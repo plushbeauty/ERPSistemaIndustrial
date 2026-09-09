@@ -1,6 +1,4 @@
-import { useEffect, useState } from 'react'
-import { ArrowRight, BarChart3, Boxes, Check, Factory, Gauge, Package, ShieldCheck, ShoppingCart, Truck, Wrench } from 'lucide-react'
-import { supabase } from './lib/supabaseClient'
+import { ArrowRight, BarChart3, Boxes, Check, Factory, Gauge, Package, ShieldCheck, ShoppingCart, Wrench } from 'lucide-react'
 import AppIndustrial from './AppIndustrial'
 import './styles/public-industrial.css'
 
@@ -20,23 +18,9 @@ const modules = [
 ]
 
 export default function PublicIndustrial() {
-  const [checking, setChecking] = useState(true)
-  const [authenticated, setAuthenticated] = useState(false)
-  const forceLogin = window.location.pathname === '/login'
-
-  useEffect(() => {
-    let alive = true
-    supabase.auth.getSession().then(({ data }) => {
-      if (!alive) return
-      setAuthenticated(Boolean(data.session))
-      setChecking(false)
-    })
-    return () => { alive = false }
-  }, [])
-
-  if (checking) return <div className="public-loading">Carregando SGQ ERP…</div>
-  if (authenticated && !forceLogin) return <AppIndustrial />
-  if (forceLogin) return <AppIndustrial />
+  // A raiz é uma vitrine pública e não depende de Supabase/Auth para renderizar.
+  // O sistema autenticado fica exclusivamente em /login e nas rotas do AppIndustrial.
+  if (window.location.pathname === '/login') return <AppIndustrial />
 
   return (
     <div className="public-industrial">
