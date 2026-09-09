@@ -5,9 +5,6 @@ import './styles/index.css'
 import './styles/sgq-overrides.css'
 import './styles/public-industrial.css'
 import './styles/industrial-enhancements.css'
+import './styles/public-home-v2.css'
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <AppEntry />
-  </React.StrictMode>,
-)
+ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><AppEntry /></React.StrictMode>)
