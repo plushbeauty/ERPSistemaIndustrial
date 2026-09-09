@@ -55,7 +55,12 @@ function Login() {
 function HelpAI() {
   const [open, setOpen] = useState(false)
   const questions = ['Como cadastrar uma ordem de produção?', 'Como funciona o MRP?', 'Como importar uma NF-e da contabilidade?', 'Onde encontro a chave de acesso?', 'Como configurar a emissão fiscal?']
-  return <><button className="ai-help-button" onClick={() => setOpen(!open)} aria-label="Abrir ajuda do ERP">{open ? <X size={20}/> : <Bot size={20}/>}<span>Ajuda IA</span></button>{open && <div className="ai-help-panel"><div className="ai-help-head"><div><strong>Assistente SGQ ERP</strong><small>Ajuda rápida por módulo</small></div><button onClick={() => setOpen(false)}><X size={18}/></button></div><p>Escolha uma pergunta para abrir a orientação correspondente.</p>{questions.map(q => <button key={q} onClick={() => alert(q + '\n\nO assistente orientará passo a passo conforme os dados e permissões da sua empresa.')}>{q}</button>)}</div>}</n
+  return <>
+    <button className="ai-help-button" onClick={() => setOpen(!open)} aria-label="Abrir ajuda do ERP">{open ? <X size={20}/> : <Bot size={20}/>}<span>Ajuda IA</span></button>
+    {open && <div className="ai-help-panel"><div className="ai-help-head"><div><strong>Assistente SGQ ERP</strong><small>Ajuda rápida por módulo</small></div><button onClick={() => setOpen(false)}><X size={18}/></button></div><p>Escolha uma pergunta para abrir a orientação correspondente.</p>{questions.map(q => <button key={q} onClick={() => alert(q + '\n\nO assistente orientará passo a passo conforme os dados e permissões da sua empresa.')}>{q}</button>)}</div>}
+  </>
+}
+
 function ERPWithShortcuts() {
   return <><AppIndustrial/><div className="erp-shortcuts"><a href="/fiscal"><FileText size={18}/><span>Fiscal</span></a></div><HelpAI/></>
 }
