@@ -4,6 +4,7 @@ import AppEntry from './AppEntry'
 import './styles/index.css'
 import './styles/sgq-overrides.css'
 import './styles/public-industrial.css'
+import './styles/industrial-enhancements.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
