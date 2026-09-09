@@ -1,6 +1,6 @@
 import { Component, FormEvent, ReactNode, useEffect, useState } from 'react'
 import { Bot, FileText, KeyRound, LogIn, X } from 'lucide-react'
-import AppIndustrial from './AppIndustrial'
+import AppIndustrial from './AppIndustrialV2'
 import PublicIndustrialHome from './PublicIndustrialHome'
 import Fiscal from './pages/Fiscal'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
