@@ -1,6 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import AppIndustrial from './AppIndustrial'
+import PublicIndustrial from './PublicIndustrial'
 import './styles/index.css'
 import './styles/sgq-overrides.css'
-ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><AppIndustrial/></React.StrictMode>)
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <PublicIndustrial />
+  </React.StrictMode>,
+)
