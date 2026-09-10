@@ -1,0 +1,49 @@
+/* Tema claro SGQ ERP: aparência profissional para telas públicas e administrativas. */
+:root{color-scheme:light}
+body{background:#f4f6f5;color:#172033}
+.app-shell{background:#f4f6f5!important;color:#172033}
+.sidebar{background:#ffffff!important;border-right:1px solid #e3e8e6!important;box-shadow:8px 0 30px rgba(23,32,51,.04)}
+.brand{color:#173f4a!important}.brand span{color:#718086!important}
+.nav-item{color:#64757a!important}.nav-item:hover,.nav-item.active{background:#edf5f3!important;color:#0a6f73!important}
+.logout{color:#a55f63!important}
+.topbar{background:rgba(255,255,255,.94)!important;border-bottom:1px solid #e3e8e6!important;color:#172033;backdrop-filter:blur(14px)}
+.topbar h1{color:#172033}.status{color:#718086!important}
+.content{background:#f4f6f5}
+.hero{background:linear-gradient(135deg,#ffffff,#f0f5f3)!important;border-color:#dfe7e4!important;box-shadow:0 20px 50px rgba(23,32,51,.07)!important;color:#172033}
+.hero p,.panel p{color:#66777c!important}
+.cards .metric,.metric,.panel{background:#ffffff!important;border-color:#dfe7e4!important;color:#172033;box-shadow:0 10px 30px rgba(23,32,51,.04)}
+.metric span,.metric small{color:#718086!important}.metric strong{color:#173f4a}
+.panel h2,.panel h3{color:#172033}
+.feature-grid span,.feature{background:#f5f8f7!important;color:#53676d!important;border:1px solid #e5ebe9}
+.primary{background:#0a6f73!important;color:#fff!important}.primary:hover{background:#075b5f!important}
+.secondary{background:#fff!important;color:#173f4a!important;border:1px solid #d6e0dd!important}
+.search{background:#fff!important;border-color:#dfe7e4!important}.search input{color:#172033!important}.search input::placeholder{color:#98a5a8}
+.table-wrap{border-color:#dfe7e4!important;background:#fff}.table-wrap th,.credentials th{background:#f2f6f4!important;color:#53676d!important;border-color:#e3e9e7!important}.table-wrap td,.credentials td{color:#334e56!important;border-color:#e8edeb!important}
+.modal{background:rgba(14,35,40,.38)!important;backdrop-filter:blur(5px)}
+.modal-card{background:#fff!important;border-color:#dfe7e4!important;color:#172033;box-shadow:0 30px 80px rgba(23,32,51,.18)!important}
+.form-grid label,.password-box label,.login-card label{color:#53676d!important}.form-grid input,.password-box input,.login-card input{background:#f9fbfa!important;color:#172033!important;border-color:#d8e1de!important}.form-grid input:focus,.password-box input:focus,.login-card input:focus{border-color:#0a6f73!important}
+.tabs{border-color:#dfe7e4}.tabs .tab{color:#718086}.tabs .tab.active{color:#0a6f73;border-color:#0a6f73}
+.sector{background:#f7f9f8!important;color:#334e56;border-color:#e2e9e6}.sector.selected{background:#edf6f4!important;border-color:#0a6f73}
+.machine-card{background:#fff!important;color:#172033!important;border-color:#dfe7e4!important;box-shadow:0 10px 30px rgba(23,32,51,.04)}.machine-card:hover{border-color:#0a6f73}.machine-icon{background:linear-gradient(135deg,#edf5f3,#f8faf9)!important;color:#0a6f73!important}.machine-card small,.machine-card span{color:#718086!important}
+.schedule-row{color:#53676d;border-color:#e5ebe9}
+.loading-screen{background:linear-gradient(135deg,#f8faf9,#eef4f2)!important;color:#173f4a!important;position:relative;overflow:hidden;font-weight:800}
+.loading-screen:before{content:'';width:64px;height:64px;border-radius:50%;border:4px solid #dbe8e5;border-top-color:#0a6f73;border-right-color:#c9a86a;animation:sgq-spin .85s linear infinite;position:absolute;top:calc(50% - 52px);left:calc(50% - 32px);box-shadow:0 10px 30px rgba(10,111,115,.12)}
+.loading-screen:after{content:'SGQ ERP  •  preparando seu ambiente';position:absolute;top:calc(50% + 28px);left:0;right:0;text-align:center;font-size:12px;letter-spacing:.08em;color:#718086;text-transform:uppercase}
+@keyframes sgq-spin{to{transform:rotate(360deg)}}
+/* Público: fundo claro e acentos em verde-petróleo/dourado, sem grandes blocos azuis. */
+.public-industrial,.home-v2{background:#f4f6f5!important;color:#172033!important}
+.home-v2 .public-nav{background:rgba(255,255,255,.96)!important;border-color:#e2e8e5!important;color:#53676d!important;backdrop-filter:blur(16px)}
+.home-v2 .public-nav a,.home-v2 .nav-menu-trigger{color:#53676d!important}.home-v2 .public-nav a:hover,.home-v2 .nav-menu-trigger:hover,.home-v2 .nav-menu-trigger.open{color:#0a6f73!important}
+.home-v2 .public-hero,.home-v2 .public-section{background:#f4f6f5!important}
+.home-v2 .public-hero{border-color:#e1e8e5!important}
+.home-v2 .dashboard-preview,.home-v2 .automation-card,.home-v2 .screen-card,.home-v2 .flow-step,.home-v2 .module-card{background:#fff!important;border-color:#dfe7e4!important;box-shadow:0 16px 45px rgba(23,32,51,.06)!important;color:#172033}
+.home-v2 .preview-metrics i,.home-v2 .screen-body,.home-v2 .automation-flow{background:#f7f9f8!important;border-color:#e5ebe9!important}
+.home-v2 .hero-chart{background:#fff;border-color:#e5ebe9}.home-v2 .hero-chart i{background:linear-gradient(180deg,#0a6f73,#91c96f)!important}
+.home-v2 .phone-mock{background:linear-gradient(145deg,#173f4a,#0a6f73)!important;box-shadow:0 25px 70px rgba(10,111,115,.18)}
+.home-v2 .mega-menu{background:#fff!important;border-color:#dfe7e4!important;box-shadow:0 24px 70px rgba(23,32,51,.16)!important}
+.home-v2 .mega-link:hover{background:#f0f6f4!important}.home-v2 .mega-title{color:#0a6f73!important}
+.home-v2 .public-primary{background:#0a6f73!important;color:#fff!important}.home-v2 .public-secondary{background:#fff!important;color:#173f4a!important;border-color:#d8e1de!important}
+.home-v2 .public-section h2,.home-v2 .public-section h3,.home-v2 .public-hero h1{color:#172033}
+.home-v2 .public-section p,.home-v2 .public-hero p{color:#66777c}
+.home-v2 .public-kicker{color:#0a6f73!important}
+@media(max-width:900px){.sidebar{box-shadow:18px 0 45px rgba(23,32,51,.12)}}
