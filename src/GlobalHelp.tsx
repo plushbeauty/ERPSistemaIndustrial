@@ -29,10 +29,15 @@ export default function GlobalHelp(){
   const [title,setTitle]=useState('Ajuda do SGQ ERP')
   const [text,setText]=useState('Posso explicar esta tela, o que cada botão faz e qual é o próximo passo.')
   useEffect(()=>{
+    let opened=false
     const update=()=>{
       const h=document.querySelector('.v2-top h1')?.textContent?.trim()||'SGQ ERP'
       setTitle(`Ajuda: ${h}`)
       setText(topics[h]||'Posso explicar esta tela, o que cada botão faz e qual é o próximo passo. Use a Central de Acesso para encontrar outros módulos.')
+      if(!opened&&document.querySelector('.v2-shell')){
+        opened=true
+        window.setTimeout(()=>document.querySelector<HTMLButtonElement>('[data-open-launcher]')?.click(),180)
+      }
     }
     update()
     const observer=new MutationObserver(update)
