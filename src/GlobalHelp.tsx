@@ -1,58 +1,39 @@
 import { useEffect, useState } from 'react'
-import { Bot, HelpCircle, X } from 'lucide-react'
+import { Bot, HelpCircle, X, ArrowRight } from 'lucide-react'
 
-const topics:Record<string,string>={
-  Dashboard:'Veja os principais indicadores da empresa e use a Central de Acesso para abrir qualquer módulo.',
-  Cadastros:'Os Cadastros Mestres alimentam o restante do ERP. Comece por produtos, clientes, fornecedores, setores e máquinas.',
-  Produtos:'Cadastre código, nome, unidade, grupo, estoque, custo e preço. O produto pode ser usado em compras, vendas, estoque e produção.',
-  Clientes:'Mantenha os dados comerciais e documentos dos clientes atualizados para vendas, faturamento e financeiro.',
-  Fornecedores:'Cadastre fornecedores e seus documentos para compras e contas a pagar.',
-  Produção:'Use Engenharia/BOM, MRP, PCP e Ordens de Produção para planejar e acompanhar a fabricação.',
-  'Estoque / WMS':'Controle produtos, saldos e movimentações. O estoque se conecta à compra, produção, expedição e venda.',
-  Compras:'Registre fornecedores e pedidos de compra para abastecer a produção e controlar compromissos financeiros.',
-  'Vendas / CRM':'Organize clientes, pedidos e oportunidades comerciais e acompanhe o histórico.',
-  Financeiro:'O financeiro conecta pedidos, faturamento, contas, bancos, conciliação e DRE.',
-  'Contas a pagar':'Acompanhe obrigações, vencimentos e pagamentos da empresa.',
-  'Contas a receber':'Acompanhe recebimentos, parcelas e inadimplência.',
-  'Bancos / OFX':'Importe movimentos bancários e faça a conciliação com o financeiro.',
-  'Qualidade / QMS':'Registre inspeções, não conformidades, ações e indicadores de qualidade.',
-  'Fiscal / Documentos':'Consulte o fluxo fiscal, NF-e, NFC-e, XML, DANFE e chave de acesso.',
-  Expedição:'Controle separação, conferência, despacho e entrega.',
-  'Manutenção / CMMS':'Controle máquinas, ordens de manutenção, preventiva e corretiva.',
-  'Indicadores / OEE':'Acompanhe disponibilidade, performance, qualidade, produção e paradas.',
-  'Outlook / IA':'Pedidos recebidos por e-mail podem entrar no fluxo de leitura, OCR, conferência e processamento.',
-  Configurações:'Área para empresa, usuários, permissões e segurança.'
+const topics:Record<string,{text:string;steps:string[];href?:string}>={
+  Dashboard:{text:'Acompanhe a operação em uma visão simples. Os indicadores mostram onde existe atenção e a Central de Acesso abre os módulos.',steps:['Confira os indicadores do dia.','Abra a Central de Acesso.','Entre no módulo que precisa de atenção.']},
+  Cadastros:{text:'Os Cadastros Mestres alimentam todo o ERP. Comece pelos dados que sua operação realmente usa.',steps:['Cadastre setores e máquinas.','Cadastre produtos com código e unidade.','Cadastre clientes e fornecedores.','Depois configure engenharia, estoque e PCP.']},
+  Produtos:{text:'O produto é a base da engenharia, estoque, compras, vendas, PCP e fiscal.',steps:['Informe código e descrição.','Defina grupo e unidade.','Configure estoque, custo e preço.','Complete BOM, processo e dados fiscais quando aplicável.']},
+  Produção:{text:'Produção transforma uma necessidade planejada em fabricação acompanhada.',steps:['Receba o pedido.','Verifique materiais e capacidade.','Gere a OP.','Programe máquina e operador.','Registre produção boa e refugo.']},
+  'Qualidade / QMS':{text:'A Qualidade controla documentos, inspeções, RPNC, ações, auditorias, treinamentos, metrologia e indicadores.',steps:['Defina padrões e documentos.','Inspecione e registre resultados.','Abra RPNC quando houver desvio.','Crie ação corretiva e verifique eficácia.','Mantenha evidências e revisões controladas.'],href:'/qualidade'},
+  'Estoque / WMS':{text:'O saldo deve nascer dos movimentos de entrada, consumo, produção e saída.',steps:['Registre entradas.','Reserve materiais para pedidos/OPs.','Baixe consumo na produção.','Confira inventário e rastreabilidade.']},
+  Compras:{text:'Compras abastece a fábrica e acompanha fornecedores, pedidos e prazos.',steps:['Identifique a necessidade.','Gere solicitação/pedido.','Acompanhe fornecedor e previsão.','Registre recebimento e impacto no estoque.']},
+  'Financeiro':{text:'O Financeiro acompanha pagar, receber, caixa, bancos, conciliação, custos e resultado.',steps:['Registre compromissos.','Conecte pagamentos e recebimentos.','Concilie o banco.','Analise custos e resultado.']},
+  'Fiscal / Documentos':{text:'O Fiscal organiza documentos, itens, tributos, XML, DANFE e integração com o autorizador fiscal.',steps:['Confira emitente e destinatário.','Confira produtos e tributação.','Valide a nota.','Transmita pelo integrador.','Guarde XML e DANFE.'],href:'/fiscal'},
+  'Manutenção / CMMS':{text:'A manutenção evita paradas e registra o histórico de cada máquina.',steps:['Cadastre a máquina.','Defina plano e periodicidade.','Gere ordem preventiva/corretiva.','Registre execução, peças e custo.']},
+  'Indicadores / OEE':{text:'Indicadores transformam apontamentos em informação para decisão.',steps:['Registre produção e paradas.','Calcule disponibilidade e performance.','Compare qualidade e refugo.','Analise tendências.']},
+  'Outlook / IA':{text:'Pedidos recebidos por e-mail podem entrar em leitura, OCR, conferência e aprovação antes da produção.',steps:['Capturar e-mail.','Extrair dados.','Conferir cliente, produto e quantidade.','Aprovar pedido.','Enviar ao fluxo operacional.']},
+  Configurações:{text:'Use esta área para segurança, empresa, usuários, permissões e parâmetros.',steps:['Configure a empresa.','Defina usuários e setores.','Revise permissões.','Nunca compartilhe senhas.']},
 }
 
 export default function GlobalHelp(){
-  const [open,setOpen]=useState(false)
-  const [title,setTitle]=useState('Ajuda do SGQ ERP')
-  const [text,setText]=useState('Posso explicar esta tela, o que cada botão faz e qual é o próximo passo.')
-  useEffect(()=>{
-    let opened=false
-    const update=()=>{
-      const h=document.querySelector('.v2-top h1')?.textContent?.trim()||'SGQ ERP'
-      setTitle(`Ajuda: ${h}`)
-      setText(topics[h]||'Posso explicar esta tela, o que cada botão faz e qual é o próximo passo. Use a Central de Acesso para encontrar outros módulos.')
-      if(!opened&&document.querySelector('.v2-shell')){
-        opened=true
-        window.setTimeout(()=>document.querySelector<HTMLButtonElement>('[data-open-launcher]')?.click(),180)
-      }
-    }
-    update()
-    const observer=new MutationObserver(update)
-    const root=document.querySelector('#root')
-    if(root)observer.observe(root,{subtree:true,childList:true,characterData:true})
-    window.addEventListener('popstate',update)
-    return()=>{observer.disconnect();window.removeEventListener('popstate',update)}
-  },[])
-  return <>
-    <button type="button" aria-label="Abrir ajuda" className="global-help-button" onClick={()=>setOpen(v=>!v)}>{open?<X size={20}/>:<HelpCircle size={20}/>}<span>Ajuda</span></button>
-    {open&&<div className="global-help-panel" role="dialog" aria-label="Ajuda do SGQ ERP">
-      <div className="global-help-head"><span className="global-help-icon"><Bot size={20}/></span><div><strong>{title}</strong><small>Assistente SGQ ERP</small></div><button type="button" onClick={()=>setOpen(false)} aria-label="Fechar ajuda"><X size={17}/></button></div>
-      <p>{text}</p>
-      <div className="global-help-tips"><span>💡 Dica</span><span>Comece pelos Cadastros Mestres quando uma tela estiver vazia.</span></div>
-      <button type="button" className="global-help-close" onClick={()=>setOpen(false)}>Entendi</button>
-    </div>}
-  </>
+ const [open,setOpen]=useState(false)
+ const [title,setTitle]=useState('Ajuda do SGQ ERP')
+ const [topic,setTopic]=useState(topics.Dashboard)
+ useEffect(()=>{
+   const update=()=>{const h=document.querySelector('.v2-top h1')?.textContent?.trim()||'Dashboard';const found=topics[h]||topics.Dashboard;setTitle(`Ajuda: ${h}`);setTopic(found)}
+   update(); const observer=new MutationObserver(update); const root=document.querySelector('#root'); if(root)observer.observe(root,{subtree:true,childList:true,characterData:true}); window.addEventListener('popstate',update); return()=>{observer.disconnect();window.removeEventListener('popstate',update)}
+ },[])
+ return <>
+  <button type="button" aria-label="Abrir ajuda desta tela" title="Abrir explicação desta tela" className="global-help-button" onClick={()=>setOpen(v=>!v)}>{open?<X size={20}/>:<HelpCircle size={20}/>}<span>Ajuda</span></button>
+  {open&&<div className="global-help-panel" role="dialog" aria-label="Ajuda do SGQ ERP">
+   <div className="global-help-head"><span className="global-help-icon"><Bot size={20}/></span><div><strong>{title}</strong><small>Guia rápido do SGQ ERP</small></div><button type="button" onClick={()=>setOpen(false)} aria-label="Fechar ajuda" title="Fechar ajuda"><X size={18}/></button></div>
+   <p>{topic.text}</p>
+   <ol className="global-help-steps">{topic.steps.map((s,i)=><li key={s}><b>{i+1}</b><span>{s}</span></li>)}</ol>
+   <div className="global-help-tips"><span>💡 Dica</span><span>Se uma tela estiver vazia, comece pelos Cadastros Mestres.</span></div>
+   {topic.href&&<a className="global-help-action" href={topic.href}>Abrir módulo <ArrowRight size={17}/></a>}
+   <button type="button" className="global-help-close" onClick={()=>setOpen(false)}>Entendi</button>
+  </div>}
+ </>
 }
