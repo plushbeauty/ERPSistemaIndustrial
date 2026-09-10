@@ -10,6 +10,7 @@ import './styles/public-modern.css'
 import './styles/industrial-v2.css'
 import './styles/fiscal-public.css'
 import './styles/master.css'
+import './styles/industrial-light-theme.css'
 
 if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>undefined))
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><AppEntry /></React.StrictMode>)
