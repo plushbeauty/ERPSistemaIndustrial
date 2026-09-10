@@ -1,53 +1,30 @@
 import { useEffect, useState } from 'react'
-import { AlertTriangle, Building2, CheckCircle2, CircleDollarSign, LogOut, RefreshCw, ShieldAlert, Users, XCircle } from 'lucide-react'
+import { AlertTriangle, Building2, CheckCircle2, CircleDollarSign, LogOut, RefreshCw, ShieldAlert, Users } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Empresa={id:string;nome:string;plano:string|null;ativo:boolean;cobranca_status:string;dias_atraso:number;vencimento:string|null}
 type Plano={nome:string;preco_mensal:number;quantidade:number;mensal:number}
 type Resumo={empresas:number;empresas_ativas:number;empresas_bloqueadas:number;gratis:number;teste:number;em_dia:number;atrasados:number;bloquear:number;receita_mensal_prevista:number;receita_mensal_paga:number}
 type MasterData={resumo:Resumo;planos:Plano[];empresas:Empresa[]}
-
 const dinheiro=(v:number)=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
 
 export default function Master(){
  const[data,setData]=useState<MasterData|null>(null);const[loading,setLoading]=useState(true);const[msg,setMsg]=useState('')
  async function load(){setLoading(true);setMsg('');await supabase.rpc('erp_master_aplicar_bloqueios');const{data,error}=await supabase.rpc('erp_master_dashboard');if(error)setMsg(error.message);else setData(data as MasterData);setLoading(false)}
  useEffect(()=>{void load()},[])
- const r=data?.resumo
- const empresas=data?.empresas||[]
- const planos=data?.planos||[]
- const atrasadas=empresas.filter(e=>e.cobranca_status==='ATRASADO')
- const bloquear=empresas.filter(e=>e.cobranca_status==='BLOQUEAR')
+ const r=data?.resumo;const empresas=data?.empresas||[];const planos=data?.planos||[];const atrasadas=empresas.filter(e=>e.cobranca_status==='ATRASADO');const bloquear=empresas.filter(e=>e.cobranca_status==='BLOQUEAR')
+ async function reativar(id:string){setMsg('');const{error}=await supabase.rpc('erp_master_set_empresa_status',{p_empresa_id:id,p_ativo:true});if(error)setMsg(error.message);else await load()}
  return <div className="master-page">
   <header><div><span className="master-kicker">SGQ ERP • MASTER</span><h1>Visão geral</h1><p>Clientes, planos, faturamento e inadimplência em um só lugar.</p></div><div className="master-actions"><button onClick={()=>void load()}><RefreshCw size={17}/> Atualizar</button><button onClick={()=>supabase.auth.signOut()}><LogOut size={17}/> Sair</button></div></header>
   {msg&&<div className="master-error">{msg}</div>}
   <main className="master-main">
-   <section className="master-kpis master-kpis-5">
-    <article><Building2/><span>Empresas clientes</span><strong>{loading?'—':r?.empresas??0}</strong></article>
-    <article><Users/><span>Empresas ativas</span><strong>{loading?'—':r?.empresas_ativas??0}</strong></article>
-    <article><CircleDollarSign/><span>Faturamento mensal previsto</span><strong>{loading?'—':dinheiro(r?.receita_mensal_prevista||0)}</strong></article>
-    <article><CheckCircle2/><span>Em dia</span><strong>{loading?'—':r?.em_dia??0}</strong></article>
-    <article className={(r?.atrasados||0)>0?'kpi-warning':''}><AlertTriangle/><span>Em atraso</span><strong>{loading?'—':r?.atrasados??0}</strong></article>
-   </section>
-
-   <section className="master-plan-grid">
-    {planos.map(p=><article className="master-plan-card" key={p.nome}><div><span>{p.nome}</span><small>{p.quantidade} {p.quantidade===1?'empresa':'empresas'}</small></div><strong>{dinheiro(p.preco_mensal)}<em>/mês</em></strong><b>{dinheiro(p.mensal)} / mês</b><small>Receita recorrente deste plano</small></article>)}
-    {r&&<article className="master-plan-card master-plan-free"><div><span>Grátis / teste</span><small>{(r.gratis||0)+(r.teste||0)} empresas</small></div><strong>R$ 0<em>/mês</em></strong><b>Sem cobrança recorrente</b><small>Grátis: {r.gratis||0} • Teste: {r.teste||0}</small></article>}
-   </section>
-
+   <section className="master-kpis master-kpis-5"><article><Building2/><span>Empresas clientes</span><strong>{loading?'—':r?.empresas??0}</strong></article><article><Users/><span>Empresas ativas</span><strong>{loading?'—':r?.empresas_ativas??0}</strong></article><article><CircleDollarSign/><span>Faturamento mensal previsto</span><strong>{loading?'—':dinheiro(r?.receita_mensal_prevista||0)}</strong></article><article><CheckCircle2/><span>Em dia</span><strong>{loading?'—':r?.em_dia??0}</strong></article><article className={(r?.atrasados||0)>0?'kpi-warning':''}><AlertTriangle/><span>Em atraso</span><strong>{loading?'—':r?.atrasados??0}</strong></article></section>
+   <section className="master-plan-grid">{planos.map(p=><article className="master-plan-card" key={p.nome}><div><span>{p.nome}</span><small>{p.quantidade} {p.quantidade===1?'empresa':'empresas'}</small></div><strong>{dinheiro(p.preco_mensal)}<em>/mês</em></strong><b>{dinheiro(p.mensal)} / mês</b><small>Receita recorrente deste plano</small></article>)}{r&&<article className="master-plan-card master-plan-free"><div><span>Grátis / teste</span><small>{(r.gratis||0)+(r.teste||0)} empresas</small></div><strong>R$ 0<em>/mês</em></strong><b>Sem cobrança recorrente</b><small>Grátis: {r.gratis||0} • Teste: {r.teste||0}</small></article>}</section>
    <section className="master-billing-grid">
-    <article className="master-panel"><div className="master-panel-title"><div><AlertTriangle/><div><strong>Alertas de cobrança</strong><small>Quem está com mensalidade vencida</small></div></div><b className="master-alert-count">{r?.atrasados||0}</b></div>
-     {atrasadas.length?<div className="master-alert-list">{atrasadas.map(e=><div className="master-alert-row" key={e.id}><span><strong>{e.nome}</strong><small>{e.plano||'Plano não informado'} • {e.dias_atraso} dias em atraso</small></span><em>ALERTA</em></div>)}</div>:<div className="master-ok"><CheckCircle2/> Nenhuma empresa com mensalidade em atraso.</div>}
-    </article>
-    <article className="master-panel"><div className="master-panel-title"><div><ShieldAlert/><div><strong>Bloqueio automático</strong><small>2 meses sem pagamento</small></div></div><b className="master-block-count">{r?.bloquear||0}</b></div>
-     {bloquear.length?<div className="master-alert-list">{bloquear.map(e=><div className="master-alert-row" key={e.id}><span><strong>{e.nome}</strong><small>{e.plano||'Plano não informado'} • {e.dias_atraso} dias em atraso</small></span><em className="danger">BLOQUEADA</em></div>)}</div>:<div className="master-ok"><CheckCircle2/> Nenhuma empresa atingiu 2 meses de atraso.</div>}
-     <p className="master-rule">Após 60 dias do vencimento, o acesso da empresa é bloqueado automaticamente. Ao confirmar o pagamento, o Master poderá reativá-la.</p>
-    </article>
+    <article className="master-panel"><div className="master-panel-title"><div><AlertTriangle/><div><strong>Alertas de cobrança</strong><small>Mensalidade vencida</small></div></div><b className="master-alert-count">{r?.atrasados||0}</b></div>{atrasadas.length?<div className="master-alert-list">{atrasadas.map(e=><div className="master-alert-row" key={e.id}><span><strong>{e.nome}</strong><small>{e.plano||'Plano não informado'} • {e.dias_atraso} dias em atraso</small></span><em>ALERTA</em></div>)}</div>:<div className="master-ok"><CheckCircle2/> Nenhuma empresa com mensalidade em atraso.</div>}</article>
+    <article className="master-panel"><div className="master-panel-title"><div><ShieldAlert/><div><strong>Bloqueio automático</strong><small>2 meses sem pagamento</small></div></div><b className="master-block-count">{r?.bloquear||0}</b></div>{bloquear.length?<div className="master-alert-list">{bloquear.map(e=><div className="master-alert-row" key={e.id}><span><strong>{e.nome}</strong><small>{e.plano||'Plano não informado'} • {e.dias_atraso} dias em atraso</small></span><em className="danger">BLOQUEADA</em></div>)}</div>:<div className="master-ok"><CheckCircle2/> Nenhuma empresa atingiu 2 meses de atraso.</div>}<p className="master-rule">Com 60 dias ou mais após o vencimento, o acesso é bloqueado. Depois que o pagamento for confirmado, o Master pode reativar a empresa.</p></article>
    </section>
-
-   <section className="master-panel master-companies"><div className="master-panel-title"><div><Building2/><div><strong>Empresas clientes</strong><small>Lista simples para acompanhar plano e situação.</small></div></div><b>{loading?'Carregando…':`${empresas.length} empresas`}</b></div>
-    <div className="master-table"><div className="master-row master-head"><span>Empresa</span><span>Plano</span><span>Cobrança</span><span>Status</span></div>{empresas.map(e=><div className="master-row" key={e.id}><span><strong>{e.nome}</strong></span><span>{e.plano||'—'}</span><span><em className={e.cobranca_status==='EM_DIA'?'master-active':e.cobranca_status==='ATRASADO'?'master-warning':'master-off'}>{e.cobranca_status==='EM_DIA'?'Em dia':e.cobranca_status==='ATRASADO'?'Atrasado':e.cobranca_status==='BLOQUEAR'?'2 meses em atraso':e.cobranca_status==='GRATIS'?'Grátis':e.cobranca_status==='TESTE'?'Teste':'Sem vencimento'}</em></span><span><em className={e.ativo?'master-active':'master-off'}>{e.ativo?'Ativa':'Bloqueada'}</em></span></div>)}{!loading&&!empresas.length&&<div className="master-empty">Nenhuma empresa cadastrada.</div>}</div>
-   </section>
+   <section className="master-panel master-companies"><div className="master-panel-title"><div><Building2/><div><strong>Empresas clientes</strong><small>Plano, cobrança e acesso.</small></div></div><b>{loading?'Carregando…':`${empresas.length} empresas`}</b></div><div className="master-table"><div className="master-row master-head"><span>Empresa</span><span>Plano</span><span>Cobrança</span><span>Acesso</span></div>{empresas.map(e=><div className="master-row" key={e.id}><span><strong>{e.nome}</strong></span><span>{e.plano||'—'}</span><span><em className={e.cobranca_status==='EM_DIA'?'master-active':e.cobranca_status==='ATRASADO'?'master-warning':'master-off'}>{e.cobranca_status==='EM_DIA'?'Em dia':e.cobranca_status==='ATRASADO'?'Atrasado':e.cobranca_status==='BLOQUEAR'?'2 meses em atraso':e.cobranca_status==='GRATIS'?'Grátis':e.cobranca_status==='TESTE'?'Teste':'Sem vencimento'}</em></span><span>{e.ativo?<em className="master-active">Ativa</em>:<button className="master-reactivate" onClick={()=>void reativar(e.id)}>Reativar após pagamento</button>}</span></div>)}{!loading&&!empresas.length&&<div className="master-empty">Nenhuma empresa cadastrada.</div>}</div></section>
   </main><footer>FernandoSch_System • SGQ ERP • Administração Master</footer>
  </div>
 }
