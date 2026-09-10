@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowRight, Check, ChevronDown, FileText, Factory, Mail, Package, ShieldCheck, Smartphone, Wrench, X } from 'lucide-react'
+import { ArrowRight, Check, ChevronDown, FileText, Factory, Mail, Package, ShieldCheck, Smartphone, Wrench, X } from 'lucide-react'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 
