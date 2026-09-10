@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import AppEntry from './AppEntry'
+import AppEntry from './AppEntryV2'
 import './styles/index.css'
 import './styles/sgq-overrides.css'
 import './styles/public-industrial.css'
