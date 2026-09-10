@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import AppEntry from './AppEntryV2'
 import GlobalHelp from './GlobalHelp'
+import ERPHeaderActions from './components/ERPHeaderActions'
 import './styles/index.css'
 import './styles/sgq-overrides.css'
 import './styles/public-industrial.css'
@@ -15,4 +16,4 @@ import './styles/industrial-light-theme.css'
 import './styles/global-help.css'
 
 if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>undefined))
-ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><AppEntry/><GlobalHelp/></React.StrictMode>)
+ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><AppEntry/><ERPHeaderActions/><GlobalHelp/></React.StrictMode>)
