@@ -38,8 +38,8 @@ async function validarAcessoERP(authUserId: string): Promise<AccessResult> {
   return { ok: true, master: false, reason: '' }
 }
 
-async function autenticarERP(empresa: string, setor: string, senha: string): Promise<LoginResponse> {
-  const { data, error } = await supabase.functions.invoke('erp-login', { body: { empresa: empresa.trim(), setor: setor.trim(), senha } })
+async function autenticarERP(empresa: string, setor: string, identificador: string, senha: string): Promise<LoginResponse> {
+  const { data, error } = await supabase.functions.invoke('erp-login', { body: { empresa: empresa.trim(), setor: setor.trim(), identificador: identificador.trim(), senha } })
   if (error) throw new Error('Não foi possível autenticar no ERP. Verifique a configuração da função de login.')
   const result = data as LoginResponse | null
   if (!result?.session?.access_token || !result.session.refresh_token) throw new Error(result?.error || 'A função de autenticação não retornou uma sessão válida.')
@@ -53,7 +53,7 @@ function Login() {
     try {
       if (!supabaseConfigurado) throw new Error('A conexão do sistema com o banco não está configurada.')
       if (!empresa.trim() || !setor.trim() || !id.trim() || !pw) throw new Error('Informe empresa, setor, usuário e senha.')
-      const loginResult = await autenticarERP(empresa, setor, pw)
+      const loginResult = await autenticarERP(empresa, setor, id, pw)
       const { error: sessionError } = await supabase.auth.setSession(loginResult.session!)
       if (sessionError) throw sessionError
       const authUser = (await supabase.auth.getUser()).data.user
