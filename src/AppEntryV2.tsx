@@ -10,6 +10,7 @@ import PCPIndustrial from './pages/PCPIndustrial'
 import QualidadeIndustrial from './pages/QualidadeIndustrial'
 import CadastroEmpresa from './pages/CadastroEmpresa'
 import SolicitacaoCompra from './pages/SolicitacaoCompra'
+import TesteERP from './pages/TesteERP'
 import './styles/login-blog-fix.css'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 
@@ -106,5 +107,6 @@ export default function AppEntryV2() {
   if (path === '/qualidade') return <Protected><QualidadeIndustrial /></Protected>
   if (path === '/compras-solicitacao') return <Protected><SolicitacaoCompra /></Protected>
   if (path === '/fiscal') return <Protected><Fiscal /></Protected>
+  if (path === '/teste-erp') return <Protected><TesteERP /></Protected>
   return <Boundary><PublicIndustrialHome /></Boundary>
 }
