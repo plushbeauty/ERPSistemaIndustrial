@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const PROJECT_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
-const PROJECT_PUBLISHABLE_KEY = 'sb_publishable_QX10nEg-hrWd_5UOuYSpQg_v5M-1xuM'
+const PROJECT_URL = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
+const PROJECT_PUBLISHABLE_KEY = 'sb_publishable_BcwsSbBx8dWof7d_hAKtQA_XzQGAYwR'
 
 const env = import.meta.env
 const configuredUrl = env.VITE_SUPABASE_URL?.trim()
