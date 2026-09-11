@@ -18,4 +18,5 @@ import './styles/erp-header-actions.css'
 import './styles/company-signup.css'
 
 if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>undefined))
+window.addEventListener('click',(event)=>{const target=event.target as HTMLElement|null;const brand=target?.closest('.v2-brand') as HTMLElement|null;if(brand){event.preventDefault();location.href='/'}})
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><AppEntry/><ERPHeaderActions/><GlobalHelp/></React.StrictMode>)
