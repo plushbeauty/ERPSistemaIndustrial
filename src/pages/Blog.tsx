@@ -5,106 +5,15 @@ import '../styles/login-blog-fix.css'
 type Article = { category: string; title: string; excerpt: string; content: string[] }
 
 const articles: Article[] = [
-  {
-    category:'PCP / MRP',
-    title:'O que é MRP e como ele ajuda a indústria a planejar materiais?',
-    excerpt:'Entenda como demanda, estoque, estrutura e prazo se transformam em necessidades de compra e produção.',
-    content:[
-      'MRP é o planejamento das necessidades de materiais. Ele cruza demanda, estoque disponível, estrutura do produto (BOM), ordens em aberto e prazos para indicar o que precisa ser comprado ou produzido, quanto e quando.',
-      'No SGQ ERP, esse raciocínio está conectado ao cadastro de produtos, fichas técnicas/BOM, parâmetros de processo, estoque, compras e ordens de produção. Assim, o PCP deixa de depender de planilhas isoladas.',
-      'Para uma indústria de plásticos, por exemplo, uma necessidade de produto acabado pode resultar em consumo planejado de resina, pigmento, embalagem e outros componentes. O estoque disponível e as compras já abertas precisam ser considerados antes de gerar uma nova necessidade.',
-      'A qualidade do MRP depende de dados confiáveis: cadastro correto, unidade de medida, BOM atualizada, estoque correto e prazos de compra/produção coerentes. O SGQ ERP foi estruturado para manter essas informações conectadas ao processo industrial.',
-      'Resultado esperado: menos falta de material, menos excesso de estoque, compras mais previsíveis e maior capacidade de cumprir o planejamento.'
-    ]
-  },
-  {
-    category:'Estoque',
-    title:'Gestão de estoque industrial: matéria-prima, lote e rastreabilidade',
-    excerpt:'Como reduzir faltas, excesso e perdas mantendo cada movimentação vinculada ao processo.',
-    content:[
-      'Estoque industrial não é apenas saber quantas unidades existem. É saber onde estão, qual lote foi recebido, quanto foi consumido, quanto permanece disponível e qual processo utilizou aquele material.',
-      'O SGQ ERP contempla produtos e materiais, movimentações de estoque, lotes de matéria-prima, estoque mínimo e vínculo com produção. Isso permite acompanhar a movimentação desde a entrada até o consumo e o produto acabado.',
-      'A rastreabilidade é especialmente importante quando há exigência de identificar lote, origem, consumo, produção e qualidade. Em caso de desvio, a empresa consegue investigar o caminho do material em vez de procurar informações em planilhas.',
-      'Indicadores de estoque crítico ajudam o PCP e Compras a agir antes da parada. O objetivo é equilibrar disponibilidade, capital imobilizado e demanda produtiva.'
-    ]
-  },
-  {
-    category:'Qualidade',
-    title:'Controle de qualidade industrial: da inspeção à não conformidade',
-    excerpt:'Veja como conectar inspeções, ordens, lotes, desvios e ações corretivas em um único fluxo.',
-    content:[
-      'Qualidade industrial precisa estar dentro do processo, não somente no final da produção. Inspeções, resultados, evidências e não conformidades precisam estar associados aos itens e processos corretos.',
-      'No SGQ ERP, a estrutura contempla inspeções de qualidade, não conformidades/RPNC, severidade, descrição, prazo, causa, ação corretiva e histórico. Esses registros podem ser relacionados à operação industrial e à rastreabilidade.',
-      'Quando um lote apresenta desvio, a empresa precisa saber o que foi produzido, qual material foi utilizado, qual ordem estava em execução e qual tratamento foi dado ao problema. Essa integração reduz retrabalho e acelera a tomada de decisão.',
-      'O objetivo não é apenas registrar defeitos: é transformar cada ocorrência em informação para prevenção, melhoria do processo e redução de perdas.'
-    ]
-  },
-  {
-    category:'Produção',
-    title:'Como controlar uma Ordem de Produção do planejamento ao apontamento',
-    excerpt:'Planejamento, execução, consumo, produção, refugo e encerramento sem depender de planilhas.',
-    content:[
-      'A Ordem de Produção transforma o planejamento em execução. Ela define o produto, quantidade, processos e acompanhamento do que realmente aconteceu no chão de fábrica.',
-      'No SGQ ERP, as OPs são conectadas a produto, quantidade planejada, processos, máquinas e apontamentos. O acompanhamento pode registrar quantidade boa, refugo e paradas.',
-      'Essa diferença entre planejado e realizado é fundamental para o PCP. A gestão consegue identificar atrasos, gargalos, perdas e capacidade utilizada.',
-      'Depois da produção, os dados alimentam estoque, qualidade e custos. Dessa forma, a OP não termina como um documento isolado: ela faz parte do fluxo integrado da fábrica.'
-    ]
-  },
-  {
-    category:'Custos',
-    title:'Custo industrial: o que realmente entra no custo de fabricação?',
-    excerpt:'Material, mão de obra, máquina, energia, perdas, terceirização e custos indiretos.',
-    content:[
-      'Conhecer o custo de fabricação é essencial para formar preço e proteger margem. O custo não deve ser confundido simplesmente com o valor da matéria-prima.',
-      'O modelo industrial do SGQ ERP considera materiais, mão de obra, máquinas, custos indiretos e perdas dentro da análise de custo do produto. A estrutura de BOM e os processos produtivos ajudam a formar a composição.',
-      'Com o custo calculado, a gestão pode comparar custo e preço de venda, acompanhar margem e identificar quais produtos ou processos pressionam o resultado.',
-      'O custo também deve ser analisado junto com estoque, produção e perdas. Uma matéria-prima desperdiçada, uma máquina parada ou um processo ineficiente pode alterar significativamente o custo real.'
-    ]
-  },
-  {
-    category:'Manutenção',
-    title:'Manutenção preventiva e corretiva: como evitar paradas inesperadas',
-    excerpt:'Organize máquinas, ordens de manutenção, histórico e indicadores para aumentar a disponibilidade.',
-    content:[
-      'Manutenção industrial precisa sair do modelo de somente consertar quando quebra. Histórico de equipamentos, preventiva, corretiva e ordens de manutenção ajudam a reduzir indisponibilidade.',
-      'O SGQ ERP possui estrutura para máquinas, equipamentos e ordens de manutenção, permitindo registrar status, prioridade, responsável, descrição e datas.',
-      'Quando a manutenção está integrada ao estoque, também é possível relacionar peças e materiais necessários ao reparo. Isso ajuda a evitar que uma intervenção fique parada por falta de componente.',
-      'A gestão pode acompanhar disponibilidade, backlog e histórico de intervenções para decidir onde priorizar recursos e reduzir reincidência de falhas.'
-    ]
-  },
-  {
-    category:'Tecnologia',
-    title:'ERP industrial: por que integrar produção, estoque e financeiro?',
-    excerpt:'Dados conectados reduzem retrabalho e dão à gestão uma visão única da operação.',
-    content:[
-      'Um ERP industrial deve conectar as áreas que participam do mesmo processo. Pedido, PCP, compras, estoque, produção, qualidade, expedição, fiscal e financeiro não deveriam depender de bases paralelas.',
-      'A arquitetura do SGQ ERP foi pensada como um núcleo integrado e multissegmento. Para a indústria, os módulos podem trabalhar sobre a mesma empresa e seus dados operacionais.',
-      'Essa integração reduz redigitação e melhora a rastreabilidade das informações. Uma necessidade identificada no planejamento pode chegar a Compras; uma produção concluída pode refletir no estoque; uma venda pode ser acompanhada até a entrega.',
-      'Tecnologia só gera valor quando melhora o processo. Por isso, o sistema deve combinar automação, permissões, histórico, validações e dados reais em vez de telas isoladas.'
-    ]
-  },
-  {
-    category:'Fiscal',
-    title:'Reforma Tributária 2026: por que o ERP precisa estar preparado',
-    excerpt:'Um panorama operacional para empresas que precisam manter processos e dados fiscais organizados.',
-    content:[
-      'Mudanças tributárias exigem organização cadastral e capacidade de adaptação. Produtos, clientes, fornecedores, operações e documentos fiscais precisam estar corretamente estruturados para acompanhar regras que evoluem.',
-      'No SGQ ERP, o fiscal está conectado ao restante da operação para evitar que a informação comercial e produtiva fique isolada da documentação fiscal.',
-      'A preparação deve envolver cadastro, parametrização tributária, documentos, validações e acompanhamento das regras aplicáveis à empresa. A emissão fiscal em produção depende de configuração e provedores/certificados reais; o sistema não deve simular autorização.',
-      'O melhor momento para preparar o ERP é antes da necessidade operacional: revisar cadastros, processos e integrações reduz risco quando novas regras entrarem em vigor.'
-    ]
-  },
-  {
-    category:'Gestão',
-    title:'Dashboard industrial: quais indicadores realmente importam?',
-    excerpt:'Transforme dados operacionais em decisões sobre produção, estoque, qualidade, prazo e custos.',
-    content:[
-      'Dashboard não deve ser uma coleção de números bonitos. Os indicadores precisam responder perguntas que ajudam a gestão a agir.',
-      'Na indústria, alguns grupos essenciais são produção planejada x realizada, OPs atrasadas, capacidade, refugo, estoque crítico, qualidade, manutenção, custos e margem.',
-      'O SGQ ERP foi estruturado para apresentar uma visão executiva conectando esses processos. O objetivo é permitir que a gestão saia do problema para a causa e da causa para a ação.',
-      'Um bom indicador também precisa de contexto. OEE, por exemplo, ganha valor quando analisado junto com paradas, qualidade, produção e manutenção, em vez de ser tratado como um percentual isolado.'
-    ]
-  }
+  { category:'PCP / MRP', title:'O que é MRP e como ele ajuda a indústria a planejar materiais?', excerpt:'Entenda como demanda, estoque, estrutura e prazo se transformam em necessidades de compra e produção.', content:['MRP é o planejamento das necessidades de materiais. Ele cruza demanda, estoque disponível, estrutura do produto (BOM), ordens em aberto e prazos para indicar o que precisa ser comprado ou produzido, quanto e quando.','No SGQ ERP, esse raciocínio está conectado ao cadastro de produtos, fichas técnicas/BOM, parâmetros de processo, estoque, compras e ordens de produção. Assim, o PCP deixa de depender de planilhas isoladas.','Para uma indústria de plásticos, uma necessidade de produto acabado pode resultar em consumo planejado de resina, pigmento, embalagem e outros componentes. O estoque disponível e as compras já abertas precisam ser considerados antes de gerar uma nova necessidade.','A qualidade do MRP depende de dados confiáveis: cadastro correto, unidade de medida, BOM atualizada, estoque correto e prazos de compra/produção coerentes. O SGQ ERP foi estruturado para manter essas informações conectadas ao processo industrial.','Resultado esperado: menos falta de material, menos excesso de estoque, compras mais previsíveis e maior capacidade de cumprir o planejamento.'] },
+  { category:'Estoque', title:'Gestão de estoque industrial: matéria-prima, lote e rastreabilidade', excerpt:'Como reduzir faltas, excesso e perdas mantendo cada movimentação vinculada ao processo.', content:['Estoque industrial não é apenas saber quantas unidades existem. É saber onde estão, qual lote foi recebido, quanto foi consumido, quanto permanece disponível e qual processo utilizou aquele material.','O SGQ ERP contempla produtos e materiais, movimentações de estoque, lotes de matéria-prima, estoque mínimo e vínculo com produção. Isso permite acompanhar a movimentação desde a entrada até o consumo e o produto acabado.','A rastreabilidade é especialmente importante quando há exigência de identificar lote, origem, consumo, produção e qualidade. Em caso de desvio, a empresa consegue investigar o caminho do material em vez de procurar informações em planilhas.','Indicadores de estoque crítico ajudam o PCP e Compras a agir antes da parada. O objetivo é equilibrar disponibilidade, capital imobilizado e demanda produtiva.'] },
+  { category:'Qualidade', title:'Controle de qualidade industrial: da inspeção à não conformidade', excerpt:'Veja como conectar inspeções, ordens, lotes, desvios e ações corretivas em um único fluxo.', content:['Qualidade industrial precisa estar dentro do processo, não somente no final da produção. Inspeções, resultados, evidências e não conformidades precisam estar associados aos itens e processos corretos.','No SGQ ERP, a estrutura contempla inspeções de qualidade, não conformidades/RPNC, severidade, descrição, prazo, causa, ação corretiva e histórico. Esses registros podem ser relacionados à operação industrial e à rastreabilidade.','Quando um lote apresenta desvio, a empresa precisa saber o que foi produzido, qual material foi utilizado, qual ordem estava em execução e qual tratamento foi dado ao problema. Essa integração reduz retrabalho e acelera a tomada de decisão.','O objetivo não é apenas registrar defeitos: é transformar cada ocorrência em informação para prevenção, melhoria do processo e redução de perdas.'] },
+  { category:'Produção', title:'Como controlar uma Ordem de Produção do planejamento ao apontamento', excerpt:'Planejamento, execução, consumo, produção, refugo e encerramento sem depender de planilhas.', content:['A Ordem de Produção transforma o planejamento em execução. Ela define o produto, quantidade, processos e acompanhamento do que realmente aconteceu no chão de fábrica.','No SGQ ERP, as OPs são conectadas a produto, quantidade planejada, processos, máquinas e apontamentos. O acompanhamento pode registrar quantidade boa, refugo e paradas.','Essa diferença entre planejado e realizado é fundamental para o PCP. A gestão consegue identificar atrasos, gargalos, perdas e capacidade utilizada.','Depois da produção, os dados alimentam estoque, qualidade e custos. Dessa forma, a OP não termina como um documento isolado: ela faz parte do fluxo integrado da fábrica.'] },
+  { category:'Custos', title:'Custo industrial: o que realmente entra no custo de fabricação?', excerpt:'Material, mão de obra, máquina, energia, perdas, terceirização e custos indiretos.', content:['Conhecer o custo de fabricação é essencial para formar preço e proteger margem. O custo não deve ser confundido simplesmente com o valor da matéria-prima.','O modelo industrial do SGQ ERP considera materiais, mão de obra, máquinas, custos indiretos e perdas dentro da análise de custo do produto. A estrutura de BOM e os processos produtivos ajudam a formar a composição.','Com o custo calculado, a gestão pode comparar custo e preço de venda, acompanhar margem e identificar quais produtos ou processos pressionam o resultado.','O custo também deve ser analisado junto com estoque, produção e perdas. Uma matéria-prima desperdiçada, uma máquina parada ou um processo ineficiente pode alterar significativamente o custo real.'] },
+  { category:'Manutenção', title:'Manutenção preventiva e corretiva: como evitar paradas inesperadas', excerpt:'Organize máquinas, ordens de manutenção, histórico e indicadores para aumentar a disponibilidade.', content:['Manutenção industrial precisa sair do modelo de somente consertar quando quebra. Histórico de equipamentos, preventiva, corretiva e ordens de manutenção ajudam a reduzir indisponibilidade.','O SGQ ERP possui estrutura para máquinas, equipamentos e ordens de manutenção, permitindo registrar status, prioridade, responsável, descrição e datas.','Quando a manutenção está integrada ao estoque, também é possível relacionar peças e materiais necessários ao reparo. Isso ajuda a evitar que uma intervenção fique parada por falta de componente.','A gestão pode acompanhar disponibilidade, backlog e histórico de intervenções para decidir onde priorizar recursos e reduzir reincidência de falhas.'] },
+  { category:'Tecnologia', title:'ERP industrial: por que integrar produção, estoque e financeiro?', excerpt:'Dados conectados reduzem retrabalho e dão à gestão uma visão única da operação.', content:['Um ERP industrial deve conectar as áreas que participam do mesmo processo. Pedido, PCP, compras, estoque, produção, qualidade, expedição, fiscal e financeiro não deveriam depender de bases paralelas.','A arquitetura do SGQ ERP foi pensada como um núcleo integrado e multissegmento. Para a indústria, os módulos podem trabalhar sobre a mesma empresa e seus dados operacionais.','Essa integração reduz redigitação e melhora a rastreabilidade das informações. Uma necessidade identificada no planejamento pode chegar a Compras; uma produção concluída pode refletir no estoque; uma venda pode ser acompanhada até a entrega.','Tecnologia só gera valor quando melhora o processo. Por isso, o sistema deve combinar automação, permissões, histórico, validações e dados reais em vez de telas isoladas.'] },
+  { category:'Fiscal', title:'Reforma Tributária 2026: por que o ERP precisa estar preparado', excerpt:'Um panorama operacional para empresas que precisam manter processos e dados fiscais organizados.', content:['Mudanças tributárias exigem organização cadastral e capacidade de adaptação. Produtos, clientes, fornecedores, operações e documentos fiscais precisam estar corretamente estruturados para acompanhar regras que evoluem.','No SGQ ERP, o fiscal está conectado ao restante da operação para evitar que a informação comercial e produtiva fique isolada da documentação fiscal.','A preparação deve envolver cadastro, parametrização tributária, documentos, validações e acompanhamento das regras aplicáveis à empresa. A emissão fiscal em produção depende de configuração e provedores/certificados reais; o sistema não deve simular autorização.','O melhor momento para preparar o ERP é antes da necessidade operacional: revisar cadastros, processos e integrações reduz risco quando novas regras entrarem em vigor.'] },
+  { category:'Gestão', title:'Dashboard industrial: quais indicadores realmente importam?', excerpt:'Transforme dados operacionais em decisões sobre produção, estoque, qualidade, prazo e custos.', content:['Dashboard não deve ser uma coleção de números bonitos. Os indicadores precisam responder perguntas que ajudam a gestão a agir.','Na indústria, alguns grupos essenciais são produção planejada x realizada, OPs atrasadas, capacidade, refugo, estoque crítico, qualidade, manutenção, custos e margem.','O SGQ ERP foi estruturado para apresentar uma visão executiva conectando esses processos. O objetivo é permitir que a gestão saia do problema para a causa e da causa para a ação.','Um bom indicador também precisa de contexto. OEE, por exemplo, ganha valor quando analisado junto com paradas, qualidade, produção e manutenção, em vez de ser tratado como um percentual isolado.'] }
 ]
 
 const cats = ['Todos', ...Array.from(new Set(articles.map(a => a.category)))]
@@ -114,12 +23,10 @@ export default function Blog() {
   const [category, setCategory] = useState('Todos')
   const [selected, setSelected] = useState<Article | null>(null)
   const visible = useMemo(() => category === 'Todos' ? articles : articles.filter(a => a.category === category), [category])
-
   return <main className="blog-page">
     <header className="blog-nav"><a className="blog-brand" href="/"><img src="/logo-industrial.svg" alt="SGQ ERP" /></a><nav className="blog-nav-links"><a href="/">Início</a><a href="/#solucoes">Soluções</a><a href="/#segmentos">Segmentos</a><a href="/blog">Blog</a><a href="/#contato">Contato</a><a href="/login">Entrar</a></nav></header>
     <section className="blog-hero"><div className="blog-hero-inner"><div className="blog-kicker">BLOG INDUSTRIAL SGQ ERP</div><h1>Conhecimento para quem administra uma indústria</h1><p>Produção, PCP, MRP, estoque, qualidade, custos, manutenção, fiscal e tecnologia industrial — conteúdo prático para transformar gestão em resultado.</p></div></section>
     <section className="blog-container">
-      <div className="blog-feature"><article className="blog-feature-main"><div className="blog-kicker">DESTAQUE • PCP / MRP</div><h2>ERP industrial: produção, estoque, PCP, qualidade e financeiro em um único fluxo</h2><p>Uma indústria eficiente não pode trabalhar com informações isoladas. O objetivo de um ERP industrial é conectar pedido, planejamento, materiais, produção, qualidade, estoque, expedição, fiscal e financeiro.</p><button className="read" type="button" onClick={() => setSelected(articles[0])}>Ler artigo completo <ArrowRight size={16} /></button></article><aside className="blog-side"><div className="blog-side-card"><strong>Produção conectada</strong><p>Do planejamento à ordem de produção e ao apontamento.</p></div><div className="blog-side-card"><strong>Rastreabilidade</strong><p>Produto, lote, estoque e qualidade em uma mesma cadeia.</p></div></aside></div>
       <div className="blog-categories">{cats.map(c => <button key={c} className={category === c ? 'active' : ''} onClick={() => setCategory(c)}>{c}</button>)}</div>
       <div id="artigos" className="blog-grid">{visible.map(a => { const Icon = icons[a.category] ?? Factory; return <article className="blog-card" key={a.title}><Icon size={25} /><span className="blog-tag">{a.category}</span><h3>{a.title}</h3><p>{a.excerpt}</p><button className="read" type="button" onClick={() => setSelected(a)}>Ler artigo <ArrowRight size={15} /></button></article> })}</div>
     </section>
