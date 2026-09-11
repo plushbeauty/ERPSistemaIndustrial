@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ClipboardCheck, FileText, ShieldCheck, ShoppingCart } from 'lucide-react'
+import { ShieldCheck, ShoppingCart } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 export default function ERPHeaderActions() {
@@ -14,6 +14,6 @@ export default function ERPHeaderActions() {
     })()
     return () => { alive = false }
   }, [])
-  if (['/', '/login', '/fiscal', '/master', '/pcp', '/qualidade', '/compras-solicitacao'].includes(location.pathname)) return null
-  return <div className="erp-header-actions"><a href="/compras-solicitacao" className="erp-header-action purchases"><ShoppingCart size={17} /><span>Solicitação de Compras</span></a><a href="/qualidade" className="erp-header-action quality"><ClipboardCheck size={17} /><span>Qualidade</span></a><a href="/fiscal" className="erp-header-action fiscal"><FileText size={17} /><span>Fiscal</span></a>{showMaster && <a href="/master" className="erp-header-action master"><ShieldCheck size={17} /><span>Master</span></a>}</div>
+  if (['/', '/login', '/fiscal', '/master', '/pcp', '/qualidade', '/compras-solicitacao', '/cadastro-empresa'].includes(location.pathname)) return null
+  return <div className="erp-header-actions"><a href="/compras-solicitacao" className="erp-header-action purchases" title="Abrir solicitações de compras"><ShoppingCart size={17} /><span>Solicitação de Compras</span></a>{showMaster && <a href="/master" className="erp-header-action master" title="Abrir administração Master"><ShieldCheck size={17} /><span>Master</span></a>}</div>
 }
