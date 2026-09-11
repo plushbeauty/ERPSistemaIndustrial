@@ -11,6 +11,7 @@ import QualidadeIndustrial from './pages/QualidadeIndustrial'
 import CadastroEmpresa from './pages/CadastroEmpresa'
 import SolicitacaoCompra from './pages/SolicitacaoCompra'
 import TesteERP from './pages/TesteERP'
+import VirtualGuide from './components/VirtualGuide'
 import './styles/login-blog-fix.css'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 
@@ -81,7 +82,7 @@ function ERP() {
   useEffect(() => { let alive = true; void supabase.auth.getUser().then(async ({ data }) => { if (!data.user) { if (alive) setValid(false); return } const access = await validarAcessoERP(data.user.id); if (!alive) return; if (!access.ok) { void supabase.auth.signOut(); location.href = '/login'; return } setValid(true) }).catch(() => { if (alive) setValid(false) }); return () => { alive = false } }, [])
   if (valid === null) return <div className="loading-screen">Validando acesso…</div>
   if (valid === false) return <Login />
-  return <AppIndustrial />
+  return <><AppIndustrial /><VirtualGuide brand="SGQ ERP" name="Dri" /></>
 }
 
 function Protected({ children, masterOnly = false }: { children: ReactNode; masterOnly?: boolean }) {
