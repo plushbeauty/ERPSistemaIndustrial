@@ -1,0 +1,29 @@
+/* SGQ ERP — final 2026 product UX layer. Structural redesign across the authenticated workspace. */
+:root{--ux-bg:#edf2f0;--ux-surface:#fff;--ux-ink:#102c25;--ux-muted:#64756f;--ux-brand:#0f7656;--ux-brand-2:#094b39;--ux-accent:#d0ad62;--ux-line:#d5e0db;--ux-shadow:0 18px 55px rgba(16,44,37,.09);--ux-radius:18px}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(135deg,#edf3f0,#f7f8f6)}
+.v7-shell{min-height:100vh;background:radial-gradient(circle at 100% 0,rgba(15,118,86,.07),transparent 30%),#edf2f0!important}
+.v7-sidebar{width:272px!important;padding:18px 14px!important;background:linear-gradient(180deg,#092f25 0%,#0c4938 55%,#062a21 100%)!important;box-shadow:16px 0 48px rgba(5,36,27,.15)!important;border-right:1px solid rgba(255,255,255,.08)!important}
+.v7-brand{padding:8px 10px 20px!important;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:14px}
+.v7-brand strong{font-size:17px!important;letter-spacing:-.02em}.v7-brand span{font-size:9px!important;letter-spacing:.16em;text-transform:uppercase;opacity:.68}
+.v7-all{margin:0 2px 16px!important;border:1px solid rgba(208,173,98,.3)!important;background:rgba(208,173,98,.11)!important;border-radius:13px!important;min-height:44px!important;font-weight:800!important}
+.v7-segment-label{font-size:9px!important;letter-spacing:.18em!important;color:#d7c08b!important;font-weight:900!important;margin:10px 8px 6px!important}
+.v7-segment-current{border-radius:13px!important;background:rgba(255,255,255,.075)!important;border:1px solid rgba(255,255,255,.08)!important;min-height:46px!important}
+.v7-sidebar nav{display:flex!important;flex-direction:column!important;gap:3px!important;overflow:auto!important;padding-right:3px}
+.v7-nav{min-height:44px!important;border-radius:12px!important;color:rgba(255,255,255,.72)!important;font-size:13px!important;font-weight:700!important;padding:9px 11px!important}
+.v7-nav:hover{background:rgba(255,255,255,.075)!important;color:#fff!important;transform:translateX(2px)}
+.v7-nav.active{background:linear-gradient(90deg,rgba(208,173,98,.18),rgba(255,255,255,.07))!important;color:#fff!important;box-shadow:inset 3px 0 #d0ad62,0 8px 22px rgba(0,0,0,.12)!important}
+.v7-exit{border-radius:12px!important;min-height:44px!important;margin-top:12px!important}
+.v7-main{background:transparent!important}
+.v7-header{position:sticky!important;top:0!important;z-index:30!important;padding:22px clamp(18px,3vw,42px)!important;background:rgba(255,255,255,.9)!important;backdrop-filter:blur(18px)!important;border-bottom:1px solid var(--ux-line)!important;box-shadow:0 8px 25px rgba(16,44,37,.04)!important}
+.v7-header h1{font-size:clamp(27px,3vw,40px)!important;letter-spacing:-.045em!important;font-weight:850!important}.v7-header p{max-width:760px!important;color:var(--ux-muted)!important;line-height:1.55!important}
+.v7-user{border:1px solid var(--ux-line)!important;border-radius:14px!important;padding:10px 14px!important;background:#fff!important;box-shadow:0 8px 24px rgba(16,44,37,.06)!important}
+.v7-content{max-width:1560px!important;padding:26px clamp(16px,3vw,42px) 52px!important}
+.v7-content>section,.dashboard-v2>section{border-radius:var(--ux-radius)!important;border:1px solid var(--ux-line)!important;background:rgba(255,255,255,.88)!important;box-shadow:var(--ux-shadow)!important}
+.v7-content h2,.dashboard-v2 h2{letter-spacing:-.03em!important;font-weight:800!important}
+.v7-content button,.v7-content a{border-radius:12px!important}
+.v7-content input,.v7-content select,.v7-content textarea{min-height:44px!important;border-radius:12px!important;background:#fff!important}
+.v7-content table{border-radius:16px!important;box-shadow:0 10px 35px rgba(16,44,37,.06)!important}.v7-content th{text-transform:uppercase;letter-spacing:.08em!important;font-size:10px!important;height:46px!important}.v7-content td{height:52px!important}
+.v7-content .empty-state{min-height:220px;display:grid;place-items:center}
+@media(max-width:900px){.v7-sidebar{position:relative!important;width:100%!important;box-shadow:none!important}.v7-sidebar nav{flex-direction:row!important;overflow-x:auto!important}.v7-nav{white-space:nowrap!important}.v7-header{position:relative!important;padding:18px!important}.v7-content{padding:16px 12px 32px!important}.v7-content table{display:block;overflow:auto;white-space:nowrap}.v7-content button{min-height:46px!important}.v7-content input,.v7-content select,.v7-content textarea{font-size:16px!important}}
+@media(max-width:640px){.v7-content{padding:12px 9px 26px!important}.v7-header h1{font-size:27px!important}.v7-header{padding:15px 12px!important}.v7-user{display:none}.v7-content>section,.dashboard-v2>section{border-radius:15px!important}.v7-content [class*=grid-cols-]{grid-template-columns:1fr!important}}
+@media(prefers-reduced-motion:reduce){.v7-shell *,.v7-shell *::before,.v7-shell *::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.v7-shell button:hover{transform:none!important}}
