@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowDownToLine, ArrowUpFromLine, LockKeyhole } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import '../styles/cashflow-timeline.css'
 const money=(n:number)=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); const horizons=[0,5,10,15,30,60,90]
 export default function FiscalPrevisaoCaixa(){
  const [allowed,setAllowed]=useState<boolean|null>(null); const [days,setDays]=useState(30); const [rows,setRows]=useState<any[]>([]); const [open,setOpen]=useState<'receber'|'pagar'|null>(null)
