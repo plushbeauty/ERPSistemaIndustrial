@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import AppEntry from './AppEntryV2'
 import GlobalHelp from './GlobalHelp'
 import ERPHeaderActions from './components/ERPHeaderActions'
+import GlobalErrorBoundary from './components/GlobalErrorBoundary'
 import './styles/index.css'
 import './styles/sgq-overrides.css'
 import './styles/public-industrial.css'
@@ -23,5 +24,15 @@ import './styles/company-signup.css'
 import './styles/design-system-premium.css'
 import './styles/ux-final-2026.css'
 import './styles/ux-overhaul-2026.css'
-if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>undefined))
-ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><AppEntry/><ERPHeaderActions/><GlobalHelp/></React.StrictMode>)
+
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => undefined))
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <GlobalErrorBoundary>
+      <AppEntry />
+      <ERPHeaderActions />
+      <GlobalHelp />
+    </GlobalErrorBoundary>
+  </React.StrictMode>,
+)
