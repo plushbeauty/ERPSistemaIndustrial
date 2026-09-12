@@ -14,6 +14,11 @@ export default function ERPHeaderActions() {
     })()
     return () => { alive = false }
   }, [])
-  if (['/', '/login', '/fiscal', '/master', '/pcp', '/qualidade', '/compras-solicitacao', '/cadastro-empresa'].includes(location.pathname)) return null
-  return <div className="erp-header-actions"><a href="/compras-solicitacao" className="erp-header-action purchases" title="Abrir solicitações de compras"><ShoppingCart size={17} /><span>Solicitação de Compras</span></a>{showMaster && <a href="/master" className="erp-header-action master" title="Abrir administração Master"><ShieldCheck size={17} /><span>Master</span></a>}</div>
+  // Solicitação de Compras é uma ação do workspace principal; não deve poluir blog, home ou módulos.
+  const path = location.pathname
+  if (path !== '/erp-industrial' && path !== '/master') return null
+  return <div className="erp-header-actions">
+    {path === '/erp-industrial' && <a href="/compras-solicitacao?returnTo=%2Ferp-industrial" className="erp-header-action purchases" title="Abrir solicitações de compras"><ShoppingCart size={17} /><span>Solicitação de Compras</span></a>}
+    {showMaster && path === '/master' && <a href="/master" className="erp-header-action master" title="Abrir administração Master"><ShieldCheck size={17} /><span>Master</span></a>}
+  </div>
 }
