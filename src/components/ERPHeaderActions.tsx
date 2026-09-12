@@ -10,7 +10,7 @@ export default function ERPHeaderActions() {
       const { data } = await supabase.auth.getUser()
       if (!data.user) return
       const { data: profile } = await supabase.from('erp_usuarios').select('nivel_admin').eq('auth_user_id', data.user.id).maybeSingle()
-      if (alive) setShowMaster(profile?.nivel_admin === 1)
+      if (alive) setShowMaster(Number(profile?.nivel_admin) >= 9)
     })()
     return () => { alive = false }
   }, [])
