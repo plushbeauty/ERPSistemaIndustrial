@@ -31,8 +31,10 @@ function trialExpired(ends: string | null, status: string | null) { return !!end
 
 async function validarAcessoERP(authUserId: string): Promise<AccessResult> {
   const { data: u, error } = await supabase.from('erp_usuarios').select('id,empresa_id,ativo,nivel_admin').eq('auth_user_id', authUserId).maybeSingle()
-  if (error || !u || u.ativo === false) return { ok: false, master: false, reason: 'Este acesso não está vinculado a um usuário ativo do ERP.' }
-  if (u.nivel_admin === 1) return { ok: true, master: true, reason: '' }
+  if (error) throw error
+  if (!u || u.ativo === false) return { ok: false, master: false, reason: 'Este acesso não está vinculado a um usuário ativo do ERP.' }
+  const master = Number(u.nivel_admin) >= 9
+  if (master) return { ok: true, master: true, reason: '' }
   const { data: e, error: ee } = await supabase.from('erp_empresas').select('ativo,plano_status,trial_ends_at').eq('id', u.empresa_id).maybeSingle()
   if (ee) throw ee
   if (e?.ativo === false) return { ok: false, master: false, reason: 'O acesso desta empresa está bloqueado. Regularize o plano com a administração.' }
