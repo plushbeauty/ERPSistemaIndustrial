@@ -1,9 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
+const allowedOrigin = Deno.env.get("ERP_ALLOWED_ORIGIN") || "https://erp-sistema-industrial.vercel.app"
 const cors = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": allowedOrigin,
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Vary": "Origin",
 }
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } })
 
@@ -13,10 +15,9 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json()
     const empresa = String(body.empresa ?? "").trim()
-    const setor = String(body.setor ?? "").trim()
     const identificador = String(body.identificador ?? "").trim()
     const senha = String(body.senha ?? "")
-    if (!empresa || !setor || !identificador || !senha) return json({ error: "Informe empresa, setor, usuário/e-mail e senha." }, 400)
+    if (!empresa || !identificador || !senha) return json({ error: "Informe empresa, usuário/e-mail e senha." }, 400)
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
@@ -25,16 +26,15 @@ Deno.serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } })
     const { data: users, error: resolverError } = await admin.rpc("erp_resolver_login", {
       p_empresa: empresa,
-      p_setor: setor,
       p_identificador: identificador,
     })
     if (resolverError) {
       console.error("erp_resolver_login", resolverError)
-      return json({ error: "Falha ao validar empresa, setor e usuário." }, 500)
+      return json({ error: "Falha ao validar empresa e usuário." }, 500)
     }
 
     const user = Array.isArray(users) ? users[0] : users
-    if (!user?.email || !user?.auth_user_id) return json({ error: "Empresa, setor, usuário ou e-mail não encontrado." }, 401)
+    if (!user?.email || !user?.auth_user_id || !user?.empresa_id) return json({ error: "Empresa, usuário ou e-mail não encontrado." }, 401)
 
     const auth = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
       method: "POST",
@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
         empresa_id: user.empresa_id,
         empresa_nome: user.empresa_nome,
         setor_id: user.setor_id,
-        setor: user.setor_codigo || user.setor_nome,
+        setor: user.setor_codigo || user.setor_nome || null,
         nivel_admin: user.nivel_admin,
         cargo_id: user.cargo_id,
       },
