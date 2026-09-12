@@ -25,6 +25,7 @@ import './styles/company-signup.css'
 import './styles/design-system-premium.css'
 import './styles/ux-final-2026.css'
 import './styles/ux-overhaul-2026.css'
+import './styles/visual-ux-redesign-2026.css'
 
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => undefined))
 
