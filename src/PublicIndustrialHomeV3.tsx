@@ -1,53 +1,135 @@
-import { ArrowRight, BarChart3, Boxes, Check, ClipboardCheck, Factory, FileText, Package, ShoppingCart, Wrench, X, ShieldCheck, LockKeyhole, Zap, Smartphone } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
-type Screen = { title:string; icon:LucideIcon; kpis:string[]; rows:string[] }
-type Segment = {name:string;description:string;status:'ATIVO'|'PARCIALMENTE ATENDIDO'|'EM DESENVOLVIMENTO'}
-type PlanFeature = {name:string;value:string;included:boolean}
-const segments:Segment=[
- {name:'Plásticos / Injetados / Prensados / Estampados',description:'Núcleo mais completo: PCP, OP, matéria-prima, moldes, estoque, qualidade, RPNC, manutenção, custos e rastreabilidade.',status:'ATIVO'},
- {name:'Metalúrgica',description:'Cadastros, estoque, compras, clientes e gestão estão disponíveis; processos metalúrgicos especializados seguem em evolução.',status:'PARCIALMENTE ATENDIDO'},
- {name:'Usinagem',description:'Base administrativa e de estoque disponível; recursos avançados de CNC, ferramentas e roteiros específicos estão em evolução.',status:'PARCIALMENTE ATENDIDO'},
- {name:'Ferramentaria',description:'Base de gestão disponível; engenharia e controles especializados de projetos e ferramentaria estão em evolução.',status:'PARCIALMENTE ATENDIDO'},
- {name:'Química',description:'Segmento previsto, mas formulações e controles regulatórios específicos ainda não estão completos.',status:'EM DESENVOLVIMENTO'},
- {name:'Autopeças',description:'Base industrial aplicável, porém requisitos específicos de cadeia automotiva e rastreabilidade avançada ainda evoluem.',status:'EM DESENVOLVIMENTO'},
- {name:'Móveis',description:'Gestão comercial e estoque podem ser aproveitados, mas produção moveleira específica ainda está em evolução.',status:'EM DESENVOLVIMENTO'},
- {name:'Atacado / Distribuição',description:'Operação comercial e estoque são aplicáveis; WMS e distribuição avançada ainda estão em evolução.',status:'EM DESENVOLVIMENTO'},
- {name:'Lojas / Varejo',description:'Base comercial disponível, mas PDV e operação multi-loja específica ainda está em evolução.',status:'EM DESENVOLVIMENTO'},
- {name:'Serviços',description:'CRM e gestão podem ser aproveitados; agenda e ordens de serviço especializadas ainda estão em evolução.',status:'EM DESENVOLVIMENTO'}
+// src/PublicIndustrialHome.tsx
+import React, { useState, useMemo, FormEvent } from 'react'
+import { 
+  ArrowRight, 
+  BarChart3, 
+  Check, 
+  ChevronRight, 
+  Clock3, 
+  CreditCard, 
+  Facebook, 
+  Instagram, 
+  MessageCircle, 
+  ShieldCheck, 
+  Smartphone, 
+  Sparkles, 
+  Users, 
+  WalletCards, 
+  X, 
+  Youtube,
+  Factory,
+  Package,
+  ClipboardCheck,
+  ShoppingCart,
+  FileText,
+  Wrench,
+  LockKeyhole,
+  Zap,
+  Building2,
+  Lock
+} from 'lucide-react'
+import { supabase } from './lib/supabaseClient'
+
+type Screen = { title: string; icon: React.ComponentType<any>; kpis: string[]; rows: string[] }
+type Segment = { name: string; description: string; status: 'ATIVO' | 'PARCIALMENTE ATENDIDO' | 'EM DESENVOLVIMENTO' }
+type PlanFeature = { name: string; value: string; included: boolean }
+
+const segments: Segment[] = [
+  { name: 'Plásticos / Injetados / Prensados / Estampados', description: 'Núcleo mais completo: PCP, OP, matéria-prima, moldes, estoque, qualidade, RPNC, manutenção, custos e rastreabilidade.', status: 'ATIVO' },
+  { name: 'Metalúrgica', description: 'Cadastros, estoque, compras, clientes e gestão estão disponíveis; processos metalúrgicos especializados seguem em evolução.', status: 'PARCIALMENTE ATENDIDO' },
+  { name: 'Usinagem', description: 'Base administrativa e de estoque disponível; recursos avançados de CNC, ferramentas e roteiros específicos estão em evolução.', status: 'PARCIALMENTE ATENDIDO' },
+  { name: 'Ferramentaria', description: 'Base de gestão disponível; engenharia e controles especializados de projetos e ferramentaria estão em evolução.', status: 'PARCIALMENTE ATENDIDO' },
+  { name: 'Química', description: 'Segmento previsto, mas formulações e controles regulatórios específicos ainda não estão completos.', status: 'EM DESENVOLVIMENTO' },
+  { name: 'Autopeças', description: 'Base industrial aplicável, porém requisitos específicos de cadeia automotiva e rastreabilidade avançada ainda evoluem.', status: 'EM DESENVOLVIMENTO' },
+  { name: 'Móveis', description: 'Gestão comercial e estoque podem ser aproveitados, mas produção moveleira específica ainda está em evolução.', status: 'EM DESENVOLVIMENTO' },
+  { name: 'Atacado / Distribuição', description: 'Operação comercial e estoque são aplicáveis; WMS e distribuição avançada ainda estão em evolução.', status: 'EM DESENVOLVIMENTO' },
+  { name: 'Lojas / Varejo', description: 'Base comercial disponível, mas PDV e operação multi-loja específica ainda está em evolução.', status: 'EM DESENVOLVIMENTO' },
+  { name: 'Serviços', description: 'CRM e gestão podem ser aproveitados; agenda e ordens de serviço especializadas ainda estão em evolução.', status: 'EM DESENVOLVIMENTO' }
 ]
-const screens:Screen[]=[
- {title:'Dashboard executivo',icon:BarChart3,kpis:['OPs 24','OEE 87%','Estoque R$ 184 mil','RPNC 03'],rows:['Produção do dia • 92% do planejado','Pedidos em aberto • 18','Estoque crítico • 7 itens']},
- {title:'PCP / Produção',icon:Factory,kpis:['OPs 24','Atrasadas 02','Capacidade 86%','Refugo 1,8%'],rows:['OP-00482 • Injeção • 78%','OP-00483 • Usinagem • 41%','OP-00484 • Montagem • Aguardando']},
- {title:'Estoque / WMS',icon:Package,kpis:['Itens 1.284','Lotes 318','Críticos 07','Valor R$ 1,2 mi'],rows:['PP-00041 • Matéria-prima • 820 kg','MP-00218 • Polímero • 240 kg','PA-00991 • Produto acabado • 94 un']},
- {title:'Qualidade / RPNC',icon:ClipboardCheck,kpis:['Inspeções 42','RPNC 03','Ações 07','Risco alto 01'],rows:['RPNC-0012 • Dimensional • Em análise','RPNC-0013 • Visual • Ação corretiva','Lote L-2026-091 • Liberado']},
- {title:'Custos industriais',icon:BarChart3,kpis:['Material 58%','Mão de obra 17%','Máquinas 12%','Margem 23%'],rows:['Produto A • Custo R$ 42,80 • Venda R$ 68,00','Produto B • Custo R$ 18,40 • Venda R$ 31,90','Perdas • R$ 4.820 no período']},
- {title:'Financeiro',icon:ShoppingCart,kpis:['A receber R$ 328 mil','A pagar R$ 214 mil','Caixa R$ 96 mil','Margem 21%'],rows:['Hoje • 12 títulos a vencer','Semana • 8 pagamentos programados','Mês • DRE em acompanhamento']},
- {title:'Fiscal',icon:FileText,kpis:['NF-e 128','Autorizadas 126','Rejeitadas 02','XML 100%'],rows:['NF-e 000128 • Autorizada','NF-e 000127 • Autorizada','NF-e 000126 • Rejeitada • corrigir']},
- {title:'Manutenção',icon:Wrench,kpis:['Máquinas 42','Preventivas 11','Corretivas 03','Disponibilidade 94%'],rows:['INJ-04 • Preventiva • amanhã','TOR-02 • Corretiva • em execução','CNC-08 • Disponível']}
+
+const screens: Screen[] = [
+  { title: 'Dashboard executivo', icon: BarChart3, kpis: ['OPs 24', 'OEE 87%', 'Estoque R$ 184 mil', 'RPNC 03'], rows: ['Produção do dia • 92% do planejado', 'Pedidos em aberto • 18', 'Estoque crítico • 7 itens'] },
+  { title: 'PCP / Produção', icon: Factory, kpis: ['OPs 24', 'Atrasadas 02', 'Capacidade 86%', 'Refugo 1,8%'], rows: ['OP-00482 • Injeção • 78%', 'OP-00483 • Usinagem • 41%', 'OP-00484 • Montagem • Aguardando'] },
+  { title: 'Estoque / WMS', icon: Package, kpis: ['Itens 1.284', 'Lotes 318', 'Críticos 07', 'Valor R$ 1,2 mi'], rows: ['PP-00041 • Matéria-prima • 820 kg', 'MP-00218 • Polímero • 240 kg', 'PA-00991 • Produto acabado • 94 un'] },
+  { title: 'Qualidade / RPNC', icon: ClipboardCheck, kpis: ['Inspeções 42', 'RPNC 03', 'Ações 07', 'Risco alto 01'], rows: ['RPNC-0012 • Dimensional • Em análise', 'RPNC-0013 • Visual • Ação corretiva', 'Lote L-2026-091 • Liberado'] },
+  { title: 'Custos industriais', icon: BarChart3, kpis: ['Material 58%', 'Mão de obra 17%', 'Máquinas 12%', 'Margem 23%'], rows: ['Produto A • Custo R$ 42,80 • Venda R$ 68,00', 'Produto B • Custo R$ 18,40 • Venda R$ 31,90', 'Perdas • R$ 4.820 no período'] },
+  { title: 'Financeiro', icon: ShoppingCart, kpis: ['A receber R$ 328 mil', 'A pagar R$ 214 mil', 'Caixa R$ 96 mil', 'Margem 21%'], rows: ['Hoje • 12 títulos a vencer', 'Semana • 8 pagamentos programados', 'Mês • DRE em acompanhamento'] },
+  { title: 'Fiscal', icon: FileText, kpis: ['NF-e 128', 'Autorizadas 126', 'Rejeitadas 02', 'XML 100%'], rows: ['NF-e 000128 • Autorizada', 'NF-e 000127 • Autorizada', 'NF-e 000126 • Rejeitada • corrigir'] },
+  { title: 'Manutenção', icon: Wrench, kpis: ['Máquinas 42', 'Preventivas 11', 'Corretivas 03', 'Disponibilidade 94%'], rows: ['INJ-04 • Preventiva • amanhã', 'TOR-02 • Corretiva • em execução', 'CNC-08 • Disponível'] }
 ]
-const planFeatureNames=['Dashboard e gestão','Usuários e empresas','Cadastros mestres','Estoque e inventário','Clientes e fornecedores','Compras e recebimento','Ordens de produção','PCP / MRP / capacidade','Qualidade / RPNC / CAPA','Manutenção industrial','Indicadores avançados / OEE','Financeiro integrado','Fiscal / NF-e / XML','Automação + IA','Auditoria e rastreabilidade ampliada']
-const plans=[
- {name:'Essencial',price:'R$ 199',desc:'Para pequenas operações que precisam sair das planilhas e organizar a base da fábrica em um único ambiente.',tag:'BASE INDUSTRIAL',features:planFeatureNames.map((name,i)=>({name,value:['Completo','Completo','Completo','Completo','Completo','Completo','Básico','Não inclui','Não inclui','Não inclui','Básico','Básico','Não inclui','Não inclui','Básico'][i],included:[0,1,2,3,4,5,6,10,11,14].includes(i)} as PlanFeature))},
- {name:'Profissional',price:'R$ 349',desc:'Para indústrias em crescimento que precisam conectar planejamento, qualidade, manutenção e gestão de desempenho.',tag:'MAIS ESCOLHIDO',features:planFeatureNames.map((name,i)=>({name,value:i===13?'Não inclui':'Completo',included:i!==12&&i!==13} as PlanFeature))},
- {name:'Diamante',price:'R$ 549',desc:'Para operações que querem a visão integrada da fábrica, fiscal, auditoria e automação assistida por IA.',tag:'GESTÃO INTEGRADA',features:planFeatureNames.map(name=>({name,value:'Completo',included:true} as PlanFeature))}
+
+const planFeatureNames = ['Dashboard e gestão', 'Usuários e empresas', 'Cadastros mestres', 'Estoque e inventário', 'Clientes e fornecedores', 'Compras e recebimento', 'Ordens de produção', 'PCP / MRP / capacidade', 'Qualidade / RPNC / CAPA', 'Manutenção industrial', 'Indicadores avançados / OEE', 'Financeiro integrado', 'Fiscal / NF-e / XML', 'Automação + IA', 'Auditoria e rastreabilidade ampliada']
+
+const plans = [
+  { name: 'Essencial', price: 'R$ 199', desc: 'Para pequenas operações que precisam sair das planilhas e organizar a base da fábrica em um único ambiente.', tag: 'BASE INDUSTRIAL', features: planFeatureNames.map((name, i) => ({ name, value: ['Completo', 'Completo', 'Completo', 'Completo', 'Completo', 'Completo', 'Básico', 'Não inclui', 'Não inclui', 'Não inclui', 'Básico', 'Básico', 'Não inclui', 'Não inclui', 'Básico'][i], included: [0, 1, 2, 3, 4, 5, 6, 10, 11, 14].includes(i) } as PlanFeature)) },
+  { name: 'Profissional', price: 'R$ 349', desc: 'Para indústrias em crescimento que precisam conectar planejamento, qualidade, manutenção e gestão de desempenho.', tag: 'MAIS ESCOLHIDO', features: planFeatureNames.map((name, i) => ({ name, value: i === 13 ? 'Não inclui' : 'Completo', included: i !== 12 && i !== 13 } as PlanFeature)) },
+  { name: 'Diamante', price: 'R$ 549', desc: 'Para operações que querem a visão integrada da fábrica, fiscal, auditoria e automação assistida por IA.', tag: 'GESTÃO INTEGRADA', features: planFeatureNames.map(name => ({ name, value: 'Completo', included: true } as PlanFeature)) }
 ]
-const posts=[['O que é MRP?','PCP / MRP'],['Como calcular o custo real de produção?','Custos'],['ERP industrial: o que uma fábrica precisa controlar?','Gestão'],['Como reduzir perdas no estoque industrial?','Estoque']]
-const infrastructure=[
- {icon:LockKeyhole,title:'Dados isolados por empresa',text:'Seus dados ficam separados por tenant. RLS no PostgreSQL restringe o acesso por empresa antes da aplicação liberar a informação.',badge:'RLS + PostgreSQL'},
- {icon:ShieldCheck,title:'Operação sem conflito',text:'Restrições transacionais impedem sobreposição de horários em agenda e programação de recursos quando a regra de negócio estiver configurada no banco.',badge:'Anti-double booking'},
- {icon:Zap,title:'Infraestrutura de alta performance',text:'Frontend distribuído na Vercel e backend Supabase com Edge Functions para autenticação e integrações server-side.',badge:'Vercel + Supabase'},
- {icon:Smartphone,title:'Instalação como aplicativo',text:'PWA permite instalar o ERP no desktop, tablet ou celular sem depender de uma aba permanente do navegador.',badge:'PWA standalone'},
- {icon:Factory,title:'PCP + SGQ rastreáveis',text:'Produção, lote, refugo, RPNC, CAPA e indicadores são conectados para preservar a genealogia operacional.',badge:'OEE + genealogia'}
+
+const infrastructure = [
+  { icon: LockKeyhole, title: 'Dados isolados por empresa', text: 'Seus dados ficam separados por tenant. RLS no PostgreSQL restringe o acesso por empresa antes da aplicação liberar a informação.', badge: 'RLS + PostgreSQL' },
+  { icon: ShieldCheck, title: 'Operação sem conflito', text: 'Restrições transacionais impedem sobreposição de horários em agenda e programação de recursos quando a regra de negócio estiver configurada no banco.', badge: 'Anti-double booking' },
+  { icon: Zap, title: 'Infraestrutura de alta performance', text: 'Frontend distribuído na Vercel e backend Supabase com Edge Functions para autenticação e integrações server-side.', badge: 'Vercel + Supabase' },
+  { icon: Smartphone, title: 'Instalação como aplicativo', text: 'PWA permite instalar o ERP no desktop, tablet ou celular sem depender de uma aba permanente do navegador.', badge: 'PWA standalone' },
+  { icon: Factory, title: 'PCP + SGQ rastreáveis', text: 'Produção, lote, refugo, RPNC, CAPA e indicadores são conectados para preservar a genealogia operacional.', badge: 'OEE + genealogia' }
 ]
-export default function PublicIndustrialHomeV3(){return <div className="public-industrial industrial-home-v3"><header className="industrial-public-nav"><a className="industrial-logo" href="/"><img src="/logo-industrial.svg" alt="SGQ ERP"/></a><nav><a href="#solucoes">Soluções</a><a href="#segmentos">Segmentos</a><a href="#infraestrutura">Infraestrutura</a><a href="#por-dentro">Por dentro</a><a href="/blog">Blog</a><a href="#planos">Planos</a><a href="#contato">Contato</a></nav><div className="industrial-nav-actions"><a className="industrial-nav-login" href="/login">Entrar</a></div></header>
-<section className="industrial-hero-v3"><div><span className="public-kicker">SGQ ERP • GESTÃO INDUSTRIAL MULTISSEGMENTO</span><h1>O ERP que conecta toda a sua operação.</h1><p>Produção, PCP, MRP, estoque, qualidade, custos, manutenção, compras, vendas, logística, fiscal e financeiro em uma única plataforma.</p><div className="industrial-hero-actions"><a className="industrial-cta" href="/cadastro-empresa">Teste grátis por 15 dias <ArrowRight size={18}/></a><a className="industrial-outline" href="#planos">Conhecer os planos</a></div><div className="industrial-proof"><span><Check/> Dados por empresa</span><span><Check/> Computador, tablet e celular</span><span><Check/> Arquitetura modular</span></div></div><div className="executive-screen"><div className="screen-top"><b>SGQ ERP</b><span>● Ambiente conectado</span></div><h3>Visão executiva</h3><div className="screen-kpis">{['OPs 24','OEE 87%','Estoque R$184k','RPNC 03'].map(x=><div key={x}>{x}</div>)}</div><div className="screen-bars">{[38,62,51,78,67,91,73].map((h,i)=><i key={i} style={{height:`${h}%`}}/>)}</div><div className="screen-list"><span>Produção em fluxo</span><span>7 itens em estoque crítico</span><span>3 RPNCs em tratamento</span></div></div></section>
-<section id="infraestrutura" className="industrial-section infrastructure-section"><div className="industrial-heading"><span className="public-kicker">INFRAESTRUTURA PROFISSIONAL</span><h2>O que existe por trás da tela também importa.</h2><p>Arquitetura, isolamento e rastreabilidade transformados em benefícios claros para quem contrata o sistema.</p></div><div className="benefit-grid">{infrastructure.map(({icon:Icon,title,text,badge})=><article key={title}><Icon/><span className="segment-status">{badge}</span><h3>{title}</h3><p>{text}</p></article>)}</div></section>
-<section id="solucoes" className="industrial-section"><div className="industrial-heading"><span className="public-kicker">DO PEDIDO AO RESULTADO</span><h2>Um fluxo. Todos os departamentos.</h2><p>O SGQ ERP conecta a informação uma única vez e faz cada área trabalhar sobre o mesmo dado.</p></div><div className="industrial-flow">{['CRM / Pedido','PCP / MRP','Compras','Estoque','Produção','Qualidade','Expedição','Fiscal','Financeiro'].map((x,i)=><div key={x}><strong>{i+1}</strong><span>{x}</span>{i<8&&<b>→</b>}</div>)}</div></section>
-<section className="industrial-section benefits"><div className="benefit-grid">{[['Planeje antes de produzir','Demanda → MRP → capacidade → sequência → OP.'],['Controle o chão de fábrica','OP → máquina → operador → produção → refugo.'],['Trate o desvio a tempo','Inspeção → lote → RPNC → causa → ação.'],['Conheça o custo real','Material + mão de obra + máquina + energia + perdas + indiretos.'],['Rastreie cada movimento','Entrada → lote → endereço → consumo → produto acabado.'],['Decida com dados','KPIs, margem, OEE, estoque e financeiro na mesma visão.']].map(([t,d])=><article key={t}><Check/><h3>{t}</h3><p>{d}</p></article>)}</div></section>
-<section id="segmentos" className="industrial-section"><div className="industrial-heading"><span className="public-kicker">SEGMENTOS</span><h2>O mesmo ERP. Configurado para cada negócio.</h2><p>Transparência sobre o estágio de cada vertical: o que já está disponível e o que está em evolução.</p></div><div className="segment-grid-v3">{segments.map(s=><article className={`segment-card-v3 segment-${s.status.toLowerCase().replaceAll(' ','-')}`} key={s.name}><span className="segment-status">{s.status}</span><h3>{s.name}</h3><p>{s.description}</p>{s.status==='ATIVO'?<a href="#por-dentro">Ver solução <ArrowRight size={14}/></a>:<small>Disponível em evolução</small>}</article>)}</div></section>
-<section id="por-dentro" className="industrial-section"><div className="industrial-heading"><span className="public-kicker">POR DENTRO DO SGQ ERP</span><h2>Telas reais do fluxo do sistema.</h2><p>Indicadores, cadastros, listas, status e ações pensados para produtividade.</p></div><div className="real-screen-grid">{screens.map(s=><article className="real-screen" key={s.title}><div className="screen-top"><b>{s.title}</b><span>● Ambiente conectado</span></div><div className="screen-kpis">{s.kpis.map(k=><div key={k}>{k}</div>)}</div><div className="screen-list">{s.rows.map(r=><span key={r}>{r}</span>)}</div><a href="/login">Entrar no sistema <ArrowRight size={14}/></a></article>)}</div></section>
-<section className="industrial-section"><div className="industrial-heading"><span className="public-kicker">AUTOMAÇÃO</span><h2>Do documento ao processo, com revisão humana.</h2><p>Captura → leitura → validação → execução, sem prometer automações que ainda não estejam configuradas.</p></div><div className="automation-strip">{[['01','Captura','E-mail, remetente, assunto e anexos'],['02','Leitura','PDF, imagem e texto estruturados'],['03','Revisão','Operador confirma antes de liberar'],['04','Execução','Pedido, produção, estoque e fiscal']].map(([n,t,d])=><article key={n}><strong>{n}</strong><h3>{t}</h3><p>{d}</p></article>)}</div></section>
-<section id="blog" className="industrial-section blog-preview-v3"><div className="industrial-heading"><span className="public-kicker">BLOG INDUSTRIAL</span><h2>Conhecimento para uma indústria mais eficiente.</h2><p>Conteúdo editorial fica aqui. A operação de compras permanece dentro do ERP.</p></div><div className="post-grid-v3">{posts.map(([t,c])=><a href="/blog" key={t}><span>{c}</span><h3>{t}</h3><b>Leia o artigo <ArrowRight size={14}/></b></a>)}</div><a className="industrial-outline" href="/blog">Ver todo o Blog</a></section>
-<section id="planos" className="industrial-section industrial-plans-v4"><div className="industrial-heading"><span className="public-kicker">PLANOS</span><h2>Compare com calma antes de escolher.</h2><p>Os cards agora mostram a proposta de cada nível e a matriz abaixo deixa explícito o que entra, o que não entra e onde está o limite de cada plano.</p></div><div className="plan-grid-v4">{plans.map((p,i)=><article className={i===1?'plan-card-v4 featured':'plan-card-v4'} key={p.name}><div className="plan-badge">{p.tag}</div><h3>{p.name}</h3><p>{p.desc}</p><div className="plan-price">{p.price}<small>/mês</small></div><div className="plan-summary"><b>{p.features.filter(f=>f.included).length} recursos contemplados</b><span>{p.features.filter(f=>!f.included).length} recursos fora deste plano</span></div><a className="industrial-cta" href="#contato">Conhecer plano <ArrowRight size={15}/></a></article>)}</div><div className="plan-comparison-v4"><div className="comparison-title"><div><span className="public-kicker">COMPARAÇÃO DETALHADA</span><h3>O que cada plano entrega</h3></div><span>✓ incluído • — não incluído</span></div><div className="comparison-table"><div className="comparison-row comparison-head"><b>Recurso</b>{plans.map(p=><b key={p.name}>{p.name}</b>)}</div>{planFeatureNames.map(name=><div className="comparison-row" key={name}><span>{name}</span>{plans.map(p=>{const f=p.features.find(x=>x.name===name)!;return <span className={f.included?'included':'excluded'} key={p.name}>{f.included?<><Check size={16}/>{f.value}</>:<><X size={16}/>{f.value}</>}</span>})}</div>)}</div></div></section>
-<section id="contato" className="industrial-final-cta"><div><span className="public-kicker">FALE COM A SGQ ERP</span><h2>Vamos entender sua operação.</h2><p>Fale diretamente para conhecer o sistema, tirar dúvidas sobre os módulos e iniciar o teste gratuito.</p><div className="contact-grid-v3"><a href="mailto:fernandosch2012@hotmail.com"><b>E-mail</b><span>fernandosch2012@hotmail.com</span></a><a href="https://wa.me/5511990029404"><b>WhatsApp</b><span>(11) 99002-9404</span></a><a href="/cadastro-empresa"><b>Próximo passo</b><span>Teste grátis por 15 dias <ArrowRight size={14}/></span></a></div></div></section>
-<footer className="industrial-footer-v3"><span>SGQ ERP • Sistema de Gestão Industrial</span><div><a href="/login">Entrar</a><a href="/blog">Blog</a><a href="#planos">Planos</a><a href="#contato">Contato</a></div></footer></div>}
+
+export default function PublicIndustrialHomeV3() {
+  const [modalLogin, setModalLogin] = useState(false)
+  const [empresa, setEmpresa] = useState('')
+  const [identificador, setIdentificador] = useState('')
+  const [senha, setSenha] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [erroLogin, setErroLogin] = useState('')
+
+  const handleLoginReal = async (e: FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setErroLogin('')
+
+    try {
+      // Injeção da chamada RPC segura que aniquila o bloqueio de CORS
+      const { data, error } = await supabase.rpc('erp_autenticar_usuario_v2', {
+        p_empresa: empresa.trim(),
+        p_identificador: identificador.trim(),
+        p_senha: senha
+      })
+
+      if (error || !data?.success) {
+        throw new Error(error?.message || data?.error || 'Credenciais ou empresa inválidas.')
+      }
+
+      // Sincroniza a sessão e despacha o usuário para dentro do ERP
+      localStorage.setItem('erp_profile', JSON.stringify(data.profile))
+      localStorage.setItem('erp_session', JSON.stringify(data.session))
+      window.location.href = '/dashboard'
+    } catch (err: any) {
+      console.error(err)
+      setErroLogin(err.message || 'Erro interno na validação de acesso.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="public-industrial bg-[#fbfaf7] font-sans antialiased text-[#17313a] min-h-screen">
+      {/* HEADER NAVBAR */}
+      <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md px-6 py-4 flex items-center justify-between">
+        <a className="flex items-center gap-2 text-xl font-black text-emerald-800 tracking-tight text-decoration-none" href="/">
+          <Sparkles className="text-emerald-600" size={24} />
+          <span>SGQ<span className="text-emerald-600">ERP</span></span>
+        </a>
+        <nav className="hidden md:flex items-center gap-6 text-sm font-bold text-slate-600">
+          <a href="#solucoes" className="hover:text-emerald-700 text-decoration-none">Soluções</a>
+          <a href="#segmentos" className="hover:text-emerald-700 text-decoration-none">Segmentos</a>
+          <a href="#infraextra" className="hover:text-emerald-700 text-decoration-none">Infraestrutura</a>
+          <a href="#planos" className="hover:text-emerald-700 text-decoration-none">Planos</a>
+        </nav>
+        <div>
+          <button type="button" onClick={() => setModalLogin(true)} className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-5 py-2.5 rounded-full transition-all shadow-md">
+            Acessar Sistema
+          </button>
+        </div>
+      </header>
+
+      {/* HERO SECTION */}
