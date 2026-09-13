@@ -12,7 +12,7 @@ for (const [name, expectedOrigin] of cases) {
   const methods=response.headers.get('access-control-allow-methods')
   const headers=response.headers.get('access-control-allow-headers')
   const checks=[['STATUS 204',response.status===204,String(response.status)],['ALLOW-ORIGIN',actualOrigin===expectedOrigin,actualOrigin??'ausente'],['ALLOW-METHODS',methods===expectedMethods,methods??'ausente'],['ALLOW-HEADERS',headers===expectedHeaders,headers??'ausente']]
-  for(const [label,ok,actual] of checks){console.log(`${ok?'PASS':'FAIL'} ${label}${ok?'':` — ${actual}`);if(!ok)failures++}
+  for(const [label,ok,actual] of checks){console.log(`${ok?'PASS':'FAIL'} ${label}${ok?'':` — ${actual}`}`);if(!ok)failures++}
 }
 console.log(`\nResultado: ${failures===0?'CORS OPTIONS APROVADO':`${failures} validação(ões) falharam`}`)
 process.exitCode=failures?1:0
