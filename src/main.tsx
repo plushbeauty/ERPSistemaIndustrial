@@ -5,7 +5,8 @@ import GlobalHelp from './GlobalHelp'
 import ERPHeaderActions from './components/ERPHeaderActions'
 import GlobalErrorBoundary from './components/GlobalErrorBoundary'
 import PwaInstallButton from './components/PwaInstallButton'
+import VirtualGuide from './components/VirtualGuide'
 import './styles/app.css'
 import './styles/visual-ux-redesign-2026.css'
 if ('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>undefined))
-ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><GlobalErrorBoundary><AppEntry/><ERPHeaderActions/><GlobalHelp/><PwaInstallButton/></GlobalErrorBoundary></React.StrictMode>)
+ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><GlobalErrorBoundary><AppEntry/><ERPHeaderActions/><GlobalHelp/><VirtualGuide brand="SGQ ERP" name="Dri"/><PwaInstallButton/></GlobalErrorBoundary></React.StrictMode>)
