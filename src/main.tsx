@@ -4,37 +4,7 @@ import AppEntry from './AppEntryV2'
 import GlobalHelp from './GlobalHelp'
 import ERPHeaderActions from './components/ERPHeaderActions'
 import GlobalErrorBoundary from './components/GlobalErrorBoundary'
-import './styles/index.css'
-import './styles/sgq-overrides.css'
-import './styles/public-industrial.css'
-import './styles/industrial-enhancements.css'
-import './styles/public-home-v2.css'
-import './styles/public-modern.css'
-import './styles/industrial-v2.css'
-import './styles/industrial-v6.css'
-import './styles/industrial-v7.css'
-import './styles/industrial-home-v3.css'
-import './styles/industrial-plans-v4.css'
-import './styles/industrial-hero-background.css'
-import './styles/fiscal-public.css'
-import './styles/master.css'
-import './styles/industrial-light-theme.css'
-import './styles/global-help.css'
-import './styles/erp-header-actions.css'
-import './styles/company-signup.css'
-import './styles/design-system-premium.css'
-import './styles/ux-final-2026.css'
-import './styles/ux-overhaul-2026.css'
-import './styles/visual-ux-redesign-2026.css'
-
-if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => undefined))
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <GlobalErrorBoundary>
-      <AppEntry />
-      <ERPHeaderActions />
-      <GlobalHelp />
-    </GlobalErrorBoundary>
-  </React.StrictMode>,
-)
+import PwaInstallButton from './components/PwaInstallButton'
+import './styles/app.css'
+if ('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>undefined))
+ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><GlobalErrorBoundary><AppEntry/><ERPHeaderActions/><GlobalHelp/><PwaInstallButton/></GlobalErrorBoundary></React.StrictMode>)
