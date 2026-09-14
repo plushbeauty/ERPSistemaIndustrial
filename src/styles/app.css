@@ -25,3 +25,30 @@
 @import './pcp-cockpit-2026.css';
 @import './loading-skeleton-2026.css';
 @import './visual-lock-2026.css';
+
+/* SGQ ERP global theme — TailAdmin-inspired behavior, SGQ industrial identity */
+html[data-sgq-theme='dark'] body{background:#07110e;color:#e8f2ee}
+html[data-sgq-theme='dark'] .v7-shell{background:#07110e;color:#e8f2ee}
+html[data-sgq-theme='dark'] .v7-header,html[data-sgq-theme='dark'] .v7-main footer{background:#0b1713;border-color:#20352d;color:#e8f2ee}
+html[data-sgq-theme='dark'] .v7-header p,html[data-sgq-theme='dark'] .v7-user small,html[data-sgq-theme='dark'] .v7-feature p,html[data-sgq-theme='dark'] .v7-crud-head p{color:#9bb0a7}
+html[data-sgq-theme='dark'] .v7-kpis article,html[data-sgq-theme='dark'] .v7-quick button,html[data-sgq-theme='dark'] .v7-feature,html[data-sgq-theme='dark'] .v7-form,html[data-sgq-theme='dark'] .v7-table,html[data-sgq-theme='dark'] .v7-search{background:#0e1d18;border-color:#294239;color:#e8f2ee}
+html[data-sgq-theme='dark'] .v7-kpis span,html[data-sgq-theme='dark'] .v7-kpis small,html[data-sgq-theme='dark'] .v7-quick button small,html[data-sgq-theme='dark'] .v7-form label{color:#9bb0a7}
+html[data-sgq-theme='dark'] .v7-form input,html[data-sgq-theme='dark'] .v7-search input{background:#091610;border-color:#294239;color:#f2f8f5}
+html[data-sgq-theme='dark'] .v7-table th{background:#14261f;color:#b7c9c1}
+html[data-sgq-theme='dark'] .v7-table td,html[data-sgq-theme='dark'] .v7-table th{border-color:#20352d}
+html[data-sgq-theme='dark'] .v7-overlay{background:rgba(1,8,6,.82)}
+html[data-sgq-theme='dark'] .v7-panel{background:#0b1713;color:#e8f2ee}
+html[data-sgq-theme='dark'] .v7-panel-head,html[data-sgq-theme='dark'] .v7-segment-list{border-color:#20352d}
+html[data-sgq-theme='dark'] .v7-segment-list{background:#091510}
+html[data-sgq-theme='dark'] .v7-segment-list button{color:#aabcb4}
+html[data-sgq-theme='dark'] .v7-segment-list button.selected{background:#15372b;color:#b9ead4}
+html[data-sgq-theme='dark'] .v7-segment-hero{background:#0f2019;border-color:#294239}
+html[data-sgq-theme='dark'] .v7-segment-hero p{color:#9bb0a7}
+html[data-sgq-theme='dark'] .v7-module-grid button{background:#0e1d18;border-color:#294239;color:#e8f2ee}
+html[data-sgq-theme='dark'] .v7-module-grid button small{color:#9bb0a7}
+html[data-sgq-theme='dark'] .v7-module-grid button:hover,html[data-sgq-theme='dark'] .v7-module-grid button.selected{background:#12372a;border-color:#4c9d7a}
+
+.sgq-theme-toggle{position:fixed;right:18px;top:16px;z-index:1500;display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(92,125,111,.35);background:rgba(255,255,255,.92);color:#19392f;border-radius:999px;padding:8px 11px;font:700 12px/1 system-ui,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.12);backdrop-filter:blur(12px);cursor:pointer}
+.sgq-theme-toggle:hover{transform:translateY(-1px)}
+html[data-sgq-theme='dark'] .sgq-theme-toggle{background:rgba(15,31,25,.95);border-color:#315347;color:#e9f5f0}
+@media(max-width:700px){.sgq-theme-toggle{right:12px;top:10px;padding:9px}.sgq-theme-toggle span{display:none}}
