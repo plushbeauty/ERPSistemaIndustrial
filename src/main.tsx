@@ -6,8 +6,32 @@ import ERPHeaderActions from './components/ERPHeaderActions'
 import GlobalErrorBoundary from './components/GlobalErrorBoundary'
 import PwaInstallButton from './components/PwaInstallButton'
 import VirtualGuide from './components/VirtualGuide'
+import { ThemeProvider } from './context/ThemeContext'
+import { SidebarProvider } from './context/SidebarContext'
+import AppHeader from './layout/AppHeader'
+import Backdrop from './layout/Backdrop'
 import './styles/app.css'
 import './styles/visual-ux-redesign-2026.css'
 import './styles/infrastructure-trust.css'
-if ('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>undefined))
-ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><GlobalErrorBoundary><AppEntry/><ERPHeaderActions/><GlobalHelp/>{location.pathname!=='/erp-industrial'&&<VirtualGuide brand="SGQ ERP" name="Dri"/>}<PwaInstallButton/></GlobalErrorBoundary></React.StrictMode>)
+import './styles/industrial-public-restoration.css'
+import './styles/tailadmin-shell.css'
+
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => undefined))
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <GlobalErrorBoundary>
+      <ThemeProvider>
+        <SidebarProvider>
+          <AppEntry />
+          <AppHeader />
+          <Backdrop />
+          <ERPHeaderActions />
+          <GlobalHelp />
+          {location.pathname !== '/erp-industrial' && <VirtualGuide brand="SGQ ERP" name="Dri" />}
+          <PwaInstallButton />
+        </SidebarProvider>
+      </ThemeProvider>
+    </GlobalErrorBoundary>
+  </React.StrictMode>,
+)
