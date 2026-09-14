@@ -15,13 +15,14 @@ function renderFatal(title: string, message: string) {
 
 async function bootstrap() {
   if (!supabaseConfigurado) {
-    renderFatal('Ambiente do ERP não configurado', 'O aplicativo foi protegido contra tela branca. Falta configurar VITE_SUPABASE_PUBLISHABLE_KEY no ambiente de produção e gerar um novo deploy. Nenhum dado local ou senha administrativa é usado como substituto.')
+    renderFatal('Ambiente do ERP não configurado', 'Configure a chave pública anon/publishable do Supabase no ambiente da Vercel e gere um novo deploy. Chaves privadas não são aceitas no frontend.')
     return
   }
 
   try {
-    const [entry, help, actions, boundary, pwa, guide, theme, sidebar, header, backdrop] = await Promise.all([
+    const [entry, nativeLogin, help, actions, boundary, pwa, guide, theme, sidebar, header, backdrop] = await Promise.all([
       import('./AppEntryV2'),
+      import('./pages/LoginNativoUnificado'),
       import('./GlobalHelp'),
       import('./components/ERPHeaderActions'),
       import('./components/GlobalErrorBoundary'),
@@ -36,6 +37,7 @@ async function bootstrap() {
     if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => undefined))
 
     const AppEntry = entry.default
+    const NativeLogin = nativeLogin.default
     const GlobalHelp = help.default
     const ERPHeaderActions = actions.default
     const GlobalErrorBoundary = boundary.default
@@ -51,13 +53,13 @@ async function bootstrap() {
         <GlobalErrorBoundary>
           <ThemeProvider>
             <SidebarProvider>
-              <AppEntry />
-              <AppHeader />
-              <Backdrop />
-              <ERPHeaderActions />
-              <GlobalHelp />
-              {location.pathname !== '/erp-industrial' && <VirtualGuide brand="SGQ ERP" name="Dri" />}
-              <PwaInstallButton />
+              {location.pathname === '/login' ? <NativeLogin /> : <AppEntry />}
+              {location.pathname !== '/login' && <AppHeader />}
+              {location.pathname !== '/login' && <Backdrop />}
+              {location.pathname !== '/login' && <ERPHeaderActions />}
+              {location.pathname !== '/login' && <GlobalHelp />}
+              {location.pathname !== '/erp-industrial' && location.pathname !== '/login' && <VirtualGuide brand="SGQ ERP" name="Dri" />}
+              {location.pathname !== '/login' && <PwaInstallButton />}
             </SidebarProvider>
           </ThemeProvider>
         </GlobalErrorBoundary>
@@ -65,7 +67,7 @@ async function bootstrap() {
     )
   } catch (error) {
     console.error('ERP_BOOT_FAILURE', error)
-    renderFatal('Falha ao iniciar o ERP', 'Um módulo do aplicativo não conseguiu carregar. O erro foi isolado para impedir tela vazia. Recarregue a página; se persistir, verifique o módulo indicado no console.')
+    renderFatal('Falha ao iniciar o ERP', 'Um módulo do aplicativo não conseguiu carregar. O erro foi isolado para impedir tela vazia.')
   }
 }
 
