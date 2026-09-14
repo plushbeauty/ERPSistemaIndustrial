@@ -52,3 +52,60 @@ html[data-sgq-theme='dark'] .v7-module-grid button:hover,html[data-sgq-theme='da
 .sgq-theme-toggle:hover{transform:translateY(-1px)}
 html[data-sgq-theme='dark'] .sgq-theme-toggle{background:rgba(15,31,25,.95);border-color:#315347;color:#e9f5f0}
 @media(max-width:700px){.sgq-theme-toggle{right:12px;top:10px;padding:9px}.sgq-theme-toggle span{display:none}}
+
+/* 2026 unified industrial workspace: all internal screens */
+:root{--sgq-ink:#10231d;--sgq-muted:#66756f;--sgq-line:#dbe5e0;--sgq-surface:#ffffff;--sgq-bg:#f4f7f6;--sgq-accent:#147a5a;--sgq-accent-2:#0f6249;--sgq-shadow:0 14px 38px rgba(16,35,29,.08)}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--sgq-bg);color:var(--sgq-ink)}
+button,a,input,select,textarea{font-family:inherit}
+button{transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background .16s ease}
+button:not(:disabled):hover{transform:translateY(-1px)}
+button:disabled{cursor:not-allowed;opacity:.58}
+
+/* Standard page shells */
+.pcp-page,.master-page,.fiscal-page,.quality-page,.operacao-page,.produtos-page,.manual-page,.usuarios-page,.company-signup-page,.page-shell,.erp-page{min-height:100vh;background:linear-gradient(180deg,#f8faf9 0,#f2f6f4 100%);color:var(--sgq-ink)}
+.pcp-toolbar,.page-toolbar,.master-toolbar,.fiscal-toolbar,.quality-toolbar,.operacao-toolbar,.produtos-toolbar{position:relative;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 22px;margin:0 0 18px;border:1px solid var(--sgq-line);border-radius:18px;background:rgba(255,255,255,.94);box-shadow:var(--sgq-shadow);backdrop-filter:blur(10px)}
+.pcp-toolbar h1,.page-toolbar h1,.master-toolbar h1,.fiscal-toolbar h1,.quality-toolbar h1,.operacao-toolbar h1,.produtos-toolbar h1{margin:0;font-size:clamp(20px,2vw,28px);letter-spacing:-.03em;color:#10231d}
+.pcp-toolbar p,.page-toolbar p,.master-toolbar p,.fiscal-toolbar p,.quality-toolbar p,.operacao-toolbar p,.produtos-toolbar p{color:var(--sgq-muted)}
+
+/* Cards, dashboards and forms */
+.v7-kpis article,.v7-feature,.v7-form,.v7-table,.v7-search,.dashboard-card,.panel,.card,.form-card,.table-card,.metric-card,.module-card,.report-card{border:1px solid var(--sgq-line);border-radius:18px;background:var(--sgq-surface);box-shadow:var(--sgq-shadow)}
+.card,.panel,.form-card,.table-card,.metric-card,.module-card,.report-card{padding:20px}
+input,select,textarea{min-height:42px;border:1px solid #ccd9d4;border-radius:11px;background:#fff;color:#132820;padding:9px 12px;outline:none;box-sizing:border-box}
+input:focus,select:focus,textarea:focus{border-color:#38a27d;box-shadow:0 0 0 3px rgba(20,122,90,.11)}
+label{color:#30423b;font-weight:650}
+.primary,.primary-v2,.btn-primary,.button-primary,.login-submit{border:1px solid var(--sgq-accent);background:linear-gradient(135deg,#178561,#10674d);color:#fff;border-radius:11px;font-weight:750;box-shadow:0 8px 18px rgba(20,122,90,.18);padding:10px 15px}
+.secondary,.secondary-v2,.btn-secondary,.button-secondary{border:1px solid #ccd9d4;background:#fff;color:#26443a;border-radius:11px;font-weight:700;padding:10px 15px}
+.danger,.btn-danger{border:1px solid #efb8b8;background:#fff5f5;color:#a62c2c;border-radius:11px;font-weight:700;padding:10px 15px}
+
+/* Tables */
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border:1px solid var(--sgq-line);border-radius:14px;background:#fff}
+thead th{background:#f0f5f2;color:#40534b;font-size:12px;text-transform:uppercase;letter-spacing:.055em;padding:12px;text-align:left;border-bottom:1px solid var(--sgq-line)}
+tbody td{padding:12px;border-bottom:1px solid #edf1ef;color:#253a32}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:#f8fbf9}
+
+/* Internal header/sidebar: clean, professional, no blue flood */
+.v7-shell{background:#f4f7f6!important;color:var(--sgq-ink)}
+.v7-sidebar{background:linear-gradient(180deg,#0d211b,#0a1915)!important;border-right:1px solid #203d32!important;box-shadow:10px 0 28px rgba(4,20,14,.12)}
+.v7-brand strong{color:#f5fbf8!important}.v7-brand span,.v7-segment-label{color:#9eb2aa!important}
+.v7-nav,.v7-all,.v7-segment-current{border-color:transparent!important;background:transparent!important;color:#b9cbc4!important;border-radius:10px!important}
+.v7-nav:hover,.v7-nav.active,.v7-all:hover,.v7-segment-current:hover{background:#15382b!important;color:#fff!important}
+.v7-header{background:rgba(255,255,255,.94)!important;border-bottom:1px solid var(--sgq-line)!important;box-shadow:0 4px 20px rgba(16,35,29,.05)}
+.v7-main{background:#f4f7f6!important}
+
+/* Module launcher */
+.v7-module-grid{gap:14px!important}
+.v7-module-grid button{min-height:105px!important;border:1px solid #d7e2dd!important;border-radius:16px!important;background:#fff!important;color:#17362c!important;box-shadow:0 8px 24px rgba(16,35,29,.06)!important}
+.v7-module-grid button:hover,.v7-module-grid button.selected{border-color:#63a98e!important;background:#f1faf6!important;box-shadow:0 12px 28px rgba(20,122,90,.12)!important}
+
+/* Status badges */
+.badge,.status,.status-badge,.chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:750;background:#edf5f1;color:#226047;border:1px solid #d2e4dc}
+
+/* Responsive */
+@media(max-width:900px){.pcp-toolbar,.page-toolbar,.master-toolbar,.fiscal-toolbar,.quality-toolbar,.operacao-toolbar,.produtos-toolbar{padding:15px}.card,.panel,.form-card,.table-card{padding:15px}.v7-sidebar{box-shadow:none}.v7-module-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:620px){.pcp-toolbar,.page-toolbar,.master-toolbar,.fiscal-toolbar,.quality-toolbar,.operacao-toolbar,.produtos-toolbar{align-items:stretch;flex-direction:column}.v7-module-grid{grid-template-columns:1fr!important}input,select,textarea{width:100%}.primary,.secondary,.primary-v2,.secondary-v2{min-height:44px}}
+
+html[data-sgq-theme='dark'] body,html[data-sgq-theme='dark'] .pcp-page,html[data-sgq-theme='dark'] .master-page,html[data-sgq-theme='dark'] .fiscal-page,html[data-sgq-theme='dark'] .quality-page,html[data-sgq-theme='dark'] .operacao-page,html[data-sgq-theme='dark'] .produtos-page,html[data-sgq-theme='dark'] .page-shell{background:#07110e;color:#e8f2ee}
+html[data-sgq-theme='dark'] .pcp-toolbar,html[data-sgq-theme='dark'] .page-toolbar,html[data-sgq-theme='dark'] .master-toolbar,html[data-sgq-theme='dark'] .fiscal-toolbar,html[data-sgq-theme='dark'] .quality-toolbar,html[data-sgq-theme='dark'] .operacao-toolbar,html[data-sgq-theme='dark'] .produtos-toolbar,html[data-sgq-theme='dark'] .card,html[data-sgq-theme='dark'] .panel,html[data-sgq-theme='dark'] .form-card,html[data-sgq-theme='dark'] .table-card{background:#0d1d17;border-color:#294239;color:#e8f2ee}
+html[data-sgq-theme='dark'] input,html[data-sgq-theme='dark'] select,html[data-sgq-theme='dark'] textarea{background:#091610;color:#edf6f2;border-color:#294239}
+html[data-sgq-theme='dark'] thead th{background:#14271f;color:#b7c9c1;border-color:#294239}html[data-sgq-theme='dark'] tbody td{color:#d8e7e1;border-color:#20352d}html[data-sgq-theme='dark'] tbody tr:hover td{background:#10231c}
