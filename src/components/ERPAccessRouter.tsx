@@ -14,7 +14,7 @@ export default function ERPAccessRouter() {
 
       const { data: erpUser, error } = await supabase
         .from('erp_usuarios')
-        .select('nivel_admin, ativo, empresa_id, erp_empresas(tipo_segmento, ativo)')
+        .select('nivel_admin, ativo, empresa_id, erp_empresas(segmento, ativo)')
         .eq('auth_user_id', user.id)
         .maybeSingle()
 
@@ -39,7 +39,7 @@ export default function ERPAccessRouter() {
         return
       }
 
-      if (path === '/login' && empresa.tipo_segmento === 'industria_cosmeticos') {
+      if (path === '/login' && empresa.segmento === 'industria_cosmeticos') {
         window.location.replace('/erp-industrial')
       }
     }
