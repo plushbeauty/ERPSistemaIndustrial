@@ -1,13 +1,24 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "vite",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "installCommand": "npm install --no-audit --no-fund",
-  "rewrites": [
-    { "source": "/login", "destination": "/index.html" },
-    { "source": "/fiscal", "destination": "/index.html" },
-    { "source": "/erp-industrial", "destination": "/index.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+"$schema": "https://openapi.vercel.sh/vercel.json",
+"framework": "vite",
+"buildCommand": "npm run build",
+"outputDirectory": "dist",
+"installCommand": "npm install --no-audit --no-fund",
+"rewrites": [
+{ "source": "/login", "destination": "/index.html" },
+{ "source": "/fiscal", "destination": "/index.html" },
+{ "source": "/erp-industrial", "destination": "/index.html" },
+{ "source": "/pcp", "destination": "/index.html" },
+{ "source": "/qualidade", "destination": "/index.html" },
+{ "source": "/operacao", "destination": "/index.html" },
+{ "source": "/produtos-vendas", "destination": "/index.html" },
+{ "source": "/solicitacao-compra", "destination": "/index.html" },
+{ "source": "/usuarios", "destination": "/index.html" },
+{ "source": "/documentos-qualidade", "destination": "/index.html" },
+{ "source": "/manual", "destination": "/index.html" },
+{ "source": "/guia", "destination": "/index.html" },
+{ "source": "/teste-erp", "destination": "/index.html" },
+{ "source": "/cadastro-empresa", "destination": "/index.html" },
+{ "source": "/master", "destination": "/index.html" }
+]
 }
