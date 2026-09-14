@@ -2,70 +2,15 @@ import { createClient, type Session, type SupabaseClient } from '@supabase/supab
 
 const env = import.meta.env
 const CANONICAL_SUPABASE_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
-// Esta é uma chave pública do projeto e pode ser usada pelo frontend.
-// Nunca usar service-role ou sb_secret no bundle do navegador.
-const PUBLIC_SUPABASE_KEY = 'sb_publishable_QX10nEg-hrWd_5UOuYSpQg_v5M-1xuM'
-const configuredKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || '').trim()
+const configuredKey = String(env.VITE_SUPABASE_ANON_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || '').trim()
 const isPrivateKey = configuredKey.startsWith('sb_secret_') || configuredKey.includes('service_role')
 const supabaseUrl = String(env.VITE_SUPABASE_URL || CANONICAL_SUPABASE_URL).trim()
-const supabaseKey = isPrivateKey || !configuredKey ? PUBLIC_SUPABASE_KEY : configuredKey
-
+const supabaseKey = isPrivateKey ? '' : configuredKey
 export const supabaseConfigurado = Boolean(supabaseUrl && supabaseKey)
 export const supabaseUrlExportada = supabaseUrl
 export const supabaseKeyExportada = supabaseKey
-
-const missingConfigClient = new Proxy({} as SupabaseClient, {
-  get() {
-    throw new Error('SUPABASE_CONFIG_MISSING: configure a public Supabase key in the deployment environment')
-  },
-})
-
-export const supabase: SupabaseClient = supabaseConfigurado
-  ? createClient(supabaseUrl, supabaseKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        storageKey: 'erp-industrial-auth',
-      },
-      global: { headers: { 'x-client-info': 'sgq-erp-industrial' } },
-    })
-  : missingConfigClient
-
-export async function getValidSession(minValiditySeconds = 60): Promise<Session> {
-  const { data, error } = await supabase.auth.getSession()
-  if (error) throw error
-  let session = data.session
-  const expiresAt = Number(session?.expires_at ?? 0)
-  if (session?.refresh_token && (!expiresAt || expiresAt * 1000 - Date.now() < minValiditySeconds * 1000)) {
-    const refreshed = await supabase.auth.refreshSession()
-    if (!refreshed.error && refreshed.data.session) session = refreshed.data.session
-  }
-  if (!session?.access_token || !session.user) throw new Error('AUTH_SESSION_REQUIRED')
-  return session
-}
-
-export async function getAccessTokenOrThrow(): Promise<string> {
-  return (await getValidSession()).access_token
-}
-
-export async function rpcAutenticado<T = unknown>(functionName: string, args: Record<string, unknown> = {}): Promise<T> {
-  const session = await getValidSession()
-  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/${encodeURIComponent(functionName)}`, {
-    method: 'POST',
-    headers: {
-      apikey: supabaseKey,
-      Authorization: `Bearer ${session.access_token}`,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify(args),
-  })
-  const raw = await response.text()
-  let data: unknown = null
-  try { data = raw ? JSON.parse(raw) : null } catch { data = raw }
-  if (!response.ok) {
-    throw new Error(typeof data === 'object' && data !== null && 'message' in data ? String((data as { message: unknown }).message) : raw || response.statusText)
-  }
-  return data as T
-}
+const missingConfigClient = new Proxy({} as SupabaseClient, { get() { throw new Error('SUPABASE_CONFIG_MISSING: configure the public Supabase anon/publishable key in Vercel') } })
+export const supabase: SupabaseClient = supabaseConfigurado ? createClient(supabaseUrl, supabaseKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'erp-industrial-auth' }, global: { headers: { 'x-client-info': 'sgq-erp-industrial' } } }) : missingConfigClient
+export async function getValidSession(minValiditySeconds = 60): Promise<Session> { const { data, error } = await supabase.auth.getSession(); if (error) throw error; let session = data.session; const expiresAt = Number(session?.expires_at ?? 0); if (session?.refresh_token && (!expiresAt || expiresAt * 1000 - Date.now() < minValiditySeconds * 1000)) { const refreshed = await supabase.auth.refreshSession(); if (!refreshed.error && refreshed.data.session) session = refreshed.data.session } if (!session?.access_token || !session.user) throw new Error('AUTH_SESSION_REQUIRED'); return session }
+export async function getAccessTokenOrThrow(): Promise<string> { return (await getValidSession()).access_token }
+export async function rpcAutenticado<T = unknown>(functionName: string, args: Record<string, unknown> = {}): Promise<T> { const session = await getValidSession(); const response = await fetch(`${supabaseUrl}/rest/v1/rpc/${encodeURIComponent(functionName)}`, { method: 'POST', headers: { apikey: supabaseKey, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(args) }); const raw = await response.text(); let data: unknown = null; try { data = raw ? JSON.parse(raw) : null } catch { data = raw } if (!response.ok) throw new Error(typeof data === 'object' && data !== null && 'message' in data ? String((data as { message: unknown }).message) : raw || response.statusText); return data as T }
