@@ -9,15 +9,23 @@ export const supabaseConfigurado = Boolean(supabaseUrl && supabaseKey)
 export const supabaseUrlExportada = supabaseUrl
 export const supabaseKeyExportada = supabaseKey
 
-export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    storageKey: 'erp-industrial-auth',
+const missingConfigClient = new Proxy({} as SupabaseClient, {
+  get() {
+    throw new Error('SUPABASE_CONFIG_MISSING: configure VITE_SUPABASE_PUBLISHABLE_KEY in the deployment environment')
   },
-  global: { headers: { 'x-client-info': 'sgq-erp-industrial' } },
 })
+
+export const supabase: SupabaseClient = supabaseConfigurado
+  ? createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storageKey: 'erp-industrial-auth',
+      },
+      global: { headers: { 'x-client-info': 'sgq-erp-industrial' } },
+    })
+  : missingConfigClient
 
 export async function getValidSession(minValiditySeconds = 60): Promise<Session> {
   const { data, error } = await supabase.auth.getSession()
