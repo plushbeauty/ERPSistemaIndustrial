@@ -3,6 +3,10 @@ import { KeyRound, LogIn, UserPlus, ShieldCheck } from 'lucide-react'
 import { supabase, supabaseConfigurado } from '../lib/supabaseClient'
 import InfrastructureTrust from '../components/InfrastructureTrust'
 
+type Perfil = { id: string; auth_user_id: string; nome: string; email: string | null; empresa_id: string; nivel_admin: number; ativo: boolean }
+
+type Empresa = { id: string; nome_fantasia: string | null; razao_social: string | null; segmento: string | null; ativo: boolean; plano_status: string | null; trial_ends_at: string | null }
+
 export default function LoginNativoUnificado() {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
@@ -17,22 +21,15 @@ export default function LoginNativoUnificado() {
     setBusy(true)
     try {
       if (!supabaseConfigurado) throw new Error('A conexão pública do Supabase não está configurada neste ambiente.')
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
-        password: senha,
-      })
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password: senha })
       if (authError) throw authError
       if (!authData.user) throw new Error('O Supabase Auth não devolveu um usuário válido.')
       setStatus('Autenticado. Carregando empresa, segmento e permissões...')
 
-      const { data: perfil, error: perfilError } = await supabase
-        .from('erp_usuarios')
-        .select('id, empresa_id, nome, nivel_admin, ativo, deleted_at')
-        .eq('auth_user_id', authData.user.id)
-        .is('deleted_at', null)
-        .maybeSingle()
+      const { data: perfilData, error: perfilError } = await supabase.rpc('erp_auth_profile')
       if (perfilError) throw perfilError
-      if (!perfil) throw new Error('Usuário autenticado, mas sem vínculo ativo em erp_usuarios.')
+      const perfil = Array.isArray(perfilData) ? (perfilData[0] as Perfil | undefined) : (perfilData as Perfil | null)
+      if (!perfil || perfil.auth_user_id !== authData.user.id) throw new Error('Usuário autenticado, mas sem vínculo ativo em erp_usuarios.')
       if (perfil.ativo === false) throw new Error('Este usuário está inativo no ERP.')
 
       const { data: empresa, error: empresaError } = await supabase
@@ -44,13 +41,16 @@ export default function LoginNativoUnificado() {
       if (!empresa) throw new Error('A empresa vinculada ao usuário não foi encontrada.')
       if (empresa.ativo === false) throw new Error('A empresa vinculada está bloqueada.')
 
-      const trialExpired = Boolean(empresa.trial_ends_at && Date.now() >= new Date(empresa.trial_ends_at).getTime() && empresa.plano_status !== 'ativo')
+      const company = empresa as Empresa
+      const trialExpired = Boolean(company.trial_ends_at && Date.now() >= new Date(company.trial_ends_at).getTime() && company.plano_status !== 'ativo')
       if (trialExpired && Number(perfil.nivel_admin) < 9) throw new Error('O período de teste desta empresa terminou. Ative o plano para continuar.')
 
-      const segmento = String(empresa.segmento || '').trim().toLowerCase()
-      setStatus(`Acesso liberado • ${empresa.nome_fantasia || empresa.razao_social || 'Empresa'} • ${segmento || 'segmento não informado'}`)
+      const segmento = String(company.segmento || '').trim().toLowerCase()
+      setStatus(`Acesso liberado • ${company.nome_fantasia || company.razao_social || 'Empresa'} • ${segmento || 'segmento não informado'}`)
       window.setTimeout(() => {
-        window.location.replace(Number(perfil.nivel_admin) >= 9 ? '/master' : '/erp-industrial')
+        if (segmento === 'industria_cosmeticos') window.location.replace('/erp-industrial?segmento=industria_cosmeticos')
+        else if (Number(perfil.nivel_admin) >= 9) window.location.replace('/master')
+        else window.location.replace('/erp-industrial')
       }, 150)
     } catch (error) {
       setErro(error instanceof Error ? error.message : 'Não foi possível autenticar.')
@@ -98,7 +98,7 @@ export default function LoginNativoUnificado() {
         <a className="login-brand-logo" href="/login" aria-label="SGQ ERP"><img className="login-logo-large" src="/logo-industrial.svg" alt="SGQ ERP" /></a>
         <span className="login-kicker">ACESSO NATIVO</span>
         <h1>Entrar no SGQ ERP</h1>
-        <p>Use o e-mail e a senha cadastrados no Supabase Auth. A empresa é descoberta depois da autenticação.</p>
+        <p>Use o e-mail e a senha cadastrados no Supabase Auth. A empresa e o segmento são descobertos após a autenticação.</p>
       </div>
       <div className="login-fields">
         <label>E-mail corporativo<input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="admin@empresa.com.br" autoComplete="username" required disabled={busy} /></label>
