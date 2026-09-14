@@ -2,40 +2,39 @@ import {
   createClient,
   type Session,
   type SupabaseClient,
-} from '@supabase/supabase-js'
+} from "@supabase/supabase-js";
 
-const env = import.meta.env
+const env = import.meta.env;
 
-/*
- * URL REAL DO PROJETO SUPABASE DO ERP INDUSTRIAL.
- *
- * Não usar:
- * https://supabase.co
- *
- * O domínio de projeto precisa conter o ref.
- */
-const DEFAULT_SUPABASE_URL =
-  'https://zsklkydlawgvwgnvxwwx.supabase.co'
+const supabaseUrl = String(
+  env.VITE_SUPABASE_URL ?? "",
+).trim();
 
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY =
-  'sb_publishable_BcwsSbBx8dWof7d_hAKtQA_XzQGAYwR'
+const supabaseKey = String(
+  env.VITE_SUPABASE_PUBLISHABLE_KEY ??
+    env.VITE_SUPABASE_ANON_KEY ??
+    "",
+).trim();
 
-export const supabaseUrl = String(
-  env.VITE_SUPABASE_URL ||
-    DEFAULT_SUPABASE_URL,
-).trim()
+if (!supabaseUrl) {
+  throw new Error(
+    "VITE_SUPABASE_URL não configurada.",
+  );
+}
 
-export const supabaseKey = String(
-  env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    env.VITE_SUPABASE_ANON_KEY ||
-    DEFAULT_SUPABASE_PUBLISHABLE_KEY,
-).trim()
+if (!supabaseKey) {
+  throw new Error(
+    "VITE_SUPABASE_PUBLISHABLE_KEY/VITE_SUPABASE_ANON_KEY não configurada.",
+  );
+}
 
-export const supabaseConfigurado =
-  Boolean(
-    supabaseUrl &&
-      supabaseKey,
-  )
+export const supabaseConfigurado = true;
+
+export const supabaseUrlExportada =
+  supabaseUrl;
+
+export const supabaseKeyExportada =
+  supabaseKey;
 
 export const supabase: SupabaseClient =
   createClient(
@@ -47,10 +46,10 @@ export const supabase: SupabaseClient =
         autoRefreshToken: true,
         detectSessionInUrl: true,
         storageKey:
-          'erp-industrial-auth',
+          "erp-industrial-auth",
       },
     },
-  )
+  );
 
 export async function getValidSession(
   minValiditySeconds = 60,
@@ -58,20 +57,19 @@ export async function getValidSession(
   const {
     data,
     error,
-  } =
-    await supabase.auth.getSession()
+  } = await supabase.auth.getSession();
 
   if (error) {
-    throw error
+    throw error;
   }
 
   let session =
-    data.session
+    data.session;
 
   const expiresAt =
     Number(
       session?.expires_at ?? 0,
-    )
+    );
 
   const needsRefresh =
     !session?.access_token ||
@@ -79,12 +77,11 @@ export async function getValidSession(
     !expiresAt ||
     expiresAt * 1000 -
       Date.now() <
-      minValiditySeconds *
-        1000
+      minValiditySeconds * 1000;
 
   if (needsRefresh) {
     const refreshed =
-      await supabase.auth.refreshSession()
+      await supabase.auth.refreshSession();
 
     if (
       refreshed.error ||
@@ -93,13 +90,13 @@ export async function getValidSession(
       throw (
         refreshed.error ??
         new Error(
-          'AUTH_SESSION_REQUIRED',
+          "AUTH_SESSION_REQUIRED",
         )
-      )
+      );
     }
 
     session =
-      refreshed.data.session
+      refreshed.data.session;
   }
 
   if (
@@ -107,31 +104,28 @@ export async function getValidSession(
     !session.user
   ) {
     throw new Error(
-      'AUTH_SESSION_REQUIRED',
-    )
+      "AUTH_SESSION_REQUIRED",
+    );
   }
 
-  return session
+  return session;
 }
 
 export async function getAccessTokenOrThrow(): Promise<string> {
   const session =
-    await getValidSession()
+    await getValidSession();
 
-  return session.access_token
+  return session.access_token;
 }
 
 export async function rpcAutenticado<
   T = unknown,
 >(
   functionName: string,
-  args: Record<
-    string,
-    unknown
-  > = {},
+  args: Record<string, unknown> = {},
 ): Promise<T> {
   const session =
-    await getValidSession()
+    await getValidSession();
 
   const response =
     await fetch(
@@ -139,80 +133,51 @@ export async function rpcAutenticado<
         functionName,
       )}`,
       {
-        method: 'POST',
-
+        method: "POST",
         headers: {
-          apikey:
-            supabaseKey,
-
+          apikey: supabaseKey,
           Authorization:
             `Bearer ${session.access_token}`,
-
-          'Content-Type':
-            'application/json',
-
+          "Content-Type":
+            "application/json",
           Accept:
-            'application/json',
+            "application/json",
         },
-
         body: JSON.stringify(
           args,
         ),
       },
-    )
+    );
 
   const raw =
-    await response.text()
+    await response.text();
 
-  let data: unknown =
-    null
+  let data: unknown = null;
 
   try {
     data = raw
       ? JSON.parse(raw)
-      : null
+      : null;
   } catch {
-    data = raw
+    data = raw;
   }
 
   if (!response.ok) {
-    const message =
-      typeof data ===
-        'object' &&
-      data !== null &&
-      'message' in data
+    throw new Error(
+      typeof data === "object" &&
+        data !== null &&
+        "message" in data
         ? String(
             (
               data as {
-                message: unknown
+                message: unknown;
               }
             ).message,
           )
         : raw ||
-          response.statusText
-
-    if (
-      response.status ===
-      401
-    ) {
-      throw new Error(
-        `AUTH_SESSION_REQUIRED: ${message}`,
-      )
-    }
-
-    if (
-      response.status ===
-      403
-    ) {
-      throw new Error(
-        `AUTH_FORBIDDEN: ${message}`,
-      )
-    }
-
-    throw new Error(
-      `RPC_HTTP_${response.status}: ${message}`,
-    )
+            response.statusText,
+    );
   }
 
-  return data as T
+  return data as T;
 }
