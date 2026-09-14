@@ -1,110 +1,58 @@
-import {
-  createClient,
-  type Session,
-  type SupabaseClient,
-} from "@supabase/supabase-js";
+import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 
-const env = import.meta.env;
+const env = import.meta.env
+const CANONICAL_SUPABASE_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
+const supabaseUrl = String(env.VITE_SUPABASE_URL || CANONICAL_SUPABASE_URL).trim()
+const supabaseKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || '').trim()
 
-const CANONICAL_SUPABASE_URL = "https://zsklkydlawgvwgnvxwwx.supabase.co";
-const CANONICAL_SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_BcwsSbBx8dWof7d_hAKtQA_XzQGAYwR";
+export const supabaseConfigurado = Boolean(supabaseUrl && supabaseKey)
+export const supabaseUrlExportada = supabaseUrl
+export const supabaseKeyExportada = supabaseKey
 
-const supabaseUrl = String(
-  env.VITE_SUPABASE_URL || CANONICAL_SUPABASE_URL,
-).trim();
-
-const supabaseKey = String(
-  env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    env.VITE_SUPABASE_ANON_KEY ||
-    CANONICAL_SUPABASE_PUBLISHABLE_KEY,
-).trim();
-
-export const supabaseConfigurado = Boolean(supabaseUrl && supabaseKey);
-export const supabaseUrlExportada = supabaseUrl;
-export const supabaseKeyExportada = supabaseKey;
-
-export const supabase: SupabaseClient = createClient(
-  supabaseUrl,
-  supabaseKey,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-      storageKey: "erp-industrial-auth",
-    },
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storageKey: 'erp-industrial-auth',
   },
-);
+  global: { headers: { 'x-client-info': 'sgq-erp-industrial' } },
+})
 
-export async function getValidSession(
-  minValiditySeconds = 60,
-): Promise<Session> {
-  const { data, error } = await supabase.auth.getSession();
-
-  if (error) throw error;
-
-  let session = data.session;
-  const expiresAt = Number(session?.expires_at ?? 0);
-  const needsRefresh =
-    !session?.access_token ||
-    !session?.refresh_token ||
-    !expiresAt ||
-    expiresAt * 1000 - Date.now() < minValiditySeconds * 1000;
-
-  if (needsRefresh && session?.refresh_token) {
-    const refreshed = await supabase.auth.refreshSession();
-    if (!refreshed.error && refreshed.data.session) {
-      session = refreshed.data.session;
-    }
+export async function getValidSession(minValiditySeconds = 60): Promise<Session> {
+  const { data, error } = await supabase.auth.getSession()
+  if (error) throw error
+  let session = data.session
+  const expiresAt = Number(session?.expires_at ?? 0)
+  if (session?.refresh_token && (!expiresAt || expiresAt * 1000 - Date.now() < minValiditySeconds * 1000)) {
+    const refreshed = await supabase.auth.refreshSession()
+    if (!refreshed.error && refreshed.data.session) session = refreshed.data.session
   }
-
-  if (!session?.access_token || !session.user) {
-    throw new Error("AUTH_SESSION_REQUIRED");
-  }
-
-  return session;
+  if (!session?.access_token || !session.user) throw new Error('AUTH_SESSION_REQUIRED')
+  return session
 }
 
 export async function getAccessTokenOrThrow(): Promise<string> {
-  return (await getValidSession()).access_token;
+  return (await getValidSession()).access_token
 }
 
-export async function rpcAutenticado<T = unknown>(
-  functionName: string,
-  args: Record<string, unknown> = {},
-): Promise<T> {
-  const session = await getValidSession();
-  const response = await fetch(
-    `${supabaseUrl}/rest/v1/rpc/${encodeURIComponent(functionName)}`,
-    {
-      method: "POST",
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${session.access_token}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(args),
+export async function rpcAutenticado<T = unknown>(functionName: string, args: Record<string, unknown> = {}): Promise<T> {
+  const session = await getValidSession()
+  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/${encodeURIComponent(functionName)}`, {
+    method: 'POST',
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
     },
-  );
-
-  const raw = await response.text();
-  let data: unknown = null;
-
-  try {
-    data = raw ? JSON.parse(raw) : null;
-  } catch {
-    data = raw;
-  }
-
+    body: JSON.stringify(args),
+  })
+  const raw = await response.text()
+  let data: unknown = null
+  try { data = raw ? JSON.parse(raw) : null } catch { data = raw }
   if (!response.ok) {
-    throw new Error(
-      typeof data === "object" && data !== null && "message" in data
-        ? String((data as { message: unknown }).message)
-        : raw || response.statusText,
-    );
+    throw new Error(typeof data === 'object' && data !== null && 'message' in data ? String((data as { message: unknown }).message) : raw || response.statusText)
   }
-
-  return data as T;
+  return data as T
 }
