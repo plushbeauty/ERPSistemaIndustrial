@@ -1,8 +1,8 @@
 import { createClient, type SupabaseClient, type Session } from '@supabase/supabase-js'
 
 const env = import.meta.env
-const DEFAULT_SUPABASE_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_QX10nEg-hrWd_5UOuYSpQg_v5M-1xuM'
+const DEFAULT_SUPABASE_URL = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BcwsSbBx8dWof7d_hAKtQA_XzQGAYwR'
 
 export const supabaseUrl = (env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL).trim()
 export const supabaseKey = (env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY).trim()
