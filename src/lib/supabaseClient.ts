@@ -2,8 +2,13 @@ import { createClient, type Session, type SupabaseClient } from '@supabase/supab
 
 const env = import.meta.env
 const CANONICAL_SUPABASE_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
+// Esta é uma chave pública do projeto e pode ser usada pelo frontend.
+// Nunca usar service-role ou sb_secret no bundle do navegador.
+const PUBLIC_SUPABASE_KEY = 'sb_publishable_QX10nEg-hrWd_5UOuYSpQg_v5M-1xuM'
+const configuredKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || '').trim()
+const isPrivateKey = configuredKey.startsWith('sb_secret_') || configuredKey.includes('service_role')
 const supabaseUrl = String(env.VITE_SUPABASE_URL || CANONICAL_SUPABASE_URL).trim()
-const supabaseKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || '').trim()
+const supabaseKey = isPrivateKey || !configuredKey ? PUBLIC_SUPABASE_KEY : configuredKey
 
 export const supabaseConfigurado = Boolean(supabaseUrl && supabaseKey)
 export const supabaseUrlExportada = supabaseUrl
@@ -11,7 +16,7 @@ export const supabaseKeyExportada = supabaseKey
 
 const missingConfigClient = new Proxy({} as SupabaseClient, {
   get() {
-    throw new Error('SUPABASE_CONFIG_MISSING: configure VITE_SUPABASE_PUBLISHABLE_KEY in the deployment environment')
+    throw new Error('SUPABASE_CONFIG_MISSING: configure a public Supabase key in the deployment environment')
   },
 })
 
