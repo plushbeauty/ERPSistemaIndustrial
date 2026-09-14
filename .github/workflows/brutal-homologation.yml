@@ -1,0 +1,50 @@
+name: "Auditoria Brutal e Homologação"
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: brutal-homologation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  homologation:
+    name: "TypeScript + Auditoria + Build"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: "Configurar Node.js 20"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: "Limitar heap do Node"
+        run: echo "NODE_OPTIONS=--max-old-space-size=4096" >> "$GITHUB_ENV"
+
+      - name: "Instalar dependências determinísticas"
+        run: npm ci
+
+      - name: "Type-check estrito"
+        run: npx tsc --noEmit
+
+      - name: "Auditoria estática de interações"
+        run: node scripts/audit-interactions.mjs
+
+      - name: "Build de produção"
+        run: npm run build
