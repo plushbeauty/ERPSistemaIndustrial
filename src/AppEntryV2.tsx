@@ -41,7 +41,18 @@ function LoadingSkeleton({label='Carregando SGQ ERP…'}:{label?:string}){return
 function lazyFallback(){return <LoadingSkeleton/>}
 function trialExpired(ends:string|null,status:string|null){return!!ends&&Date.now()>=new Date(ends).getTime()&&status!=='ativo'}
 
-async function validarAcessoERP(authUserId:string):Promise<AccessResult>{const{data:u,error}=await supabase.from('erp_usuarios').select('id,empresa_id,ativo,nivel_admin,is_master').eq('auth_user_id',authUserId).is('deleted_at',null).maybeSingle();if(error)throw error;if(!u||u.ativo===false)return{ok:false,master:false,reason:'Este acesso não está vinculado a um usuário ativo do ERP.'};const master=Boolean(u.is_master)||Number(u.nivel_admin)>=9;if(master)return{ok:true,master:true,reason:''};const{data:e,error:ee}=await supabase.from('erp_empresas').select('ativo,plano_status,trial_ends_at').eq('id',u.empresa_id).maybeSingle();if(ee)throw ee;if(e?.ativo===false)return{ok:false,master:false,reason:'O acesso desta empresa está bloqueado.'};if(trialExpired(e?.trial_ends_at??null,e?.plano_status??null))return{ok:false,master:false,reason:'Seu teste gratuito terminou. Ative seu plano para continuar.'};return{ok:true,master:false,reason:''}}
+async function validarAcessoERP(authUserId:string):Promise<AccessResult>{
+  const{data:u,error}=await supabase.from('erp_usuarios').select('id,empresa_id,ativo,nivel_admin').eq('auth_user_id',authUserId).is('deleted_at',null).maybeSingle()
+  if(error)throw error
+  if(!u||u.ativo===false)return{ok:false,master:false,reason:'Este acesso não está vinculado a um usuário ativo do ERP.'}
+  const master=Number(u.nivel_admin)>=9
+  if(master)return{ok:true,master:true,reason:''}
+  const{data:e,error:ee}=await supabase.from('erp_empresas').select('ativo,plano_status,trial_ends_at').eq('id',u.empresa_id).maybeSingle()
+  if(ee)throw ee
+  if(e?.ativo===false)return{ok:false,master:false,reason:'O acesso desta empresa está bloqueado.'}
+  if(trialExpired(e?.trial_ends_at??null,e?.plano_status??null))return{ok:false,master:false,reason:'Seu teste gratuito terminou. Ative seu plano para continuar.'}
+  return{ok:true,master:false,reason:''}
+}
 function safeReturnTo(value:string|null){if(!value||!value.startsWith('/')||value.startsWith('//')||value.startsWith('/login'))return'/erp-industrial';return value}
 function requestedTarget(){return safeReturnTo(new URLSearchParams(location.search).get('returnTo'))}
 async function autenticarERP(empresa:string,identificador:string,senha:string):Promise<LoginResponse>{const payload={empresa:empresa.trim(),identificador:identificador.trim(),senha};const{data,error}=await supabase.functions.invoke('erp-login',{body:payload});if(error)throw new Error('Não foi possível conectar ao serviço de autenticação do ERP.');const result=(data??{}) as {session?:Session;profile?:{id:string;empresa_id:string;nivel_admin:number};error?:string};if(result.error||!result.session||!result.profile)throw new Error(result.error||'Empresa, usuário ou senha inválidos.');return{session:result.session,profile:result.profile}}
