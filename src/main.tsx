@@ -20,7 +20,7 @@ async function bootstrap() {
   }
 
   try {
-    const [entry, help, actions, boundary, pwa, guide, theme, sidebar, header, backdrop] = await Promise.all([
+    const [entry, help, actions, boundary, pwa, guide, theme, sidebar, header, backdrop, accessRouter] = await Promise.all([
       import('./AppEntryV2'),
       import('./GlobalHelp'),
       import('./components/ERPHeaderActions'),
@@ -31,6 +31,7 @@ async function bootstrap() {
       import('./context/SidebarContext'),
       import('./layout/AppHeader'),
       import('./layout/Backdrop'),
+      import('./components/ERPAccessRouter'),
     ])
 
     if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => undefined))
@@ -41,6 +42,7 @@ async function bootstrap() {
     const GlobalErrorBoundary = boundary.default
     const PwaInstallButton = pwa.default
     const VirtualGuide = guide.default
+    const ERPAccessRouter = accessRouter.default
     const { ThemeProvider } = theme
     const { SidebarProvider } = sidebar
     const AppHeader = header.default
@@ -51,6 +53,7 @@ async function bootstrap() {
         <GlobalErrorBoundary>
           <ThemeProvider>
             <SidebarProvider>
+              <ERPAccessRouter />
               <AppEntry />
               <AppHeader />
               <Backdrop />
