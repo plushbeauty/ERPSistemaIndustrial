@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import AppEntryV2 from './AppEntryV2'
 import IndustrialDashboardPremium from './pages/IndustrialDashboardPremium'
 import { supabase } from './lib/supabaseClient'
+import './styles/industrial-public-restoration.css'
 
 export default function AppEntryPremium() {
   const [path, setPath] = useState(location.pathname)
