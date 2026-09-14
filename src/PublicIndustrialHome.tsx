@@ -1,76 +1,38 @@
-import { ArrowRight, Check, ChevronDown, FileText, Factory, Mail, Package, ShieldCheck, Smartphone, Wrench, X } from 'lucide-react'
-import { useState } from 'react'
-import type { ReactNode } from 'react'
+import { ArrowRight, Check, Factory, ShieldCheck, Smartphone, Boxes, ClipboardCheck, Wrench, BarChart3, Receipt, Workflow } from 'lucide-react'
 
-type ResourceGroup = { title: string; items: Array<[string, string, string]> }
-type ResourceCard = [string, string, string, string[]]
-type Plan = { name: string; price: string; tag: string; yes: string[]; no: string[] }
-type Reason = [string, string]
+const modules = [
+  ['PCP e Produção', 'Planejamento, ordens, sequenciamento e acompanhamento do chão de fábrica.', '/pcp', Factory],
+  ['Estoque e Materiais', 'Saldos, movimentações, rastreabilidade e necessidades de materiais.', '/produtos-vendas', Boxes],
+  ['Qualidade', 'RPNC, auditorias, ações, documentos e rastreabilidade da qualidade.', '/qualidade', ClipboardCheck],
+  ['Manutenção', 'Máquinas, manutenção preventiva, corretiva e histórico operacional.', '/operacao-industrial', Wrench],
+  ['Financeiro e Fiscal', 'Visão financeira e preparação dos processos fiscais do ERP.', '/fiscal', Receipt],
+  ['Indicadores', 'Acompanhe produção, qualidade, estoque e desempenho com dados do sistema.', '/erp-industrial', BarChart3],
+] as const
 
-const plans: Plan[] = [
-{name:'Essencial',price:'R$ 199',tag:'Para organizar a operação',yes:['Dashboard executivo','Estoque e materiais','Compras e fornecedores','Produção / OP','Clientes e cadastros'],no:['MRP e planejamento avançado','PCP e agenda de máquinas','Qualidade / RPNC','Manutenção / CMMS','OEE e indicadores avançados','Emissão fiscal integrada','Outlook + IA/OCR','Faturamento automático']},
-{name:'Profissional',price:'R$ 349',tag:'Para ganhar escala',yes:['Tudo do Essencial','MRP / planejamento','PCP / máquinas','Qualidade / RPNC','Manutenção','OEE','Pedidos recebidos por e-mail','Fluxo de aprovação'],no:['Painel Master','Auditoria ampliada','Fiscal NF-e / NFC-e completo','Outlook + IA/OCR completo','Pedido → faturamento automático','Recursos avançados de gestão']},
-{name:'Diamante',price:'R$ 549',tag:'Para operação completa',yes:['Tudo do Profissional','Painel Master','Auditoria ampliada','Fiscal NF-e modelo 55','Fiscal NFC-e modelo 65','Importação XML e chave de acesso','Outlook + IA/OCR','Pedidos → aprovação → faturamento','Visão integrada da fábrica'],no:[]}
-]
-
-const resourceGroups: ResourceGroup[] = [
-{title:'Operação industrial',items:[['Produção / OP','Ordens, etapas, apontamentos e acompanhamento.','#recurso-producao'],['Estoque / WMS','Saldos, materiais, inventário e rastreabilidade.','#recurso-estoque'],['MRP / PCP','Planejamento de materiais, capacidade e produção.','#recurso-mrp'],['Qualidade / RPNC','Inspeções, não conformidades e ações.','#recurso-qualidade'],['Manutenção / CMMS','Máquinas, planos e manutenção preventiva.','#recurso-manutencao']]},
-{title:'Comercial e gestão',items:[['Vendas / CRM','Clientes, oportunidades, pedidos e histórico.','#recurso-vendas'],['Compras / fornecedores','Cotações, pedidos e acompanhamento de fornecedores.','#recurso-compras'],['Financeiro','Contas, caixa, bancos, conciliação e DRE.','#recurso-financeiro'],['Fiscal NF-e / NFC-e','Documentos fiscais, XML, DANFE e integrações.','#recurso-fiscal'],['Relatórios e BI','Indicadores, análises e visão executiva.','#recurso-bi']]},
-{title:'Automação e controle',items:[['Outlook + IA/OCR','Captura de pedidos por e-mail e leitura automática.','#recurso-automacao'],['Painel Master','Controle administrativo, empresas, usuários e auditoria.','#recurso-master'],['Integrações','Supabase, fiscal, e-mail e serviços externos.','#recurso-integracoes'],['Mobile / PWA','Acesso responsivo no computador, tablet e celular.','#recurso-mobile'],['Segurança','Perfis, empresa, permissões e rastreabilidade.','#recurso-seguranca']]}
-]
-
-const resourceCards: ResourceCard[] = [
-['recurso-producao','Produção / OP','Do pedido à ordem de produção, com etapas, apontamentos, setores, máquinas e histórico.',['OPs','Apontamento','Setores','Máquinas']],
-['recurso-estoque','Estoque / WMS','Controle de matérias-primas e produtos, saldos, movimentações, inventário e rastreabilidade.',['Saldos','Inventário','Lotes','Movimentações']],
-['recurso-mrp','MRP / PCP','Planeje necessidades de materiais, ordens e capacidade antes que a falta de insumo pare a fábrica.',['MRP','PCP','Necessidades','Capacidade']],
-['recurso-qualidade','Qualidade / RPNC','Registre inspeções, não conformidades, causas, ações corretivas e indicadores de qualidade.',['Inspeções','RPNC','Ações','Indicadores']],
-['recurso-manutencao','Manutenção / CMMS','Organize máquinas e planos de manutenção para reduzir paradas e aumentar disponibilidade.',['Preventiva','Corretiva','Máquinas','Histórico']],
-['recurso-vendas','Vendas / CRM','Centralize clientes, oportunidades, pedidos e histórico comercial conectado ao restante do ERP.',['Clientes','Pedidos','CRM','Histórico']],
-['recurso-compras','Compras / fornecedores','Conecte compras ao estoque e à produção, acompanhando pedidos, prazos e desempenho de fornecedores.',['Cotações','Pedidos','Fornecedores','Prazos']],
-['recurso-financeiro','Financeiro','Una contas a pagar e receber, caixa, bancos, conciliação, custos e visão de resultado.',['Pagar','Receber','Bancos','DRE']],
-['recurso-fiscal','Fiscal NF-e / NFC-e','Prepare documentos fiscais, séries, itens, impostos, XML, chave de acesso e retorno do integrador SEFAZ.',['NF-e 55','NFC-e 65','XML','DANFE']],
-['recurso-bi','Relatórios e BI','Transforme os dados da operação em indicadores para diretoria, gestores e equipes.',['KPIs','Dashboards','ABC','Margens']],
-['recurso-automacao','Outlook + IA/OCR','Capture pedidos por e-mail, leia PDF/imagem/texto e envie dados para revisão antes da produção.',['Outlook','OCR','IA','Aprovação']],
-['recurso-master','Painel Master','Administre empresas, usuários, acessos, auditoria e visão global da plataforma.',['Empresas','Usuários','Auditoria','Controle']],
-['recurso-integracoes','Integrações','Arquitetura preparada para Supabase, integradores fiscais, Microsoft Graph e futuras APIs.',['Supabase','Fiscal','Graph','APIs']],
-['recurso-mobile','Mobile / PWA','Acesse os processos do ERP em telas responsivas, sem depender de um computador específico.',['Celular','Tablet','PWA','Responsivo']],
-['recurso-seguranca','Segurança','Separação por empresa, perfis de acesso, autenticação e trilha de auditoria para operações críticas.',['Login','Perfis','Empresa','Auditoria']]
-]
-
-const reasons: Reason[] = [
-['Visão ponta a ponta','Pedido, compra, estoque, produção, qualidade, expedição, fiscal e financeiro trabalhando sobre os mesmos dados.'],
-['Menos retrabalho','Reduza planilhas paralelas, redigitação e informações desencontradas entre departamentos.'],
-['Decisão em tempo real','Dashboards e indicadores mostram o que está acontecendo na fábrica e onde existe desvio.'],
-['Controle de custos','Conecte consumo, produção, compras e financeiro para entender margem, desperdício e rentabilidade.'],
-['Rastreabilidade','Histórico por empresa, pedido, produto, lote, ordem, qualidade e documento fiscal.'],
-['Indústria preparada para crescer','Arquitetura modular para adicionar automações, IA, integrações e novos processos sem trocar de sistema.']
-]
-
-export default function PublicIndustrialHome(){
- const[help,setHelp]=useState(false),[resources,setResources]=useState(false)
- return <div className="public-industrial home-v2">
-  <header className="public-nav">
-   <a href="/" className="public-brand" aria-label="Voltar para a página principal"><img src="/logo-industrial.svg" alt="SGQ ERP"/></a>
-   <nav>
-    <div className="nav-menu"><button type="button" className={resources?'nav-menu-trigger open':'nav-menu-trigger'} onClick={()=>setResources(!resources)}>Recursos <ChevronDown size={18}/></button>{resources&&<div className="mega-menu" onClick={()=>setResources(false)}>{resourceGroups.map(g=><div className="mega-column" key={g.title}><div className="mega-title">{g.title}</div>{g.items.map(([name,desc,href])=><a className="mega-link" href={href} key={name}><strong>{name}</strong><span>{desc}</span></a>)}</div>)}<div className="mega-footer"><span>Todos os módulos conectados ao mesmo fluxo operacional.</span><a href="#recursos">Ver todos os recursos <ArrowRight size={14}/></a></div></div>}</div>
-    <a href="#fiscal">Fiscal</a><a href="#por-dentro">Por dentro</a><a href="#automacao">Automação</a><a href="#planos">Planos</a>
-   </nav>
-   <a className="nav-login" href="/login">Entrar <ArrowRight size={18}/></a>
-  </header>
-  <main>
-   <section className="public-hero"><div className="hero-copy"><span className="public-kicker">SGQ ERP • GESTÃO INDUSTRIAL</span><h1>A fábrica inteira conectada em uma única plataforma.</h1><p>Produção, PCP, MRP, estoque, compras, qualidade, manutenção, vendas e fiscal no computador ou celular.</p><div className="hero-actions"><a className="public-primary" href="#planos">Conhecer planos <ArrowRight size={18}/></a><a className="public-secondary" href="/login">Já sou cliente</a></div><div className="hero-proof"><span><Check size={16}/> 15 dias para testar</span><span><Smartphone size={16}/> PWA / celular</span><span><ShieldCheck size={16}/> Segurança por empresa</span></div></div><div className="dashboard-preview"><b>VISÃO EXECUTIVA</b><h3>Controle da fábrica</h3><div className="preview-metrics"><i>Ordens <b>24</b></i><i>OEE <b>87%</b></i><i>Estoque <b>R$ 184k</b></i><i>RPNC <b>03</b></i></div><div className="hero-chart">{[45,70,52,86,62,94,78].map((h,i)=><i key={i} style={{height:`${h}%`}}/>)}</div><div className="hero-status">● Produção em fluxo • Estoque controlado • Qualidade monitorada</div></div></section>
-   <section className="public-section automation-hero"><div className="section-heading"><span className="public-kicker">AUTOMAÇÃO DE PEDIDOS</span><h2>Seu pedido chega por e-mail. O ERP faz o trabalho pesado.</h2><p>Outlook → IA/OCR → Supabase → Pedido pendente → aprovação → produção → faturamento.</p></div><div className="automation-cards"><Card icon={<Mail/>} t="Outlook" d="Captura e-mail, remetente, assunto e anexos por Microsoft Graph."/><Card icon={<Package/>} t="IA + OCR" d="Lê PDF, imagem ou texto e extrai cliente, SKU, quantidade, preço e entrega."/><Card icon={<Check/>} t="Pedido pendente" d="O operador revisa os dados antes de liberar a ordem para a fábrica."/><Card icon={<ShieldCheck/>} t="Fiscal" d="Após aprovação, prepara a emissão de NF-e/NFC-e pelo integrador fiscal."/></div></section>
-   <section id="fiscal" className="public-section mobile-fiscal-hero"><div><span className="public-kicker">FISCAL • NF-e / NFC-e</span><h2>Faça sua nota fiscal pelo celular ou computador.</h2><p>O SGQ ERP prepara os dados da nota a partir do pedido, cliente e produtos. A autorização oficial é feita por um integrador fiscal conectado à SEFAZ, com certificado digital protegido no backend.</p><ul><li><Check/> NF-e modelo 55 para operações de mercadorias</li><li><Check/> NFC-e modelo 65 para venda ao consumidor</li><li><Check/> Preenchimento automático de cliente, itens, valores e natureza</li><li><Check/> Importação de XML recebido da contabilidade/fornecedor</li><li><Check/> Consulta por chave de acesso de 44 dígitos</li><li><Check/> Status: em preparação, enviada, autorizada, rejeitada ou cancelada</li><li><Check/> XML e DANFE disponíveis após retorno do integrador</li><li><Check/> Base preparada para Focus NFe, PlugNotas/TecnoSpeed ou Nuvem Fiscal</li></ul><a className="public-primary" href="/fiscal">Abrir apresentação do Fiscal <ArrowRight size={17}/></a></div><div className="phone-mock"><b>SGQ ERP</b><small>EMISSÃO FISCAL</small><h3>Nova NF-e</h3><label>Pedido <strong>PED-00482</strong></label><label>Cliente <strong>Metalúrgica Horizonte</strong></label><label>Itens <strong>4 produtos • R$ 18.450,00</strong></label><label>Modelo <strong>55 • NF-e</strong></label><a className="public-primary" href="/fiscal">Conhecer o fluxo <ArrowRight size={16}/></a></div></section>
-   <section id="recursos" className="public-section"><div className="section-heading"><span className="public-kicker">GESTÃO INTEGRADA</span><h2>Todos os recursos em uma única visão.</h2><p>Como no modelo que você gostou dos concorrentes: clique em um módulo no menu para vir direto ao recurso e veja abaixo o que cada área faz.</p></div><div className="module-cards">{resourceCards.map(([id,title,desc,points])=><article id={id} className="module-card resource-card" key={id}><div className="module-icon">{title.includes('Fiscal')?<FileText size={22}/>:title.includes('Manutenção')?<Wrench size={22}/>:title.includes('Produção')?<Factory size={22}/>:<Package size={22}/>}</div><h3>{title}</h3><p>{desc}</p><div className="resource-points">{points.map(x=><span key={x}>{x}</span>)}</div></article>)}</div></section>
-   <section id="por-dentro" className="public-section"><div className="section-heading"><span className="public-kicker">POR DENTRO</span><h2>Veja como o sistema aparece para o cliente.</h2></div><div className="inside-grid">{['Dashboard executivo','Produção / OP','Estoque / WMS','Qualidade / RPNC'].map((x,i)=><article className="screen-card" key={x}><div className="screen-bar"><b>{x}</b><span>● Online</span></div><div className="screen-body"><div className="mini-kpis"><i>{i===0?'OPs':'Status'} <b>{i===0?'24':'Ativo'}</b></i><i>{i===0?'OEE':'Registros'} <b>{i===0?'87%':'100%'}</b></i></div><div className="mini-lines"><span/><span/><span/></div></div></article>)}</div></section>
-   <section id="automacao" className="public-section automation-flow"><div className="section-heading"><span className="public-kicker">OUTLOOK → ERP → FISCAL</span><h2>Pipeline automático de pedidos.</h2><p>1. Captura do Outlook • 2. OCR/IA • 3. Supabase • 4. Aprovação • 5. Produção • 6. Faturamento fiscal.</p></div><div className="flow-steps"><Flow n="01" t="Captura" d="Microsoft Graph identifica e-mail, remetente, assunto e anexos."/><Flow n="02" t="Leitura" d="OCR/IA transforma PDF, imagem ou texto em dados estruturados."/><Flow n="03" t="Supabase" d="Pedido entra em Pendentes com rastreabilidade e empresa correta."/><Flow n="04" t="Faturamento" d="Aprovação prepara produção, baixa de estoque e documento fiscal."/></div></section>
-   <section className="public-section reasons-section"><div className="section-heading"><span className="public-kicker">POR QUE TER UM ERP INDUSTRIAL?</span><h2>O sistema precisa ajudar sua indústria a enxergar antes do problema.</h2><p>Não queremos apenas cadastrar dados. A proposta é conectar a operação inteira para reduzir retrabalho, antecipar gargalos e transformar dados reais em decisão.</p></div><div className="module-cards">{reasons.map(([title,desc],i)=><article className="module-card" key={title}><div className="module-icon"><Check size={22}/></div><h3>{i+1}. {title}</h3><p>{desc}</p></article>)}</div><div className="section-heading reasons-bottom"><p><strong>Do chão de fábrica à diretoria:</strong> uma única visão para produção, estoque, compras, vendas, qualidade, manutenção, fiscal e financeiro.</p></div></section>
-   <section id="planos" className="public-section plans-section"><div className="section-heading"><span className="public-kicker">PLANOS</span><h2>Compare antes de contratar.</h2><p>O ponto importante não é só o que cada plano entrega. É também o trabalho manual e os recursos que você deixa de ter quando escolhe um plano menor.</p></div><div className="plans-grid">{plans.map(p=><article className={p.name==='Profissional'?'plan-card featured':'plan-card'} key={p.name}>{p.name==='Profissional'&&<span className="plan-badge">MAIS ESCOLHIDO</span>}<h3>{p.name}</h3><span className="plan-tag">{p.tag}</span><strong>{p.price}<small>/mês</small></strong><a href="/login">Começar teste <ArrowRight size={16}/></a><div className="plan-list"><b>✓ Você tem:</b><ul>{p.yes.map(x=><li key={x}><Check/> {x}</li>)}</ul></div><div className="plan-list missing"><b>✕ Você deixa de ter neste plano:</b>{p.no.length?<ul>{p.no.map(x=><li key={x}><X/> {x}</li>)}</ul>:<p>✓ Nenhuma limitação desta lista. Pacote completo.</p>}</div></article>)}</div></section>
-   <section className="public-section"><div className="section-heading"><span className="public-kicker">POR QUE SUBIR DE PLANO?</span><h2>Menos digitação. Mais automação. Mais controle.</h2></div><div className="automation-cards"><Card icon={<Mail/>} t="Plano menor" d="Mais etapas manuais, menos automações e menos recursos avançados disponíveis."/><Card icon={<Check/>} t="Plano Profissional" d="Mais planejamento, qualidade, manutenção e captura de pedidos."/><Card icon={<ShieldCheck/>} t="Plano Diamante" d="Fiscal, automação Outlook + IA/OCR, auditoria e fluxo completo de pedido ao faturamento."/><Card icon={<ArrowRight/>} t="Escala" d="A escolha do plano acompanha a complexidade da operação e reduz retrabalho."/></div></section>
-  </main>
-  <footer className="public-footer"><img src="/logo-industrial.svg" alt="SGQ ERP"/><span>FernandoSch_System • SGQ ERP</span><a href="/login">Acessar sistema</a></footer>
-  <button type="button" className="public-help" onClick={()=>setHelp(!help)}>{help?<X/>:'?'}<b>Ajuda IA</b></button>{help&&<div className="public-help-panel"><strong>Assistente SGQ ERP</strong><p>Ajuda rápida sobre fiscal, Outlook, produção, MRP e planos.</p><a href="/fiscal">Ver apresentação Fiscal</a><a href="#automacao">Ver automação</a><a href="#por-dentro">Ver telas</a><a href="#planos">Comparar planos</a></div>}
- </div>
+export default function PublicIndustrialHome() {
+  return <div className="public-industrial home-v2">
+    <header className="public-nav">
+      <a href="/" className="public-brand" aria-label="SGQ ERP"><img src="/logo-industrial.svg" alt="SGQ ERP" /></a>
+      <nav><a href="#modulos">Módulos</a><a href="#fluxo">Fluxo</a><a href="#seguranca">Segurança</a><a href="/blog">Conteúdos</a></nav>
+      <a className="nav-login" href="/login">Entrar <ArrowRight size={17}/></a>
+    </header>
+    <main>
+      <section className="public-hero">
+        <div className="hero-copy">
+          <span className="public-kicker">SGQ ERP • GESTÃO INDUSTRIAL</span>
+          <h1>Gestão industrial de ponta a ponta, em um único sistema.</h1>
+          <p>PCP, produção, estoque, qualidade, manutenção, financeiro e fiscal conectados aos mesmos dados da sua empresa.</p>
+          <div className="hero-actions"><a className="public-primary" href="/cadastro-empresa">Começar teste grátis <ArrowRight size={18}/></a><a className="public-secondary" href="/login">Já sou cliente</a></div>
+          <div className="hero-proof"><span><Check size={16}/> Dados separados por empresa</span><span><Smartphone size={16}/> Responsivo e PWA</span><span><ShieldCheck size={16}/> Auth + RLS</span></div>
+        </div>
+        <div className="dashboard-preview"><span className="public-kicker">FLUXO INDUSTRIAL</span><h3>Um processo conectado</h3><div className="preview-flow"><b>Pedido</b><i>→</i><b>PCP</b><i>→</i><b>Produção</b><i>→</i><b>Qualidade</b></div><div className="preview-flow"><b>Estoque</b><i>→</i><b>Expedição</b><i>→</i><b>Fiscal</b><i>→</i><b>Financeiro</b></div><small>Os indicadores dentro do ERP são alimentados pelo banco da empresa autenticada.</small></div>
+      </section>
+      <section id="modulos" className="public-section"><div className="section-heading"><span className="public-kicker">MÓDULOS</span><h2>O ERP acompanha a operação real da fábrica.</h2><p>Sem menus de demonstração e sem números inventados. Cada módulo leva para sua área correspondente.</p></div><div className="module-cards">{modules.map(([title,desc,href,Icon]) => <article className="module-card resource-card" key={title}><div className="module-icon"><Icon size={22}/></div><h3>{title}</h3><p>{desc}</p><a className="public-link" href={href}>Abrir módulo <ArrowRight size={15}/></a></article>)}</div></section>
+      <section id="fluxo" className="public-section automation-flow"><div className="section-heading"><span className="public-kicker">FLUXO INTEGRADO</span><h2>Do pedido ao resultado.</h2><p>Elimine redigitação e mantenha rastreabilidade entre departamentos.</p></div><div className="flow-steps"><Flow n="01" t="Pedido" d="Entrada comercial e cadastro do cliente/produto."/><Flow n="02" t="PCP" d="Planejamento, capacidade, materiais e ordens."/><Flow n="03" t="Produção" d="Apontamentos, perdas, paradas e acompanhamento."/><Flow n="04" t="Qualidade" d="Inspeções, RPNC, ações e evidências."/><Flow n="05" t="Expedição" d="Estoque, movimentações e rastreabilidade."/><Flow n="06" t="Fiscal / Financeiro" d="Processos fiscais e reflexos financeiros."/></div></section>
+      <section id="seguranca" className="public-section"><div className="section-heading"><span className="public-kicker">SEGURANÇA</span><h2>Cada empresa vê somente seus próprios dados.</h2><p>Supabase Auth, vínculo usuário/empresa, controle de acesso e RLS no banco.</p></div><div className="automation-cards"><Card t="Autenticação" d="Sessão persistente e validação antes das áreas protegidas."/><Card t="Multiempresa" d="Empresa e usuário são validados no backend."/><Card t="RLS" d="O banco aplica isolamento por empresa nas tabelas protegidas."/><Card t="Auditoria" d="Operações administrativas podem ser rastreadas."/></div></section>
+    </main>
+    <footer className="public-footer"><img src="/logo-industrial.svg" alt="SGQ ERP"/><span>SGQ ERP • Gestão Industrial</span><a href="/login">Acessar sistema</a></footer>
+  </div>
 }
-function Card({icon,t,d}:{icon:ReactNode;t:string;d:string}){return <article className="automation-card">{icon}<strong>{t}</strong><span>{d}</span></article>}
-function Flow({n,t,d}:{n:string;t:string;d:string}){return <article className="flow-step"><span>{n}</span><h3>{t}</h3><p>{d}</p></article>}
+function Card({t,d}:{t:string;d:string}) { return <article className="automation-card"><Workflow size={22}/><h3>{t}</h3><p>{d}</p></article> }
+function Flow({n,t,d}:{n:string;t:string;d:string}) { return <article className="flow-step"><b>{n}</b><h3>{t}</h3><p>{d}</p></article> }
