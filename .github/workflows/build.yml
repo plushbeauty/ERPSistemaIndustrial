@@ -17,24 +17,18 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
-
       - name: Instalar dependências
         run: npm install --no-audit --no-fund
-
       - name: TypeScript
         run: npm run type-check
-
       - name: Auditoria de interações
         run: npm run audit:interactions
-
       - name: Build de produção
         run: npm run build
