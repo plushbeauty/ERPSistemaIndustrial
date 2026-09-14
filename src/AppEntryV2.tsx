@@ -1,135 +1,936 @@
-import { Component, FormEvent, ReactNode, lazy, Suspense, useEffect, useState } from 'react'
-import { KeyRound, LogIn, UserPlus, Clock3 } from 'lucide-react'
-import type { Session } from '@supabase/supabase-js'
-import InfrastructureTrust from './components/InfrastructureTrust'
-import './styles/login-blog-fix.css'
-import './styles/forms-premium.css'
-import './styles/manual-usuario-2026.css'
-import { supabase, supabaseConfigurado } from './lib/supabaseClient'
+import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { supabase, supabaseConfigurado } from './lib/supabaseClient';
 
-const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
-const PublicIndustrialHome = lazy(() => import('./PublicIndustrialHome'))
-const Blog = lazy(() => import('./pages/Blog'))
-const Fiscal = lazy(() => import('./pages/Fiscal'))
-const FiscalPrevisaoCaixa = lazy(() => import('./pages/FiscalPrevisaoCaixa'))
-const Master = lazy(() => import('./pages/Master'))
-const PCPIndustrial = lazy(() => import('./pages/PCPIndustrial'))
-const QualidadeIndustrial = lazy(() => import('./pages/QualidadeIndustrial'))
-const OperacaoIndustrial = lazy(() => import('./pages/OperacaoIndustrial'))
-const ProdutosVendasIndustrial = lazy(() => import('./pages/ProdutosVendasIndustrial'))
-const CadastroEmpresa = lazy(() => import('./pages/CadastroEmpresa'))
-const SolicitacaoCompra = lazy(() => import('./pages/SolicitacaoCompra'))
-const TesteERP = lazy(() => import('./pages/TesteERP'))
-const UsuariosAdmin = lazy(() => import('./pages/UsuariosAdmin'))
-const DocumentosQualidadeControle = lazy(() => import('./pages/DocumentosQualidadeControle'))
-const ManualUsuario = lazy(() => import('./pages/ManualUsuario'))
-const VirtualGuide = lazy(() => import('./components/VirtualGuide'))
+const AppIndustrialV7 = lazy(() => import('./AppIndustrialV7'));
+const PublicIndustrialHome = lazy(() => import('./pages/PublicIndustrialHome'));
+const Blog = lazy(() => import('./pages/Blog'));
+const Fiscal = lazy(() => import('./pages/Fiscal'));
+const FiscalPrevisaoCaixa = lazy(() => import('./pages/FiscalPrevisaoCaixa'));
+const Master = lazy(() => import('./pages/Master'));
+const PCPIndustrial = lazy(() => import('./pages/PCPIndustrial'));
+const QualidadeIndustrial = lazy(() => import('./pages/QualidadeIndustrial'));
+const OperacaoIndustrial = lazy(() => import('./pages/OperacaoIndustrial'));
+const ProdutosVendasIndustrial = lazy(() => import('./pages/ProdutosVendasIndustrial'));
+const CadastroEmpresa = lazy(() => import('./pages/CadastroEmpresa'));
+const SolicitacaoCompra = lazy(() => import('./pages/SolicitacaoCompra'));
+const TesteERP = lazy(() => import('./pages/TesteERP'));
+const UsuariosAdmin = lazy(() => import('./pages/UsuariosAdmin'));
+const DocumentosQualidadeControle = lazy(
+  () => import('./pages/DocumentosQualidadeControle')
+);
+const ManualUsuario = lazy(() => import('./pages/ManualUsuario'));
+const VirtualGuide = lazy(() => import('./pages/VirtualGuide'));
 
-type AccessResult={ok:boolean;master:boolean;reason:string}
-type LoginResponse={session?:Session;profile?:{id:string;empresa_id:string;nivel_admin:number};error?:string}
+type ERPUsuario = {
+  id: string;
+  empresa_id: string;
+  auth_user_id: string | null;
+  nome: string;
+  email: string | null;
+  login_nome?: string | null;
+  nivel_admin: number | null;
+  ativo: boolean;
+  setor_id?: string | null;
+  cargo_id?: string | null;
+  matricula?: string | null;
+};
 
-class Boundary extends Component<{children:ReactNode},{error:Error|null}>{
-  state={error:null as Error|null}
-  static getDerivedStateFromError(error:Error){return{error}}
-  render(){
-    if(this.state.error)return <div className="error-screen"><div className="error-screen-card"><strong>Erro ao abrir a tela.</strong><p>{this.state.error.message}</p><button className="primary" type="button" onClick={()=>location.reload()}>Recarregar</button></div></div>
-    return this.props.children
+type ERPEmpresa = {
+  id: string;
+  codigo?: string | null;
+  nome_fantasia?: string | null;
+  razao_social?: string | null;
+  ativo?: boolean | null;
+  status?: string | null;
+};
+
+type AuthenticatedERP = {
+  authUserId: string;
+  usuario: ERPUsuario;
+  empresa: ERPEmpresa;
+};
+
+function LoadingScreen() {
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#f3f5f4',
+        color: '#16352d',
+        fontFamily: 'Arial, sans-serif',
+      }}
+    >
+      <div style={{ textAlign: 'center' }}>
+        <div
+          style={{
+            width: 42,
+            height: 42,
+            border: '4px solid #d8e1dd',
+            borderTopColor: '#16856d',
+            borderRadius: '50%',
+            margin: '0 auto 16px',
+            animation: 'erp-spin 0.8s linear infinite',
+          }}
+        />
+        <strong>Carregando SGQ ERP Industrial...</strong>
+
+        <style>
+          {`
+            @keyframes erp-spin {
+              to { transform: rotate(360deg); }
+            }
+          `}
+        </style>
+      </div>
+    </div>
+  );
+}
+
+function ErrorScreen({ message }: { message: string }) {
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+        background: '#f3f5f4',
+        fontFamily: 'Arial, sans-serif',
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          maxWidth: 620,
+          background: '#fff',
+          borderRadius: 16,
+          padding: 32,
+          boxShadow: '0 10px 35px rgba(0,0,0,.08)',
+          border: '1px solid #dfe7e3',
+        }}
+      >
+        <h2 style={{ marginTop: 0, color: '#16352d' }}>
+          Não foi possível carregar o ERP
+        </h2>
+
+        <p style={{ color: '#53615c', lineHeight: 1.6 }}>
+          O sistema encontrou um problema ao carregar este ambiente.
+        </p>
+
+        <div
+          style={{
+            marginTop: 20,
+            padding: 16,
+            borderRadius: 10,
+            background: '#fff4f2',
+            color: '#8b2c20',
+            fontSize: 14,
+            whiteSpace: 'pre-wrap',
+          }}
+        >
+          {message}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          style={{
+            marginTop: 22,
+            border: 0,
+            borderRadius: 10,
+            padding: '12px 20px',
+            background: '#16856d',
+            color: '#fff',
+            cursor: 'pointer',
+            fontWeight: 700,
+          }}
+        >
+          Tentar novamente
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AuthLoading() {
+  return <LoadingScreen />;
+}
+
+async function buscarUsuarioERP(
+  authUserId: string
+): Promise<AuthenticatedERP> {
+  const { data: usuario, error: usuarioError } = await supabase
+    .from('erp_usuarios')
+    .select(
+      `
+        id,
+        empresa_id,
+        auth_user_id,
+        nome,
+        email,
+        login_nome,
+        nivel_admin,
+        ativo,
+        setor_id,
+        cargo_id,
+        matricula
+      `
+    )
+    .eq('auth_user_id', authUserId)
+    .maybeSingle();
+
+  if (usuarioError) {
+    throw new Error(
+      `Não foi possível consultar o usuário ERP: ${usuarioError.message}`
+    );
+  }
+
+  if (!usuario) {
+    throw new Error(
+      'Seu usuário do Supabase Auth não está vinculado a um usuário do ERP.'
+    );
+  }
+
+  if (!usuario.ativo) {
+    throw new Error('Este usuário está inativo no ERP.');
+  }
+
+  const { data: empresa, error: empresaError } = await supabase
+    .from('erp_empresas')
+    .select(
+      `
+        id,
+        codigo,
+        nome_fantasia,
+        razao_social,
+        ativo,
+        status
+      `
+    )
+    .eq('id', usuario.empresa_id)
+    .maybeSingle();
+
+  if (empresaError) {
+    throw new Error(
+      `Não foi possível consultar a empresa do usuário: ${empresaError.message}`
+    );
+  }
+
+  if (!empresa) {
+    throw new Error(
+      'A empresa vinculada ao usuário não foi encontrada no ERP.'
+    );
+  }
+
+  if (empresa.ativo === false) {
+    throw new Error('A empresa vinculada ao usuário está inativa.');
+  }
+
+  return {
+    authUserId,
+    usuario,
+    empresa,
+  };
+}
+
+async function autenticarERP(
+  email: string,
+  password: string
+): Promise<AuthenticatedERP> {
+  if (!supabaseConfigurado) {
+    throw new Error(
+      'O Supabase não está configurado neste ambiente. Configure VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY na Vercel e faça um novo deploy.'
+    );
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+
+  if (!normalizedEmail) {
+    throw new Error('Informe seu e-mail.');
+  }
+
+  if (!password) {
+    throw new Error('Informe sua senha.');
+  }
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: normalizedEmail,
+    password,
+  });
+
+  if (error) {
+    throw new Error(
+      error.message === 'Invalid login credentials'
+        ? 'E-mail ou senha inválidos.'
+        : error.message
+    );
+  }
+
+  if (!data.user) {
+    throw new Error('O Supabase não retornou o usuário autenticado.');
+  }
+
+  try {
+    return await buscarUsuarioERP(data.user.id);
+  } catch (error) {
+    await supabase.auth.signOut();
+    throw error;
   }
 }
 
-function LoadingSkeleton({label='Carregando SGQ ERP…'}:{label?:string}){return <div className="loading-screen" role="status" aria-live="polite"><div className="loading-skeleton-card"><div className="loading-skeleton-brand"/><div className="loading-skeleton-line wide"/><div className="loading-skeleton-line"/><div className="loading-skeleton-line short"/><span>{label}</span></div></div>}
-function lazyFallback(){return <LoadingSkeleton/>}
-function trialExpired(ends:string|null,status:string|null){return!!ends&&Date.now()>=new Date(ends).getTime()&&status!=='ativo'}
+function LoginPage() {
+  const navigate = useNavigate();
 
-async function validarAcessoERP(authUserId:string):Promise<AccessResult>{
-  const{data:u,error}=await supabase.from('erp_usuarios').select('id,empresa_id,ativo,nivel_admin,is_master').eq('auth_user_id',authUserId).is('deleted_at',null).maybeSingle()
-  if(error)throw error
-  if(!u||u.ativo===false)return{ok:false,master:false,reason:'Este acesso não está vinculado a um usuário ativo do ERP.'}
-  const master=Boolean(u.is_master)||Number(u.nivel_admin)>=9
-  if(master)return{ok:true,master:true,reason:''}
-  const{data:e,error:ee}=await supabase.from('erp_empresas').select('ativo,plano_status,trial_ends_at').eq('id',u.empresa_id).maybeSingle()
-  if(ee)throw ee
-  if(e?.ativo===false)return{ok:false,master:false,reason:'O acesso desta empresa está bloqueado.'}
-  if(trialExpired(e?.trial_ends_at??null,e?.plano_status??null))return{ok:false,master:false,reason:'Seu teste gratuito terminou. Ative seu plano para continuar.'}
-  return{ok:true,master:false,reason:''}
-}
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [empresa, setEmpresa] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-function safeReturnTo(value:string|null){if(!value||!value.startsWith('/')||value.startsWith('//')||value.startsWith('/login'))return'/erp-industrial';return value}
-function requestedTarget(){return safeReturnTo(new URLSearchParams(location.search).get('returnTo'))}
+  const handleLogin = async (event: React.FormEvent) => {
+    event.preventDefault();
 
-async function autenticarERP(empresa:string,identificador:string,senha:string):Promise<LoginResponse>{
-  const payload={empresa:empresa.trim(),identificador:identificador.trim(),senha}
-  const{data,error}=await supabase.functions.invoke('erp-login',{body:payload})
-  if(error)throw new Error('Não foi possível conectar ao serviço de autenticação do ERP.')
-  const result=(data??{}) as {session?:Session;profile?:{id:string;empresa_id:string;nivel_admin:number};error?:string}
-  if(result.error||!result.session||!result.profile)throw new Error(result.error||'Empresa, usuário ou senha inválidos.')
-  return{session:result.session,profile:result.profile}
-}
+    setLoading(true);
+    setErrorMessage('');
 
-function Login(){
-  const[id,setId]=useState(''),[empresa,setEmpresa]=useState(''),[pw,setPw]=useState(''),[err,setErr]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[recovery,setRecovery]=useState(false)
-  async function submit(e:FormEvent){
-    e.preventDefault();setErr('');setNotice('');setBusy(true)
-    try{
-      if(!supabaseConfigurado)throw new Error('A conexão do sistema com o banco não está configurada.')
-      if(!empresa.trim()||!id.trim()||!pw)throw new Error('Informe empresa, usuário/e-mail e senha.')
-      const loginResult=await autenticarERP(empresa,id,pw)
-      const{error:sessionError}=await supabase.auth.setSession(loginResult.session!)
-      if(sessionError)throw sessionError
-      const authUser=(await supabase.auth.getUser()).data.user
-      if(!authUser)throw new Error('Não foi possível validar a sessão.')
-      const access=await validarAcessoERP(authUser.id)
-      if(!access.ok){await supabase.auth.signOut();throw new Error(access.reason)}
-      location.href=requestedTarget()
-    }catch(e){setErr(e instanceof Error?e.message:'Não foi possível entrar no sistema.')}finally{setBusy(false)}
+    try {
+      /*
+       * O campo empresa continua visível para o usuário,
+       * mas a autenticação de identidade é feita exclusivamente
+       * pelo Supabase Auth usando e-mail + senha.
+       *
+       * A empresa real é obtida depois pelo vínculo:
+       *
+       * auth.users.id
+       *      ↓
+       * erp_usuarios.auth_user_id
+       *      ↓
+       * erp_usuarios.empresa_id
+       *      ↓
+       * erp_empresas.id
+       */
+      void empresa;
+
+      await autenticarERP(email, password);
+
+      navigate('/erp-industrial', { replace: true });
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível realizar o login.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRecovery = async () => {
+    setErrorMessage('');
+
+    if (!email.trim()) {
+      setErrorMessage('Informe seu e-mail para recuperar a senha.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        email.trim().toLowerCase(),
+        {
+          redirectTo: `${window.location.origin}/login`,
+        }
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      setErrorMessage(
+        'Se o e-mail estiver cadastrado, as instruções de recuperação serão enviadas.'
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível solicitar a recuperação.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!supabaseConfigurado) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'grid',
+          placeItems: 'center',
+          padding: 24,
+          background: '#edf2f0',
+          fontFamily: 'Arial, sans-serif',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 620,
+            width: '100%',
+            background: '#fff',
+            borderRadius: 18,
+            padding: 34,
+            boxShadow: '0 15px 45px rgba(0,0,0,.08)',
+          }}
+        >
+          <h1 style={{ color: '#16352d', marginTop: 0 }}>
+            SGQ ERP INDUSTRIAL
+          </h1>
+
+          <h3>Configuração do ambiente pendente</h3>
+
+          <p style={{ lineHeight: 1.6, color: '#596660' }}>
+            O sistema está carregado, mas as credenciais públicas do Supabase
+            ainda não foram disponibilizadas para este deploy.
+          </p>
+
+          <p style={{ lineHeight: 1.6, color: '#596660' }}>
+            Configure na Vercel:
+          </p>
+
+          <ul style={{ lineHeight: 1.8 }}>
+            <li>
+              <strong>VITE_SUPABASE_URL</strong>
+            </li>
+            <li>
+              <strong>VITE_SUPABASE_PUBLISHABLE_KEY</strong>
+            </li>
+          </ul>
+
+          <p style={{ color: '#596660', fontSize: 14 }}>
+            Depois faça um novo deploy.
+          </p>
+        </div>
+      </div>
+    );
   }
-  async function resetPassword(){
-    setErr('');setNotice('');const email=id.trim().toLowerCase()
-    if(!email||!email.includes('@')){setErr('Para recuperar a senha, informe o e-mail cadastrado.');return}
-    setBusy(true)
-    try{const r=await supabase.auth.resetPasswordForEmail(email,{redirectTo:`${location.origin}/login`});if(r.error)throw r.error;setNotice('Se o e-mail estiver cadastrado, o link de recuperação será enviado.');setRecovery(false)}catch(e){setErr(e instanceof Error?e.message:'Não foi possível solicitar a recuperação.')}finally{setBusy(false)}
+
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1.1fr) minmax(420px, .9fr)',
+        background: '#10231f',
+        fontFamily: 'Arial, sans-serif',
+      }}
+    >
+      <section
+        style={{
+          padding: '60px 7vw',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          color: '#fff',
+          background:
+            'linear-gradient(135deg, #10231f 0%, #163b32 55%, #0d2923 100%)',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 640,
+          }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              padding: '8px 14px',
+              borderRadius: 999,
+              border: '1px solid rgba(255,255,255,.15)',
+              background: 'rgba(255,255,255,.06)',
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: 1,
+              marginBottom: 24,
+            }}
+          >
+            PORTAL SEGURO
+          </div>
+
+          <h1
+            style={{
+              fontSize: 'clamp(34px, 5vw, 64px)',
+              lineHeight: 1.02,
+              margin: 0,
+              letterSpacing: -2,
+            }}
+          >
+            O controle da fábrica em um único sistema.
+          </h1>
+
+          <p
+            style={{
+              fontSize: 18,
+              lineHeight: 1.7,
+              color: '#c9d7d2',
+              maxWidth: 560,
+              marginTop: 26,
+            }}
+          >
+            Produção, qualidade, PCP, estoque, RH, manutenção, documentos e
+            gestão industrial integrados.
+          </p>
+        </div>
+      </section>
+
+      <section
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 32,
+          background: '#f5f7f6',
+        }}
+      >
+        <div
+          style={{
+            width: '100%',
+            maxWidth: 470,
+            background: '#fff',
+            borderRadius: 22,
+            padding: 38,
+            boxShadow: '0 20px 60px rgba(0,0,0,.12)',
+            border: '1px solid #e2e9e6',
+          }}
+        >
+          <div style={{ marginBottom: 30 }}>
+            <div
+              style={{
+                fontSize: 12,
+                fontWeight: 800,
+                letterSpacing: 1.2,
+                color: '#16856d',
+                marginBottom: 10,
+              }}
+            >
+              SGQ ERP INDUSTRIAL
+            </div>
+
+            <h2
+              style={{
+                margin: 0,
+                color: '#16352d',
+                fontSize: 30,
+              }}
+            >
+              Acesse seu ERP
+            </h2>
+
+            <p style={{ color: '#68756f', lineHeight: 1.5 }}>
+              Entre com seu e-mail corporativo e sua senha.
+            </p>
+          </div>
+
+          <form onSubmit={handleLogin}>
+            <label
+              style={{
+                display: 'block',
+                fontSize: 13,
+                fontWeight: 700,
+                color: '#33423d',
+                marginBottom: 7,
+              }}
+            >
+              Empresa
+            </label>
+
+            <input
+              value={empresa}
+              onChange={(event) => setEmpresa(event.target.value)}
+              placeholder="Código ou nome da empresa"
+              autoComplete="organization"
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                border: '1px solid #d5dfdb',
+                borderRadius: 10,
+                padding: '13px 14px',
+                marginBottom: 16,
+                outline: 'none',
+              }}
+            />
+
+            <label
+              style={{
+                display: 'block',
+                fontSize: 13,
+                fontWeight: 700,
+                color: '#33423d',
+                marginBottom: 7,
+              }}
+            >
+              E-mail
+            </label>
+
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="seu@email.com"
+              autoComplete="username"
+              required
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                border: '1px solid #d5dfdb',
+                borderRadius: 10,
+                padding: '13px 14px',
+                marginBottom: 16,
+                outline: 'none',
+              }}
+            />
+
+            <label
+              style={{
+                display: 'block',
+                fontSize: 13,
+                fontWeight: 700,
+                color: '#33423d',
+                marginBottom: 7,
+              }}
+            >
+              Senha
+            </label>
+
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Digite sua senha"
+              autoComplete="current-password"
+              required
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                border: '1px solid #d5dfdb',
+                borderRadius: 10,
+                padding: '13px 14px',
+                marginBottom: 18,
+                outline: 'none',
+              }}
+            />
+
+            {errorMessage && (
+              <div
+                role="alert"
+                style={{
+                  padding: 13,
+                  borderRadius: 10,
+                  background: '#fff1ef',
+                  color: '#9a3024',
+                  fontSize: 14,
+                  lineHeight: 1.5,
+                  marginBottom: 18,
+                }}
+              >
+                {errorMessage}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: '100%',
+                border: 0,
+                borderRadius: 11,
+                padding: '14px 18px',
+                background: loading ? '#7da99d' : '#16856d',
+                color: '#fff',
+                fontWeight: 800,
+                cursor: loading ? 'wait' : 'pointer',
+                fontSize: 15,
+              }}
+            >
+              {loading ? 'Entrando...' : 'Entrar no sistema'}
+            </button>
+          </form>
+
+          <button
+            type="button"
+            onClick={handleRecovery}
+            disabled={loading}
+            style={{
+              width: '100%',
+              border: 0,
+              background: 'transparent',
+              color: '#16856d',
+              marginTop: 18,
+              cursor: 'pointer',
+              fontWeight: 700,
+            }}
+          >
+            Esqueci minha senha
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate('/cadastro-empresa')}
+            style={{
+              width: '100%',
+              border: '1px solid #d5dfdb',
+              borderRadius: 11,
+              padding: '13px 18px',
+              background: '#fff',
+              color: '#16352d',
+              marginTop: 12,
+              cursor: 'pointer',
+              fontWeight: 700,
+            }}
+          >
+            Cadastrar nova empresa
+          </button>
+
+          <div
+            style={{
+              textAlign: 'center',
+              marginTop: 24,
+              fontSize: 11,
+              color: '#89958f',
+            }}
+          >
+            FernandoSch_System
+          </div>
+        </div>
+      </section>
+
+      <style>
+        {`
+          @media (max-width: 900px) {
+            body {
+              margin: 0;
+            }
+          }
+        `}
+      </style>
+    </div>
+  );
+}
+
+function ProtectedERP() {
+  return <AppIndustrialV7 />;
+}
+
+function MasterRoute() {
+  return <Master />;
+}
+
+function GenericLazyPage({
+  Component,
+}: {
+  Component: React.LazyExoticComponent<React.ComponentType<any>>;
+}) {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <Component />
+    </Suspense>
+  );
+}
+
+function AppRouter() {
+  const location = useLocation();
+
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [sessionExists, setSessionExists] = useState(false);
+  const [erpUser, setErpUser] = useState<AuthenticatedERP | null>(null);
+  const [authError, setAuthError] = useState('');
+
+  const refreshAuth = useCallback(async () => {
+    if (!supabaseConfigurado) {
+      setCheckingAuth(false);
+      setSessionExists(false);
+      setErpUser(null);
+      return;
+    }
+
+    setCheckingAuth(true);
+    setAuthError('');
+
+    try {
+      const { data, error } = await supabase.auth.getSession();
+
+      if (error) {
+        throw error;
+      }
+
+      const session = data.session;
+
+      if (!session?.user) {
+        setSessionExists(false);
+        setErpUser(null);
+        return;
+      }
+
+      try {
+        const authenticated = await buscarUsuarioERP(session.user.id);
+
+        setSessionExists(true);
+        setErpUser(authenticated);
+      } catch (error) {
+        await supabase.auth.signOut();
+
+        setSessionExists(false);
+        setErpUser(null);
+
+        setAuthError(
+          error instanceof Error
+            ? error.message
+            : 'Usuário autenticado, mas não vinculado ao ERP.'
+        );
+      }
+    } catch (error) {
+      setSessionExists(false);
+      setErpUser(null);
+
+      setAuthError(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível verificar a sessão.'
+      );
+    } finally {
+      setCheckingAuth(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshAuth();
+
+    if (!supabaseConfigurado) {
+      return;
+    }
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async () => {
+      await refreshAuth();
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [refreshAuth]);
+
+  if (checkingAuth) {
+    return <AuthLoading />;
   }
-  return <main className="login-page"><section className="login-art" aria-label="Apresentação do SGQ ERP"><img src="/images/sgq/sgq-erp-login.png" alt="SGQ ERP — Gestão Industrial"/><div className="login-art-overlay"><div className="login-art-copy"><span className="login-eyebrow">SGQ ERP INDUSTRIAL</span><h2>O controle da fábrica em um único sistema.</h2><p>Produção, qualidade, PCP, estoque, manutenção, financeiro e gestão integrados por empresa.</p><div className="login-feature-pills"><span>● Produção</span><span>● Qualidade</span><span>● PCP</span><span>● Estoque</span></div></div><InfrastructureTrust/></div></section><form className="login-card" onSubmit={submit}><div className="login-brand"><a className="login-brand-logo" href="/login" aria-label="SGQ ERP"><img className="login-logo-large" src="/logo-industrial.svg" alt="SGQ ERP"/></a><span className="login-kicker">PORTAL SEGURO</span><h1>Acesse seu SGQ ERP</h1><p>Entre com suas credenciais para acessar a operação da sua empresa.</p></div><div className="login-fields"><label>Empresa<input value={empresa} onChange={e=>setEmpresa(e.target.value)} placeholder="Ex.: PLASTIBOR" autoComplete="organization" required/></label><label>Usuário ou e-mail<input value={id} onChange={e=>setId(e.target.value)} placeholder="Digite seu usuário ou e-mail" autoComplete="username" required/></label><label>Senha<div className="password-input"><input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="Digite sua senha" autoComplete="current-password" required/><KeyRound size={18}/></div></label></div>{err&&<div className="error" role="alert">{err}</div>}{notice&&<div className="notice" role="status">{notice}</div>}{!recovery?<><button className="primary full login-submit" disabled={busy}>{busy?'Entrando…':'Entrar no sistema'} <LogIn size={18}/></button><div className="login-actions-row"><a className="trial-login-button" href="/cadastro-empresa"><Clock3 size={17}/> Teste grátis 15 dias</a><button type="button" className="login-forgot" disabled={busy} onClick={()=>setRecovery(true)}>Esqueci minha senha</button></div><a className="signup-login-link" href="/cadastro-empresa"><UserPlus size={18}/> Cadastrar nova empresa</a></>:<><button type="button" className="primary full" disabled={busy} onClick={()=>void resetPassword()}>{busy?'Enviando…':'Enviar recuperação'}</button><button type="button" className="secondary full" disabled={busy} onClick={()=>setRecovery(false)}>Voltar ao login</button></>}<a className="login-back" href="/">Voltar para o site</a><small className="login-watermark">FernandoSch_System</small></form></main>
+
+  if (location.pathname === '/login') {
+    if (sessionExists) {
+      return <Navigate to="/erp-industrial" replace />;
+    }
+
+    return <LoginPage />;
+  }
+
+  if (location.pathname === '/cadastro-empresa') {
+    return <GenericLazyPage Component={CadastroEmpresa} />;
+  }
+
+  if (
+    location.pathname === '/' ||
+    location.pathname === '/home' ||
+    location.pathname === '/inicio'
+  ) {
+    if (sessionExists) {
+      return <Navigate to="/erp-industrial" replace />;
+    }
+
+    return <GenericLazyPage Component={PublicIndustrialHome} />;
+  }
+
+  if (location.pathname === '/blog') {
+    return <GenericLazyPage Component={Blog} />;
+  }
+
+  if (location.pathname === '/teste-erp') {
+    return <GenericLazyPage Component={TesteERP} />;
+  }
+
+  if (!sessionExists || !erpUser) {
+    if (authError) {
+      return <ErrorScreen message={authError} />;
+    }
+
+    return <Navigate to="/login" replace />;
+  }
+
+  if (location.pathname === '/master') {
+    const nivel = Number(erpUser.usuario.nivel_admin ?? 0);
+
+    if (nivel < 9) {
+      return <Navigate to="/erp-industrial" replace />;
+    }
+
+    return <MasterRoute />;
+  }
+
+  switch (location.pathname) {
+    case '/erp-industrial':
+      return <ProtectedERP />;
+
+    case '/fiscal':
+      return <GenericLazyPage Component={Fiscal} />;
+
+    case '/fiscal/previsao-caixa':
+      return <GenericLazyPage Component={FiscalPrevisaoCaixa} />;
+
+    case '/pcp':
+    case '/pcp-industrial':
+      return <GenericLazyPage Component={PCPIndustrial} />;
+
+    case '/qualidade':
+    case '/qualidade-industrial':
+      return <GenericLazyPage Component={QualidadeIndustrial} />;
+
+    case '/operacao':
+    case '/operacao-industrial':
+      return <GenericLazyPage Component={OperacaoIndustrial} />;
+
+    case '/produtos-vendas':
+      return <GenericLazyPage Component={ProdutosVendasIndustrial} />;
+
+    case '/solicitacao-compra':
+      return <GenericLazyPage Component={SolicitacaoCompra} />;
+
+    case '/usuarios':
+    case '/usuarios-admin':
+      return <GenericLazyPage Component={UsuariosAdmin} />;
+
+    case '/documentos-qualidade':
+      return <GenericLazyPage Component={DocumentosQualidadeControle} />;
+
+    case '/manual':
+    case '/manual-usuario':
+      return <GenericLazyPage Component={ManualUsuario} />;
+
+    case '/guia':
+    case '/virtual-guide':
+      return <GenericLazyPage Component={VirtualGuide} />;
+
+    default:
+      return <Navigate to="/erp-industrial" replace />;
+  }
 }
 
-function ERP(){
-  const[valid,setValid]=useState<boolean|null>(null)
-  useEffect(()=>{let alive=true;void supabase.auth.getUser().then(async({data})=>{if(!data.user){if(alive)setValid(false);return}const access=await validarAcessoERP(data.user.id);if(!alive)return;if(!access.ok){void supabase.auth.signOut();location.href='/login';return}setValid(true)}).catch(()=>{if(alive)setValid(false)});return()=>{alive=false}},[])
-  if(valid===null)return <LoadingSkeleton label="Validando acesso…"/>
-  if(valid===false)return <Login/>
-  return <Suspense fallback={<LoadingSkeleton/>}><AppIndustrial/><VirtualGuide brand="SGQ ERP" name="Dri"/></Suspense>
-}
-
-function Protected({children,masterOnly=false}:{children:ReactNode;masterOnly?:boolean}){
-  const[state,setState]=useState<'checking'|'allowed'|'denied'>('checking')
-  useEffect(()=>{let alive=true;void supabase.auth.getUser().then(async({data})=>{if(!data.user){if(alive)setState('denied');return}const access=await validarAcessoERP(data.user.id);if(!alive)return;if(!access.ok||(masterOnly&&!access.master)){void supabase.auth.signOut();setState('denied');return}setState('allowed')}).catch(()=>{if(alive)setState('denied')});return()=>{alive=false}},[masterOnly])
-  if(state==='checking')return <LoadingSkeleton label="Validando permissões…"/>
-  if(state==='denied'){const target=encodeURIComponent(location.pathname+location.search);return <LoginRedirect target={target}/>}
-  return <Boundary>{children}</Boundary>
-}
-function LoginRedirect({target}:{target:string}){useEffect(()=>{const safe=safeReturnTo(decodeURIComponent(target));if(location.pathname!=='/login')location.replace(`/login?returnTo=${encodeURIComponent(safe)}`)},[target]);return <LoadingSkeleton label="Redirecionando para o login…"/>}
-
-export default function AppEntryV2(){
-  const[path,setPath]=useState(location.pathname),[session,setSession]=useState<Session|null>(null),[checking,setChecking]=useState(true)
-  useEffect(()=>{void supabase.auth.getSession().then(({data})=>{setSession(data.session);setChecking(false)}).catch(()=>setChecking(false));const s=supabase.auth.onAuthStateChange((_e,x)=>setSession(x));return()=>s.data.subscription.unsubscribe()},[])
-  useEffect(()=>{const f=()=>setPath(location.pathname);addEventListener('popstate',f);return()=>removeEventListener('popstate',f)},[])
-  if(path==='/'||path==='/home')return <Boundary><Suspense fallback={<LoadingSkeleton/>}>{session?<ERP/>:<Login/>}</Suspense></Boundary>
-  if(checking)return <LoadingSkeleton/>
-  if(path==='/login')return session?<ERP/>:<Login/>
-  if(path==='/cadastro-empresa')return <Boundary><Suspense fallback={lazyFallback()}><CadastroEmpresa/></Suspense></Boundary>
-  if(path==='/blog')return <Boundary><Suspense fallback={lazyFallback()}><Blog/></Suspense></Boundary>
-  if(path==='/erp-industrial')return <Protected><ERP/></Protected>
-  if(path==='/master')return <Protected masterOnly><Suspense fallback={lazyFallback()}><Master/></Suspense></Protected>
-  if(path==='/usuarios')return <Protected><Suspense fallback={lazyFallback()}><UsuariosAdmin/></Suspense></Protected>
-  if(path==='/pcp')return <Protected><Suspense fallback={lazyFallback()}><PCPIndustrial/></Suspense></Protected>
-  if(path==='/operacao-industrial')return <Protected><Suspense fallback={lazyFallback()}><OperacaoIndustrial/></Suspense></Protected>
-  if(path==='/produtos-vendas')return <Protected><Suspense fallback={lazyFallback()}><ProdutosVendasIndustrial/></Suspense></Protected>
-  if(path==='/qualidade')return <Protected><Suspense fallback={lazyFallback()}><QualidadeIndustrial/></Suspense></Protected>
-  if(path==='/qualidade/documentos')return <Protected><Suspense fallback={lazyFallback()}><DocumentosQualidadeControle/></Suspense></Protected>
-  if(path==='/manual-usuario')return <Protected><Suspense fallback={lazyFallback()}><ManualUsuario/></Suspense></Protected>
-  if(path==='/compras-solicitacao')return <Protected><Suspense fallback={lazyFallback()}><SolicitacaoCompra/></Suspense></Protected>
-  if(path==='/fiscal')return <Protected><Suspense fallback={lazyFallback()}><Fiscal/></Suspense></Protected>
-  if(path==='/fiscal/previsao-caixa')return <Protected><Suspense fallback={lazyFallback()}><FiscalPrevisaoCaixa/></Suspense></Protected>
-  if(path==='/teste-erp')return <Protected><Suspense fallback={lazyFallback()}><TesteERP/></Suspense></Protected>
-  return <Boundary><Suspense fallback={<LoadingSkeleton/>}>{session?<ERP/>:<Login/>}</Suspense></Boundary>
+export default function AppEntryV2() {
+  return (
+    <React.Suspense fallback={<LoadingScreen />}>
+      <AppRouter />
+    </React.Suspense>
+  );
 }
