@@ -5,6 +5,7 @@ import InfrastructureTrust from './components/InfrastructureTrust'
 import './styles/login-blog-fix.css'
 import './styles/forms-premium.css'
 import './styles/manual-usuario-2026.css'
+import './styles/public-contact.css'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
@@ -54,7 +55,7 @@ async function validarAcessoERP(authUserId: string): Promise<AccessResult> {
   if (ee) throw ee
   if (e?.ativo === false) return { ok: false, master: false, reason: 'O acesso desta empresa está bloqueado.' }
   if (trialExpired(e?.trial_ends_at ?? null, e?.plano_status ?? null)) return { ok: false, master: false, reason: 'Seu teste gratuito terminou. Ative seu plano para continuar.' }
-  return { ok: true, master: false, reason: '' }
+  return { ok: true, master, reason: '' }
 }
 
 function safeReturnTo(value: string | null) {
@@ -70,7 +71,6 @@ function Login() {
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
   const [recovery, setRecovery] = useState(false)
-
   async function submit(e: FormEvent) {
     e.preventDefault(); setErr(''); setNotice(''); setBusy(true)
     try {
@@ -82,39 +82,18 @@ function Login() {
       const access = await validarAcessoERP(data.user.id)
       if (!access.ok) { await supabase.auth.signOut(); throw new Error(access.reason) }
       location.replace(requestedTarget())
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Não foi possível entrar no sistema.')
-    } finally { setBusy(false) }
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Não foi possível entrar no sistema.') }
+    finally { setBusy(false) }
   }
-
   async function resetPassword() {
     setErr(''); setNotice(''); const target = email.trim().toLowerCase()
     if (!target || !target.includes('@')) { setErr('Informe o e-mail cadastrado para recuperar a senha.'); return }
     setBusy(true)
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(target, { redirectTo: `${location.origin}/login` })
-      if (error) throw error
-      setNotice('Se o e-mail estiver cadastrado, o link de recuperação será enviado.'); setRecovery(false)
-    } catch (e) { setErr(e instanceof Error ? e.message : 'Não foi possível solicitar a recuperação.') }
+    try { const { error } = await supabase.auth.resetPasswordForEmail(target, { redirectTo: `${location.origin}/login` }); if (error) throw error; setNotice('Se o e-mail estiver cadastrado, o link de recuperação será enviado.'); setRecovery(false) }
+    catch (e) { setErr(e instanceof Error ? e.message : 'Não foi possível solicitar a recuperação.') }
     finally { setBusy(false) }
   }
-
-  return <main className="login-page">
-    <section className="login-art" aria-label="Apresentação do SGQ ERP">
-      <img src="/images/sgq/sgq-erp-login.png" alt="SGQ ERP — Gestão Industrial" />
-      <div className="login-art-overlay"><div className="login-art-copy"><span className="login-eyebrow">SGQ ERP INDUSTRIAL</span><h2>O controle da fábrica em um único sistema.</h2><p>Produção, qualidade, PCP, estoque, manutenção, financeiro e gestão integrados por empresa.</p><div className="login-feature-pills"><span>● Produção</span><span>● Qualidade</span><span>● PCP</span><span>● Estoque</span></div></div><InfrastructureTrust /></div>
-    </section>
-    <form className="login-card" onSubmit={submit}>
-      <div className="login-brand"><a className="login-brand-logo" href="/login" aria-label="SGQ ERP"><img className="login-logo-large" src="/logo-industrial.svg" alt="SGQ ERP" /></a><span className="login-kicker">PORTAL SEGURO</span><h1>Acesse seu SGQ ERP</h1><p>Autenticação direta pelo Supabase Auth. Depois do login, o ERP identifica sua empresa, segmento e permissões.</p></div>
-      <div className="login-fields">
-        <label>Usuário ou e-mail<input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Digite seu e-mail corporativo" autoComplete="username" required /></label>
-        <label>Senha<div className="password-input"><input type="password" value={pw} onChange={e => setPw(e.target.value)} placeholder="Digite sua senha" autoComplete="current-password" required /><KeyRound size={18} /></div></label>
-      </div>
-      {err && <div className="error" role="alert">{err}</div>}{notice && <div className="notice" role="status">{notice}</div>}
-      {!recovery ? <><button className="primary full login-submit" disabled={busy}>{busy ? 'Entrando…' : 'Entrar no sistema'} <LogIn size={18} /></button><div className="login-actions-row"><a className="trial-login-button" href="/cadastro-empresa"><Clock3 size={17} /> Teste grátis 15 dias</a><button type="button" className="login-forgot" disabled={busy} onClick={() => setRecovery(true)}>Esqueci minha senha</button></div><a className="signup-login-link" href="/cadastro-empresa"><UserPlus size={18} /> Cadastrar nova empresa</a></> : <><button type="button" className="primary full" disabled={busy} onClick={() => void resetPassword()}>{busy ? 'Enviando…' : 'Enviar recuperação'}</button><button type="button" className="secondary full" disabled={busy} onClick={() => setRecovery(false)}>Voltar ao login</button></>}
-      <a className="login-back" href="/">Voltar para o site</a><small className="login-watermark">FernandoSch_System</small>
-    </form>
-  </main>
+  return <main className="login-page"><section className="login-art" aria-label="Apresentação do SGQ ERP"><img src="/images/sgq/sgq-erp-login.png" alt="SGQ ERP — Gestão Industrial" /><div className="login-art-overlay"><div className="login-art-copy"><span className="login-eyebrow">SGQ ERP INDUSTRIAL</span><h2>O controle da fábrica em um único sistema.</h2><p>Produção, qualidade, PCP, estoque, manutenção, financeiro e gestão integrados por empresa.</p><div className="login-feature-pills"><span>● Produção</span><span>● Qualidade</span><span>● PCP</span><span>● Estoque</span></div></div><InfrastructureTrust /></div></section><form className="login-card" onSubmit={submit}><div className="login-brand"><a className="login-brand-logo" href="/login" aria-label="SGQ ERP"><img className="login-logo-large" src="/logo-industrial.svg" alt="SGQ ERP" /></a><span className="login-kicker">PORTAL SEGURO</span><h1>Acesse seu SGQ ERP</h1><p>Autenticação direta pelo Supabase Auth. Depois do login, o ERP identifica sua empresa, segmento e permissões.</p></div><div className="login-fields"><label>Usuário ou e-mail<input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Digite seu e-mail corporativo" autoComplete="username" required /></label><label>Senha<div className="password-input"><input type="password" value={pw} onChange={e => setPw(e.target.value)} placeholder="Digite sua senha" autoComplete="current-password" required /><KeyRound size={18} /></div></label></div>{err && <div className="error" role="alert">{err}</div>}{notice && <div className="notice" role="status">{notice}</div>}{!recovery ? <><button className="primary full login-submit" disabled={busy}>{busy ? 'Entrando…' : 'Entrar no sistema'} <LogIn size={18} /></button><div className="login-actions-row"><a className="trial-login-button" href="/cadastro-empresa"><Clock3 size={17} /> Teste grátis 15 dias</a><button type="button" className="login-forgot" disabled={busy} onClick={() => setRecovery(true)}>Esqueci minha senha</button></div><a className="signup-login-link" href="/cadastro-empresa"><UserPlus size={18} /> Cadastrar nova empresa</a></> : <><button type="button" className="primary full" disabled={busy} onClick={() => void resetPassword()}>{busy ? 'Enviando…' : 'Enviar recuperação'}</button><button type="button" className="secondary full" disabled={busy} onClick={() => setRecovery(false)}>Voltar ao login</button></>}<a className="login-back" href="/">Voltar para o site</a><small className="login-watermark">FernandoSch_System</small></form></main>
 }
 
 function ERP() {
