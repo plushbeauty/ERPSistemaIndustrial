@@ -27,7 +27,6 @@ const UsuariosAdmin = lazy(() => import('./pages/UsuariosAdmin'))
 const DocumentosQualidadeControle = lazy(() => import('./pages/DocumentosQualidadeControle'))
 const RecebimentoMateriais = lazy(() => import('./pages/RecebimentoMateriais'))
 const ManualUsuario = lazy(() => import('./pages/ManualUsuario'))
-const VirtualGuide = lazy(() => import('./components/VirtualGuide'))
 
 type AccessResult = { ok: boolean; master: boolean; reason: string }
 
@@ -49,21 +48,13 @@ function trialExpired(ends: string | null, status: string | null) { return !!end
 async function validarAcessoERP(authUserId: string): Promise<AccessResult> {
   try {
     if (!authUserId?.trim()) return { ok: false, master: false, reason: 'Sessão de autenticação inválida.' }
-    const { data: u, error } = await supabase
-      .from('erp_usuarios')
-      .select('id,empresa_id,ativo,nivel_admin')
-      .eq('auth_user_id', authUserId)
-      .maybeSingle()
+    const { data: u, error } = await supabase.from('erp_usuarios').select('id,empresa_id,ativo,nivel_admin').eq('auth_user_id', authUserId).maybeSingle()
     if (error) throw error
     if (!u || u.ativo === false) return { ok: false, master: false, reason: 'Este acesso não está vinculado a um usuário ativo do ERP.' }
     const master = Number(u.nivel_admin) >= 9
     if (master) return { ok: true, master: true, reason: '' }
     if (!u.empresa_id) return { ok: false, master: false, reason: 'Usuário sem empresa vinculada.' }
-    const { data: e, error: ee } = await supabase
-      .from('erp_empresas')
-      .select('ativo,plano_status,trial_ends_at')
-      .eq('id', u.empresa_id)
-      .maybeSingle()
+    const { data: e, error: ee } = await supabase.from('erp_empresas').select('ativo,plano_status,trial_ends_at').eq('id', u.empresa_id).maybeSingle()
     if (ee) throw ee
     if (!e) return { ok: false, master: false, reason: 'Empresa vinculada não encontrada.' }
     if (e.ativo === false) return { ok: false, master: false, reason: 'O acesso desta empresa está bloqueado.' }
@@ -75,10 +66,7 @@ async function validarAcessoERP(authUserId: string): Promise<AccessResult> {
   }
 }
 
-function safeReturnTo(value: string | null) {
-  if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/login')) return '/erp-industrial'
-  return value
-}
+function safeReturnTo(value: string | null) { if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/login')) return '/erp-industrial'; return value }
 function requestedTarget() { return safeReturnTo(new URLSearchParams(location.search).get('returnTo')) }
 
 function Login() {
@@ -88,7 +76,7 @@ function Login() {
   return <main className="auth-screen"><section className="auth-visual" aria-label="SGQ ERP Industrial"><img src="/images/sgq/sgq-erp-login.png" alt="SGQ ERP Industrial"/><div className="auth-visual-shade"/><div className="auth-visual-content"><a href="/" className="auth-visual-logo"><img src="/logo-industrial.svg" alt="SGQ ERP"/></a><div className="auth-visual-message"><span>SGQ ERP • GESTÃO INDUSTRIAL</span><h2>Uma fábrica inteira. Um único controle.</h2><p>PCP, produção, qualidade, estoque, manutenção, financeiro e fiscal trabalhando sobre os mesmos dados.</p><div className="auth-trust"><b>✓ Multiempresa</b><b>✓ Rastreabilidade</b><b>✓ Controle de acesso</b></div></div><small>FernandoSch_System</small></div></section><section className="auth-panel"><div className="auth-panel-inner"><div className="auth-mobile-brand"><a href="/"><img src="/logo-industrial.svg" alt="SGQ ERP"/></a></div><span className="auth-overline">ACESSO SEGURO</span><h1>Entrar no SGQ ERP</h1><p className="auth-description">Use seu e-mail corporativo para acessar o ambiente da sua empresa.</p><form className="auth-form" onSubmit={submit}><label htmlFor="erp-email">E-mail corporativo</label><div className="auth-input-wrap"><input id="erp-email" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="nome@empresa.com.br" autoComplete="username" required/></div><div className="auth-label-row"><label htmlFor="erp-password">Senha</label>{!recovery&&<button type="button" className="auth-text-button" onClick={()=>setRecovery(true)} disabled={busy}>Esqueci minha senha</button>}</div><div className="auth-input-wrap"><input id="erp-password" type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="Digite sua senha" autoComplete="current-password" required/><KeyRound size={17} aria-hidden="true"/></div>{err&&<div className="auth-message auth-error" role="alert">{err}</div>}{notice&&<div className="auth-message auth-notice" role="status">{notice}</div>}{!recovery?<><button className="auth-submit" type="submit" disabled={busy}>{busy?'Entrando…':'Entrar'} <LogIn size={18}/></button><div className="auth-divider"><span>ou</span></div><a className="auth-register" href="/cadastro-empresa"><UserPlus size={18}/> Criar uma nova empresa</a><a className="auth-trial" href="/cadastro-empresa"><Clock3 size={17}/> Começar teste grátis de 15 dias <ArrowRight size={16}/></a></>:<><button className="auth-submit" type="button" disabled={busy} onClick={()=>void resetPassword()}>{busy?'Enviando…':'Enviar recuperação'} <ArrowRight size={18}/></button><button className="auth-secondary" type="button" disabled={busy} onClick={()=>setRecovery(false)}>Voltar ao login</button></>}</form><div className="auth-footer"><a href="/">Voltar para o site</a><span>•</span><a href="/contato">Fale conosco</a></div></div></section></main>
 }
 
-function ERP() { const [valid,setValid]=useState<boolean|null>(null); useEffect(()=>{let alive=true; void (async()=>{try{const{data,error}=await supabase.auth.getUser();if(error)throw error;if(!data.user){if(alive)setValid(false);return}const access=await validarAcessoERP(data.user.id);if(!alive)return;if(!access.ok){await supabase.auth.signOut();location.replace('/login');return}setValid(true)}catch(error){console.error('[ERP access]',error);if(alive){setValid(false);location.replace('/login')}}})();return()=>{alive=false}},[]);if(valid===null)return <LoadingSkeleton label="Validando acesso…"/>;if(valid===false)return <Login/>;return <Suspense fallback={<LoadingSkeleton/>}><AppIndustrial/><VirtualGuide brand="SGQ ERP" name="Dri"/></Suspense> }
+function ERP() { const [valid,setValid]=useState<boolean|null>(null); useEffect(()=>{let alive=true; void (async()=>{try{const{data,error}=await supabase.auth.getUser();if(error)throw error;if(!data.user){if(alive)setValid(false);return}const access=await validarAcessoERP(data.user.id);if(!alive)return;if(!access.ok){await supabase.auth.signOut();location.replace('/login');return}setValid(true)}catch(error){console.error('[ERP access]',error);if(alive){setValid(false);location.replace('/login')}}})();return()=>{alive=false}},[]);if(valid===null)return <LoadingSkeleton label="Validando acesso…"/>;if(valid===false)return <Login/>;return <Suspense fallback={<LoadingSkeleton/>}><AppIndustrial/></Suspense> }
 function Protected({children,masterOnly=false}:{children:ReactNode;masterOnly?:boolean}){const[state,setState]=useState<'checking'|'allowed'|'denied'>('checking');useEffect(()=>{let alive=true;void(async()=>{try{const{data,error}=await supabase.auth.getUser();if(error)throw error;if(!data.user){if(alive)setState('denied');return}const access=await validarAcessoERP(data.user.id);if(!alive)return;if(!access.ok||(masterOnly&&!access.master)){await supabase.auth.signOut();setState('denied');return}setState('allowed')}catch(error){console.error('[Protected]',error);if(alive)setState('denied')}})();return()=>{alive=false}},[masterOnly]);if(state==='checking')return <LoadingSkeleton label="Validando permissões…"/>;if(state==='denied'){const target=encodeURIComponent(location.pathname+location.search);return <LoginRedirect target={target}/>};return <Boundary>{children}</Boundary>}
 function LoginRedirect({target}:{target:string}){useEffect(()=>{const safe=safeReturnTo(decodeURIComponent(target));if(location.pathname!=='/login')location.replace(`/login?returnTo=${encodeURIComponent(safe)}`)},[target]);return <LoadingSkeleton label="Redirecionando para o login…"/>}
 
