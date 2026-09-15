@@ -35,8 +35,8 @@ jobs:
       - name: "Limitar heap do Node"
         run: echo "NODE_OPTIONS=--max-old-space-size=4096" >> "$GITHUB_ENV"
 
-      - name: "Instalar dependências determinísticas"
-        run: npm ci --no-audit --no-fund
+      - name: "Instalar dependências"
+        run: npm install --no-audit --no-fund
 
       - name: "Type-check estrito"
         run: npx tsc --noEmit
