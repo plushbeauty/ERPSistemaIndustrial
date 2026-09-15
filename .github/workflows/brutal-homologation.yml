@@ -15,9 +15,9 @@ concurrency:
 
 jobs:
   homologation:
-    name: "TypeScript + Auditoria + Build"
+    name: "TypeScript + Auditoria Global + Interações + Build"
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -50,6 +50,25 @@ jobs:
       - name: "Falhar se TypeScript falhou"
         if: steps.typecheck.outcome == 'failure'
         run: exit 1
+      - name: "Auditoria global ponta a ponta"
+        id: global-audit
+        continue-on-error: true
+        run: |
+          npm run audit:global > global-audit.log 2>&1
+          status=$?
+          cat global-audit.log
+          exit $status
+      - name: "Publicar diagnóstico da auditoria global"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: global-audit-diagnostics
+          path: global-audit.log
+          if-no-files-found: warn
+          retention-days: 2
+      - name: "Falhar se auditoria global encontrou bloqueadores"
+        if: steps.global-audit.outcome == 'failure'
+        run: exit 1
       - name: "Auditoria estática de interações"
         id: audit
         continue-on-error: true
@@ -66,7 +85,7 @@ jobs:
           path: audit.log
           if-no-files-found: warn
           retention-days: 2
-      - name: "Falhar se auditoria falhou"
+      - name: "Falhar se auditoria de interações falhou"
         if: steps.audit.outcome == 'failure'
         run: exit 1
       - name: "Build de produção"
