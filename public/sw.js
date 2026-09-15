@@ -1,4 +1,17 @@
-const CACHE='sgq-erp-v1';
-self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/','/manifest.webmanifest'])));self.skipWaiting()});
-self.addEventListener('activate',event=>{event.waitUntil(self.clients.claim())});
-self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;event.respondWith(fetch(event.request).then(response=>{const copy=response.clone();caches.open(CACHE).then(c=>c.put(event.request,copy));return response}).catch(()=>caches.match(event.request).then(r=>r||caches.match('/'))))});
+const VERSION = 'sgq-erp-disabled-v2'
+
+// The ERP no longer uses a runtime cache for application assets. A previous
+// service worker could keep an obsolete JavaScript bundle alive after deploys,
+// which is unacceptable for authentication/security changes.
+self.addEventListener('install', () => self.skipWaiting())
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys()
+    await Promise.all(keys.map((key) => caches.delete(key)))
+    await self.clients.claim()
+    await self.registration.unregister()
+  })())
+})
+
+self.addEventListener('fetch', () => undefined)
