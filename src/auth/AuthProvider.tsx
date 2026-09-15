@@ -26,20 +26,46 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 function clearAuthStorage() {
   if (typeof window === 'undefined') return
   try {
-    for (const key of Object.keys(localStorage)) if (key.startsWith('sb-') || key.includes('supabase') || key === 'erp-industrial-auth') localStorage.removeItem(key)
-    for (const key of Object.keys(sessionStorage)) if (key.startsWith('sb-') || key.includes('supabase') || key === 'erp-industrial-auth') sessionStorage.removeItem(key)
-  } catch {}
+    for (const key of Object.keys(localStorage)) {
+      if (key.startsWith('sb-') || key.includes('supabase') || key === 'erp-industrial-auth') localStorage.removeItem(key)
+    }
+    for (const key of Object.keys(sessionStorage)) {
+      if (key.startsWith('sb-') || key.includes('supabase') || key === 'erp-industrial-auth') sessionStorage.removeItem(key)
+    }
+  } catch {
+    // Storage may be unavailable in hardened/private browser contexts.
+  }
 }
 
 async function loadProfile(userId: string): Promise<ERPProfile | null> {
-  const { data, error } = await supabase
+  const { data: userRow, error: userError } = await supabase
     .from('erp_usuarios')
     .select('id,empresa_id,nome,email,nivel_admin,ativo,role_id,is_master')
     .eq('auth_user_id', userId)
+    .eq('ativo', true)
     .maybeSingle()
-  if (error) throw error
-  if (!data || data.ativo === false) return null
-  return data as ERPProfile
+
+  if (userError) throw userError
+  if (!userRow || !userRow.empresa_id) return null
+
+  // Multi-tenant validation is deliberately performed against the real ERP tables.
+  // A valid Supabase Auth user is not enough to enter a tenant without an active company.
+  const { data: company, error: companyError } = await supabase
+    .from('erp_empresas')
+    .select('id,ativo,plano_status,trial_ends_at')
+    .eq('id', userRow.empresa_id)
+    .maybeSingle()
+
+  if (companyError) throw companyError
+  if (!company || company.ativo === false) return null
+
+  const status = String(company.plano_status ?? '').trim().toLowerCase()
+  const trialEnds = company.trial_ends_at ? new Date(company.trial_ends_at).getTime() : null
+  const trialExpired = trialEnds !== null && Number.isFinite(trialEnds) && Date.now() >= trialEnds && !['ativo', 'active'].includes(status)
+  if (trialExpired) return null
+  if (status && !['trial', 'ativo', 'active'].includes(status)) return null
+
+  return userRow as ERPProfile
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -57,16 +83,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(next)
       setProfile(null)
       setLoading(true)
+
       if (!next?.user) {
         setLoading(false)
         return
       }
+
       try {
         const nextProfile = await loadProfile(next.user.id)
         if (!mounted || requestId !== profileRequest) return
         setProfile(nextProfile)
       } catch (error) {
-        console.error('[AuthProvider] Falha ao carregar perfil ERP:', error)
+        console.error('[AuthProvider] Falha ao carregar perfil/empresa ERP:', error)
         if (mounted && requestId === profileRequest) setProfile(null)
       } finally {
         if (mounted && requestId === profileRequest) setLoading(false)
@@ -89,7 +117,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   async function signOut() {
-    try { await supabase.auth.signOut() } finally {
+    try {
+      await supabase.auth.signOut()
+    } finally {
       clearAuthStorage()
       setProfile(null)
       setSession(null)
