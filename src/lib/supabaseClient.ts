@@ -2,15 +2,14 @@ import { createClient, type Session, type SupabaseClient } from '@supabase/supab
 
 const env = import.meta.env
 const CANONICAL_SUPABASE_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
-const PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_QX10nEg-hrWd_5UOuYSpQg_v5M-1xuM'
-const configuredKey = String(env.VITE_SUPABASE_ANON_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || PUBLIC_SUPABASE_PUBLISHABLE_KEY).trim()
-const isPrivateKey = configuredKey.startsWith('sb_secret_') || configuredKey.includes('service_role')
 const supabaseUrl = String(env.VITE_SUPABASE_URL || CANONICAL_SUPABASE_URL).trim()
+const configuredKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || '').trim()
+const isPrivateKey = configuredKey.startsWith('sb_secret_') || configuredKey.includes('service_role')
 const supabaseKey = isPrivateKey ? '' : configuredKey
 export const supabaseConfigurado = Boolean(supabaseUrl && supabaseKey)
 export const supabaseUrlExportada = supabaseUrl
 export const supabaseKeyExportada = supabaseKey
-const missingConfigClient = new Proxy({} as SupabaseClient, { get() { throw new Error('SUPABASE_CONFIG_MISSING: configure the public Supabase anon/publishable key in Vercel') } })
+const missingConfigClient = new Proxy({} as SupabaseClient, { get() { throw new Error('SUPABASE_CONFIG_MISSING: configure VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in Vercel') } })
 export const supabase: SupabaseClient = supabaseConfigurado ? createClient(supabaseUrl, supabaseKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'erp-industrial-auth' }, global: { headers: { 'x-client-info': 'sgq-erp-industrial' } } }) : missingConfigClient
 export async function getValidSession(minValiditySeconds = 60): Promise<Session> { const { data, error } = await supabase.auth.getSession(); if (error) throw error; let session = data.session; const expiresAt = Number(session?.expires_at ?? 0); if (session?.refresh_token && (!expiresAt || expiresAt * 1000 - Date.now() < minValiditySeconds * 1000)) { const refreshed = await supabase.auth.refreshSession(); if (!refreshed.error && refreshed.data.session) session = refreshed.data.session } if (!session?.access_token || !session.user) throw new Error('AUTH_SESSION_REQUIRED'); return session }
 export async function getAccessTokenOrThrow(): Promise<string> { return (await getValidSession()).access_token }
