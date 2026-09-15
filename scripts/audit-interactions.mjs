@@ -1,71 +1,15 @@
 #!/usr/bin/env node
-/**
- * SGQ ERP — auditoria estática de telas/interações.
- * Reconhece tags interativas e bloqueia somente placeholders reais ou
- * interações sem qualquer ação declarada.
- */
 import fs from 'node:fs';
 import path from 'node:path';
-
-const root = path.resolve(process.argv[2] || 'src');
-const exts = new Set(['.tsx', '.jsx', '.js']);
-const skip = new Set(['node_modules', 'dist', '.git']);
-const blocking = [];
-const warnings = [];
-let filesAnalyzed = 0;
-
-const INTERACTIVE = /<(button|a|Link)\b/i;
-const PLACEHOLDER = /(console\.log\s*\(|TODO|FIXME|em breve|coming\s+soon)/i;
-const ACTION = /\b(onClick|onSubmit|onChange|to|href|type)\s*=/i;
-
-function walk(dir) {
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const ent of entries) {
-    if (skip.has(ent.name)) continue;
-    const file = path.join(dir, ent.name);
-    if (ent.isDirectory()) walk(file);
-    else if (exts.has(path.extname(ent.name))) scan(file);
-  }
-}
-
-function relative(file) { return path.relative(process.cwd(), file); }
-function normalizeHandler(text) { return text.replace(/\s+/g, ' ').replace(/\b[a-zA-Z_$][\w$]*\b/g, 'ID').trim(); }
-
-function scan(file) {
-  filesAnalyzed += 1;
-  const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
-  const handlers = new Map();
-  let tag = null; let tagStart = 0; let quote = null; let braceDepth = 0; let handlerBuffer = ''; let handlerStart = 0;
-  const finishTag = (lineNumber) => {
-    if (!tag) return;
-    const text = tag.text;
-    if (!ACTION.test(text)) blocking.push({ type: 'SEM_ACAO', file: relative(file), line: tagStart, label: text.slice(0, 180) });
-    if (PLACEHOLDER.test(text)) blocking.push({ type: 'PLACEHOLDER', file: relative(file), line: tagStart, label: text.slice(0, 180) });
-    tag = null; quote = null; braceDepth = 0; handlerBuffer = ''; handlerStart = lineNumber;
-  };
-  for (let i = 0; i < lines.length; i += 1) {
-    const line = lines[i];
-    if (!tag) { const start = line.search(INTERACTIVE); if (start >= 0) { tag = { text: line.slice(start) }; tagStart = i + 1; } }
-    else tag.text += ` ${line}`;
-    if (tag) {
-      for (let c = 0; c < line.length; c += 1) {
-        const ch = line[c];
-        if (quote) { if (ch === quote && line[c - 1] !== '\\') quote = null; continue; }
-        if (ch === '"' || ch === "'" || ch === '`') { quote = ch; continue; }
-        if (ch === '{') braceDepth += 1;
-        else if (ch === '}' && braceDepth > 0) braceDepth -= 1;
-        if (ch === '>' && braceDepth === 0) { finishTag(i + 1); break; }
-      }
-    }
-    if (/\bonClick\s*=/.test(line) || /\bonSubmit\s*=/.test(line)) {
-      handlerBuffer = `${handlerBuffer} ${line}`.slice(-1200); if (!handlerStart) handlerStart = i + 1;
-      const normalized = normalizeHandler(handlerBuffer); if (normalized.length >= 8) { const list = handlers.get(normalized) || []; list.push(handlerStart); handlers.set(normalized, list); }
-      handlerBuffer = ''; handlerStart = 0;
-    }
-  }
-  if (tag) finishTag(lines.length);
-  for (const [key, lineList] of handlers) if (lineList.length > 1) warnings.push({ type: 'DUPLICADO_POTENCIAL', file: relative(file), line: lineList.join(','), label: key.slice(0, 180) });
-}
-
-if (!fs.existsSync(root)) { console.error(`Diretório não encontrado: ${root}`); process.exitCode = 2; }
-else { walk(root); console.log('\nSGQ ERP — AUDITORIA DE INTERAÇÕES'); console.log(`Arquivos analisados: ${filesAnalyzed}`); console.log(`Bloqueios: ${blocking.length}`); console.log(`Alertas de revisão: ${warnings.length}\n`); for (const item of blocking) console.log(`[BLOQUEIO:${item.type}] ${item.file}:${item.line} — ${item.label}`); for (const item of warnings) console.log(`[ALERTA:${item.type}] ${item.file}:${item.line} — ${item.label}`); if (!blocking.length) console.log('OK — nenhum bloqueio estático encontrado.'); process.exitCode = blocking.length ? 1 : 0; }
+const root=path.resolve(process.argv[2]||'src');
+const exts=new Set(['.tsx','.jsx','.js']);
+const skip=new Set(['node_modules','dist','.git']);
+const blocking=[];let filesAnalyzed=0;
+const TAG_START=/<(button|a|Link)\b/i;
+const ACTION=/\b(onClick|onSubmit|onChange|to|href|type)\s*=/i;
+const PLACEHOLDER=/(console\.log\s*\(|TODO|FIXME|em breve|coming\s+soon)/i;
+function walk(dir){for(const ent of fs.readdirSync(dir,{withFileTypes:true})){if(skip.has(ent.name))continue;const file=path.join(dir,ent.name);if(ent.isDirectory())walk(file);else if(exts.has(path.extname(ent.name)))scan(file)}}
+function relative(file){return path.relative(process.cwd(),file)}
+function analyzeTag(file,line,text){if(!ACTION.test(text))blocking.push({type:'SEM_ACAO',file:relative(file),line,label:text.slice(0,220)});if(PLACEHOLDER.test(text))blocking.push({type:'PLACEHOLDER',file:relative(file),line,label:text.slice(0,220)})}
+function scan(file){filesAnalyzed++;const source=fs.readFileSync(file,'utf8');let i=0;while(i<source.length){const rest=source.slice(i),match=rest.match(TAG_START);if(!match)break;const start=i+match.index;let j=start,quote=null,braceDepth=0,end=-1;for(;j<source.length;j++){const ch=source[j];if(quote){if(ch===quote&&source[j-1]!== '\\')quote=null;continue}if(ch==='"'||ch==="'"||ch==='`'){quote=ch;continue}if(ch==='{'){braceDepth++;continue}if(ch==='}'&&braceDepth>0){braceDepth--;continue}if(ch==='>'&&braceDepth===0){end=j;break}}if(end<0)break;const text=source.slice(start,end+1),before=source.slice(0,start),line=(before.match(/\n/g)||[]).length+1;analyzeTag(file,line,text);i=end+1}}
+if(!fs.existsSync(root)){console.error(`Diretório não encontrado: ${root}`);process.exitCode=2}else{walk(root);console.log('\nSGQ ERP — AUDITORIA DE INTERAÇÕES');console.log(`Arquivos analisados: ${filesAnalyzed}`);console.log(`Bloqueios: ${blocking.length}`);for(const item of blocking)console.log(`[BLOQUEIO:${item.type}] ${item.file}:${item.line} — ${item.label}`);if(!blocking.length)console.log('OK — nenhum bloqueio estático encontrado.');process.exitCode=blocking.length?1:0}
