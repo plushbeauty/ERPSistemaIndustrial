@@ -32,7 +32,24 @@ jobs:
       - name: "Instalar dependências"
         run: npm install --legacy-peer-deps --no-audit --no-fund
       - name: "Type-check estrito"
-        run: npm run type-check
+        id: typecheck
+        continue-on-error: true
+        run: |
+          npm run type-check > typecheck.log 2>&1
+          status=$?
+          cat typecheck.log
+          exit $status
+      - name: "Publicar diagnóstico TypeScript"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: typecheck-diagnostics
+          path: typecheck.log
+          if-no-files-found: warn
+          retention-days: 2
+      - name: "Falhar se TypeScript falhou"
+        if: steps.typecheck.outcome == 'failure'
+        run: exit 1
       - name: "Auditoria estática de interações"
         run: npm run audit:interactions
       - name: "Build de produção"
