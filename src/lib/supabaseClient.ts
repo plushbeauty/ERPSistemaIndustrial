@@ -1,24 +1,25 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 
 const env = import.meta.env as Record<string, unknown>
-const supabaseUrl = String(env.VITE_SUPABASE_URL ?? '').trim().replace(/\/$/, '')
-const configuredKey = String(env.VITE_SUPABASE_ANON_KEY ?? env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').trim()
-const isPrivateKey = configuredKey.startsWith('sb_secret_') || configuredKey.includes('service_role')
+const FALLBACK_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
+const FALLBACK_PUBLIC_KEY = 'sb_publishable_QX10nEg-hrWd_5UOuYSpQg_v5M-1xuM'
 
-export const supabaseConfigurado = Boolean(supabaseUrl && configuredKey && !isPrivateKey)
+const supabaseUrl = String(env.VITE_SUPABASE_URL ?? FALLBACK_URL).trim().replace(/\/$/, '') || FALLBACK_URL
+const configuredKey = String(env.VITE_SUPABASE_ANON_KEY ?? env.VITE_SUPABASE_PUBLISHABLE_KEY ?? FALLBACK_PUBLIC_KEY).trim() || FALLBACK_PUBLIC_KEY
+const isPrivateKey = configuredKey.startsWith('sb_secret_') || configuredKey.includes('service_role')
+const clientKey = isPrivateKey ? FALLBACK_PUBLIC_KEY : configuredKey
+
+export const supabaseConfigurado = Boolean(supabaseUrl && clientKey)
 export const supabaseEnvironmentMismatch = false
 export const supabaseUrlExportada = supabaseUrl
-export const supabaseKeyExportada = configuredKey
+export const supabaseKeyExportada = clientKey
 
-if (isPrivateKey) console.error('[Supabase] Chave privada detectada no frontend. Use VITE_SUPABASE_ANON_KEY com uma chave pública anon/publishable.')
-if (!supabaseConfigurado) console.error('[Supabase] Ambiente não configurado. Defina VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY na Vercel.')
+if (isPrivateKey) console.error('[Supabase] Chave privada detectada no frontend. O ERP ignorou a chave privada e usou a chave pública publishable de contingência.')
 
-const missingConfigClient = new Proxy({} as SupabaseClient, { get() { throw new Error('SUPABASE_CONFIG_MISSING: configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY na Vercel.') } })
-
-export const supabase: SupabaseClient = supabaseConfigurado ? createClient(supabaseUrl, configuredKey, {
+export const supabase: SupabaseClient = createClient(supabaseUrl, clientKey, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'erp-industrial-auth' },
   global: { headers: { 'x-client-info': 'sgq-erp-industrial' } },
-}) : missingConfigClient
+})
 
 export async function getValidSession(minValiditySeconds = 60): Promise<Session> {
   const { data, error } = await supabase.auth.getSession()
@@ -55,7 +56,7 @@ export async function rpcAutenticado<T = unknown>(functionName: string, args: Re
   const session = await getValidSession()
   const response = await fetch(`${supabaseUrl}/rest/v1/rpc/${encodeURIComponent(functionName)}`, {
     method: 'POST',
-    headers: { apikey: configuredKey, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
+    headers: { apikey: clientKey, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify(args),
   })
   const raw = await response.text()
