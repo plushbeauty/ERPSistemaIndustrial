@@ -51,6 +51,23 @@ jobs:
         if: steps.typecheck.outcome == 'failure'
         run: exit 1
       - name: "Auditoria estática de interações"
-        run: npm run audit:interactions
+        id: audit
+        continue-on-error: true
+        run: |
+          npm run audit:interactions > audit.log 2>&1
+          status=$?
+          cat audit.log
+          exit $status
+      - name: "Publicar diagnóstico da auditoria"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-diagnostics
+          path: audit.log
+          if-no-files-found: warn
+          retention-days: 2
+      - name: "Falhar se auditoria falhou"
+        if: steps.audit.outcome == 'failure'
+        run: exit 1
       - name: "Build de produção"
         run: npm run build
