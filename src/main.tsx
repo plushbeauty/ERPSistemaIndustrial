@@ -1,16 +1,19 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import { supabaseConfigurado } from './lib/supabaseClient'
 import './styles/app.css'
+import './styles/tablet-launchpad.css'
 import './styles/visual-ux-redesign-2026.css'
 import './styles/infrastructure-trust.css'
 import './styles/industrial-public-restoration.css'
 import './styles/tailadmin-shell.css'
+import { TabletLaunchpad } from './components/TabletLaunchpad'
 
-const root = document.getElementById('root')!
+const root = document.getElementById('root')
+if (!root) throw new Error('ROOT_ELEMENT_MISSING')
 
 function renderFatal(title: string, message: string) {
-  root.innerHTML = `<main style="min-height:100vh;display:grid;place-items:center;padding:24px;box-sizing:border-box;background:#f4f7f6;font-family:Inter,system-ui,sans-serif;color:#14211e"><section style="width:min(620px,100%);background:#fff;border:1px solid #dce6e2;border-radius:20px;padding:36px;box-shadow:0 20px 60px rgba(15,61,52,.10)"><div style="font-size:12px;font-weight:800;letter-spacing:.12em;color:#0f766e">SGQ ERP INDUSTRIAL</div><h1 style="margin:10px 0 8px;font-size:28px">${title}</h1><p style="margin:0;color:#60716c;line-height:1.6">${message}</p></section></main>`
+  root.innerHTML = `<main class="bootstrap-fatal"><section><div class="bootstrap-eyebrow">SGQ ERP INDUSTRIAL</div><h1>${title}</h1><p>${message}</p><button onclick="location.reload()">Tentar novamente</button></section></main>`
 }
 
 const ERP_SHELL_PATHS = new Set([
@@ -23,20 +26,30 @@ function isErpShellPath(pathname: string) {
   return ERP_SHELL_PATHS.has(pathname)
 }
 
+function TabletHost() {
+  const [open, setOpen] = useState(() => isErpShellPath(location.pathname))
+  useEffect(() => {
+    const handler = () => setOpen(true)
+    window.addEventListener('sgq:open-tablet', handler)
+    return () => window.removeEventListener('sgq:open-tablet', handler)
+  }, [])
+  const navigate = (route: string) => { location.href = route }
+  return <TabletLaunchpad isOpen={open} onClose={() => setOpen(false)} onNavigate={navigate} />
+}
+
 async function bootstrap() {
   if (!supabaseConfigurado) {
-    renderFatal('Ambiente do ERP não configurado', 'Configure a chave pública anon/publishable do Supabase no ambiente da Vercel e gere um novo deploy. Chaves privadas não são aceitas no frontend.')
+    renderFatal('Ambiente do ERP não configurado', 'A Vercel precisa expor VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY como variáveis públicas do Vite. Nunca use sb_secret ou service_role no navegador.')
     return
   }
 
   try {
-    const [entry, help, actions, boundary, pwa, guide, theme, sidebar, header, backdrop] = await Promise.all([
+    const [entry, help, actions, boundary, pwa, theme, sidebar, header, backdrop] = await Promise.all([
       import('./AppEntryV2'),
       import('./GlobalHelp'),
       import('./components/ERPHeaderActions'),
       import('./components/GlobalErrorBoundary'),
       import('./components/PwaInstallButton'),
-      import('./components/VirtualGuide'),
       import('./context/ThemeContext'),
       import('./context/SidebarContext'),
       import('./layout/AppHeader'),
@@ -50,7 +63,6 @@ async function bootstrap() {
     const ERPHeaderActions = actions.default
     const GlobalErrorBoundary = boundary.default
     const PwaInstallButton = pwa.default
-    const VirtualGuide = guide.default
     const { ThemeProvider } = theme
     const { SidebarProvider } = sidebar
     const AppHeader = header.default
@@ -67,8 +79,8 @@ async function bootstrap() {
               {shell && <Backdrop />}
               {shell && <ERPHeaderActions />}
               {shell && <GlobalHelp />}
-              {shell && <VirtualGuide brand="SGQ ERP" name="Dri" />}
               {shell && <PwaInstallButton />}
+              {shell && <TabletHost />}
             </SidebarProvider>
           </ThemeProvider>
         </GlobalErrorBoundary>
@@ -76,7 +88,7 @@ async function bootstrap() {
     )
   } catch (error) {
     console.error('ERP_BOOT_FAILURE', error)
-    renderFatal('Falha ao iniciar o ERP', 'Um módulo do aplicativo não conseguiu carregar. O erro foi isolado para impedir tela vazia.')
+    renderFatal('Falha ao iniciar o ERP', 'O carregamento de um módulo foi isolado para impedir uma tela vazia. Recarregue para tentar novamente.')
   }
 }
 
