@@ -1,65 +1,55 @@
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import AppEntryV2 from './AppEntryV2'
+
 async function limparAmbienteLocal() {
-  if (typeof window === "undefined") return;
-
-  const hostLocal =
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1";
-
-  if (!hostLocal) return;
-
-  const FLAG = "SGQ_LOCAL_CACHE_PURGED_2026";
+  if (typeof window === 'undefined') return
 
   try {
-    if (sessionStorage.getItem(FLAG) === "1") return;
-    sessionStorage.setItem(FLAG, "1");
-  } catch {
-    // Continua mesmo se sessionStorage estiver indisponível.
-  }
-
-  try {
-    if ("serviceWorker" in navigator) {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations()
       await Promise.all(
         registrations.map(async (registration) => {
           try {
-            registration.active?.postMessage({ type: "CLEAR_EVERYTHING" });
-          } catch {
-            // Sem bloquear a limpeza.
-          }
-
+            registration.active?.postMessage({ type: 'CLEAR_EVERYTHING' })
+          } catch {}
           try {
-            await registration.unregister();
-          } catch {
-            // Sem bloquear a limpeza.
-          }
+            await registration.unregister()
+          } catch {}
         }),
-      );
+      )
     }
 
-    if ("caches" in window) {
-      const cacheNames = await caches.keys();
-      await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+    if ('caches' in window) {
+      const cacheNames = await caches.keys()
+      await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)))
     }
 
-    // Limpa somente artefatos de cache/localização antiga do ERP.
-    // Não remove sessão do Supabase nem credenciais do usuário.
-    const prefixes = ["erp-", "sgq-", "vite-", "workbox-"];
-
+    // Remove somente artefatos antigos do ERP. A sessão oficial do Supabase é preservada.
+    const prefixes = ['erp-', 'sgq-', 'vite-', 'workbox-']
     for (const storage of [localStorage, sessionStorage]) {
       for (let i = storage.length - 1; i >= 0; i -= 1) {
-        const key = storage.key(i);
+        const key = storage.key(i)
         if (key && prefixes.some((prefix) => key.toLowerCase().startsWith(prefix))) {
-          storage.removeItem(key);
+          storage.removeItem(key)
         }
       }
     }
-
-    // Recarrega uma única vez para buscar o bundle atual do Vite.
-    window.location.reload();
   } catch (error) {
-    console.warn("Limpeza de cache local concluída com avisos:", error);
+    console.warn('[ERP] Limpeza de cache concluída com avisos:', error)
   }
 }
 
-void limparAmbienteLocal();
+void limparAmbienteLocal()
+
+const rootElement = document.getElementById('root')
+
+if (!rootElement) {
+  throw new Error('Elemento raiz #root não encontrado.')
+}
+
+createRoot(rootElement).render(
+  <StrictMode>
+    <AppEntryV2 />
+  </StrictMode>,
+)
