@@ -3,20 +3,20 @@ import { createClient, type Session, type SupabaseClient } from '@supabase/supab
 const env = import.meta.env
 const CANONICAL_SUPABASE_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
 const envUrl = String(env.VITE_SUPABASE_URL || '').trim().replace(/\/$/, '')
-const envKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '').trim()
+const envKey = String(env.VITE_SUPABASE_ANON_KEY || env.VITE_SUPABASE_PUBLISHABLE_KEY || '').trim()
 const isPrivateKey = envKey.startsWith('sb_secret_') || envKey.includes('service_role')
 
 export const supabaseEnvironmentMismatch = Boolean(envUrl && envUrl !== CANONICAL_SUPABASE_URL)
-export const supabaseConfigurado = Boolean(envUrl === CANONICAL_SUPABASE_URL && envKey && !isPrivateKey)
+export const supabaseConfigurado = Boolean(envUrl && envKey && !isPrivateKey)
 export const supabaseUrlExportada = envUrl
 export const supabaseKeyExportada = envKey
 
-if (supabaseEnvironmentMismatch) console.error(`Supabase URL inválida para o ERP Industrial. Esperada: ${CANONICAL_SUPABASE_URL}`)
-if (isPrivateKey) console.error('Chave privada detectada em VITE_SUPABASE_PUBLISHABLE_KEY. O frontend recusou a chave por segurança.')
+if (supabaseEnvironmentMismatch) console.error(`Supabase URL diferente do projeto esperado. Esperada: ${CANONICAL_SUPABASE_URL}`)
+if (isPrivateKey) console.error('Chave privada detectada no frontend. Use somente a chave pública anon/publishable.')
 
 const missingConfigClient = new Proxy({} as SupabaseClient, {
   get() {
-    throw new Error('SUPABASE_CONFIG_MISSING: configure VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY na Vercel.')
+    throw new Error('SUPABASE_CONFIG_MISSING: configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY na Vercel.')
   },
 })
 
@@ -51,7 +51,7 @@ export async function getAccessTokenOrThrow(): Promise<string> {
 
 export async function invokeSecureEdgeFunction<T = unknown>(
   functionName: string,
-  payload: any,
+  payload: unknown,
 ): Promise<{ data: T | null; error: Error | null }> {
   try {
     const session = await getValidSession()
