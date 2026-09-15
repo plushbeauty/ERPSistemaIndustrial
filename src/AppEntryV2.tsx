@@ -10,6 +10,7 @@ import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
 const PublicIndustrialHome = lazy(() => import('./PublicIndustrialHome'))
 const Blog = lazy(() => import('./pages/Blog'))
+const Contato = lazy(() => import('./pages/Contato'))
 const Fiscal = lazy(() => import('./pages/Fiscal'))
 const FiscalPrevisaoCaixa = lazy(() => import('./pages/FiscalPrevisaoCaixa'))
 const Master = lazy(() => import('./pages/Master'))
@@ -80,7 +81,7 @@ function Login() {
       if (!data.user) throw new Error('O Supabase Auth não retornou o usuário autenticado.')
       const access = await validarAcessoERP(data.user.id)
       if (!access.ok) { await supabase.auth.signOut(); throw new Error(access.reason) }
-      location.href = requestedTarget()
+      location.replace(requestedTarget())
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Não foi possível entrar no sistema.')
     } finally { setBusy(false) }
@@ -141,6 +142,7 @@ export default function AppEntryV2() {
   if (checking) return <LoadingSkeleton />
   if (path === '/login') return session ? <ERP /> : <Login />
   if (path === '/cadastro-empresa') return <Boundary><Suspense fallback={lazyFallback()}><CadastroEmpresa /></Suspense></Boundary>
+  if (path === '/contato') return <Boundary><Suspense fallback={lazyFallback()}><Contato /></Suspense></Boundary>
   if (path === '/blog') return <Boundary><Suspense fallback={lazyFallback()}><Blog /></Suspense></Boundary>
   if (path === '/erp-industrial') return <Protected><ERP /></Protected>
   if (path === '/master') return <Protected masterOnly><Suspense fallback={lazyFallback()}><Master /></Suspense></Protected>
