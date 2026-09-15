@@ -8,6 +8,7 @@ import './styles/manual-usuario-2026.css'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
+const PublicIndustrialHome = lazy(() => import('./PublicIndustrialHome'))
 const Blog = lazy(() => import('./pages/Blog'))
 const Fiscal = lazy(() => import('./pages/Fiscal'))
 const FiscalPrevisaoCaixa = lazy(() => import('./pages/FiscalPrevisaoCaixa'))
@@ -136,7 +137,7 @@ export default function AppEntryV2() {
   const [path, setPath] = useState(location.pathname); const [session, setSession] = useState<Session | null>(null); const [checking, setChecking] = useState(true)
   useEffect(() => { void supabase.auth.getSession().then(({ data }) => { setSession(data.session); setChecking(false) }).catch(() => setChecking(false)); const s = supabase.auth.onAuthStateChange((_e, x) => setSession(x)); return () => s.data.subscription.unsubscribe() }, [])
   useEffect(() => { const f = () => setPath(location.pathname); addEventListener('popstate', f); return () => removeEventListener('popstate', f) }, [])
-  if (path === '/' || path === '/home') return <Boundary><Suspense fallback={<LoadingSkeleton />}>{session ? <ERP /> : <Login />}</Suspense></Boundary>
+  if (path === '/' || path === '/home') return <Boundary><Suspense fallback={<LoadingSkeleton />}>{session ? <ERP /> : <PublicIndustrialHome />}</Suspense></Boundary>
   if (checking) return <LoadingSkeleton />
   if (path === '/login') return session ? <ERP /> : <Login />
   if (path === '/cadastro-empresa') return <Boundary><Suspense fallback={lazyFallback()}><CadastroEmpresa /></Suspense></Boundary>
