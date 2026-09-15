@@ -9,15 +9,15 @@ export default function AppBootstrap() {
 
   if (path === '/' || path === '/home') {
     return (
-      <>
+      <main aria-label="SGQ ERP Industrial">
         <PublicIndustrialHome />
         <IndustrialVisualShowcase />
-      </>
+      </main>
     )
   }
 
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'Inter, system-ui, sans-serif' }}>Carregando SGQ ERP…</div>}>
+    <Suspense fallback={<div role="status" aria-live="polite" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'Inter, system-ui, sans-serif' }}>Carregando SGQ ERP…</div>}>
       <AppEntryV2 />
     </Suspense>
   )
