@@ -17,32 +17,23 @@ jobs:
   homologation:
     name: "TypeScript + Auditoria + Build"
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: .
-
+    timeout-minutes: 15
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-
       - name: "Configurar Node.js"
         uses: actions/setup-node@v4
         with:
-          node-version: 24
-
+          node-version: 22
       - name: "Limitar heap do Node"
         run: echo "NODE_OPTIONS=--max-old-space-size=4096" >> "$GITHUB_ENV"
-
       - name: "Instalar dependências"
-        run: npm install --no-audit --no-fund
-
+        run: npm install --legacy-peer-deps --no-audit --no-fund
       - name: "Type-check estrito"
-        run: npx tsc --noEmit
-
+        run: npm run type-check
       - name: "Auditoria estática de interações"
-        run: node scripts/audit-interactions.mjs
-
+        run: npm run audit:interactions
       - name: "Build de produção"
         run: npm run build
