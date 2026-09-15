@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react'
 import { Activity, CalendarDays, ClipboardCheck, Factory, FileText, LayoutGrid, Package, ShoppingCart, Users, Wrench, X } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
 interface MenuButton {
   label: string
   description: string
   route: string
-  icon: React.ComponentType<{ size?: number; className?: string }>
+  icon: LucideIcon
   category: 'Operação' | 'Faturamento' | 'Administrativo'
 }
 
@@ -31,9 +32,7 @@ interface TabletLaunchpadProps {
 export const TabletLaunchpad: React.FC<TabletLaunchpadProps> = ({ onNavigate, isOpen, onClose }) => {
   useEffect(() => {
     if (!isOpen) return
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [isOpen, onClose])
@@ -45,11 +44,8 @@ export const TabletLaunchpad: React.FC<TabletLaunchpadProps> = ({ onNavigate, is
       <div className="tablet-frame">
         <div className="tablet-screen">
           <header className="tablet-header">
-            <div>
-              <span>SISTEMA DE GESTÃO INTEGRADA</span>
-              <h2>Central de Módulos SGQ ERP</h2>
-            </div>
-            <button className="tablet-close-btn" onClick={onClose} aria-label="Fechar Painel"><X size={20} /></button>
+            <div><span>SISTEMA DE GESTÃO INTEGRADA</span><h2>Central de Módulos SGQ ERP</h2></div>
+            <button className="tablet-close-btn" type="button" onClick={onClose} aria-label="Fechar Painel"><X size={20} /></button>
           </header>
           <div className="tablet-grid-container">
             {(['Operação', 'Faturamento', 'Administrativo'] as const).map((category) => (
@@ -58,12 +54,7 @@ export const TabletLaunchpad: React.FC<TabletLaunchpadProps> = ({ onNavigate, is
                 <div className="tablet-grid">
                   {erpButtons.filter((button) => button.category === category).map((button) => {
                     const Icon = button.icon
-                    return (
-                      <button key={button.route + button.label} className="tablet-card-button" onClick={() => { onNavigate(button.route); onClose() }}>
-                        <div className="tablet-card-icon"><Icon size={24} /></div>
-                        <div className="tablet-card-info"><strong>{button.label}</strong><small>{button.description}</small></div>
-                      </button>
-                    )
+                    return <button key={button.route + button.label} type="button" className="tablet-card-button" onClick={() => { onNavigate(button.route); onClose() }}><div className="tablet-card-icon"><Icon size={24} /></div><div className="tablet-card-info"><strong>{button.label}</strong><small>{button.description}</small></div></button>
                   })}
                 </div>
               </section>
