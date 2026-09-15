@@ -2,6 +2,8 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import AppEntryV2 from './AppEntryV2'
 
+const ERP_BOOTSTRAP_VERSION = '2026-09-15-v2'
+
 async function limparAmbienteLocal() {
   if (typeof window === 'undefined') return
 
@@ -47,6 +49,8 @@ const rootElement = document.getElementById('root')
 if (!rootElement) {
   throw new Error('Elemento raiz #root não encontrado.')
 }
+
+console.info(`[ERP] bootstrap ${ERP_BOOTSTRAP_VERSION}`)
 
 createRoot(rootElement).render(
   <StrictMode>
