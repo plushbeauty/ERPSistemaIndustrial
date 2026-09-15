@@ -1,69 +1,416 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createClient } from '@supabase/supabase-js'
 
-const allowedOrigin = Deno.env.get("ERP_ALLOWED_ORIGIN") || "https://erp-sistema-industrial.vercel.app";
-const corsHeaders = { "Access-Control-Allow-Origin": allowedOrigin, "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS", "Content-Type": "application/json; charset=utf-8", "Vary": "Origin" };
-const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: corsHeaders });
-const text = (v: unknown) => typeof v === "string" ? v.trim() : "";
-const norm = (v: unknown) => text(v).toLowerCase();
+const cors = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
 
-Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
-  if (req.method !== "POST") return json({ ok: false, error: "METHOD_NOT_ALLOWED" }, 405);
-  const url = Deno.env.get("SUPABASE_URL"), serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"), anon = Deno.env.get("SUPABASE_ANON_KEY");
-  if (!url || !serviceRole || !anon) return json({ ok: false, error: "SERVER_CONFIGURATION_ERROR" }, 500);
-  const admin = createClient(url, serviceRole, { auth: { persistSession: false, autoRefreshToken: false } });
-  const auth = createClient(url, anon, { auth: { persistSession: false, autoRefreshToken: false } });
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      ...cors,
+      'Content-Type': 'application/json',
+    },
+  })
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: cors })
+  }
+
+  if (req.method !== 'POST') {
+    return json(
+      {
+        error: 'Método não permitido.',
+      },
+      405,
+    )
+  }
+
   try {
-    const body = await req.json();
-    const empresa = norm(body?.empresa);
-    const login = norm(body?.login ?? body?.identificador);
-    const password = text(body?.password ?? body?.senha);
-    if (!login || !password) return json({ ok: false, error: "CAMPOS_OBRIGATORIOS" }, 400);
+    const body = await req.json()
 
-    let company: { id:string; razao_social:string|null; nome_fantasia:string|null; codigo:string|null; slug:string|null; cnpj:string|null; ativo:boolean; plano:string|null; plano_status:string|null; segmento:string|null } | null = null;
-    let users: Array<{id:string;empresa_id:string;auth_user_id:string|null;nome:string|null;email:string|null;nivel_admin:number;ativo:boolean;setor_id:string|null;cargo_id:string|null;matricula:string|null;login_nome:string|null}> = [];
+    const empresa = String(body.empresa ?? '').trim()
+    const setor = String(body.setor ?? '').trim()
+    const identificador = String(body.identificador ?? '').trim()
+    const senha = String(body.senha ?? '')
 
-    if (empresa) {
-      const { data: companies, error: companyError } = await admin.from("erp_empresas")
-        .select("id,razao_social,nome_fantasia,codigo,slug,cnpj,ativo,plano,plano_status,segmento")
-        .or(`codigo.eq.${empresa},slug.eq.${empresa},cnpj.eq.${empresa},nome_fantasia.ilike.${empresa},razao_social.ilike.${empresa}`).limit(2);
-      if (companyError) return json({ ok: false, error: "EMPRESA_LOOKUP_ERROR" }, 500);
-      company = companies?.length === 1 ? companies[0] : null;
-      if (!company || !company.ativo) return json({ ok: false, error: "EMPRESA_INVALIDA" }, 401);
-      const status = norm(company.plano_status);
-      if (!["", "trial", "ativo", "active"].includes(status)) return json({ ok: false, error: "ASSINATURA_BLOQUEADA", status: company.plano_status }, 403);
-      const { data, error: userError } = await admin.from("erp_usuarios")
-        .select("id,empresa_id,auth_user_id,nome,email,nivel_admin,ativo,setor_id,cargo_id,matricula,login_nome")
-        .eq("empresa_id", company.id).eq("ativo", true).or(`email.eq.${login},login_nome.eq.${login}`).limit(2);
-      if (userError) return json({ ok: false, error: "USUARIO_LOOKUP_ERROR" }, 500);
-      users = data ?? [];
-    } else {
-      const { data, error: userError } = await admin.from("erp_usuarios")
-        .select("id,empresa_id,auth_user_id,nome,email,nivel_admin,ativo,setor_id,cargo_id,matricula,login_nome,erp_empresas!inner(id,razao_social,nome_fantasia,codigo,slug,cnpj,ativo,plano,plano_status,segmento)")
-        .eq("ativo", true).or(`email.eq.${login},login_nome.eq.${login}`).limit(2);
-      if (userError) return json({ ok: false, error: "USUARIO_LOOKUP_ERROR" }, 500);
-      users = (data ?? []).map((row: any) => row);
-      if (users.length === 1) company = (data as any[])[0].erp_empresas;
-      if (!company && users.length > 1) return json({ ok: false, error: "EMPRESA_OBRIGATORIA" }, 409);
-      if (!company || !company.ativo) return json({ ok: false, error: "EMPRESA_INVALIDA" }, 401);
-      const status = norm(company.plano_status);
-      if (!["", "trial", "ativo", "active"].includes(status)) return json({ ok: false, error: "ASSINATURA_BLOQUEADA", status: company.plano_status }, 403);
+    if (!empresa || !setor || !identificador || !senha) {
+      return json(
+        {
+          error:
+            'Informe empresa, setor, usuário/e-mail e senha.',
+        },
+        400,
+      )
     }
 
-    if (!users || users.length !== 1) return json({ ok: false, error: "CREDENCIAIS_INVALIDAS" }, 401);
-    const profile = users[0];
-    if (!profile.auth_user_id) return json({ ok: false, error: "USUARIO_NAO_VINCULADO" }, 401);
-    const { data: authUserData, error: authUserError } = await admin.auth.admin.getUserById(profile.auth_user_id);
-    if (authUserError || !authUserData.user) return json({ ok: false, error: "AUTH_USUARIO_NAO_ENCONTRADO" }, 401);
-    if (authUserData.user.banned_until && new Date(authUserData.user.banned_until).getTime() > Date.now()) return json({ ok: false, error: "USUARIO_BLOQUEADO" }, 403);
-    const authEmail = authUserData.user.email || profile.email;
-    if (!authEmail) return json({ ok: false, error: "EMAIL_AUTH_NAO_CONFIGURADO" }, 401);
-    const { data: authData, error: authError } = await auth.auth.signInWithPassword({ email: authEmail, password });
-    if (authError || !authData.session || !authData.user) return json({ ok: false, error: "CREDENCIAIS_INVALIDAS" }, 401);
-    return json({ ok: true, session: authData.session, user: profile, empresa: company, segmento: company.segmento });
+    const admin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+      {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      },
+    )
+
+    const empresaNormalizada = empresa.toLowerCase()
+    const setorNormalizado = setor.toLowerCase()
+    const identificadorNormalizado =
+      identificador.toLowerCase()
+
+    /*
+     * 1. LOCALIZA EMPRESA
+     */
+    const { data: empresas, error: empresaError } =
+      await admin
+        .from('erp_empresas')
+        .select(
+          `
+          id,
+          razao_social,
+          nome_fantasia,
+          ativo,
+          plano_status,
+          trial_ends_at
+          `,
+        )
+        .or(
+          `nome_fantasia.ilike.${empresa},razao_social.ilike.${empresa}`,
+        )
+        .limit(20)
+
+    if (empresaError) {
+      console.error(empresaError)
+
+      return json(
+        {
+          error:
+            'Falha ao localizar a empresa.',
+        },
+        500,
+      )
+    }
+
+    const empresaEncontrada = (empresas ?? []).find(
+      (item) =>
+        String(item.nome_fantasia ?? '')
+          .trim()
+          .toLowerCase() === empresaNormalizada ||
+        String(item.razao_social ?? '')
+          .trim()
+          .toLowerCase() === empresaNormalizada,
+    )
+
+    if (!empresaEncontrada) {
+      return json(
+        {
+          error: 'Empresa não encontrada.',
+        },
+        401,
+      )
+    }
+
+    if (empresaEncontrada.ativo === false) {
+      return json(
+        {
+          error: 'Empresa bloqueada.',
+        },
+        403,
+      )
+    }
+
+    /*
+     * 2. LOCALIZA SETOR
+     */
+    const { data: setores, error: setorError } =
+      await admin
+        .from('erp_setores')
+        .select(
+          `
+          id,
+          codigo,
+          nome,
+          empresa_id,
+          ativo
+          `,
+        )
+        .eq(
+          'empresa_id',
+          empresaEncontrada.id,
+        )
+        .eq('ativo', true)
+        .limit(100)
+
+    if (setorError) {
+      console.error(setorError)
+
+      return json(
+        {
+          error:
+            'Falha ao localizar o setor.',
+        },
+        500,
+      )
+    }
+
+    const setorEncontrado = (setores ?? []).find(
+      (item) =>
+        String(item.codigo ?? '')
+          .trim()
+          .toLowerCase() === setorNormalizado ||
+        String(item.nome ?? '')
+          .trim()
+          .toLowerCase() === setorNormalizado,
+    )
+
+    if (!setorEncontrado) {
+      return json(
+        {
+          error:
+            'Setor não encontrado para esta empresa.',
+        },
+        401,
+      )
+    }
+
+    /*
+     * 3. LOCALIZA USUÁRIO
+     *
+     * Aceita:
+     * username
+     * email
+     * nome
+     */
+    const { data: usuarios, error: usuarioError } =
+      await admin
+        .from('erp_usuarios')
+        .select(
+          `
+          id,
+          nome,
+          username,
+          email,
+          empresa_id,
+          setor_id,
+          ativo,
+          nivel_admin,
+          auth_user_id,
+          is_master
+          `,
+        )
+        .eq(
+          'empresa_id',
+          empresaEncontrada.id,
+        )
+        .eq(
+          'setor_id',
+          setorEncontrado.id,
+        )
+        .eq('ativo', true)
+        .limit(200)
+
+    if (usuarioError) {
+      console.error(usuarioError)
+
+      return json(
+        {
+          error:
+            'Falha ao localizar o usuário do ERP.',
+        },
+        500,
+      )
+    }
+
+    const usuario = (usuarios ?? []).find(
+      (item) =>
+        String(item.username ?? '')
+          .trim()
+          .toLowerCase() ===
+          identificadorNormalizado ||
+        String(item.email ?? '')
+          .trim()
+          .toLowerCase() ===
+          identificadorNormalizado ||
+        String(item.nome ?? '')
+          .trim()
+          .toLowerCase() ===
+          identificadorNormalizado,
+    )
+
+    if (!usuario) {
+      return json(
+        {
+          error:
+            'Usuário não encontrado neste setor.',
+        },
+        401,
+      )
+    }
+
+    if (!usuario.auth_user_id) {
+      return json(
+        {
+          error:
+            'Este usuário não possui vínculo com o Supabase Auth.',
+        },
+        403,
+      )
+    }
+
+    /*
+     * 4. CONFERE IDENTIDADE AUTH
+     */
+    const {
+      data: authUserData,
+      error: authUserError,
+    } =
+      await admin.auth.admin.getUserById(
+        usuario.auth_user_id,
+      )
+
+    if (
+      authUserError ||
+      !authUserData.user
+    ) {
+      console.error(authUserError)
+
+      return json(
+        {
+          error:
+            'O vínculo de autenticação deste usuário está inválido.',
+        },
+        403,
+      )
+    }
+
+    const authEmail = String(
+      authUserData.user.email ??
+        usuario.email ??
+        '',
+    )
+      .trim()
+      .toLowerCase()
+
+    if (!authEmail) {
+      return json(
+        {
+          error:
+            'Usuário sem e-mail de autenticação válido.',
+        },
+        403,
+      )
+    }
+
+    /*
+     * 5. AUTENTICA NO SUPABASE AUTH
+     */
+    const {
+      data: authData,
+      error: authError,
+    } =
+      await admin.auth.signInWithPassword({
+        email: authEmail,
+        password: senha,
+      })
+
+    if (
+      authError ||
+      !authData.session ||
+      !authData.user
+    ) {
+      console.error(authError)
+
+      return json(
+        {
+          error:
+            'Usuário ou senha inválidos.',
+        },
+        401,
+      )
+    }
+
+    /*
+     * 6. VALIDA PLANO
+     *
+     * A regra antiga de nível 1 é preservada.
+     * MASTER 9 e ADMIN 8 não são bloqueados
+     * por essa regra.
+     */
+    if (
+      Number(usuario.nivel_admin) === 1 &&
+      empresaEncontrada.plano_status !==
+        'ativo' &&
+      empresaEncontrada.trial_ends_at &&
+      Date.now() >=
+        new Date(
+          empresaEncontrada.trial_ends_at,
+        ).getTime()
+    ) {
+      return json(
+        {
+          error:
+            'A empresa está com o plano expirado.',
+        },
+        403,
+      )
+    }
+
+    /*
+     * 7. LOGIN CONCLUÍDO
+     */
+    return json({
+      session: {
+        access_token:
+          authData.session.access_token,
+        refresh_token:
+          authData.session.refresh_token,
+      },
+
+      profile: {
+        id: usuario.id,
+        empresa_id:
+          empresaEncontrada.id,
+
+        setor_id:
+          setorEncontrado.id,
+
+        setor_codigo:
+          setorEncontrado.codigo,
+
+        setor_nome:
+          setorEncontrado.nome,
+
+        username:
+          usuario.username,
+
+        nome:
+          usuario.nome,
+
+        email:
+          usuario.email,
+
+        nivel_admin:
+          usuario.nivel_admin ?? 99,
+
+        is_master:
+          usuario.is_master === true,
+      },
+    })
   } catch (error) {
-    console.error("ERP_LOGIN_ERROR", error);
-    return json({ ok: false, error: error instanceof Error ? error.message : "LOGIN_ERROR" }, 500);
+    console.error(error)
+
+    return json(
+      {
+        error:
+          'Não foi possível concluir o login.',
+      },
+      500,
+    )
   }
-});
+})
