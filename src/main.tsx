@@ -55,17 +55,27 @@ async function bootstrap() {
   }
 
   try {
-    /* O AppEntry é o núcleo. Ele deve abrir mesmo se algum módulo visual opcional estiver com chunk/cache quebrado. */
+    /* O núcleo deve abrir antes dos módulos visuais opcionais. */
     const entry = await import('./AppEntryV2')
     const AppEntry = entry.default
     const shell = isErpShellPath(location.pathname)
 
-    ReactDOM.createRoot(rootContainer).render(
-      <React.StrictMode>
-        <AppEntry />
-        <OptionalChrome shell={shell}/>
-      </React.StrictMode>,
-    )
+    const [themeResult, sidebarResult] = await Promise.allSettled([
+      import('./context/ThemeContext'),
+      import('./context/SidebarContext'),
+    ])
+
+    let app: ReactNode
+    if (themeResult.status === 'fulfilled' && sidebarResult.status === 'fulfilled') {
+      const { ThemeProvider } = themeResult.value
+      const { SidebarProvider } = sidebarResult.value
+      app = <ThemeProvider><SidebarProvider><AppEntry/><OptionalChrome shell={shell}/></SidebarProvider></ThemeProvider>
+    } else {
+      console.warn('ERP_OPTIONAL_CONTEXT_FALLBACK', { theme: themeResult.status, sidebar: sidebarResult.status })
+      app = <><AppEntry/><OptionalChrome shell={shell}/></>
+    }
+
+    ReactDOM.createRoot(rootContainer).render(<React.StrictMode>{app}</React.StrictMode>)
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => undefined))
