@@ -1,0 +1,47 @@
+import { ChangeEvent, useMemo, useState } from 'react'
+import { ArrowLeft, CheckCircle2, FileUp, PackageCheck, Plus, Trash2, XCircle } from 'lucide-react'
+import { supabase } from '../lib/supabaseClient'
+
+type NfeItem={item_nfe:number;codigo_produto:string;descricao_produto:string;unidade:string;quantidade_total:number;valor_unitario:number;valor_total:number}
+type Lote={id:string;item_nfe:number;lote_fabricante:string;lote_interno:string;data_validade:string;quantidade:number}
+type Header={numero_nfe:string;serie:string;chave_acesso:string;data_emissao:string;cnpj_fornecedor:string;valor_total:string;xml_nome_arquivo:string}
+
+const tag=(root:Element,name:string)=>{const e=Array.from(root.getElementsByTagName('*')).find(x=>x.localName===name);return e?.textContent?.trim()??''}
+const children=(root:Element,name:string)=>Array.from(root.getElementsByTagName('*')).filter(x=>x.localName===name)
+const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0)
+
+function parseNfe(xml:string):{header:Header;items:NfeItem[]} {
+ const doc=new DOMParser().parseFromString(xml,'application/xml')
+ if(doc.querySelector('parsererror')) throw new Error('O arquivo selecionado não é um XML válido.')
+ const inf=Array.from(doc.getElementsByTagName('*')).find(e=>e.localName==='infNFe')
+ if(!inf) throw new Error('O XML não parece ser uma NF-e autorizada: tag infNFe não encontrada.')
+ const ide=Array.from(inf.getElementsByTagName('*')).find(e=>e.localName==='ide')
+ const emit=Array.from(inf.getElementsByTagName('*')).find(e=>e.localName==='emit')
+ const total=Array.from(inf.getElementsByTagName('*')).find(e=>e.localName==='ICMSTot')
+ const dets=Array.from(inf.getElementsByTagName('*')).filter(e=>e.localName==='det')
+ const chave=(inf.getAttribute('Id')||'').replace(/^NFe/,'')
+ const header:Header={numero_nfe:tag(ide||inf,'nNF'),serie:tag(ide||inf,'serie'),chave_acesso:chave,data_emissao:tag(ide||inf,'dhEmi')||tag(ide||inf,'dEmi'),cnpj_fornecedor:tag(emit||inf,'CNPJ'),valor_total:tag(total||inf,'vNF'),xml_nome_arquivo:''}
+ const items=dets.map((det,i)=>{const prod=Array.from(det.getElementsByTagName('*')).find(e=>e.localName==='prod')||det;return {item_nfe:Number(det.getAttribute('nItem')||i+1),codigo_produto:tag(prod,'cProd'),descricao_produto:tag(prod,'xProd'),unidade:tag(prod,'uCom')||'UN',quantidade_total:Number(tag(prod,'qCom')||0),valor_unitario:Number(tag(prod,'vUnCom')||0),valor_total:Number(tag(prod,'vProd')||0)}})
+ if(!items.length) throw new Error('A NF-e não contém itens.')
+ if(items.some(i=>!i.codigo_produto||!i.quantidade_total)) throw new Error('Há item na NF-e sem código ou quantidade comercial.')
+ return {header,items}
+}
+
+export default function RecebimentoMateriais(){
+ const [header,setHeader]=useState<Header|null>(null),[items,setItems]=useState<NfeItem[]>([]),[lotes,setLotes]=useState<Lote[]>([]),[fileError,setFileError]=useState(''),[saving,setSaving]=useState(false),[saved,setSaved]=useState(''),[error,setError]=useState('')
+ const totals=useMemo(()=>items.map(i=>({item:i,soma:lotes.filter(l=>l.item_nfe===i.item_nfe).reduce((a,l)=>a+Number(l.quantidade||0),0)})),[items,lotes])
+ const ready=!!header&&items.length>0&&items.every(i=>{const ls=lotes.filter(l=>l.item_nfe===i.item_nfe);return ls.length>0&&ls.every(l=>l.lote_interno.trim()&&l.quantidade>0)&&Math.abs(ls.reduce((a,l)=>a+l.quantidade,0)-i.quantidade_total)<0.00001})
+ const load=(e:ChangeEvent<HTMLInputElement>)=>{const f=e.target.files?.[0];if(!f)return;setFileError('');setError('');setSaved('');setLotes([]);f.text().then(txt=>{const parsed=parseNfe(txt);parsed.header.xml_nome_arquivo=f.name;setHeader(parsed.header);setItems(parsed.items);setLotes(parsed.items.map(i=>({id:crypto.randomUUID(),item_nfe:i.item_nfe,lote_fabricante:'',lote_interno:'',data_validade:'',quantidade:i.quantidade_total})))}).catch(err=>setFileError(err instanceof Error?err.message:'Falha ao ler o XML.'));e.target.value=''}
+ const addLote=(item:NfeItem)=>{const current=lotes.filter(l=>l.item_nfe===item.item_nfe).reduce((a,l)=>a+l.quantidade,0);setLotes(x=>[...x,{id:crypto.randomUUID(),item_nfe:item.item_nfe,lote_fabricante:'',lote_interno:'',data_validade:'',quantidade:Math.max(item.quantidade_total-current,0)}])}
+ const update=(id:string,key:keyof Lote,value:string|number)=>setLotes(x=>x.map(l=>l.id===id?{...l,[key]:value}:l))
+ const remove=(id:string)=>setLotes(x=>x.filter(l=>l.id!==id))
+ const save=async()=>{if(!ready)return;setSaving(true);setError('');setSaved('');try{const {data,error:e}=await supabase.rpc('erp_confirmar_recebimento_nfe',{p_header:header,p_items:items,p_lotes:lotes});if(e)throw e;if(!data)throw new Error('O banco não retornou o recebimento.');setSaved(`Recebimento ${data} gravado com sucesso.`)}catch(e){setError(e instanceof Error?e.message:'Não foi possível gravar o recebimento.')}finally{setSaving(false)}}
+ return <div className="v7-content" style={{maxWidth:1500,margin:'0 auto'}}>
+  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:16,marginBottom:22,flexWrap:'wrap'}}><div><span className="public-kicker">ESTOQUE • RECEBIMENTO</span><h2 style={{margin:'6px 0'}}>Recebimento de materiais por NF-e</h2><p>Carregue o XML, confira os itens e distribua cada quantidade em um ou mais lotes.</p></div><a className="public-secondary" href="/erp-industrial"><ArrowLeft size={17}/> Voltar ao ERP</a></div>
+  <section className="resource-card" style={{padding:22,marginBottom:18}}><label style={{display:'inline-flex',alignItems:'center',gap:9,cursor:'pointer'}} className="public-primary"><FileUp size={18}/> Carregar Nota<input type="file" accept=".xml,text/xml,application/xml" onChange={load} hidden/></label>{fileError&&<div className="auth-message auth-error" style={{marginTop:14}}><XCircle size={17}/> {fileError}</div>}{header&&<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:14,marginTop:18}}>{[['NF-e',header.numero_nfe],['Série',header.serie],['Emissão',header.data_emissao],['Fornecedor CNPJ',header.cnpj_fornecedor],['Valor total',money(Number(header.valor_total||0))],['Chave',header.chave_acesso||'—']].map(([k,v])=><div key={k as string}><small>{k}</small><strong style={{display:'block',marginTop:4,wordBreak:'break-word'}}>{v}</strong></div>)}</div>}</section>
+  {items.length>0&&<section className="resource-card" style={{padding:22}}><div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr><th>Item</th><th>Código</th><th>Produto</th><th>NF-e</th><th>Distribuído</th><th>Status</th><th></th></tr></thead><tbody>{items.map(item=>{const t=totals.find(x=>x.item.item_nfe===item.item_nfe)!;const ok=Math.abs(t.soma-item.quantidade_total)<0.00001&&t.soma>0;return <tr key={item.item_nfe}><td>{item.item_nfe}</td><td>{item.codigo_produto}</td><td>{item.descricao_produto}</td><td>{item.quantidade_total} {item.unidade}</td><td>{t.soma} {item.unidade}</td><td>{ok?<CheckCircle2 size={18}/>:<XCircle size={18}/>}</td><td><button className="public-secondary" type="button" onClick={()=>addLote(item)}><Plus size={16}/> Novo lote</button></td></tr>})}</tbody></table></div>
+   <div style={{display:'grid',gap:14,marginTop:20}}>{lotes.map((l,index)=>{const item=items.find(i=>i.item_nfe===l.item_nfe)!;return <div key={l.id} style={{padding:16,border:'1px solid rgba(100,116,139,.22)',borderRadius:14,display:'grid',gridTemplateColumns:'80px 1.2fr 1.2fr 1fr 120px 42px',gap:10,alignItems:'end'}}><div><small>Item</small><b>{item.item_nfe}</b></div><label>Lote fabricante<input value={l.lote_fabricante} onChange={e=>update(l.id,'lote_fabricante',e.target.value)}/></label><label>Lote interno*<input value={l.lote_interno} onChange={e=>update(l.id,'lote_interno',e.target.value)}/></label><label>Validade<input type="date" value={l.data_validade} onChange={e=>update(l.id,'data_validade',e.target.value)}/></label><label>Quantidade*<input type="number" min="0" step="0.0001" value={l.quantidade} onChange={e=>update(l.id,'quantidade',Number(e.target.value))}/></label><button type="button" title="Remover lote" onClick={()=>remove(l.id)}><Trash2 size={18}/></button></div>})}</div>
+   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:14,marginTop:22,flexWrap:'wrap'}}><div>{!ready&&<small>O recebimento só pode ser gravado quando cada item tiver lote preenchido e a soma dos lotes for exatamente igual à quantidade da NF-e.</small>}{error&&<div className="auth-message auth-error">{error}</div>}{saved&&<div className="auth-message auth-notice">{saved}</div>}</div><button className="public-primary" type="button" disabled={!ready||saving} onClick={()=>void save()}><PackageCheck size={18}/>{saving?'Gravando…':'Salvar recebimento'}</button></div>
+  </section>}
+ </div>
+}
