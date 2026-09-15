@@ -27,7 +27,7 @@ function isErpShellPath(pathname: string) {
 }
 
 function TabletHost() {
-  const [open, setOpen] = useState(() => isErpShellPath(location.pathname))
+  const [open, setOpen] = useState(false)
   useEffect(() => {
     const handler = () => setOpen(true)
     window.addEventListener('sgq:open-tablet', handler)
