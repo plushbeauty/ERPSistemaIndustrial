@@ -1,148 +1,95 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import AppEntryV2 from "./AppEntryV2";
-import "./index.css";
-
-/**
- * Limpeza completa do ambiente local.
- *
- * Não remove cookies de autenticação automaticamente,
- * pois isso poderia apagar uma sessão válida.
- */
-async function limparAmbienteAntigo() {
+async function limparAmbienteLocal() {
   try {
-    console.log("[SGQ] Iniciando limpeza do ambiente...");
-
-    /*
-     * 1. Service Workers
-     */
+    // 1. Remover todos os Service Workers
     if ("serviceWorker" in navigator) {
       const registrations =
         await navigator.serviceWorker.getRegistrations();
 
-      for (const registration of registrations) {
-        console.log(
-          "[SGQ] Removendo Service Worker:",
-          registration.scope
-        );
+      await Promise.all(
+        registrations.map(async (registration) => {
+          try {
+            registration.active?.postMessage({
+              type: "CLEAR_EVERYTHING",
+            });
+          } catch {}
 
-        await registration.unregister();
-      }
+          try {
+            await registration.unregister();
+          } catch {}
+        })
+      );
     }
 
-    /*
-     * 2. Cache Storage
-     */
+    // 2. Apagar Cache Storage
     if ("caches" in window) {
       const cacheNames = await caches.keys();
 
-      for (const cacheName of cacheNames) {
-        console.log("[SGQ] Removendo cache:", cacheName);
-
-        await caches.delete(cacheName);
-      }
+      await Promise.all(
+        cacheNames.map((cacheName) => caches.delete(cacheName))
+      );
     }
 
-    /*
-     * 3. LocalStorage obsoleto.
-     *
-     * NÃO apagar toda a sessão cegamente.
-     */
-    const keysToRemove = [
-      "vite",
-      "vite-cache",
-      "workbox",
-      "workbox-expiration",
-      "sgq-erp-cache",
-      "sgq-erp-sw",
-      "erp-cache",
-      "erp-service-worker",
+    // 3. Limpar armazenamento antigo do aplicativo
+    const chavesParaRemover = [
+      "supabase.auth.token",
+      "sb-auth-token",
+      "access_token",
+      "refresh_token",
+      "auth_token",
+      "erp_session",
+      "erp_user",
+      "erp_profile",
+      "erp_empresa",
+      "erp_usuario",
+      "SGQ_FORCE_CLEAN",
     ];
 
-    for (const key of keysToRemove) {
-      localStorage.removeItem(key);
+    for (const chave of chavesParaRemover) {
+      try {
+        localStorage.removeItem(chave);
+      } catch {}
+
+      try {
+        sessionStorage.removeItem(chave);
+      } catch {}
     }
 
-    /*
-     * 4. SessionStorage obsoleto.
-     */
-    for (const key of keysToRemove) {
-      sessionStorage.removeItem(key);
-    }
+    // 4. Remover qualquer chave antiga claramente relacionada ao ERP
+    try {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
 
-    console.log("[SGQ] Limpeza concluída.");
-  } catch (error) {
-    console.error("[SGQ] Erro durante limpeza:", error);
-  }
-}
-
-/**
- * Registra o SW somente depois da limpeza.
- *
- * updateViaCache = "none"
- * impede o navegador de buscar o script do SW
- * através do cache HTTP.
- */
-async function registrarServiceWorker() {
-  if (!("serviceWorker" in navigator)) {
-    return;
-  }
-
-  try {
-    const registration = await navigator.serviceWorker.register(
-      `/sw.js?v=${Date.now()}`,
-      {
-        updateViaCache: "none",
+        if (
+          key &&
+          (
+            key.toLowerCase().includes("erp") ||
+            key.toLowerCase().includes("sgq") ||
+            key.toLowerCase().includes("supabase")
+          )
+        ) {
+          localStorage.removeItem(key);
+        }
       }
-    );
+    } catch {}
 
-    console.log(
-      "[SGQ] Service Worker registrado:",
-      registration.scope
-    );
+    try {
+      for (let i = sessionStorage.length - 1; i >= 0; i--) {
+        const key = sessionStorage.key(i);
 
-    /*
-     * Força atualização.
-     */
-    await registration.update();
+        if (
+          key &&
+          (
+            key.toLowerCase().includes("erp") ||
+            key.toLowerCase().includes("sgq") ||
+            key.toLowerCase().includes("supabase")
+          )
+        ) {
+          sessionStorage.removeItem(key);
+        }
+      }
+    } catch {}
 
-    /*
-     * Se existir um SW aguardando, ativa imediatamente.
-     */
-    if (registration.waiting) {
-      registration.waiting.postMessage({
-        type: "SKIP_WAITING",
-      });
-    }
   } catch (error) {
-    console.error(
-      "[SGQ] Falha ao registrar Service Worker:",
-      error
-    );
+    console.warn("Limpeza local concluída com avisos:", error);
   }
 }
-
-async function bootstrap() {
-  /*
-   * Primeiro limpa o ambiente.
-   */
-  await limparAmbienteAntigo();
-
-  /*
-   * Depois registra a versão limpa.
-   */
-  await registrarServiceWorker();
-
-  /*
-   * Só então inicia React.
-   */
-  ReactDOM.createRoot(
-    document.getElementById("root")!
-  ).render(
-    <React.StrictMode>
-      <AppEntryV2 />
-    </React.StrictMode>
-  );
-}
-
-void bootstrap();
