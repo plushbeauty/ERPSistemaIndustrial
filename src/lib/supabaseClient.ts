@@ -3,7 +3,7 @@ import { createClient, type Session, type SupabaseClient } from '@supabase/supab
 const env = import.meta.env
 const CANONICAL_SUPABASE_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
 const supabaseUrl = String(env.VITE_SUPABASE_URL || CANONICAL_SUPABASE_URL).trim()
-const configuredKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || '').trim()
+const configuredKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '').trim()
 const isPrivateKey = configuredKey.startsWith('sb_secret_') || configuredKey.includes('service_role')
 const supabaseKey = isPrivateKey ? '' : configuredKey
 export const supabaseConfigurado = Boolean(supabaseUrl && supabaseKey)
