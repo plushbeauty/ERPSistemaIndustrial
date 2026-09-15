@@ -77,8 +77,13 @@ async function bootstrap() {
 
     ReactDOM.createRoot(rootContainer).render(<React.StrictMode>{app}</React.StrictMode>)
 
+    // Versioned registration forces clients that still have the old v1 worker
+    // to fetch the cleanup worker. That worker removes all legacy caches and
+    // unregisters itself, so old login bundles cannot survive a deployment.
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => undefined))
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js?v=2', { updateViaCache: 'none' }).catch(() => undefined)
+      })
     }
   } catch (error) {
     console.error('ERP_BOOT_FAILURE', error)
