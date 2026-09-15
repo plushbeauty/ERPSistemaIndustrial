@@ -51,7 +51,7 @@ export async function getAccessTokenOrThrow(): Promise<string> {
 
 export async function invokeSecureEdgeFunction<T = unknown>(
   functionName: string,
-  payload: unknown,
+  payload: any,
 ): Promise<{ data: T | null; error: Error | null }> {
   try {
     const session = await getValidSession()
