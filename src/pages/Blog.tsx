@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, BookOpen, Factory, Package, ShieldCheck, Wrench, BarChart3, Boxes, X } from 'lucide-react'
 import '../styles/login-blog-fix.css'
+import '../styles/blog-visual-2026.css'
 
 type Article = { category: string; title: string; excerpt: string; content: string[] }
 
