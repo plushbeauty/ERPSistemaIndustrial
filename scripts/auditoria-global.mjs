@@ -19,12 +19,18 @@ function rel(file) { return path.relative(ROOT, file).replaceAll(path.sep, '/') 
 function add(level, file, line, message) { findings.push({ level, file: rel(file), line, message }) }
 function lineOf(text, index) { return text.slice(0, index).split('\n').length }
 function read(file) { return fs.readFileSync(file, 'utf8') }
+function stripSqlStringsAndComments(text) {
+  return text
+    .replace(/--[^\n]*(?=\n|$)/g, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/'(?:''|[^'])*'/g, "''")
+    .replace(/\$\$[\s\S]*?\$\$/g, '$$')
+}
 walk(ROOT)
 const sourceFiles = files.filter(f => ['.ts','.tsx','.js','.jsx','.mjs'].includes(path.extname(f).toLowerCase()))
 const frontendFiles = sourceFiles.filter(f => f.includes(`${path.sep}src${path.sep}`))
 const allText = new Map(files.map(f => [f, read(f)]))
 
-// Secrets: detect actual private values, not safe env-variable names or SQL role names.
 const secretPatterns = [
   /sb_secret_[A-Za-z0-9_-]{20,}/g,
   /SUPABASE_SERVICE_ROLE_KEY\s*[:=]\s*['"][^'"\n]{20,}['"]/gi,
@@ -41,7 +47,6 @@ for (const file of files) {
   for (const re of secretPatterns) for (const m of text.matchAll(re)) add('BLOCKER', file, lineOf(text, m.index ?? 0), 'Possível segredo/credencial hardcoded.')
 }
 
-// Browser must never use private Supabase credentials.
 for (const file of frontendFiles) {
   const text = allText.get(file)
   for (const token of ['SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SECRET_KEY']) {
@@ -51,7 +56,6 @@ for (const file of frontendFiles) {
   if (/["']service_role["']\s*[:=]/i.test(text)) add('BLOCKER', file, 1, 'Possível credencial privada atribuída no frontend.')
 }
 
-// Dangerous local credential/auth bypass patterns.
 for (const file of frontendFiles) {
   const text = allText.get(file)
   const patterns = [
@@ -62,18 +66,15 @@ for (const file of frontendFiles) {
   for (const re of patterns) for (const m of text.matchAll(re)) add('HIGH', file, lineOf(text, m.index ?? 0), 'Possível bypass de autenticação/armazenamento inseguro de credencial.')
 }
 
-// Duplicate Supabase client implementations.
 const clientCandidates = frontendFiles.filter(f => /supabase.*client|client.*supabase/i.test(path.basename(f)))
 if (clientCandidates.length > 1) findings.push({ level: 'HIGH', file: clientCandidates.map(rel).join(', '), line: 1, message: 'Mais de uma implementação de cliente Supabase detectada; consolidar em um cliente canônico.' })
 
-// Obvious executable placeholders.
 for (const file of frontendFiles) {
   const text = allText.get(file)
   const re = /(?:TODO|FIXME|coming\s+soon|em\s+breve)/gi
   for (const m of text.matchAll(re)) add('MEDIUM', file, lineOf(text, m.index ?? 0), 'Placeholder/TODO encontrado em código executável.')
 }
 
-// Broken relative imports.
 const importRe = /(?:import\s+(?:[^'";]+?\s+from\s+)?|export\s+(?:[^'";]+?\s+from\s+)?|import\s*\()(['"])(\.\.?\/[^'"\n]+)\1/g
 for (const file of sourceFiles) {
   const text = allText.get(file)
@@ -84,7 +85,6 @@ for (const file of sourceFiles) {
   }
 }
 
-// Lazy pages in the main ERP entry.
 const entry = files.find(f => rel(f) === 'src/AppEntryV2.tsx')
 if (entry) {
   const text = allText.get(entry), lazyRe = /import\(['"](\.\/pages\/[^'"\n]+)['"]\)/g
@@ -94,7 +94,6 @@ if (entry) {
   }
 }
 
-// Vercel/package sanity.
 const vercel = files.find(f => rel(f) === 'vercel.json')
 if (!vercel) add('HIGH', ROOT, 1, 'vercel.json ausente.')
 else { try { JSON.parse(allText.get(vercel)) } catch { add('BLOCKER', vercel, 1, 'vercel.json inválido.') } }
@@ -102,12 +101,12 @@ const pkg = files.find(f => rel(f) === 'package.json')
 if (!pkg) add('BLOCKER', ROOT, 1, 'package.json ausente.')
 else { try { const p = JSON.parse(allText.get(pkg)); for (const required of ['type-check','build']) if (!p.scripts?.[required]) add('HIGH', pkg, 1, `Script obrigatório ausente: ${required}.`) } catch { add('BLOCKER', pkg, 1, 'package.json inválido.') } }
 
-// Migration hygiene. SECURITY DEFINER must have an explicit fixed search_path.
 for (const file of files.filter(f => f.includes(`${path.sep}supabase${path.sep}migrations${path.sep}`))) {
   const text = allText.get(file)
-  if (/sb_secret_[A-Za-z0-9_-]{20,}/i.test(text)) add('BLOCKER', file, 1, 'Segredo privado encontrado em migration.')
-  const hasDefiner = /security\s+definer/i.test(text)
-  const hasSafePath = /search_path\s*(?:=|to)\s*(?:pg_catalog\s*,\s*public|public\s*,\s*pg_catalog|public|pg_catalog)/i.test(text)
+  const sql = stripSqlStringsAndComments(text)
+  if (/sb_secret_[A-Za-z0-9_-]{20,}/i.test(sql)) add('BLOCKER', file, 1, 'Segredo privado encontrado em migration.')
+  const hasDefiner = /security\s+definer/i.test(sql)
+  const hasSafePath = /search_path\s*(?:=|to)\s*(?:pg_catalog\s*,\s*public|public\s*,\s*pg_catalog|public|pg_catalog)/i.test(sql)
   if (hasDefiner && !hasSafePath) add('HIGH', file, 1, 'SECURITY DEFINER sem search_path fixo explícito; revisar risco de search_path injection.')
 }
 
