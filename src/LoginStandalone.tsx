@@ -24,13 +24,17 @@ type LoginResponse = {
   error?: string
 }
 
+type HttpError = Error & { status?: number }
+
 async function withRetry<T>(operation: () => Promise<T>, retries = 2): Promise<T> {
   let attempt = 0
   while (true) {
     try {
       return await operation()
     } catch (error) {
-      if (attempt >= retries) throw error
+      const status = (error as HttpError).status
+      const retryable = status === undefined || status >= 500
+      if (!retryable || attempt >= retries) throw error
       attempt += 1
       await new Promise<void>((resolve) => window.setTimeout(resolve, 350 * attempt))
     }
@@ -41,19 +45,24 @@ async function postErpLogin(identifier: string, password: string): Promise<Login
   const endpoint = `${supabaseUrlExportada}/functions/v1/erp-login`
 
   return withRetry(async () => {
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: supabaseKeyExportada,
-        Authorization: `Bearer ${supabaseKeyExportada}`,
-      },
-      body: JSON.stringify({
-        email: identifier,
-        password,
-        empresa_id: null,
-      }),
-    })
+    let response: Response
+    try {
+      response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: supabaseKeyExportada,
+          Authorization: `Bearer ${supabaseKeyExportada}`,
+        },
+        body: JSON.stringify({
+          email: identifier,
+          password,
+          empresa_id: null,
+        }),
+      })
+    } catch (error) {
+      throw error instanceof Error ? error : new Error('Falha de rede ao chamar o serviço de autenticação.')
+    }
 
     const raw = await response.text()
     let payload: LoginResponse = {}
@@ -64,9 +73,8 @@ async function postErpLogin(identifier: string, password: string): Promise<Login
     }
 
     if (!response.ok) {
-      const message = payload.error || `Falha de autenticação (${response.status}).`
-      const error = new Error(message)
-      if (response.status < 500) throw error
+      const error = new Error(payload.error || `Falha de autenticação (${response.status}).`) as HttpError
+      error.status = response.status
       throw error
     }
 
