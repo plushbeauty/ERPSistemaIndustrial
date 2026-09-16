@@ -1,7 +1,78 @@
 import { FormEvent, useState } from 'react'
 import { KeyRound, LogIn, UserPlus, ArrowRight } from 'lucide-react'
-import { supabase, supabaseConfigurado } from './lib/supabaseClient'
+import { supabase, supabaseConfigurado, supabaseKeyExportada, supabaseUrlExportada } from './lib/supabaseClient'
 import './styles/industrial-login.css'
+
+type LoginResponse = {
+  session?: {
+    access_token?: string
+    refresh_token?: string
+  }
+  empresa_id?: string
+  profile?: {
+    id: string
+    empresa_id: string
+    setor_id: string | null
+    setor_codigo: string | null
+    setor_nome: string | null
+    username: string | null
+    nome: string | null
+    email: string
+    nivel_admin: number
+    is_master: boolean
+  }
+  error?: string
+}
+
+async function withRetry<T>(operation: () => Promise<T>, retries = 2): Promise<T> {
+  let attempt = 0
+  while (true) {
+    try {
+      return await operation()
+    } catch (error) {
+      if (attempt >= retries) throw error
+      attempt += 1
+      await new Promise<void>((resolve) => window.setTimeout(resolve, 350 * attempt))
+    }
+  }
+}
+
+async function postErpLogin(identifier: string, password: string): Promise<LoginResponse> {
+  const endpoint = `${supabaseUrlExportada}/functions/v1/erp-login`
+
+  return withRetry(async () => {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: supabaseKeyExportada,
+        Authorization: `Bearer ${supabaseKeyExportada}`,
+      },
+      body: JSON.stringify({
+        email: identifier,
+        password,
+        empresa_id: null,
+      }),
+    })
+
+    const raw = await response.text()
+    let payload: LoginResponse = {}
+    try {
+      payload = raw ? (JSON.parse(raw) as LoginResponse) : {}
+    } catch {
+      payload = {}
+    }
+
+    if (!response.ok) {
+      const message = payload.error || `Falha de autenticação (${response.status}).`
+      const error = new Error(message)
+      if (response.status < 500) throw error
+      throw error
+    }
+
+    return payload
+  })
+}
 
 export default function LoginStandalone() {
   const [usuario, setUsuario] = useState('')
@@ -12,30 +83,35 @@ export default function LoginStandalone() {
   async function entrar(event: FormEvent) {
     event.preventDefault()
     setErro('')
-    if (!supabaseConfigurado) { setErro('A conexão do sistema com o banco não está configurada.'); return }
-    if (!usuario.trim() || !senha) { setErro('Informe usuário e senha.'); return }
+    if (!supabaseConfigurado) {
+      setErro('A conexão do sistema com o banco não está configurada.')
+      return
+    }
+    if (!usuario.trim() || !senha) {
+      setErro('Informe usuário/e-mail e senha.')
+      return
+    }
+
     setBusy(true)
     try {
-      const { data, error } = await supabase.functions.invoke('erp-login', { body: { identificador: usuario.trim(), senha } })
-      if (error) {
-        const context = (error as { context?: unknown }).context
-        if (context instanceof Response) {
-          try {
-            const payload = await context.clone().json() as { error?: string }
-            throw new Error(payload?.error || `Falha de autenticação (${context.status}).`)
-          } catch (bodyError) {
-            if (bodyError instanceof Error && bodyError.message) throw bodyError
-          }
-        }
-        throw error
+      const data = await postErpLogin(usuario.trim(), senha)
+
+      if (!data.session?.access_token || !data.session.refresh_token || !data.profile) {
+        throw new Error(data.error || 'O serviço de autenticação não retornou uma sessão válida.')
       }
-      if (!data?.session?.access_token || !data?.session?.refresh_token || !data?.profile) throw new Error(data?.error || 'O serviço de autenticação não retornou uma sessão válida.')
-      const { error: sessionError } = await supabase.auth.setSession({ access_token: data.session.access_token, refresh_token: data.session.refresh_token })
+
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+      })
+
       if (sessionError) throw sessionError
       window.location.replace('/erp-industrial')
     } catch (error) {
       setErro(error instanceof Error ? error.message : 'Não foi possível entrar no sistema.')
-    } finally { setBusy(false) }
+    } finally {
+      setBusy(false)
+    }
   }
 
   return <main className="auth-screen">
@@ -58,10 +134,10 @@ export default function LoginStandalone() {
         <div className="auth-mobile-brand"><a href="/"><img src="/logo-industrial.svg" alt="SGQ ERP" /></a></div>
         <span className="auth-overline">ACESSO SEGURO</span>
         <h1>Entrar no SGQ ERP</h1>
-        <p className="auth-description">Acesse com seu nome de usuário e senha. A empresa e as permissões são identificadas automaticamente pelo seu usuário.</p>
+        <p className="auth-description">Acesse com seu nome de usuário ou e-mail e senha. A empresa e as permissões são validadas automaticamente pelo seu perfil.</p>
         <form className="auth-form" onSubmit={entrar}>
-          <label htmlFor="erp-user">Usuário</label>
-          <div className="auth-input-wrap"><input id="erp-user" type="text" value={usuario} onChange={e => setUsuario(e.target.value)} placeholder="Seu nome de usuário" autoComplete="username" autoFocus required /></div>
+          <label htmlFor="erp-user">Usuário ou e-mail</label>
+          <div className="auth-input-wrap"><input id="erp-user" type="text" value={usuario} onChange={e => setUsuario(e.target.value)} placeholder="Seu nome de usuário ou e-mail" autoComplete="username" autoFocus required /></div>
           <label htmlFor="erp-password" style={{ marginTop: 16 }}>Senha</label>
           <div className="auth-input-wrap"><input id="erp-password" type="password" value={senha} onChange={e => setSenha(e.target.value)} placeholder="Digite sua senha" autoComplete="current-password" required /><KeyRound size={17} aria-hidden="true" /></div>
           {erro && <div className="auth-message auth-error" role="alert">{erro}</div>}
