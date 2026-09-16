@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
 import PublicIndustrialHome from './PublicIndustrialHome'
 import IndustrialVisualShowcase from './components/IndustrialVisualShowcase'
 import { supabase } from './lib/supabaseClient'
@@ -20,7 +21,7 @@ const protectedOverviewPaths = new Set([
   '/modulos/indicadores',
 ])
 
-function AccessGate({ children }: { children: React.ReactNode }) {
+function AccessGate({ children }: { children: ReactNode }) {
   const [state, setState] = useState<'checking' | 'allowed' | 'denied'>('checking')
 
   useEffect(() => {
