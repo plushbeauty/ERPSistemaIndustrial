@@ -1,16 +1,12 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabaseClient'
 
 type ERPProfile = {
   id: string
+  email: string
   empresa_id: string
-  nome: string
-  email: string | null
-  nivel_admin: number
-  ativo: boolean
-  role_id: string | null
-  is_master: boolean
+  role: string
 }
 
 type AuthContextValue = {
@@ -23,107 +19,120 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
-function clearAuthStorage() {
-  if (typeof window === 'undefined') return
-  try {
-    for (const key of Object.keys(localStorage)) {
-      if (key.startsWith('sb-') || key.includes('supabase') || key === 'erp-industrial-auth') localStorage.removeItem(key)
-    }
-    for (const key of Object.keys(sessionStorage)) {
-      if (key.startsWith('sb-') || key.includes('supabase') || key === 'erp-industrial-auth') sessionStorage.removeItem(key)
-    }
-  } catch {
-    // Storage may be unavailable in hardened/private browser contexts.
-  }
+async function loadProfile(userId: string): Promise<ERPProfile | null> {
+  const { data, error } = await supabase
+    .from('erp_usuarios')
+    .select('id,email,empresa_id,role')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (error) throw error
+  if (!data) return null
+
+  const profile = data as ERPProfile
+  if (!profile.id || profile.id !== userId) throw new Error('Perfil ERP não corresponde ao usuário autenticado.')
+  if (!profile.email?.trim()) throw new Error('Perfil ERP sem email válido.')
+  if (!profile.empresa_id?.trim()) throw new Error('Perfil ERP sem empresa vinculada.')
+  if (!profile.role?.trim()) throw new Error('Perfil ERP sem role válida.')
+
+  return profile
 }
 
-async function loadProfile(userId: string): Promise<ERPProfile | null> {
-  const { data: userRow, error: userError } = await supabase
-    .from('erp_usuarios')
-    .select('id,empresa_id,nome,email,nivel_admin,ativo,role_id,is_master')
-    .eq('auth_user_id', userId)
-    .eq('ativo', true)
-    .maybeSingle()
-
-  if (userError) throw userError
-  if (!userRow || !userRow.empresa_id) return null
-
-  // Multi-tenant validation is deliberately performed against the real ERP tables.
-  // A valid Supabase Auth user is not enough to enter a tenant without an active company.
-  const { data: company, error: companyError } = await supabase
-    .from('erp_empresas')
-    .select('id,ativo,plano_status,trial_ends_at')
-    .eq('id', userRow.empresa_id)
-    .maybeSingle()
-
-  if (companyError) throw companyError
-  if (!company || company.ativo === false) return null
-
-  const status = String(company.plano_status ?? '').trim().toLowerCase()
-  const trialEnds = company.trial_ends_at ? new Date(company.trial_ends_at).getTime() : null
-  const trialExpired = trialEnds !== null && Number.isFinite(trialEnds) && Date.now() >= trialEnds && !['ativo', 'active'].includes(status)
-  if (trialExpired) return null
-  if (status && !['trial', 'ativo', 'active'].includes(status)) return null
-
-  return userRow as ERPProfile
+function tenantClaim(session: Session | null): string | null {
+  const value = session?.user?.app_metadata?.empresa_id
+  return typeof value === 'string' && value.trim() ? value : null
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<ERPProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const hydratedUserId = useRef<string | null>(null)
+  const hydratedTenant = useRef<string | null>(null)
+  const requestId = useRef(0)
+
+  const hydrate = useCallback(async (next: Session | null, force = false) => {
+    const currentRequest = ++requestId.current
+    setSession(next)
+
+    if (!next?.user) {
+      hydratedUserId.current = null
+      hydratedTenant.current = null
+      setProfile(null)
+      setLoading(false)
+      return
+    }
+
+    const userId = next.user.id
+    const tenant = tenantClaim(next)
+    if (!force && hydratedUserId.current === userId && hydratedTenant.current === tenant && profile) {
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+    try {
+      const nextProfile = await loadProfile(userId)
+      if (currentRequest !== requestId.current) return
+      if (!nextProfile) throw new Error('Usuário autenticado não possui perfil ERP.')
+      if (tenant && tenant !== nextProfile.empresa_id) throw new Error('A empresa da sessão não corresponde ao perfil ERP.')
+      hydratedUserId.current = userId
+      hydratedTenant.current = nextProfile.empresa_id
+      setProfile(nextProfile)
+    } catch (error) {
+      if (currentRequest !== requestId.current) return
+      console.error('[AuthProvider] Falha ao carregar perfil ERP:', error)
+      setProfile(null)
+      hydratedUserId.current = null
+      hydratedTenant.current = null
+    } finally {
+      if (currentRequest === requestId.current) setLoading(false)
+    }
+  }, [profile])
 
   useEffect(() => {
     let mounted = true
-    let profileRequest = 0
-
-    const applySession = async (next: Session | null) => {
-      const requestId = ++profileRequest
-      if (!mounted) return
-      setSession(next)
-      setProfile(null)
-      setLoading(true)
-
-      if (!next?.user) {
-        setLoading(false)
-        return
-      }
-
-      try {
-        const nextProfile = await loadProfile(next.user.id)
-        if (!mounted || requestId !== profileRequest) return
-        setProfile(nextProfile)
-      } catch (error) {
-        console.error('[AuthProvider] Falha ao carregar perfil/empresa ERP:', error)
-        if (mounted && requestId === profileRequest) setProfile(null)
-      } finally {
-        if (mounted && requestId === profileRequest) setLoading(false)
-      }
-    }
 
     void supabase.auth.getSession().then(({ data, error }) => {
+      if (!mounted) return
       if (error) console.error('[AuthProvider] Falha ao restaurar sessão:', error)
-      void applySession(data.session)
+      void hydrate(data.session, true)
     })
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, next) => {
-      void applySession(next)
+    const { data: listener } = supabase.auth.onAuthStateChange((event, next) => {
+      if (!mounted) return
+      if (event === 'SIGNED_OUT') {
+        void hydrate(null, true)
+        return
+      }
+      if (event === 'SIGNED_IN') {
+        void hydrate(next, true)
+        return
+      }
+      if (event === 'TOKEN_REFRESHED') {
+        const nextUserId = next?.user?.id ?? null
+        const nextTenant = tenantClaim(next)
+        const changed = nextUserId !== hydratedUserId.current || nextTenant !== hydratedTenant.current
+        if (changed) void hydrate(next, true)
+        else setSession(next)
+      }
     })
 
     return () => {
       mounted = false
       listener.subscription.unsubscribe()
     }
-  }, [])
+  }, [hydrate])
 
   async function signOut() {
     try {
       await supabase.auth.signOut()
     } finally {
-      clearAuthStorage()
+      requestId.current += 1
+      hydratedUserId.current = null
+      hydratedTenant.current = null
       setProfile(null)
       setSession(null)
-      if (typeof window !== 'undefined') window.location.replace('/login')
     }
   }
 
@@ -135,3 +144,5 @@ export function useAuth() {
   if (!value) throw new Error('useAuth deve ser usado dentro de AuthProvider')
   return value
 }
+
+export type { ERPProfile }
