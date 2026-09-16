@@ -5,15 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/prepare-tenant-segment.mjs && npm run type-check && vite build",
+    "build": "npm run audit && npm run audit:global && npm run audit:interactions && tsc -b && vite build",
     "type-check": "tsc --noEmit",
     "audit:interactions": "node scripts/audit-interactions.mjs",
     "audit:global": "node scripts/auditoria-global.mjs",
-    "audit": "npm run type-check && npm run audit:global && npm run audit:interactions && npm run build",
+    "audit": "npm run type-check",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.57.4",
+    "@Supabase/supabase-js": "^2.57.4",
     "jspdf": "^3.0.3",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
