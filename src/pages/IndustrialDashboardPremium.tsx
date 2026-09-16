@@ -31,7 +31,7 @@ export default function IndustrialDashboardPremium({ onOpen }: DashboardProps) {
         if (authError) throw authError
         if (!auth.user) throw new Error('AUTH_SESSION_REQUIRED')
 
-        const { data: profile, error: profileError } = await supabase.from('erp_usuarios').select('empresa_id').eq('auth_user_id', auth.user.id).is('deleted_at', null).maybeSingle()
+        const { data: profile, error: profileError } = await supabase.from('erp_usuarios').select('empresa_id').eq('id', auth.user.id).is('deleted_at', null).maybeSingle()
         if (profileError) throw profileError
         if (!profile?.empresa_id) throw new Error('Perfil empresarial não encontrado.')
         const empresaId = profile.empresa_id
