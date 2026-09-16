@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { Component, lazy, Suspense, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import PublicIndustrialHome from './PublicIndustrialHome'
 import IndustrialVisualShowcase from './components/IndustrialVisualShowcase'
@@ -10,74 +10,16 @@ import './styles/industrial-public-restoration.css'
 import './styles/visual-showcase-2026.css'
 
 const AppEntryV2 = lazy(() => import('./AppEntryV2'))
+const protectedOverviewPaths = new Set(['/modulos/pcp','/modulos/estoque','/modulos/recebimento','/modulos/qualidade','/modulos/manutencao','/modulos/fiscal','/modulos/indicadores'])
 
-const protectedOverviewPaths = new Set([
-  '/modulos/pcp',
-  '/modulos/estoque',
-  '/modulos/recebimento',
-  '/modulos/qualidade',
-  '/modulos/manutencao',
-  '/modulos/fiscal',
-  '/modulos/indicadores',
-])
-
-function AccessGate({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<'checking' | 'allowed' | 'denied'>('checking')
-
-  useEffect(() => {
-    let alive = true
-    void (async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession()
-        if (error) throw error
-        if (!data.session?.user) {
-          if (alive) setState('denied')
-          return
-        }
-        const metadata = data.session.user.app_metadata ?? {}
-        const empresaId = typeof metadata.empresa_id === 'string' ? metadata.empresa_id.trim() : ''
-        const role = typeof metadata.role === 'string' ? metadata.role.trim() : ''
-        if (!empresaId || !role) {
-          if (alive) setState('denied')
-          return
-        }
-        if (alive) setState('allowed')
-      } catch (error) {
-        console.error('[Protected overview]', error)
-        if (alive) setState('denied')
-      }
-    })()
-    return () => { alive = false }
-  }, [])
-
-  if (state === 'checking') {
-    return <div role="status" aria-live="polite" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'Inter, system-ui, sans-serif' }}>Validando acesso…</div>
-  }
-  if (state === 'denied') {
-    const returnTo = `${window.location.pathname}${window.location.search}`
-    window.location.replace(`/login?returnTo=${encodeURIComponent(returnTo)}`)
-    return null
-  }
-  return <>{children}</>
+class BootstrapBoundary extends Component<{children:ReactNode},{error:Error|null}>{
+  state={error:null as Error|null}
+  static getDerivedStateFromError(error:Error){return{error}}
+  render(){if(this.state.error)return <main style={{minHeight:'100vh',display:'grid',placeItems:'center',padding:24,background:'#07141a',fontFamily:'Inter,system-ui,sans-serif',color:'#fff'}}><section style={{width:'min(680px,100%)',border:'1px solid rgba(255,255,255,.14)',borderRadius:24,padding:28,background:'linear-gradient(145deg,#102a34,#08191f)',boxShadow:'0 30px 90px rgba(0,0,0,.35)'}}><div style={{fontSize:11,fontWeight:900,letterSpacing:'.18em',color:'#d6b36a'}}>SGQ ERP INDUSTRIAL</div><h1 style={{fontSize:28,margin:'10px 0 8px'}}>O ambiente encontrou uma falha ao iniciar</h1><p style={{color:'rgba(255,255,255,.7)',lineHeight:1.7,margin:0}}>A inicialização falhou. Esta tela de recuperação evita o antigo estado azul/blank e permite reiniciar o bootstrap.</p><pre style={{whiteSpace:'pre-wrap',wordBreak:'break-word',marginTop:18,padding:16,borderRadius:14,background:'rgba(0,0,0,.25)',color:'#f1d89e',fontSize:12}}>{this.state.error.message}</pre><div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:18}}><button type="button" onClick={()=>location.reload()} style={{border:0,borderRadius:12,padding:'12px 18px',fontWeight:900,cursor:'pointer'}}>Recarregar ambiente</button><button type="button" onClick={()=>{void supabase.auth.signOut();location.replace('/login')}} style={{border:'1px solid rgba(255,255,255,.18)',borderRadius:12,padding:'12px 18px',fontWeight:900,cursor:'pointer',background:'transparent',color:'#fff'}}>Limpar sessão e entrar</button><a href="/" style={{border:'1px solid rgba(255,255,255,.18)',borderRadius:12,padding:'12px 18px',fontWeight:900,color:'#fff',textDecoration:'none'}}>Voltar ao site</a></div></section></main>;return this.props.children}
 }
 
-export default function AppBootstrap() {
-  const path = window.location.pathname
+function LoginBootstrap(){const[ready,setReady]=useState(false);useEffect(()=>{let alive=true;void supabase.auth.signOut().finally(()=>{if(alive)setReady(true)});return()=>{alive=false}},[]);if(!ready)return <div role="status" aria-live="polite" style={{minHeight:'100vh',display:'grid',placeItems:'center',fontFamily:'Inter,system-ui,sans-serif',background:'#07141a',color:'#fff'}}>Preparando acesso seguro…</div>;return <AppEntryV2/>}
 
-  if (path === '/' || path === '/home') {
-    return (
-      <main aria-label="SGQ ERP Industrial">
-        <PublicIndustrialHome />
-        <IndustrialVisualShowcase />
-      </main>
-    )
-  }
+function AccessGate({children}:{children:ReactNode}){const[state,setState]=useState<'checking'|'allowed'|'denied'>('checking');useEffect(()=>{let alive=true;void(async()=>{try{const{data,error}=await supabase.auth.getSession();if(error)throw error;if(!data.session?.user){if(alive)setState('denied');return}const metadata=data.session.user.app_metadata??{};const empresaId=typeof metadata.empresa_id==='string'?metadata.empresa_id.trim():'';const role=typeof metadata.role==='string'?metadata.role.trim():'';if(!empresaId||!role){if(alive)setState('denied');return}if(alive)setState('allowed')}catch(error){console.error('[Protected overview]',error);if(alive)setState('denied')}})();return()=>{alive=false}},[]);if(state==='checking')return <div role="status" aria-live="polite" style={{minHeight:'100vh',display:'grid',placeItems:'center',fontFamily:'Inter,system-ui,sans-serif'}}>Validando acesso…</div>;if(state==='denied'){const returnTo=`${window.location.pathname}${window.location.search}`;window.location.replace(`/login?returnTo=${encodeURIComponent(returnTo)}`);return null}return <>{children}</>}
 
-  const app = (
-    <Suspense fallback={<div role="status" aria-live="polite" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'Inter, system-ui, sans-serif' }}>Carregando SGQ ERP…</div>}>
-      <AppEntryV2 />
-    </Suspense>
-  )
-
-  return protectedOverviewPaths.has(path) ? <AccessGate>{app}</AccessGate> : app
-}
+export default function AppBootstrap(){const path=window.location.pathname;if(path==='/login')return <BootstrapBoundary><Suspense fallback={<div role="status" style={{minHeight:'100vh',display:'grid',placeItems:'center'}}>Carregando acesso…</div>}><LoginBootstrap/></Suspense></BootstrapBoundary>;if(path==='/'||path==='/home')return <BootstrapBoundary><main aria-label="SGQ ERP Industrial"><PublicIndustrialHome/><IndustrialVisualShowcase/></main></BootstrapBoundary>;const app=<BootstrapBoundary><Suspense fallback={<div role="status" aria-live="polite" style={{minHeight:'100vh',display:'grid',placeItems:'center',fontFamily:'Inter,system-ui,sans-serif'}}>Carregando SGQ ERP…</div>}><AppEntryV2/></Suspense></BootstrapBoundary>;return protectedOverviewPaths.has(path)?<AccessGate>{app}</AccessGate>:app}
