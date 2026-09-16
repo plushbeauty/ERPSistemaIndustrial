@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'
 import { ArrowLeft, ArrowRight, BarChart3, Boxes, ClipboardCheck, Factory, PackageCheck, Receipt, Wrench } from 'lucide-react'
+import { supabase } from '../lib/supabaseClient'
 
 type ModuleKey = 'pcp' | 'estoque' | 'recebimento' | 'qualidade' | 'manutencao' | 'fiscal' | 'indicadores'
 
@@ -24,8 +26,27 @@ const modules: Record<ModuleKey, ModuleInfo> = {
 }
 
 export default function ModuleOverviewIndustrial({ module }: { module: ModuleKey }) {
+  const [checking, setChecking] = useState(true)
   const item = modules[module]
   const Icon = item.Icon
+
+  useEffect(() => {
+    let alive = true
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!alive) return
+      if (!data.session) {
+        location.replace(`/login?returnTo=${encodeURIComponent(location.pathname)}`)
+        return
+      }
+      setChecking(false)
+    }).catch(() => {
+      if (alive) location.replace(`/login?returnTo=${encodeURIComponent(location.pathname)}`)
+    })
+    return () => { alive = false }
+  }, [])
+
+  if (checking) return <div className="loading-screen">Validando acesso…</div>
+
   return <main className="module-overview" style={{ maxWidth: 1440, margin: '0 auto', padding: '32px 24px 56px' }}>
     <a href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 28 }}><ArrowLeft size={17}/> Voltar ao início</a>
     <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.5fr) minmax(280px, .8fr)', gap: 28, alignItems: 'stretch' }}>
