@@ -45,27 +45,21 @@ function LoadingSkeleton({label='Carregando SGQ ERP…'}:{label?:string}){
 }
 
 function lazyFallback(){return <LoadingSkeleton/>}
-function trialExpired(ends:string|null,status:string|null){return !!ends&&Date.now()>=new Date(ends).getTime()&&status!=='ativo'}
 
-async function validarAcessoERP(authUserId:string):Promise<AccessResult>{
-  try{
-    if(!authUserId?.trim())return{ok:false,master:false,reason:'Sessão de autenticação inválida.'}
-    const{data:u,error}=await supabase.from('erp_usuarios').select('id,empresa_id,ativo,nivel_admin').eq('auth_user_id',authUserId).maybeSingle()
-    if(error)throw error
-    if(!u||u.ativo===false)return{ok:false,master:false,reason:'Este acesso não está vinculado a um usuário ativo do ERP.'}
-    const master=Number(u.nivel_admin)>=9
-    if(master)return{ok:true,master:true,reason:''}
-    if(!u.empresa_id)return{ok:false,master:false,reason:'Usuário sem empresa vinculada.'}
-    const{data:e,error:ee}=await supabase.from('erp_empresas').select('ativo,plano_status,trial_ends_at').eq('id',u.empresa_id).maybeSingle()
-    if(ee)throw ee
-    if(!e)return{ok:false,master:false,reason:'Empresa vinculada não encontrada.'}
-    if(e.ativo===false)return{ok:false,master:false,reason:'O acesso desta empresa está bloqueado.'}
-    if(trialExpired(e.trial_ends_at??null,e.plano_status??null))return{ok:false,master:false,reason:'Seu teste gratuito terminou. Ative seu plano para continuar.'}
-    return{ok:true,master,reason:''}
-  }catch(error){
-    console.error('[validarAcessoERP]',error)
-    return{ok:false,master:false,reason:error instanceof Error?error.message:'Não foi possível validar o acesso ao ERP.'}
-  }
+function profileFromSession(session:Session|null){
+  const metadata=session?.user?.app_metadata
+  const empresaId=typeof metadata?.empresa_id==='string'?metadata.empresa_id.trim():''
+  const role=typeof metadata?.role==='string'?metadata.role.trim():''
+  return {empresaId,role}
+}
+
+async function validarAcessoERP(session:Session|null):Promise<AccessResult>{
+  if(!session?.user)return{ok:false,master:false,reason:'Sessão de autenticação inválida.'}
+  const {empresaId,role}=profileFromSession(session)
+  if(!empresaId)return{ok:false,master:false,reason:'A sessão não contém a empresa autenticada.'}
+  if(!role)return{ok:false,master:false,reason:'A sessão não contém a role autenticada.'}
+  const normalizedRole=role.toUpperCase()
+  return{ok:true,master:normalizedRole==='MASTER'||normalizedRole==='MASTER_ADMIN'||normalizedRole==='SUPER_ADMIN',reason:''}
 }
 
 function safeReturnTo(value:string|null){if(!value||!value.startsWith('/')||value.startsWith('//')||value.startsWith('/login'))return'/erp-industrial';return value}
@@ -86,8 +80,13 @@ function Login(){
       if(sessionError)throw sessionError
       const{data:authUser,error:authError}=await supabase.auth.getUser()
       if(authError||!authUser.user)throw authError??new Error('Sessão autenticada sem usuário válido.')
-      const access=await validarAcessoERP(authUser.user.id)
+      const{data:sessionData,error:sessionReadError}=await supabase.auth.getSession()
+      if(sessionReadError||!sessionData.session)throw sessionReadError??new Error('Sessão não disponível após autenticação.')
+      const access=await validarAcessoERP(sessionData.session)
       if(!access.ok){await supabase.auth.signOut();throw new Error(access.reason)}
+      if(authUser.user.id!==data.profile.id)throw new Error('O perfil retornado não corresponde ao usuário autenticado.')
+      if(sessionData.session.user.app_metadata?.empresa_id!==data.profile.empresa_id)throw new Error('A empresa da sessão não corresponde ao perfil autenticado.')
+      if(sessionData.session.user.app_metadata?.role!==data.profile.role)throw new Error('A role da sessão não corresponde ao perfil autenticado.')
       location.replace(requestedTarget())
     }catch(e){setErr(e instanceof Error?e.message:'Não foi possível entrar no sistema.')}
     finally{setBusy(false)}
@@ -105,9 +104,9 @@ function Login(){
     <section className="auth-panel"><div className="auth-panel-inner">
       <div className="auth-mobile-brand"><a href="/"><img src="/logo-industrial.svg" alt="SGQ ERP"/></a></div>
       <span className="auth-overline">ACESSO SEGURO</span><h1>Entrar no SGQ ERP</h1>
-      <p className="auth-description">Informe seu usuário ou e-mail e sua senha. A empresa e as permissões são identificadas automaticamente pelo seu vínculo no ERP.</p>
+      <p className="auth-description">Informe seu e-mail e sua senha. A empresa e as permissões são identificadas automaticamente pelo vínculo autenticado no ERP.</p>
       <form className="auth-form" onSubmit={submit}>
-        <label htmlFor="erp-user">Usuário ou e-mail</label><div className="auth-input-wrap"><input id="erp-user" type="text" value={usuario} onChange={e=>setUsuario(e.target.value)} placeholder="Seu nome de usuário ou e-mail" autoComplete="username" autoFocus required/></div>
+        <label htmlFor="erp-user">E-mail</label><div className="auth-input-wrap"><input id="erp-user" type="email" value={usuario} onChange={e=>setUsuario(e.target.value)} placeholder="seu@email.com" autoComplete="username" autoFocus required/></div>
         <label htmlFor="erp-password">Senha</label><div className="auth-input-wrap"><input id="erp-password" type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="Digite sua senha" autoComplete="current-password" required/><KeyRound size={17} aria-hidden="true"/></div>
         {err&&<div className="auth-message auth-error" role="alert">{err}</div>}{notice&&<div className="auth-message auth-notice" role="status">{notice}</div>}
         <button className="auth-submit" type="submit" disabled={busy}>{busy?'Entrando…':'Entrar'} <LogIn size={18}/></button>
@@ -120,13 +119,13 @@ function Login(){
 
 function ERP(){
   const[valid,setValid]=useState<boolean|null>(null)
-  useEffect(()=>{let alive=true;void(async()=>{try{const{data,error}=await supabase.auth.getUser();if(error)throw error;if(!data.user){if(alive)setValid(false);return}const access=await validarAcessoERP(data.user.id);if(!alive)return;if(!access.ok){await supabase.auth.signOut();location.replace('/login');return}setValid(true)}catch(error){console.error('[ERP access]',error);if(alive){setValid(false);location.replace('/login')}}})();return()=>{alive=false}},[])
+  useEffect(()=>{let alive=true;void(async()=>{try{const{data,error}=await supabase.auth.getSession();if(error)throw error;if(!data.session){if(alive)setValid(false);return}const access=await validarAcessoERP(data.session);if(!alive)return;if(!access.ok){await supabase.auth.signOut();location.replace('/login');return}setValid(true)}catch(error){console.error('[ERP access]',error);if(alive){setValid(false);location.replace('/login')}}})();return()=>{alive=false}},[])
   if(valid===null)return <LoadingSkeleton label="Validando acesso…"/>;if(valid===false)return <Login/>;return <Suspense fallback={<LoadingSkeleton/>}><AppIndustrial/></Suspense>
 }
 
 function Protected({children,masterOnly=false}:{children:ReactNode;masterOnly?:boolean}){
   const[state,setState]=useState<'checking'|'allowed'|'denied'>('checking')
-  useEffect(()=>{let alive=true;void(async()=>{try{const{data,error}=await supabase.auth.getUser();if(error)throw error;if(!data.user){if(alive)setState('denied');return}const access=await validarAcessoERP(data.user.id);if(!alive)return;if(!access.ok||(masterOnly&&!access.master)){await supabase.auth.signOut();setState('denied');return}setState('allowed')}catch(error){console.error('[Protected]',error);if(alive)setState('denied')}})();return()=>{alive=false}},[masterOnly])
+  useEffect(()=>{let alive=true;void(async()=>{try{const{data,error}=await supabase.auth.getSession();if(error)throw error;if(!data.session){if(alive)setState('denied');return}const access=await validarAcessoERP(data.session);if(!alive)return;if(!access.ok||(masterOnly&&!access.master)){setState('denied');return}setState('allowed')}catch(error){console.error('[Protected]',error);if(alive)setState('denied')}})();return()=>{alive=false}},[masterOnly])
   if(state==='checking')return <LoadingSkeleton label="Validando permissões…"/>;if(state==='denied'){const target=encodeURIComponent(location.pathname+location.search);return <LoginRedirect target={target}/>};return <Boundary>{children}</Boundary>
 }
 
