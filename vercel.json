@@ -11,6 +11,13 @@
     { "source": "/contato", "destination": "/index.html" },
     { "source": "/cadastro-empresa", "destination": "/index.html" },
     { "source": "/erp-industrial", "destination": "/index.html" },
+    { "source": "/modulos/pcp", "destination": "/index.html" },
+    { "source": "/modulos/estoque", "destination": "/index.html" },
+    { "source": "/modulos/recebimento", "destination": "/index.html" },
+    { "source": "/modulos/qualidade", "destination": "/index.html" },
+    { "source": "/modulos/manutencao", "destination": "/index.html" },
+    { "source": "/modulos/fiscal", "destination": "/index.html" },
+    { "source": "/modulos/indicadores", "destination": "/index.html" },
     { "source": "/recebimento-materiais", "destination": "/index.html" },
     { "source": "/pcp", "destination": "/index.html" },
     { "source": "/qualidade", "destination": "/index.html" },
@@ -23,6 +30,7 @@
     { "source": "/fiscal/previsao-caixa", "destination": "/index.html" },
     { "source": "/manual-usuario", "destination": "/index.html" },
     { "source": "/teste-erp", "destination": "/index.html" },
-    { "source": "/master", "destination": "/index.html" }
+    { "source": "/master", "destination": "/index.html" },
+    { "source": "/master/evolucao", "destination": "/index.html" }
   ]
 }
