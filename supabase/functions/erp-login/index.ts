@@ -1,111 +1,172 @@
 import { createClient } from '@supabase/supabase-js'
 
-const productionOrigin = 'https://erp-sistema-industrial.vercel.app'
-const previewOrigin = /^https:\/\/erp-sistema-industrial(?:-git-main-plushbeauty)?-[a-z0-9-]+\.vercel\.app$/i
-const localhostOrigin = /^https?:\/\/(localhost|127\.0\.0\.1):(5173|4173)$/i
-
-function allowedOrigin(origin: string | null) {
-  if (!origin) return productionOrigin
-  if (origin === productionOrigin || previewOrigin.test(origin) || localhostOrigin.test(origin)) return origin
-  return productionOrigin
+export const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-function cors(origin: string | null) {
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin(origin),
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Max-Age': '86400',
-    'Vary': 'Origin',
-    'Content-Type': 'application/json',
+type LoginBody = {
+  email?: unknown
+  password?: unknown
+  empresa_id?: unknown
+  identificador?: unknown
+  usuario?: unknown
+  username?: unknown
+  senha?: unknown
+}
+
+type ErpUser = {
+  id: string
+  nome: string | null
+  login_nome: string | null
+  email: string | null
+  empresa_id: string
+  setor_id: string | null
+  ativo: boolean
+  nivel_admin: number | null
+  auth_user_id: string | null
+  is_master: boolean | null
+  deleted_at: string | null
+}
+
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
+
+Deno.serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
   }
-}
 
-const json = (origin: string | null, body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: cors(origin) })
-
-Deno.serve(async (req) => {
-  const origin = req.headers.get('origin')
-  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(origin) })
-  if (req.method !== 'POST') return json(origin, { error: 'Método não permitido.' }, 405)
+  if (req.method !== 'POST') {
+    return json({ error: 'Método não permitido.' }, 405)
+  }
 
   try {
-    const body = await req.json()
-    const identificador = String(body.identificador ?? body.usuario ?? body.username ?? '').trim()
-    const senha = String(body.senha ?? body.password ?? '')
-    if (!identificador || !senha) return json(origin, { error: 'Informe usuário e senha.' }, 400)
+    const body = (await req.json()) as LoginBody
+    const identifier = String(body.email ?? body.identificador ?? body.usuario ?? body.username ?? '').trim()
+    const password = String(body.password ?? body.senha ?? '')
+    const requestedEmpresaId = String(body.empresa_id ?? '').trim() || null
 
-    const serviceRole = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
+    if (!identifier || !password) {
+      return json({ error: 'Informe usuário/e-mail e senha.' }, 400)
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    if (!serviceRole || !anonKey || !supabaseUrl) return json(origin, { error: 'Ambiente de autenticação do ERP não configurado.' }, 500)
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
-    const admin = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false, autoRefreshToken: false } })
-    const needle = identificador.toLowerCase()
-    const { data: users, error: usersError } = await admin
+    if (!supabaseUrl || !anonKey || !serviceRoleKey) {
+      return json({ error: 'Ambiente de autenticação do ERP não configurado.' }, 500)
+    }
+
+    const admin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    })
+
+    const needle = identifier.toLowerCase()
+    const { data: candidates, error: candidateError } = await admin
       .from('erp_usuarios')
       .select('id,nome,login_nome,email,empresa_id,setor_id,ativo,nivel_admin,auth_user_id,is_master,deleted_at')
       .eq('ativo', true)
       .is('deleted_at', null)
       .limit(1000)
 
-    if (usersError) return json(origin, { error: 'Falha ao localizar o usuário do ERP.' }, 500)
+    if (candidateError) {
+      console.error('[erp-login] profile lookup:', candidateError)
+      return json({ error: 'Falha ao localizar o perfil de autenticação.' }, 500)
+    }
 
-    const matches = (users ?? []).filter((u) =>
-      String(u.login_nome ?? '').trim().toLowerCase() === needle ||
-      String(u.email ?? '').trim().toLowerCase() === needle ||
-      String(u.nome ?? '').trim().toLowerCase() === needle,
+    const matches = ((candidates ?? []) as ErpUser[]).filter((user) =>
+      String(user.email ?? '').trim().toLowerCase() === needle ||
+      String(user.login_nome ?? '').trim().toLowerCase() === needle ||
+      String(user.nome ?? '').trim().toLowerCase() === needle,
     )
 
-    if (matches.length !== 1) return json(origin, { error: 'Usuário ou senha inválidos.' }, 401)
+    if (matches.length !== 1 || !matches[0].auth_user_id || !matches[0].email) {
+      return json({ error: 'Usuário ou senha inválidos.' }, 401)
+    }
 
-    const u = matches[0]
-    if (!u.auth_user_id) return json(origin, { error: 'Este usuário ainda não foi provisionado para autenticação.' }, 403)
+    const profileCandidate = matches[0]
 
-    const { data: authData, error: authLookupError } = await admin.auth.admin.getUserById(u.auth_user_id)
-    if (authLookupError || !authData.user?.email) return json(origin, { error: 'Vínculo de autenticação inválido.' }, 403)
+    const { data: authUserData, error: authUserError } = await admin.auth.admin.getUserById(profileCandidate.auth_user_id)
+    if (authUserError || !authUserData.user?.email) {
+      console.error('[erp-login] auth identity lookup:', authUserError)
+      return json({ error: 'Usuário ou senha inválidos.' }, 401)
+    }
 
-    const authClient = createClient(supabaseUrl, anonKey, { auth: { persistSession: false, autoRefreshToken: false } })
-    const { data: signIn, error: signInError } = await authClient.auth.signInWithPassword({
-      email: authData.user.email.trim().toLowerCase(),
-      password: senha,
+    const authClient = createClient(supabaseUrl, anonKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
     })
 
-    if (signInError || !signIn.session || !signIn.user) return json(origin, { error: 'Usuário ou senha inválidos.' }, 401)
+    const { data: signIn, error: signInError } = await authClient.auth.signInWithPassword({
+      email: authUserData.user.email.trim().toLowerCase(),
+      password,
+    })
+
+    if (signInError) {
+      return json({ error: signInError.message }, 401)
+    }
+
+    if (!signIn.session || !signIn.user) {
+      return json({ error: 'A autenticação não retornou uma sessão válida.' }, 401)
+    }
+
+    const { data: profile, error: profileError } = await admin
+      .from('erp_usuarios')
+      .select('id,nome,login_nome,email,empresa_id,setor_id,ativo,nivel_admin,auth_user_id,is_master,deleted_at')
+      .eq('auth_user_id', signIn.user.id)
+      .eq('ativo', true)
+      .is('deleted_at', null)
+      .maybeSingle()
+
+    if (profileError || !profile || profile.auth_user_id !== signIn.user.id) {
+      return json({ error: 'Perfil ERP não autorizado para esta sessão.' }, 401)
+    }
+
+    if (requestedEmpresaId && profile.empresa_id !== requestedEmpresaId) {
+      return json({ error: 'Usuário não pertence à empresa informada.' }, 401)
+    }
 
     let setorCodigo: string | null = null
     let setorNome: string | null = null
-    if (u.setor_id) {
+
+    if (profile.setor_id) {
       const { data: setor } = await admin
         .from('erp_setores')
         .select('codigo,nome')
-        .eq('id', u.setor_id)
-        .eq('empresa_id', u.empresa_id)
+        .eq('id', profile.setor_id)
+        .eq('empresa_id', profile.empresa_id)
         .maybeSingle()
+
       setorCodigo = setor?.codigo ?? null
       setorNome = setor?.nome ?? null
     }
 
-    return json(origin, {
+    return json({
       session: {
         access_token: signIn.session.access_token,
         refresh_token: signIn.session.refresh_token,
       },
+      empresa_id: profile.empresa_id,
       profile: {
-        id: u.id,
-        empresa_id: u.empresa_id,
-        setor_id: u.setor_id,
+        id: profile.id,
+        empresa_id: profile.empresa_id,
+        setor_id: profile.setor_id,
         setor_codigo: setorCodigo,
         setor_nome: setorNome,
-        username: u.login_nome,
-        nome: u.nome,
-        email: authData.user.email,
-        nivel_admin: u.nivel_admin ?? 1,
-        is_master: u.is_master === true || Number(u.nivel_admin) >= 9,
+        username: profile.login_nome,
+        nome: profile.nome,
+        email: authUserData.user.email,
+        nivel_admin: profile.nivel_admin ?? 1,
+        is_master: profile.is_master === true || Number(profile.nivel_admin) >= 9,
       },
     })
   } catch (error) {
     console.error('[erp-login]', error)
-    return json(origin, { error: 'Não foi possível concluir o login.' }, 500)
+    return json({ error: error instanceof Error ? error.message : 'Não foi possível concluir o login.' }, 500)
   }
 })
