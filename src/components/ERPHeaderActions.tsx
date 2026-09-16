@@ -8,10 +8,11 @@ export default function ERPHeaderActions() {
   useEffect(() => {
     let alive = true
     void (async () => {
-      const { data } = await supabase.auth.getUser()
-      if (!data.user) return
-      const { data: profile } = await supabase.from('erp_usuarios').select('nivel_admin').eq('auth_user_id', data.user.id).maybeSingle()
-      if (alive) setShowMaster(Number(profile?.nivel_admin) >= 9)
+      const { data } = await supabase.auth.getSession()
+      const user = data.session?.user
+      if (!user) return
+      const role = typeof user.app_metadata?.role === 'string' ? user.app_metadata.role.toUpperCase() : ''
+      if (alive) setShowMaster(['MASTER', 'MASTER_ADMIN', 'SUPER_ADMIN'].includes(role))
     })()
     return () => { alive = false }
   }, [])
