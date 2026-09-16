@@ -1,9 +1,33 @@
 import { createClient } from '@supabase/supabase-js'
 
-export const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+const ALLOWED_PRODUCTION_ORIGIN = 'https://erp-sistema-industrial.vercel.app'
+
+function corsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get('Origin') ?? ''
+  let allowedOrigin = ALLOWED_PRODUCTION_ORIGIN
+
+  if (origin) {
+    try {
+      const url = new URL(origin)
+      const isAllowed =
+        origin === ALLOWED_PRODUCTION_ORIGIN ||
+        url.hostname.endsWith('.vercel.app') ||
+        url.hostname === 'localhost' ||
+        url.hostname === '127.0.0.1'
+      if (isAllowed) allowedOrigin = origin
+    } catch {
+      // Keep the production origin for malformed/untrusted Origin headers.
+    }
+  }
+
+  const requestedHeaders = req.headers.get('Access-Control-Request-Headers')
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': requestedHeaders || 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Max-Age': '86400',
+    'Vary': 'Origin, Access-Control-Request-Headers',
+  }
 }
 
 type LoginBody = {
@@ -30,19 +54,19 @@ type ErpUser = {
   deleted_at: string | null
 }
 
-const json = (body: unknown, status = 200) =>
+const json = (req: Request, body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
   })
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { status: 204, headers: corsHeaders(req) })
   }
 
   if (req.method !== 'POST') {
-    return json({ error: 'Método não permitido.' }, 405)
+    return json(req, { error: 'Método não permitido.' }, 405)
   }
 
   try {
@@ -52,7 +76,7 @@ Deno.serve(async (req: Request) => {
     const requestedEmpresaId = String(body.empresa_id ?? '').trim() || null
 
     if (!identifier || !password) {
-      return json({ error: 'Informe usuário/e-mail e senha.' }, 400)
+      return json(req, { error: 'Informe usuário/e-mail e senha.' }, 400)
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -60,7 +84,7 @@ Deno.serve(async (req: Request) => {
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
     if (!supabaseUrl || !anonKey || !serviceRoleKey) {
-      return json({ error: 'Ambiente de autenticação do ERP não configurado.' }, 500)
+      return json(req, { error: 'Ambiente de autenticação do ERP não configurado.' }, 500)
     }
 
     const admin = createClient(supabaseUrl, serviceRoleKey, {
@@ -77,7 +101,7 @@ Deno.serve(async (req: Request) => {
 
     if (candidateError) {
       console.error('[erp-login] profile lookup:', candidateError)
-      return json({ error: 'Falha ao localizar o perfil de autenticação.' }, 500)
+      return json(req, { error: 'Falha ao localizar o perfil de autenticação.' }, 500)
     }
 
     const matches = ((candidates ?? []) as ErpUser[]).filter((user) =>
@@ -87,15 +111,15 @@ Deno.serve(async (req: Request) => {
     )
 
     if (matches.length !== 1 || !matches[0].auth_user_id || !matches[0].email) {
-      return json({ error: 'Usuário ou senha inválidos.' }, 401)
+      return json(req, { error: 'Usuário ou senha inválidos.' }, 401)
     }
 
     const profileCandidate = matches[0]
-
     const { data: authUserData, error: authUserError } = await admin.auth.admin.getUserById(profileCandidate.auth_user_id)
+
     if (authUserError || !authUserData.user?.email) {
       console.error('[erp-login] auth identity lookup:', authUserError)
-      return json({ error: 'Usuário ou senha inválidos.' }, 401)
+      return json(req, { error: 'Usuário ou senha inválidos.' }, 401)
     }
 
     const authClient = createClient(supabaseUrl, anonKey, {
@@ -108,11 +132,11 @@ Deno.serve(async (req: Request) => {
     })
 
     if (signInError) {
-      return json({ error: signInError.message }, 401)
+      return json(req, { error: signInError.message }, 401)
     }
 
     if (!signIn.session || !signIn.user) {
-      return json({ error: 'A autenticação não retornou uma sessão válida.' }, 401)
+      return json(req, { error: 'A autenticação não retornou uma sessão válida.' }, 401)
     }
 
     const { data: profile, error: profileError } = await admin
@@ -124,11 +148,11 @@ Deno.serve(async (req: Request) => {
       .maybeSingle()
 
     if (profileError || !profile || profile.auth_user_id !== signIn.user.id) {
-      return json({ error: 'Perfil ERP não autorizado para esta sessão.' }, 401)
+      return json(req, { error: 'Perfil ERP não autorizado para esta sessão.' }, 401)
     }
 
     if (requestedEmpresaId && profile.empresa_id !== requestedEmpresaId) {
-      return json({ error: 'Usuário não pertence à empresa informada.' }, 401)
+      return json(req, { error: 'Usuário não pertence à empresa informada.' }, 401)
     }
 
     let setorCodigo: string | null = null
@@ -146,7 +170,7 @@ Deno.serve(async (req: Request) => {
       setorNome = setor?.nome ?? null
     }
 
-    return json({
+    return json(req, {
       session: {
         access_token: signIn.session.access_token,
         refresh_token: signIn.session.refresh_token,
@@ -167,6 +191,6 @@ Deno.serve(async (req: Request) => {
     })
   } catch (error) {
     console.error('[erp-login]', error)
-    return json({ error: error instanceof Error ? error.message : 'Não foi possível concluir o login.' }, 500)
+    return json(req, { error: error instanceof Error ? error.message : 'Não foi possível concluir o login.' }, 500)
   }
 })
