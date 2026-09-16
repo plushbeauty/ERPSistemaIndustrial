@@ -24,7 +24,6 @@ function stripSqlStringsAndComments(text) {
     .replace(/--[^\n]*(?=\n|$)/g, '')
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/'(?:''|[^'])*'/g, "''")
-    .replace(/\$\$[\s\S]*?\$\$/g, '$$')
 }
 walk(ROOT)
 const sourceFiles = files.filter(f => ['.ts','.tsx','.js','.jsx','.mjs'].includes(path.extname(f).toLowerCase()))
@@ -71,7 +70,7 @@ if (clientCandidates.length > 1) findings.push({ level: 'HIGH', file: clientCand
 
 for (const file of frontendFiles) {
   const text = allText.get(file)
-  const re = /(?:TODO|FIXME|coming\s+soon|em\s+breve)/gi
+  const re = /(?:\bTODO\b|\bFIXME\b|coming\s+soon|em\s+breve)/gi
   for (const m of text.matchAll(re)) add('MEDIUM', file, lineOf(text, m.index ?? 0), 'Placeholder/TODO encontrado em código executável.')
 }
 
