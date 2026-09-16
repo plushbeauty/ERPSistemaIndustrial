@@ -6,6 +6,7 @@ import './styles/forms-premium.css'
 import './styles/manual-usuario-2026.css'
 import './styles/public-contact.css'
 import './styles/visual-showcase-2026.css'
+import './styles/module-overview.css'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 
 const AppIndustrial=lazy(()=>import('./AppIndustrialV7'))
