@@ -1,7 +1,6 @@
 import { lazy, Suspense } from 'react'
 import PublicIndustrialHome from './PublicIndustrialHome'
 import IndustrialVisualShowcase from './components/IndustrialVisualShowcase'
-import LoginStandalone from './LoginStandalone'
 import './styles/index.css'
 import './styles/public-industrial.css'
 import './styles/public-home-v2.css'
@@ -21,8 +20,6 @@ export default function AppBootstrap() {
       </main>
     )
   }
-
-  if (path === '/login') return <LoginStandalone />
 
   return (
     <Suspense fallback={<div role="status" aria-live="polite" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'Inter, system-ui, sans-serif' }}>Carregando SGQ ERP…</div>}>
