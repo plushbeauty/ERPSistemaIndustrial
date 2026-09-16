@@ -67,7 +67,7 @@ function safeReturnTo(value:string|null){if(!value||!value.startsWith('/')||valu
 function requestedTarget(){return safeReturnTo(new URLSearchParams(location.search).get('returnTo'))}
 
 function Login(){
-  const[usuario,setUsuario]=useState(''),[pw,setPw]=useState(''),[err,setErr]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[showPassword,setShowPassword]=useState(false)
+  const[usuario,setUsuario]=useState(''),[pw,setPw]=useState(''),[err,setErr]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[showPassword,setShowPassword]=useState(false),[recovering,setRecovering]=useState(false)
 
   async function submit(e:FormEvent){
     e.preventDefault();setErr('');setNotice('');setBusy(true)
@@ -93,6 +93,20 @@ function Login(){
     finally{setBusy(false)}
   }
 
+  async function recuperarSenha(){
+    setErr('');setNotice('')
+    const email=usuario.trim()
+    if(!supabaseConfigurado){setErr('A conexão do sistema com o banco não está configurada.');return}
+    if(!email){setErr('Informe seu e-mail corporativo para receber o link de recuperação.');return}
+    setRecovering(true)
+    try{
+      const{error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:`${window.location.origin}/login?reset=1`})
+      if(error)throw error
+      setNotice('Se o e-mail estiver cadastrado, você receberá as instruções de recuperação. Verifique também a pasta de spam.')
+    }catch(e){setErr(e instanceof Error?e.message:'Não foi possível solicitar a recuperação de senha.')}
+    finally{setRecovering(false)}
+  }
+
   return <main className="auth-screen">
     <section className="auth-visual" aria-label="SGQ ERP Industrial">
       <img src="/images/sgq/sgq-erp-login.png" alt="Ambiente industrial do SGQ ERP"/><div className="auth-visual-shade"/>
@@ -116,10 +130,10 @@ function Login(){
       <p className="auth-description">Acesse sua empresa com as credenciais cadastradas. O ERP identifica automaticamente a empresa e as permissões do usuário autenticado.</p>
       <form className="auth-form" onSubmit={submit}>
         <label htmlFor="erp-user">E-mail corporativo</label><div className="auth-input-wrap"><input id="erp-user" type="email" value={usuario} onChange={e=>setUsuario(e.target.value)} placeholder="seu@email.com" autoComplete="username" autoFocus required/></div>
-        <div className="auth-label-row"><label htmlFor="erp-password">Senha</label><button type="button" className="auth-text-button" onClick={()=>setNotice('A recuperação de senha será disponibilizada pelo fluxo seguro de recuperação do Supabase.')}>Esqueci minha senha</button></div>
+        <div className="auth-label-row"><label htmlFor="erp-password">Senha</label><button type="button" className="auth-text-button" onClick={recuperarSenha} disabled={recovering||busy}>{recovering?'Enviando…':'Esqueci minha senha'}</button></div>
         <div className="auth-input-wrap"><input id="erp-password" type={showPassword?'text':'password'} value={pw} onChange={e=>setPw(e.target.value)} placeholder="Digite sua senha" autoComplete="current-password" required/><button type="button" className="auth-password-toggle" aria-label={showPassword?'Ocultar senha':'Mostrar senha'} onClick={()=>setShowPassword(value=>!value)}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button><KeyRound className="auth-key-icon" size={16} aria-hidden="true"/></div>
         {err&&<div className="auth-message auth-error" role="alert">{err}</div>}{notice&&<div className="auth-message auth-notice" role="status">{notice}</div>}
-        <button className="auth-submit" type="submit" disabled={busy}>{busy?<><span className="auth-spinner"/>Entrando…</>:<>Entrar no sistema <LogIn size={18}/></>}</button>
+        <button className="auth-submit" type="submit" disabled={busy||recovering}>{busy?<><span className="auth-spinner"/>Entrando…</>:<>Entrar no sistema <LogIn size={18}/></>}</button>
         <div className="auth-divider"><span>ou</span></div><a className="auth-register" href="/cadastro-empresa"><UserPlus size={18}/> Criar uma nova empresa</a><a className="auth-trial" href="/cadastro-empresa"><Clock3 size={17}/> Começar teste grátis de 15 dias <ArrowRight size={16}/></a>
       </form>
       <div className="auth-security-note"><ShieldCheck size={16}/><span>Autenticação por sessão segura. Nenhuma senha é armazenada no navegador.</span></div>
