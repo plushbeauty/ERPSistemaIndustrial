@@ -4,6 +4,11 @@ import { supabase } from '../lib/supabaseClient'
 
 type RequestRow = { id: string; numero: number; descricao: string; prioridade: string; requer_autorizacao: boolean; status: string; email_destino: string | null; created_at: string }
 
+function canApproveRole(role: unknown) {
+  const normalized = typeof role === 'string' ? role.toUpperCase() : ''
+  return ['MASTER', 'MASTER_ADMIN', 'SUPER_ADMIN', 'ADMIN'].includes(normalized)
+}
+
 export default function SolicitacaoCompra() {
   const [descricao, setDescricao] = useState('')
   const [prioridade, setPrioridade] = useState('normal')
@@ -16,11 +21,9 @@ export default function SolicitacaoCompra() {
   const [canApprove, setCanApprove] = useState(false)
 
   async function load() {
-    const { data: userData } = await supabase.auth.getUser()
-    if (userData.user) {
-      const { data: profile } = await supabase.from('erp_usuarios').select('nivel_admin').eq('auth_user_id', userData.user.id).maybeSingle()
-      setCanApprove((profile?.nivel_admin ?? 99) <= 2)
-    }
+    const { data: sessionData } = await supabase.auth.getSession()
+    const role = sessionData.session?.user.app_metadata?.role
+    setCanApprove(canApproveRole(role))
     const { data } = await supabase.from('erp_solicitacoes_compra').select('id,numero,descricao,prioridade,requer_autorizacao,status,email_destino,created_at').order('created_at', { ascending: false }).limit(50)
     setRows((data ?? []) as RequestRow[])
   }
@@ -45,10 +48,11 @@ export default function SolicitacaoCompra() {
   async function approve(id: string) {
     setBusy(true); setMessage('')
     try {
-      const { data: userData } = await supabase.auth.getUser()
-      const { data: actor } = userData.user ? await supabase.from('erp_usuarios').select('id,nivel_admin').eq('auth_user_id', userData.user.id).maybeSingle() : { data: null }
-      if (!actor || actor.nivel_admin > 2) throw new Error('Somente responsável autorizado pode liberar compras.')
-      const { error } = await supabase.from('erp_solicitacoes_compra').update({ status: 'autorizada', autorizado_por: actor.id, autorizado_em: new Date().toISOString() }).eq('id', id)
+      const { data: sessionData } = await supabase.auth.getSession()
+      const session = sessionData.session
+      if (!session || !canApproveRole(session.user.app_metadata?.role)) throw new Error('Somente responsável autorizado pode liberar compras.')
+      const actorId = session.user.id
+      const { error } = await supabase.from('erp_solicitacoes_compra').update({ status: 'autorizada', autorizado_por: actorId, autorizado_em: new Date().toISOString() }).eq('id', id)
       if (error) throw error
       setMessage('Solicitação autorizada e encaminhada para Compras.')
       await load()
