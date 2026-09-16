@@ -2,6 +2,7 @@ import { Component, lazy, Suspense, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import PublicIndustrialHome from './PublicIndustrialHome'
 import IndustrialVisualShowcase from './components/IndustrialVisualShowcase'
+import IndustrialLoginDirect from './IndustrialLoginDirect'
 import { supabase } from './lib/supabaseClient'
 import './styles/index.css'
 import './styles/public-industrial.css'
@@ -10,7 +11,6 @@ import './styles/industrial-public-restoration.css'
 import './styles/visual-showcase-2026.css'
 
 const AppEntryV2 = lazy(() => import('./AppEntryV2'))
-
 const publicPaths = new Set(['/','/home','/login','/cadastro-empresa','/contato','/blog'])
 
 class BootstrapBoundary extends Component<{children:ReactNode},{error:Error|null}>{
@@ -25,8 +25,9 @@ class BootstrapBoundary extends Component<{children:ReactNode},{error:Error|null
 function LoginBootstrap(){
   const[ready,setReady]=useState(false)
   useEffect(()=>{let alive=true;void supabase.auth.getSession().finally(()=>{if(alive)setReady(true)});return()=>{alive=false}},[])
-  if(!ready)return <div role="status" aria-live="polite" style={{minHeight:'100vh',display:'grid',placeItems:'center',fontFamily:'Inter,system-ui,sans-serif',background:'#07141a',color:'#fff'}}>Preparando acesso seguro…</div>
-  return <AppEntryV2/>
+  if(!ready)return <div role="status" aria-live="polite" style={{minHeight:'100vh',display:'grid',placeItems:'center',fontFamily:'Inter,system-ui,sans-serif',background:'#f5f7f6',color:'#172126'}}>Preparando acesso seguro…</div>
+  const params=new URLSearchParams(window.location.search)
+  return <IndustrialLoginDirect returnTo={params.get('returnTo') ?? undefined}/>
 }
 
 function AccessGate({children}:{children:ReactNode}){
@@ -39,7 +40,7 @@ function AccessGate({children}:{children:ReactNode}){
       const metadata=data.session.user.app_metadata??{}
       const empresaId=typeof metadata.empresa_id==='string'?metadata.empresa_id.trim():''
       const role=typeof metadata.role==='string'?metadata.role.trim():''
-      if(!empresaId||!role){if(alive)setState('denied');return}
+      if(!empresaId&&!['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(role.toUpperCase())){if(alive)setState('denied');return}
       if(alive)setState('allowed')
     }catch(error){
       console.error('[Protected route bootstrap]',error)
@@ -57,7 +58,7 @@ function AccessGate({children}:{children:ReactNode}){
 
 export default function AppBootstrap(){
   const path=window.location.pathname
-  if(path==='/login')return <BootstrapBoundary><Suspense fallback={<div role="status" style={{minHeight:'100vh',display:'grid',placeItems:'center'}}>Carregando acesso…</div>}><LoginBootstrap/></Suspense></BootstrapBoundary>
+  if(path==='/login')return <BootstrapBoundary><LoginBootstrap/></BootstrapBoundary>
   if(path==='/'||path==='/home')return <BootstrapBoundary><main aria-label="SGQ ERP Industrial"><PublicIndustrialHome/><IndustrialVisualShowcase/></main></BootstrapBoundary>
   const app=<BootstrapBoundary><Suspense fallback={<div role="status" aria-live="polite" style={{minHeight:'100vh',display:'grid',placeItems:'center',fontFamily:'Inter,system-ui,sans-serif'}}>Carregando SGQ ERP…</div>}><AppEntryV2/></Suspense></BootstrapBoundary>
   return publicPaths.has(path)?app:<AccessGate>{app}</AccessGate>
