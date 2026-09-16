@@ -1,0 +1,4 @@
+project_id = "wdkvrqekixczuhrfygen"
+
+[functions.erp-login]
+verify_jwt = false
