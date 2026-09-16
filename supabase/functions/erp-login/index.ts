@@ -1,224 +1,369 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const PRODUCTION_ORIGIN = 'https://erp-sistema-industrial.vercel.app'
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-function isAllowedOrigin(origin: string): boolean {
-  if (!origin) return false
-  if (origin === PRODUCTION_ORIGIN) return true
-  try {
-    const url = new URL(origin)
-    const hostname = url.hostname.toLowerCase()
-    if (hostname === 'localhost' || hostname === '127.0.0.1') return true
-    return hostname.startsWith('erp-sistema-industrial-') && hostname.endsWith('.vercel.app')
-  } catch {
-    return false
-  }
+if (!SUPABASE_URL) {
+  throw new Error("SUPABASE_URL não configurada.");
 }
 
-function corsHeaders(req: Request): Record<string, string> {
-  const origin = req.headers.get('Origin') ?? ''
-  return {
-    'Access-Control-Allow-Origin': isAllowedOrigin(origin) ? origin : PRODUCTION_ORIGIN,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Max-Age': '86400',
-    Vary: 'Origin, Access-Control-Request-Headers',
-  }
+if (!SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error("SUPABASE_SERVICE_ROLE_KEY não configurada.");
 }
 
-type LoginBody = {
-  email?: unknown
-  password?: unknown
-  empresa_id?: unknown
-  identificador?: unknown
-  usuario?: unknown
-  username?: unknown
-  senha?: unknown
+const supabaseAdmin: SupabaseClient = createClient(
+  SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  },
+);
+
+const corsHeaders: Record<string, string> = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Content-Type": "application/json; charset=utf-8",
+};
+
+interface LoginRequest {
+  email: string;
+  password: string;
 }
 
-type ErpUser = {
-  id: string
-  nome: string | null
-  login_nome: string | null
-  email: string | null
-  empresa_id: string
-  setor_id: string | null
-  ativo: boolean
-  nivel_admin: number | null
-  auth_user_id: string | null
-  is_master: boolean | null
-  deleted_at: string | null
+interface ErpUsuario {
+  id: string;
+  email: string;
+  empresa_id: string;
+  role: string;
 }
 
-type Company = {
-  id: string
-  ativo: boolean
-  plano_status: string | null
-  trial_ends_at: string | null
+interface LoginResponse {
+  session: {
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+    expires_at: number | null;
+    token_type: string;
+  };
+  user: {
+    id: string;
+    email: string | null;
+    app_metadata: Record<string, unknown>;
+  };
+  profile: ErpUsuario;
 }
 
-const json = (req: Request, body: unknown, status = 200): Response =>
-  new Response(JSON.stringify(body), {
+function jsonResponse(
+  body: unknown,
+  status: number,
+): Response {
+  return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
-  })
+    headers: corsHeaders,
+  });
+}
+
+function isValidUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value,
+  );
+}
+
+function parseLoginRequest(body: unknown): LoginRequest {
+  if (
+    typeof body !== "object" ||
+    body === null ||
+    Array.isArray(body)
+  ) {
+    throw new Error("Corpo da requisição inválido.");
+  }
+
+  const record = body as Record<string, unknown>;
+
+  const keys = Object.keys(record);
+
+  if (
+    keys.length !== 2 ||
+    !keys.includes("email") ||
+    !keys.includes("password")
+  ) {
+    throw new Error(
+      "A requisição deve conter somente email e password.",
+    );
+  }
+
+  if (
+    typeof record.email !== "string" ||
+    typeof record.password !== "string"
+  ) {
+    throw new Error("Email e password devem ser textos.");
+  }
+
+  const email = record.email.trim();
+  const password = record.password;
+
+  if (!email) {
+    throw new Error("Email obrigatório.");
+  }
+
+  if (!password) {
+    throw new Error("Password obrigatória.");
+  }
+
+  return {
+    email,
+    password,
+  };
+}
+
+async function autenticarUsuario(
+  email: string,
+  password: string,
+) {
+  const { data, error } =
+    await supabaseAdmin.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+  if (error || !data.user || !data.session) {
+    throw new Error("Email ou senha inválidos.");
+  }
+
+  return data;
+}
+
+async function buscarPerfilReal(
+  userId: string,
+): Promise<ErpUsuario> {
+  const { data, error } = await supabaseAdmin
+    .from("erp_usuarios")
+    .select("id, email, empresa_id, role")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Erro ao consultar erp_usuarios:", error);
+    throw new Error("Não foi possível consultar o perfil do usuário.");
+  }
+
+  if (!data) {
+    throw new Error(
+      "Usuário autenticado não possui perfil ERP.",
+    );
+  }
+
+  const perfil = data as ErpUsuario;
+
+  if (!isValidUuid(perfil.id)) {
+    throw new Error("Perfil ERP possui id inválido.");
+  }
+
+  if (!isValidUuid(perfil.empresa_id)) {
+    throw new Error("Perfil ERP possui empresa_id inválido.");
+  }
+
+  if (typeof perfil.email !== "string" || !perfil.email.trim()) {
+    throw new Error("Perfil ERP possui email inválido.");
+  }
+
+  if (typeof perfil.role !== "string" || !perfil.role.trim()) {
+    throw new Error("Perfil ERP possui role inválida.");
+  }
+
+  if (perfil.id !== userId) {
+    throw new Error("Perfil ERP não corresponde ao usuário autenticado.");
+  }
+
+  return perfil;
+}
+
+async function atualizarAppMetadata(
+  userId: string,
+  empresaId: string,
+  role: string,
+  existingMetadata: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const appMetadata: Record<string, unknown> = {
+    ...existingMetadata,
+    empresa_id: empresaId,
+    role,
+  };
+
+  const { data, error } =
+    await supabaseAdmin.auth.admin.updateUserById(
+      userId,
+      {
+        app_metadata: appMetadata,
+      },
+    );
+
+  if (error || !data.user) {
+    console.error("Erro ao atualizar app_metadata:", error);
+    throw new Error(
+      "Não foi possível atualizar as claims de autorização.",
+    );
+  }
+
+  return data.user.app_metadata ?? appMetadata;
+}
+
+async function renovarSessao(
+  refreshToken: string,
+) {
+  const { data, error } =
+    await supabaseAdmin.auth.refreshSession({
+      refresh_token: refreshToken,
+    });
+
+  if (error || !data.session || !data.user) {
+    console.error("Erro ao renovar sessão:", error);
+    throw new Error(
+      "Não foi possível renovar a sessão após atualizar as claims.",
+    );
+  }
+
+  return data;
+}
 
 Deno.serve(async (req: Request): Promise<Response> => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders(req) })
+  if (req.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders,
+    });
   }
 
-  if (req.method !== 'POST') {
-    return json(req, { error: 'MÉTODO_NAO_PERMITIDO' }, 405)
+  if (req.method !== "POST") {
+    return jsonResponse(
+      {
+        error: "Método não permitido.",
+      },
+      405,
+    );
   }
 
   try {
-    const body = (await req.json()) as LoginBody
-    const identifier = String(body.email ?? body.identificador ?? body.usuario ?? body.username ?? '').trim()
-    const password = String(body.password ?? body.senha ?? '')
-    const requestedEmpresaId = String(body.empresa_id ?? '').trim() || null
+    const rawBody: unknown = await req.json();
 
-    if (!identifier || !password) {
-      return json(req, { error: 'Informe usuário/e-mail e senha.' }, 400)
+    const { email, password } =
+      parseLoginRequest(rawBody);
+
+    const authentication =
+      await autenticarUsuario(email, password);
+
+    const authenticatedUser =
+      authentication.user;
+
+    const initialSession =
+      authentication.session;
+
+    const profile =
+      await buscarPerfilReal(authenticatedUser.id);
+
+    if (profile.id !== authenticatedUser.id) {
+      return jsonResponse(
+        {
+          error:
+            "O perfil ERP não corresponde ao usuário autenticado.",
+        },
+        403,
+      );
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    const existingAppMetadata: Record<string, unknown> =
+      authenticatedUser.app_metadata ?? {};
 
-    if (!supabaseUrl || !anonKey || !serviceRoleKey) {
-      console.error('[erp-login] Variáveis internas de autenticação ausentes.')
-      return json(req, { error: 'AUTH_CONFIGURATION_ERROR' }, 500)
+    const updatedAppMetadata =
+      await atualizarAppMetadata(
+        authenticatedUser.id,
+        profile.empresa_id,
+        profile.role,
+        existingAppMetadata,
+      );
+
+    const refreshed =
+      await renovarSessao(
+        initialSession.refresh_token,
+      );
+
+    const refreshedUser =
+      refreshed.user;
+
+    if (refreshedUser.id !== profile.id) {
+      return jsonResponse(
+        {
+          error:
+            "A sessão renovada não corresponde ao perfil ERP.",
+        },
+        403,
+      );
     }
 
-    const admin = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    })
+    const refreshedAppMetadata: Record<string, unknown> =
+      refreshedUser.app_metadata ?? updatedAppMetadata;
 
-    const needle = identifier.toLowerCase()
-    const { data: candidates, error: candidateError } = await admin
-      .from('erp_usuarios')
-      .select('id,nome,login_nome,email,empresa_id,setor_id,ativo,nivel_admin,auth_user_id,is_master,deleted_at')
-      .eq('ativo', true)
-      .is('deleted_at', null)
-      .limit(1000)
-
-    if (candidateError) {
-      console.error('[erp-login] profile lookup:', candidateError)
-      return json(req, { error: 'AUTH_PROFILE_LOOKUP_ERROR' }, 500)
+    if (
+      refreshedAppMetadata.empresa_id !==
+      profile.empresa_id
+    ) {
+      return jsonResponse(
+        {
+          error:
+            "A sessão renovada não contém a empresa_id esperada.",
+        },
+        500,
+      );
     }
 
-    const matches = ((candidates ?? []) as ErpUser[]).filter((user) =>
-      String(user.email ?? '').trim().toLowerCase() === needle ||
-      String(user.login_nome ?? '').trim().toLowerCase() === needle ||
-      String(user.nome ?? '').trim().toLowerCase() === needle,
-    )
-
-    if (matches.length !== 1 || !matches[0].auth_user_id || !matches[0].email) {
-      return json(req, { error: 'USUARIO_OU_SENHA_INVALIDOS' }, 401)
+    if (
+      refreshedAppMetadata.role !==
+      profile.role
+    ) {
+      return jsonResponse(
+        {
+          error:
+            "A sessão renovada não contém a role esperada.",
+        },
+        500,
+      );
     }
 
-    const profileCandidate = matches[0]
-
-    const { data: company, error: companyError } = await admin
-      .from('erp_empresas')
-      .select('id,ativo,plano_status,trial_ends_at')
-      .eq('id', profileCandidate.empresa_id)
-      .maybeSingle()
-
-    if (companyError) {
-      console.error('[erp-login] company lookup:', companyError)
-      return json(req, { error: 'AUTH_COMPANY_LOOKUP_ERROR' }, 500)
-    }
-
-    if (!company || company.ativo === false) {
-      return json(req, { error: 'EMPRESA_INATIVA_OU_INEXISTENTE' }, 401)
-    }
-
-    const companyRecord = company as Company
-    const planStatus = String(companyRecord.plano_status ?? '').trim().toLowerCase()
-    const trialEnds = companyRecord.trial_ends_at ? new Date(companyRecord.trial_ends_at).getTime() : null
-    const trialExpired = trialEnds !== null && Number.isFinite(trialEnds) && Date.now() >= trialEnds && !['ativo', 'active'].includes(planStatus)
-    if (trialExpired || (planStatus && !['trial', 'ativo', 'active'].includes(planStatus))) {
-      return json(req, { error: 'EMPRESA_SEM_ACESSO_ATIVO' }, 401)
-    }
-
-    if (requestedEmpresaId && profileCandidate.empresa_id !== requestedEmpresaId) {
-      return json(req, { error: 'USUARIO_NAO_PERTENCE_A_EMPRESA' }, 401)
-    }
-
-    const { data: authUserData, error: authUserError } = await admin.auth.admin.getUserById(profileCandidate.auth_user_id)
-    if (authUserError || !authUserData.user?.email) {
-      console.error('[erp-login] auth identity lookup:', authUserError)
-      return json(req, { error: 'USUARIO_AUTH_NAO_VINCULADO' }, 401)
-    }
-
-    const authClient = createClient(supabaseUrl, anonKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    })
-
-    const { data: signIn, error: signInError } = await authClient.auth.signInWithPassword({
-      email: authUserData.user.email.trim().toLowerCase(),
-      password,
-    })
-
-    if (signInError || !signIn.session || !signIn.user) {
-      return json(req, { error: 'USUARIO_OU_SENHA_INVALIDOS' }, 401)
-    }
-
-    const { data: profile, error: profileError } = await admin
-      .from('erp_usuarios')
-      .select('id,nome,login_nome,email,empresa_id,setor_id,ativo,nivel_admin,auth_user_id,is_master,deleted_at')
-      .eq('auth_user_id', signIn.user.id)
-      .eq('ativo', true)
-      .is('deleted_at', null)
-      .maybeSingle()
-
-    if (profileError || !profile || profile.auth_user_id !== signIn.user.id || profile.empresa_id !== company.id) {
-      return json(req, { error: 'PERFIL_ERP_NAO_AUTORIZADO' }, 401)
-    }
-
-    let setorCodigo: string | null = null
-    let setorNome: string | null = null
-
-    if (profile.setor_id) {
-      const { data: setor, error: setorError } = await admin
-        .from('erp_setores')
-        .select('codigo,nome')
-        .eq('id', profile.setor_id)
-        .eq('empresa_id', profile.empresa_id)
-        .maybeSingle()
-
-      if (setorError) {
-        console.error('[erp-login] sector lookup:', setorError)
-        return json(req, { error: 'AUTH_SECTOR_LOOKUP_ERROR' }, 500)
-      }
-
-      setorCodigo = setor?.codigo ?? null
-      setorNome = setor?.nome ?? null
-    }
-
-    return json(req, {
+    const response: LoginResponse = {
       session: {
-        access_token: signIn.session.access_token,
-        refresh_token: signIn.session.refresh_token,
+        access_token: refreshed.session.access_token,
+        refresh_token: refreshed.session.refresh_token,
+        expires_in: refreshed.session.expires_in,
+        expires_at: refreshed.session.expires_at ?? null,
+        token_type: refreshed.session.token_type,
       },
-      empresa_id: profile.empresa_id,
-      profile: {
-        id: profile.id,
-        empresa_id: profile.empresa_id,
-        setor_id: profile.setor_id,
-        setor_codigo: setorCodigo,
-        setor_nome: setorNome,
-        username: profile.login_nome,
-        nome: profile.nome,
-        email: authUserData.user.email,
-        nivel_admin: profile.nivel_admin ?? 1,
-        is_master: profile.is_master === true || Number(profile.nivel_admin) >= 9,
+      user: {
+        id: refreshedUser.id,
+        email: refreshedUser.email ?? null,
+        app_metadata: refreshedAppMetadata,
       },
-    })
-  } catch (error) {
-    console.error('[erp-login]', error)
-    return json(req, { error: 'AUTH_INTERNAL_ERROR' }, 500)
+      profile,
+    };
+
+    return jsonResponse(response, 200);
+  } catch (error: unknown) {
+    console.error("Falha no login ERP:", error);
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Falha interna de autenticação.";
+
+    return jsonResponse(
+      {
+        error: message,
+      },
+      400,
+    );
   }
-})
+});
