@@ -5,7 +5,7 @@ const FALLBACK_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
 const FALLBACK_PUBLIC_KEY = 'sb_publishable_QX10nEg-hrWd_5UOuYSpQg_v5M-1xuM'
 
 const supabaseUrl = String(env.VITE_SUPABASE_URL ?? FALLBACK_URL).trim().replace(/\/$/, '') || FALLBACK_URL
-const configuredKey = String(env.VITE_SUPABASE_ANON_KEY ?? env.VITE_SUPABASE_PUBLISHABLE_KEY ?? FALLBACK_PUBLIC_KEY).trim() || FALLBACK_PUBLIC_KEY
+const configuredKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY ?? env.VITE_SUPABASE_ANON_KEY ?? FALLBACK_PUBLIC_KEY).trim() || FALLBACK_PUBLIC_KEY
 const isPrivateKey = configuredKey.startsWith('sb_secret_') || configuredKey.includes('service_role')
 const clientKey = isPrivateKey ? FALLBACK_PUBLIC_KEY : configuredKey
 
