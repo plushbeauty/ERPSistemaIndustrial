@@ -17,7 +17,18 @@ export default function LoginStandalone() {
     setBusy(true)
     try {
       const { data, error } = await supabase.functions.invoke('erp-login', { body: { identificador: usuario.trim(), senha } })
-      if (error) throw error
+      if (error) {
+        const context = (error as { context?: unknown }).context
+        if (context instanceof Response) {
+          try {
+            const payload = await context.clone().json() as { error?: string }
+            throw new Error(payload?.error || `Falha de autenticação (${context.status}).`)
+          } catch (bodyError) {
+            if (bodyError instanceof Error && bodyError.message) throw bodyError
+          }
+        }
+        throw error
+      }
       if (!data?.session?.access_token || !data?.session?.refresh_token || !data?.profile) throw new Error(data?.error || 'O serviço de autenticação não retornou uma sessão válida.')
       const { error: sessionError } = await supabase.auth.setSession({ access_token: data.session.access_token, refresh_token: data.session.refresh_token })
       if (sessionError) throw sessionError
