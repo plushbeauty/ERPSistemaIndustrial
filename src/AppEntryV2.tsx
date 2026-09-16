@@ -1,5 +1,5 @@
 import { Component, FormEvent, ReactNode, lazy, Suspense, useEffect, useState } from 'react'
-import { ArrowRight, KeyRound, LogIn, UserPlus, Clock3 } from 'lucide-react'
+import { ArrowRight, BarChart3, Building2, Eye, EyeOff, KeyRound, LogIn, ShieldCheck, UserPlus, Clock3 } from 'lucide-react'
 import type { Session } from '@supabase/supabase-js'
 import './styles/industrial-login.css'
 import './styles/forms-premium.css'
@@ -66,7 +66,7 @@ function safeReturnTo(value:string|null){if(!value||!value.startsWith('/')||valu
 function requestedTarget(){return safeReturnTo(new URLSearchParams(location.search).get('returnTo'))}
 
 function Login(){
-  const[usuario,setUsuario]=useState(''),[pw,setPw]=useState(''),[err,setErr]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false)
+  const[usuario,setUsuario]=useState(''),[pw,setPw]=useState(''),[err,setErr]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[showPassword,setShowPassword]=useState(false)
 
   async function submit(e:FormEvent){
     e.preventDefault();setErr('');setNotice('');setBusy(true)
@@ -94,24 +94,34 @@ function Login(){
 
   return <main className="auth-screen">
     <section className="auth-visual" aria-label="SGQ ERP Industrial">
-      <img src="/images/sgq/sgq-erp-login.png" alt="SGQ ERP Industrial"/><div className="auth-visual-shade"/>
+      <img src="/images/sgq/sgq-erp-login.png" alt="Ambiente industrial do SGQ ERP"/><div className="auth-visual-shade"/>
+      <div className="auth-visual-grid" aria-hidden="true"/>
       <div className="auth-visual-content">
         <a href="/" className="auth-visual-logo"><img src="/logo-industrial.svg" alt="SGQ ERP"/></a>
-        <div className="auth-visual-message"><span>SGQ ERP • GESTÃO INDUSTRIAL</span><h2>Uma fábrica inteira. Um único controle.</h2><p>PCP, produção, qualidade, estoque, manutenção, financeiro e fiscal trabalhando sobre os mesmos dados.</p><div className="auth-trust"><b>✓ Multiempresa</b><b>✓ Rastreabilidade</b><b>✓ Controle de acesso</b></div></div>
+        <div className="auth-visual-message">
+          <span>SGQ ERP • GESTÃO INDUSTRIAL</span>
+          <h2>Uma fábrica inteira.<br/><em>Um único controle.</em></h2>
+          <p>PCP, produção, qualidade, estoque, manutenção, financeiro e fiscal trabalhando sobre os mesmos dados.</p>
+          <div className="auth-trust"><b><ShieldCheck size={14}/> Multiempresa</b><b><BarChart3 size={14}/> Indicadores</b><b><Building2 size={14}/> Rastreabilidade</b></div>
+          <div className="auth-visual-card"><div className="auth-visual-card-icon"><BarChart3 size={18}/></div><div><strong>Visão operacional integrada</strong><span>Dados, processos e permissões no mesmo ambiente.</span></div><i/></div>
+        </div>
         <small>FernandoSch_System</small>
       </div>
     </section>
     <section className="auth-panel"><div className="auth-panel-inner">
       <div className="auth-mobile-brand"><a href="/"><img src="/logo-industrial.svg" alt="SGQ ERP"/></a></div>
-      <span className="auth-overline">ACESSO SEGURO</span><h1>Entrar no SGQ ERP</h1>
-      <p className="auth-description">Informe seu e-mail e sua senha. A empresa e as permissões são identificadas automaticamente pelo vínculo autenticado no ERP.</p>
+      <div className="auth-heading"><span className="auth-overline">ACESSO SEGURO</span><span className="auth-status"><i/> Ambiente protegido</span></div>
+      <h1>Entrar no SGQ ERP</h1>
+      <p className="auth-description">Acesse sua empresa com as credenciais cadastradas. O ERP identifica automaticamente a empresa e as permissões do usuário autenticado.</p>
       <form className="auth-form" onSubmit={submit}>
-        <label htmlFor="erp-user">E-mail</label><div className="auth-input-wrap"><input id="erp-user" type="email" value={usuario} onChange={e=>setUsuario(e.target.value)} placeholder="seu@email.com" autoComplete="username" autoFocus required/></div>
-        <label htmlFor="erp-password">Senha</label><div className="auth-input-wrap"><input id="erp-password" type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="Digite sua senha" autoComplete="current-password" required/><KeyRound size={17} aria-hidden="true"/></div>
+        <label htmlFor="erp-user">E-mail corporativo</label><div className="auth-input-wrap"><input id="erp-user" type="email" value={usuario} onChange={e=>setUsuario(e.target.value)} placeholder="seu@email.com" autoComplete="username" autoFocus required/></div>
+        <div className="auth-label-row"><label htmlFor="erp-password">Senha</label><button type="button" className="auth-text-button" onClick={()=>setNotice('A recuperação de senha será disponibilizada pelo fluxo seguro de recuperação do Supabase.')}>Esqueci minha senha</button></div>
+        <div className="auth-input-wrap"><input id="erp-password" type={showPassword?'text':'password'} value={pw} onChange={e=>setPw(e.target.value)} placeholder="Digite sua senha" autoComplete="current-password" required/><button type="button" className="auth-password-toggle" aria-label={showPassword?'Ocultar senha':'Mostrar senha'} onClick={()=>setShowPassword(value=>!value)}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button><KeyRound className="auth-key-icon" size={16} aria-hidden="true"/></div>
         {err&&<div className="auth-message auth-error" role="alert">{err}</div>}{notice&&<div className="auth-message auth-notice" role="status">{notice}</div>}
-        <button className="auth-submit" type="submit" disabled={busy}>{busy?'Entrando…':'Entrar'} <LogIn size={18}/></button>
+        <button className="auth-submit" type="submit" disabled={busy}>{busy?<><span className="auth-spinner"/>Entrando…</>:<>Entrar no sistema <LogIn size={18}/></>}</button>
         <div className="auth-divider"><span>ou</span></div><a className="auth-register" href="/cadastro-empresa"><UserPlus size={18}/> Criar uma nova empresa</a><a className="auth-trial" href="/cadastro-empresa"><Clock3 size={17}/> Começar teste grátis de 15 dias <ArrowRight size={16}/></a>
       </form>
+      <div className="auth-security-note"><ShieldCheck size={16}/><span>Autenticação por sessão segura. Nenhuma senha é armazenada no navegador.</span></div>
       <div className="auth-footer"><a href="/">Voltar para o site</a><span>•</span><a href="/contato">Fale conosco</a></div>
     </div></section>
   </main>
