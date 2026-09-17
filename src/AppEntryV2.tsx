@@ -1,4 +1,4 @@
-/* REVISÃO DE ENGENHARIA | Projeto: SGQ ERP Industrial | Pasta: src/ | Arquivo: AppEntryV2.tsx | Data: 2026-09-17 | Correções: sessão Auth única, validação ERP por auth_user_id, proteção de rotas, abertura do Launchpad Tablet após JWT/perfil válidos, rota one-time de cadastro ADM Master | Segurança: nenhuma senha ou chave service_role no frontend; setup usa Edge Function e bloqueia após conclusão; RLS permanece ativo | Testes/Homologação: revisão estática; build/Vercel pendente após este commit | Status: REVISADO — NÃO HOMOLOGADO */
+/* REVISÃO DE ENGENHARIA | Projeto: SGQ ERP Industrial | Pasta: src/ | Arquivo: AppEntryV2.tsx | Data: 2026-09-17 | Correções: sessão Auth única, validação ERP por auth_user_id, proteção de rotas, Launchpad, rota one-time de cadastro ADM Master e correção do Suspense da home | Segurança: nenhuma senha ou service_role no frontend; setup via Edge Function e bloqueio após conclusão | Testes/Homologação: revisão estática; build/Vercel pendente | Status: REVISADO — NÃO HOMOLOGADO */
 
 import { Component, ReactNode, lazy, Suspense, useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
@@ -12,7 +12,6 @@ import './styles/industrial-plans.css'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 import IndustrialLoginDirect from './IndustrialLoginDirect'
 import InitialSetupLink from './components/InitialSetupLink'
-
 const AppIndustrial=lazy(()=>import('./AppIndustrialV7'))
 const PublicIndustrialHome=lazy(()=>import('./PublicIndustrialHome'))
 const IndustrialVisualShowcase=lazy(()=>import('./components/IndustrialVisualShowcase'))
@@ -35,76 +34,17 @@ const RecebimentoMateriais=lazy(()=>import('./pages/RecebimentoMateriais'))
 const ManualUsuario=lazy(()=>import('./pages/ManualUsuario'))
 const ModuleOverviewIndustrial=lazy(()=>import('./pages/ModuleOverviewIndustrial'))
 const SetupADMInicial=lazy(()=>import('./pages/SetupADMInicial'))
-
 type AccessResult={ok:boolean;master:boolean;reason:string}
-
-class Boundary extends Component<{children:ReactNode},{error:Error|null}>{
- state={error:null as Error|null}
- static getDerivedStateFromError(error:Error){return{error}}
- render(){if(this.state.error)return <div className="error-screen"><div className="error-screen-card"><strong>Erro ao abrir a tela.</strong><p>{this.state.error.message}</p><button className="primary" type="button" onClick={()=>location.reload()}>Recarregar</button></div></div>;return this.props.children}
-}
+class Boundary extends Component<{children:ReactNode},{error:Error|null}>{state={error:null as Error|null};static getDerivedStateFromError(error:Error){return{error}};render(){if(this.state.error)return <div className="error-screen"><div className="error-screen-card"><strong>Erro ao abrir a tela.</strong><p>{this.state.error.message}</p><button className="primary" type="button" onClick={()=>location.reload()}>Recarregar</button></div></div>;return this.props.children}}
 function LoadingSkeleton({label='Carregando SGQ ERP…'}:{label?:string}){return <div className="loading-screen"><div className="loading-skeleton-card"><div className="loading-skeleton-brand"/><div className="loading-skeleton-line wide"/><div className="loading-skeleton-line"/><div className="loading-skeleton-line short"/><span>{label}</span></div></div>}
 function safeReturnTo(value:string|null){if(!value||!value.startsWith('/')||value.startsWith('//')||value.startsWith('/login'))return'/erp-industrial';return value}
 function requestedTarget(){return safeReturnTo(new URLSearchParams(location.search).get('returnTo'))}
 function Login(){return <><IndustrialLoginDirect returnTo={requestedTarget()}/><InitialSetupLink/></>}
 function abrirLaunchpadTablet(){window.dispatchEvent(new CustomEvent('sgq:open-tablet'))}
-async function validarAcessoERP(session:Session|null):Promise<AccessResult>{
- if(!supabaseConfigurado||!session?.user)return{ok:false,master:false,reason:'Sessão de autenticação inválida.'}
- const userId=session.user.id
- const{data:profile,error}=await supabase.from('erp_usuarios').select('id,auth_user_id,empresa_id,role,nivel_admin,is_master,ativo,deleted_at').eq('auth_user_id',userId).eq('ativo',true).is('deleted_at',null).maybeSingle()
- if(error)throw error
- if(!profile||profile.auth_user_id!==userId)return{ok:false,master:false,reason:'Usuário autenticado sem perfil ERP ativo.'}
- if(!profile.empresa_id)return{ok:false,master:false,reason:'Usuário autenticado sem empresa vinculada.'}
- const{data:empresa,error:empresaError}=await supabase.from('erp_empresas').select('id,ativo').eq('id',profile.empresa_id).eq('ativo',true).maybeSingle()
- if(empresaError)throw empresaError
- if(!empresa?.ativo)return{ok:false,master:false,reason:'Empresa ERP inativa ou inexistente.'}
- const role=String(profile.role??'').trim().toUpperCase()
- const master=Boolean(profile.is_master)||Number(profile.nivel_admin??0)>=9||['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(role)
- return{ok:true,master,reason:''}
-}
-function ERP(){
- const[valid,setValid]=useState<boolean|null>(null)
- useEffect(()=>{let alive=true;void(async()=>{try{const{data,error}=await supabase.auth.getSession();if(error)throw error;if(!data.session){if(alive)setValid(false);return}const access=await validarAcessoERP(data.session);if(!alive)return;if(!access.ok){await supabase.auth.signOut();location.replace('/login');return}setValid(true);requestAnimationFrame(()=>abrirLaunchpadTablet())}catch(error){console.error('[ERP access]',error);if(alive){setValid(false);location.replace('/login')}}})();return()=>{alive=false}},[])
- if(valid===null)return <LoadingSkeleton label="Validando acesso…"/>
- if(valid===false)return <Login/>
- return <Suspense fallback={<LoadingSkeleton/>}><AppIndustrial/></Suspense>
-}
-function Protected({children,masterOnly=false}:{children:ReactNode;masterOnly?:boolean}){
- const[state,setState]=useState<'checking'|'allowed'|'denied'>('checking')
- useEffect(()=>{let alive=true;void(async()=>{try{const{data,error}=await supabase.auth.getSession();if(error)throw error;if(!data.session){if(alive)setState('denied');return}const access=await validarAcessoERP(data.session);if(!alive)return;if(!access.ok||(masterOnly&&!access.master)){setState('denied');return}setState('allowed')}catch(error){console.error('[Protected]',error);if(alive)setState('denied')}})();return()=>{alive=false}},[masterOnly])
- if(state==='checking')return <LoadingSkeleton label="Validando permissões…"/>
- if(state==='denied'){const target=encodeURIComponent(location.pathname+location.search);return <LoginRedirect target={target}/>}
- return <Boundary>{children}</Boundary>
-}
+async function validarAcessoERP(session:Session|null):Promise<AccessResult>{if(!supabaseConfigurado||!session?.user)return{ok:false,master:false,reason:'Sessão de autenticação inválida.'};const userId=session.user.id;const{data:profile,error:profileError}=await supabase.from('erp_usuarios').select('id,auth_user_id,empresa_id,role,nivel_admin,is_master,ativo,deleted_at').eq('auth_user_id',userId).eq('ativo',true).is('deleted_at',null).maybeSingle();if(profileError)throw profileError;if(!profile||profile.auth_user_id!==userId)return{ok:false,master:false,reason:'Usuário autenticado sem perfil ERP ativo.'};if(!profile.empresa_id)return{ok:false,master:false,reason:'Usuário autenticado sem empresa vinculada.'};const{data:empresa,error:empresaError}=await supabase.from('erp_empresas').select('id,ativo').eq('id',profile.empresa_id).eq('ativo',true).maybeSingle();if(empresaError)throw empresaError;if(!empresa?.ativo)return{ok:false,master:false,reason:'Empresa ERP inativa ou inexistente.'};const role=String(profile.role??'').trim().toUpperCase();const master=Boolean(profile.is_master)||Number(profile.nivel_admin??0)>=9||['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(role);return{ok:true,master,reason:''}}
+function ERP(){const[valid,setValid]=useState<boolean|null>(null);useEffect(()=>{let alive=true;void(async()=>{try{const{data,error}=await supabase.auth.getSession();if(error)throw error;if(!data.session){if(alive)setValid(false);return}const access=await validarAcessoERP(data.session);if(!alive)return;if(!access.ok){await supabase.auth.signOut();location.replace('/login');return}setValid(true);requestAnimationFrame(()=>abrirLaunchpadTablet())}catch(error){console.error('[ERP access]',error);if(alive){setValid(false);location.replace('/login')}}})();return()=>{alive=false}},[]);if(valid===null)return <LoadingSkeleton label="Validando acesso…"/>;if(valid===false)return <Login/>;return <Suspense fallback={<LoadingSkeleton/>}><AppIndustrial/></Suspense>}
+function Protected({children,masterOnly=false}:{children:ReactNode;masterOnly?:boolean}){const[state,setState]=useState<'checking'|'allowed'|'denied'>('checking');useEffect(()=>{let alive=true;void(async()=>{try{const{data,error}=await supabase.auth.getSession();if(error)throw error;if(!data.session){if(alive)setState('denied');return}const access=await validarAcessoERP(data.session);if(!alive)return;if(!access.ok||(masterOnly&&!access.master)){setState('denied');return}setState('allowed')}catch(error){console.error('[Protected]',error);if(alive)setState('denied')}})();return()=>{alive=false}},[masterOnly]);if(state==='checking')return <LoadingSkeleton label="Validando permissões…"/>;if(state==='denied'){const target=encodeURIComponent(location.pathname+location.search);return <LoginRedirect target={target}/>};return <Boundary>{children}</Boundary>}
 function LoginRedirect({target}:{target:string}){useEffect(()=>{const safe=safeReturnTo(decodeURIComponent(target));if(location.pathname!=='/login')location.replace(`/login?returnTo=${encodeURIComponent(safe)}`)},[target]);return <LoadingSkeleton label="Redirecionando para o login…"/>}
 const overviewRoutes:Record<string,string>={'/modulos/pcp':'pcp','/modulos/estoque':'estoque','/modulos/recebimento':'recebimento','/modulos/qualidade':'qualidade','/modulos/manutencao':'manutencao','/modulos/fiscal':'fiscal','/modulos/indicadores':'indicadores','/modulos/engenharia':'engenharia','/modulos/compras':'compras','/modulos/clientes':'clientes','/modulos/rastreabilidade':'rastreabilidade','/modulos/custos':'custos','/modulos/expedicao':'expedicao','/modulos/fmea':'fmea','/modulos/rh':'rh'}
 function ModulePage({module}:{module:string}){return <Protected><Boundary><Suspense fallback={<LoadingSkeleton/>}><ModuleOverviewIndustrial module={module}/></Suspense></Boundary></Protected>}
-export default function AppEntryV2(){
- const[path,setPath]=useState(location.pathname),[session,setSession]=useState<Session|null>(null),[checking,setChecking]=useState(true)
- useEffect(()=>{let alive=true;if(!supabaseConfigurado){setChecking(false);setSession(null);return()=>{alive=false}};void supabase.auth.getSession().then(({data,error})=>{if(alive){if(error)console.error('[Auth bootstrap]',error);setSession(data.session);setChecking(false)}}).catch(error=>{console.error('[Auth bootstrap]',error);if(alive){setSession(null);setChecking(false)}});const s=supabase.auth.onAuthStateChange((_e,x)=>{if(alive)setSession(x)});return()=>{alive=false;s.data.subscription.unsubscribe()}},[])
- useEffect(()=>{const f=()=>setPath(location.pathname);addEventListener('popstate',f);return()=>removeEventListener('popstate',f)},[])
- if(path==='/'||path==='/home')return <Boundary><Suspense fallback={<LoadingSkeleton/>}>{session?<ERP/>:<><PublicIndustrialHome/><IndustrialVisualShowcase/></Suspense>}</Boundary>
- if(checking)return <LoadingSkeleton/>
- if(path==='/login')return session?<ERP/>:<Login/>
- if(path==='/configuracao-adm-master')return <Boundary><Suspense fallback={<LoadingSkeleton label="Abrindo configuração inicial…"/>}><SetupADMInicial/></Suspense></Boundary>
- if(path==='/planos')return <Boundary><Suspense fallback={<LoadingSkeleton/>}><PlanosIndustrial/></Suspense></Boundary>
- if(path==='/cadastro-empresa')return <Boundary><Suspense fallback={<LoadingSkeleton/>}><CadastroEmpresa/></Suspense></Boundary>
- if(path==='/contato')return <Boundary><Suspense fallback={<LoadingSkeleton/>}><Contato/></Suspense></Boundary>
- if(path==='/blog')return <Boundary><Suspense fallback={<LoadingSkeleton/>}><Blog/></Suspense></Boundary>
- if(path.startsWith('/modulos/')){const key=path.replace('/modulos/','').replace(/\/$/,'');return <ModulePage module={overviewRoutes[path]??key}/>}
- if(path==='/recebimento-materiais')return <Protected><Suspense fallback={<LoadingSkeleton/>}><RecebimentoMateriais/></Suspense></Protected>
- if(path==='/erp-industrial')return <Protected><ERP/></Protected>
- if(path==='/master')return <Protected masterOnly><Suspense fallback={<LoadingSkeleton/>}><Master/></Suspense></Protected>
- if(path==='/usuarios')return <Protected><Suspense fallback={<LoadingSkeleton/>}><UsuariosAdmin/></Suspense></Protected>
- if(path==='/pcp')return <Protected><Suspense fallback={<LoadingSkeleton/>}><PCPIndustrial/></Suspense></Protected>
- if(path==='/operacao-industrial')return <Protected><Suspense fallback={<LoadingSkeleton/>}><OperacaoIndustrial/></Suspense></Protected>
- if(path==='/produtos-vendas')return <Protected><Suspense fallback={<LoadingSkeleton/>}><ProdutosVendasIndustrial/></Suspense></Protected>
- if(path==='/qualidade')return <Protected><Suspense fallback={<LoadingSkeleton/>}><QualidadeIndustrial/></Suspense></Protected>
- if(path==='/qualidade/documentos')return <Protected><Suspense fallback={<LoadingSkeleton/>}><DocumentosQualidadeControle/></Suspense></Protected>
- if(path==='/manual-usuario')return <Protected><Suspense fallback={<LoadingSkeleton/>}><ManualUsuario/></Suspense></Protected>
- if(path==='/compras-solicitacao')return <Protected><Suspense fallback={<LoadingSkeleton/>}><SolicitacaoCompra/></Suspense></Protected>
- if(path==='/fiscal')return <Protected><Suspense fallback={<LoadingSkeleton/>}><Fiscal/></Suspense></Protected>
- if(path==='/fiscal/previsao-caixa')return <Protected><Suspense fallback={<LoadingSkeleton/>}><FiscalPrevisaoCaixa/></Suspense></Protected>
- if(path==='/teste-erp')return <Protected><Suspense fallback={<LoadingSkeleton/>}><TesteERP/></Suspense></Protected>
- return <Boundary><Suspense fallback={<LoadingSkeleton/>}>{session?<ERP/>:<Login/>}</Suspense></Boundary>
-}
+export default function AppEntryV2(){const[path,setPath]=useState(location.pathname),[session,setSession]=useState<Session|null>(null),[checking,setChecking]=useState(true);useEffect(()=>{let alive=true;if(!supabaseConfigurado){setChecking(false);setSession(null);return()=>{alive=false}};void supabase.auth.getSession().then(({data,error})=>{if(alive){if(error)console.error('[Auth bootstrap]',error);setSession(data.session);setChecking(false)}}).catch(error=>{console.error('[Auth bootstrap]',error);if(alive){setSession(null);setChecking(false)}});const s=supabase.auth.onAuthStateChange((_e,x)=>{if(alive)setSession(x)});return()=>{alive=false;s.data.subscription.unsubscribe()}},[]);useEffect(()=>{const f=()=>setPath(location.pathname);addEventListener('popstate',f);return()=>removeEventListener('popstate',f)},[]);if(path==='/'||path==='/home')return <Boundary><Suspense fallback={<LoadingSkeleton/>}>{session?<ERP/>:<><PublicIndustrialHome/><IndustrialVisualShowcase/></>}</Suspense></Boundary>;if(checking)return <LoadingSkeleton/>;if(path==='/login')return session?<ERP/>:<Login/>;if(path==='/configuracao-adm-master')return <Boundary><Suspense fallback={<LoadingSkeleton label="Abrindo configuração inicial…"/>}><SetupADMInicial/></Suspense></Boundary>;if(path==='/planos')return <Boundary><Suspense fallback={<LoadingSkeleton/>}><PlanosIndustrial/></Suspense></Boundary>;if(path==='/cadastro-empresa')return <Boundary><Suspense fallback={<LoadingSkeleton/>}><CadastroEmpresa/></Suspense></Boundary>;if(path==='/contato')return <Boundary><Suspense fallback={<LoadingSkeleton/>}><Contato/></Suspense></Boundary>;if(path==='/blog')return <Boundary><Suspense fallback={<LoadingSkeleton/>}><Blog/></Suspense></Boundary>;if(path.startsWith('/modulos/')){const key=path.replace('/modulos/','').replace(/\/$/,'');return <ModulePage module={overviewRoutes[path]??key}/>};if(path==='/recebimento-materiais')return <Protected><Suspense fallback={<LoadingSkeleton/>}><RecebimentoMateriais/></Suspense></Protected>;if(path==='/erp-industrial')return <Protected><ERP/></Protected>;if(path==='/master')return <Protected masterOnly><Suspense fallback={<LoadingSkeleton/>}><Master/></Suspense></Protected>;if(path==='/usuarios')return <Protected><Suspense fallback={<LoadingSkeleton/>}><UsuariosAdmin/></Suspense></Protected>;if(path==='/pcp')return <Protected><Suspense fallback={<LoadingSkeleton/>}><PCPIndustrial/></Suspense></Protected>;if(path==='/operacao-industrial')return <Protected><Suspense fallback={<LoadingSkeleton/>}><OperacaoIndustrial/></Suspense></Protected>;if(path==='/produtos-vendas')return <Protected><Suspense fallback={<LoadingSkeleton/>}><ProdutosVendasIndustrial/></Suspense></Protected>;if(path==='/qualidade')return <Protected><Suspense fallback={<LoadingSkeleton/>}><QualidadeIndustrial/></Suspense></Protected>;if(path==='/qualidade/documentos')return <Protected><Suspense fallback={<LoadingSkeleton/>}><DocumentosQualidadeControle/></Suspense></Protected>;if(path==='/manual-usuario')return <Protected><Suspense fallback={<LoadingSkeleton/>}><ManualUsuario/></Suspense></Protected>;if(path==='/compras-solicitacao')return <Protected><Suspense fallback={<LoadingSkeleton/>}><SolicitacaoCompra/></Suspense></Protected>;if(path==='/fiscal')return <Protected><Suspense fallback={<LoadingSkeleton/>}><Fiscal/></Suspense></Protected>;if(path==='/fiscal/previsao-caixa')return <Protected><Suspense fallback={<LoadingSkeleton/>}><FiscalPrevisaoCaixa/></Suspense></Protected>;if(path==='/teste-erp')return <Protected><Suspense fallback={<LoadingSkeleton/>}><TesteERP/></Suspense></Protected>;return <Boundary><Suspense fallback={<LoadingSkeleton/>}>{session?<ERP/>:<Login/>}</Suspense></Boundary>}
