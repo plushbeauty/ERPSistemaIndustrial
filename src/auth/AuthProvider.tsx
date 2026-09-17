@@ -1,12 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
-import { supabase } from '../lib/supabaseClient'
+import { supabase, supabaseConfigurado } from '../lib/supabaseClient'
 
 type ERPProfile = {
   id: string
   email: string
   empresa_id: string
   role: string
+  nivel_admin: number
+  is_master: boolean
 }
 
 type AuthContextValue = {
@@ -19,23 +21,39 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
-async function loadProfile(userId: string): Promise<ERPProfile | null> {
+async function loadProfile(authUserId: string): Promise<ERPProfile | null> {
   const { data, error } = await supabase
     .from('erp_usuarios')
-    .select('id,email,empresa_id,role')
-    .eq('id', userId)
+    .select('id,auth_user_id,email,empresa_id,role,nivel_admin,is_master,ativo,deleted_at')
+    .eq('auth_user_id', authUserId)
+    .eq('ativo', true)
+    .is('deleted_at', null)
     .maybeSingle()
 
   if (error) throw error
-  if (!data) return null
+  if (!data || data.auth_user_id !== authUserId || !data.empresa_id) return null
 
-  const profile = data as ERPProfile
-  if (!profile.id || profile.id !== userId) throw new Error('Perfil ERP não corresponde ao usuário autenticado.')
-  if (!profile.email?.trim()) throw new Error('Perfil ERP sem email válido.')
-  if (!profile.empresa_id?.trim()) throw new Error('Perfil ERP sem empresa vinculada.')
-  if (!profile.role?.trim()) throw new Error('Perfil ERP sem role válida.')
+  const { data: empresa, error: empresaError } = await supabase
+    .from('erp_empresas')
+    .select('id,ativo')
+    .eq('id', data.empresa_id)
+    .eq('ativo', true)
+    .maybeSingle()
 
-  return profile
+  if (empresaError) throw empresaError
+  if (!empresa?.ativo) return null
+
+  const role = String(data.role ?? '').trim().toUpperCase()
+  if (!role) return null
+
+  return {
+    id: data.id,
+    email: String(data.email ?? '').trim(),
+    empresa_id: data.empresa_id,
+    role,
+    nivel_admin: Number(data.nivel_admin ?? 0),
+    is_master: Boolean(data.is_master),
+  }
 }
 
 function tenantClaim(session: Session | null): string | null {
@@ -72,19 +90,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setLoading(true)
     try {
+      if (!supabaseConfigurado) throw new Error('SUPABASE_ENV_NOT_CONFIGURED')
       const nextProfile = await loadProfile(userId)
       if (currentRequest !== requestId.current) return
-      if (!nextProfile) throw new Error('Usuário autenticado não possui perfil ERP.')
-      if (tenant && tenant !== nextProfile.empresa_id) throw new Error('A empresa da sessão não corresponde ao perfil ERP.')
+      if (!nextProfile) throw new Error('ERP_PROFILE_NOT_AUTHORIZED')
+      if (tenant && tenant !== nextProfile.empresa_id) throw new Error('ERP_TENANT_MISMATCH')
+
       hydratedUserId.current = userId
       hydratedTenant.current = nextProfile.empresa_id
       setProfile(nextProfile)
     } catch (error) {
       if (currentRequest !== requestId.current) return
-      console.error('[AuthProvider] Falha ao carregar perfil ERP:', error)
+      console.error('[AuthProvider] Falha ao validar perfil ERP:', error)
       setProfile(null)
       hydratedUserId.current = null
       hydratedTenant.current = null
+      if (next?.user) await supabase.auth.signOut().catch(() => undefined)
     } finally {
       if (currentRequest === requestId.current) setLoading(false)
     }
@@ -92,6 +113,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true
+
+    if (!supabaseConfigurado) {
+      setLoading(false)
+      return () => { mounted = false }
+    }
 
     void supabase.auth.getSession().then(({ data, error }) => {
       if (!mounted) return
@@ -105,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         void hydrate(null, true)
         return
       }
-      if (event === 'SIGNED_IN') {
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
         void hydrate(next, true)
         return
       }
@@ -133,6 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hydratedTenant.current = null
       setProfile(null)
       setSession(null)
+      setLoading(false)
     }
   }
 
