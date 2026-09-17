@@ -1,27 +1,37 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 
 const env = import.meta.env as Record<string, unknown>
-const FALLBACK_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
-const FALLBACK_PUBLIC_KEY = 'sb_publishable_QX10nEg-hrWd_5UOuYSpQg_v5M-1xuM'
-
-const supabaseUrl = String(env.VITE_SUPABASE_URL ?? FALLBACK_URL).trim().replace(/\/$/, '') || FALLBACK_URL
-const configuredKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY ?? env.VITE_SUPABASE_ANON_KEY ?? FALLBACK_PUBLIC_KEY).trim() || FALLBACK_PUBLIC_KEY
+const supabaseUrl = String(env.VITE_SUPABASE_URL ?? '').trim().replace(/\/$/, '')
+const configuredKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY ?? env.VITE_SUPABASE_ANON_KEY ?? '').trim()
 const isPrivateKey = configuredKey.startsWith('sb_secret_') || configuredKey.includes('service_role')
-const clientKey = isPrivateKey ? FALLBACK_PUBLIC_KEY : configuredKey
 
-export const supabaseConfigurado = Boolean(supabaseUrl && clientKey)
+export const supabaseConfigurado = Boolean(supabaseUrl && configuredKey && !isPrivateKey)
 export const supabaseEnvironmentMismatch = false
 export const supabaseUrlExportada = supabaseUrl
-export const supabaseKeyExportada = clientKey
+export const supabaseKeyExportada = isPrivateKey ? '' : configuredKey
 
-if (isPrivateKey) console.error('[Supabase] Chave privada detectada no frontend. O ERP ignorou a chave privada e usou a chave pública publishable de contingência.')
+const clientUrl = supabaseUrl || 'https://supabase-not-configured.invalid'
+const clientKey = configuredKey && !isPrivateKey ? configuredKey : 'supabase-not-configured-public-key'
 
-export const supabase: SupabaseClient = createClient(supabaseUrl, clientKey, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'erp-industrial-auth' },
+if (!supabaseConfigurado) {
+  console.error('[Supabase] Ambiente não configurado. Defina VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY (ou VITE_SUPABASE_ANON_KEY) na Vercel.')
+}
+if (isPrivateKey) {
+  console.error('[Supabase] Chave privada/secret detectada no frontend. Ela foi rejeitada e não será usada.')
+}
+
+export const supabase: SupabaseClient = createClient(clientUrl, clientKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storageKey: 'erp-industrial-auth',
+  },
   global: { headers: { 'x-client-info': 'sgq-erp-industrial' } },
 })
 
 export async function getValidSession(minValiditySeconds = 60): Promise<Session> {
+  if (!supabaseConfigurado) throw new Error('SUPABASE_ENV_NOT_CONFIGURED')
   const { data, error } = await supabase.auth.getSession()
   if (error) throw error
   let session = data.session
@@ -34,7 +44,9 @@ export async function getValidSession(minValiditySeconds = 60): Promise<Session>
   return session
 }
 
-export async function getAccessTokenOrThrow(): Promise<string> { return (await getValidSession()).access_token }
+export async function getAccessTokenOrThrow(): Promise<string> {
+  return (await getValidSession()).access_token
+}
 
 export async function invokeSecureEdgeFunction<T = unknown>(functionName: string, payload: unknown): Promise<{ data: T | null; error: Error | null }> {
   try {
