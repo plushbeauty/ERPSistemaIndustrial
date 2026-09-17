@@ -1,7 +1,7 @@
 import { Component, lazy, Suspense, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import IndustrialLoginDirect from './IndustrialLoginDirect'
-import { supabase } from './lib/supabaseClient'
+import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 import './styles/index.css'
 import './styles/public-industrial.css'
 import './styles/public-home-v2.css'
@@ -19,7 +19,7 @@ class BootstrapBoundary extends Component<{ children: ReactNode }, { error: Erro
     if (this.state.error) return (
       <main style={{minHeight:'100vh',display:'grid',placeItems:'center',padding:24,background:'#f4f7f5',fontFamily:'Inter,system-ui,sans-serif',color:'#17342f'}}>
         <section style={{width:'min(680px,100%)',border:'1px solid #d9e3df',borderRadius:24,padding:28,background:'#fff',boxShadow:'0 30px 90px rgba(20,55,49,.12)'}}>
-          <div style={{fontSize:11,fontWeight:900,letterSpacing:'.18em',color:'#9a763b'}}>SGQ ERP INDUSTRIAL</div>
+          <div style={{fontSize:11,fontWeight:900,letterSpacing:'.18em',color:'#9a763b'}}>SGQ ERP INDUSTRIAL • PLASTIBOR</div>
           <h1 style={{fontSize:28,margin:'10px 0 8px'}}>O ambiente encontrou uma falha ao iniciar</h1>
           <p style={{color:'#667975',lineHeight:1.7,margin:0}}>A inicialização falhou. Esta tela evita o antigo estado azul/blank e permite reiniciar o bootstrap.</p>
           <pre style={{whiteSpace:'pre-wrap',wordBreak:'break-word',marginTop:18,padding:16,borderRadius:14,background:'#f2f5f3',color:'#8a5d23',fontSize:12}}>{this.state.error.message}</pre>
@@ -44,7 +44,12 @@ function Loading({ label = 'Carregando SGQ ERP…' }: { label?: string }) {
 
 function LoginBootstrap() {
   const [ready,setReady] = useState(false)
-  useEffect(() => { let alive = true; void supabase.auth.getSession().finally(() => { if (alive) setReady(true) }); return () => { alive = false } }, [])
+  useEffect(() => {
+    let alive = true
+    if (!supabaseConfigurado) { setReady(true); return () => { alive = false } }
+    void supabase.auth.getSession().finally(() => { if (alive) setReady(true) })
+    return () => { alive = false }
+  }, [])
   if (!ready) return <Loading label="Preparando acesso seguro…" />
   const params = new URLSearchParams(window.location.search)
   return <IndustrialLoginDirect returnTo={params.get('returnTo') ?? undefined} />
@@ -56,6 +61,7 @@ function AccessGate({ children }: { children: ReactNode }) {
     let alive = true
     void (async () => {
       try {
+        if (!supabaseConfigurado) throw new Error('SUPABASE_ENV_NOT_CONFIGURED')
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
         if (sessionError) throw sessionError
         const user = sessionData.session?.user
@@ -63,18 +69,19 @@ function AccessGate({ children }: { children: ReactNode }) {
 
         const { data: profile, error: profileError } = await supabase
           .from('erp_usuarios')
-          .select('id,empresa_id,ativo,is_master,nivel_admin,role,deleted_at')
+          .select('id,auth_user_id,empresa_id,ativo,is_master,nivel_admin,role,deleted_at')
           .eq('auth_user_id', user.id)
           .eq('ativo', true)
           .is('deleted_at', null)
           .maybeSingle()
         if (profileError) throw profileError
-        if (!profile?.empresa_id) { if (alive) setState('denied'); return }
+        if (!profile?.empresa_id || profile.auth_user_id !== user.id) { if (alive) setState('denied'); return }
 
         const { data: empresa, error: empresaError } = await supabase
           .from('erp_empresas')
           .select('id,ativo')
           .eq('id', profile.empresa_id)
+          .eq('ativo', true)
           .maybeSingle()
         if (empresaError) throw empresaError
         if (!empresa?.ativo) { if (alive) setState('denied'); return }
@@ -88,7 +95,7 @@ function AccessGate({ children }: { children: ReactNode }) {
     return () => { alive = false }
   }, [])
 
-  if (state === 'checking') return <Loading label="Validando empresa e permissões…" />
+  if (state === 'checking') return <Loading label="Validando empresa, perfil e permissões…" />
   if (state === 'denied') {
     const returnTo = `${window.location.pathname}${window.location.search}`
     window.location.replace(`/login?returnTo=${encodeURIComponent(returnTo)}`)
@@ -102,6 +109,6 @@ export default function AppBootstrap() {
   if (path === '/login') return <BootstrapBoundary><LoginBootstrap /></BootstrapBoundary>
   if (path === '/' || path === '/home') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo SGQ ERP Industrial…" />}><PublicIndustrialHome /></Suspense></BootstrapBoundary>
   const app = <BootstrapBoundary><Suspense fallback={<Loading />}><AppEntryV2 /></Suspense></BootstrapBoundary>
-  const isPublic = publicPaths.has(path) || path.startsWith('/modulos/')
+  const isPublic = publicPaths.has(path)
   return isPublic ? app : <AccessGate>{app}</AccessGate>
 }
