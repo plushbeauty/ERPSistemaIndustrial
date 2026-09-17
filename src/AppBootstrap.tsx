@@ -109,6 +109,6 @@ export default function AppBootstrap() {
   if (path === '/login') return <BootstrapBoundary><LoginBootstrap /></BootstrapBoundary>
   if (path === '/' || path === '/home') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo SGQ ERP Industrial…" />}><PublicIndustrialHome /></Suspense></BootstrapBoundary>
   const app = <BootstrapBoundary><Suspense fallback={<Loading />}><AppEntryV2 /></Suspense></BootstrapBoundary>
-  const isPublic = publicPaths.has(path)
+  const isPublic = publicPaths.has(path) || path.startsWith('/modulos/')
   return isPublic ? app : <AccessGate>{app}</AccessGate>
 }
