@@ -31,13 +31,19 @@ export default function IndustrialDashboardPremium({ onOpen }: DashboardProps) {
         if (authError) throw authError
         if (!auth.user) throw new Error('AUTH_SESSION_REQUIRED')
 
-        const { data: profile, error: profileError } = await supabase.from('erp_usuarios').select('empresa_id').eq('id', auth.user.id).is('deleted_at', null).maybeSingle()
+        const { data: profile, error: profileError } = await supabase
+          .from('erp_usuarios')
+          .select('empresa_id')
+          .eq('auth_user_id', auth.user.id)
+          .eq('ativo', true)
+          .is('deleted_at', null)
+          .maybeSingle()
         if (profileError) throw profileError
         if (!profile?.empresa_id) throw new Error('Perfil empresarial não encontrado.')
         const empresaId = profile.empresa_id
 
         const [companyResult, ordersResult, productionResult, stockResult, machinesResult, ncResult] = await Promise.all([
-          supabase.from('erp_empresas').select('nome_fantasia,razao_social').eq('id', empresaId).maybeSingle(),
+          supabase.from('erp_empresas').select('nome_fantasia,razao_social').eq('id', empresaId).eq('ativo', true).maybeSingle(),
           supabase.from('erp_ordens_producao').select('id,numero,produto_id,quantidade_planejada,quantidade_produzida,status,data_prevista').eq('empresa_id', empresaId).order('created_at', { ascending: false }).limit(6),
           supabase.from('erp_apontamentos_producao').select('quantidade_boa,quantidade_refugo,quantidade_retrabalho,setup_min,parada_min').eq('empresa_id', empresaId).limit(5000),
           supabase.from('erp_estoque_movimentos').select('tipo,quantidade').eq('empresa_id', empresaId).limit(5000),
@@ -100,57 +106,11 @@ export default function IndustrialDashboardPremium({ onOpen }: DashboardProps) {
   const open = (path: string) => onOpen ? onOpen(path) : go(path)
 
   return <div className="industrial-premium-dashboard">
-    <section className="ipd-welcome">
-      <div>
-        <span className="ipd-eyebrow">SGQ ERP • CENTRO DE COMANDO INDUSTRIAL</span>
-        <h2>Visão real da operação</h2>
-        <p>{empresa} · indicadores calculados a partir dos registros atuais do Supabase.</p>
-      </div>
-      <button className="ipd-refresh" type="button" onClick={() => setRefresh(value => value + 1)}><RefreshCw size={17}/> Atualizar</button>
-    </section>
-
+    <section className="ipd-welcome"><div><span className="ipd-eyebrow">SGQ ERP • CENTRO DE COMANDO INDUSTRIAL</span><h2>Visão real da operação</h2><p>{empresa} · indicadores calculados a partir dos registros atuais do Supabase.</p></div><button className="ipd-refresh" type="button" onClick={() => setRefresh(value => value + 1)}><RefreshCw size={17}/> Atualizar</button></section>
     {error && <div className="ipd-card" role="alert" style={{ marginBottom: 18, borderColor: '#efb8b8' }}><strong>Não foi possível carregar todos os indicadores.</strong><p>{error}</p></div>}
-
-    <section className="ipd-kpis" aria-label="Indicadores principais">
-      <Kpi icon={Factory} label="Planejado nas OPs" value={loading ? '…' : fmt(metrics.planned)} helper="Quantidade planejada nas OPs recentes" />
-      <Kpi icon={CheckCircle2} label="Produção boa" value={loading ? '…' : fmt(metrics.produced)} helper="Apontamentos de produção registrados" />
-      <Kpi icon={Gauge} label="Qualidade da produção" value={loading ? '…' : metrics.produced + metrics.scrap > 0 ? pct(qualityRate) : '—'} helper="Boa ÷ (boa + refugo)" />
-      <Kpi icon={AlertTriangle} label="Não conformidades abertas" value={loading ? '…' : fmt(metrics.openNc)} helper="Registros ainda não encerrados" />
-    </section>
-
-    <section className="ipd-grid-main">
-      <article className="ipd-card ipd-orders">
-        <div className="ipd-card-head"><div><span>ORDENS DE PRODUÇÃO</span><h3>Últimas OPs registradas</h3></div><button onClick={() => open('/pcp')} type="button">Ver PCP <ArrowUpRight size={15}/></button></div>
-        {orders.length ? <div className="ipd-order-list">{orders.map(order => {
-          const product = products[order.produto_id]
-          const progress = order.quantidade_planejada > 0 ? Math.min(100, (safeNumber(order.quantidade_produzida) / safeNumber(order.quantidade_planejada)) * 100) : 0
-          return <div className="ipd-order" key={order.id}><div className="ipd-order-top"><b>OP {order.numero}</b><span className={progress >= 100 ? 'done' : ''}>{order.status}</span></div><strong>{product ? `${product.codigo} · ${product.nome}` : `Produto ${order.produto_id}`}</strong><div className="ipd-progress"><i style={{ width: `${progress}%` }}/></div><small>{fmt(order.quantidade_produzida)} / {fmt(order.quantidade_planejada)} · {pct(progress)}</small></div>
-        })}</div> : <Empty text="Nenhuma ordem de produção encontrada para esta empresa." />}
-      </article>
-
-      <article className="ipd-card ipd-status">
-        <div className="ipd-card-head"><div><span>SAÚDE DA OPERAÇÃO</span><h3>Dados atuais</h3></div><ShieldCheck size={18}/></div>
-        <Status icon={Factory} title="Máquinas ativas" value={fmt(metrics.machines)} ok={metrics.machines > 0}/>
-        <Status icon={Package} title="Saldo movimentado" value={`${fmt(metrics.stock)} unidades apuradas`} ok={metrics.stock > 0}/>
-        <Status icon={CalendarDays} title="Setup" value={`${fmt(metrics.setup)} min registrados`} ok={metrics.setup === 0}/>
-        <Status icon={Truck} title="Paradas" value={`${fmt(metrics.downtime)} min registrados`} ok={metrics.downtime === 0}/>
-      </article>
-    </section>
-
-    <section className="ipd-grid-bottom">
-      <article className="ipd-card">
-        <div className="ipd-card-head"><div><span>ACESSO RÁPIDO</span><h3>Operação</h3></div><Settings size={18}/></div>
-        <div className="ipd-actions">{actions.map(([title, desc, Icon, path]) => <button key={title} type="button" onClick={() => open(path)}><span className="ipd-action-icon"><Icon size={18}/></span><span><b>{title}</b><small>{desc}</small></span><ArrowUpRight size={15}/></button>)}</div>
-      </article>
-      <article className="ipd-card ipd-production">
-        <div className="ipd-card-head"><div><span>PRODUÇÃO</span><h3>Composição dos apontamentos</h3></div><Activity size={18}/></div>
-        <MetricLine label="Produção boa" value={fmt(metrics.produced)} />
-        <MetricLine label="Refugo" value={fmt(metrics.scrap)} />
-        <MetricLine label="Setup" value={`${fmt(metrics.setup)} min`} />
-        <MetricLine label="Paradas" value={`${fmt(metrics.downtime)} min`} />
-      </article>
-    </section>
-
+    <section className="ipd-kpis" aria-label="Indicadores principais"><Kpi icon={Factory} label="Planejado nas OPs" value={loading ? '…' : fmt(metrics.planned)} helper="Quantidade planejada nas OPs recentes" /><Kpi icon={CheckCircle2} label="Produção boa" value={loading ? '…' : fmt(metrics.produced)} helper="Apontamentos de produção registrados" /><Kpi icon={Gauge} label="Qualidade da produção" value={loading ? '…' : metrics.produced + metrics.scrap > 0 ? pct(qualityRate) : '—'} helper="Boa ÷ (boa + refugo)" /><Kpi icon={AlertTriangle} label="Não conformidades abertas" value={loading ? '…' : fmt(metrics.openNc)} helper="Registros ainda não encerrados" /></section>
+    <section className="ipd-grid-main"><article className="ipd-card ipd-orders"><div className="ipd-card-head"><div><span>ORDENS DE PRODUÇÃO</span><h3>Últimas OPs registradas</h3></div><button onClick={() => open('/pcp')} type="button">Ver PCP <ArrowUpRight size={15}/></button></div>{orders.length ? <div className="ipd-order-list">{orders.map(order => { const product = products[order.produto_id]; const progress = order.quantidade_planejada > 0 ? Math.min(100, (safeNumber(order.quantidade_produzida) / safeNumber(order.quantidade_planejada)) * 100) : 0; return <div className="ipd-order" key={order.id}><div className="ipd-order-top"><b>OP {order.numero}</b><span className={progress >= 100 ? 'done' : ''}>{order.status}</span></div><strong>{product ? `${product.codigo} · ${product.nome}` : `Produto ${order.produto_id}`}</strong><div className="ipd-progress"><i style={{ width: `${progress}%` }}/></div><small>{fmt(order.quantidade_produzida)} / {fmt(order.quantidade_planejada)} · {pct(progress)}</small></div> })}</div> : <Empty text="Nenhuma ordem de produção encontrada para esta empresa." />}</article><article className="ipd-card ipd-status"><div className="ipd-card-head"><div><span>SAÚDE DA OPERAÇÃO</span><h3>Dados atuais</h3></div><ShieldCheck size={18}/></div><Status icon={Factory} title="Máquinas ativas" value={fmt(metrics.machines)} ok={metrics.machines > 0}/><Status icon={Package} title="Saldo movimentado" value={`${fmt(metrics.stock)} unidades apuradas`} ok={metrics.stock > 0}/><Status icon={CalendarDays} title="Setup" value={`${fmt(metrics.setup)} min registrados`} ok={metrics.setup === 0}/><Status icon={Truck} title="Paradas" value={`${fmt(metrics.downtime)} min registrados`} ok={metrics.downtime === 0}/></article></section>
+    <section className="ipd-grid-bottom"><article className="ipd-card"><div className="ipd-card-head"><div><span>ACESSO RÁPIDO</span><h3>Operação</h3></div><Settings size={18}/></div><div className="ipd-actions">{actions.map(([title, desc, Icon, path]) => <button key={title} type="button" onClick={() => open(path)}><span className="ipd-action-icon"><Icon size={18}/></span><span><b>{title}</b><small>{desc}</small></span><ArrowUpRight size={15}/></button>)}</div></article><article className="ipd-card ipd-production"><div className="ipd-card-head"><div><span>PRODUÇÃO</span><h3>Composição dos apontamentos</h3></div><Activity size={18}/></div><MetricLine label="Produção boa" value={fmt(metrics.produced)} /><MetricLine label="Refugo" value={fmt(metrics.scrap)} /><MetricLine label="Setup" value={`${fmt(metrics.setup)} min`} /><MetricLine label="Paradas" value={`${fmt(metrics.downtime)} min`} /></article></section>
     <footer className="ipd-footer"><span>SGQ ERP Industrial</span><span>Multiempresa · RBAC · Rastreabilidade</span><span>FernandoSch_System</span></footer>
   </div>
 }
