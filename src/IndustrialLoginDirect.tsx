@@ -4,9 +4,37 @@ import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 import './styles/industrial-login.css'
 
 type Props = { returnTo?: string }
+
 function safeReturnTo(value: string | null | undefined) {
   if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/login')) return '/erp-industrial'
   return value
+}
+
+async function validateIndustrialSession(userId: string) {
+  const { data: profile, error: profileError } = await supabase
+    .from('erp_usuarios')
+    .select('id,auth_user_id,empresa_id,nivel_admin,ativo,is_master,role,deleted_at')
+    .eq('auth_user_id', userId)
+    .eq('ativo', true)
+    .is('deleted_at', null)
+    .maybeSingle()
+
+  if (profileError) throw profileError
+  if (!profile) throw new Error('Usuário autenticado, mas sem perfil ERP ativo.')
+  if (profile.auth_user_id !== userId) throw new Error('O vínculo entre Supabase Auth e o perfil ERP é inválido.')
+  if (!profile.empresa_id) throw new Error('Usuário autenticado sem empresa industrial vinculada.')
+
+  const { data: empresa, error: empresaError } = await supabase
+    .from('erp_empresas')
+    .select('id,razao_social,nome_fantasia,ativo')
+    .eq('id', profile.empresa_id)
+    .eq('ativo', true)
+    .maybeSingle()
+
+  if (empresaError) throw empresaError
+  if (!empresa) throw new Error('A empresa vinculada ao usuário está inexistente ou inativa.')
+
+  return { profile, empresa }
 }
 
 export default function IndustrialLoginDirect({ returnTo }: Props) {
@@ -20,21 +48,36 @@ export default function IndustrialLoginDirect({ returnTo }: Props) {
 
   useEffect(() => {
     let alive = true
-    if (!supabaseConfigurado) {
-      setChecking(false)
-      return () => { alive = false }
-    }
-    void supabase.auth.getSession().then(({ data, error: sessionError }) => {
-      if (!alive) return
-      if (sessionError || !data.session?.user) {
-        setChecking(false)
+
+    async function bootstrap() {
+      if (!supabaseConfigurado) {
+        if (alive) setChecking(false)
         return
       }
-      window.location.replace(safeReturnTo(returnTo))
-    }).catch(err => {
-      console.error('[ERP login bootstrap]', err)
-      if (alive) setChecking(false)
-    })
+
+      try {
+        const { data, error: sessionError } = await supabase.auth.getSession()
+        if (sessionError) throw sessionError
+
+        const user = data.session?.user
+        if (!user) {
+          if (alive) setChecking(false)
+          return
+        }
+
+        await validateIndustrialSession(user.id)
+        if (alive) window.location.replace(safeReturnTo(returnTo))
+      } catch (err) {
+        console.error('[ERP login bootstrap]', err)
+        await supabase.auth.signOut().catch(() => undefined)
+        if (alive) {
+          setError('A sessão anterior não possui acesso válido ao ERP Industrial. Entre novamente com uma conta Industrial autorizada.')
+          setChecking(false)
+        }
+      }
+    }
+
+    void bootstrap()
     return () => { alive = false }
   }, [returnTo])
 
@@ -42,6 +85,7 @@ export default function IndustrialLoginDirect({ returnTo }: Props) {
     event.preventDefault()
     setError('')
     setNotice('')
+
     if (!supabaseConfigurado) {
       setError('O ambiente do ERP não está configurado. Verifique VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY na Vercel e faça um novo deploy.')
       return
@@ -50,6 +94,7 @@ export default function IndustrialLoginDirect({ returnTo }: Props) {
       setError('Informe seu e-mail corporativo e sua senha.')
       return
     }
+
     setBusy(true)
     try {
       const { data, error: authError } = await supabase.auth.signInWithPassword({
@@ -62,34 +107,18 @@ export default function IndustrialLoginDirect({ returnTo }: Props) {
       const { data: verifiedUser, error: userError } = await supabase.auth.getUser()
       if (userError || !verifiedUser.user) throw userError ?? new Error('O usuário autenticado não pôde ser validado.')
 
-      const userId = verifiedUser.user.id
-      const { data: profile, error: profileError } = await supabase
-        .from('erp_usuarios')
-        .select('id,auth_user_id,empresa_id,nivel_admin,ativo,is_master,role,deleted_at')
-        .eq('auth_user_id', userId)
-        .eq('ativo', true)
-        .is('deleted_at', null)
-        .maybeSingle()
-      if (profileError) throw profileError
-      if (!profile) throw new Error('Usuário autenticado, mas sem perfil ERP ativo. Verifique o cadastro em erp_usuarios.')
-      if (profile.auth_user_id !== userId) throw new Error('O vínculo entre Supabase Auth e o perfil ERP é inválido.')
-      if (!profile.empresa_id) throw new Error('Usuário autenticado sem empresa industrial vinculada.')
-
-      const { data: empresa, error: empresaError } = await supabase
-        .from('erp_empresas')
-        .select('id,razao_social,nome_fantasia,ativo')
-        .eq('id', profile.empresa_id)
-        .eq('ativo', true)
-        .maybeSingle()
-      if (empresaError) throw empresaError
-      if (!empresa) throw new Error('A empresa vinculada ao usuário está inexistente ou inativa.')
-
+      const { profile, empresa } = await validateIndustrialSession(verifiedUser.user.id)
       const role = String(profile.role ?? '').trim().toUpperCase()
       const level = Number(profile.nivel_admin ?? 0)
       const master = Boolean(profile.is_master) || level >= 9 || ['MASTER', 'MASTER_ADMIN', 'SUPER_ADMIN'].includes(role)
+
       setNotice(`Acesso validado para ${empresa.nome_fantasia || empresa.razao_social || 'PLASTIBOR'}. ${master ? 'Perfil MASTER.' : 'Perfil autorizado.'} Abrindo o ERP…`)
+
       const { data: finalSession, error: finalSessionError } = await supabase.auth.getSession()
-      if (finalSessionError || finalSession.session?.user.id !== userId) throw finalSessionError ?? new Error('A sessão não ficou disponível após a validação.')
+      if (finalSessionError || finalSession.session?.user.id !== verifiedUser.user.id) {
+        throw finalSessionError ?? new Error('A sessão não ficou disponível após a validação.')
+      }
+
       window.location.replace(safeReturnTo(returnTo))
     } catch (err) {
       console.error('[ERP login]', err)
@@ -99,9 +128,7 @@ export default function IndustrialLoginDirect({ returnTo }: Props) {
         ? 'E-mail ou senha incorretos.'
         : /email not confirmed/i.test(message)
           ? 'O e-mail ainda não foi confirmado no Supabase.'
-          : /SUPABASE_ENV_NOT_CONFIGURED/i.test(message)
-            ? 'Ambiente Supabase não configurado na Vercel.'
-            : message
+          : message
       setError(friendly)
     } finally {
       setBusy(false)
