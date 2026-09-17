@@ -1,5 +1,4 @@
-import { Component, FormEvent, ReactNode, lazy, Suspense, useEffect, useState } from 'react'
-import { ArrowRight, BarChart3, Building2, Eye, EyeOff, KeyRound, LogIn, ShieldCheck, UserPlus, Clock3 } from 'lucide-react'
+import { Component, ReactNode, lazy, Suspense, useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import './styles/industrial-login.css'
 import './styles/forms-premium.css'
@@ -7,7 +6,8 @@ import './styles/manual-usuario-2026.css'
 import './styles/public-contact.css'
 import './styles/visual-showcase-2026.css'
 import './styles/module-overview.css'
-import { supabase, supabaseConfigurado } from './lib/supabaseClient'
+import { supabase } from './lib/supabaseClient'
+import IndustrialLoginDirect from './IndustrialLoginDirect'
 
 const AppIndustrial=lazy(()=>import('./AppIndustrialV7'))
 const PublicIndustrialHome=lazy(()=>import('./PublicIndustrialHome'))
@@ -41,106 +41,36 @@ class Boundary extends Component<{children:ReactNode},{error:Error|null}>{
   }
 }
 
-function LoadingSkeleton({label='Carregando SGQ ERP…'}:{label?:string}){
-  return <div className="loading-screen"><div className="loading-skeleton-card"><div className="loading-skeleton-brand"/><div className="loading-skeleton-line wide"/><div className="loading-skeleton-line"/><div className="loading-skeleton-line short"/><span>{label}</span></div></div>
-}
-
+function LoadingSkeleton({label='Carregando SGQ ERP…'}:{label?:string}){return <div className="loading-screen"><div className="loading-skeleton-card"><div className="loading-skeleton-brand"/><div className="loading-skeleton-line wide"/><div className="loading-skeleton-line"/><div className="loading-skeleton-line short"/><span>{label}</span></div></div>}
 function lazyFallback(){return <LoadingSkeleton/>}
 
 function profileFromSession(session:Session|null){
-  const metadata=session?.user?.app_metadata
-  const empresaId=typeof metadata?.empresa_id==='string'?metadata.empresa_id.trim():''
-  const role=typeof metadata?.role==='string'?metadata.role.trim():''
+  const metadata=session?.user?.app_metadata??{}
+  const empresaId=typeof metadata.empresa_id==='string'?metadata.empresa_id.trim():''
+  const role=typeof metadata.role==='string'?metadata.role.trim():''
   return {empresaId,role}
 }
 
 async function validarAcessoERP(session:Session|null):Promise<AccessResult>{
   if(!session?.user)return{ok:false,master:false,reason:'Sessão de autenticação inválida.'}
-  const {empresaId,role}=profileFromSession(session)
-  if(!empresaId)return{ok:false,master:false,reason:'A sessão não contém a empresa autenticada.'}
-  if(!role)return{ok:false,master:false,reason:'A sessão não contém a role autenticada.'}
-  const normalizedRole=role.toUpperCase()
-  return{ok:true,master:normalizedRole==='MASTER'||normalizedRole==='MASTER_ADMIN'||normalizedRole==='SUPER_ADMIN',reason:''}
+  const userId=session.user.id
+  const {data:profile,error}=await supabase.from('erp_usuarios').select('id,auth_user_id,empresa_id,role,nivel_admin,is_master,ativo').eq('auth_user_id',userId).maybeSingle()
+  if(error)throw error
+  const {empresaId:metadataCompany,role:metadataRole}=profileFromSession(session)
+  const companyId=String(profile?.empresa_id??metadataCompany).trim()
+  const role=String(profile?.role??metadataRole).trim().toUpperCase()
+  const active=profile?.ativo===undefined||profile?.ativo===null||profile?.ativo===true
+  if(!profile&&role!=='MASTER'&&role!=='MASTER_ADMIN'&&role!=='SUPER_ADMIN')return{ok:false,master:false,reason:'Usuário autenticado, mas sem cadastro correspondente no ERP.'}
+  if(!active)return{ok:false,master:false,reason:'Usuário desativado no ERP.'}
+  if(!companyId&&role!=='MASTER'&&role!=='MASTER_ADMIN'&&role!=='SUPER_ADMIN')return{ok:false,master:false,reason:'Usuário autenticado sem empresa vinculada.'}
+  const master=Boolean(profile?.is_master)||Number(profile?.nivel_admin??0)>=100||['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(role)
+  return{ok:true,master,reason:''}
 }
 
 function safeReturnTo(value:string|null){if(!value||!value.startsWith('/')||value.startsWith('//')||value.startsWith('/login'))return'/erp-industrial';return value}
 function requestedTarget(){return safeReturnTo(new URLSearchParams(location.search).get('returnTo'))}
 
-function Login(){
-  const[usuario,setUsuario]=useState(''),[pw,setPw]=useState(''),[err,setErr]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[showPassword,setShowPassword]=useState(false),[recovering,setRecovering]=useState(false)
-
-  async function submit(e:FormEvent){
-    e.preventDefault();setErr('');setNotice('');setBusy(true)
-    try{
-      if(!supabaseConfigurado)throw new Error('A conexão do sistema com o banco não está configurada.')
-      if(!usuario.trim()||!pw)throw new Error('Informe usuário/e-mail e senha.')
-      const{data,error}=await supabase.functions.invoke('erp-login',{body:{email:usuario.trim(),password:pw}})
-      if(error)throw error
-      if(!data?.session?.access_token||!data?.session?.refresh_token||!data?.profile)throw new Error(data?.error||'O serviço de autenticação não retornou uma sessão válida.')
-      const{error:sessionError}=await supabase.auth.setSession({access_token:data.session.access_token,refresh_token:data.session.refresh_token})
-      if(sessionError)throw sessionError
-      const{data:authUser,error:authError}=await supabase.auth.getUser()
-      if(authError||!authUser.user)throw authError??new Error('Sessão autenticada sem usuário válido.')
-      const{data:sessionData,error:sessionReadError}=await supabase.auth.getSession()
-      if(sessionReadError||!sessionData.session)throw sessionReadError??new Error('Sessão não disponível após autenticação.')
-      const access=await validarAcessoERP(sessionData.session)
-      if(!access.ok){await supabase.auth.signOut();throw new Error(access.reason)}
-      if(authUser.user.id!==data.profile.id)throw new Error('O perfil retornado não corresponde ao usuário autenticado.')
-      if(sessionData.session.user.app_metadata?.empresa_id!==data.profile.empresa_id)throw new Error('A empresa da sessão não corresponde ao perfil autenticado.')
-      if(sessionData.session.user.app_metadata?.role!==data.profile.role)throw new Error('A role da sessão não corresponde ao perfil autenticado.')
-      location.replace(requestedTarget())
-    }catch(e){setErr(e instanceof Error?e.message:'Não foi possível entrar no sistema.')}
-    finally{setBusy(false)}
-  }
-
-  async function recuperarSenha(){
-    setErr('');setNotice('')
-    const email=usuario.trim()
-    if(!supabaseConfigurado){setErr('A conexão do sistema com o banco não está configurada.');return}
-    if(!email){setErr('Informe seu e-mail corporativo para receber o link de recuperação.');return}
-    setRecovering(true)
-    try{
-      const{error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:`${window.location.origin}/login?reset=1`})
-      if(error)throw error
-      setNotice('Se o e-mail estiver cadastrado, você receberá as instruções de recuperação. Verifique também a pasta de spam.')
-    }catch(e){setErr(e instanceof Error?e.message:'Não foi possível solicitar a recuperação de senha.')}
-    finally{setRecovering(false)}
-  }
-
-  return <main className="auth-screen">
-    <section className="auth-visual" aria-label="SGQ ERP Industrial">
-      <img src="/images/sgq/sgq-erp-login.png" alt="Ambiente industrial do SGQ ERP"/><div className="auth-visual-shade"/>
-      <div className="auth-visual-grid" aria-hidden="true"/>
-      <div className="auth-visual-content">
-        <a href="/" className="auth-visual-logo"><img src="/logo-industrial.svg" alt="SGQ ERP"/></a>
-        <div className="auth-visual-message">
-          <span>SGQ ERP • GESTÃO INDUSTRIAL</span>
-          <h2>Uma fábrica inteira.<br/><em>Um único controle.</em></h2>
-          <p>PCP, produção, qualidade, estoque, manutenção, financeiro e fiscal trabalhando sobre os mesmos dados.</p>
-          <div className="auth-trust"><b><ShieldCheck size={14}/> Multiempresa</b><b><BarChart3 size={14}/> Indicadores</b><b><Building2 size={14}/> Rastreabilidade</b></div>
-          <div className="auth-visual-card"><div className="auth-visual-card-icon"><BarChart3 size={18}/></div><div><strong>Visão operacional integrada</strong><span>Dados, processos e permissões no mesmo ambiente.</span></div><i/></div>
-        </div>
-        <small>FernandoSch_System</small>
-      </div>
-    </section>
-    <section className="auth-panel"><div className="auth-panel-inner">
-      <div className="auth-mobile-brand"><a href="/"><img src="/logo-industrial.svg" alt="SGQ ERP"/></a></div>
-      <div className="auth-heading"><span className="auth-overline">ACESSO SEGURO</span><span className="auth-status"><i/> Ambiente protegido</span></div>
-      <h1>Entrar no SGQ ERP</h1>
-      <p className="auth-description">Acesse sua empresa com as credenciais cadastradas. O ERP identifica automaticamente a empresa e as permissões do usuário autenticado.</p>
-      <form className="auth-form" onSubmit={submit}>
-        <label htmlFor="erp-user">E-mail corporativo</label><div className="auth-input-wrap"><input id="erp-user" type="email" value={usuario} onChange={e=>setUsuario(e.target.value)} placeholder="seu@email.com" autoComplete="username" autoFocus required/></div>
-        <div className="auth-label-row"><label htmlFor="erp-password">Senha</label><button type="button" className="auth-text-button" onClick={recuperarSenha} disabled={recovering||busy}>{recovering?'Enviando…':'Esqueci minha senha'}</button></div>
-        <div className="auth-input-wrap"><input id="erp-password" type={showPassword?'text':'password'} value={pw} onChange={e=>setPw(e.target.value)} placeholder="Digite sua senha" autoComplete="current-password" required/><button type="button" className="auth-password-toggle" aria-label={showPassword?'Ocultar senha':'Mostrar senha'} onClick={()=>setShowPassword(value=>!value)}>{showPassword?<EyeOff size={18}/>:<Eye size={18}/>}</button><KeyRound className="auth-key-icon" size={16} aria-hidden="true"/></div>
-        {err&&<div className="auth-message auth-error" role="alert">{err}</div>}{notice&&<div className="auth-message auth-notice" role="status">{notice}</div>}
-        <button className="auth-submit" type="submit" disabled={busy||recovering}>{busy?<><span className="auth-spinner"/>Entrando…</>:<>Entrar no sistema <LogIn size={18}/></>}</button>
-        <div className="auth-divider"><span>ou</span></div><a className="auth-register" href="/cadastro-empresa"><UserPlus size={18}/> Criar uma nova empresa</a><a className="auth-trial" href="/cadastro-empresa"><Clock3 size={17}/> Começar teste grátis de 15 dias <ArrowRight size={16}/></a>
-      </form>
-      <div className="auth-security-note"><ShieldCheck size={16}/><span>Autenticação por sessão segura. Nenhuma senha é armazenada no navegador.</span></div>
-      <div className="auth-footer"><a href="/">Voltar para o site</a><span>•</span><a href="/contato">Fale conosco</a></div>
-    </div></section>
-  </main>
-}
+function Login(){return <IndustrialLoginDirect returnTo={requestedTarget()}/>} 
 
 function ERP(){
   const[valid,setValid]=useState<boolean|null>(null)
