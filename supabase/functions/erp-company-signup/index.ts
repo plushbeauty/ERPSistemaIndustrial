@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
 
     if (!razao_social || !nome_fantasia || !documento || !email || !senha || !nome_admin || !nome_acesso) return json({ error: "Preencha todos os campos obrigatórios." }, 400)
     if ((tipo_documento === "CPF" && documento.length !== 11) || (tipo_documento === "CNPJ" && documento.length !== 14)) return json({ error: `Informe um ${tipo_documento} válido.` }, 400)
-    if (senha.length < 8) return json({ error: "A senha deve possuir pelo menos 8 caracteres." }, 400)
+    if (senha.length < 6) return json({ error: "A senha deve possuir pelo menos 6 caracteres." }, 400)
     if (!/^\S+@\S+\.\S+$/.test(email)) return json({ error: "Informe um e-mail válido." }, 400)
 
     const existingEmail = await admin.from("erp_usuarios").select("id").ilike("email", email).limit(1)
