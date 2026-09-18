@@ -63,7 +63,7 @@ export default function AtivarAcesso() {
       <label style={label}>E-mail do convite<input style={input} type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" placeholder="voce@empresa.com"/></label>
       <label style={label}>Código recebido<input style={{...input,letterSpacing:'.25em',fontSize:20,fontWeight:900}} inputMode="numeric" maxLength={8} value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,''))} placeholder="000000"/></label>
       <label style={label}>Seu nome<input style={input} value={nome} onChange={e=>setNome(e.target.value)} autoComplete="name" placeholder="Nome completo"/></label>
-      <label style={label}>Nova senha<input style={input} type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="new-password" placeholder="Mínimo de 10 caracteres"/></label>
+      <label style={label}>Nova senha<input style={input} type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="new-password" placeholder="Mínimo de 6 caracteres"/></label>
       <label style={label}>Confirmar senha<input style={input} type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} autoComplete="new-password" placeholder="Repita a senha"/></label>
       {error&&<div style={{...msg,background:'#fff3f3',borderColor:'#f0c8c8',color:'#a83a3a'}} role="alert">{error}</div>}
       {message&&<div style={msg} role="status">{message}</div>}
