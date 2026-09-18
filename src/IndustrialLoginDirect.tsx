@@ -25,7 +25,7 @@ export default function IndustrialLoginDirect({returnTo,masterMode=false}:Props)
  async function submit(event:FormEvent){
   event.preventDefault();setError('');setNotice('');
   if(!supabaseConfigurado){setError('O ambiente do ERP não está configurado. Verifique VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY na Vercel e faça um novo deploy.');return}
-  if(!email.trim()||!password){setError('Informe seu nome/e-mail e sua senha.');return}
+  if(!email.trim()||!password){setError('Informe seu nome/e-mail e sua senha.');return}\n  if(password.length<6){setError('A senha deve ter no mínimo 6 caracteres.');return}
   setBusy(true);
   try{
     const {data:loginData,error:loginError}=await supabase.functions.invoke('erp-login',{body:{identifier:email.trim(),password}});
