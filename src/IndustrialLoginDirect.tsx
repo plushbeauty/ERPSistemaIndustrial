@@ -10,7 +10,7 @@ function safeReturnTo(value: string | null | undefined) { if (!value || !value.s
 function normalizeIndustrialLogin(value: string) { const normalized=value.trim().toLowerCase(); return normalized.includes('@') ? normalized : `${normalized}@transforbater.com.br` }
 async function validateIndustrialSession(userId:string){
  const {data:profile,error:profileError}=await supabase.from('erp_usuarios').select('id,auth_user_id,empresa_id,nivel_admin,ativo,is_master,role,deleted_at,setor_id').eq('auth_user_id',userId).eq('ativo',true).is('deleted_at',null).maybeSingle();
- if(profileError)throw profileError;if(!profile)throw new Error('Usuário autenticado, mas sem perfil ERP ativo.');if(profile.auth_user_id!==userId)throw new Error('O vínculo entre Supabase Auth e o perfil ERP é inválido.');if(!profile.empresa_id)throw new Error('Usuário autenticado sem empresa industrial vinculada.');
+ if(profileError)throw profileError;if(!profile)throw new Error('Usuário autenticado, mas sem perfil ERP ativo.');if(profile.auth_user_id!==userId)throw new Error('O vínculo entre Supabase Auth e o perfil ERP é inválido.');const master=Boolean(profile.is_master)||Number(profile.nivel_admin??0)>=9||['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(String(profile.role??'').trim().toUpperCase());if(master&&!profile.empresa_id)return {profile,empresa:null};if(!profile.empresa_id)throw new Error('Usuário autenticado sem empresa industrial vinculada.');
  const {data:empresa,error:empresaError}=await supabase.from('erp_empresas').select('id,razao_social,nome_fantasia,ativo').eq('id',profile.empresa_id).eq('ativo',true).maybeSingle();if(empresaError)throw empresaError;if(!empresa)throw new Error('A empresa vinculada ao usuário está inexistente ou inativa.');return {profile,empresa}
 }
 async function executarBootstrapOficial(email:string,password:string){
@@ -38,7 +38,7 @@ export default function IndustrialLoginDirect({returnTo,masterMode=false}:Props)
     const {profile,empresa}=await validateIndustrialSession(sessionData.user.id);
     const role=String(profile.role??'').trim().toUpperCase(),level=Number(profile.nivel_admin??0),master=Boolean(profile.is_master)||level>=9||['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(role);
     if(masterMode&&!master)throw new Error('Este acesso não possui perfil MASTER autorizado.');
-    setNotice('Acesso validado para '+(empresa.nome_fantasia||empresa.razao_social||'empresa')+'. '+(master?'Perfil MASTER.':'Perfil autorizado.')+' Abrindo o ERP…');
+    setNotice('Acesso validado para '+(empresa?.nome_fantasia||empresa?.razao_social||'ambiente Master')+'. '+(master?'Perfil MASTER.':'Perfil autorizado.')+' Abrindo o ERP…');
     window.location.replace(safeReturnTo(returnTo));
   }catch(err){
     console.error('[ERP login]',err);await supabase.auth.signOut().catch(()=>undefined);
