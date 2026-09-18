@@ -47,11 +47,56 @@ Deno.serve(async (req) => {
     const userClient = createClient(supabaseUrl, anon, { global: { headers: { Authorization: authorization } } })
     const { data: authData, error: authError } = await userClient.auth.getUser()
     if (authError || !authData.user) return json({ error: 'Sessão inválida.' }, 401)
-    const actor = await actorFor(authData.user.id)
-    if (!actor?.ativo) return json({ error: 'Usuário interno inativo.' }, 403)
 
     const body = await req.json()
     const action = String(body.action || '')
+
+    if (action === 'finalize_invite') {
+      const email = String(authData.user.email || '').trim().toLowerCase()
+      const password = String(body.password || '')
+      const nome = String(body.nome || '').trim()
+      if (!email || !password || nome.length < 3) return json({ error: 'Nome e senha são obrigatórios.' }, 400)
+      if (!passwordIsStrong(password) || password.length < 10) return json({ error: 'A senha deve ter pelo menos 10 caracteres e conter letras e números.' }, 400)
+
+      const { data: invite, error: inviteError } = await admin
+        .from('erp_convites_acesso')
+        .select('id,empresa_id,email,nome,auth_user_id,role,role_id,nivel_admin,expira_em,verificado_em,concluido_em,cancelado_em')
+        .eq('auth_user_id', authData.user.id)
+        .ilike('email', email)
+        .is('concluido_em', null)
+        .is('cancelado_em', null)
+        .gt('expira_em', new Date().toISOString())
+        .order('criado_em', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (inviteError) throw inviteError
+      if (!invite) return json({ error: 'Convite inexistente, expirado ou já utilizado.' }, 409)
+
+      const changed = await admin.auth.admin.updateUserById(authData.user.id, {
+        password,
+        user_metadata: { ...authData.user.user_metadata, nome, must_change_password: false, invited_user: true },
+        app_metadata: { ...authData.user.app_metadata, empresa_id: invite.empresa_id, role: invite.role, is_master: false },
+      })
+      if (changed.error) return json({ error: changed.error.message }, 400)
+
+      const { error: profileError } = await admin
+        .from('erp_usuarios')
+        .update({ nome, email, ativo: true, updated_at: new Date().toISOString() })
+        .eq('id', authData.user.id)
+        .eq('empresa_id', invite.empresa_id)
+      if (profileError) throw profileError
+
+      const { error: closeError } = await admin
+        .from('erp_convites_acesso')
+        .update({ verificado_em: new Date().toISOString(), concluido_em: new Date().toISOString() })
+        .eq('id', invite.id)
+      if (closeError) throw closeError
+
+      return json({ ok: true, message: 'Cadastro concluído. Seu acesso está habilitado.' })
+    }
+
+    const actor = await actorFor(authData.user.id)
+    if (!actor?.ativo) return json({ error: 'Usuário interno inativo.' }, 403)
     const actorIsMaster = isMaster(actor.role)
     const actorLevel = Number(actor.nivel_admin ?? 0)
     const isAdmin = actorIsMaster || actorLevel >= 8
@@ -99,25 +144,76 @@ Deno.serve(async (req) => {
       let authUserId = ''
       let temporaryPassword: string | null = null
       if (action === 'invite_user') {
-        const invited = await admin.auth.admin.inviteUserByEmail(email, { redirectTo: `${Deno.env.get('ERP_ALLOWED_ORIGIN') || 'https://erp-sistema-industrial.vercel.app'}/login` })
-        if (invited.error || !invited.data.user) return json({ error: invited.error?.message || 'Não foi possível enviar o convite.' }, 400)
-        authUserId = invited.data.user.id
-      } else {
-        const password = String(body.password || randomPassword())
-        if (!passwordIsStrong(password)) return json({ error: 'A senha deve ter pelo menos 8 caracteres e conter letras e números.' }, 400)
-        const created = await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { must_change_password: !body.password, empresa_id: actor.empresa_id } })
-        if (created.error || !created.data.user) return json({ error: created.error?.message || 'Não foi possível criar o usuário Auth.' }, 400)
+        const { data: pending } = await admin
+          .from('erp_convites_acesso')
+          .select('id,auth_user_id')
+          .ilike('email', email)
+          .is('concluido_em', null)
+          .is('cancelado_em', null)
+          .maybeSingle()
+        if (pending) return json({ error: 'Já existe um convite pendente para este e-mail. O cliente deve usar o código recebido ou aguardar a expiração.' }, 409)
+
+        const created = await admin.auth.admin.createUser({
+          email,
+          password: randomPassword(),
+          email_confirm: true,
+          user_metadata: { nome, invited_user: true, must_change_password: true, empresa_id: actor.empresa_id },
+          app_metadata: { empresa_id: actor.empresa_id, role: roleCode, is_master: false },
+        })
+        if (created.error || !created.data.user) return json({ error: created.error?.message || 'Não foi possível criar a identidade de acesso.' }, 400)
         authUserId = created.data.user.id
-        temporaryPassword = body.password ? null : password
+
+        const { error: profileError } = await admin.from('erp_usuarios').insert({
+          id: authUserId, auth_user_id: authUserId, empresa_id: actor.empresa_id, nome, email, role: roleCode,
+          nivel_admin: nivelAdmin, ativo: false, role_id: role?.id ?? null, setor_id: body.setor_id || null,
+          cargo_id: body.cargo_id || null, matricula: body.matricula ? String(body.matricula).trim() : null,
+          login_nome: loginNome,
+        })
+        if (profileError) {
+          await admin.auth.admin.deleteUser(authUserId)
+          return json({ error: profileError.message }, 400)
+        }
+
+        const { data: invite, error: inviteError } = await admin.from('erp_convites_acesso').insert({
+          empresa_id: actor.empresa_id, email, nome, role_id: role?.id ?? null, role: roleCode,
+          nivel_admin: nivelAdmin, auth_user_id: authUserId, criado_por: actor.id,
+        }).select('id').single()
+        if (inviteError || !invite) {
+          await admin.from('erp_usuarios').delete().eq('id', authUserId)
+          await admin.auth.admin.deleteUser(authUserId)
+          return json({ error: inviteError?.message || 'Não foi possível registrar o convite.' }, 400)
+        }
+
+        const otpClient = createClient(supabaseUrl, anon, { auth: { persistSession: false, autoRefreshToken: false } })
+        const { error: otpError } = await otpClient.auth.signInWithOtp({
+          email,
+          options: { shouldCreateUser: false, emailRedirectTo: `${Deno.env.get('ERP_ALLOWED_ORIGIN') || 'https://erp-sistema-industrial.vercel.app'}/ativar-acesso` },
+        })
+        if (otpError) {
+          await admin.from('erp_convites_acesso').update({ cancelado_em: new Date().toISOString() }).eq('id', invite.id)
+          await admin.from('erp_usuarios').delete().eq('id', authUserId)
+          await admin.auth.admin.deleteUser(authUserId)
+          return json({ error: `O convite foi preparado, mas o e-mail com código não pôde ser enviado: ${otpError.message}` }, 502)
+        }
+
+        await writeAudit(actor, 'user.invited_with_otp', authUserId, null, { ...invite, email, role: roleCode }, req)
+        return json({ ok: true, invited: true, message: 'Código de acesso enviado ao e-mail. O usuário deve abrir /ativar-acesso e informar o código recebido.' })
       }
 
-      const inserted = await admin.from('erp_usuarios').insert({ id: authUserId, empresa_id: actor.empresa_id, nome, email, role: roleCode, nivel_admin: nivelAdmin, ativo: true, role_id: role?.id ?? null, setor_id: body.setor_id || null, cargo_id: body.cargo_id || null, matricula: body.matricula ? String(body.matricula).trim() : null, login_nome: loginNome }).select('id,empresa_id,nome,email,role,nivel_admin,ativo,role_id,setor_id,cargo_id,matricula,login_nome').single()
+      const password = String(body.password || randomPassword())
+      if (!passwordIsStrong(password)) return json({ error: 'A senha deve ter pelo menos 8 caracteres e conter letras e números.' }, 400)
+      const created = await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { must_change_password: !body.password, empresa_id: actor.empresa_id } })
+      if (created.error || !created.data.user) return json({ error: created.error?.message || 'Não foi possível criar o usuário Auth.' }, 400)
+      authUserId = created.data.user.id
+      temporaryPassword = body.password ? null : password
+
+      const inserted = await admin.from('erp_usuarios').insert({ id: authUserId, auth_user_id: authUserId, empresa_id: actor.empresa_id, nome, email, role: roleCode, nivel_admin: nivelAdmin, ativo: true, role_id: role?.id ?? null, setor_id: body.setor_id || null, cargo_id: body.cargo_id || null, matricula: body.matricula ? String(body.matricula).trim() : null, login_nome: loginNome }).select('id,empresa_id,nome,email,role,nivel_admin,ativo,role_id,setor_id,cargo_id,matricula,login_nome').single()
       if (inserted.error) {
         await admin.auth.admin.deleteUser(authUserId)
         return json({ error: inserted.error.message }, 400)
       }
-      await writeAudit(actor, action === 'invite_user' ? 'user.invited' : 'user.created', inserted.data.id, null, inserted.data, req)
-      return json({ ok: true, user: inserted.data, temporary_password: temporaryPassword, invited: action === 'invite_user' })
+      await writeAudit(actor, 'user.created', inserted.data.id, null, inserted.data, req)
+      return json({ ok: true, user: inserted.data, temporary_password: temporaryPassword, invited: false })
     }
 
     const targetId = String(body.user_id || '')
