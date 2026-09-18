@@ -1,20 +1,80 @@
-/* REVISÃO DE ENGENHARIA | Projeto: SGQ ERP Industrial | Pasta: src/pages/ | Arquivo: SetupADMInicial.tsx | Data: 2026-09-17 | Correções: tela única de provisionamento do Master nível 9 e Demo proprietário nível 8; bloqueio após conclusão | Segurança: senhas somente no formulário e enviadas à Edge Function; service_role nunca chega ao frontend; e-mails oficiais validados no servidor | Testes/Homologação: revisão estática; build/Vercel pendente | Status: REVISADO — NÃO HOMOLOGADO */
+import { FormEvent, useEffect, useState, type CSSProperties } from 'react'
+import { CheckCircle2, LockKeyhole, ShieldCheck } from 'lucide-react'
+import { supabase, supabaseConfigurado } from '../lib/supabaseClient'
 
-import { FormEvent, useEffect, useState, type CSSProperties } from 'react';
-import { supabase, supabaseConfigurado } from '../lib/supabaseClient';
+const shell: CSSProperties = { minHeight:'100vh', display:'grid', placeItems:'center', padding:24, background:'radial-gradient(circle at top,#173f48,#070b0d 62%)', color:'#fff', fontFamily:'Inter,system-ui,sans-serif' }
+const card: CSSProperties = { width:'min(100%,680px)', background:'#101619', border:'1px solid rgba(201,168,76,.28)', borderRadius:24, padding:32, boxShadow:'0 30px 90px rgba(0,0,0,.45)' }
+const input: CSSProperties = { display:'block', width:'100%', height:50, marginTop:7, marginBottom:14, padding:'0 14px', borderRadius:11, border:'1px solid rgba(255,255,255,.14)', background:'#0a0d0f', color:'#fff', fontSize:14, outline:'none' }
+const button: CSSProperties = { display:'inline-flex', alignItems:'center', justifyContent:'center', gap:8, width:'100%', minHeight:52, marginTop:8, border:0, borderRadius:11, background:'#c9a84c', color:'#0b0d0e', fontWeight:900, cursor:'pointer' }
+const label: CSSProperties = { display:'block', marginTop:13, fontSize:12, fontWeight:900 }
+const muted: CSSProperties = { color:'rgba(255,255,255,.66)', lineHeight:1.7, fontSize:14 }
+const box: CSSProperties = { marginTop:14, padding:13, borderRadius:11, background:'rgba(15,118,110,.14)', border:'1px solid rgba(88,190,175,.25)', color:'#baf1e8', fontSize:12, lineHeight:1.55 }
 
-const MASTER_EMAIL='fernandosch2012@hotmail.com';
-const DEMO_EMAIL='demo.industrial@plushbeauty.com';
+export default function SetupADMInicial() {
+  const [available,setAvailable] = useState<boolean|null>(null)
+  const [nome,setNome] = useState('')
+  const [email,setEmail] = useState('')
+  const [password,setPassword] = useState('')
+  const [confirm,setConfirm] = useState('')
+  const [busy,setBusy] = useState(false)
+  const [error,setError] = useState('')
+  const [message,setMessage] = useState('')
 
-export default function SetupADMInicial(){
-  const [locked,setLocked]=useState<boolean|null>(null),[masterPassword,setMasterPassword]=useState(''),[demoPassword,setDemoPassword]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('');
-  async function check(){if(!supabaseConfigurado){setLocked(false);setError('Supabase não está configurado neste ambiente.');return}try{const {data,error}=await supabase.functions.invoke('erp-login',{body:{action:'setup_status'}});if(error)throw error;setLocked(Boolean(data?.locked))}catch(e){setError(e instanceof Error?e.message:'Não foi possível verificar o setup inicial.');setLocked(false)}}
-  useEffect(()=>{void check()},[]);
-  async function submit(e:FormEvent){e.preventDefault();setError('');setMessage('');if(masterPassword.length<8||demoPassword.length<8){setError('As duas senhas precisam ter pelo menos 8 caracteres.');return}setBusy(true);try{const {data,error}=await supabase.functions.invoke('erp-login',{body:{action:'setup_initial',master:{email:MASTER_EMAIL,password:masterPassword},demo:{email:DEMO_EMAIL,password:demoPassword}}});if(error)throw error;if(!data?.ok)throw new Error(String(data?.error??'Não foi possível concluir o cadastro inicial.'));setMasterPassword('');setDemoPassword('');setLocked(true);setMessage('Cadastro inicial concluído. A configuração foi bloqueada. Agora use somente o login normal.')}catch(e){setError(e instanceof Error?e.message:'Falha ao provisionar os usuários oficiais.')}finally{setBusy(false)}}
-  if(locked===null)return <main style={shell}><section style={card}><span style={eyebrow}>SGQ ERP INDUSTRIAL • CONFIGURAÇÃO INICIAL</span><h1>Verificando o cadastro ADM Master…</h1></section></main>;
-  if(locked)return <main style={shell}><section style={card}><span style={eyebrow}>CONFIGURAÇÃO CONCLUÍDA</span><h1>ADM Master já cadastrado</h1><p style={text}>Esta tela é de uso único e foi bloqueada após o provisionamento oficial.</p><a href="/login" style={button}>Ir para o login</a></section></main>;
-  return <main style={shell}><section style={card}><span style={eyebrow}>SGQ ERP INDUSTRIAL • CONFIGURAÇÃO INICIAL</span><h1>Cadastro do ADM Master</h1><p style={text}>Cadastre uma vez o Master nível 9 e o Demo proprietário nível 8. As senhas não ficam gravadas no código.</p><form onSubmit={submit}><label style={label}>Master nível 9</label><input value={MASTER_EMAIL} readOnly style={input}/><input type="password" required minLength={8} value={masterPassword} onChange={e=>setMasterPassword(e.target.value)} placeholder="Defina a senha do Master" style={input}/><label style={label}>Demo proprietário nível 8</label><input value={DEMO_EMAIL} readOnly style={input}/><input type="password" required minLength={8} value={demoPassword} onChange={e=>setDemoPassword(e.target.value)} placeholder="Defina a senha do Demo" style={input}/>{error&&<div style={errorBox}>{error}</div>}{message&&<div style={okBox}>{message}</div>}<button disabled={busy} type="submit" style={button}>{busy?'Cadastrando…':'Cadastrar ADM Master + Demo'}</button></form><a href="/login" style={back}>Voltar ao login</a></section></main>
+  useEffect(() => {
+    let alive = true
+    async function check() {
+      if (!supabaseConfigurado) { if (alive) { setAvailable(false); setError('Supabase não está configurado neste ambiente.') }; return }
+      try {
+        const { data, error: fnError } = await supabase.functions.invoke('master-onboarding', { body:{ action:'status' } })
+        if (fnError) throw fnError
+        if (alive) setAvailable(Boolean(data?.available))
+      } catch (e) {
+        if (alive) { setAvailable(false); setError(e instanceof Error ? e.message : 'Não foi possível verificar o cadastro Master.') }
+      }
+    }
+    void check()
+    return () => { alive = false }
+  }, [])
+
+  async function submit(event: FormEvent) {
+    event.preventDefault()
+    setError(''); setMessage('')
+    if (nome.trim().length < 3) return setError('Informe seu nome completo.')
+    if (!email.includes('@')) return setError('Informe um e-mail válido.')
+    if (password.length < 10 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) return setError('A senha precisa ter pelo menos 10 caracteres e conter letras e números.')
+    if (password !== confirm) return setError('A confirmação da senha não confere.')
+    setBusy(true)
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('master-onboarding', { body:{ action:'register_owner', nome:nome.trim(), email:email.trim().toLowerCase(), password } })
+      if (fnError) throw fnError
+      if (!data?.ok) throw new Error(String(data?.error || 'Não foi possível concluir o cadastro Master.'))
+      const { error:loginError } = await supabase.auth.signInWithPassword({ email:email.trim().toLowerCase(), password })
+      if (loginError) throw loginError
+      setMessage('Proprietário Master cadastrado. Abrindo a tela de configurações…')
+      window.setTimeout(() => { window.location.replace('/master') }, 500)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Falha ao cadastrar o proprietário Master.')
+    } finally { setBusy(false) }
+  }
+
+  if (available === null) return <main style={shell}><section style={card}><LockKeyhole/><h1>Preparando cadastro do proprietário</h1><p style={muted}>Verificando se o sistema ainda aceita o primeiro Master…</p></section></main>
+
+  if (!available) return <main style={shell}><section style={card}><span style={{fontSize:11,fontWeight:900,letterSpacing:'.16em',color:'#e0c56f'}}>ACESSO DO PROPRIETÁRIO</span><h1>O cadastro inicial do Master já foi encerrado.</h1><p style={muted}>Existe um proprietário Master ativo ou o ambiente não pôde liberar o cadastro. Se você já é o proprietário, entre pelo login normal.</p>{error&&<div style={{...box,background:'rgba(150,25,25,.18)',color:'#ffb6b6'}}>{error}</div>}<a href="/login" style={{...button,textDecoration:'none'}}>Ir para o login</a><a href="/" style={{display:'block',marginTop:15,textAlign:'center',color:'#e0c56f',fontSize:12}}>Voltar ao site</a></section></main>
+
+  return <main style={shell}><section style={card}>
+    <div style={{display:'flex',alignItems:'center',gap:10,color:'#e0c56f'}}><ShieldCheck size={22}/><span style={{fontSize:11,fontWeight:900,letterSpacing:'.16em'}}>PROPRIETÁRIO • MASTER DO SISTEMA</span></div>
+    <h1 style={{fontSize:34,margin:'12px 0 8px'}}>Cadastre seu acesso de dono</h1>
+    <p style={muted}>Este é o cadastro único do proprietário do SGQ ERP Industrial. Depois de concluir, você entra na área Master para configurar empresas, usuários, demonstrações e permissões.</p>
+    <form onSubmit={submit}>
+      <label style={label}>Seu nome<input style={input} value={nome} onChange={e=>setNome(e.target.value)} autoComplete="name" placeholder="Nome completo"/></label>
+      <label style={label}>Seu e-mail<input style={input} type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" placeholder="seu@email.com"/></label>
+      <label style={label}>Senha Master<input style={input} type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="new-password" placeholder="Mínimo de 10 caracteres"/></label>
+      <label style={label}>Confirmar senha<input style={input} type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} autoComplete="new-password" placeholder="Repita a senha"/></label>
+      {error&&<div style={{...box,background:'rgba(150,25,25,.18)',color:'#ffb6b6'}}>{error}</div>}
+      {message&&<div style={box}><CheckCircle2 size={15} style={{verticalAlign:'middle',marginRight:6}}/>{message}</div>}
+      <button disabled={busy} type="submit" style={{...button,opacity:busy?.7:1}}>{busy?'Criando acesso Master…':'Cadastrar meu acesso de proprietário'}</button>
+    </form>
+    <div style={{...box,marginTop:18}}>Depois do cadastro, o sistema usa o Supabase Auth para a identidade e o perfil Master nível 9 para autorizar a área administrativa. A senha não fica no código nem no navegador.</div>
+    <a href="/login" style={{display:'block',marginTop:17,textAlign:'center',color:'#e0c56f',fontSize:12}}>Já tenho acesso · entrar</a>
+  </section></main>
 }
-const shell:CSSProperties={minHeight:'100vh',display:'grid',placeItems:'center',background:'radial-gradient(circle at top,#173f48,#070b0d 62%)',padding:24,color:'#fff'};
-const card:CSSProperties={width:'min(100%,620px)',background:'#101619',border:'1px solid rgba(201,168,76,.28)',borderRadius:24,padding:32,boxShadow:'0 30px 90px rgba(0,0,0,.4)'};
-const eyebrow:CSSProperties={fontSize:11,fontWeight:900,letterSpacing:'.18em',color:'#e0c56f'}; const text:CSSProperties={color:'rgba(255,255,255,.68)',lineHeight:1.7,fontSize:14}; const label:CSSProperties={display:'block',margin:'18px 0 7px',fontSize:12,fontWeight:900}; const input:CSSProperties={display:'block',width:'100%',height:48,marginBottom:10,padding:'0 14px',borderRadius:10,border:'1px solid rgba(255,255,255,.14)',background:'#0a0d0f',color:'#fff',fontSize:14}; const button:CSSProperties={display:'inline-flex',alignItems:'center',justifyContent:'center',width:'100%',minHeight:50,marginTop:16,border:0,borderRadius:10,background:'#c9a84c',color:'#0b0d0e',fontWeight:900,textDecoration:'none',cursor:'pointer'}; const back:CSSProperties={display:'block',marginTop:18,textAlign:'center',color:'#e0c56f',fontSize:12,textDecoration:'none'}; const errorBox:CSSProperties={marginTop:12,padding:12,borderRadius:10,background:'rgba(150,25,25,.2)',border:'1px solid rgba(255,100,100,.3)',color:'#ffb6b6',fontSize:12}; const okBox:CSSProperties={marginTop:12,padding:12,borderRadius:10,background:'rgba(40,130,90,.2)',border:'1px solid rgba(100,220,160,.3)',color:'#baf1d0',fontSize:12};
