@@ -41,7 +41,7 @@ export default function SetupADMInicial() {
     setError(''); setMessage('')
     if (nome.trim().length < 3) return setError('Informe seu nome completo.')
     if (!email.includes('@')) return setError('Informe um e-mail válido.')
-    if (password.length < 10 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) return setError('A senha precisa ter pelo menos 10 caracteres e conter letras e números.')
+    if (password.length < 6) return setError('A senha precisa ter pelo menos 6 caracteres.')
     if (password !== confirm) return setError('A confirmação da senha não confere.')
     setBusy(true)
     try {
