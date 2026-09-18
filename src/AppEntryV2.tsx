@@ -36,6 +36,7 @@ const RecebimentoMateriais=lazy(()=>import('./pages/RecebimentoMateriais'))
 const ManualUsuario=lazy(()=>import('./pages/ManualUsuario'))
 const ModuleOverviewIndustrial=lazy(()=>import('./pages/ModuleOverviewIndustrial'))
 const SetupADMInicial=lazy(()=>import('./pages/SetupADMInicial'))
+const AtivarAcesso=lazy(()=>import('./pages/AtivarAcesso'))
 type AccessResult={ok:boolean;master:boolean;reason:string}
 class Boundary extends Component<{children:ReactNode},{error:Error|null}>{state={error:null as Error|null};static getDerivedStateFromError(error:Error){return{error}};render(){if(this.state.error)return <div className="error-screen"><div className="error-screen-card"><strong>Erro ao abrir a tela.</strong><p>{this.state.error.message}</p><button className="primary" type="button" onClick={()=>location.reload()}>Recarregar</button></div></div>;return this.props.children}}
 function LoadingSkeleton({label='Carregando SGQ ERP…'}:{label?:string}){return <div className="loading-screen"><div className="loading-skeleton-card"><div className="loading-skeleton-brand"/><div className="loading-skeleton-line wide"/><div className="loading-skeleton-line"/><div className="loading-skeleton-line short"/><span>{label}</span></div></div>}
