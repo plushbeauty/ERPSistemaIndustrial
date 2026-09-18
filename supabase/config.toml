@@ -2,3 +2,9 @@ project_id = "wdkvrqekixczuhrfygen"
 
 [functions.erp-login]
 verify_jwt = false
+
+[functions.erp-user-admin]
+verify_jwt = true
+
+[functions.erp-company-signup]
+verify_jwt = false
