@@ -25,7 +25,7 @@ export default function SetupADMInicial() {
     async function check() {
       if (!supabaseConfigurado) { if (alive) { setAvailable(false); setError('Supabase não está configurado neste ambiente.') }; return }
       try {
-        const { data, error: fnError } = await supabase.functions.invoke('master-onboarding', { body:{ action:'status' } })
+        const { data, error: fnError } = await supabase.functions.invoke('erp-login', { body:{ action:'setup_status' } })
         if (fnError) throw fnError
         if (alive) setAvailable(Boolean(data?.available))
       } catch (e) {
@@ -45,7 +45,7 @@ export default function SetupADMInicial() {
     if (password !== confirm) return setError('A confirmação da senha não confere.')
     setBusy(true)
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('master-onboarding', { body:{ action:'register_owner', nome:nome.trim(), email:email.trim().toLowerCase(), password } })
+      const { data, error: fnError } = await supabase.functions.invoke('erp-login', { body:{ action:'bootstrap_master', nome:nome.trim(), email:email.trim().toLowerCase(), password } })
       if (fnError) throw fnError
       if (!data?.ok) throw new Error(String(data?.error || 'Não foi possível concluir o cadastro Master.'))
       const { error:loginError } = await supabase.auth.signInWithPassword({ email:email.trim().toLowerCase(), password })
