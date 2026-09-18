@@ -19,7 +19,7 @@ async function executarBootstrapOficial(email:string,password:string){
  if(!data?.ok)throw new Error(String(data?.error??'Não foi possível provisionar o acesso oficial.'))
  return data
 }
-export default function IndustrialLoginDirect({returnTo}:Props){
+export default function IndustrialLoginDirect({returnTo,masterMode=false}:Props){
  const[email,setEmail]=useState(''),[password,setPassword]=useState(''),[showPassword,setShowPassword]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[checking,setChecking]=useState(true)
  useEffect(()=>{let alive=true;async function bootstrap(){if(!supabaseConfigurado){if(alive)setChecking(false);return}try{const{data,error:sessionError}=await supabase.auth.getSession();if(sessionError)throw sessionError;const user=data.session?.user;if(!user){if(alive)setChecking(false);return}await validateIndustrialSession(user.id);if(alive)window.location.replace(safeReturnTo(returnTo))}catch(err){console.error('[ERP login bootstrap]',err);await supabase.auth.signOut().catch(()=>undefined);if(alive){setError('A sessão anterior não possui acesso válido ao ERP Industrial. Entre novamente com uma conta Industrial autorizada.');setChecking(false)}}}void bootstrap();return()=>{alive=false}},[returnTo])
  async function submit(event:FormEvent){event.preventDefault();setError('');setNotice('');if(!supabaseConfigurado){setError('O ambiente do ERP não está configurado. Verifique VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY na Vercel e faça um novo deploy.');return}if(!email.trim()||!password){setError('Informe seu e-mail corporativo e sua senha.');return}const emailTratado=normalizeIndustrialLogin(email);setEmail(emailTratado);setBusy(true);try{
