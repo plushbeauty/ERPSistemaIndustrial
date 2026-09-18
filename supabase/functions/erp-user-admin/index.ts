@@ -13,7 +13,7 @@ const anon = Deno.env.get('SUPABASE_ANON_KEY')!
 const service = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const admin = createClient(supabaseUrl, service, { auth: { autoRefreshToken: false, persistSession: false } })
 
-function passwordIsStrong(value: string) { return value.length >= 8 && /[A-Za-z]/.test(value) && /\d/.test(value) }
+function passwordIsStrong(value: string) { return value.length >= 6 }
 function randomPassword() { const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%'; let value = ''; for (let i = 0; i < 14; i += 1) value += alphabet[Math.floor(Math.random() * alphabet.length)]; return value }
 function isMaster(role: unknown) { const value = String(role ?? '').toUpperCase(); return value === 'MASTER' || value === 'MASTER_ADMIN' || value === 'SUPER_ADMIN' }
 
@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
       const password = String(body.password || '')
       const nome = String(body.nome || '').trim()
       if (!email || !password || nome.length < 3) return json({ error: 'Nome e senha são obrigatórios.' }, 400)
-      if (!passwordIsStrong(password) || password.length < 10) return json({ error: 'A senha deve ter pelo menos 10 caracteres e conter letras e números.' }, 400)
+      if (!passwordIsStrong(password) || password.length < 6) return json({ error: 'A senha deve ter pelo menos 6 caracteres.' }, 400)
 
       const { data: invite, error: inviteError } = await admin
         .from('erp_convites_acesso')
@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
     if (action === 'change_my_password') {
       const currentPassword = String(body.currentPassword || '')
       const newPassword = String(body.newPassword || '')
-      if (!passwordIsStrong(newPassword)) return json({ error: 'A nova senha deve ter pelo menos 8 caracteres e conter letras e números.' }, 400)
+      if (!passwordIsStrong(newPassword)) return json({ error: 'A nova senha deve ter pelo menos 6 caracteres.' }, 400)
       if (!authData.user.email) return json({ error: 'O usuário autenticado não possui e-mail.' }, 400)
       const verify = createClient(supabaseUrl, anon)
       const check = await verify.auth.signInWithPassword({ email: authData.user.email, password: currentPassword })
