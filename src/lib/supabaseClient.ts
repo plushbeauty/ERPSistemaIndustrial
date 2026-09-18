@@ -12,8 +12,8 @@ export const supabaseEnvironmentMismatch = false
 export const supabaseUrlExportada = supabaseUrl
 export const supabaseKeyExportada = isPrivateKey ? '' : configuredKey
 
-const clientUrl = supabaseUrl || 'https://supabase-not-configured.invalid'
-const clientKey = configuredKey && !isPrivateKey ? configuredKey : 'supabase-not-configured-public-key'
+const clientUrl = supabaseUrl || DEFAULT_SUPABASE_URL
+const clientKey = configuredKey && !isPrivateKey ? configuredKey : DEFAULT_SUPABASE_PUBLISHABLE_KEY
 
 if (!supabaseConfigurado) {
   console.error('[Supabase] Configuração pública inválida ou ausente.')
