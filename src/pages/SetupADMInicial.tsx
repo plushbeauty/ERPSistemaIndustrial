@@ -68,7 +68,7 @@ export default function SetupADMInicial() {
     <form onSubmit={submit}>
       <label style={label}>Seu nome<input style={input} value={nome} onChange={e=>setNome(e.target.value)} autoComplete="name" placeholder="Nome completo"/></label>
       <label style={label}>Seu e-mail<input style={input} type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" placeholder="seu@email.com"/></label>
-      <label style={label}>Senha Master<input style={input} type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="new-password" placeholder="Mínimo de 10 caracteres"/></label>
+      <label style={label}>Senha Master<input style={input} type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="new-password" placeholder="Mínimo de 6 caracteres"/></label>
       <label style={label}>Confirmar senha<input style={input} type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} autoComplete="new-password" placeholder="Repita a senha"/></label>
       {error&&<div style={{...box,background:'rgba(150,25,25,.18)',color:'#ffb6b6'}}>{error}</div>}
       {message&&<div style={box}><CheckCircle2 size={15} style={{verticalAlign:'middle',marginRight:6}}/>{message}</div>}
