@@ -10,6 +10,8 @@
     { "source": "/blog", "destination": "/index.html" },
     { "source": "/contato", "destination": "/index.html" },
     { "source": "/cadastro-empresa", "destination": "/index.html" },
+    { "source": "/configuracao-adm-master", "destination": "/index.html" },
+    { "source": "/ativar-acesso", "destination": "/index.html" },
     { "source": "/erp-industrial", "destination": "/index.html" },
     { "source": "/modulos/pcp", "destination": "/index.html" },
     { "source": "/modulos/estoque", "destination": "/index.html" },
