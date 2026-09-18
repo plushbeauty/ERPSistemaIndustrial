@@ -59,7 +59,7 @@ export default function SetupADMInicial() {
 
   if (available === null) return <main style={shell}><section style={card}><LockKeyhole/><h1>Preparando cadastro do proprietário</h1><p style={muted}>Verificando se o sistema ainda aceita o primeiro Master…</p></section></main>
 
-  if (!available) return <main style={shell}><section style={card}><span style={{fontSize:11,fontWeight:900,letterSpacing:'.16em',color:'#e0c56f'}}>ACESSO DO PROPRIETÁRIO</span><h1>O cadastro inicial do Master já foi encerrado.</h1><p style={muted}>Existe um proprietário Master ativo ou o ambiente não pôde liberar o cadastro. Se você já é o proprietário, entre pelo login normal.</p>{error&&<div style={{...box,background:'rgba(150,25,25,.18)',color:'#ffb6b6'}}>{error}</div>}<a href="/login" style={{...button,textDecoration:'none'}}>Ir para o login</a><a href="/" style={{display:'block',marginTop:15,textAlign:'center',color:'#e0c56f',fontSize:12}}>Voltar ao site</a></section></main>
+  if (!available) return <main style={shell}><section style={card}><span style={{fontSize:11,fontWeight:900,letterSpacing:'.16em',color:'#e0c56f'}}>ACESSO DO PROPRIETÁRIO</span><h1>O cadastro inicial do Master já foi encerrado.</h1><p style={muted}>Existe um proprietário Master ativo ou o ambiente não pôde liberar o cadastro. Se você já é o proprietário, entre pelo login normal.</p>{error&&<div style={{...box,background:'rgba(150,25,25,.18)',color:'#ffb6b6'}}>{error}</div>}<a href="/login?mode=master&returnTo=%2Fmaster" style={{...button,textDecoration:'none'}}>Ir para o login</a><a href="/" style={{display:'block',marginTop:15,textAlign:'center',color:'#e0c56f',fontSize:12}}>Voltar ao site</a></section></main>
 
   return <main style={shell}><section style={card}>
     <div style={{display:'flex',alignItems:'center',gap:10,color:'#e0c56f'}}><ShieldCheck size={22}/><span style={{fontSize:11,fontWeight:900,letterSpacing:'.16em'}}>PROPRIETÁRIO • MASTER DO SISTEMA</span></div>
@@ -75,6 +75,6 @@ export default function SetupADMInicial() {
       <button disabled={busy} type="submit" style={{...button,opacity:busy?.7:1}}>{busy?'Criando acesso Master…':'Cadastrar meu acesso de proprietário'}</button>
     </form>
     <div style={{...box,marginTop:18}}>Depois do cadastro, o sistema usa o Supabase Auth para a identidade e o perfil Master nível 9 para autorizar a área administrativa. A senha não fica no código nem no navegador.</div>
-    <a href="/login" style={{display:'block',marginTop:17,textAlign:'center',color:'#e0c56f',fontSize:12}}>Já tenho acesso · entrar</a>
+    <a href="/login?mode=master&returnTo=%2Fmaster" style={{display:'block',marginTop:17,textAlign:'center',color:'#e0c56f',fontSize:12}}>Já tenho acesso · entrar</a>
   </section></main>
 }
