@@ -1,8 +1,10 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 
 const env = import.meta.env as Record<string, unknown>
-const supabaseUrl = String(env.VITE_SUPABASE_URL ?? '').trim().replace(/\/$/, '')
-const configuredKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY ?? env.VITE_SUPABASE_ANON_KEY ?? '').trim()
+const DEFAULT_SUPABASE_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_QX10nEg-hrWd_5UOuYSpQg_v5M-1xuM'
+const supabaseUrl = String(env.VITE_SUPABASE_URL ?? DEFAULT_SUPABASE_URL).trim().replace(/\/$/, '')
+const configuredKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY ?? env.VITE_SUPABASE_ANON_KEY ?? DEFAULT_SUPABASE_PUBLISHABLE_KEY).trim()
 const isPrivateKey = configuredKey.startsWith('sb_secret_') || configuredKey.includes('service_role')
 
 export const supabaseConfigurado = Boolean(supabaseUrl && configuredKey && !isPrivateKey)
@@ -14,7 +16,7 @@ const clientUrl = supabaseUrl || 'https://supabase-not-configured.invalid'
 const clientKey = configuredKey && !isPrivateKey ? configuredKey : 'supabase-not-configured-public-key'
 
 if (!supabaseConfigurado) {
-  console.error('[Supabase] Ambiente não configurado. Defina VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY (ou VITE_SUPABASE_ANON_KEY) na Vercel.')
+  console.warn('[Supabase] Variáveis Vercel não encontradas; usando a configuração pública do projeto SGQ ERP Industrial.')
 }
 if (isPrivateKey) {
   console.error('[Supabase] Chave privada/secret detectada no frontend. Ela foi rejeitada e não será usada.')
