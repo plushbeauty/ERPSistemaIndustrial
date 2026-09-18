@@ -16,7 +16,7 @@ const clientUrl = supabaseUrl || 'https://supabase-not-configured.invalid'
 const clientKey = configuredKey && !isPrivateKey ? configuredKey : 'supabase-not-configured-public-key'
 
 if (!supabaseConfigurado) {
-  console.warn('[Supabase] Variáveis Vercel não encontradas; usando a configuração pública do projeto SGQ ERP Industrial.')
+  console.error('[Supabase] Configuração pública inválida ou ausente.')
 }
 if (isPrivateKey) {
   console.error('[Supabase] Chave privada/secret detectada no frontend. Ela foi rejeitada e não será usada.')
