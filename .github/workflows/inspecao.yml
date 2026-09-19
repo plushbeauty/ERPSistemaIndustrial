@@ -1,0 +1,203 @@
+name: Inspeção Profunda - Auth + TypeScript + Build
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  auditoria:
+    name: Auditoria completa
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependências
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --legacy-peer-deps
+          else
+            npm install --legacy-peer-deps
+          fi
+
+      - name: Verificar arquivos essenciais
+        shell: bash
+        run: |
+          set -e
+
+          test -d src || {
+            echo "::error::Pasta src não encontrada."
+            exit 1
+          }
+
+          test -f package.json || {
+            echo "::error::package.json não encontrado."
+            exit 1
+          }
+
+          echo "Arquivos essenciais encontrados."
+
+      - name: Auditoria de autenticação
+        shell: bash
+        run: |
+          set -e
+
+          echo "=========================================="
+          echo " AUDITORIA DE AUTENTICAÇÃO"
+          echo "=========================================="
+
+          FAILED=0
+
+          check_forbidden() {
+            PATTERN="$1"
+            DESCRIPTION="$2"
+
+            echo ""
+            echo "Verificando: $DESCRIPTION"
+
+            if grep -RInE \
+              --exclude-dir=node_modules \
+              --exclude-dir=.git \
+              --exclude-dir=dist \
+              --exclude-dir=.next \
+              "$PATTERN" src 2>/dev/null; then
+
+              echo "::error::Encontrado padrão proibido: $DESCRIPTION"
+              FAILED=1
+            else
+              echo "OK - não encontrado."
+            fi
+          }
+
+          check_forbidden 'erp-login' \
+            'erp-login'
+
+          check_forbidden 'plush-login' \
+            'plush-login'
+
+          check_forbidden 'signup-client-v4' \
+            'signup-client-v4'
+
+          check_forbidden 'shadowEmail' \
+            'shadowEmail'
+
+          check_forbidden 'setSession[[:space:]]*\(' \
+            'setSession()'
+
+          check_forbidden 'user_metadata' \
+            'user_metadata usado no frontend'
+
+          check_forbidden 'session\.user\.(perfil|empresa_id|is_master)' \
+            'autorização diretamente em session.user'
+
+          check_forbidden 'localStorage[^[:cntrl:]]*(password|senha)' \
+            'senha armazenada em localStorage'
+
+          check_forbidden 'sessionStorage[^[:cntrl:]]*(password|senha)' \
+            'senha armazenada em sessionStorage'
+
+          check_forbidden 'localStorage\.setItem[[:space:]]*\([^,]*(password|senha)' \
+            'senha gravada em localStorage'
+
+          check_forbidden 'sessionStorage\.setItem[[:space:]]*\([^,]*(password|senha)' \
+            'senha gravada em sessionStorage'
+
+          if [ "$FAILED" -ne 0 ]; then
+            echo ""
+            echo "::error::AUDITORIA DE AUTENTICAÇÃO FALHOU."
+            echo "Os padrões acima precisam ser removidos/corrigidos."
+            exit 1
+          fi
+
+          echo ""
+          echo "=========================================="
+          echo " AUTENTICAÇÃO: LIMPA"
+          echo "=========================================="
+
+      - name: Verificar signInWithPassword
+        shell: bash
+        run: |
+          set -e
+
+          echo "Procurando autenticação nativa Supabase..."
+
+          if grep -RIn \
+            --exclude-dir=node_modules \
+            --exclude-dir=.git \
+            --exclude-dir=dist \
+            "signInWithPassword" src >/dev/null 2>&1; then
+
+            echo "OK - signInWithPassword encontrado."
+
+          else
+
+            echo "::error::signInWithPassword não foi encontrado em src."
+            exit 1
+
+          fi
+
+      - name: Verificar recuperação de senha
+        shell: bash
+        run: |
+          set -e
+
+          echo "Procurando resetPasswordForEmail..."
+
+          if grep -RIn \
+            --exclude-dir=node_modules \
+            --exclude-dir=.git \
+            --exclude-dir=dist \
+            "resetPasswordForEmail" src >/dev/null 2>&1; then
+
+            echo "OK - recuperação nativa encontrada."
+
+          else
+
+            echo "::error::resetPasswordForEmail não foi encontrado."
+            exit 1
+
+          fi
+
+      - name: TypeScript
+        shell: bash
+        run: |
+          set -e
+
+          echo "=========================================="
+          echo " TYPESCRIPT"
+          echo "=========================================="
+
+          npx tsc --noEmit
+
+      - name: Build de produção
+        shell: bash
+        run: |
+          set -e
+
+          echo "=========================================="
+          echo " BUILD DE PRODUÇÃO"
+          echo "=========================================="
+
+          npm run build
+
+      - name: Resultado final
+        if: success()
+        run: |
+          echo ""
+          echo "=========================================="
+          echo " AUDITORIA CONCLUÍDA COM SUCESSO"
+          echo "=========================================="
+          echo ""
+          echo "AUTH: OK"
+          echo "TYPESCRIPT: OK"
+          echo "BUILD: OK"
