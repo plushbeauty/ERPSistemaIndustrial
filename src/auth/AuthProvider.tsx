@@ -11,7 +11,7 @@ async function loadProfile(authUserId:string):Promise<ERPProfile|null>{
  if(error)throw error
  if(!data||data.auth_user_id!==authUserId)return null
  const perfil=String(data.perfil??'').trim().toUpperCase(),nivel=Number(data.nivel_admin??0)
- const master=Boolean(data.is_master)||nivel>=9||['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(perfil)
+ const master=Boolean(data.is_master)&&nivel===100&&perfil==='MASTER'&&data.empresa_id===null
  if(master)return{id:data.id,email:String(data.email??'').trim(),empresa_id:data.empresa_id??null,perfil,nivel_admin:nivel,is_master:true}
  if(!data.empresa_id)return null
  const {data:empresa,error:empresaError}=await supabase.from('erp_empresas').select('id,ativo').eq('id',data.empresa_id).eq('ativo',true).maybeSingle()
