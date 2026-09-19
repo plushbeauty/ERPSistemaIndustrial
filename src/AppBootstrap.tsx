@@ -71,13 +71,13 @@ function AccessGate({ children }: { children: ReactNode }) {
         if (!user) { if (alive) setState('denied'); return }
         const { data: profile, error: profileError } = await supabase
           .from('erp_usuarios')
-          .select('id,auth_user_id,empresa_id,ativo,is_master,nivel_admin,role,deleted_at')
+          .select('id,auth_user_id,empresa_id,ativo,is_master,nivel_admin,perfil,deleted_at')
           .eq('auth_user_id', user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
         if (profileError) throw profileError
         let master = false
         let empresaId = profile?.empresa_id ?? null
         if (profile?.auth_user_id === user.id) {
-          master = Boolean(profile?.is_master) || Number(profile?.nivel_admin ?? 0) >= 9 || ['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(String(profile?.role ?? '').trim().toUpperCase())
+          master = Boolean(profile?.is_master) || Number(profile?.nivel_admin ?? 0) >= 9 || ['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(String(profile?.perfil ?? '').trim().toUpperCase())
         } else {
           const { data: global, error: globalError } = await supabase.from('usuarios').select('id,auth_user_id,ativo,nivel_admin,perfil,empresa_id').eq('auth_user_id', user.id).eq('ativo', true).maybeSingle()
           if (globalError) throw globalError
