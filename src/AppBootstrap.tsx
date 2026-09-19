@@ -1,6 +1,7 @@
 import { Component, lazy, Suspense, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import IndustrialLoginDirect from './IndustrialLoginDirect'
+import SetupADMInicial from './pages/SetupADMInicial'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 import './styles/index.css'
 import './styles/public-industrial.css'
@@ -52,7 +53,9 @@ function LoginBootstrap() {
   }, [])
   if (!ready) return <Loading label="Preparando acesso seguro…" />
   const params = new URLSearchParams(window.location.search)
-  return <IndustrialLoginDirect returnTo={params.get('returnTo') ?? undefined} />
+  const returnTo = params.get('returnTo') ?? ''
+  if (returnTo === '/cadastro-master' || returnTo.startsWith('/cadastro-master?')) return <SetupADMInicial />
+  return <IndustrialLoginDirect returnTo={returnTo || undefined} masterMode={params.get('mode') === 'master'} />
 }
 
 function AccessGate({ children }: { children: ReactNode }) {
@@ -66,26 +69,18 @@ function AccessGate({ children }: { children: ReactNode }) {
         if (sessionError) throw sessionError
         const user = sessionData.session?.user
         if (!user) { if (alive) setState('denied'); return }
-
         const { data: profile, error: profileError } = await supabase
           .from('erp_usuarios')
           .select('id,auth_user_id,empresa_id,ativo,is_master,nivel_admin,role,deleted_at')
-          .eq('auth_user_id', user.id)
-          .eq('ativo', true)
-          .is('deleted_at', null)
-          .maybeSingle()
+          .eq('auth_user_id', user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
         if (profileError) throw profileError
-        if (!profile?.empresa_id || profile.auth_user_id !== user.id) { if (alive) setState('denied'); return }
-
-        const { data: empresa, error: empresaError } = await supabase
-          .from('erp_empresas')
-          .select('id,ativo')
-          .eq('id', profile.empresa_id)
-          .eq('ativo', true)
-          .maybeSingle()
-        if (empresaError) throw empresaError
-        if (!empresa?.ativo) { if (alive) setState('denied'); return }
-
+        const master = Boolean(profile?.is_master) || Number(profile?.nivel_admin ?? 0) >= 9 || ['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(String(profile?.role ?? '').trim().toUpperCase())
+        if (!profile?.auth_user_id || profile.auth_user_id !== user.id || (!master && !profile.empresa_id)) { if (alive) setState('denied'); return }
+        if (!master) {
+          const { data: empresa, error: empresaError } = await supabase.from('erp_empresas').select('id,ativo').eq('id', profile.empresa_id).eq('ativo', true).maybeSingle()
+          if (empresaError) throw empresaError
+          if (!empresa?.ativo) { if (alive) setState('denied'); return }
+        }
         if (alive) setState('allowed')
       } catch (error) {
         console.error('[Protected route bootstrap]', error)
@@ -94,7 +89,6 @@ function AccessGate({ children }: { children: ReactNode }) {
     })()
     return () => { alive = false }
   }, [])
-
   if (state === 'checking') return <Loading label="Validando empresa, perfil e permissões…" />
   if (state === 'denied') {
     const returnTo = `${window.location.pathname}${window.location.search}`
