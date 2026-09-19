@@ -1,129 +1,117 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "npm:@supabase/supabase-js@2"
 
-const cors = {
-  "Access-Control-Allow-Origin": "*",
+const ORIGIN = "https://erp-sistema-industrial.vercel.app"
+const H = {
+  "Access-Control-Allow-Origin": ORIGIN,
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, accept",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Max-Age": "86400",
+  "Cache-Control": "no-store",
+  "Content-Type": "application/json; charset=utf-8",
+}
+const out = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: H })
+const clean = (v: unknown) => String(v ?? "").trim().replace(/\s+/g, " ")
+const digits = (v: unknown) => String(v ?? "").replace(/\D/g, "")
+const username = (v: string) => clean(v).normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80)
+
+function secretKey() {
+  try {
+    const parsed = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}")
+    if (parsed?.default) return String(parsed.default)
+  } catch {}
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 }
 
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } })
-
-const clean = (value: unknown) => String(value ?? "").trim().replace(/\s+/g, " ")
-const digits = (value: unknown) => String(value ?? "").replace(/\D/g, "")
-const firstName = (value: string) => clean(value).split(" ")[0].replace(/[^A-Za-zÀ-ÿ0-9_-]/g, "")
-
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors })
-  if (req.method !== "POST") return json({ error: "Método não permitido." }, 405)
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: H })
+  if (req.method !== "POST") return out({ error: "Método não permitido." }, 405)
 
-  let companyId: string | null = null
-  let authUserId: string | null = null
-
+  let empresaId: string | null = null
+  let authId: string | null = null
   try {
-    const url = Deno.env.get("SUPABASE_URL")
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
-    if (!url || !serviceKey) return json({ error: "SERVER_AUTH_CONFIGURATION_ERROR" }, 500)
-
-    const admin = createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } })
+    const url = clean(Deno.env.get("SUPABASE_URL"))
+    const secret = secretKey()
+    if (!url || !secret) return out({ error: "Serviço de cadastro não configurado." }, 500)
+    const admin = createClient(url, secret, { auth: { persistSession: false, autoRefreshToken: false } })
     const body = await req.json()
-    const razao_social = clean(body?.razao_social)
-    const nome_fantasia = clean(body?.nome_fantasia)
+
+    const razao = clean(body?.razao_social)
+    const fantasia = clean(body?.nome_fantasia)
     const documento = digits(body?.documento ?? body?.cnpj)
-    const requestedTipo = String(body?.tipo_documento ?? "").toUpperCase()
-    const tipo_documento = requestedTipo === "CPF" || requestedTipo === "CNPJ"
-      ? requestedTipo
-      : documento.length === 11 ? "CPF" : "CNPJ"
-    const email = String(body?.email ?? "").trim().toLowerCase()
-    const senha = String(body?.senha ?? "")
-    const nome_admin = clean(body?.nome_admin)
-    const nome_acesso = firstName(String(body?.nome_acesso ?? nome_fantasia ?? razao_social))
+    const tipo = String(body?.tipo_documento ?? (documento.length === 11 ? "CPF" : "CNPJ")).toUpperCase()
+    const email = clean(body?.email).toLowerCase()
+    const nomeAdmin = clean(body?.nome_admin)
+    const senha = clean(body?.senha)
+    const loginNome = username(clean(body?.nome_acesso) || fantasia || razao)
 
-    if (!razao_social || !nome_fantasia || !documento || !email || !senha || !nome_admin || !nome_acesso) return json({ error: "Preencha todos os campos obrigatórios." }, 400)
-    if ((tipo_documento === "CPF" && documento.length !== 11) || (tipo_documento === "CNPJ" && documento.length !== 14)) return json({ error: `Informe um ${tipo_documento} válido.` }, 400)
-    if (senha.length < 6) return json({ error: "A senha deve possuir pelo menos 6 caracteres." }, 400)
-    if (!/^\S+@\S+\.\S+$/.test(email)) return json({ error: "Informe um e-mail válido." }, 400)
+    if (!razao || !fantasia || !documento || !email || !nomeAdmin || !senha || !loginNome) return out({ error: "Preencha todos os campos obrigatórios." }, 400)
+    if ((tipo === "CNPJ" && documento.length !== 14) || (tipo === "CPF" && documento.length !== 11)) return out({ error: "Informe um " + tipo + " válido." }, 400)
+    if (!/^\S+@\S+\.\S+$/.test(email)) return out({ error: "Informe um e-mail válido." }, 400)
+    if (senha.length < 6) return out({ error: "A senha deve possuir pelo menos 6 caracteres." }, 400)
 
-    const existingEmail = await admin.from("erp_usuarios").select("id").ilike("email", email).limit(1)
-    if (existingEmail.error) throw existingEmail.error
-    if (existingEmail.data?.length) return json({ error: "Este e-mail já está cadastrado." }, 409)
+    const { data: existingEmail, error: emailError } = await admin.from("erp_usuarios").select("id").ilike("email", email).limit(1)
+    if (emailError) throw emailError
+    if (existingEmail?.length) return out({ error: "Este e-mail já está cadastrado." }, 409)
 
-    const existingDocument = await admin.from("erp_empresas").select("id").eq("documento", documento).limit(1)
-    if (existingDocument.error) throw existingDocument.error
-    if (existingDocument.data?.length) return json({ error: "Este CPF/CNPJ já está cadastrado." }, 409)
-
-    const companyExisting = await admin.from("erp_empresas").select("id").or(`razao_social.ilike.${razao_social},nome_fantasia.ilike.${nome_fantasia}`).limit(1)
-    if (companyExisting.error) throw companyExisting.error
-    if (companyExisting.data?.length) return json({ error: "Já existe uma empresa com esse nome." }, 409)
-
-    const company = await admin.from("erp_empresas").insert({
-      razao_social,
-      nome_fantasia,
-      cnpj: tipo_documento === "CNPJ" ? documento : null,
-      documento,
-      tipo_documento,
-      codigo: nome_acesso.toUpperCase(),
-      plano: String(body?.plano ?? "Essencial"),
-      plano_status: "teste",
-      ativo: true,
-    }).select("id,razao_social,nome_fantasia,codigo,plano,documento,tipo_documento").single()
-
-    if (company.error || !company.data) throw company.error ?? new Error("Não foi possível criar a empresa.")
-    companyId = company.data.id
-
-    const auth = await admin.auth.admin.createUser({
-      email,
-      password: senha,
-      email_confirm: true,
-      user_metadata: { empresa_id: companyId, nome: nome_admin, login_nome: nome_acesso },
-    })
-
-    if (auth.error || !auth.data.user) {
-      await admin.from("erp_empresas").delete().eq("id", companyId)
-      throw auth.error ?? new Error("Não foi possível criar o usuário de acesso.")
+    if (tipo === "CNPJ") {
+      const { data: existingCnpj, error: cnpjError } = await admin.from("erp_empresas").select("id").eq("cnpj", documento).limit(1)
+      if (cnpjError) throw cnpjError
+      if (existingCnpj?.length) return out({ error: "Este CNPJ já está cadastrado." }, 409)
     }
 
-    authUserId = auth.data.user.id
-
-    const sector = await admin.from("erp_setores").insert({
-      empresa_id: companyId,
-      codigo: "ADM",
-      nome: "Administrativo",
+    const now = new Date()
+    const trialEnd = new Date(now.getTime() + 15 * 86400000)
+    const { data: empresa, error: empresaError } = await admin.from("erp_empresas").insert({
+      razao_social: razao,
+      nome_fantasia: fantasia,
+      cnpj: tipo === "CNPJ" ? documento : null,
+      plano: clean(body?.plano) || "Essencial",
       ativo: true,
-    }).select("id").single()
+      status: "ativo",
+      plano_status: "trial",
+      trial_inicio: now.toISOString(),
+      trial_fim: trialEnd.toISOString(),
+      trial_ends_at: trialEnd.toISOString(),
+      subscription_status: "trialing",
+      plan_type: "basic",
+    }).select("id,razao_social,nome_fantasia,cnpj,plano,plano_status,trial_ends_at").single()
+    if (empresaError || !empresa) throw empresaError ?? new Error("EMPRESA_CREATE_FAILED")
+    empresaId = empresa.id
 
-    if (sector.error || !sector.data) throw sector.error ?? new Error("Não foi possível criar o setor administrativo.")
+    const { data: setor, error: setorError } = await admin.from("erp_setores").insert({
+      empresa_id: empresaId, codigo: "ADM", nome: "Administração", ativo: true,
+    }).select("id,codigo,nome").single()
+    if (setorError || !setor) throw setorError ?? new Error("SETOR_CREATE_FAILED")
 
-    const user = await admin.from("erp_usuarios").insert({
-      empresa_id: companyId,
-      auth_user_id: authUserId,
-      nome: nome_admin,
-      email,
-      nivel_admin: 2,
-      ativo: true,
-      setor_id: sector.data.id,
-      login_nome: nome_acesso,
-      is_master: false,
-      role: "ADMIN",
+    const { data: auth, error: authError } = await admin.auth.admin.createUser({
+      email, password: senha, email_confirm: true,
+      user_metadata: { nome: nomeAdmin, username: loginNome, empresa_id: empresaId, setor_id: setor.id, sistema: "SGQ ERP Industrial" },
     })
+    if (authError || !auth.user) throw authError ?? new Error("AUTH_CREATE_FAILED")
+    authId = auth.user.id
 
-    if (user.error) throw user.error
+    const { data: user, error: userError } = await admin.from("erp_usuarios").insert({
+      empresa_id: empresaId, nome: nomeAdmin, email, perfil: "administrador",
+      ativo: true, nivel_admin: 1, setor_id: setor.id, username: loginNome,
+      auth_user_id: authId, is_master: false, deleted_at: null,
+    }).select("id,nome,username,email").single()
+    if (userError || !user) throw userError ?? new Error("ERP_USER_CREATE_FAILED")
 
     const setores = [
       ["COM", "Comercial / Vendas"], ["COMPRAS", "Compras"], ["PCP", "PCP / Planejamento"],
       ["PROD", "Produção"], ["CQ", "Controle de Qualidade"], ["EST", "Estoque / Almoxarifado"],
       ["EXP", "Expedição / Logística"], ["MAN", "Manutenção"], ["FISCAL", "Fiscal / Faturamento"],
       ["FIN", "Financeiro"], ["RH", "Recursos Humanos"],
-    ].map(([codigo, nome]) => ({ empresa_id: companyId, codigo, nome, ativo: true }))
+    ].map(([codigo, nome]) => ({ empresa_id: empresaId, codigo, nome, ativo: true }))
+    const defaults = await admin.from("erp_setores").insert(setores)
+    if (defaults.error) console.warn("DEFAULT_SECTORS", defaults.error.message)
 
-    const setoresResult = await admin.from("erp_setores").insert(setores)
-    if (setoresResult.error) console.warn("Setores padrão não inseridos:", setoresResult.error.message)
-
-    return json({ ok: true, empresa: company.data, login_nome: nome_acesso, email, message: "Empresa criada com sucesso. O acesso está pronto para login." })
+    return out({ ok: true, empresa, login_nome: loginNome, email, message: "Empresa criada com sucesso. O acesso está pronto para login." }, 201)
   } catch (error) {
-    console.error("[erp-company-signup]", error)
-    return json({ error: error instanceof Error ? error.message : "Não foi possível concluir o cadastro." }, 500)
+    console.error("ERP_COMPANY_SIGNUP", error)
+    const secret = secretKey()
+    if (authId && secret) await createClient(clean(Deno.env.get("SUPABASE_URL")), secret).auth.admin.deleteUser(authId).catch(() => undefined)
+    if (empresaId && secret) await createClient(clean(Deno.env.get("SUPABASE_URL")), secret).from("erp_empresas").delete().eq("id", empresaId).catch(() => undefined)
+    return out({ error: error instanceof Error ? error.message : "Não foi possível concluir o cadastro da empresa." }, 500)
   }
 })
