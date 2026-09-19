@@ -1,82 +1,73 @@
 # Estado de Execução — ERP Industrial
 
-**Última atualização:** 2026-09-11
-
-## Projeto
-ERP Industrial / SGQ ERP — `plushbeauty/ERPSistemaIndustrial`
+**Última atualização:** 2026-09-18/19 — auditoria automática
 
 ## BLOCO ATUAL
-**02 — Login, sessão, permissões e segurança funcional**
+**Auditoria total — bootstrap, login universal, banco compartilhado e deploy**
 
-## ÚLTIMO ITEM CONCLUÍDO E VALIDADO
-Estrutura base de autenticação e proteção de rotas: frontend chama a Edge Function `erp-login`, estabelece sessão Supabase e valida o vínculo do usuário ERP antes de liberar o sistema.
+## EVIDÊNCIAS CONFIRMADAS
+- Repositório oficial: `plushbeauty/ERPSistemaIndustrial`, branch `main`.
+- Projeto Vercel: `erp-sistema-industrial`.
+- Produção atual consultada: HTTP 200.
+- Deployment mais recente observado: READY, commit `ffc173417b8b23eed1ed7fa90ab12ed5d4605824`.
+- GitHub/Vercel status do commit `ffc173417b8b23eed1ed7fa90ab12ed5d4605824`: Vercel success.
+- `erp-login` publicado no Supabase: versão 25, ACTIVE, `verify_jwt=false` por manter autenticação customizada da função.
+- `erp-login` foi alinhado ao GitHub e agora reconhece o Master universal existente em `public.usuarios`, sem exigir seleção de segmento nem vínculo obrigatório a uma empresa para o Master.
+- `src/main.tsx` foi corrigido para montar React sem aguardar limpeza de Service Worker/Cache e para exibir o erro real caso o import de `AppBootstrap` falhe.
+- O bundle de produção contém o bootstrap v9 e o chunk `AppBootstrap`; o chunk contém os textos da tela de login/cadastro.
+- As migrations de odontologia aplicadas no banco e ausentes do Git foram reconciliadas como artefatos no GitHub dos dois repositórios, sem replay destrutivo de DDL.
 
-## ITEM ATUAL
-Validar e corrigir o fluxo completo **cadastro de empresa → Supabase Auth → `erp_usuarios` → login → sessão → permissões**.
+## BANCO / SUPABASE
+Projeto: `wdkvrqekixczuhrfygen`.
 
-## PRÓXIMO ITEM OBRIGATÓRIO
-Executar os cenários de autenticação e regressão antes de avançar para CRUD.
+Migrations odontológicas confirmadas como aplicadas:
+- 20260918130023 — odonto_atendimento_integracao_v1
+- 20260918142302 — odonto_radiologia_metadata_v1
+- 20260918142311 — odonto_radiologia_data_v1
+- 20260918151543 — odonto_prontuario_anamnese_tratamentos_v2
+- 20260918193518 — erp_empresa_documento_cpf_cnpj
 
-## ITENS CONCLUÍDOS E VALIDADOS
-- Projeto e branch `main` identificados.
-- Integração do frontend com o projeto Supabase Industrial identificada.
-- Edge Function `erp-login` ativa e implementada.
-- Edge Function `erp-company-signup` ativa e implementada.
-- Cadastro de empresa passou a exigir CNPJ no frontend e backend.
-- Cadastro cria empresa, setores iniciais, identidade Supabase Auth e `erp_usuarios` vinculado.
-- Rotas protegidas usam validação de sessão e acesso.
-- `/master` possui validação de administrador.
+Tabelas odontológicas presentes:
+- odonto_anamneses
+- odonto_atendimentos
+- odonto_imagens_clinicas
+- odonto_odontograma
+- odonto_tratamento_itens
+- odonto_tratamentos
 
-## ITENS PENDENTES
-- Login real com usuário novo.
-- Login inválido e usuário inexistente.
-- Usuário inativo.
-- Empresa bloqueada/expirada.
-- Setor inválido.
-- Persistência e revalidação da sessão após refresh.
-- Logout.
-- Recuperação de senha.
-- Bloqueio de `/master` para não administrador.
-- Auditoria dos usuários ERP existentes sem vínculo Auth.
-- Regressão do cadastro após correção do CNPJ.
-- Validação da implantação de produção mais recente.
+As tabelas odontológicas possuem `empresa_id` e policies de tenant/master verificadas no banco.
 
-## ERROS ABERTOS
-1. Usuários ERP existentes sem `auth_user_id` não podem ser considerados autenticados até provisionamento/validação legítima.
-2. O `erp-login` possui provisionamento automático de Auth quando `auth_user_id` está vazio; isso deve ser revisado como risco de segurança antes da aprovação final do bloco.
-3. A implantação mais recente precisa ser confirmada como READY antes de homologação.
+## AUTH / MASTER
+- `public.usuarios`: 1 registro ativo e 1 Master.
+- `public.erp_usuarios`: atualmente não há usuário ERP ativo; o único registro existente está inativo/deletado.
+- Isso explica por que o fluxo antigo baseado exclusivamente em `erp_usuarios` não conseguia autenticar o proprietário.
+- Correção aplicada: `erp-login` consulta o Master universal de `usuarios` e autentica esse usuário normalmente por Supabase Auth, retornando perfil `MASTER`/universal sem exigir empresa ou segmento.
 
-## ERROS CORRIGIDOS
-- Cadastro de empresa não enviava CNPJ: corrigido.
-- URL do cadastro apontava para projeto Supabase incorreto: corrigida para o projeto Industrial.
+## SEGURANÇA
+- `current_empresa_id()` foi verificada: deriva empresa do usuário autenticado em `public.usuarios`.
+- `is_master_user()` foi verificada: reconhece Master em `erp_usuarios` e em `usuarios`.
+- Policies de `clientes` e das tabelas odontológicas foram inspecionadas.
+- O Supabase Advisor ainda reporta muitos WARNs históricos (funções SECURITY DEFINER executáveis, políticas anon em tabelas que podem ser públicas por desenho e proteção contra senhas vazadas desativada). Eles não foram mascarados como PASS e exigem revisão individual antes do E2E final.
 
-## TESTES REALIZADOS
-- Inspeção do código de `AppEntryV2.tsx`.
-- Inspeção da Edge Function `erp-login`.
-- Inspeção da Edge Function `erp-company-signup`.
-- Verificação da existência das tabelas públicas do projeto.
-- Verificação das Edge Functions ativas.
+## E2E
+Ainda NÃO APROVADO.
+Bloqueios atuais:
+1. Não há usuário ERP ativo dedicado para um teste autenticado convencional; o Master universal existe em `usuarios`.
+2. Não foi possível obter uma execução de navegador autenticado com console/DOM através das ferramentas atualmente expostas; por isso não será inventado um PASS visual.
+3. RLS A/B com sessão JWT real ainda precisa de execução autenticada real.
+4. CRUD completo dos dois produtos ainda não foi homologado item a item.
 
-## TESTES PENDENTES
-- Testes ponta a ponta reais com credenciais válidas e inválidas.
-- Persistência Auth/ERP.
-- Sessão/refresh/logout.
-- Permissões por nível.
-- Cadastro real e regressão.
+## PLUSH BEAUTY
+- Produção/Vercel está com histórico recente de deployments ERROR.
+- A causa do build foi confirmada no nível do deployment: `npm run build` saiu com código 2 e `lint_or_type_error`.
+- O commit que introduziu a exigência de type-check foi `dcb5ae93adc4729032671833ff39cd00a84da88b`; a falha atual é compatível com erros TypeScript que antes não bloqueavam o build.
+- GitHub Actions no commit mais recente também está em FAILURE.
+- Não declarar Build/Deploy PASS até identificar e corrigir os erros TypeScript reais.
 
-## BLOQUEIOS EXTERNOS
-Nenhum bloqueio externo definitivo registrado neste estado. A indisponibilidade de credenciais de usuários antigos impede somente a homologação desses acessos específicos; não autoriza mascarar a falha.
-
-## ARQUIVOS/COMPONENTES RELEVANTES
-- `src/AppEntryV2.tsx`
-- `src/pages/CadastroEmpresa.tsx`
-- `supabase/functions/erp-login/index.ts`
-- `supabase/functions/erp-company-signup/index.ts`
-- `docs/EXECUTION-STATE.md`
-
-## PRÓXIMA AÇÃO EXATA
-1. Reauditar o fluxo de login/cadastro contra o banco e Auth.
-2. Corrigir qualquer defeito encontrado antes de avançar.
-3. Executar cenários normal, inválido, inativo, empresa bloqueada, sessão, logout e permissões.
-4. Confirmar regressão e estado da implantação.
-5. Só então atualizar este arquivo e avançar para o próximo item do Bloco 02.
+## PRÓXIMAS AÇÕES OBRIGATÓRIAS
+1. Corrigir os erros TypeScript reais do Plush Beauty e repetir GitHub Actions + Vercel.
+2. Validar assets HTTP 200 no deployment READY final.
+3. Executar sessão Master universal real no ERP.
+4. Executar RLS A/B com JWT real.
+5. Auditar CRUDs críticos.
+6. Executar E2E autenticado e atualizar este documento somente com evidência.
