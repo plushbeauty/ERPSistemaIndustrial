@@ -10,7 +10,7 @@ import './styles/visual-showcase-2026.css'
 
 const PublicIndustrialHome = lazy(() => import('./PublicIndustrialHome'))
 const AppEntryV2 = lazy(() => import('./AppEntryV2'))
-const publicPaths = new Set(['/','/home','/login','/cadastro-empresa','/contato','/blog','/configuracao-adm-master','/ativar-acesso'])
+const publicPaths = new Set(['/','/home','/login','/cadastro-empresa','/contato','/blog','/configuracao-adm-master','/cadastro-master','/planos','/ativar-acesso'])
 
 class BootstrapBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null }
