@@ -52,7 +52,8 @@ jobs:
             fi
           }
 
-          check_forbidden 'erp-login' 'erp-login'
+          check_forbidden "functions\\.invoke[[:space:]]*\\([[:space:]]*['\"]erp-login['\"]" 'uso da Edge Function legada erp-login'
+          check_forbidden 'supabase/functions/v1/erp-login' 'URL direta da Edge Function legada erp-login'
           check_forbidden 'plush-login' 'plush-login'
           check_forbidden 'signup-client-v4' 'signup-client-v4'
           check_forbidden 'shadowEmail' 'shadowEmail'
