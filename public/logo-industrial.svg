@@ -1,16 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 150" role="img" aria-labelledby="title desc">
-  <title id="title">SGQ ERP</title>
-  <desc id="desc">SGQ ERP — Gestão Industrial</desc>
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0a8f8b"/>
-      <stop offset="1" stop-color="#08706f"/>
-    </linearGradient>
-  </defs>
-  <rect x="10" y="10" width="130" height="130" rx="30" fill="url(#g)"/>
-  <path d="M38 91V58l37-20 37 20v33" fill="none" stroke="#fff" stroke-width="9" stroke-linejoin="round"/>
-  <path d="M49 91V70h52v21M61 91V77h28v14" fill="none" stroke="#fff" stroke-width="7" stroke-linejoin="round"/>
-  <circle cx="75" cy="51" r="7" fill="#fff"/>
-  <text x="165" y="76" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="58" font-weight="900" letter-spacing="-2" fill="#17343b">SGQ ERP</text>
-  <text x="168" y="111" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="20" font-weight="800" letter-spacing="4" fill="#0a7778">GESTÃO INDUSTRIAL</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 160" role="img" aria-labelledby="title desc">
+<title id="title">SGQ ERP</title><desc id="desc">SGQ ERP Industrial</desc>
+<defs><linearGradient id="sgqg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0e9b93"/><stop offset="1" stop-color="#075f67"/></linearGradient></defs>
+<rect x="10" y="10" width="140" height="140" rx="34" fill="url(#sgqg)"/>
+<path d="M43 83c0-24 17-43 42-43 16 0 29 7 37 19l-17 12c-5-7-11-10-20-10-13 0-23 9-23 22s10 22 23 22c9 0 16-3 21-10l17 12c-8 12-21 19-38 19-25 0-42-19-42-43Z" fill="#fff"/>
+<path d="M88 64h35v18H88z" fill="#d9b66b"/><path d="M88 91h35v18H88z" fill="#fff"/>
+<text x="177" y="79" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="60" font-weight="900" letter-spacing="-2.5" fill="#16383d">SGQ ERP</text>
+<text x="181" y="116" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="18" font-weight="800" letter-spacing="4.2" fill="#087b7d">INDUSTRIAL</text>
 </svg>
