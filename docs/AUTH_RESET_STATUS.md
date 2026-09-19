@@ -5,3 +5,5 @@
 - Tenant users require `empresa_id` and `auth_user_id`.
 - Legacy `erp-login` is frozen; provisioning uses `erp-master-bootstrap`.
 - ERP Supabase project: `zsklkydlawgvwgnvxwwx`.
+- Removed stale `hydratedTenant` references from `src/auth/AuthProvider.tsx` that could fail strict TypeScript compilation.
+- This commit is an intentional Vercel rebuild trigger after the auth type fix.
