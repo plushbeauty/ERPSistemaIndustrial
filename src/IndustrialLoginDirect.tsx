@@ -14,12 +14,6 @@ async function validateIndustrialSession(userId:string){
  if(profileError)throw profileError;if(!profile)throw new Error('Usuário autenticado, mas sem perfil ERP ativo.');if(profile.auth_user_id!==userId)throw new Error('O vínculo entre Supabase Auth e o perfil ERP é inválido.');const master=Boolean(profile.is_master)||Number(profile.nivel_admin??0)>=9||['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(String(profile.perfil??'').trim().toUpperCase());if(master&&!profile.empresa_id)return {profile,empresa:null};if(!profile.empresa_id)throw new Error('Usuário autenticado sem empresa industrial vinculada.');
  const {data:empresa,error:empresaError}=await supabase.from('erp_empresas').select('id,razao_social,nome_fantasia,ativo').eq('id',profile.empresa_id).eq('ativo',true).maybeSingle();if(empresaError)throw empresaError;if(!empresa)throw new Error('A empresa vinculada ao usuário está inexistente ou inativa.');return {profile,empresa}
 }
-async function executarBootstrapOficial(email:string,password:string){
- const {data,error}=await supabase.functions.invoke('erp-login',{body:{action:'bootstrap_master',email,password}})
- if(error)throw error
- if(!data?.ok)throw new Error(String(data?.error??'Não foi possível provisionar o acesso oficial.'))
- return data
-}
 export default function IndustrialLoginDirect({returnTo,masterMode=false}:Props){
  const[email,setEmail]=useState(''),[password,setPassword]=useState(''),[showPassword,setShowPassword]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[checking,setChecking]=useState(true)
  useEffect(()=>{let alive=true;async function bootstrap(){if(!supabaseConfigurado){if(alive)setChecking(false);return}try{const{data,error:sessionError}=await supabase.auth.getSession();if(sessionError)throw sessionError;const user=data.session?.user;if(!user){if(alive)setChecking(false);return}await validateIndustrialSession(user.id);if(alive)window.location.replace(safeReturnTo(returnTo))}catch(err){console.error('[ERP login bootstrap]',err);await supabase.auth.signOut().catch(()=>undefined);if(alive){setError('A sessão anterior não possui acesso válido ao ERP Industrial. Entre novamente com uma conta Industrial autorizada.');setChecking(false)}}}void bootstrap();return()=>{alive=false}},[returnTo])
