@@ -25,7 +25,7 @@ export default function SetupADMInicial() {
     async function check() {
       if (!supabaseConfigurado) { if (alive) { setAvailable(false); setError('Supabase não está configurado neste ambiente.') }; return }
       try {
-        const { data, error: fnError } = await supabase.functions.invoke('erp-login', { body:{ action:'setup_status' } })
+        const { data, error:fnError } = await supabase.functions.invoke('erp-master-bootstrap', { body:{ action:'status' } })
         if (fnError) throw fnError
         if (alive) setAvailable(Boolean(data?.available))
       } catch (e) {
@@ -36,45 +36,44 @@ export default function SetupADMInicial() {
     return () => { alive = false }
   }, [])
 
-  async function submit(event: FormEvent) {
+  async function submit(event:FormEvent) {
     event.preventDefault()
     setError(''); setMessage('')
     if (nome.trim().length < 3) return setError('Informe seu nome completo.')
-    if (!email.includes('@')) return setError('Informe um e-mail válido.')
-    if (password.length < 6) return setError('A senha precisa ter pelo menos 6 caracteres.')
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return setError('Informe um e-mail válido.')
+    if (password.length < 8) return setError('A senha precisa ter pelo menos 8 caracteres.')
     if (password !== confirm) return setError('A confirmação da senha não confere.')
     setBusy(true)
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('erp-login', { body:{ action:'bootstrap_master', nome:nome.trim(), email:email.trim().toLowerCase(), password } })
+      const { data, error:fnError } = await supabase.functions.invoke('erp-master-bootstrap', {
+        body:{ action:'bootstrap_master', nome:nome.trim(), email:email.trim().toLowerCase(), password }
+      })
       if (fnError) throw fnError
       if (!data?.ok) throw new Error(String(data?.error || 'Não foi possível concluir o cadastro Master.'))
       const { error:loginError } = await supabase.auth.signInWithPassword({ email:email.trim().toLowerCase(), password })
       if (loginError) throw loginError
-      setMessage('Proprietário Master cadastrado. Abrindo a tela de configurações…')
-      window.setTimeout(() => { window.location.replace('/master') }, 500)
+      setAvailable(false)
+      setMessage('Proprietário Master criado. Abrindo o painel universal…')
+      window.setTimeout(() => window.location.replace('/master'), 400)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Falha ao cadastrar o proprietário Master.')
+      setError(e instanceof Error ? e.message : 'Não foi possível concluir o cadastro Master.')
     } finally { setBusy(false) }
   }
 
-  if (available === null) return <main style={shell}><section style={card}><LockKeyhole/><h1>Preparando cadastro do proprietário</h1><p style={muted}>Verificando se o sistema ainda aceita o primeiro Master…</p></section></main>
-
-  if (!available) return <main style={shell}><section style={card}><span style={{fontSize:11,fontWeight:900,letterSpacing:'.16em',color:'#e0c56f'}}>ACESSO DO PROPRIETÁRIO</span><h1>O cadastro inicial do Master já foi encerrado.</h1><p style={muted}>Existe um proprietário Master ativo ou o ambiente não pôde liberar o cadastro. Se você já é o proprietário, entre pelo login normal.</p>{error&&<div style={{...box,background:'rgba(150,25,25,.18)',color:'#ffb6b6'}}>{error}</div>}<a href="/login?mode=master&returnTo=%2Fmaster" style={{...button,textDecoration:'none'}}>Ir para o login</a><a href="/" style={{display:'block',marginTop:15,textAlign:'center',color:'#e0c56f',fontSize:12}}>Voltar ao site</a></section></main>
+  if (available === null) return <main style={shell}><section style={card}><p style={muted}>Verificando a disponibilidade do primeiro acesso…</p></section></main>
+  if (!available) return <main style={shell}><section style={card}><ShieldCheck size={28}/><h1 style={{fontSize:28,margin:'12px 0'}}>Cadastro Master indisponível</h1><p style={muted}>{message || 'Já existe um proprietário Master ou o serviço ainda não está disponível.'}</p><a href="/login" style={{...button,textDecoration:'none'}}>Ir para o login</a></section></main>
 
   return <main style={shell}><section style={card}>
-    <div style={{display:'flex',alignItems:'center',gap:10,color:'#e0c56f'}}><ShieldCheck size={22}/><span style={{fontSize:11,fontWeight:900,letterSpacing:'.16em'}}>PROPRIETÁRIO • MASTER DO SISTEMA</span></div>
-    <h1 style={{fontSize:34,margin:'12px 0 8px'}}>Cadastre seu acesso de dono</h1>
-    <p style={muted}>Este é o cadastro único do proprietário do SGQ ERP Industrial. Depois de concluir, você entra na área Master para configurar empresas, usuários, demonstrações e permissões.</p>
+    <div style={{display:'flex',gap:12,alignItems:'center'}}><LockKeyhole size={28}/><div><strong style={{display:'block',fontSize:11,letterSpacing:2}}>SGQ ERP INDUSTRIAL</strong><h1 style={{fontSize:28,margin:'4px 0'}}>Criar proprietário Master</h1></div></div>
+    <p style={muted}>Este acesso é universal. O Master não pertence a uma empresa nem exige setor. Depois do cadastro, o login usa exclusivamente o Supabase Auth.</p>
+    {error && <div style={{...box,background:'rgba(180,40,40,.12)',borderColor:'rgba(255,120,120,.3)',color:'#ffd0d0'}}>{error}</div>}
     <form onSubmit={submit}>
-      <label style={label}>Seu nome<input style={input} value={nome} onChange={e=>setNome(e.target.value)} autoComplete="name" placeholder="Nome completo"/></label>
-      <label style={label}>Seu e-mail<input style={input} type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" placeholder="seu@email.com"/></label>
-      <label style={label}>Senha Master<input style={input} type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="new-password" placeholder="Mínimo de 6 caracteres"/></label>
-      <label style={label}>Confirmar senha<input style={input} type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} autoComplete="new-password" placeholder="Repita a senha"/></label>
-      {error&&<div style={{...box,background:'rgba(150,25,25,.18)',color:'#ffb6b6'}}>{error}</div>}
-      {message&&<div style={box}><CheckCircle2 size={15} style={{verticalAlign:'middle',marginRight:6}}/>{message}</div>}
-      <button disabled={busy} type="submit" style={{...button,opacity:busy?.7:1}}>{busy?'Criando acesso Master…':'Cadastrar meu acesso de proprietário'}</button>
+      <label style={label}>Nome completo<input style={input} value={nome} onChange={e=>setNome(e.target.value)} autoComplete="name" required/></label>
+      <label style={label}>E-mail<input style={input} type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" required/></label>
+      <label style={label}>Senha<input style={input} type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="new-password" minLength={8} required/></label>
+      <label style={label}>Confirmar senha<input style={input} type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} autoComplete="new-password" minLength={8} required/></label>
+      <button style={button} disabled={busy}>{busy?'Criando acesso…':'Criar proprietário Master'}</button>
     </form>
-    <div style={{...box,marginTop:18}}>Depois do cadastro, o sistema usa o Supabase Auth para a identidade e o perfil Master nível 9 para autorizar a área administrativa. A senha não fica no código nem no navegador.</div>
-    <a href="/login?mode=master&returnTo=%2Fmaster" style={{display:'block',marginTop:17,textAlign:'center',color:'#e0c56f',fontSize:12}}>Já tenho acesso · entrar</a>
+    <div style={box}><CheckCircle2 size={15} style={{verticalAlign:'middle',marginRight:7}}/> Nenhuma empresa será criada nesta etapa.</div>
   </section></main>
 }
