@@ -10,7 +10,9 @@
     "audit:interactions": "node scripts/audit-interactions.mjs",
     "audit:global": "node scripts/auditoria-global.mjs",
     "audit": "npm run type-check",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "audit:brutal": "node scripts/auditoria-brutal.mjs",
+    "audit:all": "npm run audit:brutal && npm run audit:global && npm run audit:interactions"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
