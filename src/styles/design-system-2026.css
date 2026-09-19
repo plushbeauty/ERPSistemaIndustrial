@@ -79,3 +79,24 @@ body{background:var(--ds-bg)}
 .v7-shell.theme-dark .v7-form input,.v7-shell.theme-dark .v7-form select,.v7-shell.theme-dark .v7-search input,.v7-shell.theme-dark .v7-user .v7-theme-toggle{background:#091a1e!important;color:#e8f1f1!important;border-color:#ffffff18!important}
 .v7-shell.theme-dark .v7-theme-toggle{color:#e8f1f1}.v7-shell.theme-dark .v7-theme-toggle:hover{border-color:#2aa9a2!important}
 @media(prefers-color-scheme:dark){body:has(.v7-shell.theme-dark){background:#081417}}
+
+/* Shared module surfaces: PCP / Qualidade / Operação */
+.pcp-page{min-height:100%;max-width:1500px;margin:0 auto;padding:clamp(14px,2.5vw,30px);color:var(--ds-ink)}
+.pcp-toolbar{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.pcp-toolbar h1,.pcp-page h1{letter-spacing:-.045em}
+.pcp-machine-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
+.erp-card{border:1px solid var(--ds-line)!important;border-radius:18px!important;background:rgba(255,255,255,.92)!important;box-shadow:var(--ds-shadow)!important;transition:transform var(--ds-ease),box-shadow var(--ds-ease),border-color var(--ds-ease)}
+.erp-card:hover{transform:translateY(-2px);box-shadow:0 20px 48px rgba(16,42,50,.10)!important;border-color:#afd6d3!important}
+.pcp-side{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,.8fr);gap:14px}.pcp-side-panel{border:1px solid var(--ds-line)!important;border-radius:18px!important;background:#fff!important;box-shadow:var(--ds-shadow)!important;padding:16px}
+.pcp-timeline{display:grid;gap:8px}.pcp-timeline-row{display:grid;grid-template-columns:180px minmax(0,1fr);gap:10px;align-items:center}.pcp-track{height:34px;border-radius:10px;background:#edf3f3;overflow:hidden}.pcp-block{height:100%;border-radius:9px;background:linear-gradient(90deg,#0d8f8a,#32bdb2);box-shadow:0 5px 14px rgba(13,143,138,.2)}
+.crud-list,.crud-table-wrap{border:1px solid var(--ds-line)!important;border-radius:18px!important;background:#fff!important;box-shadow:var(--ds-shadow)!important}
+.crud-list{overflow:hidden}.crud-list-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #edf2f2}.crud-table-wrap{overflow:auto}.crud-table-wrap table{width:100%;border-collapse:collapse;min-width:760px}.crud-table-wrap th{background:#f7faf9;color:#53666b;font-size:10px;text-transform:uppercase;letter-spacing:.09em}.crud-table-wrap th,.crud-table-wrap td{padding:12px 13px;border-bottom:1px solid #edf2f2;text-align:left}.crud-table-wrap tbody tr:hover{background:#f6fbfa}.crud-empty,.pcp-empty{padding:28px;text-align:center;color:var(--ds-muted)}
+.notice{border-radius:12px!important;border:1px solid #cce4df!important;background:#effaf7!important;color:#0d716d!important;padding:11px 13px!important}
+.modal{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:18px;background:rgba(5,20,24,.58)!important;backdrop-filter:blur(7px)}
+.modal-card{width:min(760px,100%);max-height:min(88vh,900px);overflow:auto;border:1px solid rgba(255,255,255,.14)!important;border-radius:22px!important;background:#fff!important;box-shadow:0 35px 110px rgba(0,0,0,.28)!important;padding:22px}
+.menu-green{border:0!important;border-radius:11px!important;background:linear-gradient(135deg,#0d8f8a,#12aaa2)!important;color:#fff!important;box-shadow:0 10px 22px rgba(13,143,138,.18);font-weight:900!important;transition:.18s}.menu-green:hover{transform:translateY(-1px);filter:brightness(1.04)}
+.secondary-v2{border:1px solid var(--ds-line)!important;border-radius:11px!important;background:#fff!important;color:var(--ds-ink)!important;font-weight:850!important;transition:.18s}.secondary-v2:hover{transform:translateY(-1px);border-color:#a7d1ce!important;box-shadow:0 8px 20px rgba(16,42,50,.07)}
+@media(max-width:1000px){.pcp-machine-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pcp-side{grid-template-columns:1fr}}
+@media(max-width:600px){.pcp-machine-grid{grid-template-columns:1fr}.pcp-timeline-row{grid-template-columns:1fr}.pcp-toolbar{align-items:flex-start}.modal-card{padding:16px;border-radius:18px!important}}
+.v7-shell.theme-dark .erp-card,.v7-shell.theme-dark .pcp-side-panel,.v7-shell.theme-dark .crud-list,.v7-shell.theme-dark .crud-table-wrap,.v7-shell.theme-dark .modal-card{background:#0d2025!important;border-color:#ffffff14!important;color:#e8f1f1}
+.v7-shell.theme-dark .crud-table-wrap th{background:#10272c;color:#a8b9bb}.v7-shell.theme-dark .crud-table-wrap td{border-color:#ffffff10}.v7-shell.theme-dark .pcp-track{background:#132b30}.v7-shell.theme-dark .secondary-v2{background:#0d2025!important;color:#e8f1f1!important;border-color:#ffffff14!important}
