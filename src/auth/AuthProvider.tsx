@@ -21,20 +21,19 @@ async function loadProfile(authUserId:string):Promise<ERPProfile|null>{
 }
 export function AuthProvider({children}:{children:ReactNode}){
  const[session,setSession]=useState<Session|null>(null),[profile,setProfile]=useState<ERPProfile|null>(null),[loading,setLoading]=useState(true)
- const hydratedUserId=useRef<string|null>(null),hydratedTenant=useRef<string|null>(null),requestId=useRef(0)
+ const hydratedUserId=useRef<string|null>(null),requestId=useRef(0)
  const hydrate=useCallback(async(next:Session|null,force=false)=>{
   const currentRequest=++requestId.current;setSession(next)
-  if(!next?.user){hydratedUserId.current=null;hydratedTenant.current=null;setProfile(null);setLoading(false);return}
-  const userId=next.user.id,tenant=null
-  if(!force&&hydratedUserId.current===userId&&hydratedTenant.current===tenant&&profile){setLoading(false);return}
+  if(!next?.user){hydratedUserId.current=null;setProfile(null);setLoading(false);return}
+  const userId=next.user.id
+  if(!force&&hydratedUserId.current===userId&&profile){setLoading(false);return}
   setLoading(true)
   try{
    if(!supabaseConfigurado)throw new Error('SUPABASE_ENV_NOT_CONFIGURED')
    const nextProfile=await loadProfile(userId)
    if(currentRequest!==requestId.current)return
    if(!nextProfile)throw new Error('ERP_PROFILE_NOT_AUTHORIZED')
-   if(!nextProfile.is_master&&tenant&&tenant!==nextProfile.empresa_id)throw new Error('ERP_TENANT_MISMATCH')
-   hydratedUserId.current=userId;hydratedTenant.current=nextProfile.empresa_id;setProfile(nextProfile)
+   hydratedUserId.current=userId;setProfile(nextProfile)
   }catch(error){
    if(currentRequest!==requestId.current)return
    console.error('[AuthProvider] Falha ao validar perfil ERP:',error)
