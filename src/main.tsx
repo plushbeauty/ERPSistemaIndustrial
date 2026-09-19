@@ -1,7 +1,9 @@
 import { StrictMode, lazy, Suspense, useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import { MotionConfig } from 'motion/react'
 import './styles/erp-reference-ux-2026.css'
 import './styles/industrial-command-center-2026.css'
+import './styles/design-system-2026.css'
 
 const ERP_BOOTSTRAP_VERSION = '2026-09-18-browser-auth-v9'
 
@@ -43,7 +45,9 @@ if (!rootElement) throw new Error('Elemento raiz #root não encontrado.')
 console.info(`[ERP] bootstrap ${ERP_BOOTSTRAP_VERSION}`)
 createRoot(rootElement).render(
   <StrictMode>
-    <BootstrapLoader />
+    <MotionConfig reducedMotion="user" transition={{ duration: 0.22, ease: 'easeOut' }}>
+      <BootstrapLoader />
+    </MotionConfig>
   </StrictMode>,
 )
 
