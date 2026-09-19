@@ -37,7 +37,7 @@ export function AuthProvider({children}:{children:ReactNode}){
   }catch(error){
    if(currentRequest!==requestId.current)return
    console.error('[AuthProvider] Falha ao validar perfil ERP:',error)
-   setProfile(null);hydratedUserId.current=null;hydratedTenant.current=null
+   setProfile(null);hydratedUserId.current=null
    await supabase.auth.signOut().catch(()=>undefined)
   }finally{if(currentRequest===requestId.current)setLoading(false)}
  },[profile])
