@@ -1,8 +1,8 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 
 const env = import.meta.env as Record<string, unknown>
-const DEFAULT_SUPABASE_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_QX10nEg-hrWd_5UOuYSpQg_v5M-1xuM'
+const DEFAULT_SUPABASE_URL = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BcwsSbBx8dWof7d_hAKtQA_XzQGAYwR'
 const supabaseUrl = String(env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL).trim().replace(/\/$/, '')
 const configuredKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY).trim()
 const isPrivateKey = configuredKey.startsWith('sb_secret_') || configuredKey.includes('service_role')
@@ -15,20 +15,11 @@ export const supabaseKeyExportada = isPrivateKey ? '' : configuredKey
 const clientUrl = supabaseUrl || DEFAULT_SUPABASE_URL
 const clientKey = configuredKey && !isPrivateKey ? configuredKey : DEFAULT_SUPABASE_PUBLISHABLE_KEY
 
-if (!supabaseConfigurado) {
-  console.error('[Supabase] Configuração pública inválida ou ausente.')
-}
-if (isPrivateKey) {
-  console.error('[Supabase] Chave privada/secret detectada no frontend. Ela foi rejeitada e não será usada.')
-}
+if (!supabaseConfigurado) console.error('[Supabase] Configuração pública inválida ou ausente.')
+if (isPrivateKey) console.error('[Supabase] Chave privada/secret detectada no frontend. Ela foi rejeitada e não será usada.')
 
 export const supabase: SupabaseClient = createClient(clientUrl, clientKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    storageKey: 'erp-industrial-auth',
-  },
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'erp-industrial-auth' },
   global: { headers: { 'x-client-info': 'sgq-erp-industrial' } },
 })
 
