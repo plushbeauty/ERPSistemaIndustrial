@@ -1,5 +1,5 @@
 # Visual Redesign 2026
 
-Design system, Motion, dark mode, login and Master visual refresh implemented in the existing ERP application.
+Final visual foundation for this pass: design tokens, responsive executive SaaS surfaces, Motion transitions, reduced-motion support, dark mode, premium login, Master control center styling, PCP/Quality/CRUD visual surfaces.
 
-References used as pattern research: shadcn dashboard, Magic UI, Motion, ERPNext/OpenMES concepts, modern admin layouts.
+Reference research: shadcn dashboard, Magic UI, Motion, ERPNext/OpenMES concepts and modern administrative layouts.
