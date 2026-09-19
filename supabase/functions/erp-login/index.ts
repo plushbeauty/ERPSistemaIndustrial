@@ -7,6 +7,7 @@ const out=(req:Request,body:unknown,status=200)=>new Response(JSON.stringify(bod
 
 type B={action?:unknown;email?:unknown;password?:unknown;empresa_id?:unknown;identificador?:unknown;usuario?:unknown;username?:unknown;senha?:unknown;nome?:unknown}
 type U={id:string;nome:string|null;login_nome:string|null;email:string|null;empresa_id:string|null;setor_id:string|null;ativo:boolean;nivel_admin:number|null;auth_user_id:string|null;is_master:boolean|null;role:string|null;deleted_at:string|null}
+type GlobalMaster={id:string;nome:string|null;email:string|null;auth_user_id:string;ativo:boolean;nivel_admin:number|null;perfil:string|null}
 
 const masterRole=(u:Pick<U,'is_master'|'nivel_admin'|'role'>)=>Boolean(u.is_master)||Number(u.nivel_admin??0)>=9||['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(String(u.role??'').trim().toUpperCase())
 
@@ -20,10 +21,20 @@ Deno.serve(async(req)=>{
     if(!url||!anon||!service)return out(req,{error:'AUTH_CONFIGURATION_ERROR'},500)
     const admin=createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}})
 
+    const {data:globalMasterRow,error:globalMasterError}=await admin
+      .from('usuarios')
+      .select('id,nome,email,auth_user_id,ativo,nivel_admin,perfil')
+      .or('nivel_admin.gte.80,perfil.ilike.SUPER_ADMIN,perfil.ilike.MASTER,perfil.ilike.MASTER_ADMIN')
+      .eq('ativo',true)
+      .limit(1)
+      .maybeSingle()
+    if(globalMasterError)return out(req,{error:'GLOBAL_MASTER_LOOKUP_ERROR'},500)
+    const globalMaster=globalMasterRow?.auth_user_id?globalMasterRow as GlobalMaster:null
+
     if(action==='setup_status'){
       const {data,error}=await admin.from('erp_usuarios').select('id').eq('is_master',true).eq('ativo',true).is('deleted_at',null).limit(1)
       if(error)return out(req,{error:'MASTER_STATUS_ERROR'},500)
-      return out(req,{available:!(data?.length)})
+      return out(req,{available:!(data?.length)&&!globalMaster})
     }
 
     if(action==='bootstrap_master'){
@@ -32,7 +43,7 @@ Deno.serve(async(req)=>{
       if(!/^\S+@\S+\.\S+$/.test(email))return out(req,{error:'EMAIL_INVALIDO'},400)
       if(pw.length<6)return out(req,{error:'SENHA_FRACA'},400)
       const {data:existing}=await admin.from('erp_usuarios').select('id').eq('is_master',true).eq('ativo',true).is('deleted_at',null).limit(1)
-      if(existing?.length)return out(req,{error:'MASTER_JA_CADASTRADO'},409)
+      if(existing?.length||globalMaster)return out(req,{error:'MASTER_JA_CADASTRADO',locked:true},409)
       const {data:byEmail}=await admin.auth.admin.getUserByEmail(email)
       if(byEmail?.user)return out(req,{error:'EMAIL_AUTH_JA_EXISTE'},409)
       let empresaId:string|undefined,userId:string|undefined
@@ -63,13 +74,36 @@ Deno.serve(async(req)=>{
     const {data:rows,error:re}=await admin.from('erp_usuarios').select('id,nome,login_nome,email,empresa_id,setor_id,ativo,nivel_admin,auth_user_id,is_master,role,deleted_at').eq('ativo',true).is('deleted_at',null).limit(1000)
     if(re)return out(req,{error:'AUTH_PROFILE_LOOKUP_ERROR'},500)
     const matches=((rows??[]) as U[]).filter(u=>String(u.email??'').trim().toLowerCase()===n||String(u.login_nome??'').trim().toLowerCase()===n||String(u.nome??'').trim().toLowerCase()===n)
-    if(matches.length!==1||!matches[0].auth_user_id)return out(req,{error:'USUARIO_OU_SENHA_INVALIDOS'},401)
 
-    const candidate=matches[0]
-    const candidateMaster=masterRole(candidate)
+    let candidate:U|null=matches.length===1?matches[0]:null
+    let isGlobalMaster=false
+    if(!candidate&&globalMaster){
+      const globalEmail=String(globalMaster.email??'').trim().toLowerCase()
+      const globalName=String(globalMaster.nome??'').trim().toLowerCase()
+      if(globalEmail===n||globalName===n){
+        isGlobalMaster=true
+        candidate={
+          id:globalMaster.id,
+          nome:globalMaster.nome,
+          login_nome:globalMaster.nome,
+          email:globalMaster.email,
+          empresa_id:null,
+          setor_id:null,
+          ativo:true,
+          nivel_admin:globalMaster.nivel_admin??100,
+          auth_user_id:globalMaster.auth_user_id,
+          is_master:true,
+          role:'MASTER',
+          deleted_at:null,
+        }
+      }
+    }
 
-    if(requestedEmpresa && !candidateMaster && candidate.empresa_id!==requestedEmpresa)return out(req,{error:'USUARIO_NAO_PERTENCE_A_EMPRESA'},401)
-    if(!candidateMaster && !candidate.empresa_id)return out(req,{error:'USUARIO_SEM_EMPRESA'},401)
+    if(!candidate||!candidate.auth_user_id)return out(req,{error:'USUARIO_OU_SENHA_INVALIDOS'},401)
+    const candidateMaster=isGlobalMaster||masterRole(candidate)
+
+    if(requestedEmpresa&&!candidateMaster&&candidate.empresa_id!==requestedEmpresa)return out(req,{error:'USUARIO_NAO_PERTENCE_A_EMPRESA'},401)
+    if(!candidateMaster&&!candidate.empresa_id)return out(req,{error:'USUARIO_SEM_EMPRESA'},401)
 
     if(candidate.empresa_id){
       const {data:company,error:companyError}=await admin.from('erp_empresas').select('id,ativo').eq('id',candidate.empresa_id).maybeSingle()
@@ -84,11 +118,17 @@ Deno.serve(async(req)=>{
     const {data:si,error:se}=await client.auth.signInWithPassword({email:au.user.email.trim().toLowerCase(),password:pw})
     if(se||!si.session||!si.user)return out(req,{error:'USUARIO_OU_SENHA_INVALIDOS'},401)
 
-    const {data:p,error:pe}=await admin.from('erp_usuarios').select('id,nome,login_nome,email,empresa_id,setor_id,ativo,nivel_admin,auth_user_id,is_master,role,deleted_at').eq('auth_user_id',si.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle()
-    if(pe||!p)return out(req,{error:'PERFIL_ERP_NAO_AUTORIZADO'},401)
+    let p:U|null=null
+    if(isGlobalMaster){
+      p=candidate
+    }else{
+      const {data:profile,error:pe}=await admin.from('erp_usuarios').select('id,nome,login_nome,email,empresa_id,setor_id,ativo,nivel_admin,auth_user_id,is_master,role,deleted_at').eq('auth_user_id',si.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle()
+      if(pe||!profile)return out(req,{error:'PERFIL_ERP_NAO_AUTORIZADO'},401)
+      p=profile as U
+    }
 
     const master=masterRole(p)
-    if(!master && !p.empresa_id)return out(req,{error:'PERFIL_ERP_NAO_AUTORIZADO'},401)
+    if(!master&&!p.empresa_id)return out(req,{error:'PERFIL_ERP_NAO_AUTORIZADO'},401)
 
     if(p.empresa_id){
       const {data:company,error:companyError}=await admin.from('erp_empresas').select('id,ativo').eq('id',p.empresa_id).maybeSingle()
@@ -97,7 +137,7 @@ Deno.serve(async(req)=>{
     }
 
     const role=String(p.role??(master?'MASTER':'USER')).trim().toUpperCase()||(master?'MASTER':'USER')
-    const md={...(si.user.app_metadata??{}),empresa_id:p.empresa_id,role,is_master:master}
+    const md={...(si.user.app_metadata??{}),empresa_id:p.empresa_id,role,is_master:master,universal_master:master}
     const {error:me}=await admin.auth.admin.updateUserById(si.user.id,{app_metadata:md})
     if(me)return out(req,{error:'AUTH_CLAIMS_UPDATE_ERROR'},500)
 
@@ -105,14 +145,14 @@ Deno.serve(async(req)=>{
     if(fe||!rf.session||!rf.user)return out(req,{error:'AUTH_SESSION_REFRESH_ERROR'},500)
 
     let setorCodigo=null,setorNome=null
-    if(p.setor_id){
+    if(p.setor_id&&p.empresa_id){
       const {data:s,error:sx}=await admin.from('erp_setores').select('codigo,nome').eq('id',p.setor_id).eq('empresa_id',p.empresa_id).maybeSingle()
       if(sx)return out(req,{error:'AUTH_SECTOR_LOOKUP_ERROR'},500)
       setorCodigo=s?.codigo??null
       setorNome=s?.nome??null
     }
 
-    return out(req,{session:{access_token:rf.session.access_token,refresh_token:rf.session.refresh_token},empresa_id:p.empresa_id,profile:{id:rf.user.id,erp_usuario_id:p.id,empresa_id:p.empresa_id,setor_id:p.setor_id,setor_codigo:setorCodigo,setor_nome:setorNome,username:p.login_nome,nome:p.nome,email:rf.user.email??au.user.email,nivel_admin:p.nivel_admin??1,role,is_master:master}})
+    return out(req,{session:{access_token:rf.session.access_token,refresh_token:rf.session.refresh_token},empresa_id:p.empresa_id,profile:{id:rf.user.id,erp_usuario_id:p.id,empresa_id:p.empresa_id,setor_id:p.setor_id,setor_codigo:setorCodigo,setor_nome:setorNome,username:p.login_nome,nome:p.nome,email:rf.user.email??au.user.email,nivel_admin:p.nivel_admin??100,role,is_master:master,universal_master:master}})
   }catch(e){
     console.error('[erp-login]',e)
     return out(req,{error:'AUTH_INTERNAL_ERROR'},500)
