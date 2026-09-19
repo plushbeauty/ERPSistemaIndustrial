@@ -19,14 +19,13 @@ async function loadProfile(authUserId:string):Promise<ERPProfile|null>{
  if(!empresa?.ativo)return null
  return{id:data.id,email:String(data.email??'').trim(),empresa_id:data.empresa_id,perfil,nivel_admin:nivel,is_master:false}
 }
-function tenantClaim(session:Session|null):string|null{const value=session?.user?.app_metadata?.empresa_id;return typeof value==='string'&&value.trim()?value:null}
 export function AuthProvider({children}:{children:ReactNode}){
  const[session,setSession]=useState<Session|null>(null),[profile,setProfile]=useState<ERPProfile|null>(null),[loading,setLoading]=useState(true)
  const hydratedUserId=useRef<string|null>(null),hydratedTenant=useRef<string|null>(null),requestId=useRef(0)
  const hydrate=useCallback(async(next:Session|null,force=false)=>{
   const currentRequest=++requestId.current;setSession(next)
   if(!next?.user){hydratedUserId.current=null;hydratedTenant.current=null;setProfile(null);setLoading(false);return}
-  const userId=next.user.id,tenant=tenantClaim(next)
+  const userId=next.user.id,tenant=null
   if(!force&&hydratedUserId.current===userId&&hydratedTenant.current===tenant&&profile){setLoading(false);return}
   setLoading(true)
   try{
@@ -51,7 +50,7 @@ export function AuthProvider({children}:{children:ReactNode}){
    if(!mounted)return
    if(event==='SIGNED_OUT'){void hydrate(null,true);return}
    if(event==='SIGNED_IN'||event==='USER_UPDATED'){void hydrate(next,true);return}
-   if(event==='TOKEN_REFRESHED'){const nextUserId=next?.user?.id??null,nextTenant=tenantClaim(next),changed=nextUserId!==hydratedUserId.current||nextTenant!==hydratedTenant.current;if(changed)void hydrate(next,true);else setSession(next)}
+   if(event==='TOKEN_REFRESHED'){const nextUserId=next?.user?.id??null,changed=nextUserId!==hydratedUserId.current;if(changed)void hydrate(next,true);else setSession(next)}
   })
   return()=>{mounted=false;listener.subscription.unsubscribe()}
  },[hydrate])
