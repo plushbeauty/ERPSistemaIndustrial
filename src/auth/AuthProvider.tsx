@@ -53,7 +53,7 @@ export function AuthProvider({children}:{children:ReactNode}){
   })
   return()=>{mounted=false;listener.subscription.unsubscribe()}
  },[hydrate])
- async function signOut(){try{await supabase.auth.signOut()}finally{requestId.current+=1;hydratedUserId.current=null;hydratedTenant.current=null;setProfile(null);setSession(null);setLoading(false)}}
+ async function signOut(){try{await supabase.auth.signOut()}finally{requestId.current+=1;hydratedUserId.current=null;setProfile(null);setSession(null);setLoading(false)}}
  return <AuthContext.Provider value={{session,user:session?.user??null,profile,loading,signOut}}>{children}</AuthContext.Provider>
 }
 export function useAuth(){const value=useContext(AuthContext);if(!value)throw new Error('useAuth deve ser usado dentro de AuthProvider');return value}
