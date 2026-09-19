@@ -1,1 +1,37 @@
-.blog-page{background:#f4f7f7}.blog-hero{position:relative!important;overflow:hidden!important;background:linear-gradient(90deg,rgba(4,20,26,.95) 0%,rgba(7,31,39,.86) 46%,rgba(7,31,39,.35) 100%),url('https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1800&q=84') center/cover no-repeat!important;min-height:390px!important;display:flex!important;align-items:center!important}.blog-hero:after{content:'';position:absolute;inset:auto 0 0;height:90px;background:linear-gradient(transparent,rgba(4,20,26,.35));pointer-events:none}.blog-hero-inner{position:relative!important;z-index:1!important}.blog-hero h1{max-width:820px!important;font-size:clamp(38px,5vw,68px)!important;line-height:1.02!important;letter-spacing:-.045em!important;text-wrap:balance}.blog-hero p{max-width:760px!important;color:#d7e3e5!important;font-size:17px!important;line-height:1.75!important}.blog-card{position:relative!important;overflow:hidden!important;background:#fff!important;border:1px solid #dce5e5!important;box-shadow:0 16px 42px rgba(12,42,49,.08)!important;transition:transform .2s ease,box-shadow .2s ease!important}.blog-card:before{content:'';display:block;height:108px;background:linear-gradient(135deg,#0b3943,#d1aa63);opacity:.9}.blog-card:hover{transform:translateY(-4px)!important;box-shadow:0 24px 55px rgba(12,42,49,.14)!important}.blog-card>svg{position:absolute!important;top:30px!important;left:20px!important;color:#fff!important;z-index:1!important}.blog-card .blog-tag{margin-top:18px!important}.blog-modal-card{border:1px solid #d9e2e3!important;box-shadow:0 30px 90px rgba(4,20,26,.28)!important}@media(max-width:700px){.blog-hero{min-height:340px!important}.blog-hero p{font-size:15px!important}.blog-card:before{height:92px!important}}
+/* Blog 2026 — proporção compacta e padrão SaaS corporativo */
+.blog-page{min-height:100vh;background:#f4f7f7;color:#17343b}
+.blog-nav{height:72px;display:flex;align-items:center;justify-content:space-between;width:min(1280px,calc(100% - 32px));margin:0 auto;padding:0 4px}
+.blog-brand img{width:158px;height:auto;display:block}
+.blog-nav-links{display:flex;align-items:center;gap:22px}
+.blog-nav-links a{font-size:12px;font-weight:800;color:#36545b;text-decoration:none}
+.blog-nav-links a:hover{color:#087c7e}
+.blog-hero{position:relative;overflow:hidden;min-height:300px;display:flex;align-items:center;background:linear-gradient(90deg,rgba(4,20,26,.96),rgba(7,31,39,.82) 55%,rgba(7,31,39,.48)),url('https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1500&q=76') center/cover no-repeat}
+.blog-hero-inner{position:relative;z-index:1;width:min(1280px,calc(100% - 32px));margin:0 auto;padding:42px 0}
+.blog-kicker{font-size:10px;font-weight:900;letter-spacing:.2em;color:#79d7ca}
+.blog-hero h1{max-width:680px;margin:10px 0 12px;font-size:clamp(34px,4.3vw,52px);line-height:1.04;letter-spacing:-.045em;color:#fff}
+.blog-hero p{max-width:680px;margin:0;color:#d7e3e5;font-size:15px;line-height:1.65}
+.blog-container{width:min(1280px,calc(100% - 32px));margin:0 auto;padding:26px 0 64px}
+.blog-categories{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.blog-categories button{height:36px;padding:0 13px;border:1px solid #d5e1e2;border-radius:10px;background:#fff;color:#466169;font-size:11px;font-weight:900;cursor:pointer}
+.blog-categories button:hover{border-color:#0d9995;color:#087477}
+.blog-categories button.active{background:#0d7f82;border-color:#0d7f82;color:#fff}
+.blog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.blog-card{position:relative;min-height:270px;display:flex;flex-direction:column;overflow:hidden;background:#fff;border:1px solid #dce5e5;border-radius:18px;box-shadow:0 10px 30px rgba(12,42,49,.06);transition:transform .18s ease,box-shadow .18s ease}
+.blog-card:before{content:'';display:block;height:78px;flex:none;background:linear-gradient(135deg,#0b3943,#c9a55e)}
+.blog-card>svg{position:absolute;top:23px;left:18px;color:#fff;z-index:1}
+.blog-card .blog-tag{margin:14px 18px 0}
+.blog-tag{display:inline-flex;width:max-content;padding:5px 8px;border-radius:7px;background:#edf7f6;color:#087477;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.blog-card h3{margin:9px 18px 0;font-size:16px;line-height:1.25;letter-spacing:-.02em;color:#17343b}
+.blog-card p{margin:8px 18px 0;color:#667c82;font-size:12px;line-height:1.55}
+.blog-card .read{margin:auto 18px 17px;align-self:flex-start}
+.read{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:0 11px;border:1px solid #d4e1e2;border-radius:9px;background:#fff;color:#1d555d;font-size:11px;font-weight:900;cursor:pointer}
+.read:hover{border-color:#0d9995;background:#f4fbfa;color:#087477}
+.blog-modal{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:18px;background:rgba(3,15,20,.62);backdrop-filter:blur(5px)}
+.blog-modal-card{position:relative;width:min(720px,calc(100vw - 36px));max-height:calc(100vh - 36px);overflow:auto;padding:30px;border:1px solid #d9e2e3;border-radius:20px;background:#fff;box-shadow:0 30px 90px rgba(4,20,26,.28)}
+.blog-modal-close{position:absolute;top:16px;right:16px;width:34px;height:34px;display:grid;place-items:center;border:1px solid #d9e2e3;border-radius:9px;background:#fff;color:#48636a;cursor:pointer}
+.blog-modal-card h2{max-width:600px;margin:14px 0 8px;font-size:30px;line-height:1.1;letter-spacing:-.035em;color:#17343b}
+.blog-modal-excerpt{color:#61767d;font-size:14px;line-height:1.6}
+.blog-modal-content{margin:20px 0}
+.blog-modal-content p{margin:0 0 14px;color:#415960;font-size:14px;line-height:1.75}
+@media(max-width:900px){.blog-nav{height:64px}.blog-nav-links{gap:12px}.blog-nav-links a:nth-child(-n+3){display:none}.blog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.blog-nav{width:calc(100% - 24px)}.blog-brand img{width:140px}.blog-nav-links a{font-size:11px}.blog-hero{min-height:300px}.blog-hero-inner,.blog-container{width:calc(100% - 24px)}.blog-grid{grid-template-columns:1fr}.blog-card{min-height:250px}.blog-modal-card{padding:24px}.blog-modal-card h2{font-size:24px}}
