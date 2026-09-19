@@ -1,160 +1,81 @@
-export type Empresa = {
-  id: string;
-  razao_social: string;
-  nome_fantasia: string;
-  ativo: boolean;
-  plano_status: string;
-};
+name: Inspeção Profunda - Auth + TypeScript + Build
 
-export type AuthProfile = {
-  id: string;
-  auth_user_id: string;
-  email: string | null;
-  nome: string;
-  perfil: 'MASTER' | 'SUPER_ADMIN' | 'ADMIN' | 'USER';
-  nivel_admin: number;
-  ativo: boolean;
-  empresa_id: string | null;
-  empresa: Empresa | null;
-  isMaster: boolean;
-};
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
 
-type DbUser = {
-  id: string;
-  auth_user_id: string;
-  email: string | null;
-  nome: string;
-  perfil: 'MASTER' | 'SUPER_ADMIN' | 'ADMIN' | 'USER';
-  nivel_admin: number;
-  ativo: boolean;
-  empresa_id: string | null;
-  is_master: boolean;
-  setor_id?: string | null;
-};
+jobs:
+  auditoria:
+    name: Auditoria completa
+    runs-on: ubuntu-latest
 
-type DbEmpresa = {
-  id: string;
-  razao_social: string;
-  nome_fantasia: string;
-  ativo: boolean;
-  plano_status: string;
-};
+    steps:
+      - name: Clonar código
+        uses: actions/checkout@v4
 
-/**
- * Valida e transforma o registro do banco no contrato único
- * utilizado pelo frontend.
- *
- * IMPORTANTE:
- * - MASTER é universal e não possui empresa.
- * - Usuário normal obrigatoriamente pertence a uma empresa ativa.
- * - Nenhum dado de user_metadata/session.user é utilizado para autorização.
- */
-export function validateAndNarrowProfile(
-  dbUser: DbUser | null | undefined,
-  dbEmpresa: DbEmpresa | null | undefined
-): AuthProfile {
-  if (!dbUser) {
-    throw new Error(
-      'Contrato de autenticação violado: usuário ausente.'
-    );
-  }
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
 
-  if (!dbUser.ativo) {
-    throw new Error(
-      'Acesso negado: perfil de usuário inativo.'
-    );
-  }
+      - name: Instalar dependências
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --legacy-peer-deps
+          else
+            npm install --legacy-peer-deps
+          fi
 
-  /*
-   * MASTER UNIVERSAL
-   *
-   * Todos os requisitos precisam ser verdadeiros.
-   * Não basta nivel_admin=100.
-   * Não basta perfil=MASTER.
-   * Não basta is_master=true.
-   */
-  const isMasterUser =
-    dbUser.is_master === true &&
-    dbUser.perfil === 'MASTER' &&
-    dbUser.nivel_admin === 100 &&
-    dbUser.empresa_id === null &&
-    (dbUser.setor_id === null || dbUser.setor_id === undefined);
+      - name: Verificar arquivos essenciais
+        shell: bash
+        run: |
+          set -e
+          test -d src || { echo "::error::Pasta src não encontrada."; exit 1; }
+          test -f package.json || { echo "::error::package.json não encontrado."; exit 1; }
 
-  if (isMasterUser) {
-    return {
-      id: dbUser.id,
-      auth_user_id: dbUser.auth_user_id,
-      email: dbUser.email,
-      nome: dbUser.nome,
-      perfil: 'MASTER',
-      nivel_admin: 100,
-      ativo: true,
-      empresa_id: null,
-      empresa: null,
-      isMaster: true,
-    };
-  }
+      - name: Auditoria de autenticação
+        shell: bash
+        run: |
+          set -e
+          FAILED=0
 
-  /*
-   * USUÁRIO NORMAL
-   *
-   * Nunca pode entrar no estado Master por possuir
-   * nivel_admin elevado ou perfil semelhante.
-   */
-  if (dbUser.is_master === true) {
-    throw new Error(
-      'Acesso negado: registro marcado como Master possui identidade inconsistente.'
-    );
-  }
+          check_forbidden() {
+            PATTERN="$1"
+            DESCRIPTION="$2"
 
-  if (dbUser.perfil === 'MASTER') {
-    throw new Error(
-      'Acesso negado: perfil MASTER inconsistente.'
-    );
-  }
+            if grep -RInE --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=.next "$PATTERN" src 2>/dev/null; then
+              echo "::error::Encontrado padrão proibido: $DESCRIPTION"
+              FAILED=1
+            fi
+          }
 
-  if (dbUser.nivel_admin === 100) {
-    throw new Error(
-      'Acesso negado: nível administrativo de Master inconsistente.'
-    );
-  }
+          check_forbidden 'erp-login' 'erp-login'
+          check_forbidden 'plush-login' 'plush-login'
+          check_forbidden 'signup-client-v4' 'signup-client-v4'
+          check_forbidden 'shadowEmail' 'shadowEmail'
+          check_forbidden 'setSession[[:space:]]*\(' 'setSession()'
+          check_forbidden 'session\.user\.(perfil|empresa_id|is_master)' 'autorização diretamente em session.user'
+          check_forbidden 'localStorage[^[:cntrl:]]*(password|senha)' 'senha em localStorage'
+          check_forbidden 'sessionStorage[^[:cntrl:]]*(password|senha)' 'senha em sessionStorage'
 
-  if (!dbUser.empresa_id) {
-    throw new Error(
-      'Acesso negado: usuário normal sem empresa vinculada.'
-    );
-  }
+          if [ "$FAILED" -ne 0 ]; then
+            echo "::error::AUDITORIA DE AUTENTICAÇÃO FALHOU."
+            exit 1
+          fi
 
-  if (!dbEmpresa) {
-    throw new Error(
-      'Acesso negado: empresa vinculada não encontrada.'
-    );
-  }
+      - name: Verificar autenticação nativa
+        shell: bash
+        run: |
+          set -e
+          grep -RIn --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist "signInWithPassword" src >/dev/null             || { echo "::error::signInWithPassword não encontrado."; exit 1; }
+          grep -RIn --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist "resetPasswordForEmail" src >/dev/null             || { echo "::error::resetPasswordForEmail não encontrado."; exit 1; }
 
-  if (!dbEmpresa.ativo) {
-    throw new Error(
-      'Acesso negado: a empresa associada a este acesso está inativa.'
-    );
-  }
+      - name: TypeScript
+        run: npx tsc --noEmit
 
-  const empresa: Empresa = {
-    id: dbEmpresa.id,
-    razao_social: dbEmpresa.razao_social,
-    nome_fantasia: dbEmpresa.nome_fantasia,
-    ativo: dbEmpresa.ativo,
-    plano_status: dbEmpresa.plano_status,
-  };
-
-  return {
-    id: dbUser.id,
-    auth_user_id: dbUser.auth_user_id,
-    email: dbUser.email,
-    nome: dbUser.nome,
-    perfil: dbUser.perfil,
-    nivel_admin: dbUser.nivel_admin,
-    ativo: true,
-    empresa_id: dbUser.empresa_id,
-    empresa,
-    isMaster: false,
-  };
-}
+      - name: Build de produção
+        run: npm run build
