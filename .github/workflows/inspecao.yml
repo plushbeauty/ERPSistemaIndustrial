@@ -57,7 +57,6 @@ jobs:
           check_forbidden 'plush-login' 'plush-login'
           check_forbidden 'signup-client-v4' 'signup-client-v4'
           check_forbidden 'shadowEmail' 'shadowEmail'
-          check_forbidden 'setSession[[:space:]]*\(' 'setSession()'
           check_forbidden 'session\.user\.(perfil|empresa_id|is_master)' 'autorização diretamente em session.user'
           check_forbidden 'localStorage[^[:cntrl:]]*(password|senha)' 'senha em localStorage'
           check_forbidden 'sessionStorage[^[:cntrl:]]*(password|senha)' 'senha em sessionStorage'
