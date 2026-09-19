@@ -1,0 +1,3 @@
+-- Reconciliation artifact for the production migration 20260918142311_odonto_radiologia_data_v1.
+-- Already recorded as applied in the shared production Supabase project.
+-- Intentionally no-op: do not replay or destructively reconstruct production DDL.
