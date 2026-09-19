@@ -4,6 +4,8 @@ import { ArrowRight, Building2, Eye, EyeOff, KeyRound, LogIn, ShieldCheck, UserP
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 import './styles/industrial-login.css'
 
+// Production marker: native Supabase Auth login.
+
 type Props = {
   returnTo?: string
   masterMode?: boolean
