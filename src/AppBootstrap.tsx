@@ -74,10 +74,21 @@ function AccessGate({ children }: { children: ReactNode }) {
           .select('id,auth_user_id,empresa_id,ativo,is_master,nivel_admin,role,deleted_at')
           .eq('auth_user_id', user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
         if (profileError) throw profileError
-        const master = Boolean(profile?.is_master) || Number(profile?.nivel_admin ?? 0) >= 9 || ['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(String(profile?.role ?? '').trim().toUpperCase())
-        if (!profile?.auth_user_id || profile.auth_user_id !== user.id || (!master && !profile.empresa_id)) { if (alive) setState('denied'); return }
+        let master = false
+        let empresaId = profile?.empresa_id ?? null
+        if (profile?.auth_user_id === user.id) {
+          master = Boolean(profile?.is_master) || Number(profile?.nivel_admin ?? 0) >= 9 || ['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(String(profile?.role ?? '').trim().toUpperCase())
+        } else {
+          const { data: global, error: globalError } = await supabase.from('usuarios').select('id,auth_user_id,ativo,nivel_admin,perfil,empresa_id').eq('auth_user_id', user.id).eq('ativo', true).maybeSingle()
+          if (globalError) throw globalError
+          const globalRole = String(global?.perfil ?? '').trim().toUpperCase()
+          master = Boolean(global?.auth_user_id) && (Number(global?.nivel_admin ?? 0) >= 80 || ['SUPER_ADMIN','MASTER','MASTER_ADMIN'].includes(globalRole))
+          empresaId = global?.empresa_id ?? null
+        }
+        if (!profile?.auth_user_id && !master) { if (alive) setState('denied'); return }
+        if (!master && !empresaId) { if (alive) setState('denied'); return }
         if (!master) {
-          const { data: empresa, error: empresaError } = await supabase.from('erp_empresas').select('id,ativo').eq('id', profile.empresa_id).eq('ativo', true).maybeSingle()
+          const { data: empresa, error: empresaError } = await supabase.from('erp_empresas').select('id,ativo').eq('id', empresaId).eq('ativo', true).maybeSingle()
           if (empresaError) throw empresaError
           if (!empresa?.ativo) { if (alive) setState('denied'); return }
         }
