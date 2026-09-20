@@ -1,5 +1,5 @@
 import {useMemo,useState} from 'react'
-import {ArrowLeft,BarChart3,Building2,ClipboardCheck,Factory,FileText,Gauge,GraduationCap,LockKeyhole,Package,Search,ShieldCheck,Truck,TriangleAlert,Users,UsersRound,Warehouse} from 'lucide-react'
+import {ArrowLeft,Activity,BarChart3,Boxes,Building2,CalendarDays,ClipboardCheck,Factory,FileText,Gauge,GraduationCap,LockKeyhole,Package,Search,ShieldCheck,ShoppingCart,Truck,TriangleAlert,Users,UsersRound,WalletCards,Warehouse,Wrench} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 type Icon = LucideIcon
 type Group={id:string;title:string;icon:Icon;detail:string}
