@@ -8,8 +8,8 @@ import { useMemo, useState } from 'react'
 import { CheckCircle2, Cog, Gauge, Hammer, Layers3, LockKeyhole, Search, ShieldCheck, Wrench } from 'lucide-react'
 
 type Status = 'Disponível' | 'Em produção' | 'Em manutenção'
-type Mold = { id:string; codigo:string; descricao:string; material:string; cavidades:number; status:Status; proxima:string }
-const molds:Mold[]=[
+type Mold = { id: string; codigo: string; descricao: string; material: string; cavidades: number; status: Status; proxima: string }
+const molds: Mold[] = [
  {id:'MOL-001',codigo:'INJ-PP-08C',descricao:'Carcaça técnica',material:'Aço P20',cavidades:8,status:'Disponível',proxima:'2026-10-12'},
  {id:'MOL-002',codigo:'PRS-PA-04C',descricao:'Componente estrutural',material:'AISI H13',cavidades:4,status:'Em produção',proxima:'2026-09-28'},
  {id:'MOL-003',codigo:'INJ-ABS-16C',descricao:'Acabamento externo',material:'AISI 420',cavidades:16,status:'Em manutenção',proxima:'2026-09-24'},
@@ -17,7 +17,7 @@ const molds:Mold[]=[
 ]
 export default function MoldesInjecao(){
  const [q,setQ]=useState(''); const [status,setStatus]=useState<'Todos'|Status>('Todos')
- const rows=useMemo(()=>molds.filter(m=>(status==='Todos'||m.status===status)&&(!q||Object.values(m).join(' ').toLowerCase().includes(q.toLowerCase()))),[q,status])
+ const rows = useMemo(()=>molds.filter((m) => (status === 'Todos' || m.status === status) && (!q || Object.values(m).join(' ').toLowerCase().includes(q.toLowerCase()))),[q,status])
  return <main style={{minHeight:'100vh',background:'#071316',color:'#fff',fontFamily:'Inter,system-ui,sans-serif',padding:24,boxSizing:'border-box'}}><section style={{maxWidth:1500,margin:'0 auto'}}>
   <header style={{display:'flex',gap:16,alignItems:'center',flexWrap:'wrap',padding:'18px 0',borderBottom:'1px solid rgba(255,255,255,.1)'}}><span style={{display:'grid',placeItems:'center',width:52,height:52,borderRadius:16,background:'#d4af37',color:'#111'}}><Hammer size={25}/></span><div style={{flex:1,minWidth:260}}><small style={{letterSpacing:'.18em',fontWeight:900,color:'#8dd9cf'}}>ENGENHARIA · MOLDES E INJEÇÃO</small><h1 style={{margin:'5px 0',fontSize:'clamp(26px,4vw,42px)'}}>Moldes e Injeção Plástica</h1><p style={{margin:0,color:'#94a3b8'}}>Usinagem, ferramentaria, cavidades e manutenção preventiva.</p></div><span style={{display:'inline-flex',alignItems:'center',gap:7,padding:'8px 12px',borderRadius:999,border:'1px solid rgba(212,175,55,.3)',color:'#f5df8b',fontSize:11,fontWeight:900}}><LockKeyhole size={14}/> OPERACIONAL</span></header>
   <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:12,marginTop:20}}><article style={{padding:18,borderRadius:18,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.04)'}}><Gauge size={19}/><div style={{color:'#94a3b8',fontSize:12,marginTop:12}}>Moldes cadastrados</div><strong style={{display:'block',fontSize:28}}>{molds.length}</strong></article><article style={{padding:18,borderRadius:18,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.04)'}}><Layers3 size={19}/><div style={{color:'#94a3b8',fontSize:12,marginTop:12}}>Cavidades totais</div><strong style={{display:'block',fontSize:28}}>{molds.reduce((a,m)=>a+m.cavidades,0)}</strong></article><article style={{padding:18,borderRadius:18,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.04)'}}><Wrench size={19}/><div style={{color:'#94a3b8',fontSize:12,marginTop:12}}>Em manutenção</div><strong style={{display:'block',fontSize:28}}>{molds.filter(m=>m.status==='Em manutenção').length}</strong></article><article style={{padding:18,borderRadius:18,border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.04)'}}><CheckCircle2 size={19}/><div style={{color:'#94a3b8',fontSize:12,marginTop:12}}>Disponíveis</div><strong style={{display:'block',fontSize:28}}>{molds.filter(m=>m.status==='Disponível').length}</strong></article></div>
