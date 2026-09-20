@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { Activity, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, FileText, LayoutGrid, Package, Search, Settings, ShoppingCart, Store, Sun, Moon, Truck, Users, Wrench, X } from 'lucide-react'
+import { Activity, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Sun, Moon, Truck, Users, Wrench, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from './lib/supabaseClient'
 
@@ -141,7 +141,7 @@ export default function AppIndustrialV7() {
       <div className="v7-top-actions">
         <span className="v7-top-date">{new Date().toLocaleDateString('pt-BR')}</span>
         <button className="v7-top-lang" type="button" onClick={() => setDark(v => v)} aria-label="Idioma atual">PT</button>
-        <button className="v7-top-tablet" type="button" onClick={() => setLauncher(true)}><LayoutGrid size={17}/> TABLET</button>
+        <button className="v7-top-tablet" type="button" onClick={() => { const key = module?.name ? module.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : "dashboard"; location.href = `/demo/erp-industrial?module=${encodeURIComponent(key)}` }}><MonitorPlay size={17}/> DEMO</button><button className="v7-top-tablet" type="button" onClick={() => setLauncher(true)}><LayoutGrid size={17}/> TABLET</button>
         <button className="v7-top-user" type="button" onClick={() => setLauncher(true)}><Users size={16}/><span>{profile.nome}</span></button>
         <button className="v7-top-exit" type="button" onClick={() => void supabase.auth.signOut().then(() => { location.href = '/login' })}>Sair</button>
       </div>
