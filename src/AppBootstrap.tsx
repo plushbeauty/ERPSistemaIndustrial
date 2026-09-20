@@ -11,7 +11,7 @@ import './styles/visual-showcase-2026.css'
 
 const PublicIndustrialHome = lazy(() => import('./PublicIndustrialHome'))
 const AppEntryV2 = lazy(() => import('./AppEntryV2'))
-const publicPaths = new Set(['/','/home','/login','/cadastro-empresa','/contato','/blog','/configuracao-adm-master','/cadastro-master','/planos','/ativar-acesso'])
+const publicPaths = new Set(['/','/home','/login','/cadastro-empresa','/contato','/blog','/configuracao-adm-master','/cadastro-master','/planos','/ativar-acesso','/demo'])
 
 class BootstrapBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null }
@@ -114,6 +114,6 @@ export default function AppBootstrap() {
   if (path === '/login') return <BootstrapBoundary><LoginBootstrap /></BootstrapBoundary>
   if (path === '/' || path === '/home') return <BootstrapBoundary><Suspense fallback={<Loading label="Abrindo SGQ ERP Industrial…" />}><PublicIndustrialHome /></Suspense></BootstrapBoundary>
   const app = <BootstrapBoundary><Suspense fallback={<Loading />}><AppEntryV2 /></Suspense></BootstrapBoundary>
-  const isPublic = publicPaths.has(path) || path.startsWith('/modulos/')
+  const isPublic = publicPaths.has(path) || path.startsWith('/demo/') || path.startsWith('/modulos/')
   return isPublic ? app : <AccessGate>{app}</AccessGate>
 }
