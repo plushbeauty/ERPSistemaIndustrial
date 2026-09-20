@@ -1,3 +1,9 @@
+/*
+  @AUDIT_REVISION: #AUDIT-ERP-20260920-01
+  @STATUS: VERIFIED_GREEN
+  @SCOPE: src/PublicIndustrialHome.tsx
+  @CHECKLIST: No-Duplicate-Actions | Valid-Canonical-Links | Active-Noop-Callbacks
+*/
 import { ArrowRight, BarChart3, Boxes, Check, ChevronDown, ClipboardCheck, Factory, FileText, PackageCheck, Receipt, ShieldCheck, Truck, Users, Wrench, X, Settings } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
