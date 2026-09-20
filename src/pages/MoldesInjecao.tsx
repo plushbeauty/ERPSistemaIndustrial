@@ -1,6 +1,6 @@
 /*
   @INDUSTRIAL_AUDIT_REVISION: #ERP-IND-HYBRID-02026
-  @STATUS: VERIFIED_GREEN
+  @STATUS: PENDING_VALIDATION
   @DEVICE_COMPATIBILITY: Desktop | Laptop | Mobile_Touch
   @CHECKLIST: No-Broken-SVGs | Pure-Memory-Data | Local-Storage-Offline
 */
