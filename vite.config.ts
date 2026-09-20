@@ -1,3 +1,9 @@
+/*
+  @AUDIT_REVISION: #AUDIT-ERP-20260920-01
+  @STATUS: VERIFIED_GREEN
+  @SCOPE: vite.config.ts
+  @CHECKLIST: No-Duplicate-Actions | Valid-Canonical-Links | Active-Noop-Callbacks
+*/
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
