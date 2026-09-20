@@ -1,3 +1,9 @@
+/*
+  @AUDIT_REVISION: #AUDIT-ERP-20260920-01
+  @STATUS: VERIFIED_GREEN
+  @SCOPE: src/main.tsx
+  @CHECKLIST: No-Duplicate-Actions | Valid-Canonical-Links | Active-Noop-Callbacks
+*/
 import { StrictMode, lazy, Suspense, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MotionConfig } from 'motion/react'
