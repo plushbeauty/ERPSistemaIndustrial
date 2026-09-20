@@ -1,16 +1,17 @@
-name: Build Validation
+name: Build ERP Industrial
 on:
   push:
     branches: [main]
   workflow_dispatch:
 jobs:
-  validate:
+  quality:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
+          node-version: 22
+      - run: npm install --legacy-peer-deps --no-audit --no-fund
       - run: npm run type-check
+      - run: npm run audit:interactions
+      - run: npm run build
