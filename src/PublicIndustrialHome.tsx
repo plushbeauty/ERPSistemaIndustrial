@@ -1,6 +1,6 @@
 /*
   @AUDIT_REVISION: #AUDIT-ERP-20260920-01
-  @STATUS: VERIFIED_GREEN
+  @STATUS: PENDING_VALIDATION
   @SCOPE: src/PublicIndustrialHome.tsx
   @CHECKLIST: No-Duplicate-Actions | Valid-Canonical-Links | Active-Noop-Callbacks
 */
