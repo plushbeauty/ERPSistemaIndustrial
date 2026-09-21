@@ -1,0 +1,24 @@
+/*
+📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
+- Arquivo: supabase/migrations/20260921170000_erp_engineering_moldes_core_v1.sql
+- Status Atual: Revisão 1
+- Total de Linhas Gerado: 44
+- Assinatura de Entrada: Não se aplica a SQL; migration DDL
+- Regra de Negócio Senior/Nomus Incorporada: modelo/BOM, roteiro, ferramental e isolamento por empresa.
+*/
+CREATE TABLE IF NOT EXISTS public.erp_fichas_tecnicas (id uuid PRIMARY KEY DEFAULT gen_random_uuid(),empresa_id uuid NOT NULL REFERENCES public.erp_empresas(id),produto_id uuid NOT NULL REFERENCES public.erp_produtos(id),versao integer NOT NULL DEFAULT 1 CHECK (versao>0),rendimento numeric(18,6) NOT NULL DEFAULT 1 CHECK (rendimento>0),unidade_rendimento text NOT NULL DEFAULT 'UN',observacoes text,ativa boolean NOT NULL DEFAULT true,created_at timestamptz NOT NULL DEFAULT now(),updated_at timestamptz NOT NULL DEFAULT now(),UNIQUE(empresa_id,produto_id,versao));
+CREATE TABLE IF NOT EXISTS public.erp_ficha_itens (id uuid PRIMARY KEY DEFAULT gen_random_uuid(),empresa_id uuid NOT NULL REFERENCES public.erp_empresas(id),ficha_id uuid NOT NULL REFERENCES public.erp_fichas_tecnicas(id) ON DELETE CASCADE,componente_id uuid NOT NULL REFERENCES public.erp_produtos(id),quantidade numeric(18,6) NOT NULL CHECK(quantidade>0),perda_percentual numeric(9,4) NOT NULL DEFAULT 0 CHECK(perda_percentual>=0),lote_obrigatorio boolean NOT NULL DEFAULT false,tipo_item text NOT NULL DEFAULT 'COMPRADO' CHECK(tipo_item IN ('COMPRADO','FABRICADO')),sequencia integer NOT NULL DEFAULT 10,created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS public.erp_ficha_operacoes (id uuid PRIMARY KEY DEFAULT gen_random_uuid(),empresa_id uuid NOT NULL REFERENCES public.erp_empresas(id),ficha_id uuid NOT NULL REFERENCES public.erp_fichas_tecnicas(id) ON DELETE CASCADE,sequencia integer NOT NULL,operacao text NOT NULL,maquina_id uuid REFERENCES public.erp_maquinas(id),molde_id uuid,setup_min numeric(12,2) NOT NULL DEFAULT 0 CHECK(setup_min>=0),ciclo_seg numeric(12,3) NOT NULL DEFAULT 0 CHECK(ciclo_seg>=0),instrucoes text,created_at timestamptz NOT NULL DEFAULT now(),UNIQUE(empresa_id,ficha_id,sequencia));
+CREATE TABLE IF NOT EXISTS public.erp_moldes (id uuid PRIMARY KEY DEFAULT gen_random_uuid(),empresa_id uuid NOT NULL REFERENCES public.erp_empresas(id),codigo text NOT NULL,nome text NOT NULL,tipo text NOT NULL DEFAULT 'INJECAO',status text NOT NULL DEFAULT 'DISPONIVEL',produto_id uuid REFERENCES public.erp_produtos(id),data_fabricacao date,numero_cavidades integer NOT NULL DEFAULT 1 CHECK(numero_cavidades>0),cavidades integer NOT NULL DEFAULT 1 CHECK(cavidades>0),cavidades_ativas integer NOT NULL DEFAULT 1 CHECK(cavidades_ativas>=0),ciclos_atuais bigint NOT NULL DEFAULT 0 CHECK(ciclos_atuais>=0),limite_ciclos bigint NOT NULL DEFAULT 0 CHECK(limite_ciclos>=0),ativo boolean NOT NULL DEFAULT true,created_at timestamptz NOT NULL DEFAULT now(),updated_at timestamptz NOT NULL DEFAULT now(),UNIQUE(empresa_id,codigo));
+ALTER TABLE public.erp_fichas_tecnicas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.erp_ficha_itens ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.erp_ficha_operacoes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.erp_moldes ENABLE ROW LEVEL SECURITY;
+CREATE INDEX IF NOT EXISTS idx_erp_fichas_empresa_produto ON public.erp_fichas_tecnicas(empresa_id,produto_id,ativa,versao DESC);
+CREATE INDEX IF NOT EXISTS idx_erp_ficha_itens_empresa_ficha ON public.erp_ficha_itens(empresa_id,ficha_id,sequencia);
+CREATE INDEX IF NOT EXISTS idx_erp_ficha_operacoes_empresa_ficha ON public.erp_ficha_operacoes(empresa_id,ficha_id,sequencia);
+CREATE INDEX IF NOT EXISTS idx_erp_moldes_empresa_produto ON public.erp_moldes(empresa_id,produto_id,ativo);
+DO $$ BEGIN CREATE POLICY erp_fichas_tenant ON public.erp_fichas_tecnicas FOR ALL TO authenticated USING(empresa_id=public.erp_current_empresa_id() OR public.erp_is_master()) WITH CHECK(empresa_id=public.erp_current_empresa_id() OR public.erp_is_master()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY erp_ficha_itens_tenant ON public.erp_ficha_itens FOR ALL TO authenticated USING(empresa_id=public.erp_current_empresa_id() OR public.erp_is_master()) WITH CHECK(empresa_id=public.erp_current_empresa_id() OR public.erp_is_master()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY erp_ficha_operacoes_tenant ON public.erp_ficha_operacoes FOR ALL TO authenticated USING(empresa_id=public.erp_current_empresa_id() OR public.erp_is_master()) WITH CHECK(empresa_id=public.erp_current_empresa_id() OR public.erp_is_master()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE POLICY erp_moldes_tenant ON public.erp_moldes FOR ALL TO authenticated USING(empresa_id=public.erp_current_empresa_id() OR public.erp_is_master()) WITH CHECK(empresa_id=public.erp_current_empresa_id() OR public.erp_is_master()); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
