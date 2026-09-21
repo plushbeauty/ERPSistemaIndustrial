@@ -1,3 +1,11 @@
+/*
+📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
+- Arquivo: src/pages/SolicitacaoCompra.tsx
+- Status Atual: Revisão 3 (Compras com Fornecedor Qualificado)
+- Total de Linhas Gerado: 95
+- Assinatura de Entrada (Primeiros 3 Imports): import { FormEvent, useEffect, useState } from 'react' | import { ArrowLeft, CheckCircle2, Mail, Printer, ShoppingCart } from 'lucide-react' | import { supabase } from '../lib/supabaseClient'
+- Regra de Negócio Incorporada: Solicitação de compra grava fornecedor sugerido e ordena fornecedores ISO 9001 à frente.
+*/
 import { FormEvent, useEffect, useState } from 'react'
 import { ArrowLeft, CheckCircle2, Mail, Printer, ShoppingCart } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
