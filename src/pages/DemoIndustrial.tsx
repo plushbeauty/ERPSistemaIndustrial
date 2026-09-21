@@ -60,6 +60,7 @@ export default function DemoIndustrial() {
  const initialView: View = requested === 'injecao' || requested === 'prensados' || requested === 'pcp' || requested === 'bloco-k' ? requested : 'dashboard'
  const [view,setView] = useState<View>(initialView)
  const [tabletMode,setTabletMode] = useState(false)
+ const [demoMold,setDemoMold] = useState<Mold|null>(null)
  const [detail,setDetail] = useState<Detail|null>(null)
  const [brightness,setBrightness] = useState(100)
  const [largeText,setLargeText] = useState(false)
