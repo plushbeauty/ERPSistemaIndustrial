@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { Activity, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Sun, Moon, Truck, Users, Wrench, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from './lib/supabaseClient'
+import IndustrialModuleWorkspace from './components/IndustrialModuleWorkspace'
 
 type Field = { key: string; label: string; type?: 'text' | 'number' | 'date' | 'email'; required?: boolean }
 type Module = { name: string; title: string; description: string; icon: LucideIcon; table?: string; fields?: Field[] }
@@ -129,8 +130,9 @@ export default function AppIndustrialV7() {
   if (loading) return <div className="loading-screen">Carregando SGQ ERP…</div>
   if (!profile) return <div className="error-screen"><div className="error-screen-card"><strong>Perfil ERP não encontrado.</strong><p>A sessão autenticada não possui um usuário ERP ativo vinculado à empresa.</p><button className="primary" type="button" onClick={() => { void supabase.auth.signOut(); location.replace('/login') }}>Voltar ao login</button></div></div>
   const choose = (s: Segment, m: string) => { setSegment(s.name); setActive(m); setLauncher(false) }
+  const openModule = (m: Module) => { setActive(m.name); setLauncher(false) }
 
-  return <motion.div className={`v7-shell v7-shell-no-sidebar${dark ? " theme-dark" : ""}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
+  return <motion.div className={`v7-shell v7-shell-with-sidebar${dark ? " theme-dark" : ""}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
     <header className="v7-topbar">
       <button className="v7-top-brand" type="button" onClick={() => setLauncher(true)} aria-label="Abrir Tablet">
         <img src="/logo-industrial.svg" alt="SGQ ERP" />
@@ -146,13 +148,20 @@ export default function AppIndustrialV7() {
         <button className="v7-top-exit" type="button" onClick={() => void supabase.auth.signOut().then(() => { location.href = '/login' })}>Sair</button>
       </div>
     </header>
+    <aside className="v7-sidebar-rail">
+      <div className="v7-rail-brand"><img src="/logo-industrial.svg" alt="SGQ ERP"/><div><b>SGQ ERP</b><small>Industrial</small></div></div>
+      <div className="v7-rail-context"><span>SETOR ATIVO</span><b>{segment}</b></div>
+      <nav>{current.modules.map(m => <button key={m.name} className={active===m.name?'active':''} onClick={() => openModule(m)}><m.icon size={16}/><span>{m.title}</span></button>)}</nav>
+      <button className="v7-rail-tablet" onClick={() => setLauncher(true)}><LayoutGrid size={16}/> Tablet de módulos</button>
+    </aside>
     <main className="v7-main v7-main-full">
       <section className="v7-header v7-page-header">
         <div><span>SGQ ERP • {segment.toUpperCase()}</span><h1>{active === 'Dashboard' ? `Dashboard — ${segment}` : module?.title ?? active}</h1><p>{active === 'Dashboard' ? current.description : module?.description}</p></div>
         <div className="v7-user"><b>{profile.nome}</b><small>Empresa isolada por tenant</small></div>
       </section>
-      <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{active === 'Dashboard' ? <Dashboard segment={current} setActive={(value) => { setActive(value); setLauncher(false) }}/> : active === 'Configurações' ? <Feature title="Configurações" description="Parâmetros, usuários, permissões e módulos são separados por empresa e segmento." icon={Settings}/> : module?.table ? <Crud module={module} profile={profile}/> : <Feature title={module?.title ?? active} description={module?.description ?? 'Módulo preparado para este segmento.'} icon={module?.icon ?? LayoutGrid}/>}</motion.div></AnimatePresence></section>
+      <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{active === 'Dashboard' ? <Dashboard segment={current} setActive={(value) => { setActive(value); setLauncher(false) }}/> : active === 'Configurações' ? <Feature title="Configurações" description="Parâmetros, usuários, permissões e módulos são separados por empresa e segmento." icon={Settings}/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
       <footer>FernandoSch_System • SGQ ERP • {segment} • Ambiente isolado por empresa</footer>
+      <button className="floating-tablet-shell" onClick={() => setLauncher(true)} aria-label="Abrir Tablet"><LayoutGrid size={19}/><span>TABLET</span></button>
     </main>
     {launcher && <div className="v7-launcher-backdrop" onMouseDown={() => setLauncher(false)}><div className="v7-launcher" role="dialog" aria-modal="true" onMouseDown={e => e.stopPropagation()}><header><div><strong>TABLET · Todos os módulos</strong><span>Escolha o segmento e abra a operação que precisa.</span></div><button onClick={() => setLauncher(false)} aria-label="Fechar"><X size={20}/></button></header><div className="v7-segment-grid">{segments.map(s => { const Icon = s.icon; return <article key={s.name} className={s.name === segment ? 'v7-segment-card selected' : 'v7-segment-card'}><div className="v7-segment-card-head"><span className="v7-icon-box"><Icon size={20}/></span><div><b>{s.name}</b><small>{s.description}</small></div></div><div className="v7-module-grid">{s.modules.map(m => { const I = m.icon; return <button key={m.name} onClick={() => choose(s, m.name)}><I size={16}/><span>{m.title}</span><small>{m.description}</small></button> })}</div></article> })}</div></div></div>}
   </motion.div>
