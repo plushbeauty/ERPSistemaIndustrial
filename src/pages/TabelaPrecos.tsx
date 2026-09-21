@@ -2,7 +2,7 @@
 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
 - Arquivo: src/pages/TabelaPrecos.tsx
 - Status Atual: Revisão 3 (Tabelas Comerciais)
-- Total de Linhas Gerado: 26
+- Total de Linhas Gerado: 27
 - Assinatura de Entrada (Primeiros 3 Imports): import { FormEvent, useEffect, useState } from 'react' | import { Check, Pencil, Plus, Search, Trash2, X } from 'lucide-react' | import { supabase } from '../lib/supabaseClient'
 - Regra de Negócio Incorporada: Tabela de preços por segmento de cliente e preço específico por produto, com vínculo posterior ao cliente.
 */
