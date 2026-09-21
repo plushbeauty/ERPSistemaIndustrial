@@ -4,7 +4,7 @@ export interface QuickAction { id: 'op' | 'parada' | 'refugo' | 'molde'; label: 
 export const INDUSTRIAL_QUICK_ACTIONS: QuickAction[] = [
   { id: 'op', label: 'Abertura de OP', description: 'Consultar e iniciar uma ordem', icon: Factory },
   { id: 'parada', label: 'Parada de máquina', description: 'Registrar motivo e duração', icon: PauseCircle },
-  { id: 'refugo', label: 'Apontamento de refugo', description: 'Registrar perda e causa', icon: ClipboardX },
+  { id: 'refugo', label: 'Apontamento de refugo', description: 'Registrar perda e causa', icon: ClipboardCheck },
   { id: 'molde', label: 'Troca de molde', description: 'Abrir checklist de setup', icon: Wrench },
 ]
 export interface DashboardQuickActionsProps { onAction?: (action: QuickAction) => void }
