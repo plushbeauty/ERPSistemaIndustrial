@@ -2,7 +2,7 @@
 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
 - Arquivo: src/AppIndustrialV7.tsx
 - Status Atual: Revisão 3 (Compras, Comercial e Qualidade Conectados)
-- Total de Linhas Gerado: 234
+- Total de Linhas Gerado: 233
 - Assinatura de Entrada (Primeiros 3 Imports): import { FormEvent, useEffect, useMemo, useState } from 'react' | import { motion, AnimatePresence } from 'motion/react' | import { Activity, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Sun, Moon, Truck, Users, Wrench, X } from 'lucide-react'
 - Regra de Negócio Incorporada: Navegação real para clientes, fornecedores ISO 9001 e tabelas de preços por cliente.
 */
