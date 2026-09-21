@@ -1,10 +1,10 @@
 /*
  * 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
  * - Arquivo: src/components/UnifiedTabletDashboard.tsx
- * - Status Atual: Revisão 5
- * - Total de Linhas Lido/Gerado: 461
+ * - Status Atual: Revisão 6
+ * - Total de Linhas Lido/Gerado: 463
  * - Assinatura de Entrada (Primeiros 3 Imports): import { useMemo, useState } from 'react' | import { |   Activity, CalendarDays, ClipboardList, Factory, Gauge, Layers3, Package,
- * - Integração Concretizada: painel de manutenção com JSX válido e tipagem React explícita.
+ * - Integração Concretizada: painel Tablet com manutenção, PCP, máquinas, estoque e modais, com JSX e tipagem válidos.
  */
 import { useMemo, useState } from 'react' | import {
  * - Integração Concretizada: correção estrutural do painel de manutenção do Tablet e manutenção do fluxo operacional.
