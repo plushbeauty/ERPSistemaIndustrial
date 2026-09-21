@@ -1,3 +1,11 @@
+/*
+ * 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
+ * - Arquivo: src/components/UnifiedTabletDashboard.tsx
+ * - Status Atual: Revisão 2
+ * - Total de Linhas Lido/Gerado: 8
+ * - Assinatura de Entrada (Primeiros 3 Imports): import { useMemo, useState } from 'react' | import type { ReactNode } from 'react' | import {
+ * - Integração Concretizada: central operacional do Tablet, ficha de molde com ciclos/cavidades/vida útil e slot de desenho/fotos, além de PCP, máquinas, manutenção e estoque demonstrativos.
+ */
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
