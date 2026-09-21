@@ -1,13 +1,12 @@
 /*
  * 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
  * - Arquivo: src/components/UnifiedTabletDashboard.tsx
- * - Status Atual: Revisão 2
- * - Total de Linhas Lido/Gerado: 8
- * - Assinatura de Entrada (Primeiros 3 Imports): import { useMemo, useState } from 'react' | import type { ReactNode } from 'react' | import {
- * - Integração Concretizada: central operacional do Tablet, ficha de molde com ciclos/cavidades/vida útil e slot de desenho/fotos, além de PCP, máquinas, manutenção e estoque demonstrativos.
+ * - Status Atual: Revisão 3
+ * - Total de Linhas Lido/Gerado: 461
+ * - Assinatura de Entrada (Primeiros 3 Imports): import { useMemo, useState } from 'react' | import {
+ * - Integração Concretizada: central operacional do Tablet com PCP, máquinas, manutenção, estoque e ficha de molde.
  */
 import { useMemo, useState } from 'react'
-import type { ReactNode } from 'react'
 import {
   Activity, CalendarDays, ClipboardList, Factory, Gauge, Layers3, Package,
   Settings2, ShieldCheck, Tablet, Wrench, X
@@ -434,7 +433,7 @@ function Metric({label,value,note}:{label:string;value:string;note:string}) {
   return <article className="utd-card"><span>{label}</span><strong>{value}</strong><small>{note}</small></article>
 }
 
-function Panel({title,description,children}:{title:string;description:string;children:ReactNode}) {
+function Panel({title,description,children}:{title:string;description:string;children:React.ReactNode}) {
   return <section className="utd-panel"><h2>{title}</h2><p>{description}</p>{children}</section>
 }
 
