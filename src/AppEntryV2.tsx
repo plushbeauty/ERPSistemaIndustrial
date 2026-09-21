@@ -2,7 +2,7 @@
 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
 - Arquivo: src/AppEntryV2.tsx
 - Status Atual: Revisão 3 (Rotas Comerciais e Compras Conectadas)
-- Total de Linhas Gerado: 70
+- Total de Linhas Gerado: 69
 - Assinatura de Entrada (Primeiros 3 Imports): import { Component, ReactNode, lazy, Suspense, useEffect, useState } from 'react' | import type { Session } from '@supabase/supabase-js' | import './styles/industrial-login.css'
 - Regra de Negócio Incorporada: Rotas protegidas para fornecedores, clientes e tabelas de preços com tenant ERP.
 */
