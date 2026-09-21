@@ -2,7 +2,7 @@
  * 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
  * - Arquivo: src/pages/NFeEmissao.tsx
  * - Status Atual: Revisão 3 (Módulo Manufatura Conectado)
- * - Total de Linhas Gerado: 118
+ * - Total de Linhas Gerado: 26
  * - Assinatura de Entrada (Primeiros 3 Imports): import { useEffect, useMemo, useState } from 'react' | import { FileCheck2, Plus, Save, Trash2 } from 'lucide-react' | import { supabase } from '../lib/supabaseClient'
  * - Regra de Negócio Incorporada: Rascunho de NF-e modelo 55 com destinatário, itens, CFOP/NCM/CST-CSOSN, ICMS/IPI e persistência por tenant; emissão real continua dependente do integrador fiscal backend.
  */
