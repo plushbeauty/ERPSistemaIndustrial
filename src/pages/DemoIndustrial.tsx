@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { Activity, Factory, Gauge, Layers3, Package, ShieldCheck, Tablet, Wrench, X } from 'lucide-react'
 
 type View = 'dashboard' | 'injecao' | 'prensados' | 'pcp' | 'bloco-k'
@@ -77,8 +78,8 @@ function PCP({openDetail}:{openDetail:(title:string,body:string)=>void}){return 
 
 function BlockK({openDetail}:{openDetail:(title:string,body:string)=>void}){return <View title="Bloco K" icon={<ShieldCheck/>} text="Simulação somente leitura dos registros K200 e K230."><Panel title="Apontamentos fiscais simulados" text="Estrutura de dados demonstrativa para SPED EFD ICMS/IPI; não transmite dados fiscais."><Table heads={['Registro','Item','Descrição','Quantidade','Unidade','OP']} rows={blocoK.map(k=>[k.registro,k.item,k.descricao,n(k.quantidade),k.unidade,k.op??'—'])} detail={row=>openDetail(row[0],'Item '+row[1]+' • '+row[2]+' • '+row[3]+' '+row[4]+'.')}/></Panel></View>}
 
-function View({title,icon,text,children}:{title:string;icon:React.ReactNode;text:string;children:React.ReactNode}){return <div className="erp4-view"><header><span className="erp4-eyebrow">SGQ ERP • PCP BRASIL</span><h1>{icon}{title}</h1><p>{text}</p></header>{children}</div>}
+function View({title,icon,text,children}:{title:string;icon:ReactNode;text:string;children:ReactNode}){return <div className="erp4-view"><header><span className="erp4-eyebrow">SGQ ERP • PCP BRASIL</span><h1>{icon}{title}</h1><p>{text}</p></header>{children}</div>}
 function Metric({label,value}:{label:string;value:string}){return <article className="erp4-card"><span>{label}</span><strong>{value}</strong></article>}
-function Action({icon,title,text}:{icon:React.ReactNode;title:string;text:string}){return <button className="erp4-action" onClick={()=>undefined}>{icon}<span><b>{title}</b><small>{text}</small></span></button>}
-function Panel({title,text,children}:{title:string;text:string;children:React.ReactNode}){return <section className="erp4-panel"><header><span className="erp4-eyebrow">CONTROLE</span><h2>{title}</h2><p>{text}</p></header>{children}</section>}
+function Action({icon,title,text}:{icon:ReactNode;title:string;text:string}){return <button className="erp4-action" onClick={()=>undefined}>{icon}<span><b>{title}</b><small>{text}</small></span></button>}
+function Panel({title,text,children}:{title:string;text:string;children:ReactNode}){return <section className="erp4-panel"><header><span className="erp4-eyebrow">CONTROLE</span><h2>{title}</h2><p>{text}</p></header>{children}</section>}
 function Table({heads,rows,detail}:{heads:string[];rows:string[][];detail?:(row:string[])=>void}){return <div className="erp4-table"><table><thead><tr>{heads.map(h=><th key={h}>{h}</th>)}{detail&&<th>Ação</th>}</tr></thead><tbody>{rows.map((row,index)=><tr key={row.join('|')+index}>{row.map((cell,i)=><td key={heads[i]}>{cell}</td>)}{detail&&<td><button onClick={()=>detail(row)}>Ver</button></td>}</tr>)}</tbody></table></div>}
