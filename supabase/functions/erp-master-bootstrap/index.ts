@@ -27,10 +27,25 @@ Deno.serve(async (req) => {
   try {
     stage = "env"
     const url = clean(Deno.env.get("SUPABASE_URL"))
-    const serviceRole = clean(Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"))
-    if (!url || !serviceRole) return json({ error: "SERVER_AUTH_CONFIGURATION_ERROR", stage, has_url: Boolean(url), has_service_role: Boolean(serviceRole) }, 500)
+    const secretKey = clean(Deno.env.get("SUPABASE_SECRET_KEY"))
+    let secretFromDictionary = ""
+    const secretDictionary = clean(Deno.env.get("SUPABASE_SECRET_KEYS"))
+    if (secretDictionary) {
+      try {
+        const parsed: unknown = JSON.parse(secretDictionary)
+        if (parsed && typeof parsed === "object" && "default" in parsed) {
+          const value = parsed.default
+          if (typeof value === "string") secretFromDictionary = value.trim()
+        }
+      } catch (error) {
+        console.warn("[erp-master-bootstrap] SUPABASE_SECRET_KEYS inválida; seguindo para fallback.", error)
+      }
+    }
+    const serviceRoleFallback = clean(Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"))
+    const adminKey = secretKey || secretFromDictionary || serviceRoleFallback
+    if (!url || !adminKey) return json({ error: "SERVER_AUTH_CONFIGURATION_ERROR", stage, has_url: Boolean(url), has_admin_key: Boolean(adminKey) }, 500)
 
-    admin = createClient(url, serviceRole, {
+    admin = createClient(url, adminKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     })
 
