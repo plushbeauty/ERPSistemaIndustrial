@@ -1,5 +1,6 @@
 import { ClipboardX, Factory, PauseCircle, Wrench } from 'lucide-react'
-export interface QuickAction { id: 'op' | 'parada' | 'refugo' | 'molde'; label: string; description: string; icon: typeof Factory }
+import type { LucideIcon } from 'lucide-react'
+export interface QuickAction { id: 'op' | 'parada' | 'refugo' | 'molde'; label: string; description: string; icon: LucideIcon }
 export const INDUSTRIAL_QUICK_ACTIONS: QuickAction[] = [
   { id: 'op', label: 'Abertura de OP', description: 'Consultar e iniciar uma ordem', icon: Factory },
   { id: 'parada', label: 'Parada de máquina', description: 'Registrar motivo e duração', icon: PauseCircle },
