@@ -119,14 +119,16 @@ export default function IndustrialModuleWorkspace({module,profile,onBack}:{modul
    finally{setBusy(false)}
  }
 
- const goDemo=()=>{const key=module.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');location.href=`/demo/erp-industrial?module=${encodeURIComponent(key)}`}
+ const moduleKey=module.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+ const goDemo=()=>{location.href=`/demo/erp-industrial?module=${encodeURIComponent(moduleKey)}`}
+ const openSub=(sub:string)=>{if(route){location.href=route;return}location.href=`/modulos/${moduleKey}`}
  const goSpecial=()=>{if(route)location.href=route}
 
  return <div className="module-workspace">
    <div className="module-workspace-head">
      <div className="module-breadcrumb"><button onClick={onBack}><ArrowLeft size={16}/> ERP</button><span>/</span><b>{module.title}</b></div>
      <div className="module-head-actions">
-       <button className="secondary-v2" onClick={goDemo}><Tablet size={16}/> Ver DEMO</button>
+       <button className="secondary-v2" onClick={goDemo}><Tablet size={16}/> Ver Demonstração</button>
        {route&&<button className="secondary-v2" onClick={goSpecial}><ArrowUpRight size={16}/> Abrir centro</button>}
        {module.table&&<button className="menu-green" onClick={openNew}><Plus size={16}/> Novo {module.name==='Clientes'?'cliente':module.name==='Produtos'?'produto':'registro'}</button>}
      </div>
@@ -144,8 +146,8 @@ export default function IndustrialModuleWorkspace({module,profile,onBack}:{modul
    <div className="module-layout">
      <aside className="module-subnav">
        <div className="module-subnav-title">Neste setor</div>
-       {subs.map((s,i)=><button key={s} className={i===0?'active':''} onClick={()=>setMessage(`${s}: selecione um registro ou use uma ação para abrir a operação.`)}>{s}<ArrowUpRight size={14}/></button>)}
-       <button onClick={goDemo}><Tablet size={14}/> Abrir ambiente DEMO</button>
+       {subs.map((s,i)=><button key={s} className={i===0?'active':''} onClick={()=>openSub(s)}>{s}<ArrowUpRight size={14}/></button>)}
+       <button onClick={goDemo}><Tablet size={14}/> Abrir demonstração</button>
      </aside>
      <main className="module-main">
        <div className="module-toolbar">
@@ -153,7 +155,7 @@ export default function IndustrialModuleWorkspace({module,profile,onBack}:{modul
          {module.table&&<div className="module-search"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')void load()}} placeholder={module.name==='Clientes'?'Pesquisar cliente…':'Pesquisar…'}/><button onClick={()=>void load()} disabled={busy}>Pesquisar</button></div>}
        </div>
        {message&&<div className="notice" style={{marginBottom:14}}>{message}</div>}
-       {!module.table&&<div className="module-action-grid">{subs.slice(0,5).map((s,i)=><button key={s} onClick={()=>setMessage(`${s} pronto para abertura do fluxo operacional.`)}><span>{i+1}</span><div><b>{s}</b><small>Entrar nesta rotina e acompanhar os registros do setor.</small></div><ArrowUpRight size={17}/></button>)}</div>}
+       {!module.table&&<div className="module-action-grid">{subs.slice(0,5).map((s,i)=><button key={s} onClick={()=>openSub(s)}><span>{i+1}</span><div><b>{s}</b><small>Entrar nesta rotina e acompanhar os registros do setor.</small></div><ArrowUpRight size={17}/></button>)}</div>}
        {module.table&&<section className="crud-list"><div className="crud-list-head"><div><strong>{module.title}</strong><small>{rows.length} registros carregados</small></div><button className="menu-green" onClick={openNew}><FilePlus2 size={16}/> Novo</button></div><div className="crud-table-wrap"><table><thead><tr>{fields.map(f=><th key={f.key}>{f.label}</th>)}<th></th></tr></thead><tbody>{rows.map(row=><tr key={row.id} onClick={()=>setSelected(row)} style={{cursor:'pointer'}}>{fields.map(f=><td key={f.key}>{row[f.key]==null||row[f.key]===''?'—':String(row[f.key])}</td>)}<td><button onClick={e=>{e.stopPropagation();edit(row)}} title="Editar"><MoreHorizontal size={17}/></button></td></tr>)}{!rows.length&&<tr><td colSpan={fields.length+1} className="crud-empty">{busy?'Carregando dados reais…':'Nenhum registro encontrado para esta empresa.'}</td></tr>}</tbody></table></div></section>}
        {!module.table&&<section className="module-empty-data"><h3>O setor não pode ser um quadro vazio</h3><p>Esta área já possui sua estrutura operacional e seus atalhos. Quando houver uma tabela transacional vinculada, os registros aparecerão aqui sem dados fictícios.</p><button className="secondary-v2" onClick={goDemo}><Tablet size={16}/> Ver demonstração preenchida</button></section>}
      </main>
