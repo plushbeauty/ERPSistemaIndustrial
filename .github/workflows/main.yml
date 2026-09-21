@@ -1,5 +1,11 @@
 # 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
 # - Arquivo: .github/workflows/main.yml
+# - Status Atual: Revisão 2
+# - Total de Linhas Lido/Gerado: 48
+# - Assinatura de Entrada: Não se aplica a YAML; validar name, on e permissions
+# - Integração Concretizada: GitHub Actions instala dependências sem lockfile e executa TypeScript + Build
+# 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
+# - Arquivo: .github/workflows/main.yml
 # - Status Atual: Revisão 1
 # - Total de Linhas Lido/Gerado: 32
 # - Assinatura de Entrada (Primeiros 3 Imports): Não se aplica a YAML; name, on, permissions
@@ -37,11 +43,8 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Preparar lockfile
-        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-
       - name: Instalar dependências
-        run: npm ci
+        run: npm install --legacy-peer-deps --no-audit --no-fund
 
       - name: TypeScript
         run: npm run type-check
