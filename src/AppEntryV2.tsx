@@ -1,8 +1,8 @@
 /*
  * 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
  * - Arquivo: src/AppEntryV2.tsx
- * - Status Atual: Revisão 3 (Módulo Industrial Avançado)
- * - Total de Linhas Gerado: 67
+ * - Status Atual: Revisão 4
+ * - Total de Linhas Gerado: 69
  * - Assinatura de Entrada (Primeiros 3 Imports): import { Component, ReactNode, lazy, Suspense, useEffect, useState } from 'react' | import type { Session } from '@supabase/supabase-js' | import './styles/industrial-login.css'
  * - Regra de Negócio Senior/Nomus Incorporada: rotas reais de Engenharia e Engine de Lote/PCP protegidas por autenticação e tenant.
  */
@@ -61,7 +61,6 @@ function OperationalFrame({children}:{children:ReactNode}){
   return <div className="operational-frame"><div className="operational-frame-content">{children}</div><button className="floating-tablet-global" type="button" onClick={()=>{location.href='/demo/erp-industrial'}} aria-label="Abrir Tablet Industrial"><span>TABLET</span><small>Todos os módulos</small></button></div>
 }
 const overviewRoutes:Record<string,string>={'/modulos/pcp':'pcp','/modulos/estoque':'estoque','/modulos/recebimento':'recebimento','/modulos/qualidade':'qualidade','/modulos/manutencao':'manutencao','/modulos/fiscal':'fiscal','/modulos/indicadores':'indicadores','/modulos/engenharia':'engenharia','/modulos/compras':'compras','/modulos/clientes':'clientes','/modulos/rastreabilidade':'rastreabilidade','/modulos/custos':'custos','/modulos/expedicao':'expedicao','/modulos/fmea':'fmea','/modulos/rh':'rh'}
-/* IMPORTANTE: esta rota é pública. Ela apresenta o módulo sem abrir a operação autenticada. */
 function ModulePage({module}:{module:string}){return <Boundary><Suspense fallback={<LoadingSkeleton label="Carregando apresentação do módulo…"/>}><ModuleOverviewIndustrial module={module}/></Suspense></Boundary>}
 const DemoIndustrial = lazy(() => import('./pages/DemoIndustrial'))
 const MoldesInjecao = lazy(() => import('./pages/MoldesInjecao'))
