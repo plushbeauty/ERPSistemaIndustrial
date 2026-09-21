@@ -1,16 +1,9 @@
 # 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
 # - Arquivo: .github/workflows/main.yml
-# - Status Atual: Revisão 4
-# - Total de Linhas Lido/Gerado: 54
+# - Status Atual: Revisão 5
+# - Total de Linhas Lido/Gerado: 46
 # - Assinatura de Entrada: Não se aplica a YAML; validar name, on e permissions
 # - Integração Concretizada: GitHub Actions sem cache npm e sem lockfile sintético; instala dependências, executa TypeScript e Build
-# 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
-# - Arquivo: .github/workflows/main.yml
-# - Status Atual: Revisão 1
-# - Total de Linhas Lido/Gerado: 32
-# - Assinatura de Entrada (Primeiros 3 Imports): Não se aplica a YAML; name, on, permissions
-# - Integração Concretizada: pipeline real do ERP com npm ci, type-check e build na branch main.
-
 name: ERP Industrial CI
 
 on:
@@ -50,5 +43,3 @@ jobs:
 
       - name: Build
         run: npm run build
-
-
