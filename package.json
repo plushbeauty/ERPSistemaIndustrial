@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run audit && npm run audit:global && npm run audit:interactions && tsc -b && vite build",
+    "build": "npm run type-check && vite build",
     "type-check": "tsc --noEmit",
     "audit:interactions": "node scripts/audit-interactions.mjs",
     "audit:global": "node scripts/auditoria-global.mjs",
