@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 import {
   Activity, CalendarDays, ClipboardList, Factory, Gauge, Layers3, Package,
   Settings2, ShieldCheck, Tablet, Wrench, X
@@ -425,7 +426,7 @@ function Metric({label,value,note}:{label:string;value:string;note:string}) {
   return <article className="utd-card"><span>{label}</span><strong>{value}</strong><small>{note}</small></article>
 }
 
-function Panel({title,description,children}:{title:string;description:string;children:React.ReactNode}) {
+function Panel({title,description,children}:{title:string;description:string;children:ReactNode}) {
   return <section className="utd-panel"><h2>{title}</h2><p>{description}</p>{children}</section>
 }
 
@@ -444,7 +445,7 @@ function Field({label,value}:{label:string;value:string|undefined}) {
   return <label><span>{label}</span><input value={value ?? '—'} readOnly /></label>
 }
 
-function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:React.ReactNode}) {
+function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:ReactNode}) {
   return <div className="utd-modal" onMouseDown={onClose}><div className="utd-modal-card" onMouseDown={event => event.stopPropagation()}>
     <div className="utd-modal-head"><div><span className="utd-eyebrow">CADASTRO OPERACIONAL</span><h2>{title}</h2></div><button type="button" onClick={onClose} aria-label="Fechar"><X size={19}/></button></div>
     {children}
