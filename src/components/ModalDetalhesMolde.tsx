@@ -12,7 +12,8 @@ import { supabase } from '../lib/supabaseClient'
 
 export type MoldDetails={id:string;codigo:string;nome:string;status:string;produto_id:string|null;data_fabricacao:string|null;numero_cavidades:number;cavidades_ativas:number;ciclos_atuais:number;limite_ciclos:number}
 type FileMeta={name:string;size:number;extension:string}
-type Props={moldId:string|null;open:boolean;onClose:()=>void;demo?:Partial<MoldDetails>}
+type DemoMold=Partial<MoldDetails> & {cavidades?:number;ciclos?:number}
+type Props={moldId:string|null;open:boolean;onClose:()=>void;demo?:DemoMold}
 const bytes=(n:number)=>n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(1)+' MB'
 const ext=(name:string)=>name.includes('.')?(name.split('.').pop()??'ARQUIVO').toUpperCase():'ARQUIVO'
 const errorText=(e:unknown)=>e instanceof Error?e.message:String((e as {message?:string})?.message??'Não foi possível salvar o molde.')
