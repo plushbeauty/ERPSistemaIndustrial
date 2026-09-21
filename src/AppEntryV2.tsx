@@ -1,13 +1,10 @@
 /*
  * 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
  * - Arquivo: src/AppEntryV2.tsx
- * - Status Atual: Revisão 4
- * - Total de Linhas Gerado: 69
+ * - Status Atual: Revisão 5
+ * - Total de Linhas Gerado: 65
  * - Assinatura de Entrada (Primeiros 3 Imports): import { Component, ReactNode, lazy, Suspense, useEffect, useState } from 'react' | import type { Session } from '@supabase/supabase-js' | import './styles/industrial-login.css'
  * - Regra de Negócio Senior/Nomus Incorporada: rotas reais de Engenharia e Engine de Lote/PCP protegidas por autenticação e tenant.
- */
-import { Component, ReactNode, lazy, Suspense, useEffect, useState } from 'react' | import type { Session } from '@supabase/supabase-js' | import './styles/industrial-login.css'
- * - Integração Concretizada: rota autenticada /configuracao-lote ligada à tela real de configuração por tenant.
  */
 import { Component, ReactNode, lazy, Suspense, useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
