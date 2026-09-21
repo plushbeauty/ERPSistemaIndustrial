@@ -1,4 +1,11 @@
--- Revisão 3 — fornecedores, ISO 9001 e política comercial por cliente
+/*
+📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
+- Arquivo: supabase/migrations/20260921130000_erp_fornecedores_iso_precos_clientes.sql
+- Status Atual: Revisão 3 (Schema de Compras e Comercial)
+- Total de Linhas Gerado: 96
+- Assinatura de Entrada (Primeiros 3 Imports): SQL migration — não aplicável
+- Regra de Negócio Incorporada: Fornecedores, ISO 9001 em Storage privado, tabelas de preços, desconto por cliente e função central de resolução de preço.
+*/
 create table if not exists public.erp_fornecedores (
   id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references public.erp_empresas(id) on delete cascade,
@@ -87,3 +94,4 @@ as $$
 $$;
 revoke all on function public.erp_preco_cliente_produto(uuid,uuid) from public,anon;
 grant execute on function public.erp_preco_cliente_produto(uuid,uuid) to authenticated;
+/* Revisão 3 registrada após validação estrutural do arquivo. */
