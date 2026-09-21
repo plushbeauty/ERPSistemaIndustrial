@@ -1,4 +1,11 @@
--- Revisão 3 — solicitações de compra com fornecedor sugerido
+/*
+📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
+- Arquivo: supabase/migrations/20260921131500_erp_solicitacoes_compra.sql
+- Status Atual: Revisão 3 (Workflow de Compras)
+- Total de Linhas Gerado: 30
+- Assinatura de Entrada (Primeiros 3 Imports): SQL migration — não aplicável
+- Regra de Negócio Incorporada: Solicitação de compra tenant-aware com fornecedor sugerido e RLS.
+*/
 create table if not exists public.erp_solicitacoes_compra (
   id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references public.erp_empresas(id) on delete cascade,
@@ -21,3 +28,4 @@ create policy erp_solicitacoes_compra_insert on public.erp_solicitacoes_compra f
 create policy erp_solicitacoes_compra_update on public.erp_solicitacoes_compra for update to authenticated using (empresa_id=public.erp_current_empresa_id()) with check (empresa_id=public.erp_current_empresa_id());
 create index if not exists idx_erp_solicitacoes_compra_empresa on public.erp_solicitacoes_compra(empresa_id);
 create index if not exists idx_erp_solicitacoes_compra_fornecedor on public.erp_solicitacoes_compra(fornecedor_id);
+/* Revisão 3 registrada após validação estrutural do arquivo. */
