@@ -130,7 +130,8 @@ export default function AppIndustrialV7() {
   if (loading) return <div className="loading-screen">Carregando SGQ ERP…</div>
   if (!profile) return <div className="error-screen"><div className="error-screen-card"><strong>Perfil ERP não encontrado.</strong><p>A sessão autenticada não possui um usuário ERP ativo vinculado à empresa.</p><button className="primary" type="button" onClick={() => { void supabase.auth.signOut(); location.replace('/login') }}>Voltar ao login</button></div></div>
   const choose = (s: Segment, m: string) => { setSegment(s.name); setActive(m); setLauncher(false) }
-  const openModule = (m: Module) => { setActive(m.name); setLauncher(false) }
+  const moduleRoutes: Record<string,string> = { Qualidade:'/qualidade', Fiscal:'/fiscal', PCP:'/pcp', Produtos:'/produtos-vendas', 'Moldes e Ferramentas':'/moldes-injecao', Apontamentos:'/operacao-industrial', Compras:'/compras-solicitacao' }
+  const openModule = (m: Module) => { const route = moduleRoutes[m.name]; if (route) { location.href = route; return }; setActive(m.name); setLauncher(false) }
 
   return <motion.div className={`v7-shell v7-shell-with-sidebar${dark ? " theme-dark" : ""}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
     <header className="v7-topbar">
@@ -168,7 +169,49 @@ export default function AppIndustrialV7() {
 }
 
 function Nav({ module, active, setActive }: { module: Module; active: string; setActive: (value: string) => void }) { const Icon = module.icon; return <button className={active === module.name ? 'v7-nav active' : 'v7-nav'} onClick={() => setActive(module.name)}><Icon size={17}/>{module.title}</button> }
-function Dashboard({ segment, setActive }: { segment: Segment; setActive: (value: string) => void }) { const cards = segment.modules.filter(m => m.name !== 'Dashboard').slice(0, 8); return <div className="v7-dashboard"><div className="v7-kpi-grid"><div><span>Módulos disponíveis</span><b>{segment.modules.length - 1}</b></div><div><span>Segmento</span><b>{segment.name}</b></div><div><span>Ambiente</span><b>Produção</b></div><div><span>Segurança</span><b>RLS + tenant</b></div></div><div className="v7-module-cards">{cards.map(m => { const Icon = m.icon; return <button key={m.name} onClick={() => setActive(m.name)}><span className="v7-icon-box"><Icon size={20}/></span><div><b>{m.title}</b><p>{m.description}</p></div><CheckCircle2 size={18}/></button> })}</div></div> }
+function Dashboard({ segment, setActive }: { segment: Segment; setActive: (value: string) => void }) {
+  const [metrics,setMetrics] = useState({ops:'—',rpnc:'—',purchases:'—',shipments:'—',receivables:'—',stock:'—',machines:'—',quality:'—'})
+  const [loading,setLoading] = useState(true)
+  useEffect(() => {
+    let alive=true
+    void (async()=>{
+      setLoading(true)
+      const empresaId = await supabase.rpc('erp_current_empresa_id')
+      if (empresaId.error || !empresaId.data) { if(alive)setLoading(false); return }
+      const id=String(empresaId.data)
+      const count=async(table:string, filter?:{column:string;values:string[]})=>{
+        let q=supabase.from(table).select('*',{count:'exact',head:true}).eq('empresa_id',id)
+        if(filter) q=q.not(filter.column,'in',`(${filter.values.join(',')})`)
+        const r=await q
+        return r.error?null:r.count
+      }
+      const [ops,rpnc,purchases,shipments,receivables,stock,machines,inspections]=await Promise.all([
+        count('erp_ordens_producao',{column:'status',values:['concluida','concluído','cancelada','cancelado']}),
+        count('erp_rpnc',{column:'status',values:['encerrada','fechada','concluida','concluído']}),
+        count('erp_pedidos_compra',{column:'status',values:['concluido','concluída','cancelado','cancelada']}),
+        count('erp_expedicoes',{column:'status',values:['entregue','concluido','concluída','cancelado']}),
+        count('erp_contas_receber',{column:'status',values:['recebido','pago','quitado']}),
+        count('erp_produtos'),
+        count('erp_maquinas'),
+        count('erp_inspecoes')
+      ])
+      if(alive)setMetrics({ops:ops==null?'—':String(ops),rpnc:rpnc==null?'—':String(rpnc),purchases:purchases==null?'—':String(purchases),shipments:shipments==null?'—':String(shipments),receivables:receivables==null?'—':String(receivables),stock:stock==null?'—':String(stock),machines:machines==null?'—':String(machines),quality:inspections==null?'—':String(inspections)})
+      if(alive)setLoading(false)
+    })()
+    return()=>{alive=false}
+  },[])
+  const cards=[['OPs abertas',metrics.ops,'Ordens de produção'],['RPNC abertas',metrics.rpnc,'Não conformidades'],['Pedidos de compra',metrics.purchases,'Compras em aberto'],['Pedidos para expedir',metrics.shipments,'Expedições pendentes'],['Contas a receber',metrics.receivables,'Títulos em aberto'],['Produtos cadastrados',metrics.stock,'Cadastro mestre'],['Máquinas',metrics.machines,'Recursos produtivos'],['Inspeções',metrics.quality,'Registros de qualidade']]
+  const actions=[['Clientes','Cadastro de clientes'],['Produtos','Cadastro de produtos'],['PCP','Planejamento e programação'],['Qualidade','RPNC, inspeções e auditorias'],['Fiscal','NF-e, XML e parâmetros'],['Financeiro','Contas e fluxo de caixa']]
+  return <div className="v7-dashboard-pro">
+    <div className="v7-executive-kpis">{cards.map(([label,value,helper])=><article key={label}><span>{label}</span><b>{loading?'…':value}</b><small>{helper}</small></article>)}</div>
+    <div className="v7-executive-grid">
+      <section className="v7-executive-panel"><header><div><span>CONTROLE OPERACIONAL</span><h2>Visão da fábrica</h2></div><Activity size={19}/></header><div className="v7-executive-bars">{[['Produção',metrics.ops],['Qualidade',metrics.rpnc],['Compras',metrics.purchases],['Expedição',metrics.shipments],['Financeiro',metrics.receivables]].map(([name,value])=><div key={name}><div><b>{name}</b><span>{value}</span></div><i><em style={{width:value==='—'?'0%':`${Math.min(100,Math.max(8,Number(value)||0)*7)}%`}}/></i></div>)}</div></section>
+      <section className="v7-executive-panel"><header><div><span>ATALHOS</span><h2>Entrar diretamente no setor</h2></div><LayoutGrid size={19}/></header><div className="v7-executive-actions">{actions.map(([name,description])=><button key={name} onClick={()=>{const m=segment.modules.find(x=>x.name===name);if(m){const route:Record<string,string>={Qualidade:'/qualidade',Fiscal:'/fiscal',PCP:'/pcp',Produtos:'/produtos-vendas'}[m.name];if(route){location.href=route}else setActive(m.name)}}}><span>{name}</span><small>{description}</small><ArrowUpRight size={15}/></button>)}</div></section>
+    </div>
+    <section className="v7-sector-strip"><div><span>TABLET INDUSTRIAL</span><h2>Todos os setores em um único acesso</h2><p>Abra PCP, Qualidade, Fiscal, Engenharia, Estoque, Compras, Manutenção e os demais módulos sem voltar ao início.</p></div><button className="menu-green" onClick={()=>setActive('Dashboard')}>Ver módulos no Tablet <LayoutGrid size={16}/></button></section>
+  </div>
+}
+
 function Feature({ title, description, icon: Icon }: { title: string; description: string; icon: LucideIcon }) { return <div className="v7-feature"><span className="v7-icon-box"><Icon size={28}/></span><h2>{title}</h2><p>{description}</p><small>Este módulo permanece integrado ao mesmo tenant ERP e às políticas de segurança do banco.</small></div> }
 function Crud({ module, profile }: { module: Module; profile: Profile }) {
   const fields = module.fields ?? []; const searchable = useMemo(() => fields.filter(f => f.type === 'text' || f.type === 'email').slice(0, 8), [fields]); const [rows, setRows] = useState<Row[]>([]); const [form, setForm] = useState<Record<string, string>>({}); const [editing, setEditing] = useState<string | null>(null); const [query, setQuery] = useState(''); const [busy, setBusy] = useState(false); const [msg, setMsg] = useState('')
