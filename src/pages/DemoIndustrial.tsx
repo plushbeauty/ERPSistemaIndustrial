@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 import { ArrowLeft, Factory, Gauge, Layers3, ShieldCheck, Tablet, Wrench, X } from 'lucide-react'
 import FloatingTabletHeader from '../components/FloatingTabletHeader'
 import UnifiedTabletDashboard from '../components/UnifiedTabletDashboard'
@@ -67,7 +68,7 @@ function BlockKView({onDetail}:{onDetail:(detail:Detail)=>void}){
   <Panel title="Apontamentos fiscais simulados" subtitle="Estrutura demonstrativa para SPED EFD ICMS/IPI; não é transmissão fiscal."><Table headers={['Registro','Item','Descrição','Quantidade','Unid.','OP']} rows={demoBlockK.map(k=>[k.registro,k.codigoItem,k.descricao,number(k.quantidade),k.unidade,k.op??'—'])} onDetail={row=>onDetail({title:row[0],body:'Item '+row[1]+' • '+row[2]+' • '+row[3]+' '+row[4]+'. '+(row[5]!=='—'?'Vinculado à '+row[5]+'.':'Saldo de estoque simulado.')})}/></Panel>
  </ViewShell>
 }
-function ViewShell({title,subtitle,icon,children}:{title:string;subtitle:string;icon:React.ReactNode;children:React.ReactNode}){return <div className="industrial-view-shell"><header><div><span>SGQ ERP • PCP BRASIL</span><h1>{icon}{title}</h1><p>{subtitle}</p></div></header>{children}</div>}
+function ViewShell({title,subtitle,icon,children}:{title:string;subtitle:string;icon:ReactNode;children:ReactNode}){return <div className="industrial-view-shell"><header><div><span>SGQ ERP • PCP BRASIL</span><h1>{icon}{title}</h1><p>{subtitle}</p></div></header>{children}</div>}
 function DataCards({cards}:{cards:Array<[string,string]>}){return <section className="industrial-data-cards">{cards.map(card=><article key={card[0]}><span>{card[0]}</span><strong>{card[1]}</strong></article>)}</section>}
 function Panel({title,subtitle,children}:{title:string;subtitle:string;children:React.ReactNode}){return <section className="industrial-panel"><header><div><span>CONTROLE</span><h2>{title}</h2><p>{subtitle}</p></div></header>{children}</section>}
 function Table({headers,rows,onDetail}:{headers:string[];rows:string[][];onDetail:(row:string[])=>void}){return <div className="industrial-table-wrap"><table><thead><tr>{headers.map(header=><th key={header}>{header}</th>)}<th>Ação</th></tr></thead><tbody>{rows.map((row,index)=><tr key={row.join('|')+index}>{row.map((cell,i)=><td key={headers[i]}>{cell}</td>)}<td><button type="button" onClick={()=>onDetail(row)}>Ver</button></td></tr>)}</tbody></table></div>}
