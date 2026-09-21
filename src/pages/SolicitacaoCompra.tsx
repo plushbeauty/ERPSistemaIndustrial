@@ -2,7 +2,8 @@ import { FormEvent, useEffect, useState } from 'react'
 import { ArrowLeft, CheckCircle2, Mail, Printer, ShoppingCart } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
-type RequestRow = { id: string; numero: number; descricao: string; prioridade: string; requer_autorizacao: boolean; status: string; email_destino: string | null; created_at: string }
+type RequestRow = { id: string; numero: number; descricao: string; prioridade: string; requer_autorizacao: boolean; status: string; email_destino: string | null; fornecedor_id: string | null; created_at: string }
+type Supplier = { id: string; razao_social: string; documento: string | null; iso_9001_certificado: boolean; iso_certificado_validade: string | null }
 
 function canApproveRole(role: unknown) {
   const normalized = typeof role === 'string' ? role.toUpperCase() : ''
@@ -11,6 +12,8 @@ function canApproveRole(role: unknown) {
 
 export default function SolicitacaoCompra() {
   const [descricao, setDescricao] = useState('')
+  const [fornecedorId, setFornecedorId] = useState('')
+  const [fornecedores, setFornecedores] = useState<Supplier[]>([])
   const [prioridade, setPrioridade] = useState('normal')
   const [requerAutorizacao, setRequerAutorizacao] = useState(true)
   const [emailDestino, setEmailDestino] = useState('')
@@ -24,8 +27,10 @@ export default function SolicitacaoCompra() {
     const { data: sessionData } = await supabase.auth.getSession()
     const role = sessionData.session?.user.app_metadata?.role
     setCanApprove(canApproveRole(role))
-    const { data } = await supabase.from('erp_solicitacoes_compra').select('id,numero,descricao,prioridade,requer_autorizacao,status,email_destino,created_at').order('created_at', { ascending: false }).limit(50)
+    const { data } = await supabase.from('erp_solicitacoes_compra').select('id,numero,descricao,prioridade,requer_autorizacao,status,email_destino,fornecedor_id,created_at').order('created_at', { ascending: false }).limit(50)
     setRows((data ?? []) as RequestRow[])
+    const { data: supplierData } = await supabase.from('erp_fornecedores').select('id,razao_social,documento,iso_9001_certificado,iso_certificado_validade').eq('ativo', true).order('razao_social')
+    setFornecedores((supplierData ?? []) as Supplier[])
   }
 
   useEffect(() => { void load() }, [])
@@ -37,10 +42,10 @@ export default function SolicitacaoCompra() {
     try {
       const { data: empresaId, error: companyError } = await supabase.rpc('erp_current_empresa_id')
       if (companyError || !empresaId) throw companyError ?? new Error('Empresa não identificada.')
-      const { data: created, error } = await supabase.from('erp_solicitacoes_compra').insert({ empresa_id: empresaId, descricao: descricao.trim(), prioridade, requer_autorizacao: requerAutorizacao, status: requerAutorizacao ? 'aguardando_autorizacao' : 'autorizada', email_destino: emailDestino.trim() || null, observacoes: observacoes.trim() || null }).select('id,numero').single()
+      const { data: created, error } = await supabase.from('erp_solicitacoes_compra').insert({ empresa_id: empresaId, descricao: descricao.trim(), prioridade, requer_autorizacao: requerAutorizacao, status: requerAutorizacao ? 'aguardando_autorizacao' : 'autorizada', email_destino: emailDestino.trim() || null, observacoes: observacoes.trim() || null, fornecedor_id: fornecedorId || null }).select('id,numero').single()
       if (error) throw error
       setMessage(`Solicitação ${created.numero} criada. Status: ${requerAutorizacao ? 'aguardando autorização' : 'autorizada'}.`)
-      setDescricao(''); setObservacoes(''); await load()
+      setDescricao(''); setObservacoes(''); setFornecedorId(''); await load()
     } catch (error) { setMessage(error instanceof Error ? error.message : 'Não foi possível criar a solicitação.') }
     finally { setBusy(false) }
   }
@@ -66,7 +71,7 @@ export default function SolicitacaoCompra() {
     <section style={{ background: '#fff', border: '1px solid #dfe7e4', borderRadius: 18, padding: 24 }}>
       <form onSubmit={save}>
         <label>Material ou serviço necessário<textarea value={descricao} onChange={event => setDescricao(event.target.value)} placeholder="Ex.: borracha NBR, arruelas, material de manutenção, ferramental, embalagem…" required style={{ width: '100%', minHeight: 110, marginTop: 7, padding: 12, borderRadius: 10, border: '1px solid #cbd5e1' }} /></label>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 14, marginTop: 15 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 14, marginTop: 15 }}><label>Fornecedor sugerido<select value={fornecedorId} onChange={event => setFornecedorId(event.target.value)}><option value="">Selecionar fornecedor</option>{[...fornecedores].sort((a,b)=>Number(b.iso_9001_certificado)-Number(a.iso_9001_certificado)||a.razao_social.localeCompare(b.razao_social)).map(s=><option key={s.id} value={s.id}>{s.iso_9001_certificado?'★ ISO 9001 • ':''}{s.razao_social}{s.documento?` • ${s.documento}`:''}</option>)}</select></label>
           <label>Prioridade<select value={prioridade} onChange={event => setPrioridade(event.target.value)}><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></label>
           <label>E-mail do setor responsável<input type="email" value={emailDestino} onChange={event => setEmailDestino(event.target.value)} placeholder="compras@empresa.com.br" /></label>
         </div>
@@ -76,7 +81,8 @@ export default function SolicitacaoCompra() {
       </form>
       {message && <div style={{ marginTop: 14, padding: 12, borderRadius: 10, background: '#f0fdf4', color: '#166534' }}>{message}</div>}
     </section>
-    <section style={{ marginTop: 20, background: '#fff', border: '1px solid #dfe7e4', borderRadius: 18, padding: 24 }}><h2 style={{ marginTop: 0 }}>Solicitações recentes</h2><div style={{ display: 'grid', gap: 9 }}>{rows.map(row => <div key={row.id} style={{ display: 'grid', gridTemplateColumns: '100px 1fr 150px 160px', gap: 12, alignItems: 'center', padding: 12, border: '1px solid #e5e7eb', borderRadius: 10 }}><strong>#{row.numero}</strong><span>{row.descricao}</span><span>{row.status}</span>{row.status === 'aguardando_autorizacao' && canApprove ? <button className="menu-green" type="button" disabled={busy} onClick={() => void approve(row.id)}><CheckCircle2 size={16} /> Autorizar</button> : <small style={{ color: '#64748b' }}>{row.requer_autorizacao ? 'Aguardando responsável' : 'Liberada para Compras'}</small>}</div>)}</div>{!rows.length && <p style={{ color: '#64748b' }}>Nenhuma solicitação registrada.</p>}</section>
+    <section style={{ marginTop: 20, background: '#fff', border: '1px solid #dfe7e4', borderRadius: 18, padding: 24 }}><h2 style={{ marginTop: 0 }}>Solicitações recentes</h2><div style={{ display: 'grid', gap: 9 }}>{rows.map(row => <div key={row.id} style={{ display: 'grid', gridTemplateColumns: '100px 1fr 150px 150px 160px', gap: 12, alignItems: 'center', padding: 12, border: '1px solid #e5e7eb', borderRadius: 10 }}><strong>#{row.numero}</strong><span>{row.descricao}</span><span>{row.status}</span><span>{fornecedores.find(s=>s.id===row.fornecedor_id)?.iso_9001_certificado?'★ ISO 9001':''}</span>{row.status === 'aguardando_autorizacao' && canApprove ? <button className="menu-green" type="button" disabled={busy} onClick={() => void approve(row.id)}><CheckCircle2 size={16} /> Autorizar</button> : <small style={{ color: '#64748b' }}>{row.requer_autorizacao ? 'Aguardando responsável' : 'Liberada para Compras'}</small>}</div>)}</div>{!rows.length && <p style={{ color: '#64748b' }}>Nenhuma solicitação registrada.</p>}</section>
     <small style={{ display: 'block', marginTop: 18, color: '#64748b' }}>Status: aguardando autorização → autorizada → Compras. Sem provedor de e-mail configurado, nenhum envio é simulado.</small>
   </main>
 }
+/* Revisão 3 registrada após validação estrutural do arquivo. */
