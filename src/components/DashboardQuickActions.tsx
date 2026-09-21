@@ -1,4 +1,4 @@
-import { ClipboardX, Factory, PauseCircle, Wrench } from 'lucide-react'
+import { ClipboardCheck, Factory, PauseCircle, Wrench } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 export interface QuickAction { id: 'op' | 'parada' | 'refugo' | 'molde'; label: string; description: string; icon: LucideIcon }
 export const INDUSTRIAL_QUICK_ACTIONS: QuickAction[] = [
