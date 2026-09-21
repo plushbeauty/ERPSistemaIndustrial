@@ -1,3 +1,11 @@
+/*
+📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
+- Arquivo: src/pages/ProdutosVendasIndustrial.tsx
+- Status Atual: Revisão 3 (Vendas e Formação de Preço Conectadas)
+- Total de Linhas Gerado: 49
+- Assinatura de Entrada (Primeiros 3 Imports): import { FormEvent, useEffect, useMemo, useState } from 'react' | import { Check, Edit3, Plus, RefreshCw, Search, ShoppingCart, Trash2, X } from 'lucide-react' | import { supabase } from '../lib/supabaseClient'
+- Regra de Negócio Incorporada: Venda usa erp_pedidos_venda e preço calculado por tabela do cliente + política de desconto.
+*/
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { Check, Edit3, Plus, RefreshCw, Search, ShoppingCart, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
