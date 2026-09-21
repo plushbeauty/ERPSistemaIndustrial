@@ -1,10 +1,9 @@
 # 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
 # - Arquivo: .github/workflows/main.yml
-# - Status Atual: Revisão 1
-# - Total de Linhas Lido/Gerado: 32
-# - Assinatura de Entrada (Primeiros 3 Imports): Não se aplica a YAML; name, on, permissions
-# - Integração Concretizada: pipeline real do ERP com npm ci, type-check e build na branch main.
-
+# - Status Atual: Revisão 5
+# - Total de Linhas Lido/Gerado: 46
+# - Assinatura de Entrada: Não se aplica a YAML; validar name, on e permissions
+# - Integração Concretizada: GitHub Actions sem cache npm e sem lockfile sintético; instala dependências, executa TypeScript e Build
 name: ERP Industrial CI
 
 on:
@@ -35,13 +34,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-
-      - name: Preparar lockfile
-        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
 
       - name: Instalar dependências
-        run: npm ci
+        run: npm install --legacy-peer-deps --no-audit --no-fund
 
       - name: TypeScript
         run: npm run type-check

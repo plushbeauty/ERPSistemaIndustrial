@@ -1,3 +1,11 @@
+/*
+ * 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
+ * - Arquivo: src/AppIndustrialV7.tsx
+ * - Status Atual: Revisão 3
+ * - Total de Linhas Lido/Gerado: 224
+ * - Assinatura de Entrada (Primeiros 3 Imports): import { FormEvent, useEffect, useMemo, useState } from 'react' | import { motion, AnimatePresence } from 'motion/react' | import { Activity, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Sun, Moon, Truck, Users, Wrench, X } from 'lucide-react'
+ * - Integração Concretizada: atalhos do dashboard resolvem rotas opcionais com tipagem segura.
+ */
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Activity, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Sun, Moon, Truck, Users, Wrench, X } from 'lucide-react'
@@ -206,7 +214,7 @@ function Dashboard({ segment, setActive }: { segment: Segment; setActive: (value
     <div className="v7-executive-kpis">{cards.map(([label,value,helper])=><article key={label}><span>{label}</span><b>{loading?'…':value}</b><small>{helper}</small></article>)}</div>
     <div className="v7-executive-grid">
       <section className="v7-executive-panel"><header><div><span>CONTROLE OPERACIONAL</span><h2>Visão da fábrica</h2></div><Activity size={19}/></header><div className="v7-executive-bars">{[['Produção',metrics.ops],['Qualidade',metrics.rpnc],['Compras',metrics.purchases],['Expedição',metrics.shipments],['Financeiro',metrics.receivables]].map(([name,value])=><div key={name}><div><b>{name}</b><span>{value}</span></div><i><em style={{width:value==='—'?'0%':`${Math.min(100,Math.max(8,Number(value)||0)*7)}%`}}/></i></div>)}</div></section>
-      <section className="v7-executive-panel"><header><div><span>ATALHOS</span><h2>Entrar diretamente no setor</h2></div><LayoutGrid size={19}/></header><div className="v7-executive-actions">{actions.map(([name,description])=><button key={name} onClick={()=>{const m=segment.modules.find(x=>x.name===name);if(m){const route:Record<string,string>={Qualidade:'/qualidade',Fiscal:'/fiscal',PCP:'/pcp',Produtos:'/produtos-vendas'}[m.name];if(route){location.href=route}else setActive(m.name)}}}><span>{name}</span><small>{description}</small><ArrowUpRight size={15}/></button>)}</div></section>
+      <section className="v7-executive-panel"><header><div><span>ATALHOS</span><h2>Entrar diretamente no setor</h2></div><LayoutGrid size={19}/></header><div className="v7-executive-actions">{actions.map(([name,description])=><button key={name} onClick={()=>{const m=segment.modules.find(x=>x.name===name);if(m){const route=({Qualidade:'/qualidade',Fiscal:'/fiscal',PCP:'/pcp',Produtos:'/produtos-vendas'} as Record<string,string | undefined>)[m.name];if(route){location.href=route}else setActive(m.name)}}}><span>{name}</span><small>{description}</small><ArrowUpRight size={15}/></button>)}</div></section>
     </div>
     <section className="v7-sector-strip"><div><span>TABLET INDUSTRIAL</span><h2>Todos os setores em um único acesso</h2><p>Abra PCP, Qualidade, Fiscal, Engenharia, Estoque, Compras, Manutenção e os demais módulos sem voltar ao início.</p></div><button className="menu-green" onClick={()=>setActive('Dashboard')}>Ver módulos no Tablet <LayoutGrid size={16}/></button></section>
   </div>

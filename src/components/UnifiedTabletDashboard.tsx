@@ -1,10 +1,10 @@
 /*
  * 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
  * - Arquivo: src/components/UnifiedTabletDashboard.tsx
- * - Status Atual: Revisão 3
- * - Total de Linhas Lido/Gerado: 461
- * - Assinatura de Entrada (Primeiros 3 Imports): import { useMemo, useState } from 'react' | import {
- * - Integração Concretizada: central operacional do Tablet com PCP, máquinas, manutenção, estoque e ficha de molde.
+ * - Status Atual: Revisão 7
+ * - Total de Linhas Lido/Gerado: 460
+ * - Assinatura de Entrada (Primeiros 3 Imports): import { useMemo, useState } from 'react' | import { |   Activity, CalendarDays, ClipboardList, Factory, Gauge, Layers3, Package,
+ * - Integração Concretizada: painel Tablet com manutenção, PCP, máquinas, estoque e modais, com JSX e tipagem válidos.
  */
 import { useMemo, useState } from 'react'
 import {
@@ -329,9 +329,9 @@ function MaintenanceView() {
     </div>
     <Panel title="Plano preventivo" description="Modelo que deve gerar OS automaticamente quando o gatilho for atingido.">
       <div className="utd-table"><table><thead><tr><th>Ativo</th><th>Gatilho</th><th>Última execução</th><th>Próximo</th><th>Responsável</th><th>Status</th></tr></thead><tbody>
-        <tr><td>MOL-014</td><td>400.000 ciclos</td><td>22/08/2026</td><td>Ao atingir 400.000</td><td>Manutenção</td><td><Status value="Atenção"/></tr>
-        <tr><td>Prensa 03</td><td>50.000 golpes</td><td>17/09/2026</td><td>24/09/2026</td><td>Manutenção</td><td><Status value="Manutenção"/></tr>
-        <tr><td>Injetora 01</td><td>1.000 h</td><td>04/09/2026</td><td>04/10/2026</td><td>Manutenção</td><td><Status value="Disponível"/></tr>
+        <tr><td>MOL-014</td><td>400.000 ciclos</td><td>22/08/2026</td><td>Ao atingir 400.000</td><td>Manutenção</td><td><Status value="Atenção"/></td></tr>
+        <tr><td>Prensa 03</td><td>50.000 golpes</td><td>17/09/2026</td><td>24/09/2026</td><td>Manutenção</td><td><Status value="Manutenção"/></td></tr>
+        <tr><td>Injetora 01</td><td>1.000 h</td><td>04/09/2026</td><td>04/10/2026</td><td>Manutenção</td><td><Status value="Disponível"/></td></tr>
       </tbody></table></div>
     </Panel>
   </section>
@@ -452,7 +452,7 @@ function Field({label,value}:{label:string;value:string|undefined}) {
   return <label><span>{label}</span><input value={value ?? '—'} readOnly /></label>
 }
 
-function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:ReactNode}) {
+function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:React.ReactNode}) {
   return <div className="utd-modal" onMouseDown={onClose}><div className="utd-modal-card" onMouseDown={event => event.stopPropagation()}>
     <div className="utd-modal-head"><div><span className="utd-eyebrow">CADASTRO OPERACIONAL</span><h2>{title}</h2></div><button type="button" onClick={onClose} aria-label="Fechar"><X size={19}/></button></div>
     {children}
