@@ -11,12 +11,12 @@ import { useEffect, useMemo, useState } from 'react'
 type Module = { key: string; title: string; description: string; route: string; Icon: LucideIcon }
 
 const modules: Module[] = [
-  { key:'pcp', title:'PCP e Produção', description:'Planejamento, ordens, sequenciamento e acompanhamento do chão de fábrica.', route:'/modulos/pcp', Icon:Factory },
-  { key:'estoque', title:'Estoque e Materiais', description:'Saldos, movimentações, rastreabilidade e necessidades de materiais.', route:'/modulos/estoque', Icon:Boxes },
+  { key:'pcp', title:'PCP e Produção', description:'Planejamento, ordens, sequenciamento e acompanhamento do chão de fábrica.', route:'/pcp', Icon:Factory },
+  { key:'estoque', title:'Estoque e Materiais', description:'Saldos, movimentações, rastreabilidade e necessidades de materiais.', route:'/estoque', Icon:Boxes },
   { key:'recebimento', title:'Recebimento de Materiais', description:'NF-e XML, conferência, lotes e entrada rastreável.', route:'/modulos/recebimento', Icon:PackageCheck },
-  { key:'qualidade', title:'Qualidade', description:'RPNC, auditorias, CAPA, documentos e evidências.', route:'/modulos/qualidade', Icon:ClipboardCheck },
+  { key:'qualidade', title:'Qualidade', description:'RPNC, auditorias, CAPA, documentos e evidências.', route:'/qualidade', Icon:ClipboardCheck },
   { key:'manutencao', title:'Manutenção', description:'Máquinas, planos preventivos, corretivas e histórico.', route:'/modulos/manutencao', Icon:Wrench },
-  { key:'fiscal', title:'Financeiro e Fiscal', description:'Processos financeiros, documentos e visão fiscal.', route:'/modulos/fiscal', Icon:Receipt },
+  { key:'fiscal', title:'Financeiro e Fiscal', description:'Processos financeiros, documentos e visão fiscal.', route:'/fiscal', Icon:Receipt },
   { key:'indicadores', title:'Indicadores', description:'Produção, qualidade, estoque, custos e performance.', route:'/modulos/indicadores', Icon:BarChart3 },
   { key:'engenharia', title:'Engenharia e BOM', description:'Fichas técnicas, versões, estruturas e roteiros.', route:'/modulos/engenharia', Icon:FileText },
   { key:'compras', title:'Compras e Fornecedores', description:'Solicitações, pedidos, fornecedores e recebimento.', route:'/modulos/compras', Icon:Truck },
