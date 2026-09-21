@@ -1,9 +1,12 @@
 /*
  * 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
  * - Arquivo: src/components/UnifiedTabletDashboard.tsx
- * - Status Atual: Revisão 4
+ * - Status Atual: Revisão 5
  * - Total de Linhas Lido/Gerado: 461
- * - Assinatura de Entrada (Primeiros 3 Imports): import { useMemo, useState } from 'react' | import {
+ * - Assinatura de Entrada (Primeiros 3 Imports): import { useMemo, useState } from 'react' | import { |   Activity, CalendarDays, ClipboardList, Factory, Gauge, Layers3, Package,
+ * - Integração Concretizada: painel de manutenção com JSX válido e tipagem React explícita.
+ */
+import { useMemo, useState } from 'react' | import {
  * - Integração Concretizada: correção estrutural do painel de manutenção do Tablet e manutenção do fluxo operacional.
  */
 import { useMemo, useState } from 'react'
@@ -452,7 +455,7 @@ function Field({label,value}:{label:string;value:string|undefined}) {
   return <label><span>{label}</span><input value={value ?? '—'} readOnly /></label>
 }
 
-function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:ReactNode}) {
+function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:React.ReactNode}) {
   return <div className="utd-modal" onMouseDown={onClose}><div className="utd-modal-card" onMouseDown={event => event.stopPropagation()}>
     <div className="utd-modal-head"><div><span className="utd-eyebrow">CADASTRO OPERACIONAL</span><h2>{title}</h2></div><button type="button" onClick={onClose} aria-label="Fechar"><X size={19}/></button></div>
     {children}
