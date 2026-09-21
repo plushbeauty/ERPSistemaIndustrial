@@ -1,7 +1,7 @@
 /*
  * 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
  * - Arquivo: src/pages/DemoIndustrial.tsx
- * - Status Atual: Revisão 3 (Módulo Industrial Avançado)
+ * - Status Atual: Revisão 4 (Módulo Industrial Avançado)
  * - Total de Linhas Gerado: 94
  * - Assinatura de Entrada (Primeiros 3 Imports): import { useState } from 'react' | import type { ReactNode } from 'react' | import { Activity, Factory, Gauge, Layers3, Package, ShieldCheck, Tablet, Wrench, X } from 'lucide-react'
  * - Regra de Negócio Senior/Nomus Incorporada: a demonstração usa o mesmo modal e o mesmo contrato visual do ativo de ferramentaria, mas permanece explicitamente separada dos dados de produção.
