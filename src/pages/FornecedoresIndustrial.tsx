@@ -2,7 +2,7 @@
 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
 - Arquivo: src/pages/FornecedoresIndustrial.tsx
 - Status Atual: Revisão 3 (Compras e Qualificação de Fornecedores)
-- Total de Linhas Gerado: 33
+- Total de Linhas Gerado: 32
 - Assinatura de Entrada (Primeiros 3 Imports): import { ChangeEvent, FormEvent, useEffect, useState } from 'react' | import { Check, Download, FileCheck2, Pencil, Plus, Search, ShieldCheck, Star, Upload, X } from 'lucide-react' | import { supabase } from '../lib/supabaseClient'
 - Regra de Negócio Incorporada: Cadastro real de fornecedor, certificado ISO 9001 em Storage privado, validade e qualificação visual por estrela.
 */
