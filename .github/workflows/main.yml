@@ -37,6 +37,9 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Preparar lockfile
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
       - name: Instalar dependências
         run: npm ci
 
