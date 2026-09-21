@@ -2,7 +2,7 @@
 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
 - Arquivo: src/pages/NFeEmissao.tsx
 - Status Atual: Revisão 3 (Fiscal e Política Comercial Conectados)
-- Total de Linhas Gerado: 28
+- Total de Linhas Gerado: 27
 - Assinatura de Entrada (Primeiros 3 Imports): import { useEffect, useMemo, useState } from 'react' | import { FileCheck2, Plus, Save, Trash2 } from 'lucide-react' | import { supabase } from '../lib/supabaseClient'
 - Regra de Negócio Incorporada: NF-e de rascunho utiliza o preço resolvido pela tabela do cliente e mantém a autorização SEFAZ explicitamente pendente.
 */
