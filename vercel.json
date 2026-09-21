@@ -35,6 +35,8 @@
     { "source": "/teste-erp", "destination": "/index.html" },
     { "source": "/master", "destination": "/index.html" },
     { "source": "/master/evolucao", "destination": "/index.html" },
-    { "source": "/moldes-injecao", "destination": "/index.html" }
+    { "source": "/moldes-injecao", "destination": "/index.html" },
+    { "source": "/demo", "destination": "/index.html" },
+    { "source": "/demo/(.*)", "destination": "/index.html" }
   ]
 }
