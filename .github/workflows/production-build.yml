@@ -1,7 +1,5 @@
-name: Build ERP Industrial
+name: Build ERP Industrial — Manual Production Check
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 jobs:
   quality:
