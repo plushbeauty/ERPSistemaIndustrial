@@ -22,19 +22,23 @@ Deno.serve(async (req) => {
 
   let admin: ReturnType<typeof createClient> | null = null
   let authUserId: string | null = null
+  let stage = "start"
 
   try {
+    stage = "env"
     const url = clean(Deno.env.get("SUPABASE_URL"))
     const serviceRole = clean(Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"))
-    if (!url || !serviceRole) return json({ error: "SERVER_AUTH_CONFIGURATION_ERROR" }, 500)
+    if (!url || !serviceRole) return json({ error: "SERVER_AUTH_CONFIGURATION_ERROR", stage, has_url: Boolean(url), has_service_role: Boolean(serviceRole) }, 500)
 
     admin = createClient(url, serviceRole, {
       auth: { persistSession: false, autoRefreshToken: false },
     })
 
+    stage = "request"
     const body = await req.json()
     const action = clean(body?.action || "status")
 
+    stage = "master_lookup"
     const { data: masters, error: masterError } = await admin
       .from("erp_usuarios")
       .select("id")
@@ -50,6 +54,7 @@ Deno.serve(async (req) => {
     if (masterError) throw masterError
 
     if (action === "status") {
+      stage = "status_ok"
       return json({ ok: true, available: !masters?.length })
     }
 
@@ -67,6 +72,7 @@ Deno.serve(async (req) => {
     const existing = await admin.auth.admin.getUserByEmail(email)
     if (existing.data?.user) return json({ error: "EMAIL_AUTH_JA_EXISTE" }, 409)
 
+    stage = "auth_create"
     const created = await admin.auth.admin.createUser({
       email,
       password,
@@ -90,6 +96,7 @@ Deno.serve(async (req) => {
         .replace(/^-+|-+$/g, "")
         .slice(0, 80) || "master"
 
+    stage = "profile_insert"
     const inserted = await admin
       .from("erp_usuarios")
       .insert({
@@ -117,6 +124,6 @@ Deno.serve(async (req) => {
   } catch (error) {
     if (authUserId && admin) await admin.auth.admin.deleteUser(authUserId).catch(() => undefined)
     console.error("[erp-master-bootstrap]", error)
-    return json({ error: error instanceof Error ? error.message : "MASTER_BOOTSTRAP_FAILED" }, 500)
+    return json({ error: error instanceof Error ? error.message : "MASTER_BOOTSTRAP_FAILED", stage }, 500)
   }
 })
