@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Accessibility, ArrowLeft, Monitor, Moon, Sun } from 'lucide-react'
+import { ArrowLeft, Monitor, Moon, Settings, Sun } from 'lucide-react'
 
 export interface FloatingTabletHeaderProps {
   title?: string
@@ -24,7 +24,7 @@ export default function FloatingTabletHeader({ title = 'SGQ ERP Industrial', sub
     </div>
     <div className="erp-header-controls">
       <button type="button" className="erp-icon-button" onClick={() => setBrightness(v => v >= 120 ? 90 : v + 10)} aria-label="Ajustar iluminação" title={"Iluminação " + brightness + "%"}>{brightness >= 110 ? <Sun size={18}/> : <Moon size={18}/>}<span>{brightness}%</span></button>
-      <button type="button" className={"erp-icon-button" + (largeText ? " active" : "")} onClick={() => setLargeText(v => !v)} aria-pressed={largeText} aria-label="Texto maior"><Accessibility size={18}/></button>
+      <button type="button" className={"erp-icon-button" + (largeText ? " active" : "")} onClick={() => setLargeText(v => !v)} aria-pressed={largeText} aria-label="Texto maior"><Settings size={18}/></button>
       <button type="button" className="erp-tablet-button" onClick={onTablet}><Monitor size={19}/> TABLET</button>
     </div>
   </header>
