@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import TabletLaunchpad from './TabletLaunchpad'
 import { supabase } from '../lib/supabaseClient'
+import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 type Props = { onNavigate: (route: string) => void; profileName: string; isMaster?: boolean }
 
@@ -13,6 +14,7 @@ type Metrics = {
   ops: number; produced: number; scrap: number; rpnc: number; products: number
   machines: number; inspections: number; purchases: number
 }
+type ProductionPoint = { date: string; boa: number; refugo: number }
 
 const n = (v: unknown) => {
   const value = Number(v)
@@ -29,6 +31,7 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
   const [error, setError] = useState('')
   const [tabletOpen, setTabletOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [productionSeries, setProductionSeries] = useState<ProductionPoint[]>([])
 
   useEffect(() => {
     let alive = true
@@ -87,8 +90,18 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
         if (production.error) throw production.error
         const produced = (production.data ?? []).reduce((s, row) => s + n(row.quantidade_boa), 0)
         const scrap = (production.data ?? []).reduce((s, row) => s + n(row.quantidade_defeituosa), 0)
+        const byDay = new Map<string, ProductionPoint>()
+        for (const row of production.data ?? []) {
+          const date = String(row.created_at ?? '').slice(0, 10)
+          if (!date) continue
+          const point = byDay.get(date) ?? { date: date.slice(5).split('-').reverse().join('/'), boa: 0, refugo: 0 }
+          point.boa += n(row.quantidade_boa)
+          point.refugo += n(row.quantidade_defeituosa)
+          byDay.set(date, point)
+        }
 
         if (!alive) return
+        setProductionSeries([...byDay.entries()].sort(([a], [b]) => a.localeCompare(b)).slice(-14).map(([, value]) => value))
         setMetrics({ ops, rpnc, products, machines, inspections, purchases, produced, scrap })
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : 'Não foi possível carregar os indicadores.')
@@ -155,6 +168,17 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
             <ArrowUpRight size={17} />
           </button>
         })}
+      </section>
+
+      <section className="icd-charts-grid">
+        <article className="icd-panel icd-chart-panel">
+          <header><div><span>PRODUÇÃO REAL</span><h2>Boa x refugo por dia</h2></div><button className="icd-icon-btn" type="button" onClick={() => window.print()} title="Imprimir dashboard"><ArrowUpRight size={16} /></button></header>
+          {productionSeries.length ? <div className="icd-chart"><ResponsiveContainer width="100%" height={280}><LineChart data={productionSeries} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="date"/><YAxis/><Tooltip/><Legend/><Line type="monotone" dataKey="boa" name="Boa" strokeWidth={3} dot={false}/><Line type="monotone" dataKey="refugo" name="Refugo" strokeWidth={3} dot={false}/></LineChart></ResponsiveContainer></div> : <div className="icd-chart-empty">Não existem registros de produção no período disponível.</div>}
+        </article>
+        <article className="icd-panel icd-chart-panel">
+          <header><div><span>QUALIDADE</span><h2>Produção acumulada</h2></div><Gauge size={19} /></header>
+          {productionSeries.length ? <div className="icd-chart"><ResponsiveContainer width="100%" height={280}><BarChart data={productionSeries} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="date"/><YAxis/><Tooltip/><Legend/><Bar dataKey="boa" name="Boa"/><Bar dataKey="refugo" name="Refugo"/></BarChart></ResponsiveContainer></div> : <div className="icd-chart-empty">Sem dados para gerar o gráfico.</div>}
+        </article>
       </section>
 
       <section className="icd-tablet-banner">
