@@ -46,7 +46,7 @@ export default function IndustrialDashboardPremium({ onOpen, isMaster = false }:
         let ordersQuery = supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade,status,data_prevista').order('criado_em', { ascending: false }).limit(6)
         let productionQuery = supabase.from('erp_producao_conferencias').select('ordem_producao_id,quantidade_boa,quantidade_defeituosa').limit(5000)
         let stockQuery = supabase.from('erp_estoque_movimentos').select('tipo,quantidade').limit(5000)
-        let machinesQuery = supabase.from('erp_maquinas').select('id', { count: 'exact', head: true }).eq('ativo', true)
+        let machinesQuery = supabase.from('erp_maquinas').select('id', { count: 'exact', head: true }).not('status', 'eq', 'INATIVA')
         let ncQuery = supabase.from('erp_rpnc').select('id', { count: 'exact', head: true }).neq('status', 'encerrada')
         if (!masterProfile && empresaId) {
           ordersQuery = ordersQuery.eq('empresa_id', empresaId)
