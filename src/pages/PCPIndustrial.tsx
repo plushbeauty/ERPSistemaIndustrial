@@ -1,4 +1,5 @@
-import { useEffect,useMemo,useState } from 'react'\nimport type { LucideIcon } from 'lucide-react'
+import { useEffect,useMemo,useState } from 'react'
+import type { LucideIcon } from 'lucide-react'
 import { AlertTriangle, ArrowLeft, CalendarDays, ClipboardList, Factory, Gauge, Package, Play, RefreshCw, Route, Search, ShieldCheck, Truck, Wrench } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 type Tab='visao'|'pedidos'|'ops'|'materiais'|'producao'|'programacao'|'capacidade'|'qualidade'

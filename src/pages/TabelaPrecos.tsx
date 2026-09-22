@@ -33,4 +33,5 @@ export default function TabelaPrecos(){
     </div>
   </main>
 )
+}
 /* Revisão 3 registrada após validação estrutural do arquivo. */

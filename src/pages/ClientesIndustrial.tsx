@@ -54,4 +54,5 @@ export default function ClientesIndustrial(){
     </div>}
   </main>
 )
+}
 /* Revisão 3 registrada após validação estrutural do arquivo. */
