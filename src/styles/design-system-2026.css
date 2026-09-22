@@ -262,3 +262,12 @@ body{background:var(--ds-bg)}
 .theme-windows .icd-tablet-banner{background:linear-gradient(100deg,#e2f0fb,#f7fbfe)!important;border-color:#b9d5ea!important}
 .theme-windows .icd-footer{color:#6f8597!important;border-top-color:#d3e1eb!important}
 .theme-windows .icd-process p,.theme-windows .icd-tablet-banner p,.theme-windows .icd-health-row small{color:#6d8191!important}
+
+
+/* Dashboard executivo com gráficos reais e impressão A4. */
+.icd-charts-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:16px 0}
+.icd-chart-panel{min-width:0}
+.icd-chart{width:100%;min-height:280px}
+.icd-chart-empty{min-height:280px;display:grid;place-items:center;text-align:center;padding:24px;color:#64748b;font-size:16px;border:1px dashed currentColor;border-radius:14px}
+@media(max-width:1000px){.icd-charts-grid{grid-template-columns:1fr}}
+@media print{body{background:#fff!important}.v7-topbar,.v7-launcher-backdrop,.icd-hero-actions,.icd-tablet-banner button,.icd-icon-btn,.v7-top-actions,.v7-user,.floating-tablet-shell{display:none!important}.icd{padding:0!important}.icd-panel,.icd-kpi,.icd-process{break-inside:avoid;box-shadow:none!important}.icd-charts-grid{grid-template-columns:1fr 1fr!important}.icd-chart{min-height:260px}.icd-footer{border-top:1px solid #999!important}}
