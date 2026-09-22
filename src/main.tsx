@@ -13,6 +13,63 @@ import './styles/design-system-2026.css'
 
 const ERP_BOOTSTRAP_VERSION = '2026-09-18-browser-auth-v9'
 
+// Vite/Vercel: evita que um cliente mantenha HTML antigo apontando para chunks
+// removidos após um novo deploy. O evento é disparado quando um import dinâmico
+// não consegue carregar o chunk atual; limpamos caches legados e fazemos uma
+// única recarga automática por navegação.
+const ERP_DEPLOY_RECOVERY_KEY = 'erp-industrial-vite-deploy-recovery'
+
+async function recoverFromStaleDeployment() {
+  if (typeof window === 'undefined') return
+  if (window.sessionStorage.getItem(ERP_DEPLOY_RECOVERY_KEY) === '1') {
+    window.sessionStorage.removeItem(ERP_DEPLOY_RECOVERY_KEY)
+    return
+  }
+  window.sessionStorage.setItem(ERP_DEPLOY_RECOVERY_KEY, '1')
+  try {
+    if ('caches' in window) {
+      const keys = await caches.keys()
+      await Promise.allSettled(keys.map(key => caches.delete(key)))
+    }
+  } catch (error) {
+    console.warn('[ERP] limpeza de cache após deploy ignorada:', error)
+  }
+  window.location.reload()
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('vite:preloadError', event => {
+    event.preventDefault()
+    console.log('Novo deploy detectado, recarregando a página...')
+    void recoverFromStaleDeployment()
+  })
+
+  window.addEventListener('error', event => {
+    const message = String(event.error?.message ?? event.message ?? '').toLowerCase()
+    const target = event.target
+    const resource = target instanceof HTMLScriptElement
+      ? target.src
+      : target instanceof HTMLLinkElement
+        ? target.href
+        : ''
+    if (
+      import.meta.env.PROD &&
+      (/chunk|dynamically imported module|failed to fetch|loading css chunk|module script/.test(message) ||
+        /\\/assets\\/.*\\.(js|css)(\\?|$)/.test(resource.toLowerCase()))
+    ) {
+      void recoverFromStaleDeployment()
+    }
+  })
+
+  window.addEventListener('unhandledrejection', event => {
+    const message = String(event.reason?.message ?? event.reason ?? '').toLowerCase()
+    if (import.meta.env.PROD && /chunk|dynamically imported module|failed to fetch|module script/.test(message)) {
+      event.preventDefault()
+      void recoverFromStaleDeployment()
+    }
+  })
+}
+
 function FatalBootstrap({ error, retry }: { error: unknown; retry: () => void }) {
   const message = error instanceof Error ? error.message : String(error)
   return (
