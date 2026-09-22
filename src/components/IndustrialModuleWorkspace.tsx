@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabaseClient'
 
 type Field={key:string;label:string;type?:'text'|'number'|'date'|'email';required?:boolean}
 type Module={name:string;title:string;description:string;icon:LucideIcon;table?:string;fields?:Field[]}
-type Profile={nome:string;empresa_id:string;nivel_admin:number}
+type Profile={nome:string;empresa_id:string|null;nivel_admin:number;is_master?:boolean;perfil?:string}
 type Row=Record<string,unknown>&{id:string}
 
 const sourceMap:Record<string,string>={
@@ -122,6 +122,7 @@ export default function IndustrialModuleWorkspace({module,profile,onBack}:{modul
     if(!table)return
     setBusy(true);setMessage('')
     try{
+      if (!profile.empresa_id) { setRows([]); setMsg('Master autenticado. Selecione uma empresa para operar registros deste módulo.'); return }
       let req=supabase.from(table).select('*').eq('empresa_id',profile.empresa_id).limit(200)
       const q=query.trim().replace(/[%_]/g,'')
       if(q){
