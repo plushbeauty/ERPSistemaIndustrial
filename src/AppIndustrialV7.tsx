@@ -114,7 +114,7 @@ export default function AppIndustrialV7() {
   const [launcher, setLauncher] = useState(false)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const [dark, setDark] = useState(() => localStorage.getItem('erp-theme') === 'dark')
+  const [dark, setDark] = useState(() => localStorage.getItem('erp-theme') !== 'light')
   const current = segments.find(s => s.name === segment) ?? segments[0]
   const module = current.modules.find(m => m.name === active)
   useEffect(() => { localStorage.setItem('erp-theme', dark ? 'dark' : 'light') }, [dark])
