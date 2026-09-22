@@ -14,6 +14,7 @@ import { supabase } from './lib/supabaseClient'
 import IndustrialModuleWorkspace from './components/IndustrialModuleWorkspace'
 import IndustrialCommandDashboard from './components/IndustrialCommandDashboard'
 import CompanySettings from './components/CompanySettings'
+import TabletLaunchpad from './components/TabletLaunchpad'
 
 type Field = { key: string; label: string; type?: 'text' | 'number' | 'date' | 'email'; required?: boolean }
 type Module = { name: string; title: string; description: string; icon: LucideIcon; table?: string; fields?: Field[] }
@@ -181,7 +182,7 @@ export default function AppIndustrialV7() {
       <footer>FernandoSch_System • SGQ ERP • {segment} • Ambiente isolado por empresa</footer>
 
     </main>
-    {launcher && <div className="v7-launcher-backdrop" onMouseDown={() => setLauncher(false)}><div className="v7-launcher" role="dialog" aria-modal="true" onMouseDown={e => e.stopPropagation()}><header><div><strong>TABLET · Todos os módulos</strong><span>Escolha o segmento e abra a operação que precisa.</span></div><button onClick={() => setLauncher(false)} aria-label="Fechar"><X size={20}/></button></header><div className="v7-segment-grid">{segments.map(s => { const Icon = s.icon; return <article key={s.name} className={s.name === segment ? 'v7-segment-card selected' : 'v7-segment-card'}><div className="v7-segment-card-head"><span className="v7-icon-box"><Icon size={20}/></span><div><b>{s.name}</b><small>{s.description}</small></div></div><div className="v7-module-grid">{s.modules.map(m => { const I = m.icon; return <button key={m.name} onClick={() => choose(s, m.name)}><I size={16}/><span>{m.title}</span><small>{m.description}</small></button> })}</div></article> })}</div></div></div>}
+    <TabletLaunchpad isOpen={launcher} onClose={() => setLauncher(false)} onNavigate={(route) => { setLauncher(false); if (route === '/erp-industrial') { setActive('Dashboard'); return } location.href = route }} />
   </motion.div>
 }
 
