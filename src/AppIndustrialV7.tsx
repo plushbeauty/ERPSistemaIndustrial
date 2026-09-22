@@ -19,6 +19,7 @@ type Module = { name: string; title: string; description: string; icon: LucideIc
 type Segment = { name: string; description: string; icon: LucideIcon; modules: Module[] }
 type Row = Record<string, unknown> & { id: string }
 type Profile = { nome: string; empresa_id: string | null; nivel_admin: number; is_master: boolean; perfil: string }
+type UiTheme = 'dark' | 'light' | 'windows'
 
 const F = (key: string, label: string, required = false, type: Field['type'] = 'text'): Field => ({ key, label, required, type })
 const M = (name: string, title: string, description: string, icon: LucideIcon, table?: string, fields: Field[] = []): Module => ({ name, title, description, icon, table, fields })
@@ -114,10 +115,15 @@ export default function AppIndustrialV7() {
   const [launcher, setLauncher] = useState(false)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const [dark, setDark] = useState(() => localStorage.getItem('erp-theme') !== 'light')
+  const [theme, setTheme] = useState<UiTheme>(() => {
+    const saved = localStorage.getItem('erp-theme')
+    return saved === 'light' || saved === 'windows' || saved === 'dark' ? saved : 'dark'
+  })
   const current = segments.find(s => s.name === segment) ?? segments[0]
   const module = current.modules.find(m => m.name === active)
-  useEffect(() => { localStorage.setItem('erp-theme', dark ? 'dark' : 'light') }, [dark])
+  useEffect(() => { localStorage.setItem('erp-theme', theme) }, [theme])
+  const cycleTheme = () => setTheme(value => value === 'dark' ? 'light' : value === 'light' ? 'windows' : 'dark')
+  const themeLabel = theme === 'dark' ? 'Escuro' : theme === 'light' ? 'Claro' : 'Windows'
 
   useEffect(() => {
     let alive = true
@@ -145,7 +151,7 @@ export default function AppIndustrialV7() {
   const moduleRoutes: Record<string,string> = { Qualidade:'/qualidade', Fiscal:'/fiscal', PCP:'/pcp', Produtos:'/produtos-vendas', Clientes:'/clientes', Fornecedores:'/fornecedores', 'Tabelas de preços':'/tabelas-preco', 'Moldes e Ferramentas':'/moldes-injecao', Apontamentos:'/operacao-industrial', Compras:'/compras-solicitacao', Engenharia:'/ficha-engenharia', Processos:'/ficha-engenharia' }
   const openModule = (m: Module) => { const route = moduleRoutes[m.name]; if (route) { location.href = route; return }; setActive(m.name); setLauncher(false) }
 
-  return <motion.div className={`v7-shell v7-shell-with-sidebar${dark ? " theme-dark" : ""}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
+  return <motion.div className={`v7-shell v7-shell-with-sidebar theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
     <header className="v7-topbar">
       <button className="v7-top-brand" type="button" onClick={() => setLauncher(true)} aria-label="Abrir Tablet">
         <img src="/logo-industrial.svg" alt="SGQ ERP" />
@@ -155,7 +161,9 @@ export default function AppIndustrialV7() {
       <div className="v7-top-search"><Search size={17}/><input placeholder="Pesquisar módulos, clientes, produtos, pedidos..." aria-label="Pesquisa global" /></div>
       <div className="v7-top-actions">
         <span className="v7-top-date">{new Date().toLocaleDateString('pt-BR')}</span>
-        <button className="v7-top-lang" type="button" onClick={() => setDark(v => v)} aria-label="Idioma atual">PT</button>
+        <button className="v7-top-lang v7-theme-toggle" type="button" onClick={cycleTheme} aria-label={`Tema atual: ${themeLabel}. Clique para alternar`} title={`Tema: ${themeLabel}`}>
+          {theme === 'dark' ? <Moon size={15}/> : <Sun size={15}/>} <span>{themeLabel}</span>
+        </button>
         <button className="v7-top-tablet" type="button" onClick={() => { const key = module?.name ? module.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : "dashboard"; location.href = `/demo/erp-industrial?module=${encodeURIComponent(key)}` }}><MonitorPlay size={17}/> DEMO</button><button className="v7-top-tablet" type="button" onClick={() => setLauncher(true)}><LayoutGrid size={17}/> TABLET</button>
         <button className="v7-top-user" type="button" onClick={() => setLauncher(true)}><Users size={16}/><span>{profile.nome}</span></button>
         <button className="v7-top-exit" type="button" onClick={() => void supabase.auth.signOut().then(() => { location.href = '/login' })}>Sair</button>
