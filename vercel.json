@@ -5,38 +5,193 @@
   "outputDirectory": "dist",
   "installCommand": "npm install --no-audit --no-fund",
   "rewrites": [
-    { "source": "/login", "destination": "/index.html" },
-    { "source": "/home", "destination": "/index.html" },
-    { "source": "/blog", "destination": "/index.html" },
-    { "source": "/contato", "destination": "/index.html" },
-    { "source": "/cadastro-empresa", "destination": "/index.html" },
-    { "source": "/configuracao-adm-master", "destination": "/index.html" },
-    { "source": "/cadastro-master", "destination": "/index.html" },
-    { "source": "/ativar-acesso", "destination": "/index.html" },
-    { "source": "/erp-industrial", "destination": "/index.html" },
-    { "source": "/modulos/pcp", "destination": "/index.html" },
-    { "source": "/modulos/estoque", "destination": "/index.html" },
-    { "source": "/modulos/recebimento", "destination": "/index.html" },
-    { "source": "/modulos/qualidade", "destination": "/index.html" },
-    { "source": "/modulos/manutencao", "destination": "/index.html" },
-    { "source": "/modulos/fiscal", "destination": "/index.html" },
-    { "source": "/modulos/indicadores", "destination": "/index.html" },
-    { "source": "/recebimento-materiais", "destination": "/index.html" },
-    { "source": "/pcp", "destination": "/index.html" },
-    { "source": "/qualidade", "destination": "/index.html" },
-    { "source": "/qualidade/documentos", "destination": "/index.html" },
-    { "source": "/operacao-industrial", "destination": "/index.html" },
-    { "source": "/produtos-vendas", "destination": "/index.html" },
-    { "source": "/compras-solicitacao", "destination": "/index.html" },
-    { "source": "/usuarios", "destination": "/index.html" },
-    { "source": "/fiscal", "destination": "/index.html" },
-    { "source": "/fiscal/previsao-caixa", "destination": "/index.html" },
-    { "source": "/manual-usuario", "destination": "/index.html" },
-    { "source": "/teste-erp", "destination": "/index.html" },
-    { "source": "/master", "destination": "/index.html" },
-    { "source": "/master/evolucao", "destination": "/index.html" },
-    { "source": "/moldes-injecao", "destination": "/index.html" },
-    { "source": "/demo", "destination": "/index.html" },
-    { "source": "/demo/(.*)", "destination": "/index.html" }
+    {
+      "source": "/login",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/home",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/blog",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/contato",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cadastro-empresa",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/configuracao-adm-master",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cadastro-master",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ativar-acesso",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/erp-industrial",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/modulos/pcp",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/modulos/estoque",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/modulos/recebimento",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/modulos/qualidade",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/modulos/manutencao",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/modulos/fiscal",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/modulos/indicadores",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/recebimento-materiais",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/pcp",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/qualidade",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/qualidade/documentos",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/operacao-industrial",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/produtos-vendas",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/compras-solicitacao",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/usuarios",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/fiscal",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/fiscal/previsao-caixa",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/manual-usuario",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/teste-erp",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/master",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/master/evolucao",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/moldes-injecao",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/demo",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/demo/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/planos",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/recuperar-senha",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/configuracao-lote",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/configuracao-lote-pcp",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ficha-engenharia",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/engenharia",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/fornecedores",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/clientes",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tabelas-preco",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/almoxarifado",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/pedidos-vendas",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/central-qualidade",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/rh",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/fiscal/nova",
+      "destination": "/index.html"
+    }
   ]
 }
