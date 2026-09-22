@@ -216,3 +216,49 @@ body{background:var(--ds-bg)}
 .v7-main>footer{background:#071417!important;border-top:1px solid rgba(255,255,255,.07)!important;color:#5e7779!important;padding:12px 26px!important}
 @media(max-width:900px){.v7-top-context,.v7-top-date,.v7-top-lang{display:none!important}.v7-top-brand{min-width:145px!important}.v7-top-actions{gap:4px!important}.v7-top-user span{display:none}.v7-content{padding:8px 14px 0!important}.v7-header.v7-page-header{padding:16px 14px 8px!important}.v7-header.v7-page-header h1{font-size:22px!important}}
 @media(max-width:620px){.v7-topbar{height:64px!important;padding:8px 10px!important}.v7-top-search{display:none!important}.v7-top-tablet{font-size:0!important;width:38px!important;padding:0!important;justify-content:center}.v7-top-exit{font-size:0!important;width:38px!important;padding:0!important;justify-content:center}.v7-top-brand small{display:none!important}.v7-top-brand{min-width:120px!important}}
+
+
+/* USER THEME SWITCH — dark / light / Windows-like blue */
+.v7-theme-toggle{min-width:82px!important;justify-content:center!important}
+.theme-light.v7-shell-with-sidebar{background:#f3f6f8!important;color:#18242b!important}
+.theme-light.v7-shell-with-sidebar .v7-topbar,
+.theme-light.v7-shell-with-sidebar .v7-header.v7-page-header,
+.theme-light.v7-shell-with-sidebar .v7-content,
+.theme-light.v7-shell-with-sidebar .v7-main>footer{background:#f3f6f8!important;color:#18242b!important}
+.theme-light.v7-shell-with-sidebar .v7-topbar{border-bottom-color:#d8e0e5!important;box-shadow:0 8px 28px rgba(20,40,55,.08)!important}
+.theme-light .v7-top-brand strong,.theme-light .v7-top-context b,.theme-light .v7-top-user,
+.theme-light .v7-header.v7-page-header h1{color:#17232b!important}
+.theme-light .v7-top-brand small,.theme-light .v7-header.v7-page-header p,.theme-light .v7-user small{color:#687982!important}
+.theme-light .v7-top-context,.theme-light .v7-top-search,.theme-light .v7-top-lang,.theme-light .v7-top-tablet,.theme-light .v7-top-user,.theme-light .v7-top-exit,.theme-light .v7-user{background:#fff!important;border-color:#d8e0e5!important;color:#33464f!important}
+.theme-light .v7-top-search input{color:#24353d!important}.theme-light .v7-top-search input::placeholder{color:#8a9aa2!important}
+.theme-light .v7-sidebar-rail{background:#fff!important;border-right-color:#dce4e8!important}
+.theme-light .v7-rail-brand{border-bottom-color:#e2e8eb!important}.theme-light .v7-rail-context{background:#f4f7f8!important;border-color:#dde5e8!important}
+.theme-light .v7-sidebar-rail nav button{color:#64757d!important}.theme-light .v7-sidebar-rail nav button:hover{background:#eef5f6!important;color:#173238!important}
+.theme-light .icd-hero,.theme-light .icd-panel,.theme-light .icd-kpi,.theme-light .icd-process{background:#fff!important;color:#1c2c34!important;border-color:#dce5e9!important;box-shadow:0 12px 35px rgba(20,40,55,.06)!important}
+.theme-light .icd-hero-side,.theme-light .icd-mini-grid div{background:#f5f8f9!important;border-color:#e0e7ea!important}
+.theme-light .icd-hero-side>strong,.theme-light .icd-panel h2,.theme-light .icd-process h2{color:#1b2c34!important}
+.theme-light .icd-hero-side>small,.theme-light .icd-tablet-banner p,.theme-light .icd-module-grid small,.theme-light .icd-health-row small{color:#71828a!important}
+.theme-light .icd-kpi{color:#24343c!important}.theme-light .icd-kpi-text small{color:#60727a!important}.theme-light .icd-kpi-text em{color:#7c8b92!important}
+.theme-light .icd-module-grid button{background:#f7fafb!important;color:#24343c!important;border-color:#e0e7ea!important}
+.theme-light .icd-tablet-banner{background:linear-gradient(100deg,#e7f7f5,#f7fafb)!important;border-color:#bfe5df!important}
+.theme-light .icd-alert{background:#fff8e6!important;color:#8a5a00!important}.theme-light .icd-alert span{color:#8a6b2d!important}
+.theme-light .icd-process{background:#f7fafb!important}.theme-light .icd-footer{color:#7b8b92!important;border-top-color:#e0e7ea!important}
+
+/* Windows-like: azul institucional, inspirado em interfaces desktop modernas, sem imitar marca registrada. */
+.theme-windows.v7-shell-with-sidebar{background:#eaf2f9!important;color:#1b2a38!important}
+.theme-windows.v7-shell-with-sidebar .v7-topbar{background:#e8f1fa!important;border-bottom-color:#c5d7e8!important;box-shadow:0 8px 28px rgba(37,76,110,.10)!important}
+.theme-windows.v7-shell-with-sidebar .v7-header.v7-page-header,.theme-windows.v7-shell-with-sidebar .v7-content,.theme-windows.v7-shell-with-sidebar .v7-main>footer{background:#eaf2f9!important;color:#1b2a38!important}
+.theme-windows .v7-sidebar-rail{background:#f6f9fc!important;border-right-color:#c9d9e7!important}
+.theme-windows .v7-top-brand strong,.theme-windows .v7-top-context b,.theme-windows .v7-top-user,.theme-windows .v7-header.v7-page-header h1{color:#193047!important}
+.theme-windows .v7-top-brand small,.theme-windows .v7-header.v7-page-header p,.theme-windows .v7-user small{color:#60788c!important}
+.theme-windows .v7-top-context,.theme-windows .v7-top-search,.theme-windows .v7-top-lang,.theme-windows .v7-top-tablet,.theme-windows .v7-top-user,.theme-windows .v7-top-exit,.theme-windows .v7-user{background:rgba(255,255,255,.86)!important;border-color:#c8d9e8!important;color:#29465c!important}
+.theme-windows .v7-top-search input{color:#1e3a50!important}.theme-windows .v7-top-search input::placeholder{color:#7890a3!important}
+.theme-windows .v7-sidebar-rail nav button{color:#526b80!important}.theme-windows .v7-sidebar-rail nav button:hover{background:#e4eff9!important;color:#1c4568!important}
+.theme-windows .v7-sidebar-rail nav button.active{background:linear-gradient(90deg,#2b7cc1,#3b8fd2)!important;color:#fff!important;box-shadow:0 8px 22px rgba(43,124,193,.20)!important}
+.theme-windows .icd-hero,.theme-windows .icd-panel,.theme-windows .icd-kpi,.theme-windows .icd-process{background:rgba(255,255,255,.88)!important;color:#1b3042!important;border-color:#c9dbe9!important;box-shadow:0 12px 35px rgba(40,75,105,.08)!important}
+.theme-windows .icd-hero-side,.theme-windows .icd-mini-grid div{background:#f4f8fc!important;border-color:#d8e5ef!important}
+.theme-windows .icd-hero-side>strong,.theme-windows .icd-panel h2,.theme-windows .icd-process h2{color:#1b3042!important}
+.theme-windows .icd-module-grid button{background:#f8fbfe!important;color:#20394e!important;border-color:#d7e4ed!important}
+.theme-windows .icd-tablet-banner{background:linear-gradient(100deg,#e2f0fb,#f7fbfe)!important;border-color:#b9d5ea!important}
+.theme-windows .icd-footer{color:#6f8597!important;border-top-color:#d3e1eb!important}
+.theme-windows .icd-process p,.theme-windows .icd-tablet-banner p,.theme-windows .icd-health-row small{color:#6d8191!important}
