@@ -17,7 +17,7 @@ type Field = { key: string; label: string; type?: 'text' | 'number' | 'date' | '
 type Module = { name: string; title: string; description: string; icon: LucideIcon; table?: string; fields?: Field[] }
 type Segment = { name: string; description: string; icon: LucideIcon; modules: Module[] }
 type Row = Record<string, unknown> & { id: string }
-type Profile = { nome: string; empresa_id: string; nivel_admin: number }
+type Profile = { nome: string; empresa_id: string | null; nivel_admin: number; is_master: boolean; perfil: string }
 
 const F = (key: string, label: string, required = false, type: Field['type'] = 'text'): Field => ({ key, label, required, type })
 const M = (name: string, title: string, description: string, icon: LucideIcon, table?: string, fields: Field[] = []): Module => ({ name, title, description, icon, table, fields })
@@ -125,9 +125,10 @@ export default function AppIndustrialV7() {
         const { data: auth, error: authError } = await supabase.auth.getUser()
         if (authError) throw authError
         if (!auth.user) return
-        const { data, error } = await supabase.from('erp_usuarios').select('nome,empresa_id,nivel_admin,auth_user_id,ativo,deleted_at').eq('auth_user_id', auth.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
+        const { data, error } = await supabase.from('erp_usuarios').select('nome,empresa_id,nivel_admin,auth_user_id,ativo,deleted_at,is_master,perfil').eq('auth_user_id', auth.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
         if (error) throw error
-        if (data && data.auth_user_id === auth.user.id && data.empresa_id && alive) setProfile(data)
+        const master = data?.auth_user_id === auth.user.id && data?.is_master === true && Number(data?.nivel_admin ?? 0) === 100 && String(data?.perfil ?? '').trim().toUpperCase() === 'MASTER' && data?.empresa_id === null
+        if (data && data.auth_user_id === auth.user.id && (master || Boolean(data.empresa_id)) && alive) setProfile(data)
       } catch (error) {
         console.error('[ERP profile]', error)
       } finally {
