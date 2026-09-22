@@ -31,7 +31,7 @@ export default function FichaEngenharia(){
    try{
      const [p,m]=await Promise.all([
        supabase.from('erp_produtos').select('id,codigo,nome,unidade').eq('ativo',true).order('codigo').limit(2000),
-       supabase.from('erp_maquinas').select('id,codigo,nome').eq('ativo',true).order('codigo').limit(500)
+       supabase.from('erp_maquinas').select('id,codigo,nome').not('status','eq','INATIVA').order('codigo').limit(500)
      ])
      if(p.error)throw p.error;if(m.error)throw m.error
      setProducts((p.data??[]) as Product[]);setMachines((m.data??[]) as Machine[])
