@@ -55,7 +55,7 @@ if (typeof window !== 'undefined') {
     if (
       import.meta.env.PROD &&
       (/chunk|dynamically imported module|failed to fetch|loading css chunk|module script/.test(message) ||
-        /\\/assets\\/.*\\.(js|css)(\\?|$)/.test(resource.toLowerCase()))
+        /\/assets\/.*\.(js|css)(\?|$)/.test(resource.toLowerCase()))
     ) {
       void recoverFromStaleDeployment()
     }
