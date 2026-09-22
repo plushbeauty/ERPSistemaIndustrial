@@ -12,6 +12,7 @@ import { Activity, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, ClipboardChe
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from './lib/supabaseClient'
 import IndustrialModuleWorkspace from './components/IndustrialModuleWorkspace'
+import IndustrialCommandDashboard from './components/IndustrialCommandDashboard'
 
 type Field = { key: string; label: string; type?: 'text' | 'number' | 'date' | 'email'; required?: boolean }
 type Module = { name: string; title: string; description: string; icon: LucideIcon; table?: string; fields?: Field[] }
@@ -171,7 +172,7 @@ export default function AppIndustrialV7() {
         <div><span>SGQ ERP • {segment.toUpperCase()}</span><h1>{active === 'Dashboard' ? `Dashboard — ${segment}` : module?.title ?? active}</h1><p>{active === 'Dashboard' ? current.description : module?.description}</p></div>
         <div className="v7-user"><b>{profile.nome}</b><small>Empresa isolada por tenant</small></div>
       </section>
-      <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{active === 'Dashboard' ? <Dashboard segment={current} setActive={(value) => { setActive(value); setLauncher(false) }} isMaster={profile.is_master}/> : active === 'Configurações' ? <Feature title="Configurações" description="Parâmetros, usuários, permissões e módulos são separados por empresa e segmento." icon={Settings}/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
+      <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{active === 'Dashboard' ? <IndustrialCommandDashboard profileName={profile.nome} isMaster={profile.is_master} onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); setLauncher(false); return }; location.href = route }} /> : active === 'Configurações' ? <Feature title="Configurações" description="Parâmetros, usuários, permissões e módulos são separados por empresa e segmento." icon={Settings}/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
       <footer>FernandoSch_System • SGQ ERP • {segment} • Ambiente isolado por empresa</footer>
       <button className="floating-tablet-shell" onClick={() => setLauncher(true)} aria-label="Abrir Tablet"><LayoutGrid size={19}/><span>TABLET</span></button>
     </main>
