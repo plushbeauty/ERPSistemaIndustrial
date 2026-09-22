@@ -18,7 +18,7 @@ const modules:Module[]=[
   A('Painel SGQ','Indicadores e Pareto',Gauge,'/qualidade'),
   A('Inspeções','Controle de recebimento, processo e final',ClipboardCheck,'/qualidade?tab=inspecao'),
   A('RPNC / CAPA','Não conformidade e ações corretivas',FileCheck2,'/qualidade?tab=rpnc'),
-  A('Calibração','Equipamentos, certificados e revisões',Gauge,'/qualidade?tab=calibracao'),
+  A('Calibração','Equipamentos, certificados e revisões',Gauge,'/qualidade/calibracao'),
   A('Documentos Vivos','Revisão, validade, aprovação e histórico',FileText,'/qualidade/documentos'),
   A('Auditorias','Plano, execução e evidências',ClipboardList,'/qualidade?tab=auditorias'),
   A('Planos de Inspeção','Características e limites',Settings,'/qualidade?tab=planos')
