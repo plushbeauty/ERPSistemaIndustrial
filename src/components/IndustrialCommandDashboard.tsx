@@ -74,7 +74,7 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
         }
 
         const productionQuery = master
-          ? supabase.from('erp_producao_conferencias').select('quantidade_boa,quantidade_defeituosa').limit(5000)
+          ? supabase.from('erp_producao_conferencias').select('quantidade_boa,quantidade_defeituosa,created_at').limit(5000)
           : supabase.from('erp_producao_conferencias').select('quantidade_boa,quantidade_defeituosa').eq('empresa_id', empresaId as string).limit(5000)
 
         const [ops, rpnc, products, machines, inspections, purchases, production] = await Promise.all([
