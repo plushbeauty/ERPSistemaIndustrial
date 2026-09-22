@@ -27,6 +27,17 @@ function text(value: unknown) {
   return String(value ?? '').trim()
 }
 
+async function authUserExistsByEmail(admin: ReturnType<typeof createClient>, email: string) {
+  for (let page = 1; page <= 100; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 })
+    if (error) throw error
+    const users = data?.users ?? []
+    if (users.some((user) => text(user.email).toLowerCase() === email)) return true
+    if (users.length < 1000) return false
+  }
+  throw new Error('AUTH_USER_LOOKUP_LIMIT')
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { status: 204, headers: cors(req) })
   if (req.method !== 'POST') return out(req, { error: 'METODO_NAO_PERMITIDO' }, 405)
@@ -100,8 +111,7 @@ Deno.serve(async (req: Request) => {
       return out(req, { error: 'MASTER_JA_CADASTRADO', locked: true }, 409)
     }
 
-    const { data: byEmail } = await admin.auth.admin.getUserByEmail(email)
-    if (byEmail?.user) return out(req, { error: 'EMAIL_AUTH_JA_EXISTE' }, 409)
+    if (await authUserExistsByEmail(admin, email)) return out(req, { error: 'EMAIL_AUTH_JA_EXISTE' }, 409)
 
     let authUserId: string | null = null
 
