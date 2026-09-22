@@ -112,7 +112,7 @@ function makePayload(fields: Field[], form: Record<string, string>) {
 export default function AppIndustrialV7() {
   const [segment, setSegment] = useState(segments[0].name)
   const [active, setActive] = useState('Dashboard')
-  const [launcher, setLauncher] = useState(false)
+  const [launcher, setLauncher] = useState(true)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [theme, setTheme] = useState<UiTheme>(() => {
@@ -151,7 +151,7 @@ export default function AppIndustrialV7() {
   const moduleRoutes: Record<string,string> = { Qualidade:'/qualidade', Fiscal:'/fiscal', PCP:'/pcp', Produtos:'/produtos-vendas', Clientes:'/clientes', Fornecedores:'/fornecedores', 'Tabelas de preços':'/tabelas-preco', 'Moldes e Ferramentas':'/moldes-injecao', Apontamentos:'/operacao-industrial', Compras:'/compras-solicitacao', Engenharia:'/ficha-engenharia', Processos:'/ficha-engenharia' }
   const openModule = (m: Module) => { const route = moduleRoutes[m.name]; if (route) { location.href = route; return }; setActive(m.name); setLauncher(false) }
 
-  return <motion.div className={`v7-shell v7-shell-with-sidebar theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
+  return <motion.div className={`v7-shell theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
     <header className="v7-topbar">
       <button className="v7-top-brand" type="button" onClick={() => setLauncher(true)} aria-label="Abrir Tablet">
         <img src="/logo-industrial.svg" alt="SGQ ERP" />
@@ -164,17 +164,12 @@ export default function AppIndustrialV7() {
         <button className="v7-top-lang v7-theme-toggle" type="button" onClick={cycleTheme} aria-label={`Tema atual: ${themeLabel}. Clique para alternar`} title={`Tema: ${themeLabel}`}>
           {theme === 'dark' ? <Moon size={15}/> : <Sun size={15}/>} <span>{themeLabel}</span>
         </button>
-        <button className="v7-top-tablet" type="button" onClick={() => { const key = module?.name ? module.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") : "dashboard"; location.href = `/demo/erp-industrial?module=${encodeURIComponent(key)}` }}><MonitorPlay size={17}/> DEMO</button><button className="v7-top-tablet" type="button" onClick={() => setLauncher(true)}><LayoutGrid size={17}/> TABLET</button>
+        <button className="v7-top-tablet" type="button" onClick={() => setLauncher(true)}><LayoutGrid size={17}/> TABLET</button>
         <button className="v7-top-user" type="button" onClick={() => setLauncher(true)}><Users size={16}/><span>{profile.nome}</span></button>
         <button className="v7-top-exit" type="button" onClick={() => void supabase.auth.signOut().then(() => { location.href = '/login' })}>Sair</button>
       </div>
     </header>
-    <aside className="v7-sidebar-rail">
-      <div className="v7-rail-brand"><img src="/logo-industrial.svg" alt="SGQ ERP"/><div><b>SGQ ERP</b><small>Industrial</small></div></div>
-      <div className="v7-rail-context"><span>SETOR ATIVO</span><b>{segment}</b></div>
-      <nav>{current.modules.map(m => <button key={m.name} className={active===m.name?'active':''} onClick={() => openModule(m)}><m.icon size={16}/><span>{m.title}</span></button>)}</nav>
-      <button className="v7-rail-tablet" onClick={() => setLauncher(true)}><LayoutGrid size={16}/> Tablet de módulos</button>
-    </aside>
+
     <main className="v7-main v7-main-full">
       <section className="v7-header v7-page-header">
         <div><span>SGQ ERP • {segment.toUpperCase()}</span><h1>{active === 'Dashboard' ? `Dashboard — ${segment}` : module?.title ?? active}</h1><p>{active === 'Dashboard' ? current.description : module?.description}</p></div>
@@ -182,7 +177,7 @@ export default function AppIndustrialV7() {
       </section>
       <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{active === 'Dashboard' ? <IndustrialCommandDashboard profileName={profile.nome} isMaster={profile.is_master} onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); setLauncher(false); return }; location.href = route }} /> : active === 'Configurações' ? <Feature title="Configurações" description="Parâmetros, usuários, permissões e módulos são separados por empresa e segmento." icon={Settings}/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
       <footer>FernandoSch_System • SGQ ERP • {segment} • Ambiente isolado por empresa</footer>
-      <button className="floating-tablet-shell" onClick={() => setLauncher(true)} aria-label="Abrir Tablet"><LayoutGrid size={19}/><span>TABLET</span></button>
+
     </main>
     {launcher && <div className="v7-launcher-backdrop" onMouseDown={() => setLauncher(false)}><div className="v7-launcher" role="dialog" aria-modal="true" onMouseDown={e => e.stopPropagation()}><header><div><strong>TABLET · Todos os módulos</strong><span>Escolha o segmento e abra a operação que precisa.</span></div><button onClick={() => setLauncher(false)} aria-label="Fechar"><X size={20}/></button></header><div className="v7-segment-grid">{segments.map(s => { const Icon = s.icon; return <article key={s.name} className={s.name === segment ? 'v7-segment-card selected' : 'v7-segment-card'}><div className="v7-segment-card-head"><span className="v7-icon-box"><Icon size={20}/></span><div><b>{s.name}</b><small>{s.description}</small></div></div><div className="v7-module-grid">{s.modules.map(m => { const I = m.icon; return <button key={m.name} onClick={() => choose(s, m.name)}><I size={16}/><span>{m.title}</span><small>{m.description}</small></button> })}</div></article> })}</div></div></div>}
   </motion.div>
