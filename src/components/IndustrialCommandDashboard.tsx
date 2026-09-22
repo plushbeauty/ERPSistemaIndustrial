@@ -142,7 +142,6 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
           <p>Controle a fábrica, qualidade, materiais e administração em uma única operação.</p>
           <div className="icd-hero-actions">
             <button className="icd-primary" onClick={() => setTabletOpen(true)}><LayoutGrid size={18} /> Abrir Tablet Industrial</button>
-            <button className="icd-secondary" onClick={() => onNavigate('/pcp')}><Factory size={18} /> Abrir PCP</button>
             <button className="icd-icon-btn" title="Atualizar indicadores" onClick={() => setRefreshKey(v => v + 1)}><RefreshCw size={18} /></button>
           </div>
         </div>
@@ -184,7 +183,7 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
       <section className="icd-tablet-banner">
         <div className="icd-tablet-icon"><LayoutGrid size={30} /></div>
         <div><span>ACESSO OPERACIONAL</span><h2>Tablet Industrial</h2><p>PCP, Produção, Qualidade, Estoque, Compras, Engenharia, Manutenção, Fiscal e RH.</p></div>
-        <button onClick={() => setTabletOpen(true)}>Abrir todos os módulos <ArrowUpRight size={16} /></button>
+        <span className="icd-tablet-hint">Use o Tablet para abrir os módulos operacionais.</span>
       </section>
 
       <section className="icd-main-grid">
