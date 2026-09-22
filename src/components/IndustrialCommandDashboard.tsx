@@ -78,7 +78,7 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
           count('erp_ordens_producao', 'status', ['concluida', 'concluído', 'cancelada', 'cancelado']),
           count('erp_rpnc', 'status', ['encerrada', 'fechada', 'concluida', 'concluído']),
           count('erp_produtos'),
-          count('erp_maquinas', 'ativo', ['false']),
+          count('erp_maquinas'),
           count('erp_inspecoes'),
           count('erp_pedidos_compra', 'status', ['concluido', 'concluída', 'cancelado', 'cancelada']),
           productionQuery
