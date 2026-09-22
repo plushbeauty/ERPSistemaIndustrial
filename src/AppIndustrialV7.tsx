@@ -13,6 +13,7 @@ import type { LucideIcon } from 'lucide-react'
 import { supabase } from './lib/supabaseClient'
 import IndustrialModuleWorkspace from './components/IndustrialModuleWorkspace'
 import IndustrialCommandDashboard from './components/IndustrialCommandDashboard'
+import CompanySettings from './components/CompanySettings'
 
 type Field = { key: string; label: string; type?: 'text' | 'number' | 'date' | 'email'; required?: boolean }
 type Module = { name: string; title: string; description: string; icon: LucideIcon; table?: string; fields?: Field[] }
@@ -53,6 +54,7 @@ const industrialModules: Module[] = [
   M('Financeiro', 'Financeiro', 'Contas a pagar, receber, caixa, conciliação e fluxo.', ShoppingCart),
   M('Fiscal', 'Fiscal', 'Documentos fiscais, tributos, XML e acompanhamento de emissão.', FileText),
   M('Relatórios', 'Relatórios industriais', 'Indicadores operacionais, financeiros e históricos.', FileText),
+  M('Configurações', 'Configurações', 'Empresa, identidade visual, relatórios, permissões e infraestrutura.', Settings),
 ]
 
 const commonModules: Module[] = [
@@ -175,7 +177,7 @@ export default function AppIndustrialV7() {
         <div><span>SGQ ERP • {segment.toUpperCase()}</span><h1>{active === 'Dashboard' ? `Dashboard — ${segment}` : module?.title ?? active}</h1><p>{active === 'Dashboard' ? current.description : module?.description}</p></div>
         <div className="v7-user"><b>{profile.nome}</b><small>Empresa isolada por tenant</small></div>
       </section>
-      <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{active === 'Dashboard' ? <IndustrialCommandDashboard profileName={profile.nome} isMaster={profile.is_master} onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); setLauncher(false); return }; location.href = route }} /> : active === 'Configurações' ? <Feature title="Configurações" description="Parâmetros, usuários, permissões e módulos são separados por empresa e segmento." icon={Settings}/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
+      <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{active === 'Dashboard' ? <IndustrialCommandDashboard profileName={profile.nome} isMaster={profile.is_master} onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); setLauncher(false); return }; location.href = route }} /> : active === 'Configurações' ? <CompanySettings profile={profile}/>; : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
       <footer>FernandoSch_System • SGQ ERP • {segment} • Ambiente isolado por empresa</footer>
 
     </main>
