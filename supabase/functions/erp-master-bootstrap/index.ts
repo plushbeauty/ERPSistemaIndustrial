@@ -16,6 +16,17 @@ const json = (body: unknown, status = 200) =>
 const clean = (value: unknown) => String(value ?? "").trim()
 const normalizeEmail = (value: unknown) => clean(value).toLowerCase()
 
+async function authUserExistsByEmail(admin: ReturnType<typeof createClient>, email: string) {
+  for (let page = 1; page <= 100; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 })
+    if (error) throw error
+    const users = data?.users ?? []
+    if (users.some((user) => normalizeEmail(user.email) === email)) return true
+    if (users.length < 1000) return false
+  }
+  throw new Error("AUTH_USER_LOOKUP_LIMIT")
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: HEADERS })
   if (req.method !== "POST") return json({ error: "MÉTODO_NÃO_PERMITIDO" }, 405)
@@ -84,8 +95,7 @@ Deno.serve(async (req) => {
     if (!/^\S+@\S+\.\S+$/.test(email)) return json({ error: "EMAIL_INVALIDO" }, 400)
     if (password.length < 8) return json({ error: "SENHA_MINIMA_8" }, 400)
 
-    const existing = await admin.auth.admin.getUserByEmail(email)
-    if (existing.data?.user) return json({ error: "EMAIL_AUTH_JA_EXISTE" }, 409)
+    if (await authUserExistsByEmail(admin, email)) return json({ error: "EMAIL_AUTH_JA_EXISTE" }, 409)
 
     stage = "auth_create"
     const created = await admin.auth.admin.createUser({

@@ -10,6 +10,17 @@ const clean = (v: unknown) => String(v ?? '').trim()
 const normalize = (v: unknown) => clean(v).replace(/\D/g, '')
 const emailNorm = (v: unknown) => clean(v).toLowerCase()
 
+async function authUserExistsByEmail(admin: ReturnType<typeof createClient>, email: string) {
+  for (let page = 1; page <= 100; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 })
+    if (error) throw error
+    const users = data?.users ?? []
+    if (users.some((user) => emailNorm(user.email) === email)) return true
+    if (users.length < 1000) return false
+  }
+  throw new Error('AUTH_USER_LOOKUP_LIMIT')
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors })
   if (req.method !== 'POST') return json({ error: 'Método não permitido.' }, 405)
@@ -45,8 +56,7 @@ Deno.serve(async (req) => {
     if (duplicateError) throw duplicateError
     if (duplicate?.length) return json({ error: 'Já existe uma empresa cadastrada com este documento.' }, 409)
 
-    const existing = await admin.auth.admin.getUserByEmail(email)
-    if (existing.data?.user) return json({ error: 'Este e-mail já possui um acesso de autenticação.' }, 409)
+    if (await authUserExistsByEmail(admin, email)) return json({ error: 'Este e-mail já possui um acesso de autenticação.' }, 409)
 
     const trialStart = new Date()
     const trialEnd = new Date(trialStart.getTime() + 15 * 86400000)
