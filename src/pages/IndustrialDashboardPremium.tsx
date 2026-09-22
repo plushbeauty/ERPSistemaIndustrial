@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Activity, AlertTriangle, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, Gauge, Package, RefreshCw, Settings, ShieldCheck, Truck, Users, Wrench, ArrowUpRight } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
-type DashboardProps = { onOpen?: (path: string) => void }
+type DashboardProps = { onOpen?: (path: string) => void; isMaster?: boolean }
 type ProductionRow = { ordem_producao_id: string; quantidade_boa: number | null; quantidade_defeituosa: number | null }
 type OrderRow = { id: string; numero_op: string; produto_id: string; quantidade: number; produced: number; status: string; data_prevista: string | null }
 type ProductRow = { id: string; nome: string; codigo: string }
@@ -12,7 +12,7 @@ const safeNumber = (value: unknown) => { const n = Number(value); return Number.
 const fmt = (value: number, digits = 0) => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: digits }).format(value)
 const pct = (value: number) => `${fmt(value, 1)}%`
 
-export default function IndustrialDashboardPremium({ onOpen }: DashboardProps) {
+export default function IndustrialDashboardPremium({ onOpen, isMaster = false }: DashboardProps) {
   const [loading, setLoading] = useState(true)
   const [empresa, setEmpresa] = useState('Sua empresa')
   const [refresh, setRefresh] = useState(0)
@@ -33,22 +33,38 @@ export default function IndustrialDashboardPremium({ onOpen }: DashboardProps) {
 
         const { data: profile, error: profileError } = await supabase
           .from('erp_usuarios')
-          .select('empresa_id')
+          .select('empresa_id,is_master,perfil,nivel_admin')
           .eq('auth_user_id', auth.user.id)
           .eq('ativo', true)
           .is('deleted_at', null)
           .maybeSingle()
         if (profileError) throw profileError
-        if (!profile?.empresa_id) throw new Error('Perfil empresarial não encontrado.')
-        const empresaId = profile.empresa_id
+        const masterProfile = profile?.is_master === true && Number(profile?.nivel_admin ?? 0) === 100 && String(profile?.perfil ?? '').trim().toUpperCase() === 'MASTER' && profile?.empresa_id === null
+        if (!masterProfile && !profile?.empresa_id) throw new Error('Perfil empresarial não encontrado.')
+        const empresaId = profile?.empresa_id ?? null
+
+        let ordersQuery = supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade,status,data_prevista').order('criado_em', { ascending: false }).limit(6)
+        let productionQuery = supabase.from('erp_producao_conferencias').select('ordem_producao_id,quantidade_boa,quantidade_defeituosa').limit(5000)
+        let stockQuery = supabase.from('erp_estoque_movimentos').select('tipo,quantidade').limit(5000)
+        let machinesQuery = supabase.from('erp_maquinas').select('id', { count: 'exact', head: true }).eq('ativo', true)
+        let ncQuery = supabase.from('erp_rpnc').select('id', { count: 'exact', head: true }).neq('status', 'encerrada')
+        if (!masterProfile && empresaId) {
+          ordersQuery = ordersQuery.eq('empresa_id', empresaId)
+          productionQuery = productionQuery.eq('empresa_id', empresaId)
+          stockQuery = stockQuery.eq('empresa_id', empresaId)
+          machinesQuery = machinesQuery.eq('empresa_id', empresaId)
+          ncQuery = ncQuery.eq('empresa_id', empresaId)
+        }
 
         const [companyResult, ordersResult, productionResult, stockResult, machinesResult, ncResult] = await Promise.all([
-          supabase.from('erp_empresas').select('nome_fantasia,razao_social').eq('id', empresaId).eq('ativo', true).maybeSingle(),
-          supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade,status,data_prevista').eq('empresa_id', empresaId).order('criado_em', { ascending: false }).limit(6),
-          supabase.from('erp_producao_conferencias').select('ordem_producao_id,quantidade_boa,quantidade_defeituosa').eq('empresa_id', empresaId).limit(5000),
-          supabase.from('erp_estoque_movimentos').select('tipo,quantidade').eq('empresa_id', empresaId).limit(5000),
-          supabase.from('erp_maquinas').select('id', { count: 'exact', head: true }).eq('empresa_id', empresaId).eq('ativo', true),
-          supabase.from('erp_rpnc').select('id', { count: 'exact', head: true }).eq('empresa_id', empresaId).neq('status', 'encerrada'),
+          masterProfile
+            ? supabase.from('erp_empresas').select('nome_fantasia,razao_social').eq('ativo', true).limit(500)
+            : supabase.from('erp_empresas').select('nome_fantasia,razao_social').eq('id', empresaId as string).eq('ativo', true).maybeSingle(),
+          ordersQuery,
+          productionQuery,
+          stockQuery,
+          machinesQuery,
+          ncQuery,
         ])
 
         if (ordersResult.error) throw ordersResult.error
@@ -61,7 +77,7 @@ export default function IndustrialDashboardPremium({ onOpen }: DashboardProps) {
         const producedByOrder = production.reduce<Record<string, number>>((acc, row) => { acc[row.ordem_producao_id] = (acc[row.ordem_producao_id] ?? 0) + safeNumber(row.quantidade_boa); return acc }, {})
         const nextOrders = ((ordersResult.data ?? []) as Omit<OrderRow, 'produced'>[]).map(row => ({ ...row, produced: producedByOrder[row.id] ?? 0 }))
         const productIds = [...new Set(nextOrders.map(row => row.produto_id).filter(Boolean))]
-        const productResult = productIds.length ? await supabase.from('erp_produtos').select('id,nome,codigo').eq('empresa_id', empresaId).in('id', productIds) : { data: [], error: null }
+        const productResult = productIds.length ? (masterProfile ? await supabase.from('erp_produtos').select('id,nome,codigo').in('id', productIds) : await supabase.from('erp_produtos').select('id,nome,codigo').eq('empresa_id', empresaId as string).in('id', productIds)) : { data: [], error: null }
         if (productResult.error) throw productResult.error
 
         const produced = production.reduce((sum, row) => sum + safeNumber(row.quantidade_boa), 0)
@@ -76,7 +92,8 @@ export default function IndustrialDashboardPremium({ onOpen }: DashboardProps) {
         }, 0)
 
         if (!alive) return
-        setEmpresa(companyResult.data?.nome_fantasia || companyResult.data?.razao_social || 'Sua empresa')
+        const companyName = masterProfile ? `Visão Master · ${companyResult.data?.length ?? 0} empresas` : (companyResult.data?.nome_fantasia || companyResult.data?.razao_social || 'Sua empresa')
+        setEmpresa(companyName)
         setOrders(nextOrders)
         setProducts(Object.fromEntries(((productResult.data ?? []) as ProductRow[]).map(product => [product.id, product])))
         setMetrics({ planned, produced, scrap, stock: Math.max(0, stock), machines: machinesResult.count ?? 0, openNc: ncResult.count ?? 0, downtime, setup })
