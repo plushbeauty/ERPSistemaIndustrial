@@ -92,7 +92,9 @@ export default function IndustrialDashboardPremium({ onOpen, isMaster = false }:
         }, 0)
 
         if (!alive) return
-        const companyName = masterProfile ? `Visão Master · ${companyResult.data?.length ?? 0} empresas` : (companyResult.data?.nome_fantasia || companyResult.data?.razao_social || 'Sua empresa')
+        const companyName = masterProfile
+          ? `Visão Master · ${Array.isArray(companyResult.data) ? companyResult.data.length : 0} empresas`
+          : (!Array.isArray(companyResult.data) && (companyResult.data?.nome_fantasia || companyResult.data?.razao_social)) || 'Sua empresa'
         setEmpresa(companyName)
         setOrders(nextOrders)
         setProducts(Object.fromEntries(((productResult.data ?? []) as ProductRow[]).map(product => [product.id, product])))
