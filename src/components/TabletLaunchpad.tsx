@@ -1,70 +1,26 @@
-import React, { useEffect } from 'react'
-import { Activity, CalendarDays, ClipboardCheck, Factory, FileText, LayoutGrid, Package, ShoppingCart, Users, Wrench, X } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Activity, ArrowLeft, BarChart3, BookOpen, Boxes, CalendarCheck2, ClipboardCheck, ClipboardList, Factory, FileCheck2, FileText, Gauge, GraduationCap, HardHat, HelpCircle, Landmark, Package, Plus, Receipt, Settings, ShieldCheck, ShoppingCart, Users, Warehouse, Wrench, X, UserRound } from 'lucide-react'
 
-interface MenuButton {
-  label: string
-  description: string
-  route: string
-  icon: LucideIcon
-  category: 'Operação' | 'Faturamento' | 'Administrativo'
-}
-
-const erpButtons: MenuButton[] = [
-  { label: 'PCP & Planejamento', description: 'Agenda de máquinas e sequenciamento', route: '/pcp', icon: CalendarDays, category: 'Operação' },
-  { label: 'Produtos & Estoque', description: 'Controle de materiais e insumos', route: '/produtos-vendas', icon: Package, category: 'Operação' },
-  { label: 'Ordens de Produção', description: 'Apontamentos e chão de fábrica', route: '/operacao-industrial', icon: Factory, category: 'Operação' },
-  { label: 'Máquinas & Manutenção', description: 'Equipamentos, manutenção e histórico', route: '/operacao-industrial', icon: Wrench, category: 'Operação' },
-  { label: 'Controle de Qualidade', description: 'Inspeções, RPNC e conformidades', route: '/qualidade', icon: ClipboardCheck, category: 'Administrativo' },
-  { label: 'Usuários & Permissões', description: 'Níveis de acesso e segurança Master', route: '/usuarios', icon: Users, category: 'Administrativo' },
-  { label: 'Indicadores OEE', description: 'Eficiência global e indicadores', route: '/erp-industrial', icon: Activity, category: 'Administrativo' },
-  { label: 'Documentos Controlados', description: 'Procedimentos e documentos da qualidade', route: '/qualidade/documentos', icon: FileText, category: 'Administrativo' },
-  { label: 'Recebimento XML', description: 'Importação de NF-e e notas fiscais', route: '/fiscal', icon: FileText, category: 'Faturamento' },
-  { label: 'Solicitação de Compras', description: 'Pedidos e cotações de insumos', route: '/compras-solicitacao', icon: ShoppingCart, category: 'Faturamento' },
+type Module={label:string;description:string;icon:typeof Settings;actions:Array<{label:string;description:string;icon:typeof Settings;route:string}>}
+const A=(label:string,description:string,icon:typeof Settings,route:string)=>({label,description,icon,route})
+const modules:Module[]=[
+ {label:'PCP',description:'Planejamento, MRP, OP, programação e produção',icon:Factory,actions:[A('Visão geral','Ordens, demanda e capacidade',Gauge,'/pcp'),A('Pedidos / Demandas','Pedidos que alimentam o planejamento',ClipboardList,'/produtos-vendas'),A('MRP / Materiais','Necessidades e disponibilidade',Boxes,'/pcp'),A('BOM / Engenharia','Estrutura e roteiro',Settings,'/engenharia'),A('Programação','Máquinas, capacidade e sequência',CalendarCheck2,'/pcp'),A('Produção / Apontamento','Registrar produção e perdas',Factory,'/operacao-industrial'),A('Lotes / Rastreabilidade','Rastreio por lote e OP',ShieldCheck,'/qualidade')]},
+ {label:'Qualidade',description:'SGQ, inspeção, RPNC, documentos e equipamentos',icon:ShieldCheck,actions:[A('Visão geral','Indicadores e Pareto',Gauge,'/qualidade'),A('Nova Inspeção','Abrir formulário',ClipboardCheck,'/qualidade?tab=inspecao&novo=1'),A('RPNC / CAPA','Abrir formulário de não conformidade',FileCheck2,'/qualidade?tab=rpnc&novo=1'),A('Controle de Documentos','Revisão, aprovação e vigência',FileText,'/qualidade/documentos'),A('Controle de Equipamentos','Instrumentos e calibração',Gauge,'/qualidade?tab=calibracao&novo=1'),A('Auditorias','Plano, execução e evidências',ClipboardList,'/qualidade?tab=auditorias&novo=1'),A('Planos de Inspeção','Características e limites',Settings,'/qualidade?tab=planos&novo=1'),A('Defeitos / Pareto','Causas e quantidades',BarChart3,'/qualidade?tab=defeitos')]},
+ {label:'Vendas',description:'Produtos, pedidos, clientes, preços e faturamento',icon:ShoppingCart,actions:[A('Cadastro de Produtos','Dados gerais, fiscal, estoque e produção',Package,'/produtos-vendas'),A('Novo Pedido','Selecionar cliente e itens',ShoppingCart,'/produtos-vendas'),A('Clientes','Cadastro e histórico',Users,'/clientes'),A('Tabelas de Preços','Preços por condição',Receipt,'/tabelas-preco'),A('Estoque para Venda','Saldo e disponibilidade',Boxes,'/estoque')]},
+ {label:'Compras',description:'Solicitação, fornecedores, pedidos e recebimento',icon:ShoppingCart,actions:[A('Nova Solicitação','Formulário de necessidade',Plus,'/compras-solicitacao'),A('Fornecedores','Cadastro e documentos',Users,'/fornecedores'),A('Recebimento de Materiais','Entrada e conferência',Package,'/recebimento-materiais'),A('Pedidos de Compra','Solicitações e aprovações',ClipboardList,'/compras-solicitacao'),A('MRP → Compras','Necessidades do planejamento',Factory,'/pcp')]},
+ {label:'Fiscal / Financeiro',description:'NF-e, faturamento, contas a pagar e receber',icon:Landmark,actions:[A('Liberação Fiscal','Saldo real por item',ShieldCheck,'/fiscal'),A('Nova NF-e','Preenchimento da nota',FileText,'/fiscal/nova'),A('Contas a Receber','Títulos e recebimentos',Receipt,'/fiscal'),A('Contas a Pagar','Vencimentos e pagamentos',Landmark,'/fiscal'),A('Aging / Relatórios','Visão financeira',BarChart3,'/fiscal'),A('Previsão de Caixa','Entradas e saídas',Activity,'/fiscal/previsao-caixa')]},
+ {label:'ADM / Gestão',description:'Usuários, permissões, empresa e parâmetros',icon:Settings,actions:[A('Usuários e Permissões','Acessos por perfil',Users,'/usuarios'),A('Master','Administração universal',ShieldCheck,'/master'),A('Cadastro da Empresa','Dados e configuração',Landmark,'/cadastro-empresa'),A('Logs / Auditoria','Rastreabilidade administrativa',ClipboardList,'/teste-erp'),A('Manual do Usuário','Todas as telas',BookOpen,'/manual-usuario')]},
+ {label:'RH',description:'Funcionários, ponto, treinamentos e competências',icon:Users,actions:[A('Cadastro de Funcionários','Dados funcionais',UserRound,'/rh'),A('Ponto / Presença','Entradas, saídas e faltas',CalendarCheck2,'/rh?tab=ponto'),A('Treinamentos','Turmas, instrutor e presença',GraduationCap,'/rh?tab=treinamentos'),A('Cronograma de Treinamento','Plano e competências',ClipboardList,'/rh?tab=planos'),A('Avaliação de Funcionários','Notas e plano de ação',BarChart3,'/rh?tab=avaliacoes'),A('Gráfico de Faltas e Presenças','Indicadores do ponto',Activity,'/rh?tab=indicadores')]},
+ {label:'Almoxarifado',description:'Recebimento, conferência, localização e entrega',icon:Warehouse,actions:[A('Entrada de Material','Formulário de entrada',Package,'/estoque?tab=entrada'),A('Conferir Recebimento','Conferência',ClipboardCheck,'/recebimento-materiais'),A('Localizar / Endereçar','Prateleira e pallet',Warehouse,'/estoque'),A('Reservar para Produção','Separar material para OP',Boxes,'/estoque'),A('Separar e Entregar','Baixa para produção',Factory,'/estoque'),A('Lotes e Rastreabilidade','Histórico de lote',ShieldCheck,'/estoque')]},
+ {label:'Estoque',description:'Saldos, entradas, saídas, transferências e inventário',icon:Boxes,actions:[A('Saldo / Endereços','Saldo real',Boxes,'/estoque'),A('Entrada','Formulário de entrada',Plus,'/estoque?tab=entrada'),A('Saída','Formulário de saída',Package,'/estoque?tab=saida'),A('Transferência','Mover entre endereços',ArrowLeft,'/estoque?tab=transferencia'),A('Conferir Produção','Boa, defeito, refugo',ClipboardCheck,'/estoque?tab=producao'),A('Inventário / Rastreabilidade','Conferência e histórico',ShieldCheck,'/estoque')]},
+ {label:'Produção',description:'OP, apontamento, conferência e perdas',icon:HardHat,actions:[A('Ordens de Produção','Criar e acompanhar OPs',Factory,'/operacao-industrial'),A('Apontamento','Produzido, operador e máquina',ClipboardCheck,'/operacao-industrial'),A('Conferência','Encontrado, bom e defeituoso',ShieldCheck,'/estoque?tab=producao'),A('Refugo / Defeitos','Causa e observação',FileCheck2,'/qualidade?tab=defeitos'),A('Indicadores','Produção e perdas',BarChart3,'/erp-industrial')]},
+ {label:'Manutenção',description:'Máquinas, planos, ordens e histórico',icon:Wrench,actions:[A('Máquinas','Cadastro e situação',Factory,'/operacao-industrial'),A('Ordem de Manutenção','Intervenção e causa',Wrench,'/operacao-industrial'),A('Preventiva','Periodicidade',CalendarCheck2,'/operacao-industrial'),A('Histórico','Paradas e intervenções',ClipboardList,'/operacao-industrial')]},
+ {label:'Engenharia / BOM',description:'Fichas, componentes, operações e roteiros',icon:Settings,actions:[A('Ficha de Engenharia','Produto, versão e rendimento',FileText,'/engenharia'),A('BOM','Componentes e quantidades',Boxes,'/engenharia'),A('Roteiro','Operações, máquinas e setup',Factory,'/engenharia'),A('Moldes e Ferramentas','Cavidades e ciclos',Wrench,'/moldes-injecao')]},
+ {label:'Expedição',description:'Separação, conferência, romaneio e entrega',icon:Package,actions:[A('Pedidos Liberados','Saldo pronto',ClipboardList,'/fiscal'),A('Separação','Itens e volumes',Boxes,'/fiscal'),A('Conferência','Quantidade e lote',ClipboardCheck,'/fiscal'),A('Romaneio','Carga e transporte',FileText,'/fiscal')]},
+ {label:'Relatórios',description:'Indicadores, gráficos e consultas',icon:BarChart3,actions:[A('Dashboard Industrial','Visão executiva',Gauge,'/erp-industrial'),A('PCP / Produção','Planejado x realizado',Factory,'/pcp'),A('Qualidade','Pareto e RPNC',ShieldCheck,'/qualidade'),A('Estoque','Saldos e movimentações',Boxes,'/estoque'),A('Fiscal / Financeiro','Pagar, receber e aging',Landmark,'/fiscal'),A('RH','Ponto e treinamentos',Users,'/rh')]},
+ {label:'Manual do Usuário',description:'Ajuda contextual de todas as telas',icon:BookOpen,actions:[A('Manual completo','O que cada tela faz',BookOpen,'/manual-usuario'),A('Ajuda do módulo','Orientação contextual',HelpCircle,'/manual-usuario')]}
 ]
-
-interface TabletLaunchpadProps {
-  onNavigate: (route: string) => void
-  isOpen: boolean
-  onClose: () => void
+export default function TabletLaunchpad({onNavigate,isOpen,onClose}:{onNavigate:(route:string)=>void;isOpen:boolean;onClose:()=>void}){
+ const[selected,setSelected]=useState<Module|null>(null);useEffect(()=>{if(!isOpen)setSelected(null)},[isOpen]);if(!isOpen)return null
+ return <div className="sgq-tablet-backdrop" role="dialog" aria-modal="true"><style>{`.sgq-tablet-backdrop{position:fixed;inset:0;z-index:9999;background:rgba(2,12,18,.68);display:grid;place-items:center;padding:18px}.sgq-tablet-frame{width:min(1500px,96vw);height:min(900px,94vh);background:#f5f7f8;border:10px solid #17242b;border-radius:32px;box-shadow:0 35px 100px rgba(0,0,0,.45);overflow:hidden}.sgq-tablet-head{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;background:#fff;border-bottom:2px solid #d7dee5}.sgq-tablet-head strong{display:block;font-size:18px}.sgq-tablet-head small{display:block;color:#64748b;margin-top:3px}.sgq-tablet-head button,.sgq-back{border:1px solid #cbd5e1;background:#fff;border-radius:10px;padding:9px;cursor:pointer}.sgq-tablet-body{height:calc(100% - 72px);overflow:auto;padding:20px}.sgq-module-grid{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:14px}.sgq-module-icon{min-height:150px;border:1px solid #d4dde2;border-radius:18px;background:#fff;display:grid;place-items:center;padding:16px;text-align:center;cursor:pointer;box-shadow:0 7px 20px rgba(15,23,42,.06)}.sgq-module-icon:hover{transform:translateY(-2px);border-color:#0f766e}.sgq-module-icon svg,.sgq-action-card svg{color:#0f766e}.sgq-module-icon b{display:block;margin-top:10px;font-size:14px}.sgq-module-icon span{display:block;color:#64748b;font-size:10px;line-height:1.4;margin-top:5px}.sgq-module-title{display:flex;align-items:center;gap:12px;margin-bottom:16px}.sgq-module-title h2{margin:0;font-size:24px}.sgq-module-title p{margin:3px 0 0;color:#64748b}.sgq-back{display:inline-flex;align-items:center;gap:7px;font-weight:850}.sgq-action-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.sgq-action-card{min-height:125px;border:1px solid #d4dde2;border-radius:16px;background:#fff;padding:16px;text-align:left;cursor:pointer;box-shadow:0 6px 18px rgba(15,23,42,.05)}.sgq-action-card:hover{border-color:#0f766e;background:#f8fffd}.sgq-action-card b{display:block;margin-top:9px;font-size:13px}.sgq-action-card span{display:block;margin-top:5px;color:#64748b;font-size:10px;line-height:1.4}.sgq-action-card em{display:inline-flex;margin-top:10px;border:1px solid #0f766e;border-radius:8px;padding:6px 8px;color:#0f766e;font-size:9px;font-weight:900;font-style:normal}.sgq-tablet-note{padding:13px 15px;background:#fff7ed;border-left:4px solid #f97316;border-radius:9px;margin-bottom:16px;font-size:11px;color:#7c2d12}@media(max-width:1100px){.sgq-module-grid{grid-template-columns:repeat(3,minmax(130px,1fr))}.sgq-action-grid{grid-template-columns:repeat(3,minmax(140px,1fr))}}@media(max-width:700px){.sgq-tablet-frame{width:100%;height:96vh;border-width:5px;border-radius:20px}.sgq-module-grid,.sgq-action-grid{grid-template-columns:repeat(2,minmax(120px,1fr))}.sgq-tablet-body{padding:12px}}`}</style><section className="sgq-tablet-frame"><header className="sgq-tablet-head"><div><strong>{selected?'Tablet • '+selected.label:'Tablet • SGQ ERP Industrial'}</strong><small>{selected?selected.description:'Clique no ícone do módulo para abrir o segundo tablet operacional.'}</small></div><div style={{display:'flex',gap:8}}>{selected&&<button type="button" onClick={()=>setSelected(null)} aria-label="Voltar"><ArrowLeft size={19}/></button>}<button type="button" onClick={onClose} aria-label="Fechar"><X size={20}/></button></div></header><div className="sgq-tablet-body">{!selected?<><div className="sgq-tablet-note"><b>Tablet operacional:</b> cada ícone abre o segundo nível com ações reais e a tela correspondente.</div><div className="sgq-module-grid">{modules.map(m=>{const I=m.icon;return <button type="button" className="sgq-module-icon" key={m.label} onClick={()=>setSelected(m)}><I size={38}/><div><b>{m.label}</b><span>{m.description}</span></div></button>})}</div></>:<><div className="sgq-module-title"><button type="button" className="sgq-back" onClick={()=>setSelected(null)}><ArrowLeft size={16}/> Módulos</button><div><h2>{selected.label}</h2><p>{selected.description}</p></div></div><div className="sgq-action-grid">{selected.actions.map(a=>{const I=a.icon;return <button type="button" className="sgq-action-card" key={a.label} onClick={()=>onNavigate(a.route)}><I size={22}/><b>{a.label}</b><span>{a.description}</span><em>ABRIR TELA</em></button>})}</div></>}</div></section></div>
 }
-
-export const TabletLaunchpad: React.FC<TabletLaunchpadProps> = ({ onNavigate, isOpen, onClose }) => {
-  useEffect(() => {
-    if (!isOpen) return
-    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [isOpen, onClose])
-
-  if (!isOpen) return null
-
-  return (
-    <div className="tablet-overlay" role="dialog" aria-modal="true" aria-label="Painel Tablet do SGQ ERP">
-      <div className="tablet-frame">
-        <div className="tablet-screen">
-          <header className="tablet-header">
-            <div><span>SISTEMA DE GESTÃO INTEGRADA</span><h2>Central de Módulos SGQ ERP</h2></div>
-            <button className="tablet-close-btn" type="button" onClick={onClose} aria-label="Fechar Painel"><X size={20} /></button>
-          </header>
-          <div className="tablet-grid-container">
-            {(['Operação', 'Faturamento', 'Administrativo'] as const).map((category) => (
-              <section key={category} className="tablet-category-section">
-                <h3 className="tablet-category-title">{category}</h3>
-                <div className="tablet-grid">
-                  {erpButtons.filter((button) => button.category === category).map((button) => {
-                    const Icon = button.icon
-                    return <button key={button.route + button.label} type="button" className="tablet-card-button" onClick={() => { onNavigate(button.route); onClose() }}><div className="tablet-card-icon"><Icon size={24} /></div><div className="tablet-card-info"><strong>{button.label}</strong><small>{button.description}</small></div></button>
-                  })}
-                </div>
-              </section>
-            ))}
-          </div>
-          <button type="button" className="tablet-home-button-indicator" onClick={onClose} aria-label="Fechar painel" />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export default TabletLaunchpad
