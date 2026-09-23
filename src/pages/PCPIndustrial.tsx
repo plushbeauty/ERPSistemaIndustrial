@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { FormEvent } from 'react'
+import type { FormEvent, ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { AlertTriangle, ArrowLeft, CalendarDays, CheckCircle2, ClipboardList, Factory, Gauge, HelpCircle, Package, Play, Plus, RefreshCw, Search, ShieldCheck, Wrench, X, XCircle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -186,7 +186,7 @@ export default function PCPIndustrial(){
  </main>
 }
 
-function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:React.ReactNode}){
+function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:ReactNode}){
  return <div className="pcp-modal-backdrop" role="dialog" aria-modal="true"><div className="pcp-modal"><div className="pcp-modal-head"><h2>{title}</h2><button className="pcp-modal-close" onClick={onClose} aria-label="Fechar"><X size={20}/></button></div>{children}</div></div>
 }
 
