@@ -19,3 +19,182 @@ button,input,select,textarea,table{font-size:16px!important}
 .icd-hero-actions{display:flex;justify-content:center;align-items:center;gap:12px}.icd-hero-actions .icd-primary{min-width:300px;justify-content:center;font-size:18px!important;background:#ea6a0a!important;color:#fff!important;box-shadow:0 12px 28px rgba(234,106,10,.25)!important}.icd-tablet-hint{font-size:14px;color:#64748b;font-weight:750}.icd-tablet-banner{display:flex;align-items:center;gap:20px}.icd-tablet-banner .icd-tablet-hint{margin-left:auto}@media(max-width:700px){.icd-hero-actions .icd-primary{min-width:0;width:100%}.icd-hero-actions{flex-direction:column}.icd-tablet-banner{align-items:flex-start;flex-direction:column}.icd-tablet-banner .icd-tablet-hint{margin-left:0}}
 .qms-control-page{font-size:16px!important}.qms-control-page input,.qms-control-page select,.qms-control-page textarea{font-size:16px!important;min-height:46px;box-sizing:border-box}.qms-control-page button{font-size:15px!important;min-height:44px}.qms-control-page h1{font-size:32px!important}.qms-control-page h2{font-size:25px!important}.qms-control-page h3{font-size:20px!important}.qms-status-row span,.qms-doc small,.qms-control-page p{font-size:15px!important}.qms-document-paper{font-size:16px!important}.qms-history article{font-size:15px!important}
 .erp-page-v3{min-height:100%;padding:32px;max-width:1700px;margin:0 auto;color:#e5eef2}.erp-page-header-v3{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:24px}.erp-page-header-v3 h1{font-size:32px;line-height:1.15;margin:8px 0}.erp-page-header-v3 p,.erp-card-v3 p{font-size:16px;color:#94a3b8}.erp-eyebrow{font-size:14px;letter-spacing:.14em;font-weight:800;color:#22d3ee}.erp-card-v3,.erp-card-inner{background:#0f1720;border:1px solid #263544;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.16);padding:24px}.erp-card-inner{background:#111c27}.erp-table-head-v3{display:flex;justify-content:space-between;gap:20px;margin-bottom:18px}.erp-table-head-v3 h2,.erp-card-v3 h2{font-size:22px;margin:0 0 5px}.erp-table-scroll{overflow:auto}.erp-table-v3{width:100%;border-collapse:separate;border-spacing:0;font-size:16px}.erp-table-v3 th{background:#162330;color:#a9c1cc;text-align:left;padding:14px;border-bottom:1px solid #334155;white-space:nowrap}.erp-table-v3 td{padding:15px 14px;border-bottom:1px solid #253342;vertical-align:middle}.erp-row-click{cursor:pointer}.erp-row-click:hover{background:#142331}.erp-table-v3 svg{display:inline-block;vertical-align:middle}.erp-badge-ok,.erp-badge-warn,.erp-badge-danger{display:inline-flex;padding:6px 10px;border-radius:999px;font-size:14px;font-weight:800}.erp-badge-ok{background:#064e3b;color:#a7f3d0}.erp-badge-warn{background:#78350f;color:#fed7aa}.erp-badge-danger{background:#7f1d1d;color:#fecaca}.erp-btn-primary,.erp-btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:46px;padding:0 16px;border-radius:8px;font-size:16px;font-weight:800;cursor:pointer}.erp-btn-primary{background:#0e9f9a;color:white;border:1px solid #14b8a6}.erp-btn-secondary{background:#172330;color:#dce8ee;border:1px solid #3a4b5a}.erp-detail-card{border:1px solid #304354;background:#14212c;border-radius:9px;padding:16px;display:flex;flex-direction:column;gap:7px}.erp-detail-card span{font-size:14px;color:#94a3b8}.erp-detail-card b{font-size:18px}.erp-alert-error,.erp-alert-ok{padding:14px 18px;border-radius:8px;margin-bottom:18px;font-size:16px}.erp-alert-error{background:#450a0a;color:#fecaca;border:1px solid #7f1d1d}.erp-alert-ok{background:#063b35;color:#a7f3d0;border:1px solid #0f766e}.erp-tabs-v3{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}.erp-tabs-v3 button{min-height:46px;padding:0 17px;border:1px solid #334155;border-radius:8px;background:#111c27;color:#cbd5e1;font-size:16px;font-weight:700}.erp-tabs-v3 button.active{background:#0e9f9a;color:#fff;border-color:#14b8a6}.erp-page-v3 label{display:flex;flex-direction:column;gap:7px;font-size:15px;font-weight:800;color:#cbd5e1}.erp-page-v3 input,.erp-page-v3 select,.erp-page-v3 textarea{min-height:46px;border:1px solid #334155;background:#0b131c;color:#f8fafc;border-radius:8px;padding:10px 12px;font-size:16px;outline:none}.erp-page-v3 textarea{min-height:110px}.erp-page-v3 input:focus,.erp-page-v3 select:focus,.erp-page-v3 textarea:focus{border-color:#22d3ee;box-shadow:0 0 0 2px rgba(34,211,238,.15)}.erp-count{font-size:16px;color:#94a3b8;font-weight:700}@media(max-width:800px){.erp-page-v3{padding:18px}.erp-page-header-v3{flex-direction:column}.erp-page-header-v3 h1{font-size:28px}}
+
+/* HOTFIX VISUAL — ERP INDUSTRIAL: tela operacional sempre legível */
+.v7-shell.theme-dark,
+.v7-shell.theme-windows,
+.v7-shell.theme-light{
+  background:#F4FBFD!important;
+  color:#17333F!important;
+}
+.v7-shell.theme-dark .v7-topbar,
+.v7-shell.theme-windows .v7-topbar,
+.v7-shell.theme-light .v7-topbar{
+  background:#FFFFFF!important;
+  color:#17333F!important;
+  border-bottom:1px solid #CFE1E7!important;
+}
+.v7-shell.theme-dark .v7-topbar *,
+.v7-shell.theme-windows .v7-topbar *,
+.v7-shell.theme-light .v7-topbar *{
+  color:inherit;
+}
+.v7-shell.theme-dark .v7-top-brand,
+.v7-shell.theme-windows .v7-top-brand,
+.v7-shell.theme-light .v7-top-brand{
+  color:#17333F!important;
+}
+.v7-shell.theme-dark .v7-top-brand small,
+.v7-shell.theme-windows .v7-top-brand small,
+.v7-shell.theme-light .v7-top-brand small,
+.v7-shell.theme-dark .v7-top-date small,
+.v7-shell.theme-windows .v7-top-date small,
+.v7-shell.theme-light .v7-top-date small,
+.v7-shell.theme-dark .v7-top-user-block small,
+.v7-shell.theme-windows .v7-top-user-block small{
+  color:#536B76!important;
+}
+.v7-shell.theme-dark .v7-top-context,
+.v7-shell.theme-windows .v7-top-context,
+.v7-shell.theme-light .v7-top-context{
+  background:#F4FBFD!important;
+  color:#17333F!important;
+  border:1px solid #B9D2DA!important;
+}
+.v7-shell.theme-dark .v7-top-search,
+.v7-shell.theme-windows .v7-top-search,
+.v7-shell.theme-light .v7-top-search{
+  background:#FFFFFF!important;
+  color:#17333F!important;
+  border:1px solid #B9D2DA!important;
+}
+.v7-shell.theme-dark .v7-top-search input,
+.v7-shell.theme-windows .v7-top-search input,
+.v7-shell.theme-light .v7-top-search input{
+  background:#FFFFFF!important;
+  color:#17333F!important;
+  caret-color:#17333F!important;
+}
+.v7-shell.theme-dark .v7-top-user-block,
+.v7-shell.theme-windows .v7-top-user-block,
+.v7-shell.theme-light .v7-top-user-block{
+  background:#F7FBFC!important;
+  color:#17333F!important;
+  border:1px solid #CFE1E7!important;
+}
+.v7-shell.theme-dark .v7-top-date,
+.v7-shell.theme-windows .v7-top-date,
+.v7-shell.theme-light .v7-top-date{
+  color:#17333F!important;
+}
+.v7-shell.theme-dark .v7-top-lang,
+.v7-shell.theme-windows .v7-top-lang,
+.v7-shell.theme-light .v7-top-lang,
+.v7-shell.theme-dark .v7-theme-toggle,
+.v7-shell.theme-windows .v7-theme-toggle,
+.v7-shell.theme-light .v7-theme-toggle{
+  background:#FFFFFF!important;
+  color:#17333F!important;
+  border:1px solid #B9D2DA!important;
+}
+.v7-shell.theme-dark .v7-top-exit,
+.v7-shell.theme-windows .v7-top-exit,
+.v7-shell.theme-light .v7-top-exit{
+  background:#FFF5F5!important;
+  color:#9B2525!important;
+  border:1px solid #D8A8AD!important;
+}
+.v7-shell.theme-dark .v7-main,
+.v7-shell.theme-windows .v7-main,
+.v7-shell.theme-light .v7-main{
+  background:#F4FBFD!important;
+  color:#17333F!important;
+}
+.v7-shell.theme-dark .v7-header,
+.v7-shell.theme-windows .v7-header,
+.v7-shell.theme-light .v7-header{
+  background:#FFFFFF!important;
+  color:#17333F!important;
+  border:1px solid #CFE1E7!important;
+}
+.v7-shell.theme-dark .v7-header p,
+.v7-shell.theme-windows .v7-header p,
+.v7-shell.theme-light .v7-header p{
+  color:#536B76!important;
+}
+.v7-shell.theme-dark .v7-user,
+.v7-shell.theme-windows .v7-user,
+.v7-shell.theme-light .v7-user{
+  background:#F7FBFC!important;
+  color:#17333F!important;
+  border:1px solid #CFE1E7!important;
+}
+.v7-shell.theme-dark .v7-content,
+.v7-shell.theme-windows .v7-content,
+.v7-shell.theme-light .v7-content{
+  color:#17333F!important;
+}
+.v7-shell.theme-dark .v7-content h1,
+.v7-shell.theme-dark .v7-content h2,
+.v7-shell.theme-dark .v7-content h3,
+.v7-shell.theme-windows .v7-content h1,
+.v7-shell.theme-windows .v7-content h2,
+.v7-shell.theme-windows .v7-content h3,
+.v7-shell.theme-light .v7-content h1,
+.v7-shell.theme-light .v7-content h2,
+.v7-shell.theme-light .v7-content h3{
+  color:#17333F!important;
+}
+.v7-shell.theme-dark .v7-content p,
+.v7-shell.theme-dark .v7-content small,
+.v7-shell.theme-windows .v7-content p,
+.v7-shell.theme-windows .v7-content small,
+.v7-shell.theme-light .v7-content p,
+.v7-shell.theme-light .v7-content small{
+  color:#536B76!important;
+}
+.v7-shell.theme-dark .v7-executive-panel,
+.v7-shell.theme-dark .v7-executive-kpis article,
+.v7-shell.theme-windows .v7-executive-panel,
+.v7-shell.theme-windows .v7-executive-kpis article,
+.v7-shell.theme-light .v7-executive-panel,
+.v7-shell.theme-light .v7-executive-kpis article{
+  background:#FFFFFF!important;
+  color:#17333F!important;
+  border:1px solid #CFE1E7!important;
+  box-shadow:0 8px 24px rgba(23,51,63,.07)!important;
+}
+.v7-shell.theme-dark .v7-executive-kpis article span,
+.v7-shell.theme-windows .v7-executive-kpis article span,
+.v7-shell.theme-light .v7-executive-kpis article span{
+  color:#536B76!important;
+}
+.v7-shell.theme-dark .v7-executive-kpis article b,
+.v7-shell.theme-windows .v7-executive-kpis article b,
+.v7-shell.theme-light .v7-executive-kpis article b{
+  color:#17333F!important;
+}
+.v7-shell.theme-dark .v7-executive-actions button,
+.v7-shell.theme-windows .v7-executive-actions button,
+.v7-shell.theme-light .v7-executive-actions button{
+  background:#F8FCFD!important;
+  color:#17333F!important;
+  border:1px solid #CFE1E7!important;
+}
+.v7-shell.theme-dark .v7-executive-actions button small,
+.v7-shell.theme-windows .v7-executive-actions button small,
+.v7-shell.theme-light .v7-executive-actions button small{
+  color:#536B76!important;
+}
+.v7-shell.theme-dark .v7-executive-actions button:hover,
+.v7-shell.theme-windows .v7-executive-actions button:hover,
+.v7-shell.theme-light .v7-executive-actions button:hover{
+  background:#EAF6F8!important;
+  border-color:#2D8DB8!important;
+}
+.v7-shell.theme-dark footer,
+.v7-shell.theme-windows footer,
+.v7-shell.theme-light footer{
+  background:#17333F!important;
+  color:#FFFFFF!important;
+}
