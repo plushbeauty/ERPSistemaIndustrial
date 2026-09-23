@@ -127,7 +127,7 @@ export default function AppIndustrialV7() {
   useEffect(() => { const id = window.setInterval(() => setClock(new Date()), 1000); return () => window.clearInterval(id) }, [])
   const [theme, setTheme] = useState<UiTheme>(() => {
     const saved = localStorage.getItem('erp-theme')
-    return saved === 'light' || saved === 'windows' || saved === 'dark' ? saved : 'dark'
+    return saved === 'dark' ? 'dark' : 'light'
   })
   const current = segments.find(s => s.name === segment) ?? segments[0]
   const module = current.modules.find(m => m.name === active)
