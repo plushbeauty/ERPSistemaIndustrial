@@ -5,7 +5,7 @@ const out=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,h
 const norm=(v:string)=>v.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 const financialTerms=["financeiro","caixa","conta a pagar","conta a receber","a pagar","a receber","saldo","faturamento","receita","despesa","fluxo de caixa","previsao de caixa","pagamento","recebimento"];
 const actions=(p:string)=>{const n=norm(p);const a:{label:string;route:string}[]=[];if(n.includes("qualidade")||n.includes("nao conformidade")||n.includes("fmea"))a.push({label:"Abrir Qualidade",route:"/qualidade"});if(n.includes("pcp")||n.includes("mrp")||n.includes("producao"))a.push({label:"Abrir PCP / MRP",route:"/pcp"});if(n.includes("fiscal")||financialTerms.some(x=>n.includes(x)))a.push({label:"Abrir Fiscal",route:"/fiscal"});return a.slice(0,3)};
-function key(){const j=Deno.env.get("SUPABASE_PUBLISHABLE_KEYS");if(j)try{const k=JSON.parse(j);if(k.default)return String(k.default)}catch{}return Deno.env.get("SUPABASE_ANON_KEY")||null}
+function key(){const j=Deno.env.get("SUPABASE_PUBLISHABLE_KEYS");if(j)try{const k=JSON.parse(j);if(k.default)return String(k.default)}catch { void 0 }return Deno.env.get("SUPABASE_ANON_KEY")||null}
 function image(v:string|null){if(!v||!/^data:image\/(png|jpe?g|webp|gif);base64,/i.test(v)||v.length>8_500_000)return null;return v}
 Deno.serve(async(req)=>{
  if(req.method==='OPTIONS')return new Response('ok',{headers:cors});if(req.method!=='POST')return out({error:'Método não permitido'},405);const auth=req.headers.get('Authorization');if(!auth)return out({error:'Não autenticado'},401);
