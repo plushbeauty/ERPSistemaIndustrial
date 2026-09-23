@@ -30,7 +30,7 @@ const modules:Module[]=[
   A('Recebimento','Conferência de materiais',Package,'/recebimento-materiais'),
   A('Rastreabilidade','Lotes e histórico',ShieldCheck,'/estoque')
  ]},
- {label:'Fiscal • Financeiro',description:'NF-e, faturamento, documentos e caixa.',icon:Landmark,actions:[
+ {label:'Qualidade • PPAP / RIA',description:'Plano dimensional, amostras, tolerâncias e PSW / FAI.',icon:ShieldCheck,actions:[A('PPAP / RIA','PSW e certificado FAI',ShieldCheck,'/qualidade/ppap-ria')]},\n {label:'Fiscal • Financeiro',description:'NF-e, faturamento, documentos e caixa.',icon:Landmark,actions:[
   A('Fiscal','Documentos e liberações',Landmark,'/fiscal'),
   A('Nova NF-e','Modelo 55 / simulador',FileText,'/fiscal/nova'),
   A('Previsão de Caixa','Entradas e saídas',Activity,'/fiscal/previsao-caixa')
