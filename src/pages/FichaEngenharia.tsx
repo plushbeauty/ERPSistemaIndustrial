@@ -95,23 +95,105 @@ export default function FichaEngenharia(){
  if(loading)return <main className="industrial-form-page"><div className="industrial-panel">Carregando ficha de processo…</div></main>
  const tabs=[['identificacao','Identificação'],['materiais','Materiais / BOM'],['processo','Roteiro do Processo'],['qualidade','Controle da Qualidade'],['documentos','Documentos / Instruções'],['historico','Histórico']] as const
  return <main className="industrial-form-page process-sheet-page">
-  <header className="process-sheet-header"><div><span className="industrial-eyebrow">ENGENHARIA • SGQ • PCP</span><h1>Ficha de Processo de Fabricação</h1><p>Documento mestre que conecta Engenharia, PCP, Almoxarifado, Produção, Qualidade, Manutenção e Custos.</p></div><div className="process-sheet-actions"><button className="industrial-secondary" type="button" onClick={()=>{reset(false);setTab('identificacao')}}><X size={16}/>Nova ficha</button><button className="industrial-primary" type="button" onClick={()=>void save()} disabled={busy}><Save size={16}/>{busy?'Salvando…':'Salvar ficha'}</button></div></header>
-  <section className="process-sheet-banner"><div><b>FICHA</b><strong>{processCode||'—'}</strong><span>Revisão {version}</span></div><div><b>PRODUTO</b><strong>{selected?selected.codigo+' — '+selected.nome:'Não selecionado'}</strong><span>{selected?.unidade??'—'}</span></div><div><b>STATUS</b><strong>{ficha?.ativa?'ATIVA':'RASCUNHO'}</strong><span>Tenant isolado</span></div></section>
-  <section className="industrial-panel process-sheet-selector"><label>Produto produzido<select value={productId} onChange={e=>setProductId(e.target.value)}><option value="">Selecione o produto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select></label><label>Código<input value={processCode} onChange={e=>setProcessCode(e.target.value)} placeholder="FP-0001"/></label><label>Processo<input value={processName} onChange={e=>setProcessName(e.target.value)} placeholder="Processo de fabricação"/></label><label>Revisão<input type="number" min="1" value={version} onChange={e=>setVersion(e.target.value)}/></label><label>Rendimento<input type="number" min="0.000001" step="0.001" value={rendimento} onChange={e=>setRendimento(e.target.value)}/></label><label>Unidade<input value={unit} onChange={e=>setUnit(e.target.value.toUpperCase())}/></label></section>
-  <nav className="industrial-tabs process-sheet-tabs">{tabs.map(([key,label])=><button type="button" key={key} className={tab===key?'active':''} onClick={()=>setTab(key)}>{label}</button>)}</nav>
+  <header className="process-sheet-header">
+    <div>
+      <span className="industrial-eyebrow">INDUSTRIA ERP • Engenharia / Processos</span>
+      <h1>Ficha de Processo</h1>
+      <p>Documento operacional único para fabricação, roteiro, parâmetros, qualidade e aprovação.</p>
+    </div>
+    <div className="process-sheet-actions">
+      <button className="industrial-secondary" type="button" onClick={()=>reset(false)}><X size={16}/>Novo</button>
+      <button className="industrial-primary" type="button" onClick={()=>void save()} disabled={busy}><Save size={16}/>{busy?'Gravando…':'Gravar'}</button>
+    </div>
+  </header>
 
-  {tab==='identificacao'&&<section className="process-sheet-grid"><article className="industrial-panel"><div className="process-card-title"><Workflow/><div><span>DEFINIÇÃO DO PROCESSO</span><h2>Objetivo, entradas e saídas</h2></div></div><label>Objetivo<textarea rows={4} value={objective} onChange={e=>setObjective(e.target.value)} placeholder="Finalidade do processo e requisitos que devem ser atendidos."/></label><label>Entradas / materiais recebidos<textarea rows={4} value={inputSpec} onChange={e=>setInputSpec(e.target.value)} placeholder="Matéria-prima, componentes, lotes, desenhos, pedidos e documentos."/></label><label>Saídas / produto entregue<textarea rows={4} value={outputSpec} onChange={e=>setOutputSpec(e.target.value)} placeholder="Produto, subproduto, lote, embalagem e registros de liberação."/></label></article><article className="industrial-panel"><div className="process-card-title"><Factory/><div><span>BASE DO PCP</span><h2>Resumo operacional</h2></div></div><div className="process-metrics"><div><b>{bom.filter(x=>x.componente_id).length}</b><span>Materiais</span></div><div><b>{ops.length}</b><span>Operações</span></div><div><b>{quality.filter(x=>x.caracteristica.trim()).length}</b><span>Controles CQ</span></div><div><b>{totalTime.toFixed(1)}</b><span>Tempo teórico</span></div></div><div className="process-callout"><ShieldCheck size={18}/><span>O PCP pode usar a BOM para MRP e o roteiro para capacidade, sequência, prazo, setup e ciclo.</span></div></article></section>}
+  <div className="process-sheet-toolbar">
+    <button type="button" onClick={()=>reset(false)}>Novo</button>
+    <button type="button" onClick={()=>void save()} disabled={busy}>Gravar</button>
+    <button type="button" onClick={()=>productId&&void loadFicha(productId)} disabled={busy}>Pesquisar</button>
+    <button type="button" onClick={()=>window.print()}>Imprimir</button>
+    <span className="process-sheet-toolbar-status">{notice||'Ficha de processo • edição operacional'}</span>
+  </div>
 
-  {tab==='materiais'&&<section className="industrial-panel"><div className="industrial-section-head"><div><span>ESTRUTURA DO PRODUTO</span><h2>Lista de materiais</h2><p>Consumo, perda, lote e origem.</p></div><button className="industrial-secondary" type="button" onClick={()=>setBom(r=>[...r,{...emptyBom(),sequencia:(r.at(-1)?.sequencia??0)+10}])}><Plus size={16}/>Adicionar material</button></div><div className="industrial-table-scroll"><table className="industrial-table"><thead><tr><th>Seq.</th><th>Componente</th><th>Qtd.</th><th>Perda %</th><th>Lote</th><th>Origem</th><th/></tr></thead><tbody>{bom.map((r,i)=><tr key={r.id??'b'+i}><td>{r.sequencia}</td><td><select value={r.componente_id} onChange={e=>setBomField(i,'componente_id',e.target.value)}><option value="">Selecionar</option>{products.filter(p=>p.id!==productId).map(p=><option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select></td><td><input type="number" min="0.000001" step="0.001" value={r.quantidade} onChange={e=>setBomField(i,'quantidade',e.target.value)}/></td><td><input type="number" min="0" step="0.01" value={r.perda_percentual} onChange={e=>setBomField(i,'perda_percentual',e.target.value)}/></td><td><input type="checkbox" checked={r.lote_obrigatorio} onChange={e=>setBomField(i,'lote_obrigatorio',e.target.checked)}/></td><td><select value={r.tipo_item} onChange={e=>setBomField(i,'tipo_item',e.target.value as BomRow['tipo_item'])}><option value="COMPRADO">Comprado</option><option value="FABRICADO">Fabricado</option></select></td><td><button type="button" className="icon-button danger" onClick={()=>setBom(x=>x.length===1?[emptyBom()]:x.filter((_,n)=>n!==i))}><Trash2 size={16}/></button></td></tr>)}</tbody></table></div></section>}
+  <section className="process-sheet-module-title">
+    <div><b>FICHA DE PROCESSO</b><span>Módulo: Engenharia / Qualidade</span></div>
+    <div className="process-sheet-document-id"><span>Código</span><strong>{processCode||'—'}</strong><small>Revisão {version}</small></div>
+  </section>
 
-  {tab==='processo'&&<section className="industrial-panel"><div className="industrial-section-head"><div><span>ROTEIRO DE FABRICAÇÃO</span><h2>Operações e tempos padrão</h2><p>Sequência, máquina, ferramental, setup, ciclo e instrução.</p></div><button className="industrial-secondary" type="button" onClick={()=>setOps(r=>[...r,{...emptyOp(),sequencia:(r.at(-1)?.sequencia??0)+10}])}><Plus size={16}/>Adicionar operação</button></div><div className="industrial-table-scroll"><table className="industrial-table"><thead><tr><th>Seq.</th><th>Operação</th><th>Máquina</th><th>Molde / recurso</th><th>Setup</th><th>Ciclo</th><th>Instrução</th><th/></tr></thead><tbody>{ops.map((r,i)=><tr key={r.id??'o'+i}><td><input type="number" value={r.sequencia} onChange={e=>setOpField(i,'sequencia',Number(e.target.value))}/></td><td><input value={r.operacao} onChange={e=>setOpField(i,'operacao',e.target.value)} placeholder="Cortar / Usinar / Injetar / Montar"/></td><td><select value={r.maquina_id} onChange={e=>setOpField(i,'maquina_id',e.target.value)}><option value="">Sem recurso</option>{machines.map(m=><option key={m.id} value={m.id}>{m.codigo} — {m.nome}</option>)}</select></td><td><input value={r.molde_id} onChange={e=>setOpField(i,'molde_id',e.target.value)} placeholder="ID"/></td><td><input type="number" min="0" step="0.1" value={r.setup_min} onChange={e=>setOpField(i,'setup_min',e.target.value)}/></td><td><input type="number" min="0" step="0.001" value={r.ciclo_seg} onChange={e=>setOpField(i,'ciclo_seg',e.target.value)}/></td><td><textarea rows={2} value={r.instrucoes} onChange={e=>setOpField(i,'instrucoes',e.target.value)} placeholder="Instrução controlada / parâmetro crítico"/></td><td><button type="button" className="icon-button danger" onClick={()=>setOps(x=>x.length===1?[emptyOp()]:x.filter((_,n)=>n!==i))}><Trash2 size={16}/></button></td></tr>)}</tbody></table></div><div className="process-callout"><Factory size={18}/><span>Tempo estimado = setup + ciclo × quantidade. Essa estrutura alimenta capacidade e programação.</span></div></section>}
+  <section className="industrial-panel process-sheet-selector">
+    <div className="process-section-heading"><span>IDENTIFICAÇÃO</span><h2>Dados do processo</h2></div>
+    <div className="process-form-grid">
+      <label>Produto<select value={productId} onChange={e=>setProductId(e.target.value)}><option value="">Selecione o produto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select></label>
+      <label>Processo<input value={processName} onChange={e=>setProcessName(e.target.value)} placeholder="Usinagem / Injeção / Montagem"/></label>
+      <label>Versão<input type="number" min="1" value={version} onChange={e=>setVersion(e.target.value)}/></label>
+      <label>Rendimento<input type="number" min="0.000001" step="0.001" value={rendimento} onChange={e=>setRendimento(e.target.value)}/></label>
+      <label>Unidade<input value={unit} onChange={e=>setUnit(e.target.value.toUpperCase())}/></label>
+      <label>Status<input value={ficha?.ativa?'Ativa':'Rascunho'} readOnly/></label>
+      <label className="process-form-span-2">Código da ficha<input value={processCode} onChange={e=>setProcessCode(e.target.value)} placeholder="FP-0001"/></label>
+      <label className="process-form-span-2">Objetivo<textarea rows={3} value={objective} onChange={e=>setObjective(e.target.value)} placeholder="Finalidade do processo e requisitos que devem ser atendidos."/></label>
+    </div>
+  </section>
 
-  {tab==='qualidade'&&<section className="industrial-panel"><div className="industrial-section-head"><div><span>PLANO DE INSPEÇÃO</span><h2>Características e critérios de aceitação</h2><p>Controles ligados ao produto.</p></div><button className="industrial-secondary" type="button" onClick={()=>setQuality(r=>[...r,emptyQuality()])}><Plus size={16}/>Adicionar controle</button></div><div className="industrial-table-scroll"><table className="industrial-table"><thead><tr><th>Código</th><th>Característica</th><th>Unidade</th><th>Limite mín.</th><th>Limite máx.</th><th>Frequência</th><th>Status</th><th/></tr></thead><tbody>{quality.map((r,i)=><tr key={r.id??'q'+i}><td><input value={r.codigo} onChange={e=>setQualityField(i,'codigo',e.target.value)} placeholder="CQ-001"/></td><td><input value={r.caracteristica} onChange={e=>setQualityField(i,'caracteristica',e.target.value)} placeholder="Dimensão / peso / aparência"/></td><td><input value={r.unidade} onChange={e=>setQualityField(i,'unidade',e.target.value)} placeholder="mm / kg / °C"/></td><td><input type="number" step="0.001" value={r.limite_inferior} onChange={e=>setQualityField(i,'limite_inferior',e.target.value)}/></td><td><input type="number" step="0.001" value={r.limite_superior} onChange={e=>setQualityField(i,'limite_superior',e.target.value)}/></td><td><input value={r.frequencia} onChange={e=>setQualityField(i,'frequencia',e.target.value)}/></td><td><select value={r.status} onChange={e=>setQualityField(i,'status',e.target.value)}><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></td><td><button type="button" className="icon-button danger" onClick={()=>setQuality(x=>x.length===1?[emptyQuality()]:x.filter((_,n)=>n!==i))}><Trash2 size={16}/></button></td></tr>)}</tbody></table></div><div className="process-callout quality"><ClipboardCheck size={18}/><span>O plano pode orientar inspeção de recebimento, processo e produto com limites e frequência definidos.</span></div></section>}
+  <section className="industrial-panel process-sheet-operation-head">
+    <div className="process-section-heading"><span>ROTEIRO DE FABRICAÇÃO</span><h2>Operações</h2><p>Sequência, centro/máquina, setup, ciclo, ferramental e instrução.</p></div>
+    <button className="industrial-secondary" type="button" onClick={()=>setOps(r=>[...r,{...emptyOp(),sequencia:(r.at(-1)?.sequencia??0)+10}])}><Plus size={16}/>Adicionar operação</button>
+  </section>
+  <section className="industrial-panel process-sheet-table-panel">
+    <div className="industrial-table-scroll"><table className="industrial-table process-sheet-table"><thead><tr><th>Seq.</th><th>Operação</th><th>Centro / Máquina</th><th>Molde / Ferramenta</th><th>Setup</th><th>Ciclo</th><th>Mão de obra</th><th>Instrução</th><th></th></tr></thead><tbody>{ops.map((r,i)=><tr key={r.id??'o'+i}>
+      <td><input type="number" value={r.sequencia} onChange={e=>setOpField(i,'sequencia',Number(e.target.value))}/></td>
+      <td><input value={r.operacao} onChange={e=>setOpField(i,'operacao',e.target.value)} placeholder="Operação"/></td>
+      <td><select value={r.maquina_id} onChange={e=>setOpField(i,'maquina_id',e.target.value)}><option value="">Selecionar</option>{machines.map(m=><option key={m.id} value={m.id}>{m.codigo} — {m.nome}</option>)}</select></td>
+      <td><input value={r.molde_id} onChange={e=>setOpField(i,'molde_id',e.target.value)} placeholder="Ferramenta / molde"/></td>
+      <td><input type="number" min="0" step="0.1" value={r.setup_min} onChange={e=>setOpField(i,'setup_min',e.target.value)}/></td>
+      <td><input type="number" min="0" step="0.001" value={r.ciclo_seg} onChange={e=>setOpField(i,'ciclo_seg',e.target.value)}/></td>
+      <td><input value="1 operador" readOnly/></td>
+      <td><textarea rows={2} value={r.instrucoes} onChange={e=>setOpField(i,'instrucoes',e.target.value)} placeholder="Instrução controlada / parâmetro crítico"/></td>
+      <td><button type="button" className="icon-button danger" onClick={()=>setOps(x=>x.length===1?[emptyOp()]:x.filter((_,n)=>n!==i))}><Trash2 size={16}/></button></td>
+    </tr>)}</tbody></table></div>
+  </section>
 
-  {tab==='documentos'&&<section className="process-sheet-grid"><article className="industrial-panel"><div className="process-card-title"><FileText/><div><span>DOCUMENTOS CONTROLADOS</span><h2>Instruções e evidências</h2></div></div><label>POP / IT / desenho / parâmetros<textarea rows={12} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Códigos, revisões, normas, desenho técnico, instrução de trabalho e parâmetros críticos…"/></label></article><article className="industrial-panel"><div className="process-card-title"><Package/><div><span>USO INTERDEPARTAMENTAL</span><h2>Quem utiliza esta ficha</h2></div></div><ul className="process-checklist"><li>PCP: MRP, capacidade, sequência e prazo.</li><li>Almoxarifado: separação, consumo e lotes.</li><li>Produção: operações, máquina, setup e ciclo.</li><li>Qualidade: características e critérios de aceitação.</li><li>Manutenção: recursos e máquinas do processo.</li><li>Custos: material, mão de obra, máquina e perdas.</li></ul></article></section>}
+  <section className="industrial-panel process-sheet-table-panel">
+    <div className="process-section-heading"><span>ESTRUTURA DO PRODUTO</span><h2>Materiais / BOM</h2><p>Componentes, quantidade, unidade, perda, lote e origem.</p></div>
+    <div className="industrial-table-scroll"><table className="industrial-table process-sheet-table"><thead><tr><th>Seq.</th><th>Componente</th><th>Descrição</th><th>Qtd.</th><th>Un.</th><th>Perda %</th><th>Lote</th><th>Origem</th><th></th></tr></thead><tbody>{bom.map((r,i)=>{const p=products.find(x=>x.id===r.componente_id);return <tr key={r.id??'b'+i}>
+      <td>{r.sequencia}</td><td><select value={r.componente_id} onChange={e=>setBomField(i,'componente_id',e.target.value)}><option value="">Selecionar</option>{products.filter(p=>p.id!==productId).map(p=><option key={p.id} value={p.id}>{p.codigo}</option>)}</select></td>
+      <td>{p?.nome??'—'}</td><td><input type="number" min="0.000001" step="0.001" value={r.quantidade} onChange={e=>setBomField(i,'quantidade',e.target.value)}/></td>
+      <td>{p?.unidade??'UN'}</td><td><input type="number" min="0" step="0.01" value={r.perda_percentual} onChange={e=>setBomField(i,'perda_percentual',e.target.value)}/></td>
+      <td><input type="checkbox" checked={r.lote_obrigatorio} onChange={e=>setBomField(i,'lote_obrigatorio',e.target.checked)}/></td>
+      <td><select value={r.tipo_item} onChange={e=>setBomField(i,'tipo_item',e.target.value as BomRow['tipo_item'])}><option value="COMPRADO">Comprado</option><option value="FABRICADO">Fabricado</option></select></td>
+      <td><button type="button" className="icon-button danger" onClick={()=>setBom(x=>x.length===1?[emptyBom()]:x.filter((_,n)=>n!==i))}><Trash2 size={16}/></button></td>
+    </tr>})}</tbody></table></div>
+    <button className="industrial-secondary process-add-row" type="button" onClick={()=>setBom(r=>[...r,{...emptyBom(),sequencia:(r.at(-1)?.sequencia??0)+10}])}><Plus size={16}/>Adicionar material</button>
+  </section>
 
-  {tab==='historico'&&<section className="industrial-panel"><div className="process-card-title"><History/><div><span>AUDITORIA</span><h2>Histórico da ficha</h2></div></div>{audit.length?<div className="process-history">{audit.map(a=><article key={a.id}><b>{a.action}</b><span>{a.module} • {a.entity}</span><time>{new Date(a.created_at).toLocaleString('pt-BR')}</time><small>{a.new_data?JSON.stringify(a.new_data):'Sem dados adicionais'}</small></article>)}</div>:<div className="industrial-empty">Ainda não há eventos de auditoria para esta ficha.</div>}</section>}
+  <section className="process-sheet-two-columns">
+    <article className="industrial-panel">
+      <div className="process-section-heading"><span>PARÂMETROS DO PROCESSO</span><h2>Entradas e saídas</h2></div>
+      <label>Entradas / materiais recebidos<textarea rows={6} value={inputSpec} onChange={e=>setInputSpec(e.target.value)} placeholder="Matéria-prima, componentes, lotes, desenhos e documentos."/></label>
+      <label>Saídas / produto entregue<textarea rows={6} value={outputSpec} onChange={e=>setOutputSpec(e.target.value)} placeholder="Produto, subproduto, lote, embalagem e registros de liberação."/></label>
+    </article>
+    <article className="industrial-panel">
+      <div className="process-section-heading"><span>DOCUMENTOS / INSTRUÇÕES</span><h2>Documentação controlada</h2></div>
+      <label>POP / IT / desenho / parâmetros<textarea rows={12} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Códigos, revisões, normas, desenho técnico, instrução de trabalho e parâmetros críticos…"/></label>
+    </article>
+  </section>
 
+  <section className="industrial-panel process-sheet-table-panel">
+    <div className="process-section-heading"><span>CONTROLE DA QUALIDADE</span><h2>Parâmetros e critérios de aceitação</h2><p>Inspeção ligada ao produto e ao processo.</p></div>
+    <div className="industrial-table-scroll"><table className="industrial-table process-sheet-table"><thead><tr><th>Código</th><th>Parâmetro / característica</th><th>Un.</th><th>Valor nominal</th><th>Tol. mín.</th><th>Tol. máx.</th><th>Frequência</th><th>Status</th><th></th></tr></thead><tbody>{quality.map((r,i)=><tr key={r.id??'q'+i}>
+      <td><input value={r.codigo} onChange={e=>setQualityField(i,'codigo',e.target.value)} placeholder="CQ-001"/></td><td><input value={r.caracteristica} onChange={e=>setQualityField(i,'caracteristica',e.target.value)} placeholder="Dimensão / peso / aparência"/></td><td><input value={r.unidade} onChange={e=>setQualityField(i,'unidade',e.target.value)} placeholder="mm"/></td>
+      <td><input placeholder="—"/></td><td><input type="number" step="0.001" value={r.limite_inferior} onChange={e=>setQualityField(i,'limite_inferior',e.target.value)}/></td><td><input type="number" step="0.001" value={r.limite_superior} onChange={e=>setQualityField(i,'limite_superior',e.target.value)}/></td>
+      <td><input value={r.frequencia} onChange={e=>setQualityField(i,'frequencia',e.target.value)}/></td><td><select value={r.status} onChange={e=>setQualityField(i,'status',e.target.value)}><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></td>
+      <td><button type="button" className="icon-button danger" onClick={()=>setQuality(x=>x.length===1?[emptyQuality()]:x.filter((_,n)=>n!==i))}><Trash2 size={16}/></button></td>
+    </tr>)}</tbody></table></div>
+    <button className="industrial-secondary process-add-row" type="button" onClick={()=>setQuality(r=>[...r,emptyQuality()])}><Plus size={16}/>Adicionar controle</button>
+  </section>
+
+  <section className="process-sheet-approval">
+    <div><span>APROVAÇÃO</span><strong>Responsável Engenharia</strong><small>Nome / assinatura / data</small></div>
+    <div><span>QUALIDADE</span><strong>Responsável CQ</strong><small>Nome / assinatura / data</small></div>
+    <div><span>STATUS DA FICHA</span><strong>{ficha?.ativa?'ATIVA':'RASCUNHO'}</strong><small>Revisão {version} • {selected?.codigo??'produto não selecionado'}</small></div>
+  </section>
+
+  {audit.length>0&&<section className="industrial-panel process-sheet-history"><div className="process-section-heading"><span>HISTÓRICO</span><h2>Auditoria da ficha</h2></div>{audit.slice(0,8).map(a=><div className="process-history-row" key={a.id}><b>{a.action}</b><span>{a.module} • {a.entity}</span><time>{new Date(a.created_at).toLocaleString('pt-BR')}</time></div>)}</section>}
   {notice&&<div className="industrial-notice" role="status">{notice}</div>}
  </main>
-}
