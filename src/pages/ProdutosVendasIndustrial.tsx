@@ -4,7 +4,7 @@ import {
   Boxes, Check, CheckCircle2, ClipboardList, Edit3, Factory, FileText, History, Image as ImageIcon,
   Plus, Printer, RefreshCw, RotateCcw, Save, Search, ShieldCheck, Tag, Trash2, Upload, X
 } from 'lucide-react'
-import { supabase } from '../lib/supabaseClient'
+import { supabase } from '../lib/supabaseClient'\ndeclare global { interface Window { XLSX?: any } }
 
 type Product={
   id:string;empresa_id:string|null;codigo:string;nome:string;descricao:string|null;descricao_resumida:string|null;codigo_barras:string|null
@@ -65,7 +65,7 @@ export default function ProdutosVendasIndustrial(){
   const [audits,setAudits]=useState<Audit[]>([])
   const [attachments,setAttachments]=useState<Attachment[]>([])
   const [detailsLoaded,setDetailsLoaded]=useState(false)
-  const fileRef=useRef<HTMLInputElement>(null)
+  const fileRef=useRef<HTMLInputElement>(null)\n  const importRef=useRef<HTMLInputElement>(null)
 
   const load=async()=>{
     setBusy(true);setError('')
@@ -134,7 +134,7 @@ export default function ProdutosVendasIndustrial(){
   }
   useEffect(()=>{if(selectedId)void loadDetails()},[selectedId])
 
-  const choosePhoto=(e:ChangeEvent<HTMLInputElement>)=>{
+  const importExcel=async(e:ChangeEvent<HTMLInputElement>)=>{\n    const file=e.target.files?.[0]; if(!file)return; setBusy(true); setError(''); setMessage('');\n    try{\n      const XLSX=window.XLSX; if(!XLSX)throw new Error('Leitor Excel ainda não foi carregado. Atualize a página e tente novamente.');\n      const buffer=await file.arrayBuffer(); const wb=XLSX.read(buffer,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]];\n      const rows=XLSX.utils.sheet_to_json<Record<string,unknown>>(ws,{defval:''}); if(!rows.length)throw new Error('A planilha está vazia.');\n      const norm=(v:unknown)=>String(v??'').trim(); const key=(row:Record<string,unknown>,names:string[])=>{const k=Object.keys(row).find(x=>names.includes(x.trim().toLowerCase()));return k?norm(row[k]):''};\n      let created=0,updated=0,failed=0; const failures:string[]=[];\n      for(let i=0;i<rows.length;i++){const row=rows[i]; const codigo=key(row,['codigointerno','codigo interno','codigo']); const nome=key(row,['descrição','descricao','nome','descrição do produto']);\n        if(!codigo||!nome){failed++;failures.push('Linha '+(i+2)+': código interno e descrição são obrigatórios.');continue}\n        const grupo=key(row,['grupo'])||null, cliente=key(row,['cliente'])||null, desenho=key(row,['desenho'])||null, dimensional=key(row,['dimensional'])||null, refCliente=key(row,['codigocliente','codigo cliente','referencia cliente'])||null;\n        const payload={empresa_id:companyId,codigo,nome,descricao:nome,grupo,referencia_interna:codigo,referencia_cliente:refCliente,cliente,desenho,dimensional,unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',categoria:'Produto acabado',ativo:true,fabricado:true};\n        const existing=products.find(p=>p.codigo.trim().toLowerCase()===codigo.toLowerCase());\n        const result=existing?await supabase.from('erp_produtos').update(payload).eq('id',existing.id).eq('empresa_id',companyId):await supabase.from('erp_produtos').insert(payload);\n        if(result.error){failed++;failures.push('Linha '+(i+2)+' / '+codigo+': '+result.error.message)}else existing?updated++:created++;\n      }\n      await load(); setMessage('Importação concluída: '+created+' novos, '+updated+' atualizados, '+failed+' com erro.'+(failures.length?' '+failures.slice(0,3).join(' | '):''));\n    }catch(err){setError(err instanceof Error?err.message:'Falha ao importar Excel.')}finally{setBusy(false);e.target.value=''}\n  }\n\n  const choosePhoto=(e:ChangeEvent<HTMLInputElement>)=>{
     const file=e.target.files?.[0]
     if(!file||!selectedId||!companyId)return
     if(!['image/jpeg','image/png','image/webp'].includes(file.type)){setError('Use JPG, PNG ou WEBP.');return}
@@ -155,7 +155,7 @@ export default function ProdutosVendasIndustrial(){
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:14,padding:'14px 16px 10px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:900,color:'#1c4bb5'}}>SGQ ERP • CADASTRO MESTRE</div><h1 style={{margin:'2px 0 0',fontSize:25,color:'#173fae'}}>CADASTRO DE PRODUTOS</h1></div>
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
-        <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>
+        <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>\n        <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />\n        <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={16}/>Importar Excel (temporário)</button>\n
         <button type="button" onClick={()=>setEditing(true)} disabled={!selectedId} style={btn('normal')}><Edit3 size={16}/>Editar</button>
         <button type="button" onClick={()=>void save(new Event('submit') as unknown as FormEvent)} disabled={!editing||busy} style={btn('normal')}><Save size={16}/>Salvar</button>
         <button type="button" onClick={cancelEdit} style={btn('normal')}><RotateCcw size={16}/>Cancelar</button>
