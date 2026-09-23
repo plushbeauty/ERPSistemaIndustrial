@@ -42,7 +42,6 @@ const industrialModules: Module[] = [
   M('Processos', 'Processos produtivos', 'Operações, tempos padrão, recursos e sequência de fabricação.', Activity),
   M('PCP', 'PCP', 'Planejamento mestre, capacidade, sequenciamento e programação.', CalendarDays),
   M('MRP', 'MRP', 'Necessidades de materiais, compras planejadas e disponibilidade.', Activity),
-  M('Ordens de Produção', 'Ordens de produção', 'OPs, quantidades, datas, status e execução.', Factory, 'erp_ordens_producao', [F('numero_op', 'Número da OP', true), F('produto_id', 'Produto ID', true), F('quantidade', 'Quantidade', true, 'number'), F('status', 'Status', true), F('data_prevista', 'Data prevista', false, 'date'), F('observacoes', 'Observações')]),
   M('Apontamentos', 'Apontamento de produção', 'Produção boa, refugo, tempos e paradas do chão de fábrica.', Activity),
   M('Setup', 'Setup e troca', 'Tempos de setup, troca de molde, preparação e perdas.', CalendarDays),
   M('Refugo', 'Refugo e perdas', 'Apuração de perdas por máquina, produto, turno, causa e lote.', ClipboardCheck),
@@ -155,7 +154,7 @@ export default function AppIndustrialV7() {
   if (loading) return <div className="loading-screen">Carregando SGQ ERP…</div>
   if (!profile) return <div className="error-screen"><div className="error-screen-card"><strong>Perfil ERP não encontrado.</strong><p>A sessão autenticada não possui um usuário ERP ativo vinculado à empresa.</p><button className="primary" type="button" onClick={() => { void supabase.auth.signOut(); location.replace('/login') }}>Voltar ao login</button></div></div>
   const choose = (s: Segment, m: string) => { setSegment(s.name); setActive(m); setLauncher(false) }
-  const moduleRoutes: Record<string,string> = { 'Moldes e Ferramentas':'/moldes-injecao', Qualidade:'/qualidade', Fiscal:'/fiscal', PCP:'/pcp', Produtos:'/produtos-vendas', Clientes:'/clientes', Fornecedores:'/fornecedores', 'Tabelas de preços':'/tabelas-preco', Apontamentos:'/operacao-industrial', Compras:'/compras-solicitacao', Engenharia:'/ficha-engenharia', Processos:'/ficha-engenharia' }
+  const moduleRoutes: Record<string,string> = { 'Moldes e Ferramentas':'/moldes-injecao', PCP:'/pcp', Qualidade:'/qualidade', Fiscal:'/fiscal', Produtos:'/produtos-vendas', Clientes:'/clientes', Fornecedores:'/fornecedores', 'Tabelas de preços':'/tabelas-preco', Apontamentos:'/operacao-industrial', Compras:'/compras-solicitacao', Engenharia:'/ficha-engenharia', Processos:'/ficha-engenharia' }
   const openModule = (m: Module) => { const route = moduleRoutes[m.name]; if (route) { location.href = route; return }; setActive(m.name); setLauncher(false) }
 
   return <motion.div className={`v7-shell theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
