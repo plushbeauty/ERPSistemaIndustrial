@@ -125,14 +125,11 @@ export default function AppIndustrialV7() {
   const [clock, setClock] = useState(new Date())
   const [language, setLanguage] = useState(localStorage.getItem('erp-lang') === 'en-US' ? 'en-US' : 'pt-BR')
   useEffect(() => { const id = window.setInterval(() => setClock(new Date()), 1000); return () => window.clearInterval(id) }, [])
-  const [theme, setTheme] = useState<UiTheme>(() => {
-    const saved = localStorage.getItem('erp-theme')
-    return saved === 'dark' ? 'dark' : 'light'
-  })
+  const [theme, setTheme] = useState<UiTheme>('light')
   const current = segments.find(s => s.name === segment) ?? segments[0]
   const module = current.modules.find(m => m.name === active)
   useEffect(() => { localStorage.setItem('erp-theme', theme) }, [theme])
-  const cycleTheme = () => setTheme(value => value === 'dark' ? 'light' : value === 'light' ? 'windows' : 'dark')
+  const cycleTheme = () => setTheme(value => value === 'light' ? 'windows' : 'light')
   const themeLabel = theme === 'dark' ? 'Escuro' : theme === 'light' ? 'Claro' : 'Windows'
 
   useEffect(() => {
