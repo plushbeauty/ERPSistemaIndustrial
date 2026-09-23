@@ -11,7 +11,10 @@ import { ArrowLeft, CheckCircle2, Mail, Printer, ShoppingCart } from 'lucide-rea
 import { supabase } from '../lib/supabaseClient'
 
 type RequestRow = { id: string; numero: number; descricao: string; prioridade: string; requer_autorizacao: boolean; status: string; email_destino: string | null; fornecedor_id: string | null; created_at: string }
-type Supplier = { id: string; razao_social: string; documento: string | null; iso_9001_certificado: boolean; iso_certificado_validade: string | null }\ntype Product={id:string;codigo:string;nome:string;unidade:string|null;unidade_compra:string|null;estoque_atual:number}\ntype Item={produto_id:string;codigo_mp:string;descricao:string;unidade:string;quantidade:string;cliente_interno:string;data_necessidade:string;nivel_urgencia:string;valor_unitario:string;observacoes:string}\nconst emptyItem=():Item=>({produto_id:'',codigo_mp:'',descricao:'',unidade:'UN',quantidade:'1',cliente_interno:'',data_necessidade:'',nivel_urgencia:'normal',valor_unitario:'0',observacoes:''})
+type Supplier = { id: string; razao_social: string; documento: string | null; iso_9001_certificado: boolean; iso_certificado_validade: string | null }
+type Product={id:string;codigo:string;nome:string;unidade:string|null;unidade_compra:string|null;estoque_atual:number}
+type Item={produto_id:string;codigo_mp:string;descricao:string;unidade:string;quantidade:string;cliente_interno:string;data_necessidade:string;nivel_urgencia:string;valor_unitario:string;observacoes:string}
+const emptyItem=():Item=>({produto_id:'',codigo_mp:'',descricao:'',unidade:'UN',quantidade:'1',cliente_interno:'',data_necessidade:'',nivel_urgencia:'normal',valor_unitario:'0',observacoes:''})
 
 function canApproveRole(role: unknown) {
   const normalized = typeof role === 'string' ? role.toUpperCase() : ''
