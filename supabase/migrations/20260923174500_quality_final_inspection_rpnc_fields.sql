@@ -17,7 +17,7 @@ do $$ begin
   alter table public.erp_rpnc add column if not exists lote text;
   alter table public.erp_rpnc add column if not exists numero_pedido text;
   alter table public.erp_rpnc add column if not exists tipo_ocorrencia text;
-  alter table public.erp_rpnc add column if not exists contenção text;
+  alter table public.erp_rpnc add column if not exists contencao text;
   alter table public.erp_rpnc add column if not exists causa_raiz text;
   alter table public.erp_rpnc add column if not exists responsavel text;
   alter table public.erp_rpnc add column if not exists prazo date;
