@@ -122,8 +122,8 @@ export default function IndustrialModuleWorkspace({module,profile,onBack}:{modul
     if(!table)return
     setBusy(true);setMessage('')
     try{
-      if (!profile.empresa_id) { setRows([]); setMsg('Master autenticado. Selecione uma empresa para operar registros deste módulo.'); return }
-      let req=supabase.from(table).select('*').eq('empresa_id',profile.empresa_id).limit(200)
+      if (!profile.empresa_id) { setRows([]); setMessage('Master autenticado. Selecione uma empresa para operar registros deste módulo.'); return }
+      let req=supabase.from(table).select('*').eq('empresa_id',profile.empresa_id as string).limit(200)
       const q=query.trim().replace(/[%_]/g,'')
       if(q){
         const searchFields=fields.filter(f=>f.type!=='number'&&f.type!=='date').slice(0,5).map(f=>f.key+'.ilike.%'+q+'%')
