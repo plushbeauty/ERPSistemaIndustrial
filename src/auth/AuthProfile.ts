@@ -9,7 +9,7 @@ export type AuthProfile =
       auth_user_id: string;
       email: string;
       perfil: 'MASTER';
-      nivel_admin: 100;
+      nivel_admin: 9;
       ativo: true;
       empresa_id: null;
       empresa: null;
@@ -63,7 +63,7 @@ export function narrowERPProfile(user: DbERPUsuario, empresa: EmpresaERPAuth | n
       auth_user_id: user.auth_user_id,
       email,
       perfil: 'MASTER',
-      nivel_admin: 100,
+      nivel_admin: 9,
       ativo: true,
       empresa_id: null,
       empresa: null,
