@@ -163,19 +163,24 @@ export default function AppIndustrialV7() {
 
   return <motion.div className={`v7-shell theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
     <header className="v7-topbar">
-      <button className="v7-top-brand" type="button" onClick={() => setLauncher(true)} aria-label="Abrir Tablet">
-        <img src="/logo-industrial.svg" alt="SGQ ERP" />
-        <span><strong>SGQ ERP</strong><small>ERP Industrial</small></span>
+      <button className="v7-top-brand" type="button" onClick={() => setLauncher(true)} aria-label="Abrir Tablet Industrial">
+        <img src="/logo-industrial.svg" alt="Logomarca INDUSTRIA ERP" />
+        <span><strong>INDUSTRIA ERP</strong><small>Plataforma integrada de gestão industrial</small></span>
       </button>
-      <div className="v7-top-context"><span>SISTEMA</span><b>{segment}</b></div>
-      <div className="v7-top-search"><Search size={17}/><input placeholder="Pesquisar módulos, clientes, produtos, pedidos..." aria-label="Pesquisa global" /></div>
+      <div className="v7-top-plant" aria-label="Status da planta">
+        <span className="v7-online-dot" aria-hidden="true" />
+        <div><small>STATUS DA PLANTA</small><strong>PLANTA 01 ONLINE</strong></div>
+      </div>
+      <div className="v7-top-context"><span>AMBIENTE</span><b>{segment}</b></div>
+      <div className="v7-top-search"><Search size={18}/><input placeholder="Pesquisar módulos, clientes, produtos, pedidos..." aria-label="Pesquisa global" /></div>
       <div className="v7-top-actions">
-        <span className="v7-top-date">{clock.toLocaleDateString(language === 'en-US' ? 'en-US' : 'pt-BR')} • {clock.toLocaleTimeString(language === 'en-US' ? 'en-US' : 'pt-BR')}</span><button className="v7-top-lang" type="button" onClick={()=>{const n=language==='pt-BR'?'en-US':'pt-BR';setLanguage(n);localStorage.setItem('erp-lang',n)}}>{language==='pt-BR'?'PT':'EN'}</button>
+        <div className="v7-top-user-block"><Users size={20}/><div><small>USUÁRIO ATIVO</small><strong>{profile.nome || 'Usuário Administrador'}</strong></div></div>
+        <div className="v7-top-date"><small>DATA E HORA</small><strong>{clock.toLocaleDateString(language === 'en-US' ? 'en-US' : 'pt-BR')} • {clock.toLocaleTimeString(language === 'en-US' ? 'en-US' : 'pt-BR')}</strong></div>
+        <button className="v7-top-lang" type="button" onClick={()=>{const n=language==='pt-BR'?'en-US':'pt-BR';setLanguage(n);localStorage.setItem('erp-lang',n)}}>{language==='pt-BR'?'PT':'EN'}</button>
         <button className="v7-top-lang v7-theme-toggle" type="button" onClick={cycleTheme} aria-label={`Tema atual: ${themeLabel}. Clique para alternar`} title={`Tema: ${themeLabel}`}>
-          {theme === 'dark' ? <Moon size={15}/> : <Sun size={15}/>} <span>{themeLabel}</span>
+          {theme === 'dark' ? <Moon size={17}/> : <Sun size={17}/>} <span>{themeLabel}</span>
         </button>
-        
-        <button className="v7-top-user" type="button" onClick={() => setLauncher(true)}><Users size={16}/><span>{profile.nome}</span></button>
+        <button className="v7-top-tablet" type="button" onClick={() => setLauncher(true)}><LayoutGrid size={18}/> Tablet</button>
         <button className="v7-top-exit" type="button" onClick={() => void supabase.auth.signOut().then(() => { location.href = '/login' })}>Sair</button>
       </div>
     </header>
