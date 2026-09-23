@@ -14,7 +14,8 @@
     "preview": "vite preview",
     "audit:brutal": "node scripts/auditoria-brutal.mjs",
     "audit:all": "npm run audit:brutal && npm run audit:global && npm run audit:interactions",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=0",
+    "verify:production": "npm ci && npm run lint && npm run type-check && npm run build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
