@@ -1,0 +1,20 @@
+:root{color-scheme:dark;--erp-bg:#0f1822;--erp-surface:#162330;--erp-surface-2:#1b2b3a;--erp-line:#304657;--erp-text:#eef7fb;--erp-muted:#9fb3c0;--erp-blue:#2d8db8;--erp-cyan:#35b8d4;--erp-green:#3fb889;--erp-orange:#e6a34a;--erp-red:#e46d76}
+html,body,#root{background:var(--erp-bg)!important;color:var(--erp-text)!important}
+body{font-size:16px!important}
+button,input,select,textarea{font-size:16px!important}
+button{min-height:44px!important;border-radius:10px}
+.industrial-form-page,.module-workspace-v3,.erp-page-v3,.v7-content,.pcp-page,.process-sheet-page,.tablet-frame,.operational-frame{background:var(--erp-bg)!important;color:var(--erp-text)!important}
+.industrial-panel,.mw3-card,.erp-card,.erp-card-v3,.resource-card,.crud-list,.pcp-modern-panel,.process-card,.tablet-module-card,.tablet-action-card{background:var(--erp-surface)!important;border-color:var(--erp-line)!important;color:var(--erp-text)!important}
+.industrial-form-page label,.mw3-form label,.process-sheet-page label{color:var(--erp-muted)!important}
+input,select,textarea,.industrial-form-page input,.industrial-form-page select,.industrial-form-page textarea,.mw3-form input,.process-sheet-page input,.process-sheet-page select,.process-sheet-page textarea{background:#101c27!important;color:var(--erp-text)!important;border-color:var(--erp-line)!important;min-height:46px!important}
+input:focus,select:focus,textarea:focus{border-color:var(--erp-cyan)!important;box-shadow:0 0 0 3px rgba(53,184,212,.16)!important}
+.industrial-primary,.erp-btn-primary,.public-primary,.mw3-btn.primary{background:var(--erp-blue)!important;border-color:var(--erp-blue)!important;color:#fff!important}
+.industrial-secondary,.erp-btn-secondary,.public-secondary,.mw3-btn{background:var(--erp-surface-2)!important;border-color:var(--erp-line)!important;color:var(--erp-text)!important}
+table th,.mw3-table-wrap th{background:var(--erp-surface-2)!important;color:var(--erp-muted)!important}
+table td,.mw3-table-wrap td{color:var(--erp-text)!important;border-color:var(--erp-line)!important}
+.industrial-context,.industrial-preview,.mw3-notice{background:var(--erp-surface-2)!important;border-color:var(--erp-line)!important;color:var(--erp-text)!important}
+.industrial-global-header{background:#101c27!important;color:var(--erp-text)!important;border-color:var(--erp-line)!important}
+.industrial-global-status,.industrial-global-user,.industrial-global-theme{background:var(--erp-surface)!important;color:var(--erp-text)!important;border-color:var(--erp-line)!important}
+.industrial-global-time,.industrial-global-brand small{color:var(--erp-muted)!important}
+.industrial-tabs button,.mw3-tabs button{background:var(--erp-surface-2)!important;color:var(--erp-text)!important;border-color:var(--erp-line)!important}
+.industrial-tabs button.active,.mw3-tabs button.active{background:var(--erp-blue)!important;border-color:var(--erp-blue)!important;color:#fff!important}
