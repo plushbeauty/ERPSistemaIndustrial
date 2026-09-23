@@ -7,7 +7,7 @@
 - Regra de Negócio Incorporada: Solicitação de compra grava fornecedor sugerido e ordena fornecedores ISO 9001 à frente.
 */
 import { FormEvent, useEffect, useState } from 'react'
-import { ArrowLeft, CheckCircle2, Mail, Printer, ShoppingCart } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Mail, Printer, ShoppingCart, Plus, Trash2, Save, Send, Search, RefreshCw } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type RequestRow = { id: string; numero: number; descricao: string; prioridade: string; requer_autorizacao: boolean; status: string; email_destino: string | null; fornecedor_id: string | null; created_at: string }

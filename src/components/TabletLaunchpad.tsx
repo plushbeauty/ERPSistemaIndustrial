@@ -1,4 +1,5 @@
 import { useEffect,useState } from 'react'
+import { supabase } from '../lib/supabaseClient'
 import { Activity, ArrowLeft, BarChart3, BookOpen, Boxes, CalendarCheck2, ClipboardCheck, ClipboardList, Factory, FileCheck2, FileText, Gauge, HelpCircle, Landmark, LayoutDashboard, Package, Receipt, Settings, ShieldCheck, ShoppingCart, Users, Warehouse, Wrench, X, UserRound, SlidersHorizontal, Truck, Languages } from 'lucide-react'
 type IconComponent = typeof Activity
  type Action={label:string;description:string;icon:IconComponent;route:string}
@@ -30,6 +31,7 @@ const modules:Module[]=[
   A('Recebimento','Conferência de materiais',Package,'/recebimento-materiais'),
   A('Rastreabilidade','Lotes e histórico',ShieldCheck,'/estoque')
  ]},
+ {label:'Qualidade • PPAP / RIA',description:'Plano dimensional, amostras, tolerâncias e PSW / FAI.',icon:ShieldCheck,actions:[A('PPAP / RIA','PSW e certificado FAI',ShieldCheck,'/qualidade/ppap-ria')]},
  {label:'Fiscal • Financeiro',description:'NF-e, faturamento, documentos e caixa.',icon:Landmark,actions:[
   A('Fiscal','Documentos e liberações',Landmark,'/fiscal'),
   A('Nova NF-e','Modelo 55 / simulador',FileText,'/fiscal/nova'),
@@ -66,7 +68,60 @@ const modules:Module[]=[
  ]}
 ]
 export default function TabletLaunchpad({onNavigate,isOpen,onClose}:{onNavigate:(route:string)=>void;isOpen:boolean;onClose:()=>void}){
- const[selected,setSelected]=useState<Module|null>(null);useEffect(()=>{if(!isOpen)setSelected(null)},[isOpen]);if(!isOpen)return null
- return <div className="tablet-overlay" role="dialog" aria-modal="true"><section className="tablet-frame"><header className="tablet-head"><div className="tablet-brand"><img src="/logo-industrial.svg" alt=""/><div><span>SGQ ERP INDUSTRIAL</span><strong>{selected?selected.label:'Tablet Operacional'}</strong><small>{selected?selected.description:'Acesso rápido aos módulos da fábrica'}</small></div></div><div className="tablet-head-actions"><button className="tablet-icon-btn" onClick={()=>{const n=localStorage.getItem('erp-lang')==='en-US'?'pt-BR':'en-US';localStorage.setItem('erp-lang',n);location.reload()}} title="Idioma"><Languages size={23}/></button>{selected&&<button onClick={()=>setSelected(null)} className="tablet-icon-btn" title="Voltar"><ArrowLeft size={22}/></button>}<button onClick={onClose} className="tablet-icon-btn" title="Fechar tablet"><X size={23}/></button></div></header><div className="tablet-body">{!selected?<><div className="tablet-section-title"><div><span>VISUALIZAÇÃO E OPERAÇÃO</span><h2>Escolha o ambiente de trabalho</h2></div><div className="tablet-user"><UserRound size={20}/><b>Operação ERP</b></div></div><div className="tablet-grid">{modules.slice(0,8).map(m=><ModuleCard key={m.label} module={m} onClick={()=>setSelected(m)}/>)}</div><div className="tablet-section-title tablet-config-title"><div><span>CONFIGURAÇÕES E CADASTROS MESTRES</span><h2>Administração e apoio</h2></div></div><div className="tablet-grid tablet-grid-small">{modules.slice(8).map(m=><ModuleCard key={m.label} module={m} onClick={()=>setSelected(m)}/>)}</div></>:<><button className="tablet-back" onClick={()=>setSelected(null)}><ArrowLeft size={19}/> Todos os módulos</button><div className="tablet-action-grid">{selected.actions.map(a=>{const I=a.icon;return <button key={a.label} className="tablet-action-card" onClick={()=>onNavigate(a.route)}><span className="tablet-action-icon"><I size={30}/></span><div><b>{a.label}</b><small>{a.description}</small></div><span className="tablet-open">ABRIR</span></button>})}</div></>}</div><footer className="tablet-foot"><span>© FernandoSch_System</span><span>ERP Industrial • Operação integrada • RLS</span></footer></section></div>
+ const [selected,setSelected]=useState<Module|null>(null)
+ const [isMaster,setIsMaster]=useState(false)
+ const [purging,setPurging]=useState(false)
+ const [confirmOpen,setConfirmOpen]=useState(false)
+ const [confirmText,setConfirmText]=useState('')
+ useEffect(()=>{
+  if(!isOpen){setSelected(null);setConfirmOpen(false);return}
+  void (async()=>{try{const{data}=await supabase.rpc('erp_is_master');setIsMaster(data===true)}catch{setIsMaster(false)}})()
+ },[isOpen])
+ async function purge(){
+  if(confirmText.trim().toUpperCase()!=='ZERAR BANCO PLASTIBOR')return
+  setPurging(true)
+  try{
+   const{error}=await supabase.rpc('erp_master_purge_plastibor',{p_confirmation:confirmText})
+   if(error)throw error
+   alert('Limpeza Plastibor concluída com segurança para o tenant atual.')
+   setConfirmOpen(false);setConfirmText('')
+  }catch(e){alert(e instanceof Error?e.message:'Falha ao executar a limpeza.')}
+  finally{setPurging(false)}
+ }
+ if(!isOpen)return null
+ return <div className="tablet-overlay" role="dialog" aria-modal="true">
+  <section className="tablet-frame">
+   <header className="tablet-head">
+    <div className="tablet-brand"><img src="/logo-industrial.svg" alt=""/><div><span>SGQ ERP INDUSTRIAL</span><strong>{selected?selected.label:'Tablet Operacional'}</strong><small>{selected?selected.description:'Acesso rápido aos módulos da fábrica'}</small></div></div>
+    <div className="tablet-head-actions">
+     <button className="tablet-icon-btn" onClick={()=>{const n=localStorage.getItem('erp-lang')==='en-US'?'pt-BR':'en-US';localStorage.setItem('erp-lang',n);location.reload()}} title="Idioma"><Languages size={23}/></button>
+     {selected&&<button onClick={()=>setSelected(null)} className="tablet-icon-btn" title="Voltar"><ArrowLeft size={22}/></button>}
+     <button onClick={onClose} className="tablet-icon-btn" title="Fechar tablet"><X size={23}/></button>
+    </div>
+   </header>
+   <div className="tablet-body">
+    {!selected ? <>
+     <div className="tablet-section-title"><div><span>VISUALIZAÇÃO E OPERAÇÃO</span><h2>Escolha o ambiente de trabalho</h2></div><div className="tablet-user"><UserRound size={20}/><b>Operação ERP</b></div></div>
+     <div className="tablet-grid">{modules.slice(0,8).map(m=><ModuleCard key={m.label} module={m} onClick={()=>setSelected(m)}/>)}</div>
+     <div className="tablet-section-title tablet-config-title"><div><span>CONFIGURAÇÕES E CADASTROS MESTRES</span><h2>Administração e apoio</h2></div></div>
+     <div className="tablet-grid tablet-grid-small">{modules.slice(8).map(m=><ModuleCard key={m.label} module={m} onClick={()=>setSelected(m)}/>)}</div>
+     {isMaster&&<div className="tablet-danger-zone">
+      <div><span>MASTER • CONTINGÊNCIA</span><h3>Limpeza controlada da Plastibor</h3><p>Exclusivo para Master. A operação é escopada ao tenant atual e exige confirmação em dois níveis.</p></div>
+      <button className="tablet-purge-btn" disabled={purging} onClick={()=>setConfirmOpen(true)}>{purging?'EXECUTANDO…':'ZERAR BANCO PLASTIBOR'}</button>
+      {confirmOpen&&<div className="tablet-purge-dialog">
+       <strong>Confirmação de segurança 1/2</strong>
+       <p>Esta ação remove os dados transacionais da empresa atual. Digite exatamente <b>ZERAR BANCO PLASTIBOR</b>.</p>
+       <input value={confirmText} onChange={e=>setConfirmText(e.target.value)} placeholder="ZERAR BANCO PLASTIBOR"/>
+       <div><button onClick={()=>setConfirmOpen(false)}>Cancelar</button><button className="tablet-purge-btn" disabled={confirmText.trim().toUpperCase()!=='ZERAR BANCO PLASTIBOR'||purging} onClick={()=>void purge()}>Confirmar limpeza 2/2</button></div>
+      </div>}
+     </div>}
+    </> : <>
+     <button className="tablet-back" onClick={()=>setSelected(null)}><ArrowLeft size={19}/> Todos os módulos</button>
+     <div className="tablet-action-grid">{selected.actions.map(a=>{const I=a.icon;return <button key={a.label} className="tablet-action-card" onClick={()=>onNavigate(a.route)}><span className="tablet-action-icon"><I size={30}/></span><div><b>{a.label}</b><small>{a.description}</small></div><span className="tablet-open">ABRIR</span></button>})}</div>
+    </>}
+   </div>
+   <footer className="tablet-foot"><span>© FernandoSch_System</span><span>ERP Industrial • Operação integrada • RLS</span></footer>
+  </section>
+ </div>
 }
 function ModuleCard({module,onClick}:{module:Module;onClick:()=>void}){const I=module.icon;return <button className="tablet-module-card" onClick={onClick}><span className="tablet-module-icon"><I size={42}/></span><div><b>{module.label}</b><small>{module.description}</small></div><span className="tablet-chevron">›</span></button>}

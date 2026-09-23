@@ -1,0 +1,40 @@
+:root{color-scheme:dark;--erp-bg:#0f1822;--erp-surface:#162330;--erp-surface-2:#1b2b3a;--erp-line:#304657;--erp-text:#eef7fb;--erp-muted:#9fb3c0;--erp-blue:#2d8db8;--erp-cyan:#35b8d4;--erp-green:#3fb889;--erp-orange:#e6a34a;--erp-red:#e46d76}
+html,body,#root{background:var(--erp-bg)!important;color:var(--erp-text)!important}
+body{font-size:16px!important}
+button,input,select,textarea{font-size:16px!important}
+button{min-height:44px!important;border-radius:10px}
+.industrial-form-page,.module-workspace-v3,.erp-page-v3,.v7-content,.pcp-page,.process-sheet-page,.tablet-frame,.operational-frame{background:var(--erp-bg)!important;color:var(--erp-text)!important}
+.industrial-panel,.mw3-card,.erp-card,.erp-card-v3,.resource-card,.crud-list,.pcp-modern-panel,.process-card,.tablet-module-card,.tablet-action-card{background:var(--erp-surface)!important;border-color:var(--erp-line)!important;color:var(--erp-text)!important}
+.industrial-form-page label,.mw3-form label,.process-sheet-page label{color:var(--erp-muted)!important}
+input,select,textarea,.industrial-form-page input,.industrial-form-page select,.industrial-form-page textarea,.mw3-form input,.process-sheet-page input,.process-sheet-page select,.process-sheet-page textarea{background:#101c27!important;color:var(--erp-text)!important;border-color:var(--erp-line)!important;min-height:46px!important}
+input:focus,select:focus,textarea:focus{border-color:var(--erp-cyan)!important;box-shadow:0 0 0 3px rgba(53,184,212,.16)!important}
+.industrial-primary,.erp-btn-primary,.public-primary,.mw3-btn.primary{background:var(--erp-blue)!important;border-color:var(--erp-blue)!important;color:#fff!important}
+.industrial-secondary,.erp-btn-secondary,.public-secondary,.mw3-btn{background:var(--erp-surface-2)!important;border-color:var(--erp-line)!important;color:var(--erp-text)!important}
+table th,.mw3-table-wrap th{background:var(--erp-surface-2)!important;color:var(--erp-muted)!important}
+table td,.mw3-table-wrap td{color:var(--erp-text)!important;border-color:var(--erp-line)!important}
+.industrial-context,.industrial-preview,.mw3-notice{background:var(--erp-surface-2)!important;border-color:var(--erp-line)!important;color:var(--erp-text)!important}
+.industrial-global-header{background:#101c27!important;color:var(--erp-text)!important;border-color:var(--erp-line)!important}
+.industrial-global-status,.industrial-global-user,.industrial-global-theme{background:var(--erp-surface)!important;color:var(--erp-text)!important;border-color:var(--erp-line)!important}
+.industrial-global-time,.industrial-global-brand small{color:var(--erp-muted)!important}
+.industrial-tabs button,.mw3-tabs button{background:var(--erp-surface-2)!important;color:var(--erp-text)!important;border-color:var(--erp-line)!important}
+.industrial-tabs button.active,.mw3-tabs button.active{background:var(--erp-blue)!important;border-color:var(--erp-blue)!important;color:#fff!important}
+
+/* DESIGN SYSTEM 2026: structured forms, list boxes, compact ERP controls */
+:root{--erp-control-h:46px;--erp-radius:12px;--erp-gap:24px}
+.erp-page-v3,.industrial-form-page,.module-workspace-v3{max-width:1600px;margin:0 auto;padding:28px clamp(16px,3vw,40px)}
+.erp-page-v3 section,.industrial-form-page section,.module-workspace-v3 section{box-sizing:border-box}
+.erp-card-v3,.erp-card,.industrial-panel,.mw3-card{padding:24px;border-radius:16px;box-shadow:0 12px 34px rgba(0,0,0,.16)}
+.erp-page-v3 form,.industrial-form-page form,.module-workspace-v3 form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;align-items:end}
+.erp-page-v3 form>label,.industrial-form-page form>label,.module-workspace-v3 form>label{min-width:0}
+.erp-page-v3 .grid,.industrial-form-page .grid,.module-workspace-v3 .grid{gap:24px!important}
+.erp-page-v3 label,.industrial-form-page label,.module-workspace-v3 label{display:flex;flex-direction:column;gap:7px;min-width:0;font-size:16px;font-weight:700;line-height:1.25}
+.erp-page-v3 input,.erp-page-v3 select,.erp-page-v3 textarea,.industrial-form-page input,.industrial-form-page select,.industrial-form-page textarea,.module-workspace-v3 input,.module-workspace-v3 select,.module-workspace-v3 textarea{width:100%;box-sizing:border-box}
+.erp-page-v3 .erp-card-inner{padding:24px;border:1px solid var(--erp-line);border-radius:14px;background:var(--erp-surface-2)}
+.erp-page-v3 button,.industrial-form-page button,.module-workspace-v3 button{min-height:44px;padding:0 16px;font-weight:750;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.erp-page-v3 table,.industrial-form-page table,.module-workspace-v3 table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border:1px solid var(--erp-line);border-radius:12px}
+.erp-page-v3 th,.erp-page-v3 td,.industrial-form-page th,.industrial-form-page td,.module-workspace-v3 th,.module-workspace-v3 td{padding:12px 14px;vertical-align:middle}
+.erp-list-box{border:1px solid var(--erp-line);background:var(--erp-surface);border-radius:14px;overflow:auto;max-height:520px}
+.erp-list-box button{width:100%;justify-content:flex-start;text-align:left;border:0;border-bottom:1px solid var(--erp-line);background:transparent;color:var(--erp-text)}
+.erp-list-box button:hover,.erp-list-box button[aria-selected=true]{background:var(--erp-surface-2);border-left:3px solid var(--erp-cyan)}
+@media(max-width:1100px){.erp-page-v3 form,.industrial-form-page form,.module-workspace-v3 form{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.erp-page-v3,.industrial-form-page,.module-workspace-v3{padding:18px 14px}.erp-page-v3 form,.industrial-form-page form,.module-workspace-v3 form{grid-template-columns:1fr}.erp-page-v3 .grid,.industrial-form-page .grid,.module-workspace-v3 .grid{grid-template-columns:1fr!important}}

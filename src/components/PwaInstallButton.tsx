@@ -12,6 +12,6 @@ export default function PwaInstallButton(){
     return()=>window.removeEventListener('beforeinstallprompt',handler)
   },[])
   if(hidden||!prompt)return null
-  async function install(){const p=prompt;setPrompt(null);try{await p.prompt();await p.userChoice}catch{} }
+  async function install(){const p=prompt;setPrompt(null);try{await p.prompt();await p.userChoice}catch { void 0 } }
   return <div className="pwa-install-banner" role="status"><div><strong>Instale o ERP no computador</strong><span>Acesso rápido, tela própria e experiência de aplicativo.</span></div><div className="pwa-install-actions"><button onClick={install}><Download size={16}/> Instalar</button><button aria-label="Fechar" onClick={()=>setPrompt(null)}><X size={16}/></button></div></div>
 }
