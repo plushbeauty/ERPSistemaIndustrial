@@ -134,7 +134,53 @@ export default function ProdutosVendasIndustrial(){
   }
   useEffect(()=>{if(selectedId)void loadDetails()},[selectedId])
 
-  const importExcel=async(e:ChangeEvent<HTMLInputElement>)=>{\n    const file=e.target.files?.[0]; if(!file)return; setBusy(true); setError(''); setMessage('');\n    try{\n      const XLSX=window.XLSX; if(!XLSX)throw new Error('Leitor Excel ainda não foi carregado. Atualize a página e tente novamente.');\n      const buffer=await file.arrayBuffer(); const wb=XLSX.read(buffer,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]];\n      const rows=XLSX.utils.sheet_to_json<Record<string,unknown>>(ws,{defval:''}); if(!rows.length)throw new Error('A planilha está vazia.');\n      const norm=(v:unknown)=>String(v??'').trim(); const key=(row:Record<string,unknown>,names:string[])=>{const k=Object.keys(row).find(x=>names.includes(x.trim().toLowerCase()));return k?norm(row[k]):''};\n      let created=0,updated=0,failed=0; const failures:string[]=[];\n      for(let i=0;i<rows.length;i++){const row=rows[i]; const codigo=key(row,['codigointerno','codigo interno','codigo']); const nome=key(row,['descrição','descricao','nome','descrição do produto']);\n        if(!codigo||!nome){failed++;failures.push('Linha '+(i+2)+': código interno e descrição são obrigatórios.');continue}\n        const grupo=key(row,['grupo'])||null, cliente=key(row,['cliente'])||null, desenho=key(row,['desenho'])||null, dimensional=key(row,['dimensional'])||null, refCliente=key(row,['codigocliente','codigo cliente','referencia cliente'])||null;\n        const payload={empresa_id:companyId,codigo,nome,descricao:nome,grupo,referencia_interna:codigo,referencia_cliente:refCliente,cliente,desenho,dimensional,unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',categoria:'Produto acabado',ativo:true,fabricado:true};\n        const existing=products.find(p=>p.codigo.trim().toLowerCase()===codigo.toLowerCase());\n        const result=existing?await supabase.from('erp_produtos').update(payload).eq('id',existing.id).eq('empresa_id',companyId):await supabase.from('erp_produtos').insert(payload);\n        if(result.error){failed++;failures.push('Linha '+(i+2)+' / '+codigo+': '+result.error.message)}else existing?updated++:created++;\n      }\n      await load(); setMessage('Importação concluída: '+created+' novos, '+updated+' atualizados, '+failed+' com erro.'+(failures.length?' '+failures.slice(0,3).join(' | '):''));\n    }catch(err){setError(err instanceof Error?err.message:'Falha ao importar Excel.')}finally{setBusy(false);e.target.value=''}\n  }\n\n  const choosePhoto=(e:ChangeEvent<HTMLInputElement>)=>{
+  const importExcel=async(e:ChangeEvent<HTMLInputElement>)=>{
+    const file=e.target.files?.[0]
+    if(!file)return
+    setBusy(true);setError('');setMessage('')
+    try{
+      const XLSX=window.XLSX
+      if(!XLSX)throw new Error('Leitor Excel ainda não foi carregado. Atualize a página e tente novamente.')
+      const buffer=await file.arrayBuffer()
+      const wb=XLSX.read(buffer,{type:'array'})
+      const ws=wb.Sheets[wb.SheetNames[0]]
+      const rows=XLSX.utils.sheet_to_json<Record<string,unknown>>(ws,{defval:''})
+      if(!rows.length)throw new Error('A planilha está vazia.')
+      const norm=(v:unknown)=>String(v??'').trim()
+      const key=(row:Record<string,unknown>,names:string[])=>{
+        const k=Object.keys(row).find(x=>names.includes(x.trim().toLowerCase()))
+        return k?norm(row[k]):''
+      }
+      let created=0,updated=0,failed=0
+      const failures:string[]=[]
+      for(let i=0;i<rows.length;i++){
+        const row=rows[i]
+        const codigo=key(row,['codigointerno','codigo interno','codigo'])
+        const nome=key(row,['descrição','descricao','nome','descrição do produto'])
+        if(!codigo||!nome){failed++;failures.push('Linha '+(i+2)+': código interno e descrição são obrigatórios.');continue}
+        const grupo=key(row,['grupo'])||null
+        const cliente=key(row,['cliente'])||null
+        const desenho=key(row,['desenho'])||null
+        const dimensional=key(row,['dimensional'])||null
+        const refCliente=key(row,['codigocliente','codigo cliente','referencia cliente'])||null
+        const payload={empresa_id:companyId,codigo,nome,descricao:nome,grupo,referencia_interna:codigo,referencia_cliente:refCliente,cliente,desenho,dimensional,unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',categoria:'Produto acabado',ativo:true,fabricado:true}
+        const existing=products.find(p=>p.codigo.trim().toLowerCase()===codigo.toLowerCase())
+        const result=existing
+          ?await supabase.from('erp_produtos').update(payload).eq('id',existing.id).eq('empresa_id',companyId)
+          :await supabase.from('erp_produtos').insert(payload)
+        if(result.error){failed++;failures.push('Linha '+(i+2)+' / '+codigo+': '+result.error.message)}
+        else existing?updated++:created++
+      }
+      await load()
+      setMessage('Importação concluída: '+created+' novos, '+updated+' atualizados, '+failed+' com erro.'+(failures.length?' '+failures.slice(0,3).join(' | '):''))
+    }catch(err){
+      setError(err instanceof Error?err.message:'Falha ao importar Excel.')
+    }finally{
+      setBusy(false);e.target.value=''
+    }
+  }
+
+  const choosePhoto=(e:ChangeEvent<HTMLInputElement>)=>{
     const file=e.target.files?.[0]
     if(!file||!selectedId||!companyId)return
     if(!['image/jpeg','image/png','image/webp'].includes(file.type)){setError('Use JPG, PNG ou WEBP.');return}
