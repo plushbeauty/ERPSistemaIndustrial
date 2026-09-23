@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { Activity, AlertTriangle, ArrowLeft, ArrowUpRight, Clock3, FilePlus2, HelpCircle, LayoutDashboard, MoreHorizontal, Package, Pencil, Plus, RefreshCw, Search, Settings2, X } from 'lucide-react'
+import { Activity, AlertTriangle, ArrowLeft, ArrowUpRight, CalendarDays, Clock3, FilePlus2, HelpCircle, LayoutDashboard, MoreHorizontal, Package, Pencil, Plus, RefreshCw, Search, Settings2, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
@@ -122,7 +122,7 @@ export default function IndustrialModuleWorkspace({module,profile,onBack}:{modul
     if(!table)return
     setBusy(true);setMessage('')
     try{
-      if (!profile.empresa_id) { setRows([]); setMsg('Master autenticado. Selecione uma empresa para operar registros deste módulo.'); return }
+      if (!profile.empresa_id) { setRows([]); setMessage('Master autenticado. Selecione uma empresa para operar registros deste módulo.'); return }
       let req=supabase.from(table).select('*').eq('empresa_id',profile.empresa_id).limit(200)
       const q=query.trim().replace(/[%_]/g,'')
       if(q){
@@ -212,6 +212,7 @@ export default function IndustrialModuleWorkspace({module,profile,onBack}:{modul
       <aside className="mw3-actions"><div className="mw3-actions-head"><b>Ações da rotina</b><Settings2 size={16}/></div>{actionLabels.map((a,i)=><button key={a} onClick={()=>runAction(a)}><span>{i+1}</span><div><b>{a}</b><small>Executar rotina</small></div><ArrowUpRight size={15}/></button>)}<button className="mw3-help-action" onClick={()=>setHelp(true)}><HelpCircle size={16}/> Manual desta tela</button></aside>
       <main className="mw3-main">
         {message&&<div className="mw3-notice">{message}</div>}
+        {module.name==='Manutenção'&&<PreventiveMaintenancePanel empresaId={profile.empresa_id}/>}
         {tab===tabs[0]&&<Overview module={module} rows={rows} fields={fields} steps={steps} stats={stats} onSelect={setSelected} onEdit={edit} onRefresh={()=>void load()}/>}
         {tab===tabs[1]&&<FormPanel module={module} fields={fields} form={form} setForm={setForm} onSubmit={save} busy={busy} editing={editing} onCancel={()=>setTab(tabs[0])}/>}
         {tab!==tabs[0]&&tab!==tabs[1]&&<section className="mw3-card"><div className="mw3-card-head"><div><span>{tab.toUpperCase()}</span><h2>{tab}</h2><p>Rotina vinculada aos registros reais desta empresa.</p></div><div className="mw3-search"><Search size={15}/><input value={query} onChange={e=>setQuery(e.target.value)} onKeyDown={e=>e.key==='Enter'&&void load()} placeholder="Pesquisar"/><button onClick={()=>void load()}><Search size={14}/> Pesquisar</button></div></div><div className="mw3-action-strip">{actionLabels.map(a=><button key={a} onClick={()=>runAction(a)}><Plus size={14}/>{a}</button>)}</div><DataTable rows={rows} fields={fields} onSelect={setSelected} onEdit={edit}/></section>}
@@ -223,6 +224,35 @@ export default function IndustrialModuleWorkspace({module,profile,onBack}:{modul
     {selected&&<div className="mw3-modal-backdrop" onMouseDown={()=>setSelected(null)}><div className="mw3-modal" onMouseDown={e=>e.stopPropagation()}><header><div><span>DETALHE DO REGISTRO</span><h2>{module.title}</h2></div><button onClick={()=>setSelected(null)}><X size={18}/></button></header><div className="mw3-detail-grid">{fields.map(f=><div key={f.key}><span>{f.label}</span><strong>{norm(selected[f.key])||'—'}</strong></div>)}</div><footer><button className="mw3-btn secondary" onClick={()=>{edit(selected);setSelected(null)}}><Pencil size={15}/> Editar</button><button className="mw3-btn secondary" onClick={()=>setSelected(null)}>Fechar</button></footer></div></div>}
     {help&&<div className="mw3-modal-backdrop" onMouseDown={()=>setHelp(false)}><div className="mw3-help-modal" onMouseDown={e=>e.stopPropagation()}><HelpPanel module={module} tabs={tabs} onClose={()=>setHelp(false)}/></div></div>}
   </div>
+}
+
+
+function PreventiveMaintenancePanel({empresaId}:{empresaId:string|null}){
+ const [machines,setMachines]=useState<Row[]>([]),[plans,setPlans]=useState<Row[]>([]),[year,setYear]=useState(new Date().getFullYear()),[machineId,setMachineId]=useState(''),[frequency,setFrequency]=useState('Mensal'),[task,setTask]=useState('Inspeção preventiva'),[message,setMessage]=useState(''),[loading,setLoading]=useState(false)
+ const months=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+ const load=async()=>{if(!empresaId)return;setLoading(true);setMessage('');try{const[m,p]=await Promise.all([supabase.from('erp_maquinas').select('*').eq('empresa_id',empresaId).order('codigo').limit(500),supabase.from('erp_manutencao').select('*').eq('empresa_id',empresaId).order('criado_em',{ascending:false}).limit(1000)]);if(m.error)throw m.error;if(p.error)throw p.error;setMachines((m.data||[]) as Row[]);setPlans((p.data||[]) as Row[])}catch(e){setMessage(e instanceof Error?e.message:'Não foi possível carregar o cronograma real.')}finally{setLoading(false)}}
+ useEffect(()=>{void load()},[empresaId,year])
+ const machineName=(id:string)=>{const m=machines.find(x=>x.id===id);return m?(norm(m.nome)||norm(m.codigo)||'Máquina sem nome'):'Selecione a máquina'}
+ const planned=(machine:Row,month:number)=>{const id=String(machine.id);return plans.some(p=>{if(String(p.maquina_id||p.maquina||'')!==id&&String(p.maquina||'')!==norm(machine.codigo))return false;const d=String(p.descricao||'').toLowerCase(),f=String(p.tipo||'').toLowerCase();return d.includes(String(year))&&(d.includes(months[month].toLowerCase())||['mensal','semanal','trimestral','semestral','anual'].some(x=>f.includes(x)))})}
+ const savePlan=async()=>{if(!empresaId||!machineId){setMessage('Cadastre e selecione uma máquina antes de criar o plano.');return}setLoading(true);setMessage('');try{const r=await supabase.from('erp_manutencao').insert({empresa_id:empresaId,maquina:machineName(machineId),tipo:frequency,status:'Agendado',descricao:JSON.stringify({formulario:null,ano:year,tarefa:task,frequencia:frequency,maquina_id:machineId,observacao:'Plano gerado a partir do cadastro do cliente.'})});if(r.error)throw r.error;setMessage('Plano preventivo criado. A identificação do formulário permanece definida pelo cliente e não foi inventada pelo ERP.');await load()}catch(e){setMessage(e instanceof Error?e.message:'Não foi possível salvar o plano.')}finally{setLoading(false)}}
+ if(!empresaId)return <section className="mw3-card"><h2>Cronograma de Manutenção Preventiva</h2><p>Selecione uma empresa para operar o cronograma.</p></section>
+ return <section className="mw3-card" style={{marginBottom:16}}>
+  <div className="mw3-card-head"><div><span>MANUTENÇÃO PREVENTIVA • CRONOGRAMA ANUAL</span><h2>Cronograma de Manutenção Preventiva — Máquinas</h2><p>As máquinas aparecem automaticamente a partir do cadastro do cliente. O ERP não traz números da Plastibor e não inventa número de formulário.</p></div><CalendarDays size={22}/></div>
+  <div className="mw3-form-grid" style={{marginBottom:14}}>
+   <label>Ano<input type="number" value={year} onChange={e=>setYear(Number(e.target.value)||new Date().getFullYear())}/></label>
+   <label>Máquina cadastrada<select value={machineId} onChange={e=>setMachineId(e.target.value)}><option value="">Selecione uma máquina</option>{machines.map(m=><option key={m.id} value={m.id}>{norm(m.codigo)} — {norm(m.nome)}</option>)}</select></label>
+   <label>Periodicidade<select value={frequency} onChange={e=>setFrequency(e.target.value)}><option>Semanal</option><option>Mensal</option><option>Trimestral</option><option>Semestral</option><option>Anual</option><option>Por horas de operação</option></select></label>
+   <label>Tarefa preventiva<input value={task} onChange={e=>setTask(e.target.value)} placeholder="Ex.: lubrificação, inspeção, troca de filtro"/></label>
+  </div>
+  <div className="mw3-action-strip"><button onClick={()=>void savePlan()} disabled={loading}><Plus size={14}/> Criar plano preventivo</button><button onClick={()=>void load()} disabled={loading}><RefreshCw size={14}/> Atualizar máquinas</button></div>
+  {message&&<div className="mw3-notice" style={{marginTop:10}}>{message}</div>}
+  <div className="mw3-table-wrap" style={{marginTop:14,overflowX:'auto'}}><table><thead><tr><th>Máquina</th><th>Periodicidade</th>{months.map(m=><th key={m} title={m}>{m.slice(0,3)}</th>)}</tr></thead><tbody>
+   {machines.map(m=><tr key={m.id}><td><b>{norm(m.codigo)||'—'}</b><br/><small>{norm(m.nome)||'Máquina sem nome'}</small></td><td>{plans.find(p=>String(p.maquina||'')===norm(m.nome)||String(p.maquina||'')===norm(m.codigo))?.tipo||'—'}</td>{months.map((_,i)=><td key={i} style={{textAlign:'center'}}><span title={planned(m,i)?'Planejado':'Sem manutenção programada'}>{planned(m,i)?'●':'·'}</span></td>)}</tr>)}
+   {!machines.length&&<tr><td colSpan={14} className="mw3-empty">Nenhuma máquina cadastrada. Cadastre as máquinas do cliente e este cronograma será preenchido automaticamente.</td></tr>}
+  </tbody></table></div>
+  <div style={{display:'flex',gap:16,flexWrap:'wrap',marginTop:12,fontSize:13,fontWeight:700}}><span>● Programado</span><span>✓ Programado e executado</span><span>⚠ Em atraso</span></div>
+  <div className="mw3-help-grid" style={{marginTop:14}}><article><h3>Identificação do formulário</h3><p>O código/número do formulário não é pré-preenchido. O cliente define sua identificação; o ERP poderá gerar revisões e histórico depois dessa definição, sem reutilizar códigos da Plastibor.</p></article><article><h3>Estrutura do calendário</h3><p>Máquina, periodicidade, tarefa e meses. A estrutura segue modelos atuais de CMMS que usam ativo, frequência, última execução, próxima execução, responsável e observações.</p></article></div>
+ </section>
 }
 
 function Overview({module,rows,fields,steps,stats,onSelect,onEdit,onRefresh}:{module:Module;rows:Row[];fields:Field[];steps:string[];stats:{total:number;open:number;alerts:number};onSelect:(r:Row)=>void;onEdit:(r:Row)=>void;onRefresh:()=>void}){
