@@ -1,8 +1,9 @@
 import { useEffect,useState } from 'react'
 import { Activity, ArrowLeft, BarChart3, BookOpen, Boxes, CalendarCheck2, ClipboardCheck, ClipboardList, Factory, FileCheck2, FileText, Gauge, HelpCircle, Landmark, LayoutDashboard, Package, Receipt, Settings, ShieldCheck, ShoppingCart, Users, Warehouse, Wrench, X, UserRound, SlidersHorizontal, Truck, Languages } from 'lucide-react'
-type Action={label:string;description:string;icon:any;route:string}
-type Module={label:string;description:string;icon:any;actions:Action[]}
-const A=(label:string,description:string,icon:any,route:string):Action=>({label,description,icon,route})
+type IconComponent = typeof Activity
+ type Action={label:string;description:string;icon:IconComponent;route:string}
+type Module={label:string;description:string;icon:IconComponent;actions:Action[]}
+const A=(label:string,description:string,icon:IconComponent,route:string):Action=>({label,description,icon,route})
 const modules:Module[]=[
  {label:'PCP • Produção',description:'Demanda, MRP, BOM, OP, programação, materiais e chão de fábrica.',icon:Factory,actions:[
   A('Centro PCP','Ordens, demandas, capacidade e prioridades',LayoutDashboard,'/pcp'),
