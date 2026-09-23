@@ -3,14 +3,28 @@ import { createClient, type Session, type SupabaseClient } from '@supabase/supab
 const env = import.meta.env as Record<string, unknown>
 const DEFAULT_SUPABASE_URL = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
 const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BcwsSbBx8dWof7d_hAKtQA_XzQGAYwR'
-const supabaseUrl = String(env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL).trim().replace(/\/$/, '')
-const configuredKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY).trim()
+const CONNECTION_MODE_KEY = 'erp_modo_conexao'
+const connectionMode = typeof window !== 'undefined' ? window.localStorage.getItem(CONNECTION_MODE_KEY) : null
+const localMode = connectionMode === 'local'
+const cloudUrl = String(env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL).trim().replace(/\/$/, '')
+const localUrl = String(env.VITE_SUPABASE_LOCAL_URL || 'http://localhost:54321').trim().replace(/\/$/, '')
+const supabaseUrl = localMode ? localUrl : cloudUrl
+const configuredKey = String(
+  localMode
+    ? (env.VITE_SUPABASE_LOCAL_ANON_KEY || env.VITE_SUPABASE_ANON_KEY || '')
+    : (env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY),
+).trim()
 const isPrivateKey = configuredKey.startsWith('sb_secret_') || configuredKey.includes('service_role')
 
+export const supabaseModoConexao = localMode ? 'local' : 'nuvem'
 export const supabaseConfigurado = Boolean(supabaseUrl && configuredKey && !isPrivateKey)
 export const supabaseEnvironmentMismatch = false
 export const supabaseUrlExportada = supabaseUrl
 export const supabaseKeyExportada = isPrivateKey ? '' : configuredKey
+
+if (localMode && !configuredKey) {
+  console.error('[Supabase] Modo local selecionado, mas VITE_SUPABASE_LOCAL_ANON_KEY não foi configurada. Execute o ambiente local e configure a chave pública local.')
+}
 
 const clientUrl = supabaseUrl || DEFAULT_SUPABASE_URL
 const clientKey = configuredKey && !isPrivateKey ? configuredKey : DEFAULT_SUPABASE_PUBLISHABLE_KEY
