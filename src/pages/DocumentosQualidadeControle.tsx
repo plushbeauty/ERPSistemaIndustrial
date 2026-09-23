@@ -3,7 +3,7 @@ import { CheckCircle2, FileCheck2, FilePlus2, History, LockKeyhole, Printer, Ref
 import { supabase } from '../lib/supabaseClient'
 import './DocumentosQualidadeControle.css'
 
-type Doc={id:string;codigo:string;titulo:string;area:string;tipo:string;revisao:number;status:string;proxima_revisao:string|null;motivo_alteracao:string|null;data_revisao:string|null;data_emissao:string|null;validade_ate:string|null;historico_alteracoes:string|null}
+type Doc={id:string;codigo:string;titulo:string;area:string;tipo:string;revisao:number;status:string;proxima_revisao:string|null;motivo_alteracao?:string|null;data_revisao:string|null;data_emissao:string|null;validade_ate:string|null;historico_alteracoes?:string|null}
 type Revision={id:string;documento_id:string;revisao:number;status:string;titulo:string;conteudo:string|null;motivo_alteracao:string|null;criado_em:string;aprovado_em:string|null;liberado_em:string|null}
 type User={id:string;empresa_id:string;setor_id:string|null;nivel_admin:number}
 const statusLabel:Record<string,string>={rascunho:'Rascunho',solicitada_alteracao:'Alteração solicitada',em_revisao:'Em revisão',aprovada:'Aprovada',liberada:'Liberada',vigente:'Vigente',substituida:'Substituída',obsoleta:'Obsoleta'}
