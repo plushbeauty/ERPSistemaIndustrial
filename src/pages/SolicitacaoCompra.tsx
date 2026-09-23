@@ -19,7 +19,10 @@ function canApproveRole(role: unknown) {
 }
 
 export default function SolicitacaoCompra() {
-  const [descricao, setDescricao] = useState('')\n  const [products,setProducts]=useState<Product[]>([])\n  const [items,setItems]=useState<Item[]>([emptyItem()])\n  const [dataNecessidade,setDataNecessidade]=useState('')
+  const [descricao, setDescricao] = useState('')
+  const [products,setProducts]=useState<Product[]>([])
+  const [items,setItems]=useState<Item[]>([emptyItem()])
+  const [dataNecessidade,setDataNecessidade]=useState('')
   const [fornecedorId, setFornecedorId] = useState('')
   const [fornecedores, setFornecedores] = useState<Supplier[]>([])
   const [prioridade, setPrioridade] = useState('normal')
@@ -37,7 +40,9 @@ export default function SolicitacaoCompra() {
     setCanApprove(canApproveRole(role))
     const { data } = await supabase.from('erp_solicitacoes_compra').select('id,numero,descricao,prioridade,requer_autorizacao,status,email_destino,fornecedor_id,created_at').order('created_at', { ascending: false }).limit(50)
     setRows((data ?? []) as RequestRow[])
-    const { data: productData } = await supabase.from('erp_produtos').select('id,codigo,nome,unidade,unidade_compra,estoque_atual').eq('ativo',true).order('codigo').limit(3000)\n    setProducts((productData ?? []) as Product[])\n    const { data: supplierData } = await supabase.from('erp_fornecedores').select('id,razao_social,documento,iso_9001_certificado,iso_certificado_validade').eq('ativo', true).order('razao_social')
+    const { data: productData } = await supabase.from('erp_produtos').select('id,codigo,nome,unidade,unidade_compra,estoque_atual').eq('ativo',true).order('codigo').limit(3000)
+    setProducts((productData ?? []) as Product[])
+    const { data: supplierData } = await supabase.from('erp_fornecedores').select('id,razao_social,documento,iso_9001_certificado,iso_certificado_validade').eq('ativo', true).order('razao_social')
     setFornecedores((supplierData ?? []) as Supplier[])
   }
 
@@ -45,7 +50,8 @@ export default function SolicitacaoCompra() {
 
   async function save(event: FormEvent) {
     event.preventDefault()
-    const valid=items.filter(i=>i.produto_id&&Number(i.quantidade)>0)\n    if (!valid.length) { setMessage('Adicione pelo menos uma matéria-prima/material na grade.'); return }
+    const valid=items.filter(i=>i.produto_id&&Number(i.quantidade)>0)
+    if (!valid.length) { setMessage('Adicione pelo menos uma matéria-prima/material na grade.'); return }
     setBusy(true); setMessage('')
     try {
       const { data: empresaId, error: companyError } = await supabase.rpc('erp_current_empresa_id')
@@ -53,7 +59,8 @@ export default function SolicitacaoCompra() {
       const { data: created, error } = await supabase.from('erp_solicitacoes_compra').insert({ empresa_id: empresaId, descricao: valid.map(i=>`${i.codigo_mp} — ${i.descricao} x ${i.quantidade}`).join('; '), prioridade, requer_autorizacao: requerAutorizacao, status: requerAutorizacao ? 'aguardando_autorizacao' : 'autorizada', email_destino: emailDestino.trim() || null, observacoes: observacoes.trim() || null, fornecedor_id: fornecedorId || null }).select('id,numero').single()
       if (error) throw error
       setMessage(`Solicitação ${created.numero} criada. Status: ${requerAutorizacao ? 'aguardando autorização' : 'autorizada'}.`)
-      await supabase.from('erp_pedidos_compra').insert(valid.map(i=>({produto_id:i.produto_id,quantidade:Number(i.quantidade),valor_unitario:Number(i.valor_unitario||0),total:Number(i.quantidade)*Number(i.valor_unitario||0),fornecedor_id:fornecedorId||null,status:'pendente',data_prevista:i.data_necessidade||dataNecessidade||null,observacoes:i.observacoes||observacoes.trim()||null,origem_solicitacao:'SOLICITACAO_INTERNA',data_necessidade:i.data_necessidade||dataNecessidade||null,nivel_urgencia:i.nivel_urgencia.toUpperCase()})))\n      setDescricao(''); setObservacoes(''); setFornecedorId(''); setItems([emptyItem()]); await load()
+      await supabase.from('erp_pedidos_compra').insert(valid.map(i=>({produto_id:i.produto_id,quantidade:Number(i.quantidade),valor_unitario:Number(i.valor_unitario||0),total:Number(i.quantidade)*Number(i.valor_unitario||0),fornecedor_id:fornecedorId||null,status:'pendente',data_prevista:i.data_necessidade||dataNecessidade||null,observacoes:i.observacoes||observacoes.trim()||null,origem_solicitacao:'SOLICITACAO_INTERNA',data_necessidade:i.data_necessidade||dataNecessidade||null,nivel_urgencia:i.nivel_urgencia.toUpperCase()})))
+      setDescricao(''); setObservacoes(''); setFornecedorId(''); setItems([emptyItem()]); await load()
     } catch (error) { setMessage(error instanceof Error ? error.message : 'Não foi possível criar a solicitação.') }
     finally { setBusy(false) }
   }
