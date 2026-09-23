@@ -5,7 +5,7 @@ import {supabase} from '../lib/supabaseClient'
 import '../styles/ppap-ria-psw.css'
 
 type Plan={id:string;codigo:string;caracteristica:string;unidade:string|null;limite_inferior:number|null;limite_superior:number|null;frequencia:string|null;status:string|null}
-type Item={id:string;sequencia:number;caracteristica:string;especificacao:string|null;unidade:string|null;nominal:number|null;limite_inferior:number|null;limite_superior:number|null;metodo_inspecao:string|null;frequencia:string|null;amostras:number[];valor_encontrado:number|null;media:number|null;desvio_padrao:number|null;minimo_encontrado:number|null;maximo_encontrado:number|null;status:string}
+type Item={id:string;plano_inspecao_id?:string|null;sequencia:number;caracteristica:string;especificacao:string|null;unidade:string|null;nominal:number|null;limite_inferior:number|null;limite_superior:number|null;metodo_inspecao:string|null;frequencia:string|null;amostras:number[];valor_encontrado:number|null;media:number|null;desvio_padrao:number|null;minimo_encontrado:number|null;maximo_encontrado:number|null;status:string}
 const num=(v:unknown)=>Number.isFinite(Number(v))?Number(v):null
 const stats=(values:number[])=>{if(!values.length)return{mean:null,sd:null,min:null,max:null};const mean=values.reduce((a,b)=>a+b,0)/values.length;const sd=values.length>1?Math.sqrt(values.reduce((s,v)=>s+(v-mean)**2,0)/(values.length-1)):0;return{mean,sd,min:Math.min(...values),max:Math.max(...values)}}
 export default function PPAPRiaPSW(){
