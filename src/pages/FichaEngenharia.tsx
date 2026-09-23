@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ClipboardCheck, Factory, FileText, History, Package, Plus, Save, ShieldCheck, Trash2, Workflow, X } from 'lucide-react'
+import { Factory, Plus, Save, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Product={id:string;codigo:string;nome:string;unidade:string|null}
@@ -19,7 +19,6 @@ export default function FichaEngenharia(){
  const [productId,setProductId]=useState(''),[version,setVersion]=useState('1'),[rendimento,setRendimento]=useState('1'),[unit,setUnit]=useState('UN'),[notes,setNotes]=useState('')
  const [processCode,setProcessCode]=useState(''),[processName,setProcessName]=useState(''),[objective,setObjective]=useState(''),[inputSpec,setInputSpec]=useState(''),[outputSpec,setOutputSpec]=useState('')
  const [bom,setBom]=useState<BomRow[]>([emptyBom()]),[ops,setOps]=useState<OpRow[]>([emptyOp()]),[quality,setQuality]=useState<QualityRow[]>([emptyQuality()])
- const [tab,setTab]=useState<'identificacao'|'materiais'|'processo'|'qualidade'|'documentos'|'historico'>('identificacao')
  const [busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[audit,setAudit]=useState<AuditRow[]>([])
  const selected=useMemo(()=>products.find(p=>p.id===productId),[products,productId])
  const totalTime=useMemo(()=>ops.reduce((s,o)=>s+(Number(o.setup_min)||0)+(Number(o.ciclo_seg)||0)*Number(rendimento||0),0),[ops,rendimento])
