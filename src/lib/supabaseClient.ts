@@ -17,7 +17,7 @@ export const supabaseEnvironmentMismatch = false
 export const supabaseUrlExportada = supabaseUrl
 export const supabaseKeyExportada = configuredKey
 
-export const supabase: SupabaseClient = createClient(clientUrl, configuredKey, {
+export const supabase: SupabaseClient = createClient(supabaseUrl, configuredKey, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'erp-industrial-auth' },
   global: { headers: { 'x-client-info': 'sgq-erp-industrial' } },
 })
