@@ -40,6 +40,7 @@ export default function FichaEngenharia(){
  const machineName=(id:string)=>machines.find(m=>m.id===id)?.codigo??'—'
 
  useEffect(()=>{void loadBase()},[])
+ useEffect(()=>{if(products.length)void loadMaster()},[products,clients])
  async function company(){const r=await supabase.rpc('erp_current_empresa_id');if(r.error||!r.data)throw new Error('Empresa da sessão não identificada.');return String(r.data)}
 
  async function loadBase(){
@@ -53,7 +54,6 @@ export default function FichaEngenharia(){
      ])
      for(const r of [p,c,m,o])if(r.error)throw r.error
      setProducts((p.data??[]) as Product[]);setClients((c.data??[]) as Client[]);setMachines((m.data??[]) as Machine[]);setOperations((o.data??[]) as Operation[])
-     await loadMaster()
    }catch(e){setError(errorText(e))}finally{setLoading(false)}
  }
 
