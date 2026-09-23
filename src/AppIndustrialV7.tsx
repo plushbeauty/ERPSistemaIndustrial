@@ -144,7 +144,7 @@ export default function AppIndustrialV7() {
         if (!auth.user) return
         const { data, error } = await supabase.from('erp_usuarios').select('nome,empresa_id,nivel_admin,auth_user_id,ativo,deleted_at,is_master,perfil').eq('auth_user_id', auth.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
         if (error) throw error
-        const master = data?.auth_user_id === auth.user.id && data?.is_master === true && Number(data?.nivel_admin ?? 0) === 100 && String(data?.perfil ?? '').trim().toUpperCase() === 'MASTER' && data?.empresa_id === null
+        const master = data?.auth_user_id === auth.user.id && data?.is_master === true && Number(data?.nivel_admin ?? 0) === 9 && String(data?.perfil ?? '').trim().toUpperCase() === 'MASTER' && data?.empresa_id === null
         if (data && data.auth_user_id === auth.user.id && (master || Boolean(data.empresa_id)) && alive) setProfile(data)
       } catch (error) {
         console.error('[ERP profile]', error)
