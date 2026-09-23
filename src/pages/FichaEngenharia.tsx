@@ -7,13 +7,13 @@ type Client={id:string;codigo:string|null;nome:string;documento:string|null}
 type Machine={id:string;codigo:string;nome:string}
 type Operation={id:string;codigo:string;nome:string;descricao:string|null}
 type Ficha={id:string;produto_id:string;versao:number;rendimento:number;unidade_rendimento:string;observacoes:string|null;ativa:boolean;cliente_id:string|null;codigo_cliente:string|null;desenho:string|null;modelo:string|null}
-type BomRow={id?:string;componente_id:string;quantidade:string;unidade_medida:string;perda_percentual:string;lote_obrigatorio:boolean;tipo_item:'COMPRADO'|'FABRICADO';sequencia:number}
+type BomRow={id?:string;componente_id:string;quantidade:string;unidade_medida:string;perda_percentual:string;lote_obrigatorio:boolean;origem:string;medida_valor:string;medida_unidade:string;tipo_item:'COMPRADO'|'FABRICADO';sequencia:number}
 type OpRow={id?:string;sequencia:number;operacao_id:string;operacao_texto:string;maquina_id:string;molde_id:string;setup_min:string;ciclo_seg:string;instrucoes:string}
 type QualityRow={id:string;codigo:string;caracteristica:string;unidade:string;limite_inferior:string;limite_superior:string;frequencia:string;status:string}
 type AuditRow={id:string;action:string;module:string;entity:string;created_at:string;new_data:Record<string,unknown>|null}
 type MasterRow={id:string;produto_id:string;versao:number;produto?:Product;cliente?:Client;created_at:string;ativa:boolean}
 
-const emptyBom=():BomRow=>({componente_id:'',quantidade:'1',unidade_medida:'UN',perda_percentual:'0',lote_obrigatorio:false,tipo_item:'COMPRADO',sequencia:10})
+const emptyBom=():BomRow=>({componente_id:'',quantidade:'1',unidade_medida:'UN',perda_percentual:'0',lote_obrigatorio:false,origem:'NACIONAL',medida_valor:'',medida_unidade:'',tipo_item:'COMPRADO',sequencia:10})
 const emptyOp=():OpRow=>({sequencia:10,operacao_id:'',operacao_texto:'',maquina_id:'',molde_id:'',setup_min:'0',ciclo_seg:'0',instrucoes:''})
 const emptyQuality=():QualityRow=>({id:'new-quality-'+Date.now(),codigo:'',caracteristica:'',unidade:'',limite_inferior:'',limite_superior:'',frequencia:'100%',status:'ativo'})
 const errorText=(e:unknown)=>e instanceof Error?e.message:String((e as {message?:string})?.message??'Operação recusada pelo banco.')
@@ -80,13 +80,13 @@ export default function FichaEngenharia(){
      const raw=current.observacoes?JSON.parse(current.observacoes) as {processCode?:string;processName?:string;notes?:string}:{}
      setProcessCode(raw.processCode??'FP-'+current.produto_id.slice(0,8).toUpperCase()+'-'+current.versao);setProcessName(raw.processName??'Processo de fabricação');setNotes(raw.notes??'')
      const [bi,ro,qi,ar]=await Promise.all([
-       supabase.from('erp_ficha_itens').select('id,componente_id,quantidade,unidade_medida,perda_percentual,lote_obrigatorio,tipo_item,sequencia').eq('empresa_id',empresaId).eq('ficha_id',current.id).order('sequencia'),
+       supabase.from('erp_ficha_itens').select('id,componente_id,quantidade,unidade_medida,perda_percentual,lote_obrigatorio,origem,medida_valor,medida_unidade,tipo_item,sequencia').eq('empresa_id',empresaId).eq('ficha_id',current.id).order('sequencia'),
        supabase.from('erp_ficha_operacoes').select('id,sequencia,operacao,maquina_id,molde_id,setup_min,ciclo_seg,instrucoes').eq('empresa_id',empresaId).eq('ficha_id',current.id).order('sequencia'),
        supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,limite_inferior,limite_superior,frequencia,status').eq('empresa_id',empresaId).eq('produto_id',current.produto_id).order('codigo').limit(300),
        supabase.from('erp_audit_logs').select('id,action,module,entity,created_at,new_data').eq('company_id',empresaId).eq('entity_id',current.id).order('created_at',{ascending:false}).limit(50)
      ])
      for(const r of [bi,ro,qi])if(r.error)throw r.error
-     setBom((bi.data??[]).map(x=>({id:x.id,componente_id:x.componente_id,quantidade:String(x.quantidade),unidade_medida:x.unidade_medida||products.find(p=>p.id===x.componente_id)?.unidade||'UN',perda_percentual:String(x.perda_percentual),lote_obrigatorio:Boolean(x.lote_obrigatorio),tipo_item:x.tipo_item,sequencia:x.sequencia})).concat((bi.data??[]).length?[]:[emptyBom()]))
+     setBom((bi.data??[]).map(x=>({id:x.id,componente_id:x.componente_id,quantidade:String(x.quantidade),unidade_medida:x.unidade_medida||products.find(p=>p.id===x.componente_id)?.unidade||'UN',perda_percentual:String(x.perda_percentual),lote_obrigatorio:Boolean(x.lote_obrigatorio),origem:x.origem||'NACIONAL',medida_valor:x.medida_valor==null?'':String(x.medida_valor),medida_unidade:x.medida_unidade||'',tipo_item:x.tipo_item,sequencia:x.sequencia})).concat((bi.data??[]).length?[]:[emptyBom()]))
      setOps((ro.data??[]).map(x=>({id:x.id,sequencia:x.sequencia,operacao_id:'',operacao_texto:x.operacao,maquina_id:x.maquina_id??'',molde_id:x.molde_id??'',setup_min:String(x.setup_min),ciclo_seg:String(x.ciclo_seg),instrucoes:x.instrucoes??''})).concat((ro.data??[]).length?[]:[emptyOp()]))
      setQuality((qi.data??[]).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status})).concat((qi.data??[]).length?[]:[emptyQuality()]))
      if(!ar.error)setAudit((ar.data??[]) as AuditRow[])
@@ -134,7 +134,7 @@ export default function FichaEngenharia(){
      if(saved.error)throw saved.error
      const fichaId=String(saved.data.id)
      const delBom=await supabase.from('erp_ficha_itens').delete().eq('empresa_id',empresaId).eq('ficha_id',fichaId);if(delBom.error)throw delBom.error
-     const insBom=await supabase.from('erp_ficha_itens').insert(bom.map(x=>({empresa_id:empresaId,ficha_id:fichaId,componente_id:x.componente_id,quantidade:Number(x.quantidade),unidade_medida:x.unidade_medida.trim(),perda_percentual:Number(x.perda_percentual),lote_obrigatorio:x.lote_obrigatorio,tipo_item:x.tipo_item,sequencia:x.sequencia})));if(insBom.error)throw insBom.error
+     const insBom=await supabase.from('erp_ficha_itens').insert(bom.map(x=>({empresa_id:empresaId,ficha_id:fichaId,componente_id:x.componente_id,quantidade:Number(x.quantidade),unidade_medida:x.unidade_medida.trim(),perda_percentual:Number(x.perda_percentual),lote_obrigatorio:x.lote_obrigatorio,origem:x.origem.trim()||'NACIONAL',medida_valor:x.medida_valor?Number(x.medida_valor):null,medida_unidade:x.medida_unidade.trim()||null,tipo_item:x.tipo_item,sequencia:x.sequencia})));if(insBom.error)throw insBom.error
      const delOps=await supabase.from('erp_ficha_operacoes').delete().eq('empresa_id',empresaId).eq('ficha_id',fichaId);if(delOps.error)throw delOps.error
      const insOps=await supabase.from('erp_ficha_operacoes').insert(ops.map(x=>({empresa_id:empresaId,ficha_id:fichaId,sequencia:x.sequencia,operacao:x.operacao_texto.trim(),maquina_id:x.maquina_id||null,molde_id:x.molde_id||null,setup_min:Number(x.setup_min),ciclo_seg:Number(x.ciclo_seg),instrucoes:x.instrucoes.trim()||null})));if(insOps.error)throw insOps.error
      for(const q of quality.filter(x=>x.caracteristica.trim())){
@@ -186,14 +186,16 @@ export default function FichaEngenharia(){
 
   <section className="industrial-panel">
    <div className="industrial-section-head"><div><span>MATERIAIS</span><h2>Lista de materiais — consumo, perda, lote, origem e unidade</h2><p>Não existe lista infinita para rolar. Primeiro informe o código; se não souber, use a lupa para consultar.</p></div><button className="industrial-secondary" type="button" onClick={()=>setBom(r=>[...r,{...emptyBom(),sequencia:(r.at(-1)?.sequencia??0)+10}])}><Plus size={16}/>Adicionar material</button></div>
-   <div className="industrial-table-scroll"><table className="industrial-table"><thead><tr><th>Seq.</th><th style={{minWidth:300}}>Código / descrição</th><th>Qtd.</th><th>Unidade</th><th>Perda %</th><th>Lote</th><th>Origem</th><th/></tr></thead><tbody>{bom.map((r,i)=><tr key={r.id??'b'+i}>
+   <div className="industrial-table-scroll"><table className="industrial-table"><thead><tr><th>Seq.</th><th style={{minWidth:300}}>Código / descrição</th><th>Consumo</th><th>Unidade</th><th>Medida / peso</th><th>Unidade medida</th><th>Perda %</th><th>Lote</th><th>Origem</th><th/></tr></thead><tbody>{bom.map((r,i)=><tr key={r.id??'b'+i}>
     <td>{r.sequencia}</td>
     <td><div style={{display:'flex',gap:8,alignItems:'center'}}><input value={products.find(p=>p.id===r.componente_id)?.codigo??''} onChange={e=>{const p=products.find(x=>x.codigo.toLowerCase()===e.target.value.trim().toLowerCase());setMaterialCode(e.target.value);if(p)setBomField(i,'componente_id',p.id)}} placeholder="Digite o código" style={{maxWidth:150}}/><button className="icon-button" type="button" title="Consultar matéria-prima" onClick={()=>{setMaterialRow(i);setMaterialModal(true)}}><Search size={17}/></button><span style={{fontWeight:600}}>{materialName(r.componente_id)}</span></div></td>
-    <td><input type="number" min="0.000001" step="0.001" value={r.quantidade} onChange={e=>setBomField(i,'quantidade',e.target.value)}/></td>
+    <td><input type="number" min="0.000001" step="0.001" value={r.quantidade} onChange={e=>setBomField(i,'quantidade',e.target.value)} title="Consumo por unidade/rendimento"/></td>
     <td><input value={r.unidade_medida} onChange={e=>setBomField(i,'unidade_medida',e.target.value.toUpperCase())} placeholder="KG / M / UN"/></td>
+    <td><input type="number" min="0" step="0.001" value={r.medida_valor} onChange={e=>setBomField(i,'medida_valor',e.target.value)} placeholder="Peso / metros"/></td>
+    <td><input value={r.medida_unidade} onChange={e=>setBomField(i,'medida_unidade',e.target.value.toUpperCase())} placeholder="KG / M"/></td>
     <td><input type="number" min="0" step="0.01" value={r.perda_percentual} onChange={e=>setBomField(i,'perda_percentual',e.target.value)}/></td>
     <td><input type="checkbox" checked={r.lote_obrigatorio} onChange={e=>setBomField(i,'lote_obrigatorio',e.target.checked)}/></td>
-    <td><select value={r.tipo_item} onChange={e=>setBomField(i,'tipo_item',e.target.value as BomRow['tipo_item'])}><option value="COMPRADO">Comprado</option><option value="FABRICADO">Fabricado</option></select></td>
+    <td><select value={r.origem} onChange={e=>setBomField(i,'origem',e.target.value)}><option value="NACIONAL">Nacional</option><option value="IMPORTADO">Importado</option><option value="CLIENTE">Fornecido pelo cliente</option><option value="INTERNO">Interno</option></select><select value={r.tipo_item} onChange={e=>setBomField(i,'tipo_item',e.target.value as BomRow['tipo_item'])}><option value="COMPRADO">Comprado</option><option value="FABRICADO">Fabricado</option></select></td>
     <td><button type="button" className="icon-button danger" onClick={()=>setBom(x=>x.length===1?[emptyBom()]:x.filter((_,n)=>n!==i))}><Trash2 size={16}/></button></td>
    </tr>)}</tbody></table></div>
   </section>
