@@ -146,7 +146,7 @@ export default function ProdutosVendasIndustrial(){
       const buffer=await file.arrayBuffer()
       const wb=XLSX.read(buffer,{type:'array'})
       const ws=wb.Sheets[wb.SheetNames[0]]
-      const rows=XLSX.utils.sheet_to_json<Record<string,unknown>>(ws,{defval:''})
+      const rows=XLSX.utils.sheet_to_json(ws,{defval:''}) as Record<string,unknown>[]
       if(!rows.length)throw new Error('A planilha está vazia.')
       const norm=(v:unknown)=>String(v??'').trim()
       const key=(row:Record<string,unknown>,names:string[])=>{
