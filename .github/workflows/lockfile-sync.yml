@@ -2,7 +2,7 @@ name: Sync npm lockfile
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'remediation/**']
     paths:
       - package.json
       - package-lock.json
