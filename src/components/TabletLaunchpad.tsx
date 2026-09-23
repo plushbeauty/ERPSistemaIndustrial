@@ -1,13 +1,13 @@
 import { useEffect,useState } from 'react'
 import { Activity, ArrowLeft, BarChart3, BookOpen, Boxes, CalendarCheck2, ClipboardCheck, ClipboardList, Factory, FileCheck2, FileText, Gauge, HelpCircle, Landmark, LayoutDashboard, Package, Receipt, Settings, ShieldCheck, ShoppingCart, Users, Warehouse, Wrench, X, UserRound, SlidersHorizontal, Truck, Languages } from 'lucide-react'
 type IconComponent = typeof Activity
- type Action={label:string;description:string;icon:IconComponent;route:string}
+type Action={label:string;description:string;icon:IconComponent;route:string}
 type Module={label:string;description:string;icon:IconComponent;actions:Action[]}
 const A=(label:string,description:string,icon:IconComponent,route:string):Action=>({label,description,icon,route})
 const modules:Module[]=[
  {label:'PCP • Produção',description:'Demanda, MRP, BOM, OP, programação, materiais e chão de fábrica.',icon:Factory,actions:[
   A('Centro PCP','Ordens, demandas, capacidade e prioridades',LayoutDashboard,'/pcp'),
-  A('Pedidos / Demanda','Pedidos que alimentam o planejamento',ClipboardList,'/produtos-vendas'),
+  A('Pedidos / Demanda','Pedidos que alimentam o planejamento',ClipboardList,'/pcp'),
   A('MRP / Materiais','Necessidade, reserva e disponibilidade',Boxes,'/pcp'),
   A('BOM / Engenharia','Estrutura, roteiro e ficha de processo',Settings,'/engenharia'),
   A('Ficha de Processo','Operações, máquina, ciclo e instruções',FileText,'/ficha-engenharia'),
@@ -25,48 +25,34 @@ const modules:Module[]=[
   A('Planos de Inspeção','Características e limites',Settings,'/qualidade?tab=planos')
  ]},
  {label:'Almoxarifado • WMS',description:'Recebimento, lotes, endereços, reservas, separação e rastreabilidade.',icon:Warehouse,actions:[
-  A('Almoxarifado','Movimentações e saldos',Warehouse,'/almoxarifado'),
-  A('Estoque','Saldo, inventário e movimentos',Package,'/estoque'),
-  A('Recebimento','Conferência de materiais',Package,'/recebimento-materiais'),
-  A('Rastreabilidade','Lotes e histórico',ShieldCheck,'/estoque')
+  A('Almoxarifado','Movimentações e saldos',Warehouse,'/almoxarifado'),A('Estoque','Saldo, inventário e movimentos',Package,'/estoque'),A('Recebimento','Conferência de materiais',Package,'/recebimento-materiais'),A('Rastreabilidade','Lotes e histórico',ShieldCheck,'/estoque')
  ]},
  {label:'Fiscal • Financeiro',description:'NF-e, faturamento, documentos e caixa.',icon:Landmark,actions:[
-  A('Fiscal','Documentos e liberações',Landmark,'/fiscal'),
-  A('Nova NF-e','Modelo 55 / simulador',FileText,'/fiscal/nova'),
-  A('Previsão de Caixa','Entradas e saídas',Activity,'/fiscal/previsao-caixa')
+  A('Fiscal','Documentos e liberações',Landmark,'/fiscal'),A('Nova NF-e','Modelo 55 / simulador',FileText,'/fiscal/nova'),A('Previsão de Caixa','Entradas e saídas',Activity,'/fiscal/previsao-caixa')
  ]},
- {label:'Vendas • Comercial',description:'Clientes, pedidos, produtos, preços e faturamento.',icon:ShoppingCart,actions:[
-  A('Clientes','Cadastro e histórico',Users,'/clientes'),
-  A('Produtos','Cadastro mestre e preços',Package,'/produtos-vendas'),
-  A('Pedidos','Pedidos de venda e itens',ShoppingCart,'/produtos-vendas'),
-  A('Tabelas de Preços','Condições comerciais',Receipt,'/tabelas-preco')
+ {label:'Vendas • Comercial',description:'Cadastros, pedidos e consultas comerciais em uma única central.',icon:ShoppingCart,actions:[
+  A('Central de Vendas','Cadastros, pedidos pendentes e consultas',ShoppingCart,'/comercial'),
+  A('Pedidos Pendentes','Carteira não faturada',ClipboardList,'/comercial'),
+  A('Cadastro de Clientes','Cadastro comercial',Users,'/comercial'),
+  A('Pedidos de Venda','Lançamento de pedidos',ShoppingCart,'/comercial'),
+  A('Consultas','Carteira e histórico',SearchIcon,'/comercial')
  ]},
  {label:'Moldes & Ferramentaria',description:'Moldes, ciclos, preventiva, localização e ordens de serviço.',icon:Wrench,actions:[A('Moldes & Ferramentaria','Ficha técnica, ciclos e histórico de O.S.',Wrench,'/moldes-injecao')]},
- {label:'Comercial & Suprimentos',description:'Clientes, vendas, pedidos pendentes, fornecedores e compras.',icon:ShoppingCart,actions:[A('Pedidos Pendentes','Pedidos não faturados que alimentam PCP e Fiscal',ClipboardList,'/comercial'),A('Clientes','Cadastro comercial',Users,'/comercial'),A('Novo Pedido de Venda','Lançamento comercial',ShoppingCart,'/comercial'),A('Fornecedores','Cadastro e qualificação',Users,'/comercial'),A('Compras','Pedidos e recebimento',Package,'/comercial')]},
  {label:'Compras',description:'Solicitações, fornecedores, pedidos e recebimento.',icon:ShoppingCart,actions:[
-  A('Solicitação de Compra','Necessidades internas',ClipboardList,'/compras-solicitacao'),
-  A('Fornecedores','Cadastro e qualificação',Users,'/fornecedores'),
-  A('Recebimento','Entrada e conferência',Package,'/recebimento-materiais')
+  A('Solicitação de Compra','Necessidades internas',ClipboardList,'/compras-solicitacao'),A('Fornecedores','Cadastro e qualificação',Users,'/fornecedores'),A('Recebimento','Entrada e conferência',Package,'/recebimento-materiais')
  ]},
  {label:'Administração',description:'Usuários, permissões, empresa, identidade e infraestrutura.',icon:Settings,actions:[
-  A('Configurações','Identidade, empresa e relatórios',Settings,'/configuracao-adm-master'),
-  A('Usuários / ACL','Permissões por colaborador',Users,'/usuarios'),
-  A('Empresa','Dados e identidade visual',SlidersHorizontal,'/erp-industrial'),A('ACL e Prefixos','Permissões por colaborador e numeração',ShieldCheck,'/configuracoes-adm')
+  A('Configurações','Identidade e empresa',Settings,'/configuracoes-adm'),A('Usuários / ACL','Permissões por colaborador',Users,'/usuarios'),A('Empresa','Dados e identidade visual',SlidersHorizontal,'/erp-industrial'),A('ACL e Prefixos','Permissões por colaborador e numeração',ShieldCheck,'/configuracoes-adm')
  ]},
  {label:'Relatórios',description:'Indicadores e consultas do ERP.',icon:BarChart3,actions:[
-  A('Dashboard Industrial','Visão executiva',Gauge,'/erp-industrial'),
-  A('PCP / Produção','Planejado x realizado',Factory,'/pcp'),
-  A('Qualidade','Pareto e RPNC',ShieldCheck,'/qualidade'),
-  A('Estoque','Saldos e movimentos',Boxes,'/estoque'),
-  A('Fiscal / Financeiro','Documentos e caixa',Landmark,'/fiscal')
+  A('Dashboard Industrial','Visão executiva',Gauge,'/erp-industrial'),A('PCP / Produção','Planejado x realizado',Factory,'/pcp'),A('Qualidade','Pareto e RPNC',ShieldCheck,'/qualidade'),A('Estoque','Saldos e movimentos',Boxes,'/estoque'),A('Fiscal / Financeiro','Documentos e caixa',Landmark,'/fiscal')
  ]},
- {label:'Ajuda',description:'Manual operacional e ajuda contextual.',icon:HelpCircle,actions:[
-  A('Manual do Usuário','Como operar cada módulo',BookOpen,'/manual-usuario'),
-  A('Ajuda do módulo','Orientação contextual',HelpCircle,'/manual-usuario')
- ]}
+ {label:'Ajuda',description:'Manual operacional e ajuda contextual.',icon:HelpCircle,actions:[A('Manual do Usuário','Como operar cada módulo',BookOpen,'/manual-usuario'),A('Ajuda do módulo','Orientação contextual',HelpCircle,'/manual-usuario')]}
 ]
+function SearchIcon({size=24}:{size?:number}){return <span style={{fontSize:size}}>⌕</span>}
 export default function TabletLaunchpad({onNavigate,isOpen,onClose}:{onNavigate:(route:string)=>void;isOpen:boolean;onClose:()=>void}){
  const[selected,setSelected]=useState<Module|null>(null);useEffect(()=>{if(!isOpen)setSelected(null)},[isOpen]);if(!isOpen)return null
- return <div className="tablet-overlay" role="dialog" aria-modal="true"><section className="tablet-frame"><header className="tablet-head"><div className="tablet-brand"><img src="/logo-industrial.svg" alt=""/><div><span>SGQ ERP INDUSTRIAL</span><strong>{selected?selected.label:'Tablet Operacional'}</strong><small>{selected?selected.description:'Acesso rápido aos módulos da fábrica'}</small></div></div><div className="tablet-head-actions"><button className="tablet-icon-btn" onClick={()=>{const n=localStorage.getItem('erp-lang')==='en-US'?'pt-BR':'en-US';localStorage.setItem('erp-lang',n);location.reload()}} title="Idioma"><Languages size={23}/></button>{selected&&<button onClick={()=>setSelected(null)} className="tablet-icon-btn" title="Voltar"><ArrowLeft size={22}/></button>}<button onClick={onClose} className="tablet-icon-btn" title="Fechar tablet"><X size={23}/></button></div></header><div className="tablet-body">{!selected?<><div className="tablet-section-title"><div><span>VISUALIZAÇÃO E OPERAÇÃO</span><h2>Escolha o ambiente de trabalho</h2></div><div className="tablet-user"><UserRound size={20}/><b>Operação ERP</b></div></div><div className="tablet-grid">{modules.slice(0,8).map(m=><ModuleCard key={m.label} module={m} onClick={()=>setSelected(m)}/>)}</div><div className="tablet-section-title tablet-config-title"><div><span>CONFIGURAÇÕES E CADASTROS MESTRES</span><h2>Administração e apoio</h2></div></div><div className="tablet-grid tablet-grid-small">{modules.slice(8).map(m=><ModuleCard key={m.label} module={m} onClick={()=>setSelected(m)}/>)}</div></>:<><button className="tablet-back" onClick={()=>setSelected(null)}><ArrowLeft size={19}/> Todos os módulos</button><div className="tablet-action-grid">{selected.actions.map(a=>{const I=a.icon;return <button key={a.label} className="tablet-action-card" onClick={()=>onNavigate(a.route)}><span className="tablet-action-icon"><I size={30}/></span><div><b>{a.label}</b><small>{a.description}</small></div><span className="tablet-open">ABRIR</span></button>})}</div></>}</div><footer className="tablet-foot"><span>© FernandoSch_System</span><span>ERP Industrial • Operação integrada • RLS</span></footer></section></div>
+ return <div className="tablet-overlay" role="dialog" aria-modal="true"><section className="tablet-frame"><header className="tablet-head"><div className="tablet-brand"><img src="/logo-industrial.svg" alt=""/><div><span>SGQ ERP INDUSTRIAL</span><strong>{selected?selected.label:'Tablet Operacional'}</strong><small>{selected?selected.description:'Acesso rápido aos módulos da fábrica'}</small></div></div><div className="tablet-head-actions"><button className="tablet-icon-btn" onClick={()=>{const n=localStorage.getItem('erp-lang')==='en-US'?'pt-BR':'en-US';localStorage.setItem('erp-lang',n);location.reload()}} title="Idioma"><Languages size={23}/></button>{selected&&<button onClick={()=>setSelected(null)} className="tablet-icon-btn" title="Voltar"><ArrowLeft size={22}/></button>}<button onClick={onClose} className="tablet-icon-btn" title="Fechar tablet"><X size={23}/></button></div></header><div className="tablet-body">{!selected?<><div className="tablet-section-title"><div><span>ACESSOS PRIORITÁRIOS</span><h2>Rotinas mais usadas da fábrica</h2></div><div className="tablet-user"><UserRound size={20}/><b>Operação ERP</b></div></div><div className="tablet-grid tablet-grid-priority"><QuickCard icon={ClipboardList} title="Pedidos Pendentes" description="Carteira de vendas aguardando faturamento, produção ou expedição." onClick={()=>onNavigate('/comercial')}/><QuickCard icon={CalendarCheck2} title="PCP • Programação de Produção" description="Programação, capacidade, prioridades e sequência da produção." onClick={()=>onNavigate('/pcp')}/></div><div className="tablet-section-title"><div><span>VISUALIZAÇÃO E OPERAÇÃO</span><h2>Escolha o ambiente de trabalho</h2></div></div><div className="tablet-grid">{modules.slice(0,6).map(m=><ModuleCard key={m.label} module={m} onClick={()=>setSelected(m)}/>)}</div><div className="tablet-section-title tablet-config-title"><div><span>CONFIGURAÇÕES E APOIO</span><h2>Cadastros e administração</h2></div></div><div className="tablet-grid tablet-grid-small">{modules.slice(6).map(m=><ModuleCard key={m.label} module={m} onClick={()=>setSelected(m)}/>)}</div></>:<><button className="tablet-back" onClick={()=>setSelected(null)}><ArrowLeft size={19}/> Todos os módulos</button><div className="tablet-action-grid">{selected.actions.map(a=>{const I=a.icon;return <button key={a.label} className="tablet-action-card" onClick={()=>onNavigate(a.route)}><span className="tablet-action-icon"><I size={30}/></span><div><b>{a.label}</b><small>{a.description}</small></div><span className="tablet-open">ABRIR</span></button>})}</div></>}</div><footer className="tablet-foot"><span>© FernandoSch_System</span><span>ERP Industrial • Operação integrada • RLS</span></footer></section></div>
 }
+function QuickCard({icon:Icon,title,description,onClick}:{icon:IconComponent;title:string;description:string;onClick:()=>void}){return <button className="tablet-module-card tablet-priority-card" onClick={onClick}><span className="tablet-module-icon"><Icon size={42}/></span><div><b>{title}</b><small>{description}</small></div><span className="tablet-chevron">›</span></button>}
 function ModuleCard({module,onClick}:{module:Module;onClick:()=>void}){const I=module.icon;return <button className="tablet-module-card" onClick={onClick}><span className="tablet-module-icon"><I size={42}/></span><div><b>{module.label}</b><small>{module.description}</small></div><span className="tablet-chevron">›</span></button>}
