@@ -8,6 +8,7 @@
 */
 import { Component, ReactNode, lazy, Suspense, useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
+import { LayoutGrid, Sun, Users } from 'lucide-react'
 import './styles/industrial-login.css'
 import './styles/forms-premium.css'
 import './styles/manual-usuario-2026.css'
