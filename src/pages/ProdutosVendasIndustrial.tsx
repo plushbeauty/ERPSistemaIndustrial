@@ -4,7 +4,8 @@ import {
   Boxes, Check, CheckCircle2, ClipboardList, Edit3, Factory, FileText, History, Image as ImageIcon,
   Plus, Printer, RefreshCw, RotateCcw, Save, Search, ShieldCheck, Tag, Trash2, Upload, X
 } from 'lucide-react'
-import { supabase } from '../lib/supabaseClient'\ndeclare global { interface Window { XLSX?: any } }
+import { supabase } from '../lib/supabaseClient'
+declare global { interface Window { XLSX?: any } }
 
 type Product={
   id:string;empresa_id:string|null;codigo:string;nome:string;descricao:string|null;descricao_resumida:string|null;codigo_barras:string|null
@@ -65,7 +66,8 @@ export default function ProdutosVendasIndustrial(){
   const [audits,setAudits]=useState<Audit[]>([])
   const [attachments,setAttachments]=useState<Attachment[]>([])
   const [detailsLoaded,setDetailsLoaded]=useState(false)
-  const fileRef=useRef<HTMLInputElement>(null)\n  const importRef=useRef<HTMLInputElement>(null)
+  const fileRef=useRef<HTMLInputElement>(null)
+  const importRef=useRef<HTMLInputElement>(null)
 
   const load=async()=>{
     setBusy(true);setError('')
@@ -201,7 +203,10 @@ export default function ProdutosVendasIndustrial(){
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:14,padding:'14px 16px 10px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:900,color:'#1c4bb5'}}>SGQ ERP • CADASTRO MESTRE</div><h1 style={{margin:'2px 0 0',fontSize:25,color:'#173fae'}}>CADASTRO DE PRODUTOS</h1></div>
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
-        <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>\n        <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />\n        <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={16}/>Importar Excel (temporário)</button>\n
+        <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>
+        <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />
+        <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={16}/>Importar Excel (temporário)</button>
+
         <button type="button" onClick={()=>setEditing(true)} disabled={!selectedId} style={btn('normal')}><Edit3 size={16}/>Editar</button>
         <button type="button" onClick={()=>void save(new Event('submit') as unknown as FormEvent)} disabled={!editing||busy} style={btn('normal')}><Save size={16}/>Salvar</button>
         <button type="button" onClick={cancelEdit} style={btn('normal')}><RotateCcw size={16}/>Cancelar</button>
