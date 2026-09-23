@@ -1,0 +1,1 @@
+alter table if exists public.erp_maquinas add column if not exists foto_url text;
