@@ -84,6 +84,7 @@ export default function FichaEngenharia(){
  async function save(){
   if(!kind)return setNotice('Selecione o tipo de ficha.')
   if(!productId)return setNotice('Selecione o produto produzido.')
+  if((kind==='PRENSADOS'||kind==='INJETADOS'||kind==='ESTAMPARIA')&&(!spec.moldeId||Number(spec.cavidades)<=0))return setNotice('Para Prensados, Injetados e Estampo, informe o molde/estampo e a quantidade de cavidades.')
   if(bom.some(x=>!x.componente_id||Number(x.quantidade)<=0))return setNotice('Preencha todos os materiais da BOM.')
   if(ops.some(x=>!x.operacao.trim()||Number(x.setup_min)<0||Number(x.ciclo_seg)<0))return setNotice('Preencha todas as operações e tempos.')
   setBusy(true);setNotice('')
@@ -102,7 +103,7 @@ export default function FichaEngenharia(){
     const qr=q.id?await supabase.from('erp_planos_inspecao').update(qp).eq('id',q.id).eq('empresa_id',empresaId):await supabase.from('erp_planos_inspecao').insert(qp)
     if(qr.error)throw qr.error
    }
-   setFicha(saved.data as Ficha);setNotice('Ficha de processo gravada: parâmetros, materiais, roteiro e controles de qualidade registrados.')
+   setFicha(saved.data as Ficha);setCatalog(rows=>[{id:String(saved.data.id),produto_id:productId,versao:Number(version),observacoes:JSON.stringify(payload)},...rows.filter(x=>x.id!==String(saved.data.id))]);setNotice('Ficha de processo gravada: parâmetros, ferramental, fotos, materiais, roteiro e controles de qualidade registrados.')
   }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
  }
 
