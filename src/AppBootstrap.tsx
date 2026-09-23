@@ -7,6 +7,7 @@ import './styles/index.css'
 import './styles/public-industrial.css'
 import './styles/public-home-v2.css'
 import './styles/industrial-public-restoration.css'
+import './styles/premium-dark.css'
 import './styles/visual-showcase-2026.css'
 
 const PublicIndustrialHome = lazy(() => import('./PublicIndustrialHome'))
