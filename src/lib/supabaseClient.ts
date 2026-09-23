@@ -1,38 +1,23 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 
 const env = import.meta.env as Record<string, unknown>
-const DEFAULT_SUPABASE_URL = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BcwsSbBx8dWof7d_hAKtQA_XzQGAYwR'
-const CONNECTION_MODE_KEY = 'erp_modo_conexao'
-const connectionMode = typeof window !== 'undefined' ? window.localStorage.getItem(CONNECTION_MODE_KEY) : null
-const localMode = connectionMode === 'local'
-const cloudUrl = String(env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL).trim().replace(/\/$/, '')
-const localUrl = String(env.VITE_SUPABASE_LOCAL_URL || 'http://localhost:54321').trim().replace(/\/$/, '')
-const supabaseUrl = localMode ? localUrl : cloudUrl
-const configuredKey = String(
-  localMode
-    ? (env.VITE_SUPABASE_LOCAL_ANON_KEY || env.VITE_SUPABASE_ANON_KEY || '')
-    : (env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY),
-).trim()
+const localMode = typeof window !== 'undefined' && window.localStorage.getItem('erp_modo_conexao') === 'local'
+const supabaseUrl = String(localMode ? (env.VITE_SUPABASE_LOCAL_URL ?? '') : (env.VITE_SUPABASE_URL ?? '')).trim().replace(/\/$/, '')
+const configuredKey = String(localMode ? (env.VITE_SUPABASE_LOCAL_ANON_KEY ?? env.VITE_SUPABASE_ANON_KEY ?? '') : (env.VITE_SUPABASE_ANON_KEY ?? '')).trim()
 const isPrivateKey = configuredKey.startsWith('sb_secret_') || configuredKey.includes('service_role')
 
+if (!supabaseUrl || !configuredKey) {
+  throw new Error(localMode ? 'SUPABASE_ENV_NOT_CONFIGURED: local Supabase URL/key are required.' : 'SUPABASE_ENV_NOT_CONFIGURED: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are required.')
+}
+if (isPrivateKey) throw new Error('SUPABASE_PUBLIC_KEY_INVALID: private/service_role keys are forbidden in the browser.')
+
 export const supabaseModoConexao = localMode ? 'local' : 'nuvem'
-export const supabaseConfigurado = Boolean(supabaseUrl && configuredKey && !isPrivateKey)
+export const supabaseConfigurado = true
 export const supabaseEnvironmentMismatch = false
 export const supabaseUrlExportada = supabaseUrl
-export const supabaseKeyExportada = isPrivateKey ? '' : configuredKey
+export const supabaseKeyExportada = configuredKey
 
-if (localMode && !configuredKey) {
-  console.error('[Supabase] Modo local selecionado, mas VITE_SUPABASE_LOCAL_ANON_KEY não foi configurada. Execute o ambiente local e configure a chave pública local.')
-}
-
-const clientUrl = supabaseUrl || DEFAULT_SUPABASE_URL
-const clientKey = configuredKey && !isPrivateKey ? configuredKey : DEFAULT_SUPABASE_PUBLISHABLE_KEY
-
-if (!supabaseConfigurado) console.error('[Supabase] Configuração pública inválida ou ausente.')
-if (isPrivateKey) console.error('[Supabase] Chave privada/secret detectada no frontend. Ela foi rejeitada e não será usada.')
-
-export const supabase: SupabaseClient = createClient(clientUrl, clientKey, {
+export const supabase: SupabaseClient = createClient(clientUrl, configuredKey, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'erp-industrial-auth' },
   global: { headers: { 'x-client-info': 'sgq-erp-industrial' } },
 })
@@ -75,7 +60,7 @@ export async function rpcAutenticado<T = unknown>(functionName: string, args: Re
   const session = await getValidSession()
   const response = await fetch(`${supabaseUrl}/rest/v1/rpc/${encodeURIComponent(functionName)}`, {
     method: 'POST',
-    headers: { apikey: clientKey, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
+    headers: { apikey: configuredKey, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify(args),
   })
   const raw = await response.text()
