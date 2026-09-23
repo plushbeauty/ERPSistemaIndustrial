@@ -53,7 +53,7 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
 
         if (profileError) throw profileError
         const master = profile?.is_master === true &&
-          Number(profile?.nivel_admin ?? 0) === 100 &&
+          Number(profile?.nivel_admin ?? 0) === 9 &&
           String(profile?.perfil ?? '').toUpperCase() === 'MASTER' &&
           profile?.empresa_id === null
 
