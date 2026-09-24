@@ -1,7 +1,10 @@
 {
   "name": "erp-sistema-industrial",
   "private": true,
-  "version": "0.1.7",
+  "version": "0.1.8",
+  "engines": {
+    "node": "22.x"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
