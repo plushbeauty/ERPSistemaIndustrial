@@ -1,0 +1,32 @@
+name: ERP Industrial Build Gate
+
+on:
+  push:
+    branches:
+      - main
+      - fix/rev-078-077-075-clean
+  pull_request:
+    branches:
+      - main
+      - fix/rev-078-077-075-clean
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: TypeScript
+        run: npm run type-check
+      - name: ESLint
+        run: npx eslint . --ext .js,.jsx,.ts,.tsx
+      - name: Vite build
+        run: npx vite build
