@@ -146,3 +146,19 @@ table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!i
 
 /* Botão flutuante do tablet também fica discreto nas páginas internas. */
 .floating-tablet-global{transform:scale(.86);transform-origin:bottom right}
+
+/* REV-065B — regra única para páginas internas protegidas; a Home pública não recebe esta compactação. */
+.industrial-route-content input,.industrial-route-content select,.industrial-route-content textarea{
+  min-height:34px!important;height:34px;padding:6px 9px!important;font-size:13px!important;line-height:1.2!important;border-radius:6px!important;
+}
+.industrial-route-content textarea{height:auto;min-height:58px!important}
+.industrial-route-content label{font-size:11px!important;line-height:1.25}
+.industrial-route-content table th,.industrial-route-content table td{padding:7px 8px}
+.industrial-route-content h1{font-size:24px;line-height:1.15}
+.industrial-route-content h2{font-size:18px;line-height:1.2}
+.industrial-route-content .text-3xl{font-size:24px!important}
+.industrial-route-content .text-xl{font-size:18px!important}
+.industrial-route-content .text-base{font-size:13px!important}
+.industrial-route-content .min-h-12{min-height:38px!important}
+.industrial-route-content .min-h-11,.industrial-route-content .min-h-10{min-height:34px!important}
+.industrial-route-content .px-5{padding-left:12px!important;padding-right:12px!important}
