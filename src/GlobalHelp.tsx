@@ -1,22 +1,11 @@
 /**
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 12:47 BRT
- * Desenvolvedor: Homologado por FernandoSch.
- * ID da Revisão: REV-052
- * Alterações: Consolidação do cabeçalho de revisão; reconhecimento de voz permanece estritamente tipado.
- * Status do Build Local: Não executado — gate remoto após commit.
- * =========================================================================
- */
-
-/**
- * =========================================================================
- * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Data/Hora: 24/09/2026 - 12:55 BRT
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
- * ID da Revisão: REV-035
- * Alterações: Eliminar any da API de reconhecimento de voz e tipar referência/evento de SpeechRecognition com interfaces locais.
- * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * ID da Revisão: REV-057
+ * Alterações: Consolidar cabeçalho e manter API de reconhecimento de voz com interfaces estritas.
+ * Status do Build Local: Não executado — validação será feita pelo gate remoto.
  * =========================================================================
  */
 
