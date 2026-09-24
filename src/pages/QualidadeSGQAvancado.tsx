@@ -2,7 +2,7 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 11:43 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * Desenvolvedor: FernandoSch
  * ID da Revisão: REV-058
  * Alterações: Tornar os quatro formulários SGQ compatíveis com setters estritos Record<string,string>.
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
