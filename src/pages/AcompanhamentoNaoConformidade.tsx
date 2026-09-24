@@ -1,4 +1,15 @@
-import { useEffect, useMemo, useState } from 'react'
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 12:47 BRT
+ * Desenvolvedor: Homologado por FernandoSch.
+ * ID da Revisão: REV-046
+ * Alterações: Correção explícita do namespace React usado em CSSProperties e React.ReactNode.
+ * Status do Build Local: Não executado — gate remoto após commit.
+ * =========================================================================
+ */
+
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   AlertTriangle, ArrowLeft, CheckCircle2, ClipboardCheck, Clock3, FileText,
   Filter, Plus, RefreshCw, Save, Search, ShieldCheck, Target, UserRound, X
