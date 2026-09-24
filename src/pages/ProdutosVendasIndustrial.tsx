@@ -182,8 +182,7 @@ export default function ProdutosVendasIndustrial(){
         const result=existing
           ?await supabase.from('erp_produtos').update(payload).eq('id',existing.id).eq('empresa_id',companyId)
           :await supabase.from('erp_produtos').insert(payload)
-        if(result.error){failed++;failures.push('Linha '+(i+2)+' / '+codigo+': '+result.error.message)}
-        else if(existing){updated++}else{created++}
+        if(result.error){failed++;failures.push('Linha '+(i+2)+' / '+codigo+': '+result.error.message)} else { if(existing){updated++} else {created++} }
       }
       await load()
       setMessage('Importação concluída: '+created+' novos, '+updated+' atualizados, '+failed+' com erro.'+(failures.length?' '+failures.slice(0,3).join(' | '):''))
