@@ -20,7 +20,7 @@ type Client = { id: string; codigo: string | null; nome: string; email: string |
 type PriceTable = { id: string; codigo: string; nome: string }
 type Price = { produto_id: string; preco: number }
 const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0)
-const inputStyle:React.CSSProperties={height:34,border:'1px solid #BFD0D7',borderRadius:5,padding:'0 9px',background:'#fff',color:'#123B50',fontSize:12,outline:'none',boxSizing:'border-box',width:'100%'}
+const inputStyle:CSSProperties={height:34,border:'1px solid #BFD0D7',borderRadius:5,padding:'0 9px',background:'#fff',color:'#123B50',fontSize:12,outline:'none',boxSizing:'border-box',width:'100%'}
 export default function CatalogoDigital(){
  const [products,setProducts]=useState<Product[]>([])
  const [clients,setClients]=useState<Client[]>([])
