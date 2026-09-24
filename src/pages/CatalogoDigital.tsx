@@ -181,7 +181,7 @@ export default function CatalogoDigital() {
     try {
       const text = productMessage(product)
       await writeAudit('CATALOGO_COMPARTILHADO', product, { canal: channel })
-      if (channel === 'whatsapp') window.open('https://whatsapp.com/?text=' + encodeURIComponent(text), '_blank', 'noopener,noreferrer')
+      if (channel === 'whatsapp') window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener,noreferrer')
       else window.location.href = 'mailto:?subject=' + encodeURIComponent('Catálogo B2B — ' + productCode(product) + ' — ' + product.nome) + '&body=' + encodeURIComponent(text)
       setMessage('Compartilhamento ' + (channel === 'whatsapp' ? 'WhatsApp' : 'E-mail') + ' registrado no histórico.')
       if (showHistory && user) await loadHistory(user)
