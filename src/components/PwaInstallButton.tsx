@@ -47,6 +47,7 @@ export default function PwaInstallButton() {
 
   async function install() {
     const currentPrompt = prompt
+    if (!currentPrompt) return
     setPrompt(null)
     try {
       await currentPrompt.prompt()
