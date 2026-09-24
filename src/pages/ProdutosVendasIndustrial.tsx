@@ -1,11 +1,11 @@
 /**
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 12:07 BRT
- * Desenvolvedor: Homologado por Fernando
- * ID da Revisão: REV-014
- * Alterações: Eliminar expressão ternária solta no contador da importação de produtos.
- * Status do Build Local: Não executado — gate remoto em homologação.
+ * Data/Hora: 24/09/2026 - 13:00 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-059
+ * Alterações: Remoção de cast Event→FormEvent artificial no salvamento de produtos; ação agora chama save() diretamente.
+ * Status do Build Local: Não executado — validação será feita pelo gate remoto.
  * =========================================================================
  */
 
@@ -219,7 +219,7 @@ export default function ProdutosVendasIndustrial(){
         <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={16}/>Importar Excel (temporário)</button>
 
         <button type="button" onClick={()=>setEditing(true)} disabled={!selectedId} style={btn('normal')}><Edit3 size={16}/>Editar</button>
-        <button type="button" onClick={()=>void save(new Event('submit') as unknown as FormEvent)} disabled={!editing||busy} style={btn('normal')}><Save size={16}/>Salvar</button>
+        <button type="button" onClick={()=>void save()} disabled={!editing||busy} style={btn('normal')}><Save size={16}/>Salvar</button>
         <button type="button" onClick={cancelEdit} style={btn('normal')}><RotateCcw size={16}/>Cancelar</button>
         <button type="button" onClick={()=>window.print()} style={btn('normal')}><Printer size={16}/>Imprimir</button>
         <button type="button" onClick={()=>setMessage('Etiqueta preparada para impressão do produto selecionado.')} disabled={!selectedId} style={btn('normal')}><Tag size={16}/>Etiqueta</button>
