@@ -1,17 +1,17 @@
 /**
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 12:07 BRT
- * Desenvolvedor: Homologado por Fernando
- * ID da Revisão: REV-012
- * Alterações: Remover bloco catch vazio do instalador PWA e manter evento BeforeInstallPromptEvent estritamente tipado.
- * Status do Build Local: Não executado — gate remoto em homologação.
+ * Data/Hora: 24/09/2026 - 12:47 BRT
+ * Desenvolvedor: Homologado por FernandoSch.
+ * ID da Revisão: REV-053
+ * Alterações: Reordenação do cabeçalho/imports e manutenção da tipagem estrita do evento PWA.
+ * Status do Build Local: Não executado — gate remoto após commit.
  * =========================================================================
  */
 
+import { useEffect, useState } from 'react'
 interface BeforeInstallPromptEvent extends Event { prompt(): Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }> }
 interface NavigatorWithStandalone extends Navigator { standalone?: boolean }
-import { useEffect, useState } from 'react'
 import { Download, X } from 'lucide-react'
 
 export default function PwaInstallButton(){
