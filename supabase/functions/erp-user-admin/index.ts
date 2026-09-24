@@ -1,3 +1,14 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 12:07 BRT
+ * Desenvolvedor: Homologado por Fernando
+ * ID da Revisão: REV-016
+ * Alterações: Eliminar any do auditor administrativo com tipo Actor estrito.
+ * Status do Build Local: Não executado — gate remoto em homologação.
+ * =========================================================================
+ */
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const allowedOrigin = Deno.env.get('ERP_ALLOWED_ORIGIN') || 'https://erp-sistema-industrial.vercel.app'
@@ -34,7 +45,9 @@ async function roleFor(roleId: string | null, fallbackLevel: number) {
   return data
 }
 
-async function writeAudit(actor: any, action: string, entityId: string | null, oldData: unknown, newData: unknown, req: Request) {
+type Actor = { id:string; empresa_id:string|null; nome:string|null; email:string|null; ativo:boolean; role:string|null; role_id:string|null; nivel_admin:number|null; is_master:boolean|null };
+
+async function writeAudit(actor: Actor, action: string, entityId: string | null, oldData: unknown, newData: unknown, req: Request) {
   await admin.from('erp_audit_logs').insert({ empresa_id: actor?.empresa_id ?? null, actor_user_id: actor?.id ?? null, action, entity_type: 'erp_usuario', entity_id: entityId, old_data: oldData ?? null, new_data: newData ?? null, user_agent: req.headers.get('user-agent') }).then(() => undefined).catch(() => undefined)
 }
 
