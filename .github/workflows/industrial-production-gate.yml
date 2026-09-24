@@ -1,0 +1,34 @@
+# =========================================================================
+# REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+# Data/Hora: 24/09/2026 - 12:05 BRT
+# Desenvolvedor: Homologado por Fernando
+# ID da Revisão: REV-010
+# Alterações: Gate obrigatório de lint, type-check e build para a branch main.
+# Status do Build Local: Não executado — gate remoto será a certificação objetiva.
+# =========================================================================
+name: Industrial Production Gate
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  production-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Type check
+        run: npm run type-check
+      - name: Build
+        run: npm run build
