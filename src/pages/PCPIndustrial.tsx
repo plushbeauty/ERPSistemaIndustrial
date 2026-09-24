@@ -11,8 +11,6 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
-import type { LucideIcon } from 'lucide-react'
-import { AlertTriangle, ArrowLeft, CalendarDays, CheckCircle2, ClipboardList, Factory, Gauge, HelpCircle, Package, Play, Plus, RefreshCw, Search, ShieldCheck, Wrench, X, XCircle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Tab='visao'|'pedidos'|'ops'|'materiais'|'producao'|'programacao'|'capacidade'|'qualidade'
@@ -28,6 +26,8 @@ type Employee={id:string;matricula:string;nome:string;cargo:string|null;status:s
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number}
 type Ficha={id:string;produto_id:string;versao:number;rendimento:number;ativa:boolean}
 type FItem={id:string;ficha_id:string;componente_id:string;quantidade:number;perda_percentual:number}
+
+function InlineIcon({name,size=18}:{name:string;size?:number}){const path=name==='Plus'?'M12 5v14M5 12h14':name==='X'?'M6 6l12 12M18 6 6 18':name==='CheckCircle2'?'M9 12l2 2 4-5':name==='XCircle'?'M8 8l8 8M16 8l-8 8':name==='ArrowLeft'?'M19 12H5M12 19l-7-7 7-7':name==='Search'?'M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm6-2 4 4':name==='RefreshCw'?'M20 11a8 8 0 0 0-14.8-4L3 9M3 4v5h5M4 13a8 8 0 0 0 14.8 4L21 15M21 20v-5h-5':'M5 12h14M12 5v14';return <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={path}/></svg>}
 
 const help:Record<Tab,{title:string;what:string;how:string;action:string}> = {
  visao:{title:'Visão geral',what:'É o painel de comando do PCP. Mostra a situação atual e orienta o usuário pelo fluxo completo.',how:'Comece pelos pedidos, confirme materiais, crie/libere a OP, programe máquina, aponte a produção e acompanhe qualidade.',action:'Use os atalhos abaixo para executar cada etapa.'},
@@ -135,21 +135,21 @@ export default function PCPIndustrial(){
 
  function selectTab(next:Tab){setTab(next);setError('');setMessage('')}
 
- const tabs:[Tab,string,LucideIcon][]=[['visao','Visão geral',Gauge],['pedidos','Pedidos / Demanda',ClipboardList],['ops','Ordens de Produção',Factory],['materiais','Materiais / MRP',Package],['producao','Apontar produção',Play],['programacao','Programação / Gantt',CalendarDays],['capacidade','Capacidade / Máquinas',Wrench],['qualidade','Qualidade / Defeitos',ShieldCheck]]
+ const tabs:[Tab,string,string][]=[['visao','Visão geral',Gauge],['pedidos','Pedidos / Demanda',ClipboardList],['ops','Ordens de Produção',Factory],['materiais','Materiais / MRP',Package],['producao','Apontar produção',Play],['programacao','Programação / Gantt',CalendarDays],['capacidade','Capacidade / Máquinas',Wrench],['qualidade','Qualidade / Defeitos',ShieldCheck]]
 
  return <main className="pcp-modern-page">
   <header className="pcp-modern-header">
-   <div><button className="pcp-back-modern" onClick={()=>window.location.href='/erp-industrial'}><ArrowLeft size={18}/> Voltar ao Tablet</button><span>PCP • PLANEJAMENTO E CONTROLE DA PRODUÇÃO</span><h1>PCP Industrial</h1><p>Demanda → MRP → materiais → OP → programação → produção → estoque → qualidade.</p></div>
-   <div className="pcp-modern-actions"><button className="pcp-help-btn" onClick={()=>setModal('ajuda')}><HelpCircle size={18}/> Como funciona?</button><div className="pcp-live-modern"><span/> DADOS SUPABASE</div><button className="pcp-refresh-modern" onClick={()=>void load()} disabled={busy}><RefreshCw size={18}/>{busy?'Atualizando…':'Atualizar'}</button></div>
+   <div><button className="pcp-back-modern" onClick={()=>window.location.href='/erp-industrial'}><InlineIcon name="ArrowLeft" size={18}/> Voltar ao Tablet</button><span>PCP • PLANEJAMENTO E CONTROLE DA PRODUÇÃO</span><h1>PCP Industrial</h1><p>Demanda → MRP → materiais → OP → programação → produção → estoque → qualidade.</p></div>
+   <div className="pcp-modern-actions"><button className="pcp-help-btn" onClick={()=>setModal('ajuda')}><InlineIcon name="HelpCircle" size={18}/> Como funciona?</button><div className="pcp-live-modern"><span/> DADOS SUPABASE</div><button className="pcp-refresh-modern" onClick={()=>void load()} disabled={busy}><InlineIcon name="RefreshCw" size={18}/>{busy?'Atualizando…':'Atualizar'}</button></div>
   </header>
   {(message||error)&&<div className={error?'error':'notice'} style={{margin:'12px 0'}}>{error||message}</div>}
 
   <section className="pcp-quick-actions">
    <div><strong>O que você quer fazer?</strong><small>O PCP não é só consulta. Use uma ação para iniciar o trabalho.</small></div>
-   <button onClick={openNewOP}><Plus size={18}/> Nova OP</button>
-   <button onClick={()=>openProgram()}><CalendarDays size={18}/> Programar OP</button>
+   <button onClick={openNewOP}><InlineIcon name="Plus" size={18}/> Nova OP</button>
+   <button onClick={()=>openProgram()}><InlineIcon name="CalendarDays" size={18}/> Programar OP</button>
    <button onClick={()=>selectTab('producao')}><Play size={18}/> Apontar produção</button>
-   <button onClick={()=>selectTab('materiais')}><Package size={18}/> Ver MRP</button>
+   <button onClick={()=>selectTab('materiais')}><InlineIcon name="Package" size={18}/> Ver MRP</button>
   </section>
 
   <nav className="pcp-modern-tabs">{tabs.map(([id,label,I])=><button key={id} className={tab===id?'active':''} onClick={()=>selectTab(id)}><I size={16}/>{label}<span className="tab-help">?</span></button>)}</nav>
@@ -159,13 +159,13 @@ export default function PCPIndustrial(){
    <div className="pcp-flow">
     {(['pedidos','ops','materiais','programacao','producao','qualidade'] as Tab[]).map((id,i)=><button key={id} onClick={()=>selectTab(id)}><b>{i+1}</b><strong>{help[id].title}</strong><small>{help[id].what}</small><em>{help[id].action} →</em></button>)}
    </div>
-   <div className="pcp-info"><AlertTriangle size={20}/><div><strong>Regra de uso</strong><p>Pedido é a demanda. OP é a autorização de fabricação. MRP verifica materiais. Programação define onde/quando fabricar. Apontamento registra o realizado. Qualidade trata desvios.</p></div></div>
+   <div className="pcp-info"><InlineIcon name="AlertTriangle" size={20}/><div><strong>Regra de uso</strong><p>Pedido é a demanda. OP é a autorização de fabricação. MRP verifica materiais. Programação define onde/quando fabricar. Apontamento registra o realizado. Qualidade trata desvios.</p></div></div>
   </section>}
 
   {tab==='pedidos'&&<section><Table title="Pedidos que alimentam o PCP" cols={['Pedido','Status','Total','OPs vinculadas']} rows={orders.filter(o=>!query||String(o.numero).includes(query)).map(o=>[o.numero,o.status,o.total,ops.filter(x=>x.pedido_venda_id===o.id).length])} search={query} setSearch={setQuery}/></section>}
 
   {tab==='ops'&&<section className="crud-list">
-   <div className="crud-list-head"><div><strong>Ordens de Produção</strong><small>Cadastre, consulte e abra uma OP para continuar o processo.</small></div><div className="pcp-list-actions"><div className="module-search"><Search size={16}/><input placeholder="OP / status" value={query} onChange={e=>setQuery(e.target.value)}/></div><button className="primary-v2" onClick={openNewOP}><Plus size={17}/> Nova OP</button></div></div>
+   <div className="crud-list-head"><div><strong>Ordens de Produção</strong><small>Cadastre, consulte e abra uma OP para continuar o processo.</small></div><div className="pcp-list-actions"><div className="module-search"><InlineIcon name="Search" size={16}/><input placeholder="OP / status" value={query} onChange={e=>setQuery(e.target.value)}/></div><button className="primary-v2" onClick={openNewOP}><InlineIcon name="Plus" size={17}/> Nova OP</button></div></div>
    <div className="crud-table-wrap"><table><thead><tr><th>OP</th><th>Produto</th><th>Quantidade</th><th>Status</th><th>Prevista</th><th>Ações</th></tr></thead><tbody>{filteredOps.map(o=><tr key={o.id}><td><strong>{o.numero_op}</strong></td><td>{products.find(p=>p.id===o.produto_id)?.codigo||'—'} • {products.find(p=>p.id===o.produto_id)?.nome||'Produto não localizado'}</td><td>{o.quantidade}</td><td>{o.status}</td><td>{o.data_prevista||'—'}</td><td className="pcp-row-actions"><button className="secondary-v2" onClick={()=>{setSelectedOp(o.id);selectTab('materiais')}}>Materiais</button><button className="secondary-v2" onClick={()=>{setSelectedOp(o.id);selectTab('producao')}}>Apontar</button><button className="secondary-v2" onClick={()=>openProgram(o.id)}>Programar</button></td></tr>)}</tbody></table></div>
   </section>}
 
@@ -175,7 +175,7 @@ export default function PCPIndustrial(){
   </section>}
 
   {tab==='producao'&&<section className="pcp-production-modern">
-   <section className="pcp-modern-panel"><div className="pcp-modern-panel-head"><div><span>CONFERÊNCIA DE PRODUÇÃO</span><h2>Entrada real do que saiu da fábrica</h2><p>Registre o resultado da OP. O lançamento usa a rotina transacional do ERP.</p></div><Play size={24}/></div>
+   <section className="pcp-modern-panel"><div className="pcp-modern-panel-head"><div><span>CONFERÊNCIA DE PRODUÇÃO</span><h2>Entrada real do que saiu da fábrica</h2><p>Registre o resultado da OP. O lançamento usa a rotina transacional do ERP.</p></div><InlineIcon name="Play" size={24}/></div>
     <div className="pcp-form-grid-modern">
      <label><span>OP</span><select value={selectedOp} onChange={e=>setSelectedOp(e.target.value)}><option value="">Selecione a OP</option>{ops.map(o=><option key={o.id} value={o.id}>{o.numero_op} • planejado {o.quantidade}</option>)}</select></label>
      <label><span>Quantidade Encontrada</span><input type="number" min="0" step="any" value={found} onChange={e=>setFound(e.target.value)} inputMode="decimal"/></label>
@@ -183,20 +183,20 @@ export default function PCPIndustrial(){
      <label><span>Localização de Destino</span><input value={location} onChange={e=>setLocation(e.target.value)} placeholder="ID da localização"/></label>
      <label className="wide"><span>Detalhes de Qualidade</span><textarea rows={4} value={defectText} onChange={e=>setDefectText(e.target.value)} placeholder="Defeito:quantidade:observação — um por linha"/></label>
     </div>
-    <div className="pcp-modern-form-footer"><span>Boa = encontrada − defeituosa.</span><button className="pcp-conferir" disabled={busy} onClick={()=>void confirmProduction()}><Play size={21}/>{busy?'Lançando…':'CONFERIR E LANÇAR'}</button></div>
+    <div className="pcp-modern-form-footer"><span>Boa = encontrada − defeituosa.</span><button className="pcp-conferir" disabled={busy} onClick={()=>void confirmProduction()}><InlineIcon name="Play" size={21}/>{busy?'Lançando…':'CONFERIR E LANÇAR'}</button></div>
    </section>
-   <section className="pcp-modern-panel"><div className="pcp-modern-panel-head"><div><span>STATUS DA OP</span><h2>{current?current.numero_op:'Selecione uma OP'}</h2><p>{current?'Indicadores atuais das programações.':'Selecione uma OP para acompanhar.'}</p></div><Gauge size={24}/></div>
-    <div className="pcp-stock-modern-grid"><article><ClipboardList/><small>Planejada</small><strong>{current?.quantidade??0}</strong><em>Plano da OP</em></article><article><Package/><small>Encontrada</small><strong>{productionFound}</strong><em>Apontada</em></article><article className="red"><XCircle/><small>Defeituosa</small><strong>{productionBad}</strong><em>Refugo</em></article><article className="green"><CheckCircle2/><small>Boa</small><strong>{productionGood}</strong><em>Quantidade boa</em></article></div>
+   <section className="pcp-modern-panel"><div className="pcp-modern-panel-head"><div><span>STATUS DA OP</span><h2>{current?current.numero_op:'Selecione uma OP'}</h2><p>{current?'Indicadores atuais das programações.':'Selecione uma OP para acompanhar.'}</p></div><InlineIcon name="Gauge" size={24}/></div>
+    <div className="pcp-stock-modern-grid"><article><InlineIcon name="ClipboardList"/><small>Planejada</small><strong>{current?.quantidade??0}</strong><em>Plano da OP</em></article><article><InlineIcon name="Package"/><small>Encontrada</small><strong>{productionFound}</strong><em>Apontada</em></article><article className="red"><InlineIcon name="XCircle"/><small>Defeituosa</small><strong>{productionBad}</strong><em>Refugo</em></article><article className="green"><InlineIcon name="CheckCircle2"/><small>Boa</small><strong>{productionGood}</strong><em>Quantidade boa</em></article></div>
    </section>
   </section>}
 
   {tab==='programacao'&&<ProgramacaoTimeline programs={schedule} machines={machines} molds={molds} employees={employees} onProgram={openProgram}/>} 
 
-  {tab==='capacidade'&&<section><div className="pcp-capacity-grid">{machines.map(m=><article key={m.id}><div><span>{m.codigo}</span><strong>{m.nome}</strong><small>{m.tipo||'Máquina'} • {m.status}</small></div><b>{programs.filter(p=>p.maquina_id===m.id).length} programação(ões)</b><button onClick={()=>openProgram()}><CalendarDays size={16}/> Programar</button></article>)}</div></section>}
+  {tab==='capacidade'&&<section><div className="pcp-capacity-grid">{machines.map(m=><article key={m.id}><div><span>{m.codigo}</span><strong>{m.nome}</strong><small>{m.tipo||'Máquina'} • {m.status}</small></div><b>{programs.filter(p=>p.maquina_id===m.id).length} programação(ões)</b><button onClick={()=>openProgram()}><InlineIcon name="CalendarDays" size={16}/> Programar</button></article>)}</div></section>}
 
   {tab==='qualidade'&&<Table title="Defeitos enviados pela produção" cols={['Defeito','Quantidade','OP']} rows={defects.filter(d=>!query||d.defeito.toLowerCase().includes(query.toLowerCase())||d.ordem_producao_id.includes(query)).map(d=>[d.defeito,d.quantidade,d.ordem_producao_id])} search={query} setSearch={setQuery}/>}
 
-  {modal==='ajuda'&&<Modal title="Como usar o PCP Industrial" onClose={()=>setModal(null)}><div className="pcp-help-modal">{tabs.map(([id,label,I])=><button key={id} onClick={()=>{selectTab(id);setModal(null)}}><I size={20}/><div><strong>{label}</strong><p>{help[id].what}</p><small>Como usar: {help[id].how}</small></div><span>→</span></button>)}</div><div className="pcp-info"><CheckCircle2 size={20}/><div><strong>Fluxo recomendado</strong><p>Pedido → OP → MRP → Programação → Apontamento → Estoque/Qualidade. Cada etapa tem uma finalidade; não é necessário preencher tudo de uma vez.</p></div></div></Modal>}
+  {modal==='ajuda'&&<Modal title="Como usar o PCP Industrial" onClose={()=>setModal(null)}><div className="pcp-help-modal">{tabs.map(([id,label,I])=><button key={id} onClick={()=>{selectTab(id);setModal(null)}}><I size={20}/><div><strong>{label}</strong><p>{help[id].what}</p><small>Como usar: {help[id].how}</small></div><span>→</span></button>)}</div><div className="pcp-info"><InlineIcon name="CheckCircle2" size={20}/><div><strong>Fluxo recomendado</strong><p>Pedido → OP → MRP → Programação → Apontamento → Estoque/Qualidade. Cada etapa tem uma finalidade; não é necessário preencher tudo de uma vez.</p></div></div></Modal>}
 
   {modal==='op'&&<Modal title="Nova Ordem de Produção" onClose={()=>setModal(null)}><form className="pcp-modal-form" onSubmit={createOP}><label>Produto<select value={opForm.produto_id} onChange={e=>setOpForm(v=>({...v,produto_id:e.target.value}))}><option value="">Selecione o produto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} • {p.nome}</option>)}</select></label><label>Quantidade<input type="number" min="0.0001" step="any" value={opForm.quantidade} onChange={e=>setOpForm(v=>({...v,quantidade:e.target.value}))}/></label><label>Data prevista<input type="date" value={opForm.data_prevista} onChange={e=>setOpForm(v=>({...v,data_prevista:e.target.value}))}/></label><label>Status<select value={opForm.status} onChange={e=>setOpForm(v=>({...v,status:e.target.value}))}><option>Planejada</option><option>Aguardando PCP</option><option>Em produção</option><option>Concluída</option></select></label><label className="wide">Observações<textarea value={opForm.observacoes} onChange={e=>setOpForm(v=>({...v,observacoes:e.target.value}))}/></label><div className="pcp-modal-footer"><button type="button" className="secondary-v2" onClick={()=>setModal(null)}>Cancelar</button><button className="primary-v2" disabled={busy}>{busy?'Criando…':'Criar OP'}</button></div></form></Modal>}
 
@@ -226,7 +226,7 @@ function ProgramacaoTimeline({programs,machines,molds,employees,onProgram}:{prog
  const moldName=(id:string|null|undefined)=>molds.find(m=>m.id===id)?.codigo||'sem molde'
  const empName=(id:string|null|undefined)=>employees.find(e=>e.id===id)?.nome||'—'
  return <section className="pcp-timeline-wrap">
-  <div className="pcp-section-toolbar"><div><strong>Programação visual da fábrica</strong><small>Os dias ficam no topo e cada barra mostra o que está programado em cada máquina.</small></div><button className="primary-v2" onClick={()=>onProgram()}><Plus size={17}/> Programar OP</button></div>
+  <div className="pcp-section-toolbar"><div><strong>Programação visual da fábrica</strong><small>Os dias ficam no topo e cada barra mostra o que está programado em cada máquina.</small></div><button className="primary-v2" onClick={()=>onProgram()}><InlineIcon name="Plus" size={17}/> Programar OP</button></div>
   <div className="pcp-planning-strip"><div><strong>O PCP calcula carga, não só datas.</strong><span>Quantidade • ciclo • cavidades • setup • turnos • eficiência • molde • operadores.</span></div><b>{active.reduce((s,p)=>s+Number(p.quantidade_planejada||0),0).toLocaleString('pt-BR')} peças programadas</b><b>{new Set(active.map(p=>p.molde_id).filter(Boolean)).size} moldes</b><b>{active.length} blocos</b></div>
   <div className="pcp-timeline-card"><div className="pcp-timeline-scroll"><div className="pcp-timeline-grid" style={{gridTemplateColumns:`190px repeat(${horizon},minmax(92px,1fr))`}}>
    <div className="pcp-timeline-corner">MÁQUINA</div>{days.map(d=><div className="pcp-day-head" key={d.toISOString()}><strong>{fmtDay(d)}</strong><small>{d.toLocaleDateString('pt-BR',{year:'numeric'})}</small></div>)}
@@ -238,9 +238,9 @@ function ProgramacaoTimeline({programs,machines,molds,employees,onProgram}:{prog
 }
 
 function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:ReactNode}){
- return <div className="pcp-modal-backdrop" role="dialog" aria-modal="true"><div className="pcp-modal"><div className="pcp-modal-head"><h2>{title}</h2><button className="pcp-modal-close" onClick={onClose} aria-label="Fechar"><X size={20}/></button></div>{children}</div></div>
+ return <div className="pcp-modal-backdrop" role="dialog" aria-modal="true"><div className="pcp-modal"><div className="pcp-modal-head"><h2>{title}</h2><button className="pcp-modal-close" onClick={onClose} aria-label="Fechar"><InlineIcon name="X" size={20}/></button></div>{children}</div></div>
 }
 
 function Table({title,cols,rows,search,setSearch}:{title:string;cols:string[];rows:(string|number)[][];search:string;setSearch:(v:string)=>void}){
- return <section className="crud-list"><div className="crud-list-head"><div><strong>{title}</strong><small>{rows.length} registros</small></div><div className="module-search"><Search size={16}/><input placeholder="Pesquisar..." value={search} onChange={e=>setSearch(e.target.value)}/></div></div><div className="crud-table-wrap"><table><thead><tr>{cols.map(c=><th key={c}>{c}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{r.map((v,j)=><td key={j}>{String(v??'—')}</td>)}</tr>)}{!rows.length&&<tr><td colSpan={cols.length} className="crud-empty">Nenhum registro encontrado.</td></tr>}</tbody></table></div></section>
+ return <section className="crud-list"><div className="crud-list-head"><div><strong>{title}</strong><small>{rows.length} registros</small></div><div className="module-search"><InlineIcon name="Search" size={16}/><input placeholder="Pesquisar..." value={search} onChange={e=>setSearch(e.target.value)}/></div></div><div className="crud-table-wrap"><table><thead><tr>{cols.map(c=><th key={c}>{c}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{r.map((v,j)=><td key={j}>{String(v??'—')}</td>)}</tr>)}{!rows.length&&<tr><td colSpan={cols.length} className="crud-empty">Nenhum registro encontrado.</td></tr>}</tbody></table></div></section>
 }
