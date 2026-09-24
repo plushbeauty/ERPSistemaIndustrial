@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   Activity, AlertTriangle, ArrowUpRight, Boxes, CheckCircle2, ClipboardCheck,
-  Factory, Gauge, LayoutGrid, Package, RefreshCw, ShieldCheck, ShoppingCart,
+  Factory, Gauge, LayoutGrid, Moon, Package, RefreshCw, ShieldCheck, ShoppingCart, Sun,
   Truck, Users, Wrench, Zap
 } from 'lucide-react'
 import TabletLaunchpad from './TabletLaunchpad'
@@ -47,6 +47,13 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
   const [tabletOpen, setTabletOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [productionSeries, setProductionSeries] = useState<ProductionPoint[]>([])
+  const [now, setNow] = useState(() => new Date())
+  const [lightMode, setLightMode] = useState(true)
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     let alive = true
@@ -175,7 +182,19 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
   ] as const
 
   return <>
-    <div className="icd icd-industrial-dashboard">
+    <div className={`icd icd-industrial-dashboard ${lightMode ? 'icd-light' : 'icd-dark'}`}>
+      <header className="icd-system-bar">
+        <div className="icd-brand">
+          <img src="/logo-industrial.svg" alt="SGQ ERP Industrial" />
+          <div><strong>SGQ ERP Industrial</strong><span>Gestão Industrial Integrada</span></div>
+        </div>
+        <div className="icd-session">
+          <div className="icd-session-user"><span className="icd-avatar">{(profileName || 'U').trim().charAt(0).toUpperCase()}</span><div><b>{profileName || 'Usuário'}</b><small>{isMaster ? 'Administrador Master' : 'Usuário conectado'}</small></div></div>
+          <div className="icd-clock"><b>{now.toLocaleDateString('pt-BR')}</b><span>{now.toLocaleTimeString('pt-BR')}</span></div>
+          <button className="icd-light-toggle" title={lightMode ? 'Ativar modo escuro' : 'Ativar modo claro'} onClick={() => setLightMode(v => !v)}>{lightMode ? <Moon size={17} /> : <Sun size={17} />}<span>{lightMode ? 'Claro' : 'Escuro'}</span></button>
+        </div>
+      </header>
+
       <section className="icd-hero">
         <div className="icd-hero-copy">
           <div className="icd-kicker"><span className="icd-live-dot" /> CENTRO DE COMANDO INDUSTRIAL</div>
