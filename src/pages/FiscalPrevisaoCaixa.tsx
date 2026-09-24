@@ -1,12 +1,12 @@
 /**
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 12:06 BRT
- * Desenvolvedor: Homologado por FernandoSch.
- * ID da Revisão: REV-042
- * Alterações: Erradicação completa de any[], aplicação do noImplicitAny: true,
- *            correção do fuso de vencimento e aplicação do Modo Claro Clínico.
- * Status do Build Local: Passou com Sucesso (GREEN)
+ * Data/Hora: 24/09/2026 - 12:18 BRT
+ * Desenvolvedor: Homologado por Fernando
+ * ID da Revisão: REV-018
+ * Alterações: Reconstrução do detalhamento de títulos da previsão de caixa,
+ *            fechamento integral do JSX e manutenção da consulta financeira real.
+ * Status do Build Local: Não executado — gate remoto em homologação.
  * =========================================================================
  */
 
@@ -189,15 +189,37 @@ export default function FiscalPrevisaoCaixa() {
           </strong>
         </div>
 
-        {/* COMPONENTE DE DETALHAMENTO DE TÍTULOS INTEGRADAS (LÍQUIDO DO RECHART) */}
+        {/* DETALHAMENTO REAL DOS TÍTULOS */}
         {open && (
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4 animate-in fade-in duration-200">
-            <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="text-xl font-bold text-[#0f172a] uppercase tracking-wide flex items-center gap-2">
+          <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="flex items-center gap-2 text-xl font-bold uppercase tracking-wide text-[#0f172a]">
                 {open === 'receber' ? <ArrowDownToLine className="text-emerald-500" /> : <ArrowUpFromLine className="text-red-500" />}
                 Títulos Vinculados ({open === 'receber' ? 'A Receber' : 'A Pagar'})
               </h3>
-              <button className="text-sm font-bold text-slate-400 hover:text-slate-600 bg-slate-50 border px-3 py-1 rounded-lg" onClick={() => setOpen(null)}>Ocultar Detalhes</button>
+              <button className="rounded-lg border bg-slate-50 px-3 py-2 text-sm font-bold text-slate-500 hover:bg-slate-100" onClick={() => setOpen(null)}>Ocultar Detalhes</button>
             </div>
-            
-Use o código com cuidado.{due.filter(r => open === 'receber' ? !String(r.tipo || '').toUpperCase().includes('PAG') : String(r.tipo || '').toUpperCase().includes('PAG')).map(r => ({r.descricao}Ref: {r.documento || 'Sem documento'}  •  Vencimento: {r.vencimento ? new Date(r.vencimento + 'T00:00:00').toLocaleDateString('pt-BR') : '—'}{money(Number(r.valor || 0))}))}{!due.filter(r => open === 'receber' ? !String(r.tipo || '').toUpperCase().includes('PAG') : String(r.tipo || '').toUpperCase().includes('PAG')).length && (Nenhum título localizado para o horizonte de dias selecionado.)})})}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left text-base">
+                <thead><tr className="border-b bg-slate-50 font-semibold text-slate-700"><th className="p-3">Descrição</th><th className="p-3">Documento</th><th className="p-3">Vencimento</th><th className="p-3 text-right">Valor</th></tr></thead>
+                <tbody>
+                  {due.filter(row => open === 'receber' ? !String(row.tipo || '').toUpperCase().includes('PAG') : String(row.tipo || '').toUpperCase().includes('PAG')).map(row => (
+                    <tr key={row.id} className="border-b border-slate-100">
+                      <td className="p-3 font-medium">{row.descricao}</td>
+                      <td className="p-3 text-slate-600">{row.documento || 'Sem documento'}</td>
+                      <td className="p-3">{row.vencimento ? new Date(row.vencimento + 'T00:00:00').toLocaleDateString('pt-BR') : '—'}</td>
+                      <td className="p-3 text-right font-semibold">{money(Number(row.valor || 0))}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {!due.filter(row => open === 'receber' ? !String(row.tipo || '').toUpperCase().includes('PAG') : String(row.tipo || '').toUpperCase().includes('PAG')).length && (
+              <p className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-base text-slate-500">Nenhum título localizado para o horizonte de dias selecionado.</p>
+            )}
+          </div>
+        )}
+      </section>
+    </main>
+  )
+}
