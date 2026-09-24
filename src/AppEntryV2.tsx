@@ -2,7 +2,7 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 12:55 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * Desenvolvedor: FernandoSch
  * ID da Revisão: REV-056
  * Alterações: Consolidar os cabeçalhos duplicados e manter a definição estrita do perfil administrativo.
  * Status do Build Local: Não executado — validação será feita pelo gate remoto.
