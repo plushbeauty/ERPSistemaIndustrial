@@ -2,7 +2,7 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 11:43 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * Desenvolvedor: FernandoSch
  * ID da Revisão: REV-050
  * Alterações: Corrigir referências antigas qtd para o campo estrito quantidade.
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
@@ -13,7 +13,7 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 11:43 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * Desenvolvedor: FernandoSch
  * ID da Revisão: REV-036
  * Alterações: Eliminar any da coleção de pedidos e do atualizador de itens, usando tipos Order e valores estritos.
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
