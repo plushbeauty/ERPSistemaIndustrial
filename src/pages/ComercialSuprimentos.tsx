@@ -1,4 +1,4 @@
-import {useEffect,useMemo,useState} from 'react'
+import {useEffect,useMemo,useState,type CSSProperties} from 'react'
 import {ClipboardList,RefreshCw,Plus,Search,Users,Factory,Save,CheckCircle2,Clock3,FileText,Boxes,Eye} from 'lucide-react'
 import {supabase} from '../lib/supabaseClient'
 
@@ -8,9 +8,8 @@ type Item={id:string;pedido_id:string;produto_id:string;codigo:string;descricao:
 type Order={id:string;numero:number;pedido_cliente:string|null;cliente_id:string;status:string;total:number;data_entrega_prometida:string|null;created_at:string}
 type OrderRow=Order&{item?:Item;pcp:string}
 
-const compactInput:React.CSSProperties={width:'100%',height:38,border:'1px solid #cbd5e1',borderRadius:8,padding:'0 9px',boxSizing:'border-box',background:'#fff',color:'#0f172a',fontSize:13}
-const label:React.CSSProperties={display:'grid',gap:5,fontSize:11,fontWeight:800,color:'#334155'}
-const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0)
+const compactInput:CSSProperties={width:'100%',height:38,border:'1px solid #cbd5e1',borderRadius:8,padding:'0 9px',boxSizing:'border-box',background:'#fff',color:'#0f172a',fontSize:13}
+const label:CSSProperties={display:'grid',gap:5,fontSize:11,fontWeight:800,color:'#334155'}
 
 export default function ComercialSuprimentos(){
  const[area,setArea]=useState<'pendentes'|'pedido'|'clientes'>('pendentes')
