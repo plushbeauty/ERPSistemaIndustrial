@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
 type Tab = 'gerais' | 'parceiros' | 'itens' | 'impostos' | 'transporte'
@@ -138,7 +138,7 @@ function SelectField({
   label: string
   value: string
   onChange: (value: string) => void
-  children: React.ReactNode
+  children: ReactNode
   className?: string
 }) {
   return (
