@@ -1,3 +1,14 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-043
+ * Alterações: Tipar explicitamente as props do componente para eliminar TS7031.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
 import { ChangeEvent, DragEvent, useEffect, useState } from 'react'
 import { Download, FileUp, Loader2, Trash2, UploadCloud } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -7,7 +18,7 @@ type Props={documentoId:string;titulo?:string}
 const MAX_BYTES=25*1024*1024
 const ALLOWED=new Set(['application/pdf','image/png','image/jpeg','image/webp','text/plain','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
 
-export default function DocumentoAnexoUpload({documentoId,titulo='Documentos em anexo'}){
+export default function DocumentoAnexoUpload({documentoId,titulo='Documentos em anexo'}:Props){
  const[items,setItems]=useState<Attachment[]>([]),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[drag,setDrag]=useState(false)
  async function load(){const{data,error}=await supabase.from('erp_documentos_anexos').select('id,nome_arquivo,storage_path,mime_type,tamanho_bytes,created_at').eq('entidade_id',documentoId).eq('entidade_tipo','qualidade_documento').order('created_at',{ascending:false});if(!error)setItems((data??[]) as Attachment[]);else setMessage(error.message)}
  useEffect(()=>{void load()},[documentoId])

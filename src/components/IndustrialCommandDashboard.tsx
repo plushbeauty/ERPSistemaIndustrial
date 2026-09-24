@@ -1,3 +1,14 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-044
+ * Alterações: Unificar a consulta de produção incluindo created_at nos dois ramos.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
 import { useEffect, useMemo, useState } from 'react'
 import {
   Activity, AlertTriangle, ArrowUpRight, Boxes, CheckCircle2, ClipboardCheck,
@@ -75,7 +86,7 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
 
         const productionQuery = master
           ? supabase.from('erp_producao_conferencias').select('quantidade_boa,quantidade_defeituosa,created_at').limit(5000)
-          : supabase.from('erp_producao_conferencias').select('quantidade_boa,quantidade_defeituosa').eq('empresa_id', empresaId as string).limit(5000)
+          : supabase.from('erp_producao_conferencias').select('quantidade_boa,quantidade_defeituosa,created_at').eq('empresa_id', empresaId as string).limit(5000)
 
         const [ops, rpnc, products, machines, inspections, purchases, production] = await Promise.all([
           count('erp_ordens_producao', 'status', ['concluida', 'concluído', 'cancelada', 'cancelado']),

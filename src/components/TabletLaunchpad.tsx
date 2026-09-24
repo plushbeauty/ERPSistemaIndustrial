@@ -1,5 +1,16 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-046
+ * Alterações: Usar o ícone Search oficial no lugar de componente incompatível.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
 import { useEffect,useState } from 'react'
-import { Activity, ArrowLeft, BarChart3, BookOpen, Boxes, CalendarCheck2, ClipboardCheck, ClipboardList, Factory, FileCheck2, FileText, Gauge, HelpCircle, Landmark, LayoutDashboard, Package, Receipt, Settings, ShieldCheck, ShoppingCart, Users, Warehouse, Wrench, X, UserRound, SlidersHorizontal, Truck, Languages } from 'lucide-react'
+import { Activity, ArrowLeft, BarChart3, BookOpen, Boxes, CalendarCheck2, ClipboardCheck, ClipboardList, Factory, FileCheck2, FileText, Gauge, HelpCircle, Landmark, LayoutDashboard, Package, Receipt, Search, Settings, ShieldCheck, ShoppingCart, Users, Warehouse, Wrench, X, UserRound, SlidersHorizontal, Truck, Languages } from 'lucide-react'
 type IconComponent = typeof Activity
 type Action={label:string;description:string;icon:IconComponent;route:string}
 type Module={label:string;description:string;icon:IconComponent;actions:Action[]}
@@ -35,7 +46,7 @@ const modules:Module[]=[
   A('Pedidos Pendentes','Carteira não faturada',ClipboardList,'/comercial'),
   A('Cadastro de Clientes','Cadastro comercial',Users,'/comercial'),
   A('Pedidos de Venda','Lançamento de pedidos',ShoppingCart,'/comercial'),
-  A('Consultas','Carteira e histórico',SearchIcon,'/comercial')
+  A('Consultas','Carteira e histórico',Search,'/comercial')
  ]},
  {label:'Moldes & Ferramentaria',description:'Moldes, ciclos, preventiva, localização e ordens de serviço.',icon:Wrench,actions:[A('Moldes & Ferramentaria','Ficha técnica, ciclos e histórico de O.S.',Wrench,'/moldes-injecao')]},
  {label:'Compras',description:'Solicitações, fornecedores, pedidos e recebimento.',icon:ShoppingCart,actions:[
@@ -49,7 +60,6 @@ const modules:Module[]=[
  ]},
  {label:'Ajuda',description:'Manual operacional e ajuda contextual.',icon:HelpCircle,actions:[A('Manual do Usuário','Como operar cada módulo',BookOpen,'/manual-usuario'),A('Ajuda do módulo','Orientação contextual',HelpCircle,'/manual-usuario')]}
 ]
-function SearchIcon({size=24}:{size?:number}){return <span style={{fontSize:size}}>⌕</span>}
 export default function TabletLaunchpad({onNavigate,isOpen,onClose}:{onNavigate:(route:string)=>void;isOpen:boolean;onClose:()=>void}){
  const[selected,setSelected]=useState<Module|null>(null);useEffect(()=>{if(!isOpen)setSelected(null)},[isOpen]);if(!isOpen)return null
  return <div className="tablet-overlay" role="dialog" aria-modal="true"><section className="tablet-frame"><header className="tablet-head"><div className="tablet-brand"><img src="/logo-industrial.svg" alt=""/><div><span>SGQ ERP INDUSTRIAL</span><strong>{selected?selected.label:'Tablet Operacional'}</strong><small>{selected?selected.description:'Acesso rápido aos módulos da fábrica'}</small></div></div><div className="tablet-head-actions"><button className="tablet-icon-btn" onClick={()=>{const n=localStorage.getItem('erp-lang')==='en-US'?'pt-BR':'en-US';localStorage.setItem('erp-lang',n);location.reload()}} title="Idioma"><Languages size={23}/></button>{selected&&<button onClick={()=>setSelected(null)} className="tablet-icon-btn" title="Voltar"><ArrowLeft size={22}/></button>}<button onClick={onClose} className="tablet-icon-btn" title="Fechar tablet"><X size={23}/></button></div></header><div className="tablet-body">{!selected?<><div className="tablet-section-title"><div><span>ACESSOS PRIORITÁRIOS</span><h2>Rotinas mais usadas da fábrica</h2></div><div className="tablet-user"><UserRound size={20}/><b>Operação ERP</b></div></div><div className="tablet-grid tablet-grid-priority"><QuickCard icon={ClipboardList} title="Pedidos Pendentes" description="Carteira de vendas aguardando faturamento, produção ou expedição." onClick={()=>onNavigate('/comercial')}/><QuickCard icon={CalendarCheck2} title="PCP • Programação de Produção" description="Programação, capacidade, prioridades e sequência da produção." onClick={()=>onNavigate('/pcp')}/></div><div className="tablet-section-title"><div><span>VISUALIZAÇÃO E OPERAÇÃO</span><h2>Escolha o ambiente de trabalho</h2></div></div><div className="tablet-grid">{modules.slice(0,6).map(m=><ModuleCard key={m.label} module={m} onClick={()=>setSelected(m)}/>)}</div><div className="tablet-section-title tablet-config-title"><div><span>CONFIGURAÇÕES E APOIO</span><h2>Cadastros e administração</h2></div></div><div className="tablet-grid tablet-grid-small">{modules.slice(6).map(m=><ModuleCard key={m.label} module={m} onClick={()=>setSelected(m)}/>)}</div></>:<><button className="tablet-back" onClick={()=>setSelected(null)}><ArrowLeft size={19}/> Todos os módulos</button><div className="tablet-action-grid">{selected.actions.map(a=>{const I=a.icon;return <button key={a.label} className="tablet-action-card" onClick={()=>onNavigate(a.route)}><span className="tablet-action-icon"><I size={30}/></span><div><b>{a.label}</b><small>{a.description}</small></div><span className="tablet-open">ABRIR</span></button>})}</div></>}</div><footer className="tablet-foot"><span>© FernandoSch_System</span><span>ERP Industrial • Operação integrada • RLS</span></footer></section></div>

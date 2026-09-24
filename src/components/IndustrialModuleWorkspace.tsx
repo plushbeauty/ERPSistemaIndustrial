@@ -1,3 +1,14 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-045
+ * Alterações: Proteger empresa_id nulo na apresentação do tenant.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { Activity, AlertTriangle, ArrowLeft, ArrowUpRight, CalendarDays, Clock3, FilePlus2, HelpCircle, LayoutDashboard, MoreHorizontal, Package, Pencil, Plus, RefreshCw, Search, Settings2, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -202,7 +213,7 @@ export default function IndustrialModuleWorkspace({module,profile,onBack}:{modul
       <div className="mw3-head-actions"><button className="mw3-btn secondary" onClick={()=>setHelp(true)}><HelpCircle size={16}/> Como usar</button>{special[module.name]&&<button className="mw3-btn secondary" onClick={openSpecial}><ArrowUpRight size={16}/> Abrir módulo completo</button>}<button className="mw3-btn primary" onClick={openNew}><Plus size={16}/> Novo</button></div>
     </header>
 
-    <section className="mw3-hero"><div><span>SGQ ERP • {module.name.toUpperCase()}</span><h1>{module.title}</h1><p>{module.description}</p></div><div className="mw3-tenant"><span>EMPRESA</span><strong>{profile.empresa_id.slice(0,8)}…</strong><small>Dados isolados por tenant</small></div></section>
+    <section className="mw3-hero"><div><span>SGQ ERP • {module.name.toUpperCase()}</span><h1>{module.title}</h1><p>{module.description}</p></div><div className="mw3-tenant"><span>EMPRESA</span><strong>{profile.empresa_id ? profile.empresa_id.slice(0,8) + '…' : 'MASTER'}</strong><small>Dados isolados por tenant</small></div></section>
 
     <section className="mw3-kpis"><article><LayoutDashboard/><span>Registros</span><strong>{stats.total}</strong><small>dados reais</small></article><article><Activity/><span>Em andamento</span><strong>{stats.open}</strong><small>status operacionais</small></article><article><AlertTriangle/><span>Atenção</span><strong>{stats.alerts}</strong><small>pendentes / críticos</small></article><article><Clock3/><span>Consulta</span><strong>{busy?'…':'OK'}</strong><small>Supabase atual</small></article></section>
 
