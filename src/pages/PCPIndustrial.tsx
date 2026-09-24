@@ -7,6 +7,7 @@
  * Alterações: Corrigir horas_turno e aceitar IDs opcionais na timeline estrita.
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
  * =========================================================================
+ */
 
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
