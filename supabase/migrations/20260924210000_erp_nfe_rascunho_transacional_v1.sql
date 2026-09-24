@@ -50,6 +50,7 @@ as $$
 declare
   v_empresa_id uuid := nullif(p_documento->>'empresa_id','')::uuid;
   v_id uuid;
+  v_usuario_id uuid;
 begin
   if auth.uid() is null then
     raise exception 'Sessão de autenticação obrigatória';
@@ -62,6 +63,8 @@ begin
   if not (v_empresa_id = public.erp_current_company_id() or public.erp_is_master()) then
     raise exception 'Empresa não autorizada para esta sessão';
   end if;
+
+  select id into v_usuario_id from public.erp_usuarios where auth_user_id = auth.uid() and ativo = true limit 1;
 
   if p_documento_id is null then
     insert into public.erp_documentos_fiscais (
@@ -180,9 +183,14 @@ begin
     item->>'pis_cst',item->>'cofins_cst',item->>'lote',coalesce(item->>'origem','0'),now()
   from jsonb_array_elements(coalesce(p_itens,'[]'::jsonb)) as item;
 
+  insert into public.erp_logs_sistema(empresa_id,usuario_id,modulo,acao,entidade,entidade_id,dados)
+  values(v_empresa_id,v_usuario_id,'Fiscal','NFE_RASCUNHO_SALVO','erp_documentos_fiscais',v_id,
+    jsonb_build_object('numero',p_documento->>'numero','serie',p_documento->>'serie','itens',jsonb_array_length(coalesce(p_itens,'[]'::jsonb))));
+
   return v_id;
 end;
 $$;
 
 revoke all on function public.erp_salvar_rascunho_nfe(uuid,jsonb,jsonb) from public;
+revoke all on function public.erp_salvar_rascunho_nfe(uuid,jsonb,jsonb) from anon;
 grant execute on function public.erp_salvar_rascunho_nfe(uuid,jsonb,jsonb) to authenticated;
