@@ -1,215 +1,45 @@
-/**
- * =========================================================================
- * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 12:52 BRT
- * Desenvolvedor: Homologado por FernandoSch.
- * ID da Revisão: REV-046
- * Alterações: Substituição de componentes de abas externos por botões nativos,
- *            resolução do erro TS2322 de className e total pass no type-check.
- * Status do Build Local: Passou com Sucesso (GREEN)
- * =========================================================================
- */
-
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import type { CSSProperties, FormEvent, ReactNode } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import { FileText, Save, RefreshCw, Building2, Package, Landmark, Truck, ArrowRight } from 'lucide-react'
 
-interface NFItem {
-  id: string;
-  codigo_item: string;
-  descricao: string;
-  ncm: string;
-  cfop: string;
-  cst_icms: string;
-  quantidade: number;
-  valor_unitario: number;
-  valor_total: number;
-  lote_rastreabilidade: string;
+type Tab='cabecalho'|'parceiros'|'itens'|'tributacao'|'transporte'
+type Client={id:string;nome:string|null;documento:string|null;email:string|null;endereco:string|null;cidade:string|null;estado:string|null}
+type Product={id:string;codigo:string;nome:string;unidade:string|null;ncm:string|null;estoque_atual:number|null;preco_venda:number|null;cfop_saida:string|null;cst_icms:string|null;aliquota_icms:number|null;aliquota_ipi:number|null;aliquota_pis:number|null;aliquota_cofins:number|null}
+type Item={produto_id:string;codigo_produto:string;descricao_produto:string;ncm:string;cfop:string;cst_csosn:string;unidade:string;quantidade:string;valor_unitario:string;valor_total:string;icms_aliquota:string;ipi_aliquota:string;pis_aliquota:string;cofins_aliquota:string;pis_cst:string;cofins_cst:string;lote:string}
+type Form={natureza:string;data:string;serie:string;numero:string;ambiente:'homologacao'|'producao';destinatario:string;documento:string;email:string;endereco:string;cidade:string;uf:string;frete:string;desconto:string;transportadora:string;placa:string;motorista:string;volumes:string;peso_liquido:string;peso_bruto:string;observacoes:string}
+const num=(v:string|number|null|undefined)=>Number(v??0)||0
+const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v)
+const digits=(v:string)=>v.replace(/\D/g,'')
+const input:CSSProperties={height:34,border:'1px solid #cbd5e1',borderRadius:5,padding:'0 8px',background:'#fff',color:'#123B50',fontSize:12,boxSizing:'border-box'}
+const lab:CSSProperties={display:'block',fontSize:9,fontWeight:800,color:'#526875',marginBottom:3,textTransform:'uppercase',letterSpacing:'.04em'}
+function Field({name,value,onChange,width=180,type='text',disabled=false}:{name:string;value:string;onChange:(v:string)=>void;width?:number;type?:string;disabled?:boolean}){return <label style={{width,flex:'0 0 auto'}}><span style={lab}>{name}</span><input style={{...input,width:'100%'}} type={type} value={value} disabled={disabled} onChange={e=>onChange(e.target.value)}/></label>}
+function Section({title,children}:{title:string;children:ReactNode}){return <section style={{background:'#fff',border:'1px solid #dce7eb',borderRadius:7,padding:10,marginBottom:8}}><div style={{fontSize:11,fontWeight:900,color:'#123B50',marginBottom:8}}>{title}</div>{children}</section>}
+const newItem=():Item=>({produto_id:'',codigo_produto:'',descricao_produto:'',ncm:'',cfop:'',cst_csosn:'',unidade:'UN',quantidade:'1',valor_unitario:'0',valor_total:'0',icms_aliquota:'0',ipi_aliquota:'0',pis_aliquota:'0',cofins_aliquota:'0',pis_cst:'',cofins_cst:'',lote:''})
+
+export default function NFeEmissao(){
+ const [tab,setTab]=useState<Tab>('cabecalho'),[clients,setClients]=useState<Client[]>([]),[products,setProducts]=useState<Product[]>([]),[clientSearch,setClientSearch]=useState(''),[productSearch,setProductSearch]=useState(''),[items,setItems]=useState<Item[]>([]),[selected,setSelected]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState(''),[documentId,setDocumentId]=useState(''),[chave,setChave]=useState('')
+ const [form,setForm]=useState<Form>({natureza:'Venda de mercadoria',data:new Date().toISOString().slice(0,10),serie:'1',numero:'',ambiente:'homologacao',destinatario:'',documento:'',email:'',endereco:'',cidade:'',uf:'',frete:'0',desconto:'0',transportadora:'',placa:'',motorista:'',volumes:'0',peso_liquido:'0',peso_bruto:'0',observacoes:''})
+ const set=(k:keyof Form,v:string)=>setForm(x=>({...x,[k]:v}))
+ useEffect(()=>{const load=async()=>{const [c,p]=await Promise.all([supabase.from('erp_clientes').select('id,nome,documento,email,endereco,cidade,estado').eq('ativo',true).order('nome').limit(1000),supabase.from('erp_produtos').select('id,codigo,nome,unidade,ncm,estoque_atual,preco_venda,cfop_saida,cst_icms,aliquota_icms,aliquota_ipi,aliquota_pis,aliquota_cofins').eq('ativo',true).order('codigo').limit(2000)]);if(c.error)throw c.error;if(p.error)throw p.error;setClients((c.data??[]) as Client[]);setProducts((p.data??[]) as Product[])};void load().catch((e:unknown)=>setError(e instanceof Error?e.message:'Falha ao carregar cadastros fiscais.'))},[])
+ const cf=useMemo(()=>{const q=clientSearch.toLowerCase();return clients.filter(x=>!q||[x.nome,x.documento].join(' ').toLowerCase().includes(q)).slice(0,8)},[clients,clientSearch])
+ const pf=useMemo(()=>{const q=productSearch.toLowerCase();return products.filter(x=>!q||[x.codigo,x.nome,x.ncm].join(' ').toLowerCase().includes(q)).slice(0,30)},[products,productSearch])
+ const totals=useMemo(()=>{const produtos=items.reduce((s,x)=>s+num(x.valor_total),0),frete=num(form.frete),desconto=num(form.desconto),base=Math.max(0,produtos-desconto);const icms=items.reduce((s,x)=>s+num(x.valor_total)*num(x.icms_aliquota)/100,0),ipi=items.reduce((s,x)=>s+num(x.valor_total)*num(x.ipi_aliquota)/100,0),pis=items.reduce((s,x)=>s+num(x.valor_total)*num(x.pis_aliquota)/100,0),cofins=items.reduce((s,x)=>s+num(x.valor_total)*num(x.cofins_aliquota)/100,0);return{produtos,frete,desconto,base,icms,ipi,pis,cofins,total:Math.max(0,produtos-desconto+frete)}},[items,form.frete,form.desconto])
+ const chooseClient=(c:Client)=>{set('destinatario',c.nome??'');set('documento',digits(c.documento??''));set('email',c.email??'');set('endereco',c.endereco??'');set('cidade',c.cidade??'');set('uf',(c.estado??'').slice(0,2).toUpperCase());setClientSearch(c.nome??'')}
+ const addProduct=(p:Product)=>{const v=num(p.preco_venda);setItems(x=>[...x,{...newItem(),produto_id:p.id,codigo_produto:p.codigo,descricao_produto:p.nome,ncm:digits(p.ncm??'').slice(0,8),cfop:digits(p.cfop_saida??'').slice(0,4),cst_csosn:p.cst_icms??'',unidade:p.unidade??'UN',valor_unitario:String(v),valor_total:String(v),icms_aliquota:String(num(p.aliquota_icms)),ipi_aliquota:String(num(p.aliquota_ipi)),pis_aliquota:String(num(p.aliquota_pis)),cofins_aliquota:String(num(p.aliquota_cofins))}]);setSelected('');setProductSearch('');setTab('itens')}
+ const updateItem=(i:number,k:keyof Item,v:string)=>setItems(rows=>rows.map((r,n)=>{if(n!==i)return r;const z={...r,[k]:v};if(k==='quantidade'||k==='valor_unitario')z.valor_total=String(num(z.quantidade)*num(z.valor_unitario));return z}))
+ const validate=()=>{if(!form.numero)return'Informe o número da NF-e.';if(!form.destinatario||!form.documento)return'Selecione um destinatário cadastrado.';if(form.uf.length!==2||!form.cidade||!form.endereco)return'Endereço fiscal incompleto.';if(!items.length)return'Inclua pelo menos um item.';for(const [i,x] of items.entries()){if(digits(x.ncm).length!==8)return'NCM inválido no item '+(i+1)+'.';if(digits(x.cfop).length!==4)return'CFOP inválido no item '+(i+1)+'.';if(num(x.quantidade)<=0)return'Quantidade inválida no item '+(i+1)+'.'}return null}
+ const save=async(event?:FormEvent):Promise<string|null=>{event?.preventDefault();setBusy(true);setError('');setMessage('');try{const v=validate();if(v)throw new Error(v);const c=await supabase.rpc('erp_current_empresa_id');if(c.error||!c.data)throw c.error??new Error('Empresa da sessão não identificada.');const empresaId=String(c.data);const d=await supabase.from('erp_documentos_fiscais').insert({empresa_id:empresaId,tipo:'NF-e',modelo:'55',serie:Number(form.serie),numero:Number(form.numero),status:'Rascunho',natureza_operacao:form.natureza,data_emissao:form.data,destinatario_nome:form.destinatario,destinatario_documento:digits(form.documento),valor_total:totals.total,valor_produtos:totals.produtos,valor_frete:totals.frete,valor_outras_despesas:0,valor_desconto:totals.desconto,base_calculo_icms:totals.base,valor_icms:totals.icms,valor_ipi:totals.ipi,valor_pis:totals.pis,valor_cofins:totals.cofins,valor_liquido:totals.total}).select('id').single();if(d.error)throw d.error;if(!d.data)throw new Error('Documento fiscal não criado.');const rows=items.map((x,i)=>({empresa_id:empresaId,documento_id:d.data.id,produto_id:x.produto_id||null,item_numero:i+1,codigo_produto:x.codigo_produto,descricao_produto:x.descricao_produto,ncm:digits(x.ncm),cfop:digits(x.cfop),cst_csosn:x.cst_csosn||null,unidade:x.unidade||'UN',quantidade:num(x.quantidade),valor_unitario:num(x.valor_unitario),valor_total:num(x.valor_total),icms_aliquota:num(x.icms_aliquota),ipi_aliquota:num(x.ipi_aliquota),pis_aliquota:num(x.pis_aliquota),cofins_aliquota:num(x.cofins_aliquota),pis_cst:x.pis_cst||null,cofins_cst:x.cofins_cst||null,lote:x.lote||null}));const it=await supabase.from('erp_documentos_fiscais_itens').insert(rows);if(it.error){await supabase.from('erp_documentos_fiscais').delete().eq('id',d.data.id);throw it.error}setDocumentId(String(d.data.id));setMessage('NF-e salva como rascunho.');return String(d.data.id)}catch(e:unknown){setError(e instanceof Error?e.message:'Falha ao salvar a NF-e.');return null}finally{setBusy(false)}}
+ const emit=async()=>{setBusy(true);setError('');try{const id=documentId||await save();if(!id)throw new Error('Não foi possível gravar a NF-e.');const r=await supabase.functions.invoke('emitir-nfe',{body:{documento_id:id}});if(r.error)throw r.error;if(r.data?.error)throw new Error(String(r.data.error));setChave(String(r.data?.chave_acesso??''));setMessage(r.data?.status==='Autorizada'?'NF-e autorizada.':'NF-e enviada para processamento fiscal.')}catch(e:unknown){setError(e instanceof Error?e.message:'Falha na transmissão fiscal.')}finally{setBusy(false)}}
+ const tabButton=(id:Tab,text:string)=><button type="button" onClick={()=>setTab(id)} style={{border:0,borderBottom:tab===id?'3px solid #48B7C7':'3px solid transparent',background:tab===id?'#eaf9fb':'#fff',color:tab===id?'#123B50':'#64748b',padding:'9px 12px',fontSize:11,fontWeight:900,cursor:'pointer'}}>{text}</button>
+ return <form onSubmit={e=>void save(e)} style={{minHeight:'100%',background:'#F4FBFD',color:'#123B50',padding:12,fontFamily:'Inter,Roboto,Arial,sans-serif'}}>
+  <header style={{background:'#123B50',color:'#fff',borderRadius:7,padding:10,display:'flex',justifyContent:'space-between',alignItems:'center',gap:10,marginBottom:8}}><div><div style={{fontSize:9,opacity:.75}}>FISCAL · MODELO 55</div><h1 style={{margin:2,fontSize:18}}>Emissão de NF-e</h1></div><div style={{display:'flex',gap:6}}><button type="button" disabled={busy} onClick={()=>void save()} style={{border:0,borderRadius:5,background:'#2D8DB8',color:'#fff',padding:'8px 12px',fontWeight:900}}>SALVAR RASCUNHO</button><button type="button" disabled={busy||!items.length} onClick={()=>void emit()} style={{border:0,borderRadius:5,background:'#3A9D78',color:'#fff',padding:'8px 12px',fontWeight:900}}>TRANSMITIR NF-e</button></div></header>
+  {(error||message||chave)&&<div style={{marginBottom:8,padding:8,borderRadius:5,background:error?'#fff5f5':'#f0fbf6',color:error?'#9d3037':'#24684f',fontSize:11,fontWeight:700}}>{error||message}{chave?' · Chave: '+chave:''}</div>}
+  <nav style={{background:'#fff',border:'1px solid #dce7eb',borderRadius:7,display:'flex',overflowX:'auto',marginBottom:8}}>{tabButton('cabecalho','1 · DADOS GERAIS')}{tabButton('parceiros','2 · PARCEIROS')}{tabButton('itens','3 · ITENS')}{tabButton('tributacao','4 · TRIBUTAÇÃO')}{tabButton('transporte','5 · TRANSPORTE / TOTAIS')}</nav>
+  {tab==='cabecalho'&&<><Section title="Identificação fiscal"><div style={{display:'flex',flexWrap:'wrap',gap:8,alignItems:'end'}}><Field name="Modelo" value="55" onChange={()=>undefined} width={60} disabled/><Field name="Série" value={form.serie} onChange={v=>set('serie',v)} width={65}/><Field name="Número" value={form.numero} onChange={v=>set('numero',v)} width={90}/><Field name="Emissão" value={form.data} onChange={v=>set('data',v)} width={125} type="date"/><label style={{width:125}}><span style={lab}>Ambiente</span><select value={form.ambiente} onChange={e=>set('ambiente',e.target.value)} style={{...input,width:'100%'}}><option value="homologacao">Homologação</option><option value="producao">Produção</option></select></label><Field name="Natureza da operação" value={form.natureza} onChange={v=>set('natureza',v)}/></div></Section><Section title="Totais"><div style={{display:'flex',gap:8,flexWrap:'wrap'}}><Field name="Produtos" value={money(totals.produtos)} onChange={()=>undefined} width={120} disabled/><Field name="Desconto" value={form.desconto} onChange={v=>set('desconto',v)} width={100} type="number"/><Field name="Frete" value={form.frete} onChange={v=>set('frete',v)} width={100} type="number"/><Field name="Base ICMS" value={money(totals.base)} onChange={()=>undefined} width={120} disabled/><Field name="ICMS" value={money(totals.icms)} onChange={()=>undefined} width={120} disabled/><Field name="Total NF-e" value={money(totals.total)} onChange={()=>undefined} width={135} disabled/></div></Section></>}
+  {tab==='parceiros'&&<Section title="Emitente / destinatário"><div style={{display:'flex',flexWrap:'wrap',gap:8,alignItems:'end'}}><label style={{width:300}}><span style={lab}>Pesquisar cliente cadastrado</span><input style={{...input,width:'100%'}} value={clientSearch} onChange={e=>setClientSearch(e.target.value)} placeholder="Nome ou documento"/>{clientSearch&&cf.length>0&&<div style={{position:'absolute',zIndex:5,width:300,background:'#fff',border:'1px solid #cbd5e1'}}>{cf.map(c=><button type="button" key={c.id} onClick={()=>chooseClient(c)} style={{display:'block',width:'100%',border:0,background:'#fff',textAlign:'left',padding:7,fontSize:11}}>{c.nome} · {c.documento}</button>)}</div>}</label><Field name="Destinatário" value={form.destinatario} onChange={v=>set('destinatario',v)}/><Field name="CPF / CNPJ" value={form.documento} onChange={v=>set('documento',digits(v))} width={145}/><Field name="E-mail" value={form.email} onChange={v=>set('email',v)} width={220}/><Field name="UF" value={form.uf} onChange={v=>set('uf',v.toUpperCase().slice(0,2))} width={60}/><Field name="Cidade" value={form.cidade} onChange={v=>set('cidade',v)} width={170}/><Field name="Endereço fiscal" value={form.endereco} onChange={v=>set('endereco',v)}/></div></Section>}
+  {tab==='itens'&&<><Section title="Adicionar produto real"><div style={{display:'flex',gap:8,alignItems:'end',flexWrap:'wrap'}}><Field name="Pesquisa / lupa" value={productSearch} onChange={setProductSearch} width={320}/><select value={selected} onChange={e=>setSelected(e.target.value)} style={{...input,width:380}}><option value="">Selecione o cadastro</option>{pf.map(p=><option key={p.id} value={p.id}>{p.codigo} · {p.nome} · estoque {num(p.estoque_atual)}</option>)}</select><button type="button" disabled={!selected} onClick={()=>{const p=products.find(x=>x.id===selected);if(p)addProduct(p)}} style={{height:34,border:0,borderRadius:5,background:'#2D8DB8',color:'#fff',fontWeight:900,padding:'0 12px'}}>+ INCLUIR ITEM</button></div></Section><Section title="Grade densa NCM / CFOP"><div style={{overflowX:'auto'}}><table style={{width:'100%',minWidth:1200,borderCollapse:'collapse',fontSize:11}}><thead><tr style={{background:'#eef7f9'}}>{['#','Código','Descrição','NCM','CFOP','UM','Qtd','Vlr Unit.','Total','ICMS %','IPI %','PIS %','COFINS %','Lote',''].map(h=><th key={h} style={{padding:6,textAlign:'left'}}>{h}</th>)}</tr></thead><tbody>{items.map((x,i)=><tr key={x.codigo_produto+'-'+i}><td>{i+1}</td><td>{x.codigo_produto}</td><td style={{minWidth:210}}>{x.descricao_produto}</td><td><input style={{...input,width:78}} value={x.ncm} onChange={e=>updateItem(i,'ncm',digits(e.target.value).slice(0,8))}/></td><td><input style={{...input,width:65}} value={x.cfop} onChange={e=>updateItem(i,'cfop',digits(e.target.value).slice(0,4))}/></td><td><input style={{...input,width:50}} value={x.unidade} onChange={e=>updateItem(i,'unidade',e.target.value)}/></td><td><input style={{...input,width:70}} type="number" value={x.quantidade} onChange={e=>updateItem(i,'quantidade',e.target.value)}/></td><td><input style={{...input,width:90}} type="number" value={x.valor_unitario} onChange={e=>updateItem(i,'valor_unitario',e.target.value)}/></td><td>{money(num(x.valor_total))}</td><td><input style={{...input,width:65}} type="number" value={x.icms_aliquota} onChange={e=>updateItem(i,'icms_aliquota',e.target.value)}/></td><td><input style={{...input,width:65}} type="number" value={x.ipi_aliquota} onChange={e=>updateItem(i,'ipi_aliquota',e.target.value)}/></td><td><input style={{...input,width:65}} type="number" value={x.pis_aliquota} onChange={e=>updateItem(i,'pis_aliquota',e.target.value)}/></td><td><input style={{...input,width:65}} type="number" value={x.cofins_aliquota} onChange={e=>updateItem(i,'cofins_aliquota',e.target.value)}/></td><td><input style={{...input,width:90}} value={x.lote} onChange={e=>updateItem(i,'lote',e.target.value)}/></td><td><button type="button" onClick={()=>setItems(rows=>rows.filter((_,n)=>n!==i))}>Excluir</button></td></tr>)}</tbody></table>{!items.length&&<div style={{padding:24,textAlign:'center',color:'#64748b'}}>Nenhum item cadastrado.</div>}</div></Section></>}
+  {tab==='tributacao'&&<><Section title="Tributação detalhada"><div style={{display:'flex',gap:8,flexWrap:'wrap'}}><Field name="Base ICMS" value={money(totals.base)} onChange={()=>undefined} width={125} disabled/><Field name="Valor ICMS" value={money(totals.icms)} onChange={()=>undefined} width={125} disabled/><Field name="IPI" value={money(totals.ipi)} onChange={()=>undefined} width={125} disabled/><Field name="PIS" value={money(totals.pis)} onChange={()=>undefined} width={125} disabled/><Field name="COFINS" value={money(totals.cofins)} onChange={()=>undefined} width={125} disabled/></div></Section><Section title="CST / CSOSN / PIS / COFINS"><div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}><thead><tr><th>Item</th><th>CST/CSOSN</th><th>PIS CST</th><th>COFINS CST</th><th>ICMS</th><th>IPI</th></tr></thead><tbody>{items.map((x,i)=><tr key={x.codigo_produto+'-t'}><td>{i+1} · {x.codigo_produto}</td><td><input style={{...input,width:90}} value={x.cst_csosn} onChange={e=>updateItem(i,'cst_csosn',e.target.value)}/></td><td><input style={{...input,width:80}} value={x.pis_cst} onChange={e=>updateItem(i,'pis_cst',e.target.value)}/></td><td><input style={{...input,width:90}} value={x.cofins_cst} onChange={e=>updateItem(i,'cofins_cst',e.target.value)}/></td><td>{x.icms_aliquota}%</td><td>{x.ipi_aliquota}%</td></tr>)}</tbody></table></div></Section></>}
+  {tab==='transporte'&&<><Section title="Transporte / volumes"><div style={{display:'flex',gap:8,flexWrap:'wrap'}}><Field name="Transportadora" value={form.transportadora} onChange={v=>set('transportadora',v)}/><Field name="Placa" value={form.placa} onChange={v=>set('placa',v.toUpperCase())} width={90}/><Field name="Motorista" value={form.motorista} onChange={v=>set('motorista',v)}/><Field name="Volumes" value={form.volumes} onChange={v=>set('volumes',v)} width={80} type="number"/><Field name="Peso líquido kg" value={form.peso_liquido} onChange={v=>set('peso_liquido',v)} width={105} type="number"/><Field name="Peso bruto kg" value={form.peso_bruto} onChange={v=>set('peso_bruto',v)} width={105} type="number"/></div></Section><Section title="Totais gerais"><div style={{display:'flex',gap:8,flexWrap:'wrap'}}><Field name="Produtos" value={money(totals.produtos)} onChange={()=>undefined} width={125} disabled/><Field name="Frete" value={money(totals.frete)} onChange={()=>undefined} width={125} disabled/><Field name="Desconto" value={money(totals.desconto)} onChange={()=>undefined} width={125} disabled/><Field name="Total NF-e" value={money(totals.total)} onChange={()=>undefined} width={140} disabled/><Field name="Observações" value={form.observacoes} onChange={v=>set('observacoes',v)}/></div></Section></>}
+  <footer style={{padding:'7px 2px',color:'#64748b',fontSize:10}}>{items.length} item(ns) · Documento {documentId||'ainda não gravado'} · Fluxo Pedido → Expedição → NF → Financeiro</footer>
+ </form>
 }
-
-interface DestinatarioData {
-  cnpj_cpf: string;
-  razao_social: string;
-  inscricao_estadual: string;
-  email: string;
-  logradouro: string;
-  bairro: string;
-  cep: string;
-  cidade: string;
-  estado: string;
-}
-
-const money = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0)
-
-export default function NFeEmissao() {
-  const [tab, setTab] = useState<'identificacao' | 'produtos' | 'impostos' | 'transporte'>('identificacao')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setMsg] = useState('')
-  
-  const [pedidoOrigem, setPedidoOrigem] = useState('')
-  const [destinatario, setDestinatario] = useState<DestinatarioData>({
-    cnpj_cpf: '',
-    razao_social: '',
-    inscricao_estadual: '',
-    email: '',
-    logradouro: '',
-    bairro: '',
-    cep: '',
-    cidade: '',
-    estado: ''
-  })
-  
-  const [itens, setItens] = useState<NFItem[]>([])
-  const [naturezaOperacao, setNaturezaOperacao] = useState('5101')
-  const [modalidadeFrete, setModalidadeFrete] = useState<'0' | '1'>('0')
-  const [valorFrete, setValorFrete] = useState('0')
-  const [valorDesconto, setValorDesconto] = useState('0')
-
-  const puxarPedidoAlmoxarifado = async () => {
-    if (!pedidoOrigem.trim()) {
-      setError('Informe o número de um pedido pendente (1001 a 1050) para realizar a varredura.')
-      return
-    }
-    setLoading(true)
-    setError('')
-    setMsg('')
-    try {
-      const numPed = Number(pedidoOrigem)
-      if (numPed < 1001 || numPed > 1050) {
-        throw new Error('Pedido de homologação não localizado. Digite um número válido entre 1001 e 1050.')
-      }
-
-      setDestinatario({
-        cnpj_cpf: '24.812.940/0001-88',
-        razao_social: `Cliente Industrial Plastibor Filial #${numPed}`,
-        inscricao_estadual: '123.456.789',
-        email: 'compras@clienteindustrial.com.br',
-        logradouro: 'Av. das Nações Unidas, 4500',
-        bairro: 'Distrito Industrial',
-        cep: '05425-000',
-        cidade: 'São Paulo',
-        estado: 'SP'
-      })
-
-      setItens([
-        {
-          id: 'item-1',
-          codigo_item: 'MP-000125',
-          descricao: 'Manípulo Injetado Plástico Preto Plastibor',
-          ncm: '3926.90.90',
-          cfop: naturezaOperacao,
-          cst_icms: '000',
-          quantidade: 500,
-          valor_unitario: 4.50,
-          valor_total: 2250.00,
-          lote_rastreabilidade: `LOT-24B9-${numPed}`
-        }
-      ])
-      
-      setMsg(`Pedido #${pedidoOrigem} localizado no Almoxarifado. Dados de lote e destinatário carregados.`)
-      setTab('produtos')
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Falha ao sincronizar dados com o Almoxarifado.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const totalProdutos = useMemo(() => itens.reduce((s, i) => s + i.valor_total, 0), [itens])
-  const baseCalculoIcms = useMemo(() => totalProdutos + Number(valorFrete) - Number(valorDesconto), [totalProdutos, valorFrete, valorDesconto])
-  const valorIcms = useMemo(() => baseCalculoIcms * 0.18, [baseCalculoIcms])
-  const valorIpi = useMemo(() => totalProdutos * 0.05, [totalProdutos])
-  const valorPis = useMemo(() => totalProdutos * 0.0165, [totalProdutos])
-  const valorCofins = useMemo(() => totalProdutos * 0.076, [totalProdutos])
-  const valorLiquidoNota = useMemo(() => totalProdutos + valorIpi + Number(valorFrete) - Number(valorDesconto), [totalProdutos, valorIpi, valorFrete, valorDesconto])
-
-  return (
-    <main className="bg-[#f8fafc] p-6 min-h-screen font-sans text-[#0f172a]">
-      <header className="flex justify-between items-center border-b border-[#C9E1E8] pb-4 mb-6 bg-white p-4 rounded-xl shadow-sm">
-        <div className="flex items-center gap-3">
-          <img src="/logo-industrial.svg" alt="Plastibor" className="h-10 w-10" />
-          <div>
-            <span className="text-[#2563eb] text-sm font-bold uppercase tracking-wider">MÓDULO FISCAL • MODELO 55</span>
-            <h1 className="text-3xl font-extrabold text-[#0f172a] mt-0.5">Emissor de Nota Fiscal Eletrônica (NF-e)</h1>
-          </div>
-        </div>
-      </header>
-
-      {error && <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-6 text-base font-medium">{error}</div>}
-      {success && <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 p-4 rounded-lg mb-6 text-base font-medium">{success}</div>}
-
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-        <label className="text-base font-semibold block text-[#0f172a]">Importar Pedido do Almoxarifado
-          <input className="mt-1 w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-mono outline-none text-base" placeholder="Digite de 1001 a 1050" value={pedidoOrigem} onChange={e => setPedidoOrigem(e.target.value)} />
-        </label>
-        <button className="bg-[#2563eb] hover:bg-blue-700 text-white font-bold p-2.5 rounded-lg flex items-center justify-center gap-2 text-base transition-all" onClick={() => void puxarPedidoAlmoxarifado()}>
-          <RefreshCw size={18} /> Puxar Dados do Pedido
-        </button>
-      </div>
-
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        {/* RESOLVIDO O CONFLITO TS232A: Abas reconstruídas com botões HTML5 nativos do Tailwind */}
-        <nav className="flex bg-slate-50 border-b border-slate-200">
-          {[
-            ['identificacao', '1. Identificação', Building2],
-            ['produtos', '2. Produtos', Package],
-            ['impostos', '3. Impostos', Landmark],
-            ['transporte', '4. Transporte', Truck]
-          ].map(([id, label, IconComponent]) => (
-            <button 
-              key={id} 
-              type="button"
-              className={`flex-1 px-4 py-3.5 text-base font-bold border-b-2 flex items-center justify-center gap-2 transition-all ${tab === id ? 'bg-white border-[#2563eb] text-[#2563eb]' : 'border-transparent text-slate-500 hover:bg-slate-100/50'}`} 
-              onClick={() => setTab(id as any)}
-            >
-              <IconComponent size={18} /> {label}
-            </button>
-          ))}
-        </nav>
-
-        <div className="p-6">
-          {tab === 'identificacao' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-base">
-                <label className="font-semibold block">CNPJ / CPF do Cliente
-                  <input className="mt-1 w-full bg-slate-50 border p-2 rounded-lg outline-none font-mono" value={destinatario.cnpj_cpf} readOnly placeholder="Aguardando importação..." />
-                </label>
-                <label className="font-semibold block">Razão Social
-                  <input className="mt-1 w-full bg-slate-50 border p-2 rounded-lg outline-none" value={destinatario.razao_social} readOnly />
-                </label>
-                <label className="font-semibold block">Inscrição Estadual
-                  <input className="mt-1 w-full bg-slate-50 border p-2 rounded-lg outline-none font-mono" value={destinatario.inscricao_estadual} readOnly />
-                </label>
-              </div>
-              <button className="bg-[#2563eb] text-white font-bold px-6 py-2 rounded-lg flex items-center gap-2 text-base mt-4" onClick={() => setTab('produtos')}>Avançar <ArrowRight size={16} /></button>
-            </div>
-          )}
-
-          {tab === 'produtos' && (
-            <div className="space-y-6">
-              <table className="w-full text-left border-collapse text-base">
-                <thead>
-                  <tr className="border-b bg-slate-50 font-semibold">
-                    <th className="p-3">Código</th>
-                    <th className="p-3">Descrição Insumo</th>
-                    <th className="p-3 text-center">NCM</th>
-                    <th className="p-3 text-right">Qtd</th>
-                    <th className="p-3 text-right">Unitário</th>
-                    <th className="p-3 text-right">Total</th>
-                    <th className="p-3">Lote</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {itens.map(i => (
-                    <tr key={i.id} className="border-b border-slate-100">
-                      <td className="p-3 font-bold text-[#2563eb]">{i.codigo_item}</td>
-                      <td className="p-3">{i.descricao}</td>
-                      <td className="p-3 text-center font-mono">{i.ncm}</td>
-                      <td className="p-3 text-right font-bold">{i.quantidade}</td>
-                      <td className="p-3 text-right font-mono">{money(i.valor_unitario)}</td>
-                      <td className="p-3 text-right font-mono font-bold">{money(i.valor_total)}</td>
-                      <td className="p-3 font-mono text-emerald-700 font-bold bg-emerald-50">{i.lote_rastreabilidade}</td>
-                    </tr>
-                  ))}
-<button className="bg-[#2563eb] text-white font-bold px-6 py-2 rounded-lg flex items-center gap-2 text-base mt-4" onClick={() => setTab('impostos')}>Avançar )}{tab === 'impostos' && (Base ICMS{money(baseCalculoIcms)}ICMS (18%)+{money(valorIcms)}IPI (5%)+{money(valorIpi)}Líquido Total da Nota{money(valorLiquidoNota)}<button className="bg-[#2563eb] text-white font-bold px-6 py-2 rounded-lg flex items-center gap-2 text-base mt-4" onClick={() => setTab('transporte')}>Avançar )}{tab === 'transporte' && (Modalidade do FreteValor do Frete (R$)Desconto (R$)TRANSMITIR NOTA FISCAL SEFAZ (REAL))}Desenvolvedor: Homologado por FernandoSch. •2026)}
