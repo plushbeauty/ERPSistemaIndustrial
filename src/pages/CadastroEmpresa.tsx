@@ -14,18 +14,20 @@ const formatDocumento = (v: string, tipo: 'CNPJ' | 'CPF') => {
   const digits = v.replace(/\D/g, '')
   if (tipo === 'CNPJ') {
     return digits.slice(0, 14)
-      .replace(/(\d{2})(\d)/, '\$1.\$2')
-      .replace(/(\d{3})(\d)/, '\$1.\$2')
-      .replace(/(\d{3})(\d)/, '\$1/\(2')       .replace(/(\d{4})(\d{1,2})\)/, '\$1-\$2')
+      .replace(/(\d{2})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1/$2')
+      .replace(/(\d{4})(\d{1,2})$/, '$1-$2')
   }
   return digits.slice(0, 11)
-    .replace(/(\d{3})(\d)/, '\$1.\$2')
-    .replace(/(\d{3})(\d)/, '\$1.\(2')     .replace(/(\d{3})(\d{1,2})\)/, '\$1-\$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
 }
 
 const firstName = (v: string) => v.trim().replace(/\s+/g, ' ').split(' ')[0] || ''
 const plans: Record<string, string> = { essencial: 'Essencial', profissional: 'Profissional', diamante: 'Diamante' }
-const prices: Record<string, string> = { essencial: 'R\$ 199/mês', profissional: 'R\$ 349/mês', diamante: 'R\$ 549/mês' }
+const prices: Record<string, string> = { essencial: 'R$ 199/mês', profissional: 'R$ 349/mês', diamante: 'R$ 549/mês' }
 
 export default function CadastroEmpresa() {
   const p = useMemo(() => new URLSearchParams(location.search), [])
