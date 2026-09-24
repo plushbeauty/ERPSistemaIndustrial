@@ -1,0 +1,2 @@
+alter table public.erp_clientes add column if not exists inscricao_estadual text;
+create index if not exists ix_erp_clientes_empresa_inscricao_estadual on public.erp_clientes(empresa_id,inscricao_estadual) where inscricao_estadual is not null;
