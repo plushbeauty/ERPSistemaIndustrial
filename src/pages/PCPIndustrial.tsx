@@ -135,7 +135,7 @@ export default function PCPIndustrial(){
 
  function selectTab(next:Tab){setTab(next);setError('');setMessage('')}
 
- const tabs:[Tab,string,string][]=[['visao','Visão geral',Gauge],['pedidos','Pedidos / Demanda',ClipboardList],['ops','Ordens de Produção',Factory],['materiais','Materiais / MRP',Package],['producao','Apontar produção',Play],['programacao','Programação / Gantt',CalendarDays],['capacidade','Capacidade / Máquinas',Wrench],['qualidade','Qualidade / Defeitos',ShieldCheck]]
+ const tabs:[Tab,string,string][]=[['visao','Visão geral','Gauge'],['pedidos','Pedidos / Demanda','ClipboardList'],['ops','Ordens de Produção','Factory'],['materiais','Materiais / MRP','Package'],['producao','Apontar produção','Play'],['programacao','Programação / Gantt','CalendarDays'],['capacidade','Capacidade / Máquinas','Wrench'],['qualidade','Qualidade / Defeitos','ShieldCheck']]
 
  return <main className="pcp-modern-page">
   <header className="pcp-modern-header">
@@ -152,7 +152,7 @@ export default function PCPIndustrial(){
    <button onClick={()=>selectTab('materiais')}><InlineIcon name="Package" size={18}/> Ver MRP</button>
   </section>
 
-  <nav className="pcp-modern-tabs">{tabs.map(([id,label,I])=><button key={id} className={tab===id?'active':''} onClick={()=>selectTab(id)}><I size={16}/>{label}<span className="tab-help">?</span></button>)}</nav>
+  <nav className="pcp-modern-tabs">{tabs.map(([id,label,I])=><button key={id} className={tab===id?'active':''} onClick={()=>selectTab(id)}><InlineIcon name={I} size={16}/>{label}<span className="tab-help">?</span></button>)}</nav>
 
   {tab==='visao'&&<section>
    <div className="quality-kpis"><article><span>Pedidos</span><strong>{orders.length}</strong></article><article><span>OPs</span><strong>{ops.length}</strong></article><article><span>Programações</span><strong>{programs.length}</strong></article><article><span>Defeitos</span><strong>{defects.reduce((s,d)=>s+Number(d.quantidade||0),0)}</strong></article></div>
@@ -196,7 +196,7 @@ export default function PCPIndustrial(){
 
   {tab==='qualidade'&&<Table title="Defeitos enviados pela produção" cols={['Defeito','Quantidade','OP']} rows={defects.filter(d=>!query||d.defeito.toLowerCase().includes(query.toLowerCase())||d.ordem_producao_id.includes(query)).map(d=>[d.defeito,d.quantidade,d.ordem_producao_id])} search={query} setSearch={setQuery}/>}
 
-  {modal==='ajuda'&&<Modal title="Como usar o PCP Industrial" onClose={()=>setModal(null)}><div className="pcp-help-modal">{tabs.map(([id,label,I])=><button key={id} onClick={()=>{selectTab(id);setModal(null)}}><I size={20}/><div><strong>{label}</strong><p>{help[id].what}</p><small>Como usar: {help[id].how}</small></div><span>→</span></button>)}</div><div className="pcp-info"><InlineIcon name="CheckCircle2" size={20}/><div><strong>Fluxo recomendado</strong><p>Pedido → OP → MRP → Programação → Apontamento → Estoque/Qualidade. Cada etapa tem uma finalidade; não é necessário preencher tudo de uma vez.</p></div></div></Modal>}
+  {modal==='ajuda'&&<Modal title="Como usar o PCP Industrial" onClose={()=>setModal(null)}><div className="pcp-help-modal">{tabs.map(([id,label,I])=><button key={id} onClick={()=>{selectTab(id);setModal(null)}}><InlineIcon name={I} size={20}/><div><strong>{label}</strong><p>{help[id].what}</p><small>Como usar: {help[id].how}</small></div><span>→</span></button>)}</div><div className="pcp-info"><InlineIcon name="CheckCircle2" size={20}/><div><strong>Fluxo recomendado</strong><p>Pedido → OP → MRP → Programação → Apontamento → Estoque/Qualidade. Cada etapa tem uma finalidade; não é necessário preencher tudo de uma vez.</p></div></div></Modal>}
 
   {modal==='op'&&<Modal title="Nova Ordem de Produção" onClose={()=>setModal(null)}><form className="pcp-modal-form" onSubmit={createOP}><label>Produto<select value={opForm.produto_id} onChange={e=>setOpForm(v=>({...v,produto_id:e.target.value}))}><option value="">Selecione o produto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} • {p.nome}</option>)}</select></label><label>Quantidade<input type="number" min="0.0001" step="any" value={opForm.quantidade} onChange={e=>setOpForm(v=>({...v,quantidade:e.target.value}))}/></label><label>Data prevista<input type="date" value={opForm.data_prevista} onChange={e=>setOpForm(v=>({...v,data_prevista:e.target.value}))}/></label><label>Status<select value={opForm.status} onChange={e=>setOpForm(v=>({...v,status:e.target.value}))}><option>Planejada</option><option>Aguardando PCP</option><option>Em produção</option><option>Concluída</option></select></label><label className="wide">Observações<textarea value={opForm.observacoes} onChange={e=>setOpForm(v=>({...v,observacoes:e.target.value}))}/></label><div className="pcp-modal-footer"><button type="button" className="secondary-v2" onClick={()=>setModal(null)}>Cancelar</button><button className="primary-v2" disabled={busy}>{busy?'Criando…':'Criar OP'}</button></div></form></Modal>}
 
