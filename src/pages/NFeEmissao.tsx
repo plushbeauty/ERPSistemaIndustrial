@@ -10,6 +10,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { FileDown, Plus, Printer, Save, Search, Send, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
