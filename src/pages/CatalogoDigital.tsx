@@ -4,22 +4,21 @@ import { supabase } from '../lib/supabaseClient'
 type Product = {
   id: string
   empresa_id: string
+  codigo: string
   nome: string
+  descricao: string | null
   categoria: string | null
-  quantidade: number | null
+  estoque_atual: number | null
   unidade: string | null
-  sku: string | null
-  codigo_barras: string | null
   ncm: string | null
-  cfop: string | null
+  cfop_saida: string | null
   peso_liquido: number | null
   peso_bruto: number | null
   volume: string | null
-  imagem_url: string | null
+  foto_url: string | null
   ativo: boolean | null
   catalogo_disponivel: boolean
 }
-
 type CurrentUser = { id: string; empresa_id: string | null }
 type AuditAction = 'CATALOGO_PUBLICADO' | 'CATALOGO_RETIRADO' | 'CATALOGO_COMPARTILHADO'
 
@@ -36,7 +35,7 @@ function Icon({ kind }: { kind: 'refresh' | 'whatsapp' | 'mail' | 'history' | 'e
 }
 
 function productCode(product: Product): string {
-  return product.sku?.trim() || product.codigo_barras?.trim() || product.id.slice(0, 8).toUpperCase()
+  return product.codigo?.trim() || product.id.slice(0, 8).toUpperCase()
 }
 
 function productLink(product: Product): string {
@@ -51,7 +50,7 @@ function productMessage(product: Product): string {
     '',
     'Código: ' + productCode(product),
     'Produto: ' + product.nome,
-    'Estoque: ' + stockFormat.format(Number(product.quantidade ?? 0)) + ' ' + (product.unidade?.trim() || 'UN'),
+    'Estoque: ' + stockFormat.format(Number(product.estoque_atual ?? 0)) + ' ' + (product.unidade?.trim() || 'UN'),
     'Catálogo: ' + productLink(product),
   ].join('\n')
 }
@@ -87,7 +86,7 @@ export default function CatalogoDigital() {
     const auth = await supabase.auth.getUser()
     if (auth.error || !auth.data.user) throw new Error('Sessão de autenticação não localizada.')
 
-    const profile = await supabase.from('usuarios').select('id,empresa_id').eq('auth_user_id', auth.data.user.id).eq('ativo', true).maybeSingle()
+    const profile = await supabase.from('erp_usuarios').select('id,empresa_id').eq('auth_user_id', auth.data.user.id).eq('ativo', true).maybeSingle()
     if (profile.error) throw profile.error
     if (!profile.data) throw new Error('Usuário ERP ativo não localizado para a sessão atual.')
 
@@ -96,13 +95,14 @@ export default function CatalogoDigital() {
     return current
   }, [])
 
-  const loadProducts = useCallback(async () => {
+  const loadProducts = useCallback(async (currentUser: CurrentUser) => {
     setBusy(true)
     setError('')
     try {
       const result = await supabase
-        .from('produtos')
-        .select('id,empresa_id,nome,categoria,quantidade,unidade,sku,codigo_barras,ncm,cfop,peso_liquido,peso_bruto,volume,imagem_url,ativo,catalogo_disponivel')
+        .from('erp_produtos')
+        .select('id,empresa_id,codigo,nome,descricao,categoria,estoque_atual,unidade,ncm,cfop_saida,peso_liquido,peso_bruto,volume,foto_url,ativo,catalogo_disponivel')
+        .eq('empresa_id', currentUser.empresa_id ?? '')
         .eq('ativo', true)
         .order('sku', { ascending: true, nullsFirst: false })
         .order('nome', { ascending: true })
@@ -116,7 +116,7 @@ export default function CatalogoDigital() {
   }, [])
 
   const loadHistory = useCallback(async (currentUser: CurrentUser) => {
-    let query = supabase.from('logs_sistema').select('id,acao,created_at,dados').eq('tabela', 'produtos').in('acao', ['CATALOGO_PUBLICADO', 'CATALOGO_RETIRADO', 'CATALOGO_COMPARTILHADO']).order('created_at', { ascending: false }).limit(25)
+    let query = supabase.from('erp_logs_sistema').select('id,acao,created_at,dados').eq('modulo', 'Comercial').eq('entidade', 'erp_produtos').in('acao', ['CATALOGO_PUBLICADO', 'CATALOGO_RETIRADO', 'CATALOGO_COMPARTILHADO']).order('created_at', { ascending: false }).limit(25)
     if (currentUser.empresa_id) query = query.eq('empresa_id', currentUser.empresa_id)
     const result = await query
     if (result.error) throw result.error
@@ -127,7 +127,7 @@ export default function CatalogoDigital() {
     void (async () => {
       try {
         const current = await loadUser()
-        await Promise.all([loadProducts(), loadHistory(current)])
+        await Promise.all([loadProducts(current), loadHistory(current)])
       } catch (cause) {
         setError(cause instanceof Error ? cause.message : 'Não foi possível inicializar o catálogo.')
       }
@@ -145,12 +145,13 @@ export default function CatalogoDigital() {
 
   const writeAudit = useCallback(async (action: AuditAction, product: Product | null, extra: Record<string, unknown> = {}) => {
     if (!user) throw new Error('Usuário ERP não localizado para registrar o histórico.')
-    const result = await supabase.from('logs_sistema').insert({
+    const result = await supabase.from('erp_logs_sistema').insert({
       empresa_id: user.empresa_id,
       usuario_id: user.id,
+      modulo: 'Comercial',
       acao: action,
-      tabela: 'produtos',
-      registro_id: product?.id ?? null,
+      entidade: 'erp_produtos',
+      entidade_id: product?.id ?? null,
       dados: { rota: '/comercial/catalogo', produto_codigo: product ? productCode(product) : null, produto_nome: product?.nome ?? null, ...extra },
     })
     if (result.error) throw result.error
@@ -162,7 +163,7 @@ export default function CatalogoDigital() {
     setMessage('')
     const nextValue = !product.catalogo_disponivel
     try {
-      const result = await supabase.from('produtos').update({ catalogo_disponivel: nextValue, updated_at: new Date().toISOString() }).eq('id', product.id).select('id,catalogo_disponivel').single()
+      const result = await supabase.from('erp_produtos').update({ catalogo_disponivel: nextValue, updated_at: new Date().toISOString() }).eq('id', product.id).select('id,catalogo_disponivel').single()
       if (result.error || !result.data) throw new Error(result.error?.message || 'Não foi possível gravar a disponibilidade do catálogo.')
       setProducts((current) => current.map((item) => item.id === product.id ? { ...item, catalogo_disponivel: Boolean(result.data.catalogo_disponivel) } : item))
       await writeAudit(nextValue ? 'CATALOGO_PUBLICADO' : 'CATALOGO_RETIRADO', product)
