@@ -1,3 +1,14 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 12:47 BRT
+ * Desenvolvedor: Homologado por FernandoSch.
+ * ID da Revisão: REV-054
+ * Alterações: Inclusão do cabeçalho obrigatório de revisão no fluxo de ativação de acesso.
+ * Status do Build Local: Não executado — gate remoto após commit.
+ * =========================================================================
+ */
+
 import { FormEvent, useState, type CSSProperties } from 'react'
 import { KeyRound, ShieldCheck } from 'lucide-react'
 import { supabase, supabaseConfigurado } from '../lib/supabaseClient'
