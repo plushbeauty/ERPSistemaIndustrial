@@ -2,7 +2,7 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 11:43 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * Desenvolvedor: FernandoSch
  * ID da Revisão: REV-044
  * Alterações: Unificar a consulta de produção incluindo created_at nos dois ramos.
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
