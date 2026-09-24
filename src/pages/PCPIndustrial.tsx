@@ -104,8 +104,23 @@ export default function PCPIndustrial(){
   if(!progForm.ordem_producao_id||!progForm.maquina_id||!progForm.inicio||!progForm.fim||qty<=0){setError('OP, máquina, início, fim e quantidade são obrigatórios.');return}
   if(new Date(progForm.fim)<=new Date(progForm.inicio)){setError('O fim deve ser posterior ao início.');return}
   const op=ops.find(x=>x.id===progForm.ordem_producao_id)
-  const conflict=programs.some(p=>p.maquina_id===progForm.maquina_id&&p.status.toLowerCase()!=='cancelada'&&new Date(progForm.inicio)<new Date(p.fim_planejado)&&new Date(progForm.fim)>new Date(p.inicio_planejado))
-  if(conflict){setError('Conflito de capacidade: esta máquina já possui uma programação nesse intervalo.');return}
+  const machine=machines.find(x=>x.id===progForm.maquina_id)
+  if(machine?.status?.toUpperCase().includes('MANUT')){setError('A máquina selecionada está em manutenção e não pode receber programação.');return}
+  const mold=molds.find(x=>x.id===progForm.molde_id)
+  if(mold?.status?.toUpperCase().includes('MANUT')){setError('O molde selecionado está em manutenção e não pode receber programação.');return}
+  const start=new Date(progForm.inicio)
+  const end=new Date(progForm.fim)
+  const activePrograms=programs.filter(p=>p.status.toLowerCase()!=='cancelada')
+  const overlaps=(p:Program)=>start<new Date(p.fim_planejado)&&end>new Date(p.inicio_planejado)
+  const machineConflict=activePrograms.some(p=>p.maquina_id===progForm.maquina_id&&overlaps(p))
+  if(machineConflict){setError('Conflito de horário: a injetora já possui uma programação nesse intervalo.');return}
+  const moldConflict=Boolean(progForm.molde_id)&&activePrograms.some(p=>p.molde_id===progForm.molde_id&&overlaps(p))
+  if(moldConflict){setError('Conflito de horário: o mesmo molde já está programado nesse intervalo.');return}
+  const dayKey=(value:Date)=>value.toISOString().slice(0,10)
+  const sameMachineDay=activePrograms.filter(p=>p.maquina_id===progForm.maquina_id&&dayKey(new Date(p.inicio_planejado))===dayKey(start))
+  const distinctMolds=new Set(sameMachineDay.map(p=>p.molde_id).filter((id):id is string=>Boolean(id)))
+  if(progForm.molde_id)distinctMolds.add(progForm.molde_id)
+  if(distinctMolds.size>2){setError('A mesma injetora suporta no máximo dois moldes distintos no mesmo dia.');return}
   setBusy(true);setError('');setMessage('')
   const detailed={ordem_producao_id:progForm.ordem_producao_id,maquina_id:progForm.maquina_id,produto_id:op?.produto_id||null,inicio_planejado:progForm.inicio,fim_planejado:progForm.fim,quantidade_planejada:qty,quantidade_produzida:0,quantidade_refugada:0,status:progForm.status,molde_id:progForm.molde_id||null,operador_frente_id:progForm.operador_frente_id||null,operador_atras_id:progForm.operador_atras_id||null,turnos,horas_turno:horasTurno,eficiencia_percent:eff,ciclo_seg:cycle,cavidades_ativas:cav,setup_min:setup}
   try{
