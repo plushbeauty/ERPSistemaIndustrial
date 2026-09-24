@@ -144,7 +144,7 @@ const emptyItem = (): NFeItem => ({
 
 const numberValue = (value: string | number | null | undefined): number => {
   if (typeof value === 'number') return Number.isFinite(value) ? value : 0
-  const normalized = String(value ?? '').replace(/\./g, '').replace(',', '.').trim()
+  const raw = String(value ?? '').trim()\n  const normalized = raw.includes(',') ? raw.replace(/\./g, '').replace(',', '.') : raw
   const result = Number(normalized)
   return Number.isFinite(result) ? result : 0
 }
@@ -179,7 +179,7 @@ export default function NFeEmissao() {
   const [error, setError] = useState('')
 
   const totalProdutos = useMemo(() => items.reduce((sum, item) => sum + item.total, 0), [items])
-  const totalNota = Math.max(0, totalProdutos + numberValue(form.valorFrete) + numberValue(form.outrasDespesas) - numberValue(form.valorDesconto))
+  const totalNota = Math.max(0, totalProdutos + numberValue(form.valorFrete) + numberValue(form.outrasDespesas) + numberValue(form.valorIpi) + numberValue(form.valorSt) - numberValue(form.valorDesconto))
 
   useEffect(() => { void loadReferenceData() }, [])
 
@@ -284,44 +284,87 @@ export default function NFeEmissao() {
       if (profile.error || !profile.data?.empresa_id) throw new Error(profile.error?.message || 'Empresa da sessão não localizada.')
       const empresaId = String(profile.data.empresa_id)
       const payload = {
-        empresa_id: empresaId, numero: form.numero ? numberValue(form.numero) : null, serie: numberValue(form.serie) || 1, modelo: '55',
-        tipo: form.tipo, ambiente: form.ambiente, status: 'rascunho', natureza_operacao: form.natureza.trim(), cfop: digits(form.cfop, 4),
-        data_emissao: dateTime(form.emissao) || new Date().toISOString(), data_saida: dateTime(form.saida),
-        destinatario_nome: form.parceiro.razaoSocial.trim(), destinatario_documento: form.parceiro.cnpjCpf.trim(),
-        destinatario_ie: form.parceiro.inscricaoEstadual.trim() || null, destinatario_email: form.parceiro.email.trim() || null,
-        destinatario_endereco: form.parceiro.endereco.trim() || null, destinatario_bairro: form.parceiro.bairro.trim() || null,
-        destinatario_cep: form.parceiro.cep.trim() || null, destinatario_cidade: form.parceiro.cidade.trim() || null,
-        destinatario_uf: form.parceiro.uf.trim().toUpperCase() || null, modalidade_frete: form.modalidadeFrete,
-        transportadora: form.transportadora.trim() || null, placa: form.placa.trim().toUpperCase() || null,
-        uf_transportadora: form.ufTransportadora.trim().toUpperCase() || null, peso_liquido: numberValue(form.pesoLiquido),
-        peso_bruto: numberValue(form.pesoBruto), volumes: numberValue(form.volumes), valor_produtos: totalProdutos,
-        valor_frete: numberValue(form.valorFrete), valor_desconto: numberValue(form.valorDesconto), valor_outras_despesas: numberValue(form.outrasDespesas),
-        base_icms: numberValue(form.baseIcms), valor_icms: numberValue(form.valorIcms), base_icms_st: numberValue(form.baseIcmsSt),
-        valor_icms_st: numberValue(form.valorSt), valor_ipi: numberValue(form.valorIpi), valor_pis: numberValue(form.valorPis),
-        valor_cofins: numberValue(form.valorCofins), valor_total: totalNota, created_by: profile.data.id, updated_at: new Date().toISOString(),
+        empresa_id: empresaId,
+        tipo: form.tipo === 'entrada' ? 'NF-e Entrada' : 'NF-e',
+        modelo: '55',
+        serie: form.serie,
+        numero: form.numero || null,
+        status: 'Rascunho',
+        natureza_operacao: form.natureza.trim(),
+        cfop: digits(form.cfop, 4),
+        ambiente: form.ambiente,
+        data_emissao: dateTime(form.emissao) || new Date().toISOString(),
+        data_saida: dateTime(form.saida),
+        destinatario_nome: form.parceiro.razaoSocial.trim(),
+        destinatario_documento: form.parceiro.cnpjCpf.trim(),
+        destinatario_ie: form.parceiro.inscricaoEstadual.trim() || null,
+        destinatario_email: form.parceiro.email.trim() || null,
+        destinatario_endereco: form.parceiro.endereco.trim() || null,
+        destinatario_bairro: form.parceiro.bairro.trim() || null,
+        destinatario_cep: form.parceiro.cep.trim() || null,
+        destinatario_cidade: form.parceiro.cidade.trim() || null,
+        destinatario_uf: form.parceiro.uf.trim().toUpperCase() || null,
+        modalidade_frete: form.modalidadeFrete,
+        transportadora: form.transportadora.trim() || null,
+        placa: form.placa.trim().toUpperCase() || null,
+        uf_transportadora: form.ufTransportadora.trim().toUpperCase() || null,
+        peso_liquido: numberValue(form.pesoLiquido),
+        peso_bruto: numberValue(form.pesoBruto),
+        volumes: numberValue(form.volumes),
+        valor_produtos: totalProdutos,
+        valor_frete: numberValue(form.valorFrete),
+        valor_outras_despesas: numberValue(form.outrasDespesas),
+        valor_desconto: numberValue(form.valorDesconto),
+        base_calculo_icms: numberValue(form.baseIcms),
+        valor_icms: numberValue(form.valorIcms),
+        base_icms_st: numberValue(form.baseIcmsSt),
+        valor_icms_st: numberValue(form.valorSt),
+        valor_ipi: numberValue(form.valorIpi),
+        valor_pis: numberValue(form.valorPis),
+        valor_cofins: numberValue(form.valorCofins),
+        valor_total: totalNota,
+        valor_liquido: totalNota,
       }
-      const saved = documentId
-        ? await supabase.from('fiscal_nfes').update(payload).eq('id', documentId).select('id').single()
-        : await supabase.from('fiscal_nfes').insert(payload).select('id').single()
-      if (saved.error || !saved.data) throw new Error(saved.error?.message || 'Não foi possível gravar o rascunho.')
-      const id = String(saved.data.id)
-      setDocumentId(id)
-      const deleted = await supabase.from('fiscal_nfe_itens').delete().eq('nfe_id', id)
-      if (deleted.error) throw deleted.error
       const rows = items.filter((item) => item.codigo.trim() && item.descricao.trim()).map((item, index) => ({
-        empresa_id: empresaId, nfe_id: id, item_numero: index + 1, produto_id: item.produtoId || null, codigo_produto: item.codigo.trim(),
-        descricao_produto: item.descricao.trim(), ncm: digits(item.ncm, 8), cfop: digits(item.cfop, 4), unidade: item.unidade.trim().slice(0, 6) || 'UN',
-        quantidade: numberValue(item.quantidade), valor_unitario: numberValue(item.valorUnitario), valor_desconto: numberValue(item.desconto),
-        valor_total: item.total, origem: digits(item.origem, 1) || '0', updated_at: new Date().toISOString(),
+        produto_id: item.produtoId || null,
+        item_numero: index + 1,
+        codigo_produto: item.codigo.trim(),
+        descricao_produto: item.descricao.trim(),
+        ncm: digits(item.ncm, 8),
+        cfop: digits(item.cfop, 4),
+        cst_csosn: null,
+        unidade: item.unidade.trim().slice(0, 6) || 'UN',
+        quantidade: numberValue(item.quantidade),
+        valor_unitario: numberValue(item.valorUnitario),
+        valor_total: item.total,
+        valor_desconto: numberValue(item.desconto),
+        icms_aliquota: null,
+        ipi_aliquota: null,
+        pis_aliquota: numberValue(form.valorPis) > 0 && totalProdutos > 0 ? (numberValue(form.valorPis) / totalProdutos) * 100 : null,
+        cofins_aliquota: numberValue(form.valorCofins) > 0 && totalProdutos > 0 ? (numberValue(form.valorCofins) / totalProdutos) * 100 : null,
+        pis_cst: null,
+        cofins_cst: null,
+        lote: null,
+        origem: digits(item.origem, 1) || '0',
       }))
-      const inserted = await supabase.from('fiscal_nfe_itens').insert(rows)
-      if (inserted.error) throw inserted.error
+      const rpc = await supabase.rpc('erp_salvar_rascunho_nfe', {
+        p_documento_id: documentId,
+        p_documento: payload,
+        p_itens: rows,
+      })
+      if (rpc.error || !rpc.data) throw new Error(rpc.error?.message || 'Não foi possível gravar o rascunho fiscal.')
+      const id = String(rpc.data)
+      setDocumentId(id)
       const audit = await supabase.from('logs_sistema').insert({
-        empresa_id: empresaId, usuario_id: profile.data.id, acao: 'NFE_RASCUNHO_SALVO', tabela: 'fiscal_nfes', registro_id: id,
+        empresa_id: empresaId,
+        usuario_id: profile.data.id,
+        acao: 'NFE_RASCUNHO_SALVO',
+        tabela: 'erp_documentos_fiscais',
+        registro_id: id,
         dados: { numero: form.numero || null, serie: form.serie, total: totalNota, itens: rows.length },
       })
       if (audit.error) throw audit.error
-      setMessage('NF-e gravada como rascunho. Nenhuma transmissão à SEFAZ foi executada.')
+      setMessage('NF-e gravada como rascunho de forma transacional. Nenhuma transmissão à SEFAZ foi executada.')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao salvar a NF-e.')
     } finally {
