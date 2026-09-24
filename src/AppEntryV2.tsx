@@ -3,6 +3,17 @@
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 11:43 BRT
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-048
+ * Alterações: Alinhar perfil administrativo com Profile usando nivel_admin opcional.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-034
  * Alterações: Eliminar useState<any> do perfil administrativo e declarar perfil de administração empresarial estritamente.
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
@@ -30,7 +41,7 @@ import './styles/erp-ui-pass-2026.css'
 import './styles/industrial-plans.css'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 
-type EmpresaAdminProfile={nome:string;empresa_id:string|null;is_master:boolean;nivel_admin:number|null;perfil:string|null}
+type EmpresaAdminProfile={nome:string;empresa_id:string|null;is_master:boolean;nivel_admin?:number;perfil:string|null}
 import IndustrialLoginDirect from './IndustrialLoginDirect'
 const AppIndustrial=lazy(()=>import('./AppIndustrialV7'))
 const PublicIndustrialHome=lazy(()=>import('./PublicIndustrialHome'))

@@ -3,6 +3,17 @@
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 11:43 BRT
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-050
+ * Alterações: Corrigir referências antigas qtd para o campo estrito quantidade.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-036
  * Alterações: Eliminar any da coleção de pedidos e do atualizador de itens, usando tipos Order e valores estritos.
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
@@ -20,7 +31,7 @@ export default function PedidoVendaCompleto(){
  const[empresa,setEmpresa]=useState(''),[savedOrderId,setSavedOrderId]=useState(''),[clients,setClients]=useState<Client[]>([]),[products,setProducts]=useState<Product[]>([]),[orders,setOrders]=useState<Order[]>([]),[client,setClient]=useState(''),[clientDoc,setClientDoc]=useState(''),[number,setNumber]=useState(''),[date,setDate]=useState(new Date().toISOString().slice(0,10)),[delivery,setDelivery]=useState(''),[items,setItems]=useState<Item[]>([]),[draft,setDraft]=useState({produto:'',qtd:'1',valor:'0'}),[busy,setBusy]=useState(false),[msg,setMsg]=useState(''),[err,setErr]=useState('')
  const load=async()=>{setErr('');const e=await supabase.rpc('erp_current_empresa_id');if(e.error||!e.data)throw e.error??new Error('Empresa não identificada');const id=String(e.data);setEmpresa(id);const [c,p,o]=await Promise.all([supabase.from('erp_clientes').select('id,nome,documento').eq('empresa_id',id).eq('ativo',true).order('nome'),supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,preco_venda,unidade').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(2000),supabase.from('erp_pedidos_venda').select('id,numero,status,total,data_entrega_prometida,cliente_id').eq('empresa_id',id).order('numero',{ascending:false}).limit(100)]);for(const x of[c,p,o])if(x.error)throw x.error;setClients(c.data||[]);setProducts(p.data||[]);setOrders(o.data||[]);setNumber(String((Number(o.data?.[0]?.numero||0)+1)).padStart(6,'0'))}
  useEffect(()=>{void load().catch(e=>setErr(e.message))},[])
- const selected=products.find(p=>p.id===draft.produto);const total=useMemo(()=>items.reduce((s,i)=>s+Number(i.qtd)*Number(i.valor),0),[items]);const needs=items.filter(i=>Number(i.qtd)>i.estoque&&!i.produzir);const prodItems=items.filter(i=>i.produzir||Number(i.qtd)>i.estoque)
+ const selected=products.find(p=>p.id===draft.produto);const total=useMemo(()=>items.reduce((s,i)=>s+Number(i.quantidade)*Number(i.valor),0),[items]);const needs=items.filter(i=>Number(i.quantidade)>i.estoque&&!i.produzir);const prodItems=items.filter(i=>i.produzir||Number(i.quantidade)>i.estoque)
  function choose(id:string){const p=products.find(x=>x.id===id);if(!p)return;setDraft({...draft,produto:id,valor:String(p.preco_venda||0)})}
  function add(){if(!selected||Number(draft.qtd)<=0)return;setItems([...items,{produto_id:selected.id,codigo:selected.codigo,descricao:selected.nome,quantidade:draft.qtd,valor:draft.valor||String(selected.preco_venda||0),estoque:Number(selected.estoque_atual||0),reservado:false,produzir:Number(draft.qtd)>Number(selected.estoque_atual||0)}]);setDraft({produto:'',qtd:'1',valor:'0'})}
  function update(i:number,k:keyof Item,v:string|number|boolean){setItems(x=>x.map((a,n)=>n===i?{...a,[k]:v}:a))}
