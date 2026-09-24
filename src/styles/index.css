@@ -162,3 +162,120 @@ table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!i
 .industrial-route-content .min-h-12{min-height:38px!important}
 .industrial-route-content .min-h-11,.industrial-route-content .min-h-10{min-height:34px!important}
 .industrial-route-content .px-5{padding-left:12px!important;padding-right:12px!important}
+
+/* REV-066 — PADRÃO GLOBAL DAS TELAS INTERNAS
+   Home (/ e /home) fica fora desta regra. O formulário operacional deve ser
+   compacto, horizontal e proporcional ao dado; a grade/lista vem imediatamente abaixo. */
+.industrial-route-content{
+  --erp-blue:#0f172a;--erp-blue-2:#1e3a8a;--erp-primary:#2563eb;--erp-bg:#f8fafc;
+  --erp-border:#cbd5e1;--erp-text:#0f172a;--erp-muted:#64748b;
+  background:var(--erp-bg)!important;color:var(--erp-text);
+}
+.industrial-route-content h1{font-size:24px!important;line-height:1.15!important;margin:0 0 8px!important}
+.industrial-route-content h2{font-size:18px!important;line-height:1.2!important}
+.industrial-route-content h3{font-size:15px!important}
+.industrial-route-content input,
+.industrial-route-content select{
+  min-height:34px!important;height:34px!important;padding:5px 8px!important;
+  font-size:13px!important;line-height:1.2!important;border-radius:5px!important;
+}
+.industrial-route-content textarea{
+  min-height:58px!important;padding:7px 8px!important;font-size:13px!important;
+  line-height:1.3!important;border-radius:5px!important;
+}
+.industrial-route-content label{font-size:11px!important;line-height:1.2!important;gap:4px!important}
+.industrial-route-content button{font-size:12px}
+.industrial-route-content table{font-size:12px!important}
+.industrial-route-content table th{font-size:10px!important;text-transform:uppercase;letter-spacing:.02em}
+.industrial-route-content table th,.industrial-route-content table td{padding:6px 7px!important;vertical-align:middle}
+.industrial-route-content .crud-table-wrap{overflow:auto!important}
+.industrial-route-content .crud-list{border-radius:7px!important}
+.industrial-route-content .crud-list-head{padding:10px 12px!important;gap:8px!important}
+.industrial-route-content .module-search input{min-width:150px!important}
+.industrial-route-content .primary-v2,.industrial-route-content .secondary-v2,
+.industrial-route-content button[type="submit"]{
+  min-height:34px!important;height:34px!important;padding:0 10px!important;border-radius:5px!important;
+}
+.industrial-route-content .pcp-modern-page{
+  min-height:calc(100vh - 76px)!important;background:#f8fafc!important;
+  color:#0f172a!important;padding:18px 22px 30px!important;font-size:13px!important;
+}
+.industrial-route-content .pcp-modern-header{gap:14px!important;margin-bottom:12px!important}
+.industrial-route-content .pcp-modern-header h1{font-size:24px!important}
+.industrial-route-content .pcp-modern-header p{font-size:13px!important;line-height:1.4!important}
+.industrial-route-content .pcp-modern-actions{gap:6px!important}
+.industrial-route-content .pcp-modern-actions button,
+.industrial-route-content .pcp-help-btn,
+.industrial-route-content .pcp-refresh-modern,
+.industrial-route-content .pcp-live-modern{min-height:34px!important;height:34px!important;font-size:12px!important;padding:0 10px!important;border-radius:5px!important}
+.industrial-route-content .pcp-quick-actions{gap:7px!important;border-radius:7px!important;padding:9px 11px!important;margin-bottom:10px!important}
+.industrial-route-content .pcp-quick-actions button{min-height:34px!important;font-size:12px!important;border-radius:5px!important}
+.industrial-route-content .pcp-modern-tabs{gap:3px!important;padding:4px!important;border-radius:7px!important;margin-bottom:10px!important}
+.industrial-route-content .pcp-modern-tabs button{min-height:34px!important;font-size:11px!important;padding:0 8px!important;border-radius:5px!important}
+.industrial-route-content .pcp-flow{gap:8px!important;margin-top:10px!important}
+.industrial-route-content .pcp-flow button{border-radius:7px!important;padding:10px!important}
+.industrial-route-content .pcp-flow strong{font-size:14px!important;margin-top:7px!important}
+.industrial-route-content .pcp-flow small{font-size:11px!important;line-height:1.3!important}
+.industrial-route-content .pcp-info{border-radius:7px!important;padding:9px!important;margin-top:9px!important}
+.industrial-route-content .pcp-section-toolbar{border-radius:7px!important;padding:9px 11px!important;margin-bottom:8px!important}
+.industrial-route-content .pcp-section-toolbar strong{font-size:13px!important}
+.industrial-route-content .pcp-section-toolbar small{font-size:10px!important}
+.industrial-route-content .pcp-production-modern{gap:10px!important}
+.industrial-route-content .pcp-modern-panel{border-radius:7px!important;padding:12px!important;box-shadow:none!important}
+.industrial-route-content .pcp-modern-panel-head{margin-bottom:10px!important}
+.industrial-route-content .pcp-modern-panel-head h2{font-size:17px!important}
+.industrial-route-content .pcp-modern-panel-head p{font-size:11px!important}
+.industrial-route-content .pcp-form-grid-modern,
+.industrial-route-content .pcp-modal-form{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px!important}
+.industrial-route-content .pcp-form-grid-modern label.wide,
+.industrial-route-content .pcp-modal-form label.wide{grid-column:1/-1!important}
+.industrial-route-content .pcp-form-grid-modern input,
+.industrial-route-content .pcp-form-grid-modern select,
+.industrial-route-content .pcp-form-grid-modern textarea,
+.industrial-route-content .pcp-modal-form input,
+.industrial-route-content .pcp-modal-form select,
+.industrial-route-content .pcp-modal-form textarea{min-height:34px!important;height:34px!important;padding:5px 8px!important;font-size:12px!important;border-radius:5px!important}
+.industrial-route-content .pcp-form-grid-modern textarea,
+.industrial-route-content .pcp-modal-form textarea{height:auto!important;min-height:58px!important}
+.industrial-route-content .pcp-conferir{min-height:34px!important;height:34px!important;font-size:12px!important;padding:0 11px!important;border-radius:5px!important}
+.industrial-route-content .pcp-capacity-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+.industrial-route-content .pcp-capacity-grid article{border-radius:7px!important;padding:10px!important}
+.industrial-route-content .pcp-capacity-grid strong{font-size:15px!important}
+.industrial-route-content .quality-kpis{gap:8px!important}
+.industrial-route-content .quality-kpis article{border-radius:7px!important;padding:10px!important}
+.industrial-route-content .quality-kpis strong{font-size:22px!important}
+.industrial-route-content .pcp-stock-modern-grid{gap:8px!important}
+.industrial-route-content .pcp-stock-modern-grid article{min-height:90px!important;padding:10px!important;border-radius:7px!important}
+.industrial-route-content .pcp-stock-modern-grid strong{font-size:22px!important;margin-top:14px!important}
+.industrial-route-content .pcp-modal{border-radius:8px!important;padding:14px!important}
+.industrial-route-content .pcp-modal-head{margin-bottom:10px!important}
+.industrial-route-content .pcp-modal-head h2{font-size:18px!important}
+@media(max-width:1100px){
+ .industrial-route-content .pcp-form-grid-modern,
+ .industrial-route-content .pcp-modal-form{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .industrial-route-content .pcp-capacity-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:720px){
+ .industrial-route-content .pcp-form-grid-modern,
+ .industrial-route-content .pcp-modal-form{grid-template-columns:1fr!important}
+ .industrial-route-content .pcp-capacity-grid{grid-template-columns:1fr!important}
+}
+
+/* NF-e/fiscal: campos curtos permanecem curtos; descrição ocupa o espaço necessário. */
+.industrial-route-content .nfe-form-grid,
+.industrial-route-content .fiscal-form-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:7px!important}
+.industrial-route-content .nfe-form-grid .wide,
+.industrial-route-content .fiscal-form-grid .wide{grid-column:span 3!important}
+.industrial-route-content .nfe-items-table input,
+.industrial-route-content .nfe-items-table select{min-height:30px!important;height:30px!important;font-size:12px!important;padding:4px 6px!important}
+.industrial-route-content .nfe-items-table td{padding:4px 5px!important}
+
+/* Engenharia/ficha/processo: identificação curta, BOM/roteiro em grade horizontal. */
+.industrial-route-content .engineering-form-grid,
+.industrial-route-content .ficha-form-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:7px!important}
+.industrial-route-content .engineering-form-grid .wide,
+.industrial-route-content .ficha-form-grid .wide{grid-column:span 3!important}
+.industrial-route-content .bom-grid,.industrial-route-content .roteiro-grid,
+.industrial-route-content .document-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:6px!important}
+.industrial-route-content .bom-grid input,.industrial-route-content .roteiro-grid input,
+.industrial-route-content .document-grid input{min-height:32px!important;height:32px!important}
