@@ -1,3 +1,14 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-056
+ * Alterações: Corrigir horas_turno, remover any da timeline e remover prop fichaOps não utilizada.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
@@ -179,7 +190,7 @@ export default function PCPIndustrial(){
    </section>
   </section>}
 
-  {tab==='programacao'&&<ProgramacaoTimeline programs={schedule} machines={machines} molds={molds} employees={employees} fichaOps={fichaOps} onProgram={openProgram}/>} 
+  {tab==='programacao'&&<ProgramacaoTimeline programs={schedule} machines={machines} molds={molds} employees={employees} onProgram={openProgram}/>} 
 
   {tab==='capacidade'&&<section><div className="pcp-capacity-grid">{machines.map(m=><article key={m.id}><div><span>{m.codigo}</span><strong>{m.nome}</strong><small>{m.tipo||'Máquina'} • {m.status}</small></div><b>{programs.filter(p=>p.maquina_id===m.id).length} programação(ões)</b><button onClick={()=>openProgram()}><CalendarDays size={16}/> Programar</button></article>)}</div></section>}
 
@@ -198,7 +209,8 @@ export default function PCPIndustrial(){
 }
 
 
-function ProgramacaoTimeline({programs,machines,molds,employees,onProgram}:{programs:any[];machines:Machine[];molds:Molde[];employees:Employee[];onProgram:(opId?:string)=>void}){
+type ProgramView=Program & {op?:OP;product?:Product}
+function ProgramacaoTimeline({programs,machines,molds,employees,onProgram}:{programs:ProgramView[];machines:Machine[];molds:Molde[];employees:Employee[];onProgram:(opId?:string)=>void}){
  const active=programs.filter(p=>p.status?.toLowerCase()!=='cancelada'&&p.inicio_planejado&&p.fim_planejado)
  const base=active.length?new Date(Math.min(...active.map(p=>new Date(p.inicio_planejado).getTime()))):new Date()
  base.setHours(0,0,0,0)
@@ -208,9 +220,9 @@ function ProgramacaoTimeline({programs,machines,molds,employees,onProgram}:{prog
  const totalMs=endH.getTime()-base.getTime()
  const machineStats=machines.map(m=>{const ps=active.filter(p=>p.maquina_id===m.id);const pieces=ps.reduce((s,p)=>s+Number(p.quantidade_planejada||0),0);const moldCount=new Set(ps.map(p=>p.molde_id).filter(Boolean)).size;const hours=ps.reduce((s,p)=>s+Math.max(0,(new Date(p.fim_planejado).getTime()-new Date(p.inicio_planejado).getTime())/3600000),0);const shiftHours=ps.reduce((s,p)=>s+Math.max(1,Number(p.horas_turno||8))*Math.max(1,Number(p.turnos||1)),0)/Math.max(1,ps.length);return{m,ps,pieces,moldCount,hours,days:hours/Math.max(1,shiftHours)} })
  const fmtDay=(d:Date)=>d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'}).replace('.','')
- const durationDays=(p:any)=>Math.max(.01,(new Date(p.fim_planejado).getTime()-new Date(p.inicio_planejado).getTime())/86400000)
- const leftPct=(p:any)=>Math.max(0,Math.min(100,(new Date(p.inicio_planejado).getTime()-base.getTime())/totalMs*100))
- const widthPct=(p:any)=>Math.max(.8,Math.min(100-leftPct(p),(new Date(p.fim_planejado).getTime()-new Date(p.inicio_planejado).getTime())/totalMs*100))
+ const durationDays=(p:ProgramView)=>Math.max(.01,(new Date(p.fim_planejado).getTime()-new Date(p.inicio_planejado).getTime())/86400000)
+ const leftPct=(p:ProgramView)=>Math.max(0,Math.min(100,(new Date(p.inicio_planejado).getTime()-base.getTime())/totalMs*100))
+ const widthPct=(p:ProgramView)=>Math.max(.8,Math.min(100-leftPct(p),(new Date(p.fim_planejado).getTime()-new Date(p.inicio_planejado).getTime())/totalMs*100))
  const moldName=(id:string|null)=>molds.find(m=>m.id===id)?.codigo||'sem molde'
  const empName=(id:string|null)=>employees.find(e=>e.id===id)?.nome||'—'
  return <section className="pcp-timeline-wrap">
@@ -218,10 +230,10 @@ function ProgramacaoTimeline({programs,machines,molds,employees,onProgram}:{prog
   <div className="pcp-planning-strip"><div><strong>O PCP calcula carga, não só datas.</strong><span>Quantidade • ciclo • cavidades • setup • turnos • eficiência • molde • operadores.</span></div><b>{active.reduce((s,p)=>s+Number(p.quantidade_planejada||0),0).toLocaleString('pt-BR')} peças programadas</b><b>{new Set(active.map(p=>p.molde_id).filter(Boolean)).size} moldes</b><b>{active.length} blocos</b></div>
   <div className="pcp-timeline-card"><div className="pcp-timeline-scroll"><div className="pcp-timeline-grid" style={{gridTemplateColumns:`190px repeat(${horizon},minmax(92px,1fr))`}}>
    <div className="pcp-timeline-corner">MÁQUINA</div>{days.map(d=><div className="pcp-day-head" key={d.toISOString()}><strong>{fmtDay(d)}</strong><small>{d.toLocaleDateString('pt-BR',{year:'numeric'})}</small></div>)}
-   {machines.map(m=>{const stat=machineStats.find(x=>x.m.id===m.id)!;return <div className="pcp-machine-row" key={m.id}><div className="pcp-machine-label"><strong>{m.codigo}</strong><span>{m.nome}</span><small>{stat.ps.length} blocos • {stat.pieces.toLocaleString('pt-BR')} peças • {stat.moldCount} moldes • {stat.hours.toFixed(1)} h</small></div><div className="pcp-machine-track" style={{gridColumn:`2 / span ${horizon}`}}><div className="pcp-day-lines">{days.map(d=><i key={d.toISOString()}/>)}</div>{stat.ps.map((p:any,i:number)=><button key={p.id} className="pcp-gantt-bar" style={{left:`${leftPct(p)}%`,width:`${widthPct(p)}%`,top:`${8+(i%3)*34}px`}} onClick={()=>onProgram(p.ordem_producao_id||undefined)} title={`${p.op?.numero_op||'OP'} • ${p.product?.codigo||'produto'} • ${moldName(p.molde_id)} • ${durationDays(p).toFixed(1)} dias • ${Number(p.quantidade_planejada||0).toLocaleString('pt-BR')} peças`}><strong>{p.op?.numero_op||'OP'}</strong><span>{p.product?.codigo||'produto'} • {moldName(p.molde_id)}</span><small>{durationDays(p).toFixed(1)} d • {Number(p.quantidade_planejada||0).toLocaleString('pt-BR')} pç • {empName(p.operador_frente_id)} / {empName(p.operador_atras_id)}</small></button>)}</div></div>})}
+   {machines.map(m=>{const stat=machineStats.find(x=>x.m.id===m.id)!;return <div className="pcp-machine-row" key={m.id}><div className="pcp-machine-label"><strong>{m.codigo}</strong><span>{m.nome}</span><small>{stat.ps.length} blocos • {stat.pieces.toLocaleString('pt-BR')} peças • {stat.moldCount} moldes • {stat.hours.toFixed(1)} h</small></div><div className="pcp-machine-track" style={{gridColumn:`2 / span ${horizon}`}}><div className="pcp-day-lines">{days.map(d=><i key={d.toISOString()}/>)}</div>{stat.ps.map((p:ProgramView,i:number)=><button key={p.id} className="pcp-gantt-bar" style={{left:`${leftPct(p)}%`,width:`${widthPct(p)}%`,top:`${8+(i%3)*34}px`}} onClick={()=>onProgram(p.ordem_producao_id||undefined)} title={`${p.op?.numero_op||'OP'} • ${p.product?.codigo||'produto'} • ${moldName(p.molde_id)} • ${durationDays(p).toFixed(1)} dias • ${Number(p.quantidade_planejada||0).toLocaleString('pt-BR')} peças`}><strong>{p.op?.numero_op||'OP'}</strong><span>{p.product?.codigo||'produto'} • {moldName(p.molde_id)}</span><small>{durationDays(p).toFixed(1)} d • {Number(p.quantidade_planejada||0).toLocaleString('pt-BR')} pç • {empName(p.operador_frente_id)} / {empName(p.operador_atras_id)}</small></button>)}</div></div>})}
   </div></div></div>
   <div className="pcp-capacity-summary"><div><strong>Resumo por máquina</strong><span>Mostra quantos dias a prensa fica ocupada, quantos moldes passam por ela e quantas peças estão programadas.</span></div>{machineStats.map(s=><article key={s.m.id}><strong>{s.m.codigo}</strong><b>{s.days.toFixed(1)} dias</b><span>{s.hours.toFixed(1)} h ocupadas</span><span>{s.moldCount} moldes • {s.pieces.toLocaleString('pt-BR')} peças</span></article>)}</div>
-  <Table title="Detalhamento das programações" cols={['OP','Máquina','Molde','Operadores frente / atrás','Início','Fim','Dias','Peças','Ciclo','Cav.','Setup','Status']} rows={active.map((p:any)=>[p.op?.numero_op||'—',machines.find(m=>m.id===p.maquina_id)?.codigo||'—',moldName(p.molde_id),empName(p.operador_frente_id)+' / '+empName(p.operador_atras_id),new Date(p.inicio_planejado).toLocaleString('pt-BR'),new Date(p.fim_planejado).toLocaleString('pt-BR'),durationDays(p).toFixed(1),Number(p.quantidade_planejada||0),Number(p.ciclo_seg||0),Number(p.cavidades_ativas||1),Number(p.setup_min||0),p.status])} search="" setSearch={()=>{}}/>
+  <Table title="Detalhamento das programações" cols={['OP','Máquina','Molde','Operadores frente / atrás','Início','Fim','Dias','Peças','Ciclo','Cav.','Setup','Status']} rows={active.map((p:ProgramView)=>[p.op?.numero_op||'—',machines.find(m=>m.id===p.maquina_id)?.codigo||'—',moldName(p.molde_id),empName(p.operador_frente_id)+' / '+empName(p.operador_atras_id),new Date(p.inicio_planejado).toLocaleString('pt-BR'),new Date(p.fim_planejado).toLocaleString('pt-BR'),durationDays(p).toFixed(1),Number(p.quantidade_planejada||0),Number(p.ciclo_seg||0),Number(p.cavidades_ativas||1),Number(p.setup_min||0),p.status])} search="" setSearch={()=>{}}/>
  </section>
 }
 

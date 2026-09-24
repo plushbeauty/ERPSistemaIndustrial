@@ -1,5 +1,16 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-055
+ * Alterações: Adicionar o ícone X usado pelo diálogo de ajuda.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
 import { FormEvent, useEffect, useState } from 'react'
-import { AlertTriangle, ArrowLeft, CheckCircle2, HelpCircle, Play, RefreshCw, Search, XCircle } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, CheckCircle2, HelpCircle, Play, RefreshCw, Search, X, XCircle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type OP={id:string;numero_op:string;produto_id:string|null;quantidade:number;status:string;data_prevista:string|null}

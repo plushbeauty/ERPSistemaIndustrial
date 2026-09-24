@@ -1,3 +1,14 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-054
+ * Alterações: Restaurar imports dos ícones usados no cabeçalho e ações.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
 /*
 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
 - Arquivo: src/pages/FornecedoresIndustrial.tsx
@@ -7,7 +18,7 @@
 - Regra de Negócio Incorporada: Cadastro real de fornecedor, certificado ISO 9001 em Storage privado, validade e qualificação visual por estrela.
 */
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
-import { Check, Download, FileCheck2, Pencil, Plus, Search, ShieldCheck, Star, Upload, X } from 'lucide-react'
+import { Check, Download, FileCheck2, Pencil, Plus, Printer, RefreshCw, Search, ShieldCheck, Star, Trash2, Upload, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Supplier={id:string;codigo:string|null;razao_social:string;nome_fantasia:string|null;documento:string|null;email:string|null;telefone:string|null;cidade:string|null;estado:string|null;contato:string|null;ativo:boolean;iso_9001_certificado:boolean;iso_certificado_nome:string|null;iso_certificado_path:string|null;iso_certificado_validade:string|null;iso_certificado_numero:string|null;observacoes:string|null}
