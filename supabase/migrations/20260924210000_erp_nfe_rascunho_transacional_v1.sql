@@ -23,6 +23,12 @@ alter table public.erp_documentos_fiscais
   add column if not exists base_icms_st numeric(18,2) not null default 0,
   add column if not exists valor_icms_st numeric(18,2) not null default 0;
 
+alter table public.erp_produtos
+  add column if not exists catalogo_disponivel boolean not null default false;
+
+create index if not exists idx_erp_produtos_catalogo
+  on public.erp_produtos(empresa_id, ativo, catalogo_disponivel, codigo);
+
 alter table public.erp_documentos_fiscais_itens
   add column if not exists valor_desconto numeric(18,2) not null default 0,
   add column if not exists pis_aliquota numeric(7,4),
@@ -45,6 +51,10 @@ declare
   v_empresa_id uuid := nullif(p_documento->>'empresa_id','')::uuid;
   v_id uuid;
 begin
+  if auth.uid() is null then
+    raise exception 'Sessão de autenticação obrigatória';
+  end if;
+
   if v_empresa_id is null then
     raise exception 'empresa_id é obrigatório';
   end if;
@@ -108,7 +118,7 @@ begin
        set tipo=coalesce(p_documento->>'tipo',tipo),
            modelo=coalesce(p_documento->>'modelo',modelo),
            serie=nullif(p_documento->>'serie','')::integer,
-           numero=nullif(p_documento->>'numero','')::integer,
+           numero=nullif(p_documento->>'numero','')::bigint,
            status=coalesce(p_documento->>'status',status),
            natureza_operacao=p_documento->>'natureza_operacao',
            cfop=p_documento->>'cfop',
