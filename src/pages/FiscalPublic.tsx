@@ -133,5 +133,29 @@ export default function FiscalPublic() {
           </div>
         </section>
 
-        <section className="fiscal-features space-y-8">
-Use o código com cuidado.RECURSOSUma central fiscal preparada para crescer.{features.map((feat) => {const IconComponent = feat.iconreturn ({feat.titulo}{feat.descricao})})}FernandoSch. • SGQ ERP IndustrialVoltar à Home Principal)}
+        <section id="recursos" className="fiscal-features space-y-8">
+          <div className="section-heading mx-auto max-w-2xl space-y-2 text-center">
+            <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-[#2563eb]">RECURSOS</span>
+            <h2 className="text-2xl font-bold text-[#0f172a] lg:text-3xl">Uma central fiscal preparada para crescer.</h2>
+          </div>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {features.map((feature) => {
+              const IconComponent = feature.icon
+              return (
+                <article key={feature.titulo} className="space-y-3 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-[#2563eb]"><IconComponent size={22} /></div>
+                  <h3 className="text-lg font-bold text-[#0f172a]">{feature.titulo}</h3>
+                  <p className="text-base leading-relaxed text-slate-500">{feature.descricao}</p>
+                </article>
+              )
+            })}
+          </div>
+        </section>
+        <footer className="border-t border-slate-200 py-8 text-center text-sm font-medium text-slate-500">
+          FernandoSch. • SGQ ERP Industrial <span className="mx-2">•</span>
+          <a className="text-[#2563eb] hover:underline" href="/">Voltar à Home Principal</a>
+        </footer>
+      </main>
+    </div>
+  )
+}
