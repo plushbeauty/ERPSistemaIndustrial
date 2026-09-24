@@ -1,3 +1,14 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-037
+ * Alterações: Adicionar cabeçalho de rastreabilidade e manter tipagem explícita do seletor de abas.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
 import {useEffect,useMemo,useState} from 'react'
 import {supabase} from '../lib/supabaseClient'
 import {Calculator,Plus,Save,Trash2,RefreshCw,Search,Building2,ReceiptText,Factory,ChevronRight} from 'lucide-react'

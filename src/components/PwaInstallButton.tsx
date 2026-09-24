@@ -1,13 +1,26 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-033
+ * Alterações: Eliminar any do evento de instalação PWA e do estado; usar interface estrita BeforeInstallPromptEvent e guarda de capacidade do navigator.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
+interface BeforeInstallPromptEvent extends Event { prompt(): Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }> }
+interface NavigatorWithStandalone extends Navigator { standalone?: boolean }
 import { useEffect, useState } from 'react'
 import { Download, X } from 'lucide-react'
 
 export default function PwaInstallButton(){
-  const [prompt,setPrompt]=useState<any>(null)
+  const [prompt,setPrompt]=useState<BeforeInstallPromptEvent | null>(null)
   const [hidden,setHidden]=useState(false)
   useEffect(()=>{
-    const standalone=window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone===true
+    const standalone=window.matchMedia('(display-mode: standalone)').matches || (navigator as NavigatorWithStandalone).standalone===true
     if(standalone){setHidden(true);return}
-    const handler=(event:any)=>{event.preventDefault();setPrompt(event)}
+    const handler=(event: Event)=>{event.preventDefault();setPrompt(event as BeforeInstallPromptEvent)}
     window.addEventListener('beforeinstallprompt',handler)
     return()=>window.removeEventListener('beforeinstallprompt',handler)
   },[])

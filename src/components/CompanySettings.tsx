@@ -1,3 +1,14 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-038
+ * Alterações: Adicionar cabeçalho de rastreabilidade mantendo o tipo Profile/Company estrito existente.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
 import { FormEvent, useEffect, useState } from 'react'
 import { Building2, Image, Save, RefreshCw } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
