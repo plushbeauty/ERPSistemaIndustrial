@@ -2,7 +2,7 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 12:58 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * Desenvolvedor: FernandoSch
  * ID da Revisão: REV-060
  * Alterações: Reconstrução integral da NF-e em quatro abas conforme Projeto Executivo PDF; tipagem estrita sem any; pedido, cliente, produto, lote, totais, transporte, rascunho real no Supabase e preparação para transmissão pela Edge Function fiscal.
  * Status do Build Local: Não executado — validação será feita pelo gate remoto.
