@@ -2,7 +2,7 @@
 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
 - Arquivo: src/pages/ClientesIndustrial.tsx
 - Status Atual: Revisão 3 (Cadastro Comercial e Política de Preços)
-- Total de Linhas Gerado: 27
+- Total de Linhas Gerado: 27 Desenvolverdor FernandoSch.
 - Assinatura de Entrada (Primeiros 3 Imports): import { FormEvent, useEffect, useState } from 'react' | import { Check, Pencil, Plus, Search, X } from 'lucide-react' | import { supabase } from '../lib/supabaseClient'
 - Regra de Negócio Incorporada: Cadastro real de cliente com tipo comercial, tabela de preço e desconto percentual padrão.
 */
