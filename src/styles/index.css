@@ -122,33 +122,7 @@ table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!i
 .industrial-table th,.mw3-table-wrap th,.erp-table-v3 th{font-size:10px!important}
 .mw3-form-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
 .industrial-toolbar{grid-template-columns:minmax(180px,1.7fr) repeat(4,minmax(90px,1fr))!important;gap:8px!important}
-
-/* Tablet: ícones menores e controles mais próximos do padrão de terminal industrial. */
-.tablet-frame{font-size:13px}
-.tablet-head{min-height:58px!important;padding:8px 12px!important}
-.tablet-icon-btn{width:34px!important;height:34px!important}
-.tablet-icon-btn svg{width:17px!important;height:17px!important}
-.tablet-module-icon{width:34px!important;height:34px!important}
-.tablet-module-icon svg{width:21px!important;height:21px!important}
-.tablet-action-icon{width:34px!important;height:34px!important}
-.tablet-action-icon svg{width:20px!important;height:20px!important}
-.tablet-module-card{padding:10px 12px!important;min-height:66px!important}
-.tablet-priority-card{min-height:70px!important}
-.tablet-action-card{padding:9px 11px!important;min-height:54px!important}
-.tablet-section-title h2{font-size:17px!important}
-.tablet-section-title span{font-size:9px!important}
-.tablet-brand img{width:34px!important;height:34px!important}
-.tablet-brand strong{font-size:14px!important}
-.tablet-brand small{font-size:10px!important}
-.tablet-head-actions{gap:5px!important}
-.tablet-grid,.tablet-grid-priority,.tablet-grid-small{gap:8px!important}
-.tablet-action-grid{gap:7px!important}
-
-/* Botão flutuante do tablet também fica discreto nas páginas internas. */
-.floating-tablet-global{transform:scale(.86);transform-origin:bottom right}
-
-/* REV-065B — regra única para páginas internas protegidas; a Home pública não recebe esta compactação. */
-.industrial-route-content input,.industrial-route-content select,.industrial-route-content textarea{
+l-route-content select,.industrial-route-content textarea{
   min-height:34px!important;height:34px;padding:6px 9px!important;font-size:13px!important;line-height:1.2!important;border-radius:6px!important;
 }
 .industrial-route-content textarea{height:auto;min-height:58px!important}
