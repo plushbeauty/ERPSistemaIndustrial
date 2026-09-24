@@ -1,3 +1,13 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 12:58 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-060
+ * Alterações: Hardening do AccessGate para reconhecer Master somente por is_master + SUPER_ADMIN/MASTER + nivel_admin 100 + empresa_id nula; bloqueio de bypass por nível legado.
+ * Status do Build Local: Não executado — validação será feita pelo gate remoto.
+ * =========================================================================
+ */
 import { Component, lazy, Suspense, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import IndustrialLoginDirect from './IndustrialLoginDirect'
@@ -77,12 +87,12 @@ function AccessGate({ children }: { children: ReactNode }) {
         let master = false
         let empresaId = profile?.empresa_id ?? null
         if (profile?.auth_user_id === user.id) {
-          master = Boolean(profile?.is_master) || Number(profile?.nivel_admin ?? 0) >= 9 || ['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(String(profile?.perfil ?? '').trim().toUpperCase())
+          master = Boolean(profile?.is_master) && Number(profile?.nivel_admin ?? 0) === 100 && ['SUPER_ADMIN','MASTER'].includes(String(profile?.perfil ?? '').trim().toUpperCase()) && profile?.empresa_id === null
         } else {
           const { data: global, error: globalError } = await supabase.from('usuarios').select('id,auth_user_id,ativo,nivel_admin,perfil,empresa_id').eq('auth_user_id', user.id).eq('ativo', true).maybeSingle()
           if (globalError) throw globalError
           const globalRole = String(global?.perfil ?? '').trim().toUpperCase()
-          master = Boolean(global?.auth_user_id) && (Number(global?.nivel_admin ?? 0) >= 80 || ['SUPER_ADMIN','MASTER','MASTER_ADMIN'].includes(globalRole))
+          master = Boolean(global?.auth_user_id) && Boolean(global?.is_master) && Number(global?.nivel_admin ?? 0) === 100 && ['SUPER_ADMIN','MASTER'].includes(globalRole) && global?.empresa_id === null
           empresaId = global?.empresa_id ?? null
         }
         if (!profile?.auth_user_id && !master) { if (alive) setState('denied'); return }
