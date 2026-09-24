@@ -1,12 +1,15 @@
-/*
- * 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
- * - Arquivo: src/components/UnifiedTabletDashboard.tsx
- * - Status Atual: Revisão 7
- * - Total de Linhas Lido/Gerado: 460
- * - Assinatura de Entrada (Primeiros 3 Imports): import { useMemo, useState } from 'react' | import { |   Activity, CalendarDays, ClipboardList, Factory, Gauge, Layers3, Package,
- * - Integração Concretizada: painel Tablet com manutenção, PCP, máquinas, estoque e modais, com JSX e tipagem válidos.
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 12:47 BRT
+ * Desenvolvedor: Homologado por FernandoSch.
+ * ID da Revisão: REV-045
+ * Alterações: Correção do namespace React usado nos tipos JSX e padronização do cabeçalho.
+ * Status do Build Local: Não executado — gate remoto após commit.
+ * =========================================================================
  */
-import { useMemo, useState } from 'react'
+
+import React, { useMemo, useState } from 'react'
 import {
   Activity, CalendarDays, ClipboardList, Factory, Gauge, Layers3, Package,
   Settings2, ShieldCheck, Tablet, Wrench, X
