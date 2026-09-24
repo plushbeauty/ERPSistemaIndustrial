@@ -2,7 +2,7 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 13:12 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * Desenvolvedor: FernandoSch
  * ID da Revisão: REV-061
  * Alterações: Corrigir AccessGate para usar exclusivamente erp_usuarios no vínculo autenticado; remover fallback legado para usuarios e garantir regra única de Master com is_master, nivel_admin 100, perfil SUPER_ADMIN/MASTER e empresa_id nula.
  * Status do Build Local: Não executado — validação será feita pelo gate remoto.
