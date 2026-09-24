@@ -48,11 +48,12 @@ export default function PwaInstallButton() {
   async function install() {
     const currentPrompt = prompt
     if (!currentPrompt) return
-    setPrompt(null)
     try {
       await currentPrompt.prompt()
       await currentPrompt.userChoice
     } catch {
+      // Cancelamento do prompt nativo não pode derrubar o ERP.
+    } finally {
       setPrompt(null)
     }
   }
