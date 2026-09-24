@@ -137,7 +137,7 @@ export default function CatalogoDigital() {
   const filtered = useMemo(() => {
     const query = search.trim().toLocaleLowerCase('pt-BR')
     return products.filter((product) => {
-      const searchable = [productCode(product), product.nome, product.categoria ?? '', product.ncm ?? '', product.cfop ?? '']
+      const searchable = [productCode(product), product.nome, product.categoria ?? '', product.ncm ?? '', product.cfop_saida ?? '']
       const matchesSearch = !query || searchable.some((value) => value.toLocaleLowerCase('pt-BR').includes(query))
       return matchesSearch && (!onlyPublished || product.catalogo_disponivel)
     })
@@ -228,7 +228,7 @@ export default function CatalogoDigital() {
           <p>Produtos ativos do cadastro mestre, com estoque, peso, publicação e trilha de auditoria.</p>
         </div>
         <div className="catalog-actions">
-          <button className="button secondary" type="button" onClick={() => void loadProducts()} disabled={busy}><Icon kind="refresh" />{busy ? 'Atualizando…' : 'Atualizar'}</button>
+          <button className="button secondary" type="button" onClick={() => { if (user) void loadProducts(user) }} disabled={busy}><Icon kind="refresh" />{busy ? 'Atualizando…' : 'Atualizar'}</button>
           <button className="button whatsapp" type="button" onClick={() => void shareAll('whatsapp')} disabled={!products.length}><Icon kind="whatsapp" />WhatsApp</button>
           <button className="button mail" type="button" onClick={() => void shareAll('email')} disabled={!products.length}><Icon kind="mail" />E-mail</button>
           <button className="button history" type="button" onClick={() => void toggleHistory()}><Icon kind="history" />{showHistory ? 'Fechar histórico' : 'Histórico'}</button>
@@ -255,7 +255,7 @@ export default function CatalogoDigital() {
               {filtered.map((product) => {
                 const published = product.catalogo_disponivel
                 const saving = savingId === product.id
-                const image = product.imagem_url?.trim()
+                const image = product.foto_url?.trim()
                 return (
                   <tr key={product.id}>
                     <td className="mono">{productCode(product)}</td>
@@ -267,7 +267,7 @@ export default function CatalogoDigital() {
                     </td>
                     <td className="number">{product.peso_liquido == null ? '—' : numberFormat.format(product.peso_liquido) + ' kg'}</td>
                     <td className="number">{product.peso_bruto == null ? '—' : numberFormat.format(product.peso_bruto) + ' kg'}</td>
-                    <td className="number">{stockFormat.format(Number(product.quantidade ?? 0))}</td>
+                    <td className="number">{stockFormat.format(Number(product.estoque_atual ?? 0))}</td>
                     <td>{product.unidade?.trim() || 'UN'}</td>
                     <td>
                       <button className={'publish ' + (published ? 'published' : 'unpublished')} type="button" onClick={() => void togglePublished(product)} disabled={saving} aria-pressed={published}>
