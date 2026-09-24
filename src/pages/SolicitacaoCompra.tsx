@@ -1,3 +1,14 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-059
+ * Alterações: Restaurar imports Plus e Trash2 usados pela grade de materiais.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
 /*
 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
 - Arquivo: src/pages/SolicitacaoCompra.tsx
@@ -7,7 +18,7 @@
 - Regra de Negócio Incorporada: Solicitação de compra grava fornecedor sugerido e ordena fornecedores ISO 9001 à frente.
 */
 import { FormEvent, useEffect, useState } from 'react'
-import { ArrowLeft, CheckCircle2, Mail, Printer, ShoppingCart } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Mail, Plus, Printer, ShoppingCart, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type RequestRow = { id: string; numero: number; descricao: string; prioridade: string; requer_autorizacao: boolean; status: string; email_destino: string | null; fornecedor_id: string | null; created_at: string }

@@ -1,3 +1,14 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-058
+ * Alterações: Tornar os quatro formulários SGQ compatíveis com setters estritos Record<string,string>.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
 import { useEffect, useMemo, useState } from 'react'
 import { Activity, AlertTriangle, BarChart3, GitBranch, Plus, Save, ShieldCheck, Users, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -14,7 +25,7 @@ const blankIndicator={codigo:'',nome:'',unidade:'%',meta:'',valor_atual:'',perio
 
 export default function QualidadeSGQAvancado(){
  const [tab,setTab]=useState('dashboard'),[risks,setRisks]=useState<Risk[]>([]),[processes,setProcesses]=useState<Process[]>([]),[actions,setActions]=useState<Action[]>([]),[indicators,setIndicators]=useState<Indicator[]>([]),[suppliers,setSuppliers]=useState<Supplier[]>([])
- const [risk,setRisk]=useState({...blankRisk}),[process,setProcess]=useState({...blankProcess}),[action,setAction]=useState({...blankAction}),[indicator,setIndicator]=useState({...blankIndicator}),[ish,setIsh]=useState({efeito:'',maquina:'',metodo:'',mao_de_obra:'',material:'',medicao:'',meio_ambiente:'',cinco_porques:''})
+ const [risk,setRisk]=useState<Record<string,string>>({...blankRisk}),[process,setProcess]=useState<Record<string,string>>({...blankProcess}),[action,setAction]=useState<Record<string,string>>({...blankAction}),[indicator,setIndicator]=useState<Record<string,string>>({...blankIndicator}),[ish,setIsh]=useState({efeito:'',maquina:'',metodo:'',mao_de_obra:'',material:'',medicao:'',meio_ambiente:'',cinco_porques:''})
  const [form,setForm]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false)
  const load=async()=>{setBusy(true);try{const [r,p,a,i,s]=await Promise.all([supabase.from('erp_qualidade_riscos').select('id,tipo,titulo,causa,consequencia,severidade,ocorrencia,deteccao,score,status').order('score',{ascending:false}).limit(300),supabase.from('erp_qualidade_processos').select('id,codigo,nome,objetivo,entradas,fornecedores,atividades,saidas,clientes,indicadores,status').order('codigo').limit(300),supabase.from('erp_qualidade_acoes').select('id,origem_tipo,what,why,where_to,when_date,how,how_much,status,eficacia').order('created_at',{ascending:false}).limit(300),supabase.from('erp_qualidade_indicadores').select('id,codigo,nome,unidade,meta,valor_atual,periodo,status').order('codigo').limit(300),supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia').eq('ativo',true).order('razao_social').limit(500)]);for(const x of [r,p,a,i,s])if(x.error)throw x.error;setRisks((r.data??[]) as Risk[]);setProcesses((p.data??[]) as Process[]);setActions((a.data??[]) as Action[]);setIndicators((i.data??[]) as Indicator[]);setSuppliers((s.data??[]) as Supplier[])}catch(e){setError(e instanceof Error?e.message:'Falha ao carregar SGQ avançado.')}finally{setBusy(false)}}
  useEffect(()=>{void load()},[])
