@@ -3,6 +3,17 @@
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 11:43 BRT
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-064
+ * Alterações: Usar window.location no retorno ao Tablet para evitar colisão com o estado location.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-055
  * Alterações: Adicionar o ícone X usado pelo diálogo de ajuda.
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
@@ -39,7 +50,7 @@ export default function OperacaoIndustrial(){
   setFound('');setBad('');setLocation('');setDefectText('');await load()
  }catch(e){setError(e instanceof Error?e.message:'Não foi possível gravar o apontamento.')}finally{setBusy(false)}}
  return <main className="pcp-page" style={{padding:24,maxWidth:1600,margin:'0 auto'}}>
-  <header className="pcp-toolbar" style={{alignItems:'flex-start'}}><div><button className="secondary-v2" onClick={()=>location.href='/erp-industrial'}><ArrowLeft size={17}/> Voltar</button><span className="v2-eyebrow" style={{display:'block',marginTop:12}}>PRODUÇÃO • CHÃO DE FÁBRICA</span><h1 style={{margin:'6px 0'}}>Apontamento de Produção</h1><p style={{margin:0,color:'#64777d',maxWidth:900}}>Registre o que realmente aconteceu na OP: quantidade produzida, refugo, defeitos e destino. <b>Ordens de Produção são cadastradas e planejadas no PCP.</b></p></div><div style={{display:'flex',gap:8}}><button className="secondary-v2" onClick={()=>setHelp(true)}><HelpCircle size={17}/> Para que serve?</button><button className="menu-green" onClick={()=>void load()} disabled={busy}><RefreshCw size={17}/> Atualizar</button></div></header>
+  <header className="pcp-toolbar" style={{alignItems:'flex-start'}}><div><button className="secondary-v2" onClick={()=>window.location.href='/erp-industrial'}><ArrowLeft size={17}/> Voltar</button><span className="v2-eyebrow" style={{display:'block',marginTop:12}}>PRODUÇÃO • CHÃO DE FÁBRICA</span><h1 style={{margin:'6px 0'}}>Apontamento de Produção</h1><p style={{margin:0,color:'#64777d',maxWidth:900}}>Registre o que realmente aconteceu na OP: quantidade produzida, refugo, defeitos e destino. <b>Ordens de Produção são cadastradas e planejadas no PCP.</b></p></div><div style={{display:'flex',gap:8}}><button className="secondary-v2" onClick={()=>setHelp(true)}><HelpCircle size={17}/> Para que serve?</button><button className="menu-green" onClick={()=>void load()} disabled={busy}><RefreshCw size={17}/> Atualizar</button></div></header>
   {(message||error)&&<div className={error?'error':'notice'} style={{margin:'12px 0'}}>{error||message}</div>}
   <section style={{display:'grid',gridTemplateColumns:'minmax(330px,.8fr) minmax(0,1.2fr)',gap:16,alignItems:'start'}}>
    <form onSubmit={launch} className="erp-card" style={{padding:20}}><span className="v2-eyebrow">APONTAMENTO REAL</span><h2 style={{margin:'6px 0 5px'}}>Lançar produção</h2><p style={{color:'#64777d',lineHeight:1.5}}>A OP precisa existir no PCP antes de ser apontada aqui.</p>

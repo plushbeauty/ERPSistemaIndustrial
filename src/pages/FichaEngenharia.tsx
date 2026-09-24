@@ -3,6 +3,17 @@
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 11:43 BRT
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-063
+ * Alterações: Adicionar estados de filtro de catálogo e tornar o carregamento de qualidade explicitamente QualityRow[].
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-040
  * Alterações: Restaurar o conteúdo integral perdido na revisão anterior; adicionar useMemo e LucideIcon; eliminar o any explícito da matriz de tipos.
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
@@ -41,7 +52,7 @@ export default function FichaEngenharia(){
  const [ficha,setFicha]=useState<Ficha|null>(null),[productId,setProductId]=useState(''),[version,setVersion]=useState('1'),[rendimento,setRendimento]=useState('1'),[unit,setUnit]=useState('UN')
  const [processCode,setProcessCode]=useState(''),[processName,setProcessName]=useState(''),[notes,setNotes]=useState('')
  const [bom,setBom]=useState<BomRow[]>([emptyBom()]),[ops,setOps]=useState<OpRow[]>([emptyOp()]),[quality,setQuality]=useState<QualityRow[]>([emptyQuality()])
- const [spec,setSpec]=useState<Record<string,string>>({}),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[search,setSearch]=useState('')
+ const [spec,setSpec]=useState<Record<string,string>>({}),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[search,setSearch]=useState(''),[catalogKind,setCatalogKind]=useState<Kind|''>(''),[catalogMold,setCatalogMold]=useState('')
 
  const selected=useMemo(()=>products.find(p=>p.id===productId),[products,productId])
  useEffect(()=>{void loadBase()},[])
@@ -80,7 +91,7 @@ export default function FichaEngenharia(){
    if(bi.error)throw bi.error;if(ro.error)throw ro.error;if(qi.error)throw qi.error
    setBom((bi.data??[]).map(x=>({id:x.id,componente_id:x.componente_id,quantidade:String(x.quantidade),perda_percentual:String(x.perda_percentual),lote_obrigatorio:Boolean(x.lote_obrigatorio),tipo_item:x.tipo_item,sequencia:x.sequencia})))
    setOps((ro.data??[]).map(x=>({id:x.id,sequencia:x.sequencia,operacao:x.operacao,maquina_id:x.maquina_id??'',molde_id:x.molde_id??'',setup_min:String(x.setup_min),ciclo_seg:String(x.ciclo_seg),instrucoes:x.instrucoes??''})))
-   setQuality((qi.data??[]).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',nominal:'',limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status})).concat((qi.data??[]).length?[]:[emptyQuality()]))
+   const loadedQuality: QualityRow[] = (qi.data??[]).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',nominal:'',limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status}); setQuality(loadedQuality.length ? loadedQuality : [emptyQuality()])
   }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
  }
  function resetForm(keepProduct=false,id=''){

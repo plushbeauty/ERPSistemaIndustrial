@@ -3,6 +3,17 @@
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 11:43 BRT
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-062
+ * Alterações: Converter tipo desconhecido de manutenção preventiva para texto antes de renderizar.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-045
  * Alterações: Proteger empresa_id nulo na apresentação do tenant.
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
@@ -258,7 +269,7 @@ function PreventiveMaintenancePanel({empresaId}:{empresaId:string|null}){
   <div className="mw3-action-strip"><button onClick={()=>void savePlan()} disabled={loading}><Plus size={14}/> Criar plano preventivo</button><button onClick={()=>void load()} disabled={loading}><RefreshCw size={14}/> Atualizar máquinas</button></div>
   {message&&<div className="mw3-notice" style={{marginTop:10}}>{message}</div>}
   <div className="mw3-table-wrap" style={{marginTop:14,overflowX:'auto'}}><table><thead><tr><th>Máquina</th><th>Periodicidade</th>{months.map(m=><th key={m} title={m}>{m.slice(0,3)}</th>)}</tr></thead><tbody>
-   {machines.map(m=><tr key={m.id}><td><b>{norm(m.codigo)||'—'}</b><br/><small>{norm(m.nome)||'Máquina sem nome'}</small></td><td>{plans.find(p=>String(p.maquina||'')===norm(m.nome)||String(p.maquina||'')===norm(m.codigo))?.tipo||'—'}</td>{months.map((_,i)=><td key={i} style={{textAlign:'center'}}><span title={planned(m,i)?'Planejado':'Sem manutenção programada'}>{planned(m,i)?'●':'·'}</span></td>)}</tr>)}
+   {machines.map(m=><tr key={m.id}><td><b>{norm(m.codigo)||'—'}</b><br/><small>{norm(m.nome)||'Máquina sem nome'}</small></td><td>{plans.find(p=>String(p.maquina||'')===norm(m.nome)||String(p.maquina||'')===norm(m.codigo))?.tipo ? String(plans.find(p=>String(p.maquina||'')===norm(m.nome)||String(p.maquina||'')===norm(m.codigo))?.tipo) : '—'}</td>{months.map((_,i)=><td key={i} style={{textAlign:'center'}}><span title={planned(m,i)?'Planejado':'Sem manutenção programada'}>{planned(m,i)?'●':'·'}</span></td>)}</tr>)}
    {!machines.length&&<tr><td colSpan={14} className="mw3-empty">Nenhuma máquina cadastrada. Cadastre as máquinas do cliente e este cronograma será preenchido automaticamente.</td></tr>}
   </tbody></table></div>
   <div style={{display:'flex',gap:16,flexWrap:'wrap',marginTop:12,fontSize:13,fontWeight:700}}><span>● Programado</span><span>✓ Programado e executado</span><span>⚠ Em atraso</span></div>

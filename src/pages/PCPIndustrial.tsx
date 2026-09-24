@@ -3,6 +3,17 @@
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 11:43 BRT
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * ID da Revisão: REV-065
+ * Alterações: Corrigir horas_turno e aceitar IDs opcionais na timeline estrita.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * =========================================================================
+ */
+
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-056
  * Alterações: Corrigir horas_turno, remover any da timeline e remover prop fichaOps não utilizada.
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
@@ -107,7 +118,7 @@ export default function PCPIndustrial(){
   const conflict=programs.some(p=>p.maquina_id===progForm.maquina_id&&p.status.toLowerCase()!=='cancelada'&&new Date(progForm.inicio)<new Date(p.fim_planejado)&&new Date(progForm.fim)>new Date(p.inicio_planejado))
   if(conflict){setError('Conflito de capacidade: esta máquina já possui uma programação nesse intervalo.');return}
   setBusy(true);setError('');setMessage('')
-  const detailed={ordem_producao_id:progForm.ordem_producao_id,maquina_id:progForm.maquina_id,produto_id:op?.produto_id||null,inicio_planejado:progForm.inicio,fim_planejado:progForm.fim,quantidade_planejada:qty,quantidade_produzida:0,quantidade_refugada:0,status:progForm.status,molde_id:progForm.molde_id||null,operador_frente_id:progForm.operador_frente_id||null,operador_atras_id:progForm.operador_atras_id||null,turnos,horas_turno,eficiencia_percent:eff,ciclo_seg:cycle,cavidades_ativas:cav,setup_min:setup}
+  const detailed={ordem_producao_id:progForm.ordem_producao_id,maquina_id:progForm.maquina_id,produto_id:op?.produto_id||null,inicio_planejado:progForm.inicio,fim_planejado:progForm.fim,quantidade_planejada:qty,quantidade_produzida:0,quantidade_refugada:0,status:progForm.status,molde_id:progForm.molde_id||null,operador_frente_id:progForm.operador_frente_id||null,operador_atras_id:progForm.operador_atras_id||null,turnos,horas_turno:horasTurno,eficiencia_percent:eff,ciclo_seg:cycle,cavidades_ativas:cav,setup_min:setup}
   try{
    let r=await supabase.from('erp_pcp_programacoes').insert(detailed).select('id').single()
    if(r.error&&/column .* does not exist|schema cache/i.test(r.error.message)){const legacy={ordem_producao_id:detailed.ordem_producao_id,maquina_id:detailed.maquina_id,produto_id:detailed.produto_id,inicio_planejado:detailed.inicio_planejado,fim_planejado:detailed.fim_planejado,quantidade_planejada:detailed.quantidade_planejada,quantidade_produzida:0,quantidade_refugada:0,status:detailed.status};r=await supabase.from('erp_pcp_programacoes').insert(legacy).select('id').single();if(!r.error)setMessage('Programação gravada, mas a estrutura detalhada ainda depende da migração PCP v2.')}
@@ -223,8 +234,8 @@ function ProgramacaoTimeline({programs,machines,molds,employees,onProgram}:{prog
  const durationDays=(p:ProgramView)=>Math.max(.01,(new Date(p.fim_planejado).getTime()-new Date(p.inicio_planejado).getTime())/86400000)
  const leftPct=(p:ProgramView)=>Math.max(0,Math.min(100,(new Date(p.inicio_planejado).getTime()-base.getTime())/totalMs*100))
  const widthPct=(p:ProgramView)=>Math.max(.8,Math.min(100-leftPct(p),(new Date(p.fim_planejado).getTime()-new Date(p.inicio_planejado).getTime())/totalMs*100))
- const moldName=(id:string|null)=>molds.find(m=>m.id===id)?.codigo||'sem molde'
- const empName=(id:string|null)=>employees.find(e=>e.id===id)?.nome||'—'
+ const moldName=(id:string|null|undefined)=>molds.find(m=>m.id===id)?.codigo||'sem molde'
+ const empName=(id:string|null|undefined)=>employees.find(e=>e.id===id)?.nome||'—'
  return <section className="pcp-timeline-wrap">
   <div className="pcp-section-toolbar"><div><strong>Programação visual da fábrica</strong><small>Os dias ficam no topo e cada barra mostra o que está programado em cada máquina.</small></div><button className="primary-v2" onClick={()=>onProgram()}><Plus size={17}/> Programar OP</button></div>
   <div className="pcp-planning-strip"><div><strong>O PCP calcula carga, não só datas.</strong><span>Quantidade • ciclo • cavidades • setup • turnos • eficiência • molde • operadores.</span></div><b>{active.reduce((s,p)=>s+Number(p.quantidade_planejada||0),0).toLocaleString('pt-BR')} peças programadas</b><b>{new Set(active.map(p=>p.molde_id).filter(Boolean)).size} moldes</b><b>{active.length} blocos</b></div>
