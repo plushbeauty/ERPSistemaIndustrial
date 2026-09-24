@@ -67,7 +67,7 @@ export default function FichaEngenharia(){
     supabase.from('erp_clientes').select('id,codigo,nome,documento').eq('ativo',true).order('nome').limit(1000),
     supabase.from('erp_maquinas').select('id,codigo,nome').not('status','eq','INATIVA').order('codigo').limit(500),
     supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades,cavidades_ativas,ativo').eq('ativo',true).order('codigo').limit(1000),
-    supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,observacoes').eq('ativa',true).order('updated_at',{ascending:false}).limit(1000)
+    supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,observacoes').order('updated_at',{ascending:false}).limit(1000)
    ])
    if(p.error)throw p.error;if(c.error)throw c.error;if(m.error)throw m.error;if(md.error)throw md.error;if(fc.error)throw fc.error
    setProducts((p.data??[]) as Product[]);setClients((c.data??[]) as Client[]);setMachines((m.data??[]) as Machine[]);setMolds((md.data??[]) as Mold[]);setCatalog((fc.data??[]) as {id:string;produto_id:string;versao:number;observacoes:string|null}[])
@@ -79,7 +79,7 @@ export default function FichaEngenharia(){
   setBusy(true);setNotice('')
   try{
    const empresaId=await company()
-   const f=await supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,rendimento,unidade_rendimento,observacoes,ativa').eq('empresa_id',empresaId).eq('produto_id',id).eq('ativa',true).order('versao',{ascending:false}).limit(1).maybeSingle()
+   const f=await supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,rendimento,unidade_rendimento,observacoes,ativa').eq('empresa_id',empresaId).eq('produto_id',id).order('versao',{ascending:false}).limit(1).maybeSingle()
    if(f.error)throw f.error
    if(!f.data){resetForm(true,id);return}
    const current=f.data as Ficha
