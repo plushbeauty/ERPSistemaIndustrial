@@ -2,7 +2,7 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 12:58 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * Desenvolvedor: FernandoSch
  * ID da Revisão: REV-060
  * Alterações: Saneamento do shell industrial, remoção de imports sem uso, correção da regra de Master para SUPER_ADMIN/nivel_admin 100 e preservação do cabeçalho operacional com usuário e data/hora.
  * Status do Build Local: Não executado — validação será feita pelo gate remoto.
