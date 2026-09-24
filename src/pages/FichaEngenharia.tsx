@@ -29,6 +29,7 @@ type Product={id:string;codigo:string;nome:string;unidade:string|null}
 type Machine={id:string;codigo:string;nome:string}
 type Mold={id:string;codigo:string;nome:string;tipo:string;status:string;produto_id:string|null;numero_cavidades:number;cavidades:number;cavidades_ativas:number;ativo:boolean}
 type Kind='PRENSADOS'|'INJETADOS'|'ACABAMENTO'|'ESTAMPARIA'|'DIVERSOS'
+type Client={id:string;codigo:string|null;nome:string;documento:string|null}
 type Ficha={id:string;produto_id:string;versao:number;rendimento:number;unidade_rendimento:string;observacoes:string|null;ativa:boolean}
 type BomRow={id?:string;componente_id:string;quantidade:string;perda_percentual:string;lote_obrigatorio:boolean;tipo_item:'COMPRADO'|'FABRICADO';sequencia:number}
 type OpRow={id?:string;sequencia:number;operacao:string;maquina_id:string;molde_id:string;setup_min:string;ciclo_seg:string;instrucoes:string}
@@ -48,7 +49,7 @@ const emptyQuality=():QualityRow=>({codigo:'',caracteristica:'',unidade:'',nomin
 const errorText=(e:unknown)=>e instanceof Error?e.message:String((e as {message?:string})?.message??'Operação recusada pelo banco.')
 
 export default function FichaEngenharia(){
- const [kind,setKind]=useState<Kind|null>(null),[products,setProducts]=useState<Product[]>([]),[machines,setMachines]=useState<Machine[]>([]),[molds,setMolds]=useState<Mold[]>([]),[catalog,setCatalog]=useState<{id:string;produto_id:string;versao:number;observacoes:string|null}[]>([])
+ const [kind,setKind]=useState<Kind|null>(null),[products,setProducts]=useState<Product[]>([]),[clients,setClients]=useState<Client[]>([]),[machines,setMachines]=useState<Machine[]>([]),[molds,setMolds]=useState<Mold[]>([]),[catalog,setCatalog]=useState<{id:string;produto_id:string;versao:number;observacoes:string|null}[]>([]),[workflowStatus,setWorkflowStatus]=useState('RASCUNHO')
  const [ficha,setFicha]=useState<Ficha|null>(null),[productId,setProductId]=useState(''),[version,setVersion]=useState('1'),[rendimento,setRendimento]=useState('1'),[unit,setUnit]=useState('UN')
  const [processCode,setProcessCode]=useState(''),[processName,setProcessName]=useState(''),[notes,setNotes]=useState('')
  const [bom,setBom]=useState<BomRow[]>([emptyBom()]),[ops,setOps]=useState<OpRow[]>([emptyOp()]),[quality,setQuality]=useState<QualityRow[]>([emptyQuality()])
@@ -61,14 +62,15 @@ export default function FichaEngenharia(){
  async function loadBase(){
   setLoading(true)
   try{
-   const[p,m,md,fc]=await Promise.all([
+   const[p,c,m,md,fc]=await Promise.all([
     supabase.from('erp_produtos').select('id,codigo,nome,unidade').eq('ativo',true).order('codigo').limit(2000),
+    supabase.from('erp_clientes').select('id,codigo,nome,documento').eq('ativo',true).order('nome').limit(1000),
     supabase.from('erp_maquinas').select('id,codigo,nome').not('status','eq','INATIVA').order('codigo').limit(500),
     supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades,cavidades_ativas,ativo').eq('ativo',true).order('codigo').limit(1000),
     supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,observacoes').eq('ativa',true).order('updated_at',{ascending:false}).limit(1000)
    ])
-   if(p.error)throw p.error;if(m.error)throw m.error;if(md.error)throw md.error;if(fc.error)throw fc.error
-   setProducts((p.data??[]) as Product[]);setMachines((m.data??[]) as Machine[]);setMolds((md.data??[]) as Mold[]);setCatalog((fc.data??[]) as {id:string;produto_id:string;versao:number;observacoes:string|null}[])
+   if(p.error)throw p.error;if(c.error)throw c.error;if(m.error)throw m.error;if(md.error)throw md.error;if(fc.error)throw fc.error
+   setProducts((p.data??[]) as Product[]);setClients((c.data??[]) as Client[]);setMachines((m.data??[]) as Machine[]);setMolds((md.data??[]) as Mold[]);setCatalog((fc.data??[]) as {id:string;produto_id:string;versao:number;observacoes:string|null}[])
   }catch(e){setNotice(errorText(e))}finally{setLoading(false)}
  }
  async function loadFicha(id:string, selectedKind:Kind|null=kind){
@@ -82,7 +84,7 @@ export default function FichaEngenharia(){
    if(!f.data){resetForm(true,id);return}
    const current=f.data as Ficha
    setFicha(current);setVersion(String(current.versao));setRendimento(String(current.rendimento));setUnit(current.unidade_rendimento)
-   try{const j=JSON.parse(current.observacoes||'{}');setKind((j.kind||selectedKind) as Kind);setProcessCode(j.processCode||'');setProcessName(j.processName||'');setNotes(j.notes||'');setSpec(j.spec||{})}catch{setSpec({})}
+   try{const j=JSON.parse(current.observacoes||'{}');setKind((j.kind||selectedKind) as Kind);setProcessCode(j.processCode||'');setProcessName(j.processName||'');setNotes(j.notes||'');setSpec(j.spec||{});setWorkflowStatus(j.status|| (current.ativa?'LIBERADO':'RASCUNHO'))}catch{setSpec({})}
    const[bi,ro,qi]=await Promise.all([
     supabase.from('erp_ficha_itens').select('id,componente_id,quantidade,perda_percentual,lote_obrigatorio,tipo_item,sequencia').eq('empresa_id',empresaId).eq('ficha_id',current.id).order('sequencia'),
     supabase.from('erp_ficha_operacoes').select('id,sequencia,operacao,maquina_id,molde_id,setup_min,ciclo_seg,instrucoes').eq('empresa_id',empresaId).eq('ficha_id',current.id).order('sequencia'),
@@ -96,7 +98,7 @@ export default function FichaEngenharia(){
  }
  function resetForm(keepProduct=false,id=''){
   setFicha(null);if(!keepProduct){setProductId('');setKind(null)}else setProductId(id)
-  setVersion('1');setRendimento('1');setUnit('UN');setProcessCode('');setProcessName('');setNotes('');setSpec({});setBom([emptyBom()]);setOps([emptyOp()]);setQuality([emptyQuality()])
+  setVersion('1');setRendimento('1');setUnit('UN');setProcessCode('');setProcessName('');setNotes('');setSpec({});setWorkflowStatus('RASCUNHO');setBom([emptyBom()]);setOps([emptyOp()]);setQuality([emptyQuality()])
  }
  function setS(k:string,v:string){setSpec(x=>({...x,[k]:v}))}
  function setBomField(i:number,k:keyof BomRow,v:string|boolean){setBom(r=>r.map((x,n)=>n===i?{...x,[k]:v}:x))}
@@ -104,7 +106,7 @@ export default function FichaEngenharia(){
  function setQualityField(i:number,k:keyof QualityRow,v:string){setQuality(r=>r.map((x,n)=>n===i?{...x,[k]:v}:x))}
  function setPhoto(key:'fotoPrincipal'|'fotoSecundaria',file:File|null){if(!file)return;if(file.size>2*1024*1024){setNotice('A foto deve ter no máximo 2 MB.');return}if(!file.type.startsWith('image/')){setNotice('Selecione um arquivo de imagem.');return}const reader=new FileReader();reader.onload=()=>setS(key,String(reader.result));reader.readAsDataURL(file)}
 
- async function save(){
+ async function save(statusOverride?:string){
   if(!kind)return setNotice('Selecione o tipo de ficha.')
   if(!productId)return setNotice('Selecione o produto produzido.')
   if((kind==='PRENSADOS'||kind==='INJETADOS'||kind==='ESTAMPARIA')&&(!spec.moldeId||Number(spec.cavidades)<=0))return setNotice('Para Prensados, Injetados e Estampo, informe o molde/estampo e a quantidade de cavidades.')
@@ -113,8 +115,9 @@ export default function FichaEngenharia(){
   setBusy(true);setNotice('')
   try{
    const empresaId=await company()
-   const payload={kind,processCode,processName,notes,spec,updatedAt:new Date().toISOString()}
-   const saved=await supabase.from('erp_fichas_tecnicas').upsert({empresa_id:empresaId,produto_id:productId,versao:Number(version),rendimento:Number(rendimento)||1,unidade_rendimento:unit.trim()||'UN',observacoes:JSON.stringify(payload),ativa:true},{onConflict:'empresa_id,produto_id,versao'}).select('id,produto_id,versao,rendimento,unidade_rendimento,observacoes,ativa').single()
+   const currentStatus=statusOverride??workflowStatus
+   const payload={kind,processCode,processName,notes,spec,status:currentStatus,updatedAt:new Date().toISOString()}
+   const saved=await supabase.from('erp_fichas_tecnicas').upsert({empresa_id:empresaId,produto_id:productId,versao:Number(version),rendimento:Number(rendimento)||1,unidade_rendimento:unit.trim()||'UN',observacoes:JSON.stringify(payload),ativa:currentStatus==='LIBERADO'},{onConflict:'empresa_id,produto_id,versao'}).select('id,produto_id,versao,rendimento,unidade_rendimento,observacoes,ativa').single()
    if(saved.error)throw saved.error
    const fichaId=String(saved.data.id)
    const db=await supabase.from('erp_ficha_itens').delete().eq('empresa_id',empresaId).eq('ficha_id',fichaId);if(db.error)throw db.error
@@ -126,7 +129,7 @@ export default function FichaEngenharia(){
     const qr=q.id?await supabase.from('erp_planos_inspecao').update(qp).eq('id',q.id).eq('empresa_id',empresaId):await supabase.from('erp_planos_inspecao').insert(qp)
     if(qr.error)throw qr.error
    }
-   setFicha(saved.data as Ficha);setCatalog(rows=>[{id:String(saved.data.id),produto_id:productId,versao:Number(version),observacoes:JSON.stringify(payload)},...rows.filter(x=>x.id!==String(saved.data.id))]);setNotice('Ficha de processo gravada: parâmetros, ferramental, fotos, materiais, roteiro e controles de qualidade registrados.')
+   setWorkflowStatus(currentStatus);setFicha(saved.data as Ficha);setCatalog(rows=>[{id:String(saved.data.id),produto_id:productId,versao:Number(version),observacoes:JSON.stringify(payload)},...rows.filter(x=>x.id!==String(saved.data.id))]);setNotice('Ficha de processo gravada: parâmetros, ferramental, fotos, materiais, roteiro e controles de qualidade registrados.')
   }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
  }
 
@@ -152,23 +155,29 @@ export default function FichaEngenharia(){
  const labels=kind==='PRENSADOS'?['Composto / material','Código do composto','Dureza alvo','Prensa','Molde','Pressão de prensagem','Temperatura','Tempo de cura','Pós-cura','Desmoldante / agente']:kind==='INJETADOS'?['Matéria-prima','Código da MP','Cor / pigmento','Máquina injetora','Molde','Nº cavidades','Secagem do material','Temperatura do molde','Pressão de injeção','Velocidade de injeção','Comutação','Pressão de recalque','Tempo de recalque','Resfriamento','Dosagem','Contrapressão','Descompressão','Ciclo alvo','Câmara quente']:kind==='ESTAMPARIA'?['Material / chapa','Espessura','Largura do blank','Comprimento do blank','Prensa','Tonelagem','Ferramenta / estampo','Curso','Velocidade','Avanço','Passo','Lubrificação','Operações de corte','Operações de dobra','Operações de conformação','Rebarba máxima']:kind==='ACABAMENTO'?['Tipo de acabamento','Preparação da superfície','Equipamento','Ferramenta / abrasivo','Produto químico / tinta','Diluição / mistura','Velocidade de aplicação','Pressão','Temperatura de secagem','Tempo de secagem','Tempo de cura','Espessura alvo','Método de inspeção','Embalagem']:['Tipo de processo','Objetivo','Equipamento','Ferramenta / dispositivo','Material de entrada','Parâmetro 1','Parâmetro 2','Parâmetro 3','Tempo padrão','Critério de aceitação','EPI / segurança','Instrução especial']
 
  return <main className="industrial-form-page process-sheet-page">
-  <header className="process-sheet-header"><div><span className="industrial-eyebrow">INDUSTRIA ERP • ENGENHARIA / PROCESSOS</span><h1>{kinds.find(x=>x.id===kind)?.title}</h1><p>Ficha operacional completa para orientar Engenharia, PCP, Produção e Qualidade.</p></div><div className="process-sheet-actions"><button className="industrial-secondary" onClick={()=>setKind(null)}><X size={16}/>Tipos</button><button className="industrial-secondary" onClick={()=>window.print()}><Printer size={16}/>Imprimir</button><button className="industrial-primary" onClick={()=>void save()} disabled={busy}><Save size={16}/>{busy?'Gravando…':'Gravar'}</button></div></header>
-  <div className="process-sheet-toolbar"><button onClick={()=>resetForm(false)}>Novo</button><button onClick={()=>void save()} disabled={busy}>Gravar</button><button onClick={()=>productId&&void loadFicha(productId)} disabled={busy}><Search size={15}/>Pesquisar</button><button onClick={()=>window.print()}><Printer size={15}/>Imprimir</button><span className="process-sheet-toolbar-status">{notice||'Documento operacional controlado'}</span></div>
+  <header className="process-sheet-header"><div><span className="industrial-eyebrow">INDUSTRIA ERP • ENGENHARIA / PROCESSOS</span><h1>{kinds.find(x=>x.id===kind)?.title}</h1><p>Ficha operacional completa para orientar Engenharia, PCP, Produção e Qualidade.</p></div><div className="process-sheet-actions"><button className="industrial-secondary" onClick={()=>setKind(null)}><Search size={16}/>Consultar</button><button className="industrial-secondary" onClick={()=>resetForm(false)}><Plus size={16}/>Novo</button><button className="industrial-secondary" onClick={()=>window.print()}><Printer size={16}/>Imprimir</button><button className="industrial-secondary" onClick={()=>void save('LIBERADO')} disabled={busy}><CheckCircle2 size={16}/>Aprovar / Liberar</button><button className="industrial-primary" onClick={()=>void save()} disabled={busy}><Save size={16}/>{busy?'Gravando…':'Gravar'}</button></div></header>
+  <div className="process-sheet-toolbar"><button onClick={()=>resetForm(false)}>Novo</button><button onClick={()=>setKind(null)}><Search size={15}/>Consultar</button><button onClick={()=>void save()} disabled={busy}>Gravar</button><button onClick={()=>void save('LIBERADO')} disabled={busy}><CheckCircle2 size={15}/>Aprovar / Liberar</button><button onClick={()=>window.print()}><Printer size={15}/>Imprimir</button><span className="process-sheet-toolbar-status">{notice||'Documento operacional controlado'}</span></div>
 
   <section className="process-sheet-module-title"><div><b>FICHA DE PROCESSO {kind}</b><span>Engenharia • PCP • Produção • Qualidade</span></div><div className="process-sheet-document-id"><span>Código</span><strong>{processCode||'—'}</strong><small>Revisão {version}</small></div></section>
 
   <section className="industrial-panel">
    <div className="process-section-heading"><span>1 • IDENTIFICAÇÃO E CONTROLE DO DOCUMENTO</span><h2>Dados mestres</h2></div>
-   <div className="process-form-grid">
-    <label>Produto / peça<select value={productId} onChange={e=>setProductId(e.target.value)}><option value="">Selecione o produto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select></label>
-    <label>Código da ficha<input value={processCode} onChange={e=>setProcessCode(e.target.value)}/></label>
-    <label>Revisão<input type="number" min="1" value={version} onChange={e=>setVersion(e.target.value)}/></label>
-    <label>Nome do processo<input value={processName} onChange={e=>setProcessName(e.target.value)}/></label>
-    <label>Rendimento<input type="number" min="0.001" step="0.001" value={rendimento} onChange={e=>setRendimento(e.target.value)}/></label>
-    <label>Unidade<input value={unit} onChange={e=>setUnit(e.target.value.toUpperCase())}/></label>
-    <label>Desenho / especificação<input value={spec.desenho||''} onChange={e=>setS('desenho',e.target.value)} placeholder="Código e revisão do desenho"/></label>
+   <div className="process-form-grid process-identification-grid">
+    <label className="field-wide">Produto / peça<select value={productId} onChange={e=>setProductId(e.target.value)}><option value="">Código / descrição do produto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select></label>
+    <label>Revisão<input className="field-number" type="number" min="1" value={version} onChange={e=>setVersion(e.target.value)}/></label>
+    <label>Status<select value={workflowStatus} onChange={e=>setWorkflowStatus(e.target.value)}><option>RASCUNHO</option><option>EM ANÁLISE</option><option>APROVADO</option><option>LIBERADO</option><option>OBSOLETA</option></select></label>
+    <label>Vigência início<input type="date" value={spec.vigenciaInicio||''} onChange={e=>setS('vigenciaInicio',e.target.value)}/></label>
+    <label>Vigência fim<input type="date" value={spec.vigenciaFim||''} onChange={e=>setS('vigenciaFim',e.target.value)}/></label>
+    <label className="field-wide">Cliente<select value={spec.clientId||''} onChange={e=>{const c=clients.find(x=>x.id===e.target.value);setS('clientId',e.target.value);setS('clientCode',c?.codigo||'')}}><option value="">Consultar cliente</option>{clients.map(c=><option key={c.id} value={c.id}>{c.codigo||'—'} — {c.nome}{c.documento?' • '+c.documento:''}</option>)}</select></label>
+    <label>Código cliente<input value={spec.clientCode||''} readOnly placeholder="Preenchido pelo cadastro"/></label>
+    <label>Desenho<input value={spec.desenho||''} onChange={e=>setS('desenho',e.target.value)} placeholder="Código / revisão"/></label>
+    <label>Modelo<input value={spec.modelo||''} onChange={e=>setS('modelo',e.target.value)}/></label>
+    <label className="field-wide">Código da ficha<input value={processCode} onChange={e=>setProcessCode(e.target.value)} placeholder="Ex.: FP-INJ-001"/></label>
+    <label>Processo<input value={processName} onChange={e=>setProcessName(e.target.value)}/></label>
+    <label>Rendimento<input className="field-number" type="number" min="0.001" step="0.001" value={rendimento} onChange={e=>setRendimento(e.target.value)}/></label>
+    <label>Unidade<input className="field-short" value={unit} onChange={e=>setUnit(e.target.value.toUpperCase())}/></label>
     <label>Responsável<input value={spec.responsavel||''} onChange={e=>setS('responsavel',e.target.value)}/></label>
-    <label>Data de aprovação<input type="date" value={spec.dataAprovacao||''} onChange={e=>setS('dataAprovacao',e.target.value)}/></label>
+    <label>Data aprovação<input type="date" value={spec.dataAprovacao||''} onChange={e=>setS('dataAprovacao',e.target.value)}/></label>
    </div>
   </section>
 
