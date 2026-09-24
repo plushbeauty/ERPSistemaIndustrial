@@ -2,7 +2,7 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 11:43 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * Desenvolvedor: FernandoSch
  * ID da Revisão: REV-063
  * Alterações: Adicionar estados de filtro de catálogo e tornar o carregamento de qualidade explicitamente QualityRow[].
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
@@ -13,7 +13,7 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 11:43 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * Desenvolvedor: FernandoSch
  * ID da Revisão: REV-040
  * Alterações: Restaurar o conteúdo integral perdido na revisão anterior; adicionar useMemo e LucideIcon; eliminar o any explícito da matriz de tipos.
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.

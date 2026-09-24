@@ -1,14 +1,16 @@
-/*
-📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
-- Arquivo: src/AppIndustrialV7.tsx
-- Status Atual: Revisão 3 (Compras, Comercial e Qualidade Conectados)
-- Total de Linhas Gerado: 233
-- Assinatura de Entrada (Primeiros 3 Imports): import { FormEvent, useEffect, useMemo, useState } from 'react' | import { motion, AnimatePresence } from 'motion/react' | import { Activity, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Sun, Moon, Truck, Users, Wrench, X } from 'lucide-react'
-- Regra de Negócio Incorporada: Navegação real para clientes, fornecedores ISO 9001 e tabelas de preços por cliente.
-*/
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 12:58 BRT
+ * Desenvolvedor: FernandoSch
+ * ID da Revisão: REV-060
+ * Alterações: Saneamento do shell industrial, remoção de imports sem uso, correção da regra de Master para SUPER_ADMIN/nivel_admin 100 e preservação do cabeçalho operacional com usuário e data/hora.
+ * Status do Build Local: Não executado — validação será feita pelo gate remoto.
+ * =========================================================================
+ */
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { Activity, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Sun, Moon, Truck, Users, Wrench, X } from 'lucide-react'
+import { Activity, ArrowUpRight, Boxes, CalendarDays, ClipboardCheck, Factory, FileText, LayoutGrid, Package, Search, Settings, ShoppingCart, Store, Sun, Moon, Truck, Users, Wrench } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from './lib/supabaseClient'
 import IndustrialModuleWorkspace from './components/IndustrialModuleWorkspace'
@@ -140,7 +142,7 @@ export default function AppIndustrialV7() {
         if (!auth.user) return
         const { data, error } = await supabase.from('erp_usuarios').select('nome,empresa_id,nivel_admin,auth_user_id,ativo,deleted_at,is_master,perfil').eq('auth_user_id', auth.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
         if (error) throw error
-        const master = data?.auth_user_id === auth.user.id && data?.is_master === true && Number(data?.nivel_admin ?? 0) === 9 && String(data?.perfil ?? '').trim().toUpperCase() === 'MASTER' && data?.empresa_id === null
+        const master = data?.auth_user_id === auth.user.id && data?.is_master === true && Number(data?.nivel_admin ?? 0) === 100 && ['SUPER_ADMIN','MASTER'].includes(String(data?.perfil ?? '').trim().toUpperCase()) && data?.empresa_id === null
         if (data && data.auth_user_id === auth.user.id && (master || Boolean(data.empresa_id)) && alive) setProfile(data)
       } catch (error) {
         console.error('[ERP profile]', error)

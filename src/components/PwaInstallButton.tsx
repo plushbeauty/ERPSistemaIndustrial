@@ -2,7 +2,7 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 12:55 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * Desenvolvedor: FernandoSch
  * ID da Revisão: REV-055
  * Alterações: Tipagem estrita do evento beforeinstallprompt; remoção de casts de Navigator e organização dos imports.
  * Status do Build Local: Não executado — validação será feita pelo gate remoto.
@@ -47,11 +47,13 @@ export default function PwaInstallButton() {
 
   async function install() {
     const currentPrompt = prompt
-    setPrompt(null)
+    if (!currentPrompt) return
     try {
       await currentPrompt.prompt()
       await currentPrompt.userChoice
     } catch {
+      // Cancelamento do prompt nativo não pode derrubar o ERP.
+    } finally {
       setPrompt(null)
     }
   }

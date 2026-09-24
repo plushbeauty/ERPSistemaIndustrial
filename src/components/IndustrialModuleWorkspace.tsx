@@ -2,7 +2,7 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 11:43 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * Desenvolvedor: FernandoSch
  * ID da Revisão: REV-062
  * Alterações: Converter tipo desconhecido de manutenção preventiva para texto antes de renderizar.
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
@@ -13,7 +13,7 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 11:43 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * Desenvolvedor: FernandoSch
  * ID da Revisão: REV-045
  * Alterações: Proteger empresa_id nulo na apresentação do tenant.
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.

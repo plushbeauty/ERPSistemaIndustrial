@@ -1,3 +1,13 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 13:12 BRT
+ * Desenvolvedor: FernandoSch
+ * ID da Revisão: REV-061
+ * Alterações: Corrigir AccessGate para usar exclusivamente erp_usuarios no vínculo autenticado; remover fallback legado para usuarios e garantir regra única de Master com is_master, nivel_admin 100, perfil SUPER_ADMIN/MASTER e empresa_id nula.
+ * Status do Build Local: Não executado — validação será feita pelo gate remoto.
+ * =========================================================================
+ */
 import { Component, lazy, Suspense, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import IndustrialLoginDirect from './IndustrialLoginDirect'
@@ -18,16 +28,16 @@ class BootstrapBoundary extends Component<{ children: ReactNode }, { error: Erro
   static getDerivedStateFromError(error: Error) { return { error } }
   render() {
     if (this.state.error) return (
-      <main style={{minHeight:'100vh',display:'grid',placeItems:'center',padding:24,background:'#f4f7f5',fontFamily:'Inter,system-ui,sans-serif',color:'#17342f'}}>
-        <section style={{width:'min(680px,100%)',border:'1px solid #d9e3df',borderRadius:24,padding:28,background:'#fff',boxShadow:'0 30px 90px rgba(20,55,49,.12)'}}>
-          <div style={{fontSize:11,fontWeight:900,letterSpacing:'.18em',color:'#9a763b'}}>SGQ ERP INDUSTRIAL • PLASTIBOR</div>
-          <h1 style={{fontSize:28,margin:'10px 0 8px'}}>O ambiente encontrou uma falha ao iniciar</h1>
-          <p style={{color:'#667975',lineHeight:1.7,margin:0}}>A inicialização falhou. Esta tela evita o antigo estado azul/blank e permite reiniciar o bootstrap.</p>
-          <pre style={{whiteSpace:'pre-wrap',wordBreak:'break-word',marginTop:18,padding:16,borderRadius:14,background:'#f2f5f3',color:'#8a5d23',fontSize:12}}>{this.state.error.message}</pre>
-          <div style={{display:'flex',gap:10,flexWrap:'wrap',marginTop:18}}>
-            <button type="button" onClick={() => location.reload()} style={{border:0,borderRadius:12,padding:'12px 18px',fontWeight:900,cursor:'pointer',background:'#0f766e',color:'#fff'}}>Recarregar ambiente</button>
-            <button type="button" onClick={() => { void supabase.auth.signOut(); location.replace('/login') }} style={{border:'1px solid #d7e1dc',borderRadius:12,padding:'12px 18px',fontWeight:900,cursor:'pointer',background:'#fff',color:'#17342f'}}>Limpar sessão e entrar</button>
-            <a href="/" style={{border:'1px solid #d7e1dc',borderRadius:12,padding:'12px 18px',fontWeight:900,color:'#17342f',textDecoration:'none'}}>Voltar ao site</a>
+      <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24, background: '#f4f7f5', fontFamily: 'Inter,system-ui,sans-serif', color: '#17342f' }}>
+        <section style={{ width: 'min(680px,100%)', border: '1px solid #d9e3df', borderRadius: 24, padding: 28, background: '#fff', boxShadow: '0 30px 90px rgba(20,55,49,.12)' }}>
+          <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: '.18em', color: '#9a763b' }}>SGQ ERP INDUSTRIAL • PLASTIBOR</div>
+          <h1 style={{ fontSize: 28, margin: '10px 0 8px' }}>O ambiente encontrou uma falha ao iniciar</h1>
+          <p style={{ color: '#667975', lineHeight: 1.7, margin: 0 }}>A inicialização falhou. Esta tela evita o antigo estado azul/blank e permite reiniciar o bootstrap.</p>
+          <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', marginTop: 18, padding: 16, borderRadius: 14, background: '#f2f5f3', color: '#8a5d23', fontSize: 12 }}>{this.state.error.message}</pre>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 18 }}>
+            <button type="button" onClick={() => location.reload()} style={{ border: 0, borderRadius: 12, padding: '12px 18px', fontWeight: 900, cursor: 'pointer', background: '#0f766e', color: '#fff' }}>Recarregar ambiente</button>
+            <button type="button" onClick={() => { void supabase.auth.signOut(); location.replace('/login') }} style={{ border: '1px solid #d7e1dc', borderRadius: 12, padding: '12px 18px', fontWeight: 900, cursor: 'pointer', background: '#fff', color: '#17342f' }}>Limpar sessão e entrar</button>
+            <a href="/" style={{ border: '1px solid #d7e1dc', borderRadius: 12, padding: '12px 18px', fontWeight: 900, color: '#17342f', textDecoration: 'none' }}>Voltar ao site</a>
           </div>
         </section>
       </main>
@@ -37,14 +47,14 @@ class BootstrapBoundary extends Component<{ children: ReactNode }, { error: Erro
 }
 
 function Loading({ label = 'Carregando SGQ ERP…' }: { label?: string }) {
-  return <div role="status" aria-live="polite" style={{minHeight:'100vh',display:'grid',placeItems:'center',fontFamily:'Inter,system-ui,sans-serif',background:'#f4f7f5',color:'#17342f'}}>
-    <div style={{textAlign:'center'}}><div style={{margin:'0 auto 14px',width:34,height:34,border:'4px solid #dbe5e1',borderTopColor:'#0f766e',borderRadius:'50%',animation:'sgqspin .8s linear infinite'}}/><strong>{label}</strong></div>
+  return <div role="status" aria-live="polite" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'Inter,system-ui,sans-serif', background: '#f4f7f5', color: '#17342f' }}>
+    <div style={{ textAlign: 'center' }}><div style={{ margin: '0 auto 14px', width: 34, height: 34, border: '4px solid #dbe5e1', borderTopColor: '#0f766e', borderRadius: '50%', animation: 'sgqspin .8s linear infinite' }}/><strong>{label}</strong></div>
     <style>{'@keyframes sgqspin{to{transform:rotate(360deg)}}'}</style>
   </div>
 }
 
 function LoginBootstrap() {
-  const [ready,setReady] = useState(false)
+  const [ready, setReady] = useState(false)
   useEffect(() => {
     let alive = true
     if (!supabaseConfigurado) { setReady(true); return () => { alive = false } }
@@ -59,7 +69,8 @@ function LoginBootstrap() {
 }
 
 function AccessGate({ children }: { children: ReactNode }) {
-  const [state,setState] = useState<'checking'|'allowed'|'denied'>('checking')
+  const [state, setState] = useState<'checking' | 'allowed' | 'denied'>('checking')
+
   useEffect(() => {
     let alive = true
     void (async () => {
@@ -69,29 +80,37 @@ function AccessGate({ children }: { children: ReactNode }) {
         if (sessionError) throw sessionError
         const user = sessionData.session?.user
         if (!user) { if (alive) setState('denied'); return }
+
         const { data: profile, error: profileError } = await supabase
           .from('erp_usuarios')
-          .select('id,auth_user_id,empresa_id,ativo,is_master,nivel_admin,perfil,deleted_at')
-          .eq('auth_user_id', user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
+          .select('id,auth_user_id,empresa_id,ativo,nivel_admin,perfil,deleted_at')
+          .eq('auth_user_id', user.id)
+          .eq('ativo', true)
+          .is('deleted_at', null)
+          .maybeSingle()
+
         if (profileError) throw profileError
-        let master = false
-        let empresaId = profile?.empresa_id ?? null
-        if (profile?.auth_user_id === user.id) {
-          master = Boolean(profile?.is_master) || Number(profile?.nivel_admin ?? 0) >= 9 || ['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(String(profile?.perfil ?? '').trim().toUpperCase())
-        } else {
-          const { data: global, error: globalError } = await supabase.from('usuarios').select('id,auth_user_id,ativo,nivel_admin,perfil,empresa_id').eq('auth_user_id', user.id).eq('ativo', true).maybeSingle()
-          if (globalError) throw globalError
-          const globalRole = String(global?.perfil ?? '').trim().toUpperCase()
-          master = Boolean(global?.auth_user_id) && (Number(global?.nivel_admin ?? 0) >= 80 || ['SUPER_ADMIN','MASTER','MASTER_ADMIN'].includes(globalRole))
-          empresaId = global?.empresa_id ?? null
-        }
-        if (!profile?.auth_user_id && !master) { if (alive) setState('denied'); return }
+        if (!profile?.auth_user_id) { if (alive) setState('denied'); return }
+
+        const perfil = String(profile.perfil ?? '').trim().toUpperCase()
+        const master = Number(profile.nivel_admin ?? 0) === 100
+          && (perfil === 'SUPER_ADMIN' || perfil === 'MASTER')
+          && profile.empresa_id === null
+
+        const empresaId = profile.empresa_id ?? null
         if (!master && !empresaId) { if (alive) setState('denied'); return }
+
         if (!master) {
-          const { data: empresa, error: empresaError } = await supabase.from('erp_empresas').select('id,ativo').eq('id', empresaId).eq('ativo', true).maybeSingle()
+          const { data: empresa, error: empresaError } = await supabase
+            .from('erp_empresas')
+            .select('id,ativo')
+            .eq('id', empresaId)
+            .eq('ativo', true)
+            .maybeSingle()
           if (empresaError) throw empresaError
           if (!empresa?.ativo) { if (alive) setState('denied'); return }
         }
+
         if (alive) setState('allowed')
       } catch (error) {
         console.error('[Protected route bootstrap]', error)
@@ -100,6 +119,7 @@ function AccessGate({ children }: { children: ReactNode }) {
     })()
     return () => { alive = false }
   }, [])
+
   if (state === 'checking') return <Loading label="Validando empresa, perfil e permissões…" />
   if (state === 'denied') {
     const returnTo = `${window.location.pathname}${window.location.search}`

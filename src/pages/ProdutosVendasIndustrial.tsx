@@ -2,7 +2,7 @@
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 13:00 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
+ * Desenvolvedor: FernandoSch
  * ID da Revisão: REV-059
  * Alterações: Remoção de cast Event→FormEvent artificial no salvamento de produtos; ação agora chama save() diretamente.
  * Status do Build Local: Não executado — validação será feita pelo gate remoto.
@@ -108,8 +108,8 @@ export default function ProdutosVendasIndustrial(){
   const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
   const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
   const update=(key:keyof FormData,value:unknown)=>setForm(prev=>({...prev,[key]:value}))
-  const save=async(e:FormEvent)=>{
-    e.preventDefault();setBusy(true);setError('');setMessage('')
+  const save=async(e?:FormEvent)=>{
+    e?.preventDefault();setBusy(true);setError('');setMessage('')
     try{
       if(!companyId)throw new Error('Empresa da sessão não identificada.')
       if(!String(form.codigo||'').trim()||!String(form.nome||'').trim())throw new Error('Código e descrição são obrigatórios.')

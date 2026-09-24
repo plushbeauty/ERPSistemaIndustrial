@@ -1,215 +1,126 @@
 /**
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 12:52 BRT
- * Desenvolvedor: Homologado por FernandoSch.
- * ID da Revisão: REV-046
- * Alterações: Substituição de componentes de abas externos por botões nativos,
- *            resolução do erro TS2322 de className e total pass no type-check.
- * Status do Build Local: Passou com Sucesso (GREEN)
+ * Data/Hora: 24/09/2026 - 12:58 BRT
+ * Desenvolvedor: FernandoSch
+ * ID da Revisão: REV-064
+ * Alterações: Padronização industrial de campos compactos, larguras proporcionais por tipo de dado, grade horizontal de itens e redução de rolagem para preenchimento operacional.
+ * Status do Build Local: Não executado — validação será feita pelo gate remoto.
  * =========================================================================
  */
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { FileDown, Plus, Printer, Save, Search, Send, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import { FileText, Save, RefreshCw, Building2, Package, Landmark, Truck, ArrowRight } from 'lucide-react'
 
-interface NFItem {
-  id: string;
-  codigo_item: string;
-  descricao: string;
-  ncm: string;
-  cfop: string;
-  cst_icms: string;
-  quantidade: number;
-  valor_unitario: number;
-  valor_total: number;
-  lote_rastreabilidade: string;
-}
+type Tab = 'identificacao' | 'produtos' | 'totais' | 'transporte'
+type Client = { id: string; nome: string; documento: string | null }
+type Product = { id: string; codigo: string; nome: string; preco_venda: number; unidade: string }
+type NFeItem = { produto_id: string; codigo: string; descricao: string; ncm: string; cfop: string; quantidade: string; unidade: string; valor_unitario: string; lote: string }
+type Freight = { modalidade: '0' | '1' | '2' | '3' | '4' | '9'; transportador: string; documento: string; placa: string }
+type Totals = { frete: string; desconto: string; outras: string; icms: string; ipi: string; pis: string; cofins: string }
 
-interface DestinatarioData {
-  cnpj_cpf: string;
-  razao_social: string;
-  inscricao_estadual: string;
-  email: string;
-  logradouro: string;
-  bairro: string;
-  cep: string;
-  cidade: string;
-  estado: string;
-}
-
-const money = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0)
+const tabs: Array<{ id: Tab; label: string }> = [
+  { id: 'identificacao', label: '1. Identificação' },
+  { id: 'produtos', label: '2. Produtos e Serviços' },
+  { id: 'totais', label: '3. Totais e Impostos' },
+  { id: 'transporte', label: '4. Transporte / Cobrança' }
+]
+const emptyItem = (): NFeItem => ({ produto_id: '', codigo: '', descricao: '', ncm: '', cfop: '5102', quantidade: '1', unidade: 'UN', valor_unitario: '0', lote: '' })
+const emptyTotals = (): Totals => ({ frete: '0', desconto: '0', outras: '0', icms: '0', ipi: '0', pis: '0', cofins: '0' })
+const numberValue = (value: string): number => { const n = Number(value); return Number.isFinite(n) ? n : 0 }
+const money = (value: number): string => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+const digits = (value: string): string => value.replace(/\D/g, '')
 
 export default function NFeEmissao() {
-  const [tab, setTab] = useState<'identificacao' | 'produtos' | 'impostos' | 'transporte'>('identificacao')
-  const [loading, setLoading] = useState(false)
+  const [tab, setTab] = useState<Tab>('identificacao')
+  const [clients, setClients] = useState<Client[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [clientId, setClientId] = useState('')
+  const [numero, setNumero] = useState('')
+  const [serie, setSerie] = useState('1')
+  const [natureza, setNatureza] = useState('Venda de mercadoria')
+  const [destinatario, setDestinatario] = useState('')
+  const [destDocumento, setDestDocumento] = useState('')
+  const [items, setItems] = useState<NFeItem[]>([emptyItem()])
+  const [freight, setFreight] = useState<Freight>({ modalidade: '9', transportador: '', documento: '', placa: '' })
+  const [totals, setTotals] = useState<Totals>(emptyTotals())
+  const [pedidoAlmox, setPedidoAlmox] = useState('')
+  const [message, setMessage] = useState('')
   const [error, setError] = useState('')
-  const [success, setMsg] = useState('')
-  
-  const [pedidoOrigem, setPedidoOrigem] = useState('')
-  const [destinatario, setDestinatario] = useState<DestinatarioData>({
-    cnpj_cpf: '',
-    razao_social: '',
-    inscricao_estadual: '',
-    email: '',
-    logradouro: '',
-    bairro: '',
-    cep: '',
-    cidade: '',
-    estado: ''
-  })
-  
-  const [itens, setItens] = useState<NFItem[]>([])
-  const [naturezaOperacao, setNaturezaOperacao] = useState('5101')
-  const [modalidadeFrete, setModalidadeFrete] = useState<'0' | '1'>('0')
-  const [valorFrete, setValorFrete] = useState('0')
-  const [valorDesconto, setValorDesconto] = useState('0')
+  const [busy, setBusy] = useState(false)
+  const totalProdutos = useMemo(() => items.reduce((sum, item) => sum + numberValue(item.quantidade) * numberValue(item.valor_unitario), 0), [items])
+  const baseIcms = Math.max(0, totalProdutos + numberValue(totals.frete) + numberValue(totals.outras) - numberValue(totals.desconto))
+  const valorLiquido = Math.max(0, totalProdutos + numberValue(totals.ipi) + numberValue(totals.frete) + numberValue(totals.outras) - numberValue(totals.desconto))
 
-  const puxarPedidoAlmoxarifado = async () => {
-    if (!pedidoOrigem.trim()) {
-      setError('Informe o número de um pedido pendente (1001 a 1050) para realizar a varredura.')
-      return
-    }
-    setLoading(true)
-    setError('')
-    setMsg('')
+  useEffect(() => {
+    void (async () => {
+      setError('')
+      try {
+        const [clientResult, productResult] = await Promise.all([
+          supabase.from('erp_clientes').select('id,nome,documento').eq('ativo', true).order('nome').limit(1000),
+          supabase.from('erp_produtos').select('id,codigo,nome,preco_venda,unidade').eq('ativo', true).order('codigo').limit(1000)
+        ])
+        if (clientResult.error) throw clientResult.error
+        if (productResult.error) throw productResult.error
+        setClients((clientResult.data ?? []).filter(row => typeof row.id === 'string' && typeof row.nome === 'string').map(row => ({ id: row.id, nome: row.nome, documento: typeof row.documento === 'string' ? row.documento : null })))
+        setProducts((productResult.data ?? []).filter(row => typeof row.id === 'string' && typeof row.codigo === 'string' && typeof row.nome === 'string').map(row => ({ id: row.id, codigo: row.codigo, nome: row.nome, preco_venda: numberValue(String(row.preco_venda ?? 0)), unidade: typeof row.unidade === 'string' ? row.unidade : 'UN' })))
+      } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao carregar os cadastros fiscais.') }
+    })()
+  }, [])
+  const chooseClient = (id: string) => { const client = clients.find(item => item.id === id); setClientId(id); setDestinatario(client?.nome ?? ''); setDestDocumento(client?.documento ?? '') }
+  const chooseProduct = (index: number, productId: string) => { const product = products.find(item => item.id === productId); if (!product) return; setItems(current => current.map((item, currentIndex) => currentIndex === index ? { ...item, produto_id: product.id, codigo: product.codigo, descricao: product.nome, unidade: product.unidade, valor_unitario: String(product.preco_venda) } : item)) }
+  const updateItem = (index: number, field: keyof NFeItem, value: string) => { setItems(current => current.map((item, currentIndex) => currentIndex === index ? { ...item, [field]: value } : item)) }
+  const importAlmox = async () => {
+    if (!pedidoAlmox.trim()) { setError('Informe o número do pedido do Almoxarifado.'); return }
+    setBusy(true); setError(''); setMessage('')
     try {
-      const numPed = Number(pedidoOrigem)
-      if (numPed < 1001 || numPed > 1050) {
-        throw new Error('Pedido de homologação não localizado. Digite um número válido entre 1001 e 1050.')
-      }
-
-      setDestinatario({
-        cnpj_cpf: '24.812.940/0001-88',
-        razao_social: `Cliente Industrial Plastibor Filial #${numPed}`,
-        inscricao_estadual: '123.456.789',
-        email: 'compras@clienteindustrial.com.br',
-        logradouro: 'Av. das Nações Unidas, 4500',
-        bairro: 'Distrito Industrial',
-        cep: '05425-000',
-        cidade: 'São Paulo',
-        estado: 'SP'
-      })
-
-      setItens([
-        {
-          id: 'item-1',
-          codigo_item: 'MP-000125',
-          descricao: 'Manípulo Injetado Plástico Preto Plastibor',
-          ncm: '3926.90.90',
-          cfop: naturezaOperacao,
-          cst_icms: '000',
-          quantidade: 500,
-          valor_unitario: 4.50,
-          valor_total: 2250.00,
-          lote_rastreabilidade: `LOT-24B9-${numPed}`
-        }
-      ])
-      
-      setMsg(`Pedido #${pedidoOrigem} localizado no Almoxarifado. Dados de lote e destinatário carregados.`)
-      setTab('produtos')
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Falha ao sincronizar dados com o Almoxarifado.')
-    } finally {
-      setLoading(false)
-    }
+      const result = await supabase.from('erp_almoxarifado_pedidos').select('id,numero_pedido,cliente_nome,cliente_cnpj,codigo_peca,descricao_peca,quantidade,lote,valor_unitario,ncm,cfop,status').eq('numero_pedido', pedidoAlmox.trim()).eq('status', 'Liberado').maybeSingle()
+      if (result.error) throw result.error
+      if (!result.data) throw new Error('Pedido não encontrado ou não está Liberado para faturamento.')
+      const row = result.data
+      setDestinatario(String(row.cliente_nome ?? '')); setDestDocumento(String(row.cliente_cnpj ?? ''))
+      setItems([{ ...emptyItem(), codigo: String(row.codigo_peca ?? ''), descricao: String(row.descricao_peca ?? ''), quantidade: String(row.quantidade ?? '0'), lote: String(row.lote ?? ''), valor_unitario: String(row.valor_unitario ?? '0'), ncm: String(row.ncm ?? ''), cfop: String(row.cfop ?? '5102') }])
+      setMessage('Pedido real do Almoxarifado carregado para conferência fiscal.'); setTab('produtos')
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao importar pedido do Almoxarifado.') } finally { setBusy(false) }
   }
-
-  const totalProdutos = useMemo(() => itens.reduce((s, i) => s + i.valor_total, 0), [itens])
-  const baseCalculoIcms = useMemo(() => totalProdutos + Number(valorFrete) - Number(valorDesconto), [totalProdutos, valorFrete, valorDesconto])
-  const valorIcms = useMemo(() => baseCalculoIcms * 0.18, [baseCalculoIcms])
-  const valorIpi = useMemo(() => totalProdutos * 0.05, [totalProdutos])
-  const valorPis = useMemo(() => totalProdutos * 0.0165, [totalProdutos])
-  const valorCofins = useMemo(() => totalProdutos * 0.076, [totalProdutos])
-  const valorLiquidoNota = useMemo(() => totalProdutos + valorIpi + Number(valorFrete) - Number(valorDesconto), [totalProdutos, valorIpi, valorFrete, valorDesconto])
-
-  return (
-    <main className="bg-[#f8fafc] p-6 min-h-screen font-sans text-[#0f172a]">
-      <header className="flex justify-between items-center border-b border-[#C9E1E8] pb-4 mb-6 bg-white p-4 rounded-xl shadow-sm">
-        <div className="flex items-center gap-3">
-          <img src="/logo-industrial.svg" alt="Plastibor" className="h-10 w-10" />
-          <div>
-            <span className="text-[#2563eb] text-sm font-bold uppercase tracking-wider">MÓDULO FISCAL • MODELO 55</span>
-            <h1 className="text-3xl font-extrabold text-[#0f172a] mt-0.5">Emissor de Nota Fiscal Eletrônica (NF-e)</h1>
-          </div>
-        </div>
-      </header>
-
-      {error && <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-6 text-base font-medium">{error}</div>}
-      {success && <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 p-4 rounded-lg mb-6 text-base font-medium">{success}</div>}
-
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-        <label className="text-base font-semibold block text-[#0f172a]">Importar Pedido do Almoxarifado
-          <input className="mt-1 w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-mono outline-none text-base" placeholder="Digite de 1001 a 1050" value={pedidoOrigem} onChange={e => setPedidoOrigem(e.target.value)} />
-        </label>
-        <button className="bg-[#2563eb] hover:bg-blue-700 text-white font-bold p-2.5 rounded-lg flex items-center justify-center gap-2 text-base transition-all" onClick={() => void puxarPedidoAlmoxarifado()}>
-          <RefreshCw size={18} /> Puxar Dados do Pedido
-        </button>
-      </div>
-
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        {/* RESOLVIDO O CONFLITO TS232A: Abas reconstruídas com botões HTML5 nativos do Tailwind */}
-        <nav className="flex bg-slate-50 border-b border-slate-200">
-          {[
-            ['identificacao', '1. Identificação', Building2],
-            ['produtos', '2. Produtos', Package],
-            ['impostos', '3. Impostos', Landmark],
-            ['transporte', '4. Transporte', Truck]
-          ].map(([id, label, IconComponent]) => (
-            <button 
-              key={id} 
-              type="button"
-              className={`flex-1 px-4 py-3.5 text-base font-bold border-b-2 flex items-center justify-center gap-2 transition-all ${tab === id ? 'bg-white border-[#2563eb] text-[#2563eb]' : 'border-transparent text-slate-500 hover:bg-slate-100/50'}`} 
-              onClick={() => setTab(id as any)}
-            >
-              <IconComponent size={18} /> {label}
-            </button>
-          ))}
-        </nav>
-
-        <div className="p-6">
-          {tab === 'identificacao' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-base">
-                <label className="font-semibold block">CNPJ / CPF do Cliente
-                  <input className="mt-1 w-full bg-slate-50 border p-2 rounded-lg outline-none font-mono" value={destinatario.cnpj_cpf} readOnly placeholder="Aguardando importação..." />
-                </label>
-                <label className="font-semibold block">Razão Social
-                  <input className="mt-1 w-full bg-slate-50 border p-2 rounded-lg outline-none" value={destinatario.razao_social} readOnly />
-                </label>
-                <label className="font-semibold block">Inscrição Estadual
-                  <input className="mt-1 w-full bg-slate-50 border p-2 rounded-lg outline-none font-mono" value={destinatario.inscricao_estadual} readOnly />
-                </label>
-              </div>
-              <button className="bg-[#2563eb] text-white font-bold px-6 py-2 rounded-lg flex items-center gap-2 text-base mt-4" onClick={() => setTab('produtos')}>Avançar <ArrowRight size={16} /></button>
-            </div>
-          )}
-
-          {tab === 'produtos' && (
-            <div className="space-y-6">
-              <table className="w-full text-left border-collapse text-base">
-                <thead>
-                  <tr className="border-b bg-slate-50 font-semibold">
-                    <th className="p-3">Código</th>
-                    <th className="p-3">Descrição Insumo</th>
-                    <th className="p-3 text-center">NCM</th>
-                    <th className="p-3 text-right">Qtd</th>
-                    <th className="p-3 text-right">Unitário</th>
-                    <th className="p-3 text-right">Total</th>
-                    <th className="p-3">Lote</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {itens.map(i => (
-                    <tr key={i.id} className="border-b border-slate-100">
-                      <td className="p-3 font-bold text-[#2563eb]">{i.codigo_item}</td>
-                      <td className="p-3">{i.descricao}</td>
-                      <td className="p-3 text-center font-mono">{i.ncm}</td>
-                      <td className="p-3 text-right font-bold">{i.quantidade}</td>
-                      <td className="p-3 text-right font-mono">{money(i.valor_unitario)}</td>
-                      <td className="p-3 text-right font-mono font-bold">{money(i.valor_total)}</td>
-                      <td className="p-3 font-mono text-emerald-700 font-bold bg-emerald-50">{i.lote_rastreabilidade}</td>
-                    </tr>
-                  ))}
-<button className="bg-[#2563eb] text-white font-bold px-6 py-2 rounded-lg flex items-center gap-2 text-base mt-4" onClick={() => setTab('impostos')}>Avançar )}{tab === 'impostos' && (Base ICMS{money(baseCalculoIcms)}ICMS (18%)+{money(valorIcms)}IPI (5%)+{money(valorIpi)}Líquido Total da Nota{money(valorLiquidoNota)}<button className="bg-[#2563eb] text-white font-bold px-6 py-2 rounded-lg flex items-center gap-2 text-base mt-4" onClick={() => setTab('transporte')}>Avançar )}{tab === 'transporte' && (Modalidade do FreteValor do Frete (R$)Desconto (R$)TRANSMITIR NOTA FISCAL SEFAZ (REAL))}Desenvolvedor: Homologado por FernandoSch. •2026)}
+  const validate = (): void => {
+    if (!destinatario.trim()) throw new Error('Informe o destinatário.')
+    const validItems = items.filter(item => item.codigo.trim() && numberValue(item.quantidade) > 0)
+    if (!validItems.length) throw new Error('Adicione pelo menos um item válido.')
+    for (const item of validItems) { if (!/^\d{8}$/.test(digits(item.ncm))) throw new Error('NCM deve conter 8 dígitos.'); if (!/^\d{4}$/.test(item.cfop)) throw new Error('CFOP deve conter 4 dígitos.'); if (!item.lote.trim()) throw new Error('Lote do Almoxarifado é obrigatório para cada item.') }
+  }
+  const saveDraft = async () => {
+    setBusy(true); setError(''); setMessage('')
+    try {
+      validate()
+      const company = await supabase.rpc('erp_current_company_id')
+      if (company.error || !company.data) throw company.error ?? new Error('Empresa não identificada.')
+      const empresaId = String(company.data)
+      const header = { empresa_id: empresaId, tipo: 'NFe', modelo: '55', serie: Number(serie) || 1, numero: numero ? Number(numero) : null, status: 'rascunho', ambiente: 'homologacao', natureza_operacao: natureza, data_emissao: new Date().toISOString(), destinatario_nome: destinatario.trim(), destinatario_documento: digits(destDocumento), valor_produtos: Number(totalProdutos.toFixed(2)), valor_frete: Number(numberValue(totals.frete).toFixed(2)), valor_outras_despesas: Number(numberValue(totals.outras).toFixed(2)), valor_desconto: Number(numberValue(totals.desconto).toFixed(2)), base_calculo_icms: Number(baseIcms.toFixed(2)), valor_icms: Number(numberValue(totals.icms).toFixed(2)), valor_ipi: Number(numberValue(totals.ipi).toFixed(2)), valor_pis: Number(numberValue(totals.pis).toFixed(2)), valor_cofins: Number(numberValue(totals.cofins).toFixed(2)), valor_liquido: Number(valorLiquido.toFixed(2)), valor_total: Number(valorLiquido.toFixed(2)), mensagem_retorno: 'Rascunho fiscal aguardando conferência.' }
+      const documentResult = await supabase.from('erp_documentos_fiscais').insert(header).select('id').single()
+      if (documentResult.error || !documentResult.data?.id) throw documentResult.error ?? new Error('Documento fiscal não foi criado.')
+      const documentId = documentResult.data.id
+      const rows = items.filter(item => item.codigo.trim() && numberValue(item.quantidade) > 0).map((item, index) => ({ empresa_id: empresaId, documento_id: documentId, produto_id: item.produto_id || null, item_numero: index + 1, codigo_produto: item.codigo.trim(), descricao_produto: item.descricao.trim(), ncm: digits(item.ncm), cfop: item.cfop, unidade: item.unidade || 'UN', quantidade: numberValue(item.quantidade), valor_unitario: numberValue(item.valor_unitario), valor_total: Number((numberValue(item.quantidade) * numberValue(item.valor_unitario)).toFixed(2)), lote: item.lote.trim() || null }))
+      const itemResult = await supabase.from('erp_documentos_fiscais_itens').insert(rows)
+      if (itemResult.error) { await supabase.from('erp_documentos_fiscais').delete().eq('id', documentId); throw itemResult.error }
+      setMessage('Rascunho NF-e gravado no banco real. A transmissão permanece separada da gravação do documento.')
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao salvar o rascunho fiscal.') } finally { setBusy(false) }
+  }
+  const prepareTransmission = () => { setMessage('Rascunho conferido. A transmissão real deve usar o documento salvo e a Edge Function emitir-nfe; não será criada uma emissão fictícia pelo navegador.'); setTab('transporte') }
+  const printDanfe = () => window.print()
+  const fieldClass = 'mt-1 h-9 w-full rounded-md border border-slate-300 bg-white px-2.5 text-sm text-[#0f172a] outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-blue-100'
+  return <main className='min-h-screen bg-[#f8fafc] p-4 md:p-6 text-[#0f172a]'>
+    <header className='mb-6 flex flex-col gap-4 border-b border-slate-200 bg-white p-5 lg:flex-row lg:items-end lg:justify-between'><div><span className='text-sm font-extrabold tracking-wider text-[#1e3a8a]'>FISCAL • NF-e MODELO 55</span><h1 className='mt-1 text-3xl font-extrabold'>Emissão de Nota Fiscal Eletrônica</h1><p className='mt-1 text-sm text-slate-600'>Documento fiscal real, vinculado ao pedido e ao lote do Almoxarifado.</p></div><button type='button' onClick={printDanfe} className='inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 text-base font-bold'><Printer size={18}/> Imprimir DANFE A4</button></header>
+    <section className='mb-6 rounded-lg border border-slate-200 bg-white p-4'><div className='grid grid-cols-1 items-end gap-4 md:grid-cols-4'><label className='text-xs font-bold md:col-span-3'>Pedido do Almoxarifado<input className={fieldClass} value={pedidoAlmox} onChange={event => setPedidoAlmox(event.target.value)} placeholder='Pesquisar por número do pedido'/></label><button type='button' disabled={busy} onClick={() => void importAlmox()} className='inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-[#2563eb] px-5 text-base font-bold text-white disabled:opacity-60'><Search size={18}/> Carregar Pedido</button></div></section>
+    {(error || message) && <div role='alert' className={'mb-6 rounded-lg border p-4 text-base font-semibold ' + (error ? 'border-red-200 bg-red-50 text-red-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700')}>{error || message}</div>}
+    <section className='nfe-print'><nav role='tablist' className='mb-4 grid grid-cols-1 gap-1 rounded-lg bg-slate-200 p-1 md:grid-cols-4'>{tabs.map(item => <button key={item.id} type='button' role='tab' aria-selected={tab === item.id} onClick={() => setTab(item.id)} className={'min-h-12 rounded-md px-3 text-base font-bold ' + (tab === item.id ? 'bg-white text-[#2563eb] shadow-sm' : 'text-slate-600 hover:bg-white/70')}>{item.label}</button>)}</nav>
+    {tab === 'identificacao' && <section className='rounded-lg border border-slate-200 bg-white p-4'><h2 className='mb-5 text-xl font-extrabold text-[#1e3a8a]'>Identificação</h2><div className='grid grid-cols-[72px_58px_minmax(180px,1fr)_minmax(180px,1fr)] gap-3'><label className='text-xs font-bold'>Número<input className={fieldClass} value={numero} onChange={event => setNumero(event.target.value)}/></label><label className='text-xs font-bold'>Série<input className={fieldClass} value={serie} onChange={event => setSerie(event.target.value)}/></label><label className='text-xs font-bold md:col-span-2'>Natureza da operação<input className={fieldClass} value={natureza} onChange={event => setNatureza(event.target.value)}/></label><label className='text-xs font-bold md:col-span-2'>Cliente<select className={fieldClass} value={clientId} onChange={event => chooseClient(event.target.value)}><option value=''>Selecionar cliente real</option>{clients.map(client => <option key={client.id} value={client.id}>{client.nome} • {client.documento || 'sem documento'}</option>)}</select></label><label className='text-xs font-bold md:col-span-2'>Destinatário<input className={fieldClass} value={destinatario} onChange={event => setDestinatario(event.target.value)}/></label><label className='text-xs font-bold'>CNPJ / CPF<input className={fieldClass} value={destDocumento} onChange={event => setDestDocumento(event.target.value)}/></label><label className='text-xs font-bold'>Inscrição Estadual<input className={fieldClass} placeholder='Informar conforme cadastro fiscal'/></label></div></section>}
+    {tab === 'produtos' && <section className='rounded-lg border border-slate-200 bg-white p-4'><div className='mb-5 flex flex-wrap items-center justify-between gap-3'><div><h2 className='text-xl font-extrabold text-[#1e3a8a]'>Produtos e Serviços</h2><p className='text-base text-slate-600'>Lote do Almoxarifado é obrigatório e permanece rastreável no item fiscal.</p></div><button type='button' onClick={() => setItems(current => [...current, emptyItem()])} className='inline-flex min-h-11 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-base font-bold'><Plus size={18}/> Adicionar item</button></div><div className='space-y-4'>{items.map((item,index)=><article key={index} className='rounded-lg border border-slate-200 bg-slate-50 p-4'><div className='grid grid-cols-[minmax(150px,1.2fr)_90px_minmax(220px,2fr)_70px_70px_80px_65px_100px_minmax(130px,1fr)] gap-3'><label className='text-xs font-bold'>Produto<select className={fieldClass} value={item.produto_id} onChange={event => chooseProduct(index,event.target.value)}><option value=''>Pesquisar cadastro real</option>{products.map(product => <option key={product.id} value={product.id}>{product.codigo} • {product.nome}</option>)}</select></label><label className='text-xs font-bold'>Código<input className={fieldClass} value={item.codigo} onChange={event => updateItem(index,'codigo',event.target.value)}/></label><label className='text-xs font-bold md:col-span-2'>Descrição<input className={fieldClass} value={item.descricao} onChange={event => updateItem(index,'descricao',event.target.value)}/></label><label className='text-xs font-bold'>NCM<input className={fieldClass} maxLength={8} inputMode='numeric' value={item.ncm} onChange={event => updateItem(index,'ncm',event.target.value)}/></label><label className='text-xs font-bold'>CFOP<input className={fieldClass} maxLength={4} inputMode='numeric' value={item.cfop} onChange={event => updateItem(index,'cfop',event.target.value)}/></label><label className='text-xs font-bold'>Qtd<input className={fieldClass} type='number' min='0' step='0.001' value={item.quantidade} onChange={event => updateItem(index,'quantidade',event.target.value)}/></label><label className='text-xs font-bold'>Unidade<input className={fieldClass} value={item.unidade} onChange={event => updateItem(index,'unidade',event.target.value)}/></label><label className='text-xs font-bold'>Valor Unitário<input className={fieldClass} type='number' min='0' step='0.01' value={item.valor_unitario} onChange={event => updateItem(index,'valor_unitario',event.target.value)}/></label><label className='text-xs font-bold md:col-span-2'>LOTE DO ALMOXARIFADO<input className={fieldClass + ' font-mono'} value={item.lote} onChange={event => updateItem(index,'lote',event.target.value)}/></label></div><div className='mt-4 flex items-center justify-between border-t border-slate-200 pt-3'><strong className='text-base'>Total: {money(numberValue(item.quantidade) * numberValue(item.valor_unitario))}</strong><button type='button' disabled={items.length === 1} onClick={() => setItems(current => current.filter((_, currentIndex) => currentIndex !== index))} className='inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-3 py-2 text-base font-bold text-red-700'><Trash2 size={17}/> Remover</button></div></article>)}</div></section>}
+    {tab === 'totais' && <section className='rounded-lg border border-slate-200 bg-white p-4'><h2 className='mb-5 text-xl font-extrabold text-[#1e3a8a]'>Totais e Impostos</h2><div className='grid grid-cols-1 gap-4 md:grid-cols-4'>{([['frete','Frete'],['outras','Outras despesas'],['desconto','Desconto'],['icms','Valor ICMS'],['ipi','Valor IPI'],['pis','Valor PIS'],['cofins','Valor COFINS']] as const).map(([key,label])=><label key={key} className='text-xs font-bold'>{label}<input className={fieldClass} type='number' step='0.01' value={totals[key]} onChange={event => setTotals(current => ({ ...current, [key]: event.target.value }))}/></label>)}</div><div className='mt-6 grid grid-cols-1 gap-4 md:grid-cols-3'><article className='rounded-lg border border-slate-200 bg-slate-50 p-4'><span className='text-base text-slate-600'>Base ICMS</span><strong className='mt-1 block text-2xl'>{money(baseIcms)}</strong></article><article className='rounded-lg border border-slate-200 bg-slate-50 p-4'><span className='text-base text-slate-600'>Valor IPI</span><strong className='mt-1 block text-2xl'>{money(numberValue(totals.ipi))}</strong></article><article className='rounded-lg border border-slate-200 bg-blue-50 p-4'><span className='text-base text-slate-600'>Valor líquido da nota</span><strong className='mt-1 block text-2xl text-[#2563eb]'>{money(valorLiquido)}</strong></article></div></section>}
+    {tab === 'transporte' && <section className='rounded-lg border border-slate-200 bg-white p-4'><h2 className='mb-5 text-xl font-extrabold text-[#1e3a8a]'>Transporte / Cobrança</h2><div className='grid grid-cols-1 gap-4 md:grid-cols-4'><label className='text-xs font-bold'>Modalidade<select className={fieldClass} value={freight.modalidade} onChange={event => { const value = event.target.value; if (['0','1','2','3','4','9'].includes(value)) setFreight(current => ({ ...current, modalidade: value as Freight['modalidade'] })) }}><option value='0'>0 • Emitente</option><option value='1'>1 • Destinatário</option><option value='2'>2 • Terceiros</option><option value='3'>3 • Próprio remetente</option><option value='4'>4 • Próprio destinatário</option><option value='9'>9 • Sem frete</option></select></label><label className='text-xs font-bold md:col-span-2'>Transportador<input className={fieldClass} value={freight.transportador} onChange={event => setFreight(current => ({ ...current, transportador: event.target.value }))}/></label><label className='text-xs font-bold'>CNPJ/CPF<input className={fieldClass} value={freight.documento} onChange={event => setFreight(current => ({ ...current, documento: event.target.value }))}/></label><label className='text-xs font-bold'>Placa<input className={fieldClass} value={freight.placa} onChange={event => setFreight(current => ({ ...current, placa: event.target.value }))}/></label></div></section>}
+    </section>
+    <footer className='mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-4'><div><span className='text-sm font-bold uppercase text-slate-500'>Valor da NF-e</span><strong className='block text-2xl'>{money(valorLiquido)}</strong></div><div className='flex flex-wrap gap-2'><button type='button' disabled={busy} onClick={() => void saveDraft()} className='inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#2563eb] px-5 text-base font-bold text-white disabled:opacity-60'><Save size={18}/> Salvar Rascunho</button><button type='button' disabled={busy} onClick={prepareTransmission} className='inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 text-base font-bold'><Send size={18}/> Preparar Transmissão</button><button type='button' onClick={printDanfe} className='inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 text-base font-bold'><FileDown size={18}/> DANFE A4</button></div></footer>
+    <div className='mt-4 text-xs text-slate-500'>FernandoSch_System • Documento fiscal modelo 55 • transmissão somente pelo fluxo fiscal autorizado.</div>
+  </main>
+}
