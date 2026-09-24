@@ -7,18 +7,6 @@
  * Alterações: Corrigir horas_turno e aceitar IDs opcionais na timeline estrita.
  * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
  * =========================================================================
- */
-
-/**
- * =========================================================================
- * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 11:43 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
- * ID da Revisão: REV-056
- * Alterações: Corrigir horas_turno, remover any da timeline e remover prop fichaOps não utilizada.
- * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
- * =========================================================================
- */
 
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
