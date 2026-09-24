@@ -144,7 +144,8 @@ const emptyItem = (): NFeItem => ({
 
 const numberValue = (value: string | number | null | undefined): number => {
   if (typeof value === 'number') return Number.isFinite(value) ? value : 0
-  const raw = String(value ?? '').trim()\n  const normalized = raw.includes(',') ? raw.replace(/\./g, '').replace(',', '.') : raw
+  const raw = String(value ?? '').trim()
+  const normalized = raw.includes(',') ? raw.replace(/\./g, '').replace(',', '.') : raw
   const result = Number(normalized)
   return Number.isFinite(result) ? result : 0
 }
