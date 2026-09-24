@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 import {
   Activity, AlertTriangle, ArrowUpRight, Boxes, CheckCircle2, ClipboardCheck,
   Factory, Gauge, LayoutGrid, Package, RefreshCw, ShieldCheck, ShoppingCart,
@@ -294,7 +295,7 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
 }
 
 function DashboardChart({ title, subtitle, icon, value, secondary, primaryLabel, secondaryLabel }: {
-  title: string; subtitle: string; icon: React.ReactNode; value: MetricValue; secondary: MetricValue; primaryLabel: string; secondaryLabel: string
+  title: string; subtitle: string; icon: ReactNode; value: MetricValue; secondary: MetricValue; primaryLabel: string; secondaryLabel: string
 }) {
   const data = [
     { name: primaryLabel, value: value ?? 0 },
