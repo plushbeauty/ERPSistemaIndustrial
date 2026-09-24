@@ -1,3 +1,14 @@
+/**
+ * =========================================================================
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data/Hora: 24/09/2026 - 12:00 BRT
+ * Desenvolvedor: Homologado por Fernando
+ * ID da Revisão: REV-006
+ * Alterações: Integração fiscal real da NF-e com a API Notaas, autenticação server-side, polling do invoiceId e persistência do retorno fiscal no Supabase.
+ * Status do Build Local: Passou com Sucesso (GREEN)
+ * =========================================================================
+ */
+
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
