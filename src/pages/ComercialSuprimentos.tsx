@@ -21,15 +21,15 @@ export default function ComercialSuprimentos(){
   try{
    const empresa=await supabase.rpc('erp_current_empresa_id');if(empresa.error||!empresa.data)throw empresa.error??new Error('Empresa da sessão não identificada.')
    const id=String(empresa.data)
-   const[c,p,o]=await Promise.all([
+   const[c,productsData,o]=await Promise.all([
     supabase.from('erp_clientes').select('id,codigo,nome,documento').eq('empresa_id',id).eq('ativo',true).order('nome'),
     supabase.from('erp_produtos').select('id,codigo,nome,preco_venda,estoque_atual,unidade').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(3000),
     supabase.from('erp_pedidos_venda').select('id,numero,pedido_cliente,cliente_id,status,total,data_entrega_prometida,created_at').eq('empresa_id',id).order('numero',{ascending:false}).limit(1000)
    ])
-   if(c.error)throw c.error;if(p.error)throw p.error;if(o.error)throw o.error
-   setClients((c.data??[]) as Client[]);setProducts((p.data??[]) as Product[]);setOrders((o.data??[]) as Order[])
+   if(c.error)throw c.error;if(productsData.error)throw productsData.error;if(o.error)throw o.error
+   setClients((c.data??[]) as Client[]);setProducts((productsData.data??[]) as Product[]);setOrders((o.data??[]) as Order[])
    const ids=(o.data??[]).map(x=>x.id)
-   if(ids.length){const it=await supabase.from('erp_pedidos_venda_itens').select('id,pedido_id,produto_id,descricao,quantidade,valor_unitario').eq('empresa_id',id).in('pedido_id',ids).order('created_at',{ascending:true});if(it.error)throw it.error;const mapped=(it.data??[]).map((x:{id:string;pedido_id:string;produto_id:string;descricao:string;quantidade:number;valor_unitario:number})=>{const p=(p.data??[]).find((z:{id:string;codigo:string;nome:string})=>z.id===x.produto_id);return {...x,codigo:p?.codigo??'—'}});setItems(mapped as Item[])}else setItems([])
+   if(ids.length){const it=await supabase.from('erp_pedidos_venda_itens').select('id,pedido_id,produto_id,descricao,quantidade,valor_unitario').eq('empresa_id',id).in('pedido_id',ids).order('created_at',{ascending:true});if(it.error)throw it.error;const mapped=(it.data??[]).map((x:{id:string;pedido_id:string;produto_id:string;descricao:string;quantidade:number;valor_unitario:number})=>{const productRow=(productsData.data??[]).find((z:{id:string;codigo:string;nome:string})=>z.id===x.produto_id);return {...x,codigo:productRow?.codigo??'—'}});setItems(mapped as Item[])}else setItems([])
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar a central de vendas.')}finally{setBusy(false)}
  }
  useEffect(()=>{void load()},[])
