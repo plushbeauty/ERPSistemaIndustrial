@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
 type Tab = 'gerais' | 'parceiros' | 'itens' | 'impostos' | 'transporte'
@@ -160,7 +160,7 @@ function Field({ label, value, onChange, className = '', type = 'text', maxLengt
 }
 
 function SelectField({ label, value, onChange, children, className = '' }: {
-  label: string; value: string; onChange: (value: string) => void; children: React.ReactNode; className?: string
+  label: string; value: string; onChange: (value: string) => void; children: ReactNode; className?: string
 }) {
   return <label className={className}><span className="nfe-label">{label}</span><select className="nfe-input" value={value} onChange={(event) => onChange(event.target.value)}>{children}</select></label>
 }
