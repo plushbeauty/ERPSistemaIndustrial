@@ -52,7 +52,8 @@ const help:Record<Tab,{title:string;what:string;how:string;action:string}> = {
 }
 
 export default function PCPIndustrial(){
- const [tab,setTab]=useState<Tab>('visao'),[modal,setModal]=useState<Modal>(null)
+ const initialTab:Tab=location.pathname==='/pcp/fila'?'pedidos':location.pathname==='/pcp/mrp'?'materiais':location.pathname==='/pcp/programacao'?'programacao':location.pathname==='/pcp/capacidade'?'capacidade':location.pathname==='/pcp/qualidade'?'qualidade':location.pathname==='/pcp/producao'?'producao':location.pathname==='/pcp/ops'?'ops':'visao';
+ const [tab,setTab]=useState<Tab>(initialTab),[modal,setModal]=useState<Modal>(null)
  const [ops,setOps]=useState<OP[]>([]),[orders,setOrders]=useState<Order[]>([]),[products,setProducts]=useState<Product[]>([]),[programs,setPrograms]=useState<Program[]>([]),[machines,setMachines]=useState<Machine[]>([]),[defects,setDefects]=useState<Defect[]>([]),[fichas,setFichas]=useState<Ficha[]>([]),[fitems,setFitems]=useState<FItem[]>([]),[fichaOps,setFichaOps]=useState<FichaOp[]>([]),[molds,setMolds]=useState<Molde[]>([]),[employees,setEmployees]=useState<Employee[]>([])
  const [selectedOp,setSelectedOp]=useState(''),[found,setFound]=useState(''),[bad,setBad]=useState(''),[defectText,setDefectText]=useState(''),[location,setLocation]=useState(''),[query,setQuery]=useState('')
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
