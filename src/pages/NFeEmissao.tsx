@@ -64,19 +64,19 @@ type NFeForm = {
 
 type Product = {
   id: string
-  sku: string | null
-  codigo_barras: string | null
+  codigo: string
   nome: string
   unidade: string | null
   ncm: string | null
-  cfop: string | null
-  preco: number | null
+  cfop_saida: string | null
+  preco_venda: number | null
 }
 
 type Company = {
   id: string
-  nome: string
-  cnpj: string | null
+  razao_social: string
+  nome_fantasia: string | null
+  cnpj: string
   endereco: string | null
 }
 
@@ -189,13 +189,13 @@ export default function NFeEmissao() {
     try {
       const auth = await supabase.auth.getUser()
       if (auth.error || !auth.data.user) throw new Error('Sessão não localizada.')
-      const profile = await supabase.from('usuarios').select('id,empresa_id').eq('auth_user_id', auth.data.user.id).eq('ativo', true).maybeSingle()
+      const profile = await supabase.from('erp_usuarios').select('id,empresa_id').eq('auth_user_id', auth.data.user.id).eq('ativo', true).maybeSingle()
       if (profile.error || !profile.data?.empresa_id) throw new Error(profile.error?.message || 'Empresa do usuário não localizada.')
       const empresaId = String(profile.data.empresa_id)
       const [empresaResult, productResult, customerResult] = await Promise.all([
-        supabase.from('empresas').select('id,nome,cnpj,endereco').eq('id', empresaId).single(),
-        supabase.from('produtos').select('id,sku,codigo_barras,nome,unidade,ncm,cfop,preco').eq('empresa_id', empresaId).eq('ativo', true).order('nome').limit(500),
-        supabase.from('clientes').select('id,cnpj,razao_social,nome,inscricao_estadual,endereco,cidade,estado,email').eq('empresa_id', empresaId).eq('ativo', true).order('razao_social').limit(500),
+        supabase.from('erp_empresas').select('id,razao_social,nome_fantasia,cnpj,endereco').eq('id', empresaId).single(),
+        supabase.from('erp_produtos').select('id,codigo,nome,unidade,ncm,cfop_saida,preco_venda').eq('empresa_id', empresaId).eq('ativo', true).order('nome').limit(500),
+        supabase.from('erp_clientes').select('id,documento,nome,inscricao_estadual,endereco,cidade,estado,email').eq('empresa_id', empresaId).eq('ativo', true).order('nome').limit(500),
       ])
       if (empresaResult.error) throw empresaResult.error
       if (productResult.error) throw productResult.error
@@ -204,9 +204,9 @@ export default function NFeEmissao() {
       setProducts((productResult.data ?? []) as Product[])
       setCustomers((customerResult.data ?? []).map((row) => ({
         id: String(row.id),
-        cnpjCpf: String(row.cnpj ?? ''),
+        cnpjCpf: String(row.documento ?? ''),
         inscricaoEstadual: String(row.inscricao_estadual ?? ''),
-        razaoSocial: String(row.razao_social ?? row.nome ?? ''),
+        razaoSocial: String(row.nome ?? ''),
         endereco: String(row.endereco ?? ''),
         bairro: '',
         cep: '',
@@ -249,13 +249,13 @@ export default function NFeEmissao() {
     setItems((current) => current.map((item) => item.id === itemId ? {
       ...item,
       produtoId: product.id,
-      codigo: product.sku || product.codigo_barras || product.id.slice(0, 8).toUpperCase(),
+      codigo: product.codigo || product.id.slice(0, 8).toUpperCase(),
       descricao: product.nome,
       ncm: digits(product.ncm ?? '', 8),
-      cfop: digits(product.cfop ?? form.cfop, 4),
+      cfop: digits(product.cfop_saida ?? form.cfop, 4),
       unidade: (product.unidade || 'UN').toUpperCase(),
-      valorUnitario: String(product.preco ?? 0),
-      total: Math.max(0, numberValue(item.quantidade) * Number(product.preco ?? 0) - numberValue(item.desconto)),
+      valorUnitario: String(product.preco_venda ?? 0),
+      total: Math.max(0, numberValue(item.quantidade) * Number(product.preco_venda ?? 0) - numberValue(item.desconto)),
     } : item))
   }
 
@@ -281,7 +281,7 @@ export default function NFeEmissao() {
       if (validation) throw new Error(validation)
       const auth = await supabase.auth.getUser()
       if (auth.error || !auth.data.user) throw new Error('Sessão de autenticação não localizada.')
-      const profile = await supabase.from('usuarios').select('id,empresa_id').eq('auth_user_id', auth.data.user.id).eq('ativo', true).maybeSingle()
+      const profile = await supabase.from('erp_usuarios').select('id,empresa_id').eq('auth_user_id', auth.data.user.id).eq('ativo', true).maybeSingle()
       if (profile.error || !profile.data?.empresa_id) throw new Error(profile.error?.message || 'Empresa da sessão não localizada.')
       const empresaId = String(profile.data.empresa_id)
       const payload = {
@@ -356,15 +356,6 @@ export default function NFeEmissao() {
       if (rpc.error || !rpc.data) throw new Error(rpc.error?.message || 'Não foi possível gravar o rascunho fiscal.')
       const id = String(rpc.data)
       setDocumentId(id)
-      const audit = await supabase.from('logs_sistema').insert({
-        empresa_id: empresaId,
-        usuario_id: profile.data.id,
-        acao: 'NFE_RASCUNHO_SALVO',
-        tabela: 'erp_documentos_fiscais',
-        registro_id: id,
-        dados: { numero: form.numero || null, serie: form.serie, total: totalNota, itens: rows.length },
-      })
-      if (audit.error) throw audit.error
       setMessage('NF-e gravada como rascunho de forma transacional. Nenhuma transmissão à SEFAZ foi executada.')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao salvar a NF-e.')
