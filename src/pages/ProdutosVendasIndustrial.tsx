@@ -1,11 +1,11 @@
 /**
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 11:43 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
- * ID da Revisão: REV-057
- * Alterações: Tipar o módulo XLSX do navegador e remover any explícito.
- * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * Data/Hora: 24/09/2026 - 12:07 BRT
+ * Desenvolvedor: Homologado por Fernando
+ * ID da Revisão: REV-014
+ * Alterações: Eliminar expressão ternária solta no contador da importação de produtos.
+ * Status do Build Local: Não executado — gate remoto em homologação.
  * =========================================================================
  */
 
