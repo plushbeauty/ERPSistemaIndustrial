@@ -1,44 +1,14 @@
 /**
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 11:43 BRT
+ * Data/Hora: 24/09/2026 - 12:55 BRT
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
- * ID da Revisão: REV-061
- * Alterações: Corrigir perfil administrativo para aceitar perfil opcional sem null incompatível.
- * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * ID da Revisão: REV-056
+ * Alterações: Consolidar os cabeçalhos duplicados e manter a definição estrita do perfil administrativo.
+ * Status do Build Local: Não executado — validação será feita pelo gate remoto.
  * =========================================================================
  */
 
-/**
- * =========================================================================
- * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 11:43 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
- * ID da Revisão: REV-048
- * Alterações: Alinhar perfil administrativo com Profile usando nivel_admin opcional.
- * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
- * =========================================================================
- */
-
-/**
- * =========================================================================
- * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 11:43 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
- * ID da Revisão: REV-034
- * Alterações: Eliminar useState<any> do perfil administrativo e declarar perfil de administração empresarial estritamente.
- * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
- * =========================================================================
- */
-
-/*
-📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
-- Arquivo: src/AppEntryV2.tsx
-- Status Atual: Revisão 3 (Rotas Comerciais e Compras Conectadas)
-- Total de Linhas Gerado: 69
-- Assinatura de Entrada (Primeiros 3 Imports): import { Component, ReactNode, lazy, Suspense, useEffect, useState } from 'react' | import type { Session } from '@supabase/supabase-js' | import './styles/industrial-login.css'
-- Regra de Negócio Incorporada: Rotas protegidas para fornecedores, clientes e tabelas de preços com tenant ERP.
-*/
 import { Component, ReactNode, lazy, Suspense, useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { LayoutGrid, Sun, Users } from 'lucide-react'
