@@ -20,7 +20,8 @@ export default function FichasProcesso(){
    const auth=await supabase.auth.getUser();if(auth.error||!auth.data.user)throw new Error('Sessão não localizada.')
    const profile=await supabase.from('erp_usuarios').select('empresa_id').eq('auth_user_id',auth.data.user.id).eq('ativo',true).maybeSingle()
    if(profile.error||!profile.data?.empresa_id)throw new Error(profile.error?.message||'Empresa não localizada.')
-   const empresaId=String(profile.data.empresa_id)
+   const profileData=profile.data
+   const empresaId=String(profileData.empresa_id)
       const [p,f]=await Promise.all([
     supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id',empresaId).eq('ativo',true).order('nome').limit(500),
     supabase.from('erp_fichas_tecnicas').select('id,codigo,versao,titulo,descricao,status,produto_id,observacoes').eq('empresa_id',empresaId).order('codigo').order('versao',{ascending:false}).limit(500)
@@ -43,7 +44,7 @@ export default function FichasProcesso(){
    const saved=form.id?await supabase.from('erp_fichas_tecnicas').update(payload).eq('id',form.id).select('id').single():await supabase.from('erp_fichas_tecnicas').insert(payload).select('id').single()
    if(saved.error||!saved.data)throw new Error(saved.error?.message||'Falha ao gravar ficha.')
    const id=String(saved.data.id);await supabase.from('erp_ficha_operacoes').delete().eq('ficha_id',id)
-   const rows=ops.filter(o=>o.operacao.trim()).map((o,i)=>({empresa_id:String(profile.data.empresa_id),ficha_id:id,sequencia:i+1,operacao:o.operacao.trim(),parametro_nominal:o.parametro_nominal||null,tolerancia_min:o.tolerancia_min||null,tolerancia_max:o.tolerancia_max||null,unidade:o.unidade||null,instrumento:o.instrumento||null,criterio_aceitacao:o.criterio_aceitacao||null,observacoes:o.observacoes||null}))
+   const rows=ops.filter(o=>o.operacao.trim()).map((o,i)=>({empresa_id:String(profileData.empresa_id),ficha_id:id,sequencia:i+1,operacao:o.operacao.trim(),parametro_nominal:o.parametro_nominal||null,tolerancia_min:o.tolerancia_min||null,tolerancia_max:o.tolerancia_max||null,unidade:o.unidade||null,instrumento:o.instrumento||null,criterio_aceitacao:o.criterio_aceitacao||null,observacoes:o.observacoes||null}))
    const inserted=rows.length?await supabase.from('erp_ficha_operacoes').insert(rows):{error:null}
    if(inserted.error)throw inserted.error
    await supabase.from('erp_logs_sistema').insert({empresa_id:String(profile.data.empresa_id),usuario_id:usuarioId,modulo:'Engenharia',acao:'FICHA_PROCESSO_SALVA',entidade:'erp_fichas_tecnicas',entidade_id:id,dados:{status:statusOverride ?? form.status,operacoes:rows.length}})
