@@ -4,7 +4,8 @@
   @SCOPE: src/main.tsx
   @CHECKLIST: No-Duplicate-Actions | Valid-Canonical-Links | Active-Noop-Callbacks
 */
-import { StrictMode, lazy, Suspense, useState } from 'react'
+import { StrictMode, Suspense } from 'react'
+import AppBootstrap from './AppBootstrap'
 import { createRoot } from 'react-dom/client'
 import { MotionConfig } from 'motion/react'
 import './styles/erp-reference-ux-2026.css'
@@ -86,18 +87,9 @@ function FatalBootstrap({ error, retry }: { error: unknown; retry: () => void })
 }
 
 function BootstrapLoader() {
-  const [error, setError] = useState<unknown>(null)
-  const [retryKey, setRetryKey] = useState(0)
-  const AppBootstrap = lazy(() =>
-    import('./AppBootstrap').catch((reason) => {
-      setError(reason)
-      throw reason
-    }),
-  )
-  if (error) return <FatalBootstrap error={error} retry={() => { setError(null); setRetryKey(value => value + 1) }} />
   return (
-    <Suspense fallback={<div role="status" aria-live="polite" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'Inter,system-ui,sans-serif', background: '#f4f7f5', color: '#17342f' }}><strong>Carregando SGQ ERP Industrial…</strong></div>}>
-      <AppBootstrap key={retryKey} />
+    <Suspense fallback={<div role="status" aria-live="polite" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'Inter,system-ui,sans-serif', background: '#f4f5f3', color: '#17342f' }}><strong>Carregando SGQ ERP Industrial…</strong></div>}>
+      <AppBootstrap />
     </Suspense>
   )
 }
