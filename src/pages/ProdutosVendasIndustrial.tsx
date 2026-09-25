@@ -148,7 +148,7 @@ export default function ProdutosVendasIndustrial(){
   }
   useEffect(()=>{if(selectedId)void loadDetails()},[selectedId])
 
-  const importExcel=async(e:ChangeEvent<HTMLInputElement>)=>{
+  const loadXlsx=async():Promise<XlsxModule>=>{\n    if(window.XLSX)return window.XLSX\n    const existing=document.querySelector('script[data-erp-xlsx]') as HTMLScriptElement|null\n    if(existing){await new Promise<void>((resolve,reject)=>{existing.addEventListener('load',()=>resolve(),{once:true});existing.addEventListener('error',()=>reject(new Error('Não foi possível carregar o leitor Excel.')),{once:true})})}\n    }else{\n      await new Promise<void>((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';script.async=true;script.dataset.erpXlsx='true';script.onload=()=>resolve();script.onerror=()=>reject(new Error('Não foi possível carregar o leitor Excel.'));document.head.appendChild(script)})\n    }\n    if(!window.XLSX)throw new Error('Leitor Excel não disponível.')\n    return window.XLSX\n  }\n\n  const importExcel=async(e:ChangeEvent<HTMLInputElement>)=>{
     const file=e.target.files?.[0]
     if(!file)return
     setBusy(true);setError('');setMessage('')
