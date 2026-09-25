@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { Play } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import PCPMonthlyPlanner from '../components/pcp/PCPMonthlyPlanner'
 
 type Tab='visao'|'pedidos'|'ops'|'materiais'|'producao'|'programacao'|'capacidade'|'qualidade'
 type Modal='ajuda'|'op'|'programacao'|null
@@ -206,7 +207,7 @@ export default function PCPIndustrial(){
    </section>
   </section>}
 
-  {tab==='programacao'&&<ProgramacaoTimeline programs={schedule} machines={machines} molds={molds} employees={employees} onProgram={openProgram}/>} 
+  {tab==='programacao'&&<PCPMonthlyPlanner programs={schedule} machines={machines} onOpen={openProgram}/>} 
 
   {tab==='capacidade'&&<section><div className="pcp-capacity-grid">{machines.map(m=><article key={m.id}><div><span>{m.codigo}</span><strong>{m.nome}</strong><small>{m.tipo||'Máquina'} • {m.status}</small></div><b>{programs.filter(p=>p.maquina_id===m.id).length} programação(ões)</b><button onClick={()=>openProgram()}><InlineIcon name="CalendarDays" size={16}/> Programar</button></article>)}</div></section>}
 
