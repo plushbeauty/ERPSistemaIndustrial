@@ -52,5 +52,4 @@ export default function PublicIndustrial() {
     <button className="public-help" onClick={() => setHelpOpen(!helpOpen)}>{helpOpen ? <X size={19}/> : <span>?</span>}<b>Ajuda IA</b></button>{helpOpen && <div className="public-help-panel"><strong>Assistente SGQ ERP</strong><p>Posso explicar recursos, planos, módulos, fiscal, MRP, produção e estoque.</p><a href="#planos">Ver comparação dos planos</a><a href="#por-dentro">Ver telas por dentro</a><a href="/login">Acessar o ERP</a></div>}
   </div>
 }
-undefined
 function Workflow({n,title,text}:{n:string;title:string;text:string}){return <article className="workflow-card"><span>{n}</span><h3>{title}</h3><p>{text}</p></article>}
