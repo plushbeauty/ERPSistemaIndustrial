@@ -36,9 +36,10 @@ export default function FichasProcesso(){
    const auth=await supabase.auth.getUser();if(auth.error||!auth.data.user)throw new Error('Sessão não localizada.')
    const profile=await supabase.from('erp_usuarios').select('id,empresa_id').eq('auth_user_id',auth.data.user.id).eq('ativo',true).maybeSingle()
    if(profile.error||!profile.data?.empresa_id)throw new Error(profile.error?.message||'Empresa não localizada.')
-   const usuarioId=String(profile.data.id??'')
+   const profileData=profile.data
+   const usuarioId=String(profileData.id??'')
    if(!form.codigo.trim()||!form.titulo.trim())throw new Error('Código e título são obrigatórios.')
-   const payload={empresa_id:String(profile.data.empresa_id),produto_id:form.produto_id||null,codigo:form.codigo.trim(),versao:Number(form.versao)||1,revisao:form.versao,titulo:form.titulo.trim(),descricao:form.descricao.trim()||null,status:statusOverride ?? form.status,observacoes:form.observacoes.trim()||null,updated_at:new Date().toISOString()}
+   const payload={empresa_id:String(profileData.empresa_id),produto_id:form.produto_id||null,codigo:form.codigo.trim(),versao:Number(form.versao)||1,revisao:form.versao,titulo:form.titulo.trim(),descricao:form.descricao.trim()||null,status:statusOverride ?? form.status,observacoes:form.observacoes.trim()||null,updated_at:new Date().toISOString()}
    const saved=form.id?await supabase.from('erp_fichas_tecnicas').update(payload).eq('id',form.id).select('id').single():await supabase.from('erp_fichas_tecnicas').insert(payload).select('id').single()
    if(saved.error||!saved.data)throw new Error(saved.error?.message||'Falha ao gravar ficha.')
    const id=String(saved.data.id);await supabase.from('erp_ficha_operacoes').delete().eq('ficha_id',id)
@@ -55,7 +56,7 @@ export default function FichasProcesso(){
   if(r.error){setError(r.error.message);return}
   setForm(f);setOps((r.data??[]).map(x=>({...x,parametro_nominal:String(x.parametro_nominal??''),tolerancia_min:String(x.tolerancia_min??''),tolerancia_max:String(x.tolerancia_max??''),unidade:String(x.unidade??''),instrumento:String(x.instrumento??''),criterio_aceitacao:String(x.criterio_aceitacao??''),observacoes:String(x.observacoes??'')}))||[emptyOp()])
  }
- const nextStatus:Record<Status,Status|''>={rascunho:'em_analise',em_analise:'aprovado',aprovado:'liberado',liberado:'',obsoleto:''}
+ const nextStatus:Record<Status,Status|undefined>={rascunho:'em_analise',em_analise:'aprovado',aprovado:'liberado',liberado:'',obsoleto:''}
  async function advance(){if(!form.id)return;const status=nextStatus[form.status];if(!status)return;setForm(x=>({...x,status}));await save(status)}
  return <main className="ficha-page"><header><div><span>ENGENHARIA • FICHAS DE PROCESSO</span><h1>Fichas de Processo</h1><p>Parâmetros nominais, tolerâncias, instrumentos e aprovação controlada.</p></div><button onClick={()=>void save()} disabled={busy}>{busy?'Gravando…':'Gravar ficha'}</button></header>
  {error&&<div className="alert error">{error}</div>}{message&&<div className="alert ok">{message}</div>}
