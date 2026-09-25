@@ -1,258 +1,161 @@
-import { useEffect, useRef, useState } from 'react'
-import { Check, Loader2, Search, X } from 'lucide-react'
-import { supabase } from '../../lib/supabaseClient'
+import { useEffect, useMemo, useState } from 'react';
+import { Search, X } from 'lucide-react';
+import { supabase } from '../../lib/supabaseClient';
 
-export type LookupColumn<T> = { key: keyof T & string; label: string }
-export type LookupResult<T> = { id: string; code: string; description: string; row: T }
+type LookupRecord = Record<string, unknown>;
 
-type Props<T extends Record<string, unknown>> = {
-  label: string
-  value: string
-  onChange: (value: string) => void
-  onSelect: (result: LookupResult<T>) => void
-  table: string
-  codeColumn?: string
-  descriptionColumn?: string
-  extraColumns?: string
-  placeholder?: string
-  disabled?: boolean
-  searchColumns?: string[]
-  columns: LookupColumn<T>[]
-  title?: string
+export type LookupFieldProps = {
+  table: string;
+  value: string;
+  onChange: (value: string, row: LookupRecord | null) => void;
+  columns: string;
+  labelKey: string;
+  codeKey?: string;
+  placeholder?: string;
+  disabled?: boolean;
+};
+
+function isLookupRecord(value: unknown): value is LookupRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false
-  return Object.keys(value).every(key => typeof key === 'string')
-}
-
-function toRow<T extends Record<string, unknown>>(value: unknown): T | null {
-  if (!isRecord(value)) return null
-  return value as T
-}
-
-function normalizeRows<T extends Record<string, unknown>>(value: unknown): T[] {
-  if (!Array.isArray(value)) return []
-  const rows: T[] = []
-  for (const item of value) {
-    const row = toRow<T>(item)
-    if (row) rows.push(row)
-  }
-  return rows
-}
-
-export default function LookupField<T extends Record<string, unknown>>({
-  label,
+export function LookupField({
+  table,
   value,
   onChange,
-  onSelect,
-  table,
-  codeColumn = 'codigo',
-  descriptionColumn = 'nome',
-  extraColumns = '',
-  placeholder = 'Digite o código',
-  disabled = false,
-  searchColumns,
   columns,
-  title,
-}: Props<T>) {
-  const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState('')
-  const [rows, setRows] = useState<T[]>([])
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('')
-  const [resolved, setResolved] = useState(false)
-  const timer = useRef<number | null>(null)
+  labelKey,
+  codeKey,
+  placeholder = 'Pesquisar...',
+  disabled = false,
+}: LookupFieldProps) {
+  const [query, setQuery] = useState('');
+  const [rows, setRows] = useState<LookupRecord[]>([]);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  async function findByCode(code = value) {
-    const normalized = code.trim()
-    if (!normalized) {
-      setResolved(false)
-      return
-    }
+  const selectedLabel = useMemo(() => {
+    const row = rows.find((item) => String(item.id ?? '') === value);
+    if (!row) return '';
+    return String(row[labelKey] ?? row[codeKey ?? ''] ?? '');
+  }, [rows, value, labelKey, codeKey]);
 
-    setLoading(true)
-    setMessage('')
+  useEffect(() => {
+    if (!open || disabled) return;
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const result = await supabase
+          .from(table)
+          .select(columns)
+          .limit(50);
 
-    const select = ['id', codeColumn, descriptionColumn, extraColumns].filter(Boolean).join(',')
-    const response = await supabase
-      .from(table)
-      .select(select)
-      .eq(codeColumn, normalized)
-      .eq('ativo', true)
-      .maybeSingle()
+        if (result.error) throw result.error;
 
-    if (response.error) {
-      setMessage(response.error.message)
-      setResolved(false)
-    } else {
-      const row = toRow<T>(response.data)
-      if (!row) {
-        setResolved(false)
-        setMessage('Código não localizado. Use a lupa para consultar.')
-      } else {
-        setResolved(true)
-        onSelect({
-          id: String(row.id ?? ''),
-          code: String(row[codeColumn] ?? normalized),
-          description: String(row[descriptionColumn] ?? ''),
-          row,
-        })
+        const normalized = Array.isArray(result.data)
+          ? result.data.filter(isLookupRecord)
+          : [];
+
+        const needle = query.trim().toLocaleLowerCase('pt-BR');
+        const filtered = needle
+          ? normalized.filter((row) =>
+              Object.values(row).some((item) =>
+                String(item ?? '').toLocaleLowerCase('pt-BR').includes(needle),
+              ),
+            )
+          : normalized;
+
+        if (!cancelled) setRows(filtered);
+      } catch (cause) {
+        if (!cancelled) {
+          setRows([]);
+          setError(cause instanceof Error ? cause.message : 'Falha ao pesquisar.');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    }
+    }, 250);
 
-    setLoading(false)
-  }
-
-  useEffect(
-    () => () => {
-      if (timer.current !== null) window.clearTimeout(timer.current)
-    },
-    [],
-  )
-
-  async function search() {
-    setLoading(true)
-    setMessage('')
-
-    const select = `id,${codeColumn},${descriptionColumn}${extraColumns ? `,${extraColumns}` : ''}`
-    let request = supabase.from(table).select(select).eq('ativo', true).limit(100)
-    const term = query.trim()
-
-    if (term) {
-      const columnsToSearch = searchColumns?.length ? searchColumns : [codeColumn, descriptionColumn]
-      request = request.or(columnsToSearch.map(column => `${column}.ilike.%${term}%`).join(','))
-    }
-
-    const response = await request
-
-    if (response.error) {
-      setMessage(response.error.message)
-    } else {
-      setRows(normalizeRows<T>(response.data))
-    }
-
-    setLoading(false)
-  }
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [open, disabled, query, table, columns]);
 
   return (
-    <div className="lookup-field">
-      <label>{label}</label>
-      <div className="lookup-control">
+    <div className="relative">
+      <div className="flex gap-2">
         <input
-          value={value}
+          value={open ? query : selectedLabel}
           disabled={disabled}
+          onFocus={() => setOpen(true)}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setOpen(true);
+          }}
           placeholder={placeholder}
-          onChange={event => {
-            onChange(event.target.value)
-            setResolved(false)
-            if (timer.current !== null) window.clearTimeout(timer.current)
-            timer.current = window.setTimeout(() => void findByCode(event.target.value), 450)
-          }}
-          onKeyDown={event => {
-            if (event.key === 'Enter') {
-              event.preventDefault()
-              void findByCode()
-            }
-          }}
+          aria-label={placeholder}
         />
+        {value && (
+          <button
+            type="button"
+            className="erp-btn-secondary"
+            onClick={() => {
+              setQuery('');
+              onChange('', null);
+              setOpen(false);
+            }}
+            aria-label="Limpar seleção"
+          >
+            <X />
+          </button>
+        )}
         <button
           type="button"
-          disabled={disabled || loading}
-          aria-label={`Consultar ${label}`}
-          title="Consulta avançada"
-          onClick={() => {
-            setOpen(true)
-            void search()
-          }}
+          className="erp-btn-secondary"
+          disabled={disabled}
+          onClick={() => setOpen((current) => !current)}
+          aria-label="Abrir pesquisa"
         >
-          <Search size={17} />
+          <Search />
         </button>
-        {resolved && <Check className="lookup-ok" size={17} />}
       </div>
 
-      {message && <small className="lookup-message">{message}</small>}
-
-      {open && (
-        <div
-          className="lookup-overlay"
-          role="presentation"
-          onMouseDown={event => {
-            if (event.target === event.currentTarget) setOpen(false)
-          }}
-        >
-          <section className="lookup-dialog" role="dialog" aria-modal="true" aria-label={title || `Consultar ${label}`}>
-            <header>
-              <div>
-                <span>CONSULTA</span>
-                <h2>{title || `Consultar ${label}`}</h2>
-              </div>
-              <button type="button" aria-label="Fechar consulta" onClick={() => setOpen(false)}>
-                <X size={19} />
-              </button>
-            </header>
-
-            <div className="lookup-search">
-              <Search size={17} />
-              <input
-                autoFocus
-                value={query}
-                onChange={event => setQuery(event.target.value)}
-                onKeyDown={event => {
-                  if (event.key === 'Enter') void search()
-                }}
-                placeholder="Código, descrição ou outro filtro..."
-              />
-              <button type="button" onClick={() => void search()} disabled={loading}>
-                {loading ? <Loader2 className="spin" size={17} /> : 'Pesquisar'}
-              </button>
-            </div>
-
-            {message && <div className="lookup-error" role="alert">{message}</div>}
-
-            <div className="lookup-table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    {columns.map(column => <th key={column.key}>{column.label}</th>)}
-                    <th>Ação</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row, index) => (
-                    <tr key={String(row.id ?? index)}>
-                      {columns.map(column => <td key={column.key}>{String(row[column.key] ?? '—')}</td>)}
-                      <td>
-                        <button
-                          type="button"
-                          className="lookup-select"
-                          onClick={() => {
-                            onSelect({
-                              id: String(row.id ?? ''),
-                              code: String(row[codeColumn] ?? ''),
-                              description: String(row[descriptionColumn] ?? ''),
-                              row,
-                            })
-                            setOpen(false)
-                            setResolved(true)
-                          }}
-                        >
-                          Selecionar
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {!loading && rows.length === 0 && (
-                    <tr>
-                      <td colSpan={columns.length + 1} className="lookup-empty">Nenhum registro encontrado.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </section>
+      {open && !disabled && (
+        <div className="absolute z-50 mt-2 max-h-72 w-full overflow-auto rounded-xl border bg-white p-2 shadow-xl">
+          {loading && <div className="p-3 text-sm">Pesquisando...</div>}
+          {error && <div className="p-3 text-sm text-red-700">{error}</div>}
+          {!loading && !error && rows.length === 0 && (
+            <div className="p-3 text-sm text-slate-500">Nenhum registro encontrado.</div>
+          )}
+          {!loading &&
+            !error &&
+            rows.map((row) => {
+              const id = String(row.id ?? '');
+              const label = String(row[labelKey] ?? row[codeKey ?? ''] ?? id);
+              const code = codeKey ? String(row[codeKey] ?? '') : '';
+              return (
+                <button
+                  type="button"
+                  key={id}
+                  className="block w-full rounded-lg p-3 text-left hover:bg-slate-100 focus:bg-slate-100 focus:outline-none"
+                  onClick={() => {
+                    onChange(id, row);
+                    setQuery('');
+                    setOpen(false);
+                  }}
+                >
+                  <strong>{code ? code + ' • ' : ''}{label}</strong>
+                </button>
+              );
+            })}
         </div>
       )}
     </div>
-  )
+  );
 }
+
+export default LookupField;
