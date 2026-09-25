@@ -77,12 +77,12 @@ function AccessGate({ children }: { children: ReactNode }) {
         let master = false
         let empresaId = profile?.empresa_id ?? null
         if (profile?.auth_user_id === user.id) {
-          master = Boolean(profile?.is_master) || Number(profile?.nivel_admin ?? 0) >= 9 || ['MASTER','MASTER_ADMIN','SUPER_ADMIN'].includes(String(profile?.perfil ?? '').trim().toUpperCase())
+          master = profile?.is_master === true && Number(profile?.nivel_admin ?? 0) >= 100 && String(profile?.perfil ?? '').trim().toUpperCase() === 'MASTER' && profile?.empresa_id === null
         } else {
           const { data: global, error: globalError } = await supabase.from('usuarios').select('id,auth_user_id,ativo,nivel_admin,perfil,empresa_id').eq('auth_user_id', user.id).eq('ativo', true).maybeSingle()
           if (globalError) throw globalError
           const globalRole = String(global?.perfil ?? '').trim().toUpperCase()
-          master = Boolean(global?.auth_user_id) && (Number(global?.nivel_admin ?? 0) >= 80 || ['SUPER_ADMIN','MASTER','MASTER_ADMIN'].includes(globalRole))
+          master = Boolean(global?.auth_user_id) && Number(global?.nivel_admin ?? 0) >= 100 && ['SUPER_ADMIN','MASTER','MASTER_ADMIN'].includes(globalRole) && global?.empresa_id === null
           empresaId = global?.empresa_id ?? null
         }
         if (!profile?.auth_user_id && !master) { if (alive) setState('denied'); return }
