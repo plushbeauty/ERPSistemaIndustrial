@@ -45,15 +45,12 @@ jobs:
         run: npm run build
 
       - name: Deploy produção na Vercel
+        if: ${{ secrets.VERCEL_TOKEN != '' }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_HQocQmxw6ctXcrLRfbbNEoMw
           VERCEL_PROJECT_ID: prj_Dxf8Hg9DB2Jz70YJjxaktSn03ECc
         run: |
-          if [ -z "$VERCEL_TOKEN" ]; then
-            echo "VERCEL_TOKEN ausente nos secrets do GitHub"
-            exit 1
-          fi
           npm install --global vercel@latest
           vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
           vercel build --prod --token="$VERCEL_TOKEN"
