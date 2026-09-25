@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import TabletLaunchpad from './TabletLaunchpad'
 import { supabase } from '../lib/supabaseClient'
+import IndustrialGlyph from './ui/IndustrialGlyph'
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 type Props = { onNavigate: (route: string) => void; profileName: string; isMaster?: boolean }
@@ -64,7 +65,7 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
 
         if (profileError) throw profileError
         const master = profile?.is_master === true &&
-          Number(profile?.nivel_admin ?? 0) === 9 &&
+          Number(profile?.nivel_admin ?? 0) === 100 &&
           String(profile?.perfil ?? '').toUpperCase() === 'MASTER' &&
           profile?.empresa_id === null
 
@@ -134,14 +135,14 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
   ] as const
 
   const modules = [
-    { label: 'PCP & MRP', desc: 'OPs, demanda, materiais e programação', icon: Factory, route: '/pcp' },
-    { label: 'Engenharia / BOM', desc: 'Estrutura, roteiro e ficha de processo', icon: Boxes, route: '/engenharia' },
-    { label: 'Chão de Fábrica', desc: 'Tablet, apontamento, refugo e paradas', icon: Zap, route: '/operacao-industrial' },
-    { label: 'Qualidade / SGQ', desc: 'Inspeção, RPNC, calibração e auditoria', icon: ShieldCheck, route: '/qualidade' },
-    { label: 'Almoxarifado', desc: 'Lotes, endereços, reservas e rastreio', icon: Package, route: '/estoque' },
-    { label: 'Compras', desc: 'Solicitações, fornecedores e recebimento', icon: ShoppingCart, route: '/compras-solicitacao' },
-    { label: 'Manutenção', desc: 'Máquinas, planos e ordens', icon: Wrench, route: '/operacao-industrial' },
-    { label: 'RH & Competências', desc: 'Operadores, treinamentos e autorizações', icon: Users, route: '/rh' },
+    { label: 'PCP & MRP', desc: 'OPs, demanda, materiais e programação', icon: Factory, glyph: 'planning' as const, route: '/pcp' },
+    { label: 'Engenharia / BOM', desc: 'Estrutura, roteiro e ficha de processo', icon: Boxes, glyph: 'engineering' as const, route: '/engenharia' },
+    { label: 'Chão de Fábrica', desc: 'Tablet, apontamento, refugo e paradas', icon: Zap, glyph: 'factory' as const, route: '/operacao-industrial' },
+    { label: 'Qualidade / SGQ', desc: 'Inspeção, RPNC, calibração e auditoria', icon: ShieldCheck, glyph: 'quality' as const, route: '/qualidade' },
+    { label: 'Almoxarifado', desc: 'Lotes, endereços, reservas e rastreio', icon: Package, glyph: 'warehouse' as const, route: '/estoque' },
+    { label: 'Compras', desc: 'Solicitações, fornecedores e recebimento', icon: ShoppingCart, glyph: 'materials' as const, route: '/compras-solicitacao' },
+    { label: 'Manutenção', desc: 'Máquinas, planos e ordens', icon: Wrench, glyph: 'maintenance' as const, route: '/operacao-industrial' },
+    { label: 'RH & Competências', desc: 'Operadores, treinamentos e autorizações', icon: Users, glyph: 'orders' as const, route: '/rh' },
   ] as const
 
   return <>
@@ -204,7 +205,7 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
             {modules.map(item => {
               const Icon = item.icon
               return <button key={item.label} onClick={() => onNavigate(item.route)}>
-                <span><Icon size={20} /></span><div><b>{item.label}</b><small>{item.desc}</small></div><ArrowUpRight size={15} />
+                <span className="icd-custom-glyph">{item.glyph ? <IndustrialGlyph name={item.glyph} width={22} height={22}/> : <Icon size={20} />}</span><div><b>{item.label}</b><small>{item.desc}</small></div><ArrowUpRight size={15} />
               </button>
             })}
           </div>

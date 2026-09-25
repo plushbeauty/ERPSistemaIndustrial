@@ -160,7 +160,7 @@ export default function AppIndustrialV7() {
   return <motion.div className={`v7-shell theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
     <header className="v7-topbar">
       <button className="v7-top-brand" type="button" onClick={() => setLauncher(true)} aria-label="Abrir Tablet Industrial">
-        <img src="/logo-industrial.svg" alt="Logomarca INDUSTRIA ERP" />
+        <span className="industrial-logo-lockup"><img src="/logo-industrial.svg" alt="Logomarca SGQ ERP Industrial" /></span>
         <span><strong>INDUSTRIA ERP</strong><small>Plataforma integrada de gestão industrial</small></span>
       </button>
       <div className="v7-top-plant" aria-label="Status da planta">

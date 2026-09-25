@@ -229,6 +229,21 @@ Deno.serve(async (req) => {
       return json({ ok: true, user: inserted.data, temporary_password: temporaryPassword, invited: false })
     }
 
+    if (action === 'reset_password') {
+      const targetId = String(body.user_id || '')
+      if (!targetId) return json({ error: 'Usuário alvo não informado.' }, 400)
+      const { data: target, error: targetError } = await admin.from('erp_usuarios').select('id,empresa_id,nome,email,ativo,nivel_admin').eq('id', targetId).eq('empresa_id', actor.empresa_id).is('deleted_at', null).maybeSingle()
+      if (targetError) throw targetError
+      if (!target) return json({ error: 'Usuário não encontrado nesta empresa.' }, 404)
+      if (target.id === authData.user.id) return json({ error: 'Para sua própria senha use Minha conta → Segurança.' }, 400)
+      if (Number(target.nivel_admin ?? 0) >= actorLevel && !actorIsMaster) return json({ error: 'Você não pode redefinir a senha de um usuário de nível igual ou superior ao seu.' }, 403)
+      if (!target.email) return json({ error: 'O usuário não possui e-mail para recuperação.' }, 400)
+      const { error: resetError } = await userClient.auth.resetPasswordForEmail(target.email, { redirectTo: (Deno.env.get('ERP_ALLOWED_ORIGIN') || 'https://erp-sistema-industrial.vercel.app') + '/redefinir-senha' })
+      if (resetError) return json({ error: resetError.message }, 400)
+      await writeAudit(actor, 'user.password_reset_requested', target.id, { email: target.email }, { requested: true }, req)
+      return json({ ok: true, message: 'Link de redefinição enviado para o e-mail do usuário.' })
+    }
+
     const targetId = String(body.user_id || '')
     if (!targetId) return json({ error: 'Usuário alvo não informado.' }, 400)
     const { data: target, error: targetError } = await admin.from('erp_usuarios').select('id,empresa_id,nome,email,role,nivel_admin,ativo,role_id').eq('id', targetId).eq('empresa_id', actor.empresa_id).is('deleted_at', null).maybeSingle()
