@@ -23,7 +23,7 @@ export default function SetupADMInicial() {
   useEffect(() => {
     let alive = true
     async function check() {
-      if (!supabaseConfigurado) { if (alive) { setAvailable(false); setError('Supabase não está configurado neste ambiente.') }; return }
+      if (!supabaseConfigurado) { if (alive) { setAvailable(false); setError('Supabase não está configurado neste ambiente.') } return }
       try {
         const { data, error:fnError } = await supabase.functions.invoke('erp-master-bootstrap', { body:{ action:'status' } })
         if (fnError) throw fnError
