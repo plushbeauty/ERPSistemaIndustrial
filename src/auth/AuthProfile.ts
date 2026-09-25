@@ -9,7 +9,7 @@ export type AuthProfile =
       auth_user_id: string;
       email: string;
       perfil: 'MASTER';
-      nivel_admin: 9;
+      nivel_admin: 100;
       ativo: true;
       empresa_id: null;
       empresa: null;
