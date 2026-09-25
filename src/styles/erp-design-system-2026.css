@@ -327,3 +327,16 @@ textarea.ds-control{min-height:90px;resize:vertical}
 
 .pcp-month-view-toggle{display:inline-flex;gap:2px;margin-left:8px}.pcp-month-view-toggle button{height:30px;padding:0 9px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#D7E7EA;border-radius:5px;font-size:10px;font-weight:800;cursor:pointer}.pcp-month-view-toggle button.active{background:#fff;color:var(--ds-primary);border-color:#fff}.pcp-month-scope{display:inline-flex;align-items:center;min-height:30px;padding:0 8px;border-radius:5px;background:#EAF3F5;color:var(--ds-primary);font-size:10px;font-weight:900}
 @media(max-width:760px){.pcp-month-view-toggle{margin-left:0}.pcp-month-toolbar__actions{width:100%}.pcp-month-toolbar__actions>strong{margin-left:auto}}
+
+.pcp-month-main{min-width:0}
+.pcp-backlog-rail{width:238px;flex:0 0 238px;background:var(--ds-surface);border:1px solid var(--ds-border);border-radius:var(--ds-radius-lg);padding:12px;box-shadow:var(--ds-shadow-xs);display:flex;flex-direction:column;gap:8px}
+.pcp-backlog-rail>div{display:flex;flex-direction:column;gap:3px;padding-bottom:8px;border-bottom:1px solid var(--ds-border)}
+.pcp-backlog-rail>div strong{font-size:11px;letter-spacing:.08em;color:var(--ds-primary)}
+.pcp-backlog-rail>div span{font-size:12px;color:var(--ds-text-2)}
+.pcp-backlog-rail button{display:grid;grid-template-columns:1fr auto;gap:2px 8px;text-align:left;border:1px solid var(--ds-border);background:var(--ds-bg);border-radius:6px;padding:8px;cursor:pointer}
+.pcp-backlog-rail button:hover{border-color:var(--ds-action);box-shadow:var(--ds-shadow-xs)}
+.pcp-backlog-rail button b{font-size:12px;color:var(--ds-text)}
+.pcp-backlog-rail button span{font-size:10px;color:var(--ds-text-2);justify-self:end}
+.pcp-backlog-rail button small{grid-column:1/-1;font-size:10px;color:var(--ds-text-3)}
+.pcp-backlog-empty{padding:12px;color:var(--ds-text-3);font-size:12px}
+@media (max-width:1100px){.pcp-backlog-rail{width:100%;flex-basis:auto;order:-1;flex-direction:row;overflow:auto}.pcp-backlog-rail>div{min-width:190px}.pcp-backlog-rail button{min-width:160px}}
