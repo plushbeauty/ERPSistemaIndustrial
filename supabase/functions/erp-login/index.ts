@@ -60,7 +60,7 @@ Deno.serve(async (req: Request) => {
       const [{ data: masters, error: masterError }, { data: globalMasters, error: globalError }] = await Promise.all([
         admin.from('erp_usuarios')
           .select('id')
-          .or('is_master.eq.true,nivel_admin.gte.9,perfil.in.(MASTER,MASTER_ADMIN,SUPER_ADMIN)')
+          .or('is_master.eq.true,nivel_admin.gte.100,perfil.in.(MASTER,MASTER_ADMIN,SUPER_ADMIN)')
           .eq('ativo', true)
           .is('deleted_at', null)
           .limit(1),
