@@ -207,7 +207,7 @@ export default function PCPIndustrial(){
    </section>
   </section>}
 
-  {tab==='programacao'&&<PCPMonthlyPlanner programs={schedule} machines={machines} onOpen={openProgram}/>} 
+  {tab==='programacao'&&<PCPMonthlyPlanner programs={schedule} machines={machines} ops={ops} onOpen={openProgram}/>} 
 
   {tab==='capacidade'&&<section><div className="pcp-capacity-grid">{machines.map(m=><article key={m.id}><div><span>{m.codigo}</span><strong>{m.nome}</strong><small>{m.tipo||'Máquina'} • {m.status}</small></div><b>{programs.filter(p=>p.maquina_id===m.id).length} programação(ões)</b><button onClick={()=>openProgram()}><InlineIcon name="CalendarDays" size={16}/> Programar</button></article>)}</div></section>}
 
