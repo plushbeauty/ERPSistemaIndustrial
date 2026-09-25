@@ -32,7 +32,7 @@ as $$
       and u.deleted_at is null
       and (
         coalesce(u.is_master, false) = true
-        or coalesce(u.nivel_admin, 0) >= 9
+        or coalesce(u.nivel_admin, 0) >= 100
         or upper(coalesce(u.role, '')) in ('MASTER','MASTER_ADMIN','SUPER_ADMIN')
       )
   )
