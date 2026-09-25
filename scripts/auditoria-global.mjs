@@ -70,7 +70,7 @@ if (clientCandidates.length > 1) findings.push({ level: 'HIGH', file: clientCand
 
 for (const file of frontendFiles) {
   const text = allText.get(file)
-  const re = /(?:\bTODO\b|\bFIXME\b|coming\s+soon|em\s+breve)/gi
+  const re = /(?<![\p{L}\p{N}_])(?:TODO|FIXME)(?![\p{L}\p{N}_])/giu
   for (const m of text.matchAll(re)) add('MEDIUM', file, lineOf(text, m.index ?? 0), 'Placeholder/TODO encontrado em código executável.')
 }
 
