@@ -1,3 +1,4 @@
+import React from 'react'
 import { useMemo } from 'react'
 import { BookOpen, Boxes, CheckCircle2, FileText, Factory, HelpCircle, KeyRound, Package, ShieldCheck, ShoppingCart, Wrench } from 'lucide-react'
 
