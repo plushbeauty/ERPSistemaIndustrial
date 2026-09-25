@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BarChart3, Boxes, Calculator, ClipboardCheck, FileCheck2, Factory, RefreshCw, WalletCards, ArrowRight, AlertTriangle } from 'lucide-react'
+import { Boxes, Calculator, ClipboardCheck, FileCheck2, Factory, RefreshCw, ArrowRight } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Product={id:string;codigo:string;nome:string;estoque_atual:number;custo_medio:number;custo_fabricacao:number;preco_venda:number}
