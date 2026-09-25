@@ -26,6 +26,7 @@ declare global {
 export default function PwaInstallButton() {
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [hidden, setHidden] = useState(false)
+  const [help, setHelp] = useState(false)
 
   useEffect(() => {
     const standalone = window.matchMedia('(display-mode: standalone)').matches
@@ -43,9 +44,10 @@ export default function PwaInstallButton() {
     return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
 
-  if (hidden || !prompt) return null
+  if (hidden) return null
 
   async function install() {
+    if (!prompt) { setHelp(true); return }
     const currentPrompt = prompt
     if (!currentPrompt) return
     setPrompt(null)
@@ -61,7 +63,7 @@ export default function PwaInstallButton() {
     <div className="pwa-install-banner" role="status">
       <div>
         <strong>Instale o ERP no computador</strong>
-        <span>Acesso rápido, tela própria e experiência de aplicativo.</span>
+        <span>{help ? 'No Chrome/Edge: Menu ⋮ → Instalar aplicativo. O botão automático aparece quando o navegador liberar a instalação.' : 'Acesso rápido, tela própria e experiência de aplicativo.'}</span>
       </div>
       <div className="pwa-install-actions">
         <button type="button" onClick={() => void install()}>
