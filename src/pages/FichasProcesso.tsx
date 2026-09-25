@@ -56,7 +56,7 @@ export default function FichasProcesso(){
   if(r.error){setError(r.error.message);return}
   setForm(f);setOps((r.data??[]).map(x=>({...x,parametro_nominal:String(x.parametro_nominal??''),tolerancia_min:String(x.tolerancia_min??''),tolerancia_max:String(x.tolerancia_max??''),unidade:String(x.unidade??''),instrumento:String(x.instrumento??''),criterio_aceitacao:String(x.criterio_aceitacao??''),observacoes:String(x.observacoes??'')}))||[emptyOp()])
  }
- const nextStatus:Record<Status,Status|undefined>={rascunho:'em_analise',em_analise:'aprovado',aprovado:'liberado',liberado:'',obsoleto:''}
+ const nextStatus:Record<Status,Status|undefined>={rascunho:'em_analise',em_analise:'aprovado',aprovado:'liberado',liberado:undefined,obsoleto:undefined}
  async function advance(){if(!form.id)return;const status=nextStatus[form.status];if(!status)return;setForm(x=>({...x,status}));await save(status)}
  return <main className="ficha-page"><header><div><span>ENGENHARIA • FICHAS DE PROCESSO</span><h1>Fichas de Processo</h1><p>Parâmetros nominais, tolerâncias, instrumentos e aprovação controlada.</p></div><button onClick={()=>void save()} disabled={busy}>{busy?'Gravando…':'Gravar ficha'}</button></header>
  {error&&<div className="alert error">{error}</div>}{message&&<div className="alert ok">{message}</div>}
