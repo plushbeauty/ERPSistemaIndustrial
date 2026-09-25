@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, CheckCircle2, Gauge, Plus, RefreshCw, Save, Shuffle, Target, Boxes } from 'lucide-react'
+import { AlertTriangle, CalendarDays, CheckCircle2, Factory, Gauge, Plus, RefreshCw, Save, Shuffle, Target, Boxes } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Product={id:string;codigo:string;nome:string;estoque_atual:number}
@@ -8,7 +8,7 @@ type Planned={id:string;produto_id:string;quantidade:number;data_necessaria:stri
 type Center={id:string;codigo:string;nome:string;capacidade_horas_dia:number;eficiencia_percent:number;ativo:boolean}
 type Program={id:string;maquina_id:string|null;inicio_planejado:string;fim_planejado:string;quantidade_planejada:number;status:string}
 type Machine={id:string;codigo:string;nome:string;status:string}
-type AlertRow={id:string;tipo:string;severidade:string;mensagem:string;status:string;criado_em:string}
+type AlertRow={id:string;tipo:string;severidade:string;mensagem:string;status:string;created_at:string}
 
 const today=()=>new Date().toISOString().slice(0,10)
 const productLabel=(p:Product)=>p.codigo+' • '+p.nome
@@ -36,7 +36,7 @@ export default function PCPPlanejamentoIndustrial(){
     supabase.from('erp_pcp_centros_trabalho').select('id,codigo,nome,capacidade_horas_dia,eficiencia_percent,ativo').eq('ativo',true).order('codigo'),
     supabase.from('erp_pcp_programacoes').select('id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,status').neq('status','cancelada').order('inicio_planejado').limit(3000),
     supabase.from('erp_maquinas').select('id,codigo,nome,status').not('status','eq','INATIVA').order('codigo'),
-    supabase.from('erp_pcp_alertas').select('id,tipo,severidade,mensagem,status,criado_em').neq('status','RESOLVIDO').order('created_at',{ascending:false}).limit(500)
+    supabase.from('erp_pcp_alertas').select('id,tipo,severidade,mensagem,status,created_at').neq('status','RESOLVIDO').order('created_at',{ascending:false}).limit(500)
    ])
    for(const r of [p,m,o,c,pr,ma,a]) if(r.error) throw r.error
    setProducts((p.data??[]) as Product[]);setMps((m.data??[]) as MPS[]);setPlanned((o.data??[]) as Planned[]);setCenters((c.data??[]) as Center[]);setPrograms((pr.data??[]) as Program[]);setMachines((ma.data??[]) as Machine[]);setAlerts((a.data??[]) as AlertRow[])
@@ -51,6 +51,7 @@ export default function PCPPlanejamentoIndustrial(){
   const hours=rows.reduce((s,p)=>s+Math.max(0,(new Date(p.fim_planejado).getTime()-new Date(p.inicio_planejado).getTime())/3600000),0)
   return {m,rows,hours}
  }),[machines,programs])
+ const shortages=useMemo(()=>products.filter(p=>Number(p.estoque_atual||0)<0),[products])
 
  async function createMPS(){
   const q=Number(qty),t=Number(target)
@@ -127,7 +128,7 @@ export default function PCPPlanejamentoIndustrial(){
 
   {tab==='alertas'&&<section className="industrial-panel">
    <div className="process-section-heading"><span>EXCEÇÕES</span><h2>Alertas do PCP</h2><p>Fila de exceções que exige ação do planejador: atraso, falta, capacidade, conflito e máquina indisponível.</p></div>
-   <div className="industrial-table-scroll"><table className="industrial-table"><thead><tr><th>Data</th><th>Tipo</th><th>Severidade</th><th>Mensagem</th><th>Ação</th></tr></thead><tbody>{alerts.map(a=><tr key={a.id}><td>{new Date(a.criado_em).toLocaleString('pt-BR')}</td><td>{a.tipo}</td><td>{a.severidade}</td><td>{a.mensagem}</td><td><button className="industrial-secondary" onClick={()=>void resolveAlert(a.id)} disabled={busy}><CheckCircle2 size={15}/> Resolver</button></td></tr>)}{!alerts.length&&<tr><td colSpan={5}>Nenhum alerta aberto.</td></tr>}</tbody></table></div>
+   <div className="industrial-table-scroll"><table className="industrial-table"><thead><tr><th>Data</th><th>Tipo</th><th>Severidade</th><th>Mensagem</th><th>Ação</th></tr></thead><tbody>{alerts.map(a=><tr key={a.id}><td>{new Date(a.created_at).toLocaleString('pt-BR')}</td><td>{a.tipo}</td><td>{a.severidade}</td><td>{a.mensagem}</td><td><button className="industrial-secondary" onClick={()=>void resolveAlert(a.id)} disabled={busy}><CheckCircle2 size={15}/> Resolver</button></td></tr>)}{!alerts.length&&<tr><td colSpan={5}>Nenhum alerta aberto.</td></tr>}</tbody></table></div>
   </section>}
  </main>
 }
