@@ -219,7 +219,7 @@ export default function ProdutosVendasIndustrial(){
         <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={16}/>Importar Excel (temporário)</button>
 
         <button type="button" onClick={()=>setEditing(true)} disabled={!selectedId} style={btn('normal')}><Edit3 size={16}/>Editar</button>
-        <button type="button" onClick={()=>void save()} disabled={!editing||busy} style={btn('normal')}><Save size={16}/>Salvar</button>
+        <button type="button" onClick={e=>void save(e)} disabled={!editing||busy} style={btn('normal')}><Save size={16}/>Salvar</button>
         <button type="button" onClick={cancelEdit} style={btn('normal')}><RotateCcw size={16}/>Cancelar</button>
         <button type="button" onClick={()=>window.print()} style={btn('normal')}><Printer size={16}/>Imprimir</button>
         <button type="button" onClick={()=>setMessage('Etiqueta preparada para impressão do produto selecionado.')} disabled={!selectedId} style={btn('normal')}><Tag size={16}/>Etiqueta</button>
