@@ -60,13 +60,13 @@ Deno.serve(async (req: Request) => {
       const [{ data: masters, error: masterError }, { data: globalMasters, error: globalError }] = await Promise.all([
         admin.from('erp_usuarios')
           .select('id')
-          .or('is_master.eq.true,nivel_admin.gte.9,perfil.in.(MASTER,MASTER_ADMIN,SUPER_ADMIN)')
+          .or('is_master.eq.true,nivel_admin.gte.100,perfil.in.(MASTER,MASTER_ADMIN,SUPER_ADMIN)')
           .eq('ativo', true)
           .is('deleted_at', null)
           .limit(1),
         admin.from('usuarios')
           .select('id')
-          .or('nivel_admin.gte.9,perfil.in.(MASTER,MASTER_ADMIN,SUPER_ADMIN)')
+          .or('nivel_admin.gte.100,perfil.in.(MASTER,MASTER_ADMIN,SUPER_ADMIN)')
           .eq('ativo', true)
           .limit(1),
       ])
@@ -96,13 +96,13 @@ Deno.serve(async (req: Request) => {
     const [{ data: existingErp }, { data: existingPlush }] = await Promise.all([
       admin.from('erp_usuarios')
         .select('id')
-        .or('is_master.eq.true,nivel_admin.gte.9,perfil.in.(MASTER,MASTER_ADMIN,SUPER_ADMIN)')
+        .or('is_master.eq.true,nivel_admin.gte.100,perfil.in.(MASTER,MASTER_ADMIN,SUPER_ADMIN)')
         .eq('ativo', true)
         .is('deleted_at', null)
         .limit(1),
       admin.from('usuarios')
         .select('id')
-        .or('nivel_admin.gte.9,perfil.in.(MASTER,MASTER_ADMIN,SUPER_ADMIN)')
+        .or('nivel_admin.gte.100,perfil.in.(MASTER,MASTER_ADMIN,SUPER_ADMIN)')
         .eq('ativo', true)
         .limit(1),
     ])
@@ -123,7 +123,7 @@ Deno.serve(async (req: Request) => {
         app_metadata: {
           product: 'erp-industrial',
           is_master: true,
-          nivel_admin: 9,
+          nivel_admin: 100,
         },
         user_metadata: {
           nome,
@@ -144,7 +144,7 @@ Deno.serve(async (req: Request) => {
         perfil: 'MASTER',
         ativo: true,
         auth_user_id: authUserId,
-        nivel_admin: 9,
+        nivel_admin: 100,
         setor_id: null,
         username: null,
         role_id: null,
