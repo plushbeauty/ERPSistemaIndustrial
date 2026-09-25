@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: 22
       - name: Install
-        run: npm ci
+        run: npm install --legacy-peer-deps --no-audit --no-fund
       - name: TypeScript
         run: npm run type-check
       - name: ESLint
