@@ -72,7 +72,7 @@ export default function ProcessoIndustrialPage(){
     try{
       if(!processForm.codigo.trim()||!processForm.nome.trim()) throw new Error('Código e nome são obrigatórios.')
       const id=await companyId()
-      const r=await supabase.from('erp_processos_industriais').insert({empresa_id:id,codigo:processForm.codigo.trim(),nome:processForm.nome.trim(),tipo,descricao:processForm.descricao||null,capacidade_hora:Number(processForm.capacidade)||null,setup_padrao_min:Number(processForm.setup)||0,ciclo_padrao_seg:Number(processForm.ciclo)||null}).select('id').single()
+      const r=await supabase.from('erp_processos_industriais').insert({empresa_id:id,codigo:processForm.codigo.trim(),nome:processForm.nome.trim(),tipo:type,descricao:processForm.descricao||null,capacidade_hora:Number(processForm.capacidade)||null,setup_padrao_min:Number(processForm.setup)||0,ciclo_padrao_seg:Number(processForm.ciclo)||null}).select('id').single()
       if(r.error) throw r.error
       setMessage('Processo cadastrado no banco.');setShowProcess(false);setProcessForm({codigo:'',nome:'',descricao:'',capacidade:'',setup:'0',ciclo:''});await load()
     }catch(e){setError(e instanceof Error?e.message:'Não foi possível cadastrar o processo.')}finally{setBusy(false)}
