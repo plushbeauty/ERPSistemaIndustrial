@@ -275,3 +275,52 @@ textarea.ds-control{min-height:90px;resize:vertical}
  .pcp-month-summary{gap:8px}
  .pcp-month-summary span+span{padding-left:8px}
 }
+
+
+/* ==========================================================================
+   COMPONENT PRIMITIVES — estados e interação
+   ========================================================================== */
+.ds-section{background:var(--ds-surface);border-bottom:1px solid var(--ds-border);padding:18px 0}
+.ds-section__head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px}
+.ds-section__head h2{margin:0;color:var(--ds-primary);font-size:15px;line-height:1.25}
+.ds-section__head p{margin:4px 0 0;color:var(--ds-text-2);font-size:11px}
+.ds-section__actions{display:flex;gap:6px;align-items:center}
+.ds-status-pill{display:inline-flex;align-items:center;gap:6px;min-height:24px;padding:0 8px;border-radius:999px;font-size:10px;font-weight:800;border:1px solid transparent;white-space:nowrap}
+.ds-status-pill--production,.ds-status-pill--success{background:#E7F5EF;color:#216C51;border-color:#BFE4D4}
+.ds-status-pill--setup,.ds-status-pill--warning{background:#FFF4DD;color:#8B6219;border-color:#F0D59B}
+.ds-status-pill--idle{background:#EFF3F4;color:#53666D;border-color:#D6E0E3}
+.ds-status-pill--stop,.ds-status-pill--maintenance,.ds-status-pill--danger{background:#FCEBED;color:#9E3239;border-color:#F1C7CC}
+.ds-status-pill--risk{background:#FFF0E2;color:#A65A18;border-color:#F0CFAC}
+.ds-status-pill--info{background:#E8F4F8;color:#216B83;border-color:#C6E1E9}
+.ds-spin{animation:ds-spin 1s linear infinite}@keyframes ds-spin{to{transform:rotate(360deg)}}
+.ds-icon-btn{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--ds-border);background:#fff;border-radius:6px;cursor:pointer;color:var(--ds-text-2)}
+.ds-icon-btn:hover{background:var(--ds-surface-2);color:var(--ds-primary)}
+.ds-drawer-layer{position:fixed;inset:0;z-index:1000;background:rgba(13,32,41,.28);display:flex;justify-content:flex-end}
+.ds-drawer{width:min(520px,94vw);height:100%;background:#fff;box-shadow:-12px 0 35px rgba(13,32,41,.16);display:flex;flex-direction:column}
+.ds-drawer__head{display:flex;justify-content:space-between;gap:12px;padding:16px;border-bottom:1px solid var(--ds-border)}
+.ds-drawer__head strong{display:block;font-size:16px;color:var(--ds-primary)}
+.ds-drawer__head small{display:block;margin-top:4px;color:var(--ds-text-2);font-size:11px}
+.ds-drawer__body{flex:1;overflow:auto;padding:16px}
+.ds-drawer__foot{padding:12px 16px;border-top:1px solid var(--ds-border);background:#FBFDFE;display:flex;justify-content:flex-end;gap:7px}
+.ds-confirm-row{position:relative;display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #E7EFF1;cursor:pointer}
+.ds-confirm-row>input{position:absolute;opacity:0;pointer-events:none}
+.ds-confirm-row strong{display:block;font-size:12px}.ds-confirm-row small{display:block;margin-top:2px;color:var(--ds-text-2);font-size:10px}
+.ds-check{width:18px;height:18px;display:grid;place-items:center;border:1px solid var(--ds-border-strong);border-radius:4px;background:#fff;color:#fff;flex:0 0 auto}
+.ds-check--on{background:var(--ds-action);border-color:var(--ds-action)}
+.ds-alert{display:flex;gap:9px;align-items:flex-start;padding:10px 12px;border-left:3px solid;border-radius:4px;font-size:11px}
+.ds-alert--info{background:#EAF5F8;border-color:var(--ds-info);color:#245C70}
+.ds-alert--warning{background:#FFF6E7;border-color:var(--ds-warning);color:#765518}
+.ds-alert--danger{background:#FCEBED;border-color:var(--ds-danger);color:#8B3037}
+.ds-alert--success{background:#EAF6F0;border-color:var(--ds-success);color:#28664F}
+.ds-control{width:100%;min-height:36px;border:1px solid var(--ds-border-strong);border-radius:6px;background:#fff;padding:0 10px;color:var(--ds-text);font-size:12px}
+.ds-control:hover{border-color:#8FB7C3}.ds-control:focus{border-color:var(--ds-action)}
+.ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:0 12px;border:1px solid var(--ds-border-strong);border-radius:6px;background:#fff;font-size:12px;font-weight:800;cursor:pointer;transition:background .12s,border-color .12s,transform .06s}
+.ds-btn:hover{background:var(--ds-surface-2)}.ds-btn:active{transform:translateY(1px)}.ds-btn:disabled{opacity:.48;cursor:not-allowed}
+.ds-btn--primary{background:var(--ds-action);border-color:var(--ds-action);color:#fff}.ds-btn--primary:hover{background:#257EA6}
+.ds-btn--success{background:var(--ds-success);border-color:var(--ds-success);color:#fff}
+.ds-btn--danger{background:var(--ds-danger);border-color:var(--ds-danger);color:#fff}
+.ds-btn--secondary{background:var(--ds-primary);border-color:var(--ds-primary);color:#fff}
+.ds-btn--ghost{background:transparent;border-color:transparent;color:var(--ds-action)}
+.ds-btn--sm{min-height:30px;padding:0 9px;font-size:11px}.ds-btn--lg{min-height:42px;padding:0 16px}
+.ds-field{display:flex;flex-direction:column;gap:5px}.ds-field label{font-size:11px;font-weight:800;color:var(--ds-text)}.ds-field__hint,.ds-field__error{font-size:10px}.ds-field__hint{color:var(--ds-text-3)}.ds-field__error{color:var(--ds-danger);font-weight:700}
+@media(max-width:900px){.ds-section__head{flex-direction:column}.ds-drawer{width:min(560px,96vw)}}
