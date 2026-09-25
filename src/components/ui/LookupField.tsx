@@ -44,24 +44,26 @@ export function LookupField({
   useEffect(() => {
     if (!open || disabled) return;
     let cancelled = false;
+
     const timer = window.setTimeout(async () => {
       setLoading(true);
       setError('');
-      try {
-        const result = await supabase
-          .from(table)
-          .select(columns)
-          .limit(50);
 
+      try {
+        const result = await supabase.from(table).select(columns).limit(50);
         if (result.error) throw result.error;
 
         const rawData: unknown = result.data;
-        const normalized = Array.isArray(rawData)
-          ? rawData.filter(isLookupRecord)
-          : [];
+        const normalized: LookupRecord[] = [];
+
+        if (Array.isArray(rawData)) {
+          for (const item of rawData) {
+            if (isLookupRecord(item)) normalized.push(item);
+          }
+        }
 
         const needle = query.trim().toLocaleLowerCase('pt-BR');
-        const filtered = needle
+        const filtered: LookupRecord[] = needle
           ? normalized.filter((row) =>
               Object.values(row).some((item) =>
                 String(item ?? '').toLocaleLowerCase('pt-BR').includes(needle),
@@ -101,16 +103,11 @@ export function LookupField({
           aria-label={placeholder}
         />
         {value && (
-          <button
-            type="button"
-            className="erp-btn-secondary"
-            onClick={() => {
-              setQuery('');
-              onChange('', null);
-              setOpen(false);
-            }}
-            aria-label="Limpar seleção"
-          >
+          <button type="button" className="erp-btn-secondary" onClick={() => {
+            setQuery('');
+            onChange('', null);
+            setOpen(false);
+          }} aria-label="Limpar seleção">
             <X />
           </button>
         )}
@@ -132,27 +129,26 @@ export function LookupField({
           {!loading && !error && rows.length === 0 && (
             <div className="p-3 text-sm text-slate-500">Nenhum registro encontrado.</div>
           )}
-          {!loading &&
-            !error &&
-            rows.map((row) => {
-              const id = String(row.id ?? '');
-              const label = String(row[labelKey] ?? row[codeKey ?? ''] ?? id);
-              const code = codeKey ? String(row[codeKey] ?? '') : '';
-              return (
-                <button
-                  type="button"
-                  key={id}
-                  className="block w-full rounded-lg p-3 text-left hover:bg-slate-100 focus:bg-slate-100 focus:outline-none"
-                  onClick={() => {
-                    onChange(id, row);
-                    setQuery('');
-                    setOpen(false);
-                  }}
-                >
-                  <strong>{code ? code + ' • ' : ''}{label}</strong>
-                </button>
-              );
-            })}
+          {!loading && !error && rows.map((row) => {
+            const id = String(row.id ?? '');
+            const label = String(row[labelKey] ?? row[codeKey ?? ''] ?? id);
+            const code = codeKey ? String(row[codeKey] ?? '') : '';
+
+            return (
+              <button
+                type="button"
+                key={id}
+                className="block w-full rounded-lg p-3 text-left hover:bg-slate-100 focus:bg-slate-100 focus:outline-none"
+                onClick={() => {
+                  onChange(id, row);
+                  setQuery('');
+                  setOpen(false);
+                }}
+              >
+                <strong>{code ? code + ' • ' : ''}{label}</strong>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
