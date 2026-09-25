@@ -9,7 +9,7 @@ export type AuthProfile =
       auth_user_id: string;
       email: string;
       perfil: 'MASTER';
-      nivel_admin: 9;
+      nivel_admin: 100;
       ativo: true;
       empresa_id: null;
       empresa: null;
@@ -53,7 +53,7 @@ export function narrowERPProfile(user: DbERPUsuario, empresa: EmpresaERPAuth | n
   const isStrictMaster =
     user.is_master === true &&
     perfil === 'MASTER' &&
-    nivel === 9 &&
+    nivel >= 100 &&
     user.empresa_id === null &&
     (user.setor_id === null || user.setor_id === undefined);
 
@@ -63,7 +63,7 @@ export function narrowERPProfile(user: DbERPUsuario, empresa: EmpresaERPAuth | n
       auth_user_id: user.auth_user_id,
       email,
       perfil: 'MASTER',
-      nivel_admin: 9,
+      nivel_admin: nivel,
       ativo: true,
       empresa_id: null,
       empresa: null,
