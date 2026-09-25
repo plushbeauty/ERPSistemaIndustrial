@@ -55,7 +55,7 @@ export function validateAndNarrowProfile(
   const isMasterUser =
     dbUser.is_master === true &&
     dbUser.perfil === 'MASTER' &&
-    dbUser.nivel_admin === 9 &&
+    dbUser.nivel_admin === 100 &&
     dbUser.empresa_id === null &&
     (dbUser.setor_id === null || dbUser.setor_id === undefined);
 
@@ -66,7 +66,7 @@ export function validateAndNarrowProfile(
       email: dbUser.email,
       nome: dbUser.nome,
       perfil: 'MASTER',
-      nivel_admin: 9,
+      nivel_admin: 100,
       ativo: true,
       empresa_id: null,
       empresa: null,
@@ -82,7 +82,7 @@ export function validateAndNarrowProfile(
     throw new Error('Acesso negado: perfil MASTER inconsistente.');
   }
 
-  if (dbUser.nivel_admin === 9) {
+  if (dbUser.nivel_admin === 100) {
     throw new Error('Acesso negado: nível administrativo de Master inconsistente.');
   }
 
