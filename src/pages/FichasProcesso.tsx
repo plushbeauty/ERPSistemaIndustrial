@@ -20,7 +20,7 @@ export default function FichasProcesso(){
    const auth=await supabase.auth.getUser();if(auth.error||!auth.data.user)throw new Error('Sessão não localizada.')
    const profile=await supabase.from('usuarios').select('empresa_id').eq('auth_user_id',auth.data.user.id).eq('ativo',true).maybeSingle()
    if(profile.error||!profile.data?.empresa_id)throw new Error(profile.error?.message||'Empresa não localizada.')
-   const empresaId=String(profileData.empresa_id)
+   const empresaId=String(profile.data.empresa_id)
    const [p,f]=await Promise.all([
     supabase.from('produtos').select('id,sku,codigo_barras,nome').eq('empresa_id',empresaId).eq('ativo',true).order('nome').limit(500),
     supabase.from('engenharia_fichas_processo').select('id,codigo,versao,titulo,descricao,status,produto_id,observacoes').eq('empresa_id',empresaId).order('codigo').order('versao',{ascending:false}).limit(500)
