@@ -114,18 +114,5 @@ createRoot(rootElement).render(
   </StrictMode>,
 )
 
-async function limparAplicacaoPwaLegada() {
-  if (!('serviceWorker' in navigator)) return
-  try {
-    const registrations = await navigator.serviceWorker.getRegistrations()
-    await Promise.allSettled(registrations.map(registration => registration.unregister()))
-    if ('caches' in window) {
-      const keys = await caches.keys()
-      await Promise.allSettled(keys.map(key => caches.delete(key)))
-    }
-  } catch (error) {
-    console.warn('[ERP] limpeza de cache legado ignorada:', error)
-  }
-}
 
-void limparAplicacaoPwaLegada()
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) { void navigator.serviceWorker.register('/sw.js').catch(() => undefined) }
