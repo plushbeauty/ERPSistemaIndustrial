@@ -1,7 +1,7 @@
 import { useEffect,useMemo,useState } from 'react'
 import { ArrowLeft, BarChart3, ClipboardCheck, FileText, Gauge, RefreshCw, Ruler, Search, ShieldCheck, TriangleAlert, Plus, Save, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import { Button, Field, Input, Select, Section, StatusPill } from '../components/ui/erp-design-system'
+import { Button } from '../components/ui/erp-design-system'
 import QualidadeSGQAvancado from './QualidadeSGQAvancado'
 import CalibracaoPanel from '../components/CalibracaoPanel'
 import '../styles/quality-industrial-2026.css'
