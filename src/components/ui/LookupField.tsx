@@ -55,8 +55,9 @@ export function LookupField({
 
         if (result.error) throw result.error;
 
-        const normalized = Array.isArray(result.data)
-          ? result.data.filter(isLookupRecord)
+        const rawData: unknown = result.data;
+        const normalized = Array.isArray(rawData)
+          ? rawData.filter(isLookupRecord)
           : [];
 
         const needle = query.trim().toLocaleLowerCase('pt-BR');
