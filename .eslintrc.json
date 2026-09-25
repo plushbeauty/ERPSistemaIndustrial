@@ -13,20 +13,47 @@
       "jsx": true
     }
   },
-  "plugins": ["@typescript-eslint"],
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
-  "ignorePatterns": ["dist/", "node_modules/", ".vercel/", "coverage/"],
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "ignorePatterns": [
+    "dist/",
+    "node_modules/",
+    ".vercel/",
+    "coverage/"
+  ],
   "overrides": [
     {
-      "files": ["supabase/functions/**/*.ts"],
-      "globals": { "Deno": "readonly", "RequestInit": "readonly", "Request": "readonly", "Response": "readonly", "Headers": "readonly" }
+      "files": [
+        "supabase/functions/**/*.ts"
+      ],
+      "globals": {
+        "Deno": "readonly",
+        "RequestInit": "readonly",
+        "Request": "readonly",
+        "Response": "readonly",
+        "Headers": "readonly"
+      }
     }
   ],
   "rules": {
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/ban-ts-comment": "error",
     "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
     "no-undef": "error"
+  },
+  "globals": {
+    "React": "readonly"
   }
 }
