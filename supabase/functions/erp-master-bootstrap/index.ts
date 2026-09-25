@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
       .select("id")
       .eq("is_master", true)
       .eq("perfil", "MASTER")
-      .eq("nivel_admin", 9)
+      .eq("nivel_admin", 100)
       .eq("ativo", true)
       .is("empresa_id", null)
       .is("setor_id", null)
@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
         username,
         perfil: "MASTER",
         ativo: true,
-        nivel_admin: 9,
+        nivel_admin: 100,
         auth_user_id: authUserId,
         is_master: true,
         deleted_at: null,
