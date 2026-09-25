@@ -36,6 +36,7 @@ export default function FichasProcesso(){
    const auth=await supabase.auth.getUser();if(auth.error||!auth.data.user)throw new Error('Sessão não localizada.')
    const profile=await supabase.from('erp_usuarios').select('id,empresa_id').eq('auth_user_id',auth.data.user.id).eq('ativo',true).maybeSingle()
    if(profile.error||!profile.data?.empresa_id)throw new Error(profile.error?.message||'Empresa não localizada.')
+   const usuarioId=String(profile.data.id??'')
    if(!form.codigo.trim()||!form.titulo.trim())throw new Error('Código e título são obrigatórios.')
    const payload={empresa_id:String(profile.data.empresa_id),produto_id:form.produto_id||null,codigo:form.codigo.trim(),versao:Number(form.versao)||1,revisao:form.versao,titulo:form.titulo.trim(),descricao:form.descricao.trim()||null,status:statusOverride ?? form.status,observacoes:form.observacoes.trim()||null,updated_at:new Date().toISOString()}
    const saved=form.id?await supabase.from('erp_fichas_tecnicas').update(payload).eq('id',form.id).select('id').single():await supabase.from('erp_fichas_tecnicas').insert(payload).select('id').single()
