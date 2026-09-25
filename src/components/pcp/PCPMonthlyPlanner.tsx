@@ -18,6 +18,7 @@ export default function PCPMonthlyPlanner({programs,machines,ops,onOpen}:{progra
  const days=useMemo(()=>{if(view==='day')return [cursor];if(view==='week'){const day=cursor.getDay();const monday=addDays(cursor,day===0?-6:1-day);return Array.from({length:7},(_,i)=>addDays(monday,i))}const last=new Date(cursor.getFullYear(),cursor.getMonth()+1,0).getDate();return Array.from({length:last},(_,i)=>new Date(cursor.getFullYear(),cursor.getMonth(),i+1))},[cursor,view])
  const scheduledIds=useMemo(()=>new Set(programs.map(p=>p.ordem_producao_id).filter(Boolean)),[programs])
  const backlog=useMemo(()=>ops.filter(o=>!scheduledIds.has(o.id)&&(!query||o.numero_op.toLowerCase().includes(query.toLowerCase()))),[ops,scheduledIds,query])
+ const dayPrograms=(machineId:string,day:Date)=>active.filter(p=>p.maquina_id===machineId&&overlaps(p,day))
  const active=useMemo(()=>programs.filter(p=>days.some(d=>overlaps(p,d))&&(!query||((p.op?.numero_op||'')+' '+(p.product?.codigo||'')+' '+(p.product?.nome||'')).toLowerCase().includes(query.toLowerCase()))&&(status==='todos'||p.status===status)),[programs,days,query,status])
  const statusClass=(p:ProgramView)=>{const s=(p.status||'').toLowerCase();if(s.includes('manut')||s.includes('parad'))return 'ds-plan-segment--stop';if(s.includes('setup'))return 'ds-plan-segment--setup';if(s.includes('atras'))return 'ds-plan-segment--risk';return 'ds-plan-segment--production'}
  const visibleMachines=machines.filter(m=>machineFilter==='todos'||m.id===machineFilter)
