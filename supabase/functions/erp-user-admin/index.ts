@@ -25,7 +25,7 @@ const service = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const admin = createClient(supabaseUrl, service, { auth: { autoRefreshToken: false, persistSession: false } })
 
 function passwordIsStrong(value: string) { return value.length >= 6 }
-function randomPassword() { const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%'; let value = ''; for (let i = 0; i < 14; i += 1) value += alphabet[Math.floor(Math.random() * alphabet.length)]; return value }
+function randomPassword() { const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%'; const values = new Uint32Array(14); crypto.getRandomValues(values); return Array.from(values, value => alphabet[value % alphabet.length]).join('') }
 function isMaster(role: unknown) { const value = String(role ?? '').toUpperCase(); return value === 'MASTER' || value === 'MASTER_ADMIN' || value === 'SUPER_ADMIN' }
 
 async function actorFor(authUserId: string) {
