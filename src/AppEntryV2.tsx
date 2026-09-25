@@ -89,6 +89,7 @@ const MRPIndustrial = lazy(() => import('./pages/MRPIndustrial'))
 const PCPPlanejamentoIndustrial = lazy(() => import('./pages/PCPPlanejamentoIndustrial'))
 const FMEAIndustrial = lazy(() => import('./pages/FMEAIndustrialPage'))
 const ProcessoIndustrialPage = lazy(() => import('./pages/ProcessoIndustrialPage'))
+const CentraisIndustriais = lazy(() => import('./pages/CentraisIndustriais'))
 const ManutencaoIndustrial = lazy(() => import('./pages/ManutencaoIndustrial'))
 const InteligenciaIndustrial = lazy(() => import('./pages/InteligenciaIndustrial'))
 
