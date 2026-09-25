@@ -53,7 +53,7 @@ export default function FiscalPrevisaoCaixa() {
 
     const s = Array.isArray(u?.erp_setores) ? u?.erp_setores[0] : u?.erp_setores
     const ok = !!u?.ativo && (
-      Number(u?.nivel_admin || 0) >= 9 || 
+      Number(u?.nivel_admin || 0) >= 100 || 
       ['ADM', 'ADMIN', 'FISCAL'].includes(String(s?.codigo || '').toUpperCase()) || 
       String(s?.nome || '').toUpperCase().includes('FISCAL')
     )
