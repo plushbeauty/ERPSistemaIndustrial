@@ -151,7 +151,7 @@ export default function ProdutosVendasIndustrial(){
   const loadXlsx=async():Promise<XlsxModule>=>{
     if(window.XLSX)return window.XLSX
     const existing=document.querySelector('script[data-erp-xlsx]') as HTMLScriptElement|null
-    if(existing){await new Promise<void>((resolve,reject)=>{existing.addEventListener('load',()=>resolve(),{once:true});existing.addEventListener('error',()=>reject(new Error('Não foi possível carregar o leitor Excel.')),{once:true})})}
+    if(existing){await new Promise<void>((resolve,reject)=>{existing.addEventListener('load',()=>resolve(),{once:true});existing.addEventListener('error',()=>reject(new Error('Não foi possível carregar o leitor Excel.')),{once:true})})
     }else{
       await new Promise<void>((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';script.async=true;script.dataset.erpXlsx='true';script.onload=()=>resolve();script.onerror=()=>reject(new Error('Não foi possível carregar o leitor Excel.'));document.head.appendChild(script)})
     }
