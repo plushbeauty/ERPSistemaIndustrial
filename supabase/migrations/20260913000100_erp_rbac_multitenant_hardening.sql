@@ -71,7 +71,7 @@ update public.erp_usuarios u
 set role_id =
   case
     when coalesce(u.is_master, false)
-      or coalesce(u.nivel_admin, 0) >= 10
+      or coalesce(u.nivel_admin, 0) >= 100
       then (select id from public.erp_roles where codigo = 'MASTER')
     when coalesce(u.nivel_admin, 0) >= 9
       then (select id from public.erp_roles where codigo = 'ADMIN')
