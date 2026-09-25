@@ -11,6 +11,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
+import { Play } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Tab='visao'|'pedidos'|'ops'|'materiais'|'producao'|'programacao'|'capacidade'|'qualidade'
