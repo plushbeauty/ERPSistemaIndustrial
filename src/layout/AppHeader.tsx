@@ -4,6 +4,7 @@ import { useSidebar } from '../context/SidebarContext'
 import ThemeToggleButton from '../components/common/ThemeToggleButton'
 import TabletLaunchpad from '../components/TabletLaunchpad'
 import PwaInstallButton from '../components/PwaInstallButton'
+import { supabase } from '../lib/supabaseClient'
 
 export default function AppHeader() {
   const { isExpanded, isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar()
