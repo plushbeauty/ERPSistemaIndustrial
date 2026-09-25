@@ -8,7 +8,7 @@ alter table public.erp_usuarios add column if not exists role text;
 
 update public.erp_usuarios
 set role = case
-  when coalesce(is_master, false) = true or coalesce(nivel_admin, 0) >= 9 then 'MASTER'
+  when coalesce(is_master, false) = true or coalesce(nivel_admin, 0) >= 100 then 'MASTER'
   when coalesce(nivel_admin, 0) >= 8 then 'ADMIN'
   else 'USER'
 end
