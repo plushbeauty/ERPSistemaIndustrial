@@ -6,19 +6,20 @@ const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BcwsSbBx8dWof7d_hAKtQA_
 const CONNECTION_MODE_KEY = 'erp_modo_conexao'
 const connectionMode = typeof window !== 'undefined' ? window.localStorage.getItem(CONNECTION_MODE_KEY) : null
 const localMode = connectionMode === 'local'
-const cloudUrl = String(env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL).trim().replace(/\/$/, '')
+const configuredCloudUrl = String(env.VITE_SUPABASE_URL || '').trim().replace(/\/$/, '')
+const cloudUrl = configuredCloudUrl === DEFAULT_SUPABASE_URL ? configuredCloudUrl : DEFAULT_SUPABASE_URL
 const localUrl = String(env.VITE_SUPABASE_LOCAL_URL || 'http://localhost:54321').trim().replace(/\/$/, '')
 const supabaseUrl = localMode ? localUrl : cloudUrl
 const configuredKey = String(
   localMode
     ? (env.VITE_SUPABASE_LOCAL_ANON_KEY || env.VITE_SUPABASE_ANON_KEY || '')
-    : (env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY),
+    : DEFAULT_SUPABASE_PUBLISHABLE_KEY,
 ).trim()
 const isPrivateKey = configuredKey.startsWith('sb_secret_') || configuredKey.includes('service_role')
 
 export const supabaseModoConexao = localMode ? 'local' : 'nuvem'
 export const supabaseConfigurado = Boolean(supabaseUrl && configuredKey && !isPrivateKey)
-export const supabaseEnvironmentMismatch = false
+export const supabaseEnvironmentMismatch = !localMode && configuredCloudUrl !== '' && configuredCloudUrl !== DEFAULT_SUPABASE_URL
 export const supabaseUrlExportada = supabaseUrl
 export const supabaseKeyExportada = isPrivateKey ? '' : configuredKey
 
