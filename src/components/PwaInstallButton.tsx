@@ -45,9 +45,7 @@ export default function PwaInstallButton() {
 
   if (hidden || !prompt) return null
 
-  async function install() {
-    const currentPrompt = prompt
-    if (!currentPrompt) return
+  async function install(currentPrompt: BeforeInstallPromptEvent) {
     setPrompt(null)
     try {
       await currentPrompt.prompt()
@@ -64,7 +62,7 @@ export default function PwaInstallButton() {
         <span>Acesso rápido, tela própria e experiência de aplicativo.</span>
       </div>
       <div className="pwa-install-actions">
-        <button type="button" onClick={() => void install()}>
+        <button type="button" onClick={() => prompt && void install(prompt)}>
           <Download size={16} /> Instalar
         </button>
         <button type="button" aria-label="Fechar" onClick={() => setPrompt(null)}>
