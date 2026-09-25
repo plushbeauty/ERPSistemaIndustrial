@@ -39,7 +39,7 @@ export default function IndustrialDashboardPremium({ onOpen, isMaster = false }:
           .is('deleted_at', null)
           .maybeSingle()
         if (profileError) throw profileError
-        const masterProfile = profile?.is_master === true && Number(profile?.nivel_admin ?? 0) === 9 && String(profile?.perfil ?? '').trim().toUpperCase() === 'MASTER' && profile?.empresa_id === null
+        const masterProfile = profile?.is_master === true && Number(profile?.nivel_admin ?? 0) === 100 && String(profile?.perfil ?? '').trim().toUpperCase() === 'MASTER' && profile?.empresa_id === null
         if (!masterProfile && !profile?.empresa_id) throw new Error('Perfil empresarial não encontrado.')
         const empresaId = profile?.empresa_id ?? null
 
