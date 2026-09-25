@@ -13,20 +13,8 @@ export default function PCPMonthlyPlanner({programs,machines,onOpen}:{programs:P
  const [status,setStatus]=useState('todos')
  const [view,setView]=useState<'month'|'week'|'day'>('month')
  const [machineFilter,setMachineFilter]=useState('todos')
- const days=useMemo(()=>{
-   const y=cursor.getFullYear(),m=cursor.getMonth()
-   if(view==='day') return [new Date(y,m,cursor.getDate())]
-   if(view==='week'){
-     const d=new Date(cursor),day=d.getDay(),offset=day===0?-6:1-day
-     d.setDate(d.getDate()+offset)
-     return Array.from({length:7},(_,i)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+i))
-   }
-   const last=new Date(y,m+1,0).getDate()
-   return Array.from({length:last},(_,i)=>new Date(y,m,i+1))
- },[cursor,view])
- const monthKey=cursor.toISOString().slice(0,7)
- const active=useMemo(()=>programs.filter(p=>{const start=p.inicio_planejado?.slice(0,7),end=p.fim_planejado?.slice(0,7);const text=((p.op?.numero_op||'')+' '+(p.product?.codigo||'')+' '+(p.product?.nome||'')).toLowerCase();return (view!=='month'||start===monthKey||end===monthKey)&&(!query||text.includes(query.toLowerCase()))&&(status==='todos'||p.status===status)&&(machineFilter==='todos'||p.maquina_id===machineFilter)}),[programs,monthKey,query,status,machineFilter,view])
- const dayPrograms=(machineId:string,day:Date)=>active.filter(p=>{if(p.maquina_id!==machineId)return false;const start=new Date(p.inicio_planejado);const end=new Date(p.fim_planejado);const d0=new Date(day);d0.setHours(0,0,0,0);const d1=new Date(d0);d1.setDate(d1.getDate()+1);return start<d1&&end>d0}).sort((a,b)=>new Date(a.inicio_planejado).getTime()-new Date(b.inicio_planejado).getTime())
+ const days=useMemo(()=>{if(view==='day')return [cursor];if(view==='week'){const day=cursor.getDay();const monday=addDays(cursor,day===0?-6:1-day);return Array.from({length:7},(_,i)=>addDays(monday,i))}const last=new Date(cursor.getFullYear(),cursor.getMonth()+1,0).getDate();return Array.from({length:last},(_,i)=>new Date(cursor.getFullYear(),cursor.getMonth(),i+1))},[cursor,view])
+ const active=useMemo(()=>programs.filter(p=>days.some(d=>overlaps(p,d))&&(!query||((p.op?.numero_op||'')+' '+(p.product?.codigo||'')+' '+(p.product?.nome||'')).toLowerCase().includes(query.toLowerCase()))&&(status==='todos'||p.status===status)),[programs,days,query,status])
  const statusClass=(p:ProgramView)=>{const s=(p.status||'').toLowerCase();if(s.includes('manut')||s.includes('parad'))return 'ds-plan-segment--stop';if(s.includes('setup'))return 'ds-plan-segment--setup';if(s.includes('atras'))return 'ds-plan-segment--risk';return 'ds-plan-segment--production'}
  const monthLabel=cursor.toLocaleDateString('pt-BR',{month:'long',year:'numeric'})
  return <section className="pcp-month-planner">
