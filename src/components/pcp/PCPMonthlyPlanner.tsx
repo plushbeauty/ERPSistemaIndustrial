@@ -33,4 +33,6 @@ export default function PCPMonthlyPlanner({programs,machines,ops,onOpen}:{progra
   </div></div>
   <div className="pcp-month-summary"><strong>{active.length} programações</strong><span>{machines.filter(m=>active.some(p=>p.maquina_id===m.id)).length} máquinas com carga</span><span>{active.reduce((s,p)=>s+Number(p.quantidade_planejada||0),0).toLocaleString('pt-BR')} peças planejadas</span><span>{active.filter(p=>String(p.status).toLowerCase().includes('atras')).length} em risco/atraso</span></div></div>
  </section>
+ </div>
+ </section>
 }
