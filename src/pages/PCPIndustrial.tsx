@@ -10,6 +10,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
+import { Play } from 'lucide-react'
 import type { FormEvent, ReactNode } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
@@ -43,7 +44,7 @@ const help:Record<Tab,{title:string;what:string;how:string;action:string}> = {
 export default function PCPIndustrial(){
  const [tab,setTab]=useState<Tab>(() => location.pathname === '/pcp/programacao' ? 'programacao' : 'visao'),[modal,setModal]=useState<Modal>(null)
  const [ops,setOps]=useState<OP[]>([]),[orders,setOrders]=useState<Order[]>([]),[products,setProducts]=useState<Product[]>([]),[programs,setPrograms]=useState<Program[]>([]),[machines,setMachines]=useState<Machine[]>([]),[defects,setDefects]=useState<Defect[]>([]),[fichas,setFichas]=useState<Ficha[]>([]),[fitems,setFitems]=useState<FItem[]>([]),[fichaOps,setFichaOps]=useState<FichaOp[]>([]),[molds,setMolds]=useState<Molde[]>([]),[employees,setEmployees]=useState<Employee[]>([])
- const [selectedOp,setSelectedOp]=useState(''),[found,setFound]=useState(''),[bad,setBad]=useState(''),[defectText,setDefectText]=useState(''),[location,setLocation]=useState(''),[query,setQuery]=useState('')
+ const [selectedOp,setSelectedOp]=useState(''),[found,setFound]=useState(''),[bad,setBad]=useState(''),[defectText,setDefectText]=useState(''),[destinationLocation,setDestinationLocation]=useState(''),[query,setQuery]=useState('')
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
  const [opForm,setOpForm]=useState({produto_id:'',quantidade:'',data_prevista:'',status:'Planejada',observacoes:''})
  const [progForm,setProgForm]=useState({ordem_producao_id:'',maquina_id:'',molde_id:'',operador_frente_id:'',operador_atras_id:'',inicio:'',fim:'',quantidade:'',status:'Programada',turnos:'1',horas_turno:'8',eficiencia:'85',ciclo_seg:'0',cavidades_ativas:'1',setup_min:'0'})
@@ -140,7 +141,7 @@ export default function PCPIndustrial(){
   const defectsJson=defectText.split('\n').map(x=>x.trim()).filter(Boolean).map(x=>{const parts=x.split(':');return{defeito:parts[0].trim(),quantidade:Number(parts[1]||0),observacao:parts.slice(2).join(':').trim()||null}}).filter(x=>x.defeito&&x.quantidade>0)
   setBusy(true);setError('')
   try{
-   const {data,error}=await supabase.rpc('erp_registrar_conferencia_producao',{p_ordem_producao_id:selectedOp,p_quantidade_encontrada:f,p_quantidade_defeituosa:b,p_defeitos:defectsJson,p_localizacao_destino_id:location||null,p_acabamento:false,p_observacao:'Conferência realizada no PCP'})
+   const {data,error}=await supabase.rpc('erp_registrar_conferencia_producao',{p_ordem_producao_id:selectedOp,p_quantidade_encontrada:f,p_quantidade_defeituosa:b,p_defeitos:defectsJson,p_localizacao_destino_id:destinationLocation||null,p_acabamento:false,p_observacao:'Conferência realizada no PCP'})
    if(error)throw error
    const r=data as {quantidade_boa?:number;saldo_producao?:number}
    setMessage('Conferência registrada: '+Number(r.quantidade_boa||0)+' boas, '+b+' em refugo. Saldo de produção: '+Number(r.saldo_producao||0)+'.')
@@ -195,7 +196,7 @@ export default function PCPIndustrial(){
      <label><span>OP</span><select value={selectedOp} onChange={e=>setSelectedOp(e.target.value)}><option value="">Selecione a OP</option>{ops.map(o=><option key={o.id} value={o.id}>{o.numero_op} • planejado {o.quantidade}</option>)}</select></label>
      <label><span>Quantidade Encontrada</span><input type="number" min="0" step="any" value={found} onChange={e=>setFound(e.target.value)} inputMode="decimal"/></label>
      <label><span>Quantidade Defeituosa</span><input type="number" min="0" step="any" value={bad} onChange={e=>setBad(e.target.value)} inputMode="decimal"/></label>
-     <label><span>Localização de Destino</span><input value={location} onChange={e=>setLocation(e.target.value)} placeholder="ID da localização"/></label>
+     <label><span>Localização de Destino</span><input value={destinationLocation} onChange={e=>setDestinationLocation(e.target.value)} placeholder="ID da localização"/></label>
      <label className="wide"><span>Detalhes de Qualidade</span><textarea rows={4} value={defectText} onChange={e=>setDefectText(e.target.value)} placeholder="Defeito:quantidade:observação — um por linha"/></label>
     </div>
     <div className="pcp-modern-form-footer"><span>Boa = encontrada − defeituosa.</span><button className="pcp-conferir" disabled={busy} onClick={()=>void confirmProduction()}><InlineIcon name="Play" size={21}/>{busy?'Lançando…':'CONFERIR E LANÇAR'}</button></div>
