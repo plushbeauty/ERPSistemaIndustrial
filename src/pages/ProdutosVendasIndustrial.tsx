@@ -108,8 +108,8 @@ export default function ProdutosVendasIndustrial(){
   const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
   const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
   const update=(key:keyof FormData,value:unknown)=>setForm(prev=>({...prev,[key]:value}))
-  const save=async(e:FormEvent)=>{
-    e.preventDefault();setBusy(true);setError('');setMessage('')
+  const save=async()=>{
+    setBusy(true);setError('');setMessage('')
     try{
       if(!companyId)throw new Error('Empresa da sessão não identificada.')
       if(!String(form.codigo||'').trim()||!String(form.nome||'').trim())throw new Error('Código e descrição são obrigatórios.')
