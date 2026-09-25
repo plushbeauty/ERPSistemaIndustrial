@@ -51,7 +51,8 @@
         "varsIgnorePattern": "^_"
       }
     ],
-    "no-undef": "error"
+    "no-undef": "error",
+    "no-extra-semi": "off"
   },
   "globals": {
     "React": "readonly"
