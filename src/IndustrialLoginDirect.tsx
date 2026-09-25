@@ -41,7 +41,7 @@ async function validateIndustrialSession(userId: string) {
   const nivel = Number(profile.nivel_admin ?? 0)
   const isMaster =
     profile.is_master === true &&
-    nivel === 9 &&
+    nivel === 100 &&
     perfil === 'MASTER' &&
     profile.empresa_id === null &&
     (profile.setor_id === null || profile.setor_id === undefined)
@@ -50,7 +50,7 @@ async function validateIndustrialSession(userId: string) {
     return { profile, empresa: null, isMaster: true }
   }
 
-  if (profile.is_master === true || perfil === 'MASTER' || nivel === 9) {
+  if (profile.is_master === true || perfil === 'MASTER' || nivel === 100) {
     throw new Error('Registro administrativo inconsistente. Acesso bloqueado.')
   }
 
