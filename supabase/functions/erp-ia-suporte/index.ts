@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (profileError || !profile) return json({ ok: false, error: "ERP_PROFILE_REQUIRED" }, 403);
-    if (!profile.empresa_id && Number(profile.nivel_admin) < 9) return json({ ok: false, error: "ERP_COMPANY_REQUIRED" }, 403);
+    if (!profile.empresa_id && Number(profile.nivel_admin) < 100) return json({ ok: false, error: "ERP_COMPANY_REQUIRED" }, 403);
 
     const body = await req.json();
     const pergunta = text(body?.pergunta ?? body?.question);
