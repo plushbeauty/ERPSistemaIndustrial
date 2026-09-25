@@ -15,7 +15,7 @@ declare
   v_cnpj text := nullif(regexp_replace(coalesce(p_header->>'cnpj_fornecedor',''),'[^0-9]','','g'),'');
 begin
   if v_empresa is null then raise exception 'Empresa do usuário não identificada.' using errcode='42501'; end if;
-  if not (public.erp_has_permission('estoque','criar') or exists(select 1 from public.erp_usuarios u where u.auth_user_id=auth.uid() and u.ativo=true and coalesce(u.nivel_admin,0)>=9)) then raise exception 'Usuário sem permissão para receber materiais.' using errcode='42501'; end if;
+  if not (public.erp_has_permission('estoque','criar') or exists(select 1 from public.erp_usuarios u where u.auth_user_id=auth.uid() and u.ativo=true and coalesce(u.nivel_admin,0)>=100)) then raise exception 'Usuário sem permissão para receber materiais.' using errcode='42501'; end if;
   if v_chave is null or length(v_chave) <> 44 then raise exception 'Chave de acesso da NF-e inválida.' using errcode='22023'; end if;
   if v_numero is null then raise exception 'Número da NF-e é obrigatório.' using errcode='22023'; end if;
   if jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items)=0 then raise exception 'A NF-e precisa conter itens.' using errcode='22023'; end if;
