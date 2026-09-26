@@ -1,4 +1,5 @@
-import { FormEvent, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+import type { FormEvent } from 'react'
 import { LogIn, Palette, Wifi, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
