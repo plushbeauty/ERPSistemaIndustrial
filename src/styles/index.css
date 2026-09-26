@@ -83,3 +83,13 @@ input::placeholder,textarea::placeholder{color:#718894!important;opacity:1}
 table th{background:#eef7fa!important;color:#355462!important;font-size:14px!important}
 table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!important}
 .sgq-theme-toggle{min-height:44px!important;padding:0 13px!important;border:1px solid #b9d2da!important;border-radius:10px!important;background:#fff!important;color:#17333F!important;font-weight:800}
+
+
+/* INDUSTRIAL BI PRINT */
+@media print {
+  nav, aside, sidebar, header, button, .print\\:hidden { display:none !important; }
+  body, main { background:#fff !important; color:#000 !important; width:100% !important; margin:0 !important; padding:0 !important; }
+  .print\\:w-full { width:100% !important; }
+  .page-break { break-before:page; page-break-before:always; }
+  table tr { height:54px !important; }
+}
