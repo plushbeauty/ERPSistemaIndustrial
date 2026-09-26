@@ -1,15 +1,126 @@
-import { useEffect,useMemo,useState } from "react";
-import { CalendarDays,RefreshCw,Download } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AlertTriangle, ClipboardList, PackageX, RefreshCw, ShieldAlert, ShoppingCart } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
-import { BarChart,Bar,PieChart,Pie,Cell,XAxis,YAxis,CartesianGrid,Tooltip,ResponsiveContainer,Legend } from "recharts";
-type R={op:string;cliente:string;venda:number;custo:number;lucro:number;margem:number;refugo:number};
-export default function DiretoriaDashboard(){
- const [rows,setRows]=useState<R[]>([]);const [period,setPeriod]=useState(new Date().toISOString().slice(0,7));const [loading,setLoading]=useState(true);
- async function load(){setLoading(true);const {data:o}=await supabase.from("erp_ordens_producao").select("id,numero_op,numero,produto_id,pedido_venda_id,quantidade_planejada,quantidade_produzida").order("created_at",{ascending:false}).limit(500);const raw=(o??[]) as Array<Record<string,unknown>>;const pids=[...new Set(raw.map(x=>String(x.produto_id??"")).filter(Boolean))];const oids=[...new Set(raw.map(x=>String(x.pedido_venda_id??"")).filter(Boolean))];const [p,orders,a]=await Promise.all([pids.length?supabase.from("erp_produtos").select("id,custo_fabricacao,preco_venda").in("id",pids):Promise.resolve({data:[]}),oids.length?supabase.from("erp_pedidos_venda").select("id,total,cliente_id").in("id",oids):Promise.resolve({data:[]}),supabase.from("erp_producao_apontamentos").select("ordem_producao_id,maquina_id,inicio,fim,quantidade_refugo")]);const pm=new Map((p.data??[]).map((x:{id:string;custo_fabricacao:number;preco_venda:number})=>[x.id,x]));const om=new Map((orders.data??[]).map((x:{id:string;total:number;cliente_id:string})=>[x.id,x]));const cids=[...new Set((orders.data??[]).map((x:{cliente_id:string})=>x.cliente_id).filter(Boolean))];const [clients,machines]=await Promise.all([cids.length?supabase.from("erp_clientes").select("id,nome").in("id",cids):Promise.resolve({data:[]}),supabase.from("erp_maquinas").select("id,custo_hora")]);const cm=new Map((clients.data??[]).map((x:{id:string;nome:string})=>[x.id,x.nome]));const mm=new Map((machines.data??[]).map((x:{id:string;custo_hora:number})=>[x.id,Number(x.custo_hora??0)]));const costBy=new Map<string,{cost:number;refugo:number}>();for(const x of (a.data??[]) as Array<Record<string,unknown>>){const key=String(x.ordem_producao_id);const hours=x.inicio&&x.fim?Math.max(0,(new Date(String(x.fim)).getTime()-new Date(String(x.inicio)).getTime())/3600000):0;const cur=costBy.get(key)??{cost:0,refugo:0};cur.cost+=hours*(mm.get(String(x.maquina_id))??0);cur.refugo+=Number(x.quantidade_refugo??0);costBy.set(key,cur)}setRows(raw.map(x=>{const p=pm.get(String(x.produto_id));const order=om.get(String(x.pedido_venda_id));const q=Number(x.quantidade_produzida??x.quantidade_planejada??0);const sale=Number(order?.total??0)||Number(p?.preco_venda??0)*q;const material=Number(p?.custo_fabricacao??0)*q;const extra=costBy.get(String(x.id))??{cost:0,refugo:0};const cost=material+extra.cost;const lucro=sale-cost;return {op:"OP-"+Number(x.numero_op??x.numero??0),cliente:order?.cliente_id?cm.get(order.cliente_id)??"Cliente não identificado":"Sem cliente",venda:sale,custo:cost,lucro,margem:sale?lucro/sale*100:0,refugo:extra.refugo}}));setLoading(false)}
- useEffect(()=>{void load()},[period]);
- const totals=useMemo(()=>rows.reduce((a,r)=>({venda:a.venda+r.venda,custo:a.custo+r.custo,lucro:a.lucro+r.lucro}),{venda:0,custo:0,lucro:0}),[rows]);const margin=totals.venda?totals.lucro/totals.venda*100:0;const pie=[{name:"Refugo",value:rows.reduce((a,r)=>a+r.refugo,0)},{name:"Custos",value:Math.max(0,totals.custo-rows.reduce((a,r)=>a+r.refugo,0))}];const exportAudit=()=>{const csv="OP,Cliente,Faturamento,Custo,Lucro,Margem,Refugo\n"+rows.map(r=>[r.op,r.cliente,r.venda.toFixed(2),r.custo.toFixed(2),r.lucro.toFixed(2),r.margem.toFixed(2),r.refugo].join(",")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\\ufeff"+csv],{type:"text/csv;charset=utf-8"}));a.download="diretoria-auditoria.csv";a.click()};
- return <main className="min-h-screen bg-slate-50 text-slate-900 p-6"><div className="max-w-[1600px] mx-auto space-y-5"><header className="flex flex-wrap justify-between gap-4 border-b border-slate-200 pb-4"><div><p className="text-sm font-bold text-slate-600">MÓDULO: DIRETORIA</p><h1 className="text-xl font-bold text-slate-950">Painel de Controle — Custos e Faturamento Real</h1></div><div className="flex gap-2"><label className="h-11 rounded-md bg-slate-700 text-white px-3 font-bold inline-flex items-center gap-2"><CalendarDays size={18}/><input type="month" value={period} onChange={e=>setPeriod(e.target.value)} className="bg-transparent"/></label><button onClick={()=>void load()} className="h-11 rounded-md bg-blue-600 text-white px-4 font-bold"><RefreshCw size={18} className="inline mr-2"/>ATUALIZAR MATRIZ</button><button onClick={exportAudit} className="h-11 rounded-md bg-emerald-600 text-white px-4 font-bold"><Download size={18} className="inline mr-2"/>EXPORTAR EXCEL</button></div></header>
- <div className="grid lg:grid-cols-3 gap-4"><div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm"><b>Faturamento Bruto</b><div className="text-[28px] font-extrabold mt-2">R$ {totals.venda.toLocaleString("pt-BR",{minimumFractionDigits:2})}</div></div><div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm"><b>Custo Industrial Total Absorvido</b><div className="text-[28px] font-extrabold mt-2">R$ {totals.custo.toLocaleString("pt-BR",{minimumFractionDigits:2})}</div></div><div className={"border rounded-md p-5 shadow-sm "+(margin<20?"bg-rose-100 border-rose-300":"bg-white border-slate-200")}><b>EBITDA / Lucro Líquido Real</b><div className={"text-[28px] font-extrabold mt-2 "+(margin<20?"text-rose-600":"text-emerald-800")}>R$ {totals.lucro.toLocaleString("pt-BR",{minimumFractionDigits:2})}</div><div className="font-bold">{margin.toFixed(1)}% de margem</div>{margin<20&&<div className="mt-2 font-extrabold text-rose-700 animate-pulse">ATENÇÃO: MARGEM CRÍTICA</div>}</div></div>
- <div className="grid xl:grid-cols-2 gap-5"><section className="bg-white border border-slate-200 rounded-md p-5 shadow-sm"><h2 className="text-xl font-bold mb-4">Lucratividade por OP</h2><div className="h-80"><ResponsiveContainer width="100%" height="100%"><BarChart data={rows.slice(0,20)}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="op"/><YAxis/><Tooltip/><Legend/><Bar dataKey="venda" fill="#2563eb"/><Bar dataKey="custo" fill="#64748b"/><Bar dataKey="lucro" fill="#059669"/></BarChart></ResponsiveContainer></div></section><section className="bg-white border border-slate-200 rounded-md p-5 shadow-sm"><h2 className="text-xl font-bold mb-4">Custo de Refugo Industrial</h2><div className="h-80"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={pie} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>{pie.map((x,i)=><Cell key={x.name} fill={i===0?"#dc2626":"#94a3b8"}/>)}</Pie><Tooltip/><Legend/></PieChart></ResponsiveContainer></div></section></div>
- <section className="bg-white border border-slate-200 rounded-md shadow-sm overflow-hidden"><div className="p-5"><h2 className="text-xl font-bold">OPs e margem real</h2></div><table className="w-full"><thead className="bg-slate-100"><tr><th className="h-[54px] px-4 text-left">OP</th><th className="px-4 text-left">Cliente</th><th className="px-4 text-right">Lucro Real</th><th className="px-4 text-right">Margem</th></tr></thead><tbody>{loading?<tr><td colSpan={4} className="p-8 text-center">Calculando custos reais...</td></tr>:rows.map(r=><tr key={r.op} className="border-t border-slate-200"><td className="h-[54px] px-4 font-bold text-blue-900">{r.op}</td><td className="px-4 font-semibold text-slate-700">{r.cliente}</td><td className="px-4 text-right font-bold">R$ {r.lucro.toLocaleString("pt-BR",{minimumFractionDigits:2})}</td><td className={"px-4 text-right font-bold "+(r.margem<20?"bg-rose-100 text-rose-800":"bg-emerald-100 text-emerald-800")}>⭐ {r.margem.toFixed(1)}%</td></tr>)}</tbody></table></section></div></main>
+import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+
+type Kpi = { value: number; label: string };
+type ChartPoint = { name: string; value: number };
+
+type PendingRow = {
+  codigo: string;
+  origem: string;
+  impacto: string;
+  valor: number;
+  urgencia: "ALTA" | "MÉDIA" | "BAIXA";
+};
+
+async function countRows(table: string, filter?: (query: ReturnType<typeof supabase.from>) => ReturnType<typeof supabase.from>): Promise<number | null> {
+  let query = supabase.from(table).select("id", { count: "exact", head: true });
+  if (filter) query = filter(query);
+  const { count, error } = await query;
+  return error ? null : count ?? 0;
+}
+
+export default function DiretoriaDashboard() {
+  const [kpis, setKpis] = useState<Record<string, Kpi>>({});
+  const [pending, setPending] = useState<PendingRow[]>([]);
+  const [revenue, setRevenue] = useState<ChartPoint[]>([]);
+  const [production, setProduction] = useState<ChartPoint[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notice, setNotice] = useState("");
+
+  const load = async () => {
+    setLoading(true);
+    const [ops, rncs, stock, reservations, sales] = await Promise.all([
+      countRows("erp_ordens_producao"),
+      countRows("erp_rncs"),
+      countRows("erp_produto_estoque"),
+      countRows("erp_estoque_reservas"),
+      supabase.from("erp_pedidos_venda").select("id,numero_pedido,valor_total,status,data_pedido").order("data_pedido", { ascending: false }).limit(100),
+    ]);
+
+    setKpis({
+      ops: { value: ops ?? 0, label: "Ordens de produção abertas" },
+      rncs: { value: rncs ?? 0, label: "RNCs ativas" },
+      stock: { value: stock ?? 0, label: "Registros de estoque" },
+    });
+
+    const salesRows = (sales.data ?? []) as Array<Record<string, unknown>>;
+    const monthly = new Map<string, number>();
+    for (const row of salesRows) {
+      const date = String(row.data_pedido ?? "");
+      const month = date.slice(0, 7);
+      if (month) monthly.set(month, (monthly.get(month) ?? 0) + Number(row.valor_total ?? 0));
+    }
+    setRevenue([...monthly.entries()].sort().slice(-6).map(([name, value]) => ({ name, value })));
+
+    const openStatuses = new Set(["aberta", "aberto", "planejada", "planejado", "em_producao", "em produção"]);
+    const prodRows = salesRows.slice(0, 12).map((row) => ({
+      name: String(row.numero_pedido ?? row.id).slice(-8),
+      value: openStatuses.has(String(row.status ?? "").toLowerCase()) ? 1 : 0,
+    }));
+    setProduction(prodRows);
+
+    const pendingRows: PendingRow[] = [];
+    if (reservations !== null) {
+      const { data: reservationRows } = await supabase.from("erp_estoque_reservas").select("id,produto_id,quantidade_reservada").limit(20);
+      for (const row of (reservationRows ?? []) as Array<Record<string, unknown>>) {
+        pendingRows.push({
+          codigo: String(row.id).slice(0, 8).toUpperCase(),
+          origem: "MRP / Estoque",
+          impacto: `Reserva ${Number(row.quantidade_reservada ?? 0)}u`,
+          valor: 0,
+          urgencia: "MÉDIA",
+        });
+      }
+    }
+    setPending(pendingRows.slice(0, 10));
+    setNotice([ops, rncs, stock, reservations].some(v => v === null) ? "Alguns indicadores não puderam ser consultados pelas permissões ou pelo esquema atual." : "");
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    void load();
+    const channel = supabase
+      .channel("diretoria-dashboard-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "erp_ordens_producao" }, () => void load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "erp_rncs" }, () => void load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "erp_estoque_reservas" }, () => void load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "erp_pedidos_venda" }, () => void load())
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, []);
+
+  const alertCards = [
+    { key: "ops", title: "ORDENS DE PRODUÇÃO", icon: <ClipboardList size={28} />, tone: "bg-amber-50 border-amber-200 text-amber-950" },
+    { key: "rncs", title: "NÃO CONFORMIDADES", icon: <ShieldAlert size={28} />, tone: "bg-rose-100 border-rose-200 text-rose-950" },
+    { key: "stock", title: "ALMOXARIFADO", icon: <PackageX size={28} />, tone: "bg-red-50 border-red-200 text-red-950" },
+  ];
+
+  return <main className="min-h-screen bg-slate-50 text-slate-900">
+    <header className="border-b border-slate-200 bg-white px-4 py-4 lg:px-6">
+      <div className="mx-auto flex max-w-[1700px] items-center gap-4">
+        <button className="rounded-md border border-slate-300 p-2 text-slate-900" aria-label="Abrir menu">☰</button>
+        <div><p className="text-sm font-black text-slate-600">ERP INDUSTRIAL GLOBAL</p><h1 className="text-xl font-bold text-slate-950">PAINEL DE CONTROLE CENTRAL • GESTÃO À VISTA</h1></div>
+        <div className="ml-auto font-bold text-slate-700">👤 ADM / DIRETOR</div>
+      </div>
+    </header>
+    <div className="mx-auto grid max-w-[1700px] lg:grid-cols-[230px_1fr]">
+      <aside className="hidden min-h-[calc(100vh-78px)] border-r border-slate-200 bg-white p-4 lg:block">
+        {["🗂️ Cockpit Geral","🛍️ Módulo de Vendas","⚙️ PCP / Engenharia","📐 Gestão da Qualidade","📦 Estoque / Compras","⚙️ Configurações Sistema"].map((item, index) =>
+          <div key={item} className={`mb-2 rounded-md px-3 py-3 font-bold ${index === 0 ? "bg-sky-50 text-sky-900" : "text-slate-700"}`}>{item}</div>
+        )}
+      </aside>
+      <section className="min-w-0 space-y-5 p-4 lg:p-6">
+        <div className="flex flex-wrap items-center gap-3"><div><h2 className="text-xl font-bold text-slate-950">MONITORAMENTO DA OPERAÇÃO EM TEMPO REAL</h2><p className="text-sm font-semibold text-slate-600">Indicadores derivados exclusivamente das tabelas disponíveis.</p></div><button onClick={() => void load()} className="ml-auto h-11 rounded-md bg-sky-700 px-4 font-black text-white"><RefreshCw size={17} className="mr-2 inline"/>ATUALIZAR</button></div>
+        <div className="grid gap-4 md:grid-cols-3">{alertCards.map(card => <article key={card.key} className={`rounded-md border p-5 shadow-sm ${card.tone}`}><div className="flex items-center gap-3">{card.icon}<h3 className="text-base font-black">{card.title}</h3></div><div className="mt-3 text-3xl font-black">{loading ? "…" : kpis[card.key]?.value ?? 0}</div><p className="mt-1 font-semibold">{kpis[card.key]?.label}</p></article>)}</div>
+        <div className="grid gap-5 xl:grid-cols-2">
+          <section className="rounded-md border border-slate-200 bg-white p-5 shadow-sm"><h2 className="mb-4 text-xl font-bold text-slate-950">FATURAMENTO REAL DOS PEDIDOS</h2><div className="h-72"><ResponsiveContainer width="100%" height="100%"><BarChart data={revenue}><XAxis dataKey="name"/><YAxis/><Tooltip/><Bar dataKey="value" fill="#2563eb"/></BarChart></ResponsiveContainer></div></section>
+          <section className="rounded-md border border-slate-200 bg-white p-5 shadow-sm"><h2 className="mb-4 text-xl font-bold text-slate-950">FILA OPERACIONAL</h2><div className="h-72"><ResponsiveContainer width="100%" height="100%"><BarChart data={production}><XAxis dataKey="name"/><YAxis allowDecimals={false}/><Tooltip/><Bar dataKey="value" fill="#f59e0b"/></BarChart></ResponsiveContainer></div></section>
+        </div>
+        <section className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm"><div className="p-5"><h2 className="text-xl font-bold text-slate-950">REQUISIÇÕES RECENTES QUE REQUEREM ATENÇÃO</h2></div><div className="overflow-x-auto"><table className="w-full min-w-[800px]"><thead className="bg-slate-100"><tr><th className="h-[54px] px-4 text-left">Cód Doc</th><th className="px-4 text-left">Origem / Setor</th><th className="px-4 text-left">Impacto</th><th className="px-4 text-right">Valor (R$)</th><th className="px-4 text-left">Urgência</th></tr></thead><tbody>{pending.map(row => <tr key={row.codigo} className="border-t border-slate-100"><td className="h-[54px] px-4 font-bold text-sky-900">{row.codigo}</td><td className="px-4 font-semibold">{row.origem}</td><td className="px-4">{row.impacto}</td><td className="px-4 text-right font-semibold">{row.valor.toLocaleString("pt-BR",{minimumFractionDigits:2})}</td><td className="px-4"><span className={`rounded-full px-3 py-1 text-xs font-black ${row.urgencia === "ALTA" ? "bg-rose-100 text-rose-900" : "bg-amber-100 text-amber-900"}`}>{row.urgencia}</span></td></tr>)}{pending.length===0&&<tr><td colSpan={5} className="p-8 text-center font-semibold text-slate-500">Nenhuma requisição pendente encontrada.</td></tr>}</tbody></table></div></section>
+        {notice && <div className="rounded-md border border-amber-300 bg-amber-50 p-4 font-semibold text-amber-900"><AlertTriangle className="mr-2 inline" size={18}/>{notice}</div>}
+      </section>
+    </div>
+  </main>;
 }
