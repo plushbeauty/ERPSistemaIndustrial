@@ -12,8 +12,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   Activity, AlertTriangle, ArrowUpRight, Boxes, CheckCircle2, ClipboardCheck,
-  Factory, Gauge, LayoutGrid, Package, RefreshCw, ShieldCheck, ShoppingCart,
-  Truck, Users, Wrench, X, Zap
+  Factory, Gauge, LayoutGrid, Package, ShieldCheck, ShoppingCart,
+  Truck, Users, Wrench, Zap
 } from 'lucide-react'
 import TabletLaunchpad from './TabletLaunchpad'
 import { supabase } from '../lib/supabaseClient'
@@ -41,7 +41,6 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [tabletOpen, setTabletOpen] = useState(false)
-  const [refreshKey, setRefreshKey] = useState(0)
   const [productionSeries, setProductionSeries] = useState<ProductionPoint[]>([])
 
   useEffect(() => {
@@ -122,7 +121,7 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
     }
     void load()
     return () => { alive = false }
-  }, [refreshKey])
+  }, [])
 
   const total = metrics.produced + metrics.scrap
   const quality = total ? (metrics.produced / total) * 100 : 0
@@ -145,31 +144,10 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
   ] as const
 
   return <>
-    <div className="icd">
-      <section className="icd-hero">
-        <div className="icd-hero-copy">
-          <div className="icd-kicker"><span className="icd-live-dot" /> CENTRO DE COMANDO INDUSTRIAL</div>
-          <h1>Bom dia, {profileName.split(' ')[0]}.</h1>
-          <p>Controle a fábrica, qualidade, materiais e administração em uma única operação.</p>
-          <div className="icd-hero-actions">
-            <button className="icd-primary" onClick={() => setTabletOpen(true)}><LayoutGrid size={18} /> Abrir Tablet Industrial</button>
-            <button className="icd-icon-btn" title="Atualizar indicadores" onClick={() => setRefreshKey(v => v + 1)}><RefreshCw size={18} /></button>
-          </div>
-        </div>
-        <div className="icd-hero-side">
-          <div className="icd-status"><span /> SISTEMA ONLINE</div>
-          <strong>{isMaster ? 'Visão Master' : 'Operação da empresa'}</strong>
-          <small>Dados consultados diretamente no Supabase</small>
-          <div className="icd-mini-grid">
-            <div><b>{loading ? '…' : fmt(metrics.machines)}</b><span>Máquinas</span></div>
-            <div><b>{loading ? '…' : fmt(metrics.products)}</b><span>Produtos</span></div>
-          </div>
-        </div>
-      </section>
+    <div className="icd icd-clean">
+      {error && <div className="icd-alert" role="alert"><AlertTriangle size={18} /><div><b>Não foi possível carregar todos os indicadores</b><span>{error}</span></div></div>}
 
-      {error && <div className="icd-alert"><AlertTriangle size={18} /><div><b>Indicadores parcialmente indisponíveis</b><span>{error}</span></div></div>}
-
-      <section className="icd-kpis">
+      <section className="icd-kpis" aria-label="Indicadores principais">
         {cards.map(card => {
           const Icon = card.icon
           return <button key={card.label} className={`icd-kpi ${card.tone}`} onClick={() => onNavigate(card.route)}>
@@ -180,56 +158,45 @@ export default function IndustrialCommandDashboard({ onNavigate, profileName, is
         })}
       </section>
 
-      <section className="icd-charts-grid">
-        <article className="icd-panel icd-chart-panel">
-          <header><div><span>PRODUÇÃO REAL</span><h2>Boa x refugo por dia</h2></div><button className="icd-icon-btn" type="button" onClick={() => window.print()} title="Imprimir dashboard"><ArrowUpRight size={16} /></button></header>
-          {productionSeries.length ? <div className="icd-chart"><ResponsiveContainer width="100%" height={280}><LineChart data={productionSeries} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="date"/><YAxis/><Tooltip/><Legend/><Line type="monotone" dataKey="boa" name="Boa" strokeWidth={3} dot={false}/><Line type="monotone" dataKey="refugo" name="Refugo" strokeWidth={3} dot={false}/></LineChart></ResponsiveContainer></div> : <div className="icd-chart-empty">Não existem registros de produção no período disponível.</div>}
-        </article>
-        <article className="icd-panel icd-chart-panel">
-          <header><div><span>QUALIDADE</span><h2>Produção acumulada</h2></div><Gauge size={19} /></header>
-          {productionSeries.length ? <div className="icd-chart"><ResponsiveContainer width="100%" height={280}><BarChart data={productionSeries} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="date"/><YAxis/><Tooltip/><Legend/><Bar dataKey="boa" name="Boa"/><Bar dataKey="refugo" name="Refugo"/></BarChart></ResponsiveContainer></div> : <div className="icd-chart-empty">Sem dados para gerar o gráfico.</div>}
-        </article>
-      </section>
-
-      <section className="icd-tablet-banner">
-        <div className="icd-tablet-icon"><LayoutGrid size={30} /></div>
-        <div><span>ACESSO OPERACIONAL</span><h2>Tablet Industrial</h2><p>PCP, Produção, Qualidade, Estoque, Compras, Engenharia, Manutenção, Fiscal e RH.</p></div>
-        <span className="icd-tablet-hint">Use o Tablet para abrir os módulos operacionais.</span>
-      </section>
-
-      <section className="icd-main-grid">
-        <article className="icd-panel">
-          <header><div><span>MAPA DA OPERAÇÃO</span><h2>Setores do ERP</h2></div><Activity size={19} /></header>
-          <div className="icd-module-grid">
-            {modules.map(item => {
-              const Icon = item.icon
-              return <button key={item.label} onClick={() => onNavigate(item.route)}>
-                <span><Icon size={20} /></span><div><b>{item.label}</b><small>{item.desc}</small></div><ArrowUpRight size={15} />
-              </button>
-            })}
-          </div>
-        </article>
-
+      <section className="icd-overview-grid">
         <article className="icd-panel icd-health">
-          <header><div><span>SAÚDE OPERACIONAL</span><h2>Visão rápida</h2></div><ShieldCheck size={19} /></header>
+          <header><div><span>OPERAÇÃO</span><h2>Visão rápida</h2></div><ShieldCheck size={19} /></header>
           <HealthRow icon={CheckCircle2} label="Produção boa" value={fmt(metrics.produced)} />
           <HealthRow icon={AlertTriangle} label="Refugo" value={fmt(metrics.scrap)} warning={metrics.scrap > 0} />
           <HealthRow icon={ClipboardCheck} label="Inspeções" value={fmt(metrics.inspections)} />
           <HealthRow icon={ShoppingCart} label="Compras abertas" value={fmt(metrics.purchases)} />
           <HealthRow icon={Truck} label="Máquinas ativas" value={fmt(metrics.machines)} />
         </article>
+
+        <article className="icd-panel icd-chart-panel">
+          <header><div><span>PRODUÇÃO REAL</span><h2>Boa x refugo por dia</h2></div><Activity size={19} /></header>
+          {productionSeries.length ? <div className="icd-chart"><ResponsiveContainer width="100%" height={255}><LineChart data={productionSeries} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="date"/><YAxis/><Tooltip/><Legend/><Line type="monotone" dataKey="boa" name="Boa" strokeWidth={3} dot={false}/><Line type="monotone" dataKey="refugo" name="Refugo" strokeWidth={3} dot={false}/></LineChart></ResponsiveContainer></div> : <div className="icd-chart-empty">Não existem registros de produção no período disponível.</div>}
+        </article>
       </section>
 
-      <section className="icd-process">
-        <div><span>FLUXO INDUSTRIAL</span><h2>Pedido → Engenharia → PCP → Produção → Qualidade → Estoque → Expedição</h2><p>O dashboard é o centro de comando; cada etapa abre a operação correspondente sem telas decorativas.</p></div>
-        <div className="icd-flow"><b>1</b><i /><b>2</b><i /><b>3</b><i /><b>4</b><i /><b>5</b><i /><b>6</b><i /><b>7</b></div>
+      <section className="icd-charts-grid">
+        <article className="icd-panel icd-chart-panel">
+          <header><div><span>QUALIDADE</span><h2>Produção acumulada</h2></div><Gauge size={19} /></header>
+          {productionSeries.length ? <div className="icd-chart"><ResponsiveContainer width="100%" height={255}><BarChart data={productionSeries} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="date"/><YAxis/><Tooltip/><Legend/><Bar dataKey="boa" name="Boa"/><Bar dataKey="refugo" name="Refugo"/></BarChart></ResponsiveContainer></div> : <div className="icd-chart-empty">Sem dados para gerar o gráfico.</div>}
+        </article>
       </section>
 
-      <footer className="icd-footer"><span>SGQ ERP Industrial</span><span>Multiempresa · RLS · Rastreabilidade</span><span>FernandoSch_System</span></footer>
+      <section className="icd-panel icd-modules-panel">
+        <header><div><span>OPERAÇÃO INDUSTRIAL</span><h2>Módulos principais</h2></div><LayoutGrid size={19} /></header>
+        <div className="icd-module-grid">
+          {modules.map(item => {
+            const Icon = item.icon
+            return <button key={item.label} onClick={() => onNavigate(item.route)}>
+              <span><Icon size={20} /></span><div><b>{item.label}</b><small>{item.desc}</small></div><ArrowUpRight size={15} />
+            </button>
+          })}
+        </div>
+      </section>
+
+      <footer className="icd-footer"><span>SGQ ERP Industrial</span><span>RLS · Rastreabilidade</span><span>FernandoSch_System</span></footer>
     </div>
     <TabletLaunchpad isOpen={tabletOpen} onClose={() => setTabletOpen(false)} onNavigate={route => { setTabletOpen(false); onNavigate(route) }} />
   </>
-}
 
 function HealthRow({ icon: Icon, label, value, warning = false }: { icon: typeof CheckCircle2; label: string; value: string; warning?: boolean }) {
   return <div className="icd-health-row"><span className={warning ? 'warn' : ''}><Icon size={17} /></span><div><b>{label}</b><small>Registro atual</small></div><strong>{value}</strong></div>

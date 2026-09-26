@@ -160,31 +160,32 @@ export default function AppIndustrialV7() {
   return <motion.div className={`v7-shell theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
     <header className="v7-topbar">
       <button className="v7-top-brand" type="button" onClick={() => setLauncher(true)} aria-label="Abrir Tablet Industrial">
-        <img src="/logo-industrial.svg" alt="Logomarca INDUSTRIA ERP" />
-        <span><strong>INDUSTRIA ERP</strong><small>Plataforma integrada de gestão industrial</small></span>
+        <img src="/logo-industrial.svg" alt="Logomarca SGQ ERP Industrial" />
+        <span><strong>SGQ ERP INDUSTRIAL</strong><small>Gestão integrada industrial</small></span>
       </button>
-      <div className="v7-top-plant" aria-label="Status da planta">
-        <span className="v7-online-dot" aria-hidden="true" />
-        <div><small>STATUS DA PLANTA</small><strong>PLANTA 01 ONLINE</strong></div>
-      </div>
-      <div className="v7-top-context"><span>AMBIENTE</span><b>{segment}</b></div>
-      <div className="v7-top-search"><Search size={18}/><input placeholder="Pesquisar módulos, clientes, produtos, pedidos..." aria-label="Pesquisa global" /></div>
       <div className="v7-top-actions">
-        <div className="v7-top-user-block"><Users size={20}/><div><small>USUÁRIO ATIVO</small><strong>{profile.nome || 'Usuário Administrador'}</strong></div></div>
-        <div className="v7-top-date"><small>DATA E HORA</small><strong>{clock.toLocaleDateString(language === 'en-US' ? 'en-US' : 'pt-BR')} • {clock.toLocaleTimeString(language === 'en-US' ? 'en-US' : 'pt-BR')}</strong></div>
-        <button className="v7-top-lang" type="button" onClick={()=>{const n=language==='pt-BR'?'en-US':'pt-BR';setLanguage(n);localStorage.setItem('erp-lang',n)}}>{language==='pt-BR'?'PT':'EN'}</button>
-        <button className="v7-top-lang v7-theme-toggle" type="button" onClick={cycleTheme} aria-label={`Tema atual: ${themeLabel}. Clique para alternar`} title={`Tema: ${themeLabel}`}>
-          {theme === 'dark' ? <Moon size={17}/> : <Sun size={17}/>} <span>{themeLabel}</span>
-        </button>
-        <button className="v7-top-tablet" type="button" onClick={() => setLauncher(true)}><LayoutGrid size={18}/> Tablet</button>
+        <div className="v7-top-date" aria-label="Data e hora atual">
+          <small>DATA E HORA</small>
+          <strong>{clock.toLocaleDateString(language === 'en-US' ? 'en-US' : 'pt-BR')} • {clock.toLocaleTimeString(language === 'en-US' ? 'en-US' : 'pt-BR')}</strong>
+        </div>
+        <div className="v7-top-user-simple" aria-label="Usuário conectado">
+          <span className="v7-online-dot" aria-hidden="true" />
+          <strong>{profile.nome || 'Usuário'}</strong>
+        </div>
         <button className="v7-top-exit" type="button" onClick={() => void supabase.auth.signOut().then(() => { location.href = '/login' })}>Sair</button>
       </div>
     </header>
 
     <main className="v7-main v7-main-full">
       <section className="v7-header v7-page-header">
-        <div><span>SGQ ERP • {segment.toUpperCase()}</span><h1>{active === 'Dashboard' ? `Dashboard — ${segment}` : module?.title ?? active}</h1><p>{active === 'Dashboard' ? current.description : module?.description}</p></div>
-        <div className="v7-user"><b>{profile.nome}</b><small>Empresa isolada por tenant</small></div>
+        <div>
+          <div className="v7-page-heading-line">
+            <button className="v7-page-tablet" type="button" onClick={() => setLauncher(true)}><LayoutGrid size={16}/> Tablet Industrial</button>
+            <span>SGQ ERP • {segment.toUpperCase()}</span>
+          </div>
+          <h1>{active === 'Dashboard' ? `Dashboard — ${segment}` : module?.title ?? active}</h1>
+          <p>{active === 'Dashboard' ? current.description : module?.description}</p>
+        </div>
       </section>
       <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{active === 'Dashboard' ? <IndustrialCommandDashboard profileName={profile.nome} isMaster={profile.is_master} onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); setLauncher(false); return }; location.href = route }} /> : active === 'Configurações' ? <CompanySettings profile={profile}/> : location.pathname === '/qualidade/calibracao' ? <CalibracaoIndustrial/> : location.pathname === '/moldes-injecao' ? <MoldesFerramentaria/> : location.pathname === '/comercial' ? <ComercialSuprimentos/> : location.pathname === '/configuracoes-adm' ? <ConfiguracoesADM profile={profile}/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
       <footer>FernandoSch_System • SGQ ERP • {segment} • Ambiente isolado por empresa</footer>
