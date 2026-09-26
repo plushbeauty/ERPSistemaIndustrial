@@ -50,8 +50,57 @@ const modules:Module[]=[
  {label:'Ajuda',description:'Manual operacional e ajuda contextual.',icon:HelpCircle,actions:[A('Manual do Usuário','Como operar cada módulo',BookOpen,'/manual-usuario'),A('Ajuda do módulo','Orientação contextual',HelpCircle,'/manual-usuario')]}
 ]
 export default function TabletLaunchpad({onNavigate,isOpen,onClose}:{onNavigate:(route:string)=>void;isOpen:boolean;onClose:()=>void}){
- const[selected,setSelected]=useState<Module|null>(null);useEffect(()=>{if(!isOpen)setSelected(null)},[isOpen]);if(!isOpen)return null
- return <div className="tablet-overlay" role="dialog" aria-modal="true"><section className="tablet-frame"><header className="tablet-head"><div className="tablet-brand"><img src="/logo-industrial.svg" alt=""/><div><span>SGQ ERP INDUSTRIAL</span><strong>{selected?selected.label:'Tablet Operacional'}</strong><small>{selected?selected.description:'Acesso rápido aos módulos da fábrica'}</small></div></div><div className="tablet-head-actions"><button className="tablet-icon-btn" onClick={()=>{const n=localStorage.getItem('erp-lang')==='en-US'?'pt-BR':'en-US';localStorage.setItem('erp-lang',n);location.reload()}} title="Idioma"><Languages size={23}/></button>{selected&&<button onClick={()=>setSelected(null)} className="tablet-icon-btn" title="Voltar"><ArrowLeft size={22}/></button>}<button onClick={onClose} className="tablet-icon-btn" title="Fechar tablet"><X size={23}/></button></div></header><div className="tablet-body">{!selected?<><div className="tablet-section-title"><div><span>WORKSPACES OPERACIONAIS</span><h2>Escolha um módulo para abrir seu ambiente de trabalho</h2></div><div className="tablet-user"><UserRound size={20}/><b>Operação ERP</b></div></div><div className="tablet-section-title"><div><span>VISUALIZAÇÃO E OPERAÇÃO</span><h2>Escolha o ambiente de trabalho</h2></div></div><div className="tablet-grid">{modules.slice(0,6).map(m=><ModuleCard key={m.label} module={m} onClick={()=>setSelected(m)}/>)}</div><div className="tablet-section-title tablet-config-title"><div><span>CONFIGURAÇÕES E APOIO</span><h2>Cadastros e administração</h2></div></div><div className="tablet-grid tablet-grid-small">{modules.slice(6).map(m=><ModuleCard key={m.label} module={m} onClick={()=>setSelected(m)}/>)}</div></>:<><button className="tablet-back" onClick={()=>setSelected(null)}><ArrowLeft size={19}/> Todos os módulos</button><div className="tablet-action-grid">{selected.actions.map(a=>{const I=a.icon;return <button key={a.label} className="tablet-action-card" onClick={()=>onNavigate(a.route)}><span className="tablet-action-icon"><I size={30}/></span><div><b>{a.label}</b><small>{a.description}</small></div><span className="tablet-open">ABRIR</span></button>})}</div></>}</div><footer className="tablet-foot"><span>© FernandoSch_System</span><span>ERP Industrial • Operação integrada • RLS</span></footer></section></div>
+ const[selected,setSelected]=useState<Module|null>(null)
+ useEffect(()=>{if(!isOpen)setSelected(null)},[isOpen])
+ if(!isOpen)return null
+
+ const openModule=(module:Module)=>{
+  if(module.label.startsWith('PCP')){onNavigate('/pcp');return}
+  if(module.label.startsWith('Vendas')){onNavigate('/pedidos-vendas');return}
+  setSelected(module)
+ }
+
+ return <div className="fixed inset-0 z-[10000] grid place-items-center bg-slate-950/80 p-3 sm:p-6" role="dialog" aria-modal="true">
+  <section className="flex max-h-[96vh] w-full max-w-[1500px] flex-col overflow-hidden rounded-lg border border-slate-700 bg-slate-900 text-white shadow-2xl">
+   <header className="flex shrink-0 items-center justify-between gap-4 border-b border-slate-700 bg-slate-950 px-5 py-4">
+    <div className="flex min-w-0 items-center gap-4">
+     <img src="/logo-industrial.svg" alt="ERP Industrial" className="h-16 w-auto max-w-[360px] object-contain sm:h-20"/>
+     <div className="min-w-0 border-l border-slate-700 pl-4">
+      <span className="block text-sm font-extrabold uppercase tracking-[0.18em] text-sky-300">SGQ ERP INDUSTRIAL</span>
+      <strong className="block truncate text-xl font-extrabold sm:text-2xl">{selected?selected.label:'Tablet Operacional'}</strong>
+      <small className="block truncate text-base text-slate-300">{selected?selected.description:'Ambiente de operação industrial'}</small>
+     </div>
+    </div>
+    <div className="flex shrink-0 items-center gap-2">
+     <button className="rounded-md border border-slate-600 bg-slate-800 p-3 text-slate-100 hover:bg-slate-700" onClick={()=>{const n=localStorage.getItem('erp-lang')==='en-US'?'pt-BR':'en-US';localStorage.setItem('erp-lang',n);location.reload()}} title="Idioma"><Languages size={24}/></button>
+     {selected&&<button onClick={()=>setSelected(null)} className="rounded-md border border-slate-600 bg-slate-800 p-3 text-slate-100 hover:bg-slate-700" title="Voltar"><ArrowLeft size={24}/></button>}
+     <button onClick={onClose} className="rounded-md border border-red-700 bg-red-700/20 p-3 text-red-300 hover:bg-red-700 hover:text-white" title="Fechar tablet"><X size={26}/></button>
+    </div>
+   </header>
+
+   <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-7">
+    {!selected?<div className="space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-700 pb-5">
+       <div><span className="text-sm font-extrabold uppercase tracking-[0.18em] text-sky-300">WORKSPACES OPERACIONAIS</span><h2 className="mt-1 text-2xl font-extrabold text-white sm:text-3xl">Escolha o ambiente de trabalho</h2><p className="mt-1 text-base text-slate-300">Cada módulo abre diretamente sua área operacional, sem uma segunda tela de seleção.</p></div>
+       <div className="flex items-center gap-2 rounded-md border border-slate-700 bg-slate-800 px-4 py-3 text-base text-slate-100"><UserRound size={21}/><b>Operação ERP</b></div>
+      </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+       {modules.slice(0,6).map(m=><ModuleCard key={m.label} module={m} onClick={()=>openModule(m)}/>)}
+      </div>
+      <div className="border-t border-slate-700 pt-5">
+       <span className="text-sm font-extrabold uppercase tracking-[0.18em] text-sky-300">CONFIGURAÇÕES E APOIO</span>
+       <h3 className="mt-1 text-xl font-extrabold text-white">Cadastros e administração</h3>
+      </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+       {modules.slice(6).map(m=><ModuleCard key={m.label} module={m} onClick={()=>openModule(m)}/>)}
+      </div>
+    </div>:<div className="space-y-5">
+      <button className="inline-flex items-center gap-2 rounded-md border border-slate-600 bg-slate-800 px-4 py-3 text-base font-extrabold text-white hover:bg-slate-700" onClick={()=>setSelected(null)}><ArrowLeft size={19}/> Todos os módulos</button>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">{selected.actions.map(a=>{const I=a.icon;return <button key={a.label} className="flex min-h-28 items-center gap-4 rounded-md border border-slate-700 bg-slate-800 p-5 text-left text-white shadow-lg hover:border-sky-500 hover:bg-slate-750" onClick={()=>onNavigate(a.route)}><span className="grid h-14 w-14 shrink-0 place-items-center rounded-md bg-sky-700 text-white"><I size={30}/></span><span className="min-w-0 flex-1"><b className="block text-lg font-extrabold">{a.label}</b><small className="mt-1 block text-base text-slate-300">{a.description}</small></span><span className="rounded-md bg-slate-950 px-3 py-2 text-sm font-extrabold text-sky-300">ABRIR</span></button>})}</div>
+    </div>}
+   </div>
+   <footer className="flex shrink-0 flex-wrap justify-between gap-2 border-t border-slate-700 bg-slate-950 px-5 py-3 text-sm font-semibold text-slate-300"><span>© FernandoSch_System</span><span>ERP Industrial • Operação integrada • RLS</span></footer>
+  </section>
+ </div>
 }
-function QuickCard({icon:Icon,title,description,onClick}:{icon:IconComponent;title:string;description:string;onClick:()=>void}){return <button className="tablet-module-card tablet-priority-card" onClick={onClick}><span className="tablet-module-icon"><Icon size={42}/></span><div><b>{title}</b><small>{description}</small></div><span className="tablet-chevron">›</span></button>}
-function ModuleCard({module,onClick}:{module:Module;onClick:()=>void}){const I=module.icon;return <button className="tablet-module-card" onClick={onClick}><span className="tablet-module-icon"><I size={42}/></span><div><b>{module.label}</b><small>{module.description}</small></div><span className="tablet-chevron">›</span></button>}
+function ModuleCard({module,onClick}:{module:Module;onClick:()=>void}){const I=module.icon;return <button className="group flex min-h-32 items-center gap-4 rounded-md border border-slate-700 bg-slate-800 p-5 text-left text-white shadow-xl transition hover:-translate-y-0.5 hover:border-sky-500 hover:bg-slate-750" onClick={onClick}><span className="grid h-16 w-16 shrink-0 place-items-center rounded-md bg-slate-950 text-sky-300 ring-1 ring-slate-700 group-hover:bg-sky-700 group-hover:text-white"><I size={40}/></span><span className="min-w-0 flex-1"><b className="block text-lg font-extrabold leading-tight">{module.label}</b><small className="mt-2 block text-base leading-6 text-slate-300">{module.description}</small></span><span className="text-3xl text-slate-400 group-hover:text-sky-300">›</span></button>}
