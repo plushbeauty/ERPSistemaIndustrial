@@ -120,7 +120,7 @@ export default function PedidoVendaCompleto(){
        <button className="sales-btn primary" onClick={add} disabled={!selected}><Plus size={17}/> Adicionar Produto</button>
       </div>
       <div className="sales-table-wrap"><table className="sales-table"><thead><tr><th>Cód. Int.</th><th>Cód. Cliente</th><th>Produto</th><th>Qtd.</th><th>Est. Fís.</th><th>Disponível</th><th>Status</th><th>Destino</th><th/></tr></thead><tbody>
-       {analyzed.map((i,n)=><tr key={n}><td><b>{i.codigo}</b></td><td>{i.codigoCliente||'—'}</td><td>{i.descricao}</td><td>{Number(i.quantidade).toLocaleString('pt-BR')}</td><td>{i.estoque.toLocaleString('pt-BR')}</td><td>{i.disponivel.toLocaleString('pt-BR')}</td><td><span className={`status ${i.falta?'warn':'ok'}`}>{i.falta?'🟠 FALTA':'🟢 OK'}</span></td><td><b>{i.falta?\`Produzir ${i.falta}\`:'Reservar integral'}</b></td><td><button className="sales-btn danger" onClick={()=>setItems(items.filter((_,x)=>x!==n))}><Trash2 size={15}/></button></td></tr>)}
+       {analyzed.map((i,n)=><tr key={n}><td><b>{i.codigo}</b></td><td>{i.codigoCliente||'—'}</td><td>{i.descricao}</td><td>{Number(i.quantidade).toLocaleString('pt-BR')}</td><td>{i.estoque.toLocaleString('pt-BR')}</td><td>{i.disponivel.toLocaleString('pt-BR')}</td><td><span className={`status ${i.falta?'warn':'ok'}`}>{i.falta?'🟠 FALTA':'🟢 OK'}</span></td><td><b>{i.falta?`Produzir ${i.falta}`:'Reservar integral'}</b></td><td><button className="sales-btn danger" onClick={()=>setItems(items.filter((_,x)=>x!==n))}><Trash2 size={15}/></button></td></tr>)}
        {!items.length&&<tr><td colSpan={9}>Adicione os produtos do pedido. A análise usa o estoque real disponível da empresa.</td></tr>}
       </tbody></table></div>
      </section>}
