@@ -19,7 +19,7 @@ export type LookupRecord = {
 type Props = {
   label: string
   value: string
-  records: LookupRecord[]
+  records?: LookupRecord[]
   onChange: (value: string) => void
   onSelect: (record: LookupRecord) => void
   placeholder?: string
