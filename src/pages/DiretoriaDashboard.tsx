@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle, ClipboardList, PackageX, RefreshCw, ShieldAlert, ShoppingCart } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
+import { useRealtimeAlerts } from "../hooks/useRealtimeAlerts";
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 
 type Kpi = { value: number; label: string };
@@ -22,6 +23,7 @@ async function countRows(table: string, filter?: (query: ReturnType<typeof supab
 }
 
 export default function DiretoriaDashboard() {
+  const alertCounts = useRealtimeAlerts(null);
   const [kpis, setKpis] = useState<Record<string, Kpi>>({});
   const [pending, setPending] = useState<PendingRow[]>([]);
   const [revenue, setRevenue] = useState<ChartPoint[]>([]);
@@ -40,8 +42,8 @@ export default function DiretoriaDashboard() {
     ]);
 
     setKpis({
-      ops: { value: ops ?? 0, label: "Ordens de produção abertas" },
-      rncs: { value: rncs ?? 0, label: "RNCs ativas" },
+      ops: { value: alertCounts.opsAbertas || ops || 0, label: "Ordens de produção abertas" },
+      rncs: { value: alertCounts.rncsAtivas || rncs || 0, label: "RNCs ativas" },
       stock: { value: stock ?? 0, label: "Registros de estoque" },
     });
 
