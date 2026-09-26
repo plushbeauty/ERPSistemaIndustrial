@@ -78,6 +78,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/pcp/(.*)",
+      "destination": "/index.html"
+    },
+    {
       "source": "/qualidade",
       "destination": "/index.html"
     },
