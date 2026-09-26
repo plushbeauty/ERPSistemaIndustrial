@@ -1,17 +1,79 @@
-import { useEffect,useState } from "react";
-import { Plus,Save,Printer,Search } from "lucide-react";
-import { supabase } from "../lib/supabaseClient";
-import type { IFerramentalParametrosJSONB } from "../types/ferramental";
-type T={id:string;codigo:string;nome:string;numero_cavidades:number;vida_ciclos:number;ciclos_realizados:number;parametros:IFerramentalParametrosJSONB|null};
-const items=["Limpeza e Polimento das Cavidades do Molde","Verificação do Desgaste dos Pinos de Guia e Buchas","Inspeção e Troca dos Retentores do Sistema de Refrigeração","Lubrificação com Graxa de Alta Temperatura nas Gavetas"];
+import { useEffect,useState } from 'react'
+import { Plus, Save, Printer } from 'lucide-react'
+import { supabase } from '../lib/supabaseClient'
+import type { IFerramentalParametrosJSONB } from '../types/ferramental'
+import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
+import IndustrialPageShell, { SectionCard, Field, ToolbarButton } from '../components/industrial/IndustrialPageShell'
+
+type T={id:string;codigo:string;nome:string;numero_cavidades:number;vida_ciclos:number;ciclos_realizados:number;parametros:IFerramentalParametrosJSONB|null}
+const items=['Limpeza e Polimento das Cavidades do Molde','Verificação do Desgaste dos Pinos de Guia e Buchas','Inspeção e Troca dos Retentores do Sistema de Refrigeração','Lubrificação com Graxa de Alta Temperatura nas Gavetas']
+
 export default function FerramentariaPreventiva(){
- const [tools,setTools]=useState<T[]>([]);const [code,setCode]=useState("");const [status,setStatus]=useState<"LIBERADO"|"RETIDO">("LIBERADO");const [done,setDone]=useState<boolean[]>(items.map(()=>false));const [obs,setObs]=useState("");const [msg,setMsg]=useState("");
- async function load(){const {data}=await supabase.from("erp_ferramentas_industriais").select("id,codigo,nome,numero_cavidades,vida_ciclos,ciclos_realizados,parametros").eq("ativo",true).order("codigo");setTools((data??[]) as T[])}
- useEffect(()=>{void load()},[]);const tool=tools.find(x=>x.codigo===code);
- useEffect(()=>{if(tool){const p=tool.parametros?.preventiva;setDone(items.map(x=>Boolean(p?.checklist?.[x])));setObs(p?.observacoes??"");setStatus(p?.status==="RETIDO"?"RETIDO":"LIBERADO")}},[tool]);
- async function save(){if(!tool){setMsg("Informe um código de molde válido.");return}const {data:e}=await supabase.rpc("erp_current_empresa_id");const next={...(tool.parametros??{}),preventiva:{ultima_execucao_em:new Date().toISOString(),status,checklist:Object.fromEntries(items.map((x,i)=>[x,done[i]])),observacoes:obs}};const {error}=await supabase.from("erp_ferramentas_industriais").update({parametros:next}).eq("id",tool.id).eq("empresa_id",String(e??""));setMsg(error?error.message:"Manutenção preventiva gravada no JSONB real.");if(!error)void load()}
- return <main className="min-h-screen bg-slate-50 text-slate-900 p-6"><div className="max-w-[1400px] mx-auto space-y-5"><header className="flex flex-wrap justify-between gap-4 border-b border-slate-200 pb-4"><div><p className="text-sm font-bold text-slate-600">MÓDULO: FERRAMENTARIA</p><h1 className="text-xl font-bold text-slate-950">Plano de Manutenção Preventiva do Molde</h1></div><div className="flex gap-2"><button className="rounded-md bg-emerald-600 text-white h-11 px-4 font-bold"><Plus size={18} className="inline mr-2"/>NOVA ORDEM DE SERVIÇO</button><button onClick={()=>void save()} className="rounded-md bg-blue-600 text-white h-11 px-4 font-bold"><Save size={18} className="inline mr-2"/>GRAVAR MANUTENÇÃO</button><button onClick={()=>window.print()} className="rounded-md bg-slate-700 text-white h-11 px-4 font-bold"><Printer size={18} className="inline mr-2"/>IMPRIMIR LAUDO</button></div></header>
- <section className="bg-white border border-slate-200 rounded-md shadow-sm p-5"><h2 className="text-xl font-bold mb-4">1. Identificação via Lupa</h2><div className="grid lg:grid-cols-2 gap-4"><label className="font-semibold">Número do Molde<div className="flex mt-1"><input list="tools-preventiva" value={code} onChange={e=>setCode(e.target.value)} className="h-12 flex-1 border border-slate-300 rounded-l-md px-3 text-slate-900" placeholder="Digite o código exato"/><button className="w-14 bg-slate-800 text-white rounded-r-md"><Search size={20} className="mx-auto"/></button></div><datalist id="tools-preventiva">{tools.map(t=><option key={t.id} value={t.codigo}>{t.nome}</option>)}</datalist></label><div className="rounded-md border border-slate-200 bg-slate-50 p-3"><div className="font-semibold">Contador Atual de Ciclos</div><div className="text-[28px] font-extrabold">{tool?Number(tool.ciclos_realizados).toLocaleString("pt-BR"):"—"} ciclos</div><div className="text-sm text-slate-600">Vida útil: {tool?Number(tool.vida_ciclos).toLocaleString("pt-BR"):"—"} • Cavidades: {tool?.numero_cavidades??"—"}</div></div></div></section>
- <section className="bg-white border border-slate-200 rounded-md shadow-sm p-5"><h2 className="text-xl font-bold mb-3">2. Check-list de Engenharia</h2>{items.map((x,i)=><label key={x} className="h-[45px] border-b border-slate-200 flex items-center gap-4 font-semibold"><input type="checkbox" className="w-6 h-6" checked={done[i]} onChange={e=>setDone(v=>v.map((a,j)=>j===i?e.target.checked:a))}/>{x}</label>)}</section>
- <section className="bg-white border border-slate-200 rounded-md shadow-sm p-5"><h2 className="text-xl font-bold mb-3">3. Laudo Final de Engenharia</h2><select value={status} onChange={e=>setStatus(e.target.value as "LIBERADO"|"RETIDO")} className="h-12 w-full border border-slate-300 rounded-md px-3 font-bold"><option value="LIBERADO">🟢 Molde Liberado para Produção</option><option value="RETIDO">🔴 Condenado / Reter na Ferramentaria</option></select><textarea value={obs} onChange={e=>setObs(e.target.value)} rows={5} className="mt-4 w-full border border-slate-300 rounded-md p-3 text-slate-900" placeholder="Observações e falhas encontradas"/>{msg&&<p className="mt-3 font-semibold">{msg}</p>}</section></div></main>
+ const [tools,setTools]=useState<T[]>([])
+ const [selected,setSelected]=useState<T|null>(null)
+ const [status,setStatus]=useState<'LIBERADO'|'RETIDO'>('LIBERADO')
+ const [done,setDone]=useState<boolean[]>(items.map(()=>false))
+ const [obs,setObs]=useState('')
+ const [msg,setMsg]=useState('')
+
+ async function load(){
+   const {data}=await supabase.from('erp_ferramentas_industriais').select('id,codigo,nome,numero_cavidades,vida_ciclos,ciclos_realizados,parametros').eq('ativo',true).order('codigo')
+   setTools((data??[]) as T[])
+ }
+ useEffect(()=>{void load()},[])
+
+ useEffect(()=>{
+   if(!selected)return
+   const raw=selected.parametros?.preventiva
+   setDone(items.map(x=>Boolean(raw?.checklist?.[x])))
+   setObs(raw?.observacoes??'')
+   setStatus(raw?.status==='RETIDO'?'RETIDO':'LIBERADO')
+ },[selected])
+
+ const records:LookupRecord[]=tools.map(t=>({id:t.id,codigo:t.codigo,nome:t.nome}))
+ async function save(){
+   if(!selected){setMsg('Selecione um molde pelo código ou pela lupa.');return}
+   const {data:e}=await supabase.rpc('erp_current_empresa_id')
+   const next={...(selected.parametros??{}),preventiva:{ultima_execucao_em:new Date().toISOString(),status,checklist:Object.fromEntries(items.map((x,i)=>[x,done[i]])),observacoes:obs}}
+   const {error}=await supabase.from('erp_ferramentas_industriais').update({parametros:next}).eq('id',selected.id).eq('empresa_id',String(e??''))
+   setMsg(error?error.message:'Manutenção preventiva gravada no ferramental real.')
+   if(!error)void load()
+ }
+
+ return <IndustrialPageShell
+   module="Ferramentaria / Preventiva"
+   title="Plano de Manutenção Preventiva do Molde"
+   subtitle="Identificação por código e lupa centralizada; checklist persistido no JSONB do ferramental."
+   actions={[
+     {label:'NOVA ORDEM DE SERVIÇO',type:'primary',icon:<Plus size={18}/>,onClick:()=>{setSelected(null);setMsg('Selecione o molde para iniciar uma nova execução.')} },
+     {label:'GRAVAR MANUTENÇÃO',type:'success',icon:<Save size={18}/>,onClick:()=>void save()},
+     {label:'IMPRIMIR LAUDO',type:'neutral',icon:<Printer size={18}/>,onClick:()=>window.print()},
+   ]}
+ >
+   <SectionCard title="1. Identificação do ferramental">
+     <div className="ips-grid-2">
+       <EntityCodeLookup label="Código do Molde" value={selected?.codigo??''} records={records} onChange={()=>{}} onSelect={r=>setSelected(tools.find(t=>t.id===r.id)??null)} required helper="Digite o código exato ou abra a lupa. Não use combobox." />
+       <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
+         <div className="text-base font-bold text-slate-900">Contador atual de ciclos</div>
+         <div className="mt-2 text-3xl font-extrabold text-slate-950">{selected?Number(selected.ciclos_realizados).toLocaleString('pt-BR'):'—'} ciclos</div>
+         <div className="mt-1 text-sm font-semibold text-slate-600">Vida útil: {selected?Number(selected.vida_ciclos).toLocaleString('pt-BR'):'—'} • Cavidades: {selected?.numero_cavidades??'—'}</div>
+       </div>
+     </div>
+   </SectionCard>
+
+   <SectionCard title="2. Check-list de engenharia">
+     <div className="grid gap-0">{items.map((x,i)=><label key={x} className="min-h-[54px] border-b border-slate-200 flex items-center gap-4 text-base font-semibold text-slate-900"><input type="checkbox" className="h-6 w-6" checked={done[i]} onChange={e=>setDone(v=>v.map((a,j)=>j===i?e.target.checked:a))}/>{x}</label>)}</div>
+   </SectionCard>
+
+   <SectionCard title="3. Laudo final">
+     <div className="grid gap-4">
+       <Field label="Status final">
+         <select value={status} onChange={e=>setStatus(e.target.value as 'LIBERADO'|'RETIDO')}><option value="LIBERADO">LIBERADO PARA PRODUÇÃO</option><option value="RETIDO">RETIDO NA FERRAMENTARIA</option></select>
+       </Field>
+       <Field label="Observações técnicas"><textarea value={obs} onChange={e=>setObs(e.target.value)} placeholder="Descreva desgaste, intervenção e condição encontrada."/></Field>
+       <div className="ips-bottom-actions"><ToolbarButton tone="success" onClick={()=>void save()}><Save size={18}/> GRAVAR LAUDO</ToolbarButton></div>
+       {msg&&<p className="font-semibold text-slate-900">{msg}</p>}
+     </div>
+   </SectionCard>
+ </IndustrialPageShell>
 }
