@@ -256,14 +256,14 @@ export default function PCPIndustrial(){
   </section>}
 
   {tab==='materiais'&&<section>
-   <div className="erp-card" style={{padding:18,marginBottom:14}}><span className="v2-eyebrow">BOM / MRP</span><h2>Necessidade de materiais</h2><p className="pcp-help-text">Selecione uma OP. O sistema usa a ficha técnica ativa e compara a necessidade com o estoque atual.</p><select value={selectedOp} onChange={e=>setSelectedOp(e.target.value)}><option value="">Selecione a OP</option>{ops.map(o=><option key={o.id} value={o.id}>{o.numero_op} • {o.quantidade}</option>)}</select></div>
+   <div className="erp-card pcp-code-card"><span className="v2-eyebrow">BOM / MRP</span><h2>Necessidade de materiais</h2><p className="pcp-help-text">Digite o número/código da OP. A lupa abre a consulta sem obrigar a percorrer uma lista.</p><EntityCodeLookup label="Código da OP" value={selectedOp} records={ops.map(o=>({id:o.id,codigo:o.numero_op,nome:String(o.quantidade)}))} onChange={setSelectedOp} onSelect={o=>setSelectedOp(o.id)} helper="Digite o código exato da OP."/></div>
    <Table title={current?'Necessidade calculada para '+current.numero_op:'Selecione uma OP para calcular'} cols={['Componente','Necessidade','Estoque atual','Saldo após necessidade','Situação']} rows={materials.map(i=>{const need=Number(i.quantidade)*Number(current?.quantidade||0)*(1+Number(i.perda_percentual||0)/100);const stock=Number(i.product?.estoque_atual||0);return[i.product?.codigo+' • '+i.product?.nome,need,stock,stock-need,stock>=need?'ATENDE':'FALTA']})} search="" setSearch={()=>{}}/>
   </section>}
 
   {tab==='producao'&&<section className="pcp-production-modern">
    <section className="pcp-modern-panel"><div className="pcp-modern-panel-head"><div><span>CONFERÊNCIA DE PRODUÇÃO</span><h2>Entrada real do que saiu da fábrica</h2><p>Registre o resultado da OP. O lançamento usa a rotina transacional do ERP.</p></div><InlineIcon name="Play" size={24}/></div>
     <div className="pcp-form-grid-modern">
-     <label><span>OP</span><select value={selectedOp} onChange={e=>setSelectedOp(e.target.value)}><option value="">Selecione a OP</option>{ops.map(o=><option key={o.id} value={o.id}>{o.numero_op} • planejado {o.quantidade}</option>)}</select></label>
+     <EntityCodeLookup label="OP" value={selectedOp} records={ops.map(o=>({id:o.id,codigo:o.numero_op,nome:'Planejado '+o.quantidade}))} onChange={setSelectedOp} onSelect={o=>setSelectedOp(o.id)} helper="Digite o número da OP ou use a lupa."/>
      <label><span>Quantidade Encontrada</span><input type="number" min="0" step="any" value={found} onChange={e=>setFound(e.target.value)} inputMode="decimal"/></label>
      <label><span>Quantidade Defeituosa</span><input type="number" min="0" step="any" value={bad} onChange={e=>setBad(e.target.value)} inputMode="decimal"/></label>
      <label><span>Localização de Destino</span><input value={destinationLocation} onChange={e=>setDestinationLocation(e.target.value)} placeholder="ID da localização"/></label>
