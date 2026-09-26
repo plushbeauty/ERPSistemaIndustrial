@@ -16,15 +16,8 @@ type Action={label:string;description:string;icon:IconComponent;route:string}
 type Module={label:string;description:string;icon:IconComponent;actions:Action[]}
 const A=(label:string,description:string,icon:IconComponent,route:string):Action=>({label,description,icon,route})
 const modules:Module[]=[
- {label:'PCP • Produção',description:'Demanda, MRP, BOM, OP, programação, materiais e chão de fábrica.',icon:Factory,actions:[
-  A('Centro PCP','Ordens, demandas, capacidade e prioridades',LayoutDashboard,'/pcp'),
-  A('Pedidos / Demanda','Pedidos que alimentam o planejamento',ClipboardList,'/pcp'),
-  A('MRP / Materiais','Necessidade, reserva e disponibilidade',Boxes,'/pcp'),
-  A('BOM / Engenharia','Estrutura, roteiro e ficha de processo',Settings,'/engenharia'),
-  A('Ficha de Processo','Operações, máquina, ciclo e instruções',FileText,'/ficha-engenharia'),
-  A('Programação','Máquinas, capacidade e sequência',CalendarCheck2,'/pcp'),
-  A('Apontamento','Boa, refugo, retrabalho e parada',Factory,'/operacao-industrial'),
-  A('Lotes / Rastreabilidade','Lote de MP, PA e OP',ShieldCheck,'/estoque')
+ {label:'PCP • Planejamento e Controle',description:'Um único workspace para demanda, BOM, OP, materiais, programação, capacidade e chão de fábrica.',icon:Factory,actions:[
+  A('Abrir PCP','Entrar no workspace completo do PCP',LayoutDashboard,'/pcp')
  ]},
  {label:'Qualidade • SGQ',description:'Inspeções, RPNC, calibração, documentos vivos e auditorias.',icon:ShieldCheck,actions:[
   A('Painel SGQ','Indicadores e Pareto',Gauge,'/qualidade'),
@@ -41,12 +34,8 @@ const modules:Module[]=[
  {label:'Fiscal • Financeiro',description:'NF-e, faturamento, documentos e caixa.',icon:Landmark,actions:[
   A('Fiscal','Documentos e liberações',Landmark,'/fiscal'),A('Nova NF-e','Modelo 55 / simulador',FileText,'/fiscal/nova'),A('Previsão de Caixa','Entradas e saídas',Activity,'/fiscal/previsao-caixa')
  ]},
- {label:'Vendas • Comercial',description:'Cadastros, pedidos e consultas comerciais em uma única central.',icon:ShoppingCart,actions:[
-  A('Central de Vendas','Cadastros, pedidos pendentes e consultas',ShoppingCart,'/comercial'),
-  A('Pedidos Pendentes','Carteira não faturada',ClipboardList,'/comercial'),
-  A('Cadastro de Clientes','Cadastro comercial',Users,'/comercial'),
-  A('Pedidos de Venda','Lançamento de pedidos',ShoppingCart,'/comercial'),
-  A('Consultas','Carteira e histórico',Search,'/comercial')
+ {label:'Vendas • Comercial',description:'Um único workspace para pedidos, carteira, clientes, metas e configurações de vendas.',icon:ShoppingCart,actions:[
+  A('Abrir Vendas','Entrar no workspace completo de Vendas',ShoppingCart,'/pedidos-vendas')
  ]},
  {label:'Moldes & Ferramentaria',description:'Moldes, ciclos, preventiva, localização e ordens de serviço.',icon:Wrench,actions:[A('Moldes & Ferramentaria','Ficha técnica, ciclos e histórico de O.S.',Wrench,'/moldes-injecao')]},
  {label:'Compras',description:'Solicitações, fornecedores, pedidos e recebimento.',icon:ShoppingCart,actions:[
