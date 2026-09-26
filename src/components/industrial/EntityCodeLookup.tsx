@@ -25,9 +25,12 @@ type Props = {
   placeholder?: string
   required?: boolean
   helper?: string
+  entityType?: string
 }
 
-export default function EntityCodeLookup({label,value,records,onChange,onSelect,placeholder='Digite o código e pressione Enter',required=false,helper}:Props){
+export { EntityCodeLookup }
+
+export default function EntityCodeLookup({label,value,records=[],onChange,onSelect=()=>undefined,placeholder='Digite o código e pressione Enter',required=false,helper}:Props){
   const [open,setOpen]=useState(false)
   const [codigo,setCodigo]=useState('')
   const [nome,setNome]=useState('')
