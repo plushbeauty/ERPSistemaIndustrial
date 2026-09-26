@@ -3,6 +3,7 @@ import { AlertTriangle, Check, FileText, Inbox, RefreshCw, Search, Trash2, X } f
 import { supabase } from '../lib/supabaseClient'
 import type { IOutlookMailbox, IOutlookMessage, IXmlPedidoResult } from '../types/outlook'
 import { processarXmlPedido } from '../types/outlook'
+import { processarEConverterXmlPedido } from '../services/leitorXmlService'
 
 const MAILBOXES: IOutlookMailbox[] = [
   { address: 'vendas@empresa.com', label: 'Vendas', role: 'vendedor' },
@@ -84,6 +85,14 @@ export default function OutlookCaixaEntrada() {
     if (!attachment) { setMessage('O e-mail selecionado não possui anexo XML.'); return }
     const result: IXmlPedidoResult = processarXmlPedido(attachment.contentBytes)
     if (!result.sucesso) { setMessage(result.erro ?? 'Falha no XML.'); return }
+    const { data: userData } = await supabase.auth.getUser()
+    if (!userData.user) { setMessage('Sessão autenticada necessária para capturar o XML.'); return }
+    const { data: profile } = await supabase.from('erp_usuarios').select('empresa_id').eq('auth_user_id', userData.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
+    const clienteId = result.pedidoCliente ? selectedMessage.senderEmail : ''
+    if (!profile?.empresa_id || !clienteId) {
+      setMessage('Não foi possível determinar empresa e cliente para o De-Para. O XML permanece disponível para análise.')
+      return
+    }
     const captureEndpoint = import.meta.env.VITE_OUTLOOK_CAPTURE_URL as string | undefined
     if (!captureEndpoint) {
       setMessage(`XML lido: ${result.itens.length} item(ns). A integração de De-Para/PCP precisa estar configurada em VITE_OUTLOOK_CAPTURE_URL.`)
