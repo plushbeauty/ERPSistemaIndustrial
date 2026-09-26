@@ -31,10 +31,43 @@ export default function PedidoVendaCompleto(){
  const[empresa,setEmpresa]=useState(''),[savedOrderId,setSavedOrderId]=useState(''),[clients,setClients]=useState<Client[]>([]),[products,setProducts]=useState<Product[]>([]),[orders,setOrders]=useState<Order[]>([]),[client,setClient]=useState(''),[clientDoc,setClientDoc]=useState(''),[number,setNumber]=useState(''),[date,setDate]=useState(new Date().toISOString().slice(0,10)),[delivery,setDelivery]=useState(''),[items,setItems]=useState<Item[]>([]),[draft,setDraft]=useState({produto:'',qtd:'1',valor:'0'}),[busy,setBusy]=useState(false),[msg,setMsg]=useState(''),[err,setErr]=useState('')
  const load=async()=>{setErr('');const e=await supabase.rpc('erp_current_empresa_id');if(e.error||!e.data)throw e.error??new Error('Empresa não identificada');const id=String(e.data);setEmpresa(id);const [c,p,o]=await Promise.all([supabase.from('erp_clientes').select('id,nome,documento').eq('empresa_id',id).eq('ativo',true).order('nome'),supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,preco_venda,unidade').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(2000),supabase.from('erp_pedidos_venda').select('id,numero,status,total,data_entrega_prometida,cliente_id').eq('empresa_id',id).order('numero',{ascending:false}).limit(100)]);for(const x of[c,p,o])if(x.error)throw x.error;setClients(c.data||[]);setProducts(p.data||[]);setOrders(o.data||[]);setNumber(String((Number(o.data?.[0]?.numero||0)+1)).padStart(6,'0'))}
  useEffect(()=>{void load().catch(e=>setErr(e.message))},[])
- const selected=products.find(p=>p.id===draft.produto);const total=useMemo(()=>items.reduce((s,i)=>s+Number(i.quantidade)*Number(i.valor),0),[items]);const needs=items.filter(i=>Number(i.quantidade)>i.estoque&&!i.produzir);const prodItems=items.filter(i=>i.produzir||Number(i.quantidade)>i.estoque)
+ const selected=products.find(p=>p.id===draft.produto)
+ const total=useMemo(()=>items.reduce((s,i)=>s+Number(i.quantidade)*Number(i.valor),0),[items])
+ const needs=items.filter(i=>i.produzirQtd>0)
+ const prodItems=items.filter(i=>i.produzirQtd>0)
  function choose(id:string){const p=products.find(x=>x.id===id);if(!p)return;setDraft({...draft,produto:id,valor:String(p.preco_venda||0)})}
  function add(){if(!selected||Number(draft.qtd)<=0)return;setItems([...items,{produto_id:selected.id,codigo:selected.codigo,descricao:selected.nome,quantidade:draft.qtd,valor:draft.valor||String(selected.preco_venda||0),estoque:Number(selected.estoque_atual||0),reservado:false,produzir:Number(draft.qtd)>Number(selected.estoque_atual||0),reservadoQtd:0,produzirQtd:Math.max(0,Number(draft.qtd)-Number(selected.estoque_atual||0))}]);setDraft({produto:'',qtd:'1',valor:'0'})}
-  async function save(){if(!empresa||!client||!items.length)return setErr('Cliente e pelo menos um item são obrigatórios.');setBusy(true);setErr('');setMsg('');try{const r=await supabase.rpc('erp_finalizar_pedido_planejado',{p_cliente_id:client,p_data_entrada:date,p_data_entrega:delivery||null,p_itens:items.map(i=>({produto_id:i.produto_id,codigo:i.codigo,quantidade:Number(i.quantidade),valor_unitario:Number(i.valor)}))});if(r.error)throw r.error;const orderId=String(r.data);setSavedOrderId(orderId);const [oi,rv,op]=await Promise.all([supabase.from('erp_pedidos_venda_itens').select('produto_id,quantidade').eq('pedido_id',orderId),supabase.from('erp_estoque_reservas').select('produto_id,quantidade,status').eq('pedido_venda_id',orderId),supabase.from('erp_ordens_producao').select('produto_id,quantidade,status').eq('pedido_venda_id',orderId)]);if(oi.error)throw oi.error;if(rv.error)throw rv.error;if(op.error)throw op.error;const reserved=new Map<string,number>();for(const x of (rv.data||[]))if(x.status==='ATIVA')reserved.set(x.produto_id,(reserved.get(x.produto_id)||0)+Number(x.quantidade||0));const producing=new Map<string,number>();for(const x of (op.data||[]))producing.set(x.produto_id,(producing.get(x.produto_id)||0)+Number(x.quantidade||0));setItems(items.map(i=>{const rq=reserved.get(i.produto_id)||0;const pq=producing.get(i.produto_id)||0;return {...i,reservado:rq>0,produzir:pq>0,reservadoQtd:rq,produzirQtd:pq}}));setMsg('Pedido finalizado. Estoque disponível foi reservado e somente a necessidade líquida foi enviada ao PCP como OP.');await load()}catch(e){setErr(e instanceof Error?e.message:'Falha ao finalizar pedido e gerar o fluxo operacional.')}finally{setBusy(false)}}
+  async function save(){
+  if(!empresa||!client||!items.length){setErr('Cliente e pelo menos um item são obrigatórios.');return}
+  setBusy(true);setErr('');setMsg('')
+  try{
+    const result=await supabase.rpc('erp_finalizar_pedido_planejado',{
+      p_cliente_id:client,
+      p_data_entrada:date,
+      p_data_entrega:delivery||null,
+      p_itens:items.map(item=>({
+        produto_id:item.produto_id,
+        codigo:item.codigo,
+        quantidade:Number(item.quantidade),
+        valor_unitario:Number(item.valor)
+      }))
+    })
+    if(result.error) throw result.error
+    setSavedOrderId(String(result.data))
+    setMsg('Pedido finalizado. O estoque disponível foi reservado e somente a necessidade líquida foi enviada ao PCP como OP.')
+    setItems(items.map(item=>({
+      ...item,
+      reservado:item.produzirQtd===0,
+      reservadoQtd:item.produzirQtd===0?Number(item.quantidade):Math.max(0,Number(item.quantidade)-item.produzirQtd),
+      produzir:item.produzirQtd>0
+    })))
+    await load()
+  }catch(error){
+    setErr(error instanceof Error?error.message:'Falha ao finalizar pedido e gerar o fluxo operacional.')
+  }finally{
+    setBusy(false)
+  }
+}
  async function reserve(item:Item){setErr('A reserva é criada automaticamente quando o pedido é finalizado.');setMsg('Use “Finalizar pedido” para reservar o estoque disponível e gerar apenas a necessidade líquida de produção.');}\n return <main className="erp-page-v3" style={{maxWidth:1550,margin:'0 auto',padding:24}}><header className="erp-page-header-v3"><div><span className="erp-eyebrow">COMERCIAL • VENDAS</span><h1>Novo Pedido de Venda</h1><p>Pedido completo: cliente → análise de disponibilidade → reserva → necessidade líquida → OP → PCP.</p></div><button className="erp-btn-secondary" onClick={()=>void load()}><RefreshCw/>Atualizar</button></header>
  {(msg||err)&&<div className={err?'error':'notice'}>{err||msg}</div>}
  <section className="erp-card-v3" style={{padding:20}}><div className="grid md:grid-cols-5 gap-4"><label>Nº Pedido<input value={number} readOnly/></label><label>Data<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label><label className="md:col-span-2">Cliente<select value={client} onChange={e=>{setClient(e.target.value);setClientDoc(clients.find(c=>c.id===e.target.value)?.documento||'')}}><option value="">Selecione o cliente</option>{clients.map(c=><option key={c.id} value={c.id}>{c.nome}</option>)}</select></label><label>Documento<input value={clientDoc} readOnly/></label><label>Data de entrega<input type="date" value={delivery} onChange={e=>setDelivery(e.target.value)}/></label></div>
