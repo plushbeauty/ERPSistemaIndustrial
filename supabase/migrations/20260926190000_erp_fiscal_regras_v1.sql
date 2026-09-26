@@ -19,7 +19,7 @@ alter table public.erp_regras_fiscais enable row level security;
 drop policy if exists "erp_regras_fiscais_tenant" on public.erp_regras_fiscais;
 create policy "erp_regras_fiscais_tenant" on public.erp_regras_fiscais
 for all to authenticated
-using ((empresa_id=public.erp_current_company_id()) or public.erp_is_master())
-with check ((empresa_id=public.erp_current_company_id()) or public.erp_is_master());
+using ((empresa_id=public.erp_current_empresa_id()) or public.erp_is_master())
+with check ((empresa_id=public.erp_current_empresa_id()) or public.erp_is_master());
 grant select,insert,update,delete on public.erp_regras_fiscais to authenticated;
 create index if not exists idx_erp_regras_fiscais_busca on public.erp_regras_fiscais(empresa_id,ncm,cfop,uf_destino,ativo);
