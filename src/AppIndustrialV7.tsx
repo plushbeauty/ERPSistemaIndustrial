@@ -3,7 +3,7 @@
 - Arquivo: src/AppIndustrialV7.tsx
 - Status Atual: Revisão 3 (Compras, Comercial e Qualidade Conectados)
 - Total de Linhas Gerado: 233
-- Assinatura de Entrada (Primeiros 3 Imports): import { FormEvent, useEffect, useMemo, useState } from 'react' | import { motion, AnimatePresence } from 'motion/react' | import { Activity, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Sun, Moon, Truck, Users, Wrench, X } from 'lucide-react'
+- Assinatura de Entrada (Primeiros 3 Imports): import { FormEvent, useEffect, useMemo, useState } from 'react' | import { motion, AnimatePresence } from 'motion/react' | import { Activity, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Truck, Users, Wrench, X } from 'lucide-react'
 - Regra de Negócio Incorporada: Navegação real para clientes, fornecedores ISO 9001 e tabelas de preços por cliente.
 */
 import { FormEvent, useEffect, useMemo, useState } from 'react'
@@ -128,8 +128,6 @@ export default function AppIndustrialV7() {
   const current = segments.find(s => s.name === segment) ?? segments[0]
   const module = current.modules.find(m => m.name === active)
   useEffect(() => { localStorage.setItem('erp-theme', theme) }, [theme])
-  const cycleTheme = () => setTheme(value => value === 'light' ? 'windows' : 'light')
-  const themeLabel = theme === 'dark' ? 'Escuro' : theme === 'light' ? 'Claro' : 'Windows'
 
   useEffect(() => {
     let alive = true
@@ -187,7 +185,7 @@ export default function AppIndustrialV7() {
           <p>{active === 'Dashboard' ? current.description : module?.description}</p>
         </div>
       </section>
-      <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{active === 'Dashboard' ? <IndustrialCommandDashboard profileName={profile.nome} isMaster={profile.is_master} onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); setLauncher(false); return }; location.href = route }} /> : active === 'Configurações' ? <CompanySettings profile={profile}/> : location.pathname === '/qualidade/calibracao' ? <CalibracaoIndustrial/> : location.pathname === '/moldes-injecao' ? <MoldesFerramentaria/> : location.pathname === '/comercial' ? <ComercialSuprimentos/> : location.pathname === '/configuracoes-adm' ? <ConfiguracoesADM profile={profile}/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
+      <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{active === 'Dashboard' ? <IndustrialCommandDashboard onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); setLauncher(false); return }; location.href = route }} /> : active === 'Configurações' ? <CompanySettings profile={profile}/> : location.pathname === '/qualidade/calibracao' ? <CalibracaoIndustrial/> : location.pathname === '/moldes-injecao' ? <MoldesFerramentaria/> : location.pathname === '/comercial' ? <ComercialSuprimentos/> : location.pathname === '/configuracoes-adm' ? <ConfiguracoesADM profile={profile}/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
       <footer>FernandoSch_System • SGQ ERP • {segment} • Ambiente isolado por empresa</footer>
 
     </main>

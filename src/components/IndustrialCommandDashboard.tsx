@@ -19,7 +19,7 @@ import TabletLaunchpad from './TabletLaunchpad'
 import { supabase } from '../lib/supabaseClient'
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
-type Props = { onNavigate: (route: string) => void; profileName: string; isMaster?: boolean }
+type Props = { onNavigate: (route: string) => void }
 
 type Metrics = {
   ops: number; produced: number; scrap: number; rpnc: number; products: number
@@ -34,7 +34,7 @@ const n = (v: unknown) => {
 
 const fmt = (v: number) => new Intl.NumberFormat('pt-BR').format(v)
 
-export default function IndustrialCommandDashboard({ onNavigate, profileName, isMaster = false }: Props) {
+export default function IndustrialCommandDashboard({ onNavigate }: Props) {
   const [metrics, setMetrics] = useState<Metrics>({
     ops: 0, produced: 0, scrap: 0, rpnc: 0, products: 0, machines: 0, inspections: 0, purchases: 0
   })
