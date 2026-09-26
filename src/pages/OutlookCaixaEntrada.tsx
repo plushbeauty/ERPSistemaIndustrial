@@ -88,11 +88,29 @@ export default function OutlookCaixaEntrada() {
     const { data: userData } = await supabase.auth.getUser()
     if (!userData.user) { setMessage('Sessão autenticada necessária para capturar o XML.'); return }
     const { data: profile } = await supabase.from('erp_usuarios').select('empresa_id').eq('auth_user_id', userData.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
-    const clienteId = result.pedidoCliente ? selectedMessage.senderEmail : ''
-    if (!profile?.empresa_id || !clienteId) {
-      setMessage('Não foi possível determinar empresa e cliente para o De-Para. O XML permanece disponível para análise.')
+    if (!profile?.empresa_id) {
+      setMessage('Não foi possível determinar a empresa do usuário autenticado.')
       return
     }
+    const { data: cliente } = await supabase
+      .from('erp_clientes')
+      .select('id')
+      .eq('empresa_id', profile.empresa_id)
+      .eq('email', selectedMessage.senderEmail)
+      .maybeSingle()
+    if (!cliente?.id) {
+      setMessage('Cliente remetente não localizado no cadastro. Cadastre o cliente antes de converter o XML.')
+      return
+    }
+    const conversao = await processarEConverterXmlPedido(result.xmlTexto ?? '', cliente.id, profile.empresa_id)
+    if (!conversao.sucesso) {
+      setMessage(conversao.erro ?? 'Falha na conversão De-Para.')
+      return
+    }
+    const faltantes = conversao.itens.filter(item => item.codigo_interno === 'NÃO_ENCONTRADO').length
+    setMessage(faltantes > 0
+      ? String(faltantes) + ' item(ns) sem De-Para. Abra a Lupa de Produtos para vincular.'
+      : 'XML processado: ' + String(conversao.itens.length) + ' item(ns) convertido(s) com sucesso.')
     const captureEndpoint = import.meta.env.VITE_OUTLOOK_CAPTURE_URL as string | undefined
     if (!captureEndpoint) {
       setMessage(`XML lido: ${result.itens.length} item(ns). A integração de De-Para/PCP precisa estar configurada em VITE_OUTLOOK_CAPTURE_URL.`)
