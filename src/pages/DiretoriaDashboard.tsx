@@ -23,7 +23,8 @@ async function countRows(table: string, filter?: (query: ReturnType<typeof supab
 }
 
 export default function DiretoriaDashboard() {
-  const alertCounts = useRealtimeAlerts(null);
+  const [empresaId, setEmpresaId] = useState<string | null>(null);
+  const alertCounts = useRealtimeAlerts(empresaId);
   const [kpis, setKpis] = useState<Record<string, Kpi>>({});
   const [pending, setPending] = useState<PendingRow[]>([]);
   const [revenue, setRevenue] = useState<ChartPoint[]>([]);
@@ -82,6 +83,11 @@ export default function DiretoriaDashboard() {
   };
 
   useEffect(() => {
+    void supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      const { data: profile } = await supabase.from("erp_usuarios").select("empresa_id").eq("auth_user_id", data.user.id).eq("ativo", true).is("deleted_at", null).maybeSingle();
+      setEmpresaId(profile?.empresa_id ?? null);
+    });
     void load();
     const channel = supabase
       .channel("diretoria-dashboard-live")
