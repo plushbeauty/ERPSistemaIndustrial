@@ -27,11 +27,12 @@ type Molde={id:string;codigo:string;nome:string;tipo:string;status:string;numero
 type Employee={id:string;matricula:string;nome:string;cargo:string|null;status:string}
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number}
 type Ficha={id:string;produto_id:string;versao:number;rendimento:number;ativa:boolean}
-type FItem={id:string;ficha_id:string;componente_id:string;quantidade:number;perda_percentual:number}
+type FItem={id:string;ficha_id:string;componente_id:string;quantidade:number;perda_percentual:number;unidade_medida?:string}
 
 function InlineIcon({name,size=18}:{name:string;size?:number}){const path=name==='Plus'?'M12 5v14M5 12h14':name==='X'?'M6 6l12 12M18 6 6 18':name==='CheckCircle2'?'M9 12l2 2 4-5':name==='XCircle'?'M8 8l8 8M16 8l-8 8':name==='ArrowLeft'?'M19 12H5M12 19l-7-7 7-7':name==='Search'?'M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm6-2 4 4':name==='RefreshCw'?'M20 11a8 8 0 0 0-14.8-4L3 9M3 4v5h5M4 13a8 8 0 0 0 14.8 4L21 15M21 20v-5h-5':'M5 12h14M12 5v14';return <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={path}/></svg>}
 
 const help:Record<Tab,{title:string;what:string;how:string;action:string}> = {
+ novaop:{title:'Criar Nova OP',what:'Cadastro completo da ordem de produção com dados básicos, explosão de materiais e roteiro.',how:'Selecione produto, cliente, quantidade e prioridade. Confira BOM e roteiro e salve a OP.',action:'Salvar e gerar OP'},
  visao:{title:'Visão geral',what:'É o painel de comando do PCP. Mostra a situação atual e orienta o usuário pelo fluxo completo.',how:'Comece pelos pedidos, confirme materiais, crie/libere a OP, programe máquina, aponte a produção e acompanhe qualidade.',action:'Use os atalhos abaixo para executar cada etapa.'},
  pedidos:{title:'Pedidos / Demanda',what:'Mostra pedidos comerciais que podem gerar necessidade de fabricação.',how:'Consulte um pedido, veja quantas OPs estão vinculadas e use a rotina Comercial para gerar as OPs necessárias.',action:'Aqui a função principal é consulta e rastreabilidade da demanda.'},
  ops:{title:'Ordens de Produção',what:'É o cadastro operacional da fabricação: produto, quantidade, prazo e status da OP.',how:'Clique em Nova OP, informe produto, quantidade e data prevista. Depois abra a OP para consultar materiais e apontar produção.',action:'Nova OP'},
@@ -54,7 +55,7 @@ export default function PCPIndustrial(){
  async function load(){
   setBusy(true);setError('')
   try{
-   const [o,op,cl,p,pr,m,d,f,fi,fo,mo,em]=await Promise.all([
+   const [o,cl,op,p,pr,m,d,f,fi,fo,mo,em]=await Promise.all([
     supabase.from('erp_pedidos_venda').select('id,numero,cliente_id,status,total').order('numero',{ascending:false}).limit(300),
     supabase.from('erp_clientes').select('id,nome,codigo').eq('ativo',true).order('nome').limit(2000),
     supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade,status,pedido_venda_id,data_prevista').order('criado_em',{ascending:false}).limit(500),
@@ -68,7 +69,7 @@ export default function PCPIndustrial(){
     supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,numero_cavidades,cavidades,cavidades_ativas').eq('ativo',true).order('codigo').limit(1000),
     supabase.from('erp_funcionarios').select('id,matricula,nome,cargo,status').eq('status','ativo').order('nome').limit(1000)
    ])
-   for(const x of [o,op,cl,p,pr,m,d,f,fi,fo,mo,em]) if(x.error) throw x.error
+   for(const x of [o,cl,op,p,pr,m,d,f,fi,fo,mo,em]) if(x.error) throw x.error
    setOrders((o.data||[]) as Order[]);setClients((cl.data||[]) as Client[]);setOps((op.data||[]) as OP[]);setProducts((p.data||[]) as Product[]);setPrograms((pr.data||[]) as Program[]);setMachines((m.data||[]) as Machine[]);setDefects((d.data||[]) as Defect[]);setFichas((f.data||[]) as Ficha[]);setFitems((fi.data||[]) as FItem[]);setFichaOps((fo.data||[]) as FichaOp[]);setMolds((mo.data||[]) as Molde[]);setEmployees((em.data||[]) as Employee[])
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar PCP.')}finally{setBusy(false)}
  }
@@ -97,7 +98,7 @@ export default function PCPIndustrial(){
    const product=products.find(p=>p.id===opForm.produto_id)
    const numero='OP-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+String(Date.now()).slice(-6)
    const empresa=await supabase.rpc('erp_current_empresa_id');if(empresa.error||!empresa.data)throw empresa.error||new Error('Empresa ERP não identificada.')
-   const r=await supabase.from('erp_ordens_producao').insert({empresa_id:empresa.data,numero_op:numero,produto_id:opForm.produto_id,cliente_id:opForm.cliente_id||null,quantidade,status:opForm.status,prioridade:opForm.prioridade,data_prevista:opForm.data_prevista||null,observacoes:opForm.observacoes||null}).select('id,numero_op').single().select('id,numero_op').single()
+   const r=await supabase.from('erp_ordens_producao').insert({empresa_id:empresa.data,numero_op:numero,produto_id:opForm.produto_id,cliente_id:opForm.cliente_id||null,quantidade,status:opForm.status,prioridade:opForm.prioridade,data_prevista:opForm.data_prevista||null,observacoes:opForm.observacoes||null}).select('id,numero_op').single()
    if(r.error) throw r.error
    setMessage('OP '+(r.data?.numero_op||numero)+' criada para '+(product?.codigo||product?.nome||'produto')+'.')
    setModal(null);setSelectedOp(r.data?.id||'');await load()
