@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Search, X } from 'lucide-react'
+import './entity-code-lookup.css'
 
 export type LookupRecord = {
   id: string
