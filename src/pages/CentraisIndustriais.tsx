@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { ArrowDownCircle, ArrowUpCircle, ClipboardCheck, Factory, FileText, Gauge, Plus, RefreshCw, Truck, Users, X } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
 type Module = 'financeiro'|'expedicao'|'metrologia'|'treinamentos'|'auditoria'|'paradas'|'refugos'
 type Profile = { empresa_id:string|null; is_master:boolean }
-type Row = Record<string, any>
+type Row = Record<string, unknown> & { id: string }
 
-const money=(v:any)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0)
-const date=(v:any)=>v?new Date(v).toLocaleDateString('pt-BR'):'—'
+const money=(v:unknown)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0)
+const date=(v:unknown)=>v?new Date(v).toLocaleDateString('pt-BR'):'—'
 
 export default function CentraisIndustriais({module}:{module:Module}){
  const [profile,setProfile]=useState<Profile|null>(null),[rows,setRows]=useState<Row[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[refresh,setRefresh]=useState(0),[query,setQuery]=useState(''),[form,setForm]=useState(false)
@@ -59,10 +60,10 @@ export default function CentraisIndustriais({module}:{module:Module}){
   {form&&<div role="dialog" aria-modal="true" style={overlay}><div style={{background:'#fff',width:'min(620px,94vw)',borderRadius:18,padding:24,border:'1px solid #cfe1e7'}}><div style={{display:'flex',justifyContent:'space-between'}}><h2 style={{marginTop:0}}>{module==='financeiro'?'Nova conta a pagar':'Nova expedição'}</h2><button onClick={()=>setForm(false)} style={btn(false)}><X size={18}/></button></div>{module==='financeiro'?<form onSubmit={addFinance} style={formGrid}><Field name="descricao" label="Descrição" required/><Field name="documento" label="Documento"/><Field name="valor" label="Valor" type="number" step="0.01" required/><Field name="vencimento" label="Vencimento" type="date" required/><button style={{...btn(true),gridColumn:'1/-1'}}>Salvar conta</button></form>:<form onSubmit={addExpedicao} style={formGrid}><Field name="numero" label="Número da expedição" type="number" required/><Field name="transportadora" label="Transportadora"/><Field name="rastreio" label="Rastreio"/><Field name="observacoes" label="Observações"/><button style={{...btn(true),gridColumn:'1/-1'}}>Criar expedição</button></form>}</div></div>}
  </main>
 }
-function Kpi({icon:Icon,label,value}:{icon:any;label:string;value:string}){return <article style={{background:'#fff',border:'1px solid #cfe1e7',borderRadius:14,padding:16,display:'flex',gap:12,alignItems:'center'}}><span style={{width:40,height:40,borderRadius:10,display:'grid',placeItems:'center',background:'#e9f6fa',color:'#2D8DB8'}}><Icon size={20}/></span><div><small style={{display:'block',color:'#536B76'}}>{label}</small><strong style={{fontSize:20}}>{value}</strong></div></article>}
+function Kpi({icon:Icon,label,value}:{icon:LucideIcon;label:string;value:string}){return <article style={{background:'#fff',border:'1px solid #cfe1e7',borderRadius:14,padding:16,display:'flex',gap:12,alignItems:'center'}}><span style={{width:40,height:40,borderRadius:10,display:'grid',placeItems:'center',background:'#e9f6fa',color:'#2D8DB8'}}><Icon size={20}/></span><div><small style={{display:'block',color:'#536B76'}}>{label}</small><strong style={{fontSize:20}}>{value}</strong></div></article>}
 function Field({name,label,type='text',required=false,step}:{name:string;label:string;type?:string;required?:boolean;step?:string}){return <label style={{display:'grid',gap:6}}>{label}<input name={name} type={type} required={required} step={step} style={input}/></label>}
 function headers(m:Module){return m==='financeiro'?[['descricao','Descrição'],['documento','Documento'],['valor','Valor'],['vencimento','Vencimento'],['pagamento','Pagamento'],['status','Status']] :m==='expedicao'?[['numero','Número'],['status','Status'],['transportadora','Transportadora'],['rastreio','Rastreio'],['data_expedicao','Data'],['observacoes','Observações']]:m==='metrologia'?[['codigo','Código'],['descricao','Descrição'],['status','Status'],['proxima_calibracao','Próxima calibração'],['setor_localizacao','Localização']]:m==='treinamentos'?[['titulo','Treinamento'],['instrutor','Instrutor'],['data','Data'],['carga_horas','Horas'],['status','Status']]:m==='paradas'?[['lado_prensagem','Lado'],['inicio','Início'],['fim','Fim'],['categoria','Categoria'],['motivo','Motivo'],['setup_changeover','Setup']]:m==='refugos'?[['tipo','Tipo'],['quantidade','Quantidade'],['motivo','Motivo'],['custo','Custo'],['created_at','Registro']]:[['auditor','Auditor'],['criterio','Critério'],['data_auditoria','Data'],['resultado','Resultado'],['evidencia','Evidência']]}
-function formatCell(m:Module,r:Row,k:string){if(k==='valor')return money(r[k]);if(k.includes('data')||k==='vencimento'||k==='pagamento'||k==='proxima_calibracao')return date(r[k]);return r[k]??'—'}
+function formatCell(m:Module,r:Row,k:string){if(k==='valor')return money(r[k]);if(k.includes('data')||k==='vencimento'||k==='pagamento'||k==='proxima_calibracao')return date(r[k]);const value=r[k];return value==null||value===''?'—':String(value)}
 const btn=(primary:boolean):React.CSSProperties=>({border:primary?'0':'1px solid #b9d2da',background:primary?'#2D8DB8':'#fff',color:primary?'#fff':'#123B50',borderRadius:10,minHeight:42,padding:'0 14px',fontWeight:800,display:'inline-flex',gap:7,alignItems:'center',cursor:'pointer'})
 const input:React.CSSProperties={width:'100%',minHeight:42,boxSizing:'border-box',border:'1px solid #b9d2da',borderRadius:10,padding:'0 12px',background:'#fff',color:'#123B50'}
 const th:React.CSSProperties={padding:13,textAlign:'left',fontSize:12,letterSpacing:'.04em',borderBottom:'1px solid #dbe8ed',background:'#f4fbfd'}
