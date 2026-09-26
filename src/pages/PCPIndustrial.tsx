@@ -98,10 +98,10 @@ export default function PCPIndustrial(){
    const product=products.find(p=>p.id===opForm.produto_id)
    const numero='OP-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+String(Date.now()).slice(-6)
    const empresa=await supabase.rpc('erp_current_empresa_id');if(empresa.error||!empresa.data)throw empresa.error||new Error('Empresa ERP não identificada.')
-   const r=await supabase.from('erp_ordens_producao').insert({empresa_id:empresa.data,numero_op:numero,produto_id:opForm.produto_id,cliente_id:opForm.cliente_id||null,quantidade,status:opForm.status,prioridade:opForm.prioridade,data_prevista:opForm.data_prevista||null,observacoes:opForm.observacoes||null}).select('id,numero_op').single()
+   const r=await supabase.from('erp_ordens_producao').insert({empresa_id:empresa.data,numero_op:numero,produto_id:opForm.produto_id,cliente_id:opForm.cliente_id||null,quantidade,status:opForm.status,prioridade:opForm.prioridade,data_prevista:opForm.data_prevista||null,observacoes:opForm.observacoes||null})
    if(r.error) throw r.error
-   setMessage('OP '+(r.data?.numero_op||numero)+' criada para '+(product?.codigo||product?.nome||'produto')+'.')
-   setModal(null);setSelectedOp(r.data?.id||'');await load()
+   setMessage('OP '+numero+' criada para '+(product?.codigo||product?.nome||'produto')+'.')
+   setModal(null);setSelectedOp('');await load()
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível criar a OP.')}
   finally{setBusy(false)}
  }
