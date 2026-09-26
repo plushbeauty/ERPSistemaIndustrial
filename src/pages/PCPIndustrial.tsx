@@ -172,11 +172,13 @@ export default function PCPIndustrial(){
    <div className="pcp-side-section">PLANEJAMENTO E CONTROLE</div>
    <button className={`pcp-side-item ${tab==='visao'?'active':''}`} onClick={()=>selectTab('visao')}><span>▦</span> VISÃO GERAL</button>
    <button className={`pcp-side-item ${tab==='novaop'?'active':''}`} onClick={()=>selectTab('novaop')}><span>＋</span> CRIAR NOVA OP</button>
-   <button className="pcp-side-item" onClick={()=>selectTab('pedidos')}><span>▤</span> PEDIDOS / DEMANDA</button>
-   <button className="pcp-side-item" onClick={()=>selectTab('ops')}><span>□</span> ORDENS DE PRODUÇÃO</button>
-   <button className="pcp-side-item" onClick={()=>selectTab('materiais')}><span>◇</span> MATERIAIS / MRP</button>
-   <button className="pcp-side-item" onClick={()=>selectTab('programacao')}><span>◫</span> PROGRAMAÇÃO / GANTT</button>
-   <button className="pcp-side-item" onClick={()=>selectTab('capacidade')}><span>▥</span> CAPACIDADE / MÁQUINAS</button>
+   <button className={`pcp-side-item ${tab==='pedidos'?'active':''}`} onClick={()=>selectTab('pedidos')}><span>▤</span> PEDIDOS / DEMANDA</button>
+   <button className={`pcp-side-item ${tab==='ops'?'active':''}`} onClick={()=>selectTab('ops')}><span>□</span> ORDENS DE PRODUÇÃO</button>
+   <button className="pcp-side-item" onClick={()=>selectTab('novaop')}><span>＋</span> NOVA ORDEM DE PRODUÇÃO</button>
+   <button className={`pcp-side-item ${tab==='materiais'?'active':''}`} onClick={()=>selectTab('materiais')}><span>◇</span> MATERIAIS / MRP</button>
+   <button className={`pcp-side-item ${tab==='programacao'?'active':''}`} onClick={()=>selectTab('programacao')}><span>◫</span> CALENDÁRIO / PROGRAMAÇÃO</button>
+   <button className={`pcp-side-item ${tab==='capacidade'?'active':''}`} onClick={()=>selectTab('capacidade')}><span>▥</span> CENTROS DE TRABALHO / MÁQUINAS</button>
+   <button className="pcp-side-item" onClick={()=>location.href='/ficha-engenharia'}><span>⌘</span> ESTRUTURA DE PRODUTO / BOM</button>
    <button className="pcp-side-item" onClick={()=>selectTab('producao')}><span>▶</span> CHÃO DE FÁBRICA</button>
    <button className="pcp-side-item" onClick={()=>location.href='/pcp/paradas'}><span>Ⅱ</span> PARADAS / SETUP</button>
    <button className="pcp-side-item" onClick={()=>selectTab('qualidade')}><span>✓</span> QUALIDADE / DEFEITOS</button>
@@ -185,12 +187,13 @@ export default function PCPIndustrial(){
    <button className="pcp-side-item" onClick={()=>location.href='/mrp'}><span>◌</span> MRP MULTINÍVEL</button>
    <button className="pcp-side-item" onClick={()=>location.href='/configuracao-lote-pcp'}><span>⚙</span> CONFIGURAÇÃO DE LOTE</button>
    <button className="pcp-side-item" onClick={()=>location.href='/qualidade/refugos'}><span>△</span> REFUGO / RETRABALHO</button>
+   <button className="pcp-side-item" onClick={()=>location.href='/central-custos-industrial'}><span>▤</span> RELATÓRIOS / CUSTOS</button>
    <div className="pcp-side-spacer"/>
    <button className="pcp-side-item" onClick={()=>location.href='/manual-usuario'}><span>?</span> MANUAL</button>
   </aside>
   <section className="pcp-main">
    <header className="pcp-topbar">
-    <div className="pcp-top-title"><button className="pcp-top-tablet" onClick={()=>location.href='/demo/erp-industrial'}>▦ TABLET</button><div><strong>PCP Industrial</strong><small>PCP • PLANEJAMENTO E CONTROLE DA PRODUÇÃO</small></div></div>
+    <div className="pcp-top-title"><button className="pcp-top-tablet" onClick={()=>location.href='/erp-industrial?tablet=1'}>▦ TABLET</button><div><strong>PCP Industrial</strong><small>PCP • PLANEJAMENTO E CONTROLE DA PRODUÇÃO</small></div></div>
     <div className="pcp-top-actions"><span className="pcp-supabase-dot"><i/> DADOS SUPABASE</span><span className="pcp-top-user"><i/>{profileName}</span><span className="pcp-top-clock">{clock.toLocaleDateString('pt-BR')} • {clock.toLocaleTimeString('pt-BR')}</span><button className="pcp-top-light">☼ Light</button><button className="pcp-top-exit" onClick={()=>void supabase.auth.signOut().then(()=>location.replace('/login'))}>Sair</button></div>
    </header>
    <div className="pcp-page-head"><div><span>PCP • PLANEJAMENTO E CONTROLE DA PRODUÇÃO</span><h1>{tab==='visao'?'DASHBOARD':tab==='novaop'?'NOVA ORDEM DE PRODUÇÃO':help[tab].title.toUpperCase()}</h1><p>{tab==='visao'?'Visão geral da programação, produção, capacidade e qualidade da fábrica.':tab==='novaop'?'Cadastro operacional da OP, explosão de materiais e roteiro de produção.':help[tab].what}</p></div></div>
