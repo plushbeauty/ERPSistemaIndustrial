@@ -3,7 +3,7 @@
 - Arquivo: src/AppIndustrialV7.tsx
 - Status Atual: Revisão 3 (Compras, Comercial e Qualidade Conectados)
 - Total de Linhas Gerado: 233
-- Assinatura de Entrada (Primeiros 3 Imports): import { FormEvent, useEffect, useMemo, useState } from 'react' | import { motion, AnimatePresence } from 'motion/react' | import { Activity, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Truck, Users, Wrench, X } from 'lucide-react'
+- Assinatura de Entrada (Primeiros 3 Imports): import { useEffect, useState } from 'react' | import { motion, AnimatePresence } from 'motion/react' | import { Activity, ArrowUpRight, Boxes, CalendarDays, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Truck, Users, Wrench } from 'lucide-react'
 - Regra de Negócio Incorporada: Navegação real para clientes, fornecedores ISO 9001 e tabelas de preços por cliente.
 */
 import { FormEvent, useEffect, useMemo, useState } from 'react'
@@ -122,9 +122,9 @@ export default function AppIndustrialV7() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [clock, setClock] = useState(new Date())
-  const [language, setLanguage] = useState(localStorage.getItem('erp-lang') === 'en-US' ? 'en-US' : 'pt-BR')
+  const [language] = useState(localStorage.getItem('erp-lang') === 'en-US' ? 'en-US' : 'pt-BR')
   useEffect(() => { const id = window.setInterval(() => setClock(new Date()), 1000); return () => window.clearInterval(id) }, [])
-  const [theme, setTheme] = useState<UiTheme>('light')
+  const [theme] = useState<UiTheme>('light')
   const current = segments.find(s => s.name === segment) ?? segments[0]
   const module = current.modules.find(m => m.name === active)
   useEffect(() => { localStorage.setItem('erp-theme', theme) }, [theme])
@@ -151,9 +151,8 @@ export default function AppIndustrialV7() {
 
   if (loading) return <div className="loading-screen">Carregando SGQ ERP…</div>
   if (!profile) return <div className="error-screen"><div className="error-screen-card"><strong>Perfil ERP não encontrado.</strong><p>A sessão autenticada não possui um usuário ERP ativo vinculado à empresa.</p><button className="primary" type="button" onClick={() => { void supabase.auth.signOut(); location.replace('/login') }}>Voltar ao login</button></div></div>
-  const choose = (s: Segment, m: string) => { setSegment(s.name); setActive(m); setLauncher(false) }
   const moduleRoutes: Record<string,string> = { 'Moldes e Ferramentas':'/moldes-injecao', PCP:'/pcp', Qualidade:'/qualidade', Fiscal:'/fiscal', Produtos:'/produtos-vendas', Clientes:'/clientes', Fornecedores:'/fornecedores', 'Tabelas de preços':'/tabelas-preco', Apontamentos:'/operacao-industrial', Compras:'/compras-solicitacao', Engenharia:'/ficha-engenharia', Processos:'/ficha-engenharia' }
-  const openModule = (m: Module) => { const route = moduleRoutes[m.name]; if (route) { location.href = route; return }; setActive(m.name); setLauncher(false) }
+
 
   return <motion.div className={`v7-shell theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
     <header className="v7-topbar">
@@ -204,57 +203,4 @@ export default function AppIndustrialV7() {
   </motion.div>
 }
 
-function Nav({ module, active, setActive }: { module: Module; active: string; setActive: (value: string) => void }) { const Icon = module.icon; return <button className={active === module.name ? 'v7-nav active' : 'v7-nav'} onClick={() => setActive(module.name)}><Icon size={17}/>{module.title}</button> }
-function Dashboard({ segment, setActive }: { segment: Segment; setActive: (value: string) => void }) {
-  const [metrics,setMetrics] = useState({ops:'—',rpnc:'—',purchases:'—',shipments:'—',receivables:'—',stock:'—',machines:'—',quality:'—'})
-  const [loading,setLoading] = useState(true)
-  useEffect(() => {
-    let alive=true
-    void (async()=>{
-      setLoading(true)
-      const empresaId = await supabase.rpc('erp_current_empresa_id')
-      if (empresaId.error || !empresaId.data) { if(alive)setLoading(false); return }
-      const id=String(empresaId.data)
-      const count=async(table:string, filter?:{column:string;values:string[]})=>{
-        let q=supabase.from(table).select('*',{count:'exact',head:true}).eq('empresa_id',id)
-        if(filter) q=q.not(filter.column,'in',`(${filter.values.join(',')})`)
-        const r=await q
-        return r.error?null:r.count
-      }
-      const [ops,rpnc,purchases,shipments,receivables,stock,machines,inspections]=await Promise.all([
-        count('erp_ordens_producao',{column:'status',values:['concluida','concluído','cancelada','cancelado']}),
-        count('erp_rpnc',{column:'status',values:['encerrada','fechada','concluida','concluído']}),
-        count('erp_pedidos_compra',{column:'status',values:['concluido','concluída','cancelado','cancelada']}),
-        count('erp_expedicoes',{column:'status',values:['entregue','concluido','concluída','cancelado']}),
-        count('erp_contas_receber',{column:'status',values:['recebido','pago','quitado']}),
-        count('erp_produtos'),
-        count('erp_maquinas'),
-        count('erp_inspecoes')
-      ])
-      if(alive)setMetrics({ops:ops==null?'—':String(ops),rpnc:rpnc==null?'—':String(rpnc),purchases:purchases==null?'—':String(purchases),shipments:shipments==null?'—':String(shipments),receivables:receivables==null?'—':String(receivables),stock:stock==null?'—':String(stock),machines:machines==null?'—':String(machines),quality:inspections==null?'—':String(inspections)})
-      if(alive)setLoading(false)
-    })()
-    return()=>{alive=false}
-  },[])
-  const cards=[['OPs abertas',metrics.ops,'Ordens de produção'],['RPNC abertas',metrics.rpnc,'Não conformidades'],['Pedidos de compra',metrics.purchases,'Compras em aberto'],['Pedidos para expedir',metrics.shipments,'Expedições pendentes'],['Contas a receber',metrics.receivables,'Títulos em aberto'],['Produtos cadastrados',metrics.stock,'Cadastro mestre'],['Máquinas',metrics.machines,'Recursos produtivos'],['Inspeções',metrics.quality,'Registros de qualidade']]
-  const actions=[['Clientes','Cadastro de clientes e política comercial'],['Fornecedores','Cadastro e qualificação ISO 9001'],['Tabelas de preços','Preços por tipo de cliente'],['Produtos','Cadastro de produtos'],['PCP','Planejamento e programação'],['Qualidade','RPNC, inspeções e auditorias'],['Fiscal','NF-e, XML e parâmetros'],['Financeiro','Contas e fluxo de caixa']]
-  return <div className="v7-dashboard-pro">
-    <div className="v7-executive-kpis">{cards.map(([label,value,helper])=><article key={label}><span>{label}</span><b>{loading?'…':value}</b><small>{helper}</small></article>)}</div>
-    <div className="v7-executive-grid">
-      <section className="v7-executive-panel"><header><div><span>CONTROLE OPERACIONAL</span><h2>Visão da fábrica</h2></div><Activity size={19}/></header><div className="v7-executive-bars">{[['Produção',metrics.ops],['Qualidade',metrics.rpnc],['Compras',metrics.purchases],['Expedição',metrics.shipments],['Financeiro',metrics.receivables]].map(([name,value])=><div key={name}><div><b>{name}</b><span>{value}</span></div><i><em style={{width:value==='—'?'0%':`${Math.min(100,Math.max(8,Number(value)||0)*7)}%`}}/></i></div>)}</div></section>
-      <section className="v7-executive-panel"><header><div><span>ATALHOS</span><h2>Entrar diretamente no setor</h2></div><LayoutGrid size={19}/></header><div className="v7-executive-actions">{actions.map(([name,description])=><button key={name} onClick={()=>{const m=segment.modules.find(x=>x.name===name);if(m){const route=({Qualidade:'/qualidade',Fiscal:'/fiscal',PCP:'/pcp',Produtos:'/produtos-vendas',Clientes:'/clientes',Fornecedores:'/fornecedores','Tabelas de preços':'/tabelas-preco'} as Record<string,string | undefined>)[m.name];if(route){location.href=route}else setActive(m.name)}}}><span>{name}</span><small>{description}</small><ArrowUpRight size={15}/></button>)}</div></section>
-    </div>
-    <section className="v7-sector-strip"><div><span>TABLET INDUSTRIAL</span><h2>Todos os setores em um único acesso</h2><p>Abra PCP, Qualidade, Fiscal, Engenharia, Estoque, Compras, Manutenção e os demais módulos sem voltar ao início.</p></div><button className="menu-green" onClick={()=>setActive('Dashboard')}>Ver módulos no Tablet <LayoutGrid size={16}/></button></section>
-  </div>
-}
-
-function Feature({ title, description, icon: Icon }: { title: string; description: string; icon: LucideIcon }) { return <div className="v7-feature"><span className="v7-icon-box"><Icon size={28}/></span><h2>{title}</h2><p>{description}</p><small>Este módulo permanece integrado ao mesmo tenant ERP e às políticas de segurança do banco.</small></div> }
-function Crud({ module, profile }: { module: Module; profile: Profile }) {
-  const fields = module.fields ?? []; const searchable = useMemo(() => fields.filter(f => f.type === 'text' || f.type === 'email').slice(0, 8), [fields]); const [rows, setRows] = useState<Row[]>([]); const [form, setForm] = useState<Record<string, string>>({}); const [editing, setEditing] = useState<string | null>(null); const [query, setQuery] = useState(''); const [busy, setBusy] = useState(false); const [msg, setMsg] = useState('')
-  async function load(search = query) { if (!module.table) return; setBusy(true); setMsg(''); try { let request = supabase.from(module.table).select('*').eq('empresa_id', profile.empresa_id).order('created_at', { ascending: false }).limit(100); const term = search.trim(); if (term && searchable.length) { const safe = escapeIlike(term); request = request.or(searchable.map(f => `${f.key}.ilike.%${safe}%`).join(',')) } const { data, error } = await request; if (error) throw error; setRows((data ?? []) as Row[]) } catch (error) { console.error('[ERP CRUD select]', error); setRows([]); setMsg(error instanceof Error ? error.message : 'Não foi possível carregar os registros.') } finally { setBusy(false) } }
-  useEffect(() => { void load('') }, [module.table, profile.empresa_id])
-  async function save(event: FormEvent) { event.preventDefault(); if (!module.table) return; setBusy(true); setMsg(''); try { const payload = makePayload(fields, form); payload.empresa_id = profile.empresa_id; for (const field of fields) if (field.key.endsWith('_id') && (payload[field.key] === '' || payload[field.key] == null)) payload[field.key] = null; if (editing) { const { error } = await supabase.from(module.table).update(payload).eq('id', editing).eq('empresa_id', profile.empresa_id); if (error) throw error; setMsg('Registro atualizado com segurança no tenant atual.') } else { const { error } = await supabase.from(module.table).insert(payload); if (error) throw error; setMsg('Registro gravado com segurança no tenant atual.') } setForm({}); setEditing(null); await load(query) } catch (error) { console.error('[ERP CRUD save]', error); setMsg(error instanceof Error ? error.message : 'Não foi possível salvar o registro.') } finally { setBusy(false) } }
-  async function remove(id: string) { if (!module.table || !window.confirm('Excluir este registro?')) return; setBusy(true); setMsg(''); try { const { error } = await supabase.from(module.table).delete().eq('id', id).eq('empresa_id', profile.empresa_id); if (error) throw error; setMsg('Registro excluído.'); await load(query) } catch (error) { console.error('[ERP CRUD delete]', error); setMsg(error instanceof Error ? error.message : 'Não foi possível excluir o registro.') } finally { setBusy(false) } }
-  return <div className="v7-crud"><div className="v7-crud-toolbar"><div><h2>{module.title}</h2><p>CRUD real • empresa isolada</p></div><div className="v7-search"><Search size={17}/><input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') void load() }} placeholder="Pesquisar no banco…"/><button onClick={() => void load()} disabled={busy}>Pesquisar</button></div></div><form className="v7-form" onSubmit={save}>{fields.map(field => <label key={field.key}><span>{field.label}{field.required ? ' *' : ''}</span><input type={field.type ?? 'text'} value={form[field.key] ?? ''} onChange={e => setForm({ ...form, [field.key]: e.target.value })} placeholder={field.key.endsWith('_id') ? 'UUID ou deixe vazio' : field.label}/></label>)}<div className="v7-form-actions"><button className="primary" disabled={busy} type="submit">{busy ? 'Salvando…' : editing ? 'Salvar alteração' : 'Gravar'}</button>{editing && <button type="button" onClick={() => { setEditing(null); setForm({}) }}>Cancelar</button>}</div></form>{msg && <div className="v7-message" role="status">{msg}</div>}<div className="v7-table-wrap"><table><thead><tr>{fields.map(f => <th key={f.key}>{f.label}</th>)}<th>Ações</th></tr></thead><tbody>{rows.map(row => <tr key={row.id}>{fields.map(f => <td key={f.key}>{value(row[f.key]) || '—'}</td>)}<td><button onClick={() => { setEditing(row.id); setForm(Object.fromEntries(fields.map(f => [f.key, value(row[f.key])])) ) }}>Editar</button><button onClick={() => void remove(row.id)}>Excluir</button></td></tr>)}{!rows.length && <tr><td colSpan={fields.length + 1}>{busy ? 'Consultando Supabase…' : 'Nenhum registro encontrado para esta empresa.'}</td></tr>}</tbody></table></div></div>
-}
 /* Revisão 3 registrada após validação estrutural do arquivo. */
