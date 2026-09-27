@@ -79,7 +79,7 @@ export default function PedidoVendaCompleto(){
   if(!empresa||!client||!items.length){setErr('Cliente e pelo menos um item são obrigatórios.');return}
   setBusy(true);setErr('');setMsg('')
   try{
-   const r=await supabase.rpc('erp_finalizar_pedido_planejado',{p_cliente_id:client,p_data_entrada:date,p_data_entrega:delivery||null,p_itens:items.map(i=>({produto_id:i.produto_id,codigo:i.codigo,quantidade:Number(i.quantidade),valor_unitario:Number(i.valor)}))})
+   const r=await supabase.rpc('erp_finalizar_pedido_venda',{p_cliente_id:client,p_desconto:0,p_data_entrega:delivery||null,p_pedido_cliente:null,p_itens:items.map(i=>({produto_id:i.produto_id,quantidade:Number(i.quantidade),valor_unitario:Number(i.valor),codigo_cliente:i.codigoCliente||null}))})
    if(r.error)throw r.error
    setProcessed(true)
    setMsg('Pedido finalizado com sucesso. O estoque disponível foi reservado e somente a necessidade líquida foi enviada ao PCP.')
