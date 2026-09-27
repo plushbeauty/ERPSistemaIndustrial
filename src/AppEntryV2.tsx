@@ -74,6 +74,9 @@ const PCPTabletOperador = lazy(() => import('./pages/PCPTabletOperador'))
 const EstoqueAjustes = lazy(() => import('./pages/EstoqueAjustes'))
 const EstoqueRecebimentoLotes = lazy(() => import('./pages/estoque/EstoqueRecebimentoLotes'))
 const QualidadeGenealogiaLote = lazy(() => import('./pages/qualidade/QualidadeGenealogiaLote'))
+const QualidadeEditorIT = lazy(() => import('./pages/qualidade/QualidadeEditorIT'))
+const QualidadeAssinaturaIT = lazy(() => import('./pages/qualidade/QualidadeAssinaturaIT'))
+const QualidadeProcedimentos = lazy(() => import('./pages/qualidade/QualidadeProcedimentos'))
 const QualidadeQuarentena = lazy(() => import('./pages/qualidade/QualidadeQuarentena'))
 
 type ERPProfile = { empresa_id: string | null; is_master: boolean; nivel_admin?: number; perfil?: string; nome?: string }
@@ -266,6 +269,9 @@ export default function AppEntryV2() {
       <Route path="/qualidade/dashboard-rnc" element={<QualidadeDashboardRNC />} />
       <Route path="/qualidade/pfmea" element={<QualidadePFMEA />} />
       <Route path="/qualidade/documentos" element={<DocumentosQualidadeControle />} />
+      <Route path="/qualidade/editor-it" element={<QualidadeEditorIT />} />
+      <Route path="/qualidade/procedimentos" element={<QualidadeProcedimentos />} />
+      <Route path="/qualidade/assinatura-it" element={<QualidadeAssinaturaIT />} />
       <Route path="/qualidade/genealogia-lote" element={<QualidadeGenealogiaLote />} />
       <Route path="/qualidade/quarentena" element={<QualidadeQuarentena />} />
       <Route path="/estoque" element={<EstoqueAlmoxarifado />} />
