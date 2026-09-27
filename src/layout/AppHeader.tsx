@@ -25,8 +25,8 @@ export default function AppHeader() {
   const navigate = useNavigate()
   const [tabletOpen, setTabletOpen] = useState(false)
 
-  const visible = ['/erp-industrial','/master','/usuarios','/pcp','/operacao-industrial','/produtos-vendas','/qualidade','/qualidade/documentos','/manual-usuario','/compras-solicitacao','/fiscal','/fiscal/previsao-caixa','/teste-erp','/rh','/estoque','/almoxarifado','/fornecedores','/clientes','/tabelas-preco','/recebimento-materiais','/engenharia','/moldes-injecao'].includes(location.pathname)
-
+  const visibleRoutes = ['/erp-industrial','/master','/usuarios','/pcp','/pcp/tablet-operador','/operacao-industrial','/produtos-vendas','/qualidade','/qualidade/calibracao','/qualidade/documentos','/qualidade/liberacao-lote','/qualidade/genealogia-lote','/qualidade/quarentena','/qualidade/rnc','/fichas-processo','/engenharia/fichas-processo','/manutencao/ordens','/expedicao/roteirizacao','/manual-usuario','/compras-solicitacao','/fiscal','/fiscal/previsao-caixa','/teste-erp','/rh','/estoque','/almoxarifado','/fornecedores','/clientes','/tabelas-preco','/recebimento-materiais','/engenharia','/moldes-injecao','/vendas/novo-pedido'];
+  const visible = visibleRoutes.some((route) => location.pathname === route || location.pathname.startsWith(route + '/'))
   useEffect(() => {
     if (!visible) return
     const fn = (event: KeyboardEvent) => {
