@@ -14,6 +14,7 @@ type PendingRow = {
 };
 
 type ApontamentoRow = {
+  ordem_producao_id: string | null;
   quantidade_boa: number | null;
   quantidade_refugo: number | null;
   setup_min: number | null;
@@ -21,6 +22,7 @@ type ApontamentoRow = {
   inicio: string | null;
   fim: string | null;
 };
+type OrderRow = { id: string; velocidade_nominal_hora: number | null };
 
 function numberValue(value: unknown): number {
   const parsed = Number(value);
@@ -49,8 +51,8 @@ export default function DiretoriaDashboard() {
       supabase.from("erp_ordens_producao").select("id,status").in("status", ["ABERTA", "PLANEJADA", "EM_PRODUCAO", "EM_ANDAMENTO"]),
       supabase.from("erp_rncs").select("id,status").not("status", "in", "(ENCERRADA,CANCELADA,FECHADA)"),
       supabase.from("erp_equipamentos_medicao").select("id").lte("proxima_calibracao", new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)),
-      supabase.from("fiscal_nfes").select("id,valor_total,status,data_emissao").eq("status", "AUTORIZADA").order("data_emissao", { ascending: true }).limit(500),
-      supabase.from("erp_producao_apontamentos").select("quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim").order("created_at", { ascending: false }).limit(500),
+      supabase.from("erp_documentos_fiscais").select("id,valor_total,status,data_emissao").eq("empresa_id", empresaId ?? undefined).eq("status", "AUTORIZADA").order("data_emissao", { ascending: true }).limit(500),
+      supabase.from("erp_producao_apontamentos").select("ordem_producao_id,quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim").order("created_at", { ascending: false }).limit(500),
       supabase.from("erp_estoque_reservas").select("id,quantidade, status, pedido_item_id").eq("status", "ATIVA").order("created_at", { ascending: false }).limit(20),
     ]);
 
@@ -69,27 +71,47 @@ export default function DiretoriaDashboard() {
     setRevenue([...monthly.entries()].slice(-6).map(([name, value]) => ({ name, value })));
 
     const apontamentos = (apontamentosResult.data ?? []) as ApontamentoRow[];
+    const orderIds = [...new Set(apontamentos.map(row => row.ordem_producao_id).filter((id): id is string => Boolean(id)))];
+    let orders: OrderRow[] = [];
+    if (orderIds.length > 0) {
+      const orderResult = await supabase.from("erp_ordens_producao").select("id,velocidade_nominal_hora").in("id", orderIds);
+      orders = (orderResult.data ?? []) as OrderRow[];
+    }
+    const speedByOrder = new Map(orders.map(row => [row.id, numberValue(row.velocidade_nominal_hora)]));
     let totalBoa = 0;
     let totalRefugo = 0;
-    let plannedMinutes = 0;
+    let runMinutes = 0;
+    let elapsedMinutes = 0;
+    let idealMinutes = 0;
     let downtimeMinutes = 0;
     for (const row of apontamentos) {
-      totalBoa += numberValue(row.quantidade_boa);
-      totalRefugo += numberValue(row.quantidade_refugo);
-      plannedMinutes += Math.max(0, numberValue(row.setup_min) + numberValue(row.paradas_min));
+      const boa = numberValue(row.quantidade_boa);
+      const refugo = numberValue(row.quantidade_refugo);
+      const setup = Math.max(0, numberValue(row.setup_min));
+      const parada = Math.max(0, numberValue(row.paradas_min));
+      totalBoa += boa;
+      totalRefugo += refugo;
+      downtimeMinutes += parada;
       if (row.inicio && row.fim) {
         const elapsed = (new Date(row.fim).getTime() - new Date(row.inicio).getTime()) / 60000;
-        if (Number.isFinite(elapsed) && elapsed > 0) plannedMinutes += elapsed;
+        if (Number.isFinite(elapsed) && elapsed > 0) {
+          elapsedMinutes += elapsed;
+          runMinutes += Math.max(0, elapsed - setup - parada);
+        }
       }
-      downtimeMinutes += numberValue(row.paradas_min);
+      const speed = speedByOrder.get(row.ordem_producao_id ?? "") ?? 0;
+      if (speed > 0) idealMinutes += ((boa + refugo) / speed) * 60;
     }
-    const quality = totalBoa + totalRefugo > 0 ? (totalBoa / (totalBoa + totalRefugo)) * 100 : 0;
-    const availability = plannedMinutes > 0 ? Math.max(0, Math.min(100, ((plannedMinutes - downtimeMinutes) / plannedMinutes) * 100)) : 0;
-    const performance = availability > 0 ? Math.max(0, Math.min(100, quality / 100 * 100)) : 0;
+    const total = totalBoa + totalRefugo;
+    const quality = total > 0 ? (totalBoa / total) * 100 : 0;
+    const availability = elapsedMinutes > 0 ? Math.max(0, Math.min(100, (runMinutes / elapsedMinutes) * 100)) : 0;
+    const performance = runMinutes > 0 && idealMinutes > 0 ? Math.max(0, Math.min(100, (idealMinutes / runMinutes) * 100)) : 0;
+    const oeeValue = (availability * performance * quality) / 10000;
     setOee([
       { name: "Disponibilidade", value: Number(availability.toFixed(1)) },
       { name: "Performance", value: Number(performance.toFixed(1)) },
       { name: "Qualidade", value: Number(quality.toFixed(1)) },
+      { name: "OEE", value: Number(oeeValue.toFixed(1)) },
     ]);
 
     setPending((reservationsResult.data ?? []).map((row) => ({
@@ -154,7 +176,7 @@ export default function DiretoriaDashboard() {
           <div className="flex flex-wrap items-center gap-3">
             <div>
               <h2 className="text-xl font-bold text-slate-950">MONITORAMENTO DA OPERAÇÃO EM TEMPO REAL</h2>
-              <p className="text-sm font-semibold text-slate-600">Dados reais de PCP, qualidade, metrologia e NF-e autorizada.</p>
+              <p className="text-sm font-semibold text-slate-600">Dados reais de PCP, qualidade, metrologia e documentos fiscais autorizados.</p>
             </div>
             <button type="button" onClick={() => void load()} className="ml-auto h-11 rounded-md bg-sky-700 px-4 font-black text-white"><RefreshCw size={17} className="mr-2 inline" />ATUALIZAR</button>
           </div>
@@ -175,7 +197,7 @@ export default function DiretoriaDashboard() {
               <div className="h-72"><ResponsiveContainer width="100%" height="100%"><BarChart data={revenue}><XAxis dataKey="name" /><YAxis /><Tooltip /><Bar dataKey="value" fill="#2563eb" /></BarChart></ResponsiveContainer></div>
             </section>
             <section className="rounded-md border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-4 text-xl font-bold text-slate-950">OEE • APONTAMENTOS REAIS</h2>
+              <h2 className="mb-4 text-xl font-bold text-slate-950">OEE • APONTAMENTOS REAIS + VELOCIDADE NOMINAL</h2>
               <div className="h-72"><ResponsiveContainer width="100%" height="100%"><BarChart data={oee}><XAxis dataKey="name" /><YAxis domain={[0, 100]} /><Tooltip /><Bar dataKey="value" fill="#0f766e" /></BarChart></ResponsiveContainer></div>
             </section>
           </div>
