@@ -16,7 +16,7 @@ type PendingRow = {
 };
 
 async function countRows(table: string): Promise<number | null> {
-  let query = supabase.from(table).select("id", { count: "exact", head: true });
+  const query = supabase.from(table).select("id", { count: "exact", head: true });
   const { count, error } = await query;
   return error ? null : count ?? 0;
 }
