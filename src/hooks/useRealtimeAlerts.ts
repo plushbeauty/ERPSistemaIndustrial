@@ -8,8 +8,8 @@ export interface IContadoresAlertas {
 }
 
 interface AlertaRow {
-  tipo_alerta: string;
-  status: string;
+  tipo_alerta: "OP_ABERTA" | "RNC_ATIVA" | "MATERIAL_VENCIDO";
+  status: "ATIVO" | "RESOLVIDO";
 }
 
 const ZERO: IContadoresAlertas = { opsAbertas: 0, rncsAtivas: 0, materiaisVencendo: 0 };
