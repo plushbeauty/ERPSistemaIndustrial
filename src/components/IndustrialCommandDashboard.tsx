@@ -11,13 +11,13 @@
 
 import { useEffect, useState } from 'react'
 import {
-  Activity, AlertTriangle, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, ClipboardCheck,
+  Activity, AlertTriangle, ArrowUpRight, Boxes, CalendarDays, CheckCircle2,
   Factory, Gauge, LayoutGrid, ListChecks, Package, Plus, ShieldCheck, ShoppingCart,
-  Truck, Users, Wrench, Zap
+  Zap
 } from 'lucide-react'
 import TabletLaunchpad from './TabletLaunchpad'
 import { supabase } from '../lib/supabaseClient'
-import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 type Props = { onNavigate: (route: string) => void }
 
@@ -206,14 +206,9 @@ export default function IndustrialCommandDashboard({ onNavigate }: Props) {
           </div></aside>
         </section>
         <section className="icd-panel icd-orders"><div className="icd-panel-head"><div><span>PCP · DADOS REAIS</span><h2>Últimas ordens de produção atualizadas</h2></div><ListChecks size={19}/></div><div className="icd-table-wrap"><table className="icd-table"><thead><tr><th>COD_OP</th><th>PRODUTO</th><th>DATA</th><th>STATUS</th></tr></thead><tbody>{latestOps.length?latestOps.map(op=><tr key={op.id}><td><b>OP-{op.numero_op}</b></td><td>{op.produto}</td><td>{op.created_at?new Date(op.created_at).toLocaleDateString('pt-BR'):'—'}</td><td><span className="icd-status">{statusLabel(op.status)}</span></td></tr>):<tr><td colSpan={4} className="icd-empty-row">Nenhuma ordem de produção encontrada para esta empresa.</td></tr>}</tbody></table></div></section>
-        <section className="icd-panel icd-production"><div className="icd-panel-head"><div><span>QUALIDADE</span><h2>Boa x refugo por dia</h2></div><Gauge size={19}/></div>{productionSeries.length?<div className="icd-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={productionSeries} margin={{top:8,right:16,left:0,bottom:8}}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="date"/><YAxis/><Tooltip/><Legend/><Bar dataKey="boa" name="Boa"/><Bar dataKey="refugo" name="Refugo"/></BarChart></ResponsiveContainer></div>:<div className="icd-empty">Sem dados reais para gerar este gráfico.</div>}</section>
       </main>
     </div>
     <TabletLaunchpad isOpen={tabletOpen} onClose={()=>setTabletOpen(false)} onNavigate={route=>{setTabletOpen(false);onNavigate(route)}}/>
   </>
-}
-
-function HealthRow({ icon: Icon, label, value, warning = false }: { icon: typeof CheckCircle2; label: string; value: string; warning?: boolean }) {
-  return <div className="icd-health-row"><span className={warning ? 'warn' : ''}><Icon size={17} /></span><div><b>{label}</b><small>Registro atual</small></div><strong>{value}</strong></div>
 }
 
