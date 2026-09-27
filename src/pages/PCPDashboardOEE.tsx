@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Activity, Clock3, Gauge, RefreshCw, ShieldCheck, TrendingUp } from 'lucide-react'
+import { Activity, BarChart3, Clock3, Factory, Gauge, RefreshCw, ShieldCheck, TrendingUp } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { supabase } from '../lib/supabaseClient'
 
