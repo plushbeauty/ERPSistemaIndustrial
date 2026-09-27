@@ -234,7 +234,7 @@ export default function CalibracaoIndustrial() {
         <div className="mt-4 overflow-x-auto">
           <table className="w-full border-collapse text-left text-base">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 font-semibold">
+              <tr className="h-[54px] border-b border-slate-200 bg-slate-50 font-semibold text-slate-900">
                 <th className="p-3">Código</th>
                 <th className="p-3">Descrição</th>
                 <th className="p-3">Fabricante / Modelo</th>
@@ -246,7 +246,7 @@ export default function CalibracaoIndustrial() {
             </thead>
             <tbody>
               {equip.map(equipment => (
-                <tr key={equipment.id} className="cursor-pointer border-b border-slate-100 hover:bg-slate-50" onClick={() => void openEq(equipment)}>
+                <tr key={equipment.id} className="h-[54px] cursor-pointer border-b border-slate-100 text-slate-900 hover:bg-slate-50" onClick={() => void openEq(equipment)}>
                   <td className="p-3 font-bold">{equipment.codigo}</td>
                   <td className="p-3">{equipment.descricao}</td>
                   <td className="p-3">{equipment.fabricante || '—'} / {equipment.modelo || '—'}</td>
@@ -287,7 +287,7 @@ export default function CalibracaoIndustrial() {
                 <h2 className="flex items-center gap-2 border-b border-slate-200 pb-3 text-lg font-bold text-[#1e3a8a]"><History size={20} /> Histórico de Laudos e Revisões</h2>
                 <div className="mt-4 overflow-x-auto">
                   <table className="w-full text-left text-base">
-                    <thead><tr className="border-b border-slate-200 bg-slate-50"><th className="p-2">Revisão</th><th className="p-2">Certificado</th><th className="p-2">Data</th><th className="p-2">Laboratório</th><th className="p-2">Resultado</th></tr></thead>
+                    <thead><tr className="h-[54px] border-b border-slate-200 bg-slate-50 text-slate-900"><th className="p-2">Revisão</th><th className="p-2">Certificado</th><th className="p-2">Data</th><th className="p-2">Laboratório</th><th className="p-2">Resultado</th></tr></thead>
                     <tbody>
                       {hist.map(item => <tr key={item.id} className="border-b border-slate-100"><td className="p-2 font-bold">{item.revisao}</td><td className="p-2">{item.numero_certificado}</td><td className="p-2">{item.data_calibracao}</td><td className="p-2">{item.laboratorio || '—'}</td><td className="p-2">{item.resultado}</td></tr>)}
                       {hist.length === 0 && <tr><td colSpan={5} className="p-4 text-center text-slate-500">Nenhuma revisão registrada.</td></tr>}
