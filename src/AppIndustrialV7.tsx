@@ -118,8 +118,9 @@ function makePayload(fields: Field[], form: Record<string, string>) {
 export default function AppIndustrialV7() {
   const [segment, setSegment] = useState(segments[0].name)
   const [active, setActive] = useState('Dashboard')
-  const [launcher, setLauncher] = useState(true)
+  const [launcher, setLauncher] = useState(false)
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [empresaNome, setEmpresaNome] = useState('Empresa industrial')
   const [loading, setLoading] = useState(true)
   const [clock, setClock] = useState(new Date())
   const [language] = useState(localStorage.getItem('erp-lang') === 'en-US' ? 'en-US' : 'pt-BR')
@@ -140,7 +141,7 @@ export default function AppIndustrialV7() {
         const { data, error } = await supabase.from('erp_usuarios').select('nome,empresa_id,nivel_admin,auth_user_id,ativo,deleted_at,is_master,perfil').eq('auth_user_id', auth.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
         if (error) throw error
         const master = data?.auth_user_id === auth.user.id && data?.is_master === true && Number(data?.nivel_admin ?? 0) === 100 && String(data?.perfil ?? '').trim().toUpperCase() === 'MASTER' && data?.empresa_id === null
-        if (data && data.auth_user_id === auth.user.id && (master || Boolean(data.empresa_id)) && alive) setProfile(data)
+        if (data && data.auth_user_id === auth.user.id && (master || Boolean(data.empresa_id)) && alive) { setProfile(data); if (data.empresa_id) { const company = await supabase.from('erp_empresas').select('nome_fantasia,razao_social').eq('id', data.empresa_id).eq('ativo', true).maybeSingle(); if (!company.error && alive) setEmpresaNome(String(company.data?.nome_fantasia ?? company.data?.razao_social ?? 'Empresa industrial')) } else if (master && alive) setEmpresaNome('Visão Master do Ecossistema') }
       } catch (error) {
         console.error('[ERP profile]', error)
       } finally {
@@ -154,46 +155,38 @@ export default function AppIndustrialV7() {
   if (!profile) return <div className="error-screen"><div className="error-screen-card"><strong>Perfil ERP não encontrado.</strong><p>A sessão autenticada não possui um usuário ERP ativo vinculado à empresa.</p><button className="primary" type="button" onClick={() => { void supabase.auth.signOut(); location.replace('/login') }}>Voltar ao login</button></div></div>
 
   return <motion.div className={`v7-shell theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
-    <header className="v7-topbar">
-      <button className="v7-top-brand" type="button" onClick={() => setLauncher(true)} aria-label="Abrir Tablet Industrial">
-        <img src="/logo-industrial.svg" alt="Logomarca SGQ ERP Industrial" />
-        <span><strong>SGQ ERP INDUSTRIAL</strong><small>Gestão integrada industrial</small></span>
-      </button>
+    <header className="v7-topbar" aria-label="Barra superior do ERP">
+      <div className="v7-top-brand">
+        <img src="/logo-industrial.svg" alt="SGQ ERP Industrial" />
+        <div className="v7-top-company"><strong>{empresaNome}</strong><span>SGQ ERP INDUSTRIAL</span></div>
+      </div>
       <div className="v7-top-actions">
         <button className="v7-top-tablet" type="button" onClick={() => setLauncher(true)} aria-label="Abrir Tablet Industrial"><LayoutGrid size={17}/> TABLET</button>
-        <button className="v7-top-command" type="button" onClick={() => setActive('Dashboard')} aria-label="Abrir comandos do ERP"><MonitorPlay size={17}/> COMANDOS</button>
-        <div className="v7-top-date" aria-label="Data e hora atual">
-          <small>DATA E HORA</small>
-          <strong>{clock.toLocaleDateString(language === 'en-US' ? 'en-US' : 'pt-BR')} • {clock.toLocaleTimeString(language === 'en-US' ? 'en-US' : 'pt-BR')}</strong>
-        </div>
-        <div className="v7-top-user-simple" aria-label="Usuário conectado">
-          <span className="v7-online-dot" aria-hidden="true" />
-          <strong>{profile.nome || 'Usuário'}</strong>
-        </div>
-        <button className="v7-top-exit" type="button" onClick={() => void supabase.auth.signOut().then(() => { location.href = '/login' })}>Sair</button>
+        <button className="v7-top-command" type="button" onClick={() => setActive('Dashboard')} aria-label="Abrir Comandos"><MonitorPlay size={17}/> COMANDOS</button>
+        <div className="v7-top-user-simple" aria-label="Usuário conectado"><strong>{profile.nome || 'Usuário'}</strong></div>
+        <div className="v7-top-date" aria-label="Data e hora atual"><strong>{clock.toLocaleDateString(language === 'en-US' ? 'en-US' : 'pt-BR')} • {clock.toLocaleTimeString(language === 'en-US' ? 'en-US' : 'pt-BR')}</strong></div>
+        <button className="v7-top-exit" type="button" onClick={() => void supabase.auth.signOut().then(() => { location.href = '/login' })}>SAIR</button>
       </div>
     </header>
     <style>{`
-      .v7-top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-      .v7-top-tablet,.v7-top-command{display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:0 13px;border-radius:10px;border:1px solid #cbd5e1;background:#fff;color:#0f172a;font-weight:900;cursor:pointer;white-space:nowrap}
-      .v7-top-tablet{background:#ea6a0a;border-color:#ea6a0a;color:#fff;box-shadow:0 5px 14px rgba(234,106,10,.22)}
-      .v7-top-command{background:#0f766e;border-color:#0f766e;color:#fff}
-      .v7-top-tablet:hover,.v7-top-command:hover{filter:brightness(.96)}
-      @media(max-width:980px){.v7-top-actions{gap:6px}.v7-top-date{display:none}}
-      @media(max-width:700px){.v7-top-command{display:none}.v7-top-tablet{font-size:0;width:44px;justify-content:center;padding:0}.v7-top-user-simple strong{max-width:110px;overflow:hidden;text-overflow:ellipsis}}
+      .v7-topbar{min-height:68px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:8px 18px;background:#fff;border-bottom:1px solid #cbd5e1;color:#0f172a}
+      .v7-top-brand{display:flex;align-items:center;gap:12px;min-width:0}
+      .v7-top-brand img{display:block;width:150px;height:46px;object-fit:contain}
+      .v7-top-company{display:flex;flex-direction:column;min-width:0;border-left:1px solid #cbd5e1;padding-left:12px}
+      .v7-top-company strong{font-size:16px;line-height:1.1;font-weight:900;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .v7-top-company span{font-size:10px;line-height:1.2;font-weight:900;letter-spacing:.12em;color:#334155;margin-top:3px}
+      .v7-top-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0}
+      .v7-top-tablet,.v7-top-command,.v7-top-exit{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:0 12px;border-radius:8px;border:1px solid #94a3b8;background:#fff;color:#0f172a;font-weight:900;cursor:pointer;white-space:nowrap}
+      .v7-top-tablet{background:#0f766e;border-color:#0f766e;color:#fff}
+      .v7-top-command{background:#1e3a8a;border-color:#1e3a8a;color:#fff}
+      .v7-top-exit{background:#fff;color:#b91c1c;border-color:#fca5a5}
+      .v7-top-user-simple,.v7-top-date{display:flex;align-items:center;min-height:40px;padding:0 10px;border-left:1px solid #cbd5e1}
+      .v7-top-user-simple strong,.v7-top-date strong{font-size:13px;font-weight:900;color:#0f172a;white-space:nowrap}
+      .v7-top-actions button:hover{filter:brightness(.97)}
+      @media(max-width:900px){.v7-top-company span{display:none}.v7-top-brand img{width:125px}.v7-top-actions{gap:5px}.v7-top-command{display:none}}
+      @media(max-width:650px){.v7-topbar{padding:8px 10px}.v7-top-company strong{max-width:120px}.v7-top-user-simple{display:none}.v7-top-date strong{font-size:11px}.v7-top-tablet{font-size:0;width:42px;padding:0}.v7-top-tablet svg{width:18px}.v7-top-exit{font-size:0;width:42px;padding:0}.v7-top-exit::after{content:'×';font-size:22px}}
     `}</style>
-
     <main className="v7-main v7-main-full">
-      <section className="v7-header v7-page-header">
-        <div>
-          <div className="v7-page-heading-line">
-            <button className="v7-page-tablet" type="button" onClick={() => setLauncher(true)}><LayoutGrid size={16}/> Tablet Industrial</button>
-            <span>SGQ ERP • {segment.toUpperCase()}</span>
-          </div>
-          <h1>{active === 'Dashboard' ? `Dashboard — ${segment}` : module?.title ?? active}</h1>
-          <p>{active === 'Dashboard' ? current.description : module?.description}</p>
-        </div>
-      </section>
       <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={specialPath+active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{specialPath === '/vendas/clientes' ? <VendasClientesPage/> : specialPath === '/financeiro/custo-padrao' ? <FinanceiroCustoPadrao/> : specialPath === '/admin/logs' ? <AdminLogs/> : specialPath === '/outlook/configuracao' ? <OutlookConfiguracao/> : specialPath === '/compras/fornecedores' ? <FornecedoresIndustrial/> : active === 'Dashboard' ? <IndustrialCommandDashboard onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); setLauncher(false); return }; location.href = route }} /> : active === 'Configurações' ? <CompanySettings profile={profile}/> : location.pathname === '/qualidade/calibracao' ? <CalibracaoIndustrial/> : location.pathname === '/moldes-injecao' ? <MoldesFerramentaria/> : location.pathname === '/comercial' ? <ComercialSuprimentos/> : location.pathname === '/configuracoes-adm' ? <ConfiguracoesADM profile={profile}/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
       <footer>FernandoSch_System • SGQ ERP • {segment} • Ambiente isolado por empresa</footer>
 
