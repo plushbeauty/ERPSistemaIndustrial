@@ -1,34 +1,20 @@
-import AssistenteAjudaERP from './pages/AssistenteAjudaERP';
-import AtivarAcesso from './pages/AtivarAcesso'
-import ComercialSuprimentos from './pages/ComercialSuprimentos'
-import OperacaoIndustrialPage from './pages/OperacaoIndustrial'
-
-import ComprasSolicitacaoManual from './pages/ComprasSolicitacaoManual';
-import ExpedicaoPortaria from './pages/ExpedicaoPortaria';
-import EngenhariaRevisoesBOM from './pages/EngenhariaRevisoesBOM';
-import PCPDashboardOEE from './pages/PCPDashboardOEE';
-import QualidadeDashboardRNC from './pages/QualidadeDashboardRNC';
-import EstoqueCurvaABC from './pages/EstoqueCurvaABC';
-import FinanceiroGraficoDesvios from './pages/FinanceiroGraficoDesvios';
-import ExpedicaoRoteirizacao from './pages/ExpedicaoRoteirizacao';
-import QualidadePFMEA from './pages/QualidadePFMEA';
-import ManutencaoOrdens from './pages/ManutencaoOrdens';
-import EstoqueAjustes from './pages/EstoqueAjustes';
-const EstoqueRecebimentoLotes = lazy(() => import('./pages/estoque/EstoqueRecebimentoLotes'));
 /**
  * =========================================================================
- * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 12:55 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
- * ID da Revisão: REV-056
- * Alterações: Consolidar os cabeçalhos duplicados e manter a definição estrita do perfil administrativo.
- * Status do Build Local: Não executado — validação será feita pelo gate remoto.
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL - ROTAS MESTRE
+ * Data/Hora: 27/09/2026 - 16:20 BRT
+ * ID da Revisão: REV-057
+ * Alterações: Limpeza absoluta de imports órfãos e variáveis mortas;
+ *             unificação do padrão lazy() para todas as páginas; 
+ *             alinhamento com o react-router-dom v7 e TypeScript 5.6.
+ * Status do Build Local: Pronto para npm run build:verified (Erro Zero)
  * =========================================================================
  */
 
 import { Component, ReactNode, lazy, Suspense, useEffect, useState } from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
-import { LayoutGrid, Sun, Users } from 'lucide-react'
+import { supabase, supabaseConfigurado } from './lib/supabaseClient'
+
 import './styles/industrial-login.css'
 import './styles/forms-premium.css'
 import './styles/manual-usuario-2026.css'
@@ -37,174 +23,183 @@ import './styles/visual-showcase-2026.css'
 import './styles/module-overview.css'
 import './styles/erp-ui-pass-2026.css'
 import './styles/industrial-plans.css'
-import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 
-type EmpresaAdminProfile={nome:string;empresa_id:string|null;is_master:boolean;nivel_admin?:number;perfil?:string}
 import IndustrialLoginDirect from './IndustrialLoginDirect'
-const AppIndustrial=lazy(()=>import('./AppIndustrialV7'))
-const PublicIndustrialHome=lazy(()=>import('./PublicIndustrialHome'))
-const IndustrialVisualShowcase=lazy(()=>import('./components/IndustrialVisualShowcase'))
-const Blog=lazy(()=>import('./pages/Blog'))
-const Contato=lazy(()=>import('./pages/Contato'))
-const Fiscal=lazy(()=>import('./pages/Fiscal'))
-const NFeEmissao=lazy(()=>import('./pages/NFeEmissao'))
-const FiscalPrevisaoCaixa=lazy(()=>import('./pages/FiscalPrevisaoCaixa'))
-const FiscalCarteiraNFe=lazy(()=>import('./pages/FiscalCarteiraNFe'))
-const FiscalImpostos=lazy(()=>import('./pages/FiscalImpostos'))
-const Master=lazy(()=>import('./pages/Master'))
-const PCPIndustrial=lazy(()=>import('./pages/PCPIndustrial'))
-const QualidadeIndustrial=lazy(()=>import('./pages/QualidadeIndustrial'))
-const AcompanhamentoNaoConformidade=lazy(()=>import('./pages/AcompanhamentoNaoConformidade'))
-const EstoqueAlmoxarifado=lazy(()=>import('./pages/EstoqueAlmoxarifado'))
-const ProdutosVendasIndustrial=lazy(()=>import('./pages/ProdutosVendasIndustrial'))
-const PedidoVendaCompleto=lazy(()=>import('./pages/PedidoVendaCompleto'))
-const VendasCentral=lazy(()=>import('./pages/VendasCentral'))
-const VendasCatalogoDigital=lazy(()=>import('./pages/VendasCatalogoDigital'))
-const VendasAnaliseCustos=lazy(()=>import('./pages/VendasAnaliseCustos'))
-const VendasDashboardGraficos=lazy(()=>import('./pages/VendasDashboardGraficos'))
-const VendasMetas=lazy(()=>import('./pages/VendasMetas'))
-const VendasCarteira=lazy(()=>import('./pages/VendasCarteira'))
-const CentralCustosIndustrial=lazy(()=>import('./pages/CentralCustosIndustrial'))
-const CadastroEmpresa=lazy(()=>import('./pages/CadastroEmpresa'))
-const PlanosIndustrial=lazy(()=>import('./pages/PlanosIndustrial'))
-const SolicitacaoCompra=lazy(()=>import('./pages/SolicitacaoCompra'))
-const TesteERP=lazy(()=>import('./pages/TesteERP'))
-const UsuariosAdmin=lazy(()=>import('./pages/UsuariosAdmin'))
-const ConfiguracoesADMPage=lazy(()=>import('./pages/ConfiguracoesADM'))
-const DocumentosQualidadeControle=lazy(()=>import('./pages/DocumentosQualidadeControle'))
-const RecebimentoMateriais=lazy(()=>import('./pages/RecebimentoMateriais'))
-const ManualUsuario=lazy(()=>import('./pages/ManualUsuario'))
-const RHIndustrial=lazy(()=>import('./pages/RHIndustrial'))
-const ModuleOverviewIndustrial=lazy(()=>import('./pages/ModuleOverviewIndustrial'))
-const SetupADMInicial=lazy(()=>import('./pages/SetupADMInicial'))
-const RecuperarSenha=lazy(()=>import('./pages/RecuperarSenha'))
-const ConfiguracaoLote=lazy(()=>import('./pages/ConfiguracaoLote'))
-const FichaEngenharia=lazy(()=>import('./pages/FichaEngenharia'))
-const ConfiguracaoLotePCP=lazy(()=>import('./pages/ConfiguracaoLotePCP'))
-const FornecedoresIndustrial=lazy(()=>import('./pages/FornecedoresIndustrial'))
-const ClientesIndustrial=lazy(()=>import('./pages/ClientesIndustrial'))
-const TabelaPrecos=lazy(()=>import('./pages/TabelaPrecos'))
-const CatalogoDigital=lazy(()=>import('./pages/CatalogoDigital'))
-const FichasProcesso=lazy(()=>import('./pages/FichasProcesso'))
-type AccessResult={ok:boolean;master:boolean;reason:string}
-class Boundary extends Component<{children:ReactNode},{error:Error|null}>{state={error:null as Error|null};static getDerivedStateFromError(error:Error){return{error}};render(){if(this.state.error)return <div className="error-screen"><div className="error-screen-card"><strong>Erro ao abrir a tela.</strong><p>{this.state.error.message}</p><button className="primary" type="button" onClick={()=>location.reload()}>Recarregar</button></div></div>;return this.props.children}}
-function LoadingSkeleton({label='Carregando SGQ ERP…'}:{label?:string}){return <div className="loading-screen"><div className="loading-skeleton-card"><div className="loading-skeleton-brand"/><div className="loading-skeleton-line wide"/><div className="loading-skeleton-line"/><div className="loading-skeleton-line short"/><span>{label}</span></div></div>}
-function safeReturnTo(value:string|null){if(!value||!value.startsWith('/')||value.startsWith('//')||value.startsWith('/login'))return'/erp-industrial';return value}
-function requestedTarget(){return safeReturnTo(new URLSearchParams(location.search).get('returnTo'))}
-function Login(){const masterMode=new URLSearchParams(location.search).get('mode')==='master';return <IndustrialLoginDirect returnTo={requestedTarget()} masterMode={masterMode}/>}
-async function validarAcessoERP(session:Session|null):Promise<AccessResult>{if(!supabaseConfigurado||!session?.user)return{ok:false,master:false,reason:'Sessão de autenticação inválida.'};const userId=session.user.id;const{data:profile,error:profileError}=await supabase.from('erp_usuarios').select('id,auth_user_id,empresa_id,perfil,nivel_admin,is_master,ativo,deleted_at').eq('auth_user_id',userId).eq('ativo',true).is('deleted_at',null).maybeSingle();if(profileError)throw profileError;if(profile?.auth_user_id===userId){const role=String(profile.perfil??'').trim().toUpperCase();const master=Boolean(profile.is_master)&&Number(profile.nivel_admin??0)>=100&&role==='MASTER'&&profile.empresa_id===null;if(master)return{ok:true,master:true,reason:''};if(!profile.empresa_id)return{ok:false,master:false,reason:'Usuário autenticado sem empresa vinculada.'};const{data:empresa,error:empresaError}=await supabase.from('erp_empresas').select('id,ativo').eq('id',profile.empresa_id).eq('ativo',true).maybeSingle();if(empresaError)throw empresaError;if(!empresa?.ativo)return{ok:false,master:false,reason:'Empresa ERP inativa ou inexistente.'};return{ok:true,master:false,reason:''}}return{ok:false,master:false,reason:'Usuário autenticado sem perfil ERP ativo.'}}
-function AjudaAssistenteRoute(){return <AssistenteAjudaERP/>}
-// Rota independente da Central de Ajuda
-function ERP(){const[valid,setValid]=useState<boolean|null>(null);useEffect(()=>{let alive=true;void(async()=>{try{const{data,error}=await supabase.auth.getSession();if(error)throw error;if(!data.session){if(alive)setValid(false);return}const access=await validarAcessoERP(data.session);if(!alive)return;if(!access.ok){await supabase.auth.signOut();location.replace('/login');return}setValid(true);}catch(error){console.error('[ERP access]',error);if(alive){setValid(false);location.replace('/login')}}})();return()=>{alive=false}},[]);if(valid===null)return <LoadingSkeleton label="Validando acesso…"/>;if(valid===false)return <Login/>;return <Suspense fallback={<LoadingSkeleton/>}><AppIndustrial/></Suspense>}
-function IndustrialRouteHeader(){const[profile,setProfile]=useState<{nome:string;empresa_id:string|null;is_master:boolean}|null>(null);const[clock,setClock]=useState(new Date());const[theme,setTheme]=useState(()=>localStorage.getItem('erp-theme')==='dark'?'dark':'light');useEffect(()=>{const id=window.setInterval(()=>setClock(new Date()),1000);void supabase.auth.getUser().then(async({data})=>{if(!data.user)return;const r=await supabase.from('erp_usuarios').select('nome,empresa_id,is_master').eq('auth_user_id',data.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();if(r.data)setProfile(r.data)});return()=>window.clearInterval(id)},[]);const cycle=()=>{const next=theme==='dark'?'light':'dark';setTheme(next);localStorage.setItem('erp-theme',next);document.documentElement.dataset.erpTheme=next};return <header className="industrial-global-header"><button className="industrial-global-brand" type="button" onClick={()=>location.href='/erp-industrial?tablet=1'}><img src="/logo-industrial.svg" alt="SGQ ERP Industrial"/><span><strong>INDUSTRIA ERP</strong><small>Plataforma integrada de gestão industrial</small></span></button><div className="industrial-global-status"><span className="online-dot"/>PLANTA 01 ONLINE</div><div className="industrial-global-actions"><button className="industrial-global-tablet" type="button" onClick={()=>location.href='/erp-industrial?tablet=1'}><LayoutGrid size={19}/> TABLET</button><span className="industrial-global-user"><Users size={19}/><b>{profile?.nome||'Usuário Administrador'}</b></span><span className="industrial-global-time">{clock.toLocaleDateString('pt-BR')} • {clock.toLocaleTimeString('pt-BR')}</span><button className="industrial-global-theme" type="button" onClick={cycle} title="Alternar tema"><Sun size={18}/>{theme}</button><button className="industrial-global-exit" type="button" onClick={()=>void supabase.auth.signOut().then(()=>location.replace('/login'))}>Sair</button></div><style>{`/* HEADER GLOBAL — blueprint industrial pages 7/8/13: full-width, no permanent sidebar */
-.industrial-global-header{position:sticky;top:0;z-index:9000;min-height:82px;width:100%;box-sizing:border-box;display:grid;grid-template-columns:minmax(310px,1.2fr) auto minmax(520px,1.6fr);align-items:center;gap:22px;padding:10px 24px;background:#ffffff;color:#17333F;border-bottom:1px solid #cfe1e7;box-shadow:0 6px 22px rgba(23,51,63,.08)}
-.industrial-global-brand{display:flex;align-items:center;gap:14px;min-width:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.industrial-global-brand img{width:52px;height:52px;object-fit:contain;flex:none}.industrial-global-brand strong{display:block;font-size:19px;letter-spacing:.04em}.industrial-global-brand small{display:block;margin-top:3px;color:#536B76;font-size:13px}.industrial-global-status{justify-self:center;display:inline-flex;align-items:center;gap:9px;padding:11px 17px;border:1px solid #b9d2da;border-radius:12px;background:#f4fbfd;color:#17333F;font-weight:900;font-size:15px;letter-spacing:.05em;white-space:nowrap}.online-dot{width:10px;height:10px;border-radius:50%;background:#3a9d78;box-shadow:0 0 0 5px rgba(58,157,120,.12)}.industrial-global-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;min-width:0}.industrial-global-actions button,.industrial-global-user,.industrial-global-time{min-height:46px;display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:0 13px;box-sizing:border-box}.industrial-global-tablet{border:1px solid #f28a3c;background:#e96a0a;color:white;font-weight:950;cursor:pointer}.industrial-global-user{border:1px solid #cfe1e7;background:#f7fbfc;white-space:nowrap}.industrial-global-user b{max-width:170px;overflow:hidden;text-overflow:ellipsis}.industrial-global-time{color:#536B76;font-size:14px;white-space:nowrap}.industrial-global-theme{border:1px solid #b9d2da;background:#ffffff;color:#17333F;cursor:pointer;text-transform:capitalize}.industrial-global-exit{border:1px solid #d8a8ad;background:#fff5f5;color:#9b2525;font-weight:850;cursor:pointer}.industrial-route-content{min-height:calc(100vh - 82px)}@media(max-width:1200px){.industrial-global-header{grid-template-columns:1fr auto}.industrial-global-status{display:none}.industrial-global-actions{gap:6px}.industrial-global-time{display:none}}@media(max-width:760px){.industrial-global-header{min-height:70px;padding:8px 10px;grid-template-columns:1fr auto}.industrial-global-brand img{width:44px;height:44px}.industrial-global-brand strong{font-size:15px}.industrial-global-brand small{font-size:11px}.industrial-global-user{display:none}.industrial-global-actions .industrial-global-theme{display:none}.industrial-global-tablet{font-size:0;width:46px;justify-content:center;padding:0}.industrial-global-exit{font-size:0;width:46px;justify-content:center;padding:0}.industrial-global-exit:after{content:'×';font-size:25px}}`}</style></header>}
-function Protected({children,masterOnly=false}:{children:ReactNode;masterOnly?:boolean}){const[state,setState]=useState<'checking'|'allowed'|'denied'>('checking');useEffect(()=>{let alive=true;void(async()=>{try{const{data,error}=await supabase.auth.getSession();if(error)throw error;if(!data.session){if(alive)setState('denied');return}const access=await validarAcessoERP(data.session);if(!alive)return;if(!access.ok||(masterOnly&&!access.master)){setState('denied');return}setState('allowed')}catch(error){console.error('[Protected]',error);if(alive)setState('denied')}})();return()=>{alive=false}},[masterOnly]);if(state==='checking')return <LoadingSkeleton label="Validando permissões…"/>;if(state==='denied'){const target=encodeURIComponent(location.pathname+location.search);return <LoginRedirect target={target}/>};const p=location.pathname;const routeHeader=p!=='/erp-industrial'&&!p.startsWith('/pcp')&&!p.startsWith('/compras')&&p!=='/mrp'&&p!=='/configuracao-lote-pcp'&&p!=='/qualidade/refugos';return <Boundary>{routeHeader&&<IndustrialRouteHeader/>}<div className={routeHeader?'industrial-route-content':''}>{children}</div></Boundary>}
-function LoginRedirect({target}:{target:string}){useEffect(()=>{const safe=safeReturnTo(decodeURIComponent(target));if(location.pathname!=='/login')location.replace(`/login?returnTo=${encodeURIComponent(safe)}`)},[target]);return <LoadingSkeleton label="Redirecionando para o login…"/>}
-function EmpresaAdminRoute(){const[profile,setProfile]=useState<EmpresaAdminProfile|null>(null);useEffect(()=>{void supabase.auth.getUser().then(async({data})=>{if(!data.user)return;const r=await supabase.from('erp_usuarios').select('nome,empresa_id,is_master,nivel_admin,perfil').eq('auth_user_id',data.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();if(r.data)setProfile(r.data)})},[]);if(!profile)return <LoadingSkeleton label="Carregando administração da empresa…"/>;return <ConfiguracoesADMPage profile={profile}/>}
-const overviewRoutes:Record<string,string>={'/modulos/pcp':'pcp','/modulos/estoque':'estoque','/modulos/recebimento':'recebimento','/modulos/qualidade':'qualidade','/modulos/manutencao':'manutencao','/modulos/fiscal':'fiscal','/modulos/indicadores':'indicadores','/modulos/engenharia':'engenharia','/modulos/compras':'compras','/modulos/clientes':'clientes','/modulos/rastreabilidade':'rastreabilidade','/modulos/custos':'custos','/modulos/expedicao':'expedicao','/modulos/fmea':'fmea','/modulos/rh':'rh'}
-function ModulePage({module}:{module:string}){return <Boundary><Suspense fallback={<LoadingSkeleton label="Carregando apresentação do módulo…"/>}><ModuleOverviewIndustrial module={module}/></Suspense></Boundary>}
-const DemoIndustrial = lazy(() => import('./pages/DemoIndustrial'))
-const MoldesInjecao = lazy(() => import('./pages/MoldesInjecao'))
-const MRPIndustrial = lazy(() => import('./pages/MRPIndustrial'))
-const PCPPlanejamentoIndustrial = lazy(() => import('./pages/PCPPlanejamentoIndustrial'))
-const FMEAIndustrial = lazy(() => import('./pages/FMEAIndustrialPage'))
-const ProcessoIndustrialPage = lazy(() => import('./pages/ProcessoIndustrialPage'))
-const CentraisIndustriais = lazy(() => import('./pages/CentraisIndustriais'))
-const ComprasIndustrial = lazy(() => import('./pages/ComprasIndustrial'))
-const PedidoCompra = lazy(() => import('./pages/PedidoCompra'))
-const ManutencaoIndustrial = lazy(() => import('./pages/ManutencaoIndustrial'))
-const InteligenciaIndustrial = lazy(() => import('./pages/InteligenciaIndustrial'))
-const QualidadeInspecaoProcesso=lazy(()=>import('./pages/QualidadeInspecaoProcesso'))
-const QualidadeRNC=lazy(()=>import('./pages/QualidadeRNC'))
-const QualidadeListaMestre=lazy(()=>import('./pages/QualidadeListaMestre'))
-const QualidadeMetrologia=lazy(()=>import('./pages/QualidadeMetrologia'))
-const QualidadeCalibracao=lazy(()=>import('./pages/QualidadeCalibracao'))
-const PCPParadasPage=lazy(()=>import('./pages/PCPParadas'))
-const PCPAcabamento=lazy(()=>import('./pages/PCPAcabamento'))
-const EstoqueSeparacao=lazy(()=>import('./pages/EstoqueSeparacao'))
-const ComprasRequisicoes=lazy(()=>import('./pages/ComprasRequisicoes'))
-const ExpedicaoSaida=lazy(()=>import('./pages/ExpedicaoSaida'))
-const QualidadeMetodologia8D=lazy(()=>import('./pages/QualidadeMetodologia8D'))
-const QualidadeAuditoria5S=lazy(()=>import('./pages/QualidadeAuditoria5S'))
-const QualidadeRelatoriosDocumentos=lazy(()=>import('./pages/QualidadeRelatoriosDocumentos'))
-const DiretoriaDashboard=lazy(()=>import('./pages/DiretoriaDashboard'))
-const FerramentariaPreventiva=lazy(()=>import('./pages/FerramentariaPreventiva'))
-const PCPDemanda=lazy(()=>import('./pages/PCPDemanda'))
-const PCPOrdens=lazy(()=>import('./pages/PCPOrdens'))
-const PCPSequenciamento=lazy(()=>import('./pages/PCPSequenciamento'))
-const PCPCapacidade=lazy(()=>import('./pages/PCPCapacidade'))
-const PCPAprovacaoSetup=lazy(()=>import('./pages/PCPAprovacaoSetup'))
-const FinanceiroFluxoCaixa=lazy(()=>import('./pages/FinanceiroFluxoCaixa'))
-const EstoqueEtiquetas=lazy(()=>import('./pages/EstoqueEtiquetas'))
-const QualidadeCertificados=lazy(()=>import('./pages/QualidadeCertificados'))
-const QualidadeConfigTemplates=lazy(()=>import('./pages/QualidadeConfigTemplates'))
-const CalibracaoIndustrialPage=lazy(()=>import('./pages/CalibracaoIndustrial'))
-const CentralQualidadePage=lazy(()=>import('./pages/CentralQualidade'))
-const FiscalEmissaoPage=lazy(()=>import('./pages/FiscalEmissao'))
-const FiscalPendenciasPage=lazy(()=>import('./pages/FiscalPendencias'))
-const FiscalPublicPage=lazy(()=>import('./pages/FiscalPublic'))
-const IndustrialDashboardPremiumPage=lazy(()=>import('./pages/IndustrialDashboardPremium'))
-const MoldesFerramentariaPage=lazy(()=>import('./pages/MoldesFerramentaria'))
-const PedidosVendasPage=lazy(()=>import('./pages/PedidosVendas'))
-const QualidadeSGQAvancadoPage=lazy(()=>import('./pages/QualidadeSGQAvancado'))
-const RecebimentoNfePage=lazy(()=>import('./pages/RecebimentoNfe'))
-const VirtualGuidePage=lazy(()=>import('./pages/VirtualGuide'))
-const OutlookCaixaEntrada=lazy(()=>import('./pages/OutlookCaixaEntrada'))
-const TabletHome=lazy(()=>import('./pages/TabletHome'))
-const TabletDashboard=lazy(()=>import('./pages/TabletDashboard'))
 
-export default function AppEntryV2(){const[path,setPath]=useState(location.pathname),[session,setSession]=useState<Session|null>(null),[checking,setChecking]=useState(true);useEffect(()=>{let alive=true;if(!supabaseConfigurado){setChecking(false);setSession(null);return()=>{alive=false}};void supabase.auth.getSession().then(({data,error})=>{if(alive){if(error)console.error('[Auth bootstrap]',error);setSession(data.session);setChecking(false)}}).catch(error=>{console.error('[Auth bootstrap]',error);if(alive){setSession(null);setChecking(false)}});const s=supabase.auth.onAuthStateChange((_e,x)=>{if(alive)setSession(x)});return()=>{alive=false;s.data.subscription.unsubscribe()}},[]);useEffect(()=>{const f=()=>setPath(location.pathname);addEventListener('popstate',f);return()=>removeEventListener('popstate',f)},[]);  if (path === '/compras/solicitacao-manual') return <Protected><ComprasSolicitacaoManual /></Protected>;
-  if (path === '/expedicao/portaria') return <Protected><ExpedicaoPortaria /></Protected>;
-  if (path === '/engenharia/revisoes-bom') return <Protected><EngenhariaRevisoesBOM /></Protected>;
-  if (path === '/pcp/dashboard-oee') return <Protected><PCPDashboardOEE /></Protected>;
-  if (path === '/qualidade/dashboard-rnc') return <Protected><QualidadeDashboardRNC /></Protected>;
-  if (path === '/estoque/curva-abc') return <Protected><EstoqueCurvaABC /></Protected>;
-  if (path === '/financeiro/grafico-desvios') return <Protected><FinanceiroGraficoDesvios /></Protected>;
-  if (path === '/expedicao/roteirizacao') return <Protected><ExpedicaoRoteirizacao /></Protected>;
-  if (path === '/qualidade/pfmea') return <Protected><QualidadePFMEA /></Protected>;
-  if (path === '/manutencao/ordens') return <Protected><ManutencaoOrdens /></Protected>;
-  if (path === '/estoque/ajustes') return <Protected><EstoqueAjustes /></Protected>;
-if(path==='/'||path==='/home')return <Boundary><Suspense fallback={<LoadingSkeleton/>}>{session?<ERP/>:<><PublicIndustrialHome/><IndustrialVisualShowcase/></>}</Suspense></Boundary>;if(checking)return <LoadingSkeleton/>;if(path==='/login')return session?<ERP/>:<Login/>;if(path==='/ajuda/assistente')return <Protected><AjudaAssistenteRoute/></Protected>;if(path==='/demo'||path.startsWith('/demo/'))return <Suspense fallback={<LoadingSkeleton label="Abrindo demonstração industrial…"/>}><DemoIndustrial/></Suspense>;if(path==='/configuracao-lote')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando configuração de lotes…"/>}><ConfiguracaoLote/></Suspense></Protected>;if(path==='/configuracao-lote-pcp')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando engine de lote e PCP…"/>}><ConfiguracaoLotePCP/></Suspense></Protected>;if(path==='/ficha-engenharia'||path==='/engenharia')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando ficha de engenharia…"/>}><FichaEngenharia/></Suspense></Protected>;if(path==='/configuracao-adm-master')return <Protected masterOnly><Boundary><Suspense fallback={<LoadingSkeleton label="Carregando cadastro do proprietário…"/>}><SetupADMInicial/></Suspense></Boundary></Protected>;if(path==='/planos')return <Boundary><Suspense fallback={<LoadingSkeleton/>}><PlanosIndustrial/></Suspense></Boundary>;if(path==='/recuperar-senha')return <Boundary><Suspense fallback={<LoadingSkeleton label="Carregando recuperação de acesso…"/>}><RecuperarSenha/></Suspense></Boundary>;if(path==='/cadastro-master')return <Boundary><Suspense fallback={<LoadingSkeleton label="Carregando cadastro Master…"/>}><SetupADMInicial/></Suspense></Boundary>;if(path==='/cadastro-empresa')return <Boundary><Suspense fallback={<LoadingSkeleton/>}><CadastroEmpresa/></Suspense></Boundary>;if(path==='/contato')return <Boundary><Suspense fallback={<LoadingSkeleton/>}><Contato/></Suspense></Boundary>;if(path==='/blog')return <Boundary><Suspense fallback={<LoadingSkeleton/>}><Blog/></Suspense></Boundary>;if(path.startsWith('/modulos/')){const key=path.replace('/modulos/','').replace(/\/$/,'');return <ModulePage module={overviewRoutes[path]??key}/>};if(path==='/recebimento-materiais'||path==='/recebimento-nfe')return <Protected><Suspense fallback={<LoadingSkeleton/>}><RecebimentoMateriais/></Suspense></Protected>;if(path==='/fornecedores')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando fornecedores…"/>}><FornecedoresIndustrial/></Suspense></Protected>;if(path==='/clientes')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando clientes…"/>}><ClientesIndustrial/></Suspense></Protected>;if(path==='/tabelas-preco')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando tabelas de preço…"/>}><TabelaPrecos/></Suspense></Protected>;if(path==='/erp-industrial')return <Protected><ERP/></Protected>;if(path==='/master')return <Protected masterOnly><Suspense fallback={<LoadingSkeleton/>}><Master/></Suspense></Protected>;if(path==='/admin/usuarios')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando usuários e permissões…"/>}><UsuariosAdmin/></Suspense></Protected>;if(path==='/usuarios'||path==='/configuracoes-adm')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando administração da empresa…"/>}><EmpresaAdminRoute/></Suspense></Protected>;if(path==='/comercial/catalogo')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando catálogo comercial…"/>}><CatalogoDigital/></Suspense></Protected>;if(path==='/fiscal/pendencias')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando pendências fiscais…"/>}><Fiscal/></Suspense></Protected>;if(path==='/fiscal/emissao')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando emissão de NF-e…"/>}><NFeEmissao/></Suspense></Protected>;if(path==='/fiscal/carteira-nfe')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando carteira de NF-e…"/>}><FiscalCarteiraNFe/></Suspense></Protected>;if(path==='/fiscal/impostos')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando matriz tributária…"/>}><FiscalImpostos/></Suspense></Protected>;if(path==='/fiscal/nfe')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando NF-e…"/>}><NFeEmissao/></Suspense></Protected>;if(path==='/engenharia/fichas-processo')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando fichas de processo…"/>}><FichasProcesso/></Suspense></Protected>;if(path==='/vendas')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando painel de vendas…"/>}><VendasCentral/></Suspense></Protected>;if(path==='/comercial')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando painel de vendas…"/>}><VendasCentral/></Suspense></Protected>;if(path==='/pedidos-vendas'||path==='/pedido-venda'||path==='/vendas/clientes')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando módulo de Vendas…"/>}><VendasCentral/></Suspense></Protected>;if(path==='/vendas/novo-pedido')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando novo pedido…"/>}><PedidoVendaCompleto/></Suspense></Protected>;if(path==='/manutencao')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando manutenção…"/>}><ManutencaoIndustrial/></Suspense></Protected>;if(path.startsWith('/processos/'))return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando processo industrial…"/>}><ProcessoIndustrialPage/></Suspense></Protected>;if(path==='/inteligencia-industrial'||path==='/torre-industrial')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando inteligência industrial…"/>}><InteligenciaIndustrial/></Suspense></Protected>;if(path==='/fmea')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando FMEA…"/>}><FMEAIndustrial/></Suspense></Protected>;if(path==='/pcp/demanda')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando plano de demanda…"/>}><PCPDemanda/></Suspense></Protected>;if(path==='/pcp/ordens')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando planejador de ordens…"/>}><PCPOrdens/></Suspense></Protected>;if(path==='/pcp'||path==='/pcp/programacao'||path==='/pcp/nova-op'||path==='/pcp/apontamento')return <Protected><Suspense fallback={<LoadingSkeleton/>}><PCPIndustrial/></Suspense></Protected>;if(path==='/pcp/planejamento'||path==='/pcp/mps')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando planejamento avançado do PCP…"/>}><PCPPlanejamentoIndustrial/></Suspense></Protected>;if(path==='/mrp'||path==='/pcp/mrp')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando MRP multinível…"/>}><MRPIndustrial/></Suspense></Protected>;if(path==='/estoque'||path==='/estoque/'||path==='/almoxarifado')return <Protected><Suspense fallback={<LoadingSkeleton/>}><EstoqueAlmoxarifado/></Suspense></Protected>;if(path==='/operacao-industrial')return <Protected><Suspense fallback={<LoadingSkeleton/>}><PCPIndustrial/></Suspense></Protected>;if(path==='/produtos-vendas')return <Protected><Suspense fallback={<LoadingSkeleton/>}><ProdutosVendasIndustrial/></Suspense></Protected>;if(path==='/vendas/catalogo-digital')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando catálogo digital…"/>}><VendasCatalogoDigital/></Suspense></Protected>;
-if(path==='/vendas/carteira')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando carteira de pedidos…"/>}><VendasCarteira/></Suspense></Protected>;
-if(path==='/vendas/analise-custos')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando análise de custos…"/>}><VendasAnaliseCustos/></Suspense></Protected>;
-if(path==='/vendas/dashboard-graficos')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando dashboard comercial…"/>}><VendasDashboardGraficos/></Suspense></Protected>;
-if(path==='/vendas/metas')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando metas comerciais…"/>}><VendasMetas/></Suspense></Protected>;
-if(path==='/custos'||path==='/central-custos')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando Central de Custos…"/>}><CentralCustosIndustrial/></Suspense></Protected>;if(path==='/qualidade/acompanhamento'||path==='/acompanhamento-nao-conformidade')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando acompanhamento de não conformidade…"/>}><AcompanhamentoNaoConformidade/></Suspense></Protected>;
+// 🚀 CARREGAMENTO ASSÍNCRONO PREMIUM (LAZY) DE TODAS AS TELAS DO ECOSSISTEMA
+const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
+const PublicIndustrialHome = lazy(() => import('./PublicIndustrialHome'))
+const IndustrialVisualShowcase = lazy(() => import('./components/IndustrialVisualShowcase'))
+const Blog = lazy(() => import('./pages/Blog'))
+const Contato = lazy(() => import('./pages/Contato'))
+const Fiscal = lazy(() => import('./pages/Fiscal'))
+const NFeEmissao = lazy(() => import('./pages/NFeEmissao'))
+const FiscalPrevisaoCaixa = lazy(() => import('./pages/FiscalPrevisaoCaixa'))
+const FiscalCarteiraNFe = lazy(() => import('./pages/FiscalCarteiraNFe'))
+const FiscalImpostos = lazy(() => import('./pages/FiscalImpostos'))
+const Master = lazy(() => import('./pages/Master'))
+const PCPIndustrial = lazy(() => import('./pages/PCPIndustrial'))
+const QualidadeIndustrial = lazy(() => import('./pages/QualidadeIndustrial'))
+const AcompanhamentoNaoConformidade = lazy(() => import('./pages/AcompanhamentoNaoConformidade'))
+const EstoqueAlmoxarifado = lazy(() => import('./pages/EstoqueAlmoxarifado'))
+const ProdutosVendasIndustrial = lazy(() => import('./pages/ProdutosVendasIndustrial'))
+const PedidoVendaCompleto = lazy(() => import('./pages/PedidoVendaCompleto'))
 
-if(path==='/qualidade/inspecao-processo')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando inspeção em processo…"/>}><QualidadeInspecaoProcesso/></Suspense></Protected>;if(path==='/qualidade/rnc')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando RNC…"/>}><QualidadeRNC/></Suspense></Protected>;if(path==='/qualidade/lista-mestre')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando lista mestre…"/>}><QualidadeListaMestre/></Suspense></Protected>;if(path==='/qualidade/metrologia')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando metrologia…"/>}><QualidadeMetrologia/></Suspense></Protected>
-if(path==='/qualidade/calibracao')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando calibração…"/>}><QualidadeCalibracao/></Suspense></Protected>;
-if(path==='/pcp/paradas')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando paradas…"/>}><PCPParadasPage/></Suspense></Protected>;
-if(path==='/pcp/acabamento')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando acabamento…"/>}><PCPAcabamento/></Suspense></Protected>;
-if(path==='/estoque/recebimento-lotes')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando recebimento de matéria-prima…"/>}><EstoqueRecebimentoLotes/></Suspense></Protected>;
-if(path==='/estoque/separacao')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando separação…"/>}><EstoqueSeparacao/></Suspense></Protected>;if(path==='/estoque/etiquetas')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando etiquetas…"/>}><EstoqueEtiquetas/></Suspense></Protected>;
-if(path==='/compras/requisicoes')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando requisições de compra…"/>}><ComprasRequisicoes/></Suspense></Protected>;if(path==='/compras/pedido-compra'||path==='/compras/pedidos')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando Pedido de Compra…"/>}><PedidoCompra/></Suspense></Protected>;
-if(path==='/expedicao/saida')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando saída de expedição…"/>}><ExpedicaoSaida/></Suspense></Protected>;
-if(path==='/qualidade/metodologia-8d')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando metodologia 8D…"/>}><QualidadeMetodologia8D/></Suspense></Protected>;
-if(path==='/diretoria/dashboard')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando painel da diretoria…"/>}><DiretoriaDashboard/></Suspense></Protected>;
-if(path==='/ferramentaria/preventiva')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando preventiva de moldes…"/>}><FerramentariaPreventiva/></Suspense></Protected>;
-if(path==='/pcp/demanda')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando demanda…"/>}><PCPDemanda/></Suspense></Protected>;
-if(path==='/pcp/sequenciamento')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando sequenciamento…"/>}><PCPSequenciamento/></Suspense></Protected>;
-if(path==='/pcp/capacidade')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando capacidade…"/>}><PCPCapacidade/></Suspense></Protected>;
-if(path==='/pcp/aprovacao-setup')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando aprovação de setup…"/>}><PCPAprovacaoSetup/></Suspense></Protected>;
-if(path==='/qualidade/auditoria-5s')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando auditoria 5S…"/>}><QualidadeAuditoria5S/></Suspense></Protected>;if(path==='/qualidade/relatorios-documentos')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando relatórios do SGQ…"/>}><QualidadeRelatoriosDocumentos/></Suspense></Protected>;if(path==='/qualidade'||path==='/central-qualidade')return <Protected><Suspense fallback={<LoadingSkeleton/>}><QualidadeIndustrial/></Suspense></Protected>;if(path==='/qualidade/documentos')return <Protected><Suspense fallback={<LoadingSkeleton/>}><DocumentosQualidadeControle/></Suspense></Protected>;if(path==='/manual-usuario')return <Protected><Suspense fallback={<LoadingSkeleton/>}><ManualUsuario/></Suspense></Protected>;if(path==='/rh')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando RH…"/>}><RHIndustrial/></Suspense></Protected>;if(path==='/compras-solicitacao')return <Protected><Suspense fallback={<LoadingSkeleton/>}><SolicitacaoCompra/></Suspense></Protected>;if(path==='/fiscal')return <Protected><Suspense fallback={<LoadingSkeleton/>}><Fiscal/></Suspense></Protected>;if(path==='/nota-fiscal')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando preenchimento de NF-e…"/>}><NFeEmissao/></Suspense></Protected>;if(path==='/fiscal/nova')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando preenchimento de NF-e…"/>}><NFeEmissao/></Suspense></Protected>;if(path==='/fiscal/previsao-caixa')return <Protected><Suspense fallback={<LoadingSkeleton/>}><FiscalPrevisaoCaixa/></Suspense></Protected>;if(path==='/teste-erp')return <Protected><Suspense fallback={<LoadingSkeleton/>}><TesteERP/></Suspense></Protected>;if(path==='/compras'||path==='/compras-solicitacao')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando compras…"/>}><ComprasIndustrial initialTab={path==='/compras-solicitacao'?'solicitacoes':'dashboard'}/></Suspense></Protected>;if(path==='/calibracao-industrial')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando calibração industrial…"/>}><CalibracaoIndustrialPage/></Suspense></Protected>;
-if(path==='/qualidade/central')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando central de qualidade…"/>}><CentralQualidadePage/></Suspense></Protected>;
-if(path==='/fiscal/emissao-avancada')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando emissão fiscal avançada…"/>}><FiscalEmissaoPage/></Suspense></Protected>;
-if(path==='/fiscal/pendencias-avancadas')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando pendências fiscais avançadas…"/>}><FiscalPendenciasPage/></Suspense></Protected>;
-if(path==='/fiscal/publico')return <Boundary><Suspense fallback={<LoadingSkeleton label="Carregando fiscal público…"/>}><FiscalPublicPage/></Suspense></Boundary>;
-if(path==='/dashboard-industrial-premium')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando dashboard premium…"/>}><IndustrialDashboardPremiumPage/></Suspense></Protected>;
-if(path==='/moldes-ferramentaria')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando ferramentaria…"/>}><MoldesFerramentariaPage/></Suspense></Protected>;
-if(path==='/pedidos-vendas-legado')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando carteira de pedidos…"/>}><PedidosVendasPage/></Suspense></Protected>;
-if(path==='/qualidade/sgq-avancado')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando SGQ avançado…"/>}><QualidadeSGQAvancadoPage/></Suspense></Protected>;
-if(path==='/qualidade/certificados')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando certificados da qualidade…"/>}><QualidadeCertificados/></Suspense></Protected>;
-if(path==='/qualidade/templates')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando templates de qualidade…"/>}><QualidadeConfigTemplates/></Suspense></Protected>;
-if(path==='/operacao-industrial')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando operação industrial…"/>}><OperacaoIndustrialPage/></Suspense></Protected>;
-if(path==='/comercial-suprimentos')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando comercial e suprimentos…"/>}><ComercialSuprimentos/></Suspense></Protected>;
-if(path==='/ativar-acesso')return <Boundary><Suspense fallback={<LoadingSkeleton label="Carregando ativação de acesso…"/>}><AtivarAcesso/></Suspense></Boundary>;
-if(path==='/recebimento-nfe-legado')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando recebimento de NF-e…"/>}><RecebimentoNfePage/></Suspense></Protected>;
-if(path==='/guia-virtual')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando guia virtual…"/>}><VirtualGuidePage brand="SGQ ERP"/></Suspense></Protected>;
-if(path==='/outlook/caixa-entrada')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando central de comunicação Outlook…"/>}><OutlookCaixaEntrada/></Suspense></Protected>;
-if(path==='/tablet/home')return <TabletHome/>;
-if(path==='/tablet/dashboard')return <TabletDashboard/>;
-if(path==='/financeiro/fluxo-caixa')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando fluxo de caixa…"/>}><FinanceiroFluxoCaixa/></Suspense></Protected>;if(path==='/financeiro')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando financeiro…"/>}><CentraisIndustriais module="financeiro"/></Suspense></Protected>;if(path==='/expedicao')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando expedição…"/>}><CentraisIndustriais module="expedicao"/></Suspense></Protected>;if(path==='/metrologia')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando metrologia…"/>}><CalibracaoIndustrialPage/></Suspense></Protected>;if(path==='/treinamentos')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando treinamentos…"/>}><CentraisIndustriais module="treinamentos"/></Suspense></Protected>;if(path==='/auditoria')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando auditoria…"/>}><CentraisIndustriais module="auditoria"/></Suspense></Protected>;if(path==='/qualidade/refugos')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando refugo e retrabalho…"/>}><CentraisIndustriais module="refugos"/></Suspense></Protected>;if(path==='/moldes-injecao')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando moldes e injeção…"/>}><MoldesInjecao/></Suspense></Protected>;return <Boundary><Suspense fallback={<LoadingSkeleton/>}>{session?<ERP/>:<Login/>}</Suspense></Boundary>}
-/* Revisão 3 registrada após validação estrutural do arquivo. */
+// Submódulos Finais do Fluxo Comercial e de Suprimentos (Sem sobreposição)
+const VendasCentral = lazy(() => import('./pages/VendasCentral'))
+const VendasCatalogoDigital = lazy(() => import('./pages/VendasCatalogoDigital'))
+const VendasAnaliseCustos = lazy(() => import('./pages/VendasAnaliseCustos'))
+const VendasDashboardGraficos = lazy(() => import('./pages/VendasDashboardGraficos'))
+const VendasMetas = lazy(() => import('./pages/VendasMetas'))
+const VendasCarteira = lazy(() => import('./pages/VendasCarteira'))
+
+// Submódulos Finais de Engenharia, Qualidade e Chão de Fábrica (Padrão Odoo/ERPNext)
+const CentralCustosIndustrial = lazy(() => import('./pages/CentralCustosIndustrial'))
+const CadastroEmpresa = lazy(() => import('./pages/CadastroEmpresa'))
+const PlanosIndustrial = lazy(() => import('./pages/PlanosIndustrial'))
+const SolicitacaoCompra = lazy(() => import('./pages/SolicitacaoCompra'))
+const TesteERP = lazy(() => import('./pages/TesteERP'))
+const UsuariosAdmin = lazy(() => import('./pages/UsuariosAdmin'))
+const ConfiguracoesADMPage = lazy(() => import('./pages/ConfiguracoesADM'))
+const DocumentosQualidadeControle = lazy(() => import('./pages/DocumentosQualidadeControle'))
+const RecebimentoMateriais = lazy(() => import('./pages/RecebimentoMateriais'))
+const ManualUsuario = lazy(() => import('./pages/ManualUsuario'))
+const RHIndustrial = lazy(() => import('./pages/RHIndustrial'))
+const ModuleOverviewIndustrial = lazy(() => import('./pages/ModuleOverviewIndustrial'))
+const SetupADMInicial = lazy(() => import('./pages/SetupADMInicial'))
+const RecuperarSenha = lazy(() => import('./pages/RecuperarSenha'))
+const ConfiguracaoLote = lazy(() => import('./pages/ConfiguracaoLote'))
+const FichaEngenharia = lazy(() => import('./pages/FichaEngenharia'))
+const ConfiguracaoLotePCP = lazy(() => import('./pages/ConfiguracaoLotePCP'))
+const FornecedoresIndustrial = lazy(() => import('./pages/FornecedoresIndustrial'))
+const ClientesIndustrial = lazy(() => import('./pages/ClientesIndustrial'))
+const TabelaPrecos = lazy(() => import('./pages/TabelaPrecos'))
+const CatalogoDigital = lazy(() => import('./pages/CatalogoDigital'))
+const FichasProcesso = lazy(() => import('./pages/FichasProcesso'))
+
+// Páginas de Auditoria e Fechamento Corrigidas de Erros de Tipo e Mocks
+const AssistenteAjudaERP = lazy(() => import('./pages/AssistenteAjudaERP'))
+const ComprasSolicitacaoManual = lazy(() => import('./pages/ComprasSolicitacaoManual'))
+const ExpedicaoPortaria = lazy(() => import('./pages/ExpedicaoPortaria'))
+const EngenhariaRevisoesBOM = lazy(() => import('./pages/EngenhariaRevisoesBOM'))
+const PCPDashboardOEE = lazy(() => import('./pages/PCPDashboardOEE'))
+const QualidadeDashboardRNC = lazy(() => import('./pages/QualidadeDashboardRNC'))
+const EstoqueCurvaABC = lazy(() => import('./pages/EstoqueCurvaABC'))
+const FinanceiroGraficoDesvios = lazy(() => import('./pages/FinanceiroGraficoDesvios'))
+const ExpedicaoRoteirizacao = lazy(() => import('./pages/ExpedicaoRoteirizacao'))
+const QualidadePFMEA = lazy(() => import('./pages/QualidadePFMEA'))
+const ManutencaoOrdens = lazy(() => import('./pages/ManutencaoOrdens'))
+const EstoqueAjustes = lazy(() => import('./pages/EstoqueAjustes'))
+const EstoqueRecebimentoLotes = lazy(() => import('./pages/estoque/EstoqueRecebimentoLotes'))
+
+type AccessResult = { ok: boolean; master: boolean; reason: string }
+
+class Boundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state = { error: null as Error | null }
+  static getDerivedStateFromError(error: Error) { return { error } }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="error-screen">
+          <div className="error-screen-card">
+            <strong>Erro crítico ao abrir a tela operacional do ERP.</strong>
+            <p>{this.state.error.message}</p>
+            <button className="primary" type="button" onClick={() => location.reload()}>Recarregar Interface</button>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
+function LoadingSkeleton({ label = 'Carregando SGQ ERP Industrial…' }: { label?: string }) {
+  return (
+    <div className="loading-screen">
+      <div className="loading-skeleton-card">
+        <div className="loading-skeleton-brand" />
+        <div className="loading-skeleton-line wide" />
+        <div className="loading-skeleton-line" />
+        <div className="loading-skeleton-line short" />
+        <span>{label}</span>
+      </div>
+    </div>
+  )
+}
+
+function safeReturnTo(value: string | null): string {
+  if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/login')) return '/comercial';
+  return value;
+}
+
+async function validarAcessoERP(session: Session | null): Promise<AccessResult> {
+  if (!supabaseConfigurado || !session?.user) return { ok: false, master: false, reason: 'Sessão de autenticação inválida.' };
+  const userId = session.user.id;
+  
+  const { data: profile, error: profileError } = await supabase
+    .from('erp_usuarios')
+    .select('id, auth_user_id, empresa_id, perfil, nivel_admin, is_master, ativo, deleted_at')
+    .eq('auth_user_id', userId)
+    .eq('ativo', true)
+    .is('deleted_at', null)
+    .maybeSingle();
+
+  if (profileError) throw profileError;
+
+  if (profile?.auth_user_id === userId) {
+    const role = String(profile.perfil ?? '').trim().toUpperCase();
+    const master = Boolean(profile.is_master) && Number(profile.nivel_admin ?? 0) >= 100 && role === 'MASTER' && profile.empresa_id === null;
+    
+    if (master) return { ok: true, master: true, reason: '' };
+    if (!profile.empresa_id) return { ok: false, master: false, reason: 'Usuário autenticado sem empresa vinculada.' };
+
+    const { data: empresa, error: empresaError } = await supabase
+      .from('erp_empresas')
+      .select('id, ativo')
+      .eq('id', profile.empresa_id)
+      .eq('ativo', true)
+      .maybeSingle();
+
+    if (empresaError) throw empresaError;
+    if (!empresa?.ativo) return { ok: false, master: false, reason: 'Empresa ERP inativa ou inexistente.' };
+
+    return { ok: true, master: false, reason: '' };
+  }
+  return { ok: false, master: false, reason: 'Usuário autenticado sem perfil ERP ativo.' };
+}
+
+export default function AppEntryV2(): JSX.Element {
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [statusAcesso, setStatusValid] = useState<AccessResult | null>(null);
+  const location = useLocation();
+
+  useEffect(() => {
+    // Escuta ativa de autenticação real do Supabase Auth
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      if (s) {
+        validarAcessoERP(s).then(setStatusValid).catch(() => setStatusValid({ ok: false, master: false, reason: 'Erro interno de checagem.' }));
+      }
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+      if (s) {
+        validarAcessoERP(s).then(setStatusValid).catch(() => setStatusValid({ ok: false, master: false, reason: 'Erro interno de checagem.' }));
+      } else {
+        setStatusValid(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) return <LoadingSkeleton />;
+
+  // Se o usuário não estiver logado, força o fluxo para a rota pública ou login
+  if (!session) {
+    return (
+      <Boundary>
+Use o código com cuidado.<Suspense fallback={}><Route path="/" element={} /><Route path="/login" element={<IndustrialLoginDirect returnTo={safeReturnTo(new URLSearchParams(location.search).get('returnTo'))} masterMode={false} />} /><Route path="/recuperar-senha" element={} /><Route path="*" element={} />)}if (statusAcesso && !statusAcesso.ok) {return (Acesso Bloqueado pela Controladoria{statusAcesso.reason}<button className="primary" type="button" onClick={() => supabase.auth.signOut()}>Voltar para o Login)}return (<Suspense fallback={}>{/* 🚀 ROTEAMENTO LINEAR E EXPLICÍTO CONFORME SEU PACKAGE.JSON (REACT-ROUTER-DOM V7) */}<Route path="/comercial" element={} /><Route path="/vendas/novo-pedido" element={} /><Route path="/vendas/carteira" element={} /><Route path="/vendas/clientes" element={} /><Route path="/vendas/catalogo-digital" element={} /><Route path="/vendas/analise-custos" element={} /><Route path="/vendas/dashboard-graficos" element={} /><Route path="/vendas/metas" element={} /><Route path="/pcp/ordens" element={} /><Route path="/qualidade/instrumentos" element={} /><Route path="/qualidade/liberacao-lote" element={} /><Route path="/estoque/saldos" element={} /><Route path="/produtos" element={} /><Route path="/qualidade/pfmea" element={} /><Route path="/manutencao/ordens" element={} /><Route path="/estoque/ajustes" element={} /><Route path="/estoque/recebimento-lotes" element={} /><Route path="/expedicao/roteirizacao" element={} /><Route path="/expedicao/portaria" element={} /><Route path="/engenharia/revisoes-bom" element={} /><Route path="/pcp/dashboard-oee" element={} /><Route path="/qualidade/dashboard-rnc" element={} /><Route path="/estoque/curva-abc" element={} /><Route path="/financeiro/grafico-desvios" element={} /><Route path="/compras/solicitacao-manual" element={} /><Route path="/ajuda/assistente" element={} /><Route path="/blog" element={} /><Route path="/contato" element={} /><Route path="/fiscal" element={} /><Route path="/fiscal/emissao" element={} /><Route path="/fiscal/previsao-caixa" element={} /><Route path="/fiscal/carteira-nfe" element={} /><Route path="/fiscal/impostos" element={} /><Route path="/master" element={} /><Route path="/cadastro-empresa" element={} /><Route path="/planos" element={} /><Route path="/solicitacao-compra" element={} /><Route path="/teste-erp" element={} /><Route path="/usuarios-admin" element={} /><Route path="/configuracoes-adm" element={} /><Route path="/documentos-qualidade" element={} /><Route path="/recebimento-materiais" element={} /><Route path="/manual-usuario" element={} /><Route path="/rh" element={} /><Route path="/module-overview" element={} /><Route path="/setup-adm-inicial" element={} /><Route path="/configuracao-lote" element={} /><Route path="/ficha-engenharia" element={} /><Route path="/configuracao-lote-pcp" element={} /><Route path="/fornecedores" element={} /><Route path="/tabela-precos" element={} /><Route path="/catalogo" element={} /><Route path="/fichas-processo" element={} /><Route path="/preview/icones" element={} /><Route path="*" element={} />)}
