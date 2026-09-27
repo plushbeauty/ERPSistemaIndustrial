@@ -411,6 +411,10 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
             <a className="auth-register" href="/cadastro-empresa">
               <UserPlus size={18} /> Criar uma nova empresa
             </a>
+
+            <a className="auth-trial" href="/cadastro-empresa">
+              Começar teste grátis de 15 dias <ArrowRight size={16} />
+            </a>
           </form>
 
           <div className="auth-security-note">
