@@ -161,7 +161,7 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
   return { ok: true, master: false, reason: '' }
 }
 
-export default function AppEntryV2(): JSX.Element {
+export default function AppEntryV2() {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [statusAcesso, setStatusAcesso] = useState<AccessResult | null>(null)
