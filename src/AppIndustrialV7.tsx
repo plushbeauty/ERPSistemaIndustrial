@@ -157,34 +157,34 @@ export default function AppIndustrialV7() {
   return <motion.div className={`v7-shell theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
     <header className="v7-topbar" aria-label="Barra superior do ERP">
       <div className="v7-top-brand">
-        <img src="/logo-industrial.svg" alt="SGQ ERP Industrial" />
-        <div className="v7-top-company"><strong>{empresaNome}</strong><span>SGQ ERP INDUSTRIAL</span></div>
+        <img src="/logo-industrial.svg" alt="PLASTIBOR" />
+        <div className="v7-top-company"><strong>{empresaNome}</strong></div>
       </div>
       <div className="v7-top-actions">
-        <button className="v7-top-tablet" type="button" onClick={() => setLauncher(true)} aria-label="Abrir Tablet Industrial"><LayoutGrid size={17}/> TABLET</button>
-        <button className="v7-top-command" type="button" onClick={() => setActive('Dashboard')} aria-label="Abrir Comandos"><MonitorPlay size={17}/> COMANDOS</button>
-        <div className="v7-top-user-simple" aria-label="Usuário conectado"><strong>{profile.nome || 'Usuário'}</strong></div>
+        <button className="v7-top-tablet" type="button" onClick={() => setLauncher(true)} aria-label="Abrir Tablet Industrial"><LayoutGrid size={16}/> TABLET</button>
+        <button className="v7-top-command" type="button" onClick={() => setActive('Dashboard')} aria-label="Abrir Comandos"><MonitorPlay size={16}/> COMANDOS</button>
+        <div className="v7-top-user-simple" aria-label="Usuário conectado"><span>USUÁRIO (A):</span><strong>{profile.nome || 'Vanda'}</strong></div>
         <div className="v7-top-date" aria-label="Data e hora atual"><strong>{clock.toLocaleDateString(language === 'en-US' ? 'en-US' : 'pt-BR')} • {clock.toLocaleTimeString(language === 'en-US' ? 'en-US' : 'pt-BR')}</strong></div>
         <button className="v7-top-exit" type="button" onClick={() => void supabase.auth.signOut().then(() => { location.href = '/login' })}>SAIR</button>
       </div>
     </header>
     <style>{`
-      .v7-topbar{min-height:68px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:8px 18px;background:#fff;border-bottom:1px solid #cbd5e1;color:#0f172a}
-      .v7-top-brand{display:flex;align-items:center;gap:12px;min-width:0}
-      .v7-top-brand img{display:block;width:150px;height:46px;object-fit:contain}
-      .v7-top-company{display:flex;flex-direction:column;min-width:0;border-left:1px solid #cbd5e1;padding-left:12px}
-      .v7-top-company strong{font-size:16px;line-height:1.1;font-weight:900;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .v7-top-company span{font-size:10px;line-height:1.2;font-weight:900;letter-spacing:.12em;color:#334155;margin-top:3px}
+      .v7-topbar{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:9px 20px;background:#fff;border-bottom:1px solid #cbd5e1;color:#0f172a}
+      .v7-top-brand{display:flex;align-items:center;gap:16px;min-width:0}
+      .v7-top-brand img{display:block;width:210px;height:58px;object-fit:contain}
+      .v7-top-company{display:flex;align-items:center;min-width:0;border-left:1px solid #cbd5e1;padding-left:16px}
+      .v7-top-company strong{font-size:19px;line-height:1.1;font-weight:900;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .v7-top-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0}
-      .v7-top-tablet,.v7-top-command,.v7-top-exit{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:0 12px;border-radius:8px;border:1px solid #94a3b8;background:#fff;color:#0f172a;font-weight:900;cursor:pointer;white-space:nowrap}
-      .v7-top-tablet{background:#0f766e;border-color:#0f766e;color:#fff}
+      .v7-top-tablet,.v7-top-command,.v7-top-exit{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:0 10px;border-radius:7px;border:1px solid #94a3b8;background:#fff;color:#0f172a;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap}
+      .v7-top-tablet{background:#f59e0b;border-color:#d97706;color:#fff;min-height:32px;padding:0 9px;box-shadow:0 2px 6px rgba(245,158,11,.22)}
       .v7-top-command{background:#1e3a8a;border-color:#1e3a8a;color:#fff}
       .v7-top-exit{background:#fff;color:#b91c1c;border-color:#fca5a5}
-      .v7-top-user-simple,.v7-top-date{display:flex;align-items:center;min-height:40px;padding:0 10px;border-left:1px solid #cbd5e1}
+      .v7-top-user-simple,.v7-top-date{display:flex;align-items:center;gap:6px;min-height:34px;padding:0 10px;border-left:1px solid #cbd5e1}
+      .v7-top-user-simple span{font-size:11px;font-weight:900;color:#475569;white-space:nowrap}
       .v7-top-user-simple strong,.v7-top-date strong{font-size:13px;font-weight:900;color:#0f172a;white-space:nowrap}
       .v7-top-actions button:hover{filter:brightness(.97)}
-      @media(max-width:900px){.v7-top-company span{display:none}.v7-top-brand img{width:125px}.v7-top-actions{gap:5px}.v7-top-command{display:none}}
-      @media(max-width:650px){.v7-topbar{padding:8px 10px}.v7-top-company strong{max-width:120px}.v7-top-user-simple{display:none}.v7-top-date strong{font-size:11px}.v7-top-tablet{font-size:0;width:42px;padding:0}.v7-top-tablet svg{width:18px}.v7-top-exit{font-size:0;width:42px;padding:0}.v7-top-exit::after{content:'×';font-size:22px}}
+      @media(max-width:900px){.v7-top-brand img{width:170px;height:52px}.v7-top-actions{gap:5px}.v7-top-command{display:none}.v7-top-company strong{font-size:16px}}
+      @media(max-width:650px){.v7-topbar{padding:8px 10px}.v7-top-brand img{width:145px;height:46px}.v7-top-company{display:none}.v7-top-user-simple{display:none}.v7-top-date strong{font-size:11px}.v7-top-tablet{font-size:0;width:38px;padding:0}.v7-top-tablet svg{width:17px}.v7-top-exit{font-size:0;width:38px;padding:0}.v7-top-exit::after{content:'×';font-size:20px}}
     `}</style>
     <main className="v7-main v7-main-full">
       <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={specialPath+active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{specialPath === '/vendas/clientes' ? <VendasClientesPage/> : specialPath === '/financeiro/custo-padrao' ? <FinanceiroCustoPadrao/> : specialPath === '/admin/logs' ? <AdminLogs/> : specialPath === '/outlook/configuracao' ? <OutlookConfiguracao/> : specialPath === '/compras/fornecedores' ? <FornecedoresIndustrial/> : active === 'Dashboard' ? <IndustrialCommandDashboard onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); setLauncher(false); return }; location.href = route }} /> : active === 'Configurações' ? <CompanySettings profile={profile}/> : location.pathname === '/qualidade/calibracao' ? <CalibracaoIndustrial/> : location.pathname === '/moldes-injecao' ? <MoldesFerramentaria/> : location.pathname === '/comercial' ? <ComercialSuprimentos/> : location.pathname === '/configuracoes-adm' ? <ConfiguracoesADM profile={profile}/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
