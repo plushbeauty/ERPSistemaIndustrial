@@ -1,7 +1,6 @@
 import { useCallback, useState, type ReactElement } from 'react'
-import { Layers, Printer, RefreshCw, Search, ShieldCheck, User, Cpu, PackageSearch } from 'lucide-react'
+import { Layers, Printer, RefreshCw, ShieldCheck, User, Cpu, PackageSearch } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
-import EntityCodeLookup from '../../components/shared/EntityCodeLookup'
 
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; quantidade_disponivel: number; status_inspecao: string | null }
 type Product = { id: string; codigo: string; nome: string }
@@ -13,7 +12,6 @@ type ComponentRow = { id: string; quantidade_consumida: number; lote_insumo_id: 
 
 export default function QualidadeGenealogiaLote(): ReactElement {
   const [lotePesquisa, setLotePesquisa] = useState('')
-  const [mostrarLupa, setMostrarLupa] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [searched, setSearched] = useState(false)
@@ -190,7 +188,6 @@ export default function QualidadeGenealogiaLote(): ReactElement {
             <div><p className="text-xs font-black uppercase tracking-widest text-slate-500">Qualidade</p><h1 className="text-xl font-black">Genealogia e Rastreabilidade de Lote 360°</h1></div>
           </div>
           <div className="flex gap-2">
-            <button type="button" onClick={() => setMostrarLupa(true)} className="inline-flex h-[54px] items-center gap-2 rounded-lg border border-slate-300 px-4 font-bold"><Search size={17} /> Pesquisar lote</button>
             <button type="button" onClick={() => window.print()} className="inline-flex h-[54px] items-center gap-2 rounded-lg bg-slate-900 px-4 font-bold text-white"><Printer size={17} /> Emitir laudo</button>
           </div>
         </header>
@@ -224,7 +221,6 @@ export default function QualidadeGenealogiaLote(): ReactElement {
           )}
         </div>
       </section>
-      {mostrarLupa && <EntityCodeLookup titulo="QUALIDADE: PESQUISA DE LOTES" onFechar={() => setMostrarLupa(false)} onSelecionar={(codigo) => { setLotePesquisa(codigo); setMostrarLupa(false) }} />}
     </main>
   )
 }
