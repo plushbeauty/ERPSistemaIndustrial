@@ -9,7 +9,7 @@
  * =========================================================================
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Activity, AlertTriangle, ArrowUpRight, Boxes, CheckCircle2, ClipboardCheck,
   Factory, Gauge, LayoutGrid, Package, ShieldCheck, ShoppingCart,
