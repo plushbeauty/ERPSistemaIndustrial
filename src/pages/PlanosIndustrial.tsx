@@ -110,7 +110,7 @@ export default function PlanosIndustrial() {
       setStatus('error')
       setError(cause instanceof Error ? cause.message : 'Falha técnica ao carregar o catálogo comercial do Supabase.')
     }
-  }
+  }, [])
 
   useEffect(() => {
     void load()
