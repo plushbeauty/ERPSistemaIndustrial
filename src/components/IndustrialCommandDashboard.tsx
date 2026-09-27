@@ -23,7 +23,7 @@ type Props = { onNavigate: (route: string) => void }
 
 type Metrics = {
   ops: number; produced: number; scrap: number; rpnc: number; products: number
-  machines: number; inspections: number; purchases: number
+  machines: number; inspections: number; purchases: number; sales: number
 }
 type ProductionPoint = { date: string; boa: number; refugo: number }
 
@@ -36,7 +36,7 @@ const fmt = (v: number) => new Intl.NumberFormat('pt-BR').format(v)
 
 export default function IndustrialCommandDashboard({ onNavigate }: Props) {
   const [metrics, setMetrics] = useState<Metrics>({
-    ops: 0, produced: 0, scrap: 0, rpnc: 0, products: 0, machines: 0, inspections: 0, purchases: 0
+    ops: 0, produced: 0, scrap: 0, rpnc: 0, products: 0, machines: 0, inspections: 0, purchases: 0, sales: 0
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -87,13 +87,14 @@ export default function IndustrialCommandDashboard({ onNavigate }: Props) {
           ? supabase.from('erp_producao_conferencias').select('quantidade_boa,quantidade_defeituosa,created_at').limit(5000)
           : supabase.from('erp_producao_conferencias').select('quantidade_boa,quantidade_defeituosa,created_at').eq('empresa_id', empresaId as string).limit(5000)
 
-        const [ops, rpnc, products, machines, inspections, purchases, production] = await Promise.all([
+        const [ops, rpnc, products, machines, inspections, purchases, sales, production] = await Promise.all([
           count('erp_ordens_producao', 'status', ['concluida', 'concluído', 'cancelada', 'cancelado']),
           count('erp_rpnc', 'status', ['encerrada', 'fechada', 'concluida', 'concluído']),
           count('erp_produtos'),
           count('erp_maquinas'),
           count('erp_inspecoes'),
           count('erp_pedidos_compra', 'status', ['concluido', 'concluída', 'cancelado', 'cancelada']),
+          count('erp_pedidos_venda', 'status', ['faturado', 'concluido', 'concluído', 'cancelado', 'cancelada']),
           productionQuery
         ])
 
@@ -112,7 +113,7 @@ export default function IndustrialCommandDashboard({ onNavigate }: Props) {
 
         if (!alive) return
         setProductionSeries([...byDay.entries()].sort(([a], [b]) => a.localeCompare(b)).slice(-14).map(([, value]) => value))
-        setMetrics({ ops, rpnc, products, machines, inspections, purchases, produced, scrap })
+        setMetrics({ ops, rpnc, products, machines, inspections, purchases, sales, produced, scrap })
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : 'Não foi possível carregar os indicadores.')
       } finally {
@@ -130,6 +131,7 @@ export default function IndustrialCommandDashboard({ onNavigate }: Props) {
     { label: 'Produção boa', value: metrics.produced, helper: 'Peças apontadas', icon: CheckCircle2, route: '/operacao-industrial', tone: 'green' },
     { label: 'Qualidade', value: total ? `${quality.toFixed(1).replace('.', ',')}%` : '—', helper: 'Boa / total produzido', icon: Gauge, route: '/qualidade', tone: 'blue' },
     { label: 'RPNC abertas', value: metrics.rpnc, helper: 'Não conformidades', icon: AlertTriangle, route: '/qualidade?tab=rpnc', tone: 'amber' },
+    { label: 'Pedidos de venda', value: metrics.sales, helper: 'Carteira comercial ativa', icon: ShoppingCart, route: '/comercial', tone: 'blue' },
   ] as const
 
   const modules = [
@@ -138,6 +140,7 @@ export default function IndustrialCommandDashboard({ onNavigate }: Props) {
     { label: 'Chão de Fábrica', desc: 'Tablet, apontamento, refugo e paradas', icon: Zap, route: '/operacao-industrial' },
     { label: 'Qualidade / SGQ', desc: 'Inspeção, RPNC, calibração e auditoria', icon: ShieldCheck, route: '/qualidade' },
     { label: 'Almoxarifado', desc: 'Lotes, endereços, reservas e rastreio', icon: Package, route: '/estoque' },
+    { label: 'Vendas', desc: 'Pedidos, carteira, clientes e metas comerciais', icon: ShoppingCart, route: '/comercial' },
     { label: 'Compras', desc: 'Solicitações, fornecedores e recebimento', icon: ShoppingCart, route: '/compras-solicitacao' },
     { label: 'Manutenção', desc: 'Máquinas, planos e ordens', icon: Wrench, route: '/operacao-industrial' },
     { label: 'RH & Competências', desc: 'Operadores, treinamentos e autorizações', icon: Users, route: '/rh' },
@@ -165,6 +168,7 @@ export default function IndustrialCommandDashboard({ onNavigate }: Props) {
           <HealthRow icon={AlertTriangle} label="Refugo" value={fmt(metrics.scrap)} warning={metrics.scrap > 0} />
           <HealthRow icon={ClipboardCheck} label="Inspeções" value={fmt(metrics.inspections)} />
           <HealthRow icon={ShoppingCart} label="Compras abertas" value={fmt(metrics.purchases)} />
+          <HealthRow icon={ShoppingCart} label="Pedidos de venda" value={fmt(metrics.sales)} />
           <HealthRow icon={Truck} label="Máquinas ativas" value={fmt(metrics.machines)} />
         </article>
 
