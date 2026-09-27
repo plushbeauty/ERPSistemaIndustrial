@@ -151,8 +151,6 @@ export default function AppIndustrialV7() {
 
   if (loading) return <div className="loading-screen">Carregando SGQ ERP…</div>
   if (!profile) return <div className="error-screen"><div className="error-screen-card"><strong>Perfil ERP não encontrado.</strong><p>A sessão autenticada não possui um usuário ERP ativo vinculado à empresa.</p><button className="primary" type="button" onClick={() => { void supabase.auth.signOut(); location.replace('/login') }}>Voltar ao login</button></div></div>
-  const moduleRoutes: Record<string,string> = { 'Moldes e Ferramentas':'/moldes-injecao', PCP:'/pcp', Qualidade:'/qualidade', Fiscal:'/fiscal', Produtos:'/produtos-vendas', Clientes:'/clientes', Fornecedores:'/fornecedores', 'Tabelas de preços':'/tabelas-preco', Apontamentos:'/operacao-industrial', Compras:'/compras-solicitacao', Engenharia:'/ficha-engenharia', Processos:'/ficha-engenharia' }
-
 
   return <motion.div className={`v7-shell theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
     <header className="v7-topbar">
@@ -202,5 +200,7 @@ export default function AppIndustrialV7() {
     <TabletLaunchpad isOpen={launcher} onClose={() => setLauncher(false)} onNavigate={(route) => { setLauncher(false); if (route === '/erp-industrial') { setActive('Dashboard'); return } location.href = route }} />
   </motion.div>
 }
+
+function Feature({ title, description, icon: Icon }: { title: string; description: string; icon: LucideIcon }) { return <div className="v7-feature"><span className="v7-icon-box"><Icon size={28}/></span><h2>{title}</h2><p>{description}</p><small>Este módulo permanece integrado ao mesmo tenant ERP e às políticas de segurança do banco.</small></div>}
 
 /* Revisão 3 registrada após validação estrutural do arquivo. */
