@@ -44,7 +44,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
 
       const result = await supabase
         .from('erp_produtos')
-        .select('id,codigo,nome,descricao,unidade,unidade_medida,estoque_atual,ativo')
+        .select('id,codigo,nome,descricao,unidade,estoque_atual,ativo')
         .eq('empresa_id', tenant.data)
         .eq('ativo', true)
         .order('codigo')
