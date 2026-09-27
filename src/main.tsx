@@ -5,6 +5,7 @@
   @CHECKLIST: No-Duplicate-Actions | Valid-Canonical-Links | Active-Noop-Callbacks
 */
 import { StrictMode, Suspense } from 'react'
+import { BrowserRouter } from 'react-router-dom'
 import AppBootstrap from './AppBootstrap'
 import { createRoot } from 'react-dom/client'
 import { MotionConfig } from 'motion/react'
@@ -101,7 +102,9 @@ console.info(`[ERP] bootstrap ${ERP_BOOTSTRAP_VERSION}`)
 createRoot(rootElement).render(
   <StrictMode>
     <MotionConfig reducedMotion="user" transition={{ duration: 0.22, ease: 'easeOut' }}>
-      <BootstrapLoader />
+      <BrowserRouter>
+        <BootstrapLoader />
+      </BrowserRouter>
     </MotionConfig>
   </StrictMode>,
 )
