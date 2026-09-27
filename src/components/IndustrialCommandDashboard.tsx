@@ -37,7 +37,7 @@ const fmt = (v: number) => new Intl.NumberFormat('pt-BR').format(v)
 
 export default function IndustrialCommandDashboard({ onNavigate }: Props) {
   const [metrics, setMetrics] = useState<Metrics>({
-    ops: 0, produced: 0, scrap: 0, rpnc: 0, products: 0, machines: 0, inspections: 0, purchases: 0, sales: 0
+    ops: 0, completedOps: 0, produced: 0, scrap: 0, rpnc: 0, products: 0, machines: 0, inspections: 0, purchases: 0, sales: 0
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
