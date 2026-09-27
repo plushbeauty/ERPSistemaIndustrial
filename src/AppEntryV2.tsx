@@ -73,7 +73,8 @@ const ManutencaoOrdens = lazy(() => import('./pages/ManutencaoOrdens'))
 const EstoqueAjustes = lazy(() => import('./pages/EstoqueAjustes'))
 const EstoqueRecebimentoLotes = lazy(() => import('./pages/estoque/EstoqueRecebimentoLotes'))
 
-type AccessResult = { ok: boolean; master: boolean; reason: string }
+type ERPProfile = { empresa_id: string | null; is_master: boolean; nivel_admin?: number; perfil?: string; nome?: string }
+type AccessResult = { ok: boolean; master: boolean; reason: string; profile: ERPProfile | null }
 
 class Boundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null }
@@ -122,7 +123,7 @@ function safeReturnTo(value: string | null): string {
 
 async function validarAcessoERP(session: Session | null): Promise<AccessResult> {
   if (!supabaseConfigurado || !session?.user) {
-    return { ok: false, master: false, reason: 'Sessão de autenticação inválida.' }
+    return { ok: false, master: false, reason: 'Sessão de autenticação inválida.', profile: null }
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -136,16 +137,16 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
   if (profileError) throw profileError
 
   if (!profile || profile.auth_user_id !== session.user.id) {
-    return { ok: false, master: false, reason: 'Usuário autenticado sem perfil ERP ativo.' }
+    return { ok: false, master: false, reason: 'Usuário autenticado sem perfil ERP ativo.', profile: null }
   }
 
   const role = String(profile.perfil ?? '').trim().toUpperCase()
   const master = Boolean(profile.is_master) && Number(profile.nivel_admin ?? 0) >= 100 && role === 'MASTER' && profile.empresa_id === null
 
-  if (master) return { ok: true, master: true, reason: '' }
+  if (master) return { ok: true, master: true, reason: '', profile }
 
   if (!profile.empresa_id) {
-    return { ok: false, master: false, reason: 'Usuário autenticado sem empresa vinculada.' }
+    return { ok: false, master: false, reason: 'Usuário autenticado sem empresa vinculada.', profile }
   }
 
   const { data: empresa, error: empresaError } = await supabase
@@ -156,9 +157,9 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
     .maybeSingle()
 
   if (empresaError) throw empresaError
-  if (!empresa?.ativo) return { ok: false, master: false, reason: 'Empresa ERP inativa ou inexistente.' }
+  if (!empresa?.ativo) return { ok: false, master: false, reason: 'Empresa ERP inativa ou inexistente.', profile }
 
-  return { ok: true, master: false, reason: '' }
+  return { ok: true, master: false, reason: '', profile }
 }
 
 // Router master industrial v7: verified JSX boundary.
@@ -184,7 +185,7 @@ export default function AppEntryV2() {
         const access = await validarAcessoERP(nextSession)
         if (active) setStatusAcesso(access)
       } catch {
-        if (active) setStatusAcesso({ ok: false, master: false, reason: 'Erro interno de checagem de acesso.' })
+        if (active) setStatusAcesso({ ok: false, master: false, reason: 'Erro interno de checagem de acesso.', profile: null })
       }
     }
 
@@ -289,12 +290,12 @@ export default function AppEntryV2() {
       <Route path="/planos" element={<PlanosIndustrial />} />
       <Route path="/teste-erp" element={<TesteERP />} />
       <Route path="/usuarios-admin" element={<UsuariosAdmin />} />
-      <Route path="/configuracoes-adm" element={<ConfiguracoesADMPage />} />
+      <Route path="/configuracoes-adm" element={<ConfiguracoesADMPage profile={statusAcesso?.profile ?? { empresa_id: null, is_master: false }} />} />
       <Route path="/documentos-qualidade" element={<DocumentosQualidadeControle />} />
       <Route path="/recebimento-materiais" element={<RecebimentoMateriais />} />
       <Route path="/manual-usuario" element={<ManualUsuario />} />
       <Route path="/rh" element={<RHIndustrial />} />
-      <Route path="/module-overview" element={<ModuleOverviewIndustrial />} />
+      <Route path="/module-overview" element={<ModuleOverviewIndustrial module="erp" />} />
       <Route path="/setup-adm-inicial" element={<SetupADMInicial />} />
       <Route path="/configuracao-lote" element={<ConfiguracaoLote />} />
       <Route path="/configuracao-lote-pcp" element={<ConfiguracaoLotePCP />} />
