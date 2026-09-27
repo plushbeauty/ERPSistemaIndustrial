@@ -1,185 +1,294 @@
-import { useEffect, useState } from 'react'
-import { Activity, AlertTriangle, ArrowUpRight, BarChart3, CheckCircle2, Factory, Gauge, ListChecks, TrendingDown } from 'lucide-react'
-import TabletLaunchpad from './TabletLaunchpad'
+import { useEffect, useMemo, useState } from 'react'
+import {
+  Tablet, Activity, CheckCircle, AlertTriangle, BarChart3,
+  X, ShoppingCart, Cpu, Layers, Factory, Settings, Users, ArrowUpRight
+} from 'lucide-react'
+import {
+  Bar, BarChart, CartesianGrid, Legend, Line, LineChart,
+  ResponsiveContainer, Tooltip, XAxis, YAxis
+} from 'recharts'
 import { supabase } from '../lib/supabaseClient'
-import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 type Props = { onNavigate: (route: string) => void }
-type ProductionPoint = { date: string; boa: number; refugo: number; refugoPercent: number }
-type OrderStatusPoint = { status: string; quantidade: number }
-type LatestOP = { id: string; numero_op: number | string; produto: string; status: string; created_at: string | null }
-type Metrics = { ops:number; completedOps:number; produced:number; scrap:number; rpnc:number }
+type Profile = { nome: string; empresa_id: string | null; nivel_admin: number; is_master: boolean; perfil: string }
+type Machine = { id: string; codigo: string; nome: string; status: string }
+type OP = { id: string; numero_op: string | number; produto_id: string | null; maquina_id: string | null; status: string; quantidade_planejada: number | null; quantidade: number | null; created_at: string | null }
+type Product = { id: string; codigo: string | null; nome: string | null }
+type Pointing = { id: string; ordem_producao_id: string | null; maquina_id: string | null; quantidade_planejada: number | null; quantidade_boa: number | null; quantidade_refugada: number | null; created_at: string | null }
+type Program = { id: string; ordem_producao_id: string | null; maquina_id: string | null; inicio_planejado: string; fim_planejado: string; quantidade_planejada: number | null; quantidade_produzida: number | null; quantidade_refugada: number | null; status: string }
+type Stop = { maquina_id: string | null; inicio: string | null; fim: string | null; status: string | null }
+type QueueRow = { op: string; workstation: string; product: string; lastPointing: string; status: string }
+type Daily = { day: string; previsto: number; realizado: number }
+type MachineShift = { maquina: string; eficiencia: number }
 
-const num = (v: unknown) => Number.isFinite(Number(v)) ? Number(v) : 0
-const fmt = (v:number) => new Intl.NumberFormat('pt-BR').format(v)
+const n = (v: unknown) => Number.isFinite(Number(v)) ? Number(v) : 0
+const fmt = (v: number) => new Intl.NumberFormat('pt-BR').format(Math.round(v))
+const dateKey = (d: Date) => d.toISOString().slice(0, 10)
 
-const statusLabel = (status:string) => {
-  const v = status.toLowerCase()
-  if (v.includes('concl')) return 'Concluída'
-  if (v.includes('cancel')) return 'Cancelada'
-  if (v.includes('exec')) return 'Em execução'
-  if (v.includes('planej')) return 'Planejada'
-  return status || 'Sem status'
+function statusText(value: string) {
+  const s = value.toLowerCase()
+  if (s.includes('concl')) return 'Concluída'
+  if (s.includes('cancel')) return 'Cancelada'
+  if (s.includes('paus')) return 'Pausada'
+  if (s.includes('exec') || s.includes('produ')) return 'Em produção'
+  if (s.includes('liber')) return 'Liberada'
+  if (s.includes('planej')) return 'Planejada'
+  return value || 'Sem status'
 }
 
-export default function IndustrialCommandDashboard({ onNavigate }: Props) {
-  const [metrics,setMetrics] = useState<Metrics>({ops:0,completedOps:0,produced:0,scrap:0,rpnc:0})
-  const [production,setProduction] = useState<ProductionPoint[]>([])
-  const [orderStatus,setOrderStatus] = useState<OrderStatusPoint[]>([])
-  const [latestOps,setLatestOps] = useState<LatestOP[]>([])
-  const [usuarioNome,setUsuarioNome] = useState('Usuário')
-  const [empresaNome,setEmpresaNome] = useState('Empresa industrial')
-  const [loading,setLoading] = useState(true)
-  const [error,setError] = useState('')
-  const [clock,setClock] = useState(new Date())
-  const [tabletOpen,setTabletOpen] = useState(false)
+export default function DashboardPrincipal({ onNavigate }: Props) {
+  const [tabletOpen, setTabletOpen] = useState(false)
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [machines, setMachines] = useState<Machine[]>([])
+  const [ops, setOps] = useState<OP[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [pointings, setPointings] = useState<Pointing[]>([])
+  const [programs, setPrograms] = useState<Program[]>([])
+  const [stops, setStops] = useState<Stop[]>([])
+  const [rpnc, setRpnc] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [clock, setClock] = useState(new Date())
 
   useEffect(() => {
-    const id=window.setInterval(()=>setClock(new Date()),1000)
-    return ()=>window.clearInterval(id)
-  },[])
+    const timer = window.setInterval(() => setClock(new Date()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   useEffect(() => {
-    let alive=true
-    async function load(){
-      setLoading(true); setError('')
-      try{
-        const {data:auth,error:authError}=await supabase.auth.getUser()
-        if(authError) throw authError
-        if(!auth.user) throw new Error('Sessão não encontrada.')
-        const {data:profile,error:profileError}=await supabase.from('erp_usuarios')
-          .select('nome,empresa_id,is_master,perfil,nivel_admin').eq('auth_user_id',auth.user.id)
-          .eq('ativo',true).is('deleted_at',null).maybeSingle()
-        if(profileError) throw profileError
-        const master=profile?.is_master===true && Number(profile?.nivel_admin??0)===100 &&
-          String(profile?.perfil??'').toUpperCase()==='MASTER' && profile?.empresa_id===null
-        if(!master && !profile?.empresa_id) throw new Error('Perfil empresarial não encontrado.')
-        const empresaId=profile?.empresa_id??null
-        if(profile?.nome) setUsuarioNome(String(profile.nome))
-        if(empresaId){
-          const company=await supabase.from('erp_empresas').select('nome_fantasia,razao_social')
-            .eq('id',empresaId).eq('ativo',true).maybeSingle()
-          if(company.error) throw company.error
-          setEmpresaNome(String(company.data?.nome_fantasia??company.data?.razao_social??'Empresa industrial'))
-        } else if(master) setEmpresaNome('Visão Master do Ecossistema')
+    let alive = true
+    async function load() {
+      setLoading(true)
+      setError('')
+      try {
+        const { data: auth, error: authError } = await supabase.auth.getUser()
+        if (authError) throw authError
+        if (!auth.user) throw new Error('Sessão não encontrada.')
 
-        const count=async(table:string,excluded:string[]=[])=>{
-          let q=supabase.from(table).select('*',{count:'exact',head:true})
-          if(!master) q=q.eq('empresa_id',empresaId as string)
-          if(excluded.length) q=q.not('status','in',`(${excluded.join(',')})`)
-          const r=await q
-          if(r.error) throw r.error
-          return r.count??0
-        }
+        const { data: p, error: profileError } = await supabase
+          .from('erp_usuarios')
+          .select('nome,empresa_id,nivel_admin,is_master,perfil,auth_user_id')
+          .eq('auth_user_id', auth.user.id)
+          .eq('ativo', true)
+          .is('deleted_at', null)
+          .maybeSingle()
+        if (profileError) throw profileError
+        if (!p) throw new Error('Perfil ERP não encontrado.')
 
-        const prodQuery=master
-          ? supabase.from('erp_producao_conferencias').select('quantidade_boa,quantidade_defeituosa,created_at').limit(5000)
-          : supabase.from('erp_producao_conferencias').select('quantidade_boa,quantidade_defeituosa,created_at').eq('empresa_id',empresaId as string).limit(5000)
-        const opStatusQuery=master
-          ? supabase.from('erp_ordens_producao').select('status').limit(5000)
-          : supabase.from('erp_ordens_producao').select('status').eq('empresa_id',empresaId as string).limit(5000)
+        const master = p.is_master === true &&
+          Number(p.nivel_admin ?? 0) === 100 &&
+          String(p.perfil ?? '').toUpperCase() === 'MASTER' &&
+          p.empresa_id === null
+        if (!master && !p.empresa_id) throw new Error('Empresa do usuário não identificada.')
 
-        const [ops,completedOps,rpnc,prodRows,opStatusRows]=await Promise.all([
-          count('erp_ordens_producao',['concluida','concluído','cancelada','cancelado']),
-          count('erp_ordens_producao',['aberta','aberto','planejada','planejado','em execução','em_execucao','em andamento','em_andamento','cancelada','cancelado']),
-          count('erp_rpnc',['encerrada','fechada','concluida','concluído']),
-          prodQuery,opStatusQuery
-        ])
-        if(prodRows.error) throw prodRows.error
-        if(opStatusRows.error) throw opStatusRows.error
+        const empresaId = p.empresa_id as string | null
+        const scoped = <T,>(q: any) => master || !empresaId ? q : q.eq('empresa_id', empresaId)
 
-        const byDay=new Map<string,ProductionPoint>()
-        let produced=0,scrap=0
-        for(const row of prodRows.data??[]){
-          produced+=num(row.quantidade_boa); scrap+=num(row.quantidade_defeituosa)
-          const raw=String(row.created_at??''); const key=raw.slice(0,10)
-          if(!key) continue
-          const p=byDay.get(key)??{date:key.slice(5).split('-').reverse().join('/'),boa:0,refugo:0,refugoPercent:0}
-          p.boa+=num(row.quantidade_boa); p.refugo+=num(row.quantidade_defeituosa); p.refugoPercent=p.boa+p.refugo?Number(((p.refugo/(p.boa+p.refugo))*100).toFixed(2)):0; byDay.set(key,p)
-        }
-        const statusMap=new Map<string,number>()
-        for(const row of opStatusRows.data??[]){const k=statusLabel(String(row.status??''));statusMap.set(k,(statusMap.get(k)??0)+1)}
+        const machineQ = scoped(supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('ativo', true).order('codigo'))
+        const opQ = scoped(supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at').order('created_at', { ascending: false }).limit(500))
+        const prodQ = scoped(supabase.from('erp_produtos').select('id,codigo,nome').limit(3000))
+        const pointingQ = scoped(supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,created_at').order('created_at', { ascending: false }).limit(5000))
+        const programQ = scoped(supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status').neq('status', 'cancelada').limit(3000))
+        const stopQ = scoped(supabase.from('erp_producao_paradas').select('maquina_id,inicio,fim,status').limit(5000))
+        const rpncQ = scoped(supabase.from('erp_rpnc').select('id,status').limit(5000))
 
-        const opQuery=master
-          ? supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,status,created_at').order('created_at',{ascending:false}).limit(8)
-          : supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,status,created_at').eq('empresa_id',empresaId as string).order('created_at',{ascending:false}).limit(8)
-        const {data:opRows,error:opError}=await opQuery
-        if(opError) throw opError
-        const ids=[...new Set((opRows??[]).map(r=>String(r.produto_id??'')).filter(Boolean))]
-        const {data:products,error:productsError}=ids.length
-          ? await supabase.from('erp_produtos').select('id,codigo,nome').in('id',ids)
-          : {data:[],error:null}
-        if(productsError) throw productsError
-        const map=new Map((products??[]).map(r=>[String(r.id),String(r.codigo??r.nome??'Produto')]))
-        if(!alive) return
-        setMetrics({ops,completedOps,produced,scrap,rpnc})
-        setProduction([...byDay.entries()].sort(([a],[b])=>a.localeCompare(b)).slice(-14).map(([,v])=>v))
-        setOrderStatus([...statusMap.entries()].sort((a,b)=>b[1]-a[1]).map(([status,quantidade])=>({status,quantidade})))
-        setLatestOps((opRows??[]).map(r=>({id:String(r.id),numero_op:r.numero_op,produto:map.get(String(r.produto_id??''))??'Produto não informado',status:String(r.status??'—'),created_at:r.created_at?String(r.created_at):null})))
-      }catch(e){if(alive)setError(e instanceof Error?e.message:'Não foi possível carregar os indicadores.')}
-      finally{if(alive)setLoading(false)}
+        const [m, o, pr, pt, pg, st, rn] = await Promise.all([machineQ, opQ, prodQ, pointingQ, programQ, stopQ, rpncQ])
+        for (const result of [m, o, pr, pt, pg, st, rn]) if (result.error) throw result.error
+
+        if (!alive) return
+        setProfile(p as Profile)
+        setMachines((m.data ?? []) as Machine[])
+        setOps((o.data ?? []) as OP[])
+        setProducts((pr.data ?? []) as Product[])
+        setPointings((pt.data ?? []) as Pointing[])
+        setPrograms((pg.data ?? []) as Program[])
+        setStops((st.data ?? []) as Stop[])
+        setRpnc((rn.data ?? []).filter((x: any) => !['encerrada', 'fechada', 'concluida', 'concluído'].includes(String(x.status ?? '').toLowerCase())).length)
+      } catch (e) {
+        if (alive) setError(e instanceof Error ? e.message : 'Não foi possível carregar o dashboard.')
+      } finally {
+        if (alive) setLoading(false)
+      }
     }
     void load()
-    return ()=>{alive=false}
-  },[])
+    return () => { alive = false }
+  }, [])
 
-  const total=metrics.produced+metrics.scrap
-  const efficiency=total?(metrics.produced/total)*100:0
-  const scrapRate=total?(metrics.scrap/total)*100:0
-  const cards=[
-    {label:'ORDENS ATIVAS',value:fmt(metrics.ops),hint:'OPs não concluídas',icon:Factory,route:'/pcp'},
-    {label:'OPs CONCLUÍDAS',value:fmt(metrics.completedOps),hint:'Ordens encerradas',icon:CheckCircle2,route:'/pcp'},
-    {label:'ALERTAS CRÍTICOS',value:fmt(metrics.rpnc),hint:'RPN / RPNC em aberto',icon:AlertTriangle,route:'/qualidade'},
-    {label:'EFICIÊNCIA',value:total?efficiency.toFixed(1).replace('.',',')+'%':'—',hint:'Peças boas ÷ total',icon:Gauge,route:'/operacao-industrial'}
+  const today = dateKey(clock)
+  const activeOps = ops.filter(o => !['concluida', 'concluído', 'cancelada', 'cancelado'].includes(String(o.status).toLowerCase()))
+  const todayPointings = pointings.filter(p => String(p.created_at ?? '').slice(0, 10) === today)
+  const producedToday = todayPointings.reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
+  const totalPlanned = pointings.reduce((s, p) => s + n(p.quantidade_planejada), 0)
+  const totalGood = pointings.reduce((s, p) => s + n(p.quantidade_boa), 0)
+  const totalBad = pointings.reduce((s, p) => s + n(p.quantidade_refugada), 0)
+  const performance = totalPlanned > 0 ? Math.min(100, (totalGood / totalPlanned) * 100) : null
+  const quality = totalGood + totalBad > 0 ? (totalGood / (totalGood + totalBad)) * 100 : null
+
+  const plannedHours = programs.reduce((s, p) => s + Math.max(0, (new Date(p.fim_planejado).getTime() - new Date(p.inicio_planejado).getTime()) / 3600000), 0)
+  const stopHours = stops.reduce((s, p) => {
+    if (!p.inicio || !p.fim) return s
+    return s + Math.max(0, (new Date(p.fim).getTime() - new Date(p.inicio).getTime()) / 3600000)
+  }, 0)
+  const availability = plannedHours > 0 ? Math.max(0, Math.min(100, ((plannedHours - Math.min(stopHours, plannedHours)) / plannedHours) * 100)) : null
+  const oee = performance !== null && quality !== null && availability !== null
+    ? (performance * quality * availability) / 10000
+    : null
+
+  const machineShift = useMemo<MachineShift[]>(() => machines.map(machine => {
+    const rows = pointings.filter(p => p.maquina_id === machine.id)
+    const plan = rows.reduce((s, p) => s + n(p.quantidade_planejada), 0)
+    const good = rows.reduce((s, p) => s + n(p.quantidade_boa), 0)
+    return { maquina: machine.codigo, eficiencia: plan > 0 ? Math.min(100, (good / plan) * 100) : 0 }
+  }).filter(x => x.eficiencia > 0), [machines, pointings])
+
+  const weekly = useMemo<Daily[]>(() => {
+    const days: Daily[] = []
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(clock)
+      d.setHours(0, 0, 0, 0)
+      d.setDate(d.getDate() - i)
+      const key = dateKey(d)
+      const previsto = programs.filter(p => String(p.inicio_planejado).slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_planejada), 0)
+      const realizado = pointings.filter(p => String(p.created_at ?? '').slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
+      days.push({ day: d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''), previsto, realizado })
+    }
+    return days
+  }, [clock, programs, pointings])
+
+  const queue = useMemo<QueueRow[]>(() => {
+    const productMap = new Map(products.map(p => [p.id, p]))
+    const machineMap = new Map(machines.map(m => [m.id, m]))
+    return activeOps.slice(0, 12).map(op => {
+      const rows = pointings.filter(p => p.ordem_producao_id === op.id).sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')))
+      const last = rows[0]
+      const machine = machineMap.get(op.maquina_id ?? '')
+      const product = productMap.get(op.produto_id ?? '')
+      return {
+        op: `OP-${op.numero_op}`,
+        workstation: machine ? `${machine.codigo} · ${machine.nome}` : 'Posto não definido',
+        product: product ? `${product.codigo ?? ''} · ${product.nome ?? ''}`.replace(/^ · | · $/g, '') : 'Produto não informado',
+        lastPointing: last?.created_at ? new Date(last.created_at).toLocaleString('pt-BR') : 'Sem apontamento',
+        status: statusText(op.status)
+      }
+    })
+  }, [activeOps, pointings, products, machines])
+
+  const cards = [
+    { label: 'OPs EM ANDAMENTO', value: fmt(activeOps.length), icon: Activity },
+    { label: 'PRODUÇÃO DO DIA', value: fmt(producedToday), suffix: 'un', icon: CheckCircle },
+    { label: 'ALERTAS DO SGQ', value: fmt(rpnc), icon: AlertTriangle },
+    { label: 'EFICIÊNCIA (OEE)', value: oee === null ? '—' : `${oee.toFixed(1).replace('.', ',')}%`, icon: BarChart3 }
   ]
 
-  return <>
-    <style>{`
-      .icd-shell{min-height:calc(100vh - 78px);background:#f1f5f9;color:#0f172a}
-      .icd-main{width:100%;max-width:1600px;margin:0 auto;padding:24px 30px 40px}
-      .icd-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:18px}
-      .icd-heading h1{margin:3px 0 4px;font-size:29px;font-weight:950;letter-spacing:-.02em}
-      .icd-heading p{margin:0;color:#475569;font-weight:600}
-      .icd-heading-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-      .icd-online{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:#dcfce7;color:#166534;border:1px solid #86efac;font-size:11px;font-weight:950}
-      .icd-dot{width:7px;height:7px;border-radius:50%;background:#16a34a}
-      .icd-date{font-size:12px;color:#475569;font-weight:800}
-      .icd-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
-      .icd-kpi{display:flex;align-items:center;gap:12px;min-width:0;padding:15px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;text-align:left;box-shadow:0 1px 2px rgba(15,23,42,.05);cursor:pointer}
-      .icd-kpi:hover{border-color:#60a5fa}
-      .icd-kpi-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:8px;background:#eff6ff;color:#1d4ed8;flex:none}
-      .icd-kpi-text{min-width:0;flex:1}.icd-kpi small{display:block;font-size:11px;font-weight:900;color:#475569}.icd-kpi strong{display:block;margin:2px 0;font-size:24px;line-height:1;font-weight:950;color:#020617}.icd-kpi em{display:block;font-style:normal;font-size:10px;color:#64748b;font-weight:700}
-      .icd-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}.icd-grid+.icd-grid{margin-top:16px}
-      .icd-panel{background:#fff;border:1px solid #cbd5e1;border-radius:9px;box-shadow:0 1px 2px rgba(15,23,42,.04);overflow:hidden}
-      .icd-panel-head{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid #e2e8f0}
-      .icd-panel-head span{display:block;color:#2563eb;font-size:10px;font-weight:950;letter-spacing:.12em}.icd-panel-head h2{margin:3px 0 0;font-size:16px;font-weight:950}
-      .icd-chart{height:235px;padding:10px 10px 6px}.icd-empty{height:235px;display:grid;place-items:center;padding:20px;color:#64748b;font-weight:700;text-align:center}
-      .icd-orders{margin-top:16px}.icd-table-wrap{overflow:auto}.icd-table{width:100%;border-collapse:collapse;font-size:12px}.icd-table th{padding:10px 13px;background:#f8fafc;color:#475569;text-align:left;font-size:10px;font-weight:950;border-bottom:1px solid #e2e8f0}.icd-table td{padding:11px 13px;border-bottom:1px solid #eef2f7;font-weight:650;white-space:nowrap}.icd-table tr:last-child td{border-bottom:0}.icd-status{display:inline-flex;padding:4px 8px;border-radius:999px;background:#e0f2fe;color:#075985;font-size:10px;font-weight:900}.icd-empty-row{text-align:center!important;color:#64748b!important;padding:28px!important}
-      .icd-alert{display:flex;gap:9px;align-items:flex-start;margin-bottom:14px;padding:11px 13px;border:1px solid #fecaca;background:#fef2f2;color:#991b1b;border-radius:8px}.icd-alert span{display:block;margin-top:2px;font-size:12px}
-      @media(max-width:1050px){.icd-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.icd-grid{grid-template-columns:1fr}.icd-main{padding:20px}}
-      @media(max-width:640px){.icd-kpis{grid-template-columns:1fr}.icd-heading{align-items:flex-start;flex-direction:column}.icd-heading-meta{justify-content:flex-start}.icd-main{padding:14px}}
-    `}</style>
-    <div className="icd-shell">
-      <main className="icd-main">
-        {error&&<div className="icd-alert" role="alert"><AlertTriangle size={18}/><div><b>Indicadores com erro de leitura</b><span>{error}</span></div></div>}
-        <header className="icd-heading">
-          <div><div style={{fontSize:11,fontWeight:950,letterSpacing:'.12em',color:'#2563eb'}}>VISÃO GERAL DO CLIENTE</div><h1>Olá, {usuarioNome}!</h1><p>Bem-vindo ao sistema de controle fabril da <strong>{empresaNome}</strong>.</p></div>
-          <div className="icd-heading-meta"><span className="icd-online"><i className="icd-dot"/> ONLINE · SUPABASE</span><span className="icd-date">{clock.toLocaleDateString('pt-BR')} · {clock.toLocaleTimeString('pt-BR')}</span></div>
-        </header>
-        <section className="icd-kpis">
-          {cards.map(({label,value,hint,icon:Icon,route})=><button key={label} className="icd-kpi" type="button" onClick={()=>onNavigate(route)}><span className="icd-kpi-icon"><Icon size={19}/></span><span className="icd-kpi-text"><small>{label}</small><strong>{loading?'…':value}</strong><em>{hint}</em></span><ArrowUpRight size={15}/></button>)}
+  const modules = [
+    ['Comercial / Vendas', ShoppingCart, '/vendas'],
+    ['Engenharia / BOM', Layers, '/engenharia'],
+    ['Materiais / MRP', Cpu, '/pcp/materiais'],
+    ['PCP / Ordens', Factory, '/pcp'],
+    ['Chão de Fábrica', Settings, '/operacao-industrial'],
+    ['Qualidade / SGQ', AlertTriangle, '/qualidade']
+  ] as const
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+      <style>{`
+        .dp-shell{min-height:100%;background:#f8fafc}
+        .dp-main{width:100%;max-width:1700px;margin:0 auto;padding:18px 24px 34px}
+        .dp-subhead{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:10px 0 15px;border-bottom:1px solid #dbe3ea}
+        .dp-subhead h1{margin:0;font-size:23px;font-weight:950;letter-spacing:-.02em;color:#0f172a}
+        .dp-subhead p{margin:3px 0 0;color:#475569;font-size:12px;font-weight:700}
+        .dp-meta{display:flex;align-items:center;gap:14px;color:#475569;font-size:12px;font-weight:800}
+        .dp-live{padding:6px 9px;border:1px solid #86efac;border-radius:999px;background:#f0fdf4;color:#166534;font-size:10px;font-weight:950}
+        .dp-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
+        .dp-kpi{display:flex;align-items:center;gap:12px;padding:15px;background:#fff;border:1px solid #cbd5e1;border-radius:8px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+        .dp-kpi-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:8px;background:#eff6ff;color:#1d4ed8;flex:none}
+        .dp-kpi small{display:block;color:#475569;font-size:10px;font-weight:950;letter-spacing:.06em}.dp-kpi strong{display:block;color:#020617;font-size:24px;font-weight:950;line-height:1.1;margin-top:3px}.dp-kpi em{font-style:normal;color:#64748b;font-size:10px;font-weight:700}
+        .dp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+        .dp-panel{background:#fff;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+        .dp-head{padding:12px 15px;border-bottom:1px solid #e2e8f0}.dp-head span{color:#2563eb;font-size:10px;font-weight:950;letter-spacing:.1em}.dp-head h2{margin:3px 0 0;color:#0f172a;font-size:15px;font-weight:950}
+        .dp-chart{height:255px;padding:10px 12px 8px}.dp-empty{height:255px;display:grid;place-items:center;padding:20px;text-align:center;color:#64748b;font-size:12px;font-weight:700}
+        .dp-table-wrap{overflow:auto}.dp-table{width:100%;border-collapse:collapse;font-size:12px}.dp-table th{background:#f8fafc;color:#475569;text-align:left;font-size:10px;font-weight:950;padding:10px 12px;border-bottom:1px solid #e2e8f0}.dp-table td{padding:11px 12px;border-bottom:1px solid #edf2f7;color:#334155;font-weight:650;white-space:nowrap}.dp-table tr:last-child td{border-bottom:0}.dp-status{display:inline-flex;padding:4px 8px;border-radius:999px;background:#e0f2fe;color:#075985;font-size:10px;font-weight:900}.dp-error{margin:0 0 12px;padding:10px 12px;border:1px solid #fecaca;background:#fef2f2;color:#991b1b;border-radius:7px;font-size:12px;font-weight:700}
+        .dp-modules-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.62);display:flex;align-items:center;justify-content:center;padding:18px}.dp-modules{width:min(760px,100%);background:#fff;border:1px solid #cbd5e1;border-radius:14px;box-shadow:0 30px 80px rgba(15,23,42,.3);padding:20px}.dp-modules-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.dp-modules-head h3{margin:0;font-size:20px;font-weight:950}.dp-modules-head p{margin:4px 0 0;color:#64748b;font-size:12px}.dp-close{border:0;background:#f1f5f9;color:#334155;width:38px;height:38px;border-radius:8px;cursor:pointer}.dp-module-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}.dp-module{min-height:105px;border:1px solid #dbe3ea;background:#f8fafc;border-radius:10px;padding:14px;text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:8px}.dp-module:hover{background:#eff6ff;border-color:#93c5fd}.dp-module svg{color:#2563eb}.dp-module strong{font-size:12px;color:#0f172a}.dp-module small{font-size:10px;color:#64748b;font-weight:700}
+        @media(max-width:1050px){.dp-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-grid{grid-template-columns:1fr}.dp-main{padding:16px}}
+        @media(max-width:650px){.dp-kpis{grid-template-columns:1fr}.dp-subhead{align-items:flex-start;flex-direction:column}.dp-meta{align-items:flex-start;flex-direction:column;gap:5px}.dp-module-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-main{padding:12px}}
+      `}</style>
+
+      <main className="dp-main">
+        {error && <div className="dp-error">{error}</div>}
+
+        <section className="dp-subhead">
+          <div>
+            <p>VISÃO GERAL DO CHÃO DE FÁBRICA</p>
+            <h1>Central de Controle Industrial</h1>
+          </div>
+          <div className="dp-meta">
+            <span>Operador: <strong>{profile?.nome ?? 'Usuário'}</strong></span>
+            <span>{clock.toLocaleDateString('pt-BR')} · {clock.toLocaleTimeString('pt-BR')}</span>
+            <span className="dp-live">DADOS: SUPABASE</span>
+          </div>
         </section>
-        <section className="icd-grid">
-          <article className="icd-panel"><div className="icd-panel-head"><div><span>PRODUÇÃO REAL</span><h2>Eficiência de produção</h2></div><Activity size={18}/></div>{production.length?<div className="icd-chart"><ResponsiveContainer width="100%" height="100%"><LineChart data={production}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="date"/><YAxis/><Tooltip/><Legend/><Line type="monotone" dataKey="boa" name="Peças boas" stroke="#16a34a" strokeWidth={2.5} dot={false}/><Line type="monotone" dataKey="refugo" name="Refugo" stroke="#dc2626" strokeWidth={2.5} dot={false}/></LineChart></ResponsiveContainer></div>:<div className="icd-empty">Sem apontamentos de produção registrados. O gráfico será preenchido quando houver dados reais.</div>}</article>
-          <article className="icd-panel"><div className="icd-panel-head"><div><span>QUALIDADE</span><h2>Taxa de refugo</h2></div><TrendingDown size={18}/></div>{production.length?<div className="icd-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={production}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="date"/><YAxis unit="%"/><Tooltip formatter={(v:number)=>[`${v.toFixed(2)}%`,'Refugo']}/><Bar dataKey="refugoPercent" name="Refugo %" fill="#dc2626"/></BarChart></ResponsiveContainer></div>:<div className="icd-empty">Sem dados reais de refugo registrados.</div>}</article>
+
+        <section className="dp-kpis">
+          {cards.map(({ label, value, suffix, icon: Icon }) => (
+            <article key={label} className="dp-kpi">
+              <span className="dp-kpi-icon"><Icon size={19}/></span>
+              <div><small>{label}</small><strong>{loading ? '…' : value} {suffix && <em>{suffix}</em>}</strong></div>
+            </article>
+          ))}
         </section>
-        <section className="icd-grid">
-          <article className="icd-panel"><div className="icd-panel-head"><div><span>PCP · ORDENS</span><h2>Ordens de produção por status</h2></div><ListChecks size={18}/></div>{orderStatus.length?<div className="icd-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={orderStatus} layout="vertical"><CartesianGrid strokeDasharray="3 3"/><XAxis type="number" allowDecimals={false}/><YAxis type="category" dataKey="status" width={95}/><Tooltip/><Bar dataKey="quantidade" name="Ordens" fill="#2563eb"/></BarChart></ResponsiveContainer></div>:<div className="icd-empty">Nenhuma ordem de produção encontrada.</div>}</article>
-          <article className="icd-panel"><div className="icd-panel-head"><div><span>VOLUME REAL</span><h2>Peças boas x refugo</h2></div><BarChart3 size={18}/></div>{production.length?<div className="icd-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={production}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="date"/><YAxis/><Tooltip/><Legend/><Bar dataKey="boa" name="Peças boas" fill="#16a34a"/><Bar dataKey="refugo" name="Refugo" fill="#dc2626"/></BarChart></ResponsiveContainer></div>:<div className="icd-empty">Sem dados reais de produção registrados.</div>}</article>
+
+        <section className="dp-grid">
+          <article className="dp-panel">
+            <div className="dp-head"><span>MONITORAMENTO EM TEMPO REAL</span><h2>Eficiência de máquinas por turno</h2></div>
+            {machineShift.length ? (
+              <div className="dp-chart"><ResponsiveContainer width="100%" height="100%">
+                <BarChart data={machineShift}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="maquina"/><YAxis domain={[0,100]} unit="%"/><Tooltip formatter={(v:number) => [`${v.toFixed(1)}%`, 'Eficiência']}/><Bar dataKey="eficiencia" name="Eficiência" fill="#2563eb" radius={[3,3,0,0]}/></BarChart>
+              </ResponsiveContainer></div>
+            ) : <div className="dp-empty">Sem dados reais de eficiência por máquina/turno registrados.</div>}
+          </article>
+
+          <article className="dp-panel">
+            <div className="dp-head"><span>PCP · PREVISTO × REALIZADO</span><h2>Volumes de produção semanal</h2></div>
+            {weekly.some(x => x.previsto || x.realizado) ? (
+              <div className="dp-chart"><ResponsiveContainer width="100%" height="100%">
+                <LineChart data={weekly}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="day"/><YAxis/><Tooltip/><Legend/><Line type="monotone" dataKey="previsto" name="Previsto" stroke="#64748b" strokeWidth={2} strokeDasharray="5 5" dot={false}/><Line type="monotone" dataKey="realizado" name="Realizado" stroke="#2563eb" strokeWidth={2.5} dot={false}/></LineChart>
+              </ResponsiveContainer></div>
+            ) : <div className="dp-empty">Sem programação ou produção registrada para os últimos 7 dias.</div>}
+          </article>
         </section>
-        <section className="icd-panel icd-orders"><div className="icd-panel-head"><div><span>PCP · DADOS REAIS</span><h2>Últimas ordens de produção atualizadas</h2></div><ListChecks size={18}/></div><div className="icd-table-wrap"><table className="icd-table"><thead><tr><th>COD_OP</th><th>PRODUTO</th><th>DATA</th><th>STATUS</th></tr></thead><tbody>{latestOps.length?latestOps.map(op=><tr key={op.id}><td><b>OP-{op.numero_op}</b></td><td>{op.produto}</td><td>{op.created_at?new Date(op.created_at).toLocaleDateString('pt-BR'):'—'}</td><td><span className="icd-status">{statusLabel(op.status)}</span></td></tr>):<tr><td colSpan={4} className="icd-empty-row">Nenhuma ordem de produção encontrada para esta empresa.</td></tr>}</tbody></table></div></section>
+
+        <section className="dp-panel" style={{ marginTop: 12 }}>
+          <div className="dp-head"><span>ALERTAS E PARADAS</span><h2>Fila de trabalho atual</h2></div>
+          <div className="dp-table-wrap">
+            <table className="dp-table">
+              <thead><tr><th>CÓD_OP</th><th>POSTO DE TRABALHO</th><th>PRODUTO</th><th>ÚLTIMO APONTAMENTO</th><th>STATUS DE OPERAÇÃO</th></tr></thead>
+              <tbody>
+                {queue.length ? queue.map(row => (
+                  <tr key={row.op}><td><strong>{row.op}</strong></td><td>{row.workstation}</td><td>{row.product}</td><td>{row.lastPointing}</td><td><span className="dp-status">{row.status}</span></td></tr>
+                )) : <tr><td colSpan={5} style={{textAlign:'center',padding:28,color:'#64748b'}}>Nenhuma OP em andamento com dados reais para exibir.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </main>
+
+      {tabletOpen && (
+        <div className="dp-modules-backdrop" onMouseDown={e => { if (e.target === e.currentTarget) setTabletOpen(false) }}>
+          <div className="dp-modules" role="dialog" aria-modal="true" aria-label="Central de módulos">
+            <div className="dp-modules-head">
+              <div><h3><Tablet size={19} style={{verticalAlign:'-3px',marginRight:7,color:'#ea580c'}}/>Central de Módulos</h3><p>Acesse as áreas operacionais do ERP pelo tablet.</p></div>
+              <button className="dp-close" type="button" onClick={() => setTabletOpen(false)} aria-label="Fechar"><X size={19}/></button>
+            </div>
+            <div className="dp-module-grid">
+              {modules.map(([label, Icon, route]) => (
+                <button className="dp-module" key={label} type="button" onClick={() => { setTabletOpen(false); onNavigate(route) }}>
+                  <Icon size={22}/><strong>{label}</strong><small>Abrir módulo</small>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-    <TabletLaunchpad isOpen={tabletOpen} onClose={()=>setTabletOpen(false)} onNavigate={route=>{setTabletOpen(false);onNavigate(route)}}/>
-  </>
+  )
 }
