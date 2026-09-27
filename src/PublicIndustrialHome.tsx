@@ -228,14 +228,14 @@ export default function PublicIndustrialHome() {
                 ['01', 'Planejar', 'Engenharia, BOM, capacidade e programação formam a base da execução.', Factory],
                 ['02', 'Executar', 'O operador registra produção, perdas, instrumento e evidências no chão de fábrica.', PackageCheck],
                 ['03', 'Controlar', 'Qualidade, manutenção, estoque, fiscal e indicadores recebem os mesmos eventos.', ShieldCheck],
-              ].map(([number, title, description, Icon]) => {
-                const FlowIcon = Icon as typeof Factory
+              ].map((card) => {
+                const FlowIcon = card.icon
                 return (
-                  <article key={String(number)} className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-                    <span className="text-sm font-black text-blue-700">{number}</span>
+                  <article key={card.number} className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                    <span className="text-sm font-black text-blue-700">{card.number}</span>
                     <FlowIcon className="mt-5 text-slate-700" size={25} />
-                    <h3 className="mt-3 text-xl font-black text-slate-950">{String(title)}</h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-700">{String(description)}</p>
+                    <h3 className="mt-3 text-xl font-black text-slate-950">{card.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-700">{card.description}</p>
                   </article>
                 )
               })}
