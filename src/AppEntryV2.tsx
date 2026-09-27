@@ -72,6 +72,8 @@ const QualidadePFMEA = lazy(() => import('./pages/QualidadePFMEA'))
 const ManutencaoOrdens = lazy(() => import('./pages/ManutencaoOrdens'))
 const EstoqueAjustes = lazy(() => import('./pages/EstoqueAjustes'))
 const EstoqueRecebimentoLotes = lazy(() => import('./pages/estoque/EstoqueRecebimentoLotes'))
+const QualidadeGenealogiaLote = lazy(() => import('./pages/qualidade/QualidadeGenealogiaLote'))
+const QualidadeQuarentena = lazy(() => import('./pages/qualidade/QualidadeQuarentena'))
 
 type ERPProfile = { empresa_id: string | null; is_master: boolean; nivel_admin?: number; perfil?: string; nome?: string }
 type AccessResult = { ok: boolean; master: boolean; reason: string; profile: ERPProfile | null }
@@ -262,6 +264,8 @@ export default function AppEntryV2() {
       <Route path="/qualidade/dashboard-rnc" element={<QualidadeDashboardRNC />} />
       <Route path="/qualidade/pfmea" element={<QualidadePFMEA />} />
       <Route path="/qualidade/documentos" element={<DocumentosQualidadeControle />} />
+      <Route path="/qualidade/genealogia-lote" element={<QualidadeGenealogiaLote />} />
+      <Route path="/qualidade/quarentena" element={<QualidadeQuarentena />} />
       <Route path="/estoque" element={<EstoqueAlmoxarifado />} />
       <Route path="/estoque/saldos" element={<EstoqueAlmoxarifado />} />
       <Route path="/estoque/ajustes" element={<EstoqueAjustes />} />
