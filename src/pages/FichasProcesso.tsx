@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
 import { Check, FileDown, ImagePlus, Printer, RotateCcw, Save, Search, Trash2, Upload, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
@@ -55,6 +55,7 @@ export default function FichasProcesso(){
  const [message,setMessage]=useState('')
  const [error,setError]=useState('')
  const [preview,setPreview]=useState('')
+ const [dragging,setDragging]=useState(false)
  const fileRef=useRef<HTMLInputElement>(null)
 
  async function load(){
@@ -218,14 +219,19 @@ export default function FichasProcesso(){
        ['Tempo de ciclo nominal','ciclo_seg','Segundos'],['Peso líquido da peça','peso_peca','kg'],['Peso canal / refugo','peso_canal','kg'],['Cavidades ativas','cavidades_ativas','un']
       ].map(([l,k,u])=><label key={k} className={label}>{l}<div className="mt-2 flex"><input className="min-h-12 w-full rounded-l-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100" type="number" step="any" value={form[k as keyof FormState] as string} onChange={e=>update(k as keyof FormState,e.target.value as never)}/><span className="grid min-w-24 place-items-center rounded-r-md border border-l-0 border-slate-300 bg-slate-100 px-2 text-sm font-bold text-slate-700">{u}</span></div></label>)}
      </div>
+     <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="rounded-md border border-sky-200 bg-sky-50 p-4"><p className="text-xs font-extrabold uppercase tracking-wide text-sky-800">CAPACIDADE NOMINAL</p><p className="mt-1 text-2xl font-black text-slate-950">{Number(form.ciclo_seg)>0?((3600/Number(form.ciclo_seg))*Math.max(1,Number(form.cavidades_ativas)||1)).toFixed(1):'—'} <span className="text-sm font-bold">peças/h</span></p><p className="mt-1 text-sm font-semibold text-slate-700">Base: ciclo nominal × cavidades ativas.</p></div>
+      <div className="rounded-md border border-slate-200 bg-white p-4"><p className="text-xs font-extrabold uppercase tracking-wide text-slate-600">MASSA DA PEÇA</p><p className="mt-1 text-2xl font-black text-slate-950">{form.peso_peca||'—'} <span className="text-sm font-bold">kg</span></p><p className="mt-1 text-sm font-semibold text-slate-700">Peso líquido unitário.</p></div>
+      <div className="rounded-md border border-slate-200 bg-white p-4"><p className="text-xs font-extrabold uppercase tracking-wide text-slate-600">CANAL / REFUGO</p><p className="mt-1 text-2xl font-black text-slate-950">{form.peso_canal||'—'} <span className="text-sm font-bold">kg</span></p><p className="mt-1 text-sm font-semibold text-slate-700">Massa informada para o canal/refugo.</p></div>
+     </div>
      <div className="mt-5 rounded-md border border-slate-200 bg-slate-50 p-4"><h3 className="text-base font-extrabold text-slate-900">Temperatura das zonas / aquecimento</h3><div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">{[['Zona 1','zona1'],['Zona 2','zona2'],['Zona 3','zona3'],['Zona 4','zona4']].map(([l,k])=><label key={k} className={label}>{l}<input className={field} value={form[k as keyof FormState] as string} onChange={e=>update(k as keyof FormState,e.target.value as never)} placeholder="°C"/></label>)}</div></div>
     </section>
 
     <section className={card}>
      <div className="mb-4"><p className="text-sm font-extrabold uppercase tracking-wider text-sky-700">3. CONTROLE VISUAL</p><h2 className="mt-1 text-xl font-extrabold text-slate-900">Imagem técnica da peça / molde</h2></div>
-     <button type="button" onClick={()=>fileRef.current?.click()} className="flex min-h-44 w-full flex-col items-center justify-center rounded-md border-2 border-dashed border-indigo-400 bg-slate-50 px-6 text-center transition hover:border-sky-600 hover:bg-sky-50">
+     <div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==='Enter'||e.key===' ')fileRef.current?.click()}} onClick={()=>fileRef.current?.click()} onDragOver={e=>{e.preventDefault();setDragging(true)}} onDragLeave={()=>setDragging(false)} onDrop={(e:DragEvent<HTMLDivElement>)=>{e.preventDefault();setDragging(false);void handleFile(e.dataTransfer.files?.[0])}} className={'flex min-h-44 w-full cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed px-6 text-center transition '+(dragging?'border-sky-700 bg-sky-50':'border-indigo-400 bg-slate-50 hover:border-sky-600 hover:bg-sky-50')}>
       {preview?<img src={preview} alt="Imagem técnica da ficha" className="max-h-72 rounded-md object-contain"/>:<><Upload size={40} className="text-indigo-600"/><span className="mt-3 text-lg font-extrabold text-slate-800">CLIQUE OU ARRASTE A IMAGEM TÉCNICA DA PEÇA AQUI</span><span className="mt-1 text-base text-slate-600">PNG ou JPG • Máximo 5 MB • visualização otimizada para tablet</span></>}
-     </button>
+     </div>
      <input ref={fileRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={e=>void handleFile(e.target.files?.[0])}/>
     </section>
 
