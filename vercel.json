@@ -138,10 +138,6 @@
       "destination": "/index.html"
     },
     {
-      "source": "/demo/(.*)",
-      "destination": "/index.html"
-    },
-    {
       "source": "/planos",
       "destination": "/index.html"
     },
