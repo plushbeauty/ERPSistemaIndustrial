@@ -70,6 +70,7 @@ const FinanceiroGraficoDesvios = lazy(() => import('./pages/FinanceiroGraficoDes
 const ExpedicaoRoteirizacao = lazy(() => import('./pages/ExpedicaoRoteirizacao'))
 const QualidadePFMEA = lazy(() => import('./pages/QualidadePFMEA'))
 const ManutencaoOrdens = lazy(() => import('./pages/ManutencaoOrdens'))
+const PCPTabletOperador = lazy(() => import('./pages/PCPTabletOperador'))
 const EstoqueAjustes = lazy(() => import('./pages/EstoqueAjustes'))
 const EstoqueRecebimentoLotes = lazy(() => import('./pages/estoque/EstoqueRecebimentoLotes'))
 const QualidadeGenealogiaLote = lazy(() => import('./pages/qualidade/QualidadeGenealogiaLote'))
@@ -258,6 +259,7 @@ export default function AppEntryV2() {
       <Route path="/pcp" element={<PCPIndustrial />} />
       <Route path="/pcp/ordens" element={<PCPIndustrial />} />
       <Route path="/pcp/dashboard-oee" element={<PCPDashboardOEE />} />
+      <Route path="/pcp/tablet-operador" element={<PCPTabletOperador />} />
       <Route path="/qualidade" element={<QualidadeIndustrial />} />
       <Route path="/qualidade/instrumentos" element={<QualidadeIndustrial />} />
       <Route path="/qualidade/liberacao-lote" element={<AcompanhamentoNaoConformidade />} />
