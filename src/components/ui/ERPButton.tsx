@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { LoaderCircle } from 'lucide-react'
+import './erp-ui.css'
 
 export type ERPButtonVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'ghost' | 'neutral'
 
@@ -11,24 +12,9 @@ type ERPButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode
 }
 
-export function ERPButton({
-  variant = 'primary',
-  size = 'md',
-  icon,
-  loading = false,
-  disabled,
-  children,
-  className = '',
-  ...props
-}: ERPButtonProps) {
-  return (
-    <button
-      {...props}
-      disabled={disabled || loading}
-      className={`erp-button erp-button--${variant} erp-button--${size} ${className}`}
-    >
-      {loading ? <LoaderCircle className="erp-button__spinner" size={16} aria-hidden="true" /> : icon}
-      <span>{children}</span>
-    </button>
-  )
+export function ERPButton({ variant = 'primary', size = 'md', icon, loading = false, disabled, children, className = '', ...props }: ERPButtonProps) {
+  return <button {...props} disabled={disabled || loading} className={`erp-button erp-button--${variant} erp-button--${size} ${className}`}>
+    {loading ? <LoaderCircle className="erp-button__spinner" size={16} aria-hidden="true" /> : icon}
+    <span>{children}</span>
+  </button>
 }
