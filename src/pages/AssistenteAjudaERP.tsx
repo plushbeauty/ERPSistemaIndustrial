@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { HelpCircle, Send, ShieldCheck, Cpu, ShoppingCart, Wrench, Printer } from 'lucide-react';
 
 interface IMensagemChat {
@@ -7,6 +8,7 @@ interface IMensagemChat {
 }
 
 export default function AssistenteAjudaERP() {
+  const [searchParams] = useSearchParams();
   const [mensagens, setMensagens] = useState<IMensagemChat[]>([
     {
       emissor: 'ia',
@@ -14,7 +16,12 @@ export default function AssistenteAjudaERP() {
         'Olá! Sou o Assistente de IA do seu ERP Industrial. Selecione ou digite qual procedimento (Vendas, PCP, Calibração, Ficha de Processo, Laudo de Liberação ou Manutenção) você deseja consultar que eu te explico o preenchimento campo por campo!',
     },
   ]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(searchParams.get('busca') ?? '');
+
+  useEffect(() => {
+    const busca = searchParams.get('busca');
+    if (busca) setInput(busca);
+  }, [searchParams]);
 
   const processarDuvidaDoProcedimento = () => {
     if (!input.trim()) return;
@@ -60,7 +67,7 @@ export default function AssistenteAjudaERP() {
           </h2>
         </div>
 
-        <div className="hidden print:block border-2 border-dashed border-slate-600 p-3 text-center text-xs font-black text-slate-700 bg-slate-50 uppercase rounded-md tracking-wider leading-relaxed">
+        <div className="hidden print:block border-2 border-dashed border-slate-600 p-3 text-center text-xs font-black text-slate-700 bg-slate-100 uppercase rounded-md tracking-wider leading-relaxed">
           ⚠️ CÓPIA NÃO CONTROLADA<br />
           APENAS PARA CONSULTA LOCAL
         </div>
@@ -101,7 +108,7 @@ export default function AssistenteAjudaERP() {
 
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
-          nav, sidebar, header, .print\\:hidden, button, input {
+          nav, aside, .sgq-app-header, .print\\:hidden, button, input {
             display: none !important;
           }
           body, main, .max-w-4xl {
