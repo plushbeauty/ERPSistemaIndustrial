@@ -158,33 +158,41 @@ export default function AppIndustrialV7() {
     <header className="v7-topbar" aria-label="Barra superior do ERP">
       <div className="v7-top-brand">
         <img src="/logo-industrial.svg" alt="PLASTIBOR" />
-        <div className="v7-top-company"><strong>{empresaNome}</strong></div>
+        <div className="v7-top-title">
+          <strong>ERPSistema INDUSTRIAL</strong>
+          <span>CENTRAL DE CONTROLE</span>
+        </div>
       </div>
       <div className="v7-top-actions">
-        <button className="v7-top-tablet" type="button" onClick={() => setLauncher(true)} aria-label="Abrir Tablet Industrial"><LayoutGrid size={16}/> TABLET</button>
-        <button className="v7-top-command" type="button" onClick={() => setActive('Dashboard')} aria-label="Abrir Comandos"><MonitorPlay size={16}/> COMANDOS</button>
-        <div className="v7-top-user-simple" aria-label="Usuário conectado"><span>USUÁRIO (A):</span><strong>{profile.nome || 'Vanda'}</strong></div>
+        <button className="v7-top-tablet" type="button" onClick={() => setLauncher(true)} aria-label="Abrir módulos">MÓDULOS</button>
+        <button className="v7-top-command" type="button" onClick={() => setActive('Dashboard')} aria-label="Abrir comandos">COMANDOS</button>
+        <div className="v7-top-company" aria-label="Empresa conectada"><span>EMPRESA</span><strong>{empresaNome}</strong></div>
+        <div className="v7-top-user-simple" aria-label="Usuário conectado"><span>OPERADOR</span><strong>{profile.nome || 'Usuário'}</strong></div>
         <div className="v7-top-date" aria-label="Data e hora atual"><strong>{clock.toLocaleDateString(language === 'en-US' ? 'en-US' : 'pt-BR')} • {clock.toLocaleTimeString(language === 'en-US' ? 'en-US' : 'pt-BR')}</strong></div>
+        <span className="v7-top-data">DADOS: SUPABASE</span>
         <button className="v7-top-exit" type="button" onClick={() => void supabase.auth.signOut().then(() => { location.href = '/login' })}>SAIR</button>
       </div>
     </header>
     <style>{`
-      .v7-topbar{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:9px 20px;background:#fff;border-bottom:1px solid #cbd5e1;color:#0f172a}
-      .v7-top-brand{display:flex;align-items:center;gap:16px;min-width:0}
-      .v7-top-brand img{display:block;width:210px;height:58px;object-fit:contain}
-      .v7-top-company{display:flex;align-items:center;min-width:0;border-left:1px solid #cbd5e1;padding-left:16px}
-      .v7-top-company strong{font-size:19px;line-height:1.1;font-weight:900;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .v7-top-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0}
-      .v7-top-tablet,.v7-top-command,.v7-top-exit{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:0 10px;border-radius:7px;border:1px solid #94a3b8;background:#fff;color:#0f172a;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap}
-      .v7-top-tablet{background:#f59e0b;border-color:#d97706;color:#fff;min-height:32px;padding:0 9px;box-shadow:0 2px 6px rgba(245,158,11,.22)}
-      .v7-top-command{background:#1e3a8a;border-color:#1e3a8a;color:#fff}
-      .v7-top-exit{background:#fff;color:#b91c1c;border-color:#fca5a5}
-      .v7-top-user-simple,.v7-top-date{display:flex;align-items:center;gap:6px;min-height:34px;padding:0 10px;border-left:1px solid #cbd5e1}
-      .v7-top-user-simple span{font-size:11px;font-weight:900;color:#475569;white-space:nowrap}
-      .v7-top-user-simple strong,.v7-top-date strong{font-size:13px;font-weight:900;color:#0f172a;white-space:nowrap}
+      .v7-topbar{position:relative;z-index:20;width:100%;min-height:76px;display:flex!important;align-items:center;justify-content:space-between;gap:18px;padding:8px 18px!important;background:#ffffff!important;border-bottom:1px solid #cbd5e1!important;color:#0f172a!important;box-sizing:border-box}
+      .v7-top-brand{display:flex!important;align-items:center;gap:14px;min-width:300px}
+      .v7-top-brand img{display:block!important;width:178px!important;height:54px!important;object-fit:contain!important;flex:none}
+      .v7-top-title{display:flex;flex-direction:column;justify-content:center;border-left:1px solid #cbd5e1;padding-left:14px;line-height:1.1}
+      .v7-top-title strong{color:#0f172a!important;font-size:16px!important;font-weight:950!important;letter-spacing:.02em;white-space:nowrap}
+      .v7-top-title span{color:#475569!important;font-size:10px!important;font-weight:900!important;letter-spacing:.12em;margin-top:4px}
+      .v7-top-actions{display:flex!important;align-items:center;justify-content:flex-end;gap:7px;min-width:0;flex-wrap:nowrap}
+      .v7-top-tablet,.v7-top-command,.v7-top-exit{display:inline-flex!important;align-items:center;justify-content:center;min-height:34px;padding:0 11px!important;border-radius:6px!important;font-size:11px!important;font-weight:950!important;cursor:pointer;white-space:nowrap;box-sizing:border-box}
+      .v7-top-tablet{background:#f59e0b!important;border:1px solid #d97706!important;color:#ffffff!important}
+      .v7-top-command{background:#173f5f!important;border:1px solid #173f5f!important;color:#ffffff!important}
+      .v7-top-exit{background:#ffffff!important;border:1px solid #fca5a5!important;color:#991b1b!important}
+      .v7-top-company,.v7-top-user-simple,.v7-top-date{display:flex!important;align-items:center;gap:6px;min-height:34px;padding:0 9px;border-left:1px solid #cbd5e1!important;white-space:nowrap}
+      .v7-top-company span,.v7-top-user-simple span{color:#64748b!important;font-size:9px!important;font-weight:950!important;letter-spacing:.06em}
+      .v7-top-company strong,.v7-top-user-simple strong,.v7-top-date strong{color:#0f172a!important;font-size:11px!important;font-weight:950!important;white-space:nowrap}
+      .v7-top-data{display:inline-flex!important;align-items:center;min-height:34px;padding:0 9px;background:#f0fdf4!important;border:1px solid #86efac!important;border-radius:6px!important;color:#166534!important;font-size:9px!important;font-weight:950!important;white-space:nowrap}
       .v7-top-actions button:hover{filter:brightness(.97)}
-      @media(max-width:900px){.v7-top-brand img{width:170px;height:52px}.v7-top-actions{gap:5px}.v7-top-command{display:none}.v7-top-company strong{font-size:16px}}
-      @media(max-width:650px){.v7-topbar{padding:8px 10px}.v7-top-brand img{width:145px;height:46px}.v7-top-company{display:none}.v7-top-user-simple{display:none}.v7-top-date strong{font-size:11px}.v7-top-tablet{font-size:0;width:38px;padding:0}.v7-top-tablet svg{width:17px}.v7-top-exit{font-size:0;width:38px;padding:0}.v7-top-exit::after{content:'×';font-size:20px}}
+      @media(max-width:1180px){.v7-top-company{display:none!important}.v7-top-brand{min-width:260px}.v7-top-brand img{width:155px!important}}
+      @media(max-width:900px){.v7-top-date{display:none!important}.v7-top-data{display:none!important}.v7-top-brand{min-width:220px}.v7-top-title strong{font-size:13px!important}}
+      @media(max-width:650px){.v7-topbar{padding:7px 10px!important}.v7-top-brand{min-width:0}.v7-top-brand img{width:120px!important;height:44px!important}.v7-top-title{display:none!important}.v7-top-user-simple{display:none!important}.v7-top-tablet,.v7-top-command,.v7-top-exit{min-width:34px;padding:0 8px!important;font-size:0!important}.v7-top-tablet::after{content:'☰';font-size:17px}.v7-top-command::after{content:'⌂';font-size:17px}.v7-top-exit::after{content:'×';font-size:19px}}
     `}</style>
     <main className="v7-main v7-main-full">
       <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={specialPath+active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{specialPath === '/vendas/clientes' ? <VendasClientesPage/> : specialPath === '/financeiro/custo-padrao' ? <FinanceiroCustoPadrao/> : specialPath === '/admin/logs' ? <AdminLogs/> : specialPath === '/outlook/configuracao' ? <OutlookConfiguracao/> : specialPath === '/compras/fornecedores' ? <FornecedoresIndustrial/> : active === 'Dashboard' ? <IndustrialCommandDashboard onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); setLauncher(false); return }; location.href = route }} /> : active === 'Configurações' ? <CompanySettings profile={profile}/> : location.pathname === '/qualidade/calibracao' ? <CalibracaoIndustrial/> : location.pathname === '/moldes-injecao' ? <MoldesFerramentaria/> : location.pathname === '/comercial' ? <ComercialSuprimentos/> : location.pathname === '/configuracoes-adm' ? <ConfiguracoesADM profile={profile}/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
