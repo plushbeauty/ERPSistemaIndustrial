@@ -7,13 +7,17 @@ const respostas: Array<{ termos: string[]; texto: string }> = [
   { termos: ["venda","pedido","outlook","xml"], texto: "Em Vendas, informe o cliente ou importe o pedido do Outlook. O XML é cruzado com o De-Para cadastrado. Verde indica saldo disponível para reserva; laranja indica falta e necessidade de PCP." },
   { termos: ["pcp","prensa","dupla","mrp"], texto: "No PCP, revise a OP e marque Operação Dupla somente quando o processo e o ferramental suportarem dois moldes simultâneos. O planejamento recalcula capacidade e o MRP verifica os componentes da BOM." },
   { termos: ["tablet","operador","refugo","peça"], texto: "No terminal de fábrica, o operador registra a produção. A regra de quantidade boa é: Peças Boas = Encontradas - Defeituosas. Havendo defeito, o motivo deve ser informado antes do apontamento." },
-  { termos: ["calibração","calibracao","paquímetro","paquimetro","vencido"], texto: "Na Qualidade, acompanhe a validade dos instrumentos. Um instrumento vencido deve ser tratado conforme a regra de bloqueio configurada para a operação antes de novo apontamento." },
+  { termos: ["calibração","calibracao","paquímetro","paquimetro","vencido"], texto: "Na tela de Calibração, informe certificado, data do ensaio e próxima validade. Equipamento vencido deve aparecer bloqueado e não pode ser utilizado em apontamentos que exigem instrumento válido." },
+  { termos: ["ficha","processo","ficha de processo"], texto: "Na Ficha de Processo, selecione Produto, Ferramental e Máquina pelos localizadores. Registre força, pressão, temperaturas das zonas, ciclo, pesos, instruções de setup e inspeção. A ficha é persistida no Supabase e sua revisão deve acompanhar a alteração técnica." },
+  { termos: ["laudo","liberação","embalagem","lote"], texto: "Na Liberação de Lote, confira o lote e o checklist de inspeção. Somente um resultado conforme deve liberar o lote. Um lote retido deve permanecer bloqueado para expedição e faturamento até a decisão de Qualidade." },
+  { termos: ["manutenção","manutencao","tpm","ordem de serviço","os"], texto: "Na Central TPM, acompanhe a Ordem de Serviço, registre causa, diagnóstico, solução e peças utilizadas. A máquina só deve retornar ao PCP quando a OS estiver efetivamente concluída." },
+  { termos: ["roteirização","roteirizacao","caminhão","caminhao","expedição"], texto: "Na Roteirização, selecione o veículo e as cargas reais. O sistema deve comparar o peso alocado com a capacidade cadastrada e impedir a liberação quando houver excesso ou pendência fiscal." },
 ];
 
 function responder(pergunta: string): string {
   const texto = pergunta.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   const resposta = respostas.find((item) => item.termos.some((termo) => texto.includes(termo)));
-  return resposta?.texto ?? "Não encontrei essa orientação no manual. Tente perguntar sobre Vendas, Outlook/XML, PCP, Operação Dupla, Tablet, Refugo ou Calibração.";
+  return resposta?.texto ?? "Não encontrei essa orientação no manual. Tente perguntar sobre Vendas, PCP, Tablet, Calibração, Ficha de Processo, Liberação de Lote, Manutenção TPM ou Roteirização.";
 }
 
 export default function AssistenteAjudaERP() {
@@ -22,7 +26,7 @@ export default function AssistenteAjudaERP() {
   ]);
   const [input, setInput] = useState("");
 
-  const sugestoes = useMemo(() => ["Como importar um pedido XML?", "Como funciona a Operação Dupla?", "Como registrar refugo no Tablet?", "O que acontece com um instrumento vencido?"], []);
+  const sugestoes = useMemo(() => ["Como importar um pedido XML?", "Como funciona a Operação Dupla?", "Como registrar refugo no Tablet?", "Como funciona a Ficha de Processo?", "Como bloquear um lote retido?", "Como funciona a calibração?"], []);
 
   const enviar = () => {
     const pergunta = input.trim();
