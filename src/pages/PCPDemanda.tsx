@@ -19,7 +19,7 @@ export default function PCPDemanda(){
    ])
    for(const r of [products,orders,items,reservations]) if(r.error) throw r.error
    const ps=(products.data??[]) as Product[], os=(orders.data??[]) as Array<Record<string,unknown>>, it=(items.data??[]) as Array<Record<string,unknown>>, rs=(reservations.data??[]) as Array<Record<string,unknown>>
-   const validOrders=new Map(os.filter(o=>activeOrderStatus(String(o.status??''))).map(o=>[String(o.id),o]))
+   const validOrders=new Map(os.filter(o=>{const status=String(o.status??'');const date=String(o.data_entrega_prometida??o.data_entrada??'');return activeOrderStatus(status)&&(!date||date.startsWith(periodo))}).map(o=>[String(o.id),o]))
    const pedido:Record<string,number>={}, pedidosIds:Record<string,string[]>={}
    for(const x of it){const pid=String(x.pedido_id??''),prod=String(x.produto_id??'');if(!validOrders.has(pid)||!prod)continue;pedido[prod]=(pedido[prod]??0)+Number(x.quantidade??0);pedidosIds[prod]??=[];if(!pedidosIds[prod].includes(pid))pedidosIds[prod].push(pid)}
    const reservado:Record<string,number>={}
