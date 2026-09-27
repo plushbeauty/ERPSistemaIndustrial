@@ -196,7 +196,7 @@ if(path==='/moldes-ferramentaria')return <Protected><Suspense fallback={<Loading
 if(path==='/pedidos-vendas-legado')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando carteira de pedidos…"/>}><PedidosVendasPage/></Suspense></Protected>;
 if(path==='/qualidade/sgq-avancado')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando SGQ avançado…"/>}><QualidadeSGQAvancadoPage/></Suspense></Protected>;
 if(path==='/recebimento-nfe-legado')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando recebimento de NF-e…"/>}><RecebimentoNfePage/></Suspense></Protected>;
-if(path==='/guia-virtual')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando guia virtual…"/>}><VirtualGuidePage/></Suspense></Protected>;
+if(path==='/guia-virtual')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando guia virtual…"/>}><VirtualGuidePage brand="SGQ ERP"/></Suspense></Protected>;
 if(path==='/outlook/caixa-entrada')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando central de comunicação Outlook…"/>}><OutlookCaixaEntrada/></Suspense></Protected>;
 if(path==='/tablet/home')return <TabletHome/>;
 if(path==='/tablet/dashboard')return <TabletDashboard/>;
