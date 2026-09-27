@@ -153,15 +153,15 @@ const OutlookCaixaEntrada=lazy(()=>import('./pages/OutlookCaixaEntrada'))
 const TabletHome=lazy(()=>import('./pages/TabletHome'))
 const TabletDashboard=lazy(()=>import('./pages/TabletDashboard'))
 
-export default function AppEntryV2(){const[path,setPath]=useState(location.pathname),[session,setSession]=useState<Session|null>(null),[checking,setChecking]=useState(true);useEffect(()=>{let alive=true;if(!supabaseConfigurado){setChecking(false);setSession(null);return()=>{alive=false}};void supabase.auth.getSession().then(({data,error})=>{if(alive){if(error)console.error('[Auth bootstrap]',error);setSession(data.session);setChecking(false)}}).catch(error=>{console.error('[Auth bootstrap]',error);if(alive){setSession(null);setChecking(false)}});const s=supabase.auth.onAuthStateChange((_e,x)=>{if(alive)setSession(x)});return()=>{alive=false;s.data.subscription.unsubscribe()}},[]);useEffect(()=>{const f=()=>setPath(location.pathname);addEventListener('popstate',f);return()=>removeEventListener('popstate',f)},[]);  if (path === '/qualidade/instrumentos-cadastro') return <QualidadeInstrumentosCadastro />;
-  if (path === '/compras/solicitacao-manual') return <ComprasSolicitacaoManual />;
-  if (path === '/expedicao/portaria') return <ExpedicaoPortaria />;
-  if (path === '/engenharia/revisoes-bom') return <EngenhariaRevisoesBOM />;
-  if (path === '/pcp/dashboard-oee') return <PCPDashboardOEE />;
-  if (path === '/qualidade/dashboard-rnc') return <QualidadeDashboardRNC />;
-  if (path === '/estoque/curva-abc') return <EstoqueCurvaABC />;
-  if (path === '/financeiro/grafico-desvios') return <FinanceiroGraficoDesvios />;
-  if (path === '/expedicao/roteirizacao') return <ExpedicaoRoteirizacao />;
+export default function AppEntryV2(){const[path,setPath]=useState(location.pathname),[session,setSession]=useState<Session|null>(null),[checking,setChecking]=useState(true);useEffect(()=>{let alive=true;if(!supabaseConfigurado){setChecking(false);setSession(null);return()=>{alive=false}};void supabase.auth.getSession().then(({data,error})=>{if(alive){if(error)console.error('[Auth bootstrap]',error);setSession(data.session);setChecking(false)}}).catch(error=>{console.error('[Auth bootstrap]',error);if(alive){setSession(null);setChecking(false)}});const s=supabase.auth.onAuthStateChange((_e,x)=>{if(alive)setSession(x)});return()=>{alive=false;s.data.subscription.unsubscribe()}},[]);useEffect(()=>{const f=()=>setPath(location.pathname);addEventListener('popstate',f);return()=>removeEventListener('popstate',f)},[]);  if (path === '/qualidade/instrumentos-cadastro') return <Protected><QualidadeInstrumentosCadastro /></Protected>;
+  if (path === '/compras/solicitacao-manual') return <Protected><ComprasSolicitacaoManual /></Protected>;
+  if (path === '/expedicao/portaria') return <Protected><ExpedicaoPortaria /></Protected>;
+  if (path === '/engenharia/revisoes-bom') return <Protected><EngenhariaRevisoesBOM /></Protected>;
+  if (path === '/pcp/dashboard-oee') return <Protected><PCPDashboardOEE /></Protected>;
+  if (path === '/qualidade/dashboard-rnc') return <Protected><QualidadeDashboardRNC /></Protected>;
+  if (path === '/estoque/curva-abc') return <Protected><EstoqueCurvaABC /></Protected>;
+  if (path === '/financeiro/grafico-desvios') return <Protected><FinanceiroGraficoDesvios /></Protected>;
+  if (path === '/expedicao/roteirizacao') return <Protected><ExpedicaoRoteirizacao /></Protected>;
   if (path === '/qualidade/pfmea') return <QualidadePFMEA />;
   if (path === '/manutencao/ordens') return <ManutencaoOrdens />;
   if (path === '/estoque/ajustes') return <EstoqueAjustes />;
