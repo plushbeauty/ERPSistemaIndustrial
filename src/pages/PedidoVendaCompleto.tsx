@@ -135,7 +135,7 @@ export default function PedidoVendaCompleto(){
     {!processed&&<section className="sales-card">
       <div className="sales-kicker">1. CABEÇALHO DO PEDIDO</div>
       <h2>Dados gerais</h2>
-      <div className="sales-grid" style={{marginTop:14}}>
+      <div className="sales-grid mt-3">
        <label className="sales-field">Nº Pedido<input value={number} readOnly/></label>
        <label className="sales-field">Data Entrada<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>
        <div className="sales-field sales-field-span-2"><EntityCodeLookup label="Cliente" value={client} records={clients} required onChange={value=>setClient(value)} onSelect={x=>{setClient(x.id);setClientDoc(String(x.documento??''))}} helper="Digite o código exato do cliente. A lupa abre a consulta quando necessário."/></div>
@@ -165,7 +165,7 @@ export default function PedidoVendaCompleto(){
       <h3>🎉 Pedido salvo com sucesso</h3>
       <p>{msg}</p>
       <div className="sales-table-wrap"><table className="sales-table"><thead><tr><th>Item</th><th>Qtd.</th><th>Reserva</th><th>Produção</th><th>Status</th></tr></thead><tbody>{analyzed.map(i=><tr key={i.produto_id}><td><b>{i.codigo}</b> — {i.descricao}</td><td>{Number(i.quantidade).toLocaleString('pt-BR')}</td><td>{i.reserva.toLocaleString('pt-BR')} un</td><td>{i.falta.toLocaleString('pt-BR')} un</td><td><span className={`status ${i.falta?'warn':'ok'}`}>{i.falta?'🟠 PCP':'🟢 Reservado'}</span></td></tr>)}</tbody></table></div>
-      {faltantes.length>0&&<div className="sales-summary" style={{marginTop:14}}><span>Existem produtos em falta. A necessidade líquida já foi criada para análise do PCP.</span><button className="sales-btn primary" onClick={()=>go('/pcp')}><Factory size={17}/> ENVIAR PRODUTOS FALTANTES PARA PCP</button></div>}
+      {faltantes.length>0&&<div className="sales-summary mt-3"><span>Existem produtos em falta. A necessidade líquida já foi criada para análise do PCP.</span><button className="sales-btn primary" onClick={()=>go('/pcp')}><Factory size={17}/> ENVIAR PRODUTOS FALTANTES PARA PCP</button></div>}
       {faltantes.length===0&&<div className="sales-summary" style={{marginTop:14}}><span>Todos os itens foram atendidos por reserva de estoque.</span><button className="sales-btn" onClick={()=>go('/comercial')}>Voltar para Carteira</button></div>}
     </section>}
     <section className="sales-card"><div className="sales-kicker">CARTEIRA</div><h2>Pedidos recentes</h2><div className="sales-table-wrap"><table className="sales-table"><thead><tr><th>Pedido</th><th>Status</th><th>Total</th><th>Entrega</th></tr></thead><tbody>{orders.map(o=><tr key={o.id}><td>PV-{o.numero}</td><td>{o.status}</td><td>{money(Number(o.total))}</td><td>{o.data_entrega_prometida||'—'}</td></tr>)}{!orders.length&&<tr><td colSpan={4}>Nenhum pedido cadastrado.</td></tr>}</tbody></table></div></section>
