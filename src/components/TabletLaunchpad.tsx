@@ -64,7 +64,7 @@ export default function TabletLaunchpad({onNavigate,isOpen,onClose}:{onNavigate:
   <section className="flex max-h-[96vh] w-full max-w-[1500px] flex-col overflow-hidden rounded-lg border border-slate-700 bg-slate-900 text-white shadow-2xl">
    <header className="flex shrink-0 items-center justify-between gap-4 border-b border-slate-700 bg-slate-950 px-5 py-4">
     <div className="flex min-w-0 items-center gap-4">
-     <img src="/logo-industrial.svg" alt="ERP Industrial" className="h-16 w-auto max-w-[360px] object-contain sm:h-20"/>
+     <img src="/logo-industrial.svg" alt="ERP Industrial" className="h-auto w-[320px] max-w-[55vw] object-contain sm:w-[420px]"/>
      <div className="min-w-0 border-l border-slate-700 pl-4">
       <span className="block text-sm font-extrabold uppercase tracking-[0.18em] text-sky-300">SGQ ERP INDUSTRIAL</span>
       <strong className="block truncate text-xl font-extrabold sm:text-2xl">{selected?selected.label:'Tablet Operacional'}</strong>
