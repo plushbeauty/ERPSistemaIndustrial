@@ -58,6 +58,9 @@ Deno.serve(async (req) => {
 
     if (await authUserExistsByEmail(admin, email)) return json({ error: 'Este e-mail já possui um acesso de autenticação.' }, 409)
 
+    const trialStart = new Date()
+    const trialEnd = new Date(trialStart.getTime() + 15 * 86400000)
+
     const { data:empresa, error:empresaError } = await admin.from('erp_empresas').insert({
       razao_social: razao,
       nome_fantasia: fantasia,
@@ -65,6 +68,11 @@ Deno.serve(async (req) => {
       plano: 'Essencial',
       ativo: true,
       status: 'ativo',
+      plano_status: 'trial',
+      trial_inicio: trialStart.toISOString(),
+      trial_fim: trialEnd.toISOString(),
+      trial_started_at: trialStart.toISOString(),
+      trial_ends_at: trialEnd.toISOString(),
     }).select('id,nome_fantasia,razao_social').single()
 
     if (empresaError || !empresa) throw empresaError ?? new Error('EMPRESA_CREATE_FAILED')
@@ -94,7 +102,7 @@ Deno.serve(async (req) => {
 
     if (userError || !erpUser) throw userError ?? new Error('ERP_USER_CREATE_FAILED')
 
-    return json({ ok:true, empresa:{id:empresa.id,nome_fantasia:empresa.nome_fantasia,razao_social:empresa.razao_social}, login_nome:nomeAcesso, email, tipo_documento:tipoDocumento.toUpperCase() }, 201)
+    return json({ ok:true, empresa:{id:empresa.id,nome_fantasia:empresa.nome_fantasia,razao_social:empresa.razao_social}, login_nome:nomeAcesso, email, tipo_documento:tipoDocumento.toUpperCase(), trial_ends_at:trialEnd.toISOString() }, 201)
   } catch (error) {
     if (authUserId) await admin.auth.admin.deleteUser(authUserId).catch(()=>undefined)
     if (empresaId) {
