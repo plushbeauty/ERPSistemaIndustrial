@@ -18,7 +18,7 @@ export default function FiscalImpostos() {
             <h2 className="mb-5 text-xl font-bold text-slate-950">👉 1. PARÂMETROS DE APLICAÇÃO DA REGRA</h2>
             <div className="grid gap-5 md:grid-cols-2">
               <label className="text-base font-semibold">NCM Origem<input className="mt-2 min-h-[54px] w-full rounded-md border border-slate-400 px-3 text-base text-slate-900"/><button type="button" onClick={(e)=>{e.preventDefault()}} className="mt-2 min-h-[54px] rounded-md bg-slate-700 px-4 font-bold text-white">🔍 Lupa</button></label>
-              <label className="text-base font-semibold">CFOP Operação<input className="mt-2 min-h-[54px] w-full rounded-md border border-slate-400 px-3 text-base text-slate-900"/><button className="mt-2 min-h-[54px] rounded-md bg-slate-700 px-4 font-bold text-white">🔍 Lupa</button></label>
+              <label className="text-base font-semibold">CFOP Operação<input className="mt-2 min-h-[54px] w-full rounded-md border border-slate-400 px-3 text-base text-slate-900"/><button type="button" onClick={(e)=>{e.preventDefault()}} className="mt-2 min-h-[54px] rounded-md bg-slate-700 px-4 font-bold text-white">🔍 Lupa</button></label>
               <label className="text-base font-semibold">Regime Empresa<select className="mt-2 min-h-[54px] w-full rounded-md border border-slate-400 bg-white px-3 text-base text-slate-900"><option>Lucro Presumido</option><option>Lucro Real</option><option>Simples Nacional</option></select></label>
               <label className="text-base font-semibold">UF Destino<select className="mt-2 min-h-[54px] w-full rounded-md border border-slate-400 bg-white px-3 text-base text-slate-900"><option>SP - São Paulo</option></select></label>
             </div>
