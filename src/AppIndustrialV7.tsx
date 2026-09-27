@@ -3,7 +3,7 @@
 - Arquivo: src/AppIndustrialV7.tsx
 - Status Atual: Revisão 3 (Compras, Comercial e Qualidade Conectados)
 - Total de Linhas Gerado: 233
-- Assinatura de Entrada (Primeiros 3 Imports): import { useEffect, useState } from 'react' | import { motion, AnimatePresence } from 'motion/react' | import { Activity, ArrowUpRight, Boxes, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Truck, Users, Wrench } from 'lucide-react'
+- Assinatura de Entrada (Primeiros 3 Imports): import { useEffect, useState } from 'react' | import { motion, AnimatePresence } from 'motion/react' | import { Activity, ArrowUpRight, Boxes, ClipboardCheck, Factory, FileText, LayoutGrid, Package, Search, Settings, ShoppingCart, Store, Truck, Users, Wrench } from 'lucide-react'
 - Regra de Negócio Incorporada: Navegação real para clientes, fornecedores ISO 9001 e tabelas de preços por cliente.
 */
 import { FormEvent, useEffect, useMemo, useState } from 'react'
@@ -165,7 +165,6 @@ export default function AppIndustrialV7() {
       </div>
       <div className="v7-top-actions">
         <button className="v7-top-tablet" type="button" onClick={() => setLauncher(true)} aria-label="Abrir módulos">MÓDULOS</button>
-        <button className="v7-top-command" type="button" onClick={() => setActive('Dashboard')} aria-label="Abrir comandos">COMANDOS</button>
         <div className="v7-top-company" aria-label="Empresa conectada"><span>EMPRESA</span><strong>{empresaNome}</strong></div>
         <div className="v7-top-user-simple" aria-label="Usuário conectado"><span>OPERADOR</span><strong>{profile.nome || 'Usuário'}</strong></div>
         <div className="v7-top-date" aria-label="Data e hora atual"><strong>{clock.toLocaleDateString(language === 'en-US' ? 'en-US' : 'pt-BR')} • {clock.toLocaleTimeString(language === 'en-US' ? 'en-US' : 'pt-BR')}</strong></div>
@@ -181,9 +180,8 @@ export default function AppIndustrialV7() {
       .v7-top-title strong{color:#0f172a!important;font-size:16px!important;font-weight:950!important;letter-spacing:.02em;white-space:nowrap}
       .v7-top-title span{color:#475569!important;font-size:10px!important;font-weight:900!important;letter-spacing:.12em;margin-top:4px}
       .v7-top-actions{display:flex!important;align-items:center;justify-content:flex-end;gap:7px;min-width:0;flex-wrap:nowrap}
-      .v7-top-tablet,.v7-top-command,.v7-top-exit{display:inline-flex!important;align-items:center;justify-content:center;min-height:34px;padding:0 11px!important;border-radius:6px!important;font-size:11px!important;font-weight:950!important;cursor:pointer;white-space:nowrap;box-sizing:border-box}
+      .v7-top-tablet,.v7-top-exit{display:inline-flex!important;align-items:center;justify-content:center;min-height:34px;padding:0 11px!important;border-radius:6px!important;font-size:11px!important;font-weight:950!important;cursor:pointer;white-space:nowrap;box-sizing:border-box}
       .v7-top-tablet{background:#f59e0b!important;border:1px solid #d97706!important;color:#ffffff!important}
-      .v7-top-command{background:#173f5f!important;border:1px solid #173f5f!important;color:#ffffff!important}
       .v7-top-exit{background:#ffffff!important;border:1px solid #fca5a5!important;color:#991b1b!important}
       .v7-top-company,.v7-top-user-simple,.v7-top-date{display:flex!important;align-items:center;gap:6px;min-height:34px;padding:0 9px;border-left:1px solid #cbd5e1!important;white-space:nowrap}
       .v7-top-company span,.v7-top-user-simple span{color:#64748b!important;font-size:9px!important;font-weight:950!important;letter-spacing:.06em}
@@ -192,7 +190,7 @@ export default function AppIndustrialV7() {
       .v7-top-actions button:hover{filter:brightness(.97)}
       @media(max-width:1180px){.v7-top-company{display:none!important}.v7-top-brand{min-width:260px}.v7-top-brand img{width:155px!important}}
       @media(max-width:900px){.v7-top-date{display:none!important}.v7-top-data{display:none!important}.v7-top-brand{min-width:220px}.v7-top-title strong{font-size:13px!important}}
-      @media(max-width:650px){.v7-topbar{padding:7px 10px!important}.v7-top-brand{min-width:0}.v7-top-brand img{width:120px!important;height:44px!important}.v7-top-title{display:none!important}.v7-top-user-simple{display:none!important}.v7-top-tablet,.v7-top-command,.v7-top-exit{min-width:34px;padding:0 8px!important;font-size:0!important}.v7-top-tablet::after{content:'☰';font-size:17px}.v7-top-command::after{content:'⌂';font-size:17px}.v7-top-exit::after{content:'×';font-size:19px}}
+      @media(max-width:650px){.v7-topbar{padding:7px 10px!important}.v7-top-brand{min-width:0}.v7-top-brand img{width:120px!important;height:44px!important}.v7-top-title{display:none!important}.v7-top-user-simple{display:none!important}.v7-top-tablet,.v7-top-exit{min-width:34px;padding:0 8px!important;font-size:0!important}.v7-top-tablet::after{content:'☰';font-size:17px}.v7-top-exit::after{content:'×';font-size:19px}}
     `}</style>
     <main className="v7-main v7-main-full">
       <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={specialPath+active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{specialPath === '/vendas/clientes' ? <VendasClientesPage/> : specialPath === '/financeiro/custo-padrao' ? <FinanceiroCustoPadrao/> : specialPath === '/admin/logs' ? <AdminLogs/> : specialPath === '/outlook/configuracao' ? <OutlookConfiguracao/> : specialPath === '/compras/fornecedores' ? <FornecedoresIndustrial/> : active === 'Dashboard' ? <IndustrialCommandDashboard onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); setLauncher(false); return }; location.href = route }} /> : active === 'Configurações' ? <CompanySettings profile={profile}/> : location.pathname === '/qualidade/calibracao' ? <CalibracaoIndustrial/> : location.pathname === '/moldes-injecao' ? <MoldesFerramentaria/> : location.pathname === '/comercial' ? <ComercialSuprimentos/> : location.pathname === '/configuracoes-adm' ? <ConfiguracoesADM profile={profile}/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
