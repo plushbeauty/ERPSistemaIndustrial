@@ -114,7 +114,7 @@ export default function PlanosIndustrial() {
 
   useEffect(() => {
     void load()
-  }, [location.search])
+  }, [load, location.search])
 
   const current = plans.find((plan) => plan.codigo === selected) ?? plans[0]
   const included = (plan: Plan) => (module ? plan.modulos.includes(module) : true)
