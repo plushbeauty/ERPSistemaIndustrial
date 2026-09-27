@@ -8,7 +8,7 @@
 */
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { Activity, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Sun, Moon, Truck, Users, Wrench, X } from 'lucide-react'
+import { Activity, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Truck, Users, Wrench, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from './lib/supabaseClient'
 import IndustrialModuleWorkspace from './components/IndustrialModuleWorkspace'
