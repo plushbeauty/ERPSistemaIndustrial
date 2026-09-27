@@ -23,6 +23,8 @@ concurrency:
 
 jobs:
   quality:
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
     name: TypeScript + Build
     runs-on: ubuntu-latest
     timeout-minutes: 15
