@@ -52,7 +52,6 @@ const PCPIndustrial=lazy(()=>import('./pages/PCPIndustrial'))
 const QualidadeIndustrial=lazy(()=>import('./pages/QualidadeIndustrial'))
 const AcompanhamentoNaoConformidade=lazy(()=>import('./pages/AcompanhamentoNaoConformidade'))
 const EstoqueAlmoxarifado=lazy(()=>import('./pages/EstoqueAlmoxarifado'))
-const OperacaoIndustrial=lazy(()=>import('./pages/OperacaoIndustrial'))
 const ProdutosVendasIndustrial=lazy(()=>import('./pages/ProdutosVendasIndustrial'))
 const PedidoVendaCompleto=lazy(()=>import('./pages/PedidoVendaCompleto'))
 const VendasCentral=lazy(()=>import('./pages/VendasCentral'))
@@ -75,14 +74,12 @@ const RHIndustrial=lazy(()=>import('./pages/RHIndustrial'))
 const ModuleOverviewIndustrial=lazy(()=>import('./pages/ModuleOverviewIndustrial'))
 const SetupADMInicial=lazy(()=>import('./pages/SetupADMInicial'))
 const RecuperarSenha=lazy(()=>import('./pages/RecuperarSenha'))
-const AtivarAcesso=lazy(()=>import('./pages/AtivarAcesso'))
 const ConfiguracaoLote=lazy(()=>import('./pages/ConfiguracaoLote'))
 const FichaEngenharia=lazy(()=>import('./pages/FichaEngenharia'))
 const ConfiguracaoLotePCP=lazy(()=>import('./pages/ConfiguracaoLotePCP'))
 const FornecedoresIndustrial=lazy(()=>import('./pages/FornecedoresIndustrial'))
 const ClientesIndustrial=lazy(()=>import('./pages/ClientesIndustrial'))
 const TabelaPrecos=lazy(()=>import('./pages/TabelaPrecos'))
-const ComercialSuprimentos=lazy(()=>import('./pages/ComercialSuprimentos'))
 const CatalogoDigital=lazy(()=>import('./pages/CatalogoDigital'))
 const FichasProcesso=lazy(()=>import('./pages/FichasProcesso'))
 type AccessResult={ok:boolean;master:boolean;reason:string}
@@ -101,9 +98,6 @@ function IndustrialRouteHeader(){const[profile,setProfile]=useState<{nome:string
 function Protected({children,masterOnly=false}:{children:ReactNode;masterOnly?:boolean}){const[state,setState]=useState<'checking'|'allowed'|'denied'>('checking');useEffect(()=>{let alive=true;void(async()=>{try{const{data,error}=await supabase.auth.getSession();if(error)throw error;if(!data.session){if(alive)setState('denied');return}const access=await validarAcessoERP(data.session);if(!alive)return;if(!access.ok||(masterOnly&&!access.master)){setState('denied');return}setState('allowed')}catch(error){console.error('[Protected]',error);if(alive)setState('denied')}})();return()=>{alive=false}},[masterOnly]);if(state==='checking')return <LoadingSkeleton label="Validando permissões…"/>;if(state==='denied'){const target=encodeURIComponent(location.pathname+location.search);return <LoginRedirect target={target}/>};const p=location.pathname;const routeHeader=p!=='/erp-industrial'&&!p.startsWith('/pcp')&&!p.startsWith('/compras')&&p!=='/mrp'&&p!=='/configuracao-lote-pcp'&&p!=='/qualidade/refugos';return <Boundary>{routeHeader&&<IndustrialRouteHeader/>}<div className={routeHeader?'industrial-route-content':''}>{children}</div></Boundary>}
 function LoginRedirect({target}:{target:string}){useEffect(()=>{const safe=safeReturnTo(decodeURIComponent(target));if(location.pathname!=='/login')location.replace(`/login?returnTo=${encodeURIComponent(safe)}`)},[target]);return <LoadingSkeleton label="Redirecionando para o login…"/>}
 function EmpresaAdminRoute(){const[profile,setProfile]=useState<EmpresaAdminProfile|null>(null);useEffect(()=>{void supabase.auth.getUser().then(async({data})=>{if(!data.user)return;const r=await supabase.from('erp_usuarios').select('nome,empresa_id,is_master,nivel_admin,perfil').eq('auth_user_id',data.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();if(r.data)setProfile(r.data)})},[]);if(!profile)return <LoadingSkeleton label="Carregando administração da empresa…"/>;return <ConfiguracoesADMPage profile={profile}/>}
-function OperationalFrame({children}:{children:ReactNode}){
-  return <div className="operational-frame"><div className="operational-frame-content">{children}</div><button className="floating-tablet-global" type="button" onClick={()=>{location.href='/erp-industrial?tablet=1'}} aria-label="Abrir Tablet Industrial"><span>TABLET</span><small>Todos os módulos</small></button></div>
-}
 const overviewRoutes:Record<string,string>={'/modulos/pcp':'pcp','/modulos/estoque':'estoque','/modulos/recebimento':'recebimento','/modulos/qualidade':'qualidade','/modulos/manutencao':'manutencao','/modulos/fiscal':'fiscal','/modulos/indicadores':'indicadores','/modulos/engenharia':'engenharia','/modulos/compras':'compras','/modulos/clientes':'clientes','/modulos/rastreabilidade':'rastreabilidade','/modulos/custos':'custos','/modulos/expedicao':'expedicao','/modulos/fmea':'fmea','/modulos/rh':'rh'}
 function ModulePage({module}:{module:string}){return <Boundary><Suspense fallback={<LoadingSkeleton label="Carregando apresentação do módulo…"/>}><ModuleOverviewIndustrial module={module}/></Suspense></Boundary>}
 const DemoIndustrial = lazy(() => import('./pages/DemoIndustrial'))
