@@ -11,7 +11,7 @@ export default function MRPIndustrial(){
  const[runs,setRuns]=useState<Run[]>([])
  const[needs,setNeeds]=useState<Need[]>([])
  const[productId,setProductId]=useState('')
- const[quantity,setQuantity]=useState('1')
+ const[quantity,setQuantity]=useState('')
  const[demandRef,setDemandRef]=useState('')
  const[selectedRun,setSelectedRun]=useState('')
  const[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
