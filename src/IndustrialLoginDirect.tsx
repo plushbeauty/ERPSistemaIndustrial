@@ -22,7 +22,22 @@ function normalizeIndustrialLogin(value: string) {
   return value.trim().toLowerCase()
 }
 
-async function validateIndustrialSession(userId: string) {
+type IndustrialDestination = { profile: Record<string, unknown>; empresa: Record<string, unknown> | null; isMaster: boolean; perfil: string }
+
+function isTabletDevice() {
+  if (typeof navigator === 'undefined') return false
+  return /Tablet|iPad|Android(?!.*Mobile)/i.test(navigator.userAgent) || Math.min(window.innerWidth, window.innerHeight) >= 600 && Math.max(window.innerWidth, window.innerHeight) <= 1366 && navigator.maxTouchPoints > 1
+}
+
+function destinationAfterLogin(result: IndustrialDestination, requested?: string | null) {
+  if (result.isMaster) return '/diretoria/dashboard'
+  if (isTabletDevice() || result.perfil === 'OPERADOR_FABRIL') return '/tablet/dashboard'
+  const desktopProfiles = new Set(['DIRETOR', 'ADMINISTRADOR', 'ADMIN', 'PCP', 'PCPISTA', 'PLANEJADOR', 'PLANEJADOR_PCP'])
+  if (desktopProfiles.has(result.perfil)) return '/diretoria/dashboard'
+  return safeReturnTo(requested)
+}
+
+async function validateIndustrialSession(userId: string): Promise<IndustrialDestination> {
   const { data: profile, error: profileError } = await supabase
     .from('erp_usuarios')
     .select('id,auth_user_id,empresa_id,nivel_admin,ativo,is_master,perfil,deleted_at,setor_id')
@@ -47,7 +62,7 @@ async function validateIndustrialSession(userId: string) {
     (profile.setor_id === null || profile.setor_id === undefined)
 
   if (isMaster) {
-    return { profile, empresa: null, isMaster: true }
+    return { profile, empresa: null, isMaster: true, perfil }
   }
 
   if (profile.is_master === true || perfil === 'MASTER' || nivel === 100) {
@@ -70,7 +85,7 @@ async function validateIndustrialSession(userId: string) {
     throw new Error('A empresa vinculada ao usuário está inexistente ou inativa.')
   }
 
-  return { profile, empresa, isMaster: false }
+  return { profile, empresa, isMaster: false, perfil }
 }
 
 export default function IndustrialLoginDirect({ returnTo, masterMode = false }: Props) {
@@ -112,7 +127,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
           return
         }
 
-        if (alive) window.location.replace(safeReturnTo(returnTo))
+        if (alive) window.location.replace(destinationAfterLogin(result, returnTo))
       } catch (err) {
         console.error('[ERP login bootstrap]', err)
         await supabase.auth.signOut().catch(() => undefined)
@@ -170,7 +185,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
         throw new Error('Este acesso não possui perfil MASTER autorizado.')
       }
 
-      const destination = safeReturnTo(returnTo)
+      const destination = destinationAfterLogin(result, returnTo)
       const destinationName =
         result.empresa?.nome_fantasia ||
         result.empresa?.razao_social ||
