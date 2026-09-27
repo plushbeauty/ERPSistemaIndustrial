@@ -104,7 +104,7 @@ export default function PlanosIndustrial() {
         setStatus('empty')
         return
       }
-      if (!rows.some((plan) => plan.codigo === selected)) setSelected(rows[0].codigo)
+      setSelected((previous) => rows.some((plan) => plan.codigo === previous) ? previous : rows[0].codigo)
       setStatus('success')
     } catch (cause) {
       setStatus('error')
