@@ -20,8 +20,12 @@ create table if not exists public.erp_vendas_metas (
 );
 alter table public.erp_vendas_configuracoes enable row level security;
 alter table public.erp_vendas_metas enable row level security;
-create policy if not exists "vendas_config_select" on public.erp_vendas_configuracoes for select to authenticated using(empresa_id=public.erp_current_empresa_id());
-create policy if not exists "vendas_config_write" on public.erp_vendas_configuracoes for all to authenticated using(empresa_id=public.erp_current_empresa_id()) with check(empresa_id=public.erp_current_empresa_id());
-create policy if not exists "vendas_metas_select" on public.erp_vendas_metas for select to authenticated using(empresa_id=public.erp_current_empresa_id());
-create policy if not exists "vendas_metas_write" on public.erp_vendas_metas for all to authenticated using(empresa_id=public.erp_current_empresa_id()) with check(empresa_id=public.erp_current_empresa_id());
+drop policy if exists "vendas_config_select" on public.erp_vendas_configuracoes;
+create policy "vendas_config_select" on public.erp_vendas_configuracoes for select to authenticated using(empresa_id=public.erp_current_empresa_id());
+drop policy if exists "vendas_config_write" on public.erp_vendas_configuracoes;
+create policy "vendas_config_write" on public.erp_vendas_configuracoes for all to authenticated using(empresa_id=public.erp_current_empresa_id()) with check(empresa_id=public.erp_current_empresa_id());
+drop policy if exists "vendas_metas_select" on public.erp_vendas_metas;
+create policy "vendas_metas_select" on public.erp_vendas_metas for select to authenticated using(empresa_id=public.erp_current_empresa_id());
+drop policy if exists "vendas_metas_write" on public.erp_vendas_metas;
+create policy "vendas_metas_write" on public.erp_vendas_metas for all to authenticated using(empresa_id=public.erp_current_empresa_id()) with check(empresa_id=public.erp_current_empresa_id());
 grant select,insert,update,delete on public.erp_vendas_configuracoes,public.erp_vendas_metas to authenticated;
