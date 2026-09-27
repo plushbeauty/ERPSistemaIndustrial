@@ -10,7 +10,7 @@
  */
 
 import { ChangeEvent, DragEvent, useEffect, useState } from 'react'
-import { Download, FileUp, Loader2, Trash2, UploadCloud } from 'lucide-react'
+import { Download, FileUp, Trash2, UploadCloud } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Attachment={id:string;nome_arquivo:string;storage_path:string|null;mime_type:string|null;tamanho_bytes:number|null;created_at:string}
