@@ -19,6 +19,11 @@ import MoldesFerramentaria from './pages/MoldesFerramentaria'
 import ComercialSuprimentos from './pages/ComercialSuprimentos'
 import ConfiguracoesADM from './pages/ConfiguracoesADM'
 import CalibracaoIndustrial from './pages/CalibracaoIndustrial'
+import VendasClientesPage from './pages/VendasClientes'
+import FinanceiroCustoPadrao from './pages/FinanceiroCustoPadrao'
+import AdminLogs from './pages/AdminLogs'
+import OutlookConfiguracao from './pages/OutlookConfiguracao'
+import FornecedoresIndustrial from './pages/FornecedoresIndustrial'
 
 type Field = { key: string; label: string; type?: 'text' | 'number' | 'date' | 'email'; required?: boolean }
 type Module = { name: string; title: string; description: string; icon: LucideIcon; table?: string; fields?: Field[] }
@@ -122,6 +127,7 @@ export default function AppIndustrialV7() {
   const [theme] = useState<UiTheme>('light')
   const current = segments.find(s => s.name === segment) ?? segments[0]
   const module = current.modules.find(m => m.name === active)
+  const specialPath = location.pathname
   useEffect(() => { localStorage.setItem('erp-theme', theme) }, [theme])
 
   useEffect(() => {
@@ -188,7 +194,7 @@ export default function AppIndustrialV7() {
           <p>{active === 'Dashboard' ? current.description : module?.description}</p>
         </div>
       </section>
-      <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{active === 'Dashboard' ? <IndustrialCommandDashboard onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); setLauncher(false); return }; location.href = route }} /> : active === 'Configurações' ? <CompanySettings profile={profile}/> : location.pathname === '/qualidade/calibracao' ? <CalibracaoIndustrial/> : location.pathname === '/moldes-injecao' ? <MoldesFerramentaria/> : location.pathname === '/comercial' ? <ComercialSuprimentos/> : location.pathname === '/configuracoes-adm' ? <ConfiguracoesADM profile={profile}/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
+      <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={specialPath+active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{specialPath === '/vendas/clientes' ? <VendasClientesPage/> : specialPath === '/financeiro/custo-padrao' ? <FinanceiroCustoPadrao/> : specialPath === '/admin/logs' ? <AdminLogs/> : specialPath === '/outlook/configuracao' ? <OutlookConfiguracao/> : specialPath === '/compras/fornecedores' ? <FornecedoresIndustrial/> : active === 'Dashboard' ? <IndustrialCommandDashboard onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); setLauncher(false); return }; location.href = route }} /> : active === 'Configurações' ? <CompanySettings profile={profile}/> : location.pathname === '/qualidade/calibracao' ? <CalibracaoIndustrial/> : location.pathname === '/moldes-injecao' ? <MoldesFerramentaria/> : location.pathname === '/comercial' ? <ComercialSuprimentos/> : location.pathname === '/configuracoes-adm' ? <ConfiguracoesADM profile={profile}/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
       <footer>FernandoSch_System • SGQ ERP • {segment} • Ambiente isolado por empresa</footer>
 
     </main>
