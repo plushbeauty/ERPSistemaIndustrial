@@ -1,6 +1,6 @@
 import { useEffect,useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { CalendarDays, CheckCircle2, Clock3, FileCheck2, MapPin, Plus, Ruler, Search, ShieldCheck, X } from 'lucide-react'
+import { CheckCircle2, Clock3, FileCheck2, MapPin, Plus, Search, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Equip={id:string;codigo:string;descricao:string;fabricante:string|null;modelo:string|null;setor_localizacao:string|null;status:string|null;ultima_calibracao:string|null;proxima_calibracao:string|null;numero_certificado_atual:string|null}
