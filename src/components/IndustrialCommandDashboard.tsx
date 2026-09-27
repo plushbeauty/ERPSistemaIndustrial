@@ -15,6 +15,8 @@ import {
   Factory, Gauge, LayoutGrid, ListChecks, Package, Plus, ShieldCheck, ShoppingCart,
   Zap
 } from 'lucide-react'
+import { ERPButton } from './ui/ERPButton'
+import { ERPIconButton } from './ui/ERPIconButton'
 import TabletLaunchpad from './TabletLaunchpad'
 import { supabase } from '../lib/supabaseClient'
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
@@ -199,10 +201,10 @@ export default function IndustrialCommandDashboard({ onNavigate }: Props) {
         <section className="icd-grid">
           <article className="icd-panel icd-production"><div className="icd-panel-head"><div><span>PRODUÇÃO REAL</span><h2>Eficiência de produção</h2></div><Activity size={19}/></div>{productionSeries.length?<div className="icd-chart"><ResponsiveContainer width="100%" height="100%"><LineChart data={productionSeries} margin={{top:8,right:16,left:0,bottom:8}}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="date"/><YAxis/><Tooltip/><Legend/><Line type="monotone" dataKey="boa" name="Boa" strokeWidth={3} dot={false}/><Line type="monotone" dataKey="refugo" name="Refugo" strokeWidth={3} dot={false}/></LineChart></ResponsiveContainer></div>:<div className="icd-empty">Sem apontamentos de produção registrados. O gráfico será preenchido automaticamente quando houver dados reais.</div>}</article>
           <aside className="icd-panel icd-production"><div className="icd-panel-head"><div><span>AÇÕES RÁPIDAS</span><h2>Central operacional</h2></div><LayoutGrid size={19}/></div><div className="icd-actions">
-            <button className="icd-action" type="button" onClick={()=>onNavigate('/pcp/nova-op')}><span><Plus size={18}/></span><div><b>Criar Nova OP</b><small>Abrir ordem de produção</small></div></button>
-            <button className="icd-action" type="button" onClick={()=>onNavigate('/pcp')}><span><ListChecks size={18}/></span><div><b>Central de OPs</b><small>Demanda e acompanhamento</small></div></button>
-            <button className="icd-action" type="button" onClick={()=>onNavigate('/pcp/mrp')}><span><Package size={18}/></span><div><b>Materiais / MRP</b><small>Consultar materiais e necessidades</small></div></button>
-            <button className="icd-action" type="button" onClick={()=>setTabletOpen(true)}><span><LayoutGrid size={18}/></span><div><b>TABLET INDUSTRIAL</b><small>Operação de chão de fábrica</small></div></button>
+            <ERPButton variant="primary" icon={<Plus size={17}/>} onClick={()=>onNavigate('/pcp/nova-op')}>Criar Nova OP</ERPButton>
+            <ERPButton variant="secondary" icon={<ListChecks size={17}/>} onClick={()=>onNavigate('/pcp')}>Central de OPs</ERPButton>
+            <ERPButton variant="secondary" icon={<Package size={17}/>} onClick={()=>onNavigate('/pcp/mrp')}>Materiais / MRP</ERPButton>
+            <ERPButton variant="neutral" icon={<LayoutGrid size={17}/>} onClick={()=>setTabletOpen(true)}>Tablet Industrial</ERPButton>
           </div></aside>
         </section>
         <section className="icd-panel icd-orders"><div className="icd-panel-head"><div><span>PCP · DADOS REAIS</span><h2>Últimas ordens de produção atualizadas</h2></div><ListChecks size={19}/></div><div className="icd-table-wrap"><table className="icd-table"><thead><tr><th>COD_OP</th><th>PRODUTO</th><th>DATA</th><th>STATUS</th></tr></thead><tbody>{latestOps.length?latestOps.map(op=><tr key={op.id}><td><b>OP-{op.numero_op}</b></td><td>{op.produto}</td><td>{op.created_at?new Date(op.created_at).toLocaleDateString('pt-BR'):'—'}</td><td><span className="icd-status">{statusLabel(op.status)}</span></td></tr>):<tr><td colSpan={4} className="icd-empty-row">Nenhuma ordem de produção encontrada para esta empresa.</td></tr>}</tbody></table></div></section>
