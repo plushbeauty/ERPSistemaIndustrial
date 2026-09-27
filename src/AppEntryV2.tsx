@@ -161,6 +161,7 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
   return { ok: true, master: false, reason: '' }
 }
 
+// Router master industrial v7: verified JSX boundary.
 export default function AppEntryV2() {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
