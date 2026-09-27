@@ -175,6 +175,15 @@ export default function AppIndustrialV7() {
         <button className="v7-top-exit" type="button" onClick={() => void supabase.auth.signOut().then(() => { location.href = '/login' })}>Sair</button>
       </div>
     </header>
+    <style>{`
+      .v7-top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+      .v7-top-tablet,.v7-top-command{display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:0 13px;border-radius:10px;border:1px solid #cbd5e1;background:#fff;color:#0f172a;font-weight:900;cursor:pointer;white-space:nowrap}
+      .v7-top-tablet{background:#ea6a0a;border-color:#ea6a0a;color:#fff;box-shadow:0 5px 14px rgba(234,106,10,.22)}
+      .v7-top-command{background:#0f766e;border-color:#0f766e;color:#fff}
+      .v7-top-tablet:hover,.v7-top-command:hover{filter:brightness(.96)}
+      @media(max-width:980px){.v7-top-actions{gap:6px}.v7-top-date{display:none}}
+      @media(max-width:700px){.v7-top-command{display:none}.v7-top-tablet{font-size:0;width:44px;justify-content:center;padding:0}.v7-top-user-simple strong{max-width:110px;overflow:hidden;text-overflow:ellipsis}}
+    `}</style>
 
     <main className="v7-main v7-main-full">
       <section className="v7-header v7-page-header">
