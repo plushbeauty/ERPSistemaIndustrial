@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { JSX } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { BarChart3, Printer, RefreshCw, AlertTriangle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -7,7 +6,7 @@ import { supabase } from '../lib/supabaseClient'
 type CostRow={codigo_produto:string;custo_padrao_total:number;custo_real_total:number;data_apuracao:string}
 type ChartRow={produto:string;padrao:number;real:number;desvio:number}
 
-export default function FinanceiroGraficoDesvios():JSX.Element{
+export default function FinanceiroGraficoDesvios(){
  const [rows,setRows]=useState<CostRow[]>([])
  const [busy,setBusy]=useState(false)
  const [error,setError]=useState('')
