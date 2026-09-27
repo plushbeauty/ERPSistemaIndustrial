@@ -3,12 +3,12 @@
 - Arquivo: src/AppIndustrialV7.tsx
 - Status Atual: Revisão 3 (Compras, Comercial e Qualidade Conectados)
 - Total de Linhas Gerado: 233
-- Assinatura de Entrada (Primeiros 3 Imports): import { useEffect, useState } from 'react' | import { motion, AnimatePresence } from 'motion/react' | import { Activity, ArrowUpRight, Boxes, CalendarDays, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Truck, Users, Wrench } from 'lucide-react'
+- Assinatura de Entrada (Primeiros 3 Imports): import { useEffect, useState } from 'react' | import { motion, AnimatePresence } from 'motion/react' | import { Activity, ArrowUpRight, Boxes, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Truck, Users, Wrench } from 'lucide-react'
 - Regra de Negócio Incorporada: Navegação real para clientes, fornecedores ISO 9001 e tabelas de preços por cliente.
 */
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { Activity, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Truck, Users, Wrench, X } from 'lucide-react'
+import { Activity, ArrowUpRight, Boxes, CalendarDays, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Truck, Users, Wrench } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from './lib/supabaseClient'
 import IndustrialModuleWorkspace from './components/IndustrialModuleWorkspace'
