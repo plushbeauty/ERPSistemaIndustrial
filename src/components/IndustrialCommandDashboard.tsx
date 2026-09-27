@@ -12,7 +12,7 @@
 import { useEffect, useState } from 'react'
 import {
   Activity, AlertTriangle, ArrowUpRight, Boxes, CalendarDays, CheckCircle2,
-  Factory, Gauge, LayoutGrid, ListChecks, Package, Plus, ShieldCheck, ShoppingCart,
+  Factory, Gauge, LayoutGrid, ListChecks, Package, Plus, ShieldCheck,
   Zap
 } from 'lucide-react'
 import { ERPButton } from './ui/ERPButton'
