@@ -228,8 +228,8 @@ const tabs:[Tab,string,string][]=[['visao','Visão geral','Gauge'],['novaop','Cr
    <div className="pcp-side-section">PLANEJAMENTO E CONTROLE</div>
    <button className={`pcp-side-item ${tab==='visao'?'active':''}`} onClick={()=>selectTab('visao')}><span>▦</span> VISÃO GERAL</button>
    <button className={`pcp-side-item ${tab==='novaop'?'active':''}`} onClick={()=>selectTab('novaop')}><span>＋</span> CRIAR NOVA OP</button>
-   <button className={`pcp-side-item ${tab==='pedidos'?'active':''}`} onClick={()=>selectTab('pedidos')}><span>▤</span> PEDIDOS / DEMANDA</button>
-   <button className={`pcp-side-item ${tab==='ops'?'active':''}`} onClick={()=>selectTab('ops')}><span>□</span> ORDENS DE PRODUÇÃO</button>
+   <button className="pcp-side-item" onClick={()=>location.href='/pcp/demanda'}><span>▤</span> DEMANDA CENTRAL</button>
+   <button className="pcp-side-item" onClick={()=>location.href='/pcp/ordens'}><span>□</span> ORDENS DE PRODUÇÃO</button>
    <button className={`pcp-side-item ${tab==='materiais'?'active':''}`} onClick={()=>selectTab('materiais')}><span>◇</span> MATERIAIS / MRP</button>
    <button className={`pcp-side-item ${tab==='programacao'?'active':''}`} onClick={()=>selectTab('programacao')}><span>◫</span> CALENDÁRIO / PROGRAMAÇÃO</button>
    <button className={`pcp-side-item ${tab==='capacidade'?'active':''}`} onClick={()=>selectTab('capacidade')}><span>▥</span> CENTROS DE TRABALHO / MÁQUINAS</button>
