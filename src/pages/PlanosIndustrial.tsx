@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight, Check, Factory, RefreshCw, ShieldCheck, Wrench } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 
@@ -65,7 +65,7 @@ export default function PlanosIndustrial() {
   const [status, setStatus] = useState<'loading' | 'success' | 'empty' | 'error'>('loading')
   const [error, setError] = useState('')
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setStatus('loading')
     setError('')
 
