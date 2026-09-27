@@ -59,7 +59,7 @@ export function processarXmlPedido(xmlBase64: string): IXmlPedidoResult {
       return { sucesso: false, pedidoCliente: null, itens: [], erro: 'XML inválido ou malformado.' };
     }
 
-    const text = (root: ParentNode, names: string[]): string | null => {
+    const text = (root: Document | Element, names: string[]): string | null => {
       for (const name of names) {
         const node = root.querySelector(name);
         const value = node?.textContent?.trim();
