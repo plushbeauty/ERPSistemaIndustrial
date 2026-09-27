@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactElement } from 'react'
 import { CheckCircle, FileText, Inbox, Save, Search, Upload, X } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import EntityCodeLookup, { type LookupRecord } from '../../components/industrial/EntityCodeLookup'
@@ -12,7 +12,7 @@ type QualityStatus = 'APROVADO' | 'REPROVADO'
 
 const numberFormat = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 3 })
 
-export default function EstoqueRecebimentoLotes(): JSX.Element {
+export default function EstoqueRecebimentoLotes(): ReactElement {
   const [empresaId, setEmpresaId] = useState('')
   const [products, setProducts] = useState<Product[]>([])
   const [produtoId, setProdutoId] = useState('')
