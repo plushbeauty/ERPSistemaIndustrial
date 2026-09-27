@@ -10,7 +10,7 @@
  */
 
 import { useEffect,useState } from 'react'
-import { Activity, ArrowLeft, BarChart3, BookOpen, Boxes, CalendarCheck2, ClipboardCheck, ClipboardList, Factory, FileCheck2, FileText, Gauge, HelpCircle, Landmark, LayoutDashboard, Package, Receipt, Search, Settings, ShieldCheck, ShoppingCart, Users, Warehouse, Wrench, X, UserRound, SlidersHorizontal, Truck, Languages } from 'lucide-react'
+import { Activity, ArrowLeft, BarChart3, BookOpen, Boxes, ClipboardCheck, ClipboardList, Factory, FileCheck2, FileText, Gauge, HelpCircle, Landmark, LayoutDashboard, Package, Search, Settings, ShieldCheck, ShoppingCart, Users, Warehouse, Wrench, X, UserRound, SlidersHorizontal, Truck, Languages } from 'lucide-react'
 type IconComponent = typeof Activity
 type Action={label:string;description:string;icon:IconComponent;route:string}
 type Module={label:string;description:string;icon:IconComponent;actions:Action[]}
