@@ -265,7 +265,7 @@ const tabs:[Tab,string,string][]=[['visao','Visão geral','Gauge'],['novaop','Cr
     </article>
     <article className="pcp-dash-card">
      <h2>Produção (últimos 7 dias)</h2>
-     {productionDays.length ? <div className="pcp-prod-bars">{productionDays.map(d=><div className="pcp-prod-day" key={d.date}><b>{(d.good+d.scrap).toLocaleString('pt-BR')}</b><div className="pcp-prod-bar" className={\`pcp-prod-bar ${heightBucket((d.good+d.scrap)/Math.max(1,maxProduction))}\`}/><small>{new Date(d.date+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</small></div>)}</div> : <div className="pcp-chart-empty">Nenhuma produção apontada no período disponível.</div>}
+     {productionDays.length ? <div className="pcp-prod-bars">{productionDays.map(d=><div className="pcp-prod-day" key={d.date}><b>{(d.good+d.scrap).toLocaleString('pt-BR')}</b><div className={`pcp-prod-bar ${heightBucket((d.good+d.scrap)/Math.max(1,maxProduction))}`}/><small>{new Date(d.date+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</small></div>)}</div> : <div className="pcp-chart-empty">Nenhuma produção apontada no período disponível.</div>}
     </article>
     <article className="pcp-dash-card">
      <h2>Alertas do PCP</h2>
