@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
-import { CheckCircle, CloudOff, LogOut, RefreshCw, Wifi } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { CheckCircle, CloudOff, LogOut, RefreshCw, ShieldAlert, Wifi } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { cn } from '../utils/cn'
 
@@ -27,14 +27,30 @@ type PendingApontamento = {
   instrument: string
 }
 
+type LoadState = 'loading' | 'success' | 'empty' | 'error'
+
 const QUEUE_KEY = 'erp:pcp:tablet:pending-apontamentos:v1'
+
+function isPendingApontamento(value: unknown): value is PendingApontamento {
+  if (typeof value !== 'object' || value === null) return false
+  const item = value as Record<string, unknown>
+  return (
+    typeof item.id === 'string' &&
+    typeof item.createdAt === 'string' &&
+    typeof item.opId === 'string' &&
+    typeof item.found === 'number' &&
+    typeof item.defects === 'number' &&
+    typeof item.reason === 'string' &&
+    typeof item.instrument === 'string'
+  )
+}
 
 function readQueue(): PendingApontamento[] {
   try {
     const raw = localStorage.getItem(QUEUE_KEY)
     if (!raw) return []
     const parsed: unknown = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed as PendingApontamento[] : []
+    return Array.isArray(parsed) ? parsed.filter(isPendingApontamento) : []
   } catch {
     return []
   }
@@ -47,8 +63,7 @@ function writeQueue(queue: PendingApontamento[]): void {
 function enqueue(item: PendingApontamento): void {
   const queue = readQueue()
   if (!queue.some((entry) => entry.id === item.id)) {
-    queue.push(item)
-    writeQueue(queue)
+    writeQueue([...queue, item])
   }
 }
 
@@ -59,10 +74,13 @@ function removeFromQueue(id: string): void {
 function networkFailure(error: unknown): boolean {
   if (!navigator.onLine) return true
   if (error instanceof TypeError) return true
-  const code = typeof error === 'object' && error !== null && 'code' in error
-    ? String(error.code)
-    : ''
+  if (typeof error !== 'object' || error === null || !('code' in error)) return false
+  const code = String(error.code)
   return code.startsWith('08') || code === 'PGRST000' || code === 'PGRST001' || code === 'PGRST003'
+}
+
+function tenantIdFromRpc(value: unknown): string {
+  return typeof value === 'string' ? value : ''
 }
 
 export default function PCPTabletOperador() {
@@ -72,20 +90,42 @@ export default function PCPTabletOperador() {
   const [defects, setDefects] = useState(0)
   const [reason, setReason] = useState('')
   const [instrument, setInstrument] = useState('')
+  const [instrumentValid, setInstrumentValid] = useState(false)
   const [blocked, setBlocked] = useState('')
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
   const [online, setOnline] = useState(navigator.onLine)
   const [pendingCount, setPendingCount] = useState(() => readQueue().length)
+  const [loadState, setLoadState] = useState<LoadState>('loading')
+  const [loadError, setLoadError] = useState('')
 
   const load = useCallback(async () => {
-    const result = await supabase
-      .from('erp_ordens_producao')
-      .select('id,numero_op,produto_id,maquina_id,quantidade_planejada')
-      .in('status', ['pendente', 'EM_EXECUCAO', 'EM_PRODUCAO', 'em_execucao'])
-      .limit(200)
+    setLoadState('loading')
+    setLoadError('')
 
-    if (!result.error) setOps((result.data ?? []) as OP[])
+    try {
+      const tenant = await supabase.rpc('erp_current_empresa_id')
+      if (tenant.error) throw tenant.error
+      const empresaId = tenantIdFromRpc(tenant.data)
+      if (!empresaId) throw new Error('Empresa do operador não identificada pelo contexto multi-tenant.')
+
+      const result = await supabase
+        .from('erp_ordens_producao')
+        .select('id,numero_op,produto_id,maquina_id,quantidade_planejada')
+        .eq('empresa_id', empresaId)
+        .in('status', ['pendente', 'EM_EXECUCAO', 'EM_PRODUCAO', 'em_execucao'])
+        .order('numero_op', { ascending: false })
+        .limit(200)
+
+      if (result.error) throw result.error
+
+      const rows = (result.data ?? []) as OP[]
+      setOps(rows)
+      setLoadState(rows.length ? 'success' : 'empty')
+    } catch (cause) {
+      setLoadState('error')
+      setLoadError(cause instanceof Error ? cause.message : 'Falha técnica ao carregar as ordens de produção do Supabase.')
+    }
   }, [])
 
   const resolvePayload = useCallback(async (item: PendingApontamento) => {
@@ -93,7 +133,9 @@ export default function PCPTabletOperador() {
     if (userError || !userData.user) throw userError ?? new Error('Sessão do operador não encontrada.')
 
     const tenant = await supabase.rpc('erp_current_empresa_id')
-    if (tenant.error || !tenant.data) throw tenant.error ?? new Error('Empresa não identificada.')
+    if (tenant.error) throw tenant.error
+    const empresaId = tenantIdFromRpc(tenant.data)
+    if (!empresaId) throw new Error('Empresa do operador não identificada.')
 
     const selectedOp = ops.find((entry) => entry.id === item.opId)
     let currentOp = selectedOp
@@ -102,6 +144,7 @@ export default function PCPTabletOperador() {
       const opResult = await supabase
         .from('erp_ordens_producao')
         .select('id,numero_op,produto_id,maquina_id,quantidade_planejada')
+        .eq('empresa_id', empresaId)
         .eq('id', item.opId)
         .maybeSingle()
       if (opResult.error) throw opResult.error
@@ -109,14 +152,15 @@ export default function PCPTabletOperador() {
     }
 
     if (!currentOp) throw new Error('A OP do lançamento não está mais disponível.')
+    if (item.found <= 0) throw new Error('Informe pelo menos uma peça encontrada.')
     if (item.defects > item.found) throw new Error('Refugo não pode superar peças encontradas.')
-    if (!item.reason.trim()) throw new Error('Motivo de refugo obrigatório.')
-    if (!item.instrument.trim()) throw new Error('Instrumento obrigatório.')
+    if (!item.reason.trim() && item.defects > 0) throw new Error('Motivo de refugo obrigatório.')
+    if (!item.instrument.trim()) throw new Error('TAG do instrumento obrigatória.')
 
     const processResult = await supabase
       .from('erp_receitas_processos')
       .select('processo_id,ferramenta_id,maquina_id')
-      .eq('empresa_id', tenant.data)
+      .eq('empresa_id', empresaId)
       .eq('produto_id', currentOp.produto_id ?? '')
       .eq('status', 'APROVADA')
       .order('versao', { ascending: false })
@@ -130,6 +174,7 @@ export default function PCPTabletOperador() {
     const instrumentResult = await supabase
       .from('erp_equipamentos_medicao')
       .select('status,proxima_calibracao')
+      .eq('empresa_id', empresaId)
       .eq('codigo', item.instrument)
       .maybeSingle()
 
@@ -137,17 +182,18 @@ export default function PCPTabletOperador() {
     const instrumentData = instrumentResult.data
     const calibrationExpired = Boolean(
       instrumentData?.proxima_calibracao &&
-      new Date(instrumentData.proxima_calibracao) < new Date()
+      new Date(instrumentData.proxima_calibracao + 'T23:59:59') < new Date(),
     )
-    if (!instrumentData || String(instrumentData.status ?? '').toUpperCase() !== 'APROVADO' || calibrationExpired) {
-      throw new Error('Instrumento vencido ou não aprovado. Apontamento bloqueado.')
+    const calibrationStatus = String(instrumentData?.status ?? '').trim().toUpperCase()
+    if (!instrumentData || calibrationStatus !== 'APROVADO' || calibrationExpired) {
+      throw new Error('TAG bloqueada: instrumento vencido ou não aprovado no banco.')
     }
 
     const good = Math.max(0, item.found - item.defects)
     const startedAt = new Date(item.createdAt).toISOString()
 
     return {
-      empresa_id: tenant.data,
+      empresa_id: empresaId,
       processo_id: process.processo_id,
       ordem_producao_id: currentOp.id,
       maquina_id: currentOp.maquina_id ?? process.maquina_id,
@@ -164,13 +210,14 @@ export default function PCPTabletOperador() {
       parametros_reais: {
         instrumento: item.instrument,
         motivo_refugo: item.reason,
-        client_transaction_id: item.id
-      }
+        client_transaction_id: item.id,
+      },
     }
   }, [ops])
 
   const syncQueue = useCallback(async () => {
     if (!navigator.onLine || busy) return
+
     const queue = readQueue()
     if (!queue.length) {
       setPendingCount(0)
@@ -179,6 +226,7 @@ export default function PCPTabletOperador() {
 
     setBusy(true)
     setMessage('Sincronizando apontamentos pendentes…')
+
     try {
       for (const item of queue) {
         const payload = await resolvePayload(item)
@@ -187,14 +235,16 @@ export default function PCPTabletOperador() {
         removeFromQueue(item.id)
       }
       setPendingCount(readQueue().length)
-      setMessage('Apontamentos sincronizados com sucesso.')
-    } catch (error) {
+      setMessage('SUCCESS · Apontamentos sincronizados com sucesso.')
+    } catch (cause) {
       setPendingCount(readQueue().length)
-      if (networkFailure(error)) {
-        setMessage('Conexão instável. O apontamento permanece protegido na fila local.')
-      } else {
-        setMessage(error instanceof Error ? error.message : 'Falha ao sincronizar apontamentos.')
-      }
+      setMessage(
+        networkFailure(cause)
+          ? 'OFFLINE · Conexão instável. O apontamento permanece protegido na fila local.'
+          : cause instanceof Error
+            ? cause.message
+            : 'Falha técnica ao sincronizar apontamentos.',
+      )
     } finally {
       setBusy(false)
     }
@@ -211,8 +261,9 @@ export default function PCPTabletOperador() {
     }
     const handleOffline = () => {
       setOnline(false)
-      setMessage('Sem conexão. Novos apontamentos serão protegidos na fila local.')
+      setMessage('OFFLINE · Novos apontamentos serão protegidos na fila local.')
     }
+
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
     return () => {
@@ -227,35 +278,58 @@ export default function PCPTabletOperador() {
 
   const op = ops.find((entry) => entry.id === opId)
   const good = Math.max(0, found - defects)
-  const quality = found ? (good / found) * 100 : 0
+  const quality = found > 0 ? (good / found) * 100 : 0
+  const canSave = !busy && Boolean(op) && found > 0 && (defects === 0 || reason.trim().length > 0) && instrumentValid
+  const statusText = online ? 'ONLINE' : 'OFFLINE • FILA LOCAL ATIVA'
 
   const check = async () => {
-    if (!instrument.trim()) {
-      setBlocked('Instrumento obrigatório.')
+    const normalizedInstrument = instrument.trim().toUpperCase()
+    setInstrument(normalizedInstrument)
+
+    if (!normalizedInstrument) {
+      setInstrumentValid(false)
+      setBlocked('TAG do instrumento obrigatória.')
       return false
     }
-    const result = await supabase
-      .from('erp_equipamentos_medicao')
-      .select('status,proxima_calibracao')
-      .eq('codigo', instrument)
-      .maybeSingle()
-    if (result.error) {
-      setBlocked(result.error.message)
+
+    try {
+      const tenant = await supabase.rpc('erp_current_empresa_id')
+      if (tenant.error) throw tenant.error
+      const empresaId = tenantIdFromRpc(tenant.data)
+      if (!empresaId) throw new Error('Empresa do operador não identificada.')
+
+      const result = await supabase
+        .from('erp_equipamentos_medicao')
+        .select('status,proxima_calibracao')
+        .eq('empresa_id', empresaId)
+        .eq('codigo', normalizedInstrument)
+        .maybeSingle()
+
+      if (result.error) throw result.error
+
+      const expired = Boolean(
+        result.data?.proxima_calibracao &&
+        new Date(result.data.proxima_calibracao + 'T23:59:59') < new Date(),
+      )
+      const approved = String(result.data?.status ?? '').trim().toUpperCase() === 'APROVADO'
+      const valid = Boolean(result.data) && approved && !expired
+
+      setInstrumentValid(valid)
+      setBlocked(valid ? '' : 'TAG bloqueada: calibração vencida ou instrumento não aprovado no banco.')
+      return valid
+    } catch (cause) {
+      setInstrumentValid(false)
+      setBlocked(cause instanceof Error ? cause.message : 'Falha técnica ao validar a TAG no Supabase.')
       return false
     }
-    const expired = Boolean(result.data?.proxima_calibracao && new Date(result.data.proxima_calibracao) < new Date())
-    const invalid = !result.data || String(result.data.status ?? '').toUpperCase() !== 'APROVADO' || expired
-    setBlocked(invalid ? 'Instrumento vencido ou não aprovado. Apontamento bloqueado.' : '')
-    return !invalid
   }
 
   const save = async () => {
     if (busy) return
-    if (!op || defects > found || !reason.trim()) {
-      setMessage('Selecione a OP e informe o motivo de refugo; defeitos não podem superar encontrados.')
+    if (!canSave) {
+      setMessage('DISABLED · Complete OP, quantidade, refugo, motivo quando aplicável e TAG calibrada antes de gravar.')
       return
     }
-    if (!await check()) return
 
     const item: PendingApontamento = {
       id: crypto.randomUUID(),
@@ -264,13 +338,13 @@ export default function PCPTabletOperador() {
       found,
       defects,
       reason: reason.trim(),
-      instrument: instrument.trim().toUpperCase()
+      instrument: instrument.trim().toUpperCase(),
     }
 
     if (!navigator.onLine) {
       enqueue(item)
       setPendingCount(readQueue().length)
-      setMessage('Sem conexão. Apontamento protegido na fila local para sincronização automática.')
+      setMessage('OFFLINE · Apontamento protegido na fila local para sincronização automática.')
       setFound(0)
       setDefects(0)
       setReason('')
@@ -282,166 +356,248 @@ export default function PCPTabletOperador() {
       const payload = await resolvePayload(item)
       const result = await supabase.from('erp_apontamentos_processo').insert(payload)
       if (result.error && result.error.code !== '23505') throw result.error
-      setMessage(result.error?.code === '23505'
-        ? 'Apontamento já registrado; duplicidade bloqueada.'
-        : 'Apontamento gravado no Supabase.')
+
+      setMessage(
+        result.error?.code === '23505'
+          ? 'SUCCESS · Apontamento já registrado; duplicidade bloqueada.'
+          : 'SUCCESS · Apontamento gravado no Supabase.',
+      )
       setFound(0)
       setDefects(0)
       setReason('')
-    } catch (error) {
-      if (networkFailure(error)) {
+    } catch (cause) {
+      if (networkFailure(cause)) {
         enqueue(item)
         setPendingCount(readQueue().length)
-        setMessage('Conexão instável. Apontamento protegido na fila local.')
+        setMessage('OFFLINE · Conexão instável. Apontamento protegido na fila local.')
         setFound(0)
         setDefects(0)
         setReason('')
       } else {
-        setMessage(error instanceof Error ? error.message : 'Falha ao gravar apontamento.')
+        setMessage(cause instanceof Error ? cause.message : 'Falha técnica ao gravar apontamento.')
       }
     } finally {
       setBusy(false)
     }
   }
 
-  const step = (setter: (fn: (value: number) => number) => void, delta: number, max?: number) => {
+  const step = (
+    setter: (update: (value: number) => number) => void,
+    delta: number,
+    max = Number.POSITIVE_INFINITY,
+  ) => {
     if (busy) return
-    setter((value) => Math.max(0, Math.min(max ?? Number.POSITIVE_INFINITY, value + delta)))
+    setter((value) => Math.max(0, Math.min(max, value + delta)))
   }
 
-  const statusText = online ? 'ONLINE' : 'OFFLINE • FILA LOCAL ATIVA'
+  const statePanel = loadState === 'loading'
+    ? <div className="rounded-xl border border-slate-700 bg-slate-900 p-5 text-slate-200">LOADING · Carregando OPs reais do Supabase…</div>
+    : loadState === 'error'
+      ? (
+        <div className="rounded-xl border border-rose-500/40 bg-rose-950/50 p-5 text-rose-100">
+          <strong>ERROR · Falha técnica do Supabase</strong>
+          <p className="mt-2 break-words text-sm">{loadError}</p>
+          <button type="button" onClick={() => void load()} className="mt-4 min-h-[60px] rounded-xl bg-rose-600 px-5 font-black text-white hover:bg-rose-500">
+            <RefreshCw className="mr-2 inline" size={18} /> Recarregar OPs
+          </button>
+        </div>
+      )
+      : loadState === 'empty'
+        ? <div className="rounded-xl border border-amber-500/40 bg-amber-950/40 p-5 text-amber-100">EMPTY · Nenhuma OP disponível para o operador nesta empresa.</div>
+        : <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/30 p-5 text-emerald-100">SUCCESS · OPs carregadas do banco e isoladas pelo contexto da empresa.</div>
 
   return (
-    <main className="min-h-screen bg-slate-950 p-4 text-slate-100 md:p-6">
-      <div className="mx-auto max-w-[1500px]">
-        <header className="flex flex-col gap-4 border-b border-slate-700 pb-4 md:flex-row md:items-center md:justify-between">
+    <main className="min-h-screen bg-[#05050a] p-3 text-slate-100 md:p-5">
+      <div className="mx-auto max-w-[1600px]">
+        <header className="flex flex-col gap-4 border-b border-slate-800 pb-4 md:flex-row md:items-start md:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-3">
               <span className={cn(
-                'inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-black',
+                'inline-flex min-h-[54px] items-center gap-2 rounded-xl border px-4 text-sm font-black',
                 online
                   ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
-                  : 'border-amber-500/40 bg-amber-500/10 text-amber-300'
+                  : 'border-amber-500/40 bg-amber-500/10 text-amber-300',
               )}>
-                {online ? <Wifi size={17} /> : <CloudOff size={17} />}
+                {online ? <Wifi size={18} /> : <CloudOff size={18} />}
                 {statusText}
               </span>
               {pendingCount > 0 && (
-                <span className="inline-flex h-10 items-center rounded-full border border-sky-500/40 bg-sky-500/10 px-4 text-sm font-black text-sky-300">
-                  {pendingCount} pendente{pendingCount === 1 ? '' : 's'} de sincronização
+                <span className="inline-flex min-h-[54px] items-center rounded-xl border border-sky-500/40 bg-sky-500/10 px-4 text-sm font-black text-sky-300">
+                  {pendingCount} pendente{pendingCount === 1 ? '' : 's'}
                 </span>
               )}
             </div>
-            <p className="mt-3 text-sm font-black text-slate-400">{new Date().toLocaleString('pt-BR')} • CHÃO DE FÁBRICA</p>
-            <h1 className="text-2xl font-black tracking-tight md:text-3xl">TERMINAL TOUCH DO OPERADOR</h1>
+            <p className="mt-3 text-xs font-black uppercase tracking-[0.16em] text-slate-500">CHÃO DE FÁBRICA · TERMINAL TOUCH</p>
+            <h1 className="mt-1 text-2xl font-black tracking-tight text-white md:text-4xl">Terminal Touch do Operador</h1>
           </div>
+
           <button
             type="button"
+            disabled={busy}
             onClick={() => void supabase.auth.signOut().then(() => window.location.replace('/login'))}
-            className="h-[60px] w-full rounded-xl bg-red-600 text-3xl font-black shadow-lg shadow-red-950/30 transition hover:bg-red-500 md:w-[60px]"
-            aria-label="Sair"
+            className="inline-flex h-[64px] w-full items-center justify-center rounded-xl bg-red-600 px-5 text-lg font-black text-white shadow-xl shadow-red-950/40 hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto"
+            aria-label="Sair do terminal tablet"
           >
-            <LogOut className="mx-auto" size={32} />
+            <LogOut className="mr-2" size={26} />
+            ❌ SAIR DO TERMINAL TABLET
           </button>
         </header>
 
-        {(message || blocked) && (
-          <div className="my-4 rounded-xl border border-slate-700 bg-slate-900 p-4 text-base font-bold md:text-lg">
-            {message || blocked}
-          </div>
-        )}
+        <div className="my-5">{statePanel}</div>
 
-        <div className="my-5 rounded-xl border border-slate-700 bg-slate-900 p-4 shadow-xl shadow-black/10 md:p-5">
+        <section className="rounded-2xl border border-slate-800 bg-[#0f172a] p-4 shadow-2xl md:p-6">
           <label className="block text-sm font-black uppercase tracking-wide text-slate-300">
             Ordem de produção
             <select
               value={opId}
               onChange={(event) => setOpId(event.target.value)}
-              className="mt-2 h-[60px] w-full rounded-xl border border-slate-600 bg-slate-950 px-4 text-lg font-black text-white outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20"
+              disabled={busy || loadState !== 'success'}
+              className="mt-2 min-h-[60px] w-full rounded-xl border border-slate-700 bg-[#05050a] px-4 text-lg font-black text-white outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="">Selecione uma OP real</option>
-              {ops.map((entry) => <option key={entry.id} value={entry.id}>OP-{entry.numero_op}</option>)}
+              {ops.map((entry) => (
+                <option key={entry.id} value={entry.id}>OP-{entry.numero_op}</option>
+              ))}
             </select>
           </label>
-        </div>
+        </section>
 
-        <div className="grid gap-5 lg:grid-cols-2">
-          <section className="rounded-xl border border-slate-700 bg-slate-900 p-5 shadow-xl shadow-black/10">
-            <div className="mb-5">
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-sky-400">Apontamento</p>
-              <h2 className="mt-1 text-xl font-black">Produção e refugo</h2>
-            </div>
+        <div className="my-5 grid gap-5 lg:grid-cols-2">
+          <section className="rounded-2xl border border-slate-800 bg-[#0f172a] p-5 shadow-2xl md:p-6">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-sky-400">APONTAMENTO REAL</p>
+            <h2 className="mt-1 text-2xl font-black text-white">Produção e refugo</h2>
 
-            <div className="space-y-7">
+            <div className="mt-7 space-y-7">
               <div>
                 <h3 className="text-sm font-black uppercase tracking-wide text-slate-300">Peças encontradas</h3>
-                <div className="mt-3 flex items-center gap-2">
-                  {[-10, -1].map((delta) => <button key={delta} type="button" onClick={() => step(setFound, delta)} className="h-[60px] min-w-[68px] rounded-xl bg-slate-700 text-xl font-black transition hover:bg-slate-600">{delta}</button>)}
-                  <strong className="min-w-0 flex-1 text-center text-4xl tabular-nums">{found}</strong>
-                  {[1, 10].map((delta) => <button key={delta} type="button" onClick={() => step(setFound, delta)} className="h-[60px] min-w-[68px] rounded-xl bg-sky-700 text-xl font-black transition hover:bg-sky-600">+{delta}</button>)}
+                <div className="mt-3 grid grid-cols-5 gap-2">
+                  {[-10, -1].map((delta) => (
+                    <button key={delta} type="button" disabled={busy} onClick={() => step(setFound, delta)} className="min-h-[64px] rounded-xl bg-slate-700 text-xl font-black text-white hover:bg-slate-600 disabled:opacity-40">{delta}</button>
+                  ))}
+                  <strong className="grid min-h-[64px] place-items-center rounded-xl border border-slate-700 bg-[#05050a] text-4xl tabular-nums text-white">{found}</strong>
+                  {[1, 10].map((delta) => (
+                    <button key={delta} type="button" disabled={busy} onClick={() => step(setFound, delta)} className="min-h-[64px] rounded-xl bg-sky-700 text-xl font-black text-white hover:bg-sky-600 disabled:opacity-40">+{delta}</button>
+                  ))}
                 </div>
               </div>
 
               <div>
                 <h3 className="text-sm font-black uppercase tracking-wide text-slate-300">Refugo</h3>
-                <div className="mt-3 flex items-center gap-2">
-                  {[-5, -1].map((delta) => <button key={delta} type="button" onClick={() => step(setDefects, delta, found)} className="h-[60px] min-w-[68px] rounded-xl bg-slate-700 text-xl font-black transition hover:bg-slate-600">{delta}</button>)}
-                  <strong className="min-w-0 flex-1 text-center text-4xl tabular-nums">{defects}</strong>
-                  {[1, 5].map((delta) => <button key={delta} type="button" onClick={() => step(setDefects, delta, found)} className="h-[60px] min-w-[68px] rounded-xl bg-red-700 text-xl font-black transition hover:bg-red-600">+{delta}</button>)}
+                <div className="mt-3 grid grid-cols-5 gap-2">
+                  {[-10, -1].map((delta) => (
+                    <button key={delta} type="button" disabled={busy} onClick={() => step(setDefects, delta, found)} className="min-h-[64px] rounded-xl bg-slate-700 text-xl font-black text-white hover:bg-slate-600 disabled:opacity-40">{delta}</button>
+                  ))}
+                  <strong className="grid min-h-[64px] place-items-center rounded-xl border border-slate-700 bg-[#05050a] text-4xl tabular-nums text-white">{defects}</strong>
+                  {[1, 10].map((delta) => (
+                    <button key={delta} type="button" disabled={busy} onClick={() => step(setDefects, delta, found)} className="min-h-[64px] rounded-xl bg-red-700 text-xl font-black text-white hover:bg-red-600 disabled:opacity-40">+{delta}</button>
+                  ))}
                 </div>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
+                {defects > 0 && (
+                  <label className="text-sm font-black uppercase tracking-wide text-slate-300">
+                    Motivo do refugo · obrigatório
+                    <input
+                      required
+                      value={reason}
+                      onChange={(event) => setReason(event.target.value)}
+                      disabled={busy}
+                      className="mt-2 min-h-[60px] w-full rounded-xl border border-red-500/50 bg-[#05050a] px-3 text-base font-bold normal-case text-white outline-none focus:border-red-400 disabled:opacity-50"
+                    />
+                  </label>
+                )}
                 <label className="text-sm font-black uppercase tracking-wide text-slate-300">
-                  Motivo do refugo
-                  <input value={reason} onChange={(event) => setReason(event.target.value)} className="mt-2 h-[60px] w-full rounded-xl border border-slate-600 bg-slate-950 px-3 text-base font-bold normal-case text-white outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20" />
-                </label>
-                <label className="text-sm font-black uppercase tracking-wide text-slate-300">
-                  Instrumento
-                  <input value={instrument} onChange={(event) => setInstrument(event.target.value.toUpperCase())} onBlur={() => void check()} className="mt-2 h-[60px] w-full rounded-xl border border-slate-600 bg-slate-950 px-3 text-base font-bold normal-case text-white outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20" />
+                  TAG do paquímetro / instrumento
+                  <input
+                    value={instrument}
+                    onChange={(event) => {
+                      setInstrument(event.target.value.toUpperCase())
+                      setInstrumentValid(false)
+                      setBlocked('')
+                    }}
+                    onBlur={() => void check()}
+                    disabled={busy}
+                    placeholder="BIPAR / DIGITAR TAG"
+                    className="mt-2 min-h-[60px] w-full rounded-xl border border-slate-600 bg-[#05050a] px-3 text-base font-black uppercase text-white outline-none focus:border-sky-400 disabled:opacity-50"
+                  />
+                  <span className={cn(
+                    'mt-2 flex min-h-[44px] items-center rounded-lg px-3 text-xs font-black',
+                    instrumentValid
+                      ? 'bg-emerald-500/10 text-emerald-300'
+                      : 'bg-rose-500/10 text-rose-300',
+                  )}>
+                    {instrumentValid ? 'CALIBRAÇÃO VÁLIDA · APONTAMENTO LIBERADO' : 'TAG NÃO VALIDADA · BOTÃO MESTRE BLOQUEADO'}
+                  </span>
                 </label>
               </div>
+
+              {blocked && (
+                <div className="flex items-start gap-3 rounded-xl border border-rose-500/40 bg-rose-950/40 p-4 text-rose-100">
+                  <ShieldAlert className="mt-0.5 shrink-0" size={20} />
+                  <strong>{blocked}</strong>
+                </div>
+              )}
             </div>
           </section>
 
-          <section className="rounded-xl border border-slate-700 bg-slate-900 p-5 shadow-xl shadow-black/10">
-            <div className="mb-5 flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-400">Conferência</p>
-                <h2 className="mt-1 text-xl font-black">Resultado em tempo real</h2>
-              </div>
-              {pendingCount > 0 && (
-                <button type="button" disabled={busy || !online} onClick={() => void syncQueue()} className="inline-flex h-12 items-center gap-2 rounded-xl border border-slate-600 bg-slate-800 px-4 font-black disabled:opacity-50">
-                  <RefreshCw size={18} /> Sincronizar
-                </button>
-              )}
-            </div>
+          <section className="rounded-2xl border border-slate-800 bg-[#0f172a] p-5 shadow-2xl md:p-6">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-400">CONFERÊNCIA</p>
+            <h2 className="mt-1 text-2xl font-black text-white">Resultado em tempo real</h2>
 
-            <div className="grid grid-cols-2 gap-3 md:gap-4">
+            <div className="mt-6 grid grid-cols-2 gap-3">
               {[
                 ['PLANEJADA', op?.quantidade_planejada ?? 0],
                 ['ENCONTRADAS', found],
                 ['PEÇAS BOAS', good],
                 ['REFUGO', defects],
-                ['QUALIDADE', quality.toFixed(1) + '%']
+                ['QUALIDADE', quality.toFixed(1) + '%'],
               ].map(([label, value]) => (
-                <article key={String(label)} className="rounded-xl border border-slate-700 bg-slate-950 p-4 md:p-5">
-                  <span className="text-xs font-black uppercase tracking-wide text-slate-400">{label}</span>
-                  <strong className="mt-2 block text-2xl tabular-nums md:text-3xl">{value}</strong>
+                <article key={String(label)} className="rounded-xl border border-slate-800 bg-[#05050a] p-4">
+                  <span className="text-xs font-black uppercase tracking-wide text-slate-500">{label}</span>
+                  <strong className="mt-2 block text-2xl tabular-nums text-white md:text-3xl">{value}</strong>
                 </article>
               ))}
             </div>
 
-            <div className="mt-4 rounded-xl border border-sky-500/20 bg-sky-500/5 p-4">
+            <div className="mt-4 rounded-xl border border-sky-500/30 bg-sky-500/5 p-4">
               <p className="text-xs font-black uppercase tracking-wide text-sky-300">Equação operacional</p>
-              <p className="mt-1 text-lg font-black tabular-nums">Peças boas = {found} − {defects} = {good}</p>
+              <p className="mt-1 text-xl font-black tabular-nums text-white">Peças Boas = Peças Encontradas − Peças Defeituosas</p>
+              <p className="mt-1 text-2xl font-black tabular-nums text-sky-300">{found} − {defects} = {good}</p>
             </div>
 
-            <button type="button" onClick={() => void save()} disabled={busy} className="mt-6 h-[60px] w-full rounded-xl bg-emerald-600 text-lg font-black shadow-lg shadow-emerald-950/30 transition hover:bg-emerald-500 disabled:cursor-wait disabled:opacity-50">
-              <CheckCircle className="mr-2 inline" />{busy ? 'GRAVANDO / SINCRONIZANDO…' : 'CONFERIR E GRAVAR APONTAMENTO'}
+            {pendingCount > 0 && (
+              <button
+                type="button"
+                disabled={busy || !online}
+                onClick={() => void syncQueue()}
+                className="mt-4 inline-flex min-h-[60px] w-full items-center justify-center gap-2 rounded-xl border border-slate-600 bg-slate-800 px-4 font-black text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <RefreshCw size={18} /> Sincronizar fila
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => void save()}
+              disabled={!canSave}
+              className="mt-5 min-h-[68px] w-full rounded-xl bg-emerald-600 px-5 text-lg font-black text-white shadow-xl shadow-emerald-950/40 hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
+            >
+              <CheckCircle className="mr-2 inline" size={22} />
+              {busy ? 'GRAVANDO / SINCRONIZANDO…' : 'CONFERIR E GRAVAR APONTAMENTO'}
             </button>
+
+            <p className="mt-3 text-center text-xs font-bold text-slate-500">
+              {busy ? 'DISABLED · Operação protegida contra cliques duplicados.' : 'O botão mestre só libera após OP + quantidade + TAG calibrada válida.'}
+            </p>
           </section>
         </div>
+
+        {message && (
+          <div className="rounded-xl border border-slate-700 bg-slate-900 p-4 text-sm font-bold text-slate-200" role="status">
+            {message}
+          </div>
+        )}
       </div>
     </main>
   )
