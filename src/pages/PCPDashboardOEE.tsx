@@ -132,17 +132,20 @@ export default function PCPDashboardOEE() {
         {error && <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 font-bold text-rose-900">{error}</div>}
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
-            ['OEE GLOBAL', pct(metrics.oee), Gauge, 'Índice composto'],
-            ['DISPONIBILIDADE', pct(metrics.availability), Clock3, 'Tempo planejado sem parada'],
-            ['PERFORMANCE', pct(metrics.performance), TrendingUp, 'Produção versus ciclo nominal'],
-            ['QUALIDADE', pct(metrics.quality), ShieldCheck, 'Boa versus boa + refugo'],
-          ].map(([label, value, Icon, note]) => (
-            <article key={String(label)} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-center justify-between"><span className="text-xs font-black uppercase tracking-wider text-slate-500">{label}</span><Icon className="text-sky-700" size={21}/></div>
-              <strong className="mt-3 block text-4xl font-black tracking-tight">{loading ? '—' : String(value)}</strong>
-              <p className="mt-1 text-sm font-semibold text-slate-500">{note}</p>
-            </article>
-          ))}
+            { label: 'OEE GLOBAL', value: pct(metrics.oee), icon: Gauge, note: 'Índice composto' },
+            { label: 'DISPONIBILIDADE', value: pct(metrics.availability), icon: Clock3, note: 'Tempo planejado sem parada' },
+            { label: 'PERFORMANCE', value: pct(metrics.performance), icon: TrendingUp, note: 'Produção versus ciclo nominal' },
+            { label: 'QUALIDADE', value: pct(metrics.quality), icon: ShieldCheck, note: 'Boa versus boa + refugo' },
+          ].map((card) => {
+            const MetricIcon = card.icon
+            return (
+              <article key={card.label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center justify-between"><span className="text-xs font-black uppercase tracking-wider text-slate-500">{card.label}</span><MetricIcon className="text-sky-700" size={21}/></div>
+                <strong className="mt-3 block text-4xl font-black tracking-tight">{loading ? '—' : card.value}</strong>
+                <p className="mt-1 text-sm font-semibold text-slate-500">{card.note}</p>
+              </article>
+            )
+          })}
         </section>
 
         <section className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
