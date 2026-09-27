@@ -8,7 +8,7 @@
 */
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { Activity, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Sun, Moon, Truck, Users, Wrench, X } from 'lucide-react'
+import { Activity, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, FileText, LayoutGrid, MonitorPlay, Package, Search, Settings, ShoppingCart, Store, Truck, Users, Wrench, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from './lib/supabaseClient'
 import IndustrialModuleWorkspace from './components/IndustrialModuleWorkspace'
@@ -162,6 +162,8 @@ export default function AppIndustrialV7() {
         <span><strong>SGQ ERP INDUSTRIAL</strong><small>Gestão integrada industrial</small></span>
       </button>
       <div className="v7-top-actions">
+        <button className="v7-top-tablet" type="button" onClick={() => setLauncher(true)} aria-label="Abrir Tablet Industrial"><LayoutGrid size={17}/> TABLET</button>
+        <button className="v7-top-command" type="button" onClick={() => setActive('Dashboard')} aria-label="Abrir comandos do ERP"><MonitorPlay size={17}/> COMANDOS</button>
         <div className="v7-top-date" aria-label="Data e hora atual">
           <small>DATA E HORA</small>
           <strong>{clock.toLocaleDateString(language === 'en-US' ? 'en-US' : 'pt-BR')} • {clock.toLocaleTimeString(language === 'en-US' ? 'en-US' : 'pt-BR')}</strong>
