@@ -12,9 +12,11 @@ update public.erp_empresas
 set plano_status = 'ativo'
 where lower(coalesce(plano_status,'')) in ('teste','trial','expirado','expired','cancelado','cancelled','inadimplente','delinquent');
 
-update public.erp_empresas
-set subscription_status = 'active'
-where subscription_status is null
-   or lower(subscription_status) in ('trial','expired','cancelled','cancelled','delinquent');
+alter table public.erp_empresas
+  drop column if exists stripe_customer_id,
+  drop column if exists asaas_customer_id,
+  drop column if exists subscription_status,
+  drop column if exists plan_type,
+  drop column if exists subscription_ends_at;
 
 commit;
