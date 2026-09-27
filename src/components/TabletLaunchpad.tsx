@@ -29,23 +29,23 @@ const modules:Module[]=[
   A('Planos de Inspeção','Características e limites',Settings,'/qualidade?tab=planos')
  ]},
  {label:'Almoxarifado • WMS',description:'Recebimento, lotes, endereços, reservas, separação e rastreabilidade.',icon:Warehouse,actions:[
-  A('Almoxarifado','Movimentações e saldos',Warehouse,'/almoxarifado'),A('Estoque','Saldo, inventário e movimentos',Package,'/estoque'),A('Recebimento','Conferência de materiais',Package,'/recebimento-materiais'),A('Rastreabilidade','Lotes e histórico',ShieldCheck,'/estoque')
+  A('Almoxarifado','Movimentações e saldos',Warehouse,'/estoque'),A('Estoque','Saldo, inventário e movimentos',Package,'/estoque'),A('Recebimento','Conferência de materiais',Package,'/recebimento-materiais'),A('Rastreabilidade','Lotes e histórico',ShieldCheck,'/estoque')
  ]},
  {label:'Fiscal • Financeiro',description:'NF-e, faturamento, documentos e caixa.',icon:Landmark,actions:[
   A('Fiscal','Documentos e liberações',Landmark,'/fiscal'),A('Nova NF-e','Modelo 55 / simulador',FileText,'/fiscal/nova'),A('Previsão de Caixa','Entradas e saídas',Activity,'/fiscal/previsao-caixa')
  ]},
  {label:'Vendas • Comercial',description:'Um único workspace para pedidos, carteira, clientes, metas e configurações de vendas.',icon:ShoppingCart,actions:[
-  A('Abrir Vendas','Entrar no workspace completo de Vendas',ShoppingCart,'/pedidos-vendas')
+  A('Abrir Vendas','Entrar no workspace completo de Vendas',ShoppingCart,'/vendas')
  ]},
  {label:'Moldes & Ferramentaria',description:'Moldes, ciclos, preventiva, localização e ordens de serviço.',icon:Wrench,actions:[A('Moldes & Ferramentaria','Ficha técnica, ciclos e histórico de O.S.',Wrench,'/moldes-injecao')]},
  {label:'Compras',description:'Solicitações, fornecedores, pedidos e recebimento.',icon:ShoppingCart,actions:[
-  A('Solicitação de Compra','Necessidades internas',ClipboardList,'/compras-solicitacao'),A('Fornecedores','Cadastro e qualificação',Users,'/fornecedores'),A('Recebimento','Entrada e conferência',Package,'/recebimento-materiais')
+  A('Solicitação de Compra','Necessidades internas',ClipboardList,'/compras/solicitacao'),A('Fornecedores','Cadastro e qualificação',Users,'/fornecedores'),A('Recebimento','Entrada e conferência',Package,'/recebimento-materiais')
  ]},
  {label:'Administração',description:'Usuários, permissões, empresa, identidade e infraestrutura.',icon:Settings,actions:[
-  A('Configurações','Identidade e empresa',Settings,'/configuracoes-adm'),A('Usuários / ACL','Permissões por colaborador',Users,'/usuarios'),A('Empresa','Dados e identidade visual',SlidersHorizontal,'/erp-industrial'),A('ACL e Prefixos','Permissões por colaborador e numeração',ShieldCheck,'/configuracoes-adm')
+  A('Configurações','Identidade e empresa',Settings,'/configuracoes-adm'),A('Usuários / ACL','Permissões por colaborador',Users,'/usuarios-admin'),A('Empresa','Dados e identidade visual',SlidersHorizontal,'/comercial'),A('ACL e Prefixos','Permissões por colaborador e numeração',ShieldCheck,'/configuracoes-adm')
  ]},
  {label:'Relatórios',description:'Indicadores e consultas do ERP.',icon:BarChart3,actions:[
-  A('Dashboard Industrial','Visão executiva',Gauge,'/erp-industrial'),A('PCP / Produção','Planejado x realizado',Factory,'/pcp'),A('Qualidade','Pareto e RPNC',ShieldCheck,'/qualidade'),A('Estoque','Saldos e movimentos',Boxes,'/estoque'),A('Fiscal / Financeiro','Documentos e caixa',Landmark,'/fiscal')
+  A('Dashboard Industrial','Visão executiva',Gauge,'/comercial'),A('PCP / Produção','Planejado x realizado',Factory,'/pcp'),A('Qualidade','Pareto e RPNC',ShieldCheck,'/qualidade'),A('Estoque','Saldos e movimentos',Boxes,'/estoque'),A('Fiscal / Financeiro','Documentos e caixa',Landmark,'/fiscal')
  ]},
  {label:'Ajuda',description:'Manual operacional e ajuda contextual.',icon:HelpCircle,actions:[A('Manual do Usuário','Como operar cada módulo',BookOpen,'/manual-usuario'),A('Ajuda do módulo','Orientação contextual',HelpCircle,'/manual-usuario')]}
 ]
@@ -56,7 +56,7 @@ export default function TabletLaunchpad({onNavigate,isOpen,onClose}:{onNavigate:
 
  const openModule=(module:Module)=>{
   if(module.label.startsWith('PCP')){onNavigate('/pcp');return}
-  if(module.label.startsWith('Vendas')){onNavigate('/pedidos-vendas');return}
+  if(module.label.startsWith('Vendas')){onNavigate('/vendas');return}
   setSelected(module)
  }
 
@@ -64,9 +64,8 @@ export default function TabletLaunchpad({onNavigate,isOpen,onClose}:{onNavigate:
   <section className="flex max-h-[96vh] w-full max-w-[1500px] flex-col overflow-hidden rounded-lg border border-slate-700 bg-slate-900 text-white shadow-2xl">
    <header className="flex shrink-0 items-center justify-between gap-4 border-b border-slate-700 bg-slate-950 px-5 py-4">
     <div className="flex min-w-0 items-center gap-4">
-     <img src="/logo-industrial.svg" alt="ERP Industrial" className="h-auto w-[320px] max-w-[55vw] object-contain sm:w-[420px]"/>
+     <img src="/logo-industrial.svg" alt="ERP Industrial" className="h-12 w-[148px] shrink-0 object-contain sm:h-14 sm:w-[170px]"/>
      <div className="min-w-0 border-l border-slate-700 pl-4">
-      <span className="block text-sm font-extrabold uppercase tracking-[0.18em] text-sky-300">SGQ ERP INDUSTRIAL</span>
       <strong className="block truncate text-xl font-extrabold sm:text-2xl">{selected?selected.label:'Tablet Operacional'}</strong>
       <small className="block truncate text-base text-slate-300">{selected?selected.description:'Ambiente de operação industrial'}</small>
      </div>
