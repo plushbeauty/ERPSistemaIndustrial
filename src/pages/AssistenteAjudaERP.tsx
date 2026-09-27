@@ -1,69 +1,122 @@
-import { useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState } from 'react';
+import { HelpCircle, Send, ShieldCheck, Cpu, ShoppingCart, Wrench, Printer } from 'lucide-react';
 
-type Emissor = "usuario" | "ia";
-interface IMensagem { emissor: Emissor; texto: string; }
-
-const respostas: Array<{ termos: string[]; texto: string }> = [
-  { termos: ["venda","pedido","outlook","xml"], texto: "🛍️ VENDAS: informe o cliente ou importe o pedido real. O fluxo de reserva deve usar dados cadastrados no ERP; não há dados fictícios." },
-  { termos: ["calibracao","paquimetro","instrumento","rbc","vencido"], texto: "📐 CALIBRAÇÃO: o Nº CERTIFICADO RBC deve corresponder ao laudo do laboratório. Informe DATA DO ENSAIO e PRÓXIMA CALIBRAÇÃO. Instrumento vencido deve ficar bloqueado para uso no tablet quando essa trava estiver aplicada no banco." },
-  { termos: ["ficha","processo","produto","molde","ferramental","temperatura","forca"], texto: "⚙️ FICHA DE PROCESSO: Produto Mestre e Ferramental/Molde devem ser selecionados por Lupa a partir de registros reais. Forças e temperaturas das zonas 1 a 4 são parâmetros estruturados da receita; a embalagem deve registrar caixa e empilhamento permitido." },
-  { termos: ["laudo","liberacao","embalagem","lote","palete","retido"], texto: "🛡️ LIBERAÇÃO DE LOTE: cada item do checklist do palete deve ser inspecionado. Lote retido deve permanecer bloqueado para expedição. A trava fiscal só deve ser considerada ativa quando existir enforcement real no fluxo de faturamento." },
-  { termos: ["manutencao","tpm","ordem de servico","os","componente","mttr"], texto: "🛠️ MANUTENÇÃO TPM: selecione a O.S., registre causa/solução e lance componentes por registro real. A baixa deve ocorrer no estoque real. Ao finalizar, o MTTR deve ser calculado e a máquina liberada somente pela regra efetivamente implementada." },
-  { termos: ["roteirizacao","caminhao","peso","expedicao"], texto: "🚚 ROTEIRIZAÇÃO: selecione veículo e cargas reais e valide capacidade, peso e pendências antes da liberação." },
-  { termos: ["pcp","tablet","operador","refugo"], texto: "🏭 PCP/TABLET: o operador registra produção real e, havendo defeito, informa obrigatoriamente o motivo. Instrumentos vencidos não devem ser aceitos quando a trava de calibração estiver ativa." },
-];
-
-function responder(pergunta: string): string {
-  const texto = pergunta.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-  return respostas.find((item) => item.termos.some((termo) => texto.includes(termo)))?.texto
-    ?? "Não encontrei essa orientação. Tente Vendas, Calibração, Ficha de Processo, Liberação de Lote, Manutenção TPM, Roteirização ou PCP.";
+interface IMensagemChat {
+  emissor: 'usuario' | 'ia';
+  texto: string;
 }
 
 export default function AssistenteAjudaERP() {
-  const [searchParams] = useSearchParams();
-  const [mensagens, setMensagens] = useState<IMensagem[]>([
-    { emissor: "ia", texto: "Olá! Sou o Assistente Virtual do ERP Industrial. Posso orientar os procedimentos do POP-SGQ-012." },
+  const [mensagens, setMensagens] = useState<IMensagemChat[]>([
+    {
+      emissor: 'ia',
+      texto:
+        'Olá! Sou o Assistente de IA do seu ERP Industrial. Selecione ou digite qual procedimento (Vendas, PCP, Calibração, Ficha de Processo, Laudo de Liberação ou Manutenção) você deseja consultar que eu te explico o preenchimento campo por campo!',
+    },
   ]);
-  const [input, setInput] = useState(() => searchParams.get("busca") ?? "");
+  const [input, setInput] = useState('');
 
-  const sugestoes = useMemo(() => [
-    "Como preencher calibração?",
-    "Como preencher ficha de processo?",
-    "Como funciona o laudo de liberação?",
-    "Como fechar ordem de serviço TPM?",
-    "Como funciona a roteirização?",
-  ], []);
+  const processarDuvidaDoProcedimento = () => {
+    if (!input.trim()) return;
 
-  const enviar = () => {
-    const pergunta = input.trim();
-    if (!pergunta) return;
-    setMensagens((atual) => [...atual, { emissor: "usuario", texto: pergunta }, { emissor: "ia", texto: responder(pergunta) }]);
-    setInput("");
+    const novaMensagemUsuario: IMensagemChat = { emissor: 'usuario', texto: input };
+    setMensagens((prev) => [...prev, novaMensagemUsuario]);
+    const busca = input.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    setInput('');
+
+    let resposta =
+      'Desculpe, não localizei este procedimento específico no POP-SGQ-012. Tente pesquisar por Vendas, PCP, Calibração, Ficha de Processo, Laudo de Liberação ou Manutenção.';
+
+    if (busca.includes('venda') || busca.includes('pedido') || busca.includes('carteira')) {
+      resposta =
+        "🛍️ [INSTRUÇÃO OPERACIONAL - SETOR COMERCIAL VENDAS]\n\n• CAMPO NOVO PEDIDO: Insira os dados ou utilize o fluxo de importação disponível no ERP para ler o pedido. Linhas VERDES representam disponibilidade real; linhas LARANJAS indicam necessidade de atendimento pelo PCP conforme as regras implementadas.\n\n• CARTEIRA DE PEDIDOS: Utilize o painel touch para acompanhar os pedidos e seus status reais.";
+    } else if (busca.includes('calibracao') || busca.includes('paquimetro') || busca.includes('instrumento') || busca.includes('rbc')) {
+      resposta =
+        '📐 [INSTRUÇÃO OPERACIONAL - SETOR QUALIDADE METROLOGIA]\n\n• CAMPO Nº CERTIFICADO RBC: Digite o código alfanumérico do certificado emitido pelo laboratório.\n\n• DATA DO ENSAIO: Registre a data efetiva do ensaio.\n\n• PRÓXIMA CALIBRAÇÃO (VALIDADE): Registre a data limite. Instrumento vencido deve ser tratado como bloqueado somente quando o enforcement correspondente estiver ativo no banco/fluxo operacional.';
+    } else if (busca.includes('ficha') || busca.includes('processo')) {
+      resposta =
+        '⚙️ [INSTRUÇÃO OPERACIONAL - SETOR ENGENHARIA PCP]\n\n• CAMPO PRODUTO E MOLDE: Utilize os localizadores para selecionar registros reais do Supabase.\n\n• PARÂMETROS TÉRMICOS: Registre força/pressão em BAR e temperaturas das zonas 1 a 4 como parâmetros estruturados da receita.\n\n• EMBALAGEM: Defina o modelo de caixa e o empilhamento máximo.';
+    } else if (busca.includes('laudo') || busca.includes('liberacao') || busca.includes('embalagem')) {
+      resposta =
+        '🛡️ [INSTRUÇÃO OPERACIONAL - SETOR GESTÃO DA QUALIDADE SGQ]\n\n• CAMPO ROMANEIO EXPEDIÇÃO: Utilize a seleção por registro real.\n\n• CHECKLIST: Cada item inspecionado deve receber resultado conforme ou não conforme.\n\n• LOTE RETIDO: O bloqueio físico/logístico deve permanecer ativo conforme as regras de qualidade implementadas. O bloqueio de faturamento/NF-e somente deve ser informado como ativo quando existir enforcement real no fluxo fiscal.';
+    } else if (busca.includes('manutencao') || busca.includes('tpm') || busca.includes('os')) {
+      resposta =
+        '🛠️ [INSTRUÇÃO OPERACIONAL - SETOR MANUTENÇÃO INDUSTRIAL TPM]\n\n• FILA DE CHAMADOS: Selecione a O.S. correspondente ao contexto real de falha.\n\n• LAUDO TÉCNICO: Registre causa raiz, diagnóstico e solução. Componentes devem ser selecionados por registros reais e a baixa de estoque somente deve ser considerada concluída quando persistida no estoque.\n\n• FINALIZAÇÃO: A liberação da máquina depende da regra efetivamente implementada no sistema.';
+    } else if (busca.includes('roteirizacao') || busca.includes('caminhao') || busca.includes('peso')) {
+      resposta =
+        '🚚 [INSTRUÇÃO OPERACIONAL - SETOR LOGÍSTICA EXPEDIÇÃO]\n\n• CAPACIDADE VEÍCULO: Utilize a capacidade cadastrada do veículo.\n\n• CARGA: Valide o peso acumulado contra a capacidade e bloqueie a liberação quando houver excesso ou pendência conforme as regras efetivamente implementadas.';
+    }
+
+    setMensagens((prev) => [...prev, { emissor: 'ia', texto: resposta }]);
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4 md:p-8 text-slate-900">
-      <section className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-5xl flex-col rounded-lg border border-slate-200 bg-white shadow-sm">
-        <header className="flex items-center justify-between border-b border-slate-200 p-5">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-wide text-slate-600">ERP Industrial</p>
-            <h1 className="text-xl font-black text-slate-950">Central de Ajuda & Inteligência do Sistema</h1>
-          </div>
-        </header>
-        <div className="flex flex-wrap gap-2 border-b border-slate-200 p-4">
-          {sugestoes.map((sugestao) => <button key={sugestao} type="button" onClick={() => setInput(sugestao)} className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-slate-900">{sugestao}</button>)}
+    <div className="w-full max-w-4xl mx-auto bg-white rounded-lg border border-slate-200 shadow-sm p-6 text-slate-900 font-sans print:border-none print:shadow-none print:p-0">
+      <div className="flex justify-between items-start gap-4 border-b border-slate-200 pb-3 mb-4">
+        <div className="flex items-center gap-2">
+          <HelpCircle className="text-blue-600 h-6 w-6 print:hidden" />
+          <h2 className="text-xl font-bold text-slate-950 uppercase tracking-tight print:text-black print:text-lg print:font-black">
+            🧠 CENTRAL DE COMPLIANCE E INSTRUÇÃO OPERACIONAL (POP-SGQ-012)
+          </h2>
         </div>
-        <div className="flex-1 space-y-3 overflow-y-auto bg-slate-50 p-4 md:p-6">
-          {mensagens.map((mensagem, index) => <div key={index} className={`max-w-[88%] rounded-lg p-4 text-base font-medium leading-6 ${mensagem.emissor === "ia" ? "mr-auto bg-blue-50 text-slate-900" : "ml-auto bg-slate-200 text-slate-900"}`}>{mensagem.texto}</div>)}
+
+        <div className="hidden print:block border-2 border-dashed border-slate-600 p-3 text-center text-xs font-black text-slate-700 bg-slate-50 uppercase rounded-md tracking-wider leading-relaxed">
+          ⚠️ CÓPIA NÃO CONTROLADA<br />
+          APENAS PARA CONSULTA LOCAL
         </div>
-        <div className="border-t border-slate-200 bg-white p-4">
-          <div className="flex h-[54px] gap-3">
-            <input value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") enviar(); }} placeholder="Digite sua dúvida..." className="min-h-[54px] flex-1 rounded-md border border-slate-400 bg-white px-4 text-base font-medium text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-200" />
-            <button type="button" onClick={enviar} className="min-h-[54px] rounded-md bg-slate-900 px-6 font-black text-white shadow-sm hover:bg-slate-800">PERGUNTAR</button>
-          </div>
-        </div>
-      </section>
-    </main>
+
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs h-10 px-4 rounded-md shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer print:hidden"
+        >
+          <Printer className="h-4 w-4 text-blue-400" /> IMPRIMIR INSTRUÇÃO DA TELA
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4 print:hidden">
+        <button type="button" onClick={() => setInput('Como preencher Ficha de Processo?')} className="p-3 bg-slate-50 border border-slate-200 rounded-md text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-1.5"><Cpu className="h-4 w-4 text-blue-600" /> PCP ENGENHARIA</button>
+        <button type="button" onClick={() => setInput('Como funciona o laudo de liberação?')} className="p-3 bg-slate-50 border border-slate-200 rounded-md text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-600" /> QUALITY INSPECTION</button>
+        <button type="button" onClick={() => setInput('Como lançar Pedido de Venda?')} className="p-3 bg-slate-50 border border-slate-200 rounded-md text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-1.5"><ShoppingCart className="h-4 w-4 text-amber-600" /> COMERCIAL B2B</button>
+        <button type="button" onClick={() => setInput('Como fechar Ordem de Serviço TPM?')} className="p-3 bg-slate-50 border border-slate-200 rounded-md text-xs font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-1.5"><Wrench className="h-4 w-4 text-slate-600" /> MANUTENÇÃO TPM</button>
+      </div>
+
+      <div className="h-96 overflow-y-auto bg-slate-50 p-4 rounded-md border border-slate-200 space-y-3 mb-4 shadow-inner print:h-auto print:bg-white print:border-none print:shadow-none print:space-y-6">
+        {mensagens.map((mensagem, index) => {
+          if (mensagem.emissor === 'usuario') return null;
+          return (
+            <div key={index} className="p-4 rounded-lg bg-blue-50 text-slate-900 border border-blue-100 text-base font-medium whitespace-pre-line leading-relaxed print:bg-white print:border-b print:border-slate-300 print:rounded-none print:p-0 print:text-black print:text-sm">
+              {mensagem.texto}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex gap-2 h-[54px] print:hidden">
+        <input type="text" value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') processarDuvidaDoProcedimento(); }} placeholder="Digite a dúvida operacional para gerar o documento..." className="w-full px-4 text-base border border-slate-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium text-slate-900 bg-white" />
+        <button type="button" onClick={processarDuvidaDoProcedimento} className="bg-slate-900 hover:bg-slate-800 text-white font-black text-sm px-6 rounded-md shadow-md flex items-center gap-1.5 cursor-pointer transition-colors">
+          <Send className="h-4 w-4" /> ENVIAR DÚVIDA
+        </button>
+      </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          nav, sidebar, header, .print\\:hidden, button, input {
+            display: none !important;
+          }
+          body, main, .max-w-4xl {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .bg-slate-50, .bg-blue-50 {
+            background-color: #ffffff !important;
+            border: none !important;
+          }
+        }
+      ` }} />
+    </div>
   );
 }
