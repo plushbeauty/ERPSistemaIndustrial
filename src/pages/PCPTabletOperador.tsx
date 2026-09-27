@@ -249,27 +249,6 @@ export default function PCPTabletOperador() {
     return !invalid
   }
 
-  const stopMachine = async (motivo: string) => {
-    if (!op?.maquina_id) {
-      setMessage('OP sem máquina vinculada.')
-      return
-    }
-    setBusy(true)
-    try {
-      const result = await supabase.rpc('erp_registrar_parada_manutencao', {
-        p_maquina_id: op.maquina_id,
-        p_ordem_producao_id: op.id,
-        p_motivo: motivo
-      })
-      if (result.error) throw result.error
-      setBlocked('MÁQUINA BLOQUEADA PARA MANUTENÇÃO • O.S. ' + String((result.data as { numero_os?: string })?.numero_os ?? ''))
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Falha ao abrir O.S. de manutenção.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
   const save = async () => {
     if (busy) return
     if (!op || defects > found || !reason.trim()) {
