@@ -163,6 +163,12 @@ export default function IndustrialCommandDashboard({ onNavigate }: Props) {
   ] as const
 
   return <>
+    <style>{`
+      .icd-hero{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:18px;padding:20px 22px;background:#fff;border:1px solid #cbd5e1;border-radius:10px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+      .icd-hero-brand{display:flex;align-items:center;gap:16px;min-width:0}.icd-hero-brand img{width:76px;height:76px;object-fit:contain;flex:none}.icd-hero-brand span{display:block;font-size:12px;font-weight:950;letter-spacing:.12em;color:#2563eb}.icd-hero-brand h1{margin:3px 0 2px;font-size:28px;line-height:1.15;font-weight:900;color:#020617}.icd-hero-brand p{margin:0;color:#475569;font-size:15px;font-weight:600}
+      .icd-hero-time{min-width:255px;padding:12px 16px;border-left:1px solid #e2e8f0;text-align:right}.icd-hero-time small{display:block;color:#64748b;font-size:11px;font-weight:900;letter-spacing:.08em}.icd-hero-time strong{display:block;margin-top:4px;color:#0f172a;font-size:15px;font-weight:900;white-space:nowrap}
+      @media(max-width:760px){.icd-hero{align-items:flex-start;flex-direction:column}.icd-hero-brand img{width:60px;height:60px}.icd-hero-brand h1{font-size:22px}.icd-hero-time{width:100%;min-width:0;border-left:0;border-top:1px solid #e2e8f0;padding:12px 0 0;text-align:left}.icd-hero-time strong{white-space:normal}}
+    `}</style>
     <div className="icd icd-clean">
       <section className="icd-hero" aria-label="Identificação do painel">
         <div className="icd-hero-brand">
@@ -231,7 +237,3 @@ function HealthRow({ icon: Icon, label, value, warning = false }: { icon: typeof
   return <div className="icd-health-row"><span className={warning ? 'warn' : ''}><Icon size={17} /></span><div><b>{label}</b><small>Registro atual</small></div><strong>{value}</strong></div>
 }
 
-
-/* Dashboard de entrada — identidade, usuário e relógio reais. */
-.icd-hero{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:18px;padding:20px 22px;background:#fff;border:1px solid #cbd5e1;border-radius:10px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
-.icd-hero-brand{display:flex;align-items:center;gap:16px;min-width:0}.icd-hero-brand img{width:76px;height:76px;object-fit:contain;flex:none}.icd-hero-brand span{display:block;font-size:12px;font-weight:950;letter-spacing:.12em;color:#2563eb}.icd-hero-brand h1{margin:3px 0 2px;font-size:28px;line-height:1.15;font-weight:900;color:#020617}.icd-hero-brand p{margin:0;color:#475569;font-size:15px;font-weight:600}.icd-hero-time{min-width:255px;padding:12px 16px;border-left:1px solid #e2e8f0;text-align:right}.icd-hero-time small{display:block;color:#64748b;font-size:11px;font-weight:900;letter-spacing:.08em}.icd-hero-time strong{display:block;margin-top:4px;color:#0f172a;font-size:15px;font-weight:900;white-space:nowrap}@media(max-width:760px){.icd-hero{align-items:flex-start;flex-direction:column}.icd-hero-brand img{width:60px;height:60px}.icd-hero-brand h1{font-size:22px}.icd-hero-time{width:100%;min-width:0;border-left:0;border-top:1px solid #e2e8f0;padding:12px 0 0;text-align:left}.icd-hero-time strong{white-space:normal}}
