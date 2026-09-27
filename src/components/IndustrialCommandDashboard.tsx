@@ -16,7 +16,6 @@ import {
   Zap
 } from 'lucide-react'
 import { ERPButton } from './ui/ERPButton'
-import { ERPIconButton } from './ui/ERPIconButton'
 import TabletLaunchpad from './TabletLaunchpad'
 import { supabase } from '../lib/supabaseClient'
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
