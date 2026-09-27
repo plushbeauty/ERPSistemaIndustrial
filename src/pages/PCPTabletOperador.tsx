@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { CheckCircle, CloudOff, LogOut, RefreshCw, ShieldAlert, Wifi } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { cn } from '../utils/cn'
