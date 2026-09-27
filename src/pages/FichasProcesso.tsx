@@ -40,7 +40,7 @@ const blank:FormState={
  zona1:'',zona2:'',zona3:'',zona4:'',imagem_url:'',observacoes_setup:'',observacoes:''
 }
 
-const field='mt-2 min-h-12 w-full rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none transition focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
+const field='mt-2 h-[54px] w-full rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none transition focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
 const label='block text-sm font-bold uppercase tracking-wide text-slate-800'
 const card='rounded-md border border-slate-200 bg-white p-5 shadow-sm'
 
@@ -170,8 +170,8 @@ export default function FichasProcesso(){
    <div className="mx-auto flex max-w-[1700px] items-center justify-between gap-4">
     <div><p className="text-sm font-bold uppercase tracking-[0.18em] text-sky-300">ERP INDUSTRIAL • ENGENHARIA</p><h1 className="text-xl font-extrabold sm:text-2xl">Ficha de Processo Premium</h1></div>
     <div className="flex flex-wrap items-center justify-end gap-2">
-     <button type="button" onClick={newFicha} className="rounded-md border border-slate-500 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800"><FileDown size={16} className="mr-2 inline"/>NOVO</button>
-     <button type="button" onClick={()=>void save()} disabled={busy} className="rounded-md bg-sky-600 px-5 py-2 text-sm font-extrabold text-white hover:bg-sky-500 disabled:opacity-50"><Save size={16} className="mr-2 inline"/>{busy?'GRAVANDO…':'GRAVAR'}</button>
+     <button type="button" onClick={newFicha} className="rounded-md border border-slate-500 px-4 h-[54px] text-sm font-bold text-white hover:bg-slate-800"><FileDown size={16} className="mr-2 inline"/>NOVO</button>
+     <button type="button" onClick={()=>void save()} disabled={busy} className="rounded-md bg-sky-600 px-5 h-[54px] text-sm font-extrabold text-white hover:bg-sky-500 disabled:opacity-50"><Save size={16} className="mr-2 inline"/>{busy?'GRAVANDO…':'GRAVAR'}</button>
      <button type="button" onClick={()=>window.print()} className="rounded-md border border-slate-500 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800"><Printer size={16} className="mr-2 inline"/>IMPRIMIR</button>
      <button type="button" onClick={()=>void load()} className="rounded-md border border-slate-500 p-2.5 text-white hover:bg-slate-800" title="Atualizar"><RotateCcw size={18}/></button>
      <button type="button" onClick={()=>void remove()} disabled={!form.id||busy} className="rounded-md bg-red-700 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-600 disabled:opacity-40"><Trash2 size={16} className="mr-2 inline"/>DELETAR</button>
