@@ -14,6 +14,7 @@ import ExpedicaoRoteirizacao from './pages/ExpedicaoRoteirizacao';
 import QualidadePFMEA from './pages/QualidadePFMEA';
 import ManutencaoOrdens from './pages/ManutencaoOrdens';
 import EstoqueAjustes from './pages/EstoqueAjustes';
+const EstoqueRecebimentoLotes = lazy(() => import('./pages/estoque/EstoqueRecebimentoLotes'));
 /**
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
@@ -175,6 +176,7 @@ if(path==='/qualidade/inspecao-processo')return <Protected><Suspense fallback={<
 if(path==='/qualidade/calibracao')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando calibração…"/>}><QualidadeCalibracao/></Suspense></Protected>;
 if(path==='/pcp/paradas')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando paradas…"/>}><PCPParadasPage/></Suspense></Protected>;
 if(path==='/pcp/acabamento')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando acabamento…"/>}><PCPAcabamento/></Suspense></Protected>;
+if(path==='/estoque/recebimento-lotes')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando recebimento de matéria-prima…"/>}><EstoqueRecebimentoLotes/></Suspense></Protected>;
 if(path==='/estoque/separacao')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando separação…"/>}><EstoqueSeparacao/></Suspense></Protected>;if(path==='/estoque/etiquetas')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando etiquetas…"/>}><EstoqueEtiquetas/></Suspense></Protected>;
 if(path==='/compras/requisicoes')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando requisições de compra…"/>}><ComprasRequisicoes/></Suspense></Protected>;if(path==='/compras/pedido-compra'||path==='/compras/pedidos')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando Pedido de Compra…"/>}><PedidoCompra/></Suspense></Protected>;
 if(path==='/expedicao/saida')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando saída de expedição…"/>}><ExpedicaoSaida/></Suspense></Protected>;
