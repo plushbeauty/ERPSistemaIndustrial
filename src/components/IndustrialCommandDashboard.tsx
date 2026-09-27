@@ -143,10 +143,10 @@ export default function IndustrialCommandDashboard({ onNavigate }: Props) {
   const total = metrics.produced + metrics.scrap
   const quality = total ? (metrics.produced / total) * 100 : 0
   const cards = [
-    { label: 'Ordens de produção', value: metrics.ops, helper: 'OPs em aberto', icon: Factory, route: '/pcp', tone: 'teal' },
+    { label: 'PCP — OPs abertas', value: metrics.ops, helper: 'Ordens de produção', icon: Factory, route: '/pcp', tone: 'teal' },
     { label: 'Produção boa', value: metrics.produced, helper: 'Peças apontadas', icon: CheckCircle2, route: '/operacao-industrial', tone: 'green' },
     { label: 'Qualidade', value: total ? `${quality.toFixed(1).replace('.', ',')}%` : '—', helper: 'Boa / total produzido', icon: Gauge, route: '/qualidade', tone: 'blue' },
-    { label: 'RPNC abertas', value: metrics.rpnc, helper: 'Não conformidades', icon: AlertTriangle, route: '/qualidade?tab=rpnc', tone: 'amber' },
+    { label: 'RPN / RPNC abertas', value: metrics.rpnc, helper: 'Não conformidades', icon: AlertTriangle, route: '/qualidade?tab=rpnc', tone: 'amber' },
     { label: 'Pedidos de venda', value: metrics.sales, helper: 'Carteira comercial ativa', icon: ShoppingCart, route: '/comercial', tone: 'blue' },
   ] as const
 
@@ -165,9 +165,9 @@ export default function IndustrialCommandDashboard({ onNavigate }: Props) {
   return <>
     <style>{`
       .icd-hero{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:18px;padding:20px 22px;background:#fff;border:1px solid #cbd5e1;border-radius:10px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
-      .icd-hero-brand{display:flex;align-items:center;gap:16px;min-width:0}.icd-hero-brand img{width:76px;height:76px;object-fit:contain;flex:none}.icd-hero-brand span{display:block;font-size:12px;font-weight:950;letter-spacing:.12em;color:#2563eb}.icd-hero-brand h1{margin:3px 0 2px;font-size:28px;line-height:1.15;font-weight:900;color:#020617}.icd-hero-brand p{margin:0;color:#475569;font-size:15px;font-weight:600}
+      .icd-hero-brand{display:block;min-width:0}.icd-hero-brand span{display:block;font-size:11px;font-weight:950;letter-spacing:.14em;color:#2563eb}.icd-hero-brand h1{margin:4px 0 3px;font-size:30px;line-height:1.15;font-weight:900;color:#020617}.icd-hero-brand p{margin:0;color:#475569;font-size:15px;font-weight:600}
       .icd-hero-time{min-width:255px;padding:12px 16px;border-left:1px solid #e2e8f0;text-align:right}.icd-hero-time small{display:block;color:#64748b;font-size:11px;font-weight:900;letter-spacing:.08em}.icd-hero-time strong{display:block;margin-top:4px;color:#0f172a;font-size:15px;font-weight:900;white-space:nowrap}
-      @media(max-width:760px){.icd-hero{align-items:flex-start;flex-direction:column}.icd-hero-brand img{width:60px;height:60px}.icd-hero-brand h1{font-size:22px}.icd-hero-time{width:100%;min-width:0;border-left:0;border-top:1px solid #e2e8f0;padding:12px 0 0;text-align:left}.icd-hero-time strong{white-space:normal}}
+      @media(max-width:760px){.icd-hero{align-items:flex-start;flex-direction:column}.icd-hero-brand h1{font-size:22px}.icd-hero-time{width:100%;min-width:0;border-left:0;border-top:1px solid #e2e8f0;padding:12px 0 0;text-align:left}.icd-hero-time strong{white-space:normal}}
     `}</style>
     <div className="icd icd-clean">
       <section className="icd-hero" aria-label="Identificação do painel">
