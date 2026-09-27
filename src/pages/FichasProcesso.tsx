@@ -36,7 +36,7 @@ type FormState={
 
 const blank:FormState={
  id:'',codigo_ficha:'',produto_id:'',codigo_cliente:'',ferramenta_id:'',maquina_id:'',
- cavidades_ativas:'1',revisao:'1',status:'RASCUNHO',forca_fechamento:'',pressao_trabalho:'',
+ cavidades_ativas:'',revisao:'1',status:'RASCUNHO',forca_fechamento:'',pressao_trabalho:'',
  temperatura_trabalho:'',pressao_injecao:'',ciclo_seg:'',peso_peca:'',peso_canal:'',
  zona1:'',zona2:'',zona3:'',zona4:'',imagem_url:'',observacoes_setup:'',observacoes:''
 }
@@ -86,7 +86,7 @@ export default function FichasProcesso(){
   return {
    id:String(x.id??''),codigo_ficha:String(x.codigo_ficha??''),produto_id:String(x.produto_id??''),
    codigo_cliente:String(x.codigo_cliente??''),ferramenta_id:String(x.ferramenta_id??''),maquina_id:String(x.maquina_id??''),
-   cavidades_ativas:String(x.cavidades_ativas??1),revisao:String(x.revisao??1),status:(String(x.status??'RASCUNHO') as Status),
+   cavidades_ativas:String(x.cavidades_ativas??''),revisao:String(x.revisao??1),status:(String(x.status??'RASCUNHO') as Status),
    forca_fechamento:String(x.forca_fechamento??''),pressao_trabalho:String(x.pressao_trabalho??''),
    temperatura_trabalho:String(x.temperatura_trabalho??''),pressao_injecao:String(x.pressao_injecao??''),
    ciclo_seg:String(x.ciclo_seg??''),peso_peca:String(x.peso_peca??''),peso_canal:String(x.peso_canal??''),
@@ -133,13 +133,17 @@ export default function FichasProcesso(){
   try{
    if(!form.codigo_ficha.trim())throw new Error('Código da ficha é obrigatório.')
    if(!form.produto_id)throw new Error('Informe o código do produto.')
+   const cavities=Number(form.cavidades_ativas)
+   if(!Number.isFinite(cavities)||cavities<=0)throw new Error('Informe o número real de cavidades ativas.')
+   const revision=Number(form.revisao)
+   if(!Number.isInteger(revision)||revision<1)throw new Error('A revisão deve ser um número inteiro maior que zero.')
    const company=await supabase.rpc('erp_current_empresa_id')
    const user=await supabase.auth.getUser()
    if(company.error||!company.data)throw company.error||new Error('Empresa ERP não identificada.')
    const payload={
     empresa_id:company.data,codigo_ficha:form.codigo_ficha.trim(),produto_id:form.produto_id,codigo_cliente:form.codigo_cliente.trim()||null,
-    ferramenta_id:form.ferramenta_id||null,maquina_id:form.maquina_id||null,cavidades_ativas:Math.max(0,Number(form.cavidades_ativas)||0),
-    revisao:Math.max(0,Number(form.revisao)||0),status:form.status,
+    ferramenta_id:form.ferramenta_id||null,maquina_id:form.maquina_id||null,cavidades_ativas:cavities,
+    revisao:revision,status:form.status,
     forca_fechamento:Number(form.forca_fechamento)||null,pressao_trabalho:Number(form.pressao_trabalho)||null,
     temperatura_trabalho:Number(form.temperatura_trabalho)||null,pressao_injecao:Number(form.pressao_injecao)||null,
     ciclo_seg:Number(form.ciclo_seg)||null,peso_peca:Number(form.peso_peca)||null,peso_canal:Number(form.peso_canal)||null,
@@ -204,7 +208,7 @@ export default function FichasProcesso(){
       <EntityCodeLookup label="CÓDIGO DO CLIENTE" value={form.codigo_cliente} records={clients.map(client=>({id:client.codigo,codigo:client.codigo,nome:client.nome,documento:client.documento,codigo_cliente:client.codigo}))} onChange={v=>update('codigo_cliente',v)} onSelect={client=>update('codigo_cliente',client.codigo??client.id)} helper="Digite o código exato do cliente ou abra a lupa para consultar." />
       <label className={label}>CAVIDADES ATIVAS<input className={field} type="number" min="0" value={form.cavidades_ativas} onChange={e=>update('cavidades_ativas',e.target.value)}/></label>
       <div><EntityCodeLookup label="CÓDIGO DO PRODUTO / PEÇA" value={form.produto_id} records={products} onChange={v=>update('produto_id',v)} onSelect={r=>{update('produto_id',r.id);setMessage('Produto '+(r.codigo||'')+' localizado automaticamente.')}} required helper="Digite o código exato ou use a lupa para consulta avançada."/></div>
-      <div><EntityCodeLookup label="CÓDIGO DO MOLDE / FERRAMENTAL" value={form.ferramenta_id} records={tools.map(t=>({id:t.id,codigo:t.codigo,nome:t.nome,dimensoes:t.tipo,molde:t.nome}))} onChange={v=>update('ferramenta_id',v)} onSelect={r=>{update('ferramenta_id',r.id);update('cavidades_ativas',String((tools.find(t=>t.id===r.id)?.cavidades_ativas??tools.find(t=>t.id===r.id)?.numero_cavidades??1)));}} required helper="Busca por código, descrição ou molde."/></div>
+      <div><EntityCodeLookup label="CÓDIGO DO MOLDE / FERRAMENTAL" value={form.ferramenta_id} records={tools.map(t=>({id:t.id,codigo:t.codigo,nome:t.nome,dimensoes:t.tipo,molde:t.nome}))} onChange={v=>update('ferramenta_id',v)} onSelect={r=>{update('ferramenta_id',r.id);update('cavidades_ativas',String(tools.find(t=>t.id===r.id)?.cavidades_ativas??tools.find(t=>t.id===r.id)?.numero_cavidades??''));}} required helper="Busca por código, descrição ou molde."/></div>
       <div><EntityCodeLookup label="RECURSO / MÁQUINA" value={form.maquina_id} records={machines.map(m=>({id:m.id,codigo:m.codigo,nome:m.nome,dimensoes:m.tipo}))} onChange={v=>update('maquina_id',v)} onSelect={r=>update('maquina_id',r.id)} helper="Código direto ou lupa de consulta."/></div>
       <label className={label}>STATUS DA REVISÃO<select className={field} value={form.status} onChange={e=>update('status',e.target.value as Status)}><option>RASCUNHO</option><option>EM_ANALISE</option><option>APROVADA</option><option>LIBERADA</option><option>OBSOLETA</option></select></label>
      </div>
@@ -224,7 +228,7 @@ export default function FichasProcesso(){
       ].map(([l,k,u])=><label key={k} className={label}>{l}<div className="mt-2 flex"><input className="min-h-12 w-full rounded-l-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100" type="number" step="any" value={form[k as keyof FormState] as string} onChange={e=>update(k as keyof FormState,e.target.value as never)}/><span className="grid min-w-24 place-items-center rounded-r-md border border-l-0 border-slate-300 bg-slate-100 px-2 text-sm font-bold text-slate-700">{u}</span></div></label>)}
      </div>
      <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
-      <div className="rounded-md border border-sky-200 bg-sky-50 p-4"><p className="text-xs font-extrabold uppercase tracking-wide text-sky-800">CAPACIDADE NOMINAL</p><p className="mt-1 text-2xl font-black text-slate-950">{Number(form.ciclo_seg)>0?((3600/Number(form.ciclo_seg))*Math.max(1,Number(form.cavidades_ativas)||1)).toFixed(1):'—'} <span className="text-sm font-bold">peças/h</span></p><p className="mt-1 text-sm font-semibold text-slate-700">Base: ciclo nominal × cavidades ativas.</p></div>
+      <div className="rounded-md border border-sky-200 bg-sky-50 p-4"><p className="text-xs font-extrabold uppercase tracking-wide text-sky-800">CAPACIDADE NOMINAL</p><p className="mt-1 text-2xl font-black text-slate-950">{Number(form.ciclo_seg)>0&&Number(form.cavidades_ativas)>0?((3600/Number(form.ciclo_seg))*Number(form.cavidades_ativas)).toFixed(1):'—'} <span className="text-sm font-bold">peças/h</span></p><p className="mt-1 text-sm font-semibold text-slate-700">Base: ciclo nominal × cavidades ativas.</p></div>
       <div className="rounded-md border border-slate-200 bg-white p-4"><p className="text-xs font-extrabold uppercase tracking-wide text-slate-600">MASSA DA PEÇA</p><p className="mt-1 text-2xl font-black text-slate-950">{form.peso_peca||'—'} <span className="text-sm font-bold">kg</span></p><p className="mt-1 text-sm font-semibold text-slate-700">Peso líquido unitário.</p></div>
       <div className="rounded-md border border-slate-200 bg-white p-4"><p className="text-xs font-extrabold uppercase tracking-wide text-slate-600">CANAL / REFUGO</p><p className="mt-1 text-2xl font-black text-slate-950">{form.peso_canal||'—'} <span className="text-sm font-bold">kg</span></p><p className="mt-1 text-sm font-semibold text-slate-700">Massa informada para o canal/refugo.</p></div>
      </div>
