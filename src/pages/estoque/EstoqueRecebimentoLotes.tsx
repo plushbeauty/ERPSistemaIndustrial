@@ -150,7 +150,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
       if (result.error) throw result.error
 
       const selected = products.find(product => product.id === produtoId)
-      setSuccess(`Lote ${loteFornecedor.trim()} recebido com sucesso. ${numberFormat.format(quantidade)} ${selected?.unidade ?? selected?.unidade_medida ?? 'kg'} integrados ao saldo físico.`)
+      setSuccess(`Lote ${loteFornecedor.trim()} recebido com sucesso. ${numberFormat.format(quantidade)} ${selected?.unidade ?? 'kg'} integrados ao saldo físico.`)
       setNotaFiscal('')
       setLoteFornecedor('')
       setQuantidade(0)
