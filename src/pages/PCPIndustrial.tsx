@@ -172,7 +172,50 @@ export default function PCPIndustrial(){
  const totalScrap=programs.reduce((s,p)=>s+Number(p.quantidade_refugada||0),0)
  function selectTab(next:Tab){setTab(next);setError('');setMessage('')}
 
- const tabs:[Tab,string,string][]=[['visao','Visão geral','Gauge'],['novaop','Criar Nova OP','Plus'],['pedidos','Pedidos / Demanda','ClipboardList'],['ops','Ordens de Produção','Factory'],['materiais','Materiais / MRP','Package'],['producao','Apontar produção','Play'],['programacao','Programação / Gantt','CalendarDays'],['capacidade','Capacidade / Máquinas','Wrench'],['qualidade','Qualidade / Defeitos','ShieldCheck']]
+ const widthBucket=(ratio:number)=>{
+ const pct=Math.max(0,Math.min(100,ratio*100))
+ if(pct<=0)return 'w-0'
+ if(pct<15)return 'w-[10%]'
+ if(pct<25)return 'w-1/5'
+ if(pct<35)return 'w-1/3'
+ if(pct<50)return 'w-2/5'
+ if(pct<65)return 'w-1/2'
+ if(pct<80)return 'w-3/5'
+ if(pct<95)return 'w-4/5'
+ return 'w-full'
+}
+const heightBucket=(ratio:number)=>{
+ const pct=Math.max(0,Math.min(100,ratio*100))
+ if(pct<=5)return 'h-1'
+ if(pct<20)return 'h-6'
+ if(pct<40)return 'h-12'
+ if(pct<60)return 'h-20'
+ if(pct<80)return 'h-28'
+ return 'h-32'
+}
+const ganttLeftBucket=(pct:number)=>{
+ if(pct<5)return 'left-0'
+ if(pct<15)return 'left-[10%]'
+ if(pct<25)return 'left-1/5'
+ if(pct<35)return 'left-1/3'
+ if(pct<50)return 'left-2/5'
+ if(pct<65)return 'left-1/2'
+ if(pct<80)return 'left-3/5'
+ if(pct<95)return 'left-4/5'
+ return 'left-full'
+}
+const ganttWidthBucket=(pct:number)=>{
+ if(pct<10)return 'w-1/12'
+ if(pct<20)return 'w-1/5'
+ if(pct<30)return 'w-1/4'
+ if(pct<45)return 'w-1/3'
+ if(pct<60)return 'w-1/2'
+ if(pct<75)return 'w-3/5'
+ return 'w-4/5'
+}
+const ganttTopBucket=(index:number)=>index%3===0?'top-2':index%3===1?'top-10':'top-[72px]'
+
+const tabs:[Tab,string,string][]=[['visao','Visão geral','Gauge'],['novaop','Criar Nova OP','Plus'],['pedidos','Pedidos / Demanda','ClipboardList'],['ops','Ordens de Produção','Factory'],['materiais','Materiais / MRP','Package'],['producao','Apontar produção','Play'],['programacao','Programação / Gantt','CalendarDays'],['capacidade','Capacidade / Máquinas','Wrench'],['qualidade','Qualidade / Defeitos','ShieldCheck']]
 
  return <main className="pcp-modern-page pcp-industrial-shell">
   <aside className="pcp-sidebar">
@@ -205,7 +248,7 @@ export default function PCPIndustrial(){
     <div className="pcp-top-actions"><span className="pcp-supabase-dot"><i/> DADOS SUPABASE</span><span className="pcp-top-user"><i/>{profileName}</span><span className="pcp-top-clock">{clock.toLocaleDateString('pt-BR')} • {clock.toLocaleTimeString('pt-BR')}</span><button className="pcp-top-light">☼ Light</button><button className="pcp-top-exit" onClick={()=>void supabase.auth.signOut().then(()=>location.replace('/login'))}>Sair</button></div>
    </header>
    <div className="pcp-page-head"><div><span>PCP • PLANEJAMENTO E CONTROLE DA PRODUÇÃO</span><h1>{tab==='visao'?'DASHBOARD':tab==='novaop'?'NOVA ORDEM DE PRODUÇÃO':help[tab].title.toUpperCase()}</h1><p>{tab==='visao'?'Visão geral da programação, produção, capacidade e qualidade da fábrica.':tab==='novaop'?'Cadastro operacional da OP, explosão de materiais e roteiro de produção.':help[tab].what}</p></div></div>
-   {(message||error)&&<div className={error?'error':'notice'} style={{margin:'0 28px 12px'}}>{error||message}</div>}
+   {(message||error)&&<div className={error?'error':'notice'} className="mb-3">{error||message}</div>}
    <div className="pcp-content">
   {tab==='novaop'&&<NovaOPScreen products={products} clients={clients} machines={machines} fichas={fichas} fitems={fitems} fichaOps={fichaOps} onCancel={()=>selectTab('visao')} onSave={createOP} busy={busy} form={opForm} setForm={setOpForm}/>}\n\n  {tab==='visao'&&<section>
    <div className="quality-kpis">
@@ -218,11 +261,11 @@ export default function PCPIndustrial(){
    <div className="pcp-dashboard-grid">
     <article className="pcp-dash-card">
      <h2>Pedidos por Status</h2>
-     {statusSummary.length ? statusSummary.map(([name,n])=><div className="pcp-status-row" key={name}><span>{name}</span><div className="pcp-status-bar"><i style={{width:(n/Math.max(1,ops.length))*100+'%'}}/></div><b>{n}</b></div>) : <div className="pcp-empty">Nenhuma OP real encontrada.</div>}
+     {statusSummary.length ? statusSummary.map(([name,n])=><div className="pcp-status-row" key={name}><span>{name}</span><div className="pcp-status-bar"><i className={widthBucket(n/Math.max(1,ops.length))}/></div><b>{n}</b></div>) : <div className="pcp-empty">Nenhuma OP real encontrada.</div>}
     </article>
     <article className="pcp-dash-card">
      <h2>Produção (últimos 7 dias)</h2>
-     {productionDays.length ? <div className="pcp-prod-bars">{productionDays.map(d=><div className="pcp-prod-day" key={d.date}><b>{(d.good+d.scrap).toLocaleString('pt-BR')}</b><div className="pcp-prod-bar" style={{height:Math.max(4,((d.good+d.scrap)/maxProduction)*120)}}/><small>{new Date(d.date+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</small></div>)}</div> : <div className="pcp-chart-empty">Nenhuma produção apontada no período disponível.</div>}
+     {productionDays.length ? <div className="pcp-prod-bars">{productionDays.map(d=><div className="pcp-prod-day" key={d.date}><b>{(d.good+d.scrap).toLocaleString('pt-BR')}</b><div className="pcp-prod-bar" className={\`pcp-prod-bar ${heightBucket((d.good+d.scrap)/Math.max(1,maxProduction))}\`}/><small>{new Date(d.date+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</small></div>)}</div> : <div className="pcp-chart-empty">Nenhuma produção apontada no período disponível.</div>}
     </article>
     <article className="pcp-dash-card">
      <h2>Alertas do PCP</h2>
@@ -249,7 +292,7 @@ export default function PCPIndustrial(){
   {tab==='pedidos'&&<section><Table title="Pedidos que alimentam o PCP" cols={['Pedido','Status','Total','OPs vinculadas']} rows={orders.filter(o=>!query||String(o.numero).includes(query)).map(o=>[o.numero,o.status,o.total,ops.filter(x=>x.pedido_venda_id===o.id).length])} search={query} setSearch={setQuery}/></section>}
 
   {tab==='ops'&&<section className="crud-list">
-   {current&&<section className="pcp-modern-panel" style={{marginBottom:12}}><div className="pcp-modern-panel-head"><div><span>DETALHES DA ORDEM DE PRODUÇÃO DISPARADA PELAS VENDAS</span><h2>{current.numero_op}</h2><p>Qtd. solicitada: {Number(current.quantidade).toLocaleString('pt-BR')} • Data limite: {current.data_prevista||'—'}</p></div></div><div className="pcp-form-grid-modern"><EntityCodeLookup label="Máquina destino" value={machineForAnalysis} records={machines.map(m=>({id:m.id,codigo:m.codigo,nome:m.nome}))} onChange={setMachineForAnalysis} onSelect={m=>setMachineForAnalysis(m.id)} helper="Digite o código da máquina ou consulte pela lupa."/><label><span>Peças por hora nominal</span><input type="number" min="1" value={nominalRate} onChange={e=>setNominalRate(e.target.value)}/></label><label><span>Início planejado</span><input type="datetime-local" value={analysisStart} onChange={e=>setAnalysisStart(e.target.value)}/></label><label><span>Operação dupla</span><span style={{display:'flex',alignItems:'center',gap:10,minHeight:42}}><input type="checkbox" checked={doubleMold} onChange={e=>setDoubleMold(e.target.checked)} style={{width:20,minHeight:20}}/> Dois moldes simultâneos: frente + atrás</span></label></div><div className="pcp-planning-strip" style={{marginTop:12}}><div><strong>CAPACIDADE AUTOMÁTICA</strong><span>{analysisRate.toLocaleString('pt-BR')} peças/h • {analysisMachine?.codigo||'máquina não selecionada'} • tempo estimado {Math.floor(analysisHours)}h {Math.round((analysisHours%1)*60)}min</span></div><b>Início: {analysisStart?new Date(analysisStart).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'defina o início'}</b><b>Término: {analysisStart?analysisEnd:'—'}</b></div><div style={{marginTop:12}}><strong>ANÁLISE DE DISPONIBILIDADE DE MATERIAL — EXPLOSÃO DA BOM</strong><div style={{overflowX:'auto',marginTop:8}}><table><thead><tr><th>Insumo requerido</th><th>Qtd. necessária</th><th>Estoque</th><th>Status</th></tr></thead><tbody>{analysisMaterials.map(i=><tr key={i.id}><td>{i.product?.codigo||'—'} • {i.product?.nome||'Componente'}</td><td>{i.need.toLocaleString('pt-BR',{maximumFractionDigits:3})}</td><td>{i.stock.toLocaleString('pt-BR',{maximumFractionDigits:3})}</td><td className={i.missing?'pcp-newop-warn':'pcp-newop-ok'}>{i.missing?'🔴 FALTA — '+i.missing.toLocaleString('pt-BR',{maximumFractionDigits:3}):'🟢 DISPONÍVEL — RESERVAR'}</td></tr>)}{!analysisMaterials.length&&<tr><td colSpan={4}>Esta OP ainda não possui BOM/ficha técnica ativa.</td></tr>}</tbody></table></div></div><div style={{display:'flex',justifyContent:'flex-end',gap:8,marginTop:12}}>{analysisMaterials.some(i=>i.missing>0)&&<button className="secondary-v2" onClick={()=>location.href='/compras-solicitacao'}>🛒 COMPRAR MATERIAIS FALTANTES</button>}<button className="primary-v2" disabled={analysisMaterials.some(i=>i.missing>0)||!analysisMachine} onClick={()=>openProgram(current.id)}>⚙️ LIBERAR OP PARA PROGRAMAÇÃO</button></div></section>}
+   {current&&<section className="pcp-modern-panel" className="mb-3"><div className="pcp-modern-panel-head"><div><span>DETALHES DA ORDEM DE PRODUÇÃO DISPARADA PELAS VENDAS</span><h2>{current.numero_op}</h2><p>Qtd. solicitada: {Number(current.quantidade).toLocaleString('pt-BR')} • Data limite: {current.data_prevista||'—'}</p></div></div><div className="pcp-form-grid-modern"><EntityCodeLookup label="Máquina destino" value={machineForAnalysis} records={machines.map(m=>({id:m.id,codigo:m.codigo,nome:m.nome}))} onChange={setMachineForAnalysis} onSelect={m=>setMachineForAnalysis(m.id)} helper="Digite o código da máquina ou consulte pela lupa."/><label><span>Peças por hora nominal</span><input type="number" min="1" value={nominalRate} onChange={e=>setNominalRate(e.target.value)}/></label><label><span>Início planejado</span><input type="datetime-local" value={analysisStart} onChange={e=>setAnalysisStart(e.target.value)}/></label><label><span>Operação dupla</span><span className="flex min-h-[42px] items-center gap-2.5"><input type="checkbox" checked={doubleMold} onChange={e=>setDoubleMold(e.target.checked)} className="h-5 w-5"/> Dois moldes simultâneos: frente + atrás</span></label></div><div className="pcp-planning-strip" className="mt-3"><div><strong>CAPACIDADE AUTOMÁTICA</strong><span>{analysisRate.toLocaleString('pt-BR')} peças/h • {analysisMachine?.codigo||'máquina não selecionada'} • tempo estimado {Math.floor(analysisHours)}h {Math.round((analysisHours%1)*60)}min</span></div><b>Início: {analysisStart?new Date(analysisStart).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'defina o início'}</b><b>Término: {analysisStart?analysisEnd:'—'}</b></div><div style={{marginTop:12}}><strong>ANÁLISE DE DISPONIBILIDADE DE MATERIAL — EXPLOSÃO DA BOM</strong><div className="mt-2 overflow-x-auto"><table><thead><tr><th>Insumo requerido</th><th>Qtd. necessária</th><th>Estoque</th><th>Status</th></tr></thead><tbody>{analysisMaterials.map(i=><tr key={i.id}><td>{i.product?.codigo||'—'} • {i.product?.nome||'Componente'}</td><td>{i.need.toLocaleString('pt-BR',{maximumFractionDigits:3})}</td><td>{i.stock.toLocaleString('pt-BR',{maximumFractionDigits:3})}</td><td className={i.missing?'pcp-newop-warn':'pcp-newop-ok'}>{i.missing?'🔴 FALTA — '+i.missing.toLocaleString('pt-BR',{maximumFractionDigits:3}):'🟢 DISPONÍVEL — RESERVAR'}</td></tr>)}{!analysisMaterials.length&&<tr><td colSpan={4}>Esta OP ainda não possui BOM/ficha técnica ativa.</td></tr>}</tbody></table></div></div><div className="mt-3 flex justify-end gap-2">{analysisMaterials.some(i=>i.missing>0)&&<button className="secondary-v2" onClick={()=>location.href='/compras-solicitacao'}>🛒 COMPRAR MATERIAIS FALTANTES</button>}<button className="primary-v2" disabled={analysisMaterials.some(i=>i.missing>0)||!analysisMachine} onClick={()=>openProgram(current.id)}>⚙️ LIBERAR OP PARA PROGRAMAÇÃO</button></div></section>}
    <div className="crud-list-head"><div><strong>Ordens de Produção</strong><small>Cadastre, consulte e abra uma OP para continuar o processo.</small></div><div className="pcp-list-actions"><div className="module-search"><InlineIcon name="Search" size={16}/><input placeholder="OP / status" value={query} onChange={e=>setQuery(e.target.value)}/></div><button className="primary-v2" onClick={openNewOP}><InlineIcon name="Plus" size={17}/> Nova OP</button></div></div>
    <div className="crud-table-wrap"><table><thead><tr><th>OP</th><th>Produto</th><th>Quantidade</th><th>Status</th><th>Prevista</th><th>Ações</th></tr></thead><tbody>{filteredOps.map(o=><tr key={o.id}><td><strong>{o.numero_op}</strong></td><td>{products.find(p=>p.id===o.produto_id)?.codigo||'—'} • {products.find(p=>p.id===o.produto_id)?.nome||'Produto não localizado'}</td><td>{o.quantidade}</td><td>{o.status}</td><td>{o.data_prevista||'—'}</td><td className="pcp-row-actions"><button className="secondary-v2" onClick={()=>{setSelectedOp(o.id)}}>Analisar</button><button className="secondary-v2" onClick={()=>{setSelectedOp(o.id);selectTab('materiais')}}>Materiais</button><button className="secondary-v2" onClick={()=>{setSelectedOp(o.id);selectTab('producao')}}>Apontar</button><button className="secondary-v2" onClick={()=>openProgram(o.id)}>Programar</button></td></tr>)}</tbody></table></div>
   </section>}
