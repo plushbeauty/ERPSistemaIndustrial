@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { ArrowLeft, Save, Printer, X } from 'lucide-react'
+import { ArrowLeft, X } from 'lucide-react'
 import './industrial-page-shell.css'
 
 export type PageAction = {
