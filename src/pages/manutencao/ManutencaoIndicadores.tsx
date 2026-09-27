@@ -13,6 +13,13 @@ type ReliabilityRow = {
   maquina: string
   paradas: number
   mttr: number
+  mtbf: number | null
+}
+
+type MachineReliability = {
+  paradas: number
+  minutosParados: number
+  inicios: number[]
 }
 
 export default function ManutencaoIndicadores() {
@@ -39,35 +46,56 @@ export default function ManutencaoIndicadores() {
   }, [])
 
   const data = useMemo<ReliabilityRow[]>(() => {
-    const grouped = new Map<string, { paradas: number; minutos: number }>()
+    const grouped = new Map<string, MachineReliability>()
 
     for (const row of rows) {
       const relation = Array.isArray(row.erp_maquinas) ? row.erp_maquinas[0] : row.erp_maquinas
       const machineCode = relation?.codigo?.trim() || row.maquina_id || 'Máquina não identificada'
-      const current = grouped.get(machineCode) ?? { paradas: 0, minutos: 0 }
+      const current = grouped.get(machineCode) ?? { paradas: 0, minutosParados: 0, inicios: [] }
 
       current.paradas += 1
 
-      if (row.inicio && row.fim) {
-        const durationMinutes = (new Date(row.fim).getTime() - new Date(row.inicio).getTime()) / 60000
-        if (Number.isFinite(durationMinutes) && durationMinutes >= 0) {
-          current.minutos += durationMinutes
+      if (row.inicio) {
+        const start = new Date(row.inicio).getTime()
+        if (Number.isFinite(start)) current.inicios.push(start)
+
+        if (row.fim) {
+          const end = new Date(row.fim).getTime()
+          const durationMinutes = (end - start) / 60000
+          if (Number.isFinite(durationMinutes) && durationMinutes >= 0) {
+            current.minutosParados += durationMinutes
+          }
         }
       }
 
       grouped.set(machineCode, current)
     }
 
-    return Array.from(grouped, ([maquina, values]) => ({
-      maquina,
-      paradas: values.paradas,
-      mttr: values.paradas > 0 ? values.minutos / values.paradas : 0,
-    }))
+    return Array.from(grouped, ([maquina, values]) => {
+      const starts = [...values.inicios].sort((a, b) => a - b)
+      let intervalTotal = 0
+
+      for (let index = 1; index < starts.length; index += 1) {
+        intervalTotal += (starts[index] - starts[index - 1]) / 60000
+      }
+
+      return {
+        maquina,
+        paradas: values.paradas,
+        mttr: values.paradas > 0 ? values.minutosParados / values.paradas : 0,
+        mtbf: starts.length > 1 ? intervalTotal / (starts.length - 1) : null,
+      }
+    })
   }, [rows])
 
   const mttr = data.length > 0
     ? data.reduce((sum, row) => sum + row.mttr, 0) / data.length
     : 0
+
+  const mtbfValues = data.filter((row): row is ReliabilityRow & { mtbf: number } => row.mtbf !== null)
+  const mtbf = mtbfValues.length > 0
+    ? mtbfValues.reduce((sum, row) => sum + row.mtbf, 0) / mtbfValues.length
+    : null
 
   return (
     <main className="min-h-screen bg-slate-50 p-6 text-slate-900">
@@ -88,10 +116,18 @@ export default function ManutencaoIndicadores() {
           </div>
         </header>
 
-        <article className="mt-5 rounded-md border bg-white p-5">
-          <span className="font-bold">MTTR MÉDIO</span>
-          <strong className="mt-2 block text-3xl">{mttr.toFixed(1)} min</strong>
-        </article>
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          <article className="rounded-md border bg-white p-5">
+            <span className="font-bold">MTTR MÉDIO</span>
+            <strong className="mt-2 block text-3xl">{mttr.toFixed(1)} min</strong>
+          </article>
+          <article className="rounded-md border bg-white p-5">
+            <span className="font-bold">MTBF MÉDIO</span>
+            <strong className="mt-2 block text-3xl">
+              {mtbf === null ? '—' : `${mtbf.toFixed(1)} min`}
+            </strong>
+          </article>
+        </div>
 
         <section className="mt-5 rounded-md border bg-white p-5">
           <h2 className="mb-4 text-xl font-black">Paradas por máquina</h2>
