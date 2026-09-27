@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import type { JSX } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { BarChart3, Printer, RefreshCw, AlertTriangle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -10,7 +11,7 @@ export default function FinanceiroGraficoDesvios():JSX.Element{
  const [rows,setRows]=useState<CostRow[]>([])
  const [busy,setBusy]=useState(false)
  const [error,setError]=useState('')
- async function load(){
+ async function load(){ 
   setBusy(true);setError('')
   try{
    const result=await supabase.from('erp_financeiro_apuracao_custos').select('codigo_produto,custo_padrao_total,custo_real_total,data_apuracao').order('data_apuracao',{ascending:false}).limit(500)

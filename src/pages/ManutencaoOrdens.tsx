@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import type { JSX } from 'react'
 import { RefreshCw, Save, Wrench, Printer, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { EntityCodeLookup, type LookupRecord } from '../components/industrial/EntityCodeLookup'
