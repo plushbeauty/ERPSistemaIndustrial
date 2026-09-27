@@ -79,7 +79,7 @@ export default function QualidadeListaMestre() {
         doc.area === departamento ||
         doc.setor === departamento
 
-      const isForm = /formul[aá]rio|^for[-_]/i.test(`${doc.tipo} ${doc.codigo}`)
+      const isForm = /formul[aá]rio|^for[-_]/i.test([doc.tipo, doc.codigo].filter(Boolean).join(' '))
       const formMatches = incluirFormularios || !isForm
 
       const searchable = [
