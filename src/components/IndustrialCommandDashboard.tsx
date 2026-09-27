@@ -170,14 +170,6 @@ export default function IndustrialCommandDashboard({ onNavigate }: Props) {
       @media(max-width:760px){.icd-hero{align-items:flex-start;flex-direction:column}.icd-hero-brand h1{font-size:22px}.icd-hero-time{width:100%;min-width:0;border-left:0;border-top:1px solid #e2e8f0;padding:12px 0 0;text-align:left}.icd-hero-time strong{white-space:normal}}
     `}</style>
     <div className="icd icd-clean">
-      <section className="icd-hero" aria-label="Identificação do painel">
-        <div className="icd-hero-brand">
-          <img src="/logo-industrial.svg" alt="SGQ ERP Industrial" />
-          <div><span>SGQ ERP INDUSTRIAL</span><h1>{empresaNome}</h1><p>Olá, <strong>{usuarioNome}</strong> • Gestão à vista da operação industrial</p></div>
-        </div>
-        <div className="icd-hero-time"><small>DATA E HORA</small><strong>{clock.toLocaleDateString('pt-BR')} • {clock.toLocaleTimeString('pt-BR')}</strong></div>
-      </section>
-
       {error && <div className="icd-alert" role="alert"><AlertTriangle size={18} /><div><b>Não foi possível carregar todos os indicadores</b><span>{error}</span></div></div>}
 
       <section className="icd-kpis" aria-label="Indicadores principais">
