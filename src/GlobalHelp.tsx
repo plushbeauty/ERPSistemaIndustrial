@@ -10,7 +10,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowRight, Bot, HelpCircle, ImagePlus, Link2, Loader2, Mic, Search, Volume2, VolumeX, X } from 'lucide-react'
+import { ArrowRight, Bot , ImagePlus, Link2, Loader2, Mic, Search, Volume2, VolumeX, X } from 'lucide-react'
 import { supabase } from './lib/supabaseClient'
 
 type HelpDoc={id:string;slug:string;titulo:string;resumo:string;conteudo:string;palavras_chave:string[];rota:string|null;ordem:number}
@@ -20,7 +20,6 @@ interface SpeechRecognitionLike extends EventTarget { lang:string; interimResult
 interface WindowWithSpeech extends Window { SpeechRecognition?: new()=>SpeechRecognitionLike; webkitSpeechRecognition?: new()=>SpeechRecognitionLike }
 const fallback:HelpDoc[]=[{id:'fallback-dashboard',slug:'dashboard',titulo:'Dashboard',resumo:'Visão executiva da operação.',conteudo:'Use os indicadores e atalhos para acompanhar a operação industrial.',palavras_chave:['dashboard','indicadores','KPI'],rota:'/',ordem:1}]
 const routeSlug:Record<string,string>={'/':'dashboard','/login':'login','/cadastro-empresa':'cadastro-empresa','/qualidade':'qualidade','/fiscal':'fiscal','/pcp':'pcp-mrp','/master':'usuarios-permissoes','/erp-industrial':'dashboard'}
-const financialTerms=['financeiro','caixa','conta a pagar','conta a receber','a pagar','a receber','saldo','faturamento','receita','despesa','fluxo de caixa','previsao de caixa','pagamento','recebimento']
 const normalize=(v:string)=>v.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();const MAX=6*1024*1024
 export default function GlobalHelp(){
  const [open,setOpen]=useState(false),[docs,setDocs]=useState<HelpDoc[]>(fallback),[search,setSearch]=useState(''),[question,setQuestion]=useState(''),[answer,setAnswer]=useState(''),[actions,setActions]=useState<Action[]>([]),[image,setImage]=useState<string|null>(null),[loading,setLoading]=useState(false),[speaking,setSpeaking]=useState(false),[listening,setListening]=useState(false),[path,setPath]=useState(location.pathname);const inputRef=useRef<HTMLInputElement>(null);const recognitionRef=useRef<SpeechRecognitionLike|null>(null)
