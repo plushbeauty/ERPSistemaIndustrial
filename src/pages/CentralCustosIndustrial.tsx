@@ -11,7 +11,7 @@
 
 import {useEffect,useMemo,useState} from 'react'
 import {supabase} from '../lib/supabaseClient'
-import {Calculator,Plus,Save,Trash2,RefreshCw,Search,Building2,ReceiptText,Factory,ChevronRight} from 'lucide-react'
+import {Calculator,Plus,Save,RefreshCw,Building2,Factory} from 'lucide-react'
 type Center={id:string;codigo:string;nome:string;tipo:string;parent_id:string|null;ativo:boolean}
 type Fixed={id:string;centro_custo_id:string;categoria:string;descricao:string;valor_mensal:number;percentual_rateio:number;ativo:boolean}
 type Product={id:string;codigo:string;nome:string;custo_medio:number;custo_fabricacao:number;preco_venda:number}
