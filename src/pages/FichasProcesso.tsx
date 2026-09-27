@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 
 type Product={id:string;codigo:string;nome:string;descricao?:string|null}
+type Client={id:string;codigo:string;nome:string;documento?:string|null}
 type Tool={id:string;codigo:string;nome:string;tipo:string;numero_cavidades:number|null;cavidades_ativas?:number|null}
 type Machine={id:string;codigo:string;nome:string;tipo:string|null;status:string}
 type Status='RASCUNHO'|'EM_ANALISE'|'APROVADA'|'LIBERADA'|'OBSOLETA'
@@ -47,6 +48,7 @@ const card='rounded-md border border-slate-200 bg-white p-5 shadow-sm'
 export default function FichasProcesso(){
  const [form,setForm]=useState<FormState>(blank)
  const [products,setProducts]=useState<Product[]>([])
+ const [clients,setClients]=useState<Client[]>([])
  const [tools,setTools]=useState<Tool[]>([])
  const [machines,setMachines]=useState<Machine[]>([])
  const [rows,setRows]=useState<FormState[]>([])
@@ -63,14 +65,16 @@ export default function FichasProcesso(){
   try{
    const company=await supabase.rpc('erp_current_empresa_id')
    if(company.error||!company.data) throw company.error||new Error('Empresa ERP não identificada.')
-   const [p,t,m,f]=await Promise.all([
+   const [p,c,t,m,f]=await Promise.all([
     supabase.from('erp_produtos').select('id,codigo,nome,descricao').eq('empresa_id',company.data).eq('ativo',true).order('codigo').limit(3000),
+    supabase.from('erp_clientes').select('id,codigo,nome,documento').eq('empresa_id',company.data).eq('ativo',true).order('codigo').limit(3000),
     supabase.from('erp_ferramentas_industriais').select('id,codigo,nome,tipo,numero_cavidades,parametros').eq('empresa_id',company.data).eq('ativo',true).order('codigo').limit(2000),
     supabase.from('erp_maquinas').select('id,codigo,nome,tipo,status').eq('empresa_id',company.data).not('status','eq','INATIVA').order('codigo').limit(2000),
     supabase.from('erp_fichas_processo').select('*').eq('empresa_id',company.data).order('codigo_ficha').limit(500)
    ])
-   for(const x of [p,t,m,f]) if(x.error) throw x.error
+   for(const x of [p,c,t,m,f]) if(x.error) throw x.error
    setProducts((p.data??[]) as Product[])
+   setClients((c.data??[]) as Client[])
    setTools((t.data??[]) as Tool[])
    setMachines((m.data??[]) as Machine[])
    setRows(((f.data??[]) as Record<string,unknown>[]).map(fromDb))
@@ -197,7 +201,7 @@ export default function FichasProcesso(){
      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
       <label className={label}>CÓD. DA FICHA<input className={field} value={form.codigo_ficha} onChange={e=>update('codigo_ficha',e.target.value)} placeholder="FCH-2026-089"/></label>
       <label className={label}>REVISÃO<input className={field} type="number" min="0" value={form.revisao} onChange={e=>update('revisao',e.target.value)}/></label>
-      <label className={label}>CÓDIGO DO CLIENTE<input className={field} value={form.codigo_cliente} onChange={e=>update('codigo_cliente',e.target.value)} placeholder="COD-CLI-X9"/></label>
+      <EntityCodeLookup label="CÓDIGO DO CLIENTE" value={form.codigo_cliente} records={clients.map(client=>({id:client.codigo,codigo:client.codigo,nome:client.nome,documento:client.documento,codigo_cliente:client.codigo}))} onChange={v=>update('codigo_cliente',v)} onSelect={client=>update('codigo_cliente',client.codigo??client.id)} helper="Digite o código exato do cliente ou abra a lupa para consultar." />
       <label className={label}>CAVIDADES ATIVAS<input className={field} type="number" min="0" value={form.cavidades_ativas} onChange={e=>update('cavidades_ativas',e.target.value)}/></label>
       <div><EntityCodeLookup label="CÓDIGO DO PRODUTO / PEÇA" value={form.produto_id} records={products} onChange={v=>update('produto_id',v)} onSelect={r=>{update('produto_id',r.id);setMessage('Produto '+(r.codigo||'')+' localizado automaticamente.')}} required helper="Digite o código exato ou use a lupa para consulta avançada."/></div>
       <div><EntityCodeLookup label="CÓDIGO DO MOLDE / FERRAMENTAL" value={form.ferramenta_id} records={tools.map(t=>({id:t.id,codigo:t.codigo,nome:t.nome,dimensoes:t.tipo,molde:t.nome}))} onChange={v=>update('ferramenta_id',v)} onSelect={r=>{update('ferramenta_id',r.id);update('cavidades_ativas',String((tools.find(t=>t.id===r.id)?.cavidades_ativas??tools.find(t=>t.id===r.id)?.numero_cavidades??1)));}} required helper="Busca por código, descrição ou molde."/></div>
