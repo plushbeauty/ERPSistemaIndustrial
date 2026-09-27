@@ -225,9 +225,9 @@ export default function PublicIndustrialHome() {
           <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
             <div className="grid gap-6 lg:grid-cols-3">
               {[
-                ['01', 'Planejar', 'Engenharia, BOM, capacidade e programação formam a base da execução.', Factory],
-                ['02', 'Executar', 'O operador registra produção, perdas, instrumento e evidências no chão de fábrica.', PackageCheck],
-                ['03', 'Controlar', 'Qualidade, manutenção, estoque, fiscal e indicadores recebem os mesmos eventos.', ShieldCheck],
+                { number: '01', title: 'Planejar', description: 'Engenharia, BOM, capacidade e programação formam a base da execução.', icon: Factory },
+                { number: '02', title: 'Executar', description: 'O operador registra produção, perdas, instrumento e evidências no chão de fábrica.', icon: PackageCheck },
+                { number: '03', title: 'Controlar', description: 'Qualidade, manutenção, estoque, fiscal e indicadores recebem os mesmos eventos.', icon: ShieldCheck },
               ].map((card) => {
                 const FlowIcon = card.icon
                 return (
