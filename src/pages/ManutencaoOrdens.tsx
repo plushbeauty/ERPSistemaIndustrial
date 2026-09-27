@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { RefreshCw, Save, Wrench, Printer, X } from 'lucide-react'
-import { supabase } from '../../lib/supabaseClient'
-import { EntityCodeLookup, type LookupRecord } from '../../components/industrial/EntityCodeLookup'
+import { supabase } from '../lib/supabaseClient'
+import { EntityCodeLookup, type LookupRecord } from '../components/industrial/EntityCodeLookup'
 type Order={id:string;numero_os:string|null;ativo_id:string;tipo:string;descricao:string;prioridade:string;status:string;data_prevista:string|null;inicio_atendimento:string|null;data_fechamento:string|null;laudo_tecnico:string|null}
 type Form={machineId:string;tipo:'CORRETIVA'|'PREVENTIVA'|'PREDITIVA';descricao:string;prioridade:'BAIXA'|'MEDIA'|'ALTA'|'CRITICA';dataPrevista:string}
 export default function ManutencaoOrdens():JSX.Element{
