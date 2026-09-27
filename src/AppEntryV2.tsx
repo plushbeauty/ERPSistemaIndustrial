@@ -1,17 +1,5 @@
-/**
- * =========================================================================
- * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL - ROTAS MESTRE
- * Data/Hora: 27/09/2026 - 16:20 BRT
- * ID da Revisão: REV-057
- * Alterações: Limpeza absoluta de imports órfãos e variáveis mortas;
- *             unificação do padrão lazy() para todas as páginas; 
- *             alinhamento com o react-router-dom v7 e TypeScript 5.6.
- * Status do Build Local: Pronto para npm run build:verified (Erro Zero)
- * =========================================================================
- */
-
-import { Component, ReactNode, lazy, Suspense, useEffect, useState } from 'react'
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { Component, type ReactNode, lazy, Suspense, useEffect, useState } from 'react'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 
@@ -26,7 +14,6 @@ import './styles/industrial-plans.css'
 
 import IndustrialLoginDirect from './IndustrialLoginDirect'
 
-// 🚀 CARREGAMENTO ASSÍNCRONO PREMIUM (LAZY) DE TODAS AS TELAS DO ECOSSISTEMA
 const AppIndustrial = lazy(() => import('./AppIndustrialV7'))
 const PublicIndustrialHome = lazy(() => import('./PublicIndustrialHome'))
 const IndustrialVisualShowcase = lazy(() => import('./components/IndustrialVisualShowcase'))
@@ -44,16 +31,12 @@ const AcompanhamentoNaoConformidade = lazy(() => import('./pages/AcompanhamentoN
 const EstoqueAlmoxarifado = lazy(() => import('./pages/EstoqueAlmoxarifado'))
 const ProdutosVendasIndustrial = lazy(() => import('./pages/ProdutosVendasIndustrial'))
 const PedidoVendaCompleto = lazy(() => import('./pages/PedidoVendaCompleto'))
-
-// Submódulos Finais do Fluxo Comercial e de Suprimentos (Sem sobreposição)
 const VendasCentral = lazy(() => import('./pages/VendasCentral'))
 const VendasCatalogoDigital = lazy(() => import('./pages/VendasCatalogoDigital'))
 const VendasAnaliseCustos = lazy(() => import('./pages/VendasAnaliseCustos'))
 const VendasDashboardGraficos = lazy(() => import('./pages/VendasDashboardGraficos'))
 const VendasMetas = lazy(() => import('./pages/VendasMetas'))
 const VendasCarteira = lazy(() => import('./pages/VendasCarteira'))
-
-// Submódulos Finais de Engenharia, Qualidade e Chão de Fábrica (Padrão Odoo/ERPNext)
 const CentralCustosIndustrial = lazy(() => import('./pages/CentralCustosIndustrial'))
 const CadastroEmpresa = lazy(() => import('./pages/CadastroEmpresa'))
 const PlanosIndustrial = lazy(() => import('./pages/PlanosIndustrial'))
@@ -76,8 +59,6 @@ const ClientesIndustrial = lazy(() => import('./pages/ClientesIndustrial'))
 const TabelaPrecos = lazy(() => import('./pages/TabelaPrecos'))
 const CatalogoDigital = lazy(() => import('./pages/CatalogoDigital'))
 const FichasProcesso = lazy(() => import('./pages/FichasProcesso'))
-
-// Páginas de Auditoria e Fechamento Corrigidas de Erros de Tipo e Mocks
 const AssistenteAjudaERP = lazy(() => import('./pages/AssistenteAjudaERP'))
 const ComprasSolicitacaoManual = lazy(() => import('./pages/ComprasSolicitacaoManual'))
 const ExpedicaoPortaria = lazy(() => import('./pages/ExpedicaoPortaria'))
@@ -96,7 +77,11 @@ type AccessResult = { ok: boolean; master: boolean; reason: string }
 
 class Boundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null }
-  static getDerivedStateFromError(error: Error) { return { error } }
+
+  static getDerivedStateFromError(error: Error) {
+    return { error }
+  }
+
   render() {
     if (this.state.error) {
       return (
@@ -104,11 +89,14 @@ class Boundary extends Component<{ children: ReactNode }, { error: Error | null 
           <div className="error-screen-card">
             <strong>Erro crítico ao abrir a tela operacional do ERP.</strong>
             <p>{this.state.error.message}</p>
-            <button className="primary" type="button" onClick={() => location.reload()}>Recarregar Interface</button>
+            <button className="primary" type="button" onClick={() => window.location.reload()}>
+              Recarregar Interface
+            </button>
           </div>
         </div>
       )
     }
+
     return this.props.children
   }
 }
@@ -128,78 +116,205 @@ function LoadingSkeleton({ label = 'Carregando SGQ ERP Industrial…' }: { label
 }
 
 function safeReturnTo(value: string | null): string {
-  if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/login')) return '/comercial';
-  return value;
+  if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/login')) return '/comercial'
+  return value
 }
 
 async function validarAcessoERP(session: Session | null): Promise<AccessResult> {
-  if (!supabaseConfigurado || !session?.user) return { ok: false, master: false, reason: 'Sessão de autenticação inválida.' };
-  const userId = session.user.id;
-  
+  if (!supabaseConfigurado || !session?.user) {
+    return { ok: false, master: false, reason: 'Sessão de autenticação inválida.' }
+  }
+
   const { data: profile, error: profileError } = await supabase
     .from('erp_usuarios')
     .select('id, auth_user_id, empresa_id, perfil, nivel_admin, is_master, ativo, deleted_at')
-    .eq('auth_user_id', userId)
+    .eq('auth_user_id', session.user.id)
     .eq('ativo', true)
     .is('deleted_at', null)
-    .maybeSingle();
+    .maybeSingle()
 
-  if (profileError) throw profileError;
+  if (profileError) throw profileError
 
-  if (profile?.auth_user_id === userId) {
-    const role = String(profile.perfil ?? '').trim().toUpperCase();
-    const master = Boolean(profile.is_master) && Number(profile.nivel_admin ?? 0) >= 100 && role === 'MASTER' && profile.empresa_id === null;
-    
-    if (master) return { ok: true, master: true, reason: '' };
-    if (!profile.empresa_id) return { ok: false, master: false, reason: 'Usuário autenticado sem empresa vinculada.' };
-
-    const { data: empresa, error: empresaError } = await supabase
-      .from('erp_empresas')
-      .select('id, ativo')
-      .eq('id', profile.empresa_id)
-      .eq('ativo', true)
-      .maybeSingle();
-
-    if (empresaError) throw empresaError;
-    if (!empresa?.ativo) return { ok: false, master: false, reason: 'Empresa ERP inativa ou inexistente.' };
-
-    return { ok: true, master: false, reason: '' };
+  if (!profile || profile.auth_user_id !== session.user.id) {
+    return { ok: false, master: false, reason: 'Usuário autenticado sem perfil ERP ativo.' }
   }
-  return { ok: false, master: false, reason: 'Usuário autenticado sem perfil ERP ativo.' };
+
+  const role = String(profile.perfil ?? '').trim().toUpperCase()
+  const master = Boolean(profile.is_master) && Number(profile.nivel_admin ?? 0) >= 100 && role === 'MASTER' && profile.empresa_id === null
+
+  if (master) return { ok: true, master: true, reason: '' }
+
+  if (!profile.empresa_id) {
+    return { ok: false, master: false, reason: 'Usuário autenticado sem empresa vinculada.' }
+  }
+
+  const { data: empresa, error: empresaError } = await supabase
+    .from('erp_empresas')
+    .select('id, ativo')
+    .eq('id', profile.empresa_id)
+    .eq('ativo', true)
+    .maybeSingle()
+
+  if (empresaError) throw empresaError
+  if (!empresa?.ativo) return { ok: false, master: false, reason: 'Empresa ERP inativa ou inexistente.' }
+
+  return { ok: true, master: false, reason: '' }
 }
 
 export default function AppEntryV2(): JSX.Element {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [statusAcesso, setStatusValid] = useState<AccessResult | null>(null);
-  const location = useLocation();
+  const [session, setSession] = useState<Session | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [statusAcesso, setStatusAcesso] = useState<AccessResult | null>(null)
+  const location = useLocation()
 
   useEffect(() => {
-    // Escuta ativa de autenticação real do Supabase Auth
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      if (s) {
-        validarAcessoERP(s).then(setStatusValid).catch(() => setStatusValid({ ok: false, master: false, reason: 'Erro interno de checagem.' }));
+    let active = true
+
+    const validarSessao = async (nextSession: Session | null) => {
+      if (!active) return
+      setSession(nextSession)
+
+      if (!nextSession) {
+        setStatusAcesso(null)
+        return
       }
-      setLoading(false);
-    });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
-      if (s) {
-        validarAcessoERP(s).then(setStatusValid).catch(() => setStatusValid({ ok: false, master: false, reason: 'Erro interno de checagem.' }));
-      } else {
-        setStatusValid(null);
+      try {
+        const access = await validarAcessoERP(nextSession)
+        if (active) setStatusAcesso(access)
+      } catch {
+        if (active) setStatusAcesso({ ok: false, master: false, reason: 'Erro interno de checagem de acesso.' })
       }
-    });
+    }
 
-    return () => subscription.unsubscribe();
-  }, []);
+    void supabase.auth.getSession().then(({ data }) => {
+      void validarSessao(data.session)
+      if (active) setLoading(false)
+    })
 
-  if (loading) return <LoadingSkeleton />;
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      void validarSessao(nextSession)
+    })
 
-  // Se o usuário não estiver logado, força o fluxo para a rota pública ou login
+    return () => {
+      active = false
+      authListener.subscription.unsubscribe()
+    }
+  }, [])
+
+  if (loading) return <LoadingSkeleton />
+
+  const publicRoutes = (
+    <Routes>
+      <Route path="/" element={<PublicIndustrialHome />} />
+      <Route path="/login" element={<IndustrialLoginDirect returnTo={safeReturnTo(new URLSearchParams(location.search).get('returnTo'))} masterMode={false} />} />
+      <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/contato" element={<Contato />} />
+      <Route path="/preview/icones" element={<IndustrialVisualShowcase />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+
   if (!session) {
+    return <Boundary><Suspense fallback={<LoadingSkeleton />}>{publicRoutes}</Suspense></Boundary>
+  }
+
+  if (!statusAcesso) {
+    return <LoadingSkeleton label="Validando acesso ao ERP Industrial…" />
+  }
+
+  if (!statusAcesso.ok) {
     return (
       <Boundary>
-Use o código com cuidado.<Suspense fallback={}><Route path="/" element={} /><Route path="/login" element={<IndustrialLoginDirect returnTo={safeReturnTo(new URLSearchParams(location.search).get('returnTo'))} masterMode={false} />} /><Route path="/recuperar-senha" element={} /><Route path="*" element={} />)}if (statusAcesso && !statusAcesso.ok) {return (Acesso Bloqueado pela Controladoria{statusAcesso.reason}<button className="primary" type="button" onClick={() => supabase.auth.signOut()}>Voltar para o Login)}return (<Suspense fallback={}>{/* 🚀 ROTEAMENTO LINEAR E EXPLICÍTO CONFORME SEU PACKAGE.JSON (REACT-ROUTER-DOM V7) */}<Route path="/comercial" element={} /><Route path="/vendas/novo-pedido" element={} /><Route path="/vendas/carteira" element={} /><Route path="/vendas/clientes" element={} /><Route path="/vendas/catalogo-digital" element={} /><Route path="/vendas/analise-custos" element={} /><Route path="/vendas/dashboard-graficos" element={} /><Route path="/vendas/metas" element={} /><Route path="/pcp/ordens" element={} /><Route path="/qualidade/instrumentos" element={} /><Route path="/qualidade/liberacao-lote" element={} /><Route path="/estoque/saldos" element={} /><Route path="/produtos" element={} /><Route path="/qualidade/pfmea" element={} /><Route path="/manutencao/ordens" element={} /><Route path="/estoque/ajustes" element={} /><Route path="/estoque/recebimento-lotes" element={} /><Route path="/expedicao/roteirizacao" element={} /><Route path="/expedicao/portaria" element={} /><Route path="/engenharia/revisoes-bom" element={} /><Route path="/pcp/dashboard-oee" element={} /><Route path="/qualidade/dashboard-rnc" element={} /><Route path="/estoque/curva-abc" element={} /><Route path="/financeiro/grafico-desvios" element={} /><Route path="/compras/solicitacao-manual" element={} /><Route path="/ajuda/assistente" element={} /><Route path="/blog" element={} /><Route path="/contato" element={} /><Route path="/fiscal" element={} /><Route path="/fiscal/emissao" element={} /><Route path="/fiscal/previsao-caixa" element={} /><Route path="/fiscal/carteira-nfe" element={} /><Route path="/fiscal/impostos" element={} /><Route path="/master" element={} /><Route path="/cadastro-empresa" element={} /><Route path="/planos" element={} /><Route path="/solicitacao-compra" element={} /><Route path="/teste-erp" element={} /><Route path="/usuarios-admin" element={} /><Route path="/configuracoes-adm" element={} /><Route path="/documentos-qualidade" element={} /><Route path="/recebimento-materiais" element={} /><Route path="/manual-usuario" element={} /><Route path="/rh" element={} /><Route path="/module-overview" element={} /><Route path="/setup-adm-inicial" element={} /><Route path="/configuracao-lote" element={} /><Route path="/ficha-engenharia" element={} /><Route path="/configuracao-lote-pcp" element={} /><Route path="/fornecedores" element={} /><Route path="/tabela-precos" element={} /><Route path="/catalogo" element={} /><Route path="/fichas-processo" element={} /><Route path="/preview/icones" element={} /><Route path="*" element={} />)}
+        <div className="error-screen">
+          <div className="error-screen-card">
+            <strong>Acesso bloqueado pela Controladoria.</strong>
+            <p>{statusAcesso.reason}</p>
+            <button className="primary" type="button" onClick={() => void supabase.auth.signOut()}>
+              Voltar para o Login
+            </button>
+          </div>
+        </div>
+      </Boundary>
+    )
+  }
+
+  const protectedRoutes = (
+    <Routes>
+      <Route path="/comercial" element={<AppIndustrial />} />
+      <Route path="/vendas" element={<VendasCentral />} />
+      <Route path="/vendas/novo-pedido" element={<PedidoVendaCompleto />} />
+      <Route path="/vendas/carteira" element={<VendasCarteira />} />
+      <Route path="/vendas/clientes" element={<ClientesIndustrial />} />
+      <Route path="/vendas/catalogo-digital" element={<VendasCatalogoDigital />} />
+      <Route path="/vendas/analise-custos" element={<VendasAnaliseCustos />} />
+      <Route path="/vendas/dashboard-graficos" element={<VendasDashboardGraficos />} />
+      <Route path="/vendas/metas" element={<VendasMetas />} />
+      <Route path="/pcp" element={<PCPIndustrial />} />
+      <Route path="/pcp/ordens" element={<PCPIndustrial />} />
+      <Route path="/pcp/dashboard-oee" element={<PCPDashboardOEE />} />
+      <Route path="/qualidade" element={<QualidadeIndustrial />} />
+      <Route path="/qualidade/instrumentos" element={<QualidadeIndustrial />} />
+      <Route path="/qualidade/liberacao-lote" element={<AcompanhamentoNaoConformidade />} />
+      <Route path="/qualidade/dashboard-rnc" element={<QualidadeDashboardRNC />} />
+      <Route path="/qualidade/pfmea" element={<QualidadePFMEA />} />
+      <Route path="/qualidade/documentos" element={<DocumentosQualidadeControle />} />
+      <Route path="/estoque" element={<EstoqueAlmoxarifado />} />
+      <Route path="/estoque/saldos" element={<EstoqueAlmoxarifado />} />
+      <Route path="/estoque/ajustes" element={<EstoqueAjustes />} />
+      <Route path="/estoque/recebimento-lotes" element={<EstoqueRecebimentoLotes />} />
+      <Route path="/estoque/curva-abc" element={<EstoqueCurvaABC />} />
+      <Route path="/produtos" element={<ProdutosVendasIndustrial />} />
+      <Route path="/expedicao/roteirizacao" element={<ExpedicaoRoteirizacao />} />
+      <Route path="/expedicao/portaria" element={<ExpedicaoPortaria />} />
+      <Route path="/engenharia/revisoes-bom" element={<EngenhariaRevisoesBOM />} />
+      <Route path="/engenharia/ficha" element={<FichaEngenharia />} />
+      <Route path="/engenharia/fichas-processo" element={<FichasProcesso />} />
+      <Route path="/financeiro/grafico-desvios" element={<FinanceiroGraficoDesvios />} />
+      <Route path="/compras/solicitacao-manual" element={<ComprasSolicitacaoManual />} />
+      <Route path="/solicitacao-compra" element={<SolicitacaoCompra />} />
+      <Route path="/fornecedores" element={<FornecedoresIndustrial />} />
+      <Route path="/clientes" element={<ClientesIndustrial />} />
+      <Route path="/tabela-precos" element={<TabelaPrecos />} />
+      <Route path="/catalogo" element={<CatalogoDigital />} />
+      <Route path="/fiscal" element={<Fiscal />} />
+      <Route path="/fiscal/emissao" element={<NFeEmissao />} />
+      <Route path="/fiscal/previsao-caixa" element={<FiscalPrevisaoCaixa />} />
+      <Route path="/fiscal/carteira-nfe" element={<FiscalCarteiraNFe />} />
+      <Route path="/fiscal/impostos" element={<FiscalImpostos />} />
+      <Route path="/master" element={<Master />} />
+      <Route path="/cadastro-empresa" element={<CadastroEmpresa />} />
+      <Route path="/planos" element={<PlanosIndustrial />} />
+      <Route path="/teste-erp" element={<TesteERP />} />
+      <Route path="/usuarios-admin" element={<UsuariosAdmin />} />
+      <Route path="/configuracoes-adm" element={<ConfiguracoesADMPage />} />
+      <Route path="/documentos-qualidade" element={<DocumentosQualidadeControle />} />
+      <Route path="/recebimento-materiais" element={<RecebimentoMateriais />} />
+      <Route path="/manual-usuario" element={<ManualUsuario />} />
+      <Route path="/rh" element={<RHIndustrial />} />
+      <Route path="/module-overview" element={<ModuleOverviewIndustrial />} />
+      <Route path="/setup-adm-inicial" element={<SetupADMInicial />} />
+      <Route path="/configuracao-lote" element={<ConfiguracaoLote />} />
+      <Route path="/configuracao-lote-pcp" element={<ConfiguracaoLotePCP />} />
+      <Route path="/custos" element={<CentralCustosIndustrial />} />
+      <Route path="/ajuda/assistente" element={<AssistenteAjudaERP />} />
+      <Route path="/ajuda" element={<AssistenteAjudaERP />} />
+      <Route path="/compras/solicitacao" element={<ComprasSolicitacaoManual />} />
+      <Route path="/manutencao/ordens" element={<ManutencaoOrdens />} />
+      <Route path="/fiscal/carteira" element={<FiscalCarteiraNFe />} />
+      <Route path="/qualidade/rnc" element={<QualidadeDashboardRNC />} />
+      <Route path="/estoque/recebimento" element={<EstoqueRecebimentoLotes />} />
+      <Route path="/fichas-processo" element={<FichasProcesso />} />
+      <Route path="*" element={<Navigate to="/comercial" replace />} />
+    </Routes>
+  )
+
+  return (
+    <Boundary>
+      <Suspense fallback={<LoadingSkeleton />}>
+        {protectedRoutes}
+      </Suspense>
+    </Boundary>
+  )
+}
