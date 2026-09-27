@@ -21,7 +21,7 @@ type Props = {
   value: string
   records?: LookupRecord[]
   onChange: (value: string) => void
-  onSelect: (record: LookupRecord) => void
+  onSelect?: (record: LookupRecord) => void
   placeholder?: string
   required?: boolean
   helper?: string
