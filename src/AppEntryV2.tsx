@@ -111,6 +111,7 @@ const FMEAIndustrial = lazy(() => import('./pages/FMEAIndustrialPage'))
 const ProcessoIndustrialPage = lazy(() => import('./pages/ProcessoIndustrialPage'))
 const CentraisIndustriais = lazy(() => import('./pages/CentraisIndustriais'))
 const ComprasIndustrial = lazy(() => import('./pages/ComprasIndustrial'))
+const PedidoCompra = lazy(() => import('./pages/PedidoCompra'))
 const ManutencaoIndustrial = lazy(() => import('./pages/ManutencaoIndustrial'))
 const InteligenciaIndustrial = lazy(() => import('./pages/InteligenciaIndustrial'))
 const QualidadeInspecaoProcesso=lazy(()=>import('./pages/QualidadeInspecaoProcesso'))
@@ -175,7 +176,7 @@ if(path==='/qualidade/calibracao')return <Protected><Suspense fallback={<Loading
 if(path==='/pcp/paradas')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando paradas…"/>}><PCPParadasPage/></Suspense></Protected>;
 if(path==='/pcp/acabamento')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando acabamento…"/>}><PCPAcabamento/></Suspense></Protected>;
 if(path==='/estoque/separacao')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando separação…"/>}><EstoqueSeparacao/></Suspense></Protected>;if(path==='/estoque/etiquetas')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando etiquetas…"/>}><EstoqueEtiquetas/></Suspense></Protected>;
-if(path==='/compras/requisicoes')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando requisições de compra…"/>}><ComprasRequisicoes/></Suspense></Protected>;
+if(path==='/compras/requisicoes')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando requisições de compra…"/>}><ComprasRequisicoes/></Suspense></Protected>;if(path==='/compras/pedido-compra'||path==='/compras/pedidos')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando Pedido de Compra…"/>}><PedidoCompra/></Suspense></Protected>;
 if(path==='/expedicao/saida')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando saída de expedição…"/>}><ExpedicaoSaida/></Suspense></Protected>;
 if(path==='/qualidade/metodologia-8d')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando metodologia 8D…"/>}><QualidadeMetodologia8D/></Suspense></Protected>;
 if(path==='/diretoria/dashboard')return <Protected><Suspense fallback={<LoadingSkeleton label="Carregando painel da diretoria…"/>}><DiretoriaDashboard/></Suspense></Protected>;
