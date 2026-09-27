@@ -1,5 +1,5 @@
 import { useCallback, useState, type ReactElement } from 'react'
-import { Layers, Printer, RefreshCw, ShieldCheck, User, Cpu, PackageSearch } from 'lucide-react'
+import { Printer, RefreshCw, ShieldCheck } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; quantidade_disponivel: number; status_inspecao: string | null }
@@ -22,11 +22,13 @@ export default function QualidadeGenealogiaLote(): ReactElement {
   const [machine, setMachine] = useState<Machine | null>(null)
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [components, setComponents] = useState<ComponentRow[]>([])
+  const [loadingState, setLoadingState] = useState<'idle' | 'loading' | 'success' | 'empty' | 'error'>('idle')
 
   const executarRastreabilidade = useCallback(async () => {
     const codigo = lotePesquisa.trim()
     if (!codigo) return
     setBusy(true)
+    setLoadingState('loading')
     setError('')
     setSearched(true)
     setLot(null)
@@ -102,6 +104,7 @@ export default function QualidadeGenealogiaLote(): ReactElement {
         })
       }
       setComponents(rows)
+      setLoadingState(rows.length || lotData ? 'success' : 'empty')
 
       const { data: production, error: productionError } = await supabase
         .from('erp_apontamentos_processo')
@@ -173,6 +176,7 @@ export default function QualidadeGenealogiaLote(): ReactElement {
         }
       }
     } catch (err) {
+      setLoadingState('error')
       setError(err instanceof Error ? err.message : 'Falha na rastreabilidade.')
     } finally {
       setBusy(false)
