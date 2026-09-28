@@ -81,7 +81,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
 
         const empresaId = p.empresa_id as string | null
         const machineQ = supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('ativo', true).order('codigo')
-        const opQ = supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at').order('created_at', { ascending: false }).limit(500)
+        const opQ = supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at,criado_em').order('created_at', { ascending: false }).limit(500)
         const prodQ = supabase.from('erp_produtos').select('id,codigo,nome').limit(3000)
         const pointingQ = supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,created_at').order('created_at', { ascending: false }).limit(5000)
         const programQ = supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status').neq('status', 'cancelada').limit(3000)
@@ -124,7 +124,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
 
   const today = dateKey(clock)
   const activeOps = ops.filter(o => !['concluida', 'concluído', 'cancelada', 'cancelado'].includes(String(o.status).toLowerCase()))
-  const todayPointings = pointings.filter(p => String(p.criado_em ?? '').slice(0, 10) === today)
+  const todayPointings = pointings.filter(p => String(p.criado_em ?? p.created_at ?? '').slice(0, 10) === today)
   const producedToday = todayPointings.reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
   const totalPlanned = pointings.reduce((s, p) => s + n(p.quantidade_planejada), 0)
   const totalGood = pointings.reduce((s, p) => s + n(p.quantidade_boa), 0)
@@ -157,7 +157,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
       d.setDate(d.getDate() - i)
       const key = dateKey(d)
       const previsto = programs.filter(p => String(p.inicio_planejado).slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_planejada), 0)
-      const realizado = pointings.filter(p => String(p.criado_em ?? '').slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
+      const realizado = pointings.filter(p => String(p.criado_em ?? p.created_at ?? '').slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
       days.push({ day: d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''), previsto, realizado })
     }
     return days
@@ -225,10 +225,10 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
   ]
 
   const attentionCards = [
-    { label: 'PEÇAS EM ATRASO', value: fmt(overduePieces), suffix: 'un', tone: 'danger' },
-    { label: 'PEÇAS NO PRAZO', value: fmt(onTimePieces), suffix: 'un', tone: 'success' },
-    { label: 'MATERIAIS VENCIDOS', value: '—', suffix: 'sem validade cadastrada', tone: 'warning' },
-    { label: 'EQUIPAMENTOS VENCIDOS', value: fmt(expiredEquipment), suffix: 'un', tone: 'danger' }
+    { label: 'PEÇAS EM ATRASO', value: fmt(overduePieces), suffix: 'un', tone: 'danger', icon: AlertTriangle },
+    { label: 'PEÇAS NO PRAZO', value: fmt(onTimePieces), suffix: 'un', tone: 'success', icon: CheckCircle },
+    { label: 'MATERIAIS VENCIDOS', value: '—', suffix: 'sem validade cadastrada', tone: 'warning', icon: Activity },
+    { label: 'EQUIPAMENTOS VENCIDOS', value: fmt(expiredEquipment), suffix: 'un', tone: 'danger', icon: AlertTriangle }
   ]
 
   return (
@@ -236,7 +236,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
       <style>{`
         .dp-shell{min-height:100%;background:#f8fafc}
         .dp-main{width:100%;max-width:1700px;margin:0 auto;padding:18px 24px 34px}
-        .dp-context{padding:11px 0 13px;border-bottom:1px solid #dbe3ea}.dp-context p{margin:0;color:#475569;font-size:10px;font-weight:950;letter-spacing:.12em}
+        .dp-context{padding:11px 0 13px;border-bottom:1px solid #dbe3ea}.dp-context>div{display:flex;align-items:center;justify-content:space-between;gap:12px}.dp-context strong{color:#123B50;font-size:10px;font-weight:950;letter-spacing:.08em}.dp-context p{margin:0;color:#475569;font-size:10px;font-weight:950;letter-spacing:.12em}
         .dp-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
         .dp-kpi{position:relative;display:flex;align-items:center;gap:13px;padding:12px 14px;min-height:76px;background:linear-gradient(135deg,#17445A,#0B3042);border:1px solid #082838;border-radius:14px;box-shadow:0 10px 24px rgba(8,40,56,.28);overflow:hidden}
         .dp-kpi::after{content:"";position:absolute;right:-26px;bottom:-38px;width:104px;height:104px;border-radius:50%;background:rgba(72,183,199,.32);pointer-events:none}
@@ -249,7 +249,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         .dp-panel{background:#fff;border:1px solid #d7e5ea;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(18,59,80,.07)}
         .dp-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 17px;border-bottom:1px solid #edf4f6;background:linear-gradient(180deg,#fff,#fbfeff)}.dp-head span{color:#2D8DB8;font-size:10px;font-weight:950;letter-spacing:.1em}.dp-head h2{margin:3px 0 0;color:#123B50;font-size:16px;font-weight:950}
         .dp-chart{height:250px;padding:12px 12px 10px}.dp-chart-compact{height:220px}.dp-empty{height:220px;display:grid;place-items:center;padding:20px;text-align:center;color:#64748b;font-size:12px;font-weight:700}.dp-empty-compact{height:220px}
-        .dp-attention-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0}.dp-attention{position:relative;min-width:0;min-height:72px;padding:12px 14px;border-radius:14px;overflow:hidden;box-shadow:0 8px 20px rgba(18,59,80,.10);border:1px solid}.dp-attention::after{content:"";position:absolute;right:-22px;bottom:-28px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.16)}.dp-attention small{display:block!important;color:#fff!important;font-size:11px;font-weight:950;letter-spacing:.04em;line-height:1.2}.dp-attention strong{display:inline-block!important;color:#fff!important;font-size:24px;font-weight:950;line-height:1.05;margin-top:7px}.dp-attention em{color:#fff!important;font-size:10px;font-weight:850;font-style:normal;margin-left:6px}.dp-attention-danger{background:linear-gradient(135deg,#B83A45,#74212A);border-color:#642029}.dp-attention-success{background:linear-gradient(135deg,#16805C,#0A4D38);border-color:#083F2E}.dp-attention-warning{background:linear-gradient(135deg,#B96A09,#7A4300);border-color:#613400}.dp-status-panel{margin-top:12px}
+        .dp-attention-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0}.dp-attention{position:relative;min-width:0;min-height:72px;padding:12px 14px;display:flex;align-items:center;gap:12px;border-radius:14px;overflow:hidden;box-shadow:0 8px 20px rgba(18,59,80,.10);border:1px solid}.dp-attention::after{content:"";position:absolute;right:-22px;bottom:-28px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.16)}.dp-attention-icon{display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.16);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}.dp-attention small{display:block!important;color:#fff!important;font-size:11px;font-weight:950;letter-spacing:.04em;line-height:1.2}.dp-attention strong{display:inline-block!important;color:#fff!important;font-size:24px;font-weight:950;line-height:1.05;margin-top:7px}.dp-attention em{color:#fff!important;font-size:10px;font-weight:850;font-style:normal;margin-left:6px}.dp-attention-danger{background:linear-gradient(135deg,#B83A45,#74212A);border-color:#642029}.dp-attention-success{background:linear-gradient(135deg,#16805C,#0A4D38);border-color:#083F2E}.dp-attention-warning{background:linear-gradient(135deg,#B96A09,#7A4300);border-color:#613400}.dp-status-panel{margin-top:12px}
 
         .dp-table-wrap{overflow:auto}.dp-table{width:100%;border-collapse:collapse;font-size:12px}.dp-table th{background:#f8fafc;color:#475569;text-align:left;font-size:10px;font-weight:950;padding:10px 12px;border-bottom:1px solid #e2e8f0}.dp-table td{padding:11px 12px;border-bottom:1px solid #edf2f7;color:#334155;font-weight:650;white-space:nowrap}.dp-table tr:last-child td{border-bottom:0}.dp-status{display:inline-flex;padding:4px 8px;border-radius:999px;background:#ecfdf5;color:#065f46;font-size:10px;font-weight:900}.dp-error{margin:0 0 12px;padding:10px 12px;border:1px solid #fecaca;background:#fef2f2;color:#991b1b;border-radius:7px;font-size:12px;font-weight:700}
                 @media(max-width:1050px){.dp-kpis,.dp-attention-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-grid{grid-template-columns:1fr}.dp-main{padding:16px}}
@@ -259,7 +259,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
       <main className="dp-main">
         {error && <div className="dp-error">{error}</div>}
 
-        <section className="dp-context"><p>VISÃO GERAL DO CHÃO DE FÁBRICA</p></section>
+        <section className="dp-context"><div><p>VISÃO GERAL DO CHÃO DE FÁBRICA</p><strong>REVISÃO 2 · 16:30</strong></div></section>
 
         <section className="dp-kpis">
           {cards.map(({ label, value, suffix, icon: Icon }) => (
@@ -270,7 +270,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
           ))}
         </section>
 
-        <section className="dp-attention-grid">{attentionCards.map(card => <article key={card.label} className={`dp-attention dp-attention-${card.tone}`}><div><small>{card.label}</small><strong>{loading ? '…' : card.value}</strong><em>{card.suffix}</em></div></article>)}
+        <section className="dp-attention-grid">{attentionCards.map(card => <article key={card.label} className={`dp-attention dp-attention-${card.tone}`}><span className="dp-attention-icon"><card.icon size={18}/></span><div><small>{card.label}</small><strong>{loading ? '…' : card.value}</strong><em>{card.suffix}</em></div></article>)}
         </section>
 
         <section className="dp-grid dp-chart-grid">
