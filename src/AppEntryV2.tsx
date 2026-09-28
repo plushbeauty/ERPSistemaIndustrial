@@ -48,8 +48,6 @@ const SolicitacaoCompra = lazy(() => import('./pages/SolicitacaoCompra'))
 const TesteERP = lazy(() => import('./pages/TesteERP'))
 const UsuariosAdmin = lazy(() => import('./pages/UsuariosAdmin'))
 const ConfiguracoesADMPage = lazy(() => import('./pages/ConfiguracoesADM'))
-const ConfiguracaoCodificacaoAreas = lazy(() => import('./pages/configuracoes/ConfiguracaoCodificacaoAreas'))
-const ConfiguracaoPermissoes = lazy(() => import('./pages/configuracoes/ConfiguracaoPermissoes'))
 const DocumentosQualidadeControle = lazy(() => import('./pages/DocumentosQualidadeControle'))
 const RecebimentoMateriais = lazy(() => import('./pages/RecebimentoMateriais'))
 const ManualUsuario = lazy(() => import('./pages/ManualUsuario'))
@@ -365,8 +363,6 @@ export default function AppEntryV2() {
       <Route path="/teste-erp" element={<TesteERP />} />
       <Route path="/usuarios-admin" element={<UsuariosAdmin />} />
       <Route path="/usuarios" element={<UsuariosAdmin />} />
-      <Route path="/configuracoes-adm/codificacao" element={<ConfiguracaoCodificacaoAreas />} />
-      <Route path="/configuracoes-adm/permissoes" element={<ConfiguracaoPermissoes />} />
       <Route path="/configuracoes-adm" element={<ConfiguracoesADMPage profile={statusAcesso.profile} />} />
       <Route path="/documentos-qualidade" element={<DocumentosQualidadeControle />} />
       <Route path="/recebimento-materiais" element={<RecebimentoMateriais />} />
