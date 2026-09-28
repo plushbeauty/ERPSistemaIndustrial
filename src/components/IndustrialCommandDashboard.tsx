@@ -10,9 +10,9 @@ import { supabase } from '../lib/supabaseClient'
 
 type Props = { onNavigate: (route: string) => void }
 type Machine = { id: string; codigo: string; nome: string; status: string }
-type OP = { id: string; numero_op: string | number; produto_id: string | null; maquina_id: string | null; status: string; quantidade_planejada: number | null; quantidade: number | null; created_at: string | null }
+type OP = { id: string; numero_op: string | number; produto_id: string | null; maquina_id: string | null; status: string; quantidade_planejada: number | null; quantidade: number | null; created_at: string | null; criado_em?: string | null }
 type Product = { id: string; codigo: string | null; nome: string | null }
-type Pointing = { id: string; ordem_producao_id: string | null; maquina_id: string | null; quantidade_planejada: number | null; quantidade_boa: number | null; quantidade_refugada: number | null; created_at: string | null }
+type Pointing = { id: string; ordem_producao_id: string | null; maquina_id: string | null; quantidade_planejada: number | null; quantidade_boa: number | null; quantidade_refugada: number | null; created_at: string | null; criado_em?: string | null }
 type Program = { id: string; ordem_producao_id: string | null; maquina_id: string | null; inicio_planejado: string; fim_planejado: string; quantidade_planejada: number | null; quantidade_produzida: number | null; quantidade_refugada: number | null; status: string }
 type Stop = { maquina_id: string | null; inicio: string | null; fim: string | null; status: string | null }
 type QueueRow = { op: string; workstation: string; product: string; lastPointing: string; status: string }
@@ -124,7 +124,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
 
   const today = dateKey(clock)
   const activeOps = ops.filter(o => !['concluida', 'concluído', 'cancelada', 'cancelado'].includes(String(o.status).toLowerCase()))
-  const todayPointings = pointings.filter(p => String(p.created_at ?? '').slice(0, 10) === today)
+  const todayPointings = pointings.filter(p => String(p.criado_em ?? '').slice(0, 10) === today)
   const producedToday = todayPointings.reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
   const totalPlanned = pointings.reduce((s, p) => s + n(p.quantidade_planejada), 0)
   const totalGood = pointings.reduce((s, p) => s + n(p.quantidade_boa), 0)
@@ -157,7 +157,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
       d.setDate(d.getDate() - i)
       const key = dateKey(d)
       const previsto = programs.filter(p => String(p.inicio_planejado).slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_planejada), 0)
-      const realizado = pointings.filter(p => String(p.created_at ?? '').slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
+      const realizado = pointings.filter(p => String(p.criado_em ?? '').slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
       days.push({ day: d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''), previsto, realizado })
     }
     return days
@@ -270,7 +270,10 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
           ))}
         </section>
 
-        <section className="dp-attention-grid">\n          {attentionCards.map(card => <article key={card.label} className={`dp-attention dp-attention-${card.tone}`}><div><small>{card.label}</small><strong>{loading ? '…' : card.value}</strong><em>{card.suffix}</em></div></article>)}\n        </section>\n\n        <section className="dp-grid dp-chart-grid">
+        <section className="dp-attention-grid">{attentionCards.map(card => <article key={card.label} className={`dp-attention dp-attention-${card.tone}`}><div><small>{card.label}</small><strong>{loading ? '…' : card.value}</strong><em>{card.suffix}</em></div></article>)}
+        </section>
+
+        <section className="dp-grid dp-chart-grid">
           <article className="dp-panel">
             <div className="dp-head"><span>PCP · MÁQUINAS</span><h2>Eficiência por máquina</h2></div>
             {machineShift.length ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={machineShift} barCategoryGap="26%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="maquina" axisLine={false} tickLine={false}/><YAxis domain={[0,100]} unit="%" axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="eficiencia" name="Eficiência" fill="#2D8DB8" radius={[7,7,2,2]} maxBarSize={36}/></BarChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem dados reais de eficiência.</div>}
