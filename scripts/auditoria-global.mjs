@@ -29,6 +29,8 @@ walk(ROOT)
 const sourceFiles = files.filter(f => ['.ts','.tsx','.js','.jsx','.mjs'].includes(path.extname(f).toLowerCase()))
 const frontendFiles = sourceFiles.filter(f => f.includes(`${path.sep}src${path.sep}`))
 const allText = new Map(files.map(f => [f, read(f)]))
+const canonicalSupabaseUrl = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
+const legacySupabaseUrl = 'https://wdkvrqekixczuhrfygen.supabase.co'
 
 const secretPatterns = [
   /sb_secret_[A-Za-z0-9_-]{20,}/g,
