@@ -16,7 +16,7 @@ const supabaseUrl = localMode ? localUrl : cloudUrl
 const configuredKey = String(
   localMode
     ? (env.VITE_SUPABASE_LOCAL_ANON_KEY || env.VITE_SUPABASE_ANON_KEY || '')
-    : DEFAULT_SUPABASE_PUBLISHABLE_KEY,
+    : (env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY),
 ).trim()
 const isPrivateKey = configuredKey.startsWith('sb_secret_') || configuredKey.includes('service_role')
 
