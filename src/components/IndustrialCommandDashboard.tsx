@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  Tablet, Activity, CheckCircle, AlertTriangle, BarChart3,
-  X, ShoppingCart, Cpu, Layers, Factory, Settings, Users, ArrowUpRight
+  Activity, CheckCircle, AlertTriangle, BarChart3
 } from 'lucide-react'
 import {
   Bar, BarChart, CartesianGrid, Legend, Line, LineChart,
@@ -10,7 +9,6 @@ import {
 import { supabase } from '../lib/supabaseClient'
 
 type Props = { onNavigate: (route: string) => void }
-type Profile = { nome: string; empresa_id: string | null; nivel_admin: number; is_master: boolean; perfil: string }
 type Machine = { id: string; codigo: string; nome: string; status: string }
 type OP = { id: string; numero_op: string | number; produto_id: string | null; maquina_id: string | null; status: string; quantidade_planejada: number | null; quantidade: number | null; created_at: string | null }
 type Product = { id: string; codigo: string | null; nome: string | null }
@@ -37,8 +35,6 @@ function statusText(value: string) {
 }
 
 export default function DashboardPrincipal({ onNavigate }: Props) {
-  const [tabletOpen, setTabletOpen] = useState(false)
-  const [profile, setProfile] = useState<Profile | null>(null)
   const [machines, setMachines] = useState<Machine[]>([])
   const [ops, setOps] = useState<OP[]>([])
   const [products, setProducts] = useState<Product[]>([])
@@ -96,7 +92,6 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         for (const result of [m, o, pr, pt, pg, st, rn]) if (result.error) throw result.error
 
         if (!alive) return
-        setProfile(p as Profile)
         setMachines((m.data ?? []) as Machine[])
         setOps((o.data ?? []) as OP[])
         setProducts((pr.data ?? []) as Product[])
@@ -180,25 +175,12 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     { label: 'EFICIÊNCIA (OEE)', value: oee === null ? '—' : `${oee.toFixed(1).replace('.', ',')}%`, icon: BarChart3 }
   ]
 
-  const modules = [
-    ['Comercial / Vendas', ShoppingCart, '/vendas'],
-    ['Engenharia / BOM', Layers, '/engenharia'],
-    ['Materiais / MRP', Cpu, '/pcp/materiais'],
-    ['PCP / Ordens', Factory, '/pcp'],
-    ['Chão de Fábrica', Settings, '/operacao-industrial'],
-    ['Qualidade / SGQ', AlertTriangle, '/qualidade']
-  ] as const
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
       <style>{`
         .dp-shell{min-height:100%;background:#f8fafc}
         .dp-main{width:100%;max-width:1700px;margin:0 auto;padding:18px 24px 34px}
-        .dp-subhead{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:10px 0 15px;border-bottom:1px solid #dbe3ea}
-        .dp-subhead h1{margin:0;font-size:23px;font-weight:950;letter-spacing:-.02em;color:#0f172a}
-        .dp-subhead p{margin:3px 0 0;color:#475569;font-size:12px;font-weight:700}
-        .dp-meta{display:flex;align-items:center;gap:14px;color:#475569;font-size:12px;font-weight:800}
-        .dp-live{padding:6px 9px;border:1px solid #86efac;border-radius:999px;background:#f0fdf4;color:#166534;font-size:10px;font-weight:950}
+        .dp-context{padding:11px 0 13px;border-bottom:1px solid #dbe3ea}.dp-context p{margin:0;color:#475569;font-size:10px;font-weight:950;letter-spacing:.12em}
         .dp-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
         .dp-kpi{display:flex;align-items:center;gap:12px;padding:15px;background:#fff;border:1px solid #cbd5e1;border-radius:8px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
         .dp-kpi-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:8px;background:#eff6ff;color:#1d4ed8;flex:none}
@@ -208,25 +190,14 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         .dp-head{padding:12px 15px;border-bottom:1px solid #e2e8f0}.dp-head span{color:#2563eb;font-size:10px;font-weight:950;letter-spacing:.1em}.dp-head h2{margin:3px 0 0;color:#0f172a;font-size:15px;font-weight:950}
         .dp-chart{height:255px;padding:10px 12px 8px}.dp-empty{height:255px;display:grid;place-items:center;padding:20px;text-align:center;color:#64748b;font-size:12px;font-weight:700}
         .dp-table-wrap{overflow:auto}.dp-table{width:100%;border-collapse:collapse;font-size:12px}.dp-table th{background:#f8fafc;color:#475569;text-align:left;font-size:10px;font-weight:950;padding:10px 12px;border-bottom:1px solid #e2e8f0}.dp-table td{padding:11px 12px;border-bottom:1px solid #edf2f7;color:#334155;font-weight:650;white-space:nowrap}.dp-table tr:last-child td{border-bottom:0}.dp-status{display:inline-flex;padding:4px 8px;border-radius:999px;background:#e0f2fe;color:#075985;font-size:10px;font-weight:900}.dp-error{margin:0 0 12px;padding:10px 12px;border:1px solid #fecaca;background:#fef2f2;color:#991b1b;border-radius:7px;font-size:12px;font-weight:700}
-        .dp-modules-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.62);display:flex;align-items:center;justify-content:center;padding:18px}.dp-modules{width:min(760px,100%);background:#fff;border:1px solid #cbd5e1;border-radius:14px;box-shadow:0 30px 80px rgba(15,23,42,.3);padding:20px}.dp-modules-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.dp-modules-head h3{margin:0;font-size:20px;font-weight:950}.dp-modules-head p{margin:4px 0 0;color:#64748b;font-size:12px}.dp-close{border:0;background:#f1f5f9;color:#334155;width:38px;height:38px;border-radius:8px;cursor:pointer}.dp-module-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}.dp-module{min-height:105px;border:1px solid #dbe3ea;background:#f8fafc;border-radius:10px;padding:14px;text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:8px}.dp-module:hover{background:#eff6ff;border-color:#93c5fd}.dp-module svg{color:#2563eb}.dp-module strong{font-size:12px;color:#0f172a}.dp-module small{font-size:10px;color:#64748b;font-weight:700}
-        @media(max-width:1050px){.dp-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-grid{grid-template-columns:1fr}.dp-main{padding:16px}}
-        @media(max-width:650px){.dp-kpis{grid-template-columns:1fr}.dp-subhead{align-items:flex-start;flex-direction:column}.dp-meta{align-items:flex-start;flex-direction:column;gap:5px}.dp-module-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-main{padding:12px}}
+                @media(max-width:1050px){.dp-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-grid{grid-template-columns:1fr}.dp-main{padding:16px}}
+        @media(max-width:650px){.dp-kpis{grid-template-columns:1fr}.dp-main{padding:12px}}
       `}</style>
 
       <main className="dp-main">
         {error && <div className="dp-error">{error}</div>}
 
-        <section className="dp-subhead">
-          <div>
-            <p>VISÃO GERAL DO CHÃO DE FÁBRICA</p>
-            <h1>Central de Controle Industrial</h1>
-          </div>
-          <div className="dp-meta">
-            <span>Operador: <strong>{profile?.nome ?? 'Usuário'}</strong></span>
-            <span>{clock.toLocaleDateString('pt-BR')} · {clock.toLocaleTimeString('pt-BR')}</span>
-            <span className="dp-live">DADOS: SUPABASE</span>
-          </div>
-        </section>
+        <section className="dp-context"><p>VISÃO GERAL DO CHÃO DE FÁBRICA</p></section>
 
         <section className="dp-kpis">
           {cards.map(({ label, value, suffix, icon: Icon }) => (
@@ -272,23 +243,6 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         </section>
       </main>
 
-      {tabletOpen && (
-        <div className="dp-modules-backdrop" onMouseDown={e => { if (e.target === e.currentTarget) setTabletOpen(false) }}>
-          <div className="dp-modules" role="dialog" aria-modal="true" aria-label="Central de módulos">
-            <div className="dp-modules-head">
-              <div><h3><Tablet size={19} style={{verticalAlign:'-3px',marginRight:7,color:'#ea580c'}}/>Central de Módulos</h3><p>Acesse as áreas operacionais do ERP pelo tablet.</p></div>
-              <button className="dp-close" type="button" onClick={() => setTabletOpen(false)} aria-label="Fechar"><X size={19}/></button>
-            </div>
-            <div className="dp-module-grid">
-              {modules.map(([label, Icon, route]) => (
-                <button className="dp-module" key={label} type="button" onClick={() => { setTabletOpen(false); onNavigate(route) }}>
-                  <Icon size={22}/><strong>{label}</strong><small>Abrir módulo</small>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
