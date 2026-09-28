@@ -63,6 +63,7 @@ const AssistenteAjudaERP = lazy(() => import('./pages/AssistenteAjudaERP'))
 const ComprasSolicitacaoManual = lazy(() => import('./pages/ComprasSolicitacaoManual'))
 const ExpedicaoPortaria = lazy(() => import('./pages/ExpedicaoPortaria'))
 const EngenhariaRevisoesBOM = lazy(() => import('./pages/EngenhariaRevisoesBOM'))
+const EngenhariaCentral = lazy(() => import('./pages/EngenhariaCentral'))
 const PCPDashboardOEE = lazy(() => import('./pages/PCPDashboardOEE'))
 const QualidadeDashboardRNC = lazy(() => import('./pages/QualidadeDashboardRNC'))
 const EstoqueCurvaABC = lazy(() => import('./pages/EstoqueCurvaABC'))
@@ -282,6 +283,7 @@ export default function AppEntryV2() {
       <Route path="/produtos" element={<ProdutosVendasIndustrial />} />
       <Route path="/expedicao/roteirizacao" element={<ExpedicaoRoteirizacao />} />
       <Route path="/expedicao/portaria" element={<ExpedicaoPortaria />} />
+      <Route path="/engenharia" element={<EngenhariaCentral />} />
       <Route path="/engenharia/revisoes-bom" element={<EngenhariaRevisoesBOM />} />
       <Route path="/engenharia/ficha" element={<FichaEngenharia />} />
       <Route path="/engenharia/fichas-processo" element={<FichasProcesso />} />
