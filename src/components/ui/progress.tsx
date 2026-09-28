@@ -1,0 +1,2 @@
+import * as ProgressPrimitive from '@radix-ui/react-progress'
+export function Progress({value=0}:{value?:number}){return <ProgressPrimitive.Root value={value} className="relative h-3 w-full overflow-hidden rounded-full bg-slate-800"><ProgressPrimitive.Indicator className={`h-full transition-all ${value>=100?'bg-red-500':value>=85?'bg-orange-500':'bg-cyan-500'}`} style={{transform:`translateX(-${100-Math.min(100,value)}%)`}}/></ProgressPrimitive.Root>}

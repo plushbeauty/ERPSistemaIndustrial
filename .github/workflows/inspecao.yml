@@ -1,0 +1,80 @@
+name: Inspeção Profunda - Auth + TypeScript + Build
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  auditoria:
+    name: Auditoria completa
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependências
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --legacy-peer-deps
+          else
+            npm install --legacy-peer-deps
+          fi
+
+      - name: Verificar arquivos essenciais
+        shell: bash
+        run: |
+          set -e
+          test -d src || { echo "::error::Pasta src não encontrada."; exit 1; }
+          test -f package.json || { echo "::error::package.json não encontrado."; exit 1; }
+
+      - name: Auditoria de autenticação
+        shell: bash
+        run: |
+          set -e
+          FAILED=0
+
+          check_forbidden() {
+            PATTERN="$1"
+            DESCRIPTION="$2"
+
+            if grep -RInE --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=.next "$PATTERN" src 2>/dev/null; then
+              echo "::error::Encontrado padrão proibido: $DESCRIPTION"
+              FAILED=1
+            fi
+          }
+
+          check_forbidden "functions\\.invoke[[:space:]]*\\([[:space:]]*['\"]erp-login['\"]" 'uso da Edge Function legada erp-login'
+          check_forbidden 'supabase/functions/v1/erp-login' 'URL direta da Edge Function legada erp-login'
+          check_forbidden 'plush-login' 'plush-login'
+          check_forbidden 'signup-client-v4' 'signup-client-v4'
+          check_forbidden 'shadowEmail' 'shadowEmail'
+          check_forbidden 'session\.user\.(perfil|empresa_id|is_master)' 'autorização diretamente em session.user'
+          check_forbidden 'localStorage[^[:cntrl:]]*(password|senha)' 'senha em localStorage'
+          check_forbidden 'sessionStorage[^[:cntrl:]]*(password|senha)' 'senha em sessionStorage'
+
+          if [ "$FAILED" -ne 0 ]; then
+            echo "::error::AUDITORIA DE AUTENTICAÇÃO FALHOU."
+            exit 1
+          fi
+
+      - name: Verificar autenticação nativa
+        shell: bash
+        run: |
+          set -e
+          grep -RIn --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist "signInWithPassword" src >/dev/null             || { echo "::error::signInWithPassword não encontrado."; exit 1; }
+          grep -RIn --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist "resetPasswordForEmail" src >/dev/null             || { echo "::error::resetPasswordForEmail não encontrado."; exit 1; }
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Build de produção
+        run: npm run build

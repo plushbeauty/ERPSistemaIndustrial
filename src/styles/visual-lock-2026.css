@@ -1,0 +1,55 @@
+/* SGQ ERP — visual lock 2026. Loaded last so legacy themes cannot overwrite the approved presentation. */
+:root{--sgq-deep:#08232b;--sgq-teal:#0a6f73;--sgq-teal-strong:#075b60;--sgq-gold:#c9a45b;--sgq-paper:#f5f7f6;--sgq-ink:#172033}
+
+/* PUBLIC COVER — restore the photographic approved hero */
+.public-industrial.home-v2{background:var(--sgq-paper)!important;color:var(--sgq-ink)!important}
+.public-industrial.home-v2 .public-nav{height:86px!important;background:rgba(255,255,255,.96)!important;border-bottom:1px solid #dfe8ea!important}
+.public-industrial.home-v2 .public-brand img{display:block!important;width:220px!important;max-height:66px!important;height:auto!important;visibility:visible!important;opacity:1!important}
+.public-industrial.home-v2 .public-hero{max-width:none!important;min-height:calc(100vh - 86px)!important;display:grid!important;grid-template-columns:minmax(0,1.05fr) minmax(360px,.75fr)!important;align-items:center!important;gap:56px!important;padding:clamp(52px,7vh,92px) clamp(24px,7vw,110px)!important;position:relative!important;isolation:isolate!important;overflow:hidden!important;color:#fff!important;background-image:linear-gradient(90deg,rgba(4,25,31,.94) 0%,rgba(4,25,31,.78) 43%,rgba(4,25,31,.26) 100%),url('/images/sgq/sgq-erp-dashboard.png')!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important}
+.public-industrial.home-v2 .public-hero:after{content:""!important;position:absolute!important;inset:auto 0 0!important;height:150px!important;background:linear-gradient(transparent,rgba(4,25,31,.75))!important;z-index:-1!important;pointer-events:none!important}
+.public-industrial.home-v2 .hero-copy{position:relative!important;z-index:3!important;max-width:820px!important}
+.public-industrial.home-v2 .hero-copy .public-kicker{color:#a5ead8!important}
+.public-industrial.home-v2 .hero-copy h1{color:#fff!important;font-size:clamp(42px,5.2vw,74px)!important;line-height:1.02!important;text-shadow:0 8px 30px rgba(0,0,0,.35)!important}
+.public-industrial.home-v2 .hero-copy>p{color:#e5f0f2!important;font-size:19px!important;max-width:700px!important}
+.public-industrial.home-v2 .hero-proof{color:#e0edef!important}
+.public-industrial.home-v2 .hero-proof svg{color:#a5ead8!important}
+.public-industrial.home-v2 .dashboard-preview{position:relative!important;z-index:3!important;background:rgba(255,255,255,.95)!important;border:1px solid rgba(255,255,255,.7)!important;backdrop-filter:blur(10px)!important;box-shadow:0 30px 90px rgba(0,0,0,.32)!important}
+.public-industrial.home-v2 .public-primary{background:linear-gradient(135deg,#0a8f7d,#075f66)!important;color:#fff!important;box-shadow:0 14px 32px rgba(0,0,0,.22)!important}
+.public-industrial.home-v2 .public-secondary{background:rgba(255,255,255,.95)!important;color:#17343b!important;border-color:rgba(255,255,255,.8)!important}
+
+/* PUBLIC SECTIONS — premium, less flat */
+.public-industrial.home-v2 .public-section{background:#f5f7f6!important}
+.public-industrial.home-v2 .automation-hero{background:#fff!important}
+.public-industrial.home-v2 .automation-card,.public-industrial.home-v2 .module-card,.public-industrial.home-v2 .screen-card,.public-industrial.home-v2 .flow-step{background:#fff!important;border:1px solid #dfe7e4!important;box-shadow:0 16px 45px rgba(23,32,51,.08)!important}
+.public-industrial.home-v2 .module-icon{background:#eaf5f2!important;color:var(--sgq-teal)!important}
+.public-industrial.home-v2 .plans-section{background:#eef4f2!important}
+.public-industrial.home-v2 .public-footer{background:#08232b!important}
+
+/* INTERNAL ERP — keep industrial identity, never legacy blue */
+.v7-shell{background:#eef3f1!important;color:#173229!important}
+.v7-sidebar{background:linear-gradient(180deg,#082e25,#0c4b39 56%,#06281f)!important}
+.v7-brand{visibility:visible!important}
+.v7-brand img{display:block!important;visibility:visible!important;opacity:1!important;width:210px!important;height:auto!important;max-height:70px!important;object-fit:contain!important}
+.v7-nav.active{background:linear-gradient(90deg,rgba(208,173,98,.22),rgba(255,255,255,.08))!important;box-shadow:inset 3px 0 #d0ad62,0 8px 24px rgba(0,0,0,.12)!important}
+.v7-header{background:rgba(255,255,255,.95)!important;border-bottom:1px solid #d7e1dc!important}
+.v7-content{background:#eef3f1!important}
+.v7-content>section,.dashboard-v2>section{background:rgba(255,255,255,.97)!important;border-color:#d7e1dc!important;box-shadow:0 18px 55px rgba(16,44,37,.08)!important}
+.v7-content button.primary,.primary{background:linear-gradient(135deg,#0f7656,#15936d)!important;color:#fff!important}
+.v7-content button.secondary,.secondary{background:#fff!important;color:#173229!important;border:1px solid #d7e1dc!important}
+
+/* LOGIN — preserve photographic approved cover */
+.login-page{background:#061f18!important}
+.login-page .login-art{background:#061f18!important}
+.login-page .login-art img{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important;opacity:1!important;filter:none!important}
+.login-page .login-card{background:rgba(255,255,255,.97)!important;border:1px solid rgba(255,255,255,.78)!important;box-shadow:0 30px 100px rgba(0,0,0,.30)!important}
+.login-page .login-logo-large{display:block!important;visibility:visible!important;opacity:1!important;width:185px!important;height:auto!important}
+.login-page .login-submit,.login-page .login-card .primary{background:linear-gradient(135deg,#087b80,#075e66)!important;color:#fff!important}
+
+/* COMPANY SIGNUP */
+.company-signup-page{background:#eef4f5!important}
+.company-signup-page:before{background:linear-gradient(135deg,rgba(7,52,61,.28),rgba(7,89,96,.12)),url('/images/sgq/sgq-erp-login.png') center/cover no-repeat!important}
+.company-signup-card{background:rgba(255,255,255,.98)!important;border:1px solid #d7e1dc!important}
+.company-signup-card .signup-brand img{display:block!important;visibility:visible!important;opacity:1!important}
+
+@media(max-width:900px){.public-industrial.home-v2 .public-hero{grid-template-columns:1fr!important;min-height:calc(100vh - 72px)!important;gap:26px!important;padding:54px 20px!important;background-position:center!important}.public-industrial.home-v2 .hero-copy h1{font-size:clamp(40px,10vw,58px)!important}.public-industrial.home-v2 .dashboard-preview{max-width:760px!important;width:100%!important}.v7-brand img{width:180px!important}}
+@media(max-width:650px){.public-industrial.home-v2 .public-nav{height:72px!important}.public-industrial.home-v2 .public-brand img{width:165px!important}.public-industrial.home-v2 .public-hero{min-height:calc(100vh - 72px)!important;padding:44px 18px!important;background-position:center!important}.public-industrial.home-v2 .hero-copy h1{font-size:42px!important}.login-page .login-logo-large{width:155px!important}}

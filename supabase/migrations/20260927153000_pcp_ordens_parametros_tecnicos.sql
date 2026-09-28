@@ -1,0 +1,2 @@
+ALTER TABLE public.erp_ordens_producao ADD COLUMN IF NOT EXISTS maquina_id uuid REFERENCES public.erp_maquinas(id), ADD COLUMN IF NOT EXISTS velocidade_nominal_hora numeric(18,6) NOT NULL DEFAULT 0 CHECK (velocidade_nominal_hora >= 0), ADD COLUMN IF NOT EXISTS operacao_dupla boolean NOT NULL DEFAULT false, ADD COLUMN IF NOT EXISTS tempo_estimado_horas numeric(18,6) NOT NULL DEFAULT 0 CHECK (tempo_estimado_horas >= 0);
+CREATE INDEX IF NOT EXISTS idx_erp_ordens_producao_maquina ON public.erp_ordens_producao (empresa_id, maquina_id);

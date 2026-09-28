@@ -1,0 +1,67 @@
+import type { CSSProperties } from 'react'
+import { Activity, CheckCircle, Cpu, Factory, Layers, ShoppingCart, Tablet, X } from 'lucide-react'
+
+type TabletLaunchpadProps = {
+  onNavigate: (route: string) => void
+  isOpen: boolean
+  onClose: () => void
+}
+
+type Module = {
+  number: string
+  label: string
+  route: string
+  icon: typeof ShoppingCart
+  accent: string
+}
+
+const modules: Module[] = [
+  { number: '1', label: 'COMERCIAL / PEDIDOS', route: '/vendas', icon: ShoppingCart, accent: '#3b82f6' },
+  { number: '2', label: 'ENGENHARIA / BOM', route: '/engenharia', icon: Cpu, accent: '#8b5cf6' },
+  { number: '3', label: 'MATERIAIS / MRP', route: '/pcp/materiais', icon: Layers, accent: '#f97316' },
+  { number: '4', label: 'PCP / CENTRAL OPs', route: '/pcp', icon: Factory, accent: '#10b981' },
+  { number: '5', label: 'CHÃO DE FÁBRICA', route: '/operacao-industrial', icon: Activity, accent: '#eab308' },
+  { number: '6', label: 'QUALIDADE / SGQ', route: '/qualidade', icon: CheckCircle, accent: '#06b6d4' },
+]
+
+export default function TabletLaunchpad({ onNavigate, isOpen, onClose }: TabletLaunchpadProps) {
+  if (!isOpen) return null
+
+  return (
+    <div className="tablet-modal-backdrop" role="dialog" aria-modal="true" aria-label="Central de módulos">
+      <section className="tablet-modal">
+        <header className="tablet-modal-header">
+          <div className="tablet-modal-heading">
+            <div className="tablet-heading-icon"><Tablet size={25} /></div>
+            <div>
+              <strong>CENTRAL DE MÓDULOS — MODO TABLET</strong>
+              <p>Acesse as etapas do processo produtivo diretamente por aqui.</p>
+            </div>
+          </div>
+          <button className="tablet-close" type="button" onClick={onClose} aria-label="Fechar central de módulos"><X size={22} /></button>
+        </header>
+
+        <div className="tablet-module-grid">
+          {modules.map(({ number, label, route, icon: Icon, accent }) => (
+            <button
+              key={route}
+              type="button"
+              className="tablet-module-card"
+              onClick={() => { onNavigate(route); onClose() }}
+              style={{ '--module-accent': accent } as CSSProperties}
+            >
+              <span className="tablet-3d-icon" aria-hidden="true"><Icon size={31} strokeWidth={2.4} /></span>
+              <span className="tablet-module-copy">
+                <small>{number}.</small>
+                <strong>{label}</strong>
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <footer className="tablet-modal-footer">ERPSistema INDUSTRIAL • Central operacional integrada</footer>
+      </section>
+      <style>{'.tablet-modal-backdrop{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(15,23,42,.68);backdrop-filter:blur(5px)}.tablet-modal{width:min(760px,100%);max-height:calc(100vh - 36px);overflow:auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:18px;box-shadow:0 30px 90px rgba(2,6,23,.48);padding:22px;color:#1e293b}.tablet-modal-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;border-bottom:1px solid #f1f5f9;padding-bottom:18px}.tablet-modal-heading{display:flex;align-items:center;gap:13px;min-width:0}.tablet-heading-icon{width:48px;height:48px;display:grid;place-items:center;flex:none;border-radius:12px;background:linear-gradient(145deg,#f97316,#c2410c);color:#fff;box-shadow:0 8px 18px rgba(249,115,22,.25),inset 0 1px 0 rgba(255,255,255,.25)}.tablet-modal-heading strong{display:block;font-size:16px;font-weight:950;letter-spacing:.02em;color:#1e293b}.tablet-modal-heading p{margin:4px 0 0;color:#64748b;font-size:12px;font-weight:650}.tablet-close{width:40px;height:40px;display:grid;place-items:center;flex:none;border:1px solid #475569;border-radius:9px;background:#f8fafc;color:#475569;cursor:pointer}.tablet-close:hover{background:#f1f5f9;color:#1e293b}.tablet-module-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:18px}.tablet-module-card{min-height:112px;display:flex;align-items:center;gap:15px;text-align:left;padding:17px;border:1px solid #e2e8f0;border-radius:13px;background:#ffffff;color:#1e293b;cursor:pointer;transition:transform .16s ease,border-color .16s ease,background .16s ease;box-shadow:0 7px 16px rgba(2,6,23,.18)}.tablet-module-card:hover{transform:translateY(-2px);border-color:#059669;background:rgba(236,253,245,.3)}.tablet-module-card:active{transform:translateY(0)}.tablet-3d-icon{width:58px;height:58px;display:grid;place-items:center;flex:none;border-radius:15px;color:#fff;background:linear-gradient(145deg,var(--module-accent),#0f172a);box-shadow:0 9px 16px rgba(2,6,23,.35),inset 0 2px 0 rgba(255,255,255,.28),inset 0 -4px 8px rgba(0,0,0,.22);text-shadow:0 2px 2px rgba(0,0,0,.2)}.tablet-module-copy{display:flex;flex-direction:column;gap:4px;min-width:0}.tablet-module-copy small{color:var(--module-accent);font-size:11px;font-weight:950;letter-spacing:.08em}.tablet-module-copy strong{color:#f8fafc;font-size:13px;font-weight:950;line-height:1.25}.tablet-modal-footer{border-top:1px solid #f1f5f9;margin-top:18px;padding-top:13px;text-align:center;color:#94a3b8;font-size:10px;font-weight:750;letter-spacing:.04em}@media(max-width:620px){.tablet-modal{padding:16px;border-radius:14px}.tablet-module-grid{grid-template-columns:1fr}.tablet-modal-heading strong{font-size:14px}.tablet-modal-heading p{font-size:11px}.tablet-module-card{min-height:88px}}'}</style>
+    </div>
+  )
+}
