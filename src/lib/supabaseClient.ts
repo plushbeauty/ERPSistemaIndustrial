@@ -4,7 +4,10 @@ const env = import.meta.env as Record<string, unknown>
 const DEFAULT_SUPABASE_URL = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
 const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BcwsSbBx8dWof7d_hAKtQA_XzQGAYwR'
 const CONNECTION_MODE_KEY = 'erp_modo_conexao'
+const AUTH_STORAGE_KEY = 'erp-industrial-auth'
 const connectionMode = typeof window !== 'undefined' ? window.localStorage.getItem(CONNECTION_MODE_KEY) : null
+if (typeof window !== 'undefined') window.localStorage.removeItem(AUTH_STORAGE_KEY)
+const authStorage = typeof window !== 'undefined' ? window.sessionStorage : undefined
 const localMode = connectionMode === 'local'
 const configuredCloudUrl = String(env.VITE_SUPABASE_URL || '').trim().replace(/\/$/, '')
 const cloudUrl = configuredCloudUrl === DEFAULT_SUPABASE_URL ? configuredCloudUrl : DEFAULT_SUPABASE_URL
@@ -34,7 +37,7 @@ if (!supabaseConfigurado) console.error('[Supabase] Configuração pública inv�
 if (isPrivateKey) console.error('[Supabase] Chave privada/secret detectada no frontend. Ela foi rejeitada e não será usada.')
 
 export const supabase: SupabaseClient = createClient(clientUrl, clientKey, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'erp-industrial-auth' },
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: AUTH_STORAGE_KEY, storage: authStorage },
   global: { headers: { 'x-client-info': 'sgq-erp-industrial' } },
 })
 
