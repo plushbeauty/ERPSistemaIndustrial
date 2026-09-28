@@ -18,6 +18,7 @@ type Stop = { maquina_id: string | null; inicio: string | null; fim: string | nu
 type QueueRow = { op: string; workstation: string; product: string; lastPointing: string; status: string }
 type Daily = { day: string; previsto: number; realizado: number }
 type MachineShift = { maquina: string; eficiencia: number }
+type Equipment = { id: string; codigo: string; descricao: string; status: string; proxima_calibracao: string | null; certificado_validade: string | null }
 
 const n = (v: unknown) => Number.isFinite(Number(v)) ? Number(v) : 0
 const fmt = (v: number) => new Intl.NumberFormat('pt-BR').format(Math.round(v))
@@ -41,6 +42,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
   const [pointings, setPointings] = useState<Pointing[]>([])
   const [programs, setPrograms] = useState<Program[]>([])
   const [stops, setStops] = useState<Stop[]>([])
+  const [equipment, setEquipment] = useState<Equipment[]>([])
   const [rpnc, setRpnc] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -85,6 +87,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         const programQ = supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status').neq('status', 'cancelada').limit(3000)
         const stopQ = supabase.from('erp_producao_paradas').select('maquina_id,inicio,fim,status').limit(5000)
         const rpncQ = supabase.from('erp_rpnc').select('id,status').limit(5000)
+        const equipmentQ = supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao,certificado_validade').limit(3000)
 
         if (!master && empresaId) {
           machineQ.eq('empresa_id', empresaId)
@@ -94,10 +97,11 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
           programQ.eq('empresa_id', empresaId)
           stopQ.eq('empresa_id', empresaId)
           rpncQ.eq('empresa_id', empresaId)
+          equipmentQ.eq('empresa_id', empresaId)
         }
 
-        const [m, o, pr, pt, pg, st, rn] = await Promise.all([machineQ, opQ, prodQ, pointingQ, programQ, stopQ, rpncQ])
-        for (const result of [m, o, pr, pt, pg, st, rn]) if (result.error) throw result.error
+        const [m, o, pr, pt, pg, st, rn, eq] = await Promise.all([machineQ, opQ, prodQ, pointingQ, programQ, stopQ, rpncQ, equipmentQ])
+        for (const result of [m, o, pr, pt, pg, st, rn, eq]) if (result.error) throw result.error
 
         if (!alive) return
         setMachines((m.data ?? []) as Machine[])
@@ -107,6 +111,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         setPrograms((pg.data ?? []) as Program[])
         setStops((st.data ?? []) as Stop[])
         setRpnc((rn.data ?? []).filter((x: { status?: unknown }) => !['encerrada', 'fechada', 'concluida', 'concluído'].includes(String(x.status ?? '').toLowerCase())).length)
+        setEquipment((eq.data ?? []) as Equipment[])
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : 'Não foi possível carregar o dashboard.')
       } finally {
@@ -158,6 +163,42 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     return days
   }, [clock, programs, pointings])
 
+  const overduePieces = useMemo(() => programs.reduce((sum, p) => {
+    const due = new Date(p.fim_planejado).getTime()
+    const produced = n(p.quantidade_produzida)
+    const planned = n(p.quantidade_planejada)
+    return due < clock.getTime() && produced < planned ? sum + Math.max(0, planned - produced) : sum
+  }, 0), [programs, clock])
+
+  const onTimePieces = useMemo(() => programs.reduce((sum, p) => {
+    const due = new Date(p.fim_planejado).getTime()
+    const produced = n(p.quantidade_produzida)
+    const planned = n(p.quantidade_planejada)
+    return due >= clock.getTime() && produced < planned ? sum + Math.max(0, planned - produced) : sum
+  }, 0), [programs, clock])
+
+  const expiredEquipment = useMemo(() => equipment.filter(e => {
+    const calibration = e.proxima_calibracao || e.certificado_validade
+    return calibration ? calibration < today : false
+  }).length, [equipment, today])
+
+  const stopSummary = useMemo(() => {
+    const grouped = new Map<string, number>()
+    stops.forEach(s => {
+      if (!s.inicio || !s.fim) return
+      const day = String(s.inicio).slice(0, 10)
+      const hours = Math.max(0, (new Date(s.fim).getTime() - new Date(s.inicio).getTime()) / 3600000)
+      grouped.set(day, (grouped.get(day) ?? 0) + hours)
+    })
+    return Array.from(grouped.entries()).sort((a,b) => a[0].localeCompare(b[0])).slice(-7).map(([day, horas]) => ({ day: new Date(day + 'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.',''), horas: Number(horas.toFixed(1)) }))
+  }, [stops])
+
+  const opStatus = useMemo(() => {
+    const map = new Map<string, number>()
+    ops.forEach(o => { const s = statusText(o.status); map.set(s, (map.get(s) ?? 0) + 1) })
+    return Array.from(map.entries()).map(([status, quantidade]) => ({ status, quantidade }))
+  }, [ops])
+
   const queue = useMemo<QueueRow[]>(() => {
     const productMap = new Map(products.map(p => [p.id, p]))
     const machineMap = new Map(machines.map(m => [m.id, m]))
@@ -183,6 +224,13 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     { label: 'EFICIÊNCIA (OEE)', value: oee === null ? '—' : `${oee.toFixed(1).replace('.', ',')}%`, icon: BarChart3 }
   ]
 
+  const attentionCards = [
+    { label: 'PEÇAS EM ATRASO', value: fmt(overduePieces), suffix: 'un', tone: 'danger' },
+    { label: 'PEÇAS NO PRAZO', value: fmt(onTimePieces), suffix: 'un', tone: 'success' },
+    { label: 'MATERIAIS VENCIDOS', value: '—', suffix: 'sem campo de validade industrial', tone: 'warning' },
+    { label: 'EQUIPAMENTOS VENCIDOS', value: fmt(expiredEquipment), suffix: 'calibração', tone: 'danger' }
+  ]
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
       <style>{`
@@ -200,10 +248,12 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         .dp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
         .dp-panel{background:#fff;border:1px solid #d7e5ea;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(18,59,80,.07)}
         .dp-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 17px;border-bottom:1px solid #edf4f6;background:linear-gradient(180deg,#fff,#fbfeff)}.dp-head span{color:#2D8DB8;font-size:10px;font-weight:950;letter-spacing:.1em}.dp-head h2{margin:3px 0 0;color:#123B50;font-size:16px;font-weight:950}
-        .dp-chart{height:280px;padding:14px 14px 12px}.dp-empty{height:255px;display:grid;place-items:center;padding:20px;text-align:center;color:#64748b;font-size:12px;font-weight:700}
+        .dp-chart{height:250px;padding:12px 12px 10px}.dp-chart-compact{height:220px}.dp-empty{height:220px;display:grid;place-items:center;padding:20px;text-align:center;color:#64748b;font-size:12px;font-weight:700}.dp-empty-compact{height:220px}
+        .dp-attention-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0}.dp-attention{position:relative;min-height:84px;padding:14px 16px;border-radius:14px;overflow:hidden;box-shadow:0 8px 20px rgba(18,59,80,.10);border:1px solid}.dp-attention::after{content:"";position:absolute;right:-22px;bottom:-28px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.16)}.dp-attention small{display:block;color:#fff;font-size:11px;font-weight:950;letter-spacing:.04em}.dp-attention strong{display:inline-block;color:#fff;font-size:27px;font-weight:950;line-height:1.05;margin-top:6px}.dp-attention em{color:#fff;font-size:10px;font-weight:850;font-style:normal;margin-left:6px}.dp-attention-danger{background:linear-gradient(135deg,#B83A45,#74212A);border-color:#642029}.dp-attention-success{background:linear-gradient(135deg,#16805C,#0A4D38);border-color:#083F2E}.dp-attention-warning{background:linear-gradient(135deg,#B96A09,#7A4300);border-color:#613400}.dp-status-panel{margin-top:12px}
+
         .dp-table-wrap{overflow:auto}.dp-table{width:100%;border-collapse:collapse;font-size:12px}.dp-table th{background:#f8fafc;color:#475569;text-align:left;font-size:10px;font-weight:950;padding:10px 12px;border-bottom:1px solid #e2e8f0}.dp-table td{padding:11px 12px;border-bottom:1px solid #edf2f7;color:#334155;font-weight:650;white-space:nowrap}.dp-table tr:last-child td{border-bottom:0}.dp-status{display:inline-flex;padding:4px 8px;border-radius:999px;background:#ecfdf5;color:#065f46;font-size:10px;font-weight:900}.dp-error{margin:0 0 12px;padding:10px 12px;border:1px solid #fecaca;background:#fef2f2;color:#991b1b;border-radius:7px;font-size:12px;font-weight:700}
-                @media(max-width:1050px){.dp-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-grid{grid-template-columns:1fr}.dp-main{padding:16px}}
-        @media(max-width:650px){.dp-kpis{grid-template-columns:1fr}.dp-main{padding:12px}}
+                @media(max-width:1050px){.dp-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-grid{grid-template-columns:1fr}.dp-attention-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-main{padding:16px}}
+        @media(max-width:650px){.dp-kpis,.dp-attention-grid{grid-template-columns:1fr}.dp-main{padding:12px}}
       `}</style>
 
       <main className="dp-main">
@@ -220,38 +270,32 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
           ))}
         </section>
 
-        <section className="dp-grid">
+        <section className="dp-grid dp-chart-grid">
           <article className="dp-panel">
-            <div className="dp-head"><span>MONITORAMENTO EM TEMPO REAL</span><h2>Eficiência de máquinas por turno</h2></div>
-            {machineShift.length ? (
-              <div className="dp-chart"><ResponsiveContainer width="100%" height="100%">
-                <BarChart data={machineShift} barCategoryGap="30%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="maquina" axisLine={false} tickLine={false}/><YAxis domain={[0,100]} unit="%" axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea',boxShadow:'0 10px 25px rgba(18,59,80,.12)'}}/><Bar dataKey="eficiencia" name="Eficiência" fill="#2D8DB8" radius={[8,8,3,3]} maxBarSize={42}/></BarChart>
-              </ResponsiveContainer></div>
-            ) : <div className="dp-empty">Sem dados reais de eficiência por máquina/turno registrados.</div>}
+            <div className="dp-head"><span>PCP · MÁQUINAS</span><h2>Eficiência por máquina</h2></div>
+            {machineShift.length ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={machineShift} barCategoryGap="26%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="maquina" axisLine={false} tickLine={false}/><YAxis domain={[0,100]} unit="%" axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="eficiencia" name="Eficiência" fill="#2D8DB8" radius={[7,7,2,2]} maxBarSize={36}/></BarChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem dados reais de eficiência.</div>}
           </article>
-
           <article className="dp-panel">
-            <div className="dp-head"><span>PCP · PREVISTO × REALIZADO</span><h2>Volumes de produção semanal</h2></div>
-            {weekly.some(x => x.previsto || x.realizado) ? (
-              <div className="dp-chart"><ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weekly}><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="day" axisLine={false} tickLine={false}/><YAxis axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea',boxShadow:'0 10px 25px rgba(18,59,80,.12)'}}/><Legend verticalAlign="top" height={28}/><Line type="monotone" dataKey="previsto" name="Previsto" stroke="#94a3b8" strokeWidth={2} strokeDasharray="6 5" dot={false}/><Line type="monotone" dataKey="realizado" name="Realizado" stroke="#2D8DB8" strokeWidth={4} dot={{r:4,strokeWidth:2,fill:"#fff"}} activeDot={{r:6}}/></LineChart>
-              </ResponsiveContainer></div>
-            ) : <div className="dp-empty">Sem programação ou produção registrada para os últimos 7 dias.</div>}
+            <div className="dp-head"><span>PCP · ENTREGA</span><h2>Peças no prazo × em atraso</h2></div>
+            <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{categoria:'No prazo',quantidade:onTimePieces},{categoria:'Em atraso',quantidade:overduePieces}]} barCategoryGap="38%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="categoria" axisLine={false} tickLine={false}/><YAxis axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="quantidade" name="Peças" fill="#3A9D78" radius={[8,8,3,3]} maxBarSize={48}/></BarChart></ResponsiveContainer></div>
+          </article>
+          <article className="dp-panel">
+            <div className="dp-head"><span>PRODUÇÃO · SEMANA</span><h2>Previsto × realizado</h2></div>
+            {weekly.some(x => x.previsto || x.realizado) ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><LineChart data={weekly}><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="day" axisLine={false} tickLine={false}/><YAxis axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Legend verticalAlign="top" height={24}/><Line type="monotone" dataKey="previsto" name="Previsto" stroke="#94a3b8" strokeWidth={2} strokeDasharray="6 5" dot={false}/><Line type="monotone" dataKey="realizado" name="Realizado" stroke="#2D8DB8" strokeWidth={3} dot={{r:3,strokeWidth:2,fill:"#fff"}}/></LineChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem dados reais nos últimos 7 dias.</div>}
+          </article>
+          <article className="dp-panel">
+            <div className="dp-head"><span>PARADAS · CHÃO DE FÁBRICA</span><h2>Horas de parada por dia</h2></div>
+            {stopSummary.length ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={stopSummary} barCategoryGap="30%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="day" axisLine={false} tickLine={false}/><YAxis unit="h" axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="horas" name="Parada" fill="#D65B61" radius={[7,7,2,2]} maxBarSize={34}/></BarChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem paradas registradas.</div>}
           </article>
         </section>
 
-        <section className="dp-panel" style={{ marginTop: 12 }}>
-          <div className="dp-head"><span>ALERTAS E PARADAS</span><h2>Fila de trabalho atual</h2></div>
-          <div className="dp-table-wrap">
-            <table className="dp-table">
-              <thead><tr><th>CÓD_OP</th><th>POSTO DE TRABALHO</th><th>PRODUTO</th><th>ÚLTIMO APONTAMENTO</th><th>STATUS DE OPERAÇÃO</th></tr></thead>
-              <tbody>
-                {queue.length ? queue.map(row => (
-                  <tr key={row.op}><td><strong>{row.op}</strong></td><td>{row.workstation}</td><td>{row.product}</td><td>{row.lastPointing}</td><td><span className="dp-status">{row.status}</span></td></tr>
-                )) : <tr><td colSpan={5} style={{textAlign:'center',padding:28,color:'#64748b'}}>Nenhuma OP em andamento com dados reais para exibir.</td></tr>}
-              </tbody>
-            </table>
-          </div>
+        <section className="dp-attention-grid">
+          {attentionCards.map(card => <article key={card.label} className={`dp-attention dp-attention-${card.tone}`}><div><small>{card.label}</small><strong>{loading ? '…' : card.value}</strong><em>{card.suffix}</em></div></article>)}
+        </section>
+
+        <section className="dp-panel dp-status-panel">
+          <div className="dp-head"><span>STATUS DOS SETORES · PCP</span><h2>Distribuição das ordens de produção</h2></div>
+          {opStatus.length ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={opStatus} layout="vertical" margin={{left:16,right:18}}><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" horizontal={false}/><XAxis type="number" axisLine={false} tickLine={false}/><YAxis type="category" dataKey="status" width={105} axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="quantidade" name="OPs" fill="#48B7C7" radius={[0,7,7,0]} maxBarSize={26}/></BarChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem ordens de produção reais para distribuir.</div>}
         </section>
       </main>
 
