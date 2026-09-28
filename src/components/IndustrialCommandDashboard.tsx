@@ -78,15 +78,23 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         if (!master && !p.empresa_id) throw new Error('Empresa do usuário não identificada.')
 
         const empresaId = p.empresa_id as string | null
-        const scoped = <T extends { eq: (column: string, value: string) => T }>(q: T): T => master || !empresaId ? q : q.eq('empresa_id', empresaId)
+        const machineQ = supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('ativo', true).order('codigo')
+        const opQ = supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at').order('created_at', { ascending: false }).limit(500)
+        const prodQ = supabase.from('erp_produtos').select('id,codigo,nome').limit(3000)
+        const pointingQ = supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,created_at').order('created_at', { ascending: false }).limit(5000)
+        const programQ = supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status').neq('status', 'cancelada').limit(3000)
+        const stopQ = supabase.from('erp_producao_paradas').select('maquina_id,inicio,fim,status').limit(5000)
+        const rpncQ = supabase.from('erp_rpnc').select('id,status').limit(5000)
 
-        const machineQ = scoped(supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('ativo', true).order('codigo'))
-        const opQ = scoped(supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at').order('created_at', { ascending: false }).limit(500))
-        const prodQ = scoped(supabase.from('erp_produtos').select('id,codigo,nome').limit(3000))
-        const pointingQ = scoped(supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,created_at').order('created_at', { ascending: false }).limit(5000))
-        const programQ = scoped(supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status').neq('status', 'cancelada').limit(3000))
-        const stopQ = scoped(supabase.from('erp_producao_paradas').select('maquina_id,inicio,fim,status').limit(5000))
-        const rpncQ = scoped(supabase.from('erp_rpnc').select('id,status').limit(5000))
+        if (!master && empresaId) {
+          machineQ.eq('empresa_id', empresaId)
+          opQ.eq('empresa_id', empresaId)
+          prodQ.eq('empresa_id', empresaId)
+          pointingQ.eq('empresa_id', empresaId)
+          programQ.eq('empresa_id', empresaId)
+          stopQ.eq('empresa_id', empresaId)
+          rpncQ.eq('empresa_id', empresaId)
+        }
 
         const [m, o, pr, pt, pg, st, rn] = await Promise.all([machineQ, opQ, prodQ, pointingQ, programQ, stopQ, rpncQ])
         for (const result of [m, o, pr, pt, pg, st, rn]) if (result.error) throw result.error
