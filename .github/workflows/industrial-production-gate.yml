@@ -35,3 +35,5 @@ jobs:
         run: npm run type-check
       - name: Build
         run: npm run build
+      - name: Release gate summary
+        run: npm run verify:release
