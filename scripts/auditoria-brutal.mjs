@@ -32,7 +32,7 @@ const vercel=JSON.parse(read('vercel.json'))
 
 if(!bootstrap.includes("'/cadastro-master'")) fail('REGRESSÃO DE ROTA: /cadastro-master não está liberada antes do AccessGate.')
 if(!bootstrap.includes("'/planos'")) warn('ROTA /planos não está explicitamente pública no bootstrap.')
-if(!entry.includes("path==='/cadastro-master'")) fail('ROTA /cadastro-master não está implementada no AppEntryV2.')
+if(!/path\s*=\s*["']\/cadastro-master["']/.test(entry)) fail('ROTA /cadastro-master não está implementada no AppEntryV2.')
 if(!entry.includes("SetupADMInicial")) fail('Cadastro Master não aponta para SetupADMInicial.')
 if(!login.includes("signInWithPassword") && !login.includes("erp-login")) fail('LOGIN: não foi encontrada autenticação Supabase/erp-login.')
 if(!login.includes("resetPasswordForEmail")) fail('LOGIN: recuperação de senha ausente.')
@@ -78,12 +78,12 @@ for(const spec of lazyImports){
 
 for(const route of requiredRoutes){
  if(route==='/login'&&!bootstrap.includes("path === '/login'")) warn('BOOTSTRAP: /login não é tratado diretamente.')
- if(route==='/cadastro-master'&&!entry.includes("path==='/cadastro-master'")) fail('ROTA AUSENTE: '+route)
+ if(route==='/cadastro-master'&&!/path\s*=\s*["']\/cadastro-master["']/.test(entry)) fail('ROTA AUSENTE: '+route)
 }
 
 if(!setup.includes('bootstrap_master')) fail('MASTER: ação bootstrap_master ausente no cadastro.')
 if(!setup.includes('signInWithPassword')) fail('MASTER: login após cadastro ausente.')
-if(!entry.includes('masterOnly')) fail('MASTER: proteção masterOnly ausente.')
+if(!entry.includes('MasterOnly') && !entry.includes('masterOnly')) fail('MASTER: proteção master-only ausente.')
 if(!entry.includes('is_master') || !entry.includes('nivel_admin')) fail('MASTER: validação de nível/perfil ausente.')
 
 console.log('FILES REQUIRED:',requiredFiles.length)
