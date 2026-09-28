@@ -78,7 +78,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         if (!master && !p.empresa_id) throw new Error('Empresa do usuário não identificada.')
 
         const empresaId = p.empresa_id as string | null
-        const scoped = <T,>(q: T): T => master || !empresaId ? q : (q as { eq: (column: string, value: string) => T }).eq('empresa_id', empresaId)
+        const scoped = <T extends { eq: (column: string, value: string) => T }>(q: T): T => master || !empresaId ? q : q.eq('empresa_id', empresaId)
 
         const machineQ = scoped(supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('ativo', true).order('codigo'))
         const opQ = scoped(supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at').order('created_at', { ascending: false }).limit(500))
