@@ -30,7 +30,7 @@ const sourceFiles = files.filter(f => ['.ts','.tsx','.js','.jsx','.mjs'].include
 const frontendFiles = sourceFiles.filter(f => f.includes(`${path.sep}src${path.sep}`))
 const allText = new Map(files.map(f => [f, read(f)]))
 const canonicalSupabaseUrl = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
-const legacySupabaseUrl = 'https://wdkvrqekixczuhrfygen.supabase.co'
+const legacySupabaseUrls = ['https://wdkvrqekixczuhrfygen.supabase.co','https://uhuxfkhutaknrykrvxge.supabase.co']
 
 const secretPatterns = [
   /sb_secret_[A-Za-z0-9_-]{20,}/g,
@@ -46,6 +46,11 @@ for (const file of files) {
     continue
   }
   for (const re of secretPatterns) for (const m of text.matchAll(re)) add('BLOCKER', file, lineOf(text, m.index ?? 0), 'Possível segredo/credencial hardcoded.')
+}
+
+for (const file of files) {
+  const text = allText.get(file)
+  for (const legacy of legacySupabaseUrls) if (text.includes(legacy)) add('BLOCKER', file, lineOf(text, text.indexOf(legacy)), `Projeto Supabase legado/proibido encontrado: ${legacy}`)
 }
 
 for (const file of frontendFiles) {
