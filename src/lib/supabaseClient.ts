@@ -5,9 +5,9 @@ const DEFAULT_SUPABASE_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
 const DEFAULT_SUPABASE_PUBLISHABLE_KEY = ''
 const CONNECTION_MODE_KEY = 'erp_modo_conexao'
 const AUTH_STORAGE_KEY = 'erp-industrial-auth'
+const LEGACY_AUTH_CLEANUP_KEY = 'erp-industrial-auth-cleanup-v1'
 const connectionMode = typeof window !== 'undefined' ? window.localStorage.getItem(CONNECTION_MODE_KEY) : null
-if (typeof window !== 'undefined') window.localStorage.removeItem(AUTH_STORAGE_KEY)
-const authStorage = typeof window !== 'undefined' ? window.sessionStorage : undefined
+const authStorage = typeof window !== 'undefined' ? window.localStorage : undefined
 const localMode = connectionMode === 'local'
 const configuredCloudUrl = String(env.VITE_SUPABASE_URL || '').trim().replace(/\/$/, '')
 const cloudUrl = configuredCloudUrl || DEFAULT_SUPABASE_URL
