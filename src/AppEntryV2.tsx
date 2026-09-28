@@ -85,6 +85,10 @@ const QualidadeEditorIT = lazy(() => import('./pages/qualidade/QualidadeEditorIT
 const QualidadeAssinaturaIT = lazy(() => import('./pages/qualidade/QualidadeAssinaturaIT'))
 const QualidadeProcedimentos = lazy(() => import('./pages/qualidade/QualidadeProcedimentos'))
 const QualidadeQuarentena = lazy(() => import('./pages/qualidade/QualidadeQuarentena'))
+const FinanceiroCustoPadrao = lazy(() => import('./pages/FinanceiroCustoPadrao'))
+const OutlookConfiguracao = lazy(() => import('./pages/OutlookConfiguracao'))
+const AdminLogs = lazy(() => import('./pages/AdminLogs'))
+const CalibracaoIndustrial = lazy(() => import('./pages/CalibracaoIndustrial'))
 const QualidadeRelatoriosDocumentos = lazy(() => import('./pages/QualidadeRelatoriosDocumentos'))
 const QualidadeListaMestre = lazy(() => import('./pages/QualidadeListaMestre'))
 const QualidadeAuditoria5S = lazy(() => import('./pages/QualidadeAuditoria5S'))
@@ -294,6 +298,7 @@ export default function AppEntryV2() {
       <Route path="/qualidade/lista-mestre" element={<QualidadeListaMestre />} />
       <Route path="/qualidade/relatorios-documentos" element={<QualidadeRelatoriosDocumentos />} />
       <Route path="/qualidade/metrologia" element={<CentraisIndustriais module="metrologia" />} />
+      <Route path="/qualidade/calibracao" element={<CalibracaoIndustrial />} />
       <Route path="/qualidade/editor-it" element={<QualidadeEditorIT />} />
       <Route path="/qualidade/procedimentos" element={<QualidadeProcedimentos />} />
       <Route path="/qualidade/assinatura-it" element={<QualidadeAssinaturaIT />} />
@@ -320,6 +325,10 @@ export default function AppEntryV2() {
       <Route path="/engenharia/ficha" element={<FichaEngenharia />} />
       <Route path="/engenharia/fichas-processo" element={<FichasProcesso />} />
       <Route path="/financeiro/grafico-desvios" element={<FinanceiroGraficoDesvios />} />
+      <Route path="/financeiro/custo-padrao" element={<FinanceiroCustoPadrao />} />
+      <Route path="/admin/logs" element={<AdminLogs />} />
+      <Route path="/outlook/configuracao" element={<OutlookConfiguracao />} />
+      <Route path="/compras/fornecedores" element={<FornecedoresIndustrial />} />
       <Route path="/compras/solicitacao-manual" element={<ComprasSolicitacaoManual />} />
       <Route path="/solicitacao-compra" element={<SolicitacaoCompra />} />
       <Route path="/fornecedores" element={<FornecedoresIndustrial />} />
