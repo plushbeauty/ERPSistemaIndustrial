@@ -50,7 +50,8 @@ for (const file of files) {
 
 for (const file of files) {
   const text = allText.get(file)
-  for (const legacy of legacySupabaseUrls) if (text.includes(legacy)) add('BLOCKER', file, lineOf(text, text.indexOf(legacy)), `Projeto Supabase legado/proibido encontrado: ${legacy}`)
+  const isGuardFile = rel(file) === 'scripts/auditoria-global.mjs' || rel(file) === 'scripts/verify-supabase-env.mjs'
+  if (!isGuardFile) for (const legacy of legacySupabaseUrls) if (text.includes(legacy)) add('BLOCKER', file, lineOf(text, text.indexOf(legacy)), `Projeto Supabase legado/proibido encontrado: ${legacy}`)
 }
 
 for (const file of frontendFiles) {
