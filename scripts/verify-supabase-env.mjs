@@ -7,6 +7,8 @@ const publishable = String(process.env.VITE_SUPABASE_PUBLISHABLE_KEY || '').trim
 const isVercel = process.env.VERCEL === '1' || process.env.VERCEL === 'true'
 const isCi = process.env.CI === 'true'
 const canonicalUrl = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
+const forbiddenProjectRefs = ['wdkvrqekixczuhrfygen', 'uhuxfkhutaknrykrvxge']
+const forbiddenHosts = forbiddenProjectRefs.map(ref => `${ref}.supabase.co`)
 const failures = []
 
 function fail(message) { failures.push(message) }
@@ -31,6 +33,7 @@ else {
 
   if (/DEFAULT_SUPABASE_PUBLISHABLE_KEY\s*=\s*['"][^'"]+['"]/.test(client)) fail('Chave Supabase hardcoded encontrada no cliente.')
   if (/https:\/\/[^'"]+\.supabase\.co/.test(client) && !client.includes(canonicalUrl)) fail('URL Supabase diferente do projeto ERP encontrada no cliente.')
+  for (const host of forbiddenHosts) if (client.includes(host)) fail(`Projeto Supabase legado/proibido encontrado no cliente: ${host}.`)
   if (/sb_secret_[A-Za-z0-9_-]{20,}/.test(client)) fail('Chave sb_secret_ encontrada no frontend.')
   if (/[\'"]service_role[\'"]\s*[:=]/i.test(client)) fail('service_role encontrado no cliente frontend.')
   if (!readsPublicUrl) fail('Cliente não lê VITE_SUPABASE_URL.')
@@ -39,6 +42,7 @@ else {
 }
 
 if (isVercel) {
+  if (forbiddenHosts.some(host => url.includes(host))) fail('Vercel aponta para projeto Supabase legado/proibido.')
   if (!url) fail('Vercel sem VITE_SUPABASE_URL.')
   if (url !== canonicalUrl) fail('VITE_SUPABASE_URL aponta para projeto Supabase diferente do ERP Industrial.')
   if (!publishable) fail('Vercel sem VITE_SUPABASE_PUBLISHABLE_KEY.')
