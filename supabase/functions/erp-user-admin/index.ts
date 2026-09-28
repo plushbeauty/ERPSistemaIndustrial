@@ -248,6 +248,20 @@ Deno.serve(async (req) => {
       return json({ ok: true, message: active ? 'Usuário ativado.' : 'Usuário bloqueado.' })
     }
 
+    if (action === 'reset_password') {
+      const temporaryPassword = randomPassword()
+      const changed = await admin.auth.admin.updateUserById(target.id, {
+        password: temporaryPassword,
+        user_metadata: {
+          ...(authData.user.user_metadata || {}),
+          must_change_password: true,
+        },
+      })
+      if (changed.error) return json({ error: changed.error.message }, 400)
+      await writeAudit(actor, 'user.password_reset', target.id, { id: target.id, email: target.email }, { id: target.id, must_change_password: true }, req)
+      return json({ ok: true, message: 'Nova senha temporária gerada.', temporary_password: temporaryPassword })
+    }
+
     if (action === 'update_user') {
       const patch: Record<string, unknown> = { updated_at: new Date().toISOString() }
       if (body.nome !== undefined) patch.nome = String(body.nome).trim()
