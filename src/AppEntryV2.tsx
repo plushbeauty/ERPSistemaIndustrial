@@ -126,6 +126,23 @@ class Boundary extends Component<{ children: ReactNode }, { error: Error | null 
   }
 }
 
+function MasterOnly({ children, allowed }: { children: ReactNode; allowed: boolean }) {
+  if (!allowed) {
+    return (
+      <div className="error-screen">
+        <div className="error-screen-card">
+          <strong>Acesso restrito ao Master.</strong>
+          <p>Esta área administrativa exige um perfil Master válido.</p>
+          <button className="primary" type="button" onClick={() => window.location.replace('/comercial')}>
+            Voltar ao ERP
+          </button>
+        </div>
+      </div>
+    )
+  }
+  return <>{children}</>
+}
+
 function LoadingSkeleton({ label = 'Carregando SGQ ERP Industrial…' }: { label?: string }) {
   return (
     <div className="loading-screen">
@@ -341,7 +358,7 @@ export default function AppEntryV2() {
       <Route path="/fiscal/previsao-caixa" element={<FiscalPrevisaoCaixa />} />
       <Route path="/fiscal/carteira-nfe" element={<FiscalCarteiraNFe />} />
       <Route path="/fiscal/impostos" element={<FiscalImpostos />} />
-      <Route path="/master" element={<Master />} />
+      <Route path="/master" element={<MasterOnly allowed={statusAcesso.master}><Master /></MasterOnly>} />
       <Route path="/cadastro-empresa" element={<CadastroEmpresa />} />
       <Route path="/planos" element={<PlanosIndustrial />} />
       <Route path="/teste-erp" element={<TesteERP />} />
