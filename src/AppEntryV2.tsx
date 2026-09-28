@@ -26,6 +26,10 @@ const FiscalCarteiraNFe = lazy(() => import('./pages/FiscalCarteiraNFe'))
 const FiscalImpostos = lazy(() => import('./pages/FiscalImpostos'))
 const Master = lazy(() => import('./pages/Master'))
 const PCPIndustrial = lazy(() => import('./pages/PCPIndustrial'))
+const PCPParadas = lazy(() => import('./pages/PCPParadas'))
+const PCPPlanejamentoIndustrial = lazy(() => import('./pages/PCPPlanejamentoIndustrial'))
+const MRPIndustrial = lazy(() => import('./pages/MRPIndustrial'))
+const CentraisIndustriais = lazy(() => import('./pages/CentraisIndustriais'))
 const QualidadeIndustrial = lazy(() => import('./pages/QualidadeIndustrial'))
 const AcompanhamentoNaoConformidade = lazy(() => import('./pages/AcompanhamentoNaoConformidade'))
 const EstoqueAlmoxarifado = lazy(() => import('./pages/EstoqueAlmoxarifado'))
@@ -264,6 +268,10 @@ export default function AppEntryV2() {
       <Route path="/vendas/metas" element={<VendasMetas />} />
       <Route path="/pcp" element={<PCPIndustrial />} />
       <Route path="/pcp/ordens" element={<PCPIndustrial />} />
+      <Route path="/pcp/demanda" element={<PCPIndustrial />} />
+      <Route path="/pcp/materiais" element={<PCPIndustrial />} />
+      <Route path="/pcp/paradas" element={<PCPParadas />} />
+      <Route path="/pcp/planejamento" element={<PCPPlanejamentoIndustrial />} />
       <Route path="/pcp/dashboard-oee" element={<PCPDashboardOEE />} />
       <Route path="/pcp/tablet-operador" element={<PCPTabletOperador />} />
       <Route path="/qualidade" element={<QualidadeIndustrial />} />
@@ -283,6 +291,10 @@ export default function AppEntryV2() {
       <Route path="/estoque/recebimento-lotes" element={<EstoqueRecebimentoLotes />} />
       <Route path="/estoque/curva-abc" element={<EstoqueCurvaABC />} />
       <Route path="/produtos" element={<ProdutosVendasIndustrial />} />
+      <Route path="/ficha-engenharia" element={<FichaEngenharia />} />
+      <Route path="/mrp" element={<MRPIndustrial />} />
+      <Route path="/qualidade/refugos" element={<CentraisIndustriais module="refugos" />} />
+      <Route path="/central-custos-industrial" element={<CentralCustosIndustrial />} />
       <Route path="/expedicao/roteirizacao" element={<ExpedicaoRoteirizacao />} />
       <Route path="/expedicao/portaria" element={<ExpedicaoPortaria />} />
       <Route path="/engenharia" element={<EngenhariaCentral />} />
