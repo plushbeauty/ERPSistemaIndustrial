@@ -250,10 +250,12 @@ Deno.serve(async (req) => {
 
     if (action === 'reset_password') {
       const temporaryPassword = randomPassword()
+      const targetAuth = await admin.auth.admin.getUserById(target.id)
+      if (targetAuth.error || !targetAuth.data.user) return json({ error: targetAuth.error?.message || 'Identidade Auth não encontrada.' }, 404)
       const changed = await admin.auth.admin.updateUserById(target.id, {
         password: temporaryPassword,
         user_metadata: {
-          ...(authData.user.user_metadata || {}),
+          ...(targetAuth.data.user.user_metadata || {}),
           must_change_password: true,
         },
       })
