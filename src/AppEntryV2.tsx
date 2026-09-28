@@ -250,7 +250,7 @@ export default function AppEntryV2() {
 
   const protectedRoutes = (
     <Routes>
-      <Route path="/comercial" element={<AppIndustrial />} />
+      <Route path="/comercial" element={<VendasCentral />} />
       <Route path="/vendas" element={<VendasCentral />} />
       <Route path="/vendas/novo-pedido" element={<PedidoVendaCompleto />} />
       <Route path="/vendas/carteira" element={<VendasCarteira />} />
