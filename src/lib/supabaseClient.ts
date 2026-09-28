@@ -1,21 +1,12 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 
 const AUTH_STORAGE_KEY = 'erp-industrial-auth'
+
 const supabaseUrl: string = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey: string = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
-const expectedSupabaseUrl = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
-const isPrivateKey = supabaseKey.startsWith('sb_secret_') || supabaseKey.includes('service_role')
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error('Erro Crítico: Variáveis VITE_SUPABASE_URL ou VITE_SUPABASE_PUBLISHABLE_KEY não foram injetadas corretamente no build.')
-}
-
-if (supabaseUrl.replace(/\/$/, '') !== expectedSupabaseUrl) {
-  throw new Error('[Supabase] VITE_SUPABASE_URL aponta para um projeto diferente do ERP Industrial.')
-}
-
-if (isPrivateKey) {
-  throw new Error('[Supabase] Chave privada/secret detectada no frontend. Use somente VITE_SUPABASE_PUBLISHABLE_KEY.')
 }
 
 export const supabaseModoConexao = 'nuvem'
