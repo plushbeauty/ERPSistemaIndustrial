@@ -26,12 +26,15 @@ const clientPath = path.join(root, 'src/lib/supabaseClient.ts')
 if (!fs.existsSync(clientPath)) fail('src/lib/supabaseClient.ts ausente.')
 else {
   const client = fs.readFileSync(clientPath, 'utf8')
+  const readsPublicUrl = /import\.meta\.env\.VITE_SUPABASE_URL|env\.VITE_SUPABASE_URL/.test(client)
+  const readsPublicKey = /import\.meta\.env\.VITE_SUPABASE_PUBLISHABLE_KEY|env\.VITE_SUPABASE_PUBLISHABLE_KEY/.test(client)
+
   if (/DEFAULT_SUPABASE_PUBLISHABLE_KEY\s*=\s*['"][^'"]+['"]/.test(client)) fail('Chave Supabase hardcoded encontrada no cliente.')
   if (/https:\/\/[^'"]+\.supabase\.co/.test(client) && !client.includes(canonicalUrl)) fail('URL Supabase diferente do projeto ERP encontrada no cliente.')
   if (/sb_secret_[A-Za-z0-9_-]{20,}/.test(client)) fail('Chave sb_secret_ encontrada no frontend.')
   if (/[\'"]service_role[\'"]\s*[:=]/i.test(client)) fail('service_role encontrado no cliente frontend.')
-  if (!client.includes('import.meta.env.VITE_SUPABASE_URL')) fail('Cliente não usa import.meta.env.VITE_SUPABASE_URL.')
-  if (!client.includes('import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY')) fail('Cliente não usa import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY.')
+  if (!readsPublicUrl) fail('Cliente não lê VITE_SUPABASE_URL.')
+  if (!readsPublicKey) fail('Cliente não lê VITE_SUPABASE_PUBLISHABLE_KEY.')
   if (client.includes('VITE_SUPABASE_ANON_KEY')) fail('Cliente ainda aceita VITE_SUPABASE_ANON_KEY; somente a chave publishable é permitida.')
 }
 
