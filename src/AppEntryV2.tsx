@@ -85,6 +85,13 @@ const QualidadeEditorIT = lazy(() => import('./pages/qualidade/QualidadeEditorIT
 const QualidadeAssinaturaIT = lazy(() => import('./pages/qualidade/QualidadeAssinaturaIT'))
 const QualidadeProcedimentos = lazy(() => import('./pages/qualidade/QualidadeProcedimentos'))
 const QualidadeQuarentena = lazy(() => import('./pages/qualidade/QualidadeQuarentena'))
+const QualidadeRelatoriosDocumentos = lazy(() => import('./pages/QualidadeRelatoriosDocumentos'))
+const QualidadeListaMestre = lazy(() => import('./pages/QualidadeListaMestre'))
+const QualidadeAuditoria5S = lazy(() => import('./pages/QualidadeAuditoria5S'))
+const QualidadeMetodologia8D = lazy(() => import('./pages/QualidadeMetodologia8D'))
+const QualidadeInspecaoProcesso = lazy(() => import('./pages/QualidadeInspecaoProcesso'))
+const MoldesFerramentaria = lazy(() => import('./pages/MoldesFerramentaria'))
+const OperacaoIndustrial = lazy(() => import('./pages/OperacaoIndustrial'))
 
 type ERPProfile = { empresa_id: string | null; is_master: boolean; nivel_admin?: number; perfil?: string; nome?: string }
 type AccessResult = { ok: boolean; master: boolean; reason: string; profile: ERPProfile | null }
@@ -258,6 +265,7 @@ export default function AppEntryV2() {
   const protectedRoutes = (
     <Routes>
       <Route path="/comercial" element={<AppIndustrial />} />
+      <Route path="/erp-industrial" element={<AppIndustrial />} />
       <Route path="/vendas" element={<VendasCentral />} />
       <Route path="/vendas/novo-pedido" element={<PedidoVendaCompleto />} />
       <Route path="/vendas/carteira" element={<VendasCarteira />} />
@@ -280,17 +288,27 @@ export default function AppEntryV2() {
       <Route path="/qualidade/dashboard-rnc" element={<QualidadeDashboardRNC />} />
       <Route path="/qualidade/pfmea" element={<QualidadePFMEA />} />
       <Route path="/qualidade/documentos" element={<DocumentosQualidadeControle />} />
+      <Route path="/qualidade/inspecao-processo" element={<QualidadeInspecaoProcesso />} />
+      <Route path="/qualidade/metodologia-8d" element={<QualidadeMetodologia8D />} />
+      <Route path="/qualidade/auditoria-5s" element={<QualidadeAuditoria5S />} />
+      <Route path="/qualidade/lista-mestre" element={<QualidadeListaMestre />} />
+      <Route path="/qualidade/relatorios-documentos" element={<QualidadeRelatoriosDocumentos />} />
+      <Route path="/qualidade/metrologia" element={<CentraisIndustriais module="metrologia" />} />
       <Route path="/qualidade/editor-it" element={<QualidadeEditorIT />} />
       <Route path="/qualidade/procedimentos" element={<QualidadeProcedimentos />} />
       <Route path="/qualidade/assinatura-it" element={<QualidadeAssinaturaIT />} />
       <Route path="/qualidade/genealogia-lote" element={<QualidadeGenealogiaLote />} />
       <Route path="/qualidade/quarentena" element={<QualidadeQuarentena />} />
       <Route path="/estoque" element={<EstoqueAlmoxarifado />} />
+      <Route path="/almoxarifado" element={<EstoqueAlmoxarifado />} />
       <Route path="/estoque/saldos" element={<EstoqueAlmoxarifado />} />
       <Route path="/estoque/ajustes" element={<EstoqueAjustes />} />
       <Route path="/estoque/recebimento-lotes" element={<EstoqueRecebimentoLotes />} />
       <Route path="/estoque/curva-abc" element={<EstoqueCurvaABC />} />
       <Route path="/produtos" element={<ProdutosVendasIndustrial />} />
+      <Route path="/produtos-vendas" element={<ProdutosVendasIndustrial />} />
+      <Route path="/operacao-industrial" element={<OperacaoIndustrial />} />
+      <Route path="/moldes-injecao" element={<MoldesFerramentaria />} />
       <Route path="/ficha-engenharia" element={<FichaEngenharia />} />
       <Route path="/mrp" element={<MRPIndustrial />} />
       <Route path="/qualidade/refugos" element={<CentraisIndustriais module="refugos" />} />
@@ -307,6 +325,7 @@ export default function AppEntryV2() {
       <Route path="/fornecedores" element={<FornecedoresIndustrial />} />
       <Route path="/clientes" element={<ClientesIndustrial />} />
       <Route path="/tabela-precos" element={<TabelaPrecos />} />
+      <Route path="/tabelas-preco" element={<TabelaPrecos />} />
       <Route path="/catalogo" element={<CatalogoDigital />} />
       <Route path="/fiscal" element={<Fiscal />} />
       <Route path="/fiscal/emissao" element={<NFeEmissao />} />
@@ -318,6 +337,7 @@ export default function AppEntryV2() {
       <Route path="/planos" element={<PlanosIndustrial />} />
       <Route path="/teste-erp" element={<TesteERP />} />
       <Route path="/usuarios-admin" element={<UsuariosAdmin />} />
+      <Route path="/usuarios" element={<UsuariosAdmin />} />
       <Route path="/configuracoes-adm/codificacao" element={<ConfiguracaoCodificacaoAreas />} />
       <Route path="/configuracoes-adm/permissoes" element={<ConfiguracaoPermissoes />} />
       <Route path="/configuracoes-adm" element={<ConfiguracoesADMPage profile={statusAcesso.profile} />} />
@@ -333,6 +353,7 @@ export default function AppEntryV2() {
       <Route path="/ajuda/assistente" element={<AssistenteAjudaERP />} />
       <Route path="/ajuda" element={<AssistenteAjudaERP />} />
       <Route path="/compras/solicitacao" element={<ComprasSolicitacaoManual />} />
+      <Route path="/compras-solicitacao" element={<ComprasSolicitacaoManual />} />
       <Route path="/manutencao/ordens" element={<ManutencaoOrdens />} />
       <Route path="/fiscal/carteira" element={<FiscalCarteiraNFe />} />
       <Route path="/qualidade/rnc" element={<QualidadeDashboardRNC />} />
