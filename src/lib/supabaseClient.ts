@@ -1,34 +1,28 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 
-const env = import.meta.env as Record<string, unknown>
 const AUTH_STORAGE_KEY = 'erp-industrial-auth'
-
-const supabaseUrl = String(env.VITE_SUPABASE_URL || '').trim().replace(/\/$/, '')
-const supabaseKey = String(env.VITE_SUPABASE_PUBLISHABLE_KEY || '').trim()
-const isPrivateKey = supabaseKey.startsWith('sb_secret_') || supabaseKey.includes('service_role')
+const supabaseUrl: string = import.meta.env.VITE_SUPABASE_URL
+const supabaseKey: string = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 const expectedSupabaseUrl = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
+const isPrivateKey = supabaseKey.startsWith('sb_secret_') || supabaseKey.includes('service_role')
 
-export const supabaseModoConexao = 'nuvem'
-export const supabaseEnvironmentMismatch = supabaseUrl !== expectedSupabaseUrl
-export const supabaseUrlExportada = supabaseUrl
-export const supabaseKeyExportada = isPrivateKey ? '' : supabaseKey
-export const supabaseConfigurado = Boolean(supabaseUrl && supabaseKey && !isPrivateKey && !supabaseEnvironmentMismatch)
-
-if (!supabaseUrl) {
-  throw new Error('[Supabase] VITE_SUPABASE_URL ausente. Configure a URL do projeto ERP Industrial na Vercel.')
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Erro Crítico: Variáveis VITE_SUPABASE_URL ou VITE_SUPABASE_PUBLISHABLE_KEY não foram injetadas corretamente no build.')
 }
 
-if (!supabaseKey) {
-  throw new Error('[Supabase] VITE_SUPABASE_PUBLISHABLE_KEY ausente. Configure a chave pública do projeto ERP Industrial na Vercel.')
-}
-
-if (supabaseEnvironmentMismatch) {
+if (supabaseUrl.replace(/\/$/, '') !== expectedSupabaseUrl) {
   throw new Error('[Supabase] VITE_SUPABASE_URL aponta para um projeto diferente do ERP Industrial.')
 }
 
 if (isPrivateKey) {
   throw new Error('[Supabase] Chave privada/secret detectada no frontend. Use somente VITE_SUPABASE_PUBLISHABLE_KEY.')
 }
+
+export const supabaseModoConexao = 'nuvem'
+export const supabaseEnvironmentMismatch = false
+export const supabaseUrlExportada = supabaseUrl
+export const supabaseKeyExportada = supabaseKey
+export const supabaseConfigurado = true
 
 const authStorage = typeof window !== 'undefined' ? window.localStorage : undefined
 
