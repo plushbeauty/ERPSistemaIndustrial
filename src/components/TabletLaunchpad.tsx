@@ -30,7 +30,6 @@ const modules: Module[] = [
   { number:'12', label:'CHÃO DE FÁBRICA', route:'/operacao-industrial', icon:Activity, accent:'#8A6200' },
   { number:'13', label:'QUALIDADE', route:'/qualidade', icon:CheckCircle, accent:'#16788A' },
   { number:'14', label:'SGQ', route:'/qualidade', icon:CheckCircle, accent:'#0F6170' },
-  { number:'15', label:'CONFIGURAÇÕES', route:'/configuracoes-adm', icon:Settings, accent:'#F97316' },
 ]
 
 const moduleItems: Record<string, string> = {
