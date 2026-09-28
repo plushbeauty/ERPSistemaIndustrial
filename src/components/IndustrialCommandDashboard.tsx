@@ -270,7 +270,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
           ))}
         </section>
 
-        <section className="dp-attention-grid">{attentionCards.map(card => <article key={card.label} className={`dp-attention dp-attention-${card.tone}`}><span className="dp-attention-icon"><card.icon size={18}/></span><div><small>{card.label}</small><strong>{loading ? '…' : card.value}</strong><em>{card.suffix}</em></div></article>)}
+        <section className="dp-attention-grid">{attentionCards.map(card => { const Icon = card.icon; return <article key={card.label} className={`dp-attention dp-attention-${card.tone}`}><span className="dp-attention-icon"><Icon size={18}/></span><div><small>{card.label}</small><strong>{loading ? '…' : card.value}</strong><em>{card.suffix}</em></div></article> })}
         </section>
 
         <section className="dp-grid dp-chart-grid">
