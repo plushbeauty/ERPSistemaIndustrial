@@ -10,6 +10,7 @@ jobs:
         with:
           node-version: 22
       - run: npm install --legacy-peer-deps --no-audit --no-fund
+      - run: npm run verify:supabase-env
       - run: npm run type-check
       - run: npm run audit:interactions
       - run: npm run build
