@@ -8,9 +8,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
+          cache: npm
       - run: npm install --legacy-peer-deps --no-audit --no-fund
       - run: npm run verify:supabase-env
+      - run: npm run audit:all
       - run: npm run type-check
-      - run: npm run audit:interactions
+      - run: npm run lint:check
       - run: npm run build
