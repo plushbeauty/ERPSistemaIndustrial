@@ -1,454 +1,66 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Settings, Users, ChevronRight, UserPlus, Search, ShieldCheck, KeyRound } from 'lucide-react'
+import { Settings, Users, ChevronRight, UserPlus, Search, ShieldCheck, KeyRound, Building, Pencil, Save, UserCheck, UserX, RefreshCw, LogOut, Plus, Trash2, HelpCircle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import ConfiguracaoCodificacaoAreas from './configuracoes/ConfiguracaoCodificacaoAreas'
+import ConfiguracaoPermissoes from './configuracoes/ConfiguracaoPermissoes'
 
-type Profile = {
-  empresa_id: string | null
-  is_master: boolean
-  nivel_admin?: number
-  perfil?: string
-  nome?: string
+type Profile={empresa_id:string|null;is_master:boolean;nivel_admin?:number;perfil?:string;nome?:string}
+type UserRow={id:string;nome:string;email:string|null;ativo:boolean;setor_id:string|null;matricula:string|null;role:string|null;role_id:string|null;nivel_admin:number;login_nome?:string|null}
+type Setor={id:string;nome:string;codigo:string;ativo?:boolean}
+type Role={id:string;codigo:string;nome:string;nivel:number}
+type Form={nome:string;email:string;setor_id:string;matricula:string;role_id:string;password:string}
+const emptyForm:Form={nome:'',email:'',setor_id:'',matricula:'',role_id:'',password:''}
+const isAdmin=(p:Profile)=>p.is_master===true||Number(p.nivel_admin||0)>=8||['ADMIN','ADMINISTRADOR','SUPER_ADMIN','MASTER'].includes(String(p.perfil||'').toUpperCase())
+
+function PerfisUsuarios({profile}:{profile:Profile}){
+ const [usuarios,setUsuarios]=useState<UserRow[]>([]),[setores,setSetores]=useState<Setor[]>([]),[roles,setRoles]=useState<Role[]>([])
+ const [form,setForm]=useState<Form>(emptyForm),[editing,setEditing]=useState<string|null>(null),[query,setQuery]=useState(''),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState(''),[temporaryPassword,setTemporaryPassword]=useState('')
+ const load=async()=>{setLoading(true);setError('');try{const [u,s,r]=await Promise.all([supabase.functions.invoke('erp-user-admin',{body:{action:'list_users'}}),profile.empresa_id?supabase.from('erp_setores').select('id,nome,codigo,ativo').eq('empresa_id',profile.empresa_id).eq('ativo',true).order('nome'):Promise.resolve({data:[],error:null}),supabase.from('erp_roles').select('id,codigo,nome,nivel').eq('ativo',true).order('nivel')]);if(u.error)throw u.error;if(!u.data?.ok)throw Error(u.data?.error||'Não foi possível carregar os usuários.');if(s.error)throw s.error;if(r.error)throw r.error;setUsuarios((u.data.users||[]) as UserRow[]);setSetores((s.data||[]) as Setor[]);setRoles((r.data||[]) as Role[]);setForm(v=>v.role_id?v:{...v,role_id:((r.data||[]).find((x:Role)=>x.codigo!=='MASTER')||(r.data||[])[0])?.id||''})}catch(e){setError(e instanceof Error?e.message:'Erro ao carregar usuários.')}finally{setLoading(false)}}
+ useEffect(()=>{void load()},[profile.empresa_id,profile.is_master])
+ const visible=useMemo(()=>{const q=query.trim().toLowerCase();return q?usuarios.filter(u=>[u.nome,u.email,u.matricula,u.role,u.login_nome].filter(Boolean).join(' ').toLowerCase().includes(q)):usuarios},[usuarios,query])
+ const reset=()=>{setEditing(null);setForm({...emptyForm,role_id:(roles.find(r=>r.codigo!=='MASTER')||roles[0])?.id||''})}
+ const save=async(e:React.FormEvent)=>{e.preventDefault();setBusy(true);setError('');setMessage('');setTemporaryPassword('');try{if(!form.nome.trim()||!form.email.trim()||!form.setor_id||!form.role_id)throw Error('Preencha nome, e-mail, departamento e perfil.');const body=editing?{action:'update_user',user_id:editing,nome:form.nome.trim(),setor_id:form.setor_id,matricula:form.matricula.trim(),role_id:form.role_id}:{action:'create_user',nome:form.nome.trim(),email:form.email.trim().toLowerCase(),setor_id:form.setor_id,matricula:form.matricula.trim(),role_id:form.role_id,password:form.password||undefined};const {data,error:fn}=await supabase.functions.invoke('erp-user-admin',{body});if(fn)throw fn;if(!data?.ok)throw Error(data?.error||'Operação não concluída.');if(data.temporary_password)setTemporaryPassword(String(data.temporary_password));setMessage(editing?'Usuário atualizado no Supabase.':'Colaborador cadastrado no Supabase.');reset();await load()}catch(e){setError(e instanceof Error?e.message:'Não foi possível salvar.')}finally{setBusy(false)}}
+ const edit=(u:UserRow)=>{setEditing(u.id);setForm({nome:u.nome,email:u.email||'',setor_id:u.setor_id||'',matricula:u.matricula||'',role_id:u.role_id||roles.find(r=>r.codigo===u.role)?.id||'',password:''});setMessage('Modo de edição ativado.');setError('')}
+ const toggle=async(u:UserRow)=>{setBusy(true);setError('');try{const {data,error:fn}=await supabase.functions.invoke('erp-user-admin',{body:{action:'set_active',user_id:u.id,ativo:!u.ativo}});if(fn)throw fn;if(!data?.ok)throw Error(data?.error||'Não foi possível alterar o status.');setMessage(data.message||'Status atualizado.');await load()}catch(e){setError(e instanceof Error?e.message:'Não foi possível alterar o status.')}finally{setBusy(false)}}
+ const resetPassword=async(u:UserRow)=>{if(!window.confirm(`Gerar nova senha temporária para ${u.nome}?`))return;setBusy(true);setError('');setMessage('');setTemporaryPassword('');try{const {data,error:fn}=await supabase.functions.invoke('erp-user-admin',{body:{action:'reset_password',user_id:u.id}});if(fn)throw fn;if(!data?.ok)throw Error(data?.error||'Não foi possível redefinir a senha.');setTemporaryPassword(String(data.temporary_password||''));setMessage('Nova senha temporária gerada.')}catch(e){setError(e instanceof Error?e.message:'Não foi possível redefinir a senha.')}finally{setBusy(false)}}
+ return <div className="space-y-6">
+  <header className="border-b border-slate-200 pb-4"><span className="block text-xs font-bold uppercase tracking-wider text-blue-600">Configurações / Controle de Acessos</span><h2 className="text-3xl font-black tracking-tight text-slate-900">Perfis de Usuários</h2><p className="mt-1 text-sm text-slate-500">Gerencie operadores, planejadores e administradores com dados reais do Supabase.</p></header>
+  {(message||error)&&<div className={`rounded-2xl border px-4 py-3 text-sm font-bold ${error?'border-red-200 bg-red-50 text-red-700':'border-cyan-200 bg-cyan-50 text-[#123B50]'}`}>{error||message}</div>}
+  {temporaryPassword&&<div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900"><div className="flex items-center gap-2 font-black"><KeyRound size={18}/>Senha temporária</div><div className="mt-2 flex items-center justify-between gap-4"><code className="rounded-xl bg-white px-4 py-3 text-lg font-black tracking-wider">{temporaryPassword}</code><button type="button" onClick={()=>setTemporaryPassword('')} className="rounded-xl border border-amber-300 px-3 py-2 text-xs font-bold">Ocultar</button></div><p className="mt-2 text-xs">Entregue por canal seguro. O backend marca a troca obrigatória no próximo acesso.</p></div>}
+  <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
+   <section className="space-y-4 rounded-3xl border border-slate-100 bg-white p-6 shadow-xl shadow-slate-200/40"><h3 className="flex items-center gap-2 border-b border-slate-100 pb-2 text-xs font-black uppercase tracking-wider text-slate-400"><UserPlus className="h-4 w-4 text-blue-900"/>{editing?'Modificar Usuário':'Registrar Novo Usuário'}</h3><form onSubmit={save} className="space-y-4">
+    <label className="block text-[11px] font-bold uppercase text-slate-500">Nome Completo<input required value={form.nome} onChange={e=>setForm({...form,nome:e.target.value})} className="mt-1 w-full rounded-2xl border-2 border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-800"/></label>
+    <label className="block text-[11px] font-bold uppercase text-slate-500">E-mail Corporativo<input required type="email" disabled={Boolean(editing)} value={form.email} onChange={e=>setForm({...form,email:e.target.value})} className="mt-1 w-full rounded-2xl border-2 border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-800 disabled:opacity-60"/></label>
+    <label className="block text-[11px] font-bold uppercase text-slate-500">Departamento<select required value={form.setor_id} onChange={e=>setForm({...form,setor_id:e.target.value})} className="mt-1 w-full rounded-2xl border-2 border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-800"><option value="">Selecionar setor</option>{setores.map(s=><option key={s.id} value={s.id}>{s.nome}</option>)}</select></label>
+    <label className="block text-[11px] font-bold uppercase text-slate-500">Perfil de Acesso<select required value={form.role_id} onChange={e=>setForm({...form,role_id:e.target.value})} className="mt-1 w-full rounded-2xl border-2 border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-800"><option value="">Selecionar perfil</option>{roles.filter(r=>profile.is_master||r.codigo!=='MASTER').map(r=><option key={r.id} value={r.id}>{r.nome} — nível {r.nivel}</option>)}</select></label>
+    <label className="block text-[11px] font-bold uppercase text-slate-500">Matrícula<input value={form.matricula} onChange={e=>setForm({...form,matricula:e.target.value})} className="mt-1 w-full rounded-2xl border-2 border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-800"/></label>
+    {!editing&&<label className="block text-[11px] font-bold uppercase text-slate-500">Senha inicial (opcional)<input type="password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder="Vazio = gerar temporária" className="mt-1 w-full rounded-2xl border-2 border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-800"/></label>}
+    <div className="flex gap-2"><button type="submit" disabled={busy} className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#2D8DB8] px-4 py-3 text-xs font-black uppercase tracking-wider text-white hover:bg-[#123B50] disabled:opacity-50">{editing?<Save size={16}/>:<UserPlus size={16}/>} {editing?'Salvar Alterações':'Cadastrar no Supabase'}</button>{editing&&<button type="button" onClick={reset} className="rounded-2xl border border-slate-200 px-4 text-xs font-bold">Cancelar</button>}</div>
+   </form></section>
+   <section className="space-y-4 rounded-3xl border border-slate-100 bg-white p-6 shadow-xl shadow-slate-200/40 lg:col-span-2"><div className="flex flex-wrap items-center justify-between gap-4"><div><h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400"><Users className="h-4 w-4 text-blue-900"/>Quadro de Colaboradores Cadastrados</h3><p className="mt-1 text-sm text-slate-500">Somente registros retornados do banco operacional.</p></div><button type="button" onClick={()=>void load()} disabled={busy||loading} className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-[#123B50]"><RefreshCw size={15}/>Atualizar</button></div>
+    <div className="relative"><Search className="absolute left-3 top-3 h-4 w-4 text-slate-400"/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Pesquisar colaborador, e-mail ou matrícula" className="w-full rounded-2xl border-2 border-slate-100 bg-slate-50 py-2 pl-9 pr-3 text-sm"/></div>
+    <div className="overflow-auto rounded-2xl border border-slate-100"><table className="w-full min-w-[820px] text-left text-sm"><thead><tr className="border-b border-slate-100 bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-400"><th className="p-3">Colaborador</th><th className="p-3">E-mail</th><th className="p-3">Setor</th><th className="p-3">Cargo / Perfil</th><th className="p-3 text-center">Status</th><th className="p-3 text-center">Ações</th></tr></thead><tbody className="divide-y divide-slate-100">
+    {loading?<tr><td colSpan={6} className="p-8 text-center text-slate-400">Consultando chaves do Supabase...</td></tr>:!visible.length?<tr><td colSpan={6} className="p-8 text-center font-medium text-slate-400">Nenhum operador indexado ao banco.</td></tr>:visible.map(u=><tr key={u.id} className="hover:bg-slate-50/60"><td className="p-3"><strong className="text-slate-900">{u.nome}</strong>{u.matricula&&<small className="block text-slate-400">{u.matricula}</small>}</td><td className="p-3 font-mono text-xs text-slate-500">{u.email||'—'}</td><td className="p-3 font-semibold">{setores.find(s=>s.id===u.setor_id)?.nome||'—'}</td><td className="p-3">{roles.find(r=>r.id===u.role_id)?.nome||u.role||'—'}</td><td className="p-3 text-center"><span className={u.ativo?'inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-xs font-black text-emerald-700':'inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-1 text-xs font-black text-red-700'}>{u.ativo?<UserCheck size={13}/>:<UserX size={13}/>} {u.ativo?'Ativo':'Inativo'}</span></td><td className="p-3"><div className="flex justify-center gap-1"><button type="button" disabled={busy} onClick={()=>edit(u)} title="Editar usuário" className="rounded-lg p-2 text-[#2D8DB8] hover:bg-cyan-50"><Pencil size={15}/></button><button type="button" disabled={busy} onClick={()=>void resetPassword(u)} title="Gerar nova senha temporária" className="rounded-lg p-2 text-amber-600 hover:bg-amber-50"><KeyRound size={15}/></button><button type="button" disabled={busy} onClick={()=>void toggle(u)} title={u.ativo?'Desativar usuário':'Ativar usuário'} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100">{u.ativo?<UserX size={15}/>:<UserCheck size={15}/>}</button></div></td></tr>)}
+    </tbody></table></div>
+   </section>
+  </div>
+  <section className="rounded-3xl border border-cyan-100 bg-white p-6 shadow-xl shadow-slate-200/30"><div className="flex items-center gap-2 font-black text-[#123B50]"><HelpCircle size={18} className="text-[#2D8DB8]"/>Manual do Usuário: Cadastro e Reset de Credenciais</div><div className="mt-4 grid gap-4 md:grid-cols-3"><div><h4 className="font-black text-slate-800">💡 O que é esta tela?</h4><p className="mt-1 text-sm text-slate-600">Vincula colaboradores aos perfis de segurança do ERP.</p></div><div><h4 className="font-black text-slate-800">🔍 Separação por Áreas</h4><p className="mt-1 text-sm text-slate-600">Departamento e perfil são gravados nos registros reais do banco.</p></div><div><h4 className="font-black text-slate-800">⚠️ Regra de Segurança</h4><p className="mt-1 text-sm text-slate-600">Desativar um operador bloqueia o acesso Auth pelo serviço administrativo.</p></div></div></section>
+ </div>
 }
 
-type UsuarioIndustria = {
-  id: string
-  nome: string
-  email: string | null
-  ativo: boolean
-  setor_id: string | null
-  matricula: string | null
-  role: string | null
-  nivel_admin: number
+function DepartamentosSetores({profile}:{profile:Profile}){
+ const [rows,setRows]=useState<Setor[]>([]),[nome,setNome]=useState(''),[codigo,setCodigo]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
+ const load=async()=>{if(!profile.empresa_id){setRows([]);return}const {data,error:e}=await supabase.from('erp_setores').select('id,nome,codigo,ativo').eq('empresa_id',profile.empresa_id).eq('ativo',true).order('nome');if(e)setError(e.message);else setRows((data||[]) as Setor[])}
+ useEffect(()=>{void load()},[profile.empresa_id])
+ const add=async(e:React.FormEvent)=>{e.preventDefault();if(!profile.empresa_id||!nome.trim()||!codigo.trim())return;setBusy(true);setError('');try{const {data,error:e}=await supabase.from('erp_setores').insert({empresa_id:profile.empresa_id,nome:nome.trim(),codigo:codigo.trim().toUpperCase(),ativo:true}).select('id,nome,codigo,ativo').single();if(e)throw e;setRows(v=>[...v,data as Setor].sort((a,b)=>a.nome.localeCompare(b.nome)));setNome('');setCodigo('');setMessage('Setor gravado no Supabase.')}catch(e){setError(e instanceof Error?e.message:'Não foi possível cadastrar.')}finally{setBusy(false)}}
+ const remove=async(id:string)=>{setBusy(true);try{const {error:e}=await supabase.from('erp_setores').update({ativo:false}).eq('id',id);if(e)throw e;setRows(v=>v.filter(x=>x.id!==id));setMessage('Setor desativado.')}catch(e){setError(e instanceof Error?e.message:'Não foi possível desativar.')}finally{setBusy(false)}}
+ return <div className="space-y-6"><header className="border-b border-slate-200 pb-4"><span className="text-xs font-bold uppercase tracking-wider text-blue-600">Configurações / Estrutura</span><h2 className="text-3xl font-black text-slate-900">Departamentos e Setores</h2><p className="mt-1 text-sm text-slate-500">Cadastre somente áreas reais do tenant atual.</p></header>{(message||error)&&<div className={`rounded-2xl border px-4 py-3 text-sm font-bold ${error?'border-red-200 bg-red-50 text-red-700':'border-cyan-200 bg-cyan-50 text-[#123B50]'}`}>{error||message}</div>}<div className="grid gap-6 lg:grid-cols-3"><form onSubmit={add} className="space-y-4 rounded-3xl border border-slate-100 bg-white p-6 shadow-xl shadow-slate-200/40"><h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400"><Plus size={16} className="text-[#2D8DB8]"/>Novo setor</h3><label className="block text-[11px] font-bold uppercase text-slate-500">Código<input required value={codigo} onChange={e=>setCodigo(e.target.value)} className="mt-1 w-full rounded-2xl border-2 border-slate-100 bg-slate-50 px-3 py-2"/></label><label className="block text-[11px] font-bold uppercase text-slate-500">Nome<input required value={nome} onChange={e=>setNome(e.target.value)} className="mt-1 w-full rounded-2xl border-2 border-slate-100 bg-slate-50 px-3 py-2"/></label><button disabled={busy} className="w-full rounded-2xl bg-[#2D8DB8] px-4 py-3 text-sm font-black text-white">Gravar Setor</button></form><section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-xl shadow-slate-200/40 lg:col-span-2"><h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400"><Building size={16} className="text-[#2D8DB8]"/>Setores ativos</h3><div className="mt-4 overflow-auto rounded-2xl border border-slate-100"><table className="w-full text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-400"><tr><th className="p-3 text-left">Código</th><th className="p-3 text-left">Setor</th><th className="p-3 text-right">Ação</th></tr></thead><tbody>{rows.length?rows.map(s=><tr key={s.id} className="border-t border-slate-100"><td className="p-3 font-mono font-black">{s.codigo}</td><td className="p-3 font-semibold">{s.nome}</td><td className="p-3 text-right"><button type="button" disabled={busy} onClick={()=>void remove(s.id)} className="rounded-lg p-2 text-red-600" title="Desativar setor"><Trash2 size={15}/></button></td></tr>):<tr><td colSpan={3} className="p-8 text-center text-slate-400">Nenhum setor ativo no banco.</td></tr>}</tbody></table></div></section></div></div>
 }
 
-type Setor = {
-  id: string
-  nome: string
-  codigo: string
-}
-
-type Form = {
-  nome: string
-  email: string
-  setor_id: string
-  matricula: string
-  perfil: string
-  password: string
-}
-
-const emptyForm: Form = {
-  nome: '',
-  email: '',
-  setor_id: '',
-  matricula: '',
-  perfil: 'OPERATOR',
-  password: ''
-}
-
-const isAdmin = (profile: Profile) =>
-  profile.is_master === true ||
-  Number(profile.nivel_admin || 0) >= 8 ||
-  ['ADMIN', 'ADMINISTRADOR', 'SUPER_ADMIN'].includes(String(profile.perfil || '').toUpperCase())
-
-export default function ConfiguracoesADM({ profile }: { profile: Profile | null }) {
-  const [abaAtiva, setAbaAtiva] = useState<'codificacao' | 'usuarios'>('codificacao')
-  const [clock, setClock] = useState(new Date())
-  const [usuarios, setUsuarios] = useState<UsuarioIndustria[]>([])
-  const [setores, setSetores] = useState<Setor[]>([])
-  const [form, setForm] = useState<Form>(emptyForm)
-  const [query, setQuery] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [message, setMessage] = useState('')
-  const [error, setError] = useState('')
-
-  const loadUsuarios = async () => {
-    if (!profile?.empresa_id) {
-      setUsuarios([])
-      setSetores([])
-      return
-    }
-
-    setBusy(true)
-    setError('')
-
-    try {
-      const [usuariosResult, setoresResult] = await Promise.all([
-        supabase
-          .from('erp_usuarios')
-          .select('id,nome,email,ativo,setor_id,matricula,role,nivel_admin')
-          .eq('empresa_id', profile.empresa_id)
-          .is('deleted_at', null)
-          .order('nome'),
-        supabase
-          .from('erp_setores')
-          .select('id,nome,codigo')
-          .eq('empresa_id', profile.empresa_id)
-          .eq('ativo', true)
-          .order('nome')
-      ])
-
-      if (usuariosResult.error) throw usuariosResult.error
-      if (setoresResult.error) throw setoresResult.error
-
-      setUsuarios((usuariosResult.data || []) as UsuarioIndustria[])
-      setSetores((setoresResult.data || []) as Setor[])
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Não foi possível carregar os dados da empresa.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  useEffect(() => {
-    void loadUsuarios()
-  }, [profile?.empresa_id])
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setClock(new Date()), 1000)
-    return () => window.clearInterval(timer)
-  }, [])
-
-  const usuariosVisiveis = useMemo(() => {
-    const termo = query.trim().toLowerCase()
-    if (!termo) return usuarios
-
-    return usuarios.filter(usuario =>
-      [usuario.nome, usuario.email, usuario.matricula, usuario.role]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
-        .includes(termo)
-    )
-  }, [usuarios, query])
-
-  const criarUsuario = async (event: React.FormEvent) => {
-    event.preventDefault()
-
-    if (!form.nome.trim() || !form.email.trim() || !form.setor_id) {
-      setError('Preencha nome, e-mail e setor.')
-      return
-    }
-
-    if (form.password && form.password.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres.')
-      return
-    }
-
-    setBusy(true)
-    setError('')
-    setMessage('')
-
-    try {
-      const { data, error: functionError } = await supabase.functions.invoke('erp-user-admin', {
-        body: {
-          action: 'create_user',
-          nome: form.nome.trim(),
-          email: form.email.trim().toLowerCase(),
-          setor_id: form.setor_id,
-          matricula: form.matricula.trim() || undefined,
-          nivel_admin: 1,
-          password: form.password || undefined
-        }
-      })
-
-      if (functionError) throw functionError
-      if (!data?.ok) throw new Error(data?.error || 'Não foi possível criar o usuário.')
-
-      setMessage(
-        data.temporary_password
-          ? 'Funcionário criado. Senha inicial gerada pelo sistema.'
-          : 'Funcionário criado com a senha informada.'
-      )
-      setForm(emptyForm)
-      await loadUsuarios()
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Não foi possível criar o funcionário.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  if (!profile || !isAdmin(profile)) {
-    return (
-      <main className="min-h-screen grid place-items-center bg-[#F4F7FE] p-8">
-        <section className="rounded-2xl bg-white border border-slate-200 p-8 max-w-xl shadow-sm">
-          <ShieldCheck size={30} className="text-blue-600" />
-          <h1 className="mt-3 text-2xl font-black text-slate-900">Acesso restrito</h1>
-          <p className="mt-2 text-slate-500">
-            Somente o Administrador da empresa ou o Master Universal pode administrar estas configurações.
-          </p>
-        </section>
-      </main>
-    )
-  }
-
-  return (
-    <div className="flex min-h-screen bg-[#F4F7FE] text-slate-800 font-sans antialiased">
-      <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col fixed h-full border-r border-slate-800 z-30 shadow-2xl">
-        <div className="p-6 border-b border-slate-800 flex items-center space-x-3">
-          <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-900 rounded-xl flex items-center justify-center text-white font-black text-sm">
-            SQ
-          </div>
-          <div>
-            <span className="text-base font-black text-white block tracking-tight">SGQ ERP</span>
-            <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest block -mt-1">Industrial</span>
-          </div>
-        </div>
-
-        <div className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-6 pt-6">
-          Administração da Empresa
-        </div>
-
-        <nav className="px-4 flex-1 space-y-1">
-          <button
-            type="button"
-            onClick={() => setAbaAtiva('codificacao')}
-            className={`w-full flex items-center justify-between p-3 rounded-xl font-bold transition-all text-sm ${
-              abaAtiva === 'codificacao'
-                ? 'bg-blue-600/10 text-cyan-400 border border-blue-500/20'
-                : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
-            }`}
-          >
-            <div className="flex items-center space-x-3">
-              <Settings className="w-4 h-4" />
-              <span>Codificação e Áreas</span>
-            </div>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setAbaAtiva('usuarios')}
-            className={`w-full flex items-center justify-between p-3 rounded-xl font-bold transition-all text-sm ${
-              abaAtiva === 'usuarios'
-                ? 'bg-blue-600/10 text-cyan-400 border border-blue-500/20'
-                : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
-            }`}
-          >
-            <div className="flex items-center space-x-3">
-              <Users className="w-4 h-4" />
-              <span>Funcionários / Usuários</span>
-            </div>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </nav>
-
-        <div className="p-4 border-t border-slate-800 text-[10px] text-slate-500 font-mono flex items-center justify-between pl-6">
-          <span>SUPABASE CONNECTED</span>
-          <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
-        </div>
-      </aside>
-
-      <main className="flex-1 ml-64 min-h-screen overflow-y-auto">
-        <header className="sticky top-0 z-20 min-h-[78px] bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between gap-6 shadow-sm">
-          <div className="min-w-0">
-            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-blue-600">SGQ ERP INDUSTRIAL</span>
-            <h1 className="text-xl font-black text-slate-900 mt-1">Configurações / Administração da Empresa</h1>
-            <p className="text-xs text-slate-500 mt-1">Módulo ativo: Configurações • Dados reais do tenant</p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="text-right border-l border-slate-200 pl-4">
-              <span className="block text-[9px] font-black uppercase tracking-wider text-slate-400">Logado</span>
-              <strong className="block text-xs font-black text-slate-800">{profile.nome || 'Usuário'}</strong>
-            </div>
-            <div className="text-right border-l border-slate-200 pl-4">
-              <strong className="block text-xs font-black text-slate-800">{clock.toLocaleDateString('pt-BR')}</strong>
-              <span className="block text-[11px] font-bold text-slate-500">{clock.toLocaleTimeString('pt-BR')}</span>
-            </div>
-          </div>
-        </header>
-        <div className="p-8">
-        {abaAtiva === 'codificacao' && (
-          <div className="space-y-6">
-            <header className="border-b border-slate-200 pb-4">
-              <span className="text-xs font-bold text-blue-600 uppercase tracking-wider block">
-                Configurações / Administração
-              </span>
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight">Codificação e Áreas</h1>
-            </header>
-
-            <ConfiguracaoCodificacaoAreas />
-          </div>
-        )}
-
-        {abaAtiva === 'usuarios' && (
-          <div className="space-y-6">
-            <header className="border-b border-slate-200 pb-4">
-              <span className="text-xs font-bold text-blue-600 uppercase tracking-wider block">
-                Segurança Interna
-              </span>
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight">Funcionários / Usuários</h1>
-            </header>
-
-            {(message || error) && (
-              <div className={`rounded-xl border px-4 py-3 text-sm font-bold ${
-                error
-                  ? 'border-red-200 bg-red-50 text-red-700'
-                  : 'border-blue-200 bg-blue-50 text-blue-800'
-              }`}>
-                {error || message}
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-              <section className="bg-white p-6 rounded-3xl shadow-xl border border-slate-100 space-y-4">
-                <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider border-b pb-2 flex items-center gap-2">
-                  <UserPlus className="w-4 h-4" />
-                  Registrar Usuário
-                </h3>
-
-                <form onSubmit={criarUsuario} className="space-y-4">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nome completo</label>
-                    <input
-                      type="text"
-                      required
-                      value={form.nome}
-                      onChange={e => setForm({ ...form, nome: e.target.value })}
-                      placeholder="Nome completo"
-                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-3 py-2 text-sm font-bold text-slate-900"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">E-mail</label>
-                    <input
-                      type="email"
-                      required
-                      value={form.email}
-                      onChange={e => setForm({ ...form, email: e.target.value })}
-                      placeholder="usuario@empresa.com"
-                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-3 py-2 text-sm font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Departamento</label>
-                    <select
-                      required
-                      value={form.setor_id}
-                      onChange={e => setForm({ ...form, setor_id: e.target.value })}
-                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-3 py-2 text-sm font-medium"
-                    >
-                      <option value="">Selecione</option>
-                      {setores.map(setor => (
-                        <option key={setor.id} value={setor.id}>{setor.nome}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Perfil</label>
-                    <select
-                      value={form.perfil}
-                      onChange={e => setForm({ ...form, perfil: e.target.value })}
-                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-3 py-2 text-sm font-medium"
-                    >
-                      <option value="OPERATOR">Operador</option>
-                      <option value="SUPERVISOR">Supervisor</option>
-                      <option value="ANALYST">Analista</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Matrícula</label>
-                    <input
-                      type="text"
-                      value={form.matricula}
-                      onChange={e => setForm({ ...form, matricula: e.target.value })}
-                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-3 py-2 text-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Senha inicial</label>
-                    <input
-                      type="password"
-                      value={form.password}
-                      onChange={e => setForm({ ...form, password: e.target.value })}
-                      placeholder="Opcional"
-                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-3 py-2 text-sm font-mono"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={busy}
-                    className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    <KeyRound className="w-4 h-4" />
-                    <span>{busy ? 'Processando...' : 'Inserir Colaborador'}</span>
-                  </button>
-                </form>
-              </section>
-
-              <section className="lg:col-span-2 bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                  <div>
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider">
-                      Colaboradores Ativos no Supabase
-                    </h3>
-                    <p className="mt-1 text-sm text-slate-500">
-                      Somente registros reais da empresa atual.
-                    </p>
-                  </div>
-
-                </div>
-
-                <div className="relative mt-4">
-                  <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-                  <input
-                    value={query}
-                    onChange={e => setQuery(e.target.value)}
-                    placeholder="Pesquisar funcionário, e-mail ou matrícula"
-                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl pl-9 pr-3 py-2 text-sm"
-                  />
-                </div>
-
-                <div className="mt-4 overflow-auto rounded-xl border border-slate-100">
-                  <table className="w-full text-sm">
-                    <thead className="bg-slate-50">
-                      <tr>
-                        <th className="p-3 text-left text-[10px] uppercase text-slate-500">Nome</th>
-                        <th className="p-3 text-left text-[10px] uppercase text-slate-500">E-mail</th>
-                        <th className="p-3 text-left text-[10px] uppercase text-slate-500">Setor</th>
-                        <th className="p-3 text-left text-[10px] uppercase text-slate-500">Permissão</th>
-                        <th className="p-3 text-left text-[10px] uppercase text-slate-500">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {usuariosVisiveis.map(usuario => (
-                        <tr key={usuario.id} className="border-t border-slate-100">
-                          <td className="p-3 font-bold text-slate-900">{usuario.nome}</td>
-                          <td className="p-3">{usuario.email || '—'}</td>
-                          <td className="p-3">
-                            {setores.find(setor => setor.id === usuario.setor_id)?.nome || '—'}
-                          </td>
-                          <td className="p-3">{usuario.role || 'OPERADOR'}</td>
-                          <td className="p-3 font-bold">
-                            <span className={usuario.ativo ? 'text-emerald-700' : 'text-red-600'}>
-                              {usuario.ativo ? 'ATIVO' : 'INATIVO'}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                      {!usuariosVisiveis.length && (
-                        <tr>
-                          <td colSpan={5} className="p-8 text-center text-slate-400">
-                            Nenhum funcionário encontrado nos dados reais da empresa.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-            </div>
-          </div>
-        )}
-        </div>
-      </main>
-    </div>
-  )
+export default function ConfiguracoesADM({profile}:{profile:Profile|null}){
+ const [abaAtiva,setAbaAtiva]=useState<'codificacao'|'permissoes'|'usuarios'|'setores'>('codificacao'),[clock,setClock]=useState(new Date())
+ useEffect(()=>{const t=window.setInterval(()=>setClock(new Date()),1000);return()=>window.clearInterval(t)},[])
+ if(!profile||!isAdmin(profile))return <main className="grid min-h-screen place-items-center bg-[#F4F7FE] p-8"><section className="max-w-xl rounded-3xl border border-slate-200 bg-white p-8 shadow-xl"><ShieldCheck size={30} className="text-blue-600"/><h1 className="mt-3 text-2xl font-black text-slate-900">Acesso restrito</h1><p className="mt-2 text-slate-500">Somente o Administrador da empresa ou o Master Universal pode administrar estas configurações.</p></section></main>
+ const menu=[['codificacao','Codificação e Áreas',Settings],['permissoes','Controle de Permissões',ShieldCheck],['usuarios','Perfis de Usuários',Users],['setores','Departamentos / Setores',Building] ] as const
+ return <div className="flex min-h-screen bg-[#F4F7FE] font-sans antialiased text-slate-800"><aside className="fixed left-0 top-0 z-30 flex h-full w-64 flex-col border-r border-slate-800 bg-slate-900 text-slate-300 shadow-2xl"><div className="flex items-center gap-3 border-b border-slate-800 p-6"><div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-900 text-sm font-black text-white">SQ</div><div><span className="block text-base font-black text-white">SGQ ERP</span><span className="block text-[10px] font-bold uppercase tracking-widest text-cyan-400">Industrial</span></div></div><div className="p-4 pl-6 pt-6 text-[10px] font-bold uppercase tracking-widest text-slate-500">Menu de Configurações</div><nav className="flex-1 space-y-1 px-4">{menu.map(([id,label,Icon])=><button key={id} type="button" onClick={()=>setAbaAtiva(id)} className={`flex w-full items-center justify-between rounded-xl p-3 text-sm font-bold transition-all ${abaAtiva===id?'border border-blue-500/20 bg-blue-600/10 text-cyan-400':'text-slate-400 hover:bg-slate-800/60 hover:text-white'}`}><span className="flex items-center gap-3"><Icon className="h-4 w-4"/>{label}</span><ChevronRight className="h-3.5 w-3.5"/></button>)}</nav><div className="flex items-center justify-between border-t border-slate-800 p-4 pl-6 text-[10px] font-mono text-slate-500"><span>SUPABASE CONNECTED</span><span className="h-2 w-2 rounded-full bg-emerald-500"/></div></aside><main className="ml-64 min-h-screen flex-1 overflow-y-auto"><header className="sticky top-0 z-20 flex min-h-[78px] items-center justify-between gap-6 border-b border-slate-200 bg-white px-8 py-4 shadow-sm"><div><span className="block text-[10px] font-black uppercase tracking-[0.16em] text-blue-600">SGQ ERP INDUSTRIAL</span><h1 className="mt-1 text-xl font-black text-slate-900">Cadastro de Colaboradores e Perfis</h1><p className="mt-1 text-xs text-slate-500">Administração central • dados operacionais reais</p></div><div className="flex items-center gap-3"><div className="border-l border-slate-200 pl-4 text-right"><span className="block text-[9px] font-black uppercase tracking-wider text-slate-400">Logado</span><strong className="block text-xs font-black text-slate-800">{profile.nome||'Usuário'}</strong></div><div className="border-l border-slate-200 pl-4 text-right"><strong className="block text-xs font-black text-slate-800">{clock.toLocaleDateString('pt-BR')}</strong><span className="block text-[11px] font-bold text-slate-500">{clock.toLocaleTimeString('pt-BR')}</span></div><button type="button" title="Sair" onClick={()=>void supabase.auth.signOut()} className="rounded-xl border border-slate-200 p-2 text-slate-500"><LogOut size={16}/></button></div></header><div className="p-8">{abaAtiva==='codificacao'&&<ConfiguracaoCodificacaoAreas/>}{abaAtiva==='permissoes'&&<ConfiguracaoPermissoes/>}{abaAtiva==='usuarios'&&<PerfisUsuarios profile={profile}/>} {abaAtiva==='setores'&&<DepartamentosSetores profile={profile}/>}</div></main></div>
 }
