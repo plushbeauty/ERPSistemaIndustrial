@@ -192,15 +192,15 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         .dp-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
         .dp-kpi{position:relative;display:flex;align-items:center;gap:13px;padding:17px 16px;min-height:90px;background:linear-gradient(135deg,#17445A,#0B3042);border:1px solid #082838;border-radius:14px;box-shadow:0 10px 24px rgba(8,40,56,.28);overflow:hidden}
         .dp-kpi::after{content:"";position:absolute;right:-26px;bottom:-38px;width:104px;height:104px;border-radius:50%;background:rgba(72,183,199,.32);pointer-events:none}
-        .dp-kpi-icon{position:relative;z-index:1;display:grid;place-items:center;width:48px;height:48px;border-radius:13px;background:#F4FBFD;color:#123B50;flex:none;box-shadow:0 6px 14px rgba(8,42,57,.30)}
+        .dp-kpi-icon{position:relative;z-index:1;display:grid;place-items:center;width:52px;height:52px;border-radius:16px;background:linear-gradient(145deg,#ffffff,#bfe4ec);color:#123B50;flex:none;box-shadow:0 10px 18px rgba(8,42,57,.34),inset 0 2px 0 rgba(255,255,255,.95),inset 0 -5px 9px rgba(18,59,80,.14);text-shadow:0 1px 1px rgba(18,59,80,.12)}
         .dp-kpi small{display:block;color:#FFFFFF;font-size:13px;font-weight:950;letter-spacing:.04em;line-height:1.2}.dp-kpi strong{display:block;color:#FFFFFF;font-size:29px;font-weight:950;line-height:1.08;margin-top:5px}.dp-kpi em{font-style:normal;color:#FFFFFF;font-size:12px;font-weight:900}
-        .dp-kpi:nth-child(2){background:linear-gradient(135deg,#0F6748,#063C2A);border-color:#052E21}.dp-kpi:nth-child(2)::after{background:rgba(72,183,199,.18)}.dp-kpi:nth-child(2) .dp-kpi-icon{color:#0E6748}
-        .dp-kpi:nth-child(3){background:linear-gradient(135deg,#A94F00,#6E2F00);border-color:#542300}.dp-kpi:nth-child(3)::after{background:rgba(255,255,255,.14)}.dp-kpi:nth-child(3) .dp-kpi-icon{color:#A64000}
-        .dp-kpi:nth-child(4){background:linear-gradient(135deg,#247E91,#145564);border-color:#0F4652}.dp-kpi:nth-child(4)::after{background:rgba(18,59,80,.20)}.dp-kpi:nth-child(4) .dp-kpi-icon{color:#176487}
+        .dp-kpi:nth-child(2){background:linear-gradient(135deg,#0F6748,#063C2A);border-color:#052E21}.dp-kpi:nth-child(2)::after{background:rgba(72,183,199,.18)}.dp-kpi:nth-child(2) .dp-kpi-icon{color:#087A58;background:linear-gradient(145deg,#ffffff,#bdebdc)}
+        .dp-kpi:nth-child(3){background:linear-gradient(135deg,#A94F00,#6E2F00);border-color:#542300}.dp-kpi:nth-child(3)::after{background:rgba(255,255,255,.14)}.dp-kpi:nth-child(3) .dp-kpi-icon{color:#A64000;background:linear-gradient(145deg,#ffffff,#ffd9b5)}
+        .dp-kpi:nth-child(4){background:linear-gradient(135deg,#247E91,#145564);border-color:#0F4652}.dp-kpi:nth-child(4)::after{background:rgba(18,59,80,.20)}.dp-kpi:nth-child(4) .dp-kpi-icon{color:#176487;background:linear-gradient(145deg,#ffffff,#c7eaf0)}
         .dp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
-        .dp-panel{background:#fff;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.04)}
-        .dp-head{padding:12px 15px;border-bottom:1px solid #f1f5f9}.dp-head span{color:#047857;font-size:10px;font-weight:950;letter-spacing:.1em}.dp-head h2{margin:3px 0 0;color:#1e293b;font-size:15px;font-weight:950}
-        .dp-chart{height:255px;padding:10px 12px 8px}.dp-empty{height:255px;display:grid;place-items:center;padding:20px;text-align:center;color:#64748b;font-size:12px;font-weight:700}
+        .dp-panel{background:#fff;border:1px solid #d7e5ea;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(18,59,80,.07)}
+        .dp-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 17px;border-bottom:1px solid #edf4f6;background:linear-gradient(180deg,#fff,#fbfeff)}.dp-head span{color:#2D8DB8;font-size:10px;font-weight:950;letter-spacing:.1em}.dp-head h2{margin:3px 0 0;color:#123B50;font-size:16px;font-weight:950}
+        .dp-chart{height:280px;padding:14px 14px 12px}.dp-empty{height:255px;display:grid;place-items:center;padding:20px;text-align:center;color:#64748b;font-size:12px;font-weight:700}
         .dp-table-wrap{overflow:auto}.dp-table{width:100%;border-collapse:collapse;font-size:12px}.dp-table th{background:#f8fafc;color:#475569;text-align:left;font-size:10px;font-weight:950;padding:10px 12px;border-bottom:1px solid #e2e8f0}.dp-table td{padding:11px 12px;border-bottom:1px solid #edf2f7;color:#334155;font-weight:650;white-space:nowrap}.dp-table tr:last-child td{border-bottom:0}.dp-status{display:inline-flex;padding:4px 8px;border-radius:999px;background:#ecfdf5;color:#065f46;font-size:10px;font-weight:900}.dp-error{margin:0 0 12px;padding:10px 12px;border:1px solid #fecaca;background:#fef2f2;color:#991b1b;border-radius:7px;font-size:12px;font-weight:700}
                 @media(max-width:1050px){.dp-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-grid{grid-template-columns:1fr}.dp-main{padding:16px}}
         @media(max-width:650px){.dp-kpis{grid-template-columns:1fr}.dp-main{padding:12px}}
@@ -225,7 +225,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
             <div className="dp-head"><span>MONITORAMENTO EM TEMPO REAL</span><h2>Eficiência de máquinas por turno</h2></div>
             {machineShift.length ? (
               <div className="dp-chart"><ResponsiveContainer width="100%" height="100%">
-                <BarChart data={machineShift}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="maquina"/><YAxis domain={[0,100]} unit="%"/><Tooltip formatter={(v:number) => [`${v.toFixed(1)}%`, 'Eficiência']}/><Bar dataKey="eficiencia" name="Eficiência" fill="#2D8DB8" radius={[3,3,0,0]}/></BarChart>
+                <BarChart data={machineShift} barCategoryGap="30%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="maquina" axisLine={false} tickLine={false}/><YAxis domain={[0,100]} unit="%" axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea',boxShadow:'0 10px 25px rgba(18,59,80,.12)'}}/><Bar dataKey="eficiencia" name="Eficiência" fill="#2D8DB8" radius={[8,8,3,3]} maxBarSize={42}/></BarChart>
               </ResponsiveContainer></div>
             ) : <div className="dp-empty">Sem dados reais de eficiência por máquina/turno registrados.</div>}
           </article>
@@ -234,7 +234,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
             <div className="dp-head"><span>PCP · PREVISTO × REALIZADO</span><h2>Volumes de produção semanal</h2></div>
             {weekly.some(x => x.previsto || x.realizado) ? (
               <div className="dp-chart"><ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weekly}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="day"/><YAxis/><Tooltip/><Legend/><Line type="monotone" dataKey="previsto" name="Previsto" stroke="#64748b" strokeWidth={2} strokeDasharray="5 5" dot={false}/><Line type="monotone" dataKey="realizado" name="Realizado" stroke="#176487" strokeWidth={3} dot={false}/></LineChart>
+                <LineChart data={weekly}><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="day" axisLine={false} tickLine={false}/><YAxis axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea',boxShadow:'0 10px 25px rgba(18,59,80,.12)'}}/><Legend verticalAlign="top" height={28}/><Line type="monotone" dataKey="previsto" name="Previsto" stroke="#94a3b8" strokeWidth={2} strokeDasharray="6 5" dot={false}/><Line type="monotone" dataKey="realizado" name="Realizado" stroke="#2D8DB8" strokeWidth={4} dot={{r:4,strokeWidth:2,fill:"#fff"}} activeDot={{r:6}}/></LineChart>
               </ResponsiveContainer></div>
             ) : <div className="dp-empty">Sem programação ou produção registrada para os últimos 7 dias.</div>}
           </article>
