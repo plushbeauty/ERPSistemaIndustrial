@@ -78,7 +78,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         if (!master && !p.empresa_id) throw new Error('Empresa do usuário não identificada.')
 
         const empresaId = p.empresa_id as string | null
-        const scoped = <T,>(q: any) => master || !empresaId ? q : q.eq('empresa_id', empresaId)
+        const scoped = <T,>(q: T): T => master || !empresaId ? q : (q as { eq: (column: string, value: string) => T }).eq('empresa_id', empresaId)
 
         const machineQ = scoped(supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('ativo', true).order('codigo'))
         const opQ = scoped(supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at').order('created_at', { ascending: false }).limit(500))
@@ -98,7 +98,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         setPointings((pt.data ?? []) as Pointing[])
         setPrograms((pg.data ?? []) as Program[])
         setStops((st.data ?? []) as Stop[])
-        setRpnc((rn.data ?? []).filter((x: any) => !['encerrada', 'fechada', 'concluida', 'concluído'].includes(String(x.status ?? '').toLowerCase())).length)
+        setRpnc((rn.data ?? []).filter((x: { status?: unknown }) => !['encerrada', 'fechada', 'concluida', 'concluído'].includes(String(x.status ?? '').toLowerCase())).length)
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : 'Não foi possível carregar o dashboard.')
       } finally {
