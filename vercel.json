@@ -200,6 +200,46 @@
     {
       "source": "/configuracoes-adm/(.*)",
       "destination": "/index.html"
+    },
+    {
+      "source": "/comercial",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/comercial/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/vendas",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/vendas/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/estoque",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/estoque/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/compras",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/compras/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/expedicao",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/expedicao/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
