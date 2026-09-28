@@ -53,6 +53,7 @@ const isAdmin = (profile: Profile) =>
 
 export default function ConfiguracoesADM({ profile }: { profile: Profile | null }) {
   const [abaAtiva, setAbaAtiva] = useState<'codificacao' | 'usuarios'>('codificacao')
+  const [clock, setClock] = useState(new Date())
   const [usuarios, setUsuarios] = useState<UsuarioIndustria[]>([])
   const [setores, setSetores] = useState<Setor[]>([])
   const [form, setForm] = useState<Form>(emptyForm)
@@ -102,6 +103,11 @@ export default function ConfiguracoesADM({ profile }: { profile: Profile | null 
   useEffect(() => {
     void loadUsuarios()
   }, [profile?.empresa_id])
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setClock(new Date()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   const usuariosVisiveis = useMemo(() => {
     const termo = query.trim().toLowerCase()
@@ -234,7 +240,25 @@ export default function ConfiguracoesADM({ profile }: { profile: Profile | null 
         </div>
       </aside>
 
-      <main className="flex-1 ml-64 p-8 overflow-y-auto">
+      <main className="flex-1 ml-64 min-h-screen overflow-y-auto">
+        <header className="sticky top-0 z-20 min-h-[78px] bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between gap-6 shadow-sm">
+          <div className="min-w-0">
+            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-blue-600">SGQ ERP INDUSTRIAL</span>
+            <h1 className="text-xl font-black text-slate-900 mt-1">Configurações / Administração da Empresa</h1>
+            <p className="text-xs text-slate-500 mt-1">Módulo ativo: Configurações • Dados reais do tenant</p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="text-right border-l border-slate-200 pl-4">
+              <span className="block text-[9px] font-black uppercase tracking-wider text-slate-400">Logado</span>
+              <strong className="block text-xs font-black text-slate-800">{profile.nome || 'Usuário'}</strong>
+            </div>
+            <div className="text-right border-l border-slate-200 pl-4">
+              <strong className="block text-xs font-black text-slate-800">{clock.toLocaleDateString('pt-BR')}</strong>
+              <span className="block text-[11px] font-bold text-slate-500">{clock.toLocaleTimeString('pt-BR')}</span>
+            </div>
+          </div>
+        </header>
+        <div className="p-8">
         {abaAtiva === 'codificacao' && (
           <div className="space-y-6">
             <header className="border-b border-slate-200 pb-4">
@@ -423,6 +447,7 @@ export default function ConfiguracoesADM({ profile }: { profile: Profile | null 
             </div>
           </div>
         )}
+        </div>
       </main>
     </div>
   )
