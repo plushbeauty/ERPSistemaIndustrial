@@ -9,7 +9,7 @@ const requiredFiles=[
  'src/AppIndustrialV7.tsx','src/pages/Master.tsx','src/pages/SetupADMInicial.tsx',
  'src/styles/industrial-login.css','src/styles/design-system-2026.css',
  'src/styles/industrial-command-center-2026.css','src/styles/erp-reference-ux-2026.css',
- 'src/lib/supabaseClient.ts','vercel.json'
+ 'src/lib/supabaseClient.ts','scripts/verify-supabase-env.mjs','vercel.json'
 ]
 const requiredRoutes=['/login','/cadastro-master','/cadastro-empresa','/master','/erp-industrial','/pcp','/qualidade','/qualidade/documentos','/produtos-vendas','/compras-solicitacao','/usuarios','/fiscal','/fiscal/previsao-caixa','/recebimento-materiais','/manual-usuario']
 function read(p){return fs.readFileSync(path.join(ROOT,p),'utf8')}
@@ -44,6 +44,8 @@ if(!main.includes('reducedMotion="user"')) fail('ACESSIBILIDADE: reducedMotion u
 if(!pkg.dependencies?.motion) fail('DEPENDÊNCIA: motion ausente.')
 if(!pkg.scripts?.['audit:global'] || !pkg.scripts?.['audit:interactions']) fail('AUDITORIAS existentes não estão configuradas.')
 if(!pkg.scripts?.['audit:brutal']) fail('AUDITORIA BRUTAL não está configurada.')
+if(!pkg.scripts?.['verify:supabase-env']) fail('GATE SUPABASE: verify:supabase-env não está configurado.')
+if(!pkg.scripts?.['build:verified']?.includes('verify:supabase-env')) fail('GATE SUPABASE: build:verified não bloqueia ambiente ausente/inválido.')
 if(!vercel.rewrites?.some(x=>x.source==='/cadastro-master'&&x.destination==='/index.html')) fail('VERCEL: rewrite /cadastro-master ausente.')
 if(!vercel.rewrites?.some(x=>x.source==='/login'&&x.destination==='/index.html')) fail('VERCEL: rewrite /login ausente.')
 
