@@ -2,7 +2,7 @@ import { createClient, type Session, type SupabaseClient } from '@supabase/supab
 
 const env = import.meta.env as Record<string, unknown>
 const DEFAULT_SUPABASE_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BcwsSbBx8dWof7d_hAKtQA_XzQGAYwR'
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = ''
 const CONNECTION_MODE_KEY = 'erp_modo_conexao'
 const AUTH_STORAGE_KEY = 'erp-industrial-auth'
 const connectionMode = typeof window !== 'undefined' ? window.localStorage.getItem(CONNECTION_MODE_KEY) : null
