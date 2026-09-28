@@ -19,7 +19,8 @@
     "lint:check": "eslint . --ext .js,.jsx,.ts,.tsx",
     "verify:production": "npm run verify:supabase-env && npm run type-check && npm run lint:check && vite build --emptyOutDir",
     "audit:security": "npm run audit:brutal && npm run audit:global",
-    "audit:production": "npm run verify:supabase-env && npm run audit:all && npm run type-check && npm run lint:check && npm run build"
+    "audit:production": "npm run verify:supabase-env && npm run audit:all && npm run type-check && npm run lint:check && npm run build",
+    "verify:release": "npm run verify:supabase-env && npm run audit:global && npm run audit:brutal && npm run audit:interactions && npm run type-check && npm run lint:check && npm run build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
