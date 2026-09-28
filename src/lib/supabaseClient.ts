@@ -1,7 +1,7 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 
 const env = import.meta.env as Record<string, unknown>
-const DEFAULT_SUPABASE_URL = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
+const DEFAULT_SUPABASE_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
 const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BcwsSbBx8dWof7d_hAKtQA_XzQGAYwR'
 const CONNECTION_MODE_KEY = 'erp_modo_conexao'
 const AUTH_STORAGE_KEY = 'erp-industrial-auth'
@@ -10,7 +10,7 @@ if (typeof window !== 'undefined') window.localStorage.removeItem(AUTH_STORAGE_K
 const authStorage = typeof window !== 'undefined' ? window.sessionStorage : undefined
 const localMode = connectionMode === 'local'
 const configuredCloudUrl = String(env.VITE_SUPABASE_URL || '').trim().replace(/\/$/, '')
-const cloudUrl = configuredCloudUrl === DEFAULT_SUPABASE_URL ? configuredCloudUrl : DEFAULT_SUPABASE_URL
+const cloudUrl = configuredCloudUrl || DEFAULT_SUPABASE_URL
 const localUrl = String(env.VITE_SUPABASE_LOCAL_URL || 'http://localhost:54321').trim().replace(/\/$/, '')
 const supabaseUrl = localMode ? localUrl : cloudUrl
 const configuredKey = String(
