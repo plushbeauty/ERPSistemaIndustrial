@@ -190,14 +190,13 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         .dp-main{width:100%;max-width:1700px;margin:0 auto;padding:18px 24px 34px}
         .dp-context{padding:11px 0 13px;border-bottom:1px solid #dbe3ea}.dp-context p{margin:0;color:#475569;font-size:10px;font-weight:950;letter-spacing:.12em}
         .dp-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
-        .dp-kpi{position:relative;display:flex;align-items:center;gap:13px;padding:17px 16px;min-height:86px;border:1px solid transparent;border-radius:14px;box-shadow:0 10px 24px rgba(15,23,42,.08);overflow:hidden}
-        .dp-kpi::after{content:"";position:absolute;inset:auto -18px -28px auto;width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,.20);pointer-events:none}
-        .dp-kpi-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;flex:none;background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(255,255,255,.55));box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 7px 14px rgba(15,23,42,.16);color:#123b50}
-        .dp-kpi small{display:block;color:#123b50;font-size:10px;font-weight:950;letter-spacing:.06em}.dp-kpi strong{display:block;color:#0f2430;font-size:26px;font-weight:950;line-height:1.1;margin-top:4px}.dp-kpi em{font-style:normal;color:#31505d;font-size:11px;font-weight:800}
-        .dp-kpi:nth-child(1){background:linear-gradient(135deg,#e8f4ff,#cfe7fb);border-color:#a8d1ef}.dp-kpi:nth-child(1) .dp-kpi-icon{color:#1769aa}
-        .dp-kpi:nth-child(2){background:linear-gradient(135deg,#eaf9f2,#cfeedd);border-color:#a8d9c0}.dp-kpi:nth-child(2) .dp-kpi-icon{color:#16805a}
-        .dp-kpi:nth-child(3){background:linear-gradient(135deg,#fff7e8,#fbe5b7);border-color:#efd29a}.dp-kpi:nth-child(3) .dp-kpi-icon{color:#a86300}
-        .dp-kpi:nth-child(4){background:linear-gradient(135deg,#f1ecff,#ddd2fb);border-color:#c9b9ef}.dp-kpi:nth-child(4) .dp-kpi-icon{color:#6540a8}
+        .dp-kpi{position:relative;display:flex;align-items:center;gap:12px;padding:15px;background:linear-gradient(135deg,#e8f4ff,#d7ebf8);border:1px solid #afd3e8;border-radius:12px;box-shadow:0 5px 14px rgba(15,23,42,.07);overflow:hidden}
+        .dp-kpi::after{content:"";position:absolute;right:-28px;bottom:-34px;width:92px;height:92px;border-radius:50%;background:rgba(255,255,255,.28);pointer-events:none}
+        .dp-kpi-icon{position:relative;z-index:1;display:grid;place-items:center;width:42px;height:42px;border-radius:11px;background:rgba(255,255,255,.9);color:#1769aa;flex:none;box-shadow:0 4px 10px rgba(15,23,42,.10)}
+        .dp-kpi small{display:block;color:#123b50;font-size:10px;font-weight:950;letter-spacing:.06em}.dp-kpi strong{display:block;color:#0f2430;font-size:24px;font-weight:950;line-height:1.1;margin-top:3px}.dp-kpi em{font-style:normal;color:#31505d;font-size:10px;font-weight:800}
+        .dp-kpi:nth-child(2){background:linear-gradient(135deg,#e9f8f0,#d4eee1);border-color:#abd8c0}.dp-kpi:nth-child(2) .dp-kpi-icon{color:#16805a}
+        .dp-kpi:nth-child(3){background:linear-gradient(135deg,#fff7e8,#f8e4bc);border-color:#ead09a}.dp-kpi:nth-child(3) .dp-kpi-icon{color:#a86300}
+        .dp-kpi:nth-child(4){background:linear-gradient(135deg,#f1ecff,#dfd5f8);border-color:#c9b9ef}.dp-kpi:nth-child(4) .dp-kpi-icon{color:#6540a8}
         .dp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
         .dp-panel{background:#fff;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.04)}
         .dp-head{padding:12px 15px;border-bottom:1px solid #f1f5f9}.dp-head span{color:#047857;font-size:10px;font-weight:950;letter-spacing:.1em}.dp-head h2{margin:3px 0 0;color:#1e293b;font-size:15px;font-weight:950}
@@ -210,7 +209,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
       <main className="dp-main">
         {error && <div className="dp-error">{error}</div>}
 
-        <section className="dp-context"><p>VISÃO GERAL DO CHÃO DE FÁBRICA</p><h1 style={{margin:"5px 0 0",fontSize:"clamp(24px,3vw,34px)",color:"#123b50",fontWeight:950}}>Painel Operacional Industrial</h1><span style={{display:"block",marginTop:3,color:"#536b76",fontSize:13,fontWeight:650}}>Indicadores reais de PCP, produção, qualidade e eficiência.</span></section>
+        <section className="dp-context"><p>VISÃO GERAL DO CHÃO DE FÁBRICA</p></section>
 
         <section className="dp-kpis">
           {cards.map(({ label, value, suffix, icon: Icon }) => (

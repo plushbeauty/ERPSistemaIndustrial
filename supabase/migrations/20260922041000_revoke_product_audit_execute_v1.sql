@@ -1,1 +1,0 @@
-revoke all on function public.erp_produto_audit() from public, anon, authenticated;
