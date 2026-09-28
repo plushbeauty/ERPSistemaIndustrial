@@ -57,7 +57,6 @@ export default function ConfiguracoesADM({ profile }: { profile: Profile | null 
   const [setores, setSetores] = useState<Setor[]>([])
   const [form, setForm] = useState<Form>(emptyForm)
   const [query, setQuery] = useState('')
-  const [showNew, setShowNew] = useState(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -156,7 +155,6 @@ export default function ConfiguracoesADM({ profile }: { profile: Profile | null 
           : 'Funcionário criado com a senha informada.'
       )
       setForm(emptyForm)
-      setShowNew(false)
       await loadUsuarios()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Não foi possível criar o funcionário.')
@@ -372,12 +370,6 @@ export default function ConfiguracoesADM({ profile }: { profile: Profile | null 
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setShowNew(true)}
-                    className="hidden"
-                    aria-hidden="true"
-                  />
                 </div>
 
                 <div className="relative mt-4">
