@@ -1,10 +1,6 @@
 # =========================================================================
-# REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
-# Data/Hora: 24/09/2026 - 12:05 BRT
-# Desenvolvedor: Homologado por Fernando
-# ID da Revisão: REV-010
-# Alterações: Gate obrigatório de lint, type-check e build para a branch main.
-# Status do Build Local: Não executado — gate remoto será a certificação objetiva.
+# INDUSTRIAL PRODUCTION GATE
+# Bloqueia publicação quando o contrato Supabase, lint, type-check ou build falhar.
 # =========================================================================
 name: Industrial Production Gate
 
@@ -24,9 +20,11 @@ jobs:
         with:
           node-version: 20
       - name: Install
-        run: npm install --legacy-peer-deps
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+      - name: Supabase contract gate
+        run: npm run verify:supabase-env
       - name: Lint
-        run: "npm run lint -- --rule 'no-undef: off'"
+        run: npm run lint:check
       - name: Type check
         run: npm run type-check
       - name: Build
