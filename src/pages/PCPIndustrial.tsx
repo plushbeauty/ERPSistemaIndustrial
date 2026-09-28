@@ -49,7 +49,7 @@ const ganttWidthBucket=(pct:number)=>{if(pct<10)return 'w-1/12';if(pct<20)return
 const ganttTopBucket=(index:number)=>index%3===0?'top-2':index%3===1?'top-10':'top-[72px]'
 
 export default function PCPIndustrial(){
- const [tab,setTab]=useState<Tab>(() => window.location.pathname === '/pcp/programacao' ? 'programacao' : window.location.pathname === '/pcp/nova-op' ? 'novaop' : window.location.pathname === '/pcp/apontamento' ? 'producao' : 'visao'),[modal,setModal]=useState<Modal>(null)
+ const [tab,setTab]=useState<Tab>(() => window.location.pathname === '/pcp/programacao' ? 'programacao' : window.location.pathname === '/pcp/nova-op' ? 'novaop' : window.location.pathname === '/pcp/apontamento' ? 'producao' : window.location.pathname === '/pcp/demanda' ? 'pedidos' : window.location.pathname === '/pcp/materiais' ? 'materiais' : 'visao'),[modal,setModal]=useState<Modal>(null)
  const [ops,setOps]=useState<OP[]>([]),[orders,setOrders]=useState<Order[]>([]),[clients,setClients]=useState<Client[]>([]),[products,setProducts]=useState<Product[]>([]),[programs,setPrograms]=useState<Program[]>([]),[machines,setMachines]=useState<Machine[]>([]),[defects,setDefects]=useState<Defect[]>([]),[fichas,setFichas]=useState<Ficha[]>([]),[fitems,setFitems]=useState<FItem[]>([]),[fichaOps,setFichaOps]=useState<FichaOp[]>([]),[molds,setMolds]=useState<Molde[]>([]),[employees,setEmployees]=useState<Employee[]>([])
  const [selectedOp,setSelectedOp]=useState(''),[found,setFound]=useState(''),[bad,setBad]=useState(''),[defectText,setDefectText]=useState(''),[destinationLocation,setDestinationLocation]=useState(''),[query,setQuery]=useState('')
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
