@@ -308,7 +308,7 @@ export default function AppEntryV2() {
       <Route path="/usuarios-admin" element={<UsuariosAdmin />} />
       <Route path="/configuracoes-adm/codificacao" element={<ConfiguracaoCodificacaoAreas />} />
       <Route path="/configuracoes-adm/permissoes" element={<ConfiguracaoPermissoes />} />
-      <Route path="/configuracoes-adm" element={<ConfiguracaoCodificacaoAreas />} />
+      <Route path="/configuracoes-adm" element={<ConfiguracoesADMPage profile={statusAcesso.profile} />} />
       <Route path="/documentos-qualidade" element={<DocumentosQualidadeControle />} />
       <Route path="/recebimento-materiais" element={<RecebimentoMateriais />} />
       <Route path="/manual-usuario" element={<ManualUsuario />} />
