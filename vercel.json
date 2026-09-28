@@ -192,6 +192,14 @@
     {
       "source": "/fiscal/nova",
       "destination": "/index.html"
+    },
+    {
+      "source": "/configuracoes-adm",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/configuracoes-adm/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
