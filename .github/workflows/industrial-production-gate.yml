@@ -1,7 +1,4 @@
-# =========================================================================
-# INDUSTRIAL PRODUCTION GATE
-# Bloqueia publicação quando o contrato Supabase, lint, type-check ou build falhar.
-# =========================================================================
+# ERP Industrial — Production Gate
 name: Industrial Production Gate
 
 on:
@@ -19,10 +16,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
       - name: Install
         run: npm install --legacy-peer-deps --no-audit --no-fund
       - name: Supabase contract gate
         run: npm run verify:supabase-env
+      - name: Global security/config audit
+        run: npm run audit:global
+      - name: Brutal structural audit
+        run: npm run audit:brutal
+      - name: Interaction audit
+        run: npm run audit:interactions
       - name: Lint
         run: npm run lint:check
       - name: Type check
