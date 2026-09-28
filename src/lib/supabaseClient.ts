@@ -5,7 +5,6 @@ const DEFAULT_SUPABASE_URL = 'https://wdkvrqekixczuhrfygen.supabase.co'
 const DEFAULT_SUPABASE_PUBLISHABLE_KEY = ''
 const CONNECTION_MODE_KEY = 'erp_modo_conexao'
 const AUTH_STORAGE_KEY = 'erp-industrial-auth'
-const LEGACY_AUTH_CLEANUP_KEY = 'erp-industrial-auth-cleanup-v1'
 const connectionMode = typeof window !== 'undefined' ? window.localStorage.getItem(CONNECTION_MODE_KEY) : null
 const authStorage = typeof window !== 'undefined' ? window.localStorage : undefined
 const localMode = connectionMode === 'local'
