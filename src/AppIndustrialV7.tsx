@@ -158,7 +158,7 @@ export default function AppIndustrialV7() {
     <header className="v7-topbar" aria-label="Barra superior do ERP">
       <div className="v7-top-brand">
         <div className="v7-logo-frame">
-          <img src="/logo-industrial.svg" alt="SGQERP" />
+          <img src="/logo/sgq-erp.png" alt="SGQERP" />
         </div>
         <div className="v7-top-title">
           <strong>SGQERP INDUSTRIAL</strong>

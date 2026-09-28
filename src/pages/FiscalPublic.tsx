@@ -49,7 +49,7 @@ export default function FiscalPublic() {
     <div className="fiscal-public bg-[#f8fafc] min-h-screen text-[#0f172a] font-sans">
       <header className="fiscal-public-nav flex justify-between items-center p-4 border-b border-[#C9E1E8] bg-white shadow-sm">
         <a href="/" className="fiscal-logo">
-          <img src="/logo-industrial.svg" alt="SGQ ERP" className="h-8" />
+          <img src="/logo/sgq-erp.png" alt="SGQ ERP" className="h-8" />
         </a>
         <div className="flex items-center gap-4 text-base font-semibold">
           <span className="text-slate-400">MÓDULO FISCAL</span>

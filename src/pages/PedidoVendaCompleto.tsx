@@ -115,7 +115,7 @@ export default function PedidoVendaCompleto(){
    @media(max-width:560px){.sales-grid{grid-template-columns:1fr}.sales-top-title small{display:none}.sales-actions{width:100%}.sales-btn{flex:1;justify-content:center}.sales-top{align-items:flex-start}.sales-content{padding:10px}}
   `}</style>
   {sidebar&&<aside className="sales-side open">
-   <div className="sales-brand"><img src="/logo-industrial.svg" alt="SGQ ERP"/><div><strong>ERP INDUSTRIAL</strong><small>MÓDULO DE VENDAS</small></div></div>
+   <div className="sales-brand"><img src="/logo/sgq-erp.png" alt="SGQ ERP"/><div><strong>ERP INDUSTRIAL</strong><small>MÓDULO DE VENDAS</small></div></div>
    <div className="sales-section">VENDAS</div>
    <button className="sales-nav" onClick={()=>go('/pedidos-vendas?view=carteira')}><BarChart3 size={18}/> Painel Comercial</button>
    <button className={new URLSearchParams(window.location.search).get('view')==='clientes'?'sales-nav':'sales-nav active'} onClick={()=>go('/pedidos-vendas?view=pedido')}><Plus size={18}/> Novo Pedido</button>

@@ -20,7 +20,7 @@ export default function PublicIndustrial() {
   const [helpOpen, setHelpOpen] = useState(false)
   return <div className="public-industrial">
     <header className="public-nav">
-      <a href="/" className="public-brand"><img src="/logo-industrial.svg" alt="SGQ ERP" /></a>
+      <a href="/" className="public-brand"><img src="/logo/sgq-erp.png" alt="SGQ ERP" /></a>
       <nav><a href="#recursos">Recursos</a><a href="#por-dentro">Por dentro</a><a href="#planos">Planos</a><a href="#como-funciona">Como funciona</a></nav>
       <a href="/login" className="nav-cta-login">Entrar no Sistema <ArrowRight size={16} /></a>
     </header>
@@ -48,7 +48,7 @@ export default function PublicIndustrial() {
       <section id="planos" className="public-section plans-section"><div className="section-heading"><span className="public-kicker">PLANOS</span><h2>Escolha o nível de gestão da sua indústria.</h2><p>Compare o que cada plano contempla.</p></div><div className="plans-grid">{plans.map(plan => <article className={plan.featured ? 'plan-card featured' : 'plan-card'} key={plan.name}>{plan.featured && <span className="plan-badge">MAIS ESCOLHIDO</span>}<h3>{plan.name}</h3><p>{plan.description}</p><strong>{plan.price}<small>/mês</small></strong><a href="/login">Começar teste <ArrowRight size={16} /></a><div className="plan-list"><b>Você tem:</b><ul>{plan.features.map(feature => <li className="has" key={feature}><Check size={16} /> {feature}</li>)}</ul></div><div className="plan-list missing"><b>Você deixa de ter neste plano:</b>{plan.missing.length ? <ul>{plan.missing.map(feature => <li key={feature}><X size={15} /> {feature}</li>)}</ul> : <p className="all-access">Nada. Este é o pacote completo.</p>}</div></article>)}</div></section>
     </main>
 
-    <footer className="public-footer"><img src="/logo-industrial.svg" alt="SGQ ERP" /><span>FernandoSch_System • SGQ ERP • Sistema de Gestão Industrial</span><a className="nav-cta-login" href="/login">Acessar sistema</a></footer>
+    <footer className="public-footer"><img src="/logo/sgq-erp.png" alt="SGQ ERP" /><span>FernandoSch_System • SGQ ERP • Sistema de Gestão Industrial</span><a className="nav-cta-login" href="/login">Acessar sistema</a></footer>
     <button className="public-help" onClick={() => setHelpOpen(!helpOpen)}>{helpOpen ? <X size={19}/> : <span>?</span>}<b>Ajuda IA</b></button>{helpOpen && <div className="public-help-panel"><strong>Assistente SGQ ERP</strong><p>Posso explicar recursos, planos, módulos, fiscal, MRP, produção e estoque.</p><a href="#planos">Ver comparação dos planos</a><a href="#por-dentro">Ver telas por dentro</a><a href="/login">Acessar o ERP</a></div>}
   </div>
 }

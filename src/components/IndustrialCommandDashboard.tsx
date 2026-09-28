@@ -190,13 +190,13 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         .dp-main{width:100%;max-width:1700px;margin:0 auto;padding:18px 24px 34px}
         .dp-context{padding:11px 0 13px;border-bottom:1px solid #dbe3ea}.dp-context p{margin:0;color:#475569;font-size:10px;font-weight:950;letter-spacing:.12em}
         .dp-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
-        .dp-kpi{position:relative;display:flex;align-items:center;gap:12px;padding:15px;background:linear-gradient(135deg,#e8f4ff,#d7ebf8);border:1px solid #afd3e8;border-radius:12px;box-shadow:0 5px 14px rgba(15,23,42,.07);overflow:hidden}
-        .dp-kpi::after{content:"";position:absolute;right:-28px;bottom:-34px;width:92px;height:92px;border-radius:50%;background:rgba(255,255,255,.28);pointer-events:none}
-        .dp-kpi-icon{position:relative;z-index:1;display:grid;place-items:center;width:42px;height:42px;border-radius:11px;background:rgba(255,255,255,.9);color:#1769aa;flex:none;box-shadow:0 4px 10px rgba(15,23,42,.10)}
-        .dp-kpi small{display:block;color:#123b50;font-size:10px;font-weight:950;letter-spacing:.06em}.dp-kpi strong{display:block;color:#0f2430;font-size:24px;font-weight:950;line-height:1.1;margin-top:3px}.dp-kpi em{font-style:normal;color:#31505d;font-size:10px;font-weight:800}
-        .dp-kpi:nth-child(2){background:linear-gradient(135deg,#e9f8f0,#d4eee1);border-color:#abd8c0}.dp-kpi:nth-child(2) .dp-kpi-icon{color:#16805a}
-        .dp-kpi:nth-child(3){background:linear-gradient(135deg,#fff7e8,#f8e4bc);border-color:#ead09a}.dp-kpi:nth-child(3) .dp-kpi-icon{color:#a86300}
-        .dp-kpi:nth-child(4){background:linear-gradient(135deg,#f1ecff,#dfd5f8);border-color:#c9b9ef}.dp-kpi:nth-child(4) .dp-kpi-icon{color:#6540a8}
+        .dp-kpi{position:relative;display:flex;align-items:center;gap:12px;padding:15px;background:linear-gradient(135deg,#2D8DB8,#176487);border:1px solid #145A78;border-radius:12px;box-shadow:0 7px 18px rgba(18,59,80,.18);overflow:hidden}
+        .dp-kpi::after{content:"";position:absolute;right:-26px;bottom:-38px;width:104px;height:104px;border-radius:50%;background:rgba(72,183,199,.32);pointer-events:none}
+        .dp-kpi-icon{position:relative;z-index:1;display:grid;place-items:center;width:44px;height:44px;border-radius:11px;background:#F4FBFD;color:#123B50;flex:none;box-shadow:0 5px 12px rgba(8,42,57,.22)}
+        .dp-kpi small{display:block;color:#E9FBFF;font-size:10px;font-weight:950;letter-spacing:.06em}.dp-kpi strong{display:block;color:#fff;font-size:25px;font-weight:950;line-height:1.1;margin-top:3px}.dp-kpi em{font-style:normal;color:#D9F7FC;font-size:10px;font-weight:900}
+        .dp-kpi:nth-child(2){background:linear-gradient(135deg,#16845B,#0E6748);border-color:#0B593E}.dp-kpi:nth-child(2)::after{background:rgba(72,183,199,.22)}.dp-kpi:nth-child(2) .dp-kpi-icon{color:#0E6748}
+        .dp-kpi:nth-child(3){background:linear-gradient(135deg,#E87500,#B94E00);border-color:#963E00}.dp-kpi:nth-child(3)::after{background:rgba(255,255,255,.18)}.dp-kpi:nth-child(3) .dp-kpi-icon{color:#A64000}
+        .dp-kpi:nth-child(4){background:linear-gradient(135deg,#48B7C7,#247E91);border-color:#1D6878}.dp-kpi:nth-child(4)::after{background:rgba(18,59,80,.22)}.dp-kpi:nth-child(4) .dp-kpi-icon{color:#176487}
         .dp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
         .dp-panel{background:#fff;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.04)}
         .dp-head{padding:12px 15px;border-bottom:1px solid #f1f5f9}.dp-head span{color:#047857;font-size:10px;font-weight:950;letter-spacing:.1em}.dp-head h2{margin:3px 0 0;color:#1e293b;font-size:15px;font-weight:950}
@@ -225,7 +225,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
             <div className="dp-head"><span>MONITORAMENTO EM TEMPO REAL</span><h2>Eficiência de máquinas por turno</h2></div>
             {machineShift.length ? (
               <div className="dp-chart"><ResponsiveContainer width="100%" height="100%">
-                <BarChart data={machineShift}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="maquina"/><YAxis domain={[0,100]} unit="%"/><Tooltip formatter={(v:number) => [`${v.toFixed(1)}%`, 'Eficiência']}/><Bar dataKey="eficiencia" name="Eficiência" fill="#2563eb" radius={[3,3,0,0]}/></BarChart>
+                <BarChart data={machineShift}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="maquina"/><YAxis domain={[0,100]} unit="%"/><Tooltip formatter={(v:number) => [`${v.toFixed(1)}%`, 'Eficiência']}/><Bar dataKey="eficiencia" name="Eficiência" fill="#2D8DB8" radius={[3,3,0,0]}/></BarChart>
               </ResponsiveContainer></div>
             ) : <div className="dp-empty">Sem dados reais de eficiência por máquina/turno registrados.</div>}
           </article>
@@ -234,7 +234,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
             <div className="dp-head"><span>PCP · PREVISTO × REALIZADO</span><h2>Volumes de produção semanal</h2></div>
             {weekly.some(x => x.previsto || x.realizado) ? (
               <div className="dp-chart"><ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weekly}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="day"/><YAxis/><Tooltip/><Legend/><Line type="monotone" dataKey="previsto" name="Previsto" stroke="#64748b" strokeWidth={2} strokeDasharray="5 5" dot={false}/><Line type="monotone" dataKey="realizado" name="Realizado" stroke="#2563eb" strokeWidth={2.5} dot={false}/></LineChart>
+                <LineChart data={weekly}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="day"/><YAxis/><Tooltip/><Legend/><Line type="monotone" dataKey="previsto" name="Previsto" stroke="#64748b" strokeWidth={2} strokeDasharray="5 5" dot={false}/><Line type="monotone" dataKey="realizado" name="Realizado" stroke="#176487" strokeWidth={3} dot={false}/></LineChart>
               </ResponsiveContainer></div>
             ) : <div className="dp-empty">Sem programação ou produção registrada para os últimos 7 dias.</div>}
           </article>

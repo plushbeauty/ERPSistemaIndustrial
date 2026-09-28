@@ -25,7 +25,7 @@ export default function Blog() {
   const [selected, setSelected] = useState<Article | null>(null)
   const visible = useMemo(() => category === 'Todos' ? articles : articles.filter(a => a.category === category), [category])
   return <main className="blog-page">
-    <header className="blog-nav"><a className="blog-brand" href="/"><img src="/logo-industrial.svg" alt="SGQ ERP" /></a><nav className="blog-nav-links"><a href="/">Início</a><a href="/#solucoes">Soluções</a><a href="/#segmentos">Segmentos</a><a href="/blog">Blog</a><a href="/#contato">Contato</a><a href="/login">Entrar</a></nav></header>
+    <header className="blog-nav"><a className="blog-brand" href="/"><img src="/logo/sgq-erp.png" alt="SGQ ERP" /></a><nav className="blog-nav-links"><a href="/">Início</a><a href="/#solucoes">Soluções</a><a href="/#segmentos">Segmentos</a><a href="/blog">Blog</a><a href="/#contato">Contato</a><a href="/login">Entrar</a></nav></header>
     <section className="blog-hero"><div className="blog-hero-inner"><div className="blog-kicker">BLOG INDUSTRIAL SGQ ERP</div><h1>Conhecimento para quem administra uma indústria</h1><p>Produção, PCP, MRP, estoque, qualidade, custos, manutenção, fiscal e tecnologia industrial — conteúdo prático para transformar gestão em resultado.</p></div></section>
     <section className="blog-container">
       <div className="blog-categories">{cats.map(c => <button key={c} className={category === c ? 'active' : ''} onClick={() => setCategory(c)}>{c}</button>)}</div>

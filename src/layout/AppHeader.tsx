@@ -50,7 +50,7 @@ export default function AppHeader() {
 
   return <>
     <header className="sgq-app-header">
-      <div className="sgq-header-left"><button className="sgq-icon-button sgq-desktop-menu" onClick={toggleSidebar} aria-label="Alternar menu">{isExpanded ? <PanelLeftClose size={19}/> : <PanelLeftOpen size={19}/>}</button><button className="sgq-icon-button sgq-mobile-menu" onClick={toggleMobileSidebar} aria-label={isMobileOpen ? 'Fechar menu' : 'Abrir menu'}><Menu size={21}/></button><div className="sgq-header-brand"><img src="/logo-industrial.svg" alt="" /><div><strong>SGQ ERP Industrial</strong><span>Gestão integrada e multiempresa</span></div></div></div>
+      <div className="sgq-header-left"><button className="sgq-icon-button sgq-desktop-menu" onClick={toggleSidebar} aria-label="Alternar menu">{isExpanded ? <PanelLeftClose size={19}/> : <PanelLeftOpen size={19}/>}</button><button className="sgq-icon-button sgq-mobile-menu" onClick={toggleMobileSidebar} aria-label={isMobileOpen ? 'Fechar menu' : 'Abrir menu'}><Menu size={21}/></button><div className="sgq-header-brand"><img src="/logo/sgq-erp.png" alt="" /><div><strong>SGQ ERP Industrial</strong><span>Gestão integrada e multiempresa</span></div></div></div>
       <div className="sgq-header-search"><Search size={17}/><input id="sgq-global-search" placeholder="Buscar no ERP..." aria-label="Buscar no ERP" /><kbd>Ctrl K</kbd></div>
       <div className="sgq-header-actions">
         <button type="button" onClick={abrirAjudaContextual} aria-label="Abrir ajuda desta tela" className="bg-slate-900 text-white font-bold h-11 px-4 text-sm rounded-lg flex items-center gap-1.5 shadow-md transition-colors hover:bg-slate-800">

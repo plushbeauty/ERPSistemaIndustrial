@@ -294,7 +294,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
         <div className="auth-visual-grid" aria-hidden="true" />
         <div className="auth-visual-content">
           <a href="/" className="auth-visual-logo">
-            <img src="/logo-industrial.svg" alt="SGQ ERP" />
+            <img src="/logo/sgq-erp.png" alt="SGQ ERP" />
           </a>
           <div className="auth-visual-message">
             <span>PLASTIBOR • SGQ ERP INDUSTRIAL</span>
@@ -320,7 +320,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
         <div className="auth-panel-inner">
           <div className="auth-mobile-brand">
             <a href="/">
-              <img src="/logo-industrial.svg" alt="SGQ ERP" />
+              <img src="/logo/sgq-erp.png" alt="SGQ ERP" />
             </a>
           </div>
 
