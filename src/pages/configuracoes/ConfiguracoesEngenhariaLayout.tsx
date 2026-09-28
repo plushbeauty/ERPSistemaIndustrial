@@ -1,5 +1,5 @@
-import { NavLink } from 'react-router-dom'
-import { Database, ShieldCheck, Users, FileText, HardDrive } from 'lucide-react'
+import { NavLink, useLocation } from 'react-router-dom'
+import { Database, ShieldCheck, Users, FileText, HardDrive, Settings, ChevronRight } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 const items = [
@@ -7,19 +7,49 @@ const items = [
   ['/configuracoes-adm/permissoes','Controle de Permissões',ShieldCheck],
   ['/configuracoes-adm/perfis','Perfis de Usuários',Users],
   ['/configuracoes-adm/logs','Logs do Sistema',FileText],
-  ['/configuracoes-adm/backups','Backups do Banco',HardDrive],
+  ['/configuracoes-adm/backups','Backups Supabase',HardDrive],
 ] as const
 
 export default function ConfiguracoesEngenhariaLayout({children,title,subtitle}:{children:ReactNode;title:string;subtitle:string}){
- return <div className='min-h-screen bg-[#F4F7FE] text-slate-800 flex'>
-  <aside className='w-[270px] shrink-0 min-h-screen bg-[#123B50] text-white border-r border-[#2D8DB8]/30 flex flex-col'>
-   <div className='px-6 py-6 border-b border-white/10'><div className='text-[11px] font-bold tracking-[.2em] text-cyan-200 uppercase'>SGQ ERP Industrial</div><h2 className='mt-1 text-lg font-black'>Configurações Globais</h2></div>
-   <nav className='p-4 space-y-2 flex-1'>{items.map(([to,label,Icon])=><NavLink key={to} to={to} className={({isActive}) => 'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold transition ' + (isActive ? 'bg-[#2D8DB8] text-white shadow-lg' : 'text-slate-200 hover:bg-white/10')}><Icon size={18}/>{label}</NavLink>)}</nav>
-   <div className='p-4 border-t border-white/10 text-[11px] text-cyan-100 flex items-center gap-2'><span className='h-2 w-2 rounded-full bg-cyan-300'/> SUPABASE CONECTADO</div>
-  </aside>
-  <main className='min-w-0 flex-1 p-6 lg:p-8 overflow-auto'>
-   <header className='mb-6 border-b border-slate-200 pb-5'><div className='text-[11px] font-black uppercase tracking-[.18em] text-[#2D8DB8]'>Configurações / Engenharia de Cadastro</div><h1 className='mt-1 text-2xl font-black text-[#123B50]'>{title}</h1><p className='mt-1 text-sm text-slate-500'>{subtitle}</p></header>
-   {children}
-  </main>
- </div>
+ const location=useLocation()
+ return (
+  <div className="min-h-screen bg-[#F4F7FA] text-[#123B50] flex overflow-hidden">
+   <aside className="w-[286px] shrink-0 h-screen bg-white border-r border-[#D8E5EA] flex flex-col shadow-[4px_0_18px_rgba(18,59,80,.06)]">
+    <div className="h-[92px] px-6 flex items-center border-b border-[#E3EDF0]">
+     <div className="h-11 w-11 rounded-xl bg-[#123B50] text-white grid place-items-center mr-3"><Settings size={22}/></div>
+     <div><div className="text-[10px] font-black tracking-[.18em] uppercase text-[#2D8DB8]">SGQ ERP INDUSTRIAL</div><div className="text-lg font-black leading-tight">CONFIGURAÇÕES</div></div>
+    </div>
+    <div className="px-5 pt-6 pb-3 text-[10px] font-black tracking-[.16em] uppercase text-slate-400">Administração do sistema</div>
+    <nav className="px-3 space-y-1.5 flex-1 overflow-y-auto">
+     {items.map(([to,label,Icon])=>(
+      <NavLink key={to} to={to} className={({isActive}) =>
+       'group flex items-center gap-3 min-h-[48px] rounded-xl px-4 text-[13px] font-extrabold transition-all ' +
+       (isActive ? 'bg-[#2D8DB8] text-white shadow-md' : 'text-[#345564] hover:bg-[#F0F8FB] hover:text-[#123B50]')
+      }>
+       <Icon size={19}/><span className="flex-1">{label}</span><ChevronRight size={15} className="opacity-60"/>
+      </NavLink>
+     ))}
+    </nav>
+    <div className="m-4 rounded-xl border border-[#D8E5EA] bg-[#F4FBFD] p-3">
+      <div className="flex items-center gap-2 text-[11px] font-black text-[#123B50]"><span className="h-2.5 w-2.5 rounded-full bg-[#3A9D78]"/> SUPABASE CONECTADO</div>
+      <div className="mt-1 text-[10px] text-slate-500">Ambiente empresarial protegido</div>
+    </div>
+   </aside>
+   <main className="min-w-0 flex-1 h-screen overflow-y-auto">
+    <div className="max-w-[1500px] mx-auto px-7 py-7 lg:px-9">
+     <header className="mb-6 flex items-start justify-between gap-6 border-b border-[#DCE8EC] pb-5">
+      <div>
+       <div className="text-[10px] font-black uppercase tracking-[.2em] text-[#2D8DB8]">Configurações / Administração</div>
+       <h1 className="mt-1 text-[28px] font-black tracking-tight text-[#123B50]">{title}</h1>
+       <p className="mt-1 max-w-4xl text-sm text-slate-500">{subtitle}</p>
+      </div>
+      <div className="hidden md:flex items-center gap-2 rounded-xl border border-[#D8E5EA] bg-white px-4 py-3 text-xs font-bold text-slate-500">
+       <span className="h-2 w-2 rounded-full bg-[#3A9D78]"/> Configuração ativa
+      </div>
+     </header>
+     {children}
+    </div>
+   </main>
+  </div>
+ )
 }
