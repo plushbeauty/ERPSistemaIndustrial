@@ -251,6 +251,7 @@ export default function AppEntryV2() {
     <Routes>
       <Route path="/" element={<PublicIndustrialHome />} />
       <Route path="/login" element={<IndustrialLoginDirect returnTo={safeReturnTo(new URLSearchParams(location.search).get('returnTo'))} masterMode={false} />} />
+      <Route path="/cadastro-master" element={<SetupADMInicial />} />
       <Route path="/recuperar-senha" element={<RecuperarSenha />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/contato" element={<Contato />} />
