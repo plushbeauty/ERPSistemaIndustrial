@@ -27,6 +27,7 @@ const FiscalImpostos = lazy(() => import('./pages/FiscalImpostos'))
 const Master = lazy(() => import('./pages/Master'))
 const PCPIndustrial = lazy(() => import('./pages/PCPIndustrial'))
 const PCPParadas = lazy(() => import('./pages/PCPParadas'))
+const PCPSequenciamento = lazy(() => import('./pages/PCPSequenciamento'))
 const PCPPlanejamentoIndustrial = lazy(() => import('./pages/PCPPlanejamentoIndustrial'))
 const MRPIndustrial = lazy(() => import('./pages/MRPIndustrial'))
 const CentraisIndustriais = lazy(() => import('./pages/CentraisIndustriais'))
@@ -79,6 +80,8 @@ const QualidadePFMEA = lazy(() => import('./pages/QualidadePFMEA'))
 const ManutencaoOrdens = lazy(() => import('./pages/ManutencaoOrdens'))
 const PCPTabletOperador = lazy(() => import('./pages/PCPTabletOperador'))
 const EstoqueAjustes = lazy(() => import('./pages/EstoqueAjustes'))
+const EstoqueSeparacao = lazy(() => import('./pages/EstoqueSeparacao'))
+const EstoqueEtiquetas = lazy(() => import('./pages/EstoqueEtiquetas'))
 const EstoqueRecebimentoLotes = lazy(() => import('./pages/estoque/EstoqueRecebimentoLotes'))
 const QualidadeGenealogiaLote = lazy(() => import('./pages/qualidade/QualidadeGenealogiaLote'))
 const QualidadeEditorIT = lazy(() => import('./pages/qualidade/QualidadeEditorIT'))
@@ -303,6 +306,7 @@ export default function AppEntryV2() {
       <Route path="/pcp/demanda" element={<PCPIndustrial />} />
       <Route path="/pcp/materiais" element={<PCPIndustrial />} />
       <Route path="/pcp/paradas" element={<PCPParadas />} />
+      <Route path="/pcp/sequenciamento" element={<PCPSequenciamento />} />
       <Route path="/pcp/planejamento" element={<PCPPlanejamentoIndustrial />} />
       <Route path="/pcp/dashboard-oee" element={<PCPDashboardOEE />} />
       <Route path="/pcp/tablet-operador" element={<PCPTabletOperador />} />
@@ -328,6 +332,8 @@ export default function AppEntryV2() {
       <Route path="/almoxarifado" element={<EstoqueAlmoxarifado />} />
       <Route path="/estoque/saldos" element={<EstoqueAlmoxarifado />} />
       <Route path="/estoque/ajustes" element={<EstoqueAjustes />} />
+      <Route path="/estoque/separacao" element={<EstoqueSeparacao />} />
+      <Route path="/estoque/etiquetas" element={<EstoqueEtiquetas />} />
       <Route path="/estoque/recebimento-lotes" element={<EstoqueRecebimentoLotes />} />
       <Route path="/estoque/curva-abc" element={<EstoqueCurvaABC />} />
       <Route path="/produtos" element={<ProdutosVendasIndustrial />} />
