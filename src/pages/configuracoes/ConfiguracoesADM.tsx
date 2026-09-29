@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ComponentType } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   ArrowRight,
@@ -12,6 +12,7 @@ import {
   Settings,
   ShieldCheck,
   UsersRound,
+  type LucideIcon,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import CompanySettings from '../../components/CompanySettings'
@@ -33,7 +34,7 @@ type Item = {
   path: string
   label: string
   description: string
-  icon: ComponentType<{ size?: number; className?: string }>
+  icon: LucideIcon
 }
 
 const items: Item[] = [
