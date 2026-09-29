@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import { ArrowLeft, X } from 'lucide-react'
-import './industrial-page-shell.css'
+import { ArrowLeft, ClipboardList, X } from 'lucide-react'
+import IndustrialReferenceShell from '../../layout/IndustrialReferenceShell'
 
 export type PageAction = {
   label: string
@@ -22,64 +22,81 @@ type Props = {
 }
 
 const actionClass: Record<NonNullable<PageAction['type']>, string> = {
-  primary: 'ips-action ips-action-blue',
-  success: 'ips-action ips-action-green',
-  danger: 'ips-action ips-action-red',
-  neutral: 'ips-action ips-action-slate',
+  primary: 'border-blue-700 bg-blue-700 text-white hover:bg-blue-800',
+  success: 'border-emerald-700 bg-emerald-700 text-white hover:bg-emerald-800',
+  danger: 'border-rose-700 bg-rose-700 text-white hover:bg-rose-800',
+  neutral: 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50',
 }
 
-export default function IndustrialPageShell({ module, title, subtitle, children, actions = [], backHref, footer, tablet = false }: Props) {
+export default function IndustrialPageShell({ module, title, subtitle, children, actions = [], backHref, footer }: Props) {
+  const nav = [{ id: 'current', label: title, icon: ClipboardList }]
+
+  const actionNodes = (
+    <>
+      {backHref && (
+        <button type="button" className={`inline-flex min-h-[42px] items-center gap-2 rounded-xl border px-3 text-xs font-black shadow-sm ${actionClass.neutral}`} onClick={() => { window.location.href = backHref }}>
+          <ArrowLeft size={16} /> VOLTAR
+        </button>
+      )}
+      {actions.map((action, index) => (
+        <button
+          key={action.label + index}
+          type="button"
+          disabled={action.disabled}
+          className={`inline-flex min-h-[42px] items-center gap-2 rounded-xl border px-3 text-xs font-black shadow-sm disabled:cursor-not-allowed disabled:opacity-50 ${actionClass[action.type ?? 'neutral']}`}
+          onClick={action.onClick}
+        >
+          {action.icon}
+          {action.label}
+        </button>
+      ))}
+    </>
+  )
+
   return (
-    <main className={tablet ? 'ips-page ips-page-tablet' : 'ips-page'}>
-      <div className="ips-page-inner">
-        <header className="ips-header">
-          <div className="ips-heading">
-            <div className="ips-breadcrumb">ERP INDUSTRIAL <span>/</span> {module}</div>
-            <h1>{title}</h1>
-            {subtitle && <p>{subtitle}</p>}
+    <IndustrialReferenceShell
+      moduleLabel={module}
+      title={title}
+      nav={nav}
+      activeId="current"
+      onNav={() => {}}
+      onHome={() => { window.location.href = '/tablet/dashboard' }}
+      actions={actionNodes}
+    >
+      <div className="space-y-5">
+        {subtitle && (
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xl">
+            <p className="text-sm font-semibold text-slate-500">{subtitle}</p>
           </div>
-          <div className="ips-toolbar" aria-label="Ações da tela">
-            {backHref && <button type="button" className={actionClass.neutral} onClick={() => { window.location.href = backHref }}><ArrowLeft size={18} /> VOLTAR</button>}
-            {actions.map((action, index) => (
-              <button key={action.label + index} type="button" disabled={action.disabled} className={actionClass[action.type ?? 'neutral']} onClick={action.onClick}>
-                {action.icon}
-                {action.label}
-              </button>
-            ))}
-          </div>
-        </header>
-
-        <section className="ips-workspace">
-          {children}
-        </section>
-
+        )}
+        {children}
         {footer ?? (
-          <footer className="ips-footer">
+          <footer className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-slate-200 bg-white px-5 py-4 text-xs font-semibold text-slate-500 shadow-xl">
             <span>ERP Industrial</span>
             <span>Dados reais • RLS por empresa • Sem dados fictícios</span>
           </footer>
         )}
       </div>
-    </main>
+    </IndustrialReferenceShell>
   )
 }
 
 export function SectionCard({ title, children, className = '' }: { title: string; children: ReactNode; className?: string }) {
-  return <section className={`ips-card ${className}`}><h2>{title}</h2>{children}</section>
+  return <section className={`rounded-3xl border border-slate-200 bg-white p-6 shadow-xl ${className}`}><h2 className="mb-5 text-lg font-black text-slate-900">{title}</h2>{children}</section>
 }
 
 export function Field({ label, children, required = false, className = '' }: { label: string; children: ReactNode; required?: boolean; className?: string }) {
-  return <label className={`ips-field ${className}`}><span>{label}{required && ' *'}</span>{children}</label>
+  return <label className={`grid gap-2 text-sm font-black text-slate-700 ${className}`}><span>{label}{required && ' *'}</span>{children}</label>
 }
 
 export function ToolbarButton({ children, onClick, tone = 'neutral', disabled = false }: { children: ReactNode; onClick?: () => void; tone?: PageAction['type']; disabled?: boolean }) {
-  return <button type="button" disabled={disabled} onClick={onClick} className={actionClass[tone ?? 'neutral']}>{children}</button>
+  return <button type="button" disabled={disabled} onClick={onClick} className={`inline-flex min-h-[46px] items-center gap-2 rounded-xl border px-4 text-sm font-black shadow-sm disabled:opacity-50 ${actionClass[tone ?? 'neutral']}`}>{children}</button>
 }
 
 export function Table({ children }: { children: ReactNode }) {
-  return <div className="ips-table-wrap"><table className="ips-table">{children}</table></div>
+  return <div className="overflow-x-auto rounded-2xl border border-slate-200"><table className="w-full min-w-[760px] border-collapse text-sm">{children}</table></div>
 }
 
 export function CloseButton({ onClick }: { onClick: () => void }) {
-  return <button type="button" className="ips-close" onClick={onClick} aria-label="Fechar"><X size={20} /></button>
+  return <button type="button" className="grid h-10 w-10 place-items-center rounded-xl border border-slate-300 bg-white text-slate-700 shadow-sm hover:bg-slate-50" onClick={onClick} aria-label="Fechar"><X size={20} /></button>
 }
