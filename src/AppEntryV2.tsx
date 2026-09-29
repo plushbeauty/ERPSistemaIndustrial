@@ -208,6 +208,14 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
 
 // Router master industrial v7: verified JSX boundary.
 export default function AppEntryV2() {
+  const routeLocation = useLocation()
+  if (routeLocation.pathname === '/configuracoes-adm' || routeLocation.pathname.startsWith('/configuracoes-adm/')) {
+    return <Boundary><Suspense fallback={<LoadingSkeleton label="Carregando demonstração visual de Configurações ADM…" />}><ConfiguracoesADMPage /></Suspense></Boundary>
+  }
+  return <AppIndustrialAuthenticated />
+}
+
+function AppIndustrialAuthenticated() {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [statusAcesso, setStatusAcesso] = useState<AccessResult | null>(null)
