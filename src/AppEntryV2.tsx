@@ -34,6 +34,7 @@ const QualidadeIndustrial = lazy(() => import('./pages/QualidadeIndustrial'))
 const AcompanhamentoNaoConformidade = lazy(() => import('./pages/AcompanhamentoNaoConformidade'))
 const EstoqueAlmoxarifado = lazy(() => import('./pages/EstoqueAlmoxarifado'))
 const ProdutosVendasIndustrial = lazy(() => import('./pages/ProdutosVendasIndustrial'))
+const ModuloCadastroProdutos = lazy(() => import('./pages/cadastro-produtos/ModuloCadastroProdutos'))
 const PedidoVendaCompleto = lazy(() => import('./pages/PedidoVendaCompleto'))
 const VendasCentral = lazy(() => import('./pages/VendasCentral'))
 const VendasCatalogoDigital = lazy(() => import('./pages/VendasCatalogoDigital'))
@@ -328,6 +329,7 @@ export default function AppEntryV2() {
       <Route path="/estoque/curva-abc" element={<EstoqueCurvaABC />} />
       <Route path="/produtos" element={<ProdutosVendasIndustrial />} />
       <Route path="/produtos-vendas" element={<ProdutosVendasIndustrial />} />
+      <Route path="/cadastro-produtos" element={<ModuloCadastroProdutos />} />
       <Route path="/operacao-industrial" element={<OperacaoIndustrial />} />
       <Route path="/moldes-injecao" element={<MoldesFerramentaria />} />
       <Route path="/ficha-engenharia" element={<FichaEngenharia />} />
