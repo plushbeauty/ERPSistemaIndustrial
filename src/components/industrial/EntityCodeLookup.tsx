@@ -25,6 +25,7 @@ type Props = {
   required?: boolean
   helper?: string
   entityType?: string
+  compact?: boolean
 }
 
 export { EntityCodeLookup }
@@ -41,6 +42,7 @@ export default function EntityCodeLookup({
   placeholder = 'Digite o código exato',
   required = false,
   helper,
+  compact = false,
 }: Props) {
   const [open, setOpen] = useState(false)
   const [codigo, setCodigo] = useState('')
@@ -110,9 +112,9 @@ export default function EntityCodeLookup({
         {label}{required ? ' *' : ''}
       </label>
 
-      <div className="mt-2 flex gap-2">
+      <div className="mt-1 flex w-fit gap-1">
         <input
-          className={inputClass}
+          className={`${compact ? "h-9 w-[140px] text-sm" : inputClass} rounded-md border border-slate-300 bg-white px-2 font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-600 focus:ring-2 focus:ring-sky-100`}
           value={typedCode}
           required={required}
           placeholder={placeholder}
@@ -128,7 +130,7 @@ export default function EntityCodeLookup({
         />
         <button
           type="button"
-          className="grid h-[54px] w-[58px] shrink-0 place-items-center rounded-md border border-slate-300 bg-slate-100 text-slate-800 shadow-sm transition hover:border-sky-500 hover:bg-sky-50 hover:text-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-200"
+          className={`grid ${compact ? "h-9 w-9" : "h-[54px] w-[58px]"} shrink-0 place-items-center rounded-md border border-slate-300 bg-slate-100 text-slate-800 shadow-sm transition hover:border-sky-500 hover:bg-sky-50 hover:text-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-200"
           onClick={() => setOpen(true)}
           aria-label={`Consultar ${label}`}
           title="Consultar por filtros"
@@ -138,7 +140,7 @@ export default function EntityCodeLookup({
       </div>
 
       {selected && (
-        <div className="mt-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-base">
+        <div className="mt-1 max-w-[360px] rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-sm">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <strong className="text-slate-950">{selected.codigo ?? '—'}</strong>
             <span className="text-slate-700">{selected.nome ?? 'Registro selecionado'}</span>
