@@ -51,6 +51,28 @@ if (!fs.existsSync(clientPath)) {
   if (readsLegacy && !readsPublishable) fail('Cliente depende somente da variável legada ANON_KEY.')
 }
 
+const scanRoots = ['src', 'scripts', '.github', 'public']
+const ignored = new Set(['node_modules', 'dist', '.git'])
+const allowedExtensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json', '.yml', '.yaml', '.html', '.env', '.md'])
+const maxBytes = 1024 * 1024
+
+function scanDirectory(directory) {
+  if (!fs.existsSync(directory)) return
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    if (ignored.has(entry.name)) continue
+    const full = path.join(directory, entry.name)
+    if (entry.isDirectory()) scanDirectory(full)
+    else if (allowedExtensions.has(path.extname(entry.name).toLowerCase()) && fs.statSync(full).size <= maxBytes) {
+      const content = fs.readFileSync(full, 'utf8')
+      for (const ref of forbiddenRefs) if (content.includes(`${ref}.supabase.co`) || content.includes(ref)) fail(`Projeto Supabase proibido encontrado em ${path.relative(root, full)}: ${ref}`)
+      if (/sb_secret_[A-Za-z0-9_-]{12,}/.test(content)) fail(`Chave sb_secret_ encontrada em ${path.relative(root, full)}`)
+      if (/['"]service_role['"]\s*[:=]/i.test(content)) fail(`service_role encontrado em ${path.relative(root, full)}`)
+    }
+  }
+}
+
+for (const directory of scanRoots) scanDirectory(path.join(root, directory))
+
 if (isVercel) {
   if (url !== canonicalUrl) fail('Vercel deve usar exatamente a URL Supabase canônica.')
   if (!publicKey) fail('Vercel sem chave pública Supabase.')
