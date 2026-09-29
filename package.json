@@ -7,21 +7,22 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:verified": "npm run verify:supabase-env && npm run type-check && vite build",
+    "build:verified": "npm run verify:supabase-env && npm run verify:deploy-integrity && npm run audit:security && npm run type-check && npm run lint:check && npm run audit:all && vite build",
     "type-check": "tsc --noEmit",
     "verify:supabase-env": "node scripts/verify-supabase-env.mjs",
+    "verify:deploy-integrity": "node scripts/verify-deploy-integrity.mjs",
     "audit:interactions": "node scripts/audit-interactions.mjs",
     "audit:global": "node scripts/auditoria-global.mjs",
     "audit": "npm run type-check",
     "preview": "vite preview",
     "audit:brutal": "node scripts/auditoria-brutal.mjs",
     "audit:all": "npm run audit:brutal && npm run audit:global && npm run audit:interactions",
+    "audit:security": "npm run audit:brutal && npm run audit:global",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "lint:check": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "verify:production": "npm run verify:supabase-env && npm run type-check && npm run lint:check && vite build --emptyOutDir",
-    "audit:security": "npm run audit:brutal && npm run audit:global",
-    "audit:production": "npm run verify:supabase-env && npm run audit:all && npm run type-check && npm run lint:check && npm run build",
-    "verify:release": "npm run verify:supabase-env && npm run audit:global && npm run audit:brutal && npm run audit:interactions && npm run type-check && npm run lint:check && npm run build"
+    "verify:production": "npm run verify:supabase-env && npm run verify:deploy-integrity && npm run audit:security && npm run type-check && npm run lint:check && npm run audit:all && vite build --emptyOutDir",
+    "audit:production": "npm run verify:supabase-env && npm run verify:deploy-integrity && npm run audit:all && npm run type-check && npm run lint:check && npm run build",
+    "verify:release": "npm run verify:supabase-env && npm run verify:deploy-integrity && npm run audit:security && npm run audit:global && npm run audit:brutal && npm run audit:interactions && npm run type-check && npm run lint:check && npm run build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
