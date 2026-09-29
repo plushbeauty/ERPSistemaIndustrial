@@ -241,7 +241,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         .dp-kpi{position:relative;display:flex;align-items:center;gap:13px;padding:12px 14px;min-height:76px;background:linear-gradient(135deg,#17445A,#0B3042);border:1px solid #082838;border-radius:14px;box-shadow:0 10px 24px rgba(8,40,56,.28);overflow:hidden}
         .dp-kpi::after{content:"";position:absolute;right:-26px;bottom:-38px;width:104px;height:104px;border-radius:50%;background:rgba(72,183,199,.32);pointer-events:none}
         .dp-kpi-icon{position:relative;z-index:1;display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:linear-gradient(145deg,#2D8DB8 0%,#17445A 58%,#0B3042 100%);color:#fff!important;flex:none;border:1px solid rgba(255,255,255,.42);box-shadow:0 11px 0 rgba(5,28,39,.55),0 17px 24px rgba(5,28,39,.34),inset 0 2px 2px rgba(255,255,255,.55),inset 0 -7px 10px rgba(0,0,0,.25);transform:perspective(180px) rotateX(4deg);text-shadow:0 2px 2px rgba(0,0,0,.38)}
-        .dp-kpi small,.dp-kpi strong,.dp-kpi em{color:#fff!important}.dp-kpi small{display:block!important;font-size:13px;font-weight:950;letter-spacing:.04em;line-height:1.2}.dp-kpi strong{display:block!important;font-size:29px;font-weight:950;line-height:1.08;margin-top:5px}.dp-kpi em{font-style:normal!important;font-size:12px;font-weight:900}
+        .dp-kpi small,.dp-kpi strong,.dp-kpi em{color:#fff!important}.dp-kpi-label{color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.55)}.dp-kpi small{display:block!important;font-size:13px;font-weight:950;letter-spacing:.04em;line-height:1.2}.dp-kpi strong{display:block!important;font-size:29px;font-weight:950;line-height:1.08;margin-top:5px}.dp-kpi em{font-style:normal!important;font-size:12px;font-weight:900}
         .dp-kpi:nth-child(2){background:linear-gradient(135deg,#0F6748,#063C2A);border-color:#052E21}.dp-kpi:nth-child(2)::after{background:rgba(72,183,199,.18)}.dp-kpi:nth-child(2) .dp-kpi-icon{color:#fff!important;background:linear-gradient(145deg,#31B982 0%,#0F6748 58%,#063C2A 100%)}
         .dp-kpi:nth-child(3){background:linear-gradient(135deg,#A94F00,#6E2F00);border-color:#542300}.dp-kpi:nth-child(3)::after{background:rgba(255,255,255,.14)}.dp-kpi:nth-child(3) .dp-kpi-icon{color:#fff!important;background:linear-gradient(145deg,#E58A36 0%,#A94F00 58%,#6E2F00 100%)}
         .dp-kpi:nth-child(4){background:linear-gradient(135deg,#247E91,#145564);border-color:#0F4652}.dp-kpi:nth-child(4)::after{background:rgba(18,59,80,.20)}.dp-kpi:nth-child(4) .dp-kpi-icon{color:#fff!important;background:linear-gradient(145deg,#48B7C7 0%,#247E91 58%,#145564 100%)}
@@ -265,7 +265,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
           {cards.map(({ label, value, suffix, icon: Icon }) => (
             <article key={label} className="dp-kpi">
               <span className="dp-kpi-icon"><Icon size={19}/></span>
-              <div><small>{label}</small><strong>{loading ? '…' : value} {suffix && <em>{suffix}</em>}</strong></div>
+              <div><small className="dp-kpi-label">{label}</small><strong>{loading ? '…' : value} {suffix && <em>{suffix}</em>}</strong></div>
             </article>
           ))}
         </section>
