@@ -4,14 +4,16 @@
   @SCOPE: src/main.tsx
   @CHECKLIST: No-Duplicate-Actions | Valid-Canonical-Links | Active-Noop-Callbacks
 */
-import { StrictMode, Suspense } from 'react'
+import { StrictMode, Suspense, lazy } from 'react'
 import { BrowserRouter } from 'react-router-dom'
-import AppBootstrap from './AppBootstrap'
 import { createRoot } from 'react-dom/client'
 import { MotionConfig } from 'motion/react'
 import './styles/erp-reference-ux-2026.css'
 import './styles/industrial-command-center-2026.css'
 import './styles/design-system-2026.css'
+
+const AppBootstrap = lazy(() => import('./AppBootstrap'))
+const ConfiguracoesADMPage = lazy(() => import('./pages/configuracoes/ConfiguracoesADM'))
 
 const ERP_BOOTSTRAP_VERSION = '2026-09-18-browser-auth-v9'
 
@@ -87,6 +89,14 @@ function FatalBootstrap({ error, retry }: { error: unknown; retry: () => void })
   )
 }
 
+function DemoConfiguracoesADM() {
+  return (
+    <Suspense fallback={<div role="status" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'Inter,system-ui,sans-serif', background: '#F4FBFD', color: '#123B50' }}><strong>Carregando demonstração visual de Configurações ADM…</strong></div>}>
+      <ConfiguracoesADMPage />
+    </Suspense>
+  )
+}
+
 function BootstrapLoader() {
   return (
     <Suspense fallback={<div role="status" aria-live="polite" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'Inter,system-ui,sans-serif', background: '#f4f5f3', color: '#17342f' }}><strong>Carregando SYSNQRA ERP & SGQ INDUSTRIAL…</strong></div>}>
@@ -103,7 +113,9 @@ createRoot(rootElement).render(
   <StrictMode>
     <MotionConfig reducedMotion="user" transition={{ duration: 0.22, ease: 'easeOut' }}>
       <BrowserRouter>
-        <BootstrapLoader />
+        {window.location.pathname === '/configuracoes-adm' || window.location.pathname.startsWith('/configuracoes-adm/')
+          ? <DemoConfiguracoesADM />
+          : <BootstrapLoader />}
       </BrowserRouter>
     </MotionConfig>
   </StrictMode>,
