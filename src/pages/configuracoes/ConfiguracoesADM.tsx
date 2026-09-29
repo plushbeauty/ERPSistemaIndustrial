@@ -1,73 +1,74 @@
-import { useMemo } from 'react'
-import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { KeyRound, ShieldCheck, UsersRound, FileText, DatabaseBackup, Settings } from 'lucide-react'
-import ConfiguracaoCodificacaoAreas from './ConfiguracaoCodificacaoAreas'
-import ConfiguracaoPermissoes from './ConfiguracaoPermissoes'
-import ConfiguracaoPerfis from './ConfiguracaoPerfis'
-import ConfiguracaoLogs from './ConfiguracaoLogs'
-import ConfiguracaoBackups from './ConfiguracaoBackups'
+// src/pages/configuracoes/ConfiguracoesADM.tsx
+import React, { useState } from 'react';
 
-type Profile={nome?:string}|null
-type Item={path:string;label:string;hint:string;icon:typeof Settings}
-const items:Item[]=[
- {path:'/configuracoes-adm/codificacao',label:'Codificação',hint:'Áreas e códigos',icon:KeyRound},
- {path:'/configuracoes-adm/permissoes',label:'Permissões',hint:'Acesso por perfil',icon:ShieldCheck},
- {path:'/configuracoes-adm/perfis',label:'Perfis',hint:'Perfis RBAC',icon:UsersRound},
- {path:'/configuracoes-adm/logs',label:'Logs',hint:'Auditoria',icon:FileText},
- {path:'/configuracoes-adm/backups',label:'Backups',hint:'Continuidade',icon:DatabaseBackup},
-]
+// Importação das páginas individuais criadas para o menu lateral
+import CodificacaoAreas from './CodificacaoAreas';
+import ControlePermissoes from './ControlePermissoes';
+import Perfis from './Perfis';
+import Logs from './Logs';
+import Backups from './Backups';
 
-export default function ConfiguracoesADM({profile}:{profile:Profile}){
- const location=useLocation(),navigate=useNavigate()
- const active=useMemo(()=>items.find(x=>location.pathname===x.path),[location.pathname])
- const renderContent=()=>{
-   if(!active)return <Welcome/>
-   if(active.path.endsWith('/codificacao'))return <ConfiguracaoCodificacaoAreas profile={profile}/>
-   if(active.path.endsWith('/permissoes'))return <ConfiguracaoPermissoes/>
-   if(active.path.endsWith('/perfis'))return <ConfiguracaoPerfis/>
-   if(active.path.endsWith('/logs'))return <ConfiguracaoLogs/>
-   return <ConfiguracaoBackups/>
- }
- return <div className="min-h-[calc(100vh-104px)] bg-[#F4F7FE] text-slate-800">
-   <div className="flex min-h-[calc(100vh-104px)]">
-     <aside className="sticky top-0 z-10 flex h-[calc(100vh-104px)] w-[95px] shrink-0 flex-col border-r border-[#173F52] bg-[#123B50] text-white shadow-[8px_0_24px_rgba(18,59,80,.18)]">
-       <div className="flex h-[72px] items-center justify-center border-b border-white/10">
-         <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-[#55B8C8] via-[#2D8DB8] to-[#17445A] shadow-[0_9px_18px_rgba(0,0,0,.3),inset_0_2px_0_rgba(255,255,255,.4)]"><Settings size={25}/></div>
-       </div>
-       <div className="px-1 pt-3 text-center text-[8px] font-black uppercase tracking-[.12em] text-[#8DE0EA]">ADM</div>
-       <nav className="mt-2 flex-1 space-y-1 overflow-y-auto px-1.5" aria-label="Configurações">
-         {items.map(({path,label,hint,icon:Icon})=><NavLink key={path} to={path} className={({isActive})=>['group flex min-h-[68px] w-full flex-col items-center justify-center gap-1 rounded-lg border text-center transition-all',isActive?'border-[#55B8C8] bg-[#17445A] text-white shadow-[0_5px_14px_rgba(0,0,0,.2)]':'border-transparent text-slate-300 hover:border-white/15 hover:bg-white/5 hover:text-white'].join(' ')}>
-           <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-[#55B8C8] via-[#2D8DB8] to-[#17445A] text-white shadow-[0_5px_10px_rgba(0,0,0,.32),inset_0_1px_1px_rgba(255,255,255,.35)]"><Icon size={16} strokeWidth={2.5}/></span>
-           <span className="text-[9px] font-black leading-none">{label}</span>
-           <span className="text-[7px] font-semibold leading-none text-white/55">{hint}</span>
-         </NavLink>)}
-       </nav>
-       <button type="button" onClick={()=>navigate('/erp-industrial')} className="mb-2 flex min-h-[56px] flex-col items-center justify-center gap-1 border-t border-white/10 text-white/80 hover:bg-white/5 hover:text-white">
-         <span className="text-[14px]">⌂</span><span className="text-[8px] font-black">INÍCIO</span>
-       </button>
-     </aside>
-     <main className="min-w-0 flex-1 overflow-y-auto">
-       <div className="mx-auto max-w-[1600px] p-4 md:p-6 lg:p-7">
-         <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3">
-           <div><span className="text-[9px] font-black uppercase tracking-[.16em] text-[#176487]">ADMINISTRAÇÃO • CONFIGURAÇÕES</span><h1 className="mt-1 text-xl font-black tracking-tight text-[#123B50]">{active?.label??'Central de Configurações'}</h1></div>
-           <div className="rounded-lg border border-[#C5DEE6] bg-white px-3 py-2 text-right"><span className="block text-[8px] font-black uppercase tracking-[.12em] text-slate-400">USUÁRIO</span><strong className="text-[10px] font-black text-[#123B50]">{profile?.nome||'Usuário ERP'}</strong></div>
-         </div>
-         {renderContent()}
-       </div>
-     </main>
-   </div>
- </div>
-}
+type PaginasConfig = 'codificacao' | 'permissoes' | 'perfis' | 'logs' | 'backups';
 
-function Welcome(){
- return <section className="flex min-h-[620px] items-center justify-center rounded-2xl border border-[#C5DEE6] bg-white shadow-[0_12px_30px_rgba(18,59,80,.12)]">
-   <div className="max-w-xl px-8 text-center">
-     <div className="mx-auto mb-7 flex h-32 w-[310px] items-center justify-center rounded-3xl border border-[#D7EAF0] bg-white p-5 shadow-[0_16px_36px_rgba(18,59,80,.14)]">
-       <img src="/logo/sgq-erp.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" className="max-h-full max-w-full object-contain"/>
-     </div>
-     <span className="text-[9px] font-black uppercase tracking-[.22em] text-[#2D8DB8]">SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL</span>
-     <h2 className="mt-2 text-2xl font-black text-[#123B50]">Configurações Administrativas</h2>
-     <p className="mx-auto mt-3 max-w-lg text-[11px] font-semibold leading-5 text-slate-500">Você entrou na área de configurações. O painel central permanece limpo até que uma função seja escolhida no menu lateral. Clique em um item à esquerda para abrir somente a tela operacional correspondente.</p>
-   </div>
- </section>
+export default function ConfiguracoesADM() {
+  // Gerencia qual página individual do menu lateral está ativa no Workspace central
+  const [paginaAtiva, setPaginaAtiva] = useState<PaginasConfig>('codificacao');
+
+  return (
+    <div className="flex min-h-screen bg-gray-900 text-gray-100 font-sans antialiased select-none">
+      
+      {/* 📋 BARRA LATERAL FIXA DE CONFIGURAÇÕES (BOTÕES EM ALTO RELEVO ESTILO DELPHI) */}
+      <aside className="w-72 bg-gray-800 border-r border-gray-700 p-4 flex flex-col justify-between shadow-2xl flex-shrink-0">
+        <div className="space-y-6">
+          <div className="px-2 flex items-center space-x-2 border-b border-gray-700 pb-4">
+            <span className="text-xl font-black text-blue-400 tracking-wider">🛠️ CONFIGURAÇÕES</span>
+          </div>
+          
+          <nav className="space-y-2">
+            {[
+              { id: 'codificacao', label: '🔢 Codificação de Áreas' },
+              { id: 'permissoes', label: '🔒 Controle de Permissões' },
+              { id: 'perfis', label: '👥 Perfis de Usuários' },
+              { id: 'logs', label: '📝 Logs do Sistema' },
+              { id: 'backups', label: '💾 Backups da Base' }
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setPaginaAtiva(item.id as PaginasConfig)}
+                className={`w-full flex items-center px-4 py-4 text-sm font-bold rounded-xl border-b-4 active:scale-98 transition-all text-left ${
+                  paginaAtiva === item.id
+                    ? 'bg-blue-600 text-white border-blue-800 shadow-inner'
+                    : 'bg-gray-750 text-gray-300 border-gray-900 hover:bg-gray-700'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {/* Retorno seguro para a mesa central de módulos do tablet */}
+        <button className="w-full py-4 bg-red-750 border-b-4 border-red-950 text-white font-black text-sm rounded-xl tracking-wider active:scale-95 transition-all">
+          🏠 VOLTAR AOS MÓDULOS TABLET
+        </button>
+      </aside>
+
+      {/* 🌆 WORKSPACE CENTRAL: RENDERIZA A PÁGINA ESPECÍFICA SELECIONADA NO MENU */}
+      <main className="flex-1 p-8 bg-gray-900 overflow-y-auto">
+        <div className="max-w-5xl mx-auto">
+          
+          {paginaAtiva === 'codificacao' && <CodificacaoAreas />}
+          
+          {paginaAtiva === 'permissoes' && <ControlePermissoes />}
+          
+          {paginaAtiva === 'perfis' && <Perfis />}
+          
+          {paginaAtiva === 'logs' && <Logs />}
+          
+          {paginaAtiva === 'backups' && <Backups />}
+
+        </div>
+      </main>
+    </div>
+  );
 }
