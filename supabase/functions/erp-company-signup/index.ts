@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
 
     const { data:auth, error:authError } = await admin.auth.admin.createUser({
       email, password:senha, email_confirm:true,
-      user_metadata:{ nome:nomeAdmin, empresa_id:empresa.id, setor_id:admSetor.id, sistema:'ERP Industrial' },
+      user_metadata:{ nome:nomeAdmin, empresa_id:empresa.id, setor_id:admSetor.id, sistema:'SYSNQRA ERP & SGQ INDUSTRIAL' },
     })
     if (authError || !auth.user) throw authError ?? new Error('AUTH_CREATE_FAILED')
     authUserId = auth.user.id

@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
       email,
       password,
       email_confirm: true,
-      user_metadata: { nome, sistema: "SGQ ERP Industrial" },
+      user_metadata: { nome, sistema: "SYSNQRA ERP & SGQ INDUSTRIAL" },
     })
 
     if (created.error || !created.user) {
