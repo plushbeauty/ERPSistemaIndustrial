@@ -11,7 +11,7 @@
 - Regra de Negócio Senior/Nomus Incorporada: base visual operacional para fichas, BOM, roteiro, PCP, moldes, capacidade e rastreabilidade sem overflow lateral.
 */
 :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#17333F;background:#F4FBFD;font-synthesis:none;text-rendering:optimizeLegibility;--erp-bg:#F4FBFD;--erp-surface:#fff;--erp-line:#cfe1e7;--erp-text:#17333F;--erp-muted:#536B76;--erp-blue:#2D8DB8;--erp-orange:#E58A2B;--erp-green:#16845B;--erp-yellow:#B8791C;--erp-red:#C74646;--erp-purple:#6D5BD0;--erp-radius:12px}
-*{box-sizing:border-box;min-width:0}html,body,#root{width:100%;max-width:100%;min-height:100%;margin:0;overflow-x:hidden!important}body{background:#F4FBFD;color:#17333F}img,svg,canvas,video{max-width:100%}button,input,select,textarea{font:inherit}button{cursor:pointer}table{max-width:100%;border-collapse:collapse}
+*{box-sizing:border-box;min-width:0}html,body,#root{width:100%;max-width:100%;min-height:100%;margin:0;overflow-x:hidden!important}body{background:#F4FBFD;color:#17333F}img,svg,canvas,video{max-width:100%}button,input,select,textarea{font:inherit}button{cursor:pointer;min-height:42px}table{max-width:100%;border-collapse:collapse}
 .industrial-form-page{width:100%;max-width:1600px;margin:0 auto;padding:24px;color:#111827;background:#FAFAFA}.industrial-page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:16px}.industrial-page-head h1{font-size:clamp(28px,4vw,42px);letter-spacing:-.04em;margin:5px 0;color:#111827}.industrial-page-head p,.industrial-panel p{color:#64748b}.industrial-eyebrow{font-size:10px;letter-spacing:.14em;font-weight:900;color:#1d4ed8}
 .industrial-panel{background:#fff;border:1px solid var(--erp-line);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 8px 28px rgba(15,23,42,.05)}.industrial-panel h2{margin:0 0 8px;color:#111827}.industrial-toolbar{display:grid;grid-template-columns:minmax(260px,2fr) repeat(3,minmax(130px,1fr));gap:12px}.industrial-form-page label{display:grid;gap:6px;color:#334155;font-weight:800;font-size:12px}.industrial-form-page input,.industrial-form-page select,.industrial-form-page textarea{width:100%;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#111827;padding:10px 11px;outline:none}.industrial-form-page input:focus,.industrial-form-page select:focus,.industrial-form-page textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
 .industrial-primary,.industrial-secondary{display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:10px;padding:10px 14px;font-weight:900}.industrial-primary{border:0;background:#1d4ed8;color:#fff}.industrial-secondary{border:1px solid #cbd5e1;background:#fff;color:#111827}.industrial-primary:disabled,.industrial-secondary:disabled{opacity:.5;cursor:not-allowed}.industrial-context{display:flex;align-items:center;gap:7px;flex-wrap:wrap;color:#334155;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:12px}.industrial-context span{margin-left:auto;color:#64748b}
@@ -76,13 +76,13 @@ button,input,select,textarea{font-size:16px!important}
 :root,[data-erp-theme="light"]{color-scheme:light}
 body,[data-erp-theme="light"]{background:#F4FBFD!important;color:#17333F!important}
 button,input,select,textarea{font-size:16px}
-button{min-height:44px}
+button{min-height:42px}
 .erp-page-v3,.v7-content,.resource-card,.erp-card,.crud-list,.crud-table-wrap,.quality-dashboard-grid,.quality-kpis{color:#17333F}
 .erp-page-v3,.v7-content{background:#F4FBFD}
 .erp-card-v3,.erp-card,.resource-card,.crud-list,.pcp-modern-panel,.mw3-card{background:#fff!important;border-color:#cfe1e7!important;color:#17333F!important}
 .erp-btn-primary,.public-primary,.industrial-primary{background:#2D8DB8!important;border-color:#2D8DB8!important;color:#fff!important;min-height:46px;font-weight:800}
 .erp-btn-secondary,.public-secondary,.industrial-secondary,.mw3-btn{background:#fff!important;border:1px solid #b9d2da!important;color:#17333F!important;min-height:44px;font-weight:800}
-input,select,textarea{background:#fff!important;color:#17333F!important;border-color:#b9d2da!important;min-height:46px}
+input,select,textarea{background:#fff!important;color:#17333F!important;border-color:#b9d2da!important;min-height:40px}
 input::placeholder,textarea::placeholder{color:#718894!important;opacity:1}
 table th{background:#eef7fa!important;color:#355462!important;font-size:14px!important}
 table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!important}
