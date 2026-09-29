@@ -1,11 +1,12 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { ChevronRight, LogOut, User } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 export type IndustrialReferenceNavItem = {
   id: string
   label: string
-  icon: React.ComponentType<{ size?: number; className?: string }>
+  icon: LucideIcon
 }
 
 type Props = {
