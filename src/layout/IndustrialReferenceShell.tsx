@@ -17,6 +17,7 @@ type Props = {
   onNav: (id: string) => void
   onHome: () => void
   children: ReactNode
+  actions?: ReactNode
 }
 
 export default function IndustrialReferenceShell({
@@ -27,6 +28,7 @@ export default function IndustrialReferenceShell({
   onNav,
   onHome,
   children,
+  actions,
 }: Props) {
   const [operator, setOperator] = useState('Administrador')
   const [clock, setClock] = useState(new Date())
@@ -127,6 +129,7 @@ export default function IndustrialReferenceShell({
             <span className="truncate text-slate-800">{title}</span>
           </div>
           <div className="flex items-center space-x-4">
+            {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
             <div className="hidden text-right text-[10px] font-bold leading-tight text-slate-400 lg:block">
               <div>{clock.toLocaleDateString('pt-BR')}</div>
               <div>{clock.toLocaleTimeString('pt-BR')}</div>
