@@ -43,6 +43,7 @@ const VendasCatalogoDigital = lazy(() => import('./pages/VendasCatalogoDigital')
 const VendasAnaliseCustos = lazy(() => import('./pages/VendasAnaliseCustos'))
 const VendasDashboardGraficos = lazy(() => import('./pages/VendasDashboardGraficos'))
 const VendasMetas = lazy(() => import('./pages/VendasMetas'))
+const VendasRelatorios = lazy(() => import('./pages/VendasRelatorios'))
 const VendasCarteira = lazy(() => import('./pages/VendasCarteira'))
 const CentralCustosIndustrial = lazy(() => import('./pages/CentralCustosIndustrial'))
 const CadastroEmpresa = lazy(() => import('./pages/CadastroEmpresa'))
@@ -320,6 +321,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/analise-custos" element={<VendasAnaliseCustos />} />
       <Route path="/vendas/dashboard-graficos" element={<VendasDashboardGraficos />} />
       <Route path="/vendas/metas" element={<VendasMetas />} />
+      <Route path="/vendas/relatorios" element={<VendasRelatorios />} />
       <Route path="/pcp" element={<PCPIndustrial />} />
       <Route path="/pcp/ordens" element={<PCPIndustrial />} />
       <Route path="/pcp/demanda" element={<PCPIndustrial />} />
