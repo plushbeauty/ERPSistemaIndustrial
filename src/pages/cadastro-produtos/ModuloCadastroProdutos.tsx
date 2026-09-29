@@ -1,9 +1,61 @@
-import {useState} from 'react'
-import {Barcode,ClipboardList,Home,PackagePlus,Settings2} from 'lucide-react'
+import { Barcode, ClipboardList, Home, PackagePlus, Settings2 } from 'lucide-react'
+import { useState } from 'react'
+import IndustrialReferenceShell from '../../layout/IndustrialReferenceShell'
 import ListagemProdutos from './ListagemProdutos'
 import FormFichaTecnica from './FormFichaTecnica'
 import ImpressaoEtiquetas from './ImpressaoEtiquetas'
 import ParametrosCodigo from './ParametrosCodigo'
-type View='lista'|'ficha'|'barcode'|'regras'
-const nav=[['lista','Listagem Geral',ClipboardList],['ficha','Ficha Técnica',ClipboardList],['barcode','Código de Barras',Barcode],['regras','Regras do Código',Settings2]] as const
-export default function ModuloCadastroProdutos(){const[view,setView]=useState<View>('lista');const[id,setId]=useState<string|undefined>();const open=(x?:string)=>{setId(x);setView('ficha')};return <main className="min-h-screen bg-[#081821] text-slate-100"><style>{'.erp-panel{background:#102936;border:1px solid #294653;border-radius:16px;box-shadow:0 16px 34px rgba(0,0,0,.28)}.erp-input{width:100%;min-height:46px;border:1px solid #3b5662;border-radius:10px;background:#0a1b23;color:#fff;padding:0 12px;font-weight:700}.erp-field{display:grid;gap:7px;font-size:12px;font-weight:900;color:#e2e8f0}.erp-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border-radius:10px;padding:0 15px;font-weight:900;background:#142f3c;color:#fff;border:1px solid #3c5c69}.erp-primary{background:#247f9e;border-color:#65d4e1}.erp-table{width:100%;border-collapse:collapse}.erp-table th{background:#0a1c25;color:#cbd5e1;text-align:left;font-size:11px;padding:14px}.erp-table td{padding:14px;border-bottom:1px solid #213d48;color:#cbd5e1}.erp-badge{border-radius:999px;padding:5px 9px;background:#064e3b;color:#a7f3d0;font-size:10px;font-weight:950}.erp-error{padding:12px;border-radius:10px;background:#4c1d1d;color:#fecaca;border:1px solid #b83a45}'} </style><header className="border-b border-slate-700 bg-[#091b24] px-4 py-3"><div className="flex flex-wrap items-center gap-4"><span className="grid h-12 w-12 place-items-center rounded-xl border border-white/40 bg-gradient-to-br from-cyan-400 via-sky-700 to-slate-900 text-white shadow-[0_8px_0_#082a39]"><PackagePlus size={24}/></span><div><p className="text-[11px] font-black tracking-[.2em] text-cyan-300">PLASTIBOR INDUSTRIAL</p><h1 className="text-lg font-black text-white">MÓDULO: CADASTRO E IDENTIFICAÇÃO DE PRODUTOS</h1></div><button className="erp-btn ml-auto" onClick={()=>location.href='/tablet/dashboard'}><Home size={17}/>MENU INICIAL</button></div></header><div className="mx-auto grid max-w-[1800px] lg:grid-cols-[280px_1fr]"><aside className="border-r border-slate-700 bg-[#0b202a] p-4 lg:min-h-[calc(100vh-80px)]"><p className="mb-4 font-black text-white">WORKSPACE · CADASTRO DE PRODUTOS</p><nav className="space-y-2">{nav.map(([v,label,Icon])=><button key={v} className={'erp-btn w-full justify-start '+(view===v?'border-cyan-400 bg-cyan-950':'')} onClick={()=>setView(v)}><Icon size={19}/>{label}</button>)}</nav><button className="erp-btn mt-5 w-full justify-start" onClick={()=>location.href='/tablet/dashboard'}><Home size={19}/>Voltar à Mesa de Ícones</button></aside><section className="p-4 lg:p-7">{view==='lista'&&<ListagemProdutos onOpenFicha={open}/>} {view==='ficha'&&<FormFichaTecnica productId={id} onSaved={()=>setView('lista')}/>} {view==='barcode'&&<ImpressaoEtiquetas/>} {view==='regras'&&<ParametrosCodigo/>}</section></div></main>}
+
+type View = 'lista' | 'ficha' | 'barcode' | 'regras'
+
+const nav = [
+  { id: 'lista', label: 'Listagem Geral', icon: ClipboardList },
+  { id: 'ficha', label: 'Ficha Técnica', icon: ClipboardList },
+  { id: 'barcode', label: 'Código de Barras', icon: Barcode },
+  { id: 'regras', label: 'Regras do Código', icon: Settings2 },
+] as const
+
+export default function ModuloCadastroProdutos() {
+  const [view, setView] = useState<View>('lista')
+  const [id, setId] = useState<string | undefined>()
+
+  const open = (productId?: string) => {
+    setId(productId)
+    setView('ficha')
+  }
+
+  return (
+    <IndustrialReferenceShell
+      moduleLabel="Cadastro de Produtos"
+      title="Cadastro e Identificação de Produtos"
+      nav={nav}
+      activeId={view}
+      onNav={(next) => setView(next as View)}
+      onHome={() => { window.location.href = '/tablet/dashboard' }}
+    >
+      {view === 'lista' && <ListagemProdutos onOpenFicha={open} />}
+      {view === 'ficha' && <FormFichaTecnica productId={id} onSaved={() => setView('lista')} />}
+      {view === 'barcode' && <ImpressaoEtiquetas />}
+      {view === 'regras' && <ParametrosCodigo />}
+      <div className="mt-6 flex items-center justify-between rounded-3xl border border-slate-200 bg-white px-5 py-4 shadow-xl">
+        <div className="flex items-center gap-3">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-blue-500 via-blue-700 to-indigo-950 text-white shadow-lg">
+            <PackagePlus size={19} />
+          </span>
+          <div>
+            <p className="text-xs font-black uppercase tracking-wider text-slate-500">Módulo ativo</p>
+            <p className="text-sm font-black text-slate-900">Cadastro Mestre de Produtos</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => { window.location.href = '/tablet/dashboard' }}
+          className="inline-flex min-h-[46px] items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 text-sm font-black text-slate-800 shadow-sm hover:bg-slate-50"
+        >
+          <Home size={17} />
+          Voltar à Mesa
+        </button>
+      </div>
+    </IndustrialReferenceShell>
+  )
+}
