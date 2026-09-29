@@ -1,0 +1,26 @@
+<svg id="svg-logo" viewBox="0 0 520 120" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
+            <defs>
+              <linearGradient id="synqra-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00A3FF"/>
+                <stop offset="100%" stop-color="#0047FF"/>
+              </linearGradient>
+            </defs>
+            <!-- Gear Icon -->
+            <g transform="translate(10, 10)">
+              <!-- Gear Outer Teeth -->
+              <path fill="url(#synqra-blue)" d="M50 0 L58 10 L70 5 L74 18 L88 18 L88 32 L100 37 L94 50 L100 63 L88 68 L88 82 L74 82 L70 95 L58 90 L50 100 L42 90 L30 95 L26 82 L12 82 L12 68 L0 63 L6 50 L0 37 L12 32 L12 18 L26 18 L30 5 L42 10 Z"/>
+              <!-- Inner Circle cutout -->
+              <circle cx="50" cy="50" r="32" fill="#020617"/>
+              <!-- Inner Doc / Chart -->
+              <rect x="36" y="32" width="28" height="36" rx="4" fill="url(#synqra-blue)"/>
+              <line x1="42" y1="42" x2="58" y2="42" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+              <line x1="42" y1="50" x2="58" y2="50" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+              <line x1="42" y1="58" x2="52" y2="58" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+              <!-- Orbit Ring -->
+              <path d="M -10 70 A 65 35 -25 0 0 105 25" fill="none" stroke="#00A3FF" stroke-width="6" stroke-linecap="round"/>
+              <polygon points="105,25 95,20 98,32" fill="#00A3FF"/>
+            </g>
+            <!-- Text Brand -->
+            <text x="135" y="72" font-family="'Inter', sans-serif" font-weight="900" font-size="52" fill="#FFFFFF" letter-spacing="2">SYNQRA</text>
+            <text x="138" y="96" font-family="'Inter', sans-serif" font-weight="600" font-size="14" fill="#00A3FF" letter-spacing="4">ERP &amp; SGQ INDUSTRIAL</text>
+          </svg>
