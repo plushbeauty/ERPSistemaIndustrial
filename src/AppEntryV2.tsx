@@ -263,7 +263,7 @@ export default function AppEntryV2() {
     </Routes>
   )
 
-  if (!session) {
+  // DEMO VISUAL ISOLADA: Configurações ADM não depende de Supabase/Auth nesta fase.\n  if (location.pathname === '/configuracoes-adm' || location.pathname.startsWith('/configuracoes-adm/')) {\n    return (\n      <Boundary>\n        <Suspense fallback={<LoadingSkeleton label="Carregando demonstração visual de Configurações ADM…" />}>\n          <ConfiguracoesADMPage />\n        </Suspense>\n      </Boundary>\n    )\n  }\n\n  if (!session) {
     return <Boundary><Suspense fallback={<LoadingSkeleton />}>{publicRoutes}</Suspense></Boundary>
   }
 
