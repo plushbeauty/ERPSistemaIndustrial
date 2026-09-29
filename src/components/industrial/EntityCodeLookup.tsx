@@ -1,5 +1,7 @@
+/* Desenvolvedor: FernandoSch */
+/* Status do Build Local: Não executado — validação será feita pelo gate remoto. */
 import { useEffect, useMemo, useState } from 'react'
-import { Search, X } from 'lucide-react'
+import { Pencil, Search, X } from 'lucide-react'
 
 export type LookupRecord = {
   id: string
@@ -26,6 +28,7 @@ type Props = {
   helper?: string
   entityType?: string
   compact?: boolean
+  onEdit?: (record: LookupRecord) => void
 }
 
 export { EntityCodeLookup }
@@ -43,6 +46,7 @@ export default function EntityCodeLookup({
   required = false,
   helper,
   compact = false,
+  onEdit,
 }: Props) {
   const [open, setOpen] = useState(false)
   const [codigo, setCodigo] = useState('')
@@ -60,7 +64,7 @@ export default function EntityCodeLookup({
   const resolve = (raw = typedCode) => {
     const code = raw.trim().toLowerCase()
     if (!code) return
-    const hit = records.find(record => String(record.codigo ?? '').trim().toLowerCase() === code)
+    const hit = records.find(record => { const codeValue=String(record.codigo ?? '').trim().toLowerCase(); const nameValue=String(record.nome ?? '').trim().toLowerCase(); const documentValue=String(record.documento ?? '').replace(/\D/g,''); const rawDocument=raw.replace(/\D/g,''); return codeValue===code || nameValue===code || (rawDocument.length>=8 && documentValue===rawDocument) })
     if (!hit) {
       onChange(raw.trim())
       onSelect({ id: '', codigo: raw.trim(), nome: null })
@@ -112,9 +116,9 @@ export default function EntityCodeLookup({
         {label}{required ? ' *' : ''}
       </label>
 
-      <div className="mt-1 flex w-fit gap-1">
+      <div className="mt-1 flex w-full min-w-0 items-center gap-2">
         <input
-          className={`${compact ? "h-10 w-[140px] text-sm" : inputClass} rounded-md border border-slate-300 bg-white px-2 font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-600 focus:ring-2 focus:ring-sky-100`}
+          className={`${compact ? "h-9 w-[180px] text-sm" : inputClass.replace('h-10','h-9')} rounded-md border border-slate-300 bg-white px-2 font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-600 focus:ring-2 focus:ring-sky-100`}
           value={typedCode}
           required={required}
           placeholder={placeholder}
@@ -130,26 +134,19 @@ export default function EntityCodeLookup({
         />
         <button
           type="button"
-          className={`grid ${compact ? "h-10 w-10" : "h-10 w-[44px]"} shrink-0 place-items-center rounded-md border border-slate-300 bg-slate-100 text-slate-800 shadow-sm transition hover:border-sky-500 hover:bg-sky-50 hover:text-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-200`}
+          className={`grid ${compact ? "h-9 w-9" : "h-9 w-[40px]"} shrink-0 place-items-center rounded-md border border-slate-300 bg-slate-100 text-slate-800 shadow-sm transition hover:border-sky-500 hover:bg-sky-50 hover:text-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-200`}
           onClick={() => setOpen(true)}
           aria-label={`Consultar ${label}`}
           title="Consultar por filtros"
         >
-          <Search size={23} />
+          <Search size={18} />
         </button>
       </div>
 
       {selected && (
-        <div className="mt-1 max-w-[360px] rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-sm">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <strong className="text-slate-950">{selected.codigo ?? '—'}</strong>
-            <span className="text-slate-700">{selected.nome ?? 'Registro selecionado'}</span>
-          </div>
-          {(selected.dimensoes || selected.canal || selected.molde) && (
-            <p className="mt-1 text-sm font-medium text-slate-600">
-              {[selected.dimensoes, selected.canal, selected.molde].filter(Boolean).join(' • ')}
-            </p>
-          )}
+        <div className="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5">
+          <div className="min-w-0 flex-1"><strong className="block truncate text-sm text-slate-950">{selected.nome ?? 'Registro selecionado'}</strong><span className="block truncate text-xs font-semibold text-slate-600">{selected.codigo ?? '—'}{selected.documento ? ' • '+selected.documento : ''}</span></div>
+          {onEdit && <button type="button" className="grid h-7 w-7 shrink-0 place-items-center rounded border border-slate-300 bg-white text-slate-700 hover:bg-sky-50 hover:text-sky-700" onClick={()=>onEdit(selected)} aria-label="Editar registro" title="Editar registro"><Pencil size={14}/></button>}
         </div>
       )}
 
@@ -184,7 +181,7 @@ export default function EntityCodeLookup({
 
             <div className="grid shrink-0 gap-3 border-b border-slate-200 bg-white p-5 md:grid-cols-2 xl:grid-cols-4">
               <label className="text-sm font-extrabold text-slate-800">
-                Código Interno
+                Código / Nome / Documento
                 <input className={filterClass} value={codigo} onChange={event => setCodigo(event.target.value)} autoFocus />
               </label>
               <label className="text-sm font-extrabold text-slate-800">
