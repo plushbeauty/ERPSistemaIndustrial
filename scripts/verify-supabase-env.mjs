@@ -2,68 +2,73 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 const root = process.cwd()
+const canonicalUrl = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
+const forbiddenRefs = ['wdkvrqekixczuhrfygen', 'uhuxfkhutaknrykrvxge']
+const failures = []
+
+const fail = message => failures.push(message)
+
+const isVercel = process.env.VERCEL === '1' || process.env.VERCEL === 'true'
+const isCi = process.env.CI === 'true'
 const url = String(process.env.VITE_SUPABASE_URL || '').trim().replace(/\/$/, '')
 const publishable = String(process.env.VITE_SUPABASE_PUBLISHABLE_KEY || '').trim()
 const legacyAnon = String(process.env.VITE_SUPABASE_ANON_KEY || '').trim()
 const publicKey = publishable || legacyAnon
-const isVercel = process.env.VERCEL === '1' || process.env.VERCEL === 'true'
-const isCi = process.env.CI === 'true'
-const canonicalUrl = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
-const forbiddenProjectRefs = ['wdkvrqekixczuhrfygen', 'uhuxfkhutaknrykrvxge']
-const forbiddenHosts = forbiddenProjectRefs.map(ref => `${ref}.supabase.co`)
-const failures = []
-
-function fail(message) { failures.push(message) }
 
 console.log('=== ERP INDUSTRIAL — SUPABASE ENVIRONMENT GATE ===')
 console.log('Mode:', isVercel ? 'VERCEL PRODUCTION/PREVIEW' : isCi ? 'CI STATIC CONTRACT' : 'LOCAL')
 
 const envExamplePath = path.join(root, '.env.example')
-if (!fs.existsSync(envExamplePath)) fail('.env.example ausente; contrato de ambiente não pode ser auditado.')
-else {
+const clientPath = path.join(root, 'src/lib/supabaseClient.ts')
+
+if (!fs.existsSync(envExamplePath)) {
+  fail('.env.example ausente.')
+} else {
   const example = fs.readFileSync(envExamplePath, 'utf8')
-  if (!example.includes('VITE_SUPABASE_URL=')) fail('.env.example sem VITE_SUPABASE_URL.')
-  if (!example.includes('VITE_SUPABASE_PUBLISHABLE_KEY=')) fail('.env.example sem VITE_SUPABASE_PUBLISHABLE_KEY.')
+  for (const variable of ['VITE_SUPABASE_URL=', 'VITE_SUPABASE_PUBLISHABLE_KEY=']) {
+    if (!example.includes(variable)) fail(`.env.example sem ${variable}`)
+  }
+  if (/sb_(publishable|secret)_[A-Za-z0-9_-]{12,}/.test(example)) {
+    fail('.env.example contém uma chave Supabase real.')
+  }
 }
 
-const clientPath = path.join(root, 'src/lib/supabaseClient.ts')
-if (!fs.existsSync(clientPath)) fail('src/lib/supabaseClient.ts ausente.')
-else {
+if (!fs.existsSync(clientPath)) {
+  fail('src/lib/supabaseClient.ts ausente.')
+} else {
   const client = fs.readFileSync(clientPath, 'utf8')
-  const readsPublicUrl = /import\.meta\.env\.VITE_SUPABASE_URL|env\.VITE_SUPABASE_URL/.test(client)
-  const readsPublicKey = /import\.meta\.env\.VITE_SUPABASE_PUBLISHABLE_KEY|env\.VITE_SUPABASE_PUBLISHABLE_KEY/.test(client) || /import\.meta\.env\.VITE_SUPABASE_ANON_KEY|env\.VITE_SUPABASE_ANON_KEY/.test(client)
+  const readsUrl = /import\.meta\.env\.VITE_SUPABASE_URL/.test(client)
+  const readsPublishable = /import\.meta\.env\.VITE_SUPABASE_PUBLISHABLE_KEY/.test(client)
+  const readsLegacy = /import\.meta\.env\.VITE_SUPABASE_ANON_KEY/.test(client)
 
-  if (/DEFAULT_SUPABASE_PUBLISHABLE_KEY\s*=\s*['"][^'"]+['"]/.test(client)) fail('Chave Supabase hardcoded encontrada no cliente.')
-  if (/https:\/\/[^'"]+\.supabase\.co/.test(client) && !client.includes(canonicalUrl)) fail('URL Supabase diferente do projeto ERP encontrada no cliente.')
-  for (const host of forbiddenHosts) if (client.includes(host)) fail(`Projeto Supabase legado/proibido encontrado no cliente: ${host}.`)
-  if (/sb_secret_[A-Za-z0-9_-]{20,}/.test(client)) fail('Chave sb_secret_ encontrada no frontend.')
-  if (/[\'"]service_role[\'"]\s*[:=]/i.test(client)) fail('service_role encontrado no cliente frontend.')
-  if (!readsPublicUrl) fail('Cliente não lê VITE_SUPABASE_URL.')
-  if (!readsPublicKey) fail('Cliente não lê VITE_SUPABASE_PUBLISHABLE_KEY.')
-  
+  if (!readsUrl) fail('Cliente Supabase não lê VITE_SUPABASE_URL.')
+  if (!readsPublishable) fail('Cliente Supabase não lê VITE_SUPABASE_PUBLISHABLE_KEY.')
+  if (/DEFAULT_SUPABASE_PUBLISHABLE_KEY\s*=\s*['"][^'"]+['"]/.test(client)) fail('Chave Supabase hardcoded no cliente.')
+  if (/https:\/\/[^'"]+\.supabase\.co/.test(client) && !client.includes(canonicalUrl)) fail('URL Supabase incorreta hardcoded no cliente.')
+  for (const ref of forbiddenRefs) if (client.includes(`${ref}.supabase.co`)) fail(`Projeto Supabase legado encontrado no cliente: ${ref}`)
+  if (/sb_secret_[A-Za-z0-9_-]{12,}/.test(client)) fail('Chave sb_secret_ encontrada no frontend.')
+  if (/['"]service_role['"]\s*[:=]/i.test(client)) fail('service_role encontrado no frontend.')
+  if (readsLegacy && !readsPublishable) fail('Cliente depende somente da variável legada ANON_KEY.')
 }
 
 if (isVercel) {
-  if (forbiddenHosts.some(host => url.includes(host))) fail('Vercel aponta para projeto Supabase legado/proibido.')
-  if (!url) fail('Vercel sem VITE_SUPABASE_URL.')
-  if (url !== canonicalUrl) fail('VITE_SUPABASE_URL aponta para projeto Supabase diferente do ERP Industrial.')
-  if (!publicKey) fail('Vercel sem chave pública Supabase. Configure VITE_SUPABASE_PUBLISHABLE_KEY (preferencial) ou VITE_SUPABASE_ANON_KEY (compatibilidade).')
-  if (publicKey.startsWith('sb_secret_') || publicKey.includes('service_role')) fail('Vercel recebeu chave privada/service_role no frontend.')
-  if (publishable && !publishable.startsWith('sb_publishable_')) fail('VITE_SUPABASE_PUBLISHABLE_KEY configurada com formato inválido.')
-  if (!publishable && !legacyAnon) fail('Nenhuma chave pública Supabase válida foi configurada.')
-} else if (!publishable || !url) {
-  console.log('AVISO LOCAL/CI: variáveis reais não foram fornecidas; validação de contrato concluída sem bloquear.')
+  if (url !== canonicalUrl) fail('Vercel deve usar exatamente a URL Supabase canônica.')
+  if (!publicKey) fail('Vercel sem chave pública Supabase.')
+  if (publishable && !publishable.startsWith('sb_publishable_')) fail('VITE_SUPABASE_PUBLISHABLE_KEY com formato inválido.')
+  if (publicKey.startsWith('sb_secret_') || /service_role/i.test(publicKey)) fail('Vercel recebeu chave privada/service_role.')
+} else if (!url || !publicKey) {
+  console.log('AVISO LOCAL/CI: variáveis reais não fornecidas; somente contrato estrutural será validado.')
 }
 
 console.log('Canonical URL:', canonicalUrl)
 console.log('Public key configured:', Boolean(publicKey))
-console.log('Private key rejected:', Boolean(publishable && (publishable.startsWith('sb_secret_') || publishable.includes('service_role'))))
 console.log('Failures:', failures.length)
+
 for (const failure of failures) console.log('[BLOCKER]', failure)
 
 if (failures.length) {
-  console.log('RESULT: FAIL — deploy bloqueado para impedir ERP sem Supabase funcional.')
+  console.log('RESULT: FAIL — deploy bloqueado.')
   process.exit(2)
 }
 
-console.log('RESULT: PASS — contrato Supabase válido para este ambiente.')
+console.log('RESULT: PASS — contrato Supabase válido.')
