@@ -113,7 +113,7 @@ for (const file of files.filter(f => f.includes(`${path.sep}supabase${path.sep}m
   const sql = stripSqlStringsAndComments(text)
   if (/sb_secret_[A-Za-z0-9_-]{20,}/i.test(sql)) add('BLOCKER', file, 1, 'Segredo privado encontrado em migration.')
   const hasDefiner = /security\s+definer/i.test(sql)
-  const hasSafePath = /search_path\s*(?:=|to)\s*(?:pg_catalog\s*,\s*public|public\s*,\s*pg_catalog|public|pg_catalog)/i.test(sql)
+  const hasSafePath = /search_path\s*(?:=|to)\s*(?:''|pg_catalog\s*,\s*public|public\s*,\s*pg_catalog|public|pg_catalog)/i.test(sql)
   if (hasDefiner && !hasSafePath) add('HIGH', file, 1, 'SECURITY DEFINER sem search_path fixo explícito; revisar risco de search_path injection.')
 }
 
