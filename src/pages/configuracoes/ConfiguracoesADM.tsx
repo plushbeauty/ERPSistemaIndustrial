@@ -1,59 +1,73 @@
-import { useState } from 'react'
-import { Settings, KeyRound, ShieldCheck, UsersRound, FileText, DatabaseBackup } from 'lucide-react'
+import { useMemo } from 'react'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { KeyRound, ShieldCheck, UsersRound, FileText, DatabaseBackup, Settings } from 'lucide-react'
 import ConfiguracaoCodificacaoAreas from './ConfiguracaoCodificacaoAreas'
+import ConfiguracaoPermissoes from './ConfiguracaoPermissoes'
+import ConfiguracaoPerfis from './ConfiguracaoPerfis'
+import ConfiguracaoLogs from './ConfiguracaoLogs'
+import ConfiguracaoBackups from './ConfiguracaoBackups'
 
-type Profile = { nome?: string }
-type ConfigSection = 'codificacao' | 'permissoes' | 'perfis' | 'logs' | 'backups'
-
-const sections: Array<{ id: ConfigSection; label: string; icon: typeof Settings }> = [
-  { id: 'codificacao', label: 'Codificação e Áreas', icon: KeyRound },
-  { id: 'permissoes', label: 'Controle de Permissões', icon: ShieldCheck },
-  { id: 'perfis', label: 'Perfis', icon: UsersRound },
-  { id: 'logs', label: 'Logs', icon: FileText },
-  { id: 'backups', label: 'Backups', icon: DatabaseBackup },
+type Profile={nome?:string}|null
+type Item={path:string;label:string;hint:string;icon:typeof Settings}
+const items:Item[]=[
+ {path:'/configuracoes-adm/codificacao',label:'Codificação',hint:'Áreas e códigos',icon:KeyRound},
+ {path:'/configuracoes-adm/permissoes',label:'Permissões',hint:'Acesso por perfil',icon:ShieldCheck},
+ {path:'/configuracoes-adm/perfis',label:'Perfis',hint:'Perfis RBAC',icon:UsersRound},
+ {path:'/configuracoes-adm/logs',label:'Logs',hint:'Auditoria',icon:FileText},
+ {path:'/configuracoes-adm/backups',label:'Backups',hint:'Continuidade',icon:DatabaseBackup},
 ]
 
-export default function ConfiguracoesADM({ profile }: { profile: Profile | null }) {
-  const [section, setSection] = useState<ConfigSection>('codificacao')
-  const current = sections.find(item => item.id === section) ?? sections[0]
-  const CurrentIcon = current.icon
+export default function ConfiguracoesADM({profile}:{profile:Profile}){
+ const location=useLocation(),navigate=useNavigate()
+ const active=useMemo(()=>items.find(x=>location.pathname===x.path),[location.pathname])
+ const renderContent=()=>{
+   if(!active)return <Welcome/>
+   if(active.path.endsWith('/codificacao'))return <ConfiguracaoCodificacaoAreas profile={profile}/>
+   if(active.path.endsWith('/permissoes'))return <ConfiguracaoPermissoes/>
+   if(active.path.endsWith('/perfis'))return <ConfiguracaoPerfis/>
+   if(active.path.endsWith('/logs'))return <ConfiguracaoLogs/>
+   return <ConfiguracaoBackups/>
+ }
+ return <div className="min-h-[calc(100vh-104px)] bg-[#F4F7FE] text-slate-800">
+   <div className="flex min-h-[calc(100vh-104px)]">
+     <aside className="sticky top-0 z-10 flex h-[calc(100vh-104px)] w-[95px] shrink-0 flex-col border-r border-[#173F52] bg-[#123B50] text-white shadow-[8px_0_24px_rgba(18,59,80,.18)]">
+       <div className="flex h-[72px] items-center justify-center border-b border-white/10">
+         <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-[#55B8C8] via-[#2D8DB8] to-[#17445A] shadow-[0_9px_18px_rgba(0,0,0,.3),inset_0_2px_0_rgba(255,255,255,.4)]"><Settings size={25}/></div>
+       </div>
+       <div className="px-1 pt-3 text-center text-[8px] font-black uppercase tracking-[.12em] text-[#8DE0EA]">ADM</div>
+       <nav className="mt-2 flex-1 space-y-1 overflow-y-auto px-1.5" aria-label="Configurações">
+         {items.map(({path,label,hint,icon:Icon})=><NavLink key={path} to={path} className={({isActive})=>['group flex min-h-[68px] w-full flex-col items-center justify-center gap-1 rounded-lg border text-center transition-all',isActive?'border-[#55B8C8] bg-[#17445A] text-white shadow-[0_5px_14px_rgba(0,0,0,.2)]':'border-transparent text-slate-300 hover:border-white/15 hover:bg-white/5 hover:text-white'].join(' ')}>
+           <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-[#55B8C8] via-[#2D8DB8] to-[#17445A] text-white shadow-[0_5px_10px_rgba(0,0,0,.32),inset_0_1px_1px_rgba(255,255,255,.35)]"><Icon size={16} strokeWidth={2.5}/></span>
+           <span className="text-[9px] font-black leading-none">{label}</span>
+           <span className="text-[7px] font-semibold leading-none text-white/55">{hint}</span>
+         </NavLink>)}
+       </nav>
+       <button type="button" onClick={()=>navigate('/erp-industrial')} className="mb-2 flex min-h-[56px] flex-col items-center justify-center gap-1 border-t border-white/10 text-white/80 hover:bg-white/5 hover:text-white">
+         <span className="text-[14px]">⌂</span><span className="text-[8px] font-black">INÍCIO</span>
+       </button>
+     </aside>
+     <main className="min-w-0 flex-1 overflow-y-auto">
+       <div className="mx-auto max-w-[1600px] p-4 md:p-6 lg:p-7">
+         <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3">
+           <div><span className="text-[9px] font-black uppercase tracking-[.16em] text-[#176487]">ADMINISTRAÇÃO • CONFIGURAÇÕES</span><h1 className="mt-1 text-xl font-black tracking-tight text-[#123B50]">{active?.label??'Central de Configurações'}</h1></div>
+           <div className="rounded-lg border border-[#C5DEE6] bg-white px-3 py-2 text-right"><span className="block text-[8px] font-black uppercase tracking-[.12em] text-slate-400">USUÁRIO</span><strong className="text-[10px] font-black text-[#123B50]">{profile?.nome||'Usuário ERP'}</strong></div>
+         </div>
+         {renderContent()}
+       </div>
+     </main>
+   </div>
+ </div>
+}
 
-  return (
-    <div className="min-h-full bg-[#F4FBFD] p-4 md:p-6">
-      <div className="mx-auto grid max-w-[1500px] grid-cols-1 gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
-        <aside className="rounded-2xl bg-[#123B50] p-4 shadow-[0_12px_30px_rgba(18,59,80,.25)]">
-          <div className="mb-5 flex items-center gap-3 border-b border-white/15 pb-5">
-            <div className="grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-[#55B8C8] to-[#17445A] text-white shadow-[0_8px_16px_rgba(0,0,0,.3),inset_0_2px_0_rgba(255,255,255,.3)]">
-              <Settings size={25} strokeWidth={2.5} />
-            </div>
-            <div><span className="block text-[9px] font-black tracking-[.16em] text-[#8DE0EA]">ADMINISTRAÇÃO</span><strong className="block text-base font-black text-white">CONFIGURAÇÕES</strong></div>
-          </div>
-          <nav className="space-y-2" aria-label="Menu de configurações">
-            {sections.map(item => {
-              const Icon = item.icon
-              const active = item.id === section
-              return <button key={item.id} type="button" onClick={() => setSection(item.id)} className={['flex min-h-[54px] w-full items-center gap-3 rounded-xl border px-3 text-left transition-all',active?'border-[#55B8C8] bg-[#17445A] shadow-lg':'border-white/10 bg-white/5 hover:border-[#55B8C8]/50 hover:bg-white/10'].join(' ')}>
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-[#2D8DB8] to-[#17445A] text-white shadow-[0_6px_12px_rgba(0,0,0,.3),inset_0_1px_0_rgba(255,255,255,.3)]"><Icon size={18} strokeWidth={2.5}/></span>
-                <span className="text-sm font-black text-white">{item.label}</span>
-              </button>
-            })}
-          </nav>
-        </aside>
-        <section className="min-h-[620px] rounded-2xl border border-[#C5DEE6] bg-white shadow-[0_12px_30px_rgba(18,59,80,.12)]">
-          <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#D7EAF0] p-5 md:p-6">
-            <div className="flex items-center gap-4">
-              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-[#2D8DB8] to-[#17445A] text-white shadow-[0_9px_18px_rgba(23,68,90,.28),inset_0_2px_0_rgba(255,255,255,.3)]"><CurrentIcon size={27} strokeWidth={2.4}/></div>
-              <div><span className="block text-[10px] font-black tracking-[.15em] text-[#176487]">SGQ ERP INDUSTRIAL</span><h1 className="text-2xl font-black text-[#123B50]">{current.label}</h1></div>
-            </div>
-            <div className="rounded-xl border border-[#C5DEE6] bg-[#F8FCFD] px-4 py-3"><span className="block text-[9px] font-black tracking-[.14em] text-[#5C7480]">USUÁRIO CONECTADO</span><strong className="text-sm font-black text-[#123B50]">{profile?.nome || 'Usuário ERP'}</strong></div>
-          </header>
-          <div className="p-6 md:p-8">
-            {section === 'codificacao'
-              ? <ConfiguracaoCodificacaoAreas profile={profile} />
-              : <div className="rounded-2xl border-2 border-dashed border-[#B8D5DE] bg-[#F8FCFD] p-10 text-center"><div className="mx-auto grid h-20 w-20 place-items-center rounded-2xl bg-gradient-to-br from-[#55B8C8] to-[#17445A] text-white shadow-[0_12px_24px_rgba(23,68,90,.28),inset_0_2px_0_rgba(255,255,255,.3)]"><CurrentIcon size={38} strokeWidth={2.2}/></div><h2 className="mt-5 text-xl font-black text-[#123B50]">{current.label}</h2><p className="mx-auto mt-2 max-w-xl font-semibold text-[#31505D]">Esta seção será implementada na próxima etapa, sem dados ou conteúdo fictício.</p></div>}
-          </div>
-        </section>
-      </div>
-    </div>
-  )
+function Welcome(){
+ return <section className="flex min-h-[620px] items-center justify-center rounded-2xl border border-[#C5DEE6] bg-white shadow-[0_12px_30px_rgba(18,59,80,.12)]">
+   <div className="max-w-xl px-8 text-center">
+     <div className="mx-auto mb-7 flex h-32 w-[310px] items-center justify-center rounded-3xl border border-[#D7EAF0] bg-white p-5 shadow-[0_16px_36px_rgba(18,59,80,.14)]">
+       <img src="/logo/sgq-erp.png" alt="SGQ ERP Industrial" className="max-h-full max-w-full object-contain"/>
+     </div>
+     <span className="text-[9px] font-black uppercase tracking-[.22em] text-[#2D8DB8]">SGQ ERP INDUSTRIAL</span>
+     <h2 className="mt-2 text-2xl font-black text-[#123B50]">Configurações Administrativas</h2>
+     <p className="mx-auto mt-3 max-w-lg text-[11px] font-semibold leading-5 text-slate-500">Você entrou na área de configurações. O painel central permanece limpo até que uma função seja escolhida no menu lateral. Clique em um item à esquerda para abrir somente a tela operacional correspondente.</p>
+   </div>
+ </section>
 }
