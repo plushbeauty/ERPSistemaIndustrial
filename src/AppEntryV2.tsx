@@ -35,6 +35,7 @@ const AcompanhamentoNaoConformidade = lazy(() => import('./pages/AcompanhamentoN
 const EstoqueAlmoxarifado = lazy(() => import('./pages/EstoqueAlmoxarifado'))
 const ProdutosVendasIndustrial = lazy(() => import('./pages/ProdutosVendasIndustrial'))
 const ModuloCadastroProdutos = lazy(() => import('./pages/cadastro-produtos/ModuloCadastroProdutos'))
+const TabletDashboard = lazy(() => import('./pages/TabletDashboard'))
 const PedidoVendaCompleto = lazy(() => import('./pages/PedidoVendaCompleto'))
 const VendasCentral = lazy(() => import('./pages/VendasCentral'))
 const VendasCatalogoDigital = lazy(() => import('./pages/VendasCatalogoDigital'))
@@ -287,6 +288,8 @@ export default function AppEntryV2() {
     <Routes>
       <Route path="/comercial" element={<AppIndustrial />} />
       <Route path="/erp-industrial" element={<AppIndustrial />} />
+      <Route path="/tablet/dashboard" element={<TabletDashboard />} />
+      <Route path="/tablet/home" element={<TabletDashboard />} />
       <Route path="/vendas" element={<VendasCentral />} />
       <Route path="/vendas/novo-pedido" element={<PedidoVendaCompleto />} />
       <Route path="/vendas/carteira" element={<VendasCarteira />} />
