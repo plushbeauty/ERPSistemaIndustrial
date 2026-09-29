@@ -259,7 +259,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
       <main className="dp-main">
         {error && <div className="dp-error">{error}</div>}
 
-        <section className="dp-context"><div><p>VISÃO GERAL DO CHÃO DE FÁBRICA</p><strong>REVISÃO 2 · 16:30</strong></div></section>
+        
 
         <section className="dp-kpis">
           {cards.map(({ label, value, suffix, icon: Icon }) => (
