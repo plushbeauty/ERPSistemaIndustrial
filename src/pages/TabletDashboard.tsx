@@ -35,7 +35,7 @@ function resolveIcon(name: string) {
     const file = normalize(path.split('/').pop()?.replace(/\\.[^.]+$/, '') ?? '')
     return file === wanted || file.startsWith(`${wanted}_`)
   })
-  return entry?.[1] ?? null
+  return entry?.[1]
 }
 
 async function countRows(table: string, empresaId: string) {
@@ -170,6 +170,7 @@ export default function TabletDashboard() {
       icon: 'compras',
       title: 'COMPRAS',
       description: 'Fornecedores e solicitações de compra.',
+      metric: undefined,
       fallback: <PackageSearch size={30} />,
       links: [
         ['Fornecedores', '/compras/fornecedores'],
@@ -182,6 +183,7 @@ export default function TabletDashboard() {
       icon: 'financeiro',
       title: 'FINANCEIRO',
       description: 'Custos e análise financeira operacional.',
+      metric: undefined,
       fallback: <BarChart3 size={30} />,
       links: [
         ['Custo Padrão', '/financeiro/custo-padrao'],
@@ -193,6 +195,7 @@ export default function TabletDashboard() {
       icon: 'manutencao',
       title: 'MANUTENÇÃO',
       description: 'Ordens de manutenção e acompanhamento de ativos.',
+      metric: undefined,
       fallback: <Wrench size={30} />,
       links: [['Ordens de Manutenção', '/manutencao/ordens']],
     },
@@ -201,6 +204,7 @@ export default function TabletDashboard() {
       icon: 'engenharia',
       title: 'ENGENHARIA',
       description: 'Fichas técnicas e documentação de processo.',
+      metric: undefined,
       fallback: <PackageSearch size={30} />,
       links: [
         ['Engenharia', '/engenharia'],
@@ -213,6 +217,7 @@ export default function TabletDashboard() {
       icon: 'fiscal',
       title: 'FISCAL',
       description: 'Operações fiscais e carteira de documentos.',
+      metric: undefined,
       fallback: <ClipboardCheck size={30} />,
       links: [
         ['Fiscal', '/fiscal'],
