@@ -68,7 +68,7 @@ function detectModule(
 
   return (
     modules[clean] ??
-    "ERP Industrial"
+    "SYSNQRA ERP & SGQ INDUSTRIAL"
   );
 }
 

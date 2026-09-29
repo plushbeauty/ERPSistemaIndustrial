@@ -224,7 +224,7 @@ export default function IndustrialModuleWorkspace({module,profile,onBack}:{modul
       <div className="mw3-head-actions"><button className="mw3-btn secondary" onClick={()=>setHelp(true)}><HelpCircle size={16}/> Como usar</button>{special[module.name]&&<button className="mw3-btn secondary" onClick={openSpecial}><ArrowUpRight size={16}/> Abrir módulo completo</button>}<button className="mw3-btn primary" onClick={openNew}><Plus size={16}/> Novo</button></div>
     </header>
 
-    <section className="mw3-hero"><div><span>SGQ ERP • {module.name.toUpperCase()}</span><h1>{module.title}</h1><p>{module.description}</p></div><div className="mw3-tenant"><span>EMPRESA</span><strong>{profile.empresa_id ? profile.empresa_id.slice(0,8) + '…' : 'MASTER'}</strong><small>Dados isolados por tenant</small></div></section>
+    <section className="mw3-hero"><div><span>SYSNQRA ERP & SGQ INDUSTRIAL • {module.name.toUpperCase()}</span><h1>{module.title}</h1><p>{module.description}</p></div><div className="mw3-tenant"><span>EMPRESA</span><strong>{profile.empresa_id ? profile.empresa_id.slice(0,8) + '…' : 'MASTER'}</strong><small>Dados isolados por tenant</small></div></section>
 
     <section className="mw3-kpis"><article><LayoutDashboard/><span>Registros</span><strong>{stats.total}</strong><small>dados reais</small></article><article><Activity/><span>Em andamento</span><strong>{stats.open}</strong><small>status operacionais</small></article><article><AlertTriangle/><span>Atenção</span><strong>{stats.alerts}</strong><small>pendentes / críticos</small></article><article><Clock3/><span>Consulta</span><strong>{busy?'…':'OK'}</strong><small>Supabase atual</small></article></section>
 
@@ -241,7 +241,7 @@ export default function IndustrialModuleWorkspace({module,profile,onBack}:{modul
       </main>
     </section>
 
-    <footer className="mw3-footer"><span>SGQ ERP Industrial</span><span>Tablet operacional • controles ≥ 10px</span><span>FernandoSch_System</span></footer>
+    <footer className="mw3-footer"><span>SYSNQRA ERP & SGQ INDUSTRIAL</span><span>Tablet operacional • controles ≥ 10px</span><span>FernandoSch_System</span></footer>
 
     {selected&&<div className="mw3-modal-backdrop" onMouseDown={()=>setSelected(null)}><div className="mw3-modal" onMouseDown={e=>e.stopPropagation()}><header><div><span>DETALHE DO REGISTRO</span><h2>{module.title}</h2></div><button onClick={()=>setSelected(null)}><X size={18}/></button></header><div className="mw3-detail-grid">{fields.map(f=><div key={f.key}><span>{f.label}</span><strong>{norm(selected[f.key])||'—'}</strong></div>)}</div><footer><button className="mw3-btn secondary" onClick={()=>{edit(selected);setSelected(null)}}><Pencil size={15}/> Editar</button><button className="mw3-btn secondary" onClick={()=>setSelected(null)}>Fechar</button></footer></div></div>}
     {help&&<div className="mw3-modal-backdrop" onMouseDown={()=>setHelp(false)}><div className="mw3-help-modal" onMouseDown={e=>e.stopPropagation()}><HelpPanel module={module} tabs={tabs} onClose={()=>setHelp(false)}/></div></div>}
@@ -259,7 +259,7 @@ function PreventiveMaintenancePanel({empresaId}:{empresaId:string|null}){
  const savePlan=async()=>{if(!empresaId||!machineId){setMessage('Cadastre e selecione uma máquina antes de criar o plano.');return}setLoading(true);setMessage('');try{const r=await supabase.from('erp_manutencao').insert({empresa_id:empresaId,maquina:machineName(machineId),tipo:frequency,status:'Agendado',descricao:JSON.stringify({formulario:null,ano:year,tarefa:task,frequencia:frequency,maquina_id:machineId,observacao:'Plano gerado a partir do cadastro do cliente.'})});if(r.error)throw r.error;setMessage('Plano preventivo criado. A identificação do formulário permanece definida pelo cliente e não foi inventada pelo ERP.');await load()}catch(e){setMessage(e instanceof Error?e.message:'Não foi possível salvar o plano.')}finally{setLoading(false)}}
  if(!empresaId)return <section className="mw3-card"><h2>Cronograma de Manutenção Preventiva</h2><p>Selecione uma empresa para operar o cronograma.</p></section>
  return <section className="mw3-card" style={{marginBottom:16}}>
-  <div className="mw3-card-head"><div><span>MANUTENÇÃO PREVENTIVA • CRONOGRAMA ANUAL</span><h2>Cronograma de Manutenção Preventiva — Máquinas</h2><p>As máquinas aparecem automaticamente a partir do cadastro do cliente. O ERP não traz números da Plastibor e não inventa número de formulário.</p></div><CalendarDays size={22}/></div>
+  <div className="mw3-card-head"><div><span>MANUTENÇÃO PREVENTIVA • CRONOGRAMA ANUAL</span><h2>Cronograma de Manutenção Preventiva — Máquinas</h2><p>As máquinas aparecem automaticamente a partir do cadastro do cliente. O ERP não traz números da SYSNQRA e não inventa número de formulário.</p></div><CalendarDays size={22}/></div>
   <div className="mw3-form-grid" style={{marginBottom:14}}>
    <label>Ano<input type="number" value={year} onChange={e=>setYear(Number(e.target.value)||new Date().getFullYear())}/></label>
    <label>Máquina cadastrada<select value={machineId} onChange={e=>setMachineId(e.target.value)}><option value="">Selecione uma máquina</option>{machines.map(m=><option key={m.id} value={m.id}>{norm(m.codigo)} — {norm(m.nome)}</option>)}</select></label>
@@ -273,7 +273,7 @@ function PreventiveMaintenancePanel({empresaId}:{empresaId:string|null}){
    {!machines.length&&<tr><td colSpan={14} className="mw3-empty">Nenhuma máquina cadastrada. Cadastre as máquinas do cliente e este cronograma será preenchido automaticamente.</td></tr>}
   </tbody></table></div>
   <div style={{display:'flex',gap:16,flexWrap:'wrap',marginTop:12,fontSize:13,fontWeight:700}}><span>● Programado</span><span>✓ Programado e executado</span><span>⚠ Em atraso</span></div>
-  <div className="mw3-help-grid" style={{marginTop:14}}><article><h3>Identificação do formulário</h3><p>O código/número do formulário não é pré-preenchido. O cliente define sua identificação; o ERP poderá gerar revisões e histórico depois dessa definição, sem reutilizar códigos da Plastibor.</p></article><article><h3>Estrutura do calendário</h3><p>Máquina, periodicidade, tarefa e meses. A estrutura segue modelos atuais de CMMS que usam ativo, frequência, última execução, próxima execução, responsável e observações.</p></article></div>
+  <div className="mw3-help-grid" style={{marginTop:14}}><article><h3>Identificação do formulário</h3><p>O código/número do formulário não é pré-preenchido. O cliente define sua identificação; o ERP poderá gerar revisões e histórico depois dessa definição, sem reutilizar códigos da SYSNQRA.</p></article><article><h3>Estrutura do calendário</h3><p>Máquina, periodicidade, tarefa e meses. A estrutura segue modelos atuais de CMMS que usam ativo, frequência, última execução, próxima execução, responsável e observações.</p></article></div>
  </section>
 }
 

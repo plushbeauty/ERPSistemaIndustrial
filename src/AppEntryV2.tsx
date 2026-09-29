@@ -146,7 +146,7 @@ function MasterOnly({ children, allowed }: { children: ReactNode; allowed: boole
   return <>{children}</>
 }
 
-function LoadingSkeleton({ label = 'Carregando SGQ ERP Industrial…' }: { label?: string }) {
+function LoadingSkeleton({ label = 'Carregando SYSNQRA ERP & SGQ INDUSTRIAL…' }: { label?: string }) {
   return (
     <div className="loading-screen">
       <div className="loading-skeleton-card">
@@ -268,7 +268,7 @@ export default function AppEntryV2() {
   }
 
   if (!statusAcesso) {
-    return <LoadingSkeleton label="Validando acesso ao ERP Industrial…" />
+    return <LoadingSkeleton label="Validando acesso ao SYSNQRA ERP & SGQ INDUSTRIAL…" />
   }
 
   if (!statusAcesso.ok) {

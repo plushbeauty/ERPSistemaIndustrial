@@ -222,7 +222,7 @@ export default function ProdutosVendasIndustrial(){
 
   return <main style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif'}}>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:14,padding:'14px 16px 10px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
-      <div><div style={{fontSize:11,fontWeight:900,color:'#1c4bb5'}}>SGQ ERP • CADASTRO MESTRE</div><h1 style={{margin:'2px 0 0',fontSize:25,color:'#173fae'}}>CADASTRO DE PRODUTOS</h1></div>
+      <div><div style={{fontSize:11,fontWeight:900,color:'#1c4bb5'}}>SYSNQRA ERP & SGQ INDUSTRIAL • CADASTRO MESTRE</div><h1 style={{margin:'2px 0 0',fontSize:25,color:'#173fae'}}>CADASTRO DE PRODUTOS</h1></div>
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
         <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>
         <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />
@@ -327,6 +327,6 @@ export default function ProdutosVendasIndustrial(){
       </div>
       <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:1050}}><thead><tr>{['Código','Descrição','Grupo','Marca','Unidade','Estoque Atual','Situação','Ações'].map(h=><th key={h} style={{textAlign:'left',padding:9,borderBottom:'1px solid #d9e1ea',fontSize:10}}>{h}</th>)}</tr></thead><tbody>{filtered.map(p=><tr key={p.id} onDoubleClick={()=>selectProduct(p)} style={{background:selectedId===p.id?'#e7eefb':'#fff',cursor:'pointer'}}><td style={{padding:9,fontSize:11,fontWeight:900}}>{p.codigo}</td><td style={{padding:9,fontSize:11}}>{p.nome}</td><td style={{padding:9,fontSize:11}}>{p.grupo||'—'}</td><td style={{padding:9,fontSize:11}}>{p.marca||'—'}</td><td style={{padding:9,fontSize:11}}>{p.unidade}</td><td style={{padding:9,fontSize:11,fontWeight:900}}>{fmt(p.estoque_atual)}</td><td style={{padding:9,fontSize:11}}><span style={{display:'inline-flex',alignItems:'center',gap:4}}><CheckCircle2 size={12} color={p.ativo?'#16a34a':'#b42318'}/>{p.ativo?'Ativo':'Inativo'}</span></td><td style={{padding:9}}><button type="button" onClick={()=>selectProduct(p)} style={{...btn('normal'),height:30,padding:'0 9px'}}><Edit3 size={13}/>Abrir</button></td></tr>)}{!filtered.length&&emptyRow('Nenhum produto encontrado.',8)}</tbody></table></div>
     </section>
-    <footer style={{padding:'7px 12px 16px',fontSize:10,color:'#667085',display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8}}><span>SGQ ERP Industrial • Cadastro Mestre de Produtos</span><span>© FernandoSch_System — Todos os direitos reservados</span></footer>
+    <footer style={{padding:'7px 12px 16px',fontSize:10,color:'#667085',display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8}}><span>SYSNQRA ERP & SGQ INDUSTRIAL • Cadastro Mestre de Produtos</span><span>© FernandoSch_System — Todos os direitos reservados</span></footer>
   </main>
 }

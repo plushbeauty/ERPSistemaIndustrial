@@ -223,7 +223,7 @@ const tabs:[Tab,string,string][]=[['visao','Visão geral','Gauge'],['novaop','Cr
 
  return <main className="pcp-modern-page pcp-industrial-shell">
   <aside className="pcp-sidebar">
-   <div className="pcp-sidebar-brand"><img src="/logo/sgq-erp.png" alt="SGQ ERP Industrial"/><div><strong>SGQ ERP</strong><small>PCP INDUSTRIAL</small></div></div>
+   <div className="pcp-sidebar-brand"><img src="/logo/sgq-erp.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL"/><div><strong>SYSNQRA ERP & SGQ INDUSTRIAL</strong><small>PCP INDUSTRIAL</small></div></div>
    <button className="pcp-side-item" onClick={()=>location.href='/erp-industrial'}><span>⌂</span> DASHBOARD</button>
    <div className="pcp-side-section">PLANEJAMENTO E CONTROLE</div>
    <button className={`pcp-side-item ${tab==='visao'?'active':''}`} onClick={()=>selectTab('visao')}><span>▦</span> VISÃO GERAL</button>

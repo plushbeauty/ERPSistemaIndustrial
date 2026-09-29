@@ -13,7 +13,7 @@ export default function AssistenteAjudaERP() {
     {
       emissor: 'ia',
       texto:
-        'Olá! Sou o Assistente de IA do seu ERP Industrial. Selecione ou digite qual procedimento (Vendas, PCP, Calibração, Ficha de Processo, Laudo de Liberação ou Manutenção) você deseja consultar que eu te explico o preenchimento campo por campo!',
+        'Olá! Sou o Assistente de IA do seu SYSNQRA ERP & SGQ INDUSTRIAL. Selecione ou digite qual procedimento (Vendas, PCP, Calibração, Ficha de Processo, Laudo de Liberação ou Manutenção) você deseja consultar que eu te explico o preenchimento campo por campo!',
     },
   ]);
   const [input, setInput] = useState(searchParams.get('busca') ?? '');

@@ -1,6 +1,6 @@
 {
-  "name":"SGQ ERP Industrial",
-  "short_name":"SGQ ERP",
+  "name":"SYSNQRA ERP & SGQ INDUSTRIAL",
+  "short_name":"SYSNQRA ERP & SGQ INDUSTRIAL",
   "description":"Sistema de Gestão Industrial",
   "start_url":"/login",
   "scope":"/",

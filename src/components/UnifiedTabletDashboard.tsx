@@ -195,7 +195,7 @@ export default function UnifiedTabletDashboard({
       <header className="utd-top">
         <div className="utd-title">
           <Tablet size={25} color="#ff6b00" />
-          <div><strong>Tablet • Chão de Fábrica</strong><span>SGQ ERP Industrial · PCP · MES · Manutenção</span></div>
+          <div><strong>Tablet • Chão de Fábrica</strong><span>SYSNQRA ERP & SGQ INDUSTRIAL · PCP · MES · Manutenção</span></div>
         </div>
         {onExit && <button className="utd-exit" type="button" onClick={onExit}><X size={17}/><span>Sair do tablet</span></button>}
       </header>

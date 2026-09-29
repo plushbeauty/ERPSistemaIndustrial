@@ -64,7 +64,7 @@ export default function SetupADMInicial() {
   if (!available) return <main style={shell}><section style={card}><ShieldCheck size={28}/><h1 style={{fontSize:28,margin:'12px 0'}}>Cadastro Master indisponível</h1><p style={muted}>{message || 'Já existe um proprietário Master ou o serviço ainda não está disponível.'}</p><a href="/login" style={{...button,textDecoration:'none'}}>Ir para o login</a></section></main>
 
   return <main style={shell}><section style={card}>
-    <div style={{display:'flex',gap:12,alignItems:'center'}}><LockKeyhole size={28}/><div><strong style={{display:'block',fontSize:11,letterSpacing:2}}>SGQ ERP INDUSTRIAL</strong><h1 style={{fontSize:28,margin:'4px 0'}}>Criar proprietário Master</h1></div></div>
+    <div style={{display:'flex',gap:12,alignItems:'center'}}><LockKeyhole size={28}/><div><strong style={{display:'block',fontSize:11,letterSpacing:2}}>SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL</strong><h1 style={{fontSize:28,margin:'4px 0'}}>Criar proprietário Master</h1></div></div>
     <p style={muted}>Este acesso é universal. O Master não pertence a uma empresa nem exige setor. Depois do cadastro, o login usa exclusivamente o Supabase Auth.</p>
     {error && <div style={{...box,background:'rgba(180,40,40,.12)',borderColor:'rgba(255,120,120,.3)',color:'#ffd0d0'}}>{error}</div>}
     <form onSubmit={submit}>

@@ -63,9 +63,9 @@ function Welcome(){
  return <section className="flex min-h-[620px] items-center justify-center rounded-2xl border border-[#C5DEE6] bg-white shadow-[0_12px_30px_rgba(18,59,80,.12)]">
    <div className="max-w-xl px-8 text-center">
      <div className="mx-auto mb-7 flex h-32 w-[310px] items-center justify-center rounded-3xl border border-[#D7EAF0] bg-white p-5 shadow-[0_16px_36px_rgba(18,59,80,.14)]">
-       <img src="/logo/sgq-erp.png" alt="SGQ ERP Industrial" className="max-h-full max-w-full object-contain"/>
+       <img src="/logo/sgq-erp.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" className="max-h-full max-w-full object-contain"/>
      </div>
-     <span className="text-[9px] font-black uppercase tracking-[.22em] text-[#2D8DB8]">SGQ ERP INDUSTRIAL</span>
+     <span className="text-[9px] font-black uppercase tracking-[.22em] text-[#2D8DB8]">SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL</span>
      <h2 className="mt-2 text-2xl font-black text-[#123B50]">Configurações Administrativas</h2>
      <p className="mx-auto mt-3 max-w-lg text-[11px] font-semibold leading-5 text-slate-500">Você entrou na área de configurações. O painel central permanece limpo até que uma função seja escolhida no menu lateral. Clique em um item à esquerda para abrir somente a tela operacional correspondente.</p>
    </div>

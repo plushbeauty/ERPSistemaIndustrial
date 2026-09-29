@@ -136,7 +136,7 @@ export default function PlanosIndustrial() {
         <header className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <span className="text-xs font-black uppercase tracking-[0.18em] text-blue-700">SGQ ERP INDUSTRIAL · PLANOS</span>
+              <span className="text-xs font-black uppercase tracking-[0.18em] text-blue-700">SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL · PLANOS</span>
               <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">Planos carregados do catálogo comercial</h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700">
                 Compare a composição atualmente cadastrada no banco ERP. Recursos e valores exibidos abaixo são lidos do catálogo ativo.
@@ -213,7 +213,7 @@ export default function PlanosIndustrial() {
                     ].join(' ')}
                   >
                     <div className="flex min-h-[54px] items-start justify-between gap-3">
-                      <span className="text-xs font-black uppercase tracking-wide text-slate-500">PLANO SGQ ERP</span>
+                      <span className="text-xs font-black uppercase tracking-wide text-slate-500">PLANO SYSNQRA ERP & SGQ INDUSTRIAL</span>
                       <button
                         type="button"
                         onClick={() => setSelected(plan.codigo)}

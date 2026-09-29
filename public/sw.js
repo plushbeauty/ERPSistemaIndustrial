@@ -1,4 +1,4 @@
-/* SGQ ERP INDUSTRIAL — SERVICE WORKER DESATIVADO */
+/* SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL — SERVICE WORKER DESATIVADO */
 /*
  * Este arquivo existe apenas para neutralizar instalações antigas.
  * Não intercepta fetch e não cria nenhum cache novo.

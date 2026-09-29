@@ -19,21 +19,21 @@ export default function Contato() {
     <main className="public-contact-page">
       <div className="public-contact-shell">
         <header className="public-contact-header">
-          <a href="/" className="public-brand" aria-label="SGQ ERP"><img src="/logo/sgq-erp.png" alt="SGQ ERP" /></a>
+          <a href="/" className="public-brand" aria-label="SYSNQRA ERP & SGQ INDUSTRIAL"><img src="/logo/sgq-erp.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" /></a>
           <a className="contact-back" href="/"><ArrowLeft size={17} /> Voltar ao site</a>
         </header>
 
         <section className="public-contact-grid">
           <div className="public-contact-copy">
             <span className="public-kicker">CONTATO</span>
-            <h1>Fale diretamente com a equipe SGQ ERP.</h1>
+            <h1>Fale diretamente com a equipe SYSNQRA ERP & SGQ INDUSTRIAL.</h1>
             <p>Envie sua dúvida, solicitação, sugestão ou pedido de demonstração. A mensagem será encaminhada para nossa caixa de atendimento.</p>
             <div className="contact-trust"><ShieldCheck size={20} /><span>Atendimento direcionado para o e-mail da equipe.</span></div>
             <div className="contact-mail"><Mail size={19} /><span>fernandosch2012@hotmail.com</span></div>
           </div>
 
           <form className="public-contact-form" action="https://formsubmit.co/fernandosch2012@hotmail.com" method="POST" onSubmit={enviar}>
-            <input type="hidden" name="_subject" value="Novo contato — SGQ ERP Industrial" />
+            <input type="hidden" name="_subject" value="Novo contato — SYSNQRA ERP & SGQ INDUSTRIAL" />
             <input type="hidden" name="_captcha" value="true" />
             <input type="hidden" name="_template" value="table" />
             <input type="hidden" name="_next" value="https://erp-sistema-industrial.vercel.app/contato?enviado=1" />

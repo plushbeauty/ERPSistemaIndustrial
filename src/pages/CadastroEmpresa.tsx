@@ -106,7 +106,7 @@ export default function CadastroEmpresa() {
             <span>Empresa: {ok.empresa}</span>
             <span>E-mail: {ok.email}</span>
           </div>
-          <a className="signup-primary" href="/login">Entrar no SGQ ERP</a>
+          <a className="signup-primary" href="/login">Entrar no SYSNQRA ERP & SGQ INDUSTRIAL</a>
           <a className="signup-secondary" href="/">Voltar ao site</a>
         </section>
       </main>
@@ -120,11 +120,11 @@ export default function CadastroEmpresa() {
         <div className="company-signup-layout">
           <section className="signup-visual">
             <div className="signup-visual-inner">
-              <img src="/images/sgq/sgq-erp-login.png" alt="SGQ ERP Industrial" />
+              <img src="/images/sgq/sgq-erp-login.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" />
               <div className="signup-visual-shade" />
               <div className="signup-visual-content">
-                <img src="/logo/sgq-erp.png" alt="SGQ ERP" className="signup-logo" />
-                <span>SGQ ERP INDUSTRIAL</span>
+                <img src="/logo/sgq-erp.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" className="signup-logo" />
+                <span>SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL</span>
                 <h1>Seu negócio.<br /><em>Seu controle.</em></h1>
                 <p>Cadastre sua empresa, crie o primeiro administrador e tenha uma base preparada para produção, qualidade, estoque, financeiro e gestão.</p>
                 <div className="signup-visual-points">
@@ -139,7 +139,7 @@ export default function CadastroEmpresa() {
           <section className="company-signup-card">
             <a className="signup-back" href="/planos"><ArrowLeft size={18} /> Voltar</a>
             <div className="signup-brand">
-              <img src="/logo/sgq-erp.png" alt="SGQ ERP" />
+              <img src="/logo/sgq-erp.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" />
               <span>NOVO CLIENTE</span>
               <h2>Cadastre sua empresa</h2>
               <p>Crie seu ambiente e o primeiro acesso administrativo.</p>
@@ -150,7 +150,7 @@ export default function CadastroEmpresa() {
                   <Package size={20} />
                   <div>
                     <small>SELEÇÃO</small>
-                    <strong>{plan ? (plans[plan] || plan) + ' • ' + (prices[plan] || '') : 'Plano do SGQ ERP'}</strong>
+                    <strong>{plan ? (plans[plan] || plan) + ' • ' + (prices[plan] || '') : 'Plano do SYSNQRA ERP & SGQ INDUSTRIAL'}</strong>
                     {module && <span>Módulo: {module}</span>}
                   </div>
                 </div>

@@ -77,7 +77,7 @@ function FatalBootstrap({ error, retry }: { error: unknown; retry: () => void })
   return (
     <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24, background: '#f4f7f5', color: '#17342f', fontFamily: 'Inter,system-ui,sans-serif' }}>
       <section style={{ width: 'min(680px,100%)', background: '#fff', border: '1px solid #d9e3df', borderRadius: 24, padding: 28, boxShadow: '0 30px 90px rgba(20,55,49,.12)' }}>
-        <strong style={{ fontSize: 11, letterSpacing: '.18em', color: '#9a763b' }}>SGQ ERP INDUSTRIAL • BOOTSTRAP</strong>
+        <strong style={{ fontSize: 11, letterSpacing: '.18em', color: '#9a763b' }}>SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL • BOOTSTRAP</strong>
         <h1 style={{ fontSize: 28, margin: '10px 0 8px' }}>Falha ao carregar o aplicativo</h1>
         <p style={{ color: '#667975', lineHeight: 1.7 }}>O navegador conseguiu carregar o HTML, mas o módulo principal não iniciou. O erro real está abaixo.</p>
         <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', marginTop: 18, padding: 16, borderRadius: 14, background: '#f2f5f3', color: '#8a5d23', fontSize: 12 }}>{message}</pre>
@@ -89,7 +89,7 @@ function FatalBootstrap({ error, retry }: { error: unknown; retry: () => void })
 
 function BootstrapLoader() {
   return (
-    <Suspense fallback={<div role="status" aria-live="polite" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'Inter,system-ui,sans-serif', background: '#f4f5f3', color: '#17342f' }}><strong>Carregando SGQ ERP Industrial…</strong></div>}>
+    <Suspense fallback={<div role="status" aria-live="polite" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'Inter,system-ui,sans-serif', background: '#f4f5f3', color: '#17342f' }}><strong>Carregando SYSNQRA ERP & SGQ INDUSTRIAL…</strong></div>}>
       <AppBootstrap />
     </Suspense>
   )

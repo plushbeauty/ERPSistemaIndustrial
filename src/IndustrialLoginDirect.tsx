@@ -133,7 +133,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
         await supabase.auth.signOut().catch(() => undefined)
 
         if (alive) {
-          setError('A sessão anterior não possui acesso válido ao ERP Industrial. Entre novamente.')
+          setError('A sessão anterior não possui acesso válido ao SYSNQRA ERP & SGQ INDUSTRIAL. Entre novamente.')
           setChecking(false)
         }
       }
@@ -164,7 +164,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
     }
 
     if (!normalizedEmail.includes('@')) {
-      setError('Use o e-mail cadastrado para entrar no ERP Industrial.')
+      setError('Use o e-mail cadastrado para entrar no SYSNQRA ERP & SGQ INDUSTRIAL.')
       return
     }
 
@@ -266,11 +266,11 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
           <div className="auth-panel-inner">
             <div className="auth-heading">
               <span className="auth-overline">
-                {masterMode ? 'SGQ ERP INDUSTRIAL • LOGIN MASTER' : 'PLASTIBOR • ACESSO SEGURO'}
+                {masterMode ? 'SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL • LOGIN MASTER' : 'SYSNQRA • ACESSO SEGURO'}
               </span>
             </div>
             <h1>Preparando seu acesso</h1>
-            <p className="auth-description">Validando a sessão do SGQ ERP Industrial…</p>
+            <p className="auth-description">Validando a sessão do SYSNQRA ERP & SGQ INDUSTRIAL…</p>
             <div className="auth-security-note">
               <ShieldCheck size={16} />
               <span>Sessão segura e persistente.</span>
@@ -288,16 +288,16 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
       animate={{ opacity: 1 }}
       transition={{ duration: 0.32 }}
     >
-      <section className="auth-visual" aria-label="SGQ ERP Industrial">
-        <img src="/images/sgq/sgq-erp-login.png" alt="Ambiente industrial do SGQ ERP" />
+      <section className="auth-visual" aria-label="SYSNQRA ERP & SGQ INDUSTRIAL">
+        <img src="/images/sgq/sgq-erp-login.png" alt="Ambiente industrial do SYSNQRA ERP & SGQ INDUSTRIAL" />
         <div className="auth-visual-shade" />
         <div className="auth-visual-grid" aria-hidden="true" />
         <div className="auth-visual-content">
           <a href="/" className="auth-visual-logo">
-            <img src="/logo/sgq-erp.png" alt="SGQ ERP" />
+            <img src="/logo/sgq-erp.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" />
           </a>
           <div className="auth-visual-message">
-            <span>PLASTIBOR • SGQ ERP INDUSTRIAL</span>
+            <span>SYSNQRA • SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL</span>
             <h2>
               Uma fábrica inteira.
               <br />
@@ -320,16 +320,16 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
         <div className="auth-panel-inner">
           <div className="auth-mobile-brand">
             <a href="/">
-              <img src="/logo/sgq-erp.png" alt="SGQ ERP" />
+              <img src="/logo/sgq-erp.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" />
             </a>
           </div>
 
           <div className="auth-heading">
-            <span className="auth-overline">PLASTIBOR • ACESSO SEGURO</span>
+            <span className="auth-overline">SYSNQRA • ACESSO SEGURO</span>
             <span className="auth-status"><i /> Ambiente protegido</span>
           </div>
 
-          <h1>{masterMode ? 'Telas Master — Administrador do Projeto' : 'Entrar no SGQ ERP'}</h1>
+          <h1>{masterMode ? 'Telas Master — Administrador do Projeto' : 'Entrar no SYSNQRA ERP & SGQ INDUSTRIAL'}</h1>
 
           <p className="auth-description">
             {masterMode

@@ -49,7 +49,7 @@ export default function FiscalPublic() {
     <div className="fiscal-public bg-[#f8fafc] min-h-screen text-[#0f172a] font-sans">
       <header className="fiscal-public-nav flex justify-between items-center p-4 border-b border-[#C9E1E8] bg-white shadow-sm">
         <a href="/" className="fiscal-logo">
-          <img src="/logo/sgq-erp.png" alt="SGQ ERP" className="h-8" />
+          <img src="/logo/sgq-erp.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" className="h-8" />
         </a>
         <div className="flex items-center gap-4 text-base font-semibold">
           <span className="text-slate-400">MÓDULO FISCAL</span>
@@ -62,7 +62,7 @@ export default function FiscalPublic() {
       <main className="max-w-7xl margin-0-auto px-4 py-12 space-y-20">
         <section className="fiscal-hero grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
-            <span className="bg-blue-50 text-[#2563eb] text-sm font-bold px-3 py-1 rounded-full uppercase tracking-wider">SGQ ERP • LINHA FISCAL</span>
+            <span className="bg-blue-50 text-[#2563eb] text-sm font-bold px-3 py-1 rounded-full uppercase tracking-wider">SYSNQRA ERP & SGQ INDUSTRIAL • LINHA FISCAL</span>
             <h1 className="text-4xl lg:text-5xl font-black text-[#0f172a] leading-tight">Do pedido à nota fiscal, tudo conectado à operação.</h1>
             <p className="text-lg text-slate-600 leading-relaxed">Uma visão completa do processo fiscal industrial: vendas, faturamento, NF-e, NFC-e, XML, estoque e financeiro trabalhando integrados com os mesmos dados.</p>
             <div className="fiscal-actions flex flex-wrap gap-4">
@@ -84,7 +84,7 @@ export default function FiscalPublic() {
           <div className="fiscal-visual flex justify-center">
             <div className="fiscal-window bg-white border border-slate-200 rounded-xl shadow-md w-full max-w-md overflow-hidden">
               <div className="fiscal-window-top bg-slate-900 text-white p-3 flex justify-between items-center text-xs font-bold">
-                <span>SGQ ERP / FISCAL</span>
+                <span>SYSNQRA ERP & SGQ INDUSTRIAL / FISCAL</span>
                 <span className="text-emerald-400 flex items-center gap-1">● Operação integrada</span>
               </div>
               <div className="p-6 space-y-6">
@@ -152,7 +152,7 @@ export default function FiscalPublic() {
           </div>
         </section>
         <footer className="border-t border-slate-200 py-8 text-center text-sm font-medium text-slate-500">
-          FernandoSch. • SGQ ERP Industrial <span className="mx-2">•</span>
+          FernandoSch. • SYSNQRA ERP & SGQ INDUSTRIAL <span className="mx-2">•</span>
           <a className="text-[#2563eb] hover:underline" href="/">Voltar à Home Principal</a>
         </footer>
       </main>

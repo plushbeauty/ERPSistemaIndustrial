@@ -105,7 +105,7 @@ export default function QualidadeRelatoriosDocumentos(){
     <section className="quality-report-paper rounded-md border border-slate-200 bg-white p-6 shadow-sm">
      <div className="mb-5 border-b-2 border-slate-900 pb-4">
       <div className="flex items-start justify-between gap-5">
-       <div><p className="text-sm font-extrabold tracking-widest">SGQ ERP INDUSTRIAL • SISTEMA DE GESTÃO DA QUALIDADE</p><h2 className="mt-2 text-2xl font-black">{printTitle}</h2><p className="mt-1 text-base font-semibold">Departamento: {department} • Emissão: {new Date().toLocaleDateString('pt-BR')}</p></div>
+       <div><p className="text-sm font-extrabold tracking-widest">SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL • SISTEMA DE GESTÃO DA QUALIDADE</p><h2 className="mt-2 text-2xl font-black">{printTitle}</h2><p className="mt-1 text-base font-semibold">Departamento: {department} • Emissão: {new Date().toLocaleDateString('pt-BR')}</p></div>
        <div className="text-right"><p className="text-sm font-bold">TOTAL</p><p className="text-3xl font-black">{rows.length}</p></div>
       </div>
      </div>
