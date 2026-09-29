@@ -374,7 +374,7 @@ export default function AppEntryV2() {
       <Route path="/teste-erp" element={<TesteERP />} />
       <Route path="/usuarios-admin" element={<UsuariosAdmin />} />
       <Route path="/usuarios" element={<UsuariosAdmin />} />
-      <Route path="/configuracoes-adm/*" element={<AppIndustrial />} />
+      <Route path="/configuracoes-adm/*" element={<ConfiguracoesADMPage />} />
       <Route path="/documentos-qualidade" element={<DocumentosQualidadeControle />} />
       <Route path="/recebimento-materiais" element={<RecebimentoMateriais />} />
       <Route path="/manual-usuario" element={<ManualUsuario />} />
