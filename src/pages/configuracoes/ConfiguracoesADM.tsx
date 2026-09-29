@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ComponentType } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   Activity,
@@ -24,7 +24,8 @@ import {
   X,
 } from 'lucide-react'
 
-type Item = { path: string; label: string; description: string; icon: typeof Settings }
+type IconType = ComponentType<{ size?: number; className?: string }>
+type Item = { path: string; label: string; description: string; icon: IconType }
 type Group = { label: string; items: Item[] }
 
 const groups: Group[] = [
@@ -96,7 +97,7 @@ function Card({ title, children, action }: { title: string; children: React.Reac
 }
 
 function Overview({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
-  const cards = [
+  const cards: Array<[string, string, IconType, string]> = [
     ['Empresa e identidade', 'Mantenha os dados cadastrais, documentos e identidade do ERP.', Building2, '/configuracoes-adm/empresa'],
     ['Perfis e permissões', 'Defina estruturas de acesso por função sem misturar módulos.', ShieldCheck, '/configuracoes-adm/perfis'],
     ['Usuários', 'Base administrativa para cadastro, situação e perfil de acesso.', UsersRound, '/configuracoes-adm/usuarios'],
@@ -107,12 +108,12 @@ function Overview({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
   return (
     <div className="space-y-5">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {[
+        {([
           ['Módulos administrativos', '10', ClipboardList],
           ['Perfis estruturados', '03', UsersRound],
           ['Políticas de segurança', '08', ShieldCheck],
           ['Integrações', '04', Network],
-        ].map(([label, value, Icon]) => (
+        ] as Array<[string, string, IconType]>).map(([label, value, Icon]) => (
           <div key={String(label)} className="rounded-xl border border-slate-200 bg-white p-5 shadow-[0_2px_10px_rgba(18,59,80,0.05)]">
             <div className="flex items-center justify-between"><span className="text-xs font-bold text-slate-500">{label}</span><Icon size={18} className="text-[#2D8DB8]" /></div>
             <div className="mt-2 text-2xl font-black text-[#123B50]">{value}</div>
