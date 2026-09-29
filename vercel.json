@@ -269,5 +269,9 @@
         }
       ]
     }
-  ]
+  ],
+  "env": {
+    "VITE_SUPABASE_URL": "https://zsklkydlawgvwgnvxwwx.supabase.co",
+    "VITE_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_BcwsSbBx8dWof7d_hAKtQA_XzQGAYwR"
+  }
 }
