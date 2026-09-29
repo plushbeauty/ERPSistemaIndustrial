@@ -3,6 +3,7 @@ import path from 'node:path'
 
 const root = process.cwd()
 const appPath = path.join(root, 'src', 'AppEntryV2.tsx')
+const sourceDir = path.dirname(appPath)
 const app = fs.readFileSync(appPath, 'utf8')
 
 const routeMatches = [...app.matchAll(/<Route\s+path=["']([^"']+)["'][^>]*element=\{<([A-Za-z0-9_]+)/g)]
@@ -21,10 +22,10 @@ for (const [, route, component] of routeMatches) {
 
 for (const [name, importPath] of lazyImports) {
   const candidates = [
-    path.join(root, importPath + '.tsx'),
-    path.join(root, importPath + '.ts'),
-    path.join(root, importPath, 'index.tsx'),
-    path.join(root, importPath, 'index.ts'),
+    path.join(sourceDir, importPath + '.tsx'),
+    path.join(sourceDir, importPath + '.ts'),
+    path.join(sourceDir, importPath, 'index.tsx'),
+    path.join(sourceDir, importPath, 'index.ts'),
   ]
   if (!candidates.some(fs.existsSync)) failures.push(`Import lazy ${name} sem arquivo: ${importPath}`)
 }
