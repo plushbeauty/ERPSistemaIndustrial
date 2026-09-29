@@ -11,7 +11,7 @@ export type IndustrialReferenceNavItem = {
 type Props = {
   moduleLabel: string
   title: string
-  nav: IndustrialReferenceNavItem[]
+  nav: readonly IndustrialReferenceNavItem[]
   activeId: string
   onNav: (id: string) => void
   onHome: () => void
