@@ -3,10 +3,10 @@ import { createClient, type Session, type SupabaseClient } from '@supabase/supab
 const AUTH_STORAGE_KEY = 'erp-industrial-auth'
 
 const supabaseUrl: string = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey: string = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+const supabaseKey: string = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Erro Crítico: Variáveis VITE_SUPABASE_URL ou VITE_SUPABASE_PUBLISHABLE_KEY não foram injetadas corretamente no build.')
+  throw new Error('Erro Crítico: Variáveis VITE_SUPABASE_URL ou uma chave pública Supabase (publishable/anon) não foi injetada corretamente no build.')
 }
 
 export const supabaseModoConexao = 'nuvem'

@@ -6,6 +6,14 @@
   "installCommand": "npm install --no-audit --no-fund",
   "rewrites": [
     {
+      "source": "/tablet/dashboard",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cadastro-produtos",
+      "destination": "/index.html"
+    },
+    {
       "source": "/login",
       "destination": "/index.html"
     },
