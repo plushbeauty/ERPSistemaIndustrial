@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { useMemo } from 'react'
 import { Activity, Boxes, CheckCircle, ClipboardList, Cpu, Factory, Layers, Receipt, Settings, ShoppingCart, Tablet, Truck, Users, X } from 'lucide-react'
 
 type TabletLaunchpadProps = {
@@ -13,6 +14,39 @@ type Module = {
   route: string
   icon: typeof ShoppingCart
   accent: string
+}
+
+const tabletIconAssets = import.meta.glob('../assets/icones-tablet/*.{png,svg,webp,jpg,jpeg}', {
+  eager: true,
+  import: 'default',
+  query: '?url',
+}) as Record<string, string>
+
+function normalizeIconKey(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\\u0300-\\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+function resolveTabletIcon(number: string, label: string) {
+  const numberKey = number.padStart(2, '0')
+  const labelKey = normalizeIconKey(label)
+  const entries = Object.entries(tabletIconAssets)
+
+  const exactNumber = entries.find(([path]) => {
+    const file = normalizeIconKey(path.split('/').pop()?.replace(/\\.[^.]+$/, '') ?? '')
+    return file.startsWith(`${numberKey}-`) || file.startsWith(`${number}-`)
+  })
+  if (exactNumber) return exactNumber[1]
+
+  const exactLabel = entries.find(([path]) => {
+    const file = normalizeIconKey(path.split('/').pop()?.replace(/\\.[^.]+$/, '') ?? '')
+    return file === labelKey || file.includes(labelKey)
+  })
+  return exactLabel?.[1] ?? null
 }
 
 const modules: Module[] = [
@@ -50,6 +84,7 @@ const moduleItems: Record<string, string> = {
 }
 
 export default function TabletLaunchpad({ onNavigate, isOpen, onClose }: TabletLaunchpadProps) {
+  const resolvedIcons = useMemo(() => Object.fromEntries(modules.map((module) => [module.label, resolveTabletIcon(module.number, module.label)])), [])
   if (!isOpen) return null
 
   return (
@@ -75,7 +110,7 @@ export default function TabletLaunchpad({ onNavigate, isOpen, onClose }: TabletL
               onClick={() => { onNavigate(route); onClose() }}
               style={{ '--module-accent': accent } as CSSProperties}
             >
-              <span className="tablet-3d-icon" aria-hidden="true"><Icon size={31} strokeWidth={2.4} /></span>
+              <span className="tablet-3d-icon" aria-hidden="true">{resolvedIcons[label] ? <img src={resolvedIcons[label]} alt="" className="h-[34px] w-[34px] object-contain" /> : <Icon size={31} strokeWidth={2.4} />}</span>
               <span className="tablet-module-copy">
                 <small>{number}.</small>
                 <strong>{label}</strong><span className="tablet-module-items">{moduleItems[label] ?? ''}</span>
