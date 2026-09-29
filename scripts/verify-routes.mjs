@@ -4,9 +4,9 @@ import path from 'node:path'
 const root = process.cwd()
 const appPath = path.join(root, 'src', 'AppEntryV2.tsx')
 const app = fs.readFileSync(appPath, 'utf8')
-const routeMatches = [...app.matchAll(/<Route\\s+path=["']([^"']+)["']\\s+element=\\{<([A-Za-z0-9_]+)[^>]*>.*?<\\/\\2>\\}/gs)]
+const routeMatches = [...app.matchAll(/<Route\s+path=["']([^"']+)["']\s+element=\{<([A-Za-z0-9_]+)[^>]*>.*?<\/\\2>\}/gs)]
 const lazyImports = new Set(
-  [...app.matchAll(/(?:const|let|var)\\s+([A-Za-z0-9_]+)\\s*=\\s*lazy\\(\\(\\)\\s*=>\\s*import\\(["']([^"']+)["']\\)\\)/g)]
+  [...app.matchAll(/(?:const|let|var)\s+([A-Za-z0-9_]+)\s*=\s*lazy\(\(\)\s*=>\s*import\(["']([^"']+)["']\)\)/g)]
     .map(([, name]) => name),
 )
 const allowedLocal = new Set(['Navigate', 'MasterOnly', 'AppIndustrial', 'IndustrialLoginDirect', 'PublicIndustrialHome'])
@@ -18,7 +18,7 @@ for (const [, route, component] of routeMatches) {
   }
 }
 
-for (const [, , importPath] of [...app.matchAll(/(?:const|let|var)\\s+([A-Za-z0-9_]+)\\s*=\\s*lazy\\(\\(\\)\\s*=>\\s*import\\(["']([^"']+)["']\\)\\)/g)]) {
+for (const [, , importPath] of [...app.matchAll(/(?:const|let|var)\s+([A-Za-z0-9_]+)\s*=\s*lazy\(\(\)\s*=>\s*import\(["']([^"']+)["']\)\)/g)]) {
   const candidates = [
     path.join(root, importPath + '.tsx'),
     path.join(root, importPath + '.ts'),
