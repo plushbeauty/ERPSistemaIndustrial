@@ -104,10 +104,10 @@ export default function TabletLaunchpad({ onNavigate, isOpen, onClose }: TabletL
         <div className="tablet-module-grid">
           {modules.map(({ number, label, route, icon: Icon, accent }) => (
             <button
-              key={route}
+              key={`${number}-${route}`}
               type="button"
               className="tablet-module-card"
-              onClick={() => { onNavigate(route); onClose() }}
+              onClick={() => { onClose(); window.location.assign(route) }}
               style={{ '--module-accent': accent } as CSSProperties}
             >
               <span className="tablet-3d-icon" aria-hidden="true">{resolvedIcons[label] ? <img src={resolvedIcons[label]} alt="" className="h-[34px] w-[34px] object-contain" /> : <Icon size={31} strokeWidth={2.4} />}</span>
