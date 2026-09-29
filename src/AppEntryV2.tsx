@@ -91,6 +91,7 @@ const QualidadeProcedimentos = lazy(() => import('./pages/qualidade/QualidadePro
 const QualidadeQuarentena = lazy(() => import('./pages/qualidade/QualidadeQuarentena'))
 const FinanceiroCustoPadrao = lazy(() => import('./pages/FinanceiroCustoPadrao'))
 const OutlookConfiguracao = lazy(() => import('./pages/OutlookConfiguracao'))
+const OutlookCaixaEntrada = lazy(() => import('./pages/OutlookCaixaEntrada'))
 const AdminLogs = lazy(() => import('./pages/AdminLogs'))
 const CalibracaoIndustrial = lazy(() => import('./pages/CalibracaoIndustrial'))
 const QualidadeRelatoriosDocumentos = lazy(() => import('./pages/QualidadeRelatoriosDocumentos'))
@@ -376,7 +377,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/financeiro/custo-padrao" element={<FinanceiroCustoPadrao />} />
       <Route path="/admin/logs" element={<AdminLogs />} />
       <Route path="/outlook/configuracao" element={<OutlookConfiguracao />} />
-      <Route path="/outlook/caixa-entrada" element={<Navigate to="/outlook/configuracao" replace />} />
+      <Route path="/outlook/caixa-entrada" element={<OutlookCaixaEntrada />} />
       <Route path="/compras/fornecedores" element={<FornecedoresIndustrial />} />
       <Route path="/compras/solicitacao-manual" element={<ComprasSolicitacaoManual />} />
       <Route path="/solicitacao-compra" element={<SolicitacaoCompra />} />
