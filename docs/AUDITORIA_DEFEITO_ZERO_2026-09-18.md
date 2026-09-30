@@ -4,7 +4,7 @@
 
 ### ERP Industrial
 - GitHub main: `fd16bbf57fade8295526edaa42eb72809b623610`
-- Supabase project: `wdkvrqekixczuhrfygen`
+- Supabase project: `zsklkydlawgvwgnvxwwx` (canonical project adopted after this historical audit)
 - Migration `20260918193518_erp_empresa_documento_cpf_cnpj`: aplicada no banco e artefato presente no Git.
 - `erp-login`: ACTIVE v23, verify_jwt=false.
 - `erp-user-admin`: ACTIVE v10, verify_jwt=true.
