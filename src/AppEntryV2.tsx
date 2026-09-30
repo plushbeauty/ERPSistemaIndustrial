@@ -11,6 +11,7 @@ import './styles/visual-showcase-2026.css'
 import './styles/module-overview.css'
 import './styles/erp-ui-pass-2026.css'
 import './styles/industrial-plans.css'
+import './styles/erp-design-system-2026.css'
 
 import IndustrialLoginDirect from './IndustrialLoginDirect'
 
