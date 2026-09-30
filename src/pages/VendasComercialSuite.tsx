@@ -241,14 +241,14 @@ function Precos({prices,priceItems,products,empresa,onSaved}:{prices:PriceTable[
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível criar a tabela.')}finally{setSaving(false)}
  }
  const saveParameters=async()=>{
-  if(!selected)return
+  if(!draft)return
   setSaving(true);setError('');setMessage('')
   try{
    const payload={
-    codigo:selected.codigo,nome:selected.nome,ativo:selected.ativo,
-    validade_inicio:selected.validade_inicio||null,validade_fim:selected.validade_fim||null,
-    margem_minima:Number(selected.margem_minima||0),desconto_maximo_vendedor:Number(selected.desconto_maximo_vendedor||0),
-    desconto_maximo_gerente:Number(selected.desconto_maximo_gerente||0),moeda:(selected.moeda||'BRL').toUpperCase(),condicao_pagamento:selected.condicao_pagamento?.trim()||null
+    codigo:draft.codigo,nome:draft.nome,ativo:draft.ativo,
+    validade_inicio:draft.validade_inicio||null,validade_fim:draft.validade_fim||null,
+    margem_minima:Number(draft.margem_minima||0),desconto_maximo_vendedor:Number(draft.desconto_maximo_vendedor||0),
+    desconto_maximo_gerente:Number(draft.desconto_maximo_gerente||0),moeda:(draft.moeda||'BRL').toUpperCase(),condicao_pagamento:draft.condicao_pagamento?.trim()||null
    }
    const r=await supabase.from('erp_tabelas_preco').update(payload).eq('id',selected.id).eq('empresa_id',empresa)
    if(r.error)throw r.error
