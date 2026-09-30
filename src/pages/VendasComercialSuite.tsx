@@ -7,7 +7,7 @@ type View = 'dashboard'|'crm'|'clientes'|'precos'|'orcamentos'|'pedidos'|'fatura
 type Client = { id:string; codigo:string; nome:string; documento:string|null; email:string|null; limite_credito:number|null; ativo:boolean }
 type Product = { id:string; codigo:string; nome:string; preco_venda:number|null; custo_ultimo:number|null; ativo:boolean }
 type Opportunity = { id:string; titulo:string; cliente_id:string|null; valor_estimado:number; probabilidade:number; etapa:string; proxima_acao:string|null; motivo_perda:string|null }
-type Quote = { id:string; numero:number; cliente_id:string; status:string; validade:string|null; total:number; margem_percentual:number|null; created_at:string }
+type Quote = { id:string; numero:number; cliente_id:string; status:string; validade:string|null; contato?:string|null; vendedor_id?:string|null; tabela_preco_id?:string|null; condicao_pagamento?:string|null; tipo_frete?:string|null; valor_frete?:number|null; outras_despesas?:number|null; termos?:string|null; observacoes?:string|null; subtotal?:number|null; desconto?:number|null; total:number; margem_percentual:number|null; created_at:string }
 type Order = { id:string; numero:number; cliente_id:string|null; status:string; total:number; data_entrada:string; data_entrega_prometida:string|null; pedido_cliente:string|null; credito_status:string|null; credito_motivo:string|null }
 type Nfe = { id:string; numero:number|null; serie:number; status:string; destinatario_nome:string; valor_total:number; data_emissao:string; chave_acesso:string|null; mensagem_sefaz:string|null }
 type PriceTable = { id:string; codigo:string; nome:string; ativo:boolean }
@@ -203,15 +203,150 @@ function Precos({prices,priceItems,products,empresa,onSaved}:{prices:PriceTable[
  return <><section className="vcs-section"><div className="vcs-section-title"><strong>Tabelas de preço</strong></div><div className="vcs-form"><label className="vcs-field erp-field-code">Código<input value={code} onChange={e=>setCode(e.target.value)}/></label><label className="vcs-field wide">Nome<input value={name} onChange={e=>setName(e.target.value)}/></label><div><button className="vcs-btn primary" style={{marginTop:20}} onClick={()=>void save()}><Plus size={16}/> Criar tabela</button></div></div></section><section className="vcs-section"><div className="vcs-section-title"><strong>Tabelas comerciais</strong><span>{prices.length} tabela(s)</span></div><DataTable headers={['Código','Tabela','Status']} rows={prices.map(p=>[p.codigo,p.nome,p.ativo?'ATIVA':'INATIVA'])}/><div className="vcs-form" style={{marginTop:10}}><label className="vcs-field erp-field-percent">Reajuste %<input type="number" step="0.01" value={adjustment} onChange={e=>setAdjustment(e.target.value)}/></label><div><button className="vcs-btn primary" style={{marginTop:20}} disabled={adjusting||!prices.length} onClick={()=>void adjust()}><RefreshCw size={16}/> {adjusting?'Aplicando…':'Reajustar tabela em lote'}</button></div></div><p style={{fontSize:12,color:'#617984',marginBottom:0}}>O reajuste usa transação no banco e bloqueia preço abaixo do custo/margem mínima cadastrada.</p></section><section className="vcs-section"><strong>Itens de tabela cadastrados</strong><DataTable headers={['Tabela','Produto','Preço','Custo']} rows={priceItems.slice(0,50).map(i=>[prices.find(p=>p.id===i.tabela_preco_id)?.nome??'—',products.find(p=>p.id===i.produto_id)?.nome??'—',brl(Number(i.preco||0)),brl(Number(products.find(p=>p.id===i.produto_id)?.custo_ultimo||0))])}/></section></>
 }
 
-function Orcamentos({quotes,clients,onCreate,onConvert}:{quotes:Quote[];clients:Client[];onCreate:(c:string,v:string)=>Promise<void>;onConvert:(q:Quote)=>Promise<void>}){
- const productsForQuote=useProductsForQuote()
- const [client,setClient]=useState('');const [validade,setValidade]=useState('');const [quoteId,setQuoteId]=useState('');const [produto,setProduto]=useState('');const [quantidade,setQuantidade]=useState('1');const [preco,setPreco]=useState('');const [items,setItems]=useState<Array<{id:string;orcamento_id:string;produto_id:string;quantidade:number;preco_unitario:number;total:number}>>([]);const [itemLoading,setItemLoading]=useState(false)
- const refreshItems=async(id:string)=>{const r=await supabase.from('erp_vendas_orcamentos_itens').select('id,orcamento_id,produto_id,quantidade,preco_unitario,total').eq('orcamento_id',id).eq('empresa_id',await supabase.rpc('erp_current_empresa_id').then(x=>String(x.data||''))).order('created_at');if(!r.error)setItems((r.data??[]) as typeof items)}
- const addItem=async()=>{if(!quoteId||!produto||Number(quantidade)<=0||Number(preco)<0)return;setItemLoading(true);try{const empresaId=await supabase.rpc('erp_current_empresa_id').then(x=>String(x.data||''));const r=await supabase.from('erp_vendas_orcamentos_itens').insert({empresa_id:empresaId,orcamento_id:quoteId,produto_id:produto,quantidade:Number(quantidade),preco_unitario:Number(preco),desconto_percentual:0});if(r.error)throw r.error;const rows=await supabase.from('erp_vendas_orcamentos_itens').select('total').eq('orcamento_id',quoteId).eq('empresa_id',empresaId);if(rows.error)throw rows.error;const total=(rows.data??[]).reduce((s,x)=>s+Number(x.total||0),0);const up=await supabase.from('erp_vendas_orcamentos').update({subtotal:total,total}).eq('id',quoteId).eq('empresa_id',empresaId);if(up.error)throw up.error;setProduto('');setQuantidade('1');setPreco('');await refreshItems(quoteId)}catch(e){window.alert(e instanceof Error?e.message:'Não foi possível adicionar o item.')}finally{setItemLoading(false)}}
- const selectedQuote=quotes.find(q=>q.id===quoteId)\n const printQuote=()=>{if(!selectedQuote)return;const clientName=clients.find(c=>c.id===selectedQuote.cliente_id)?.nome??'Cliente';const rows=items.map(i=>`<tr><td>${productsForQuote.find(p=>p.id===i.produto_id)?.codigo??''}</td><td>${productsForQuote.find(p=>p.id===i.produto_id)?.nome??''}</td><td>${i.quantidade}</td><td>${brl(i.preco_unitario)}</td><td>${brl(i.total)}</td></tr>`).join('');const w=window.open('','_blank','noopener,noreferrer,width=1000,height=800');if(!w)return;w.document.write(`<html><head><title>Orçamento ${selectedQuote.numero}</title><style>body{font-family:Arial,sans-serif;color:#123b50;margin:40px}header{border-bottom:2px solid #2d8db8;padding-bottom:16px}h1{margin:0;font-size:24px}table{width:100%;border-collapse:collapse;margin-top:24px}th,td{padding:9px;border-bottom:1px solid #d7e6eb;text-align:left}th{background:#f1f7f9}.total{text-align:right;font-size:20px;font-weight:800;margin-top:20px}.terms{margin-top:30px;color:#526a76;white-space:pre-wrap}@media print{body{margin:18mm}}</style></head><body><header><div>ERP INDUSTRIAL • VENDAS & COMERCIAL</div><h1>PROPOSTA / ORÇAMENTO Nº ${selectedQuote.numero}</h1><div>Cliente: ${clientName}</div><div>Validade: ${dateBR(selectedQuote.validade)}</div></header><table><thead><tr><th>Código</th><th>Produto</th><th>Qtd.</th><th>Preço</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table><div class="total">Total: ${brl(items.reduce((s,i)=>s+Number(i.total||0),0))}</div><div class="terms">Condições e termos: ${'Conforme cadastro comercial.'}</div><script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close()}
- return <><section className="vcs-section"><div className="vcs-section-title"><strong>Novo orçamento</strong></div><div className="vcs-form"><label className="vcs-field wide">Cliente<select value={client} onChange={e=>setClient(e.target.value)}><option value="">Selecionar</option>{clients.map(c=><option key={c.id} value={c.id}>{c.codigo} • {c.nome}</option>)}</select></label><label className="vcs-field erp-field-date">Validade<input type="date" value={validade} onChange={e=>setValidade(e.target.value)}/></label><div><button className="vcs-btn primary" style={{marginTop:20}} onClick={()=>void onCreate(client,validade)}><Plus size={16}/> Criar rascunho</button></div></div></section><section className="vcs-section"><div className="vcs-section-title"><strong>Orçamentos</strong><span>Selecione um orçamento para editar itens e gerar PDF</span></div><DataTable headers={['Orçamento','Cliente','Status','Validade','Total','Ação']} rows={quotes.map(q=>[String(q.numero).padStart(6,'0'),clients.find(c=>c.id===q.cliente_id)?.nome??'—',q.status,dateBR(q.validade),brl(q.total),q.status==='CONVERTIDO'?'—':<button className="vcs-btn" onClick={()=>{setQuoteId(q.id);void refreshItems(q.id)}}>{quoteId===q.id?'Selecionado':'Itens'}</button>])}/></section>{selectedQuote&&selectedQuote.status!=='CONVERTIDO'&&<section className="vcs-section"><div className="vcs-section-title"><strong>Itens do orçamento {String(selectedQuote.numero).padStart(6,'0')}</strong></div><div className="vcs-form"><label className="vcs-field wide">Produto<select value={produto} onChange={e=>{setProduto(e.target.value);const p=productsForQuote.find(x=>x.id===e.target.value);if(p)setPreco(String(p.preco_venda??0))}}><option value="">Selecionar</option>{productsForQuote.map(p=><option key={p.id} value={p.id}>{p.codigo} • {p.nome}</option>)}</select></label><label className="vcs-field erp-field-qty">Quantidade<input type="number" min="0.001" step="0.001" value={quantidade} onChange={e=>setQuantidade(e.target.value)}/></label><label className="vcs-field erp-field-money">Preço unitário<input className="erp-field-money" type="number" min="0" step="0.0001" value={preco} onChange={e=>setPreco(e.target.value)}/></label><div><button className="vcs-btn primary" style={{marginTop:20}} disabled={itemLoading} onClick={()=>void addItem()}><Plus size={16}/> Adicionar item</button></div></div>{items.length?<DataTable headers={['Produto','Quantidade','Preço','Total']} rows={items.map(i=>[productsForQuote.find(p=>p.id===i.produto_id)?.nome??'—',i.quantidade,brl(i.preco_unitario),brl(i.total)])}/>:<div className="vcs-empty">Nenhum item cadastrado neste orçamento.</div>}<div className="vcs-actions" style={{justifyContent:'flex-end',marginTop:10}}><button className="vcs-btn" disabled={!items.length} onClick={printQuote}><FileCheck2 size={16}/> Gerar PDF / Imprimir</button><strong>Total: {brl(items.reduce((s,i)=>s+Number(i.total||0),0)||selectedQuote.total)}</strong><button className="vcs-btn primary" disabled={!items.length} onClick={()=>void onConvert(selectedQuote)}><ShoppingCart size={16}/> Converter para pedido</button></div></section>}</>
-}
+function Orcamentos({quotes,clients,prices,products,onCreate,onConvert}:{quotes:Quote[];clients:Client[];prices:PriceTable[];products:Product[];onCreate:(c:string,v:string)=>Promise<void>;onConvert:(q:Quote)=>Promise<void>}){
+ const [quoteId,setQuoteId]=useState('');
+ const [items,setItems]=useState<Array<{id:string;orcamento_id:string;produto_id:string;quantidade:number;preco_unitario:number;desconto_percentual:number;total:number}>>([]);
+ const [itemLoading,setItemLoading]=useState(false);
+ const [saving,setSaving]=useState(false);
+ const [produto,setProduto]=useState('');
+ const [quantidade,setQuantidade]=useState('1');
+ const [desconto,setDesconto]=useState('0');
+ const [form,setForm]=useState({cliente:'',validade:'',contato:'',vendedorId:'',vendedorNome:'',tabela:'',condicao:'',tipoFrete:'CIF' as 'CIF'|'FOB',frete:'0',outras:'0',termos:'',observacoes:''});
+ const selectedQuote=quotes.find(q=>q.id===quoteId);
+ const selectedProduct=products.find(p=>p.id===produto);
+ const selectedTable=prices.find(p=>p.id===form.tabela);
+ const priceItemsForTable=useState<Array<{produto_id:string;preco:number}>>([])[0];
+ const [tableItems,setTableItems]=useState<Array<{produto_id:string;preco:number}>>([]);
+ const selectedPrice=tableItems.find(i=>i.produto_id===produto)?.preco ?? selectedProduct?.preco_venda ?? 0;
+ const subtotal=items.reduce((s,i)=>s+Number(i.total||0),0);
+ const freight=Number(form.frete)||0;
+ const other=Number(form.outras)||0;
+ const total=subtotal+freight+other;
+ const cost=items.reduce((s,i)=>s+Number(products.find(p=>p.id===i.produto_id)?.custo_ultimo||0)*Number(i.quantidade||0),0);
+ const margin=subtotal>0?((subtotal-cost)/subtotal)*100:0;
 
+ const loadItems=async(id:string)=>{
+  const e=await supabase.rpc('erp_current_empresa_id'); const empresaId=String(e.data||'');
+  if(!empresaId)return;
+  const r=await supabase.from('erp_vendas_orcamentos_itens').select('id,orcamento_id,produto_id,quantidade,preco_unitario,desconto_percentual,total').eq('orcamento_id',id).eq('empresa_id',empresaId).order('created_at');
+  if(!r.error)setItems((r.data??[]) as typeof items);
+ };
+ const loadTableItems=async(tableId:string)=>{
+  if(!tableId){setTableItems([]);return}
+  const e=await supabase.rpc('erp_current_empresa_id'); const empresaId=String(e.data||'');
+  if(!empresaId)return;
+  const r=await supabase.from('erp_tabelas_preco_itens').select('produto_id,preco').eq('empresa_id',empresaId).eq('tabela_preco_id',tableId);
+  if(!r.error)setTableItems((r.data??[]) as typeof tableItems);
+ };
+ const openQuote=async(q:Quote)=>{
+  setQuoteId(q.id);
+  setForm({
+   cliente:q.cliente_id,validade:q.validade??'',contato:q.contato??'',vendedorId:q.vendedor_id??'',vendedorNome:'',
+   tabela:q.tabela_preco_id??'',condicao:q.condicao_pagamento??'',tipoFrete:(q.tipo_frete==='FOB'?'FOB':'CIF'),
+   frete:String(q.valor_frete??0),outras:String(q.outras_despesas??0),termos:q.termos??'',observacoes:q.observacoes??''
+  });
+  await Promise.all([loadItems(q.id),loadTableItems(q.tabela_preco_id??'')]);
+  const user=await supabase.auth.getUser();
+  if(user.data.user){
+   const u=await supabase.from('erp_usuarios').select('id,nome').eq('id',q.vendedor_id??user.data.user.id).maybeSingle();
+   if(!u.error)setForm(v=>({...v,vendedorNome:u.data?.nome??''}));
+  }
+ };
+ const saveHeader=async(status:'RASCUNHO'|'ENVIADO'= 'RASCUNHO')=>{
+  if(!selectedQuote||!form.cliente){return}
+  setSaving(true);
+  try{
+   const payload={cliente_id:form.cliente,validade:form.validade||null,contato:form.contato.trim()||null,vendedor_id:form.vendedorId||null,tabela_preco_id:form.tabela||null,condicao_pagamento:form.condicao.trim()||null,tipo_frete:form.tipoFrete,valor_frete:freight,outras_despesas:other,subtotal,desconto:items.reduce((s,i)=>s+Number(i.preco_unitario*i.quantidade*i.desconto_percentual/100),0),total,margem_percentual:margin,termos:form.termos.trim()||null,observacoes:form.observacoes.trim()||null,status};
+   const r=await supabase.from('erp_vendas_orcamentos').update(payload).eq('id',selectedQuote.id);
+   if(r.error)throw r.error;
+  }catch(e){window.alert(e instanceof Error?e.message:'Não foi possível salvar o orçamento.')}finally{setSaving(false)}
+ };
+ const addItem=async()=>{
+  if(!selectedQuote||!produto||Number(quantidade)<=0||selectedPrice<0)return;
+  const d=Number(desconto)||0;if(d<0||d>100)return;
+  setItemLoading(true);
+  try{
+   const empresaId=String((await supabase.rpc('erp_current_empresa_id')).data||'');if(!empresaId)throw new Error('Empresa não identificada.');
+   const r=await supabase.from('erp_vendas_orcamentos_itens').insert({empresa_id:empresaId,orcamento_id:selectedQuote.id,produto_id:produto,quantidade:Number(quantidade),preco_unitario:Number(selectedPrice),desconto_percentual:d});
+   if(r.error)throw r.error;
+   setProduto('');setQuantidade('1');setDesconto('0');await loadItems(selectedQuote.id);
+  }catch(e){window.alert(e instanceof Error?e.message:'Não foi possível adicionar o item.')}finally{setItemLoading(false)}
+ };
+ const removeItem=async(id:string)=>{
+  const r=await supabase.from('erp_vendas_orcamentos_itens').delete().eq('id',id);
+  if(r.error)window.alert(r.error.message);else if(selectedQuote)await loadItems(selectedQuote.id);
+ };
+ const printQuote=()=>{
+  if(!selectedQuote)return;
+  const clientName=clients.find(c=>c.id===form.cliente)?.nome??'Cliente';
+  const rows=items.map((i,n)=>{const p=products.find(x=>x.id===i.produto_id);return '<tr><td>'+String(n+1).padStart(2,'0')+'</td><td>'+String(p?.codigo??'')+'</td><td>'+String(p?.nome??'')+'</td><td>'+Number(i.quantidade).toLocaleString('pt-BR')+'</td><td>'+brl(i.preco_unitario)+'</td><td>'+Number(i.desconto_percentual).toFixed(1)+'%</td><td>'+brl(Number(i.total)/Math.max(1,Number(i.quantidade)))+'</td><td>'+brl(i.total)+'</td></tr>'}).join('');
+  const w=window.open('','_blank','noopener,noreferrer,width=1100,height=800');if(!w)return;
+  w.document.write('<html><head><title>Proposta '+selectedQuote.numero+'</title><style>body{font-family:Arial,sans-serif;color:#123b50;margin:32px}header{border-bottom:2px solid #2d8db8;padding-bottom:14px}h1{margin:0 0 5px;font-size:22px}table{width:100%;border-collapse:collapse;margin-top:18px;font-size:12px}th,td{padding:7px;border-bottom:1px solid #d7e6eb;text-align:left}th{background:#f1f7f9}.summary{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:6px}.total{font-size:18px;font-weight:800;text-align:right;margin-top:12px}.terms{margin-top:24px;white-space:pre-wrap;color:#526a76;font-size:11px}@media print{body{margin:12mm}}</style></head><body><header><div>ERP INDUSTRIAL • VENDAS & COMERCIAL</div><h1>PROPOSTA / ORÇAMENTO Nº '+selectedQuote.numero+'</h1><div>Cliente: '+clientName+' • Validade: '+dateBR(form.validade||null)+'</div></header><table><thead><tr><th>#</th><th>Código</th><th>Descrição</th><th>Qtd</th><th>Preço Tab.</th><th>Desc %</th><th>Preço Líq.</th><th>Total</th></tr></thead><tbody>'+rows+'</tbody></table><div class="summary"><div>Subtotal: '+brl(subtotal)+'</div><div>Frete '+form.tipoFrete+': '+brl(freight)+'</div><div>Outras despesas: '+brl(other)+'</div><div>Margem bruta: '+margin.toFixed(1)+'%</div></div><div class="total">TOTAL: '+brl(total)+'</div><div class="terms">Termos: '+(form.termos||'—')+'\nObservações: '+(form.observacoes||'—')+'</div><script>window.onload=()=>window.print()<\\/script></body></html>');w.document.close();
+ };
+ const sendEmail=()=>{
+  const c=clients.find(x=>x.id===form.cliente);if(!c?.email){window.alert('O cliente selecionado não possui e-mail cadastrado.');return}
+  const subject=encodeURIComponent('Proposta / Orçamento Nº '+(selectedQuote?.numero??''));
+  const body=encodeURIComponent('Segue a proposta / orçamento Nº '+(selectedQuote?.numero??'')+'. Valor total: '+brl(total)+'. Validade: '+dateBR(form.validade||null));
+  window.location.href='mailto:'+c.email+'?subject='+subject+'&body='+body;
+ };
+ useEffect(()=>{if(selectedQuote&&!form.vendedorId){void supabase.auth.getUser().then(async u=>{if(u.data.user){setForm(v=>({...v,vendedorId:u.data.user?.id??''}));const r=await supabase.from('erp_usuarios').select('id,nome').eq('id',u.data.user.id).maybeSingle();if(!r.error)setForm(v=>({...v,vendedorNome:r.data?.nome??''}))}})}},[selectedQuote,form.vendedorId]);
+ useEffect(()=>{void loadTableItems(form.tabela)},[form.tabela]);
+
+ return <><section className="vcs-section">
+  <div className="vcs-section-title"><strong>Elaboração de Proposta / Cotação</strong><span>{selectedQuote?'Orçamento Nº '+String(selectedQuote.numero).padStart(6,'0'):'Selecione um orçamento'}</span></div>
+  <div className="vcs-actions">
+   {quotes.map(q=><button key={q.id} className={'vcs-btn '+(quoteId===q.id?'primary':'')} onClick={()=>void openQuote(q)}>#{String(q.numero).padStart(6,'0')} • {q.status}</button>)}
+  </div>
+ </section>
+ <section className="vcs-section">
+  <div className="vcs-section-title"><strong>Dados do Cabeçalho da Proposta</strong></div>
+  {!selectedQuote?<div className="vcs-empty">Selecione um orçamento existente ou crie um novo rascunho acima.</div>:<div className="erp-form-grid" style={{gridTemplateColumns:'minmax(240px,2fr) minmax(180px,1fr) 125px'}}>
+   <label className="erp-field-label">Cliente<select value={form.cliente} onChange={e=>setForm(v=>({...v,cliente:e.target.value}))}>{clients.map(c=><option key={c.id} value={c.id}>{c.codigo} • {c.nome}</option>)}</select></label>
+   <label className="erp-field-label">Contato<input value={form.contato} onChange={e=>setForm(v=>({...v,contato:e.target.value}))}/></label>
+   <label className="erp-field-label">Validade<input className="erp-field-date" type="date" value={form.validade} onChange={e=>setForm(v=>({...v,validade:e.target.value}))}/></label>
+   <label className="erp-field-label">Vendedor<input readOnly value={form.vendedorNome||'Usuário autenticado'}/></label>
+   <label className="erp-field-label">Tabela de Preço<select value={form.tabela} onChange={e=>setForm(v=>({...v,tabela:e.target.value}))}><option value="">Selecionar</option>{prices.filter(p=>p.ativo).map(p=><option key={p.id} value={p.id}>{p.codigo} • {p.nome}</option>)}</select></label>
+   <label className="erp-field-label">Condição de Pagamento<input value={form.condicao} onChange={e=>setForm(v=>({...v,condicao:e.target.value}))} placeholder="Ex.: 30 / 60 / 90 dias"/></label>
+  </div>}
+ </section>
+ {selectedQuote&&<><section className="vcs-section">
+  <div className="vcs-section-title"><strong>Adicionar Item ao Orçamento</strong></div>
+  <div className="erp-form-grid" style={{gridTemplateColumns:'minmax(320px,2fr) 100px 100px 155px 140px'}}>
+   <label className="erp-field-label">Produto<select value={produto} onChange={e=>setProduto(e.target.value)}><option value="">Selecionar produto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} • {p.nome}</option>)}</select></label>
+   <label className="erp-field-label">Qtd<input className="erp-field-qty" type="number" min="0.001" step="0.001" value={quantidade} onChange={e=>setQuantidade(e.target.value)}/></label>
+   <label className="erp-field-label">Preço Tab.<input className="erp-field-money" readOnly value={brl(selectedPrice)}/></label>
+   <label className="erp-field-label">Desc %<input className="erp-field-percent" type="number" min="0" max="100" step="0.1" value={desconto} onChange={e=>setDesconto(e.target.value)}/></label>
+   <button className="vcs-btn primary" style={{alignSelf:'end'}} disabled={itemLoading||!produto} onClick={()=>void addItem()}><Plus size={16}/> Adicionar</button>
+  </div>
+ </section>
+ <section className="vcs-section">
+  <div className="vcs-section-title"><strong>Itens Cotados</strong><span>{items.length} item(ns)</span></div>
+  <DataTable headers={['#','Código','Descrição','Qtd','Preço Tab.','Desc %','Preço Líq.','Total Item','Ações']} rows={items.map((i,n)=>{const p=products.find(x=>x.id===i.produto_id);const liquid=Number(i.preco_unitario)*(1-Number(i.desconto_percentual)/100);return [String(n+1).padStart(2,'0'),p?.codigo??'—',p?.nome??'—',Number(i.quantidade).toLocaleString('pt-BR'),brl(i.preco_unitario),Number(i.desconto_percentual).toFixed(1)+'%',brl(liquid),brl(i.total),<button className="vcs-btn" title="Remover item" onClick={()=>void removeItem(i.id)}>Remover</button>]})}/>
+ </section>
+ <section className="vcs-section">
+  <div className="vcs-section-title"><strong>Resumo Financeiro e Margem</strong></div>
+  <div className="erp-form-grid" style={{gridTemplateColumns:'1fr 125px 155px 155px'}}>
+   <div className="vcs-card"><span style={{fontSize:12}}>Subtotal Produtos</span><strong>{brl(subtotal)}</strong></div>
+   <label className="erp-field-label">Frete<select value={form.tipoFrete} onChange={e=>setForm(v=>({...v,tipoFrete:e.target.value as 'CIF'|'FOB'}))}><option value="CIF">CIF</option><option value="FOB">FOB</option></select></label>
+   <label className="erp-field-label">Valor Frete<input className="erp-field-money" type="number" step="0.01" value={form.frete} onChange={e=>setForm(v=>({...v,frete:e.target.value}))}/></label>
+   <label className="erp-field-label">Outras Desp.<input className="erp-field-money" type="number" step="0.01" value={form.outras} onChange={e=>setForm(v=>({...v,outras:e.target.value}))}/></label>
+  </div>
+  <div className="vcs-actions" style={{justifyContent:'flex-end',marginTop:10}}><span>Margem Bruta: <strong>{margin.toFixed(1)}%</strong></span><strong style={{fontSize:18}}>TOTAL: {brl(total)}</strong></div>
+ </section>
+ <section className="vcs-section">
+  <div className="erp-form-grid" style={{gridTemplateColumns:'minmax(360px,1fr) minmax(360px,1fr)'}}>
+   <label className="erp-field-label">Termos e Condições<textarea className="erp-field-observation" value={form.termos} onChange={e=>setForm(v=>({...v,termos:e.target.value}))}/></label>
+   <label className="erp-field-label">Observações<textarea className="erp-field-observation" value={form.observacoes} onChange={e=>setForm(v=>({...v,observacoes:e.target.value}))}/></label>
+  </div>
+ </section>
+ <section className="vcs-section"><div className="vcs-actions">
+  <button className="vcs-btn primary" disabled={saving||!items.length} onClick={()=>void saveHeader('RASCUNHO')}><RefreshCw size={16}/> {saving?'Salvando…':'Salvar Rascunho'}</button>
+  <button className="vcs-btn" disabled={!items.length} onClick={printQuote}><FileCheck2 size={16}/> Impressão / PDF</button>
+  <button className="vcs-btn" disabled={!items.length} onClick={sendEmail}>Enviar E-mail</button>
+  <button className="vcs-btn primary" disabled={!items.length||selectedQuote.status==='CONVERTIDO'} onClick={()=>void onConvert(selectedQuote)}><ShoppingCart size={16}/> Converter em Pedido de Venda</button>
+ </div></section></>}
+ </>;
+}
 function useProductsForQuote(){const [productsForQuote,setProductsForQuote]=useState<Product[]>([]);useEffect(()=>{let active=true;void supabase.rpc('erp_current_empresa_id').then(e=>{if(e.error||!e.data)return supabase.from('erp_produtos').select('id,codigo,nome,preco_venda,custo_ultimo,ativo').eq('ativo',true).limit(0);return supabase.from('erp_produtos').select('id,codigo,nome,preco_venda,custo_ultimo,ativo').eq('empresa_id',String(e.data)).eq('ativo',true).order('codigo').limit(2000)}).then(r=>{if(active&&!r.error)setProductsForQuote((r.data??[]) as Product[])});return()=>{active=false}},[]);return productsForQuote}
 function Pedidos({orders,clients}:{orders:Order[];clients:Client[]}){const [credit,setCredit]=useState<Record<string,string>>({});const [busy,setBusy]=useState<string|null>(null);const analyze=async(id:string)=>{setBusy(id);try{const r=await supabase.rpc('erp_validar_credito_pedido',{p_pedido_id:id});if(r.error)throw r.error;setCredit(v=>({...v,[id]:String((r.data as {status?:string;motivo?:string})?.status||'—')}))}catch(e){setCredit(v=>({...v,[id]:e instanceof Error?e.message:'Falha na análise'}))}finally{setBusy(null)}};return <><section className="vcs-section"><div className="vcs-section-title"><strong>Central de pedidos de venda</strong><button className="vcs-btn primary" onClick={()=>window.location.href='/vendas/novo-pedido'}><Plus size={16}/> Novo pedido</button></div><div className="vcs-flow"><span>Crédito aprovado</span><b>→</b><span>Estoque reservado</span><b>→</b><span>Necessidade líquida → PCP</span><b>→</b><span>Fisicamente pronto</span><b>→</b><span>Faturamento</span></div></section><section className="vcs-section"><DataTable headers={['Pedido','Cliente','Entrada','Entrega','Status','Crédito','Total','Pedido cliente','Ação']} rows={orders.map(o=>[String(o.numero).padStart(6,'0'),clients.find(c=>c.id===o.cliente_id)?.nome??'—',dateBR(o.data_entrada),dateBR(o.data_entrega_prometida),o.status,credit[o.id]??'NÃO ANALISADO',brl(o.total),o.pedido_cliente??'—',<button className="vcs-btn" disabled={busy===o.id} onClick={()=>void analyze(o.id)}>{busy===o.id?'Analisando…':'Analisar crédito'}</button>])}/></section></>}
 
