@@ -161,7 +161,7 @@ export default function ExpedicaoRoteirizacao() {
     } catch (cause: unknown) { setError(cause instanceof Error ? cause.message : 'Volume não localizado.') } finally { setBusy(false) }
   }
 
-  const releaseManifest = async (id: string) =>
+  const releaseManifest = async (id: string) => {
     setBusy(true)
     setError('')
     setMessage('')
