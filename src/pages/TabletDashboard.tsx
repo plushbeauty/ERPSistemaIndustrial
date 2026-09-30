@@ -193,7 +193,7 @@ export default function TabletDashboard() {
     },
     {
       key: 'financeiro',
-      number: '06',
+      number: '',
       icon: 'financeiro',
       title: 'FINANCEIRO',
       description: 'Custos e análise financeira operacional.',
@@ -206,8 +206,8 @@ export default function TabletDashboard() {
     },
     {
       key: 'manutencao',
-      number: '12',
-      icon: 'chao-de-fabrica',
+      number: '',
+      icon: 'manutencao',
       title: 'MANUTENÇÃO',
       description: 'Ordens de manutenção e acompanhamento de ativos.',
       metric: undefined,
