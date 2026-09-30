@@ -34,6 +34,10 @@ export default function ExpedicaoRoteirizacao() {
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [selectedManifest, setSelectedManifest] = useState('')
+  const [volumeCode, setVolumeCode] = useState('')
+  const [volumeWeight, setVolumeWeight] = useState('')
+  const [volumes, setVolumes] = useState<Array<{id:string;expedicao_id:string;codigo_barras:string;peso_kg:number;conferido:boolean}>>([])
 
   const selectedVehicle = vehicles.find(item => item.id === vehicle) ?? null
   const selectedWeight = useMemo(
@@ -67,6 +71,12 @@ export default function ExpedicaoRoteirizacao() {
       setDrivers((driverResult.data ?? []) as Driver[])
       setInvoices((invoiceResult.data ?? []) as Invoice[])
       setManifests((manifestResult.data ?? []) as Manifest[])
+      const manifestIds = (manifestResult.data ?? []).map(item => item.id)
+      if (manifestIds.length) {
+        const volumeResult = await supabase.from('erp_expedicao_volumes').select('id,expedicao_id,codigo_barras,peso_kg,conferido').eq('empresa_id',empresaId).in('expedicao_id',manifestIds).order('created_at',{ascending:false})
+        if (volumeResult.error) throw volumeResult.error
+        setVolumes((volumeResult.data ?? []) as typeof volumes)
+      } else setVolumes([])
     } catch (cause: unknown) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar a logística.')
     } finally {
@@ -131,14 +141,33 @@ export default function ExpedicaoRoteirizacao() {
     }
   }
 
+  const addVolume = async () => {
+    if (!empresa || !selectedManifest || !volumeCode.trim()) { setError('Selecione um romaneio e informe o código de barras do volume.'); return }
+    setBusy(true); setError(''); setMessage('')
+    try {
+      const result = await supabase.from('erp_expedicao_volumes').insert({empresa_id:empresa,expedicao_id:selectedManifest,codigo_barras:volumeCode.trim(),peso_kg:Number(volumeWeight)||0})
+      if (result.error) throw result.error
+      setVolumeCode(''); setVolumeWeight(''); setMessage('Volume registrado no romaneio.'); await load()
+    } catch (cause: unknown) { setError(cause instanceof Error ? cause.message : 'Falha ao registrar volume.') } finally { setBusy(false) }
+  }
+
+  const scanVolume = async (code:string) => {
+    if (!selectedManifest || !code.trim()) return
+    setBusy(true); setError(''); setMessage('')
+    try {
+      const result = await supabase.rpc('erp_conferir_volume_expedicao',{p_expedicao_id:selectedManifest,p_codigo_barras:code.trim()})
+      if (result.error) throw result.error
+      setMessage('Volume conferido.'); await load()
+    } catch (cause: unknown) { setError(cause instanceof Error ? cause.message : 'Volume não localizado.') } finally { setBusy(false) }
+  }
+
   const releaseManifest = async (id: string) => {
     setBusy(true)
     setError('')
     setMessage('')
     try {
-      const result = await supabase.from('erp_expedicoes').update({ status: 'LIBERADA', updated_at: new Date().toISOString() }).eq('id', id).eq('empresa_id', empresa).eq('status', 'PREPARACAO')
+      const result = await supabase.rpc('erp_liberar_expedicao',{p_expedicao_id:id})
       if (result.error) throw result.error
-      if (result.count === 0) throw new Error('Romaneio não estava em preparação ou não pertence à empresa atual.')
       setMessage('Saída liberada.')
       await load()
     } catch (cause: unknown) {
@@ -202,7 +231,7 @@ export default function ExpedicaoRoteirizacao() {
         </section>
 
         <section className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
-          <div className="p-5"><h2 className="text-xl font-black">Romaneios recentes</h2></div>
+          <div className="p-5"><h2 className="text-xl font-black">Conferência de volumes</h2><p className="text-sm font-semibold text-slate-600">A saída somente é liberada após todos os volumes cadastrados serem conferidos.</p><div className="mt-3 flex flex-wrap items-end gap-3"><label className="grid gap-1 text-sm font-black">ROMANEIO<select className={input} value={selectedManifest} onChange={event => setSelectedManifest(event.target.value)}><option value="">Selecione</option>{manifests.map(item => <option key={item.id} value={item.id}>{item.numero} • {item.status}</option>)}</select></label><label className="grid gap-1 text-sm font-black">CÓDIGO DO VOLUME<input className={input} value={volumeCode} onChange={event => setVolumeCode(event.target.value)} onKeyDown={event => {if(event.key==='Enter'){event.preventDefault();void scanVolume(volumeCode)}}}/></label><label className="grid gap-1 text-sm font-black">PESO KG<input className={input} type="number" min="0" value={volumeWeight} onChange={event => setVolumeWeight(event.target.value)}/></label><button type="button" onClick={()=>void addVolume()} disabled={busy} className="flex h-[54px] items-center gap-2 rounded-md bg-slate-900 px-5 font-black text-white disabled:opacity-50"><Save size={18}/> CADASTRAR VOLUME</button></div>{selectedManifest&&<div className="mt-4 overflow-x-auto"><table className="w-full min-w-[700px]"><thead className="bg-slate-100"><tr><th className="h-[48px] px-4 text-left">Código</th><th className="px-4 text-right">Peso</th><th className="px-4 text-left">Conferência</th></tr></thead><tbody>{volumes.filter(v=>v.expedicao_id===selectedManifest).map(v=><tr key={v.id} className="border-t border-slate-200"><td className="px-4 font-black">{v.codigo_barras}</td><td className="px-4 text-right">{Number(v.peso_kg).toLocaleString('pt-BR')} kg</td><td className="px-4 font-bold">{v.conferido?'CONFERIDO':'PENDENTE'}</td></tr>)}</tbody></table></div>}</div>
           <table className="w-full min-w-[800px]">
             <thead className="bg-slate-100"><tr><th className="h-[54px] px-4 text-left">Romaneio</th><th className="px-4 text-left">Data</th><th className="px-4 text-right">Peso</th><th className="px-4 text-left">Status</th><th className="px-4 text-right">Ação</th></tr></thead>
             <tbody>{manifests.map(item => <tr key={item.id} className="h-[54px] border-t border-slate-200"><td className="px-4 font-black">{item.numero}</td><td className="px-4">{item.data_expedicao ?? '—'}</td><td className="px-4 text-right">{Number(item.peso_total_kg).toLocaleString('pt-BR')} kg</td><td className="px-4 font-bold">{item.status}</td><td className="px-4 text-right">{item.status === 'PREPARACAO' ? <button type="button" onClick={() => void releaseManifest(item.id)} disabled={busy} className="rounded-md bg-emerald-700 px-4 py-2 font-black text-white disabled:opacity-50">LIBERAR SAÍDA</button> : <span className="text-slate-500">—</span>}</td></tr>)}</tbody>

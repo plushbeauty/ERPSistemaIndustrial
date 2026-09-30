@@ -63,6 +63,7 @@ const VendasDashboardGraficos = lazyPage(() => import('./pages/VendasDashboardGr
 const VendasMetas = lazyPage(() => import('./pages/VendasMetas'), 'VendasMetas')
 const VendasRelatorios = lazyPage(() => import('./pages/VendasRelatorios'), 'VendasRelatorios')
 const VendasCarteira = lazyPage(() => import('./pages/VendasCarteira'), 'VendasCarteira')
+const VendasComercialSuite = lazyPage(() => import('./pages/VendasComercialSuite'), 'VendasComercialSuite')
 const CentralCustosIndustrial = lazyPage(() => import('./pages/CentralCustosIndustrial'), 'CentralCustosIndustrial')
 const CadastroEmpresa = lazyPage(() => import('./pages/CadastroEmpresa'), 'CadastroEmpresa')
 const PlanosIndustrial = lazyPage(() => import('./pages/PlanosIndustrial'), 'PlanosIndustrial')
@@ -332,13 +333,21 @@ function AppIndustrialAuthenticated() {
       <Route path="/erp-industrial" element={<AppIndustrial />} />
       <Route path="/tablet/dashboard" element={<TabletDashboard />} />
       <Route path="/tablet/home" element={<TabletDashboard />} />
-      <Route path="/vendas" element={<VendasCentral />} />
+      <Route path="/vendas" element={<VendasComercialSuite />} />
+      <Route path="/vendas/crm" element={<VendasComercialSuite />} />
+      <Route path="/vendas/precos" element={<VendasComercialSuite />} />
+      <Route path="/vendas/orcamentos" element={<VendasComercialSuite />} />
+      <Route path="/vendas/pedidos" element={<VendasComercialSuite />} />
+      <Route path="/vendas/faturamento" element={<VendasComercialSuite />} />
+      <Route path="/vendas/expedicao" element={<VendasComercialSuite />} />
+      <Route path="/vendas/comissoes" element={<VendasComercialSuite />} />
+      <Route path="/vendas/rma" element={<VendasComercialSuite />} />
       <Route path="/vendas/novo-pedido" element={<PedidoVendaCompleto />} />
-      <Route path="/vendas/carteira" element={<VendasCarteira />} />
-      <Route path="/vendas/clientes" element={<ClientesIndustrial />} />
+      <Route path="/vendas/carteira" element={<VendasComercialSuite />} />
+      <Route path="/vendas/clientes" element={<VendasComercialSuite />} />
       <Route path="/vendas/catalogo-digital" element={<VendasCatalogoDigital />} />
       <Route path="/vendas/analise-custos" element={<VendasAnaliseCustos />} />
-      <Route path="/vendas/dashboard-graficos" element={<VendasDashboardGraficos />} />
+      <Route path="/vendas/dashboard-graficos" element={<VendasComercialSuite />} />
       <Route path="/vendas/metas" element={<VendasMetas />} />
       <Route path="/vendas/relatorios" element={<VendasRelatorios />} />
       <Route path="/pcp" element={<PCPIndustrial />} />
