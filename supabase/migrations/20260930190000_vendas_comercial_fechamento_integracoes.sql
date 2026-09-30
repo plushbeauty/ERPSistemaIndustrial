@@ -113,14 +113,14 @@ begin
   end if;
 
   for v_item in
-    select i.id,i.preco,p.custo_ultimo,p.custo_padrao,t.margem_minima
+    select i.id,i.preco,p.custo_ultimo,t.margem_minima
     from public.erp_tabelas_preco_itens i
     join public.erp_tabelas_preco t on t.id=i.tabela_preco_id and t.empresa_id=v_empresa
     join public.erp_produtos p on p.id=i.produto_id and p.empresa_id=v_empresa
     where i.tabela_preco_id=p_tabela_id and i.empresa_id=v_empresa
     for update
   loop
-    v_custo := greatest(coalesce(v_item.custo_ultimo,0),coalesce(v_item.custo_padrao,0),0);
+    v_custo := greatest(coalesce(v_item.custo_ultimo,0),0);
     v_novo := round(v_item.preco*(1+coalesce(p_percentual,0)/100),4);
     v_minimo := case when v_item.margem_minima>0 then v_custo/(1-v_item.margem_minima/100) else v_custo end;
     if p_respeitar_custo and v_novo<v_minimo then
@@ -173,17 +173,11 @@ set search_path = pg_catalog, public
 as $$
 declare v_empresa uuid:=public.erp_current_empresa_id(); v_id uuid;
 begin
-  select id into v_id from public.erp_expedicao_volumes
-  where id=p_expedicao_id and empresa_id=v_empresa;
-  if v_id is null then
-    update public.erp_expedicao_volumes
-      set conferido=true,conferido_em=now()
-      where expedicao_id=p_expedicao_id and empresa_id=v_empresa and codigo_barras=trim(p_codigo_barras);
-  else
-    update public.erp_expedicao_volumes
-      set conferido=true,conferido_em=now()
-      where id=v_id;
-  end if;
+  update public.erp_expedicao_volumes
+     set conferido=true,conferido_em=now()
+   where expedicao_id=p_expedicao_id
+     and empresa_id=v_empresa
+     and codigo_barras=trim(p_codigo_barras);
   if not found then raise exception 'Volume não localizado no romaneio.'; end if;
   return jsonb_build_object('conferido',true,'codigo_barras',trim(p_codigo_barras));
 end;
