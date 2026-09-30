@@ -16,7 +16,8 @@ type CommissionRule = { id:string; nome:string; percentual:number; tipo:string; 
 type CommissionLaunch = { id:string; funcionario_id:string; data_referencia:string; receita_base:number; percentual:number; valor_comissao:number; status:string }
 type SalesMeta = { competencia:string; meta_faturamento:number; meta_pedidos:number }
 type OrderItem = { id:string; pedido_id:string; produto_id:string; descricao:string|null; quantidade:number; total:number|null }
-type ProductionOrder = { id:string; status:string; quantidade:number|null; quantidade_planejada:number|null }
+type ProductionOrder = { id:string; status:string; quantidade:number|null; quantidade_planejada:number|null; pedido_item_id:string|null; numero_op:string|null; data_prevista:string|null }
+type StockReservation = { id:string; pedido_item_id:string; produto_id:string; quantidade:number; status:string }
 
 const brl=(n:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(n)||0)
 const dateBR=(v:string|null)=>v?new Date(v).toLocaleDateString('pt-BR'):'—'
@@ -48,6 +49,7 @@ export default function VendasComercialSuite(){
  const [meta,setMeta]=useState<SalesMeta|null>(null)
  const [orderItems,setOrderItems]=useState<OrderItem[]>([])
  const [productionOrders,setProductionOrders]=useState<ProductionOrder[]>([])
+ const [reservations,setReservations]=useState<StockReservation[]>([])
  const [loading,setLoading]=useState(true)
  const [error,setError]=useState('')
  const [message,setMessage]=useState('')
@@ -72,7 +74,8 @@ export default function VendasComercialSuite(){
     supabase.from('erp_vendas_comissoes_lancamentos').select('id,funcionario_id,data_referencia,receita_base,percentual,valor_comissao,status').eq('empresa_id',id).order('data_referencia',{ascending:false}).limit(300),
     supabase.from('erp_vendas_metas').select('competencia,meta_faturamento,meta_pedidos').eq('empresa_id',id).order('competencia',{ascending:false}).limit(1).maybeSingle(),
     supabase.from('erp_pedidos_venda_itens').select('id,pedido_id,produto_id,descricao,quantidade,total').eq('empresa_id',id).limit(10000),
-    supabase.from('erp_ordens_producao').select('id,status,quantidade,quantidade_planejada').eq('empresa_id',id).order('id',{ascending:false}).limit(1000),
+    supabase.from('erp_ordens_producao').select('id,status,quantidade,quantidade_planejada,pedido_item_id,numero_op,data_prevista').eq('empresa_id',id).order('id',{ascending:false}).limit(1000),
+    supabase.from('erp_estoque_reservas').select('id,pedido_item_id,produto_id,quantidade,status').eq('empresa_id',id).eq('status','ATIVA').limit(10000),
     supabase.from('erp_vendas_devolucoes').select('id,numero,cliente_id,tipo,motivo,status,tratamento_sgq,valor_credito').eq('empresa_id',id).order('created_at',{ascending:false}).limit(300)
    ])
    for(const r of results) if(r.error) throw r.error
@@ -80,7 +83,7 @@ export default function VendasComercialSuite(){
    setQuotes((results[3].data??[]) as Quote[]);setOrders((results[4].data??[]) as Order[]);setNfes((results[5].data??[]) as Nfe[])
    setPrices((results[6].data??[]) as PriceTable[]);setPriceItems((results[7].data??[]) as typeof priceItems);setRomaneios((results[8].data??[]) as Romaneio[])
    setRules((results[9].data??[]) as CommissionRule[]);setLaunches((results[10].data??[]) as CommissionLaunch[])
-   setMeta((results[11].data??null) as SalesMeta|null);setOrderItems((results[12].data??[]) as OrderItem[]);setProductionOrders((results[13].data??[]) as ProductionOrder[]);setDevolucoes((results[14].data??[]) as typeof devolucoes)
+   setMeta((results[11].data??null) as SalesMeta|null);setOrderItems((results[12].data??[]) as OrderItem[]);setProductionOrders((results[13].data??[]) as ProductionOrder[]);setReservations((results[14].data??[]) as StockReservation[]);setDevolucoes((results[15].data??[]) as typeof devolucoes)
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar o módulo Vendas & Comercial.')}finally{setLoading(false)}
  }
  useEffect(()=>{void load()},[])
@@ -347,7 +350,117 @@ function Orcamentos({quotes,clients,prices,products,onCreate,onConvert}:{quotes:
  </>;
 }
 function useProductsForQuote(){const [productsForQuote,setProductsForQuote]=useState<Product[]>([]);useEffect(()=>{let active=true;void supabase.rpc('erp_current_empresa_id').then(e=>{if(e.error||!e.data)return supabase.from('erp_produtos').select('id,codigo,nome,preco_venda,custo_ultimo,ativo').eq('ativo',true).limit(0);return supabase.from('erp_produtos').select('id,codigo,nome,preco_venda,custo_ultimo,ativo').eq('empresa_id',String(e.data)).eq('ativo',true).order('codigo').limit(2000)}).then(r=>{if(active&&!r.error)setProductsForQuote((r.data??[]) as Product[])});return()=>{active=false}},[]);return productsForQuote}
-function Pedidos({orders,clients}:{orders:Order[];clients:Client[]}){const [credit,setCredit]=useState<Record<string,string>>({});const [busy,setBusy]=useState<string|null>(null);const analyze=async(id:string)=>{setBusy(id);try{const r=await supabase.rpc('erp_validar_credito_pedido',{p_pedido_id:id});if(r.error)throw r.error;setCredit(v=>({...v,[id]:String((r.data as {status?:string;motivo?:string})?.status||'—')}))}catch(e){setCredit(v=>({...v,[id]:e instanceof Error?e.message:'Falha na análise'}))}finally{setBusy(null)}};return <><section className="vcs-section"><div className="vcs-section-title"><strong>Central de pedidos de venda</strong><button className="vcs-btn primary" onClick={()=>window.location.href='/vendas/novo-pedido'}><Plus size={16}/> Novo pedido</button></div><div className="vcs-flow"><span>Crédito aprovado</span><b>→</b><span>Estoque reservado</span><b>→</b><span>Necessidade líquida → PCP</span><b>→</b><span>Fisicamente pronto</span><b>→</b><span>Faturamento</span></div></section><section className="vcs-section"><DataTable headers={['Pedido','Cliente','Entrada','Entrega','Status','Crédito','Total','Pedido cliente','Ação']} rows={orders.map(o=>[String(o.numero).padStart(6,'0'),clients.find(c=>c.id===o.cliente_id)?.nome??'—',dateBR(o.data_entrada),dateBR(o.data_entrega_prometida),o.status,credit[o.id]??'NÃO ANALISADO',brl(o.total),o.pedido_cliente??'—',<button className="vcs-btn" disabled={busy===o.id} onClick={()=>void analyze(o.id)}>{busy===o.id?'Analisando…':'Analisar crédito'}</button>])}/></section></>}
+function Pedidos({orders,clients,orderItems,products,reservations,productionOrders,onReload}:{orders:Order[];clients:Client[];orderItems:OrderItem[];products:Product[];reservations:StockReservation[];productionOrders:ProductionOrder[];onReload:()=>void}){
+ const [selectedId,setSelectedId]=useState<string|null>(orders[0]?.id??null)
+ const [query,setQuery]=useState('')
+ const [status,setStatus]=useState('TODOS')
+ const [credit,setCredit]=useState<Record<string,string>>({})
+ const [busy,setBusy]=useState<string|null>(null)
+ const selected=orders.find(o=>o.id===selectedId)??orders[0]??null
+ const filtered=orders.filter(o=>{
+   const q=query.trim().toLowerCase()
+   const client=clients.find(c=>c.id===o.cliente_id)?.nome??''
+   const matches=!q||String(o.numero).includes(q)||client.toLowerCase().includes(q)
+   return matches&&(status==='TODOS'||o.status===status)
+ })
+ const analyze=async(id:string)=>{
+   setBusy(id)
+   try{
+     const r=await supabase.rpc('erp_validar_credito_pedido',{p_pedido_id:id})
+     if(r.error)throw r.error
+     const data=r.data as {status?:string;motivo?:string}|null
+     setCredit(v=>({...v,[id]:data?.status??'—'}))
+     onReload()
+   }catch(e){setCredit(v=>({...v,[id]:e instanceof Error?e.message:'Falha na análise'}))}
+   finally{setBusy(null)}
+ }
+ const gerarOp=async(itemId:string)=>{
+   setBusy(itemId)
+   try{
+     const r=await supabase.rpc('erp_gerar_op_pedido_item',{p_pedido_item_id:itemId})
+     if(r.error)throw r.error
+     onReload()
+   }catch(e){window.alert(e instanceof Error?e.message:'Não foi possível gerar a OP.')}
+   finally{setBusy(null)}
+ }
+ const selectedItems=selected?orderItems.filter(i=>i.pedido_id===selected.id):[]
+ const clientName=selected?clients.find(c=>c.id===selected.cliente_id)?.nome??'—':'—'
+ const statusOptions=[['TODOS','Todos'],['em_analise','Em análise'],['reservado','Reservado'],['necessita_producao','Necessita produção'],['parcial','Parcial'],['faturado','Faturado'],['cancelado','Cancelado']] as const
+ return <>
+  <section className="vcs-section">
+   <div className="vcs-section-title">
+    <strong>Gestão de Pedidos de Venda</strong>
+    <div className="vcs-actions">
+     <button className="vcs-btn" onClick={()=>void onReload()}><RefreshCw size={16}/> Atualizar</button>
+    </div>
+   </div>
+   <div className="vcs-pedido-toolbar">
+    <label className="vcs-field vcs-pedido-search">Pesquisar Pedido / Cliente<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Nº pedido ou cliente"/></label>
+    <label className="vcs-field vcs-pedido-status">Status<select value={status} onChange={e=>setStatus(e.target.value)}>{statusOptions.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
+   </div>
+   <div className="vcs-status-filters">{statusOptions.map(([v,l])=><button key={v} className={status===v?'active':''} onClick={()=>setStatus(v)}>{l}</button>)}</div>
+  </section>
+
+  <section className="vcs-section vcs-pedidos-layout">
+   <div className="vcs-pedidos-list">
+    <div className="vcs-list-head"><strong>Listagem de Pedidos ({filtered.length})</strong></div>
+    <div className="vcs-list-scroll">
+     {filtered.map(o=>{
+       const active=o.id===selected?.id
+       const client=clients.find(c=>c.id===o.cliente_id)?.nome??'—'
+       const creditStatus=credit[o.id]??o.credito_status??'PENDENTE'
+       return <button type="button" key={o.id} className={`vcs-order-row ${active?'active':''}`} onClick={()=>setSelectedId(o.id)}>
+        <span className="vcs-order-row-top"><b>PV-{String(o.numero).padStart(6,'0')}</b><strong>{brl(o.total)}</strong></span>
+        <span className="vcs-order-client">{client}</span>
+        <span className="vcs-order-meta"><span>Entrega: {dateBR(o.data_entrega_prometida)}</span><span className={creditStatus==='BLOQUEADO'?'danger':'ok'}>Crédito: {creditStatus}</span></span>
+       </button>
+     })}
+     {!filtered.length&&<div className="vcs-empty">Nenhum pedido real encontrado com os filtros informados.</div>}
+    </div>
+   </div>
+
+   <div className="vcs-pedido-detail">
+    {!selected?<div className="vcs-empty">Selecione um pedido real para consultar o fluxo.</div>:<>
+     <div className="vcs-detail-head"><div><strong>Detalhes do Pedido: PV-{String(selected.numero).padStart(6,'0')}</strong><small>{clientName} • Entrada {dateBR(selected.data_entrada)} • Entrega {dateBR(selected.data_entrega_prometida)}</small></div><span className="vcs-badge">{selected.status}</span></div>
+     <div className="vcs-pipeline">
+      {[
+       ['Crédito','credito'],['Reserva / PCP','reserva'],['Produção','producao'],['Faturamento','faturamento'],['Expedição','expedicao']
+      ].map(([label,key],idx)=>{
+        const s=String(selected.status).toLowerCase()
+        const rank=s==='em_analise'?0:s==='reservado'?1:s==='necessita_producao'||s==='parcial'?2:s==='pronto_faturar'?3:s==='faturado'||s==='expedido'?4:-1
+        const done=rank>idx||(key==='credito'&&(selected.credito_status==='APROVADO'||credit[selected.id]==='APROVADO'))
+        return <div className={`vcs-pipeline-step ${done?'done':''} `} key={key}><span>{idx+1}</span><b>{label}</b></div>
+      })}
+     </div>
+     <div className="vcs-credit-bar">
+      <div><b>Crédito</b><span className={selected.credito_status==='BLOQUEADO'?'danger':'ok'}>{credit[selected.id]??selected.credito_status??'PENDENTE'}</span>{selected.credito_motivo&&<small>{selected.credito_motivo}</small>}</div>
+      <button className="vcs-btn" disabled={busy===selected.id} onClick={()=>void analyze(selected.id)}><ShieldCheck size={16}/>{busy===selected.id?'Analisando…':'Analisar crédito'}</button>
+     </div>
+     <div className="vcs-section-inner">
+      <div className="vcs-section-title"><strong>Itens do Pedido & Reserva de Estoque</strong><span>{selectedItems.length} item(ns)</span></div>
+      <div className="vcs-table"><table><thead><tr><th>Item / Código</th><th className="center">Qtd Pedida</th><th className="center">Estoque Atual</th><th className="center">Qtd Reservada</th><th className="center">Necessidade PCP</th><th className="center">Status</th><th className="center">Ação</th></tr></thead><tbody>
+       {selectedItems.map(item=>{
+         const product=products.find(p=>p.id===item.produto_id)
+         const stock=Number(product?.estoque_atual??0)
+         const reserved=reservations.filter(r=>r.pedido_item_id===item.id&&r.status==='ATIVA').reduce((s,r)=>s+Number(r.quantidade||0),0)
+         const shortage=Math.max(Number(item.quantidade||0)-reserved,0)
+         const op=productionOrders.find(o=>o.pedido_item_id===item.id&& !['cancelada','CANCELADA'].includes(o.status))
+         const need=Math.max(shortage,0)
+         const statusText=need<=0?'ATENDIDO':op?'OP GERADA':stock>0?'PARCIAL / FALTA':'FALTA'
+         return <tr key={item.id}><td><b>{product?.codigo??'—'}</b><span className="vcs-item-desc">{product?.nome??item.descricao??'—'}</span></td><td className="center">{Number(item.quantidade).toLocaleString('pt-BR')}</td><td className="center">{stock.toLocaleString('pt-BR')}</td><td className="center">{reserved.toLocaleString('pt-BR')}</td><td className="center">{need.toLocaleString('pt-BR')}{op&&<small className="vcs-op-ref">{op.numero_op??'OP vinculada'}</small>}</td><td className="center"><span className={`vcs-badge ${statusText==='ATENDIDO'?'ok':'warn'}`}>{statusText}</span></td><td className="center">{need>0&&!op&&<button className="vcs-icon-action" disabled={busy===item.id} title="Gerar Ordem de Produção para este item" onClick={()=>void gerarOp(item.id)}><Factory size={15}/></button>}</td></tr>
+       })}
+       {!selectedItems.length&&<tr><td colSpan={7}><div className="vcs-empty">Este pedido não possui itens carregados.</div></td></tr>}
+      </tbody></table></div>
+     </div>
+     <div className="vcs-pedido-actions">
+      <button className="vcs-btn" onClick={()=>window.location.href='/nfe-emissao'} disabled={selected.credito_status!=='APROVADO' || selected.status==='faturado'}><FileCheck2 size={16}/> Gerar NF-e / Faturar</button>
+      <button className="vcs-btn" onClick={()=>window.location.href='/pcp'} disabled={!selectedItems.some(i=>{const r=reservations.filter(x=>x.pedido_item_id===i.id&&x.status==='ATIVA').reduce((s,x)=>s+Number(x.quantidade||0),0);return Number(i.quantidade)>r})}><Factory size={16}/> Abrir PCP</button>
+      <button className="vcs-btn" onClick={()=>window.location.href='/expedicao/roteirizacao'} disabled={selected.status!=='faturado'}><Truck size={16}/> Solicitar Expedição</button>
+     </div>
+    </>}
+   </div>
+  </section>
+ </>}
 
 function Faturamento({nfes}:{nfes:Nfe[]}){return <><section className="vcs-section"><div className="vcs-section-title"><strong>Faturamento & NF-e</strong><button className="vcs-btn primary" onClick={()=>window.location.href='/nfe-emissao'}><FileCheck2 size={16}/> Abrir emissão NF-e</button></div><p style={{fontSize:12,color:'#617984'}}>Somente NF-e reais da empresa atual são exibidas. A transmissão SEFAZ permanece no fluxo fiscal existente; esta central não simula autorização.</p></section><section className="vcs-section"><DataTable headers={['NF-e','Série','Destinatário','Status','Valor','Emissão','Chave / erro']} rows={nfes.map(n=>[n.numero??'—',n.serie,n.destinatario_nome,n.status,brl(n.valor_total),dateBR(n.data_emissao),n.chave_acesso??n.mensagem_sefaz??'—'])}/></section></>}
 
