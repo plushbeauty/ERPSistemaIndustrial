@@ -62,7 +62,7 @@ export default function VendasComercialSuite(){
    const id=String(e.data);setEmpresa(id)
    const results=await Promise.all([
     supabase.from('erp_clientes').select('id,codigo,nome,documento,email,limite_credito,ativo').eq('empresa_id',id).eq('ativo',true).order('nome').limit(1000),
-    supabase.from('erp_produtos').select('id,codigo,nome,preco_venda,custo_ultimo,ativo').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(2000),
+    supabase.from('erp_produtos').select('id,codigo,nome,preco_venda,custo_ultimo,estoque_atual,ativo').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(2000),
     supabase.from('erp_vendas_oportunidades').select('id,titulo,cliente_id,valor_estimado,probabilidade,etapa,proxima_acao,motivo_perda').eq('empresa_id',id).order('updated_at',{ascending:false}).limit(500),
     supabase.from('erp_vendas_orcamentos').select('id,numero,cliente_id,status,validade,contato,vendedor_id,tabela_preco_id,condicao_pagamento,tipo_frete,valor_frete,outras_despesas,termos,observacoes,subtotal,desconto,total,margem_percentual,created_at').eq('empresa_id',id).order('created_at',{ascending:false}).limit(300),
     supabase.from('erp_pedidos_venda').select('id,numero,cliente_id,status,total,data_entrada,data_entrega_prometida,pedido_cliente,credito_status,credito_motivo').eq('empresa_id',id).order('created_at',{ascending:false}).limit(500),
