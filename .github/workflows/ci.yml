@@ -43,11 +43,17 @@ jobs:
       - name: Supabase contract gate
         run: npm run verify:supabase-env
 
+      - name: Supabase guard regression
+        run: npm run verify:supabase-guard
+
       - name: Deploy identity gate
         run: npm run verify:deploy-integrity
 
       - name: TypeScript
         run: npm run type-check
+
+      - name: Lazy/dynamic import gate
+        run: npm run verify:lazy-imports
 
       - name: ESLint
         run: npm run lint:check
