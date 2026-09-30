@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { AreaChart, Area, BarChart3, Bar, CartesianGrid, FileCheck2, PackageCheck, Plus, RefreshCw, Settings, ShoppingCart, Truck, Users, XCircle, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { AreaChart, Area, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { BarChart3, FileCheck2, PackageCheck, Plus, RefreshCw, Settings, ShoppingCart, Truck, Users, XCircle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
