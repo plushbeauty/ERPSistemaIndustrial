@@ -7,8 +7,8 @@ type View = 'dashboard'|'crm'|'clientes'|'precos'|'orcamentos'|'pedidos'|'fatura
 type Client = { id:string; codigo:string; nome:string; documento:string|null; email:string|null; limite_credito:number|null; ativo:boolean }
 type Product = { id:string; codigo:string; nome:string; preco_venda:number|null; custo_ultimo:number|null; ativo:boolean }
 type Opportunity = { id:string; titulo:string; cliente_id:string|null; valor_estimado:number; probabilidade:number; etapa:string; proxima_acao:string|null; motivo_perda:string|null }
-type Quote = { id:string; numero:number; cliente_id:string; status:string; validade:string|null; total:number; margem_percentual:number|null }
-type Order = { id:string; numero:number; cliente_id:string|null; status:string; total:number; data_entrada:string; data_entrega_prometida:string|null; pedido_cliente:string|null }
+type Quote = { id:string; numero:number; cliente_id:string; status:string; validade:string|null; total:number; margem_percentual:number|null; created_at:string }
+type Order = { id:string; numero:number; cliente_id:string|null; status:string; total:number; data_entrada:string; data_entrega_prometida:string|null; pedido_cliente:string|null; credito_status:string|null; credito_motivo:string|null }
 type Nfe = { id:string; numero:number|null; serie:number; status:string; destinatario_nome:string; valor_total:number; data_emissao:string; chave_acesso:string|null; mensagem_sefaz:string|null }
 type PriceTable = { id:string; codigo:string; nome:string; ativo:boolean }
 type Romaneio = { id:string; numero:number; status:string; transportadora:string|null; peso_total_kg:number; data_expedicao:string|null }
@@ -62,8 +62,8 @@ export default function VendasComercialSuite(){
     supabase.from('erp_clientes').select('id,codigo,nome,documento,email,limite_credito,ativo').eq('empresa_id',id).eq('ativo',true).order('nome').limit(1000),
     supabase.from('erp_produtos').select('id,codigo,nome,preco_venda,custo_ultimo,ativo').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(2000),
     supabase.from('erp_vendas_oportunidades').select('id,titulo,cliente_id,valor_estimado,probabilidade,etapa,proxima_acao,motivo_perda').eq('empresa_id',id).order('updated_at',{ascending:false}).limit(500),
-    supabase.from('erp_vendas_orcamentos').select('id,numero,cliente_id,status,validade,total,margem_percentual').eq('empresa_id',id).order('created_at',{ascending:false}).limit(300),
-    supabase.from('erp_pedidos_venda').select('id,numero,cliente_id,status,total,data_entrada,data_entrega_prometida,pedido_cliente').eq('empresa_id',id).order('created_at',{ascending:false}).limit(500),
+    supabase.from('erp_vendas_orcamentos').select('id,numero,cliente_id,status,validade,total,margem_percentual,created_at').eq('empresa_id',id).order('created_at',{ascending:false}).limit(300),
+    supabase.from('erp_pedidos_venda').select('id,numero,cliente_id,status,total,data_entrada,data_entrega_prometida,pedido_cliente,credito_status,credito_motivo').eq('empresa_id',id).order('created_at',{ascending:false}).limit(500),
     supabase.from('erp_documentos_fiscais').select('id,numero,serie,status,destinatario_nome,valor_total,data_emissao,chave_acesso,mensagem_sefaz').eq('empresa_id',id).eq('tipo','saida').order('data_emissao',{ascending:false}).limit(300),
     supabase.from('erp_tabelas_preco').select('id,codigo,nome,ativo').eq('empresa_id',id).order('codigo'),
     supabase.from('erp_tabelas_preco_itens').select('id,tabela_preco_id,produto_id,preco').eq('empresa_id',id).limit(10000),
@@ -158,8 +158,9 @@ function Dashboard({orders,nfes,clients,meta,orderItems,products,productionOrder
  const periodOrders=orders.filter(o=>{const dt=new Date(o.data_entrada);return dt>=from&&dt<=to})
  const faturamento=periodNfes.reduce((s,n)=>s+Number(n.valor_total||0),0)
  const abertos=periodOrders.filter(o=>['APROVADO','EM_PRODUCAO','EM PRODUÇÃO'].includes(o.status)).length
- const convertedQuotes=quotes.filter(q=>q.status==='CONVERTIDO').length
- const conversao=quotes.length?Math.min(convertedQuotes/quotes.length*100,100):0
+ const periodQuotes=quotes.filter(q=>{const dt=new Date(q.created_at);return dt>=from&&dt<=to})
+ const convertedQuotes=periodQuotes.filter(q=>q.status==='CONVERTIDO').length
+ const conversao=periodQuotes.length?Math.min(convertedQuotes/periodQuotes.length*100,100):0
  const chartMap=new Map<string,{data:string;faturamento:number;meta:number}>()
  for(const n of nfes){const dt=new Date(n.data_emissao);if(dt<from||!['AUTORIZADA','autorizada','100','processada'].includes(n.status))continue;const key=dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});const row=chartMap.get(key)??{data:key,faturamento:0,meta:0};row.faturamento+=Number(n.valor_total||0);chartMap.set(key,row)}
  const chartData=[...chartMap.values()]
@@ -168,14 +169,14 @@ function Dashboard({orders,nfes,clients,meta,orderItems,products,productionOrder
  const topProducts=[...productMap.values()].sort((a,b)=>b.receita-a.receita).slice(0,5)
  const pcp=productionOrders.reduce((acc,o)=>{const k=String(o.status||'SEM STATUS');acc[k]=(acc[k]??0)+1;return acc},{} as Record<string,number>)
  const progress=meta&&Number(meta.meta_faturamento)>0?Math.min(100,(faturamento/Number(meta.meta_faturamento))*100):0
- const creditCandidates=clients.filter(c=>Number(c.limite_credito||0)>0)
+ const creditBlocked=periodOrders.filter(o=>o.credito_status==='BLOQUEADO')
  return <><div className="vcs-toolbar"><div><strong>Visão comercial real</strong><div style={{fontSize:12,color:'#617984'}}>Somente registros da empresa autenticada. Período aplicado ao faturamento fiscal.</div></div><label className="vcs-field" style={{width:125}}>Período<select value={period} onChange={e=>setPeriod(e.target.value as typeof period)}><option value="HOJE">Hoje</option><option value="SEMANA">Esta semana</option><option value="MES">Este mês</option><option value="TRIMESTRE">Este trimestre</option></select></label></div>
  <div className="vcs-grid"><article className="vcs-card vcs-kpi"><p>Faturamento fiscal autorizado</p><strong>{brl(faturamento)}</strong></article><article className="vcs-card vcs-kpi"><p>Meta comercial</p><strong>{meta?brl(meta.meta_faturamento):'—'}</strong><small>{meta?progress.toFixed(1)+'% realizado':'Nenhuma meta cadastrada'}</small></article><article className="vcs-card vcs-kpi"><p>Pedidos Aprovados / Em Produção</p><strong>{abertos}</strong></article><article className="vcs-card vcs-kpi"><p>Taxa de conversão registrada</p><strong>{conversao.toFixed(1)}%</strong></article></div>
  <section className="vcs-section"><div className="vcs-section-title"><strong>Faturamento × meta no período</strong><span>{chartData.length} ponto(s) real(is)</span></div>{chartData.length?<div style={{height:260}}><ResponsiveContainer width="100%" height="100%"><AreaChart data={chartData}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="data"/><YAxis tickFormatter={v=>brl(Number(v))}/><Tooltip formatter={(v)=>brl(Number(v))}/><Area type="monotone" dataKey="faturamento" name="Faturamento"/></AreaChart></ResponsiveContainer></div>:<div className="vcs-empty">Nenhum dado disponível para o período selecionado.</div>}</section>
  <section className="vcs-section"><div className="vcs-section-title"><strong>Top 5 produtos por receita</strong><span>Base: itens reais de pedidos</span></div>{topProducts.length?<DataTable headers={['Produto','Quantidade','Receita']} rows={topProducts.map(p=>[p.nome,p.quantidade.toLocaleString('pt-BR'),brl(p.receita)])}/>:<div className="vcs-empty">Nenhum dado disponível para o período selecionado.</div>}</section>
  <section className="vcs-section"><div className="vcs-section-title"><strong>Pedidos recentes e situação comercial</strong><span>{orders.length} registro(s)</span></div><DataTable headers={['Pedido','Cliente','Status','Total','Entrega']} rows={orders.slice(0,12).map(o=>[String(o.numero).padStart(6,'0'),clients.find(c=>c.id===o.cliente_id)?.nome??'—',o.status,brl(o.total),dateBR(o.data_entrega_prometida)])}/></section>
  <section className="vcs-section"><div className="vcs-section-title"><strong>Indicadores de PCP</strong><span>{productionOrders.length} OP(s) consultadas</span></div>{productionOrders.length?<DataTable headers={['Status','Quantidade de OPs']} rows={Object.entries(pcp).map(([status,count])=>[status,count])}/>:<div className="vcs-empty">Nenhuma ordem de produção encontrada.</div>}</section>
- <section className="vcs-section"><div className="vcs-section-title"><strong>Carteira de crédito cadastrada</strong><span>{creditCandidates.length} cliente(s)</span></div>{creditCandidates.length?<DataTable headers={['Cliente','Limite cadastrado','Situação']} rows={creditCandidates.slice(0,12).map(c=>[c.nome,brl(Number(c.limite_credito||0)),'Limite cadastrado — bloqueio depende da análise financeira'])}/>:<div className="vcs-empty">Nenhum cliente com limite de crédito cadastrado.</div>}</section></>
+ <section className="vcs-section"><div className="vcs-section-title"><strong>Pedidos bloqueados por crédito</strong><span>{creditBlocked.length} no período</span></div>{creditBlocked.length?<DataTable headers={['Pedido','Cliente','Total','Motivo']} rows={creditBlocked.slice(0,20).map(o=>[String(o.numero).padStart(6,'0'),clients.find(c=>c.id===o.cliente_id)?.nome??'—',brl(o.total),o.credito_motivo??'Bloqueio financeiro'])}/>:<div className="vcs-empty">Nenhum pedido bloqueado por crédito no período selecionado.</div>}</section></>
 }
 function CRM({opps,clients,onCreate,onMove,onConvert}:{opps:Opportunity[];clients:Client[];onCreate:(t:string,c:string,v:string)=>Promise<void>;onMove:(id:string,e:string)=>Promise<void>;onConvert:(o:Opportunity)=>Promise<void>}){
  const [title,setTitle]=useState('');const [client,setClient]=useState('');const [value,setValue]=useState('')
