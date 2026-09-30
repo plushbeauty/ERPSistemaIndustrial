@@ -30,7 +30,7 @@ const views: Array<{id:View;label:string;icon:typeof ShoppingCart}> = [
 export default function VendasComercialSuite(){
  const path=window.location.pathname
  const query=new URLSearchParams(window.location.search).get('view') as View|null
- const initial=(query&&views.some(v=>v.id===query)?query:null) ?? (path.includes('/vendas/crm')?'crm':path.includes('/vendas/clientes')?'clientes':path.includes('/vendas/precos')?'precos':path.includes('/vendas/orcamentos')?'orcamentos':path.includes('/vendas/faturamento')?'faturamento':path.includes('/vendas/expedicao')?'expedicao':path.includes('/vendas/comissoes')?'comissoes':path.includes('/vendas/rma')?'rma':'dashboard')
+ const initial=(query&&views.some(v=>v.id===query)?query:null) ?? (path.includes('/vendas/crm')?'crm':path.includes('/vendas/clientes')?'clientes':path.includes('/vendas/precos')?'precos':path.includes('/vendas/orcamentos')?'orcamentos':path.includes('/vendas/pedidos')?'pedidos':path.includes('/vendas/faturamento')?'faturamento':path.includes('/vendas/expedicao')?'expedicao':path.includes('/vendas/comissoes')?'comissoes':path.includes('/vendas/rma')?'rma':'dashboard')
  const [view,setView]=useState<View>(initial)
  const [empresa,setEmpresa]=useState('')
  const [clients,setClients]=useState<Client[]>([])
@@ -40,6 +40,7 @@ export default function VendasComercialSuite(){
  const [orders,setOrders]=useState<Order[]>([])
  const [nfes,setNfes]=useState<Nfe[]>([])
  const [prices,setPrices]=useState<PriceTable[]>([])
+ const [priceItems,setPriceItems]=useState<Array<{id:string;tabela_preco_id:string;produto_id:string;preco:number}>>([])
  const [romaneios,setRomaneios]=useState<Romaneio[]>([])
  const [rules,setRules]=useState<CommissionRule[]>([])
  const [launches,setLaunches]=useState<CommissionLaunch[]>([])
@@ -65,6 +66,7 @@ export default function VendasComercialSuite(){
     supabase.from('erp_pedidos_venda').select('id,numero,cliente_id,status,total,data_entrada,data_entrega_prometida,pedido_cliente').eq('empresa_id',id).order('created_at',{ascending:false}).limit(500),
     supabase.from('erp_documentos_fiscais').select('id,numero,serie,status,destinatario_nome,valor_total,data_emissao,chave_acesso,mensagem_sefaz').eq('empresa_id',id).eq('tipo','saida').order('data_emissao',{ascending:false}).limit(300),
     supabase.from('erp_tabelas_preco').select('id,codigo,nome,ativo').eq('empresa_id',id).order('codigo'),
+    supabase.from('erp_tabelas_preco_itens').select('id,tabela_preco_id,produto_id,preco').eq('empresa_id',id).limit(10000),
     supabase.from('erp_expedicoes').select('id,numero,status,transportadora,peso_total_kg,data_expedicao').eq('empresa_id',id).order('created_at',{ascending:false}).limit(200),
     supabase.from('erp_vendas_regras_comissao').select('id,nome,percentual,tipo,margem_minima,por_recebimento,ativo').eq('empresa_id',id).order('nome'),
     supabase.from('erp_vendas_comissoes_lancamentos').select('id,funcionario_id,data_referencia,receita_base,percentual,valor_comissao,status').eq('empresa_id',id).order('data_referencia',{ascending:false}).limit(300),
@@ -76,9 +78,9 @@ export default function VendasComercialSuite(){
    for(const r of results) if(r.error) throw r.error
    setClients((results[0].data??[]) as Client[]);setProducts((results[1].data??[]) as Product[]);setOpps((results[2].data??[]) as Opportunity[])
    setQuotes((results[3].data??[]) as Quote[]);setOrders((results[4].data??[]) as Order[]);setNfes((results[5].data??[]) as Nfe[])
-   setPrices((results[6].data??[]) as PriceTable[]);setRomaneios((results[7].data??[]) as Romaneio[])
-   setRules((results[8].data??[]) as CommissionRule[]);setLaunches((results[9].data??[]) as CommissionLaunch[])
-   setMeta((results[10].data??null) as SalesMeta|null);setOrderItems((results[11].data??[]) as OrderItem[]);setProductionOrders((results[12].data??[]) as ProductionOrder[]);setDevolucoes((results[13].data??[]) as typeof devolucoes)
+   setPrices((results[6].data??[]) as PriceTable[]);setPriceItems((results[7].data??[]) as typeof priceItems);setRomaneios((results[8].data??[]) as Romaneio[])
+   setRules((results[9].data??[]) as CommissionRule[]);setLaunches((results[10].data??[]) as CommissionLaunch[])
+   setMeta((results[11].data??null) as SalesMeta|null);setOrderItems((results[12].data??[]) as OrderItem[]);setProductionOrders((results[13].data??[]) as ProductionOrder[]);setDevolucoes((results[14].data??[]) as typeof devolucoes)
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar o módulo Vendas & Comercial.')}finally{setLoading(false)}
  }
  useEffect(()=>{void load()},[])
@@ -112,10 +114,9 @@ export default function VendasComercialSuite(){
  }
  const convertQuote=async(q:Quote)=>{
   if(q.status==='CONVERTIDO')return
-  const r=await supabase.from('erp_pedidos_venda').insert({empresa_id:empresa,cliente_id:q.cliente_id,status:'ABERTO',total:q.total||0,data_entrada:new Date().toISOString().slice(0,10)})
+  const r=await supabase.rpc('erp_converter_orcamento_em_pedido',{p_orcamento_id:q.id})
   if(r.error){setError(r.error.message);return}
-  const u=await supabase.from('erp_vendas_orcamentos').update({status:'CONVERTIDO'}).eq('id',q.id).eq('empresa_id',empresa)
-  if(u.error)setError(u.error.message);else{setMessage('Orçamento convertido para pedido sem redigitar o cliente.');void load()}
+  setMessage('Orçamento convertido para pedido com os itens e análise de estoque/produção.');void load()
  }
  const createRma=async(clientId:string,reason:string)=>{
   if(!clientId||!reason.trim())return
@@ -139,7 +140,7 @@ export default function VendasComercialSuite(){
       {view==='dashboard'&&<Dashboard kpis={kpis} orders={orders} nfes={nfes} clients={clients} meta={meta} orderItems={orderItems} products={products} productionOrders={productionOrders}/>} 
       {view==='crm'&&<CRM opps={opps} clients={clients} onCreate={doOpportunity} onMove={moveOpportunity}/>}
       {view==='clientes'&&<Clientes clients={clients} empresa={empresa} onSaved={()=>void load()}/>}
-      {view==='precos'&&<Precos prices={prices} products={products} empresa={empresa} onSaved={()=>void load()}/>}
+      {view==='precos'&&<Precos prices={prices} priceItems={priceItems} products={products} empresa={empresa} onSaved={()=>void load()}/>}
       {view==='orcamentos'&&<Orcamentos quotes={quotes} clients={clients} onCreate={createQuote} onConvert={convertQuote}/>}
       {view==='pedidos'&&<Pedidos orders={orders} clients={clients}/>}
       {view==='faturamento'&&<Faturamento nfes={nfes}/>}
@@ -194,10 +195,10 @@ function Clientes({clients,empresa,onSaved}:{clients:Client[];empresa:string;onS
  {tab==='historico'&&<section className="vcs-section"><div className="vcs-empty">O histórico de compras será exibido quando houver documentos comerciais/fiscais vinculados ao cliente na consulta desta empresa.</div></section>}
  {tab==='contatos'&&<section className="vcs-section"><div className="vcs-empty">Nenhum contato adicional foi retornado pela fonte de dados atual.</div></section>}</>
 }
-function Precos({prices,products,empresa,onSaved}:{prices:PriceTable[];products:Product[];empresa:string;onSaved:()=>void}){
+function Precos({prices,priceItems,products,empresa,onSaved}:{prices:PriceTable[];priceItems:Array<{id:string;tabela_preco_id:string;produto_id:string;preco:number}>;products:Product[];empresa:string;onSaved:()=>void}){
  const [table,setTable]=useState('');const [code,setCode]=useState('');const [name,setName]=useState('')
  const save=async()=>{if(!code.trim()||!name.trim())return;const r=await supabase.from('erp_tabelas_preco').insert({empresa_id:empresa,codigo:code.trim(),nome:name.trim(),ativo:true});if(!r.error){setCode('');setName('');onSaved()}}
- return <><section className="vcs-section"><div className="vcs-section-title"><strong>Tabelas de preço</strong></div><div className="vcs-form"><label className="vcs-field erp-field-code">Código<input value={code} onChange={e=>setCode(e.target.value)}/></label><label className="vcs-field wide">Nome<input value={name} onChange={e=>setName(e.target.value)}/></label><div><button className="vcs-btn primary" style={{marginTop:20}} onClick={()=>void save()}><Plus size={16}/> Criar tabela</button></div></div></section><section className="vcs-section"><DataTable headers={['Código','Tabela','Status']} rows={prices.map(p=>[p.codigo,p.nome,p.ativo?'ATIVA':'INATIVA'])}/><p style={{fontSize:12,color:'#617984',marginBottom:0}}>Os itens da tabela usam <b>erp_tabelas_preco_itens</b>. A regra de aprovação deve impedir preço abaixo do custo e respeitar o teto de desconto configurado em Vendas.</p></section><section className="vcs-section"><strong>Produtos disponíveis para formação de preço</strong><DataTable headers={['Código','Produto','Preço base','Custo']} rows={products.slice(0,30).map(p=>[p.codigo,p.nome,brl(Number(p.preco_venda||0)),brl(Number(p.custo_ultimo||0))])}/></section></>
+ return <><section className="vcs-section"><div className="vcs-section-title"><strong>Tabelas de preço</strong></div><div className="vcs-form"><label className="vcs-field erp-field-code">Código<input value={code} onChange={e=>setCode(e.target.value)}/></label><label className="vcs-field wide">Nome<input value={name} onChange={e=>setName(e.target.value)}/></label><div><button className="vcs-btn primary" style={{marginTop:20}} onClick={()=>void save()}><Plus size={16}/> Criar tabela</button></div></div></section><section className="vcs-section"><DataTable headers={['Código','Tabela','Status']} rows={prices.map(p=>[p.codigo,p.nome,p.ativo?'ATIVA':'INATIVA'])}/><p style={{fontSize:12,color:'#617984',marginBottom:0}}>Os itens da tabela usam <b>erp_tabelas_preco_itens</b>. A regra de aprovação deve impedir preço abaixo do custo e respeitar o teto de desconto configurado em Vendas.</p></section><section className="vcs-section"><strong>Itens de tabela cadastrados</strong><DataTable headers={['Tabela','Produto','Preço','Custo']} rows={priceItems.slice(0,50).map(i=>[prices.find(p=>p.id===i.tabela_preco_id)?.nome??'—',products.find(p=>p.id===i.produto_id)?.nome??'—',brl(Number(i.preco||0)),brl(Number(products.find(p=>p.id===i.produto_id)?.custo_ultimo||0))])}/></section></>
 }
 
 function Orcamentos({quotes,clients,onCreate,onConvert}:{quotes:Quote[];clients:Client[];onCreate:(c:string,v:string)=>Promise<void>;onConvert:(q:Quote)=>Promise<void>}){
@@ -215,7 +216,7 @@ function Comissoes({rules,launches}:{rules:CommissionRule[];launches:CommissionL
 
 function Rma({clients,devolucoes,onCreate}:{clients:Client[];devolucoes:Array<{id:string;numero:number;cliente_id:string;tipo:string;motivo:string;status:string;tratamento_sgq:string;valor_credito:number}>;onCreate:(c:string,r:string)=>Promise<void>}){
  const [client,setClient]=useState('');const [reason,setReason]=useState('')
- return <><section className="vcs-section"><div className="vcs-section-title"><strong>Nova devolução / troca / garantia RMA</strong></div><div className="vcs-form"><label className="vcs-field wide">Cliente<select value={client} onChange={e=>setClient(e.target.value)}><option value="">Selecionar</option>{clients.map(c=><option key={c.id} value={c.id}>{c.codigo} • {c.nome}</option>)}</select></label><label className="vcs-field wide">Motivo<textarea value={reason} onChange={e=>setReason(e.target.value)} placeholder="Descreva o motivo para análise comercial e SGQ."/></label><div><button className="vcs-btn primary" style={{marginTop:20}} onClick={()=>void onCreate(client,reason)}><Plus size={16}/> Abrir RMA</button></div></div></section><section className="vcs-section"><strong>Regra de tratamento</strong><p style={{fontSize:12,color:'#617984'}}>Todo RMA novo entra em <b>QUARENTENA</b>. Depois, a análise do SGQ define liberação, retrabalho ou sucata. O crédito/refund só deve ocorrer após o tratamento fiscal e financeiro correspondente.</p></section></>
+ return <><section className="vcs-section"><div className="vcs-section-title"><strong>Nova devolução / troca / garantia RMA</strong></div><div className="vcs-form"><label className="vcs-field wide">Cliente<select value={client} onChange={e=>setClient(e.target.value)}><option value="">Selecionar</option>{clients.map(c=><option key={c.id} value={c.id}>{c.codigo} • {c.nome}</option>)}</select></label><label className="vcs-field wide">Motivo<textarea value={reason} onChange={e=>setReason(e.target.value)} placeholder="Descreva o motivo para análise comercial e SGQ."/></label><div><button className="vcs-btn primary" style={{marginTop:20}} onClick={()=>void onCreate(client,reason)}><Plus size={16}/> Abrir RMA</button></div></div></section><section className="vcs-section"><strong>RMA registrados</strong><DataTable headers={['RMA','Cliente','Tipo','Motivo','Status','SGQ','Crédito']} rows={devolucoes.map(d=>[String(d.numero).padStart(6,'0'),clients.find(c=>c.id===d.cliente_id)?.nome??'—',d.tipo,d.motivo,d.status,d.tratamento_sgq,brl(d.valor_credito)])}/></section><section className="vcs-section"><strong>Regra de tratamento</strong><p style={{fontSize:12,color:'#617984'}}>Todo RMA novo entra em <b>QUARENTENA</b>. Depois, a análise do SGQ define liberação, retrabalho ou sucata. O crédito/refund só deve ocorrer após o tratamento fiscal e financeiro correspondente.</p></section></>
 }
 
 function DataTable({headers,rows}:{headers:string[];rows:Array<Array<ReactNode>>}){return <div className="vcs-table"><table><thead><tr>{headers.map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.map((row,i)=><tr key={i}>{row.map((cell,j)=><td key={j}>{cell}</td>)}</tr>)}{rows.length===0&&<tr><td colSpan={headers.length}><div className="vcs-empty">Nenhum registro real encontrado para a empresa atual.</div></td></tr>}</tbody></table></div>}
