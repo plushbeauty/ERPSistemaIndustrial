@@ -89,6 +89,13 @@ create table if not exists public.erp_vendas_devolucoes_itens (
   constraint erp_vendas_devolucoes_itens_qty_ck check (quantidade > 0)
 );
 
+-- Campos comerciais adicionais usados pela elaboração de propostas.
+alter table public.erp_vendas_orcamentos add column if not exists tipo_frete text not null default 'CIF';
+alter table public.erp_vendas_orcamentos add column if not exists valor_frete numeric(14,2) not null default 0;
+alter table public.erp_vendas_orcamentos add column if not exists outras_despesas numeric(14,2) not null default 0;
+alter table public.erp_vendas_orcamentos drop constraint if exists erp_vendas_orcamentos_tipo_frete_ck;
+alter table public.erp_vendas_orcamentos add constraint erp_vendas_orcamentos_tipo_frete_ck check (tipo_frete in ('CIF','FOB'));
+
 alter table public.erp_vendas_oportunidades enable row level security;
 alter table public.erp_vendas_orcamentos enable row level security;
 alter table public.erp_vendas_orcamentos_itens enable row level security;
