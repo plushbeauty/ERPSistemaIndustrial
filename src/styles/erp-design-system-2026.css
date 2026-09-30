@@ -1,0 +1,52 @@
+/*
+ * ERP INDUSTRIAL — Design System único.
+ * Referência visual: PCP aprovado.
+ * Desktop denso; tablet mantém controles maiores.
+ */
+:root{
+  --erp-font-menu:13px;
+  --erp-font-table:13px;
+  --erp-font-field:14px;
+  --erp-font-label:12px;
+  --erp-control:42px;
+  --erp-grid-row:40px;
+  --erp-grid-head:38px;
+  --erp-title:28px;
+}
+.erp-dense, .erp-dense *{box-sizing:border-box}
+.erp-dense{font-size:var(--erp-font-field)}
+.erp-dense input,.erp-dense select,.erp-dense textarea{font-size:var(--erp-font-field)}
+.erp-dense label{font-size:var(--erp-font-label)}
+.erp-dense table{font-size:var(--erp-font-table)}
+.erp-dense thead tr{height:var(--erp-grid-head)}
+.erp-dense tbody tr{height:var(--erp-grid-row)}
+.erp-dense button{min-height:var(--erp-control);font-size:var(--erp-font-field)}
+.erp-dense h1{font-size:var(--erp-title)}
+.erp-dense .erp-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.erp-dense .erp-toolbar button{min-height:40px}
+.erp-dense .erp-sidebar-label{font-size:var(--erp-font-menu)}
+.erp-dense .erp-field-sm{width:140px}
+.erp-dense .erp-field-md{width:220px}
+.erp-dense .erp-field-lg{width:min(100%,520px)}
+.erp-dense .erp-field-xl{width:min(100%,760px)}
+.erp-dense .erp-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.erp-dense .erp-grid{width:100%;overflow:auto}
+.erp-dense .erp-grid th,.erp-dense .erp-grid td{padding:7px 9px;white-space:nowrap}
+.erp-dense .erp-grid th{font-weight:800}
+.erp-dense .erp-status{font-size:12px;font-weight:800}
+@media (min-width:1024px){
+  .erp-dense .erp-sidebar-label{font-size:13px}
+}
+@media (max-width:1023px){
+  .erp-dense .erp-sidebar-label{font-size:15px}
+  .erp-dense input,.erp-dense select,.erp-dense button{min-height:48px;font-size:16px}
+  .erp-dense tbody tr{height:48px}
+  .erp-dense .erp-grid th,.erp-dense .erp-grid td{padding:9px 10px}
+}
+
+.erp-vendas aside button{min-height:40px;font-size:13px}
+.erp-vendas table{font-size:13px}
+.erp-vendas thead tr{height:38px}
+.erp-vendas tbody tr{height:40px}
+.erp-vendas .erp-toolbar button{min-height:40px;font-size:13px}
+.erp-vendas h1,.erp-vendas h2{line-height:1.15}

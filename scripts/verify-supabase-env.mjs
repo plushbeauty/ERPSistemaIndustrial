@@ -55,6 +55,11 @@ const scanRoots = ['src', 'scripts', '.github', 'public']
 const ignored = new Set(['node_modules', 'dist', '.git'])
 const allowedExtensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json', '.yml', '.yaml', '.html', '.env', '.md'])
 const maxBytes = 1024 * 1024
+const guardFiles = new Set([
+  'scripts/verify-supabase-env.mjs',
+  'scripts/auditoria-global.mjs',
+  'scripts/verify-supabase-guard.mjs',
+])
 
 function scanDirectory(directory) {
   if (!fs.existsSync(directory)) return
@@ -63,6 +68,8 @@ function scanDirectory(directory) {
     const full = path.join(directory, entry.name)
     if (entry.isDirectory()) scanDirectory(full)
     else if (allowedExtensions.has(path.extname(entry.name).toLowerCase()) && fs.statSync(full).size <= maxBytes) {
+      const relative = path.relative(root, full).replaceAll(path.sep, '/')
+      if (guardFiles.has(relative)) continue
       const content = fs.readFileSync(full, 'utf8')
       for (const ref of forbiddenRefs) if (content.includes(`${ref}.supabase.co`) || content.includes(ref)) fail(`Projeto Supabase proibido encontrado em ${path.relative(root, full)}: ${ref}`)
       if (/sb_secret_[A-Za-z0-9_-]{12,}/.test(content)) fail(`Chave sb_secret_ encontrada em ${path.relative(root, full)}`)

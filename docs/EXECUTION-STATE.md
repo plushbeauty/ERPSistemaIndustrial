@@ -18,7 +18,7 @@
 - As migrations de odontologia aplicadas no banco e ausentes do Git foram reconciliadas como artefatos no GitHub dos dois repositórios, sem replay destrutivo de DDL.
 
 ## BANCO / SUPABASE
-Projeto: `wdkvrqekixczuhrfygen`.
+Projeto: `zsklkydlawgvwgnvxwwx` (projeto canônico atual).
 
 Migrations odontológicas confirmadas como aplicadas:
 - 20260918130023 — odonto_atendimento_integracao_v1

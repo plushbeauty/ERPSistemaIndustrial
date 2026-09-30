@@ -46,8 +46,8 @@ if(!pkg.scripts?.['audit:global'] || !pkg.scripts?.['audit:interactions']) fail(
 if(!pkg.scripts?.['audit:brutal']) fail('AUDITORIA BRUTAL não está configurada.')
 if(!pkg.scripts?.['verify:supabase-env']) fail('GATE SUPABASE: verify:supabase-env não está configurado.')
 if(!pkg.scripts?.['build:verified']?.includes('verify:supabase-env')) fail('GATE SUPABASE: build:verified não bloqueia ambiente ausente/inválido.')
-if(!vercel.rewrites?.some(x=>x.source==='/cadastro-master'&&x.destination==='/index.html')) fail('VERCEL: rewrite /cadastro-master ausente.')
-if(!vercel.rewrites?.some(x=>x.source==='/login'&&x.destination==='/index.html')) fail('VERCEL: rewrite /login ausente.')
+const hasSpaCatchAll=vercel.rewrites?.some(x=>x.source==='/(.*)'&&x.destination==='/index.html')
+if(!hasSpaCatchAll) fail('VERCEL: rewrite SPA catch-all ausente.')
 
 const visualFiles=['src/styles/design-system-2026.css','src/styles/industrial-command-center-2026.css','src/styles/erp-reference-ux-2026.css','src/styles/industrial-login.css']
 for(const f of visualFiles){

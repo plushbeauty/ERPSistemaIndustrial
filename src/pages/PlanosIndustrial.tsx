@@ -1,3 +1,7 @@
+/**
+ * Desenvolvedor: FernandoSch
+ * Status do Build Local: Não executado — validação será feita no gate remoto.
+ */
 import { ArrowLeft, ArrowRight, Check, Factory, RefreshCw, ShieldCheck, Wrench } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
@@ -46,6 +50,13 @@ const moduleLabels: Record<string, string> = {
   corte: 'Corte e Preparação',
   pintura: 'Pintura e Acabamento',
   'sgq-tpm': 'SGQ Avançado e TPM',
+  'prensa-dupla': 'PCP de Prensa Dupla',
+  'chao-fabrica': 'Chão de Fábrica',
+  'metrologia-rbc': 'Metrologia RBC',
+  'documentos-obsoletos': 'Documentos Controlados e Obsoletos',
+  'matriz-desenhos': 'Matriz de Desenhos',
+  'manutencao-tpm': 'Manutenção TPM',
+  'roteirizacao-balanca': 'Roteirização de Carga',
 }
 
 const money = (value: number) =>
@@ -283,6 +294,26 @@ export default function PlanosIndustrial() {
                   </article>
                 )
               })}
+            </section>
+
+            <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <small className="text-xs font-black uppercase tracking-[0.16em] text-blue-700">ECOSSISTEMA DO CATÁLOGO</small>
+                  <h2 className="mt-1 text-2xl font-black text-slate-950">Novos recursos industriais disponíveis</h2>
+                  <p className="mt-1 text-sm text-slate-700">A lista abaixo é montada diretamente pelos módulos ativos cadastrados para os planos.</p>
+                </div>
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-700">{current?.modulos.length ?? 0} módulos no plano selecionado</span>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {(current?.modulos ?? []).map((code) => (
+                  <a key={code} href={'/planos?modulo=' + encodeURIComponent(code) + '&plano=' + encodeURIComponent(current?.codigo ?? '')}
+                    className="inline-flex min-h-[40px] items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-800 hover:border-blue-400 hover:bg-blue-50">
+                    <Check className="text-emerald-700" size={14} />
+                    {moduleLabels[code] ?? code}
+                  </a>
+                ))}
+              </div>
             </section>
 
             {current && (

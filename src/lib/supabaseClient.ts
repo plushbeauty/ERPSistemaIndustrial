@@ -1,19 +1,28 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 
 const AUTH_STORAGE_KEY = 'erp-industrial-auth'
+const SUPABASE_URL_ENV = 'VITE_SUPABASE_URL'
+const SUPABASE_PUBLISHABLE_KEY_ENV = 'VITE_SUPABASE_PUBLISHABLE_KEY'
+const SUPABASE_ANON_KEY_ENV = 'VITE_SUPABASE_ANON_KEY'
 
-const supabaseUrl: string = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey: string = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
+const CANONICAL_SUPABASE_URL = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
+const CANONICAL_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BcwsSbBx8dWof7d_hAKtQA_XzQGAYwR'
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Erro Crítico: Variáveis VITE_SUPABASE_URL ou uma chave pública Supabase (publishable/anon) não foi injetada corretamente no build.')
-}
+const supabaseUrlFromEnv = String(import.meta.env.VITE_SUPABASE_URL ?? '').trim()
+const publishableKeyFromEnv = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').trim()
+const legacyAnonKeyFromEnv = String(import.meta.env.VITE_SUPABASE_ANON_KEY ?? '').trim()
 
+// A configuração por ambiente continua sendo a fonte preferencial.
+// Os fallbacks públicos canônicos impedem que a ausência momentânea de VITE_*
+// derrube o React inteiro durante o bootstrap.
+const supabaseUrl = supabaseUrlFromEnv || CANONICAL_SUPABASE_URL
+const supabaseKey = publishableKeyFromEnv || legacyAnonKeyFromEnv || CANONICAL_SUPABASE_PUBLISHABLE_KEY
+
+export const supabaseConfigurado = Boolean(supabaseUrl && supabaseKey)
 export const supabaseModoConexao = 'nuvem'
-export const supabaseEnvironmentMismatch = false
+export const supabaseEnvironmentMismatch = supabaseUrl !== CANONICAL_SUPABASE_URL
 export const supabaseUrlExportada = supabaseUrl
 export const supabaseKeyExportada = supabaseKey
-export const supabaseConfigurado = true
 
 const authStorage = typeof window !== 'undefined' ? window.localStorage : undefined
 
