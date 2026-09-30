@@ -3,7 +3,7 @@
  * Status do Build Local: Não executado — validação será feita no gate remoto.
  */
 import type { ReactNode } from 'react'
-import { ArrowLeft, ClipboardList, X } from 'lucide-react'
+import { ArrowLeft, ClipboardList, HelpCircle, X } from 'lucide-react'
 import IndustrialReferenceShell from '../../layout/IndustrialReferenceShell'
 
 export type PageAction = {
@@ -37,6 +37,9 @@ export default function IndustrialPageShell({ module, title, subtitle, children,
 
   const actionNodes = (
     <>
+      <button type="button" className={`inline-flex min-h-[42px] items-center gap-2 rounded-xl border px-3 text-xs font-black shadow-sm ${actionClass.neutral}`} onClick={() => { window.location.href = '/manual-usuario' }}>
+        <HelpCircle size={16} /> AJUDA
+      </button>
       {backHref && (
         <button type="button" className={`inline-flex min-h-[42px] items-center gap-2 rounded-xl border px-3 text-xs font-black shadow-sm ${actionClass.neutral}`} onClick={() => { window.location.href = backHref }}>
           <ArrowLeft size={16} /> VOLTAR
