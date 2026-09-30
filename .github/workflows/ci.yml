@@ -39,6 +39,9 @@ jobs:
       - name: CI policy
         run: npm run verify:ci-policy
 
+      - name: Public naming
+        run: npm run verify:public-naming
+
       - name: Supabase environment
         run: npm run verify:supabase-env
 
