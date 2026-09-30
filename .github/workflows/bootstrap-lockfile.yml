@@ -1,11 +1,11 @@
 name: P0 Lockfile Generator
 
 on:
-  push:
-    branches: [tmp/p0-lockfile]
+  pull_request:
+    branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   generate:
@@ -13,16 +13,27 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Generate package-lock
-        run: npm install --package-lock-only --legacy-peer-deps --ignore-scripts --no-audit --no-fund
-      - name: Verify lockfile
-        run: test -s package-lock.json
-      - name: Upload package-lock
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-package-lock
-          path: package-lock.json
-          retention-days: 1
+      - name: Generate lockfile when missing
+        id: lock
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "created=false" >> "$GITHUB_OUTPUT"
+          else
+            npm install --package-lock-only --legacy-peer-deps --ignore-scripts --no-audit --no-fund
+            test -s package-lock.json
+            echo "created=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Commit generated lockfile
+        if: steps.lock.outputs.created == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "chore(ci): add deterministic npm lockfile"
+          git push origin "HEAD:${{ github.head_ref }}"
