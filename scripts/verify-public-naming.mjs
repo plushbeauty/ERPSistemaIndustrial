@@ -19,6 +19,7 @@ for (const ref of branchRefs) {
 
 const scanRoots = ['src', 'public', 'scripts', '.github', 'docs', 'vercel.json', 'package.json']
 const ignored = new Set(['node_modules', 'dist', '.git', '.vercel'])
+const guardFiles = new Set(['scripts/verify-public-naming.mjs'])
 const extensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json', '.yml', '.yaml', '.html', '.md'])
 
 function scanDirectory(dir) {
@@ -32,6 +33,8 @@ function scanDirectory(dir) {
 }
 
 function scanFile(file) {
+  const relative = path.relative(root, file).replaceAll(path.sep, '/')
+  if (guardFiles.has(relative)) return
   const content = fs.readFileSync(file, 'utf8').toLowerCase()
   for (const term of forbiddenTerms) {
     if (content.includes(term)) failures.push(`Nome interno proibido encontrado em ${path.relative(root, file)}: ${term}`)
