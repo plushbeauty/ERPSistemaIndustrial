@@ -43,3 +43,10 @@
   .erp-dense tbody tr{height:48px}
   .erp-dense .erp-grid th,.erp-dense .erp-grid td{padding:9px 10px}
 }
+
+.erp-vendas aside button{min-height:40px;font-size:13px}
+.erp-vendas table{font-size:13px}
+.erp-vendas thead tr{height:38px}
+.erp-vendas tbody tr{height:40px}
+.erp-vendas .erp-toolbar button{min-height:40px;font-size:13px}
+.erp-vendas h1,.erp-vendas h2{line-height:1.15}
