@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { BarChart3, ClipboardList, Copy, FileCheck2, Factory, PackageCheck, Plus, RefreshCw, Send, Settings, ShoppingCart, Truck, Users, XCircle } from 'lucide-react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { BarChart3, FileCheck2, PackageCheck, Plus, RefreshCw, Settings, ShoppingCart, Truck, Users, XCircle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type View = 'dashboard'|'crm'|'clientes'|'precos'|'orcamentos'|'pedidos'|'faturamento'|'expedicao'|'comissoes'|'rma'
@@ -134,7 +134,7 @@ export default function VendasComercialSuite(){
       {view==='faturamento'&&<Faturamento nfes={nfes}/>}
       {view==='expedicao'&&<Expedicao romaneios={romaneios}/>}
       {view==='comissoes'&&<Comissoes rules={rules} launches={launches}/>}
-      {view==='rma'&&<Rma clients={clients} empresa={empresa} onCreate={createRma}/>}
+      {view==='rma'&&<Rma clients={clients} onCreate={createRma}/>}
      </>}
     </section>
    </main>
@@ -183,9 +183,9 @@ function Expedicao({romaneios}:{romaneios:Romaneio[]}){return <><section classNa
 
 function Comissoes({rules,launches}:{rules:CommissionRule[];launches:CommissionLaunch[]}){return <><section className="vcs-section"><div className="vcs-section-title"><strong>Regras comerciais de comissão</strong><span>{rules.length} regra(s)</span></div><DataTable headers={['Regra','Tipo','Percentual','Margem mínima','Por recebimento','Status']} rows={rules.map(r=>[r.nome,r.tipo,`${Number(r.percentual).toFixed(2)}%`,r.margem_minima==null?'—':`${Number(r.margem_minima).toFixed(2)}%`,r.por_recebimento?'SIM':'NÃO',r.ativo?'ATIVA':'INATIVA'])}/></section><section className="vcs-section"><div className="vcs-section-title"><strong>Lançamentos de comissão</strong></div><DataTable headers={['Data','Receita base','Percentual','Comissão','Status']} rows={launches.map(l=>[dateBR(l.data_referencia),brl(l.receita_base),`${Number(l.percentual).toFixed(2)}%`,brl(l.valor_comissao),l.status])}/></section></>}
 
-function Rma({clients,empresa,onCreate}:{clients:Client[];empresa:string;onCreate:(c:string,r:string)=>Promise<void>}){
+function Rma({clients,onCreate}:{clients:Client[];onCreate:(c:string,r:string)=>Promise<void>}){
  const [client,setClient]=useState('');const [reason,setReason]=useState('')
  return <><section className="vcs-section"><div className="vcs-section-title"><strong>Nova devolução / troca / garantia RMA</strong></div><div className="vcs-form"><label className="vcs-field wide">Cliente<select value={client} onChange={e=>setClient(e.target.value)}><option value="">Selecionar</option>{clients.map(c=><option key={c.id} value={c.id}>{c.codigo} • {c.nome}</option>)}</select></label><label className="vcs-field wide">Motivo<textarea value={reason} onChange={e=>setReason(e.target.value)} placeholder="Descreva o motivo para análise comercial e SGQ."/></label><div><button className="vcs-btn primary" style={{marginTop:20}} onClick={()=>void onCreate(client,reason)}><Plus size={16}/> Abrir RMA</button></div></div></section><section className="vcs-section"><strong>Regra de tratamento</strong><p style={{fontSize:12,color:'#617984'}}>Todo RMA novo entra em <b>QUARENTENA</b>. Depois, a análise do SGQ define liberação, retrabalho ou sucata. O crédito/refund só deve ocorrer após o tratamento fiscal e financeiro correspondente.</p></section></>
 }
 
-function DataTable({headers,rows}:{headers:string[];rows:Array<Array<React.ReactNode>>}){return <div className="vcs-table"><table><thead><tr>{headers.map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.map((row,i)=><tr key={i}>{row.map((cell,j)=><td key={j}>{cell}</td>)}</tr>)}{rows.length===0&&<tr><td colSpan={headers.length}><div className="vcs-empty">Nenhum registro real encontrado para a empresa atual.</div></td></tr>}</tbody></table></div>}
+function DataTable({headers,rows}:{headers:string[];rows:Array<Array<ReactNode>>}){return <div className="vcs-table"><table><thead><tr>{headers.map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.map((row,i)=><tr key={i}>{row.map((cell,j)=><td key={j}>{cell}</td>)}</tr>)}{rows.length===0&&<tr><td colSpan={headers.length}><div className="vcs-empty">Nenhum registro real encontrado para a empresa atual.</div></td></tr>}</tbody></table></div>}
