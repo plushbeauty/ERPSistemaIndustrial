@@ -64,13 +64,11 @@ export default function IndustrialReferenceShell({
           className="flex items-center space-x-3 border-b border-slate-800 p-6 text-left"
           aria-label="Voltar à Mesa de Ícones"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-900 text-sm font-black text-white shadow-[0_4px_12px_rgba(37,99,235,0.3)]">
-            SQ
-          </div>
-          <div>
-            <span className="block text-base font-black tracking-tight text-white">SGQERP</span>
-            <span className="-mt-1 block text-[10px] font-bold uppercase tracking-widest text-cyan-400">Industrial</span>
-          </div>
+          <img
+            src="/logo-industrial.svg"
+            alt="ERP Industrial"
+            className="h-10 w-[150px] shrink-0 object-contain"
+          />
         </button>
 
         <div className="px-4 pb-3 pl-6 pt-6 text-[10px] font-bold uppercase tracking-widest text-slate-500">
