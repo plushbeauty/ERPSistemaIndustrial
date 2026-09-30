@@ -1,11 +1,11 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { AreaChart, Area, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { BarChart3, FileCheck2, PackageCheck, Plus, RefreshCw, Settings, ShoppingCart, Truck, Users, XCircle } from 'lucide-react'
+import { BarChart3, Factory, FileCheck2, PackageCheck, Plus, RefreshCw, Settings, ShieldCheck, ShoppingCart, Truck, Users, XCircle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type View = 'dashboard'|'crm'|'clientes'|'precos'|'orcamentos'|'pedidos'|'faturamento'|'expedicao'|'comissoes'|'rma'
 type Client = { id:string; codigo:string; nome:string; documento:string|null; email:string|null; limite_credito:number|null; ativo:boolean }
-type Product = { id:string; codigo:string; nome:string; preco_venda:number|null; custo_ultimo:number|null; ativo:boolean }
+type Product = { id:string; codigo:string; nome:string; preco_venda:number|null; custo_ultimo:number|null; estoque_atual:number|null; ativo:boolean }
 type Opportunity = { id:string; titulo:string; cliente_id:string|null; valor_estimado:number; probabilidade:number; etapa:string; proxima_acao:string|null; motivo_perda:string|null }
 type Quote = { id:string; numero:number; cliente_id:string; status:string; validade:string|null; contato?:string|null; vendedor_id?:string|null; tabela_preco_id?:string|null; condicao_pagamento?:string|null; tipo_frete?:string|null; valor_frete?:number|null; outras_despesas?:number|null; termos?:string|null; observacoes?:string|null; subtotal?:number|null; desconto?:number|null; total:number; margem_percentual:number|null; created_at:string }
 type Order = { id:string; numero:number; cliente_id:string|null; status:string; total:number; data_entrada:string; data_entrega_prometida:string|null; pedido_cliente:string|null; credito_status:string|null; credito_motivo:string|null }
