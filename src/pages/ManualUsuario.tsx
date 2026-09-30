@@ -2,7 +2,7 @@
  * Desenvolvedor: FernandoSch
  * Status do Build Local: Não executado — validação será feita no gate remoto.
  */
-import { BookOpen, Boxes, CheckCircle2, FileText, Factory, HelpCircle, KeyRound, Package, ShieldCheck, ShoppingCart, Wrench, Truck, Users, BarChart3 } from 'lucide-react'
+import { BookOpen, Boxes, FileText, Factory, HelpCircle, KeyRound, Package, ShieldCheck, ShoppingCart, Wrench, Truck, Users, BarChart3 } from 'lucide-react'
 
 type ManualSection = {
   id: string
