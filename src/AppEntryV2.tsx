@@ -1,11 +1,11 @@
-import { Component, type ReactNode, lazy, Suspense, useEffect, useState } from 'react'
+import { Component, type ComponentType, type ReactNode, lazy, Suspense, useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 
 
 
-type LazyModule = { default?: React.ComponentType<unknown>; [key: string]: unknown }
+type LazyModule = { default?: ComponentType<unknown>; [key: string]: unknown }
 
 function lazyPage(loader: () => Promise<LazyModule>, exportName: string) {
   return lazy(async () => {
@@ -14,7 +14,7 @@ function lazyPage(loader: () => Promise<LazyModule>, exportName: string) {
     if (typeof component !== 'function' && typeof component !== 'object') {
       throw new Error('LAZY_EXPORT_MISSING: ' + exportName)
     }
-    return { default: component as React.ComponentType<unknown> }
+    return { default: component as ComponentType<unknown> }
   })
 }
 import './styles/industrial-login.css'
