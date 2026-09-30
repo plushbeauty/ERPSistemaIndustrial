@@ -79,3 +79,12 @@ Uma tela somente pode ser marcada como GREEN após:
 - testes relevantes;
 - validação visual;
 - confirmação de que nenhuma integração real foi substituída por mock.
+
+
+## Vendas — regras funcionais consolidadas
+
+- O Dashboard Comercial deve aplicar o período selecionado aos indicadores derivados de documentos fiscais e pedidos, sem apresentar totais de outro período como se fossem do filtro atual.
+- CRM/Pipeline utiliza as seis etapas oficiais e permite mover uma oportunidade entre colunas; a mudança de etapa deve persistir no banco da empresa atual. Para **PERDIDO**, o motivo é obrigatório.
+- Orçamentos são rascunhos até possuírem itens reais. Produto, quantidade e preço devem ser gravados em `erp_vendas_orcamentos_itens`; o total do orçamento é recalculado a partir desses itens. A conversão para pedido só pode ocorrer quando houver itens e deve usar a função transacional do ERP.
+- Catálogos e consultas comerciais devem filtrar explicitamente `empresa_id` sempre que a origem disponibilizar esse campo, além da proteção RLS.
+- Estados vazios devem explicar a ausência de dados reais; não preencher a interface com registros demonstrativos.
