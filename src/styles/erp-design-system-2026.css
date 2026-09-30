@@ -39,7 +39,8 @@
 }
 @media (max-width:1023px){
   .erp-dense .erp-sidebar-label{font-size:15px}
-  .erp-dense input,.erp-dense select,.erp-dense button{min-height:48px;font-size:16px}
+  .erp-dense input,.erp-dense select{min-height:48px;font-size:16px}
+  .erp-dense button{min-height:42px;font-size:14px}
   .erp-dense tbody tr{height:48px}
   .erp-dense .erp-grid th,.erp-dense .erp-grid td{padding:9px 10px}
 }
