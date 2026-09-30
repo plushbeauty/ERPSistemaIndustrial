@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   AlertTriangle,
   BarChart3,
@@ -14,6 +14,7 @@ import { supabase } from '../lib/supabaseClient'
 
 type Profile = { nome: string | null; perfil: string | null }
 type Metric = { value: number | null; label: string }
+type TabletWorkspace = { key:string; number:string; icon:string; title:string; description:string; metric?:Metric; fallback:ReactNode; links:readonly (readonly [string,string])[] }
 
 const tabletIconAssets = import.meta.glob(
   '../assets/icones-tablet/*.{svg,png,webp,jpg,jpeg}',
@@ -29,13 +30,20 @@ function normalize(value: string) {
     .replace(/^_|_$/g, '')
 }
 
-function resolveIcon(name: string) {
+function resolveIcon(number: string, name: string) {
+  const numberKey = number.padStart(2, '0')
   const wanted = normalize(name)
-  const entry = Object.entries(tabletIconAssets).find(([path]) => {
+  const entries = Object.entries(tabletIconAssets)
+  const byNumber = entries.find(([path]) => {
     const file = normalize(path.split('/').pop()?.replace(/\\.[^.]+$/, '') ?? '')
-    return file === wanted || file.startsWith(`${wanted}_`)
+    return file.startsWith(numberKey + '_') || file.startsWith(numberKey + '-') || file === numberKey
   })
-  return entry?.[1]
+  if (byNumber) return byNumber[1]
+  const byName = entries.find(([path]) => {
+    const file = normalize(path.split('/').pop()?.replace(/\\.[^.]+$/, '') ?? '')
+    return file === wanted || file.startsWith(wanted + '_') || file.startsWith(wanted + '-')
+  })
+  return byName?.[1]
 }
 
 async function countRows(table: string, empresaId: string) {
@@ -110,9 +118,10 @@ export default function TabletDashboard() {
     location.href = '/login'
   }
 
-  const workspaces = [
+  const workspaces: TabletWorkspace[] = [
     {
       key: 'vendas',
+      number: '02',
       icon: 'vendas',
       title: 'COMERCIAL / VENDAS',
       description: 'Pedidos, carteira e acompanhamento comercial.',
@@ -125,6 +134,7 @@ export default function TabletDashboard() {
     },
     {
       key: 'pcp',
+      number: '11',
       icon: 'pcp',
       title: 'PCP CENTRAL',
       description: 'Ordens, demanda, materiais e paradas.',
@@ -139,6 +149,7 @@ export default function TabletDashboard() {
     },
     {
       key: 'qualidade',
+      number: '13',
       icon: 'qualidade',
       title: 'QUALIDADE / SGQ',
       description: 'RNC, auditorias e documentos do sistema da qualidade.',
@@ -153,6 +164,7 @@ export default function TabletDashboard() {
     },
     {
       key: 'estoque',
+      number: '04',
       icon: 'estoque',
       title: 'ESTOQUE / ALMOXARIFADO',
       description: 'Saldos, ajustes, separação e etiquetas.',
@@ -167,6 +179,7 @@ export default function TabletDashboard() {
     },
     {
       key: 'compras',
+      number: '03',
       icon: 'compras',
       title: 'COMPRAS',
       description: 'Fornecedores e solicitações de compra.',
@@ -180,6 +193,7 @@ export default function TabletDashboard() {
     },
     {
       key: 'financeiro',
+      number: '06',
       icon: 'financeiro',
       title: 'FINANCEIRO',
       description: 'Custos e análise financeira operacional.',
@@ -192,7 +206,8 @@ export default function TabletDashboard() {
     },
     {
       key: 'manutencao',
-      icon: 'manutencao',
+      number: '12',
+      icon: 'chao-de-fabrica',
       title: 'MANUTENÇÃO',
       description: 'Ordens de manutenção e acompanhamento de ativos.',
       metric: undefined,
@@ -201,6 +216,7 @@ export default function TabletDashboard() {
     },
     {
       key: 'engenharia',
+      number: '08',
       icon: 'engenharia',
       title: 'ENGENHARIA',
       description: 'Fichas técnicas e documentação de processo.',
@@ -214,6 +230,7 @@ export default function TabletDashboard() {
     },
     {
       key: 'fiscal',
+      number: '06',
       icon: 'fiscal',
       title: 'FISCAL',
       description: 'Operações fiscais e carteira de documentos.',
@@ -228,7 +245,7 @@ export default function TabletDashboard() {
   ] as const
 
   const iconMap = useMemo(
-    () => Object.fromEntries(workspaces.map(workspace => [workspace.key, resolveIcon(workspace.icon)])),
+    () => Object.fromEntries(workspaces.map(workspace => [workspace.key, resolveIcon(workspace.number, workspace.icon)])),
     [workspaces],
   )
 
