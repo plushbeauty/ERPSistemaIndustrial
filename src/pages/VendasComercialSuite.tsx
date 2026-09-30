@@ -205,6 +205,7 @@ function Precos({prices,priceItems,products,empresa,onSaved}:{prices:PriceTable[
  const [newCode,setNewCode]=useState('')
  const [newName,setNewName]=useState('')
  const [saving,setSaving]=useState(false)
+ const [draft,setDraft]=useState<PriceTable|null>(null)
  const [error,setError]=useState('')
  const [message,setMessage]=useState('')
  const [adjustment,setAdjustment]=useState('0')
@@ -228,6 +229,7 @@ function Precos({prices,priceItems,products,empresa,onSaved}:{prices:PriceTable[
   setVolumeRules((r.data??[]) as typeof volumeRules)
  }
  useEffect(()=>{if(!selectedId&&prices[0])setSelectedId(prices[0].id)},[prices,selectedId])
+ useEffect(()=>{setDraft(selected?{...selected}:null)},[selectedId,prices])
  useEffect(()=>{void loadRules(selectedId)},[selectedId,empresa])
  const saveTable=async()=>{
   if(!newCode.trim()||!newName.trim()){setError('Código e nome da tabela são obrigatórios.');return}
@@ -253,7 +255,7 @@ function Precos({prices,priceItems,products,empresa,onSaved}:{prices:PriceTable[
    setMessage('Parâmetros da tabela salvos.');onSaved()
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível salvar os parâmetros.')}finally{setSaving(false)}
  }
- const patchSelected=(patch:Partial<PriceTable>)=>setSelectedId(id=>{const next=prices.find(p=>p.id===id);if(!next)return id;Object.assign(next,patch);return id})
+ const patchSelected=(patch:Partial<PriceTable>)=>setDraft(current=>current?{...current,...patch}:current)
  const saveItem=async()=>{
   if(!selected||!itemProduct){setError('Selecione um produto.');return}
   const price=Number(itemPrice);if(!Number.isFinite(price)||price<0){setError('Informe um preço válido.');return}
@@ -323,15 +325,15 @@ function Precos({prices,priceItems,products,empresa,onSaved}:{prices:PriceTable[
  {!selected?<section className="vcs-section"><div className="vcs-empty">Nenhuma tabela comercial selecionada.</div></section>:<><section className="vcs-section">
   <div className="vcs-section-title"><strong>Parâmetros da Tabela</strong><span>Empresa atual: {empresa}</span></div>
   <div className="vcs-form">
-   <label className="vcs-field erp-field-code">Código<input readOnly value={selected.codigo}/></label>
-   <label className="vcs-field wide">Nome<input value={selected.nome} onChange={e=>patchSelected({nome:e.target.value})}/></label>
-   <label className="vcs-field erp-field-date">Validade inicial<input className="erp-field-date" type="date" value={selected.validade_inicio??''} onChange={e=>patchSelected({validade_inicio:e.target.value||null})}/></label>
-   <label className="vcs-field erp-field-date">Validade final<input className="erp-field-date" type="date" value={selected.validade_fim??''} onChange={e=>patchSelected({validade_fim:e.target.value||null})}/></label>
-   <label className="vcs-field erp-field-percent">Margem mínima<input className="erp-field-percent" type="number" step="0.001" min="0" max="100" value={selected.margem_minima??0} onChange={e=>patchSelected({margem_minima:Number(e.target.value)})}/></label>
-   <label className="vcs-field erp-field-percent">Desc. máx. vendedor<input className="erp-field-percent" type="number" step="0.001" min="0" max="100" value={selected.desconto_maximo_vendedor??0} onChange={e=>patchSelected({desconto_maximo_vendedor:Number(e.target.value)})}/></label>
-   <label className="vcs-field erp-field-percent">Desc. máx. gerente<input className="erp-field-percent" type="number" step="0.001" min="0" max="100" value={selected.desconto_maximo_gerente??0} onChange={e=>patchSelected({desconto_maximo_gerente:Number(e.target.value)})}/></label>
-   <label className="vcs-field erp-field-code">Moeda<input value={selected.moeda??'BRL'} maxLength={3} onChange={e=>patchSelected({moeda:e.target.value.toUpperCase()})}/></label>
-   <label className="vcs-field wide">Condição de pagamento<input value={selected.condicao_pagamento??''} onChange={e=>patchSelected({condicao_pagamento:e.target.value})}/></label>
+   <label className="vcs-field erp-field-code">Código<input readOnly value={draft?.codigo??''}/></label>
+   <label className="vcs-field wide">Nome<input value={draft?.nome??''} onChange={e=>patchSelected({nome:e.target.value})}/></label>
+   <label className="vcs-field erp-field-date">Validade inicial<input className="erp-field-date" type="date" value={draft?.validade_inicio??''} onChange={e=>patchSelected({validade_inicio:e.target.value||null})}/></label>
+   <label className="vcs-field erp-field-date">Validade final<input className="erp-field-date" type="date" value={draft?.validade_fim??''} onChange={e=>patchSelected({validade_fim:e.target.value||null})}/></label>
+   <label className="vcs-field erp-field-percent">Margem mínima<input className="erp-field-percent" type="number" step="0.001" min="0" max="100" value={draft?.margem_minima??0} onChange={e=>patchSelected({margem_minima:Number(e.target.value)})}/></label>
+   <label className="vcs-field erp-field-percent">Desc. máx. vendedor<input className="erp-field-percent" type="number" step="0.001" min="0" max="100" value={draft?.desconto_maximo_vendedor??0} onChange={e=>patchSelected({desconto_maximo_vendedor:Number(e.target.value)})}/></label>
+   <label className="vcs-field erp-field-percent">Desc. máx. gerente<input className="erp-field-percent" type="number" step="0.001" min="0" max="100" value={draft?.desconto_maximo_gerente??0} onChange={e=>patchSelected({desconto_maximo_gerente:Number(e.target.value)})}/></label>
+   <label className="vcs-field erp-field-code">Moeda<input value={draft?.moeda??'BRL'} maxLength={3} onChange={e=>patchSelected({moeda:e.target.value.toUpperCase()})}/></label>
+   <label className="vcs-field wide">Condição de pagamento<input value={draft?.condicao_pagamento??''} onChange={e=>patchSelected({condicao_pagamento:e.target.value})}/></label>
    <div><button className="vcs-btn primary" style={{marginTop:20}} disabled={saving} onClick={()=>void saveParameters()}>{saving?'Salvando…':'Salvar parâmetros'}</button></div>
   </div>
  </section>
@@ -360,7 +362,6 @@ function Orcamentos({quotes,clients,prices,products,onCreate,onConvert}:{quotes:
  const [form,setForm]=useState({cliente:'',validade:'',contato:'',vendedorId:'',vendedorNome:'',tabela:'',condicao:'',tipoFrete:'CIF' as 'CIF'|'FOB',frete:'0',outras:'0',termos:'',observacoes:''});
  const selectedQuote=quotes.find(q=>q.id===quoteId);
  const selectedProduct=products.find(p=>p.id===produto);
- const selectedTable=prices.find(p=>p.id===form.tabela);
  const [tableItems,setTableItems]=useState<Array<{produto_id:string;preco:number}>>([]);
  const selectedPrice=tableItems.find(i=>i.produto_id===produto)?.preco ?? selectedProduct?.preco_venda ?? 0;
  const subtotal=items.reduce((s,i)=>s+Number(i.total||0),0);
@@ -492,7 +493,6 @@ function Orcamentos({quotes,clients,prices,products,onCreate,onConvert}:{quotes:
  </div></section></>}
  </>;
 }
-function useProductsForQuote(){const [productsForQuote,setProductsForQuote]=useState<Product[]>([]);useEffect(()=>{let active=true;void supabase.rpc('erp_current_empresa_id').then(e=>{if(e.error||!e.data)return supabase.from('erp_produtos').select('id,codigo,nome,preco_venda,custo_ultimo,ativo').eq('ativo',true).limit(0);return supabase.from('erp_produtos').select('id,codigo,nome,preco_venda,custo_ultimo,ativo').eq('empresa_id',String(e.data)).eq('ativo',true).order('codigo').limit(2000)}).then(r=>{if(active&&!r.error)setProductsForQuote((r.data??[]) as Product[])});return()=>{active=false}},[]);return productsForQuote}
 function Pedidos({orders,clients,orderItems,products,reservations,productionOrders,onReload}:{orders:Order[];clients:Client[];orderItems:OrderItem[];products:Product[];reservations:StockReservation[];productionOrders:ProductionOrder[];onReload:()=>void}){
  const [selectedId,setSelectedId]=useState<string|null>(orders[0]?.id??null)
  const [query,setQuery]=useState('')
