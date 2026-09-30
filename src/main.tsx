@@ -4,13 +4,13 @@
   @SCOPE: src/main.tsx
   @CHECKLIST: No-Duplicate-Actions | Valid-Canonical-Links | Active-Noop-Callbacks
 */
-import { StrictMode, Suspense, lazy } from 'react'
+import { StrictMode, Suspense, lazy, type ComponentType } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { createRoot } from 'react-dom/client'
 import { MotionConfig } from 'motion/react'
 
 
-type LazyModule = { default?: React.ComponentType<unknown>; [key: string]: unknown }
+type LazyModule = { default?: ComponentType<unknown>; [key: string]: unknown }
 
 function lazyPage(loader: () => Promise<LazyModule>, exportName: string) {
   return lazy(async () => {
@@ -19,7 +19,7 @@ function lazyPage(loader: () => Promise<LazyModule>, exportName: string) {
     if (typeof component !== 'function' && typeof component !== 'object') {
       throw new Error('LAZY_EXPORT_MISSING: ' + exportName)
     }
-    return { default: component as React.ComponentType<unknown> }
+    return { default: component as ComponentType<unknown> }
   })
 }
 import './styles/index.css'
