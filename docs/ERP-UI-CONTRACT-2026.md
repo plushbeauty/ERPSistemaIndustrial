@@ -88,3 +88,14 @@ Uma tela somente pode ser marcada como GREEN após:
 - Orçamentos são rascunhos até possuírem itens reais. Produto, quantidade e preço devem ser gravados em `erp_vendas_orcamentos_itens`; o total do orçamento é recalculado a partir desses itens. A conversão para pedido só pode ocorrer quando houver itens e deve usar a função transacional do ERP.
 - Catálogos e consultas comerciais devem filtrar explicitamente `empresa_id` sempre que a origem disponibilizar esse campo, além da proteção RLS.
 - Estados vazios devem explicar a ausência de dados reais; não preencher a interface com registros demonstrativos.
+
+
+## Vendas — fechamento funcional 2026-09-30
+
+- Crédito: pedidos devem passar pela função central de análise de limite antes do faturamento; bloqueios e motivo ficam persistidos no pedido.
+- PCP: necessidade líquida do pedido é calculada no banco e a OP é vinculada ao item do pedido, impedindo duplicidade.
+- Expedição: liberação deve passar pela conferência de volumes; divergência mantém a saída bloqueada.
+- Comissões: lançamentos podem gerar títulos reais em Contas a Pagar pela função transacional do ERP.
+- RMA: tratamento SGQ é persistido e mantém os estados fiscal, estoque e financeiro explícitos; nenhum crédito financeiro é inventado pela interface.
+- Tabelas de preço: reajuste em lote usa função central, tenant atual e proteção contra preço abaixo do custo/margem mínima.
+- Orçamento: impressão gera documento comercial formatado a partir dos itens reais; conversão para pedido usa função transacional.
