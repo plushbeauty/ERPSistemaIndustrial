@@ -1,0 +1,28 @@
+name: P0 Lockfile Generator
+
+on:
+  push:
+    branches: [tmp/p0-lockfile]
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Generate package-lock
+        run: npm install --package-lock-only --legacy-peer-deps --ignore-scripts --no-audit --no-fund
+      - name: Verify lockfile
+        run: test -s package-lock.json
+      - name: Upload package-lock
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-package-lock
+          path: package-lock.json
+          retention-days: 1
