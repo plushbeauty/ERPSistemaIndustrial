@@ -1,11 +1,11 @@
-import { Component, lazy, Suspense, useEffect, useState } from 'react'
+import { Component, type ComponentType, lazy, Suspense, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import IndustrialLoginDirect from './IndustrialLoginDirect'
 import SetupADMInicial from './pages/SetupADMInicial'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 
 
-type LazyModule = { default?: React.ComponentType<unknown>; [key: string]: unknown }
+type LazyModule = { default?: ComponentType<unknown>; [key: string]: unknown }
 
 function lazyPage(loader: () => Promise<LazyModule>, exportName: string) {
   return lazy(async () => {
@@ -14,7 +14,7 @@ function lazyPage(loader: () => Promise<LazyModule>, exportName: string) {
     if (typeof component !== 'function' && typeof component !== 'object') {
       throw new Error('LAZY_EXPORT_MISSING: ' + exportName)
     }
-    return { default: component as React.ComponentType<unknown> }
+    return { default: component as ComponentType<unknown> }
   })
 }
 import './styles/index.css'
