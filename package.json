@@ -31,7 +31,8 @@
     "lint:check": "eslint . --ext .js,.jsx,.ts,.tsx",
     "verify:production": "npm run verify:supabase-env && npm run verify:supabase-guard && npm run verify:deploy-integrity && npm run verify:lockfile && npm run verify:vercel-config && npm run verify:ci-policy && npm run type-check && npm run lint:check && npm run audit:all && npm run verify:lazy-imports && npm run build && npm run verify:build && npm run verify-routes",
     "audit:production": "npm run verify:supabase-env && npm run verify:supabase-guard && npm run verify:deploy-integrity && npm run verify:lockfile && npm run verify:vercel-config && npm run verify:lazy-imports && npm run audit:all && npm run lint:check && npm run build && npm run verify:build && npm run verify-routes",
-    "verify:release": "npm run verify:supabase-env && npm run verify:supabase-guard && npm run verify:deploy-integrity && npm run verify:lockfile && npm run verify:vercel-config && npm run verify:ci-policy && npm run type-check && npm run lint:check && npm run audit:global && npm run audit:brutal && npm run audit:interactions && npm run verify:lazy-imports && npm run build && npm run verify:build && npm run verify-routes"
+    "verify:release": "npm run verify:supabase-env && npm run verify:supabase-guard && npm run verify:deploy-integrity && npm run verify:lockfile && npm run verify:vercel-config && npm run verify:ci-policy && npm run type-check && npm run lint:check && npm run audit:global && npm run audit:brutal && npm run audit:interactions && npm run verify:lazy-imports && npm run build && npm run verify:build && npm run verify-routes",
+    "verify:public-naming": "node scripts/verify-public-naming.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
