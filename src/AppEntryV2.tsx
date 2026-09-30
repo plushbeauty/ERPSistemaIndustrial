@@ -5,16 +5,19 @@ import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 
 
 
-type LazyModule = { default?: ComponentType<unknown>; [key: string]: unknown }
+type LazyModule<P extends object> = { default?: ComponentType<P>; [key: string]: unknown }
 
-function lazyPage(loader: () => Promise<LazyModule>, exportName: string) {
+function lazyPage<P extends object>(
+  loader: () => Promise<LazyModule<P>>,
+  exportName: string,
+) {
   return lazy(async () => {
     const module = await loader()
     const component = module.default ?? module[exportName]
     if (typeof component !== 'function' && typeof component !== 'object') {
       throw new Error('LAZY_EXPORT_MISSING: ' + exportName)
     }
-    return { default: component as ComponentType<unknown> }
+    return { default: component as ComponentType<P> }
   })
 }
 import './styles/industrial-login.css'
