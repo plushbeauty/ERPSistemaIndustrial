@@ -16,7 +16,7 @@ type CommissionRule = { id:string; nome:string; percentual:number; tipo:string; 
 type CommissionLaunch = { id:string; funcionario_id:string; data_referencia:string; receita_base:number; percentual:number; valor_comissao:number; status:string }
 type SalesMeta = { competencia:string; meta_faturamento:number; meta_pedidos:number }
 type OrderItem = { id:string; pedido_id:string; produto_id:string; descricao:string|null; quantidade:number; total:number|null }
-type ProductionOrder = { id:string; status:string; quantidade:number|null }
+type ProductionOrder = { id:string; status:string; quantidade:number|null; quantidade_planejada:number|null }
 
 const brl=(n:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(n)||0)
 const dateBR=(v:string|null)=>v?new Date(v).toLocaleDateString('pt-BR'):'—'
@@ -69,7 +69,7 @@ export default function VendasComercialSuite(){
     supabase.from('beauty_comissoes_lancamentos').select('id,funcionario_id,data_referencia,receita_base,percentual,valor_comissao,status').eq('empresa_id',id).order('data_referencia',{ascending:false}).limit(300),
     supabase.from('erp_vendas_metas').select('competencia,meta_faturamento,meta_pedidos').eq('empresa_id',id).order('competencia',{ascending:false}).limit(1).maybeSingle(),
     supabase.from('erp_pedidos_venda_itens').select('id,pedido_id,produto_id,descricao,quantidade,total').eq('empresa_id',id).limit(10000),
-    supabase.from('erp_ordens_producao').select('id,status,quantidade').eq('empresa_id',id).order('id',{ascending:false}).limit(1000)
+    supabase.from('erp_ordens_producao').select('id,status,quantidade,quantidade_planejada').eq('empresa_id',id).order('id',{ascending:false}).limit(1000)
    ])
    for(const r of results) if(r.error) throw r.error
    setClients((results[0].data??[]) as Client[]);setProducts((results[1].data??[]) as Product[]);setOpps((results[2].data??[]) as Opportunity[])
