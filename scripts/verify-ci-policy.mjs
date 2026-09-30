@@ -18,7 +18,7 @@ for(const file of required){
 const ci=fs.existsSync(path.join(workflowsDir,'ci.yml'))?fs.readFileSync(path.join(workflowsDir,'ci.yml'),'utf8'):''
 for(const command of [
   'npm run verify:lockfile','npm run verify:vercel-config','npm run verify:ci-policy',
-  'npm run verify:supabase-env','npm run verify:supabase-guard','npm run verify:deploy-integrity',
+  'npm run verify:public-naming','npm run verify:supabase-env','npm run verify:supabase-guard','npm run verify:deploy-integrity',
   'npm run type-check','npm run lint:check','npm run audit:global','npm run audit:brutal',
   'npm run audit:interactions','npm run verify:lazy-imports','npm run build',
   'npm run verify:build','npm run verify-routes'
