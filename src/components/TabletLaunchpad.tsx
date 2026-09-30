@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react'
 import { useMemo } from 'react'
 import { Activity, Boxes, CheckCircle, ClipboardList, Cpu, Factory, Layers, Receipt, Settings, ShoppingCart, Tablet, Truck, Users, X } from 'lucide-react'
 
@@ -32,7 +31,6 @@ function normalizeIconKey(value: string) {
 }
 
 function resolveTabletIcon(number: string, label: string) {
-  const numberKey = number.padStart(2, '0')
   const labelKey = normalizeIconKey(label)
   const entries = Object.entries(tabletIconAssets)
 
