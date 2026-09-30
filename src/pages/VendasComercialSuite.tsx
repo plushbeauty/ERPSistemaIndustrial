@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { AreaChart, Area, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { BarChart3, Factory, FileCheck2, PackageCheck, Plus, RefreshCw, Settings, ShieldCheck, ShoppingCart, Truck, Users, XCircle } from 'lucide-react'
+import { BarChart3, Factory, FileCheck2, Handshake, PackageCheck, Percent, Plus, Receipt, RefreshCw, RotateCcw, ShoppingCart, Tags, Target, Truck, UserRound, XCircle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type View = 'dashboard'|'crm'|'clientes'|'precos'|'orcamentos'|'pedidos'|'faturamento'|'expedicao'|'comissoes'|'rma'
@@ -22,10 +22,10 @@ type StockReservation = { id:string; pedido_item_id:string; produto_id:string; q
 const brl=(n:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(n)||0)
 const dateBR=(v:string|null)=>v?new Date(v).toLocaleDateString('pt-BR'):'—'
 const views: Array<{id:View;label:string;icon:typeof ShoppingCart}> = [
- {id:'dashboard',label:'Painel Comercial',icon:BarChart3},{id:'crm',label:'CRM & Pipeline',icon:Users},{id:'clientes',label:'Clientes',icon:Users},
- {id:'precos',label:'Preços & Políticas',icon:Settings},{id:'orcamentos',label:'Propostas & Orçamentos',icon:FileCheck2},
- {id:'pedidos',label:'Pedidos de Venda',icon:ShoppingCart},{id:'faturamento',label:'Faturamento / NF-e',icon:FileCheck2},
- {id:'expedicao',label:'Expedição & Romaneio',icon:Truck},{id:'comissoes',label:'Comissões',icon:BarChart3},{id:'rma',label:'Devoluções / RMA',icon:XCircle}
+ {id:'dashboard',label:'Painel Comercial',icon:BarChart3},{id:'crm',label:'CRM & Pipeline',icon:Handshake},{id:'clientes',label:'Clientes',icon:UserRound},
+ {id:'precos',label:'Preços & Políticas',icon:Tags},{id:'orcamentos',label:'Propostas & Orçamentos',icon:FileCheck2},
+ {id:'pedidos',label:'Pedidos de Venda',icon:ShoppingCart},{id:'faturamento',label:'Faturamento / NF-e',icon:Receipt},
+ {id:'expedicao',label:'Expedição & Romaneio',icon:Truck},{id:'comissoes',label:'Comissões',icon:Percent},{id:'rma',label:'Devoluções / RMA',icon:RotateCcw}
 ]
 
 export default function VendasComercialSuite(){
