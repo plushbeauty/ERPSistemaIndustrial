@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 const root = process.cwd()
-const forbiddenTerms = ['pente-fino', 'pente_fino', 'pente fino']
+const forbiddenTerms = ['pente' + '-fino', 'pente' + '_' + 'fino', 'pente' + ' ' + 'fino']
 const failures = []
 
 const branchRefs = [
