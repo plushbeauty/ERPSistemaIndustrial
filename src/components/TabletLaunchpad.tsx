@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { useMemo } from 'react'
-import { Activity, Boxes, CheckCircle, ClipboardList, Cpu, Factory, Layers, Receipt, Settings, ShoppingCart, Tablet, Truck, Users, X } from 'lucide-react'
+import { Activity, Boxes, CheckCircle, ClipboardList, Cpu, Factory, FileCheck2, Layers, Receipt, Settings, ShoppingCart, Tablet, Truck, Users, X } from 'lucide-react'
 
 type TabletLaunchpadProps = {
   onNavigate: (route: string) => void
@@ -25,7 +25,7 @@ const tabletIconAssets = import.meta.glob('../assets/icones-tablet/*.{png,svg,we
 function normalizeIconKey(value: string) {
   return value
     .normalize('NFD')
-    .replace(/[\\u0300-\\u036f]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
@@ -37,7 +37,7 @@ function resolveTabletIcon(number: string, label: string) {
   const entries = Object.entries(tabletIconAssets)
 
   const exactNumber = entries.find(([path]) => {
-    const file = normalizeIconKey(path.split('/').pop()?.replace(/\\.[^.]+$/, '') ?? '')
+    const file = normalizeIconKey(path.split('/').pop()?.replace(/\.[^.]+$/, '') ?? '')
     return file.startsWith(`${numberKey}-`) || file.startsWith(`${number}-`)
   })
   if (exactNumber) return exactNumber[1]
@@ -59,11 +59,11 @@ const modules: Module[] = [
   { number:'7', label:'RH', route:'/rh', icon:Users, accent:'#9A3B67' },
   { number:'8', label:'ENGENHARIA', route:'/engenharia', icon:Cpu, accent:'#17445A' },
   { number:'9', label:'MATERIAIS', route:'/pcp/materiais', icon:Layers, accent:'#B85C00' },
-  { number:'10', label:'MRP', route:'/pcp/materiais', icon:Layers, accent:'#8A4A00' },
+  { number:'10', label:'MRP', route:'/pcp/materiais', icon:Activity, accent:'#8A4A00' },
   { number:'11', label:'PCP', route:'/pcp', icon:Factory, accent:'#0B7654' },
   { number:'12', label:'CHÃO DE FÁBRICA', route:'/operacao-industrial', icon:Activity, accent:'#8A6200' },
   { number:'13', label:'QUALIDADE', route:'/qualidade', icon:CheckCircle, accent:'#16788A' },
-  { number:'14', label:'SGQ', route:'/qualidade', icon:CheckCircle, accent:'#0F6170' },
+  { number:'14', label:'SGQ', route:'/qualidade', icon:FileCheck2, accent:'#0F6170' },
 ]
 
 const moduleItems: Record<string, string> = {
