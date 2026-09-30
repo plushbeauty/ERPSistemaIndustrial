@@ -15,9 +15,9 @@ concurrency:
 
 jobs:
   quality:
-    name: P0 — Lockfile + Security + TypeScript + Build + Routes
+    name: P0 — Full Release Gate
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,44 +31,50 @@ jobs:
       - name: Instalação determinística
         run: npm ci --legacy-peer-deps --no-audit --no-fund
 
-      - name: Lockfile gate
+      - name: Lockfile
         run: npm run verify:lockfile
 
-      - name: Vercel config gate
+      - name: Vercel config
         run: npm run verify:vercel-config
 
-      - name: CI policy gate
+      - name: CI policy
         run: npm run verify:ci-policy
 
-      - name: Supabase contract gate
+      - name: Supabase environment
         run: npm run verify:supabase-env
 
       - name: Supabase guard regression
         run: npm run verify:supabase-guard
 
-      - name: Deploy identity gate
+      - name: Deploy integrity
         run: npm run verify:deploy-integrity
 
       - name: TypeScript
         run: npm run type-check
 
-      - name: Lazy/dynamic import gate
-        run: npm run verify:lazy-imports
-
       - name: ESLint
         run: npm run lint:check
 
-      - name: Global security audit
+      - name: Global audit
         run: npm run audit:global
 
-      - name: Structural audit
+      - name: Brutal audit
         run: npm run audit:brutal
 
       - name: Interaction audit
         run: npm run audit:interactions
 
-      - name: Build + dist gate
+      - name: Lazy imports
+        run: npm run verify:lazy-imports
+
+      - name: Production build
+        run: npm run build
+
+      - name: Build output
         run: npm run verify:build
 
-      - name: Route/import gate
-        run: node scripts/verify-routes.mjs
+      - name: Routes
+        run: npm run verify-routes
+
+      - name: Security no-bypass policy
+        run: npm run audit:security
