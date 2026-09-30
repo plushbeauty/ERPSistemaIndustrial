@@ -75,7 +75,7 @@ export default function IndustrialPageShell({ module, title, subtitle, children,
         )}
         {children}
         {footer ?? (
-          <footer className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-slate-200 bg-white px-5 py-4 text-xs font-semibold text-slate-500 shadow-xl">
+          <footer className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-500 shadow-sm">
             <span>SYSNQRA ERP & SGQ INDUSTRIAL</span>
             <span>Dados reais • RLS por empresa • Sem dados fictícios</span>
           </footer>
@@ -86,7 +86,7 @@ export default function IndustrialPageShell({ module, title, subtitle, children,
 }
 
 export function SectionCard({ title, children, className = '' }: { title: string; children: ReactNode; className?: string }) {
-  return <section className={`rounded-3xl border border-slate-200 bg-white p-6 shadow-xl ${className}`}><h2 className="mb-3 text-base font-black text-slate-900">{title}</h2>{children}</section>
+  return <section className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm ${className}`}><h2 className="mb-3 text-base font-black text-slate-900">{title}</h2>{children}</section>
 }
 
 export function Field({ label, children, required = false, className = '' }: { label: string; children: ReactNode; required?: boolean; className?: string }) {
