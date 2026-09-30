@@ -3,14 +3,28 @@ import type { ReactNode } from 'react'
 import IndustrialLoginDirect from './IndustrialLoginDirect'
 import SetupADMInicial from './pages/SetupADMInicial'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
+
+
+type LazyModule = { default?: React.ComponentType<unknown>; [key: string]: unknown }
+
+function lazyPage(loader: () => Promise<LazyModule>, exportName: string) {
+  return lazy(async () => {
+    const module = await loader()
+    const component = module.default ?? module[exportName]
+    if (typeof component !== 'function' && typeof component !== 'object') {
+      throw new Error('LAZY_EXPORT_MISSING: ' + exportName)
+    }
+    return { default: component as React.ComponentType<unknown> }
+  })
+}
 import './styles/index.css'
 import './styles/public-industrial.css'
 import './styles/public-home-v2.css'
 import './styles/industrial-public-restoration.css'
 import './styles/visual-showcase-2026.css'
 
-const PublicIndustrialHome = lazy(() => import('./PublicIndustrialHome'))
-const AppEntryV2 = lazy(() => import('./AppEntryV2'))
+const PublicIndustrialHome = lazyPage(() => import('./PublicIndustrialHome'), 'PublicIndustrialHome')
+const AppEntryV2 = lazyPage(() => import('./AppEntryV2'), 'AppEntryV2')
 const publicPaths = new Set(['/','/home','/login','/cadastro-empresa','/contato','/blog','/configuracao-adm-master','/cadastro-master','/planos','/ativar-acesso'])
 
 class BootstrapBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
