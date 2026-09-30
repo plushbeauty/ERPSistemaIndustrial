@@ -5,16 +5,18 @@ const SUPABASE_URL_ENV = 'VITE_SUPABASE_URL'
 const SUPABASE_PUBLISHABLE_KEY_ENV = 'VITE_SUPABASE_PUBLISHABLE_KEY'
 const SUPABASE_ANON_KEY_ENV = 'VITE_SUPABASE_ANON_KEY'
 
-/*
- * Vite replaces import.meta.env.* during bundling. The explicit string
- * normalization below keeps the module statically evaluable when an
- * environment variable is absent from a local/CI build, while the runtime
- * guard below still refuses to start an unconfigured Supabase client.
- */
-const supabaseUrl = String(import.meta.env.VITE_SUPABASE_URL ?? '').trim()
-const publishableKey = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').trim()
-const legacyAnonKey = String(import.meta.env.VITE_SUPABASE_ANON_KEY ?? '').trim()
-const supabaseKey = publishableKey || legacyAnonKey
+const CANONICAL_SUPABASE_URL = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
+const CANONICAL_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BcwsSbBx8dWof7d_hAKtQA_XzQGAYwR'
+
+const supabaseUrlFromEnv = String(import.meta.env.VITE_SUPABASE_URL ?? '').trim()
+const publishableKeyFromEnv = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').trim()
+const legacyAnonKeyFromEnv = String(import.meta.env.VITE_SUPABASE_ANON_KEY ?? '').trim()
+
+// A Vercel deve injetar as variáveis VITE_* no build. O fallback abaixo usa
+// somente a configuração pública canônica do próprio projeto Supabase, evitando
+// tela branca caso o ambiente de build esteja momentaneamente sem as variáveis.
+const supabaseUrl = supabaseUrlFromEnv || CANONICAL_SUPABASE_URL
+const supabaseKey = publishableKeyFromEnv || legacyAnonKeyFromEnv || CANONICAL_SUPABASE_PUBLISHABLE_KEY
 
 export const supabaseConfigurado = Boolean(supabaseUrl && supabaseKey)
 
@@ -25,7 +27,7 @@ if (!supabaseConfigurado) {
 }
 
 export const supabaseModoConexao = 'nuvem'
-export const supabaseEnvironmentMismatch = false
+export const supabaseEnvironmentMismatch = supabaseUrl !== CANONICAL_SUPABASE_URL
 export const supabaseUrlExportada = supabaseUrl
 export const supabaseKeyExportada = supabaseKey
 
