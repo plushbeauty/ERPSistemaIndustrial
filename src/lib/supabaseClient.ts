@@ -12,20 +12,13 @@ const supabaseUrlFromEnv = String(import.meta.env.VITE_SUPABASE_URL ?? '').trim(
 const publishableKeyFromEnv = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').trim()
 const legacyAnonKeyFromEnv = String(import.meta.env.VITE_SUPABASE_ANON_KEY ?? '').trim()
 
-// A Vercel deve injetar as variáveis VITE_* no build. O fallback abaixo usa
-// somente a configuração pública canônica do próprio projeto Supabase, evitando
-// tela branca caso o ambiente de build esteja momentaneamente sem as variáveis.
+// A configuração por ambiente continua sendo a fonte preferencial.
+// Os fallbacks públicos canônicos impedem que a ausência momentânea de VITE_*
+// derrube o React inteiro durante o bootstrap.
 const supabaseUrl = supabaseUrlFromEnv || CANONICAL_SUPABASE_URL
 const supabaseKey = publishableKeyFromEnv || legacyAnonKeyFromEnv || CANONICAL_SUPABASE_PUBLISHABLE_KEY
 
 export const supabaseConfigurado = Boolean(supabaseUrl && supabaseKey)
-
-if (!supabaseConfigurado) {
-  throw new Error(
-    `Erro Crítico: ${SUPABASE_URL_ENV} ou uma chave pública Supabase (${SUPABASE_PUBLISHABLE_KEY_ENV}/${SUPABASE_ANON_KEY_ENV}) não foi injetada corretamente no runtime.`,
-  )
-}
-
 export const supabaseModoConexao = 'nuvem'
 export const supabaseEnvironmentMismatch = supabaseUrl !== CANONICAL_SUPABASE_URL
 export const supabaseUrlExportada = supabaseUrl
