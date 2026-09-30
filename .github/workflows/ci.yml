@@ -1,4 +1,4 @@
-name: CI
+name: ERP Industrial CI
 
 on:
   push:
@@ -6,20 +6,63 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: erp-industrial-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  validate:
+  quality:
+    name: P0 — Lockfile + Security + TypeScript + Build + Routes
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node 24
+        uses: actions/setup-node@v4
         with:
-          node-version: 22
-      - run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
-      - run: npm run lint
-      - run: npm run type-check
-      - run: npm run build
+          node-version: 24
+          cache: npm
+
+      - name: Instalação determinística
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
+
+      - name: Lockfile gate
+        run: npm run verify:lockfile
+
+      - name: Vercel config gate
+        run: npm run verify:vercel-config
+
+      - name: CI policy gate
+        run: npm run verify:ci-policy
+
+      - name: Supabase contract gate
+        run: npm run verify:supabase-env
+
+      - name: Deploy identity gate
+        run: npm run verify:deploy-integrity
+
+      - name: TypeScript
+        run: npm run type-check
+
+      - name: ESLint
+        run: npm run lint:check
+
+      - name: Global security audit
+        run: npm run audit:global
+
+      - name: Structural audit
+        run: npm run audit:brutal
+
+      - name: Interaction audit
+        run: npm run audit:interactions
+
+      - name: Build + dist gate
+        run: npm run verify:build
+
+      - name: Route/import gate
+        run: node scripts/verify-routes.mjs
