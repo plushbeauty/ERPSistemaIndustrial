@@ -11,7 +11,7 @@ type Quote = { id:string; numero:number; cliente_id:string; status:string; valid
 type Order = { id:string; numero:number; cliente_id:string|null; status:string; total:number; data_entrada:string; data_entrega_prometida:string|null; pedido_cliente:string|null }
 type Nfe = { id:string; numero:number|null; serie:number; status:string; destinatario_nome:string; valor_total:number; data_emissao:string; chave_acesso:string|null; mensagem_sefaz:string|null }
 type PriceTable = { id:string; codigo:string; nome:string; ativo:boolean }
-type Romaneio = { id:string; codigo:string; status:string; veiculo_placa:string|null; motorista_nome:string|null; transportadora:string|null; peso_total_kg:number }
+type Romaneio = { id:string; numero:number; status:string; transportadora:string|null; peso_total_kg:number; data_expedicao:string|null }
 type CommissionRule = { id:string; nome:string; percentual:number; tipo:string; margem_minima:number|null; por_recebimento:boolean; ativo:boolean }
 type CommissionLaunch = { id:string; funcionario_id:string; data_referencia:string; receita_base:number; percentual:number; valor_comissao:number; status:string }
 type SalesMeta = { competencia:string; meta_faturamento:number; meta_pedidos:number }
@@ -43,6 +43,7 @@ export default function VendasComercialSuite(){
  const [romaneios,setRomaneios]=useState<Romaneio[]>([])
  const [rules,setRules]=useState<CommissionRule[]>([])
  const [launches,setLaunches]=useState<CommissionLaunch[]>([])
+ const [devolucoes,setDevolucoes]=useState<Array<{id:string;numero:number;cliente_id:string;tipo:string;motivo:string;status:string;tratamento_sgq:string;valor_credito:number}>>([])
  const [meta,setMeta]=useState<SalesMeta|null>(null)
  const [orderItems,setOrderItems]=useState<OrderItem[]>([])
  const [productionOrders,setProductionOrders]=useState<ProductionOrder[]>([])
@@ -62,21 +63,22 @@ export default function VendasComercialSuite(){
     supabase.from('erp_vendas_oportunidades').select('id,titulo,cliente_id,valor_estimado,probabilidade,etapa,proxima_acao,motivo_perda').eq('empresa_id',id).order('updated_at',{ascending:false}).limit(500),
     supabase.from('erp_vendas_orcamentos').select('id,numero,cliente_id,status,validade,total,margem_percentual').eq('empresa_id',id).order('created_at',{ascending:false}).limit(300),
     supabase.from('erp_pedidos_venda').select('id,numero,cliente_id,status,total,data_entrada,data_entrega_prometida,pedido_cliente').eq('empresa_id',id).order('created_at',{ascending:false}).limit(500),
-    supabase.from('fiscal_nfes').select('id,numero,serie,status,destinatario_nome,valor_total,data_emissao,chave_acesso,mensagem_sefaz').eq('empresa_id',id).eq('tipo','saida').order('data_emissao',{ascending:false}).limit(300),
+    supabase.from('erp_documentos_fiscais').select('id,numero,serie,status,destinatario_nome,valor_total,data_emissao,chave_acesso,mensagem_sefaz').eq('empresa_id',id).eq('tipo','saida').order('data_emissao',{ascending:false}).limit(300),
     supabase.from('erp_tabelas_preco').select('id,codigo,nome,ativo').eq('empresa_id',id).order('codigo'),
-    supabase.from('erp_expedicao_romaneios').select('id,codigo,status,veiculo_placa,motorista_nome,transportadora,peso_total_kg').eq('empresa_id',id).order('created_at',{ascending:false}).limit(200),
-    supabase.from('regras_comissao').select('id,nome,percentual,tipo,margem_minima,por_recebimento,ativo').eq('empresa_id',id).order('nome'),
-    supabase.from('beauty_comissoes_lancamentos').select('id,funcionario_id,data_referencia,receita_base,percentual,valor_comissao,status').eq('empresa_id',id).order('data_referencia',{ascending:false}).limit(300),
+    supabase.from('erp_expedicoes').select('id,numero,status,transportadora,peso_total_kg,data_expedicao').eq('empresa_id',id).order('created_at',{ascending:false}).limit(200),
+    supabase.from('erp_vendas_regras_comissao').select('id,nome,percentual,tipo,margem_minima,por_recebimento,ativo').eq('empresa_id',id).order('nome'),
+    supabase.from('erp_vendas_comissoes_lancamentos').select('id,funcionario_id,data_referencia,receita_base,percentual,valor_comissao,status').eq('empresa_id',id).order('data_referencia',{ascending:false}).limit(300),
     supabase.from('erp_vendas_metas').select('competencia,meta_faturamento,meta_pedidos').eq('empresa_id',id).order('competencia',{ascending:false}).limit(1).maybeSingle(),
     supabase.from('erp_pedidos_venda_itens').select('id,pedido_id,produto_id,descricao,quantidade,total').eq('empresa_id',id).limit(10000),
-    supabase.from('erp_ordens_producao').select('id,status,quantidade,quantidade_planejada').eq('empresa_id',id).order('id',{ascending:false}).limit(1000)
+    supabase.from('erp_ordens_producao').select('id,status,quantidade,quantidade_planejada').eq('empresa_id',id).order('id',{ascending:false}).limit(1000),
+    supabase.from('erp_vendas_devolucoes').select('id,numero,cliente_id,tipo,motivo,status,tratamento_sgq,valor_credito').eq('empresa_id',id).order('created_at',{ascending:false}).limit(300)
    ])
    for(const r of results) if(r.error) throw r.error
    setClients((results[0].data??[]) as Client[]);setProducts((results[1].data??[]) as Product[]);setOpps((results[2].data??[]) as Opportunity[])
    setQuotes((results[3].data??[]) as Quote[]);setOrders((results[4].data??[]) as Order[]);setNfes((results[5].data??[]) as Nfe[])
    setPrices((results[6].data??[]) as PriceTable[]);setRomaneios((results[7].data??[]) as Romaneio[])
    setRules((results[8].data??[]) as CommissionRule[]);setLaunches((results[9].data??[]) as CommissionLaunch[])
-   setMeta((results[10].data??null) as SalesMeta|null);setOrderItems((results[11].data??[]) as OrderItem[]);setProductionOrders((results[12].data??[]) as ProductionOrder[])
+   setMeta((results[10].data??null) as SalesMeta|null);setOrderItems((results[11].data??[]) as OrderItem[]);setProductionOrders((results[12].data??[]) as ProductionOrder[]);setDevolucoes((results[13].data??[]) as typeof devolucoes)
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar o módulo Vendas & Comercial.')}finally{setLoading(false)}
  }
  useEffect(()=>{void load()},[])
@@ -134,7 +136,7 @@ export default function VendasComercialSuite(){
      {error&&<div className="vcs-section" style={{borderColor:'#e2b9b9',color:'#9b2525'}}>{error}</div>}
      {message&&<div className="vcs-section" style={{borderColor:'#b9dfcd',color:'#287a5c'}}>{message}</div>}
      {loading?<div className="vcs-section"><div className="vcs-empty">Consultando dados reais do módulo comercial…</div></div>:<>
-      {view==='dashboard'&&<Dashboard kpis={kpis} orders={orders} nfes={nfes} clients={clients}/>}
+      {view==='dashboard'&&<Dashboard kpis={kpis} orders={orders} nfes={nfes} clients={clients} meta={meta} orderItems={orderItems} products={products} productionOrders={productionOrders}/>} 
       {view==='crm'&&<CRM opps={opps} clients={clients} onCreate={doOpportunity} onMove={moveOpportunity}/>}
       {view==='clientes'&&<Clientes clients={clients} empresa={empresa} onSaved={()=>void load()}/>}
       {view==='precos'&&<Precos prices={prices} products={products} empresa={empresa} onSaved={()=>void load()}/>}
@@ -143,7 +145,7 @@ export default function VendasComercialSuite(){
       {view==='faturamento'&&<Faturamento nfes={nfes}/>}
       {view==='expedicao'&&<Expedicao romaneios={romaneios}/>}
       {view==='comissoes'&&<Comissoes rules={rules} launches={launches}/>}
-      {view==='rma'&&<Rma clients={clients} onCreate={createRma}/>}
+      {view==='rma'&&<Rma clients={clients} devolucoes={devolucoes} onCreate={createRma}/>} 
      </>}
     </section>
    </main>
@@ -211,7 +213,7 @@ function Expedicao({romaneios}:{romaneios:Romaneio[]}){return <><section classNa
 
 function Comissoes({rules,launches}:{rules:CommissionRule[];launches:CommissionLaunch[]}){return <><section className="vcs-section"><div className="vcs-section-title"><strong>Regras comerciais de comissão</strong><span>{rules.length} regra(s)</span></div><DataTable headers={['Regra','Tipo','Percentual','Margem mínima','Por recebimento','Status']} rows={rules.map(r=>[r.nome,r.tipo,`${Number(r.percentual).toFixed(2)}%`,r.margem_minima==null?'—':`${Number(r.margem_minima).toFixed(2)}%`,r.por_recebimento?'SIM':'NÃO',r.ativo?'ATIVA':'INATIVA'])}/></section><section className="vcs-section"><div className="vcs-section-title"><strong>Lançamentos de comissão</strong></div><DataTable headers={['Data','Receita base','Percentual','Comissão','Status']} rows={launches.map(l=>[dateBR(l.data_referencia),brl(l.receita_base),`${Number(l.percentual).toFixed(2)}%`,brl(l.valor_comissao),l.status])}/></section></>}
 
-function Rma({clients,onCreate}:{clients:Client[];onCreate:(c:string,r:string)=>Promise<void>}){
+function Rma({clients,devolucoes,onCreate}:{clients:Client[];devolucoes:Array<{id:string;numero:number;cliente_id:string;tipo:string;motivo:string;status:string;tratamento_sgq:string;valor_credito:number}>;onCreate:(c:string,r:string)=>Promise<void>}){
  const [client,setClient]=useState('');const [reason,setReason]=useState('')
  return <><section className="vcs-section"><div className="vcs-section-title"><strong>Nova devolução / troca / garantia RMA</strong></div><div className="vcs-form"><label className="vcs-field wide">Cliente<select value={client} onChange={e=>setClient(e.target.value)}><option value="">Selecionar</option>{clients.map(c=><option key={c.id} value={c.id}>{c.codigo} • {c.nome}</option>)}</select></label><label className="vcs-field wide">Motivo<textarea value={reason} onChange={e=>setReason(e.target.value)} placeholder="Descreva o motivo para análise comercial e SGQ."/></label><div><button className="vcs-btn primary" style={{marginTop:20}} onClick={()=>void onCreate(client,reason)}><Plus size={16}/> Abrir RMA</button></div></div></section><section className="vcs-section"><strong>Regra de tratamento</strong><p style={{fontSize:12,color:'#617984'}}>Todo RMA novo entra em <b>QUARENTENA</b>. Depois, a análise do SGQ define liberação, retrabalho ou sucata. O crédito/refund só deve ocorrer após o tratamento fiscal e financeiro correspondente.</p></section></>
 }
