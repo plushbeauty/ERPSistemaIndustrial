@@ -1,19 +1,33 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 
 const AUTH_STORAGE_KEY = 'erp-industrial-auth'
+const SUPABASE_URL_ENV = 'VITE_SUPABASE_URL'
+const SUPABASE_PUBLISHABLE_KEY_ENV = 'VITE_SUPABASE_PUBLISHABLE_KEY'
+const SUPABASE_ANON_KEY_ENV = 'VITE_SUPABASE_ANON_KEY'
 
-const supabaseUrl: string = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey: string = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
+/*
+ * Vite replaces import.meta.env.* during bundling. The explicit string
+ * normalization below keeps the module statically evaluable when an
+ * environment variable is absent from a local/CI build, while the runtime
+ * guard below still refuses to start an unconfigured Supabase client.
+ */
+const supabaseUrl = String(import.meta.env.VITE_SUPABASE_URL ?? '').trim()
+const publishableKey = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').trim()
+const legacyAnonKey = String(import.meta.env.VITE_SUPABASE_ANON_KEY ?? '').trim()
+const supabaseKey = publishableKey || legacyAnonKey
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Erro Crítico: Variáveis VITE_SUPABASE_URL ou uma chave pública Supabase (publishable/anon) não foi injetada corretamente no build.')
+export const supabaseConfigurado = Boolean(supabaseUrl && supabaseKey)
+
+if (!supabaseConfigurado) {
+  throw new Error(
+    `Erro Crítico: ${SUPABASE_URL_ENV} ou uma chave pública Supabase (${SUPABASE_PUBLISHABLE_KEY_ENV}/${SUPABASE_ANON_KEY_ENV}) não foi injetada corretamente no runtime.`,
+  )
 }
 
 export const supabaseModoConexao = 'nuvem'
 export const supabaseEnvironmentMismatch = false
 export const supabaseUrlExportada = supabaseUrl
 export const supabaseKeyExportada = supabaseKey
-export const supabaseConfigurado = true
 
 const authStorage = typeof window !== 'undefined' ? window.localStorage : undefined
 
