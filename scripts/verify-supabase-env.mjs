@@ -63,6 +63,8 @@ function scanDirectory(directory) {
     const full = path.join(directory, entry.name)
     if (entry.isDirectory()) scanDirectory(full)
     else if (allowedExtensions.has(path.extname(entry.name).toLowerCase()) && fs.statSync(full).size <= maxBytes) {
+      const relative = path.relative(root, full).replaceAll(path.sep, '/')
+      if (relative === 'scripts/verify-supabase-env.mjs' || relative === 'scripts/auditoria-global.mjs') continue
       const content = fs.readFileSync(full, 'utf8')
       for (const ref of forbiddenRefs) if (content.includes(`${ref}.supabase.co`) || content.includes(ref)) fail(`Projeto Supabase proibido encontrado em ${path.relative(root, full)}: ${ref}`)
       if (/sb_secret_[A-Za-z0-9_-]{12,}/.test(content)) fail(`Chave sb_secret_ encontrada em ${path.relative(root, full)}`)

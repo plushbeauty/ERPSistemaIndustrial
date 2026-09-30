@@ -6,34 +6,29 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   production-gate:
+    name: Production release gate
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Node
+
+      - name: Node 24
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-      - name: Install
-        run: npm install --legacy-peer-deps --no-audit --no-fund
-      - name: Supabase contract gate
-        run: npm run verify:supabase-env
-      - name: Global security/config audit
-        run: npm run audit:global
-      - name: Brutal structural audit
-        run: npm run audit:brutal
-      - name: Interaction audit
-        run: npm run audit:interactions
-      - name: Lint
-        run: npm run lint:check
-      - name: Type check
-        run: npm run type-check
-      - name: Build
-        run: npm run build
-      - name: Release gate summary
+          node-version: 24
+          cache: npm
+
+      - name: Instalação determinística
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
+
+      - name: Release gate
         run: npm run verify:release
