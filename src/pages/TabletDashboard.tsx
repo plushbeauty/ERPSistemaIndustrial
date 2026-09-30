@@ -242,7 +242,7 @@ export default function TabletDashboard() {
         ['Previsão de Caixa', '/fiscal/previsao-caixa'],
       ],
     },
-  ] as const
+  ]
 
   const iconMap = useMemo(
     () => Object.fromEntries(workspaces.map(workspace => [workspace.key, resolveIcon(workspace.number, workspace.icon)])),
