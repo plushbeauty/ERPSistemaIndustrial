@@ -132,7 +132,7 @@ export default function VendasComercialSuite(){
      {message&&<div className="vcs-section" style={{borderColor:'#b9dfcd',color:'#287a5c'}}>{message}</div>}
      {loading?<div className="vcs-section"><div className="vcs-empty">Consultando dados reais do módulo comercial…</div></div>:<>
       {view==='dashboard'&&<Dashboard orders={orders} nfes={nfes} clients={clients} meta={meta} orderItems={orderItems} products={products} productionOrders={productionOrders} quotes={quotes} opps={opps}/>} 
-      {view==='crm'&&<CRM opps={opps} clients={clients} onCreate={doOpportunity} onMove={moveOpportunity}/>}
+      {view==='crm'&&<CRM opps={opps} clients={clients} onCreate={doOpportunity} onMove={moveOpportunity} onConvert={convertOpportunity}/>}
       {view==='clientes'&&<Clientes clients={clients} empresa={empresa} onSaved={()=>void load()}/>}
       {view==='precos'&&<Precos prices={prices} priceItems={priceItems} products={products} empresa={empresa} onSaved={()=>void load()}/>}
       {view==='orcamentos'&&<Orcamentos quotes={quotes} clients={clients} onCreate={createQuote} onConvert={convertQuote}/>}
