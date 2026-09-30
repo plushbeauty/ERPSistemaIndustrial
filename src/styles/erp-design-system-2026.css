@@ -51,3 +51,38 @@
 .erp-vendas tbody tr{height:40px}
 .erp-vendas .erp-toolbar button{min-height:40px;font-size:13px}
 .erp-vendas h1,.erp-vendas h2{line-height:1.15}
+
+/* VENDAS & COMERCIAL — escala semântica derivada do Design System ERP.
+   Não cria uma nova escala: reutiliza --erp-control, tipografia e densidade existentes. */
+.erp-dense .erp-field-uf{width:70px}
+.erp-dense .erp-field-code{width:110px}
+.erp-dense .erp-field-cep{width:120px}
+.erp-dense .erp-field-cnpj{width:170px}
+.erp-dense .erp-field-date{width:125px}
+.erp-dense .erp-field-percent{width:100px}
+.erp-dense .erp-field-qty{width:100px}
+.erp-dense .erp-field-money{width:155px}
+.erp-dense .erp-field-name{width:min(100%,360px)}
+.erp-dense .erp-field-description{width:min(100%,520px)}
+.erp-dense .erp-field-observation{width:min(100%,760px);min-height:96px}
+.erp-dense .erp-form-grid{display:grid;width:100%;gap:12px;align-items:start}
+.erp-dense .erp-section{border:1px solid #dce6e7;border-radius:12px;background:#fff;padding:16px}
+.erp-dense .erp-section-title{margin:0 0 12px;font-size:14px;font-weight:900;color:#123b50}
+.erp-dense .erp-field-label{display:grid;gap:5px;font-size:var(--erp-font-label);font-weight:800;color:#425a67}
+.erp-dense .erp-field-label>input,
+.erp-dense .erp-field-label>select,
+.erp-dense .erp-field-label>textarea{box-sizing:border-box;width:100%;min-height:var(--erp-control);border:1px solid #c8d8e0;border-radius:6px;background:#fff;color:#0f172a;padding:8px 10px;font-size:var(--erp-font-field);outline:none}
+.erp-dense .erp-field-label>textarea{min-height:96px;resize:vertical}
+.erp-dense .erp-field-label>input:focus,
+.erp-dense .erp-field-label>select:focus,
+.erp-dense .erp-field-label>textarea:focus{border-color:#2d8db8;box-shadow:0 0 0 2px rgba(45,141,184,.12);outline:0}
+@media(max-width:1023px){
+  .erp-dense .erp-field-uf{width:72px}
+  .erp-dense .erp-field-code{width:120px}
+  .erp-dense .erp-field-cep{width:130px}
+  .erp-dense .erp-field-cnpj{width:185px}
+  .erp-dense .erp-field-date{width:135px}
+  .erp-dense .erp-field-percent{width:110px}
+  .erp-dense .erp-field-qty{width:110px}
+  .erp-dense .erp-field-money{width:165px}
+}
