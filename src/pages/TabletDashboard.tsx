@@ -31,19 +31,21 @@ function normalize(value: string) {
 }
 
 function resolveIcon(number: string, name: string) {
-  const numberKey = number.padStart(2, '0')
   const wanted = normalize(name)
   const entries = Object.entries(tabletIconAssets)
-  const byNumber = entries.find(([path]) => {
-    const file = normalize(path.split('/').pop()?.replace(/\\.[^.]+$/, '') ?? '')
-    return file.startsWith(numberKey + '_') || file.startsWith(numberKey + '-') || file === numberKey
-  })
-  if (byNumber) return byNumber[1]
   const byName = entries.find(([path]) => {
-    const file = normalize(path.split('/').pop()?.replace(/\\.[^.]+$/, '') ?? '')
+    const file = normalize(path.split('/').pop()?.replace(/\.[^.]+$/, '') ?? '')
     return file === wanted || file.startsWith(wanted + '_') || file.startsWith(wanted + '-')
   })
-  return byName?.[1]
+  if (byName) return byName[1]
+
+  if (!number) return undefined
+  const numberKey = number.padStart(2, '0')
+  const byNumber = entries.find(([path]) => {
+    const file = normalize(path.split('/').pop()?.replace(/\.[^.]+$/, '') ?? '')
+    return file.startsWith(numberKey + '_') || file.startsWith(numberKey + '-') || file === numberKey
+  })
+  return byNumber?.[1]
 }
 
 async function countRows(table: string, empresaId: string) {
@@ -303,7 +305,7 @@ export default function TabletDashboard() {
               className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
             >
               <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
-                <span className="grid h-14 w-14 shrink-0 place-items-center rounded-lg border border-blue-100 bg-white p-2 text-blue-700">
+                <span className="grid h-14 w-14 shrink-0 place-items-center rounded-lg border border-blue-100 bg-white p-2 text-[#2D8DB8] shadow-sm">
                   {iconMap[workspace.key] ? (
                     <img
                       src={iconMap[workspace.key]}
