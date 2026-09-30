@@ -50,7 +50,6 @@ const moduleLabels: Record<string, string> = {
   corte: 'Corte e Preparação',
   pintura: 'Pintura e Acabamento',
   'sgq-tpm': 'SGQ Avançado e TPM',
-  rastreabilidade: 'Rastreabilidade ponta a ponta',
   'prensa-dupla': 'PCP de Prensa Dupla',
   'chao-fabrica': 'Chão de Fábrica',
   'metrologia-rbc': 'Metrologia RBC',
