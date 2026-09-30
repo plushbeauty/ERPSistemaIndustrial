@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { AreaChart, Area, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { BarChart3, Factory, FileCheck2, PackageCheck, Plus, RefreshCw, Settings, ShieldCheck, ShoppingCart, Truck, Users, XCircle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -10,7 +10,7 @@ type Opportunity = { id:string; titulo:string; cliente_id:string|null; valor_est
 type Quote = { id:string; numero:number; cliente_id:string; status:string; validade:string|null; contato?:string|null; vendedor_id?:string|null; tabela_preco_id?:string|null; condicao_pagamento?:string|null; tipo_frete?:string|null; valor_frete?:number|null; outras_despesas?:number|null; termos?:string|null; observacoes?:string|null; subtotal?:number|null; desconto?:number|null; total:number; margem_percentual:number|null; created_at:string }
 type Order = { id:string; numero:number; cliente_id:string|null; status:string; total:number; data_entrada:string; data_entrega_prometida:string|null; pedido_cliente:string|null; credito_status:string|null; credito_motivo:string|null }
 type Nfe = { id:string; numero:number|null; serie:number; status:string; destinatario_nome:string; valor_total:number; data_emissao:string; chave_acesso:string|null; mensagem_sefaz:string|null }
-type PriceTable = { id:string; codigo:string; nome:string; ativo:boolean }
+type PriceTable = { id:string; codigo:string; nome:string; ativo:boolean; validade_inicio?:string|null; validade_fim?:string|null; margem_minima?:number|null; desconto_maximo_vendedor?:number|null; desconto_maximo_gerente?:number|null; moeda?:string|null; condicao_pagamento?:string|null }
 type Romaneio = { id:string; numero:number; status:string; transportadora:string|null; peso_total_kg:number; data_expedicao:string|null }
 type CommissionRule = { id:string; nome:string; percentual:number; tipo:string; margem_minima:number|null; por_recebimento:boolean; ativo:boolean }
 type CommissionLaunch = { id:string; funcionario_id:string; data_referencia:string; receita_base:number; percentual:number; valor_comissao:number; status:string }
@@ -67,7 +67,7 @@ export default function VendasComercialSuite(){
     supabase.from('erp_vendas_orcamentos').select('id,numero,cliente_id,status,validade,contato,vendedor_id,tabela_preco_id,condicao_pagamento,tipo_frete,valor_frete,outras_despesas,termos,observacoes,subtotal,desconto,total,margem_percentual,created_at').eq('empresa_id',id).order('created_at',{ascending:false}).limit(300),
     supabase.from('erp_pedidos_venda').select('id,numero,cliente_id,status,total,data_entrada,data_entrega_prometida,pedido_cliente,credito_status,credito_motivo').eq('empresa_id',id).order('created_at',{ascending:false}).limit(500),
     supabase.from('erp_documentos_fiscais').select('id,numero,serie,status,destinatario_nome,valor_total,data_emissao,chave_acesso,mensagem_sefaz').eq('empresa_id',id).eq('tipo','saida').order('data_emissao',{ascending:false}).limit(300),
-    supabase.from('erp_tabelas_preco').select('id,codigo,nome,ativo').eq('empresa_id',id).order('codigo'),
+    supabase.from('erp_tabelas_preco').select('id,codigo,nome,ativo,validade_inicio,validade_fim,margem_minima,desconto_maximo_vendedor,desconto_maximo_gerente,moeda,condicao_pagamento').eq('empresa_id',id).order('codigo'),
     supabase.from('erp_tabelas_preco_itens').select('id,tabela_preco_id,produto_id,preco').eq('empresa_id',id).limit(10000),
     supabase.from('erp_expedicoes').select('id,numero,status,transportadora,peso_total_kg,data_expedicao').eq('empresa_id',id).order('created_at',{ascending:false}).limit(200),
     supabase.from('erp_vendas_regras_comissao').select('id,nome,percentual,tipo,margem_minima,por_recebimento,ativo').eq('empresa_id',id).order('nome'),
@@ -201,10 +201,153 @@ function Clientes({clients,empresa,onSaved}:{clients:Client[];empresa:string;onS
  {tab==='contatos'&&<section className="vcs-section"><div className="vcs-empty">Nenhum contato adicional foi retornado pela fonte de dados atual.</div></section>}</>
 }
 function Precos({prices,priceItems,products,empresa,onSaved}:{prices:PriceTable[];priceItems:Array<{id:string;tabela_preco_id:string;produto_id:string;preco:number}>;products:Product[];empresa:string;onSaved:()=>void}){
- const [code,setCode]=useState('');const [name,setName]=useState('');const [adjustment,setAdjustment]=useState('0');const [adjusting,setAdjusting]=useState(false)
- const save=async()=>{if(!code.trim()||!name.trim())return;const r=await supabase.from('erp_tabelas_preco').insert({empresa_id:empresa,codigo:code.trim(),nome:name.trim(),ativo:true});if(!r.error){setCode('');setName('');onSaved()}}\n const adjust=async()=>{if(!prices.length)return;const pct=Number(adjustment);if(!Number.isFinite(pct)||pct===0)return;setAdjusting(true);try{const r=await supabase.rpc('erp_reajustar_tabela_preco_em_lote',{p_tabela_id:prices[0].id,p_percentual:pct,p_respeitar_custo:true});if(r.error)throw r.error;onSaved()}catch(e){window.alert(e instanceof Error?e.message:'Não foi possível aplicar o reajuste em lote.')}finally{setAdjusting(false)}}
- return <><section className="vcs-section"><div className="vcs-section-title"><strong>Tabelas de preço</strong></div><div className="vcs-form"><label className="vcs-field erp-field-code">Código<input value={code} onChange={e=>setCode(e.target.value)}/></label><label className="vcs-field wide">Nome<input value={name} onChange={e=>setName(e.target.value)}/></label><div><button className="vcs-btn primary" style={{marginTop:20}} onClick={()=>void save()}><Plus size={16}/> Criar tabela</button></div></div></section><section className="vcs-section"><div className="vcs-section-title"><strong>Tabelas comerciais</strong><span>{prices.length} tabela(s)</span></div><DataTable headers={['Código','Tabela','Status']} rows={prices.map(p=>[p.codigo,p.nome,p.ativo?'ATIVA':'INATIVA'])}/><div className="vcs-form" style={{marginTop:10}}><label className="vcs-field erp-field-percent">Reajuste %<input type="number" step="0.01" value={adjustment} onChange={e=>setAdjustment(e.target.value)}/></label><div><button className="vcs-btn primary" style={{marginTop:20}} disabled={adjusting||!prices.length} onClick={()=>void adjust()}><RefreshCw size={16}/> {adjusting?'Aplicando…':'Reajustar tabela em lote'}</button></div></div><p style={{fontSize:12,color:'#617984',marginBottom:0}}>O reajuste usa transação no banco e bloqueia preço abaixo do custo/margem mínima cadastrada.</p></section><section className="vcs-section"><strong>Itens de tabela cadastrados</strong><DataTable headers={['Tabela','Produto','Preço','Custo']} rows={priceItems.slice(0,50).map(i=>[prices.find(p=>p.id===i.tabela_preco_id)?.nome??'—',products.find(p=>p.id===i.produto_id)?.nome??'—',brl(Number(i.preco||0)),brl(Number(products.find(p=>p.id===i.produto_id)?.custo_ultimo||0))])}/></section></>
-}
+ const [selectedId,setSelectedId]=useState(prices[0]?.id??'')
+ const [newCode,setNewCode]=useState('')
+ const [newName,setNewName]=useState('')
+ const [saving,setSaving]=useState(false)
+ const [error,setError]=useState('')
+ const [message,setMessage]=useState('')
+ const [adjustment,setAdjustment]=useState('0')
+ const [volumeRules,setVolumeRules]=useState<Array<{id:string;produto_id:string|null;quantidade_minima:number;quantidade_maxima:number|null;desconto_percentual:number;validade_inicio:string|null;validade_fim:string|null;prioridade:number;ativo:boolean}>>([])
+ const [itemProduct,setItemProduct]=useState('')
+ const [itemPrice,setItemPrice]=useState('')
+ const [volumeProduct,setVolumeProduct]=useState('')
+ const [volumeMin,setVolumeMin]=useState('')
+ const [volumeMax,setVolumeMax]=useState('')
+ const [volumeDiscount,setVolumeDiscount]=useState('0')
+ const [volumeStart,setVolumeStart]=useState('')
+ const [volumeEnd,setVolumeEnd]=useState('')
+ const [volumePriority,setVolumePriority]=useState('100')
+ const importRef=useRef<HTMLInputElement|null>(null)
+ const selected=prices.find(p=>p.id===selectedId)??null
+ const selectedItems=priceItems.filter(i=>i.tabela_preco_id===selectedId)
+ const loadRules=async(id:string)=>{
+  if(!id){setVolumeRules([]);return}
+  const r=await supabase.from('erp_tabelas_preco_regras_volume').select('id,produto_id,quantidade_minima,quantidade_maxima,desconto_percentual,validade_inicio,validade_fim,prioridade,ativo').eq('empresa_id',empresa).eq('tabela_preco_id',id).order('prioridade').order('quantidade_minima')
+  if(r.error){setError(r.error.message);return}
+  setVolumeRules((r.data??[]) as typeof volumeRules)
+ }
+ useEffect(()=>{if(!selectedId&&prices[0])setSelectedId(prices[0].id)},[prices,selectedId])
+ useEffect(()=>{void loadRules(selectedId)},[selectedId,empresa])
+ const saveTable=async()=>{
+  if(!newCode.trim()||!newName.trim()){setError('Código e nome da tabela são obrigatórios.');return}
+  setSaving(true);setError('');setMessage('')
+  try{
+   const r=await supabase.from('erp_tabelas_preco').insert({empresa_id:empresa,codigo:newCode.trim(),nome:newName.trim(),ativo:true,moeda:'BRL'}).select('id').single()
+   if(r.error)throw r.error
+   setNewCode('');setNewName('');setSelectedId(String(r.data.id));setMessage('Tabela de preço criada.');onSaved()
+  }catch(e){setError(e instanceof Error?e.message:'Não foi possível criar a tabela.')}finally{setSaving(false)}
+ }
+ const saveParameters=async()=>{
+  if(!selected)return
+  setSaving(true);setError('');setMessage('')
+  try{
+   const payload={
+    codigo:selected.codigo,nome:selected.nome,ativo:selected.ativo,
+    validade_inicio:selected.validade_inicio||null,validade_fim:selected.validade_fim||null,
+    margem_minima:Number(selected.margem_minima||0),desconto_maximo_vendedor:Number(selected.desconto_maximo_vendedor||0),
+    desconto_maximo_gerente:Number(selected.desconto_maximo_gerente||0),moeda:(selected.moeda||'BRL').toUpperCase(),condicao_pagamento:selected.condicao_pagamento?.trim()||null
+   }
+   const r=await supabase.from('erp_tabelas_preco').update(payload).eq('id',selected.id).eq('empresa_id',empresa)
+   if(r.error)throw r.error
+   setMessage('Parâmetros da tabela salvos.');onSaved()
+  }catch(e){setError(e instanceof Error?e.message:'Não foi possível salvar os parâmetros.')}finally{setSaving(false)}
+ }
+ const patchSelected=(patch:Partial<PriceTable>)=>setSelectedId(id=>{const next=prices.find(p=>p.id===id);if(!next)return id;Object.assign(next,patch);return id})
+ const saveItem=async()=>{
+  if(!selected||!itemProduct){setError('Selecione um produto.');return}
+  const price=Number(itemPrice);if(!Number.isFinite(price)||price<0){setError('Informe um preço válido.');return}
+  setSaving(true);setError('')
+  try{
+   const r=await supabase.from('erp_tabelas_preco_itens').upsert({empresa_id:empresa,tabela_preco_id:selected.id,produto_id:itemProduct,preco:price},{onConflict:'tabela_preco_id,produto_id'})
+   if(r.error)throw r.error
+   setItemProduct('');setItemPrice('');setMessage('Preço do item gravado.');onSaved()
+  }catch(e){setError(e instanceof Error?e.message:'Não foi possível gravar o item.')}finally{setSaving(false)}
+ }
+ const removeItem=async(id:string)=>{
+  const r=await supabase.from('erp_tabelas_preco_itens').delete().eq('id',id).eq('empresa_id',empresa)
+  if(r.error)setError(r.error.message);else{setMessage('Item removido da tabela.');onSaved()}
+ }
+ const addVolumeRule=async()=>{
+  if(!selected){setError('Selecione uma tabela.');return}
+  const min=Number(volumeMin),max=volumeMax.trim()?Number(volumeMax):null,disc=Number(volumeDiscount),priority=Number(volumePriority)||100
+  if(!Number.isFinite(min)||min<=0||!Number.isFinite(disc)||disc<0||disc>100||(max!==null&&(!Number.isFinite(max)||max<min))){setError('Regra de escala inválida.');return}
+  setSaving(true);setError('')
+  try{
+   const r=await supabase.from('erp_tabelas_preco_regras_volume').insert({empresa_id:empresa,tabela_preco_id:selected.id,produto_id:volumeProduct||null,quantidade_minima:min,quantidade_maxima:max,desconto_percentual:disc,validade_inicio:volumeStart||null,validade_fim:volumeEnd||null,prioridade})
+   if(r.error)throw r.error
+   setVolumeProduct('');setVolumeMin('');setVolumeMax('');setVolumeDiscount('0');setVolumeStart('');setVolumeEnd('');setVolumePriority('100');setMessage('Regra de escala gravada.');await loadRules(selected.id)
+  }catch(e){setError(e instanceof Error?e.message:'Não foi possível gravar a regra de escala.')}finally{setSaving(false)}
+ }
+ const removeVolumeRule=async(id:string)=>{
+  const r=await supabase.from('erp_tabelas_preco_regras_volume').delete().eq('id',id).eq('empresa_id',empresa)
+  if(r.error)setError(r.error.message);else await loadRules(selectedId)
+ }
+ const bulkAdjust=async()=>{
+  if(!selected)return
+  const pct=Number(adjustment);if(!Number.isFinite(pct)||pct===0){setError('Informe um percentual de reajuste diferente de zero.');return}
+  setSaving(true);setError('')
+  try{
+   const r=await supabase.rpc('erp_reajustar_tabela_preco_em_lote',{p_tabela_id:selected.id,p_percentual:pct,p_respeitar_custo:true})
+   if(r.error)throw r.error
+   setMessage('Reajuste em lote aplicado pela transação do banco.');onSaved()
+  }catch(e){setError(e instanceof Error?e.message:'Não foi possível aplicar o reajuste em lote.')}finally{setSaving(false)}
+ }
+ const exportCsv=()=>{
+  if(!selected)return
+  const header='codigo;descricao;custo_base;margem_percentual;preco_venda;desconto_maximo'
+  const rows=selectedItems.map(i=>{const p=products.find(x=>x.id===i.produto_id);const cost=Number(p?.custo_ultimo||0);const margin=Number(i.preco)>0?((Number(i.preco)-cost)/Number(i.preco))*100:0;return [p?.codigo??'',p?.nome??'',cost.toFixed(4),margin.toFixed(3),Number(i.preco).toFixed(4),''].map(v=>String(v).replace(/;/g,',')).join(';')})
+  const blob=new Blob([[header,...rows].join('\n')],{type:'text/csv;charset=utf-8'})
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=selected.codigo+'-itens.csv';a.click();URL.revokeObjectURL(url)
+ }
+ const importCsv=async(e:ChangeEvent<HTMLInputElement>)=>{
+  const file=e.target.files?.[0];e.target.value='';if(!file||!selected)return
+  setSaving(true);setError('');setMessage('')
+  try{
+   const text=await file.text();const rows=text.split(/\r?\n/).slice(1).filter(Boolean)
+   for(const row of rows){
+    const [codigo,, , ,preco]=row.split(';').map(v=>v.trim());const p=products.find(x=>x.codigo===codigo)
+    const value=Number(String(preco??'').replace(',','.'));if(!p||!Number.isFinite(value)||value<0)continue
+    const r=await supabase.from('erp_tabelas_preco_itens').upsert({empresa_id:empresa,tabela_preco_id:selected.id,produto_id:p.id,preco:value},{onConflict:'tabela_preco_id,produto_id'})
+    if(r.error)throw r.error
+   }
+   setMessage('Importação CSV processada com os produtos válidos encontrados no cadastro.');onSaved()
+  }catch(e){setError(e instanceof Error?e.message:'Falha ao importar CSV.')}finally{setSaving(false)}
+ }
+ return <><section className="vcs-section">
+  <div className="vcs-section-title"><strong>Tabelas de Preço & Políticas Comerciais</strong><div className="vcs-actions"><select className="erp-field-name" value={selectedId} onChange={e=>setSelectedId(e.target.value)}><option value="">Selecionar tabela</option>{prices.map(p=><option key={p.id} value={p.id}>{p.codigo} • {p.nome}</option>)}</select><button className="vcs-btn primary" onClick={()=>void saveTable()} disabled={saving||!newCode.trim()||!newName.trim()}>+ Nova tabela</button></div></div>
+  <div className="vcs-form"><label className="vcs-field erp-field-code">Código<input value={newCode} onChange={e=>setNewCode(e.target.value)} placeholder="Código da nova tabela"/></label><label className="vcs-field wide">Nome<input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="Nome da nova tabela"/></label></div>
+ </section>
+ {error&&<section className="vcs-section" style={{borderColor:'#e2b9b9',color:'#9b2525'}}>{error}</section>}
+ {message&&<section className="vcs-section" style={{borderColor:'#b9dfcd',color:'#287a5c'}}>{message}</section>}
+ {!selected?<section className="vcs-section"><div className="vcs-empty">Nenhuma tabela comercial selecionada.</div></section>:<><section className="vcs-section">
+  <div className="vcs-section-title"><strong>Parâmetros da Tabela</strong><span>Empresa atual: {empresa}</span></div>
+  <div className="vcs-form">
+   <label className="vcs-field erp-field-code">Código<input readOnly value={selected.codigo}/></label>
+   <label className="vcs-field wide">Nome<input value={selected.nome} onChange={e=>patchSelected({nome:e.target.value})}/></label>
+   <label className="vcs-field erp-field-date">Validade inicial<input className="erp-field-date" type="date" value={selected.validade_inicio??''} onChange={e=>patchSelected({validade_inicio:e.target.value||null})}/></label>
+   <label className="vcs-field erp-field-date">Validade final<input className="erp-field-date" type="date" value={selected.validade_fim??''} onChange={e=>patchSelected({validade_fim:e.target.value||null})}/></label>
+   <label className="vcs-field erp-field-percent">Margem mínima<input className="erp-field-percent" type="number" step="0.001" min="0" max="100" value={selected.margem_minima??0} onChange={e=>patchSelected({margem_minima:Number(e.target.value)})}/></label>
+   <label className="vcs-field erp-field-percent">Desc. máx. vendedor<input className="erp-field-percent" type="number" step="0.001" min="0" max="100" value={selected.desconto_maximo_vendedor??0} onChange={e=>patchSelected({desconto_maximo_vendedor:Number(e.target.value)})}/></label>
+   <label className="vcs-field erp-field-percent">Desc. máx. gerente<input className="erp-field-percent" type="number" step="0.001" min="0" max="100" value={selected.desconto_maximo_gerente??0} onChange={e=>patchSelected({desconto_maximo_gerente:Number(e.target.value)})}/></label>
+   <label className="vcs-field erp-field-code">Moeda<input value={selected.moeda??'BRL'} maxLength={3} onChange={e=>patchSelected({moeda:e.target.value.toUpperCase()})}/></label>
+   <label className="vcs-field wide">Condição de pagamento<input value={selected.condicao_pagamento??''} onChange={e=>patchSelected({condicao_pagamento:e.target.value})}/></label>
+   <div><button className="vcs-btn primary" style={{marginTop:20}} disabled={saving} onClick={()=>void saveParameters()}>{saving?'Salvando…':'Salvar parâmetros'}</button></div>
+  </div>
+ </section>
+ <section className="vcs-section">
+  <div className="vcs-section-title"><strong>Itens da Tabela</strong><span>{selectedItems.length} item(ns)</span></div>
+  <div className="vcs-form"><label className="vcs-field wide">Produto<select value={itemProduct} onChange={e=>setItemProduct(e.target.value)}><option value="">Selecionar produto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} • {p.nome}</option>)}</select></label><label className="vcs-field erp-field-money">Preço venda<input className="erp-field-money" type="number" step="0.0001" min="0" value={itemPrice} onChange={e=>setItemPrice(e.target.value)}/></label><div><button className="vcs-btn primary" style={{marginTop:20}} disabled={saving} onClick={()=>void saveItem()}><Plus size={16}/> Adicionar Produto</button></div></div>
+  <DataTable headers={['Código','Descrição','Custo base','Margem %','Preço venda','Desc. máx.','Ações']} rows={selectedItems.map(i=>{const p=products.find(x=>x.id===i.produto_id);const cost=Number(p?.custo_ultimo||0);const price=Number(i.preco||0);const margin=price>0?((price-cost)/price)*100:0;return [p?.codigo??'—',p?.nome??'—',brl(cost),margin.toFixed(2)+'%',brl(price),'—',<button className="vcs-icon-action" title="Remover item" onClick={()=>void removeItem(i.id)}><XCircle size={15}/></button>]})}/>
+ </section>
+ <section className="vcs-section">
+  <div className="vcs-section-title"><strong>Regras de Desconto por Escala de Quantidade (Volume)</strong><span>{volumeRules.length} regra(s)</span></div>
+  <div className="vcs-form"><label className="vcs-field wide">Produto (opcional)<select value={volumeProduct} onChange={e=>setVolumeProduct(e.target.value)}><option value="">Todos os produtos</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} • {p.nome}</option>)}</select></label><label className="vcs-field erp-field-qty">Qtd mínima<input className="erp-field-qty" type="number" step="0.001" min="0.001" value={volumeMin} onChange={e=>setVolumeMin(e.target.value)}/></label><label className="vcs-field erp-field-qty">Qtd máxima<input className="erp-field-qty" type="number" step="0.001" min="0" value={volumeMax} onChange={e=>setVolumeMax(e.target.value)}/></label><label className="vcs-field erp-field-percent">Desconto adicional %<input className="erp-field-percent" type="number" step="0.001" min="0" max="100" value={volumeDiscount} onChange={e=>setVolumeDiscount(e.target.value)}/></label><label className="vcs-field erp-field-date">Início<input className="erp-field-date" type="date" value={volumeStart} onChange={e=>setVolumeStart(e.target.value)}/></label><label className="vcs-field erp-field-date">Fim<input className="erp-field-date" type="date" value={volumeEnd} onChange={e=>setVolumeEnd(e.target.value)}/></label><label className="vcs-field erp-field-qty">Prioridade<input className="erp-field-qty" type="number" min="1" value={volumePriority} onChange={e=>setVolumePriority(e.target.value)}/></label><div><button className="vcs-btn primary" style={{marginTop:20}} disabled={saving} onClick={()=>void addVolumeRule()}><Plus size={16}/> Adicionar Regra Escala</button></div></div>
+  <DataTable headers={['Produto','Qtd mínima','Qtd máxima','Desconto','Validade','Prioridade','Status','Ações']} rows={volumeRules.map(v=>[v.produto_id?products.find(p=>p.id===v.produto_id)?.codigo??'—':'Todos',Number(v.quantidade_minima).toLocaleString('pt-BR'),v.quantidade_maxima==null?'—':Number(v.quantidade_maxima).toLocaleString('pt-BR'),Number(v.desconto_percentual).toFixed(2)+'%',(v.validade_inicio??'—')+' → '+(v.validade_fim??'—'),v.prioridade,v.ativo?'ATIVA':'INATIVA',<button className="vcs-icon-action" title="Excluir regra" onClick={()=>void removeVolumeRule(v.id)}><XCircle size={15}/></button>]})}/>
+ </section>
+ <section className="vcs-section"><div className="vcs-actions"><button className="vcs-btn primary" disabled={saving} onClick={()=>void saveParameters()}>Salvar Alterações da Tabela</button><button className="vcs-btn" onClick={exportCsv}>Exportar Excel / CSV</button><button className="vcs-btn" onClick={()=>importRef.current?.click()}>Importar CSV</button><input ref={importRef} type="file" accept=".csv,text/csv" hidden onChange={e=>void importCsv(e)}/><label className="vcs-field erp-field-percent">Reajuste %<input className="erp-field-percent" type="number" step="0.01" value={adjustment} onChange={e=>setAdjustment(e.target.value)}/></label><button className="vcs-btn primary" disabled={saving} onClick={()=>void bulkAdjust()}><RefreshCw size={16}/> Reajuste em lote</button></div></section>
+ </>}
+ </>}
 
 function Orcamentos({quotes,clients,prices,products,onCreate,onConvert}:{quotes:Quote[];clients:Client[];prices:PriceTable[];products:Product[];onCreate:(c:string,v:string)=>Promise<void>;onConvert:(q:Quote)=>Promise<void>}){
  const [quoteId,setQuoteId]=useState('');
