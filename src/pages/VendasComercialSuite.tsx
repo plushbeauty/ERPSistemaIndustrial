@@ -139,7 +139,7 @@ export default function VendasComercialSuite(){
       {view==='clientes'&&<Clientes clients={clients} empresa={empresa} onSaved={()=>void load()}/>}
       {view==='precos'&&<Precos prices={prices} priceItems={priceItems} products={products} empresa={empresa} onSaved={()=>void load()}/>}
       {view==='orcamentos'&&<Orcamentos quotes={quotes} clients={clients} onCreate={createQuote} onConvert={convertQuote}/>}
-      {view==='pedidos'&&<Pedidos orders={orders} clients={clients}/>}
+      {view==='pedidos'&&<Pedidos orders={orders} clients={clients} orderItems={orderItems} products={products} reservations={reservations} productionOrders={productionOrders} onReload={()=>void load()}/>}
       {view==='faturamento'&&<Faturamento nfes={nfes}/>}
       {view==='expedicao'&&<Expedicao romaneios={romaneios}/>}
       {view==='comissoes'&&<Comissoes rules={rules} launches={launches}/>}
