@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { AreaChart, Area, BarChart3, Bar, CartesianGrid, FileCheck2, PackageCheck, Plus, RefreshCw, Settings, ShoppingCart, Truck, Users, XCircle, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { BarChart3, FileCheck2, PackageCheck, Plus, RefreshCw, Settings, ShoppingCart, Truck, Users, XCircle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
@@ -13,6 +14,9 @@ type PriceTable = { id:string; codigo:string; nome:string; ativo:boolean }
 type Romaneio = { id:string; codigo:string; status:string; veiculo_placa:string|null; motorista_nome:string|null; transportadora:string|null; peso_total_kg:number }
 type CommissionRule = { id:string; nome:string; percentual:number; tipo:string; margem_minima:number|null; por_recebimento:boolean; ativo:boolean }
 type CommissionLaunch = { id:string; funcionario_id:string; data_referencia:string; receita_base:number; percentual:number; valor_comissao:number; status:string }
+type SalesMeta = { competencia:string; meta_faturamento:number; meta_pedidos:number }
+type OrderItem = { id:string; pedido_id:string; produto_id:string; descricao:string|null; quantidade:number; total:number|null }
+type ProductionOrder = { id:string; status:string; quantidade:number|null }
 
 const brl=(n:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(n)||0)
 const dateBR=(v:string|null)=>v?new Date(v).toLocaleDateString('pt-BR'):'—'
@@ -39,6 +43,9 @@ export default function VendasComercialSuite(){
  const [romaneios,setRomaneios]=useState<Romaneio[]>([])
  const [rules,setRules]=useState<CommissionRule[]>([])
  const [launches,setLaunches]=useState<CommissionLaunch[]>([])
+ const [meta,setMeta]=useState<SalesMeta|null>(null)
+ const [orderItems,setOrderItems]=useState<OrderItem[]>([])
+ const [productionOrders,setProductionOrders]=useState<ProductionOrder[]>([])
  const [loading,setLoading]=useState(true)
  const [error,setError]=useState('')
  const [message,setMessage]=useState('')
@@ -59,13 +66,17 @@ export default function VendasComercialSuite(){
     supabase.from('erp_tabelas_preco').select('id,codigo,nome,ativo').eq('empresa_id',id).order('codigo'),
     supabase.from('erp_expedicao_romaneios').select('id,codigo,status,veiculo_placa,motorista_nome,transportadora,peso_total_kg').eq('empresa_id',id).order('created_at',{ascending:false}).limit(200),
     supabase.from('regras_comissao').select('id,nome,percentual,tipo,margem_minima,por_recebimento,ativo').eq('empresa_id',id).order('nome'),
-    supabase.from('beauty_comissoes_lancamentos').select('id,funcionario_id,data_referencia,receita_base,percentual,valor_comissao,status').eq('empresa_id',id).order('data_referencia',{ascending:false}).limit(300)
+    supabase.from('beauty_comissoes_lancamentos').select('id,funcionario_id,data_referencia,receita_base,percentual,valor_comissao,status').eq('empresa_id',id).order('data_referencia',{ascending:false}).limit(300),
+    supabase.from('erp_vendas_metas').select('competencia,meta_faturamento,meta_pedidos').eq('empresa_id',id).order('competencia',{ascending:false}).limit(1).maybeSingle(),
+    supabase.from('erp_pedidos_venda_itens').select('id,pedido_id,produto_id,descricao,quantidade,total').eq('empresa_id',id).limit(10000),
+    supabase.from('erp_ordens_producao').select('id,status,quantidade').eq('empresa_id',id).order('id',{ascending:false}).limit(1000)
    ])
    for(const r of results) if(r.error) throw r.error
    setClients((results[0].data??[]) as Client[]);setProducts((results[1].data??[]) as Product[]);setOpps((results[2].data??[]) as Opportunity[])
    setQuotes((results[3].data??[]) as Quote[]);setOrders((results[4].data??[]) as Order[]);setNfes((results[5].data??[]) as Nfe[])
    setPrices((results[6].data??[]) as PriceTable[]);setRomaneios((results[7].data??[]) as Romaneio[])
    setRules((results[8].data??[]) as CommissionRule[]);setLaunches((results[9].data??[]) as CommissionLaunch[])
+   setMeta((results[10].data??null) as SalesMeta|null);setOrderItems((results[11].data??[]) as OrderItem[]);setProductionOrders((results[12].data??[]) as ProductionOrder[])
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar o módulo Vendas & Comercial.')}finally{setLoading(false)}
  }
  useEffect(()=>{void load()},[])
@@ -142,15 +153,28 @@ export default function VendasComercialSuite(){
  </div>
 }
 
-function Dashboard({kpis,orders,nfes,clients}:{kpis:{faturamento:number;abertos:number;propostas:number;conversao:number};orders:Order[];nfes:Nfe[];clients:Client[]}){
- const blocked=clients.filter(c=>Number(c.limite_credito||0)>0)
- return <><div className="vcs-grid"><article className="vcs-card vcs-kpi"><p>Faturamento fiscal autorizado</p><strong>{brl(kpis.faturamento)}</strong></article><article className="vcs-card vcs-kpi"><p>Pedidos Aprovados / Em Produção</p><strong>{kpis.abertos}</strong></article><article className="vcs-card vcs-kpi"><p>Orçamentos registrados</p><strong>{kpis.propostas}</strong></article><article className="vcs-card vcs-kpi"><p>Conversão registrada</p><strong>{kpis.conversao.toFixed(1)}%</strong></article></div>
- <section className="vcs-section"><div className="vcs-section-title"><strong>Fluxo operacional comercial</strong></div><div className="vcs-flow"><span>CRM</span><b>→</b><span>Orçamento</span><b>→</b><span>Pedido</span><b>→</b><span>PCP / Estoque</span><b>→</b><span>NF-e</span><b>→</b><span>Financeiro</span><b>→</b><span>Expedição</span></div></section>
- <section className="vcs-section"><div className="vcs-section-title"><strong>Pedidos recentes</strong><span>{orders.length} registro(s)</span></div><DataTable headers={['Pedido','Cliente','Status','Total','Entrega']} rows={orders.slice(0,12).map(o=>[String(o.numero).padStart(6,'0'),clients.find(c=>c.id===o.cliente_id)?.nome??'—',o.status,brl(o.total),dateBR(o.data_entrega_prometida)])}/></section>
- <section className="vcs-section"><div className="vcs-section-title"><strong>NF-e recentes</strong><span>{nfes.length} registro(s)</span></div><DataTable headers={['NF-e','Destinatário','Status','Valor','Emissão']} rows={nfes.slice(0,12).map(n=>[n.numero?String(n.numero):'—',n.destinatario_nome,n.status,brl(n.valor_total),dateBR(n.data_emissao)])}/></section>
- <section className="vcs-section"><div className="vcs-section-title"><strong>Regra de crédito</strong></div><p style={{margin:0,fontSize:12,color:'#617984'}}>O limite de crédito existente no cadastro deve ser validado antes da liberação comercial. Esta tela não cria bloqueios artificiais nem altera limite sem operação registrada.</p></section></>
+function Dashboard({kpis,orders,nfes,clients,meta,orderItems,products,productionOrders}:{kpis:{faturamento:number;abertos:number;propostas:number;conversao:number};orders:Order[];nfes:Nfe[];clients:Client[];meta:SalesMeta|null;orderItems:OrderItem[];products:Product[];productionOrders:ProductionOrder[]}){
+ const [period,setPeriod]=useState<'HOJE'|'SEMANA'|'MES'|'TRIMESTRE'>('MES')
+ const now=new Date()
+ const startDate=()=>{const d=new Date(now);if(period==='HOJE')d.setHours(0,0,0,0);if(period==='SEMANA'){const day=d.getDay();d.setDate(d.getDate()-(day===0?6:day-1));d.setHours(0,0,0,0)}if(period==='MES'){d.setDate(1);d.setHours(0,0,0,0)}if(period==='TRIMESTRE'){d.setMonth(Math.floor(d.getMonth()/3)*3,1);d.setHours(0,0,0,0)}return d}
+ const from=startDate()
+ const chartMap=new Map<string,{data:string;faturamento:number;meta:number}>()
+ for(const n of nfes){const dt=new Date(n.data_emissao);if(dt<from||!['AUTORIZADA','autorizada','100','processada'].includes(n.status))continue;const key=dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});const row=chartMap.get(key)??{data:key,faturamento:0,meta:0};row.faturamento+=Number(n.valor_total||0);chartMap.set(key,row)}
+ const chartData=[...chartMap.values()]
+ const productMap=new Map<string,{nome:string;quantidade:number;receita:number}>()
+ for(const item of orderItems){const p=products.find(x=>x.id===item.produto_id);const key=item.produto_id;const row=productMap.get(key)??{nome:p?.nome??item.descricao??'Produto sem descrição',quantidade:0,receita:0};row.quantidade+=Number(item.quantidade||0);row.receita+=Number(item.total||0);productMap.set(key,row)}
+ const topProducts=[...productMap.values()].sort((a,b)=>b.receita-a.receita).slice(0,5)
+ const pcp=productionOrders.reduce((acc,o)=>{const k=String(o.status||'SEM STATUS');acc[k]=(acc[k]??0)+1;return acc},{} as Record<string,number>)
+ const progress=meta&&Number(meta.meta_faturamento)>0?Math.min(100,(kpis.faturamento/Number(meta.meta_faturamento))*100):0
+ const creditCandidates=clients.filter(c=>Number(c.limite_credito||0)>0)
+ return <><div className="vcs-toolbar"><div><strong>Visão comercial real</strong><div style={{fontSize:12,color:'#617984'}}>Somente registros da empresa autenticada. Período aplicado ao faturamento fiscal.</div></div><label className="vcs-field" style={{width:125}}>Período<select value={period} onChange={e=>setPeriod(e.target.value as typeof period)}><option value="HOJE">Hoje</option><option value="SEMANA">Esta semana</option><option value="MES">Este mês</option><option value="TRIMESTRE">Este trimestre</option></select></label></div>
+ <div className="vcs-grid"><article className="vcs-card vcs-kpi"><p>Faturamento fiscal autorizado</p><strong>{brl(kpis.faturamento)}</strong></article><article className="vcs-card vcs-kpi"><p>Meta comercial</p><strong>{meta?brl(meta.meta_faturamento):'—'}</strong><small>{meta?progress.toFixed(1)+'% realizado':'Nenhuma meta cadastrada'}</small></article><article className="vcs-card vcs-kpi"><p>Pedidos Aprovados / Em Produção</p><strong>{kpis.abertos}</strong></article><article className="vcs-card vcs-kpi"><p>Taxa de conversão registrada</p><strong>{kpis.conversao.toFixed(1)}%</strong></article></div>
+ <section className="vcs-section"><div className="vcs-section-title"><strong>Faturamento × meta no período</strong><span>{chartData.length} ponto(s) real(is)</span></div>{chartData.length?<div style={{height:260}}><ResponsiveContainer width="100%" height="100%"><AreaChart data={chartData}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="data"/><YAxis tickFormatter={v=>brl(Number(v))}/><Tooltip formatter={(v)=>brl(Number(v))}/><Area type="monotone" dataKey="faturamento" name="Faturamento"/></AreaChart></ResponsiveContainer></div>:<div className="vcs-empty">Nenhum dado disponível para o período selecionado.</div>}</section>
+ <section className="vcs-section"><div className="vcs-section-title"><strong>Top 5 produtos por receita</strong><span>Base: itens reais de pedidos</span></div>{topProducts.length?<DataTable headers={['Produto','Quantidade','Receita']} rows={topProducts.map(p=>[p.nome,p.quantidade.toLocaleString('pt-BR'),brl(p.receita)])}/>:<div className="vcs-empty">Nenhum dado disponível para o período selecionado.</div>}</section>
+ <section className="vcs-section"><div className="vcs-section-title"><strong>Pedidos recentes e situação comercial</strong><span>{orders.length} registro(s)</span></div><DataTable headers={['Pedido','Cliente','Status','Total','Entrega']} rows={orders.slice(0,12).map(o=>[String(o.numero).padStart(6,'0'),clients.find(c=>c.id===o.cliente_id)?.nome??'—',o.status,brl(o.total),dateBR(o.data_entrega_prometida)])}/></section>
+ <section className="vcs-section"><div className="vcs-section-title"><strong>Indicadores de PCP</strong><span>{productionOrders.length} OP(s) consultadas</span></div>{productionOrders.length?<DataTable headers={['Status','Quantidade de OPs']} rows={Object.entries(pcp).map(([status,count])=>[status,count])}/>:<div className="vcs-empty">Nenhuma ordem de produção encontrada.</div>}</section>
+ <section className="vcs-section"><div className="vcs-section-title"><strong>Carteira de crédito cadastrada</strong><span>{creditCandidates.length} cliente(s)</span></div>{creditCandidates.length?<DataTable headers={['Cliente','Limite cadastrado','Situação']} rows={creditCandidates.slice(0,12).map(c=>[c.nome,brl(Number(c.limite_credito||0)),'Limite cadastrado — bloqueio depende da análise financeira'])}/>:<div className="vcs-empty">Nenhum cliente com limite de crédito cadastrado.</div>}</section></>
 }
-
 function CRM({opps,clients,onCreate,onMove}:{opps:Opportunity[];clients:Client[];onCreate:(t:string,c:string,v:string)=>Promise<void>;onMove:(id:string,e:string)=>Promise<void>}){
  const [title,setTitle]=useState('');const [client,setClient]=useState('');const [value,setValue]=useState('')
  const stages=[['PROSPECCAO','Prospecção'],['QUALIFICACAO','Qualificação'],['PROPOSTA','Proposta Enviada'],['NEGOCIACAO','Em Negociação'],['GANHO','Ganho'],['PERDIDO','Perdido']] as const
