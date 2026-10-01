@@ -7,7 +7,7 @@ type Client={id:string;nome:string;documento:string|null;codigo?:string|null;ema
 type CustomerMapping={produto_id:string;codigoCliente:string;dimensoes:string;canal:string;molde:string}
 type Product={id:string;codigo:string;nome:string;estoque_atual:number;preco_venda:number;unidade:string}
 type PriceItem={tabela_preco_id:string;produto_id:string;preco:number}
-type Item={produto_id:string;codigo:string;codigoCliente:string;descricao:string;quantidade:string;valor:string;estoque:number;reservadoQtd:number}
+type Item={produto_id:string;codigo:string;codigoCliente:string;descricao:string;quantidade:string;valor:string;desconto:string;unidade:string;estoque:number;reservadoQtd:number}
 type Order={id:string;numero:number;status:string;total:number;data_entrega_prometida:string|null;cliente_id:string}
 
 const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0)
@@ -45,7 +45,7 @@ function SalesCustomerView({empresa,products,clients,onSaved}:{empresa:string;pr
 export default function PedidoVendaCompleto(){
  const[empresa,setEmpresa]=useState('')
  const requestedView=new URLSearchParams(window.location.search).get('view');const pathView=window.location.pathname==='/vendas/clientes'?'clientes':window.location.pathname==='/vendas/carteira'?'carteira':window.location.pathname==='/vendas/novo-pedido'?'pedido':null;const activeView=requestedView??pathView??'pedido';const customerView=activeView==='clientes',[clients,setClients]=useState<Client[]>([]),[products,setProducts]=useState<Product[]>([]),[orders,setOrders]=useState<Order[]>([])
- const[client,setClient]=useState(''),[clientDoc,setClientDoc]=useState(''),[priceItems,setPriceItems]=useState<PriceItem[]>([]),[number,setNumber]=useState(''),[date,setDate]=useState(new Date().toISOString().slice(0,10)),[delivery,setDelivery]=useState(''),[pedidoCliente,setPedidoCliente]=useState(''),[observacoes,setObservacoes]=useState(''),[desconto,setDesconto]=useState('0')
+ const[client,setClient]=useState(''),[clientDoc,setClientDoc]=useState(''),[priceItems,setPriceItems]=useState<PriceItem[]>([]),[number,setNumber]=useState(''),[date,setDate]=useState(new Date().toISOString().slice(0,10)),[delivery,setDelivery]=useState(''),[pedidoCliente,setPedidoCliente]=useState(''),[observacoes,setObservacoes]=useState(''),[desconto,setDesconto]=useState('0'),[condicaoPagamento,setCondicaoPagamento]=useState(''),[vendedor,setVendedor]=useState(''),[modalidadeFrete,setModalidadeFrete]=useState(''),[transportadora,setTransportadora]=useState(''),[valorFrete,setValorFrete]=useState('0'),[outrasDespesas,setOutrasDespesas]=useState('0')
  const[items,setItems]=useState<Item[]>([]),[draft,setDraft]=useState({produto:'',qtd:'1',valor:'0',codigoCliente:''}),[busy,setBusy]=useState(false),[msg,setMsg]=useState(''),[err,setErr]=useState(''),[processed,setProcessed]=useState(false),[sidebar,setSidebar]=useState(true)
 
  const load=async()=>{
@@ -61,6 +61,7 @@ export default function PedidoVendaCompleto(){
   ])
   for(const x of[c,p,pi,o])if(x.error)throw x.error
   setClients(c.data||[]);setProducts(p.data||[]);setPriceItems((pi.data||[]) as PriceItem[]);setOrders(o.data||[])
+  const u=await supabase.auth.getUser(); if(u.data.user){const ur=await supabase.from('erp_usuarios').select('nome').eq('auth_user_id',u.data.user.id).eq('empresa_id',id).eq('ativo',true).is('deleted_at',null).maybeSingle();if(ur.data?.nome)setVendedor(ur.data.nome)}
   const firstClient=(c.data||[])[0] as Client|undefined
   if(firstClient) setClientDoc(String(firstClient.documento??''))
   setNumber(String((Number(o.data?.[0]?.numero||0)+1)).padStart(6,'0'))
@@ -71,7 +72,7 @@ export default function PedidoVendaCompleto(){
  const selectedClient=clients.find(c=>c.id===client)
  const priceFor=(product:Product)=>{const specific=selectedClient?.tabela_preco_id?priceItems.find(x=>x.tabela_preco_id===selectedClient.tabela_preco_id&&x.produto_id===product.id):undefined;return specific?.preco??product.preco_venda}
  const priceSource=(product:Product)=>selectedClient?.tabela_preco_id&&priceItems.some(x=>x.tabela_preco_id===selectedClient.tabela_preco_id&&x.produto_id===product.id)?'PREÇO DO CLIENTE':'PREÇO PADRÃO'
- const subtotal=useMemo(()=>items.reduce((s,i)=>s+Number(i.quantidade)*Number(i.valor),0),[items]); const descontoValor=Math.min(Math.max(Number(desconto)||0,0),subtotal); const total=Math.max(subtotal-descontoValor,0)
+ const subtotal=useMemo(()=>items.reduce((s,i)=>s+Math.max(Number(i.quantidade)*Number(i.valor)-Math.max(Number(i.desconto)||0,0),0),0),[items]); const descontoValor=Math.min(Math.max(Number(desconto)||0,0),subtotal); const freteValor=Math.max(Number(valorFrete)||0,0); const outrasValor=Math.max(Number(outrasDespesas)||0,0); const total=Math.max(subtotal-descontoValor+freteValor+outrasValor,0)
  const analyzed=items.map(i=>({...i,disponivel:Math.max(i.estoque-i.reservadoQtd,0),reserva:Math.min(Number(i.quantidade),Math.max(i.estoque-i.reservadoQtd,0)),falta:Math.max(Number(i.quantidade)-Math.max(i.estoque-i.reservadoQtd,0),0)}))
  const faltantes=analyzed.filter(i=>i.falta>0)
  const verdes=analyzed.filter(i=>i.falta===0)
@@ -79,14 +80,14 @@ export default function PedidoVendaCompleto(){
  function choose(id:string){const p=products.find(x=>x.id===id);if(!p)return;setDraft({...draft,produto:id,valor:String(priceFor(p)||0)})}
  function add(){
   if(!selected||Number(draft.qtd)<=0)return
-  setItems(x=>[...x,{produto_id:selected.id,codigo:selected.codigo,codigoCliente:draft.codigoCliente,descricao:selected.nome,quantidade:draft.qtd,valor:draft.valor||String(selected.preco_venda||0),estoque:Number(selected.estoque_atual||0),reservadoQtd:0}])
+  setItems(x=>[...x,{produto_id:selected.id,codigo:selected.codigo,codigoCliente:draft.codigoCliente,descricao:selected.nome,quantidade:draft.qtd,valor:draft.valor||String(selected.preco_venda||0),desconto:'0',unidade:selected.unidade||'UN',estoque:Number(selected.estoque_atual||0),reservadoQtd:0}])
   setDraft({produto:'',qtd:'1',valor:'0',codigoCliente:''})
  }
  async function finalize(){
   if(!empresa||!client||!items.length){setErr('Cliente e pelo menos um item são obrigatórios.');return}
   setBusy(true);setErr('');setMsg('')
   try{
-   const r=await supabase.rpc('erp_finalizar_pedido_venda',{p_cliente_id:client,p_desconto:0,p_itens:items.map(i=>({produto_id:i.produto_id,quantidade:Number(i.quantidade),valor_unitario:Number(i.valor),codigo_cliente:i.codigoCliente||null})),p_data_entrega:delivery||null,p_pedido_cliente:pedidoCliente.trim()||null})
+   const r=await supabase.rpc('erp_finalizar_pedido_venda',{p_cliente_id:client,p_desconto:Number(desconto)||0,p_itens:items.map(i=>({produto_id:i.produto_id,quantidade:Number(i.quantidade),valor_unitario:Number(i.valor),desconto:Number(i.desconto)||0,codigo_cliente:i.codigoCliente||null,codigo:i.codigo})),p_data_entrada:date||null,p_data_entrega:delivery||null,p_pedido_cliente:pedidoCliente.trim()||null,p_observacoes:observacoes.trim()||null,p_condicao_pagamento:condicaoPagamento.trim()||null,p_vendedor_nome:vendedor.trim()||null,p_modalidade_frete:modalidadeFrete.trim()||null,p_transportadora:transportadora.trim()||null,p_valor_frete:freteValor,p_valor_outras_despesas:outrasValor})
    if(r.error)throw r.error
    if(r.data){const update=await supabase.from('erp_pedidos_venda').update({observacoes:observacoes.trim()||null,pedido_cliente:pedidoCliente.trim()||null}).eq('id',String(r.data)).eq('empresa_id',empresa);if(update.error)throw update.error}
    setProcessed(true)
@@ -96,7 +97,7 @@ export default function PedidoVendaCompleto(){
   }catch(e){setErr(e instanceof Error?e.message:'Falha ao finalizar pedido.')}
   finally{setBusy(false)}
  }
- function cancel(){setItems([]);setClient('');setClientDoc('');setDelivery('');setPedidoCliente('');setObservacoes('');setDesconto('0');setProcessed(false);setMsg('');setErr('')}
+ function cancel(){setItems([]);setClient('');setClientDoc('');setDelivery('');setPedidoCliente('');setObservacoes('');setDesconto('0');setCondicaoPagamento('');setModalidadeFrete('');setTransportadora('');setValorFrete('0');setOutrasDespesas('0');setProcessed(false);setMsg('');setErr('')}
  function go(path:string){location.href=path}
 
  return <div className="sales-shell">
@@ -151,6 +152,10 @@ export default function PedidoVendaCompleto(){
        <label className="sales-field">Documento<input value={clientDoc} readOnly/></label>
        <label className="sales-field">Data Entrega Prometida<input type="date" value={delivery} onChange={e=>setDelivery(e.target.value)}/></label>
        <label className="sales-field sales-field-span-2">Pedido / Referência do Cliente<input value={pedidoCliente} onChange={e=>setPedidoCliente(e.target.value)} maxLength={120} placeholder="Número do pedido ou referência do cliente"/></label>
+       <label className="sales-field">Condição de pagamento<input value={condicaoPagamento} onChange={e=>setCondicaoPagamento(e.target.value)} maxLength={120} placeholder="Ex.: 28/42 dias"/></label>
+       <label className="sales-field">Vendedor<input value={vendedor} onChange={e=>setVendedor(e.target.value)} maxLength={120}/></label>
+       <label className="sales-field">Modalidade de frete<select value={modalidadeFrete} onChange={e=>setModalidadeFrete(e.target.value)}><option value="">Não informado</option><option value="CIF">CIF</option><option value="FOB">FOB</option><option value="RETIRADA">Retirada</option></select></label>
+       <label className="sales-field sales-field-span-2">Transportadora<input value={transportadora} onChange={e=>setTransportadora(e.target.value)} maxLength={160} placeholder="Transportadora responsável"/></label>
       </div>
      </section>}
     {!processed&&<section className="sales-card">
@@ -162,14 +167,14 @@ export default function PedidoVendaCompleto(){
        <label className="sales-field">Valor unitário<input type="number" min="0" step="0.01" value={draft.valor} onChange={e=>setDraft({...draft,valor:e.target.value})}/><small className="sales-note">{selected?priceSource(selected):selectedClient?.tabela_preco_id?'Tabela do cliente':'Selecione cliente e peça'}</small></label>
        <button className="sales-btn primary" onClick={add} disabled={!selected}><Plus size={17}/> Adicionar Produto</button>
       </div>
-      <div className="sales-table-wrap"><table className="sales-table"><thead><tr><th>Cód. Int.</th><th>Cód. Cliente</th><th>Produto</th><th>Qtd.</th><th>Est. Fís.</th><th>Disponível</th><th>Status</th><th>Destino</th><th/></tr></thead><tbody>
-       {analyzed.map((i,n)=><tr key={n}><td><b>{i.codigo}</b></td><td>{i.codigoCliente||'—'}</td><td>{i.descricao}</td><td>{Number(i.quantidade).toLocaleString('pt-BR')}</td><td>{i.estoque.toLocaleString('pt-BR')}</td><td>{i.disponivel.toLocaleString('pt-BR')}</td><td><span className={`status ${i.falta?'warn':'ok'}`}>{i.falta?'FALTA':'OK'}</span></td><td><b>{i.falta?`Produzir ${i.falta}`:'Reservar integral'}</b></td><td><button className="sales-btn danger" onClick={()=>setItems(items.filter((_,x)=>x!==n))}><Trash2 size={15}/></button></td></tr>)}
-       {!items.length&&<tr><td colSpan={9}>Adicione os produtos do pedido. A análise usa o estoque real disponível da empresa.</td></tr>}
+      <div className="sales-table-wrap"><table className="sales-table"><thead><tr><th>Cód. Int.</th><th>Cód. Cliente</th><th>Produto</th><th>Qtd.</th><th>UN</th><th>Preço</th><th>Desc.</th><th>Total</th><th>Est. Fís.</th><th>Disponível</th><th>Status</th><th>Destino</th><th/></tr></thead><tbody>
+       {analyzed.map((i,n)=><tr key={n}><td><b>{i.codigo}</b></td><td>{i.codigoCliente||'—'}</td><td>{i.descricao}</td><td>{Number(i.quantidade).toLocaleString('pt-BR')}</td><td>{i.unidade}</td><td>{money(Number(i.valor))}</td><td>{money(Number(i.desconto)||0)}</td><td>{money(Math.max(Number(i.quantidade)*Number(i.valor)-Number(i.desconto||0),0))}</td><td>{i.estoque.toLocaleString('pt-BR')}</td><td>{i.disponivel.toLocaleString('pt-BR')}</td><td><span className={`status ${i.falta?'warn':'ok'}`}>{i.falta?'FALTA':'OK'}</span></td><td><b>{i.falta?`Produzir ${i.falta}`:'Reservar integral'}</b></td><td><button className="sales-btn danger" onClick={()=>setItems(items.filter((_,x)=>x!==n))}><Trash2 size={15}/></button></td></tr>)}
+       {!items.length&&<tr><td colSpan={13}>Adicione os produtos do pedido. A análise usa o estoque real disponível da empresa.</td></tr>}
       </tbody></table></div>
      </section>}
     {!processed&&<section className="sales-card">
       <div className="sales-kicker">3. CONDIÇÕES E FINALIZAÇÃO</div>
-      <div className="sales-grid sales-final-fields"><label className="sales-field">Desconto do pedido<input type="number" min="0" max={subtotal} step="0.01" value={desconto} onChange={e=>setDesconto(e.target.value)}/></label><label className="sales-field sales-field-span-2">Observações<textarea value={observacoes} onChange={e=>setObservacoes(e.target.value)} maxLength={2000} placeholder="Instruções comerciais, entrega, embalagem ou outras observações"/></label><div className="sales-field sales-total"><span>Total do pedido</span><strong>{money(total)}</strong><small>Subtotal {money(subtotal)} • Desconto {money(descontoValor)}</small></div></div><div className="sales-summary"><div><strong>{money(total)}</strong><div className="sales-note">{verdes.length} item(ns) atendido(s) por reserva • {faltantes.length} item(ns) com necessidade de produção</div></div><div className="sales-actions"><button className="sales-btn danger" onClick={cancel}>Cancelar</button><button className="sales-btn primary" disabled={busy||!items.length} onClick={()=>void finalize()}><Save size={17}/> FINALIZAR PEDIDO E DISPARAR REQUISIÇÕES</button></div></div>
+      <div className="sales-grid sales-final-fields"><label className="sales-field">Desconto do pedido<input type="number" min="0" max={subtotal} step="0.01" value={desconto} onChange={e=>setDesconto(e.target.value)}/></label><label className="sales-field">Frete<input type="number" min="0" step="0.01" value={valorFrete} onChange={e=>setValorFrete(e.target.value)}/></label><label className="sales-field">Outras despesas<input type="number" min="0" step="0.01" value={outrasDespesas} onChange={e=>setOutrasDespesas(e.target.value)}/></label><label className="sales-field sales-field-span-2">Observações<textarea value={observacoes} onChange={e=>setObservacoes(e.target.value)} maxLength={2000} placeholder="Instruções comerciais, entrega, embalagem ou outras observações"/></label><div className="sales-field sales-total"><span>Total do pedido</span><strong>{money(total)}</strong><small>Subtotal {money(subtotal)} • Desconto {money(descontoValor)} • Frete {money(freteValor)} • Outras {money(outrasValor)}</small></div></div><div className="sales-summary"><div><strong>{money(total)}</strong><div className="sales-note">{verdes.length} item(ns) atendido(s) por reserva • {faltantes.length} item(ns) com necessidade de produção</div></div><div className="sales-actions"><button className="sales-btn danger" onClick={cancel}>Cancelar</button><button className="sales-btn primary" disabled={busy||!items.length} onClick={()=>void finalize()}><Save size={17}/> FINALIZAR PEDIDO E DISPARAR REQUISIÇÕES</button></div></div>
      </section>}
     {processed&&<section className="sales-result">
       <h3>Pedido salvo com sucesso</h3>
