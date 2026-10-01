@@ -338,6 +338,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/tablet/dashboard" element={<TabletDashboard />} />
       <Route path="/tablet/home" element={<TabletDashboard />} />
       <Route path="/vendas" element={<VendasCentral />} />
+      <Route path="/vendas/pdv" element={<VendasPDV />} />
       <Route path="/vendas/novo-pedido" element={<PedidoVendaCompleto />} />
       <Route path="/vendas/carteira" element={<VendasCarteira />} />
       <Route path="/vendas/status" element={<VendasStatusPedidos />} />
@@ -405,6 +406,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/admin/logs" element={<AdminLogs />} />
       <Route path="/outlook/configuracao" element={<OutlookConfiguracao />} />
       <Route path="/outlook/caixa-entrada" element={<OutlookCaixaEntrada />} />
+      <Route path="/compras/rfq" element={<ComprasRFQ />} />
       <Route path="/compras/fornecedores" element={<FornecedoresIndustrial />} />
       <Route path="/compras/solicitacao-manual" element={<ComprasSolicitacaoManual />} />
       <Route path="/solicitacao-compra" element={<SolicitacaoCompra />} />
