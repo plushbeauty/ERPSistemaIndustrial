@@ -1,182 +1,651 @@
-/**
- * Desenvolvedor: FernandoSch
- * Status do Build Local: Não executado — validação será feita no gate remoto.
- */
-import { useEffect, useMemo, useState } from "react";
-import { BarChart3, ClipboardList, LayoutGrid, PackageCheck, PanelLeftClose, PanelLeftOpen, Plus, RefreshCw, Save, Search, Settings, ShoppingCart, Trash2, TriangleAlert, Users } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { supabase } from "../lib/supabaseClient";
-import EntityCodeLookup from "../components/industrial/EntityCodeLookup";
-import VendasClientesPage from "./VendasClientes";
+import { useEffect, useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
+import { AlertCircle, BarChart3, Eye, Package, Pencil, Plus, RefreshCw, Save, Search, Settings, ShoppingCart, Trash2, TrendingUp, Users, X } from 'lucide-react'
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { supabase } from '../lib/supabaseClient'
+import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 
-type Cliente={id:string;codigo:string|null;nome:string;documento:string|null;email:string|null;endereco:string|null;ativo:boolean};
-type Produto={id:string;codigo:string;nome:string;descricao:string|null;estoque_atual:number;preco_venda:number;unidade:string};
-type Pedido={id:string;numero:number;status:string;total:number;data_entrega_prometida:string|null;pedido_cliente:string|null;cliente_id:string;cliente_nome?:string};
-type Item={produto_id:string;codigo:string;codigoCliente:string;descricao:string;quantidade:number;valor:number;estoque:number};
-type Shortage={pedido_item_id:string;produto_id:string;quantidade_pedida:number;estoque_disponivel:number;quantidade_reservada:number;quantidade_faltante:number;fabricado:boolean;pode_gerar_op:boolean;codigo?:string;descricao?:string};
-const brl=(n:number)=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(n||0);
-const NAV=[{k:"dashboard",t:"Painel Comercial",I:BarChart3},{k:"pedido",t:"Novo Pedido",I:Plus},{k:"pendentes",t:"Pedidos Pendentes",I:ClipboardList},{k:"carteira",t:"Carteira de Pedidos",I:ClipboardList},{k:"clientes",t:"Cadastro Clientes",I:Users},{k:"catalogo",t:"Catálogo Digital",I:ShoppingCart},{k:"metas",t:"Metas e Gráficos",I:BarChart3},{k:"relatorios",t:"Relatórios de Vendas",I:ClipboardList},{k:"config",t:"Configurações Vendas",I:Settings}] as const;
+type Cliente = { id: string; codigo: string | null; nome: string; documento: string | null; email: string | null; endereco: string | null; ativo: boolean }
+type Produto = { id: string; codigo: string; nome: string; descricao: string | null; estoque_atual: number; preco_venda: number; unidade: string }
+type Pedido = { id: string; numero: number; status: string; total: number; data_entrega_prometida: string | null; pedido_cliente: string | null; cliente_id: string; cliente_nome?: string; created_at?: string }
+type Item = { produto_id: string; codigo: string; codigoCliente: string; descricao: string; quantidade: number; valor: number; estoque: number }
+type Shortage = { pedido_item_id: string; produto_id: string; quantidade_pedida: number; estoque_disponivel: number; quantidade_reservada: number; quantidade_faltante: number; fabricado: boolean; pode_gerar_op: boolean }
 
-export default function VendasCentral(){
- const [empresa,setEmpresa]=useState("");const [empresaNome,setEmpresaNome]=useState("Empresa não identificada");const [usuarioNome,setUsuarioNome]=useState("Usuário não identificado");const [dataHora,setDataHora]=useState(new Date());const [view,setView]=useState(new URLSearchParams(location.search).get("view")||"dashboard");const [clientes,setClientes]=useState<Cliente[]>([]);const [produtos,setProdutos]=useState<Produto[]>([]);const [pedidos,setPedidos]=useState<Pedido[]>([]);const [reservasAtivas,setReservasAtivas]=useState(0);const [opsPendentes,setOpsPendentes]=useState(0);const [rncsAtivas,setRncsAtivas]=useState(0);const [error,setError]=useState("");const [busy,setBusy]=useState(false);const [sidebar,setSidebar]=useState(true);
- const load=async()=>{setBusy(true);setError("");try{const e=await supabase.rpc("erp_current_empresa_id");if(e.error||!e.data)throw e.error??new Error("Empresa não identificada.");const id=String(e.data);setEmpresa(id);const authResult=await supabase.auth.getUser();if(authResult.error)throw authResult.error;if(!authResult.data.user)throw new Error("Sessão autenticada não localizada.");const [userResult,companyResult,clientResult,productResult,orderResult,reservationResult,opResult,rncResult]=await Promise.all([supabase.from("erp_usuarios").select("nome,email").eq("auth_user_id",authResult.data.user.id).eq("empresa_id",id).eq("ativo",true).is("deleted_at",null).maybeSingle(),supabase.from("erp_empresas").select("razao_social,nome_fantasia").eq("id",id).maybeSingle(),supabase.from("erp_clientes").select("id,codigo,nome,documento,email,endereco,ativo").eq("empresa_id",id).eq("ativo",true).order("nome"),supabase.from("erp_produtos").select("id,codigo,nome,descricao,estoque_atual,preco_venda,unidade").eq("empresa_id",id).eq("ativo",true).order("codigo"),supabase.from("erp_pedidos_venda").select("id,numero,status,total,data_entrega_prometida,pedido_cliente,cliente_id,erp_clientes(nome)").eq("empresa_id",id).order("numero",{ascending:false}).limit(500),supabase.from("erp_estoque_reservas").select("id",{count:"exact",head:true}).eq("empresa_id",id).eq("status","ATIVA"),supabase.from("erp_ordens_producao").select("id",{count:"exact",head:true}).eq("empresa_id",id).in("status",["pendente","em_producao","planejada","programada"]),supabase.from("erp_rncs").select("id",{count:"exact",head:true}).eq("empresa_id",id).not("status","in","(ENCERRADA,CANCELADA)")]);if(userResult.error)throw userResult.error;if(companyResult.error)throw companyResult.error;if(clientResult.error)throw clientResult.error;if(productResult.error)throw productResult.error;if(orderResult.error)throw orderResult.error;if(reservationResult.error)throw reservationResult.error;if(opResult.error)throw opResult.error;if(rncResult.error)throw rncResult.error;setUsuarioNome(userResult.data?.nome||authResult.data.user?.email||"Usuário não identificado");setEmpresaNome(companyResult.data?.nome_fantasia||companyResult.data?.razao_social||"Empresa não identificada");setReservasAtivas(reservationResult.count??0);setOpsPendentes(opResult.count??0);setRncsAtivas(rncResult.count??0);setClientes((clientResult.data??[]) as Cliente[]);setProdutos((productResult.data??[]) as Produto[]);setPedidos(((orderResult.data??[]) as Array<Pedido&{erp_clientes:{nome:string}|{nome:string}[]|null}>).map(x=>({...x,cliente_nome:Array.isArray(x.erp_clientes)?x.erp_clientes[0]?.nome:x.erp_clientes?.nome})));}catch(e){setError(e instanceof Error?e.message:"Falha ao carregar Vendas.")}finally{setBusy(false)}};
- useEffect(()=>{const timer=window.setInterval(()=>setDataHora(new Date()),1000);return()=>window.clearInterval(timer)},[]);
- useEffect(()=>{void load()},[]);
- const go=(v:string)=>{setView(v);history.replaceState({}, "", "/comercial?view="+v)};
- return <div className="erp-dense erp-vendas min-h-screen flex bg-slate-50 text-slate-900">
- {sidebar&&<aside className="fixed inset-y-0 left-0 z-40 w-[270px] bg-white border-r border-slate-200 p-4 flex flex-col lg:static"><div className="flex items-center justify-center rounded-lg bg-[#123B50] px-3 py-2 text-white"><img src="/logo/sgq-erp.png" className="h-[72px] w-[72px] object-contain rounded-md bg-white p-1" alt="SYNQRA ERP Industrial"/></div><div className="mt-4 space-y-2 border-b border-slate-200 pb-4">
-<button onClick={()=>location.href="/tablet/dashboard"} className="w-full min-h-[44px] rounded-md bg-white border border-blue-200 text-blue-700 font-black flex items-center justify-start px-3 gap-2"><LayoutGrid size={18}/> TABLET</button>
-<button onClick={()=>location.href="/outlook/configuracao"} className="w-full min-h-[44px] rounded-md bg-slate-900 text-white font-black flex items-center justify-start px-3 gap-2"><ShoppingCart size={18}/> OUTLOOK / XML</button>
-<button onClick={()=>location.href="/erp-industrial"} className="w-full min-h-[44px] rounded-md bg-white border border-slate-300 text-slate-800 font-black flex items-center justify-start px-3 gap-2"><PanelLeftOpen size={18}/> VOLTAR AO MENU PRINCIPAL</button>
-<button onClick={async()=>{await supabase.auth.signOut();location.href="/login"}} className="w-full min-h-[44px] rounded-md bg-white border border-rose-200 text-rose-700 font-black flex items-center justify-start px-3 gap-2"><Trash2 size={18}/> SAIR</button>
-</div><div className="mt-5 text-xs font-black tracking-widest text-blue-700">VENDAS</div>{NAV.map(({k,t,I:Icon})=><button key={k} onClick={()=>k==="catalogo"?location.href="/vendas/catalogo-digital":k==="relatorios"?location.href="/vendas/relatorios":go(k)} className={"mt-1 min-h-[50px] rounded-md px-3 flex items-center gap-3 text-left font-bold "+(view===k?"bg-blue-50 text-blue-800":"hover:bg-slate-50")}><Icon size={19}/>{t}</button>)}<div className="mt-auto pt-4 text-[11px] font-bold text-slate-400">ERP INDUSTRIAL • VENDAS</div></aside>}
- <section className="min-w-0 flex-1"><header className="h-[60px] bg-white border-b flex items-center justify-between gap-3 px-4 lg:px-6"><div className="flex min-w-0 items-center gap-3"><button className="lg:hidden min-h-[46px] border border-slate-300 bg-white text-slate-900 rounded-md px-3" onClick={()=>setSidebar(x=>!x)}>{sidebar?<PanelLeftClose/>:<PanelLeftOpen/>}</button><div className="min-w-0"><div className="text-xs font-black tracking-widest text-blue-700">ERP INDUSTRIAL • VENDAS</div><h1 className="truncate text-xl font-black text-slate-950">{({dashboard:"Painel Comercial",pedido:"Novo Pedido",carteira:"Carteira de Pedidos",clientes:"Cadastro Clientes",catalogo:"Catálogo Digital",metas:"Metas e Gráficos",pendentes:"Pedidos Pendentes",relatorios:"Relatórios de Vendas",config:"Configurações Vendas"} as Record<string,string>)[view]||"Vendas"}</h1></div></div><div className="flex shrink-0 flex-wrap items-center justify-end gap-2"><span className="hidden sm:inline-flex min-h-[38px] items-center rounded-md border border-slate-200 bg-slate-50 px-3 text-xs font-bold text-slate-700">Logado como: {usuarioNome}</span><button type="button" onClick={()=>go("pedido")} className="min-h-[46px] rounded-md border border-[#123B50] bg-[#123B50] px-4 font-black text-white shadow-sm hover:bg-blue-800 flex gap-2 items-center"><Plus size={17}/> NOVO PEDIDO</button><button type="button" disabled={busy} onClick={()=>void load()} className="min-h-[46px] rounded-md border border-slate-300 bg-white px-4 font-black text-slate-900 shadow-sm hover:bg-slate-50 disabled:opacity-60 flex gap-2 items-center"><RefreshCw size={17}/> ATUALIZAR</button></div></header><main className="p-4 lg:p-6 max-w-[1600px] mx-auto">{error&&<div className="mb-4 p-4 rounded-md bg-rose-50 border border-rose-200 font-bold text-rose-800">{error}</div>}{view==="pendentes"&&<PedidosPendentes empresa={empresa} clientes={clientes} produtos={produtos}/>} {view==="dashboard"&&<Dashboard pedidos={pedidos} clientes={clientes} produtos={produtos} reservasAtivas={reservasAtivas} opsPendentes={opsPendentes} rncsAtivas={rncsAtivas}/>} {view==="pedido"&&<NovoPedido empresa={empresa} clientes={clientes} produtos={produtos} onDone={()=>{go("carteira");void load()}}/>}{view==="carteira"&&<Carteira pedidos={pedidos}/>} {view==="clientes"&&<VendasClientesPage/>} {view==="metas"&&<Metas empresa={empresa} pedidos={pedidos}/>} {view==="config"&&<Config empresa={empresa}/>}</main></section></div>;
+const brl = (n: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n || 0)
+const fmtDate = (d: string | null | undefined) => d ? new Date(d).toLocaleDateString('pt-BR') : '—'
+const statusConfig = {
+  cotacao: { bg: 'bg-amber-50', text: 'text-amber-900', badge: 'bg-amber-100', icon: '📋', label: 'Cotação' },
+  em_analise: { bg: 'bg-blue-50', text: 'text-blue-900', badge: 'bg-blue-100', icon: '🔍', label: 'Em análise' },
+  necessita_producao: { bg: 'bg-orange-50', text: 'text-orange-900', badge: 'bg-orange-100', icon: '⚙️', label: 'Produção' },
+  parcial: { bg: 'bg-yellow-50', text: 'text-yellow-900', badge: 'bg-yellow-100', icon: '⏳', label: 'Parcial' },
+  reservado: { bg: 'bg-green-50', text: 'text-green-900', badge: 'bg-green-100', icon: '✅', label: 'Reservado' },
+  separado: { bg: 'bg-violet-50', text: 'text-violet-900', badge: 'bg-violet-100', icon: '📦', label: 'Separado' },
+  faturado: { bg: 'bg-emerald-50', text: 'text-emerald-900', badge: 'bg-emerald-100', icon: '🧾', label: 'Faturado' },
+  cancelado: { bg: 'bg-slate-100', text: 'text-slate-900', badge: 'bg-slate-200', icon: '❌', label: 'Cancelado' }
+} as const
+
+export default function VendasCentral() {
+  const [view, setView] = useState<'dashboard' | 'novo' | 'pendentes' | 'carteira' | 'clientes' | 'metas' | 'config'>('dashboard')
+  const [empresa, setEmpresa] = useState('')
+  const [empresaNome, setEmpresaNome] = useState('Empresa não identificada')
+  const [usuarioNome, setUsuarioNome] = useState('Usuário')
+  const [clientes, setClientes] = useState<Cliente[]>([])
+  const [produtos, setProdutos] = useState<Produto[]>([])
+  const [pedidos, setPedidos] = useState<Pedido[]>([])
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+  const [dataHora, setDataHora] = useState(new Date())
+
+  const load = async () => {
+    setBusy(true)
+    setError('')
+    try {
+      const e = await supabase.rpc('erp_current_empresa_id')
+      if (e.error || !e.data) throw e.error ?? new Error('Empresa não identificada.')
+      const id = String(e.data)
+      setEmpresa(id)
+
+      const u = await supabase.auth.getUser()
+      if (u.data.user) {
+        const p = await supabase.from('erp_usuarios').select('nome').eq('auth_user_id', u.data.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
+        if (p.data) setUsuarioNome(p.data.nome)
+      }
+
+      const [em, cl, pr, pd] = await Promise.all([
+        supabase.from('erp_empresas').select('nome_fantasia').eq('id', id).maybeSingle(),
+        supabase.from('erp_clientes').select('id,codigo,nome,documento,email,endereco,ativo').eq('empresa_id', id).eq('ativo', true).order('nome').limit(1000),
+        supabase.from('erp_produtos').select('id,codigo,nome,descricao,estoque_atual,preco_venda,unidade').eq('empresa_id', id).eq('ativo', true).order('codigo').limit(3000),
+        supabase.from('erp_pedidos_venda').select('id,numero,status,total,data_entrega_prometida,pedido_cliente,cliente_id,created_at').eq('empresa_id', id).order('numero', { ascending: false }).limit(300)
+      ])
+
+      if (em.data) setEmpresaNome(String(em.data.nome_fantasia || 'Empresa'))
+      if (cl.error) throw cl.error
+      if (pr.error) throw pr.error
+      if (pd.error) throw pd.error
+
+      const clienteMap = new Map((cl.data || []).map(c => [c.id, c.nome]))
+      setClientes(cl.data || [])
+      setProdutos(pr.data || [])
+      setPedidos((pd.data || []).map(p => ({ ...p, cliente_nome: clienteMap.get(p.cliente_id) || 'Cliente não identificado' })))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erro ao carregar Vendas.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  useEffect(() => {
+    void load()
+    const timer = window.setInterval(() => setDataHora(new Date()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  const stats = useMemo(() => {
+    const total = pedidos.reduce((s, p) => s + (p.total || 0), 0)
+    const abertos = pedidos.filter(p => !['faturado', 'cancelado'].includes(String(p.status || '').toLowerCase())).length
+    const necessidades = pedidos.filter(p => String(p.status || '').toLowerCase() === 'necessita_producao').length
+    return { total, abertos, necessidades, count: pedidos.length }
+  }, [pedidos])
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between gap-4 px-6 py-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-700">ERP INDUSTRIAL • VENDAS</p>
+            <h1 className="mt-1 text-2xl font-black text-slate-900">Painel Comercial</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-sm font-bold text-slate-900">{usuarioNome}</p>
+              <p className="text-xs text-slate-600">{dataHora.toLocaleTimeString('pt-BR')}</p>
+            </div>
+            <button type="button" onClick={() => void load()} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100" aria-label="Recarregar dados">
+              <RefreshCw size={18} className={busy ? 'animate-spin' : ''} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="border-b border-slate-200 bg-white">
+        <div className="flex gap-1 overflow-x-auto px-6">
+          {[
+            { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+            { id: 'novo', label: 'Novo Pedido', icon: Plus },
+            { id: 'pendentes', label: 'Pendentes', icon: Search },
+            { id: 'carteira', label: 'Carteira', icon: TrendingUp },
+            { id: 'clientes', label: 'Clientes', icon: Users },
+            { id: 'metas', label: 'Metas', icon: ShoppingCart },
+            { id: 'config', label: 'Configurações', icon: Settings }
+          ].map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setView(id as any)}
+              className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-bold transition ${
+                view === id ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Icon size={16} />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <main className="px-6 py-6">
+        {error && <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-800"><AlertCircle size={18} /> {error}</div>}
+        {message && <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm font-bold text-emerald-800">{message}</div>}
+
+        {view === 'dashboard' && <Dashboard stats={stats} pedidos={pedidos} />}
+        {view === 'novo' && <NovoPedido empresa={empresa} clientes={clientes} produtos={produtos} onDone={(id) => { setMessage(`Pedido ${id} salvo com sucesso.`); setView('carteira'); void load() }} />}
+        {view === 'pendentes' && <PedidosPendentes pedidos={pedidos} />}
+        {view === 'carteira' && <Carteira pedidos={pedidos} />}
+        {view === 'clientes' && <Clientes empresa={empresa} clientes={clientes} onSaved={() => void load()} />}
+        {view === 'metas' && <Metas />}
+        {view === 'config' && <Config />}
+      </main>
+    </div>
+  )
 }
 
-function Card({t,v,s}:{t:string;v:string;s:string}){return <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"><div className="text-sm font-bold text-slate-600">{t}</div><div className="mt-2 text-2xl font-black">{v}</div><div className="mt-1 text-xs text-slate-500">{s}</div></section>}
-function Dashboard({pedidos,clientes,produtos,reservasAtivas,opsPendentes,rncsAtivas}:{pedidos:Pedido[];clientes:Cliente[];produtos:Produto[];reservasAtivas:number;opsPendentes:number;rncsAtivas:number}){const mes=new Date().toISOString().slice(0,7);const pedidosMes=pedidos.filter(x=>(x.data_entrega_prometida??"").startsWith(mes)&&x.status!=="cancelado");const carteiraMes=pedidosMes.reduce((s,x)=>s+Number(x.total||0),0);const semSaldo=produtos.filter(x=>Number(x.estoque_atual||0)<=0).length;const porCliente=useMemo(()=>{const map=new Map<string,number>();for(const p of pedidosMes){const key=p.cliente_nome||"Sem cliente";map.set(key,Number(map.get(key)||0)+Number(p.total||0))}return [...map.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8).map(([cliente,total])=>({cliente,total}))},[pedidosMes]);return <div className="space-y-5"><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5"><Card t="Carteira no mês" v={brl(carteiraMes)} s={pedidosMes.length+" pedidos com entrega no mês"}/><Card t="Pedidos pendentes" v={String(pedidos.filter(x=>!["faturado","cancelado","concluido"].includes(x.status)).length)} s="Carteira ativa"/><Card t="Reservas ativas" v={String(reservasAtivas)} s="Estoque comprometido"/><Card t="OPs pendentes" v={String(opsPendentes)} s="Necessidade de produção"/><Card t="RNCs ativas" v={String(rncsAtivas)} s="Qualidade em tratamento"/></div><div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]"><section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-black">Valor da carteira por cliente</h2><p className="text-sm text-slate-600">Baseado em pedidos reais; não é faturamento fiscal.</p></div><div className="flex items-center gap-2"><button type="button" onClick={()=>window.print()} className="print:hidden min-h-11 rounded-md border border-slate-300 bg-white px-3 font-black text-slate-900 hover:bg-slate-50">IMPRIMIR PAINEL</button><BarChart3 className="text-blue-700"/></div></div><div className="mt-4 flex h-80 w-full items-center justify-center overflow-hidden rounded-md bg-white px-2">{porCliente.length?<ResponsiveContainer width="100%" height="100%"><BarChart data={porCliente} layout="vertical" margin={{top:8,right:28,left:28,bottom:12}}><CartesianGrid strokeDasharray="3 3"/><XAxis type="number" tickFormatter={v=>brl(Number(v))}/><YAxis type="category" dataKey="cliente" width={150}/><Tooltip formatter={v=>brl(Number(v))}/><Bar dataKey="total" name="Carteira" fill="#2563eb" radius={[0,4,4,0]}/></BarChart></ResponsiveContainer>:<div className="flex h-full items-center justify-center text-slate-600 font-semibold">Nenhum pedido no período.</div>}</div></section><section className="space-y-4"><Card t="Clientes ativos" v={String(clientes.length)} s="Cadastro da empresa"/><Card t="Produtos sem saldo" v={String(semSaldo)} s="Requer análise de estoque"/><section className="rounded-lg border border-amber-200 bg-amber-50 p-5"><div className="flex items-center gap-2 font-black text-amber-900"><TriangleAlert size={19}/> Alertas operacionais</div><ul className="mt-3 space-y-2 text-sm font-semibold text-amber-950"><li className="flex items-center gap-2"><PackageCheck size={16}/> {reservasAtivas} reserva(s) ativa(s)</li><li className="flex items-center gap-2"><TriangleAlert size={16}/> {opsPendentes} OP(s) pendente(s)</li><li className="flex items-center gap-2"><TriangleAlert size={16}/> {rncsAtivas} RNC(s) ativa(s)</li></ul></section></section></div><section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"><h2 className="text-lg font-black">Últimos pedidos</h2><div className="mt-4 overflow-x-auto"><table className="w-full text-sm"><thead><tr className="h-[54px] bg-slate-100 text-left"><th>Nº</th><th>Cliente</th><th>Status</th><th>Entrega</th><th>Total</th></tr></thead><tbody>{pedidos.slice(0,10).map(x=><tr key={x.id} className="h-[54px] border-t"><td>{x.numero}</td><td>{x.cliente_nome||"—"}</td><td>{x.status}</td><td>{x.data_entrega_prometida||"—"}</td><td>{brl(x.total)}</td></tr>)}{!pedidos.length&&<tr><td colSpan={5} className="py-8 text-center text-slate-500">Nenhum pedido cadastrado.</td></tr>}</tbody></table></div></section></div>}
+function Dashboard({ stats, pedidos }: { stats: { total: number; abertos: number; necessidades: number; count: number }; pedidos: Pedido[] }) {
+  const chartData = useMemo(() => {
+    const byStatus: Record<string, number> = {}
+    for (const p of pedidos) {
+      const key = String(p.status || 'desconhecido').toLowerCase()
+      byStatus[key] = (byStatus[key] || 0) + 1
+    }
+    return Object.entries(byStatus).map(([name, value]) => ({ name: statusConfig[name as keyof typeof statusConfig]?.label || name, value }))
+  }, [pedidos])
 
-function NovoPedido({empresa,clientes,produtos,onDone}:{empresa:string;clientes:Cliente[];produtos:Produto[];onDone:(id:string)=>void}){
- const [cliente,setCliente]=useState("");
- const [produto,setProduto]=useState("");
- const [qtd,setQtd]=useState("1");
- const [valor,setValor]=useState("0");
- const [codigoCliente,setCodigoCliente]=useState("");
- const [entrega,setEntrega]=useState("");
- const [pedidoCliente,setPedidoCliente]=useState("");
- const [items,setItems]=useState<Item[]>([]);
- const [shortages,setShortages]=useState<Shortage[]>([]);
- const [savedOrder,setSavedOrder]=useState<{id:string;numero:number}|null>(null);
- const [err,setErr]=useState("");
- const [busy,setBusy]=useState(false);
- const selected=produtos.find(x=>x.id===produto);
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Card icon={<Package size={20} />} title="PEDIDOS" value={String(stats.count)} subtitle="Total no período" color="blue" />
+        <Card icon={<TrendingUp size={20} />} title="VALOR EM ABERTO" value={brl(stats.total)} subtitle="Pedidos em processamento" color="amber" />
+        <Card icon={<AlertCircle size={20} />} title="PENDENTES" value={String(stats.abertos)} subtitle="Aguardando ação" color="orange" />
+        <Card icon={<BarChart3 size={20} />} title="NECESSIDADE PCP" value={String(stats.necessidades)} subtitle="Itens em produção" color="purple" />
+      </div>
 
- const add=()=>{
-   setErr("");
-   if(!cliente){setErr("Selecione o cliente antes de adicionar itens.");return}
-   if(!selected||Number(qtd)<=0){setErr("Produto e quantidade são obrigatórios.");return}
-   setItems(x=>[...x,{produto_id:selected.id,codigo:selected.codigo,codigoCliente,descricao:selected.nome,quantidade:Number(qtd),valor:Number(valor)||selected.preco_venda,estoque:selected.estoque_atual}]);
-   setProduto("");setQtd("1");setValor("0");setCodigoCliente("");
- };
+      <div className="grid gap-6 xl:grid-cols-[1.5fr_0.8fr]">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-sm font-black uppercase tracking-[0.15em] text-slate-700">Pedidos por status</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" angle={-20} textAnchor="end" height={70} />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="value" fill="#2563eb" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
 
- const finish=async()=>{
-   if(!empresa||!cliente||!items.length){setErr("Cliente e itens são obrigatórios.");return}
-   setBusy(true);setErr("");
-   try{
-     const r=await supabase.rpc("erp_criar_pedido_venda_com_analise",{
-       p_cliente_id:cliente,p_desconto:0,
-       p_itens:items.map(x=>({produto_id:x.produto_id,quantidade:x.quantidade,valor_unitario:x.valor,codigo_cliente:x.codigoCliente})),
-       p_data_entrega:entrega||null,p_pedido_cliente:pedidoCliente||null
-     });
-     if(r.error)throw r.error;
-     const result=r.data as {pedido_id:string;numero:number;itens:Shortage[]};
-     const enriched=(result.itens??[]).map(row=>{const p=produtos.find(x=>x.id===row.produto_id);return {...row,codigo:p?.codigo,descricao:p?.nome}});
-     setSavedOrder({id:result.pedido_id,numero:Number(result.numero)});
-     setShortages(enriched.filter(x=>x.quantidade_faltante>0));
-     if(!enriched.some(x=>x.quantidade_faltante>0)) onDone(result.pedido_id);
-   }catch(e){setErr(e instanceof Error?e.message:"Falha ao gravar pedido.")}finally{setBusy(false)}
- };
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-sm font-black uppercase tracking-[0.15em] text-slate-700">Status</h2>
+          <div className="space-y-2">
+            {Object.entries(statusConfig).map(([key, cfg]) => (
+              <div key={key} className={`flex items-center justify-between rounded-lg px-3 py-2 text-xs font-bold ${cfg.badge} ${cfg.text}`}>
+                <span>{cfg.icon} {cfg.label}</span>
+                <span>{pedidos.filter(p => String(p.status || '').toLowerCase() === key).length}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
- const generateOp=async(item:Shortage)=>{
-   setBusy(true);setErr("");
-   try{
-     const r=await supabase.rpc("erp_gerar_op_pedido_item",{p_pedido_item_id:item.pedido_item_id});
-     if(r.error)throw r.error;
-     setShortages(current=>current.filter(x=>x.pedido_item_id!==item.pedido_item_id));
-     if(shortages.length<=1 && savedOrder) onDone(savedOrder.id);
-   }catch(e){setErr(e instanceof Error?e.message:"Não foi possível gerar a OP.")}finally{setBusy(false)}
- };
-
- const cr=clientes.map(x=>({id:x.id,codigo:x.codigo??x.id,nome:x.nome,documento:x.documento,email:x.email}));
- const pr=produtos.map(x=>({id:x.id,codigo:x.codigo,nome:x.nome,descricao:x.descricao,estoque_atual:x.estoque_atual}));
- return <div className="space-y-4">
-   <div className="erp-toolbar rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-     <button type="button" onClick={()=>{setItems([]);setShortages([]);setSavedOrder(null);setErr("")}} className="min-h-10 rounded-md bg-[#123B50] px-4 font-black text-white"><Plus size={16} className="mr-1 inline"/> NOVO</button>
-     <button type="button" onClick={()=>void finish()} disabled={busy||!items.length} className="min-h-10 rounded-md bg-emerald-700 px-4 font-black text-white disabled:opacity-50"><Save size={16} className="mr-1 inline"/> GRAVAR</button>
-     <button type="button" onClick={()=>window.print()} className="min-h-10 rounded-md border border-slate-300 bg-white px-4 font-black text-slate-800">IMPRIMIR</button>
-     <button type="button" onClick={()=>setErr("Use o código + lupa para pesquisar clientes e produtos.")} className="min-h-10 rounded-md border border-slate-300 bg-white px-4 font-black text-slate-800"><Search size={16} className="mr-1 inline"/> PESQUISAR</button>
-   </div>
-   <section className="rounded-lg border bg-white p-4 shadow-sm">
-     <div className="flex flex-wrap justify-between gap-3">
-       <div><h2 className="text-xl font-black">Novo Pedido de Cliente</h2><p className="text-sm text-slate-600">ADD ITEM adiciona linhas ao mesmo pedido. GRAVAR cria o pedido uma única vez e analisa disponibilidade.</p></div>
-       {savedOrder&&<span className="inline-flex h-10 items-center rounded-md bg-blue-50 px-3 text-sm font-black text-blue-900">PEDIDO Nº {String(savedOrder.numero).padStart(6,"0")}</span>}
-       <button onClick={()=>location.href="/outlook/caixa-entrada"} className="min-h-10 rounded-md bg-slate-900 px-4 font-black text-white flex gap-2 items-center"><ShoppingCart size={16}/> IMPORTAR OUTLOOK / XML</button>
-     </div>
-     <div className="mt-4 grid items-end gap-3 md:grid-cols-[150px_160px_132px_1fr]">
-       <EntityCodeLookup compact label="Cliente" value={cliente} records={cr} onChange={setCliente} onSelect={x=>setCliente(x.id)} helper="Código / consulta."/>
-       <label className="grid gap-1 text-sm font-bold">Pedido do cliente<input className="h-10 w-[160px] border rounded-md px-2 text-sm text-slate-900" value={pedidoCliente} onChange={e=>setPedidoCliente(e.target.value)}/></label>
-       <label className="grid gap-1 text-sm font-bold">Entrega<input type="date" className="h-10 w-[132px] border rounded-md px-2 text-sm text-slate-900" value={entrega} onChange={e=>setEntrega(e.target.value)}/></label>
-     </div>
-   </section>
-   <section className="rounded-lg border bg-white p-4 shadow-sm">
-     <div className="grid items-end gap-3 md:grid-cols-[140px_120px_80px_120px_1fr]">
-       <EntityCodeLookup compact label="Produto" value={produto} records={pr} onChange={setProduto} onSelect={x=>{setProduto(x.id);setValor(String(x.preco_venda??0))}}/>
-       <label className="grid gap-1 text-sm font-bold">Cód. cliente<input className="h-10 w-[120px] border rounded-md px-2 text-sm text-slate-900" value={codigoCliente} onChange={e=>setCodigoCliente(e.target.value)}/></label>
-       <label className="grid gap-1 text-sm font-bold">Quantidade<input type="number" className="h-10 w-[80px] border rounded-md px-2 text-sm text-slate-900" value={qtd} onChange={e=>setQtd(e.target.value)}/></label>
-       <label className="grid gap-1 text-sm font-bold">Valor unitário<input type="number" className="h-10 w-[120px] border rounded-md px-2 text-sm text-slate-900" value={valor} onChange={e=>setValor(e.target.value)}/></label>
-       <button type="button" onClick={add} className="min-h-10 rounded-md bg-blue-600 px-5 font-black text-white"><Plus size={16} className="inline"/> ADD ITEM</button>
-     </div>
-     {err&&<div className="mt-3 p-3 bg-rose-50 text-rose-800 font-bold">{err}</div>}
-     <div className="mt-4 overflow-x-auto">
-       <table className="w-full min-w-[900px] text-sm">
-         <thead><tr className="h-[38px] bg-slate-100 text-left"><th>Código</th><th>Descrição</th><th>Qtd.</th><th>Estoque</th><th>Status</th><th>Falta</th><th>Total</th><th></th></tr></thead>
-         <tbody>{items.map((x,i)=>{const falta=Math.max(x.quantidade-x.estoque,0);return <tr key={i} className={"h-[40px] border-t "+(falta?"bg-orange-50":"bg-emerald-50")}><td>{x.codigo}</td><td>{x.descricao}</td><td>{x.quantidade}</td><td>{x.estoque}</td><td>{falta?"🟠 FALTA":"🟢 OK"}</td><td>{falta}</td><td>{brl(x.quantidade*x.valor)}</td><td><button type="button" onClick={()=>setItems(v=>v.filter((_,j)=>j!==i))} className="text-rose-700"><Trash2 size={16}/></button></td></tr>})}{!items.length&&<tr><td colSpan={8} className="py-8 text-center text-slate-500">Nenhum item.</td></tr>}</tbody>
-       </table>
-     </div>
-   </section>
-   {shortages.length>0&&savedOrder&&<div className="fixed inset-0 z-[100] grid place-items-center bg-slate-950/45 p-4">
-     <section role="dialog" aria-modal="true" className="w-full max-w-5xl rounded-xl border border-orange-300 bg-white shadow-2xl">
-       <header className="flex items-center justify-between border-b border-slate-200 p-5"><div><span className="text-xs font-black uppercase text-orange-700">NECESSIDADE DE PRODUÇÃO</span><h2 className="text-xl font-black text-slate-950">Pedido Nº {String(savedOrder.numero).padStart(6,"0")} possui falta de estoque</h2></div><button type="button" onClick={()=>setShortages([])} className="text-slate-500">✕</button></header>
-       <div className="max-h-[65vh] overflow-auto p-5">
-         {shortages.map(item=><article key={item.pedido_item_id} className="mb-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
-           <div className="grid gap-3 md:grid-cols-7 text-sm"><div><b>Produto</b><span className="block">{item.codigo||item.produto_id}</span></div><div><b>Quantidade</b><span className="block">{item.quantidade_pedida}</span></div><div><b>Estoque</b><span className="block">{item.estoque_disponivel}</span></div><div><b>Reserva</b><span className="block">{item.quantidade_reservada}</span></div><div><b>Falta</b><span className="block text-orange-700 font-black">{item.quantidade_faltante}</span></div><div><b>Engenharia/BOM</b><span className="block">Consultar ficha ativa</span></div><div><b>Roteiro</b><span className="block">Consultar operações ativas</span></div></div>
-           <div className="mt-3 flex flex-wrap gap-2"><button type="button" disabled={busy||!item.pode_gerar_op} onClick={()=>void generateOp(item)} className="min-h-10 rounded-md bg-orange-600 px-4 font-black text-white disabled:opacity-50">{item.pode_gerar_op?"GERAR OP":"SEM OP — COMPRAS"}</button><button type="button" onClick={()=>setShortages(current=>current.filter(x=>x.pedido_item_id!==item.pedido_item_id))} className="min-h-10 rounded-md border border-slate-300 bg-white px-4 font-black text-slate-800">CONTINUAR</button></div>
-         </article>)}
-       </div>
-       <footer className="flex flex-wrap justify-end gap-2 border-t border-slate-200 p-4"><button type="button" onClick={()=>{setShortages([]);if(savedOrder)onDone(savedOrder.id)}} className="min-h-10 rounded-md border border-slate-300 bg-white px-4 font-black">FECHAR E CONTINUAR</button></footer>
-     </section>
-   </div>}
-   <div className="flex justify-end"><button disabled={!items.length||busy} onClick={()=>void finish()} className="min-h-10 rounded-md bg-emerald-700 px-6 text-white font-black"><Save size={17} className="inline"/> GRAVAR PEDIDO</button></div>
- </div>
-}
-type PendingItem={id:string;pedido_id:string;produto_id:string;descricao:string;quantidade:number}
-type PendingReservation={pedido_item_id:string;quantidade:number}
-type PendingOp={pedido_venda_id:string;produto_id:string;quantidade:number;status:string}
-
-function PedidosPendentes({empresa,clientes,produtos}:{empresa:string;clientes:Cliente[];produtos:Produto[]}){
- const [rows,setRows]=useState<Array<PendingItem & {numero:number;cliente:string;entrega:string;estoque:number;reserva:number;disponibilidade:number;producao:number;status:string}>>([]);
- const [q,setQ]=useState("");const [status,setStatus]=useState("TODOS");const [busy,setBusy]=useState(false);const [error,setError]=useState("");
- const load=async()=>{
-  if(!empresa)return;setBusy(true);setError("");
-  try{
-   const [o,i,r,op]=await Promise.all([
-    supabase.from("erp_pedidos_venda").select("id,numero,cliente_id,data_entrega_prometida,status").eq("empresa_id",empresa).order("numero",{ascending:false}).limit(1000),
-    supabase.from("erp_pedidos_venda_itens").select("id,pedido_id,produto_id,descricao,quantidade").eq("empresa_id",empresa).limit(5000),
-    supabase.from("erp_estoque_reservas").select("pedido_item_id,quantidade").eq("empresa_id",empresa).eq("status","ATIVA").limit(5000),
-    supabase.from("erp_ordens_producao").select("pedido_venda_id,produto_id,quantidade,status").eq("empresa_id",empresa).limit(5000)
-   ]);
-   for(const x of [o,i,r,op])if(x.error)throw x.error;
-   const orders=(o.data??[]) as Array<{id:string;numero:number;cliente_id:string;data_entrega_prometida:string|null;status:string}>;
-   const items=(i.data??[]) as PendingItem[];const reservations=(r.data??[]) as PendingReservation[];const ops=(op.data??[]) as PendingOp[];
-   const clientMap=new Map(clientes.map(x=>[x.id,x.nome]));const productMap=new Map(produtos.map(x=>[x.id,x]));const orderMap=new Map(orders.map(x=>[x.id,x]));
-   const reservationMap=new Map<string,number>();for(const x of reservations)reservationMap.set(x.pedido_item_id,(reservationMap.get(x.pedido_item_id)??0)+Number(x.quantidade||0));
-   const productionMap=new Map<string,number>();for(const x of ops)if(!["cancelada","CANCELADA","concluida","CONCLUIDA"].includes(x.status)){const k=x.pedido_venda_id+"|"+x.produto_id;productionMap.set(k,(productionMap.get(k)??0)+Number(x.quantidade||0))}
-   const mapped=items.map(item=>{const order=orderMap.get(item.pedido_id);const product=productMap.get(item.produto_id);const reserva=reservationMap.get(item.id)??0;const disponibilidade=Math.max(Number(product?.estoque_atual??0)-reserva,0);const producao=productionMap.get(item.pedido_id+"|"+item.produto_id)??0;const falta=Math.max(Number(item.quantidade||0)-reserva,0);const base=String(order?.status??"").toLowerCase();const derived=base.includes("cancel")?"CANCELADO":base.includes("fatur")?"FATURADO":base.includes("concl")?"ENTREGUE":falta>0&&producao>0?"EM PRODUÇÃO":(order?.data_entrega_prometida&&new Date(order.data_entrega_prometida)<new Date()&&falta>0)?"ATRASADO":"PENDENTE";return {...item,numero:Number(order?.numero??0),cliente:order?.cliente_id ? (clientMap.get(order.cliente_id) ?? "—") : "—",entrega:order?.data_entrega_prometida??"—",estoque:Number(product?.estoque_atual??0),reserva,disponibilidade,producao,status:derived}});
-   setRows(mapped);
-  }catch(e){setError(e instanceof Error?e.message:"Falha ao carregar Pedidos Pendentes.")}finally{setBusy(false)}
- };
- useEffect(()=>{void load()},[empresa]);
- const filtered=rows.filter(x=>!q||String(x.numero).includes(q)||x.cliente.toLowerCase().includes(q.toLowerCase())||Boolean(produtos.find(p=>p.id===x.produto_id)?.codigo?.toLowerCase().includes(q.toLowerCase()))).filter(x=>status==="TODOS"||x.status===status);
- return <section className="space-y-4">
-   <div className="erp-toolbar rounded-lg border border-slate-200 bg-white p-3 shadow-sm"><input className="h-10 w-64 rounded-md border border-slate-300 px-3 text-sm" placeholder="Pedido, cliente ou produto" value={q} onChange={e=>setQ(e.target.value)}/><select className="h-10 rounded-md border border-slate-300 px-3 text-sm font-bold" value={status} onChange={e=>setStatus(e.target.value)}><option>TODOS</option><option>PENDENTE</option><option>EM PRODUÇÃO</option><option>ATRASADO</option><option>ENTREGUE</option><option>FATURADO</option><option>CANCELADO</option></select><button type="button" onClick={()=>void load()} className="h-10 rounded-md border border-slate-300 bg-white px-4 text-sm font-black"><RefreshCw size={15} className="mr-1 inline"/> ATUALIZAR</button><button type="button" onClick={()=>window.print()} className="h-10 rounded-md border border-slate-300 bg-white px-4 text-sm font-black">IMPRIMIR</button></div>
-   {error&&<div className="rounded-md border border-rose-200 bg-rose-50 p-3 text-sm font-bold text-rose-800">{error}</div>}
-   <section className="overflow-auto rounded-lg border border-slate-200 bg-white shadow-sm"><table className="erp-grid min-w-[1450px] w-full text-[13px]"><thead className="bg-slate-100 text-left font-black"><tr><th>Pedido</th><th>Cliente</th><th>Código</th><th>Produto</th><th>Descrição</th><th>Qtd</th><th>Un.</th><th>Entrega</th><th>Estoque</th><th>Disponibilidade</th><th>Reserva</th><th>Produção</th><th>PCP</th><th>Status</th><th>Saída NF</th></tr></thead><tbody>{busy?<tr><td colSpan={15} className="p-8 text-center">Consultando dados reais...</td></tr>:filtered.map(x=><tr key={x.id} className="border-t border-slate-100"><td>{String(x.numero).padStart(6,"0")}</td><td>{x.cliente}</td><td>{produtos.find(p=>p.id===x.produto_id)?.codigo??"—"}</td><td>{produtos.find(p=>p.id===x.produto_id)?.nome??x.produto_id}</td><td>{x.descricao}</td><td>{x.quantidade}</td><td>{produtos.find(p=>p.id===x.produto_id)?.unidade??"—"}</td><td>{x.entrega}</td><td>{x.estoque}</td><td>{x.disponibilidade}</td><td>{x.reserva}</td><td>{x.producao}</td><td>{x.producao>0?"VINCULADO":"—"}</td><td>{x.status}</td><td>—</td></tr>)}{!busy&&!filtered.length&&<tr><td colSpan={15} className="p-8 text-center font-semibold text-slate-500">Nenhum pedido encontrado com os filtros atuais.</td></tr>}</tbody></table></section>
- </section>
+      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-4 text-sm font-black uppercase tracking-[0.15em] text-slate-700">Últimos pedidos</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b-2 border-slate-200 bg-slate-50">
+                <th className="h-12 px-4 text-left text-xs font-black uppercase text-slate-700">Pedido</th>
+                <th className="h-12 px-4 text-left text-xs font-black uppercase text-slate-700">Cliente</th>
+                <th className="h-12 px-4 text-center text-xs font-black uppercase text-slate-700">Data</th>
+                <th className="h-12 px-4 text-right text-xs font-black uppercase text-slate-700">Valor</th>
+                <th className="h-12 px-4 text-center text-xs font-black uppercase text-slate-700">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pedidos.slice(0, 8).map((p) => (
+                <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50">
+                  <td className="px-4 py-3 font-bold">PED-{String(p.numero).padStart(6, '0')}</td>
+                  <td className="px-4 py-3">{p.cliente_nome}</td>
+                  <td className="px-4 py-3 text-center text-xs text-slate-600">{fmtDate(p.created_at)}</td>
+                  <td className="px-4 py-3 text-right font-semibold">{brl(p.total)}</td>
+                  <td className="px-4 py-3 text-center">
+                    <span className={`inline-flex rounded-full px-2 py-1 text-[10px] font-black ${statusConfig[String(p.status || '').toLowerCase() as keyof typeof statusConfig]?.badge || 'bg-slate-100'}`}>
+                      {statusConfig[String(p.status || '').toLowerCase() as keyof typeof statusConfig]?.icon || '•'} {statusConfig[String(p.status || '').toLowerCase() as keyof typeof statusConfig]?.label || p.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
 }
 
-function Carteira({pedidos}:{pedidos:Pedido[]}){const [q,setQ]=useState("");const rows=pedidos.filter(x=>!q||String(x.numero).includes(q)||(x.cliente_nome??"").toLowerCase().includes(q.toLowerCase()));return <section className="rounded-lg border bg-white p-5 shadow-sm"><div className="flex flex-wrap justify-between gap-3"><h2 className="text-xl font-black">Carteira de Pedidos</h2><input className="h-10 w-[200px] border rounded-md px-2 text-sm text-slate-900" placeholder="Número ou cliente" value={q} onChange={e=>setQ(e.target.value)}/></div><div className="mt-4 overflow-x-auto"><table className="w-full min-w-[800px] text-sm"><thead><tr className="h-[54px] bg-slate-100 text-left"><th>Nº</th><th>Pedido cliente</th><th>Cliente</th><th>Entrega</th><th>Status</th><th>Total</th></tr></thead><tbody>{rows.map(x=><tr key={x.id} className="h-[54px] border-t"><td>{String(x.numero).padStart(6,"0")}</td><td>{x.pedido_cliente||"—"}</td><td>{x.cliente_nome||"—"}</td><td>{x.data_entrega_prometida||"—"}</td><td>{x.status}</td><td>{brl(x.total)}</td></tr>)}</tbody></table></div></section>}
+function Card({ icon, title, value, subtitle, color }: { icon: ReactNode; title: string; value: string; subtitle: string; color: 'blue' | 'amber' | 'orange' | 'purple' }) {
+  const styles = {
+    blue: 'border-blue-200 bg-blue-50 text-blue-900',
+    amber: 'border-amber-200 bg-amber-50 text-amber-900',
+    orange: 'border-orange-200 bg-orange-50 text-orange-900',
+    purple: 'border-violet-200 bg-violet-50 text-violet-900'
+  }
 
-function Clientes({empresa,clientes,produtos,onSaved}:{empresa:string;clientes:Cliente[];produtos:Produto[];onSaved:()=>void}){const [edit,setEdit]=useState<Cliente|null>(null);const [codigo,setCodigo]=useState("");const [nome,setNome]=useState("");const [documento,setDocumento]=useState("");const [email,setEmail]=useState("");const [endereco,setEndereco]=useState("");const [produto,setProduto]=useState("");const [codigoCliente,setCodigoCliente]=useState("");const [msg,setMsg]=useState("");const limpar=()=>{setEdit(null);setCodigo("");setNome("");setDocumento("");setEmail("");setEndereco("");setProduto("");setCodigoCliente("");setMsg("")};const open=(c:Cliente)=>{setEdit(c);setCodigo(c.codigo??"");setNome(c.nome);setDocumento(c.documento??"");setEmail(c.email??"");setEndereco(c.endereco??"");setMsg("")};const save=async()=>{if(!nome.trim()){setMsg("Nome obrigatório.");return}const payload={empresa_id:empresa,codigo:codigo.trim()||null,nome:nome.trim(),documento:documento.trim()||null,email:email.trim()||null,endereco:endereco.trim()||null,ativo:true};const r=edit?await supabase.from("erp_clientes").update(payload).eq("id",edit.id).eq("empresa_id",empresa):await supabase.from("erp_clientes").insert(payload);if(r.error){setMsg(r.error.message);return}setMsg("Cliente salvo.");limpar();onSaved()};const link=async()=>{if(!edit||!produto||!codigoCliente.trim())return;const p=produtos.find(x=>x.id===produto);if(!p)return;const r=await supabase.from("erp_vendas_depara_produtos").upsert({empresa_id:empresa,cliente_id:edit.id,codigo_interno:p.codigo,codigo_cliente:codigoCliente.trim()},{onConflict:"empresa_id,cliente_id,codigo_cliente"});setMsg(r.error?r.error.message:"DE-PARA salvo.")};return <div className="space-y-5"><section className="rounded-lg border bg-white p-5 shadow-sm"><div className="flex justify-between"><h2 className="text-xl font-black">Cadastro de Clientes</h2><button onClick={limpar} className="min-h-[48px] rounded-md bg-blue-600 px-4 font-black text-white"><Plus size={17} className="inline"/> NOVO</button></div><div className="mt-4 overflow-x-auto"><table className="w-full text-sm"><thead><tr className="h-[54px] bg-slate-100 text-left"><th>Código</th><th>Cliente</th><th>Documento</th><th>E-mail</th><th></th></tr></thead><tbody>{clientes.map(c=><tr key={c.id} className="h-[54px] border-t"><td>{c.codigo||"—"}</td><td>{c.nome}</td><td>{c.documento||"—"}</td><td>{c.email||"—"}</td><td><button onClick={()=>open(c)} className="font-black text-blue-700"><Search size={17}/></button></td></tr>)}</tbody></table></div></section><section className="rounded-lg border bg-white p-5 shadow-sm"><h2 className="font-black">{edit?"Editar cliente":"Novo cliente"}</h2><div className="mt-4 grid gap-4 md:grid-cols-2"><label className="grid gap-1 font-bold">Código<input className="min-h-[46px] border rounded-md px-3 text-slate-900" value={codigo} onChange={e=>setCodigo(e.target.value)}/></label><label className="grid gap-1 font-bold">Nome<input className="min-h-[46px] border rounded-md px-3 text-slate-900" value={nome} onChange={e=>setNome(e.target.value)}/></label><label className="grid gap-1 font-bold">Documento<input className="min-h-[46px] border rounded-md px-3 text-slate-900" value={documento} onChange={e=>setDocumento(e.target.value)}/></label><label className="grid gap-1 font-bold">E-mail<input className="min-h-[46px] border rounded-md px-3 text-slate-900" value={email} onChange={e=>setEmail(e.target.value)}/></label><label className="grid gap-1 font-bold md:col-span-2">Endereço<input className="min-h-[46px] border rounded-md px-3 text-slate-900" value={endereco} onChange={e=>setEndereco(e.target.value)}/></label></div><button onClick={()=>void save()} className="mt-5 min-h-[50px] rounded-md bg-blue-600 px-5 font-black text-white"><Save size={17} className="inline"/> SALVAR CLIENTE</button>{edit&&<div className="mt-6 border-t pt-5"><h3 className="font-black">DE-PARA</h3><div className="mt-3 grid gap-3 md:grid-cols-3"><EntityCodeLookup label="Produto interno" value={produto} records={produtos.map(p=>({id:p.id,codigo:p.codigo,nome:p.nome,descricao:p.descricao,estoque_atual:p.estoque_atual}))} onChange={setProduto} onSelect={x=>setProduto(x.id)}/><input className="min-h-[46px] border rounded-md px-3 text-slate-900" placeholder="Código do cliente" value={codigoCliente} onChange={e=>setCodigoCliente(e.target.value)}/><button onClick={()=>void link()} className="min-h-[46px] rounded-md bg-blue-600 text-white font-black">VINCULAR</button></div></div>}{msg&&<p className="mt-3 font-bold">{msg}</p>}</section></div>}
-function Metas({empresa,pedidos}:{empresa:string;pedidos:Pedido[]}){const [mes,setMes]=useState(new Date().toISOString().slice(0,7));const [meta,setMeta]=useState("0");const [message,setMessage]=useState("");const atual=pedidos.filter(p=>(p.data_entrega_prometida??"").startsWith(mes)).reduce((s,p)=>s+p.total,0);const save=async()=>{const r=await supabase.from("erp_vendas_metas").upsert({empresa_id:empresa,competencia:mes+"-01",meta_faturamento:Number(meta)||0,meta_pedidos:0},{onConflict:"empresa_id,competencia"});setMessage(r.error?r.error.message:"Meta salva.")};return <div className="grid gap-5 lg:grid-cols-2"><section className="rounded-lg border bg-white p-5 shadow-sm"><h2 className="text-xl font-black">Metas e Gráficos</h2><label className="mt-5 grid gap-1 font-bold">Competência<input type="month" className="min-h-[46px] border rounded-md px-3" value={mes} onChange={e=>setMes(e.target.value)}/></label><label className="mt-4 grid gap-1 font-bold">Meta de faturamento<input type="number" className="min-h-[46px] border rounded-md px-3" value={meta} onChange={e=>setMeta(e.target.value)}/></label><button onClick={()=>void save()} className="mt-4 min-h-[50px] rounded-md bg-blue-600 px-5 font-black text-white"><Save size={17} className="inline"/> SALVAR META</button>{message&&<p>{message}</p>}</section><section className="rounded-lg border bg-white p-5 shadow-sm"><h2 className="font-black">Realizado</h2><div className="mt-3 text-3xl font-black">{brl(atual)}</div><div className="mt-4 h-4 overflow-hidden rounded-full bg-slate-200"><div className={(() => { const pct = Number(meta) > 0 ? Math.min(100, atual / Number(meta) * 100) : 0; return `h-4 rounded-full bg-blue-600 ${pct <= 0 ? "w-0" : pct < 25 ? "w-1/4" : pct < 50 ? "w-1/2" : pct < 75 ? "w-3/4" : "w-full"}` })()} /></div></section></div>}
+  return (
+    <div className={`rounded-xl border p-5 shadow-sm ${styles[color]}`}>
+      <div className="flex items-center justify-between">
+        <div className="text-lg">{icon}</div>
+      </div>
+      <p className="mt-3 text-[11px] font-black uppercase tracking-[0.15em] opacity-80">{title}</p>
+      <p className="mt-1 text-2xl font-black">{value}</p>
+      <p className="mt-1 text-xs opacity-80">{subtitle}</p>
+    </div>
+  )
+}
 
-function Config({empresa}:{empresa:string}){const [f,setF]=useState({dias_validade_orcamento:15,tolerancia_variacao_quantidade_percentual:0,desconto_maximo_percentual:0,margem_contribuicao_minima_percentual:0,bloquear_preco_abaixo_tabela:false,permitir_venda_sem_estoque_mto:false,reservar_estoque_ao_aprovar:false,gerar_op_automaticamente:false,exigir_pedido_cliente:false,bloquear_cliente_titulo_vencido:false,bloquear_excesso_limite_credito:false});const [msg,setMsg]=useState("");const [busy,setBusy]=useState(false);useEffect(()=>{if(!empresa)return;void supabase.from("erp_vendas_configuracoes").select("*").eq("empresa_id",empresa).maybeSingle().then(r=>{if(!r.error&&r.data)setF(x=>({...x,...r.data}))})},[empresa]);const setNum=(k:keyof typeof f,v:string)=>setF(x=>({...x,[k]:Number(v)}));const save=async()=>{setBusy(true);const r=await supabase.from("erp_vendas_configuracoes").upsert({empresa_id:empresa,...f},{onConflict:"empresa_id"});setMsg(r.error?r.error.message:"Configurações de vendas salvas.");setBusy(false)};const Toggle=({k,label,help}:{k:keyof typeof f;label:string;help:string})=><label className="flex min-h-[58px] items-center gap-3 rounded-md border border-slate-200 bg-white px-3 py-2"><input type="checkbox" className="h-4 w-4 accent-[#123B50]" checked={Boolean(f[k])} onChange={e=>setF(x=>({...x,[k]:e.target.checked}))}/><span><span className="block text-sm font-bold text-slate-900">{label}</span><span className="block text-xs text-slate-500">{help}</span></span></label>;const Num=({k,label,suffix}:{k:keyof typeof f;label:string;suffix:string})=><label className="grid gap-1 text-sm font-bold text-slate-800">{label}<span className="flex items-center gap-2"><input type="number" min="0" step="0.01" className="h-9 w-[110px] rounded-md border border-slate-300 bg-white px-2 text-right font-bold text-slate-900 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]" value={Number(f[k])} onChange={e=>setNum(k,e.target.value)}/><span className="text-xs font-black text-slate-500">{suffix}</span></span></label>;return <div className="max-w-[1100px] space-y-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-black text-slate-950">Configurações de Vendas</h2><p className="text-sm text-slate-600">Parâmetros comerciais que governam orçamento, preço, estoque, PCP, crédito e exigências do pedido.</p></div><button disabled={busy} onClick={()=>void save()} className="min-h-[42px] rounded-md bg-[#123B50] px-4 font-black text-white shadow-sm disabled:opacity-60"><Save size={16} className="mr-2 inline"/>SALVAR CONFIGURAÇÕES</button></div><section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"><h3 className="font-black text-[#123B50]">1. Regras de orçamento e validade</h3><div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><Num k="dias_validade_orcamento" label="Validade padrão do orçamento" suffix="dias"/><Num k="tolerancia_variacao_quantidade_percentual" label="Tolerância de variação de quantidade" suffix="%"/></div></section><section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"><h3 className="font-black text-[#123B50]">2. Política de preço, margem e desconto</h3><div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><Num k="desconto_maximo_percentual" label="Desconto máximo sem aprovação" suffix="%"/><Num k="margem_contribuicao_minima_percentual" label="Margem de contribuição mínima" suffix="%"/></div><div className="mt-4 grid gap-3 md:grid-cols-2"><Toggle k="bloquear_preco_abaixo_tabela" label="Bloquear venda com preço abaixo da tabela" help="Impede exceções de preço abaixo da tabela de venda configurada."/></div></section><section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"><h3 className="font-black text-[#123B50]">3. Estoque e integração com PCP</h3><div className="mt-4 grid gap-3 md:grid-cols-2"><Toggle k="permitir_venda_sem_estoque_mto" label="Permitir venda sem estoque — MTO" help="Permite pedido sob encomenda quando não há produto acabado disponível."/><Toggle k="reservar_estoque_ao_aprovar" label="Reservar estoque automaticamente ao aprovar pedido" help="Compromete a quantidade disponível para o pedido aprovado."/><Toggle k="gerar_op_automaticamente" label="Gerar Ordem de Produção automaticamente" help="Solicita ao PCP a produção da necessidade do pedido conforme as regras do produto."/></div></section><section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"><h3 className="font-black text-[#123B50]">4. Crédito e exigências fiscais/comerciais</h3><div className="mt-4 grid gap-3 md:grid-cols-2"><Toggle k="exigir_pedido_cliente" label="Exigir número do Pedido do Cliente (PO/XML)" help="Torna a referência do pedido do cliente obrigatória antes da aprovação."/><Toggle k="bloquear_cliente_titulo_vencido" label="Bloquear cliente com título vencido" help="Consulta o Financeiro antes de permitir a aprovação do pedido."/><Toggle k="bloquear_excesso_limite_credito" label="Bloquear pedido ao exceder limite de crédito" help="Aplica o limite de crédito cadastrado para o cliente e empresa."/></div></section>{msg&&<div className={`rounded-md border p-3 text-sm font-bold ${msg.includes("salvas")?"border-emerald-200 bg-emerald-50 text-emerald-800":"border-rose-200 bg-rose-50 text-rose-800"}`}>{msg}</div>}</div>}
+function NovoPedido({ empresa, clientes, produtos, onDone }: { empresa: string; clientes: Cliente[]; produtos: Produto[]; onDone: (id: string) => void }) {
+  const [items, setItems] = useState<Item[]>([])
+  const [shortages, setShortages] = useState<Shortage[]>([])
+  const [savedOrder, setSavedOrder] = useState<{ id: string; numero: number } | null>(null)
+  const [err, setErr] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [form, setForm] = useState({ cliente: '', produto: '', qtd: '1', valor: '0', codigoCliente: '', entrega: '', pedidoCliente: '' })
+
+  const selected = produtos.find(x => x.id === form.produto)
+  const total = items.reduce((s, i) => s + i.quantidade * i.valor, 0)
+
+  const add = () => {
+    setErr('')
+    if (!form.cliente) { setErr('Selecione o cliente antes de adicionar itens.'); return }
+    if (!selected || Number(form.qtd) <= 0) { setErr('Produto e quantidade são obrigatórios.'); return }
+    setItems(x => [...x, { produto_id: selected.id, codigo: selected.codigo, codigoCliente: form.codigoCliente, descricao: selected.nome, quantidade: Number(form.qtd), valor: Number(form.valor) || selected.preco_venda, estoque: selected.estoque_atual }])
+    setForm({ ...form, produto: '', qtd: '1', valor: '0', codigoCliente: '' })
+  }
+
+  const finish = async () => {
+    if (!empresa || !form.cliente || !items.length) { setErr('Cliente e itens são obrigatórios.'); return }
+    setBusy(true)
+    setErr('')
+    try {
+      const r = await supabase.rpc('erp_criar_pedido_venda_com_analise', {
+        p_cliente_id: form.cliente,
+        p_desconto: 0,
+        p_itens: items.map(x => ({ produto_id: x.produto_id, quantidade: x.quantidade, valor_unitario: x.valor, codigo_cliente: x.codigoCliente })),
+        p_data_entrega: form.entrega || null,
+        p_pedido_cliente: form.pedidoCliente || null
+      })
+      if (r.error) throw r.error
+      const result = r.data as { pedido_id: string; numero: number; itens: Shortage[] }
+      const faltantes = (result.itens || []).filter(i => Number(i.quantidade_faltante) > 0)
+      setSavedOrder({ id: result.pedido_id, numero: Number(result.numero) })
+      setShortages(faltantes)
+      if (!faltantes.length) onDone(result.pedido_id)
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Falha ao gravar pedido.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.15em] text-blue-700">1. Cabeçalho</p>
+            <h2 className="mt-1 text-lg font-black text-slate-900">Dados gerais do pedido</h2>
+          </div>
+          <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-black text-blue-900">Total: {brl(total)}</div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-4">
+          <div className="md:col-span-2">
+            <div className="mb-2 text-xs font-black uppercase tracking-wide text-slate-700">Cliente</div>
+            <EntityCodeLookup
+              label="Cliente"
+              value={form.cliente}
+              records={clientes.map(c => ({ id: c.id, codigo: c.codigo || c.id, nome: c.nome, documento: c.documento }))}
+              onChange={(v) => setForm({ ...form, cliente: v })}
+              onSelect={(record) => setForm({ ...form, cliente: record.id })}
+            />
+          </div>
+          <div>
+            <div className="mb-2 text-xs font-black uppercase tracking-wide text-slate-700">Pedido do cliente</div>
+            <input type="text" value={form.pedidoCliente} onChange={e => setForm({ ...form, pedidoCliente: e.target.value })} className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm" />
+          </div>
+          <div>
+            <div className="mb-2 text-xs font-black uppercase tracking-wide text-slate-700">Entrega</div>
+            <input type="date" value={form.entrega} onChange={e => setForm({ ...form, entrega: e.target.value })} className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm" />
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.15em] text-blue-700">2. Itens</p>
+            <h2 className="mt-1 text-lg font-black text-slate-900">Grid de produtos e disponibilidade</h2>
+          </div>
+        </div>
+
+        {err && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-800">{err}</div>}
+
+        <div className="grid gap-3 md:grid-cols-6">
+          <div className="md:col-span-2">
+            <div className="mb-2 text-xs font-black uppercase tracking-wide text-slate-700">Produto</div>
+            <EntityCodeLookup
+              label="Produto"
+              value={form.produto}
+              records={produtos.map(p => ({ id: p.id, codigo: p.codigo, nome: p.nome, estoque_atual: p.estoque_atual, preco_venda: p.preco_venda }))}
+              onChange={(v) => setForm({ ...form, produto: v })}
+              onSelect={(record) => setForm({ ...form, produto: record.id, valor: String(record.preco_venda || 0) })}
+            />
+          </div>
+          <div>
+            <div className="mb-2 text-xs font-black uppercase tracking-wide text-slate-700">Cód. Cliente</div>
+            <input type="text" value={form.codigoCliente} onChange={e => setForm({ ...form, codigoCliente: e.target.value })} className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm" />
+          </div>
+          <div>
+            <div className="mb-2 text-xs font-black uppercase tracking-wide text-slate-700">Quantidade</div>
+            <input type="number" min="1" value={form.qtd} onChange={e => setForm({ ...form, qtd: e.target.value })} className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm" />
+          </div>
+          <div>
+            <div className="mb-2 text-xs font-black uppercase tracking-wide text-slate-700">Valor</div>
+            <input type="number" step="0.01" value={form.valor} onChange={e => setForm({ ...form, valor: e.target.value })} className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm" />
+          </div>
+          <div className="flex items-end">
+            <button type="button" onClick={add} className="h-10 w-full rounded-lg bg-blue-600 text-sm font-black text-white hover:bg-blue-700">
+              <span className="inline-flex items-center gap-2"><Plus size={16} /> Adicionar</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b-2 border-slate-200 bg-slate-50">
+                <th className="h-12 px-4 text-left text-xs font-black uppercase text-slate-700">Código</th>
+                <th className="h-12 px-4 text-left text-xs font-black uppercase text-slate-700">Descrição</th>
+                <th className="h-12 px-4 text-center text-xs font-black uppercase text-slate-700">Qtd</th>
+                <th className="h-12 px-4 text-center text-xs font-black uppercase text-slate-700">Estoque</th>
+                <th className="h-12 px-4 text-right text-xs font-black uppercase text-slate-700">Unit</th>
+                <th className="h-12 px-4 text-right text-xs font-black uppercase text-slate-700">Total</th>
+                <th className="h-12 px-4 text-center text-xs font-black uppercase text-slate-700">Ação</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((i, idx) => (
+                <tr key={`${i.produto_id}-${idx}`} className="border-b border-slate-100 hover:bg-slate-50">
+                  <td className="px-4 py-3 font-bold">{i.codigo}</td>
+                  <td className="px-4 py-3">{i.descricao}</td>
+                  <td className="px-4 py-3 text-center">{i.quantidade}</td>
+                  <td className="px-4 py-3 text-center">{i.estoque}</td>
+                  <td className="px-4 py-3 text-right">{brl(i.valor)}</td>
+                  <td className="px-4 py-3 text-right font-bold">{brl(i.quantidade * i.valor)}</td>
+                  <td className="px-4 py-3 text-center">
+                    <button type="button" onClick={() => setItems(items.filter((_, index) => index !== idx))} className="text-red-600 hover:text-red-800">
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-3">
+        <button type="button" onClick={() => setItems([])} className="h-10 rounded-lg border border-slate-300 bg-slate-100 px-5 text-sm font-bold text-slate-800">Limpar</button>
+        <button type="button" onClick={() => void finish()} disabled={busy || !items.length} className="h-10 rounded-lg bg-green-600 px-5 text-sm font-black text-white hover:bg-green-700 disabled:opacity-50">
+          <span className="inline-flex items-center gap-2"><Save size={16} /> Salvar pedido</span>
+        </button>
+      </div>
+
+      {shortages.length > 0 && savedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-2xl rounded-xl border border-orange-200 bg-white p-6 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-black">Necessidade de produção</h3>
+              <button type="button" onClick={() => setShortages([])} className="text-slate-600"><X size={18} /></button>
+            </div>
+            <div className="space-y-3">
+              {shortages.map((s) => (
+                <div key={s.pedido_item_id} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="font-bold">Produto {s.produto_id}</p>
+                      <p className="text-xs text-slate-600">Falta: {s.quantidade_faltante} unidades</p>
+                    </div>
+                    <button type="button" onClick={async () => { try { await supabase.rpc('erp_gerar_op_pedido_item', { p_pedido_item_id: s.pedido_item_id }); setShortages(c => c.filter(x => x.pedido_item_id !== s.pedido_item_id)); } catch (e) { setErr(e instanceof Error ? e.message : 'Erro ao gerar OP.'); } }} className="h-8 rounded-lg bg-orange-600 px-3 text-xs font-black text-white hover:bg-orange-700">Gerar OP</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button type="button" onClick={() => { setShortages([]); onDone(savedOrder.id) }} className="h-10 rounded-lg bg-blue-600 px-5 text-sm font-black text-white hover:bg-blue-700">Continuar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function PedidosPendentes({ pedidos }: { pedidos: Pedido[] }) {
+  const [query, setQuery] = useState('')
+  const filtered = pedidos.filter(p => !query || String(p.numero).includes(query) || (p.cliente_nome || '').toLowerCase().includes(query.toLowerCase()))
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex gap-3">
+          <input type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Filtrar pedido ou cliente..." className="h-10 flex-1 rounded-lg border border-slate-300 px-3 text-sm" />
+          <button type="button" className="h-10 rounded-lg bg-blue-600 px-4 text-sm font-black text-white hover:bg-blue-700">Buscar</button>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b-2 border-slate-200 bg-slate-50">
+              <th className="h-12 px-4 text-left text-xs font-black uppercase text-slate-700">Pedido</th>
+              <th className="h-12 px-4 text-left text-xs font-black uppercase text-slate-700">Cliente</th>
+              <th className="h-12 px-4 text-center text-xs font-black uppercase text-slate-700">Entrega</th>
+              <th className="h-12 px-4 text-right text-xs font-black uppercase text-slate-700">Total</th>
+              <th className="h-12 px-4 text-center text-xs font-black uppercase text-slate-700">Status</th>
+              <th className="h-12 px-4 text-center text-xs font-black uppercase text-slate-700">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((p) => (
+              <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50">
+                <td className="px-4 py-3 font-bold">PED-{String(p.numero).padStart(6, '0')}</td>
+                <td className="px-4 py-3">{p.cliente_nome}</td>
+                <td className="px-4 py-3 text-center text-xs text-slate-600">{fmtDate(p.data_entrega_prometida)}</td>
+                <td className="px-4 py-3 text-right font-semibold">{brl(p.total)}</td>
+                <td className="px-4 py-3 text-center">
+                  <span className={`inline-flex rounded-full px-2 py-1 text-[10px] font-black ${statusConfig[String(p.status || '').toLowerCase() as keyof typeof statusConfig]?.badge || 'bg-slate-100'}`}>
+                    {statusConfig[String(p.status || '').toLowerCase() as keyof typeof statusConfig]?.icon || '•'} {statusConfig[String(p.status || '').toLowerCase() as keyof typeof statusConfig]?.label || p.status}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <div className="flex justify-center gap-2">
+                    <button type="button" className="rounded-md border border-blue-200 bg-blue-50 p-1.5 text-blue-700 hover:bg-blue-100" aria-label="Visualizar pedido"><Eye size={16} /></button>
+                    <button type="button" className="rounded-md border border-amber-200 bg-amber-50 p-1.5 text-amber-700 hover:bg-amber-100" aria-label="Editar pedido"><Pencil size={16} /></button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function Carteira({ pedidos }: { pedidos: Pedido[] }) {
+  const [query, setQuery] = useState('')
+  const filtered = pedidos.filter(p => !query || String(p.numero).includes(query) || (p.cliente_nome || '').toLowerCase().includes(query.toLowerCase()))
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex gap-3">
+          <input type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Filtrar carteira..." className="h-10 flex-1 rounded-lg border border-slate-300 px-3 text-sm" />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b-2 border-slate-200 bg-slate-50">
+              <th className="h-12 px-4 text-left text-xs font-black uppercase text-slate-700">Pedido</th>
+              <th className="h-12 px-4 text-left text-xs font-black uppercase text-slate-700">Cliente</th>
+              <th className="h-12 px-4 text-center text-xs font-black uppercase text-slate-700">Data</th>
+              <th className="h-12 px-4 text-right text-xs font-black uppercase text-slate-700">Valor</th>
+              <th className="h-12 px-4 text-center text-xs font-black uppercase text-slate-700">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((p) => (
+              <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50">
+                <td className="px-4 py-3 font-bold">PED-{String(p.numero).padStart(6, '0')}</td>
+                <td className="px-4 py-3">{p.cliente_nome}</td>
+                <td className="px-4 py-3 text-center text-xs text-slate-600">{fmtDate(p.created_at)}</td>
+                <td className="px-4 py-3 text-right font-semibold">{brl(p.total)}</td>
+                <td className="px-4 py-3 text-center">
+                  <span className={`inline-flex rounded-full px-2 py-1 text-[10px] font-black ${statusConfig[String(p.status || '').toLowerCase() as keyof typeof statusConfig]?.badge || 'bg-slate-100'}`}>
+                    {statusConfig[String(p.status || '').toLowerCase() as keyof typeof statusConfig]?.icon || '•'} {statusConfig[String(p.status || '').toLowerCase() as keyof typeof statusConfig]?.label || p.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function Clientes({ empresa, clientes, onSaved }: { empresa: string; clientes: Cliente[]; onSaved: () => void }) {
+  const [query, setQuery] = useState('')
+  const [open, setOpen] = useState(false)
+  const [form, setForm] = useState({ codigo: '', nome: '', documento: '', email: '', telefone: '', endereco: '' })
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const filtered = clientes.filter(c => !query || c.nome.toLowerCase().includes(query.toLowerCase()) || String(c.codigo || '').includes(query))
+
+  const save = async () => {
+    if (!form.nome.trim()) { setError('Nome é obrigatório.'); return }
+    setBusy(true)
+    try {
+      await supabase.from('erp_clientes').insert({
+        empresa_id: empresa,
+        codigo: form.codigo || null,
+        nome: form.nome,
+        documento: form.documento || null,
+        email: form.email || null,
+        telefone: form.telefone || null,
+        endereco: form.endereco || null,
+        ativo: true
+      })
+      setForm({ codigo: '', nome: '', documento: '', email: '', telefone: '', endereco: '' })
+      setOpen(false)
+      setError('')
+      onSaved()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Não foi possível salvar o cliente.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex gap-3">
+          <input type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar cliente..." className="h-10 flex-1 rounded-lg border border-slate-300 px-3 text-sm" />
+          <button type="button" onClick={() => setOpen(true)} className="h-10 rounded-lg bg-green-600 px-4 text-sm font-black text-white hover:bg-green-700">Novo</button>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b-2 border-slate-200 bg-slate-50">
+              <th className="h-12 px-4 text-left text-xs font-black uppercase text-slate-700">Código</th>
+              <th className="h-12 px-4 text-left text-xs font-black uppercase text-slate-700">Nome</th>
+              <th className="h-12 px-4 text-left text-xs font-black uppercase text-slate-700">Documento</th>
+              <th className="h-12 px-4 text-left text-xs font-black uppercase text-slate-700">Email</th>
+              <th className="h-12 px-4 text-center text-xs font-black uppercase text-slate-700">Ativo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((c) => (
+              <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50">
+                <td className="px-4 py-3 font-bold">{c.codigo || '—'}</td>
+                <td className="px-4 py-3">{c.nome}</td>
+                <td className="px-4 py-3">{c.documento || '—'}</td>
+                <td className="px-4 py-3">{c.email || '—'}</td>
+                <td className="px-4 py-3 text-center">{c.ativo ? '✓' : '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-black">Novo cliente</h2>
+              <button type="button" onClick={() => setOpen(false)} className="text-slate-600"><X size={18} /></button>
+            </div>
+            {error && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-800">{error}</div>}
+            <div className="grid gap-4 md:grid-cols-2">
+              <input type="text" value={form.codigo} onChange={e => setForm({ ...form, codigo: e.target.value })} placeholder="Código" className="h-10 rounded-lg border border-slate-300 px-3 text-sm" />
+              <input type="text" value={form.nome} onChange={e => setForm({ ...form, nome: e.target.value })} placeholder="Nome *" className="h-10 rounded-lg border border-slate-300 px-3 text-sm" />
+              <input type="text" value={form.documento} onChange={e => setForm({ ...form, documento: e.target.value })} placeholder="Documento" className="h-10 rounded-lg border border-slate-300 px-3 text-sm" />
+              <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="E-mail" className="h-10 rounded-lg border border-slate-300 px-3 text-sm" />
+              <input type="text" value={form.telefone} onChange={e => setForm({ ...form, telefone: e.target.value })} placeholder="Telefone" className="h-10 rounded-lg border border-slate-300 px-3 text-sm md:col-span-2" />
+              <input type="text" value={form.endereco} onChange={e => setForm({ ...form, endereco: e.target.value })} placeholder="Endereço" className="h-10 rounded-lg border border-slate-300 px-3 text-sm md:col-span-2" />
+            </div>
+            <div className="mt-4 flex justify-end gap-3">
+              <button type="button" onClick={() => setOpen(false)} className="h-10 rounded-lg bg-slate-200 px-4 text-sm font-bold text-slate-800">Cancelar</button>
+              <button type="button" onClick={() => void save()} disabled={busy} className="h-10 rounded-lg bg-green-600 px-4 text-sm font-black text-white hover:bg-green-700 disabled:opacity-50">
+                <span className="inline-flex items-center gap-2"><Save size={16} /> Salvar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function Metas() {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 className="text-lg font-black">Metas comerciais</h2>
+      <p className="mt-2 text-sm text-slate-600">Módulo em desenvolvimento para metas e acompanhamento por vendedor.</p>
+    </div>
+  )
+}
+
+function Config() {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 className="text-lg font-black">Configurações de Vendas</h2>
+      <p className="mt-2 text-sm text-slate-600">Configurações do módulo disponíveis ao finalizar a padronização de the flow ERP.</p>
+    </div>
+  )
+}
