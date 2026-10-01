@@ -62,6 +62,7 @@ const VendasAnaliseCustos = lazyPage(() => import('./pages/VendasAnaliseCustos')
 const VendasDashboardGraficos = lazyPage(() => import('./pages/VendasDashboardGraficos'), 'VendasDashboardGraficos')
 const VendasMetas = lazyPage(() => import('./pages/VendasMetas'), 'VendasMetas')
 const VendasRelatorios = lazyPage(() => import('./pages/VendasRelatorios'), 'VendasRelatorios')
+const VendasConfiguracoes = lazyPage(() => import('./pages/VendasConfiguracoes'), 'VendasConfiguracoes')
 const VendasCarteira = lazyPage(() => import('./pages/VendasCarteira'), 'VendasCarteira')
 const CentralCustosIndustrial = lazyPage(() => import('./pages/CentralCustosIndustrial'), 'CentralCustosIndustrial')
 const CadastroEmpresa = lazyPage(() => import('./pages/CadastroEmpresa'), 'CadastroEmpresa')
@@ -341,6 +342,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/dashboard-graficos" element={<VendasDashboardGraficos />} />
       <Route path="/vendas/metas" element={<VendasMetas />} />
       <Route path="/vendas/relatorios" element={<VendasRelatorios />} />
+      <Route path="/vendas/configuracoes" element={<VendasConfiguracoes />} />
       <Route path="/pcp" element={<PCPIndustrial />} />
       <Route path="/pcp/ordens" element={<PCPIndustrial />} />
       <Route path="/pcp/demanda" element={<PCPIndustrial />} />
