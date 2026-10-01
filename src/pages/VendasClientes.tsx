@@ -54,10 +54,12 @@ type Form = {
   estado: string
   tipo_cliente: string
   desconto: string
+  tabela_preco_id: string
   ativo: boolean
 }
 
 type Product = LookupRecord & { descricao?: string | null }
+type PriceTable = { id: string; codigo: string; nome: string }
 type DePara = { id: string; cliente_id: string; produto_id: string; codigo_cliente: string; dimensoes: string | null; canal: string | null; molde: string | null }
 
 const empty = (): Form => ({
@@ -83,6 +85,7 @@ const empty = (): Form => ({
   estado: '',
   tipo_cliente: 'PADRAO',
   desconto: '0',
+  tabela_preco_id: '',
   ativo: true,
 })
 
@@ -123,6 +126,7 @@ export default function VendasClientes() {
   const [empresa, setEmpresa] = useState('')
   const [rows, setRows] = useState<Client[]>([])
   const [products, setProducts] = useState<Product[]>([])
+  const [priceTables, setPriceTables] = useState<PriceTable[]>([])
   const [mappings, setMappings] = useState<DePara[]>([])
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState<string | null>(null)
@@ -148,17 +152,20 @@ export default function VendasClientes() {
       const empresaId = String(company.data)
       setEmpresa(empresaId)
 
-      const [clients, productsResult, mappingsResult] = await Promise.all([
+      const [clients, productsResult, mappingsResult, priceTablesResult] = await Promise.all([
         supabase.from('erp_clientes').select('id,codigo,nome,nome_fantasia,documento,inscricao_estadual,inscricao_municipal,tipo_pessoa,regime_tributario,contato_nome,email,email_nfe,telefone,whatsapp,cep,endereco,numero,complemento,bairro,cidade,estado,tipo_cliente,tabela_preco_id,desconto_padrao_percentual,ativo').eq('empresa_id', empresaId).order('nome'),
         supabase.from('erp_produtos').select('id,codigo,nome,descricao,estoque_atual').eq('empresa_id', empresaId).eq('ativo', true).order('codigo').limit(3000),
         supabase.from('erp_cliente_produto_de_para').select('id,cliente_id,produto_id,codigo_cliente,dimensoes,canal,molde,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('codigo_cliente'),
+        supabase.from('erp_tabelas_preco').select('id,codigo,nome').eq('empresa_id', empresaId).eq('ativo', true).order('nome'),
       ])
       if (clients.error) throw clients.error
       if (productsResult.error) throw productsResult.error
       if (mappingsResult.error) throw mappingsResult.error
+      if (priceTablesResult.error) throw priceTablesResult.error
       setRows((clients.data ?? []) as Client[])
       setProducts((productsResult.data ?? []) as Product[])
       setMappings((mappingsResult.data ?? []) as DePara[])
+      setPriceTables((priceTablesResult.data ?? []) as PriceTable[])
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar clientes.')
     } finally {
@@ -209,6 +216,7 @@ export default function VendasClientes() {
       cidade: client.cidade ?? '',
       estado: client.estado ?? '',
       tipo_cliente: client.tipo_cliente ?? 'PADRAO',
+      tabela_preco_id: client.tabela_preco_id ?? '',
       desconto: String(client.desconto_padrao_percentual ?? 0),
       ativo: client.ativo,
     })
@@ -311,6 +319,7 @@ export default function VendasClientes() {
         cidade: form.cidade.trim() || null,
         estado: form.estado.trim().toUpperCase() || null,
         tipo_cliente: form.tipo_cliente.trim() || 'PADRAO',
+        tabela_preco_id: form.tabela_preco_id || null,
         desconto_padrao_percentual: Number(form.desconto) || 0,
         ativo: form.ativo,
       }
@@ -446,7 +455,7 @@ export default function VendasClientes() {
 
             {tab === 'endereco' && <div className="space-y-4"><div className="grid gap-4 md:grid-cols-[150px_1fr_130px]"><label className="grid gap-1 text-xs font-black">CEP<input maxLength={9} value={form.cep} onChange={event => setForm({...form, cep: maskCep(event.target.value)})} onBlur={() => void lookupCep()} className={shortInput}/></label><label className="grid gap-1 text-xs font-black">LOGRADOURO / RUA<input value={form.endereco} onChange={event => setForm({...form, endereco: event.target.value})} className={baseInput}/></label><label className="grid gap-1 text-xs font-black">NÚMERO<input value={form.numero} onChange={event => setForm({...form, numero: event.target.value})} className={shortInput}/></label></div><div className="grid gap-4 md:grid-cols-[1fr_1fr_150px_80px]"><label className="grid gap-1 text-xs font-black">BAIRRO<input value={form.bairro} onChange={event => setForm({...form, bairro: event.target.value})} className={baseInput}/></label><label className="grid gap-1 text-xs font-black">CIDADE<input value={form.cidade} onChange={event => setForm({...form, cidade: event.target.value})} className={baseInput}/></label><label className="grid gap-1 text-xs font-black">COMPLEMENTO<input value={form.complemento} onChange={event => setForm({...form, complemento: event.target.value})} className={baseInput}/></label><label className="grid gap-1 text-xs font-black">UF<input maxLength={2} value={form.estado} onChange={event => setForm({...form, estado: event.target.value.toUpperCase()})} className={shortInput}/></label></div><div className="rounded-md border border-sky-100 bg-sky-50 p-4 text-sm font-semibold text-sky-900"><MapPin size={17} className="mr-2 inline"/>Ao informar o CEP, o sistema tenta preencher rua, bairro, cidade e UF. Confira antes de salvar.</div></div>}
 
-            {tab === 'comercial' && <div className="grid gap-4 md:grid-cols-3"><label className="grid gap-1 text-xs font-black">TIPO DE CLIENTE<input value={form.tipo_cliente} onChange={event => setForm({...form, tipo_cliente: event.target.value})} className={baseInput}/></label><label className="grid gap-1 text-xs font-black">DESCONTO PADRÃO (%)<input type="number" min="0" max="100" step="0.01" value={form.desconto} onChange={event => setForm({...form, desconto: event.target.value})} className={baseInput}/></label><label className="flex h-11 items-center gap-3 self-end rounded-md border border-slate-300 px-3 text-sm font-black"><input type="checkbox" checked={form.ativo} onChange={event => setForm({...form, ativo: event.target.checked})} className="h-5 w-5"/> CLIENTE ATIVO</label><div className="md:col-span-3 rounded-md border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-700"><Building2 size={17} className="mr-2 inline"/>A tabela de preços já existente continua vinculada ao cliente. Não vou criar campos financeiros que não tenham estrutura real no ERP.</div></div>}
+            {tab === 'comercial' && <div className="grid gap-4 md:grid-cols-3"><label className="grid gap-1 text-xs font-black">TIPO DE CLIENTE<input value={form.tipo_cliente} onChange={event => setForm({...form, tipo_cliente: event.target.value})} className={baseInput}/></label><label className="grid gap-1 text-xs font-black">TABELA DE PREÇO<select value={form.tabela_preco_id} onChange={event => setForm({...form, tabela_preco_id: event.target.value})} className={baseInput}><option value="">Preço padrão do produto</option>{priceTables.map(table => <option key={table.id} value={table.id}>{table.codigo} — {table.nome}</option>)}</select></label><label className="grid gap-1 text-xs font-black">DESCONTO PADRÃO (%)<input type="number" min="0" max="100" step="0.01" value={form.desconto} onChange={event => setForm({...form, desconto: event.target.value})} className={baseInput}/></label><label className="flex h-11 items-center gap-3 self-end rounded-md border border-slate-300 px-3 text-sm font-black"><input type="checkbox" checked={form.ativo} onChange={event => setForm({...form, ativo: event.target.checked})} className="h-5 w-5"/> CLIENTE ATIVO</label><div className="md:col-span-3 rounded-md border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-700"><Building2 size={17} className="mr-2 inline"/>A tabela de preços define o valor comercial das peças para este cliente. Ao gerar um pedido, o preço do item será buscado primeiro nesta tabela; somente sem tabela/valor cadastrado será usado o preço padrão do produto.</div></div>}
 
             {tab === 'depara' && <div><div className="rounded-md border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-700"><UserRound size={17} className="mr-2 inline"/>Use esta seção para vincular o código que o cliente usa ao produto interno do ERP.</div><p className="mt-4 text-sm font-semibold text-slate-600">O cadastro de De/Para continua utilizando a estrutura real já existente no ERP.</p></div>}
           </div>
