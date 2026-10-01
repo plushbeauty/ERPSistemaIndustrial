@@ -29,6 +29,7 @@ import './styles/module-overview.css'
 import './styles/erp-ui-pass-2026.css'
 import './styles/industrial-plans.css'
 import './styles/erp-design-system-2026.css'
+import './styles/form-system-2026.css'
 
 import IndustrialLoginDirect from './IndustrialLoginDirect'
 
@@ -77,7 +78,6 @@ const PlanosIndustrial = lazyPage(() => import('./pages/PlanosIndustrial'), 'Pla
 const SolicitacaoCompra = lazyPage(() => import('./pages/SolicitacaoCompra'), 'SolicitacaoCompra')
 const TesteERP = lazyPage(() => import('./pages/TesteERP'), 'TesteERP')
 const UsuariosAdmin = lazyPage(() => import('./pages/UsuariosAdmin'), 'UsuariosAdmin')
-const ConfiguracoesADMPage = lazyPage(() => import('./pages/configuracoes/ConfiguracoesADM'), 'ConfiguracoesADMPage')
 const DocumentosQualidadeControle = lazyPage(() => import('./pages/DocumentosQualidadeControle'), 'DocumentosQualidadeControle')
 const RecebimentoMateriais = lazyPage(() => import('./pages/RecebimentoMateriais'), 'RecebimentoMateriais')
 const ManualUsuario = lazyPage(() => import('./pages/ManualUsuario'), 'ManualUsuario')
@@ -128,8 +128,8 @@ const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspec
 const MoldesFerramentaria = lazyPage(() => import('./pages/MoldesFerramentaria'), 'MoldesFerramentaria')
 const OperacaoIndustrial = lazyPage(() => import('./pages/OperacaoIndustrial'), 'OperacaoIndustrial')
 
-type ERPProfile = { empresa_id: string | null; is_master: boolean; nivel_admin?: number; perfil?: string; nome?: string }
-type AccessResult = { ok: boolean; master: boolean; reason: string; profile: ERPProfile | null }
+type ERPProfile = { empresa_id: string | null; is_master: boolean; nivel_admin?: number; perfil?: string; nome?: string; must_change_password?: boolean }
+type AccessResult = { ok: boolean; master: boolean; adminAccess: boolean; reason: string; profile: ERPProfile | null }
 
 class Boundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null }
@@ -162,8 +162,8 @@ function MasterOnly({ children, allowed }: { children: ReactNode; allowed: boole
     return (
       <div className="error-screen">
         <div className="error-screen-card">
-          <strong>Acesso restrito ao Master.</strong>
-          <p>Esta área administrativa exige um perfil Master válido.</p>
+          <strong>Acesso administrativo não autorizado.</strong>
+          <p>Esta área exige uma permissão administrativa ativa na empresa vinculada.</p>
           <button className="primary" type="button" onClick={() => window.location.replace('/comercial')}>
             Voltar ao ERP
           </button>
@@ -188,6 +188,23 @@ function LoadingSkeleton({ label = 'Carregando SYSNQRA ERP & SGQ INDUSTRIAL…' 
   )
 }
 
+function ForcedPasswordChange() {
+  const [temporaryPassword, setTemporaryPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [message, setMessage] = useState('')
+  const [busy, setBusy] = useState(false)
+  const submit = async () => {
+    if (newPassword.length < 8) return setMessage('A nova senha deve ter pelo menos 8 caracteres.')
+    setBusy(true)
+    setMessage('')
+    const { data, error } = await supabase.functions.invoke('erp-user-admin', { body: { action: 'change_my_password', currentPassword: temporaryPassword, newPassword } })
+    if (error || !data?.ok) { setMessage(data?.error || error?.message || 'Não foi possível trocar a senha.'); setBusy(false); return }
+    await supabase.auth.refreshSession()
+    window.location.replace('/comercial')
+  }
+  return <main className="loading-screen"><section className="loading-skeleton-card" style={{ width: 'min(460px, calc(100vw - 32px))', padding: 24 }}><h1 style={{ marginTop: 0 }}>Troque sua senha provisória</h1><p>O administrador da empresa redefiniu seu acesso. Defina uma senha pessoal para continuar.</p><label style={{ display: 'grid', gap: 6, margin: '14px 0' }}>Senha provisória<input autoComplete="current-password" type="password" value={temporaryPassword} onChange={event => setTemporaryPassword(event.target.value)} /></label><label style={{ display: 'grid', gap: 6, margin: '14px 0' }}>Nova senha<input autoComplete="new-password" type="password" value={newPassword} onChange={event => setNewPassword(event.target.value)} /></label>{message && <p role="alert">{message}</p>}<button type="button" className="primary" onClick={() => void submit()} disabled={busy || !temporaryPassword || !newPassword}>{busy ? 'Salvando…' : 'Salvar senha e entrar'}</button><button type="button" onClick={() => void supabase.auth.signOut()}>Sair</button></section></main>
+}
+
 function safeReturnTo(value: string | null): string {
   if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/login')) return '/comercial'
   return value
@@ -195,12 +212,12 @@ function safeReturnTo(value: string | null): string {
 
 async function validarAcessoERP(session: Session | null): Promise<AccessResult> {
   if (!supabaseConfigurado || !session?.user) {
-    return { ok: false, master: false, reason: 'Sessão de autenticação inválida.', profile: null }
+    return { ok: false, master: false, adminAccess: false, reason: 'Sessão de autenticação inválida.', profile: null }
   }
 
   const { data: profile, error: profileError } = await supabase
     .from('erp_usuarios')
-    .select('id, auth_user_id, empresa_id, perfil, nivel_admin, is_master, ativo, deleted_at')
+    .select('id, auth_user_id, empresa_id, perfil, nivel_admin, is_master, ativo, deleted_at, must_change_password')
     .eq('auth_user_id', session.user.id)
     .eq('ativo', true)
     .is('deleted_at', null)
@@ -209,16 +226,16 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
   if (profileError) throw profileError
 
   if (!profile || profile.auth_user_id !== session.user.id) {
-    return { ok: false, master: false, reason: 'Usuário autenticado sem perfil ERP ativo.', profile: null }
+    return { ok: false, master: false, adminAccess: false, reason: 'Usuário autenticado sem perfil ERP ativo.', profile: null }
   }
 
   const role = String(profile.perfil ?? '').trim().toUpperCase()
   const master = Boolean(profile.is_master) && Number(profile.nivel_admin ?? 0) >= 100 && role === 'MASTER' && profile.empresa_id === null
 
-  if (master) return { ok: true, master: true, reason: '', profile }
+  if (master) return { ok: true, master: true, adminAccess: true, reason: '', profile }
 
   if (!profile.empresa_id) {
-    return { ok: false, master: false, reason: 'Usuário autenticado sem empresa vinculada.', profile }
+    return { ok: false, master: false, adminAccess: false, reason: 'Usuário autenticado sem empresa vinculada.', profile }
   }
 
   const { data: empresa, error: empresaError } = await supabase
@@ -229,17 +246,14 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
     .maybeSingle()
 
   if (empresaError) throw empresaError
-  if (!empresa?.ativo) return { ok: false, master: false, reason: 'Empresa ERP inativa ou inexistente.', profile }
-
-  return { ok: true, master: false, reason: '', profile }
+  if (!empresa?.ativo) return { ok: false, master: false, adminAccess: false, reason: 'Empresa ERP inativa ou inexistente.', profile }
+  const { data: adminAccess, error: permissionError } = await supabase.rpc('erp_has_permission', { p_modulo: 'usuarios', p_acao: 'ver' })
+  if (permissionError) return { ok: true, master: false, adminAccess: false, reason: '', profile }
+  return { ok: true, master: false, adminAccess: adminAccess === true, reason: '', profile }
 }
 
 // Router master industrial v7: verified JSX boundary.
 export default function AppEntryV2() {
-  const routeLocation = useLocation()
-  if (routeLocation.pathname === '/configuracoes-adm' || routeLocation.pathname.startsWith('/configuracoes-adm/')) {
-    return <Boundary><Suspense fallback={<LoadingSkeleton label="Carregando demonstração visual de Configurações ADM…" />}><ConfiguracoesADMPage /></Suspense></Boundary>
-  }
   return <AppIndustrialAuthenticated />
 }
 
@@ -265,7 +279,7 @@ function AppIndustrialAuthenticated() {
         const access = await validarAcessoERP(nextSession)
         if (active) setStatusAcesso(access)
       } catch {
-        if (active) setStatusAcesso({ ok: false, master: false, reason: 'Erro interno de checagem de acesso.', profile: null })
+        if (active) setStatusAcesso({ ok: false, master: false, adminAccess: false, reason: 'Erro interno de checagem de acesso.', profile: null })
       }
     }
 
@@ -299,17 +313,6 @@ function AppIndustrialAuthenticated() {
     </Routes>
   )
 
-  // DEMO VISUAL ISOLADA: Configurações ADM não depende de Supabase/Auth nesta fase.
-  if (location.pathname === '/configuracoes-adm' || location.pathname.startsWith('/configuracoes-adm/')) {
-    return (
-      <Boundary>
-        <Suspense fallback={<LoadingSkeleton label="Carregando demonstração visual de Configurações ADM…" />}>
-          <ConfiguracoesADMPage />
-        </Suspense>
-      </Boundary>
-    )
-  }
-
   if (!session) {
     return <Boundary><Suspense fallback={<LoadingSkeleton />}>{publicRoutes}</Suspense></Boundary>
   }
@@ -333,6 +336,8 @@ function AppIndustrialAuthenticated() {
       </Boundary>
     )
   }
+
+  if (statusAcesso.profile?.must_change_password) return <Boundary><ForcedPasswordChange /></Boundary>
 
   const protectedRoutes = (
     <Routes>
@@ -428,9 +433,9 @@ function AppIndustrialAuthenticated() {
       <Route path="/cadastro-empresa" element={<CadastroEmpresa />} />
       <Route path="/planos" element={<PlanosIndustrial />} />
       <Route path="/teste-erp" element={<TesteERP />} />
-      <Route path="/usuarios-admin" element={<UsuariosAdmin />} />
-      <Route path="/usuarios" element={<UsuariosAdmin />} />
-      <Route path="/configuracoes-adm/*" element={<ConfiguracoesADMPage />} />
+      <Route path="/usuarios-admin" element={<MasterOnly allowed={statusAcesso.adminAccess}><UsuariosAdmin /></MasterOnly>} />
+      <Route path="/usuarios" element={<MasterOnly allowed={statusAcesso.adminAccess}><UsuariosAdmin /></MasterOnly>} />
+      <Route path="/configuracoes-adm/*" element={<Navigate to="/usuarios" replace />} />
       <Route path="/documentos-qualidade" element={<DocumentosQualidadeControle />} />
       <Route path="/recebimento-materiais" element={<RecebimentoMateriais />} />
       <Route path="/manual-usuario" element={<ManualUsuario />} />
@@ -456,7 +461,7 @@ function AppIndustrialAuthenticated() {
   return (
     <Boundary>
       <Suspense fallback={<LoadingSkeleton />}>
-        {protectedRoutes}
+        <div className="erp-operational-pages">{protectedRoutes}</div>
       </Suspense>
     </Boundary>
   )

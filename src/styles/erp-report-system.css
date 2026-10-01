@@ -1,0 +1,150 @@
+/* Compact, printable reporting patterns built on the ERP's existing palette. */
+.erp-operational-pages {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 14px;
+  color: #17333f;
+}
+
+.erp-operational-pages :is(h1, h2, h3) { line-height: 1.2; }
+.erp-operational-pages h1 { font-size: 24px; }
+.erp-operational-pages h2 { font-size: 18px; }
+.erp-operational-pages h3 { font-size: 15px; }
+
+.erp-report-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  width: min(100%, 1600px);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 20px 24px 28px;
+}
+
+.erp-report-header,
+.erp-report-heading,
+.erp-report-actions,
+.erp-report-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.erp-report-header {
+  min-width: 0;
+  padding: 4px 0 14px;
+  border-bottom: 1px solid #cfe1e7;
+}
+
+.erp-report-heading { flex: 1; align-items: flex-end; }
+.erp-report-heading h1 { margin: 4px 0; color: #123b50; font-weight: 800; }
+.erp-report-heading p { margin: 0; color: #536b76; font-size: 13px; }
+.erp-report-breadcrumb { color: #2d8db8; font-size: 11px; font-weight: 800; letter-spacing: .08em; }
+.erp-report-actions { justify-content: flex-end; flex-wrap: wrap; }
+
+.erp-report-button {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #b8cbd3;
+  border-radius: 2px;
+  padding: 0 11px;
+  background: #fff;
+  color: #17333f;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.erp-report-button--primary { border-color: #123b50; background: #123b50; color: #fff; }
+.erp-report-button:hover { border-color: #2d8db8; }
+.erp-report-button--primary:hover { background: #0f3244; }
+
+.erp-report-filter-grid {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: end;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #cfe1e7;
+  border-radius: 2px;
+  background: #fff;
+}
+
+.erp-report-filter-grid .erp-form-field > label { min-height: 16px; color: #334e59; }
+.erp-report-filter-grid .erp-form-field input,
+.erp-report-filter-grid .erp-form-field select { min-height: 36px; }
+.erp-report-search-label { display: inline-flex; align-items: center; gap: 6px; }
+.erp-report-content { display: grid; gap: 14px; min-width: 0; }
+
+.erp-report-card,
+.erp-chart-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #cfe1e7;
+  border-radius: 2px;
+  background: #fff;
+}
+
+.erp-report-card-head {
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-bottom: 1px solid #dceaf0;
+}
+
+.erp-report-card-head h2 { margin: 0 0 3px; color: #123b50; font-weight: 800; }
+.erp-report-card-head p { margin: 0; color: #536b76; font-size: 13px; }
+.erp-report-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.erp-report-table thead { background: #eef7fa; color: #355462; text-align: left; }
+.erp-report-table th { padding: 9px 12px; font-size: 11px; font-weight: 800; }
+.erp-report-table td { padding: 8px 12px; border-top: 1px solid #e1ebef; color: #17333f; }
+.erp-report-table tbody tr { height: 38px; }
+.erp-report-table tbody tr:hover { background: #f7fbfc; }
+.erp-report-table :is(th, td):last-child { text-align: right; font-variant-numeric: tabular-nums; }
+
+.erp-chart-card { padding: 16px; }
+.erp-chart-card h2 { margin: 0 0 4px; color: #123b50; font-weight: 800; }
+.erp-chart-card p { color: #536b76; }
+.erp-chart-frame { width: 100%; min-width: 0; min-height: 300px; }
+.erp-chart-frame--wide { height: 400px; }
+.erp-chart-empty { display: grid; min-height: 240px; place-items: center; color: #536b76; text-align: center; }
+
+.erp-report-page :focus-visible,
+.erp-report-filter-grid :focus-visible { outline: 2px solid #2d8db8; outline-offset: 2px; }
+
+@media (max-width: 1000px) {
+  .erp-report-page { padding: 16px; }
+  .erp-report-header { align-items: flex-start; flex-direction: column; }
+  .erp-report-heading { align-items: flex-start; }
+  .erp-report-filter-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .erp-report-filter-grid .erp-w-1,
+  .erp-report-filter-grid .erp-w-2,
+  .erp-report-filter-grid .erp-w-3 { grid-column: span 3; }
+  .erp-report-filter-grid .erp-w-4,
+  .erp-report-filter-grid .erp-w-5,
+  .erp-report-filter-grid .erp-w-6,
+  .erp-report-filter-grid .erp-w-7,
+  .erp-report-filter-grid .erp-w-8,
+  .erp-report-filter-grid .erp-w-9,
+  .erp-report-filter-grid .erp-w-10,
+  .erp-report-filter-grid .erp-w-11,
+  .erp-report-filter-grid .erp-w-12 { grid-column: span 6; }
+}
+
+@media (max-width: 640px) {
+  .erp-report-page { padding: 12px; }
+  .erp-report-heading { flex-direction: column; }
+  .erp-report-heading h1 { font-size: 20px; }
+  .erp-report-actions { width: 100%; justify-content: stretch; }
+  .erp-report-actions .erp-report-button { flex: 1 1 auto; }
+  .erp-report-filter-grid { grid-template-columns: minmax(0, 1fr); }
+  .erp-report-filter-grid .erp-form-field { grid-column: 1 / -1; }
+  .erp-chart-frame--wide { height: 320px; }
+}
+
+@media print {
+  .erp-report-page { width: 100%; min-height: 0; padding: 0; }
+  .erp-report-card, .erp-chart-card { border: 0; }
+  .erp-report-table th, .erp-report-table td { padding: 6px 8px; }
+}

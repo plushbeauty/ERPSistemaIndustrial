@@ -1,11 +1,363 @@
-/* ERP INDUSTRIAL — FORM SYSTEM 2026 */
-:root{--erp-form-radius:2px;--erp-form-height:36px;--erp-form-height-compact:32px;--erp-form-gap:12px;--erp-form-label-size:12px;--erp-form-border:#b8cbd3;--erp-form-border-focus:#2d8db8;--erp-form-surface:#fff;--erp-form-text:#17333f}
-.erp-form,.erp-form-grid{width:100%;display:grid;gap:var(--erp-form-gap)}.erp-form-grid{grid-template-columns:repeat(12,minmax(0,1fr))}.erp-form-row{display:contents}.erp-form-field{min-width:0;display:grid;gap:5px;align-content:start}.erp-form-field>label,.erp-form-label{display:block;margin:0;color:#334e59;font-size:var(--erp-form-label-size);line-height:1.2;font-weight:700}
-.erp-form-field input,.erp-form-field select,.erp-form-field textarea,.erp-form-control{width:100%;min-width:0;min-height:var(--erp-form-height);box-sizing:border-box;border:1px solid var(--erp-form-border);border-radius:var(--erp-form-radius)!important;background:var(--erp-form-surface);color:var(--erp-form-text);padding:7px 9px;outline:none;box-shadow:none;transition:border-color .12s ease,box-shadow .12s ease}
-.erp-form-field input:focus,.erp-form-field select:focus,.erp-form-field textarea:focus,.erp-form-control:focus{border-color:var(--erp-form-border-focus);box-shadow:0 0 0 2px rgba(45,141,184,.12)}.erp-form-field textarea{min-height:90px;resize:vertical}.erp-form-field input[type=checkbox],.erp-form-field input[type=radio]{width:16px;min-height:16px;padding:0;accent-color:#2d8db8}.erp-form-actions{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:4px}.erp-form-actions button,.erp-form-button{min-height:var(--erp-form-height);border-radius:var(--erp-form-radius)!important;box-shadow:none!important}.erp-form-section{min-width:0;border:1px solid #d3e1e6;background:#fff;padding:14px}.erp-form-section-title{margin:0 0 10px;color:#123b50;font-size:13px;font-weight:800}
-.erp-w-1{grid-column:span 1}.erp-w-2{grid-column:span 2}.erp-w-3{grid-column:span 3}.erp-w-4{grid-column:span 4}.erp-w-5{grid-column:span 5}.erp-w-6{grid-column:span 6}.erp-w-7{grid-column:span 7}.erp-w-8{grid-column:span 8}.erp-w-9{grid-column:span 9}.erp-w-10{grid-column:span 10}.erp-w-11{grid-column:span 11}.erp-w-12{grid-column:span 12}
-form input:not([type=checkbox]):not([type=radio]):not([type=file]),form select,form textarea{border-radius:2px!important;box-shadow:none}form button{border-radius:2px!important}
-.industrial-form-page input,.industrial-form-page select,.industrial-form-page textarea,.mw3-form input,.mw3-form select,.mw3-form textarea,.process-sheet-page input,.process-sheet-page select,.process-sheet-page textarea{min-height:var(--erp-form-height);border-radius:2px!important}.industrial-panel,.industrial-modal,.mw3-modal,.process-sheet-banner{border-radius:2px}.industrial-tabs button,.icon-button,.mw3-btn,.mw3-tabs button,.mw3-table-wrap,.mw3-table-wrap td button{border-radius:2px!important}.industrial-modal,.mw3-modal{border-radius:2px!important}
-.erp-form-layout{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}.erp-form-layout>.field-1{grid-column:span 1}.erp-form-layout>.field-2{grid-column:span 2}.erp-form-layout>.field-3{grid-column:span 3}.erp-form-layout>.field-4{grid-column:span 4}.erp-form-layout>.field-5{grid-column:span 5}.erp-form-layout>.field-6{grid-column:span 6}.erp-form-layout>.field-7{grid-column:span 7}.erp-form-layout>.field-8{grid-column:span 8}.erp-form-layout>.field-9{grid-column:span 9}.erp-form-layout>.field-10{grid-column:span 10}.erp-form-layout>.field-11{grid-column:span 11}.erp-form-layout>.field-12{grid-column:span 12}
-@media(max-width:1000px){.erp-form-layout,.erp-form-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.erp-form-layout>[class*=field-]{grid-column:span 3}.erp-form-layout>.field-6,.erp-form-layout>.field-7,.erp-form-layout>.field-8,.erp-form-layout>.field-9,.erp-form-layout>.field-10,.erp-form-layout>.field-11,.erp-form-layout>.field-12{grid-column:span 6}.erp-w-1,.erp-w-2,.erp-w-3,.erp-w-4,.erp-w-5{grid-column:span 3}.erp-w-6,.erp-w-7,.erp-w-8,.erp-w-9,.erp-w-10,.erp-w-11,.erp-w-12{grid-column:span 6}}
-@media(max-width:640px){.erp-form-layout,.erp-form-grid{grid-template-columns:1fr}.erp-form-layout>[class*=field-],.erp-w-1,.erp-w-2,.erp-w-3,.erp-w-4,.erp-w-5,.erp-w-6,.erp-w-7,.erp-w-8,.erp-w-9,.erp-w-10,.erp-w-11,.erp-w-12{grid-column:1}.erp-form-actions{justify-content:stretch}.erp-form-actions button{flex:1}}
+/* ERP form system. Shared by authenticated operational pages only. */
+:root {
+  --erp-form-radius: 2px;
+  --erp-form-height: 36px;
+  --erp-form-height-compact: 33px;
+  --erp-form-textarea-height: 96px;
+  --erp-form-gap: 12px;
+  --erp-form-label-size: 12px;
+  --erp-form-border: #b8cbd3;
+  --erp-form-border-focus: #2d8db8;
+  --erp-form-surface: #fff;
+  --erp-form-text: #17333f;
+}
+
+/* Every authenticated operational route shares the same compact controls. */
+.erp-operational-pages :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  min-height: var(--erp-form-height) !important;
+  border-radius: var(--erp-form-radius) !important;
+  padding: 6px 9px;
+  font-size: 14px !important;
+  line-height: 1.3;
+}
+
+.erp-operational-pages textarea {
+  min-height: var(--erp-form-textarea-height) !important;
+  resize: vertical;
+}
+
+.erp-operational-pages label:has(input, select, textarea) {
+  gap: 5px;
+  font-size: var(--erp-form-label-size);
+  line-height: 1.25;
+}
+
+.erp-operational-pages form button,
+.erp-operational-pages .erp-form-actions button {
+  min-height: var(--erp-form-height);
+  border-radius: var(--erp-form-radius) !important;
+  box-shadow: none !important;
+}
+
+.erp-form,
+.erp-form-grid,
+.erp-form-layout,
+.v7-content form,
+.v7-content .v7-form,
+.v7-content .user-form,
+.v7-content .process-form-grid,
+.v7-content .pcp-form-grid-modern,
+.v7-content .sgq-adv-form {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--erp-form-gap);
+  align-items: start;
+}
+
+.erp-form { width: 100%; }
+.erp-form-row { display: contents; }
+.erp-form-field { min-width: 0; display: grid; gap: 5px; align-content: start; }
+.erp-form-field > label,
+.erp-form-label,
+.v7-content form > label,
+.v7-content form > div:has(> label),
+.v7-content .process-form-grid > label,
+.v7-content .pcp-form-grid-modern > label,
+.v7-content .sgq-adv-form > label,
+.v7-content .v7-form > label,
+.v7-content .user-form > label {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  align-content: start;
+  margin: 0;
+  color: #334e59;
+  font-size: var(--erp-form-label-size);
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.v7-content form > label,
+.v7-content form > div:has(> label),
+.v7-content .process-form-grid > label,
+.v7-content .pcp-form-grid-modern > label,
+.v7-content .sgq-adv-form > label,
+.v7-content .v7-form > label,
+.v7-content .user-form > label {
+  grid-column: span 4;
+}
+
+.erp-form-control,
+.erp-form-field input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.erp-form-field select,
+.erp-form-field textarea,
+.v7-content form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.v7-content form select,
+.v7-content form textarea,
+.v7-content .industrial-form-page input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.v7-content .industrial-form-page select,
+.v7-content .industrial-form-page textarea,
+.v7-content .mw3-form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.v7-content .mw3-form select,
+.v7-content .mw3-form textarea,
+.v7-content .process-sheet-page input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.v7-content .process-sheet-page select,
+.v7-content .process-sheet-page textarea,
+.v7-content .sgq-advanced input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.v7-content .sgq-advanced select,
+.v7-content .sgq-advanced textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--erp-form-height);
+  border: 1px solid var(--erp-form-border);
+  border-radius: var(--erp-form-radius) !important;
+  background: var(--erp-form-surface);
+  color: var(--erp-form-text);
+  padding: 6px 9px;
+  box-shadow: none;
+  font-size: 14px;
+  line-height: 1.3;
+  outline: none;
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+
+.erp-form-control:focus,
+.erp-form-field input:focus,
+.erp-form-field select:focus,
+.erp-form-field textarea:focus,
+.v7-content form input:focus,
+.v7-content form select:focus,
+.v7-content form textarea:focus {
+  border-color: var(--erp-form-border-focus) !important;
+  box-shadow: 0 0 0 2px rgba(45, 141, 184, .12) !important;
+}
+
+.erp-form-field textarea,
+.erp-form textarea,
+.v7-content form textarea,
+.v7-content .industrial-form-page textarea,
+.v7-content .mw3-form textarea,
+.v7-content .process-sheet-page textarea,
+.v7-content .sgq-advanced textarea {
+  min-height: var(--erp-form-textarea-height);
+  resize: vertical;
+}
+
+.erp-form-checkbox,
+.erp-form-field input[type="checkbox"],
+.erp-form-field input[type="radio"],
+.v7-content form input[type="checkbox"],
+.v7-content form input[type="radio"] {
+  width: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  padding: 0;
+  border-radius: 2px;
+  accent-color: #2d8db8;
+}
+
+.erp-form-field:has(input[type="date"]),
+.erp-form-field:has(input[type="time"]),
+.erp-form-field:has(input[type="number"]),
+.erp-form-field:has(select),
+.v7-content form > label:has(input[type="date"]),
+.v7-content form > label:has(input[type="time"]),
+.v7-content form > label:has(input[type="number"]),
+.v7-content form > label:has(select),
+.v7-content .process-form-grid > label:has(input[type="date"]),
+.v7-content .process-form-grid > label:has(input[type="time"]),
+.v7-content .process-form-grid > label:has(input[type="number"]),
+.v7-content .pcp-form-grid-modern > label:has(input[type="date"]),
+.v7-content .pcp-form-grid-modern > label:has(input[type="time"]),
+.v7-content .pcp-form-grid-modern > label:has(input[type="number"]),
+.v7-content .pcp-form-grid-modern > label:has(select) {
+  grid-column: span 3;
+}
+
+.erp-form-field:has(textarea),
+.v7-content form > label:has(textarea),
+.v7-content .process-form-grid > label:has(textarea),
+.v7-content .pcp-form-grid-modern > label:has(textarea),
+.v7-content .sgq-adv-form > label:has(textarea) {
+  grid-column: span 12;
+}
+
+.erp-field-xs { width: min(100%, 88px); }
+.erp-field-sm { width: min(100%, 144px); }
+.erp-field-md { width: min(100%, 224px); }
+.erp-field-lg { width: min(100%, 520px); }
+.erp-field-xl { width: min(100%, 760px); }
+
+.erp-w-1 { grid-column: span 1; }
+.erp-w-2 { grid-column: span 2; }
+.erp-w-3 { grid-column: span 3; }
+.erp-w-4 { grid-column: span 4; }
+.erp-w-5 { grid-column: span 5; }
+.erp-w-6 { grid-column: span 6; }
+.erp-w-7 { grid-column: span 7; }
+.erp-w-8 { grid-column: span 8; }
+.erp-w-9 { grid-column: span 9; }
+.erp-w-10 { grid-column: span 10; }
+.erp-w-11 { grid-column: span 11; }
+.erp-w-12 { grid-column: span 12; }
+
+.erp-form-actions,
+.erp-form > button:last-child,
+.erp-form > .form-actions,
+.v7-content form > .erp-form-actions,
+.v7-content form > .form-actions,
+.v7-content form > [class*="actions"] {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.erp-form-actions button,
+.erp-form-button,
+.erp-form button,
+.v7-content form button,
+.v7-content .erp-form-actions button {
+  min-height: var(--erp-form-height);
+  border-radius: var(--erp-form-radius) !important;
+  box-shadow: none !important;
+}
+
+.erp-form-section,
+.v7-content .industrial-modal:has(form),
+.v7-content .mw3-modal:has(form),
+.v7-content [role="dialog"]:has(form) {
+  min-width: 0;
+  border-radius: 2px;
+}
+
+.erp-form-section {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--erp-form-gap);
+  border: 1px solid #d3e1e6;
+  background: #fff;
+  padding: 14px;
+}
+
+.erp-form-section-title {
+  grid-column: 1 / -1;
+  margin: 0 0 2px;
+  color: #123b50;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* Legacy form groups retain their existing markup while sharing the grid. */
+.v7-content .industrial-toolbar,
+.v7-content .process-form-grid,
+.v7-content .pcp-form-grid-modern,
+.v7-content .sgq-adv-form,
+.v7-content .v7-form,
+.v7-content .user-form {
+  gap: var(--erp-form-gap);
+}
+
+.v7-content .industrial-form-page label,
+.v7-content .mw3-form label,
+.v7-content .process-sheet-page label,
+.v7-content .sgq-adv-form label,
+.v7-content .v7-form label,
+.v7-content .user-form label {
+  min-width: 0;
+  gap: 5px;
+  margin: 0;
+  font-size: var(--erp-form-label-size);
+  line-height: 1.25;
+}
+
+.v7-content .industrial-modal,
+.v7-content .mw3-modal { border-radius: 2px !important; }
+
+@media (max-width: 1000px) {
+  .erp-form-grid,
+  .erp-form-layout,
+  .v7-content form,
+  .v7-content .v7-form,
+  .v7-content .user-form,
+  .v7-content .process-form-grid,
+  .v7-content .pcp-form-grid-modern,
+  .v7-content .sgq-adv-form {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .erp-w-4,
+  .erp-w-5,
+  .erp-w-6,
+  .erp-w-7,
+  .erp-w-8,
+  .erp-w-9,
+  .erp-w-10,
+  .erp-w-11,
+  .erp-w-12,
+  .v7-content form > label,
+  .v7-content form > div:has(> label) { grid-column: span 6; }
+
+  .erp-w-1,
+  .erp-w-2,
+  .erp-w-3,
+  .erp-form-field:has(input[type="date"]),
+  .erp-form-field:has(input[type="time"]),
+  .erp-form-field:has(input[type="number"]),
+  .erp-form-field:has(select) { grid-column: span 3; }
+
+  .v7-content :is(.process-form-grid, .pcp-form-grid-modern, .sgq-adv-form) > label,
+  .v7-content :is(.process-form-grid, .pcp-form-grid-modern) > div:has(button) { grid-column: span 3; }
+}
+
+@media (max-width: 640px) {
+  .erp-form-grid,
+  .erp-form-layout,
+  .v7-content form,
+  .v7-content .v7-form,
+  .v7-content .user-form,
+  .v7-content .process-form-grid,
+  .v7-content .pcp-form-grid-modern,
+  .v7-content .sgq-adv-form,
+  .erp-form-section { grid-template-columns: minmax(0, 1fr); }
+
+  .erp-w-1,
+  .erp-w-2,
+  .erp-w-3,
+  .erp-w-4,
+  .erp-w-5,
+  .erp-w-6,
+  .erp-w-7,
+  .erp-w-8,
+  .erp-w-9,
+  .erp-w-10,
+  .erp-w-11,
+  .erp-w-12,
+  .erp-form-field:has(input[type="date"]),
+  .erp-form-field:has(input[type="time"]),
+  .erp-form-field:has(input[type="number"]),
+  .erp-form-field:has(select),
+  .erp-form-field:has(textarea),
+  .erp-form-section > *,
+  .v7-content form > label,
+  .v7-content form > div:has(> label) { grid-column: 1 / -1; }
+
+  .v7-content :is(.process-form-grid, .pcp-form-grid-modern, .sgq-adv-form) > label,
+  .v7-content :is(.process-form-grid, .pcp-form-grid-modern) > div:has(button) { grid-column: 1 / -1; }
+
+  .erp-form-actions,
+  .v7-content form > .form-actions,
+  .v7-content form > [class*="actions"] { justify-content: stretch; }
+
+  .erp-form-actions button,
+  .v7-content form > .form-actions button,
+  .v7-content form > [class*="actions"] button { flex: 1 1 auto; }
+}

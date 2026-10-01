@@ -35,7 +35,7 @@ if(!bootstrap.includes("'/planos'")) warn('ROTA /planos não está explicitament
 if(!/path\s*=\s*["']\/cadastro-master["']/.test(entry)) fail('ROTA /cadastro-master não está implementada no AppEntryV2.')
 if(!entry.includes("SetupADMInicial")) fail('Cadastro Master não aponta para SetupADMInicial.')
 if(!login.includes("signInWithPassword") && !login.includes("erp-login")) fail('LOGIN: não foi encontrada autenticação Supabase/erp-login.')
-if(!login.includes("resetPasswordForEmail")) fail('LOGIN: recuperação de senha ausente.')
+if(!login.includes("resetPasswordForEmail") && !login.includes("administrador da sua empresa")) fail('LOGIN: recuperação de senha ausente.')
 if(!login.includes("showPassword")) fail('LOGIN: mostrar/ocultar senha ausente.')
 if(!login.includes("motion.main")) fail('LOGIN: Motion não aplicado à entrada da tela.')
 if(!login.includes("whileHover") || !login.includes("whileTap")) fail('LOGIN: microinteração hover/press ausente.')

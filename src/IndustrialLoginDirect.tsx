@@ -216,42 +216,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
 
   async function recover() {
     setError('')
-    setNotice('')
-
-    if (!supabaseConfigurado) {
-      setError('O ambiente Supabase não está configurado na Vercel.')
-      return
-    }
-
-    const normalizedEmail = normalizeIndustrialLogin(email)
-
-    if (!normalizedEmail || !normalizedEmail.includes('@')) {
-      setError('Informe seu e-mail corporativo para receber o link de recuperação.')
-      return
-    }
-
-    setBusy(true)
-
-    try {
-      const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(
-        normalizedEmail,
-        { redirectTo: `${window.location.origin}/recuperar-senha` },
-      )
-
-      if (recoveryError) throw recoveryError
-
-      setNotice(
-        'Se o e-mail estiver cadastrado, as instruções de recuperação serão enviadas.',
-      )
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Não foi possível solicitar a recuperação.',
-      )
-    } finally {
-      setBusy(false)
-    }
+    setNotice('Para recuperar o acesso, solicite ao administrador da sua empresa uma senha provisória. Ela exigirá troca antes de abrir o ERP.')
   }
 
   if (checking) {
@@ -355,7 +320,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
             <div className="auth-label-row">
               <label htmlFor="erp-direct-password">Senha</label>
               <button type="button" className="auth-text-button" onClick={recover} disabled={busy}>
-                Esqueci minha senha
+                Falar com o ADM para redefinir
               </button>
             </div>
 

@@ -12,6 +12,8 @@
     "build:vercel": "vite build --emptyOutDir",
     "build:verified": "npm run verify:supabase-env && npm run verify:supabase-guard && npm run verify:deploy-integrity && npm run verify:lockfile && npm run verify:lazy-imports && npm run lint:check && npm run audit:all && npm run build && npm run verify:build",
     "type-check": "tsc --noEmit",
+    "test:rbac-policy": "node --experimental-strip-types --test scripts/test-rbac-policy.mjs",
+    "test:user-admin-contract": "node --experimental-strip-types --test scripts/test-user-admin-contract.mjs",
     "verify:supabase-env": "node scripts/verify-supabase-env.mjs",
     "verify:supabase-guard": "node scripts/verify-supabase-guard.mjs",
     "verify:deploy-integrity": "node scripts/verify-deploy-integrity.mjs",

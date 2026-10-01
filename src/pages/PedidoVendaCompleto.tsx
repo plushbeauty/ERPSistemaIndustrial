@@ -148,7 +148,7 @@ export default function PedidoVendaCompleto(){
       <div className="sales-grid mt-3">
        <label className="sales-field">Nº Pedido (automático)<input value={number ? `Próximo: ${number}` : 'Gerado ao salvar'} readOnly/></label>
        <label className="sales-field">Data Entrada<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>
-       <div className="sales-field sales-field-span-2"><EntityCodeLookup label="Cliente" value={client} records={clients} required onChange={value=>setClient(value)} onSelect={x=>{setClient(x.id);setClientDoc(String(x.documento??''));setItems([]);setDraft({produto:'',qtd:'1',valor:'0',codigoCliente:''})}} helper="Digite o código exato do cliente. A lupa abre a consulta quando necessário."/></div>
+        <div className="sales-field sales-field-span-2"><EntityCodeLookup label="Cliente" value={client} records={clients} required onChange={value=>setClient(value)} onSelect={x=>{setClient(x.id);setClientDoc(String(x.documento??''));setItems([]);setDraft({produto:'',qtd:'1',valor:'0',desconto:'0',codigoCliente:''})}} helper="Digite o código exato do cliente. A lupa abre a consulta quando necessário."/></div>
        <label className="sales-field">Documento<input value={clientDoc} readOnly/></label>
        <label className="sales-field">Data Entrega Prometida<input type="date" value={delivery} onChange={e=>setDelivery(e.target.value)}/></label>
        <label className="sales-field sales-field-span-2">Pedido / Referência do Cliente<input value={pedidoCliente} onChange={e=>setPedidoCliente(e.target.value)} maxLength={120} placeholder="Número do pedido ou referência do cliente"/></label>
