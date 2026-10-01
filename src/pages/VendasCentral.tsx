@@ -318,7 +318,7 @@ function NovoPedido({ empresa, clientes, produtos, onDone }: { empresa: string; 
             />
           </div>
           <div>
-            <div className="mb-2 text-xs font-black uppercase tracking-wide text-slate-700">Pedido do cliente</div>
+            <div className="mb-2 text-xs font-black uppercase tracking-wide text-slate-700">Pedido Cliente</div>
             <input type="text" value={form.pedidoCliente} onChange={e => setForm({ ...form, pedidoCliente: e.target.value })} className="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm" />
           </div>
           <div>
