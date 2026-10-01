@@ -243,9 +243,9 @@ export default function VendasCentral() {
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
               <DashboardMetric label="Pedidos" value={metrics.total} onClick={() => open('/vendas/carteira')} />
-              <DashboardMetric label="Atrasados" value={metrics.overdue.length} danger onClick={() => open('/vendas/carteira?filtro=atrasados')} />
-              <DashboardMetric label="Pendentes" value={metrics.pending.length} onClick={() => open('/vendas/carteira?filtro=pendentes')} />
-              <DashboardMetric label="Necessita produção" value={metrics.production.length} onClick={() => open('/vendas/carteira?filtro=producao')} />
+              <DashboardMetric label="Atrasados" value={metrics.overdue.length} danger onClick={() => open('/vendas/status?filtro=atrasados')} />
+              <DashboardMetric label="Pendentes" value={metrics.pending.length} onClick={() => open('/vendas/status?filtro=todos')} />
+              <DashboardMetric label="Necessita produção" value={metrics.production.length} onClick={() => open('/vendas/status?filtro=producao')} />
               <DashboardMetric label="Carteira" value={money(metrics.openValue)} />
             </div>
 
