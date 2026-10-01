@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { ChevronRight, LogOut, User } from 'lucide-react'
+import { ChevronRight, LogOut, User, Tablet } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
@@ -128,6 +128,7 @@ export default function IndustrialReferenceShell({
           </div>
           <div className="flex items-center space-x-4">
             {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+            <button type="button" title="Abrir Tablet operacional" onClick={() => { window.location.href = '/tablet/dashboard' }} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-700 hover:bg-slate-50"><Tablet className="h-4 w-4" /> TABLET</button>
             <div className="hidden text-right text-[10px] font-bold leading-tight text-slate-400 lg:block">
               <div>{clock.toLocaleDateString('pt-BR')}</div>
               <div>{clock.toLocaleTimeString('pt-BR')}</div>
