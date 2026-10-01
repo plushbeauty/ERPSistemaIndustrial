@@ -329,7 +329,7 @@ export default function VendasCentral() {
         <footer className="flex items-center justify-end gap-2 pb-4">
           <button
             type="button"
-            onClick={() => open('/configuracoes-adm')}
+            onClick={() => open('/vendas/configuracoes')}
             className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-300 bg-white px-4 text-sm font-black text-slate-700"
           >
             <Settings size={17} />
