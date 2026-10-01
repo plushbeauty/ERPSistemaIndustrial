@@ -30,6 +30,7 @@ import './styles/erp-ui-pass-2026.css'
 import './styles/industrial-plans.css'
 import './styles/erp-design-system-2026.css'
 import './styles/form-system-2026.css'
+import './styles/access-admin.css'
 
 import IndustrialLoginDirect from './IndustrialLoginDirect'
 
@@ -199,7 +200,7 @@ function ForcedPasswordChange() {
     setMessage('')
     const { data, error } = await supabase.functions.invoke('erp-user-admin', { body: { action: 'change_my_password', currentPassword: temporaryPassword, newPassword } })
     if (error || !data?.ok) { setMessage(data?.error || error?.message || 'Não foi possível trocar a senha.'); setBusy(false); return }
-    await supabase.auth.refreshSession()
+    await supabase.auth.signOut({ scope: 'local' })
     window.location.replace('/comercial')
   }
   return <main className="loading-screen"><section className="loading-skeleton-card" style={{ width: 'min(460px, calc(100vw - 32px))', padding: 24 }}><h1 style={{ marginTop: 0 }}>Troque sua senha provisória</h1><p>O administrador da empresa redefiniu seu acesso. Defina uma senha pessoal para continuar.</p><label style={{ display: 'grid', gap: 6, margin: '14px 0' }}>Senha provisória<input autoComplete="current-password" type="password" value={temporaryPassword} onChange={event => setTemporaryPassword(event.target.value)} /></label><label style={{ display: 'grid', gap: 6, margin: '14px 0' }}>Nova senha<input autoComplete="new-password" type="password" value={newPassword} onChange={event => setNewPassword(event.target.value)} /></label>{message && <p role="alert">{message}</p>}<button type="button" className="primary" onClick={() => void submit()} disabled={busy || !temporaryPassword || !newPassword}>{busy ? 'Salvando…' : 'Salvar senha e entrar'}</button><button type="button" onClick={() => void supabase.auth.signOut()}>Sair</button></section></main>

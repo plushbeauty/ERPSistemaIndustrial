@@ -177,6 +177,14 @@ $$;
 revoke all on function public.erp_user_has_permission(uuid, text, text) from public, anon, authenticated;
 grant execute on function public.erp_user_has_permission(uuid, text, text) to service_role;
 
+-- Company administrators need team deactivation and audit visibility by default.
+insert into public.erp_role_permissions(role_id, permission_id)
+select role.id, permission.id
+from public.erp_roles role
+join public.erp_permissions permission on permission.codigo in ('usuarios.excluir', 'auditoria.ver') and permission.ativo = true
+where role.codigo = 'ADMIN' and role.company_id is null and role.ativo = true
+on conflict do nothing;
+
 create or replace function public.erp_admin_set_role_permissions(
   p_actor_id uuid,
   p_role_id uuid,
@@ -197,7 +205,7 @@ declare
 begin
   select * into v_actor from public.erp_usuarios where id = p_actor_id and ativo = true and deleted_at is null;
   if not found then raise exception 'Administrador inativo ou inexistente'; end if;
-  v_master := coalesce(v_actor.is_master, false) and coalesce(v_actor.nivel_admin, 0) >= 100 and upper(coalesce(v_actor.role, '')) = 'MASTER' and v_actor.empresa_id is null;
+  v_master := coalesce(v_actor.is_master, false) and coalesce(v_actor.nivel_admin, 0) >= 100 and upper(coalesce(v_actor.perfil, '')) = 'MASTER' and v_actor.empresa_id is null;
   if not v_master and not public.erp_user_has_permission(v_actor.id, 'usuarios', 'editar') then raise exception 'Sem permissão para alterar perfis'; end if;
   select * into v_role from public.erp_roles where id = p_role_id and ativo = true;
   if not found then raise exception 'Perfil inexistente ou inativo'; end if;
@@ -247,11 +255,12 @@ declare
 begin
   select * into v_actor from public.erp_usuarios where id = p_actor_id and ativo = true and deleted_at is null;
   if not found then raise exception 'Administrador inativo ou inexistente'; end if;
-  v_master := coalesce(v_actor.is_master, false) and coalesce(v_actor.nivel_admin, 0) >= 100 and upper(coalesce(v_actor.role, '')) = 'MASTER' and v_actor.empresa_id is null;
+  v_master := coalesce(v_actor.is_master, false) and coalesce(v_actor.nivel_admin, 0) >= 100 and upper(coalesce(v_actor.perfil, '')) = 'MASTER' and v_actor.empresa_id is null;
   if not v_master and not public.erp_user_has_permission(v_actor.id, 'usuarios', 'editar') then raise exception 'Sem permissão para alterar exceções'; end if;
   select * into v_target from public.erp_usuarios where id = p_user_id and ativo = true and deleted_at is null;
   if not found then raise exception 'Usuário alvo inativo ou inexistente'; end if;
   if not v_master and (v_target.empresa_id is distinct from v_actor.empresa_id or coalesce(v_target.nivel_admin, 0) >= coalesce(v_actor.nivel_admin, 0)) then raise exception 'Usuário fora do escopo administrativo'; end if;
+  if coalesce(v_target.is_master, false) and coalesce(v_target.nivel_admin, 0) >= 100 and upper(coalesce(v_target.perfil, '')) = 'MASTER' and v_target.empresa_id is null then raise exception 'As permissões globais de MASTER não aceitam exceções individuais'; end if;
   select * into v_permission from public.erp_permissions where id = p_permission_id and ativo = true;
   if not found then raise exception 'Permissão inexistente ou inativa'; end if;
   if p_effect not in ('allow', 'deny', 'inherit') then raise exception 'Exceção inválida'; end if;
@@ -291,9 +300,10 @@ declare
   v_count integer;
 begin
   insert into public.erp_revoked_auth_sessions(session_id, user_id, revoked_by)
-  select session.id, session.user_id, p_actor_id
+  select session.id, erp_user.id, p_actor_id
     from auth.sessions session
-   where session.user_id = p_user_id
+    join public.erp_usuarios erp_user on erp_user.auth_user_id = session.user_id
+   where erp_user.id = p_user_id
   on conflict (session_id) do update set revoked_at = now(), revoked_by = excluded.revoked_by;
   get diagnostics v_count = row_count;
   return v_count;
@@ -302,6 +312,153 @@ $$;
 
 revoke all on function public.erp_admin_revoke_user_sessions(uuid, uuid) from public, anon, authenticated;
 grant execute on function public.erp_admin_revoke_user_sessions(uuid, uuid) to service_role;
+
+create or replace function public.erp_admin_update_user_state(
+  p_actor_id uuid,
+  p_user_id uuid,
+  p_operation text,
+  p_user_agent text default null
+)
+returns void
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  v_actor public.erp_usuarios%rowtype;
+  v_target public.erp_usuarios%rowtype;
+  v_master boolean;
+  v_active boolean;
+  v_deleted_at timestamptz;
+  v_action text;
+begin
+  if p_operation not in ('activate', 'deactivate', 'archive', 'restore') then
+    raise exception 'Operação de acesso inválida';
+  end if;
+
+  select * into v_actor
+    from public.erp_usuarios
+   where id = p_actor_id and ativo = true and deleted_at is null;
+  if not found then raise exception 'Administrador inativo ou inexistente'; end if;
+  v_master := coalesce(v_actor.is_master, false)
+    and coalesce(v_actor.nivel_admin, 0) >= 100
+    and upper(coalesce(v_actor.perfil, '')) = 'MASTER'
+    and v_actor.empresa_id is null;
+  if not v_master and not public.erp_user_has_permission(v_actor.id, 'usuarios', 'excluir') then
+    raise exception 'Sem permissão para alterar o estado de usuários';
+  end if;
+
+  select * into v_target from public.erp_usuarios where id = p_user_id for update;
+  if not found then raise exception 'Usuário inexistente'; end if;
+  if v_target.empresa_id is null then raise exception 'Usuário fora do escopo de uma empresa'; end if;
+  if not v_master and (v_target.empresa_id is distinct from v_actor.empresa_id or coalesce(v_target.nivel_admin, 0) >= coalesce(v_actor.nivel_admin, 0)) then
+    raise exception 'Usuário fora do escopo administrativo';
+  end if;
+  if p_operation = 'restore' and v_target.deleted_at is null then raise exception 'Usuário não está arquivado'; end if;
+  if p_operation <> 'restore' and v_target.deleted_at is not null then raise exception 'Usuário já está arquivado'; end if;
+
+  -- Serialize removals within one company before counting remaining active administrators.
+  perform 1 from public.erp_empresas where id = v_target.empresa_id for update;
+  if p_operation in ('deactivate', 'archive') and v_target.ativo and v_target.nivel_admin >= 8 then
+    if not exists (
+      select 1 from public.erp_usuarios other_admin
+       where other_admin.empresa_id = v_target.empresa_id
+         and other_admin.id <> v_target.id
+         and other_admin.ativo = true
+         and other_admin.deleted_at is null
+         and other_admin.nivel_admin >= 8
+    ) then
+      raise exception 'A empresa precisa manter ao menos um administrador ativo';
+    end if;
+  end if;
+
+  v_active := p_operation in ('activate', 'restore');
+  v_deleted_at := case when p_operation = 'archive' then now() when p_operation = 'restore' then null else v_target.deleted_at end;
+  v_action := case p_operation
+    when 'activate' then 'user.activated'
+    when 'deactivate' then 'user.deactivated'
+    when 'archive' then 'user.archived'
+    else 'user.restored'
+  end;
+
+  update public.erp_usuarios
+     set ativo = v_active, deleted_at = v_deleted_at, updated_at = now()
+   where id = v_target.id;
+
+  insert into public.erp_audit_logs(empresa_id, actor_user_id, action, entity_type, entity_id, old_data, new_data, user_agent)
+  values (
+    v_target.empresa_id, v_actor.id, v_action, 'erp_usuario', v_target.id, to_jsonb(v_target),
+    to_jsonb(v_target) || jsonb_build_object('ativo', v_active, 'deleted_at', v_deleted_at), p_user_agent
+  );
+end;
+$$;
+
+revoke all on function public.erp_admin_update_user_state(uuid, uuid, text, text) from public, anon, authenticated;
+grant execute on function public.erp_admin_update_user_state(uuid, uuid, text, text) to service_role;
+
+create or replace function public.erp_admin_update_user(
+  p_actor_id uuid,
+  p_user_id uuid,
+  p_nome text,
+  p_login_nome text,
+  p_matricula text,
+  p_role_id uuid,
+  p_user_agent text default null
+)
+returns void
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  v_actor public.erp_usuarios%rowtype;
+  v_target public.erp_usuarios%rowtype;
+  v_role public.erp_roles%rowtype;
+  v_master boolean;
+  v_old jsonb;
+  v_new jsonb;
+begin
+  select * into v_actor from public.erp_usuarios where id = p_actor_id and ativo = true and deleted_at is null;
+  if not found then raise exception 'Administrador inativo ou inexistente'; end if;
+  v_master := coalesce(v_actor.is_master, false) and coalesce(v_actor.nivel_admin, 0) >= 100
+    and upper(coalesce(v_actor.perfil, '')) = 'MASTER' and v_actor.empresa_id is null;
+  if not v_master and not public.erp_user_has_permission(v_actor.id, 'usuarios', 'editar') then raise exception 'Sem permissão para editar usuários'; end if;
+
+  select * into v_target from public.erp_usuarios where id = p_user_id and deleted_at is null for update;
+  if not found or v_target.empresa_id is null then raise exception 'Usuário fora do escopo administrativo'; end if;
+  if length(btrim(coalesce(p_nome, ''))) < 2 then raise exception 'O nome precisa ter ao menos dois caracteres'; end if;
+  if not v_master and (v_target.empresa_id is distinct from v_actor.empresa_id or coalesce(v_target.nivel_admin, 0) >= coalesce(v_actor.nivel_admin, 0)) then raise exception 'Usuário fora do escopo administrativo'; end if;
+
+  select * into v_role from public.erp_roles where id = p_role_id and ativo = true;
+  if not found or (v_role.company_id is not null and v_role.company_id is distinct from v_target.empresa_id) then raise exception 'Perfil de acesso inválido'; end if;
+  if upper(v_role.codigo) in ('MASTER', 'MASTER_ADMIN', 'SUPER_ADMIN') or (not v_master and v_role.nivel >= v_actor.nivel_admin) then raise exception 'Perfil fora da hierarquia administrativa'; end if;
+
+  perform 1 from public.erp_empresas where id = v_target.empresa_id for update;
+  if nullif(lower(btrim(coalesce(p_login_nome, ''))), '') is not null and exists (
+    select 1 from public.erp_usuarios duplicate where duplicate.empresa_id = v_target.empresa_id
+      and duplicate.id <> v_target.id and duplicate.deleted_at is null
+      and lower(duplicate.login_nome) = lower(btrim(p_login_nome))
+  ) then raise exception 'Este login já está cadastrado nesta empresa'; end if;
+  if v_target.ativo and v_target.nivel_admin >= 8 and v_role.nivel < 8 and not exists (
+    select 1 from public.erp_usuarios other_admin where other_admin.empresa_id = v_target.empresa_id
+      and other_admin.id <> v_target.id and other_admin.ativo = true
+      and other_admin.deleted_at is null and other_admin.nivel_admin >= 8
+  ) then raise exception 'A empresa precisa manter ao menos um administrador ativo'; end if;
+
+  v_old := to_jsonb(v_target);
+  update public.erp_usuarios set nome = btrim(p_nome), login_nome = nullif(lower(btrim(coalesce(p_login_nome, ''))), ''),
+    matricula = nullif(btrim(coalesce(p_matricula, '')), ''), role_id = v_role.id, role = v_role.codigo,
+    perfil = v_role.codigo, nivel_admin = v_role.nivel, updated_at = now()
+  where id = v_target.id;
+  select to_jsonb(updated_user) into v_new from public.erp_usuarios updated_user where updated_user.id = v_target.id;
+
+  insert into public.erp_audit_logs(empresa_id, actor_user_id, action, entity_type, entity_id, old_data, new_data, user_agent)
+  values (v_target.empresa_id, v_actor.id, 'user.updated', 'erp_usuario', v_target.id, v_old, v_new, p_user_agent);
+end;
+$$;
+
+revoke all on function public.erp_admin_update_user(uuid, uuid, text, text, text, uuid, text) from public, anon, authenticated;
+grant execute on function public.erp_admin_update_user(uuid, uuid, text, text, text, uuid, text) to service_role;
 
 create or replace function public.erp_has_permission(p_modulo text, p_acao text)
 returns boolean

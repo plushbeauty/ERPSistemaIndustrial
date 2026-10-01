@@ -1,0 +1,126 @@
+.access-admin {
+  --access-border: #c8d9e3;
+  --access-ink: #17354a;
+  --access-muted: #60798b;
+  --access-blue: #1685b4;
+  --access-tint: #eef7fb;
+  width: min(1600px, 100%);
+  margin-inline: auto;
+  padding: 20px 24px 36px;
+  color: var(--access-ink);
+}
+.access-admin button,
+.access-admin input,
+.access-admin select { font: inherit; }
+.access-admin button { cursor: pointer; }
+.access-admin button:disabled,
+.access-admin select:disabled,
+.access-admin input:disabled { cursor: not-allowed; opacity: .58; }
+.access-admin :focus-visible { outline: 2px solid var(--access-blue); outline-offset: 2px; }
+.access-admin__header { display: flex; justify-content: space-between; align-items: end; gap: 20px; padding: 0 0 16px; border-bottom: 1px solid var(--access-border); }
+.access-admin__header h1 { margin: 5px 0 3px; font-size: clamp(22px, 2vw, 29px); line-height: 1.15; }
+.access-admin__header p { margin: 0; max-width: 780px; color: var(--access-muted); font-size: 13px; }
+.access-admin__header-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+.access-admin__company,.access-admin__form-grid label,.access-admin__selector label { display: grid; gap: 4px; color: #234c66; font-size: 11px; font-weight: 700; }
+.access-admin__company select,.access-admin__form-grid input,.access-admin__form-grid select,.access-admin__selector select,.access-admin__permission-row select { height: 34px; min-width: 160px; border: 1px solid var(--access-border); border-radius: 2px; background: white; padding: 0 9px; color: var(--access-ink); }
+.access-admin__button { display: inline-flex; height: 34px; align-items: center; justify-content: center; gap: 7px; padding: 0 11px; border: 1px solid var(--access-border); border-radius: 2px; background: #fff; color: var(--access-ink); font-size: 12px; font-weight: 700; white-space: nowrap; }
+.access-admin__button:hover:not(:disabled) { background: #f2f8fb; border-color: #9dbdce; }
+.access-admin__button--primary { border-color: #147eab; background: #147eab; color: #fff; }
+.access-admin__button--primary:hover:not(:disabled) { background: #096b95; border-color: #096b95; }
+.access-admin__notice { margin: 12px 0; padding: 9px 12px; border: 1px solid #b8d8e7; border-left: 3px solid var(--access-blue); background: #f3f9fc; color: #234c66; font-size: 12px; }
+.access-admin__temp-password { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--access-border); }
+.access-admin__temp-password code { padding: 4px 8px; border: 1px dashed #83afc4; background: #fff; font-size: 14px; letter-spacing: .06em; user-select: all; }
+.access-admin__temp-password button { display: inline-grid; width: 28px; height: 28px; place-items: center; border: 1px solid var(--access-border); border-radius: 2px; background: #fff; color: var(--access-ink); }
+.access-admin__tabs { display: flex; gap: 2px; margin: 14px 0 12px; border-bottom: 1px solid var(--access-border); }
+.access-admin__tabs button { display: inline-flex; height: 36px; align-items: center; gap: 7px; padding: 0 12px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--access-muted); font-size: 12px; font-weight: 700; }
+.access-admin__tabs button:hover { background: var(--access-tint); color: var(--access-ink); }
+.access-admin__tabs button.is-active { border-bottom-color: var(--access-blue); color: #056e9c; }
+.access-admin__tabs button span { min-width: 18px; border-radius: 9px; background: var(--access-tint); color: #34596f; text-align: center; font-size: 10px; }
+.access-admin__panel,.access-admin__selector,.access-admin__module { border: 1px solid var(--access-border); border-radius: 3px; background: #fff; }
+.access-admin__toolbar { display: flex; min-height: 48px; flex-wrap: wrap; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid #dce8ed; }
+.access-admin__search { display: flex; min-width: min(360px, 100%); height: 32px; align-items: center; gap: 7px; padding: 0 9px; border: 1px solid var(--access-border); border-radius: 2px; color: var(--access-muted); }
+.access-admin__search input { width: 100%; min-width: 0; height: 28px; border: 0; outline: 0; background: transparent; color: var(--access-ink); font-size: 12px; }
+.access-admin__check { display: inline-flex; align-items: center; gap: 7px; color: #385c71; font-size: 11px; font-weight: 600; }
+.access-admin__check input { accent-color: #147eab; }
+.access-admin__count { margin-left: auto; color: var(--access-muted); font-size: 11px; }
+.access-admin__table-wrap { width: 100%; overflow: auto; }
+.access-admin__table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.access-admin__table th { height: 32px; padding: 0 10px; border-bottom: 1px solid var(--access-border); background: #f3f8fa; color: #315a70; text-align: left; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+.access-admin__table td { min-height: 38px; padding: 6px 10px; border-bottom: 1px solid #e7eef2; vertical-align: middle; }
+.access-admin__table tbody tr:hover { background: #f8fbfc; }
+.access-admin__table td strong,.access-admin__table td small { display: block; }
+.access-admin__table td small { margin-top: 2px; color: var(--access-muted); font-size: 10px; }
+.access-admin__table code { color: #31576e; font-size: 10px; overflow-wrap: anywhere; }
+.access-admin__warning { color: #a55316 !important; }
+.access-admin__state { display: inline-flex; align-items: center; min-height: 21px; padding: 0 7px; border: 1px solid transparent; border-radius: 2px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+.access-admin__state.is-active { border-color: #a7d8bd; background: #eef9f2; color: #21643e; }
+.access-admin__state.is-off,.access-admin__state.is-archived { border-color: #edc0b9; background: #fff4f1; color: #934033; }
+.access-admin__state.is-template { border-color: #b5d7e8; background: #f0f8fc; color: #226586; }
+.access-admin__row-actions { display: flex; gap: 4px; white-space: nowrap; }
+.access-admin__row-actions button,.access-admin__text-button { display: inline-flex; min-width: 28px; height: 27px; align-items: center; justify-content: center; gap: 5px; padding: 0 6px; border: 1px solid #d3e0e7; border-radius: 2px; background: #fff; color: #2d536a; font-size: 10px; }
+.access-admin__row-actions button:hover:not(:disabled),.access-admin__text-button:hover { border-color: #83b6cf; background: #eff8fc; }
+.access-admin__text-button { padding: 0 8px; color: #086f9c; font-weight: 700; }
+.access-admin__empty,.access-admin__empty-cell { padding: 30px 14px; color: var(--access-muted); text-align: center; font-size: 12px; }
+.access-admin__empty { display: flex; justify-content: center; align-items: center; gap: 8px; }
+.access-admin__hint { display: flex; align-items: start; gap: 7px; margin: 10px 12px 12px; color: var(--access-muted); font-size: 11px; }
+.access-admin__permissions-layout { display: grid; grid-template-columns: minmax(220px, 270px) minmax(0, 1fr); align-items: start; gap: 12px; }
+.access-admin__selector { position: sticky; top: 12px; display: grid; gap: 12px; padding: 13px; }
+.access-admin__selector-title { display: flex; align-items: center; gap: 7px; padding-bottom: 9px; border-bottom: 1px solid #dce8ed; color: #24566f; font-size: 12px; }
+.access-admin__selector select { width: 100%; font-size: 11px; }
+.access-admin__selector-note { display: grid; gap: 4px; min-width: 0; padding: 9px; background: #f1f8fb; color: #264f66; font-size: 11px; }
+.access-admin__selector-note span { color: var(--access-muted); overflow-wrap: anywhere; }
+.access-admin__selector small { color: var(--access-muted); font-size: 10px; }
+.access-admin__matrix { min-width: 0; }
+.access-admin__legend { display: flex; align-items: center; gap: 5px; color: var(--access-muted); font-size: 10px; }
+.access-admin__legend i { width: 7px; height: 7px; margin-left: 7px; border-radius: 50%; background: #23865a; }
+.access-admin__legend i.is-deny { background: #b24c4c; }
+.access-admin__legend i.is-inherit { background: #8b9da8; }
+.access-admin__module { margin-bottom: 9px; overflow: hidden; }
+.access-admin__module > header { display: flex; min-height: 38px; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 11px; border-bottom: 1px solid #dce8ed; background: #f3f8fa; }
+.access-admin__module > header div { display: flex; align-items: baseline; gap: 8px; }
+.access-admin__module > header span { color: #24566f; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+.access-admin__module > header small { color: var(--access-muted); font-size: 10px; }
+.access-admin__permission-head,.access-admin__permission-row { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(130px, 190px) minmax(140px, 210px); align-items: center; gap: 9px; padding: 5px 10px; }
+.access-admin__permission-head { min-height: 25px; color: #668193; font-size: 9px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.access-admin__permission-row { min-height: 39px; border-top: 1px solid #edf2f5; font-size: 11px; }
+.access-admin__permission-row > span:first-child strong,.access-admin__permission-row > span:first-child small { display: block; }
+.access-admin__permission-row > span:first-child small { margin-top: 2px; color: #79909f; font-size: 9px; }
+.access-admin__permission-row select { width: 100%; min-width: 0; height: 28px; padding: 0 6px; font-size: 10px; }
+.access-admin__effective { font-size: 10px; }
+.access-admin__effective.is-allow { color: #247449; }
+.access-admin__effective.is-deny { color: #9b5150; }
+.access-admin__table details summary { color: #146e99; cursor: pointer; font-size: 10px; white-space: nowrap; }
+.access-admin__table details pre { max-width: min(500px, 50vw); max-height: 280px; overflow: auto; padding: 8px; background: #f5f8fa; font-size: 9px; }
+.access-admin__modal-backdrop { position: fixed; z-index: 120; inset: 0; display: grid; place-items: center; padding: 16px; background: rgb(10 28 40 / 55%); }
+.access-admin__modal { width: min(720px, 100%); max-height: min(90vh, 850px); overflow: auto; padding: 18px; border: 1px solid var(--access-border); border-radius: 3px; background: #fff; box-shadow: 0 18px 56px rgb(13 38 54 / 25%); }
+.access-admin__modal--compact { width: min(560px, 100%); }
+.access-admin__modal > header { display: flex; align-items: start; justify-content: space-between; gap: 16px; padding-bottom: 12px; border-bottom: 1px solid #dce8ed; }
+.access-admin__modal > header h2 { margin: 4px 0 0; font-size: 19px; }
+.access-admin__modal > header button { display: grid; width: 30px; height: 30px; place-items: center; border: 1px solid var(--access-border); border-radius: 2px; background: #fff; color: var(--access-ink); }
+.access-admin__form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 15px 0 5px; }
+.access-admin__form-grid label { min-width: 0; }
+.access-admin__form-grid label:nth-child(2),.access-admin__form-grid label:has(small) { grid-column: span 2; }
+.access-admin__form-grid input,.access-admin__form-grid select { width: 100%; min-width: 0; height: 34px; }
+.access-admin__form-grid small { color: var(--access-muted); font-size: 10px; font-weight: 400; line-height: 1.4; }
+.access-admin__modal > footer { display: flex; justify-content: end; gap: 7px; padding-top: 12px; border-top: 1px solid #dce8ed; }
+@media (max-width: 900px) {
+  .access-admin__header { align-items: start; flex-direction: column; }
+  .access-admin__permissions-layout { grid-template-columns: 1fr; }
+  .access-admin__selector { position: static; }
+}
+@media (max-width: 620px) {
+  .access-admin { padding: 14px 10px 28px; }
+  .access-admin__header-actions { width: 100%; }
+  .access-admin__company { flex: 1 1 100%; }
+  .access-admin__company select { width: 100%; }
+  .access-admin__tabs { overflow-x: auto; }
+  .access-admin__tabs button { flex: 0 0 auto; padding-inline: 8px; }
+  .access-admin__toolbar { align-items: stretch; }
+  .access-admin__search { min-width: 100%; }
+  .access-admin__count { margin-left: 0; }
+  .access-admin__permission-head,.access-admin__permission-row { grid-template-columns: minmax(110px, 1fr) minmax(95px, 125px); }
+  .access-admin__permission-head span:last-child,.access-admin__permission-row .access-admin__effective { grid-column: 1 / -1; }
+  .access-admin__form-grid { grid-template-columns: 1fr; }
+  .access-admin__form-grid label:nth-child(2),.access-admin__form-grid label:has(small) { grid-column: auto; }
+  .access-admin__table { min-width: 760px; }
+}
