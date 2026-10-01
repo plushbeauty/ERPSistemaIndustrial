@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Printer, RefreshCw } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
@@ -11,11 +12,12 @@ function isOverdue(o:Order){if(!o.data_entrega_prometida)return false;const d=ne
 function matches(o:Order,f:Filter){const s=norm(o.status);if(f==='atrasado')return isOverdue(o);if(f==='producao')return ['necessita_producao','em_producao','producao'].includes(s);if(f==='expedicao')return ['separado','expedicao','em_expedicao','expedido'].includes(s);if(f==='nf_saida')return ['faturado','nf_saida','nota_fiscal_saida','nota_emitida'].includes(s);return true}
 
 export default function VendasStatusPedidos(){
- const [rows,setRows]=useState<Order[]>([]);const [filter,setFilter]=useState<Filter>('todos');const [selected,setSelected]=useState<Record<string,boolean>>({});const [q,setQ]=useState('');const [busy,setBusy]=useState(false);const [error,setError]=useState('')
+ const [searchParams]=useSearchParams();const initialFilter=(searchParams.get('filtro') as Filter|null);const [rows,setRows]=useState<Order[]>([]);const [filter,setFilter]=useState<Filter>(initialFilter&&['todos','atrasado','producao','expedicao','nf_saida'].includes(initialFilter)?initialFilter:'todos');const [selected,setSelected]=useState<Record<string,boolean>>({});const [q,setQ]=useState('');const [busy,setBusy]=useState(false);const [error,setError]=useState('')
  const load=async()=>{setBusy(true);setError('');const e=await supabase.rpc('erp_current_empresa_id');if(e.error||!e.data){setError(e.error?.message||'Empresa não identificada.');setBusy(false);return}const r=await supabase.from('erp_pedidos_venda').select('id,numero,pedido_cliente,status,total,data_entrega_prometida,cliente:erp_clientes(nome)').eq('empresa_id',String(e.data)).order('numero',{ascending:false}).limit(1000);if(r.error)setError(r.error.message);setRows((r.data??[]) as unknown as Order[]);setBusy(false)}
  useEffect(()=>{void load()},[])
  const visible=useMemo(()=>rows.filter(o=>matches(o,filter)&&(!q||String(o.numero).includes(q)||(o.cliente?.nome??'').toLowerCase().includes(q.toLowerCase())||(o.pedido_cliente??'').toLowerCase().includes(q.toLowerCase()))),[rows,filter,q])
  const print=()=>window.print()
+ useEffect(()=>{const value=searchParams.get('filtro');if(value==='atrasados')setFilter('atrasado');else if(value==='producao')setFilter('producao');else if(value==='expedicao')setFilter('expedicao');else if(value==='nf_saida')setFilter('nf_saida')},[searchParams])
  const selectedRows=visible.filter(o=>selected[o.id])
  const cards:[Filter,string,string,string][]=[['todos','Todos','bg-slate-100','text-slate-800'],['atrasado','Atrasado','bg-red-100','text-red-800'],['producao','Produção','bg-orange-100','text-orange-900'],['expedicao','Expedição','bg-yellow-100','text-yellow-900'],['nf_saida','NF Saída','bg-blue-100','text-blue-800']]
  return <div className="min-h-screen bg-[#F4F7FE] text-slate-900">
