@@ -18,6 +18,7 @@ create index if not exists idx_erp_pedidos_venda_empresa_data_entrada
   on public.erp_pedidos_venda(empresa_id,data_entrada desc);
 
 drop function if exists public.erp_finalizar_pedido_venda(uuid,numeric,jsonb);
+drop function if exists public.erp_finalizar_pedido_venda(uuid,numeric,jsonb,date,text);
 
 create or replace function public.erp_finalizar_pedido_venda(
   p_cliente_id uuid,
