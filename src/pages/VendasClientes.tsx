@@ -490,4 +490,3 @@ export default function VendasClientes() {
     </main>
   )
 }
-
