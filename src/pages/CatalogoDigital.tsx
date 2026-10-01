@@ -182,9 +182,13 @@ export default function CatalogoDigital() {
     try {
       const text = productMessage(product)
       await writeAudit('CATALOGO_COMPARTILHADO', product, { canal: channel })
-      if (channel === 'whatsapp') window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener,noreferrer')
-      else window.location.href = 'mailto:?subject=' + encodeURIComponent('Catálogo B2B — ' + productCode(product) + ' — ' + product.nome) + '&body=' + encodeURIComponent(text)
-      setMessage('Compartilhamento ' + (channel === 'whatsapp' ? 'WhatsApp' : 'E-mail') + ' registrado no histórico.')
+      if (channel === 'whatsapp') {
+        window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener,noreferrer')
+        setMessage('Compartilhamento via WhatsApp preparado.')
+      } else {
+        await navigator.clipboard.writeText(text)
+        setMessage('Texto do catálogo copiado para a área de transferência. Nenhum cliente de e-mail foi aberto automaticamente.')
+      }
       if (showHistory && user) await loadHistory(user)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível registrar o compartilhamento.')
@@ -198,9 +202,13 @@ export default function CatalogoDigital() {
       const link = new URL('/comercial/catalogo', window.location.origin).toString()
       const text = 'Catálogo Comercial B2B — produtos ativos disponíveis: ' + link
       await writeAudit('CATALOGO_COMPARTILHADO', null, { canal: channel, escopo: 'catalogo_completo' })
-      if (channel === 'whatsapp') window.open('https://whatsapp.com/?text=' + encodeURIComponent(text), '_blank', 'noopener,noreferrer')
-      else window.location.href = 'mailto:?subject=' + encodeURIComponent('Catálogo Comercial B2B') + '&body=' + encodeURIComponent(text)
-      setMessage('Catálogo completo preparado e registrado no histórico.')
+      if (channel === 'whatsapp') {
+        window.open('https://whatsapp.com/?text=' + encodeURIComponent(text), '_blank', 'noopener,noreferrer')
+        setMessage('Catálogo completo preparado para WhatsApp.')
+      } else {
+        await navigator.clipboard.writeText(text)
+        setMessage('Catálogo completo copiado para a área de transferência. Nenhum cliente de e-mail foi aberto automaticamente.')
+      }
       if (showHistory && user) await loadHistory(user)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível registrar o compartilhamento.')
