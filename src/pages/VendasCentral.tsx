@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   BarChart3,
   ClipboardList,
+  FilePlus2,
+  BookOpen,
+  ListChecks,
   Clock3,
   LogOut,
   PackageSearch,
@@ -57,11 +60,11 @@ const statusClass: Record<string, string> = {
 
 const menu = [
   { label: 'Visão Geral', href: '/vendas', icon: BarChart3 },
-  { label: 'Pedidos', href: '/vendas/carteira', icon: ClipboardList },
-  { label: 'Pedidos em atraso', href: '/vendas/carteira?filtro=atrasados', icon: Clock3 },
-  { label: 'Pedidos pendentes', href: '/vendas/carteira?filtro=pendentes', icon: Clock3 },
+  { label: 'Entrada Pedido', href: '/vendas/novo-pedido', icon: FilePlus2 },
+  { label: 'Status Pedido', href: '/vendas/status', icon: ListChecks },
   { label: 'Carteira', href: '/vendas/carteira', icon: PackageSearch },
   { label: 'Clientes', href: '/vendas/clientes', icon: Users },
+  { label: 'Catálogo Digital', href: '/vendas/catalogo-digital/gestao', icon: BookOpen },
   { label: 'Metas', href: '/vendas/metas', icon: Target },
   { label: 'Gráficos', href: '/vendas/dashboard-graficos', icon: BarChart3 },
   { label: 'Configurações', href: '/vendas/configuracoes', icon: Settings },
