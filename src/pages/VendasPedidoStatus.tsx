@@ -1,4 +1,5 @@
 import { useEffect,useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
@@ -6,7 +7,8 @@ type Item={id:string;produto_id:string;descricao:string;quantidade:number;valor_
 type OP={numero_op:string;status:string;quantidade:number;quantidade_planejada:number;quantidade_produzida:number;data_prevista:string|null}
 type Exp={numero:number;status:string;transportadora:string|null;rastreio:string|null;data_expedicao:string|null}
 type Fiscal={tipo:string;status:string;quantidade_solicitada:number;quantidade_liberada:number;quantidade_pendente:number}
-export default function VendasPedidoStatus({id}:{id?:string}){
+export default function VendasPedidoStatus(){
+ const { id } = useParams<{ id: string }>()
  const [pedido,setPedido]=useState<{numero:number;status:string;pedido_cliente:string|null;total:number;data_entrega_prometida:string|null;cliente:{nome:string}|null}|null>(null);const [items,setItems]=useState<Item[]>([]);const [ops,setOps]=useState<OP[]>([]);const [exps,setExps]=useState<Exp[]>([]);const [fisc,setFisc]=useState<Fiscal[]>([]);const [error,setError]=useState('');const [busy,setBusy]=useState(false)
  const load=async()=>{if(!id)return;setBusy(true);setError('');const [p,i,o,e,f]=await Promise.all([supabase.from('erp_pedidos_venda').select('numero,status,pedido_cliente,total,data_entrega_prometida,cliente:erp_clientes(nome)').eq('id',id).maybeSingle(),supabase.from('erp_pedidos_venda_itens').select('id,produto_id,descricao,quantidade,valor_unitario,total').eq('pedido_id',id).order('id'),supabase.from('erp_ordens_producao').select('numero_op,status,quantidade,quantidade_planejada,quantidade_produzida,data_prevista').eq('pedido_venda_id',id),supabase.from('erp_expedicoes').select('numero,status,transportadora,rastreio,data_expedicao').eq('pedido_venda_id',id),supabase.from('erp_liberacoes_fiscais').select('tipo,status,quantidade_solicitada,quantidade_liberada,quantidade_pendente').eq('pedido_venda_id',id)]);if(p.error) setError(p.error.message);setPedido((p.data??null) as typeof pedido);setItems((i.data??[]) as Item[]);setOps((o.data??[]) as OP[]);setExps((e.data??[]) as Exp[]);setFisc((f.data??[]) as Fiscal[]);setBusy(false)}
  useEffect(()=>{void load()},[id])
