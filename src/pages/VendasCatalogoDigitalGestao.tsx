@@ -22,6 +22,7 @@ export default function VendasCatalogoDigitalGestao() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [companyId, setCompanyId] = useState('')
 
   const load = async () => {
     setBusy(true)
@@ -48,6 +49,7 @@ export default function VendasCatalogoDigitalGestao() {
     }
 
     const products = (result.data ?? []) as Product[]
+    setCompanyId(String(company.data))
     setRows(products)
     setSelected(Object.fromEntries(products.map((product) => [product.id, product.catalogo_disponivel])))
     setBusy(false)
@@ -73,7 +75,7 @@ export default function VendasCatalogoDigitalGestao() {
           .from('erp_produtos')
           .update({ catalogo_disponivel: Boolean(selected[product.id]) })
           .eq('id', product.id)
-          .eq('empresa_id', String(product.id ? rows.find((row) => row.id === product.id)?.id ?? '' || ''))
+           .eq('empresa_id', companyId)
         if (result.error) {
           throw result.error
         }
