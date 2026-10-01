@@ -63,6 +63,9 @@ const VendasDashboardGraficos = lazyPage(() => import('./pages/VendasDashboardGr
 const VendasMetas = lazyPage(() => import('./pages/VendasMetas'), 'VendasMetas')
 const VendasRelatorios = lazyPage(() => import('./pages/VendasRelatorios'), 'VendasRelatorios')
 const VendasConfiguracoes = lazyPage(() => import('./pages/VendasConfiguracoes'), 'VendasConfiguracoes')
+const VendasStatusPedidos = lazyPage(() => import('./pages/VendasStatusPedidos'), 'VendasStatusPedidos')
+const VendasPedidoStatus = lazyPage(() => import('./pages/VendasPedidoStatus'), 'VendasPedidoStatus')
+const VendasCatalogoDigitalGestao = lazyPage(() => import('./pages/VendasCatalogoDigitalGestao'), 'VendasCatalogoDigitalGestao')
 const VendasCarteira = lazyPage(() => import('./pages/VendasCarteira'), 'VendasCarteira')
 const VendasClientesPage = lazyPage(() => import('./pages/VendasClientes'), 'default')
 const CentralCustosIndustrial = lazyPage(() => import('./pages/CentralCustosIndustrial'), 'CentralCustosIndustrial')
@@ -337,6 +340,9 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas" element={<VendasCentral />} />
       <Route path="/vendas/novo-pedido" element={<PedidoVendaCompleto />} />
       <Route path="/vendas/carteira" element={<VendasCarteira />} />
+      <Route path="/vendas/status" element={<VendasStatusPedidos />} />
+      <Route path="/vendas/pedido/:id" element={<VendasPedidoStatus />} />
+      <Route path="/vendas/catalogo-digital/gestao" element={<VendasCatalogoDigitalGestao />} />
       <Route path="/vendas/clientes" element={<VendasClientesPage />} />
       <Route path="/vendas/catalogo-digital" element={<VendasCatalogoDigital />} />
       <Route path="/vendas/analise-custos" element={<VendasAnaliseCustos />} />
