@@ -31,8 +31,28 @@ type Client = {
   ativo: boolean
 }
 
-type Form = Omit<Client, 'id' | 'tabela_preco_id' | 'desconto_padrao_percentual' | 'ativo'> & {
+type Form = {
   codigo: string
+  nome: string
+  nome_fantasia: string
+  documento: string
+  inscricao_estadual: string
+  inscricao_municipal: string
+  tipo_pessoa: string
+  regime_tributario: string
+  contato_nome: string
+  email: string
+  email_nfe: string
+  telefone: string
+  whatsapp: string
+  cep: string
+  endereco: string
+  numero: string
+  complemento: string
+  bairro: string
+  cidade: string
+  estado: string
+  tipo_cliente: string
   desconto: string
   ativo: boolean
 }
