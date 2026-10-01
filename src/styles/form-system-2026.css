@@ -285,6 +285,7 @@
 .v7-content .mw3-modal { border-radius: 2px !important; }
 
 @media (max-width: 1000px) {
+  .erp-form,
   .erp-form-grid,
   .erp-form-layout,
   .v7-content form,
@@ -321,6 +322,7 @@
 }
 
 @media (max-width: 640px) {
+  .erp-form,
   .erp-form-grid,
   .erp-form-layout,
   .v7-content form,
@@ -429,3 +431,4 @@
   .erp-operational-pages form button,
   .erp-operational-pages .erp-form-actions button { min-height: var(--erp-form-touch-height) !important; }
 }
+
