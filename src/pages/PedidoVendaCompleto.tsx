@@ -46,7 +46,7 @@ export default function PedidoVendaCompleto(){
  const[empresa,setEmpresa]=useState('')
  const requestedView=new URLSearchParams(window.location.search).get('view');const pathView=window.location.pathname==='/vendas/clientes'?'clientes':window.location.pathname==='/vendas/carteira'?'carteira':window.location.pathname==='/vendas/novo-pedido'?'pedido':null;const activeView=requestedView??pathView??'pedido';const customerView=activeView==='clientes',[clients,setClients]=useState<Client[]>([]),[products,setProducts]=useState<Product[]>([]),[orders,setOrders]=useState<Order[]>([])
  const[client,setClient]=useState(''),[clientDoc,setClientDoc]=useState(''),[priceItems,setPriceItems]=useState<PriceItem[]>([]),[number,setNumber]=useState(''),[date,setDate]=useState(new Date().toISOString().slice(0,10)),[delivery,setDelivery]=useState(''),[pedidoCliente,setPedidoCliente]=useState(''),[observacoes,setObservacoes]=useState(''),[desconto,setDesconto]=useState('0'),[condicaoPagamento,setCondicaoPagamento]=useState(''),[vendedor,setVendedor]=useState(''),[modalidadeFrete,setModalidadeFrete]=useState(''),[transportadora,setTransportadora]=useState(''),[valorFrete,setValorFrete]=useState('0'),[outrasDespesas,setOutrasDespesas]=useState('0')
- const[items,setItems]=useState<Item[]>([]),[draft,setDraft]=useState({produto:'',qtd:'1',valor:'0',codigoCliente:''}),[busy,setBusy]=useState(false),[msg,setMsg]=useState(''),[err,setErr]=useState(''),[processed,setProcessed]=useState(false),[sidebar,setSidebar]=useState(true)
+ const[items,setItems]=useState<Item[]>([]),[draft,setDraft]=useState({produto:'',qtd:'1',valor:'0',desconto:'0',codigoCliente:''}),[busy,setBusy]=useState(false),[msg,setMsg]=useState(''),[err,setErr]=useState(''),[processed,setProcessed]=useState(false),[sidebar,setSidebar]=useState(true)
 
  const load=async()=>{
   setErr('')
@@ -80,8 +80,8 @@ export default function PedidoVendaCompleto(){
  function choose(id:string){const p=products.find(x=>x.id===id);if(!p)return;setDraft({...draft,produto:id,valor:String(priceFor(p)||0)})}
  function add(){
   if(!selected||Number(draft.qtd)<=0)return
-  setItems(x=>[...x,{produto_id:selected.id,codigo:selected.codigo,codigoCliente:draft.codigoCliente,descricao:selected.nome,quantidade:draft.qtd,valor:draft.valor||String(selected.preco_venda||0),desconto:'0',unidade:selected.unidade||'UN',estoque:Number(selected.estoque_atual||0),reservadoQtd:0}])
-  setDraft({produto:'',qtd:'1',valor:'0',codigoCliente:''})
+  setItems(x=>[...x,{produto_id:selected.id,codigo:selected.codigo,codigoCliente:draft.codigoCliente,descricao:selected.nome,quantidade:draft.qtd,valor:draft.valor||String(selected.preco_venda||0),desconto:draft.desconto||'0',unidade:selected.unidade||'UN',estoque:Number(selected.estoque_atual||0),reservadoQtd:0}])
+  setDraft({produto:'',qtd:'1',valor:'0',desconto:'0',codigoCliente:''})
  }
  async function finalize(){
   if(!empresa||!client||!items.length){setErr('Cliente e pelo menos um item são obrigatórios.');return}
@@ -165,6 +165,7 @@ export default function PedidoVendaCompleto(){
        <label className="sales-field">Cód. Cliente<input value={draft.codigoCliente} onChange={e=>setDraft({...draft,codigoCliente:e.target.value})} placeholder="COD-CLI"/></label>
        <label className="sales-field">Quantidade<input type="number" min="1" value={draft.qtd} onChange={e=>setDraft({...draft,qtd:e.target.value})}/></label>
        <label className="sales-field">Valor unitário<input type="number" min="0" step="0.01" value={draft.valor} onChange={e=>setDraft({...draft,valor:e.target.value})}/><small className="sales-note">{selected?priceSource(selected):selectedClient?.tabela_preco_id?'Tabela do cliente':'Selecione cliente e peça'}</small></label>
+       <label className="sales-field">Desconto do item<input type="number" min="0" step="0.01" value={draft.desconto} onChange={e=>setDraft({...draft,desconto:e.target.value})}/></label>
        <button className="sales-btn primary" onClick={add} disabled={!selected}><Plus size={17}/> Adicionar Produto</button>
       </div>
       <div className="sales-table-wrap"><table className="sales-table"><thead><tr><th>Cód. Int.</th><th>Cód. Cliente</th><th>Produto</th><th>Qtd.</th><th>UN</th><th>Preço</th><th>Desc.</th><th>Total</th><th>Est. Fís.</th><th>Disponível</th><th>Status</th><th>Destino</th><th/></tr></thead><tbody>
