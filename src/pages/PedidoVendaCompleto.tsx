@@ -1,6 +1,6 @@
 import {useEffect,useMemo,useState} from 'react'
 import {supabase} from '../lib/supabaseClient'
-import {Plus,Save,Trash2,RefreshCw,PackageCheck,Factory,LayoutGrid,ShoppingCart,Users,BarChart3,Settings,ClipboardList,PanelLeftClose,PanelLeftOpen,Search} from 'lucide-react'
+import {Plus,Save,Trash2,RefreshCw,PackageCheck,Factory,ShoppingCart,Users,BarChart3,Settings,ClipboardList,PanelLeftClose,PanelLeftOpen,LogOut,Tablet,FileText} from 'lucide-react'
 import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 
 type Client={id:string;nome:string;documento:string|null;codigo?:string|null;email?:string|null}
@@ -44,7 +44,7 @@ function SalesCustomerView({empresa,products,clients,onSaved}:{empresa:string;pr
 export default function PedidoVendaCompleto(){
  const[empresa,setEmpresa]=useState('')
  const requestedView=new URLSearchParams(window.location.search).get('view');const pathView=window.location.pathname==='/vendas/clientes'?'clientes':window.location.pathname==='/vendas/carteira'?'carteira':window.location.pathname==='/vendas/novo-pedido'?'pedido':null;const activeView=requestedView??pathView??'pedido';const customerView=activeView==='clientes',[clients,setClients]=useState<Client[]>([]),[products,setProducts]=useState<Product[]>([]),[orders,setOrders]=useState<Order[]>([])
- const[client,setClient]=useState(''),[clientDoc,setClientDoc]=useState(''),[number,setNumber]=useState(''),[date,setDate]=useState(new Date().toISOString().slice(0,10)),[delivery,setDelivery]=useState('')
+ const[client,setClient]=useState(''),[clientDoc,setClientDoc]=useState(''),[number,setNumber]=useState(''),[date,setDate]=useState(new Date().toISOString().slice(0,10)),[delivery,setDelivery]=useState(''),[pedidoCliente,setPedidoCliente]=useState(''),[observacoes,setObservacoes]=useState(''),[desconto,setDesconto]=useState('0')
  const[items,setItems]=useState<Item[]>([]),[draft,setDraft]=useState({produto:'',qtd:'1',valor:'0',codigoCliente:''}),[busy,setBusy]=useState(false),[msg,setMsg]=useState(''),[err,setErr]=useState(''),[processed,setProcessed]=useState(false),[sidebar,setSidebar]=useState(true)
 
  const load=async()=>{
@@ -64,7 +64,7 @@ export default function PedidoVendaCompleto(){
  useEffect(()=>{void load().catch(e=>setErr(e.message))},[])
 
  const selected=products.find(p=>p.id===draft.produto)
- const total=useMemo(()=>items.reduce((s,i)=>s+Number(i.quantidade)*Number(i.valor),0),[items])
+ const subtotal=useMemo(()=>items.reduce((s,i)=>s+Number(i.quantidade)*Number(i.valor),0),[items]); const descontoValor=Math.min(Math.max(Number(desconto)||0,0),subtotal); const total=Math.max(subtotal-descontoValor,0)
  const analyzed=items.map(i=>({...i,disponivel:Math.max(i.estoque-i.reservadoQtd,0),reserva:Math.min(Number(i.quantidade),Math.max(i.estoque-i.reservadoQtd,0)),falta:Math.max(Number(i.quantidade)-Math.max(i.estoque-i.reservadoQtd,0),0)}))
  const faltantes=analyzed.filter(i=>i.falta>0)
  const verdes=analyzed.filter(i=>i.falta===0)
@@ -79,8 +79,9 @@ export default function PedidoVendaCompleto(){
   if(!empresa||!client||!items.length){setErr('Cliente e pelo menos um item são obrigatórios.');return}
   setBusy(true);setErr('');setMsg('')
   try{
-   const r=await supabase.rpc('erp_finalizar_pedido_venda',{p_cliente_id:client,p_desconto:0,p_itens:items.map(i=>({produto_id:i.produto_id,quantidade:Number(i.quantidade),valor_unitario:Number(i.valor),codigo_cliente:i.codigoCliente||null})),p_data_entrega:delivery||null,p_pedido_cliente:null})
+   const r=await supabase.rpc('erp_finalizar_pedido_venda',{p_cliente_id:client,p_desconto:0,p_itens:items.map(i=>({produto_id:i.produto_id,quantidade:Number(i.quantidade),valor_unitario:Number(i.valor),codigo_cliente:i.codigoCliente||null})),p_data_entrega:delivery||null,p_pedido_cliente:pedidoCliente.trim()||null})
    if(r.error)throw r.error
+   if(r.data){const update=await supabase.from('erp_pedidos_venda').update({observacoes:observacoes.trim()||null,pedido_cliente:pedidoCliente.trim()||null}).eq('id',String(r.data)).eq('empresa_id',empresa);if(update.error)throw update.error}
    setProcessed(true)
    setMsg('Pedido finalizado com sucesso. O estoque disponível foi reservado e somente a necessidade líquida foi enviada ao PCP.')
    setItems(analyzed.map(i=>({...i,reservadoQtd:i.reserva})))
@@ -88,7 +89,7 @@ export default function PedidoVendaCompleto(){
   }catch(e){setErr(e instanceof Error?e.message:'Falha ao finalizar pedido.')}
   finally{setBusy(false)}
  }
- function cancel(){setItems([]);setClient('');setClientDoc('');setDelivery('');setProcessed(false);setMsg('');setErr('')}
+ function cancel(){setItems([]);setClient('');setClientDoc('');setDelivery('');setPedidoCliente('');setObservacoes('');setDesconto('0');setProcessed(false);setMsg('');setErr('')}
  function go(path:string){location.href=path}
 
  return <div className="sales-shell">
@@ -110,7 +111,7 @@ export default function PedidoVendaCompleto(){
    .sales-table-wrap{overflow:auto;border:1px solid #d7e6eb;border-radius:12px;margin-top:16px}.sales-table{width:100%;border-collapse:collapse;min-width:900px}.sales-table th{background:#f4fbfd;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:12px;border-bottom:1px solid #d7e6eb}.sales-table td{padding:12px;border-bottom:1px solid #edf3f5;font-size:13px;vertical-align:middle}
    .status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:900;white-space:nowrap}.status.ok{background:#e8f7f0;color:#287a5c}.status.warn{background:#fff2e5;color:#b45b12}.status.done{background:#e7f5fa;color:#176487}
    .sales-summary{display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap}.sales-summary strong{font-size:18px}.sales-note{font-size:12px;color:#68808b}.sales-message{padding:12px 14px;border-radius:10px;margin:0 0 14px;background:#e8f7f0;color:#287a5c;border:1px solid #b9dfcd;font-weight:750}.sales-error{padding:12px 14px;border-radius:10px;margin:0 0 14px;background:#fff2f2;color:#9b2525;border:1px solid #e2b9b9;font-weight:750}
-   .sales-result{border:1px solid #b9dfcd;background:#f2fbf6;border-radius:12px;padding:18px;margin-top:16px}.sales-result h3{margin:0 0 10px;color:#287a5c}
+   .sales-result{border:1px solid #b9dfcd;background:#f2fbf6;border-radius:12px;padding:18px;margin-top:16px}.sales-final-fields{align-items:start}.sales-final-fields textarea{min-height:96px;resize:vertical;border:1px solid #bdd3da;border-radius:9px;background:#fff;padding:10px 11px;color:#17333f;font:inherit}.sales-total{padding:12px;border:1px solid #cfe1e7;border-radius:10px;background:#f4fbfd}.sales-total strong{font-size:22px;color:#17445a}.sales-total small{color:#68808b}.sales-result h3{margin:0 0 10px;color:#287a5c}
    .sales-field-span-2{grid-column:span 2}.sales-customer{max-width:1180px;margin:0 auto}.sales-customer-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px}.sales-customer-head span{font-size:11px;font-weight:900;letter-spacing:.12em;color:#2d8db8}.sales-customer-head h1{margin:4px 0;font-size:28px}.sales-customer-badge{padding:9px 12px;border:1px solid #b9d2da;background:#f4fbfd;border-radius:7px;font-size:11px;font-weight:900;color:#17445a}.sales-customer-card{background:#fff;border:1px solid #cfe1e7;border-radius:9px;box-shadow:0 5px 16px rgba(23,51,63,.05);padding:18px;margin-bottom:14px}.sales-customer-section-title{font-size:13px;font-weight:900;color:#17445a;margin-bottom:14px}.sales-customer-grid,.sales-customer-link-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.sales-customer-grid label,.sales-customer-link-grid label{display:grid;gap:6px;font-size:12px;font-weight:850;color:#172033}.sales-customer-grid label.wide{grid-column:1/-1}.sales-customer-grid input,.sales-customer-link-grid input{min-height:42px;border:1px solid #b9cbd3;border-radius:7px;background:#fff;color:#172033;padding:0 11px;box-sizing:border-box}.sales-customer-help{color:#536b76;font-size:13px;margin:0 0 14px}.sales-customer-table{overflow:auto;margin-top:14px;border:1px solid #d7e6eb;border-radius:8px}.sales-customer-table table{width:100%;border-collapse:collapse;min-width:800px}.sales-customer-table th,.sales-customer-table td{text-align:left;padding:11px;border-bottom:1px solid #e5edf0;font-size:12px;color:#172033}.sales-customer-table th{background:#edf6f8;font-size:11px;text-transform:uppercase}.sales-customer-footer{display:flex;justify-content:flex-end;gap:9px;padding-bottom:10px}@media(max-width:700px){.sales-customer-grid,.sales-customer-link-grid{grid-template-columns:1fr}.sales-customer-grid label.wide{grid-column:auto}.sales-customer-head{align-items:flex-start;flex-direction:column}.sales-field-span-2{grid-column:auto}}\n   @media(max-width:1000px){.sales-side{position:fixed;z-index:9500;left:0;top:0;bottom:0;transform:translateX(-100%);transition:.2s}.sales-side.open{transform:translateX(0)}.sales-toggle{display:inline-flex}.sales-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sales-content{padding:16px}.sales-top{padding:10px 14px}}
    @media(max-width:560px){.sales-grid{grid-template-columns:1fr}.sales-top-title small{display:none}.sales-actions{width:100%}.sales-btn{flex:1;justify-content:center}.sales-top{align-items:flex-start}.sales-content{padding:10px}}
   `}</style>
@@ -128,43 +129,45 @@ export default function PedidoVendaCompleto(){
   <section className="sales-main">
    <header className="sales-top">
     <div className="sales-top-title"><button className="sales-btn sales-toggle" onClick={()=>setSidebar(x=>!x)}>{sidebar?<PanelLeftClose/>:<PanelLeftOpen/>}</button><span>ERP INDUSTRIAL • VENDAS</span><strong>{customerView?'Cadastro de Cliente':'Novo Pedido de Cliente'}</strong><small>{customerView?'Dados cadastrais + DE-PARA de produtos do cliente':'Pedido → análise de estoque → reserva → necessidade líquida → PCP'}</small></div>
-    <div className="sales-actions">{!customerView&&<button className="sales-btn" disabled title="Integração Microsoft Outlook requer conexão do tenant Microsoft 365"><ShoppingCart size={16}/> Importar pedido do Outlook</button>}<button className="sales-btn" onClick={()=>void load()} disabled={busy}><RefreshCw size={16}/> Atualizar</button></div>
+    <div className="sales-actions"><button className="sales-btn" onClick={()=>go('/tablet/dashboard')} title="Voltar ao painel operacional do Tablet"><Tablet size={16}/> TABLET</button>{!customerView&&<button className="sales-btn" disabled title="Integração Microsoft Outlook requer conexão do tenant Microsoft 365"><ShoppingCart size={16}/> Importar pedido do Outlook</button>}<button className="sales-btn" onClick={()=>void load()} disabled={busy}><RefreshCw size={16}/> Atualizar</button><button className="sales-btn danger" onClick={()=>void supabase.auth.signOut().then(()=>{location.replace('/login')})}><LogOut size={16}/> SAIR</button></div>
    </header>
    <main className="sales-content">{customerView?<SalesCustomerView empresa={empresa} products={products} clients={clients} onSaved={()=>void load()}/>:<>
     {err&&<div className="sales-error">{err}</div>}{msg&&<div className="sales-message">{msg}</div>}
     {!processed&&<section className="sales-card">
-      <div className="sales-kicker">1. CABEÇALHO DO PEDIDO</div>
-      <h2>Dados gerais</h2>
+      <div className="sales-kicker">1. IDENTIFICAÇÃO DO PEDIDO</div>
+      <h2>Entrada do pedido de venda</h2>
+      <p>Os campos automáticos são somente leitura. O número definitivo é gerado pelo banco no momento da gravação.</p>
       <div className="sales-grid mt-3">
-       <label className="sales-field">Nº Pedido<input value={number} readOnly/></label>
+       <label className="sales-field">Nº Pedido (automático)<input value={number ? `Próximo: ${number}` : 'Gerado ao salvar'} readOnly/></label>
        <label className="sales-field">Data Entrada<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>
        <div className="sales-field sales-field-span-2"><EntityCodeLookup label="Cliente" value={client} records={clients} required onChange={value=>setClient(value)} onSelect={x=>{setClient(x.id);setClientDoc(String(x.documento??''))}} helper="Digite o código exato do cliente. A lupa abre a consulta quando necessário."/></div>
        <label className="sales-field">Documento<input value={clientDoc} readOnly/></label>
-       <label className="sales-field">Data Entrega<input type="date" value={delivery} onChange={e=>setDelivery(e.target.value)}/></label>
+       <label className="sales-field">Data Entrega Prometida<input type="date" value={delivery} onChange={e=>setDelivery(e.target.value)}/></label>
+       <label className="sales-field sales-field-span-2">Pedido / Referência do Cliente<input value={pedidoCliente} onChange={e=>setPedidoCliente(e.target.value)} maxLength={120} placeholder="Número do pedido ou referência do cliente"/></label>
       </div>
      </section>}
     {!processed&&<section className="sales-card">
-      <div className="sales-kicker">2. ITENS DO PEDIDO</div><h2>Grid dinâmico com análise de estoque</h2>
+      <div className="sales-kicker">2. ITENS DO PEDIDO</div><h2>Produtos, quantidade, preço e atendimento</h2>
       <div className="sales-grid">
        <div className="sales-field sales-field-span-2"><EntityCodeLookup label="Código Interno / Produto" value={draft.produto} records={products} required onChange={value=>setDraft(v=>({...v,produto:value}))} onSelect={p=>choose(p.id)} helper="Digite o código da peça/produto. Não é necessário percorrer uma lista de milhares de itens."/></div>
        <label className="sales-field">Cód. Cliente<input value={draft.codigoCliente} onChange={e=>setDraft({...draft,codigoCliente:e.target.value})} placeholder="COD-CLI"/></label>
        <label className="sales-field">Quantidade<input type="number" min="1" value={draft.qtd} onChange={e=>setDraft({...draft,qtd:e.target.value})}/></label>
-       <label className="sales-field">Valor unitário<input type="number" step="0.01" value={draft.valor} onChange={e=>setDraft({...draft,valor:e.target.value})}/></label>
+       <label className="sales-field">Valor unitário<input type="number" min="0" step="0.01" value={draft.valor} onChange={e=>setDraft({...draft,valor:e.target.value})}/></label>
        <button className="sales-btn primary" onClick={add} disabled={!selected}><Plus size={17}/> Adicionar Produto</button>
       </div>
       <div className="sales-table-wrap"><table className="sales-table"><thead><tr><th>Cód. Int.</th><th>Cód. Cliente</th><th>Produto</th><th>Qtd.</th><th>Est. Fís.</th><th>Disponível</th><th>Status</th><th>Destino</th><th/></tr></thead><tbody>
-       {analyzed.map((i,n)=><tr key={n}><td><b>{i.codigo}</b></td><td>{i.codigoCliente||'—'}</td><td>{i.descricao}</td><td>{Number(i.quantidade).toLocaleString('pt-BR')}</td><td>{i.estoque.toLocaleString('pt-BR')}</td><td>{i.disponivel.toLocaleString('pt-BR')}</td><td><span className={`status ${i.falta?'warn':'ok'}`}>{i.falta?'🟠 FALTA':'🟢 OK'}</span></td><td><b>{i.falta?`Produzir ${i.falta}`:'Reservar integral'}</b></td><td><button className="sales-btn danger" onClick={()=>setItems(items.filter((_,x)=>x!==n))}><Trash2 size={15}/></button></td></tr>)}
+       {analyzed.map((i,n)=><tr key={n}><td><b>{i.codigo}</b></td><td>{i.codigoCliente||'—'}</td><td>{i.descricao}</td><td>{Number(i.quantidade).toLocaleString('pt-BR')}</td><td>{i.estoque.toLocaleString('pt-BR')}</td><td>{i.disponivel.toLocaleString('pt-BR')}</td><td><span className={`status ${i.falta?'warn':'ok'}`}>{i.falta?'FALTA':'OK'}</span></td><td><b>{i.falta?`Produzir ${i.falta}`:'Reservar integral'}</b></td><td><button className="sales-btn danger" onClick={()=>setItems(items.filter((_,x)=>x!==n))}><Trash2 size={15}/></button></td></tr>)}
        {!items.length&&<tr><td colSpan={9}>Adicione os produtos do pedido. A análise usa o estoque real disponível da empresa.</td></tr>}
       </tbody></table></div>
      </section>}
     {!processed&&<section className="sales-card">
-      <div className="sales-kicker">3. FINALIZAÇÃO E REQUISITOS</div>
-      <div className="sales-summary"><div><strong>{money(total)}</strong><div className="sales-note">{verdes.length} item(ns) atendido(s) por reserva • {faltantes.length} item(ns) com necessidade de produção</div></div><div className="sales-actions"><button className="sales-btn danger" onClick={cancel}>Cancelar</button><button className="sales-btn primary" disabled={busy||!items.length} onClick={()=>void finalize()}><Save size={17}/> FINALIZAR PEDIDO E DISPARAR REQUISIÇÕES</button></div></div>
+      <div className="sales-kicker">3. CONDIÇÕES E FINALIZAÇÃO</div>
+      <div className="sales-grid sales-final-fields"><label className="sales-field">Desconto do pedido<input type="number" min="0" max={subtotal} step="0.01" value={desconto} onChange={e=>setDesconto(e.target.value)}/></label><label className="sales-field sales-field-span-2">Observações<textarea value={observacoes} onChange={e=>setObservacoes(e.target.value)} maxLength={2000} placeholder="Instruções comerciais, entrega, embalagem ou outras observações"/></label><div className="sales-field sales-total"><span>Total do pedido</span><strong>{money(total)}</strong><small>Subtotal {money(subtotal)} • Desconto {money(descontoValor)}</small></div></div><div className="sales-summary"><div><strong>{money(total)}</strong><div className="sales-note">{verdes.length} item(ns) atendido(s) por reserva • {faltantes.length} item(ns) com necessidade de produção</div></div><div className="sales-actions"><button className="sales-btn danger" onClick={cancel}>Cancelar</button><button className="sales-btn primary" disabled={busy||!items.length} onClick={()=>void finalize()}><Save size={17}/> FINALIZAR PEDIDO E DISPARAR REQUISIÇÕES</button></div></div>
      </section>}
     {processed&&<section className="sales-result">
-      <h3>🎉 Pedido salvo com sucesso</h3>
+      <h3>Pedido salvo com sucesso</h3>
       <p>{msg}</p>
-      <div className="sales-table-wrap"><table className="sales-table"><thead><tr><th>Item</th><th>Qtd.</th><th>Reserva</th><th>Produção</th><th>Status</th></tr></thead><tbody>{analyzed.map(i=><tr key={i.produto_id}><td><b>{i.codigo}</b> — {i.descricao}</td><td>{Number(i.quantidade).toLocaleString('pt-BR')}</td><td>{i.reserva.toLocaleString('pt-BR')} un</td><td>{i.falta.toLocaleString('pt-BR')} un</td><td><span className={`status ${i.falta?'warn':'ok'}`}>{i.falta?'🟠 PCP':'🟢 Reservado'}</span></td></tr>)}</tbody></table></div>
+      <div className="sales-table-wrap"><table className="sales-table"><thead><tr><th>Item</th><th>Qtd.</th><th>Reserva</th><th>Produção</th><th>Status</th></tr></thead><tbody>{analyzed.map(i=><tr key={i.produto_id}><td><b>{i.codigo}</b> — {i.descricao}</td><td>{Number(i.quantidade).toLocaleString('pt-BR')}</td><td>{i.reserva.toLocaleString('pt-BR')} un</td><td>{i.falta.toLocaleString('pt-BR')} un</td><td><span className={`status ${i.falta?'warn':'ok'}`}>{i.falta?'PCP PENDENTE':'RESERVADO'}</span></td></tr>)}</tbody></table></div>
       {faltantes.length>0&&<div className="sales-summary mt-3"><span>Existem produtos em falta. A necessidade líquida já foi criada para análise do PCP.</span><button className="sales-btn primary" onClick={()=>go('/pcp')}><Factory size={17}/> ENVIAR PRODUTOS FALTANTES PARA PCP</button></div>}
       {faltantes.length===0&&<div className="sales-summary"><span>Todos os itens foram atendidos por reserva de estoque.</span><button className="sales-btn" onClick={()=>go('/comercial')}>Voltar para Carteira</button></div>}
     </section>}
