@@ -3,9 +3,10 @@ import {supabase} from '../lib/supabaseClient'
 import {Plus,Save,Trash2,RefreshCw,PackageCheck,Factory,ShoppingCart,Users,BarChart3,Settings,ClipboardList,PanelLeftClose,PanelLeftOpen,LogOut,Tablet,FileText} from 'lucide-react'
 import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 
-type Client={id:string;nome:string;documento:string|null;codigo?:string|null;email?:string|null}
+type Client={id:string;nome:string;documento:string|null;codigo?:string|null;email?:string|null;tabela_preco_id:string|null}
 type CustomerMapping={produto_id:string;codigoCliente:string;dimensoes:string;canal:string;molde:string}
 type Product={id:string;codigo:string;nome:string;estoque_atual:number;preco_venda:number;unidade:string}
+type PriceItem={tabela_preco_id:string;produto_id:string;preco:number}
 type Item={produto_id:string;codigo:string;codigoCliente:string;descricao:string;quantidade:string;valor:string;estoque:number;reservadoQtd:number}
 type Order={id:string;numero:number;status:string;total:number;data_entrega_prometida:string|null;cliente_id:string}
 
@@ -44,7 +45,7 @@ function SalesCustomerView({empresa,products,clients,onSaved}:{empresa:string;pr
 export default function PedidoVendaCompleto(){
  const[empresa,setEmpresa]=useState('')
  const requestedView=new URLSearchParams(window.location.search).get('view');const pathView=window.location.pathname==='/vendas/clientes'?'clientes':window.location.pathname==='/vendas/carteira'?'carteira':window.location.pathname==='/vendas/novo-pedido'?'pedido':null;const activeView=requestedView??pathView??'pedido';const customerView=activeView==='clientes',[clients,setClients]=useState<Client[]>([]),[products,setProducts]=useState<Product[]>([]),[orders,setOrders]=useState<Order[]>([])
- const[client,setClient]=useState(''),[clientDoc,setClientDoc]=useState(''),[number,setNumber]=useState(''),[date,setDate]=useState(new Date().toISOString().slice(0,10)),[delivery,setDelivery]=useState(''),[pedidoCliente,setPedidoCliente]=useState(''),[observacoes,setObservacoes]=useState(''),[desconto,setDesconto]=useState('0')
+ const[client,setClient]=useState(''),[clientDoc,setClientDoc]=useState(''),[priceItems,setPriceItems]=useState<PriceItem[]>([]),[number,setNumber]=useState(''),[date,setDate]=useState(new Date().toISOString().slice(0,10)),[delivery,setDelivery]=useState(''),[pedidoCliente,setPedidoCliente]=useState(''),[observacoes,setObservacoes]=useState(''),[desconto,setDesconto]=useState('0')
  const[items,setItems]=useState<Item[]>([]),[draft,setDraft]=useState({produto:'',qtd:'1',valor:'0',codigoCliente:''}),[busy,setBusy]=useState(false),[msg,setMsg]=useState(''),[err,setErr]=useState(''),[processed,setProcessed]=useState(false),[sidebar,setSidebar]=useState(true)
 
  const load=async()=>{
@@ -52,24 +53,30 @@ export default function PedidoVendaCompleto(){
   const e=await supabase.rpc('erp_current_empresa_id')
   if(e.error||!e.data)throw e.error??new Error('Empresa não identificada')
   const id=String(e.data);setEmpresa(id)
-  const [c,p,o]=await Promise.all([
-   supabase.from('erp_clientes').select('id,nome,documento,codigo,email').eq('empresa_id',id).eq('ativo',true).order('nome'),
+  const [c,p,pi,o]=await Promise.all([
+   supabase.from('erp_clientes').select('id,nome,documento,codigo,email,tabela_preco_id').eq('empresa_id',id).eq('ativo',true).order('nome'),
    supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,preco_venda,unidade').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(2000),
+   supabase.from('erp_tabelas_preco_itens').select('tabela_preco_id,produto_id,preco').eq('empresa_id',id).limit(10000),
    supabase.from('erp_pedidos_venda').select('id,numero,status,total,data_entrega_prometida,cliente_id').eq('empresa_id',id).order('numero',{ascending:false}).limit(100)
   ])
-  for(const x of[c,p,o])if(x.error)throw x.error
-  setClients(c.data||[]);setProducts(p.data||[]);setOrders(o.data||[])
+  for(const x of[c,p,pi,o])if(x.error)throw x.error
+  setClients(c.data||[]);setProducts(p.data||[]);setPriceItems((pi.data||[]) as PriceItem[]);setOrders(o.data||[])
+  const firstClient=(c.data||[])[0] as Client|undefined
+  if(firstClient) setClientDoc(String(firstClient.documento??''))
   setNumber(String((Number(o.data?.[0]?.numero||0)+1)).padStart(6,'0'))
  }
  useEffect(()=>{void load().catch(e=>setErr(e.message))},[])
 
  const selected=products.find(p=>p.id===draft.produto)
+ const selectedClient=clients.find(c=>c.id===client)
+ const priceFor=(product:Product)=>{const specific=selectedClient?.tabela_preco_id?priceItems.find(x=>x.tabela_preco_id===selectedClient.tabela_preco_id&&x.produto_id===product.id):undefined;return specific?.preco??product.preco_venda}
+ const priceSource=(product:Product)=>selectedClient?.tabela_preco_id&&priceItems.some(x=>x.tabela_preco_id===selectedClient.tabela_preco_id&&x.produto_id===product.id)?'PREÇO DO CLIENTE':'PREÇO PADRÃO'
  const subtotal=useMemo(()=>items.reduce((s,i)=>s+Number(i.quantidade)*Number(i.valor),0),[items]); const descontoValor=Math.min(Math.max(Number(desconto)||0,0),subtotal); const total=Math.max(subtotal-descontoValor,0)
  const analyzed=items.map(i=>({...i,disponivel:Math.max(i.estoque-i.reservadoQtd,0),reserva:Math.min(Number(i.quantidade),Math.max(i.estoque-i.reservadoQtd,0)),falta:Math.max(Number(i.quantidade)-Math.max(i.estoque-i.reservadoQtd,0),0)}))
  const faltantes=analyzed.filter(i=>i.falta>0)
  const verdes=analyzed.filter(i=>i.falta===0)
 
- function choose(id:string){const p=products.find(x=>x.id===id);if(!p)return;setDraft({...draft,produto:id,valor:String(p.preco_venda||0)})}
+ function choose(id:string){const p=products.find(x=>x.id===id);if(!p)return;setDraft({...draft,produto:id,valor:String(priceFor(p)||0)})}
  function add(){
   if(!selected||Number(draft.qtd)<=0)return
   setItems(x=>[...x,{produto_id:selected.id,codigo:selected.codigo,codigoCliente:draft.codigoCliente,descricao:selected.nome,quantidade:draft.qtd,valor:draft.valor||String(selected.preco_venda||0),estoque:Number(selected.estoque_atual||0),reservadoQtd:0}])
@@ -140,19 +147,19 @@ export default function PedidoVendaCompleto(){
       <div className="sales-grid mt-3">
        <label className="sales-field">Nº Pedido (automático)<input value={number ? `Próximo: ${number}` : 'Gerado ao salvar'} readOnly/></label>
        <label className="sales-field">Data Entrada<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>
-       <div className="sales-field sales-field-span-2"><EntityCodeLookup label="Cliente" value={client} records={clients} required onChange={value=>setClient(value)} onSelect={x=>{setClient(x.id);setClientDoc(String(x.documento??''))}} helper="Digite o código exato do cliente. A lupa abre a consulta quando necessário."/></div>
+       <div className="sales-field sales-field-span-2"><EntityCodeLookup label="Cliente" value={client} records={clients} required onChange={value=>setClient(value)} onSelect={x=>{setClient(x.id);setClientDoc(String(x.documento??''));setItems([]);setDraft({produto:'',qtd:'1',valor:'0',codigoCliente:''})}} helper="Digite o código exato do cliente. A lupa abre a consulta quando necessário."/></div>
        <label className="sales-field">Documento<input value={clientDoc} readOnly/></label>
        <label className="sales-field">Data Entrega Prometida<input type="date" value={delivery} onChange={e=>setDelivery(e.target.value)}/></label>
        <label className="sales-field sales-field-span-2">Pedido / Referência do Cliente<input value={pedidoCliente} onChange={e=>setPedidoCliente(e.target.value)} maxLength={120} placeholder="Número do pedido ou referência do cliente"/></label>
       </div>
      </section>}
     {!processed&&<section className="sales-card">
-      <div className="sales-kicker">2. ITENS DO PEDIDO</div><h2>Produtos, quantidade, preço e atendimento</h2>
+      <div className="sales-kicker">2. ITENS DO PEDIDO</div><h2>Produtos, quantidade, preço e atendimento</h2><p className="sales-note">O preço é carregado automaticamente da tabela comercial vinculada ao cliente. O preço padrão do produto só entra quando não houver preço específico cadastrado.</p>
       <div className="sales-grid">
        <div className="sales-field sales-field-span-2"><EntityCodeLookup label="Código Interno / Produto" value={draft.produto} records={products} required onChange={value=>setDraft(v=>({...v,produto:value}))} onSelect={p=>choose(p.id)} helper="Digite o código da peça/produto. Não é necessário percorrer uma lista de milhares de itens."/></div>
        <label className="sales-field">Cód. Cliente<input value={draft.codigoCliente} onChange={e=>setDraft({...draft,codigoCliente:e.target.value})} placeholder="COD-CLI"/></label>
        <label className="sales-field">Quantidade<input type="number" min="1" value={draft.qtd} onChange={e=>setDraft({...draft,qtd:e.target.value})}/></label>
-       <label className="sales-field">Valor unitário<input type="number" min="0" step="0.01" value={draft.valor} onChange={e=>setDraft({...draft,valor:e.target.value})}/></label>
+       <label className="sales-field">Valor unitário<input type="number" min="0" step="0.01" value={draft.valor} onChange={e=>setDraft({...draft,valor:e.target.value})}/><small className="sales-note">{selected?priceSource(selected):selectedClient?.tabela_preco_id?'Tabela do cliente':'Selecione cliente e peça'}</small></label>
        <button className="sales-btn primary" onClick={add} disabled={!selected}><Plus size={17}/> Adicionar Produto</button>
       </div>
       <div className="sales-table-wrap"><table className="sales-table"><thead><tr><th>Cód. Int.</th><th>Cód. Cliente</th><th>Produto</th><th>Qtd.</th><th>Est. Fís.</th><th>Disponível</th><th>Status</th><th>Destino</th><th/></tr></thead><tbody>
