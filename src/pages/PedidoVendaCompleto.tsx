@@ -1,6 +1,6 @@
 import {useEffect,useMemo,useState} from 'react'
 import {supabase} from '../lib/supabaseClient'
-import {Plus,Save,Trash2,RefreshCw,PackageCheck,Factory,ShoppingCart,Users,BarChart3,Settings,ClipboardList,PanelLeftClose,PanelLeftOpen,LogOut,Tablet,FileText} from 'lucide-react'
+import {Plus,Save,Trash2,RefreshCw,Factory,ShoppingCart,Users,BarChart3,Settings,ClipboardList,PanelLeftClose,PanelLeftOpen,LogOut,Tablet} from 'lucide-react'
 import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 
 type Client={id:string;nome:string;documento:string|null;codigo?:string|null;email?:string|null;tabela_preco_id:string|null}
