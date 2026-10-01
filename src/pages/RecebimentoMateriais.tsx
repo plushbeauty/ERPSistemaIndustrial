@@ -1,6 +1,7 @@
 import { ChangeEvent, useMemo, useState } from 'react'
 import { ArrowLeft, CheckCircle2, FileUp, PackageCheck, Plus, Printer, RefreshCw, Trash2, XCircle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { Form, FormDate, FormField, FormInput, FormNumber, FormSelect } from '../components/industrial/forms'
 
 type NfeItem = { item_nfe:number; codigo_produto:string; descricao_produto:string; unidade:string; quantidade_total:number; valor_unitario:number; valor_total:number }
 type Lote = { id:string; item_nfe:number; lote_fabricante:string; lote_interno:string; data_validade:string; quantidade:number }
@@ -9,7 +10,6 @@ type Header = { numero_nfe:string; serie:string; chave_acesso:string; data_emiss
 const blankHeader = (): Header => ({ numero_nfe:'', serie:'', chave_acesso:'', data_emissao:new Date().toISOString().slice(0,10), cnpj_fornecedor:'', valor_total:'', xml_nome_arquivo:'manual' })
 const blankItem = (n:number): NfeItem => ({ item_nfe:n, codigo_produto:'', descricao_produto:'', unidade:'UN', quantidade_total:0, valor_unitario:0, valor_total:0 })
 const tag = (root:Element, name:string) => Array.from(root.getElementsByTagName('*')).find(x => x.localName === name)?.textContent?.trim() ?? ''
-const money = (v:number) => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v || 0)
 
 function parseNfe(xml:string): { header:Header; items:NfeItem[] } {
   const doc = new DOMParser().parseFromString(xml,'application/xml')
@@ -121,26 +121,26 @@ export default function RecebimentoMateriais() {
     <section className="industrial-panel">
       <div className="industrial-section-head"><div><h2>1. Documento de entrada</h2><p>Preencha os dados ou importe o XML da NF-e.</p></div><label className="receipt-upload"><FileUp size={17}/> Importar XML<input hidden type="file" accept=".xml,text/xml,application/xml" onChange={loadXml}/></label></div>
       {fileError && <div className="receipt-alert error"><XCircle size={18}/>{fileError}</div>}
-      <div className="receipt-form-grid">
-        <label>Número NF-e *<input value={header.numero_nfe} onChange={e => setHeaderValue('numero_nfe',e.target.value)} placeholder="Ex.: 000123"/></label>
-        <label>Série<input value={header.serie} onChange={e => setHeaderValue('serie',e.target.value)} placeholder="1"/></label>
-        <label>Data de emissão<input type="date" value={header.data_emissao.slice(0,10)} onChange={e => setHeaderValue('data_emissao',e.target.value)}/></label>
-        <label>CNPJ fornecedor<input value={header.cnpj_fornecedor} onChange={e => setHeaderValue('cnpj_fornecedor',e.target.value)} placeholder="00.000.000/0000-00"/></label>
-        <label>Valor total<input value={header.valor_total} onChange={e => setHeaderValue('valor_total',e.target.value)} placeholder="0,00"/></label>
-        <label className="receipt-wide">Chave de acesso<input value={header.chave_acesso} onChange={e => setHeaderValue('chave_acesso',e.target.value)} placeholder="44 dígitos"/></label>
-      </div>
+      <Form className="receipt-form-grid" onSubmit={event => event.preventDefault()}>
+        <FormField label="Número NF-e *" span={2} id="receipt-invoice-number"><FormInput id="receipt-invoice-number" value={header.numero_nfe} onChange={e => setHeaderValue('numero_nfe',e.target.value)} placeholder="Ex.: 000123"/></FormField>
+        <FormField label="Série" span={1} id="receipt-invoice-series"><FormInput id="receipt-invoice-series" value={header.serie} onChange={e => setHeaderValue('serie',e.target.value)} placeholder="1"/></FormField>
+        <FormField label="Data de emissão" span={2} id="receipt-invoice-date"><FormDate id="receipt-invoice-date" value={header.data_emissao.slice(0,10)} onChange={e => setHeaderValue('data_emissao',e.target.value)}/></FormField>
+        <FormField label="CNPJ fornecedor" span={2} id="receipt-supplier-tax-id"><FormInput id="receipt-supplier-tax-id" value={header.cnpj_fornecedor} onChange={e => setHeaderValue('cnpj_fornecedor',e.target.value)} placeholder="00.000.000/0000-00"/></FormField>
+        <FormField label="Valor total" span={2} id="receipt-invoice-total"><FormInput id="receipt-invoice-total" inputMode="decimal" value={header.valor_total} onChange={e => setHeaderValue('valor_total',e.target.value)} placeholder="0,00"/></FormField>
+        <FormField label="Chave de acesso" span={3} id="receipt-access-key"><FormInput id="receipt-access-key" value={header.chave_acesso} onChange={e => setHeaderValue('chave_acesso',e.target.value)} maxLength={44} placeholder="44 dígitos"/></FormField>
+      </Form>
     </section>
     <section className="industrial-panel">
       <div className="industrial-section-head"><div><h2>2. Itens recebidos</h2><p>Cadastre os materiais e a quantidade efetivamente recebida.</p></div><button className="industrial-primary" type="button" onClick={addItem}><Plus size={17}/> Adicionar item</button></div>
       <div className="receipt-items">
-        {items.map((item,index) => <article className="receipt-item" key={item.item_nfe}>
+        {items.map((item,index) => <article className="receipt-item erp-form" key={item.item_nfe}>
           <div className="receipt-item-number">{String(item.item_nfe).padStart(2,'0')}</div>
-          <label>Código do produto *<input value={item.codigo_produto} onChange={e => setItemValue(index,'codigo_produto',e.target.value)} placeholder="Código interno"/></label>
-          <label className="receipt-item-description">Descrição *<input value={item.descricao_produto} onChange={e => setItemValue(index,'descricao_produto',e.target.value)} placeholder="Descrição do material"/></label>
-          <label>Unidade<select value={item.unidade} onChange={e => setItemValue(index,'unidade',e.target.value)}><option>UN</option><option>KG</option><option>PC</option><option>M</option><option>MT</option><option>L</option></select></label>
-          <label>Quantidade *<input type="number" min="0" step="0.0001" value={item.quantidade_total || ''} onChange={e => setItemValue(index,'quantidade_total',Number(e.target.value))}/></label>
-          <label>Vlr. unitário<input type="number" min="0" step="0.0001" value={item.valor_unitario || ''} onChange={e => setItemValue(index,'valor_unitario',Number(e.target.value))}/></label>
-          <button className="icon-button danger" type="button" title="Excluir item" disabled={items.length === 1} onClick={() => removeItem(item.item_nfe)}><Trash2 size={17}/></button>
+          <FormField label="Código do produto *" span={2} id={`receipt-item-code-${item.item_nfe}`}><FormInput id={`receipt-item-code-${item.item_nfe}`} value={item.codigo_produto} onChange={e => setItemValue(index,'codigo_produto',e.target.value)} placeholder="Código interno"/></FormField>
+          <FormField label="Descrição *" span={3} id={`receipt-item-description-${item.item_nfe}`}><FormInput id={`receipt-item-description-${item.item_nfe}`} value={item.descricao_produto} onChange={e => setItemValue(index,'descricao_produto',e.target.value)} placeholder="Descrição do material"/></FormField>
+          <FormField label="Unidade" span={1} id={`receipt-item-unit-${item.item_nfe}`}><FormSelect id={`receipt-item-unit-${item.item_nfe}`} value={item.unidade} onChange={e => setItemValue(index,'unidade',e.target.value)}><option>UN</option><option>KG</option><option>PC</option><option>M</option><option>MT</option><option>L</option></FormSelect></FormField>
+          <FormField label="Quantidade *" span={2} id={`receipt-item-quantity-${item.item_nfe}`}><FormNumber id={`receipt-item-quantity-${item.item_nfe}`} min="0" step="0.0001" value={item.quantidade_total || ''} onChange={e => setItemValue(index,'quantidade_total',Number(e.target.value))} required/></FormField>
+          <FormField label="Valor unitário" span={2} id={`receipt-item-price-${item.item_nfe}`}><FormNumber id={`receipt-item-price-${item.item_nfe}`} min="0" step="0.0001" value={item.valor_unitario || ''} onChange={e => setItemValue(index,'valor_unitario',e.target.value === '' ? 0 : Number(e.target.value))}/></FormField>
+          <button className="icon-button danger receipt-item-remove" type="button" title="Excluir item" aria-label={`Excluir item ${item.item_nfe}`} disabled={items.length === 1} onClick={() => removeItem(item.item_nfe)}><Trash2 size={17}/></button>
         </article>)}
       </div>
     </section>
@@ -151,7 +151,7 @@ export default function RecebimentoMateriais() {
           const rows = lotes.filter(l => l.item_nfe === item.item_nfe)
           const total = totals.find(t => t.item.item_nfe === item.item_nfe)?.soma ?? 0
           const ok = rows.length > 0 && Math.abs(total - item.quantidade_total) < 0.00001 && rows.every(l => l.lote_interno.trim() && l.quantidade > 0)
-          return rows.map(lote => <tr key={lote.id}><td>{item.item_nfe}</td><td>{item.codigo_produto || '—'}</td><td><input value={lote.lote_fabricante} onChange={e => updateLote(lote.id,'lote_fabricante',e.target.value)}/></td><td><input value={lote.lote_interno} onChange={e => updateLote(lote.id,'lote_interno',e.target.value)} placeholder="LOT-2026-001"/></td><td><input type="date" value={lote.data_validade} onChange={e => updateLote(lote.id,'data_validade',e.target.value)}/></td><td><input type="number" min="0" step="0.0001" value={lote.quantidade || ''} onChange={e => updateLote(lote.id,'quantidade',Number(e.target.value))}/></td><td>{ok ? <span className="receipt-ok"><CheckCircle2 size={16}/> Fechado</span> : <span className="receipt-bad"><XCircle size={16}/> Pendente</span>}</td><td><button className="icon-button danger" type="button" onClick={() => setLotes(rows => rows.filter(row => row.id !== lote.id))}><Trash2 size={16}/></button></td></tr>)
+          return rows.map(lote => <tr key={lote.id}><td>{item.item_nfe}</td><td>{item.codigo_produto || '—'}</td><td><FormInput aria-label={`Lote do fabricante do item ${item.item_nfe}`} value={lote.lote_fabricante} onChange={e => updateLote(lote.id,'lote_fabricante',e.target.value)}/></td><td><FormInput aria-label={`Lote interno do item ${item.item_nfe}`} value={lote.lote_interno} onChange={e => updateLote(lote.id,'lote_interno',e.target.value)} placeholder="LOT-2026-001"/></td><td><FormDate aria-label={`Validade do lote do item ${item.item_nfe}`} value={lote.data_validade} onChange={e => updateLote(lote.id,'data_validade',e.target.value)}/></td><td><FormNumber aria-label={`Quantidade do lote do item ${item.item_nfe}`} min="0" step="0.0001" value={lote.quantidade || ''} onChange={e => updateLote(lote.id,'quantidade',Number(e.target.value))}/></td><td>{ok ? <span className="receipt-ok"><CheckCircle2 size={16}/> Fechado</span> : <span className="receipt-bad"><XCircle size={16}/> Pendente</span>}</td><td><button className="icon-button danger" type="button" title="Remover lote" aria-label={`Remover lote interno ${lote.lote_interno || 'sem identificação'}`} onClick={() => setLotes(rows => rows.filter(row => row.id !== lote.id))}><Trash2 size={16}/></button></td></tr>)
         })}
       </tbody></table></div>
       <div className="receipt-lot-add">{items.map(item => <button key={item.item_nfe} className="industrial-secondary" type="button" onClick={() => addLote(item)}><Plus size={16}/> Lote item {item.item_nfe}</button>)}</div>
@@ -163,5 +163,15 @@ export default function RecebimentoMateriais() {
     <style>{`
       .receipt-actions{display:flex;gap:8px;flex-wrap:wrap}.receipt-form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.receipt-wide{grid-column:span 2}.receipt-upload{display:inline-flex;align-items:center;gap:7px;background:#2D8DB8;color:#fff;border-radius:10px;padding:10px 14px;font-weight:900;cursor:pointer}.receipt-items{display:grid;gap:10px}.receipt-item{display:grid;grid-template-columns:42px 1fr 2fr 110px 130px 130px 38px;gap:10px;align-items:end;padding:13px;border:1px solid #d9e6eb;border-radius:12px;background:#f8fcfd}.receipt-item-number{display:grid;place-items:center;height:42px;border-radius:9px;background:#123B50;color:#fff;font-weight:950}.receipt-item label{font-size:12px}.receipt-lot-table{overflow:auto}.receipt-lot-table input{min-width:120px}.receipt-lot-add{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.receipt-alert{display:flex;align-items:center;gap:8px;padding:11px 13px;border-radius:10px;margin-top:12px;font-weight:750}.receipt-alert.error{background:#fff1f2;border:1px solid #fecdd3;color:#9f1239}.receipt-alert.ok{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}.receipt-ok{display:inline-flex;align-items:center;gap:5px;color:#16845B;font-weight:850}.receipt-bad{display:inline-flex;align-items:center;gap:5px;color:#C74646;font-weight:850}.receipt-summary{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:18px;background:#123B50;color:#fff;border-radius:16px;margin-top:14px}.receipt-summary>div{display:grid;gap:4px}.receipt-summary span{opacity:.85}@media(max-width:1050px){.receipt-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.receipt-item{grid-template-columns:42px 1fr 1fr 110px 130px 38px}.receipt-item-description{grid-column:span 2}}@media(max-width:700px){.receipt-form-grid{grid-template-columns:1fr}.receipt-wide{grid-column:auto}.receipt-item{grid-template-columns:1fr}.receipt-item-description{grid-column:auto}.receipt-summary{align-items:stretch;flex-direction:column}}@media print{.receipt-actions,.v7-topbar{display:none!important}.receipt-summary{color:#111;background:#fff;border:1px solid #999}}`
     }</style>
+    <style>{`
+      .receipt-form-grid{grid-template-columns:repeat(12,minmax(0,1fr));gap:var(--erp-form-gap)}
+      .receipt-item{grid-template-columns:repeat(12,minmax(0,1fr));gap:var(--erp-form-gap);align-items:end;border-radius:var(--erp-form-radius);padding:12px}
+      .receipt-item-number{height:var(--erp-form-height);border-radius:var(--erp-form-radius)}
+      .receipt-item-remove{align-self:end}
+      .receipt-upload,.receipt-alert,.receipt-summary{border-radius:var(--erp-form-radius)}
+      @media(max-width:1000px){.receipt-item{grid-template-columns:repeat(6,minmax(0,1fr))}}
+      @media(max-width:700px){.receipt-form-grid>.erp-form-field,.receipt-item>.erp-form-field{grid-column:span 1}.receipt-item{grid-template-columns:1fr}}
+    `}</style>
   </div>
 }
+
