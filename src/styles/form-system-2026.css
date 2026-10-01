@@ -1,8 +1,9 @@
 /* ERP form system. Shared by authenticated operational pages only. */
 :root {
   --erp-form-radius: 2px;
-  --erp-form-height: 36px;
-  --erp-form-height-compact: 33px;
+  --erp-form-height: 32px;
+  --erp-form-height-compact: 30px;
+  --erp-form-touch-height: 48px;
   --erp-form-textarea-height: 96px;
   --erp-form-gap: 12px;
   --erp-form-label-size: 12px;
@@ -17,6 +18,7 @@
   box-sizing: border-box;
   max-width: 100%;
   min-width: 0;
+  height: var(--erp-form-height) !important;
   min-height: var(--erp-form-height) !important;
   border-radius: var(--erp-form-radius) !important;
   padding: 6px 9px;
@@ -360,4 +362,70 @@
   .erp-form-actions button,
   .v7-content form > .form-actions button,
   .v7-content form > [class*="actions"] button { flex: 1 1 auto; }
+}
+
+/* The Sales master and PCP order form use explicit field spans on a 12-column grid. */
+.erp-operational-pages .sales-grid {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.erp-operational-pages .sales-grid > * { grid-column: span 2; min-width: 0; }
+.erp-operational-pages .sales-grid > .sales-field-span-1 { grid-column: span 1; }
+.erp-operational-pages .sales-grid > .sales-field-span-4 { grid-column: span 4; }
+.erp-operational-pages .sales-customer-grid,
+.erp-operational-pages .sales-customer-link-grid {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.erp-operational-pages .sales-customer-grid > label { grid-column: span 6; min-width: 0; }
+.erp-operational-pages .sales-customer-grid > label.wide { grid-column: 1 / -1; }
+.erp-operational-pages .sales-customer-link-grid > * { grid-column: span 2; min-width: 0; }
+.erp-operational-pages .sales-customer-link-grid > .sales-field-span-1 { grid-column: span 1; }
+.erp-operational-pages .sales-customer-link-grid > .sales-field-span-4 { grid-column: span 4; }
+.erp-operational-pages .pcp-newop-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+.erp-operational-pages .pcp-newop-grid > label { grid-column: span 3; min-width: 0; }
+.erp-operational-pages .pcp-newop-grid > :not(label) { grid-column: span 4; min-width: 0; }
+.erp-operational-pages .pcp-newop-grid > .wide { grid-column: 1 / -1; }
+
+/* Bring the Sales master shell into the same square-corner industrial system. */
+.erp-operational-pages :is(.sales-card, .sales-table-wrap, .sales-customer-card, .sales-customer-table,
+  .sales-customer-badge, .sales-total, .sales-result, .sales-message, .sales-error, .sales-btn, .status) {
+  border-radius: var(--erp-form-radius) !important;
+}
+
+@media (max-width: 1000px) {
+  .erp-operational-pages .sales-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .erp-operational-pages .sales-grid > * { grid-column: span 1; }
+  .erp-operational-pages .sales-grid > .sales-field-span-4 { grid-column: span 2; }
+  .erp-operational-pages .sales-customer-grid,
+  .erp-operational-pages .sales-customer-link-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .erp-operational-pages .sales-customer-grid > label { grid-column: span 3; }
+  .erp-operational-pages .sales-customer-grid > label.wide { grid-column: 1 / -1; }
+  .erp-operational-pages .sales-customer-link-grid > * { grid-column: span 1; }
+  .erp-operational-pages .sales-customer-link-grid > .sales-field-span-4 { grid-column: span 2; }
+  .erp-operational-pages .pcp-newop-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .erp-operational-pages .pcp-newop-grid > label,
+  .erp-operational-pages .pcp-newop-grid > :not(label) { grid-column: span 3; }
+  .erp-operational-pages .pcp-newop-grid > .wide { grid-column: 1 / -1; }
+}
+
+@media (max-width: 640px) {
+  .erp-operational-pages .sales-grid,
+  .erp-operational-pages .sales-customer-grid,
+  .erp-operational-pages .sales-customer-link-grid,
+  .erp-operational-pages .pcp-newop-grid { grid-template-columns: minmax(0, 1fr); }
+  .erp-operational-pages .sales-grid > *,
+  .erp-operational-pages .sales-customer-grid > label,
+  .erp-operational-pages .sales-customer-grid > label.wide,
+  .erp-operational-pages .sales-customer-link-grid > *,
+  .erp-operational-pages .pcp-newop-grid > label,
+  .erp-operational-pages .pcp-newop-grid > :not(label),
+  .erp-operational-pages .pcp-newop-grid > .wide { grid-column: 1 / -1; }
+}
+
+@media (pointer: coarse) {
+  .erp-operational-pages :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) {
+    min-height: var(--erp-form-touch-height) !important;
+    font-size: 16px !important;
+  }
+  .erp-operational-pages form button,
+  .erp-operational-pages .erp-form-actions button { min-height: var(--erp-form-touch-height) !important; }
 }
