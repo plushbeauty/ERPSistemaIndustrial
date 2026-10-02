@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Calculator, RefreshCw, Factory, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Product = { id:string; codigo:string; nome:string; estoque_minimo:number; estoque_atual:number }
 type Row = Product & { pedido:number; reservado:number; emProducao:number; disponivel:number; necessidade:number; pedidosIds:string[] }
-const activeOrderStatus = (status:string) => !['cancelado','cancelada','cancelado(a)','concluido','concluída','concluida','finalizado','finalizada'].includes(status.trim().toLowerCase())
+const activeOrderStatus = (status:string) => ['aguardando produção','aprovado','liberado para produção'].includes(status.trim().toLowerCase())
 
 export default function PCPDemanda(){
- const [rows,setRows]=useState<Row[]>([]),[periodo,setPeriodo]=useState(new Date().toISOString().slice(0,7)),[loading,setLoading]=useState(true),[processing,setProcessing]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
+ const [rows,setRows]=useState<Row[]>([]),[periodo,setPeriodo]=useState(new Date().toISOString().slice(0,7)),[loading,setLoading]=useState(true),[processing,setProcessing]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState(''); const autoProcessed=useRef(false)
  async function load(){
   setLoading(true);setError('');setMessage('')
   try{
@@ -29,7 +29,7 @@ export default function PCPDemanda(){
    setRows(ps.map(p=>{const pedidoQty=pedido[p.id]??0,reservaQty=reservado[p.id]??0,producaoQty=emProducao[p.id]??0,disponivel=Math.max(0,Number(p.estoque_atual||0)-reservaQty),necessidade=Math.max(0,pedidoQty+Number(p.estoque_minimo||0)-disponivel-producaoQty);return {...p,pedido:pedidoQty,reservado:reservaQty,emProducao:producaoQty,disponivel,necessidade,pedidosIds:pedidosIds[p.id]??[]}}).filter(r=>r.pedido>0||r.necessidade>0))
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível calcular a demanda real.')}finally{setLoading(false)}
  }
- useEffect(()=>{void load()},[periodo])
+ useEffect(()=>{autoProcessed.current=false;void load()},[periodo])
  const totalFabricar=useMemo(()=>rows.reduce((s,r)=>s+r.necessidade,0),[rows]),deficitRows=useMemo(()=>rows.filter(r=>r.necessidade>0),[rows])
  async function gerarLote(){
   if(!deficitRows.length){setMessage('Não há necessidade líquida positiva para gerar OPs.');return}
@@ -45,10 +45,18 @@ export default function PCPDemanda(){
     const mrp=await supabase.rpc('erp_mrp_explodir',{p_produto_id:row.id,p_quantidade:row.necessidade,p_demanda_ref:'PCP_DEMANDA_'+periodo});if(mrp.error)throw mrp.error
     created++
    }
-   setMessage(created+' OP(s) gerada(s) com MRP explodido no banco. Quando houver vários pedidos para o mesmo produto, a OP fica sem pedido único para preservar rastreabilidade.')
+   setMessage(created+' OP(s) gerada(s) com MRP explodido pela ficha técnica/processo. Quando houver vários pedidos para o mesmo produto, a OP fica sem pedido único para preservar rastreabilidade.')
    await load()
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível gerar as OPs do lote.')}finally{setProcessing(false)}
+ } async function processarAutomaticamente() {
+  if (autoProcessed.current || loading || processing || !deficitRows.length) return
+  autoProcessed.current = true
+  await gerarLote()
  }
+ useEffect(() => {
+  if (!loading && !processing && deficitRows.length && !autoProcessed.current) void processarAutomaticamente()
+ }, [loading, processing, deficitRows.length])
+
  return <main className="min-h-screen bg-slate-50 p-6 text-slate-900"><div className="mx-auto max-w-[1600px] space-y-5">
   <header className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4"><div><p className="text-sm font-black uppercase tracking-wide text-sky-700">MÓDULO: PCP › PLANEJAMENTO</p><h1 className="text-2xl font-black">Plano de Demanda Líquida</h1><p className="mt-1 text-base text-slate-600">Carteira real de vendas + reservas + estoque físico + estoque mínimo.</p></div><div className="flex flex-wrap gap-2"><button type="button" onClick={()=>void load()} className="flex h-[54px] items-center gap-2 rounded-md border border-slate-300 bg-white px-4 font-black"><RefreshCw size={19}/> RECALCULAR NECESSIDADES</button><button type="button" onClick={()=>void gerarLote()} disabled={processing||loading||deficitRows.length===0} className="flex h-[54px] items-center gap-2 rounded-md bg-sky-700 px-4 font-black text-white disabled:cursor-not-allowed disabled:opacity-50"><Factory size={19}/> {processing?'GERANDO...':'GERAR ORDENS DE PRODUÇÃO LOTE'}</button></div></header>
   {(message||error)&&<div className={error?'rounded-md border border-rose-300 bg-rose-50 p-4 font-bold text-rose-800':'rounded-md border border-emerald-300 bg-emerald-50 p-4 font-bold text-emerald-800'}>{error||message}</div>}
