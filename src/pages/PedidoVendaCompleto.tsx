@@ -145,10 +145,10 @@ export default function PedidoVendaCompleto(){
   {sidebar&&<aside className="sales-side open">
    <div className="sales-brand"><img src="/logo/sgq-erp.png" alt="SGQ ERP"/><div><strong>ERP INDUSTRIAL</strong><small>MÓDULO DE VENDAS</small></div></div>
    <div className="sales-section">VENDAS</div>
-   <button className="sales-nav" onClick={()=>go('/pedidos-vendas?view=carteira')}><BarChart3 size={18}/> Painel Comercial</button>
-   <button className={new URLSearchParams(window.location.search).get('view')==='clientes'?'sales-nav':'sales-nav active'} onClick={()=>go('/pedidos-vendas?view=pedido')}><Plus size={18}/> Novo Pedido</button>
+   <button className="sales-nav" onClick={()=>go('/vendas')}><BarChart3 size={18}/> Painel Comercial</button>
+   <button className={new URLSearchParams(window.location.search).get('view')==='clientes'?'sales-nav':'sales-nav active'} onClick={()=>go('/vendas/novo-pedido')}><Plus size={18}/> Novo Pedido</button>
    <button className="sales-nav" onClick={()=>go('/pedidos-vendas?view=carteira')}><ClipboardList size={18}/> Carteira de Pedidos</button>
-   <button className={new URLSearchParams(window.location.search).get('view')==='clientes'?'sales-nav active':'sales-nav'} onClick={()=>go('/pedidos-vendas?view=clientes')}><Users size={18}/> Cadastro Clientes</button>
+   <button className={new URLSearchParams(window.location.search).get('view')==='clientes'?'sales-nav active':'sales-nav'} onClick={()=>go('/vendas/clientes')}><Users size={18}/> Cadastro Clientes</button>
    <button className="sales-nav" onClick={()=>go('/pedidos-vendas?view=carteira')}><BarChart3 size={18}/> Metas e Gráficos</button>
    <div className="sales-spacer"/>
    <button className="sales-nav" onClick={()=>go('/configuracoes-adm')}><Settings size={18}/> Configurações Vendas</button>
