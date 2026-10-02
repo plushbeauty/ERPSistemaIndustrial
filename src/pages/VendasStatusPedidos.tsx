@@ -29,7 +29,7 @@ function isOverdue(order: Order): boolean {
 function matches(order: Order, filter: Filter): boolean {
   const status = normalize(order.status)
   if (filter === 'atrasado') return isOverdue(order)
-  if (filter === 'producao') return ['necessita_producao', 'em_producao', 'producao'].includes(status)
+  if (filter === 'producao') return ['necessita_producao', 'em_producao', 'producao', 'aguardando produção', 'aguardando_producao', 'liberado para produção', 'liberado_para_producao'].includes(status)
   if (filter === 'expedicao') return ['separado', 'expedicao', 'em_expedicao', 'expedido'].includes(status)
   if (filter === 'nf_saida') return ['faturado', 'nf_saida', 'nota_fiscal_saida', 'nota_emitida'].includes(status)
   return true
@@ -66,6 +66,9 @@ export default function VendasStatusPedidos() {
   }
 
   useEffect(() => {
+    const filtro = new URLSearchParams(window.location.search).get('filtro')
+    if (filtro === 'atrasados') setFilter('atrasado')
+    if (filtro === 'producao') setFilter('producao')
     void load()
   }, [])
 
