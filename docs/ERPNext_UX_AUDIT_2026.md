@@ -174,3 +174,82 @@ Uma tela só será considerada padronizada quando:
 - funcionar em 1366/1440/1920 e tablet;
 - continuar usando dados reais do tenant;
 - passar type-check/lint/build.
+
+
+## Pente-fino de cobertura de documentos
+
+Na análise das 119 rotas protegidas/publicadas do ERP Industrial, os principais fluxos já presentes incluem vendas, compras, estoque, produtos, fornecedores, PCP, engenharia, qualidade, fiscal e manutenção.
+
+### Fluxos que precisam ganhar telas próprias ou aprofundamento
+
+| Fluxo ERP | Situação encontrada | Próxima implementação |
+|---|---|---|
+| Cotação de vendas | sem rota dedicada encontrada | Criar Cotação → Pedido |
+| Pedido de venda | existe | Usar como formulário mestre visual |
+| Entrega/expedição | existe | Conectar pedido → expedição → confirmação |
+| NF-e | existe | Integrar com carteira e pedido |
+| Pedido de compra | existe | Padronizar formulário |
+| Recebimento de compra | existe parcialmente | Criar fluxo documento → conferência → estoque |
+| Produtos/itens | existe | Padronizar cadastro mestre |
+| Fornecedores | existe | Padronizar cadastro mestre |
+| BOM/ficha | existe | Padronizar engenharia |
+| Ordem de produção | existe dentro do PCP | Separar documento, materiais e execução |
+| Qualidade | ampla cobertura | Padronizar formulários |
+| Contas a pagar | sem rota dedicada encontrada | Criar módulo financeiro |
+| Contas a receber | sem rota dedicada encontrada | Criar módulo financeiro |
+| Lançamento contábil | sem rota dedicada encontrada | Criar documento financeiro |
+| Pagamentos | sem rota dedicada encontrada | Criar fluxo de pagamento |
+| Preços | existe | Evoluir tabela/regra/preço por cliente |
+
+### Ordem de implantação
+
+**Fase 1 — Formulário mestre**
+- Pedido de Venda
+- Cliente
+- Produto
+- Fornecedor
+- Pedido de Compra
+
+**Fase 2 — Documentos encadeados**
+- Cotação
+- Pedido
+- Reserva
+- Expedição/Entrega
+- NF-e
+- Recebimento
+
+**Fase 3 — Estoque/PCP**
+- Entrada
+- Saída
+- Transferência
+- Inventário
+- Reserva
+- Necessidade líquida
+- OP
+
+**Fase 4 — Financeiro**
+- Contas a receber
+- Contas a pagar
+- Pagamentos
+- Lançamentos
+- Fluxo de caixa
+- Centro de custo
+
+**Fase 5 — Qualidade/Engenharia/Manutenção**
+- formulários e documentos no mesmo padrão visual.
+
+O objetivo não é aumentar artificialmente o número de páginas. Cada tela nova precisa representar um documento, uma tarefa operacional ou uma consulta que tenha função real no fluxo.
+
+## Validação da implantação visual atual
+
+A branch `feat-erp-global-forms-ux-v2` contém:
+- camada global `erp-ux-root`;
+- normalização de peso tipográfico;
+- alturas de controles;
+- classes de largura semântica;
+- grade de formulário de 12 colunas;
+- padrão de seções;
+- barra de ações;
+- primeiro formulário real migrado: Pedido de Venda.
+
+A tela de Pedido de Venda foi ajustada sem alterar a RPC de gravação, o fluxo de reserva de estoque ou a geração de necessidade para PCP.
