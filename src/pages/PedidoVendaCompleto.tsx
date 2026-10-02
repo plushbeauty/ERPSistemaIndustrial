@@ -56,12 +56,13 @@ export default function PedidoVendaCompleto(){
   const [c,p,pi,o]=await Promise.all([
    supabase.from('erp_clientes').select('id,nome,documento,codigo,email,tabela_preco_id,desconto_padrao_percentual').eq('empresa_id',id).eq('ativo',true).order('nome'),
    supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,preco_venda,unidade').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(2000),
-   supabase.from('erp_tabelas_preco_itens').select('tabela_preco_id,produto_id,preco').eq('empresa_id',id).limit(10000)
+   supabase.from('erp_tabelas_preco_itens').select('tabela_preco_id,produto_id,preco').eq('empresa_id',id).limit(10000),
+   supabase.from('erp_pedidos_venda').select('numero').eq('empresa_id',id).order('numero',{ascending:false}).limit(1)
   ])
-  for(const x of[c,p,pi])if(x.error)throw x.error
+  for(const x of[c,p,pi,o])if(x.error)throw x.error
   setClients(c.data||[]);setProducts(p.data||[]);setPriceItems((pi.data||[]) as PriceItem[])
   const u=await supabase.auth.getUser(); if(u.data.user){const ur=await supabase.from('erp_usuarios').select('nome').eq('auth_user_id',u.data.user.id).eq('empresa_id',id).eq('ativo',true).is('deleted_at',null).maybeSingle();if(ur.data?.nome)setVendedor(ur.data.nome)}
-  setNumber(number||'AUTO')
+  setNumber(String((Number(o.data?.[0]?.numero||0)+1)).padStart(6,'0'))
  }
  useEffect(()=>{void load().catch(e=>setErr(e.message))},[])
 
