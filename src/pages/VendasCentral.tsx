@@ -61,12 +61,16 @@ const statusClass: Record<string, string> = {
 const menu = [
   { label: 'Visão Geral', href: '/vendas', icon: BarChart3 },
   { label: 'Entrada Pedido', href: '/vendas/novo-pedido', icon: FilePlus2 },
+  { label: 'PDV / Caixa', href: '/vendas/pdv', icon: ClipboardList },
   { label: 'Status Pedido', href: '/vendas/status', icon: ListChecks },
   { label: 'Carteira', href: '/vendas/carteira', icon: PackageSearch },
   { label: 'Clientes', href: '/vendas/clientes', icon: Users },
   { label: 'Catálogo Digital', href: '/vendas/catalogo-digital/gestao', icon: BookOpen },
   { label: 'Metas', href: '/vendas/metas', icon: Target },
   { label: 'Gráficos', href: '/vendas/dashboard-graficos', icon: BarChart3 },
+  { label: 'Relatórios', href: '/vendas/relatorios', icon: ClipboardList },
+  { label: 'Análise de Custos', href: '/vendas/analise-custos', icon: Clock3 },
+  { label: 'Tabelas de Preço', href: '/tabela-precos', icon: BookOpen },
   { label: 'Configurações', href: '/vendas/configuracoes', icon: Settings },
 ]
 
@@ -135,9 +139,9 @@ export default function VendasCentral() {
       return due < today
     })
     const pending = active.filter(order =>
-      ['cotacao', 'em_analise', 'parcial'].includes(normalizeStatus(order.status)),
+      ['cotacao', 'em_analise', 'parcial', 'aguardando produção', 'aguardando_producao'].includes(normalizeStatus(order.status)),
     )
-    const production = active.filter(order => normalizeStatus(order.status) === 'necessita_producao')
+    const production = active.filter(order => ['necessita_producao', 'aguardando produção', 'aguardando_producao', 'liberado para produção', 'liberado_para_producao'].includes(normalizeStatus(order.status)))
     const openValue = active.reduce((sum, order) => sum + Number(order.total || 0), 0)
 
     return { total: orders.length, overdue, pending, production, openValue }
