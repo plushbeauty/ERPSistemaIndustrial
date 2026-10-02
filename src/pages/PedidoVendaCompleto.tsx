@@ -89,8 +89,23 @@ export default function PedidoVendaCompleto(){
   try{
    const r=await supabase.rpc('erp_finalizar_pedido_venda',{p_cliente_id:client,p_desconto:Number(desconto)||0,p_itens:items.map(i=>({produto_id:i.produto_id,quantidade:Number(i.quantidade),valor_unitario:Number(i.valor),desconto:Number(i.desconto)||0,codigo_cliente:i.codigoCliente||null,codigo:i.codigo})),p_data_entrada:date||null,p_data_entrega:delivery||null,p_pedido_cliente:pedidoCliente.trim()||null,p_observacoes:observacoes.trim()||null,p_condicao_pagamento:condicaoPagamento.trim()||null,p_vendedor_nome:vendedor.trim()||null,p_valor_frete:freteValor,p_valor_outras_despesas:outrasValor})
    if(r.error)throw r.error
-   if(r.data){const update=await supabase.from('erp_pedidos_venda').update({observacoes:observacoes.trim()||null,pedido_cliente:pedidoCliente.trim()||null}).eq('id',String(r.data)).eq('empresa_id',empresa);if(update.error)throw update.error}
-   setProcessed(true)
+   if(r.data){
+ const pedidoId=String(r.data)
+ const update=await supabase.from('erp_pedidos_venda').update({observacoes:observacoes.trim()||null,pedido_cliente:pedidoCliente.trim()||null,entrada_via:entryVia||null}).eq('id',pedidoId).eq('empresa_id',empresa)
+ if(update.error)throw update.error
+ if(entryVia==='EMAIL'&&emailAttachment){
+   const safeName=emailAttachment.name.replace(/[^a-zA-Z0-9._-]/g,'_')
+   const path=`${empresa}/${pedidoId}/${crypto.randomUUID()}-${safeName}`
+   const upload=await supabase.storage.from('erp-pedidos-anexos').upload(path,emailAttachment,{contentType:emailAttachment.type||'application/octet-stream',upsert:false})
+   if(upload.error)throw upload.error
+   const bytes=await emailAttachment.arrayBuffer()
+   const digest=await crypto.subtle.digest('SHA-256',bytes)
+   const hash=Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('')
+   const meta=await supabase.from('erp_pedido_anexos').insert({empresa_id:empresa,pedido_id:pedidoId,nome_arquivo:emailAttachment.name,caminho_storage:path,mime_type:emailAttachment.type||null,tamanho_bytes:emailAttachment.size,sha256:hash,origem:'EMAIL'})
+   if(meta.error){await supabase.storage.from('erp-pedidos-anexos').remove([path]);throw meta.error}
+ }
+}
+   setEmailAttachment(null);setProcessed(true)
    setMsg('Pedido finalizado com sucesso. O estoque disponível foi reservado e somente a necessidade líquida foi enviada ao PCP.')
    setItems(analyzed.map(i=>({...i,reservadoQtd:i.reserva})))
    await load()
