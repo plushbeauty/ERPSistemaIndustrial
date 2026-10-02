@@ -1,0 +1,134 @@
+/* ERP INDUSTRIAL — UX reference layer 2026
+ * Base visual derived from the uploaded ERPNext source audit.
+ * This is intentionally framework-neutral: no ERPNext backend is copied.
+ */
+.erp-ux-root{
+  --ux-font:13px;
+  --ux-label:12px;
+  --ux-help:11px;
+  --ux-control:40px;
+  --ux-control-sm:34px;
+  --ux-gap:10px;
+  --ux-border:#bfd1d8;
+  --ux-line:#d7e3e7;
+  --ux-bg:#f4fbfd;
+  --ux-surface:#fff;
+  --ux-ink:#17333f;
+  --ux-muted:#5c7079;
+  --ux-brand:#2d8db8;
+  color:var(--ux-ink);
+  font-size:var(--ux-font);
+}
+.erp-ux-root,.erp-ux-root *{box-sizing:border-box}
+.erp-ux-root :where(h1,h2,h3,h4,h5,h6){font-weight:600!important}
+.erp-ux-root :where(strong,b){font-weight:600!important}
+.erp-ux-root :where(label){font-weight:500!important}
+.erp-ux-root :where(button){font-weight:500!important}
+.erp-ux-root :where(.font-black,.font-extrabold,.font-bold,.font-semibold){font-weight:600!important}
+.erp-ux-root :where([style*="font-weight:900"],[style*="font-weight:950"],[style*="font-weight:850"],[style*="font-weight:800"],[style*="font-weight:750"],[style*="font-weight:700"]){font-weight:600!important}
+.erp-ux-root :where(input,select,textarea){
+  min-height:var(--ux-control);
+  border:1px solid var(--ux-border);
+  border-radius:4px;
+  background:#fff;
+  color:var(--ux-ink);
+  font-size:var(--ux-font);
+  font-weight:400;
+}
+.erp-ux-root :where(input,select){padding:0 9px}
+.erp-ux-root :where(textarea){padding:8px 9px}
+.erp-ux-root :where(input:focus,select:focus,textarea:focus){
+  outline:0;
+  border-color:var(--ux-brand);
+  box-shadow:0 0 0 2px rgba(45,141,184,.10);
+}
+.erp-ux-root :where(button){
+  min-height:var(--ux-control);
+  border-radius:4px;
+}
+.erp-ux-root :where(table th){font-weight:600!important}
+.erp-ux-root :where(.erp-field-xs){width:100px!important;max-width:100px}
+.erp-ux-root :where(.erp-field-sm){width:140px!important;max-width:140px}
+.erp-ux-root :where(.erp-field-date){width:150px!important;max-width:150px}
+.erp-ux-root :where(.erp-field-code){width:160px!important;max-width:160px}
+.erp-ux-root :where(.erp-field-md){width:220px!important;max-width:220px}
+.erp-ux-root :where(.erp-field-lg){width:320px!important;max-width:320px}
+.erp-ux-root :where(.erp-field-xl){width:480px!important;max-width:100%}
+.erp-ux-root :where(.erp-form-section){
+  background:var(--ux-surface);
+  border:1px solid var(--ux-line);
+  border-radius:4px;
+  padding:16px;
+  margin-top:10px;
+}
+.erp-ux-root :where(.erp-form-section-title){
+  margin:0 0 12px;
+  font-size:14px;
+  font-weight:600!important;
+  color:var(--ux-ink);
+}
+.erp-ux-root :where(.erp-form-grid){
+  display:grid;
+  grid-template-columns:repeat(12,minmax(0,1fr));
+  gap:10px;
+  align-items:start;
+}
+.erp-ux-root :where(.erp-col-1){grid-column:span 1}
+.erp-ux-root :where(.erp-col-2){grid-column:span 2}
+.erp-ux-root :where(.erp-col-3){grid-column:span 3}
+.erp-ux-root :where(.erp-col-4){grid-column:span 4}
+.erp-ux-root :where(.erp-col-5){grid-column:span 5}
+.erp-ux-root :where(.erp-col-6){grid-column:span 6}
+.erp-ux-root :where(.erp-col-8){grid-column:span 8}
+.erp-ux-root :where(.erp-col-9){grid-column:span 9}
+.erp-ux-root :where(.erp-col-12){grid-column:1/-1}
+.erp-ux-root :where(.erp-form-field){
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  min-width:0;
+  color:var(--ux-ink);
+  font-size:var(--ux-label);
+}
+.erp-ux-root :where(.erp-form-field)>small{
+  color:var(--ux-muted);
+  font-size:var(--ux-help);
+  font-weight:400!important;
+}
+.erp-ux-root :where(.erp-form-actions){
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:12px;
+}
+.erp-ux-root :where(.erp-btn){
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-height:38px;
+  padding:0 12px;
+  border:1px solid var(--ux-border);
+  background:#fff;
+  color:var(--ux-ink);
+}
+.erp-ux-root :where(.erp-btn-primary){
+  background:var(--ux-brand);
+  border-color:var(--ux-brand);
+  color:#fff;
+}
+.erp-ux-root :where(.erp-btn-danger){
+  background:#fff5f5;
+  border-color:#d8a8ad;
+  color:#9b2525;
+}
+@media(max-width:1050px){
+  .erp-ux-root :where(.erp-col-1,.erp-col-2,.erp-col-3,.erp-col-4){grid-column:span 6}
+  .erp-ux-root :where(.erp-col-5,.erp-col-6,.erp-col-8,.erp-col-9){grid-column:1/-1}
+}
+@media(max-width:680px){
+  .erp-ux-root :where(.erp-col-1,.erp-col-2,.erp-col-3,.erp-col-4,.erp-col-5,.erp-col-6,.erp-col-8,.erp-col-9,.erp-col-12){grid-column:1/-1}
+  .erp-ux-root :where(.erp-field-xs,.erp-field-sm,.erp-field-date,.erp-field-code,.erp-field-md,.erp-field-lg){max-width:100%;width:100%!important}
+}
