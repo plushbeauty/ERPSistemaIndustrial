@@ -20,14 +20,11 @@ type Order = {
   total: number
   subtotal: number
   desconto_valor: number
-  valor_frete: number
   valor_outras_despesas: number
   data_entrada: string | null
   data_entrega_prometida: string | null
   condicao_pagamento: string | null
   vendedor_nome: string | null
-  modalidade_frete: string | null
-  transportadora: string | null
   observacoes: string | null
   cliente: { nome: string; documento: string | null } | null
 }
@@ -73,7 +70,7 @@ export default function VendasPedidoStatus() {
     const [orderResult, itemsResult, productionResult, expeditionResult, fiscalResult] = await Promise.all([
       supabase
         .from('erp_pedidos_venda')
-        .select('numero,status,pedido_cliente,total,subtotal,desconto_valor,valor_frete,valor_outras_despesas,data_entrada,data_entrega_prometida,condicao_pagamento,vendedor_nome,modalidade_frete,transportadora,observacoes,cliente:erp_clientes(nome,documento)')
+        .select('numero,status,pedido_cliente,total,subtotal,desconto_valor,valor_outras_despesas,data_entrada,data_entrega_prometida,condicao_pagamento,vendedor_nome,observacoes,cliente:erp_clientes(nome,documento)')
         .eq('id', id)
         .maybeSingle(),
       supabase
@@ -148,7 +145,6 @@ export default function VendasPedidoStatus() {
                 <Info label="Status" value={order.status} />
                 <Info label="Pagamento" value={order.condicao_pagamento || '—'} />
                 <Info label="Vendedor" value={order.vendedor_nome || '—'} />
-                <div><Info label="Frete" value={order.modalidade_frete || '—'} /><p className="text-[11px] text-slate-500">{order.transportadora || ''}</p></div>
               </div>
             </section>
 
@@ -175,7 +171,6 @@ export default function VendasPedidoStatus() {
               <div className="mt-4 grid gap-4 text-sm md:grid-cols-5">
                 <Info label="Subtotal" value={money(Number(order.subtotal || 0))} />
                 <Info label="Desconto" value={money(Number(order.desconto_valor || 0))} />
-                <Info label="Frete" value={money(Number(order.valor_frete || 0))} />
                 <Info label="Outras despesas" value={money(Number(order.valor_outras_despesas || 0))} />
                 <Info label="Total" value={money(Number(order.total || 0))} />
               </div>
