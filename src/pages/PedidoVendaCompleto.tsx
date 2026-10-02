@@ -1,6 +1,6 @@
 import {useEffect,useMemo,useState} from 'react'
 import {supabase} from '../lib/supabaseClient'
-import {Plus,Save,Trash2,RefreshCw,Factory,ShoppingCart,Users,BarChart3,Settings,ClipboardList,PanelLeftClose,PanelLeftOpen,LogOut,Tablet} from 'lucide-react'
+import {Plus,Save,Trash2,RefreshCw,Factory,ShoppingCart,Users,BarChart3,Settings,ClipboardList,LogOut} from 'lucide-react'
 import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 import { FormField, FormInput, FormDate, FormNumber, FormSelect, FormTextarea } from '../components/industrial/forms'
 
@@ -44,7 +44,7 @@ function SalesCustomerView({empresa,products,onSaved}:{empresa:string;products:P
 }
 export default function PedidoVendaCompleto(){
  const[empresa,setEmpresa]=useState('')
- const requestedView=new URLSearchParams(window.location.search).get('view');const pathView=window.location.pathname==='/vendas/clientes'?'clientes':window.location.pathname==='/vendas/carteira'?'carteira':window.location.pathname==='/vendas/novo-pedido'?'pedido':null;const activeView=requestedView??pathView??'pedido';const customerView=activeView==='clientes',[clients,setClients]=useState<Client[]>([]),[products,setProducts]=useState<Product[]>([]),[orders,setOrders]=useState<Order[]>([])
+ const requestedView=new URLSearchParams(window.location.search).get('view');const pathView=window.location.pathname==='/vendas/clientes'?'clientes':window.location.pathname==='/vendas/novo-pedido'?'pedido':null;const activeView=requestedView??pathView??'pedido';const customerView=activeView==='clientes',[clients,setClients]=useState<Client[]>([]),[products,setProducts]=useState<Product[]>([])
  const[client,setClient]=useState(''),[entryVia,setEntryVia]=useState(''),[emailAttachment,setEmailAttachment]=useState<File|null>(null),[priceItems,setPriceItems]=useState<PriceItem[]>([]),[number,setNumber]=useState(''),[date,setDate]=useState(new Date().toISOString().slice(0,10)),[delivery,setDelivery]=useState(''),[pedidoCliente,setPedidoCliente]=useState(''),[observacoes,setObservacoes]=useState(''),[condicaoPagamento,setCondicaoPagamento]=useState(''),[vendedor,setVendedor]=useState('')
  const[items,setItems]=useState<Item[]>([]),[draft,setDraft]=useState({produto:'',qtd:'1',valor:'0',desconto:'0',codigoCliente:''}),[selectedItemIndex,setSelectedItemIndex]=useState<number|null>(null),[printOpen,setPrintOpen]=useState(false),[printFilter,setPrintFilter]=useState('TODOS'),[busy,setBusy]=useState(false),[msg,setMsg]=useState(''),[err,setErr]=useState(''),[processed,setProcessed]=useState(false),[sidebar,setSidebar]=useState(true)
 
@@ -56,22 +56,18 @@ export default function PedidoVendaCompleto(){
   const [c,p,pi,o]=await Promise.all([
    supabase.from('erp_clientes').select('id,nome,documento,codigo,email,tabela_preco_id,desconto_padrao_percentual').eq('empresa_id',id).eq('ativo',true).order('nome'),
    supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,preco_venda,unidade').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(2000),
-   supabase.from('erp_tabelas_preco_itens').select('tabela_preco_id,produto_id,preco').eq('empresa_id',id).limit(10000),
-   supabase.from('erp_pedidos_venda').select('id,numero,status,total,data_entrega_prometida,cliente_id').eq('empresa_id',id).order('numero',{ascending:false}).limit(100)
+   supabase.from('erp_tabelas_preco_itens').select('tabela_preco_id,produto_id,preco').eq('empresa_id',id).limit(10000)
   ])
-  for(const x of[c,p,pi,o])if(x.error)throw x.error
-  setClients(c.data||[]);setProducts(p.data||[]);setPriceItems((pi.data||[]) as PriceItem[]);setOrders(o.data||[])
+  for(const x of[c,p,pi])if(x.error)throw x.error
+  setClients(c.data||[]);setProducts(p.data||[]);setPriceItems((pi.data||[]) as PriceItem[])
   const u=await supabase.auth.getUser(); if(u.data.user){const ur=await supabase.from('erp_usuarios').select('nome').eq('auth_user_id',u.data.user.id).eq('empresa_id',id).eq('ativo',true).is('deleted_at',null).maybeSingle();if(ur.data?.nome)setVendedor(ur.data.nome)}
-  const firstClient=(c.data||[])[0] as Client|undefined
-  if(firstClient) 
-  setNumber(String((Number(o.data?.[0]?.numero||0)+1)).padStart(6,'0'))
+  setNumber(number||'AUTO')
  }
  useEffect(()=>{void load().catch(e=>setErr(e.message))},[])
 
  const selected=products.find(p=>p.id===draft.produto)
  const selectedClient=clients.find(c=>c.id===client)
  const priceFor=(product:Product)=>{const specific=selectedClient?.tabela_preco_id?priceItems.find(x=>x.tabela_preco_id===selectedClient.tabela_preco_id&&x.produto_id===product.id):undefined;return specific?.preco??product.preco_venda}
- const priceSource=(product:Product)=>selectedClient?.tabela_preco_id&&priceItems.some(x=>x.tabela_preco_id===selectedClient.tabela_preco_id&&x.produto_id===product.id)?'PREÇO DO CLIENTE':'PREÇO PADRÃO'
  const subtotal=useMemo(()=>items.reduce((s,i)=>s+Math.max(Number(i.quantidade)*Number(i.valor)-Math.max(Number(i.desconto)||0,0),0),0),[items]); const total=subtotal
  const analyzed=items.map(i=>({...i,disponivel:Math.max(i.estoque-i.reservadoQtd,0),reserva:Math.min(Number(i.quantidade),Math.max(i.estoque-i.reservadoQtd,0)),falta:Math.max(Number(i.quantidade)-Math.max(i.estoque-i.reservadoQtd,0),0)}))
  const faltantes=analyzed.filter(i=>i.falta>0)
