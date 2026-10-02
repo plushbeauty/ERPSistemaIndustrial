@@ -47,24 +47,24 @@ drop policy if exists erp_transportadoras_insert on public.erp_transportadoras;
 drop policy if exists erp_transportadoras_update on public.erp_transportadoras;
 drop policy if exists erp_transportadoras_delete on public.erp_transportadoras;
 create policy erp_transportadoras_select on public.erp_transportadoras for select to authenticated
-  using (empresa_id=public.erp_current_empresa_id() and public.erp_has_permission('vendas','ver'));
+  using (empresa_id=public.erp_current_empresa_id() and public.erp_has_permission('sales.read'));
 create policy erp_transportadoras_insert on public.erp_transportadoras for insert to authenticated
-  with check (empresa_id=public.erp_current_empresa_id() and public.erp_has_permission('vendas','criar'));
+  with check (empresa_id=public.erp_current_empresa_id() and public.erp_has_permission('sales.create'));
 create policy erp_transportadoras_update on public.erp_transportadoras for update to authenticated
-  using (empresa_id=public.erp_current_empresa_id() and public.erp_has_permission('vendas','editar'))
-  with check (empresa_id=public.erp_current_empresa_id() and public.erp_has_permission('vendas','editar'));
+  using (empresa_id=public.erp_current_empresa_id() and public.erp_has_permission('sales.update'))
+  with check (empresa_id=public.erp_current_empresa_id() and public.erp_has_permission('sales.update'));
 create policy erp_transportadoras_delete on public.erp_transportadoras for delete to authenticated
-  using (empresa_id=public.erp_current_empresa_id() and public.erp_has_permission('vendas','excluir'));
+  using (empresa_id=public.erp_current_empresa_id() and public.erp_has_permission('sales.cancel'));
 
 drop policy if exists erp_cliente_transportadoras_select on public.erp_cliente_transportadoras;
 drop policy if exists erp_cliente_transportadoras_insert on public.erp_cliente_transportadoras;
 drop policy if exists erp_cliente_transportadoras_delete on public.erp_cliente_transportadoras;
 create policy erp_cliente_transportadoras_select on public.erp_cliente_transportadoras for select to authenticated
-  using (empresa_id=public.erp_current_empresa_id() and public.erp_has_permission('vendas','ver'));
+  using (empresa_id=public.erp_current_empresa_id() and public.erp_has_permission('sales.read'));
 create policy erp_cliente_transportadoras_insert on public.erp_cliente_transportadoras for insert to authenticated
-  with check (empresa_id=public.erp_current_empresa_id() and public.erp_has_permission('clientes','editar'));
+  with check (empresa_id=public.erp_current_empresa_id() and public.erp_has_permission('sales.update'));
 create policy erp_cliente_transportadoras_delete on public.erp_cliente_transportadoras for delete to authenticated
-  using (empresa_id=public.erp_current_empresa_id() and public.erp_has_permission('clientes','editar'));
+  using (empresa_id=public.erp_current_empresa_id() and public.erp_has_permission('sales.update'));
 
 drop function if exists public.erp_finalizar_pedido_venda(uuid,numeric,jsonb,date,date,text,text,text,text,text,text,numeric,numeric);
 create or replace function public.erp_finalizar_pedido_venda(
