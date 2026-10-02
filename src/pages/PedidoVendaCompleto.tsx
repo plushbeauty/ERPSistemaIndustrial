@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Factory, LogOut, PanelLeftClose, PanelLeftOpen, Plus, RefreshCw, Save, Settings, ShoppingCart, Tablet, Trash2, Users, ClipboardList } from 'lucide-react'
+import { Factory, LogOut, PanelLeftClose, PanelLeftOpen, Plus, Printer, Pencil, RefreshCw, Save, Settings, ShoppingCart, Tablet, Trash2, Users, ClipboardList } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 
@@ -93,6 +93,7 @@ export default function PedidoVendaCompleto() {
     desconto: '0',
   })
   const [items, setItems] = useState<OrderItem[]>([])
+  const [editIndex, setEditIndex] = useState<number | null>(null)
   const [descontoPedido, setDescontoPedido] = useState('0')
   const [frete, setFrete] = useState('0')
   const [outrasDespesas, setOutrasDespesas] = useState('0')
@@ -261,9 +262,7 @@ export default function PedidoVendaCompleto() {
     }
 
     setError('')
-    setItems(current => [
-      ...current,
-      {
+    const nextItem: OrderItem = {
         produto_id: selectedProduct.id,
         codigo: selectedProduct.codigo,
         codigoCliente: draft.codigoCliente.trim(),
@@ -274,18 +273,35 @@ export default function PedidoVendaCompleto() {
         unidade: selectedProduct.unidade || 'UN',
         estoque: Number(selectedProduct.estoque_atual || 0),
         reservadoQtd: 0,
-      },
-    ])
+      }
 
+    setItems(current => editIndex === null ? [...current, nextItem] : current.map((item, index) => index === editIndex ? nextItem : item))
+    setEditIndex(null)
     setDraft({ produto: '', codigoCliente: '', quantidade: '1', valor: '0', desconto: '0' })
+  }
+
+  const editItem = (index: number) => {
+    const item = items[index]
+    if (!item) return
+    setDraft({
+      produto: item.produto_id,
+      codigoCliente: item.codigoCliente,
+      quantidade: item.quantidade,
+      valor: item.valor,
+      desconto: item.desconto,
+    })
+    setEditIndex(index)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const removeItem = (index: number) => {
     setItems(current => current.filter((_, itemIndex) => itemIndex !== index))
+    setEditIndex(current => current === index ? null : current)
   }
 
   const cancel = () => {
     setItems([])
+    setEditIndex(null)
     setClient('')
     setClientDoc('')
     setDate(today())
@@ -372,13 +388,25 @@ export default function PedidoVendaCompleto() {
         .pedido-nav:hover{background:#f2f8fa}.pedido-nav.active{background:#e7f5fa;color:#176487;font-weight:600;box-shadow:inset 3px 0 #2d8db8}.pedido-spacer{flex:1}
         .pedido-main{flex:1;min-width:0}.pedido-header{min-height:58px;background:#fff;border-bottom:1px solid #c9dce3;padding:7px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-sizing:border-box}
         .pedido-heading{min-width:0}.pedido-heading span,.pedido-kicker{font-size:9px;font-weight:600;letter-spacing:.1em;color:#2d7896}.pedido-heading h1{font-size:17px;font-weight:600;line-height:1.15;margin:2px 0}.pedido-heading p{font-size:10px;color:#68808b;margin:0}
-        .pedido-toolbar{display:flex;align-items:center;gap:4px;flex-wrap:wrap}.pedido-btn{height:30px;border:1px solid #bfd1d8;border-radius:3px;background:#fff;color:#17333f;padding:0 8px;display:inline-flex;align-items:center;gap:5px;font-size:11px;cursor:pointer}.pedido-btn.primary{background:#2d8db8;border-color:#2d8db8;color:#fff}.pedido-btn.danger{background:#fff5f5;border-color:#d8a8ad;color:#9b2525}.pedido-btn:disabled{opacity:.5;cursor:not-allowed}
+        .pedido-toolbar{display:flex;align-items:center;gap:4px;flex-wrap:wrap}.pedido-btn{height:27px;border:1px solid #bfd1d8;border-radius:3px;background:#fff;color:#17333f;padding:0 8px;display:inline-flex;align-items:center;gap:5px;font-size:11px;cursor:pointer}.pedido-btn.primary{background:#2d8db8;border-color:#2d8db8;color:#fff}.pedido-btn.danger{background:#fff5f5;border-color:#d8a8ad;color:#9b2525}.pedido-btn:disabled{opacity:.5;cursor:not-allowed}
         .pedido-content{max-width:1260px;margin:0 auto;padding:10px 14px 20px;width:100%;box-sizing:border-box}.pedido-card{background:#fff;border:1px solid #c9dce3;border-radius:3px;margin-top:7px;padding:10px 12px;box-shadow:0 1px 3px rgba(23,51,63,.03)}
         .pedido-card h2{font-size:14px;font-weight:600;margin:2px 0}.pedido-card p{font-size:10px;color:#5d717a;margin:0}.pedido-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;margin-top:8px;align-items:start}.pedido-field{grid-column:span 3;display:flex;flex-direction:column;gap:3px;min-width:0;font-size:10px;font-weight:500;color:#314a55}.pedido-field.span2{grid-column:span 6}.pedido-field.span4{grid-column:span 4}.pedido-field.span6{grid-column:span 6}.pedido-field.span12{grid-column:1/-1}
-        .pedido-field input,.pedido-field select,.pedido-field textarea{width:100%;box-sizing:border-box;border:1px solid #bfd1d8;border-radius:3px;background:#fff;color:#17333f;font-size:11px;font-weight:400}.pedido-field input,.pedido-field select{height:32px;padding:0 7px}.pedido-field textarea{min-height:62px;padding:7px;resize:vertical}.pedido-field input[readonly]{background:#f5f8f9;color:#536b76}
-        .pedido-item-entry{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:6px;align-items:end;margin-top:8px}.pedido-lookup{min-width:0}.pedido-mini{font-size:9px;color:#68808b;margin-top:2px}.pedido-table-wrap{overflow:auto;border:1px solid #d5e2e6;border-radius:3px;margin-top:9px}.pedido-table{width:100%;min-width:950px;border-collapse:collapse}.pedido-table th{background:#eaf2f5;border-bottom:1px solid #c9dce3;text-align:left;padding:6px;font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}.pedido-table td{border-bottom:1px solid #edf3f5;padding:6px;font-size:10px;white-space:nowrap}.pedido-table td.wrap{white-space:normal}.pedido-actions{display:flex;gap:3px;align-items:center}.pedido-icon{width:27px;height:27px;border:1px solid #bfd1d8;background:#fff;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#35515d}.pedido-icon.danger{color:#9b2525;border-color:#dfb8bc}
+        .pedido-field input,.pedido-field select,.pedido-field textarea{width:100%;box-sizing:border-box;border:1px solid #bfd1d8;border-radius:3px;background:#fff;color:#17333f;font-size:11px;font-weight:400}.pedido-field input,.pedido-field select{height:27px;padding:0 6px}.pedido-field textarea{min-height:62px;padding:7px;resize:vertical}.pedido-field input[readonly]{background:#f5f8f9;color:#536b76}
+        .pedido-item-entry{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:6px;align-items:end;margin-top:8px}.pedido-lookup{min-width:0}.pedido-mini{font-size:9px;color:#68808b;margin-top:2px}.pedido-table-wrap{overflow:auto;border:1px solid #d5e2e6;border-radius:3px;margin-top:9px}.pedido-table{width:100%;min-width:950px;border-collapse:collapse}.pedido-table th{background:#eaf2f5;border-bottom:1px solid #c9dce3;text-align:left;padding:6px;font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}.pedido-table td{border-bottom:1px solid #edf3f5;padding:5px 6px;font-size:10px;white-space:nowrap}.pedido-table td.wrap{white-space:normal}.pedido-actions{display:flex;gap:3px;align-items:center}.pedido-icon{width:23px;height:23px;border:1px solid #bfd1d8;background:#fff;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#35515d}.pedido-icon.danger{color:#9b2525;border-color:#dfb8bc}
         .pedido-status{display:inline-flex;padding:3px 6px;border-radius:3px;font-size:9px;font-weight:600}.pedido-status.ok{background:#e8f7f0;color:#287a5c}.pedido-status.warn{background:#fff2e5;color:#b45b12}
         .pedido-summary{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}.pedido-total{font-size:18px;font-weight:600;color:#17445a}.pedido-note{font-size:10px;color:#68808b}.pedido-alert{padding:8px 10px;border:1px solid #e2b9b9;background:#fff2f2;color:#9b2525;border-radius:3px;font-size:11px;margin-bottom:7px}.pedido-success{padding:8px 10px;border:1px solid #b9dfcd;background:#e8f7f0;color:#287a5c;border-radius:3px;font-size:11px;margin-bottom:7px}
+        .pedido-result{border:1px solid #b9dfcd;
+        .pedido-page .w-full > label{font-size:10px!important;font-weight:600!important;color:#314a55!important}
+        .pedido-page .w-full > .flex{gap:3px!important;width:100%!important;margin-top:2px!important}
+        .pedido-page .w-full > .flex > input{height:27px!important;width:120px!important;min-width:0!important;font-size:11px!important;font-weight:500!important;padding:0 6px!important;border-radius:3px!important}
+        .pedido-page .w-full > .flex > button{height:27px!important;width:27px!important;border-radius:3px!important;box-shadow:none!important}
+        .pedido-page .w-full > .flex > button svg{width:14px!important;height:14px!important}
+        .pedido-page .w-full > div.mt-1{margin-top:2px!important;max-width:none!important;padding:3px 5px!important;font-size:10px!important;border-radius:3px!important}
+        .pedido-page .w-full > div.mt-1 .text-sm{font-size:10px!important}
+        .pedido-page .w-full > p{font-size:9px!important;font-weight:400!important;margin-top:2px!important}
+        .pedido-page .pedido-toolbar .pedido-btn{white-space:nowrap}
+        .pedido-page .pedido-actions{gap:2px}
+        @media print{.pedido-sidebar,.pedido-header,.pedido-toolbar,.pedido-actions{display:none!important}.pedido-page{display:block;background:#fff}.pedido-content{max-width:none;padding:0}.pedido-card{box-shadow:none;break-inside:avoid}}
         .pedido-result{border:1px solid #b9dfcd;background:#f2fbf6}.pedido-result h2{color:#287a5c}.pedido-filter{display:grid;grid-template-columns:1fr 1fr;gap:6px}
         @media(max-width:1000px){.pedido-sidebar{width:210px;flex-basis:210px}.pedido-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.pedido-field,.pedido-field.span2,.pedido-field.span4{grid-column:span 3}.pedido-field.span6,.pedido-field.span12{grid-column:1/-1}.pedido-item-entry{grid-template-columns:1fr 1fr 1fr}.pedido-item-entry .full{grid-column:1/-1}}
         @media(max-width:720px){.pedido-sidebar{position:fixed;z-index:9999;top:0;bottom:0;left:0;transform:translateX(-100%);transition:.18s}.pedido-sidebar.open{transform:translateX(0)}.pedido-header{align-items:flex-start}.pedido-grid{grid-template-columns:1fr}.pedido-field,.pedido-field.span2,.pedido-field.span4,.pedido-field.span6,.pedido-field.span12{grid-column:1/-1}.pedido-item-entry{grid-template-columns:1fr}.pedido-content{padding:8px}.pedido-toolbar .pedido-btn{height:34px}}
@@ -412,8 +440,10 @@ export default function PedidoVendaCompleto() {
             <p>{view === 'clientes' ? 'Cadastro comercial sem alterar a estrutura de pedidos.' : 'Entrada → itens → estoque → condições → gravação'}</p>
           </div>
           <div className="pedido-toolbar">
-            <button className="pedido-btn" onClick={() => go('/tablet/dashboard')}><Tablet size={14} /> TABLET</button>
-            <button className="pedido-btn" onClick={() => void load()} disabled={busy}><RefreshCw size={14} /> Atualizar</button>
+            <button className="pedido-btn primary" onClick={() => void finalize()} disabled={busy || !items.length}><Save size={13} /> Gravar</button>
+            <button className="pedido-btn" onClick={() => window.print()}><Printer size={13} /> Imprimir</button>
+            <button className="pedido-btn" onClick={() => go('/tablet/dashboard')}><Tablet size={13} /> Tablet</button>
+            <button className="pedido-btn" onClick={() => void load()} disabled={busy}><RefreshCw size={13} /> Atualizar</button>
             <button className="pedido-btn danger" onClick={() => void supabase.auth.signOut().then(() => window.location.replace('/login'))}><LogOut size={14} /> Sair</button>
           </div>
         </header>
@@ -504,7 +534,7 @@ export default function PedidoVendaCompleto() {
                     <label className="pedido-field">Quantidade<input type="number" min="1" value={draft.quantidade} onChange={event => setDraft(current => ({ ...current, quantidade: event.target.value }))} /></label>
                     <label className="pedido-field">Valor Unitário<input type="number" min="0" step="0.01" value={draft.valor} onChange={event => setDraft(current => ({ ...current, valor: event.target.value }))} /></label>
                     <label className="pedido-field">Desconto<input type="number" min="0" step="0.01" value={draft.desconto} onChange={event => setDraft(current => ({ ...current, desconto: event.target.value }))} /></label>
-                    <button type="button" className="pedido-btn primary" onClick={addItem} disabled={!selectedProduct} title="Adicionar item"><Plus size={14} /> Adicionar</button>
+                    <button type="button" className="pedido-btn primary" onClick={addItem} disabled={!selectedProduct} title={editIndex === null ? "Adicionar item" : "Gravar edição"}><Save size={13} /> {editIndex === null ? "Adicionar" : "Gravar edição"}</button>
                   </div>
 
                   <div className="pedido-table-wrap">
@@ -525,7 +555,7 @@ export default function PedidoVendaCompleto() {
                             <td>{item.disponivel.toLocaleString('pt-BR')}</td>
                             <td><span className={`pedido-status ${item.falta ? 'warn' : 'ok'}`}>{item.falta ? 'FALTA' : 'OK'}</span></td>
                             <td><b>{item.falta ? `Produzir ${item.falta}` : 'Reservar'}</b></td>
-                            <td><button className="pedido-icon danger" onClick={() => removeItem(index)} title="Excluir item"><Trash2 size={14} /></button></td>
+                            <td><div className="pedido-actions"><button className="pedido-icon" onClick={() => editItem(index)} title="Editar item"><Pencil size={13} /></button><button className="pedido-icon danger" onClick={() => removeItem(index)} title="Excluir item"><Trash2 size={13} /></button></div></td>
                           </tr>
                         ))}
                         {!items.length && <tr><td colSpan={13}>Nenhum item lançado.</td></tr>}
