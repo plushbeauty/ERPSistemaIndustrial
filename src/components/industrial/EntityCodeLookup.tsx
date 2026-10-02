@@ -112,9 +112,9 @@ export default function EntityCodeLookup({
         {label}{required ? ' *' : ''}
       </label>
 
-      <div className="mt-1 flex w-fit gap-1">
+      <div className="mt-1 flex w-full min-w-0 gap-1">
         <input
-          className={`${compact ? "h-10 w-[140px] text-sm" : inputClass} rounded-md border border-slate-300 bg-white px-2 font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-600 focus:ring-2 focus:ring-sky-100`}
+          className={`${compact ? "h-10 w-[140px] text-sm" : inputClass} min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-2 font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-600 focus:ring-2 focus:ring-sky-100`}
           value={typedCode}
           required={required}
           placeholder={placeholder}
@@ -135,7 +135,7 @@ export default function EntityCodeLookup({
           aria-label={`Consultar ${label}`}
           title="Consultar por filtros"
         >
-          <Search size={23} />
+          <Search size={20} aria-hidden="true" /><span className="sr-only">Consultar</span>
         </button>
       </div>
 
