@@ -253,3 +253,92 @@ A branch `feat-erp-global-forms-ux-v2` contém:
 - primeiro formulário real migrado: Pedido de Venda.
 
 A tela de Pedido de Venda foi ajustada sem alterar a RPC de gravação, o fluxo de reserva de estoque ou a geração de necessidade para PCP.
+
+
+## Regra definitiva — Pedido de Venda x Expedição
+
+A pesquisa comparativa confirmou a separação operacional:
+
+**Cotação → Pedido de Venda → Reserva/Preparação → Expedição/Entrega → NF/Faturamento → Pagamento.**
+
+O Odoo permite adicionar método/custo de entrega ao pedido quando isso fizer parte do processo, mas a **transportadora** pode ser definida no Delivery Order. ERPNext também separa Sales Order, Delivery Note e Shipment.
+
+### Pedido de Venda
+
+Campos principais:
+- Nº do pedido;
+- data de entrada;
+- cliente;
+- documento do cliente (somente leitura);
+- data prometida;
+- referência/pedido do cliente;
+- condição de pagamento;
+- vendedor;
+- itens;
+- desconto;
+- observações.
+
+Não colocar como campos obrigatórios nesta etapa:
+- transportadora;
+- motorista;
+- placa;
+- rastreio;
+- romaneio;
+- peso de expedição;
+- liberação de portaria.
+
+Esses dados pertencem ao fluxo de Expedição/Entrega.
+
+### Expedição
+
+Campos/ações esperados:
+- pedido/NF de origem;
+- separação;
+- conferência;
+- volumes;
+- peso;
+- transportadora;
+- motorista;
+- veículo/placa;
+- romaneio;
+- rastreio;
+- data de expedição;
+- liberação da saída.
+
+### Regra dos botões
+
+Não colocar todos os botões em todas as telas.
+
+**Lista:**
+- Novo;
+- Filtrar;
+- Imprimir;
+- Atualizar;
+- Abrir.
+
+**Formulário de pedido:**
+- Novo/limpar;
+- Adicionar item;
+- Remover item;
+- Imprimir;
+- Cancelar;
+- Confirmar/finalizar.
+
+**Não usar Excluir para pedido confirmado.** Documento comercial deve ter cancelamento/estorno conforme estado e permissão. Exclusão física não será criada apenas para imitar um botão Delphi.
+
+### Padrão de ação rápida
+
+Ações secundárias devem ser ícones compactos de aproximadamente 30–32px, com `title`/tooltip explicativo.
+
+Exemplos:
+- + = Novo/Adicionar;
+- lupa = Consultar;
+- lápis = Editar, somente quando a operação realmente permitir edição;
+- lixeira = Remover linha ainda não gravada ou operação explicitamente permitida;
+- impressora = Imprimir;
+- filtro = Filtrar;
+- atualizar = Recarregar.
+
+Depois de adicionar um produto, o foco deve voltar automaticamente ao campo de código/produto para permitir digitação contínua sem uso do mouse.
+
+Esse comportamento é inspirado no fluxo operacional de ERP desktop/Delphi e no modelo de linhas de pedido do Odoo, que coloca a ação de adicionar produto diretamente na área das linhas e permite remover uma linha individualmente.
