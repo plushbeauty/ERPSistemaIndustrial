@@ -30,8 +30,8 @@ type Props = {
 
 export { EntityCodeLookup }
 
-const inputClass = 'h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-base font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
-const filterClass = 'h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
+const inputClass = 'h-9 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
+const filterClass = 'h-9 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-normal text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
 
 export default function EntityCodeLookup({
   label,
@@ -108,13 +108,13 @@ export default function EntityCodeLookup({
 
   return (
     <div className="w-full">
-      <label className="block text-sm font-extrabold uppercase tracking-wide text-slate-800">
+      <label className="block text-[11px] font-medium uppercase tracking-wide text-slate-700">
         {label}{required ? ' *' : ''}
       </label>
 
       <div className="mt-1 flex w-fit gap-1">
         <input
-          className={`${compact ? "h-10 w-[140px] text-sm" : inputClass} rounded-md border border-slate-300 bg-white px-2 font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-600 focus:ring-2 focus:ring-sky-100`}
+          className={`${compact ? "h-9 w-[140px] text-sm" : inputClass} rounded-md border border-slate-300 bg-white px-2 font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-600 focus:ring-2 focus:ring-sky-100`}
           value={typedCode}
           required={required}
           placeholder={placeholder}
@@ -130,23 +130,23 @@ export default function EntityCodeLookup({
         />
         <button
           type="button"
-          className={`grid ${compact ? "h-10 w-10" : "h-10 w-[44px]"} shrink-0 place-items-center rounded-md border border-slate-300 bg-slate-100 text-slate-800 shadow-sm transition hover:border-sky-500 hover:bg-sky-50 hover:text-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-200`}
+          className={`grid ${compact ? "h-10 w-10" : "h-9 w-9"} shrink-0 place-items-center rounded-md border border-slate-300 bg-slate-100 text-slate-800 shadow-sm transition hover:border-sky-500 hover:bg-sky-50 hover:text-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-200`}
           onClick={() => setOpen(true)}
           aria-label={`Consultar ${label}`}
           title="Consultar por filtros"
         >
-          <Search size={23} />
+          <Search size={16} />
         </button>
       </div>
 
       {selected && (
-        <div className="mt-1 max-w-[360px] rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-sm">
+        <div className="mt-1 max-w-[360px] rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <strong className="text-slate-950">{selected.codigo ?? '—'}</strong>
             <span className="text-slate-700">{selected.nome ?? 'Registro selecionado'}</span>
           </div>
           {(selected.dimensoes || selected.canal || selected.molde) && (
-            <p className="mt-1 text-sm font-medium text-slate-600">
+            <p className="mt-1 text-xs font-normal text-slate-600">
               {[selected.dimensoes, selected.canal, selected.molde].filter(Boolean).join(' • ')}
             </p>
           )}
@@ -168,9 +168,9 @@ export default function EntityCodeLookup({
           <section className="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-md border border-slate-300 bg-white shadow-2xl">
             <header className="flex shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-slate-50 px-5 py-4">
               <div>
-                <span className="text-xs font-black uppercase tracking-[0.18em] text-sky-700">Consulta inteligente</span>
-                <h2 className="mt-1 text-2xl font-black text-slate-950">{label}</h2>
-                <p className="mt-1 text-base text-slate-600">Filtre, selecione uma linha e o registro será aplicado ao formulário.</p>
+                <span className="text-xs font-medium uppercase tracking-[0.18em] text-sky-700">Consulta inteligente</span>
+                <h2 className="mt-1 text-lg font-medium text-slate-950">{label}</h2>
+                <p className="mt-1 text-xs text-slate-600">Filtre, selecione uma linha e o registro será aplicado ao formulário.</p>
               </div>
               <button
                 type="button"
@@ -183,7 +183,7 @@ export default function EntityCodeLookup({
             </header>
 
             <div className="grid shrink-0 gap-3 border-b border-slate-200 bg-white p-5 md:grid-cols-2 xl:grid-cols-4">
-              <label className="text-sm font-extrabold text-slate-800">
+              <label className="text-xs font-medium text-slate-700">
                 Código Interno
                 <input className={filterClass} value={codigo} onChange={event => setCodigo(event.target.value)} autoFocus />
               </label>
@@ -202,10 +202,10 @@ export default function EntityCodeLookup({
             </div>
 
             <div className="min-h-0 flex-1 overflow-auto">
-              <table className="w-full min-w-[900px] border-collapse text-base">
-                <thead className="sticky top-0 z-10 bg-slate-100 text-left text-sm font-black uppercase text-slate-800">
+              <table className="w-full min-w-[900px] border-collapse text-sm">
+                <thead className="sticky top-0 z-10 bg-slate-100 text-left text-[10px] font-medium uppercase text-slate-800">
                   <tr>
-                    <th className="h-[54px] border-b border-slate-200 px-4">Código</th>
+                    <th className="h-[40px] border-b border-slate-200 px-4">Código</th>
                     <th className="border-b border-slate-200 px-4">Descrição</th>
                     <th className="border-b border-slate-200 px-4">Cód. Cliente</th>
                     <th className="border-b border-slate-200 px-4">Dimensões / Canal / Molde</th>
@@ -236,7 +236,7 @@ export default function EntityCodeLookup({
                   ))}
                   {!filtered.length && (
                     <tr>
-                      <td colSpan={5} className="p-10 text-center text-base font-semibold text-slate-600">Nenhum registro encontrado.</td>
+                      <td colSpan={5} className="p-10 text-center text-sm font-normal text-slate-600">Nenhum registro encontrado.</td>
                     </tr>
                   )}
                 </tbody>
