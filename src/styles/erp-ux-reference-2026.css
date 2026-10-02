@@ -25,6 +25,9 @@
 .erp-ux-root :where(label){font-weight:500!important}
 .erp-ux-root :where(button){font-weight:500!important}
 .erp-ux-root :where(.font-black,.font-extrabold,.font-bold,.font-semibold){font-weight:600!important}
+.erp-ux-root :where(input,select,textarea).font-black,.erp-ux-root :where(input,select,textarea).font-extrabold,.erp-ux-root :where(input,select,textarea).font-bold,.erp-ux-root :where(input,select,textarea).font-semibold{font-weight:400!important}
+.erp-ux-root :where(label).font-black,.erp-ux-root :where(label).font-extrabold,.erp-ux-root :where(label).font-bold,.erp-ux-root :where(label).font-semibold{font-weight:500!important}
+.erp-ux-root :where(button).font-black,.erp-ux-root :where(button).font-extrabold,.erp-ux-root :where(button).font-bold,.erp-ux-root :where(button).font-semibold{font-weight:500!important}
 .erp-ux-root :where([style*="font-weight:900"],[style*="font-weight:950"],[style*="font-weight:850"],[style*="font-weight:800"],[style*="font-weight:750"],[style*="font-weight:700"]){font-weight:600!important}
 .erp-ux-root :where(input,select,textarea){
   min-height:var(--ux-control);
