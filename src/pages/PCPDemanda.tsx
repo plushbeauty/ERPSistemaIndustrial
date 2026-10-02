@@ -31,14 +31,15 @@ export default function PCPDemanda(){
  }
  useEffect(()=>{autoProcessed.current=false;void load()},[periodo])
  const totalFabricar=useMemo(()=>rows.reduce((s,r)=>s+r.necessidade,0),[rows]),deficitRows=useMemo(()=>rows.filter(r=>r.necessidade>0),[rows])
- async function gerarLote(){
-  if(!deficitRows.length){setMessage('Não há necessidade líquida positiva para gerar OPs.');return}
+ async function gerarLote(autoOnly=false){
+  const targetRows=autoOnly?deficitRows.filter(r=>r.pedido>0):deficitRows
+  if(!targetRows.length{setMessage('Não há necessidade líquida positiva para gerar OPs.');return}
   setProcessing(true);setError('');setMessage('')
   try{
    const tenant=await supabase.rpc('erp_current_empresa_id');if(tenant.error||!tenant.data)throw tenant.error||new Error('Empresa ERP não identificada.')
    const max=await supabase.from('erp_ordens_producao').select('numero_op').eq('empresa_id',tenant.data).order('numero_op',{ascending:false}).limit(1).maybeSingle();if(max.error)throw max.error
    let next=Number(max.data?.numero_op??0)+1,created=0
-   for(const row of deficitRows){
+   for(const row of targetRows){
     const pedidoId=row.pedidosIds.length===1?row.pedidosIds[0]:null
     const ins=await supabase.from('erp_ordens_producao').insert({empresa_id:tenant.data,numero_op:next++,numero:null,produto_id:row.id,pedido_venda_id:pedidoId,quantidade:row.necessidade,quantidade_planejada:row.necessidade,quantidade_produzida:0,status:'pendente'}).select('id').single()
     if(ins.error)throw ins.error
@@ -49,9 +50,10 @@ export default function PCPDemanda(){
    await load()
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível gerar as OPs do lote.')}finally{setProcessing(false)}
  } async function processarAutomaticamente() {
-  if (autoProcessed.current || loading || processing || !deficitRows.length) return
+  const pendingRows = deficitRows.filter(r => r.pedido > 0)
+  if (autoProcessed.current || loading || processing || !pendingRows.length) return
   autoProcessed.current = true
-  await gerarLote()
+  await gerarLote(true)
  }
  useEffect(() => {
   if (!loading && !processing && deficitRows.length && !autoProcessed.current) void processarAutomaticamente()
