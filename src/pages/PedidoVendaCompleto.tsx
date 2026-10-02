@@ -133,6 +133,25 @@ export default function PedidoVendaCompleto(){
    .sales-summary{display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap}.sales-summary strong{font-size:18px}.sales-note{font-size:12px;color:#68808b}.sales-message{padding:12px 14px;border-radius:10px;margin:0 0 14px;background:#e8f7f0;color:#287a5c;border:1px solid #b9dfcd;font-weight:750}.sales-error{padding:12px 14px;border-radius:10px;margin:0 0 14px;background:#fff2f2;color:#9b2525;border:1px solid #e2b9b9;font-weight:750}
    .sales-result{border:1px solid #b9dfcd;background:#f2fbf6;border-radius:12px;padding:18px;margin-top:16px}.sales-final-fields{align-items:start}.sales-final-fields textarea{min-height:96px;resize:vertical;border:1px solid #bdd3da;border-radius:9px;background:#fff;padding:10px 11px;color:#17333f;font:inherit}.sales-total{padding:12px;border:1px solid #cfe1e7;border-radius:10px;background:#f4fbfd}.sales-total strong{font-size:22px;color:#17445a}.sales-total small{color:#68808b}.sales-result h3{margin:0 0 10px;color:#287a5c}
    .sales-field-span-2{grid-column:span 2}.transport-picker{display:grid;grid-template-columns:1fr 1.2fr;gap:7px}.transport-picker input,.transport-picker select{min-height:43px;border:1px solid #bdd3da;border-radius:9px;background:#fff;padding:0 11px;color:#17333f;box-sizing:border-box;width:100%}.row-actions{display:flex;align-items:center;gap:6px;white-space:nowrap}.sales-icon-btn{width:32px;height:32px;border:1px solid #bfd7df;background:#fff;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#17445a}.sales-icon-btn:hover{background:#f4fbfd}.danger-icon{color:#9b2525;border-color:#e3b8bc}.sales-transport-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.sales-transport-option{display:flex;align-items:center;gap:9px;border:1px solid #d7e6eb;border-radius:7px;padding:10px;background:#f8fcfd}.transport-form{grid-template-columns:repeat(4,minmax(0,1fr))}.compact-field input,.compact-field select{width:95px;max-width:95px}.sales-customer{max-width:1180px;margin:0 auto}.sales-customer-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px}.sales-customer-head span{font-size:11px;font-weight:900;letter-spacing:.12em;color:#2d8db8}.sales-customer-head h1{margin:4px 0;font-size:28px}.sales-customer-badge{padding:9px 12px;border:1px solid #b9d2da;background:#f4fbfd;border-radius:7px;font-size:11px;font-weight:900;color:#17445a}.sales-customer-card{background:#fff;border:1px solid #cfe1e7;border-radius:9px;box-shadow:0 5px 16px rgba(23,51,63,.05);padding:18px;margin-bottom:14px}.sales-customer-section-title{font-size:13px;font-weight:900;color:#17445a;margin-bottom:14px}.sales-customer-grid,.sales-customer-link-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.sales-customer-grid label,.sales-customer-link-grid label{display:grid;gap:6px;font-size:12px;font-weight:850;color:#172033}.sales-customer-grid label.wide{grid-column:1/-1}.sales-customer-grid input,.sales-customer-link-grid input{min-height:42px;border:1px solid #b9cbd3;border-radius:7px;background:#fff;color:#172033;padding:0 11px;box-sizing:border-box}.sales-customer-help{color:#536b76;font-size:13px;margin:0 0 14px}.sales-customer-table{overflow:auto;margin-top:14px;border:1px solid #d7e6eb;border-radius:8px}.sales-customer-table table{width:100%;border-collapse:collapse;min-width:800px}.sales-customer-table th,.sales-customer-table td{text-align:left;padding:11px;border-bottom:1px solid #e5edf0;font-size:12px;color:#172033}.sales-customer-table th{background:#edf6f8;font-size:11px;text-transform:uppercase}.sales-customer-footer{display:flex;justify-content:flex-end;gap:9px;padding-bottom:10px}@media(max-width:700px){.sales-customer-grid,.sales-customer-link-grid{grid-template-columns:1fr}.sales-customer-grid label.wide{grid-column:auto}.sales-customer-head{align-items:flex-start;flex-direction:column}.sales-field-span-2{grid-column:auto}}\n   @media(max-width:1000px){.sales-side{position:fixed;z-index:9500;left:0;top:0;bottom:0;transform:translateX(-100%);transition:.2s}.sales-side.open{transform:translateX(0)}.sales-toggle{display:inline-flex}.sales-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sales-content{padding:16px}.sales-top{padding:10px 14px}}
+   /* PADRÃO VISUAL VENDAS — manter compacto; alterar somente dimensões, nunca voltar ao layout antigo */
+   .sales-field{font-size:9px;font-weight:700;line-height:1.2}
+   .sales-field input,.sales-field select{font-size:12px;min-height:38px;height:38px;padding:0 9px;border-radius:7px}
+   .sales-field small,.sales-note{font-size:9px}
+   .sales-card{padding:14px;margin-top:12px;border-radius:10px}
+   .sales-card h2{font-size:16px;font-weight:700}
+   .sales-card p{font-size:10px}
+   .sales-kicker{font-size:9px;font-weight:700}
+   .sales-btn{min-height:36px;height:36px;font-size:11px;font-weight:650;padding:0 10px;border-radius:7px;gap:6px}
+   .sales-icon-btn{width:28px;height:28px;border-radius:6px}
+   .row-actions{gap:4px}
+   .sales-table th{font-size:9px;padding:8px}
+   .sales-table td{font-size:11px;padding:8px}
+   .sales-summary strong{font-size:15px}
+   .sales-top-title span{font-size:9px}
+   .sales-top-title strong{font-size:16px;font-weight:700}
+   .sales-top-title small{font-size:9px}
+   .compact-field input,.compact-field select{width:95px;max-width:95px}
+   .sales-field-span-2{min-width:0}
    @media(max-width:560px){.sales-grid{grid-template-columns:1fr}.sales-top-title small{display:none}.sales-actions{width:100%}.sales-btn{flex:1;justify-content:center}.sales-top{align-items:flex-start}.sales-content{padding:10px}}
   `}</style>
   {sidebar&&<aside className="sales-side open">
@@ -196,7 +215,7 @@ export default function PedidoVendaCompleto(){
       {faltantes.length>0&&<div className="sales-summary mt-3"><span>Existem produtos em falta. A necessidade líquida já foi criada para análise do PCP.</span><button className="sales-btn primary" onClick={()=>go('/pcp')}><Factory size={17}/> ENVIAR PRODUTOS FALTANTES PARA PCP</button></div>}
       {faltantes.length===0&&<div className="sales-summary"><span>Todos os itens foram atendidos por reserva de estoque.</span><button className="sales-btn" onClick={()=>go('/comercial')}>Voltar para Carteira</button></div>}
     </section>}
-    <section className="sales-card"><div className="sales-kicker">CARTEIRA</div><h2>Pedidos recentes</h2><div className="sales-table-wrap"><table className="sales-table"><thead><tr><th>Pedido</th><th>Status</th><th>Total</th><th>Entrega</th></tr></thead><tbody>{orders.map(o=><tr key={o.id}><td>PV-{o.numero}</td><td>{o.status}</td><td>{money(Number(o.total))}</td><td>{o.data_entrega_prometida||'—'}</td></tr>)}{!orders.length&&<tr><td colSpan={4}>Nenhum pedido cadastrado.</td></tr>}</tbody></table></div></section>
+
    </>}
    </main>
   </section>
