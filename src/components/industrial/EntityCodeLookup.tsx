@@ -108,13 +108,13 @@ export default function EntityCodeLookup({
 
   return (
     <div className="w-full">
-      <label className="block text-sm font-extrabold uppercase tracking-wide text-slate-800">
+      <label className={compact ? "block text-[10px] font-medium tracking-normal text-slate-800" : "block text-sm font-extrabold uppercase tracking-wide text-slate-800"}>
         {label}{required ? ' *' : ''}
       </label>
 
       <div className="mt-1 flex w-full min-w-0 gap-1">
         <input
-          className={`${compact ? "h-10 w-[140px] text-sm" : inputClass} min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-2 font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-600 focus:ring-2 focus:ring-sky-100`}
+          className={`${compact ? "h-[26px] w-[140px] text-[12px] font-medium" : inputClass} min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-2 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-600 focus:ring-2 focus:ring-sky-100`}
           value={typedCode}
           required={required}
           placeholder={placeholder}
@@ -130,7 +130,7 @@ export default function EntityCodeLookup({
         />
         <button
           type="button"
-          className={`grid ${compact ? "h-10 w-10" : "h-10 w-[44px]"} shrink-0 place-items-center rounded-md border border-slate-300 bg-slate-100 text-slate-800 shadow-sm transition hover:border-sky-500 hover:bg-sky-50 hover:text-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-200`}
+          className={`grid ${compact ? "h-[26px] w-[26px]" : "h-10 w-[44px]"} shrink-0 place-items-center rounded-md border border-slate-300 bg-slate-100 text-slate-800 shadow-sm transition hover:border-sky-500 hover:bg-sky-50 hover:text-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-200`}
           onClick={() => setOpen(true)}
           aria-label={`Consultar ${label}`}
           title="Consultar por filtros"
@@ -139,7 +139,7 @@ export default function EntityCodeLookup({
         </button>
       </div>
 
-      {selected && (
+      {selected && !compact && (
         <div className="mt-1 max-w-[360px] rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-sm">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <strong className="text-slate-950">{selected.codigo ?? '—'}</strong>
