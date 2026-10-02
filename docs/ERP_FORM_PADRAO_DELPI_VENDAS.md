@@ -49,3 +49,43 @@ A tela **Vendas > Novo Pedido** é o protótipo visual/funcional de referência 
 
 ## Regra de implementação
 Antes de criar ou reformar outra tela, verificar este padrão e reaproveitar o mesmo sistema de grid, alturas, espaçamentos, lookup compacto e barra de ações. O objetivo é manter o ERP visualmente consistente como um sistema empresarial tradicional/Delphi moderno.
+
+
+## Decisões de fluxo comercial — 2026-10-02
+
+### Entrada de pedido
+A tela Novo Pedido deve concentrar somente a entrada comercial:
+- Nº Pedido e Data;
+- Cliente;
+- Nome do Cliente;
+- Vendedor;
+- Entrada/Via;
+- Data de entrega;
+- Referência do cliente;
+- Condição de pagamento;
+- itens com Código Interno, Descrição, Cód. Cliente, Qtde, Unid., Valor unitário e Desconto %;
+- análise de estoque/reserva/necessidade de produção;
+- valor total do pedido;
+- ações compactas: Novo, Gravar, Add Item, Deletar Item, Imprimir, Cancelar e Finalizar Pedido.
+
+### Preço
+Ao selecionar cliente + produto:
+1. procurar preço específico na tabela comercial vinculada ao cliente;
+2. se não existir preço específico, usar o preço padrão do produto;
+3. carregar desconto percentual padrão do cliente quando existir;
+4. permitir ajuste do desconto do item conforme as regras comerciais.
+
+### Fora da entrada do pedido
+Frete, transportadora e outras despesas não devem ocupar a tela de entrada quando ainda são definidos posteriormente no processo fiscal/logístico. O pedido registra a venda e o valor dos itens; documentos posteriores podem acrescentar os dados fiscais, transporte e faturamento conforme o fluxo real.
+
+### Financeiro / comissão
+A apuração de vendedor deve ser uma consulta própria do Financeiro/Comercial, com período inicial/final, vendedor, cliente, pedidos, faturamento, valor vendido e comissão calculada conforme regra cadastrada. A comissão não deve ser confundida com pagamento ao vendedor: o relatório apura o valor devido e o pagamento segue o processo financeiro/folha definido pela empresa.
+
+### Carteira
+/vendas/carteira é consulta de pedidos. Não deve possuir botão de Entrada de Pedido. A entrada ocorre somente em /vendas/novo-pedido.
+
+### Impressão
+O botão Imprimir da entrada abre filtro de relatório. O relatório deve separar Todos, Prontos, Pendentes e Produzindo quando esses estados existirem no banco. A saída deve possuir identificação da empresa/departamento e usuário responsável. Não criar logo de cliente fictício: usar somente logo efetivamente cadastrada quando existir infraestrutura para isso.
+
+### Referências de processo
+O padrão de Sales Order do ERPNext trata o pedido como registro central de cliente, itens, quantidade, preços, datas e termos, encaminhando posteriormente para entrega, faturamento, produção/compras quando necessário. Odoo também separa cotação/pedido de entrega/faturamento e possui preços, descontos e comissões em etapas próprias. Essas referências são usadas como orientação de arquitetura, não como cópia visual.
