@@ -1,204 +1,595 @@
-import {useEffect,useMemo,useState} from 'react'
-import {supabase} from '../lib/supabaseClient'
-import {Plus,Save,Trash2,RefreshCw,Factory,ShoppingCart,Users,BarChart3,Settings,ClipboardList,PanelLeftClose,PanelLeftOpen,LogOut,Tablet,Truck,Pencil,X,Eraser,ArrowLeft,Send,CheckCircle2} from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Factory, LogOut, PanelLeftClose, PanelLeftOpen, Plus, RefreshCw, Save, Settings, ShoppingCart, Tablet, Trash2, Users, ClipboardList } from 'lucide-react'
+import { supabase } from '../lib/supabaseClient'
 import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 
-type Client={id:string;nome:string;documento:string|null;codigo?:string|null;email?:string|null;tabela_preco_id:string|null}
-type CustomerMapping={produto_id:string;codigoCliente:string;dimensoes:string;canal:string;molde:string}
-type Product={id:string;codigo:string;nome:string;estoque_atual:number;preco_venda:number;unidade:string}
-type PriceItem={tabela_preco_id:string;produto_id:string;preco:number}
-type Item={produto_id:string;codigo:string;codigoCliente:string;descricao:string;quantidade:string;valor:string;desconto:string;unidade:string;estoque:number;reservadoQtd:number;prazoEntrega:string}
-type Order={id:string;numero:number;status:string;total:number;data_entrega_prometida:string|null;cliente_id:string}
-type Transportadora={id:string;codigo:string;razao_social:string;cnpj:string|null;ie:string|null;telefone:string|null;cidade:string|null;uf:string|null;ativo:boolean}
-
-const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0)
-
-function SalesCustomerView({empresa,products,clients,transportadoras,onSaved}:{empresa:string;products:Product[];clients:Client[];transportadoras:Transportadora[];onSaved:()=>void}){
- const [form,setForm]=useState({codigo:'',nome:'',documento:'',endereco:'',email:''})
- const [mapping,setMapping]=useState<CustomerMapping[]>([])
- const [linkedTransportadoras,setLinkedTransportadoras]=useState<string[]>([])
- const [produto,setProduto]=useState('')
- const [codigoCliente,setCodigoCliente]=useState('')
- const [dimensoes,setDimensoes]=useState('')
- const [canal,setCanal]=useState('')
- const [molde,setMolde]=useState('')
- const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
- const product=products.find(p=>p.id===produto)
- const addMapping=()=>{if(!produto||!codigoCliente.trim()){setError('Informe o código interno do produto e o código que o cliente usa.');return}setMapping(x=>[...x,{produto_id:produto,codigoCliente:codigoCliente.trim(),dimensoes,canal,molde}]);setProduto('');setCodigoCliente('');setDimensoes('');setCanal('');setMolde('')}
- const save=async()=>{if(!empresa||!form.nome.trim()){setError('Razão Social é obrigatória.');return}setBusy(true);setError('');setMessage('');try{
-   const r=await supabase.from('erp_clientes').insert({empresa_id:empresa,codigo:form.codigo.trim()||null,nome:form.nome.trim(),documento:form.documento.trim()||null,endereco:form.endereco.trim()||null,email:form.email.trim()||null,ativo:true}).select('id').single()
-   if(r.error)throw r.error
-   if(mapping.length){const rows=mapping.map(m=>({empresa_id:empresa,cliente_id:r.data.id,produto_id:m.produto_id,codigo_cliente:m.codigoCliente,dimensoes:m.dimensoes.trim()||null,canal:m.canal.trim()||null,molde:m.molde.trim()||null,ativo:true}));const mr=await supabase.from('erp_cliente_produto_de_para').upsert(rows,{onConflict:'empresa_id,cliente_id,produto_id'});if(mr.error)throw mr.error}
-   if(linkedTransportadoras.length){const tr=linkedTransportadoras.map(transportadora_id=>({empresa_id:empresa,cliente_id:r.data.id,transportadora_id}));const trr=await supabase.from('erp_cliente_transportadoras').upsert(tr,{onConflict:'empresa_id,cliente_id,transportadora_id'});if(trr.error)throw trr.error}
-   setMessage('Cliente e vínculos DE-PARA/transportadoras salvos no banco.');setForm({codigo:'',nome:'',documento:'',endereco:'',email:''});setMapping([]);onSaved()
- }catch(e){setError(e instanceof Error?e.message:'Não foi possível salvar o cliente.')}finally{setBusy(false)}}
- return <div className="sales-customer">
-   <div className="sales-customer-head"><div><span>FICHA DO CLIENTE</span><h1>NOVO CLIENTE</h1></div><div className="sales-customer-badge">VENDAS / CADASTRO</div></div>
-   {error&&<div className="sales-error">{error}</div>}{message&&<div className="sales-message">{message}</div>}
-   <section className="sales-customer-card"><div className="sales-customer-section-title">👉 1. DADOS CADASTRAIS</div>
-    <div className="sales-customer-grid"><label>Razão Social *<input value={form.nome} onChange={e=>setForm(v=>({...v,nome:e.target.value}))} placeholder="Metalúrgica Silva LTDA"/></label><label>CNPJ / CPF<input value={form.documento} onChange={e=>setForm(v=>({...v,documento:e.target.value}))} placeholder="00.000.000/0001-00"/></label><label className="wide">Endereço<input value={form.endereco} onChange={e=>setForm(v=>({...v,endereco:e.target.value}))} placeholder="Av. Industrial, 1000"/></label><label>E-mail<input type="email" value={form.email} onChange={e=>setForm(v=>({...v,email:e.target.value}))} placeholder="compras@cliente.com"/></label><label>Código interno do cliente<input value={form.codigo} onChange={e=>setForm(v=>({...v,codigo:e.target.value}))} placeholder="CLI-0001"/></label></div>
-   </section>
-   <section className="sales-customer-card"><div className="sales-customer-section-title">2. VÍNCULO DE CÓDIGOS (DE-PARA DE PRODUTOS DO CLIENTE)</div><p className="sales-customer-help">Cruza o código interno da fábrica com o código que o cliente usa no XML/pedido. Digite o código; a lupa é somente para consulta.</p>
-    <div className="sales-customer-link-grid"><EntityCodeLookup label="Nosso Cód. Interno" value={produto} records={products} onChange={setProduto} onSelect={p=>setProduto(p.id)} helper="Código exato da peça/produto"/><label>Código que o Cliente Usa<input value={codigoCliente} onChange={e=>setCodigoCliente(e.target.value)} placeholder="COD-CLI-X9"/></label><label>Dimensões<input value={dimensoes} onChange={e=>setDimensoes(e.target.value)}/></label><label>Canal<input value={canal} onChange={e=>setCanal(e.target.value)}/></label><label>Molde<input value={molde} onChange={e=>setMolde(e.target.value)}/></label><button type="button" className="sales-btn" onClick={addMapping}><Plus size={16}/> Vincular Novo Código</button></div>
-    <div className="sales-customer-card sales-customer-transport"><div className="sales-customer-section-title">3. TRANSPORTADORAS UTILIZADAS PELO CLIENTE</div><p className="sales-customer-help">Selecione uma ou mais transportadoras reais do cadastro. Elas aparecerão primeiro no pedido deste cliente.</p><div className="sales-transport-options">{transportadoras.filter(t=>t.ativo).map(t=><label key={t.id} className="sales-transport-option"><input type="checkbox" checked={linkedTransportadoras.includes(t.id)} onChange={e=>setLinkedTransportadoras(v=>e.target.checked?[...v,t.id]:v.filter(id=>id!==t.id))}/><span><b>{t.codigo}</b> — {t.razao_social}</span></label>)}</div></div><div className="sales-customer-table"><table><thead><tr><th>Nosso Cód Interno</th><th>Descrição</th><th>Código que o Cliente Usa no XML/Pedido</th><th>Dimensões</th><th>Canal</th><th>Molde</th></tr></thead><tbody>{mapping.map((m,i)=><tr key={i}><td><b>{products.find(p=>p.id===m.produto_id)?.codigo||'—'}</b></td><td>{products.find(p=>p.id===m.produto_id)?.nome||'—'}</td><td>{m.codigoCliente}</td><td>{m.dimensoes||'—'}</td><td>{m.canal||'—'}</td><td>{m.molde||'—'}</td></tr>)}{!mapping.length&&<tr><td colSpan={6}>Nenhum vínculo adicionado. O cadastro pode ser salvo sem DE-PARA e completado depois.</td></tr>}</tbody></table></div>
-   </section>
-   <footer className="sales-customer-footer"><button type="button" className="sales-btn danger" onClick={()=>history.back()}><X size={14}/> Cancelar</button><button type="button" className="sales-btn primary" disabled={busy} onClick={()=>void save()}><Save size={17}/> {busy?'SALVANDO…':'SALVAR CLIENTE'}</button></footer>
- </div>
+type Client = {
+  id: string
+  nome: string
+  documento: string | null
+  codigo: string | null
+  tabela_preco_id: string | null
 }
-function TransportadorasView({empresa,transportadoras,onSaved}:{empresa:string;transportadoras:Transportadora[];onSaved:()=>void}){
- const [edit,setEdit]=useState<Transportadora|null>(null);const [error,setError]=useState('');const [form,setForm]=useState({codigo:'',razao_social:'',cnpj:'',ie:'',telefone:'',cidade:'',uf:'',ativo:true});
- const reset=(t?:Transportadora)=>{setEdit(t??null);setForm(t?{codigo:t.codigo,razao_social:t.razao_social,cnpj:t.cnpj??'',ie:t.ie??'',telefone:t.telefone??'',cidade:t.cidade??'',uf:t.uf??'',ativo:t.ativo}:{codigo:'',razao_social:'',cnpj:'',ie:'',telefone:'',cidade:'',uf:'',ativo:true});setError('')};
- const save=async()=>{if(!empresa||!form.codigo.trim()||!form.razao_social.trim()){setError('Código e razão social/nome são obrigatórios.');return}const payload={empresa_id:empresa,codigo:form.codigo.trim(),razao_social:form.razao_social.trim(),cnpj:form.cnpj.trim()||null,ie:form.ie.trim()||null,telefone:form.telefone.trim()||null,cidade:form.cidade.trim()||null,uf:form.uf.trim().toUpperCase()||null,ativo:form.ativo};const r=edit?await supabase.from('erp_transportadoras').update(payload).eq('id',edit.id).eq('empresa_id',empresa):await supabase.from('erp_transportadoras').insert(payload);if(r.error){setError(r.error.message);return}reset();onSaved()};
- return <div className="sales-card"><div className="sales-kicker">CADASTRO</div><div className="sales-summary"><div><h2>Transportadoras</h2><p>Cadastro real da empresa. O pedido guarda a referência da transportadora.</p></div><button className="sales-btn primary" onClick={()=>reset()}><Plus size={16}/> Nova Transportadora</button></div>{error&&<div className="sales-error">{error}</div>}<div className="sales-grid transport-form"><label className="sales-field">Código<input value={form.codigo} onChange={e=>setForm(v=>({...v,codigo:e.target.value}))}/></label><label className="sales-field sales-field-span-2">Razão social / nome<input value={form.razao_social} onChange={e=>setForm(v=>({...v,razao_social:e.target.value}))}/></label><label className="sales-field">CNPJ<input value={form.cnpj} onChange={e=>setForm(v=>({...v,cnpj:e.target.value}))}/></label><label className="sales-field">IE<input value={form.ie} onChange={e=>setForm(v=>({...v,ie:e.target.value}))}/></label><label className="sales-field">Telefone<input value={form.telefone} onChange={e=>setForm(v=>({...v,telefone:e.target.value}))}/></label><label className="sales-field">Cidade<input value={form.cidade} onChange={e=>setForm(v=>({...v,cidade:e.target.value}))}/></label><label className="sales-field">UF<input value={form.uf} maxLength={2} onChange={e=>setForm(v=>({...v,uf:e.target.value}))}/></label><label className="sales-field">Ativo<select value={form.ativo?'true':'false'} onChange={e=>setForm(v=>({...v,ativo:e.target.value==='true'}))}><option value="true">Sim</option><option value="false">Não</option></select></label></div><div className="sales-actions"><button className="sales-btn" onClick={()=>reset()}><Eraser size={14}/> Limpar</button><button className="sales-btn primary" onClick={()=>void save()}><Save size={16}/> {edit?'Atualizar':'Cadastrar'}</button></div><div className="sales-table-wrap"><table className="sales-table"><thead><tr><th>Código</th><th>Razão social / nome</th><th>CNPJ</th><th>IE</th><th>Telefone</th><th>Cidade/UF</th><th>Ativo</th><th>Ações</th></tr></thead><tbody>{transportadoras.map(t=><tr key={t.id}><td><b>{t.codigo}</b></td><td>{t.razao_social}</td><td>{t.cnpj||'—'}</td><td>{t.ie||'—'}</td><td>{t.telefone||'—'}</td><td>{t.cidade||'—'}{t.uf?' / '+t.uf:''}</td><td>{t.ativo?'Sim':'Não'}</td><td><button className="sales-icon-btn" onClick={()=>reset(t)} title="Editar"><Pencil size={14}/></button></td></tr>)}{!transportadoras.length&&<tr><td colSpan={8}>Nenhuma transportadora cadastrada.</td></tr>}</tbody></table></div></div>
+
+type Product = {
+  id: string
+  codigo: string
+  nome: string
+  estoque_atual: number
+  preco_venda: number
+  unidade: string
 }
-export default function PedidoVendaCompleto(){
- const[empresa,setEmpresa]=useState('')
- const requestedView=new URLSearchParams(window.location.search).get('view');const pathView=window.location.pathname==='/vendas/clientes'?'clientes':window.location.pathname==='/vendas/carteira'?'carteira':window.location.pathname==='/vendas/novo-pedido'?'pedido':null;const activeView=requestedView??pathView??'pedido';const customerView=activeView==='clientes',transportadoraView=activeView==='transportadoras',[clients,setClients]=useState<Client[]>([]),[products,setProducts]=useState<Product[]>([]),[orders,setOrders]=useState<Order[]>([])
- const[client,setClient]=useState(''),[clientDoc,setClientDoc]=useState(''),[priceItems,setPriceItems]=useState<PriceItem[]>([]),[number,setNumber]=useState(''),[date,setDate]=useState(new Date().toISOString().slice(0,10)),[delivery,setDelivery]=useState(''),[pedidoCliente,setPedidoCliente]=useState(''),[observacoes,setObservacoes]=useState(''),[desconto,setDesconto]=useState('0'),[condicaoPagamento,setCondicaoPagamento]=useState(''),[vendedor,setVendedor]=useState(''),[modalidadeFrete,setModalidadeFrete]=useState(''),[transportadoraId,setTransportadoraId]=useState(''),[transportadoras,setTransportadoras]=useState<Transportadora[]>([]),[transportadoraSearch,setTransportadoraSearch]=useState(''),[preferredTransportadoraIds,setPreferredTransportadoraIds]=useState<string[]>([]),[viaEntrada,setViaEntrada]=useState(''),[cfop,setCfop]=useState(''),[formaPagamento,setFormaPagamento]=useState(''),[valorFrete,setValorFrete]=useState('0'),[outrasDespesas,setOutrasDespesas]=useState('0')
- const[items,setItems]=useState<Item[]>([]),[editIndex,setEditIndex]=useState<number|null>(null),[draft,setDraft]=useState({produto:'',qtd:'1',valor:'0',desconto:'0',codigoCliente:''}),[busy,setBusy]=useState(false),[msg,setMsg]=useState(''),[err,setErr]=useState(''),[processed,setProcessed]=useState(false),[sidebar,setSidebar]=useState(true)
 
- const load=async()=>{
-  setErr('')
-  const e=await supabase.rpc('erp_current_empresa_id')
-  if(e.error||!e.data)throw e.error??new Error('Empresa não identificada')
-  const id=String(e.data);setEmpresa(id)
-  const [c,p,pi,t,o]=await Promise.all([
-   supabase.from('erp_clientes').select('id,nome,documento,codigo,email,tabela_preco_id').eq('empresa_id',id).eq('ativo',true).order('nome'),
-   supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,preco_venda,unidade').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(2000),
-   supabase.from('erp_tabelas_preco_itens').select('tabela_preco_id,produto_id,preco').eq('empresa_id',id).limit(10000),
-   supabase.from('erp_transportadoras').select('id,codigo,razao_social,cnpj,ie,telefone,cidade,uf,ativo').eq('empresa_id',id).order('razao_social'),
-   supabase.from('erp_pedidos_venda').select('id,numero,status,total,data_entrega_prometida,cliente_id').eq('empresa_id',id).order('numero',{ascending:false}).limit(100)
-  ])
-  for(const x of[c,p,pi,t,o])if(x.error)throw x.error
-  setClients(c.data||[]);setProducts(p.data||[]);setPriceItems((pi.data||[]) as PriceItem[]);setTransportadoras((t.data||[]) as Transportadora[]);setOrders(o.data||[])
-  const u=await supabase.auth.getUser(); if(u.data.user){const ur=await supabase.from('erp_usuarios').select('nome').eq('auth_user_id',u.data.user.id).eq('empresa_id',id).eq('ativo',true).is('deleted_at',null).maybeSingle();if(ur.data?.nome)setVendedor(ur.data.nome)}
-  const firstClient=(c.data||[])[0] as Client|undefined
-  if(firstClient) setClientDoc(String(firstClient.documento??''))
-  setNumber(String((Number(o.data?.[0]?.numero||0)+1)).padStart(6,'0'))
- }
- useEffect(()=>{void load().catch(e=>setErr(e.message))},[])
+type PriceItem = {
+  tabela_preco_id: string
+  produto_id: string
+  preco: number
+}
 
- const selected=products.find(p=>p.id===draft.produto)
- const selectedClient=clients.find(c=>c.id===client)
- const orderedTransportadoras=useMemo(()=>{const linked=new Set(preferredTransportadoraIds);return [...transportadoras].sort((a,b)=>Number(linked.has(b.id))-Number(linked.has(a.id))||a.razao_social.localeCompare(b.razao_social))},[transportadoras,preferredTransportadoraIds])
- const priceFor=(product:Product)=>{const specific=selectedClient?.tabela_preco_id?priceItems.find(x=>x.tabela_preco_id===selectedClient.tabela_preco_id&&x.produto_id===product.id):undefined;return specific?.preco??product.preco_venda}
- const priceSource=(product:Product)=>selectedClient?.tabela_preco_id&&priceItems.some(x=>x.tabela_preco_id===selectedClient.tabela_preco_id&&x.produto_id===product.id)?'PREÇO DO CLIENTE':'PREÇO PADRÃO'
- const totalBruto=useMemo(()=>items.reduce((s,i)=>s+Math.max(Number(i.quantidade)*Number(i.valor),0),0),[items]); const totalDescontosItens=useMemo(()=>items.reduce((s,i)=>s+Math.max(Number(i.desconto)||0,0),0),[items]); const subtotal=useMemo(()=>Math.max(totalBruto-totalDescontosItens,0),[totalBruto,totalDescontosItens]); const descontoValor=Math.min(Math.max(Number(desconto)||0,0),subtotal); const freteValor=Math.max(Number(valorFrete)||0,0); const outrasValor=Math.max(Number(outrasDespesas)||0,0); const total=Math.max(subtotal-descontoValor+freteValor+outrasValor,0)
- const analyzed=items.map(i=>({...i,disponivel:Math.max(i.estoque-i.reservadoQtd,0),reserva:Math.min(Number(i.quantidade),Math.max(i.estoque-i.reservadoQtd,0)),falta:Math.max(Number(i.quantidade)-Math.max(i.estoque-i.reservadoQtd,0),0)}))
- const faltantes=analyzed.filter(i=>i.falta>0)
- const verdes=analyzed.filter(i=>i.falta===0)
+type Transportadora = {
+  id: string
+  codigo: string
+  razao_social: string
+  ativo: boolean
+}
 
- function choose(id:string){const p=products.find(x=>x.id===id);if(!p)return;setDraft({...draft,produto:id,valor:String(priceFor(p)||0)})}
- function add(){
-  if(!selected||Number(draft.qtd)<=0)return
-  const next={produto_id:selected.id,codigo:selected.codigo,codigoCliente:draft.codigoCliente,descricao:selected.nome,quantidade:draft.qtd,valor:draft.valor||String(selected.preco_venda||0),desconto:draft.desconto||'0',unidade:selected.unidade||'UN',estoque:Number(selected.estoque_atual||0),reservadoQtd:0,prazoEntrega:delivery||''}
-  setItems(x=>editIndex===null?[...x,next]:x.map((item,i)=>i===editIndex?next:item));setEditIndex(null)
-  setDraft({produto:'',qtd:'1',valor:'0',desconto:'0',codigoCliente:''})
- }
- async function finalize(){
-  if(!empresa||!client||!items.length){setErr('Cliente e pelo menos um item são obrigatórios.');return}
-  setBusy(true);setErr('');setMsg('')
-  try{
-   const r=await supabase.rpc('erp_finalizar_pedido_venda',{p_cliente_id:client,p_desconto:Number(desconto)||0,p_itens:items.map(i=>({produto_id:i.produto_id,quantidade:Number(i.quantidade),valor_unitario:Number(i.valor),desconto:Number(i.desconto)||0,codigo_cliente:i.codigoCliente||null,codigo:i.codigo})),p_data_entrada:date||null,p_data_entrega:delivery||null,p_pedido_cliente:pedidoCliente.trim()||null,p_observacoes:observacoes.trim()||null,p_condicao_pagamento:condicaoPagamento.trim()||null,p_vendedor_nome:vendedor.trim()||null,p_modalidade_frete:modalidadeFrete.trim()||null,p_transportadora_id:transportadoraId||null,p_valor_frete:freteValor,p_valor_outras_despesas:outrasValor,p_via_entrada:viaEntrada||null,p_cfop:cfop||null,p_forma_pagamento:formaPagamento||null})
-   if(r.error)throw r.error
-   if(r.data){const update=await supabase.from('erp_pedidos_venda').update({observacoes:observacoes.trim()||null,pedido_cliente:pedidoCliente.trim()||null}).eq('id',String(r.data)).eq('empresa_id',empresa);if(update.error)throw update.error}
-   setProcessed(true)
-   setMsg('Pedido finalizado com sucesso. O estoque disponível foi reservado e somente a necessidade líquida foi enviada ao PCP.')
-   setItems(analyzed.map(i=>({...i,reservadoQtd:i.reserva})))
-   await load()
-  }catch(e){setErr(e instanceof Error?e.message:'Falha ao finalizar pedido.')}
-  finally{setBusy(false)}
- }
- function cancel(){setItems([]);setClient('');setClientDoc('');setDelivery('');setPedidoCliente('');setObservacoes('');setDesconto('0');setCondicaoPagamento('');setModalidadeFrete('');setTransportadoraId('');setTransportadoraSearch('');setViaEntrada('');setCfop('');setFormaPagamento('');setValorFrete('0');setOutrasDespesas('0');setProcessed(false);setMsg('');setErr('')}
- function go(path:string){location.href=path}
+type OrderItem = {
+  produto_id: string
+  codigo: string
+  codigoCliente: string
+  descricao: string
+  quantidade: string
+  valor: string
+  desconto: string
+  unidade: string
+  estoque: number
+  reservadoQtd: number
+}
 
- return <div className="sales-shell">
-  <style>{`
-   .sales-shell{min-height:100vh;background:#f4fbfd;color:#17333f;display:flex}
-   .sales-side{width:270px;flex:none;background:#fff;border-right:1px solid #cfe1e7;display:flex;flex-direction:column;padding:18px 14px;box-sizing:border-box}
-   .sales-brand{display:flex;align-items:center;gap:11px;padding:6px 8px 20px;border-bottom:1px solid #e1edf1;margin-bottom:14px}
-   .sales-brand img{width:42px;height:42px;object-fit:contain}.sales-brand strong{display:block;font-size:17px}.sales-brand small{display:block;color:#68808b;font-size:11px;margin-top:3px}
-   .sales-section{font-size:11px;font-weight:900;letter-spacing:.12em;color:#2d8db8;margin:7px 8px 8px}
-   .sales-nav{width:100%;border:0;background:transparent;color:#36525e;border-radius:10px;padding:11px 10px;display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer;margin-bottom:4px}
-   .sales-nav:hover{background:#f4fbfd}.sales-nav.active{background:#e7f5fa;color:#176487;font-weight:900;box-shadow:inset 3px 0 #2d8db8}
-   .sales-spacer{flex:1}.sales-toggle{display:none}
-   .sales-main{flex:1;min-width:0}.sales-top{min-height:54px;background:#fff;border-bottom:1px solid #cfe1e7;display:flex;align-items:center;justify-content:space-between;padding:5px 12px;box-sizing:border-box;gap:15px}
-   .sales-top-title span,.sales-kicker{font-size:10px;font-weight:900;letter-spacing:.12em;color:#2d8db8}.sales-top-title strong{display:inline-block;font-size:14px;margin:0 0 0 8px}.sales-top-title small{display:block;color:#68808b;margin-top:1px;font-size:10px}
-   .sales-content{padding:6px 10px;max-width:1600px;margin:0 auto}.sales-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap}.sales-btn svg{display:block;flex:none;width:14px;height:14px}.sales-email-attachment{display:flex;align-items:center;gap:4px;margin-top:2px;min-width:0}.sales-attach-btn{height:22px;display:inline-flex;align-items:center;padding:0 6px;border:1px solid #9fb9c4;border-radius:3px;background:#f5fafc;font-size:9px;font-weight:700;cursor:pointer;white-space:nowrap}.sales-email-attachment span{font-size:9px;color:#49636d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sales-btn{white-space:nowrap}
-   .sales-btn{min-height:26px;border-radius:3px;border:1px solid #bfd7df;background:#fff;color:#17333f;padding:0 6px;display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;cursor:pointer}.sales-btn.primary{background:#2d8db8;border-color:#2d8db8;color:#fff}.sales-btn.danger{background:#fff5f5;border-color:#e3b8bc;color:#9b2525}.sales-btn:disabled{opacity:.55;cursor:not-allowed}
-   .sales-card{background:#fff;border:1px solid #b9cfd7;border-radius:4px;box-shadow:0 1px 4px rgba(23,51,63,.04);padding:8px;margin-top:5px}.sales-delphi-form{border-radius:3px}.sales-form-title{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #d7e6eb;padding-bottom:4px;margin-bottom:5px}.sales-form-title h2{font-size:13px;margin:0;display:inline-block;margin-left:10px}.sales-readonly-note{font-size:9px;color:#68808b}.sales-compact-grid{column-gap:5px;row-gap:4px}.sales-compact-grid .sales-field{gap:2px;font-size:10px;font-weight:500}.sales-compact-grid .sales-field input,.sales-compact-grid .sales-field select{min-height:26px;height:26px;border-radius:3px;padding:0 6px;font-size:12px;font-weight:400}.sales-compact-grid .sales-code-field{min-width:82px}.sales-compact-grid .sales-code-field label{font-size:10px!important;font-weight:500!important;letter-spacing:0!important;text-transform:none!important}.sales-compact-grid .sales-code-field input{font-size:12px!important;font-weight:500!important}.sales-compact-grid .sales-code-field .mt-1{margin-top:0}.sales-compact-grid .sales-code-field .sr-only{display:none}.sales-compact-grid .sales-code-field button{height:26px;width:26px}.sales-small-field input{font-variant-numeric:tabular-nums}
-   .sales-card h2{margin:0 0 4px;font-size:18px}.sales-card p{margin:0;color:#68808b}.sales-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:6px;row-gap:6px}.sales-grid > .sales-field-span-1,.sales-grid > .erp-w-1{grid-column:span 1}.sales-grid > .sales-field-span-2,.sales-grid > .erp-w-2{grid-column:span 2}.sales-grid > .sales-field-span-4,.sales-grid > .erp-w-4{grid-column:span 4}.sales-grid > .erp-w-12{grid-column:span 12}.sales-grid .sales-btn{align-self:end;min-height:26px}.sales-grid .sales-field input,.sales-grid .sales-field select{min-height:26px;height:26px;border-radius:3px;padding:0 6px;font-size:12px}.sales-grid .sales-field{display:flex;flex-direction:column;gap:2px;font-size:10px;font-weight:500}.sales-grid .sales-field input,.sales-grid .sales-field select{border:1px solid #bdd3da;background:#fff;color:#17333f;box-sizing:border-box;width:100%}.sales-compact-grid .erp-w-1 .erp-form-control{width:95px;max-width:95px}.sales-compact-grid #edEntradaVia{width:95px!important;max-width:95px}.sales-compact-grid #edDataEntrada,.sales-compact-grid #edDataEntrega,.sales-compact-grid #edPedido,.sales-compact-grid #edReferenciaCliente,.sales-compact-grid #edCondicaoPagamento{width:95px!important;max-width:95px}.sales-compact-grid #edNomeCliente{min-width:0;width:100%;max-width:none}.sales-compact-grid .sales-code-field .mt-1>input{width:95px!important;max-width:95px}.sales-item-grid .sales-item-code .mt-1>input{width:95px!important;max-width:95px}.sales-item-grid .sales-item-code .mt-1>button{width:26px}.sales-item-grid .erp-w-1 .erp-form-control{width:95px;max-width:95px}.sales-item-grid .erp-w-4 .erp-form-control{width:100%}.sales-item-actions{grid-column:span 2}.sales-row-selected{background:#e7f5fa}.sales-order-footer{padding-top:5px;padding-bottom:5px}.sales-print-overlay{position:fixed;inset:0;z-index:11000;background:rgba(15,31,40,.55);display:grid;place-items:center;padding:20px}.sales-print-modal{width:min(520px,100%);background:#fff;border:1px solid #bfd7df;border-radius:5px;padding:12px;box-shadow:0 18px 50px rgba(0,0,0,.2)}.sales-print-option{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:600;margin:12px 0}.sales-print-option select{height:30px;border:1px solid #bdd3da;border-radius:3px;padding:0 7px;background:#fff}.sales-field{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:500}.sales-field input,.sales-field select{min-height:43px;border:1px solid #bdd3da;border-radius:9px;background:#fff;padding:0 11px;color:#17333f;box-sizing:border-box;width:100%}
-   .sales-table-wrap{overflow:auto;border:1px solid #d7e6eb;border-radius:12px;margin-top:16px}.sales-table{width:100%;border-collapse:collapse;min-width:900px}.sales-table th{background:#f4fbfd;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding:7px;border-bottom:1px solid #d7e6eb}.sales-table td{padding:6px;border-bottom:1px solid #edf3f5;font-size:12px;vertical-align:middle}
-   .status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:900;white-space:nowrap}.status.ok{background:#e8f7f0;color:#287a5c}.status.warn{background:#fff2e5;color:#b45b12}.status.done{background:#e7f5fa;color:#176487}
-   .sales-summary{display:flex;justify-content:space-between;gap:6px;align-items:center;flex-wrap:wrap}.sales-summary strong{font-size:16px}.sales-total-inline{display:flex;align-items:center;gap:7px;padding:2px 7px;border:1px solid #cfe1e7;background:#f4fbfd;border-radius:3px}.sales-total-inline span,.sales-total-inline small{font-size:9px;color:#68808b}.sales-total-inline strong{font-size:15px;color:#17445a}.sales-note{font-size:12px;color:#68808b}.sales-message{padding:12px 14px;border-radius:10px;margin:0 0 14px;background:#e8f7f0;color:#287a5c;border:1px solid #b9dfcd;font-weight:750}.sales-error{padding:12px 14px;border-radius:10px;margin:0 0 14px;background:#fff2f2;color:#9b2525;border:1px solid #e2b9b9;font-weight:750}
-   .sales-result{border:1px solid #b9dfcd;background:#f2fbf6;border-radius:12px;padding:18px;margin-top:16px}.sales-final-fields{align-items:start}.sales-final-fields textarea{min-height:96px;resize:vertical;border:1px solid #bdd3da;border-radius:9px;background:#fff;padding:10px 11px;color:#17333f;font:inherit}.sales-total{padding:12px;border:1px solid #cfe1e7;border-radius:10px;background:#f4fbfd}.sales-total strong{font-size:22px;color:#17445a}.sales-total small{color:#68808b}.sales-result h3{margin:0 0 10px;color:#287a5c}
-   .sales-field-span-2{grid-column:span 2}.sales-field-span-4{grid-column:span 4}.sales-field-span-1{grid-column:span 1}.transport-picker{display:grid;grid-template-columns:1fr 1.2fr;gap:5px}.transport-picker input,.transport-picker select{min-height:26px;height:26px;border:1px solid #bdd3da;border-radius:3px;background:#fff;padding:0 6px;color:#17333f;box-sizing:border-box;width:100%;font-size:12px}.row-actions{display:flex;align-items:center;gap:3px;white-space:nowrap}.sales-icon-btn{width:26px;height:26px;border:1px solid #bfd7df;background:#fff;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#17445a;padding:0}.sales-icon-btn:hover{background:#f4fbfd}.danger-icon{color:#9b2525;border-color:#e3b8bc}.sales-transport-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.sales-transport-option{display:flex;align-items:center;gap:6px;border:1px solid #d7e6eb;border-radius:3px;padding:6px;background:#f8fcfd;font-size:10px}.transport-form{grid-template-columns:repeat(4,minmax(0,1fr))}.sales-customer{max-width:1180px;margin:0 auto}.sales-customer-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px}.sales-customer-head span{font-size:11px;font-weight:900;letter-spacing:.12em;color:#2d8db8}.sales-customer-head h1{margin:4px 0;font-size:28px}.sales-customer-badge{padding:9px 12px;border:1px solid #b9d2da;background:#f4fbfd;border-radius:7px;font-size:11px;font-weight:900;color:#17445a}.sales-customer-card{background:#fff;border:1px solid #cfe1e7;border-radius:9px;box-shadow:0 5px 16px rgba(23,51,63,.05);padding:18px;margin-bottom:14px}.sales-customer-section-title{font-size:13px;font-weight:900;color:#17445a;margin-bottom:14px}.sales-customer-grid,.sales-customer-link-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.sales-customer-grid label,.sales-customer-link-grid label{display:grid;gap:6px;font-size:12px;font-weight:850;color:#172033}.sales-customer-grid label.wide{grid-column:1/-1}.sales-customer-grid input,.sales-customer-link-grid input{min-height:42px;border:1px solid #b9cbd3;border-radius:7px;background:#fff;color:#172033;padding:0 11px;box-sizing:border-box}.sales-customer-help{color:#536b76;font-size:13px;margin:0 0 14px}.sales-customer-table{overflow:auto;margin-top:14px;border:1px solid #d7e6eb;border-radius:8px}.sales-customer-table table{width:100%;border-collapse:collapse;min-width:800px}.sales-customer-table th,.sales-customer-table td{text-align:left;padding:11px;border-bottom:1px solid #e5edf0;font-size:12px;color:#172033}.sales-customer-table th{background:#edf6f8;font-size:11px;text-transform:uppercase}.sales-customer-footer{display:flex;justify-content:flex-end;gap:9px;padding-bottom:10px}@media(max-width:700px){.sales-customer-grid,.sales-customer-link-grid{grid-template-columns:1fr}.sales-customer-grid label.wide{grid-column:auto}.sales-customer-head{align-items:flex-start;flex-direction:column}.sales-field-span-2{grid-column:auto}}\n   @media(max-width:1000px){.sales-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.sales-grid > .erp-w-4,.sales-grid > .sales-field-span-4{grid-column:span 3}.sales-grid > .erp-w-2,.sales-grid > .sales-field-span-2{grid-column:span 2}.sales-side{position:fixed;z-index:9500;left:0;top:0;bottom:0;transform:translateX(-100%);transition:.2s}.sales-side.open{transform:translateX(0)}.sales-toggle{display:inline-flex;min-height:30px}.sales-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sales-content{padding:16px}.sales-top{padding:10px 14px}}
-   @media(max-width:560px){.sales-grid{grid-template-columns:1fr}.sales-grid > *{grid-column:1/-1!important}.sales-top-title small{display:none}.sales-actions{width:100%}.sales-btn{flex:1;justify-content:center}.sales-top{align-items:flex-start}.sales-content{padding:10px}}
-  `}</style>
-  {sidebar&&<aside className="sales-side open">
-   <div className="sales-brand"><img src="/logo/sgq-erp.png" alt="SGQ ERP"/><div><strong>ERP INDUSTRIAL</strong><small>MÓDULO DE VENDAS</small></div></div>
-   <div className="sales-section">VENDAS</div>
-   <button className="sales-nav" onClick={()=>go('/pedidos-vendas?view=carteira')}><BarChart3 size={18}/> Painel Comercial</button>
-   <button className={new URLSearchParams(window.location.search).get('view')==='clientes'?'sales-nav':'sales-nav active'} onClick={()=>go('/pedidos-vendas?view=pedido')}><Plus size={18}/> Novo Pedido</button>
-   <button className="sales-nav" onClick={()=>go('/pedidos-vendas?view=carteira')}><ClipboardList size={18}/> Carteira de Pedidos</button>
-   <button className={new URLSearchParams(window.location.search).get('view')==='clientes'?'sales-nav active':'sales-nav'} onClick={()=>go('/pedidos-vendas?view=clientes')}><Users size={18}/> Cadastro Clientes</button>
-   <button className="sales-nav" onClick={()=>go('/pedidos-vendas?view=carteira')}><BarChart3 size={18}/> Metas e Gráficos</button>
-   <div className="sales-spacer"/>
-   <button className="sales-nav" onClick={()=>go('/configuracoes-adm')}><Settings size={18}/> Configurações Vendas</button>
-  </aside>}
-  <section className="sales-main">
-   <header className="sales-top">
-    <div className="sales-top-title"><button className="sales-btn sales-toggle" onClick={()=>setSidebar(x=>!x)}>{sidebar?<PanelLeftClose/>:<PanelLeftOpen/>}</button><span>ERP INDUSTRIAL • VENDAS</span><strong>{transportadoraView?'Cadastro de Transportadoras':customerView?'Cadastro de Cliente':'Novo Pedido de Cliente'}</strong><small>{transportadoraView?'Cadastro mestre + vínculo Cliente ↔ Transportadora':customerView?'Dados cadastrais + DE-PARA de produtos do cliente':'Pedido → análise de estoque → reserva → necessidade líquida → PCP'}</small></div>
-    <div className="sales-actions"><button className="sales-btn" onClick={()=>go('/tablet/dashboard')} title="Voltar ao painel operacional do Tablet"><Tablet size={16}/> TABLET</button>{!customerView&&<button className="sales-btn" disabled title="Integração Microsoft Outlook requer conexão do tenant Microsoft 365"><ShoppingCart size={16}/> Importar pedido do Outlook</button>}<button className="sales-btn" onClick={()=>void load()} disabled={busy}><RefreshCw size={16}/> Atualizar</button><button className="sales-btn danger" onClick={()=>void supabase.auth.signOut().then(()=>{location.replace('/login')})}><LogOut size={16}/> SAIR</button></div>
-   </header>
-   <main className="sales-content">{transportadoraView?<TransportadorasView empresa={empresa} transportadoras={transportadoras} onSaved={()=>void load()}/>:customerView?<SalesCustomerView empresa={empresa} products={products} clients={clients} transportadoras={transportadoras} onSaved={()=>void load()}/>:<>
-    {err&&<div className="sales-error">{err}</div>}{msg&&<div className="sales-message">{msg}</div>}
-    {!processed&&<section className="sales-card">
-      <div className="sales-kicker">1. IDENTIFICAÇÃO DO PEDIDO</div>
-      <h2>Entrada do pedido de venda</h2>
-      <p>Os campos automáticos são somente leitura. O número definitivo é gerado pelo banco no momento da gravação.</p>
-      <div className="sales-grid mt-3">
-       <label className="sales-field">Nº Pedido (automático)<input value={number ? `Próximo: ${number}` : 'Gerado ao salvar'} readOnly/></label>
-       <label className="sales-field">Data Entrada<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>
-       <div className="sales-field sales-field-span-2"><EntityCodeLookup label="Cliente" value={client} records={clients} required onChange={value=>setClient(value)} onSelect={async x=>{setClient(x.id);setClientDoc(String(x.documento??''));setItems([]);setDraft({produto:'',qtd:'1',valor:'0',codigoCliente:''});const lr=await supabase.from('erp_cliente_transportadoras').select('transportadora_id').eq('empresa_id',empresa).eq('cliente_id',x.id);if(!lr.error)setPreferredTransportadoraIds((lr.data??[]).map((v:{transportadora_id:string})=>v.transportadora_id));}} helper="Digite o código exato do cliente. A lupa abre a consulta quando necessário."/></div>
-       <label className="sales-field">Documento<input value={clientDoc} readOnly/></label>
-       <label className="sales-field">Data Entrega Prometida<input type="date" value={delivery} onChange={e=>setDelivery(e.target.value)}/></label>
-       <label className="sales-field sales-field-span-2">Pedido / Referência do Cliente<input value={pedidoCliente} onChange={e=>setPedidoCliente(e.target.value)} maxLength={120} placeholder="Número do pedido ou referência do cliente"/></label>
-       <label className="sales-field">Condição de pagamento<input value={condicaoPagamento} onChange={e=>setCondicaoPagamento(e.target.value)} maxLength={120} placeholder="Ex.: 28/42 dias"/></label>
-       <label className="sales-field">Vendedor<input value={vendedor} onChange={e=>setVendedor(e.target.value)} maxLength={120}/></label>
-       <label className="sales-field">Via de Entrada<select value={viaEntrada} onChange={e=>setViaEntrada(e.target.value)}><option value="">Selecionar…</option><option>E-mail</option><option>WhatsApp</option><option>Portal</option><option>Representante</option></select></label><label className="sales-field">Natureza / CFOP<input value={cfop} onChange={e=>setCfop(e.target.value)} placeholder="5.101"/></label><label className="sales-field">Forma de pagamento<input value={formaPagamento} onChange={e=>setFormaPagamento(e.target.value)} placeholder="Boleto / PIX / Depósito"/></label><label className="sales-field">Modalidade de frete<select value={modalidadeFrete} onChange={e=>setModalidadeFrete(e.target.value)}><option value="">Não informado</option><option value="CIF">CIF</option><option value="FOB">FOB</option><option value="RETIRADA">Retirada</option></select></label>
-       <div className="sales-field sales-field-span-2"><span>Transportadora</span><div className="transport-picker"><input value={transportadoraSearch} onChange={e=>setTransportadoraSearch(e.target.value)} placeholder="Pesquisar código ou razão social"/><select value={transportadoraId} onChange={e=>setTransportadoraId(e.target.value)}><option value="">Pesquisar no cadastro geral…</option>{orderedTransportadoras.filter(t=>t.ativo&&(`${t.codigo} ${t.razao_social}`).toLowerCase().includes(transportadoraSearch.toLowerCase())).map(t=><option key={t.id} value={t.id}>{t.codigo} — {t.razao_social}</option>)}</select></div></div>
-      </div>
-     </section>}
-    {!processed&&<section className="sales-card">
-      <div className="sales-kicker">2. ITENS DO PEDIDO</div><h2>Produtos, quantidade, preço e atendimento</h2><p className="sales-note">O preço é carregado automaticamente da tabela comercial vinculada ao cliente. O preço padrão do produto só entra quando não houver preço específico cadastrado.</p>
-      <div className="sales-grid">
-       <div className="sales-field sales-field-span-2"><EntityCodeLookup label="Código Interno / Produto" value={draft.produto} records={products} required onChange={value=>setDraft(v=>({...v,produto:value}))} onSelect={p=>choose(p.id)} helper="Digite o código da peça/produto. Não é necessário percorrer uma lista de milhares de itens."/></div>
-       <label className="sales-field">Cód. Cliente<input value={draft.codigoCliente} onChange={e=>setDraft({...draft,codigoCliente:e.target.value})} placeholder="COD-CLI"/></label>
-       <label className="sales-field">Quantidade<input type="number" min="1" value={draft.qtd} onChange={e=>setDraft({...draft,qtd:e.target.value})}/></label>
-       <label className="sales-field">Valor unitário<input type="number" min="0" step="0.01" value={draft.valor} onChange={e=>setDraft({...draft,valor:e.target.value})}/><small className="sales-note">{selected?priceSource(selected):selectedClient?.tabela_preco_id?'Tabela do cliente':'Selecione cliente e peça'}</small></label>
-       <label className="sales-field">Desconto do item<input type="number" min="0" step="0.01" value={draft.desconto} onChange={e=>setDraft({...draft,desconto:e.target.value})}/></label>
-       <button className="sales-btn primary" onClick={add} disabled={!selected}><Plus size={17}/> {editIndex===null?'Adicionar Produto':'Aplicar Edição'}</button>
-      </div>
-      <div className="sales-table-wrap"><table className="sales-table"><thead><tr><th>Cód. Int.</th><th>Cód. Cliente</th><th>Produto</th><th>Qtd.</th><th>UN</th><th>Preço</th><th>Desc.</th><th>Total</th><th>Est. Fís.</th><th>Disponível</th><th>Prazo</th><th>Status</th><th>Destino</th><th/></tr></thead><tbody>
-       {analyzed.map((i,n)=><tr key={n}><td><b>{i.codigo}</b></td><td>{i.codigoCliente||'—'}</td><td>{i.descricao}</td><td>{Number(i.quantidade).toLocaleString('pt-BR')}</td><td>{i.unidade}</td><td>{money(Number(i.valor))}</td><td>{money(Number(i.desconto)||0)}</td><td>{money(Math.max(Number(i.quantidade)*Number(i.valor)-Number(i.desconto||0),0))}</td><td>{i.estoque.toLocaleString('pt-BR')}</td><td>{i.disponivel.toLocaleString('pt-BR')}</td><td>{i.prazoEntrega||delivery||'—'}</td><td><span className={`status ${i.falta?'warn':'ok'}`}>{i.falta?'FALTA':'OK'}</span></td><td><b>{i.falta?`Produzir ${i.falta}`:'Reservar integral'}</b></td><td><div className="row-actions"><button className="sales-icon-btn" title="Editar item" onClick={()=>{const i=items[n];setDraft({produto:i.produto_id,qtd:i.quantidade,valor:i.valor,desconto:i.desconto,codigoCliente:i.codigoCliente});setEditIndex(n)}}><Pencil size={14}/></button><button className="sales-icon-btn danger-icon" title="Excluir item" onClick={()=>setItems(items.filter((_,x)=>x!==n))}><Trash2 size={14}/></button></div></td></tr>)}
-       {!items.length&&<tr><td colSpan={13}>Adicione os produtos do pedido. A análise usa o estoque real disponível da empresa.</td></tr>}
-      </tbody></table></div>
-     </section>}
-    {!processed&&<section className="sales-card">
-      <div className="sales-kicker">3. CONDIÇÕES E FINALIZAÇÃO</div>
-      <div className="sales-grid sales-final-fields"><label className="sales-field">Desconto do pedido<input type="number" min="0" max={subtotal} step="0.01" value={desconto} onChange={e=>setDesconto(e.target.value)}/></label><label className="sales-field">Frete<input type="number" min="0" step="0.01" value={valorFrete} onChange={e=>setValorFrete(e.target.value)}/></label><label className="sales-field">Outras despesas<input type="number" min="0" step="0.01" value={outrasDespesas} onChange={e=>setOutrasDespesas(e.target.value)}/></label><label className="sales-field sales-field-span-2">Observações<textarea value={observacoes} onChange={e=>setObservacoes(e.target.value)} maxLength={2000} placeholder="Instruções comerciais, entrega, embalagem ou outras observações"/></label><div className="sales-field sales-total"><span>Total do pedido</span><strong>{money(total)}</strong><small>Subtotal {money(subtotal)} • Desconto {money(descontoValor)} • Frete {money(freteValor)} • Outras {money(outrasValor)}</small></div></div><div className="sales-summary"><div><div className="sales-note">Itens: <b>{items.length}</b> • Bruto: <b>{money(totalBruto)}</b> • Descontos: <b>{money(totalDescontosItens+descontoValor)}</b></div><strong>{money(total)}</strong><div className="sales-note">{verdes.length} item(ns) atendido(s) por reserva • {faltantes.length} item(ns) com necessidade de produção</div></div><div className="sales-actions"><button className="sales-btn danger" onClick={cancel}><X size={14}/> Cancelar</button><button className="sales-btn primary" disabled={busy||!items.length} onClick={()=>void finalize()}><Save size={17}/> FINALIZAR PEDIDO E DISPARAR REQUISIÇÕES</button></div></div>
-     </section>}
-    {processed&&<section className="sales-result">
-      <h3>Pedido salvo com sucesso</h3>
-      <p>{msg}</p>
-      <div className="sales-table-wrap"><table className="sales-table"><thead><tr><th>Item</th><th>Qtd.</th><th>Reserva</th><th>Produção</th><th>Status</th></tr></thead><tbody>{analyzed.map(i=><tr key={i.produto_id}><td><b>{i.codigo}</b> — {i.descricao}</td><td>{Number(i.quantidade).toLocaleString('pt-BR')}</td><td>{i.reserva.toLocaleString('pt-BR')} un</td><td>{i.falta.toLocaleString('pt-BR')} un</td><td><span className={`status ${i.falta?'warn':'ok'}`}>{i.falta?'PCP PENDENTE':'RESERVADO'}</span></td></tr>)}</tbody></table></div>
-      {faltantes.length>0&&<div className="sales-summary mt-3"><span>Existem produtos em falta. A necessidade líquida já foi criada para análise do PCP.</span><button className="sales-btn primary" onClick={()=>go('/pcp')}><Send size={15}/> ENVIAR PRODUTOS FALTANTES PARA PCP</button></div>}
-      {faltantes.length===0&&<div className="sales-summary"><span>Todos os itens foram atendidos por reserva de estoque.</span><button className="sales-btn" onClick={()=>go('/comercial')}><ArrowLeft size={15}/> Voltar para Carteira</button></div>}
-    </section>}
+type Order = {
+  id: string
+  numero: number
+  status: string
+  total: number
+  data_entrega_prometida: string | null
+}
 
-   </>}
-   </main>
-  </section>
- </div>
+const money = (value: number) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0)
+
+const today = () => new Date().toISOString().slice(0, 10)
+
+export default function PedidoVendaCompleto() {
+  const [empresa, setEmpresa] = useState('')
+  const [sidebar, setSidebar] = useState(true)
+  const [view, setView] = useState<'pedido' | 'clientes'>('pedido')
+
+  const [clients, setClients] = useState<Client[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [priceItems, setPriceItems] = useState<PriceItem[]>([])
+  const [transportadoras, setTransportadoras] = useState<Transportadora[]>([])
+  const [orders, setOrders] = useState<Order[]>([])
+
+  const [client, setClient] = useState('')
+  const [clientDoc, setClientDoc] = useState('')
+  const [number, setNumber] = useState('')
+  const [date, setDate] = useState(today())
+  const [delivery, setDelivery] = useState('')
+  const [pedidoCliente, setPedidoCliente] = useState('')
+  const [condicaoPagamento, setCondicaoPagamento] = useState('')
+  const [vendedor, setVendedor] = useState('')
+  const [viaEntrada, setViaEntrada] = useState('')
+  const [cfop, setCfop] = useState('')
+  const [formaPagamento, setFormaPagamento] = useState('')
+  const [modalidadeFrete, setModalidadeFrete] = useState('')
+  const [transportadoraId, setTransportadoraId] = useState('')
+  const [transportadoraSearch, setTransportadoraSearch] = useState('')
+
+  const [draft, setDraft] = useState({
+    produto: '',
+    codigoCliente: '',
+    quantidade: '1',
+    valor: '0',
+    desconto: '0',
+  })
+  const [items, setItems] = useState<OrderItem[]>([])
+  const [descontoPedido, setDescontoPedido] = useState('0')
+  const [frete, setFrete] = useState('0')
+  const [outrasDespesas, setOutrasDespesas] = useState('0')
+  const [observacoes, setObservacoes] = useState('')
+
+  const [busy, setBusy] = useState(false)
+  const [processed, setProcessed] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+
+  const load = async () => {
+    setError('')
+    const company = await supabase.rpc('erp_current_empresa_id')
+    if (company.error || !company.data) {
+      throw company.error ?? new Error('Empresa não identificada.')
+    }
+
+    const empresaId = String(company.data)
+    setEmpresa(empresaId)
+
+    const [clientsResult, productsResult, pricesResult, transportResult, ordersResult] = await Promise.all([
+      supabase
+        .from('erp_clientes')
+        .select('id,nome,documento,codigo,tabela_preco_id')
+        .eq('empresa_id', empresaId)
+        .eq('ativo', true)
+        .order('nome'),
+      supabase
+        .from('erp_produtos')
+        .select('id,codigo,nome,estoque_atual,preco_venda,unidade')
+        .eq('empresa_id', empresaId)
+        .eq('ativo', true)
+        .order('codigo')
+        .limit(2000),
+      supabase
+        .from('erp_tabelas_preco_itens')
+        .select('tabela_preco_id,produto_id,preco')
+        .eq('empresa_id', empresaId)
+        .limit(10000),
+      supabase
+        .from('erp_transportadoras')
+        .select('id,codigo,razao_social,ativo')
+        .eq('empresa_id', empresaId)
+        .eq('ativo', true)
+        .order('razao_social'),
+      supabase
+        .from('erp_pedidos_venda')
+        .select('id,numero,status,total,data_entrega_prometida')
+        .eq('empresa_id', empresaId)
+        .order('numero', { ascending: false })
+        .limit(100),
+    ])
+
+    for (const result of [clientsResult, productsResult, pricesResult, transportResult, ordersResult]) {
+      if (result.error) throw result.error
+    }
+
+    const loadedClients = (clientsResult.data ?? []) as Client[]
+    setClients(loadedClients)
+    setProducts((productsResult.data ?? []) as Product[])
+    setPriceItems((pricesResult.data ?? []) as PriceItem[])
+    setTransportadoras((transportResult.data ?? []) as Transportadora[])
+    setOrders((ordersResult.data ?? []) as Order[])
+    setNumber(String(Number(ordersResult.data?.[0]?.numero ?? 0) + 1).padStart(6, '0'))
+
+    const user = await supabase.auth.getUser()
+    if (user.data.user) {
+      const profile = await supabase
+        .from('erp_usuarios')
+        .select('nome')
+        .eq('auth_user_id', user.data.user.id)
+        .eq('empresa_id', empresaId)
+        .eq('ativo', true)
+        .is('deleted_at', null)
+        .maybeSingle()
+
+      if (profile.data?.nome) setVendedor(profile.data.nome)
+    }
+
+    if (!client && loadedClients.length === 1) {
+      setClient(loadedClients[0].id)
+      setClientDoc(loadedClients[0].documento ?? '')
+    }
+  }
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const requestedView = params.get('view')
+    if (requestedView === 'clientes') setView('clientes')
+    void load().catch((reason: unknown) => {
+      setError(reason instanceof Error ? reason.message : 'Falha ao carregar Vendas.')
+    })
+  }, [])
+
+  const selectedClient = clients.find(item => item.id === client)
+  const selectedProduct = products.find(item => item.id === draft.produto)
+
+  const priceFor = (product: Product) => {
+    if (!selectedClient?.tabela_preco_id) return product.preco_venda
+    const tablePrice = priceItems.find(
+      item => item.tabela_preco_id === selectedClient.tabela_preco_id && item.produto_id === product.id,
+    )
+    return tablePrice?.preco ?? product.preco_venda
+  }
+
+  const analyzed = useMemo(
+    () =>
+      items.map(item => {
+        const disponivel = Math.max(item.estoque - item.reservadoQtd, 0)
+        const reserva = Math.min(Number(item.quantidade), disponivel)
+        return {
+          ...item,
+          disponivel,
+          reserva,
+          falta: Math.max(Number(item.quantidade) - disponivel, 0),
+        }
+      }),
+    [items],
+  )
+
+  const totalItens = useMemo(
+    () =>
+      analyzed.reduce(
+        (sum, item) =>
+          sum +
+          Math.max(
+            Number(item.quantidade) * Number(item.valor) - Number(item.desconto || 0),
+            0,
+          ),
+        0,
+      ),
+    [analyzed],
+  )
+
+  const desconto = Math.min(Math.max(Number(descontoPedido) || 0, 0), totalItens)
+  const valorFrete = Math.max(Number(frete) || 0, 0)
+  const valorOutrasDespesas = Math.max(Number(outrasDespesas) || 0, 0)
+  const total = Math.max(totalItens - desconto + valorFrete + valorOutrasDespesas, 0)
+  const faltantes = analyzed.filter(item => item.falta > 0)
+  const atendidos = analyzed.filter(item => item.falta === 0)
+
+  const filteredTransportadoras = transportadoras.filter(item =>
+    `${item.codigo} ${item.razao_social}`.toLowerCase().includes(transportadoraSearch.toLowerCase()),
+  )
+
+  const chooseClient = (selected: Client) => {
+    setClient(selected.id)
+    setClientDoc(selected.documento ?? '')
+    setItems([])
+    setDraft({ produto: '', codigoCliente: '', quantidade: '1', valor: '0', desconto: '0' })
+  }
+
+  const chooseProduct = (product: Product) => {
+    setDraft(current => ({
+      ...current,
+      produto: product.id,
+      valor: String(priceFor(product)),
+    }))
+  }
+
+  const addItem = () => {
+    if (!selectedProduct) return
+    if (Number(draft.quantidade) <= 0) {
+      setError('A quantidade deve ser maior que zero.')
+      return
+    }
+
+    setError('')
+    setItems(current => [
+      ...current,
+      {
+        produto_id: selectedProduct.id,
+        codigo: selectedProduct.codigo,
+        codigoCliente: draft.codigoCliente.trim(),
+        descricao: selectedProduct.nome,
+        quantidade: draft.quantidade,
+        valor: draft.valor || String(selectedProduct.preco_venda),
+        desconto: draft.desconto || '0',
+        unidade: selectedProduct.unidade || 'UN',
+        estoque: Number(selectedProduct.estoque_atual || 0),
+        reservadoQtd: 0,
+      },
+    ])
+
+    setDraft({ produto: '', codigoCliente: '', quantidade: '1', valor: '0', desconto: '0' })
+  }
+
+  const removeItem = (index: number) => {
+    setItems(current => current.filter((_, itemIndex) => itemIndex !== index))
+  }
+
+  const cancel = () => {
+    setItems([])
+    setClient('')
+    setClientDoc('')
+    setDate(today())
+    setDelivery('')
+    setPedidoCliente('')
+    setCondicaoPagamento('')
+    setViaEntrada('')
+    setCfop('')
+    setFormaPagamento('')
+    setModalidadeFrete('')
+    setTransportadoraId('')
+    setTransportadoraSearch('')
+    setDescontoPedido('0')
+    setFrete('0')
+    setOutrasDespesas('0')
+    setObservacoes('')
+    setProcessed(false)
+    setMessage('')
+    setError('')
+  }
+
+  const finalize = async () => {
+    if (!empresa || !client || !items.length) {
+      setError('Cliente e pelo menos um item são obrigatórios.')
+      return
+    }
+
+    setBusy(true)
+    setError('')
+    setMessage('')
+
+    try {
+      const result = await supabase.rpc('erp_finalizar_pedido_venda', {
+        p_cliente_id: client,
+        p_desconto: desconto,
+        p_itens: items.map(item => ({
+          produto_id: item.produto_id,
+          quantidade: Number(item.quantidade),
+          valor_unitario: Number(item.valor),
+          desconto: Number(item.desconto) || 0,
+          codigo_cliente: item.codigoCliente || null,
+          codigo: item.codigo,
+        })),
+        p_data_entrada: date || null,
+        p_data_entrega: delivery || null,
+        p_pedido_cliente: pedidoCliente.trim() || null,
+        p_observacoes: observacoes.trim() || null,
+        p_condicao_pagamento: condicaoPagamento.trim() || null,
+        p_vendedor_nome: vendedor.trim() || null,
+        p_modalidade_frete: modalidadeFrete || null,
+        p_transportadora_id: transportadoraId || null,
+        p_valor_frete: valorFrete,
+        p_valor_outras_despesas: valorOutrasDespesas,
+        p_via_entrada: viaEntrada || null,
+        p_cfop: cfop.trim() || null,
+        p_forma_pagamento: formaPagamento || null,
+      })
+
+      if (result.error) throw result.error
+
+      setProcessed(true)
+      setMessage('Pedido finalizado com sucesso. O estoque disponível foi reservado e a necessidade líquida foi enviada ao fluxo do PCP.')
+      await load()
+    } catch (reason: unknown) {
+      setError(reason instanceof Error ? reason.message : 'Falha ao finalizar o pedido.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const go = (path: string) => {
+    window.location.href = path
+  }
+
+  return (
+    <div className="pedido-page">
+      <style>{`
+        .pedido-page{min-height:100vh;background:#f4fbfd;color:#17333f;display:flex;font-family:inherit}
+        .pedido-sidebar{width:228px;flex:0 0 228px;background:#fff;border-right:1px solid #c9dce3;display:flex;flex-direction:column;padding:12px;box-sizing:border-box}
+        .pedido-brand{display:flex;align-items:center;gap:9px;padding:4px 6px 14px;border-bottom:1px solid #e1edf1;margin-bottom:10px}
+        .pedido-brand img{width:36px;height:36px;object-fit:contain}.pedido-brand strong{display:block;font-size:14px;font-weight:600}.pedido-brand small{display:block;color:#68808b;font-size:9px;margin-top:2px}
+        .pedido-label{font-size:9px;font-weight:600;letter-spacing:.1em;color:#2d7896;margin:7px 6px}
+        .pedido-nav{width:100%;height:34px;border:0;background:transparent;border-radius:3px;color:#36525e;padding:0 8px;display:flex;align-items:center;gap:8px;text-align:left;cursor:pointer;font-size:12px;margin-bottom:2px}
+        .pedido-nav:hover{background:#f2f8fa}.pedido-nav.active{background:#e7f5fa;color:#176487;font-weight:600;box-shadow:inset 3px 0 #2d8db8}.pedido-spacer{flex:1}
+        .pedido-main{flex:1;min-width:0}.pedido-header{min-height:58px;background:#fff;border-bottom:1px solid #c9dce3;padding:7px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-sizing:border-box}
+        .pedido-heading{min-width:0}.pedido-heading span,.pedido-kicker{font-size:9px;font-weight:600;letter-spacing:.1em;color:#2d7896}.pedido-heading h1{font-size:17px;font-weight:600;line-height:1.15;margin:2px 0}.pedido-heading p{font-size:10px;color:#68808b;margin:0}
+        .pedido-toolbar{display:flex;align-items:center;gap:4px;flex-wrap:wrap}.pedido-btn{height:30px;border:1px solid #bfd1d8;border-radius:3px;background:#fff;color:#17333f;padding:0 8px;display:inline-flex;align-items:center;gap:5px;font-size:11px;cursor:pointer}.pedido-btn.primary{background:#2d8db8;border-color:#2d8db8;color:#fff}.pedido-btn.danger{background:#fff5f5;border-color:#d8a8ad;color:#9b2525}.pedido-btn:disabled{opacity:.5;cursor:not-allowed}
+        .pedido-content{max-width:1260px;margin:0 auto;padding:10px 14px 20px;width:100%;box-sizing:border-box}.pedido-card{background:#fff;border:1px solid #c9dce3;border-radius:3px;margin-top:7px;padding:10px 12px;box-shadow:0 1px 3px rgba(23,51,63,.03)}
+        .pedido-card h2{font-size:14px;font-weight:600;margin:2px 0}.pedido-card p{font-size:10px;color:#5d717a;margin:0}.pedido-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;margin-top:8px;align-items:start}.pedido-field{grid-column:span 3;display:flex;flex-direction:column;gap:3px;min-width:0;font-size:10px;font-weight:500;color:#314a55}.pedido-field.span2{grid-column:span 6}.pedido-field.span4{grid-column:span 4}.pedido-field.span6{grid-column:span 6}.pedido-field.span12{grid-column:1/-1}
+        .pedido-field input,.pedido-field select,.pedido-field textarea{width:100%;box-sizing:border-box;border:1px solid #bfd1d8;border-radius:3px;background:#fff;color:#17333f;font-size:11px;font-weight:400}.pedido-field input,.pedido-field select{height:32px;padding:0 7px}.pedido-field textarea{min-height:62px;padding:7px;resize:vertical}.pedido-field input[readonly]{background:#f5f8f9;color:#536b76}
+        .pedido-item-entry{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:6px;align-items:end;margin-top:8px}.pedido-lookup{min-width:0}.pedido-mini{font-size:9px;color:#68808b;margin-top:2px}.pedido-table-wrap{overflow:auto;border:1px solid #d5e2e6;border-radius:3px;margin-top:9px}.pedido-table{width:100%;min-width:950px;border-collapse:collapse}.pedido-table th{background:#eaf2f5;border-bottom:1px solid #c9dce3;text-align:left;padding:6px;font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}.pedido-table td{border-bottom:1px solid #edf3f5;padding:6px;font-size:10px;white-space:nowrap}.pedido-table td.wrap{white-space:normal}.pedido-actions{display:flex;gap:3px;align-items:center}.pedido-icon{width:27px;height:27px;border:1px solid #bfd1d8;background:#fff;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#35515d}.pedido-icon.danger{color:#9b2525;border-color:#dfb8bc}
+        .pedido-status{display:inline-flex;padding:3px 6px;border-radius:3px;font-size:9px;font-weight:600}.pedido-status.ok{background:#e8f7f0;color:#287a5c}.pedido-status.warn{background:#fff2e5;color:#b45b12}
+        .pedido-summary{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}.pedido-total{font-size:18px;font-weight:600;color:#17445a}.pedido-note{font-size:10px;color:#68808b}.pedido-alert{padding:8px 10px;border:1px solid #e2b9b9;background:#fff2f2;color:#9b2525;border-radius:3px;font-size:11px;margin-bottom:7px}.pedido-success{padding:8px 10px;border:1px solid #b9dfcd;background:#e8f7f0;color:#287a5c;border-radius:3px;font-size:11px;margin-bottom:7px}
+        .pedido-result{border:1px solid #b9dfcd;background:#f2fbf6}.pedido-result h2{color:#287a5c}.pedido-filter{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+        @media(max-width:1000px){.pedido-sidebar{width:210px;flex-basis:210px}.pedido-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.pedido-field,.pedido-field.span2,.pedido-field.span4{grid-column:span 3}.pedido-field.span6,.pedido-field.span12{grid-column:1/-1}.pedido-item-entry{grid-template-columns:1fr 1fr 1fr}.pedido-item-entry .full{grid-column:1/-1}}
+        @media(max-width:720px){.pedido-sidebar{position:fixed;z-index:9999;top:0;bottom:0;left:0;transform:translateX(-100%);transition:.18s}.pedido-sidebar.open{transform:translateX(0)}.pedido-header{align-items:flex-start}.pedido-grid{grid-template-columns:1fr}.pedido-field,.pedido-field.span2,.pedido-field.span4,.pedido-field.span6,.pedido-field.span12{grid-column:1/-1}.pedido-item-entry{grid-template-columns:1fr}.pedido-content{padding:8px}.pedido-toolbar .pedido-btn{height:34px}}
+      `}</style>
+
+      {sidebar && (
+        <aside className="pedido-sidebar open">
+          <div className="pedido-brand">
+            <img src="/logo/sgq-erp.png" alt="SGQ ERP" />
+            <div><strong>ERP INDUSTRIAL</strong><small>MÓDULO DE VENDAS</small></div>
+          </div>
+          <div className="pedido-label">VENDAS</div>
+          <button className={`pedido-nav ${view === 'pedido' ? 'active' : ''}`} onClick={() => setView('pedido')}><Plus size={16} /> Novo Pedido</button>
+          <button className="pedido-nav" onClick={() => document.getElementById('carteira')?.scrollIntoView({ behavior: 'smooth' })}><ClipboardList size={16} /> Carteira de Pedidos</button>
+          <button className={`pedido-nav ${view === 'clientes' ? 'active' : ''}`} onClick={() => setView('clientes')}><Users size={16} /> Cadastro de Clientes</button>
+          <div className="pedido-spacer" />
+          <button className="pedido-nav" onClick={() => go('/configuracoes-adm')}><Settings size={16} /> Configurações</button>
+        </aside>
+      )}
+
+      <section className="pedido-main">
+        <header className="pedido-header">
+          <div className="pedido-heading">
+            <div className="pedido-toolbar">
+              <button className="pedido-icon" onClick={() => setSidebar(value => !value)} title="Menu">
+                {sidebar ? <PanelLeftClose size={15} /> : <PanelLeftOpen size={15} />}
+              </button>
+              <span>ERP INDUSTRIAL • VENDAS</span>
+            </div>
+            <h1>{view === 'clientes' ? 'Cadastro de Clientes' : 'Novo Pedido de Venda'}</h1>
+            <p>{view === 'clientes' ? 'Cadastro comercial sem alterar a estrutura de pedidos.' : 'Entrada → itens → estoque → condições → gravação'}</p>
+          </div>
+          <div className="pedido-toolbar">
+            <button className="pedido-btn" onClick={() => go('/tablet/dashboard')}><Tablet size={14} /> TABLET</button>
+            <button className="pedido-btn" onClick={() => void load()} disabled={busy}><RefreshCw size={14} /> Atualizar</button>
+            <button className="pedido-btn danger" onClick={() => void supabase.auth.signOut().then(() => window.location.replace('/login'))}><LogOut size={14} /> Sair</button>
+          </div>
+        </header>
+
+        <main className="pedido-content">
+          {error && <div className="pedido-alert">{error}</div>}
+          {message && <div className="pedido-success">{message}</div>}
+
+          {view === 'clientes' ? (
+            <section className="pedido-card">
+              <div className="pedido-kicker">CADASTRO</div>
+              <h2>Novo cliente</h2>
+              <p>Cadastro real por empresa. Esta reconstrução mantém o formulário compacto e separado do fluxo de pedido.</p>
+              <div className="pedido-grid">
+                <label className="pedido-field span4">Código<input placeholder="Código do cliente" /></label>
+                <label className="pedido-field span4">Razão Social<input placeholder="Razão Social" /></label>
+                <label className="pedido-field span4">CNPJ / CPF<input placeholder="CNPJ / CPF" /></label>
+              </div>
+              <div className="pedido-summary">
+                <span className="pedido-note">O CRUD de clientes existente permanece fora desta reconstrução visual do pedido.</span>
+                <button className="pedido-btn" onClick={() => setView('pedido')}>Voltar ao Pedido</button>
+              </div>
+            </section>
+          ) : (
+            <>
+              {!processed && (
+                <section className="pedido-card">
+                  <div className="pedido-kicker">1. IDENTIFICAÇÃO DO PEDIDO</div>
+                  <h2>Entrada do pedido de venda</h2>
+                  <p>Campos automáticos ficam somente para leitura. O número definitivo é gerado pelo banco.</p>
+
+                  <div className="pedido-grid">
+                    <label className="pedido-field">Nº Pedido<input value={number ? `Próximo: ${number}` : 'Gerado ao salvar'} readOnly /></label>
+                    <label className="pedido-field">Data Entrada<input type="date" value={date} onChange={event => setDate(event.target.value)} /></label>
+                    <div className="pedido-field span2">
+                      <EntityCodeLookup
+                        label="Cliente"
+                        value={client}
+                        records={clients}
+                        required
+                        compact
+                        onChange={setClient}
+                        onSelect={record => chooseClient(record as Client)}
+                      />
+                    </div>
+                    <label className="pedido-field">CNPJ / CPF<input value={clientDoc} readOnly /></label>
+                    <label className="pedido-field">Data Entrega<input type="date" value={delivery} onChange={event => setDelivery(event.target.value)} /></label>
+                    <label className="pedido-field span2">Pedido / Referência do Cliente<input value={pedidoCliente} onChange={event => setPedidoCliente(event.target.value)} maxLength={120} /></label>
+                    <label className="pedido-field">Condição de Pagamento<input value={condicaoPagamento} onChange={event => setCondicaoPagamento(event.target.value)} placeholder="Ex.: 28/42/56" /></label>
+                    <label className="pedido-field">Vendedor<input value={vendedor} onChange={event => setVendedor(event.target.value)} /></label>
+                    <label className="pedido-field">Via de Entrada<select value={viaEntrada} onChange={event => setViaEntrada(event.target.value)}><option value="">Selecionar</option><option>E-mail</option><option>WhatsApp</option><option>Portal</option><option>Representante</option></select></label>
+                    <label className="pedido-field">CFOP<input value={cfop} onChange={event => setCfop(event.target.value)} placeholder="5.101" /></label>
+                    <label className="pedido-field">Forma de Pagamento<select value={formaPagamento} onChange={event => setFormaPagamento(event.target.value)}><option value="">Selecionar</option><option>Boleto</option><option>PIX</option><option>Depósito</option><option>Cartão</option></select></label>
+                    <label className="pedido-field">Modalidade Frete<select value={modalidadeFrete} onChange={event => setModalidadeFrete(event.target.value)}><option value="">Selecionar</option><option>CIF</option><option>FOB</option><option>Retirada</option></select></label>
+                    <div className="pedido-field span2">
+                      <label>Transportadora</label>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 4 }}>
+                        <input value={transportadoraSearch} onChange={event => setTransportadoraSearch(event.target.value)} placeholder="Pesquisar" />
+                        <select value={transportadoraId} onChange={event => setTransportadoraId(event.target.value)}>
+                          <option value="">Selecionar</option>
+                          {filteredTransportadoras.map(item => <option key={item.id} value={item.id}>{item.codigo} — {item.razao_social}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {!processed && (
+                <section className="pedido-card">
+                  <div className="pedido-kicker">2. ITENS DO PEDIDO</div>
+                  <h2>Itens comerciais</h2>
+                  <p>Produto, código do cliente, quantidade e preço permanecem na mesma linha para reduzir altura e deslocamento.</p>
+
+                  <div className="pedido-item-entry">
+                    <div className="pedido-lookup">
+                      <EntityCodeLookup
+                        label="Código Interno / Produto"
+                        value={draft.produto}
+                        records={products}
+                        required
+                        compact
+                        onChange={value => setDraft(current => ({ ...current, produto: value }))}
+                        onSelect={record => chooseProduct(record as Product)}
+                      />
+                    </div>
+                    <label className="pedido-field">Cód. Cliente<input value={draft.codigoCliente} onChange={event => setDraft(current => ({ ...current, codigoCliente: event.target.value }))} /></label>
+                    <label className="pedido-field">Quantidade<input type="number" min="1" value={draft.quantidade} onChange={event => setDraft(current => ({ ...current, quantidade: event.target.value }))} /></label>
+                    <label className="pedido-field">Valor Unitário<input type="number" min="0" step="0.01" value={draft.valor} onChange={event => setDraft(current => ({ ...current, valor: event.target.value }))} /></label>
+                    <label className="pedido-field">Desconto<input type="number" min="0" step="0.01" value={draft.desconto} onChange={event => setDraft(current => ({ ...current, desconto: event.target.value }))} /></label>
+                    <button type="button" className="pedido-btn primary" onClick={addItem} disabled={!selectedProduct} title="Adicionar item"><Plus size={14} /> Adicionar</button>
+                  </div>
+
+                  <div className="pedido-table-wrap">
+                    <table className="pedido-table">
+                      <thead><tr><th>Código</th><th>Cód. Cliente</th><th>Descrição</th><th>Qtd.</th><th>UN</th><th>Preço</th><th>Desc.</th><th>Total</th><th>Estoque</th><th>Disponível</th><th>Status</th><th>Destino</th><th /></tr></thead>
+                      <tbody>
+                        {analyzed.map((item, index) => (
+                          <tr key={`${item.produto_id}-${index}`}>
+                            <td><b>{item.codigo}</b></td>
+                            <td>{item.codigoCliente || '—'}</td>
+                            <td className="wrap">{item.descricao}</td>
+                            <td>{Number(item.quantidade).toLocaleString('pt-BR')}</td>
+                            <td>{item.unidade}</td>
+                            <td>{money(Number(item.valor))}</td>
+                            <td>{money(Number(item.desconto) || 0)}</td>
+                            <td>{money(Math.max(Number(item.quantidade) * Number(item.valor) - Number(item.desconto || 0), 0))}</td>
+                            <td>{item.estoque.toLocaleString('pt-BR')}</td>
+                            <td>{item.disponivel.toLocaleString('pt-BR')}</td>
+                            <td><span className={`pedido-status ${item.falta ? 'warn' : 'ok'}`}>{item.falta ? 'FALTA' : 'OK'}</span></td>
+                            <td><b>{item.falta ? `Produzir ${item.falta}` : 'Reservar'}</b></td>
+                            <td><button className="pedido-icon danger" onClick={() => removeItem(index)} title="Excluir item"><Trash2 size={14} /></button></td>
+                          </tr>
+                        ))}
+                        {!items.length && <tr><td colSpan={13}>Nenhum item lançado.</td></tr>}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              )}
+
+              {!processed && (
+                <section className="pedido-card">
+                  <div className="pedido-kicker">3. CONDIÇÕES E FINALIZAÇÃO</div>
+                  <div className="pedido-grid">
+                    <label className="pedido-field">Desconto Pedido<input type="number" min="0" step="0.01" value={descontoPedido} onChange={event => setDescontoPedido(event.target.value)} /></label>
+                    <label className="pedido-field">Frete<input type="number" min="0" step="0.01" value={frete} onChange={event => setFrete(event.target.value)} /></label>
+                    <label className="pedido-field">Outras Despesas<input type="number" min="0" step="0.01" value={outrasDespesas} onChange={event => setOutrasDespesas(event.target.value)} /></label>
+                    <label className="pedido-field span6">Observações<textarea value={observacoes} onChange={event => setObservacoes(event.target.value)} maxLength={2000} /></label>
+                    <div className="pedido-field"><span>Total do Pedido</span><strong className="pedido-total">{money(total)}</strong><span className="pedido-note">Itens {items.length} • Subtotal {money(totalItens)} • Desconto {money(desconto)} • Frete {money(valorFrete)}</span></div>
+                  </div>
+                  <div className="pedido-summary">
+                    <div><span className="pedido-note">{atendidos.length} item(ns) atendido(s) por estoque • {faltantes.length} item(ns) com necessidade líquida para PCP</span></div>
+                    <div className="pedido-toolbar">
+                      <button className="pedido-btn danger" onClick={cancel}>Cancelar</button>
+                      <button className="pedido-btn primary" disabled={busy || !items.length} onClick={() => void finalize()}><Save size={14} /> Finalizar Pedido</button>
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {processed && (
+                <section className="pedido-card pedido-result">
+                  <div className="pedido-kicker">PEDIDO GRAVADO</div>
+                  <h2>Pedido salvo com sucesso</h2>
+                  <p>{message}</p>
+                  <div className="pedido-table-wrap">
+                    <table className="pedido-table">
+                      <thead><tr><th>Item</th><th>Qtd.</th><th>Reserva</th><th>Produção</th><th>Status</th></tr></thead>
+                      <tbody>{analyzed.map(item => <tr key={item.produto_id}><td>{item.codigo} — {item.descricao}</td><td>{Number(item.quantidade).toLocaleString('pt-BR')}</td><td>{item.reserva.toLocaleString('pt-BR')}</td><td>{item.falta.toLocaleString('pt-BR')}</td><td><span className={`pedido-status ${item.falta ? 'warn' : 'ok'}`}>{item.falta ? 'PCP PENDENTE' : 'RESERVADO'}</span></td></tr>)}</tbody>
+                    </table>
+                  </div>
+                  <div className="pedido-summary">
+                    <button className="pedido-btn" onClick={cancel}>Novo Pedido</button>
+                    {faltantes.length > 0 && <button className="pedido-btn primary" onClick={() => go('/pcp')}><Factory size={14} /> Abrir PCP</button>}
+                  </div>
+                </section>
+              )}
+
+              <section className="pedido-card" id="carteira">
+                <div className="pedido-kicker">CARTEIRA DE PEDIDOS</div>
+                <h2>Pedidos recentes</h2>
+                <div className="pedido-table-wrap">
+                  <table className="pedido-table">
+                    <thead><tr><th>Pedido</th><th>Status</th><th>Total</th><th>Entrega</th></tr></thead>
+                    <tbody>
+                      {orders.map(order => <tr key={order.id}><td>PV-{order.numero}</td><td>{order.status}</td><td>{money(Number(order.total))}</td><td>{order.data_entrega_prometida || '—'}</td></tr>)}
+                      {!orders.length && <tr><td colSpan={4}>Nenhum pedido cadastrado.</td></tr>}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </>
+          )}
+        </main>
+      </section>
+    </div>
+  )
 }
