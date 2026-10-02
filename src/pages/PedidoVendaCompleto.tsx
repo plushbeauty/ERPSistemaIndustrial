@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Factory, LogOut, PanelLeftClose, PanelLeftOpen, Plus, Printer, Pencil, RefreshCw, Save, Settings, ShoppingCart, Tablet, Trash2, Users, ClipboardList } from 'lucide-react'
+import { Factory, LogOut, PanelLeftClose, PanelLeftOpen, Plus, Printer, Pencil, RefreshCw, Save, Settings, Tablet, Trash2, Users, ClipboardList } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 
