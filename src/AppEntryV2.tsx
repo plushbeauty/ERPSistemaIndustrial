@@ -42,7 +42,10 @@ const NFeEmissao = lazyPage(() => import('./pages/NFeEmissao'), 'NFeEmissao')
 const FiscalPrevisaoCaixa = lazyPage(() => import('./pages/FiscalPrevisaoCaixa'), 'FiscalPrevisaoCaixa')
 const FiscalCarteiraNFe = lazyPage(() => import('./pages/FiscalCarteiraNFe'), 'FiscalCarteiraNFe')
 const FiscalImpostos = lazyPage(() => import('./pages/FiscalImpostos'), 'FiscalImpostos')
-const PainelRazaoGeral = lazyPage(() => import('./features/fiscal/PainelRazaoGeral'), 'default')
+const PainelRazaoGeral = lazyPage(() => import('./features/controladoria/PainelRazaoGeral'), 'default')
+const PainelLucratividade = lazyPage(() => import('./features/controladoria/PainelLucratividade'), 'default')
+const AuditoriaComissoes = lazyPage(() => import('./features/controladoria/AuditoriaComissoes'), 'default')
+const CadastroDecimais = lazyPage(() => import('./features/controladoria/CadastroDecimais'), 'default')
 const AuditoriaDocumental = lazyPage(() => import('./features/fiscal/AuditoriaDocumental'), 'default')
 const GeradorGruposContabeis = lazyPage(() => import('./features/fiscal/GeradorGruposContabeis'), 'default')
 const EstornoLancamentos = lazyPage(() => import('./features/fiscal/EstornoLancamentos'), 'default')
@@ -390,6 +393,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp" element={<PCPIndustrial />} />
       <Route path="/pcp/engenharia-bom" element={<EngenhariaBOM />} />
       <Route path="/pcp/roteiro-operacoes" element={<RoteiroOperacoes />} />
+      <Route path="/pcp/ficha-processo" element={<FichaProcesso />} />
       <Route path="/pcp/postos-trabalho" element={<PostosTrabalho />} />
       <Route path="/pcp/painel-ordens" element={<PainelOrdensProducao />} />
       <Route path="/pcp/apuracao-turno" element={<ApuracaoTurno />} />
@@ -468,7 +472,11 @@ function AppIndustrialAuthenticated() {
       <Route path="/fiscal/previsao-caixa" element={<FiscalPrevisaoCaixa />} />
       <Route path="/fiscal/carteira-nfe" element={<FiscalCarteiraNFe />} />
       <Route path="/fiscal/impostos" element={<FiscalImpostos />} />
-      <Route path="/fiscal/razao-geral" element={<PainelRazaoGeral />} />
+      <Route path="/controladoria/razao-geral" element={<PainelRazaoGeral />} />
+      <Route path="/controladoria/lucratividade" element={<PainelLucratividade />} />
+      <Route path="/controladoria/auditoria-comissoes" element={<AuditoriaComissoes />} />
+      <Route path="/controladoria/cadastro-decimais" element={<CadastroDecimais />} />
+      <Route path="/fiscal/razao-geral" element={<Navigate to="/controladoria/razao-geral" replace />} />
       <Route path="/fiscal/auditoria-documental" element={<AuditoriaDocumental />} />
       <Route path="/fiscal/grupos-contabeis" element={<GeradorGruposContabeis />} />
       <Route path="/fiscal/estornos" element={<EstornoLancamentos />} />
