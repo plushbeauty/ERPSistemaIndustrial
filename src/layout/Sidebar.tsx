@@ -1,4 +1,4 @@
-import { Award, ChevronDown, ShoppingCart } from 'lucide-react'
+import { Award, ShoppingCart } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
 
