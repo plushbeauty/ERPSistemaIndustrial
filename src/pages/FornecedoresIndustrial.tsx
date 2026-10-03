@@ -45,7 +45,7 @@ export default function FornecedoresIndustrial(){
  const remove=async(r:Supplier)=>{if(!window.confirm(`Excluir o fornecedor ${r.razao_social}?`))return;setBusy(true);try{const {error:e}=await supabase.from('erp_fornecedores').delete().eq('id',r.id).eq('empresa_id',empresaId);if(e)throw e;setMessage('Fornecedor excluído.');await load()}catch(e){setError(e instanceof Error?e.message:'Não foi possível excluir o fornecedor.')}finally{setBusy(false)}}
  const print=()=>window.print()
  return (
-  <main style={{minHeight:'100vh',background:'#FAFAFA',color:'#111827',padding:24,boxSizing:'border-box'}}>
+  <main className="erp-compact" style={{minHeight:'100vh',background:'#FAFAFA',color:'#111827',padding:24,boxSizing:'border-box'}}>
     <div style={{maxWidth:1500,margin:'0 auto'}}>
       <header className="supplier-page-head"><div><span className="industrial-eyebrow">COMPRAS • CADASTRO MESTRE</span><h1>Fornecedores</h1><p>Cadastro, CNPJ, contatos, qualificação ISO 9001 e documentos.</p></div><div className="supplier-actions"><button className="industrial-secondary" type="button" onClick={()=>void load()}><RefreshCw size={18}/> Atualizar</button><button className="industrial-secondary" type="button" onClick={print}><Printer size={18}/> Imprimir lista</button><button className="industrial-primary" type="button" onClick={openNew}><Plus size={18}/> Novo fornecedor</button></div></header>
       {(message||error)&&<div style={{marginBottom:16,color:error?'#b91c1c':'#047857'}}>{error||message}</div>}
