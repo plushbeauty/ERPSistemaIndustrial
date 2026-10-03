@@ -1,4 +1,4 @@
-import { Award, Factory, ShoppingCart, TrendingUp } from 'lucide-react'
+import { Award, Factory, ShoppingCart, TrendingUp, Percent } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
 import { usePonto } from '../context/PontoContext'
@@ -16,6 +16,11 @@ export default function Sidebar(){
   <button type="button" onClick={()=>navigate('/financeiro/reconciliacao')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/financeiro/reconciliacao')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}>Conciliação Bancária</button>
   <button type="button" onClick={()=>navigate('/financeiro/importar-extratos')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/financeiro/importar-extratos')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}>Importador de Extratos</button>
   <button type="button" onClick={()=>navigate('/financeiro/lista-precos-cliente')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/financeiro/lista-precos-cliente')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}>Lista de Preços Cliente</button></>}
+  <div className="mt-2 border-t border-gray-200 px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-gray-500">Controladoria / Fiscal</div>
+  <button type="button" onClick={()=>navigate('/fiscal/razao-geral')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/fiscal/razao-geral')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><Percent size={14} className="text-gray-600 mr-2"/>Razão Geral</button>
+  <button type="button" onClick={()=>navigate('/fiscal/auditoria-documental')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/fiscal/auditoria-documental')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><Percent size={14} className="text-gray-600 mr-2"/>Auditoria Documental</button>
+  <button type="button" onClick={()=>navigate('/fiscal/grupos-contabeis')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/fiscal/grupos-contabeis')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><Percent size={14} className="text-gray-600 mr-2"/>Grupos Contábeis</button>
+  <button type="button" onClick={()=>navigate('/fiscal/estornos')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/fiscal/estornos')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><Percent size={14} className="text-gray-600 mr-2"/>Estorno de Lançamentos</button>
   <div className="mt-2 border-t border-gray-200 px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-gray-500">Controladoria de Estoque</div>
   <button type="button" onClick={()=>navigate('/inventario/balanco')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/inventario')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><TrendingUp size={14} className="text-gray-600 mr-2"/>Valoração Estoque</button>
   <button type="button" onClick={()=>navigate('/inventario/depreciacao')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/inventario/depreciacao')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><TrendingUp size={14} className="text-gray-600 mr-2"/>Depreciação</button>
