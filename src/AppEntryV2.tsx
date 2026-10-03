@@ -337,7 +337,8 @@ function AppIndustrialAuthenticated() {
     )
   }
 
-  const BankReconciliation = lazyPage(() => import('./pages/financeiro/BankReconciliation'), 'BankReconciliation')
+  const BankStatementImporter = lazyPage(() => import('./pages/financeiro/BankStatementImporter'), 'BankStatementImporter')
+const BankReconciliation = lazyPage(() => import('./pages/financeiro/BankReconciliation'), 'BankReconciliation')
 const BankRecWorkspace = lazyPage(() => import('./pages/financeiro/BankRecWorkspace'), 'BankRecWorkspace')
 const BankReconciliationStatement = lazyPage(() => import('./pages/financeiro/BankReconciliationStatement'), 'BankReconciliationStatement')
 const BankTransactionList = lazyPage(() => import('./pages/financeiro/BankTransactionList'), 'BankTransactionList')
@@ -418,6 +419,7 @@ const protectedRoutes = (
       <Route path="/engenharia/revisoes-bom" element={<EngenhariaRevisoesBOM />} />
       <Route path="/engenharia/ficha" element={<FichaEngenharia />} />
       <Route path="/engenharia/fichas-processo" element={<FichasProcesso />} />
+      <Route path="/financeiro/importar-extratos" element={<BankStatementImporter />} />
       <Route path="/financeiro/reconciliacao" element={<BankRecWorkspace />}>
         <Route index element={<BankReconciliation />} />
         <Route path="match" element={<BankReconciliation />} />
