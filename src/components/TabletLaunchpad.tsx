@@ -71,10 +71,10 @@ const modules: Module[] = [
   { number:'12', label:'CHÃO DE FÁBRICA', route:'/operacao-industrial', icon:Activity, accent:'#8A6200' },
   { number:'13', label:'QUALIDADE', route:'/qualidade', icon:CheckCircle, accent:'#16788A' },
   { number:'14', label:'SGQ', route:'/qualidade', icon:CheckCircle, accent:'#0F6170' },
-  { number:'15', label:'CONCILIAÇÃO BANCÁRIA', route:'/financeiro/reconciliacao', icon:Landmark, accent:'#17445A', permission:'financeiro.ver' },
-  { number:'16', label:'IMPORTADOR DE EXTRATOS', route:'/financeiro/importar-extratos', icon:Upload, accent:'#087A58', permission:'financeiro.ver' },
-  { number:'17', label:'ANO FISCAL', route:'/financeiro/ano-fiscal', icon:CalendarDays, accent:'#7A4E00', permission:'financeiro.ver' },
-  { number:'18', label:'FLUXO DE CAIXA', route:'/financeiro/fluxo-caixa', icon:DollarSign, accent:'#0B7654', permission:'financeiro.ver' },
+  { number:'15', label:'CONCILIAÇÃO BANCÁRIA', route:'/financeiro/reconciliacao', icon:Landmark, accent:'#17445A', permission:'financeiro.ver', restrictedRoles:['ADMINISTRADOR','PCP','MASTER'] },
+  { number:'16', label:'IMPORTADOR DE EXTRATOS', route:'/financeiro/importar-extratos', icon:Upload, accent:'#087A58', permission:'financeiro.ver', restrictedRoles:['ADMINISTRADOR','PCP','MASTER'] },
+  { number:'17', label:'ANO FISCAL', route:'/financeiro/ano-fiscal', icon:CalendarDays, accent:'#7A4E00', permission:'financeiro.ver', restrictedRoles:['ADMINISTRADOR','PCP','MASTER'] },
+  { number:'18', label:'FLUXO DE CAIXA', route:'/financeiro/fluxo-caixa', icon:DollarSign, accent:'#0B7654', permission:'financeiro.ver', restrictedRoles:['ADMINISTRADOR','PCP','MASTER'] },
 ]
 
 const moduleItems: Record<string, string> = {
