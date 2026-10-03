@@ -349,7 +349,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas" element={<DashboardComercial />} />
       <Route path="/vendas/pdv" element={<VendasPDV />} />
       <Route path="/vendas/novo-pedido" element={<PedidoVendaCompleto />} />
-      <Route path="/configuracoes" element={<Configuracoes />} />
+      <Route path="/configuracoes" element={<Navigate to="/configuracoes-adm" replace />} />
       <Route path="/vendas/orcamentos" element={<VendasAnaliseCustos />} />
       <Route path="/vendas/pendentes" element={<VendasStatusPedidos />} />
       <Route path="/vendas/reajuste" element={<AjusteGlobal />} />
@@ -367,7 +367,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/dashboard-graficos" element={<VendasDashboardGraficos />} />
       <Route path="/vendas/metas" element={<VendasMetas />} />
       <Route path="/vendas/relatorios" element={<VendasRelatorios />} />
-      <Route path="/vendas/configuracoes" element={<VendasConfiguracoes />} />
+      <Route path="/vendas/configuracoes" element={<Navigate to="/configuracoes-adm" replace />} />
       <Route path="/pcp" element={<PCPIndustrial />} />
       <Route path="/pcp/ordens" element={<PCPIndustrial />} />
       <Route path="/pcp/demanda" element={<PCPIndustrial />} />
