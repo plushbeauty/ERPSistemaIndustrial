@@ -117,7 +117,7 @@ export default function DashboardComercial() {
     const storedLogo = empresaResult.data?.logo_impressao_url || empresaResult.data?.logo_url
     if (!storedLogo) {
       setLogoSrc(null)
-    } else if (/^https?:\\/\\//i.test(storedLogo)) {
+    } else if (/^https?:\/\//i.test(storedLogo)) {
       setLogoSrc(storedLogo)
     } else {
       const cleanPath = storedLogo.replace(/^\\/+/, '')
