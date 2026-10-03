@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { useMemo } from 'react'
+
 import { Activity, Award, Boxes, TrendingUp, CalendarDays, CheckCircle, ClipboardList, Cpu, DollarSign, Factory, Landmark, Layers, Receipt, Settings, ShoppingCart, Tablet, Truck, Upload, Users, X } from 'lucide-react'
 import { usePonto } from '../context/PontoContext'
 import { useEffect, useState } from 'react'
@@ -19,39 +19,6 @@ type Module = {
   accent: string
   permission?: string
   restrictedRoles?: string[]
-}
-
-const tabletIconAssets = import.meta.glob('../assets/icones-tablet/*.{png,svg,webp,jpg,jpeg}', {
-  eager: true,
-  import: 'default',
-  query: '?url',
-}) as Record<string, string>
-
-function normalizeIconKey(value: string) {
-  return value
-    .normalize('NFD')
-    .replace(/[\\u0300-\\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-}
-
-function resolveTabletIcon(number: string, label: string) {
-  const numberKey = number.padStart(2, '0')
-  const labelKey = normalizeIconKey(label)
-  const entries = Object.entries(tabletIconAssets)
-
-  const exactNumber = entries.find(([path]) => {
-    const file = normalizeIconKey(path.split('/').pop()?.replace(/\\.[^.]+$/, '') ?? '')
-    return file.startsWith(`${numberKey}-`) || file.startsWith(`${number}-`)
-  })
-  if (exactNumber) return exactNumber[1]
-
-  const exactLabel = entries.find(([path]) => {
-    const file = normalizeIconKey(path.split('/').pop()?.replace(/\\.[^.]+$/, '') ?? '')
-    return file === labelKey || file.includes(labelKey)
-  })
-  return exactLabel?.[1] ?? null
 }
 
 const modules: Module[] = [
@@ -119,7 +86,6 @@ export default function TabletLaunchpad({ onNavigate, isOpen, onClose }: TabletL
     })()
     return () => { alive = false }
   }, [isOpen])
-  const resolvedIcons = useMemo(() => Object.fromEntries(modules.map((module) => [module.label, resolveTabletIcon(module.number, module.label)])), [])
   if (!isOpen) return null
 
   return (
