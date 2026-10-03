@@ -398,7 +398,7 @@ export default function VendasClientes() {
   ] as const
 
   return (
-    <main className="min-h-screen bg-slate-50 p-5 text-slate-900">
+    <main className="erp-compact min-h-screen bg-slate-50 p-5 text-slate-900">
       <div className="mx-auto max-w-[1700px] space-y-5">
         <header className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-4">
           <div>
