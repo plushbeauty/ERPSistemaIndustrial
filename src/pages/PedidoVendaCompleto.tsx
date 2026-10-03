@@ -58,7 +58,13 @@ export default function PedidoVendaCompleto(){
   if(cnpjValido(raw)){
    try{
     const r=await supabase.functions.invoke('consultar-cnpj',{body:{cnpj:normalized}})
-    if(!r.error&&r.data?.razao_social){setClienteNome(String(r.data.razao_social));setClienteBusca(normalized);setMessage('CNPJ consultado. Cadastre o cliente no cadastro mestre para vinculá-lo ao pedido.')}
+    if(!r.error&&r.data?.razao_social){
+      const existing=await supabase.from('erp_clientes').select('id,codigo,nome,documento,fator_markup_comercial').eq('empresa_id',empresaId).eq('documento',normalized).eq('ativo',true).maybeSingle()
+      if(existing.error)throw existing.error
+      if(existing.data){setCliente(existing.data as Cliente);setClienteNome(existing.data.nome);setClienteBusca(normalized);return}
+      const created=await supabase.from('erp_clientes').insert({empresa_id:empresaId,nome:String(r.data.razao_social),nome_fantasia:String(r.data.nome_fantasia||r.data.razao_social),documento:normalized,tipo_pessoa:'PJ',ativo:true}).select('id,codigo,nome,documento,fator_markup_comercial').single()
+      if(created.error)throw created.error
+      setCliente(created.data as Cliente);setClienteNome(created.data.nome);setClienteBusca(normalized);setMessage('Cliente criado a partir da consulta pública de CNPJ.')}
    }catch{setError('Cliente não localizado na base local e consulta externa indisponível.')}
   }else setError('Cliente não localizado.')
  }
@@ -131,7 +137,7 @@ export default function PedidoVendaCompleto(){
     <div className="grid grid-cols-[72px_100px_minmax(170px,1.4fr)_minmax(170px,1fr)_105px_125px_95px_125px_80px_85px_150px] gap-1.5 items-end">
      <Field label="Nº Pedido"><input value={numero} readOnly placeholder="auto"/></Field>
      <Field label="Data Entrada"><input type="date" value={dataEntrada} onChange={e=>setDataEntrada(e.target.value)}/></Field>
-     <Field label="Cliente • Código/CNPJ"><div className="flex gap-1"><input ref={clienteRef} value={clienteBusca} onChange={e=>setClienteBusca(e.target.value)} onBlur={e=>void resolveCliente(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')void resolveCliente(clienteBusca)}}/><button type="button" title="Pesquisar cliente" onClick={()=>{setSearchMode('cliente');setSearchTerm('');setSearchMode('cliente')}} className="h-7 w-7 shrink-0 border bg-white"><Search size={12}/></button></div></Field>
+     <Field label="Cliente • Código/CNPJ"><div className="flex gap-1"><input className="h-7 w-full border border-slate-300 bg-white px-1.5 text-[11px]" ref={clienteRef} value={clienteBusca} onChange={e=>setClienteBusca(e.target.value)} onBlur={e=>void resolveCliente(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')void resolveCliente(clienteBusca)}}/><button type="button" title="Pesquisar cliente" onClick={()=>{setSearchMode('cliente');setSearchTerm('');setSearchMode('cliente')}} className="h-7 w-7 shrink-0 border bg-white"><Search size={12}/></button></div></Field>
      <Field label="Razão Social"><input readOnly value={clienteNome}/></Field>
      <Field label="Entrega"><input type="date" value={dataEntrega} onChange={e=>setDataEntrega(e.target.value)}/></Field>
      <Field label="Condição"><input value={condicao} onChange={e=>setCondicao(e.target.value)}/></Field>
