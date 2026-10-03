@@ -132,6 +132,7 @@ const OperacaoIndustrial = lazyPage(() => import('./pages/OperacaoIndustrial'), 
 const BankingReconciliation = lazyPage(() => import('./features/banking/BankReconciliation'), 'BankReconciliation')
 const BankingStatementImporter = lazyPage(() => import('./features/banking/BankStatementImporter'), 'BankStatementImporter')
 const BankingListaPrecosCliente = lazyPage(() => import('./features/banking/ListaPrecosCliente'), 'ListaPrecosCliente')
+const RetificacaoPedido = lazyPage(() => import('./features/controladoria/RetificacaoPedido'), 'RetificacaoPedido')
 
 type ERPProfile = { empresa_id: string | null; is_master: boolean; nivel_admin?: number; perfil?: string; nome?: string }
 type AccessResult = { ok: boolean; master: boolean; reason: string; profile: ERPProfile | null }
@@ -357,6 +358,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/importador" element={<BankingStatementImporter />} />
       <Route path="/vendas/carteira" element={<VendasCarteira />} />
       <Route path="/vendas/status" element={<VendasStatusPedidos />} />
+      <Route path="/controladoria/retificacao-pedido/:pedidoId" element={<RetificacaoPedido />} />
       <Route path="/vendas/pedido/:id" element={<VendasPedidoStatus />} />
       <Route path="/vendas/catalogo-digital/gestao" element={<VendasCatalogoDigitalGestao />} />
       <Route path="/vendas/clientes" element={<VendasClientesPage />} />
