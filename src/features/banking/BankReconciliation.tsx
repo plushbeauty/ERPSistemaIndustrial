@@ -99,6 +99,7 @@ export default function BankReconciliation() {
   const [reference, setReference] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [saldoContabil, setSaldoContabil] = useState(0)
 
   const load = async () => {
     setError('')
@@ -118,6 +119,8 @@ export default function BankReconciliation() {
   }
 
   useEffect(() => { void load() }, [accountId, date, status])
+
+  useEffect(() => { void (async () => { if (!accountId) { setSaldoContabil(0); return }; const r = await supabase.from('erp_fiscal_razao_lancamentos').select('debito,credito').eq('conta_bancaria_id', accountId); if (!r.error) setSaldoContabil((r.data ?? []).reduce((sum, row) => sum + Number(row.credito ?? 0) - Number(row.debito ?? 0), 0)) })() }, [accountId])
 
   const options: LinkOption[] = useMemo(() => accounts.map((account) => ({
     value: account.id,
@@ -177,7 +180,7 @@ export default function BankReconciliation() {
       <label className="ml-1 text-[10px] text-gray-500">Status Lançamentos</label><select value={status} onChange={(event) => setStatus(event.target.value)} className="h-7 w-[140px] rounded-md border border-gray-200 px-1 text-[11px]"><option>TODOS</option><option>PENDENTE</option><option>CONCILIADO</option><option>IGNORADO</option></select>
       <button type="button" onClick={exportXlsx} className="ml-auto flex h-7 w-[110px] items-center justify-center gap-1 rounded-md bg-[#ffcc00] text-[11px] font-semibold text-black"><Download size={12} />EXPORTAR XLSX</button>
     </div>
-    <div className="scroll-fade-x flex h-7 overflow-x-auto border-b border-gray-200 bg-white px-2">{tabs.map(([key, label, Icon]) => <button key={key} type="button" onClick={() => setTab(key)} className={'flex h-7 shrink-0 items-center gap-1 rounded-md px-3 text-[11px] ' + (tab === key ? 'bg-slate-100 font-semibold text-slate-900' : 'text-slate-600')}><Icon size={12} className={key === 'incorrect' ? 'text-red-500' : ''} />{label}</button>)}</div>
+    <div className="flex h-7 items-center justify-between border border-gray-200 bg-slate-100 px-3 text-[11px] font-bold rounded-sm mb-2"><span>Conta Bancária Ativa: {accounts.find((account) => account.id === accountId)?.nome || "—"}</span><span className="rounded bg-green-100 px-2 py-0.5 font-black text-green-800">Saldo Contábil do Razão: {brl(saldoContabil)}</span></div>\n    <div className="scroll-fade-x flex h-7 overflow-x-auto border-b border-gray-200 bg-white px-2">{tabs.map(([key, label, Icon]) => <button key={key} type="button" onClick={() => setTab(key)} className={'flex h-7 shrink-0 items-center gap-1 rounded-md px-3 text-[11px] ' + (tab === key ? 'bg-slate-100 font-semibold text-slate-900' : 'text-slate-600')}><Icon size={12} className={key === 'incorrect' ? 'text-red-500' : ''} />{label}</button>)}</div>
     <div className="p-2">
       {error && <div className="mb-2 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-[11px] text-red-700">{error}</div>}
       {message && <div className="mb-2 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] text-emerald-700">{message}</div>}
