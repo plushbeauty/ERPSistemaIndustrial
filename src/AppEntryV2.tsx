@@ -337,7 +337,13 @@ function AppIndustrialAuthenticated() {
     )
   }
 
-  const protectedRoutes = (
+  const BankReconciliation = lazyPage(() => import('./pages/financeiro/BankReconciliation'), 'BankReconciliation')
+const BankRecWorkspace = lazyPage(() => import('./pages/financeiro/BankRecWorkspace'), 'BankRecWorkspace')
+const BankReconciliationStatement = lazyPage(() => import('./pages/financeiro/BankReconciliationStatement'), 'BankReconciliationStatement')
+const BankTransactionList = lazyPage(() => import('./pages/financeiro/BankTransactionList'), 'BankTransactionList')
+const BankClearanceSummary = lazyPage(() => import('./pages/financeiro/BankClearanceSummary'), 'BankClearanceSummary')
+const IncorrectlyClearedEntries = lazyPage(() => import('./pages/financeiro/IncorrectlyClearedEntries'), 'IncorrectlyClearedEntries')
+const protectedRoutes = (
     <Routes>
       <Route path="/comercial" element={<AppIndustrial />} />
       <Route path="/erp-industrial" element={<AppIndustrial />} />
@@ -412,6 +418,14 @@ function AppIndustrialAuthenticated() {
       <Route path="/engenharia/revisoes-bom" element={<EngenhariaRevisoesBOM />} />
       <Route path="/engenharia/ficha" element={<FichaEngenharia />} />
       <Route path="/engenharia/fichas-processo" element={<FichasProcesso />} />
+      <Route path="/financeiro/reconciliacao" element={<BankRecWorkspace />}>
+        <Route index element={<BankReconciliation />} />
+        <Route path="match" element={<BankReconciliation />} />
+        <Route path="statement" element={<BankReconciliationStatement />} />
+        <Route path="transactions" element={<BankTransactionList />} />
+        <Route path="clearance" element={<BankClearanceSummary />} />
+        <Route path="incorrect" element={<IncorrectlyClearedEntries />} />
+      </Route>
       <Route path="/financeiro/grafico-desvios" element={<FinanceiroGraficoDesvios />} />
       <Route path="/financeiro/custo-padrao" element={<FinanceiroCustoPadrao />} />
       <Route path="/admin/logs" element={<AdminLogs />} />
