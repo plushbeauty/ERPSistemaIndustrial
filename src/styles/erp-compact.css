@@ -1,0 +1,49 @@
+.erp-compact,
+.erp-compact * {
+  box-sizing: border-box;
+}
+
+.erp-compact {
+  --erp-compact-control-height: 28px;
+  --erp-compact-font: 11px;
+  --erp-compact-label: 10px;
+  --erp-compact-gap: 8px;
+}
+
+.erp-compact input,
+.erp-compact select,
+.erp-compact textarea,
+.erp-compact button {
+  min-height: var(--erp-compact-control-height);
+  height: var(--erp-compact-control-height);
+  border-radius: 6px;
+  font-size: var(--erp-compact-font);
+}
+
+.erp-compact label {
+  font-size: var(--erp-compact-label);
+}
+
+.erp-compact .erp-compact-grid {
+  display: grid;
+  gap: var(--erp-compact-gap);
+}
+
+.erp-compact .erp-compact-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--erp-compact-gap);
+}
+
+.erp-compact.tablet-mode input,
+.erp-compact.tablet-mode select,
+.erp-compact.tablet-mode textarea,
+.erp-compact.tablet-mode button {
+  min-height: 40px;
+  height: 40px;
+  font-size: 14px;
+}
+
+.erp-compact.tablet-mode .erp-compact-sidebar {
+  display: none;
+}
