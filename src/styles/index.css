@@ -75,8 +75,9 @@ button,input,select,textarea{font-size:16px!important}
 /* PDF INDUSTRIAL LIGHT FOUNDATION */
 :root,[data-erp-theme="light"]{color-scheme:light}
 body,[data-erp-theme="light"]{background:#F4FBFD!important;color:#17333F!important}
-button,input,select,textarea{font-size:16px}
-button{min-height:42px}
+button,input,select,textarea{font-size:11px}
+input,select,textarea{height:28px;min-height:28px;padding:0 8px;border-radius:6px}
+button{min-height:28px;height:28px}
 .erp-page-v3,.v7-content,.resource-card,.erp-card,.crud-list,.crud-table-wrap,.quality-dashboard-grid,.quality-kpis{color:#17333F}
 .erp-page-v3,.v7-content{background:#F4FBFD}
 .erp-card-v3,.erp-card,.resource-card,.crud-list,.pcp-modern-panel,.mw3-card{background:#fff!important;border-color:#cfe1e7!important;color:#17333F!important}
@@ -117,3 +118,7 @@ table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!i
   mask-image:linear-gradient(to right,transparent 0,#000 16px,#000 calc(100% - 16px),transparent 100%);
   -webkit-mask-image:linear-gradient(to right,transparent 0,#000 16px,#000 calc(100% - 16px),transparent 100%);
 }
+
+
+/* ERP Industrial: densidade de formulário; mobile mantém 16px para impedir zoom automático do navegador. */
+@media (max-width: 767px){button,input,select,textarea{font-size:16px}input,select,textarea{height:40px;min-height:40px;padding:0 8px}button{height:40px;min-height:40px}}
