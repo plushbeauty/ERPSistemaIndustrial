@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { supabase } from '../lib/supabaseClient'
+import { supabase } from '../../lib/supabaseClient'
 
 type Tab = 'gerais' | 'parceiros' | 'itens' | 'impostos' | 'transporte'
 type TipoNfe = 'entrada' | 'saida'
