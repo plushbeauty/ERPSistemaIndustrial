@@ -73,7 +73,6 @@ export default function TabletLaunchpad({ onNavigate, isOpen, onClose }: TabletL
   const [financeAllowed, setFinanceAllowed] = useState(false)
   const { perfilRole } = usePonto()
   const commissionBlocked = perfilRole === 'PRODUÇÃO' || perfilRole === 'PRODUCAO' || perfilRole === 'ENGENHARIA'
-  const pcpAllowed = perfilRole === 'ADMINISTRADOR' || perfilRole === 'PCP' || perfilRole === 'MASTER'
   const fiscalAllowed = perfilRole === 'ADMINISTRADOR' || perfilRole === 'PCP' || perfilRole === 'MASTER'
   useEffect(() => {
     if (!isOpen) return
