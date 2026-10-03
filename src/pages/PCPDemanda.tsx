@@ -33,7 +33,7 @@ export default function PCPDemanda(){
  const totalFabricar=useMemo(()=>rows.reduce((s,r)=>s+r.necessidade,0),[rows]),deficitRows=useMemo(()=>rows.filter(r=>r.necessidade>0),[rows])
  async function gerarLote(autoOnly=false){
   const targetRows=autoOnly?deficitRows.filter(r=>r.pedido>0):deficitRows
-  if(!targetRows.length{setMessage('Não há necessidade líquida positiva para gerar OPs.');return}
+  if(!targetRows.length){setMessage('Não há necessidade líquida positiva para gerar OPs.');return}
   setProcessing(true);setError('');setMessage('')
   try{
    const tenant=await supabase.rpc('erp_current_empresa_id');if(tenant.error||!tenant.data)throw tenant.error||new Error('Empresa ERP não identificada.')
