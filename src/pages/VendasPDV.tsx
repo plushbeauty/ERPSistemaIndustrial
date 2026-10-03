@@ -4,7 +4,8 @@ import { supabase } from '../lib/supabaseClient'
 
 type Product={id:string;codigo:string;codigo_barras:string|null;nome:string;preco_venda:number;unidade:string;categoria:string|null;estoque_atual:number;permite_estoque_negativo:boolean}
 type CartItem=Product&{quantidade:number}
-type Box={id:string;codigo:string;descricao:string}\ntype Customer={id:string;codigo:string|null;nome:string;documento:string|null}
+type Box={id:string;codigo:string;descricao:string}
+type Customer={id:string;codigo:string|null;nome:string;documento:string|null}
 
 const money=(n:number)=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
 export default function VendasPDV(){
