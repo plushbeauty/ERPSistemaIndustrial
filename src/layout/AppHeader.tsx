@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
 import ThemeToggleButton from '../components/common/ThemeToggleButton'
 import TabletLaunchpad from '../components/TabletLaunchpad'
+import Sidebar from './Sidebar'
 
 interface AjudaContextual {
   rota: string
