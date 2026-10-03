@@ -59,19 +59,11 @@ const statusClass: Record<string, string> = {
 }
 
 const menu = [
-  { label: 'Visão Geral', href: '/vendas', icon: BarChart3 },
-  { label: 'Entrada Pedido', href: '/vendas/novo-pedido', icon: FilePlus2 },
-  { label: 'PDV / Caixa', href: '/vendas/pdv', icon: ClipboardList },
-  { label: 'Status Pedido', href: '/vendas/status', icon: ListChecks },
-  { label: 'Carteira', href: '/vendas/carteira', icon: PackageSearch },
-  { label: 'Clientes', href: '/vendas/clientes', icon: Users },
-  { label: 'Catálogo Digital', href: '/vendas/catalogo-digital/gestao', icon: BookOpen },
-  { label: 'Metas', href: '/vendas/metas', icon: Target },
-  { label: 'Gráficos', href: '/vendas/dashboard-graficos', icon: BarChart3 },
-  { label: 'Relatórios', href: '/vendas/relatorios', icon: ClipboardList },
-  { label: 'Análise de Custos', href: '/vendas/analise-custos', icon: Clock3 },
-  { label: 'Tabelas de Preço', href: '/tabela-precos', icon: BookOpen },
-  { label: 'Configurações', href: '/vendas/configuracoes', icon: Settings },
+  { label: 'Dashboard Comercial', href: '/vendas', icon: BarChart3 },
+  { label: 'Novo Pedido de Venda', href: '/vendas/novo-pedido', icon: FilePlus2 },
+  { label: 'Análise de Orçamentos', href: '/vendas/orcamentos', icon: ClipboardList },
+  { label: 'Pedidos Pendentes', href: '/vendas/pendentes', icon: ListChecks },
+  { label: 'Ajuste Global de Preços', href: '/vendas/reajuste', icon: Settings },
 ]
 
 export default function VendasCentral() {
@@ -169,152 +161,24 @@ export default function VendasCentral() {
   return (
     <div className="min-h-screen bg-[#F4F7FE] text-slate-800">
       <div className="flex min-h-screen">
-        <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-slate-200 bg-white lg:flex lg:flex-col">
-          <div className="border-b border-slate-200 px-5 py-5">
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#2D8DB8]">Vendas</p>
-            <h1 className="mt-1 text-lg font-medium text-[#123B50]">Painel Comercial</h1>
-            <p className="mt-1 truncate text-xs font-normal text-slate-500">
-              {company?.nome_fantasia || company?.razao_social || 'Empresa ERP'}
-            </p>
-          </div>
-          <nav className="flex-1 px-3 py-4">
-            <p className="px-3 pb-2 text-[10px] font-medium uppercase tracking-wider text-slate-400">Vendas</p>
-            <div className="space-y-0.5">
-              {menu.map(item => {
-                const Icon = item.icon
-                const active = item.href === '/vendas'
-                return (
-                  <button
-                    key={item.href}
-                    type="button"
-                    onClick={() => open(item.href)}
-                    className={`flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-xs font-normal transition ${
-                      active
-                        ? 'bg-[#E8F4F8] text-[#176487]'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-[#123B50]'
-                    }`}
-                  >
-                    <Icon size={15} strokeWidth={1.8} />
-                    <span>{item.label}</span>
-                  </button>
-                )
-              })}
-            </div>
+        <aside className="fixed inset-y-0 left-0 z-30 hidden w-56 border-r border-slate-200 bg-[#343A40] lg:flex lg:flex-col">
+          <div className="border-b border-slate-700 px-4 py-4"><p className="text-[10px] font-bold uppercase tracking-widest text-cyan-300">Vendas</p><h1 className="mt-1 text-sm font-medium text-white">Módulo Comercial</h1><p className="mt-1 truncate text-[10px] text-slate-300">{company?.nome_fantasia || company?.razao_social || 'Empresa ERP'}</p></div>
+          <nav className="flex-1 px-2 py-3">
+            {menu.map(item => { const Icon=item.icon; const active=item.href === '/vendas'; return <button key={item.href} type="button" onClick={() => open(item.href)} className={`flex w-full items-center gap-2 rounded px-2 py-2 text-left text-[11px] ${active ? 'bg-[#495057] text-white font-bold' : 'text-slate-300 hover:bg-slate-700'}`}><Icon size={14}/><span>{item.label}</span></button> })}
           </nav>
         </aside>
 
-        <main className="min-w-0 flex-1 lg:ml-64">
+        <main className="min-w-0 flex-1 lg:ml-56">
           <header className="sticky top-0 z-20 border-b border-slate-200 bg-white">
-            <div className="flex min-h-[70px] items-center justify-between gap-4 px-5 lg:px-8">
-              <div>
-                <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[#2D8DB8]">ERP Industrial • Vendas</p>
-                <h2 className="mt-1 text-xl font-medium text-[#123B50]">Painel Comercial</h2>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => open('/tablet/dashboard')}
-                  className="inline-flex h-9 items-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                >
-                  <Tablet size={15} strokeWidth={1.8} />
-                  TABLET
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void supabase.auth.signOut()}
-                  className="inline-flex h-9 items-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                >
-                  <LogOut size={15} strokeWidth={1.8} />
-                  SAIR
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void load()}
-                  disabled={loading}
-                  aria-label="Atualizar painel"
-                  className="inline-flex h-9 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-slate-600 hover:bg-slate-50 disabled:opacity-60"
-                >
-                  <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
-                </button>
-              </div>
+            <div className="flex min-h-[48px] items-center justify-between gap-3 px-4">
+              <div><p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#2D8DB8]">ERP Industrial • Vendas</p><h2 className="text-sm font-medium text-[#123B50]">Painel Comercial</h2></div>
+              <div className="flex items-center gap-1.5"><button type="button" onClick={() => open('/tablet/dashboard')} className="inline-flex h-7 items-center gap-1 rounded border border-slate-300 px-2 text-[10px] font-bold"><Tablet size={13}/>TABLET</button><button type="button" onClick={() => void supabase.auth.signOut()} className="inline-flex h-7 items-center gap-1 rounded border border-slate-300 px-2 text-[10px] font-bold"><LogOut size={13}/>SAIR</button><button type="button" onClick={() => void load()} className="inline-flex h-7 items-center justify-center rounded border border-slate-300 px-2"><RefreshCw size={13}/></button></div>
             </div>
           </header>
-
-          <section className="space-y-5 p-5 lg:p-8">
-            {error && (
-              <div className="rounded-md border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{error}</div>
-            )}
-
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-              <DashboardMetric label="Pedidos" value={metrics.total} onClick={() => open('/vendas/carteira')} />
-              <DashboardMetric label="Atrasados" value={metrics.overdue.length} danger onClick={() => open('/vendas/status?filtro=atrasados')} />
-              <DashboardMetric label="Pendentes" value={metrics.pending.length} onClick={() => open('/vendas/status?filtro=todos')} />
-              <DashboardMetric label="Necessita produção" value={metrics.production.length} onClick={() => open('/vendas/status?filtro=producao')} />
-              <DashboardMetric label="Carteira" value={money(metrics.openValue)} />
-            </div>
-
-            <section className="grid gap-5 xl:grid-cols-2">
-              <RealChart title="Vendas por período" data={chartData} valueKey="value" money />
-              <RealChart title="Pedidos por período" data={chartData} valueKey="orders" />
-            </section>
-
-            <section className="grid gap-5 xl:grid-cols-[1.35fr_1fr]">
-              <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
-                <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-                  <div>
-                    <h3 className="text-base font-medium text-[#123B50]">Pedidos atrasados</h3>
-                    <p className="mt-1 text-xs text-slate-500">Pedidos ativos cuja entrega prometida já venceu.</p>
-                  </div>
-                  <button type="button" onClick={() => open('/vendas/carteira?filtro=atrasados')} className="text-xs font-normal text-[#2D8DB8]">
-                    Ver todos
-                  </button>
-                </div>
-                <div className="divide-y divide-slate-100">
-                  {metrics.overdue.slice(0, 6).map(order => (
-                    <div key={order.id} className="flex items-center justify-between gap-4 px-5 py-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-slate-800">PV-{String(order.numero).padStart(6, '0')} · {order.cliente_nome}</p>
-                        <p className="mt-0.5 text-xs text-rose-600">
-                          Entrega: {new Date(order.data_entrega_prometida as string).toLocaleDateString('pt-BR')}
-                        </p>
-                      </div>
-                      <span className="shrink-0 text-sm font-medium text-slate-700">{money(order.total)}</span>
-                    </div>
-                  ))}
-                  {!metrics.overdue.length && (
-                    <div className="px-5 py-8 text-center text-sm text-slate-500">Nenhum pedido atrasado encontrado.</div>
-                  )}
-                </div>
-              </div>
-
-              <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
-                <div className="border-b border-slate-200 px-5 py-4">
-                  <h3 className="text-base font-medium text-[#123B50]">Próximos e críticos</h3>
-                  <p className="mt-1 text-xs text-slate-500">Pedidos ativos com entrega próxima ou necessidade de produção.</p>
-                </div>
-                <div className="divide-y divide-slate-100">
-                  {orders
-                    .filter(order => !['faturado', 'cancelado'].includes(normalizeStatus(order.status)))
-                    .slice(0, 6)
-                    .map(order => {
-                      const key = normalizeStatus(order.status)
-                      return (
-                        <div key={order.id} className="flex items-center justify-between gap-3 px-5 py-3">
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-medium text-slate-800">PV-{String(order.numero).padStart(6, '0')} · {order.cliente_nome}</p>
-                            <p className="mt-0.5 text-xs text-slate-500">
-                              {order.data_entrega_prometida ? new Date(order.data_entrega_prometida).toLocaleDateString('pt-BR') : 'Sem entrega prometida'}
-                            </p>
-                          </div>
-                          <span className={`shrink-0 rounded-full border px-2 py-1 text-[10px] font-normal ${statusClass[key] ?? 'border-slate-200 bg-slate-50 text-slate-600'}`}>
-                            {statusLabel[key] ?? order.status}
-                          </span>
-                        </div>
-                      )
-                    })}
-                </div>
-              </div>
-            </section>
+          <section className="space-y-3 p-3 lg:p-4">
+            {error && <div className="rounded border border-rose-200 bg-rose-50 p-2 text-xs text-rose-800">{error}</div>}
+            <div className="grid gap-2 md:grid-cols-4"><DashboardMetric label="Pedidos Pendentes" value={metrics.pending.length} onClick={() => open('/vendas/status')} /><DashboardMetric label="Carteira Aberta" value={money(metrics.openValue)} /><DashboardMetric label="Necessita produção" value={metrics.production.length} /><DashboardMetric label="Pedidos Totais" value={metrics.total} /></div>
+            <section className="grid gap-3 xl:grid-cols-2"><RealChart title="Vendas por período" data={chartData} valueKey="value" money /><RealChart title="Pedidos por período" data={chartData} valueKey="orders" /></section>
           </section>
         </main>
       </div>
