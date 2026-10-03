@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 import {
   Bar,
   BarChart,
@@ -351,6 +352,6 @@ function Kpi({ label, value }: { label: string; value: string | number }) {
   return <div className="border border-slate-300 bg-white p-2"><div className="text-[9px] uppercase text-slate-500">{label}</div><div className="mt-1 text-[15px] font-semibold text-[#123B50]">{value}</div></div>
 }
 
-function ChartCard({ title, onPrint, className = '', children }: { title: string; onPrint: () => void; className?: string; children: React.ReactNode }) {
+function ChartCard({ title, onPrint, className = '', children }: { title: string; onPrint: () => void; className?: string; children: ReactNode }) {
   return <section className={`border border-slate-300 bg-white ${className}`}><div className="flex items-center justify-between border-b bg-[#F4F7FE] px-2 py-1.5"><b className="text-[10px] uppercase">{title}</b><button type="button" title="Imprimir relatório deste gráfico" onClick={onPrint} className="no-print flex items-center gap-1 border px-1.5 py-1 text-[9px]"><Printer size={12}/>IMPRIMIR</button></div>{children}</section>
 }
