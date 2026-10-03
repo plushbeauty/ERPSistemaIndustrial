@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { History, Plus, RefreshCw, Save, TriangleAlert, X } from 'lucide-react'
+import { History, Pencil, Plus, RefreshCw, Save, TriangleAlert, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '../components/ui/dialog'
 
@@ -207,7 +207,7 @@ export default function CalibracaoIndustrial() {
 
   const field = (label: string, key: keyof typeof emptyEquipment, type = 'text') => <label className="grid gap-1 text-sm font-extrabold text-slate-800">{label}<input type={type} value={equipmentForm[key]} onChange={event => setEquipmentForm({ ...equipmentForm, [key]: event.target.value })} className="min-h-11 rounded-md border border-slate-300 bg-white px-3 text-slate-900"/></label>
 
-  return <main className="min-h-screen bg-[#f8fafc] p-4 text-slate-900 md:p-6">
+  return <main className="erp-compact min-h-screen bg-[#f8fafc] p-4 text-slate-900 md:p-6">
     <header className="mb-6 flex flex-col gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-center lg:justify-between">
       <div><span className="text-sm font-black uppercase tracking-wider text-sky-700">SGQ • METROLOGIA</span><h1 className="mt-1 text-2xl font-black md:text-3xl">Calibração e Equipamentos de Medição</h1><p className="mt-1 text-base text-slate-600">Cadastro real, rastreabilidade de certificados e barreira operacional por validade metrológica.</p></div>
       <div className="flex flex-wrap items-center gap-2">
@@ -227,7 +227,7 @@ export default function CalibracaoIndustrial() {
         <td className="p-3 font-black">{item.codigo}</td><td className="p-3">{item.descricao}</td><td className="p-3">{[item.fabricante, item.equipamento].filter(Boolean).join(' / ') || '—'}</td><td className="p-3">{item.setor || '—'}</td>
         <td className="p-3"><span className={'inline-flex rounded-md px-2.5 py-1 text-xs font-black ' + (isUsable(item) ? 'bg-emerald-100 text-emerald-950' : 'bg-rose-100 text-rose-950')}>{isUsable(item) ? 'APTO PARA USO' : isExpired(item) ? 'VENCIDO / BLOQUEADO' : item.status}</span></td>
         <td className="p-3">{item.proxima_calibracao || '—'}</td><td className="p-3">{item.certificado_rbc || '—'}</td>
-        <td className="p-3 text-right"><div className="flex justify-end gap-2"><button type="button" onClick={() => void openEquipment(item)} className="inline-flex min-h-10 items-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-sm font-bold"><History size={16}/> Ficha</button><button type="button" onClick={() => editEquipment(item)} className="inline-flex min-h-10 items-center rounded-md border border-slate-300 bg-white px-3 text-sm font-bold">Editar</button></div></td>
+        <td className="p-3 text-right"><div className="flex justify-end gap-2"><button type="button" onClick={() => void openEquipment(item)} className="inline-flex min-h-10 items-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-sm font-bold"><History size={16}/> Ficha</button><button type="button" onClick={() => editEquipment(item)} className="erp-edit-button" title={`Editar ${item.descricao ?? item.codigo ?? 'instrumento'}`} aria-label={`Editar ${item.descricao ?? item.codigo ?? 'instrumento'}`}><Pencil size={14}/></button></div></td>
       </tr>)}{!filtered.length && !busy && <tr><td colSpan={8} className="p-8 text-center font-semibold text-slate-600">Nenhum instrumento de medição cadastrado na empresa.</td></tr>}</tbody>
     </table></div></section>
 

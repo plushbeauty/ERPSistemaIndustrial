@@ -29,6 +29,7 @@ import './styles/module-overview.css'
 import './styles/erp-ui-pass-2026.css'
 import './styles/industrial-plans.css'
 import './styles/erp-design-system-2026.css'
+import './styles/erp-compact.css'
 
 import IndustrialLoginDirect from './IndustrialLoginDirect'
 
@@ -38,7 +39,7 @@ const IndustrialVisualShowcase = lazyPage(() => import('./components/IndustrialV
 const Blog = lazyPage(() => import('./pages/Blog'), 'Blog')
 const Contato = lazyPage(() => import('./pages/Contato'), 'Contato')
 const Fiscal = lazyPage(() => import('./pages/Fiscal'), 'Fiscal')
-const NFeEmissao = lazyPage(() => import('./pages/NFeEmissao'), 'NFeEmissao')
+const NFeEmissao = lazyPage(() => import('./features/fiscal/EmissaoNotaFiscal'), 'default')
 const FiscalPrevisaoCaixa = lazyPage(() => import('./pages/FiscalPrevisaoCaixa'), 'FiscalPrevisaoCaixa')
 const FiscalCarteiraNFe = lazyPage(() => import('./pages/FiscalCarteiraNFe'), 'FiscalCarteiraNFe')
 const FiscalImpostos = lazyPage(() => import('./pages/FiscalImpostos'), 'FiscalImpostos')
@@ -137,9 +138,9 @@ const QualidadeMetodologia8D = lazyPage(() => import('./pages/QualidadeMetodolog
 const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspecaoProcesso'), 'QualidadeInspecaoProcesso')
 const MoldesFerramentaria = lazyPage(() => import('./pages/MoldesFerramentaria'), 'MoldesFerramentaria')
 const OperacaoIndustrial = lazyPage(() => import('./pages/OperacaoIndustrial'), 'OperacaoIndustrial')
-const BankingReconciliation = lazyPage(() => import('./features/banking/BankReconciliation'), 'BankReconciliation')
-const BankingStatementImporter = lazyPage(() => import('./features/banking/BankStatementImporter'), 'BankStatementImporter')
-const BankingListaPrecosCliente = lazyPage(() => import('./features/banking/ListaPrecosCliente'), 'ListaPrecosCliente')
+const BankingReconciliation = lazyPage(() => import('./features/financeiro/BankReconciliation'), 'BankReconciliation')
+const BankingStatementImporter = lazyPage(() => import('./features/financeiro/BankStatementImporter'), 'BankStatementImporter')
+const BankingListaPrecosCliente = lazyPage(() => import('./features/financeiro/ListaPrecosCliente'), 'ListaPrecosCliente')
 const FinanceiroFluxoCaixa = lazyPage(() => import('./pages/FinanceiroFluxoCaixa'), 'FinanceiroFluxoCaixa')
 const RetificacaoPedido = lazyPage(() => import('./features/controladoria/RetificacaoPedido'), 'RetificacaoPedido')
 const CadastroRegrasComissao = lazyPage(() => import('./features/comissoes/CadastroRegras'), 'CadastroRegras')

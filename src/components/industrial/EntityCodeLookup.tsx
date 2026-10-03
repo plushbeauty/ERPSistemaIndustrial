@@ -130,12 +130,12 @@ export default function EntityCodeLookup({
         />
         <button
           type="button"
-          className={`grid ${compact ? "h-10 w-10" : "h-10 w-[44px]"} shrink-0 place-items-center rounded-md border border-slate-300 bg-slate-100 text-slate-800 shadow-sm transition hover:border-sky-500 hover:bg-sky-50 hover:text-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-200`}
+          className={`grid ${compact ? "h-7 w-7" : "h-7 w-7"} shrink-0 place-items-center rounded-md border border-slate-300 bg-slate-100 text-slate-800 shadow-sm transition hover:border-sky-500 hover:bg-sky-50 hover:text-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-200`}
           onClick={() => setOpen(true)}
           aria-label={`Consultar ${label}`}
           title="Consultar por filtros"
         >
-          <Search size={23} />
+          <Search size={13} />
         </button>
       </div>
 

@@ -1,4 +1,4 @@
-import { Award, Factory, ShoppingCart, TrendingUp, Percent } from 'lucide-react'
+import { Award, Factory, FileText, ShoppingCart, TrendingUp, Percent } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
 import { usePonto } from '../context/PontoContext'
@@ -19,6 +19,7 @@ export default function Sidebar(){
   <button type="button" onClick={()=>navigate('/financeiro/ano-fiscal')} className="flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] text-gray-700 hover:bg-slate-50">Ano Fiscal</button>
   <button type="button" onClick={()=>navigate('/financeiro/fluxo-caixa')} className="flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] text-gray-700 hover:bg-slate-50">Fluxo de Caixa</button>
   <div className="mt-2 border-t border-gray-200 px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-gray-500">Controladoria / Fiscal</div>
+  <button type="button" onClick={()=>navigate('/fiscal/emissao')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/fiscal/emissao')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><FileText size={14} className="text-gray-600 mr-2"/>11. Emissão NF-e</button>
   <button type="button" onClick={()=>navigate('/controladoria/razao-geral')} className="flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] text-gray-700 hover:bg-slate-50"><Percent size={14} className="text-gray-600 mr-2"/>Razão Geral</button>
   <button type="button" onClick={()=>navigate('/controladoria/lucratividade')} className="flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] text-gray-700 hover:bg-slate-50"><Percent size={14} className="text-gray-600 mr-2"/>Lucratividade / Margens</button>
   <button type="button" onClick={()=>navigate('/controladoria/auditoria-comissoes')} className="flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] text-gray-700 hover:bg-slate-50"><Award size={14} className="text-gray-600 mr-2"/>Auditoria de Comissões</button>

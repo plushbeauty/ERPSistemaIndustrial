@@ -287,7 +287,7 @@ function FormPanel({module,fields,form,setForm,onSubmit,busy,editing,onCancel}:{
 
 function DataTable({rows,fields,onSelect,onEdit}:{rows:Row[];fields:Field[];onSelect:(r:Row)=>void;onEdit:(r:Row)=>void}){
  if(!rows.length)return <div className="mw3-empty"><Package size={25}/><strong>Nenhum registro encontrado</strong><span>Não há dados carregados para esta empresa nesta rotina.</span></div>
- return <div className="mw3-table-wrap"><table><thead><tr>{fields.slice(0,8).map(f=><th key={f.key}>{f.label}</th>)}<th>Ações</th></tr></thead><tbody>{rows.map(r=><tr key={r.id} onClick={()=>onSelect(r)}>{fields.slice(0,8).map(f=><td key={f.key}>{norm(r[f.key])||'—'}</td>)}<td><button type="button" onClick={e=>{e.stopPropagation();onEdit(r)}}><MoreHorizontal size={16}/></button></td></tr>)}</tbody></table></div>
+ return <div className="mw3-table-wrap"><table><thead><tr>{fields.slice(0,8).map(f=><th key={f.key}>{f.label}</th>)}<th>Ações</th></tr></thead><tbody>{rows.map(r=><tr key={r.id} onClick={()=>onSelect(r)}>{fields.slice(0,8).map(f=><td key={f.key}>{norm(r[f.key])||'—'}</td>)}<td><div className="erp-row-actions"><button type="button" className="erp-edit-button" onClick={e=>{e.stopPropagation();onEdit(r)}} title="Editar registro" aria-label="Editar registro"><Pencil size={14}/></button></div></td></tr>)}</tbody></table></div>
 }
 
 function HelpPanel({module,tabs,onClose}:{module:Module;tabs:string[];onClose:()=>void}){

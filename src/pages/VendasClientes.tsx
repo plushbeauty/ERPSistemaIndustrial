@@ -398,7 +398,7 @@ export default function VendasClientes() {
   ] as const
 
   return (
-    <main className="min-h-screen bg-slate-50 p-5 text-slate-900">
+    <main className="erp-compact min-h-screen bg-slate-50 p-5 text-slate-900">
       <div className="mx-auto max-w-[1700px] space-y-5">
         <header className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-4">
           <div>
@@ -406,11 +406,11 @@ export default function VendasClientes() {
             <h1 className="text-3xl font-black text-slate-950">Cadastro de Clientes</h1>
             <p className="mt-1 text-sm font-semibold text-slate-600">Cadastro fiscal, contatos, endereço, regras comerciais e De/Para do cliente.</p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={openNew} className="flex h-11 items-center gap-2 rounded-md bg-sky-700 px-5 text-sm font-black text-white"><Plus size={18}/> NOVO CLIENTE</button>
-            <button type="button" disabled={!selectedClient} onClick={() => selectedClient && edit(selectedClient)} className="flex h-11 items-center gap-2 rounded-md border border-slate-300 bg-white px-4 text-sm font-black disabled:opacity-50"><Pencil size={18}/> EDITAR</button>
-            <button type="button" disabled={!selected} onClick={() => void remove()} className="flex h-11 items-center gap-2 rounded-md border border-rose-300 bg-rose-50 px-4 text-sm font-black text-rose-800 disabled:opacity-50"><Trash2 size={18}/> EXCLUIR</button>
-            <button type="button" onClick={() => void load()} className="flex h-11 items-center gap-2 rounded-md border border-slate-300 bg-white px-4 text-sm font-black"><RefreshCw size={18}/> ATUALIZAR</button>
+          <div className="erp-action-toolbar">
+            <button type="button" onClick={openNew} className="flex h-7 items-center gap-1 rounded-md bg-sky-700 px-2 text-[11px] font-bold text-white"><Plus size={13}/> NOVO</button>
+            <button type="button" disabled={!selectedClient} onClick={() => selectedClient && edit(selectedClient)} className="flex h-7 items-center gap-1 rounded-md border border-slate-300 bg-white px-2 text-[11px] font-bold disabled:opacity-50"><Pencil size={13}/> EDITAR</button>
+            <button type="button" disabled={!selected} onClick={() => void remove()} className="flex h-7 items-center gap-1 rounded-md border border-rose-300 bg-rose-50 px-2 text-[11px] font-bold text-rose-800 disabled:opacity-50"><Trash2 size={13}/> EXCLUIR</button>
+            <button type="button" onClick={() => void load()} className="flex h-7 items-center gap-1 rounded-md border border-slate-300 bg-white px-2 text-[11px] font-bold"><RefreshCw size={13}/> ATUALIZAR</button>
           </div>
         </header>
 
@@ -423,8 +423,8 @@ export default function VendasClientes() {
           </div>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[1100px] text-sm">
-              <thead className="bg-slate-100"><tr className="h-12 text-left font-black"><th className="px-4">Código</th><th className="px-4">Razão Social / Nome</th><th className="px-4">CNPJ / CPF</th><th className="px-4">Contato</th><th className="px-4">Cidade/UF</th><th className="px-4">Status</th></tr></thead>
-              <tbody>{filtered.map(row => <tr key={row.id} onClick={() => setSelected(row.id)} className={'h-12 cursor-pointer border-t border-slate-200 ' + (selected === row.id ? 'bg-sky-50' : 'hover:bg-slate-50')}><td className="px-4 font-mono font-black">{row.codigo ?? '—'}</td><td className="px-4 font-bold">{row.nome}<span className="ml-2 font-normal text-slate-500">{row.nome_fantasia ?? ''}</span></td><td className="px-4">{row.documento ?? '—'}</td><td className="px-4">{row.contato_nome ?? '—'}</td><td className="px-4">{[row.cidade, row.estado].filter(Boolean).join(' / ') || '—'}</td><td className={'px-4 font-black ' + (row.ativo ? 'text-emerald-700' : 'text-rose-700')}>{row.ativo ? 'ATIVO' : 'INATIVO'}</td></tr>)}</tbody>
+              <thead className="bg-slate-100"><tr className="h-12 text-left font-black"><th className="px-4">Código</th><th className="px-4">Razão Social / Nome</th><th className="px-4">CNPJ / CPF</th><th className="px-4">Contato</th><th className="px-4">Cidade/UF</th><th className="px-4">Status</th><th className="w-[60px] px-2 text-right">Ações</th></tr></thead>
+              <tbody>{filtered.map(row => <tr key={row.id} onClick={() => setSelected(row.id)} className={'h-12 cursor-pointer border-t border-slate-200 ' + (selected === row.id ? 'bg-sky-50' : 'hover:bg-slate-50')}><td className="px-4 font-mono font-black">{row.codigo ?? '—'}</td><td className="px-4 font-bold">{row.nome}<span className="ml-2 font-normal text-slate-500">{row.nome_fantasia ?? ''}</span></td><td className="px-4">{row.documento ?? '—'}</td><td className="px-4">{row.contato_nome ?? '—'}</td><td className="px-4">{[row.cidade, row.estado].filter(Boolean).join(' / ') || '—'}</td><td className={'px-4 font-black ' + (row.ativo ? 'text-emerald-700' : 'text-rose-700')}>{row.ativo ? 'ATIVO' : 'INATIVO'}</td><td className="px-2 text-right"><div className="erp-row-actions"><button type="button" className="erp-edit-button" title={`Editar ${row.nome}`} aria-label={`Editar ${row.nome}`} onClick={event => { event.stopPropagation(); edit(row) }}><Pencil size={14}/></button></div></td></tr>)}</tbody>
             </table>
           </div>
           {!busy && !filtered.length && <p className="p-10 text-center font-bold text-slate-500">Nenhum cliente encontrado.</p>}

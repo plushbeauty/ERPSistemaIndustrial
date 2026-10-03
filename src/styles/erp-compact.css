@@ -1,0 +1,64 @@
+.erp-compact,
+.erp-compact * {
+  box-sizing: border-box;
+}
+
+.erp-compact {
+  --erp-compact-control-height: 28px;
+  --erp-compact-font: 11px;
+  --erp-compact-label: 10px;
+  --erp-compact-gap: 8px;
+}
+
+.erp-compact input,
+.erp-compact select,
+.erp-compact textarea,
+.erp-compact button {
+  min-height: var(--erp-compact-control-height);
+  height: var(--erp-compact-control-height);
+  border-radius: 6px;
+  font-size: var(--erp-compact-font);
+}
+
+.erp-compact label {
+  font-size: var(--erp-compact-label);
+}
+
+.erp-compact .erp-compact-grid {
+  display: grid;
+  gap: var(--erp-compact-gap);
+}
+
+.erp-compact .erp-compact-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--erp-compact-gap);
+}
+
+.erp-compact.tablet-mode input,
+.erp-compact.tablet-mode select,
+.erp-compact.tablet-mode textarea,
+.erp-compact.tablet-mode button {
+  min-height: 40px;
+  height: 40px;
+  font-size: 14px;
+}
+
+.erp-compact.tablet-mode .erp-compact-sidebar {
+  display: none;
+}
+
+
+/* PADRÃO ÚNICO DE AÇÕES DE LINHA — ERP Industrial
+   Editar: 28x28px, ícone 14px, coluna fixa à direita, gap 4px.
+   Não usar alturas 40/42px para ações de tabela. */
+.erp-row-actions{display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;min-height:28px;white-space:nowrap}
+.erp-edit-button,.erp-row-action{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:28px!important;height:28px!important;min-width:28px!important;min-height:28px!important;padding:0!important;border:1px solid #d1d5db!important;border-radius:4px!important;background:#fff!important;color:#334155!important;line-height:1!important;box-shadow:none!important}
+.erp-edit-button svg,.erp-row-action svg{width:14px!important;height:14px!important}
+.erp-edit-button:hover,.erp-row-action:hover{border-color:#2D8DB8!important;background:#F4FBFD!important;color:#17445A!important}
+.erp-edit-button:focus-visible,.erp-row-action:focus-visible{outline:2px solid #2D8DB8;outline-offset:1px}
+.erp-edit-button:disabled,.erp-row-action:disabled{opacity:.45;cursor:not-allowed}
+.erp-action-toolbar{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.erp-action-toolbar>button{height:28px!important;min-height:28px!important;padding:0 8px!important;border-radius:4px!important;font-size:11px!important}
+
+.supplier-row-actions{display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;min-height:28px;white-space:nowrap}
