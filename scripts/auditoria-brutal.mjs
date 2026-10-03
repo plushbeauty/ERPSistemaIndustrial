@@ -86,6 +86,31 @@ if(!setup.includes('signInWithPassword')) fail('MASTER: login após cadastro aus
 if(!entry.includes('MasterOnly') && !entry.includes('masterOnly')) fail('MASTER: proteção master-only ausente.')
 if(!entry.includes('is_master') || !entry.includes('nivel_admin')) fail('MASTER: validação de nível/perfil ausente.')
 
+
+const pageAudit = []
+const pageImports = [...entry.matchAll(/import\(['"](.+?)['"]\)/g)].map(m => m[1]).filter(x => x.startsWith('./pages/') || x.startsWith('./features/'))
+const pagePaths = [...new Set(pageImports.map(spec => {
+  const base = spec.replace(/^\.\//, 'src/')
+  return ['.tsx','.ts'].map(ext => base.endsWith(ext) ? base : base + ext)
+}).flat())].filter((p,i,a) => a.indexOf(p) === i && has(p))
+for (const page of pagePaths) {
+  const t = read(page)
+  const buttons = (t.match(/<button\b/gi) || []).length
+  const controls = (t.match(/<(?:input|select|textarea)\b/gi) || []).length
+  const editWords = (t.match(/(?:Editar|edit\()/gi) || []).length
+  const editButtons = (t.match(/erp-edit-button|erp-row-action/g) || []).length
+  const largeControls = (t.match(/\b(?:h-10|h-11|h-12|min-h-10|min-h-11|min-h-12)\b/g) || []).length
+  const fakeMarkers = (t.match(/mock|fake|fict[ií]cio|tempor[aá]rio|TODO|FIXME/gi) || []).length
+  const alias = /^import [A-Za-z0-9_]+ from ['"][.][/]\S+['"]\s*\nexport default [A-Za-z0-9_]+/m.test(t)
+  pageAudit.push({page, buttons, controls, editWords, editButtons, largeControls, fakeMarkers, compact: t.includes('erp-compact'), alias})
+  if (alias) warn('PAGE ALIAS: '+page+' — revisar para não contar como módulo independente.')
+  if (editWords > 0 && editButtons === 0 && !/function\s+edit\b/.test(t)) warn('EDIT SEM PADRÃO: '+page+' — há ação/texto de editar, mas nenhum erp-edit-button/erp-row-action.')
+  if (largeControls > 0 && t.includes('erp-compact')) warn('CONTROLE GRANDE EM TELA COMPACTA: '+page+' — '+largeControls+' ocorrência(s) h-10/h-11/h-12.')
+  if (fakeMarkers > 0) warn('MARCADOR DE AUDITORIA: '+page+' — '+fakeMarkers+' ocorrência(s) mock/fake/TODO/FIXME/temporário; revisar se é código real ou comentário histórico.')
+}
+console.log('PAGES AUDITED:', pageAudit.length)
+for (const x of pageAudit) console.log('[PAGE]', JSON.stringify(x))
+
 console.log('FILES REQUIRED:',requiredFiles.length)
 console.log('ROUTES CHECKED:',requiredRoutes.length)
 console.log('FAILURES:',failures.length)
