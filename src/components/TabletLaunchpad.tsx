@@ -147,7 +147,7 @@ export default function TabletLaunchpad({ onNavigate, isOpen, onClose }: TabletL
               onClick={() => { if (!allowed) return; onClose(); onNavigate(route) }}
               style={{ '--module-accent': accent } as CSSProperties}
             >
-              <span className={label === 'CONFIGURAÇÕES' ? 'tablet-3d-icon tablet-3d-icon-config' : 'tablet-3d-icon'} aria-hidden="true">{permission ? <Icon size={32} strokeWidth={2.4} /> : resolvedIcons[label] ? <img src={resolvedIcons[label]} alt="" className="h-[34px] w-[34px] object-contain" /> : <Icon size={32} strokeWidth={2.4} />}</span>
+              <span className="tablet-3d-icon" aria-hidden="true"><Icon size={28} strokeWidth={2.2} /></span>
               <span className="tablet-module-copy">
                 <small>{number}.</small>
                 <strong>{label}</strong><span className="tablet-module-items">{moduleItems[label] ?? ''}</span>
