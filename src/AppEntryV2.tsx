@@ -416,15 +416,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/engenharia/revisoes-bom" element={<EngenhariaRevisoesBOM />} />
       <Route path="/engenharia/ficha" element={<FichaEngenharia />} />
       <Route path="/engenharia/fichas-processo" element={<FichasProcesso />} />
-      <Route path="/financeiro/importar-extratos" element={<BankStatementImporter />} />
-      <Route path="/financeiro/reconciliacao" element={<BankRecWorkspace />}>
-        <Route index element={<BankReconciliation />} />
-        <Route path="match" element={<BankReconciliation />} />
-        <Route path="statement" element={<BankReconciliationStatement />} />
-        <Route path="transactions" element={<BankTransactionList />} />
-        <Route path="clearance" element={<BankClearanceSummary />} />
-        <Route path="incorrect" element={<IncorrectlyClearedEntries />} />
-      </Route>
+      <Route path="/financeiro/importar-extratos" element={<BankingStatementImporter />} />
+      <Route path="/financeiro/reconciliacao" element={<BankingReconciliation />} />
       <Route path="/financeiro/grafico-desvios" element={<FinanceiroGraficoDesvios />} />
       <Route path="/financeiro/custo-padrao" element={<FinanceiroCustoPadrao />} />
       <Route path="/admin/logs" element={<AdminLogs />} />
