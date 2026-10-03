@@ -12,12 +12,12 @@ const menu = [
 ]
 
 export default function VendasLayout({ children, title, subtitle, onRefresh }: { children: ReactNode; title: string; subtitle?: string; onRefresh?: () => void }) {
-  const [tablet, setTablet] = useState(false)
+  const [isTabletMode, setIsTabletMode] = useState(false)
   const path = window.location.pathname
   const logout = async () => { await supabase.auth.signOut(); window.location.assign('/login') }
 
   return (
-    <div className={`min-h-screen bg-[#F4F7FE] text-[#123B50] ${tablet ? 'vendas-tablet' : ''}`}>
+    <div className={`min-h-screen bg-[#F4F7FE] text-[#123B50] ${isTabletMode ? 'tablet-mode' : ''}`}>
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-56 bg-[#212529] text-slate-200 lg:flex lg:flex-col">
         <div className="border-b border-slate-700 px-3 py-3">
           <div className="text-[10px] font-bold uppercase tracking-widest text-[#48B7C7]">ERP Industrial</div>
@@ -29,11 +29,11 @@ export default function VendasLayout({ children, title, subtitle, onRefresh }: {
         <div className="border-t border-slate-700 p-2 text-[9px] text-slate-400">Vendas • Estoque • PCP • Expedição • Fiscal</div>
       </aside>
 
-      <main className="min-w-0 lg:ml-56">
+      <main className={`min-w-0 ${isTabletMode ? 'ml-0' : 'lg:ml-56'}`}>
         <header className="sticky top-0 z-30 flex min-h-10 items-center justify-between gap-2 border-b border-slate-300 bg-[#212529] px-3 text-white">
           <div className="truncate text-[12px] font-semibold">{title}<span className="ml-2 text-[10px] font-normal text-slate-400">{subtitle ?? ''}</span></div>
           <div className="flex items-center gap-1">
-            <button type="button" onClick={()=>setTablet(v=>!v)} className="flex h-7 items-center gap-1 rounded border border-slate-500 px-2 text-[10px]" title="Alternar modo touch"><Tablet size={13}/>TABLET</button>
+            <button type="button" onClick={()=>setIsTabletMode(v=>!v)} className="flex h-7 items-center gap-1 rounded border border-slate-500 px-2 text-[10px]" title="Alternar modo touch"><Tablet size={13}/>TABLET</button>
             {onRefresh && <button type="button" onClick={onRefresh} className="flex h-7 items-center rounded border border-slate-500 px-2" title="Atualizar"><RefreshCw size={13}/></button>}
             <button type="button" onClick={()=>void logout()} className="flex h-7 items-center gap-1 rounded border border-slate-500 px-2 text-[10px]" title="Sair"><LogOut size={13}/>SAIR</button>
           </div>
@@ -41,8 +41,11 @@ export default function VendasLayout({ children, title, subtitle, onRefresh }: {
         <div className="p-3 lg:p-4">{children}</div>
       </main>
       <style>{`
-        .vendas-tablet input,.vendas-tablet select,.vendas-tablet button{min-height:34px}
-        .vendas-tablet table td,.vendas-tablet table th{padding-top:8px;padding-bottom:8px}
+        .tablet-mode aside{display:none !important}
+        .tablet-mode{font-size:14px}
+        .tablet-mode input,.tablet-mode select,.tablet-mode button{min-height:40px;padding-top:8px;padding-bottom:8px}
+        .tablet-mode table td,.tablet-mode table th{padding-top:8px;padding-bottom:8px}
+        .tablet-mode .tablet-hide-column{display:none !important}
       `}</style>
     </div>
   )
