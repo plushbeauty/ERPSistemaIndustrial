@@ -130,6 +130,9 @@ const QualidadeMetodologia8D = lazyPage(() => import('./pages/QualidadeMetodolog
 const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspecaoProcesso'), 'QualidadeInspecaoProcesso')
 const MoldesFerramentaria = lazyPage(() => import('./pages/MoldesFerramentaria'), 'MoldesFerramentaria')
 const OperacaoIndustrial = lazyPage(() => import('./pages/OperacaoIndustrial'), 'OperacaoIndustrial')
+const BankingReconciliation = lazyPage(() => import('./features/banking/BankReconciliation'), 'BankReconciliation')
+const BankingStatementImporter = lazyPage(() => import('./features/banking/BankStatementImporter'), 'BankStatementImporter')
+const BankingListaPrecosCliente = lazyPage(() => import('./features/banking/ListaPrecosCliente'), 'ListaPrecosCliente')
 
 type ERPProfile = { empresa_id: string | null; is_master: boolean; nivel_admin?: number; perfil?: string; nome?: string }
 type AccessResult = { ok: boolean; master: boolean; reason: string; profile: ERPProfile | null }
@@ -337,14 +340,7 @@ function AppIndustrialAuthenticated() {
     )
   }
 
-  const BankStatementImporter = lazyPage(() => import('./pages/financeiro/BankStatementImporter'), 'BankStatementImporter')
-const BankReconciliation = lazyPage(() => import('./pages/financeiro/BankReconciliation'), 'BankReconciliation')
-const BankRecWorkspace = lazyPage(() => import('./pages/financeiro/BankRecWorkspace'), 'BankRecWorkspace')
-const BankReconciliationStatement = lazyPage(() => import('./pages/financeiro/BankReconciliationStatement'), 'BankReconciliationStatement')
-const BankTransactionList = lazyPage(() => import('./pages/financeiro/BankTransactionList'), 'BankTransactionList')
-const BankClearanceSummary = lazyPage(() => import('./pages/financeiro/BankClearanceSummary'), 'BankClearanceSummary')
-const IncorrectlyClearedEntries = lazyPage(() => import('./pages/financeiro/IncorrectlyClearedEntries'), 'IncorrectlyClearedEntries')
-const protectedRoutes = (
+  const protectedRoutes = (
     <Routes>
       <Route path="/comercial" element={<AppIndustrial />} />
       <Route path="/erp-industrial" element={<AppIndustrial />} />
@@ -357,7 +353,9 @@ const protectedRoutes = (
       <Route path="/vendas/orcamentos" element={<VendasAnaliseCustos />} />
       <Route path="/vendas/pendentes" element={<VendasStatusPedidos />} />
       <Route path="/vendas/reajuste" element={<AjusteGlobal />} />
-      <Route path="/vendas/lista-precos-cliente" element={<ListaPrecosCliente />} />
+      <Route path="/vendas/lista-precos-cliente" element={<BankingListaPrecosCliente />} />
+      <Route path="/vendas/reconciliacao" element={<BankingReconciliation />} />
+      <Route path="/vendas/importador" element={<BankingStatementImporter />} />
       <Route path="/vendas/carteira" element={<VendasCarteira />} />
       <Route path="/vendas/status" element={<VendasStatusPedidos />} />
       <Route path="/vendas/pedido/:id" element={<VendasPedidoStatus />} />
