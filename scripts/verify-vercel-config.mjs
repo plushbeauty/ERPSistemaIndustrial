@@ -18,3 +18,5 @@ if(config.builds) failures.push('configuração legada "builds" não permitida')
 if(config.routes) failures.push('configuração legada "routes" não permitida')
 if(failures.length){for(const failure of failures)console.error('[BLOCKER]',failure);process.exit(2)}
 console.log('VERCEL CONFIG GATE PASS — Vite/dist/SPA/Node24 e comandos determinísticos.')
+
+if(pkg.scripts?.['build:vercel']!=='npm run type-check && npm run lint:check && vite build --emptyOutDir') failures.push('build:vercel deve executar type-check e lint antes do Vite')
