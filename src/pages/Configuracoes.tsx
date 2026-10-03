@@ -217,7 +217,7 @@ export default function Configuracoes() {
                     </td>
                     <td className="px-2">
                       <div className="flex items-center gap-1">
-                        <button type="button" title="Editar perfil" aria-label={`Editar ${usuario.nome_funcionario}`} onClick={() => editUser(usuario)} className="flex h-6 w-6 items-center justify-center rounded-sm border border-gray-200 bg-white"><Edit2 size={11} className="text-blue-600" /></button>
+                        <button type="button" title="Editar perfil" aria-label={`Editar ${usuario.nome_funcionario}`} onClick={() => editUser(usuario)} className="erp-edit-button"><Edit2 size={14} className="text-blue-600" /></button>
                         {usuario.ativo && <button type="button" title="Bloquear usuário" aria-label={`Inativar ${usuario.nome_funcionario}`} onClick={() => void blockUser(usuario)} className="flex h-6 w-6 items-center justify-center rounded-sm border border-gray-200 bg-white"><Ban size={11} className="text-red-600" /></button>}
                       </div>
                     </td>
