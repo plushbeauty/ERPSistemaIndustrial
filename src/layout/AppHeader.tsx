@@ -25,7 +25,7 @@ export default function AppHeader() {
   const navigate = useNavigate()
   const [tabletOpen, setTabletOpen] = useState(false)
 
-  const visibleRoutes = ['/erp-industrial','/master','/usuarios','/pcp','/pcp/tablet-operador','/operacao-industrial','/produtos-vendas','/qualidade','/qualidade/calibracao','/qualidade/documentos','/qualidade/editor-it','/qualidade/procedimentos','/qualidade/assinatura-it','/qualidade/liberacao-lote','/qualidade/genealogia-lote','/qualidade/quarentena','/qualidade/rnc','/fichas-processo','/engenharia/fichas-processo','/manutencao/ordens','/expedicao/roteirizacao','/manual-usuario','/compras-solicitacao','/fiscal','/fiscal/previsao-caixa','/teste-erp','/rh','/estoque','/almoxarifado','/fornecedores','/clientes','/tabelas-preco','/recebimento-materiais','/engenharia','/moldes-injecao','/vendas/novo-pedido'];
+  const visibleRoutes = ['/erp-industrial','/master','/usuarios','/pcp','/pcp/tablet-operador','/operacao-industrial','/produtos-vendas','/qualidade','/qualidade/calibracao','/qualidade/documentos','/qualidade/editor-it','/qualidade/procedimentos','/qualidade/assinatura-it','/qualidade/liberacao-lote','/qualidade/genealogia-lote','/qualidade/quarentena','/qualidade/rnc','/fichas-processo','/engenharia/fichas-processo','/manutencao/ordens','/expedicao/roteirizacao','/manual-usuario','/compras-solicitacao','/fiscal','/fiscal/previsao-caixa','/teste-erp','/rh','/estoque','/almoxarifado','/fornecedores','/clientes','/tabelas-preco','/recebimento-materiais','/engenharia','/moldes-injecao','/vendas/novo-pedido','/financeiro','/financeiro/reconciliacao','/financeiro/importar-extratos','/financeiro/ano-fiscal','/financeiro/fluxo-caixa'];
   const visible = visibleRoutes.some((route) => location.pathname === route || location.pathname.startsWith(route + '/'))
   useEffect(() => {
     if (!visible) return
@@ -56,7 +56,7 @@ export default function AppHeader() {
         <button type="button" onClick={abrirAjudaContextual} aria-label="Abrir ajuda desta tela" className="bg-slate-900 text-white font-bold h-11 px-4 text-sm rounded-lg flex items-center gap-1.5 shadow-md transition-colors hover:bg-slate-800">
           <HelpCircle className="h-4 w-4 text-blue-400" /> AJUDA DESTA TELA
         </button>
-        <button type="button" className="v7-nav-tablet-trigger" onClick={openTablet} aria-label="Abrir Painel Tablet"><LayoutGrid size={16}/><span>Painel Tablet</span></button>
+        <button type="button" className="v7-nav-tablet-trigger" onClick={openTablet} aria-label="Abrir Painel Tablet"><LayoutGrid size={12}/><span>Painel Tablet</span></button>
         <ThemeToggleButton/><span className="sgq-user-chip">Usuário</span>
       </div>
     </header>
