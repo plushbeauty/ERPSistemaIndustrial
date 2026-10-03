@@ -50,6 +50,7 @@ const AuditoriaDocumental = lazyPage(() => import('./features/fiscal/AuditoriaDo
 const GeradorGruposContabeis = lazyPage(() => import('./features/fiscal/GeradorGruposContabeis'), 'default')
 const EstornoLancamentos = lazyPage(() => import('./features/fiscal/EstornoLancamentos'), 'default')
 const ClassificacaoFiscal = lazyPage(() => import('./features/fiscal/ClassificacaoFiscal'), 'default')
+const AnoFiscal = lazyPage(() => import('./features/fiscal/AnoFiscal'), 'default')
 const AssistenteRetificacao = lazyPage(() => import('./features/controladoria/AssistenteRetificacao'), 'default')
 const Master = lazyPage(() => import('./pages/Master'), 'Master')
 const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
@@ -139,6 +140,7 @@ const OperacaoIndustrial = lazyPage(() => import('./pages/OperacaoIndustrial'), 
 const BankingReconciliation = lazyPage(() => import('./features/banking/BankReconciliation'), 'BankReconciliation')
 const BankingStatementImporter = lazyPage(() => import('./features/banking/BankStatementImporter'), 'BankStatementImporter')
 const BankingListaPrecosCliente = lazyPage(() => import('./features/banking/ListaPrecosCliente'), 'ListaPrecosCliente')
+const FinanceiroFluxoCaixa = lazyPage(() => import('./pages/FinanceiroFluxoCaixa'), 'FinanceiroFluxoCaixa')
 const RetificacaoPedido = lazyPage(() => import('./features/controladoria/RetificacaoPedido'), 'RetificacaoPedido')
 const CadastroRegrasComissao = lazyPage(() => import('./features/comissoes/CadastroRegras'), 'CadastroRegras')
 const CalculoComissao = lazyPage(() => import('./features/comissoes/CalculoComissao'), 'CalculoComissao')
@@ -374,6 +376,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/financeiro/lista-precos-cliente" element={<BankingListaPrecosCliente />} />
       <Route path="/financeiro/reconciliacao" element={<BankingReconciliation />} />
       <Route path="/financeiro/importar-extratos" element={<BankingStatementImporter />} />
+      <Route path="/financeiro/ano-fiscal" element={<AnoFiscal />} />
+      <Route path="/financeiro/fluxo-caixa" element={<FinanceiroFluxoCaixa />} />
       <Route path="/vendas/carteira" element={<VendasCarteira />} />
       <Route path="/vendas/status" element={<VendasStatusPedidos />} />
       <Route path="/controladoria/retificacao-pedido/:pedidoId" element={<RetificacaoPedido />} />
