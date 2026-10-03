@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 
-import { Activity, Award, Boxes, TrendingUp, CalendarDays, CheckCircle, ClipboardList, Cpu, DollarSign, Factory, Landmark, Layers, Receipt, Settings, ShoppingCart, Tablet, Truck, Upload, Users, X } from 'lucide-react'
+import { Activity, Award, Boxes, TrendingUp, CalendarDays, CheckCircle, ClipboardList, Cpu, DollarSign, Factory, FileText, Landmark, Layers, Receipt, Settings, ShoppingCart, Tablet, Truck, Upload, Users, X } from 'lucide-react'
 import { usePonto } from '../context/PontoContext'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
@@ -19,6 +19,7 @@ type Module = {
   accent: string
   permission?: string
   restrictedRoles?: string[]
+  exactRoles?: string[]
 }
 
 const modules: Module[] = [
@@ -33,6 +34,7 @@ const modules: Module[] = [
   { number:'4', label:'ESTOQUE', route:'/estoque', icon:Boxes, accent:'#087A58' },
   { number:'5', label:'EXPEDIÇÃO', route:'/expedicao/roteirizacao', icon:Truck, accent:'#A64B00' },
   { number:'6', label:'FISCAL', route:'/fiscal', icon:Receipt, accent:'#6B3FA0' },
+  { number:'11', label:'EMISSÃO NF-E', route:'/fiscal/emissao', icon:FileText, accent:'#059669', exactRoles:['ADMINISTRADOR','PCP'] },
   { number:'7', label:'RH', route:'/rh', icon:Users, accent:'#9A3B67' },
   { number:'8', label:'ENGENHARIA', route:'/engenharia', icon:Cpu, accent:'#17445A' },
   { number:'9', label:'MATERIAIS', route:'/pcp/materiais', icon:Layers, accent:'#B85C00' },
@@ -103,8 +105,8 @@ export default function TabletLaunchpad({ onNavigate, isOpen, onClose }: TabletL
         </header>
 
         <div className="tablet-module-grid">
-          {modules.map(({ number, label, route, icon: Icon, accent, permission, restrictedRoles }) => {
-            const allowed = (!permission || financeAllowed) && (!restrictedRoles || fiscalAllowed) && !(label === 'COMISSÕES & METAS' && commissionBlocked)
+          {modules.map(({ number, label, route, icon: Icon, accent, permission, restrictedRoles, exactRoles }) => {
+            const allowed = (!permission || financeAllowed) && (!restrictedRoles || fiscalAllowed) && (!exactRoles || exactRoles.includes(perfilRole ?? '')) && !(label === 'COMISSÕES & METAS' && commissionBlocked)
             return (
             <button
               key={`${number}-${route}`}
