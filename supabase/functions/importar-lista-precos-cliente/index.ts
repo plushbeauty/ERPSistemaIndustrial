@@ -28,7 +28,6 @@ Deno.serve(async(req)=>{
   ]);if(ce)throw ce;if(pe)throw pe
   const cm=new Map((clientes??[]).map(x=>[digits(x.documento),x.id])),pm=new Map((produtos??[]).map(x=>[String(x.codigo),x.id]))
   const insertRows=payload.map(x=>({empresa_id:empresa,cliente_id:cm.get(x.cnpj_cliente),produto_id:pm.get(x.sku_produto),...x}));const missing=insertRows.findIndex(x=>!x.cliente_id||!x.produto_id);if(missing>=0)return json({error:"Cliente/Código de produto não localizado na empresa na linha "+(missing+2)+"."},422)
-  const {error}=await supabase.from("erp_tabela_precos_cliente").upsert(insertRows,{onConflict:"empresa_id,cliente_id,produto_id"});if(error)throw error
-  return json({inserted:insertRows.length})
+  return json({validated:insertRows})
  }catch(error){return json({error:error instanceof Error?error.message:"Falha ao importar lista."},500)}
 })
