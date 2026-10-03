@@ -120,7 +120,7 @@ export default function DashboardComercial() {
     } else if (/^https?:\/\//i.test(storedLogo)) {
       setLogoSrc(storedLogo)
     } else {
-      const cleanPath = storedLogo.replace(/^\\/+/, '')
+      const cleanPath = storedLogo.replace(/^\/+/, '')
       const signed = await supabase.storage.from('erp-documentos').createSignedUrl(cleanPath, 3600)
       setLogoSrc(signed.data?.signedUrl ?? null)
     }
