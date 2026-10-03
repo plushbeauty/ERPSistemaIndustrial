@@ -134,6 +134,14 @@ const RetificacaoPedido = lazyPage(() => import('./features/controladoria/Retifi
 const CadastroRegrasComissao = lazyPage(() => import('./features/comissoes/CadastroRegras'), 'CadastroRegras')
 const CalculoComissao = lazyPage(() => import('./features/comissoes/CalculoComissao'), 'CalculoComissao')
 const PerfilVendedorComissao = lazyPage(() => import('./features/comissoes/PerfilVendedor'), 'PerfilVendedor')
+const BalancoEstoque = lazyPage(() => import('./features/inventario/BalancoEstoque'), 'BalancoEstoque')
+const RegrasDepreciacao = lazyPage(() => import('./features/inventario/RegrasDepreciacao'), 'RegrasDepreciacao')
+const AuditoriaSaldos = lazyPage(() => import('./features/inventario/AuditoriaSaldos'), 'AuditoriaSaldos')
+const EngenhariaBOM = lazyPage(() => import('./features/pcp/EngenhariaBOM'), 'EngenhariaBOM')
+const RoteiroOperacoes = lazyPage(() => import('./features/pcp/RoteiroOperacoes'), 'RoteiroOperacoes')
+const PostosTrabalho = lazyPage(() => import('./features/pcp/PostosTrabalho'), 'PostosTrabalho')
+const PainelOrdensProducao = lazyPage(() => import('./features/pcp/PainelOrdensProducao'), 'PainelOrdensProducao')
+const ApuracaoTurno = lazyPage(() => import('./features/pcp/ApuracaoTurno'), 'ApuracaoTurno')
 
 type ERPProfile = { empresa_id: string | null; is_master: boolean; nivel_admin?: number; perfil?: string; nome?: string }
 type AccessResult = { ok: boolean; master: boolean; reason: string; profile: ERPProfile | null }
@@ -354,9 +362,9 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/orcamentos" element={<VendasAnaliseCustos />} />
       <Route path="/vendas/pendentes" element={<VendasStatusPedidos />} />
       <Route path="/vendas/reajuste" element={<AjusteGlobal />} />
-      <Route path="/vendas/lista-precos-cliente" element={<BankingListaPrecosCliente />} />
-      <Route path="/vendas/reconciliacao" element={<BankingReconciliation />} />
-      <Route path="/vendas/importador" element={<BankingStatementImporter />} />
+      <Route path="/financeiro/lista-precos-cliente" element={<BankingListaPrecosCliente />} />
+      <Route path="/financeiro/reconciliacao" element={<BankingReconciliation />} />
+      <Route path="/financeiro/importar-extratos" element={<BankingStatementImporter />} />
       <Route path="/vendas/carteira" element={<VendasCarteira />} />
       <Route path="/vendas/status" element={<VendasStatusPedidos />} />
       <Route path="/controladoria/retificacao-pedido/:pedidoId" element={<RetificacaoPedido />} />
@@ -374,6 +382,11 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/relatorios" element={<VendasRelatorios />} />
       <Route path="/vendas/configuracoes" element={<Navigate to="/configuracoes-adm" replace />} />
       <Route path="/pcp" element={<PCPIndustrial />} />
+      <Route path="/pcp/engenharia-bom" element={<EngenhariaBOM />} />
+      <Route path="/pcp/roteiro-operacoes" element={<RoteiroOperacoes />} />
+      <Route path="/pcp/postos-trabalho" element={<PostosTrabalho />} />
+      <Route path="/pcp/painel-ordens" element={<PainelOrdensProducao />} />
+      <Route path="/pcp/apuracao-turno" element={<ApuracaoTurno />} />
       <Route path="/pcp/ordens" element={<PCPIndustrial />} />
       <Route path="/pcp/demanda" element={<PCPIndustrial />} />
       <Route path="/pcp/materiais" element={<PCPIndustrial />} />
@@ -408,6 +421,10 @@ function AppIndustrialAuthenticated() {
       <Route path="/estoque/etiquetas" element={<EstoqueEtiquetas />} />
       <Route path="/estoque/recebimento-lotes" element={<EstoqueRecebimentoLotes />} />
       <Route path="/estoque/curva-abc" element={<EstoqueCurvaABC />} />
+      <Route path="/inventario" element={<Navigate to="/inventario/balanco" replace />} />
+      <Route path="/inventario/balanco" element={<BalancoEstoque />} />
+      <Route path="/inventario/depreciacao" element={<RegrasDepreciacao />} />
+      <Route path="/inventario/auditoria" element={<AuditoriaSaldos />} />
       <Route path="/produtos" element={<ProdutosVendasIndustrial />} />
       <Route path="/produtos-vendas" element={<ProdutosVendasIndustrial />} />
       <Route path="/cadastro-produtos" element={<ModuloCadastroProdutos />} />
