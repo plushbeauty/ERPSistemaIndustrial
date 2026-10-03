@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AlertTriangle, CheckCircle, Download, Home, Landmark, List, ScrollText, Shuffle } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useIsMobile } from '../../hooks/useIsMobile'
@@ -88,6 +89,7 @@ function makeXlsx(rows: string[][]) {
 }
 
 export default function BankReconciliation() {
+  const navigate = useNavigate()
   const mobile = useIsMobile()
   const [accounts, setAccounts] = useState<Account[]>([])
   const [accountId, setAccountId] = useState('')
@@ -120,7 +122,7 @@ export default function BankReconciliation() {
 
   useEffect(() => { void load() }, [accountId, date, status])
 
-  useEffect(() => { void (async () => { if (!accountId) { setSaldoContabil(0); return }; const r = await supabase.from('erp_fiscal_razao_lancamentos').select('debito,credito').eq('conta_bancaria_id', accountId); if (!r.error) setSaldoContabil((r.data ?? []).reduce((sum, row) => sum + Number(row.credito ?? 0) - Number(row.debito ?? 0), 0)) })() }, [accountId])
+  useEffect(() => { void (async () => { if (!accountId) { setSaldoContabil(0); return }; const r = await supabase.from('erp_fiscal_razao_lancamentos').select('debito,credito').eq('conta_bancaria_id', accountId); if (!r.error) { const opening = Number(accounts.find((account) => account.id === accountId)?.saldo_inicial ?? 0); setSaldoContabil(opening + (r.data ?? []).reduce((sum, row) => sum + Number(row.credito ?? 0) - Number(row.debito ?? 0), 0)) } })() }, [accountId])
 
   const options: LinkOption[] = useMemo(() => accounts.map((account) => ({
     value: account.id,
@@ -172,7 +174,7 @@ export default function BankReconciliation() {
   if (mobile) return <div className="erp-global-density flex min-h-screen items-center justify-center bg-slate-50 p-4"><div className="rounded-md border border-gray-200 bg-white px-5 py-4 text-center"><Landmark size={24} className="mx-auto mb-2 text-slate-500" /><div className="text-[13px] font-semibold text-slate-800">Esta tela não é suportada em dispositivos móveis. Use o Desktop.</div></div></div>
 
   return <div className="erp-global-density min-h-screen bg-slate-50 text-gray-800">
-    <div className="flex h-7 items-center gap-1 border-b border-gray-200 bg-white px-2 text-[10px] text-gray-500"><Home size={12} /><span>Finanças</span><span>›</span><span className="font-medium text-gray-700">Conciliação Bancária</span></div>
+    <div className="flex h-7 items-center gap-2 border-b border-gray-200 bg-white px-2 text-[10px] text-gray-500"><button type="button" onClick={() => navigate(-1)} className="flex h-7 items-center gap-1 rounded-md border border-gray-200 bg-white px-2 text-[10px] font-bold text-gray-600">← Voltar</button><Home size={12} /><span>Finanças</span><span>›</span><span className="font-medium text-gray-700">Conciliação Bancária</span></div>
     <div className="flex h-7 items-center gap-2 border-b border-gray-200 bg-white px-2">
       <label className="text-[10px] text-gray-500">Empresa</label><select className="h-7 w-40 rounded-md border border-gray-200 text-[11px]" disabled><option>Empresa atual</option></select>
       <label className="ml-1 text-[10px] text-gray-500">Data Limite</label><input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="h-7 w-[110px] rounded-md border border-gray-200 px-1 text-[11px]" />
