@@ -343,6 +343,9 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas" element={<VendasCentral />} />
       <Route path="/vendas/pdv" element={<VendasPDV />} />
       <Route path="/vendas/novo-pedido" element={<PedidoVendaCompleto />} />
+      <Route path="/vendas/orcamentos" element={<VendasAnaliseCustos />} />
+      <Route path="/vendas/pendentes" element={<VendasStatusPedidos />} />
+      <Route path="/vendas/reajuste" element={<TabelaPrecos />} />
       <Route path="/vendas/carteira" element={<VendasCarteira />} />
       <Route path="/vendas/status" element={<VendasStatusPedidos />} />
       <Route path="/vendas/pedido/:id" element={<VendasPedidoStatus />} />
