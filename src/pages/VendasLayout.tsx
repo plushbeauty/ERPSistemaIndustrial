@@ -34,7 +34,7 @@ export default function VendasLayout({ children, title, subtitle, onRefresh }: {
         <header className="sticky top-0 z-30 flex min-h-10 items-center justify-between gap-2 border-b border-slate-300 bg-white px-3 text-gray-800">
           <div className="truncate text-[12px] font-semibold">{title}<span className="ml-2 text-[10px] font-normal text-gray-500">{subtitle ?? ''}</span></div>
           <div className="flex items-center gap-1">
-            <button type="button" onClick={()=>setIsTabletMode(v=>!v)} className="flex h-7 items-center gap-1 rounded border border-gray-300 px-2 text-[10px]" title="Alternar modo touch"><Tablet size={13}/>TABLET</button>
+            <button type="button" onClick={()=>{setIsTabletMode(v=>!v);if(window.location.pathname!=='/erp-industrial')window.location.assign('/erp-industrial')}} className="flex h-7 items-center gap-1 rounded border border-gray-200 px-2 text-[10px]" title="Alternar modo touch"><Tablet size={13}/>TABLET</button>
             {onRefresh && <button type="button" onClick={onRefresh} className="flex h-7 items-center rounded border border-slate-500 px-2" title="Atualizar"><RefreshCw size={13}/></button>}
             <button type="button" onClick={()=>void logout()} className="flex h-7 items-center gap-1 rounded border border-slate-500 px-2 text-[10px]" title="Sair"><LogOut size={13}/>SAIR</button>
           </div>
