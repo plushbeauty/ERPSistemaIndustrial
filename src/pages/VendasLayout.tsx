@@ -18,7 +18,7 @@ export default function VendasLayout({ children, title, subtitle, onRefresh }: {
   const logout = async () => { await supabase.auth.signOut(); window.location.assign('/login') }
 
   return (
-    <div className={`min-h-screen bg-slate-50 text-gray-800 ${isTabletMode ? 'tablet-mode' : ''}`}>
+    <div className={`erp-global-density min-h-screen bg-slate-50 text-gray-800 ${isTabletMode ? 'tablet-mode' : ''}`}>
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-56 border-r border-gray-200 bg-slate-100 text-gray-700 lg:flex lg:flex-col">
         <div className="border-b border-gray-200 px-3 py-3">
           <div className="text-[10px] font-bold uppercase tracking-widest text-blue-700">ERP Industrial</div>
