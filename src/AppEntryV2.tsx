@@ -56,7 +56,7 @@ const ProdutosVendasIndustrial = lazyPage(() => import('./pages/ProdutosVendasIn
 const ModuloCadastroProdutos = lazyPage(() => import('./pages/cadastro-produtos/ModuloCadastroProdutos'), 'ModuloCadastroProdutos')
 const TabletDashboard = lazyPage(() => import('./pages/TabletDashboard'), 'TabletDashboard')
 const PedidoVendaCompleto = lazyPage(() => import('./pages/PedidoVendaCompleto'), 'PedidoVendaCompleto')
-const VendasCentral = lazyPage(() => import('./pages/VendasCentral'), 'VendasCentral')
+const DashboardComercial = lazyPage(() => import('./pages/DashboardComercial'), 'DashboardComercial')
 const VendasCatalogoDigital = lazyPage(() => import('./pages/VendasCatalogoDigital'), 'VendasCatalogoDigital')
 const VendasAnaliseCustos = lazyPage(() => import('./pages/VendasAnaliseCustos'), 'VendasAnaliseCustos')
 const VendasDashboardGraficos = lazyPage(() => import('./pages/VendasDashboardGraficos'), 'VendasDashboardGraficos')
@@ -340,7 +340,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/erp-industrial" element={<AppIndustrial />} />
       <Route path="/tablet/dashboard" element={<TabletDashboard />} />
       <Route path="/tablet/home" element={<TabletDashboard />} />
-      <Route path="/vendas" element={<VendasCentral />} />
+      <Route path="/vendas" element={<DashboardComercial />} />
       <Route path="/vendas/pdv" element={<VendasPDV />} />
       <Route path="/vendas/novo-pedido" element={<PedidoVendaCompleto />} />
       <Route path="/vendas/orcamentos" element={<VendasAnaliseCustos />} />
