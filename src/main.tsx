@@ -29,6 +29,7 @@ import './styles/erp-reference-ux-2026.css'
 import './styles/industrial-command-center-2026.css'
 import './styles/design-system-2026.css'
 import './styles/form-system-2026.css'
+import './styles/erp-compact.css'
 
 const AppBootstrap = lazyPage(() => import('./AppBootstrap'), 'AppBootstrap')
 const ConfiguracoesADMPage = lazyPage(() => import('./pages/configuracoes/ConfiguracoesADM'), 'ConfiguracoesADMPage')
