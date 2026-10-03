@@ -1,4 +1,5 @@
-import { ReactNode, useState } from 'react'
+import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { BarChart3, ClipboardList, FilePlus2, ListChecks, LogOut, Mail, RefreshCw, Settings, Tablet } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
