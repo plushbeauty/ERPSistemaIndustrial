@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { BarChart3, ClipboardList, FilePlus2, ListChecks, LogOut, RefreshCw, Settings, Tablet } from 'lucide-react'
+import { BarChart3, ClipboardList, FilePlus2, ListChecks, LogOut, RefreshCw, Settings, Tablet, Landmark, DownloadCloud, FileSpreadsheet } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 const menu = [
@@ -9,6 +9,9 @@ const menu = [
   { label: 'Análise de Orçamentos', href: '/vendas/orcamentos', icon: ClipboardList },
   { label: 'Pedidos Pendentes', href: '/vendas/pendentes', icon: ListChecks },
   { label: 'Ajuste Global', href: '/vendas/reajuste', icon: Settings },
+  { label: 'Conciliação Bancária', href: '/vendas/reconciliacao', icon: Landmark },
+  { label: 'Importador de Extratos', href: '/vendas/importador', icon: DownloadCloud },
+  { label: 'Lista de Preços Cliente', href: '/vendas/lista-precos-cliente', icon: FileSpreadsheet },
 ]
 
 export default function VendasLayout({ children, title, subtitle, onRefresh }: { children: ReactNode; title: string; subtitle?: string; onRefresh?: () => void }) {
