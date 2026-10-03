@@ -92,6 +92,8 @@ const ConfiguracaoLotePCP = lazyPage(() => import('./pages/ConfiguracaoLotePCP')
 const FornecedoresIndustrial = lazyPage(() => import('./pages/FornecedoresIndustrial'), 'FornecedoresIndustrial')
 const ClientesIndustrial = lazyPage(() => import('./pages/ClientesIndustrial'), 'ClientesIndustrial')
 const TabelaPrecos = lazyPage(() => import('./pages/TabelaPrecos'), 'TabelaPrecos')
+const AjusteGlobal = lazyPage(() => import('./pages/AjusteGlobal'), 'default')
+const ListaPrecosCliente = lazyPage(() => import('./pages/ListaPrecosCliente'), 'default')
 const CatalogoDigital = lazyPage(() => import('./pages/CatalogoDigital'), 'CatalogoDigital')
 const FichasProcesso = lazyPage(() => import('./pages/FichasProcesso'), 'FichasProcesso')
 const AssistenteAjudaERP = lazyPage(() => import('./pages/AssistenteAjudaERP'), 'AssistenteAjudaERP')
@@ -347,7 +349,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/configuracoes" element={<Configuracoes />} />
       <Route path="/vendas/orcamentos" element={<VendasAnaliseCustos />} />
       <Route path="/vendas/pendentes" element={<VendasStatusPedidos />} />
-      <Route path="/vendas/reajuste" element={<TabelaPrecos />} />
+      <Route path="/vendas/reajuste" element={<AjusteGlobal />} />
+      <Route path="/vendas/lista-precos-cliente" element={<ListaPrecosCliente />} />
       <Route path="/vendas/carteira" element={<VendasCarteira />} />
       <Route path="/vendas/status" element={<VendasStatusPedidos />} />
       <Route path="/vendas/pedido/:id" element={<VendasPedidoStatus />} />
@@ -421,8 +424,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/solicitacao-compra" element={<SolicitacaoCompra />} />
       <Route path="/fornecedores" element={<FornecedoresIndustrial />} />
       <Route path="/clientes" element={<ClientesIndustrial />} />
-      <Route path="/tabela-precos" element={<TabelaPrecos />} />
-      <Route path="/tabelas-preco" element={<TabelaPrecos />} />
+      <Route path="/tabela-precos" element={<AjusteGlobal />} />
+      <Route path="/tabelas-preco" element={<AjusteGlobal />} />
       <Route path="/catalogo" element={<CatalogoDigital />} />
       <Route path="/fiscal" element={<Fiscal />} />
       <Route path="/fiscal/emissao" element={<NFeEmissao />} />
