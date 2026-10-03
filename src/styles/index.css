@@ -97,3 +97,17 @@ table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!i
   .page-break { break-before:page; page-break-before:always; }
   table tr { height:54px !important; }
 }
+
+
+/* ERP Industrial — padrão global compacto Light Mode */
+.erp-global-density{background:#f8fafc;color:#374151;font-size:11px}
+.erp-global-density input,.erp-global-density select,.erp-global-density button,.erp-global-density textarea{box-sizing:border-box}
+.erp-global-density input,.erp-global-density select{height:24px;min-height:24px;padding:.125rem .375rem;font-size:11px;line-height:1.15;border-radius:.125rem}
+.erp-global-density button{min-height:24px;height:24px;padding:.125rem .375rem;font-size:11px;line-height:1.15;border-radius:.125rem}
+.erp-global-density label{font-size:10px;font-weight:700;color:#6b7280;margin-bottom:.125rem;line-height:1.1}
+.erp-global-density table{font-size:10px}
+.erp-global-density thead th{height:28px;padding:4px 8px;background:#334155;color:#fff;font-size:11px;font-weight:400}
+.erp-global-density tbody td{height:28px;padding:4px 8px;border-bottom:1px solid #e5e7eb}
+.erp-global-density tbody tr:nth-child(even){background:#f8fafc}
+.erp-global-density .erp-card,.erp-global-density section{border-radius:.125rem}
+.erp-global-density .tablet-mode input,.erp-global-density .tablet-mode select,.erp-global-density .tablet-mode button{min-height:40px;height:40px;padding-top:8px;padding-bottom:8px;font-size:14px}
