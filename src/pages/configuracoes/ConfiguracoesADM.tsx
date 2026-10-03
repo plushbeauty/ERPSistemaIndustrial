@@ -33,16 +33,16 @@ const groups: Group[] = [
 const allItems = groups.flatMap(group => group.items)
 
 const inputStyle: CSSProperties = {
-  boxSizing: 'border-box', width: '100%', height: 42, borderRadius: 8,
-  border: '1px solid #CBD5E1', background: '#FFFFFF', padding: '0 14px',
-  color: '#1E293B', fontSize: 14, fontWeight: 500, outline: 'none',
+  boxSizing: 'border-box', width: '100%', height: 24, borderRadius: 2,
+  border: '1px solid #CBD5E1', background: '#FFFFFF', padding: '0 8px',
+  color: '#1E293B', fontSize: 11, fontWeight: 500, outline: 'none',
 }
 
 function Field({ label, value, onChange, placeholder, required = false }: {
   label: string; value: string; onChange: (value: string) => void; placeholder?: string; required?: boolean
 }) {
   return <label style={{ display: 'block', width: '100%' }}>
-    <span style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 800, color: '#475569' }}>
+    <span style={{ display: 'block', marginBottom: 2, fontSize: 10, fontWeight: 800, color: '#475569' }}>
       {label}{required && <span style={{ marginLeft: 4, color: '#D65B61' }}>*</span>}
     </span>
     <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={inputStyle} />
@@ -71,8 +71,8 @@ const grid = (min = 220): CSSProperties => ({
   display: 'grid', gridTemplateColumns: `repeat(auto-fit,minmax(${min}px,1fr))`, gap: 16,
 })
 const buttonStyle: CSSProperties = {
-  border: 0, borderRadius: 8, height: 40, padding: '0 16px', display: 'inline-flex',
-  alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, fontWeight: 800,
+  border: 0, borderRadius: 2, height: 24, padding: '0 8px', display: 'inline-flex',
+  alignItems: 'center', gap: 4, cursor: 'pointer', fontSize: 11, fontWeight: 800,
 }
 
 function Overview({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
@@ -204,18 +204,18 @@ export default function ConfiguracoesADM() {
   const toggleGroup = (label: string) => setOpenGroups(s => ({ ...s, [label]: !s[label] }))
 
   const sidebar: CSSProperties = {
-    width: 310, flexShrink: 0, minHeight: 'calc(100vh - 64px)', borderRight: '1px solid #E2E8F0',
+    width: 250, flexShrink: 0, minHeight: 'calc(100vh - 48px)', borderRight: '1px solid #E2E8F0',
     background: '#FFFFFF', display: 'flex', flexDirection: 'column',
   }
   const navLink = (active: boolean): CSSProperties => ({
-    display: 'flex', alignItems: 'center', gap: 12, borderRadius: 8, padding: '10px 12px',
+    display: 'flex', alignItems: 'center', gap: 12, borderRadius: 8, padding: '4px 8px',
     textDecoration: 'none', color: active ? '#123B50' : '#475569',
     background: active ? '#EAF7FA' : 'transparent', border: active ? '1px solid #C8E1E8' : '1px solid transparent',
   })
 
   return <div style={{ minHeight: '100vh', background: '#F4FBFD', color: '#1E293B', fontFamily: 'system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif' }}>
     <header style={{ position: 'sticky', top: 0, zIndex: 40, borderBottom: '1px solid #E2E8F0', background: 'rgba(255,255,255,.96)', backdropFilter: 'blur(4px)' }}>
-      <div style={{ height: 64, display: 'flex', alignItems: 'center', gap: 12, padding: '0 24px' }}>
+      <div style={{ height: 48, display: 'flex', alignItems: 'center', gap: 12, padding: '0 24px' }}>
         <button type="button" onClick={() => setMobileOpen(v => !v)} style={{ ...buttonStyle, width: 40, padding: 0, justifyContent: 'center', border: '1px solid #E2E8F0', background: '#FFFFFF', color: '#17445A' }} aria-label="Abrir menu"><Menu size={19} /></button>
         <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.18em', color: '#2D8DB8' }}>SYNQRA ERP & SGQ INDUSTRIAL</div><div style={{ fontSize: 14, fontWeight: 900, color: '#123B50', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Administração do sistema</div></div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: 'min(380px,42vw)', border: '1px solid #E2E8F0', borderRadius: 8, background: '#F8FAFC', padding: '0 12px' }}><Search size={16} color="#94A3B8" /><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Pesquisar configuração..." style={{ height: 36, flex: 1, minWidth: 0, border: 0, outline: 0, background: 'transparent', fontSize: 12, fontWeight: 600 }} /></div>
@@ -227,7 +227,7 @@ export default function ConfiguracoesADM() {
     {mobileOpen && <button type="button" aria-label="Fechar menu" onClick={() => setMobileOpen(false)} style={{ position: 'fixed', inset: '64px 0 0', zIndex: 45, border: 0, background: 'rgba(18,59,80,.42)' }} />}
 
     <div style={{ maxWidth: 1680, margin: '0 auto', display: 'flex', alignItems: 'stretch' }}>
-      <aside style={{ ...sidebar, position: 'fixed', top: 64, bottom: 0, left: 0, zIndex: 50, overflowY: 'auto', transform: mobileOpen ? 'translateX(0)' : 'translateX(-105%)', transition: 'transform .2s ease' }}>
+      <aside style={{ ...sidebar, position: 'fixed', top: 48, bottom: 0, left: 0, zIndex: 50, overflowY: 'auto', transform: mobileOpen ? 'translateX(0)' : 'translateX(-105%)', transition: 'transform .2s ease' }}>
         <div style={{ borderBottom: '1px solid #E2E8F0', padding: 16 }}><div style={{ display: 'flex', alignItems: 'center', gap: 12, borderRadius: 12, background: '#123B50', padding: 16, color: '#FFFFFF' }}><div style={{ width: 40, height: 40, display: 'grid', placeItems: 'center', borderRadius: 8, background: 'rgba(255,255,255,.1)' }}><SlidersHorizontal size={19} /></div><div><div style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.1em', color: '#8DE0EA' }}>CONFIGURAÇÃO</div><div style={{ fontSize: 14, fontWeight: 900 }}>Painel Administrativo</div></div></div></div>
         <nav aria-label="Menu administrativo" style={{ flex: 1, padding: 12 }}>
           {filteredGroups.map(group => <div key={group.label} style={{ marginBottom: 16 }}>
@@ -242,7 +242,7 @@ export default function ConfiguracoesADM() {
         <div style={{ borderTop: '1px solid #E2E8F0', padding: 16 }}><div style={{ border: '1px solid #FDE68A', borderRadius: 8, background: '#FEF3C7', padding: 12 }}><div style={{ fontSize: 10, fontWeight: 900, color: '#B45309' }}>MODO DEMONSTRAÇÃO</div><div style={{ marginTop: 4, fontSize: 11, fontWeight: 700, lineHeight: 1.4, color: '#78350F' }}>Sem Supabase, Auth, API, RPC ou gravação.</div></div></div>
       </aside>
 
-      <main style={{ flex: 1, minWidth: 0, padding: 24, marginLeft: 310 }}>
+      <main style={{ flex: 1, minWidth: 0, padding: 12, marginLeft: 250 }}>
         <div style={{ marginBottom: 20, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div><div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8' }}>ERP Industrial / Administração / <span style={{ color: '#475569' }}>{current.label}</span></div><h1 style={{ margin: '4px 0 0', fontSize: 24, fontWeight: 900, color: '#123B50' }}>{current.label}</h1><p style={{ margin: '4px 0 0', fontSize: 12, fontWeight: 600, color: '#64748B' }}>{current.description}</p></div>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 999, border: '1px solid #FDE68A', background: '#FEF3C7', padding: '6px 12px', fontSize: 10, fontWeight: 900, color: '#92400E' }}><Activity size={13} /> Visual isolado</div>
