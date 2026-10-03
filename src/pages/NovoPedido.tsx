@@ -56,7 +56,7 @@ export default function NovoPedido(){
  const produtosFiltro=produtos.filter(p=>{const q=busca.toLowerCase();return !q||p.codigo.toLowerCase().includes(q)||p.nome.toLowerCase().includes(q)||(p.referencia_interna??'').toLowerCase().includes(q)||(p.codigo_barras??'').toLowerCase().includes(q)}).slice(0,40)
 
  return <VendasLayout title="Novo Pedido de Venda" subtitle="Entrada comercial → estoque → PCP" onRefresh={()=>void load()}>
-  <div id="frmNovoPedido" className="w-full space-y-2 bg-slate-50 text-[11px]">
+  <div id="frmNovoPedido" className="erp-compact w-full space-y-2 bg-slate-50 text-[11px]">
    {(error||message)&&<div className={`border px-2 py-1 text-[10px] ${error?'border-red-200 bg-red-50 text-red-800':'border-green-200 bg-green-50 text-green-800'}`}>{error||message}</div>}
    <section className="rounded-md border border-gray-200 bg-white p-2">
     <div className="mb-2 text-[11px] font-bold text-gray-700">IDENTIFICAÇÃO DO PEDIDO</div>
