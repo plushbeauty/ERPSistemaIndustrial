@@ -46,7 +46,7 @@ type Empresa = {
 }
 
 type PrintTarget = 'perfil' | 'evolucao' | 'metas' | null
-type MonthRow = { mes: string; faturamento: number; meta: number }
+type MonthRow = { mes: string; faturamento: number; acumulado: number; meta: number }
 type ProfileRow = { perfil: string; valor: number; percentual: number }
 
 const brl = (value: number) =>
@@ -152,24 +152,22 @@ export default function DashboardComercial() {
 
   const monthlyData = useMemo<MonthRow[]>(() => {
     const metaMap = new Map(metas.map((meta) => [Number(meta.competencia.slice(5, 7)), Number(meta.meta_faturamento ?? 0)]))
-    const values = monthNames.map((mes, index) => ({ mes, faturamento: 0, meta: metaMap.get(index + 1) ?? 0 }))
+    const values = monthNames.map((mes, index) => ({ mes, faturamento: 0, acumulado: 0, meta: metaMap.get(index + 1) ?? 0 }))
     for (const pedido of pedidos) {
       if (!pedido.data_entrada) continue
       const date = new Date(pedido.data_entrada)
       if (date.getFullYear() !== currentYear) continue
       values[date.getMonth()].faturamento += Number(pedido.total ?? 0)
     }
-    return values
+    let acumulado = 0
+    return values.map((row) => { acumulado += row.faturamento; return { ...row, acumulado } })
   }, [pedidos, metas, currentYear])
 
   const totals = useMemo(() => ({
     faturamento: monthlyData.reduce((sum, row) => sum + row.faturamento, 0),
     meta: monthlyData.reduce((sum, row) => sum + row.meta, 0),
     pedidos: pedidos.length,
-    pendentes: pedidos.filter((pedido) => !['faturado', 'cancelado'].includes(pedido.status.toLowerCase())).length,
   }), [monthlyData, pedidos])
-
-  const recentOrders = pedidos.slice(0, 12)
 
   const requestPrint = (target: PrintTarget) => {
     setPrintTarget(target)
@@ -211,14 +209,13 @@ export default function DashboardComercial() {
       {error && <div className="mb-2 border border-red-200 bg-red-50 p-2 text-[11px] text-red-800">{error}</div>}
 
       <div className="space-y-2 text-[11px]">
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <Kpi label="Faturamento no ano" value={brl(totals.faturamento)} />
           <Kpi label="Meta anual" value={brl(totals.meta)} />
           <Kpi label="Pedidos" value={totals.pedidos} />
-          <Kpi label="Pedidos pendentes" value={totals.pendentes} />
-        </div>
+                  </div>
 
-        <div className="grid grid-cols-[minmax(0,1fr)_300px] gap-2">
+        <div className="grid min-w-0 gap-2">
           <main className="grid min-w-0 grid-cols-2 gap-2">
             <ChartCard title="Faturamento por Perfil de Cliente" onPrint={() => requestPrint('perfil')} className="min-h-[235px]">
               <ResponsiveContainer width="100%" height={205}>
@@ -239,7 +236,7 @@ export default function DashboardComercial() {
                   <XAxis dataKey="mes" fontSize={9} />
                   <YAxis fontSize={9} tickFormatter={(value: number) => value >= 1000 ? `R$ ${Math.round(value / 1000)}k` : String(value)} />
                   <Tooltip formatter={(value: number) => brl(value)} />
-                  <Line type="monotone" dataKey="faturamento" name="Faturamento" stroke="#2D8DB8" strokeWidth={2} dot={false} isAnimationActive={false} />
+                  <Line type="monotone" dataKey="acumulado" name="Faturamento acumulado" stroke="#2D8DB8" strokeWidth={2} dot={false} isAnimationActive={false} />
                 </LineChart>
               </ResponsiveContainer>
             </ChartCard>
@@ -259,28 +256,7 @@ export default function DashboardComercial() {
             </ChartCard>
           </main>
 
-          <aside className="min-w-0 border border-slate-300 bg-white">
-            <div className="flex items-center justify-between border-b bg-[#DEE2E6] px-2 py-1.5">
-              <b className="text-[10px] uppercase">Pedidos Recentes</b>
-              <button type="button" title="Atualizar" onClick={() => void load()} disabled={loading} className="no-print p-1"><RefreshCw size={13} className={loading ? 'animate-spin' : ''} /></button>
-            </div>
-            <div className="overflow-hidden">
-              <table className="w-full border-collapse text-[10px]">
-                <thead><tr className="border-b text-left uppercase"><th className="p-1">Pedido</th><th>Cliente</th><th>Status</th><th className="text-right">Total</th></tr></thead>
-                <tbody>
-                  {recentOrders.map((pedido, index) => (
-                    <tr key={pedido.id} className={index % 2 ? 'bg-slate-50' : 'bg-white'}>
-                      <td className="p-1 font-semibold">{String(pedido.numero).padStart(6, '0')}</td>
-                      <td className="max-w-[105px] truncate">{clienteMap.get(pedido.cliente_id ?? '')?.nome ?? '—'}</td>
-                      <td>{pedido.status}</td>
-                      <td className="text-right">{brl(Number(pedido.total ?? 0))}</td>
-                    </tr>
-                  ))}
-                  {!recentOrders.length && <tr><td colSpan={4} className="p-5 text-center text-slate-500">Nenhum pedido real encontrado.</td></tr>}
-                </tbody>
-              </table>
-            </div>
-          </aside>
+
         </div>
       </div>
 
@@ -316,7 +292,7 @@ export default function DashboardComercial() {
                 <XAxis dataKey="mes" />
                 <YAxis tickFormatter={(value: number) => brl(value)} />
                 <Tooltip formatter={(value: number) => brl(value)} />
-                <Line type="monotone" dataKey="faturamento" name="Faturamento" stroke="#2D8DB8" strokeWidth={3} dot isAnimationActive={false} />
+                <Line type="monotone" dataKey="acumulado" name="Faturamento acumulado" stroke="#2D8DB8" strokeWidth={3} dot isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>
           )}
@@ -339,7 +315,7 @@ export default function DashboardComercial() {
           <tbody>
             {printTarget === 'perfil'
               ? profileData.map((row) => <tr key={row.perfil} className="border-b"><td className="p-1">{row.perfil}</td><td className="p-1 text-right">{brl(row.valor)}</td><td className="p-1 text-right">{row.percentual.toFixed(1)}%</td></tr>)
-              : (printRows as MonthRow[]).map((row) => <tr key={row.mes} className="border-b"><td className="p-1">{row.mes}/{currentYear}</td><td className="p-1 text-right">{brl(printTarget === 'metas' ? row.meta : row.faturamento)}</td><td className="p-1 text-right">{printTarget === 'metas' ? brl(row.faturamento) : 'Faturamento'}</td></tr>)}
+              : (printRows as MonthRow[]).map((row) => <tr key={row.mes} className="border-b"><td className="p-1">{row.mes}/{currentYear}</td><td className="p-1 text-right">{brl(printTarget === 'metas' ? row.meta : row.acumulado)}</td><td className="p-1 text-right">{printTarget === 'metas' ? brl(row.faturamento) : 'Faturamento acumulado'}</td></tr>)}
           </tbody>
         </table>
         {empresa?.rodape_relatorios && <div className="mt-5 border-t pt-2 text-[9px]">{empresa.rodape_relatorios}</div>}
