@@ -2,6 +2,7 @@ import { Download, ArrowLeft } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
+import { makeXlsx } from '../../utils/makeXlsx'
 
 type Product={id:string;codigo:string;nome:string;unidade:string|null;estoque_atual:number|null;custo_medio:number|null}
 type Warehouse={id:string;codigo:string;nome:string}
@@ -12,12 +13,7 @@ const label='mb-0.5 text-[10px] font-bold uppercase text-gray-500'
 const button='inline-flex h-7 items-center justify-center gap-1 rounded-md px-2 text-[11px] font-bold'
 function fuzzy(value:string,query:string){const q=query.trim().toLowerCase();if(!q)return true;let i=0;for(const c of value.toLowerCase()){if(c===q[i])i++;if(i===q.length)return true}return false}
 
-function exportXlsx(rows:Row[],date:string){
- const headers=['SKU','Descrição','Saldo Físico','Unidade','Custo Unitário','Custo Total R$','Status do Lote']
- const lines=[headers,...rows.map(r=>[r.codigo,r.nome,r.saldo,r.unidade??'',r.custo,r.total,r.status])].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';'))
- const blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'})
- const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`balanco-estoque-${date}.xlsx.csv`;a.click();URL.revokeObjectURL(url)
-}
+function exportXlsx(rows:Row[],date:string){const data=[['SKU','Descrição','Saldo Físico','Unidade','Custo Unitário','Custo Total R$','Status do Lote'],...rows.map(r=>[r.codigo,r.nome,String(r.saldo),r.unidade??'',r.custo.toFixed(6),r.total.toFixed(2),r.status])];const blob=makeXlsx(data,'Valoração');const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='balanco-estoque-'+date+'.xlsx';a.click();URL.revokeObjectURL(url)}
 
 export default function BalancoEstoque(){
  const navigate=useNavigate();const [cut,setCut]=useState(new Date().toISOString().slice(0,10));const [warehouse,setWarehouse]=useState('');const [method,setMethod]=useState('Custo Médio Ponderado');const [warehouses,setWarehouses]=useState<Warehouse[]>([]);const [products,setProducts]=useState<Product[]>([]);const [search,setSearch]=useState('');const [loading,setLoading]=useState(true);const [error,setError]=useState('')
