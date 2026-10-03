@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { History, Plus, RefreshCw, Save, TriangleAlert, X } from 'lucide-react'
+import { History, Pencil, Plus, RefreshCw, Save, TriangleAlert, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '../components/ui/dialog'
 
