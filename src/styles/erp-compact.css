@@ -62,3 +62,6 @@
 .erp-action-toolbar>button{height:28px!important;min-height:28px!important;padding:0 8px!important;border-radius:4px!important;font-size:11px!important}
 
 .supplier-row-actions{display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;min-height:28px;white-space:nowrap}
+
+
+button[title^="Editar"],button[aria-label^="Editar"],button[title*="Editar"],button[aria-label*="Editar"]{box-sizing:border-box!important;width:28px!important;min-width:28px!important;height:28px!important;min-height:28px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:0!important;border-radius:4px!important;font-size:0!important;line-height:1!important}button[title^="Editar"] svg,button[aria-label^="Editar"] svg,button[title*="Editar"] svg,button[aria-label*="Editar"] svg{width:14px!important;height:14px!important;flex:none!important}button[title^="Editar"]:focus-visible,button[aria-label^="Editar"]:focus-visible{outline:2px solid #2D8DB8!important;outline-offset:1px}
