@@ -93,7 +93,6 @@ const FornecedoresIndustrial = lazyPage(() => import('./pages/FornecedoresIndust
 const ClientesIndustrial = lazyPage(() => import('./pages/ClientesIndustrial'), 'ClientesIndustrial')
 const TabelaPrecos = lazyPage(() => import('./pages/TabelaPrecos'), 'TabelaPrecos')
 const AjusteGlobal = lazyPage(() => import('./pages/AjusteGlobal'), 'default')
-const ListaPrecosCliente = lazyPage(() => import('./pages/ListaPrecosCliente'), 'default')
 const CatalogoDigital = lazyPage(() => import('./pages/CatalogoDigital'), 'CatalogoDigital')
 const FichasProcesso = lazyPage(() => import('./pages/FichasProcesso'), 'FichasProcesso')
 const AssistenteAjudaERP = lazyPage(() => import('./pages/AssistenteAjudaERP'), 'AssistenteAjudaERP')
