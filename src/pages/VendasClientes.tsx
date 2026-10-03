@@ -406,11 +406,11 @@ export default function VendasClientes() {
             <h1 className="text-3xl font-black text-slate-950">Cadastro de Clientes</h1>
             <p className="mt-1 text-sm font-semibold text-slate-600">Cadastro fiscal, contatos, endereço, regras comerciais e De/Para do cliente.</p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={openNew} className="flex h-11 items-center gap-2 rounded-md bg-sky-700 px-5 text-sm font-black text-white"><Plus size={18}/> NOVO CLIENTE</button>
-            <button type="button" disabled={!selectedClient} onClick={() => selectedClient && edit(selectedClient)} className="flex h-11 items-center gap-2 rounded-md border border-slate-300 bg-white px-4 text-sm font-black disabled:opacity-50"><Pencil size={18}/> EDITAR</button>
-            <button type="button" disabled={!selected} onClick={() => void remove()} className="flex h-11 items-center gap-2 rounded-md border border-rose-300 bg-rose-50 px-4 text-sm font-black text-rose-800 disabled:opacity-50"><Trash2 size={18}/> EXCLUIR</button>
-            <button type="button" onClick={() => void load()} className="flex h-11 items-center gap-2 rounded-md border border-slate-300 bg-white px-4 text-sm font-black"><RefreshCw size={18}/> ATUALIZAR</button>
+          <div className="erp-action-toolbar">
+            <button type="button" onClick={openNew} className="flex h-7 items-center gap-1 rounded-md bg-sky-700 px-2 text-[11px] font-bold text-white"><Plus size={13}/> NOVO</button>
+            <button type="button" disabled={!selectedClient} onClick={() => selectedClient && edit(selectedClient)} className="flex h-7 items-center gap-1 rounded-md border border-slate-300 bg-white px-2 text-[11px] font-bold disabled:opacity-50"><Pencil size={13}/> EDITAR</button>
+            <button type="button" disabled={!selected} onClick={() => void remove()} className="flex h-7 items-center gap-1 rounded-md border border-rose-300 bg-rose-50 px-2 text-[11px] font-bold text-rose-800 disabled:opacity-50"><Trash2 size={13}/> EXCLUIR</button>
+            <button type="button" onClick={() => void load()} className="flex h-7 items-center gap-1 rounded-md border border-slate-300 bg-white px-2 text-[11px] font-bold"><RefreshCw size={13}/> ATUALIZAR</button>
           </div>
         </header>
 
