@@ -42,6 +42,10 @@ const NFeEmissao = lazyPage(() => import('./pages/NFeEmissao'), 'NFeEmissao')
 const FiscalPrevisaoCaixa = lazyPage(() => import('./pages/FiscalPrevisaoCaixa'), 'FiscalPrevisaoCaixa')
 const FiscalCarteiraNFe = lazyPage(() => import('./pages/FiscalCarteiraNFe'), 'FiscalCarteiraNFe')
 const FiscalImpostos = lazyPage(() => import('./pages/FiscalImpostos'), 'FiscalImpostos')
+const PainelRazaoGeral = lazyPage(() => import('./features/fiscal/PainelRazaoGeral'), 'default')
+const AuditoriaDocumental = lazyPage(() => import('./features/fiscal/AuditoriaDocumental'), 'default')
+const GeradorGruposContabeis = lazyPage(() => import('./features/fiscal/GeradorGruposContabeis'), 'default')
+const EstornoLancamentos = lazyPage(() => import('./features/fiscal/EstornoLancamentos'), 'default')
 const Master = lazyPage(() => import('./pages/Master'), 'Master')
 const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
 const PCPParadas = lazyPage(() => import('./pages/PCPParadas'), 'PCPParadas')
@@ -462,6 +466,10 @@ function AppIndustrialAuthenticated() {
       <Route path="/fiscal/previsao-caixa" element={<FiscalPrevisaoCaixa />} />
       <Route path="/fiscal/carteira-nfe" element={<FiscalCarteiraNFe />} />
       <Route path="/fiscal/impostos" element={<FiscalImpostos />} />
+      <Route path="/fiscal/razao-geral" element={<PainelRazaoGeral />} />
+      <Route path="/fiscal/auditoria-documental" element={<AuditoriaDocumental />} />
+      <Route path="/fiscal/grupos-contabeis" element={<GeradorGruposContabeis />} />
+      <Route path="/fiscal/estornos" element={<EstornoLancamentos />} />
       <Route path="/master" element={<MasterOnly allowed={statusAcesso.master}><Master /></MasterOnly>} />
       <Route path="/cadastro-empresa" element={<CadastroEmpresa />} />
       <Route path="/planos" element={<PlanosIndustrial />} />
