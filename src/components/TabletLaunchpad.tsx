@@ -104,6 +104,7 @@ export default function TabletLaunchpad({ onNavigate, isOpen, onClose }: TabletL
   const { perfilRole } = usePonto()
   const commissionBlocked = perfilRole === 'PRODUÇÃO' || perfilRole === 'PRODUCAO' || perfilRole === 'ENGENHARIA'
   const pcpAllowed = perfilRole === 'ADMINISTRADOR' || perfilRole === 'PCP' || perfilRole === 'MASTER'
+  const fiscalAllowed = perfilRole === 'ADMINISTRADOR' || perfilRole === 'PCP' || perfilRole === 'MASTER'
   useEffect(() => {
     if (!isOpen) return
     let alive = true
@@ -135,7 +136,7 @@ export default function TabletLaunchpad({ onNavigate, isOpen, onClose }: TabletL
 
         <div className="tablet-module-grid">
           {modules.map(({ number, label, route, icon: Icon, accent, permission, restrictedRoles }) => {
-            const allowed = (!permission || financeAllowed) && !(label === 'COMISSÕES & METAS' && commissionBlocked) && (!restrictedRoles || (restrictedRoles.includes('ADMINISTRADOR') && pcpAllowed) || (restrictedRoles.includes(perfilRole ?? '')))
+            const allowed = (!permission || financeAllowed) && (!restrictedRoles || fiscalAllowed) && !(label === 'COMISSÕES & METAS' && commissionBlocked)
             return (
             <button
               key={`${number}-${route}`}
