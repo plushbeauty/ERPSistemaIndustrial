@@ -46,6 +46,8 @@ const PainelRazaoGeral = lazyPage(() => import('./features/fiscal/PainelRazaoGer
 const AuditoriaDocumental = lazyPage(() => import('./features/fiscal/AuditoriaDocumental'), 'default')
 const GeradorGruposContabeis = lazyPage(() => import('./features/fiscal/GeradorGruposContabeis'), 'default')
 const EstornoLancamentos = lazyPage(() => import('./features/fiscal/EstornoLancamentos'), 'default')
+const ClassificacaoFiscal = lazyPage(() => import('./features/fiscal/ClassificacaoFiscal'), 'default')
+const AssistenteRetificacao = lazyPage(() => import('./features/controladoria/AssistenteRetificacao'), 'default')
 const Master = lazyPage(() => import('./pages/Master'), 'Master')
 const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
 const PCPParadas = lazyPage(() => import('./pages/PCPParadas'), 'PCPParadas')
@@ -470,6 +472,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/fiscal/auditoria-documental" element={<AuditoriaDocumental />} />
       <Route path="/fiscal/grupos-contabeis" element={<GeradorGruposContabeis />} />
       <Route path="/fiscal/estornos" element={<EstornoLancamentos />} />
+      <Route path="/fiscal/classificacao" element={<ClassificacaoFiscal />} />
+      <Route path="/controladoria/assistente-retificacao" element={<AssistenteRetificacao />} />
       <Route path="/master" element={<MasterOnly allowed={statusAcesso.master}><Master /></MasterOnly>} />
       <Route path="/cadastro-empresa" element={<CadastroEmpresa />} />
       <Route path="/planos" element={<PlanosIndustrial />} />
