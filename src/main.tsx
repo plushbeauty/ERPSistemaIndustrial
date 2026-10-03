@@ -8,6 +8,7 @@ import { StrictMode, Suspense, lazy, type ComponentType } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { createRoot } from 'react-dom/client'
 import { MotionConfig } from 'motion/react'
+import { PontoProvider } from './context/PontoContext'
 
 
 type LazyModule = { default?: ComponentType<unknown>; [key: string]: unknown }
@@ -72,9 +73,11 @@ createRoot(rootElement).render(
   <StrictMode>
     <MotionConfig reducedMotion="user" transition={{ duration: 0.22, ease: 'easeOut' }}>
       <BrowserRouter>
+        <PontoProvider>
         {window.location.pathname === '/configuracoes-adm' || window.location.pathname.startsWith('/configuracoes-adm/')
           ? <DemoConfiguracoesADM />
           : <BootstrapLoader />}
+        </PontoProvider>
       </BrowserRouter>
     </MotionConfig>
   </StrictMode>,
