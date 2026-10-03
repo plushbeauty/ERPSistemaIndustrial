@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import { useMemo } from 'react'
-import { Activity, Boxes, CalendarDays, CheckCircle, ClipboardList, Cpu, DollarSign, Factory, Landmark, Layers, Receipt, Settings, ShoppingCart, Tablet, Truck, Upload, Users, X } from 'lucide-react'
+import { Activity, Award, Boxes, CalendarDays, CheckCircle, ClipboardList, Cpu, DollarSign, Factory, Landmark, Layers, Receipt, Settings, ShoppingCart, Tablet, Truck, Upload, Users, X } from 'lucide-react'
+import { usePonto } from '../context/PontoContext'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
@@ -55,6 +56,7 @@ function resolveTabletIcon(number: string, label: string) {
 const modules: Module[] = [
   { number:'1', label:'CONFIGURAÇÕES', route:'/configuracoes-adm', icon:Settings, accent:'#F97316' },
   { number:'2', label:'VENDAS', route:'/vendas', icon:ShoppingCart, accent:'#2D8DB8' },
+  { number:'9', label:'COMISSÕES & METAS', route:'/comissoes', icon:Award, accent:'#2563EB' },
   { number:'3', label:'COMPRAS', route:'/compras-solicitacao', icon:ClipboardList, accent:'#7A4E00' },
   { number:'4', label:'ESTOQUE', route:'/estoque', icon:Boxes, accent:'#087A58' },
   { number:'5', label:'EXPEDIÇÃO', route:'/expedicao/roteirizacao', icon:Truck, accent:'#A64B00' },
@@ -75,6 +77,7 @@ const modules: Module[] = [
 
 const moduleItems: Record<string, string> = {
   "VENDAS": "Pedidos • Clientes • Carteira • Catálogo Digital • Análise de Custos • Metas • Configurações",
+  "COMISSÕES & METAS": "Regras de comissão • Metas por SKU • Processamento mensal • Extrato",
   "COMPRAS": "Solicitações • Pedidos de Compra • Fornecedores • Recebimento • Aprovações",
   "ESTOQUE": "Saldos • Movimentações • Ajustes • Recebimento de Lotes • Inventário • Curva ABC",
   "EXPEDIÇÃO": "Roteirização • Portaria • Separação • Conferência • Entrega",
@@ -96,6 +99,8 @@ const moduleItems: Record<string, string> = {
 
 export default function TabletLaunchpad({ onNavigate, isOpen, onClose }: TabletLaunchpadProps) {
   const [financeAllowed, setFinanceAllowed] = useState(false)
+  const { perfilRole } = usePonto()
+  const commissionBlocked = perfilRole === 'PRODUÇÃO' || perfilRole === 'PRODUCAO' || perfilRole === 'ENGENHARIA'
   useEffect(() => {
     if (!isOpen) return
     let alive = true
@@ -127,12 +132,12 @@ export default function TabletLaunchpad({ onNavigate, isOpen, onClose }: TabletL
 
         <div className="tablet-module-grid">
           {modules.map(({ number, label, route, icon: Icon, accent, permission }) => {
-            const allowed = !permission || financeAllowed
+            const allowed = (!permission || financeAllowed) && !(label === 'COMISSÕES & METAS' && commissionBlocked)
             return (
             <button
               key={`${number}-${route}`}
               type="button"
-              className="tablet-module-card"
+              className={`tablet-module-card ${label === 'COMISSÕES & METAS' ? 'tablet-commission-card' : ''}`}
               disabled={!allowed}
               aria-disabled={!allowed}
               onClick={() => { if (!allowed) return; onClose(); onNavigate(route) }}
