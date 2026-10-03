@@ -15,7 +15,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { Printer, RefreshCw } from 'lucide-react'
+import { Printer } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout from './VendasLayout'
 
