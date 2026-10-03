@@ -131,6 +131,9 @@ const BankingReconciliation = lazyPage(() => import('./features/banking/BankReco
 const BankingStatementImporter = lazyPage(() => import('./features/banking/BankStatementImporter'), 'BankStatementImporter')
 const BankingListaPrecosCliente = lazyPage(() => import('./features/banking/ListaPrecosCliente'), 'ListaPrecosCliente')
 const RetificacaoPedido = lazyPage(() => import('./features/controladoria/RetificacaoPedido'), 'RetificacaoPedido')
+const CadastroRegrasComissao = lazyPage(() => import('./features/comissoes/CadastroRegras'), 'CadastroRegras')
+const CalculoComissao = lazyPage(() => import('./features/comissoes/CalculoComissao'), 'CalculoComissao')
+const PerfilVendedorComissao = lazyPage(() => import('./features/comissoes/PerfilVendedor'), 'PerfilVendedor')
 
 type ERPProfile = { empresa_id: string | null; is_master: boolean; nivel_admin?: number; perfil?: string; nome?: string }
 type AccessResult = { ok: boolean; master: boolean; reason: string; profile: ERPProfile | null }
@@ -357,6 +360,10 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/carteira" element={<VendasCarteira />} />
       <Route path="/vendas/status" element={<VendasStatusPedidos />} />
       <Route path="/controladoria/retificacao-pedido/:pedidoId" element={<RetificacaoPedido />} />
+      <Route path="/comissoes" element={<Navigate to="/comissoes/regras" replace />} />
+      <Route path="/comissoes/regras" element={<CadastroRegrasComissao />} />
+      <Route path="/comissoes/calculo" element={<CalculoComissao />} />
+      <Route path="/comissoes/perfil" element={<PerfilVendedorComissao />} />
       <Route path="/vendas/pedido/:id" element={<VendasPedidoStatus />} />
       <Route path="/vendas/catalogo-digital/gestao" element={<VendasCatalogoDigitalGestao />} />
       <Route path="/vendas/clientes" element={<VendasClientesPage />} />
