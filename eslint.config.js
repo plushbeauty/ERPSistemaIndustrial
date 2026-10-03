@@ -1,4 +1,3 @@
-import eslint from 'eslint'
 import tsParser from '@typescript-eslint/parser'
 import tsPlugin from '@typescript-eslint/eslint-plugin'
 
