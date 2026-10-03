@@ -9,7 +9,6 @@ const menu = [
   { label: 'Análise de Orçamentos', href: '/vendas/orcamentos', icon: ClipboardList },
   { label: 'Pedidos Pendentes', href: '/vendas/pendentes', icon: ListChecks },
   { label: 'Ajuste Global', href: '/vendas/reajuste', icon: Settings },
-  { label: 'Configurações', href: '/configuracoes', icon: Settings },
 ]
 
 export default function VendasLayout({ children, title, subtitle, onRefresh }: { children: ReactNode; title: string; subtitle?: string; onRefresh?: () => void }) {
