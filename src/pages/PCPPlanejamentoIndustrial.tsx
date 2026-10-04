@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, CalendarDays, CheckCircle2, Factory, Gauge, Plus, RefreshCw, Save, Shuffle, Target, Boxes } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Factory, Gauge, Plus, RefreshCw, Save, Shuffle, Target, Boxes } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Product={id:string;codigo:string;nome:string;estoque_atual:number}
