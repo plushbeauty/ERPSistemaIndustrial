@@ -10,7 +10,6 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import { Play } from 'lucide-react'
 import type { FormEvent, ReactNode } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
