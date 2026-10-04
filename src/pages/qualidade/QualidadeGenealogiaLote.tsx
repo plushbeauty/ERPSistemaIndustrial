@@ -1,5 +1,5 @@
 import { useCallback, useState, type ReactElement } from 'react'
-import { Layers, PackageSearch, Printer, RefreshCw, ShieldCheck, User, Cpu } from 'lucide-react'
+import { Layers, PackageSearch, Printer, ShieldCheck, User, Cpu } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; quantidade_disponivel: number; status_inspecao: string | null }
