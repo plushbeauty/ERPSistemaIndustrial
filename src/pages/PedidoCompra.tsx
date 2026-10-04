@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Check, ChevronLeft, FileText, Printer, Search, Send, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
