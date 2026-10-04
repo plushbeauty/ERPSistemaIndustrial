@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { Database, ShieldCheck, Users, FileText, HardDrive, Settings, ChevronRight, User, LogOut } from 'lucide-react'
+import { Database, ShieldCheck, Users, FileText, HardDrive, ChevronRight, User, LogOut } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 
 const items=[['/configuracoes-adm/codificacao','Codificação e Áreas',Database],['/configuracoes-adm/permissoes','Controle de Permissões',ShieldCheck],['/configuracoes-adm/perfis','Perfis de Usuários',Users],['/configuracoes-adm/logs','Logs do Sistema',FileText],['/configuracoes-adm/backups','Backups do Banco',HardDrive]] as const
