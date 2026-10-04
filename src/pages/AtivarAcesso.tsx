@@ -27,7 +27,6 @@ export default function AtivarAcesso() {
   const [password,setPassword]=useState('')
   const [confirm,setConfirm]=useState('')
   const [busy,setBusy]=useState(false)
-  const [sent,setSent]=useState(false)
   const [error,setError]=useState('')
   const [message,setMessage]=useState('')
 
@@ -39,7 +38,7 @@ export default function AtivarAcesso() {
     try {
       const { error: e } = await supabase.auth.signInWithOtp({ email:email.trim().toLowerCase(), options:{ shouldCreateUser:false } })
       if (e) throw e
-      setSent(true); setMessage('Novo código enviado. Verifique sua caixa de entrada e o spam.')
+      setMessage('Novo código enviado. Verifique sua caixa de entrada e o spam.')
     } catch (e) { setError(e instanceof Error ? e.message : 'Não foi possível enviar outro código.') }
     finally { setBusy(false) }
   }
