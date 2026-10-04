@@ -129,7 +129,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
 
         if (alive) window.location.replace(destinationAfterLogin(result, returnTo))
       } catch (err) {
-        console.error('[ERP login bootstrap]', err)
+
         await supabase.auth.signOut().catch(() => undefined)
 
         if (alive) {
@@ -197,7 +197,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
 
       window.location.replace(destination)
     } catch (err) {
-      console.error('[ERP login]', err)
+
       await supabase.auth.signOut().catch(() => undefined)
 
       const message = err instanceof Error ? err.message : 'Não foi possível entrar no ERP.'
