@@ -108,7 +108,7 @@ function AccessGate({ children }: { children: ReactNode }) {
         }
         if (alive) setState('allowed')
       } catch (error) {
-        console.error('[Protected route bootstrap]', error)
+
         if (alive) setState('denied')
       }
     })()
