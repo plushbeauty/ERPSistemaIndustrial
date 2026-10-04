@@ -48,8 +48,7 @@ Deno.serve(async (req) => {
           const value = parsed.default
           if (typeof value === "string") secretFromDictionary = value.trim()
         }
-      } catch (error) {
-        console.warn("[erp-master-bootstrap] SUPABASE_SECRET_KEYS inválida; seguindo para fallback.", error)
+      } catch {
       }
     }
     const serviceRoleFallback = clean(Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"))
