@@ -9,9 +9,9 @@
  * =========================================================================
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import {useEffect, useMemo, useState} from 'react'
 import type { FormEvent, ReactNode } from 'react'
-import { supabase } from '../lib/supabaseClient'
+import {supabase} from '../lib/supabaseClient'
 import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 
 type Tab='visao'|'novaop'|'pedidos'|'ops'|'materiais'|'producao'|'programacao'|'capacidade'|'qualidade'
