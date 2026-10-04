@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build --emptyOutDir",
-    "build:vercel": "npm run type-check && npm run lint:check && vite build --emptyOutDir",
+    "build:vercel": "npm run verify:production",
     "build:verified": "npm run verify:supabase-env && npm run verify:supabase-guard && npm run verify:deploy-integrity && npm run verify:lockfile && npm run verify:lazy-imports && npm run lint:check && npm run audit:all && npm run build && npm run verify:build",
     "type-check": "tsc --noEmit",
     "verify:supabase-env": "node scripts/verify-supabase-env.mjs",
