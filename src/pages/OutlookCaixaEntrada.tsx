@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Check, FileText, Inbox, RefreshCw, Search, Trash2, X } from 'lucide-react'
-import { supabase } from '../lib/supabaseClient'
+import {useEffect, useMemo, useState} from 'react'
+import {AlertTriangle, Check, FileText, Inbox, RefreshCw, Search, Trash2, X} from 'lucide-react'
+import {supabase} from '../lib/supabaseClient'
 import type { IOutlookMailbox, IOutlookMessage, IXmlPedidoResult } from '../types/outlook'
-import { processarXmlPedido } from '../types/outlook'
-import { processarEConverterXmlPedido } from '../services/leitorXmlService'
+import {processarXmlPedido} from '../types/outlook'
+import {processarEConverterXmlPedido} from '../services/leitorXmlService'
 
 const MAILBOXES: IOutlookMailbox[] = [
   { address: 'vendas@empresa.com', label: 'Vendas', role: 'vendedor' },
