@@ -30,7 +30,7 @@ type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number
 
 export default function OperacaoIndustrial(){
  const [ops,setOps]=useState<OP[]>([]),[products,setProducts]=useState<Product[]>([]),[defects,setDefects]=useState<Defect[]>([])
- const [selectedOp,setSelectedOp]=useState(''),[found,setFound]=useState(''),[bad,setBad]=useState(''),[location,setLocation]=useState(''),[defectText,setDefectText]=useState(''),[query]=useState('')
+ const [selectedOp,setSelectedOp]=useState(''),[found,setFound]=useState(''),[bad,setBad]=useState(''),[location,setLocation]=useState(''),[defectText,setDefectText]=useState(''),[query,setQuery]=useState('')
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState(''),[help,setHelp]=useState(false)
  const load=async()=>{setBusy(true);setError('');try{const [o,p,d]=await Promise.all([
   supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade,status,data_prevista').order('criado_em',{ascending:false}).limit(500),
