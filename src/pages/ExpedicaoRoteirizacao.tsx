@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
-import { CheckCircle2, RefreshCw, Save, Truck, XCircle } from 'lucide-react'
-import { supabase } from '../lib/supabaseClient'
+import {useEffect, useMemo, useState} from 'react'
+import {CheckCircle2, RefreshCw, Save, Truck, XCircle} from 'lucide-react'
+import {supabase} from '../lib/supabaseClient'
 
 type Vehicle = { id: string; placa: string; descricao: string | null; capacidade_kg: number }
 type Driver = { id: string; nome: string; documento: string | null; cnh: string | null }
