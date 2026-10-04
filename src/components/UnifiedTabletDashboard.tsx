@@ -10,10 +10,7 @@
  */
 
 import React, { useMemo, useState } from 'react'
-import {
-  Activity, CalendarDays, ClipboardList, Factory, Gauge, Layers3, Package,
-  Settings2, ShieldCheck, Tablet, Wrench, X
-} from 'lucide-react'
+import { CalendarDays, ClipboardList, Factory, Gauge, Layers3, Package, Settings2, Tablet, Wrench, X } from 'lucide-react'
 
 type TabletTab = 'overview' | 'injection' | 'presses' | 'machines' | 'maintenance' | 'pcp' | 'stock'
 type Status = 'Disponível' | 'Em produção' | 'Manutenção' | 'Atenção' | 'Bloqueado'
