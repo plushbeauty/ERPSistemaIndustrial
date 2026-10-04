@@ -9,7 +9,6 @@ type Header = { numero_nfe:string; serie:string; chave_acesso:string; data_emiss
 const blankHeader = (): Header => ({ numero_nfe:'', serie:'', chave_acesso:'', data_emissao:new Date().toISOString().slice(0,10), cnpj_fornecedor:'', valor_total:'', xml_nome_arquivo:'manual' })
 const blankItem = (n:number): NfeItem => ({ item_nfe:n, codigo_produto:'', descricao_produto:'', unidade:'UN', quantidade_total:0, valor_unitario:0, valor_total:0 })
 const tag = (root:Element, name:string) => Array.from(root.getElementsByTagName('*')).find(x => x.localName === name)?.textContent?.trim() ?? ''
-const money = (v:number) => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v || 0)
 
 function parseNfe(xml:string): { header:Header; items:NfeItem[] } {
   const doc = new DOMParser().parseFromString(xml,'application/xml')
