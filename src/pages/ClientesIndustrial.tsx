@@ -3,12 +3,12 @@
 - Arquivo: src/pages/ClientesIndustrial.tsx
 - Status Atual: Revisão 3 (Cadastro Comercial e Política de Preços)
 - Total de Linhas Gerado: 27 Desenvolverdor FernandoSch.
-- Assinatura de Entrada (Primeiros 3 Imports): import { FormEvent, useEffect, useState } from 'react' | import { Check, Pencil, Plus, Search, X } from 'lucide-react' | import { supabase } from '../lib/supabaseClient'
+- Assinatura de Entrada (Primeiros 3 Imports): import {FormEvent, useEffect, useState} from 'react' | import {Check, Pencil, Plus, Search} from 'lucide-react' | import {supabase} from '../lib/supabaseClient'
 - Regra de Negócio Incorporada: Cadastro real de cliente com tipo comercial, tabela de preço e desconto percentual padrão.
 */
-import { FormEvent, useEffect, useState } from 'react'
-import { Check, Pencil, Plus, Search, X } from 'lucide-react'
-import { supabase } from '../lib/supabaseClient'
+import {FormEvent, useEffect, useState} from 'react'
+import {Check, Pencil, Plus, Search} from 'lucide-react'
+import {supabase} from '../lib/supabaseClient'
 
 type Client={id:string;codigo:string|null;nome:string;documento:string|null;email:string|null;telefone:string|null;tipo_cliente:string|null;tabela_preco_id:string|null;desconto_padrao_percentual:number;ativo:boolean}
 type PriceTable={id:string;codigo:string;nome:string;ativo:boolean}
