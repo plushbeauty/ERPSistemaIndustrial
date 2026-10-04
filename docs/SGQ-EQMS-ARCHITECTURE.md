@@ -20,3 +20,6 @@ RPNC/CAPA: Aberta -> Em análise -> Em tratamento -> Aguardando eficácia -> Enc
 
 ## Segurança
 As novas tabelas usam RLS por empresa. A distribuição exige a permissão qualidade_documentos.liberar ou perfil Master. Revisões são criadas, não sobrescritas.
+
+## Estado da implementação
+Workspace integrado em React/TypeScript com funções SQL, RLS, distribuição e API Node/Vercel.
