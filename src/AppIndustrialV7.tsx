@@ -6,14 +6,13 @@
 - Assinatura de Entrada (Primeiros 3 Imports): import { useEffect, useState } from 'react' | import { motion, AnimatePresence } from 'motion/react' | import { Activity, ArrowUpRight, Boxes, ClipboardCheck, Factory, FileText, LayoutGrid, Package, Search, Settings, ShoppingCart, Store, Truck, Users, Wrench } from 'lucide-react'
 - Regra de Negócio Incorporada: Navegação real para clientes, fornecedores ISO 9001 e tabelas de preços por cliente.
 */
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { Activity, ArrowUpRight, Boxes, CalendarDays, ClipboardCheck, Factory, FileText, LayoutGrid, Package, Search, Settings, ShoppingCart, Store, Truck, Users, Wrench } from 'lucide-react'
+import { Activity, Boxes, ClipboardCheck, Factory, FileText, LayoutGrid, Package, Settings, ShoppingCart, Store, Truck, Users, Wrench } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from './lib/supabaseClient'
 import IndustrialModuleWorkspace from './components/IndustrialModuleWorkspace'
 import IndustrialCommandDashboard from './components/IndustrialCommandDashboard'
-import CompanySettings from './components/CompanySettings'
 import TabletLaunchpad from './components/TabletLaunchpad'
 import MoldesFerramentaria from './pages/MoldesFerramentaria'
 import ComercialSuprimentos from './pages/ComercialSuprimentos'
@@ -28,7 +27,6 @@ import FornecedoresIndustrial from './pages/FornecedoresIndustrial'
 type Field = { key: string; label: string; type?: 'text' | 'number' | 'date' | 'email'; required?: boolean }
 type Module = { name: string; title: string; description: string; icon: LucideIcon; table?: string; fields?: Field[] }
 type Segment = { name: string; description: string; icon: LucideIcon; modules: Module[] }
-type Row = Record<string, unknown> & { id: string }
 type Profile = { nome: string; empresa_id: string | null; nivel_admin: number; is_master: boolean; perfil: string }
 type UiTheme = 'dark' | 'light' | 'windows'
 
@@ -94,33 +92,12 @@ const segments: Segment[] = [
   { name: 'Representação Comercial', description: 'Leads, clientes, oportunidades, propostas, pedidos e comissões.', icon: Users, modules: commonModules },
 ]
 
-const value = (v: unknown) => v == null ? '' : String(v)
-const escapeIlike = (v: string) => v.replace(/[\\%_]/g, m => `\\${m}`).replace(/[(),]/g, m => `\\${m}`)
-
-function makePayload(fields: Field[], form: Record<string, string>) {
-  const out: Record<string, unknown> = {}
-  for (const field of fields) {
-    const raw = (form[field.key] ?? '').trim()
-    if (!raw) {
-      if (field.required) throw new Error(`Informe ${field.label}.`)
-      out[field.key] = null
-      continue
-    }
-    if (field.type === 'number') {
-      const n = Number(raw)
-      if (!Number.isFinite(n)) throw new Error(`${field.label} deve ser numérico.`)
-      out[field.key] = n
-    } else out[field.key] = raw
-  }
-  return out
-}
-
 export default function AppIndustrialV7() {
-  const [segment, setSegment] = useState(segments[0].name)
+  const [segment] = useState(segments[0].name)
   const [active, setActive] = useState('Dashboard')
   const [launcher, setLauncher] = useState(false)
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [empresaNome, setEmpresaNome] = useState('Empresa industrial')
+  const [empresaNome] = useState('Empresa industrial')
   const [loading, setLoading] = useState(true)
   const [clock, setClock] = useState(new Date())
   const [language] = useState(localStorage.getItem('erp-lang') === 'en-US' ? 'en-US' : 'pt-BR')
@@ -141,18 +118,7 @@ export default function AppIndustrialV7() {
         const { data, error } = await supabase.from('erp_usuarios').select('nome,empresa_id,nivel_admin,auth_user_id,ativo,deleted_at,is_master,perfil').eq('auth_user_id', auth.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
         if (error) throw error
         const master = data?.auth_user_id === auth.user.id && data?.is_master === true && Number(data?.nivel_admin ?? 0) === 100 && String(data?.perfil ?? '').trim().toUpperCase() === 'MASTER' && data?.empresa_id === null
-        if (data && data.auth_user_id === auth.user.id && (master || Boolean(data.empresa_id)) && alive) { setProfile(data); if (data.empresa_id) { const company = await supabase.from('erp_empresas').select('nome_fantasia,razao_social').eq('id', data.empresa_id).eq('ativo', true).maybeSingle(); if (!company.error && alive) setEmpresaNome(String(company.data?.nome_fantasia ?? company.data?.razao_social ?? 'Empresa industrial')) } else if (master && alive) setEmpresaNome('Visão Master do Ecossistema') }
-      } catch (error) {
-        console.error('[ERP profile]', error)
-      } finally {
-        if (alive) setLoading(false)
-      }
-    })()
-    return () => { alive = false }
-  }, [])
-
-  if (loading) return <div className="loading-screen">Carregando SYSNQRA ERP & SGQ INDUSTRIAL…</div>
-  if (!profile) return <div className="error-screen"><div className="error-screen-card"><strong>Perfil ERP não encontrado.</strong><p>A sessão autenticada não possui um usuário ERP ativo vinculado à empresa.</p><button className="primary" type="button" onClick={() => { void supabase.auth.signOut(); location.replace('/login') }}>Voltar ao login</button></div></div>
+        if (data && data.auth_user_id === auth.user.id && (master || Boolean(data.empresa_id)) && alive) { setProfile(data); if (data.empresa_id) { const company = await supabase.from('erp_empresas').select('nome_fantasia,razao_social').eq('id', data.empresa_id).eq('ativo', true).maybeSingle(); if (!company.error && alive) ; location.replace('/login') }}>Voltar ao login</button></div></div>
 
   return <motion.div className={`v7-shell theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
     <header className="v7-topbar" aria-label="Barra superior do ERP">
