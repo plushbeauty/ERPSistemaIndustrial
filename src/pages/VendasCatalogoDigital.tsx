@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Copy, Search, ShoppingCart, Send, X } from "lucide-react";
+import { ArrowLeft, Copy, Search, Send } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import EntityCodeLookup from "../components/industrial/EntityCodeLookup";
 
