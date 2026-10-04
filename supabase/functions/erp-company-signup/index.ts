@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
       await admin.from('erp_setores').delete().eq('empresa_id',empresaId).catch(()=>undefined)
       await admin.from('erp_empresas').delete().eq('id',empresaId).catch(()=>undefined)
     }
-    console.error('[erp-company-signup]',error)
+
     return json({ error:error instanceof Error ? error.message : 'Não foi possível concluir o cadastro da empresa.' }, 500)
   }
 })
