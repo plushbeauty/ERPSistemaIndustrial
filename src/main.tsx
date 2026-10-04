@@ -86,6 +86,7 @@ async function limparAplicacaoPwaLegadaUmaVez() {
     window.localStorage.setItem(LEGACY_PWA_CLEANUP_KEY, '1')
   } catch {
     // Limpeza legada é best-effort; falha aqui não impede o bootstrap.
+  }
 }
 
 void limparAplicacaoPwaLegadaUmaVez()
