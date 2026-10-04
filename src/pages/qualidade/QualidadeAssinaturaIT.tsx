@@ -1,7 +1,7 @@
-import { useEffect,useState,type FormEvent } from 'react'
-import { CheckCircle2,Lock,Search,ShieldCheck } from 'lucide-react'
+import { useEffect, useState, type FormEvent } from 'react'
+import { CheckCircle2, Lock, ShieldCheck } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
-import { EntityCodeLookup,type LookupRecord } from '../../components/industrial/EntityCodeLookup'
+import { EntityCodeLookup, type LookupRecord } from '../../components/industrial/EntityCodeLookup'
 export default function QualidadeAssinaturaIT(){
  const[records,setRecords]=useState<LookupRecord[]>([]),[codigo,setCodigo]=useState(''),[rev,setRev]=useState(''),[hash,setHash]=useState(''),[busy,setBusy]=useState(false),[err,setErr]=useState(''),[ok,setOk]=useState('')
  useEffect(()=>{void (async()=>{const r=await supabase.from('erp_qualidade_documentos_revisoes').select('id,codigo_documento,titulo_documento,revisao,status').eq('status','VIGENTE').order('codigo_documento');if(!r.error)setRecords((r.data??[]).map(x=>({id:x.id,codigo:x.codigo_documento,nome:x.titulo_documento})))})()},[])
