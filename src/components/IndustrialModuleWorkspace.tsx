@@ -21,7 +21,7 @@
  */
 
 import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { Activity, AlertTriangle, ArrowLeft, ArrowUpRight, CalendarDays, Clock3, FilePlus2, HelpCircle, LayoutDashboard, MoreHorizontal, Package, Pencil, Plus, RefreshCw, Search, Settings2, X } from 'lucide-react'
+import { Activity, AlertTriangle, ArrowLeft, ArrowUpRight, CalendarDays, Clock3, FilePlus2, HelpCircle, LayoutDashboard, Package, Pencil, Plus, RefreshCw, Search, Settings2, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
