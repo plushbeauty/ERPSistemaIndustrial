@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactElement } from 'react'
-import { AlertTriangle, Ban, LockKeyhole, RefreshCw, Search, ShieldCheck, UnlockKeyhole } from 'lucide-react'
+import { AlertTriangle, Ban, LockKeyhole, RefreshCw, Search, ShieldCheck } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; quantidade_disponivel: number; status_inspecao: string | null }
