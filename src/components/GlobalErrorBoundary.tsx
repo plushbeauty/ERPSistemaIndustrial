@@ -11,7 +11,7 @@ export default class GlobalErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('ERP render error', error, info.componentStack)
+
   }
 
   private retry = () => {
