@@ -60,6 +60,13 @@ const PCPSequenciamento = lazyPage(() => import('./pages/PCPSequenciamento'), 'P
 const PCPPlanejamentoIndustrial = lazyPage(() => import('./pages/PCPPlanejamentoIndustrial'), 'PCPPlanejamentoIndustrial')
 const MRPIndustrial = lazyPage(() => import('./pages/MRPIndustrial'), 'MRPIndustrial')
 const CentraisIndustriais = lazyPage(() => import('./pages/CentraisIndustriais'), 'CentraisIndustriais')
+const SgqDashboard = lazyPage(() => import('./pages/sgq/SgqDashboard'), 'SgqDashboard')
+const SgqProcedimentos = lazyPage(() => import('./pages/sgq/SgqProcedimentos'), 'SgqProcedimentos')
+const SgqProcedimentoEditor = lazyPage(() => import('./pages/sgq/SgqProcedimentoEditor'), 'SgqProcedimentoEditor')
+const SgqProcedimentoVisualizar = lazyPage(() => import('./pages/sgq/SgqProcedimentoVisualizar'), 'SgqProcedimentoVisualizar')
+const SgqDistribuicao = lazyPage(() => import('./pages/sgq/SgqDistribuicao'), 'SgqDistribuicao')
+const SgqRpnc = lazyPage(() => import('./pages/sgq/SgqRpnc'), 'SgqRpnc')
+const SgqRpncTratativa = lazyPage(() => import('./pages/sgq/SgqRpncTratativa'), 'SgqRpncTratativa')
 const QualidadeIndustrial = lazyPage(() => import('./pages/QualidadeIndustrial'), 'QualidadeIndustrial')
 const AcompanhamentoNaoConformidade = lazyPage(() => import('./pages/AcompanhamentoNaoConformidade'), 'AcompanhamentoNaoConformidade')
 const EstoqueAlmoxarifado = lazyPage(() => import('./pages/EstoqueAlmoxarifado'), 'EstoqueAlmoxarifado')
@@ -411,6 +418,14 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/planejamento" element={<PCPPlanejamentoIndustrial />} />
       <Route path="/pcp/dashboard-oee" element={<PCPDashboardOEE />} />
       <Route path="/pcp/tablet-operador" element={<PCPTabletOperador />} />
+      <Route path="/sgq" element={<SgqDashboard />} />
+      <Route path="/sgq/indicadores" element={<SgqDashboard />} />
+      <Route path="/sgq/procedimentos" element={<SgqProcedimentos />} />
+      <Route path="/sgq/procedimentos/editar" element={<SgqProcedimentoEditor />} />
+      <Route path="/sgq/procedimentos/visualizar" element={<SgqProcedimentoVisualizar />} />
+      <Route path="/sgq/distribuicao" element={<SgqDistribuicao />} />
+      <Route path="/sgq/rpnc" element={<SgqRpnc />} />
+      <Route path="/sgq/rpnc/tratativa/:id" element={<SgqRpncTratativa />} />
       <Route path="/qualidade" element={<QualidadeIndustrial />} />
       <Route path="/qualidade/instrumentos" element={<QualidadeIndustrial />} />
       <Route path="/qualidade/liberacao-lote" element={<AcompanhamentoNaoConformidade />} />
