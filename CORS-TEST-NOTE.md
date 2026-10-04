@@ -1,1 +1,0 @@
-Teste automatizado de preflight OPTIONS será executado localmente contra a Edge Function emitir-nfe.

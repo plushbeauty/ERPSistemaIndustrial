@@ -1,5 +1,0 @@
-create table if not exists public.erp_anos_fiscais(id uuid primary key default gen_random_uuid(),empresa_id uuid not null references public.erp_empresas(id) on delete restrict,ano integer not null check(ano between 2000 and 2100),status text not null default 'ABERTO' check(status in ('ABERTO','FECHADO')),data_abertura date not null default current_date,data_fechamento date,criado_em timestamptz not null default now(),atualizado_em timestamptz not null default now(),unique(empresa_id,ano));
-alter table public.erp_anos_fiscais enable row level security;
-drop policy if exists erp_anos_fiscais_all on public.erp_anos_fiscais;
-create policy erp_anos_fiscais_all on public.erp_anos_fiscais for all to authenticated using(empresa_id=public.erp_current_empresa_id() or public.erp_is_master()) with check(empresa_id=public.erp_current_empresa_id() or public.erp_is_master());
-grant select,insert,update,delete on public.erp_anos_fiscais to authenticated;

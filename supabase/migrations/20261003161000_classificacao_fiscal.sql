@@ -1,4 +1,0 @@
-create table if not exists public.erp_classificacao_fiscal(id uuid primary key default gen_random_uuid(),empresa_id uuid not null,nome_fiscal text not null,ncm_codigo varchar(20) not null,aliquota numeric(8,4) not null default 0,data_vigencia date not null,criado_em timestamptz not null default now(),unique(empresa_id,ncm_codigo,data_vigencia));
-alter table public.erp_classificacao_fiscal enable row level security;
-create policy fiscal_classificacao_all on public.erp_classificacao_fiscal for all to authenticated using(empresa_id=public.erp_current_empresa_id() or public.erp_is_master()) with check(empresa_id=public.erp_current_empresa_id() or public.erp_is_master());
-grant select,insert,update,delete on public.erp_classificacao_fiscal to authenticated;

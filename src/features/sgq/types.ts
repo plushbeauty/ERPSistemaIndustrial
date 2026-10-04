@@ -1,0 +1,4 @@
+export type RpncSeverity = 'critica' | 'maior' | 'menor'
+export type SgqDocument = { id:string; codigo_documento:string; titulo_documento:string; revisao:number; status:string; departamento:string; responsavel:string|null; conteudo_texto:string; motivo_alteracao:string|null }
+export type Rpnc = { id:string; numero_rpnc:string|null; descricao_nao_conformidade:string|null; origem:string|null; gravidade:RpncSeverity|null; setor_envolvido_id:string|null; causa_raiz:string|null; investigacao:string|null; acao_corretiva:string|null; eficacia:string|null; data_eficacia:string|null; status:string|null }
+export type Action = { id:string; origem_id:string|null; what:string; why:string|null; where_to:string|null; when_date:string|null; who_id:string|null; how:string|null; status:string; eficacia:string|null }
