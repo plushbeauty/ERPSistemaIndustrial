@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
-import { Check, FileDown, ImagePlus, Printer, RotateCcw, Save, Search, Trash2, Upload, X } from 'lucide-react'
+import { FileDown, Printer, RotateCcw, Save, Search, Trash2, Upload, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 
