@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Copy, Search, Send } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
-import EntityCodeLookup from "../components/industrial/EntityCodeLookup";
 
 type Produto={id:string;codigo:string;nome:string;descricao:string|null;preco_venda:number|null;estoque_atual:number|null;unidade:string;foto_url:string|null;catalogo_disponivel:boolean};
-type Item={produto_id:string;codigo:string;descricao:string;preco:number;quantidade:number};
 
 const brl=(n:number)=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(n);
 export default function VendasCatalogoDigital(){
