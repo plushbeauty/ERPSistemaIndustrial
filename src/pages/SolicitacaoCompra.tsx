@@ -33,8 +33,7 @@ function canApproveRole(role: unknown) {
 }
 
 export default function SolicitacaoCompra() {
-  const [descricao, setDescricao] = useState('')
-  const [products,setProducts]=useState<Product[]>([])
+    const [products,setProducts]=useState<Product[]>([])
   const [items,setItems]=useState<Item[]>([emptyItem()])
   const [dataNecessidade,setDataNecessidade]=useState('')
   const [fornecedorId, setFornecedorId] = useState('')
