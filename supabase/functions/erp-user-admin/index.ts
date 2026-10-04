@@ -297,7 +297,7 @@ Deno.serve(async (req) => {
 
     return json({ error: 'Ação não suportada.' }, 400)
   } catch (error) {
-    console.error(error)
+
     return json({ error: error instanceof Error ? error.message : 'Erro interno.' }, 500)
   }
 })
