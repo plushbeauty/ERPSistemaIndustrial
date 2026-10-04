@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState, type ComponentType } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
+  type LucideIcon,
   BarChart3, Bell, BookOpen, CalendarDays, CheckCircle2, ClipboardCheck,
   ClipboardList, FileCheck2, FileText, Factory, Gauge, Headphones, Home,
   Landmark, Leaf, LogOut, PackageCheck, PackageSearch, Search, Settings,
@@ -13,7 +14,7 @@ type TabletModule = {
   label: string
   icon: string
   route?: string
-  Icon: ComponentType<{ size?: number; strokeWidth?: number; className?: string }>
+  Icon: LucideIcon
 }
 
 const MODULES: TabletModule[] = [
