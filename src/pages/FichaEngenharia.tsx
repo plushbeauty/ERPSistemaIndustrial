@@ -21,7 +21,7 @@
  */
 
 import {useEffect, useMemo, useState} from 'react'
-import {Factory, Plus, X, Search, Printer, CircleDot, Paintbrush, Stamp, Boxes, ChevronRight, CheckCircle2, Image as ImageIcon} from 'lucide-react'
+import {Factory, Plus, X, Search, Printer, CircleDot, Paintbrush, Stamp, Boxes, ChevronRight, CheckCircle2, Image as ImageIcon, Save, Trash2} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import {supabase} from '../lib/supabaseClient'
 
