@@ -165,11 +165,11 @@ Deno.serve(async (req: Request) => {
       if (authUserId) {
         await admin.auth.admin.deleteUser(authUserId).catch(() => undefined)
       }
-      console.error('[erp-login/bootstrap_master]', error)
+
       return out(req, { error: 'MASTER_BOOTSTRAP_FAILED' }, 500)
     }
   } catch (error) {
-    console.error('[erp-login]', error)
+
     return out(req, { error: 'AUTH_INTERNAL_ERROR' }, 500)
   }
 })
