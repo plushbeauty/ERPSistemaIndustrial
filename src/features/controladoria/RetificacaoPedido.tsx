@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Check, Lock, Save } from 'lucide-react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { supabase } from '../../lib/supabaseClient'
+import {useEffect, useMemo, useState} from 'react'
+import {ArrowLeft, Lock, Save} from 'lucide-react'
+import {useNavigate, useParams} from 'react-router-dom'
+import {supabase} from '../../lib/supabaseClient'
 
 type Pedido = {
   id: string
