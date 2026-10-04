@@ -21,11 +21,11 @@ export function AuthProvider({children}:{children:ReactNode}){
   if(!next?.user){setSession(null);setProfile(null);setLoading(false);return}
   setLoading(true);
   try{if(!supabaseConfigurado)throw new Error('SUPABASE_ENV_NOT_CONFIGURED');const nextProfile=await loadProfile(next.user.id);setSession(next);setProfile(nextProfile)}
-  catch(error){console.error('[ERP AuthProvider] acesso bloqueado:',error);setSession(null);setProfile(null);await supabase.auth.signOut().catch(()=>undefined)}
+  catch(error){setSession(null);setProfile(null);await supabase.auth.signOut().catch(()=>undefined)}
   finally{setLoading(false)}
  },[]);
  useEffect(()=>{let mounted=true;if(!supabaseConfigurado){setLoading(false);return()=>{mounted=false}};
-  void supabase.auth.getSession().then(({data,error})=>{if(!mounted)return;if(error){console.error('[ERP AuthProvider] sessão inválida:',error);void hydrate(null);return}void hydrate(data.session)});
+  void supabase.auth.getSession().then(({data,error})=>{if(!mounted)return;if(error){void hydrate(null);return}void hydrate(data.session)});
   const{data:listener}=supabase.auth.onAuthStateChange((_event,next)=>{if(mounted)void hydrate(next)});
   return()=>{mounted=false;listener.subscription.unsubscribe()}
  },[hydrate]);
