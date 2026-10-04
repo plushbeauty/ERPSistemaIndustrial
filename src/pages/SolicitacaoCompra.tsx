@@ -43,6 +43,7 @@ export default function SolicitacaoCompra() {
   const [emailDestino, setEmailDestino] = useState('')
   const [observacoes, setObservacoes] = useState('')
   const [rows, setRows] = useState<RequestRow[]>([])
+  const [dataNecessidade] = useState('')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [canApprove, setCanApprove] = useState(false)
