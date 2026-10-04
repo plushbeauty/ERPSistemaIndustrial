@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Check, ChevronLeft, FileText, Printer, Search, Send, Trash2, X } from 'lucide-react'
-import { supabase } from '../lib/supabaseClient'
+import {useEffect, useMemo, useState} from 'react'
+import {Check, ChevronLeft, FileText, Printer, Search, Send, Trash2, X} from 'lucide-react'
+import {supabase} from '../lib/supabaseClient'
 
 type Supplier={id:string;codigo:string|null;razao_social:string;nome_fantasia:string|null;documento:string|null}
 type Product={id:string;codigo:string;nome:string;unidade:string|null;descricao:string|null;custo_ultimo:number}
