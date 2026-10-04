@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ShieldCheck, Activity, AlertTriangle, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, Gauge, Package, RefreshCw, Settings, Truck, Users, Wrench, ArrowUpRight } from 'lucide-react'
+import { Activity, AlertTriangle, Boxes, CalendarDays, CheckCircle2, ClipboardCheck, Factory, Gauge, Package, RefreshCw, Settings, Truck, Users, Wrench, ArrowUpRight } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type DashboardProps = { onOpen?: (path: string) => void; isMaster?: boolean }
