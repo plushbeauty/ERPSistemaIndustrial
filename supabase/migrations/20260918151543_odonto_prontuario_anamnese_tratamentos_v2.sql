@@ -1,0 +1,3 @@
+-- Reconciliation artifact for the production migration 20260918151543_odonto_prontuario_anamnese_tratamentos_v2.
+-- Already recorded as applied in the shared production Supabase project.
+-- Intentionally no-op: do not replay or destructively reconstruct production DDL.

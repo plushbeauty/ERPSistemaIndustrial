@@ -1,0 +1,3 @@
+-- Reconciliation artifact for the production migration 20260918130023_odonto_atendimento_integracao_v1.
+-- Already recorded as applied in the shared production Supabase project.
+-- Intentionally no-op: do not replay or destructively reconstruct production DDL.

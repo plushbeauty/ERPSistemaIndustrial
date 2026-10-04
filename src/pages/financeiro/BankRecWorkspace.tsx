@@ -1,0 +1,4 @@
+import { AlertTriangle,CheckCircle,List,ScrollText,Shuffle } from 'lucide-react'
+import { NavLink,Outlet } from 'react-router-dom'
+const tabs=[['match','Match and Reconcile',Shuffle],['statement','Reconciliation Statement',ScrollText],['transactions','Transactions',List],['clearance','Clearance Summary',CheckCircle],['incorrect','Incorrectly Cleared',AlertTriangle]] as const
+export default function BankRecWorkspace(){return <section className="erp-global-density flex min-h-0 flex-1 flex-col bg-slate-50"><nav className="flex shrink-0 gap-1 border-b bg-white px-2 py-1">{tabs.map(([path,label,Icon])=><NavLink key={path} to={path} className={({isActive})=>['inline-flex h-7 items-center gap-1 rounded-md px-2 text-[11px]',isActive?'bg-slate-100 font-semibold text-slate-900':'text-slate-600'].join(' ')}><Icon size={12}/>{label}</NavLink>)}</nav><div className="min-h-0 flex-1 overflow-auto p-2"><Outlet/></div></section>}

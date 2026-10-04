@@ -1,0 +1,82 @@
+name: ERP Industrial CI
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: erp-industrial-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: P0 — Full Release Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalação determinística
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
+
+      - name: Lockfile
+        run: npm run verify:lockfile
+
+      - name: Vercel config
+        run: npm run verify:vercel-config
+
+      - name: CI policy
+        run: npm run verify:ci-policy
+
+      - name: Public naming
+        run: npm run verify:public-naming
+
+      - name: Supabase environment
+        run: npm run verify:supabase-env
+
+      - name: Supabase guard regression
+        run: npm run verify:supabase-guard
+
+      - name: Deploy integrity
+        run: npm run verify:deploy-integrity
+
+      - name: TypeScript
+        run: npm run type-check
+
+      - name: ESLint
+        run: npm run lint:check
+
+      - name: Global audit
+        run: npm run audit:global
+
+      - name: Brutal audit
+        run: npm run audit:brutal
+
+      - name: Interaction audit
+        run: npm run audit:interactions
+
+      - name: Lazy imports
+        run: npm run verify:lazy-imports
+
+      - name: Production build
+        run: npm run build
+
+      - name: Build output
+        run: npm run verify:build
+
+      - name: Routes
+        run: npm run verify-routes
+
+      - name: Security no-bypass policy
+        run: npm run audit:security

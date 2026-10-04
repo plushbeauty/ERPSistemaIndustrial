@@ -1,0 +1,21 @@
+/* Consolidated 2026 visual layer: modern industrial cockpit without changing business logic. */
+:root{--erp-bg:#f4f7f8;--erp-surface:#fff;--erp-ink:#102a31;--erp-muted:#64777d;--erp-line:#dce6e9;--erp-primary:#0f6672;--erp-accent:#c79a4b;--erp-radius:18px;--erp-shadow:0 14px 40px rgba(16,42,49,.08)}
+body{background:var(--erp-bg)}
+.pcp-page{color:var(--erp-ink)}
+.pcp-page h1,.pcp-page h2,.pcp-page h3{letter-spacing:-.025em}
+.erp-card,.pcp-card{background:var(--erp-surface);border:1px solid var(--erp-line);border-radius:var(--erp-radius);box-shadow:var(--erp-shadow)}
+.pcp-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.pcp-machine-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:16px}
+.pcp-machine{padding:16px;border:1px solid var(--erp-line);border-radius:16px;background:#fff;cursor:pointer;transition:.18s;box-shadow:0 6px 20px rgba(16,42,49,.05)}
+.pcp-machine:hover,.pcp-machine.active{transform:translateY(-2px);border-color:#8bb7be;box-shadow:0 12px 30px rgba(16,42,49,.1)}
+.pcp-side{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pcp-side-panel{min-height:150px;padding:16px;border:1px solid var(--erp-line);border-radius:16px;background:linear-gradient(180deg,#fff,#f8fbfb)}
+.pcp-timeline{overflow:auto;border:1px solid var(--erp-line);border-radius:18px;background:#fff}
+.pcp-timeline-row{display:grid;grid-template-columns:150px minmax(760px,1fr);min-width:910px;border-top:1px solid #edf2f3}
+.pcp-timeline-label{padding:13px;border-right:1px solid #edf2f3;font-weight:800;background:#fbfcfc}
+.pcp-track{position:relative;min-height:74px;background-image:linear-gradient(90deg,rgba(16,42,49,.055) 1px,transparent 1px);background-size:80px 100%}
+.pcp-block{position:absolute;top:9px;height:56px;border:1px solid #8db2b8;border-radius:12px;padding:7px 10px;overflow:hidden;background:#e6f3f5;box-shadow:0 5px 16px rgba(16,42,49,.08);cursor:pointer}
+.pcp-block strong{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pcp-block small{display:block;color:#587077;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcp-empty{padding:42px 20px;text-align:center;color:var(--erp-muted)}
+@media(max-width:900px){.pcp-side{grid-template-columns:1fr}.pcp-page{padding:14px!important}.pcp-machine-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.pcp-machine-grid{grid-template-columns:1fr}.pcp-toolbar button{width:100%}}

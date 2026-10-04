@@ -1,0 +1,2 @@
+alter function public.erp_salvar_revisao_documento(text,text,text,text,text,text,text) set search_path = public, auth, pg_temp;
+alter function public.erp_proteger_assinatura_revisao() set search_path = public, auth, pg_temp;

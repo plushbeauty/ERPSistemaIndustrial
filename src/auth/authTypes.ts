@@ -1,0 +1,121 @@
+export type Empresa = {
+  id: string;
+  razao_social: string;
+  nome_fantasia: string;
+  ativo: boolean;
+  plano_status: string;
+};
+
+export type AuthProfile = {
+  id: string;
+  auth_user_id: string;
+  email: string | null;
+  nome: string;
+  perfil: 'MASTER' | 'SUPER_ADMIN' | 'ADMIN' | 'USER';
+  nivel_admin: number;
+  ativo: boolean;
+  empresa_id: string | null;
+  empresa: Empresa | null;
+  isMaster: boolean;
+};
+
+type DbUser = {
+  id: string;
+  auth_user_id: string;
+  email: string | null;
+  nome: string;
+  perfil: 'MASTER' | 'SUPER_ADMIN' | 'ADMIN' | 'USER';
+  nivel_admin: number;
+  ativo: boolean;
+  empresa_id: string | null;
+  is_master: boolean;
+  setor_id?: string | null;
+};
+
+type DbEmpresa = {
+  id: string;
+  razao_social: string;
+  nome_fantasia: string;
+  ativo: boolean;
+  plano_status: string;
+};
+
+export function validateAndNarrowProfile(
+  dbUser: DbUser | null | undefined,
+  dbEmpresa: DbEmpresa | null | undefined
+): AuthProfile {
+  if (!dbUser) {
+    throw new Error('Contrato de autenticação violado: usuário ausente.');
+  }
+
+  if (!dbUser.ativo) {
+    throw new Error('Acesso negado: perfil de usuário inativo.');
+  }
+
+  const isMasterUser =
+    dbUser.is_master === true &&
+    dbUser.perfil === 'MASTER' &&
+    dbUser.nivel_admin === 100 &&
+    dbUser.empresa_id === null &&
+    (dbUser.setor_id === null || dbUser.setor_id === undefined);
+
+  if (isMasterUser) {
+    return {
+      id: dbUser.id,
+      auth_user_id: dbUser.auth_user_id,
+      email: dbUser.email,
+      nome: dbUser.nome,
+      perfil: 'MASTER',
+      nivel_admin: 100,
+      ativo: true,
+      empresa_id: null,
+      empresa: null,
+      isMaster: true,
+    };
+  }
+
+  if (dbUser.is_master === true) {
+    throw new Error('Acesso negado: registro marcado como Master possui identidade inconsistente.');
+  }
+
+  if (dbUser.perfil === 'MASTER') {
+    throw new Error('Acesso negado: perfil MASTER inconsistente.');
+  }
+
+  if (dbUser.nivel_admin === 100) {
+    throw new Error('Acesso negado: nível administrativo de Master inconsistente.');
+  }
+
+  if (!dbUser.empresa_id) {
+    throw new Error('Acesso negado: usuário normal sem empresa vinculada.');
+  }
+
+  if (!dbEmpresa) {
+    throw new Error('Acesso negado: empresa vinculada não encontrada.');
+  }
+
+  if (!dbEmpresa.ativo) {
+    throw new Error('Acesso negado: a empresa associada a este acesso está inativa.');
+  }
+
+  const empresa: Empresa = {
+    id: dbEmpresa.id,
+    razao_social: dbEmpresa.razao_social,
+    nome_fantasia: dbEmpresa.nome_fantasia,
+    ativo: dbEmpresa.ativo,
+    plano_status: dbEmpresa.plano_status,
+  };
+
+  return {
+    id: dbUser.id,
+    auth_user_id: dbUser.auth_user_id,
+    email: dbUser.email,
+    nome: dbUser.nome,
+    perfil: dbUser.perfil,
+    nivel_admin: dbUser.nivel_admin,
+    ativo: true,
+    empresa_id: dbUser.empresa_id,
+    empresa,
+    isMaster: false,
+  };
+}
