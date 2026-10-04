@@ -2,7 +2,7 @@
   @AUDIT_REVISION: #AUDIT-ERP-20260920-01
   @STATUS: VERIFIED_GREEN
   @SCOPE: src/main.tsx
-  @CHECKLIST: No-Duplicate-Actions | Valid-Canonical-Links | Active-Noop-Callbacks
+  @CHECKLIST: No-Duplicate-Actions | Valid-Canonical-Links | Active-Noop-Callbacks | Vercel-Final-Gate
 */
 import { StrictMode, Suspense, lazy, type ComponentType } from 'react'
 import { BrowserRouter } from 'react-router-dom'
