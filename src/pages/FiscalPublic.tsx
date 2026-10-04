@@ -11,7 +11,7 @@
  */
 
 import React from 'react'
-import { ArrowRight, Check, FileCheck2, FileText, Landmark, LockKeyhole, PackageCheck, ReceiptText, ShieldCheck, Truck, Upload } from 'lucide-react'
+import { ArrowRight, Check, FileCheck2, FileText, Landmark, PackageCheck, ReceiptText, ShieldCheck, Truck, Upload } from 'lucide-react'
 
 // Interfaces estritas para validação do noImplicitAny: true
 interface FiscalStep {
