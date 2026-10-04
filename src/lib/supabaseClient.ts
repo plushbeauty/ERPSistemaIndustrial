@@ -1,9 +1,6 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 
 const AUTH_STORAGE_KEY = 'erp-industrial-auth'
-const SUPABASE_URL_ENV = 'VITE_SUPABASE_URL'
-const SUPABASE_PUBLISHABLE_KEY_ENV = 'VITE_SUPABASE_PUBLISHABLE_KEY'
-const SUPABASE_ANON_KEY_ENV = 'VITE_SUPABASE_ANON_KEY'
 
 const CANONICAL_SUPABASE_URL = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
 const CANONICAL_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BcwsSbBx8dWof7d_hAKtQA_XzQGAYwR'
@@ -75,7 +72,6 @@ export async function invokeSecureEdgeFunction<T = unknown>(
     return { data: data as T, error: null }
   } catch (error) {
     const normalized = error instanceof Error ? error : new Error(String(error))
-    console.error(`[Edge Function ${functionName}]`, normalized.message)
     return { data: null, error: normalized }
   }
 }
