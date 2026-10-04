@@ -20,10 +20,10 @@
  * =========================================================================
  */
 
-import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { Activity, AlertTriangle, ArrowLeft, ArrowUpRight, CalendarDays, Clock3, FilePlus2, HelpCircle, LayoutDashboard, Package, Pencil, Plus, RefreshCw, Search, Settings2, X } from 'lucide-react'
+import {FormEvent, useEffect, useMemo, useState} from 'react'
+import {Activity, AlertTriangle, ArrowLeft, ArrowUpRight, CalendarDays, Clock3, FilePlus2, HelpCircle, LayoutDashboard, Package, Pencil, Plus, RefreshCw, Search, Settings2, X} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { supabase } from '../lib/supabaseClient'
+import {supabase} from '../lib/supabaseClient'
 
 type Field={key:string;label:string;type?:'text'|'number'|'date'|'email';required?:boolean}
 type Module={name:string;title:string;description:string;icon:LucideIcon;table?:string;fields?:Field[]}
