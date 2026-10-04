@@ -1,5 +1,5 @@
-import { useMemo,useState } from 'react'
-import { supabase } from '../../lib/supabaseClient'
+import {useMemo, useState} from 'react'
+import {supabase} from '../../lib/supabaseClient'
 type Group={codigo:string;nome:string;nivel:number}
 export default function GeradorGruposContabeis(){const [nivel,setNivel]=useState('1');const [tamanho,setTamanho]=useState('8');const [prefixo,setPrefixo]=useState('1.');const [groups,setGroups]=useState<Group[]>([]);const [msg,setMsg]=useState('')
 const preview=useMemo(()=>{const n=Math.max(1,Number(nivel)||1);const p=prefixo.trim();return [{codigo:p+'000',nome:'GRUPO CONTÁBIL',nivel:n},{codigo:p+'001',nome:'SUBGRUPO',nivel:n+1},{codigo:p+'001.01',nome:'CONTA ANALÍTICA',nivel:n+2}]},[nivel,prefixo])
