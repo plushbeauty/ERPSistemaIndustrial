@@ -199,7 +199,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     return Array.from(map.entries()).map(([status, quantidade]) => ({ status, quantidade }))
   }, [ops])
 
-  const queue = useMemo<QueueRow[]>(() => {
+  useMemo<QueueRow[]>(() => {
     const productMap = new Map(products.map(p => [p.id, p]))
     const machineMap = new Map(machines.map(m => [m.id, m]))
     return activeOps.slice(0, 12).map(op => {
