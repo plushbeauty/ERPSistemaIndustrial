@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Check, FileText, Inbox, RefreshCw, Search, Trash2, X } from 'lucide-react'
+import { AlertTriangle, FileText, Inbox, RefreshCw, Search, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import type { IOutlookMailbox, IOutlookMessage, IXmlPedidoResult } from '../types/outlook'
 import { processarXmlPedido } from '../types/outlook'
