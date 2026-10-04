@@ -199,24 +199,6 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     return Array.from(map.entries()).map(([status, quantidade]) => ({ status, quantidade }))
   }, [ops])
 
-  useMemo<QueueRow[]>(() => {
-    const productMap = new Map(products.map(p => [p.id, p]))
-    const machineMap = new Map(machines.map(m => [m.id, m]))
-    return activeOps.slice(0, 12).map(op => {
-      const rows = pointings.filter(p => p.ordem_producao_id === op.id).sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')))
-      const last = rows[0]
-      const machine = machineMap.get(op.maquina_id ?? '')
-      const product = productMap.get(op.produto_id ?? '')
-      return {
-        op: `OP-${op.numero_op}`,
-        workstation: machine ? `${machine.codigo} · ${machine.nome}` : 'Posto não definido',
-        product: product ? `${product.codigo ?? ''} · ${product.nome ?? ''}`.replace(/^ · | · $/g, '') : 'Produto não informado',
-        lastPointing: last?.created_at ? new Date(last.created_at).toLocaleString('pt-BR') : 'Sem apontamento',
-        status: statusText(op.status)
-      }
-    })
-  }, [activeOps, pointings, products, machines])
-
   const cards = [
     { label: 'OPs EM ANDAMENTO', value: fmt(activeOps.length), icon: Activity },
     { label: 'PRODUÇÃO DO DIA', value: fmt(producedToday), suffix: 'un', icon: CheckCircle },
