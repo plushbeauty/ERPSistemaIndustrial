@@ -1,5 +1,5 @@
 import {FormEvent, useEffect, useMemo, useState} from 'react'
-import {BarChart3, ClipboardList, LayoutGrid, PackageCheck, Plus, RefreshCw, ShoppingCart, Truck, Users, X} from 'lucide-react'
+import {BarChart3, ClipboardList, LayoutGrid, PackageCheck, Plus, RefreshCw, Search, ShoppingCart, Truck, Users, X} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import {supabase} from '../lib/supabaseClient'
 
