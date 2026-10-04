@@ -118,7 +118,18 @@ export default function AppIndustrialV7() {
         const { data, error } = await supabase.from('erp_usuarios').select('nome,empresa_id,nivel_admin,auth_user_id,ativo,deleted_at,is_master,perfil').eq('auth_user_id', auth.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
         if (error) throw error
         const master = data?.auth_user_id === auth.user.id && data?.is_master === true && Number(data?.nivel_admin ?? 0) === 100 && String(data?.perfil ?? '').trim().toUpperCase() === 'MASTER' && data?.empresa_id === null
-        if (data && data.auth_user_id === auth.user.id && (master || Boolean(data.empresa_id)) && alive) { setProfile(data); if (data.empresa_id) { const company = await supabase.from('erp_empresas').select('nome_fantasia,razao_social').eq('id', data.empresa_id).eq('ativo', true).maybeSingle(); if (!company.error && alive) ; location.replace('/login') }}>Voltar ao login</button></div></div>
+        if (data && data.auth_user_id === auth.user.id && (master || Boolean(data.empresa_id)) && alive) { setProfile(data); if (data.empresa_id) { const company = await supabase.from('erp_empresas').select('nome_fantasia,razao_social').eq('id', data.empresa_id).eq('ativo', true).maybeSingle(); if (!company.error && alive) setEmpresaNome(String(company.data?.nome_fantasia ?? company.data?.razao_social ?? 'Empresa industrial')) } }
+      } catch (error) {
+        console.error('[ERP profile]', error)
+      } finally {
+        if (alive) setLoading(false)
+      }
+    })()
+    return () => { alive = false }
+  }, [])
+
+  if (loading) return <div className="loading-screen">Carregando SYSNQRA ERP & SGQ INDUSTRIAL…</div>
+  if (!profile) return <div className="error-screen"><div className="error-screen-card"><strong>Perfil ERP não encontrado.</strong><p>A sessão autenticada não possui um usuário ERP ativo vinculado à empresa.</p><button className="primary" type="button" onClick={() => { void supabase.auth.signOut(); location.replace('/login') }}>Voltar ao login</button></div></div>
 
   return <motion.div className={`v7-shell theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
     <header className="v7-topbar" aria-label="Barra superior do ERP">
