@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       textoAcao: manual?.[0]?.texto_acao ?? null,
     });
   } catch (error) {
-    console.error("ERP_IA_SUPORTE_ERROR", error);
+
     return json({ ok: false, error: error instanceof Error ? error.message : "IA_SUPPORT_ERROR" }, 500);
   }
 });
