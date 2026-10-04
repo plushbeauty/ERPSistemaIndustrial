@@ -1,7 +1,7 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { BarChart3, ClipboardList, LayoutGrid, PackageCheck, Plus, RefreshCw, Search, ShoppingCart, Truck, Users, X } from 'lucide-react'
+import {FormEvent, useEffect, useMemo, useState} from 'react'
+import {BarChart3, ClipboardList, LayoutGrid, PackageCheck, Plus, RefreshCw, ShoppingCart, Truck, Users, X} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { supabase } from '../lib/supabaseClient'
+import {supabase} from '../lib/supabaseClient'
 
 type Tab='dashboard'|'solicitacoes'|'pedidos'|'fornecedores'|'recebimentos'
 type Supplier={id:string;razao_social:string;nome_fantasia:string|null;documento:string|null;iso_9001_certificado:boolean;ativo:boolean}
