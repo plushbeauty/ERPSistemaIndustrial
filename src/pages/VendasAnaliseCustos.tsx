@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Paperclip, Plus, RefreshCw, Trash2 } from 'lucide-react'
+import { Paperclip, Plus, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout from './VendasLayout'
 
