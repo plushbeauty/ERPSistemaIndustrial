@@ -15,6 +15,7 @@ export default function QualidadeGenealogiaLote(): ReactElement {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [searched, setSearched] = useState(false)
+  const [, setLoadingState] = useState<'idle' | 'loading' | 'success' | 'empty' | 'error'>('idle')
   const [lot, setLot] = useState<Lot | null>(null)
   const [product, setProduct] = useState<Product | null>(null)
   const [order, setOrder] = useState<Order | null>(null)
