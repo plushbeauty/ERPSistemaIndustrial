@@ -22,8 +22,7 @@ export default function QualidadeGenealogiaLote(): ReactElement {
   const [machine, setMachine] = useState<Machine | null>(null)
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [components, setComponents] = useState<ComponentRow[]>([])
-  const [loadingState, setLoadingState] = useState<'idle' | 'loading' | 'success' | 'empty' | 'error'>('idle')
-
+  
   const executarRastreabilidade = useCallback(async () => {
     const codigo = lotePesquisa.trim()
     if (!codigo) return
