@@ -148,7 +148,7 @@ Deno.serve(async (req) => {
     return json({ ok: true, master: true, user_id: inserted.data.id, auth_user_id: authUserId, email, nome }, 201)
   } catch (error) {
     if (authUserId && admin) await admin.auth.admin.deleteUser(authUserId).catch(() => undefined)
-    console.error("[erp-master-bootstrap]", error)
+
     return json({ error: error instanceof Error ? error.message : "MASTER_BOOTSTRAP_FAILED", stage }, 500)
   }
 })
