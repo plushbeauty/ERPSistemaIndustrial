@@ -51,7 +51,6 @@ export default function PCPPlanejamentoIndustrial(){
   const hours=rows.reduce((s,p)=>s+Math.max(0,(new Date(p.fim_planejado).getTime()-new Date(p.inicio_planejado).getTime())/3600000),0)
   return {m,rows,hours}
  }),[machines,programs])
- const shortages=useMemo(()=>products.filter(p=>Number(p.estoque_atual||0)<0),[products])
 
  async function createMPS(){
   const q=Number(qty),t=Number(target)
