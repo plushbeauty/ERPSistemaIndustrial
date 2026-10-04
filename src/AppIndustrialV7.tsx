@@ -97,7 +97,7 @@ export default function AppIndustrialV7() {
   const [active, setActive] = useState('Dashboard')
   const [launcher, setLauncher] = useState(false)
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [empresaNome] = useState('Empresa industrial')
+  const [empresaNome, setEmpresaNome] = useState('Empresa industrial')
   const [loading, setLoading] = useState(true)
   const [clock, setClock] = useState(new Date())
   const [language] = useState(localStorage.getItem('erp-lang') === 'en-US' ? 'en-US' : 'pt-BR')
