@@ -161,15 +161,14 @@ Deno.serve(async (req: Request) => {
         auth_user_id: authUserId,
         universal_master: true,
       })
-    } catch (error) {
+    } catch {
       if (authUserId) {
         await admin.auth.admin.deleteUser(authUserId).catch(() => undefined)
       }
 
       return out(req, { error: 'MASTER_BOOTSTRAP_FAILED' }, 500)
     }
-  } catch (error) {
-
+  } catch {
     return out(req, { error: 'AUTH_INTERNAL_ERROR' }, 500)
   }
 })
