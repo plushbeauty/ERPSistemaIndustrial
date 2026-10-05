@@ -24,13 +24,13 @@ import { useIsMobile } from '../hooks/useIsMobile'
 import { useSynqraLayout } from '../layout/SynqraLayoutContext'
 import '../styles/premium-workspaces.css'
 
-type SalesNavItem = {
+export type SalesNavItem = {
   label: string
   href: string
   icon: typeof LayoutDashboard
 }
 
-type SalesNavSection = {
+export type SalesNavSection = {
   label: string
   items: SalesNavItem[]
 }
@@ -76,7 +76,7 @@ const sections: SalesNavSection[] = [
   },
 ]
 
-const allItems = sections.flatMap(section => section.items)
+
 
 export default function VendasLayout({
   children,
@@ -93,7 +93,7 @@ export default function VendasLayout({
   const [isTabletMode, setIsTabletMode] = useState(false)
   const isMobile = useIsMobile()
   const tabletMode = isTabletMode || isMobile
-  const { pathname } = useLocation()
+  const { pathname } = useLocation()\n  const activeSections = navSections ?? sections\n  const allItems = activeSections.flatMap(section => section.items)
 
   const logout = async () => {
     await supabase.auth.signOut()
