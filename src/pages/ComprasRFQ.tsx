@@ -23,6 +23,7 @@ export default function ComprasRFQ() {
   const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>([])
   const [items, setItems] = useState<Item[]>([])
   const [productId, setProductId] = useState('')
+  const [productQuery, setProductQuery] = useState('')
   const [quantity, setQuantity] = useState('1')
   const [needDate, setNeedDate] = useState('')
   const [responseDate, setResponseDate] = useState('')
@@ -84,6 +85,11 @@ export default function ComprasRFQ() {
     () => items.reduce((sum, item) => sum + Number(item.quantidade), 0),
     [items],
   )
+  const visibleProducts = useMemo(() => {
+    const query = productQuery.trim().toLocaleLowerCase('pt-BR')
+    if (!query) return products.slice(0, 30)
+    return products.filter(product => (product.codigo + ' ' + product.nome).toLocaleLowerCase('pt-BR').includes(query)).slice(0, 30)
+  }, [productQuery, products])
 
   const addItem = () => {
     const product = products.find(candidate => candidate.id === productId)
@@ -107,6 +113,7 @@ export default function ComprasRFQ() {
       observacoes: '',
     }])
     setProductId('')
+    setProductQuery('')
     setQuantity('1')
   }
 
@@ -289,10 +296,10 @@ export default function ComprasRFQ() {
             </div>
 
             <div className="mt-5 grid gap-2 md:grid-cols-[minmax(0,1fr)_120px_100px]">
-              <select value={productId} onChange={event => setProductId(event.target.value)} className="h-10 min-w-0 rounded border px-3" aria-label="Selecionar matéria-prima ou produto">
-                <option value="">Selecionar matéria-prima/produto</option>
-                {products.map(product => <option key={product.id} value={product.id}>{product.codigo} — {product.nome}</option>)}
-              </select>
+              <div className="relative min-w-0">
+                <input value={productQuery} onChange={event => { setProductQuery(event.target.value); setProductId('') }} onKeyDown={event => { if (event.key === 'Enter' && visibleProducts[0]) { event.preventDefault(); setProductId(visibleProducts[0].id); setProductQuery(visibleProducts[0].codigo + ' — ' + visibleProducts[0].nome) } }} placeholder="Digite código ou descrição do produto..." className="h-10 w-full rounded border px-3" aria-label="Pesquisar produto por código ou descrição" />
+                {productQuery && !productId && <div className="absolute left-0 right-0 top-11 z-20 max-h-56 overflow-auto rounded border bg-white shadow-lg">{visibleProducts.map(product => <button key={product.id} type="button" className="block w-full border-b px-3 py-2 text-left text-xs hover:bg-slate-50" onClick={() => { setProductId(product.id); setProductQuery(product.codigo + ' — ' + product.nome) }}><strong>{product.codigo}</strong> — {product.nome} <span className="text-slate-500">({product.unidade})</span></button>)}{!visibleProducts.length && <p className="px-3 py-3 text-xs text-slate-500">Nenhum produto ativo encontrado.</p>}</div>}
+              </div>
               <input aria-label="Quantidade" type="number" min="0.0001" step="0.0001" value={quantity} onChange={event => setQuantity(event.target.value)} className="h-10 rounded border px-3" />
               <button type="button" onClick={addItem} className="flex min-h-10 items-center justify-center gap-1 rounded bg-[#123B50] text-xs text-white">
                 <Plus size={15} /> Adicionar
