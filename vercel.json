@@ -6,7 +6,7 @@
   "installCommand": "npm ci --legacy-peer-deps --no-audit --no-fund",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
     }
   ],
