@@ -122,7 +122,9 @@ export default function ComprasRequisicoes() {
   const supplierById = useMemo(() => new Map(suppliers.map(supplier => [supplier.id, supplier])), [suppliers])
   const opById = useMemo(() => new Map(productionOrders.map(order => [order.id, order])), [productionOrders])
 
-  return (\n    <VendasLayout title="Requisições de compra" subtitle="PCP • MRP • materiais • cotação" onRefresh={() => void load()}>\n    <main className="min-h-screen bg-slate-100 p-5 text-slate-900">
+  return (
+    <VendasLayout title="Requisições de compra" subtitle="PCP • MRP • materiais • cotação" onRefresh={() => void load()}>
+    <main className="min-h-screen bg-slate-100 p-5 text-slate-900">
       <header className="mx-auto flex max-w-[1800px] flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
           <p className="text-sm font-bold text-sky-700">COMPRAS &gt; REQUISIÇÕES MRP</p>
