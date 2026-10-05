@@ -40,6 +40,12 @@ const money = (value: number | null) => value == null || !Number.isFinite(Number
   ? '—'
   : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value))
 const PAGE_SIZE = 25
+const statusClass = (status: string) => {
+  const value = status.trim().toLocaleLowerCase('pt-BR')
+  if (['pendente', 'pendente de aprovação', 'atrasado', 'atrasada', 'cancelado', 'cancelada'].includes(value)) return 'is-status-pendente'
+  if (['em produção', 'producao', 'produção', 'separação', 'separacao', 'em andamento'].includes(value)) return 'is-status-producao'
+  if (['finalizado', 'faturado', 'entregue', 'concluído', 'concluido'].includes(value)) return 'is-status-finalizado'
+  return 'is-status-neutro'}
 
 export default function VendasStatusPedidos() {
   const [rows, setRows] = useState<Row[]>([])
@@ -190,7 +196,7 @@ export default function VendasStatusPedidos() {
       row.cliente?.nome ?? '',
       row.status,
     ].some((value) => value.toLocaleLowerCase('pt-BR').includes(needle)))
-  }, [rows, query, isPending])
+  }, [rows, query])
   const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE))
   const currentPage = Math.min(page, pageCount - 1)
   const pageRows = visible.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)
@@ -201,13 +207,13 @@ export default function VendasStatusPedidos() {
   }
 
   return (
-    <VendasLayout title={isPending ? "Pedidos pendentes" : "Status dos pedidos"} subtitle={isPending ? "Pendências operacionais e pedidos aguardando conclusão" : "Acompanhamento operacional por status, entrega e produção"} onRefresh={() => void load()}>
+    <VendasLayout title="Status dos pedidos" subtitle="Acompanhamento operacional por status, entrega e produção" onRefresh={() => void load()}>
       <main className="space-y-3 text-xs">
         {error && <div role="alert" className="flex items-start gap-2 border border-red-200 bg-red-50 p-2 text-red-800"><AlertTriangle size={14} className="mt-0.5 shrink-0" />{error}</div>}
 
         <section className="flex flex-wrap items-center gap-2 border border-slate-200 bg-white p-2">
           <div className="inline-flex items-center gap-1.5 rounded border border-slate-200 px-2 py-1 text-slate-700">
-            <Package size={13} /> <span>{isPending ? "Pendentes" : "Pedidos"} carregados</span><strong>{visible.length}</strong>
+            <Package size={13} /> <span>Pedidos carregados</span><strong>{visible.length}</strong>
           </div>
           <p className="min-w-0 flex-1 text-[11px] text-slate-500">Status exibido conforme gravado no pedido. Prazo, estoque, acabamento e entrega não são inferidos.</p>
           <label className="flex h-8 w-full items-center gap-2 border border-slate-300 px-2 sm:ml-auto sm:w-64">
