@@ -216,7 +216,9 @@ export default function ComprasRFQ() {
     }
   }
 
-  return (\n    <VendasLayout title="Cotação de compras" subtitle="Fornecedores • materiais • prazo • condição de pagamento" onRefresh={() => void load()}>\n    <div className="min-h-screen bg-[#F4F7FE] text-slate-900">
+  return (
+    <VendasLayout title="Cotação de compras" subtitle="Fornecedores • materiais • prazo • condição de pagamento" onRefresh={() => void load()}>
+    <div className="min-h-screen bg-[#F4F7FE] text-slate-900">
       <header className="border-b bg-white">
         <div className="flex min-h-[70px] items-center justify-between gap-3 px-5 lg:px-8">
           <div>
