@@ -108,7 +108,7 @@ export default function VendasDashboardGraficos() {
         {loading && <div role="status" className="sales-loading-row">Carregando documentos fiscais…</div>}
 
         <section className="sales-orders-card p-4" aria-label="Resumo do faturamento">
-          <span className="sales-eyebrow">Faturamento fiscal do ${period === 'mes' ? 'mês' : 'ano'}</span>
+          <span className="sales-eyebrow">Faturamento fiscal do {period === 'mes' ? 'mês' : 'ano'}</span>
           <strong className="mt-1 block text-2xl font-bold text-slate-900">{brl(total)}</strong>
           <small className="text-xs text-slate-500">{rows.length} cliente(s) com documentos autorizados</small>
         </section>
