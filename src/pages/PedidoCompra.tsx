@@ -18,7 +18,7 @@ const emptyItem=():Item=>({produto_id:'',codigo:'',descricao:'',quantidade:'1',u
 export default function PedidoCompra(){
  const [empresaId,setEmpresaId]=useState(''),[orders,setOrders]=useState<Order[]>([]),[suppliers,setSuppliers]=useState<Supplier[]>([]),[products,setProducts]=useState<Product[]>([])
  const [page,setPage]=useState(0)
- const [selected,setSelected]=useState<string|null>(null),[supplierId,setSupplierId]=useState(''),[buyer,setBuyer]=useState(''),[payment,setPayment]=useState(''),[deadline,setDeadline]=useState(''),[notes,setNotes]=useState(''),[costCenter,setCostCenter]=useState(''),[deliveryLocation,setDeliveryLocation]=useState(''),[specification,setSpecification]=useState(''),[quoteRef,setQuoteRef]=useState(''),[fiscalStatus,setFiscalStatus]=useState('NAO_ANALISADO'),[fiscalOpinion,setFiscalOpinion]=useState('')
+ const [selected,setSelected]=useState<string|null>(null),[supplierId,setSupplierId]=useState(''),[buyer,setBuyer]=useState(''),[payment,setPayment]=useState(''),[deadline,setDeadline]=useState(''),[freight,setFreight]=useState('0'),[discount,setDiscount]=useState('0'),[carrier,setCarrier]=useState(''),[freightMode,setFreightMode]=useState(''),[contractNumber,setContractNumber]=useState(''),[receivingNotes,setReceivingNotes]=useState(''),[notes,setNotes]=useState(''),[costCenter,setCostCenter]=useState(''),[deliveryLocation,setDeliveryLocation]=useState(''),[specification,setSpecification]=useState(''),[quoteRef,setQuoteRef]=useState(''),[fiscalStatus,setFiscalStatus]=useState('NAO_ANALISADO'),[fiscalOpinion,setFiscalOpinion]=useState('')
  const [items,setItems]=useState<Item[]>([emptyItem()]),[busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState('')
  const [canEditOrder,setCanEditOrder]=useState(true)
  const selectedOrder=useMemo(()=>selected?orders.find(o=>o.id===selected):undefined,[selected,orders])
@@ -56,7 +56,7 @@ export default function PedidoCompra(){
  }
  const updateItem=(index:number,patch:Partial<Item>)=>setItems(current=>current.map((item,i)=>{if(i!==index)return item;const next={...item,...patch};return {...next,total:Number(next.quantidade||0)*Number(next.preco||0)}}))
 
- const reset=()=>{setSelected(null);setCanEditOrder(true);setSupplierId('');setPayment('');setDeadline('');setNotes('');setCostCenter('');setDeliveryLocation('');setSpecification('');setQuoteRef('');setFiscalStatus('NAO_ANALISADO');setFiscalOpinion('');setItems([emptyItem()]);setMessage('');setError('')}
+ const reset=()=>{setSelected(null);setCanEditOrder(true);setSupplierId('');setPayment('');setDeadline('');setNotes('');setFreight('0');setDiscount('0');setCarrier('');setFreightMode('');setContractNumber('');setReceivingNotes('');setCostCenter('');setDeliveryLocation('');setSpecification('');setQuoteRef('');setFiscalStatus('NAO_ANALISADO');setFiscalOpinion('');setItems([emptyItem()]);setMessage('');setError('')}
  const save=async(status:'RASCUNHO'|'PENDENTE_APROVACAO')=>{
   setBusy(true);setError('');setMessage('')
   try{
@@ -80,7 +80,7 @@ export default function PedidoCompra(){
    const saved=Array.isArray(result.data)?result.data[0]:result.data
    if(!saved||typeof saved!=='object'||!('id' in saved))throw new Error('O banco não retornou o pedido salvo.')
    const id=String(saved.id)
-   const meta=await supabase.from('erp_pedidos_compra').update({centro_custo:costCenter.trim()||null,local_entrega:deliveryLocation.trim()||null,especificacao_tecnica:specification.trim()||null,referencia_cotacao:quoteRef.trim()||null}).eq('id',id).eq('empresa_id',empresaId).select('id').single()
+   const meta=await supabase.from('erp_pedidos_compra').update({centro_custo:costCenter.trim()||null,local_entrega:deliveryLocation.trim()||null,especificacao_tecnica:specification.trim()||null,referencia_cotacao:quoteRef.trim()||null,valor_frete:Math.max(0,Number(freight)||0),valor_desconto:Math.max(0,Number(discount)||0),transportadora:carrier.trim()||null,modalidade_frete:freightMode.trim()||null,numero_contrato:contractNumber.trim()||null,observacoes_recebimento:receivingNotes.trim()||null,total:Math.max(0,total + Math.max(0,Number(freight)||0) - Math.max(0,Number(discount)||0))}).eq('id',id).eq('empresa_id',empresaId).select('id').single()
    if(meta.error) throw meta.error
    setMessage(status==='PENDENTE_APROVACAO'?'Pedido enviado para aprovação.':'Pedido salvo como rascunho.')
    await load()
@@ -95,7 +95,7 @@ export default function PedidoCompra(){
     supabase.from('erp_pedidos_compra_itens').select('*').eq('pedido_id',id).eq('empresa_id',empresaId).order('created_at')
    ])
    if(o.error)throw o.error;if(i.error)throw i.error
-   setSelected(id);setCanEditOrder(['RASCUNHO','PENDENTE_APROVACAO'].includes(o.data.status));setSupplierId(o.data.fornecedor_id);setBuyer(o.data.comprador_nome??'');setPayment(o.data.condicao_pagamento??'');setDeadline(o.data.prazo_entrega??'');setNotes(o.data.observacoes??'');setCostCenter(o.data.centro_custo??'');setDeliveryLocation(o.data.local_entrega??'');setSpecification(o.data.especificacao_tecnica??'');setQuoteRef(o.data.referencia_cotacao??'');setFiscalStatus(o.data.fiscal_status??'NAO_ANALISADO');setFiscalOpinion(o.data.fiscal_parecer??'')
+   setSelected(id);setCanEditOrder(['RASCUNHO','PENDENTE_APROVACAO'].includes(o.data.status));setSupplierId(o.data.fornecedor_id);setBuyer(o.data.comprador_nome??'');setPayment(o.data.condicao_pagamento??'');setDeadline(o.data.prazo_entrega??'');setFreight(String(o.data.valor_frete??0));setDiscount(String(o.data.valor_desconto??0));setCarrier(o.data.transportadora??'');setFreightMode(o.data.modalidade_frete??'');setContractNumber(o.data.numero_contrato??'');setReceivingNotes(o.data.observacoes_recebimento??'');setNotes(o.data.observacoes??'');setCostCenter(o.data.centro_custo??'');setDeliveryLocation(o.data.local_entrega??'');setSpecification(o.data.especificacao_tecnica??'');setQuoteRef(o.data.referencia_cotacao??'');setFiscalStatus(o.data.fiscal_status??'NAO_ANALISADO');setFiscalOpinion(o.data.fiscal_parecer??'')
    setItems((i.data??[]).map(x=>({produto_id:x.produto_id,codigo:x.codigo_produto,descricao:x.descricao_produto,quantidade:String(x.quantidade),unidade:x.unidade,preco:String(x.preco_unitario),total:Number(x.total)})))
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível abrir o pedido.')}finally{setBusy(false)}
  }
@@ -129,12 +129,17 @@ export default function PedidoCompra(){
      </label>
      <label className="pc-field">Condição de pagamento<input value={payment} onChange={e=>setPayment(e.target.value)} placeholder="Ex.: 28/42 dias"/></label>
      <label className="pc-field">Prazo de entrega<input type="date" value={deadline} onChange={e=>setDeadline(e.target.value)}/></label>
+     <label className="pc-field">Frete<input type="number" min="0" step="0.01" value={freight} onChange={e=>setFreight(e.target.value)}/></label>
+     <label className="pc-field">Desconto<input type="number" min="0" step="0.01" value={discount} onChange={e=>setDiscount(e.target.value)}/></label>
+     <label className="pc-field">Transportadora<input value={carrier} onChange={e=>setCarrier(e.target.value)} placeholder="Transportadora"/></label>
+     <label className="pc-field">Modalidade de frete<input value={freightMode} onChange={e=>setFreightMode(e.target.value)} placeholder="CIF / FOB / outro"/></label>
+     <label className="pc-field">Nº contrato<input value={contractNumber} onChange={e=>setContractNumber(e.target.value)}/></label>
      <label className="pc-field">Comprador<input value={buyer} onChange={e=>setBuyer(e.target.value)} /></label>
      <label className="pc-field wide">Observações<textarea value={notes} onChange={e=>setNotes(e.target.value)} /></label>
     </div>
     <div className="pc-items"><table className="pc-table"><thead><tr><th>ITEM / PRODUTO</th><th>QTD</th><th>UN</th><th>PREÇO</th><th>TOTAL</th><th></th></tr></thead><tbody>{items.map((item,index)=><tr key={index}><td><div className="pc-supplier"><input value={item.codigo?item.codigo+' — '+item.descricao:''} readOnly placeholder="Localizar produto"/><button className="pc-lupa" type="button" onClick={()=>{setLookupIndex(index);setLookup('product');setLookupText('')}}><Search size={16}/></button></div></td><td><input type="number" min="0.001" step="0.001" value={item.quantidade} onChange={e=>updateItem(index,{quantidade:e.target.value})}/></td><td>{item.unidade}</td><td><input type="number" min="0" step="0.0001" value={item.preco} onChange={e=>updateItem(index,{preco:e.target.value})}/></td><td><strong>{money(item.total)}</strong></td><td><button className="pc-remove" type="button" onClick={()=>setItems(v=>v.length>1?v.filter((_,i)=>i!==index):[emptyItem()])}><X size={17}/></button></td></tr>)}</tbody></table></div>
     <div className="pc-item-actions"><button className="pc-btn" type="button" onClick={()=>setItems(v=>[...v,emptyItem()])}>+ Adicionar item</button></div>
-    <div className="pc-total"><span>TOTAL DO PEDIDO</span><strong>{money(total)}</strong></div>
+    <div className="pc-total"><span>ITENS {money(total)} + FRETE {money(Number(freight)||0)} − DESCONTO {money(Number(discount)||0)}</span><strong>{money(Math.max(0,total+(Number(freight)||0)-(Number(discount)||0)))}</strong></div>
     </fieldset>
     <footer className="pc-footer"><button className="pc-btn" type="button" onClick={reset}><ChevronLeft size={16}/> Cancelar</button>{selectedOrder?.status==='PENDENTE_APROVACAO'&&<><button className="pc-btn" type="button" disabled={busy} onClick={()=>void decideApproval(false)}>Rejeitar</button><button className="pc-btn primary" type="button" disabled={busy} onClick={()=>void decideApproval(true)}><Check size={16}/> Aprovar compra</button></>}{canEditOrder&&<><button className="pc-btn" type="button" disabled={busy} onClick={()=>void save('RASCUNHO')}><Check size={16}/> Salvar</button><button className="pc-btn primary" type="button" disabled={busy} onClick={()=>void save('PENDENTE_APROVACAO')}><Send size={16}/> Enviar aprovação</button></>}</footer>
    </section>
