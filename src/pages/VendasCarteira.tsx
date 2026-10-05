@@ -114,7 +114,7 @@ export default function VendasCarteira() {
               </thead>
               <tbody>
                 {visible.map((order) => (
-                  <tr key={order.id}>
+                  <tr key={order.id} className={statusClass(order.status)}>
                     <td>
                       <Link className="sales-order-number" to={`/vendas/pedido/${order.id}`}>
                         PV-{String(order.numero).padStart(6, '0')}
@@ -123,7 +123,7 @@ export default function VendasCarteira() {
                     <td>{order.pedido_cliente || '—'}</td>
                     <td><strong className="sales-client-name">{order.cliente?.nome || '—'}</strong></td>
                     <td>{order.data_entrega_prometida || '—'}</td>
-                    <td><span className="sales-status is-neutral">{order.status || '—'}</span></td>
+                    <td><span className={`sales-status ${statusPill(order.status)}`}>{order.status || '—'}</span></td>
                     <td className="sales-number sales-total">{brl(Number(order.total || 0))}</td>
                     <td>
                       <div className="sales-row-actions">
