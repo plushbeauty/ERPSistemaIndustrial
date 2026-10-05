@@ -1,0 +1,66 @@
+/* ERP PROFESSIONAL STANDARD — referência Novo Pedido / ERP denso 2026 */
+:root{--erp-radius:2px!important}
+.erp-global-density,.erp-global-density *{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.erp-global-density .rounded,.erp-global-density .rounded-sm,.erp-global-density .rounded-md,.erp-global-density .rounded-lg,.erp-global-density .rounded-xl{border-radius:2px!important}
+.erp-global-density input,.erp-global-density select,.erp-global-density textarea{min-height:28px!important;height:28px;border-radius:2px!important;padding:4px 7px!important;font-size:11px!important;box-shadow:none}
+.erp-global-density textarea{height:auto;min-height:56px!important}
+.erp-global-density button{min-height:28px!important;height:28px;border-radius:2px!important;padding:0 8px!important;font-size:11px!important;font-weight:600}
+.erp-global-density table{font-size:11px!important}
+.erp-global-density th,.erp-global-density td{padding:4px 6px!important}
+.erp-global-density h1{font-size:20px!important;line-height:1.2!important}
+.erp-global-density h2{font-size:15px!important;line-height:1.25!important}
+.erp-global-density h3{font-size:13px!important}
+.erp-global-density [class*="shadow-"]{box-shadow:none!important}
+.erp-global-density [class*="rounded-full"]{border-radius:2px!important}
+.erp-global-density .font-black,.erp-global-density .font-extrabold{font-weight:700!important}
+.erp-global-density .font-bold{font-weight:600!important}
+
+.industrial-form-page{padding:12px!important}
+.industrial-form-page .industrial-panel{border-radius:2px!important;padding:10px!important;box-shadow:none!important}
+.industrial-form-page input,.industrial-form-page select,.industrial-form-page textarea{min-height:30px!important;border-radius:2px!important;padding:5px 7px!important;font-size:11px!important}
+.industrial-form-page label{gap:3px!important;font-size:10px!important;font-weight:600!important}
+.industrial-primary,.industrial-secondary{min-height:30px!important;height:30px!important;border-radius:2px!important;padding:0 10px!important;font-size:11px!important;font-weight:600!important}
+.industrial-tabs{gap:2px!important;padding-bottom:7px!important}
+.industrial-tabs button{min-height:28px!important;border-radius:2px!important;padding:0 9px!important;font-size:11px!important;font-weight:600!important}
+.industrial-table th,.industrial-table td{padding:5px 6px!important}
+.industrial-info-grid,.industrial-capacity,.industrial-k-grid{gap:7px!important}
+.industrial-info-grid article,.industrial-capacity article,.industrial-k-grid article{border-radius:2px!important;padding:8px!important}
+
+.module-workspace-v3{padding:12px!important}
+.module-workspace-v3 .mw3-hero,.module-workspace-v3 .mw3-card,.module-workspace-v3 .mw3-actions,.module-workspace-v3 .mw3-kpis article{border-radius:2px!important;box-shadow:none!important}
+.module-workspace-v3 .mw3-hero{padding:12px!important;margin-bottom:8px!important}
+.module-workspace-v3 .mw3-hero h1{font-size:20px!important}
+.module-workspace-v3 .mw3-kpis{gap:7px!important;margin-bottom:8px!important}
+.module-workspace-v3 .mw3-kpis article{padding:9px!important}
+.module-workspace-v3 .mw3-kpis strong{font-size:18px!important}
+.module-workspace-v3 .mw3-card{padding:10px!important}
+.module-workspace-v3 .mw3-form-grid{gap:7px!important}
+.module-workspace-v3 .mw3-form input{min-height:30px!important;border-radius:2px!important;padding:5px 7px!important}
+.module-workspace-v3 .mw3-btn,.module-workspace-v3 .mw3-action-strip button,.module-workspace-v3 .mw3-tabs button{min-height:28px!important;height:28px!important;border-radius:2px!important;padding:0 9px!important;font-size:11px!important}
+.module-workspace-v3 .mw3-table-wrap{border-radius:2px!important}
+.module-workspace-v3 .mw3-table-wrap th,.module-workspace-v3 .mw3-table-wrap td{padding:5px 6px!important}
+
+.v7-content{padding:12px!important}
+.v7-content>section,.v7-content>div{max-width:100%!important}
+.v7-content input,.v7-content select,.v7-content textarea{min-height:30px!important;height:30px;border-radius:2px!important;padding:5px 7px!important;font-size:11px!important}
+.v7-content textarea{height:auto}
+.v7-content button{min-height:28px!important;height:28px;border-radius:2px!important;padding:0 9px!important;font-size:11px!important}
+.v7-content table{font-size:11px!important}
+.v7-content th,.v7-content td{padding:5px 6px!important}
+.v7-content .feature-card,.v7-content .crud-card,.v7-content .v7-dashboard-main,.v7-content .v7-panel,.v7-content .v7-kpis article,.v7-content .v7-quick button{border-radius:2px!important;box-shadow:none!important}
+.v7-content h1{font-size:20px!important;line-height:1.2!important}
+.v7-content h2{font-size:15px!important;line-height:1.25!important}
+.v7-content h3{font-size:13px!important}
+.v7-kpis,.v7-quick{gap:7px!important}
+.v7-kpis article{padding:9px!important}
+.v7-kpis article strong{font-size:18px!important}
+.v7-quick button{padding:9px!important}
+.v7-header{padding:8px 12px!important}
+.v7-header h1{font-size:18px!important;letter-spacing:-.01em!important}
+.v7-header p{font-size:11px!important;line-height:1.35!important}
+.v7-sidebar{padding:10px 8px!important}
+.v7-nav{padding:7px 8px!important;border-radius:2px!important;font-size:11px!important}
+
+[data-erp-tooltip]{position:relative}
+[data-erp-tooltip]::after{content:attr(data-erp-tooltip);position:absolute;left:50%;bottom:calc(100% + 5px);transform:translateX(-50%);display:none;z-index:5000;white-space:nowrap;padding:4px 6px;border:1px solid #334155;border-radius:2px;background:#17202a;color:#fff;font-size:10px;font-weight:500;pointer-events:none}
+[data-erp-tooltip]:hover::after,[data-erp-tooltip]:focus-visible::after{display:block}
