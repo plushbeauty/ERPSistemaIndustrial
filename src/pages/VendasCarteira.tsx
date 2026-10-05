@@ -17,6 +17,8 @@ type Pedido = {
 
 const PAGE_SIZE = 25
 const brl = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+const statusClass = (status: string) => status.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+const statusPill = (status: string) => `sales-status--${statusClass(status)}`
 
 export default function VendasCarteira() {
   const [rows, setRows] = useState<Pedido[]>([])
