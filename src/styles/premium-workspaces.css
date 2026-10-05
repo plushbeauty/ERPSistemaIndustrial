@@ -581,3 +581,52 @@
 .sales-global-nav .sales-mobile-nav a{min-height:36px;padding:0 11px;font-size:10px;font-weight:500}
 .sales-global-nav .sales-mobile-nav a svg{width:15px;height:15px}
 @media(max-width:900px){.sales-global-nav{top:52px}.sales-global-nav .sales-mobile-nav{min-height:50px}}
+
+
+/* Vendas 2026 — densidade operacional e leitura por status */
+.sales-global-nav .sales-mobile-nav a.is-active,
+.synqra-sales-nav-wrap .sales-mobile-nav a.is-active{
+  background:#1f6f96!important;color:#fff!important;border-color:#1f6f96!important;
+  box-shadow:0 2px 6px #1f6f9626;
+}
+.sales-global-nav .sales-mobile-nav a.is-active svg{color:#fff!important}
+.sales-global-nav .sales-mobile-nav a:hover{background:#eef6f9;color:#15566f}
+.sales-content{background:#f3f7f8}
+.sales-content>.sales-workspace{padding:12px 14px 20px}
+.sales-page-heading{margin:0 0 12px}
+.sales-page-heading h1{font-size:clamp(20px,2.2vw,28px)}
+.sales-orders-card,.sales-detail section{border-radius:9px!important;box-shadow:0 3px 12px #123b5006}
+.sales-list-toolbar{padding:9px 12px}
+.sales-search{min-height:34px}
+.sales-search input{min-height:30px}
+.sales-orders-table thead th{height:36px;padding:0 10px}
+.sales-orders-table tbody td{height:50px;padding:6px 10px;font-size:11px!important}
+.sales-orders-table tbody tr{transition:background .12s ease}
+.sales-orders-table tbody tr.is-status-pendente{background:#fff2f1}
+.sales-orders-table tbody tr.is-status-pendente:hover{background:#ffe9e7}
+.sales-orders-table tbody tr.is-status-producao{background:#fff9e6}
+.sales-orders-table tbody tr.is-status-producao:hover{background:#fff3cf}
+.sales-orders-table tbody tr.is-status-finalizado{background:#eef9f2}
+.sales-orders-table tbody tr.is-status-finalizado:hover{background:#e3f5e9}
+.sales-orders-table tbody tr.is-status-cancelado{background:#f7f7f7;color:#7b8589}
+.sales-orders-table tbody tr.is-status-pendente td:first-child{box-shadow:inset 3px 0 #e88b82}
+.sales-orders-table tbody tr.is-status-producao td:first-child{box-shadow:inset 3px 0 #e8bf55}
+.sales-orders-table tbody tr.is-status-finalizado td:first-child{box-shadow:inset 3px 0 #6dbb88}
+.sales-status{padding:4px 8px;font-size:9px}
+.sales-button{min-height:34px;padding:0 10px;font-size:10px}
+.sales-icon-action,.sales-open-action{min-height:30px}
+.sales-detail{font-size:11px}
+.sales-detail header h1{font-size:24px!important}
+.sales-detail section{padding:12px!important}
+.sales-detail button{min-height:34px!important;height:34px!important;padding:0 10px!important;font-size:10px!important;border-radius:7px!important}
+.sales-detail input,.sales-detail select,.sales-detail textarea{min-height:34px!important;height:34px!important;padding:6px 9px!important;font-size:11px!important}
+.sales-detail textarea{height:auto!important;min-height:68px!important}
+.sales-detail table thead th{height:34px!important;font-size:9px!important}
+.sales-detail table tbody td{height:42px!important;padding:5px 8px!important;font-size:10px!important}
+.sales-pdv .sales-button,.sales-pdv button{min-height:34px!important;height:34px!important;padding:0 10px!important;font-size:10px!important}
+.sales-kpis article{min-height:92px;padding:12px 14px}
+.sales-kpis article>strong{font-size:22px}
+@media(max-width:900px){
+ .sales-content>.sales-workspace{padding:9px 9px 16px}
+ .sales-global-nav .sales-mobile-nav{min-height:48px}
+}
