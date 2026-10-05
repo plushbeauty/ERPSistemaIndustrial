@@ -18,6 +18,7 @@
 import VendasLayout from './VendasLayout'
 import VendasLayout from './VendasLayout'
 import VendasLayout from './VendasLayout'
+import VendasLayout from './VendasLayout'
 - Regra de Negócio Incorporada: Cadastro real de fornecedor, certificado ISO 9001 em Storage privado, validade e qualificação visual por estrela.
 */
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
