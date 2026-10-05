@@ -33,6 +33,7 @@ export default function VendasDashboardGraficos() {
   const [total, setTotal] = useState(0)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const [period, setPeriod] = useState<'mes'|'ano'>('mes')
   const [month, setMonth] = useState(localMonth)
 
   const load = async () => {
