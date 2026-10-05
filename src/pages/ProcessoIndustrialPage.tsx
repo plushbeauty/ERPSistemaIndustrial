@@ -90,13 +90,6 @@ export default function ProcessoIndustrialPage(){
     if(company.error||!company.data) throw company.error??new Error('Empresa da sessão não identificada.')
     return company.data as string
   }
-  async function recordHistory(entidade:'PROCESSO'|'FERRAMENTA'|'RECEITA', entidade_id:string, acao:string, codigo:string, descricao:string, detalhes:Record<string,unknown>={}):Promise<void>{
-    const empresa=await companyId()
-    const user=await supabase.auth.getUser()
-    const result=await supabase.from('erp_processos_historico').insert({empresa_id:empresa,entidade,entidade_id,acao,codigo,descricao,detalhes,usuario_id:user.data.user?.id??null})
-    if(result.error)throw result.error
-  }
-
   async function saveProcess(e:FormEvent){
     e.preventDefault();setBusy(true);setError('');setMessage('')
     try{
