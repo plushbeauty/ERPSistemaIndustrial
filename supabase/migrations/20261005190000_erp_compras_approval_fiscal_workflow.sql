@@ -1,3 +1,11 @@
+-- Permissões específicas do fluxo de compras.
+insert into public.erp_permissions (codigo,nome,modulo,ativo)
+values
+  ('compras.aprovar','Aprovar pedidos de compra','compras',true),
+  ('fiscal.editar','Validar compras fiscalmente','fiscal',true)
+on conflict (codigo) do update
+set nome=excluded.nome, modulo=excluded.modulo, ativo=true;
+
 -- Compras: aprovação, validação fiscal e especificações de aquisição.
 alter table public.erp_pedidos_compra
   add column if not exists centro_custo text,
