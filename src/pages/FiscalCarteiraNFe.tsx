@@ -140,7 +140,7 @@ export default function FiscalCarteiraNFe() {
       <h1 className="text-xl font-semibold">Carteira de documentos fiscais</h1>
       <p className="mt-1 text-sm text-slate-600">Status, protocolos e arquivos consultados do banco do ERP; nenhuma autorização é inferida pela interface.</p>
     </header>
-    <div className="flex flex-col lg:flex-row">
+    <div className="block">
       <FiscalSidebar />
       <section className="min-w-0 flex-1 space-y-4 p-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
