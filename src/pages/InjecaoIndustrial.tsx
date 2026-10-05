@@ -127,12 +127,12 @@ export default function InjecaoIndustrial() {
 
   const filteredMachines = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase('pt-BR')
-    if (!needle) return machines.filter(machine => (statusFilter === 'TODOS' || (machine.ativo ? (machine.status ?? 'ATIVO') : 'INATIVO') === statusFilter) && (!needle || [machine.codigo, machine.nome, machine.tipo ?? '', machine.status ?? ''].some(value => value.toLocaleLowerCase('pt-BR').includes(needle))))
+    return machines.filter(machine => (statusFilter === 'TODOS' || (machine.ativo ? (machine.status ?? 'ATIVO') : 'INATIVO') === statusFilter) && (!needle || [machine.codigo, machine.nome, machine.tipo ?? '', machine.status ?? ''].some(value => value.toLocaleLowerCase('pt-BR').includes(needle))))
   }, [machines, query, statusFilter])
 
   const filteredMolds = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase('pt-BR')
-    if (!needle) return molds.filter(mold => (statusFilter === 'TODOS' || (mold.ativo ? mold.status : 'INATIVO') === statusFilter) && (!needle || [mold.codigo, mold.nome, mold.status, mold.localizacao_fisica ?? ''].some(value => value.toLocaleLowerCase('pt-BR').includes(needle))))
+    return molds.filter(mold => (statusFilter === 'TODOS' || (mold.ativo ? mold.status : 'INATIVO') === statusFilter) && (!needle || [mold.codigo, mold.nome, mold.status, mold.localizacao_fisica ?? ''].some(value => value.toLocaleLowerCase('pt-BR').includes(needle))))
   }, [molds, query, statusFilter])
 
   const activeOrders = orders.filter(order => !['concluida', 'concluído', 'cancelada', 'cancelado'].includes(order.status.toLocaleLowerCase('pt-BR')))
