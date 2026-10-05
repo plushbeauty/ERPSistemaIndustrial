@@ -630,3 +630,5 @@
  .sales-content>.sales-workspace{padding:9px 9px 16px}
  .sales-global-nav .sales-mobile-nav{min-height:48px}
 }
+
+.sales-global-nav .sales-mobile-nav a[href="/produtos-vendas"]{color:#b45309}.sales-global-nav .sales-mobile-nav a[href="/produtos-vendas"] svg{color:#f97316}.sales-global-nav .sales-mobile-nav a[href="/produtos-vendas"].is-active{background:#f97316!important;border-color:#f97316!important;color:#fff!important}.sales-global-nav .sales-mobile-nav a[href="/produtos-vendas"].is-active svg{color:#fff!important}
