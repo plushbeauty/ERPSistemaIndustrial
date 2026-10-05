@@ -196,7 +196,7 @@ export default function FiscalImpostos() {
 
   return <main className="erp-dense fiscal-workspace min-h-screen bg-slate-50 text-slate-900">
     <header className="border-b border-slate-200 bg-white px-5 py-4"><p className="text-xs font-bold uppercase tracking-wide text-blue-800">Fiscal / parametrização</p><h1 className="text-xl font-semibold">Regras tributárias da empresa</h1><p className="mt-1 text-sm text-slate-600">As regras persistidas são a origem dos códigos e alíquotas enviados ao integrador; não são consultoria nem substituem revisão fiscal.</p></header>
-    <div className="flex flex-col lg:flex-row"><FiscalSidebar/><section className="min-w-0 flex-1 space-y-4 p-4">
+    <div className="block"><FiscalSidebar/><section className="min-w-0 flex-1 space-y-4 p-4">
       {error && <div role="alert" className="border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900">{error}</div>}
       {message && <div role="status" className="border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">{message}</div>}
       <section className="flex flex-wrap items-end gap-3 border border-slate-200 bg-white p-4">
