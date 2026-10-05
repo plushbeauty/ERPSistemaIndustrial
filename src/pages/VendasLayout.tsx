@@ -95,7 +95,8 @@ export default function VendasLayout({
   const [isTabletMode, setIsTabletMode] = useState(false)
   const isMobile = useIsMobile()
   const tabletMode = isTabletMode || isMobile
-  const { pathname } = useLocation()\n  const activeSections = navSections ?? sections\n  const allItems = activeSections.flatMap(section => section.items)
+  const { pathname } = useLocation()
+  const activeSections = navSections ?? sections\n  const allItems = activeSections.flatMap(section => section.items)
 
   const logout = async () => {
     await supabase.auth.signOut()
