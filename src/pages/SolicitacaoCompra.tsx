@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { CheckCircle2, Plus, Printer, ShoppingCart, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import VendasLayout from './VendasLayout'
 import { fetchAllPages } from '../lib/supabasePagination'
 
 type RequestRow = {
