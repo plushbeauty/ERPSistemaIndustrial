@@ -44,7 +44,7 @@ export default function NovoPedido(){
     fetchAllPages<Produto>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,unidade,unidade_venda,estoque_atual,preco_venda,codigo_barras,referencia_interna',{count:'exact'}).eq('empresa_id',id).eq('ativo',true).order('codigo').range(from,to)),
     fetchAllPages<Transportadora>((from,to)=>supabase.from('erp_transportadoras').select('id,codigo,razao_social',{count:'exact'}).eq('empresa_id',id).eq('ativo',true).order('codigo').range(from,to))
    ])
-   setClientes(loadedClients);setProdutos(loadedProducts);setTransportadoras(loadedCarriers)
+   setClientes(loadedClients);setProdutos(loadedProducts);setTransportadoras(loadedCarriers);setVendedores(loadedVendedores)
    if(editOrderId){
    const order=await supabase.from('erp_pedidos_venda').select('id,numero,cliente_id,status,data_entrada,data_entrega_prometida,pedido_cliente,observacoes,condicao_pagamento,vendedor_nome,modalidade_frete,id_transportadora,via_entrada,cfop,forma_pagamento,desconto_valor,valor_frete,valor_outras_despesas').eq('id',editOrderId).eq('empresa_id',id).maybeSingle()
    if(order.error)throw order.error
