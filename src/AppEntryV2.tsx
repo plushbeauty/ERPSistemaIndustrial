@@ -85,6 +85,8 @@ const ComprasRFQ = lazyPage(() => import('./pages/ComprasRFQ'), 'default')
 const ComprasIndustrial = lazyPage(() => import('./pages/ComprasIndustrial'), 'default')
 const ComprasRequisicoes = lazyPage(() => import('./pages/ComprasRequisicoes'), 'default')
 const FiscalCompras = lazyPage(() => import('./pages/FiscalCompras'), 'default')
+const ComprasRelatorios = lazyPage(() => import('./pages/ComprasRelatorios'), 'default')
+const ComprasAjuda = lazyPage(() => import('./pages/ComprasAjuda'), 'default')
 const PedidoCompra = lazyPage(() => import('./pages/PedidoCompra'), 'default')
 const VendasClientesPage = lazyPage(() => import('./pages/VendasClientes'), 'default')
 const CentralCustosIndustrial = lazyPage(() => import('./pages/CentralCustosIndustrial'), 'CentralCustosIndustrial')
@@ -495,6 +497,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/catalogo" element={<CatalogoDigital />} />
       <Route path="/fiscal" element={<Fiscal />} />
       <Route path="/fiscal/compras" element={<FiscalCompras />} />
+      <Route path="/compras/relatorios" element={<ComprasRelatorios />} />
+      <Route path="/compras/ajuda" element={<ComprasAjuda />} />
       <Route path="/fiscal/emissao" element={<NFeEmissao />} />
       <Route path="/fiscal/previsao-caixa" element={<FiscalPrevisaoCaixa />} />
       <Route path="/fiscal/carteira-nfe" element={<FiscalCarteiraNFe />} />
