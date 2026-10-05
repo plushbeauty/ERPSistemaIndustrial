@@ -90,6 +90,13 @@ export default function ProcessoIndustrialPage(){
     if(company.error||!company.data) throw company.error??new Error('Empresa da sessão não identificada.')
     return company.data as string
   }
+  async function recordHistory(entidade:'PROCESSO'|'FERRAMENTA'|'RECEITA', entidade_id:string, acao:string, codigo:string, descricao:string, detalhes:Record<string,unknown>={}):Promise<void>{
+    const empresa=await companyId()
+    const user=await supabase.auth.getUser()
+    const result=await supabase.from('erp_processos_historico').insert({empresa_id:empresa,entidade,entidade_id,acao,codigo,descricao,detalhes,usuario_id:user.data.user?.id??null})
+    if(result.error)throw result.error
+  }
+
   async function saveProcess(e:FormEvent){
     e.preventDefault();setBusy(true);setError('');setMessage('')
     try{
@@ -101,6 +108,8 @@ export default function ProcessoIndustrialPage(){
         ? await supabase.from('erp_processos_industriais').update(payload).eq('id',editingProcess).eq('empresa_id',id)
         : await supabase.from('erp_processos_industriais').insert(payload)
       if(r.error) throw r.error
+      const processId=editingProcess||((await supabase.from('erp_processos_industriais').select('id').eq('empresa_id',id).eq('codigo',payload.codigo).single()).data?.id)
+      if(processId) await recordHistory('PROCESSO',processId,editingProcess?'EDITAR':'CRIAR',payload.codigo,editingProcess?'Processo atualizado.':'Processo cadastrado.',{tipo:type})
       setMessage(editingProcess?'Processo atualizado no banco.':'Processo cadastrado no banco.')
       setShowProcess(false);setEditingProcess('');setProcessForm({codigo:'',nome:'',descricao:'',capacidade:'',setup:'0',ciclo:''});await load()
     }catch(e){setError(e instanceof Error?e.message:'Não foi possível gravar o processo.')}finally{setBusy(false)}
@@ -111,6 +120,8 @@ export default function ProcessoIndustrialPage(){
       const company=await companyId()
       const r=await supabase.from(table).update({ativo:false}).eq('id',id).eq('empresa_id',company)
       if(r.error) throw r.error
+      const row=table==='erp_processos_industriais'?processes.find(item=>item.id===id):tools.find(item=>item.id===id)
+      if(row) await recordHistory(table==='erp_processos_industriais'?'PROCESSO':'FERRAMENTA',id,'INATIVAR',row.codigo,table==='erp_processos_industriais'?'Processo inativado.':'Ferramenta inativada.')
       setMessage(table==='erp_processos_industriais'?'Processo inativado.':'Ferramenta inativada.')
       if(selectedProcess===id) setSelectedProcess('')
       await load()
@@ -127,6 +138,8 @@ export default function ProcessoIndustrialPage(){
         ? await supabase.from('erp_ferramentas_industriais').update(payload).eq('id',editingTool).eq('empresa_id',id)
         : await supabase.from('erp_ferramentas_industriais').insert(payload)
       if(r.error) throw r.error
+      const toolId=editingTool||((await supabase.from('erp_ferramentas_industriais').select('id').eq('empresa_id',id).eq('codigo',payload.codigo).single()).data?.id)
+      if(toolId) await recordHistory('FERRAMENTA',toolId,editingTool?'EDITAR':'CRIAR',payload.codigo,editingTool?'Ferramenta atualizada.':'Ferramenta cadastrada.',{tipo:payload.tipo})
       setMessage(editingTool?'Ferramenta atualizada no banco.':'Ferramenta cadastrada no banco.')
       setShowTool(false);setEditingTool('');setToolForm({codigo:'',nome:'',tipo:toolTypes[type][0],cavidades:'',vida:''});await load()
     }catch(e){setError(e instanceof Error?e.message:'Não foi possível gravar a ferramenta.')}finally{setBusy(false)}
