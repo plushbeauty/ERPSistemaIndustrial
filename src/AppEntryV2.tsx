@@ -148,6 +148,7 @@ const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspec
 const MoldesFerramentaria = lazyPage(() => import('./pages/MoldesFerramentaria'), 'MoldesFerramentaria')
 const OperacaoIndustrial = lazyPage(() => import('./pages/OperacaoIndustrial'), 'OperacaoIndustrial')
 const InjecaoIndustrial = lazyPage(() => import('./pages/InjecaoIndustrial'), 'InjecaoIndustrial')
+const ProcessoIndustrialPage = lazyPage(() => import('./pages/ProcessoIndustrialPage'), 'ProcessoIndustrialPage')
 const BankingReconciliation = lazyPage(() => import('./features/banking/BankReconciliation'), 'BankReconciliation')
 const BankingStatementImporter = lazyPage(() => import('./features/banking/BankStatementImporter'), 'BankStatementImporter')
 const BankingListaPrecosCliente = lazyPage(() => import('./features/banking/ListaPrecosCliente'), 'ListaPrecosCliente')
@@ -541,6 +542,15 @@ function AppIndustrialAuthenticated() {
       <Route path="/estoque/recebimento" element={<EstoqueRecebimentoLotes />} />
       <Route path="/fichas-processo" element={<FichasProcesso />} />
       <Route path="/processos/injecao" element={<InjecaoIndustrial />} />
+      <Route path="/processos/prensados" element={<ProcessoIndustrialPage />} />
+      <Route path="/processos/estamparia" element={<ProcessoIndustrialPage />} />
+      <Route path="/processos/ferramentaria" element={<ProcessoIndustrialPage />} />
+      <Route path="/processos/extrusao" element={<ProcessoIndustrialPage />} />
+      <Route path="/processos/usinagem" element={<ProcessoIndustrialPage />} />
+      <Route path="/processos/soldagem" element={<ProcessoIndustrialPage />} />
+      <Route path="/processos/montagem" element={<ProcessoIndustrialPage />} />
+      <Route path="/processos/corte" element={<ProcessoIndustrialPage />} />
+      <Route path="/processos/pintura" element={<ProcessoIndustrialPage />} />
       <Route path="*" element={<Navigate to="/comercial" replace />} />
     </Routes>
   )
