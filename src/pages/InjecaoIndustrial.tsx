@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Factory, Pencil, Plus, RefreshCw, Search, XCircle } from 'lucide-react'
+import { Boxes, ClipboardList, Factory, History, PackageSearch, Pencil, Plus, RefreshCw, Search, Settings2, ShieldCheck, XCircle } from 'lucide-react'
+import VendasLayout, { type SalesNavSection } from './VendasLayout'
 import { supabase } from '../lib/supabaseClient'
 
 type Machine = {
@@ -28,6 +29,8 @@ type Mold = {
   ativo: boolean
   localizacao_fisica: string | null
 }
+
+type HistoryRow = { id:string; entidade:string; entidade_id:string; acao:string; codigo:string|null; descricao:string|null; detalhes:Record<string,unknown>; criado_em:string }
 
 type ProductionOrder = {
   id: string
@@ -59,6 +62,10 @@ type MoldForm = {
   localizacao_fisica: string
 }
 
+const injectionNav: SalesNavSection[] = [
+  { label:'Injeção', items:[{ label:'Painel de injeção', href:'/processos/injecao', icon:Factory },{ label:'Processos e receitas', href:'/processos/injecao', icon:Settings2 },{ label:'Fichas de processo', href:'/fichas-processo', icon:ClipboardList }]},
+  { label:'Integrações', items:[{ label:'PCP e ordens', href:'/pcp', icon:Boxes },{ label:'Qualidade', href:'/qualidade', icon:ShieldCheck },{ label:'Estoque', href:'/estoque', icon:PackageSearch }]},
+]
 const emptyMachine: MachineForm = { id: null, codigo: '', nome: '', tipo: 'INJETORA', fabricante: '', modelo: '', valor_hora_custo: '0' }
 const emptyMold: MoldForm = { id: null, codigo: '', nome: '', status: 'DISPONIVEL', numero_cavidades: '1', cavidades_ativas: '1', limite_ciclos: '0', localizacao_fisica: '' }
 
@@ -71,6 +78,9 @@ export default function InjecaoIndustrial() {
   const [machines, setMachines] = useState<Machine[]>([])
   const [molds, setMolds] = useState<Mold[]>([])
   const [orders, setOrders] = useState<ProductionOrder[]>([])
+  const [history, setHistory] = useState<HistoryRow[]>([])
+  const [statusFilter, setStatusFilter] = useState('TODOS')
+  const [historyFilter, setHistoryFilter] = useState('TODOS')
   const [query, setQuery] = useState('')
   const [machineForm, setMachineForm] = useState<MachineForm>(emptyMachine)
   const [moldForm, setMoldForm] = useState<MoldForm>(emptyMold)
@@ -102,6 +112,8 @@ export default function InjecaoIndustrial() {
       setMachines((machineResult.data ?? []) as Machine[])
       setMolds((moldResult.data ?? []) as Mold[])
       setOrders((orderResult.data ?? []) as ProductionOrder[])
+      const historyResult = await supabase.from('erp_injecao_historico').select('id,entidade,entidade_id,acao,codigo,descricao,detalhes,criado_em').eq('empresa_id', id).order('criado_em', { ascending:false }).limit(100)
+      setHistory(historyResult.error ? [] : (historyResult.data ?? []) as HistoryRow[])
       setCanCreate(createPermission.error ? false : Boolean(createPermission.data))
       setCanEdit(editPermission.error ? false : Boolean(editPermission.data))
     } catch (cause) {
@@ -115,17 +127,16 @@ export default function InjecaoIndustrial() {
 
   const filteredMachines = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase('pt-BR')
-    if (!needle) return machines
-    return machines.filter(machine => [machine.codigo, machine.nome, machine.tipo ?? '', machine.status ?? ''].some(value => value.toLocaleLowerCase('pt-BR').includes(needle)))
+    if (!needle) return machines.filter(machine => (statusFilter === 'TODOS' || (machine.ativo ? (machine.status ?? 'ATIVO') : 'INATIVO') === statusFilter) && (!needle || [machine.codigo, machine.nome, machine.tipo ?? '', machine.status ?? ''].some(value => value.toLocaleLowerCase('pt-BR').includes(needle))))
   }, [machines, query])
 
   const filteredMolds = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase('pt-BR')
-    if (!needle) return molds
-    return molds.filter(mold => [mold.codigo, mold.nome, mold.status, mold.localizacao_fisica ?? ''].some(value => value.toLocaleLowerCase('pt-BR').includes(needle)))
+    if (!needle) return molds.filter(mold => (statusFilter === 'TODOS' || (mold.ativo ? mold.status : 'INATIVO') === statusFilter) && (!needle || [mold.codigo, mold.nome, mold.status, mold.localizacao_fisica ?? ''].some(value => value.toLocaleLowerCase('pt-BR').includes(needle))))
   }, [molds, query])
 
   const activeOrders = orders.filter(order => !['concluida', 'concluído', 'cancelada', 'cancelado'].includes(order.status.toLocaleLowerCase('pt-BR')))
+  const visibleHistory = history.filter(item => historyFilter === 'TODOS' || item.entidade === historyFilter)
 
   async function saveMachine(): Promise<void> {
     if (!canCreate && !machineForm.id) { setError('Seu perfil não possui permissão para criar recursos de produção.'); return }
@@ -200,6 +211,7 @@ export default function InjecaoIndustrial() {
   }
 
   return (
+    <VendasLayout title="Injeção Plástica" subtitle="Injetoras • moldes • ordens • histórico" onRefresh={() => void load()} navSections={injectionNav}>
     <main className="min-h-screen bg-[#F4FBFD] p-3 text-xs text-slate-800 md:p-4">
       <header className="mb-3 flex flex-wrap items-center gap-2 border border-slate-300 bg-white px-3 py-2">
         <Factory size={18} className="text-[#3A9D78]" />
@@ -215,6 +227,9 @@ export default function InjecaoIndustrial() {
 
       <section className="mb-3 flex flex-wrap items-center gap-2 border border-slate-300 bg-white p-2">
         <label className="flex h-8 min-w-64 flex-1 items-center gap-2 border border-slate-300 px-2"><Search size={13} /><input className="min-w-0 flex-1 outline-none" value={query} onChange={event => setQuery(event.target.value)} placeholder="Código, nome, tipo ou status..." /></label>
+        <select aria-label="Filtrar status" value={statusFilter} onChange={event => setStatusFilter(event.target.value)} className="h-8 border border-slate-300 bg-white px-2">
+          <option value="TODOS">Todos os status</option><option value="DISPONIVEL">Disponível</option><option value="ATIVA">Ativa</option><option value="EM_PRODUCAO">Em produção</option><option value="EM_MANUTENCAO">Em manutenção</option><option value="INATIVO">Inativo</option>
+        </select>
         <button type="button" title="Nova injetora" disabled={!canCreate || busy} onClick={() => { setMachineForm(emptyMachine); setForm('machine') }} className="flex h-8 items-center gap-1 border border-slate-400 bg-white px-2 hover:bg-slate-50 disabled:opacity-50"><Plus size={13} /> Nova Injetora</button>
         <button type="button" title="Novo molde" disabled={!canCreate || busy} onClick={() => { setMoldForm(emptyMold); setForm('mold') }} className="flex h-8 items-center gap-1 border border-slate-400 bg-white px-2 hover:bg-slate-50 disabled:opacity-50"><Plus size={13} /> Novo Molde</button>
       </section>
@@ -235,7 +250,7 @@ export default function InjecaoIndustrial() {
             <thead><tr className="bg-slate-100 text-left"><th className="p-2">Código</th><th className="p-2">Nome</th><th className="p-2">Fabricante / Modelo</th><th className="p-2">Status</th><th className="p-2 text-right">Custo/h</th><th className="p-2">Ações</th></tr></thead>
             <tbody>{filteredMachines.map(machine => <tr key={machine.id} className="border-t border-slate-200">
               <td className="p-2">{machine.codigo}</td><td className="p-2">{machine.nome}</td><td className="p-2">{[machine.fabricante, machine.modelo].filter(Boolean).join(' / ') || '—'}</td><td className="p-2">{machine.ativo ? machine.status ?? 'ativo' : 'INATIVA'}</td><td className="p-2 text-right">{Number(machine.valor_hora_custo).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td>
-              <td className="p-2"><div className="flex gap-1"><button type="button" title="Editar injetora" aria-label={`Editar injetora ${machine.codigo}`} disabled={!canEdit || busy} onClick={() => { setMachineForm({ id: machine.id, codigo: machine.codigo, nome: machine.nome, tipo: machine.tipo ?? 'INJETORA', fabricante: machine.fabricante ?? '', modelo: machine.modelo ?? '', valor_hora_custo: String(machine.valor_hora_custo ?? 0) }); setForm('machine') }} className="flex h-7 w-7 items-center justify-center border border-slate-300 hover:bg-slate-100 disabled:opacity-50"><Pencil size={13} /></button>{machine.ativo && <button type="button" title="Inativar injetora" aria-label={`Inativar injetora ${machine.codigo}`} disabled={!canEdit || busy} onClick={() => void inactivate('erp_maquinas', machine.id)} className="flex h-7 w-7 items-center justify-center border border-slate-300 hover:bg-red-50 disabled:opacity-50"><XCircle size={13} /></button>}</div></td>
+              <td className="p-2"><div className="flex gap-1"><button type="button" title="Editar injetora" aria-label={`Editar injetora ${machine.codigo}`} disabled={!canEdit || busy} onClick={() => { setMachineForm({ id: machine.id, codigo: machine.codigo, nome: machine.nome, tipo: machine.tipo ?? 'INJETORA', fabricante: machine.fabricante ?? '', modelo: machine.modelo ?? '', valor_hora_custo: String(machine.valor_hora_custo ?? 0) }); setForm('machine') }} className="flex h-7 w-7 items-center justify-center border border-slate-300 hover:bg-slate-100 disabled:opacity-50"><Pencil size={13} /></button>{machine.ativo && <button type="button" title="Inativar injetora" aria-label={`Inativar injetora ${machine.codigo}`} disabled={!canEdit || busy} onClick={() => window.confirm(`Inativar a injetora ${machine.codigo}?`) && void inactivate('erp_maquinas', machine.id)} className="flex h-7 w-7 items-center justify-center border border-slate-300 hover:bg-red-50 disabled:opacity-50"><XCircle size={13} /></button>}</div></td>
             </tr>)}{!filteredMachines.length && <tr><td colSpan={6} className="p-6 text-center text-slate-500">Nenhuma injetora encontrada no banco da empresa.</td></tr>}</tbody>
           </table>
         </section>
@@ -246,7 +261,7 @@ export default function InjecaoIndustrial() {
             <thead><tr className="bg-slate-100 text-left"><th className="p-2">Código</th><th className="p-2">Nome</th><th className="p-2 text-right">Cavidades</th><th className="p-2 text-right">Ciclos</th><th className="p-2">Status</th><th className="p-2">Ações</th></tr></thead>
             <tbody>{filteredMolds.map(mold => <tr key={mold.id} className="border-t border-slate-200">
               <td className="p-2">{mold.codigo}</td><td className="p-2">{mold.nome}</td><td className="p-2 text-right">{mold.cavidades_ativas}/{mold.numero_cavidades}</td><td className="p-2 text-right">{Number(mold.ciclos_atuais).toLocaleString('pt-BR')} / {Number(mold.limite_ciclos).toLocaleString('pt-BR')}</td><td className="p-2">{mold.ativo ? mold.status : 'INATIVO'}</td>
-              <td className="p-2"><div className="flex gap-1"><button type="button" title="Editar molde" aria-label={`Editar molde ${mold.codigo}`} disabled={!canEdit || busy} onClick={() => { setMoldForm({ id: mold.id, codigo: mold.codigo, nome: mold.nome, status: mold.status, numero_cavidades: String(mold.numero_cavidades), cavidades_ativas: String(mold.cavidades_ativas), limite_ciclos: String(mold.limite_ciclos), localizacao_fisica: mold.localizacao_fisica ?? '' }); setForm('mold') }} className="flex h-7 w-7 items-center justify-center border border-slate-300 hover:bg-slate-100 disabled:opacity-50"><Pencil size={13} /></button>{mold.ativo && <button type="button" title="Inativar molde" aria-label={`Inativar molde ${mold.codigo}`} disabled={!canEdit || busy} onClick={() => void inactivate('erp_moldes', mold.id)} className="flex h-7 w-7 items-center justify-center border border-slate-300 hover:bg-red-50 disabled:opacity-50"><XCircle size={13} /></button>}</div></td>
+              <td className="p-2"><div className="flex gap-1"><button type="button" title="Editar molde" aria-label={`Editar molde ${mold.codigo}`} disabled={!canEdit || busy} onClick={() => { setMoldForm({ id: mold.id, codigo: mold.codigo, nome: mold.nome, status: mold.status, numero_cavidades: String(mold.numero_cavidades), cavidades_ativas: String(mold.cavidades_ativas), limite_ciclos: String(mold.limite_ciclos), localizacao_fisica: mold.localizacao_fisica ?? '' }); setForm('mold') }} className="flex h-7 w-7 items-center justify-center border border-slate-300 hover:bg-slate-100 disabled:opacity-50"><Pencil size={13} /></button>{mold.ativo && <button type="button" title="Inativar molde" aria-label={`Inativar molde ${mold.codigo}`} disabled={!canEdit || busy} onClick={() => window.confirm(`Inativar o molde ${mold.codigo}?`) && void inactivate('erp_moldes', mold.id)} className="flex h-7 w-7 items-center justify-center border border-slate-300 hover:bg-red-50 disabled:opacity-50"><XCircle size={13} /></button>}</div></td>
             </tr>)}{!filteredMolds.length && <tr><td colSpan={6} className="p-6 text-center text-slate-500">Nenhum molde de injeção encontrado no banco da empresa.</td></tr>}</tbody>
           </table>
         </section>
@@ -258,6 +273,11 @@ export default function InjecaoIndustrial() {
           <tbody>{activeOrders.map(order => <tr key={order.id} className="border-t border-slate-200"><td className="p-2">{order.numero_op}</td><td className="p-2">{order.status}</td><td className="p-2 text-right">{Number(order.quantidade).toLocaleString('pt-BR')}</td><td className="p-2 text-right">{Number(order.quantidade_produzida).toLocaleString('pt-BR')}</td><td className="p-2">{machines.find(machine => machine.id === order.maquina_id)?.codigo ?? 'Não vinculada'}</td></tr>)}</tbody>
         </table>
         {!activeOrders.length && <p className="p-6 text-center text-slate-500">Nenhuma OP aberta vinculada ao módulo.</p>}
+      </section>
+
+      <section className="mt-3 overflow-x-auto border border-slate-300 bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-300 px-3 py-2"><div><h2 className="text-sm text-[#123B50]">Histórico do módulo</h2><p className="text-[10px] text-slate-500">Inclusões, alterações e inativações registradas no banco.</p></div><div className="flex items-center gap-2"><History size={14}/><select value={historyFilter} onChange={event=>setHistoryFilter(event.target.value)} className="h-8 border border-slate-300 bg-white px-2 text-[11px]"><option value="TODOS">Todos</option><option value="INJETORA">Injetoras</option><option value="MOLDE">Moldes</option></select></div></div>
+        <table className="w-full min-w-[760px] border-collapse text-[11px]"><thead><tr className="bg-slate-100 text-left"><th className="p-2">Data</th><th className="p-2">Entidade</th><th className="p-2">Código</th><th className="p-2">Ação</th><th className="p-2">Descrição</th></tr></thead><tbody>{visibleHistory.map(item=><tr key={item.id} className="border-t border-slate-200"><td className="p-2">{new Date(item.criado_em).toLocaleString('pt-BR')}</td><td className="p-2">{item.entidade}</td><td className="p-2 font-semibold">{item.codigo ?? '—'}</td><td className="p-2">{item.acao}</td><td className="p-2">{item.descricao ?? '—'}</td></tr>)}{!visibleHistory.length&&<tr><td colSpan={5} className="p-6 text-center text-slate-500">Nenhum evento registrado.</td></tr>}</tbody></table>
       </section>
 
       {form && (
@@ -283,5 +303,7 @@ export default function InjecaoIndustrial() {
         </div>
       )}
     </main>
+    </main>
+    </VendasLayout>
   )
 }
