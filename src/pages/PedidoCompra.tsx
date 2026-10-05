@@ -17,7 +17,7 @@ const emptyItem=():Item=>({produto_id:'',codigo:'',descricao:'',quantidade:'1',u
 export default function PedidoCompra(){
  const [empresaId,setEmpresaId]=useState(''),[orders,setOrders]=useState<Order[]>([]),[suppliers,setSuppliers]=useState<Supplier[]>([]),[products,setProducts]=useState<Product[]>([])
  const [page,setPage]=useState(0)
- const [selected,setSelected]=useState<string|null>(null),[supplierId,setSupplierId]=useState(''),[buyer,setBuyer]=useState(''),[payment,setPayment]=useState(''),[deadline,setDeadline]=useState(''),[notes,setNotes]=useState('')
+ const [selected,setSelected]=useState<string|null>(null),[supplierId,setSupplierId]=useState(''),[buyer,setBuyer]=useState(''),[payment,setPayment]=useState(''),[deadline,setDeadline]=useState(''),[notes,setNotes]=useState(''),[costCenter,setCostCenter]=useState(''),[deliveryLocation,setDeliveryLocation]=useState(''),[specification,setSpecification]=useState(''),[quoteRef,setQuoteRef]=useState(''),[fiscalStatus,setFiscalStatus]=useState('NAO_ANALISADO'),[fiscalOpinion,setFiscalOpinion]=useState('')
  const [items,setItems]=useState<Item[]>([emptyItem()]),[busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState('')
  const [canEditOrder,setCanEditOrder]=useState(true)
  const [lookup,setLookup]=useState<'supplier'|'product'|null>(null),[lookupIndex,setLookupIndex]=useState(0),[lookupText,setLookupText]=useState('')
@@ -54,7 +54,7 @@ export default function PedidoCompra(){
  }
  const updateItem=(index:number,patch:Partial<Item>)=>setItems(current=>current.map((item,i)=>{if(i!==index)return item;const next={...item,...patch};return {...next,total:Number(next.quantidade||0)*Number(next.preco||0)}}))
 
- const reset=()=>{setSelected(null);setCanEditOrder(true);setSupplierId('');setPayment('');setDeadline('');setNotes('');setItems([emptyItem()]);setMessage('');setError('')}
+ const reset=()=>{setSelected(null);setCanEditOrder(true);setSupplierId('');setPayment('');setDeadline('');setNotes('');setCostCenter('');setDeliveryLocation('');setSpecification('');setQuoteRef('');setFiscalStatus('NAO_ANALISADO');setFiscalOpinion('');setItems([emptyItem()]);setMessage('');setError('')}
  const save=async(status:'RASCUNHO'|'PENDENTE_APROVACAO')=>{
   setBusy(true);setError('');setMessage('')
   try{
@@ -78,6 +78,8 @@ export default function PedidoCompra(){
    const saved=Array.isArray(result.data)?result.data[0]:result.data
    if(!saved||typeof saved!=='object'||!('id' in saved))throw new Error('O banco não retornou o pedido salvo.')
    const id=String(saved.id)
+   const meta=await supabase.from('erp_pedidos_compra').update({centro_custo:costCenter.trim()||null,local_entrega:deliveryLocation.trim()||null,especificacao_tecnica:specification.trim()||null,referencia_cotacao:quoteRef.trim()||null}).eq('id',id).eq('empresa_id',empresaId).select('id').single()
+   if(meta.error) throw meta.error
    setMessage(status==='PENDENTE_APROVACAO'?'Pedido enviado para aprovação.':'Pedido salvo como rascunho.')
    await load()
    setSelected(id)
@@ -91,14 +93,14 @@ export default function PedidoCompra(){
     supabase.from('erp_pedidos_compra_itens').select('*').eq('pedido_id',id).eq('empresa_id',empresaId).order('created_at')
    ])
    if(o.error)throw o.error;if(i.error)throw i.error
-   setSelected(id);setCanEditOrder(['RASCUNHO','PENDENTE_APROVACAO'].includes(o.data.status));setSupplierId(o.data.fornecedor_id);setBuyer(o.data.comprador_nome??'');setPayment(o.data.condicao_pagamento??'');setDeadline(o.data.prazo_entrega??'');setNotes(o.data.observacoes??'')
+   setSelected(id);setCanEditOrder(['RASCUNHO','PENDENTE_APROVACAO'].includes(o.data.status));setSupplierId(o.data.fornecedor_id);setBuyer(o.data.comprador_nome??'');setPayment(o.data.condicao_pagamento??'');setDeadline(o.data.prazo_entrega??'');setNotes(o.data.observacoes??'');setCostCenter(o.data.centro_custo??'');setDeliveryLocation(o.data.local_entrega??'');setSpecification(o.data.especificacao_tecnica??'');setQuoteRef(o.data.referencia_cotacao??'');setFiscalStatus(o.data.fiscal_status??'NAO_ANALISADO');setFiscalOpinion(o.data.fiscal_parecer??'')
    setItems((i.data??[]).map(x=>({produto_id:x.produto_id,codigo:x.codigo_produto,descricao:x.descricao_produto,quantidade:String(x.quantidade),unidade:x.unidade,preco:String(x.preco_unitario),total:Number(x.total)})))
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível abrir o pedido.')}finally{setBusy(false)}
  }
  const remove=async()=>{if(!selected||!canEditOrder)return;if(!window.confirm('Excluir este pedido de compra?'))return;setBusy(true);try{const r=await supabase.from('erp_pedidos_compra').delete().eq('id',selected).eq('empresa_id',empresaId).select('id').single();if(r.error)throw r.error;reset();await load();setMessage('Pedido excluído.')}catch(e){setError(e instanceof Error?e.message:'Não foi possível excluir o pedido.')}finally{setBusy(false)}}
  const print=()=>window.print()
 
- return <main className="pc-page">
+ return <VendasLayout title="Pedido de compra" subtitle="Suprimentos • fornecedor • aprovação • recebimento"><main className="pc-page">
   <style>{`.pc-page{min-height:100vh;background:#f8fafc;color:#0f172a;padding:24px}.pc-wrap{max-width:1500px;margin:0 auto}.pc-header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:18px}.pc-eyebrow{font-size:11px;font-weight:900;letter-spacing:.12em;color:#2563eb}.pc-header h1{margin:5px 0;font-size:30px}.pc-header p{margin:0;color:#64748b}.pc-actions{display:flex;gap:8px;flex-wrap:wrap}.pc-btn{min-height:44px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#334155;padding:0 13px;display:inline-flex;align-items:center;gap:7px;font-weight:800;cursor:pointer}.pc-btn.primary{background:#2563eb;color:#fff;border-color:#2563eb}.pc-btn.danger{color:#b91c1c;border-color:#fecaca;background:#fff}.pc-msg{padding:10px 12px;margin-bottom:12px;border-radius:7px;background:#ecfdf5;color:#166534;border:1px solid #bbf7d0}.pc-error{padding:10px 12px;margin-bottom:12px;border-radius:7px;background:#fef2f2;color:#991b1b;border:1px solid #fecaca}.pc-list,.pc-card{background:#fff;border:1px solid #dbe3ea;border-radius:8px;box-shadow:0 2px 8px rgba(15,23,42,.05)}.pc-table{width:100%;border-collapse:collapse}.pc-table th,.pc-table td{height:54px;padding:0 12px;text-align:left;border-bottom:1px solid #edf1f4}.pc-table th{background:#f8fafc;color:#64748b;font-size:10px;letter-spacing:.08em;text-transform:uppercase}.pc-table td{font-size:12px}.pc-table tbody tr{cursor:pointer}.pc-table tbody tr:hover{background:#f8fafc}.pc-status{font-size:10px;font-weight:900;padding:5px 8px;border-radius:5px;background:#eef2ff;color:#3730a3}.pc-detail{margin-top:16px;padding:18px}.pc-detail-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}.pc-detail-head h2{margin:0;font-size:19px}.pc-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:12px}.pc-field{display:grid;gap:6px;font-size:11px;font-weight:800;color:#334155}.pc-field input,.pc-field textarea{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#111827;padding:10px 11px;font:inherit}.pc-field textarea{min-height:70px;resize:vertical}.pc-field.wide{grid-column:1/-1}.pc-supplier{display:flex;gap:7px}.pc-supplier input{flex:1}.pc-lupa{width:44px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;display:grid;place-items:center;cursor:pointer}.pc-items{margin-top:18px;overflow-x:auto}.pc-items table{min-width:850px}.pc-items input{width:100%;box-sizing:border-box;border:1px solid #d1d5db;border-radius:5px;padding:8px;color:#111827;background:#fff}.pc-item-actions{display:flex;justify-content:flex-end;margin-top:9px}.pc-total{display:flex;justify-content:flex-end;align-items:center;gap:16px;margin-top:16px;font-size:13px}.pc-total strong{font-size:24px}.pc-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid #e2e8f0}.pc-modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.62);display:grid;place-items:center;padding:20px;z-index:10000}.pc-modal{width:min(950px,100%);max-height:85vh;overflow:auto;background:#fff;border-radius:9px;padding:20px;box-shadow:0 24px 80px rgba(0,0,0,.25)}.pc-modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.pc-modal-head h3{margin:0}.pc-search{display:flex;align-items:center;gap:8px;border:1px solid #cbd5e1;border-radius:7px;padding:0 10px;margin-bottom:12px}.pc-search input{border:0;outline:0;width:100%;padding:11px;color:#111827}.pc-empty{padding:30px;text-align:center;color:#64748b}.pc-remove{border:0;background:transparent;color:#b91c1c;cursor:pointer}@media(max-width:900px){.pc-page{padding:14px}.pc-header{flex-direction:column}.pc-grid{grid-template-columns:1fr 1fr}}@media(max-width:620px){.pc-grid{grid-template-columns:1fr}.pc-actions,.pc-footer{justify-content:stretch}.pc-actions .pc-btn,.pc-footer .pc-btn{flex:1}}
 @media print{.pc-page{background:#fff;padding:0}.pc-header,.pc-list,.pc-footer,.pc-actions,.pc-eyebrow,.pc-msg,.pc-error,.pc-item-actions{display:none!important}.pc-detail{box-shadow:none;border:0;margin:0}.pc-field input,.pc-field textarea{border:0;padding:0}.pc-page *{color:#000!important}.pc-items{overflow:visible}.pc-table th,.pc-table td{height:54px}}`}</style>
   <div className="pc-wrap">
@@ -112,6 +114,12 @@ export default function PedidoCompra(){
     {!canEditOrder&&<div className="pc-msg" role="status">Pedido finalizado: somente consulta disponível.</div>}
     <fieldset disabled={!canEditOrder} style={{border:0,padding:0,margin:0,minWidth:0}}>
     <div className="pc-grid">
+    <label className="pc-field"><span>Centro de custo</span><input value={costCenter} onChange={e=>setCostCenter(e.target.value)} placeholder="Ex.: Produção / PCP"/></label>
+    <label className="pc-field"><span>Local de entrega</span><input value={deliveryLocation} onChange={e=>setDeliveryLocation(e.target.value)} placeholder="Almoxarifado / endereço"/></label>
+    <label className="pc-field"><span>Referência da cotação</span><input value={quoteRef} onChange={e=>setQuoteRef(e.target.value)} placeholder="RFQ / proposta"/></label>
+    <label className="pc-field"><span>Validação fiscal</span><input value={fiscalStatus} readOnly/></label>
+    <label className="pc-field wide"><span>Especificação técnica da compra</span><textarea value={specification} onChange={e=>setSpecification(e.target.value)} placeholder="Material, norma, dimensão, acabamento, tolerância, lote, certificado, embalagem e demais requisitos."/></label>
+
      <label className="pc-field">Fornecedor
       <div className="pc-supplier"><input value={supplierMap.get(supplierId)?.razao_social??''} readOnly placeholder="Use a lupa para localizar fornecedor"/><button className="pc-lupa" type="button" onClick={()=>{setLookup('supplier');setLookupText('')}}><Search size={18}/></button></div>
      </label>
