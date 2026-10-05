@@ -90,18 +90,19 @@ export default function VendasDashboardGraficos() {
           </div>
           <div className="sales-heading-actions">
             <label className="sales-button sales-button--secondary">
+              Visão
+              <select value={period} onChange={(event) => setPeriod(event.target.value as 'mes'|'ano')} aria-label="Visão do faturamento">
+                <option value="mes">Mês</option>
+                <option value="ano">Ano</option>
+              </select>
+            </label>
+            <label className="sales-button sales-button--secondary">
               Período
-              <input
-                type="month"
-                value={month}
-                onChange={(event) => setMonth(event.target.value)}
-                aria-label="Período do faturamento"
-              />
+              <input type="month" value={month} onChange={(event) => setMonth(event.target.value)} aria-label="Período do faturamento" />
             </label>
             <button type="button" onClick={() => window.print()} className="sales-button sales-button--primary no-print">
               Imprimir gráficos
-            </button>
-          </div>
+            </button>          </div>
         </section>
 
         {error && <div role="alert" className="sales-alert">{error}</div>}
