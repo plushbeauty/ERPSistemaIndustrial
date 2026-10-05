@@ -67,7 +67,7 @@ export default function ProcessoIndustrialPage(){
       const [p,t,r,pr,m]=await Promise.all([
         supabase.from('erp_processos_industriais').select('id,codigo,nome,tipo,descricao,capacidade_hora,setup_padrao_min,ciclo_padrao_seg,ativo').eq('tipo',type).eq('ativo',true).order('codigo'),
         supabase.from('erp_ferramentas_industriais').select('id,codigo,nome,tipo,numero_cavidades,vida_ciclos,ciclos_realizados,status,revisao,ativo').in('tipo',toolTypes[type]).eq('ativo',true).order('codigo'),
-        supabase.from('erp_receitas_processos').select('id,processo_id,produto_id,ferramenta_id,maquina_id,versao,status,parametros,ciclo_seg,setup_min,rendimento_percent,perda_percent').eq('status','APROVADA').order('versao',{ascending:false}),
+        supabase.from('erp_receitas_processos').select('id,processo_id,produto_id,ferramenta_id,maquina_id,versao,status,parametros,ciclo_seg,setup_min,rendimento_percent,perda_percent').order('versao',{ascending:false}),
         supabase.from('erp_produtos').select('id,codigo,nome').eq('ativo',true).order('codigo').limit(2000),
         supabase.from('erp_maquinas').select('id,codigo,nome,status').not('status','eq','INATIVA').order('codigo').limit(1000)
       ])
