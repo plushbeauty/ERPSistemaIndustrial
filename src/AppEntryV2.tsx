@@ -82,6 +82,8 @@ const VendasCatalogoDigitalGestao = lazyPage(() => import('./pages/VendasCatalog
 const VendasCarteira = lazyPage(() => import('./pages/VendasCarteira'), 'VendasCarteira')
 const VendasPDV = lazyPage(() => import('./pages/VendasPDV'), 'default')
 const ComprasRFQ = lazyPage(() => import('./pages/ComprasRFQ'), 'default')
+const ComprasIndustrial = lazyPage(() => import('./pages/ComprasIndustrial'), 'default')
+const ComprasRequisicoes = lazyPage(() => import('./pages/ComprasRequisicoes'), 'default')
 const PedidoCompra = lazyPage(() => import('./pages/PedidoCompra'), 'default')
 const VendasClientesPage = lazyPage(() => import('./pages/VendasClientes'), 'default')
 const CentralCustosIndustrial = lazyPage(() => import('./pages/CentralCustosIndustrial'), 'CentralCustosIndustrial')
@@ -477,6 +479,9 @@ function AppIndustrialAuthenticated() {
       <Route path="/admin/logs" element={<AdminLogs />} />
       <Route path="/outlook/configuracao" element={<OutlookConfiguracao />} />
       <Route path="/outlook/caixa-entrada" element={<OutlookCaixaEntrada />} />
+      <Route path="/compras" element={<ComprasIndustrial />} />
+      <Route path="/compras/requisicoes" element={<ComprasRequisicoes />} />
+      <Route path="/compras/recebimentos" element={<ComprasIndustrial initialTab="recebimentos" />} />
       <Route path="/compras/rfq" element={<ComprasRFQ />} />
       <Route path="/compras/pedido" element={<PedidoCompra />} />
       <Route path="/compras/fornecedores" element={<FornecedoresIndustrial />} />
