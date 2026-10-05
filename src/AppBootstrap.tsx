@@ -34,7 +34,7 @@ class BootstrapBoundary extends Component<{ children: ReactNode }, { error: Erro
     if (this.state.error) return (
       <main style={{minHeight:'100vh',display:'grid',placeItems:'center',padding:24,background:'#f4f7f5',fontFamily:'Inter,system-ui,sans-serif',color:'#17342f'}}>
         <section style={{width:'min(680px,100%)',border:'1px solid #d9e3df',borderRadius:24,padding:28,background:'#fff',boxShadow:'0 30px 90px rgba(20,55,49,.12)'}}>
-          <div style={{fontSize:11,fontWeight:900,letterSpacing:'.18em',color:'#9a763b'}}>SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL • SYSNQRA</div>
+          <div style={{fontSize:11,fontWeight:900,letterSpacing:'.18em',color:'#9a763b'}}>SYSNQRA ERP & SGQ INDUSTRIAL • SYSNQRA</div>
           <h1 style={{fontSize:28,margin:'10px 0 8px'}}>O ambiente encontrou uma falha ao iniciar</h1>
           <p style={{color:'#667975',lineHeight:1.7,margin:0}}>A inicialização falhou. Esta tela evita o antigo estado azul/blank e permite reiniciar o bootstrap.</p>
           <pre style={{whiteSpace:'pre-wrap',wordBreak:'break-word',marginTop:18,padding:16,borderRadius:14,background:'#f2f5f3',color:'#8a5d23',fontSize:12}}>{this.state.error.message}</pre>
