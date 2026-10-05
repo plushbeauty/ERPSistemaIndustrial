@@ -524,5 +524,3 @@ function AppIndustrialAuthenticated() {
     </Boundary>
   )
 }
-
-import './styles/erp-professional-standard.css'
