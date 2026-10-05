@@ -190,7 +190,7 @@ export default function VendasStatusPedidos() {
       row.cliente?.nome ?? '',
       row.status,
     ].some((value) => value.toLocaleLowerCase('pt-BR').includes(needle)))
-  }, [rows, query])
+  }, [rows, query, isPending])
   const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE))
   const currentPage = Math.min(page, pageCount - 1)
   const pageRows = visible.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)
@@ -201,13 +201,13 @@ export default function VendasStatusPedidos() {
   }
 
   return (
-    <VendasLayout title="Pedidos de venda" subtitle="Handoff operacional: vendas → PCP · status original do pedido" onRefresh={() => void load()}>
+    <VendasLayout title={isPending ? "Pedidos pendentes" : "Status dos pedidos"} subtitle={isPending ? "Pendências operacionais e pedidos aguardando conclusão" : "Acompanhamento operacional por status, entrega e produção"} onRefresh={() => void load()}>
       <main className="space-y-3 text-xs">
         {error && <div role="alert" className="flex items-start gap-2 border border-red-200 bg-red-50 p-2 text-red-800"><AlertTriangle size={14} className="mt-0.5 shrink-0" />{error}</div>}
 
         <section className="flex flex-wrap items-center gap-2 border border-slate-200 bg-white p-2">
           <div className="inline-flex items-center gap-1.5 rounded border border-slate-200 px-2 py-1 text-slate-700">
-            <Package size={13} /> <span>Pedidos carregados</span><strong>{rows.length}</strong>
+            <Package size={13} /> <span>{isPending ? "Pendentes" : "Pedidos"} carregados</span><strong>{visible.length}</strong>
           </div>
           <p className="min-w-0 flex-1 text-[11px] text-slate-500">Status exibido conforme gravado no pedido. Prazo, estoque, acabamento e entrega não são inferidos.</p>
           <label className="flex h-8 w-full items-center gap-2 border border-slate-300 px-2 sm:ml-auto sm:w-64">
@@ -223,11 +223,11 @@ export default function VendasStatusPedidos() {
             </tr></thead>
             <tbody>
               {pageRows.map((row) => (
-                <tr key={row.id} className="border-t border-slate-200 hover:bg-slate-50">
+                <tr key={row.id} className={`border-t border-slate-200 hover:bg-slate-50 ${statusClass(row.status)}`}>
                   <td className="p-2 font-semibold">{String(row.numero).padStart(6, '0')}{row.pedido_cliente && <span className="ml-1 font-normal text-slate-500">· {row.pedido_cliente}</span>}</td>
                   <td className="p-2">{row.cliente?.nome ?? '—'}</td>
                   <td className="p-2">{formatDate(row.data_entrega_prometida)}</td>
-                  <td className="p-2"><span className="inline-block max-w-56 truncate rounded border border-slate-200 px-1.5 py-0.5" title={row.status}>{row.status || '—'}</span></td>
+                  <td className="p-2"><span className={`sales-status ${statusClass(row.status) === "is-status-pendente" ? "is-danger" : statusClass(row.status) === "is-status-producao" ? "is-warning" : statusClass(row.status) === "is-status-finalizado" ? "is-success" : "is-neutral"} inline-block max-w-56 truncate rounded border border-slate-200 px-1.5 py-0.5" title={row.status}>{row.status || '—'}</span></td>
                   <td className="p-2 text-right">{money(row.total)}</td>
                   <td className="p-2 text-right"><button type="button" onClick={() => void loadItems(row)} className="rounded border border-slate-300 px-2 py-1 font-medium text-[#17445A] hover:bg-slate-100">Ver itens</button></td>
                 </tr>
