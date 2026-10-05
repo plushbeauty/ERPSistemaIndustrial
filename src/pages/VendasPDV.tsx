@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeft, CreditCard, RefreshCw, Search, ShoppingCart, Wallet } from 'lucide-react'
+import { CreditCard, RefreshCw, Search, ShoppingCart, Wallet } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
