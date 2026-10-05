@@ -48,6 +48,7 @@ const sections: SalesNavSection[] = [
       { label: 'Pedidos de venda', href: '/vendas/pedidos', icon: ClipboardList },
       { label: 'Novo pedido', href: '/vendas/novo-pedido', icon: FilePlus2 },
       { label: 'Pedidos pendentes', href: '/vendas/pendentes', icon: ListChecks },
+      { label: 'Status do pedido', href: '/vendas/status', icon: ListChecks },
       { label: 'Carteira de pedidos', href: '/vendas/carteira', icon: FolderKanban },
       { label: 'PDV / venda rápida', href: '/vendas/pdv', icon: ShoppingCart },
     ],
@@ -57,15 +58,19 @@ const sections: SalesNavSection[] = [
     items: [
       { label: 'Clientes', href: '/vendas/clientes', icon: Users },
       { label: 'Orçamentos e custos', href: '/vendas/orcamentos', icon: PackageSearch },
+      { label: 'Análise de custos', href: '/vendas/analise-custos', icon: PackageSearch },
       { label: 'Metas', href: '/vendas/metas', icon: Target },
       { label: 'Relatórios', href: '/vendas/relatorios', icon: BookOpen },
+      { label: 'Produtos / vendas', href: '/produtos-vendas', icon: PackageSearch },
     ],
   },
   {
     label: 'Ferramentas',
     items: [
       { label: 'Catálogo digital', href: '/vendas/catalogo-digital', icon: BookOpen },
+      { label: 'Gestão do catálogo', href: '/vendas/catalogo-digital/gestao', icon: BookOpen },
       { label: 'Ajuste global / preços', href: '/vendas/reajuste', icon: Settings2 },
+      { label: 'Configurações', href: '/vendas/configuracoes', icon: Settings2 },
     ],
   },
 ]
@@ -96,7 +101,7 @@ export default function VendasLayout({
 
   const isActive = (href: string) => {
     if (href === '/vendas/dashboard') return pathname === '/vendas' || pathname === '/vendas/dashboard'
-    if (href === '/vendas/pedidos') return pathname === '/vendas/pedidos' || pathname.startsWith('/vendas/pedido/') || pathname === '/vendas/status'
+    if (href === '/vendas/pedidos') return pathname === '/vendas/pedidos' || pathname.startsWith('/vendas/pedido/')
     return pathname === href || pathname.startsWith(href + '/')
   }
 
