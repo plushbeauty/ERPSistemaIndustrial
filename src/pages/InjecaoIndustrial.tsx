@@ -80,6 +80,12 @@ export default function InjecaoIndustrial(){
   const openOrders=orders.filter(item=>!['concluida','concluído','cancelada','cancelado'].includes(item.status.toLocaleLowerCase('pt-BR')))
   const visibleHistory=history.filter(item=>historyFilter==='TODOS'||item.entidade===historyFilter)
 
+  async function recordHistory(entidade:'INJETORA'|'MOLDE', entidade_id:string, acao:string, codigo:string, descricao:string, detalhes:Record<string,unknown>={}):Promise<void>{
+    const user=await supabase.auth.getUser()
+    const result=await supabase.from('erp_injecao_historico').insert({empresa_id:empresaId,entidade,entidade_id,acao,codigo,descricao,detalhes,usuario_id:user.data.user?.id??null})
+    if(result.error)throw result.error
+  }
+
   async function saveMachine():Promise<void>{
     if(machineForm.id?!canEdit:!canCreate){setError('Sem permissão para esta operação.');return}
     if(!empresaId||!machineForm.codigo.trim()||!machineForm.nome.trim()){setError('Código e nome da injetora são obrigatórios.');return}
@@ -87,8 +93,10 @@ export default function InjecaoIndustrial(){
     setBusy(true);setError('');setMessage('')
     try{
       const payload={empresa_id:empresaId,codigo:machineForm.codigo.trim(),nome:machineForm.nome.trim(),tipo:machineForm.tipo.trim()||'INJETORA',fabricante:machineForm.fabricante.trim()||null,modelo:machineForm.modelo.trim()||null,valor_hora_custo:Number(machineForm.valor_hora_custo||0),ativo:true}
-      const result=machineForm.id?await supabase.from('erp_maquinas').update(payload).eq('id',machineForm.id).eq('empresa_id',empresaId):await supabase.from('erp_maquinas').insert(payload)
+      const result=machineForm.id?await supabase.from('erp_maquinas').update(payload).eq('id',machineForm.id).eq('empresa_id',empresaId).select('id').single():await supabase.from('erp_maquinas').insert(payload).select('id').single()
       if(result.error)throw result.error
+      const machineId=machineForm.id??result.data?.id
+      if(machineId)await recordHistory('INJETORA',machineId,machineForm.id?'EDITAR':'CRIAR',payload.codigo,machineForm.id?'Injetora atualizada.':'Injetora cadastrada.',{tipo:payload.tipo})
       setMessage(machineForm.id?'Injetora atualizada.':'Injetora cadastrada.');setForm(null);setMachineForm(emptyMachine);await load()
     }catch(cause){setError(errorText(cause,'Não foi possível gravar a injetora.'))}finally{setBusy(false)}
   }
@@ -100,8 +108,10 @@ export default function InjecaoIndustrial(){
     setBusy(true);setError('');setMessage('')
     try{
       const payload={empresa_id:empresaId,codigo:moldForm.codigo.trim(),nome:moldForm.nome.trim(),tipo:'INJECAO',status:moldForm.status,numero_cavidades:cavities,cavidades:cavities,cavidades_ativas:active,limite_ciclos:Math.max(0,Number(moldForm.limite_ciclos||0)),localizacao_fisica:moldForm.localizacao_fisica.trim()||null,ativo:true}
-      const result=moldForm.id?await supabase.from('erp_moldes').update(payload).eq('id',moldForm.id).eq('empresa_id',empresaId):await supabase.from('erp_moldes').insert(payload)
+      const result=moldForm.id?await supabase.from('erp_moldes').update(payload).eq('id',moldForm.id).eq('empresa_id',empresaId).select('id').single():await supabase.from('erp_moldes').insert(payload).select('id').single()
       if(result.error)throw result.error
+      const moldId=moldForm.id??result.data?.id
+      if(moldId)await recordHistory('MOLDE',moldId,moldForm.id?'EDITAR':'CRIAR',payload.codigo,moldForm.id?'Molde atualizado.':'Molde cadastrado.',{status:payload.status,numero_cavidades:cavities})
       setMessage(moldForm.id?'Molde atualizado.':'Molde cadastrado.');setForm(null);setMoldForm(emptyMold);await load()
     }catch(cause){setError(errorText(cause,'Não foi possível gravar o molde.'))}finally{setBusy(false)}
   }
@@ -113,6 +123,8 @@ export default function InjecaoIndustrial(){
     try{
       const result=await supabase.from(table).update({ativo:false}).eq('id',id).eq('empresa_id',empresaId)
       if(result.error)throw result.error
+      const row=table==='erp_maquinas'?machines.find(item=>item.id===id):molds.find(item=>item.id===id)
+      if(row)await recordHistory(table==='erp_maquinas'?'INJETORA':'MOLDE',id,'INATIVAR',row.codigo,table==='erp_maquinas'?'Injetora inativada.':'Molde inativado.')
       setMessage(table==='erp_maquinas'?'Injetora inativada.':'Molde inativado.');await load()
     }catch(cause){setError(errorText(cause,'Não foi possível inativar o registro.'))}finally{setBusy(false)}
   }
