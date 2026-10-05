@@ -658,3 +658,18 @@
 .sales-content .buy-shell .buy-form input,.sales-content .buy-shell .buy-form select,.sales-content .buy-shell .buy-form textarea{min-height:34px!important;padding:7px 9px!important;font-size:11px!important}
 
 .sales-content .pc-page{min-height:0!important;background:transparent!important;padding:0!important}.sales-content .pc-header{display:none!important}.sales-content .pc-list,.sales-content .pc-card{border-radius:8px!important}.sales-content .pc-btn{min-height:34px!important;height:34px!important;padding:0 10px!important;font-size:10px!important}.sales-content .pc-table th{height:34px!important;font-size:9px!important}.sales-content .pc-table td{height:42px!important;font-size:10px!important}.sales-content .pc-detail{margin-top:10px!important;padding:12px!important}.sales-content .pc-field{font-size:10px!important}.sales-content .pc-field input,.sales-content .pc-field textarea{min-height:34px!important;padding:7px 9px!important;font-size:11px!important}.sales-content .pc-footer{margin-top:10px!important;padding-top:10px!important}
+
+
+/* COMPRAS - requisicoes e cotacoes no padrao compacto */
+.sales-content .buy-requisition,
+.sales-content .buy-rfq{min-height:0!important;padding:0!important;background:#f3f7f8!important}
+.sales-content .buy-requisition>header{padding:8px 0 10px!important;border-bottom:0!important;background:transparent!important}
+.sales-content .buy-requisition>header h1,.sales-content .buy-rfq h1{font-size:22px!important;font-weight:500!important;color:#1c3c49!important}
+.sales-content .buy-requisition button,.sales-content .buy-rfq button{min-height:34px!important;border-radius:6px!important;font-size:10px!important}
+.sales-content .buy-requisition section,.sales-content .buy-rfq section{border-radius:8px!important;border-color:#dbe7ea!important;box-shadow:0 2px 8px #123b5008!important}
+.sales-content .buy-requisition table,.sales-content .buy-rfq table{font-size:10px!important}
+.sales-content .buy-requisition th,.sales-content .buy-rfq th{height:34px!important;padding:6px 9px!important;font-size:9px!important}
+.sales-content .buy-requisition td,.sales-content .buy-rfq td{padding:7px 9px!important;font-size:10px!important}
+.sales-content .buy-requisition input,.sales-content .buy-rfq input,.sales-content .buy-rfq textarea{min-height:34px!important;border-radius:5px!important;font-size:11px!important}
+.sales-content .buy-rfq textarea{height:auto!important}
+.sales-content .buy-requisition .bg-slate-900{background:#1f6f96!important}
