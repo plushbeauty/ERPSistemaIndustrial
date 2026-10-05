@@ -83,11 +83,13 @@ export default function VendasLayout({
   title,
   subtitle,
   onRefresh,
+  navSections,
 }: {
   children: ReactNode
   title: string
   subtitle?: string
   onRefresh?: () => void
+  navSections?: SalesNavSection[]
 }) {
   const hostedBySynqra = useSynqraLayout()
   const [isTabletMode, setIsTabletMode] = useState(false)
@@ -119,7 +121,7 @@ export default function VendasLayout({
               </Link>
             )
           })
-        : sections.map(section => (
+        : activeSections.map(section => (
             <div className="sales-nav-section" key={section.label}>
               <div className="sales-nav-section-label">{section.label}</div>
               {section.items.map(item => {
