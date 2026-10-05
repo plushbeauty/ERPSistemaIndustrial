@@ -81,8 +81,8 @@ export default function ProcessoIndustrialPage(){
   const needle=query.trim().toLocaleLowerCase('pt-BR')
   const filteredProcesses=processes.filter(p=>!needle||[p.codigo,p.nome,p.descricao??''].some(v=>v.toLocaleLowerCase('pt-BR').includes(needle)))
   const filteredTools=tools.filter(t=>!needle||[t.codigo,t.nome,t.tipo,t.status].some(v=>v.toLocaleLowerCase('pt-BR').includes(needle)))
-  const filteredRecipes=selectedRecipes.filter(r=>!needle||[products.find(p=>p.id===r.produto_id)?.codigo??'',tools.find(t=>t.id===r.ferramenta_id)?.codigo??'',machines.find(m=>m.id===r.maquina_id)?.codigo??'',r.status].some(v=>v.toLocaleLowerCase('pt-BR').includes(needle)))
   const selectedRecipes=useMemo(()=>recipes.filter(r=>r.processo_id===selectedProcess),[recipes,selectedProcess])
+  const filteredRecipes=selectedRecipes.filter(r=>!needle||[products.find(p=>p.id===r.produto_id)?.codigo??'',tools.find(t=>t.id===r.ferramenta_id)?.codigo??'',machines.find(m=>m.id===r.maquina_id)?.codigo??'',r.status].some(v=>v.toLocaleLowerCase('pt-BR').includes(needle)))
   const visibleHistory=history.filter(x=>historyFilter==='TODOS'||x.entidade===historyFilter)
 
   async function companyId(){
