@@ -542,7 +542,9 @@ function AppIndustrialAuthenticated() {
   const appContent = (
     <Boundary>
       <Suspense fallback={<LoadingSkeleton />}>
-        {protectedRoutes}
+        <div className="erp-global-surface">
+          {protectedRoutes}
+        </div>
       </Suspense>
     </Boundary>
   )
