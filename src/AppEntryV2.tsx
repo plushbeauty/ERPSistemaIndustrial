@@ -147,6 +147,7 @@ const QualidadeMetodologia8D = lazyPage(() => import('./pages/QualidadeMetodolog
 const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspecaoProcesso'), 'QualidadeInspecaoProcesso')
 const MoldesFerramentaria = lazyPage(() => import('./pages/MoldesFerramentaria'), 'MoldesFerramentaria')
 const OperacaoIndustrial = lazyPage(() => import('./pages/OperacaoIndustrial'), 'OperacaoIndustrial')
+const InjecaoIndustrial = lazyPage(() => import('./pages/InjecaoIndustrial'), 'InjecaoIndustrial')
 const BankingReconciliation = lazyPage(() => import('./features/banking/BankReconciliation'), 'BankReconciliation')
 const BankingStatementImporter = lazyPage(() => import('./features/banking/BankStatementImporter'), 'BankStatementImporter')
 const BankingListaPrecosCliente = lazyPage(() => import('./features/banking/ListaPrecosCliente'), 'ListaPrecosCliente')
@@ -539,6 +540,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/rnc" element={<QualidadeRNC />} />
       <Route path="/estoque/recebimento" element={<EstoqueRecebimentoLotes />} />
       <Route path="/fichas-processo" element={<FichasProcesso />} />
+      <Route path="/processos/injecao" element={<InjecaoIndustrial />} />
       <Route path="*" element={<Navigate to="/comercial" replace />} />
     </Routes>
   )
