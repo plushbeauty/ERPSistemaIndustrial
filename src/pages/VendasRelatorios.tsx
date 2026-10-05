@@ -157,6 +157,7 @@ export default function VendasRelatorios() {
           </nav>
         </section>
       </section>
-    </main>
+      </main>
+    </VendasLayout>
   )
 }
