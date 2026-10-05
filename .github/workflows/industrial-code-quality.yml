@@ -1,0 +1,29 @@
+name: Industrial Code Quality
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --legacy-peer-deps --no-audit --no-fund
+      - run: npm run type-check
+      - run: npm run lint:check
+      - run: npm run audit:global
+      - run: npm run audit:brutal
+      - run: npm run audit:interactions
+      - run: npm run build
+      - run: npm run verify:build
+      - run: npm run verify-routes
