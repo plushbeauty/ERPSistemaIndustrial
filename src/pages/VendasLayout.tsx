@@ -1,33 +1,136 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { BarChart3, ClipboardList, FilePlus2, ListChecks, LogOut, RefreshCw, Settings, Tablet } from 'lucide-react'
+import {
+  BarChart3,
+  BookOpen,
+  ClipboardList,
+  FilePlus2,
+  FolderKanban,
+  LayoutDashboard,
+  ListChecks,
+  LogOut,
+  PackageSearch,
+  RefreshCw,
+  Settings2,
+  ShoppingCart,
+  Tablet,
+  Target,
+  Users,
+} from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useIsMobile } from '../hooks/useIsMobile'
 import { useSynqraLayout } from '../layout/SynqraLayoutContext'
 import '../styles/premium-workspaces.css'
 
-const menu = [
-  { label: 'Dashboard Comercial', href: '/vendas/dashboard', icon: BarChart3 },
-  { label: 'Dashboard de faturamento', href: '/vendas/dashboard-graficos', icon: BarChart3 },
-  { label: 'Pedidos de venda', href: '/vendas/pedidos', icon: ClipboardList },
-  { label: 'Novo Pedido de Venda', href: '/vendas/novo-pedido', icon: FilePlus2 },
-  { label: 'Análise de Orçamentos', href: '/vendas/orcamentos', icon: ClipboardList },
-  { label: 'Pedidos Pendentes', href: '/vendas/pendentes', icon: ListChecks },
-  { label: 'Ajuste Global', href: '/vendas/reajuste', icon: Settings },
+type SalesNavItem = {
+  label: string
+  href: string
+  icon: typeof LayoutDashboard
+}
+
+type SalesNavSection = {
+  label: string
+  items: SalesNavItem[]
+}
+
+const sections: SalesNavSection[] = [
+  {
+    label: 'Visão geral',
+    items: [
+      { label: 'Dashboard comercial', href: '/vendas/dashboard', icon: LayoutDashboard },
+      { label: 'Faturamento', href: '/vendas/dashboard-graficos', icon: BarChart3 },
+    ],
+  },
+  {
+    label: 'Operação',
+    items: [
+      { label: 'Pedidos de venda', href: '/vendas/pedidos', icon: ClipboardList },
+      { label: 'Novo pedido', href: '/vendas/novo-pedido', icon: FilePlus2 },
+      { label: 'Pedidos pendentes', href: '/vendas/pendentes', icon: ListChecks },
+      { label: 'Carteira de pedidos', href: '/vendas/carteira', icon: FolderKanban },
+      { label: 'PDV / venda rápida', href: '/vendas/pdv', icon: ShoppingCart },
+    ],
+  },
+  {
+    label: 'Comercial',
+    items: [
+      { label: 'Clientes', href: '/vendas/clientes', icon: Users },
+      { label: 'Orçamentos e custos', href: '/vendas/orcamentos', icon: PackageSearch },
+      { label: 'Metas', href: '/vendas/metas', icon: Target },
+      { label: 'Relatórios', href: '/vendas/relatorios', icon: BookOpen },
+    ],
+  },
+  {
+    label: 'Ferramentas',
+    items: [
+      { label: 'Catálogo digital', href: '/vendas/catalogo-digital', icon: BookOpen },
+      { label: 'Ajuste global / preços', href: '/vendas/reajuste', icon: Settings2 },
+    ],
+  },
 ]
 
-export default function VendasLayout({ children, title, subtitle, onRefresh }: { children: ReactNode; title: string; subtitle?: string; onRefresh?: () => void }) {
+const allItems = sections.flatMap(section => section.items)
+
+export default function VendasLayout({
+  children,
+  title,
+  subtitle,
+  onRefresh,
+}: {
+  children: ReactNode
+  title: string
+  subtitle?: string
+  onRefresh?: () => void
+}) {
   const hostedBySynqra = useSynqraLayout()
   const [isTabletMode, setIsTabletMode] = useState(false)
   const isMobile = useIsMobile()
   const tabletMode = isTabletMode || isMobile
   const { pathname } = useLocation()
-  const logout = async () => { await supabase.auth.signOut(); window.location.assign('/login') }
-  const isActive = (href: string) => pathname === href
-    || (href !== '/vendas/dashboard' && pathname.startsWith(href + '/'))
-    || (href === '/vendas/dashboard' && pathname === '/vendas')
-    || (href === '/vendas/pedidos' && (pathname.startsWith('/vendas/pedido/') || pathname === '/vendas/carteira'))
+
+  const logout = async () => {
+    await supabase.auth.signOut()
+    window.location.assign('/login')
+  }
+
+  const isActive = (href: string) => {
+    if (href === '/vendas/dashboard') return pathname === '/vendas' || pathname === '/vendas/dashboard'
+    if (href === '/vendas/pedidos') return pathname === '/vendas/pedidos' || pathname.startsWith('/vendas/pedido/') || pathname === '/vendas/status'
+    return pathname === href || pathname.startsWith(href + '/')
+  }
+
+  const renderNav = (compact = false) => (
+    <nav className={compact ? 'sales-mobile-nav' : 'sales-sidebar-nav'} aria-label="Navegação de vendas">
+      {compact
+        ? allItems.slice(0, 4).map(item => {
+            const Icon = item.icon
+            const active = isActive(item.href)
+            return (
+              <Link key={item.href} to={item.href} aria-current={active ? 'page' : undefined} className={active ? 'is-active' : ''}>
+                <Icon size={15} />
+                <span>{item.label}</span>
+              </Link>
+            )
+          })
+        : sections.map(section => (
+            <div className="sales-nav-section" key={section.label}>
+              <div className="sales-nav-section-label">{section.label}</div>
+              {section.items.map(item => {
+                const Icon = item.icon
+                const active = isActive(item.href)
+                return (
+                  <Link key={item.href} to={item.href} aria-current={active ? 'page' : undefined} className={`sales-nav-link${active ? ' is-active' : ''}`}>
+                    <Icon size={16} strokeWidth={1.8} />
+                    <span>{item.label}</span>
+                  </Link>
+                )
+              })}
+            </div>
+          ))
+      }
+    </nav>
+  )
 
   if (hostedBySynqra) {
     return (
@@ -40,75 +143,73 @@ export default function VendasLayout({ children, title, subtitle, onRefresh }: {
           </div>
           {onRefresh && (
             <button type="button" onClick={onRefresh} className="synqra-sales-refresh" title="Atualizar" aria-label="Atualizar">
-              <RefreshCw size={16} />
+              <RefreshCw size={15} />
             </button>
           )}
         </header>
-        <nav className="synqra-sales-nav" aria-label="Navegação de vendas">
-          {menu.map(item => {
-            const Icon = item.icon
-            const active = isActive(item.href)
-            return <Link key={item.href} to={item.href} aria-current={active ? 'page' : undefined} className={active ? 'is-active' : ''}><Icon size={16}/>{item.label}</Link>
-          })}
-        </nav>
+        <div className="synqra-sales-nav-wrap">{renderNav(true)}</div>
         <div className="synqra-sales-content">{children}</div>
       </div>
     )
   }
 
   return (
-    <div className={`sales-shell min-h-screen bg-[#f5f8fa] text-slate-800 ${tabletMode ? 'tablet-mode' : ''}`}>
-      <aside className="sales-sidebar fixed inset-y-0 left-0 z-40 hidden w-60 border-r border-slate-200 bg-white text-slate-700 lg:flex lg:flex-col">
-        <div className="border-b border-slate-100 px-5 py-5">
-          <div className="flex items-center gap-3">
-            <span className="sales-brand-mark">E</span>
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-[.16em] text-slate-400">ERP Industrial</div>
-              <div className="mt-0.5 text-sm font-semibold text-slate-800">Workspace comercial</div>
-            </div>
+    <div className={`sales-shell${tabletMode ? ' tablet-mode' : ''}`}>
+      <aside className="sales-sidebar" aria-label="Módulo Vendas">
+        <div className="sales-sidebar-brand">
+          <span className="sales-brand-mark" aria-hidden="true">E</span>
+          <div>
+            <div className="sales-brand-kicker">ERP INDUSTRIAL</div>
+            <div className="sales-brand-title">Vendas</div>
           </div>
         </div>
-        <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Navegação de vendas">
-          {menu.map(item => {
-            const Icon = item.icon
-            const active = pathname === item.href
-              || (item.href !== '/vendas/dashboard' && pathname.startsWith(item.href + '/'))
-              || (item.href === '/vendas/dashboard' && pathname === '/vendas')
-              || (item.href === '/vendas/pedidos' && pathname.startsWith('/vendas/pedido/'))
-            return <Link key={item.href} to={item.href} aria-current={active ? 'page' : undefined} className={`sales-nav-link${active ? ' is-active' : ''}`}><Icon size={17}/>{item.label}</Link>
-          })}
-        </nav>
-        <div className="border-t border-slate-100 p-4 text-[10px] leading-relaxed text-slate-400">Comercial integrado a Estoque, PCP, Expedição e Fiscal.</div>
+
+        {renderNav(false)}
+
+        <div className="sales-sidebar-footer">
+          <span>Comercial integrado</span>
+          <small>Estoque · PCP · Expedição · Fiscal</small>
+        </div>
       </aside>
 
-      <main className={`min-w-0 ${tabletMode ? 'ml-0' : 'lg:ml-60'}`}>
-        <header className="sales-topbar sticky top-0 z-30 flex min-h-[60px] items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 text-slate-800 lg:px-7">
-          <div className="min-w-0">
-            <div className="truncate text-sm font-semibold">{title}</div>
-            {subtitle && <div className="truncate text-xs text-slate-500">{subtitle}</div>}
+      <main className={`sales-main${tabletMode ? ' tablet-main' : ''}`}>
+        <header className="sales-topbar">
+          <div className="sales-topbar-title">
+            <span>VENDAS</span>
+            <strong>{title}</strong>
+            {subtitle && <small>{subtitle}</small>}
           </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <button type="button" onClick={()=>{setIsTabletMode(true);document.documentElement.classList.add('tablet-mode');if(window.location.pathname!=='/erp-industrial')window.location.assign('/erp-industrial')}} className="sales-topbar-button hidden sm:inline-flex" title="Alternar modo touch"><Tablet size={15}/> Touch</button>
-            {onRefresh && <button type="button" onClick={onRefresh} className="sales-topbar-button" title="Atualizar" aria-label="Atualizar"><RefreshCw size={15}/></button>}
-            <button type="button" onClick={()=>void logout()} className="sales-topbar-button" title="Sair"><LogOut size={15}/><span className="hidden sm:inline">Sair</span></button>
+          <div className="sales-topbar-actions">
+            <button
+              type="button"
+              onClick={() => {
+                setIsTabletMode(true)
+                document.documentElement.classList.add('tablet-mode')
+                if (window.location.pathname !== '/erp-industrial') window.location.assign('/erp-industrial')
+              }}
+              className="sales-topbar-button"
+              title="Abrir modo touch"
+              aria-label="Abrir modo touch"
+            >
+              <Tablet size={15} />
+              <span>Touch</span>
+            </button>
+            {onRefresh && (
+              <button type="button" onClick={onRefresh} className="sales-topbar-button" title="Atualizar" aria-label="Atualizar">
+                <RefreshCw size={15} />
+              </button>
+            )}
+            <button type="button" onClick={() => void logout()} className="sales-topbar-button" title="Sair">
+              <LogOut size={15} />
+              <span>Sair</span>
+            </button>
           </div>
         </header>
-        <nav className="sales-mobile-nav lg:hidden" aria-label="Navegação de vendas">
-          {menu.slice(0, 3).map(item => {
-            const Icon = item.icon
-            const active = isActive(item.href)
-            return <Link key={item.href} to={item.href} aria-current={active ? 'page' : undefined} className={active ? 'is-active' : ''}><Icon size={15}/>{item.label}</Link>
-          })}
-        </nav>
-        <div className="px-3 py-5 sm:px-5 lg:px-8">{children}</div>
+
+        {renderNav(true)}
+
+        <div className="sales-content">{children}</div>
       </main>
-      <style>{`
-        .tablet-mode aside{display:none !important}
-        .tablet-mode{font-size:14px}
-        .tablet-mode input,.tablet-mode select,.tablet-mode button{min-height:40px;padding-top:8px;padding-bottom:8px}
-        .tablet-mode table td,.tablet-mode table th{padding-top:8px;padding-bottom:8px}
-        .tablet-mode .tablet-hide-column{display:none !important}
-      `}</style>
     </div>
   )
 }
