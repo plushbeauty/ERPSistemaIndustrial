@@ -64,3 +64,31 @@
 [data-erp-tooltip]{position:relative}
 [data-erp-tooltip]::after{content:attr(data-erp-tooltip);position:absolute;left:50%;bottom:calc(100% + 5px);transform:translateX(-50%);display:none;z-index:5000;white-space:nowrap;padding:4px 6px;border:1px solid #334155;border-radius:2px;background:#17202a;color:#fff;font-size:10px;font-weight:500;pointer-events:none}
 [data-erp-tooltip]:hover::after,[data-erp-tooltip]:focus-visible::after{display:block}
+
+/* Aplicação transversal: o ERP operacional usa a densidade do Novo Pedido.
+   Tablet recebe override próprio abaixo para manter toque confortável. */
+#root.erp-professional-ui [class*="rounded-"]{border-radius:2px!important}
+#root.erp-professional-ui input:not([type="checkbox"]):not([type="radio"]),
+#root.erp-professional-ui select,
+#root.erp-professional-ui textarea{min-height:30px!important;height:30px;border-radius:2px!important;padding:5px 7px!important;font-size:11px!important;box-shadow:none!important}
+#root.erp-professional-ui textarea{height:auto;min-height:58px!important}
+#root.erp-professional-ui button{min-height:28px!important;height:28px;border-radius:2px!important;padding:0 9px!important;font-size:11px!important;line-height:1.1!important}
+#root.erp-professional-ui h1{font-size:20px!important;line-height:1.2!important;letter-spacing:-.01em!important}
+#root.erp-professional-ui h2{font-size:15px!important;line-height:1.25!important}
+#root.erp-professional-ui h3{font-size:13px!important}
+#root.erp-professional-ui table{font-size:11px!important}
+#root.erp-professional-ui th,#root.erp-professional-ui td{padding:5px 6px!important}
+#root.erp-professional-ui [class*="shadow-"]{box-shadow:none!important}
+#root.erp-professional-ui .text-3xl,#root.erp-professional-ui .text-4xl,#root.erp-professional-ui .text-5xl{font-size:20px!important}
+#root.erp-professional-ui .text-xl{font-size:16px!important}
+#root.erp-professional-ui .text-lg{font-size:14px!important}
+#root.erp-professional-ui .text-base{font-size:12px!important}
+#root.erp-professional-ui .font-black,#root.erp-professional-ui .font-extrabold{font-weight:700!important}
+#root.erp-professional-ui .font-bold{font-weight:600!important}
+
+/* Controles de toque: não aplicar a compactação operacional às telas Tablet. */
+#root.erp-professional-ui .tablet-overlay input:not([type="checkbox"]):not([type="radio"]),
+#root.erp-professional-ui .tablet-overlay select,
+#root.erp-professional-ui .tablet-overlay textarea{min-height:42px!important;height:42px!important;font-size:14px!important;border-radius:8px!important}
+#root.erp-professional-ui .tablet-overlay button{min-height:42px!important;height:42px!important;font-size:14px!important;border-radius:8px!important}
+#root.erp-professional-ui .tablet-overlay [class*="rounded-"]{border-radius:8px!important}
