@@ -155,15 +155,13 @@ export default function ProcessoIndustrialPage(){
   async function setRecipeStatus(id:string,status:'APROVADA'|'OBSOLETA'){
     setBusy(true);setError('');setMessage('')
     try{
-      const idEmpresa=await companyId()
+      const empresa=await companyId()
       if(!canEdit) throw new Error('Sem permissão para alterar o status da receita.')
-      const r=await supabase.from('erp_receitas_processos').update({status}).eq('id',id).eq('empresa_id',idEmpresa)
-      if(r.error) throw r.error
-      await recordHistory('RECEITA',id,status==='APROVADA'?'APROVAR':'OBSOLETAR',id,status==='APROVADA'?'Receita aprovada.':'Receita marcada como obsoleta.',{status})
+      const result=await supabase.from('erp_receitas_processos').update({status}).eq('id',id).eq('empresa_id',empresa)
+      if(result.error) throw result.error
       setMessage(status==='APROVADA'?'Receita aprovada.':'Receita marcada como obsoleta.')
       await load()
-    }catch(e){setError(e instanceof Error?e.message:'Não foi possível alterar o status da receita.')}
-    finally{setBusy(false)}
+    }catch(e){setError(e instanceof Error?e.message:'Não foi possível alterar o status da receita.')}finally{setBusy(false)}
   }
 
   return <VendasLayout title={labels[type]} subtitle="Processo • ferramental • receita • histórico" onRefresh={()=>void load()} navSections={processNav(type)}><main className="industrial-route-content" style={{padding:'28px',maxWidth:1500,margin:'0 auto'}}>
