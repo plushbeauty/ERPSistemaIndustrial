@@ -26,7 +26,7 @@ export default function RHIndustrial(){
  const [modal,setModal]=useState<string|null>(null),[editing,setEditing]=useState<string|null>(null),[form,setForm]=useState<Record<string,string>>({}),[file,setFile]=useState<File|null>(null)
  const set=(k:string,v:string)=>setForm(x=>({...x,[k]:v}))
  const company=async()=>{const r=await supabase.rpc('erp_current_empresa_id');if(r.error||!r.data)throw r.error??new Error('Empresa da sessão não identificada.');return String(r.data)}
- const en=(id:string)=>employees.find(x=>x.id===id)?.nome??'—',tn=(id:string)=>trainings.find(x=>x.id===id)?.titulo??'—',sn=(id:string|null)=>sectors.find(x=>x.id===id)?.nome??'—'
+ const en=(id:string)=>employees.find(x=>x.id===id)?.nome??'—',sn=(id:string|null)=>sectors.find(x=>x.id===id)?.nome??'—'
  const load=async()=>{setBusy(true);setError('');try{const empresa_id=await company();const [e,s,t,p,a,pt,ev,ab,ac,d]=await Promise.all([
   fetchAllPages<Employee>((f,z)=>supabase.from('erp_funcionarios').select('id,matricula,nome,cpf,cargo,setor_id,data_admissao,data_demissao,status,email,telefone,foto_storage_path').eq('empresa_id',empresa_id).order('nome').range(f,z)),
   fetchAllPages<Sector>((f,z)=>supabase.from('erp_setores').select('id,codigo,nome').eq('empresa_id',empresa_id).eq('ativo',true).order('nome').range(f,z)),
