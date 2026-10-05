@@ -55,8 +55,8 @@ export default function InjecaoIndustrial(){
         supabase.from('erp_maquinas').select('id,codigo,nome,tipo,fabricante,modelo,status,ativo,valor_hora_custo').eq('empresa_id',id).order('codigo'),
         supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades_ativas,ciclos_atuais,limite_ciclos,ativo,localizacao_fisica').eq('empresa_id',id).eq('tipo','INJECAO').order('codigo'),
         supabase.from('erp_ordens_producao').select('id,numero_op,quantidade,quantidade_produzida,status,maquina_id').eq('empresa_id',id).order('numero_op',{ascending:false}).limit(100),
-        supabase.rpc('erp_has_permission',{permission_code:'producao.criar'}),
-        supabase.rpc('erp_has_permission',{permission_code:'producao.editar'}),
+        supabase.rpc('erp_has_permission',{permission_code:'production.create'}),
+        supabase.rpc('erp_has_permission',{permission_code:'production.update'}),
         supabase.from('erp_injecao_historico').select('id,entidade,entidade_id,acao,codigo,descricao,criado_em').eq('empresa_id',id).order('criado_em',{ascending:false}).limit(150),
       ])
       for(const result of [m,mo,o])if(result.error)throw result.error
