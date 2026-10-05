@@ -61,6 +61,7 @@ const sections: SalesNavSection[] = [
       { label: 'Orçamentos e custos', href: '/vendas/orcamentos', icon: PackageSearch },
       { label: 'Análise de custos', href: '/vendas/analise-custos', icon: PackageSearch },
       { label: 'Metas', href: '/vendas/metas', icon: Target },
+      { label: 'Vendedores / comissões', href: '/comissoes/perfil', icon: Users },
       { label: 'Relatórios', href: '/vendas/relatorios', icon: BookOpen },
       { label: 'Cadastro de Produtos', href: '/produtos-vendas', icon: PackagePlus },
     ],
