@@ -2,10 +2,6 @@
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
-import { useSidebar } from './context/SidebarContext'
-import AppHeader from './layout/AppHeader'
-import Sidebar from './layout/Sidebar'
-import { SynqraLayoutProvider } from './layout/SynqraLayoutContext'
 
 
 
@@ -274,19 +270,6 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
 }
 
 // Router master industrial v7: verified JSX boundary.
-function ProtectedAppLayout({ children }: { children: ReactNode }) {
-  const { isExpanded } = useSidebar()
-  return (
-    <SynqraLayoutProvider>
-      <div className={`synqra-app-layout${isExpanded ? '' : ' is-collapsed'}`}>
-        <Sidebar />
-        <AppHeader />
-        <main className="synqra-app-content">{children}</main>
-      </div>
-    </SynqraLayoutProvider>
-  )
-}
-
 export default function AppEntryV2() {
   const routeLocation = useLocation()
   const path = routeLocation.pathname
@@ -556,6 +539,6 @@ function AppIndustrialAuthenticated() {
       </Suspense>
     </Boundary>
   )
-  if (location.pathname === '/tablet/dashboard' || location.pathname === '/tablet/home') return appContent
-  return <ProtectedAppLayout>{appContent}</ProtectedAppLayout>
+  // O ERP entra diretamente no conteúdo operacional. A navegação lateral global foi removida; o dashboard industrial/Tablet concentra os módulos.
+  return appContent
 }
