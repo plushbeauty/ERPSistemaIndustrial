@@ -14,7 +14,7 @@ using (
   (select public.erp_is_master())
   or (
     empresa_id = (select public.erp_current_empresa_id())
-    and (select public.erp_has_permission('producao.ver'))
+    and (select public.erp_has_permission('production.read'))
   )
 );
 
@@ -25,7 +25,7 @@ with check (
   (select public.erp_is_master())
   or (
     empresa_id = (select public.erp_current_empresa_id())
-    and (select public.erp_has_permission('producao.criar'))
+    and (select public.erp_has_permission('production.create'))
   )
 );
 
@@ -36,7 +36,7 @@ using (
   (select public.erp_is_master())
   or (
     empresa_id = (select public.erp_current_empresa_id())
-    and (select public.erp_has_permission('producao.editar'))
+    and (select public.erp_has_permission('production.update'))
   )
 )
 with check (
@@ -56,7 +56,7 @@ using (
   (select public.erp_is_master())
   or (
     empresa_id = (select public.erp_current_empresa_id())
-    and (select public.erp_has_permission('producao.ver'))
+    and (select public.erp_has_permission('production.read'))
   )
 );
 
@@ -67,7 +67,7 @@ with check (
   (select public.erp_is_master())
   or (
     empresa_id = (select public.erp_current_empresa_id())
-    and (select public.erp_has_permission('producao.criar'))
+    and (select public.erp_has_permission('production.create'))
   )
 );
 
@@ -78,7 +78,7 @@ using (
   (select public.erp_is_master())
   or (
     empresa_id = (select public.erp_current_empresa_id())
-    and (select public.erp_has_permission('producao.editar'))
+    and (select public.erp_has_permission('production.update'))
   )
 )
 with check (
@@ -98,7 +98,7 @@ using (
   (select public.erp_is_master())
   or (
     empresa_id = (select public.erp_current_empresa_id())
-    and (select public.erp_has_permission('producao.ver'))
+    and (select public.erp_has_permission('production.read'))
   )
 );
 
@@ -109,7 +109,7 @@ with check (
   (select public.erp_is_master())
   or (
     empresa_id = (select public.erp_current_empresa_id())
-    and (select public.erp_has_permission('producao.criar'))
+    and (select public.erp_has_permission('production.create'))
   )
 );
 
@@ -120,7 +120,7 @@ using (
   (select public.erp_is_master())
   or (
     empresa_id = (select public.erp_current_empresa_id())
-    and (select public.erp_has_permission('producao.editar'))
+    and (select public.erp_has_permission('production.update'))
   )
 )
 with check (
@@ -140,7 +140,7 @@ using (
   (select public.erp_is_master())
   or (
     empresa_id = (select public.erp_current_empresa_id())
-    and (select public.erp_has_permission('producao.ver'))
+    and (select public.erp_has_permission('production.read'))
   )
 );
 
@@ -151,7 +151,7 @@ with check (
   (select public.erp_is_master())
   or (
     empresa_id = (select public.erp_current_empresa_id())
-    and (select public.erp_has_permission('producao.apontar'))
+    and (select public.erp_has_permission('production.update'))
   )
 );
 
@@ -162,7 +162,7 @@ using (
   (select public.erp_is_master())
   or (
     empresa_id = (select public.erp_current_empresa_id())
-    and (select public.erp_has_permission('producao.apontar'))
+    and (select public.erp_has_permission('production.update'))
   )
 )
 with check (
