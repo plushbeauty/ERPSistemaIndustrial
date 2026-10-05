@@ -108,7 +108,7 @@ export default function VendasLayout({
   const renderNav = (compact = false) => (
     <nav className={compact ? 'sales-mobile-nav' : 'sales-sidebar-nav'} aria-label="Navegação de vendas">
       {compact
-        ? allItems.slice(0, 4).map(item => {
+        ? allItems.map(item => {
             const Icon = item.icon
             const active = isActive(item.href)
             return (
