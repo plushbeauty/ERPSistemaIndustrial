@@ -56,9 +56,9 @@ export default function ProcessoIndustrialPage(){
     setBusy(true);setError('')
     try{
       const [viewPerm,createPerm,editPerm]=await Promise.all([
-        supabase.rpc('erp_has_permission',{permission_code:'producao.ver'}),
-        supabase.rpc('erp_has_permission',{permission_code:'producao.criar'}),
-        supabase.rpc('erp_has_permission',{permission_code:'producao.editar'})
+        supabase.rpc('erp_has_permission',{p_modulo:'production',p_acao:'ver'}),
+        supabase.rpc('erp_has_permission',{p_modulo:'production',p_acao:'criar'}),
+        supabase.rpc('erp_has_permission',{p_modulo:'production',p_acao:'editar'})
       ])
       if(viewPerm.error) throw viewPerm.error
       setCanView(Boolean(viewPerm.data));setCanCreate(Boolean(createPerm.data));setCanEdit(Boolean(editPerm.data))
@@ -91,6 +91,7 @@ export default function ProcessoIndustrialPage(){
   async function saveProcess(e:FormEvent){
     e.preventDefault();setBusy(true);setError('');setMessage('')
     try{
+      if(editingProcess ? !canEdit : !canCreate) throw new Error('Sem permissão para esta operação.')
       if(!processForm.codigo.trim()||!processForm.nome.trim()) throw new Error('Código e nome são obrigatórios.')
       const id=await companyId()
       const payload={empresa_id:id,codigo:processForm.codigo.trim(),nome:processForm.nome.trim(),tipo:type,descricao:processForm.descricao||null,capacidade_hora:Number(processForm.capacidade)||null,setup_padrao_min:Number(processForm.setup)||0,ciclo_padrao_seg:Number(processForm.ciclo)||null}
@@ -116,6 +117,7 @@ export default function ProcessoIndustrialPage(){
   async function saveTool(e:FormEvent){
     e.preventDefault();setBusy(true);setError('');setMessage('')
     try{
+      if(editingTool ? !canEdit : !canCreate) throw new Error('Sem permissão para esta operação.')
       if(!toolForm.codigo.trim()||!toolForm.nome.trim()) throw new Error('Código e nome são obrigatórios.')
       const id=await companyId()
       const payload={empresa_id:id,codigo:toolForm.codigo.trim(),nome:toolForm.nome.trim(),tipo:toolForm.tipo,numero_cavidades:Number(toolForm.cavidades)||null,vida_ciclos:Number(toolForm.vida)||null}
@@ -130,6 +132,7 @@ export default function ProcessoIndustrialPage(){
   async function createRecipe(e:FormEvent){
     e.preventDefault();setBusy(true);setError('');setMessage('')
     try{
+      if(!canCreate) throw new Error('Sem permissão para criar receita.')
       if(!selectedProcess) throw new Error('Selecione um processo.')
       const id=await companyId()
       let params:Record<string,unknown>={}
