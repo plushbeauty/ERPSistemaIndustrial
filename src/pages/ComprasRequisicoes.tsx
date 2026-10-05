@@ -3,6 +3,7 @@ import { Printer, ShoppingCart } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
+import VendasLayout from './VendasLayout'
 
 type Requisition = { id: string; codigo: string; ordem_producao_id: string | null; status: string }
 type Item = { id: string; requisicao_id: string; produto_id: string; quantidade: number; fornecedor_id: string | null; status: string }
