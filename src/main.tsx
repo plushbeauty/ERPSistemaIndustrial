@@ -9,6 +9,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { createRoot } from 'react-dom/client'
 import { MotionConfig } from 'motion/react'
 import { PontoProvider } from './context/PontoContext'
+import { ThemeProvider } from './context/ThemeContext'
 import { SidebarProvider } from './context/SidebarContext'
 
 
@@ -64,13 +65,15 @@ console.info(`[ERP] bootstrap ${ERP_BOOTSTRAP_VERSION}`)
 createRoot(rootElement).render(
   <StrictMode>
     <MotionConfig reducedMotion="user" transition={{ duration: 0.22, ease: 'easeOut' }}>
-      <BrowserRouter>
-        <SidebarProvider>
-        <PontoProvider>
-        <BootstrapLoader />
-        </PontoProvider>
-        </SidebarProvider>
-      </BrowserRouter>
+      <ThemeProvider>
+        <BrowserRouter>
+          <SidebarProvider>
+            <PontoProvider>
+              <BootstrapLoader />
+            </PontoProvider>
+          </SidebarProvider>
+        </BrowserRouter>
+      </ThemeProvider>
     </MotionConfig>
   </StrictMode>,
 )
