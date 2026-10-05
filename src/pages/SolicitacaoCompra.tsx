@@ -263,8 +263,7 @@ export default function SolicitacaoCompra() {
     }
   }
 
-  return (
-    <main className="pcp-page" style={{ padding: 24, maxWidth: 1440, margin: '0 auto' }}>
+  return (\n    <VendasLayout title="Solicitação de compra" subtitle="Necessidade interna • autorização • encaminhamento" onRefresh={() => void load()}>\n    <main className="pcp-page" style={{ padding: 24, maxWidth: 1440, margin: '0 auto' }}>
       <header style={{ marginBottom: 22 }}>
         <span className="v2-eyebrow">COMPRAS • SOLICITAÇÃO INTERNA</span>
         <h1 style={{ fontSize: 32, margin: '6px 0' }}>Solicitação de compra</h1>
@@ -541,6 +540,5 @@ export default function SolicitacaoCompra() {
       <small style={{ display: 'block', marginTop: 14, color: '#64748b' }}>
         Toda solicitação é registrada para autorização. A liberação é protegida pela permissão de edição de Compras.
       </small>
-    </main>
-  )
+    </main>\n    </VendasLayout>\n  )
 }
