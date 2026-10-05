@@ -110,7 +110,16 @@ export default function NovoPedido(){
  const subtotal=gridItens.reduce((s,i)=>s+Math.max(i.quantidade*i.valor_unitario*(1-i.desconto/100),0),0),total=Math.max(subtotal-n(descontoPedido)+n(frete)+n(outras),0)
 
  const save=async(finalize:boolean)=>{
-  if(finalize&&pedidoId){setError('A API de finalização cria um novo pedido e não finaliza um rascunho existente. Salve as alterações como rascunho para evitar duplicidade.');return}
+  if(finalize&&pedidoId){
+    setLoading(true);setError('')
+    try{
+      const result=await supabase.rpc('erp_finalizar_rascunho_pedido_venda',{p_pedido_id:pedidoId})
+      if(result.error)throw result.error
+      navigate(`/vendas/pedido/${String(result.data)}`)
+      return
+    }catch(e){setError(e instanceof Error?e.message:'Falha ao finalizar o rascunho.')}
+    finally{setLoading(false)}
+   }
   if(!cliente){setError('Informe o cliente.');return}
   if(!gridItens.length){setError('Inclua pelo menos um item.');return}
   if(n(descontoPedido)>subtotal){setError('O desconto do pedido não pode ser maior que o subtotal.');return}
