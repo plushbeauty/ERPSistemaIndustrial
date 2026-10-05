@@ -10,6 +10,7 @@ import {
   ListChecks,
   LogOut,
   PackageSearch,
+  PackagePlus,
   RefreshCw,
   Settings2,
   ShoppingCart,
@@ -61,7 +62,7 @@ const sections: SalesNavSection[] = [
       { label: 'Análise de custos', href: '/vendas/analise-custos', icon: PackageSearch },
       { label: 'Metas', href: '/vendas/metas', icon: Target },
       { label: 'Relatórios', href: '/vendas/relatorios', icon: BookOpen },
-      { label: 'Produtos / vendas', href: '/produtos-vendas', icon: PackageSearch },
+      { label: 'Cadastro de Produtos', href: '/produtos-vendas', icon: PackagePlus },
     ],
   },
   {
