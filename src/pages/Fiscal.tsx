@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, CheckCircle2, FileCheck2, FileText, Landmark, RefreshCw, Receipt, Search, ShieldCheck, Send } from 'lucide-react'
 import { supabase, invokeSecureEdgeFunction } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import FiscalSidebar from '../components/fiscal/FiscalSidebar'
 
 type Tab = 'liberacao' | 'notas' | 'receber' | 'pagar' | 'relatorios'
 type Order = { id: string; numero: number; cliente_id: string; status: string; total: number }
@@ -190,7 +191,7 @@ export default function Fiscal() {
   }), [docs, receber, pagar, orders])
 
   return (
-    <main className="erp-dense fiscal-workspace min-h-screen bg-[#f8fafc] p-4 md:p-6 font-sans text-[#0f172a]">
+    <div className="min-h-screen bg-[#f8fafc]"><FiscalSidebar/><main className="erp-dense fiscal-workspace min-h-screen bg-[#f8fafc] p-4 md:p-6 font-sans text-[#0f172a]">
       <header className="mb-6 flex flex-col gap-4 border-b border-[#C9E1E8] pb-5 xl:flex-row xl:items-center xl:justify-between">
         <div>
           <button
@@ -416,6 +417,7 @@ export default function Fiscal() {
         </section>
       )}
     </main>
+    </div>
   )
 }
 
