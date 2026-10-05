@@ -637,3 +637,22 @@
 .sales-kpis article:nth-child(2){background:#fff7e6;border-color:#f0dfb9}
 .sales-kpis article:nth-child(3){background:#f3f6f8;border-color:#dfe7ea}
 .sales-kpis article:nth-child(4){background:#fff0ee;border-color:#efd2cd}
+
+/* Compras alinhadas ao padrão operacional de Vendas */
+.sales-content .buy-shell{display:block!important;min-height:0!important;background:#f3f7f8!important;color:#123b50!important}
+.sales-content .buy-shell .buy-sidebar{width:auto!important;min-width:0!important;height:auto!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:3px!important;margin:0 0 10px!important;padding:5px 7px!important;background:#fff!important;color:#334155!important;border:1px solid #dfe7ea!important;border-radius:8px!important;box-shadow:0 2px 8px #123b5008!important;overflow-x:auto!important}
+.sales-content .buy-shell .buy-brand,.sales-content .buy-shell .buy-section,.sales-content .buy-shell .buy-spacer,.sales-content .buy-shell .buy-sidebar>.buy-nav:last-child{display:none!important}
+.sales-content .buy-shell .buy-nav{flex:0 0 auto!important;min-height:36px!important;padding:0 10px!important;border-radius:6px!important;color:#526475!important;background:transparent!important;gap:6px!important}
+.sales-content .buy-shell .buy-nav b{font-size:10px!important}.sales-content .buy-shell .buy-nav small{display:none!important}
+.sales-content .buy-shell .buy-nav.active{background:#1f6f96!important;color:#fff!important}.sales-content .buy-shell .buy-nav.active svg{color:#fff!important}
+.sales-content .buy-shell .buy-nav:hover{background:#eef6f9!important;color:#15566f!important}
+.sales-content .buy-shell .buy-main{width:100%!important}
+.sales-content .buy-shell .buy-top{display:none!important}
+.sales-content .buy-shell .buy-head{padding:2px 0 10px!important}
+.sales-content .buy-shell .buy-head h1{font-size:22px!important}.sales-content .buy-shell .buy-head p{font-size:11px!important}
+.sales-content .buy-shell .buy-content{padding:0!important}
+.sales-content .buy-shell .buy-actions button{min-height:34px!important;padding:0 10px!important;font-size:10px!important}
+.sales-content .buy-shell .buy-kpis{gap:8px!important}.sales-content .buy-shell .buy-kpis article{min-height:88px!important;padding:11px!important}
+.sales-content .buy-shell .buy-kpis article:nth-child(1){background:#edf6fa}.sales-content .buy-shell .buy-kpis article:nth-child(2){background:#fff7e6}.sales-content .buy-shell .buy-kpis article:nth-child(3){background:#fff0ee}.sales-content .buy-shell .buy-kpis article:nth-child(4){background:#eef9f2}.sales-content .buy-shell .buy-kpis article:nth-child(5){background:#f3f6f8}
+.sales-content .buy-shell .buy-card{border-radius:8px!important}.sales-content .buy-shell .buy-card header{padding:10px 12px!important}.sales-content .buy-shell .buy-table th{height:34px!important;padding:6px 9px!important}.sales-content .buy-shell .buy-table td{padding:7px 9px!important;font-size:10px!important}
+.sales-content .buy-shell .buy-form input,.sales-content .buy-shell .buy-form select,.sales-content .buy-shell .buy-form textarea{min-height:34px!important;padding:7px 9px!important;font-size:11px!important}
