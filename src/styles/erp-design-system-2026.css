@@ -238,3 +238,9 @@ body{background:#f4f8fa}
 .erp-dense table thead{background:#eaf4f7!important;color:#285365}.erp-dense table tbody tr:nth-child(even){background:#fbfdfe}
 .erp-dense .text-emerald-600{color:#2d8b6c!important}.erp-dense .text-rose-600,.erp-dense .text-red-600{color:#c94f57!important}
 .erp-dense .bg-emerald-50{background:#eef9f4!important}.erp-dense .bg-amber-50,.erp-dense .bg-yellow-50{background:#fff8e8!important}.erp-dense .bg-rose-50,.erp-dense .bg-red-50{background:#fff0ef!important}.erp-dense .bg-sky-50,.erp-dense .bg-blue-50{background:#edf7fb!important}
+
+.erp-global-surface{min-height:100vh;background:linear-gradient(180deg,#f7fbfc 0%,#eef5f7 100%);color:#173b4a}
+.erp-global-surface input:not([type=checkbox]):not([type=radio]),.erp-global-surface select,.erp-global-surface textarea{accent-color:#2D8DB8}
+.erp-global-surface .bg-white{background-color:#fff!important}
+.erp-global-surface .border-slate-200{border-color:#d8e6ea!important}
+.erp-global-surface .text-slate-900{color:#173b4a!important}
