@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Ban, Plus, Save, Search } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import LinkFieldCombobox, { type LinkOption } from '../../components/ui/LinkFieldCombobox'
+import VendasLayout from '../../pages/VendasLayout'
 
 type Profile={id:string;nome:string;ativo:boolean}
 type Product={id:string;codigo:string;nome:string;descricao:string|null;dimensional:string|null}
@@ -29,7 +30,7 @@ export default function CadastroRegras(){
  const addProfile=async()=>{if(!newProfile.trim())return;setBusy(true);setError('');const r=await supabase.from('erp_comissao_perfis').insert({nome:newProfile.trim()}).select('id,nome,ativo').single();setBusy(false);if(r.error){setError(r.error.message);return}setProfiles(v=>[...v,r.data as Profile]);setProfileId(r.data.id);setNewProfile('')}
  const add=async()=>{setError('');setMessage('');if(!profileId||!sku){setError('Selecione perfil e SKU.');return}const p=Number(pct),m=Number(meta);if(!Number.isFinite(p)||p<0||p>100||!Number.isFinite(m)||m<0){setError('Percentual e meta devem ser numéricos válidos.');return}setBusy(true);const r=await supabase.rpc('erp_comissao_salvar_regra',{p_perfil_id:profileId,p_produto_id:sku,p_percentual:p,p_meta_quantidade:m});setBusy(false);if(r.error){setError(r.error.message);return}setMessage('Regra gravada.');await load()}
  const disable=async(id:string)=>{setError('');const r=await supabase.from('erp_comissao_regras').update({ativo:false}).eq('id',id);if(r.error)setError(r.error.message);else await load()}
- return <main className="min-h-screen bg-slate-50 p-3 text-gray-800">
+ return <VendasLayout title="Regras de comissão" subtitle="Produtos • percentuais • metas" onRefresh={() => void load()}><main className="min-h-screen bg-slate-50 p-3 text-gray-800">
   <section className="mb-2 flex items-end justify-between gap-2 border border-gray-200 bg-white p-2 shadow-sm">
    <div><div className="mb-1 text-[10px] font-bold uppercase text-blue-700">Controladoria Comercial</div><nav className="flex gap-2 text-[11px]"><a className="font-bold text-blue-700" href="/comissoes/regras">Regras</a><a href="/comissoes/calculo">Cálculo</a><a href="/comissoes/perfil">Perfil Vendedor</a></nav></div>
    <div className="flex items-end gap-2"><div><label className={label}>Perfil Comissão</label><select className={input+' w-40'} value={profileId} onChange={e=>setProfileId(e.target.value)}><option value="">Selecione...</option>{profiles.map(p=><option key={p.id} value={p.id}>{p.nome}</option>)}</select></div><div><label className={label}>Novo Perfil</label><input className={input+' w-40'} value={newProfile} onChange={e=>setNewProfile(e.target.value)} /></div><button type="button" className={button+' w-20 bg-blue-600 text-white'} onClick={()=>void addProfile()} disabled={busy}><Save size={12}/>Novo</button></div>
