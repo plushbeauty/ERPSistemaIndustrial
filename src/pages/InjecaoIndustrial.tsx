@@ -303,7 +303,6 @@ export default function InjecaoIndustrial() {
         </div>
       )}
     </main>
-    </main>
     </VendasLayout>
   )
 }
