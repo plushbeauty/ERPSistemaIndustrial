@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CheckCircle2, RefreshCw, Save, Truck, XCircle } from 'lucide-react'
+import { CheckCircle2, RefreshCw, Save, Truck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
 type Vehicle = { id: string; placa: string; descricao: string | null; capacidade_kg: number }
 type Driver = { id: string; nome: string; documento: string | null; cnh: string | null }
@@ -17,6 +18,8 @@ type Invoice = {
 type Manifest = { id: string; numero: number; status: string; peso_total_kg: number; data_expedicao: string | null }
 
 const input = 'h-[54px] w-full rounded-md border border-slate-300 bg-white px-3 text-base font-semibold text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
+const PAGE_SIZE = 25
+const MAX_MANIFEST_INVOICES = 500
 
 export default function ExpedicaoRoteirizacao() {
   const [empresa, setEmpresa] = useState('')
@@ -24,6 +27,7 @@ export default function ExpedicaoRoteirizacao() {
   const [drivers, setDrivers] = useState<Driver[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [manifests, setManifests] = useState<Manifest[]>([])
+  const [invoicePage, setInvoicePage] = useState(0)
   const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(new Set())
   const [vehicle, setVehicle] = useState('')
   const [driver, setDriver] = useState('')
@@ -42,7 +46,10 @@ export default function ExpedicaoRoteirizacao() {
   )
   const capacity = Number(capacityOverride) > 0 ? Number(capacityOverride) : Number(selectedVehicle?.capacidade_kg ?? 0)
   const occupation = capacity > 0 ? Math.min(100, (selectedWeight / capacity) * 100) : 0
-  const overloaded = capacity > 0 && selectedWeight > capacity
+  const capacityOverrideInvalid = Boolean(selectedVehicle && Number(capacityOverride) > Number(selectedVehicle.capacidade_kg) && Number(selectedVehicle.capacidade_kg) > 0)
+  const overloaded = capacityOverrideInvalid || (capacity > 0 && selectedWeight > capacity)
+  const invoicePageCount = Math.max(1, Math.ceil(invoices.length / PAGE_SIZE))
+  const visibleInvoices = invoices.slice(invoicePage * PAGE_SIZE, (invoicePage + 1) * PAGE_SIZE)
 
   const load = async () => {
     setBusy(true)
@@ -54,18 +61,18 @@ export default function ExpedicaoRoteirizacao() {
       setEmpresa(empresaId)
 
       const [vehicleResult, driverResult, invoiceResult, manifestResult] = await Promise.all([
-        supabase.from('erp_veiculos').select('id,placa,descricao,capacidade_kg').eq('empresa_id', empresaId).eq('ativo', true).order('placa'),
-        supabase.from('erp_motoristas').select('id,nome,documento,cnh').eq('empresa_id', empresaId).eq('ativo', true).order('nome'),
-        supabase.from('erp_documentos_fiscais').select('id,numero,destinatario_nome,destinatario_cidade,destinatario_uf,peso_liquido,peso_bruto,status').eq('empresa_id', empresaId).eq('status', 'AUTORIZADA').order('numero', { ascending: false }).limit(500),
+        fetchAllPages<Vehicle>((from, to) => supabase.from('erp_veiculos').select('id,placa,descricao,capacidade_kg', { count: 'exact' }).eq('empresa_id', empresaId).eq('ativo', true).order('placa').range(from, to)),
+        fetchAllPages<Driver>((from, to) => supabase.from('erp_motoristas').select('id,nome,documento,cnh', { count: 'exact' }).eq('empresa_id', empresaId).eq('ativo', true).order('nome').range(from, to)),
+        fetchAllPages<Invoice>((from, to) => supabase.from('erp_documentos_fiscais').select('id,numero,destinatario_nome,destinatario_cidade,destinatario_uf,peso_liquido,peso_bruto,status', { count: 'exact' }).eq('empresa_id', empresaId).eq('modelo', '55').eq('status', 'Autorizada').order('numero', { ascending: false }).range(from, to)),
         supabase.from('erp_expedicoes').select('id,numero,status,peso_total_kg,data_expedicao').eq('empresa_id', empresaId).order('numero', { ascending: false }).limit(30),
       ])
-      if (vehicleResult.error) throw vehicleResult.error
-      if (driverResult.error) throw driverResult.error
-      if (invoiceResult.error) throw invoiceResult.error
       if (manifestResult.error) throw manifestResult.error
-      setVehicles((vehicleResult.data ?? []) as Vehicle[])
-      setDrivers((driverResult.data ?? []) as Driver[])
-      setInvoices((invoiceResult.data ?? []) as Invoice[])
+      setVehicles(vehicleResult)
+      setDrivers(driverResult)
+      setInvoices(invoiceResult)
+      const availableInvoices = new Set(invoiceResult.map(item => item.id))
+      setSelectedInvoices(current => new Set(Array.from(current).filter(id => availableInvoices.has(id))))
+      setInvoicePage(current => Math.min(current, Math.max(0, Math.ceil(invoiceResult.length / PAGE_SIZE) - 1)))
       setManifests((manifestResult.data ?? []) as Manifest[])
     } catch (cause: unknown) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar a logística.')
@@ -94,34 +101,21 @@ export default function ExpedicaoRoteirizacao() {
       const number = Number(manifestNumber)
       if (!Number.isInteger(number) || number <= 0) throw new Error('Informe um número de romaneio válido.')
       if (selectedInvoices.size === 0) throw new Error('Selecione ao menos uma NF autorizada.')
+      if (capacityOverrideInvalid) throw new Error('A capacidade manual não pode superar a capacidade cadastrada do veículo.')
       if (overloaded) throw new Error('A carga excede a capacidade do veículo.')
-      const selected = invoices.filter(item => selectedInvoices.has(item.id))
-      const created = await supabase.from('erp_expedicoes').insert({
-        empresa_id: empresa,
-        numero: number,
-        status: 'PREPARACAO',
-        veiculo_id: vehicle,
-        motorista_id: driver,
-        transportadora: carrier.trim() || null,
-        capacidade_kg: capacity || null,
-        peso_total_kg: selectedWeight,
-        data_expedicao: date || null,
-      }).select('id').single()
+      const created = await supabase.rpc('erp_expedicao_criar_romaneio', {
+        p_numero: number,
+        p_veiculo_id: vehicle,
+        p_motorista_id: driver,
+        p_transportadora: carrier.trim() || null,
+        p_capacidade_kg: capacity || null,
+        p_data_expedicao: date || null,
+        p_documento_fiscal_ids: Array.from(selectedInvoices),
+      })
       if (created.error) throw created.error
-
-      const lines = selected.map(item => ({
-        empresa_id: empresa,
-        expedicao_id: created.data.id,
-        nota_fiscal_id: item.id,
-        peso_kg: Number(item.peso_bruto ?? item.peso_liquido ?? 0),
-        cidade: [item.destinatario_cidade, item.destinatario_uf].filter(Boolean).join(' / ') || null,
-      }))
-      const lineResult = await supabase.from('erp_expedicao_notas').insert(lines)
-      if (lineResult.error) {
-        await supabase.from('erp_expedicoes').delete().eq('id', created.data.id).eq('empresa_id', empresa)
-        throw lineResult.error
-      }
-      setMessage('Romaneio gravado com as NFs selecionadas.')
+      const manifest = Array.isArray(created.data) ? created.data[0] as { id: string; peso_total_kg: number } | undefined : undefined
+      if (!manifest) throw new Error('O banco não retornou o romaneio criado.')
+      setMessage(`Romaneio ${number} gravado atomicamente com ${selectedInvoices.size} NF(s), totalizando ${Number(manifest.peso_total_kg).toLocaleString('pt-BR')} kg.`)
       setSelectedInvoices(new Set())
       await load()
     } catch (cause: unknown) {
@@ -137,8 +131,10 @@ export default function ExpedicaoRoteirizacao() {
     setMessage('')
     try {
       const result = await supabase.from('erp_expedicoes').update({ status: 'LIBERADA', updated_at: new Date().toISOString() }).eq('id', id).eq('empresa_id', empresa).eq('status', 'PREPARACAO')
+        .select('id')
+        .maybeSingle()
       if (result.error) throw result.error
-      if (result.count === 0) throw new Error('Romaneio não estava em preparação ou não pertence à empresa atual.')
+      if (!result.data) throw new Error('Romaneio não estava em preparação, não pertence à empresa atual ou falta permissão.')
       setMessage('Saída liberada.')
       await load()
     } catch (cause: unknown) {
@@ -160,7 +156,7 @@ export default function ExpedicaoRoteirizacao() {
           <button type="button" onClick={() => void load()} disabled={busy} className="flex h-[54px] items-center gap-2 rounded-md border border-slate-300 bg-white px-5 font-black disabled:opacity-50"><RefreshCw size={18}/> ATUALIZAR</button>
         </header>
 
-        {(message || error) && <div className={error ? 'rounded-md border border-rose-300 bg-rose-50 p-4 font-bold text-rose-900' : 'rounded-md border border-emerald-300 bg-emerald-50 p-4 font-bold text-emerald-900'}>{error || message}</div>}
+        {(message || error) && <div role={error ? 'alert' : 'status'} className={error ? 'rounded-md border border-rose-300 bg-rose-50 p-4 font-bold text-rose-900' : 'rounded-md border border-emerald-300 bg-emerald-50 p-4 font-bold text-emerald-900'}>{error || message}</div>}
 
         <section className="grid gap-5 xl:grid-cols-[1.2fr_.8fr]">
           <article className="rounded-md border border-slate-200 bg-white p-5 shadow-sm">
@@ -183,26 +179,33 @@ export default function ExpedicaoRoteirizacao() {
             <h2 className="text-xl font-black">2. Performance de carga</h2>
             <p className="mt-4 text-3xl font-black">{selectedWeight.toLocaleString('pt-BR')} kg <span className="text-lg text-slate-500">/ {capacity.toLocaleString('pt-BR')} kg</span></p>
             <progress className="mt-4 h-5 w-full" max={100} value={occupation} aria-label="Ocupação do caminhão"/>
-            <div className="mt-2 flex items-center justify-between font-black"><span>{occupation.toFixed(1)}% ocupado</span><span className={overloaded ? 'text-rose-700' : 'text-emerald-700'}>{overloaded ? 'CAPACIDADE EXCEDIDA' : 'DENTRO DA CAPACIDADE'}</span></div>
-            <button type="button" onClick={() => void saveManifest()} disabled={busy || overloaded || selectedInvoices.size === 0} className="mt-5 flex h-[54px] w-full items-center justify-center gap-2 rounded-md bg-slate-900 font-black text-white disabled:cursor-not-allowed disabled:opacity-40"><Save size={18}/> GRAVAR MANIFESTO</button>
+            <div className="mt-2 flex items-center justify-between font-black"><span>{occupation.toFixed(1)}% ocupado</span><span className={overloaded ? 'text-rose-700' : 'text-emerald-700'}>{capacityOverrideInvalid ? 'CAPACIDADE MANUAL INVÁLIDA' : overloaded ? 'CAPACIDADE EXCEDIDA' : 'DENTRO DA CAPACIDADE'}</span></div>
+            <button type="button" onClick={() => void saveManifest()} disabled={busy || overloaded || selectedInvoices.size === 0 || selectedInvoices.size > MAX_MANIFEST_INVOICES} className="mt-5 flex h-[54px] w-full items-center justify-center gap-2 rounded-md bg-slate-900 font-black text-white disabled:cursor-not-allowed disabled:opacity-40"><Save size={18}/> GRAVAR MANIFESTO</button>
           </article>
         </section>
 
         <section className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3 p-5"><div><h2 className="text-xl font-black">Notas fiscais autorizadas</h2><p className="text-sm font-semibold text-slate-600">A seleção usa dados fiscais reais; não há fallback fictício.</p></div><span className="rounded-md bg-slate-100 px-3 py-2 font-black">{selectedInvoices.size} selecionada(s)</span></div>
+          <div className="flex flex-wrap items-center justify-between gap-3 p-5"><div><h2 className="text-xl font-black">Notas fiscais autorizadas</h2><p className="text-sm font-semibold text-slate-600">A seleção usa dados fiscais reais; o limite transacional é {MAX_MANIFEST_INVOICES} notas por romaneio.</p></div><span className="rounded-md bg-slate-100 px-3 py-2 font-black">{selectedInvoices.size}/{MAX_MANIFEST_INVOICES} selecionada(s)</span></div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1000px]">
               <thead className="bg-slate-100"><tr><th className="h-[54px] px-4 text-left">Selecionar</th><th className="px-4 text-left">NF</th><th className="px-4 text-left">Destinatário</th><th className="px-4 text-left">Destino</th><th className="px-4 text-right">Peso</th><th className="px-4 text-left">Status</th></tr></thead>
               <tbody>
-                {invoices.map(item => <tr key={item.id} className="h-[54px] border-t border-slate-200 hover:bg-slate-50"><td className="px-4"><input type="checkbox" className="h-5 w-5" checked={selectedInvoices.has(item.id)} onChange={() => toggleInvoice(item.id)}/></td><td className="px-4 font-black">{item.numero}</td><td className="px-4 font-semibold">{item.destinatario_nome ?? '—'}</td><td className="px-4">{[item.destinatario_cidade, item.destinatario_uf].filter(Boolean).join(' / ') || '—'}</td><td className="px-4 text-right font-semibold">{Number(item.peso_bruto ?? item.peso_liquido ?? 0).toLocaleString('pt-BR')} kg</td><td className="px-4"><span className="rounded-md bg-emerald-100 px-3 py-1 text-sm font-black text-emerald-900"><CheckCircle2 className="mr-1 inline" size={15}/> AUTORIZADA</span></td></tr>)}
+                {visibleInvoices.map(item => <tr key={item.id} className="h-[54px] border-t border-slate-200 even:bg-slate-50 hover:bg-slate-100"><td className="px-4"><input type="checkbox" aria-label={`Selecionar NF ${item.numero}`} className="h-5 w-5" checked={selectedInvoices.has(item.id)} disabled={!selectedInvoices.has(item.id) && selectedInvoices.size >= MAX_MANIFEST_INVOICES} onChange={() => toggleInvoice(item.id)}/></td><td className="px-4 font-black">{item.numero}</td><td className="px-4 font-semibold">{item.destinatario_nome ?? '—'}</td><td className="px-4">{[item.destinatario_cidade, item.destinatario_uf].filter(Boolean).join(' / ') || '—'}</td><td className="px-4 text-right font-semibold">{Number(item.peso_bruto ?? item.peso_liquido ?? 0).toLocaleString('pt-BR')} kg</td><td className="px-4"><span className="rounded-md bg-emerald-100 px-3 py-1 text-sm font-black text-emerald-900"><CheckCircle2 className="mr-1 inline" size={15}/> AUTORIZADA</span></td></tr>)}
                 {!invoices.length && <tr><td colSpan={6} className="h-24 text-center font-semibold text-slate-500">Nenhuma NF autorizada encontrada.</td></tr>}
               </tbody>
             </table>
           </div>
+          <nav aria-label="Paginação de notas fiscais autorizadas" className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 p-4 text-sm">
+            <span>{invoices.length} NF-e autorizada(s) · página {invoicePage + 1} de {invoicePageCount}</span>
+            <div className="flex gap-2">
+              <button type="button" disabled={invoicePage === 0} onClick={() => setInvoicePage(current => Math.max(0, current - 1))} className="min-h-10 rounded border border-slate-300 px-3 font-bold disabled:opacity-50">Anterior</button>
+              <button type="button" disabled={invoicePage + 1 >= invoicePageCount} onClick={() => setInvoicePage(current => Math.min(invoicePageCount - 1, current + 1))} className="min-h-10 rounded border border-slate-300 px-3 font-bold disabled:opacity-50">Próxima</button>
+            </div>
+          </nav>
         </section>
 
         <section className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
-          <div className="p-5"><h2 className="text-xl font-black">Romaneios recentes</h2></div>
+          <div className="p-5"><h2 className="text-xl font-black">Romaneios recentes</h2><p className="text-sm font-semibold text-slate-600">Exibindo os 30 mais recentes; a consulta é limitada intencionalmente a este painel de atividade.</p></div>
           <table className="w-full min-w-[800px]">
             <thead className="bg-slate-100"><tr><th className="h-[54px] px-4 text-left">Romaneio</th><th className="px-4 text-left">Data</th><th className="px-4 text-right">Peso</th><th className="px-4 text-left">Status</th><th className="px-4 text-right">Ação</th></tr></thead>
             <tbody>{manifests.map(item => <tr key={item.id} className="h-[54px] border-t border-slate-200"><td className="px-4 font-black">{item.numero}</td><td className="px-4">{item.data_expedicao ?? '—'}</td><td className="px-4 text-right">{Number(item.peso_total_kg).toLocaleString('pt-BR')} kg</td><td className="px-4 font-bold">{item.status}</td><td className="px-4 text-right">{item.status === 'PREPARACAO' ? <button type="button" onClick={() => void releaseManifest(item.id)} disabled={busy} className="rounded-md bg-emerald-700 px-4 py-2 font-black text-white disabled:opacity-50">LIBERAR SAÍDA</button> : <span className="text-slate-500">—</span>}</td></tr>)}</tbody>

@@ -5,10 +5,10 @@ const root=path.resolve(process.argv[2]||'src');
 const exts=new Set(['.tsx','.jsx','.js']);
 const skip=new Set(['node_modules','dist','.git']);
 const blocking=[];let filesAnalyzed=0;
-const TAG_START=/<(button|a|Link)\b/i;
+const TAG_START=/<(button|a|Link)(?=\s|>)/i;
 const ACTION=/\b(onClick|onSubmit|onChange|onDoubleClick|to|href|type)\s*=/i;
 const INTENTIONALLY_DISABLED=/\bdisabled(?:\s|=|>)/i;
-const PLACEHOLDER=/(console\.log\s*\(|TODO|FIXME|em breve|coming\s+soon)/i;
+const PLACEHOLDER=/(console\.log\s*\(|\bTODO\b|\bFIXME\b|em breve|coming\s+soon)/i;
 function walk(dir){for(const ent of fs.readdirSync(dir,{withFileTypes:true})){if(skip.has(ent.name))continue;const file=path.join(dir,ent.name);if(ent.isDirectory())walk(file);else if(exts.has(path.extname(ent.name)))scan(file)}}
 function relative(file){return path.relative(process.cwd(),file)}
 function analyzeTag(file,line,text,context){const isSubmitButton=/<button\b/i.test(text)&&(/\btype\s*=\s*["']submit["']/i.test(text)||context.formSubmit);const delegatedAction=/\.\.\.props\b/.test(text)

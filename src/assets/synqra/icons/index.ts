@@ -1,0 +1,72 @@
+import type { LucideIcon } from 'lucide-react'
+import {
+  Activity,
+  Award,
+  BarChart3,
+  Bell,
+  BookOpen,
+  Boxes,
+  CalendarDays,
+  ClipboardCheck,
+  ClipboardList,
+  Cpu,
+  FileCheck2,
+  FileText,
+  Factory,
+  Gauge,
+  Handshake,
+  Headphones,
+  Home,
+  Landmark,
+  Leaf,
+  PackageSearch,
+  Settings,
+  ShieldCheck,
+  ShoppingCart,
+  Truck,
+  UserCircle,
+  Users,
+  Wrench,
+} from 'lucide-react'
+
+export type SynqraModule = {
+  key: string
+  label: string
+  route?: string
+  Icon: LucideIcon
+}
+
+export const SYNQRA_MODULES: readonly SynqraModule[] = [
+  { key: 'inicio', label: 'Início', route: '/comercial', Icon: Home },
+  { key: 'dashboard', label: 'Dashboard', route: '/erp-industrial', Icon: BarChart3 },
+  { key: 'vendas', label: 'Vendas', route: '/vendas', Icon: Handshake },
+  { key: 'compras', label: 'Compras', route: '/compras/rfq', Icon: ShoppingCart },
+  { key: 'financeiro', label: 'Financeiro', route: '/financeiro/caixa', Icon: Landmark },
+  { key: 'rh', label: 'RH', route: '/rh', Icon: Users },
+  { key: 'administracao', label: 'Administração', route: '/usuarios-admin', Icon: ClipboardList },
+  { key: 'pcp', label: 'PCP', route: '/pcp', Icon: Factory },
+  { key: 'qualidade', label: 'Qualidade', route: '/qualidade', Icon: Award },
+  { key: 'estoque', label: 'Estoque', route: '/estoque', Icon: Boxes },
+  { key: 'logistica', label: 'Logística', route: '/expedicao/roteirizacao', Icon: Truck },
+  { key: 'manutencao', label: 'Manutenção', route: '/manutencao/ordens', Icon: Wrench },
+  { key: 'maquinas', label: 'Máquinas e Equipamentos', route: '/manutencao/ordens', Icon: Cpu },
+  { key: 'materiais', label: 'Controle de Materiais', route: '/pcp/materiais', Icon: PackageSearch },
+  { key: 'projetos', label: 'Projetos', route: '/engenharia', Icon: Activity },
+  { key: 'documentos', label: 'Documentos', route: '/documentos-qualidade', Icon: FileText },
+  { key: 'relatorios', label: 'Relatórios', route: '/vendas/relatorios', Icon: BarChart3 },
+  { key: 'treinamentos', label: 'Treinamentos', Icon: BookOpen },
+  { key: 'seguranca', label: 'Segurança do Trabalho', Icon: ShieldCheck },
+  { key: 'meio-ambiente', label: 'Meio Ambiente', Icon: Leaf },
+  { key: 'ti', label: 'TI', Icon: Cpu },
+  { key: 'fornecedores', label: 'Fornecedores', route: '/fornecedores', Icon: Truck },
+  { key: 'clientes', label: 'Clientes', route: '/clientes', Icon: Users },
+  { key: 'suporte', label: 'Suporte', route: '/ajuda', Icon: Headphones },
+  { key: 'notificacoes', label: 'Notificações', Icon: Bell },
+  { key: 'agenda', label: 'Agenda', Icon: CalendarDays },
+  { key: 'aprovacoes', label: 'Aprovações', Icon: FileCheck2 },
+  { key: 'auditorias', label: 'Auditorias', route: '/qualidade/auditoria-5s', Icon: ClipboardCheck },
+  { key: 'planejamento', label: 'Planejamento', route: '/pcp/planejamento', Icon: CalendarDays },
+  { key: 'indicadores', label: 'Indicadores', route: '/pcp/dashboard-oee', Icon: Gauge },
+  { key: 'configuracoes', label: 'Configurações', route: '/configuracoes-adm', Icon: Settings },
+  { key: 'perfil', label: 'Perfil', route: '/usuarios', Icon: UserCircle },
+]

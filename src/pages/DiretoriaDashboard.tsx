@@ -54,7 +54,7 @@ export default function DiretoriaDashboard() {
       supabase.from("erp_ordens_producao").select("id,status").in("status", ["ABERTA", "PLANEJADA", "EM_PRODUCAO", "EM_ANDAMENTO"]),
       supabase.from("erp_rncs").select("id,status").not("status", "in", "(ENCERRADA,CANCELADA,FECHADA)"),
       supabase.from("erp_equipamentos_medicao").select("id").lte("proxima_calibracao", new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)),
-      supabase.from("erp_documentos_fiscais").select("id,valor_total,status,data_emissao").eq("empresa_id", empresaAtual ?? "").eq("status", "AUTORIZADA").order("data_emissao", { ascending: true }).limit(500),
+      supabase.from("erp_documentos_fiscais").select("id,valor_total,status,data_emissao").eq("empresa_id", empresaAtual ?? "").eq("status", "Autorizada").order("data_emissao", { ascending: true }).limit(500),
       supabase.from("erp_producao_apontamentos").select("ordem_producao_id,quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim").order("created_at", { ascending: false }).limit(500),
       supabase.from("erp_estoque_reservas").select("id,quantidade, status, pedido_item_id").eq("status", "ATIVA").order("created_at", { ascending: false }).limit(20),
     ]);

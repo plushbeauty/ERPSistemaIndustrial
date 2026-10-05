@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { ArrowLeft, RefreshCw } from 'lucide-react'
+import { Link, useParams } from 'react-router-dom'
+import { ArrowLeft, Pencil } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import VendasLayout from './VendasLayout'
 
 type Item = {
   id: string
@@ -64,11 +65,9 @@ export default function VendasPedidoStatus() {
   const [expedition, setExpedition] = useState<Expedition[]>([])
   const [fiscal, setFiscal] = useState<Fiscal[]>([])
   const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
 
   const load = async () => {
     if (!id) return
-    setBusy(true)
     setError('')
     const [orderResult, itemsResult, productionResult, expeditionResult, fiscalResult] = await Promise.all([
       supabase
@@ -106,7 +105,6 @@ export default function VendasPedidoStatus() {
     setProduction((productionResult.data ?? []) as Production[])
     setExpedition((expeditionResult.data ?? []) as Expedition[])
     setFiscal((fiscalResult.data ?? []) as Fiscal[])
-    setBusy(false)
   }
 
   useEffect(() => {
@@ -116,25 +114,14 @@ export default function VendasPedidoStatus() {
   if (!id) return <div className="p-8">Pedido não informado.</div>
 
   return (
-    <div className="min-h-screen bg-[#F4F7FE] text-slate-900">
-      <header className="sticky top-0 z-20 border-b bg-white">
-        <div className="flex min-h-[70px] items-center justify-between gap-4 px-5 lg:px-8">
-          <div>
-            <p className="text-[10px] uppercase tracking-[.16em] text-[#2D8DB8]">ERP Industrial • Vendas</p>
-            <h1 className="text-xl font-medium text-[#123B50]">Acompanhamento do Pedido</h1>
-          </div>
-          <div className="flex gap-2">
-            <button type="button" onClick={() => location.assign('/vendas/status')} className="flex h-9 items-center gap-2 rounded-md border px-3 text-xs">
-              <ArrowLeft size={15} /> Status Pedido
-            </button>
-            <button type="button" onClick={() => void load()} className="h-9 rounded-md border px-3">
-              <RefreshCw size={15} className={busy ? 'animate-spin' : ''} />
-            </button>
-          </div>
+    <VendasLayout title="Acompanhamento do pedido" subtitle={order ? `PV-${String(order.numero).padStart(6, '0')}` : 'Vendas'} onRefresh={() => void load()}>
+      <main className="sales-workspace sales-detail">
+        <div className="sales-detail-toolbar">
+          <Link to="/vendas/pedidos" className="sales-button sales-button--secondary"><ArrowLeft size={15} /> Pedidos de venda</Link>
+          {order && ['rascunho', 'aberto'].some((status) => order.status.toLowerCase().includes(status)) && id && (
+            <Link to={`/vendas/novo-pedido?pedido=${encodeURIComponent(id)}`} className="sales-button sales-button--primary"><Pencil size={15} /> Editar rascunho</Link>
+          )}
         </div>
-      </header>
-
-      <main className="mx-auto max-w-[1500px] p-5 lg:p-8">
         {error && <div className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-red-800">{error}</div>}
         {order && (
           <>
@@ -190,7 +177,7 @@ export default function VendasPedidoStatus() {
           </>
         )}
       </main>
-    </div>
+    </VendasLayout>
   )
 }
 

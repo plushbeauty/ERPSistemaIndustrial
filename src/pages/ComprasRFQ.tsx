@@ -1,15 +1,339 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Plus, Save, Trash2 } from 'lucide-react'
+import { ArrowLeft, Plus, Save, Search, Trash2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
-type Supplier={id:string;razao_social:string;email:string|null}
-type Product={id:string;codigo:string;nome:string;unidade:string}
-type Item={produto_id:string;codigo:string;descricao:string;quantidade:string;unidade:string;data_necessidade:string;observacoes:string}
-export default function ComprasRFQ(){
- const [suppliers,setSuppliers]=useState<Supplier[]>([]),[products,setProducts]=useState<Product[]>([]),[selectedSuppliers,setSelectedSuppliers]=useState<string[]>([]),[items,setItems]=useState<Item[]>([]),[productId,setProductId]=useState(''),[qty,setQty]=useState('1'),[need,setNeed]=useState(''),[response,setResponse]=useState(''),[condition,setCondition]=useState(''),[notes,setNotes]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
- useEffect(()=>{void(async()=>{const company=await supabase.rpc('erp_current_empresa_id');if(company.error||!company.data){setError(company.error?.message||'Empresa não identificada.');return};const [s,p]=await Promise.all([supabase.from('erp_fornecedores').select('id,razao_social,email').eq('empresa_id',String(company.data)).eq('ativo',true).order('razao_social'),supabase.from('erp_produtos').select('id,codigo,nome,unidade').eq('empresa_id',String(company.data)).eq('ativo',true).order('codigo').limit(3000)]);if(s.error)setError(s.error.message);if(p.error)setError(p.error.message);setSuppliers((s.data||[]) as Supplier[]);setProducts((p.data||[]) as Product[])})()},[])
- const addItem=()=>{const p=products.find(x=>x.id===productId);if(!p||Number(qty)<=0)return;setItems(x=>[...x,{produto_id:p.id,codigo:p.codigo,descricao:p.nome,quantidade:qty,unidade:p.unidade,data_necessidade:need,observacoes:''}]);setProductId('');setQty('1')}
- const totalQty=useMemo(()=>items.reduce((s,i)=>s+Number(i.quantidade),0),[items])
- const save=async()=>{if(!selectedSuppliers.length||!items.length){setError('Selecione ao menos um fornecedor e um item.');return}setBusy(true);setError('');setMessage('');try{const company=await supabase.rpc('erp_current_empresa_id');if(company.error||!company.data)throw company.error||new Error('Empresa não identificada.');const user=await supabase.auth.getUser();const h=await supabase.from('erp_rfq').insert({empresa_id:company.data,status:'ABERTA',data_necessidade:items.map(i=>i.data_necessidade).filter(Boolean).sort()[0]||null,prazo_resposta:response||null,condicao_pagamento:condition||null,observacoes:notes||null,created_by:user.data.user?.id||null}).select('id,numero').single();if(h.error)throw h.error;const fs=await supabase.from('erp_rfq_fornecedores').insert(selectedSuppliers.map(f=>({empresa_id:company.data,rfq_id:h.data.id,fornecedor_id:f})));if(fs.error)throw fs.error;const is=await supabase.from('erp_rfq_itens').insert(items.map(i=>({empresa_id:company.data,rfq_id:h.data.id,...i,quantidade:Number(i.quantidade),data_necessidade:i.data_necessidade||null})));if(is.error)throw is.error;setMessage('RFQ #'+h.data.numero+' criada com '+selectedSuppliers.length+' fornecedor(es) e '+totalQty+' unidades.');setItems([]);setSelectedSuppliers([])}catch(e){setError(e instanceof Error?e.message:'Falha ao criar RFQ.')}finally{setBusy(false)}}
- return <div className="min-h-screen bg-[#F4F7FE] text-slate-900"><header className="border-b bg-white"><div className="flex min-h-[70px] items-center justify-between px-5 lg:px-8"><div><p className="text-[10px] uppercase tracking-[.16em] text-[#2D8DB8]">Compras • Suprimentos</p><h1 className="text-xl font-medium text-[#123B50]">Pedido de Cotação — RFQ</h1></div><button onClick={()=>location.assign('/compras-solicitacao')} className="flex items-center gap-2 rounded-md border px-3 py-2 text-xs"><ArrowLeft size={15}/>Voltar</button></div></header><main className="mx-auto max-w-[1500px] p-5 lg:p-8"><div className="grid gap-5 lg:grid-cols-3"><section className="rounded-lg border bg-white p-5 lg:col-span-1"><h2 className="font-medium text-[#123B50]">Fornecedores selecionados</h2><div className="mt-4 space-y-2">{suppliers.map(s=><label key={s.id} className="flex gap-3 rounded border p-3 text-sm"><input type="checkbox" checked={selectedSuppliers.includes(s.id)} onChange={e=>setSelectedSuppliers(x=>e.target.checked?[...x,s.id]:x.filter(id=>id!==s.id))}/><span><strong>{s.razao_social}</strong><br/><span className="text-xs text-slate-500">{s.email||'Sem e-mail cadastrado'}</span></span></label>)}</div></section><section className="rounded-lg border bg-white p-5 lg:col-span-2"><div className="grid gap-3 md:grid-cols-4"><label className="text-xs">Prazo para resposta<input type="date" value={response} onChange={e=>setResponse(e.target.value)} className="mt-1 h-10 w-full rounded border p-2"/></label><label className="text-xs md:col-span-2">Condição de pagamento<input value={condition} onChange={e=>setCondition(e.target.value)} className="mt-1 h-10 w-full rounded border p-2"/></label><label className="text-xs">Necessidade<input type="date" value={need} onChange={e=>setNeed(e.target.value)} className="mt-1 h-10 w-full rounded border p-2"/></label></div><div className="mt-5 grid gap-2 md:grid-cols-[1fr_120px_100px]"><select value={productId} onChange={e=>setProductId(e.target.value)} className="h-10 rounded border px-3"><option value="">Selecionar matéria-prima/produto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select><input type="number" min="0.0001" value={qty} onChange={e=>setQty(e.target.value)} className="h-10 rounded border px-3"/><button onClick={addItem} className="flex items-center justify-center gap-1 rounded bg-[#123B50] text-xs text-white"><Plus size={15}/>Adicionar</button></div><table className="mt-5 w-full text-sm"><thead><tr className="border-b bg-slate-100 text-left"><th className="p-3">Código</th><th className="p-3">Descrição</th><th className="p-3">Qtd.</th><th className="p-3">Necessidade</th><th/></tr></thead><tbody>{items.map((i,n)=><tr key={n} className="border-b"><td className="p-3">{i.codigo}</td><td className="p-3">{i.descricao}</td><td className="p-3">{i.quantidade} {i.unidade}</td><td className="p-3">{i.data_necessidade||'—'}</td><td className="p-3"><button onClick={()=>setItems(x=>x.filter((_,idx)=>idx!==n))}><Trash2 size={15}/></button></td></tr>)}</tbody></table><textarea value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Observações da cotação" className="mt-4 min-h-24 w-full rounded border p-3 text-sm"/>{error&&<div className="mt-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}{message&&<div className="mt-4 rounded border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{message}</div>}<button disabled={busy} onClick={()=>void save()} className="mt-4 flex h-11 items-center justify-center gap-2 rounded bg-[#2D8DB8] px-5 text-sm text-white"><Save size={16}/>Guardar RFQ</button></section></div></main></div>
+type Supplier = { id: string; razao_social: string; email: string | null }
+type Product = { id: string; codigo: string; nome: string; unidade: string }
+type Item = {
+  produto_id: string
+  codigo: string
+  descricao: string
+  quantidade: string
+  unidade: string
+  data_necessidade: string
+  observacoes: string
+}
+
+export default function ComprasRFQ() {
+  const navigate = useNavigate()
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>([])
+  const [items, setItems] = useState<Item[]>([])
+  const [productId, setProductId] = useState('')
+  const [quantity, setQuantity] = useState('1')
+  const [needDate, setNeedDate] = useState('')
+  const [responseDate, setResponseDate] = useState('')
+  const [paymentCondition, setPaymentCondition] = useState('')
+  const [supplierQuery, setSupplierQuery] = useState('')
+  const [notes, setNotes] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let alive = true
+
+    void (async () => {
+      setLoading(true)
+      try {
+        const company = await supabase.rpc('erp_current_empresa_id')
+        if (company.error || !company.data) {
+          throw company.error ?? new Error('Empresa não identificada.')
+        }
+        const empresaId = String(company.data)
+        const [supplierRows, productRows] = await Promise.all([
+          fetchAllPages<Supplier>((from, to) => supabase
+            .from('erp_fornecedores')
+            .select('id,razao_social,email', { count: 'exact' })
+            .eq('empresa_id', empresaId)
+            .eq('ativo', true)
+            .order('razao_social')
+            .range(from, to)),
+          fetchAllPages<Product>((from, to) => supabase
+            .from('erp_produtos')
+            .select('id,codigo,nome,unidade', { count: 'exact' })
+            .eq('empresa_id', empresaId)
+            .eq('ativo', true)
+            .order('codigo')
+            .range(from, to)),
+        ])
+        if (alive) {
+          setSuppliers(supplierRows)
+          setProducts(productRows)
+        }
+      } catch (cause) {
+        if (alive) setError(cause instanceof Error ? cause.message : 'Não foi possível carregar os dados da cotação.')
+      } finally {
+        if (alive) setLoading(false)
+      }
+    })()
+
+    return () => { alive = false }
+  }, [])
+
+  const visibleSuppliers = useMemo(() => {
+    const query = supplierQuery.trim().toLocaleLowerCase('pt-BR')
+    return suppliers.filter(supplier => !query
+      || `${supplier.razao_social} ${supplier.email ?? ''}`.toLocaleLowerCase('pt-BR').includes(query))
+  }, [supplierQuery, suppliers])
+  const totalQuantity = useMemo(
+    () => items.reduce((sum, item) => sum + Number(item.quantidade), 0),
+    [items],
+  )
+
+  const addItem = () => {
+    const product = products.find(candidate => candidate.id === productId)
+    const parsedQuantity = Number(quantity)
+    if (!product) {
+      setError('Selecione um produto ou matéria-prima.')
+      return
+    }
+    if (!Number.isFinite(parsedQuantity) || parsedQuantity <= 0) {
+      setError('A quantidade deve ser maior que zero.')
+      return
+    }
+    setError('')
+    setItems(current => [...current, {
+      produto_id: product.id,
+      codigo: product.codigo,
+      descricao: product.nome,
+      quantidade: String(parsedQuantity),
+      unidade: product.unidade,
+      data_necessidade: needDate,
+      observacoes: '',
+    }])
+    setProductId('')
+    setQuantity('1')
+  }
+
+  const save = async () => {
+    if (!selectedSuppliers.length || !items.length) {
+      setError('Selecione ao menos um fornecedor e um item.')
+      return
+    }
+    setBusy(true)
+    setError('')
+    setMessage('')
+    let empresaId: string | null = null
+    let rfqId: string | null = null
+
+    try {
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error || !company.data) {
+        throw company.error ?? new Error('Empresa não identificada.')
+      }
+      empresaId = String(company.data)
+
+      const auth = await supabase.auth.getUser()
+      if (auth.error || !auth.data.user) {
+        throw auth.error ?? new Error('Sessão não localizada para registrar a cotação.')
+      }
+      const profile = await supabase
+        .from('erp_usuarios')
+        .select('id')
+        .eq('auth_user_id', auth.data.user.id)
+        .eq('empresa_id', empresaId)
+        .eq('ativo', true)
+        .is('deleted_at', null)
+        .maybeSingle()
+      if (profile.error || !profile.data) {
+        throw profile.error ?? new Error('Perfil ERP ativo não localizado para registrar a cotação.')
+      }
+
+      const header = await supabase
+        .from('erp_rfq')
+        .insert({
+          empresa_id: empresaId,
+          status: 'ABERTA',
+          data_necessidade: items.map(item => item.data_necessidade).filter(Boolean).sort()[0] || null,
+          prazo_resposta: responseDate || null,
+          condicao_pagamento: paymentCondition.trim() || null,
+          observacoes: notes.trim() || null,
+          created_by: profile.data.id,
+        })
+        .select('id,numero')
+        .single()
+      if (header.error || !header.data) {
+        throw header.error ?? new Error('A cotação não foi retornada pelo banco.')
+      }
+      rfqId = header.data.id
+
+      const supplierInsert = await supabase
+        .from('erp_rfq_fornecedores')
+        .insert(selectedSuppliers.map(fornecedorId => ({
+          empresa_id: empresaId,
+          rfq_id: rfqId,
+          fornecedor_id: fornecedorId,
+        })))
+      if (supplierInsert.error) throw supplierInsert.error
+
+      const itemInsert = await supabase
+        .from('erp_rfq_itens')
+        .insert(items.map(item => ({
+          empresa_id: empresaId,
+          rfq_id: rfqId,
+          produto_id: item.produto_id,
+          descricao: item.descricao,
+          codigo: item.codigo,
+          quantidade: Number(item.quantidade),
+          unidade: item.unidade || 'UN',
+          data_necessidade: item.data_necessidade || null,
+          observacoes: item.observacoes || null,
+        })))
+      if (itemInsert.error) throw itemInsert.error
+
+      setMessage(`RFQ #${header.data.numero} criada com ${selectedSuppliers.length} fornecedor(es) e ${totalQuantity} unidades.`)
+      setItems([])
+      setSelectedSuppliers([])
+    } catch (cause) {
+      if (rfqId && empresaId) {
+        const rollback = await supabase
+          .from('erp_rfq')
+          .delete()
+          .eq('id', rfqId)
+          .eq('empresa_id', empresaId)
+        if (rollback.error) {
+          const original = cause instanceof Error ? cause.message : String(cause)
+          setError(`${original} A exclusão da cotação incompleta também falhou: ${rollback.error.message}`)
+          return
+        }
+      }
+      setError(cause instanceof Error ? cause.message : 'Falha ao criar a cotação.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-[#F4F7FE] text-slate-900">
+      <header className="border-b bg-white">
+        <div className="flex min-h-[70px] items-center justify-between gap-3 px-5 lg:px-8">
+          <div>
+            <p className="text-[10px] uppercase tracking-[.16em] text-[#2D8DB8]">Compras • Suprimentos</p>
+            <h1 className="text-xl font-medium text-[#123B50]">Pedido de Cotação — RFQ</h1>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => navigate('/compras/solicitacao-manual')}
+              className="flex min-h-10 items-center gap-2 rounded-md border px-3 py-2 text-xs"
+            >
+              <ArrowLeft size={15} /> Solicitações
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/compras/pedido')}
+              className="flex min-h-10 items-center gap-2 rounded-md border px-3 py-2 text-xs"
+            >
+              Pedido de compra
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-[1500px] p-4 lg:p-8">
+        {error && <div className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">{error}</div>}
+        {message && <div className="mb-4 rounded border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800" role="status">{message}</div>}
+        <div className="grid gap-5 lg:grid-cols-3">
+          <section className="rounded-lg border bg-white p-5 lg:col-span-1">
+            <h2 className="font-medium text-[#123B50]">Fornecedores selecionados</h2>
+            <label className="mt-3 flex items-center gap-2 rounded border px-3">
+              <Search size={16} aria-hidden="true" />
+              <input
+                className="min-w-0 flex-1 border-0 px-0"
+                value={supplierQuery}
+                onChange={event => setSupplierQuery(event.target.value)}
+                placeholder="Pesquisar fornecedores..."
+                aria-label="Pesquisar fornecedores da cotação"
+              />
+            </label>
+            <div className="mt-4 max-h-[55vh] space-y-2 overflow-y-auto">
+              {loading ? <p role="status">Carregando fornecedores...</p> : visibleSuppliers.map(supplier => (
+                <label key={supplier.id} className="flex gap-3 rounded border p-3 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={selectedSuppliers.includes(supplier.id)}
+                    onChange={event => setSelectedSuppliers(current => event.target.checked
+                      ? [...current, supplier.id]
+                      : current.filter(id => id !== supplier.id))}
+                  />
+                  <span>
+                    <strong>{supplier.razao_social}</strong>
+                    <br />
+                    <span className="text-xs text-slate-500">{supplier.email || 'Sem e-mail cadastrado'}</span>
+                  </span>
+                </label>
+              ))}
+              {!loading && !visibleSuppliers.length && <p>Nenhum fornecedor ativo corresponde à pesquisa.</p>}
+            </div>
+          </section>
+
+          <section className="rounded-lg border bg-white p-5 lg:col-span-2">
+            <div className="grid gap-3 md:grid-cols-4">
+              <label className="text-xs">
+                Prazo para resposta
+                <input type="date" value={responseDate} onChange={event => setResponseDate(event.target.value)} className="mt-1 h-10 w-full rounded border p-2" />
+              </label>
+              <label className="text-xs md:col-span-2">
+                Condição de pagamento
+                <input value={paymentCondition} onChange={event => setPaymentCondition(event.target.value)} className="mt-1 h-10 w-full rounded border p-2" />
+              </label>
+              <label className="text-xs">
+                Necessidade
+                <input type="date" value={needDate} onChange={event => setNeedDate(event.target.value)} className="mt-1 h-10 w-full rounded border p-2" />
+              </label>
+            </div>
+
+            <div className="mt-5 grid gap-2 md:grid-cols-[minmax(0,1fr)_120px_100px]">
+              <select value={productId} onChange={event => setProductId(event.target.value)} className="h-10 min-w-0 rounded border px-3" aria-label="Selecionar matéria-prima ou produto">
+                <option value="">Selecionar matéria-prima/produto</option>
+                {products.map(product => <option key={product.id} value={product.id}>{product.codigo} — {product.nome}</option>)}
+              </select>
+              <input aria-label="Quantidade" type="number" min="0.0001" step="0.0001" value={quantity} onChange={event => setQuantity(event.target.value)} className="h-10 rounded border px-3" />
+              <button type="button" onClick={addItem} className="flex min-h-10 items-center justify-center gap-1 rounded bg-[#123B50] text-xs text-white">
+                <Plus size={15} /> Adicionar
+              </button>
+            </div>
+
+            <div className="mt-5 overflow-x-auto">
+              <table className="w-full min-w-[640px] text-sm">
+                <thead><tr className="border-b bg-slate-100 text-left"><th className="p-3">Código</th><th className="p-3">Descrição</th><th className="p-3">Qtd.</th><th className="p-3">Necessidade</th><th className="p-3">Ações</th></tr></thead>
+                <tbody>
+                  {items.map((item, index) => (
+                    <tr key={`${item.produto_id}-${index}`} className="border-b">
+                      <td className="p-3">{item.codigo}</td>
+                      <td className="p-3">{item.descricao}</td>
+                      <td className="p-3">{item.quantidade} {item.unidade}</td>
+                      <td className="p-3">{item.data_necessidade || '—'}</td>
+                      <td className="p-3">
+                        <button type="button" aria-label={`Remover ${item.descricao}`} onClick={() => setItems(current => current.filter((_, itemIndex) => itemIndex !== index))}>
+                          <Trash2 size={15} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {!items.length && <tr><td className="p-4 text-center text-slate-500" colSpan={5}>Adicione ao menos um item à cotação.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+
+            <label className="mt-4 block text-xs">
+              Observações da cotação
+              <textarea value={notes} onChange={event => setNotes(event.target.value)} className="mt-1 min-h-24 w-full rounded border p-3 text-sm" />
+            </label>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-4">
+              <span className="text-sm text-slate-600">{selectedSuppliers.length} fornecedor(es) · {totalQuantity} unidade(s)</span>
+              <button type="button" disabled={busy || loading} onClick={() => void save()} className="flex min-h-11 items-center justify-center gap-2 rounded bg-[#2D8DB8] px-5 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50">
+                <Save size={16} /> {busy ? 'Salvando...' : 'Guardar RFQ'}
+              </button>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  )
 }

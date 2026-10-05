@@ -65,7 +65,7 @@ export default function QualidadeRelatoriosDocumentos(){
 
  const printTitle=status==='VIGENTES'?'LISTA MESTRE — DOCUMENTOS VIGENTES':status==='OBSOLETOS'?'RELAÇÃO DE DOCUMENTOS OBSOLETOS':'ÍNDICE DE DOCUMENTOS CONTROLADOS'
 
- return <main className="min-h-screen bg-slate-100 text-slate-900">
+ return <main data-quality-workspace className="min-h-screen bg-slate-100 text-slate-900">
   <style>{`
    @media print{
     body{background:#fff!important;color:#000!important}
@@ -87,7 +87,7 @@ export default function QualidadeRelatoriosDocumentos(){
     </div>
    </div>
   </header>
-  <div className="quality-report-screen mx-auto grid max-w-[1800px] grid-cols-1 gap-5 p-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+  <div data-quality-workspace className="quality-report-screen mx-auto grid max-w-[1800px] grid-cols-1 gap-5 p-4 lg:grid-cols-[280px_minmax(0,1fr)]">
    <div className="quality-report-no-print"><QualitySidebar active="/qualidade/relatorios-documentos"/></div>
    <section className="space-y-5">
     {error&&<div className="quality-report-no-print rounded-md border border-red-200 bg-red-50 p-4 text-base font-bold text-red-800">{error}</div>}

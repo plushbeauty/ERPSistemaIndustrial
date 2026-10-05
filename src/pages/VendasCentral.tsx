@@ -1,17 +1,275 @@
-import { useEffect,useMemo,useState } from 'react'
-import VendasLayout from './VendasLayout'
+import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import {
+  ArrowDownUp,
+  ArrowRight,
+  CalendarClock,
+  CheckCircle2,
+  CircleAlert,
+  ClipboardList,
+  FilePlus2,
+  PackageCheck,
+  RefreshCw,
+  Search,
+  XCircle,
+} from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-type O={id:string;numero:number;status:string;total:number;data_entrada:string|null;cliente_id:string}
-type C={id:string;nome:string;tipo_cliente:string|null}
-const brl=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0)
-export default function VendasCentral(){
- const [orders,setOrders]=useState<O[]>([]),[clients,setClients]=useState<C[]>([]),[error,setError]=useState('')
- const load=async()=>{const e=await supabase.rpc('erp_current_empresa_id');if(e.error||!e.data)throw e.error??new Error('Empresa não identificada.');const id=String(e.data);const o=await supabase.from('erp_pedidos_venda').select('id,numero,status,total,data_entrada,cliente_id').eq('empresa_id',id).order('numero',{ascending:false}).limit(2000);const c=await supabase.from('erp_clientes').select('id,nome,tipo_cliente').eq('empresa_id',id).eq('ativo',true).limit(5000);if(o.error)throw o.error;if(c.error)throw c.error;setOrders((o.data??[]) as O[]);setClients((c.data??[]) as C[])}
- useEffect(()=>{void load().catch(e=>setError(e instanceof Error?e.message:'Falha ao carregar dashboard.'))},[])
- const pending=orders.filter(o=>!['faturado','cancelado'].includes(o.status.toLowerCase())).length
- const month=useMemo(()=>{const now=new Date();let total=0;for(const o of orders){const d=new Date(o.data_entrada??'');if(d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear())total+=Number(o.total||0)}return total},[orders])
- const profile=useMemo(()=>{const map=new Map<string,number>();for(const o of orders){const c=clients.find(x=>x.id===o.cliente_id);const key=c?.tipo_cliente||'Não informado';map.set(key,(map.get(key)||0)+Number(o.total||0))}return Array.from(map.entries()).sort((a,b)=>b[1]-a[1]).slice(0,6)},[orders,clients])
- const maxProfile=profile.length>0?profile[0][1]:1
- return <VendasLayout title="Dashboard Comercial" subtitle="Carteira real do ERP" onRefresh={()=>void load()}><div className="space-y-2 text-[11px]">{error&&<div className="border border-red-200 bg-red-50 p-2 text-red-800">{error}</div>}<div className="grid grid-cols-4 gap-2"><K label="Pedidos pendentes" v={pending}/><K label="Faturamento do mês" v={brl(month)}/><K label="Pedidos totais" v={orders.length}/><K label="Metas" v="Abrir metas"/></div><div className="grid grid-cols-2 gap-2"><section className="border border-slate-300 bg-white p-2"><b>FATURAMENTO POR PERFIL DE CLIENTE</b><div className="mt-2 space-y-1">{profile.map(item=><div key={item[0]}><div className="flex justify-between"><span>{item[0]}</span><b>{brl(item[1])}</b></div><div className="h-2 bg-slate-100"><div className="h-2 bg-[#2D8DB8]" style={{width:(Math.min(item[1]/maxProfile,1)*100)+'%'}}/></div></div>)}{profile.length===0&&<p className="p-4 text-slate-500">Sem dados reais.</p>}</div></section><section className="border border-slate-300 bg-white p-2"><b>PEDIDOS RECENTES</b><table className="mt-2 w-full border-collapse"><thead><tr className="bg-[#DEE2E6] text-left text-[9px] uppercase"><th className="p-1">Pedido</th><th>Cliente</th><th>Status</th><th>Total</th></tr></thead><tbody>{orders.slice(0,12).map(o=><tr key={o.id} className="border-t"><td className="p-1">{String(o.numero).padStart(6,'0')}</td><td>{clients.find(c=>c.id===o.cliente_id)?.nome??'—'}</td><td>{o.status}</td><td>{brl(Number(o.total))}</td></tr>)}</tbody></table></section></div></div></VendasLayout>
+import { fetchAllPages } from '../lib/supabasePagination'
+import VendasLayout from './VendasLayout'
+
+type Order = {
+  id: string
+  numero: number
+  pedido_cliente: string | null
+  status: string
+  total: number | null
+  data_entrada: string | null
+  data_entrega_prometida: string | null
+  cliente_id: string | null
+  cliente: { nome: string; codigo: string | null } | null
 }
-function K({label,v}:{label:string;v:string|number}){return <div className="border border-slate-300 bg-white p-2"><div className="text-[9px] uppercase text-slate-500">{label}</div><div className="mt-1 text-[16px] font-semibold text-[#123B50]">{v}</div></div>}
+
+type StatusFilter = 'todos' | 'rascunho' | 'andamento' | 'atrasados' | 'faturados' | 'cancelados'
+
+const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+const PAGE_SIZE = 25
+const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+const isDraft = (status: string) => normalize(status).includes('rascunho') || normalize(status).includes('aberto')
+const isCancelled = (status: string) => normalize(status).includes('cancel')
+const isInvoiced = (status: string) => normalize(status).includes('fatur')
+const formatDate = (value: string | null) => value
+  ? new Intl.DateTimeFormat('pt-BR').format(new Date(`${value.slice(0, 10)}T00:00:00`))
+  : '—'
+const isOverdue = (order: Order) => Boolean(order.data_entrega_prometida)
+  && new Date(`${order.data_entrega_prometida!.slice(0, 10)}T00:00:00`) < new Date(new Date().toDateString())
+  && !isInvoiced(order.status)
+  && !isCancelled(order.status)
+
+function statusTone(status: string) {
+  const normalized = normalize(status)
+  if (normalized.includes('cancel')) return 'is-danger'
+  if (normalized.includes('fatur')) return 'is-success'
+  if (normalized.includes('rascunho') || normalized.includes('aberto')) return 'is-warning'
+  if (normalized.includes('produc') || normalized.includes('pcp') || normalized.includes('engen')) return 'is-blue'
+  return 'is-neutral'
+}
+
+const filters: Array<{ id: StatusFilter; label: string; icon: typeof ClipboardList }> = [
+  { id: 'todos', label: 'Todos os pedidos', icon: ClipboardList },
+  { id: 'rascunho', label: 'Rascunhos', icon: FilePlus2 },
+  { id: 'andamento', label: 'Em andamento', icon: PackageCheck },
+  { id: 'atrasados', label: 'Atrasados', icon: CalendarClock },
+  { id: 'faturados', label: 'Faturados', icon: CheckCircle2 },
+  { id: 'cancelados', label: 'Cancelados', icon: XCircle },
+]
+
+export default function VendasCentral() {
+  const [orders, setOrders] = useState<Order[]>([])
+  const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState<StatusFilter>('todos')
+  const [page, setPage] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  const load = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const tenant = await supabase.rpc('erp_current_empresa_id')
+      if (tenant.error || !tenant.data) throw tenant.error ?? new Error('Empresa não identificada.')
+      const result = await fetchAllPages((from, to) => supabase
+        .from('erp_pedidos_venda')
+        .select('id,numero,pedido_cliente,status,total,data_entrada,data_entrega_prometida,cliente_id,cliente:erp_clientes(nome,codigo)', { count: 'exact' })
+        .eq('empresa_id', String(tenant.data))
+        .order('numero', { ascending: false })
+        .range(from, to))
+      setOrders(result as unknown as Order[])
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível carregar os pedidos.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { void load() }, [])
+
+  const visibleOrders = useMemo(() => {
+    const term = normalize(query.trim())
+    return orders.filter((order) => {
+      const haystack = normalize([
+        order.numero,
+        order.pedido_cliente ?? '',
+        order.status,
+        order.cliente?.nome ?? '',
+        order.cliente?.codigo ?? '',
+      ].join(' '))
+      if (term && !haystack.includes(term)) return false
+      if (filter === 'rascunho') return isDraft(order.status)
+      if (filter === 'andamento') return !isDraft(order.status) && !isCancelled(order.status) && !isInvoiced(order.status)
+      if (filter === 'atrasados') return isOverdue(order)
+      if (filter === 'faturados') return isInvoiced(order.status)
+      if (filter === 'cancelados') return isCancelled(order.status)
+      return true
+    })
+  }, [orders, query, filter])
+  const pageCount = Math.max(1, Math.ceil(visibleOrders.length / PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount - 1)
+  const pageOrders = visibleOrders.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)
+
+  const counts = useMemo(() => ({
+    all: orders.length,
+    open: orders.filter((order) => !isCancelled(order.status) && !isInvoiced(order.status)).length,
+    drafts: orders.filter((order) => isDraft(order.status)).length,
+    overdue: orders.filter(isOverdue).length,
+  }), [orders])
+
+  return (
+    <VendasLayout title="Pedidos de venda" subtitle="Carteira comercial • dados do ERP" onRefresh={() => void load()}>
+      <main className="sales-workspace">
+        <section className="sales-page-heading">
+          <div>
+            <span className="sales-eyebrow">COMERCIAL / PEDIDOS</span>
+            <h1>Pedidos de venda</h1>
+            <p>Acompanhe cotações, pedidos e entregas em um só lugar.</p>
+          </div>
+          <div className="sales-heading-actions">
+            <button type="button" className="sales-button sales-button--secondary" onClick={() => void load()} disabled={loading}>
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+              Atualizar
+            </button>
+            <Link to="/vendas/novo-pedido" className="sales-button sales-button--primary">
+              <FilePlus2 size={17} />
+              Novo pedido
+            </Link>
+          </div>
+        </section>
+
+        {error && <div className="sales-alert" role="alert"><CircleAlert size={17} />{error}</div>}
+
+        <section className="sales-kpis" aria-label="Resumo dos pedidos">
+          <article><span>Pedidos cadastrados</span><strong>{counts.all}</strong><small>no escopo da empresa</small></article>
+          <article><span>Em aberto</span><strong>{counts.open}</strong><small>aguardando conclusão operacional</small></article>
+          <article><span>Rascunhos</span><strong>{counts.drafts}</strong><small>podem ser editados</small></article>
+          <article className={counts.overdue ? 'sales-kpi--alert' : ''}><span>Entrega atrasada</span><strong>{counts.overdue}</strong><small>com base na data prometida</small></article>
+        </section>
+
+        <section className="sales-orders-card">
+          <div className="sales-filter-row" role="tablist" aria-label="Filtrar pedidos por status">
+            {filters.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={filter === id}
+                className={`sales-filter-tab${filter === id ? ' is-active' : ''}`}
+                onClick={() => {
+                  setFilter(id)
+                  setPage(0)
+                }}
+              >
+                <Icon size={15} />
+                {label}
+                <span>{id === 'todos' ? counts.all : id === 'rascunho' ? counts.drafts : id === 'atrasados' ? counts.overdue : orders.filter((order) => {
+                  if (id === 'andamento') return !isDraft(order.status) && !isCancelled(order.status) && !isInvoiced(order.status)
+                  if (id === 'faturados') return isInvoiced(order.status)
+                  return isCancelled(order.status)
+                }).length}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="sales-list-toolbar">
+            <label className="sales-search">
+              <Search size={17} aria-hidden="true" />
+              <input
+                type="search"
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value)
+                  setPage(0)
+                }}
+                placeholder="Buscar por pedido, cliente ou status..."
+                aria-label="Buscar pedidos por número, cliente ou status"
+              />
+              {query && <button type="button" onClick={() => setQuery('')} aria-label="Limpar pesquisa"><XCircle size={16} /></button>}
+            </label>
+            <span className="sales-result-count"><ArrowDownUp size={14} /> {visibleOrders.length} resultado(s)</span>
+          </div>
+
+          <div className="sales-table-scroll">
+            <table className="sales-orders-table">
+              <thead>
+                <tr>
+                  <th>Pedido</th>
+                  <th>Cliente</th>
+                  <th>Data</th>
+                  <th>Entrega prevista</th>
+                  <th>Status</th>
+                  <th className="sales-number">Total</th>
+                  <th><span className="sr-only">Ações</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {pageOrders.map((order) => (
+                  <tr key={order.id} className={isOverdue(order) ? 'is-overdue' : ''}>
+                    <td>
+                      <Link className="sales-order-number" to={`/vendas/pedido/${order.id}`}>
+                        PV-{String(order.numero).padStart(6, '0')}
+                      </Link>
+                      {order.pedido_cliente && <small className="sales-secondary-line">Ref. {order.pedido_cliente}</small>}
+                    </td>
+                    <td>
+                      <strong className="sales-client-name">{order.cliente?.nome ?? 'Cliente não identificado'}</strong>
+                      {order.cliente?.codigo && <small className="sales-secondary-line">Cód. {order.cliente.codigo}</small>}
+                    </td>
+                    <td>{formatDate(order.data_entrada)}</td>
+                    <td>
+                      <span className={isOverdue(order) ? 'sales-delivery sales-delivery--late' : 'sales-delivery'}>
+                        {formatDate(order.data_entrega_prometida)}
+                        {isOverdue(order) && <small>Atrasado</small>}
+                      </span>
+                    </td>
+                    <td><span className={`sales-status ${statusTone(order.status)}`}>{order.status}</span></td>
+                    <td className="sales-number sales-total">{currency.format(Number(order.total ?? 0))}</td>
+                    <td>
+                      <div className="sales-row-actions">
+                        {isDraft(order.status) && (
+                          <Link className="sales-icon-action" to={`/vendas/novo-pedido?pedido=${encodeURIComponent(order.id)}`} aria-label={`Editar rascunho ${order.numero}`} title="Editar rascunho">
+                            <FilePlus2 size={16} />
+                          </Link>
+                        )}
+                        <Link className="sales-open-action" to={`/vendas/pedido/${order.id}`}>
+                          Abrir <ArrowRight size={14} />
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {!loading && visibleOrders.length === 0 && (
+                  <tr><td colSpan={7}>
+                    <div className="sales-empty-state">
+                      <ClipboardList size={26} />
+                      <strong>{query || filter !== 'todos' ? 'Nenhum pedido corresponde aos filtros.' : 'Nenhum pedido cadastrado.'}</strong>
+                      <span>{query || filter !== 'todos' ? 'Altere a pesquisa ou selecione outro status.' : 'Crie um pedido para iniciar o fluxo comercial.'}</span>
+                    </div>
+                  </td></tr>
+                )}
+                {loading && <tr><td colSpan={7} className="sales-loading-row" role="status">Carregando pedidos do ERP…</td></tr>}
+              </tbody>
+            </table>
+          </div>
+          <nav className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3" aria-label="Paginação dos pedidos de venda">
+            <span className="text-xs text-slate-500">
+              {visibleOrders.length === 0 ? '0 pedidos' : `${currentPage * PAGE_SIZE + 1}–${Math.min((currentPage + 1) * PAGE_SIZE, visibleOrders.length)} de ${visibleOrders.length}`}
+            </span>
+            <div className="flex items-center gap-2">
+              <button type="button" className="sales-button sales-button--secondary" onClick={() => setPage(currentPage - 1)} disabled={currentPage === 0 || loading}>Anterior</button>
+              <span className="min-w-20 text-center text-xs text-slate-600">Página {currentPage + 1} de {pageCount}</span>
+              <button type="button" className="sales-button sales-button--secondary" onClick={() => setPage(currentPage + 1)} disabled={currentPage >= pageCount - 1 || loading}>Próxima</button>
+            </div>
+          </nav>
+        </section>
+      </main>
+    </VendasLayout>
+  )
+}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Check, Lock, Save } from 'lucide-react'
+import { ArrowLeft, Lock, Save } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 
@@ -24,8 +24,8 @@ type Item = {
   total: number
 }
 
-const inputStyle = 'h-7 w-full rounded-md border border-gray-200 bg-white px-2 py-0.5 text-[11px] text-gray-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
-const readOnlyStyle = 'h-7 w-full rounded-md border border-gray-200 bg-gray-100 px-2 py-0.5 text-[11px] text-gray-500'
+const inputStyle = 'h-10 w-full rounded-md border border-gray-200 bg-white px-2 text-xs text-gray-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+const readOnlyStyle = 'h-10 w-full rounded-md border border-gray-200 bg-gray-100 px-2 text-xs text-gray-500'
 const labelStyle = 'mb-0.5 block text-[10px] font-bold uppercase tracking-wide text-gray-500'
 
 const brl = (value: number) =>
@@ -149,65 +149,75 @@ export default function RetificacaoPedido() {
     window.setTimeout(() => navigate('/vendas/pendentes'), 450)
   }
 
+  const pageHeading = (
+    <header className="synqra-reference-heading">
+      <div className="synqra-reference-title">
+        <p>ERP INDUSTRIAL • CONTROLADORIA</p>
+        <h1>Retificação de Pedido</h1>
+        <span className="mt-1 block text-xs text-slate-500">Ajustes informativos e analíticos</span>
+      </div>
+      <button
+        type="button"
+        onClick={() => navigate('/vendas/pendentes')}
+        className="inline-flex min-h-10 items-center gap-2 border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+      >
+        <ArrowLeft size={14} /> Voltar
+      </button>
+    </header>
+  )
+
   if (loading) {
-    return <div className="min-h-screen bg-slate-50 p-4 text-[11px] text-gray-600">Carregando retificação…</div>
+    return <div className="synqra-reference-page">{pageHeading}<p className="synqra-reference-body text-sm text-slate-600">Carregando retificação…</p></div>
   }
 
   if (roleAllowed === false) {
     return (
-      <div className="min-h-screen bg-slate-50 p-4 text-[11px]">
-        <div className="border border-red-200 bg-red-50 px-3 py-2 text-red-800">Acesso restrito a Administrador ou Controladoria.</div>
+      <div className="synqra-reference-page">
+        {pageHeading}
+        <div role="alert" className="synqra-reference-body border border-red-200 bg-red-50 px-3 py-3 text-sm text-red-800">Acesso restrito a Administrador ou Controladoria.</div>
       </div>
     )
   }
 
   if (!pedido) {
-    return <div className="min-h-screen bg-slate-50 p-4 text-[11px] text-red-700">{error || 'Pedido não encontrado.'}</div>
+    return <div className="synqra-reference-page">{pageHeading}<div role="alert" className="synqra-reference-body text-sm text-red-700">{error || 'Pedido não encontrado.'}</div></div>
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-[11px] text-gray-800">
-      <header className="sticky top-0 z-20 flex h-10 items-center justify-between border-b border-slate-300 bg-white px-3">
-        <div>
-          <div className="text-[12px] font-semibold">Retificação de Pedido</div>
-          <div className="text-[9px] text-gray-500">Controladoria • ajustes informativos e analíticos</div>
-        </div>
-        <button type="button" onClick={() => navigate('/vendas/pendentes')} className="flex h-7 items-center gap-1 rounded-md border border-gray-300 bg-white px-2 text-[10px]">
-          <ArrowLeft size={12} /> Voltar
-        </button>
-      </header>
+    <div className="synqra-reference-page min-w-0 text-xs text-gray-800">
+      {pageHeading}
 
-      <main className="p-3 lg:p-4">
+      <main className="synqra-reference-body space-y-3">
         {(error || message) && (
-          <div className={`mb-2 border px-2 py-1 text-[10px] ${error ? 'border-red-200 bg-red-50 text-red-800' : 'border-green-200 bg-green-50 text-green-800'}`}>
+          <div role={error ? 'alert' : 'status'} className={`border px-3 py-2 text-sm ${error ? 'border-red-200 bg-red-50 text-red-800' : 'border-green-200 bg-green-50 text-green-800'}`}>
             {error || message}
           </div>
         )}
 
         <section className="rounded-md border border-gray-200 bg-white p-2">
-          <div className="mb-2 text-[11px] font-bold text-gray-700">RETIFICAÇÃO CONTROLADA</div>
-          <div className="flex items-end gap-2">
-            <div className="w-[95px]">
+          <div className="mb-3 text-sm font-bold text-gray-700">Retificação controlada</div>
+          <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-[95px_140px_140px_160px_160px_minmax(180px,1fr)]">
+            <div className="min-w-0">
               <label className={labelStyle}>Pedido</label>
               <input value={String(pedido.numero).padStart(6, '0')} readOnly className={readOnlyStyle} />
             </div>
-            <div className="w-[140px]">
+            <div className="min-w-0">
               <label className={labelStyle}>Referência Cliente</label>
               <input value={pedidoCliente} onChange={event => setPedidoCliente(event.target.value)} className={inputStyle} />
             </div>
-            <div className="w-[140px]">
+            <div className="min-w-0">
               <label className={labelStyle}>Documento Origem</label>
               <input value={pedido.via_entrada ?? ''} readOnly className={readOnlyStyle} />
             </div>
-            <div className="w-[160px]">
+            <div className="min-w-0">
               <label className={labelStyle}>Vendedor</label>
               <input value={vendedor} onChange={event => setVendedor(event.target.value)} className={inputStyle} />
             </div>
-            <div className="w-[160px]">
+            <div className="min-w-0">
               <label className={labelStyle}>Condição Pagamento</label>
               <input value={condicao} onChange={event => setCondicao(event.target.value)} className={inputStyle} />
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0">
               <label className={labelStyle}>Motivo</label>
               <input value={motivo} onChange={event => setMotivo(event.target.value)} className={inputStyle} />
             </div>
@@ -250,14 +260,14 @@ export default function RetificacaoPedido() {
           </table>
         </section>
 
-        <footer className="mt-2 flex items-center justify-between border-t border-gray-200 pt-2">
-          <div className="text-[10px] text-gray-500">
+        <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 pt-3">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
             <span className="mr-3">Status: {pedido.status}</span>
             <span>Total: {brl(Number(pedido.total))}</span>
             <span className="ml-3">Itens: {brl(totalItens)}</span>
           </div>
-          <button type="button" disabled={saving} onClick={() => void save()} className="flex h-7 items-center gap-1 rounded-md bg-blue-600 px-3 text-[11px] font-bold text-white disabled:opacity-50">
-            <Save size={12} /> {saving ? 'Gravando…' : 'Gravar'}
+          <button type="button" disabled={saving} onClick={() => void save()} className="inline-flex min-h-10 items-center gap-2 rounded-md bg-blue-600 px-4 text-xs font-bold text-white disabled:opacity-50">
+            <Save size={14} /> {saving ? 'Gravando…' : 'Gravar'}
           </button>
         </footer>
       </main>

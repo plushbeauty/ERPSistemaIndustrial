@@ -35,40 +35,54 @@ export default function FiscalPrevisaoCaixa() {
   const [rows, setRows] = useState<FinanceRow[]>([]) // Tipagem estrita aplicada
   const [open, setOpen] = useState<'receber' | 'pagar' | null>(null)
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
 
   const loadCaixa = async () => {
     setBusy(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      setAllowed(false)
-      setBusy(false)
-      return
-    }
+    setError('')
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError) throw authError
+      if (!user) {
+        setAllowed(false)
+        setRows([])
+        return
+      }
 
-    const { data: u } = await supabase
-      .from('erp_usuarios')
-      .select('id, nivel_admin, setor_id, ativo, erp_setores(codigo, nome)')
-      .eq('auth_user_id', user.id)
-      .maybeSingle()
+      const profile = await supabase
+        .from('erp_usuarios')
+        .select('id, nivel_admin, setor_id, ativo, erp_setores(codigo, nome)')
+        .eq('auth_user_id', user.id)
+        .maybeSingle()
+      if (profile.error) throw profile.error
 
-    const s = Array.isArray(u?.erp_setores) ? u?.erp_setores[0] : u?.erp_setores
-    const ok = !!u?.ativo && (
-      Number(u?.nivel_admin || 0) >= 100 || 
-      ['ADM', 'ADMIN', 'FISCAL'].includes(String(s?.codigo || '').toUpperCase()) || 
-      String(s?.nome || '').toUpperCase().includes('FISCAL')
-    )
+      const u = profile.data
+      const s = Array.isArray(u?.erp_setores) ? u.erp_setores[0] : u?.erp_setores
+      const ok = !!u?.ativo && (
+        Number(u?.nivel_admin || 0) >= 100 ||
+        ['ADM', 'ADMIN', 'FISCAL'].includes(String(s?.codigo || '').toUpperCase()) ||
+        String(s?.nome || '').toUpperCase().includes('FISCAL')
+      )
 
-    setAllowed(ok)
-    
-    if (ok) {
-      const { data } = await supabase
+      setAllowed(ok)
+      if (!ok) {
+        setRows([])
+        return
+      }
+
+      const result = await supabase
         .from('erp_financeiro')
         .select('id, descricao, valor, vencimento, status, tipo, documento, categoria')
         .order('vencimento', { ascending: true })
-      
-      setRows((data || []) as FinanceRow[])
+      if (result.error) throw result.error
+      setRows((result.data ?? []) as FinanceRow[])
+    } catch (cause) {
+      setRows([])
+      setAllowed(false)
+      setError(cause instanceof Error ? cause.message : 'Falha ao carregar a previsão de caixa.')
+    } finally {
+      setBusy(false)
     }
-    setBusy(false)
   }
 
   useEffect(() => {
@@ -97,11 +111,11 @@ export default function FiscalPrevisaoCaixa() {
 
   if (!allowed) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#f8fafc] p-4 text-base">
-        <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm max-w-md text-center space-y-4">
+      <div className="fiscal-workspace flex items-center justify-center min-h-screen bg-[#f8fafc] p-4 text-base">
+        <div className="fiscal-workspace bg-white p-8 rounded-sm border border-slate-200 max-w-md text-center space-y-4">
           <div className="text-red-500 flex justify-center"><LockKeyhole size={40} /></div>
-          <strong className="block text-xl text-[#0f172a]">Acesso Financeiro Bloqueado</strong>
-          <p className="text-slate-500">Os valores de fluxo de caixa e previsão são exclusivos para os setores administrativo, fiscal e diretores de nível mestre.</p>
+          <strong className="block text-xl text-[#0f172a]">{error ? 'Falha ao validar ou consultar os dados' : 'Acesso Financeiro Bloqueado'}</strong>
+          {error ? <p role="alert" className="text-red-700">{error}</p> : <p className="text-slate-500">Os valores de fluxo de caixa e previsão são exclusivos para os setores administrativo, fiscal e diretores de nível mestre.</p>}
           <a className="block bg-[#2563eb] hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg transition-all" href="/erp-industrial">Voltar ao ERP</a>
         </div>
       </div>
@@ -109,7 +123,7 @@ export default function FiscalPrevisaoCaixa() {
   }
 
   return (
-    <main className="bg-[#f8fafc] p-6 min-h-screen font-sans text-[#0f172a]">
+    <main className="erp-dense fiscal-workspace bg-[#f8fafc] p-6 min-h-screen font-sans text-[#0f172a]">
       <header className="flex justify-between items-center border-b border-[#C9E1E8] pb-4 mb-6">
         <div>
           <span className="text-[#2563eb] text-sm font-bold uppercase tracking-wider">FISCAL • PREVISÃO DE CAIXA</span>
@@ -124,6 +138,7 @@ export default function FiscalPrevisaoCaixa() {
           <RefreshCw size={18} className={busy ? "animate-spin" : ""} /> {busy ? 'Sincronizando...' : 'Atualizar Caixa'}
         </button>
       </header>
+      {error && <div role="alert" className="mb-3 border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900">{error}</div>}
 
       <section className="space-y-6">
         {/* CARDS GRANDES DE ENTRADA E SAÍDA CONFORME DESIGN DO TABLET */}

@@ -14,12 +14,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, CheckCircle2, FileCheck2, FileText, Landmark, RefreshCw, Receipt, Search, ShieldCheck, Send } from 'lucide-react'
 import { supabase, invokeSecureEdgeFunction } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
 type Tab = 'liberacao' | 'notas' | 'receber' | 'pagar' | 'relatorios'
 type Order = { id: string; numero: number; cliente_id: string; status: string; total: number }
 type Item = { id: string; pedido_id: string; produto_id: string | null; descricao: string; quantidade: number; valor_unitario: number; total: number }
 type Doc = { id: string; numero: number | null; serie: number; status: string; valor_total: number; data_emissao: string | null; destinatario_nome: string | null }
 type Conta = { id: string; descricao: string; documento: string | null; valor: number; vencimento: string; status: string }
+type NfeEmissionResponse = { ok?: boolean; status?: string; invoiceId?: string; error?: string; chave_acesso?: string; protocolo_autorizacao?: string }
 type ReportTab = 'faturamento' | 'receber' | 'pagar'
 type TabDefinition = { id: Tab; label: string; icon: typeof ShieldCheck }
 
@@ -37,6 +39,10 @@ export default function Fiscal() {
   const [tab, setTab] = useState<Tab>('liberacao')
   const [reportTab, setReportTab] = useState<ReportTab>('faturamento')
   const [orders, setOrders] = useState<Order[]>([])
+  const [companyId, setCompanyId] = useState('')
+  const [ordersPage, setOrdersPage] = useState(1)
+  const [documentsPage, setDocumentsPage] = useState(1)
+  const [accountsPage, setAccountsPage] = useState(1)
   const [items, setItems] = useState<Item[]>([])
   const [docs, setDocs] = useState<Doc[]>([])
   const [receber, setReceber] = useState<Conta[]>([])
@@ -52,21 +58,29 @@ export default function Fiscal() {
     setBusy(true)
     setError('')
     try {
-      const [ordersResult, docsResult, receberResult, pagarResult] = await Promise.all([
-        supabase.from('erp_pedidos_venda').select('id,numero,cliente_id,status,total').order('numero', { ascending: false }).limit(300),
-        supabase.from('erp_documentos_fiscais').select('id,numero,serie,status,valor_total,data_emissao,destinatario_nome').order('created_at', { ascending: false }).limit(300),
-        supabase.from('erp_contas_receber').select('id,descricao,documento,valor,vencimento,status').order('vencimento').limit(300),
-        supabase.from('erp_contas_pagar').select('id,descricao,documento,valor,vencimento,status').order('vencimento').limit(300)
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
+      const currentCompanyId = String(company.data)
+      const [orderRows, documentRows, receivableRows, payableRows] = await Promise.all([
+        fetchAllPages<Order>((from, to) => supabase.from('erp_pedidos_venda')
+          .select('id,numero,cliente_id,status,total', { count: 'exact' })
+          .eq('empresa_id', currentCompanyId).order('numero', { ascending: false }).range(from, to)),
+        fetchAllPages<Doc>((from, to) => supabase.from('erp_documentos_fiscais')
+          .select('id,numero,serie,status,valor_total,data_emissao,destinatario_nome', { count: 'exact' })
+          .eq('empresa_id', currentCompanyId).order('created_at', { ascending: false }).range(from, to)),
+        fetchAllPages<Conta>((from, to) => supabase.from('erp_contas_receber')
+          .select('id,descricao,documento,valor,vencimento,status', { count: 'exact' })
+          .eq('empresa_id', currentCompanyId).order('vencimento').range(from, to)),
+        fetchAllPages<Conta>((from, to) => supabase.from('erp_contas_pagar')
+          .select('id,descricao,documento,valor,vencimento,status', { count: 'exact' })
+          .eq('empresa_id', currentCompanyId).order('vencimento').range(from, to))
       ])
 
-      for (const result of [ordersResult, docsResult, receberResult, pagarResult]) {
-        if (result.error) throw result.error
-      }
-
-      setOrders((ordersResult.data ?? []) as Order[])
-      setDocs((docsResult.data ?? []) as Doc[])
-      setReceber((receberResult.data ?? []) as Conta[])
-      setPagar((pagarResult.data ?? []) as Conta[])
+      setCompanyId(currentCompanyId)
+      setOrders(orderRows)
+      setDocs(documentRows)
+      setReceber(receivableRows)
+      setPagar(payableRows)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar os módulos fiscais.')
     } finally {
@@ -78,14 +92,17 @@ export default function Fiscal() {
     setSelected(id)
     setMessage('')
     setError('')
-    const { data, error: loadError } = await supabase
-      .from('erp_pedidos_venda_itens')
-      .select('id,pedido_id,produto_id,descricao,quantidade,valor_unitario,total')
-      .eq('pedido_id', id)
-      .order('id')
-
-    if (loadError) setError(loadError.message)
-    else setItems((data ?? []) as Item[])
+    try {
+      if (!companyId) throw new Error('Empresa da sessão não identificada.')
+      const rows = await fetchAllPages<Item>((from, to) => supabase
+        .from('erp_pedidos_venda_itens')
+        .select('id,pedido_id,produto_id,descricao,quantidade,valor_unitario,total', { count: 'exact' })
+        .eq('empresa_id', companyId).eq('pedido_id', id).order('id').range(from, to))
+      setItems(rows)
+    } catch (cause) {
+      setItems([])
+      setError(cause instanceof Error ? cause.message : 'Não foi possível carregar os itens do pedido.')
+    }
   }
 
   async function release(item: Item): Promise<void> {
@@ -124,10 +141,18 @@ export default function Fiscal() {
     setError('')
     setMessage('')
     try {
-      const { data, error: invokeError } = await invokeSecureEdgeFunction<{ success?: boolean; data?: { invoiceId?: string }; error?: string }>('emitir-nfe', { documento_id: doc.id })
+      const { data, error: invokeError } = await invokeSecureEdgeFunction<NfeEmissionResponse>('emitir-nfe', { documento_id: doc.id })
       if (invokeError) throw invokeError
-      const invoiceId = data?.data?.invoiceId
-      setMessage(invoiceId ? 'NF-e enviada à Notaas. Invoice ID: ' + invoiceId : 'NF-e enviada para processamento fiscal.')
+      if (!data) throw new Error('O integrador não retornou um resultado legível.')
+      if (data.status === 'Processando') {
+        setMessage(data.error || 'Solicitação aceita pelo integrador e ainda em processamento. Não há confirmação de autorização.')
+      } else {
+        if (data.ok !== true) throw new Error(data.error || 'O integrador não confirmou a solicitação fiscal.')
+        if (data.status !== 'Autorizada') throw new Error('O integrador retornou um estado fiscal não reconhecido; a autorização não foi confirmada.')
+        const protocol = data.protocolo_autorizacao?.trim()
+        if (!protocol) throw new Error('O retorno não contém protocolo de autorização; confira o estado e os documentos na carteira fiscal.')
+        setMessage(`NF-e autorizada com protocolo ${protocol}.`)
+      }
       await load()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao transmitir a NF-e.')
@@ -144,6 +169,17 @@ export default function Fiscal() {
     () => orders.filter(order => String(order.numero).includes(query) || order.status.toLowerCase().includes(query.toLowerCase())),
     [orders, query]
   )
+  const orderPageSize = 25
+  const orderPageCount = Math.max(1, Math.ceil(filteredOrders.length / orderPageSize))
+  const visibleOrders = filteredOrders.slice((ordersPage - 1) * orderPageSize, ordersPage * orderPageSize)
+  useEffect(() => { setOrdersPage(current => Math.min(current, orderPageCount)) }, [orderPageCount])
+  const documentsPageCount = Math.max(1, Math.ceil(docs.length / orderPageSize))
+  const visibleDocuments = docs.slice((documentsPage - 1) * orderPageSize, documentsPage * orderPageSize)
+  const currentAccounts = tab === 'receber' ? receber : pagar
+  const accountsPageCount = Math.max(1, Math.ceil(currentAccounts.length / orderPageSize))
+  const visibleAccounts = currentAccounts.slice((accountsPage - 1) * orderPageSize, accountsPage * orderPageSize)
+  useEffect(() => { setDocumentsPage(current => Math.min(current, documentsPageCount)) }, [documentsPageCount])
+  useEffect(() => { setAccountsPage(current => Math.min(current, accountsPageCount)) }, [accountsPageCount, tab])
 
   const report = useMemo(() => ({
     nfTotal: docs.reduce((sum, doc) => sum + Number(doc.valor_total || 0), 0),
@@ -154,7 +190,7 @@ export default function Fiscal() {
   }), [docs, receber, pagar, orders])
 
   return (
-    <main className="min-h-screen bg-[#f8fafc] p-4 md:p-6 font-sans text-[#0f172a]">
+    <main className="erp-dense fiscal-workspace min-h-screen bg-[#f8fafc] p-4 md:p-6 font-sans text-[#0f172a]">
       <header className="mb-6 flex flex-col gap-4 border-b border-[#C9E1E8] pb-5 xl:flex-row xl:items-center xl:justify-between">
         <div>
           <button
@@ -163,7 +199,7 @@ export default function Fiscal() {
           >
             <ArrowLeft size={17} /> Voltar ao Painel
           </button>
-          <span className="text-sm font-bold uppercase tracking-wider text-[#2563eb]">SGQ • CORE TRIBUTÁRIO</span>
+          <span className="text-sm font-bold uppercase tracking-wider text-[#2563eb]">ERP • MÓDULO FISCAL</span>
           <h1 className="mt-1 text-3xl font-extrabold text-[#0f172a]">Central Fiscal Integrada</h1>
           <p className="mt-1 text-base text-slate-600">Liberação para faturamento, monitoramento de notas fiscais, contas a pagar, receber e relatórios consolidados.</p>
         </div>
@@ -219,7 +255,7 @@ export default function Fiscal() {
                 </div>
                 <label className="flex min-h-11 items-center gap-2 rounded-lg border bg-slate-50 px-3 text-base">
                   <Search size={17} className="text-slate-400" />
-                  <input className="w-full bg-transparent text-base outline-none md:w-56" placeholder="Pedido ou status..." value={query} onChange={event => setQuery(event.target.value)} />
+                  <input className="w-full bg-transparent text-base outline-none md:w-56" placeholder="Pedido ou status..." value={query} onChange={event => { setQuery(event.target.value); setOrdersPage(1) }} />
                 </label>
               </div>
 
@@ -234,7 +270,7 @@ export default function Fiscal() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredOrders.map(order => (
+                    {visibleOrders.map(order => (
                       <tr key={order.id} className="border-b border-slate-100 hover:bg-slate-50">
                         <td className="p-3 font-bold text-[#2563eb]">#{order.numero}</td>
                         <td className="p-3">{order.status}</td>
@@ -249,6 +285,16 @@ export default function Fiscal() {
                   </tbody>
                 </table>
                 {!filteredOrders.length && <p className="p-6 text-center text-base text-slate-500">Nenhum pedido real encontrado para o filtro informado.</p>}
+                {filteredOrders.length > orderPageSize && (
+                  <nav aria-label="Paginação da carteira fiscal de pedidos" className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 text-sm">
+                    <span aria-live="polite">Exibindo {(ordersPage - 1) * orderPageSize + 1}–{Math.min(ordersPage * orderPageSize, filteredOrders.length)} de {filteredOrders.length}</span>
+                    <div className="flex gap-2">
+                      <button type="button" className="min-h-10 rounded-md border px-3 py-2 disabled:opacity-50" disabled={ordersPage === 1} onClick={() => setOrdersPage(page => Math.max(1, page - 1))}>Anterior</button>
+                      <span className="self-center">Página {ordersPage} de {orderPageCount}</span>
+                      <button type="button" className="min-h-10 rounded-md border px-3 py-2 disabled:opacity-50" disabled={ordersPage === orderPageCount} onClick={() => setOrdersPage(page => Math.min(orderPageCount, page + 1))}>Próxima</button>
+                    </div>
+                  </nav>
+                )}
               </div>
             </div>
 
@@ -299,7 +345,7 @@ export default function Fiscal() {
             <table className="w-full border-collapse text-left text-base">
               <thead><tr className="border-b bg-slate-50 font-semibold"><th className="p-3">Número</th><th className="p-3">Destinatário</th><th className="p-3">Emissão</th><th className="p-3">Status</th><th className="p-3 text-right">Valor</th><th className="p-3 text-center">Ação</th></tr></thead>
               <tbody>
-                {docs.map(doc => (
+                {visibleDocuments.map(doc => (
                   <tr key={doc.id} className="border-b border-slate-100">
                     <td className="p-3 font-bold text-[#1e3a8a]">{doc.numero ?? '—'} / {doc.serie}</td>
                     <td className="p-3">{doc.destinatario_nome ?? '—'}</td>
@@ -307,8 +353,8 @@ export default function Fiscal() {
                     <td className="p-3">{doc.status}</td>
                     <td className="p-3 text-right font-semibold">{money(doc.valor_total)}</td>
                     <td className="p-3 text-center">
-                      <button className="flex min-h-10 items-center justify-center gap-2 rounded-lg bg-[#2563eb] px-3 py-2 text-base font-semibold text-white hover:bg-blue-700 disabled:opacity-60" disabled={busy || ['autorizada','Processando'].includes(doc.status)} onClick={() => void emitNfe(doc)}>
-                        <Send size={16} /> Transmitir NF-e
+                      <button className="flex min-h-10 items-center justify-center gap-2 rounded-lg bg-[#2563eb] px-3 py-2 text-base font-semibold text-white hover:bg-blue-700 disabled:opacity-60" disabled={busy || doc.status !== 'Rascunho'} onClick={() => void emitNfe(doc)}>
+                        <Send size={16} /> {doc.status === 'Rascunho' ? 'Transmitir NF-e' : 'Indisponível neste status'}
                       </button>
                     </td>
                   </tr>
@@ -316,6 +362,7 @@ export default function Fiscal() {
               </tbody>
             </table>
             {!docs.length && <p className="p-6 text-center text-base text-slate-500">Nenhum documento fiscal real encontrado.</p>}
+            <FiscalPagination page={documentsPage} pageCount={documentsPageCount} total={docs.length} pageSize={orderPageSize} label="notas fiscais" onChange={setDocumentsPage}/>
           </div>
         </section>
       )}
@@ -327,7 +374,7 @@ export default function Fiscal() {
             <table className="w-full border-collapse text-left text-base">
               <thead><tr className="border-b bg-slate-50 font-semibold"><th className="p-3">Descrição</th><th className="p-3">Documento</th><th className="p-3">Vencimento</th><th className="p-3">Status</th><th className="p-3 text-right">Valor</th></tr></thead>
               <tbody>
-                {(tab === 'receber' ? receber : pagar).map(conta => (
+                {visibleAccounts.map(conta => (
                   <tr key={conta.id} className="border-b border-slate-100">
                     <td className="p-3">{conta.descricao}</td>
                     <td className="p-3">{conta.documento ?? '—'}</td>
@@ -338,6 +385,7 @@ export default function Fiscal() {
                 ))}
               </tbody>
             </table>
+            <FiscalPagination page={accountsPage} pageCount={accountsPageCount} total={currentAccounts.length} pageSize={orderPageSize} label={tab === 'receber' ? 'contas a receber' : 'contas a pagar'} onChange={setAccountsPage}/>
           </div>
         </section>
       )}
@@ -368,5 +416,33 @@ export default function Fiscal() {
         </section>
       )}
     </main>
+  )
+}
+
+function FiscalPagination({
+  page,
+  pageCount,
+  total,
+  pageSize,
+  label,
+  onChange
+}: {
+  page: number
+  pageCount: number
+  total: number
+  pageSize: number
+  label: string
+  onChange: (page: number) => void
+}) {
+  if (total <= pageSize) return null
+  return (
+    <nav aria-label={`Paginação: ${label}`} className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 text-sm">
+      <span aria-live="polite">Exibindo {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} de {total}</span>
+      <div className="flex gap-2">
+        <button type="button" className="min-h-10 rounded-md border px-3 py-2 disabled:opacity-50" disabled={page === 1} onClick={() => onChange(Math.max(1, page - 1))}>Anterior</button>
+        <span className="self-center">Página {page} de {pageCount}</span>
+        <button type="button" className="min-h-10 rounded-md border px-3 py-2 disabled:opacity-50" disabled={page === pageCount} onClick={() => onChange(Math.min(pageCount, page + 1))}>Próxima</button>
+      </div>
+    </nav>
   )
 }
