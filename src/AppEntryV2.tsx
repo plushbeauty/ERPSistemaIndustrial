@@ -482,7 +482,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/outlook/caixa-entrada" element={<OutlookCaixaEntrada />} />
       <Route path="/compras" element={<ComprasIndustrial />} />
       <Route path="/compras/requisicoes" element={<ComprasRequisicoes />} />
-      <Route path="/compras/recebimentos" element={<ComprasIndustrial initialTab="recebimentos" />} />
+      <Route path="/compras/recebimentos" element={<RecebimentoMateriais />} />
       <Route path="/compras/rfq" element={<ComprasRFQ />} />
       <Route path="/compras/pedido" element={<PedidoCompra />} />
       <Route path="/compras/fornecedores" element={<FornecedoresIndustrial />} />
