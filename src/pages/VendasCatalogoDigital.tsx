@@ -1,24 +1,70 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Copy, Search, ShoppingCart, Send, X } from "lucide-react";
+import { Copy, Search, Send, ShoppingCart } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
-import EntityCodeLookup from "../components/industrial/EntityCodeLookup";
+import VendasLayout from "./VendasLayout";
 
-type Produto={id:string;codigo:string;nome:string;descricao:string|null;preco_venda:number|null;estoque_atual:number|null;unidade:string;foto_url:string|null;catalogo_disponivel:boolean};
-type Item={produto_id:string;codigo:string;descricao:string;preco:number;quantidade:number};
-
+type Produto={id:string;codigo:string;nome:string;descricao:string|null;preco_venda:number|null;unidade:string;foto_url:string|null;catalogo_disponivel:boolean;grupo:string|null;subgrupo:string|null};
+type Empresa={nome_fantasia:string|null;razao_social:string|null;logo_url:string|null;logo_impressao_url:string|null};
 const brl=(n:number)=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(n);
+
 export default function VendasCatalogoDigital(){
- const [empresa,setEmpresa]=useState(""); const [produtos,setProdutos]=useState<Produto[]>([]); const [selected,setSelected]=useState<Record<string,boolean>>({}); const [quantidades,setQuantidades]=useState<Record<string,number>>({}); const [filtro,setFiltro]=useState(""); const [busy,setBusy]=useState(true); const [error,setError]=useState(""); const [cliente,setCliente]=useState("");
- useEffect(()=>{void (async()=>{setBusy(true);const e=await supabase.rpc("erp_current_empresa_id");if(e.error||!e.data){setError(e.error?.message||"Empresa não identificada.");setBusy(false);return}const id=String(e.data);setEmpresa(id);const r=await supabase.from("erp_produtos").select("id,codigo,nome,descricao,preco_venda,estoque_atual,unidade,foto_url,catalogo_disponivel").eq("empresa_id",id).eq("ativo",true).eq("catalogo_disponivel",true).order("codigo");if(r.error)setError(r.error.message);setProdutos((r.data??[]) as Produto[]);setBusy(false)})()},[]);
- const rows=useMemo(()=>produtos.filter(p=>{const q=filtro.toLowerCase();return !q||p.codigo.toLowerCase().includes(q)||p.nome.toLowerCase().includes(q)||(p.descricao??"").toLowerCase().includes(q)}),[produtos,filtro]);
- const cart=rows.filter(p=>selected[p.id]).map(p=>({produto_id:p.id,codigo:p.codigo,descricao:p.nome,preco:Number(p.preco_venda??0),quantidade:Math.max(1,quantidades[p.id]??1)}));
- const total=cart.reduce((s,x)=>s+x.preco*x.quantidade,0);
+ const [produtos,setProdutos]=useState<Produto[]>([]);
+ const [empresa,setEmpresa]=useState<Empresa|null>(null);
+ const [selected,setSelected]=useState<Record<string,boolean>>({});
+ const [quantidades,setQuantidades]=useState<Record<string,number>>({});
+ const [filtro,setFiltro]=useState("");
+ const [busy,setBusy]=useState(true);
+ const [error,setError]=useState("");
+ const [cliente,setCliente]=useState("");
+
+ const load=async()=>{
+  setBusy(true);setError("");
+  try{
+   const e=await supabase.rpc("erp_current_empresa_id");
+   if(e.error||!e.data)throw e.error||new Error("Empresa não identificada.");
+   const id=String(e.data);
+   const [p,emp]=await Promise.all([
+    supabase.from("erp_produtos").select("id,codigo,nome,descricao,preco_venda,unidade,foto_url,catalogo_disponivel,grupo,subgrupo").eq("empresa_id",id).eq("ativo",true).eq("catalogo_disponivel",true).order("grupo").order("subgrupo").order("codigo"),
+    supabase.from("erp_empresas").select("nome_fantasia,razao_social,logo_url,logo_impressao_url").eq("id",id).maybeSingle()
+   ]);
+   if(p.error)throw p.error;
+   if(emp.error)throw emp.error;
+   setProdutos((p.data??[]) as Produto[]);setEmpresa((emp.data??null) as Empresa|null);
+  }catch(e){setError(e instanceof Error?e.message:"Não foi possível carregar o catálogo.");setProdutos([])}
+  finally{setBusy(false)}
+ };
+ useEffect(()=>{void load()},[]);
+ const rows=useMemo(()=>produtos.filter(p=>{const q=filtro.trim().toLowerCase();return !q||p.codigo.toLowerCase().includes(q)||p.nome.toLowerCase().includes(q)||(p.descricao??"").toLowerCase().includes(q)||(p.grupo??"").toLowerCase().includes(q)||(p.subgrupo??"").toLowerCase().includes(q)}),[produtos,filtro]);
+ const groups=useMemo(()=>Array.from(new Set(rows.map(p=>p.grupo||"Sem grupo"))),[rows]);
+ const cart=rows.filter(p=>selected[p.id]).map(p=>({produto_id:p.id,codigo:p.codigo,descricao:p.nome,quantidade:Math.max(1,quantidades[p.id]??1)}));
  const link=window.location.origin+"/vendas/catalogo-digital";
  const copy=async()=>{await navigator.clipboard.writeText(link)};
- const send=async()=>{const text="Catálogo: "+link+"\n\nItens selecionados:\n"+cart.map(x=>x.codigo+" - "+x.descricao+" x "+x.quantidade).join("\n");if(navigator.share){await navigator.share({title:"Solicitação de cotação",text}).catch(()=>undefined)}else{await navigator.clipboard.writeText(text)}};
- return <div className="min-h-screen bg-slate-50 text-slate-900"><header className="sticky top-0 z-20 bg-white border-b border-slate-200"><div className="min-h-[76px] px-4 lg:px-6 flex items-center justify-between gap-4"><div><div className="text-xs font-black tracking-widest text-blue-700">ERP INDUSTRIAL • VENDAS</div><h1 className="text-xl font-black">CATÁLOGO DIGITAL DE PRODUTOS</h1></div><div className="flex gap-2"><button onClick={()=>location.assign("/vendas/catalogo-digital/gestao")} className="min-h-[46px] rounded-md border border-slate-300 px-4 font-black flex items-center gap-2"><ArrowLeft size={17}/> VOLTAR</button><button onClick={()=>void copy()} className="min-h-[46px] rounded-md border border-slate-300 px-4 font-black flex items-center gap-2"><Copy size={17}/> COPIAR LINK</button><button onClick={send} disabled={!cart.length} className="min-h-[46px] rounded-md bg-blue-700 text-white px-4 font-black flex items-center gap-2 disabled:opacity-50"><Send size={17}/> ENVIAR PEDIDO</button></div></div></header>
- <main className="p-4 lg:p-6 max-w-[1600px] mx-auto"><div className="grid lg:grid-cols-[260px_1fr] gap-5"><aside className="bg-white border border-slate-200 rounded-md p-4 shadow-sm"><h2 className="font-black text-lg">ACESSO DO CLIENTE</h2><div className="mt-4 space-y-2"><button type="button" onClick={()=>document.getElementById("catalog-cart")?.scrollIntoView({behavior:"smooth"})} className="w-full min-h-[54px] text-left rounded-md bg-blue-50 text-blue-900 font-bold px-3">Ver Meu Carrinho ({cart.length})</button><button type="button" onClick={()=>location.href="/comercial?view=carteira"} className="w-full min-h-[54px] text-left rounded-md border px-3 font-bold">Meus Pedidos</button><button type="button" onClick={()=>window.scrollTo({top:0,behavior:"smooth"})} className="w-full min-h-[54px] text-left rounded-md border px-3 font-bold">Catálogo Ativo</button></div><label className="mt-5 grid gap-1 text-base font-bold">Cliente / vínculo<input value={cliente} onChange={e=>setCliente(e.target.value)} className="min-h-[46px] border border-slate-300 rounded-md px-3 text-slate-900" placeholder="Opcional"/></label><div className="mt-5 rounded-md bg-slate-100 p-3"><div className="text-sm font-bold">Total selecionado</div><div className="text-2xl font-black mt-1">{brl(total)}</div></div></aside>
- <section id="catalog-cart" className="bg-white border border-slate-200 rounded-md shadow-sm p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-bold text-slate-950">PRODUTOS DISPONÍVEIS E SOLICITAÇÃO DE COTAÇÃO</h2><p className="text-base text-slate-700 mt-1">Fotos, descrição e preço vêm do cadastro mestre de produtos.</p></div><div className="relative"><Search className="absolute left-3 top-3.5 text-slate-500" size={18}/><input value={filtro} onChange={e=>setFiltro(e.target.value)} className="min-h-[46px] w-72 border rounded-md pl-10 pr-3 text-slate-900" placeholder="Filtrar produto"/></div></div>
- {error&&<div className="mt-4 p-3 bg-rose-100 text-rose-900 rounded-md font-bold">{error}</div>}
- <div className="mt-5 overflow-x-auto"><table className="w-full min-w-[900px]"><thead><tr className="h-[54px] bg-slate-100 text-left text-base font-bold"><th className="w-16">Sel.</th><th>Cód Item</th><th>Descrição</th><th>Unid.</th><th>Preço Base</th><th>Qtd.</th><th>Imagem</th></tr></thead><tbody>{rows.map(p=><tr key={p.id} className="h-[54px] border-t border-slate-200"><td><input type="checkbox" className="h-5 w-5" checked={!!selected[p.id]} onChange={e=>setSelected(v=>({...v,[p.id]:e.target.checked}))}/></td><td className="font-black">{p.codigo}</td><td>{p.nome}</td><td>{p.unidade}</td><td className="font-bold">{brl(Number(p.preco_venda??0))}</td><td><input type="number" min="1" className="h-[42px] w-24 border rounded-md px-2 text-slate-900" value={quantidades[p.id]??1} onChange={e=>setQuantidades(v=>({...v,[p.id]:Number(e.target.value)||1}))}/></td><td>{p.foto_url?<img src={p.foto_url} alt={p.nome} className="h-10 w-14 object-cover rounded border"/>:<span className="text-slate-500">Sem foto</span>}</td></tr>)}{!rows.length&&!busy&&<tr><td colSpan={7} className="py-12 text-center text-slate-600 font-semibold">Nenhum produto disponível no catálogo.</td></tr>}</tbody></table></div></section></div></main></div>
+ const send=async()=>{const text="Catálogo: "+link+"\nCliente: "+(cliente||"Não informado")+"\n\nItens selecionados:\n"+cart.map(x=>x.codigo+" - "+x.descricao+" x "+x.quantidade).join("\n");if(navigator.share)await navigator.share({title:"Solicitação de cotação",text}).catch(()=>undefined);else await navigator.clipboard.writeText(text)};
+ return <VendasLayout title="Catálogo digital" subtitle="Produtos por grupo, descrição e imagem • sem preços" onRefresh={()=>void load()}>
+  <main className="sales-workspace sales-detail">
+   <section className="rounded-md border bg-white p-5">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+     <div className="flex items-center gap-4">
+      {(empresa?.logo_url||empresa?.logo_impressao_url)&&<img src={empresa.logo_url||empresa.logo_impressao_url||""} alt="Logo da empresa" className="h-14 w-28 object-contain rounded border bg-white p-1"/>}
+      <div><span className="sales-eyebrow">CATÁLOGO COMERCIAL</span><h1 className="text-xl font-semibold text-[#1c3c49]">{empresa?.nome_fantasia||empresa?.razao_social||"Catálogo de produtos"}</h1><p className="text-xs text-slate-500">Apresentação dos produtos sem exibição de preço.</p></div>
+     </div>
+     <div className="flex flex-wrap gap-2">
+      <button type="button" onClick={()=>void copy()} className="sales-button sales-button--secondary"><Copy size={14}/> COPIAR LINK</button>
+      <button type="button" onClick={()=>void send()} disabled={!cart.length} className="sales-button sales-button--primary"><Send size={14}/> ENVIAR SELEÇÃO</button>
+     </div>
+    </div>
+    <div className="mt-4 grid gap-3 md:grid-cols-[1fr_260px]">
+     <label className="grid gap-1 text-xs font-semibold text-slate-600">Pesquisar produto, grupo ou descrição<span className="relative"><Search size={15} className="absolute left-3 top-2.5 text-slate-400"/><input value={filtro} onChange={e=>setFiltro(e.target.value)} className="h-9 w-full rounded-md border pl-9 pr-3" placeholder="Código, produto, grupo..."/></span></label>
+     <label className="grid gap-1 text-xs font-semibold text-slate-600">Cliente / referência<input value={cliente} onChange={e=>setCliente(e.target.value)} className="h-9 rounded-md border px-3" placeholder="Opcional"/></label>
+    </div>
+    {error&&<div className="mt-4 rounded-md border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-800">{error}</div>}
+   </section>
+   <section className="rounded-md border bg-white p-5">
+    <div className="mb-4 flex items-center justify-between"><div><h2 className="text-base font-semibold text-[#123b50]">Produtos por grupo</h2><p className="text-xs text-slate-500">{rows.length} produto(s) publicado(s)</p></div><span className="text-xs font-semibold text-slate-500"><ShoppingCart size={14} className="mr-1 inline"/> {cart.length} selecionado(s)</span></div>
+    {busy&&<div className="py-10 text-center text-sm text-slate-500">Carregando catálogo…</div>}
+    {!busy&&groups.map(group=><div key={group} className="mb-6 last:mb-0"><div className="border-b border-slate-200 pb-2"><h3 className="text-sm font-bold text-[#123b50]">{group}</h3><p className="text-[11px] text-slate-500">{rows.filter(p=>(p.grupo||"Sem grupo")===group).length} item(ns)</p></div><div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{rows.filter(p=>(p.grupo||"Sem grupo")===group).map(p=><article key={p.id} className="overflow-hidden rounded-md border border-slate-200 bg-white"><div className="flex h-44 items-center justify-center bg-slate-50">{p.foto_url?<img src={p.foto_url} alt={p.nome} className="h-full w-full object-contain"/>:<div className="text-xs text-slate-400">Sem imagem</div>}</div><div className="p-3"><div className="flex items-start justify-between gap-2"><div><div className="font-mono text-[10px] text-slate-500">{p.codigo}</div><h4 className="mt-1 text-sm font-semibold text-[#123b50]">{p.nome}</h4></div><input type="checkbox" aria-label={`Selecionar ${p.nome}`} checked={!!selected[p.id]} onChange={e=>setSelected(v=>({...v,[p.id]:e.target.checked}))} className="h-4 w-4"/></div><p className="mt-2 min-h-10 text-xs leading-5 text-slate-600">{p.descricao||"Sem descrição cadastrada."}</p>{p.subgrupo&&<span className="mt-2 inline-block rounded bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">{p.subgrupo}</span>}{selected[p.id]&&<div className="mt-3"><label className="text-[10px] font-semibold text-slate-500">Quantidade<input type="number" min="1" value={quantidades[p.id]??1} onChange={e=>setQuantidades(v=>({...v,[p.id]:Math.max(1,Number(e.target.value)||1)}))} className="ml-2 h-7 w-16 rounded border px-2 text-center text-xs"/></label></div>}</div></article>)}</div></div>)}
+    {!busy&&!rows.length&&<div className="py-12 text-center text-sm text-slate-500">Nenhum produto publicado corresponde ao filtro.</div>}
+   </section>
+  </main>
+ </VendasLayout>
 }
