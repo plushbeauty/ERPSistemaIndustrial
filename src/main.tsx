@@ -69,7 +69,6 @@ function BootstrapLoader() {
 
 const rootElement = document.getElementById('root')
 if (!rootElement) throw new Error('Elemento raiz #root não encontrado.')
-rootElement.classList.add('erp-professional-ui')
 
 console.info(`[ERP] bootstrap ${ERP_BOOTSTRAP_VERSION}`)
 createRoot(rootElement).render(
