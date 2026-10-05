@@ -3,6 +3,7 @@ import { ArrowLeft, Plus, Save, Search, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import VendasLayout from './VendasLayout'
 
 type Supplier = { id: string; razao_social: string; email: string | null }
 type Product = { id: string; codigo: string; nome: string; unidade: string }
