@@ -118,6 +118,7 @@ export default function PedidoCompra(){
     <label className="pc-field"><span>Local de entrega</span><input value={deliveryLocation} onChange={e=>setDeliveryLocation(e.target.value)} placeholder="Almoxarifado / endereço"/></label>
     <label className="pc-field"><span>Referência da cotação</span><input value={quoteRef} onChange={e=>setQuoteRef(e.target.value)} placeholder="RFQ / proposta"/></label>
     <label className="pc-field"><span>Validação fiscal</span><input value={fiscalStatus} readOnly/></label>
+    <label className="pc-field wide"><span>Parecer fiscal</span><input value={fiscalOpinion} readOnly placeholder="Ainda não analisado pelo Fiscal"/></label>
     <label className="pc-field wide"><span>Especificação técnica da compra</span><textarea value={specification} onChange={e=>setSpecification(e.target.value)} placeholder="Material, norma, dimensão, acabamento, tolerância, lote, certificado, embalagem e demais requisitos."/></label>
 
      <label className="pc-field">Fornecedor
@@ -136,5 +137,5 @@ export default function PedidoCompra(){
    </section>
   </div>
   {lookup&&<div className="pc-modal-bg" onMouseDown={e=>{if(e.currentTarget===e.target)setLookup(null)}}><div className="pc-modal" role="dialog" aria-modal="true" aria-labelledby="pc-lookup-title"><div className="pc-modal-head"><div><div className="pc-eyebrow">PESQUISA REAL</div><h3 id="pc-lookup-title">{lookup==='supplier'?'Localizar fornecedor':'Localizar produto / material'}</h3></div><button type="button" className="pc-btn" aria-label="Fechar pesquisa" onClick={()=>setLookup(null)}><X size={16}/></button></div><div className="pc-search"><Search size={17}/><input autoFocus value={lookupText} onChange={e=>setLookupText(e.target.value)} placeholder="Código, descrição, CNPJ ou nome…"/></div>{lookup==='supplier'?<table className="pc-table"><thead><tr><th>Código</th><th>Razão social</th><th>Nome fantasia</th><th>Documento</th></tr></thead><tbody>{filteredSuppliers.map(s=><tr key={s.id} onClick={()=>{setSupplierId(s.id);setLookup(null);setLookupText('')}}><td>{s.codigo||'—'}</td><td>{s.razao_social}</td><td>{s.nome_fantasia||'—'}</td><td>{s.documento||'—'}</td></tr>)}</tbody></table>:<table className="pc-table"><thead><tr><th>Código</th><th>Produto</th><th>Un.</th><th>Custo último</th></tr></thead><tbody>{filteredProducts.map(p=><tr key={p.id} onClick={()=>selectProduct(p,lookupIndex)}><td>{p.codigo}</td><td>{p.nome}</td><td>{p.unidade||'UN'}</td><td>{money(Number(p.custo_ultimo||0))}</td></tr>)}</tbody></table>}</div></div>}
- </main>
+ </main></VendasLayout>
 }
