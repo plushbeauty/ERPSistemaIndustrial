@@ -17,6 +17,7 @@
 - Assinatura de Entrada (Primeiros 3 Imports): import { ChangeEvent, FormEvent, useEffect, useState } from 'react' | import { Check, Download, FileCheck2, Pencil, Plus, Printer, RefreshCw, Search, ShieldCheck, Star, Trash2, Upload, X } from 'lucide-react' | import { supabase } from '../lib/supabaseClient'
 import VendasLayout from './VendasLayout'
 import VendasLayout from './VendasLayout'
+import VendasLayout from './VendasLayout'
 - Regra de Negócio Incorporada: Cadastro real de fornecedor, certificado ISO 9001 em Storage privado, validade e qualificação visual por estrela.
 */
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
