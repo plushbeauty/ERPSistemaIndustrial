@@ -246,7 +246,7 @@ export default function VendasStatusPedidos() {
         </section>
         <nav className="flex flex-wrap items-center justify-between gap-3 border border-slate-200 bg-white px-3 py-2" aria-label="Paginação do acompanhamento de pedidos">
           <span className="text-[11px] text-slate-500">
-            {visible.length === 0 ? '0 pedidos' : `${currentPage * PAGE_SIZE + 1}–${Math.min((currentPage + 1) * PAGE_SIZE, visible.length)} de ${visible.length}`}
+            {visible.length === 0 ? '0 pedidos' : (currentPage * PAGE_SIZE + 1) + '–' + Math.min((currentPage + 1) * PAGE_SIZE, visible.length) + ' de ' + visible.length}
           </span>
           <div className="flex items-center gap-2">
             <button type="button" className="sales-button sales-button--secondary" onClick={() => setPage(currentPage - 1)} disabled={currentPage === 0 || loading}>Anterior</button>
