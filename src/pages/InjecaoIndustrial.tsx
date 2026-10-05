@@ -40,6 +40,7 @@ export default function InjecaoIndustrial(){
   const [machineForm,setMachineForm]=useState<MachineForm>(emptyMachine)
   const [moldForm,setMoldForm]=useState<MoldForm>(emptyMold)
   const [busy,setBusy]=useState(false)
+  const [canView,setCanView]=useState(false)
   const [canCreate,setCanCreate]=useState(false)
   const [canEdit,setCanEdit]=useState(false)
   const [message,setMessage]=useState('')
@@ -51,17 +52,20 @@ export default function InjecaoIndustrial(){
       const company=await supabase.rpc('erp_current_empresa_id')
       if(company.error||!company.data)throw company.error??new Error('Empresa da sessão não identificada.')
       const id=String(company.data);setEmpresaId(id)
-      const [m,mo,o,pc,pe,h]=await Promise.all([
+      const [m,mo,o,pv,pc,pe,h]=await Promise.all([
         supabase.from('erp_maquinas').select('id,codigo,nome,tipo,fabricante,modelo,status,ativo,valor_hora_custo').eq('empresa_id',id).order('codigo'),
         supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades_ativas,ciclos_atuais,limite_ciclos,ativo,localizacao_fisica').eq('empresa_id',id).eq('tipo','INJECAO').order('codigo'),
         supabase.from('erp_ordens_producao').select('id,numero_op,quantidade,quantidade_produzida,status,maquina_id').eq('empresa_id',id).order('numero_op',{ascending:false}).limit(100),
+        supabase.rpc('erp_has_permission',{permission_code:'production.read'}),
         supabase.rpc('erp_has_permission',{permission_code:'production.create'}),
         supabase.rpc('erp_has_permission',{permission_code:'production.update'}),
         supabase.from('erp_injecao_historico').select('id,entidade,entidade_id,acao,codigo,descricao,criado_em').eq('empresa_id',id).order('criado_em',{ascending:false}).limit(150),
       ])
       for(const result of [m,mo,o])if(result.error)throw result.error
       setMachines((m.data??[]) as Machine[]);setMolds((mo.data??[]) as Mold[]);setOrders((o.data??[]) as ProductionOrder[])
-      setCanCreate(!pc.error&&Boolean(pc.data));setCanEdit(!pe.error&&Boolean(pe.data))
+      setCanView(!pv.error&&Boolean(pv.data));setCanCreate(!pc.error&&Boolean(pc.data));setCanEdit(!pe.error&&Boolean(pe.data))
+      if(pv.error)throw pv.error
+      if(!pv.data)throw new Error('Usuário sem permissão production.read para o módulo de injeção.')
       setHistory(h.error?[]:(h.data??[]) as HistoryRow[])
     }catch(cause){setError(errorText(cause,'Falha ao carregar o módulo de injeção.'))}
     finally{setBusy(false)}
@@ -136,6 +140,7 @@ export default function InjecaoIndustrial(){
         <button type="button" onClick={()=>void load()} disabled={busy} className="flex h-8 items-center gap-1 border border-slate-300 bg-white px-2"><RefreshCw size={13}/>Atualizar</button>
       </header>
       {(error||message)&&<div role={error?'alert':'status'} className={error?'mb-3 border border-red-300 bg-red-50 px-3 py-2 text-red-800':'mb-3 border border-emerald-300 bg-emerald-50 px-3 py-2 text-emerald-800'}>{error||message}</div>}
+      {!canView&&<div role="alert" className="mb-3 border border-red-300 bg-red-50 px-3 py-2 text-red-800">Acesso negado: production.read.</div>}
       <section className="mb-3 flex flex-wrap gap-2 border border-slate-300 bg-white p-2">
         <label className="flex h-8 min-w-64 flex-1 items-center gap-2 border border-slate-300 px-2"><Search size={13}/><input className="min-w-0 flex-1 outline-none" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código, nome, tipo, status..."/></label>
         <select aria-label="Status" className="h-8 border border-slate-300 bg-white px-2" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}><option value="TODOS">Todos</option><option value="DISPONIVEL">Disponível</option><option value="ATIVA">Ativa</option><option value="EM_PRODUCAO">Em produção</option><option value="EM_MANUTENCAO">Em manutenção</option><option value="INATIVO">Inativo</option></select>
