@@ -53,8 +53,8 @@ const grid = (min = 220): CSSProperties => ({
   display: 'grid', gridTemplateColumns: `repeat(auto-fit,minmax(${min}px,1fr))`, gap: 16,
 })
 const buttonStyle: CSSProperties = {
-  border: 0, borderRadius: 8, minHeight: 38, padding: '0 10px', display: 'inline-flex',
-  alignItems: 'center', gap: 4, cursor: 'pointer', fontSize: 11, fontWeight: 800,
+  border: '1px solid #C9DDE5', borderRadius: 3, minHeight: 30, padding: '0 9px', display: 'inline-flex',
+  alignItems: 'center', gap: 4, cursor: 'pointer', fontSize: 10, fontWeight: 700,
 }
 
 function Overview({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
@@ -71,7 +71,7 @@ function Overview({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
       <div style={grid(270)}>{cards.map(([label, description, Icon, path]) =>
         <button key={path} type="button" onClick={() => navigate(path)} style={{ minHeight: 150, border: '1px solid #E2E8F0', borderRadius: 12, padding: 16, textAlign: 'left', background: '#FFFFFF', cursor: 'pointer' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ width: 40, height: 40, display: 'grid', placeItems: 'center', borderRadius: 8, background: '#EAF7FA', color: '#17445A' }}><Icon size={19} /></span>
+            <span style={{ width: 32, height: 32, display: 'grid', placeItems: 'center', borderRadius: 8, background: '#EAF7FA', color: '#17445A' }}><Icon size={19} /></span>
             <ArrowRight size={16} color="#CBD5E1" />
           </div>
           <h3 style={{ margin: '16px 0 4px', fontSize: 14, fontWeight: 800, color: '#123B50' }}>{label}</h3>
@@ -156,7 +156,7 @@ export default function ConfiguracoesADM() {
   const toggleGroup = (label: string) => setOpenGroups(s => ({ ...s, [label]: !s[label] }))
 
   const sidebar: CSSProperties = {
-    width: 250, flexShrink: 0, minHeight: 'calc(100vh - 48px)', borderRight: '1px solid #E2E8F0',
+    width: 230, flexShrink: 0, minHeight: 'calc(100vh - 48px)', borderRight: '1px solid #E2E8F0',
     background: '#FFFFFF', display: 'flex', flexDirection: 'column',
   }
   const navLink = (active: boolean): CSSProperties => ({
@@ -170,7 +170,7 @@ export default function ConfiguracoesADM() {
       <div style={{ height: 48, display: 'flex', alignItems: 'center', gap: 12, padding: '0 24px' }}>
         <button type="button" onClick={() => setMobileOpen(v => !v)} style={{ ...buttonStyle, width: 40, padding: 0, justifyContent: 'center', border: '1px solid #E2E8F0', background: '#FFFFFF', color: '#17445A' }} aria-label="Abrir menu"><Menu size={19} /></button>
         <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.18em', color: '#2D8DB8' }}>SYNQRA ERP & SGQ INDUSTRIAL</div><div style={{ fontSize: 14, fontWeight: 900, color: '#123B50', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Administração do sistema</div></div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: 'min(380px,42vw)', border: '1px solid #E2E8F0', borderRadius: 8, background: '#F8FAFC', padding: '0 12px' }}><Search size={16} color="#94A3B8" /><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Pesquisar configuração..." style={{ height: 36, flex: 1, minWidth: 0, border: 0, outline: 0, background: 'transparent', fontSize: 12, fontWeight: 600 }} /></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: 'min(320px,36vw)', border: '1px solid #E2E8F0', borderRadius: 8, background: '#F8FAFC', padding: '0 12px' }}><Search size={16} color="#94A3B8" /><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Pesquisar configuração..." style={{ height: 30, flex: 1, minWidth: 0, border: 0, outline: 0, background: 'transparent', fontSize: 11, fontWeight: 600 }} /></div>
       </div>
     </header>
 
@@ -183,8 +183,8 @@ export default function ConfiguracoesADM() {
           {filteredGroups.map(group => <div key={group.label} style={{ marginBottom: 16 }}>
             <button type="button" onClick={() => toggleGroup(group.label)} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, padding: 8, border: 0, background: 'transparent', color: '#94A3B8', fontSize: 10, fontWeight: 900, letterSpacing: '.16em', cursor: 'pointer' }}>{group.label}<ChevronDown size={14} style={{ transform: openGroups[group.label] ? 'none' : 'rotate(-90deg)' }} /></button>
             {openGroups[group.label] && <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>{group.items.map(item => { const Icon = item.icon; const active = current.path === item.path; return <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)} aria-current={active ? 'page' : undefined} style={navLink(active)}>
-              <span style={{ width: 32, height: 32, flexShrink: 0, display: 'grid', placeItems: 'center', borderRadius: 6, background: active ? '#FFFFFF' : '#F1F5F9', color: active ? '#2D8DB8' : '#64748B' }}><Icon size={16} /></span>
-              <span style={{ minWidth: 0, flex: 1 }}><span style={{ display: 'block', fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span><span style={{ display: 'block', fontSize: 10, fontWeight: 600, color: '#94A3B8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.description}</span></span>
+              <span style={{ width: 28, height: 28, flexShrink: 0, display: 'grid', placeItems: 'center', borderRadius: 6, background: active ? '#FFFFFF' : '#F1F5F9', color: active ? '#2D8DB8' : '#64748B' }}><Icon size={16} /></span>
+              <span style={{ minWidth: 0, flex: 1 }}><span style={{ display: 'block', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span><span style={{ display: 'block', fontSize: 10, fontWeight: 600, color: '#94A3B8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.description}</span></span>
               <ArrowRight size={14} color={active ? '#2D8DB8' : '#CBD5E1'} />
             </Link>})}</div>}
           </div>)}
@@ -192,9 +192,9 @@ export default function ConfiguracoesADM() {
         <div style={{ borderTop: '1px solid #E2E8F0', padding: 16 }}><div style={{ border: '1px solid #C8E1E8', borderRadius: 8, background: '#F4FBFD', padding: 12 }}><div style={{ fontSize: 10, fontWeight: 900, color: '#17445A' }}>ESCOPO DE ACESSO</div><div style={{ marginTop: 4, fontSize: 11, fontWeight: 700, lineHeight: 1.4, color: '#526A75' }}>Dados operacionais respeitam as políticas RLS do banco; recursos sem fonte persistida são identificados.</div></div></div>
       </aside>
 
-      <main className="admin-config-main" style={{ flex: 1, minWidth: 0, padding: 12, marginLeft: 250 }}>
+      <main className="admin-config-main" style={{ flex: 1, minWidth: 0, padding: 12, marginLeft: 230 }}>
         <div style={{ marginBottom: 20, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <div><div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8' }}>ERP Industrial / Administração / <span style={{ color: '#475569' }}>{current.label}</span></div><h1 style={{ margin: '4px 0 0', fontSize: 24, fontWeight: 900, color: '#123B50' }}>{current.label}</h1><p style={{ margin: '4px 0 0', fontSize: 12, fontWeight: 600, color: '#64748B' }}>{current.description}</p></div>
+          <div><div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8' }}>ERP Industrial / Administração / <span style={{ color: '#475569' }}>{current.label}</span></div><h1 style={{ margin: '4px 0 0', fontSize: 20, fontWeight: 800, color: '#123B50' }}>{current.label}</h1><p style={{ margin: '4px 0 0', fontSize: 12, fontWeight: 600, color: '#64748B' }}>{current.description}</p></div>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 999, border: '1px solid #C8E1E8', background: '#F4FBFD', padding: '6px 12px', fontSize: 10, fontWeight: 900, color: '#17445A' }}><Activity size={13} /> Área administrativa</div>
         </div>
         <SectionContent item={current} navigate={navigate} />
