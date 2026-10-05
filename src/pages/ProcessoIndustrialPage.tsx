@@ -109,7 +109,7 @@ export default function ProcessoIndustrialPage(){
         : await supabase.from('erp_processos_industriais').insert(payload)
       if(r.error) throw r.error
       const processId=editingProcess||((await supabase.from('erp_processos_industriais').select('id').eq('empresa_id',id).eq('codigo',payload.codigo).single()).data?.id)
-      if(processId) await recordHistory('PROCESSO',processId,editingProcess?'EDITAR':'CRIAR',payload.codigo,editingProcess?'Processo atualizado.':'Processo cadastrado.',{tipo:type})
+      if(processId) 
       setMessage(editingProcess?'Processo atualizado no banco.':'Processo cadastrado no banco.')
       setShowProcess(false);setEditingProcess('');setProcessForm({codigo:'',nome:'',descricao:'',capacidade:'',setup:'0',ciclo:''});await load()
     }catch(e){setError(e instanceof Error?e.message:'Não foi possível gravar o processo.')}finally{setBusy(false)}
@@ -121,7 +121,7 @@ export default function ProcessoIndustrialPage(){
       const r=await supabase.from(table).update({ativo:false}).eq('id',id).eq('empresa_id',company)
       if(r.error) throw r.error
       const row=table==='erp_processos_industriais'?processes.find(item=>item.id===id):tools.find(item=>item.id===id)
-      if(row) await recordHistory(table==='erp_processos_industriais'?'PROCESSO':'FERRAMENTA',id,'INATIVAR',row.codigo,table==='erp_processos_industriais'?'Processo inativado.':'Ferramenta inativada.')
+      if(row) 
       setMessage(table==='erp_processos_industriais'?'Processo inativado.':'Ferramenta inativada.')
       if(selectedProcess===id) setSelectedProcess('')
       await load()
@@ -139,7 +139,7 @@ export default function ProcessoIndustrialPage(){
         : await supabase.from('erp_ferramentas_industriais').insert(payload)
       if(r.error) throw r.error
       const toolId=editingTool||((await supabase.from('erp_ferramentas_industriais').select('id').eq('empresa_id',id).eq('codigo',payload.codigo).single()).data?.id)
-      if(toolId) await recordHistory('FERRAMENTA',toolId,editingTool?'EDITAR':'CRIAR',payload.codigo,editingTool?'Ferramenta atualizada.':'Ferramenta cadastrada.',{tipo:payload.tipo})
+      if(toolId) 
       setMessage(editingTool?'Ferramenta atualizada no banco.':'Ferramenta cadastrada no banco.')
       setShowTool(false);setEditingTool('');setToolForm({codigo:'',nome:'',tipo:toolTypes[type][0],cavidades:'',vida:''});await load()
     }catch(e){setError(e instanceof Error?e.message:'Não foi possível gravar a ferramenta.')}finally{setBusy(false)}
@@ -155,14 +155,12 @@ export default function ProcessoIndustrialPage(){
       const payload={empresa_id:id,processo_id:selectedProcess,produto_id:recipeForm.produto_id||null,ferramenta_id:recipeForm.ferramenta_id||null,maquina_id:recipeForm.maquina_id||null,versao:1,status:'RASCUNHO',parametros:params,ciclo_seg:Number(recipeForm.ciclo)||null,setup_min:Number(recipeForm.setup)||null,rendimento_percent:Number(recipeForm.rendimento)||null,perda_percent:Number(recipeForm.perda)||null}
       const r=editingRecipe ? await supabase.from('erp_receitas_processos').update(payload).eq('id',editingRecipe).eq('empresa_id',id).select('id').single() : await supabase.from('erp_receitas_processos').insert(payload).select('id').single()
       if(r.error) throw r.error
-      const recipeId=editingRecipe || r.data?.id
-      if(recipeId) await recordHistory('RECEITA',recipeId,editingRecipe?'EDITAR':'CRIAR',recipeId,editingRecipe?'Receita atualizada.':'Receita criada como RASCUNHO.',{processo_id:selectedProcess})
-      setMessage(editingRecipe?'Receita atualizada.':'Receita criada como RASCUNHO para aprovação.');setShowRecipe(false);setEditingRecipe('');await load()
+            setMessage(editingRecipe?'Receita atualizada.':'Receita criada como RASCUNHO para aprovação.');setShowRecipe(false);setEditingRecipe('');await load()
     }catch(e){setError(e instanceof Error?e.message:'Não foi possível criar a receita.')}finally{setBusy(false)}
   }
 
   async function setRecipeStatus(id:string,status:'APROVADA'|'OBSOLETA'){ setBusy(true);setError('');setMessage(''); try{ const idEmpresa=await companyId(); if(!canEdit) throw new Error('Sem permissão para alterar o status da receita.')
- const r=await supabase.from('erp_receitas_processos').update({status}).eq('id',id).eq('empresa_id',idEmpresa); if(r.error) throw r.error; await recordHistory('RECEITA',id,status==='APROVADA'?'APROVAR':'OBSOLETAR',id,status==='APROVADA'?'Receita aprovada.':'Receita marcada como obsoleta.',{status}); setMessage(status==='APROVADA'?'Receita aprovada.':'Receita marcada como obsoleta.');await load() }catch(e){setError(e instanceof Error?e.message:'Não foi possível alterar o status da receita.')}finally{setBusy(false)} }
+ const r=await supabase.from('erp_receitas_processos').update({status}).eq('id',id).eq('empresa_id',idEmpresa); if(r.error) throw r.error} }
 
   return <VendasLayout title={labels[type]} subtitle="Processo • ferramental • receita • histórico" onRefresh={()=>void load()} navSections={processNav(type)}><main className="industrial-route-content" style={{padding:'28px',maxWidth:1500,margin:'0 auto'}}>
     <header style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:20,marginBottom:16,flexWrap:'wrap'}}>
@@ -180,7 +178,7 @@ export default function ProcessoIndustrialPage(){
     </section>
     <section style={{display:'grid',gridTemplateColumns:'minmax(0,1.1fr) minmax(0,1fr)',gap:20}}>
       <div><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}><h2>Processos</h2><button type="button" disabled={!canCreate} onClick={()=>setShowProcess(true)}><Plus size={16}/> Novo processo</button></div><div style={{display:'grid',gap:8}}>
-        {filteredProcesses.map(p=><div key={p.id} type="button" onClick={()=>setSelectedProcess(p.id)} style={{textAlign:'left',padding:12,border:selectedProcess===p.id?'2px solid #2d8db8':'1px solid #cfe1e7',background:'white'}}><strong>{p.codigo} — {p.nome}</strong><div style={{float:'right',display:'flex',gap:4}}><button type='button' title='Editar processo' disabled={!canEdit} onClick={e=>{e.stopPropagation();setEditingProcess(p.id);setProcessForm({codigo:p.codigo,nome:p.nome,descricao:p.descricao??'',capacidade:String(p.capacidade_hora??''),setup:String(p.setup_padrao_min),ciclo:String(p.ciclo_padrao_seg??'')});setShowProcess(true)}}>Editar</button><button type='button' title='Inativar processo' disabled={!canEdit} onClick={e=>{e.stopPropagation();void inactivate('erp_processos_industriais',p.id)}}>Inativar</button></div><div style={{fontSize:13,color:'#607681',marginTop:6}}>Capacidade: {p.capacidade_hora??'—'} / h • Setup: {p.setup_padrao_min} min • Ciclo: {p.ciclo_padrao_seg??'—'} s</div></div>)}
+        {filteredProcesses.map(p=><div key={p.id} onClick={()=>setSelectedProcess(p.id)} style={{textAlign:'left',padding:12,border:selectedProcess===p.id?'2px solid #2d8db8':'1px solid #cfe1e7',background:'white'}}><strong>{p.codigo} — {p.nome}</strong><div style={{float:'right',display:'flex',gap:4}}><button type='button' title='Editar processo' disabled={!canEdit} onClick={e=>{e.stopPropagation();setEditingProcess(p.id);setProcessForm({codigo:p.codigo,nome:p.nome,descricao:p.descricao??'',capacidade:String(p.capacidade_hora??''),setup:String(p.setup_padrao_min),ciclo:String(p.ciclo_padrao_seg??'')});setShowProcess(true)}}>Editar</button><button type='button' title='Inativar processo' disabled={!canEdit} onClick={e=>{e.stopPropagation();void inactivate('erp_processos_industriais',p.id)}}>Inativar</button></div><div style={{fontSize:13,color:'#607681',marginTop:6}}>Capacidade: {p.capacidade_hora??'—'} / h • Setup: {p.setup_padrao_min} min • Ciclo: {p.ciclo_padrao_seg??'—'} s</div></div>)}
         {!processes.length&&<div style={{padding:24,border:'1px dashed #b9d2da',borderRadius:2}}>Nenhum processo {labels[type]} cadastrado.</div>}
       </div></div>
       <div><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}><h2>Ferramentas</h2><button type="button" disabled={!canCreate} onClick={()=>setShowTool(true)}><Plus size={16}/> Nova ferramenta</button></div><div style={{display:'grid',gap:8}}>
