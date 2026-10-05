@@ -30,7 +30,7 @@ const MODULES: TabletModule[] = [
   { key:'logistica', label:'LOGÍSTICA', icon:'logistica', route:'/expedicao/roteirizacao', Icon:Truck },
   { key:'manutencao', label:'MANUTENÇÃO', icon:'manutencao', route:'/manutencao/ordens', Icon:Wrench },
   { key:'maquinas', label:'MÁQUINAS E EQUIPAMENTOS', icon:'maquinas', route:'/manutencao/ordens', Icon:Wrench },
-  { key:'materiais', label:'CONTROLE DE MATERIAIS', icon:'materiais', route:'/pcp/materiais', Icon:PackageSearch },
+  { key:'materiais', label:'CONTROLE DE MATERIAIS', icon:'controle_materiais', route:'/pcp/materiais', Icon:PackageSearch },
   { key:'projetos', label:'PROJETOS', icon:'projetos', route:'/engenharia', Icon:ClipboardList },
   { key:'documentos', label:'DOCUMENTOS', icon:'documentos', route:'/documentos-qualidade', Icon:FileText },
   { key:'relatorios', label:'RELATÓRIOS', icon:'relatorios', route:'/vendas/relatorios', Icon:FileText },
