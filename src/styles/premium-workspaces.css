@@ -36,7 +36,7 @@
 .sales-filter-row{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid #e6edef;padding:9px 12px 0;scrollbar-width:thin}
 .sales-filter-tab{display:flex;min-height:43px;flex:0 0 auto;align-items:center;gap:7px;border:0;border-bottom:2px solid transparent;background:transparent;padding:0 10px;color:#61767f;font-size:11px;font-weight:650;white-space:nowrap}
 .sales-filter-tab:hover{color:#153d4b}
-.sales-filter-tab.is-active{border-bottom-color:#25849c;color:#153d4b}
+.sales-filter-tab.is-active{border-bottom-color:#2d8db8;background:#2d8db8;color:#fff}
 .sales-filter-tab>span,.user-admin-tabs button>span{display:grid;min-width:21px;height:20px;place-items:center;border-radius:999px;background:#eef3f4;padding:0 5px;color:#627780;font-size:10px}
 .sales-filter-tab.is-active>span{background:#e3f1f4;color:#246b7b}
 .sales-list-toolbar,.user-admin-toolbar{display:flex;align-items:center;gap:12px;padding:14px 16px}
@@ -390,7 +390,7 @@
   background:#145b75;
   color:#fff;
 }
-.sales-button--primary:hover{background:#0e4d64}
+.sales-button--primary:hover{background:#247b9e}
 .sales-button--secondary{
   border-color:#cddde1;
   background:#fff;
