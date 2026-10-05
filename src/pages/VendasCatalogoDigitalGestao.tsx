@@ -125,4 +125,5 @@ export default function VendasCatalogoDigitalGestao() {
         </section>
       </main>
     </VendasLayout>
+  )
 }
