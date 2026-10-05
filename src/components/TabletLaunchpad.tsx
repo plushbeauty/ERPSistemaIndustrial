@@ -36,7 +36,7 @@ const modules: Module[] = [
   { number:'7', label:'RH', route:'/rh', icon:Users, accent:'#9A3B67' },
   { number:'8', label:'ENGENHARIA', route:'/engenharia', icon:Cpu, accent:'#17445A' },
   { number:'9', label:'MATERIAIS', route:'/pcp/materiais', icon:Layers, accent:'#B85C00' },
-  { number:'10', label:'MRP', route:'/pcp/materiais', icon:Layers, accent:'#8A4A00' },
+  { number:'10', label:'MRP', route:'/mrp', icon:Layers, accent:'#8A4A00' },
   { number:'11', label:'PCP', route:'/pcp', icon:Factory, accent:'#0B7654' },
   { number:'12', label:'CHÃO DE FÁBRICA', route:'/operacao-industrial', icon:Activity, accent:'#8A6200' },
   { number:'13', label:'QUALIDADE', route:'/qualidade', icon:CheckCircle, accent:'#16788A' },
