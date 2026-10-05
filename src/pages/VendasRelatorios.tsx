@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, FileDown, Printer, RefreshCw, Search } from 'lucide-react'
+import { FileDown, Printer, RefreshCw, Search } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import VendasLayout from './VendasLayout'
 
 type Order = {
   id: string
@@ -80,29 +81,10 @@ export default function VendasRelatorios() {
   const currentPage = Math.min(page, pageCount - 1)
 
   return (
-    <main className="min-h-screen bg-[#F4FBFD] text-slate-900">
+    <VendasLayout title="Relatórios de vendas" subtitle="Consultas, filtros e impressão" onRefresh={() => void load()}>
+      <main className="sales-workspace sales-detail">
       <style>{`@media print { .print-hidden { display:none!important } .sales-report-row--other-page { display:table-row!important } body { background:white!important } } .sales-report-row--other-page { display:none }`}</style>
-      <header className="print-hidden sticky top-0 z-10 border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3 px-4 py-3 lg:px-6">
-          <div>
-            <div className="text-xs font-black tracking-[0.16em] text-[#2D8DB8]">SYNQRA ERP INDUSTRIAL • VENDAS</div>
-            <h1 className="text-xl font-black text-[#123B50]">Relatórios de Vendas</h1>
-          </div>
-          <div className="flex gap-2">
-            <button type="button" onClick={() => history.back()} className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-sm font-black">
-              <ArrowLeft size={17} /> VOLTAR
-            </button>
-            <button type="button" onClick={() => void load()} className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-sm font-black">
-              <RefreshCw size={17} /> ATUALIZAR
-            </button>
-            <button type="button" onClick={() => window.print()} className="inline-flex h-10 items-center gap-2 rounded-md bg-[#123B50] px-3 text-sm font-black text-white">
-              <Printer size={17} /> IMPRIMIR
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <section className="mx-auto max-w-[1600px] space-y-4 px-4 py-5 lg:px-6">
+      <section className="space-y-4">
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm print-hidden">
           <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
             <label className="grid gap-1 text-sm font-black">
