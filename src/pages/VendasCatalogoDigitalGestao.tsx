@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Check, ExternalLink, RefreshCw, Save } from 'lucide-react'
+import { Check, ExternalLink, RefreshCw, Save } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import VendasLayout from './VendasLayout'
 
 type Product = {
   id: string
@@ -90,23 +91,8 @@ export default function VendasCatalogoDigitalGestao() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F7FE] text-slate-900">
-      <header className="sticky top-0 z-20 border-b bg-white">
-        <div className="flex min-h-[70px] items-center justify-between gap-4 px-5 lg:px-8">
-          <div>
-            <p className="text-[10px] uppercase tracking-[.16em] text-[#2D8DB8]">ERP Industrial • Vendas</p>
-            <h1 className="text-xl font-medium text-[#123B50]">Catálogo Digital — Gestão</h1>
-          </div>
-          <div className="flex gap-2">
-            <button type="button" onClick={() => location.assign('/vendas')} className="flex h-9 items-center gap-2 rounded-md border px-3 text-xs"><ArrowLeft size={15} /> Voltar</button>
-            <button type="button" onClick={() => void load()} disabled={busy} className="h-9 rounded-md border px-3"><RefreshCw size={15} className={busy ? 'animate-spin' : ''} /></button>
-            <button type="button" onClick={() => window.open('/vendas/catalogo-digital', '_blank', 'noopener,noreferrer')} className="flex h-9 items-center gap-2 rounded-md border px-3 text-xs"><ExternalLink size={15} /> Abrir catálogo</button>
-            <button type="button" disabled={saving} onClick={() => void save()} className="flex h-9 items-center gap-2 rounded-md bg-[#123B50] px-3 text-xs text-white"><Save size={15} /> Salvar</button>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-[1600px] p-5 lg:p-8">
+    <VendasLayout title="Gestão do catálogo" subtitle="Publicação de produtos no catálogo digital" onRefresh={() => void load()}>
+      <main className="sales-workspace sales-detail">
         <section className="rounded-lg border bg-white p-5 shadow-sm">
           <div className="flex flex-wrap justify-between gap-3">
             <div>
@@ -138,6 +124,5 @@ export default function VendasCatalogoDigitalGestao() {
           </div>
         </section>
       </main>
-    </div>
-  )
+    </VendasLayout>
 }
