@@ -6,6 +6,16 @@ values
 on conflict (codigo) do update
 set nome=excluded.nome, modulo=excluded.modulo, ativo=true;
 
+-- Disponibiliza as permissões específicas para os perfis administrativos que já aprovam operações.
+insert into public.erp_role_permissions (role_id, permission_id)
+select r.id, p.id
+from public.erp_roles r
+cross join public.erp_permissions p
+where r.empresa_id is null
+  and r.codigo in ('ADMIN', 'MANAGER')
+  and p.codigo in ('compras.aprovar', 'fiscal.editar')
+on conflict (role_id, permission_id) do nothing;
+
 -- Compras: aprovação, validação fiscal e especificações de aquisição.
 alter table public.erp_pedidos_compra
   add column if not exists centro_custo text,
@@ -61,7 +71,9 @@ begin
   if p_aprovado then
     update public.erp_pedidos_compra
        set status='APROVADO', aprovado_por=(select id from public.erp_usuarios where auth_user_id=auth.uid() and empresa_id=v_empresa limit 1),
-           aprovado_em=now(), motivo_rejeicao=null, updated_at=now()
+           aprovado_em=now(), motivo_rejeicao=null,
+           liberado_para_compra_em=case when fiscal_status='VALIDADO' then now() else liberado_para_compra_em end,
+           updated_at=now()
      where id=p_pedido_id and empresa_id=v_empresa;
   else
     update public.erp_pedidos_compra
