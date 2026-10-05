@@ -7,35 +7,91 @@ import VendasLayout from './VendasLayout'
 type Product={id:string;codigo:string;codigo_barras:string|null;nome:string;preco_venda:number;unidade:string;categoria:string|null;estoque_atual:number}
 type CartItem=Product&{quantidade:number}
 type Box={id:string;codigo:string;descricao:string}
-
 const money=(n:number)=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
+
 export default function VendasPDV(){
- const [products,setProducts]=useState<Product[]>([]),[boxes,setBoxes]=useState<Box[]>([]),[cart,setCart]=useState<CartItem[]>([])
- const [box,setBox]=useState(''),[query,setQuery]=useState(''),[payment,setPayment]=useState('DINHEIRO'),[discount,setDiscount]=useState('0'),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
+ const [products,setProducts]=useState<Product[]>([])
+ const [boxes,setBoxes]=useState<Box[]>([])
+ const [cart,setCart]=useState<CartItem[]>([])
+ const [box,setBox]=useState('')
+ const [query,setQuery]=useState('')
+ const [payment,setPayment]=useState('DINHEIRO')
+ const [discount,setDiscount]=useState('0')
+ const [busy,setBusy]=useState(false)
+ const [message,setMessage]=useState('')
+ const [error,setError]=useState('')
  const checkoutKey=useRef<string|null>(null)
- const load=async()=>{setBusy(true);setError('');try{const company=await supabase.rpc('erp_current_empresa_id');if(company.error||!company.data)throw company.error??new Error('Empresa não identificada.')
-  const [p,b]=await Promise.all([fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,codigo_barras,nome,preco_venda,unidade,categoria,estoque_atual',{count:'exact'}).eq('empresa_id',String(company.data)).eq('ativo',true).order('nome').range(from,to)),supabase.from('erp_caixas').select('id,codigo,descricao').eq('empresa_id',String(company.data)).eq('ativo',true).order('codigo')])
-  if(b.error)throw b.error;setProducts(p);setBoxes((b.data||[]) as Box[]);if(!box&&b.data?.[0])setBox(b.data[0].id)}catch(cause){setError(cause instanceof Error?cause.message:'Falha ao carregar produtos e caixas do PDV.');setProducts([]);setBoxes([])}finally{setBusy(false)}}
+
+ const load=async()=>{
+  setBusy(true);setError('')
+  try{
+   const company=await supabase.rpc('erp_current_empresa_id')
+   if(company.error||!company.data)throw company.error??new Error('Empresa não identificada.')
+   const id=String(company.data)
+   const [p,b]=await Promise.all([
+    fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,codigo_barras,nome,preco_venda,unidade,categoria,estoque_atual',{count:'exact'}).eq('empresa_id',id).eq('ativo',true).order('nome').range(from,to)),
+    supabase.from('erp_caixas').select('id,codigo,descricao').eq('empresa_id',id).eq('ativo',true).order('codigo')
+   ])
+   if(b.error)throw b.error
+   setProducts(p);setBoxes((b.data??[]) as Box[])
+   if(!box&&b.data?.[0])setBox(b.data[0].id)
+  }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar o PDV.');setProducts([]);setBoxes([])}
+  finally{setBusy(false)}
+ }
  useEffect(()=>{void load()},[])
- const visible=useMemo(()=>{const q=query.trim().toLowerCase();return products.filter(p=>!q||p.codigo.toLowerCase().includes(q)||p.nome.toLowerCase().includes(q)||(p.codigo_barras||'').includes(q))},[products,query])
- const subtotal=cart.reduce((s,i)=>s+i.quantidade*Number(i.preco_venda||0),0),disc=Math.min(subtotal,Math.max(0,Number(discount)||0)),total=subtotal-disc
- const add=(p:Product)=>{checkoutKey.current=null;setCart(c=>{const found=c.find(i=>i.id===p.id);return found?c.map(i=>i.id===p.id?{...i,quantidade:i.quantidade+1}:i):[...c,{...p,quantidade:1}]})}
- const finish=async()=>{if(!box){setError('Selecione o caixa operacional.');return}if(!cart.length){setError('Carrinho vazio.');return}setBusy(true);setError('');setMessage('')
-  try{const company=await supabase.rpc('erp_current_empresa_id');if(company.error||!company.data)throw company.error||new Error('Empresa não identificada.')
-   const idempotencyKey=checkoutKey.current??crypto.randomUUID();checkoutKey.current=idempotencyKey
-   const result=await supabase.rpc('erp_pdv_finalizar_venda',{p_caixa_id:box,p_cliente_id:null,p_forma_pagamento:payment,p_desconto:disc,p_chave_idempotencia:idempotencyKey,p_itens:cart.map(item=>({produto_id:item.id,quantidade:item.quantidade}))})
+ const visible=useMemo(()=>{const q=query.trim().toLowerCase();return products.filter(p=>!q||p.codigo.toLowerCase().includes(q)||p.nome.toLowerCase().includes(q)||(p.codigo_barras??'').includes(q))},[products,query])
+ const subtotal=cart.reduce((s,i)=>s+i.quantidade*Number(i.preco_venda||0),0)
+ const disc=Math.min(subtotal,Math.max(0,Number(discount)||0))
+ const total=subtotal-disc
+ const add=(p:Product)=>{checkoutKey.current=null;setCart(c=>{const old=c.find(i=>i.id===p.id);return old?c.map(i=>i.id===p.id?{...i,quantidade:i.quantidade+1}:i):[...c,{...p,quantidade:1}]})}
+ const finish=async()=>{
+  if(!box){setError('Selecione o caixa operacional.');return}
+  if(!cart.length){setError('Carrinho vazio.');return}
+  setBusy(true);setError('');setMessage('')
+  try{
+   const key=checkoutKey.current??crypto.randomUUID();checkoutKey.current=key
+   const result=await supabase.rpc('erp_pdv_finalizar_venda',{p_caixa_id:box,p_cliente_id:null,p_forma_pagamento:payment,p_desconto:disc,p_chave_idempotencia:key,p_itens:cart.map(i=>({produto_id:i.id,quantidade:i.quantidade}))})
    if(result.error)throw result.error
    const row=(Array.isArray(result.data)?result.data[0]:result.data) as {numero?:number|string;total?:number}|null
-   if(!row||row.numero==null||row.total==null)throw new Error('A finalização não retornou o número e total persistidos da venda.')
-   setMessage(`Venda PDV #${row.numero} finalizada · ${money(Number(row.total))}.`);setCart([]);setDiscount('0');checkoutKey.current=null
-  }catch(e){setError(e instanceof Error?e.message:'Não foi possível finalizar o PDV.')}finally{setBusy(false)}}
- return <VendasLayout title="PDV / venda rápida" subtitle="Caixa operacional • venda direta" onRefresh={() => void load()}>
-  <main className="sales-workspace sales-detail">
-   <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-md border bg-white p-3">
-    <div><span className="sales-eyebrow">OPERAÇÃO / PDV</span><h1 className="text-base font-semibold text-[#123b50]">Caixa operacional</h1></div>
-    <label className="flex items-center gap-2 text-xs font-semibold">Caixa<select aria-label="Caixa operacional" disabled={busy} value={box} onChange={e=>{checkoutKey.current=null;setBox(e.target.value)}} className="h-9 rounded-md border px-3">{boxes.map(b=><option key={b.id} value={b.id}>{b.codigo} — {b.descricao}</option>)}</select></label>
+   if(!row||row.numero==null||row.total==null)throw new Error('A finalização não retornou a venda persistida.')
+   setMessage('Venda PDV #'+String(row.numero)+' finalizada · '+money(Number(row.total))+'.')
+   setCart([]);setDiscount('0');checkoutKey.current=null
+  }catch(e){setError(e instanceof Error?e.message:'Não foi possível finalizar o PDV.')}
+  finally{setBusy(false)}
+ }
+
+ return <VendasLayout title='PDV / venda rápida' subtitle='Caixa operacional · venda direta' onRefresh={()=>void load()}>
+  <main className='sales-workspace sales-detail'>
+   <div className='sales-orders-card' style={{padding:14,marginBottom:10}}>
+    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,flexWrap:'wrap'}}>
+     <div><span className='sales-eyebrow'>OPERAÇÃO / PDV</span><h1 style={{margin:'5px 0 0',fontSize:18,fontWeight:650,color:'#123b50'}}>Caixa operacional</h1></div>
+     <label style={{display:'flex',alignItems:'center',gap:7,fontSize:10,fontWeight:650,color:'#526a73'}}>Caixa<select aria-label='Caixa operacional' disabled={busy} value={box} onChange={e=>{checkoutKey.current=null;setBox(e.target.value)}} style={{height:30,border:'1px solid #d3e0e3',borderRadius:4,padding:'0 8px',fontSize:11}}>{boxes.map(b=><option key={b.id} value={b.id}>{b.codigo} — {b.descricao}</option>)}</select></label>
+    </div>
    </div>
-   <div className="grid gap-5 lg:grid-cols-[1fr_440px]"><section className="rounded-lg border bg-white p-5"><div className="flex gap-2"><div className="relative flex-1"><Search className="absolute left-3 top-3.5" size={16}/><input autoFocus value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código de barras ou nome do artigo..." className="h-11 w-full rounded-md border pl-9 pr-3"/></div><button type="button" onClick={()=>void load()} disabled={busy} aria-label="Atualizar produtos e caixas" className="h-11 rounded-md border px-4 disabled:opacity-50"><RefreshCw size={16}/></button></div><div className="mt-4 flex flex-wrap gap-2"><span className="rounded-full bg-slate-100 px-3 py-1 text-xs">Todos</span>{Array.from(new Set(products.map(p=>p.categoria).filter(Boolean))).map(c=><span key={c} className="rounded-full border px-3 py-1 text-xs">{c}</span>)}</div><div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{visible.map(p=><button key={p.id} type="button" disabled={busy} onClick={()=>add(p)} className="rounded-lg border p-4 text-left transition hover:border-[#2D8DB8] disabled:cursor-not-allowed disabled:opacity-60"><div className="text-[10px] text-slate-500">{p.codigo}</div><div className="mt-1 font-medium text-[#123B50]">{p.nome}</div><div className="mt-3 flex justify-between"><span className="text-xs text-slate-500">Estoque {p.estoque_atual}</span><strong>{money(Number(p.preco_venda))}</strong></div></button>)}</div></section>
- <section className="rounded-lg border bg-white p-5"><div className="flex items-center gap-2"><ShoppingCart size={19}/><h2 className="font-medium text-[#123B50]">Carrinho</h2></div><div className="mt-4 max-h-[420px] overflow-auto">{cart.map(i=><div key={i.id} className="flex items-center gap-3 border-b py-3"><div className="min-w-0 flex-1"><div className="truncate text-sm font-medium">{i.nome}</div><div className="text-xs text-slate-500">{money(i.preco_venda)} / {i.unidade}</div></div><input type="number" min="1" disabled={busy} aria-label={`Quantidade de ${i.nome}`} value={i.quantidade} onChange={e=>{checkoutKey.current=null;setCart(c=>c.map(x=>x.id===i.id?{...x,quantidade:Math.max(1,Number(e.target.value))}:x))}} className="w-16 rounded border p-2 text-center"/><strong>{money(i.quantidade*i.preco_venda)}</strong></div>)}{!cart.length&&<div className="py-16 text-center text-sm text-slate-500">Nenhum item no carrinho.</div>}</div><div className="mt-4 space-y-2 border-t pt-4 text-sm"><div className="flex justify-between"><span>Subtotal</span><strong>{money(subtotal)}</strong></div><div className="flex justify-between items-center"><span>Desconto</span><input type="number" min="0" step="0.01" disabled={busy} value={discount} onChange={e=>{checkoutKey.current=null;setDiscount(e.target.value)}} className="w-28 rounded border p-2 text-right"/></div><div className="flex justify-between text-xl font-semibold text-[#123B50]"><span>Total</span><strong>{money(total)}</strong></div></div><div className="mt-4 grid grid-cols-3 gap-2">{[['DINHEIRO',Wallet],['CARTAO',CreditCard],['PIX',ShoppingCart]].map(([name,Icon])=><button type="button" key={String(name)} disabled={busy} onClick={()=>{checkoutKey.current=null;setPayment(String(name))}} className={payment===name?'rounded-md bg-[#123B50] p-3 text-xs text-white disabled:opacity-50':'rounded-md border p-3 text-xs disabled:opacity-50'}><Icon size={15} className="mx-auto mb-1"/>{String(name)}</button>)}</div>{error&&<div role="alert" className="mt-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}{message&&<div role="status" className="mt-4 rounded border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{message}</div>}<button type="button" disabled={busy||!cart.length} onClick={()=>void finish()} className="mt-4 h-12 w-full rounded-md bg-[#3A9D78] text-sm font-medium text-white disabled:opacity-50">{busy?'FINALIZANDO…':'FINALIZAR VENDA'}</button></section></div>
- </main>
+   {(error||message)&&<div className='sales-alert' style={{color:error?'#a43f35':'#23734e',background:error?'#fff5f3':'#eaf6ef',borderColor:error?'#f2c8c3':'#c9e5d5'}}>{error||message}</div>}
+   <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(360px,440px)',gap:12}}>
+    <section className='sales-orders-card' style={{padding:14}}>
+     <div style={{display:'flex',gap:7}}><div className='sales-search' style={{flex:1}}><Search size={14}/><input autoFocus value={query} onChange={e=>setQuery(e.target.value)} placeholder='Código, código de barras ou nome...'/></div><button type='button' onClick={()=>void load()} disabled={busy} className='sales-icon-action' title='Atualizar'><RefreshCw size={14}/></button></div>
+     <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:8,marginTop:12}}>
+      {visible.map(p=><button key={p.id} type='button' disabled={busy} onClick={()=>add(p)} style={{textAlign:'left',border:'1px solid #dfe8ea',background:'#fff',padding:10,borderRadius:5,color:'#294650'}}><span style={{display:'block',fontSize:9,color:'#71838a'}}>{p.codigo}</span><strong style={{display:'block',marginTop:3,fontSize:11,fontWeight:650,color:'#123b50'}}>{p.nome}</strong><span style={{display:'flex',justifyContent:'space-between',marginTop:9,fontSize:9,color:'#71838a'}}><span>Estoque {p.estoque_atual}</span><b style={{fontSize:10,color:'#315660'}}>{money(Number(p.preco_venda))}</b></span></button>)}
+      {!visible.length&&<div className='sales-empty-state' style={{gridColumn:'1/-1'}}>Nenhum produto encontrado.</div>}
+     </div>
+    </section>
+    <section className='sales-orders-card' style={{padding:14}}>
+     <div style={{display:'flex',alignItems:'center',gap:7,color:'#123b50'}}><ShoppingCart size={16}/><strong style={{fontSize:12,fontWeight:650}}>Carrinho</strong></div>
+     <div style={{maxHeight:380,overflow:'auto',marginTop:8}}>
+      {cart.map(i=><div key={i.id} style={{display:'flex',alignItems:'center',gap:7,borderBottom:'1px solid #edf1f2',padding:'9px 0'}}><div style={{minWidth:0,flex:1}}><div style={{fontSize:11,fontWeight:600,color:'#294650',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{i.nome}</div><div style={{fontSize:9,color:'#87989d'}}>{money(i.preco_venda)} / {i.unidade}</div></div><input type='number' min='1' disabled={busy} aria-label={'Quantidade de '+i.nome} value={i.quantidade} onChange={e=>{checkoutKey.current=null;setCart(c=>c.map(x=>x.id===i.id?{...x,quantidade:Math.max(1,Number(e.target.value))}:x))}} style={{width:54,height:28,border:'1px solid #d3e0e3',borderRadius:3,textAlign:'center',fontSize:10}}/><strong style={{fontSize:10,color:'#315660'}}>{money(i.quantidade*i.preco_venda)}</strong></div>)}
+      {!cart.length&&<div style={{padding:'45px 0',textAlign:'center',fontSize:10,color:'#8a999e'}}>Nenhum item no carrinho.</div>}
+     </div>
+     <div style={{borderTop:'1px solid #e5edef',marginTop:8,paddingTop:9,fontSize:10}}>
+      <div style={{display:'flex',justifyContent:'space-between'}}><span>Subtotal</span><strong>{money(subtotal)}</strong></div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:7}}><span>Desconto</span><input type='number' min='0' step='0.01' disabled={busy} value={discount} onChange={e=>{checkoutKey.current=null;setDiscount(e.target.value)}} style={{width:90,height:28,border:'1px solid #d3e0e3',borderRadius:3,padding:'0 7px',textAlign:'right',fontSize:10}}/></div>
+      <div style={{display:'flex',justifyContent:'space-between',marginTop:9,fontSize:17,color:'#123b50'}}><span>Total</span><strong>{money(total)}</strong></div>
+     </div>
+     <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:5,marginTop:10}}>{[['DINHEIRO',Wallet],['CARTAO',CreditCard],['PIX',ShoppingCart]].map(([name,Icon])=><button key={String(name)} type='button' disabled={busy} onClick={()=>{checkoutKey.current=null;setPayment(String(name))}} style={{height:34,border:'1px solid #d7e3e6',borderRadius:4,background:payment===name?'#123b50':'#fff',color:payment===name?'#fff':'#526b74',fontSize:9}}><Icon size={13}/>{String(name)}</button>)}</div>
+     <button type='button' disabled={busy||!cart.length} onClick={()=>void finish()} style={{width:'100%',height:38,marginTop:8,border:'1px solid #2d8db8',borderRadius:4,background:'#2d8db8',color:'#fff',fontSize:10,fontWeight:650}}>{busy?'FINALIZANDO…':'FINALIZAR VENDA'}</button>
+    </section>
+   </div>
+  </main>
  </VendasLayout>
+}
