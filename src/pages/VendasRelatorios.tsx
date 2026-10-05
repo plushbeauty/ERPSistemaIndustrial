@@ -104,7 +104,6 @@ export default function VendasRelatorios() {
           </div>
 
           </div>
-        </div>
 
         {error && <div className="rounded-md border border-rose-200 bg-rose-50 p-4 font-bold text-rose-800">{error}</div>}
 
