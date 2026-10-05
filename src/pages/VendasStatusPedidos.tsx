@@ -233,7 +233,7 @@ export default function VendasStatusPedidos() {
                   <td className="p-2 font-semibold">{String(row.numero).padStart(6, '0')}{row.pedido_cliente && <span className="ml-1 font-normal text-slate-500">· {row.pedido_cliente}</span>}</td>
                   <td className="p-2">{row.cliente?.nome ?? '—'}</td>
                   <td className="p-2">{formatDate(row.data_entrega_prometida)}</td>
-                  <td className="p-2"><span className={`sales-status ${statusClass(row.status) === "is-status-pendente" ? "is-danger" : statusClass(row.status) === "is-status-producao" ? "is-warning" : statusClass(row.status) === "is-status-finalizado" ? "is-success" : "is-neutral"} inline-block max-w-56 truncate rounded border border-slate-200 px-1.5 py-0.5" title={row.status}>{row.status || '—'}</span></td>
+                  <td className="p-2"><span className={`sales-status ${statusClass(row.status) === "is-status-pendente" ? "is-danger" : statusClass(row.status) === "is-status-producao" ? "is-warning" : statusClass(row.status) === "is-status-finalizado" ? "is-success" : "is-neutral"} inline-block max-w-56 truncate rounded border border-slate-200 px-1.5 py-0.5`} title={row.status}>{row.status || '—'}</span></td>
                   <td className="p-2 text-right">{money(row.total)}</td>
                   <td className="p-2 text-right"><button type="button" onClick={() => void loadItems(row)} className="rounded border border-slate-300 px-2 py-1 font-medium text-[#17445A] hover:bg-slate-100">Ver itens</button></td>
                 </tr>
