@@ -1,7 +1,6 @@
 import type { CSSProperties } from 'react'
 
 import { Activity, Award, Boxes, TrendingUp, CalendarDays, CheckCircle, ClipboardList, Cpu, DollarSign, Factory, Landmark, Layers, Receipt, Settings, ShoppingCart, Tablet, Truck, Upload, Users, X } from 'lucide-react'
-import { usePonto } from '../context/PontoContext'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
@@ -18,17 +17,16 @@ type Module = {
   icon: typeof ShoppingCart
   accent: string
   permission?: string
-  restrictedRoles?: string[]
 }
 
 const modules: Module[] = [
   { number:'1', label:'CONFIGURAÇÕES', route:'/configuracoes-adm', icon:Settings, accent:'#F97316' },
   { number:'2', label:'VENDAS', route:'/vendas', icon:ShoppingCart, accent:'#2D8DB8' },
   { number:'9', label:'COMISSÕES & METAS', route:'/comissoes', icon:Award, accent:'#2563EB' },
-  { number:'19', label:'VALORAÇÃO ESTOQUE', route:'/inventario/balanco', icon:TrendingUp, accent:'#EA580C', restrictedRoles:['ADMINISTRADOR','PCP','MASTER'] },
-  { number:'20', label:'AUDITORIA MARGENS', route:'/controladoria/lucratividade', icon:TrendingUp, accent:'#B45309', restrictedRoles:['ADMINISTRADOR','PCP','MASTER'] },
-  { number:'21', label:'CLASSIFICAÇÃO FISCAL', route:'/fiscal/classificacao', icon:Receipt, accent:'#6B3FA0', restrictedRoles:['ADMINISTRADOR','PCP','MASTER'] },
-  { number:'22', label:'RAZÃO GERAL', route:'/controladoria/razao-geral', icon:Landmark, accent:'#17445A', restrictedRoles:['ADMINISTRADOR','PCP','MASTER'] },
+  { number:'19', label:'VALORAÇÃO ESTOQUE', route:'/inventario/balanco', icon:TrendingUp, accent:'#EA580C' },
+  { number:'20', label:'AUDITORIA MARGENS', route:'/controladoria/lucratividade', icon:TrendingUp, accent:'#B45309' },
+  { number:'21', label:'CLASSIFICAÇÃO FISCAL', route:'/fiscal/classificacao', icon:Receipt, accent:'#6B3FA0' },
+  { number:'22', label:'RAZÃO GERAL', route:'/controladoria/razao-geral', icon:Landmark, accent:'#17445A' },
   { number:'3', label:'COMPRAS', route:'/compras-solicitacao', icon:ClipboardList, accent:'#7A4E00' },
   { number:'4', label:'ESTOQUE', route:'/estoque', icon:Boxes, accent:'#087A58' },
   { number:'5', label:'EXPEDIÇÃO', route:'/expedicao/roteirizacao', icon:Truck, accent:'#A64B00' },
@@ -41,10 +39,10 @@ const modules: Module[] = [
   { number:'12', label:'CHÃO DE FÁBRICA', route:'/operacao-industrial', icon:Activity, accent:'#8A6200' },
   { number:'13', label:'QUALIDADE', route:'/qualidade', icon:CheckCircle, accent:'#16788A' },
   { number:'14', label:'SGQ', route:'/qualidade', icon:CheckCircle, accent:'#0F6170' },
-  { number:'15', label:'CONCILIAÇÃO BANCÁRIA', route:'/financeiro/reconciliacao', icon:Landmark, accent:'#17445A', permission:'financeiro.ver', restrictedRoles:['ADMINISTRADOR','PCP','MASTER'] },
-  { number:'16', label:'IMPORTADOR DE EXTRATOS', route:'/financeiro/importar-extratos', icon:Upload, accent:'#087A58', permission:'financeiro.ver', restrictedRoles:['ADMINISTRADOR','PCP','MASTER'] },
-  { number:'17', label:'ANO FISCAL', route:'/financeiro/ano-fiscal', icon:CalendarDays, accent:'#7A4E00', permission:'financeiro.ver', restrictedRoles:['ADMINISTRADOR','PCP','MASTER'] },
-  { number:'18', label:'FLUXO DE CAIXA', route:'/financeiro/fluxo-caixa', icon:DollarSign, accent:'#0B7654', permission:'financeiro.ver', restrictedRoles:['ADMINISTRADOR','PCP','MASTER'] },
+  { number:'15', label:'CONCILIAÇÃO BANCÁRIA', route:'/financeiro/reconciliacao', icon:Landmark, accent:'#17445A', permission:'financeiro.ver' },
+  { number:'16', label:'IMPORTADOR DE EXTRATOS', route:'/financeiro/importar-extratos', icon:Upload, accent:'#087A58', permission:'financeiro.ver' },
+  { number:'17', label:'ANO FISCAL', route:'/financeiro/ano-fiscal', icon:CalendarDays, accent:'#7A4E00', permission:'financeiro.ver' },
+  { number:'18', label:'FLUXO DE CAIXA', route:'/financeiro/fluxo-caixa', icon:DollarSign, accent:'#0B7654', permission:'financeiro.ver' },
 ]
 
 const moduleItems: Record<string, string> = {
@@ -71,9 +69,6 @@ const moduleItems: Record<string, string> = {
 
 export default function TabletLaunchpad({ onNavigate, isOpen, onClose }: TabletLaunchpadProps) {
   const [financeAllowed, setFinanceAllowed] = useState(false)
-  const { perfilRole } = usePonto()
-  const commissionBlocked = perfilRole === 'PRODUÇÃO' || perfilRole === 'PRODUCAO' || perfilRole === 'ENGENHARIA'
-  const fiscalAllowed = perfilRole === 'ADMINISTRADOR' || perfilRole === 'PCP' || perfilRole === 'MASTER'
   useEffect(() => {
     if (!isOpen) return
     let alive = true
@@ -103,7 +98,7 @@ export default function TabletLaunchpad({ onNavigate, isOpen, onClose }: TabletL
         </header>
 
         <div className="tablet-module-grid">
-          {modules.map(({ number, label, route, icon: Icon, accent, permission, restrictedRoles }) => {
+          {modules.map(({ number, label, route, icon: Icon, accent, permission }) => {
             const allowed = !permission || financeAllowed
             return (
             <button
