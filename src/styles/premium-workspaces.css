@@ -573,3 +573,11 @@
   .sales-list-toolbar{align-items:stretch;flex-direction:column}
   .sales-search{max-width:none}
 }
+
+/* VENDAS — navegação superior única, padrão de Pedido. */
+.sales-main{margin-left:0!important}
+.sales-global-nav{position:sticky;top:52px;z-index:29;background:#fff;border-bottom:1px solid #dfe7e9}
+.sales-global-nav .sales-mobile-nav{min-height:48px;align-items:stretch;padding:6px 10px;gap:3px;overflow-x:auto;overflow-y:hidden}
+.sales-global-nav .sales-mobile-nav a{min-height:36px;padding:0 11px;font-size:10px;font-weight:500}
+.sales-global-nav .sales-mobile-nav a svg{width:15px;height:15px}
+@media(max-width:900px){.sales-global-nav{top:52px}.sales-global-nav .sales-mobile-nav{min-height:50px}}
