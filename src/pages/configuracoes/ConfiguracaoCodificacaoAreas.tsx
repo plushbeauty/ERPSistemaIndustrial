@@ -13,6 +13,7 @@ const msgError = (e: unknown) => e instanceof Error ? e.message : 'Não foi poss
 
 export default function ConfiguracaoCodificacaoAreas({ profile }: Props) {
   const [empresaId,setEmpresaId]=useState(''),[config,setConfig]=useState<CodigoConfig|null>(null)
+  const [operatorName,setOperatorName]=useState('')
   const [prefixo,setPrefixo]=useState(''),[separador,setSeparador]=useState('-'),[modo,setModo]=useState<CodigoConfig['modo_numeracao']>('PS'),[sequencia,setSequencia]=useState(0),[grupo,setGrupo]=useState('')
   const [grupos,setGrupos]=useState<Grupo[]>([]),[areas,setAreas]=useState<Area[]>([]),[historico,setHistorico]=useState<HistoricoCodigo[]>([])
   const [gc,setGc]=useState(''),[gn,setGn]=useState(''),[ac,setAc]=useState(''),[an,setAn]=useState('')
@@ -23,9 +24,10 @@ export default function ConfiguracaoCodificacaoAreas({ profile }: Props) {
     try{
       const auth=(await supabase.auth.getUser()).data.user
       if(!auth) throw new Error('Sessão não encontrada.')
-      const {data:u,error:ue}=await supabase.from('erp_usuarios').select('empresa_id').eq('auth_user_id',auth.id).eq('ativo',true).is('deleted_at',null).maybeSingle()
+      const {data:u,error:ue}=await supabase.from('erp_usuarios').select('empresa_id,nome').eq('auth_user_id',auth.id).eq('ativo',true).is('deleted_at',null).maybeSingle()
       if(ue) throw ue
       if(!u?.empresa_id){setEmpresaId('');setConfig(null);setGrupos([]);setAreas([]);setHistorico([]);return}
+      setOperatorName(String(u.nome ?? ''))
       const id=String(u.empresa_id);setEmpresaId(id)
       const [c,g,a,h]=await Promise.all([
         supabase.from('erp_codigos').select('*').eq('empresa_id',id).maybeSingle(),
@@ -96,6 +98,6 @@ export default function ConfiguracaoCodificacaoAreas({ profile }: Props) {
       <section className="rounded-2xl border border-[#C5DEE6] bg-white p-5"><div className="mb-4 flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-[#55B8C8] to-[#2D8DB8] text-white shadow-md"><Layers3 size={19}/></div><div><h2 className="font-black text-[#123B50]">Áreas</h2><p className="text-xs font-semibold text-[#5C7480]">Cadastro real por empresa.</p></div></div><form onSubmit={addArea} className="grid gap-2 md:grid-cols-[120px_1fr_auto]"><input value={ac} onChange={e=>setAc(e.target.value.toUpperCase())} placeholder="Código" className="rounded-xl border border-[#B8D5DE] px-3 py-2.5 font-bold text-[#123B50]"/><input value={an} onChange={e=>setAn(e.target.value)} placeholder="Nome" className="rounded-xl border border-[#B8D5DE] px-3 py-2.5 font-bold text-[#123B50]"/><button disabled={busy} className="inline-flex items-center justify-center gap-1 rounded-xl bg-[#17445A] px-4 py-2.5 font-black text-white"><Plus size={16}/>Adicionar</button></form><div className="mt-4 divide-y divide-[#E4EFF2]">{areas.map(x=><div key={x.id} className="flex items-center py-3 text-sm"><span className="font-black text-[#123B50]">{x.codigo}</span><span className="ml-3 mr-auto font-semibold text-[#526A75]">{x.nome}</span><button type="button" onClick={()=>void removeArea(x.id)} className="rounded-lg p-2 text-[#8A2424] hover:bg-[#FFF2F2]" aria-label={`Excluir área ${x.codigo}`}><Trash2 size={16}/></button></div>)}{!areas.length&&<p className="py-4 text-sm font-semibold text-[#6B7F88]">Nenhuma área cadastrada.</p>}</div></section>
     </div>
     <section className="rounded-2xl border border-[#C5DEE6] bg-white p-5"><div className="mb-4 flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-[#17445A] to-[#2D8DB8] text-white shadow-md"><Archive size={19}/></div><div><h2 className="font-black text-[#123B50]">Histórico de códigos</h2><p className="text-xs font-semibold text-[#5C7480]">Somente códigos realmente gerados.</p></div></div><div className="overflow-x-auto"><table className="min-w-full text-left text-sm"><thead><tr className="border-b border-[#DCECF0] text-xs uppercase tracking-wider text-[#5C7480]"><th className="px-3 py-3">Código</th><th className="px-3 py-3">Base</th><th className="px-3 py-3">Sequência</th><th className="px-3 py-3">Gerado em</th></tr></thead><tbody>{historico.map(x=><tr key={x.id} className="border-b border-[#EEF5F7]"><td className="px-3 py-3 font-mono font-black text-[#123B50]">{x.codigo_completo}</td><td className="px-3 py-3 font-mono text-[#526A75]">{x.codigo_base||'—'}</td><td className="px-3 py-3 font-black text-[#123B50]">{x.sequencia}</td><td className="px-3 py-3 text-[#526A75]">{new Date(x.created_at).toLocaleString('pt-BR')}</td></tr>)}</tbody></table>{!historico.length&&<p className="py-5 text-center text-sm font-semibold text-[#6B7F88]">Nenhum código foi gerado ainda.</p>}</div></section>
-    <div className="rounded-xl border border-[#D7EAF0] bg-[#F8FCFD] px-4 py-3 text-xs font-semibold text-[#5C7480]">Usuário conectado: <span className="font-black text-[#123B50]">{profile?.nome||'Usuário ERP'}</span></div>
+    <div className="rounded-xl border border-[#D7EAF0] bg-[#F8FCFD] px-4 py-3 text-xs font-semibold text-[#5C7480]">Usuário conectado: <span className="font-black text-[#123B50]">{profile?.nome||operatorName||'Não identificado'}</span></div>
   </div>
 }

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { History, Plus, RefreshCw, Save, TriangleAlert, X } from 'lucide-react'
+import { History, Plus, RefreshCw, Save, TriangleAlert } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '../components/ui/dialog'
 
 type Equipment = {
@@ -39,6 +40,7 @@ type Calibration = {
 
 const equipmentSelect = 'id,empresa_id,codigo,descricao,fabricante,equipamento,numero_serie,faixa_medicao,resolucao,setor,responsavel,status,proxima_calibracao,certificado_rbc,certificado_validade,tolerancia_nominal,erro_maximo,unidade_medida,observacoes'
 const historySelect = 'id,revisao,numero_certificado,data_calibracao,proxima_calibracao,laboratorio,resultado,observacao,certificado_rbc'
+const PAGE_SIZE = 25
 
 const emptyEquipment = {
   id: '',
@@ -78,6 +80,7 @@ export default function CalibracaoIndustrial() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
+  const [page, setPage] = useState(0)
   const [equipmentForm, setEquipmentForm] = useState(emptyEquipment)
   const [calibrationForm, setCalibrationForm] = useState({ numero_certificado: '', data_calibracao: new Date().toISOString().slice(0, 10), proxima_calibracao: '', laboratorio: '', resultado: 'Aprovado', observacao: '', certificado_rbc: '' })
 
@@ -85,9 +88,15 @@ export default function CalibracaoIndustrial() {
     setBusy(true)
     setError('')
     try {
-      const result = await supabase.from('erp_equipamentos_medicao').select(equipmentSelect).order('codigo').limit(500)
-      if (result.error) throw result.error
-      setEquipments((result.data ?? []) as Equipment[])
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
+      const rows = await fetchAllPages<Equipment>((from, to) => supabase.from('erp_equipamentos_medicao')
+        .select(equipmentSelect, { count: 'exact' })
+        .eq('empresa_id', company.data)
+        .order('codigo')
+        .range(from, to))
+      setEquipments(rows)
+      setPage(0)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível carregar os equipamentos.')
       setEquipments([])
@@ -98,17 +107,30 @@ export default function CalibracaoIndustrial() {
 
   async function openEquipment(equipment: Equipment) {
     setSelected(equipment)
+    setHistory([])
     setOpen(true)
     setError('')
-    const result = await supabase.from('erp_qualidade_calibracoes_historico').select(historySelect).eq('equipamento_id', equipment.id).order('revisao', { ascending: false })
-    if (result.error) setError(result.error.message)
-    else setHistory((result.data ?? []) as Calibration[])
+    try {
+      const rows = await fetchAllPages<Calibration>((from, to) => supabase.from('erp_qualidade_calibracoes_historico')
+        .select(historySelect, { count: 'exact' })
+        .eq('empresa_id', equipment.empresa_id)
+        .eq('equipamento_id', equipment.id)
+        .order('revisao', { ascending: false })
+        .range(from, to))
+      setHistory(rows)
+    } catch (cause) {
+      setHistory([])
+      setError(cause instanceof Error ? cause.message : 'Não foi possível carregar o histórico de calibração.')
+    }
   }
 
   useEffect(() => { void load() }, [])
 
   const filtered = useMemo(() => equipments.filter(item => JSON.stringify(item).toLowerCase().includes(query.toLowerCase())), [equipments, query])
   const blockedCount = useMemo(() => equipments.filter(item => !isUsable(item)).length, [equipments])
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const visibleEquipments = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  useEffect(() => { setPage(current => Math.min(current, pageCount - 1)) }, [pageCount])
 
   async function saveEquipment() {
     setBusy(true)
@@ -168,7 +190,7 @@ export default function CalibracaoIndustrial() {
       })
       if (result.error) throw result.error
       await load()
-      const fresh = await supabase.from('erp_equipamentos_medicao').select(equipmentSelect).eq('id', selected.id).single()
+      const fresh = await supabase.from('erp_equipamentos_medicao').select(equipmentSelect).eq('id', selected.id).eq('empresa_id', selected.empresa_id).single()
       if (fresh.error) throw fresh.error
       const nextEquipment = fresh.data as Equipment
       setSelected(nextEquipment)
@@ -219,17 +241,17 @@ export default function CalibracaoIndustrial() {
 
     {error && <div role="alert" className="mb-5 rounded-lg border border-rose-200 bg-rose-50 p-4 text-base font-bold text-rose-900">{error}</div>}
 
-    <div className="mb-4"><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Pesquisar código, descrição, fabricante, setor…" className="min-h-11 w-full max-w-xl rounded-lg border border-slate-300 bg-white px-4 text-base text-slate-900"/></div>
+    <div className="mb-4"><input value={query} onChange={event => { setQuery(event.target.value); setPage(0) }} placeholder="Pesquisar código, descrição, fabricante, setor…" className="min-h-11 w-full max-w-xl rounded-lg border border-slate-300 bg-white px-4 text-base text-slate-900"/></div>
 
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"><div className="overflow-x-auto"><table className="w-full border-collapse text-left text-base">
       <thead><tr className="h-[54px] border-b border-slate-200 bg-slate-100 font-black"><th className="p-3">CÓDIGO</th><th className="p-3">DESCRIÇÃO</th><th className="p-3">FABRICANTE / EQUIPAMENTO</th><th className="p-3">SETOR</th><th className="p-3">STATUS</th><th className="p-3">PRÓXIMA</th><th className="p-3">CERTIFICADO</th><th className="p-3 text-right">AÇÃO</th></tr></thead>
-      <tbody>{filtered.map(item => <tr key={item.id} className="h-[54px] border-b border-slate-100 hover:bg-slate-50">
+      <tbody>{visibleEquipments.map((item, index) => <tr key={item.id} className={`h-[54px] border-b border-slate-100 hover:bg-slate-50 ${index % 2 ? 'bg-slate-50' : 'bg-white'}`}>
         <td className="p-3 font-black">{item.codigo}</td><td className="p-3">{item.descricao}</td><td className="p-3">{[item.fabricante, item.equipamento].filter(Boolean).join(' / ') || '—'}</td><td className="p-3">{item.setor || '—'}</td>
         <td className="p-3"><span className={'inline-flex rounded-md px-2.5 py-1 text-xs font-black ' + (isUsable(item) ? 'bg-emerald-100 text-emerald-950' : 'bg-rose-100 text-rose-950')}>{isUsable(item) ? 'APTO PARA USO' : isExpired(item) ? 'VENCIDO / BLOQUEADO' : item.status}</span></td>
         <td className="p-3">{item.proxima_calibracao || '—'}</td><td className="p-3">{item.certificado_rbc || '—'}</td>
         <td className="p-3 text-right"><div className="flex justify-end gap-2"><button type="button" onClick={() => void openEquipment(item)} className="inline-flex min-h-10 items-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-sm font-bold"><History size={16}/> Ficha</button><button type="button" onClick={() => editEquipment(item)} className="inline-flex min-h-10 items-center rounded-md border border-slate-300 bg-white px-3 text-sm font-bold">Editar</button></div></td>
       </tr>)}{!filtered.length && !busy && <tr><td colSpan={8} className="p-8 text-center font-semibold text-slate-600">Nenhum instrumento de medição cadastrado na empresa.</td></tr>}</tbody>
-    </table></div></section>
+    </table></div><nav aria-label="Paginação dos instrumentos de medição" className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 p-3 text-sm"><span>{filtered.length} instrumento(s) · página {page + 1} de {pageCount}</span><div className="flex gap-2"><button type="button" disabled={page === 0} onClick={() => setPage(current => Math.max(0, current - 1))} className="min-h-10 rounded border border-slate-300 px-3 font-bold disabled:opacity-50">Anterior</button><button type="button" disabled={page + 1 >= pageCount} onClick={() => setPage(current => Math.min(pageCount - 1, current + 1))} className="min-h-10 rounded border border-slate-300 px-3 font-bold disabled:opacity-50">Próxima</button></div></nav></section>
 
     <Dialog open={showNew} onOpenChange={setShowNew}><DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto bg-white p-5"><DialogTitle className="text-2xl font-black text-slate-950">{equipmentForm.id ? 'Editar instrumento' : 'Novo instrumento de medição'}</DialogTitle><DialogDescription className="text-slate-600">Somente campos existentes em erp_equipamentos_medicao.</DialogDescription>
       <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">{field('Código','codigo')}{field('Descrição','descricao')}{field('Fabricante','fabricante')}{field('Equipamento','equipamento')}{field('Número de série','numero_serie')}{field('Faixa de medição','faixa_medicao')}{field('Resolução','resolucao')}{field('Setor','setor')}{field('Responsável','responsavel')}{field('Próxima calibração','proxima_calibracao','date')}{field('Certificado RBC','certificado_rbc')}{field('Validade certificado','certificado_validade','date')}{field('Tolerância nominal','tolerancia_nominal','number')}{field('Erro máximo','erro_maximo','number')}{field('Unidade de medida','unidade_medida')}</div>

@@ -4,11 +4,25 @@ import { supabase } from '../lib/supabaseClient'
 
 type NfeItem = { item_nfe:number; codigo_produto:string; descricao_produto:string; unidade:string; quantidade_total:number; valor_unitario:number; valor_total:number }
 type Lote = { id:string; item_nfe:number; lote_fabricante:string; lote_interno:string; data_validade:string; quantidade:number }
-type Header = { numero_nfe:string; serie:string; chave_acesso:string; data_emissao:string; cnpj_fornecedor:string; valor_total:string; xml_nome_arquivo:string }
+type Header = { numero_nfe:string; serie:string; chave_acesso:string; data_emissao:string; cnpj_fornecedor:string; valor_total:string; xml_nome_arquivo:string; xml_hash:string }
 
-const blankHeader = (): Header => ({ numero_nfe:'', serie:'', chave_acesso:'', data_emissao:new Date().toISOString().slice(0,10), cnpj_fornecedor:'', valor_total:'', xml_nome_arquivo:'manual' })
+const blankHeader = (): Header => ({ numero_nfe:'', serie:'', chave_acesso:'', data_emissao:new Date().toISOString().slice(0,10), cnpj_fornecedor:'', valor_total:'', xml_nome_arquivo:'manual', xml_hash:'' })
 const blankItem = (n:number): NfeItem => ({ item_nfe:n, codigo_produto:'', descricao_produto:'', unidade:'UN', quantidade_total:0, valor_unitario:0, valor_total:0 })
 const tag = (root:Element, name:string) => Array.from(root.getElementsByTagName('*')).find(x => x.localName === name)?.textContent?.trim() ?? ''
+const element = (root:Element, name:string) => Array.from(root.getElementsByTagName('*')).find(x => x.localName === name) ?? null
+const digits = (value:string) => value.replace(/\D/g,'')
+const validAccessKey = (value:string) => {
+  if (!/^\d{44}$/.test(value)) return false
+  let weight = 2
+  let sum = 0
+  for (let index = value.length - 2; index >= 0; index -= 1) {
+    sum += Number(value[index]) * weight
+    weight = weight === 9 ? 2 : weight + 1
+  }
+  const remainder = sum % 11
+  const checkDigit = remainder < 2 ? 0 : 11 - remainder
+  return checkDigit === Number(value[43])
+}
 const money = (v:number) => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v || 0)
 
 function parseNfe(xml:string): { header:Header; items:NfeItem[] } {
@@ -19,15 +33,32 @@ function parseNfe(xml:string): { header:Header; items:NfeItem[] } {
   const ide = Array.from(inf.getElementsByTagName('*')).find(e => e.localName === 'ide') || inf
   const emit = Array.from(inf.getElementsByTagName('*')).find(e => e.localName === 'emit') || inf
   const total = Array.from(inf.getElementsByTagName('*')).find(e => e.localName === 'ICMSTot') || inf
+  const protocol = element(doc.documentElement,'infProt')
+  const key = (inf.getAttribute('Id') || '').replace(/^NFe/,'')
+  const protocolKey = protocol ? tag(protocol,'chNFe') : ''
+  const protocolStatus = protocol ? tag(protocol,'cStat') : ''
+  if (!validAccessKey(key)) throw new Error('A chave de acesso do XML está ausente ou inválida.')
+  if (!protocol || protocolKey !== key || !['100','150'].includes(protocolStatus) || !tag(protocol,'nProt')) {
+    throw new Error('O XML precisa conter protocolo autorizado compatível com a chave (cStat 100 ou 150). XML assinado sem protocolo não comprova autorização.')
+  }
   const dets = Array.from(inf.getElementsByTagName('*')).filter(e => e.localName === 'det')
   const header:Header = {
     numero_nfe: tag(ide,'nNF'),
     serie: tag(ide,'serie'),
-    chave_acesso: (inf.getAttribute('Id') || '').replace(/^NFe/,''),
+    chave_acesso: key,
     data_emissao: tag(ide,'dhEmi') || tag(ide,'dEmi'),
     cnpj_fornecedor: tag(emit,'CNPJ'),
     valor_total: tag(total,'vNF'),
-    xml_nome_arquivo: ''
+    xml_nome_arquivo: '',
+    xml_hash: ''
+  }
+  const paddedSeries = /^\d{1,3}$/.test(header.serie) ? header.serie.padStart(3,'0') : ''
+  const paddedNumber = /^\d{1,9}$/.test(header.numero_nfe) ? header.numero_nfe.padStart(9,'0') : ''
+  if (key.slice(20,22) !== '55' || key.slice(22,25) !== paddedSeries || key.slice(25,34) !== paddedNumber ||
+      key.slice(6,20) !== digits(header.cnpj_fornecedor) || !header.valor_total.trim() ||
+      !Number.isFinite(Number(header.valor_total)) || !header.data_emissao ||
+      !Number.isFinite(new Date(header.data_emissao).getTime())) {
+    throw new Error('Os dados de emitente, modelo, série, número, data ou total não correspondem à chave e ao cabeçalho da NF-e.')
   }
   const items = dets.map((det,index) => {
     const prod = Array.from(det.getElementsByTagName('*')).find(e => e.localName === 'prod') || det
@@ -42,6 +73,12 @@ function parseNfe(xml:string): { header:Header; items:NfeItem[] } {
     }
   })
   if (!items.length) throw new Error('A NF-e não contém itens.')
+  if (items.some(item => !item.codigo_produto || !item.descricao_produto || !item.unidade ||
+      !Number.isFinite(item.quantidade_total) || item.quantidade_total <= 0 ||
+      !Number.isFinite(item.valor_unitario) || item.valor_unitario < 0 ||
+      !Number.isFinite(item.valor_total) || item.valor_total < 0)) {
+    throw new Error('O XML contém item sem código, descrição, unidade ou quantidade/valores válidos.')
+  }
   return { header, items }
 }
 
@@ -82,8 +119,13 @@ export default function RecebimentoMateriais() {
     setFileError('')
     setError('')
     setSaved('')
-    file.text().then(text => {
+    setHeader(blankHeader())
+    setItems([blankItem(1)])
+    setLotes([])
+    Promise.all([file.text(), file.arrayBuffer()]).then(async ([text, bytes]) => {
       const parsed = parseNfe(text)
+      const digest = await crypto.subtle.digest('SHA-256', bytes)
+      parsed.header.xml_hash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2,'0')).join('')
       parsed.header.xml_nome_arquivo = file.name
       setHeader(parsed.header)
       setItems(parsed.items)
@@ -101,6 +143,10 @@ export default function RecebimentoMateriais() {
   }
   const save = async () => {
     if (!ready) return
+    if (!validAccessKey(header.chave_acesso)) {
+      setError('Informe uma chave de acesso NF-e válida com 44 dígitos verificadores.')
+      return
+    }
     setSaving(true); setError(''); setSaved('')
     try {
       const { data, error:rpcError } = await supabase.rpc('erp_confirmar_recebimento_nfe',{p_header:header,p_items:items,p_lotes:lotes})

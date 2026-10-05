@@ -1,17 +1,180 @@
-import { useEffect, useState } from "react";
-import { ArrowLeft, ExternalLink, RefreshCw, Search } from "lucide-react";
-import { supabase } from "../lib/supabaseClient";
+import { useEffect, useState } from 'react'
+import { ExternalLink, Search } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
+import VendasLayout from './VendasLayout'
 
-type Pedido={id:string;numero:number;pedido_cliente:string|null;status:string;total:number;data_entrega_prometida:string|null;cliente:{nome:string}|null};
-const brl=(n:number)=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(n);
+type Pedido = {
+  id: string
+  numero: number
+  pedido_cliente: string | null
+  status: string
+  total: number
+  data_entrega_prometida: string | null
+  cliente: { nome: string } | null
+}
 
-export default function VendasCarteira(){
- const [rows,setRows]=useState<Pedido[]>([]); const [q,setQ]=useState(""); const [error,setError]=useState(""); const [busy,setBusy]=useState(false);
- const load=async()=>{setBusy(true);setError("");const e=await supabase.rpc("erp_current_empresa_id");if(e.error||!e.data){setError(e.error?.message||"Empresa não identificada.");setBusy(false);return}const r=await supabase.from("erp_pedidos_venda").select("id,numero,pedido_cliente,status,total,data_entrega_prometida,cliente:erp_clientes(nome)").eq("empresa_id",String(e.data)).order("numero",{ascending:false}).limit(500);if(r.error)setError(r.error.message);setRows((r.data??[]) as unknown as Pedido[]);setBusy(false)};
- useEffect(()=>{void load()},[]);
- const filtered=rows.filter(x=>!q||String(x.numero).includes(q)||(x.cliente?.nome??"").toLowerCase().includes(q.toLowerCase())||(x.pedido_cliente??"").toLowerCase().includes(q.toLowerCase()));
- return <div className="min-h-screen bg-slate-50 text-slate-900">
-  <header className="sticky top-0 z-20 bg-white border-b border-slate-200"><div className="min-h-[78px] px-4 lg:px-6 flex items-center justify-between gap-4"><div><div className="text-xs font-black tracking-widest text-blue-700">ERP INDUSTRIAL • VENDAS</div><h1 className="text-xl font-black">CARTEIRA DE PEDIDOS ATIVOS</h1></div><div className="flex flex-wrap gap-2 justify-end"><button onClick={()=>location.assign("/vendas")} className="min-h-[46px] rounded-md border border-slate-300 px-4 font-medium flex gap-2 items-center"><ArrowLeft size={17}/> VOLTAR</button><button onClick={()=>location.assign("/vendas/novo-pedido")} className="min-h-[46px] rounded-md bg-blue-700 text-white px-4 font-medium">ENTRADA PEDIDO</button><button disabled={busy} onClick={()=>void load()} className="min-h-[46px] rounded-md border px-3 font-medium"><RefreshCw size={17}/></button></div></div></header>
-  <main className="p-4 lg:p-6 max-w-[1600px] mx-auto"><section className="bg-white border border-slate-200 rounded-md shadow-sm p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-bold text-slate-950">FILA GERAL DE PEDIDOS EM CARTEIRA</h2><p className="mt-1 text-base text-slate-700">Pedidos reais da empresa atual. Nenhuma linha demonstrativa é criada.</p></div><div className="flex items-center gap-2"><Search size={18} className="text-slate-500"/><input value={q} onChange={e=>setQ(e.target.value)} className="min-h-[46px] w-72 border rounded-md px-3 text-slate-900" placeholder="Nº, cliente ou pedido cliente"/></div></div>{error&&<div className="mt-4 p-3 rounded-md bg-rose-100 text-rose-900 font-bold">{error}</div>}<div className="mt-5 overflow-x-auto"><table className="w-full min-w-[950px]"><thead><tr className="h-[54px] bg-slate-100 text-left text-base font-bold"><th>Nº Ped.</th><th>Pedido Cliente</th><th>Cliente</th><th>Data Entrega</th><th>Valor (R$)</th><th>Status</th><th>Ação</th></tr></thead><tbody>{filtered.map(x=><tr key={x.id} className="h-[54px] border-t border-slate-200"><td className="font-black">{String(x.numero).padStart(6,"0")}</td><td>{x.pedido_cliente||"—"}</td><td>{x.cliente?.nome||"—"}</td><td>{x.data_entrega_prometida||"—"}</td><td className="font-bold">{brl(Number(x.total||0))}</td><td><span className="inline-flex min-h-[32px] items-center rounded-full bg-slate-100 px-3 font-bold">{x.status}</span></td><td><button onClick={()=>location.assign("/vendas/pedido/"+x.id)} className="font-medium text-blue-700 flex gap-1 items-center"><ExternalLink size={17}/> Abrir status</button></td></tr>)}{!filtered.length&&<tr><td colSpan={7} className="py-12 text-center text-slate-600 font-semibold">Nenhum pedido real encontrado com os filtros atuais.</td></tr>}</tbody></table></div></section></main>
- </div>
+const PAGE_SIZE = 25
+const brl = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+
+export default function VendasCarteira() {
+  const [rows, setRows] = useState<Pedido[]>([])
+  const [query, setQuery] = useState('')
+  const [page, setPage] = useState(0)
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(true)
+
+  const load = async () => {
+    setBusy(true)
+    setError('')
+    try {
+      const tenant = await supabase.rpc('erp_current_empresa_id')
+      if (tenant.error || !tenant.data) throw tenant.error ?? new Error('Empresa não identificada.')
+
+      const result = await fetchAllPages((from, to) => supabase
+        .from('erp_pedidos_venda')
+        .select('id,numero,pedido_cliente,status,total,data_entrega_prometida,cliente:erp_clientes(nome)', { count: 'exact' })
+        .eq('empresa_id', String(tenant.data))
+        .order('numero', { ascending: false })
+        .range(from, to))
+      setRows(result as unknown as Pedido[])
+    } catch (cause) {
+      setRows([])
+      setError(cause instanceof Error ? cause.message : 'Não foi possível carregar a carteira.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  useEffect(() => { void load() }, [])
+
+  const normalizedQuery = query.trim().toLocaleLowerCase('pt-BR')
+  const filtered = rows.filter((order) => !normalizedQuery
+    || String(order.numero).includes(normalizedQuery)
+    || (order.cliente?.nome ?? '').toLocaleLowerCase('pt-BR').includes(normalizedQuery)
+    || (order.pedido_cliente ?? '').toLocaleLowerCase('pt-BR').includes(normalizedQuery))
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount - 1)
+  const visible = filtered.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)
+
+  return (
+    <VendasLayout
+      title="Carteira de pedidos ativos"
+      subtitle="Pedidos reais da empresa atual · nenhuma linha demonstrativa"
+      onRefresh={() => void load()}
+    >
+      <div className="sales-workspace">
+        <section className="sales-page-heading">
+          <div>
+            <span className="sales-eyebrow">COMERCIAL / CARTEIRA</span>
+            <p>Consulte pedidos recentes, prazos prometidos e valores confirmados.</p>
+          </div>
+          <div className="sales-heading-actions">
+            <Link to="/vendas/novo-pedido" className="sales-button sales-button--primary">
+              Novo pedido
+            </Link>
+          </div>
+        </section>
+
+        {error && <div className="sales-alert" role="alert">{error}</div>}
+
+        <section className="sales-orders-card">
+          <div className="sales-list-toolbar">
+            <label className="sales-search">
+              <Search size={17} aria-hidden="true" />
+              <input
+                type="search"
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value)
+                  setPage(0)
+                }}
+                placeholder="Nº, cliente ou pedido do cliente"
+                aria-label="Buscar por número do pedido, cliente ou referência do cliente"
+              />
+            </label>
+            <span className="sales-result-count" aria-live="polite">
+              {filtered.length} pedido(s) na empresa atual
+            </span>
+          </div>
+
+          <div className="sales-table-scroll">
+            <table className="sales-orders-table">
+              <thead>
+                <tr>
+                  <th>Pedido</th>
+                  <th>Pedido do cliente</th>
+                  <th>Cliente</th>
+                  <th>Entrega prevista</th>
+                  <th>Status</th>
+                  <th className="sales-number">Valor</th>
+                  <th><span className="sr-only">Ações</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((order) => (
+                  <tr key={order.id}>
+                    <td>
+                      <Link className="sales-order-number" to={`/vendas/pedido/${order.id}`}>
+                        PV-{String(order.numero).padStart(6, '0')}
+                      </Link>
+                    </td>
+                    <td>{order.pedido_cliente || '—'}</td>
+                    <td><strong className="sales-client-name">{order.cliente?.nome || '—'}</strong></td>
+                    <td>{order.data_entrega_prometida || '—'}</td>
+                    <td><span className="sales-status is-neutral">{order.status || '—'}</span></td>
+                    <td className="sales-number sales-total">{brl(Number(order.total || 0))}</td>
+                    <td>
+                      <div className="sales-row-actions">
+                        <Link className="sales-open-action" to={`/vendas/pedido/${order.id}`}>
+                          Abrir status <ExternalLink size={14} />
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {!busy && !error && visible.length === 0 && (
+                  <tr>
+                    <td colSpan={7}>
+                      <div className="sales-empty-state">
+                        <strong>{query ? 'Nenhum pedido corresponde à busca.' : 'Nenhum pedido cadastrado.'}</strong>
+                        <span>{query ? 'Altere a pesquisa e tente novamente.' : 'Os pedidos da empresa serão exibidos aqui.'}</span>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+                {busy && <tr><td colSpan={7} className="sales-loading-row">Carregando pedidos…</td></tr>}
+              </tbody>
+            </table>
+          </div>
+
+          <nav className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-4 py-3" aria-label="Paginação da carteira de pedidos">
+            <span className="text-xs text-slate-500">
+              {filtered.length === 0 ? '0 pedidos' : `${currentPage * PAGE_SIZE + 1}–${Math.min((currentPage + 1) * PAGE_SIZE, filtered.length)} de ${filtered.length}`}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="sales-button sales-button--secondary"
+                onClick={() => setPage(currentPage - 1)}
+                disabled={currentPage === 0 || busy}
+              >
+                Anterior
+              </button>
+              <span className="min-w-20 text-center text-xs text-slate-600">Página {currentPage + 1} de {pageCount}</span>
+              <button
+                type="button"
+                className="sales-button sales-button--secondary"
+                onClick={() => setPage(currentPage + 1)}
+                disabled={currentPage >= pageCount - 1 || busy}
+              >
+                Próxima
+              </button>
+            </div>
+          </nav>
+        </section>
+      </div>
+    </VendasLayout>
+  )
 }

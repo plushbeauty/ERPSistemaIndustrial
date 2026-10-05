@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { supabase } from '../../lib/supabaseClient'
+import { fetchAllPages } from '../../lib/supabasePagination'
 
 type DowntimeRow = {
   maquina_id: string | null
@@ -24,19 +25,27 @@ type MachineReliability = {
 
 export default function ManutencaoIndicadores() {
   const [rows, setRows] = useState<DowntimeRow[]>([])
+  const [error, setError] = useState('')
 
   useEffect(() => {
     let active = true
 
     async function load() {
-      const result = await supabase
-        .from('erp_producao_paradas')
-        .select('maquina_id,inicio,fim,erp_maquinas(codigo)')
-        .order('inicio', { ascending: false })
-        .limit(5000)
-
-      if (!active || result.error) return
-      setRows((result.data ?? []) as DowntimeRow[])
+      try {
+        const company = await supabase.rpc('erp_current_empresa_id')
+        if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
+        const data = await fetchAllPages<DowntimeRow>((from, to) => supabase
+          .from('erp_producao_paradas')
+          .select('maquina_id,inicio,fim,erp_maquinas(codigo)', { count: 'exact' })
+          .eq('empresa_id', String(company.data))
+          .order('inicio', { ascending: false })
+          .range(from, to))
+        if (!active) return
+        setRows(data)
+      } catch (cause) {
+        if (!active) return
+        setError(cause instanceof Error ? cause.message : 'Falha ao carregar indicadores de manutenção.')
+      }
     }
 
     void load()
@@ -115,6 +124,7 @@ export default function ManutencaoIndicadores() {
             </button>
           </div>
         </header>
+        {error && <div role="alert" className="mt-4 rounded-md border border-red-300 bg-red-50 p-3 text-sm font-semibold text-red-900">{error}</div>}
 
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           <article className="rounded-md border bg-white p-5">

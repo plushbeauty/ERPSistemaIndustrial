@@ -1,0 +1,333 @@
+.synqra-tablet {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+  background: #fff;
+  color: #123b50;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.synqra-tablet-header {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  min-height: 92px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid #e5eef4;
+  padding: 10px clamp(14px, 3vw, 38px);
+  background: rgb(255 255 255 / 97%);
+  box-shadow: 0 3px 12px rgb(18 59 80 / 5%);
+}
+
+.synqra-brand {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: clamp(12px, 2vw, 24px);
+}
+
+.synqra-brand img {
+  display: block;
+  width: clamp(170px, 31vw, 390px);
+  height: 66px;
+  object-fit: contain;
+}
+
+.synqra-brand-copy {
+  display: grid;
+  min-width: 140px;
+  gap: 5px;
+  border-left: 2px solid #39c4ef;
+  padding-left: 16px;
+}
+
+.synqra-brand-copy strong {
+  color: #164b91;
+  font-size: 10px;
+  letter-spacing: .12em;
+  white-space: nowrap;
+}
+
+.synqra-brand-copy span {
+  color: #164b91;
+  font-size: 9px;
+  letter-spacing: .16em;
+  line-height: 1.4;
+}
+
+.synqra-session {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.synqra-session-text {
+  display: grid;
+  gap: 2px;
+  text-align: right;
+  font-size: 10px;
+}
+
+.synqra-session-text strong { font-size: 11px; }
+.synqra-session-text span,
+.synqra-session-text time { color: #64748b; }
+
+.synqra-logout {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #c9e5ee;
+  border-radius: 7px;
+  padding: 0 10px;
+  background: #fff;
+  color: #164b91;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.synqra-logout:hover { background: #f0f9ff; }
+
+.synqra-tablet-toolbar {
+  position: absolute;
+  z-index: 2;
+  top: 92px;
+  right: 0;
+  left: 0;
+  display: flex;
+  min-height: 62px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid #e7f0f4;
+  padding: 8px clamp(14px, 3vw, 38px);
+  background: #fff;
+}
+
+.synqra-eyebrow {
+  color: #2d8db8;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+
+.synqra-tablet-toolbar h1 {
+  margin: 2px 0 0;
+  color: #123b50;
+  font-size: 16px;
+  letter-spacing: .06em;
+}
+
+.synqra-search {
+  display: flex;
+  width: min(260px, 40vw);
+  height: 34px;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #c9e5ee;
+  border-radius: 7px;
+  padding: 0 8px;
+  background: #f7fcfe;
+  color: #2d8db8;
+}
+
+.synqra-search input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #123b50;
+  font-size: 11px;
+}
+
+.synqra-search button {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.synqra-module-grid {
+  position: absolute;
+  inset: 154px 0 49px;
+  display: grid;
+  overflow: auto;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  align-content: start;
+  gap: clamp(8px, 1.25vw, 18px);
+  padding: clamp(12px, 2vw, 24px) clamp(14px, 3vw, 38px);
+}
+
+.synqra-module-card {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(5px, .8vw, 10px);
+  border: 1px solid #8fd8f1;
+  border-radius: 13px;
+  padding: 8px;
+  background: linear-gradient(180deg, #fbfdff 0%, #edf7fc 100%);
+  box-shadow: 0 2px 7px rgb(18 59 80 / 8%);
+  color: #164b91;
+  cursor: pointer;
+  text-align: center;
+  transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease;
+}
+
+.synqra-module-card:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: #2d8db8;
+  box-shadow: 0 7px 18px rgb(45 141 184 / 17%);
+}
+
+.synqra-module-card:focus-visible,
+.synqra-logout:focus-visible,
+.synqra-search button:focus-visible {
+  outline: 3px solid #5bb9eb;
+  outline-offset: 2px;
+}
+
+.synqra-module-card:disabled {
+  cursor: not-allowed;
+  opacity: .58;
+}
+
+.synqra-module-icon {
+  display: grid;
+  width: clamp(25px, 4.4vw, 68px);
+  height: clamp(25px, 4.4vw, 68px);
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #f0faff, #fff);
+  color: #0569c8;
+}
+
+.synqra-module-icon svg {
+  width: 76%;
+  height: 76%;
+  filter: drop-shadow(0 2px 2px rgb(0 82 204 / 14%));
+}
+
+.synqra-module-label {
+  max-width: 100%;
+  color: #164b91;
+  font-size: clamp(8px, .72vw, 11px);
+  font-weight: 900;
+  line-height: 1.15;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.synqra-module-status {
+  position: absolute;
+  right: 3px;
+  bottom: 4px;
+  left: 3px;
+  color: #a45a18;
+  font-size: clamp(5px, .45vw, 7px);
+  font-weight: 900;
+  letter-spacing: .025em;
+}
+
+.synqra-tablet-error {
+  position: absolute;
+  z-index: 4;
+  top: 158px;
+  right: 20px;
+  left: 20px;
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+  padding: 8px 10px;
+  background: #fff1f2;
+  color: #991b1b;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.synqra-tablet.has-error .synqra-module-grid { top: 198px; }
+
+.synqra-tablet-footer {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  min-height: 49px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 16px;
+  border-top: 1px solid #d9edf4;
+  padding: 7px 14px;
+  background: #fff;
+  color: #6b7f8a;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.synqra-tablet-footer span:first-child { color: #164b91; font-weight: 900; }
+.synqra-footer-slashes { display: inline-flex; gap: 3px; margin-left: 10px; }
+.synqra-footer-slashes i { width: 5px; height: 16px; transform: skew(-25deg); border-radius: 2px; background: #00a8e8; }
+.synqra-footer-slashes i:nth-child(2) { background: #1682d4; }
+.synqra-footer-slashes i:nth-child(3) { background: #0052cc; }
+
+@media (max-width: 767px) {
+  .synqra-tablet-header { min-height: 82px; gap: 8px; padding: 8px 12px; }
+  .synqra-brand { gap: 8px; }
+  .synqra-brand img { width: clamp(135px, 31vw, 220px); height: 54px; }
+  .synqra-brand-copy { min-width: 0; gap: 4px; padding-left: 8px; }
+  .synqra-brand-copy strong { font-size: 8px; letter-spacing: .06em; }
+  .synqra-brand-copy span { font-size: 7px; letter-spacing: .08em; }
+  .synqra-session-text span,
+  .synqra-session-text time { display: none; }
+  .synqra-session-text strong { max-width: 88px; overflow: hidden; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+  .synqra-logout { min-height: 30px; padding: 0 7px; font-size: 9px; }
+  .synqra-tablet-toolbar { top: 82px; min-height: 59px; padding: 7px 12px; }
+  .synqra-tablet-toolbar h1 { font-size: 12px; }
+  .synqra-eyebrow { font-size: 7px; }
+  .synqra-search { width: min(180px, 42vw); height: 31px; gap: 4px; padding: 0 6px; }
+  .synqra-search input { font-size: 10px; }
+  .synqra-module-grid {
+    inset: 141px 0 57px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .synqra-tablet.has-error .synqra-module-grid { top: 184px; }
+  .synqra-module-card { border-radius: 10px; padding: 5px 3px; }
+  .synqra-module-icon { width: clamp(25px, 8vw, 48px); height: clamp(25px, 8vw, 48px); border-radius: 10px; }
+  .synqra-module-label { font-size: clamp(7px, 2vw, 9px); }
+  .synqra-module-status { bottom: 2px; font-size: 5px; }
+  .synqra-tablet-footer { min-height: 57px; gap: 3px 10px; padding: 5px 9px; font-size: 7px; }
+}
+
+@media (max-width: 390px) {
+  .synqra-brand-copy { display: none; }
+  .synqra-brand img { width: 145px; }
+  .synqra-module-grid { gap: 6px; padding-right: 8px; padding-left: 8px; }
+  .synqra-tablet-footer { column-gap: 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .synqra-module-card { transition: none; }
+  .synqra-module-card:hover:not(:disabled) { transform: none; }
+}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Paperclip, Plus, RefreshCw, Trash2 } from 'lucide-react'
+import { Paperclip, Plus, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout from './VendasLayout'
 
@@ -59,21 +59,21 @@ export default function VendasAnaliseCustos(){
  return <VendasLayout title="Análise de Orçamentos" subtitle="Engenharia ↔ Comercial" onRefresh={()=>void load()}>
   <div className="space-y-1.5 text-[11px]">
    {(error||message)&&<div className={`border px-2 py-1 text-[10px] ${error?'border-red-200 bg-red-50 text-red-800':'border-emerald-200 bg-emerald-50 text-emerald-800'}`}>{error||message}</div>}
-   <section className="border border-gray-200 bg-white p-2"><div className="grid grid-cols-[140px_80px_140px_170px_1fr] gap-2 items-end">
-    <label className="text-[9px] font-bold uppercase text-slate-500">Cód. Projeto / Item<input value={itemBusca} onChange={e=>setItemBusca(e.target.value)} onBlur={()=>void resolve()} onKeyDown={e=>{if(e.key==='Enter')void resolve()}} className="mt-0.5 h-7 w-full rounded border border-gray-200 px-1.5 text-[11px]"/></label>
-    <label className="text-[9px] font-bold uppercase text-slate-500">Margem Alvo %<input type="number" value={margem} onChange={e=>setMargem(e.target.value)} className="mt-0.5 h-7 w-full rounded border border-gray-200 px-1.5 text-[11px]"/></label>
-    <div className="h-7 border bg-slate-50 px-2 text-[10px] leading-[22px]">Custo Técnico<strong className="ml-2 text-[12px] leading-none">{brl(custo.custo_tecnico)}</strong></div>
-    <div className="h-7 border bg-slate-50 px-2 text-[10px]">Preço Sugerido<strong className="ml-2 text-[13px] leading-none text-[#17445A]">{brl(preco)}</strong></div>
-    <div className="text-right text-[9px] text-slate-500">{produto?produto.codigo+' • '+produto.nome:'Digite o código do item e pressione Enter.'}</div>
+   <section className="min-w-0 border border-gray-200 bg-white p-2"><div className="grid min-w-0 grid-cols-1 items-end gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(0,140px)_80px_minmax(0,140px)_minmax(0,170px)_minmax(0,1fr)]">
+    <label className="min-w-0 text-[9px] font-bold uppercase text-slate-500">Cód. Projeto / Item<input value={itemBusca} onChange={e=>setItemBusca(e.target.value)} onBlur={()=>void resolve()} onKeyDown={e=>{if(e.key==='Enter')void resolve()}} className="mt-0.5 h-9 w-full rounded border border-gray-200 px-2 text-xs"/></label>
+    <label className="min-w-0 text-[9px] font-bold uppercase text-slate-500">Margem Alvo %<input type="number" value={margem} onChange={e=>setMargem(e.target.value)} className="mt-0.5 h-9 w-full rounded border border-gray-200 px-2 text-xs"/></label>
+    <div className="flex min-h-9 min-w-0 flex-wrap items-center gap-x-2 border bg-slate-50 px-2 py-1 text-[10px]">Custo Técnico<strong className="text-xs">{brl(custo.custo_tecnico)}</strong></div>
+    <div className="flex min-h-9 min-w-0 flex-wrap items-center gap-x-2 border bg-slate-50 px-2 py-1 text-[10px]">Preço Sugerido<strong className="text-sm text-[#17445A]">{brl(preco)}</strong></div>
+    <div className="min-w-0 text-left text-[10px] text-slate-500 xl:text-right">{produto?produto.codigo+' • '+produto.nome:'Digite o código do item e pressione Enter.'}</div>
    </div></section>
-   <div className="grid grid-cols-2 gap-1.5">
-    <section className="border border-gray-200 bg-white p-2"><div className="mb-1 font-bold text-[10px]">NEGOCIAÇÃO COMERCIAL</div><div className="grid grid-cols-3 gap-1.5">
-     <label className="text-[9px] uppercase text-slate-500">Impostos (%)<input type="number" step="0.01" value={impostos} onChange={e=>setImpostos(e.target.value)} className="mt-0.5 h-7 w-full rounded border border-gray-200 px-1"/></label>
-     <label className="text-[9px] uppercase text-slate-500">Comissão Representante (%)<input type="number" step="0.01" value={comissao} onChange={e=>setComissao(e.target.value)} className="mt-0.5 h-7 w-full rounded border border-gray-200 px-1"/></label>
-     <label className="text-[9px] uppercase text-slate-500">Margem de Lucro Desejada (%)<input type="number" step="0.01" value={margem} onChange={e=>setMargem(e.target.value)} className="mt-0.5 h-7 w-full rounded border border-gray-200 px-1"/></label>
+   <div className="grid min-w-0 grid-cols-1 gap-2 xl:grid-cols-2">
+    <section className="min-w-0 border border-gray-200 bg-white p-2"><div className="mb-2 font-bold text-xs">Negociação comercial</div><div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+     <label className="min-w-0 text-[9px] uppercase text-slate-500">Impostos (%)<input type="number" step="0.01" value={impostos} onChange={e=>setImpostos(e.target.value)} className="mt-0.5 h-9 w-full rounded border border-gray-200 px-2 text-xs"/></label>
+     <label className="min-w-0 text-[9px] uppercase text-slate-500">Comissão Representante (%)<input type="number" step="0.01" value={comissao} onChange={e=>setComissao(e.target.value)} className="mt-0.5 h-9 w-full rounded border border-gray-200 px-2 text-xs"/></label>
+     <label className="min-w-0 text-[9px] uppercase text-slate-500">Margem de Lucro Desejada (%)<input type="number" step="0.01" value={margem} onChange={e=>setMargem(e.target.value)} className="mt-0.5 h-9 w-full rounded border border-gray-200 px-2 text-xs"/></label>
     </div><div className="mt-2 grid grid-cols-3 gap-1 text-[10px]"><div>Custo {brl(custo.custo_tecnico)}</div><div>Operações {custo.operacoes}</div><div>Preço <b>{brl(preco)}</b></div></div></section>
-    <section className="border border-gray-200 bg-white p-2"><div className="mb-1 flex items-center justify-between"><b className="text-[10px]">FICHA DE PROCESSO / ENGENHARIA</b><label className="flex h-7 cursor-pointer items-center gap-1 border px-2 text-[10px] whitespace-nowrap"><Paperclip size={12}/>Anexar desenho<input type="file" className="hidden" accept=".pdf,.dwg,.dxf,.png,.jpg,.jpeg" onChange={e=>upload(e.currentTarget)}/></label></div>
-     <table className="w-full border-collapse text-[9px]"><thead><tr className="bg-[#DEE2E6] text-left"><th className="p-1">Seq.</th><th>Posto / Máquina</th><th>Tempo min</th><th>Custo</th><th></th></tr></thead><tbody>
+    <section className="min-w-0 overflow-x-auto border border-gray-200 bg-white p-2"><div className="mb-2 flex flex-wrap items-center justify-between gap-2"><b className="text-xs">Ficha de processo / engenharia</b><label className="flex min-h-9 cursor-pointer items-center gap-1 border px-2 text-xs whitespace-nowrap"><Paperclip size={14}/>Anexar desenho<input type="file" className="hidden" accept=".pdf,.dwg,.dxf,.png,.jpg,.jpeg" onChange={e=>upload(e.currentTarget)}/></label></div>
+     <table className="w-full min-w-[520px] border-collapse text-xs"><thead><tr className="bg-[#DEE2E6] text-left"><th className="p-2">Seq.</th><th className="p-2">Posto / Máquina</th><th className="p-2">Tempo min</th><th className="p-2">Custo</th><th className="p-2"></th></tr></thead><tbody>
       {operacoes.map((o,i)=><tr key={o.id} className="border-t"><td className="p-1">{o.sequencial_operacao||((i+1)*10)}</td><td>{o.maquina?.codigo??''} • {o.maquina?.nome??o.descricao_operacao}</td><td>{Number(o.tempo_minutos).toFixed(2)}</td><td>{brl((Number(o.tempo_minutos)/60)*Number(o.maquina?.valor_hora_custo??0))}</td><td><button type="button" onClick={()=>void removeOperation(o.id)} className="text-red-700"><Trash2 size={11}/></button></td></tr>)}
       <tr className="border-t bg-slate-50"><td className="p-1">+</td><td><select value={posto} onChange={e=>setPosto(e.target.value)} className="h-7 w-full rounded border border-gray-200 px-1"><option value="">Posto de trabalho</option>{maquinas.map(m=><option key={m.id} value={m.id}>{m.codigo} • {m.nome}</option>)}</select></td><td><input type="number" min="0.01" step="0.01" value={tempo} onChange={e=>setTempo(e.target.value)} className="h-7 w-full rounded border border-gray-200 px-1"/></td><td></td><td><button type="button" onClick={()=>void addOperation()} className="flex h-7 w-[24px] items-center justify-center border bg-[#2D8DB8] text-white"><Plus size={11}/></button></td></tr>
      </tbody></table>

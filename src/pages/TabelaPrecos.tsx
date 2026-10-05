@@ -1,14 +1,216 @@
-import { useEffect,useMemo,useState } from 'react'
-import { ShieldCheck } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout from './VendasLayout'
-type P={id:string;codigo:string;nome:string;grupo:string|null;preco_venda:number|null}
-export default function TabelaPrecos(){
- const [ps,setPs]=useState<P[]>([]),[grupo,setGrupo]=useState(''),[tipo,setTipo]=useState(''),[pct,setPct]=useState('5'),[tipoReajuste,setTipoReajuste]=useState<'vendas'|'postos'>('vendas'),[msg,setMsg]=useState(''),[error,setError]=useState('')
- const load=async()=>{const e=await supabase.rpc('erp_current_empresa_id');if(e.error||!e.data)throw e.error??new Error('Empresa não identificada.');const r=await supabase.from('erp_produtos').select('id,codigo,nome,grupo,preco_venda').eq('empresa_id',String(e.data)).eq('ativo',true).order('codigo').limit(5000);if(r.error)throw r.error;setPs((r.data??[]) as P[])}
- useEffect(()=>{void load().catch(e=>setError(e instanceof Error?e.message:'Falha ao carregar.'))},[])
- const preview=useMemo(()=>{const p=Number(pct);return new Map(ps.map(x=>{const base=Number(x.preco_venda);return [x.id,Number.isFinite(base)&&base>0&&Number.isFinite(p)?base*(1+p/100):null] as const}))},[ps,pct])
- const execute=async()=>{setError('');setMsg('');const v=Number(pct);if(!Number.isFinite(v)||v<=-100){setError('Percentual inválido.');return}const r=tipoReajuste==='vendas'?await supabase.rpc('erp_reajuste_global_vendas',{p_percentual:v,p_grupo:grupo||null,p_tipo_cliente:tipo||null}):await supabase.rpc('erp_reajuste_global_postos_trabalho',{p_percentual:v});if(r.error){setError(r.error.message);return}setMsg(`Reajuste aplicado em ${Number(r.data??0)} registro(s).`);await load()}
- return <VendasLayout title="Tabela de Preços / Reajuste" subtitle="Área administrativa" onRefresh={()=>void load()}><div className="space-y-2 text-[11px]"><section className="border border-slate-300 bg-white p-2"><div className="flex items-center gap-2"><ShieldCheck size={15}/><b>AJUSTE GLOBAL CONTROLADO POR PERMISSÃO</b></div><div className="mt-2 grid grid-cols-12 gap-2"><label className="col-span-2 font-normal">Tipo<select className="mt-1 h-7 w-full border px-1" value={tipoReajuste} onChange={e=>setTipoReajuste(e.target.value as 'vendas'|'postos')}><option value="vendas">Preço de venda comercial</option><option value="postos">Custo hora-máquina</option></select></label><label className="col-span-2 font-normal">Percentual %<input className="mt-0.5 h-7 w-[80px] border px-1 text-[11px]" type="number" step="0.01" value={pct} onChange={e=>setPct(e.target.value)}/></label><label className="col-span-3 font-normal">Grupo produto<input className="mt-0.5 h-7 w-[160px] border px-1 text-[11px]" value={grupo} onChange={e=>setGrupo(e.target.value)}/></label><label className="col-span-3 font-normal">Perfil cliente<input className="mt-0.5 h-7 w-[160px] border px-1 text-[11px]" value={tipo} onChange={e=>setTipo(e.target.value)}/></label><button type="button" onClick={()=>void execute()} className="h-7 w-[130px] self-end whitespace-nowrap rounded border border-gray-200 bg-[#3A9D78] px-2 text-[11px] font-normal leading-none text-white">APLICAR</button></div>{error&&<div className="mt-2 border border-red-200 bg-red-50 p-2 text-red-800">{error}</div>}{msg&&<div className="mt-2 border border-emerald-200 bg-emerald-50 p-2 text-emerald-800">{msg}</div>}</section><section className="overflow-x-auto border border-slate-300 bg-white"><table className="w-full border-collapse text-[10px] leading-none"><thead><tr className="bg-[#DEE2E6] text-left text-[9px] uppercase"><th className="p-1.5">SKU</th><th>Produto</th><th>Grupo</th><th>Preço Atual</th><th>PREÇO VENDA • SIMULAÇÃO</th></tr></thead><tbody>{ps.slice(0,300).map(p=><tr key={p.id} className="h-7 border-t"><td className="px-1.5 py-0">{p.codigo}</td><td>{p.nome}</td><td>{p.grupo??'—'}</td><td>{brl(Number(p.preco_venda??0))}</td><td className="font-semibold text-[#17445A]">{preview.get(p.id)!=null?brl(preview.get(p.id) as number):'—'}</td></tr>)}</tbody></table></section></div></VendasLayout>
+
+type Produto = { id: string; codigo: string; nome: string; grupo: string | null; preco_venda: number | null }
+
+const PAGE_SIZE = 25
+
+export default function TabelaPrecos() {
+  const [produtos, setProdutos] = useState<Produto[]>([])
+  const [grupo, setGrupo] = useState('')
+  const [tipoCliente, setTipoCliente] = useState('')
+  const [percentual, setPercentual] = useState('5')
+  const [tipoReajuste, setTipoReajuste] = useState<'vendas' | 'postos'>('vendas')
+  const [pagina, setPagina] = useState(1)
+  const [mensagem, setMensagem] = useState('')
+  const [erro, setErro] = useState('')
+
+  const carregar = async () => {
+    setErro('')
+    try {
+      const empresa = await supabase.rpc('erp_current_empresa_id')
+      if (empresa.error || !empresa.data) throw empresa.error ?? new Error('Empresa não identificada.')
+
+      const resultado = await supabase
+        .from('erp_produtos')
+        .select('id,codigo,nome,grupo,preco_venda')
+        .eq('empresa_id', String(empresa.data))
+        .eq('ativo', true)
+        .order('codigo')
+        .limit(5000)
+      if (resultado.error) throw resultado.error
+
+      setProdutos((resultado.data ?? []) as Produto[])
+    } catch (cause) {
+      setErro(cause instanceof Error ? cause.message : 'Falha ao carregar a tabela de preços.')
+    }
+  }
+
+  useEffect(() => { void carregar() }, [])
+
+  const paginas = Math.max(1, Math.ceil(produtos.length / PAGE_SIZE))
+  const produtosVisiveis = useMemo(
+    () => produtos.slice((pagina - 1) * PAGE_SIZE, pagina * PAGE_SIZE),
+    [pagina, produtos],
+  )
+  const simulacoes = useMemo(() => {
+    const ajuste = Number(percentual)
+    return new Map(produtos.map(produto => {
+      const preco = Number(produto.preco_venda)
+      return [
+        produto.id,
+        Number.isFinite(preco) && preco > 0 && Number.isFinite(ajuste)
+          ? preco * (1 + ajuste / 100)
+          : null,
+      ] as const
+    }))
+  }, [percentual, produtos])
+
+  useEffect(() => {
+    setPagina(atual => Math.min(atual, paginas))
+  }, [paginas])
+
+  const aplicarReajuste = async () => {
+    setErro('')
+    setMensagem('')
+    const ajuste = Number(percentual)
+    if (!Number.isFinite(ajuste) || ajuste <= -100) {
+      setErro('Percentual inválido.')
+      return
+    }
+
+    const resultado = tipoReajuste === 'vendas'
+      ? await supabase.rpc('erp_reajuste_global_vendas', {
+        p_percentual: ajuste,
+        p_grupo: grupo || null,
+        p_tipo_cliente: tipoCliente || null,
+      })
+      : await supabase.rpc('erp_reajuste_global_postos_trabalho', { p_percentual: ajuste })
+
+    if (resultado.error) {
+      setErro(resultado.error.message)
+      return
+    }
+
+    setMensagem(`Reajuste aplicado em ${Number(resultado.data ?? 0)} registro(s).`)
+    await carregar()
+  }
+
+  return (
+    <VendasLayout
+      title="Tabela de Preços / Reajuste"
+      subtitle="Área administrativa"
+      onRefresh={() => void carregar()}
+    >
+      <div className="space-y-3 text-xs">
+        <section className="border border-slate-300 bg-white p-3">
+          <div className="flex items-center gap-2 text-slate-800">
+            <ShieldCheck size={16} aria-hidden="true" />
+            <h2 className="text-sm font-bold">Ajuste global controlado por permissão</h2>
+          </div>
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-12">
+            <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-3">
+              Tipo
+              <select
+                className="h-10 w-full min-w-0 border border-slate-300 px-2"
+                value={tipoReajuste}
+                onChange={event => setTipoReajuste(event.target.value as 'vendas' | 'postos')}
+              >
+                <option value="vendas">Preço de venda comercial</option>
+                <option value="postos">Custo hora-máquina</option>
+              </select>
+            </label>
+            <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-2">
+              Percentual %
+              <input
+                className="h-10 w-full border border-slate-300 px-2"
+                type="number"
+                step="0.01"
+                value={percentual}
+                onChange={event => setPercentual(event.target.value)}
+              />
+            </label>
+            <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-3">
+              Grupo produto
+              <input
+                className="h-10 w-full border border-slate-300 px-2"
+                value={grupo}
+                onChange={event => setGrupo(event.target.value)}
+              />
+            </label>
+            <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-2">
+              Perfil cliente
+              <input
+                className="h-10 w-full border border-slate-300 px-2"
+                value={tipoCliente}
+                onChange={event => setTipoCliente(event.target.value)}
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => void aplicarReajuste()}
+              className="h-10 w-full self-end rounded border border-gray-200 bg-[#3A9D78] px-3 font-semibold text-white sm:col-span-2 xl:col-span-2"
+            >
+              Aplicar
+            </button>
+          </div>
+          {erro && <div role="alert" className="mt-3 border border-red-200 bg-red-50 p-2 text-red-800">{erro}</div>}
+          {mensagem && <div role="status" className="mt-3 border border-emerald-200 bg-emerald-50 p-2 text-emerald-800">{mensagem}</div>}
+        </section>
+
+        <section className="overflow-hidden border border-slate-300 bg-white">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] border-collapse text-left text-xs">
+              <thead>
+                <tr>
+                  <th className="p-3">SKU</th>
+                  <th className="p-3">Produto</th>
+                  <th className="p-3">Grupo</th>
+                  <th className="p-3">Preço atual</th>
+                  <th className="p-3">Preço de venda · simulação</th>
+                </tr>
+              </thead>
+              <tbody>
+                {produtosVisiveis.map(produto => (
+                  <tr key={produto.id} className="border-t border-slate-100">
+                    <td className="p-3">{produto.codigo}</td>
+                    <td className="p-3">{produto.nome}</td>
+                    <td className="p-3">{produto.grupo ?? '—'}</td>
+                    <td className="p-3">{brl(Number(produto.preco_venda ?? 0))}</td>
+                    <td className="p-3 font-semibold text-[#17445A]">
+                      {simulacoes.get(produto.id) != null ? brl(simulacoes.get(produto.id) as number) : '—'}
+                    </td>
+                  </tr>
+                ))}
+                {!produtosVisiveis.length && (
+                  <tr><td colSpan={5} className="p-8 text-center text-slate-500">Nenhum produto ativo encontrado.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <nav className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 px-3 py-2" aria-label="Paginação da tabela de preços">
+            <span className="text-xs text-slate-600">
+              Página {pagina} de {paginas} · {produtos.length} produtos
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-label="Página anterior"
+                disabled={pagina <= 1}
+                onClick={() => setPagina(atual => Math.max(1, atual - 1))}
+                className="inline-flex h-9 items-center gap-1 border border-slate-300 px-3 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <ChevronLeft size={15} /> Anterior
+              </button>
+              <button
+                type="button"
+                aria-label="Próxima página"
+                disabled={pagina >= paginas}
+                onClick={() => setPagina(atual => Math.min(paginas, atual + 1))}
+                className="inline-flex h-9 items-center gap-1 border border-slate-300 px-3 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Próxima <ChevronRight size={15} />
+              </button>
+            </div>
+          </nav>
+        </section>
+      </div>
+    </VendasLayout>
+  )
 }
-function brl(v:number){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number.isFinite(v)?v:0)}
+
+function brl(value: number) {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number.isFinite(value) ? value : 0)
+}

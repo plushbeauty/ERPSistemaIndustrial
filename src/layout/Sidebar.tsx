@@ -1,42 +1,64 @@
-import { Award, Factory, ShoppingCart, TrendingUp, Percent } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
-import { usePonto } from '../context/PontoContext'
+import { SYNQRA_MODULES } from '../assets/synqra/icons'
+import synqraLogo from '../assets/synqra/logo-synqra.png'
 
-export default function Sidebar(){
- const {isExpanded,isMobileOpen}=useSidebar();const location=useLocation();const navigate=useNavigate();const {perfilRole}=usePonto();const financeAllowed=['ADMINISTRADOR','MASTER','FINANCEIRO','CONTROLADORIA'].includes(perfilRole??'')
- if(!isExpanded&&!isMobileOpen)return null
- const active=(route:string)=>location.pathname===route||location.pathname.startsWith(route+'/')
- return <aside className="fixed left-0 top-[64px] z-[80] h-[calc(100vh-64px)] w-[210px] border-r border-gray-200 bg-white shadow-sm">
-  <div className="border-b border-gray-200 px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-gray-500">Navegação</div>
-  <button type="button" onClick={()=>navigate('/vendas')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/vendas')?'font-bold text-blue-700 bg-slate-50':'text-gray-700 hover:bg-slate-50'}`}><ShoppingCart size={14}/>Vendas</button>
-  <div className="mt-2 border-t border-gray-200 px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-gray-500">Controladoria Comercial</div>
-  <button type="button" onClick={()=>navigate('/comissoes')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/comissoes')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><Award size={14} className="text-gray-600 mr-2"/>Comissões & Metas</button>
-  {financeAllowed&&<><div className="mt-2 border-t border-gray-200 px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-gray-500">Financeiro / Controladoria</div>
-  <button type="button" onClick={()=>navigate('/financeiro/reconciliacao')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/financeiro/reconciliacao')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}>Conciliação Bancária</button>
-  <button type="button" onClick={()=>navigate('/financeiro/importar-extratos')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/financeiro/importar-extratos')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}>Importador de Extratos</button>
-  <button type="button" onClick={()=>navigate('/financeiro/lista-precos-cliente')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/financeiro/lista-precos-cliente')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}>Lista de Preços Cliente</button></>}
-  <button type="button" onClick={()=>navigate('/financeiro/ano-fiscal')} className="flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] text-gray-700 hover:bg-slate-50">Ano Fiscal</button>
-  <button type="button" onClick={()=>navigate('/financeiro/fluxo-caixa')} className="flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] text-gray-700 hover:bg-slate-50">Fluxo de Caixa</button>
-  <div className="mt-2 border-t border-gray-200 px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-gray-500">Controladoria / Fiscal</div>
-  <button type="button" onClick={()=>navigate('/controladoria/razao-geral')} className="flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] text-gray-700 hover:bg-slate-50"><Percent size={14} className="text-gray-600 mr-2"/>Razão Geral</button>
-  <button type="button" onClick={()=>navigate('/controladoria/lucratividade')} className="flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] text-gray-700 hover:bg-slate-50"><Percent size={14} className="text-gray-600 mr-2"/>Lucratividade / Margens</button>
-  <button type="button" onClick={()=>navigate('/controladoria/auditoria-comissoes')} className="flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] text-gray-700 hover:bg-slate-50"><Award size={14} className="text-gray-600 mr-2"/>Auditoria de Comissões</button>
-  <button type="button" onClick={()=>navigate('/controladoria/cadastro-decimais')} className="flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] text-gray-700 hover:bg-slate-50"><Percent size={14} className="text-gray-600 mr-2"/>Precisão Decimal</button>
-  <button type="button" onClick={()=>navigate('/fiscal/auditoria-documental')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/fiscal/auditoria-documental')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><Percent size={14} className="text-gray-600 mr-2"/>Auditoria Documental</button>
-  <button type="button" onClick={()=>navigate('/fiscal/grupos-contabeis')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/fiscal/grupos-contabeis')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><Percent size={14} className="text-gray-600 mr-2"/>Grupos Contábeis</button>
-  <button type="button" onClick={()=>navigate('/fiscal/classificacao')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/fiscal/classificacao')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><Percent size={14} className="text-gray-600 mr-2"/>Classificação Fiscal</button>
-  <button type="button" onClick={()=>navigate('/controladoria/assistente-retificacao')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/controladoria/assistente-retificacao')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><Percent size={14} className="text-gray-600 mr-2"/>Assistente Retificação</button>
-  <button type="button" onClick={()=>navigate('/fiscal/estornos')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/fiscal/estornos')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><Percent size={14} className="text-gray-600 mr-2"/>Estorno de Lançamentos</button>
-  <div className="mt-2 border-t border-gray-200 px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-gray-500">Controladoria de Estoque</div>
-  <button type="button" onClick={()=>navigate('/inventario/balanco')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/inventario')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><TrendingUp size={14} className="text-gray-600 mr-2"/>Valoração Estoque</button>
-  <button type="button" onClick={()=>navigate('/inventario/depreciacao')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/inventario/depreciacao')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><TrendingUp size={14} className="text-gray-600 mr-2"/>Depreciação</button>
-  <button type="button" onClick={()=>navigate('/inventario/auditoria')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/inventario/auditoria')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><TrendingUp size={14} className="text-gray-600 mr-2"/>Auditoria de Saldos</button>
-  <div className="mt-2 border-t border-gray-200 px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-gray-500">PCP & Engenharia</div>
-  <button type="button" onClick={()=>navigate('/pcp/engenharia-bom')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/pcp/engenharia-bom')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><Factory size={14} className="text-gray-600 mr-2"/>Engenharia BOM</button>
-  <button type="button" onClick={()=>navigate('/pcp/roteiro-operacoes')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/pcp/roteiro-operacoes')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><Factory size={14} className="text-gray-600 mr-2"/>Roteiro de Operações</button>
-  <button type="button" onClick={()=>navigate('/pcp/ficha-processo')} className="flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] text-gray-700 hover:bg-slate-50"><Factory size={14} className="text-gray-600 mr-2"/>Ficha de Processo</button>
-  <button type="button" onClick={()=>navigate('/pcp/postos-trabalho')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/pcp/postos-trabalho')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><Factory size={14} className="text-gray-600 mr-2"/>Postos de Trabalho</button>
-  <button type="button" onClick={()=>navigate('/pcp/painel-ordens')} className={`flex h-7 w-full items-center gap-2 px-3 text-left text-[11px] ${active('/pcp/painel-ordens')?'font-bold text-blue-700':'text-gray-700 hover:bg-slate-50'}`}><Factory size={14} className="text-gray-600 mr-2"/>Fila de OPs</button>
- </aside>
+export default function Sidebar() {
+  const { isExpanded, isMobileOpen, closeMobileSidebar } = useSidebar()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const current = [...SYNQRA_MODULES]
+    .filter(module => module.route)
+    .sort((left, right) => (right.route?.length ?? 0) - (left.route?.length ?? 0))
+    .find(module => location.pathname === module.route || location.pathname.startsWith(`${module.route}/`))
+
+  return (
+    <>
+      {isMobileOpen && (
+        <button
+          type="button"
+          className="synqra-sidebar-backdrop"
+          onClick={closeMobileSidebar}
+          aria-label="Fechar navegação"
+        />
+      )}
+      <aside
+        className={`synqra-sidebar${isExpanded ? ' is-expanded' : ' is-collapsed'}${isMobileOpen ? ' is-mobile-open' : ''}`}
+        aria-label="Navegação principal"
+      >
+        <div className="synqra-sidebar-brand">
+          <img src={synqraLogo} alt="SYNQRA ERP & SGQ Industrial" />
+        </div>
+        <p className="synqra-sidebar-caption">MÓDULOS</p>
+        <nav className="synqra-sidebar-nav" aria-label="Módulos do ERP">
+          {SYNQRA_MODULES.map(({ key, label, route, Icon }) => {
+            const active = current?.key === key
+            return (
+              <button
+                key={key}
+                type="button"
+                className={`synqra-sidebar-link${active ? ' is-active' : ''}`}
+                disabled={!route}
+                aria-current={active ? 'page' : undefined}
+                title={!isExpanded ? label : !route ? `${label} — sem rota operacional cadastrada` : undefined}
+                onClick={() => {
+                  if (!route) return
+                  navigate(route)
+                  closeMobileSidebar()
+                }}
+              >
+                <Icon size={19} strokeWidth={1.9} aria-hidden="true" />
+                <span className="synqra-sidebar-link-label">{label}</span>
+                {!route && <span className="synqra-sidebar-unavailable" aria-label="Sem rota">•</span>}
+              </button>
+            )
+          })}
+        </nav>
+        <div className="synqra-sidebar-footer">
+          <span className="synqra-slashes" aria-hidden="true"><i /><i /><i /></span>
+          <span className="synqra-sidebar-footer-copy">ERP & SGQ INDUSTRIAL</span>
+        </div>
+      </aside>
+    </>
+  )
 }

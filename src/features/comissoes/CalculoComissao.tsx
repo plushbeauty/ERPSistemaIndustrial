@@ -10,8 +10,56 @@ const input='h-7 rounded-md border border-gray-200 bg-white px-2 py-0.5 text-[11
 const label='mb-0.5 block text-[10px] font-bold uppercase text-gray-500'
 const money=(v:number)=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
 const crc32=(bytes:Uint8Array)=>{let c=0xffffffff;for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return (c^0xffffffff)>>>0}
-const u16=(n:number)=>new Uint8Array([n&255,(n>>>8)&255]),u32=(n:number)=>new Uint8Array([n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255])
-function zipStored(files:Array<{name:string;data:Uint8Array}>){const enc=new TextEncoder(),parts:Uint8Array[]=[];const central:Uint8Array[]=[];let offset=0;const dosTime=0,filesCount=files.length;for(const f of files){const name=enc.encode(f.name),crc=crc32(f.data);const local=new Uint8Array(30+name.length+f.data.length);local.set([80,75,3,4,20,0,0,0,0,0,0,0,0,0,...u32(crc),...u32(f.data.length),...u32(f.data.length),...u16(name.length),0, ...name]);local.set(f.data,30+name.length);parts.push(local);const cen=new Uint8Array(46+name.length);cen.set([80,75,1,2,20,0,20,0,0,0,0,0,0,0,...u32(crc),...u32(f.data.length),...u32(f.data.length),...u16(name.length),0,0,0,0,0,0,0,0,...u32(offset)]);cen.set(name,46);central.push(cen);offset+=local.length}const centralSize=central.reduce((n,x)=>n+x.length,0);const end=new Uint8Array(22);end.set([80,75,5,6,0,0,0,0,...u16(filesCount),...u16(filesCount),...u32(centralSize),...u32(offset),0,0]);return new Blob([...parts,...central,end],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+function zipStored(files:Array<{name:string;data:Uint8Array}>){
+ const encoder=new TextEncoder()
+ const localParts:Uint8Array[]=[]
+ const centralParts:Uint8Array[]=[]
+ let localOffset=0
+ for(const file of files){
+  const name=encoder.encode(file.name)
+  const checksum=crc32(file.data)
+  const local=new Uint8Array(30+name.length+file.data.length)
+  const localView=new DataView(local.buffer)
+  localView.setUint32(0,0x04034b50,true)
+  localView.setUint16(4,20,true)
+  localView.setUint32(14,checksum,true)
+  localView.setUint32(18,file.data.length,true)
+  localView.setUint32(22,file.data.length,true)
+  localView.setUint16(26,name.length,true)
+  local.set(name,30)
+  local.set(file.data,30+name.length)
+  localParts.push(local)
+
+  const central=new Uint8Array(46+name.length)
+  const centralView=new DataView(central.buffer)
+  centralView.setUint32(0,0x02014b50,true)
+  centralView.setUint16(4,20,true)
+  centralView.setUint16(6,20,true)
+  centralView.setUint32(16,checksum,true)
+  centralView.setUint32(20,file.data.length,true)
+  centralView.setUint32(24,file.data.length,true)
+  centralView.setUint16(28,name.length,true)
+  centralView.setUint32(42,localOffset,true)
+  central.set(name,46)
+  centralParts.push(central)
+  localOffset+=local.length
+ }
+ const centralSize=centralParts.reduce((total,part)=>total+part.length,0)
+ const end=new Uint8Array(22)
+ const endView=new DataView(end.buffer)
+ endView.setUint32(0,0x06054b50,true)
+ endView.setUint16(8,files.length,true)
+ endView.setUint16(10,files.length,true)
+ endView.setUint32(12,centralSize,true)
+ endView.setUint32(16,localOffset,true)
+ const asArrayBuffer=(bytes:Uint8Array):ArrayBuffer=>{
+  const buffer=new ArrayBuffer(bytes.byteLength)
+  new Uint8Array(buffer).set(bytes)
+  return buffer
+ }
+ const parts=[...localParts,...centralParts,end].map(asArrayBuffer)
+ return new Blob(parts,{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+}
 function sheetXml(lines:Line[],clients:Client[]){const esc=(s:string)=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');const clientMap=new Map(clients.map(c=>[c.id,c.nome]));const rows=[['Pedido','Cliente','SKU','Qtd Faturada','Valor Total Nota','% Comissão da Regra','Comissão Líquida R$'],...lines.map(l=>[String(l.pedido?.numero??''),clientMap.get(l.pedido?.cliente_id??'')??'',l.produto?.codigo??'',String(l.quantidade),String(l.valor_total),String(l.percentual),String(l.comissao_liquida)])];return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+rows.map(r=>'<row>'+r.map(v=>'<c t="inlineStr"><is><t>'+esc(v)+'</t></is></c>').join('')+'</row>').join('')+'</sheetData></worksheet>'}
 async function exportXlsx(lines:Line[],clients:Client[]){const enc=new TextEncoder();const contentTypes='<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>';const rels='<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';const wb='<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Comissoes" sheetId="1" r:id="rId1"/></sheets></workbook>';const wbr='<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>';const blob=zipStored([{name:'[Content_Types].xml',data:enc.encode(contentTypes)},{name:'_rels/.rels',data:enc.encode(rels)},{name:'xl/workbook.xml',data:enc.encode(wb)},{name:'xl/_rels/workbook.xml.rels',data:enc.encode(wbr)},{name:'xl/worksheets/sheet1.xml',data:enc.encode(sheetXml(lines,clients))}]);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='comissoes-'+new Date().toISOString().slice(0,7)+'.xlsx';a.click();URL.revokeObjectURL(a.href)}
 export default function CalculoComissao(){

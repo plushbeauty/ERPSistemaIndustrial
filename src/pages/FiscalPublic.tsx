@@ -11,7 +11,7 @@
  */
 
 import React from 'react'
-import { ArrowRight, Check, FileCheck2, FileText, Landmark, LockKeyhole, PackageCheck, ReceiptText, ShieldCheck, Truck, Upload } from 'lucide-react'
+import { ArrowRight, FileCheck2, FileText, ReceiptText, ShieldCheck, Upload } from 'lucide-react'
 
 // Interfaces estritas para validação do noImplicitAny: true
 interface FiscalStep {
@@ -27,21 +27,20 @@ interface FiscalFeature {
 }
 
 const steps: FiscalStep[] = [
-  { numero: '01', titulo: 'Pedido', descricao: 'O pedido de venda inicia o processo e fornece cliente, produtos, quantidades e valores.' },
-  { numero: '02', titulo: 'Validação fiscal', descricao: 'O ERP organiza natureza da operação, destinatário, itens e dados necessários para o documento.' },
-  { numero: '03', titulo: 'NF-e / NFC-e', descricao: 'O faturamento gera a estrutura do documento conforme o modelo fiscal escolhido.' },
-  { numero: '04', titulo: 'SEFAZ / integrador', descricao: 'O documento é enviado por um integrador fiscal autorizado, com certificado protegido no backend.' },
-  { numero: '05', titulo: 'Autorização', descricao: 'O retorno registra o protocolo, chave de acesso e situação do documento.' },
-  { numero: '06', titulo: 'Estoque + financeiro', descricao: 'A operação autorizada alimenta estoque, faturamento e contas a receber.' }
+  { numero: '01', titulo: 'Rascunho', descricao: 'A tela de NF-e modelo 55 grava cabeçalho e itens no ERP por RPC transacional.' },
+  { numero: '02', titulo: 'Parametrização', descricao: 'A transmissão exige configuração fiscal por empresa e regra única compatível com os itens.' },
+  { numero: '03', titulo: 'Integrador', descricao: 'A solicitação usa a Edge Function fiscal e o provedor configurado; homologação externa não foi comprovada nesta página.' },
+  { numero: '04', titulo: 'Confirmação', descricao: 'O ERP só informa Autorizada após validar retorno, chave, protocolo e XML compatíveis; respostas ambíguas ficam Processando.' },
+  { numero: '05', titulo: 'Documentos', descricao: 'XML autorizado e DANFE são consultáveis apenas quando os arquivos retornados pelo integrador foram persistidos.' },
+  { numero: '06', titulo: 'Entrada XML', descricao: 'O recebimento de materiais aceita conferência e gravação da entrada; isso não atesta assinatura ou autenticidade fiscal do XML.' }
 ]
 
 const features: FiscalFeature[] = [
-  { icon: FileText, titulo: 'NF-e modelo 55', descricao: 'Emissão de documentos para operações de mercadorias e faturamento empresarial.' },
-  { icon: ReceiptText, titulo: 'NFC-e modelo 65', descricao: 'Frente de caixa e venda ao consumidor, preparada para integração fiscal.' },
-  { icon: Upload, titulo: 'Importação XML', descricao: 'Receba XML de fornecedores e da contabilidade e mantenha os documentos organizados.' },
-  { icon: ShieldCheck, titulo: 'Validações e segurança', descricao: 'Dados fiscais separados por empresa e credenciais protegidas no backend.' },
-  { icon: FileCheck2, titulo: 'XML e DANFE', descricao: 'Histórico, consulta, XML e DANFE disponíveis conforme o retorno do integrador.' },
-  { icon: Landmark, titulo: 'Integração financeira', descricao: 'O faturamento fiscal conversa com estoque, contas a receber e indicadores.' }
+  { icon: FileText, titulo: 'NF-e modelo 55', descricao: 'Cadastro e persistência de rascunhos disponíveis; emissão real depende da configuração fiscal e do provedor.' },
+  { icon: ReceiptText, titulo: 'Regras tributárias', descricao: 'Regras por empresa podem ser cadastradas; não há cálculo tributário completo por item comprovado.' },
+  { icon: Upload, titulo: 'Recebimento XML', descricao: 'Conferência e confirmação de entrada física disponíveis; validação criptográfica do XML não demonstrada.' },
+  { icon: ShieldCheck, titulo: 'Retorno do provedor', descricao: 'Falhas e respostas ambíguas não são convertidas em autorização; casos pendentes exigem reconciliação.' },
+  { icon: FileCheck2, titulo: 'XML e DANFE', descricao: 'Consulta depende dos arquivos reais retornados e gravados pelo integrador fiscal.' }
 ]
 
 export default function FiscalPublic() {
@@ -62,9 +61,9 @@ export default function FiscalPublic() {
       <main className="max-w-7xl margin-0-auto px-4 py-12 space-y-20">
         <section className="fiscal-hero grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
-            <span className="bg-blue-50 text-[#2563eb] text-sm font-bold px-3 py-1 rounded-full uppercase tracking-wider">SYSNQRA ERP & SGQ INDUSTRIAL • LINHA FISCAL</span>
-            <h1 className="text-4xl lg:text-5xl font-black text-[#0f172a] leading-tight">Do pedido à nota fiscal, tudo conectado à operação.</h1>
-            <p className="text-lg text-slate-600 leading-relaxed">Uma visão completa do processo fiscal industrial: vendas, faturamento, NF-e, NFC-e, XML, estoque e financeiro trabalhando integrados com os mesmos dados.</p>
+            <span className="bg-blue-50 text-[#2563eb] text-sm font-bold px-3 py-1 rounded-full uppercase tracking-wider">SYSNQRA ERP & SGQ INDUSTRIAL • MÓDULO FISCAL</span>
+            <h1 className="text-4xl lg:text-5xl font-black text-[#0f172a] leading-tight">Módulo Fiscal do ERP, com limites claramente identificados.</h1>
+            <p className="text-lg text-slate-600 leading-relaxed">A emissão de NF-e modelo 55, a configuração tributária e o recebimento de XML dependem dos dados persistidos, permissões e provedor configurados em cada empresa. Os fluxos incompletos são identificados como pendentes.</p>
             <div className="fiscal-actions flex flex-wrap gap-4">
               <a className="bg-[#2563eb] hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-lg text-base shadow-sm transition-all flex items-center gap-2" href="/login">
                 Entrar no módulo Fiscal <ArrowRight size={18} />
@@ -73,54 +72,30 @@ export default function FiscalPublic() {
                 Conhecer o ERP
               </a>
             </div>
-            <div className="fiscal-trust flex flex-wrap gap-4 text-sm font-bold text-slate-500 pt-2 border-t border-slate-100">
-              <span className="flex items-center gap-1"><Check className="text-emerald-500" size={16} /> NF-e 55</span>
-              <span className="flex items-center gap-1"><Check className="text-emerald-500" size={16} /> NFC-e 65</span>
-              <span className="flex items-center gap-1"><Check className="text-emerald-500" size={16} /> XML Entrada</span>
-              <span className="flex items-center gap-1"><Check className="text-emerald-500" size={16} /> Integração SEFAZ</span>
+            <div className="fiscal-trust flex flex-wrap gap-4 text-sm font-semibold text-slate-600 pt-2 border-t border-slate-100">
+              <span>NF-e 55: fluxo parcial</span>
+              <span>NFC-e: não comprovada</span>
+              <span>SEFAZ: provedor externo</span>
             </div>
           </div>
           
           <div className="fiscal-visual flex justify-center">
-            <div className="fiscal-window bg-white border border-slate-200 rounded-xl shadow-md w-full max-w-md overflow-hidden">
-              <div className="fiscal-window-top bg-slate-900 text-white p-3 flex justify-between items-center text-xs font-bold">
-                <span>SYSNQRA ERP & SGQ INDUSTRIAL / FISCAL</span>
-                <span className="text-emerald-400 flex items-center gap-1">● Operação integrada</span>
-              </div>
-              <div className="p-6 space-y-6">
-                <div className="fiscal-document border border-slate-200 rounded-xl p-4 bg-[#f8fafc] relative">
-                  <div className="doc-head flex justify-between items-start mb-4">
-                    <div>
-                      <small className="block text-xs font-bold text-slate-400 uppercase">DOCUMENTO FISCAL ELETRÔNICO</small>
-                      <strong className="text-lg font-bold text-[#0f172a]">NF-e • MODELO 55</strong>
-                    </div>
-                    <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded">AUTORIZADA</span>
-                  </div>
-                  <div className="doc-grid grid grid-cols-2 gap-4 text-sm mb-4 border-t border-b py-3 border-slate-200/60">
-                    <div><span className="block text-xs text-slate-400">Pedido</span><strong className="text-slate-700">PED-00482</strong></div>
-                    <div><span className="block text-xs text-slate-400">Cliente</span><strong className="text-slate-700">Metalúrgica Horizonte</strong></div>
-                    <div><span className="block text-xs text-slate-400">Valor</span><strong className="text-slate-700">R$ 18.450,00</strong></div>
-                    <div><span className="block text-xs text-slate-400">Chave de Acesso</span><strong className="text-slate-700 font-mono">3526 •••• ••••</strong></div>
-                  </div>
-                  <div className="doc-flow flex items-center justify-between text-xs font-semibold text-slate-500 bg-white p-2 rounded-lg border border-slate-100">
-                    <span>Pedido</span><i>→</i><span>Fiscal</span><i>→</i><span>SEFAZ</span><i>→</i><strong className="text-emerald-600">Autorizada</strong>
-                  </div>
-                </div>
-                <div className="fiscal-mini-cards grid grid-cols-3 gap-3 text-center text-sm font-semibold">
-                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100"><PackageCheck className="text-blue-500 mx-auto mb-1" size={20} /><b>Estoque</b><small className="block text-xs text-slate-400 mt-0.5">Movimentado</small></div>
-                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100"><Truck className="text-amber-500 mx-auto mb-1" size={20} /><b>Expedição</b><small className="block text-xs text-slate-400 mt-0.5">Liberada</small></div>
-                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100"><Landmark className="text-emerald-500 mx-auto mb-1" size={20} /><b>Financeiro</b><small className="block text-xs text-slate-400 mt-0.5">A Receber</small></div>
-                </div>
-              </div>
-            </div>
+            <section role="status" className="w-full max-w-md border border-amber-300 bg-amber-50 p-6 text-amber-950">
+              <p className="text-xs font-semibold uppercase tracking-wide">Visualização fiscal</p>
+              <h2 className="mt-2 text-xl font-semibold">Prévia de documentos indisponível</h2>
+              <p className="mt-3 text-sm leading-relaxed">
+                Esta página pública não consulta documentos, valores, estoque ou respostas do provedor.
+                Nenhuma NF-e, autorização ou integração operacional é simulada aqui.
+              </p>
+            </section>
           </div>
         </section>
 
         <section className="fiscal-intro space-y-8">
           <div className="section-heading text-center max-w-2xl mx-auto space-y-2">
-            <span className="bg-blue-50 text-[#2563eb] text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">A LINHA FISCAL COMPLETA</span>
-            <h2 className="text-2xl lg:text-3xl font-bold text-[#0f172a]">O Fiscal acompanha o negócio inteiro.</h2>
-            <p className="text-base text-slate-500">Em vez de uma tela isolada de emissão, o processo é pensado como uma linha operacional rastreável.</p>
+            <span className="bg-blue-50 text-[#2563eb] text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">FLUXOS E LIMITES OBSERVADOS</span>
+            <h2 className="text-2xl lg:text-3xl font-bold text-[#0f172a]">Recursos fiscais existentes e suas dependências.</h2>
+            <p className="text-base text-slate-500">As etapas abaixo descrevem capacidades presentes no código e destacam os pontos que ainda dependem de configuração, confirmação ou validação externa.</p>
           </div>
           <div className="fiscal-flow grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {steps.map((step) => (
@@ -135,8 +110,8 @@ export default function FiscalPublic() {
 
         <section id="recursos" className="fiscal-features space-y-8">
           <div className="section-heading mx-auto max-w-2xl space-y-2 text-center">
-            <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-[#2563eb]">RECURSOS</span>
-            <h2 className="text-2xl font-bold text-[#0f172a] lg:text-3xl">Uma central fiscal preparada para crescer.</h2>
+            <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-[#2563eb]">RECURSOS OBSERVADOS NO CÓDIGO</span>
+            <h2 className="text-2xl font-bold text-[#0f172a] lg:text-3xl">Operações disponíveis com limitações explícitas.</h2>
           </div>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => {

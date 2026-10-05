@@ -1,66 +1,144 @@
-import { LayoutGrid, Menu, PanelLeftClose, PanelLeftOpen, Search, HelpCircle } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronRight, HelpCircle, LayoutGrid, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
 import ThemeToggleButton from '../components/common/ThemeToggleButton'
-import TabletLaunchpad from '../components/TabletLaunchpad'
-import Sidebar from './Sidebar'
+import { SYNQRA_MODULES } from '../assets/synqra/icons'
+import { supabase } from '../lib/supabaseClient'
 
-interface AjudaContextual {
-  rota: string
-  busca: string
-}
-
-const AJUDA_CONTEXTUAL: AjudaContextual[] = [
-  { rota: '/vendas/novo-pedido', busca: 'como lançar pedido de venda' },
-  { rota: '/qualidade/calibracao', busca: 'como preencher calibração' },
-  { rota: '/fichas-processo', busca: 'como preencher ficha de processo' },
-  { rota: '/qualidade/liberacao-lote', busca: 'como funciona o laudo de liberação' },
-  { rota: '/manutencao/ordens', busca: 'como fechar ordem de serviço tpm' },
-  { rota: '/expedicao/roteirizacao', busca: 'como funciona a roteirização' },
-]
+const normalize = (value: string) => value
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLocaleLowerCase('pt-BR')
 
 export default function AppHeader() {
-  const { isExpanded, isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar()
+  const { isExpanded, isMobileOpen, toggleSidebar, toggleMobileSidebar, closeMobileSidebar } = useSidebar()
   const location = useLocation()
   const navigate = useNavigate()
-  const [tabletOpen, setTabletOpen] = useState(false)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const [query, setQuery] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [logoutError, setLogoutError] = useState('')
+  const activeModule = useMemo(() => [...SYNQRA_MODULES]
+    .filter(module => module.route)
+    .sort((left, right) => (right.route?.length ?? 0) - (left.route?.length ?? 0))
+    .find(module => location.pathname === module.route || location.pathname.startsWith(`${module.route}/`)), [location.pathname])
+  const matches = useMemo(() => {
+    const term = normalize(query.trim())
+    return SYNQRA_MODULES
+      .filter(module => module.route && (!term || normalize(module.label).includes(term)))
+      .slice(0, 7)
+  }, [query])
 
-  const visibleRoutes = ['/erp-industrial','/master','/usuarios','/pcp','/pcp/tablet-operador','/operacao-industrial','/produtos-vendas','/qualidade','/qualidade/calibracao','/qualidade/documentos','/qualidade/editor-it','/qualidade/procedimentos','/qualidade/assinatura-it','/qualidade/liberacao-lote','/qualidade/genealogia-lote','/qualidade/quarentena','/qualidade/rnc','/fichas-processo','/engenharia/fichas-processo','/manutencao/ordens','/expedicao/roteirizacao','/manual-usuario','/compras-solicitacao','/fiscal','/fiscal/previsao-caixa','/teste-erp','/rh','/estoque','/almoxarifado','/fornecedores','/clientes','/tabelas-preco','/recebimento-materiais','/engenharia','/moldes-injecao','/vendas/novo-pedido','/financeiro','/financeiro/reconciliacao','/financeiro/importar-extratos','/financeiro/ano-fiscal','/financeiro/fluxo-caixa','/comissoes'];
-  const visible = visibleRoutes.some((route) => location.pathname === route || location.pathname.startsWith(route + '/'))
   useEffect(() => {
-    if (!visible) return
-    const fn = (event: KeyboardEvent) => {
+    const onShortcut = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault()
-        document.getElementById('sgq-global-search')?.focus()
+        setSearchOpen(true)
+        window.requestAnimationFrame(() => searchRef.current?.focus())
+      }
+      if (event.key === 'Escape') {
+        setSearchOpen(false)
+        closeMobileSidebar()
       }
     }
-    document.addEventListener('keydown', fn)
-    return () => document.removeEventListener('keydown', fn)
-  }, [visible])
+    document.addEventListener('keydown', onShortcut)
+    return () => document.removeEventListener('keydown', onShortcut)
+  }, [closeMobileSidebar])
 
-  if (!visible) return null
-
-  const openTablet = () => setTabletOpen(true)
-  const abrirAjudaContextual = () => {
-    const contexto = AJUDA_CONTEXTUAL.find((item) => location.pathname === item.rota || location.pathname.startsWith(item.rota + '/'))
-    const busca = contexto?.busca ?? 'ajuda desta tela'
-    navigate(`/ajuda/assistente?busca=${encodeURIComponent(busca)}`)
+  const goTo = (route: string) => {
+    navigate(route)
+    setQuery('')
+    setSearchOpen(false)
   }
 
-  return <><Sidebar />
-    <header className="sgq-app-header">
-      <div className="sgq-header-left"><button className="sgq-icon-button sgq-desktop-menu" onClick={toggleSidebar} aria-label="Alternar menu">{isExpanded ? <PanelLeftClose size={19}/> : <PanelLeftOpen size={19}/>}</button><button className="sgq-icon-button sgq-mobile-menu" onClick={toggleMobileSidebar} aria-label={isMobileOpen ? 'Fechar menu' : 'Abrir menu'}><Menu size={21}/></button><div className="sgq-header-brand"><img src="/logo/sgq-erp.png" alt="" /><div><strong>SYSNQRA ERP & SGQ INDUSTRIAL</strong><span>Gestão integrada e multiempresa</span></div></div></div>
-      <div className="sgq-header-search"><Search size={17}/><input id="sgq-global-search" placeholder="Buscar no ERP..." aria-label="Buscar no ERP" /><kbd>Ctrl K</kbd></div>
-      <div className="sgq-header-actions">
-        <button type="button" onClick={abrirAjudaContextual} aria-label="Abrir ajuda desta tela" className="bg-slate-900 text-white font-bold h-11 px-4 text-sm rounded-lg flex items-center gap-1.5 shadow-md transition-colors hover:bg-slate-800">
-          <HelpCircle className="h-4 w-4 text-blue-400" /> AJUDA DESTA TELA
+  const logout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        setLogoutError(error.message)
+        return
+      }
+      navigate('/login')
+    } catch (error) {
+      setLogoutError(error instanceof Error ? error.message : String(error))
+    }
+  }
+
+  return (
+    <header className="synqra-app-header">
+      <div className="synqra-header-context">
+        <button
+          type="button"
+          className="synqra-header-menu synqra-header-menu-desktop"
+          onClick={toggleSidebar}
+          aria-label={isExpanded ? 'Recolher navegação' : 'Expandir navegação'}
+          aria-expanded={isExpanded}
+        >
+          {isExpanded ? <PanelLeftClose size={19} /> : <PanelLeftOpen size={19} />}
         </button>
-        <button type="button" className="v7-nav-tablet-trigger" onClick={openTablet} aria-label="Abrir Painel Tablet"><LayoutGrid size={12}/><span>Painel Tablet</span></button>
-        <ThemeToggleButton/><span className="sgq-user-chip">Usuário</span>
+        <button
+          type="button"
+          className="synqra-header-menu synqra-header-menu-mobile"
+          onClick={toggleMobileSidebar}
+          aria-label={isMobileOpen ? 'Fechar navegação' : 'Abrir navegação'}
+          aria-expanded={isMobileOpen}
+        >
+          <Menu size={20} />
+        </button>
+        <div className="synqra-breadcrumb" aria-label="Localização atual">
+          <span>SYNQRA ERP</span>
+          <ChevronRight size={15} aria-hidden="true" />
+          <strong>{activeModule?.label ?? 'Área operacional'}</strong>
+        </div>
       </div>
+
+      <div className="synqra-global-search-wrap">
+        <label className="synqra-global-search">
+          <Search size={17} aria-hidden="true" />
+          <input
+            ref={searchRef}
+            type="search"
+            value={query}
+            onFocus={() => setSearchOpen(true)}
+            onChange={event => { setQuery(event.target.value); setSearchOpen(true) }}
+            onKeyDown={event => {
+              const firstRoute = matches[0]?.route
+              if (event.key === 'Enter' && firstRoute) goTo(firstRoute)
+            }}
+            placeholder="Buscar módulos..."
+            aria-label="Buscar módulos do ERP"
+            aria-controls="synqra-search-results"
+          />
+          <kbd>Ctrl K</kbd>
+        </label>
+        {searchOpen && (
+          <div className="synqra-search-results" id="synqra-search-results" role="region" aria-label="Resultados da busca">
+            {matches.length ? matches.map(({ key, label, route, Icon }) => (
+              <button key={key} type="button" onClick={() => route && goTo(route)}>
+                <Icon size={17} aria-hidden="true" />
+                <span>{label}</span>
+              </button>
+            )) : <p>Nenhum módulo com rota disponível corresponde à busca.</p>}
+          </div>
+        )}
+      </div>
+
+      <div className="synqra-header-actions">
+        <span className="synqra-header-motto">MAIS CONTROLE PARA O SEU RESULTADO</span>
+        <button type="button" className="synqra-header-action" onClick={() => navigate('/ajuda')} aria-label="Abrir suporte">
+          <HelpCircle size={18} />
+        </button>
+        <button type="button" className="synqra-header-action synqra-header-tablet" onClick={() => navigate('/tablet/dashboard')} aria-label="Abrir painel tablet">
+          <LayoutGrid size={18} />
+        </button>
+        <ThemeToggleButton />
+        <span className="synqra-slashes" aria-label="SYNQRA"><i /><i /><i /></span>
+        <button type="button" className="synqra-header-action" onClick={() => void logout()} aria-label="Sair do ERP" title="Sair">
+          <LogOut size={18} />
+        </button>
+      </div>
+      {logoutError && <span className="synqra-header-error" role="alert">{logoutError}</span>}
     </header>
-    <TabletLaunchpad isOpen={tabletOpen} onClose={() => setTabletOpen(false)} onNavigate={(route) => { setTabletOpen(false); navigate(route) }} />
-  </>
+  )
 }

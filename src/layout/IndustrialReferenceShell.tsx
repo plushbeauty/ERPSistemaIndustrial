@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { ChevronRight, LogOut, User, Tablet } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { useSynqraLayout } from './SynqraLayoutContext'
 
 export type IndustrialReferenceNavItem = {
   id: string
@@ -30,10 +31,12 @@ export default function IndustrialReferenceShell({
   children,
   actions,
 }: Props) {
+  const hostedBySynqra = useSynqraLayout()
   const [operator, setOperator] = useState('Administrador')
   const [clock, setClock] = useState(new Date())
 
   useEffect(() => {
+    if (hostedBySynqra) return
     let alive = true
     void (async () => {
       const { data: auth } = await supabase.auth.getUser()
@@ -53,7 +56,24 @@ export default function IndustrialReferenceShell({
       alive = false
       window.clearInterval(timer)
     }
-  }, [])
+  }, [hostedBySynqra])
+
+  const pageContent = (
+    <div className="synqra-reference-page">
+      <header className="synqra-reference-heading">
+        <div className="synqra-reference-title">
+          <p>ERP INDUSTRIAL • {moduleLabel}</p>
+          <h1>{title}</h1>
+        </div>
+        {actions && <div className="synqra-reference-actions">{actions}</div>}
+      </header>
+      <div className="synqra-reference-body">
+        <div className="synqra-reference-content">{children}</div>
+      </div>
+    </div>
+  )
+
+  if (hostedBySynqra) return pageContent
 
   return (
     <div className="flex min-h-screen bg-[#F4F7FE] font-sans antialiased text-slate-800">

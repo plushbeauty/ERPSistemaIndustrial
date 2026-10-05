@@ -1,7 +1,30 @@
-import { useMemo,useState } from 'react'
-import { supabase } from '../../lib/supabaseClient'
-type Group={codigo:string;nome:string;nivel:number}
-export default function GeradorGruposContabeis(){const [nivel,setNivel]=useState('1');const [tamanho,setTamanho]=useState('8');const [prefixo,setPrefixo]=useState('1.');const [groups,setGroups]=useState<Group[]>([]);const [msg,setMsg]=useState('')
-const preview=useMemo(()=>{const n=Math.max(1,Number(nivel)||1);const p=prefixo.trim();return [{codigo:p+'000',nome:'GRUPO CONTÁBIL',nivel:n},{codigo:p+'001',nome:'SUBGRUPO',nivel:n+1},{codigo:p+'001.01',nome:'CONTA ANALÍTICA',nivel:n+2}]},[nivel,prefixo])
-const process=async()=>{setMsg('');const r=await supabase.from('erp_fiscal_grupos_contabeis').select('id').limit(1);if(r.error){setMsg(r.error.message);return}if((r.data??[]).length){setMsg('Já existem grupos contábeis para a empresa. Operação abortada por segurança.');return}if(Number(nivel)<1){setMsg('O nível mínimo deve ser >= 1.');return}const e=await supabase.rpc('erp_current_empresa_id');if(e.error||!e.data){setMsg('Empresa não identificada.');return}const rows=preview.map(x=>({...x,empresa_id:e.data}));const ins=await supabase.from('erp_fiscal_grupos_contabeis').insert(rows);setMsg(ins.error?ins.error.message:'Grupos processados com sucesso.');if(!ins.error)setGroups(preview)}
-return <main className="min-h-full bg-slate-50 p-3"><div className="mb-2 flex items-center gap-2"><button className="h-7 rounded-md border border-gray-200 bg-white px-2 text-[10px] font-bold text-gray-600" onClick={()=>window.history.back()}>← Voltar</button><h1 className="text-[12px] font-bold">⚙️ ASSISTENTE DE GERAÇÃO EM MASSA DE GRUPOS DE CONTAS</h1></div><section className="rounded-md border border-gray-200 bg-white p-2 shadow-sm"><div className="flex items-end gap-2"><div><label className="mb-0.5 block text-[10px] font-bold uppercase text-gray-500">Nível Mínimo do Bloco</label><input type="number" className="h-7 w-[120px] rounded-md border border-gray-200 px-2 text-[11px]" value={nivel} onChange={e=>setNivel(e.target.value)}/></div><div><label className="mb-0.5 block text-[10px] font-bold uppercase text-gray-500">Tamanho Máximo do Código</label><input type="number" className="h-7 w-[140px] rounded-md border border-gray-200 px-2 text-[11px]" value={tamanho} onChange={e=>setTamanho(e.target.value)}/></div><div><label className="mb-0.5 block text-[10px] font-bold uppercase text-gray-500">Prefixo do Grupo</label><input className="h-7 w-[110px] rounded-md border border-gray-200 px-2 text-[11px]" value={prefixo} onChange={e=>setPrefixo(e.target.value)}/></div></div><div className="mt-2 max-h-[200px] overflow-auto rounded border border-gray-200 p-2 text-[10px]">{preview.map(x=><div key={x.codigo} className="h-7 border-b border-gray-100 py-1">{x.codigo} — {x.nome}</div>)}</div><div className="mt-2 flex justify-end"><button onClick={()=>void process()} className="h-7 w-[120px] rounded-md bg-blue-600 text-[11px] font-bold text-white">Processar</button></div>{msg&&<div className="mt-1 text-[10px] font-bold text-gray-600">{msg}</div>}</section></main>}
+import { Link } from 'react-router-dom'
+
+export default function GeradorGruposContabeis() {
+  return (
+    <main className="min-h-screen bg-slate-50 p-3 text-slate-900">
+      <div className="mx-auto max-w-4xl space-y-3">
+        <header className="border-b border-slate-200 bg-white p-4">
+          <p className="text-xs font-semibold uppercase text-blue-800">Fiscal / Contabilidade</p>
+          <h1 className="text-xl font-semibold">Grupos contábeis</h1>
+        </header>
+        <section role="status" className="border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+          <h2 className="font-semibold">Geração automática suspensa</h2>
+          <p className="mt-2">
+            O gerador anterior gravava três grupos com nomes e códigos fixos de demonstração e
+            ignorava o tamanho máximo informado. Esses dados não representam um plano de contas
+            aprovado e não serão mais inseridos como se fossem reais.
+          </p>
+          <p className="mt-2">
+            Para habilitar a geração, é necessário definir a origem do plano de contas da empresa,
+            as regras de codificação, validação e auditoria, e persistir o resultado de forma
+            transacional. Nenhum registro foi criado por esta tela.
+          </p>
+          <Link to="/fiscal" className="mt-3 inline-flex items-center border border-slate-400 bg-white px-3 py-2 text-sm font-medium text-slate-900">
+            Voltar ao módulo Fiscal
+          </Link>
+        </section>
+      </div>
+    </main>
+  )
+}

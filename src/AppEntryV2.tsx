@@ -1,7 +1,11 @@
-import { Component, type ComponentType, type ReactNode, lazy, Suspense, useEffect, useState } from 'react'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+﻿import { Component, type ComponentType, type ReactNode, lazy, Suspense, useEffect, useState } from 'react'
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
+import { useSidebar } from './context/SidebarContext'
+import AppHeader from './layout/AppHeader'
+import Sidebar from './layout/Sidebar'
+import { SynqraLayoutProvider } from './layout/SynqraLayoutContext'
 
 
 
@@ -29,6 +33,7 @@ import './styles/module-overview.css'
 import './styles/erp-ui-pass-2026.css'
 import './styles/industrial-plans.css'
 import './styles/erp-design-system-2026.css'
+import './styles/synqra-app-shell.css'
 
 import IndustrialLoginDirect from './IndustrialLoginDirect'
 
@@ -42,6 +47,7 @@ const NFeEmissao = lazyPage(() => import('./pages/NFeEmissao'), 'NFeEmissao')
 const FiscalPrevisaoCaixa = lazyPage(() => import('./pages/FiscalPrevisaoCaixa'), 'FiscalPrevisaoCaixa')
 const FiscalCarteiraNFe = lazyPage(() => import('./pages/FiscalCarteiraNFe'), 'FiscalCarteiraNFe')
 const FiscalImpostos = lazyPage(() => import('./pages/FiscalImpostos'), 'FiscalImpostos')
+const FiscalPendencias = lazyPage(() => import('./pages/FiscalPendencias'), 'FiscalPendencias')
 const PainelRazaoGeral = lazyPage(() => import('./features/controladoria/PainelRazaoGeral'), 'default')
 const PainelLucratividade = lazyPage(() => import('./features/controladoria/PainelLucratividade'), 'default')
 const AuditoriaComissoes = lazyPage(() => import('./features/controladoria/AuditoriaComissoes'), 'default')
@@ -54,6 +60,7 @@ const AnoFiscal = lazyPage(() => import('./features/fiscal/AnoFiscal'), 'default
 const AssistenteRetificacao = lazyPage(() => import('./features/controladoria/AssistenteRetificacao'), 'default')
 const Master = lazyPage(() => import('./pages/Master'), 'Master')
 const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
+const PCPOrdens = lazyPage(() => import('./pages/PCPOrdens'), 'default')
 const PCPParadas = lazyPage(() => import('./pages/PCPParadas'), 'PCPParadas')
 const PCPSequenciamento = lazyPage(() => import('./pages/PCPSequenciamento'), 'PCPSequenciamento')
 const PCPPlanejamentoIndustrial = lazyPage(() => import('./pages/PCPPlanejamentoIndustrial'), 'PCPPlanejamentoIndustrial')
@@ -67,6 +74,7 @@ const ModuloCadastroProdutos = lazyPage(() => import('./pages/cadastro-produtos/
 const TabletDashboard = lazyPage(() => import('./pages/TabletDashboard'), 'TabletDashboard')
 const PedidoVendaCompleto = lazyPage(() => import('./pages/NovoPedido'), 'NovoPedido')
 const DashboardComercial = lazyPage(() => import('./pages/DashboardComercial'), 'DashboardComercial')
+const VendasCentral = lazyPage(() => import('./pages/VendasCentral'), 'default')
 const VendasCatalogoDigital = lazyPage(() => import('./pages/VendasCatalogoDigital'), 'VendasCatalogoDigital')
 const VendasAnaliseCustos = lazyPage(() => import('./pages/VendasAnaliseCustos'), 'VendasAnaliseCustos')
 const VendasDashboardGraficos = lazyPage(() => import('./pages/VendasDashboardGraficos'), 'VendasDashboardGraficos')
@@ -78,11 +86,12 @@ const VendasCatalogoDigitalGestao = lazyPage(() => import('./pages/VendasCatalog
 const VendasCarteira = lazyPage(() => import('./pages/VendasCarteira'), 'VendasCarteira')
 const VendasPDV = lazyPage(() => import('./pages/VendasPDV'), 'default')
 const ComprasRFQ = lazyPage(() => import('./pages/ComprasRFQ'), 'default')
-const ComprasPedidoCompra = lazyPage(() => import('./pages/ComprasPedidoCompra'), 'default')
+const PedidoCompra = lazyPage(() => import('./pages/PedidoCompra'), 'default')
 const VendasClientesPage = lazyPage(() => import('./pages/VendasClientes'), 'default')
 const CentralCustosIndustrial = lazyPage(() => import('./pages/CentralCustosIndustrial'), 'CentralCustosIndustrial')
 const CadastroEmpresa = lazyPage(() => import('./pages/CadastroEmpresa'), 'CadastroEmpresa')
 const PlanosIndustrial = lazyPage(() => import('./pages/PlanosIndustrial'), 'PlanosIndustrial')
+const AtivarAcesso = lazyPage(() => import('./pages/AtivarAcesso'), 'AtivarAcesso')
 const SolicitacaoCompra = lazyPage(() => import('./pages/SolicitacaoCompra'), 'SolicitacaoCompra')
 const TesteERP = lazyPage(() => import('./pages/TesteERP'), 'TesteERP')
 const UsuariosAdmin = lazyPage(() => import('./pages/UsuariosAdmin'), 'UsuariosAdmin')
@@ -103,7 +112,6 @@ const TabelaPrecos = lazyPage(() => import('./pages/TabelaPrecos'), 'TabelaPreco
 const AjusteGlobal = lazyPage(() => import('./pages/AjusteGlobal'), 'default')
 const CatalogoDigital = lazyPage(() => import('./pages/CatalogoDigital'), 'CatalogoDigital')
 const FichasProcesso = lazyPage(() => import('./pages/FichasProcesso'), 'FichasProcesso')
-const FichaProcesso = lazyPage(() => import('./features/pcp/FichaProcesso'), 'default')
 const AssistenteAjudaERP = lazyPage(() => import('./pages/AssistenteAjudaERP'), 'AssistenteAjudaERP')
 const ComprasSolicitacaoManual = lazyPage(() => import('./pages/ComprasSolicitacaoManual'), 'ComprasSolicitacaoManual')
 const ExpedicaoPortaria = lazyPage(() => import('./pages/ExpedicaoPortaria'), 'ExpedicaoPortaria')
@@ -111,6 +119,7 @@ const EngenhariaRevisoesBOM = lazyPage(() => import('./pages/EngenhariaRevisoesB
 const EngenhariaCentral = lazyPage(() => import('./pages/EngenhariaCentral'), 'EngenhariaCentral')
 const PCPDashboardOEE = lazyPage(() => import('./pages/PCPDashboardOEE'), 'PCPDashboardOEE')
 const QualidadeDashboardRNC = lazyPage(() => import('./pages/QualidadeDashboardRNC'), 'QualidadeDashboardRNC')
+const QualidadeRNC = lazyPage(() => import('./pages/QualidadeRNC'), 'QualidadeRNC')
 const EstoqueCurvaABC = lazyPage(() => import('./pages/EstoqueCurvaABC'), 'EstoqueCurvaABC')
 const FinanceiroGraficoDesvios = lazyPage(() => import('./pages/FinanceiroGraficoDesvios'), 'FinanceiroGraficoDesvios')
 const ExpedicaoRoteirizacao = lazyPage(() => import('./pages/ExpedicaoRoteirizacao'), 'ExpedicaoRoteirizacao')
@@ -124,7 +133,6 @@ const EstoqueRecebimentoLotes = lazyPage(() => import('./pages/estoque/EstoqueRe
 const QualidadeGenealogiaLote = lazyPage(() => import('./pages/qualidade/QualidadeGenealogiaLote'), 'QualidadeGenealogiaLote')
 const QualidadeEditorIT = lazyPage(() => import('./pages/qualidade/QualidadeEditorIT'), 'QualidadeEditorIT')
 const QualidadeAssinaturaIT = lazyPage(() => import('./pages/qualidade/QualidadeAssinaturaIT'), 'QualidadeAssinaturaIT')
-const QualidadeProcedimentos = lazyPage(() => import('./pages/qualidade/QualidadeProcedimentos'), 'QualidadeProcedimentos')
 const QualidadeQuarentena = lazyPage(() => import('./pages/qualidade/QualidadeQuarentena'), 'QualidadeQuarentena')
 const FinanceiroCustoPadrao = lazyPage(() => import('./pages/FinanceiroCustoPadrao'), 'FinanceiroCustoPadrao')
 const OutlookConfiguracao = lazyPage(() => import('./pages/OutlookConfiguracao'), 'OutlookConfiguracao')
@@ -142,6 +150,9 @@ const BankingReconciliation = lazyPage(() => import('./features/banking/BankReco
 const BankingStatementImporter = lazyPage(() => import('./features/banking/BankStatementImporter'), 'BankStatementImporter')
 const BankingListaPrecosCliente = lazyPage(() => import('./features/banking/ListaPrecosCliente'), 'ListaPrecosCliente')
 const FinanceiroFluxoCaixa = lazyPage(() => import('./pages/FinanceiroFluxoCaixa'), 'FinanceiroFluxoCaixa')
+const FinanceiroDashboardCaixa = lazyPage(() => import('./pages/FinanceiroDashboardCaixa'), 'default')
+const FinanceiroContasPagar = lazyPage(() => import('./pages/FinanceiroTitulos'), 'FinanceiroContasPagar')
+const FinanceiroContasReceber = lazyPage(() => import('./pages/FinanceiroTitulos'), 'FinanceiroContasReceber')
 const RetificacaoPedido = lazyPage(() => import('./features/controladoria/RetificacaoPedido'), 'RetificacaoPedido')
 const CadastroRegrasComissao = lazyPage(() => import('./features/comissoes/CadastroRegras'), 'CadastroRegras')
 const CalculoComissao = lazyPage(() => import('./features/comissoes/CalculoComissao'), 'CalculoComissao')
@@ -152,6 +163,7 @@ const AuditoriaSaldos = lazyPage(() => import('./features/inventario/AuditoriaSa
 const EngenhariaBOM = lazyPage(() => import('./features/pcp/EngenhariaBOM'), 'EngenhariaBOM')
 const RoteiroOperacoes = lazyPage(() => import('./features/pcp/RoteiroOperacoes'), 'RoteiroOperacoes')
 const PostosTrabalho = lazyPage(() => import('./features/pcp/PostosTrabalho'), 'PostosTrabalho')
+const FichaProcesso = lazyPage(() => import('./features/pcp/FichaProcesso'), 'FichaProcesso')
 const PainelOrdensProducao = lazyPage(() => import('./features/pcp/PainelOrdensProducao'), 'PainelOrdensProducao')
 const ApuracaoTurno = lazyPage(() => import('./features/pcp/ApuracaoTurno'), 'ApuracaoTurno')
 
@@ -170,7 +182,7 @@ class Boundary extends Component<{ children: ReactNode }, { error: Error | null 
       return (
         <div className="error-screen">
           <div className="error-screen-card">
-            <strong>Erro crítico ao abrir a tela operacional do ERP.</strong>
+            <strong>Erro crÃ­tico ao abrir a tela operacional do ERP.</strong>
             <p>{this.state.error.message}</p>
             <button className="primary" type="button" onClick={() => window.location.reload()}>
               Recarregar Interface
@@ -190,7 +202,7 @@ function MasterOnly({ children, allowed }: { children: ReactNode; allowed: boole
       <div className="error-screen">
         <div className="error-screen-card">
           <strong>Acesso restrito ao Master.</strong>
-          <p>Esta área administrativa exige um perfil Master válido.</p>
+          <p>Esta Ã¡rea administrativa exige um perfil Master vÃ¡lido.</p>
           <button className="primary" type="button" onClick={() => window.location.replace('/comercial')}>
             Voltar ao ERP
           </button>
@@ -201,7 +213,7 @@ function MasterOnly({ children, allowed }: { children: ReactNode; allowed: boole
   return <>{children}</>
 }
 
-function LoadingSkeleton({ label = 'Carregando SYSNQRA ERP & SGQ INDUSTRIAL…' }: { label?: string }) {
+function LoadingSkeleton({ label = 'Carregando SYSNQRA ERP & SGQ INDUSTRIALâ€¦' }: { label?: string }) {
   return (
     <div className="loading-screen">
       <div className="loading-skeleton-card">
@@ -222,7 +234,7 @@ function safeReturnTo(value: string | null): string {
 
 async function validarAcessoERP(session: Session | null): Promise<AccessResult> {
   if (!supabaseConfigurado || !session?.user) {
-    return { ok: false, master: false, reason: 'Sessão de autenticação inválida.', profile: null }
+    return { ok: false, master: false, reason: 'SessÃ£o de autenticaÃ§Ã£o invÃ¡lida.', profile: null }
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -236,7 +248,7 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
   if (profileError) throw profileError
 
   if (!profile || profile.auth_user_id !== session.user.id) {
-    return { ok: false, master: false, reason: 'Usuário autenticado sem perfil ERP ativo.', profile: null }
+    return { ok: false, master: false, reason: 'UsuÃ¡rio autenticado sem perfil ERP ativo.', profile: null }
   }
 
   const role = String(profile.perfil ?? '').trim().toUpperCase()
@@ -245,7 +257,7 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
   if (master) return { ok: true, master: true, reason: '', profile }
 
   if (!profile.empresa_id) {
-    return { ok: false, master: false, reason: 'Usuário autenticado sem empresa vinculada.', profile }
+    return { ok: false, master: false, reason: 'UsuÃ¡rio autenticado sem empresa vinculada.', profile }
   }
 
   const { data: empresa, error: empresaError } = await supabase
@@ -262,12 +274,40 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
 }
 
 // Router master industrial v7: verified JSX boundary.
+function ProtectedAppLayout({ children }: { children: ReactNode }) {
+  const { isExpanded } = useSidebar()
+  return (
+    <SynqraLayoutProvider>
+      <div className={`synqra-app-layout${isExpanded ? '' : ' is-collapsed'}`}>
+        <Sidebar />
+        <AppHeader />
+        <main className="synqra-app-content">{children}</main>
+      </div>
+    </SynqraLayoutProvider>
+  )
+}
+
 export default function AppEntryV2() {
   const routeLocation = useLocation()
-  if (routeLocation.pathname === '/configuracoes-adm' || routeLocation.pathname.startsWith('/configuracoes-adm/')) {
-    return <Boundary><Suspense fallback={<LoadingSkeleton label="Carregando demonstração visual de Configurações ADM…" />}><ConfiguracoesADMPage /></Suspense></Boundary>
-  }
+  const path = routeLocation.pathname
+  if (path === '/cadastro-empresa') return <PublicPage><CadastroEmpresa /></PublicPage>
+  if (path === '/planos') return <PublicPage><PlanosIndustrial /></PublicPage>
+  if (path === '/ativar-acesso') return <PublicPage><AtivarAcesso /></PublicPage>
+  if (path === '/cadastro-master' || path === '/configuracao-adm-master') return <PublicPage><SetupADMInicial /></PublicPage>
+  if (path === '/blog') return <PublicPage><Blog /></PublicPage>
+  if (path === '/contato') return <PublicPage><Contato /></PublicPage>
+  if (path === '/preview/icones') return <PublicPage><IndustrialVisualShowcase /></PublicPage>
+  if (path.startsWith('/modulos/')) return <PublicPage><PublicModuleOverview /></PublicPage>
   return <AppIndustrialAuthenticated />
+}
+
+function PublicPage({ children }: { children: ReactNode }) {
+  return <Boundary><Suspense fallback={<LoadingSkeleton />}>{children}</Suspense></Boundary>
+}
+
+function PublicModuleOverview() {
+  const { module = '' } = useParams()
+  return <ModuleOverviewIndustrial module={module} />
 }
 
 function AppIndustrialAuthenticated() {
@@ -326,23 +366,12 @@ function AppIndustrialAuthenticated() {
     </Routes>
   )
 
-  // DEMO VISUAL ISOLADA: Configurações ADM não depende de Supabase/Auth nesta fase.
-  if (location.pathname === '/configuracoes-adm' || location.pathname.startsWith('/configuracoes-adm/')) {
-    return (
-      <Boundary>
-        <Suspense fallback={<LoadingSkeleton label="Carregando demonstração visual de Configurações ADM…" />}>
-          <ConfiguracoesADMPage />
-        </Suspense>
-      </Boundary>
-    )
-  }
-
   if (!session) {
     return <Boundary><Suspense fallback={<LoadingSkeleton />}>{publicRoutes}</Suspense></Boundary>
   }
 
   if (!statusAcesso) {
-    return <LoadingSkeleton label="Validando acesso ao SYSNQRA ERP & SGQ INDUSTRIAL…" />
+    return <LoadingSkeleton label="Validando acesso ao SYSNQRA ERP & SGQ INDUSTRIALâ€¦" />
   }
 
   if (!statusAcesso.ok) {
@@ -368,17 +397,20 @@ function AppIndustrialAuthenticated() {
       <Route path="/tablet/dashboard" element={<TabletDashboard />} />
       <Route path="/tablet/home" element={<TabletDashboard />} />
       <Route path="/vendas" element={<DashboardComercial />} />
+      <Route path="/vendas/dashboard" element={<DashboardComercial />} />
+      <Route path="/vendas/pedidos" element={<VendasCentral />} />
       <Route path="/vendas/pdv" element={<VendasPDV />} />
       <Route path="/vendas/novo-pedido" element={<PedidoVendaCompleto />} />
       <Route path="/configuracoes" element={<Navigate to="/configuracoes-adm" replace />} />
       <Route path="/vendas/orcamentos" element={<VendasAnaliseCustos />} />
       <Route path="/vendas/pendentes" element={<VendasStatusPedidos />} />
-      <Route path="/vendas/reajuste" element={<AjusteGlobal />} />
+      <Route path="/vendas/reajuste" element={<TabelaPrecos />} />
       <Route path="/financeiro/lista-precos-cliente" element={<BankingListaPrecosCliente />} />
-      <Route path="/financeiro/reconciliacao" element={<BankingReconciliation />} />
-      <Route path="/financeiro/importar-extratos" element={<BankingStatementImporter />} />
       <Route path="/financeiro/ano-fiscal" element={<AnoFiscal />} />
       <Route path="/financeiro/fluxo-caixa" element={<FinanceiroFluxoCaixa />} />
+      <Route path="/financeiro/contas-pagar" element={<FinanceiroContasPagar kind="PAGAR" />} />
+      <Route path="/financeiro/contas-receber" element={<FinanceiroContasReceber kind="RECEBER" />} />
+      <Route path="/financeiro/caixa" element={<FinanceiroDashboardCaixa />} />
       <Route path="/vendas/carteira" element={<VendasCarteira />} />
       <Route path="/vendas/status" element={<VendasStatusPedidos />} />
       <Route path="/controladoria/retificacao-pedido/:pedidoId" element={<RetificacaoPedido />} />
@@ -402,7 +434,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/postos-trabalho" element={<PostosTrabalho />} />
       <Route path="/pcp/painel-ordens" element={<PainelOrdensProducao />} />
       <Route path="/pcp/apuracao-turno" element={<ApuracaoTurno />} />
-      <Route path="/pcp/ordens" element={<PCPIndustrial />} />
+      <Route path="/pcp/ordens" element={<PCPOrdens />} />
       <Route path="/pcp/demanda" element={<PCPIndustrial />} />
       <Route path="/pcp/materiais" element={<PCPIndustrial />} />
       <Route path="/pcp/paradas" element={<PCPParadas />} />
@@ -424,7 +456,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/metrologia" element={<CentraisIndustriais module="metrologia" />} />
       <Route path="/qualidade/calibracao" element={<CalibracaoIndustrial />} />
       <Route path="/qualidade/editor-it" element={<QualidadeEditorIT />} />
-      <Route path="/qualidade/procedimentos" element={<QualidadeProcedimentos />} />
+      <Route path="/qualidade/procedimentos" element={<DocumentosQualidadeControle />} />
       <Route path="/qualidade/assinatura-it" element={<QualidadeAssinaturaIT />} />
       <Route path="/qualidade/genealogia-lote" element={<QualidadeGenealogiaLote />} />
       <Route path="/qualidade/quarentena" element={<QualidadeQuarentena />} />
@@ -463,7 +495,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/outlook/configuracao" element={<OutlookConfiguracao />} />
       <Route path="/outlook/caixa-entrada" element={<OutlookCaixaEntrada />} />
       <Route path="/compras/rfq" element={<ComprasRFQ />} />
-      <Route path="/compras/pedido" element={<ComprasPedidoCompra />} />
+      <Route path="/compras/pedido" element={<PedidoCompra />} />
       <Route path="/compras/fornecedores" element={<FornecedoresIndustrial />} />
       <Route path="/compras/solicitacao-manual" element={<ComprasSolicitacaoManual />} />
       <Route path="/solicitacao-compra" element={<SolicitacaoCompra />} />
@@ -477,15 +509,16 @@ function AppIndustrialAuthenticated() {
       <Route path="/fiscal/previsao-caixa" element={<FiscalPrevisaoCaixa />} />
       <Route path="/fiscal/carteira-nfe" element={<FiscalCarteiraNFe />} />
       <Route path="/fiscal/impostos" element={<FiscalImpostos />} />
+      <Route path="/fiscal/pendencias" element={<FiscalPendencias />} />
       <Route path="/controladoria/razao-geral" element={<PainelRazaoGeral />} />
       <Route path="/controladoria/lucratividade" element={<PainelLucratividade />} />
       <Route path="/controladoria/auditoria-comissoes" element={<AuditoriaComissoes />} />
       <Route path="/controladoria/cadastro-decimais" element={<CadastroDecimais />} />
       <Route path="/fiscal/razao-geral" element={<Navigate to="/controladoria/razao-geral" replace />} />
-      <Route path="/fiscal/auditoria-documental" element={<AuditoriaDocumental />} />
-      <Route path="/fiscal/grupos-contabeis" element={<GeradorGruposContabeis />} />
-      <Route path="/fiscal/estornos" element={<EstornoLancamentos />} />
-      <Route path="/fiscal/classificacao" element={<ClassificacaoFiscal />} />
+      <Route path="/fiscal/auditoria-documental" element={<div className="erp-dense fiscal-workspace min-h-screen"><AuditoriaDocumental /></div>} />
+      <Route path="/fiscal/grupos-contabeis" element={<div className="erp-dense fiscal-workspace min-h-screen"><GeradorGruposContabeis /></div>} />
+      <Route path="/fiscal/estornos" element={<div className="erp-dense fiscal-workspace min-h-screen"><EstornoLancamentos /></div>} />
+      <Route path="/fiscal/classificacao" element={<div className="erp-dense fiscal-workspace min-h-screen"><ClassificacaoFiscal /></div>} />
       <Route path="/controladoria/assistente-retificacao" element={<AssistenteRetificacao />} />
       <Route path="/master" element={<MasterOnly allowed={statusAcesso.master}><Master /></MasterOnly>} />
       <Route path="/cadastro-empresa" element={<CadastroEmpresa />} />
@@ -509,18 +542,20 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras-solicitacao" element={<ComprasSolicitacaoManual />} />
       <Route path="/manutencao/ordens" element={<ManutencaoOrdens />} />
       <Route path="/fiscal/carteira" element={<FiscalCarteiraNFe />} />
-      <Route path="/qualidade/rnc" element={<QualidadeDashboardRNC />} />
+      <Route path="/qualidade/rnc" element={<QualidadeRNC />} />
       <Route path="/estoque/recebimento" element={<EstoqueRecebimentoLotes />} />
       <Route path="/fichas-processo" element={<FichasProcesso />} />
       <Route path="*" element={<Navigate to="/comercial" replace />} />
     </Routes>
   )
 
-  return (
+  const appContent = (
     <Boundary>
       <Suspense fallback={<LoadingSkeleton />}>
         {protectedRoutes}
       </Suspense>
     </Boundary>
   )
+  if (location.pathname === '/tablet/dashboard' || location.pathname === '/tablet/home') return appContent
+  return <ProtectedAppLayout>{appContent}</ProtectedAppLayout>
 }

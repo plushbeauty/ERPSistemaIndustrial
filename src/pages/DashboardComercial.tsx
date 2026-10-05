@@ -17,17 +17,16 @@ import {
 } from 'recharts'
 import { Printer } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
 
-type Pedido = {
-  id: string
-  numero: number
-  total: number | null
-  data_entrada: string | null
-  cliente_id: string | null
-  status: string
+type Cliente = { id: string; tipo_cliente: string | null; nome: string; documento: string | null }
+type DocumentoFiscal = {
+  valor_total: number | null
+  data_emissao: string | null
+  destinatario_documento: string | null
+  destinatario_nome: string | null
 }
-type Cliente = { id: string; tipo_cliente: string | null; nome: string }
 type Meta = { competencia: string; meta_faturamento: number | null }
 type Empresa = {
   razao_social: string
@@ -62,8 +61,9 @@ function chartTitle(target: PrintTarget): string {
 }
 
 export default function DashboardComercial() {
-  const [pedidos, setPedidos] = useState<Pedido[]>([])
+  const [pedidosCount, setPedidosCount] = useState(0)
   const [clientes, setClientes] = useState<Cliente[]>([])
+  const [documentos, setDocumentos] = useState<DocumentoFiscal[]>([])
   const [metas, setMetas] = useState<Meta[]>([])
   const [empresa, setEmpresa] = useState<Empresa | null>(null)
   const [logoSrc, setLogoSrc] = useState<string | null>(null)
@@ -71,103 +71,119 @@ export default function DashboardComercial() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  const currentYear = new Date().getFullYear()
   const load = async () => {
     setLoading(true)
     setError('')
-    const current = await supabase.rpc('erp_current_empresa_id')
-    if (current.error || !current.data) throw current.error ?? new Error('Empresa não identificada.')
+    try {
+      const current = await supabase.rpc('erp_current_empresa_id')
+      if (current.error || !current.data) throw current.error ?? new Error('Empresa não identificada.')
 
-    const empresaId = String(current.data)
-    const [ordersResult, clientsResult, metasResult, empresaResult] = await Promise.all([
-      supabase
-        .from('erp_pedidos_venda')
-        .select('id,numero,total,data_entrada,cliente_id,status')
-        .eq('empresa_id', empresaId)
-        .order('numero', { ascending: false })
-        .limit(10000),
-      supabase
-        .from('erp_clientes')
-        .select('id,tipo_cliente,nome')
-        .eq('empresa_id', empresaId)
-        .eq('ativo', true)
-        .limit(10000),
-      supabase
-        .from('erp_vendas_metas')
-        .select('competencia,meta_faturamento')
-        .eq('empresa_id', empresaId)
-        .gte('competencia', new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10))
-        .lt('competencia', new Date(new Date().getFullYear() + 1, 0, 1).toISOString().slice(0, 10))
-        .order('competencia'),
-      supabase
-        .from('erp_empresas')
-        .select('razao_social,nome_fantasia,cnpj,logo_url,logo_impressao_url,telefone,email,endereco,cidade,uf,cep,cabecalho_relatorios,rodape_relatorios')
-        .eq('id', empresaId)
-        .maybeSingle(),
-    ])
-    if (ordersResult.error) throw ordersResult.error
-    if (clientsResult.error) throw clientsResult.error
-    if (metasResult.error) throw metasResult.error
-    if (empresaResult.error) throw empresaResult.error
+      const empresaId = String(current.data)
+      const yearStart = `${currentYear}-01-01`
+      const nextYearStart = `${currentYear + 1}-01-01`
+      const [documentsResult, clientsResult, metasResult, empresaResult, ordersResult] = await Promise.all([
+        fetchAllPages((from, to) => supabase
+          .from('erp_documentos_fiscais')
+          .select('valor_total,data_emissao,destinatario_documento,destinatario_nome', { count: 'exact' })
+          .eq('empresa_id', empresaId)
+          .eq('tipo', 'saida')
+          .eq('status', 'Autorizada')
+          .gte('data_emissao', yearStart)
+          .lt('data_emissao', nextYearStart)
+          .order('data_emissao')
+          .range(from, to)),
+        fetchAllPages((from, to) => supabase
+          .from('erp_clientes')
+          .select('id,tipo_cliente,nome,documento', { count: 'exact' })
+          .eq('empresa_id', empresaId)
+          .eq('ativo', true)
+          .order('nome')
+          .range(from, to)),
+        supabase
+          .from('erp_vendas_metas')
+          .select('competencia,meta_faturamento')
+          .eq('empresa_id', empresaId)
+          .gte('competencia', yearStart)
+          .lt('competencia', nextYearStart)
+          .order('competencia'),
+        supabase
+          .from('erp_empresas')
+          .select('razao_social,nome_fantasia,cnpj,logo_url,logo_impressao_url,telefone,email,endereco,cidade,uf,cep,cabecalho_relatorios,rodape_relatorios')
+          .eq('id', empresaId)
+          .maybeSingle(),
+        supabase
+          .from('erp_pedidos_venda')
+          .select('id', { count: 'exact', head: true })
+          .eq('empresa_id', empresaId),
+      ])
+      if (metasResult.error) throw metasResult.error
+      if (empresaResult.error) throw empresaResult.error
+      if (ordersResult.error) throw ordersResult.error
 
-    setPedidos((ordersResult.data ?? []) as Pedido[])
-    setClientes((clientsResult.data ?? []) as Cliente[])
-    setMetas((metasResult.data ?? []) as Meta[])
-    setEmpresa((empresaResult.data ?? null) as Empresa | null)
+      setDocumentos(documentsResult as unknown as DocumentoFiscal[])
+      setClientes(clientsResult as unknown as Cliente[])
+      setMetas((metasResult.data ?? []) as Meta[])
+      setEmpresa((empresaResult.data ?? null) as Empresa | null)
+      setPedidosCount(ordersResult.count ?? 0)
 
-    const storedLogo = empresaResult.data?.logo_impressao_url || empresaResult.data?.logo_url
-    if (!storedLogo) {
-      setLogoSrc(null)
-    } else if (/^https?:\/\//i.test(storedLogo)) {
-      setLogoSrc(storedLogo)
-    } else {
-      const cleanPath = storedLogo.replace(/^\/+/, '')
-      const signed = await supabase.storage.from('erp-documentos').createSignedUrl(cleanPath, 3600)
-      setLogoSrc(signed.data?.signedUrl ?? null)
+      const storedLogo = empresaResult.data?.logo_impressao_url || empresaResult.data?.logo_url
+      if (!storedLogo) {
+        setLogoSrc(null)
+      } else if (/^https?:\/\//i.test(storedLogo)) {
+        setLogoSrc(storedLogo)
+      } else {
+        const cleanPath = storedLogo.replace(/^\/+/, '')
+        const signed = await supabase.storage.from('erp-documentos').createSignedUrl(cleanPath, 3600)
+        setLogoSrc(signed.data?.signedUrl ?? null)
+      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao carregar o dashboard.')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
-  useEffect(() => {
-    void load().catch((cause: unknown) => {
-      setLoading(false)
-      setError(cause instanceof Error ? cause.message : 'Falha ao carregar o dashboard.')
-    })
-  }, [])
+  useEffect(() => { void load() }, [])
 
-  const currentYear = new Date().getFullYear()
-  const clienteMap = useMemo(() => new Map(clientes.map((cliente) => [cliente.id, cliente])), [clientes])
+  const clientesPorDocumento = useMemo(() => new Map(
+    clientes
+      .filter((cliente): cliente is Cliente & { documento: string } => Boolean(cliente.documento))
+      .map((cliente) => [cliente.documento.replace(/\D/g, ''), cliente]),
+  ), [clientes])
 
   const profileData = useMemo<ProfileRow[]>(() => {
     const totals = new Map<string, number>()
-    for (const pedido of pedidos) {
-      if (!pedido.cliente_id) continue
-      const perfil = clienteMap.get(pedido.cliente_id)?.tipo_cliente?.trim() || 'Não informado'
-      totals.set(perfil, (totals.get(perfil) ?? 0) + Number(pedido.total ?? 0))
+    for (const documento of documentos) {
+      const customerDocument = documento.destinatario_documento?.replace(/\D/g, '') ?? ''
+      const perfil = clientesPorDocumento.get(customerDocument)?.tipo_cliente?.trim() || 'Não informado'
+      totals.set(perfil, (totals.get(perfil) ?? 0) + Number(documento.valor_total ?? 0))
     }
     const total = [...totals.values()].reduce((sum, value) => sum + value, 0)
     return [...totals.entries()]
       .sort((a, b) => b[1] - a[1])
       .map(([perfil, valor]) => ({ perfil, valor, percentual: total ? (valor / total) * 100 : 0 }))
-  }, [pedidos, clienteMap])
+  }, [documentos, clientesPorDocumento])
 
   const monthlyData = useMemo<MonthRow[]>(() => {
     const metaMap = new Map(metas.map((meta) => [Number(meta.competencia.slice(5, 7)), Number(meta.meta_faturamento ?? 0)]))
     const values = monthNames.map((mes, index) => ({ mes, faturamento: 0, acumulado: 0, meta: metaMap.get(index + 1) ?? 0 }))
-    for (const pedido of pedidos) {
-      if (!pedido.data_entrada) continue
-      const date = new Date(pedido.data_entrada)
-      if (date.getFullYear() !== currentYear) continue
-      values[date.getMonth()].faturamento += Number(pedido.total ?? 0)
+    for (const documento of documentos) {
+      const date = documento.data_emissao?.slice(0, 10)
+      if (!date || Number(date.slice(0, 4)) !== currentYear) continue
+      const monthIndex = Number(date.slice(5, 7)) - 1
+      if (monthIndex < 0 || monthIndex > 11) continue
+      values[monthIndex].faturamento += Number(documento.valor_total ?? 0)
     }
     let acumulado = 0
     return values.map((row) => { acumulado += row.faturamento; return { ...row, acumulado } })
-  }, [pedidos, metas, currentYear])
+  }, [documentos, metas, currentYear])
 
   const totals = useMemo(() => ({
     faturamento: monthlyData.reduce((sum, row) => sum + row.faturamento, 0),
     meta: monthlyData.reduce((sum, row) => sum + row.meta, 0),
-    pedidos: pedidos.length,
-  }), [monthlyData, pedidos])
+    pedidos: pedidosCount,
+  }), [monthlyData, pedidosCount])
 
   const requestPrint = (target: PrintTarget) => {
     setPrintTarget(target)
@@ -206,17 +222,18 @@ export default function DashboardComercial() {
         }
       `}</style>
 
-      {error && <div className="mb-2 border border-red-200 bg-red-50 p-2 text-[11px] text-red-800">{error}</div>}
+      {error && <div role="alert" className="mb-2 border border-red-200 bg-red-50 p-2 text-[11px] text-red-800">{error}</div>}
+      {loading && <div role="status" className="mb-2 text-[11px] text-slate-500">Carregando indicadores comerciais…</div>}
 
       <div className="space-y-2 text-[11px]">
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           <Kpi label="Faturamento no ano" value={brl(totals.faturamento)} />
           <Kpi label="Meta anual" value={brl(totals.meta)} />
           <Kpi label="Pedidos" value={totals.pedidos} />
                   </div>
 
         <div className="grid min-w-0 gap-2">
-          <main className="grid min-w-0 grid-cols-2 gap-2">
+          <div className="grid min-w-0 grid-cols-1 gap-2 xl:grid-cols-2">
             <ChartCard title="Faturamento por Perfil de Cliente" onPrint={() => requestPrint('perfil')} className="min-h-[235px]">
               <ResponsiveContainer width="100%" height={205}>
                 <PieChart>
@@ -241,7 +258,7 @@ export default function DashboardComercial() {
               </ResponsiveContainer>
             </ChartCard>
 
-            <ChartCard title="Metas vs. Realizado" onPrint={() => requestPrint('metas')} className="col-span-2 min-h-[235px]">
+            <ChartCard title="Metas vs. Realizado" onPrint={() => requestPrint('metas')} className="min-h-[235px] xl:col-span-2">
               <ResponsiveContainer width="100%" height={205}>
                 <BarChart data={monthlyData} onClick={() => requestPrint('metas')} margin={{ top: 4, right: 10, left: 8, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -254,7 +271,7 @@ export default function DashboardComercial() {
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
-          </main>
+          </div>
 
 
         </div>

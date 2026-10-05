@@ -29,10 +29,8 @@ import './styles/erp-reference-ux-2026.css'
 import './styles/industrial-command-center-2026.css'
 import './styles/design-system-2026.css'
 import './styles/form-system-2026.css'
-import './styles/erp-professional-standard.css'
 
 const AppBootstrap = lazyPage(() => import('./AppBootstrap'), 'AppBootstrap')
-const ConfiguracoesADMPage = lazyPage(() => import('./pages/configuracoes/ConfiguracoesADM'), 'ConfiguracoesADMPage')
 
 const ERP_BOOTSTRAP_VERSION = '2026-09-18-browser-auth-v9'
 
@@ -48,14 +46,6 @@ function FatalBootstrap({ error, retry }: { error: unknown; retry: () => void })
         <button type="button" onClick={retry} style={{ marginTop: 18, border: 0, borderRadius: 12, padding: '12px 18px', fontWeight: 900, cursor: 'pointer', background: '#0f766e', color: '#fff' }}>Recarregar aplicativo</button>
       </section>
     </main>
-  )
-}
-
-function DemoConfiguracoesADM() {
-  return (
-    <Suspense fallback={<div role="status" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'Inter,system-ui,sans-serif', background: '#F4FBFD', color: '#123B50' }}><strong>Carregando demonstração visual de Configurações ADM…</strong></div>}>
-      <ConfiguracoesADMPage />
-    </Suspense>
   )
 }
 
@@ -77,9 +67,7 @@ createRoot(rootElement).render(
       <BrowserRouter>
         <SidebarProvider>
         <PontoProvider>
-        {window.location.pathname === '/configuracoes-adm' || window.location.pathname.startsWith('/configuracoes-adm/')
-          ? <DemoConfiguracoesADM />
-          : <BootstrapLoader />}
+        <BootstrapLoader />
         </PontoProvider>
         </SidebarProvider>
       </BrowserRouter>
