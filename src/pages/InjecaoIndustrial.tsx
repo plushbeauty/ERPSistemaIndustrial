@@ -96,7 +96,7 @@ export default function InjecaoIndustrial(){
     if(Number(machineForm.valor_hora_custo)<0){setError('Custo/hora não pode ser negativo.');return}
     setBusy(true);setError('');setMessage('')
     try{
-      const payload={empresa_id:empresaId,codigo:machineForm.codigo.trim(),nome:machineForm.nome.trim(),tipo:machineForm.tipo.trim()||'INJETORA',fabricante:machineForm.fabricante.trim()||null,modelo:machineForm.modelo.trim()||null,valor_hora_custo:Number(machineForm.valor_hora_custo||0),ativo:true}
+      const payload={empresa_id:empresaId,codigo:machineForm.codigo.trim(),nome:machineForm.nome.trim(),tipo:machineForm.tipo.trim()||'INJETORA',fabricante:machineForm.fabricante.trim()||null,modelo:machineForm.modelo.trim()||null,valor_hora_custo:Number(machineForm.valor_hora_custo||0),status:'ATIVO',ativo:true}
       const result=machineForm.id?await supabase.from('erp_maquinas').update(payload).eq('id',machineForm.id).eq('empresa_id',empresaId).select('id').single():await supabase.from('erp_maquinas').insert(payload).select('id').single()
       if(result.error)throw result.error
       const machineId=machineForm.id??result.data?.id
