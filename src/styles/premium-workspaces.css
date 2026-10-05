@@ -169,3 +169,407 @@
 @media(max-width:900px){.sales-kpis,.user-admin-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.sales-page-heading,.user-admin-heading{align-items:flex-start;flex-direction:column}.sales-heading-actions,.user-admin-heading-actions{width:100%}.sales-heading-actions .sales-button,.user-admin-heading-actions .user-button{flex:1}.user-admin{padding:20px}.user-admin-toolbar{flex-wrap:wrap}.user-admin-search{max-width:none}.user-admin-count{margin-left:0}}
 @media(max-width:600px){.sales-page-heading{margin-bottom:16px}.sales-page-heading p,.user-admin-heading p{font-size:12px}.sales-kpis,.user-admin-summary{gap:8px}.sales-kpis article,.user-admin-summary article{min-height:95px;padding:12px}.sales-kpis article>strong,.user-admin-summary article>strong{font-size:23px}.sales-list-toolbar{align-items:stretch;flex-direction:column}.sales-search{max-width:none}.sales-result-count{justify-content:flex-end}.sales-filter-row{padding-right:7px;padding-left:7px}.sales-filter-tab{padding:0 8px}.sales-order-form section:first-of-type>div:nth-child(2),.sales-order-form section:first-of-type>div:nth-child(3){align-items:stretch;flex-direction:column}.sales-order-form section:first-of-type>div:nth-child(2)>div,.sales-order-form section:first-of-type>div:nth-child(3)>div{width:100%!important;flex:1 1 auto}.sales-order-form .sales-order-extras,.sales-order-form .sales-order-product-entry{align-items:stretch;flex-direction:column}.sales-order-form .sales-order-extras>div,.sales-order-form .sales-order-product-entry>div,.sales-order-form .sales-order-product-entry>div:nth-child(2){width:100%!important;flex:1 1 auto}.sales-order-form .sales-order-product-entry>.sales-button{width:100%}.sales-totals-summary{justify-content:space-between;gap:9px;margin:4px 0 0}.sales-totals-summary strong{font-size:17px}.sales-order-actions{display:grid;grid-template-columns:1fr 1fr}.sales-order-actions .sales-button{width:100%;padding:0 7px!important;font-size:10px!important}.sales-detail-toolbar .sales-button{padding:0 9px;font-size:10px}.user-admin{padding:16px 12px}.user-admin-heading-actions{display:grid;grid-template-columns:1fr 1fr}.user-admin-heading-actions .user-button{padding:0 8px;font-size:10px}.user-admin-toolbar{padding:12px}.user-admin-company-filter{width:100%}.user-admin-count{width:100%;text-align:right}.user-admin-tabs{padding:0 8px}.user-admin-form-grid{grid-template-columns:1fr;gap:12px}.user-admin-field--wide{grid-column:auto}.user-admin-dialog{padding:16px}.user-admin-dialog-header h2{font-size:19px}.user-admin-dialog-actions .user-button{flex:1;padding:0 9px}}
 @media(prefers-reduced-motion:reduce){.sales-nav-link,.sales-button,.user-button{transition:none}}
+
+
+/* VENDAS — padrão compacto ERP industrial. Mantém a lógica das páginas e normaliza apenas a apresentação. */
+.sales-shell{
+  min-height:100vh;
+  color:#263f49;
+  background:#f3f6f8;
+}
+.sales-sidebar{
+  position:fixed;
+  inset:0 auto 0 0;
+  z-index:40;
+  display:flex;
+  width:224px;
+  flex-direction:column;
+  border-right:1px solid #dbe4e7;
+  background:#fff;
+}
+.sales-sidebar-brand{
+  display:flex;
+  min-height:58px;
+  align-items:center;
+  gap:9px;
+  border-bottom:1px solid #e5ebed;
+  padding:0 13px;
+}
+.sales-brand-mark{
+  display:grid;
+  width:29px;
+  height:29px;
+  flex:none;
+  place-items:center;
+  border-radius:4px;
+  background:#123b50;
+  color:#fff;
+  font-size:14px;
+  font-weight:600;
+  box-shadow:none;
+}
+.sales-brand-kicker{
+  color:#71858c;
+  font-size:8px;
+  font-weight:500;
+  letter-spacing:.13em;
+}
+.sales-brand-title{
+  margin-top:1px;
+  color:#173b4a;
+  font-size:14px;
+  font-weight:500;
+}
+.sales-sidebar-nav{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  padding:9px 8px;
+  scrollbar-width:thin;
+}
+.sales-nav-section{margin:0 0 8px}
+.sales-nav-section-label{
+  padding:6px 9px 4px;
+  color:#84949a;
+  font-size:8px;
+  font-weight:500;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+.sales-nav-link{
+  display:flex;
+  min-height:34px;
+  align-items:center;
+  gap:8px;
+  margin:1px 0;
+  border:1px solid transparent;
+  border-radius:3px;
+  padding:0 9px;
+  color:#526a73;
+  font-size:11px;
+  font-weight:400;
+  line-height:1.15;
+  text-decoration:none;
+}
+.sales-nav-link svg{flex:none;color:#789098}
+.sales-nav-link:hover{
+  background:#f3f7f8;
+  color:#164e63;
+}
+.sales-nav-link.is-active{
+  border-color:#cfe2e7;
+  background:#eaf4f7;
+  color:#0f526a;
+  font-weight:500;
+}
+.sales-nav-link.is-active svg{color:#1d7792}
+.sales-sidebar-footer{
+  border-top:1px solid #e5ebed;
+  padding:9px 12px;
+  color:#778a91;
+  font-size:8px;
+  line-height:1.35;
+}
+.sales-sidebar-footer span{display:block;color:#52717b}
+.sales-sidebar-footer small{display:block;margin-top:2px;font-size:8px;color:#8a9a9f}
+.sales-main{
+  min-width:0;
+  min-height:100vh;
+  margin-left:224px;
+}
+.sales-topbar{
+  position:sticky;
+  top:0;
+  z-index:30;
+  display:flex;
+  min-height:52px;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  border-bottom:1px solid #dbe4e7;
+  background:rgba(255,255,255,.98);
+  padding:0 15px;
+  box-shadow:0 1px 3px rgba(18,59,80,.04);
+}
+.sales-topbar-title{min-width:0;display:grid;gap:1px}
+.sales-topbar-title>span{color:#71858c;font-size:8px;font-weight:500;letter-spacing:.1em}
+.sales-topbar-title>strong{
+  overflow:hidden;
+  color:#234553;
+  font-size:13px;
+  font-weight:500;
+  line-height:1.2;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.sales-topbar-title>small{
+  overflow:hidden;
+  color:#7b8c92;
+  font-size:9px;
+  font-weight:400;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.sales-topbar-actions{display:flex;flex:none;align-items:center;gap:4px}
+.sales-topbar-button{
+  display:inline-flex;
+  min-width:31px;
+  min-height:31px;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  border:1px solid #d4e0e3;
+  border-radius:3px;
+  background:#fff;
+  padding:0 8px;
+  color:#47616a;
+  font-size:10px;
+  font-weight:400;
+}
+.sales-topbar-button:hover{border-color:#a9c8d0;background:#f5fafb;color:#15566c}
+.sales-mobile-nav{
+  display:flex;
+  gap:2px;
+  overflow-x:auto;
+  border-bottom:1px solid #dfe7e9;
+  background:#fff;
+  padding:4px 8px;
+  scrollbar-width:thin;
+}
+.sales-mobile-nav a{
+  display:flex;
+  min-height:31px;
+  flex:0 0 auto;
+  align-items:center;
+  gap:5px;
+  border:1px solid transparent;
+  border-radius:3px;
+  padding:0 8px;
+  color:#62767e;
+  font-size:9px;
+  font-weight:400;
+  text-decoration:none;
+}
+.sales-mobile-nav a.is-active{
+  border-color:#cfe2e7;
+  background:#eaf4f7;
+  color:#14566c;
+}
+.sales-content{
+  width:100%;
+  max-width:1700px;
+  margin:0 auto;
+  padding:13px 15px 24px;
+}
+.sales-workspace{max-width:1700px}
+.sales-page-heading{
+  margin:0 0 13px;
+  align-items:center;
+  gap:12px;
+}
+.sales-eyebrow{font-size:8px;font-weight:500;letter-spacing:.11em}
+.sales-page-heading h1{
+  margin:3px 0 2px;
+  color:#1c3c49;
+  font-size:20px;
+  font-weight:500;
+  letter-spacing:-.02em;
+  line-height:1.15;
+}
+.sales-page-heading p{font-size:10px;line-height:1.35}
+.sales-heading-actions{gap:4px}
+.sales-button{
+  min-height:32px;
+  border-radius:3px;
+  padding:0 9px;
+  font-size:10px;
+  font-weight:400;
+  box-shadow:none;
+}
+.sales-button--primary{
+  background:#145b75;
+  color:#fff;
+}
+.sales-button--primary:hover{background:#0e4d64}
+.sales-button--secondary{
+  border-color:#cddde1;
+  background:#fff;
+  color:#315662;
+}
+.sales-button--ghost{color:#617780}
+.sales-alert{
+  margin:0 0 9px;
+  border-radius:3px;
+  padding:8px 10px;
+  font-size:10px;
+}
+.sales-kpis{
+  gap:7px;
+  margin-bottom:9px;
+}
+.sales-kpis article{
+  min-height:76px;
+  border-radius:3px;
+  padding:9px 10px;
+  box-shadow:none;
+}
+.sales-kpis article>span{font-size:9px;font-weight:400}
+.sales-kpis article>strong{font-size:19px;font-weight:500}
+.sales-kpis article>small{font-size:8px}
+.sales-orders-card{
+  border-radius:3px;
+  box-shadow:none;
+}
+.sales-filter-row{padding:4px 6px 0}
+.sales-filter-tab{
+  min-height:34px;
+  gap:5px;
+  border-radius:0;
+  padding:0 8px;
+  font-size:9px;
+  font-weight:400;
+}
+.sales-filter-tab>span{
+  min-width:18px;
+  height:18px;
+  border-radius:3px;
+  font-size:8px;
+}
+.sales-list-toolbar{gap:7px;padding:8px}
+.sales-search{
+  min-height:34px;
+  border-radius:3px;
+  padding:0 8px;
+}
+.sales-search input{
+  min-height:31px;
+  font-size:10px!important;
+}
+.sales-result-count{font-size:9px}
+.sales-orders-table{min-width:800px}
+.sales-orders-table thead th{
+  height:34px;
+  padding:0 9px;
+  font-size:8px!important;
+  font-weight:500;
+}
+.sales-orders-table tbody td{
+  height:51px;
+  padding:6px 9px;
+  font-size:10px!important;
+}
+.sales-order-number{font-size:10px;font-weight:500}
+.sales-secondary-line{font-size:8px}
+.sales-client-name{font-weight:500}
+.sales-status{
+  border-radius:3px;
+  padding:3px 6px;
+  font-size:8px;
+  font-weight:400;
+}
+.sales-icon-action,.sales-open-action{
+  min-width:28px;
+  min-height:28px;
+  border-radius:3px;
+  font-size:9px;
+}
+.sales-open-action{padding:0 7px}
+.sales-empty-state{min-height:130px}
+.sales-empty-state strong{font-size:11px}
+.sales-empty-state span{font-size:9px}
+
+/* Formulário de pedido: grade densa, campos proporcionais e padrão azul único. */
+.sales-order-form{max-width:1700px}
+.sales-order-form section{
+  border-radius:3px!important;
+  box-shadow:none!important;
+}
+.sales-order-form section:first-of-type{padding:11px!important}
+.sales-order-form section:first-of-type>div:nth-child(2),
+.sales-order-form section:first-of-type>div:nth-child(3){
+  gap:7px;
+  margin-bottom:7px!important;
+}
+.sales-order-form label{
+  gap:3px;
+  color:#5c7179;
+  font-size:8px;
+  font-weight:400;
+}
+.sales-order-form input,
+.sales-order-form select,
+.sales-order-form textarea{
+  min-height:32px!important;
+  border-radius:2px!important;
+  padding:5px 7px!important;
+  font-size:10px!important;
+}
+.sales-order-form button{
+  min-height:32px;
+  padding-top:5px;
+  padding-bottom:5px;
+  font-size:9px;
+}
+.sales-order-form .sales-order-extras,
+.sales-order-form .sales-order-product-entry{
+  gap:7px;
+  border-radius:3px;
+  padding:9px;
+}
+.sales-order-form .sales-order-items{max-height:420px}
+.sales-order-form #gridItens table{min-width:920px;font-size:10px!important}
+.sales-order-form #gridItens th{
+  height:34px!important;
+  font-size:8px!important;
+  font-weight:500!important;
+}
+.sales-order-form #gridItens td{
+  height:40px!important;
+  padding:5px 7px!important;
+  font-size:9px!important;
+}
+.sales-order-form .sales-order-totals{padding:9px!important}
+.sales-totals-summary{gap:14px}
+.sales-totals-summary span{font-size:8px}
+.sales-totals-summary b{font-size:10px}
+.sales-totals-summary strong{font-size:16px}
+.sales-order-actions{gap:5px;padding-top:9px}
+.sales-order-form .sales-order-actions button{min-height:34px;padding:0 10px}
+.sales-api-note{border-radius:3px;padding:8px 10px;font-size:9px}
+
+/* Páginas de detalhe/listagem que usam Tailwind diretamente. */
+.sales-detail>section{border-radius:3px!important;box-shadow:none!important}
+.sales-detail>section h2{font-size:14px;font-weight:500}
+.sales-detail>section table th{height:34px;font-size:9px!important;font-weight:500}
+.sales-detail>section table td{padding:7px 6px;font-size:10px!important}
+.sales-detail>section>div{font-size:10px}
+
+/* Modo tablet: não esconde conteúdo nem aumenta tipografia desnecessariamente. */
+.sales-shell.tablet-mode .sales-sidebar{display:none}
+.sales-shell.tablet-mode .sales-main{margin-left:0}
+.sales-shell.tablet-mode .sales-content{padding:10px}
+.sales-shell.tablet-mode .sales-order-form input,
+.sales-shell.tablet-mode .sales-order-form select,
+.sales-shell.tablet-mode .sales-order-form textarea{min-height:36px!important}
+.sales-shell.tablet-mode .sales-order-form button{min-height:36px}
+@media(max-width:1100px){
+  .sales-sidebar{width:210px}
+  .sales-main{margin-left:210px}
+  .sales-nav-link{font-size:10px}
+  .sales-content{padding:11px}
+}
+@media(max-width:900px){
+  .sales-sidebar{display:none}
+  .sales-main{margin-left:0}
+  .sales-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sales-page-heading{align-items:flex-start;flex-direction:column}
+  .sales-heading-actions{width:100%}
+  .sales-heading-actions .sales-button{flex:1}
+}
+@media(max-width:600px){
+  .sales-kpis{gap:5px}
+  .sales-kpis article{min-height:66px;padding:7px}
+  .sales-kpis article>strong{font-size:17px}
+  .sales-list-toolbar{align-items:stretch;flex-direction:column}
+  .sales-search{max-width:none}
+}
