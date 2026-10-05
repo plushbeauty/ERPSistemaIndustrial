@@ -37,11 +37,11 @@ export default function IndustrialPageShell({ module, title, subtitle, children,
 
   const actionNodes = (
     <>
-      <button type="button" className={`inline-flex min-h-7 items-center gap-2 rounded-sm border px-3 text-xs font-black shadow-none ${actionClass.neutral}`} onClick={() => { window.location.href = '/manual-usuario' }}>
+      <button type="button" className={`inline-flex min-h-[42px] items-center gap-2 rounded-xl border px-3 text-xs font-black shadow-sm ${actionClass.neutral}`} onClick={() => { window.location.href = '/manual-usuario' }}>
         <HelpCircle size={16} /> AJUDA
       </button>
       {backHref && (
-        <button type="button" className={`inline-flex min-h-7 items-center gap-2 rounded-sm border px-3 text-xs font-black shadow-none ${actionClass.neutral}`} onClick={() => { window.location.href = backHref }}>
+        <button type="button" className={`inline-flex min-h-[42px] items-center gap-2 rounded-xl border px-3 text-xs font-black shadow-sm ${actionClass.neutral}`} onClick={() => { window.location.href = backHref }}>
           <ArrowLeft size={16} /> VOLTAR
         </button>
       )}
@@ -50,7 +50,7 @@ export default function IndustrialPageShell({ module, title, subtitle, children,
           key={action.label + index}
           type="button"
           disabled={action.disabled}
-          className={`inline-flex min-h-7 items-center gap-2 rounded-sm border px-3 text-xs font-black shadow-none disabled:cursor-not-allowed disabled:opacity-50 ${actionClass[action.type ?? 'neutral']}`}
+          className={`inline-flex min-h-[42px] items-center gap-2 rounded-xl border px-3 text-xs font-black shadow-sm disabled:cursor-not-allowed disabled:opacity-50 ${actionClass[action.type ?? 'neutral']}`}
           onClick={action.onClick}
         >
           {action.icon}
@@ -72,13 +72,13 @@ export default function IndustrialPageShell({ module, title, subtitle, children,
     >
       <div className="erp-dense space-y-4">
         {subtitle && (
-          <div className="rounded-sm border border-slate-200 bg-white p-4 shadow-none">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <p className="text-sm font-semibold text-slate-500">{subtitle}</p>
           </div>
         )}
         {children}
         {footer ?? (
-          <footer className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-500 shadow-none">
+          <footer className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-500 shadow-sm">
             <span>SYSNQRA ERP & SGQ INDUSTRIAL</span>
             <span>Dados reais • RLS por empresa • Sem dados fictícios</span>
           </footer>
@@ -89,7 +89,7 @@ export default function IndustrialPageShell({ module, title, subtitle, children,
 }
 
 export function SectionCard({ title, children, className = '' }: { title: string; children: ReactNode; className?: string }) {
-  return <section className={`rounded-sm border border-slate-200 bg-white p-4 shadow-none ${className}`}><h2 className="mb-3 text-base font-black text-slate-900">{title}</h2>{children}</section>
+  return <section className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm ${className}`}><h2 className="mb-3 text-base font-black text-slate-900">{title}</h2>{children}</section>
 }
 
 export function Field({ label, children, required = false, className = '' }: { label: string; children: ReactNode; required?: boolean; className?: string }) {
@@ -97,13 +97,13 @@ export function Field({ label, children, required = false, className = '' }: { l
 }
 
 export function ToolbarButton({ children, onClick, tone = 'neutral', disabled = false }: { children: ReactNode; onClick?: () => void; tone?: PageAction['type']; disabled?: boolean }) {
-  return <button type="button" disabled={disabled} onClick={onClick} className={`inline-flex min-h-7 items-center gap-2 rounded-sm border px-3 text-[13px] font-black shadow-none disabled:opacity-50 ${actionClass[tone ?? 'neutral']}`}>{children}</button>
+  return <button type="button" disabled={disabled} onClick={onClick} className={`inline-flex min-h-[42px] items-center gap-2 rounded-lg border px-3 text-[13px] font-black shadow-sm disabled:opacity-50 ${actionClass[tone ?? 'neutral']}`}>{children}</button>
 }
 
 export function Table({ children }: { children: ReactNode }) {
-  return <div className="overflow-x-auto rounded-sm border border-slate-200"><table className="w-full min-w-[760px] border-collapse text-[13px]">{children}</table></div>
+  return <div className="overflow-x-auto rounded-xl border border-slate-200"><table className="w-full min-w-[760px] border-collapse text-[13px]">{children}</table></div>
 }
 
 export function CloseButton({ onClick }: { onClick: () => void }) {
-  return <button type="button" data-erp-tooltip="Fechar" title="Fechar" className="grid h-7 w-7 place-items-center rounded-sm border border-slate-300 bg-white text-slate-700 shadow-none hover:bg-slate-50" onClick={onClick} aria-label="Fechar"><X size={20} /></button>
+  return <button type="button" className="grid h-10 w-10 place-items-center rounded-lg border border-slate-300 bg-white text-slate-700 shadow-sm hover:bg-slate-50" onClick={onClick} aria-label="Fechar"><X size={20} /></button>
 }
