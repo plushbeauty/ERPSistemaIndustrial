@@ -294,10 +294,10 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
         <div className="auth-visual-grid" aria-hidden="true" />
         <div className="auth-visual-content">
           <a href="/" className="auth-visual-logo">
-            <img src="/logo/sgq-erp.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" />
+            <img src="/logo-industrial.svg" alt="SYSNQRA ERP & SGQ INDUSTRIAL" />
           </a>
           <div className="auth-visual-message">
-            <span>SYSNQRA • SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL</span>
+            <span>SYSNQRA • ERP & SGQ INDUSTRIAL</span>
             <h2>
               Uma fábrica inteira.
               <br />
@@ -320,7 +320,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
         <div className="auth-panel-inner">
           <div className="auth-mobile-brand">
             <a href="/">
-              <img src="/logo/sgq-erp.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" />
+              <img src="/logo-industrial.svg" alt="SYSNQRA ERP & SGQ INDUSTRIAL" />
             </a>
           </div>
 
