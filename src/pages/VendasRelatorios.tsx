@@ -24,6 +24,9 @@ export default function VendasRelatorios() {
   const [orders, setOrders] = useState<Order[]>([])
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('TODOS')
+  const [dataInicial, setDataInicial] = useState('')
+  const [dataFinal, setDataFinal] = useState('')
+  const [clienteFiltro, setClienteFiltro] = useState('')
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -67,9 +70,12 @@ export default function VendasRelatorios() {
     return orders.filter(order => {
       const matchesStatus = status === 'TODOS' || String(order.status).toUpperCase() === status
       const searchable = [order.numero, order.pedido_cliente, order.cliente_nome].map(value => String(value ?? '').toLowerCase()).join(' ')
-      return matchesStatus && (!q || searchable.includes(q))
+      const clienteOk = !clienteFiltro.trim() || String(order.cliente_nome ?? '').toLowerCase().includes(clienteFiltro.trim().toLowerCase())
+      const inicioOk = !dataInicial || String(order.data_entrada ?? '') >= dataInicial
+      const fimOk = !dataFinal || String(order.data_entrada ?? '') <= dataFinal
+      return matchesStatus && clienteOk && inicioOk && fimOk && (!q || searchable.includes(q))
     })
-  }, [orders, query, status])
+  }, [orders, query, status, dataInicial, dataFinal, clienteFiltro])
 
   const statuses = useMemo(
     () => ['TODOS', ...Array.from(new Set(orders.map(order => String(order.status).toUpperCase()).filter(Boolean))).sort()],
@@ -86,20 +92,17 @@ export default function VendasRelatorios() {
       <style>{`@media print { .print-hidden { display:none!important } .sales-report-row--other-page { display:table-row!important } body { background:white!important } } .sales-report-row--other-page { display:none }`}</style>
       <section className="space-y-4">
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm print-hidden">
-          <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
-            <label className="grid gap-1 text-sm font-black">
-              Buscar pedido, PO ou cliente
-              <span className="relative">
-                <Search size={17} className="absolute left-3 top-3 text-slate-400" />
-                <input value={query} onChange={event => { setQuery(event.target.value); setPage(0) }} className="h-10 w-full rounded-md border border-slate-300 pl-9 pr-3 text-sm font-semibold outline-none focus:border-[#2D8DB8]" placeholder="Ex.: 000123 ou PO-456" />
-              </span>
-            </label>
-            <label className="grid gap-1 text-sm font-black">
-              Status
-              <select value={status} onChange={event => { setStatus(event.target.value); setPage(0) }} className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold">
-                {statuses.map(value => <option key={value}>{value}</option>)}
-              </select>
-            </label>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <label className="grid gap-1 text-xs font-black">Buscar pedido, PO ou cliente<span className="relative"><Search size={15} className="absolute left-3 top-2.5 text-slate-400"/><input value={query} onChange={event => { setQuery(event.target.value); setPage(0) }} className="h-9 w-full rounded-md border border-slate-300 pl-9 pr-3 text-xs" placeholder="000123 / PO / cliente"/></span></label>
+            <label className="grid gap-1 text-xs font-black">Status<select value={status} onChange={event => { setStatus(event.target.value); setPage(0) }} className="h-9 rounded-md border border-slate-300 bg-white px-3 text-xs">{statuses.map(value => <option key={value}>{value}</option>)}</select></label>
+            <label className="grid gap-1 text-xs font-black">Cliente<input value={clienteFiltro} onChange={event => { setClienteFiltro(event.target.value); setPage(0) }} className="h-9 rounded-md border border-slate-300 px-3 text-xs" placeholder="Nome do cliente"/></label>
+            <div className="grid grid-cols-2 gap-2"><label className="grid gap-1 text-xs font-black">Entrada inicial<input type="date" value={dataInicial} onChange={event => { setDataInicial(event.target.value); setPage(0) }} className="h-9 rounded-md border border-slate-300 px-2 text-xs"/></label><label className="grid gap-1 text-xs font-black">Entrada final<input type="date" value={dataFinal} onChange={event => { setDataFinal(event.target.value); setPage(0) }} className="h-9 rounded-md border border-slate-300 px-2 text-xs"/></label></div>
+          </div>
+          <div className="mt-3 flex flex-wrap justify-end gap-2">
+            <button type="button" onClick={() => { setQuery(''); setStatus('TODOS'); setClienteFiltro(''); setDataInicial(''); setDataFinal(''); setPage(0) }} className="sales-button sales-button--secondary">LIMPAR FILTROS</button>
+            <button type="button" onClick={() => window.print()} className="sales-button sales-button--primary"><Printer size={14}/> IMPRIMIR</button>
+          </div>
+
           </div>
         </div>
 
