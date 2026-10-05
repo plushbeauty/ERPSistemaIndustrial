@@ -70,7 +70,6 @@ const sections: SalesNavSection[] = [
       { label: 'Catálogo digital', href: '/vendas/catalogo-digital', icon: BookOpen },
       { label: 'Gestão do catálogo', href: '/vendas/catalogo-digital/gestao', icon: BookOpen },
       { label: 'Ajuste global / preços', href: '/vendas/reajuste', icon: Settings2 },
-      { label: 'Configurações', href: '/vendas/configuracoes', icon: Settings2 },
     ],
   },
 ]
@@ -160,23 +159,6 @@ export default function VendasLayout({
 
   return (
     <div className={`sales-shell${tabletMode ? ' tablet-mode' : ''}`}>
-      <aside className="sales-sidebar" aria-label="Módulo Vendas">
-        <div className="sales-sidebar-brand">
-          <span className="sales-brand-mark" aria-hidden="true">E</span>
-          <div>
-            <div className="sales-brand-kicker">ERP INDUSTRIAL</div>
-            <div className="sales-brand-title">Vendas</div>
-          </div>
-        </div>
-
-        {renderNav(false)}
-
-        <div className="sales-sidebar-footer">
-          <span>Comercial integrado</span>
-          <small>Estoque · PCP · Expedição · Fiscal</small>
-        </div>
-      </aside>
-
       <main className={`sales-main${tabletMode ? ' tablet-main' : ''}`}>
         <header className="sales-topbar">
           <div className="sales-topbar-title">
@@ -211,7 +193,7 @@ export default function VendasLayout({
           </div>
         </header>
 
-        {renderNav(true)}
+        <div className="sales-global-nav">{renderNav(true)}</div>
 
         <div className="sales-content">{children}</div>
       </main>
