@@ -41,7 +41,7 @@ export default function VendasDashboardGraficos() {
     setRows([])
     setTotal(0)
     try {
-      const { start, end } = monthBounds(month)
+      const { start, end } = period === 'mes' ? monthBounds(month) : { start: `${month.slice(0,4)}-01-01`, end: `${Number(month.slice(0,4)) + 1}-01-01` }
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error || !company.data) throw company.error ?? new Error('Empresa não identificada.')
 
@@ -74,7 +74,7 @@ export default function VendasDashboardGraficos() {
     }
   }
 
-  useEffect(() => { void load() }, [month])
+  useEffect(() => { void load() }, [month, period])
 
   return (
     <VendasLayout
@@ -108,7 +108,7 @@ export default function VendasDashboardGraficos() {
         {loading && <div role="status" className="sales-loading-row">Carregando documentos fiscais…</div>}
 
         <section className="sales-orders-card p-4" aria-label="Resumo do faturamento">
-          <span className="sales-eyebrow">Faturamento fiscal do período</span>
+          <span className="sales-eyebrow">Faturamento fiscal do ${period === 'mes' ? 'mês' : 'ano'}</span>
           <strong className="mt-1 block text-2xl font-bold text-slate-900">{brl(total)}</strong>
           <small className="text-xs text-slate-500">{rows.length} cliente(s) com documentos autorizados</small>
         </section>
