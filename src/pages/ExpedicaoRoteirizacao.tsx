@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { CheckCircle2, RefreshCw, Save, Truck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import VendasLayout, { type SalesNavSection } from './VendasLayout'
 
+const expeditionNav: SalesNavSection[] = [{label:'Expedição',items:[{label:'Roteirização',href:'/expedicao/roteirizacao',icon:Truck},{label:'Portaria',href:'/expedicao/portaria',icon:CheckCircle2}]},{label:'Integrações',items:[{label:'Fiscal',href:'/fiscal',icon:Truck},{label:'Vendas',href:'/vendas',icon:Truck},{label:'Estoque',href:'/estoque',icon:Truck}]}]
 type Vehicle = { id: string; placa: string; descricao: string | null; capacidade_kg: number }
 type Driver = { id: string; nome: string; documento: string | null; cnh: string | null }
 type Invoice = {
@@ -64,7 +66,7 @@ export default function ExpedicaoRoteirizacao() {
         fetchAllPages<Vehicle>((from, to) => supabase.from('erp_veiculos').select('id,placa,descricao,capacidade_kg', { count: 'exact' }).eq('empresa_id', empresaId).eq('ativo', true).order('placa').range(from, to)),
         fetchAllPages<Driver>((from, to) => supabase.from('erp_motoristas').select('id,nome,documento,cnh', { count: 'exact' }).eq('empresa_id', empresaId).eq('ativo', true).order('nome').range(from, to)),
         fetchAllPages<Invoice>((from, to) => supabase.from('erp_documentos_fiscais').select('id,numero,destinatario_nome,destinatario_cidade,destinatario_uf,peso_liquido,peso_bruto,status', { count: 'exact' }).eq('empresa_id', empresaId).eq('modelo', '55').eq('status', 'Autorizada').order('numero', { ascending: false }).range(from, to)),
-        supabase.from('erp_expedicoes').select('id,numero,status,peso_total_kg,data_expedicao').eq('empresa_id', empresaId).order('numero', { ascending: false }).limit(30),
+        fetchAllPages<Manifest>((from, to) => supabase.from('erp_expedicoes').select('id,numero,status,peso_total_kg,data_expedicao',{count:'exact'}).eq('empresa_id', empresaId).order('numero',{ascending:false}).range(from,to)),
       ])
       if (manifestResult.error) throw manifestResult.error
       setVehicles(vehicleResult)
