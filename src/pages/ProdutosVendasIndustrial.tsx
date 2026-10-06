@@ -10,7 +10,7 @@
  */
 
 import React, { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation as useRouterLocation } from 'react-router-dom'
 import type { CSSProperties, ChangeEvent } from 'react'
 import {
   Boxes, Check, CheckCircle2, ClipboardList, Edit3, Factory, FileText, History, Image as ImageIcon,
@@ -62,9 +62,9 @@ const btn=(_kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-f
 const emptyRow=(text:string,col=7)=><tr><td colSpan={col} style={{padding:22,textAlign:'center',color:'#667085'}}>{text}</td></tr>
 
 export default function ProdutosVendasIndustrial(){
-  const location=useLocation()
-  const printMode=location.pathname==='/produtos-vendas/imprimir'
-  const printId=new URLSearchParams(location.search).get('id')
+  const routerLocation=useRouterLocation()
+  const printMode=routerLocation.pathname==='/produtos-vendas/imprimir'
+  const printId=new URLSearchParams(routerLocation.search).get('id')
   const [companyId,setCompanyId]=useState('')
   const [products,setProducts]=useState<Product[]>([])
   const [suppliers,setSuppliers]=useState<Supplier[]>([])
