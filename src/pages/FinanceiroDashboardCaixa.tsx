@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, ArrowRight, CalendarClock, RefreshCw } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CalendarClock, RefreshCw, Wallet, CreditCard, ArrowDownToLine, GitCompare, FileSpreadsheet, CalendarRange, Factory } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout, { type SalesNavSection } from './VendasLayout'
 import { fetchAllPages } from '../lib/supabasePagination'
