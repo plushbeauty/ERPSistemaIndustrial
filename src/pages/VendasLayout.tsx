@@ -70,7 +70,7 @@ export default function VendasLayout({children,title,subtitle,onRefresh,navSecti
       <span className="block text-[8px] uppercase tracking-wide">{label}</span><strong className="block text-[17px] leading-5 font-medium">{value}</strong>
      </div>)}
     </div>
-    {topContent}<nav aria-label="Navegação de Vendas" className="mb-2 overflow-x-auto border border-slate-300 bg-white"><div className="flex min-w-max items-center gap-1 p-1">{activeSections.flatMap(section=>section.items).map(item=>{const Icon=item.icon;const on=active(item.href);return <Link key={item.href} to={item.href} aria-current={on?'page':undefined} className={`flex h-8 items-center gap-1.5 border px-2.5 text-[10px] font-medium whitespace-nowrap transition ${on?'border-[#2D8DB8] bg-[#2D8DB8] text-white':'border-transparent text-slate-600 hover:border-slate-200 hover:bg-[#F4FBFD]'}`} title={item.label}><Icon size={13} strokeWidth={1.8}/>{item.label}</Link>})}</div></nav>{children}</div>
+    {topContent}{children}</div>
   </main>
   <style>{`
 .vendas-standard .rounded,.vendas-standard .rounded-sm,.vendas-standard .rounded-md,.vendas-standard .rounded-lg,.vendas-standard .rounded-xl,.vendas-standard .rounded-2xl{border-radius:2px!important}
