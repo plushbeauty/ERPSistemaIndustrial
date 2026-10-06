@@ -89,6 +89,7 @@ export default function VendasLayout({children,title,subtitle,onRefresh,navSecti
  const tabletLabel=isVendas?'TABLET VENDAS':pathname.startsWith('/pcp')?'TABLET PCP':pathname.startsWith('/estoque')||pathname.startsWith('/inventario')?'TABLET ESTOQUE':pathname.startsWith('/qualidade')?'TABLET QUALIDADE':pathname.startsWith('/compras')?'TABLET COMPRAS':pathname.startsWith('/financeiro')?'TABLET FINANCEIRO':pathname.startsWith('/rh')?'TABLET RH':pathname.startsWith('/manutencao')?'TABLET MANUTENÇÃO':'TABLET GLOBAL'
  useEffect(()=>{let mounted=true;void supabase.auth.getUser().then(({data})=>{if(mounted&&data.user)setOperator({nome:(data.user.user_metadata?.nome as string|undefined)??null,email:data.user.email??null})});const timer=window.setInterval(()=>setNow(new Date()),1000);return()=>{mounted=false;window.clearInterval(timer)}},[])
  useEffect(()=>{if(isVendas)void loadStatus().catch(()=>undefined)},[isVendas,loadStatus])
+ useEffect(()=>{if(new URLSearchParams(window.location.search).get('tablet')==='1')setTabletOpen(true)},[])
  const operatorLabel=operator.nome??operator.email??'Operador autenticado'
  const dateLabel=new Intl.DateTimeFormat('pt-BR',{dateStyle:'short'}).format(now)
  const timeLabel=new Intl.DateTimeFormat('pt-BR',{timeStyle:'short'}).format(now)
