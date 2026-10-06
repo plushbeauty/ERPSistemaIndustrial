@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { Boxes, ClipboardList, Factory, Gauge, Hammer, Layers3, PackageSearch, Plus, RefreshCw, Save, ShieldCheck, Wrench } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout, { type SalesNavSection } from './VendasLayout'
 
 type ProcessType = 'INJECAO'|'PRENSADOS'|'ESTAMPARIA'|'FERRAMENTARIA'|'EXTRUSAO'|'USINAGEM'|'SOLDAGEM'|'MONTAGEM'|'CORTE'|'PINTURA'
@@ -64,15 +65,16 @@ export default function ProcessoIndustrialPage(){
       if(viewPerm.error) throw viewPerm.error
       setCanView(Boolean(viewPerm.data));setCanCreate(Boolean(createPerm.data));setCanEdit(Boolean(editPerm.data))
       if(!viewPerm.data) throw new Error('Usuário sem permissão production.read para este módulo.')
-      const [p,t,r,pr,m]=await Promise.all([
-        supabase.from('erp_processos_industriais').select('id,codigo,nome,tipo,descricao,capacidade_hora,setup_padrao_min,ciclo_padrao_seg,ativo').eq('tipo',type).eq('ativo',true).order('codigo'),
-        supabase.from('erp_ferramentas_industriais').select('id,codigo,nome,tipo,numero_cavidades,vida_ciclos,ciclos_realizados,status,revisao,ativo').in('tipo',toolTypes[type]).eq('ativo',true).order('codigo'),
-        supabase.from('erp_receitas_processos').select('id,processo_id,produto_id,ferramenta_id,maquina_id,versao,status,parametros,ciclo_seg,setup_min,rendimento_percent,perda_percent').order('versao',{ascending:false}),
-        supabase.from('erp_produtos').select('id,codigo,nome').eq('ativo',true).order('codigo').limit(2000),
-        supabase.from('erp_maquinas').select('id,codigo,nome,status').not('status','eq','INATIVA').order('codigo').limit(1000)
+      const id=await companyId()
+      const [p,t,r,pr,m,h]=await Promise.all([
+        fetchAllPages<ProcessRow>((from,to)=>supabase.from('erp_processos_industriais').select('id,codigo,nome,tipo,descricao,capacidade_hora,setup_padrao_min,ciclo_padrao_seg,ativo',{count:'exact'}).eq('empresa_id',id).eq('tipo',type).eq('ativo',true).order('codigo').range(from,to)),
+        fetchAllPages<ToolRow>((from,to)=>supabase.from('erp_ferramentas_industriais').select('id,codigo,nome,tipo,numero_cavidades,vida_ciclos,ciclos_realizados,status,revisao,ativo',{count:'exact'}).eq('empresa_id',id).in('tipo',toolTypes[type]).eq('ativo',true).order('codigo').range(from,to)),
+        fetchAllPages<RecipeRow>((from,to)=>supabase.from('erp_receitas_processos').select('id,processo_id,produto_id,ferramenta_id,maquina_id,versao,status,parametros,ciclo_seg,setup_min,rendimento_percent,perda_percent',{count:'exact'}).eq('empresa_id',id).order('versao',{ascending:false}).range(from,to)),
+        fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome',{count:'exact'}).eq('empresa_id',id).eq('ativo',true).order('codigo').range(from,to)),
+        fetchAllPages<Machine>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome,status',{count:'exact'}).eq('empresa_id',id).not('status','eq','INATIVA').order('codigo').range(from,to)),
+        fetchAllPages<HistoryRow>((from,to)=>supabase.from('erp_processos_historico').select('id,entidade,entidade_id,acao,codigo,descricao,detalhes,criado_em',{count:'exact'}).eq('empresa_id',id).order('criado_em',{ascending:false}).range(from,to))
       ])
-      for(const x of [p,t,r,pr,m]) if(x.error) throw x.error
-      setProcesses((p.data??[]) as ProcessRow[]);setTools((t.data??[]) as ToolRow[]);setRecipes((r.data??[]) as RecipeRow[]);setProducts((pr.data??[]) as Product[]);setMachines((m.data??[]) as Machine[]);const h=await supabase.from('erp_processos_historico').select('id,entidade,entidade_id,acao,codigo,descricao,detalhes,criado_em').eq('empresa_id',await companyId()).order('criado_em',{ascending:false}).limit(150);setHistory(h.error?[]:(h.data??[]) as HistoryRow[])
+      setProcesses(p);setTools(t);setRecipes(r);setProducts(pr);setMachines(m);setHistory(h)
     }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar o processo industrial.')}finally{setBusy(false)}
   }
   useEffect(()=>{void load()},[type])
