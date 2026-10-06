@@ -227,7 +227,39 @@ export default function ProdutosVendasIndustrial(){
   const check=(title:string,key:keyof FormData)=><label style={{display:'flex',alignItems:'center',gap:7,fontSize:12,fontWeight:800,color:'#344054'}}><input type="checkbox" checked={Boolean(form[key])} disabled={!editing} onChange={e=>update(key,e.target.checked)}/>{title}</label>
 
   if(printMode&&selectedId){
-    return <main className="product-print-sheet" style={{maxWidth:1120,margin:'0 auto',padding:32,color:'#111827',fontFamily:'Arial,sans-serif',background:'#fff'}}><style>{`@page{size:A4;margin:12mm}.product-print-sheet{min-height:260mm}.print-actions{display:flex;gap:8px;margin-bottom:18px}.product-print-sheet table{width:100%;border-collapse:collapse;margin:12px 0 18px}.product-print-sheet th,.product-print-sheet td{border:1px solid #9ca3af;padding:6px 8px;text-align:left;font-size:10px}.product-print-sheet th{font-size:9px;text-transform:uppercase;background:#f3f4f6}.print-hide{display:block}@media print{.print-hide{display:none!important}.product-print-sheet{padding:0;max-width:none}.product-print-sheet h1{font-size:18px!important}}`</style><div className="print-actions print-hide"><button type="button" onClick={()=>window.print()} style={btn('primary')}><Printer size={15}/>IMPRIMIR FICHA TÉCNICA</button><button type="button" onClick={()=>window.close()} style={btn('normal')}>FECHAR</button></div><header style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',borderBottom:'2px solid #2D8DB8',paddingBottom:10}}><div><strong style={{fontSize:14}}>SYNQRA INDUSTRIAL</strong><h1 style={{margin:'8px 0 0',fontSize:20,textAlign:'center'}}>FICHA TÉCNICA DO PRODUTO RESTRITA</h1></div><span style={{fontSize:10}}>CÓDIGO: {form.codigo}</span></header><table><tbody><tr><th>Produto</th><td>{form.nome}</td><th>Grupo</th><td>{form.grupo||'—'}</td></tr><tr><th>Categoria</th><td>{form.categoria||'—'}</td><th>Unidade</th><td>{form.unidade}</td></tr><tr><th>NCM</th><td>{form.ncm||'—'}</td><th>CEST</th><td>{form.cest||'—'}</td></tr><tr><th>Origem</th><td>{form.origem||'—'}</td><th>CFOP Saída</th><td>{form.cfop_saida||'—'}</td></tr></tbody></table><table><thead><tr><th>Saldo ERP</th><th>Ponto de Reposição</th><th>Estoque Máximo</th><th>Localização</th><th>Lote</th><th>Série</th></tr></thead><tbody><tr><td>{fmt(form.estoque_atual)}</td><td>{fmt(form.ponto_reposicao)}</td><td>{fmt(form.estoque_maximo)}</td><td>{form.localizacao_padrao_id||'—'}</td><td>{form.controla_lote?'SIM':'NÃO'}</td><td>{form.controla_serie?'SIM':'NÃO'}</td></tr></tbody></table><table><thead><tr><th>Custo Médio</th><th>Custo Último</th><th>Custo Fabricação</th><th>Preço Venda</th><th>Prazo Compra</th><th>Prazo Produção</th></tr></thead><tbody><tr><td>{money(form.custo_medio)}</td><td>{money(form.custo_ultimo)}</td><td>{money(form.custo_fabricacao)}</td><td>{money(form.preco_venda)}</td><td>{form.prazo_compra_dias} dias</td><td>{form.prazo_producao_dias} dias</td></tr></tbody></table><table><thead><tr><th>Parâmetro</th><th>Valor</th><th>Parâmetro</th><th>Valor</th></tr></thead><tbody><tr><td>ICMS</td><td>{fmt(form.aliquota_icms)}%</td><td>IPI</td><td>{fmt(form.aliquota_ipi)}%</td></tr><tr><td>PIS</td><td>{fmt(form.aliquota_pis)}%</td><td>COFINS</td><td>{fmt(form.aliquota_cofins)}%</td></tr><tr><td>Tolerância</td><td>{fmt(form.tolerancia_percentual)}%</td><td>Qualidade obrigatória</td><td>{form.inspecao_qualidade_obrigatoria?'SIM':'NÃO'}</td></tr></tbody></table><p style={{fontSize:10,marginTop:18}}>Documento técnico gerado a partir do cadastro mestre do produto e dos dados persistidos na empresa autenticada.</p></main>
+    return (
+      <main className="product-print-sheet" style={{maxWidth:1120,margin:'0 auto',padding:32,color:'#111827',fontFamily:'Arial,sans-serif',background:'#fff'}}>
+        <style>{'@page{size:A4;margin:12mm}.product-print-sheet{min-height:260mm}.product-print-sheet table{width:100%;border-collapse:collapse;margin:12px 0 18px}.product-print-sheet th,.product-print-sheet td{border:1px solid #9ca3af;padding:6px 8px;text-align:left;font-size:10px}.product-print-sheet th{font-size:9px;text-transform:uppercase;background:#f3f4f6}.print-hide{display:flex;gap:8px;margin-bottom:18px}@media print{.print-hide{display:none!important}.product-print-sheet{padding:0;max-width:none}}'}</style>
+        <div className="print-hide">
+          <button type="button" onClick={()=>window.print()} style={btn('primary')}><Printer size={15}/>IMPRIMIR FICHA TÉCNICA</button>
+          <button type="button" onClick={()=>window.close()} style={btn('normal')}>FECHAR</button>
+        </div>
+        <header style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',borderBottom:'2px solid #2D8DB8',paddingBottom:10}}>
+          <div><strong style={{fontSize:14}}>SYNQRA INDUSTRIAL</strong><h1 style={{margin:'8px 0 0',fontSize:20}}>FICHA TÉCNICA DO PRODUTO RESTRITA</h1></div>
+          <span style={{fontSize:10}}>CÓDIGO: {form.codigo}</span>
+        </header>
+        <table><tbody>
+          <tr><th>Produto</th><td>{form.nome}</td><th>Grupo</th><td>{form.grupo||'—'}</td></tr>
+          <tr><th>Categoria</th><td>{form.categoria||'—'}</td><th>Unidade</th><td>{form.unidade}</td></tr>
+          <tr><th>NCM</th><td>{form.ncm||'—'}</td><th>CEST</th><td>{form.cest||'—'}</td></tr>
+          <tr><th>Origem</th><td>{form.origem||'—'}</td><th>CFOP Saída</th><td>{form.cfop_saida||'—'}</td></tr>
+        </tbody></table>
+        <table><thead><tr><th>Saldo ERP</th><th>Ponto de Reposição</th><th>Estoque Máximo</th><th>Localização</th><th>Lote</th><th>Série</th></tr></thead>
+          <tbody><tr><td>{fmt(form.estoque_atual)}</td><td>{fmt(form.ponto_reposicao)}</td><td>{fmt(form.estoque_maximo)}</td><td>{form.localizacao_padrao_id||'—'}</td><td>{form.controla_lote?'SIM':'NÃO'}</td><td>{form.controla_serie?'SIM':'NÃO'}</td></tr></tbody>
+        </table>
+        <table><thead><tr><th>Custo Médio</th><th>Custo Último</th><th>Custo Fabricação</th><th>Preço Venda</th><th>Prazo Compra</th><th>Prazo Produção</th></tr></thead>
+          <tbody><tr><td>{money(form.custo_medio)}</td><td>{money(form.custo_ultimo)}</td><td>{money(form.custo_fabricacao)}</td><td>{money(form.preco_venda)}</td><td>{form.prazo_compra_dias} dias</td><td>{form.prazo_producao_dias} dias</td></tr></tbody>
+        </table>
+        <table><thead><tr><th>Parâmetro</th><th>Valor</th><th>Parâmetro</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td>ICMS</td><td>{fmt(form.aliquota_icms)}%</td><td>IPI</td><td>{fmt(form.aliquota_ipi)}%</td></tr>
+            <tr><td>PIS</td><td>{fmt(form.aliquota_pis)}%</td><td>COFINS</td><td>{fmt(form.aliquota_cofins)}%</td></tr>
+            <tr><td>Tolerância</td><td>{fmt(form.tolerancia_percentual)}%</td><td>Qualidade obrigatória</td><td>{form.inspecao_qualidade_obrigatoria?'SIM':'NÃO'}</td></tr>
+          </tbody>
+        </table>
+        <p style={{fontSize:10,marginTop:18}}>Documento técnico gerado a partir do cadastro mestre do produto e dos dados persistidos na empresa autenticada.</p>
+      </main>
+    )
   }
   return <main style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif'}}>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:14,padding:'14px 16px 10px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
