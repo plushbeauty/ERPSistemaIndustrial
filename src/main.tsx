@@ -33,8 +33,6 @@ import './styles/form-system-2026.css'
 import './styles/erp-compact.css'
 
 const AppBootstrap = lazyPage(() => import('./AppBootstrap'), 'AppBootstrap')
-const ConfiguracoesADMPage = lazyPage(() => import('./pages/configuracoes/ConfiguracoesADM'), 'ConfiguracoesADMPage')
-
 const ERP_BOOTSTRAP_VERSION = '2026-09-18-browser-auth-v9'
 
 function BootstrapLoader() {
@@ -55,9 +53,7 @@ createRoot(rootElement).render(
       <BrowserRouter>
         <SidebarProvider>
         <PontoProvider>
-        {window.location.pathname === '/configuracoes-adm' || window.location.pathname.startsWith('/configuracoes-adm/')
-          ? <DemoConfiguracoesADM />
-          : <BootstrapLoader />}
+        <BootstrapLoader />
         </PontoProvider>
         </SidebarProvider>
       </BrowserRouter>
