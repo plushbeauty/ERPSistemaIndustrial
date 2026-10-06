@@ -1,4 +1,4 @@
-import { Download } from 'lucide-react'
+import { BarChart3, Download } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import VendasLayout from '../../pages/VendasLayout'
 import { supabase } from '../../lib/supabaseClient'
@@ -21,7 +21,7 @@ export default function BalancoEstoque(){
  useEffect(()=>{void (async()=>{try{const emp=await supabase.rpc('erp_current_empresa_id');if(emp.error||!emp.data)throw emp.error??new Error('Empresa não identificada.');const empresaId=String(emp.data);const [w,p,c]=await Promise.all([supabase.from('erp_almoxarifados').select('id,codigo,nome').eq('empresa_id',empresaId).eq('ativo',true).order('codigo'),supabase.from('erp_produtos').select('id,codigo,nome,unidade,estoque_atual').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(5000),supabase.from('erp_custos_produtos').select('produto_id,custo_total,quantidade_base').eq('empresa_id',empresaId).order('created_at',{ascending:false}).limit(10000)]);if(w.error)throw w.error;if(p.error)throw p.error;if(c.error)throw c.error;setWarehouses((w.data??[]) as Warehouse[]);setProducts((p.data??[]) as Product[]);setCosts((c.data??[]) as Cost[])}catch(e){setError(e instanceof Error?e.message:'Falha ao carregar balanço.')}finally{setLoading(false)}})()},[])
  const rows=useMemo<Row[]>(()=>products.filter(p=>fuzzy(p.codigo+' '+p.nome,search)).map(p=>{const saldo=Number(p.estoque_atual??0);const latest=costs.find(c=>c.produto_id===p.id);const base=Number(latest?.quantidade_base??0);const custo=base>0?Number(latest?.custo_total??0)/base:0;return {...p,saldo,custo,total:saldo*custo,status:saldo<0?'DIVERGENTE':'ATIVO'}}),[products,costs,search])
  const total=rows.reduce((s,r)=>s+r.total,0)
- return <VendasLayout title="Balanço de Estoque" subtitle="Inventário e valoração real" navSections={[{label:'Estoque',items:[{label:'Estoque / Almoxarifado',href:'/estoque',icon:Download},{label:'Balanço de Estoque',href:'/inventario/balanco',icon:Download}]}]}>
+ return <VendasLayout title="Balanço de Estoque" subtitle="Inventário e valoração real" navSections={[{label:'Estoque',items:[{label:'Estoque / Almoxarifado',href:'/estoque',icon:BarChart3},{label:'Balanço de Estoque',href:'/inventario/balanco',icon:Download}]}]}>
   <div className="mx-auto max-w-[1600px] space-y-2">
    <div className="flex h-8 items-center justify-between border-b border-slate-300"><h1 className="text-[13px] font-medium text-slate-700">BALANÇO DE ESTOQUE</h1><span className="text-[10px] text-slate-500">Valoração contábil</span></div>
    {error&&<div className="border border-red-200 bg-red-50 px-2 py-1 text-[10px] text-red-700">{error}</div>}
