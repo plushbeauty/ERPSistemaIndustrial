@@ -195,7 +195,7 @@ export default function Fiscal() {
       <header className="mb-6 flex flex-col gap-4 border-b border-[#C9E1E8] pb-5 xl:flex-row xl:items-center xl:justify-between">
         <div>
           <button
-            className="mb-2 flex min-h-11 items-center gap-2 rounded-lg border border-[#C9E1E8] bg-white px-3 py-2 text-base font-semibold text-[#0f172a] shadow-sm hover:bg-slate-50"
+            className="mb-2 flex min-h-7 items-center gap-2 rounded-[2px] border border-[#C9E1E8] bg-white px-3 py-2 text-base font-semibold text-[#0f172a] shadow-sm hover:bg-slate-50"
             onClick={() => { window.location.href = '/erp-industrial' }}
           >
             <ArrowLeft size={17} /> Voltar ao Painel
@@ -205,7 +205,7 @@ export default function Fiscal() {
           <p className="mt-1 text-base text-slate-600">Liberação para faturamento, monitoramento de notas fiscais, contas a pagar, receber e relatórios consolidados.</p>
         </div>
         <button
-          className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#2563eb] px-4 py-2.5 text-base font-bold text-white shadow-sm transition-all hover:bg-blue-700 disabled:opacity-60"
+          className="flex min-h-7 items-center justify-center gap-2 rounded-[2px] bg-[#2563eb] px-4 py-2.5 text-base font-bold text-white shadow-sm transition-all hover:bg-blue-700 disabled:opacity-60"
           onClick={() => void load()}
           disabled={busy}
         >
@@ -416,6 +416,7 @@ export default function Fiscal() {
           </div>
         </section>
       )}
+    <style>{`.fiscal-workspace{font-size:10px}.fiscal-workspace .rounded-lg,.fiscal-workspace .rounded-md,.fiscal-workspace .rounded-xl,.fiscal-workspace .rounded-full{border-radius:2px!important}.fiscal-workspace .font-bold,.fiscal-workspace .font-extrabold,.fiscal-workspace .font-semibold{font-weight:500!important}.fiscal-workspace button{min-height:28px;padding:0 9px;border-radius:2px!important;font-size:10px!important}.fiscal-workspace input,.fiscal-workspace select{min-height:28px;border-radius:2px!important;font-size:10px!important}.fiscal-workspace table{font-size:10px}.fiscal-workspace th,.fiscal-workspace td{padding:6px 8px}.fiscal-workspace h1{font-size:18px}.fiscal-workspace h2{font-size:13px}.fiscal-workspace .shadow-sm,.fiscal-workspace .shadow-2xl{box-shadow:none!important}`}</style>
     </main>
     </div>
   )
