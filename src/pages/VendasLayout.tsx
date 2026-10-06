@@ -1,11 +1,50 @@
-import type { ReactNode } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { BarChart3, BookOpen, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, LogOut, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Tablet, Target, Users } from 'lucide-react'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useIsMobile } from '../hooks/useIsMobile'
 
 export type SalesNavItem = { label:string; href:string; icon:typeof LayoutDashboard }
 export type SalesNavSection = { label:string; items:SalesNavItem[] }
+
+type VendasStatus = { atrasados:number; producao:number; acabamento:number; almoxarifado:number; liberadoNF:number; totalPendente:number }
+type Operator = { nome:string|null; email:string|null }
+const initialVendasStatus:VendasStatus={atrasados:0,producao:0,acabamento:0,almoxarifado:0,liberadoNF:0,totalPendente:0}
+const normalizeVendasStatus=(value:string)=>value.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase()
+
+export function useVendasStatus(){
+ const [status,setStatus]=useState<VendasStatus>(initialVendasStatus)
+ const [loading,setLoading]=useState(false)
+ const load=useCallback(async()=>{
+  setLoading(true)
+  try{
+   const empresa=await supabase.rpc('erp_current_empresa_id')
+   if(empresa.error||!empresa.data) throw empresa.error??new Error('Empresa não identificada.')
+   const r=await supabase.from('erp_pedidos_venda').select('status,data_entrega_prometida').eq('empresa_id',String(empresa.data)).limit(5000)
+   if(r.error) throw r.error
+   const today=new Date();today.setHours(0,0,0,0)
+   let atrasados=0,producao=0,acabamento=0,almoxarifado=0,liberadoNF=0,totalPendente=0
+   for(const row of r.data??[]){
+    const s=normalizeVendasStatus(String(row.status??''))
+    const finalizado=s.includes('fatur')||s.includes('cancel')||s.includes('conclu')
+    const due=row.data_entrega_prometida?new Date(String(row.data_entrega_prometida).slice(0,10)+'T00:00:00'):null
+    if(due&&due<today&&!finalizado) atrasados++
+    if(s.includes('produc')||s.includes('fabric')) producao++
+    if(s.includes('acab')) acabamento++
+    if(s.includes('almox')||s.includes('mater')) almoxarifado++
+    if((s.includes('liber')&&s.includes('nf'))||s.includes('fatur')) liberadoNF++
+    if(!finalizado) totalPendente++
+   }
+   setStatus({atrasados,producao,acabamento,almoxarifado,liberadoNF,totalPendente})
+  }finally{setLoading(false)}
+ },[])
+ return {status,loading,load}
+}
+
+export function VendasStatusCards({status,loading}:{status:VendasStatus;loading:boolean}){
+ const cards=[['Atrasados',status.atrasados,'bg-red-50 border-red-300 text-red-700'],['Produção',status.producao,'bg-orange-50 border-orange-300 text-orange-700'],['Acabamento',status.acabamento,'bg-yellow-50 border-yellow-300 text-yellow-700'],['Almoxarifado',status.almoxarifado,'bg-blue-50 border-blue-300 text-blue-700'],['Liberado NF',status.liberadoNF,'bg-cyan-50 border-cyan-300 text-cyan-700'],['Total pendente',status.totalPendente,'bg-slate-50 border-slate-300 text-[#123B50]']] as const
+ return <div className="mb-2 grid grid-cols-2 gap-1.5 md:grid-cols-3 xl:grid-cols-6">{cards.map(([label,value,tone])=><div key={label} className={`border px-2.5 py-2 ${tone}`}><span className="block text-[8px] uppercase tracking-wide">{label}</span><strong className="block text-[17px] leading-5 font-medium">{loading?'—':value}</strong></div>)}</div>
+}
 
 export const sections:SalesNavSection[]=[
  {label:'Visão geral',items:[
@@ -38,19 +77,24 @@ export const sections:SalesNavSection[]=[
 
 export default function VendasLayout({children,title,subtitle,onRefresh,navSections,topContent}:{children:ReactNode;title:string;subtitle?:string;onRefresh?:()=>void;navSections?:SalesNavSection[];topContent?:ReactNode}){
  const {pathname}=useLocation()
- const isMobile=useIsMobile()
- const tabletMode=isMobile
- const activeSections=navSections??sections
+ const tabletMode=useIsMobile()
+ const {status,statusLoading,loadStatus}=useVendasStatus()
+ const [operator,setOperator]=useState<Operator>({nome:null,email:null})
+ const [now,setNow]=useState(new Date())
  const logout=async()=>{await supabase.auth.signOut();window.location.assign('/login')}
- const active=(href:string)=>href==='/vendas'?pathname==='/vendas':pathname===href||pathname.startsWith(href+'/')
  const mainRoute=pathname.startsWith('/vendas')?'/vendas':pathname.startsWith('/pcp')?'/pcp':(pathname.startsWith('/estoque')||pathname.startsWith('/inventario'))?'/estoque':pathname.startsWith('/qualidade')?'/qualidade':'/erp-industrial'
+ useEffect(()=>{let mounted=true;void supabase.auth.getUser().then(({data})=>{if(mounted&&data.user)setOperator({nome:(data.user.user_metadata?.nome as string|undefined)??null,email:data.user.email??null})});const timer=window.setInterval(()=>setNow(new Date()),1000);return()=>{mounted=false;window.clearInterval(timer)}},[])
+ useEffect(()=>{void loadStatus().catch(()=>undefined)},[loadStatus])
+ const operatorLabel=operator.nome??operator.email??'Operador autenticado'
+ const dateLabel=new Intl.DateTimeFormat('pt-BR',{dateStyle:'short'}).format(now)
+ const timeLabel=new Intl.DateTimeFormat('pt-BR',{timeStyle:'short'}).format(now)
  return <div className={`vendas-standard min-h-screen bg-[#F4F7FE] text-slate-800 ${tabletMode?'tablet-mode':''}`}>
   <main className="min-w-0">
    <header className="sticky top-0 z-30 flex min-h-10 items-center justify-between gap-2 border-b border-slate-300 bg-white px-3">
     <div className="flex min-w-0 items-center gap-2">
      <div className="vendas-brand-logo"><img src="/logo/sgq-erp.png" alt="SGQERP" /></div><div className="vendas-brand-title"><strong>SGQERP INDUSTRIAL</strong><span>CENTRAL DE CONTROLE</span></div>
     </div>
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1 text-[9px] text-slate-600"><span className="hidden lg:inline">{operatorLabel}</span><span>{dateLabel} {timeLabel}</span><span>DADOS: SUPABASE</span>
      <button type="button" onClick={()=>window.location.assign(mainRoute)} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Voltar"><span>←</span>Voltar</button>
      <button type="button" onClick={()=>window.location.assign('/vendas/tablet')} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Abrir Tablet de Vendas"><Tablet size={13}/>TABLET VENDAS</button>
      {onRefresh&&<button type="button" onClick={onRefresh} className="flex h-7 items-center border border-slate-300 bg-white px-2" title="Atualizar"><RefreshCw size={13}/></button>}
@@ -58,18 +102,8 @@ export default function VendasLayout({children,title,subtitle,onRefresh,navSecti
     </div>
    </header>
    <div className="p-2 lg:p-3">
-    <div className="mb-2 grid grid-cols-2 gap-1.5 md:grid-cols-3 xl:grid-cols-6">
-     {[
-      ['Atrasados','41','bg-red-50 border-red-300 text-red-700'],
-      ['Produção','0','bg-orange-50 border-orange-300 text-orange-700'],
-      ['Acabamento','0','bg-yellow-50 border-yellow-300 text-yellow-700'],
-      ['Almoxarifado','0','bg-blue-50 border-blue-300 text-blue-700'],
-      ['Liberado NF','0','bg-cyan-50 border-cyan-300 text-cyan-700'],
-      ['Total pendente','50','bg-slate-50 border-slate-300 text-[#123B50]']
-     ].map(([label,value,tone])=><div key={label} className={`border px-2.5 py-2 ${tone}`}>
-      <span className="block text-[8px] uppercase tracking-wide">{label}</span><strong className="block text-[17px] leading-5 font-medium">{value}</strong>
-     </div>)}
-    </div>
+    <VendasStatusCards status={status} loading={statusLoading}/>
+    <div className="mb-2 border-b border-slate-200 pb-1"><h1 className="text-[13px] leading-4 font-medium text-[#123B50]">{title}</h1>{subtitle&&<p className="text-[9px] text-slate-500">{subtitle}</p>}</div>
     {topContent}{children}</div>
   </main>
   <style>{`
