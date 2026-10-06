@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, CalendarClock, RefreshCw } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import VendasLayout from './VendasLayout'
+import VendasLayout, { type SalesNavSection } from './VendasLayout'
 import { fetchAllPages } from '../lib/supabasePagination'
 
 type Direction = 'PAGAR' | 'RECEBER'
-const financeNav = [{ label:'Financeiro', items:[{label:'Caixa',href:'/financeiro/caixa'},{label:'Contas a pagar',href:'/financeiro/contas-pagar'},{label:'Contas a receber',href:'/financeiro/contas-receber'},{label:'Fluxo de caixa',href:'/financeiro/fluxo-caixa'},{label:'Conciliação',href:'/financeiro/reconciliacao'},{label:'Importar extratos',href:'/financeiro/importar-extratos'},{label:'Ano fiscal',href:'/financeiro/ano-fiscal'},{label:'Custos padrão',href:'/financeiro/custo-padrao'}] }]
+const financeNav: SalesNavSection[] = [{ label:'Financeiro', items:[{label:'Caixa',href:'/financeiro/caixa',icon:CalendarClock},{label:'Contas a pagar',href:'/financeiro/contas-pagar',icon:CalendarClock},{label:'Contas a receber',href:'/financeiro/contas-receber',icon:CalendarClock},{label:'Fluxo de caixa',href:'/financeiro/fluxo-caixa',icon:CalendarClock},{label:'Conciliação',href:'/financeiro/reconciliacao',icon:CalendarClock},{label:'Importar extratos',href:'/financeiro/importar-extratos',icon:CalendarClock},{label:'Ano fiscal',href:'/financeiro/ano-fiscal',icon:CalendarClock},{label:'Custos padrão',href:'/financeiro/custo-padrao',icon:CalendarClock}] }]
 type TitleRef = { tipo: Direction; descricao: string }
 type RawInstallment = {
   id: string
