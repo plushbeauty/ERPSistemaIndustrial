@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Boxes, Factory, History, PackageSearch, Pencil, Plus, RefreshCw, Search, Settings2, ShieldCheck, XCircle } from 'lucide-react'
 import VendasLayout, { type SalesNavSection } from './VendasLayout'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
 type Machine = { id:string; codigo:string; nome:string; tipo:string|null; fabricante:string|null; modelo:string|null; status:string|null; ativo:boolean; valor_hora_custo:number }
 type Mold = { id:string; codigo:string; nome:string; tipo:string; status:string; produto_id:string|null; numero_cavidades:number; cavidades_ativas:number; ciclos_atuais:number; limite_ciclos:number; ativo:boolean; localizacao_fisica:string|null }
@@ -53,16 +54,15 @@ export default function InjecaoIndustrial(){
       if(company.error||!company.data)throw company.error??new Error('Empresa da sessão não identificada.')
       const id=String(company.data);setEmpresaId(id)
       const [m,mo,o,pv,pc,pe,h]=await Promise.all([
-        supabase.from('erp_maquinas').select('id,codigo,nome,tipo,fabricante,modelo,status,ativo,valor_hora_custo').eq('empresa_id',id).order('codigo'),
-        supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades_ativas,ciclos_atuais,limite_ciclos,ativo,localizacao_fisica').eq('empresa_id',id).eq('tipo','INJECAO').order('codigo'),
-        supabase.from('erp_ordens_producao').select('id,numero_op,quantidade,quantidade_produzida,status,maquina_id').eq('empresa_id',id).order('numero_op',{ascending:false}).limit(100),
+        fetchAllPages<Machine>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome,tipo,fabricante,modelo,status,ativo,valor_hora_custo',{count:'exact'}).eq('empresa_id',id).order('codigo').range(from,to)),
+        fetchAllPages<Mold>((from,to)=>supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades_ativas,ciclos_atuais,limite_ciclos,ativo,localizacao_fisica',{count:'exact'}).eq('empresa_id',id).eq('tipo','INJECAO').order('codigo').range(from,to)),
+        fetchAllPages<ProductionOrder>((from,to)=>supabase.from('erp_ordens_producao').select('id,numero_op,quantidade,quantidade_produzida,status,maquina_id',{count:'exact'}).eq('empresa_id',id).order('numero_op',{ascending:false}).range(from,to)),
         supabase.rpc('erp_has_permission',{permission_code:'production.read'}),
         supabase.rpc('erp_has_permission',{permission_code:'production.create'}),
         supabase.rpc('erp_has_permission',{permission_code:'production.update'}),
-        supabase.from('erp_injecao_historico').select('id,entidade,entidade_id,acao,codigo,descricao,criado_em').eq('empresa_id',id).order('criado_em',{ascending:false}).limit(150),
+        fetchAllPages<HistoryRow>((from,to)=>supabase.from('erp_injecao_historico').select('id,entidade,entidade_id,acao,codigo,descricao,criado_em',{count:'exact'}).eq('empresa_id',id).order('criado_em',{ascending:false}).range(from,to)),
       ])
-      for(const result of [m,mo,o])if(result.error)throw result.error
-      setMachines((m.data??[]) as Machine[]);setMolds((mo.data??[]) as Mold[]);setOrders((o.data??[]) as ProductionOrder[])
+      setMachines(m);setMolds(mo);setOrders(o)
       setCanView(!pv.error&&Boolean(pv.data));setCanCreate(!pc.error&&Boolean(pc.data));setCanEdit(!pe.error&&Boolean(pe.data))
       if(pv.error)throw pv.error
       if(!pv.data)throw new Error('Usuário sem permissão production.read para o módulo de injeção.')
