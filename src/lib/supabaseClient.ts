@@ -24,7 +24,7 @@ export const supabaseEnvironmentMismatch = supabaseUrl !== CANONICAL_SUPABASE_UR
 export const supabaseUrlExportada = supabaseUrl
 export const supabaseKeyExportada = supabaseKey
 
-const authStorage = typeof window !== 'undefined' ? window.localStorage : undefined
+const authStorage = typeof window !== 'undefined' ? window.sessionStorage : undefined
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey, {
   auth: {
