@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import { BarChart3, BookOpen, Boxes, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, LogOut, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Tablet, Target, Users } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
-import synqraLogo from '../assets/synqra/logo-synqra.png'
 import { useIsMobile } from '../hooks/useIsMobile'
 
 export type SalesNavItem = { label:string; href:string; icon:typeof LayoutDashboard }
@@ -49,12 +48,11 @@ export default function VendasLayout({children,title,subtitle,onRefresh,navSecti
   <main className="min-w-0">
    <header className="sticky top-0 z-30 flex min-h-10 items-center justify-between gap-2 border-b border-slate-300 bg-white px-3">
     <div className="flex min-w-0 items-center gap-2">
-     <img src={synqraLogo} alt="SYNQRA" className="h-7 w-auto shrink-0 object-contain" />
-     <div className="min-w-0 truncate"><span className="mr-2 text-[10px] font-medium text-[#2D8DB8]">VENDAS</span><span className="text-[11px] font-medium text-[#123B50]">{title}</span>{subtitle&&<span className="ml-2 text-[9px] text-slate-500">{subtitle}</span>}</div>
+     <div className="vendas-brand-logo"><img src="/logo/sgq-erp.png" alt="SGQERP" /></div><div className="vendas-brand-title"><strong>SGQERP INDUSTRIAL</strong><span>CENTRAL DE CONTROLE</span></div>
     </div>
     <div className="flex items-center gap-1">
      <button type="button" onClick={()=>window.location.assign(mainRoute)} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Voltar"><span>←</span>Voltar</button>
-     <button type="button" onClick={()=>window.location.assign('/vendas/tablet')} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Abrir Tablet de Vendas"><Tablet size={13}/>Tablet Vendas</button>
+     <button type="button" onClick={()=>window.location.assign('/vendas/tablet')} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Abrir Tablet de Vendas"><Tablet size={13}/>TABLET VENDAS</button>
      {onRefresh&&<button type="button" onClick={onRefresh} className="flex h-7 items-center border border-slate-300 bg-white px-2" title="Atualizar"><RefreshCw size={13}/></button>}
      <button type="button" onClick={()=>void logout()} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Sair"><LogOut size={13}/>Sair</button>
     </div>
@@ -76,6 +74,7 @@ export default function VendasLayout({children,title,subtitle,onRefresh,navSecti
   </main>
   <style>{`\n.vendas-standard .rounded,.vendas-standard .rounded-sm,.vendas-standard .rounded-md,.vendas-standard .rounded-lg,.vendas-standard .rounded-xl,.vendas-standard .rounded-2xl{border-radius:2px!important}\n.vendas-standard .font-bold,.vendas-standard .font-extrabold,.vendas-standard .font-black{font-weight:500!important}
 .vendas-standard h1,.vendas-standard h2,.vendas-standard h3,.vendas-standard p,.vendas-standard label{font-weight:500!important}
-.vendas-standard{font-size:11px}\n.vendas-standard button{border-radius:2px}\n.vendas-standard input:not([type=checkbox]):not([type=radio]):not([type=range]),.vendas-standard select{border-radius:2px}\n`}</style>{tabletMode&&<style>{`.tablet-mode input,.tablet-mode select,.tablet-mode button{min-height:36px}`}</style>}
+.vendas-standard{font-size:10px}
+.vendas-brand-logo{height:38px;min-width:118px;display:flex;align-items:center}.vendas-brand-logo img{height:100%;width:auto;object-fit:contain}.vendas-brand-title{display:flex;flex-direction:column;justify-content:center;border-left:1px solid #cbd5e1;padding-left:10px;line-height:1.1}.vendas-brand-title strong{font-size:13px;font-weight:600;color:#123B50}.vendas-brand-title span{margin-top:3px;font-size:8px;font-weight:500;letter-spacing:.12em;color:#64748b}\n.vendas-standard button{border-radius:2px}\n.vendas-standard input:not([type=checkbox]):not([type=radio]):not([type=range]),.vendas-standard select{border-radius:2px}\n`}</style>{tabletMode&&<style>{`.tablet-mode input,.tablet-mode select,.tablet-mode button{min-height:36px}`}</style>}
  </div>
 }
