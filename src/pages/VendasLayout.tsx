@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { ArrowLeft, BarChart3, BookOpen, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, LogOut, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Tablet, Target, Users, X } from 'lucide-react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import { useIsMobile } from '../hooks/useIsMobile'
@@ -133,9 +133,10 @@ export default function VendasLayout({
   topContent?: ReactNode
 }) {
   const { pathname } = useLocation()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const tabletMode = useIsMobile()
-  const [tabletOpen, setTabletOpen] = useState(false)
+  const [tabletOpen, setTabletOpen] = useState(() => searchParams.get('tablet') === '1')
   const isVendas = pathname.startsWith('/vendas')
   const { status, loading: statusLoading, load: loadStatus } = useVendasStatus()
   const [operator, setOperator] = useState<Operator>({ nome: null, email: null })
