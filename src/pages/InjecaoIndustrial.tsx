@@ -68,7 +68,7 @@ export default function InjecaoIndustrial(){
       setCanView(!pv.error&&Boolean(pv.data));setCanCreate(!pc.error&&Boolean(pc.data));setCanEdit(!pe.error&&Boolean(pe.data))
       if(pv.error)throw pv.error
       if(!pv.data)throw new Error('Usuário sem permissão production.read para o módulo de injeção.')
-      setHistory(h.error?[]:(h.data??[]) as HistoryRow[])
+      setHistory(h)
     }catch(cause){setError(errorText(cause,'Falha ao carregar o módulo de injeção.'))}
     finally{setBusy(false)}
   }
