@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import { BarChart3, BookOpen, Boxes, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, LogOut, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Tablet, Target, Users } from 'lucide-react'
-import { useState } from 'react'\nimport { Link, useLocation } from 'react-router-dom'
+import { BarChart3, BookOpen, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, LogOut, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Tablet, Target, Users } from 'lucide-react'
+import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useIsMobile } from '../hooks/useIsMobile'
 
@@ -72,9 +72,14 @@ export default function VendasLayout({children,title,subtitle,onRefresh,navSecti
     </div>
     {topContent}<nav aria-label="Navegação de Vendas" className="mb-2 overflow-x-auto border border-slate-300 bg-white"><div className="flex min-w-max items-center gap-1 p-1">{activeSections.flatMap(section=>section.items).map(item=>{const Icon=item.icon;const on=active(item.href);return <Link key={item.href} to={item.href} aria-current={on?'page':undefined} className={`flex h-8 items-center gap-1.5 border px-2.5 text-[10px] font-medium whitespace-nowrap transition ${on?'border-[#2D8DB8] bg-[#2D8DB8] text-white':'border-transparent text-slate-600 hover:border-slate-200 hover:bg-[#F4FBFD]'}`} title={item.label}><Icon size={13} strokeWidth={1.8}/>{item.label}</Link>})}</div></nav>{children}</div>
   </main>
-  <style>{`\n.vendas-standard .rounded,.vendas-standard .rounded-sm,.vendas-standard .rounded-md,.vendas-standard .rounded-lg,.vendas-standard .rounded-xl,.vendas-standard .rounded-2xl{border-radius:2px!important}\n.vendas-standard .font-bold,.vendas-standard .font-extrabold,.vendas-standard .font-black{font-weight:500!important}
+  <style>{`
+.vendas-standard .rounded,.vendas-standard .rounded-sm,.vendas-standard .rounded-md,.vendas-standard .rounded-lg,.vendas-standard .rounded-xl,.vendas-standard .rounded-2xl{border-radius:2px!important}
+.vendas-standard .font-bold,.vendas-standard .font-extrabold,.vendas-standard .font-black{font-weight:500!important}
 .vendas-standard h1,.vendas-standard h2,.vendas-standard h3,.vendas-standard p,.vendas-standard label{font-weight:500!important}
 .vendas-standard{font-size:10px}
-.vendas-brand-logo{height:38px;min-width:118px;display:flex;align-items:center}.vendas-brand-logo img{height:100%;width:auto;object-fit:contain}.vendas-brand-title{display:flex;flex-direction:column;justify-content:center;border-left:1px solid #cbd5e1;padding-left:10px;line-height:1.1}.vendas-brand-title strong{font-size:13px;font-weight:600;color:#123B50}.vendas-brand-title span{margin-top:3px;font-size:8px;font-weight:500;letter-spacing:.12em;color:#64748b}\n.vendas-standard button{border-radius:2px}\n.vendas-standard input:not([type=checkbox]):not([type=radio]):not([type=range]),.vendas-standard select{border-radius:2px}\n`}</style>{tabletMode&&<style>{`.tablet-mode input,.tablet-mode select,.tablet-mode button{min-height:36px}`}</style>}
+.vendas-brand-logo{height:38px;min-width:118px;display:flex;align-items:center}.vendas-brand-logo img{height:100%;width:auto;object-fit:contain}.vendas-brand-title{display:flex;flex-direction:column;justify-content:center;border-left:1px solid #cbd5e1;padding-left:10px;line-height:1.1}.vendas-brand-title strong{font-size:13px;font-weight:600;color:#123B50}.vendas-brand-title span{margin-top:3px;font-size:8px;font-weight:500;letter-spacing:.12em;color:#64748b}
+.vendas-standard button{border-radius:2px}
+.vendas-standard input:not([type=checkbox]):not([type=radio]):not([type=range]),.vendas-standard select{border-radius:2px}
+`}</style>{tabletMode&&<style>{`.tablet-mode input,.tablet-mode select,.tablet-mode button{min-height:36px}`}</style>}
  </div>
 }
