@@ -4,6 +4,9 @@ import { ArrowLeft, BarChart3, ClipboardList, FilePlus2, ListChecks, LogOut, Ref
 import { supabase } from '../lib/supabaseClient'
 import { useIsMobile } from '../hooks/useIsMobile'
 
+export type SalesNavItem = { label: string; href: string; icon: typeof BarChart3 }
+export type SalesNavSection = { label: string; items: SalesNavItem[] }
+
 const menu = [
   { label: 'Dashboard Comercial', href: '/vendas', icon: BarChart3 },
   { label: 'Novo Pedido de Venda', href: '/vendas/novo-pedido', icon: FilePlus2 },
@@ -12,7 +15,7 @@ const menu = [
   { label: 'Ajuste Global', href: '/vendas/reajuste', icon: Settings },
 ]
 
-export default function VendasLayout({ children, title, subtitle, onRefresh }: { children: ReactNode; title: string; subtitle?: string; onRefresh?: () => void }) {
+export default function VendasLayout({ children, title, subtitle, onRefresh, navSections }: { children: ReactNode; title: string; subtitle?: string; onRefresh?: () => void; navSections?: SalesNavSection[] }) {
   const [isTabletMode, setIsTabletMode] = useState(false)
   const isMobile = useIsMobile()
   const tabletMode = isTabletMode || isMobile
@@ -31,7 +34,10 @@ export default function VendasLayout({ children, title, subtitle, onRefresh }: {
           <div className="mt-1 text-[13px] font-semibold text-gray-800">Módulo de Vendas</div>
         </div>
         <nav className="flex-1 px-2 py-2">
-          {menu.map(item => { const Icon=item.icon; const active=path===item.href; return <button key={item.href} type="button" onClick={()=>window.location.assign(item.href)} className={`mb-1 flex h-7 w-full items-center gap-2 rounded-sm px-2 text-left text-[11px] ${active?'font-bold text-blue-700':'text-gray-700 hover:bg-white'}`}><Icon size={14}/>{item.label}</button> })}
+          {(navSections ?? [{label:'Vendas',items:menu}]).map(section => <div key={section.label} className="mb-2">
+            <div className="px-2 py-1 text-[9px] font-medium uppercase tracking-wide text-slate-500">{section.label}</div>
+            {section.items.map(item => { const Icon=item.icon; const active=path===item.href; return <button key={item.href} type="button" onClick={()=>window.location.assign(item.href)} className={`mb-1 flex h-7 w-full items-center gap-2 rounded-sm px-2 text-left text-[11px] ${active?'font-medium text-blue-700':'text-gray-700 hover:bg-white'}`}><Icon size={14}/>{item.label}</button> })}
+          </div> )}
         </nav>
         <div className="border-t border-gray-200 p-2 text-[9px] text-gray-500">Vendas • Estoque • PCP • Expedição • Fiscal</div>
       </aside>
