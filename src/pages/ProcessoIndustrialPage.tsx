@@ -57,9 +57,9 @@ export default function ProcessoIndustrialPage(){
     setBusy(true);setError('')
     try{
       const [viewPerm,createPerm,editPerm]=await Promise.all([
-        supabase.rpc('erp_has_permission',{permission_code:'production.read'}),
-        supabase.rpc('erp_has_permission',{permission_code:'production.create'}),
-        supabase.rpc('erp_has_permission',{permission_code:'production.update'})
+        supabase.rpc('erp_has_permission',{p_code:'production.read'}),
+        supabase.rpc('erp_has_permission',{p_code:'production.create'}),
+        supabase.rpc('erp_has_permission',{p_code:'production.update'})
       ])
       if(viewPerm.error) throw viewPerm.error
       setCanView(Boolean(viewPerm.data));setCanCreate(Boolean(createPerm.data));setCanEdit(Boolean(editPerm.data))
