@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { Boxes, ClipboardList, Factory, Gauge, Hammer, Layers3, PackageSearch, Plus, RefreshCw, Save, ShieldCheck, Wrench } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import VendasLayout from './VendasLayout'
+import VendasLayout, { type SalesNavSection } from './VendasLayout'
 
 type ProcessType = 'INJECAO'|'PRENSADOS'|'ESTAMPARIA'|'FERRAMENTARIA'|'EXTRUSAO'|'USINAGEM'|'SOLDAGEM'|'MONTAGEM'|'CORTE'|'PINTURA'
 type ProcessRow = { id:string; codigo:string; nome:string; tipo:ProcessType; descricao:string|null; capacidade_hora:number|null; setup_padrao_min:number; ciclo_padrao_seg:number|null; ativo:boolean }
