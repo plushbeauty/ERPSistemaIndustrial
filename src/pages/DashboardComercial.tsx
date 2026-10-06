@@ -210,9 +210,9 @@ export default function DashboardComercial() {
 
       <div className="space-y-2 text-[11px]">
         <div className="grid grid-cols-3 gap-2">
-          <Kpi label="Faturamento no ano" value={brl(totals.faturamento)} />
-          <Kpi label="Meta anual" value={brl(totals.meta)} />
-          <Kpi label="Pedidos" value={totals.pedidos} />
+          <Kpi tone="blue" label="Faturamento no ano" value={brl(totals.faturamento)} />
+          <Kpi tone="amber" label="Meta anual" value={brl(totals.meta)} />
+          <Kpi tone="green" label="Pedidos" value={totals.pedidos} />
                   </div>
 
         <div className="grid min-w-0 gap-2">
@@ -324,8 +324,9 @@ export default function DashboardComercial() {
   )
 }
 
-function Kpi({ label, value }: { label: string; value: string | number }) {
-  return <div className="border border-slate-300 bg-white p-2"><div className="text-[9px] uppercase text-slate-500">{label}</div><div className="mt-1 text-[15px] font-semibold text-[#123B50]">{value}</div></div>
+function Kpi({ label, value, tone = "blue" }: { label: string; value: string | number; tone?: "blue"|"amber"|"green" }) {
+  const tones = { blue: "border-t-[#2D8DB8] bg-[#F3FAFD]", amber: "border-t-[#E6A34A] bg-[#FFFBF3]", green: "border-t-[#3A9D78] bg-[#F3FBF7]" } as const
+  return <div className={`border border-slate-300 border-t-4 p-2 ${tones[tone]}`}><div className="text-[9px] uppercase text-slate-500">{label}</div><div className="mt-1 text-[15px] font-semibold text-[#123B50]">{value}</div></div>
 }
 
 function ChartCard({ title, onPrint, className = '', children }: { title: string; onPrint: () => void; className?: string; children: ReactNode }) {
