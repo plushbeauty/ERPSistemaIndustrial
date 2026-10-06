@@ -1,67 +1,76 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import { ArrowLeft, BarChart3, ClipboardList, FilePlus2, ListChecks, LogOut, RefreshCw, Settings, Tablet } from 'lucide-react'
+import { BarChart3, BookOpen, Boxes, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, LogOut, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Tablet, Target, Users } from 'lucide-react'
+import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useIsMobile } from '../hooks/useIsMobile'
 
-export type SalesNavItem = { label: string; href: string; icon: typeof BarChart3 }
-export type SalesNavSection = { label: string; items: SalesNavItem[] }
+export type SalesNavItem = { label:string; href:string; icon:typeof LayoutDashboard }
+export type SalesNavSection = { label:string; items:SalesNavItem[] }
 
-const menu = [
-  { label: 'Dashboard Comercial', href: '/vendas', icon: BarChart3 },
-  { label: 'Novo Pedido de Venda', href: '/vendas/novo-pedido', icon: FilePlus2 },
-  { label: 'Análise de Orçamentos', href: '/vendas/orcamentos', icon: ClipboardList },
-  { label: 'Pedidos Pendentes', href: '/vendas/pendentes', icon: ListChecks },
-  { label: 'Ajuste Global', href: '/vendas/reajuste', icon: Settings },
+const sections:SalesNavSection[]=[
+ {label:'Visão geral',items:[
+  {label:'Dashboard comercial',href:'/vendas',icon:LayoutDashboard},
+  {label:'Faturamento',href:'/vendas/dashboard-graficos',icon:BarChart3},
+ ]},
+ {label:'Operação',items:[
+  {label:'Pedidos de venda',href:'/vendas/pedidos',icon:ClipboardList},
+  {label:'Novo pedido',href:'/vendas/novo-pedido',icon:FilePlus2},
+  {label:'Pedidos pendentes',href:'/vendas/pendentes',icon:ListChecks},
+  {label:'Status do pedido',href:'/vendas/status',icon:ListChecks},
+  {label:'Carteira de pedidos',href:'/vendas/carteira',icon:FolderKanban},
+  {label:'PDV / venda rápida',href:'/vendas/pdv',icon:ShoppingCart},
+ ]},
+ {label:'Comercial',items:[
+  {label:'Clientes',href:'/vendas/clientes',icon:Users},
+  {label:'Orçamentos e custos',href:'/vendas/orcamentos',icon:PackageSearch},
+  {label:'Análise de custos',href:'/vendas/analise-custos',icon:PackageSearch},
+  {label:'Metas',href:'/vendas/metas',icon:Target},
+  {label:'Vendedores / comissões',href:'/comissoes/perfil',icon:Users},
+  {label:'Relatórios',href:'/vendas/relatorios',icon:BookOpen},
+  {label:'Cadastro de Produtos',href:'/produtos-vendas',icon:PackagePlus},
+ ]},
+ {label:'Ferramentas',items:[
+  {label:'Catálogo digital',href:'/vendas/catalogo-digital',icon:BookOpen},
+  {label:'Gestão do catálogo',href:'/vendas/catalogo-digital/gestao',icon:BookOpen},
+  {label:'Ajuste global / preços',href:'/vendas/reajuste',icon:Settings2},
+ ]}
 ]
 
-export default function VendasLayout({ children, title, subtitle, onRefresh, navSections }: { children: ReactNode; title: string; subtitle?: string; onRefresh?: () => void; navSections?: SalesNavSection[] }) {
-  const [isTabletMode, setIsTabletMode] = useState(false)
-  const isMobile = useIsMobile()
-  const tabletMode = isTabletMode || isMobile
-  const path = window.location.pathname
-  const mainRoute = path.startsWith('/vendas') ? '/vendas' : path.startsWith('/pcp') ? '/pcp' : (path.startsWith('/estoque') || path.startsWith('/inventario')) ? '/estoque' : path.startsWith('/qualidade') ? '/qualidade' : '/erp-industrial'
-
-  useEffect(() => {
-    if (isMobile && window.location.pathname !== '/erp-industrial') window.location.assign('/erp-industrial')
-  }, [isMobile])
-  const logout = async () => { await supabase.auth.signOut(); window.location.assign('/login') }
-
-  return (
-    <div className={`erp-global-density erp-compact min-h-screen bg-slate-50 text-gray-800 ${tabletMode ? 'tablet-mode' : ''}`}>
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-56 border-r border-gray-200 bg-slate-100 text-gray-700 lg:flex lg:flex-col">
-        <div className="border-b border-gray-200 px-3 py-3">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-blue-700">ERP Industrial</div>
-          <div className="mt-1 text-[13px] font-semibold text-gray-800">Módulo de Vendas</div>
-        </div>
-        <nav className="flex-1 px-2 py-2">
-          {(navSections ?? [{label:'Vendas',items:menu}]).map(section => <div key={section.label} className="mb-2">
-            <div className="px-2 py-1 text-[9px] font-medium uppercase tracking-wide text-slate-500">{section.label}</div>
-            {section.items.map(item => { const Icon=item.icon; const active=path===item.href; return <button key={item.href} type="button" onClick={()=>window.location.assign(item.href)} className={`mb-1 flex h-7 w-full items-center gap-2 rounded-sm px-2 text-left text-[11px] ${active?'font-medium text-blue-700':'text-gray-700 hover:bg-white'}`}><Icon size={14}/>{item.label}</button> })}
-          </div> )}
-        </nav>
-        <div className="border-t border-gray-200 p-2 text-[9px] text-gray-500">Vendas • Estoque • PCP • Expedição • Fiscal</div>
-      </aside>
-
-      <main className={`min-w-0 ${tabletMode ? 'ml-0' : 'lg:ml-56'}`}>
-        <header className="sticky top-0 z-30 flex min-h-10 items-center justify-between gap-2 border-b border-slate-300 bg-white px-3 text-gray-800">
-          <div className="truncate text-[12px] font-semibold">{title}<span className="ml-2 text-[10px] font-normal text-gray-500">{subtitle ?? ''}</span></div>
-          <div className="flex items-center gap-1">
-            <button type="button" onClick={() => window.location.assign(mainRoute)} className="flex h-7 items-center gap-1 rounded border border-slate-300 bg-white px-2 text-[10px]" title="Voltar"><ArrowLeft size={13}/>VOLTAR</button>
-            <button type="button" onClick={()=>{setIsTabletMode(true);document.documentElement.classList.add('tablet-mode');if(window.location.pathname!=='/erp-industrial')window.location.assign('/erp-industrial')}} className="flex h-7 items-center gap-1 rounded border border-gray-200 px-2 text-[10px]" title="Alternar modo touch"><Tablet size={13}/>TABLET</button>
-            {onRefresh && <button type="button" onClick={onRefresh} className="flex h-7 items-center rounded border border-slate-500 px-2" title="Atualizar"><RefreshCw size={13}/></button>}
-            <button type="button" onClick={()=>void logout()} className="flex h-7 items-center gap-1 rounded border border-slate-500 px-2 text-[10px]" title="Sair"><LogOut size={13}/>SAIR</button>
-          </div>
-        </header>
-        <div className="p-3 lg:p-4">{children}</div>
-      </main>
-      <style>{`
-        .tablet-mode aside{display:none !important}
-        .tablet-mode{font-size:14px}
-        .tablet-mode input,.tablet-mode select,.tablet-mode button{min-height:40px;padding-top:8px;padding-bottom:8px}
-        .tablet-mode table td,.tablet-mode table th{padding-top:8px;padding-bottom:8px}
-        .tablet-mode .tablet-hide-column{display:none !important}
-      `}</style>
+export default function VendasLayout({children,title,subtitle,onRefresh,navSections}:{children:ReactNode;title:string;subtitle?:string;onRefresh?:()=>void;navSections?:SalesNavSection[]}){
+ const {pathname}=useLocation()
+ const isMobile=useIsMobile()
+ const [tablet,setTablet]=useState(false)
+ const tabletMode=tablet||isMobile
+ const activeSections=navSections??sections
+ useEffect(()=>{if(!isMobile)return},[isMobile])
+ const logout=async()=>{await supabase.auth.signOut();window.location.assign('/login')}
+ const active=(href:string)=>href==='/vendas'?pathname==='/vendas':pathname===href||pathname.startsWith(href+'/')
+ const mainRoute=pathname.startsWith('/vendas')?'/vendas':pathname.startsWith('/pcp')?'/pcp':(pathname.startsWith('/estoque')||pathname.startsWith('/inventario'))?'/estoque':pathname.startsWith('/qualidade')?'/qualidade':'/erp-industrial'
+ return <div className={`min-h-screen bg-[#F4F7FE] text-slate-800 ${tabletMode?'tablet-mode':''}`}>
+  <aside className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-slate-300 bg-white ${tabletMode?'hidden':''}`}>
+   <div className="border-b border-slate-200 px-3 py-3"><div className="text-[10px] font-medium uppercase tracking-widest text-[#2D8DB8]">ERP INDUSTRIAL</div><div className="mt-1 text-[13px] font-medium text-[#123B50]">Módulo de Vendas</div></div>
+   <nav className="flex-1 overflow-y-auto px-2 py-2">
+    {activeSections.map(section=><div key={section.label} className="mb-3"><div className="px-2 py-1 text-[9px] font-medium uppercase tracking-wide text-slate-400">{section.label}</div>{section.items.map(item=>{const Icon=item.icon;const on=active(item.href);return <Link key={item.href} to={item.href} aria-current={on?'page':undefined} className={`mb-1 flex h-8 w-full items-center gap-2 border px-2 text-left text-[11px] transition ${on?'border-[#2D8DB8] bg-[#2D8DB8] text-white':'border-transparent text-slate-600 hover:border-slate-200 hover:bg-[#F4FBFD]'}`}><Icon size={14} strokeWidth={1.8}/><span className="truncate">{item.label}</span></Link>})}</div>)}
+   </nav>
+   <div className="border-t border-slate-200 px-3 py-2 text-[9px] text-slate-400">Vendas • Estoque • PCP • Fiscal</div>
+  </aside>
+  <main className={tabletMode?'min-w-0':'ml-60 min-w-0'}>
+   <header className="sticky top-0 z-30 flex min-h-10 items-center justify-between gap-2 border-b border-slate-300 bg-white px-3">
+    <div className="min-w-0 truncate"><span className="mr-2 text-[10px] font-medium text-[#2D8DB8]">VENDAS</span><span className="text-[12px] font-medium text-[#123B50]">{title}</span>{subtitle&&<span className="ml-2 text-[10px] text-slate-500">{subtitle}</span>}</div>
+    <div className="flex items-center gap-1">
+     <button type="button" onClick={()=>window.location.assign(mainRoute)} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Voltar"><span>←</span>Voltar</button>
+     <button type="button" onClick={()=>{setTablet(true);document.documentElement.classList.add('tablet-mode')}} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Modo tablet"><Tablet size={13}/>Tablet</button>
+     {onRefresh&&<button type="button" onClick={onRefresh} className="flex h-7 items-center border border-slate-300 bg-white px-2" title="Atualizar"><RefreshCw size={13}/></button>}
+     <button type="button" onClick={()=>void logout()} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Sair"><LogOut size={13}/>Sair</button>
     </div>
-  )
+   </header>
+   <div className="p-2 lg:p-3">{children}</div>
+  </main>
+  <style>{`
+   .tablet-mode input,.tablet-mode select,.tablet-mode button{min-height:36px}
+   .tablet-mode aside{display:none}
+   .tablet-mode main{margin-left:0}
+  `}</style>
+ </div>
 }
