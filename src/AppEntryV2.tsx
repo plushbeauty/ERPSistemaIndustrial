@@ -431,7 +431,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/fiscal" element={<Fiscal />} />
       <Route path="/vendas/rh" element={<RHIndustrial />} />
       <Route path="/vendas/engenharia" element={<EngenhariaCentral />} />
-      <Route path="/vendas/materiais" element={<CentraisIndustriais module="materiais" />} />
+      <Route path="/vendas/materiais" element={<PCPIndustrial />} />
       <Route path="/vendas/mrp" element={<MRPIndustrial />} />
       <Route path="/vendas/pcp" element={<PCPIndustrial />} />
       <Route path="/vendas/chao-de-fabrica" element={<OperacaoIndustrial />} />
