@@ -417,6 +417,10 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/metas" element={<VendasMetas />} />
       <Route path="/vendas/relatorios" element={<VendasRelatorios />} />
       <Route path="/vendas/configuracoes" element={<Navigate to="/configuracoes-adm" replace />} />
+      <Route path="/producao" element={<OperacaoIndustrial />} />
+      <Route path="/expedicao" element={<ExpedicaoRoteirizacao />} />
+      <Route path="/manutencao" element={<ManutencaoOrdens />} />
+      <Route path="/adm" element={<ConfiguracoesADMPage />} />
       <Route path="/pcp" element={<PCPIndustrial />} />
       <Route path="/pcp/engenharia-bom" element={<EngenhariaBOM />} />
       <Route path="/pcp/roteiro-operacoes" element={<RoteiroOperacoes />} />
