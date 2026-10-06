@@ -158,17 +158,17 @@ export default function Fiscal() {
       <header className="mb-6 flex flex-col gap-4 border-b border-[#C9E1E8] pb-5 xl:flex-row xl:items-center xl:justify-between">
         <div>
           <button
-            className="mb-2 flex min-h-11 items-center gap-2 rounded-lg border border-[#C9E1E8] bg-white px-3 py-2 text-base font-semibold text-[#0f172a] shadow-sm hover:bg-slate-50"
+            className="mb-2 flex min-h-11 items-center gap-2 rounded-none border border-[#C9E1E8] bg-white px-3 py-2 text-base font-semibold text-[#0f172a] shadow-sm hover:bg-slate-50"
             onClick={() => { window.location.href = '/erp-industrial' }}
           >
             <ArrowLeft size={17} /> Voltar ao Painel
           </button>
-          <span className="text-sm font-bold uppercase tracking-wider text-[#2563eb]">SGQ • CORE TRIBUTÁRIO</span>
-          <h1 className="mt-1 text-3xl font-extrabold text-[#0f172a]">Central Fiscal Integrada</h1>
+          <span className="text-sm font-medium uppercase tracking-wider text-[#2563eb]">SGQ • CORE TRIBUTÁRIO</span>
+          <h1 className="mt-1 text-3xl font-medium text-[#0f172a]">Central Fiscal Integrada</h1>
           <p className="mt-1 text-base text-slate-600">Liberação para faturamento, monitoramento de notas fiscais, contas a pagar, receber e relatórios consolidados.</p>
         </div>
         <button
-          className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#2563eb] px-4 py-2.5 text-base font-bold text-white shadow-sm transition-all hover:bg-blue-700 disabled:opacity-60"
+          className="flex min-h-11 items-center justify-center gap-2 rounded-none bg-[#2563eb] px-4 py-2.5 text-base font-medium text-white shadow-sm transition-all hover:bg-blue-700 disabled:opacity-60"
           onClick={() => void load()}
           disabled={busy}
         >
@@ -177,7 +177,7 @@ export default function Fiscal() {
       </header>
 
       {(message || error) && (
-        <div className={error ? 'mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-base font-medium text-red-700' : 'mb-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-base font-medium text-emerald-700'}>
+        <div className={error ? 'mb-6 rounded-none border border-red-200 bg-red-50 p-4 text-base font-medium text-red-700' : 'mb-6 rounded-none border border-emerald-200 bg-emerald-50 p-4 text-base font-medium text-emerald-700'}>
           {error || message}
         </div>
       )}
@@ -203,21 +203,21 @@ export default function Fiscal() {
               ['Critério Liberação', 'Total / Parcial'],
               ['Rastreabilidade', 'Saldo por Item']
             ].map(([title, value]) => (
-              <article key={title} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <article key={title} className="rounded-none border border-slate-200 bg-white p-5 shadow-sm">
                 <span className="text-sm font-semibold uppercase text-slate-400">{title}</span>
-                <strong className="mt-1 block text-2xl font-bold text-[#0f172a]">{value}</strong>
+                <strong className="mt-1 block text-2xl font-medium text-[#0f172a]">{value}</strong>
               </article>
             ))}
           </div>
 
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
+            <div className="rounded-none border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
               <div className="mb-4 flex flex-col gap-3 border-b pb-3 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-[#0f172a]">Carteira de Pedidos de Venda</h2>
+                  <h2 className="text-xl font-medium text-[#0f172a]">Carteira de Pedidos de Venda</h2>
                   <p className="mt-0.5 text-sm text-slate-500">Selecione o pedido para conferir as quantidades liberadas.</p>
                 </div>
-                <label className="flex min-h-11 items-center gap-2 rounded-lg border bg-slate-50 px-3 text-base">
+                <label className="flex min-h-11 items-center gap-2 rounded-none border bg-slate-50 px-3 text-base">
                   <Search size={17} className="text-slate-400" />
                   <input className="w-full bg-transparent text-base outline-none md:w-56" placeholder="Pedido ou status..." value={query} onChange={event => setQuery(event.target.value)} />
                 </label>
@@ -236,11 +236,11 @@ export default function Fiscal() {
                   <tbody>
                     {filteredOrders.map(order => (
                       <tr key={order.id} className="border-b border-slate-100 hover:bg-slate-50">
-                        <td className="p-3 font-bold text-[#2563eb]">#{order.numero}</td>
+                        <td className="p-3 font-medium text-[#2563eb]">#{order.numero}</td>
                         <td className="p-3">{order.status}</td>
                         <td className="p-3 text-right font-semibold">{money(order.total)}</td>
                         <td className="p-3 text-center">
-                          <button className="min-h-10 rounded-lg border border-slate-200 bg-white px-3 py-2 text-base font-semibold hover:bg-slate-50" onClick={() => void openOrder(order.id)}>
+                          <button className="min-h-10 rounded-none border border-slate-200 bg-white px-3 py-2 text-base font-semibold hover:bg-slate-50" onClick={() => void openOrder(order.id)}>
                             Conferir
                           </button>
                         </td>
@@ -252,12 +252,12 @@ export default function Fiscal() {
               </div>
             </div>
 
-            <aside className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="text-xl font-bold text-[#0f172a]">Itens do Pedido</h2>
+            <aside className="rounded-none border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 className="text-xl font-medium text-[#0f172a]">Itens do Pedido</h2>
               <p className="mt-1 text-base text-slate-500">Pedido selecionado: {selected ? '#' + (orders.find(order => order.id === selected)?.numero ?? '') : '—'}</p>
               <div className="mt-5 space-y-4">
                 {items.map(item => (
-                  <article key={item.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <article key={item.id} className="rounded-none border border-slate-200 bg-slate-50 p-4">
                     <strong className="block text-base">{item.descricao}</strong>
                     <span className="mt-1 block text-sm text-slate-600">Quantidade: {item.quantidade} • Total: {money(item.total)}</span>
                     <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -267,19 +267,19 @@ export default function Fiscal() {
                           min="0"
                           max={item.quantidade}
                           step="any"
-                          className="mt-1 min-h-11 w-full rounded-lg border bg-white p-2 text-base outline-none focus:ring-2 focus:ring-[#2563eb]"
+                          className="mt-1 min-h-11 w-full rounded-none border bg-white p-2 text-base outline-none focus:ring-2 focus:ring-[#2563eb]"
                           value={qty[item.id] ?? ''}
                           onChange={event => setQty(previous => ({ ...previous, [item.id]: event.target.value }))}
                           placeholder="0"
                         />
                       </label>
-                      <button className="mt-6 flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-base font-bold text-white hover:bg-emerald-700 disabled:opacity-60" disabled={busy} onClick={() => void release(item)}>
+                      <button className="mt-6 flex min-h-11 items-center justify-center gap-2 rounded-none bg-emerald-600 px-4 py-2.5 text-base font-medium text-white hover:bg-emerald-700 disabled:opacity-60" disabled={busy} onClick={() => void release(item)}>
                         <CheckCircle2 size={17} /> Liberar
                       </button>
                     </div>
                   </article>
                 ))}
-                {!items.length && <p className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-base text-slate-500">Selecione um pedido na tabela para detalhar os itens.</p>}
+                {!items.length && <p className="rounded-none border border-dashed border-slate-300 p-6 text-center text-base text-slate-500">Selecione um pedido na tabela para detalhar os itens.</p>}
               </div>
             </aside>
           </div>
@@ -287,13 +287,13 @@ export default function Fiscal() {
       )}
 
       {tab === 'notas' && (
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-none border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-xl font-bold text-[#0f172a]">Notas Fiscais</h2>
+              <h2 className="text-xl font-medium text-[#0f172a]">Notas Fiscais</h2>
               <p className="text-base text-slate-500">Documentos fiscais reais da empresa e transmissão pela Edge Function protegida.</p>
             </div>
-            <span className="rounded-full bg-blue-50 px-3 py-1 text-base font-bold text-blue-800">{docs.length} documentos</span>
+            <span className="rounded-full bg-blue-50 px-3 py-1 text-base font-medium text-blue-800">{docs.length} documentos</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left text-base">
@@ -301,13 +301,13 @@ export default function Fiscal() {
               <tbody>
                 {docs.map(doc => (
                   <tr key={doc.id} className="border-b border-slate-100">
-                    <td className="p-3 font-bold text-[#1e3a8a]">{doc.numero ?? '—'} / {doc.serie}</td>
+                    <td className="p-3 font-medium text-[#1e3a8a]">{doc.numero ?? '—'} / {doc.serie}</td>
                     <td className="p-3">{doc.destinatario_nome ?? '—'}</td>
                     <td className="p-3">{doc.data_emissao ? new Date(doc.data_emissao).toLocaleDateString('pt-BR') : '—'}</td>
                     <td className="p-3">{doc.status}</td>
                     <td className="p-3 text-right font-semibold">{money(doc.valor_total)}</td>
                     <td className="p-3 text-center">
-                      <button className="flex min-h-10 items-center justify-center gap-2 rounded-lg bg-[#2563eb] px-3 py-2 text-base font-semibold text-white hover:bg-blue-700 disabled:opacity-60" disabled={busy || ['autorizada','Processando'].includes(doc.status)} onClick={() => void emitNfe(doc)}>
+                      <button className="flex min-h-10 items-center justify-center gap-2 rounded-none bg-[#2563eb] px-3 py-2 text-base font-semibold text-white hover:bg-blue-700 disabled:opacity-60" disabled={busy || ['autorizada','Processando'].includes(doc.status)} onClick={() => void emitNfe(doc)}>
                         <Send size={16} /> Transmitir NF-e
                       </button>
                     </td>
@@ -321,8 +321,8 @@ export default function Fiscal() {
       )}
 
       {(tab === 'receber' || tab === 'pagar') && (
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-xl font-bold text-[#0f172a]">{tab === 'receber' ? 'Contas a Receber' : 'Contas a Pagar'}</h2>
+        <section className="rounded-none border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-xl font-medium text-[#0f172a]">{tab === 'receber' ? 'Contas a Receber' : 'Contas a Pagar'}</h2>
           <div className="mt-5 overflow-x-auto">
             <table className="w-full border-collapse text-left text-base">
               <thead><tr className="border-b bg-slate-50 font-semibold"><th className="p-3">Descrição</th><th className="p-3">Documento</th><th className="p-3">Vencimento</th><th className="p-3">Status</th><th className="p-3 text-right">Valor</th></tr></thead>
@@ -350,19 +350,19 @@ export default function Fiscal() {
               ['receber', 'Recebimentos'],
               ['pagar', 'Pagamentos']
             ] as Array<[ReportTab, string]>).map(([id, label]) => (
-              <button key={id} className={'min-h-11 rounded-lg border px-4 py-2 text-base font-semibold ' + (reportTab === id ? 'border-[#2563eb] bg-blue-50 text-[#1e3a8a]' : 'border-slate-200 bg-white text-slate-600')} onClick={() => setReportTab(id)}>
+              <button key={id} className={'min-h-11 rounded-none border px-4 py-2 text-base font-semibold ' + (reportTab === id ? 'border-[#2563eb] bg-blue-50 text-[#1e3a8a]' : 'border-slate-200 bg-white text-slate-600')} onClick={() => setReportTab(id)}>
                 {label}
               </button>
             ))}
           </nav>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><span className="text-sm font-semibold uppercase text-slate-400">NF-e monitoradas</span><strong className="mt-1 block text-2xl">{report.nfCount}</strong></article>
-            <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><span className="text-sm font-semibold uppercase text-slate-400">Valor NF-e</span><strong className="mt-1 block text-2xl">{money(report.nfTotal)}</strong></article>
-            <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><span className="text-sm font-semibold uppercase text-slate-400">A receber</span><strong className="mt-1 block text-2xl">{money(report.receber)}</strong></article>
-            <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><span className="text-sm font-semibold uppercase text-slate-400">A pagar</span><strong className="mt-1 block text-2xl">{money(report.pagar)}</strong></article>
+            <article className="rounded-none border border-slate-200 bg-white p-5 shadow-sm"><span className="text-sm font-semibold uppercase text-slate-400">NF-e monitoradas</span><strong className="mt-1 block text-2xl">{report.nfCount}</strong></article>
+            <article className="rounded-none border border-slate-200 bg-white p-5 shadow-sm"><span className="text-sm font-semibold uppercase text-slate-400">Valor NF-e</span><strong className="mt-1 block text-2xl">{money(report.nfTotal)}</strong></article>
+            <article className="rounded-none border border-slate-200 bg-white p-5 shadow-sm"><span className="text-sm font-semibold uppercase text-slate-400">A receber</span><strong className="mt-1 block text-2xl">{money(report.receber)}</strong></article>
+            <article className="rounded-none border border-slate-200 bg-white p-5 shadow-sm"><span className="text-sm font-semibold uppercase text-slate-400">A pagar</span><strong className="mt-1 block text-2xl">{money(report.pagar)}</strong></article>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-xl font-bold text-[#0f172a]">{reportTab === 'faturamento' ? 'Faturamento fiscal' : reportTab === 'receber' ? 'Recebimentos' : 'Pagamentos'}</h2>
+          <div className="rounded-none border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-xl font-medium text-[#0f172a]">{reportTab === 'faturamento' ? 'Faturamento fiscal' : reportTab === 'receber' ? 'Recebimentos' : 'Pagamentos'}</h2>
             <p className="mt-2 text-base text-slate-600">Dados consolidados diretamente das tabelas fiscais reais. Pedidos ainda abertos: <strong>{report.abertos}</strong>.</p>
           </div>
         </section>
