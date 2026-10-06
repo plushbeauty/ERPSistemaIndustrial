@@ -503,7 +503,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras/ordem-compra" element={<Navigate to="/compras/pedido" replace />} />
       <Route path="/compras/fornecedores" element={<ComprasRoute><FornecedoresIndustrial /></ComprasRoute>} />
       <Route path="/compras/solicitacao-manual" element={<ComprasRoute><ComprasSolicitacaoManual /></ComprasRoute>} />
-      <Route path="/solicitacao-compra" element={<SolicitacaoCompra />} />
+      <Route path="/solicitacao-compra" element={<ComprasRoute><SolicitacaoCompra /></ComprasRoute>} />
       <Route path="/fornecedores" element={<FornecedoresIndustrial />} />
       <Route path="/clientes" element={<ClientesIndustrial />} />
       <Route path="/tabela-precos" element={<AjusteGlobal />} />
@@ -513,7 +513,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/fiscal/compras" element={<ComprasRoute><FiscalCompras /></ComprasRoute>} />
       <Route path="/compras/analise-precos" element={<ComprasRoute><ComprasAnalisePrecos /></ComprasRoute>} />
       <Route path="/compras/relatorios" element={<ComprasRoute><ComprasRelatorios /></ComprasRoute>} />
-      <Route path="/compras/ajuda" element={<ComprasAjuda />} />
+      <Route path="/compras/ajuda" element={<ComprasRoute><ComprasAjuda /></ComprasRoute>} />
       <Route path="/fiscal/emissao" element={<NFeEmissao />} />
       <Route path="/fiscal/previsao-caixa" element={<FiscalPrevisaoCaixa />} />
       <Route path="/fiscal/carteira-nfe" element={<FiscalCarteiraNFe />} />
