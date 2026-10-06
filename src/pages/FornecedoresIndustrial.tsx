@@ -15,6 +15,7 @@
 - Status Atual: Revisão 3 (Compras e Qualificação de Fornecedores)
 - Total de Linhas Gerado: 32
 - Assinatura de Entrada (Primeiros 3 Imports): import { ChangeEvent, FormEvent, useEffect, useState } from 'react' | import { Check, Download, FileCheck2, Pencil, Plus, Printer, RefreshCw, Search, ShieldCheck, Star, Trash2, Upload, X } from 'lucide-react' | import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
 import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
