@@ -35,7 +35,7 @@ export default function ComprasAnalisePrecos(){
  const selectedRfq=rfqs.find(r=>r.id===selected)
  const rows=useMemo(()=>quotes.filter(q=>q.rfq_id===selected).map(q=>({...q,custo:Number(q.valor_total||0)+Number(q.valor_frete||0)-Number(q.valor_desconto||0)})).sort((a,b)=>a.custo-b.custo),[quotes,selected])
  const winner=rows[0]
- return <VendasLayout title="Análise de preços" subtitle="Mapa comparativo das propostas reais de RFQ" onRefresh={()=>void load()}>
+ return <VendasLayout title="Análise de preços" subtitle="Mapa comparativo real de propostas RFQ para decisão de suprimentos" onRefresh={()=>void load()}>
   <main className="min-h-screen bg-slate-50 p-2 text-slate-900">
    <header className="mb-2 flex items-center justify-between gap-2 border-b border-slate-200 pb-2">
     <div><span className="text-[9px] uppercase tracking-wider text-sky-700">COMPRAS • ANÁLISE</span><h1 className="text-lg font-medium">Análise de preços</h1><p className="text-[10px] text-slate-500">Comparação somente com propostas existentes no banco.</p></div>
