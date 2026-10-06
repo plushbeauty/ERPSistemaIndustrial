@@ -4,10 +4,12 @@ import type { IScannerControls } from '@zxing/browser'
 import type { LucideIcon } from 'lucide-react'
 import { ArrowDownCircle, ArrowUpCircle, Barcode, CalendarClock, Camera, Edit3, Plus, RefreshCw, ScanLine, Users, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import VendasLayout from './VendasLayout'
 import { fetchAllPages } from '../lib/supabasePagination'
 import { parseBoleto } from '../lib/boleto'
 
 type Kind = 'PAGAR' | 'RECEBER'
+const financeNav = [{ label:'Financeiro', items:[{label:'Caixa',href:'/financeiro/caixa'},{label:'Contas a pagar',href:'/financeiro/contas-pagar'},{label:'Contas a receber',href:'/financeiro/contas-receber'},{label:'Fluxo de caixa',href:'/financeiro/fluxo-caixa'},{label:'Conciliação',href:'/financeiro/reconciliacao'},{label:'Importar extratos',href:'/financeiro/importar-extratos'},{label:'Ano fiscal',href:'/financeiro/ano-fiscal'},{label:'Custos padrão',href:'/financeiro/custo-padrao'}] }] as const
 type Partner = { id: string; nome: string }
 type Company = { id: string; nome: string }
 type Installment = { id: string; numero: number; vencimento: string; valor: number; saldo: number; status: string }
@@ -433,7 +435,7 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
   }
 
   const title = payable ? 'Contas a pagar' : 'Contas a receber'
-  return <main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-6">
+  return <VendasLayout title={title} subtitle="Títulos • parcelas • baixas • integração com vendas e compras" onRefresh={()=>void load()} navSections={financeNav}><main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-6">
     <div className="mx-auto max-w-[1500px] space-y-4">
       <header className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-3">
         <div>
@@ -591,6 +593,7 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
       </div>}
     </div>
   </main>
+</VendasLayout>
 }
 
 export function FinanceiroContasPagar({ kind }: { kind: Kind }) {
