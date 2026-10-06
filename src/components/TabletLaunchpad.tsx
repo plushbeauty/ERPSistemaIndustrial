@@ -47,7 +47,8 @@ const modules: Module[] = [
 ]
 
 const moduleItems: Record<string, string> = {
-  "VENDAS": "Pedidos • Clientes • Carteira • Catálogo Digital • Análise de Custos • Metas • Configurações",
+  "CADASTRO DE PRODUTOS": "Produtos • SKUs • Unidades • Grupos • Estoque • Preços",
+  "VENDAS": "Pedidos • Clientes • Carteira • Catálogo Digital • Análise de Custos • Metas",
   "COMISSÕES & METAS": "Regras de comissão • Metas por SKU • Processamento mensal • Extrato",
   "COMPRAS": "Solicitações • Pedidos de Compra • Fornecedores • Recebimento • Aprovações",
   "ESTOQUE": "Saldos • Movimentações • Ajustes • Recebimento de Lotes • Inventário • Curva ABC",
