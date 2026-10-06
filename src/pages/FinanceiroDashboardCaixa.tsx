@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, CalendarClock, RefreshCw } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import VendasLayout from './VendasLayout'
 import { fetchAllPages } from '../lib/supabasePagination'
 
 type Direction = 'PAGAR' | 'RECEBER'
+const financeNav = [{ label:'Financeiro', items:[{label:'Caixa',href:'/financeiro/caixa'},{label:'Contas a pagar',href:'/financeiro/contas-pagar'},{label:'Contas a receber',href:'/financeiro/contas-receber'},{label:'Fluxo de caixa',href:'/financeiro/fluxo-caixa'},{label:'Conciliação',href:'/financeiro/reconciliacao'},{label:'Importar extratos',href:'/financeiro/importar-extratos'},{label:'Ano fiscal',href:'/financeiro/ano-fiscal'},{label:'Custos padrão',href:'/financeiro/custo-padrao'}] }] as const
 type TitleRef = { tipo: Direction; descricao: string }
 type RawInstallment = {
   id: string
@@ -156,7 +158,7 @@ export default function FinanceiroDashboardCaixa() {
   }
   const maxScale=Math.max(1,...buckets.flatMap(item=>[item.entries,item.exits]))
 
-  return <main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-6"><div className="mx-auto max-w-[1600px] space-y-4">
+  return <VendasLayout title="Fluxo de caixa" subtitle="Tesouraria • parcelas • baixas • projeção" onRefresh={()=>void load()} navSections={financeNav}><main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-6"><div className="mx-auto max-w-[1600px] space-y-4">
     <header className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-3"><div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-sky-700">Financeiro / Tesouraria</p><h1 className="text-2xl font-semibold text-[#123B50]">Fluxo de caixa</h1><p className="mt-1 text-sm text-slate-600">Entradas e saídas são parcelas e baixas registradas no financeiro da empresa.</p></div><button type="button" onClick={()=>void load()} disabled={loading} className="inline-flex h-9 items-center gap-2 border border-slate-300 bg-white px-3 text-sm disabled:opacity-50"><RefreshCw size={15}/>Atualizar</button></header>
     {error&&<div role="alert" className="border border-red-300 bg-red-50 p-3 text-sm text-red-900">{error}</div>}
     <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -168,5 +170,5 @@ export default function FinanceiroDashboardCaixa() {
         {buckets.map((item,index)=><article key={item.key} className="w-36 border border-slate-200 bg-slate-50 p-2"><strong className="block text-xs text-slate-700">{item.label}</strong><div className="mt-3 space-y-2 text-[11px]"><div><span className="flex justify-between"><span className="text-emerald-800">Entradas</span><span>{currency(item.entries)}</span></span><div className="mt-1 h-2 bg-emerald-100"><div className="h-2 bg-emerald-600" style={{width:`${Math.min(100,item.entries/maxScale*100)}%`}}/></div></div><div><span className="flex justify-between"><span className="text-rose-800">Saídas</span><span>{currency(item.exits)}</span></span><div className="mt-1 h-2 bg-rose-100"><div className="h-2 bg-rose-600" style={{width:`${Math.min(100,item.exits/maxScale*100)}%`}}/></div></div><div className="border-t border-slate-200 pt-1"><span className="text-slate-600">Variação</span><strong className={`block ${item.net<0?'text-rose-800':'text-emerald-800'}`}>{currency(item.net)}</strong><small className="text-slate-500">acumulada {currency(buckets.slice(0,index+1).reduce((sum,part)=>sum+part.net,0))}</small></div></div></article>)}
       </div></div>
     </section>
-  </div></main>
+  </div></main></VendasLayout>
 }
