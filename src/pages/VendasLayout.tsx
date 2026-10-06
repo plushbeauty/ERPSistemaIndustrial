@@ -161,22 +161,22 @@ export default function VendasLayout({
                   : '/erp-industrial'
 
   const tabletLabel = isVendas
-    ? 'TABLET VENDAS'
+    ? 'MENU PRINCIPAL VENDAS'
     : pathname.startsWith('/pcp')
-      ? 'TABLET PCP'
+      ? 'MENU PRINCIPAL PCP'
       : pathname.startsWith('/estoque') || pathname.startsWith('/inventario')
-        ? 'TABLET ESTOQUE'
+        ? 'MENU PRINCIPAL ESTOQUE'
         : pathname.startsWith('/qualidade')
-          ? 'TABLET QUALIDADE'
+          ? 'MENU PRINCIPAL QUALIDADE'
           : pathname.startsWith('/compras')
-            ? 'TABLET COMPRAS'
+            ? 'MENU PRINCIPAL COMPRAS'
             : pathname.startsWith('/financeiro')
-              ? 'TABLET FINANCEIRO'
+              ? 'MENU PRINCIPAL FINANCEIRO'
               : pathname.startsWith('/rh')
-                ? 'TABLET RH'
+                ? 'MENU PRINCIPAL RH'
                 : pathname.startsWith('/manutencao')
-                  ? 'TABLET MANUTENÇÃO'
-                  : 'TABLET GLOBAL'
+                  ? 'MENU PRINCIPAL MANUTENÇÃO'
+                  : 'MENU PRINCIPAL GLOBAL'
 
   const logout = async () => {
     await supabase.auth.signOut()
@@ -306,7 +306,7 @@ export default function VendasLayout({
         .v7-top-actions button:hover{filter:brightness(.97)}
         @media(max-width:1180px){.v7-logo-frame{height:72px;min-width:185px}.v7-top-title strong{font-size:18px!important}.v7-top-title{display:none!important}.v7-top-brand{min-width:0}}
         @media(max-width:900px){.v7-top-date{display:none!important}.v7-top-data{display:none!important}.v7-logo-frame{height:64px;min-width:165px}}
-        @media(max-width:650px){.v7-topbar{padding:7px 10px!important;min-height:72px}.v7-logo-frame{height:54px;min-width:135px}.v7-top-user-simple{display:none!important}.v7-top-tablet,.v7-top-exit{min-height:36px;padding:0 9px!important;font-size:10px!important}.v7-top-tablet{font-size:0!important}.v7-top-tablet::after{content:'VENDAS';font-size:10px}}
+        @media(max-width:650px){.v7-topbar{padding:7px 10px!important;min-height:72px}.v7-logo-frame{height:54px;min-width:135px}.v7-top-user-simple{display:none!important}.v7-top-tablet,.v7-top-exit{min-height:36px;padding:0 9px!important;font-size:10px!important}.v7-top-tablet{font-size:0!important}.v7-top-tablet::after{content:'MENU VENDAS';font-size:10px}}
         .vendas-standard .rounded,.vendas-standard .rounded-sm,.vendas-standard .rounded-md,.vendas-standard .rounded-lg,.vendas-standard .rounded-xl,.vendas-standard .rounded-2xl{border-radius:2px!important}.vendas-standard .font-bold,.vendas-standard .font-extrabold,.vendas-standard .font-black{font-weight:500!important}.vendas-standard h1,.vendas-standard h2,.vendas-standard h3,.vendas-standard p,.vendas-standard label{font-weight:500!important}.vendas-standard{font-size:10px}.vendas-standard button{border-radius:2px}.vendas-standard input:not([type=checkbox]):not([type=radio]):not([type=range]),.vendas-standard select{border-radius:2px}
       `}</style>
 
