@@ -272,10 +272,15 @@ export default function VendasCatalogoDigital() {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {rows.map((produto) => {
+              {rows.map((produto, index) => {
                 const quantity = quantidades[produto.id] ?? 0
+                const grupo = produto.grupo || 'SEM GRUPO'
+                const anterior = rows[index - 1]?.grupo || 'SEM GRUPO'
+                const showGrupo = categoria === 'TODOS' && (index === 0 || grupo !== anterior)
                 return (
-                  <article
+                  <div key={produto.id} className="contents">
+                    {showGrupo && <div className="col-span-full flex items-center gap-2 border-b border-[#c8e1e8] bg-[#f4fbfd] px-2 py-1.5"><span className="h-2 w-2 bg-[#2D8DB8]"/><strong className="text-[10px] font-medium uppercase tracking-wide text-[#123B50]">{grupo}</strong><span className="text-[8px] text-slate-400">{rows.filter((item) => (item.grupo || 'SEM GRUPO') === grupo).length} produto(s)</span></div>}
+                    <article
                     key={produto.id}
                     className="group overflow-hidden border border-slate-200 bg-white transition-shadow hover:shadow-md"
                   >
@@ -304,10 +309,11 @@ export default function VendasCatalogoDigital() {
                         )}
                       </div>
                       <div className="p-2.5">
-                        <div className="font-mono text-[8px] text-slate-400">{produto.codigo}</div>
+                        <div className="flex items-center justify-between gap-2"><span className="font-mono text-[8px] text-slate-400">{produto.codigo}</span>{produto.subgrupo&&<span className="truncate text-[8px] text-slate-400">{produto.subgrupo}</span>}</div>
                         <h2 className="mt-1 min-h-8 text-[11px] font-medium leading-4 text-[#123B50]">
                           {produto.nome}
                         </h2>
+                        <p className="mt-1 line-clamp-2 min-h-7 text-[8px] leading-3 text-slate-500">{produto.descricao || "Sem descrição cadastrada."}</p>
                         <div className="mt-2 flex items-end justify-between gap-1">
                           <div>
                             <span className="block text-[8px] text-slate-400">Preço de venda</span>
@@ -358,6 +364,7 @@ export default function VendasCatalogoDigital() {
                       </button>
                     </div>
                   </article>
+                  </div>
                 )
               })}
 
