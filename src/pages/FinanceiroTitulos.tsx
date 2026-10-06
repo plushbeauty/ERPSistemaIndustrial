@@ -4,12 +4,12 @@ import type { IScannerControls } from '@zxing/browser'
 import type { LucideIcon } from 'lucide-react'
 import { ArrowDownCircle, ArrowUpCircle, Barcode, CalendarClock, Camera, Edit3, Plus, RefreshCw, ScanLine, Users, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import VendasLayout from './VendasLayout'
+import VendasLayout, { type SalesNavSection } from './VendasLayout'
 import { fetchAllPages } from '../lib/supabasePagination'
 import { parseBoleto } from '../lib/boleto'
 
 type Kind = 'PAGAR' | 'RECEBER'
-const financeNav = [{ label:'Financeiro', items:[{label:'Caixa',href:'/financeiro/caixa'},{label:'Contas a pagar',href:'/financeiro/contas-pagar'},{label:'Contas a receber',href:'/financeiro/contas-receber'},{label:'Fluxo de caixa',href:'/financeiro/fluxo-caixa'},{label:'Conciliação',href:'/financeiro/reconciliacao'},{label:'Importar extratos',href:'/financeiro/importar-extratos'},{label:'Ano fiscal',href:'/financeiro/ano-fiscal'},{label:'Custos padrão',href:'/financeiro/custo-padrao'}] }]
+const financeNav: SalesNavSection[] = [{ label:'Financeiro', items:[{label:'Caixa',href:'/financeiro/caixa',icon:CalendarClock},{label:'Contas a pagar',href:'/financeiro/contas-pagar',icon:CalendarClock},{label:'Contas a receber',href:'/financeiro/contas-receber',icon:CalendarClock},{label:'Fluxo de caixa',href:'/financeiro/fluxo-caixa',icon:CalendarClock},{label:'Conciliação',href:'/financeiro/reconciliacao',icon:CalendarClock},{label:'Importar extratos',href:'/financeiro/importar-extratos',icon:CalendarClock},{label:'Ano fiscal',href:'/financeiro/ano-fiscal',icon:CalendarClock},{label:'Custos padrão',href:'/financeiro/custo-padrao',icon:CalendarClock}] }]
 type Partner = { id: string; nome: string }
 type Company = { id: string; nome: string }
 type Installment = { id: string; numero: number; vencimento: string; valor: number; saldo: number; status: string }
