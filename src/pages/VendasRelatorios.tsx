@@ -94,7 +94,7 @@ export default function VendasRelatorios() {
           </div>
         </div>
 
-        {error && <div className="border border-rose-200 bg-rose-50 p-4 font-bold text-rose-800">{error}</div>}
+        {error && <div className="border border-rose-200 bg-rose-50 p-4 font-medium text-rose-800">{error}</div>}
 
         <section className="border border-slate-200 bg-white shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 p-4">
@@ -124,7 +124,7 @@ export default function VendasRelatorios() {
                     <td className="px-4 py-3 font-semibold">{order.cliente_nome || '—'}</td>
                     <td className="px-4 py-3">{order.data_entrada ? new Date(order.data_entrada).toLocaleDateString('pt-BR') : '—'}</td>
                     <td className="px-4 py-3">{order.data_entrega_prometida ? new Date(order.data_entrega_prometida).toLocaleDateString('pt-BR') : '—'}</td>
-                    <td className="px-4 py-3 font-bold">{order.status}</td>
+                    <td className="px-4 py-3 font-medium">{order.status}</td>
                     <td className="px-4 py-3 text-right font-medium">{money(order.total)}</td>
                   </tr>
                 ))}
@@ -136,6 +136,6 @@ export default function VendasRelatorios() {
           </div>
         </section>
       </section>
-    </main>
+    </VendasLayout>
   )
 }
