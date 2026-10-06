@@ -301,7 +301,7 @@ export default function VendasLayout({
         .v7-top-date{display:flex!important;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;min-height:42px;padding:0 12px;border-left:1px solid #e2e8f0!important;white-space:nowrap}
         .v7-top-date strong{color:#1e293b!important;font-size:11px!important;font-weight:950!important}
         .v7-top-date span{color:#475569!important;font-size:11px!important;font-weight:800!important}
-        .v7-top-data{display:inline-flex!important;align-items:center;min-height:34px;padding:0 10px;background:#ecfdf5!important;border:1px solid #a7f3d0!important;border-radius:7px!important;color:#065f46!important;font-size:9px!important;font-weight:950!important;white-space:nowrap}
+        .v7-top-data{display:inline-flex!important;align-items:center;min-height:30px;padding:0 10px;background:#2D8DB8!important;border:1px solid #2D8DB8!important;border-radius:2px!important;color:#ffffff!important;font-size:9px!important;font-weight:500!important;white-space:nowrap}
         .v7-top-actions button:hover{filter:brightness(.97)}
         @media(max-width:1180px){.v7-logo-frame{height:72px;min-width:185px}.v7-top-title strong{font-size:18px!important}.v7-top-title{display:none!important}.v7-top-brand{min-width:0}}
         @media(max-width:900px){.v7-top-date{display:none!important}.v7-top-data{display:none!important}.v7-logo-frame{height:64px;min-width:165px}}
