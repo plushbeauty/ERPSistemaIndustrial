@@ -3,7 +3,7 @@ import { Calculator, RefreshCw, Factory, AlertTriangle, CheckCircle2 } from 'luc
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 
-type Product = { id:string; codigo:string; nome:string; estoque_minimo:number; estoque_atual:number }
+type Product = { id:string; codigo:string; nome:string; ponto_reposicao:number; estoque_atual:number }
 type Row = Product & { pedido:number; reservado:number; emProducao:number; disponivel:number; necessidade:number; pedidosIds:string[] }
 type SalesOrder = { id:string; status:string; data_entrada:string|null; data_entrega_prometida:string|null }
 type SalesItem = { pedido_id:string; produto_id:string; quantidade:number }
@@ -20,7 +20,7 @@ export default function PCPDemanda(){
    if(tenant.error||!tenant.data)throw tenant.error||new Error('Empresa ERP não identificada.')
    const empresaId=String(tenant.data)
    const [products,orders,items,reservations,productionOrders]=await Promise.all([
-    fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,estoque_minimo,estoque_atual',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to)),
+    fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,ponto_reposicao,estoque_atual',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to)),
     fetchAllPages<SalesOrder>((from,to)=>supabase.from('erp_pedidos_venda').select('id,status,data_entrada,data_entrega_prometida',{count:'exact'}).eq('empresa_id',empresaId).order('data_entrada',{ascending:false}).range(from,to)),
     fetchAllPages<SalesItem>((from,to)=>supabase.from('erp_pedidos_venda_itens').select('pedido_id,produto_id,quantidade',{count:'exact'}).eq('empresa_id',empresaId).range(from,to)),
     fetchAllPages<Reservation>((from,to)=>supabase.from('erp_estoque_reservas').select('pedido_venda_id,produto_id,quantidade,status',{count:'exact'}).eq('empresa_id',empresaId).range(from,to)),
@@ -32,7 +32,7 @@ export default function PCPDemanda(){
    const emProducao:Record<string,number>={};for(const x of productionOrders){const status=String(x.status??'').toLowerCase();if(['cancelado','cancelada','concluido','concluída','concluida','finalizado','finalizada'].includes(status))continue;const prod=String(x.produto_id??'');if(prod)emProducao[prod]=(emProducao[prod]??0)+Number(x.quantidade_planejada??0)}
    const reservado:Record<string,number>={}
    for(const x of reservations){const status=String(x.status??'').toLowerCase();if(['cancelado','cancelada','liberado','liberada'].includes(status))continue;const prod=String(x.produto_id??'');if(prod)reservado[prod]=(reservado[prod]??0)+Number(x.quantidade??0)}
-   setRows(products.map(p=>{const pedidoQty=pedido[p.id]??0,reservaQty=reservado[p.id]??0,producaoQty=emProducao[p.id]??0,disponivel=Math.max(0,Number(p.estoque_atual||0)-reservaQty),necessidade=Math.max(0,pedidoQty+Number(p.estoque_minimo||0)-disponivel-producaoQty);return {...p,pedido:pedidoQty,reservado:reservaQty,emProducao:producaoQty,disponivel,necessidade,pedidosIds:pedidosIds[p.id]??[]}}).filter(r=>r.pedido>0||r.necessidade>0))
+   setRows(products.map(p=>{const pedidoQty=pedido[p.id]??0,reservaQty=reservado[p.id]??0,producaoQty=emProducao[p.id]??0,disponivel=Math.max(0,Number(p.estoque_atual||0)-reservaQty),necessidade=Math.max(0,pedidoQty+Number(p.ponto_reposicao||0)-disponivel-producaoQty);return {...p,pedido:pedidoQty,reservado:reservaQty,emProducao:producaoQty,disponivel,necessidade,pedidosIds:pedidosIds[p.id]??[]}}).filter(r=>r.pedido>0||r.necessidade>0))
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível calcular a demanda real.')}finally{setLoading(false)}
  }
  useEffect(()=>{void load()},[periodo])
