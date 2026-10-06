@@ -102,6 +102,7 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
   const [paymentReference, setPaymentReference] = useState('')
   const [barcode, setBarcode] = useState('')
   const [barcodeMessage, setBarcodeMessage] = useState('')
+  const [statusFilter, setStatusFilter] = useState('TODOS')
   const [scannerOpen, setScannerOpen] = useState(false)
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([])
   const [videoDeviceId, setVideoDeviceId] = useState('')
@@ -269,8 +270,9 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
       partners.find(partner => partner.id === title.parceiro_id)?.nome,
     ].some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(needle)))
   }, [partners, query, titles])
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const visibleTitles = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const statusFiltered = useMemo(() => statusFilter === 'TODOS' ? filtered : filtered.filter(title => title.status === statusFilter), [filtered, statusFilter])
+  const pageCount = Math.max(1, Math.ceil(statusFiltered.length / PAGE_SIZE))
+  const visibleTitles = statusFiltered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
   useEffect(() => { setPage(current => Math.min(current, pageCount - 1)) }, [pageCount])
 
   const openNew = () => {
@@ -480,15 +482,15 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
             {sources.map(source => <option key={source.id} value={source.id}>{source.descricao} · {currency(source.total)} · {source.data ?? 'sem data'}</option>)}
           </select>
         </label>}
-        {payable && !form.titleId && !sourceMode && <section className="mb-3 border border-sky-200 bg-sky-50 p-3">
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-sky-950"><Barcode size={17}/>Ler código de boleto (somente preenchimento)</div>
+        {!form.titleId && !sourceMode && <section className="mb-3 border border-sky-200 bg-sky-50 p-3">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-sky-950"><Barcode size={17}/>Leitor de código de barras / boleto</div>
           <div className="flex flex-wrap gap-2">
             <input value={barcode} onChange={event => setBarcode(event.target.value)} placeholder="Linha digitável (47 dígitos) ou código de barras (44)" className="h-9 min-w-72 flex-1 border border-slate-300 bg-white px-2 text-sm"/>
             <button type="button" onClick={() => parseAndApplyBoleto(barcode)} className="h-9 border border-slate-300 bg-white px-3 text-xs font-semibold">Validar linha</button>
             <button type="button" onClick={() => void startScanner()} className="inline-flex h-9 items-center gap-1 bg-sky-800 px-3 text-xs font-semibold text-white"><Camera size={15}/>Abrir câmera</button>
           </div>
           {barcodeMessage && <p role="status" className="mt-2 text-xs text-emerald-800">{barcodeMessage}</p>}
-          <p className="mt-1 text-[11px] text-slate-600">A leitura nunca registra pagamento: confira beneficiário, vencimento e valor antes de salvar o título.</p>
+          <p className="mt-1 text-[11px] text-slate-600">A leitura apenas preenche o documento, valor e vencimento. Ela nunca baixa nem registra pagamento/recebimento.</p>
         </section>}
         <form onSubmit={event => void saveTitle(event)} className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <label className="grid gap-1 text-xs font-semibold xl:col-span-2">Parceiro
@@ -533,7 +535,7 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
           <label className="grid min-w-60 flex-1 gap-1 text-xs font-semibold">Buscar título
             <input value={query} onChange={event => { setQuery(event.target.value); setPage(0) }} className="h-9 border border-slate-300 px-2" placeholder="Parceiro, documento, categoria ou status"/>
           </label>
-          <span className="text-xs text-slate-600">{filtered.length} título(s)</span>
+          <div className="flex items-end gap-2"><label className="grid gap-1 text-[10px] font-semibold uppercase text-slate-500">Status<select value={statusFilter} onChange={event=>{setStatusFilter(event.target.value);setPage(0)}} className="h-9 border border-slate-300 bg-white px-2 text-xs font-normal normal-case"><option value="TODOS">Todos</option><option value="ABERTO">Aberto</option><option value="PAGO">Pago</option><option value="RECEBIDO">Recebido</option><option value="PARCIAL">Parcial</option><option value="CANCELADO">Cancelado</option></select></label><span className="text-xs text-slate-600">{statusFiltered.length} título(s)</span></div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
