@@ -214,25 +214,27 @@ export default function VendasLayout({
   return (
     <div className={`vendas-standard min-h-screen bg-[#F4F7FE] text-slate-800 ${tabletMode ? 'tablet-mode' : ''}`}>
       <main className="min-w-0">
-        <header className="vendas-topbar" aria-label="Barra superior do ERP">
-          <div className="vendas-top-brand">
-            <div className="vendas-logo-frame"><img src="/logo/sgq-erp.png" alt="SGQERP" /></div>
-            <div className="vendas-top-title">
+        <header className="v7-topbar" aria-label="Barra superior do ERP">
+          <div className="v7-top-brand">
+            <div className="v7-logo-frame">
+              <img src="/logo/sgq-erp.png" alt="SGQERP" />
+            </div>
+            <div className="v7-top-title">
               <strong>SGQERP INDUSTRIAL</strong>
               <span>CENTRAL DE CONTROLE</span>
             </div>
           </div>
-
-          <div className="vendas-top-actions">
-            <button type="button" onClick={() => setTabletOpen(true)} className="vendas-top-tablet" title={`Abrir ${tabletLabel}`}>
-              <Tablet size={15} />{tabletLabel}
+          <div className="v7-top-actions">
+            <button className="v7-top-tablet" type="button" onClick={() => setTabletOpen(true)} aria-label="Abrir central de Vendas">
+              VENDAS
             </button>
-            <div className="vendas-top-user"><span>OPERADOR</span><strong>{operatorLabel}</strong></div>
-            <div className="vendas-top-date"><strong>{dateLabel}</strong><span>{timeLabel}</span></div>
-            <span className="vendas-top-data">DADOS: SUPABASE</span>
-            <button type="button" onClick={() => window.location.assign(mainRoute)} className="vendas-top-back" title="Voltar"><ArrowLeft size={14} />VOLTAR</button>
-            {onRefresh && <button type="button" onClick={onRefresh} className="vendas-top-icon" title="Atualizar"><RefreshCw size={14} /></button>}
-            <button type="button" onClick={() => void logout()} className="vendas-top-exit" title="Sair"><LogOut size={14} />SAIR</button>
+            <div className="v7-top-user-simple" aria-label="Usuário conectado"><span>OPERADOR</span><strong>{operatorLabel}</strong></div>
+            <div className="v7-top-date" aria-label="Data e hora atual">
+              <strong>{dateLabel}</strong>
+              <span>{timeLabel}</span>
+            </div>
+            <span className="v7-top-data">DADOS: SUPABASE</span>
+            <button className="v7-top-exit" type="button" onClick={() => void logout()}>SAIR</button>
           </div>
         </header>
 
@@ -282,13 +284,28 @@ export default function VendasLayout({
       )}
 
       <style>{`
-        .vendas-topbar{position:sticky;top:0;z-index:100;width:100%;min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:7px 16px;background:#fff;border-bottom:1px solid #cbd5e1;box-sizing:border-box}
-        .vendas-top-brand{display:flex;align-items:center;gap:12px;min-width:0}.vendas-logo-frame{height:68px;min-width:190px;display:flex;align-items:center;justify-content:flex-start}.vendas-logo-frame img{height:100%;width:auto;max-width:190px;object-fit:contain;display:block}
-        .vendas-top-title{display:flex;flex-direction:column;border-left:1px solid #cbd5e1;padding-left:12px;line-height:1.1}.vendas-top-title strong{font-size:15px;font-weight:600;color:#1e293b;white-space:nowrap}.vendas-top-title span{margin-top:3px;font-size:8px;font-weight:500;letter-spacing:.14em;color:#475569}
-        .vendas-top-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0}.vendas-top-tablet,.vendas-top-exit,.vendas-top-back,.vendas-top-icon{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:30px;min-height:30px;padding:0 8px;border-radius:2px;border:1px solid #cbd5e1;background:#fff;color:#1e293b;font-size:9px;font-weight:500;white-space:nowrap}.vendas-top-tablet{background:#2D8DB8;border-color:#247c9f;color:#fff}.vendas-top-exit{border-color:#fecaca;color:#991b1b}.vendas-top-user,.vendas-top-date{display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:32px;padding:0 8px;border-left:1px solid #e2e8f0;white-space:nowrap}.vendas-top-user span{font-size:8px;color:#64748b}.vendas-top-user strong{font-size:9px;font-weight:500;color:#1e293b}.vendas-top-date strong,.vendas-top-date span{font-size:8px;font-weight:500;color:#475569}.vendas-top-data{display:inline-flex;align-items:center;min-height:28px;padding:0 8px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:2px;color:#065f46;font-size:8px;font-weight:500;white-space:nowrap}
-        .vendas-tablet-overlay{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:18px;background:rgba(7,29,37,.62);backdrop-filter:blur(4px)}.vendas-tablet-modal{width:min(1120px,96vw);max-height:86vh;overflow:auto;background:#f4fbfd;border:1px solid #2D8DB8;border-radius:2px;box-shadow:0 24px 60px rgba(0,0,0,.28)}.vendas-tablet-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px;background:#123b50;color:#fff;border-bottom:2px solid #2d8db8}.vendas-tablet-head span,.vendas-tablet-head strong,.vendas-tablet-head small{display:block}.vendas-tablet-head span{font-size:8px;letter-spacing:.16em;color:#8ed9e5}.vendas-tablet-head strong{margin-top:2px;font-size:14px;font-weight:600}.vendas-tablet-head small{margin-top:3px;font-size:8px;color:#d5edf3}.vendas-tablet-head button{width:28px;height:28px;border:0;background:transparent;color:#fff;padding:0;display:grid;place-items:center}
-        .vendas-tablet-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;padding:12px}.vendas-tablet-grid button{min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid #c8e1e8;border-radius:2px;background:#fff;color:#123b50}.vendas-tablet-grid button:hover{border-color:#2d8db8;background:#f4fbfd}.vendas-tablet-grid button span{width:30px;height:30px;display:grid;place-items:center;background:#e7f7fa;border:1px solid #c8e1e8}.vendas-tablet-grid button strong{font-size:8px;font-weight:500;text-align:center}
-        @media(max-width:1180px){.vendas-top-title{display:none}.vendas-tablet-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:900px){.vendas-top-date,.vendas-top-data{display:none}}@media(max-width:650px){.vendas-topbar{min-height:72px;padding:5px 8px}.vendas-logo-frame{height:58px;min-width:150px}.vendas-logo-frame img{max-width:150px}.vendas-top-user{display:none}.vendas-top-actions{gap:4px}.vendas-top-tablet,.vendas-top-exit,.vendas-top-back{min-height:30px;padding:0 7px;font-size:8px}.vendas-tablet-overlay{padding:7px}.vendas-tablet-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        .v7-topbar{position:relative;z-index:20;width:100%;min-height:104px;display:flex!important;align-items:center;justify-content:space-between;gap:20px;padding:10px 24px!important;background:#ffffff!important;border-bottom:1px solid #cbd5e1!important;color:#1e293b!important;box-sizing:border-box}
+        .v7-top-brand{display:flex!important;align-items:center;gap:18px;min-width:0}
+        .v7-logo-frame{height:80px;width:auto;min-width:210px;display:flex;align-items:center;justify-content:flex-start;background:#ffffff;box-sizing:border-box}
+        .v7-logo-frame img{display:block!important;height:100%!important;width:auto!important;max-height:none!important;object-fit:contain!important;padding:0!important}
+        .v7-top-title{display:flex;flex-direction:column;justify-content:center;border-left:1px solid #cbd5e1;padding-left:18px;line-height:1.1}
+        .v7-top-title strong{color:#1e293b!important;font-size:20px!important;font-weight:950!important;letter-spacing:-.02em;white-space:nowrap}
+        .v7-top-title span{color:#475569!important;font-size:10px!important;font-weight:900!important;letter-spacing:.14em;margin-top:5px}
+        .v7-top-actions{display:flex!important;align-items:center!important;justify-content:flex-end;gap:10px;min-width:0;flex-wrap:nowrap}
+        .v7-top-tablet,.v7-top-exit{display:inline-flex!important;align-items:center!important;justify-content:center;min-height:42px;padding:0 16px!important;border-radius:8px!important;font-size:12px!important;font-weight:950!important;cursor:pointer;white-space:nowrap;box-sizing:border-box}
+        .v7-top-tablet{background:#ea580c!important;border:1px solid #c2410c!important;color:#ffffff!important;box-shadow:0 4px 12px rgba(234,88,12,.2)}
+        .v7-top-exit{background:#ffffff!important;border:1px solid #fecaca!important;color:#991b1b!important}
+        .v7-top-user-simple{display:flex!important;flex-direction:column;justify-content:center;gap:3px;min-height:42px;padding:0 12px;border-left:1px solid #e2e8f0!important;white-space:nowrap}
+        .v7-top-user-simple span{color:#64748b!important;font-size:9px!important;font-weight:950!important;letter-spacing:.08em}
+        .v7-top-user-simple strong{color:#1e293b!important;font-size:12px!important;font-weight:950!important}
+        .v7-top-date{display:flex!important;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;min-height:42px;padding:0 12px;border-left:1px solid #e2e8f0!important;white-space:nowrap}
+        .v7-top-date strong{color:#1e293b!important;font-size:11px!important;font-weight:950!important}
+        .v7-top-date span{color:#475569!important;font-size:11px!important;font-weight:800!important}
+        .v7-top-data{display:inline-flex!important;align-items:center;min-height:34px;padding:0 10px;background:#ecfdf5!important;border:1px solid #a7f3d0!important;border-radius:7px!important;color:#065f46!important;font-size:9px!important;font-weight:950!important;white-space:nowrap}
+        .v7-top-actions button:hover{filter:brightness(.97)}
+        @media(max-width:1180px){.v7-logo-frame{height:72px;min-width:185px}.v7-top-title strong{font-size:18px!important}.v7-top-title{display:none!important}.v7-top-brand{min-width:0}}
+        @media(max-width:900px){.v7-top-date{display:none!important}.v7-top-data{display:none!important}.v7-logo-frame{height:64px;min-width:165px}}
+        @media(max-width:650px){.v7-topbar{padding:7px 10px!important;min-height:72px}.v7-logo-frame{height:54px;min-width:135px}.v7-top-user-simple{display:none!important}.v7-top-tablet,.v7-top-exit{min-height:36px;padding:0 9px!important;font-size:10px!important}.v7-top-tablet{font-size:0!important}.v7-top-tablet::after{content:'VENDAS';font-size:10px}}
         .vendas-standard .rounded,.vendas-standard .rounded-sm,.vendas-standard .rounded-md,.vendas-standard .rounded-lg,.vendas-standard .rounded-xl,.vendas-standard .rounded-2xl{border-radius:2px!important}.vendas-standard .font-bold,.vendas-standard .font-extrabold,.vendas-standard .font-black{font-weight:500!important}.vendas-standard h1,.vendas-standard h2,.vendas-standard h3,.vendas-standard p,.vendas-standard label{font-weight:500!important}.vendas-standard{font-size:10px}.vendas-standard button{border-radius:2px}.vendas-standard input:not([type=checkbox]):not([type=radio]):not([type=range]),.vendas-standard select{border-radius:2px}
       `}</style>
 
