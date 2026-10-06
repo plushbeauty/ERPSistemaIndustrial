@@ -10,6 +10,7 @@
  */
 
 import React, { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import type { CSSProperties, ChangeEvent } from 'react'
 import {
   Boxes, Check, CheckCircle2, ClipboardList, Edit3, Factory, FileText, History, Image as ImageIcon,
@@ -54,13 +55,16 @@ const empty=():FormData=>({
 const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0)
 const n=(v:unknown)=>Number(v??0)||0
 const fmt=(v:unknown)=>n(v).toLocaleString('pt-BR',{maximumFractionDigits:3})
-const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:8}
-const input:CSSProperties={width:'100%',height:38,border:'1px solid #c4ced9',borderRadius:5,padding:'0 9px',fontSize:13,background:'#fff',boxSizing:'border-box'}
-const label:CSSProperties={display:'grid',gap:5,fontSize:11,fontWeight:800,color:'#344054'}
-const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:7,height:38,padding:'0 14px',borderRadius:6,border:'1px solid '+(kind==='primary'?'#174ea6':kind==='danger'?'#dc2626':'#c4ced9'),background:kind==='primary'?'#1857b6':'#fff',color:kind==='danger'?'#b91c1c':'#172033',fontWeight:800,cursor:'pointer'})
+const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2}
+const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:12,background:'#fff',boxSizing:'border-box'}
+const label:CSSProperties={display:'grid',gap:2,fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}
+const btn=(_kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid #2D8DB8',background:'#2D8DB8',color:'#fff',fontSize:11,fontWeight:500,textTransform:'uppercase',cursor:'pointer'})
 const emptyRow=(text:string,col=7)=><tr><td colSpan={col} style={{padding:22,textAlign:'center',color:'#667085'}}>{text}</td></tr>
 
 export default function ProdutosVendasIndustrial(){
+  const location=useLocation()
+  const printMode=location.pathname==='/produtos-vendas/imprimir'
+  const printId=new URLSearchParams(location.search).get('id')
   const [companyId,setCompanyId]=useState('')
   const [products,setProducts]=useState<Product[]>([])
   const [suppliers,setSuppliers]=useState<Supplier[]>([])
@@ -94,6 +98,7 @@ export default function ProdutosVendasIndustrial(){
       ])
       for(const r of [p,s,l])if(r.error)throw r.error
       setProducts((p.data??[]) as Product[]);setSuppliers((s.data??[]) as Supplier[]);setLocations((l.data??[]) as Location[])
+      if(printMode&&printId){const printProduct=(p.data??[]).find((x:Product)=>x.id===printId);if(printProduct){setSelectedId(printProduct.id);setForm({...empty(),...printProduct})}}
       if(selectedId){const fresh=(p.data??[]).find((x:Product)=>x.id===selectedId);if(fresh)setForm({...empty(),...fresh})}
     }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar cadastro de produtos.')}
     finally{setBusy(false)}
@@ -108,6 +113,7 @@ export default function ProdutosVendasIndustrial(){
   const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
   const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
   const update=(key:keyof FormData,value:unknown)=>setForm(prev=>({...prev,[key]:value}))
+  const openTechnicalPrint=()=>{if(!selectedId){setError('Selecione um produto antes de imprimir a ficha técnica.');return}window.open('/produtos-vendas/imprimir?id='+encodeURIComponent(selectedId),'_blank','noopener,noreferrer')}
   const save=async()=>{
     setBusy(true);setError('');setMessage('')
     try{
@@ -220,6 +226,9 @@ export default function ProdutosVendasIndustrial(){
   const select=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{title}<select value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>{options.map(o=><option value={o[0]} key={o[0]}>{o[1]}</option>)}</select></label>
   const check=(title:string,key:keyof FormData)=><label style={{display:'flex',alignItems:'center',gap:7,fontSize:12,fontWeight:800,color:'#344054'}}><input type="checkbox" checked={Boolean(form[key])} disabled={!editing} onChange={e=>update(key,e.target.checked)}/>{title}</label>
 
+  if(printMode&&selectedId){
+    return <main className="product-print-sheet" style={{maxWidth:1120,margin:'0 auto',padding:32,color:'#111827',fontFamily:'Arial,sans-serif',background:'#fff'}}><style>{`@page{size:A4;margin:12mm}.product-print-sheet{min-height:260mm}.print-actions{display:flex;gap:8px;margin-bottom:18px}.product-print-sheet table{width:100%;border-collapse:collapse;margin:12px 0 18px}.product-print-sheet th,.product-print-sheet td{border:1px solid #9ca3af;padding:6px 8px;text-align:left;font-size:10px}.product-print-sheet th{font-size:9px;text-transform:uppercase;background:#f3f4f6}.print-hide{display:block}@media print{.print-hide{display:none!important}.product-print-sheet{padding:0;max-width:none}.product-print-sheet h1{font-size:18px!important}}`</style><div className="print-actions print-hide"><button type="button" onClick={()=>window.print()} style={btn('primary')}><Printer size={15}/>IMPRIMIR FICHA TÉCNICA</button><button type="button" onClick={()=>window.close()} style={btn('normal')}>FECHAR</button></div><header style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',borderBottom:'2px solid #2D8DB8',paddingBottom:10}}><div><strong style={{fontSize:14}}>SYNQRA INDUSTRIAL</strong><h1 style={{margin:'8px 0 0',fontSize:20,textAlign:'center'}}>FICHA TÉCNICA DO PRODUTO RESTRITA</h1></div><span style={{fontSize:10}}>CÓDIGO: {form.codigo}</span></header><table><tbody><tr><th>Produto</th><td>{form.nome}</td><th>Grupo</th><td>{form.grupo||'—'}</td></tr><tr><th>Categoria</th><td>{form.categoria||'—'}</td><th>Unidade</th><td>{form.unidade}</td></tr><tr><th>NCM</th><td>{form.ncm||'—'}</td><th>CEST</th><td>{form.cest||'—'}</td></tr><tr><th>Origem</th><td>{form.origem||'—'}</td><th>CFOP Saída</th><td>{form.cfop_saida||'—'}</td></tr></tbody></table><table><thead><tr><th>Saldo ERP</th><th>Ponto de Reposição</th><th>Estoque Máximo</th><th>Localização</th><th>Lote</th><th>Série</th></tr></thead><tbody><tr><td>{fmt(form.estoque_atual)}</td><td>{fmt(form.ponto_reposicao)}</td><td>{fmt(form.estoque_maximo)}</td><td>{form.localizacao_padrao_id||'—'}</td><td>{form.controla_lote?'SIM':'NÃO'}</td><td>{form.controla_serie?'SIM':'NÃO'}</td></tr></tbody></table><table><thead><tr><th>Custo Médio</th><th>Custo Último</th><th>Custo Fabricação</th><th>Preço Venda</th><th>Prazo Compra</th><th>Prazo Produção</th></tr></thead><tbody><tr><td>{money(form.custo_medio)}</td><td>{money(form.custo_ultimo)}</td><td>{money(form.custo_fabricacao)}</td><td>{money(form.preco_venda)}</td><td>{form.prazo_compra_dias} dias</td><td>{form.prazo_producao_dias} dias</td></tr></tbody></table><table><thead><tr><th>Parâmetro</th><th>Valor</th><th>Parâmetro</th><th>Valor</th></tr></thead><tbody><tr><td>ICMS</td><td>{fmt(form.aliquota_icms)}%</td><td>IPI</td><td>{fmt(form.aliquota_ipi)}%</td></tr><tr><td>PIS</td><td>{fmt(form.aliquota_pis)}%</td><td>COFINS</td><td>{fmt(form.aliquota_cofins)}%</td></tr><tr><td>Tolerância</td><td>{fmt(form.tolerancia_percentual)}%</td><td>Qualidade obrigatória</td><td>{form.inspecao_qualidade_obrigatoria?'SIM':'NÃO'}</td></tr></tbody></table><p style={{fontSize:10,marginTop:18}}>Documento técnico gerado a partir do cadastro mestre do produto e dos dados persistidos na empresa autenticada.</p></main>
+  }
   return <main style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif'}}>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:14,padding:'14px 16px 10px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:900,color:'#1c4bb5'}}>SYSNQRA ERP & SGQ INDUSTRIAL • CADASTRO MESTRE</div><h1 style={{margin:'2px 0 0',fontSize:25,color:'#173fae'}}>CADASTRO DE PRODUTOS</h1></div>
@@ -231,7 +240,7 @@ export default function ProdutosVendasIndustrial(){
         <button type="button" onClick={()=>setEditing(true)} disabled={!selectedId} style={btn('normal')}><Edit3 size={16}/>Editar</button>
         <button type="button" onClick={()=>void save()} disabled={!editing||busy} style={btn('normal')}><Save size={16}/>Salvar</button>
         <button type="button" onClick={cancelEdit} style={btn('normal')}><RotateCcw size={16}/>Cancelar</button>
-        <button type="button" onClick={()=>window.print()} style={btn('normal')}><Printer size={16}/>Imprimir</button>
+        <button type="button" onClick={openTechnicalPrint} disabled={!selectedId} style={btn('normal')}><Printer size={16}/>Imprimir</button>
         <button type="button" onClick={()=>setMessage('Etiqueta preparada para impressão do produto selecionado.')} disabled={!selectedId} style={btn('normal')}><Tag size={16}/>Etiqueta</button>
         <button type="button" onClick={()=>void deactivate()} disabled={!selectedId||busy} style={btn('danger')}><Trash2 size={16}/>Inativar</button>
         <button type="button" onClick={()=>{setSelectedId(null);setEditing(false);setForm(empty())}} style={btn('normal')}><X size={16}/>Fechar</button>
