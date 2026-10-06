@@ -20,6 +20,7 @@ export default function VendasLayout({ children, title, subtitle, onRefresh, nav
   const isMobile = useIsMobile()
   const tabletMode = isTabletMode || isMobile
   const path = window.location.pathname
+  const mainRoute = path.startsWith('/vendas') ? '/vendas' : path.startsWith('/pcp') ? '/pcp' : (path.startsWith('/estoque') || path.startsWith('/inventario')) ? '/estoque' : path.startsWith('/qualidade') ? '/qualidade' : '/erp-industrial'
 
   useEffect(() => {
     if (isMobile && window.location.pathname !== '/erp-industrial') window.location.assign('/erp-industrial')
@@ -46,7 +47,7 @@ export default function VendasLayout({ children, title, subtitle, onRefresh, nav
         <header className="sticky top-0 z-30 flex min-h-10 items-center justify-between gap-2 border-b border-slate-300 bg-white px-3 text-gray-800">
           <div className="truncate text-[12px] font-semibold">{title}<span className="ml-2 text-[10px] font-normal text-gray-500">{subtitle ?? ''}</span></div>
           <div className="flex items-center gap-1">
-            <button type="button" onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign('/vendas')} className="flex h-7 items-center gap-1 rounded border border-slate-300 bg-white px-2 text-[10px]" title="Voltar"><ArrowLeft size={13}/>VOLTAR</button>
+            <button type="button" onClick={() => window.location.assign(mainRoute)} className="flex h-7 items-center gap-1 rounded border border-slate-300 bg-white px-2 text-[10px]" title="Voltar"><ArrowLeft size={13}/>VOLTAR</button>
             <button type="button" onClick={()=>{setIsTabletMode(true);document.documentElement.classList.add('tablet-mode');if(window.location.pathname!=='/erp-industrial')window.location.assign('/erp-industrial')}} className="flex h-7 items-center gap-1 rounded border border-gray-200 px-2 text-[10px]" title="Alternar modo touch"><Tablet size={13}/>TABLET</button>
             {onRefresh && <button type="button" onClick={onRefresh} className="flex h-7 items-center rounded border border-slate-500 px-2" title="Atualizar"><RefreshCw size={13}/></button>}
             <button type="button" onClick={()=>void logout()} className="flex h-7 items-center gap-1 rounded border border-slate-500 px-2 text-[10px]" title="Sair"><LogOut size={13}/>SAIR</button>
