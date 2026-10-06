@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, Boxes, Factory, Lock, Package, RefreshCw, Ruler, Search, Truck, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
 
 type Cliente={nome:string}
@@ -16,7 +17,7 @@ const stageOrder:Stage[]=['comercial','engenharia','pcp','producao','almoxarifad
 
 export default function VendasStatusPedidos(){
  const [rows,setRows]=useState<Row[]>([]),[q,setQ]=useState(''),[filter,setFilter]=useState('todos'),[error,setError]=useState(''),[selected,setSelected]=useState<Row|null>(null),[items,setItems]=useState<Item[]>([]),[anexos,setAnexos]=useState<Anexo[]>([]),[canRectify,setCanRectify]=useState(false)
- const load=async()=>{const e=await supabase.rpc('erp_current_empresa_id');if(e.error||!e.data)throw e.error??new Error('Empresa não identificada.');const r=await supabase.from('erp_pedidos_venda').select('id,numero,pedido_cliente,status,total,data_entrega_prometida,cliente:erp_clientes(nome)').eq('empresa_id',String(e.data)).order('numero',{ascending:false}).limit(2000);if(r.error)throw r.error;setRows((r.data??[]) as unknown as Row[])}
+ const load=async()=>{const e=await supabase.rpc('erp_current_empresa_id');if(e.error||!e.data)throw e.error??new Error('Empresa não identificada.');const rows=await fetchAllPages<Row>((from,to)=>supabase.from('erp_pedidos_venda').select('id,numero,pedido_cliente,status,total,data_entrega_prometida,cliente:erp_clientes(nome)',{count:'exact'}).eq('empresa_id',String(e.data)).order('numero',{ascending:false}).range(from,to));setRows(rows)}
  useEffect(()=>{void load().catch(e=>setError(e instanceof Error?e.message:'Falha ao carregar pedidos.'));void (async()=>{const {data}=await supabase.auth.getUser();if(!data.user)return;const p=await supabase.from('erp_usuarios').select('perfil,is_master,ativo,deleted_at').eq('auth_user_id',data.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();if(!p.error){const role=String(p.data?.perfil??'').trim().toUpperCase();setCanRectify(Boolean(p.data?.is_master)||role==='ADMINISTRADOR'||role==='CONTROLADORIA')}})()},[])
  const loadItems=async(row:Row)=>{setSelected(row);setAnexos([]);const r=await supabase.from('erp_pedidos_venda_itens').select('id,produto_id,descricao,quantidade,data_fabricacao,produto:erp_produtos(codigo,unidade)').eq('empresa_id',await empresa()).eq('pedido_id',row.id).order('id');if(r.error){setError(r.error.message);return}setItems((r.data??[]) as unknown as Item[]);const a=await supabase.from('erp_pedidos_anexos').select('id,url_arquivo,nome_arquivo,criado_em').eq('empresa_id',await empresa()).eq('pedido_id',row.id).order('criado_em',{ascending:false});if(!a.error)setAnexos((a.data??[]) as Anexo[])}
  const empresa=async()=>{const e=await supabase.rpc('erp_current_empresa_id');if(e.error||!e.data)throw e.error??new Error('Empresa não identificada.');return String(e.data)}
