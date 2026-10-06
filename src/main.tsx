@@ -9,6 +9,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { createRoot } from 'react-dom/client'
 import { MotionConfig } from 'motion/react'
 import { PontoProvider } from './context/PontoContext'
+import { ThemeProvider } from './context/ThemeContext'
 import { SidebarProvider } from './context/SidebarContext'
 
 
@@ -36,14 +37,6 @@ const ConfiguracoesADMPage = lazyPage(() => import('./pages/configuracoes/Config
 
 const ERP_BOOTSTRAP_VERSION = '2026-09-18-browser-auth-v9'
 
-function DemoConfiguracoesADM() {
-  return (
-    <Suspense fallback={<div role="status" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'Inter,system-ui,sans-serif', background: '#F4FBFD', color: '#123B50' }}><strong>Carregando demonstração visual de Configurações ADM…</strong></div>}>
-      <ConfiguracoesADMPage />
-    </Suspense>
-  )
-}
-
 function BootstrapLoader() {
   return (
     <Suspense fallback={<div role="status" aria-live="polite" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', fontFamily: 'Inter,system-ui,sans-serif', background: '#f4f5f3', color: '#17342f' }}><strong>Carregando SYSNQRA ERP & SGQ INDUSTRIAL…</strong></div>}>
@@ -58,6 +51,7 @@ if (!rootElement) throw new Error('Elemento raiz #root não encontrado.')
 createRoot(rootElement).render(
   <StrictMode>
     <MotionConfig reducedMotion="user" transition={{ duration: 0.22, ease: 'easeOut' }}>
+      <ThemeProvider>
       <BrowserRouter>
         <SidebarProvider>
         <PontoProvider>
@@ -67,6 +61,7 @@ createRoot(rootElement).render(
         </PontoProvider>
         </SidebarProvider>
       </BrowserRouter>
+      </ThemeProvider>
     </MotionConfig>
   </StrictMode>,
 )
