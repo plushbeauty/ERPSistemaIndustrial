@@ -68,14 +68,13 @@ export default function ExpedicaoRoteirizacao() {
         fetchAllPages<Invoice>((from, to) => supabase.from('erp_documentos_fiscais').select('id,numero,destinatario_nome,destinatario_cidade,destinatario_uf,peso_liquido,peso_bruto,status', { count: 'exact' }).eq('empresa_id', empresaId).eq('modelo', '55').eq('status', 'Autorizada').order('numero', { ascending: false }).range(from, to)),
         fetchAllPages<Manifest>((from, to) => supabase.from('erp_expedicoes').select('id,numero,status,peso_total_kg,data_expedicao',{count:'exact'}).eq('empresa_id', empresaId).order('numero',{ascending:false}).range(from,to)),
       ])
-      if (manifestResult.error) throw manifestResult.error
       setVehicles(vehicleResult)
       setDrivers(driverResult)
       setInvoices(invoiceResult)
       const availableInvoices = new Set(invoiceResult.map(item => item.id))
       setSelectedInvoices(current => new Set(Array.from(current).filter(id => availableInvoices.has(id))))
       setInvoicePage(current => Math.min(current, Math.max(0, Math.ceil(invoiceResult.length / PAGE_SIZE) - 1)))
-      setManifests((manifestResult.data ?? []) as Manifest[])
+      setManifests(manifestResult)
     } catch (cause: unknown) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar a logística.')
     } finally {
