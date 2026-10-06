@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
-import { ArrowLeft, BarChart3, BookOpen, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, LogOut, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Tablet, Target, Users, X } from 'lucide-react'
+import { ArrowLeft, BarChart3, BookOpen, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, LogOut, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart Target, Users, X } from 'lucide-react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -161,7 +161,7 @@ export default function VendasLayout({
                   : '/erp-industrial'
 
   const tabletLabel = isVendas
-    ? 'MENU PRINCIPAL VENDAS'
+    ? 'CENTRAL DE MÓDULOS — MENU PRINCIPAL SYNQRA'
     : pathname.startsWith('/pcp')
       ? 'MENU PRINCIPAL PCP'
       : pathname.startsWith('/estoque') || pathname.startsWith('/inventario')
@@ -226,8 +226,8 @@ export default function VendasLayout({
             </div>
           </div>
           <div className="v7-top-actions">
-            <button className="v7-top-tablet" type="button" onClick={() => setTabletOpen(true)} aria-label="Abrir central de Vendas">
-              VENDAS
+            <button className="v7-top-tablet" type="button" onClick={() => setTabletOpen(true)} aria-label="Abrir MENU VENDAS">
+              MENU VENDAS
             </button>
             <div className="v7-top-user-simple" aria-label="Usuário conectado"><span>OPERADOR</span><strong>{operatorLabel}</strong></div>
             <div className="v7-top-date" aria-label="Data e hora atual">
