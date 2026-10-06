@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Boxes, Factory, History, PackageSearch, Pencil, Plus, RefreshCw, Search, Settings2, ShieldCheck, XCircle } from 'lucide-react'
-import VendasLayout from './VendasLayout'
+import VendasLayout, { type SalesNavSection } from './VendasLayout'
 import { supabase } from '../lib/supabaseClient'
 
 type Machine = { id:string; codigo:string; nome:string; tipo:string|null; fabricante:string|null; modelo:string|null; status:string|null; ativo:boolean; valor_hora_custo:number }
@@ -9,6 +9,20 @@ type ProductionOrder = { id:string; numero_op:string; quantidade:number; quantid
 type HistoryRow = { id:string; entidade:string; entidade_id:string; acao:string; codigo:string|null; descricao:string|null; criado_em:string }
 type MachineForm = { id:string|null; codigo:string; nome:string; tipo:string; fabricante:string; modelo:string; valor_hora_custo:string }
 type MoldForm = { id:string|null; codigo:string; nome:string; status:string; numero_cavidades:string; cavidades_ativas:string; limite_ciclos:string; localizacao_fisica:string }
+
+
+const nav: SalesNavSection[] = [
+  { label:'Injeção', items:[
+    { label:'Painel de injeção', href:'/processos/injecao', icon:Factory },
+    { label:'Processos e receitas', href:'/processos/injecao', icon:Settings2 },
+    { label:'Fichas de processo', href:'/fichas-processo', icon:Settings2 },
+  ]},
+  { label:'Integrações', items:[
+    { label:'PCP e ordens', href:'/pcp', icon:Boxes },
+    { label:'Qualidade', href:'/qualidade', icon:ShieldCheck },
+    { label:'Estoque', href:'/estoque', icon:PackageSearch },
+  ]},
+]
 
 const emptyMachine:MachineForm={id:null,codigo:'',nome:'',tipo:'INJETORA',fabricante:'',modelo:'',valor_hora_custo:'0'}
 const emptyMold:MoldForm={id:null,codigo:'',nome:'',status:'DISPONIVEL',numero_cavidades:'1',cavidades_ativas:'1',limite_ciclos:'0',localizacao_fisica:''}
