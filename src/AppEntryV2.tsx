@@ -30,6 +30,7 @@ import './styles/erp-ui-pass-2026.css'
 import './styles/industrial-plans.css'
 import './styles/erp-design-system-2026.css'
 import './styles/synqra-app-shell.css'
+import './styles/compras-compact.css'
 
 import IndustrialLoginDirect from './IndustrialLoginDirect'
 
@@ -88,6 +89,7 @@ const ComprasRequisicoes = lazyPage(() => import('./pages/ComprasRequisicoes'), 
 const FiscalCompras = lazyPage(() => import('./pages/FiscalCompras'), 'default')
 const ComprasRelatorios = lazyPage(() => import('./pages/ComprasRelatorios'), 'default')
 const ComprasAjuda = lazyPage(() => import('./pages/ComprasAjuda'), 'default')
+const ComprasAnalisePrecos = lazyPage(() => import('./pages/ComprasAnalisePrecos'), 'default')
 const PedidoCompra = lazyPage(() => import('./pages/PedidoCompra'), 'default')
 const VendasClientesPage = lazyPage(() => import('./pages/VendasClientes'), 'default')
 const CentralCustosIndustrial = lazyPage(() => import('./pages/CentralCustosIndustrial'), 'CentralCustosIndustrial')
@@ -292,6 +294,10 @@ export default function AppEntryV2() {
   return <AppIndustrialAuthenticated />
 }
 
+function ComprasRoute({ children }: { children: ReactNode }) {
+  return <div className="compras-compact">{children}</div>
+}
+
 function PublicPage({ children }: { children: ReactNode }) {
   return <Boundary><Suspense fallback={<LoadingSkeleton />}>{children}</Suspense></Boundary>
 }
@@ -486,13 +492,17 @@ function AppIndustrialAuthenticated() {
       <Route path="/admin/logs" element={<AdminLogs />} />
       <Route path="/outlook/configuracao" element={<OutlookConfiguracao />} />
       <Route path="/outlook/caixa-entrada" element={<OutlookCaixaEntrada />} />
-      <Route path="/compras" element={<ComprasIndustrial />} />
-      <Route path="/compras/requisicoes" element={<ComprasRequisicoes />} />
-      <Route path="/compras/recebimentos" element={<RecebimentoMateriais />} />
-      <Route path="/compras/rfq" element={<ComprasRFQ />} />
-      <Route path="/compras/pedido" element={<PedidoCompra />} />
-      <Route path="/compras/fornecedores" element={<FornecedoresIndustrial />} />
-      <Route path="/compras/solicitacao-manual" element={<ComprasSolicitacaoManual />} />
+      <Route path="/compras" element={<ComprasRoute><ComprasIndustrial /></ComprasRoute>} />
+      <Route path="/compras/requisicoes" element={<ComprasRoute><ComprasRequisicoes /></ComprasRoute>} />
+      <Route path="/compras/recebimentos" element={<ComprasRoute><RecebimentoMateriais /></ComprasRoute>} />
+      <Route path="/compras/recebimento" element={<Navigate to="/compras/recebimentos" replace />} />
+      <Route path="/compras/rfq" element={<ComprasRoute><ComprasRFQ /></ComprasRoute>} />
+      <Route path="/compras/cotacoes" element={<Navigate to="/compras/rfq" replace />} />
+      <Route path="/compras/pedido" element={<ComprasRoute><PedidoCompra /></ComprasRoute>} />
+      <Route path="/compras/pedidos" element={<Navigate to="/compras/pedido" replace />} />
+      <Route path="/compras/ordem-compra" element={<Navigate to="/compras/pedido" replace />} />
+      <Route path="/compras/fornecedores" element={<ComprasRoute><FornecedoresIndustrial /></ComprasRoute>} />
+      <Route path="/compras/solicitacao-manual" element={<ComprasRoute><ComprasSolicitacaoManual /></ComprasRoute>} />
       <Route path="/solicitacao-compra" element={<SolicitacaoCompra />} />
       <Route path="/fornecedores" element={<FornecedoresIndustrial />} />
       <Route path="/clientes" element={<ClientesIndustrial />} />
@@ -500,8 +510,9 @@ function AppIndustrialAuthenticated() {
       <Route path="/tabelas-preco" element={<AjusteGlobal />} />
       <Route path="/catalogo" element={<CatalogoDigital />} />
       <Route path="/fiscal" element={<Fiscal />} />
-      <Route path="/fiscal/compras" element={<FiscalCompras />} />
-      <Route path="/compras/relatorios" element={<ComprasRelatorios />} />
+      <Route path="/fiscal/compras" element={<ComprasRoute><FiscalCompras /></ComprasRoute>} />
+      <Route path="/compras/analise-precos" element={<ComprasRoute><ComprasAnalisePrecos /></ComprasRoute>} />
+      <Route path="/compras/relatorios" element={<ComprasRoute><ComprasRelatorios /></ComprasRoute>} />
       <Route path="/compras/ajuda" element={<ComprasAjuda />} />
       <Route path="/fiscal/emissao" element={<NFeEmissao />} />
       <Route path="/fiscal/previsao-caixa" element={<FiscalPrevisaoCaixa />} />
@@ -536,7 +547,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/custos" element={<CentralCustosIndustrial />} />
       <Route path="/ajuda/assistente" element={<AssistenteAjudaERP />} />
       <Route path="/ajuda" element={<AssistenteAjudaERP />} />
-      <Route path="/compras/solicitacao" element={<ComprasSolicitacaoManual />} />
+      <Route path="/compras/solicitacao" element={<ComprasRoute><ComprasSolicitacaoManual /></ComprasRoute>} />
+      <Route path="/compras/solicitacoes" element={<Navigate to="/compras/requisicoes" replace />} />
       <Route path="/compras-solicitacao" element={<ComprasSolicitacaoManual />} />
       <Route path="/manutencao/ordens" element={<ManutencaoOrdens />} />
       <Route path="/fiscal/carteira" element={<FiscalCarteiraNFe />} />
