@@ -1,342 +1,197 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
-import { AlertTriangle, ArrowLeft, ArrowRight, ArrowUpRight, ClipboardCheck, Plus, RefreshCw, Save, ShieldCheck } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { FileText, RefreshCw, Save, ShieldCheck, Upload, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import { fetchAllPages } from '../lib/supabasePagination'
-import QualitySidebar from '../components/quality/QualitySidebar'
+import VendasLayout from './VendasLayout'
 
-type Sector = { id: string; nome: string }
+type Rpn = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; sgq_origem: string; sgq_severidade: string; lote_afetado: string | null; quantidade_segregada: number; status: string; criado_em: string }
+type Ishikawa = { id: string; rpnc_id: string; metodo: string | null; mao_de_obra: string | null; material: string | null; maquina: string | null; meio_ambiente: string | null; medicao: string | null }
+type Capa = { id: string; rpnc_id: string; tipo: string; descricao: string; causa_raiz: string | null; responsavel_id: string; prazo: string; status: string; acao_o_que: string | null; acao_por_que: string | null; acao_onde: string | null; acao_quem: string | null; acao_quando: string | null; acao_como: string | null; acao_quanto: number | null }
 type User = { id: string; nome: string | null; email: string | null }
-type Rpn = {
-  id: string
-  numero_rpnc: string
-  descricao_nao_conformidade: string
-  sgq_origem: string
-  sgq_severidade: 'Critica' | 'Maior' | 'Menor'
-  setor_id: string | null
-  status: string
-  sgq_vinculo_tipo: string | null
-  sgq_vinculo_id: string | null
-  criado_em: string
-  setor?: { nome: string }[] | null
-}
-type Capa = {
-  id: string
-  rpnc_id: string
-  tipo: string
-  descricao: string
-  causa_raiz: string | null
-  responsavel_id: string | null
-  prazo: string | null
-  status: string
-  evidencia: string | null
-  comentario_aprovacao: string | null
-  resultado_eficacia: string | null
-  responsavel?: { nome: string | null; email: string | null }[] | null
-}
-type AuditEntry = { id: number; entidade: string; operacao: string; ocorrido_em: string; ator_id: string | null }
+type Doc = { id: string; codigo: string; titulo: string; tipo: string | null; revisao: number; data_revisao: string | null; preparado_por: string | null; pdf_storage_path: string | null; status: string }
 
-const inputClass = 'min-h-12 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
-const labelClass = 'grid gap-2 text-xs font-black uppercase tracking-wide text-slate-700'
-const statuses = ['aberta', 'em análise', 'em tratamento', 'aguardando eficácia', 'encerrada']
-const PAGE_SIZE = 25
+const field = (bad = false) => `h-[30px] w-full rounded-[2px] border px-2 text-[12px] outline-none ${bad ? 'border-red-500 bg-red-50/50 placeholder:text-red-400' : 'border-slate-300 bg-white focus:border-[#2D8DB8]'}`
+const label = 'grid gap-[2px] text-[9px] font-medium uppercase text-slate-600'
+const btn = 'inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-medium text-white'
 
 export default function QualidadeRNC() {
-  const [rows, setRows] = useState<Rpn[]>([])
+  const [tab, setTab] = useState<'rnc' | 'capa' | 'ged'>('rnc')
+  const [companyId, setCompanyId] = useState('')
+  const [rncs, setRncs] = useState<Rpn[]>([])
+  const [ishikawa, setIshikawa] = useState<Ishikawa | null>(null)
   const [actions, setActions] = useState<Capa[]>([])
-  const [auditEntries, setAuditEntries] = useState<AuditEntry[]>([])
-  const [auditLoading, setAuditLoading] = useState(false)
-  const [auditError, setAuditError] = useState('')
-  const [sectors, setSectors] = useState<Sector[]>([])
   const [users, setUsers] = useState<User[]>([])
-  const [selectedId, setSelectedId] = useState('')
-  const [page, setPage] = useState(1)
-  const [form, setForm] = useState({ descricao: '', origem: '', severidade: 'Menor', setor_id: '', linked_entity_type: '', linked_entity_id: '' })
-  const [actionForm, setActionForm] = useState({ tipo: 'Corretiva', descricao: '', causa_raiz: '', responsavel_id: '', prazo: '' })
-  const [loading, setLoading] = useState(true)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
+  const [docs, setDocs] = useState<Doc[]>([])
+  const [selectedRnc, setSelectedRnc] = useState('')
+  const [description, setDescription] = useState('')
+  const [origin, setOrigin] = useState('Processo')
+  const [lot, setLot] = useState('')
+  const [segregated, setSegregated] = useState('0')
+  const [sixM, setSixM] = useState({ metodo: '', mao_de_obra: '', material: '', maquina: '', meio_ambiente: '', medicao: '' })
+  const [action, setAction] = useState({ tipo: 'Corretiva', oQue: '', porQue: '', onde: '', quem: '', quando: '', como: '', quanto: '0', causa: '', responsavel: '', prazo: '' })
   const [notice, setNotice] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
 
   const load = useCallback(async () => {
-    setLoading(true)
-    setError('')
+    setBusy(true); setError('')
     try {
-      const company = await supabase.rpc('erp_current_empresa_id')
-      if (company.error) throw company.error
-      if (!company.data) throw new Error('Empresa ERP não identificada.')
-      const [r, a, s, u] = await Promise.all([
-        fetchAllPages<Rpn>((from, to) => supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,sgq_origem,sgq_severidade,setor_id,status,sgq_vinculo_tipo,sgq_vinculo_id,criado_em,setor:erp_setores(nome)', { count: 'exact' }).eq('empresa_id', company.data).not('sgq_origem', 'is', null).order('criado_em', { ascending: false }).order('id', { ascending: false }).range(from, to)),
-        fetchAllPages<Capa>((from, to) => supabase.from('erp_sgq_capa_acoes').select('id,rpnc_id,tipo,descricao,causa_raiz,responsavel_id,prazo,status,evidencia,resultado_eficacia,comentario_aprovacao,responsavel:erp_usuarios!erp_sgq_capa_acoes_responsavel_id_fkey(nome,email)', { count: 'exact' }).eq('empresa_id', company.data).order('created_at', { ascending: false }).order('id', { ascending: false }).range(from, to)),
-        fetchAllPages<Sector>((from, to) => supabase.from('erp_setores').select('id,nome', { count: 'exact' }).eq('empresa_id', company.data).eq('ativo', true).order('nome').range(from, to)),
-        fetchAllPages<User>((from, to) => supabase.from('erp_usuarios').select('id,nome,email', { count: 'exact' }).eq('empresa_id', company.data).eq('ativo', true).is('deleted_at', null).order('nome').range(from, to)),
+      const current = await supabase.rpc('erp_current_empresa_id')
+      if (current.error) throw current.error
+      if (!current.data) throw new Error('Empresa da sessão não identificada.')
+      const id = String(current.data); setCompanyId(id)
+      const [r, a, u, d] = await Promise.all([
+        supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,sgq_origem,sgq_severidade,lote_afetado,quantidade_segregada,status,criado_em').eq('empresa_id', id).not('sgq_origem', 'is', null).order('criado_em', { ascending: false }).limit(500),
+        supabase.from('erp_sgq_capa_acoes').select('id,rpnc_id,tipo,descricao,causa_raiz,responsavel_id,prazo,status,acao_o_que,acao_por_que,acao_onde,acao_quem,acao_quando,acao_como,acao_quanto').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
+        supabase.from('erp_usuarios').select('id,nome,email').eq('empresa_id', id).eq('ativo', true).is('deleted_at', null).order('nome').limit(500),
+        supabase.from('erp_documentos_qualidade').select('id,codigo,titulo,tipo,revisao,data_revisao,preparado_por,pdf_storage_path,status').eq('empresa_id', id).order('codigo').limit(500),
       ])
-      setRows(r)
-      setActions(a)
-      setSectors(s)
-      setUsers(u)
-      setSelectedId((current) => current || (r[0]?.id ?? ''))
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'Falha ao consultar RPNCs e ações CAPA.')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+      if (r.error || a.error || u.error || d.error) throw r.error ?? a.error ?? u.error ?? d.error
+      setRncs((r.data ?? []) as Rpn[]); setActions((a.data ?? []) as Capa[]); setUsers((u.data ?? []) as User[]); setDocs((d.data ?? []) as Doc[])
+      if (!selectedRnc && r.data?.[0]) setSelectedRnc(r.data[0].id)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao carregar SGQ.')
+    } finally { setBusy(false) }
+  }, [selectedRnc])
 
   useEffect(() => { void load() }, [load])
 
-  const selected = rows.find((row) => row.id === selectedId) ?? null
-  const selectedActions = actions.filter((action) => action.rpnc_id === selectedId)
-  const openCount = rows.filter((row) => !['encerrada', 'Encerrada'].includes(row.status)).length
-  const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
-  const visibleRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-
   useEffect(() => {
-    setPage((current) => Math.min(current, pageCount))
-  }, [pageCount])
-
-  useEffect(() => {
-    if (!selectedId) {
-      setAuditEntries([])
-      return
-    }
-    let active = true
-    const entityIds = [selectedId, ...actions.filter((action) => action.rpnc_id === selectedId).map((action) => action.id)]
-    setAuditLoading(true)
-    setAuditError('')
+    if (!selectedRnc || !companyId) { setIshikawa(null); return }
     void (async () => {
-      try {
-        const { data, error: queryError } = await supabase.from('erp_sgq_auditoria')
-          .select('id,entidade,operacao,ocorrido_em,ator_id')
-          .in('entidade_id', entityIds).order('ocorrido_em', { ascending: false }).limit(100)
-        if (!active) return
-        if (queryError) throw queryError
-        setAuditEntries((data ?? []) as AuditEntry[])
-      } catch (queryError) {
-        if (active) setAuditError(queryError instanceof Error ? queryError.message : 'Falha ao consultar a auditoria da RPNC.')
-      } finally {
-        if (active) setAuditLoading(false)
+      const result = await supabase.from('erp_sgq_rpnc_ishikawa').select('id,rpnc_id,metodo,mao_de_obra,material,maquina,meio_ambiente,medicao').eq('empresa_id', companyId).eq('rpnc_id', selectedRnc).maybeSingle()
+      if (!result.error) {
+        setIshikawa(result.data as Ishikawa | null)
+        if (result.data) setSixM({ metodo: result.data.metodo ?? '', mao_de_obra: result.data.mao_de_obra ?? '', material: result.data.material ?? '', maquina: result.data.maquina ?? '', meio_ambiente: result.data.meio_ambiente ?? '', medicao: result.data.medicao ?? '' })
       }
     })()
-    return () => { active = false }
-  }, [selectedId, actions])
+  }, [selectedRnc, companyId])
 
-  async function openRpn(event: FormEvent) {
-    event.preventDefault()
+  const selected = rncs.find((rnc) => rnc.id === selectedRnc) ?? null
+  const selectedActions = actions.filter((item) => item.rpnc_id === selectedRnc)
+
+  const openRnc = async () => {
+    setError(''); setNotice('')
+    if (!description.trim()) { setError('Descrição detalhada da falha é obrigatória.'); return }
+    if (!lot.trim()) { setError('Lote afetado é obrigatório.'); return }
     setBusy(true)
-    setError('')
-    setNotice('')
     try {
-      const { data, error: rpcError } = await supabase.rpc('erp_sgq_abrir_rpnc', {
-        p_descricao: form.descricao,
-        p_origem: form.origem,
-        p_severidade: form.severidade,
-        p_setor_id: form.setor_id || null,
-        p_linked_entity_type: form.linked_entity_type || null,
-        p_linked_entity_id: form.linked_entity_id || null,
+      const result = await supabase.rpc('erp_sgq_abrir_rpnc', {
+        p_descricao: description.trim(), p_origem: origin, p_severidade: 'Menor', p_setor_id: null,
+        p_linked_entity_type: 'lote', p_linked_entity_id: null,
       })
-      if (rpcError) throw rpcError
-      if (!data || typeof data !== 'object' || !('id' in data) || !('numero_rpnc' in data)) {
-        throw new Error('A abertura da RPNC não retornou o registro criado.')
-      }
-      const created = data as Rpn
-      setSelectedId(created.id)
-      setForm({ descricao: '', origem: '', severidade: 'Menor', setor_id: '', linked_entity_type: '', linked_entity_id: '' })
-      setNotice(`RPNC ${created.numero_rpnc} aberta com numeração sequencial.`)
-      await load()
-    } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : 'Não foi possível abrir a RPNC.')
-    } finally {
-      setBusy(false)
-    }
+      if (result.error) throw result.error
+      if (!result.data || typeof result.data !== 'object' || !('id' in result.data)) throw new Error('A abertura da RNC não retornou o registro.')
+      const createdId = String(result.data.id)
+      const update = await supabase.from('erp_rpnc').update({ lote_afetado: lot.trim(), quantidade_segregada: Number(segregated || 0) }).eq('id', createdId).eq('empresa_id', companyId)
+      if (update.error) throw update.error
+      setSelectedRnc(createdId); setDescription(''); setLot(''); setSegregated('0'); setNotice('RNC aberta no banco real com lote e quantidade segregada.'); await load()
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao abrir RNC.') }
+    finally { setBusy(false) }
   }
 
-  async function createAction(event: FormEvent) {
-    event.preventDefault()
+  const saveSixM = async () => {
     if (!selected) return
-    setBusy(true)
-    setError('')
-    setNotice('')
+    setBusy(true); setError(''); setNotice('')
     try {
-      const { data: company, error: companyError } = await supabase.rpc('erp_current_empresa_id')
-      if (companyError) throw companyError
-      if (!company) throw new Error('Empresa não identificada.')
-      const { error: insertError } = await supabase.from('erp_sgq_capa_acoes').insert({
-        empresa_id: company,
-        rpnc_id: selected.id,
-        tipo: actionForm.tipo,
-        descricao: actionForm.descricao.trim(),
-        causa_raiz: actionForm.causa_raiz.trim() || null,
-        responsavel_id: actionForm.responsavel_id,
-        prazo: actionForm.prazo,
-      })
-      if (insertError) throw insertError
-      setActionForm({ tipo: 'Corretiva', descricao: '', causa_raiz: '', responsavel_id: '', prazo: '' })
-      setNotice('Ação CAPA registrada.')
-      await load()
-    } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : 'Não foi possível registrar a ação CAPA.')
-    } finally {
-      setBusy(false)
-    }
+      const result = await supabase.from('erp_sgq_rpnc_ishikawa').upsert({ empresa_id: companyId, rpnc_id: selected.id, ...sixM }, { onConflict: 'empresa_id,rpnc_id' }).select('id,rpnc_id,metodo,mao_de_obra,material,maquina,meio_ambiente,medicao').single()
+      if (result.error) throw result.error
+      setIshikawa(result.data as Ishikawa); setNotice('Análise de causa raiz 6M salva no banco real.')
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao salvar Ishikawa.') }
+    finally { setBusy(false) }
   }
 
-  async function updateAction(action: Capa, status: string) {
-    const evidencia = status === 'Aguardando aprovacao'
-      ? window.prompt('Registre a evidência de execução para submeter à aprovação:')
-      : undefined
-    if (status === 'Aguardando aprovacao' && !evidencia?.trim()) return
-    setBusy(true)
-    setError('')
-    setNotice('')
-    try {
-      const { error: updateError } = await supabase.from('erp_sgq_capa_acoes').update({ status, ...(evidencia ? { evidencia: evidencia.trim() } : {}) }).eq('id', action.id)
-      if (updateError) throw updateError
-      setNotice('Etapa da ação atualizada.')
-      await load()
-    } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : 'Não foi possível atualizar a ação.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function decideAction(action: Capa, decision: string) {
-    const evidence = window.prompt(decision.startsWith('verificar') ? 'Registre a evidência da verificação de eficácia:' : 'Comentário de aprovação (opcional):')
-    if (evidence === null) return
-    setBusy(true)
-    setError('')
-    setNotice('')
-    try {
-      const { error: rpcError } = await supabase.rpc('erp_sgq_capa_decidir', {
-        p_acao_id: action.id,
-        p_decisao: decision,
-        p_evidencia: evidence,
-      })
-      if (rpcError) throw rpcError
-      setNotice('Decisão registrada no histórico de auditoria.')
-      await load()
-    } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : 'Decisão não autorizada ou inválida.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function changeStatus(status: string) {
+  const createAction = async () => {
     if (!selected) return
-    setBusy(true)
-    setError('')
-    setNotice('')
+    if (!action.oQue.trim() || !action.quem.trim() || !action.prazo || !action.responsavel) { setError('O quê, quem, prazo e responsável são obrigatórios.'); return }
+    setBusy(true); setError(''); setNotice('')
     try {
-      const { error: rpcError } = await supabase.rpc('erp_sgq_transicionar_rpnc', { p_rpnc_id: selected.id, p_status: status })
-      if (rpcError) throw rpcError
-      setNotice('Status da RPNC atualizado.')
-      await load()
-    } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : 'Não foi possível atualizar o status.')
-    } finally {
-      setBusy(false)
-    }
+      const result = await supabase.from('erp_sgq_capa_acoes').insert({
+        empresa_id: companyId, rpnc_id: selected.id, tipo: action.tipo, descricao: action.oQue.trim(), causa_raiz: action.causa.trim() || null,
+        responsavel_id: action.responsavel, prazo: action.prazo, acao_o_que: action.oQue.trim(), acao_por_que: action.porQue.trim() || null,
+        acao_onde: action.onde.trim() || null, acao_quem: action.quem.trim(), acao_quando: action.quando || action.prazo, acao_como: action.como.trim() || null, acao_quanto: Number(action.quanto || 0),
+      })
+      if (result.error) throw result.error
+      setAction({ tipo: 'Corretiva', oQue: '', porQue: '', onde: '', quem: '', quando: '', como: '', quanto: '0', causa: '', responsavel: '', prazo: '' })
+      setNotice('Plano CAPA / 5W2H registrado.'); await load()
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao registrar ação CAPA.') }
+    finally { setBusy(false) }
+  }
+
+  const uploadPdf = async (doc: Doc, file: File) => {
+    if (file.type !== 'application/pdf') { setError('Somente PDF é aceito pelo GED.'); return }
+    setBusy(true); setError(''); setNotice('')
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '_')
+      const path = `${companyId}/${doc.id}/${Date.now()}-${safeName}`
+      const upload = await supabase.storage.from('erp-documentos-qualidade').upload(path, file, { upsert: true, contentType: 'application/pdf' })
+      if (upload.error) throw upload.error
+      const update = await supabase.from('erp_documentos_qualidade').update({ pdf_storage_path: path }).eq('id', doc.id).eq('empresa_id', companyId)
+      if (update.error) throw update.error
+      setNotice(`PDF real anexado ao GED: ${doc.codigo}.`); await load()
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao anexar PDF no Storage.') }
+    finally { setBusy(false) }
+  }
+
+  const openPdf = async (doc: Doc) => {
+    if (!doc.pdf_storage_path) return
+    const signed = await supabase.storage.from('erp-documentos-qualidade').createSignedUrl(doc.pdf_storage_path, 3600)
+    if (signed.error) { setError(signed.error.message); return }
+    if (signed.data?.signedUrl) window.open(signed.data.signedUrl, '_blank', 'noopener,noreferrer')
   }
 
   return (
-    <main data-quality-workspace className="min-h-screen bg-slate-100 p-4 text-slate-900 md:p-6">
-      <div className="mx-auto grid max-w-[1800px] gap-5 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <QualitySidebar active="/qualidade/rnc" />
-        <div className="min-w-0 space-y-5">
-          <header className="flex flex-wrap items-end gap-4 border-b border-slate-300 pb-4">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[.16em] text-sky-700">QUALIDADE › SGQ › RPNC / CAPA</p>
-              <h1 className="text-2xl font-black md:text-3xl">Não conformidades e ações corretivas</h1>
-              <p className="mt-1 text-sm font-medium text-slate-600">Registro sequencial, causa raiz, responsáveis, aprovação e eficácia.</p>
-            </div>
-            <button type="button" onClick={() => void load()} disabled={loading} className="ml-auto inline-flex min-h-11 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 font-bold"><RefreshCw size={17}/>Atualizar</button>
-            <div className="rounded-lg bg-slate-900 px-4 py-2 text-white"><span className="block text-[11px] font-bold uppercase text-sky-200">Em aberto</span><b className="text-2xl">{openCount}</b></div>
-          </header>
-
-          {(error || notice) && <div role="alert" className={`rounded-lg border p-3 font-semibold ${error ? 'border-rose-200 bg-rose-50 text-rose-900' : 'border-emerald-200 bg-emerald-50 text-emerald-900'}`}>{error || notice}</div>}
-
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(360px,.95fr)]">
-            <section className="space-y-4">
-              <form onSubmit={(event) => void openRpn(event)} className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-2">
-                <div className="md:col-span-2"><h2 className="flex items-center gap-2 text-lg font-black"><Plus size={19} className="text-sky-700"/>Abrir RPNC</h2><p className="text-sm text-slate-600">O número é reservado pelo banco em transação e não pode colidir entre usuários.</p></div>
-                <label className={`${labelClass} md:col-span-2`}>Falha / não conformidade<textarea className={`${inputClass} min-h-24 py-3`} required value={form.descricao} onChange={(event) => setForm({ ...form, descricao: event.target.value })}/></label>
-                <label className={labelClass}>Origem<input className={inputClass} required placeholder="Inspeção, cliente, auditoria…" value={form.origem} onChange={(event) => setForm({ ...form, origem: event.target.value })}/></label>
-                <label className={labelClass}>Gravidade<select className={inputClass} value={form.severidade} onChange={(event) => setForm({ ...form, severidade: event.target.value })}><option>Critica</option><option>Maior</option><option>Menor</option></select></label>
-                <label className={labelClass}>Setor responsável<select required className={inputClass} value={form.setor_id} onChange={(event) => setForm({ ...form, setor_id: event.target.value })}><option value="">Selecionar setor</option>{sectors.map((sector) => <option key={sector.id} value={sector.id}>{sector.nome}</option>)}</select></label>
-                <label className={labelClass}>Vínculo ERP<input className={inputClass} placeholder="Tipo: lote / pedido / produto" value={form.linked_entity_type} onChange={(event) => setForm({ ...form, linked_entity_type: event.target.value })}/></label>
-                <label className={`${labelClass} md:col-span-2`}>Identificador do registro vinculado (opcional)<input className={inputClass} placeholder="UUID do lote, pedido ou produto" value={form.linked_entity_id} onChange={(event) => setForm({ ...form, linked_entity_id: event.target.value })}/></label>
-                <button disabled={busy} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-sky-700 px-5 font-black text-white disabled:opacity-50 md:col-span-2"><Save size={17}/>{busy ? 'Processando…' : 'Abrir RPNC'}</button>
-              </form>
-              <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3"><h2 className="font-black">RPNCs registradas</h2><span className="text-sm text-slate-500">{rows.length} registro(s)</span></div>
-                <div className="max-h-[680px] overflow-auto">
-                  {loading ? <p role="status" className="p-6 text-center font-semibold text-slate-500">Carregando dados do SGQ…</p> : rows.length === 0 ? <p className="p-6 text-center font-semibold text-slate-500">Nenhuma RPNC registrada.</p> : (
-                    <ul className="divide-y divide-slate-100">{visibleRows.map((row) => <li key={row.id}><button type="button" onClick={() => setSelectedId(row.id)} aria-current={selectedId === row.id ? 'true' : undefined} className={`w-full p-4 text-left hover:bg-sky-50 ${selectedId === row.id ? 'bg-sky-50 ring-2 ring-inset ring-sky-500' : ''}`}><span className="flex flex-wrap items-center gap-2"><b className="text-sky-800">{row.numero_rpnc}</b><span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold">{row.status}</span><Severity value={row.sgq_severidade}/></span><span className="mt-2 block font-semibold">{row.descricao_nao_conformidade}</span><span className="mt-1 block text-xs text-slate-500">{row.sgq_origem} · {row.setor?.[0]?.nome || 'Sem setor'} · {new Date(row.criado_em).toLocaleDateString('pt-BR')}</span></button></li>)}</ul>
-                  )}
-                </div>
-                {!loading && rows.length > PAGE_SIZE && <nav aria-label="Paginação de RPNCs" className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 px-3 py-2">
-                  <span className="text-xs text-slate-600">Página {page} de {pageCount} · {rows.length} RPNCs</span>
-                  <div className="flex gap-2">
-                    <button type="button" disabled={page <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))} className="inline-flex min-h-9 items-center gap-1 border border-slate-300 bg-white px-3 text-xs font-bold disabled:opacity-50"><ArrowLeft size={14}/>Anterior</button>
-                    <button type="button" disabled={page >= pageCount} onClick={() => setPage((current) => Math.min(pageCount, current + 1))} className="inline-flex min-h-9 items-center gap-1 border border-slate-300 bg-white px-3 text-xs font-bold disabled:opacity-50">Próxima<ArrowRight size={14}/></button>
-                  </div>
-                </nav>}
-              </section>
-            </section>
-
-            <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              {!selected ? <div className="grid min-h-72 place-items-center text-center text-slate-500"><div><ClipboardCheck size={36} className="mx-auto text-sky-700"/><p className="mt-3 font-bold">Selecione uma RPNC para consultar a tratativa.</p></div></div> : <>
-                <div className="flex items-start gap-3 border-b border-slate-200 pb-4"><span className="grid size-10 shrink-0 place-items-center rounded-lg bg-amber-100 text-amber-800"><AlertTriangle size={20}/></span><div className="min-w-0"><p className="text-xs font-black uppercase tracking-widest text-sky-700">Detalhe da ocorrência</p><h2 className="break-all text-xl font-black">{selected.numero_rpnc}</h2><p className="mt-1 text-sm text-slate-600">{selected.descricao_nao_conformidade}</p></div></div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2"><Info label="Origem" value={selected.sgq_origem}/><Info label="Setor" value={selected.setor?.[0]?.nome || 'Sem setor'}/><Info label="Gravidade" value={selected.sgq_severidade}/><Info label="Vínculo ERP" value={selected.sgq_vinculo_tipo ? `${selected.sgq_vinculo_tipo}: ${selected.sgq_vinculo_id || '—'}` : 'Não informado'}/></div>
-                <label className={`${labelClass} mt-4`}>Etapa da RPNC<select className={inputClass} disabled={busy} value={selected.status} onChange={(event) => void changeStatus(event.target.value)}>{statuses.map((status) => <option key={status}>{status}</option>)}</select></label>
-
-                <form onSubmit={(event) => void createAction(event)} className="mt-5 space-y-3 border-t border-slate-200 pt-4">
-                  <h3 className="flex items-center gap-2 font-black"><ShieldCheck size={18} className="text-sky-700"/>Plano de ação CAPA</h3>
-                  <label className={labelClass}>Tipo<select className={inputClass} value={actionForm.tipo} onChange={(event) => setActionForm({ ...actionForm, tipo: event.target.value })}><option>Contencao</option><option>Corretiva</option><option>Preventiva</option></select></label>
-                  <label className={labelClass}>Ação / plano<textarea required className={`${inputClass} min-h-20 py-3`} value={actionForm.descricao} onChange={(event) => setActionForm({ ...actionForm, descricao: event.target.value })}/></label>
-                  <label className={labelClass}>Investigação de causa raiz<textarea required className={`${inputClass} min-h-20 py-3`} value={actionForm.causa_raiz} onChange={(event) => setActionForm({ ...actionForm, causa_raiz: event.target.value })}/></label>
-                    <div className="grid gap-3 sm:grid-cols-2"><label className={labelClass}>Responsável<select required className={inputClass} value={actionForm.responsavel_id} onChange={(event) => setActionForm({ ...actionForm, responsavel_id: event.target.value })}><option value="">Selecionar responsável</option>{users.map((user) => <option key={user.id} value={user.id}>{user.nome || user.email || user.id}</option>)}</select></label><label className={labelClass}>Prazo<input required className={inputClass} type="date" value={actionForm.prazo} onChange={(event) => setActionForm({ ...actionForm, prazo: event.target.value })}/></label></div>
-                  <button disabled={busy} className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-slate-900 px-4 font-bold text-white disabled:opacity-50"><Plus size={16}/>Adicionar ação</button>
-                </form>
-
-                <div className="mt-5 space-y-3 border-t border-slate-200 pt-4">
-                  <div className="flex items-center justify-between"><h3 className="font-black">Ações, aprovações e eficácia</h3><span className="text-sm text-slate-500">{selectedActions.length}</span></div>
-                  {!selectedActions.length ? <p className="rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-500">Sem ações. Cadastre a contenção ou ação corretiva acima.</p> : selectedActions.map((action) => <article key={action.id} className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <div className="flex flex-wrap items-start justify-between gap-2"><div><p className="font-bold">{action.descricao}</p><p className="text-xs text-slate-600">{action.tipo} · {action.responsavel?.[0]?.nome || action.responsavel?.[0]?.email || 'Sem responsável'} · prazo {action.prazo || 'não definido'}</p></div><span className="rounded-full bg-white px-2 py-1 text-xs font-black">{action.status}</span></div>
-                    {action.causa_raiz && <p className="text-sm"><b>Causa raiz:</b> {action.causa_raiz}</p>}
-                    {action.evidencia && <p className="text-sm"><b>Evidência:</b> {action.evidencia}</p>}
-                    {action.comentario_aprovacao && <p className="text-sm"><b>Comentário da aprovação:</b> {action.comentario_aprovacao}</p>}
-                    {action.resultado_eficacia && <p className={`text-sm font-black ${action.resultado_eficacia === 'Eficaz' ? 'text-emerald-700' : 'text-rose-700'}`}>Eficácia: {action.resultado_eficacia}</p>}
-                    <div className="flex flex-wrap gap-2">
-                      {['Planejada','Em execucao','Concluida','Aguardando aprovacao'].includes(action.status) && <select aria-label={`Atualizar etapa da ação ${action.descricao}`} className="min-h-9 rounded-md border border-slate-300 bg-white px-2 text-xs font-bold" value={action.status} disabled={busy} onChange={(event) => void updateAction(action, event.target.value)}>{['Planejada','Em execucao','Concluida','Aguardando aprovacao'].map((status) => <option key={status}>{status}</option>)}</select>}
-                      {action.status === 'Aguardando aprovacao' && <><button type="button" disabled={busy} onClick={() => void decideAction(action, 'aprovar')} className="rounded-md bg-emerald-700 px-3 py-2 text-xs font-black text-white">Aprovar</button><button type="button" disabled={busy} onClick={() => void decideAction(action, 'reprovar')} className="rounded-md bg-rose-700 px-3 py-2 text-xs font-black text-white">Reprovar</button></>}
-                      {action.status === 'Aprovada' && <><button type="button" disabled={busy} onClick={() => void decideAction(action, 'verificar_eficaz')} className="rounded-md bg-sky-700 px-3 py-2 text-xs font-black text-white">Verificar eficaz</button><button type="button" disabled={busy} onClick={() => void decideAction(action, 'verificar_ineficaz')} className="rounded-md border border-rose-300 bg-white px-3 py-2 text-xs font-black text-rose-800">Verificar ineficaz</button></>}
-                    </div>
-                  </article>)}
-                </div>
-                <section className="mt-5 border-t border-slate-200 pt-4" aria-label="Trilha de auditoria da RPNC">
-                  <h3 className="font-black">Histórico de auditoria</h3>
-                  {auditError ? <p role="alert" className="mt-2 rounded-md bg-rose-50 p-3 text-sm font-semibold text-rose-800">{auditError}</p>
-                    : auditLoading ? <p role="status" className="mt-2 text-sm text-slate-500">Carregando histórico…</p>
-                    : auditEntries.length ? <ol className="mt-2 space-y-2">{auditEntries.map((entry) => <li key={entry.id} className="rounded-md bg-slate-50 p-3 text-sm"><b>{entry.entidade.replaceAll('_', ' ')} · {entry.operacao}</b><time className="ml-2 text-slate-500">{new Date(entry.ocorrido_em).toLocaleString('pt-BR')}</time><span className="ml-2 text-slate-500">ator {entry.ator_id||'sistema'}</span></li>)}</ol>
-                    : <p className="mt-2 text-sm text-slate-500">Nenhum evento de auditoria disponível.</p>}
-                </section>
-                {selected.sgq_vinculo_id && <div className="mt-4 flex flex-wrap items-center gap-2 text-sm font-bold text-slate-700"><ArrowUpRight size={16}/><span>Vínculo ERP: {selected.sgq_vinculo_tipo || 'registro'} · {selected.sgq_vinculo_id}</span>{['pedido_venda','venda','pedido de venda'].includes((selected.sgq_vinculo_tipo || '').toLowerCase()) && <a className="text-sky-800 underline" href="/vendas">Abrir Vendas</a>}</div>}
-              </>}
-            </section>
-          </div>
+    <VendasLayout title="SGQ" subtitle="RNC 6M • CAPA 5W2H • GED controlado">
+      <div className="sgq-compact">
+        <div className="sgq-tabs">
+          <button className={tab === 'rnc' ? 'active' : ''} type="button" onClick={() => setTab('rnc')}><ShieldCheck size={13}/> 01 · RNC / ISHIKAWA 6M</button>
+          <button className={tab === 'capa' ? 'active' : ''} type="button" onClick={() => setTab('capa')}><CheckCircle2 size={13}/> 02 · CAPA / 5W2H</button>
+          <button className={tab === 'ged' ? 'active' : ''} type="button" onClick={() => setTab('ged')}><FileText size={13}/> 03 · GED</button>
+          <button className="refresh" type="button" onClick={() => void load()} disabled={busy}><RefreshCw size={13}/> ATUALIZAR</button>
         </div>
+        {(error || notice) && <div className={error ? 'sgq-message error' : 'sgq-message'}>{error || notice}</div>}
+
+        {tab === 'rnc' && <section className="sgq-panel">
+          <div className="sgq-grid sgq-grid-5">
+            <label className={label}>Código RNC<input className={field(false)} readOnly value={selected?.numero_rpnc ?? 'Gerado pelo banco'} /></label>
+            <label className={label}>Origem<select className={field(false)} value={origin} onChange={(e) => setOrigin(e.target.value)}><option>Cliente</option><option>Processo</option><option>Fornecedor</option></select></label>
+            <label className={label}>Lote afetado<input className={field(!lot && !selected)} value={lot} onChange={(e) => setLot(e.target.value)} placeholder="Preencher..." /></label>
+            <label className={label}>Qtd. segregada<input className={field(false)} type="number" min="0" value={segregated} onChange={(e) => setSegregated(e.target.value)} /></label>
+            <div className="sgq-action"><button className={btn} type="button" disabled={busy} onClick={() => void openRnc()}><Save size={13}/> ABRIR RNC</button></div>
+          </div>
+          <label className={label + ' sgq-mt'}>Descrição detalhada da falha<textarea className="sgq-textarea" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Preencher..." /></label>
+          <div className="sgq-grid sgq-grid-6 sgq-mt">
+            {(['metodo','mao_de_obra','material','maquina','meio_ambiente','medicao'] as const).map((key) => <label className={label} key={key}>{key === 'mao_de_obra' ? 'Mão de obra' : key === 'meio_ambiente' ? 'Meio ambiente' : key.replace('_',' ')}<input className={field(false)} value={sixM[key]} onChange={(e) => setSixM({ ...sixM, [key]: e.target.value })} placeholder="Preencher..." /></label>)}
+          </div>
+          <div className="sgq-save-row"><button className={btn} type="button" disabled={!selected || busy} onClick={() => void saveSixM()}><Save size={13}/> SALVAR 6M</button></div>
+          <div className="sgq-table"><table><thead><tr><th>RNC</th><th>Origem</th><th>Lote</th><th>Segregada</th><th>Status</th></tr></thead><tbody>{rncs.map((row) => <tr key={row.id} className={row.id === selectedRnc ? 'selected' : ''} onClick={() => setSelectedRnc(row.id)}><td>{row.numero_rpnc}</td><td>{row.sgq_origem}</td><td>{row.lote_afetado || '—'}</td><td className="num">{row.quantidade_segregada}</td><td>{row.status}</td></tr>)}</tbody></table></div>
+        </section>}
+
+        {tab === 'capa' && <section className="sgq-panel">
+          <div className="sgq-grid sgq-grid-5">
+            <label className={label}>RNC<select className={field(false)} value={selectedRnc} onChange={(e) => setSelectedRnc(e.target.value)}><option value="">Preencher...</option>{rncs.map((row) => <option key={row.id} value={row.id}>{row.numero_rpnc} · {row.lote_afetado || 'sem lote'}</option>)}</select></label>
+            <label className={label}>O quê<input className={field(!action.oQue)} value={action.oQue} onChange={(e) => setAction({ ...action, oQue: e.target.value })} placeholder="Preencher..." /></label>
+            <label className={label}>Por quê<input className={field(false)} value={action.porQue} onChange={(e) => setAction({ ...action, porQue: e.target.value })} placeholder="Preencher..." /></label>
+            <label className={label}>Onde<input className={field(false)} value={action.onde} onChange={(e) => setAction({ ...action, onde: e.target.value })} placeholder="Preencher..." /></label>
+            <label className={label}>Quem<input className={field(!action.quem)} value={action.quem} onChange={(e) => setAction({ ...action, quem: e.target.value })} placeholder="Preencher..." /></label>
+          </div>
+          <div className="sgq-grid sgq-grid-5 sgq-mt">
+            <label className={label}>Quando<input className={field(false)} type="date" value={action.quando} onChange={(e) => setAction({ ...action, quando: e.target.value })} /></label>
+            <label className={label}>Como<input className={field(false)} value={action.como} onChange={(e) => setAction({ ...action, como: e.target.value })} placeholder="Preencher..." /></label>
+            <label className={label}>Quanto custa<input className={field(false)} type="number" min="0" step="0.01" value={action.quanto} onChange={(e) => setAction({ ...action, quanto: e.target.value })} /></label>
+            <label className={label}>Responsável<select className={field(!action.responsavel)} value={action.responsavel} onChange={(e) => setAction({ ...action, responsavel: e.target.value })}><option value="">Preencher...</option>{users.map((user) => <option key={user.id} value={user.id}>{user.nome || user.email || user.id}</option>)}</select></label>
+            <label className={label}>Prazo<input className={field(!action.prazo)} type="date" value={action.prazo} onChange={(e) => setAction({ ...action, prazo: e.target.value })} /></label>
+          </div>
+          <div className="sgq-grid sgq-grid-2 sgq-mt"><label className={label}>Causa raiz<input className={field(false)} value={action.causa} onChange={(e) => setAction({ ...action, causa: e.target.value })} placeholder="Preencher..." /></label><div className="sgq-action"><button className={btn} type="button" disabled={!selected || busy} onClick={() => void createAction()}><Save size={13}/> REGISTRAR AÇÃO</button></div></div>
+          <div className="sgq-table sgq-mt"><table><thead><tr><th>O quê</th><th>Por quê</th><th>Onde</th><th>Quem</th><th>Quando</th><th>Como</th><th>Quanto</th><th>Status</th></tr></thead><tbody>{selectedActions.map((row) => <tr key={row.id}><td>{row.acao_o_que || row.descricao}</td><td>{row.acao_por_que || '—'}</td><td>{row.acao_onde || '—'}</td><td>{row.acao_quem || '—'}</td><td>{row.acao_quando || row.prazo}</td><td>{row.acao_como || '—'}</td><td className="num">{row.acao_quanto ?? 0}</td><td>{row.status}</td></tr>)}</tbody></table></div>
+        </section>}
+
+        {tab === 'ged' && <section className="sgq-panel">
+          <div className="sgq-table"><table><thead><tr><th>Código</th><th>Nome do documento</th><th>Tipo</th><th>Rev.</th><th>Última revisão</th><th>Elaborado por</th><th>PDF Storage</th><th>Ação</th></tr></thead><tbody>{docs.map((doc) => <tr key={doc.id}><td>{doc.codigo}</td><td>{doc.titulo}</td><td>{doc.tipo || '—'}</td><td className="num">{doc.revisao}</td><td>{doc.data_revisao ? new Date(doc.data_revisao).toLocaleDateString('pt-BR') : '—'}</td><td>{doc.preparado_por || '—'}</td><td>{doc.pdf_storage_path ? <button className="link-btn" type="button" onClick={() => void openPdf(doc)}>ABRIR PDF REAL</button> : 'SEM PDF'}</td><td><label className={btn + ' cursor-pointer'}><Upload size={13}/> ANEXAR PDF<input className="hidden" type="file" accept="application/pdf" disabled={busy} onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadPdf(doc, file); e.currentTarget.value = '' }} /></label></td></tr>)}</tbody></table></div>
+        </section>}
       </div>
-    </main>
+      <style>{`
+        .sgq-compact{padding:8px;background:#f4f7fe}.sgq-tabs{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-bottom:6px}.sgq-tabs button{height:30px;display:inline-flex;align-items:center;gap:4px;padding:0 9px;border:1px solid #cbd5e1;border-radius:2px;background:#fff;color:#123b50;font-size:10px;font-weight:500}.sgq-tabs button.active,.sgq-tabs button.refresh{background:#2d8db8;border-color:#2d8db8;color:#fff}.sgq-tabs .refresh{margin-left:auto}.sgq-panel{border:1px solid #cbd5e1;background:#fff;border-radius:2px;padding:8px}.sgq-grid{display:grid;gap:6px}.sgq-grid-5{grid-template-columns:1fr 1fr 1fr .8fr 1fr}.sgq-grid-6{grid-template-columns:repeat(6,minmax(0,1fr))}.sgq-grid-2{grid-template-columns:2fr 1fr}.sgq-mt{margin-top:6px}.sgq-action{display:flex;align-items:end}.sgq-save-row{display:flex;justify-content:flex-end;margin-top:6px}.sgq-textarea{width:100%;min-height:60px;padding:5px 7px;border:1px solid #cbd5e1;border-radius:2px;font-size:12px;outline:none;resize:vertical}.sgq-textarea:focus{border-color:#2d8db8}.sgq-table{overflow:auto;border:1px solid #dbe3e8;margin-top:6px}.sgq-table table{width:100%;border-collapse:collapse;font-size:10px}.sgq-table th,.sgq-table td{height:28px;padding:3px 6px;border-bottom:1px solid #e2e8f0;white-space:nowrap;text-align:left}.sgq-table th{background:#f1f5f9;color:#475569;font-size:9px;font-weight:500;text-transform:uppercase}.sgq-table td.num{text-align:right;font-variant-numeric:tabular-nums}.sgq-table tr.selected{background:#e8f5fb}.link-btn{height:26px;border:1px solid #2d8db8;border-radius:2px;background:#fff;color:#2d8db8;padding:0 7px;font-size:9px;font-weight:500}.sgq-message{margin-bottom:6px;padding:6px 8px;border:1px solid #b7d8e5;background:#f4fbfd;color:#17445a;font-size:10px}.sgq-message.error{border-color:#fca5a5;background:#fff1f2;color:#991b1b}@media(max-width:1000px){.sgq-grid-5{grid-template-columns:repeat(3,minmax(0,1fr))}.sgq-grid-6{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:650px){.sgq-grid-5,.sgq-grid-6,.sgq-grid-2{grid-template-columns:1fr}.sgq-tabs .refresh{margin-left:0}}
+      `}</style>
+    </VendasLayout>
   )
-}
-
-function Info({ label, value }: { label: string; value: string }) {
-  return <div className="rounded-lg bg-slate-50 p-3"><span className="block text-[11px] font-black uppercase text-slate-500">{label}</span><b className="mt-1 block break-words text-sm">{value}</b></div>
-}
-
-function Severity({ value }: { value: string }) {
-  const classes = value === 'Critica' ? 'bg-rose-100 text-rose-800' : value === 'Maior' ? 'bg-amber-100 text-amber-900' : 'bg-sky-100 text-sky-900'
-  return <span className={`rounded-full px-2 py-1 text-xs font-black ${classes}`}>{value}</span>
 }
