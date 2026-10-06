@@ -5,7 +5,7 @@ import VendasLayout from './VendasLayout'
 import { fetchAllPages } from '../lib/supabasePagination'
 
 type Direction = 'PAGAR' | 'RECEBER'
-const financeNav = [{ label:'Financeiro', items:[{label:'Caixa',href:'/financeiro/caixa'},{label:'Contas a pagar',href:'/financeiro/contas-pagar'},{label:'Contas a receber',href:'/financeiro/contas-receber'},{label:'Fluxo de caixa',href:'/financeiro/fluxo-caixa'},{label:'Conciliação',href:'/financeiro/reconciliacao'},{label:'Importar extratos',href:'/financeiro/importar-extratos'},{label:'Ano fiscal',href:'/financeiro/ano-fiscal'},{label:'Custos padrão',href:'/financeiro/custo-padrao'}] }] as const
+const financeNav = [{ label:'Financeiro', items:[{label:'Caixa',href:'/financeiro/caixa'},{label:'Contas a pagar',href:'/financeiro/contas-pagar'},{label:'Contas a receber',href:'/financeiro/contas-receber'},{label:'Fluxo de caixa',href:'/financeiro/fluxo-caixa'},{label:'Conciliação',href:'/financeiro/reconciliacao'},{label:'Importar extratos',href:'/financeiro/importar-extratos'},{label:'Ano fiscal',href:'/financeiro/ano-fiscal'},{label:'Custos padrão',href:'/financeiro/custo-padrao'}] }]
 type TitleRef = { tipo: Direction; descricao: string }
 type RawInstallment = {
   id: string
