@@ -92,7 +92,7 @@ export function VendasStatusCards({ status, loading }: { status: VendasStatus; l
 export const sections: SalesNavSection[] = [
   { label: 'Visão geral', items: [
     { label: 'Dashboard comercial', href: '/vendas', icon: LayoutDashboard },
-    { label: 'Faturamento', href: '/vendas/dashboard-graficos', icon: BarChart3 },
+    { label: 'Faturamento / NF-e', href: '/fiscal/emissao', icon: FilePlus2 },
   ] },
   { label: 'Operação', items: [
     { label: 'Pedidos de venda', href: '/vendas/pedidos', icon: ClipboardList },
