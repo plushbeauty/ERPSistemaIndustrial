@@ -492,6 +492,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/inventario/auditoria" element={<AuditoriaSaldos />} />
       <Route path="/produtos" element={<ProdutosVendasIndustrial />} />
       <Route path="/produtos-vendas" element={<ProdutosVendasIndustrial />} />
+      <Route path="/produtos-vendas/imprimir" element={<ProdutosVendasIndustrial />} />
       <Route path="/cadastro-produtos" element={<ModuloCadastroProdutos />} />
       <Route path="/operacao-industrial" element={<OperacaoIndustrial />} />
       <Route path="/moldes-injecao" element={<MoldesFerramentaria />} />
