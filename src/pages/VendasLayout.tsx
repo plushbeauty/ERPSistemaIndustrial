@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
-import { BarChart3, BookOpen, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, LogOut, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Tablet, Target, Users } from 'lucide-react'
-import { useLocation } from 'react-router-dom'
+import { ArrowLeft, BarChart3, BookOpen, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, LogOut, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Tablet, Target, Users, X } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import { useIsMobile } from '../hooks/useIsMobile'
@@ -77,7 +77,9 @@ export const sections:SalesNavSection[]=[
 
 export default function VendasLayout({children,title,subtitle,onRefresh,navSections:_navSections,topContent}:{children:ReactNode;title:string;subtitle?:string;onRefresh?:()=>void;navSections?:SalesNavSection[];topContent?:ReactNode}){
  const {pathname}=useLocation()
+ const navigate=useNavigate()
  const tabletMode=useIsMobile()
+ const [tabletOpen,setTabletOpen]=useState(false)
  const isVendas=pathname.startsWith('/vendas')
  const {status,loading:statusLoading,load:loadStatus}=useVendasStatus()
  const [operator,setOperator]=useState<Operator>({nome:null,email:null})
@@ -92,23 +94,30 @@ export default function VendasLayout({children,title,subtitle,onRefresh,navSecti
  const timeLabel=new Intl.DateTimeFormat('pt-BR',{timeStyle:'short'}).format(now)
  return <div className={`vendas-standard min-h-screen bg-[#F4F7FE] text-slate-800 ${tabletMode?'tablet-mode':''}`}>
   <main className="min-w-0">
-   <header className="sticky top-0 z-30 flex min-h-10 items-center justify-between gap-2 border-b border-slate-300 bg-white px-3">
-    <div className="flex min-w-0 items-center gap-2">
-     <div className="vendas-brand-logo"><img src="/logo/sgq-erp.png" alt="SGQERP" /></div><div className="vendas-brand-title"><strong>SGQERP INDUSTRIAL</strong><span>CENTRAL DE CONTROLE</span></div>
+   <header className="vendas-topbar" aria-label="Barra superior do ERP">
+    <div className="vendas-top-brand"><div className="vendas-logo-frame"><img src="/logo/sgq-erp.png" alt="SGQERP" /></div><div className="vendas-top-title"><strong>SGQERP INDUSTRIAL</strong><span>CENTRAL DE CONTROLE</span></div></div>
+    <div className="vendas-top-actions">
+      <button type="button" onClick={()=>setTabletOpen(true)} className="vendas-top-tablet" title="Abrir Tablet Vendas"><Tablet size={15}/>TABLET VENDAS</button>
+      <div className="vendas-top-user"><span>OPERADOR</span><strong>{operatorLabel}</strong></div><div className="vendas-top-date"><strong>{dateLabel}</strong><span>{timeLabel}</span></div><span className="vendas-top-data">DADOS: SUPABASE</span>
+      <button type="button" onClick={()=>window.location.assign(mainRoute)} className="vendas-top-back" title="Voltar"><ArrowLeft size={14}/>VOLTAR</button>
+      {onRefresh&&<button type="button" onClick={onRefresh} className="vendas-top-icon" title="Atualizar"><RefreshCw size={14}/></button>}
+      <button type="button" onClick={()=>void logout()} className="vendas-top-exit" title="Sair">SAIR</button>
     </div>
-    <div className="flex items-center gap-1 text-[9px] text-slate-600"><span className="hidden lg:inline">{operatorLabel}</span><span>{dateLabel} {timeLabel}</span><span>DADOS: SUPABASE</span>
-     <button type="button" onClick={()=>window.location.assign(mainRoute)} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Voltar"><span>←</span>Voltar</button>
-     <button type="button" onClick={()=>window.location.assign('/vendas/tablet')} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Abrir Tablet do módulo"><Tablet size={13}/>{tabletLabel}</button>
-     {onRefresh&&<button type="button" onClick={onRefresh} className="flex h-7 items-center border border-slate-300 bg-white px-2" title="Atualizar"><RefreshCw size={13}/></button>}
-     <button type="button" onClick={()=>void logout()} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Sair"><LogOut size={13}/>SAIR</button>
-    </div>
-   </header>
-   <div className="p-2 lg:p-3">
+   </header>   <div className="p-2 lg:p-3">
     {isVendas&&<VendasStatusCards status={status} loading={statusLoading}/>} 
     <div className="mb-2 border-b border-slate-200 pb-1"><h1 className="text-[13px] leading-4 font-medium text-[#123B50]">{title}</h1>{subtitle&&<p className="text-[9px] text-slate-500">{subtitle}</p>}</div>
     {topContent}{children}</div>
   </main>
-  <style>{`
+  {tabletOpen&&<div className="vendas-tablet-overlay" role="dialog" aria-modal="true" aria-label="Tablet Vendas">
+    <section className="vendas-tablet-modal">
+      <header className="vendas-tablet-head"><div><span>SGQERP INDUSTRIAL</span><strong>TABLET VENDAS — CENTRAL DE COMANDO</strong><small>Operações comerciais no mesmo padrão do Tablet principal.</small></div><button type="button" onClick={()=>setTabletOpen(false)} title="Fechar"><X size={18}/></button></header>
+      <div className="vendas-tablet-grid">{sections.flatMap(section=>section.items).map(item=>{const Icon=item.icon;return <button key={item.href} type="button" onClick={()=>{setTabletOpen(false);navigate(item.href)}} title={item.label}><span><Icon size={20}/></span><strong>{item.label}</strong></button>})}</div>
+    </section>
+  </div>}
+  <style>{
+
+.vendas-topbar{position:relative;z-index:30;width:100%;min-height:104px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:10px 24px;background:#fff;border-bottom:1px solid #cbd5e1;box-sizing:border-box}.vendas-top-brand{display:flex;align-items:center;gap:18px;min-width:0}.vendas-logo-frame{height:80px;min-width:210px;display:flex;align-items:center}.vendas-logo-frame img{height:100%;width:auto;object-fit:contain}.vendas-top-title{display:flex;flex-direction:column;border-left:1px solid #cbd5e1;padding-left:18px;line-height:1.1}.vendas-top-title strong{font-size:20px;font-weight:600;color:#1e293b;white-space:nowrap}.vendas-top-title span{margin-top:5px;font-size:10px;font-weight:500;letter-spacing:.14em;color:#475569}.vendas-top-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0}.vendas-top-tablet,.vendas-top-exit,.vendas-top-back,.vendas-top-icon{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:0 12px;border-radius:2px;border:1px solid #cbd5e1;background:#fff;color:#1e293b;font-size:10px;font-weight:500;white-space:nowrap}.vendas-top-tablet{background:#2D8DB8;border-color:#2D8DB8;color:#fff}.vendas-top-exit{border-color:#fecaca;color:#991b1b}.vendas-top-user,.vendas-top-date{display:flex;flex-direction:column;justify-content:center;gap:3px;min-height:42px;padding:0 12px;border-left:1px solid #e2e8f0;white-space:nowrap}.vendas-top-user span{font-size:9px;color:#64748b}.vendas-top-user strong{font-size:11px;font-weight:500;color:#1e293b}.vendas-top-date strong,.vendas-top-date span{font-size:10px;font-weight:500;color:#475569}.vendas-top-data{display:inline-flex;align-items:center;min-height:34px;padding:0 10px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:2px;color:#065f46;font-size:9px;font-weight:500;white-space:nowrap}
+.vendas-tablet-overlay{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:24px;background:rgba(7,29,37,.62);backdrop-filter:blur(5px)}.vendas-tablet-modal{width:min(1180px,96vw);max-height:86vh;overflow:auto;background:#f4fbfd;border:1px solid #2D8DB8;border-radius:2px;box-shadow:0 28px 70px rgba(0,0,0,.28)}.vendas-tablet-head{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 22px;background:#123b50;color:#fff;border-bottom:3px solid #2d8db8}.vendas-tablet-head span,.vendas-tablet-head strong,.vendas-tablet-head small{display:block}.vendas-tablet-head span{font-size:9px;letter-spacing:.16em;color:#8ed9e5}.vendas-tablet-head strong{margin-top:3px;font-size:18px;font-weight:600}.vendas-tablet-head small{margin-top:4px;font-size:10px;color:#d5edf3}.vendas-tablet-head button{width:34px;height:34px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff}.vendas-tablet-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:16px}.vendas-tablet-grid button{min-height:82px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px solid #c8e1e8;border-radius:2px;background:#fff;color:#123b50}.vendas-tablet-grid button:hover{border-color:#2d8db8;background:#f4fbfd}.vendas-tablet-grid button span{width:32px;height:32px;display:grid;place-items:center;background:#e7f7fa;color:#2d8db8;border:1px solid #c8e1e8}.vendas-tablet-grid button strong{font-size:9px;font-weight:500;text-align:center}@media(max-width:1180px){.vendas-logo-frame{height:72px;min-width:185px}.vendas-top-title{display:none}.vendas-tablet-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:900px){.vendas-top-date,.vendas-top-data{display:none}.vendas-logo-frame{height:64px;min-width:165px}}@media(max-width:650px){.vendas-topbar{min-height:72px;padding:7px 10px}.vendas-logo-frame{height:54px;min-width:135px}.vendas-top-user{display:none}.vendas-top-actions{gap:5px}.vendas-top-tablet,.vendas-top-exit,.vendas-top-back{min-height:36px;padding:0 8px;font-size:9px}.vendas-tablet-overlay{padding:8px}.vendas-tablet-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .vendas-standard .rounded,.vendas-standard .rounded-sm,.vendas-standard .rounded-md,.vendas-standard .rounded-lg,.vendas-standard .rounded-xl,.vendas-standard .rounded-2xl{border-radius:2px!important}
 .vendas-standard .font-bold,.vendas-standard .font-extrabold,.vendas-standard .font-black{font-weight:500!important}
 .vendas-standard h1,.vendas-standard h2,.vendas-standard h3,.vendas-standard p,.vendas-standard label{font-weight:500!important}
