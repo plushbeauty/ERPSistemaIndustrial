@@ -44,7 +44,6 @@ export default function VendasCatalogoDigital() {
         .select('id,codigo,nome,descricao,preco_venda,estoque_atual,unidade,foto_url,catalogo_disponivel,grupo,subgrupo,codigo_barras,referencia_interna')
         .eq('empresa_id', String(empresa.data))
         .eq('ativo', true)
-        .eq('catalogo_disponivel', true)
         .order('grupo')
         .order('subgrupo')
         .order('codigo')
@@ -172,7 +171,7 @@ export default function VendasCatalogoDigital() {
   return (
     <VendasLayout
       title="Catálogo Digital"
-      subtitle="Produtos industriais publicados"
+      subtitle="Produtos industriais cadastrados e organizados por grupo"
       onRefresh={() => void load()}
     >
       <main className="text-[11px]">
@@ -185,7 +184,7 @@ export default function VendasCatalogoDigital() {
                 </span>
                 <h1 className="mt-1 text-xl font-medium">Produtos e soluções industriais</h1>
                 <p className="mt-1 max-w-xl text-[10px] text-cyan-50">
-                  Consulte produtos publicados, filtre por categoria e monte sua seleção para pedido.
+                  Consulte peças e materiais do cadastro industrial, organizados por grupo e subgrupo.
                 </p>
               </div>
               <div className="flex gap-1.5">
@@ -303,9 +302,7 @@ export default function VendasCatalogoDigital() {
                           </div>
                         )}
                         {produto.grupo && (
-                          <span className="absolute left-2 top-2 bg-white/90 px-1.5 py-1 text-[8px] text-slate-600 shadow-sm">
-                            {produto.grupo}
-                          </span>
+                          <span className="absolute left-2 top-2 bg-white/90 px-1.5 py-1 text-[8px] text-slate-600 shadow-sm">{produto.grupo}</span>{produto.catalogo_disponivel&&<span className="absolute right-2 top-2 bg-[#e7f7fa] px-1.5 py-1 text-[8px] text-[#2D8DB8]">PUBLICADO</span>}
                         )}
                       </div>
                       <div className="p-2.5">
