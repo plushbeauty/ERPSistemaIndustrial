@@ -21,6 +21,8 @@ type Produto = {
   referencia_interna: string | null
 }
 
+const CATALOGO_GRUPOS = ['Barramento', 'Cabos', 'Injetado', 'Inserto', 'Kits', 'Perfil', 'Prensado'] as const
+
 const brl = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0)
 
@@ -56,6 +58,8 @@ export default function VendasCatalogoDigital() {
         .select('id,codigo,nome,descricao,preco_venda,estoque_atual,unidade,foto_url,catalogo_disponivel,grupo,subgrupo,codigo_barras,referencia_interna')
         .eq('empresa_id', String(empresa.data))
         .eq('ativo', true)
+        .eq('catalogo_disponivel', true)
+        .in('grupo', [...CATALOGO_GRUPOS])
         .order('grupo')
         .order('subgrupo')
         .order('codigo')
