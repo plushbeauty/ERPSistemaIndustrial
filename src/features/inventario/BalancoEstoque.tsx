@@ -37,5 +37,5 @@ const [cut,setCut]=useState(new Date().toISOString().slice(0,10));const [warehou
    </section>
    <div className="flex h-7 items-center justify-end gap-4 border border-gray-300 bg-white px-2 text-[11px] font-medium"><span>Total Itens: {rows.length}</span><span>Custo Total Ativo: {total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</span></div>
   </div>
- </main>
+ </VendasLayout>
 }
