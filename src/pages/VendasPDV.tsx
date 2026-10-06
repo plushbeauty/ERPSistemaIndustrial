@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, CreditCard, RefreshCw, Search, ShoppingCart, Wallet } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
 
 type Product={id:string;codigo:string;codigo_barras:string|null;nome:string;preco_venda:number;unidade:string;categoria:string|null;estoque_atual:number;permite_estoque_negativo:boolean}
@@ -13,8 +14,12 @@ export default function VendasPDV(){
  const [products,setProducts]=useState<Product[]>([]),[boxes,setBoxes]=useState<Box[]>([]),[customers,setCustomers]=useState<Customer[]>([]),[cart,setCart]=useState<CartItem[]>([])
  const [box,setBox]=useState(''),[query,setQuery]=useState(''),[payment,setPayment]=useState('DINHEIRO'),[discount,setDiscount]=useState('0'),[customerId,setCustomerId]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
  const load=async()=>{setBusy(true);setError('');const company=await supabase.rpc('erp_current_empresa_id');if(company.error||!company.data){setError(company.error?.message||'Empresa não identificada.');setBusy(false);return}
-  const [p,b,cu]=await Promise.all([supabase.from('erp_produtos').select('id,codigo,codigo_barras,nome,preco_venda,unidade,categoria,estoque_atual,permite_estoque_negativo').eq('empresa_id',String(company.data)).eq('ativo',true).order('nome').limit(2000),supabase.from('erp_caixas').select('id,codigo,descricao').eq('empresa_id',String(company.data)).eq('ativo',true).order('codigo'),supabase.from('erp_clientes').select('id,codigo,nome,documento').eq('empresa_id',String(company.data)).eq('ativo',true).order('nome').limit(2000)])
-  if(p.error) throw p.error;if(b.error) throw b.error;if(cu.error) throw cu.error;setProducts((p.data||[]) as Product[]);setBoxes((b.data||[]) as Box[]);setCustomers((cu.data||[]) as Customer[]);if(!box&&b.data?.[0])setBox(b.data[0].id);setBusy(false)}
+  const [p,b,cu]=await Promise.all([
+   fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,codigo_barras,nome,preco_venda,unidade,categoria,estoque_atual,permite_estoque_negativo',{count:'exact'}).eq('empresa_id',String(company.data)).eq('ativo',true).order('nome').range(from,to)),
+   fetchAllPages<Box>((from,to)=>supabase.from('erp_caixas').select('id,codigo,descricao',{count:'exact'}).eq('empresa_id',String(company.data)).eq('ativo',true).order('codigo').range(from,to)),
+   fetchAllPages<Customer>((from,to)=>supabase.from('erp_clientes').select('id,codigo,nome,documento',{count:'exact'}).eq('empresa_id',String(company.data)).eq('ativo',true).order('nome').range(from,to)),
+  ])
+  setProducts(p);setBoxes(b);setCustomers(cu);if(!box&&b[0])setBox(b[0].id);setBusy(false)}
  useEffect(()=>{void load()},[])
  const visible=useMemo(()=>{const q=query.trim().toLowerCase();return products.filter(p=>!q||p.codigo.toLowerCase().includes(q)||p.nome.toLowerCase().includes(q)||(p.codigo_barras||'').includes(q))},[products,query])
  const subtotal=cart.reduce((s,i)=>s+i.quantidade*Number(i.preco_venda||0),0),disc=Math.min(subtotal,Math.max(0,Number(discount)||0)),total=subtotal-disc
