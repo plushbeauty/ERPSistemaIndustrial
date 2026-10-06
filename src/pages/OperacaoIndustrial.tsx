@@ -23,7 +23,10 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { AlertTriangle, ArrowLeft, CheckCircle2, HelpCircle, Play, RefreshCw, Search, X, XCircle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
+import VendasLayout, { type SalesNavSection } from './VendasLayout'
 
+const productionNav: SalesNavSection[] = [{label:'Produção',items:[{label:'Chão de fábrica',href:'/operacao-industrial',icon:Play},{label:'PCP',href:'/pcp',icon:RefreshCw},{label:'Qualidade',href:'/qualidade',icon:CheckCircle2}]}]
 type OP={id:string;numero_op:string;produto_id:string|null;quantidade:number;status:string;data_prevista:string|null}
 type Product={id:string;codigo:string;nome:string}
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number;created_at:string}
@@ -32,11 +35,7 @@ export default function OperacaoIndustrial(){
  const [ops,setOps]=useState<OP[]>([]),[products,setProducts]=useState<Product[]>([]),[defects,setDefects]=useState<Defect[]>([])
  const [selectedOp,setSelectedOp]=useState(''),[found,setFound]=useState(''),[bad,setBad]=useState(''),[location,setLocation]=useState(''),[defectText,setDefectText]=useState(''),[query,setQuery]=useState('')
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState(''),[help,setHelp]=useState(false)
- const load=async()=>{setBusy(true);setError('');try{const [o,p,d]=await Promise.all([
-  supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade,status,data_prevista').order('criado_em',{ascending:false}).limit(500),
-  supabase.from('erp_produtos').select('id,codigo,nome').eq('ativo',true).order('codigo').limit(2000),
-  supabase.from('erp_producao_defeitos').select('id,ordem_producao_id,defeito,quantidade,created_at').order('created_at',{ascending:false}).limit(500)
- ]);for(const x of[o,p,d])if(x.error)throw x.error;setOps((o.data||[]) as OP[]);setProducts((p.data||[]) as Product[]);setDefects((d.data||[]) as Defect[])}catch(e){setError(e instanceof Error?e.message:'Falha ao carregar apontamento.')}finally{setBusy(false)}}
+ const load=async()=>{setBusy(true);setError('');try{const company=await supabase.rpc('erp_current_empresa_id');if(company.error||!company.data)throw company.error??new Error('Empresa da sessão não identificada.');const id=String(company.data);const [o,p,d]=await Promise.all([fetchAllPages<OP>((from,to)=>supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade,status,data_prevista',{count:'exact'}).eq('empresa_id',id).order('criado_em',{ascending:false}).range(from,to)),fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome',{count:'exact'}).eq('empresa_id',id).eq('ativo',true).order('codigo').range(from,to)),fetchAllPages<Defect>((from,to)=>supabase.from('erp_producao_defeitos').select('id,ordem_producao_id,defeito,quantidade,created_at',{count:'exact'}).eq('empresa_id',id).order('created_at',{ascending:false}).range(from,to))]);setOps(o);setProducts(p);setDefects(d)}catch(e){setError(e instanceof Error?e.message:'Falha ao carregar apontamento.')}finally{setBusy(false)}}
  useEffect(()=>{void load()},[])
  const current=ops.find(x=>x.id===selectedOp)
  const filtered=ops.filter(x=>!query||x.numero_op.toLowerCase().includes(query.toLowerCase())||String(x.status).toLowerCase().includes(query.toLowerCase()))
