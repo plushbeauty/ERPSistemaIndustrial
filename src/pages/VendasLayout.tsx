@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { BarChart3, BookOpen, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, LogOut, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Tablet, Target, Users } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import { useIsMobile } from '../hooks/useIsMobile'
 
 export type SalesNavItem = { label:string; href:string; icon:typeof LayoutDashboard }
@@ -10,7 +11,7 @@ export type SalesNavSection = { label:string; items:SalesNavItem[] }
 type VendasStatus = { atrasados:number; producao:number; acabamento:number; almoxarifado:number; liberadoNF:number; totalPendente:number }
 type Operator = { nome:string|null; email:string|null }
 const initialVendasStatus:VendasStatus={atrasados:0,producao:0,acabamento:0,almoxarifado:0,liberadoNF:0,totalPendente:0}
-const normalizeVendasStatus=(value:string)=>value.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase()
+const normalizeVendasStatus=(value:string)=>value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
 
 export function useVendasStatus(){
  const [status,setStatus]=useState<VendasStatus>(initialVendasStatus)
@@ -20,11 +21,10 @@ export function useVendasStatus(){
   try{
    const empresa=await supabase.rpc('erp_current_empresa_id')
    if(empresa.error||!empresa.data) throw empresa.error??new Error('Empresa não identificada.')
-   const r=await supabase.from('erp_pedidos_venda').select('status,data_entrega_prometida').eq('empresa_id',String(empresa.data)).limit(5000)
-   if(r.error) throw r.error
+   const rows=await fetchAllPages<{status:string|null;data_entrega_prometida:string|null}>((from,to)=>supabase.from('erp_pedidos_venda').select('status,data_entrega_prometida',{count:'exact'}).eq('empresa_id',String(empresa.data)).range(from,to))
    const today=new Date();today.setHours(0,0,0,0)
    let atrasados=0,producao=0,acabamento=0,almoxarifado=0,liberadoNF=0,totalPendente=0
-   for(const row of r.data??[]){
+   for(const row of rows){
     const s=normalizeVendasStatus(String(row.status??''))
     const finalizado=s.includes('fatur')||s.includes('cancel')||s.includes('conclu')
     const due=row.data_entrega_prometida?new Date(String(row.data_entrega_prometida).slice(0,10)+'T00:00:00'):null
@@ -78,13 +78,15 @@ export const sections:SalesNavSection[]=[
 export default function VendasLayout({children,title,subtitle,onRefresh,navSections:_navSections,topContent}:{children:ReactNode;title:string;subtitle?:string;onRefresh?:()=>void;navSections?:SalesNavSection[];topContent?:ReactNode}){
  const {pathname}=useLocation()
  const tabletMode=useIsMobile()
+ const isVendas=pathname.startsWith('/vendas')
  const {status,loading:statusLoading,load:loadStatus}=useVendasStatus()
  const [operator,setOperator]=useState<Operator>({nome:null,email:null})
  const [now,setNow]=useState(new Date())
  const logout=async()=>{await supabase.auth.signOut();window.location.assign('/login')}
- const mainRoute=pathname.startsWith('/vendas')?'/vendas':pathname.startsWith('/pcp')?'/pcp':(pathname.startsWith('/estoque')||pathname.startsWith('/inventario'))?'/estoque':pathname.startsWith('/qualidade')?'/qualidade':'/erp-industrial'
+ const mainRoute=isVendas?'/vendas':pathname.startsWith('/pcp')?'/pcp':(pathname.startsWith('/estoque')||pathname.startsWith('/inventario'))?'/estoque':pathname.startsWith('/qualidade')?'/qualidade':pathname.startsWith('/compras')?'/compras':pathname.startsWith('/financeiro')?'/financeiro':pathname.startsWith('/rh')?'/rh':pathname.startsWith('/manutencao')?'/manutencao':'/erp-industrial'
+ const tabletLabel=isVendas?'TABLET VENDAS':pathname.startsWith('/pcp')?'TABLET PCP':pathname.startsWith('/estoque')||pathname.startsWith('/inventario')?'TABLET ESTOQUE':pathname.startsWith('/qualidade')?'TABLET QUALIDADE':pathname.startsWith('/compras')?'TABLET COMPRAS':pathname.startsWith('/financeiro')?'TABLET FINANCEIRO':pathname.startsWith('/rh')?'TABLET RH':pathname.startsWith('/manutencao')?'TABLET MANUTENÇÃO':'TABLET GLOBAL'
  useEffect(()=>{let mounted=true;void supabase.auth.getUser().then(({data})=>{if(mounted&&data.user)setOperator({nome:(data.user.user_metadata?.nome as string|undefined)??null,email:data.user.email??null})});const timer=window.setInterval(()=>setNow(new Date()),1000);return()=>{mounted=false;window.clearInterval(timer)}},[])
- useEffect(()=>{void loadStatus().catch(()=>undefined)},[loadStatus])
+ useEffect(()=>{if(isVendas)void loadStatus().catch(()=>undefined)},[isVendas,loadStatus])
  const operatorLabel=operator.nome??operator.email??'Operador autenticado'
  const dateLabel=new Intl.DateTimeFormat('pt-BR',{dateStyle:'short'}).format(now)
  const timeLabel=new Intl.DateTimeFormat('pt-BR',{timeStyle:'short'}).format(now)
@@ -96,13 +98,13 @@ export default function VendasLayout({children,title,subtitle,onRefresh,navSecti
     </div>
     <div className="flex items-center gap-1 text-[9px] text-slate-600"><span className="hidden lg:inline">{operatorLabel}</span><span>{dateLabel} {timeLabel}</span><span>DADOS: SUPABASE</span>
      <button type="button" onClick={()=>window.location.assign(mainRoute)} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Voltar"><span>←</span>Voltar</button>
-     <button type="button" onClick={()=>window.location.assign('/vendas/tablet')} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Abrir Tablet de Vendas"><Tablet size={13}/>TABLET VENDAS</button>
+     <button type="button" onClick={()=>window.location.assign('/vendas/tablet')} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Abrir Tablet do módulo"><Tablet size={13}/>{tabletLabel}</button>
      {onRefresh&&<button type="button" onClick={onRefresh} className="flex h-7 items-center border border-slate-300 bg-white px-2" title="Atualizar"><RefreshCw size={13}/></button>}
      <button type="button" onClick={()=>void logout()} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Sair"><LogOut size={13}/>SAIR</button>
     </div>
    </header>
    <div className="p-2 lg:p-3">
-    <VendasStatusCards status={status} loading={statusLoading}/>
+    {isVendas&&<VendasStatusCards status={status} loading={statusLoading}/>} 
     <div className="mb-2 border-b border-slate-200 pb-1"><h1 className="text-[13px] leading-4 font-medium text-[#123B50]">{title}</h1>{subtitle&&<p className="text-[9px] text-slate-500">{subtitle}</p>}</div>
     {topContent}{children}</div>
   </main>
