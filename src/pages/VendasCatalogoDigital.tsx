@@ -3,6 +3,8 @@ import { Copy, Filter, Minus, Plus, Search, Send, ShoppingBag, X } from 'lucide-
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout from './VendasLayout'
 
+type EmpresaCatalogo = { razao_social:string; nome_fantasia:string|null; cnpj:string; telefone:string|null; email:string|null; site:string|null }
+
 type Produto = {
   id: string
   codigo: string
@@ -24,6 +26,7 @@ const brl = (value: number) =>
 
 export default function VendasCatalogoDigital() {
   const [produtos, setProdutos] = useState<Produto[]>([])
+  const [empresa, setEmpresa] = useState<EmpresaCatalogo | null>(null)
   const [filtro, setFiltro] = useState('')
   const [categoria, setCategoria] = useState('TODOS')
   const [quantidades, setQuantidades] = useState<Record<string, number>>({})
@@ -38,6 +41,15 @@ export default function VendasCatalogoDigital() {
     try {
       const empresa = await supabase.rpc('erp_current_empresa_id')
       if (empresa.error || !empresa.data) throw empresa.error ?? new Error('Empresa não identificada.')
+
+      const company = await supabase
+        .from('erp_empresas')
+        .select('razao_social,nome_fantasia,cnpj,telefone,email,site')
+        .eq('id', String(empresa.data))
+        .eq('ativo', true)
+        .maybeSingle()
+      if (company.error) throw company.error
+      setEmpresa(company.data as EmpresaCatalogo | null)
 
       const result = await supabase
         .from('erp_produtos')
@@ -179,13 +191,10 @@ export default function VendasCatalogoDigital() {
           <div className="bg-gradient-to-r from-[#123B50] to-[#2D8DB8] px-4 py-5 text-white">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <span className="text-[9px] font-medium uppercase tracking-[.18em] text-cyan-100">
-                  CATÁLOGO DIGITAL • SGQERP
-                </span>
+                <span className="text-[9px] font-medium uppercase tracking-[.18em] text-cyan-100">CATÁLOGO DIGITAL • SGQERP</span>
                 <h1 className="mt-1 text-xl font-medium">Produtos e soluções industriais</h1>
-                <p className="mt-1 max-w-xl text-[10px] text-cyan-50">
-                  Consulte peças e materiais do cadastro industrial, organizados por grupo e subgrupo.
-                </p>
+                <p className="mt-1 max-w-xl text-[10px] text-cyan-50">Consulte peças e materiais do cadastro industrial, organizados por grupo e subgrupo.</p>
+                {empresa&&<div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[8px] text-cyan-50/90"><span>{empresa.nome_fantasia || empresa.razao_social}</span><span>CNPJ {empresa.cnpj}</span>{empresa.telefone&&<span>{empresa.telefone}</span>}{empresa.email&&<span>{empresa.email}</span>}</div>}
               </div>
               <div className="flex gap-1.5">
                 <button
