@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Check, ExternalLink, RefreshCw, Save } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
 
 type Product = {
@@ -35,21 +36,13 @@ export default function VendasCatalogoDigitalGestao() {
       return
     }
 
-    const result = await supabase
+    const products = await fetchAllPages<Product>((from,to)=>supabase
       .from('erp_produtos')
-      .select('id,codigo,nome,descricao,preco_venda,foto_url,catalogo_disponivel')
+      .select('id,codigo,nome,descricao,preco_venda,foto_url,catalogo_disponivel',{count:'exact'})
       .eq('empresa_id', String(company.data))
       .eq('ativo', true)
       .order('codigo')
-      .limit(2000)
-
-    if (result.error) {
-      setError(result.error.message)
-      setBusy(false)
-      return
-    }
-
-    const products = (result.data ?? []) as Product[]
+      .range(from,to))
     setCompanyId(String(company.data))
     setRows(products)
     setSelected(Object.fromEntries(products.map((product) => [product.id, product.catalogo_disponivel])))
