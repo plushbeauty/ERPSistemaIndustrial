@@ -9,7 +9,7 @@ import { fetchAllPages } from '../lib/supabasePagination'
 import { parseBoleto } from '../lib/boleto'
 
 type Kind = 'PAGAR' | 'RECEBER'
-const financeNav = [{ label:'Financeiro', items:[{label:'Caixa',href:'/financeiro/caixa'},{label:'Contas a pagar',href:'/financeiro/contas-pagar'},{label:'Contas a receber',href:'/financeiro/contas-receber'},{label:'Fluxo de caixa',href:'/financeiro/fluxo-caixa'},{label:'Conciliação',href:'/financeiro/reconciliacao'},{label:'Importar extratos',href:'/financeiro/importar-extratos'},{label:'Ano fiscal',href:'/financeiro/ano-fiscal'},{label:'Custos padrão',href:'/financeiro/custo-padrao'}] }] as const
+const financeNav = [{ label:'Financeiro', items:[{label:'Caixa',href:'/financeiro/caixa'},{label:'Contas a pagar',href:'/financeiro/contas-pagar'},{label:'Contas a receber',href:'/financeiro/contas-receber'},{label:'Fluxo de caixa',href:'/financeiro/fluxo-caixa'},{label:'Conciliação',href:'/financeiro/reconciliacao'},{label:'Importar extratos',href:'/financeiro/importar-extratos'},{label:'Ano fiscal',href:'/financeiro/ano-fiscal'},{label:'Custos padrão',href:'/financeiro/custo-padrao'}] }]
 type Partner = { id: string; nome: string }
 type Company = { id: string; nome: string }
 type Installment = { id: string; numero: number; vencimento: string; valor: number; saldo: number; status: string }
