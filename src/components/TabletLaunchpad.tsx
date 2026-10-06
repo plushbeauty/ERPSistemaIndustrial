@@ -40,7 +40,7 @@ const modules: Module[] = [
   { number:'18', label:'ANO FISCAL', route:'/financeiro/ano-fiscal', icon:CalendarDays, accent:'#7A4E00', permission:'financeiro.ver' },
   { number:'19', label:'FLUXO DE CAIXA', route:'/financeiro/fluxo-caixa', icon:DollarSign, accent:'#0B7654', permission:'financeiro.ver' },
   { number:'20', label:'COMISSÕES & METAS', route:'/comissoes', icon:Award, accent:'#2563EB' },
-  { number:'21', label:'VALORAÇÃO DE ESTOQUE', route:'/inventario/balanco', icon:TrendingUp, accent:'#EA580C' },
+  { number:'21', label:'BALANÇO DE ESTOQUE', route:'/inventario/balanco', icon:TrendingUp, accent:'#EA580C' },
   { number:'22', label:'AUDITORIA DE MARGENS', route:'/controladoria/lucratividade', icon:TrendingUp, accent:'#B45309' },
   { number:'23', label:'CLASSIFICAÇÃO FISCAL', route:'/fiscal/classificacao', icon:Receipt, accent:'#6B3FA0' },
   { number:'24', label:'RAZÃO GERAL', route:'/controladoria/razao-geral', icon:Landmark, accent:'#17445A' },
