@@ -266,10 +266,6 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
 
 // Router master industrial v7: verified JSX boundary.
 export default function AppEntryV2() {
-  const routeLocation = useLocation()
-  if (routeLocation.pathname === '/configuracoes-adm' || routeLocation.pathname.startsWith('/configuracoes-adm/')) {
-    return <Boundary><Suspense fallback={<LoadingSkeleton label="Carregando demonstração visual de Configurações ADM…" />}><ConfiguracoesADMPage /></Suspense></Boundary>
-  }
   return <AppIndustrialAuthenticated />
 }
 
@@ -328,17 +324,6 @@ function AppIndustrialAuthenticated() {
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
-
-  // DEMO VISUAL ISOLADA: Configurações ADM não depende de Supabase/Auth nesta fase.
-  if (location.pathname === '/configuracoes-adm' || location.pathname.startsWith('/configuracoes-adm/')) {
-    return (
-      <Boundary>
-        <Suspense fallback={<LoadingSkeleton label="Carregando demonstração visual de Configurações ADM…" />}>
-          <ConfiguracoesADMPage />
-        </Suspense>
-      </Boundary>
-    )
-  }
 
   if (!session) {
     return <Boundary><Suspense fallback={<LoadingSkeleton />}>{publicRoutes}</Suspense></Boundary>
