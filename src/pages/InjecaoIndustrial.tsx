@@ -57,9 +57,9 @@ export default function InjecaoIndustrial(){
         fetchAllPages<Machine>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome,tipo,fabricante,modelo,status,ativo,valor_hora_custo',{count:'exact'}).eq('empresa_id',id).order('codigo').range(from,to)),
         fetchAllPages<Mold>((from,to)=>supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades_ativas,ciclos_atuais,limite_ciclos,ativo,localizacao_fisica',{count:'exact'}).eq('empresa_id',id).eq('tipo','INJECAO').order('codigo').range(from,to)),
         fetchAllPages<ProductionOrder>((from,to)=>supabase.from('erp_ordens_producao').select('id,numero_op,quantidade,quantidade_produzida,status,maquina_id',{count:'exact'}).eq('empresa_id',id).order('numero_op',{ascending:false}).range(from,to)),
-        supabase.rpc('erp_has_permission',{permission_code:'production.read'}),
-        supabase.rpc('erp_has_permission',{permission_code:'production.create'}),
-        supabase.rpc('erp_has_permission',{permission_code:'production.update'}),
+        supabase.rpc('erp_has_permission',{p_code:'production.read'}),
+        supabase.rpc('erp_has_permission',{p_code:'production.create'}),
+        supabase.rpc('erp_has_permission',{p_code:'production.update'}),
         fetchAllPages<HistoryRow>((from,to)=>supabase.from('erp_injecao_historico').select('id,entidade,entidade_id,acao,codigo,descricao,criado_em',{count:'exact'}).eq('empresa_id',id).order('criado_em',{ascending:false}).range(from,to)),
       ])
       setMachines(m);setMolds(mo);setOrders(o)
