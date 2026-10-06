@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FileDown, Printer, RefreshCw, Search } from 'lucide-react'
+import { Printer, RefreshCw, Search } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
 
 type Order = {
@@ -18,16 +17,11 @@ type Order = {
 
 const money = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value) || 0)
-const PAGE_SIZE = 25
 
 export default function VendasRelatorios() {
   const [orders, setOrders] = useState<Order[]>([])
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('TODOS')
-  const [dataInicial, setDataInicial] = useState('')
-  const [dataFinal, setDataFinal] = useState('')
-  const [clienteFiltro, setClienteFiltro] = useState('')
-  const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -37,24 +31,21 @@ export default function VendasRelatorios() {
     try {
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error || !company.data) throw company.error ?? new Error('Empresa não identificada.')
-      const result = await fetchAllPages<Order & { erp_clientes: { nome: string } | { nome: string }[] | null }>(from => supabase
+      const result = await supabase
         .from('erp_pedidos_venda')
-        .select('id,numero,status,total,data_entrada,data_entrega_prometida,pedido_cliente,cliente_id,erp_clientes(nome)', { count: 'exact' })
+        .select('id,numero,status,total,data_entrada,data_entrega_prometida,pedido_cliente,cliente_id,erp_clientes(nome)')
         .eq('empresa_id', String(company.data))
         .order('numero', { ascending: false })
-        .range(from, from + 999))
+        .limit(2000)
 
-      setOrders(result.map(row => {
-        const { erp_clientes, ...order } = row
-        return {
-          ...order,
-          cliente_nome: Array.isArray(erp_clientes) ? erp_clientes[0]?.nome : erp_clientes?.nome,
-        }
-      }))
-      setPage(0)
+      if (result.error) throw result.error
+      setOrders(
+        ((result.data ?? []) as Array<Order & { erp_clientes: { nome: string } | { nome: string }[] | null }>).map(row => ({
+          ...row,
+          cliente_nome: Array.isArray(row.erp_clientes) ? row.erp_clientes[0]?.nome : row.erp_clientes?.nome,
+        })),
+      )
     } catch (e) {
-      setOrders([])
-      setPage(0)
       setError(e instanceof Error ? e.message : 'Falha ao carregar relatório.')
     } finally {
       setLoading(false)
@@ -70,12 +61,9 @@ export default function VendasRelatorios() {
     return orders.filter(order => {
       const matchesStatus = status === 'TODOS' || String(order.status).toUpperCase() === status
       const searchable = [order.numero, order.pedido_cliente, order.cliente_nome].map(value => String(value ?? '').toLowerCase()).join(' ')
-      const clienteOk = !clienteFiltro.trim() || String(order.cliente_nome ?? '').toLowerCase().includes(clienteFiltro.trim().toLowerCase())
-      const inicioOk = !dataInicial || String(order.data_entrada ?? '') >= dataInicial
-      const fimOk = !dataFinal || String(order.data_entrada ?? '') <= dataFinal
-      return matchesStatus && clienteOk && inicioOk && fimOk && (!q || searchable.includes(q))
+      return matchesStatus && (!q || searchable.includes(q))
     })
-  }, [orders, query, status, dataInicial, dataFinal, clienteFiltro])
+  }, [orders, query, status])
 
   const statuses = useMemo(
     () => ['TODOS', ...Array.from(new Set(orders.map(order => String(order.status).toUpperCase()).filter(Boolean))).sort()],
@@ -83,43 +71,41 @@ export default function VendasRelatorios() {
   )
 
   const total = filtered.reduce((sum, order) => sum + Number(order.total || 0), 0)
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const currentPage = Math.min(page, pageCount - 1)
 
   return (
-    <VendasLayout title="Relatórios de vendas" subtitle="Consultas, filtros e impressão" onRefresh={() => void load()}>
-      <main className="sales-workspace sales-detail">
-      <style>{`@media print { .print-hidden { display:none!important } .sales-report-row--other-page { display:table-row!important } body { background:white!important } } .sales-report-row--other-page { display:none }`}</style>
-      <section className="space-y-4">
-        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm print-hidden">
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <label className="grid gap-1 text-xs font-black">Buscar pedido, PO ou cliente<span className="relative"><Search size={15} className="absolute left-3 top-2.5 text-slate-400"/><input value={query} onChange={event => { setQuery(event.target.value); setPage(0) }} className="h-9 w-full rounded-md border border-slate-300 pl-9 pr-3 text-xs" placeholder="000123 / PO / cliente"/></span></label>
-            <label className="grid gap-1 text-xs font-black">Status<select value={status} onChange={event => { setStatus(event.target.value); setPage(0) }} className="h-9 rounded-md border border-slate-300 bg-white px-3 text-xs">{statuses.map(value => <option key={value}>{value}</option>)}</select></label>
-            <label className="grid gap-1 text-xs font-black">Cliente<input value={clienteFiltro} onChange={event => { setClienteFiltro(event.target.value); setPage(0) }} className="h-9 rounded-md border border-slate-300 px-3 text-xs" placeholder="Nome do cliente"/></label>
-            <div className="grid grid-cols-2 gap-2"><label className="grid gap-1 text-xs font-black">Entrada inicial<input type="date" value={dataInicial} onChange={event => { setDataInicial(event.target.value); setPage(0) }} className="h-9 rounded-md border border-slate-300 px-2 text-xs"/></label><label className="grid gap-1 text-xs font-black">Entrada final<input type="date" value={dataFinal} onChange={event => { setDataFinal(event.target.value); setPage(0) }} className="h-9 rounded-md border border-slate-300 px-2 text-xs"/></label></div>
+    <VendasLayout title="Relatórios de Vendas" subtitle="Pedidos, filtros e impressão" onRefresh={()=>void load()}>
+      <style>{`@media print { .print-hidden { display:none!important } body { background:white!important } }`}</style>
+      <section className="mx-auto max-w-[1600px] space-y-4 px-4 py-5 lg:px-6">
+        <div className="border border-slate-200 bg-white p-4 shadow-sm print-hidden">
+          <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
+            <label className="grid gap-1 text-[11px] font-medium">
+              Buscar pedido, PO ou cliente
+              <span className="relative">
+                <Search size={17} className="absolute left-3 top-3 text-slate-400" />
+                <input value={query} onChange={event => setQuery(event.target.value)} className="h-7 w-full border border-slate-300 pl-9 pr-3 text-[11px] font-semibold outline-none focus:border-[#2D8DB8]" placeholder="Ex.: 000123 ou PO-456" />
+              </span>
+            </label>
+            <label className="grid gap-1 text-[11px] font-medium">
+              Status
+              <select value={status} onChange={event => setStatus(event.target.value)} className="h-7 border border-slate-300 bg-white px-3 text-[11px] font-semibold">
+                {statuses.map(value => <option key={value}>{value}</option>)}
+              </select>
+            </label>
           </div>
-          <div className="mt-3 flex flex-wrap justify-end gap-2">
-            <button type="button" onClick={() => { setQuery(''); setStatus('TODOS'); setClienteFiltro(''); setDataInicial(''); setDataFinal(''); setPage(0) }} className="sales-button sales-button--secondary">LIMPAR FILTROS</button>
-            <button type="button" onClick={() => window.print()} className="sales-button sales-button--primary"><Printer size={14}/> IMPRIMIR</button>
-          </div>
+        </div>
 
-          </div>
+        {error && <div className="border border-rose-200 bg-rose-50 p-4 font-medium text-rose-800">{error}</div>}
 
-        {error && <div className="rounded-md border border-rose-200 bg-rose-50 p-4 font-bold text-rose-800">{error}</div>}
-
-        <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
+        <section className="border border-slate-200 bg-white shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 p-4">
             <div>
-              <h2 className="text-lg font-black text-[#123B50]">Relatório de Pedidos</h2>
-              <p className="text-sm font-semibold text-slate-500">{filtered.length} pedido(s) • total filtrado {money(total)}</p>
+              <h2 className="text-[11px] font-medium text-[#123B50]">Relatório de Pedidos</h2>
+              <p className="text-[11px] font-semibold text-slate-500">{filtered.length} pedido(s) • total filtrado {money(total)}</p>\n            <button type="button" onClick={() => window.print()} className="print-hidden inline-flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px] font-medium"><Printer size={13}/> IMPRIMIR RELATÓRIO</button>
             </div>
-            <button type="button" onClick={() => window.print()} className="print-hidden inline-flex h-10 items-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-sm font-black">
-              <FileDown size={17} /> IMPRIMIR RELATÓRIO
-            </button>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-sm">
-              <thead className="bg-slate-100 text-left text-xs font-black uppercase text-slate-700">
+            <table className="w-full min-w-[900px] text-[11px]">
+              <thead className="bg-slate-100 text-left text-xs font-medium uppercase text-slate-700">
                 <tr>
                   <th className="px-4 py-3">Pedido</th>
                   <th className="px-4 py-3">Pedido cliente / PO</th>
@@ -131,35 +117,25 @@ export default function VendasRelatorios() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((order, index) => (
-                  <tr key={order.id} className={`border-t border-slate-200${index < currentPage * PAGE_SIZE || index >= (currentPage + 1) * PAGE_SIZE ? ' sales-report-row--other-page' : ''}`}>
-                    <td className="px-4 py-3 font-black">{String(order.numero).padStart(6, '0')}</td>
+                {filtered.map(order => (
+                  <tr key={order.id} className="border-t border-slate-200">
+                    <td className="px-4 py-3 font-medium">{String(order.numero).padStart(6, '0')}</td>
                     <td className="px-4 py-3">{order.pedido_cliente || '—'}</td>
                     <td className="px-4 py-3 font-semibold">{order.cliente_nome || '—'}</td>
                     <td className="px-4 py-3">{order.data_entrada ? new Date(order.data_entrada).toLocaleDateString('pt-BR') : '—'}</td>
                     <td className="px-4 py-3">{order.data_entrega_prometida ? new Date(order.data_entrega_prometida).toLocaleDateString('pt-BR') : '—'}</td>
-                    <td className="px-4 py-3 font-bold">{order.status}</td>
-                    <td className="px-4 py-3 text-right font-black">{money(order.total)}</td>
+                    <td className="px-4 py-3 font-medium">{order.status}</td>
+                    <td className="px-4 py-3 text-right font-medium">{money(order.total)}</td>
                   </tr>
                 ))}
-                {loading && <tr><td colSpan={7} className="px-4 py-12 text-center font-semibold text-slate-500">Carregando relatório…</td></tr>}
                 {!loading && !filtered.length && (
                   <tr><td colSpan={7} className="px-4 py-12 text-center font-semibold text-slate-500">Nenhum pedido encontrado com os filtros atuais.</td></tr>
                 )}
               </tbody>
             </table>
           </div>
-          <nav className="print-hidden flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3" aria-label="Paginação do relatório de vendas">
-            <span className="text-xs text-slate-500">{filtered.length === 0 ? '0 pedidos' : `${currentPage * PAGE_SIZE + 1}–${Math.min((currentPage + 1) * PAGE_SIZE, filtered.length)} de ${filtered.length}`}</span>
-            <div className="flex items-center gap-2">
-              <button type="button" disabled={currentPage === 0 || loading} onClick={() => setPage(currentPage - 1)} className="h-9 border border-slate-300 px-3 text-sm disabled:opacity-50">Anterior</button>
-              <span aria-live="polite" className="min-w-20 text-center text-xs text-slate-600">Página {currentPage + 1} de {pageCount}</span>
-              <button type="button" disabled={currentPage + 1 >= pageCount || loading} onClick={() => setPage(currentPage + 1)} className="h-9 border border-slate-300 px-3 text-sm disabled:opacity-50">Próxima</button>
-            </div>
-          </nav>
         </section>
       </section>
-      </main>
     </VendasLayout>
   )
 }
