@@ -24,7 +24,7 @@ type Product={
   grupo:string|null;subgrupo:string|null;marca:string|null;categoria:string|null;unidade:string;unidade_compra:string;unidade_venda:string;fornecedor_padrao_id:string|null
   referencia_interna:string|null;referencia_cliente:string|null;origem:string|null;ncm:string|null;cest:string|null;peso_liquido:number;peso_bruto:number
   comprimento_mm:number;largura_mm:number;altura_mm:number;observacoes:string|null;foto_url:string|null;fabricado:boolean;comprado:boolean;revenda:boolean
-  estoque_atual:number;estoque_minimo:number;estoque_maximo:number;ponto_reposicao:number;localizacao_padrao_id:string|null;controla_lote:boolean
+  estoque_atual:number;ponto_reposicao:number;estoque_maximo:number;ponto_reposicao:number;localizacao_padrao_id:string|null;controla_lote:boolean
   controla_serie:boolean;permite_estoque_negativo:boolean;lote_validade_dias:number;inspecao_qualidade_obrigatoria:boolean;nivel_qualidade:string|null
   origem_fiscal:string|null;cst_icms:string|null;csosn:string|null;cfop_entrada:string|null;cfop_saida:string|null;aliquota_icms:number;aliquota_ipi:number
   aliquota_pis:number;aliquota_cofins:number;prazo_compra_dias:number;prazo_producao_dias:number;tolerancia_percentual:number
@@ -46,7 +46,7 @@ const tabItems:Array<[Tab,string,typeof Boxes]>=[
 const empty=():FormData=>({
   codigo:'',nome:'',descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
   fornecedor_padrao_id:null,referencia_interna:null,referencia_cliente:null,origem:'0 - Nacional',ncm:null,cest:null,peso_liquido:0,peso_bruto:0,comprimento_mm:0,largura_mm:0,altura_mm:0,
-  observacoes:null,foto_url:null,fabricado:false,comprado:false,revenda:false,estoque_atual:0,estoque_minimo:0,estoque_maximo:0,ponto_reposicao:0,localizacao_padrao_id:null,
+  observacoes:null,foto_url:null,fabricado:false,comprado:false,revenda:false,estoque_atual:0,ponto_reposicao:0,estoque_maximo:0,ponto_reposicao:0,localizacao_padrao_id:null,
   controla_lote:false,controla_serie:false,permite_estoque_negativo:false,lote_validade_dias:0,inspecao_qualidade_obrigatoria:false,nivel_qualidade:null,origem_fiscal:null,
   cst_icms:null,csosn:null,cfop_entrada:null,cfop_saida:null,aliquota_icms:0,aliquota_ipi:0,aliquota_pis:0,aliquota_cofins:0,prazo_compra_dias:0,prazo_producao_dias:0,
   tolerancia_percentual:0,custo_medio:0,custo_ultimo:0,custo_fabricacao:0,preco_venda:0,ativo:true
@@ -287,7 +287,7 @@ export default function ProdutosVendasIndustrial(){
 
       {tab==='estoque'&&<section style={{padding:14}}>
         <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:11}}>
-          {field('Estoque atual','estoque_atual','number')} {field('Estoque mínimo','estoque_minimo','number')} {field('Estoque máximo','estoque_maximo','number')} {field('Ponto de reposição','ponto_reposicao','number')}
+          {field('Estoque atual','estoque_atual','number')} {field('Estoque mínimo','ponto_reposicao','number')} {field('Estoque máximo','estoque_maximo','number')} {field('Ponto de reposição','ponto_reposicao','number')}
           <label style={{...label,gridColumn:'span 2'}}>Localização padrão<select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Sem localização</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}</option>)}</select></label>
           {field('Validade do lote (dias)','lote_validade_dias','number')}
         </div>
