@@ -11,9 +11,10 @@ const failures=[]
 if(config.framework!=='vite') failures.push('framework deve ser vite')
 if(config.outputDirectory!=='dist') failures.push('outputDirectory deve ser dist')
 if(config.buildCommand!=='npm run build:vercel') failures.push('buildCommand deve ser exatamente npm run build:vercel')
+if(pkg.scripts?.['build:vercel']!=='npm run verify:production') failures.push('build:vercel deve executar exatamente npm run verify:production')
 if(config.installCommand!=='npm ci --legacy-peer-deps --no-audit --no-fund') failures.push('installCommand deve ser exatamente npm ci --legacy-peer-deps --no-audit --no-fund')
 if(pkg.engines?.node!=='24.x') failures.push('package.json deve fixar Node 24.x')
-if(!Array.isArray(config.rewrites)||!config.rewrites.some(item=>item.source==='/(.*)'&&item.destination==='/index.html')) failures.push('rewrite SPA catch-all /(.*) -> /index.html ausente')
+if(!Array.isArray(config.rewrites)||!config.rewrites.some(item=>item.destination==='/index.html'&&typeof item.source==='string'&&item.source.includes('.*')&&!item.source.includes('/assets/'))) failures.push('rewrite SPA catch-all para /index.html ausente ou interceptando /assets/')
 if(config.builds) failures.push('configuração legada "builds" não permitida')
 if(config.routes) failures.push('configuração legada "routes" não permitida')
 if(failures.length){for(const failure of failures)console.error('[BLOCKER]',failure);process.exit(2)}
