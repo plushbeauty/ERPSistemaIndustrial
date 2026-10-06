@@ -1,0 +1,2 @@
+alter table public.erp_rpnc add column if not exists lote_afetado text;
+alter table public.erp_rpnc add column if not exists quantidade_segregada numeric(14,3) not null default 0 check (quantidade_segregada >= 0);
