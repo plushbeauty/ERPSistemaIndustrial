@@ -424,7 +424,27 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/dashboard-graficos" element={<VendasDashboardGraficos />} />
       <Route path="/vendas/metas" element={<VendasMetas />} />
       <Route path="/vendas/relatorios" element={<VendasRelatorios />} />
-      <Route path="/vendas/configuracoes" element={<Navigate to="/configuracoes-adm" replace />} />
+      <Route path="/vendas/configuracoes" element={<ConfiguracoesADMPage />} />
+      <Route path="/vendas/produtos" element={<ProdutosVendasIndustrial />} />
+      <Route path="/vendas/estoque" element={<EstoqueAlmoxarifado />} />
+      <Route path="/vendas/expedicao" element={<ExpedicaoPortaria />} />
+      <Route path="/vendas/fiscal" element={<Fiscal />} />
+      <Route path="/vendas/rh" element={<RHIndustrial />} />
+      <Route path="/vendas/engenharia" element={<EngenhariaCentral />} />
+      <Route path="/vendas/materiais" element={<CentraisIndustriais module="materiais" />} />
+      <Route path="/vendas/mrp" element={<MRPIndustrial />} />
+      <Route path="/vendas/pcp" element={<PCPIndustrial />} />
+      <Route path="/vendas/chao-de-fabrica" element={<OperacaoIndustrial />} />
+      <Route path="/vendas/qualidade" element={<QualidadeIndustrial />} />
+      <Route path="/vendas/sgq" element={<QualidadeRNC />} />
+      <Route path="/vendas/conciliacao" element={<BankingReconciliation />} />
+      <Route path="/vendas/importador" element={<BankingStatementImporter />} />
+      <Route path="/vendas/ano-fiscal" element={<AnoFiscal />} />
+      <Route path="/vendas/fluxo-caixa" element={<FinanceiroFluxoCaixa />} />
+      <Route path="/vendas/balanco" element={<BalancoEstoque />} />
+      <Route path="/vendas/auditoria" element={<PainelLucratividade />} />
+      <Route path="/vendas/classificacao-fiscal" element={<ClassificacaoFiscal />} />
+      <Route path="/vendas/razao-geral" element={<PainelRazaoGeral />} />
       <Route path="/pcp" element={<PCPIndustrial />} />
       <Route path="/pcp/engenharia-bom" element={<EngenhariaBOM />} />
       <Route path="/pcp/roteiro-operacoes" element={<RoteiroOperacoes />} />
@@ -500,7 +520,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras/cotacoes" element={<Navigate to="/compras/rfq" replace />} />
       <Route path="/compras/pedido" element={<ComprasRoute><PedidoCompra /></ComprasRoute>} />
       <Route path="/compras/pedidos" element={<Navigate to="/compras/pedido" replace />} />
-      <Route path="/compras/ordem-compra" element={<Navigate to="/compras/pedido" replace />} />
+      <Route path="/compras/ordem-compra" element={<ComprasRoute><PedidoCompra /></ComprasRoute>} />
       <Route path="/compras/fornecedores" element={<ComprasRoute><FornecedoresIndustrial /></ComprasRoute>} />
       <Route path="/compras/solicitacao-manual" element={<ComprasRoute><ComprasSolicitacaoManual /></ComprasRoute>} />
       <Route path="/solicitacao-compra" element={<ComprasRoute><SolicitacaoCompra /></ComprasRoute>} />
