@@ -7,7 +7,7 @@
 - Regra de Negócio Incorporada: Cadastro real de cliente com tipo comercial, tabela de preço e desconto percentual padrão.
 */
 import {FormEvent, useEffect, useState} from 'react'
-import {Check, Pencil, Plus, Search} from 'lucide-react'
+import {Check, Pencil, Plus, Search, X} from 'lucide-react'
 import {supabase} from '../lib/supabaseClient'
 
 type Client={id:string;codigo:string|null;nome:string;documento:string|null;email:string|null;telefone:string|null;tipo_cliente:string|null;tabela_preco_id:string|null;desconto_padrao_percentual:number;ativo:boolean}
