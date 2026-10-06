@@ -75,10 +75,10 @@ export const sections:SalesNavSection[]=[
  ]}
 ]
 
-export default function VendasLayout({children,title,subtitle,onRefresh,navSections,topContent}:{children:ReactNode;title:string;subtitle?:string;onRefresh?:()=>void;navSections?:SalesNavSection[];topContent?:ReactNode}){
+export default function VendasLayout({children,title,subtitle,onRefresh,navSections:_navSections,topContent}:{children:ReactNode;title:string;subtitle?:string;onRefresh?:()=>void;navSections?:SalesNavSection[];topContent?:ReactNode}){
  const {pathname}=useLocation()
  const tabletMode=useIsMobile()
- const {status,statusLoading,loadStatus}=useVendasStatus()
+ const {status,loading:statusLoading,load:loadStatus}=useVendasStatus()
  const [operator,setOperator]=useState<Operator>({nome:null,email:null})
  const [now,setNow]=useState(new Date())
  const logout=async()=>{await supabase.auth.signOut();window.location.assign('/login')}
@@ -98,7 +98,7 @@ export default function VendasLayout({children,title,subtitle,onRefresh,navSecti
      <button type="button" onClick={()=>window.location.assign(mainRoute)} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Voltar"><span>←</span>Voltar</button>
      <button type="button" onClick={()=>window.location.assign('/vendas/tablet')} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Abrir Tablet de Vendas"><Tablet size={13}/>TABLET VENDAS</button>
      {onRefresh&&<button type="button" onClick={onRefresh} className="flex h-7 items-center border border-slate-300 bg-white px-2" title="Atualizar"><RefreshCw size={13}/></button>}
-     <button type="button" onClick={()=>void logout()} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Sair"><LogOut size={13}/>Sair</button>
+     <button type="button" onClick={()=>void logout()} className="flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px]" title="Sair"><LogOut size={13}/>SAIR</button>
     </div>
    </header>
    <div className="p-2 lg:p-3">
