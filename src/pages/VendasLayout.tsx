@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { BarChart3, BookOpen, Boxes, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, LogOut, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Tablet, Target, Users } from 'lucide-react'
-import { Link, useLocation } from 'react-router-dom'
+import { useState } from 'react'\nimport { Link, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useIsMobile } from '../hooks/useIsMobile'
 
