@@ -16,7 +16,7 @@ type Invoice = {
 }
 type Manifest = { id: string; numero: number; status: string; peso_total_kg: number; data_expedicao: string | null }
 
-const input = 'h-[54px] w-full rounded-md border border-slate-300 bg-white px-3 text-base font-semibold text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
+const input = 'h-9 w-full rounded-none border border-slate-300 bg-white px-3 text-base font-semibold text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
 
 export default function ExpedicaoRoteirizacao() {
   const [empresa, setEmpresa] = useState('')
@@ -153,59 +153,59 @@ export default function ExpedicaoRoteirizacao() {
       <div className="mx-auto max-w-[1800px] space-y-5">
         <header className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-4">
           <div>
-            <p className="text-sm font-black uppercase tracking-widest text-sky-700">EXPEDIÇÃO › LOGÍSTICA</p>
-            <h1 className="text-3xl font-black text-slate-950">Roteirização e Carregamento de Caminhões</h1>
+            <p className="text-sm font-medium uppercase tracking-widest text-sky-700">EXPEDIÇÃO › LOGÍSTICA</p>
+            <h1 className="text-3xl font-medium text-slate-950">Roteirização e Carregamento de Caminhões</h1>
             <p className="mt-1 font-semibold text-slate-600">Romaneio real, ocupação por peso e liberação controlada de saída.</p>
           </div>
-          <button type="button" onClick={() => void load()} disabled={busy} className="flex h-[54px] items-center gap-2 rounded-md border border-slate-300 bg-white px-5 font-black disabled:opacity-50"><RefreshCw size={18}/> ATUALIZAR</button>
+          <button type="button" onClick={() => void load()} disabled={busy} className="flex h-9 items-center gap-2 rounded-none border border-slate-300 bg-white px-3 font-medium disabled:opacity-50"><RefreshCw size={18}/> ATUALIZAR</button>
         </header>
 
-        {(message || error) && <div className={error ? 'rounded-md border border-rose-300 bg-rose-50 p-4 font-bold text-rose-900' : 'rounded-md border border-emerald-300 bg-emerald-50 p-4 font-bold text-emerald-900'}>{error || message}</div>}
+        {(message || error) && <div className={error ? 'rounded-none border border-rose-300 bg-rose-50 p-4 font-medium text-rose-900' : 'rounded-none border border-emerald-300 bg-emerald-50 p-4 font-medium text-emerald-900'}>{error || message}</div>}
 
         <section className="grid gap-5 xl:grid-cols-[1.2fr_.8fr]">
-          <article className="rounded-md border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="mb-4 flex items-center gap-3"><Truck size={24} className="text-sky-700"/><div><h2 className="text-xl font-black">1. Veículo e motorista</h2><p className="text-sm font-semibold text-slate-600">Somente cadastros reais da empresa.</p></div></div>
+          <article className="rounded-none border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-4 flex items-center gap-3"><Truck size={24} className="text-sky-700"/><div><h2 className="text-xl font-medium">1. Veículo e motorista</h2><p className="text-sm font-semibold text-slate-600">Somente cadastros reais da empresa.</p></div></div>
             <div className="grid gap-4 md:grid-cols-2">
-              <label className="grid gap-2 text-sm font-black">VEÍCULO
+              <label className="grid gap-2 text-sm font-medium">VEÍCULO
                 <select className={input} value={vehicle} onChange={event => setVehicle(event.target.value)}><option value="">Selecione</option>{vehicles.map(item => <option key={item.id} value={item.id}>{item.placa} • {item.descricao ?? 'Veículo'} • {Number(item.capacidade_kg).toLocaleString('pt-BR')} kg</option>)}</select>
               </label>
-              <label className="grid gap-2 text-sm font-black">MOTORISTA
+              <label className="grid gap-2 text-sm font-medium">MOTORISTA
                 <select className={input} value={driver} onChange={event => setDriver(event.target.value)}><option value="">Selecione</option>{drivers.map(item => <option key={item.id} value={item.id}>{item.nome}{item.cnh ? ` • CNH ${item.cnh}` : ''}</option>)}</select>
               </label>
-              <label className="grid gap-2 text-sm font-black">NÚMERO DO ROMANEIO<input className={input} type="number" min="1" value={manifestNumber} onChange={event => setManifestNumber(event.target.value)} placeholder="Ex.: 1001"/></label>
-              <label className="grid gap-2 text-sm font-black">TRANSPORTADORA<input className={input} value={carrier} onChange={event => setCarrier(event.target.value)} placeholder="Opcional"/></label>
-              <label className="grid gap-2 text-sm font-black">DATA DE EXPEDIÇÃO<input className={input} type="date" value={date} onChange={event => setDate(event.target.value)}/></label>
-              <label className="grid gap-2 text-sm font-black">CAPACIDADE MANUAL (KG)<input className={input} type="number" min="0" value={capacityOverride} onChange={event => setCapacityOverride(event.target.value)} placeholder={selectedVehicle ? String(selectedVehicle.capacidade_kg) : 'Usar capacidade do veículo'}/></label>
+              <label className="grid gap-2 text-sm font-medium">NÚMERO DO ROMANEIO<input className={input} type="number" min="1" value={manifestNumber} onChange={event => setManifestNumber(event.target.value)} placeholder="Ex.: 1001"/></label>
+              <label className="grid gap-2 text-sm font-medium">TRANSPORTADORA<input className={input} value={carrier} onChange={event => setCarrier(event.target.value)} placeholder="Opcional"/></label>
+              <label className="grid gap-2 text-sm font-medium">DATA DE EXPEDIÇÃO<input className={input} type="date" value={date} onChange={event => setDate(event.target.value)}/></label>
+              <label className="grid gap-2 text-sm font-medium">CAPACIDADE MANUAL (KG)<input className={input} type="number" min="0" value={capacityOverride} onChange={event => setCapacityOverride(event.target.value)} placeholder={selectedVehicle ? String(selectedVehicle.capacidade_kg) : 'Usar capacidade do veículo'}/></label>
             </div>
           </article>
 
-          <article className="rounded-md border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-xl font-black">2. Performance de carga</h2>
-            <p className="mt-4 text-3xl font-black">{selectedWeight.toLocaleString('pt-BR')} kg <span className="text-lg text-slate-500">/ {capacity.toLocaleString('pt-BR')} kg</span></p>
+          <article className="rounded-none border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-xl font-medium">2. Performance de carga</h2>
+            <p className="mt-4 text-3xl font-medium">{selectedWeight.toLocaleString('pt-BR')} kg <span className="text-lg text-slate-500">/ {capacity.toLocaleString('pt-BR')} kg</span></p>
             <progress className="mt-4 h-5 w-full" max={100} value={occupation} aria-label="Ocupação do caminhão"/>
-            <div className="mt-2 flex items-center justify-between font-black"><span>{occupation.toFixed(1)}% ocupado</span><span className={overloaded ? 'text-rose-700' : 'text-emerald-700'}>{overloaded ? 'CAPACIDADE EXCEDIDA' : 'DENTRO DA CAPACIDADE'}</span></div>
-            <button type="button" onClick={() => void saveManifest()} disabled={busy || overloaded || selectedInvoices.size === 0} className="mt-5 flex h-[54px] w-full items-center justify-center gap-2 rounded-md bg-slate-900 font-black text-white disabled:cursor-not-allowed disabled:opacity-40"><Save size={18}/> GRAVAR MANIFESTO</button>
+            <div className="mt-2 flex items-center justify-between font-medium"><span>{occupation.toFixed(1)}% ocupado</span><span className={overloaded ? 'text-rose-700' : 'text-emerald-700'}>{overloaded ? 'CAPACIDADE EXCEDIDA' : 'DENTRO DA CAPACIDADE'}</span></div>
+            <button type="button" onClick={() => void saveManifest()} disabled={busy || overloaded || selectedInvoices.size === 0} className="mt-5 flex h-9 w-full items-center justify-center gap-2 rounded-none bg-slate-900 font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"><Save size={18}/> GRAVAR MANIFESTO</button>
           </article>
         </section>
 
-        <section className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3 p-5"><div><h2 className="text-xl font-black">Notas fiscais autorizadas</h2><p className="text-sm font-semibold text-slate-600">A seleção usa dados fiscais reais; não há fallback fictício.</p></div><span className="rounded-md bg-slate-100 px-3 py-2 font-black">{selectedInvoices.size} selecionada(s)</span></div>
+        <section className="overflow-hidden rounded-none border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-5"><div><h2 className="text-xl font-medium">Notas fiscais autorizadas</h2><p className="text-sm font-semibold text-slate-600">A seleção usa dados fiscais reais; não há fallback fictício.</p></div><span className="rounded-none bg-slate-100 px-3 py-2 font-medium">{selectedInvoices.size} selecionada(s)</span></div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1000px]">
-              <thead className="bg-slate-100"><tr><th className="h-[54px] px-4 text-left">Selecionar</th><th className="px-4 text-left">NF</th><th className="px-4 text-left">Destinatário</th><th className="px-4 text-left">Destino</th><th className="px-4 text-right">Peso</th><th className="px-4 text-left">Status</th></tr></thead>
+              <thead className="bg-slate-100"><tr><th className="h-9 px-4 text-left">Selecionar</th><th className="px-4 text-left">NF</th><th className="px-4 text-left">Destinatário</th><th className="px-4 text-left">Destino</th><th className="px-4 text-right">Peso</th><th className="px-4 text-left">Status</th></tr></thead>
               <tbody>
-                {invoices.map(item => <tr key={item.id} className="h-[54px] border-t border-slate-200 hover:bg-slate-50"><td className="px-4"><input type="checkbox" className="h-5 w-5" checked={selectedInvoices.has(item.id)} onChange={() => toggleInvoice(item.id)}/></td><td className="px-4 font-black">{item.numero}</td><td className="px-4 font-semibold">{item.destinatario_nome ?? '—'}</td><td className="px-4">{[item.destinatario_cidade, item.destinatario_uf].filter(Boolean).join(' / ') || '—'}</td><td className="px-4 text-right font-semibold">{Number(item.peso_bruto ?? item.peso_liquido ?? 0).toLocaleString('pt-BR')} kg</td><td className="px-4"><span className="rounded-md bg-emerald-100 px-3 py-1 text-sm font-black text-emerald-900"><CheckCircle2 className="mr-1 inline" size={15}/> AUTORIZADA</span></td></tr>)}
+                {invoices.map(item => <tr key={item.id} className="h-9 border-t border-slate-200 hover:bg-slate-50"><td className="px-4"><input type="checkbox" className="h-5 w-5" checked={selectedInvoices.has(item.id)} onChange={() => toggleInvoice(item.id)}/></td><td className="px-4 font-medium">{item.numero}</td><td className="px-4 font-semibold">{item.destinatario_nome ?? '—'}</td><td className="px-4">{[item.destinatario_cidade, item.destinatario_uf].filter(Boolean).join(' / ') || '—'}</td><td className="px-4 text-right font-semibold">{Number(item.peso_bruto ?? item.peso_liquido ?? 0).toLocaleString('pt-BR')} kg</td><td className="px-4"><span className="rounded-none bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-900"><CheckCircle2 className="mr-1 inline" size={15}/> AUTORIZADA</span></td></tr>)}
                 {!invoices.length && <tr><td colSpan={6} className="h-24 text-center font-semibold text-slate-500">Nenhuma NF autorizada encontrada.</td></tr>}
               </tbody>
             </table>
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
-          <div className="p-5"><h2 className="text-xl font-black">Romaneios recentes</h2></div>
+        <section className="overflow-hidden rounded-none border border-slate-200 bg-white shadow-sm">
+          <div className="p-5"><h2 className="text-xl font-medium">Romaneios recentes</h2></div>
           <table className="w-full min-w-[800px]">
-            <thead className="bg-slate-100"><tr><th className="h-[54px] px-4 text-left">Romaneio</th><th className="px-4 text-left">Data</th><th className="px-4 text-right">Peso</th><th className="px-4 text-left">Status</th><th className="px-4 text-right">Ação</th></tr></thead>
-            <tbody>{manifests.map(item => <tr key={item.id} className="h-[54px] border-t border-slate-200"><td className="px-4 font-black">{item.numero}</td><td className="px-4">{item.data_expedicao ?? '—'}</td><td className="px-4 text-right">{Number(item.peso_total_kg).toLocaleString('pt-BR')} kg</td><td className="px-4 font-bold">{item.status}</td><td className="px-4 text-right">{item.status === 'PREPARACAO' ? <button type="button" onClick={() => void releaseManifest(item.id)} disabled={busy} className="rounded-md bg-emerald-700 px-4 py-2 font-black text-white disabled:opacity-50">LIBERAR SAÍDA</button> : <span className="text-slate-500">—</span>}</td></tr>)}</tbody>
+            <thead className="bg-slate-100"><tr><th className="h-9 px-4 text-left">Romaneio</th><th className="px-4 text-left">Data</th><th className="px-4 text-right">Peso</th><th className="px-4 text-left">Status</th><th className="px-4 text-right">Ação</th></tr></thead>
+            <tbody>{manifests.map(item => <tr key={item.id} className="h-9 border-t border-slate-200"><td className="px-4 font-medium">{item.numero}</td><td className="px-4">{item.data_expedicao ?? '—'}</td><td className="px-4 text-right">{Number(item.peso_total_kg).toLocaleString('pt-BR')} kg</td><td className="px-4 font-medium">{item.status}</td><td className="px-4 text-right">{item.status === 'PREPARACAO' ? <button type="button" onClick={() => void releaseManifest(item.id)} disabled={busy} className="rounded-none bg-emerald-700 px-3 py-1 font-medium text-white disabled:opacity-50">LIBERAR SAÍDA</button> : <span className="text-slate-500">—</span>}</td></tr>)}</tbody>
           </table>
         </section>
       </div>
