@@ -161,11 +161,8 @@ export default function VendasClientes() {
         supabase.from('erp_tabelas_preco').select('id,codigo,nome').eq('empresa_id', empresaId).eq('ativo', true).order('nome'),
       ])
       if (clients.error) throw clients.error
-      if (productsResult.error) throw productsResult.error
-      if (mappingsResult.error) throw mappingsResult.error
-      if (priceTablesResult.error) throw priceTablesResult.error
       setRows((clients.data ?? []) as Client[])
-      setProducts((productsResult.data ?? []) as Product[])
+      setProducts(productsResult)
       setMappings((mappingsResult.data ?? []) as DePara[])
       setPriceTables((priceTablesResult.data ?? []) as PriceTable[])
     } catch (cause) {
