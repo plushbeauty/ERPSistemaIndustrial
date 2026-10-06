@@ -314,9 +314,16 @@ export default function VendasCatalogoDigital() {
                             Sem imagem
                           </div>
                         )}
-                        {produto.grupo && (
-                          <span className="absolute left-2 top-2 bg-white/90 px-1.5 py-1 text-[8px] text-slate-600 shadow-sm">{produto.grupo}</span>{produto.catalogo_disponivel&&<span className="absolute right-2 top-2 bg-[#e7f7fa] px-1.5 py-1 text-[8px] text-[#2D8DB8]">PUBLICADO</span>}
-                        )}
+                         {produto.grupo && (
+                           <span className="absolute left-2 top-2 bg-white/90 px-1.5 py-1 text-[8px] text-slate-600 shadow-sm">
+                             {produto.grupo}
+                           </span>
+                         )}
+                         {produto.catalogo_disponivel && (
+                           <span className="absolute right-2 top-2 bg-[#e7f7fa] px-1.5 py-1 text-[8px] text-[#2D8DB8]">
+                             PUBLICADO
+                           </span>
+                         )}
                       </div>
                       <div className="p-2.5">
                         <div className="flex items-center justify-between gap-2"><span className="font-mono text-[8px] text-slate-400">{produto.codigo}</span>{produto.subgrupo&&<span className="truncate text-[8px] text-slate-400">{produto.subgrupo}</span>}</div>
