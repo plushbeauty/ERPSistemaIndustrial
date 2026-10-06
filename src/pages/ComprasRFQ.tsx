@@ -218,7 +218,7 @@ export default function ComprasRFQ() {
 
   return (
     <VendasLayout title="Cotação de compras" subtitle="Fornecedores • materiais • prazo • condição de pagamento" onRefresh={() => window.location.reload()}>
-    <div className="min-h-screen bg-[#F4F7FE] text-slate-900">
+    <div className="compras-rfq-compact min-h-screen bg-[#F4F7FE] text-slate-900">
       <header className="border-b bg-white">
         <div className="flex min-h-[70px] items-center justify-between gap-3 px-5 lg:px-8">
           <div>
@@ -343,6 +343,7 @@ export default function ComprasRFQ() {
           </section>
         </div>
       </main>
+      <style>{`.compras-rfq-compact header>div{min-height:44px!important;padding:6px 12px!important}.compras-rfq-compact main{max-width:none!important;padding:8px!important}.compras-rfq-compact .min-h-10,.compras-rfq-compact .min-h-11{min-height:30px!important;height:30px!important}.compras-rfq-compact .rounded,.compras-rfq-compact .rounded-md,.compras-rfq-compact .rounded-lg{border-radius:2px!important}.compras-rfq-compact section{padding:8px!important}.compras-rfq-compact .gap-5{gap:6px!important}.compras-rfq-compact input,.compras-rfq-compact select{height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:12px!important}.compras-rfq-compact textarea{min-height:60px!important;border-radius:2px!important;font-size:12px!important}.compras-rfq-compact table{font-size:11px!important}.compras-rfq-compact th,.compras-rfq-compact td{padding:4px 6px!important}.compras-rfq-compact button{border-radius:2px!important;font-size:11px!important}`}</style>
     </div>
     </VendasLayout>
   )
