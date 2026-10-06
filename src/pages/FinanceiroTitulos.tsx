@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } fro
 import { BrowserMultiFormatReader } from '@zxing/browser'
 import type { IScannerControls } from '@zxing/browser'
 import type { LucideIcon } from 'lucide-react'
-import { ArrowDownCircle, ArrowUpCircle, Barcode, CalendarClock, Camera, Edit3, Plus, RefreshCw, ScanLine, Users, X } from 'lucide-react'
+import { ArrowDownCircle, ArrowUpCircle, Barcode, CalendarClock, Camera, Edit3, Plus, RefreshCw, ScanLine, Users, X, Wallet, CreditCard, ArrowDownToLine, GitCompare, FileSpreadsheet, CalendarRange, Factory } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout, { type SalesNavSection } from './VendasLayout'
 import { fetchAllPages } from '../lib/supabasePagination'
