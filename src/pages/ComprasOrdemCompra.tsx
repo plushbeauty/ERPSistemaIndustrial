@@ -1,0 +1,5 @@
+import { useEffect, useMemo, useState } from 'react'
+import { Plus, Save, Trash2 } from 'lucide-react'
+import ERPHeader from '../components/layout/ERPHeader'
+import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
