@@ -14,7 +14,6 @@ import { supabase } from './lib/supabaseClient'
 import IndustrialModuleWorkspace from './components/IndustrialModuleWorkspace'
 import IndustrialCommandDashboard from './components/IndustrialCommandDashboard'
 import CompanySettings from './components/CompanySettings'
-import TabletLaunchpad from './components/TabletLaunchpad'
 import MoldesFerramentaria from './pages/MoldesFerramentaria'
 import ComercialSuprimentos from './pages/ComercialSuprimentos'
 import ConfiguracoesADM from './pages/configuracoes/ConfiguracoesADM'
@@ -118,7 +117,6 @@ function makePayload(fields: Field[], form: Record<string, string>) {
 export default function AppIndustrialV7() {
   const [segment, setSegment] = useState(segments[0].name)
   const [active, setActive] = useState('Dashboard')
-  const [launcher, setLauncher] = useState(false)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [empresaNome, setEmpresaNome] = useState('Empresa industrial')
   const [loading, setLoading] = useState(true)
@@ -166,7 +164,7 @@ export default function AppIndustrialV7() {
         </div>
       </div>
       <div className="v7-top-actions">
-        <button className="v7-top-tablet" type="button" onClick={() => setLauncher(true)} aria-label="Abrir central de módulos">
+        <button className="v7-top-tablet" type="button" onClick={() => { location.href = '/tablet/dashboard' }} aria-label="Abrir central de módulos">
           MÓDULOS TABLET
         </button>
         <div className="v7-top-user-simple" aria-label="Usuário conectado"><span>OPERADOR</span><strong>{profile.nome || 'Usuário'}</strong></div>
@@ -203,11 +201,10 @@ export default function AppIndustrialV7() {
       @media(max-width:650px){.v7-topbar{padding:7px 10px!important;min-height:72px}.v7-logo-frame{height:54px;min-width:135px}.v7-top-user-simple{display:none!important}.v7-top-tablet,.v7-top-exit{min-height:36px;padding:0 9px!important;font-size:10px!important}.v7-top-tablet{font-size:0!important}.v7-top-tablet::after{content:'TABLET';font-size:10px}}
     `}</style>
     <main className="v7-main v7-main-full">
-      <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={specialPath+active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{specialPath === '/vendas/clientes' ? <VendasClientesPage/> : specialPath === '/financeiro/custo-padrao' ? <FinanceiroCustoPadrao/> : specialPath === '/admin/logs' ? <AdminLogs/> : specialPath === '/outlook/configuracao' ? <OutlookConfiguracao/> : specialPath === '/compras/fornecedores' ? <FornecedoresIndustrial/> : specialPath.startsWith('/configuracoes-adm') ? <ConfiguracoesADM/> : active === 'Dashboard' ? <IndustrialCommandDashboard onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); setLauncher(false); return }; location.href = route }} /> : active === 'Configurações' || active === 'Configuração' ? <ConfiguracoesADM/> : location.pathname === '/qualidade/calibracao' ? <CalibracaoIndustrial/> : location.pathname === '/moldes-injecao' ? <MoldesFerramentaria/> : location.pathname === '/comercial' ? <ComercialSuprimentos/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
+      <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={specialPath+active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{specialPath === '/vendas/clientes' ? <VendasClientesPage/> : specialPath === '/financeiro/custo-padrao' ? <FinanceiroCustoPadrao/> : specialPath === '/admin/logs' ? <AdminLogs/> : specialPath === '/outlook/configuracao' ? <OutlookConfiguracao/> : specialPath === '/compras/fornecedores' ? <FornecedoresIndustrial/> : specialPath.startsWith('/configuracoes-adm') ? <ConfiguracoesADM/> : active === 'Dashboard' ? <IndustrialCommandDashboard onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); return }; location.href = route }} /> : active === 'Configurações' || active === 'Configuração' ? <ConfiguracoesADM/> : location.pathname === '/qualidade/calibracao' ? <CalibracaoIndustrial/> : location.pathname === '/moldes-injecao' ? <MoldesFerramentaria/> : location.pathname === '/comercial' ? <ComercialSuprimentos/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
       <footer>FernandoSch_System • SYSNQRA ERP & SGQ INDUSTRIAL • {segment} • Ambiente isolado por empresa</footer>
 
     </main>
-    <TabletLaunchpad isOpen={launcher} onClose={() => setLauncher(false)} onNavigate={(route) => { setLauncher(false); if (route === '/erp-industrial') { setActive('Dashboard'); return } location.href = route }} />
   </motion.div>
 }
 
