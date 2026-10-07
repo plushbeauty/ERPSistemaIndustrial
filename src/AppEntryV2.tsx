@@ -34,6 +34,8 @@ import './styles/compras-compact.css'
 import './styles/erp-compact-global.css'
 
 import IndustrialLoginDirect from './IndustrialLoginDirect'
+import TabletDashboard from './pages/TabletDashboard'
+import ErpModuleShell from './layout/ErpModuleShell'
 
 const AppIndustrial = lazyPage(() => import('./AppIndustrialV7'), 'AppIndustrial')
 const PublicIndustrialHome = lazyPage(() => import('./PublicIndustrialHome'), 'PublicIndustrialHome')
@@ -393,8 +395,8 @@ function AppIndustrialAuthenticated() {
     <Routes>
       <Route path="/comercial" element={<AppIndustrial />} />
       <Route path="/erp-industrial" element={<AppIndustrial />} />
-      <Route path="/tablet/dashboard" element={<Navigate to="/vendas/tablet" replace />} />
-      <Route path="/tablet/home" element={<Navigate to="/vendas/tablet" replace />} />
+      <Route path="/tablet/dashboard" element={<TabletDashboard />} />
+      <Route path="/tablet/home" element={<Navigate to="/tablet/dashboard" replace />} />
       <Route path="/vendas" element={<DashboardComercial />} />
       <Route path="/vendas/dashboard" element={<DashboardComercial />} />
       <Route path="/vendas/pedidos" element={<VendasCentral />} />
@@ -593,11 +595,12 @@ function AppIndustrialAuthenticated() {
     </Routes>
   )
 
+  const standalone = location.pathname === '/erp-industrial' || location.pathname === '/comercial' || location.pathname.startsWith('/tablet/')
   const appContent = (
     <Boundary>
       <Suspense fallback={<LoadingSkeleton />}>
         <div className="erp-global-surface">
-          {protectedRoutes}
+          {standalone ? protectedRoutes : <ErpModuleShell>{protectedRoutes}</ErpModuleShell>}
         </div>
       </Suspense>
     </Boundary>
