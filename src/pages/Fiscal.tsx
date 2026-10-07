@@ -191,21 +191,21 @@ export default function Fiscal() {
   }), [docs, receber, pagar, orders])
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]"><FiscalSidebar/><main className="erp-dense fiscal-workspace min-h-screen bg-[#f8fafc] p-4 md:p-6 font-sans text-[#0f172a]">
-      <header className="mb-6 flex flex-col gap-4 border-b border-[#C9E1E8] pb-5 xl:flex-row xl:items-center xl:justify-between">
+    <div className="min-h-screen bg-[#f8fafc]"><FiscalSidebar/><main className="erp-dense fiscal-workspace min-h-screen bg-[#f8fafc] p-2 md:p-3 font-sans text-[#0f172a]">
+      <header className="mb-2 flex flex-col gap-2 border-b border-[#C9E1E8] pb-2 xl:flex-row xl:items-center xl:justify-between">
         <div>
           <button
-            className="mb-2 flex min-h-7 items-center gap-2 rounded-[2px] border border-[#C9E1E8] bg-white px-3 py-2 text-base font-semibold text-[#0f172a] shadow-sm hover:bg-slate-50"
+            className="mb-1 flex h-[30px] min-h-[30px] items-center gap-1 rounded-[2px] border border-[#C9E1E8] bg-white px-2 py-1 text-[11px] font-medium text-[#0f172a] shadow-sm hover:bg-slate-50"
             onClick={() => { window.location.href = '/erp-industrial' }}
           >
             <ArrowLeft size={17} /> Voltar ao Painel
           </button>
-          <span className="text-sm font-bold uppercase tracking-wider text-[#2563eb]">ERP • MÓDULO FISCAL</span>
-          <h1 className="mt-1 text-3xl font-extrabold text-[#0f172a]">Central Fiscal Integrada</h1>
-          <p className="mt-1 text-base text-slate-600">Liberação para faturamento, monitoramento de notas fiscais, contas a pagar, receber e relatórios consolidados.</p>
+          <span className="text-[9px] font-medium uppercase tracking-wider text-[#2563eb]">ERP • MÓDULO FISCAL</span>
+          <h1 className="mt-0.5 text-[16px] font-medium leading-5 text-[#0f172a]">Central Fiscal Integrada</h1>
+          <p className="mt-0.5 text-[11px] text-slate-600">Liberação para faturamento, monitoramento de notas fiscais, contas a pagar, receber e relatórios consolidados.</p>
         </div>
         <button
-          className="flex min-h-7 items-center justify-center gap-2 rounded-[2px] bg-[#2563eb] px-4 py-2.5 text-base font-bold text-white shadow-sm transition-all hover:bg-blue-700 disabled:opacity-60"
+          className="flex h-[30px] min-h-[30px] items-center justify-center gap-1 rounded-[2px] bg-[#2563eb] px-3 py-1 text-[11px] font-medium text-white shadow-sm transition-all hover:bg-blue-700 disabled:opacity-60"
           onClick={() => void load()}
           disabled={busy}
         >
