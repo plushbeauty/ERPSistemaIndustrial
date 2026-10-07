@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
-import { ArrowLeft, BarChart3, BookOpen, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, LogOut, PackagePlus, PackageSearch, RefreshCw, Forklift, Settings2, ShoppingCart, Target, Users, X } from 'lucide-react'
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { ArrowLeft, BarChart3, BookOpen, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, LogOut, PackagePlus, PackageSearch, RefreshCw, Forklift, Settings2, ShoppingCart, Target, Users } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import { useIsMobile } from '../hooks/useIsMobile'
@@ -151,10 +151,8 @@ export default function VendasLayout({
   titleActions?: ReactNode
 }) {
   const { pathname } = useLocation()
-  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const tabletMode = useIsMobile()
-  const [tabletOpen, setTabletOpen] = useState(() => searchParams.get('tablet') === '1')
   const isVendas = pathname.startsWith('/vendas')
   const moduleMenuInfo = moduleMenu(pathname)
   const { status, loading: statusLoading, load: loadStatus } = useVendasStatus()
@@ -162,7 +160,6 @@ export default function VendasLayout({
   const [now, setNow] = useState(new Date())
 
   const ModuleIcon = moduleMenuInfo.icon
-  const tabletLabel = moduleMenuInfo.label
 
   const logout = async () => {
     await supabase.auth.signOut()
@@ -191,10 +188,6 @@ export default function VendasLayout({
     if (isVendas) void loadStatus().catch(() => undefined)
   }, [isVendas, loadStatus])
 
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('tablet') === '1') setTabletOpen(true)
-  }, [])
-
   const operatorLabel = operator.nome ?? operator.email ?? 'Operador autenticado'
   const dateLabel = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)
   const timeLabel = new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(now)
@@ -213,7 +206,7 @@ export default function VendasLayout({
             </div>
           </div>
           <div className="v7-top-actions">
-            <button className="v7-top-tablet" type="button" onClick={() => setTabletOpen(true)} aria-label={moduleMenuInfo.label}>
+            <button className="v7-top-tablet" type="button" onClick={() => navigate('/tablet/dashboard')} aria-label={moduleMenuInfo.label}>
               <ModuleIcon size={24} strokeWidth={2.4} aria-hidden="true" />
               {moduleMenuInfo.label}
             </button>
@@ -240,39 +233,6 @@ export default function VendasLayout({
         </div>
       </main>
 
-      {tabletOpen && (
-        <div className="vendas-tablet-overlay" role="dialog" aria-modal="true" aria-label={tabletLabel}>
-          <section className="vendas-tablet-modal">
-            <header className="vendas-tablet-head">
-              <div>
-                <span>SGQERP INDUSTRIAL</span>
-                <strong>{tabletLabel} — CENTRAL DE COMANDO</strong>
-                <small>Operações no mesmo padrão do Tablet principal.</small>
-              </div>
-              <button type="button" onClick={() => setTabletOpen(false)} title="Fechar"><X size={18} /></button>
-            </header>
-            <div className="vendas-tablet-grid">
-              {sections.flatMap((section) => section.items).map((item) => {
-                const Icon = item.icon
-                const tone =
-                  item.label === 'Novo pedido' ? '#F97316' :
-                  item.label === 'Pedidos de venda' ? '#2D8DB8' :
-                  item.label === 'Catálogo digital' ? '#22AFC0' :
-                  item.label === 'Análise de custos' ? '#3A9D78' :
-                  item.label === 'Clientes' ? '#22AFC0' :
-                  item.label === 'Pedidos pendentes' ? '#6B3FA0' : '#2D8DB8'
-
-                return (
-                  <button key={item.href} type="button" onClick={() => { setTabletOpen(false); navigate(item.href) }} title={item.label}>
-                    <span style={{ color: tone, borderColor: tone + '55', background: tone + '12' }}><Icon size={20} /></span>
-                    <strong>{item.label}</strong>
-                  </button>
-                )
-              })}
-            </div>
-          </section>
-        </div>
-      )}
 
       <style>{`
         .v7-topbar{position:relative;z-index:20;width:100%;min-height:104px;display:flex!important;align-items:center;justify-content:space-between;gap:20px;padding:10px 24px!important;background:#ffffff!important;border-bottom:1px solid #cbd5e1!important;color:#1e293b!important;box-sizing:border-box}
