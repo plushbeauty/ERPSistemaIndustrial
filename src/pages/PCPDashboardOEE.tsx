@@ -116,20 +116,20 @@ export default function PCPDashboardOEE() {
         <div className="mx-auto flex max-w-[1800px] flex-wrap items-center gap-4">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.16em] text-sky-700">PCP › CHÃO DE FÁBRICA › PERFORMANCE</p>
-            <h1 className="mt-1 text-2xl font-black tracking-tight">OEE Industrial</h1>
+            <h1 className="mt-1 text-[15px] font-black tracking-tight">OEE Industrial</h1>
             <p className="text-sm font-medium text-slate-600">Disponibilidade × Performance × Qualidade, calculado somente sobre apontamentos reais.</p>
           </div>
           <div className="ml-auto flex items-center gap-2 print:hidden">
-            <select value={period} onChange={(e) => setPeriod(e.target.value)} className="h-12 rounded-xl border border-slate-300 bg-white px-4 font-bold">
+            <select value={period} onChange={(e) => setPeriod(e.target.value)} className="h-[30px] rounded-[2px] border border-slate-300 bg-white px-4 font-bold">
               <option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="90">Últimos 90 dias</option>
             </select>
-            <button type="button" onClick={() => void load()} className="inline-flex h-12 items-center gap-2 rounded-xl bg-slate-900 px-4 font-black text-white"><RefreshCw size={17}/> ATUALIZAR</button>
+            <button type="button" onClick={() => void load()} className="inline-flex h-[30px] items-center gap-2 rounded-[2px] bg-slate-900 px-4 font-black text-white"><RefreshCw size={17}/> ATUALIZAR</button>
           </div>
         </div>
       </header>
 
       <div className="mx-auto max-w-[1800px] space-y-5 p-5">
-        {error && <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 font-bold text-rose-900">{error}</div>}
+        {error && <div className="rounded-[2px] border border-rose-200 bg-rose-50 p-4 font-bold text-rose-900">{error}</div>}
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
             { label: 'OEE GLOBAL', value: pct(metrics.oee), icon: Gauge, note: 'Índice composto' },
@@ -139,7 +139,7 @@ export default function PCPDashboardOEE() {
           ].map((card) => {
             const MetricIcon = card.icon
             return (
-              <article key={card.label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <article key={card.label} className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center justify-between"><span className="text-xs font-black uppercase tracking-wider text-slate-500">{card.label}</span><MetricIcon className="text-sky-700" size={21}/></div>
                 <strong className="mt-3 block text-4xl font-black tracking-tight">{loading ? '—' : card.value}</strong>
                 <p className="mt-1 text-sm font-semibold text-slate-500">{card.note}</p>
@@ -149,7 +149,7 @@ export default function PCPDashboardOEE() {
         </section>
 
         <section className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <article className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center gap-2"><Activity className="text-sky-700"/><div><h2 className="font-black">Evolução diária</h2><p className="text-xs font-semibold text-slate-500">Sem interpolar dias sem apontamento.</p></div></div>
             <div className="h-[360px]">
               {trend.length === 0 ? <div className="flex h-full items-center justify-center font-bold text-slate-400">Sem dados reais no período.</div> :
@@ -157,20 +157,20 @@ export default function PCPDashboardOEE() {
             </div>
           </article>
 
-          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <article className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center gap-2"><Factory className="text-sky-700"/><div><h2 className="font-black">Produção real</h2><p className="text-xs font-semibold text-slate-500">Quantidade registrada pelos operadores.</p></div></div>
             <div className="mt-4 h-[260px]">
               {metrics.good + metrics.scrap === 0 ? <div className="flex h-full items-center justify-center font-bold text-slate-400">Sem produção apontada.</div> :
                 <ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={donut} dataKey="value" nameKey="name" innerRadius={72} outerRadius={105} paddingAngle={3}>{donut.map((x, i) => <Cell key={x.name} fill={i === 0 ? '#0284c7' : '#e11d48'}/>)}</Pie><Tooltip/></PieChart></ResponsiveContainer>}
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl bg-sky-50 p-3"><p className="text-xs font-black text-sky-700">BOA</p><strong className="text-2xl font-black">{metrics.good.toLocaleString('pt-BR')}</strong></div>
-              <div className="rounded-xl bg-rose-50 p-3"><p className="text-xs font-black text-rose-700">REFUGO</p><strong className="text-2xl font-black">{metrics.scrap.toLocaleString('pt-BR')}</strong></div>
+              <div className="rounded-[2px] bg-sky-50 p-3"><p className="text-xs font-black text-sky-700">BOA</p><strong className="text-[15px] font-black">{metrics.good.toLocaleString('pt-BR')}</strong></div>
+              <div className="rounded-[2px] bg-rose-50 p-3"><p className="text-xs font-black text-rose-700">REFUGO</p><strong className="text-[15px] font-black">{metrics.scrap.toLocaleString('pt-BR')}</strong></div>
             </div>
           </article>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center gap-2"><BarChart3 className="text-sky-700"/><div><h2 className="font-black">Tempo e perdas</h2><p className="text-xs font-semibold text-slate-500">Baseado nos apontamentos do período.</p></div></div>
           <div className="h-[280px]"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{nome:'Planejado',min:metrics.planned},{nome:'Paradas',min:metrics.downtime},{nome:'Operação',min:metrics.runtime}]}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="nome"/><YAxis/><Tooltip formatter={(v: number) => [`${v.toFixed(0)} min`, 'Tempo']}/><Bar dataKey="min" fill="#0f172a" radius={[8,8,0,0]}/></BarChart></ResponsiveContainer></div>
         </section>
