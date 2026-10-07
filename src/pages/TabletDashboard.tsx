@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { LogOut, Search, X } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { SYNQRA_MODULES } from '../assets/synqra/icons'
 import synqraLogo from '../assets/synqra/logo-synqra.png'
 import { supabase } from '../lib/supabaseClient'
@@ -33,10 +33,20 @@ async function loadProfile(): Promise<Profile | null> {
 
 export default function TabletDashboard() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [now, setNow] = useState(new Date())
   const [search, setSearch] = useState('')
   const [error, setError] = useState('')
+
+  const currentMenuLabel = useMemo(() => {
+    const path = location.pathname.toLowerCase()
+    if (path.includes('/vendas') || path.includes('/pedido')) return 'MENU VENDAS'
+    if (path.includes('/estoque')) return 'MENU ESTOQUE'
+    if (path.includes('/compras')) return 'MENU COMPRAS'
+    if (path.includes('/qualidade') || path.includes('/sgq')) return 'MENU QUALIDADE'
+    return 'MENU PRINCIPAL'
+  }, [location.pathname])
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000)
@@ -82,7 +92,7 @@ export default function TabletDashboard() {
           </div>
         </div>
         <button type="button" className="synqra-master-menu" onClick={() => navigate('/tablet/dashboard')} title="Menu principal">
-          MENU TABLET
+          {currentMenuLabel}
         </button>
         <div className="synqra-session">
           <div className="synqra-session-text">
@@ -97,8 +107,8 @@ export default function TabletDashboard() {
       </header>
 
       <style>{`
-.synqra-master-menu{justify-self:center;height:32px;padding:0 18px;border:1px solid #ea580c;border-radius:2px;background:#ea580c;color:#fff;font-size:15px;font-weight:900;line-height:32px;text-transform:uppercase;letter-spacing:.02em;cursor:pointer}
-.synqra-master-menu:hover{background:#c2410c;border-color:#c2410c}
+.synqra-master-menu{justify-self:center;height:30px;padding:0 16px;border:1px solid #f97316;border-radius:2px;background:#f97316;color:#fff;font-size:13px;font-weight:900;line-height:30px;text-transform:uppercase;letter-spacing:.05em;cursor:pointer}
+.synqra-master-menu:hover{background:#ea580c;border-color:#ea580c}
 `}</style>
 
       <section className="synqra-tablet-toolbar">
@@ -132,10 +142,9 @@ export default function TabletDashboard() {
               onClick={() => route && navigate(route)}
             >
               <span className="synqra-module-icon" aria-hidden="true">
-                <Icon size={52} strokeWidth={1.8} />
+                <Icon size={28} />
               </span>
               <span className="synqra-module-label">{label}</span>
-              {!available && <span className="synqra-module-status">EM IMPLANTAÇÃO</span>}
             </button>
           )
         })}
