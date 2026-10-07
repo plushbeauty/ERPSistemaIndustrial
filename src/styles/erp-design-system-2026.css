@@ -310,3 +310,30 @@ body{background:#f4f8fa}
 }
 .erp-global-surface table{font-size:11px}
 .erp-global-surface th{font-size:10px}
+
+
+/* FINAL OPERATIONAL GEOMETRY — 30px / 11px / 9px / 2px. Applied after every legacy workspace rule. */
+.erp-dense input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.erp-dense select,
+.erp-compact input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.erp-compact select,
+.erp-global-surface input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.erp-global-surface select,
+.fiscal-workspace input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.fiscal-workspace select,
+.nfe-page input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.nfe-page select{
+  height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:11px!important;line-height:14px!important;box-sizing:border-box
+}
+.erp-dense label,.erp-compact label,.erp-global-surface label,.fiscal-workspace label,.nfe-page label{
+  font-size:9px!important;line-height:12px!important;margin-bottom:2px!important;letter-spacing:.04em;text-transform:uppercase
+}
+.erp-dense button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),
+.erp-compact button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),
+.erp-global-surface button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),
+.fiscal-workspace button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),
+.nfe-page button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button){
+  height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:11px!important;line-height:14px!important
+}
+.erp-dense table,.erp-compact table,.erp-global-surface table,.fiscal-workspace table,.nfe-page table{font-size:11px!important}
+.erp-dense thead tr,.erp-dense tbody tr,.erp-compact thead tr,.erp-compact tbody tr,.erp-global-surface thead tr,.erp-global-surface tbody tr{height:30px!important}
