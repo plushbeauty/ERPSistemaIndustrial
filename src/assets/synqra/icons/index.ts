@@ -39,7 +39,7 @@ export type SynqraModule = {
 export const SYNQRA_MODULES: readonly SynqraModule[] = [
   { key: 'inicio', label: 'Início', route: '/comercial', Icon: Home },
   { key: 'dashboard', label: 'Dashboard', route: '/erp-industrial', Icon: BarChart3 },
-  { key: 'vendas', label: 'Vendas', route: '/vendas', Icon: Handshake },
+  { key: 'vendas', label: 'Vendas', route: '/vendas/tablet', Icon: Handshake },
   { key: 'compras', label: 'Compras', route: '/compras/rfq', Icon: ShoppingCart },
   { key: 'financeiro', label: 'Financeiro', route: '/financeiro/caixa', Icon: Landmark },
   { key: 'rh', label: 'RH', route: '/rh', Icon: Users },
