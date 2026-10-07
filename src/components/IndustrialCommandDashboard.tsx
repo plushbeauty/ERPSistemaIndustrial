@@ -1,303 +1,1050 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  Activity, CheckCircle, AlertTriangle, BarChart3
+  AlertTriangle,
+  ArrowUpRight,
+  BarChart3,
+  Boxes,
+  CheckCircle2,
+  Factory,
+  Gauge,
+  RefreshCw,
+  ShieldCheck,
+  Wrench,
+  X,
 } from 'lucide-react'
 import {
-  Bar, BarChart, CartesianGrid, Legend, Line, LineChart,
-  ResponsiveContainer, Tooltip, XAxis, YAxis
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from 'recharts'
 import { supabase } from '../lib/supabaseClient'
 
-type Props = { onNavigate: (route: string) => void }
-type Machine = { id: string; codigo: string; nome: string; status: string }
-type OP = { id: string; numero_op: string | number; produto_id: string | null; maquina_id: string | null; status: string; quantidade_planejada: number | null; quantidade: number | null; created_at: string | null; criado_em?: string | null }
-type Product = { id: string; codigo: string | null; nome: string | null }
-type Pointing = { id: string; ordem_producao_id: string | null; maquina_id: string | null; quantidade_planejada: number | null; quantidade_boa: number | null; quantidade_refugada: number | null; created_at: string | null; criado_em?: string | null }
-type Program = { id: string; ordem_producao_id: string | null; maquina_id: string | null; inicio_planejado: string; fim_planejado: string; quantidade_planejada: number | null; quantidade_produzida: number | null; quantidade_refugada: number | null; status: string }
-type Stop = { maquina_id: string | null; inicio: string | null; fim: string | null; status: string | null }
-type QueueRow = { op: string; workstation: string; product: string; lastPointing: string; status: string }
-type Daily = { day: string; previsto: number; realizado: number }
-type MachineShift = { maquina: string; eficiencia: number }
-type Equipment = { id: string; codigo: string; descricao: string; status: string; proxima_calibracao: string | null; certificado_validade: string | null }
+type Props = {
+  onNavigate: (route: string) => void
+}
 
-const n = (v: unknown) => Number.isFinite(Number(v)) ? Number(v) : 0
-const fmt = (v: number) => new Intl.NumberFormat('pt-BR').format(Math.round(v))
-const dateKey = (d: Date) => d.toISOString().slice(0, 10)
+type Profile = {
+  empresa_id: string | null
+  is_master: boolean
+  nivel_admin: number | null
+  perfil: string | null
+  nome: string | null
+}
 
-function statusText(value: string) {
-  const s = value.toLowerCase()
-  if (s.includes('concl')) return 'Concluída'
-  if (s.includes('cancel')) return 'Cancelada'
-  if (s.includes('paus')) return 'Pausada'
-  if (s.includes('exec') || s.includes('produ')) return 'Em produção'
-  if (s.includes('liber')) return 'Liberada'
-  if (s.includes('planej')) return 'Planejada'
-  return value || 'Sem status'
+type Machine = {
+  id: string
+  codigo: string
+  nome: string
+  status: string
+}
+
+type Product = {
+  id: string
+  codigo: string
+  nome: string
+  estoque_atual: number | null
+  ponto_reposicao: number | null
+  estoque_maximo: number | null
+}
+
+type Order = {
+  id: string
+  numero_op: string | number
+  produto_id: string | null
+  maquina_id: string | null
+  quantidade: number | null
+  quantidade_planejada: number | null
+  status: string
+  data_prevista: string | null
+  criado_em: string | null
+}
+
+type Pointing = {
+  ordem_producao_id: string
+  quantidade_boa: number | null
+  quantidade_refugo: number | null
+  setup_min: number | null
+  paradas_min: number | null
+  inicio: string | null
+  fim: string | null
+}
+
+type ProductionOrderDefinition = {
+  id: string
+  quantidade_planejada: number | null
+  velocidade_nominal_hora: number | null
+  tempo_estimado_horas: number | null
+}
+
+type Stop = {
+  maquina_id: string | null
+  motivo: string
+  inicio: string | null
+  fim: string | null
+  status: string | null
+}
+
+type CreatedOrder = {
+  id: string
+  numero_op: number
+  maquina_id: string | null
+  tempo_estimado_horas: number
+}
+
+type StockStatus = {
+  label: string
+  className: string
+}
+
+type ChartPoint = {
+  label: string
+  value: number
+}
+
+const numberValue = (value: unknown): number => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+const formatNumber = (value: number, digits = 0): string =>
+  new Intl.NumberFormat('pt-BR', { maximumFractionDigits: digits }).format(value)
+
+const formatPercent = (value: number): string => \`\${formatNumber(value, 1)}%\`
+
+const clampPercent = (value: number): number =>
+  Math.max(0, Math.min(100, value))
+
+const normalizeStatus = (value: string): string => {
+  const normalized = value.trim().toLowerCase()
+
+  if (normalized.includes('manut')) return 'MANUTENÇÃO'
+  if (normalized.includes('parad')) return 'PARADA'
+  if (normalized.includes('inativ')) return 'INATIVA'
+  if (normalized.includes('setup')) return 'SETUP'
+  if (normalized.includes('produ') || normalized.includes('oper')) return 'OPERANDO'
+
+  return value.trim().toUpperCase() || 'SEM STATUS'
+}
+
+const statusClass = (status: string): string => {
+  const normalized = normalizeStatus(status)
+
+  if (normalized === 'OPERANDO') return 'text-emerald-600'
+  if (normalized === 'SETUP') return 'text-amber-600'
+  if (normalized === 'MANUTENÇÃO') return 'text-orange-600'
+  if (normalized === 'PARADA') return 'text-red-600'
+  return 'text-slate-500'
+}
+
+const stockStatus = (product: Product): StockStatus => {
+  const current = numberValue(product.estoque_atual)
+  const reorder = numberValue(product.ponto_reposicao)
+
+  if (current <= 0) {
+    return {
+      label: 'SEM ESTOQUE',
+      className: 'border-red-200 bg-red-50 text-red-700',
+    }
+  }
+
+  if (reorder > 0 && current <= reorder) {
+    return {
+      label: 'REPOR',
+      className: 'border-amber-200 bg-amber-50 text-amber-700',
+    }
+  }
+
+  return {
+    label: 'DISPONÍVEL',
+    className: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  }
+}
+
+const durationMinutes = (start: string | null, end: string | null): number => {
+  if (!start) return 0
+
+  const startMs = new Date(start).getTime()
+  const endMs = end ? new Date(end).getTime() : Date.now()
+
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs < startMs) {
+    return 0
+  }
+
+  return (endMs - startMs) / 60000
 }
 
 export default function DashboardPrincipal({ onNavigate }: Props) {
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [machines, setMachines] = useState<Machine[]>([])
-  const [ops, setOps] = useState<OP[]>([])
   const [products, setProducts] = useState<Product[]>([])
+  const [orders, setOrders] = useState<Order[]>([])
   const [pointings, setPointings] = useState<Pointing[]>([])
-  const [programs, setPrograms] = useState<Program[]>([])
+  const [orderDefinitions, setOrderDefinitions] = useState<ProductionOrderDefinition[]>([])
   const [stops, setStops] = useState<Stop[]>([])
-  const [equipment, setEquipment] = useState<Equipment[]>([])
-  const [rpnc, setRpnc] = useState(0)
+  const [openRpncs, setOpenRpncs] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [savingOrder, setSavingOrder] = useState(false)
   const [error, setError] = useState('')
-  const [clock, setClock] = useState(new Date())
+  const [message, setMessage] = useState('')
+  const [refreshKey, setRefreshKey] = useState(0)
+  const [showOrderForm, setShowOrderForm] = useState(false)
+  const [orderProductId, setOrderProductId] = useState('')
+  const [orderMachineId, setOrderMachineId] = useState('')
+  const [orderQuantity, setOrderQuantity] = useState('')
 
-  useEffect(() => {
-    const timer = window.setInterval(() => setClock(new Date()), 1000)
-    return () => window.clearInterval(timer)
-  }, [])
+  const load = async () => {
+    setLoading(true)
+    setError('')
+    setMessage('')
 
-  useEffect(() => {
-    let alive = true
-    async function load() {
-      setLoading(true)
-      setError('')
-      try {
-        const { data: auth, error: authError } = await supabase.auth.getUser()
-        if (authError) throw authError
-        if (!auth.user) throw new Error('Sessão não encontrada.')
+    try {
+      const auth = await supabase.auth.getUser()
 
-        const { data: p, error: profileError } = await supabase
-          .from('erp_usuarios')
-          .select('nome,empresa_id,nivel_admin,is_master,perfil,auth_user_id')
-          .eq('auth_user_id', auth.user.id)
-          .eq('ativo', true)
-          .is('deleted_at', null)
-          .maybeSingle()
-        if (profileError) throw profileError
-        if (!p) throw new Error('Perfil ERP não encontrado.')
+      if (auth.error) throw auth.error
+      if (!auth.data.user) throw new Error('Sessão não autenticada.')
 
-        const master = p.is_master === true &&
-          Number(p.nivel_admin ?? 0) === 100 &&
-          String(p.perfil ?? '').toUpperCase() === 'MASTER' &&
-          p.empresa_id === null
-        if (!master && !p.empresa_id) throw new Error('Empresa do usuário não identificada.')
+      const profileResult = await supabase
+        .from('erp_usuarios')
+        .select('empresa_id,is_master,nivel_admin,perfil,nome')
+        .eq('auth_user_id', auth.data.user.id)
+        .eq('ativo', true)
+        .is('deleted_at', null)
+        .maybeSingle()
 
-        const empresaId = p.empresa_id as string | null
-        const machineQ = supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('ativo', true).order('codigo')
-        const opQ = supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at,criado_em').order('created_at', { ascending: false }).limit(500)
-        const prodQ = supabase.from('erp_produtos').select('id,codigo,nome').limit(3000)
-        const pointingQ = supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,created_at').order('created_at', { ascending: false }).limit(5000)
-        const programQ = supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status').neq('status', 'cancelada').limit(3000)
-        const stopQ = supabase.from('erp_producao_paradas').select('maquina_id,inicio,fim,status').limit(5000)
-        const rpncQ = supabase.from('erp_rpnc').select('id,status').limit(5000)
-        const equipmentQ = supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao,certificado_validade').limit(3000)
+      if (profileResult.error) throw profileResult.error
+      if (!profileResult.data) throw new Error('Perfil ERP ativo não encontrado.')
 
-        if (!master && empresaId) {
-          machineQ.eq('empresa_id', empresaId)
-          opQ.eq('empresa_id', empresaId)
-          prodQ.eq('empresa_id', empresaId)
-          pointingQ.eq('empresa_id', empresaId)
-          programQ.eq('empresa_id', empresaId)
-          stopQ.eq('empresa_id', empresaId)
-          rpncQ.eq('empresa_id', empresaId)
-          equipmentQ.eq('empresa_id', empresaId)
-        }
-
-        const [m, o, pr, pt, pg, st, rn, eq] = await Promise.all([machineQ, opQ, prodQ, pointingQ, programQ, stopQ, rpncQ, equipmentQ])
-        for (const result of [m, o, pr, pt, pg, st, rn, eq]) if (result.error) throw result.error
-
-        if (!alive) return
-        setMachines((m.data ?? []) as Machine[])
-        setOps((o.data ?? []) as OP[])
-        setProducts((pr.data ?? []) as Product[])
-        setPointings((pt.data ?? []) as Pointing[])
-        setPrograms((pg.data ?? []) as Program[])
-        setStops((st.data ?? []) as Stop[])
-        setRpnc((rn.data ?? []).filter((x: { status?: unknown }) => !['encerrada', 'fechada', 'concluida', 'concluído'].includes(String(x.status ?? '').toLowerCase())).length)
-        setEquipment((eq.data ?? []) as Equipment[])
-      } catch (e) {
-        if (alive) setError(e instanceof Error ? e.message : 'Não foi possível carregar o dashboard.')
-      } finally {
-        if (alive) setLoading(false)
+      const nextProfile: Profile = {
+        empresa_id: profileResult.data.empresa_id ?? null,
+        is_master: Boolean(profileResult.data.is_master),
+        nivel_admin: profileResult.data.nivel_admin == null ? null : Number(profileResult.data.nivel_admin),
+        perfil: profileResult.data.perfil ?? null,
+        nome: profileResult.data.nome ?? null,
       }
+
+      const master =
+        nextProfile.is_master &&
+        nextProfile.nivel_admin === 100 &&
+        String(nextProfile.perfil ?? '').trim().toUpperCase() === 'MASTER' &&
+        nextProfile.empresa_id === null
+
+      if (!master && !nextProfile.empresa_id) {
+        throw new Error('Empresa do usuário não identificada.')
+      }
+
+      const empresaId = nextProfile.empresa_id
+
+      const machineQuery = supabase
+        .from('erp_maquinas')
+        .select('id,codigo,nome,status')
+        .eq('ativo', true)
+        .order('codigo')
+        .limit(500)
+
+      const productQuery = supabase
+        .from('erp_produtos')
+        .select('id,codigo,nome,estoque_atual,ponto_reposicao,estoque_maximo')
+        .eq('ativo', true)
+        .order('codigo')
+        .limit(5000)
+
+      const orderQuery = supabase
+        .from('erp_ordens_producao')
+        .select('id,numero_op,produto_id,maquina_id,quantidade,quantidade_planejada,status,data_prevista,criado_em')
+        .order('criado_em', { ascending: false })
+        .limit(100)
+
+      const pointingQuery = supabase
+        .from('erp_producao_apontamentos')
+        .select('ordem_producao_id,quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim')
+        .gte('inicio', new Date(Date.now() - 30 * 86400000).toISOString())
+        .limit(10000)
+
+      const definitionQuery = supabase
+        .from('erp_ordens_producao')
+        .select('id,quantidade_planejada,velocidade_nominal_hora,tempo_estimado_horas')
+        .limit(10000)
+
+      const stopQuery = supabase
+        .from('erp_producao_paradas')
+        .select('maquina_id,motivo,inicio,fim,status')
+        .gte('inicio', new Date(Date.now() - 30 * 86400000).toISOString())
+        .order('inicio', { ascending: false })
+        .limit(10000)
+
+      const rpncQuery = supabase
+        .from('erp_rpnc')
+        .select('id', { count: 'exact', head: true })
+        .neq('status', 'encerrada')
+
+      if (!master && empresaId) {
+        machineQuery.eq('empresa_id', empresaId)
+        productQuery.eq('empresa_id', empresaId)
+        orderQuery.eq('empresa_id', empresaId)
+        pointingQuery.eq('empresa_id', empresaId)
+        definitionQuery.eq('empresa_id', empresaId)
+        stopQuery.eq('empresa_id', empresaId)
+        rpncQuery.eq('empresa_id', empresaId)
+      }
+
+      const [
+        machinesResult,
+        productsResult,
+        ordersResult,
+        pointingsResult,
+        definitionsResult,
+        stopsResult,
+        rpncResult,
+      ] = await Promise.all([
+        machineQuery,
+        productQuery,
+        orderQuery,
+        pointingQuery,
+        definitionQuery,
+        stopQuery,
+        rpncQuery,
+      ])
+
+      for (const result of [
+        machinesResult,
+        productsResult,
+        ordersResult,
+        pointingsResult,
+        definitionsResult,
+        stopsResult,
+        rpncResult,
+      ]) {
+        if (result.error) throw result.error
+      }
+
+      setProfile(nextProfile)
+      setMachines((machinesResult.data ?? []) as Machine[])
+      setProducts((productsResult.data ?? []) as Product[])
+      setOrders((ordersResult.data ?? []) as Order[])
+      setPointings((pointingsResult.data ?? []) as Pointing[])
+      setOrderDefinitions((definitionsResult.data ?? []) as ProductionOrderDefinition[])
+      setStops((stopsResult.data ?? []) as Stop[])
+      setOpenRpncs(rpncResult.count ?? 0)
+    } catch (reason: unknown) {
+      setError(reason instanceof Error ? reason.message : 'Falha ao carregar o centro de comando.')
+    } finally {
+      setLoading(false)
     }
+  }
+
+  useEffect(() => {
     void load()
-    return () => { alive = false }
-  }, [])
+  }, [refreshKey])
 
-  const today = dateKey(clock)
-  const activeOps = ops.filter(o => !['concluida', 'concluído', 'cancelada', 'cancelado'].includes(String(o.status).toLowerCase()))
-  const todayPointings = pointings.filter(p => String(p.criado_em ?? p.created_at ?? '').slice(0, 10) === today)
-  const producedToday = todayPointings.reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
-  const totalPlanned = pointings.reduce((s, p) => s + n(p.quantidade_planejada), 0)
-  const totalGood = pointings.reduce((s, p) => s + n(p.quantidade_boa), 0)
-  const totalBad = pointings.reduce((s, p) => s + n(p.quantidade_refugada), 0)
-  const performance = totalPlanned > 0 ? Math.min(100, (totalGood / totalPlanned) * 100) : null
-  const quality = totalGood + totalBad > 0 ? (totalGood / (totalGood + totalBad)) * 100 : null
+  const productMap = useMemo(
+    () => new Map(products.map(product => [product.id, product])),
+    [products],
+  )
 
-  const plannedHours = programs.reduce((s, p) => s + Math.max(0, (new Date(p.fim_planejado).getTime() - new Date(p.inicio_planejado).getTime()) / 3600000), 0)
-  const stopHours = stops.reduce((s, p) => {
-    if (!p.inicio || !p.fim) return s
-    return s + Math.max(0, (new Date(p.fim).getTime() - new Date(p.inicio).getTime()) / 3600000)
-  }, 0)
-  const availability = plannedHours > 0 ? Math.max(0, Math.min(100, ((plannedHours - Math.min(stopHours, plannedHours)) / plannedHours) * 100)) : null
-  const oee = performance !== null && quality !== null && availability !== null
-    ? (performance * quality * availability) / 10000
-    : null
+  const orderMap = useMemo(
+    () => new Map(orderDefinitions.map(order => [order.id, order])),
+    [orderDefinitions],
+  )
 
-  const machineShift = useMemo<MachineShift[]>(() => machines.map(machine => {
-    const rows = pointings.filter(p => p.maquina_id === machine.id)
-    const plan = rows.reduce((s, p) => s + n(p.quantidade_planejada), 0)
-    const good = rows.reduce((s, p) => s + n(p.quantidade_boa), 0)
-    return { maquina: machine.codigo, eficiencia: plan > 0 ? Math.min(100, (good / plan) * 100) : 0 }
-  }).filter(x => x.eficiencia > 0), [machines, pointings])
+  const productionMetrics = useMemo(() => {
+    let plannedMinutes = 0
+    let downtimeMinutes = 0
+    let good = 0
+    let scrap = 0
+    let idealPieces = 0
 
-  const weekly = useMemo<Daily[]>(() => {
-    const days: Daily[] = []
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(clock)
-      d.setHours(0, 0, 0, 0)
-      d.setDate(d.getDate() - i)
-      const key = dateKey(d)
-      const previsto = programs.filter(p => String(p.inicio_planejado).slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_planejada), 0)
-      const realizado = pointings.filter(p => String(p.criado_em ?? p.created_at ?? '').slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
-      days.push({ day: d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''), previsto, realizado })
+    for (const row of pointings) {
+      const definition = orderMap.get(row.ordem_producao_id)
+      const duration = durationMinutes(row.inicio, row.fim)
+      const stop = Math.min(
+        duration,
+        Math.max(0, numberValue(row.setup_min)) + Math.max(0, numberValue(row.paradas_min)),
+      )
+      const runtime = Math.max(0, duration - stop)
+
+      plannedMinutes += definition
+        ? Math.max(0, numberValue(definition.tempo_estimado_horas)) * 60
+        : duration
+
+      downtimeMinutes += stop
+      good += Math.max(0, numberValue(row.quantidade_boa))
+      scrap += Math.max(0, numberValue(row.quantidade_refugo))
+
+      const nominalRate = definition
+        ? Math.max(0, numberValue(definition.velocidade_nominal_hora))
+        : 0
+
+      idealPieces += (runtime / 60) * nominalRate
     }
-    return days
-  }, [clock, programs, pointings])
 
-  const overduePieces = useMemo(() => programs.reduce((sum, p) => {
-    const due = new Date(p.fim_planejado).getTime()
-    const produced = n(p.quantidade_produzida)
-    const planned = n(p.quantidade_planejada)
-    return due < clock.getTime() && produced < planned ? sum + Math.max(0, planned - produced) : sum
-  }, 0), [programs, clock])
+    const availability = plannedMinutes > 0
+      ? clampPercent(((plannedMinutes - downtimeMinutes) / plannedMinutes) * 100)
+      : 0
 
-  const onTimePieces = useMemo(() => programs.reduce((sum, p) => {
-    const due = new Date(p.fim_planejado).getTime()
-    const produced = n(p.quantidade_produzida)
-    const planned = n(p.quantidade_planejada)
-    return due >= clock.getTime() && produced < planned ? sum + Math.max(0, planned - produced) : sum
-  }, 0), [programs, clock])
+    const performance = idealPieces > 0
+      ? clampPercent((good / idealPieces) * 100)
+      : 0
 
-  const expiredEquipment = useMemo(() => equipment.filter(e => {
-    const calibration = e.proxima_calibracao || e.certificado_validade
-    return calibration ? calibration < today : false
-  }).length, [equipment, today])
+    const quality = good + scrap > 0
+      ? clampPercent((good / (good + scrap)) * 100)
+      : 0
 
-  const stopSummary = useMemo(() => {
-    const grouped = new Map<string, number>()
-    stops.forEach(s => {
-      if (!s.inicio || !s.fim) return
-      const day = String(s.inicio).slice(0, 10)
-      const hours = Math.max(0, (new Date(s.fim).getTime() - new Date(s.inicio).getTime()) / 3600000)
-      grouped.set(day, (grouped.get(day) ?? 0) + hours)
-    })
-    return Array.from(grouped.entries()).sort((a,b) => a[0].localeCompare(b[0])).slice(-7).map(([day, horas]) => ({ day: new Date(day + 'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.',''), horas: Number(horas.toFixed(1)) }))
+    const oee = (availability * performance * quality) / 10000
+
+    return {
+      plannedMinutes,
+      downtimeMinutes,
+      runtimeMinutes: Math.max(0, plannedMinutes - downtimeMinutes),
+      good,
+      scrap,
+      availability,
+      performance,
+      quality,
+      oee,
+    }
+  }, [orderMap, pointings])
+
+  const productionByHour = useMemo<ChartPoint[]>(() => {
+    const buckets = new Map<number, number>()
+
+    for (const row of pointings) {
+      if (!row.inicio) continue
+
+      const hour = new Date(row.inicio).getHours()
+      const value = numberValue(row.quantidade_boa)
+
+      buckets.set(hour, (buckets.get(hour) ?? 0) + value)
+    }
+
+    return [...buckets.entries()]
+      .sort(([a], [b]) => a - b)
+      .map(([hour, value]) => ({
+        label: \`\${String(hour).padStart(2, '0')}:00\`,
+        value,
+      }))
+  }, [pointings])
+
+  const scrapByDay = useMemo<ChartPoint[]>(() => {
+    const buckets = new Map<string, number>()
+
+    for (const row of pointings) {
+      if (!row.inicio) continue
+
+      const day = row.inicio.slice(0, 10)
+      const value = numberValue(row.quantidade_refugo)
+
+      buckets.set(day, (buckets.get(day) ?? 0) + value)
+    }
+
+    return [...buckets.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-14)
+      .map(([day, value]) => ({
+        label: day.slice(5).replace('-', '/'),
+        value,
+      }))
+  }, [pointings])
+
+  const downtimeByReason = useMemo<ChartPoint[]>(() => {
+    const buckets = new Map<string, number>()
+
+    for (const row of stops) {
+      const reason = row.motivo.trim() || 'Sem motivo'
+      buckets.set(reason, (buckets.get(reason) ?? 0) + durationMinutes(row.inicio, row.fim))
+    }
+
+    return [...buckets.entries()]
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 6)
+      .map(([label, value]) => ({
+        label,
+        value: Math.round(value),
+      }))
   }, [stops])
 
-  const opStatus = useMemo(() => {
-    const map = new Map<string, number>()
-    ops.forEach(o => { const s = statusText(o.status); map.set(s, (map.get(s) ?? 0) + 1) })
-    return Array.from(map.entries()).map(([status, quantidade]) => ({ status, quantidade }))
-  }, [ops])
+  const machineCounts = useMemo(() => {
+    return machines.reduce(
+      (accumulator, machine) => {
+        const status = normalizeStatus(machine.status)
+        if (status === 'OPERANDO') accumulator.operando += 1
+        else if (status === 'SETUP') accumulator.setup += 1
+        else if (status === 'MANUTENÇÃO') accumulator.manutencao += 1
+        else if (status === 'PARADA') accumulator.parada += 1
+        else accumulator.outros += 1
+        return accumulator
+      },
+      { operando: 0, setup: 0, manutencao: 0, parada: 0, outros: 0 },
+    )
+  }, [machines])
 
-  const queue = useMemo<QueueRow[]>(() => {
-    const productMap = new Map(products.map(p => [p.id, p]))
-    const machineMap = new Map(machines.map(m => [m.id, m]))
-    return activeOps.slice(0, 12).map(op => {
-      const rows = pointings.filter(p => p.ordem_producao_id === op.id).sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')))
-      const last = rows[0]
-      const machine = machineMap.get(op.maquina_id ?? '')
-      const product = productMap.get(op.produto_id ?? '')
-      return {
-        op: `OP-${op.numero_op}`,
-        workstation: machine ? `${machine.codigo} · ${machine.nome}` : 'Posto não definido',
-        product: product ? `${product.codigo ?? ''} · ${product.nome ?? ''}`.replace(/^ · | · $/g, '') : 'Produto não informado',
-        lastPointing: last?.created_at ? new Date(last.created_at).toLocaleString('pt-BR') : 'Sem apontamento',
-        status: statusText(op.status)
-      }
-    })
-  }, [activeOps, pointings, products, machines])
+  const criticalProducts = useMemo(
+    () =>
+      products
+        .filter(product => {
+          const current = numberValue(product.estoque_atual)
+          const reorder = numberValue(product.ponto_reposicao)
+          return current <= 0 || (reorder > 0 && current <= reorder)
+        })
+        .sort((a, b) => numberValue(a.estoque_atual) - numberValue(b.estoque_atual))
+        .slice(0, 8),
+    [products],
+  )
 
-  const cards = [
-    { label: 'OPs EM ANDAMENTO', value: fmt(activeOps.length), icon: Activity },
-    { label: 'PRODUÇÃO DO DIA', value: fmt(producedToday), suffix: 'un', icon: CheckCircle },
-    { label: 'ALERTAS DO SGQ', value: fmt(rpnc), icon: AlertTriangle },
-    { label: 'EFICIÊNCIA (OEE)', value: oee === null ? '—' : `${oee.toFixed(1).replace('.', ',')}%`, icon: BarChart3 }
-  ]
+  const activeOrders = useMemo(
+    () =>
+      orders
+        .filter(order => {
+          const status = String(order.status).toLowerCase()
+          return !status.includes('concl') && !status.includes('cancel')
+        })
+        .slice(0, 10),
+    [orders],
+  )
 
-  const attentionCards = [
-    { label: 'PEÇAS EM ATRASO', value: fmt(overduePieces), suffix: 'un', tone: 'danger', icon: AlertTriangle },
-    { label: 'PEÇAS NO PRAZO', value: fmt(onTimePieces), suffix: 'un', tone: 'success', icon: CheckCircle },
-    { label: 'MATERIAIS VENCIDOS', value: '—', suffix: 'sem validade cadastrada', tone: 'warning', icon: Activity },
-    { label: 'EQUIPAMENTOS VENCIDOS', value: fmt(expiredEquipment), suffix: 'un', tone: 'danger', icon: AlertTriangle }
-  ]
+  const openOrder = async () => {
+    const quantity = numberValue(orderQuantity)
+
+    if (!orderProductId) {
+      setError('Selecione o produto da OP.')
+      return
+    }
+
+    if (quantity <= 0) {
+      setError('Informe uma quantidade maior que zero.')
+      return
+    }
+
+    setSavingOrder(true)
+    setError('')
+    setMessage('')
+
+    try {
+      const result = await supabase.rpc('erp_criar_ordem_producao_v2', {
+        p_produto_id: orderProductId,
+        p_quantidade: quantity,
+        p_pedido_venda_id: null,
+        p_maquina_id: orderMachineId || null,
+        p_velocidade_nominal_hora: null,
+        p_operacao_dupla: false,
+      })
+
+      if (result.error) throw result.error
+
+      const created = Array.isArray(result.data)
+        ? (result.data[0] as CreatedOrder | undefined)
+        : (result.data as CreatedOrder | null)
+
+      setMessage(
+        created
+          ? \`OP \${created.numero_op} criada pelo fluxo transacional do PCP.\`
+          : 'OP criada pelo fluxo transacional do PCP.',
+      )
+
+      setOrderProductId('')
+      setOrderMachineId('')
+      setOrderQuantity('')
+      setShowOrderForm(false)
+      setRefreshKey(value => value + 1)
+    } catch (reason: unknown) {
+      setError(reason instanceof Error ? reason.message : 'Não foi possível criar a ordem de produção.')
+    } finally {
+      setSavingOrder(false)
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
-      <style>{`
-        .dp-shell{min-height:100%;background:#f8fafc}
-        .dp-main{width:100%;max-width:1700px;margin:0 auto;padding:18px 24px 34px}
-        .dp-context{padding:11px 0 13px;border-bottom:1px solid #dbe3ea}.dp-context>div{display:flex;align-items:center;justify-content:space-between;gap:12px}.dp-context strong{color:#123B50;font-size:10px;font-weight:950;letter-spacing:.08em}.dp-context p{margin:0;color:#475569;font-size:10px;font-weight:950;letter-spacing:.12em}
-        .dp-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
-        .dp-kpi{position:relative;display:flex;align-items:center;gap:13px;padding:12px 14px;min-height:76px;background:linear-gradient(135deg,#17445A,#0B3042);border:1px solid #082838;border-radius:14px;box-shadow:0 10px 24px rgba(8,40,56,.28);overflow:hidden}
-        .dp-kpi::after{content:"";position:absolute;right:-26px;bottom:-38px;width:104px;height:104px;border-radius:50%;background:rgba(72,183,199,.32);pointer-events:none}
-        .dp-kpi-icon{position:relative;z-index:1;display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:linear-gradient(145deg,#2D8DB8 0%,#17445A 58%,#0B3042 100%);color:#fff!important;flex:none;border:1px solid rgba(255,255,255,.42);box-shadow:0 11px 0 rgba(5,28,39,.55),0 17px 24px rgba(5,28,39,.34),inset 0 2px 2px rgba(255,255,255,.55),inset 0 -7px 10px rgba(0,0,0,.25);transform:perspective(180px) rotateX(4deg);text-shadow:0 2px 2px rgba(0,0,0,.38)}
-        .dp-kpi small,.dp-kpi strong,.dp-kpi em,.dp-kpi-label{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.55)}.dp-kpi small{display:block!important;font-size:13px;font-weight:950;letter-spacing:.04em;line-height:1.2}.dp-kpi strong{display:block!important;font-size:29px;font-weight:950;line-height:1.08;margin-top:5px}.dp-kpi em{font-style:normal!important;font-size:12px;font-weight:900}
-        .dp-kpi:nth-child(2){background:linear-gradient(135deg,#0F6748,#063C2A);border-color:#052E21}.dp-kpi:nth-child(2)::after{background:rgba(72,183,199,.18)}.dp-kpi:nth-child(2) .dp-kpi-icon{color:#fff!important;background:linear-gradient(145deg,#31B982 0%,#0F6748 58%,#063C2A 100%)}
-        .dp-kpi:nth-child(3){background:linear-gradient(135deg,#A94F00,#6E2F00);border-color:#542300}.dp-kpi:nth-child(3)::after{background:rgba(255,255,255,.14)}.dp-kpi:nth-child(3) .dp-kpi-icon{color:#fff!important;background:linear-gradient(145deg,#E58A36 0%,#A94F00 58%,#6E2F00 100%)}
-        .dp-kpi:nth-child(4){background:linear-gradient(135deg,#247E91,#145564);border-color:#0F4652}.dp-kpi:nth-child(4)::after{background:rgba(18,59,80,.20)}.dp-kpi:nth-child(4) .dp-kpi-icon{color:#fff!important;background:linear-gradient(145deg,#48B7C7 0%,#247E91 58%,#145564 100%)}
-        .dp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
-        .dp-panel{background:#fff;border:1px solid #d7e5ea;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(18,59,80,.07)}
-        .dp-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 17px;border-bottom:1px solid #edf4f6;background:linear-gradient(180deg,#fff,#fbfeff)}.dp-head span{color:#2D8DB8;font-size:10px;font-weight:950;letter-spacing:.1em}.dp-head h2{margin:3px 0 0;color:#123B50;font-size:16px;font-weight:950}
-        .dp-chart{height:250px;padding:12px 12px 10px}.dp-chart-compact{height:220px}.dp-empty{height:220px;display:grid;place-items:center;padding:20px;text-align:center;color:#64748b;font-size:12px;font-weight:700}.dp-empty-compact{height:220px}
-        .dp-attention-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0}.dp-attention{position:relative;min-width:0;min-height:72px;padding:12px 14px;display:flex;align-items:center;gap:12px;border-radius:14px;overflow:hidden;box-shadow:0 8px 20px rgba(18,59,80,.10);border:1px solid}.dp-attention::after{content:"";position:absolute;right:-22px;bottom:-28px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.16)}.dp-attention-icon{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,rgba(255,255,255,.30),rgba(255,255,255,.08));color:#fff!important;border:1px solid rgba(255,255,255,.48);box-shadow:0 8px 0 rgba(0,0,0,.20),0 12px 18px rgba(0,0,0,.18),inset 0 2px 2px rgba(255,255,255,.48),inset 0 -5px 8px rgba(0,0,0,.18);transform:perspective(160px) rotateX(5deg);text-shadow:0 2px 2px rgba(0,0,0,.38)}.dp-attention small,.dp-attention strong,.dp-attention em{color:#fff!important;-webkit-text-fill-color:#fff!important}.dp-attention small{display:block!important;font-size:11px;font-weight:950;letter-spacing:.04em;line-height:1.2}.dp-attention strong{display:inline-block!important;font-size:24px;font-weight:950;line-height:1.05;margin-top:7px}.dp-attention em{font-size:10px;font-weight:850;font-style:normal;margin-left:6px}.dp-attention-danger{background:linear-gradient(135deg,#B83A45,#74212A);border-color:#642029}.dp-attention-success{background:linear-gradient(135deg,#16805C,#0A4D38);border-color:#083F2E}.dp-attention-warning{background:linear-gradient(135deg,#B96A09,#7A4300);border-color:#613400}.dp-status-panel{margin-top:12px}
+    <div className="industrial-premium-dashboard min-w-0 space-y-3 pb-5">
+      <section className="border border-slate-200 bg-white px-3 py-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <span className="text-[9px] uppercase tracking-[0.14em] text-slate-500">
+              SYSNQRA ERP & SGQ INDUSTRIAL • CENTRO DE COMANDO
+            </span>
+            <h2 className="mt-1 text-[15px] uppercase tracking-wide text-slate-900">
+              Monitoramento operacional
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              Dados reais do Supabase • {profile?.nome ?? 'Operador'}
+            </p>
+          </div>
 
-        .dp-kpi-icon svg,.dp-attention-icon svg{color:#fff!important;stroke:#fff!important;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}.dp-table-wrap{overflow:auto}.dp-table{width:100%;border-collapse:collapse;font-size:12px}.dp-table th{background:#f8fafc;color:#475569;text-align:left;font-size:10px;font-weight:950;padding:10px 12px;border-bottom:1px solid #e2e8f0}.dp-table td{padding:11px 12px;border-bottom:1px solid #edf2f7;color:#334155;font-weight:650;white-space:nowrap}.dp-table tr:last-child td{border-bottom:0}.dp-status{display:inline-flex;padding:4px 8px;border-radius:999px;background:#ecfdf5;color:#065f46;font-size:10px;font-weight:900}.dp-error{margin:0 0 12px;padding:10px 12px;border:1px solid #fecaca;background:#fef2f2;color:#991b1b;border-radius:7px;font-size:12px;font-weight:700}
-                @media(max-width:1050px){.dp-kpis,.dp-attention-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-grid{grid-template-columns:1fr}.dp-main{padding:16px}}
-        @media(max-width:650px){.dp-kpis,.dp-attention-grid{grid-template-columns:1fr}.dp-main{padding:12px}}
-      `}</style>
+          <button
+            type="button"
+            onClick={() => setRefreshKey(value => value + 1)}
+            disabled={loading}
+            className="inline-flex h-[30px] items-center gap-1 rounded-[2px] bg-[#2D8DB8] px-3 text-[10px] uppercase text-white disabled:opacity-50"
+          >
+            <RefreshCw size={13} />
+            Atualizar
+          </button>
 
-      <main className="dp-main">
-        {error && <div className="dp-error">{error}</div>}
+          <button
+            type="button"
+            onClick={() => setShowOrderForm(true)}
+            className="inline-flex h-[30px] items-center gap-1 rounded-[2px] bg-slate-900 px-3 text-[10px] uppercase text-white"
+          >
+            <Factory size={13} />
+            Nova OP
+          </button>
+        </div>
+      </section>
 
-        
-
-        <section className="dp-kpis">
-          {cards.map(({ label, value, suffix, icon: Icon }) => (
-            <article key={label} className="dp-kpi">
-              <span className="dp-kpi-icon"><Icon size={19}/></span>
-              <div><small className="dp-kpi-label">{label}</small><strong>{loading ? '…' : value} {suffix && <em>{suffix}</em>}</strong></div>
-            </article>
-          ))}
+      {error && (
+        <section className="border border-red-300 bg-red-50 px-3 py-2 text-[10px] text-red-700" role="alert">
+          <div className="flex items-start justify-between gap-3">
+            <span>{error}</span>
+            <button type="button" onClick={() => setError('')} aria-label="Fechar erro">
+              <X size={13} />
+            </button>
+          </div>
         </section>
+      )}
 
-        <section className="dp-attention-grid">{attentionCards.map(card => { const Icon = card.icon; return <article key={card.label} className={`dp-attention dp-attention-${card.tone}`}><span className="dp-attention-icon"><Icon size={18}/></span><div><small>{card.label}</small><strong>{loading ? '…' : card.value}</strong><em>{card.suffix}</em></div></article> })}
+      {message && (
+        <section className="border border-emerald-200 bg-emerald-50 px-3 py-2 text-[10px] text-emerald-700" role="status">
+          {message}
         </section>
+      )}
 
-        <section className="dp-grid dp-chart-grid">
-          <article className="dp-panel">
-            <div className="dp-head"><span>PCP · MÁQUINAS</span><h2>Eficiência por máquina</h2></div>
-            {machineShift.length ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={machineShift} barCategoryGap="26%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="maquina" axisLine={false} tickLine={false}/><YAxis domain={[0,100]} unit="%" axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="eficiencia" name="Eficiência" fill="#2D8DB8" radius={[7,7,2,2]} maxBarSize={36}/></BarChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem dados reais de eficiência.</div>}
-          </article>
-          <article className="dp-panel">
-            <div className="dp-head"><span>PCP · ENTREGA</span><h2>Peças no prazo × em atraso</h2></div>
-            <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{categoria:'No prazo',quantidade:onTimePieces},{categoria:'Em atraso',quantidade:overduePieces}]} barCategoryGap="38%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="categoria" axisLine={false} tickLine={false}/><YAxis axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="quantidade" name="Peças" fill="#3A9D78" radius={[8,8,3,3]} maxBarSize={48}/></BarChart></ResponsiveContainer></div>
-          </article>
-          <article className="dp-panel">
-            <div className="dp-head"><span>PRODUÇÃO · SEMANA</span><h2>Previsto × realizado</h2></div>
-            {weekly.some(x => x.previsto || x.realizado) ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><LineChart data={weekly}><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="day" axisLine={false} tickLine={false}/><YAxis axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Legend verticalAlign="top" height={24}/><Line type="monotone" dataKey="previsto" name="Previsto" stroke="#94a3b8" strokeWidth={2} strokeDasharray="6 5" dot={false}/><Line type="monotone" dataKey="realizado" name="Realizado" stroke="#2D8DB8" strokeWidth={3} dot={{r:3,strokeWidth:2,fill:"#fff"}}/></LineChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem dados reais nos últimos 7 dias.</div>}
-          </article>
-          <article className="dp-panel">
-            <div className="dp-head"><span>PARADAS · CHÃO DE FÁBRICA</span><h2>Horas de parada por dia</h2></div>
-            {stopSummary.length ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={stopSummary} barCategoryGap="30%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="day" axisLine={false} tickLine={false}/><YAxis unit="h" axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="horas" name="Parada" fill="#D65B61" radius={[7,7,2,2]} maxBarSize={34}/></BarChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem paradas registradas.</div>}
-          </article>
+      {showOrderForm && (
+        <section className="border border-slate-200 bg-white p-3">
+          <div className="mb-2 flex items-center justify-between border-b border-slate-200 pb-2">
+            <div>
+              <span className="text-[9px] uppercase tracking-wider text-slate-500">PCP / ORDEM DE PRODUÇÃO</span>
+              <h3 className="text-[12px] uppercase text-slate-800">Abertura transacional</h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowOrderForm(false)}
+              className="h-[30px] rounded-[2px] border border-slate-300 px-3 text-[9px] uppercase text-slate-600"
+            >
+              Fechar
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+            <label className="block">
+              <span className="mb-[2px] block text-[9px] uppercase tracking-wider text-slate-600">Produto *</span>
+              <select
+                value={orderProductId}
+                onChange={event => setOrderProductId(event.target.value)}
+                className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px]"
+              >
+                <option value="">Selecionar produto</option>
+                {products.map(product => (
+                  <option key={product.id} value={product.id}>
+                    {product.codigo} · {product.nome}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block">
+              <span className="mb-[2px] block text-[9px] uppercase tracking-wider text-slate-600">Máquina</span>
+              <select
+                value={orderMachineId}
+                onChange={event => setOrderMachineId(event.target.value)}
+                className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px]"
+              >
+                <option value="">Usar ficha de processo</option>
+                {machines
+                  .filter(machine => normalizeStatus(machine.status) !== 'INATIVA')
+                  .map(machine => (
+                    <option key={machine.id} value={machine.id}>
+                      {machine.codigo} · {machine.nome}
+                    </option>
+                  ))}
+              </select>
+            </label>
+
+            <label className="block">
+              <span className="mb-[2px] block text-[9px] uppercase tracking-wider text-slate-600">Quantidade *</span>
+              <input
+                value={orderQuantity}
+                onChange={event => setOrderQuantity(event.target.value)}
+                type="number"
+                min="0"
+                step="0.001"
+                placeholder="Preencher..."
+                className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px]"
+              />
+            </label>
+          </div>
+
+          <div className="mt-2 flex justify-end">
+            <button
+              type="button"
+              onClick={() => void openOrder()}
+              disabled={savingOrder}
+              className="h-[30px] rounded-[2px] bg-[#2D8DB8] px-4 text-[10px] uppercase text-white disabled:opacity-50"
+            >
+              {savingOrder ? 'Criando...' : 'Criar OP'}
+            </button>
+          </div>
         </section>
+      )}
 
-        <section className="dp-panel dp-status-panel">
-          <div className="dp-head"><span>STATUS DOS SETORES · PCP</span><h2>Distribuição das ordens de produção</h2></div>
-          {opStatus.length ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={opStatus} layout="vertical" margin={{left:16,right:18}}><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" horizontal={false}/><XAxis type="number" axisLine={false} tickLine={false}/><YAxis type="category" dataKey="status" width={105} axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="quantidade" name="OPs" fill="#48B7C7" radius={[0,7,7,0]} maxBarSize={26}/></BarChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem ordens de produção reais para distribuir.</div>}
-        </section>
-      </main>
+      <section className="grid grid-cols-2 gap-2 xl:grid-cols-6">
+        <Metric label="OEE" value={loading ? '—' : formatPercent(productionMetrics.oee)} icon={Gauge} />
+        <Metric label="Disponibilidade" value={loading ? '—' : formatPercent(productionMetrics.availability)} icon={ShieldCheck} />
+        <Metric label="Performance" value={loading ? '—' : formatPercent(productionMetrics.performance)} icon={BarChart3} />
+        <Metric label="Qualidade" value={loading ? '—' : formatPercent(productionMetrics.quality)} icon={CheckCircle2} />
+        <Metric label="Produção boa" value={loading ? '—' : formatNumber(productionMetrics.good)} icon={Factory} />
+        <Metric label="Refugo" value={loading ? '—' : formatNumber(productionMetrics.scrap)} icon={AlertTriangle} />
+      </section>
 
+      <section className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1.7fr)_minmax(360px,1fr)]">
+        <article className="border border-slate-200 bg-white">
+          <header className="border-b border-slate-200 px-3 py-2">
+            <span className="text-[9px] uppercase tracking-wider text-slate-500">OEE / PERFORMANCE</span>
+            <h3 className="text-[11px] uppercase text-slate-700">Produção por hora</h3>
+          </header>
+          <div className="h-[250px] p-3">
+            {productionByHour.length === 0 ? (
+              <Empty text="Sem apontamentos de produção no período." />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={productionByHour}>
+                  <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
+                  <XAxis dataKey="label" tick={{ fontSize: 9 }} />
+                  <YAxis tick={{ fontSize: 9 }} />
+                  <Tooltip formatter={(value: number) => [formatNumber(value), 'Peças boas']} />
+                  <Line type="monotone" dataKey="value" stroke="#2D8DB8" strokeWidth={2} dot={{ r: 2 }} name="Peças boas" />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </article>
+
+        <article className="border border-slate-200 bg-white">
+          <header className="border-b border-slate-200 px-3 py-2">
+            <span className="text-[9px] uppercase tracking-wider text-slate-500">PARADAS</span>
+            <h3 className="text-[11px] uppercase text-slate-700">Tempo por motivo</h3>
+          </header>
+          <div className="h-[250px] p-3">
+            {downtimeByReason.length === 0 ? (
+              <Empty text="Sem paradas registradas no período." />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={downtimeByReason} layout="vertical">
+                  <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
+                  <XAxis type="number" tick={{ fontSize: 9 }} />
+                  <YAxis type="category" dataKey="label" width={100} tick={{ fontSize: 8 }} />
+                  <Tooltip formatter={(value: number) => [\`\${formatNumber(value)} min\`, 'Tempo']} />
+                  <Bar dataKey="value" fill="#D65B61" name="Minutos" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </article>
+      </section>
+
+      <section className="grid grid-cols-1 gap-3 xl:grid-cols-3">
+        <article className="border border-slate-200 bg-white xl:col-span-2">
+          <header className="flex items-center justify-between border-b border-slate-200 px-3 py-2">
+            <div>
+              <span className="text-[9px] uppercase tracking-wider text-slate-500">LINHAS / MÁQUINAS</span>
+              <h3 className="text-[11px] uppercase text-slate-700">Status operacional</h3>
+            </div>
+            <span className="text-[9px] text-slate-400">{machines.length} máquinas</span>
+          </header>
+
+          <div className="grid grid-cols-2 gap-px bg-slate-200 md:grid-cols-5">
+            <StatusTile label="Operando" value={machineCounts.operando} className="text-emerald-600" />
+            <StatusTile label="Setup" value={machineCounts.setup} className="text-amber-600" />
+            <StatusTile label="Manutenção" value={machineCounts.manutencao} className="text-orange-600" />
+            <StatusTile label="Parada" value={machineCounts.parada} className="text-red-600" />
+            <StatusTile label="Outros" value={machineCounts.outros} className="text-slate-500" />
+          </div>
+
+          <div className="max-h-[250px] overflow-auto">
+            <table className="w-full border-collapse text-[11px]">
+              <thead className="sticky top-0 bg-slate-50">
+                <tr className="h-[30px] border-b border-slate-200">
+                  <th className="px-3 text-left text-[9px] uppercase tracking-wider text-slate-500">Código</th>
+                  <th className="px-3 text-left text-[9px] uppercase tracking-wider text-slate-500">Máquina</th>
+                  <th className="px-3 text-left text-[9px] uppercase tracking-wider text-slate-500">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {machines.map(machine => (
+                  <tr key={machine.id} className="h-[30px] border-b border-slate-100 hover:bg-slate-50">
+                    <td className="px-3 text-left">{machine.codigo}</td>
+                    <td className="px-3 text-left">{machine.nome}</td>
+                    <td className={\`px-3 text-left \${statusClass(machine.status)}\`}>
+                      {normalizeStatus(machine.status)}
+                    </td>
+                  </tr>
+                ))}
+                {!loading && machines.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="px-3 py-5 text-center text-[10px] text-slate-400">
+                      Nenhuma máquina operacional cadastrada.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article className="border border-slate-200 bg-white">
+          <header className="flex items-center justify-between border-b border-slate-200 px-3 py-2">
+            <div>
+              <span className="text-[9px] uppercase tracking-wider text-slate-500">ESTOQUE</span>
+              <h3 className="text-[11px] uppercase text-slate-700">Níveis críticos</h3>
+            </div>
+            <Boxes size={15} className="text-[#2D8DB8]" />
+          </header>
+
+          <div className="max-h-[315px] overflow-auto">
+            {criticalProducts.map(product => {
+              const status = stockStatus(product)
+              return (
+                <div key={product.id} className="border-b border-slate-100 px-3 py-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate text-[10px] text-slate-500">{product.codigo}</div>
+                      <div className="truncate text-[11px] text-slate-800">{product.nome}</div>
+                    </div>
+                    <span className={\`shrink-0 border px-1.5 py-0.5 text-[8px] uppercase \${status.className}\`}>
+                      {status.label}
+                    </span>
+                  </div>
+                  <div className="mt-1 flex justify-between text-[9px] text-slate-500">
+                    <span>Saldo: {formatNumber(numberValue(product.estoque_atual), 3)}</span>
+                    <span>Reposição: {formatNumber(numberValue(product.ponto_reposicao), 3)}</span>
+                  </div>
+                </div>
+              )
+            })}
+
+            {!loading && criticalProducts.length === 0 && (
+              <div className="px-3 py-8 text-center text-[10px] text-emerald-600">
+                Nenhum item abaixo do ponto de reposição.
+              </div>
+            )}
+          </div>
+        </article>
+      </section>
+
+      <section className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1.6fr)_minmax(360px,1fr)]">
+        <article className="border border-slate-200 bg-white">
+          <header className="flex items-center justify-between border-b border-slate-200 px-3 py-2">
+            <div>
+              <span className="text-[9px] uppercase tracking-wider text-slate-500">PCP</span>
+              <h3 className="text-[11px] uppercase text-slate-700">Ordens de produção ativas</h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigate('/pcp')}
+              className="inline-flex h-[28px] items-center gap-1 rounded-[2px] bg-[#2D8DB8] px-3 text-[9px] uppercase text-white"
+            >
+              PCP <ArrowUpRight size={12} />
+            </button>
+          </header>
+
+          <div className="overflow-auto">
+            <table className="w-full min-w-[700px] border-collapse text-[11px]">
+              <thead className="bg-slate-50">
+                <tr className="h-[30px] border-b border-slate-200">
+                  <th className="px-3 text-left text-[9px] uppercase tracking-wider text-slate-500">OP</th>
+                  <th className="px-3 text-left text-[9px] uppercase tracking-wider text-slate-500">Produto</th>
+                  <th className="px-3 text-right text-[9px] uppercase tracking-wider text-slate-500">Quantidade</th>
+                  <th className="px-3 text-left text-[9px] uppercase tracking-wider text-slate-500">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activeOrders.map(order => {
+                  const product = order.produto_id ? productMap.get(order.produto_id) : undefined
+                  return (
+                    <tr key={order.id} className="h-[31px] border-b border-slate-100 hover:bg-slate-50">
+                      <td className="px-3 font-mono text-left text-[10px]">{String(order.numero_op)}</td>
+                      <td className="px-3 text-left">
+                        {product ? \`\${product.codigo} · \${product.nome}\` : 'Produto não identificado'}
+                      </td>
+                      <td className="px-3 text-right">
+                        {formatNumber(numberValue(order.quantidade ?? order.quantidade_planejada))}
+                      </td>
+                      <td className="px-3 text-left text-[10px] text-slate-600">
+                        {String(order.status).toUpperCase()}
+                      </td>
+                    </tr>
+                  )
+                })}
+
+                {!loading && activeOrders.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-3 py-5 text-center text-[10px] text-slate-400">
+                      Nenhuma OP ativa encontrada.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article className="border border-slate-200 bg-white">
+          <header className="border-b border-slate-200 px-3 py-2">
+            <span className="text-[9px] uppercase tracking-wider text-slate-500">PERDAS / QUALIDADE</span>
+            <h3 className="text-[11px] uppercase text-slate-700">Refugo e não conformidades</h3>
+          </header>
+
+          <div className="grid grid-cols-2 gap-2 p-3">
+            <div className="border border-slate-200 p-3">
+              <span className="text-[9px] uppercase text-slate-500">Refugo</span>
+              <strong className="mt-1 block text-[20px] text-red-600">
+                {formatNumber(productionMetrics.scrap)}
+              </strong>
+              <span className="text-[9px] text-slate-400">últimos 30 dias</span>
+            </div>
+
+            <div className="border border-slate-200 p-3">
+              <span className="text-[9px] uppercase text-slate-500">RPNCs abertas</span>
+              <strong className="mt-1 block text-[20px] text-amber-600">
+                {formatNumber(openRpncs)}
+              </strong>
+              <span className="text-[9px] text-slate-400">status diferente de encerrada</span>
+            </div>
+          </div>
+
+          <div className="h-[180px] px-3 pb-3">
+            {scrapByDay.length === 0 ? (
+              <Empty text="Sem refugo apontado no período." />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={scrapByDay}>
+                  <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
+                  <XAxis dataKey="label" tick={{ fontSize: 8 }} />
+                  <YAxis tick={{ fontSize: 8 }} />
+                  <Tooltip formatter={(value: number) => [formatNumber(value), 'Refugo']} />
+                  <Bar dataKey="value" fill="#D65B61" name="Refugo" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </article>
+      </section>
+
+      <section className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+        <article className="border border-slate-200 bg-white">
+          <header className="border-b border-slate-200 px-3 py-2">
+            <span className="text-[9px] uppercase tracking-wider text-slate-500">COMPOSIÇÃO DO OEE</span>
+            <h3 className="text-[11px] uppercase text-slate-700">Disponibilidade × Performance × Qualidade</h3>
+          </header>
+
+          <div className="grid grid-cols-3 gap-px bg-slate-200">
+            <OeeCell label="Disponibilidade" value={formatPercent(productionMetrics.availability)} />
+            <OeeCell label="Performance" value={formatPercent(productionMetrics.performance)} />
+            <OeeCell label="Qualidade" value={formatPercent(productionMetrics.quality)} />
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 p-3 text-[9px] text-slate-500">
+            <span>Planejado: {formatNumber(productionMetrics.plannedMinutes)} min</span>
+            <span>Paradas: {formatNumber(productionMetrics.downtimeMinutes)} min</span>
+            <span>Operação: {formatNumber(productionMetrics.runtimeMinutes)} min</span>
+          </div>
+        </article>
+
+        <article className="border border-slate-200 bg-white">
+          <header className="border-b border-slate-200 px-3 py-2">
+            <span className="text-[9px] uppercase tracking-wider text-slate-500">ATALHOS OPERACIONAIS</span>
+            <h3 className="text-[11px] uppercase text-slate-700">Módulos integrados</h3>
+          </header>
+
+          <div className="grid grid-cols-2 gap-px bg-slate-200 md:grid-cols-4">
+            <Shortcut label="Estoque" icon={Boxes} onClick={() => onNavigate('/estoque/saldos')} />
+            <Shortcut label="PCP" icon={Factory} onClick={() => onNavigate('/pcp')} />
+            <Shortcut label="Qualidade" icon={ShieldCheck} onClick={() => onNavigate('/qualidade')} />
+            <Shortcut label="Manutenção" icon={Wrench} onClick={() => onNavigate('/operacao-industrial')} />
+          </div>
+        </article>
+      </section>
+    </div>
+  )
+}
+
+function Metric({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string
+  value: string
+  icon: typeof Gauge
+}) {
+  return (
+    <article className="border border-slate-200 bg-white px-3 py-3">
+      <div className="flex items-center justify-between">
+        <span className="text-[9px] uppercase tracking-wider text-slate-500">{label}</span>
+        <Icon size={14} className="text-[#2D8DB8]" />
+      </div>
+      <strong className="mt-1 block text-[20px] text-slate-900">{value}</strong>
+    </article>
+  )
+}
+
+function StatusTile({
+  label,
+  value,
+  className,
+}: {
+  label: string
+  value: number
+  className: string
+}) {
+  return (
+    <div className="bg-white px-3 py-2">
+      <span className="block text-[8px] uppercase tracking-wider text-slate-500">{label}</span>
+      <strong className={\`mt-1 block text-[18px] \${className}\`}>{value}</strong>
+    </div>
+  )
+}
+
+function OeeCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-white px-3 py-3">
+      <span className="block text-[8px] uppercase tracking-wider text-slate-500">{label}</span>
+      <strong className="mt-1 block text-[16px] text-slate-800">{value}</strong>
+    </div>
+  )
+}
+
+function Shortcut({
+  label,
+  icon: Icon,
+  onClick,
+}: {
+  label: string
+  icon: typeof Boxes
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex h-[60px] items-center gap-2 bg-white px-3 text-left hover:bg-slate-50"
+    >
+      <Icon size={17} className="text-[#2D8DB8]" />
+      <span className="text-[10px] uppercase text-slate-700">{label}</span>
+    </button>
+  )
+}
+
+function Empty({ text }: { text: string }) {
+  return (
+    <div className="flex h-full items-center justify-center px-3 text-center text-[10px] text-slate-400">
+      {text}
     </div>
   )
 }
