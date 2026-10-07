@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { RefreshCw, Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { SALES_SECTIONS } from '../data/salesMenu'
+import { sections as SALES_SECTIONS } from './VendasLayout'
 
 const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
 
