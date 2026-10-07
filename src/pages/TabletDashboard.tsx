@@ -69,7 +69,7 @@ export default function TabletDashboard() {
       <section className="synqra-module-grid" aria-label="Todos os módulos do ERP">
         {filteredModules.map(({ key, label, route, Icon }) => {
           const available = Boolean(route)
-          return <button key={key} type="button" className="synqra-module-card" disabled={!available} title={available ? \`Abrir \${label}\` : \`\${label}: rota ainda não cadastrada\`} onClick={() => route && navigate(route)}>
+          return <button key={key} type="button" className="synqra-module-card" disabled={!available} title={available ? 'Abrir ' + label : label + ': rota ainda não cadastrada'} onClick={() => route && navigate(route)}>
             <span className="synqra-module-icon" aria-hidden="true"><Icon size={42} strokeWidth={1.8} /></span>
             <span className="synqra-module-label">{label}</span>
           </button>
