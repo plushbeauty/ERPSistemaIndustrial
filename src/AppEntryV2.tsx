@@ -69,7 +69,6 @@ const AcompanhamentoNaoConformidade = lazyPage(() => import('./pages/Acompanhame
 const EstoqueAlmoxarifado = lazyPage(() => import('./pages/EstoqueAlmoxarifado'), 'EstoqueAlmoxarifado')
 const ProdutosVendasIndustrial = lazyPage(() => import('./pages/ProdutosVendasIndustrial'), 'ProdutosVendasIndustrial')
 const ModuloCadastroProdutos = lazyPage(() => import('./pages/cadastro-produtos/ModuloCadastroProdutos'), 'ModuloCadastroProdutos')
-const TabletDashboard = lazyPage(() => import('./pages/TabletDashboard'), 'TabletDashboard')
 const PedidoVendaCompleto = lazyPage(() => import('./pages/NovoPedido'), 'NovoPedido')
 const ImprimirPedido = lazyPage(() => import('./pages/ImprimirPedido'), 'ImprimirPedido')
 const ImprimirProduto = lazyPage(() => import('./pages/ImprimirProduto'), 'ImprimirProduto')
@@ -394,8 +393,8 @@ function AppIndustrialAuthenticated() {
     <Routes>
       <Route path="/comercial" element={<AppIndustrial />} />
       <Route path="/erp-industrial" element={<AppIndustrial />} />
-      <Route path="/tablet/dashboard" element={<TabletDashboard />} />
-      <Route path="/tablet/home" element={<TabletDashboard />} />
+      <Route path="/tablet/dashboard" element={<Navigate to="/vendas/tablet" replace />} />
+      <Route path="/tablet/home" element={<Navigate to="/vendas/tablet" replace />} />
       <Route path="/vendas" element={<DashboardComercial />} />
       <Route path="/vendas/dashboard" element={<DashboardComercial />} />
       <Route path="/vendas/pedidos" element={<VendasCentral />} />
