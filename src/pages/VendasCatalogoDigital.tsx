@@ -291,11 +291,16 @@ export default function VendasCatalogoDigital() {
                 const showGrupo = categoria === 'TODOS' && (index === 0 || grupo !== anterior)
                 return (
                   <div key={produto.id} className="contents">
-                    {showGrupo && <div className="col-span-full flex items-center gap-2 border-b border-[#c8e1e8] bg-[#f4fbfd] px-2 py-1.5"><span className="h-2 w-2 bg-[#2D8DB8]"/><strong className="text-[10px] font-medium uppercase tracking-wide text-[#123B50]">{grupo}</strong><span className="text-[8px] text-slate-400">{rows.filter((item) => (item.grupo || 'SEM GRUPO') === grupo).length} produto(s)</span></div>}
-                    <article
-                    key={produto.id}
-                    className="group overflow-hidden border border-slate-200 bg-white transition-shadow hover:shadow-md"
-                  >
+                    {showGrupo ? (
+                      <div className="col-span-full flex items-center gap-2 border-b border-[#c8e1e8] bg-[#f4fbfd] px-2 py-1.5">
+                        <span className="h-2 w-2 bg-[#2D8DB8]" />
+                        <strong className="text-[10px] font-medium uppercase tracking-wide text-[#123B50]">{grupo}</strong>
+                        <span className="text-[8px] text-slate-400">
+                          {rows.filter((item) => (item.grupo || 'SEM GRUPO') === grupo).length} produto(s)
+                        </span>
+                      </div>
+                    ) : null}
+                    <article className="group overflow-hidden border border-slate-200 bg-white transition-shadow hover:shadow-md">
                     <button
                       type="button"
                       onClick={() => setDetalhe(produto)}
