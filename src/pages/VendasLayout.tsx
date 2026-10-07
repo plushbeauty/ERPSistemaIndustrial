@@ -118,18 +118,20 @@ export const sections: SalesNavSection[] = [
   ] },
 ]
 
-function moduleMenu(pathname: string) {
-  if (pathname.startsWith('/vendas/estoque') || pathname === '/estoque' || pathname.startsWith('/estoque/') || pathname.startsWith('/inventario')) return { label: 'MENU ESTOQUE', route: '/estoque' }
-  if (pathname.startsWith('/vendas')) return { label: 'MENU VENDAS', route: '/vendas' }
-  if (pathname.startsWith('/compras')) return { label: 'MENU COMPRAS', route: '/compras' }
-  if (pathname.startsWith('/qualidade') || pathname.startsWith('/sgq') || pathname.startsWith('/vendas/qualidade') || pathname.startsWith('/vendas/sgq')) return { label: 'MENU QUALIDADE', route: '/qualidade' }
-  if (pathname.startsWith('/fiscal') || pathname.startsWith('/vendas/fiscal') || pathname.startsWith('/vendas/classificacao-fiscal') || pathname.startsWith('/vendas/ano-fiscal')) return { label: 'MENU FISCAL', route: '/fiscal' }
-  if (pathname.startsWith('/pcp') || pathname.startsWith('/vendas/pcp') || pathname.startsWith('/vendas/chao-de-fabrica')) return { label: 'MENU PCP', route: '/pcp' }
-  if (pathname.startsWith('/financeiro') || pathname.startsWith('/vendas/conciliacao') || pathname.startsWith('/vendas/fluxo-caixa') || pathname.startsWith('/vendas/balanco') || pathname.startsWith('/vendas/razao-geral')) return { label: 'MENU FINANCEIRO', route: '/financeiro' }
-  if (pathname.startsWith('/rh') || pathname.startsWith('/vendas/rh')) return { label: 'MENU RH', route: '/rh' }
-  if (pathname.startsWith('/engenharia') || pathname.startsWith('/vendas/engenharia') || pathname.startsWith('/vendas/mrp')) return { label: 'MENU ENGENHARIA', route: '/engenharia' }
-  if (pathname.startsWith('/manutencao')) return { label: 'MENU MANUTENÇÃO', route: '/manutencao' }
-  return { label: 'MENU PRINCIPAL', route: '/erp-industrial' }
+type ModuleMenu = { label: string; route: string; icon: typeof LayoutDashboard }
+
+function moduleMenu(pathname: string): ModuleMenu {
+  if (pathname.startsWith('/vendas/estoque') || pathname === '/estoque' || pathname.startsWith('/estoque/') || pathname.startsWith('/inventario')) return { label: 'MENU ESTOQUE', route: '/estoque', icon: PackagePlus }
+  if (pathname.startsWith('/vendas/qualidade') || pathname.startsWith('/vendas/sgq') || pathname.startsWith('/qualidade') || pathname.startsWith('/sgq')) return { label: 'MENU QUALIDADE', route: '/qualidade', icon: ClipboardList }
+  if (pathname.startsWith('/vendas/fiscal') || pathname.startsWith('/vendas/classificacao-fiscal') || pathname.startsWith('/vendas/ano-fiscal') || pathname.startsWith('/fiscal')) return { label: 'MENU FISCAL', route: '/fiscal', icon: FilePlus2 }
+  if (pathname.startsWith('/vendas/pcp') || pathname.startsWith('/vendas/chao-de-fabrica') || pathname.startsWith('/pcp')) return { label: 'MENU PCP', route: '/pcp', icon: PackagePlus }
+  if (pathname.startsWith('/vendas/conciliacao') || pathname.startsWith('/vendas/fluxo-caixa') || pathname.startsWith('/vendas/balanco') || pathname.startsWith('/vendas/razao-geral') || pathname.startsWith('/financeiro')) return { label: 'MENU FINANCEIRO', route: '/financeiro', icon: BarChart3 }
+  if (pathname.startsWith('/vendas/rh') || pathname.startsWith('/rh')) return { label: 'MENU RH', route: '/rh', icon: Users }
+  if (pathname.startsWith('/vendas/engenharia') || pathname.startsWith('/vendas/mrp') || pathname.startsWith('/engenharia')) return { label: 'MENU ENGENHARIA', route: '/engenharia', icon: Settings2 }
+  if (pathname.startsWith('/manutencao')) return { label: 'MENU MANUTENÇÃO', route: '/manutencao', icon: Settings2 }
+  if (pathname.startsWith('/compras')) return { label: 'MENU COMPRAS', route: '/compras', icon: PackagePlus }
+  if (pathname.startsWith('/vendas')) return { label: 'MENU VENDAS', route: '/vendas', icon: ShoppingCart }
+  return { label: 'MENU PRINCIPAL', route: '/erp-industrial', icon: LayoutDashboard }
 }
 
 export default function VendasLayout({
@@ -209,6 +211,7 @@ export default function VendasLayout({
           </div>
           <div className="v7-top-actions">
             <button className="v7-top-tablet" type="button" onClick={() => setTabletOpen(true)} aria-label={moduleMenuInfo.label}>
+              <moduleMenuInfo.icon size={24} strokeWidth={2.4} aria-hidden="true" />
               {moduleMenuInfo.label}
             </button>
             <div className="v7-top-user-simple" aria-label="Usuário conectado"><span>OPERADOR</span><strong>{operatorLabel}</strong></div>
@@ -275,7 +278,7 @@ export default function VendasLayout({
         .v7-top-title span{color:#475569!important;font-size:10px!important;font-weight:900!important;letter-spacing:.14em;margin-top:5px}
         .v7-top-actions{display:flex!important;align-items:center!important;justify-content:flex-end;gap:10px;min-width:0;flex-wrap:nowrap}
         .v7-top-tablet,.v7-top-exit{display:inline-flex!important;align-items:center!important;justify-content:center;height:30px!important;min-height:30px!important;padding:0 10px!important;border-radius:2px!important;font-size:10px!important;font-weight:500!important;cursor:pointer;white-space:nowrap;box-sizing:border-box}
-        .v7-top-tablet{height:46px!important;min-height:46px!important;min-width:190px!important;padding:0 24px!important;background:#F97316!important;border:1px solid #EA580C!important;color:#ffffff!important;box-shadow:none!important;font-size:16px!important;font-weight:900!important;letter-spacing:.02em!important}
+        .v7-top-tablet{height:46px!important;min-height:46px!important;min-width:210px!important;padding:0 22px!important;gap:8px!important;background:#F97316!important;border:1px solid #EA580C!important;color:#ffffff!important;box-shadow:none!important;font-size:16px!important;font-weight:900!important;letter-spacing:.02em!important}
         .v7-top-exit{background:#ffffff!important;border:1px solid #fecaca!important;color:#991b1b!important}
         .v7-top-user-simple{display:flex!important;flex-direction:column;justify-content:center;gap:3px;min-height:42px;padding:0 12px;border-left:1px solid #e2e8f0!important;white-space:nowrap}
         .v7-top-user-simple span{color:#64748b!important;font-size:9px!important;font-weight:950!important;letter-spacing:.08em}
@@ -295,10 +298,10 @@ export default function VendasLayout({
         .vendas-tablet-head strong{font-size:12px!important;font-weight:500!important}
         .vendas-tablet-head small{font-size:8px!important;color:#dbeafe!important}
         .vendas-tablet-head button{height:30px!important;width:30px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;padding:0!important;background:#ffffff!important;color:#123B50!important;border:1px solid #ffffff!important;border-radius:2px!important;flex:0 0 auto}
-        .vendas-tablet-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important;gap:6px!important;padding:8px!important;background:#f4f7fe!important}
-        .vendas-tablet-grid>button{display:flex!important;align-items:center!important;gap:7px!important;min-height:42px!important;padding:5px 7px!important;background:#ffffff!important;color:#123B50!important;border:1px solid #cbd5e1!important;border-radius:2px!important;text-align:left!important;cursor:pointer!important}
+        .vendas-tablet-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))!important;gap:6px!important;padding:8px!important;background:#f4f7fe!important}
+        .vendas-tablet-grid>button{display:flex!important;align-items:center!important;gap:8px!important;min-height:50px!important;padding:5px 7px!important;background:#ffffff!important;color:#123B50!important;border:1px solid #cbd5e1!important;border-radius:2px!important;text-align:left!important;cursor:pointer!important}
         .vendas-tablet-grid>button:hover{border-color:#2D8DB8!important;background:#f4fbfd!important}
-        .vendas-tablet-grid>button>span{width:32px!important;height:32px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border:1px solid!important;border-radius:2px!important;flex:0 0 auto}.vendas-tablet-grid>button>span svg{width:20px!important;height:20px!important}
+        .vendas-tablet-grid>button>span{width:40px!important;height:40px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border:1px solid!important;border-radius:2px!important;flex:0 0 auto}.vendas-tablet-grid>button>span svg{width:26px!important;height:26px!important}
         .vendas-tablet-grid>button>strong{font-size:10px!important;font-weight:500!important;line-height:1.2!important}
         .vendas-standard .rounded,.vendas-standard .rounded-sm,.vendas-standard .rounded-md,.vendas-standard .rounded-lg,.vendas-standard .rounded-xl,.vendas-standard .rounded-2xl{border-radius:2px!important}.vendas-standard .font-bold,.vendas-standard .font-extrabold,.vendas-standard .font-black{font-weight:500!important}.vendas-standard h1,.vendas-standard h2,.vendas-standard h3,.vendas-standard p,.vendas-standard label{font-weight:500!important}.vendas-standard{font-size:10px}.vendas-standard button{border-radius:2px;font-size:9px!important}.vendas-standard input:not([type=checkbox]):not([type=radio]):not([type=range]),.vendas-standard select{border-radius:2px}
       `}</style>
