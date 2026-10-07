@@ -412,6 +412,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/financeiro/ano-fiscal" element={<AnoFiscal />} />
       <Route path="/financeiro/fluxo-caixa" element={<FinanceiroFluxoCaixa />} />
       <Route path="/financeiro/contas-pagar" element={<FinanceiroContasPagar kind="PAGAR" />} />
+      <Route path="/financas/contas-pagar" element={<FinanceiroContasPagar kind="PAGAR" />} />
       <Route path="/financeiro/contas-receber" element={<FinanceiroContasReceber kind="RECEBER" />} />
       <Route path="/financeiro/caixa" element={<FinanceiroDashboardCaixa />} />
       <Route path="/vendas/carteira" element={<VendasCarteira />} />
@@ -433,7 +434,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/produtos" element={<ProdutosVendasIndustrial />} />
       <Route path="/vendas/estoque" element={<EstoqueAlmoxarifado />} />
       <Route path="/vendas/expedicao" element={<ExpedicaoPortaria />} />
-      <Route path="/vendas/fiscal" element={<Fiscal />} />
+      <Route path="/vendas/fiscal" element={<NFeEmissao />} />
       <Route path="/vendas/rh" element={<RHIndustrial />} />
       <Route path="/vendas/engenharia" element={<EngenhariaCentral />} />
       <Route path="/vendas/materiais" element={<PCPIndustrial />} />
