@@ -81,6 +81,9 @@ export default function TabletDashboard() {
             <span>MAIS CONTROLE<br />PARA O SEU RESULTADO</span>
           </div>
         </div>
+        <button type="button" className="synqra-master-menu" onClick={() => navigate('/tablet/dashboard')} title="Menu principal">
+          MENU TABLET
+        </button>
         <div className="synqra-session">
           <div className="synqra-session-text">
             <strong>{profile?.nome ?? 'Usuário'}</strong>
@@ -92,6 +95,11 @@ export default function TabletDashboard() {
           </button>
         </div>
       </header>
+
+      <style>{`
+.synqra-master-menu{justify-self:center;height:32px;padding:0 18px;border:1px solid #ea580c;border-radius:2px;background:#ea580c;color:#fff;font-size:15px;font-weight:900;line-height:32px;text-transform:uppercase;letter-spacing:.02em;cursor:pointer}
+.synqra-master-menu:hover{background:#c2410c;border-color:#c2410c}
+`}</style>
 
       <section className="synqra-tablet-toolbar">
         <div>
