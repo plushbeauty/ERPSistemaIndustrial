@@ -67,6 +67,7 @@ const PCPPlanejamentoIndustrial = lazyPage(() => import('./pages/PCPPlanejamento
 const MRPIndustrial = lazyPage(() => import('./pages/MRPIndustrial'), 'MRPIndustrial')
 const CentraisIndustriais = lazyPage(() => import('./pages/CentraisIndustriais'), 'CentraisIndustriais')
 const QualidadeIndustrial = lazyPage(() => import('./pages/QualidadeIndustrial'), 'QualidadeIndustrial')
+const QualidadeSGQAvancado = lazyPage(() => import('./pages/QualidadeSGQAvancado'), 'QualidadeSGQAvancado')
 const AcompanhamentoNaoConformidade = lazyPage(() => import('./pages/AcompanhamentoNaoConformidade'), 'AcompanhamentoNaoConformidade')
 const EstoqueAlmoxarifado = lazyPage(() => import('./pages/EstoqueAlmoxarifado'), 'EstoqueAlmoxarifado')
 const ProdutosVendasIndustrial = lazyPage(() => import('./pages/ProdutosVendasIndustrial'), 'ProdutosVendasIndustrial')
@@ -441,7 +442,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/pcp" element={<PCPIndustrial />} />
       <Route path="/vendas/chao-de-fabrica" element={<OperacaoIndustrial />} />
       <Route path="/vendas/qualidade" element={<QualidadeIndustrial />} />
-      <Route path="/vendas/sgq" element={<QualidadeRNC />} />
+      <Route path="/vendas/sgq" element={<QualidadeSGQAvancado />} />
       <Route path="/vendas/conciliacao" element={<BankingReconciliation />} />
       <Route path="/vendas/importador" element={<BankingStatementImporter />} />
       <Route path="/vendas/ano-fiscal" element={<AnoFiscal />} />
