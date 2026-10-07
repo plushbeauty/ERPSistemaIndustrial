@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
-import { ArrowLeft, BarChart3, BookOpen, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, LogOut, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Target, Users, X } from 'lucide-react'
+import { ArrowLeft, BarChart3, BookOpen, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, LogOut, PackagePlus, PackageSearch, RefreshCw, Forklift, Settings2, ShoppingCart, Target, Users, X } from 'lucide-react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -129,7 +129,7 @@ function moduleMenu(pathname: string): ModuleMenu {
   if (pathname.startsWith('/vendas/rh') || pathname.startsWith('/rh')) return { label: 'MENU RH', route: '/rh', icon: Users }
   if (pathname.startsWith('/vendas/engenharia') || pathname.startsWith('/vendas/mrp') || pathname.startsWith('/engenharia')) return { label: 'MENU ENGENHARIA', route: '/engenharia', icon: Settings2 }
   if (pathname.startsWith('/manutencao')) return { label: 'MENU MANUTENÇÃO', route: '/manutencao', icon: Settings2 }
-  if (pathname.startsWith('/compras')) return { label: 'MENU COMPRAS', route: '/compras', icon: PackagePlus }
+  if (pathname.startsWith('/compras')) return { label: 'MENU COMPRAS', route: '/compras', icon: Forklift }
   if (pathname.startsWith('/vendas')) return { label: 'MENU VENDAS', route: '/vendas', icon: ShoppingCart }
   return { label: 'MENU PRINCIPAL', route: '/erp-industrial', icon: LayoutDashboard }
 }
@@ -159,6 +159,7 @@ export default function VendasLayout({
   const [operator, setOperator] = useState<Operator>({ nome: null, email: null })
   const [now, setNow] = useState(new Date())
 
+  const ModuleIcon = moduleMenuInfo.icon
   const tabletLabel = moduleMenuInfo.label
 
   const logout = async () => {
@@ -211,7 +212,7 @@ export default function VendasLayout({
           </div>
           <div className="v7-top-actions">
             <button className="v7-top-tablet" type="button" onClick={() => setTabletOpen(true)} aria-label={moduleMenuInfo.label}>
-              <moduleMenuInfo.icon size={24} strokeWidth={2.4} aria-hidden="true" />
+              <ModuleIcon size={24} strokeWidth={2.4} aria-hidden="true" />
               {moduleMenuInfo.label}
             </button>
             <div className="v7-top-user-simple" aria-label="Usuário conectado"><span>OPERADOR</span><strong>{operatorLabel}</strong></div>
