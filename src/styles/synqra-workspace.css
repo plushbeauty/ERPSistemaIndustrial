@@ -1,0 +1,41 @@
+.synqra-workspace{min-height:100vh;background:#F4F7FE;color:#17212b;font-family:Inter,Roboto,Arial,sans-serif;font-size:11px}
+.synqra-workspace-header{height:48px;display:grid;grid-template-columns:minmax(250px,1fr) auto minmax(250px,1fr);align-items:center;gap:10px;padding:0 10px;background:#0a0a0a;border-bottom:1px solid #252525;color:#e5e7eb}
+.synqra-workspace-brand{display:flex;align-items:center;gap:8px;min-width:0;background:transparent;border:0;color:inherit;text-align:left;cursor:pointer;padding:0}
+.synqra-workspace-brand img{width:112px;height:34px;object-fit:contain}
+.synqra-workspace-brand span{display:flex;flex-direction:column;min-width:0;border-left:1px solid #333;padding-left:8px}
+.synqra-workspace-brand strong{font-size:10px;line-height:12px;letter-spacing:.04em;font-weight:600;white-space:nowrap}
+.synqra-workspace-brand small{font-size:8px;line-height:10px;color:#9ca3af;letter-spacing:.1em}
+.synqra-master-menu{height:34px;min-width:190px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 16px;background:#f97316;border:1px solid #ea580c;border-radius:2px;color:#fff;font-size:15px;font-weight:900;letter-spacing:.03em;text-transform:uppercase;cursor:pointer}
+.synqra-master-menu:hover{background:#ea580c}
+.synqra-session{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0}
+.synqra-session>div{display:flex;flex-direction:column;align-items:flex-end;min-width:0}
+.synqra-session strong{font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.synqra-session span{font-size:9px;color:#9ca3af;white-space:nowrap}
+.synqra-logout,.synqra-tool-button{height:28px;display:inline-flex;align-items:center;justify-content:center;gap:5px;border:1px solid #334155;border-radius:2px;background:#172033;color:#e5e7eb;font-size:10px;font-weight:500;padding:0 9px;cursor:pointer}
+.synqra-logout:hover,.synqra-tool-button:hover{background:#243047}
+.synqra-workspace-body{padding:8px;min-width:0}
+.synqra-status-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin-bottom:6px}
+.synqra-status-cell{height:42px;border:1px solid #cbd5e1;border-radius:2px;padding:4px 7px;background:#fff;display:flex;flex-direction:column;justify-content:center}
+.synqra-status-cell span{font-size:8px;letter-spacing:.08em;font-weight:500}
+.synqra-status-cell strong{font-size:16px;line-height:16px;font-weight:500}
+.synqra-status-red{border-color:#fecaca;background:#fff7f7}.synqra-status-red strong{color:#b91c1c}
+.synqra-status-orange{border-color:#fed7aa;background:#fffaf5}.synqra-status-orange strong{color:#c2410c}
+.synqra-status-yellow{border-color:#fde68a;background:#fffdf2}.synqra-status-yellow strong{color:#a16207}
+.synqra-status-blue{border-color:#bfdbfe;background:#f7fbff}.synqra-status-blue strong{color:#1d4ed8}
+.synqra-status-cyan{border-color:#a5f3fc;background:#f3feff}.synqra-status-cyan strong{color:#0e7490}
+.synqra-status-slate{border-color:#cbd5e1;background:#f8fafc}.synqra-status-slate strong{color:#334155}
+.synqra-workspace-title{min-height:34px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #cbd5e1;padding:0 0 5px;margin-bottom:7px;text-align:center}
+.synqra-workspace-title>div{flex:1;min-width:0}
+.synqra-workspace-title h1{margin:0;color:#123b50;font-size:13px;line-height:15px;font-weight:500}
+.synqra-workspace-title p{margin:1px 0 0;color:#64748b;font-size:11px;line-height:13px}
+.synqra-title-actions{position:absolute;left:8px}
+.synqra-tool-button{background:#2d8db8;border-color:#2d8db8;color:#fff}
+.synqra-workspace input,.synqra-workspace select,.synqra-workspace textarea{height:30px;min-height:30px;border:1px solid #b9cbd3;border-radius:2px;background:#fff;color:#17333f;font-size:11px;line-height:16px;padding:0 7px;box-sizing:border-box}
+.synqra-workspace textarea{height:80px;padding:6px 7px}
+.synqra-workspace label{font-size:9px;text-transform:uppercase;color:#536b76;font-weight:500;letter-spacing:.03em}
+.synqra-workspace table{border-collapse:collapse;width:100%;font-size:10px}
+.synqra-workspace th{height:26px;background:#123b50;color:#fff;text-align:left;font-size:9px;text-transform:uppercase;font-weight:500;padding:0 6px;white-space:nowrap}
+.synqra-workspace td{height:26px;border-bottom:1px solid #dbe5e9;padding:0 6px;white-space:nowrap}
+.synqra-workspace button{border-radius:2px}
+@media(max-width:1100px){.synqra-status-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.synqra-workspace-header{grid-template-columns:1fr auto 1fr}}
+@media(max-width:800px){.synqra-workspace-header{grid-template-columns:1fr auto;height:auto;min-height:48px}.synqra-session{display:none}.synqra-master-menu{min-width:150px;font-size:12px}.synqra-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
