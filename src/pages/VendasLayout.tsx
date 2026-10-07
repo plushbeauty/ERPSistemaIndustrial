@@ -118,6 +118,20 @@ export const sections: SalesNavSection[] = [
   ] },
 ]
 
+function moduleMenu(pathname: string) {
+  if (pathname.startsWith('/vendas/estoque') || pathname === '/estoque' || pathname.startsWith('/estoque/') || pathname.startsWith('/inventario')) return { label: 'MENU ESTOQUE', route: '/estoque' }
+  if (pathname.startsWith('/vendas')) return { label: 'MENU VENDAS', route: '/vendas' }
+  if (pathname.startsWith('/compras')) return { label: 'MENU COMPRAS', route: '/compras' }
+  if (pathname.startsWith('/qualidade') || pathname.startsWith('/sgq') || pathname.startsWith('/vendas/qualidade') || pathname.startsWith('/vendas/sgq')) return { label: 'MENU QUALIDADE', route: '/qualidade' }
+  if (pathname.startsWith('/fiscal') || pathname.startsWith('/vendas/fiscal') || pathname.startsWith('/vendas/classificacao-fiscal') || pathname.startsWith('/vendas/ano-fiscal')) return { label: 'MENU FISCAL', route: '/fiscal' }
+  if (pathname.startsWith('/pcp') || pathname.startsWith('/vendas/pcp') || pathname.startsWith('/vendas/chao-de-fabrica')) return { label: 'MENU PCP', route: '/pcp' }
+  if (pathname.startsWith('/financeiro') || pathname.startsWith('/vendas/conciliacao') || pathname.startsWith('/vendas/fluxo-caixa') || pathname.startsWith('/vendas/balanco') || pathname.startsWith('/vendas/razao-geral')) return { label: 'MENU FINANCEIRO', route: '/financeiro' }
+  if (pathname.startsWith('/rh') || pathname.startsWith('/vendas/rh')) return { label: 'MENU RH', route: '/rh' }
+  if (pathname.startsWith('/engenharia') || pathname.startsWith('/vendas/engenharia') || pathname.startsWith('/vendas/mrp')) return { label: 'MENU ENGENHARIA', route: '/engenharia' }
+  if (pathname.startsWith('/manutencao')) return { label: 'MENU MANUTENÇÃO', route: '/manutencao' }
+  return { label: 'MENU PRINCIPAL', route: '/erp-industrial' }
+}
+
 export default function VendasLayout({
   children,
   title,
@@ -138,45 +152,12 @@ export default function VendasLayout({
   const tabletMode = useIsMobile()
   const [tabletOpen, setTabletOpen] = useState(() => searchParams.get('tablet') === '1')
   const isVendas = pathname.startsWith('/vendas')
+  const moduleMenuInfo = moduleMenu(pathname)
   const { status, loading: statusLoading, load: loadStatus } = useVendasStatus()
   const [operator, setOperator] = useState<Operator>({ nome: null, email: null })
   const [now, setNow] = useState(new Date())
 
-  const mainRoute = isVendas
-    ? '/vendas'
-    : pathname.startsWith('/pcp')
-      ? '/pcp'
-      : pathname.startsWith('/estoque') || pathname.startsWith('/inventario')
-        ? '/estoque'
-        : pathname.startsWith('/qualidade')
-          ? '/qualidade'
-          : pathname.startsWith('/compras')
-            ? '/compras'
-            : pathname.startsWith('/financeiro')
-              ? '/financeiro'
-              : pathname.startsWith('/rh')
-                ? '/rh'
-                : pathname.startsWith('/manutencao')
-                  ? '/manutencao'
-                  : '/erp-industrial'
-
-  const tabletLabel = isVendas
-    ? 'CENTRAL DE MÓDULOS — MENU PRINCIPAL SYNQRA'
-    : pathname.startsWith('/pcp')
-      ? 'MENU PRINCIPAL PCP'
-      : pathname.startsWith('/estoque') || pathname.startsWith('/inventario')
-        ? 'MENU PRINCIPAL ESTOQUE'
-        : pathname.startsWith('/qualidade')
-          ? 'MENU PRINCIPAL QUALIDADE'
-          : pathname.startsWith('/compras')
-            ? 'MENU PRINCIPAL COMPRAS'
-            : pathname.startsWith('/financeiro')
-              ? 'MENU PRINCIPAL FINANCEIRO'
-              : pathname.startsWith('/rh')
-                ? 'MENU PRINCIPAL RH'
-                : pathname.startsWith('/manutencao')
-                  ? 'MENU PRINCIPAL MANUTENÇÃO'
-                  : 'MENU PRINCIPAL GLOBAL'
+  const tabletLabel = moduleMenuInfo.label
 
   const logout = async () => {
     await supabase.auth.signOut()
@@ -187,8 +168,9 @@ export default function VendasLayout({
     let mounted = true
     void supabase.auth.getUser().then(({ data }) => {
       if (mounted && data.user) {
+        const metadataName = data.user.user_metadata?.nome
         setOperator({
-          nome: (data.user.user_metadata?.nome as string | undefined) ?? null,
+          nome: typeof metadataName === 'string' ? metadataName : null,
           email: data.user.email ?? null,
         })
       }
@@ -226,8 +208,8 @@ export default function VendasLayout({
             </div>
           </div>
           <div className="v7-top-actions">
-            <button className="v7-top-tablet" type="button" onClick={() => setTabletOpen(true)} aria-label="Abrir MENU VENDAS">
-              MENU VENDAS
+            <button className="v7-top-tablet" type="button" onClick={() => setTabletOpen(true)} aria-label={moduleMenuInfo.label}>
+              {moduleMenuInfo.label}
             </button>
             <div className="v7-top-user-simple" aria-label="Usuário conectado"><span>OPERADOR</span><strong>{operatorLabel}</strong></div>
             <div className="v7-top-date" aria-label="Data e hora atual">
@@ -240,9 +222,9 @@ export default function VendasLayout({
 
         <div className="p-2 lg:p-3">
           {isVendas && <VendasStatusCards status={status} loading={statusLoading} />}
-          <div className="mb-2 border-b border-slate-200 pb-1">
+          <div className="mb-2 border-b border-slate-200 pb-1 text-center">
             <h1 className="text-[13px] font-medium leading-4 text-[#123B50]">{title}</h1>
-            {subtitle && <p className="text-[9px] text-slate-500">{subtitle}</p>}
+            {subtitle && <p className="text-[12px] font-normal text-slate-500">{subtitle}</p>}
           </div>
           {topContent}
           {children}
@@ -293,7 +275,7 @@ export default function VendasLayout({
         .v7-top-title span{color:#475569!important;font-size:10px!important;font-weight:900!important;letter-spacing:.14em;margin-top:5px}
         .v7-top-actions{display:flex!important;align-items:center!important;justify-content:flex-end;gap:10px;min-width:0;flex-wrap:nowrap}
         .v7-top-tablet,.v7-top-exit{display:inline-flex!important;align-items:center!important;justify-content:center;height:30px!important;min-height:30px!important;padding:0 10px!important;border-radius:2px!important;font-size:10px!important;font-weight:500!important;cursor:pointer;white-space:nowrap;box-sizing:border-box}
-        .v7-top-tablet{height:42px!important;min-height:42px!important;min-width:154px!important;padding:0 18px!important;background:#F97316!important;border:1px solid #EA580C!important;color:#ffffff!important;box-shadow:none!important;font-size:14px!important;font-weight:700!important;letter-spacing:.02em!important}
+        .v7-top-tablet{height:46px!important;min-height:46px!important;min-width:190px!important;padding:0 24px!important;background:#F97316!important;border:1px solid #EA580C!important;color:#ffffff!important;box-shadow:none!important;font-size:16px!important;font-weight:900!important;letter-spacing:.02em!important}
         .v7-top-exit{background:#ffffff!important;border:1px solid #fecaca!important;color:#991b1b!important}
         .v7-top-user-simple{display:flex!important;flex-direction:column;justify-content:center;gap:3px;min-height:42px;padding:0 12px;border-left:1px solid #e2e8f0!important;white-space:nowrap}
         .v7-top-user-simple span{color:#64748b!important;font-size:9px!important;font-weight:950!important;letter-spacing:.08em}
@@ -301,7 +283,7 @@ export default function VendasLayout({
         .v7-top-date{display:flex!important;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;min-height:42px;padding:0 12px;border-left:1px solid #e2e8f0!important;white-space:nowrap}
         .v7-top-date strong{color:#1e293b!important;font-size:11px!important;font-weight:950!important}
         .v7-top-date span{color:#475569!important;font-size:11px!important;font-weight:800!important}
-                .v7-top-actions button:hover{filter:brightness(.97)}
+        .v7-top-actions button:hover{filter:brightness(.97)}
         @media(max-width:1180px){.v7-logo-frame{height:72px;min-width:185px}.v7-top-title strong{font-size:18px!important}.v7-top-title{display:none!important}.v7-top-brand{min-width:0}}
         @media(max-width:900px){.v7-top-date{display:none!important}.v7-logo-frame{height:64px;min-width:165px}}
         @media(max-width:650px){.v7-topbar{padding:7px 10px!important;min-height:72px}.v7-logo-frame{height:54px;min-width:135px}.v7-top-user-simple{display:none!important}.v7-top-tablet,.v7-top-exit{min-height:36px;padding:0 9px!important;font-size:11px!important}.v7-top-tablet{min-width:130px!important;height:38px!important;font-size:11px!important}.v7-top-tablet::after{content:none}}
