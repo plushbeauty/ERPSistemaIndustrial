@@ -38,12 +38,53 @@
   .erp-dense .erp-sidebar-label{font-size:13px}
 }
 @media (max-width:1023px){
-  .erp-dense .erp-sidebar-label{font-size:15px}
-  .erp-dense input:not([type=checkbox]):not([type=radio]):not([type=range]),.erp-dense select{height:44px;min-height:44px;font-size:16px}
-  .erp-dense button{height:44px;min-height:44px;font-size:14px}
-  .erp-dense tbody tr{height:44px}
-  .erp-dense .erp-grid th,.erp-dense .erp-grid td{padding:9px 10px}
+  .erp-dense .erp-sidebar-label{font-size:11px}
+  .erp-dense input:not([type=checkbox]):not([type=radio]):not([type=range]),.erp-dense select{height:30px;min-height:30px;font-size:11px}
+  .erp-dense button{height:30px;min-height:30px;font-size:11px}
+  .erp-dense tbody tr{height:30px}
+  .erp-dense .erp-grid th,.erp-dense .erp-grid td{padding:5px 7px}
 }
+
+/* MASTER COMPACT SCALE — operational desktop/tablet controls */
+.erp-dense input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.erp-dense select{
+  height:30px!important;
+  min-height:30px!important;
+  font-size:11px!important;
+  line-height:14px!important;
+  border-radius:2px!important;
+}
+.erp-dense label{
+  font-size:9px!important;
+  line-height:12px!important;
+  margin-bottom:2px;
+}
+.erp-dense button{
+  height:30px!important;
+  min-height:30px!important;
+  font-size:11px!important;
+  line-height:14px!important;
+  border-radius:2px!important;
+}
+.erp-dense table{font-size:11px}
+.erp-dense thead tr,.erp-dense tbody tr{height:30px}
+.erp-compact input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.erp-compact select{
+  height:30px!important;
+  min-height:30px!important;
+  font-size:11px!important;
+  line-height:14px!important;
+  border-radius:2px!important;
+}
+.erp-compact label{
+  font-size:9px!important;
+  line-height:12px!important;
+  margin-bottom:2px;
+}
+.erp-compact button{
+  border-radius:2px!important;
+}
+
 
 .erp-vendas aside button{min-height:40px;font-size:13px}
 .erp-vendas table{font-size:13px}
@@ -89,8 +130,8 @@
 .fiscal-workspace .text-base{font-size:13px!important;line-height:1.4}
 .fiscal-workspace .text-sm{font-size:12px!important;line-height:1.4}
 .fiscal-workspace .text-xs{font-size:11px!important;line-height:1.4}
-.fiscal-workspace label{font-size:12px!important;line-height:1.35;font-weight:500!important;color:#334155}
-.fiscal-workspace label.text-xs{font-size:12px!important}
+.fiscal-workspace label{font-size:9px!important;line-height:12px;font-weight:500!important;color:#334155;margin-bottom:2px}
+.fiscal-workspace label.text-xs{font-size:9px!important}
 .fiscal-workspace .font-black,.fiscal-workspace .font-extrabold,.fiscal-workspace .font-bold,
 .fiscal-workspace .font-semibold{font-weight:600!important}
 .fiscal-workspace input:not([type=checkbox]):not([type=radio]):not([type=range]),
@@ -98,12 +139,12 @@
 .fiscal-workspace button,
 .fiscal-workspace a[role=button]{
   box-sizing:border-box;
-  height:40px!important;
-  min-height:40px!important;
+  height:30px!important;
+  min-height:30px!important;
   border-radius:2px!important;
   font-family:inherit;
-  font-size:13px!important;
-  line-height:1.25;
+  font-size:11px!important;
+  line-height:14px;
 }
 .fiscal-workspace input:not([type=checkbox]):not([type=radio]):not([type=range]),
 .fiscal-workspace select{
