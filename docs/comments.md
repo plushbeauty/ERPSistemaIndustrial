@@ -8,3 +8,9 @@
 - `src/pages/ComprasOrdemCompra.tsx` foi reconstruído sobre os contratos reais já existentes do ERP: `erp_current_empresa_id`, `erp_fornecedores`, `erp_produtos`, `erp_pedidos_compra`, `erp_pedidos_compra_itens` e `erp_compras_salvar_pedido`.
 - O workspace mantém o fluxo operacional de solicitação → cotação/RFQ → pedido/aprovação → fiscal → recebimento sem criar tabela fictícia de cotação.
 - A referência SAP consultada confirma a anatomia de documentos de compras por cabeçalho/item e campos como material, fornecedor, número do fabricante, unidade, preço, requisição, centro/conta e entrega.
+
+
+## 2026-10-07 — Saneamento SRE / tenant e auditoria
+- `EstoqueAlmoxarifadoCompact.tsx` preserva o fluxo transacional real de estoque e foi ajustado para geometria compacta; o cabeçalho unificado continua sendo fornecido por `VendasLayout` → `ERPHeader`.
+- `scripts/auditoria-brutal.mjs` passou a reconhecer corretamente o `AccessGate` real de `AppBootstrap` e delimitou marcadores falsos por palavra, evitando classificar valores como `todos` como `TODO`.
+- `BalancoEstoque.tsx` e `PainelOrdensProducao.tsx` passaram a resolver `erp_current_empresa_id()` antes das consultas e aplicar `empresa_id` explicitamente.
