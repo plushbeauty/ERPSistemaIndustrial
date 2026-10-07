@@ -234,7 +234,6 @@ export default function VendasLayout({
               <strong>{dateLabel}</strong>
               <span>{timeLabel}</span>
             </div>
-            <span className="v7-top-data">DADOS: SUPABASE</span>
             <button className="v7-top-exit" type="button" onClick={() => void logout()}>SAIR</button>
           </div>
         </header>
@@ -302,10 +301,9 @@ export default function VendasLayout({
         .v7-top-date{display:flex!important;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;min-height:42px;padding:0 12px;border-left:1px solid #e2e8f0!important;white-space:nowrap}
         .v7-top-date strong{color:#1e293b!important;font-size:11px!important;font-weight:950!important}
         .v7-top-date span{color:#475569!important;font-size:11px!important;font-weight:800!important}
-        .v7-top-data{display:inline-flex!important;align-items:center;min-height:30px;padding:0 10px;background:#2D8DB8!important;border:1px solid #2D8DB8!important;border-radius:2px!important;color:#ffffff!important;font-size:9px!important;font-weight:500!important;white-space:nowrap}
-        .v7-top-actions button:hover{filter:brightness(.97)}
+                .v7-top-actions button:hover{filter:brightness(.97)}
         @media(max-width:1180px){.v7-logo-frame{height:72px;min-width:185px}.v7-top-title strong{font-size:18px!important}.v7-top-title{display:none!important}.v7-top-brand{min-width:0}}
-        @media(max-width:900px){.v7-top-date{display:none!important}.v7-top-data{display:none!important}.v7-logo-frame{height:64px;min-width:165px}}
+        @media(max-width:900px){.v7-top-date{display:none!important}.v7-logo-frame{height:64px;min-width:165px}}
         @media(max-width:650px){.v7-topbar{padding:7px 10px!important;min-height:72px}.v7-logo-frame{height:54px;min-width:135px}.v7-top-user-simple{display:none!important}.v7-top-tablet,.v7-top-exit{min-height:36px;padding:0 9px!important;font-size:10px!important}.v7-top-tablet{font-size:0!important}.v7-top-tablet::after{content:'MENU VENDAS';font-size:10px}}
         .vendas-tablet-overlay{position:fixed!important;inset:0!important;z-index:9999!important;display:flex!important;align-items:flex-start!important;justify-content:center!important;padding:54px 16px 16px!important;background:rgba(15,23,42,.58)!important;overflow:auto!important}
         .vendas-tablet-modal{width:min(1180px,100%)!important;max-height:calc(100vh - 70px)!important;overflow:auto!important;background:#ffffff!important;border:1px solid #cbd5e1!important;border-radius:2px!important;box-shadow:0 18px 50px rgba(15,23,42,.25)!important}
@@ -318,9 +316,9 @@ export default function VendasLayout({
         .vendas-tablet-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important;gap:6px!important;padding:8px!important;background:#f4f7fe!important}
         .vendas-tablet-grid>button{display:flex!important;align-items:center!important;gap:7px!important;min-height:42px!important;padding:5px 7px!important;background:#ffffff!important;color:#123B50!important;border:1px solid #cbd5e1!important;border-radius:2px!important;text-align:left!important;cursor:pointer!important}
         .vendas-tablet-grid>button:hover{border-color:#2D8DB8!important;background:#f4fbfd!important}
-        .vendas-tablet-grid>button>span{width:30px!important;height:30px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border:1px solid!important;border-radius:2px!important;flex:0 0 auto}
+        .vendas-tablet-grid>button>span{width:32px!important;height:32px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border:1px solid!important;border-radius:2px!important;flex:0 0 auto}.vendas-tablet-grid>button>span svg{width:20px!important;height:20px!important}
         .vendas-tablet-grid>button>strong{font-size:10px!important;font-weight:500!important;line-height:1.2!important}
-        .vendas-standard .rounded,.vendas-standard .rounded-sm,.vendas-standard .rounded-md,.vendas-standard .rounded-lg,.vendas-standard .rounded-xl,.vendas-standard .rounded-2xl{border-radius:2px!important}.vendas-standard .font-bold,.vendas-standard .font-extrabold,.vendas-standard .font-black{font-weight:500!important}.vendas-standard h1,.vendas-standard h2,.vendas-standard h3,.vendas-standard p,.vendas-standard label{font-weight:500!important}.vendas-standard{font-size:10px}.vendas-standard button{border-radius:2px}.vendas-standard input:not([type=checkbox]):not([type=radio]):not([type=range]),.vendas-standard select{border-radius:2px}
+        .vendas-standard .rounded,.vendas-standard .rounded-sm,.vendas-standard .rounded-md,.vendas-standard .rounded-lg,.vendas-standard .rounded-xl,.vendas-standard .rounded-2xl{border-radius:2px!important}.vendas-standard .font-bold,.vendas-standard .font-extrabold,.vendas-standard .font-black{font-weight:500!important}.vendas-standard h1,.vendas-standard h2,.vendas-standard h3,.vendas-standard p,.vendas-standard label{font-weight:500!important}.vendas-standard{font-size:10px}.vendas-standard button{border-radius:2px;font-size:9px!important}.vendas-standard input:not([type=checkbox]):not([type=radio]):not([type=range]),.vendas-standard select{border-radius:2px}
       `}</style>
 
       {tabletMode && <style>{`.tablet-mode input,.tablet-mode select,.tablet-mode button{min-height:32px}`}</style>}
