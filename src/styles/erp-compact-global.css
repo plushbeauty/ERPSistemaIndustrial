@@ -48,3 +48,27 @@
     display: none !important;
   }
 }
+
+.erp-global-surface .nfe-page input.nfe-input,
+.erp-global-surface .nfe-page select.nfe-input,
+.erp-global-surface .nfe-page input.nfe-table-input,
+.erp-global-surface .nfe-page select.nfe-table-input {
+  height: 30px !important;
+  min-height: 30px !important;
+  border-radius: 2px !important;
+  font-size: 11px !important;
+}
+.erp-global-surface .nfe-page .nfe-label {
+  font-size: 9px !important;
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .04em !important;
+}
+.erp-global-surface .nfe-page button.nfe-primary,
+.erp-global-surface .nfe-page button.nfe-secondary,
+.erp-global-surface .nfe-page button.nfe-action {
+  height: 26px !important;
+  min-height: 26px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+}
