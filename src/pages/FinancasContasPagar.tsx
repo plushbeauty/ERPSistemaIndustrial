@@ -23,7 +23,6 @@ const money = (value: number) => new Intl.NumberFormat('pt-BR',{style:'currency'
 export default function FinancasContasPagar({ kind = 'PAGAR' }: Props) {
   const location = useLocation()
   const navigate = useNavigate()
-  const [empresaId,setEmpresaId] = useState<string | null>(null)
   const [rows,setRows] = useState<Row[]>([])
   const [baixas,setBaixas] = useState<Baixa[]>([])
   const [error,setError] = useState('')
@@ -41,7 +40,6 @@ export default function FinancasContasPagar({ kind = 'PAGAR' }: Props) {
       if (!active) return
       if (parcelas.error) { setError(parcelas.error.message); return }
       if (pagamentos.error) { setError(pagamentos.error.message); return }
-      setEmpresaId(id)
       setRows((parcelas.data ?? []) as Row[])
       setBaixas((pagamentos.data ?? []) as Baixa[])
     })()
