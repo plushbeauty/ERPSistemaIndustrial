@@ -70,6 +70,9 @@ export default function VendasCentral() {
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleteBusy, setDeleteBusy] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -115,6 +118,30 @@ export default function VendasCentral() {
   const pageCount = Math.max(1, Math.ceil(visibleOrders.length / PAGE_SIZE))
   const currentPage = Math.min(page, pageCount - 1)
   const pageOrders = visibleOrders.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)
+  const selectedOrder = orders.find((order) => order.id === selectedId) ?? null
+  const openNew = () => { setSelectedId(null); window.location.assign('/vendas/novo-pedido') }
+  const openEdit = () => {
+    if (!selectedOrder) { setError('Selecione um pedido no DBGrid antes de editar.'); return }
+    window.location.assign('/vendas/novo-pedido?pedido=' + encodeURIComponent(selectedOrder.id))
+  }
+  const requestDelete = () => {
+    if (!selectedOrder) { setError('Selecione um pedido no DBGrid antes de deletar.'); return }
+    setError('')
+    setConfirmDelete(true)
+  }
+  const deleteSelected = async () => {
+    if (!selectedOrder) return
+    setDeleteBusy(true); setError('')
+    try {
+      const tenant = await supabase.rpc('erp_current_empresa_id')
+      if (tenant.error || !tenant.data) throw tenant.error ?? new Error('Empresa não identificada.')
+      const result = await supabase.from('erp_pedidos_venda').delete().eq('id', selectedOrder.id).eq('empresa_id', String(tenant.data)).select('id').maybeSingle()
+      if (result.error) throw result.error
+      setConfirmDelete(false); setSelectedId(null); await load()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível deletar o pedido.')
+    } finally { setDeleteBusy(false) }
+  }
 
   const counts = useMemo(() => ({
     all: orders.length,
@@ -133,15 +160,11 @@ export default function VendasCentral() {
             <p>Acompanhe cotações, pedidos e entregas em um só lugar.</p>
           </div>
           <div className="sales-heading-actions">
-            <button type="button" className="sales-button sales-button--secondary" onClick={() => void load()} disabled={loading}>
-              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-              Atualizar
-            </button>
-            <Link to="/vendas/novo-pedido" className="sales-button sales-button--primary">
-              <FilePlus2 size={17} />
-              Novo pedido
-            </Link>
-          </div>
+            <button type="button" className="sales-button sales-button--primary sales-crud-button" onClick={openNew}><FileText size={13} />NOVO</button>
+            <button type="button" className="sales-button sales-button--secondary sales-crud-button" onClick={openEdit} disabled={!selectedOrder}><Edit3 size={13} />EDITAR</button>
+            <button type="button" className="sales-button sales-button--danger sales-crud-button" onClick={requestDelete} disabled={!selectedOrder}><Trash2 size={13} />DELETAR</button>
+            <button type="button" className="sales-button sales-button--secondary sales-crud-button" onClick={() => void load()} disabled={loading}><RefreshCw size={13} className={loading ? 'animate-spin' : ''} />ATUALIZAR</button>
+          </div>v>
         </section>
 
         {error && <div className="sales-alert" role="alert"><CircleAlert size={17} />{error}</div>}
@@ -211,7 +234,7 @@ export default function VendasCentral() {
               </thead>
               <tbody>
                 {pageOrders.map((order) => (
-                  <tr key={order.id} className={isOverdue(order) ? 'is-overdue' : ''}>
+                  <tr key={order.id} className={(isOverdue(order) ? 'is-overdue ' : '') + (selectedId === order.id ? 'is-selected' : '')} onClick={() => setSelectedId(order.id)} onDoubleClick={() => window.location.assign('/vendas/pedido/' + order.id)} aria-selected={selectedId === order.id}>
                     <td>
                       <Link className="sales-order-number" to={`/vendas/pedido/${order.id}`}>
                         PV-{String(order.numero).padStart(6, '0')}
