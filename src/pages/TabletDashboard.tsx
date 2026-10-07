@@ -144,7 +144,7 @@ export default function TabletDashboard() {
       <footer className="synqra-tablet-footer">
         <span>SYNQRA</span>
         <span>ERP & SGQ INDUSTRIAL</span>
-        <span>{SYNQRA_MODULES.filter(module => module.route).length} módulos com rota operacional</span>
+        <span>{SYNQRA_MODULES.filter(module => module.route).length} módulo com rota operacional</span>
         <span>{SYNQRA_MODULES.filter(module => !module.route).length} módulos a implementar</span>
         <span className="synqra-footer-slashes" aria-hidden="true"><i /><i /><i /></span>
       </footer>
