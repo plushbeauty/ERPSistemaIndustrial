@@ -8,6 +8,9 @@ import {
   CircleAlert,
   ClipboardList,
   FilePlus2,
+  FileText,
+  Edit3,
+  Trash2,
   PackageCheck,
   RefreshCw,
   Search,
@@ -293,6 +296,25 @@ export default function VendasCentral() {
           </nav>
         </section>
       </main>
+    </VendasLayout>
+      {confirmDelete && selectedOrder && (
+        <div className="sales-delete-overlay" role="dialog" aria-modal="true" aria-labelledby="sales-delete-title">
+          <section className="sales-delete-dialog">
+            <div className="sales-delete-icon"><Trash2 size={22} /></div>
+            <div>
+              <h2 id="sales-delete-title">Confirmar exclusão</h2>
+              <p>Tem certeza que quer deletar o pedido <strong>PV-{String(selectedOrder.numero).padStart(6, '0')}</strong>?</p>
+              <small>Esta ação será executada no banco de dados da empresa atual.</small>
+            </div>
+            <div className="sales-delete-actions">
+              <button type="button" className="sales-button sales-button--secondary" onClick={() => setConfirmDelete(false)} disabled={deleteBusy}>CANCELAR</button>
+              <button type="button" className="sales-button sales-button--danger" onClick={() => void deleteSelected()} disabled={deleteBusy}>
+                <Trash2 size={13} />{deleteBusy ? 'DELETANDO...' : 'DELETAR'}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </VendasLayout>
   )
 }
