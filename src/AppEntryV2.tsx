@@ -41,7 +41,7 @@ const IndustrialVisualShowcase = lazyPage(() => import('./components/IndustrialV
 const Blog = lazyPage(() => import('./pages/Blog'), 'Blog')
 const Contato = lazyPage(() => import('./pages/Contato'), 'Contato')
 const Fiscal = lazyPage(() => import('./pages/Fiscal'), 'Fiscal')
-const NFeEmissao = lazyPage(() => import('./pages/NFeEmissao'), 'NFeEmissao')
+const NFeEmissao = lazyPage(() => import('./pages/NFeEmissaoCompact'), 'NFeEmissao')
 const FiscalPrevisaoCaixa = lazyPage(() => import('./pages/FiscalPrevisaoCaixa'), 'FiscalPrevisaoCaixa')
 const FiscalCarteiraNFe = lazyPage(() => import('./pages/FiscalCarteiraNFe'), 'FiscalCarteiraNFe')
 const FiscalImpostos = lazyPage(() => import('./pages/FiscalImpostos'), 'FiscalImpostos')
