@@ -140,6 +140,7 @@ export default function VendasLayout({
   subtitle,
   onRefresh,
   topContent,
+  titleActions,
 }: {
   children: ReactNode
   title: string
@@ -147,6 +148,7 @@ export default function VendasLayout({
   onRefresh?: () => void
   navSections?: SalesNavSection[]
   topContent?: ReactNode
+  titleActions?: ReactNode
 }) {
   const { pathname } = useLocation()
   const [searchParams] = useSearchParams()
@@ -226,9 +228,12 @@ export default function VendasLayout({
 
         <div className="p-2 lg:p-3">
           {isVendas && <VendasStatusCards status={status} loading={statusLoading} />}
-          <div className="mb-2 border-b border-slate-200 pb-1 text-center">
-            <h1 className="text-[13px] font-medium leading-4 text-[#123B50]">{title}</h1>
-            {subtitle && <p className="text-[12px] font-normal text-slate-500">{subtitle}</p>}
+          <div className="relative mb-2 flex min-h-[34px] items-center justify-center border-b border-slate-200 pb-1 text-center">
+            {titleActions && <div className="absolute left-0 bottom-1 flex items-center gap-1">{titleActions}</div>}
+            <div className="min-w-0">
+              <h1 className="text-[13px] font-medium leading-4 text-[#123B50]">{title}</h1>
+              {subtitle && <p className="text-[11px] font-normal text-slate-500">{subtitle}</p>}
+            </div>
           </div>
           {topContent}
           {children}
