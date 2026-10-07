@@ -7,6 +7,7 @@ type Rpn = { id: string; numero_rpnc: string; descricao_nao_conformidade: string
 type Ishikawa = { id: string; rpnc_id: string; metodo: string | null; mao_de_obra: string | null; material: string | null; maquina: string | null; meio_ambiente: string | null; medicao: string | null }
 type Capa = { id: string; rpnc_id: string; tipo: string; descricao: string; causa_raiz: string | null; responsavel_id: string; prazo: string; status: string; acao_o_que: string | null; acao_por_que: string | null; acao_onde: string | null; acao_quem: string | null; acao_quando: string | null; acao_como: string | null; acao_quanto: number | null }
 type User = { id: string; nome: string | null; email: string | null }
+type Sector = { id: string; nome: string }
 type Doc = { id: string; codigo: string; titulo: string; tipo: string | null; revisao: number; data_revisao: string | null; preparado_por: string | null; pdf_storage_path: string | null; status: string }
 
 const field = (bad = false) => `h-[30px] w-full rounded-[2px] border px-2 text-[12px] outline-none ${bad ? 'border-red-500 bg-red-50/50 placeholder:text-red-400' : 'border-slate-300 bg-white focus:border-[#2D8DB8]'}`
@@ -20,10 +21,12 @@ export default function QualidadeRNC() {
   const [ishikawa, setIshikawa] = useState<Ishikawa | null>(null)
   const [actions, setActions] = useState<Capa[]>([])
   const [users, setUsers] = useState<User[]>([])
+  const [sectors, setSectors] = useState<Sector[]>([])
   const [docs, setDocs] = useState<Doc[]>([])
   const [selectedRnc, setSelectedRnc] = useState('')
   const [description, setDescription] = useState('')
   const [origin, setOrigin] = useState('Processo')
+  const [sectorId, setSectorId] = useState('')
   const [lot, setLot] = useState('')
   const [segregated, setSegregated] = useState('0')
   const [sixM, setSixM] = useState({ metodo: '', mao_de_obra: '', material: '', maquina: '', meio_ambiente: '', medicao: '' })
@@ -39,14 +42,15 @@ export default function QualidadeRNC() {
       if (current.error) throw current.error
       if (!current.data) throw new Error('Empresa da sessão não identificada.')
       const id = String(current.data); setCompanyId(id)
-      const [r, a, u, d] = await Promise.all([
+      const [r, a, u, s, d] = await Promise.all([
         supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,sgq_origem,sgq_severidade,lote_afetado,quantidade_segregada,status,criado_em').eq('empresa_id', id).not('sgq_origem', 'is', null).order('criado_em', { ascending: false }).limit(500),
         supabase.from('erp_sgq_capa_acoes').select('id,rpnc_id,tipo,descricao,causa_raiz,responsavel_id,prazo,status,acao_o_que,acao_por_que,acao_onde,acao_quem,acao_quando,acao_como,acao_quanto').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
         supabase.from('erp_usuarios').select('id,nome,email').eq('empresa_id', id).eq('ativo', true).is('deleted_at', null).order('nome').limit(500),
+        supabase.from('erp_setores').select('id,nome').eq('empresa_id', id).eq('ativo', true).order('nome').limit(500),
         supabase.from('erp_documentos_qualidade').select('id,codigo,titulo,tipo,revisao,data_revisao,preparado_por,pdf_storage_path,status').eq('empresa_id', id).order('codigo').limit(500),
       ])
-      if (r.error || a.error || u.error || d.error) throw r.error ?? a.error ?? u.error ?? d.error
-      setRncs((r.data ?? []) as Rpn[]); setActions((a.data ?? []) as Capa[]); setUsers((u.data ?? []) as User[]); setDocs((d.data ?? []) as Doc[])
+      if (r.error || a.error || u.error || s.error || d.error) throw r.error ?? a.error ?? u.error ?? s.error ?? d.error
+      setRncs((r.data ?? []) as Rpn[]); setActions((a.data ?? []) as Capa[]); setUsers((u.data ?? []) as User[]); setSectors((s.data ?? []) as Sector[]); setDocs((d.data ?? []) as Doc[])
       if (!selectedRnc && r.data?.[0]) setSelectedRnc(r.data[0].id)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar SGQ.')
@@ -74,10 +78,15 @@ export default function QualidadeRNC() {
     if (!description.trim()) { setError('Descrição detalhada da falha é obrigatória.'); return }
     if (!lot.trim()) { setError('Lote afetado é obrigatório.'); return }
     setBusy(true)
+    if (!sectorId) { setError('Setor responsável é obrigatório.'); return }
+    setBusy(true)
     try {
+      const lotResult = await supabase.from('erp_estoque_lotes').select('id').eq('empresa_id', companyId).or(`lote_interno.eq.${lot.trim()},lote_fornecedor.eq.${lot.trim()}`).maybeSingle()
+      if (lotResult.error) throw lotResult.error
+      if (!lotResult.data) throw new Error('Lote afetado não encontrado na empresa atual.')
       const result = await supabase.rpc('erp_sgq_abrir_rpnc', {
-        p_descricao: description.trim(), p_origem: origin, p_severidade: 'Menor', p_setor_id: null,
-        p_linked_entity_type: 'lote', p_linked_entity_id: null,
+        p_descricao: description.trim(), p_origem: origin, p_severidade: 'Menor', p_setor_id: sectorId,
+        p_linked_entity_type: 'lote', p_linked_entity_id: lotResult.data.id,
       })
       if (result.error) throw result.error
       if (!result.data || typeof result.data !== 'object' || !('id' in result.data)) throw new Error('A abertura da RNC não retornou o registro.')
@@ -154,10 +163,11 @@ export default function QualidadeRNC() {
           <div className="sgq-grid sgq-grid-5">
             <label className={label}>Código RNC<input className={field(false)} readOnly value={selected?.numero_rpnc ?? 'Gerado pelo banco'} /></label>
             <label className={label}>Origem<select className={field(false)} value={origin} onChange={(e) => setOrigin(e.target.value)}><option>Cliente</option><option>Processo</option><option>Fornecedor</option></select></label>
+            <label className={label}>Setor responsável<select className={field(!sectorId)} value={sectorId} onChange={(e) => setSectorId(e.target.value)}><option value="">Preencher...</option>{sectors.map((sector) => <option key={sector.id} value={sector.id}>{sector.nome}</option>)}</select></label>
             <label className={label}>Lote afetado<input className={field(!lot && !selected)} value={lot} onChange={(e) => setLot(e.target.value)} placeholder="Preencher..." /></label>
             <label className={label}>Qtd. segregada<input className={field(false)} type="number" min="0" value={segregated} onChange={(e) => setSegregated(e.target.value)} /></label>
-            <div className="sgq-action"><button className={btn} type="button" disabled={busy} onClick={() => void openRnc()}><Save size={13}/> ABRIR RNC</button></div>
           </div>
+          <div className="sgq-save-row"><button className={btn} type="button" disabled={busy} onClick={() => void openRnc()}><Save size={13}/> ABRIR RNC</button></div>
           <label className={label + ' sgq-mt'}>Descrição detalhada da falha<textarea className="sgq-textarea" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Preencher..." /></label>
           <div className="sgq-grid sgq-grid-6 sgq-mt">
             {(['metodo','mao_de_obra','material','maquina','meio_ambiente','medicao'] as const).map((key) => <label className={label} key={key}>{key === 'mao_de_obra' ? 'Mão de obra' : key === 'meio_ambiente' ? 'Meio ambiente' : key.replace('_',' ')}<input className={field(false)} value={sixM[key]} onChange={(e) => setSixM({ ...sixM, [key]: e.target.value })} placeholder="Preencher..." /></label>)}
