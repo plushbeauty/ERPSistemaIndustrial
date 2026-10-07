@@ -1,0 +1,50 @@
+/* SYSNQRA ERP — padrão geométrico industrial global
+ * Campos operacionais: 30px, raio 2px, texto 11–12px, labels 9px.
+ * Não altera regras de negócio, Supabase, RLS ou permissões.
+ */
+.erp-global-surface input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.erp-global-surface select,
+.erp-global-surface textarea {
+  box-sizing: border-box;
+  border-radius: 2px !important;
+  font-size: 11px !important;
+}
+.erp-global-surface input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.erp-global-surface select {
+  height: 30px !important;
+  min-height: 30px !important;
+}
+.erp-global-surface label {
+  font-size: 9px !important;
+  line-height: 11px !important;
+  font-weight: 500 !important;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.erp-global-surface button {
+  border-radius: 2px !important;
+}
+.erp-global-surface .erp-compact input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.erp-global-surface .erp-compact select {
+  height: 30px !important;
+  min-height: 30px !important;
+  font-size: 11px !important;
+}
+.erp-global-surface .erp-required-error,
+.erp-global-surface input.border-red-500,
+.erp-global-surface select.border-red-500 {
+  border-color: #ef4444 !important;
+  background: rgba(254, 242, 242, .5) !important;
+}
+.erp-global-surface input::placeholder,
+.erp-global-surface select:invalid {
+  font-size: 11px !important;
+}
+@media print {
+  .erp-global-surface .print-toolbar,
+  .erp-global-surface .v7-topbar,
+  .erp-global-surface nav,
+  .erp-global-surface aside {
+    display: none !important;
+  }
+}
