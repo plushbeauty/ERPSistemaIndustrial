@@ -342,6 +342,10 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     }
   }, [refreshKey])
 
+  useEffect(() => {
+    void load()
+  }, [load])
+
   const productMap = useMemo(
     () => new Map(products.map(product => [product.id, product])),
     [products],
