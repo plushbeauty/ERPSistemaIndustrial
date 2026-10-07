@@ -36,8 +36,8 @@ export default function VendasTablet() {
           <section key={section.label}>
             <div className="erp-vendas-menu-section-title">{section.label}</div>
             <div className="erp-vendas-menu-grid">
-              {section.items.map(({ key, label, route, Icon }) => (
-                <button key={key} type="button" onClick={() => navigate(route)} title={label}>
+              {section.items.map(({ label, href, icon: Icon }) => (
+                <button key={href} type="button" onClick={() => navigate(href)} title={label}>
                   <Icon size={32} strokeWidth={1.8} aria-hidden="true" />
                   <span>{label}</span>
                 </button>
