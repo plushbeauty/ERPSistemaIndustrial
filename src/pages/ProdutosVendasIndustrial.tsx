@@ -73,7 +73,7 @@ export default function ProdutosVendasIndustrial(){
   const [form,setForm]=useState<FormData>(empty())
   const [editing,setEditing]=useState(false)
   const [tab,setTab]=useState<Tab>('gerais')
-  const [query,setQuery]=useState('')
+  const [query,setQuery]=useState(''),[categoryFilter,setCategoryFilter]=useState('TODAS')
   const [busy,setBusy]=useState(false)
   const [message,setMessage]=useState('')
   const [error,setError]=useState('')
@@ -107,7 +107,7 @@ export default function ProdutosVendasIndustrial(){
 
   const filtered=useMemo(()=>{
     const q=query.trim().toLowerCase()
-    return q?products.filter(p=>(p.codigo+' '+p.nome+' '+(p.codigo_barras||'')+' '+(p.grupo||'')+' '+(p.marca||'')).toLowerCase().includes(q)):products
+    return products.filter(p=>(!q||(p.codigo+' '+p.nome+' '+(p.codigo_barras||'')+' '+(p.grupo||'')+' '+(p.marca||'')+' '+(p.categoria||'')).toLowerCase().includes(q))&&(categoryFilter==='TODAS'||String(p.categoria||'').toUpperCase()===categoryFilter))
   },[products,query])
 
   const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
@@ -290,7 +290,7 @@ export default function ProdutosVendasIndustrial(){
         <div style={{display:'grid',gridTemplateColumns:'1.1fr 1fr 2.8fr 1.4fr',gap:11}}>
           {field('Código *','codigo')} {field('Código de barras','codigo_barras')} {field('Descrição *','nome','text',2)}
           {field('Descrição resumida','descricao_resumida','text',2)}
-          {select('Tipo de produto','categoria',[['Produto acabado','Produto acabado'],['Matéria-prima','Matéria-prima'],['Componente','Componente'],['Insumo','Insumo']])}
+          {select('Tipo de produto','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','MATÉRIA-PRIMA'],['PRENSADOS','PRENSADOS'],['INJETADOS','INJETADOS'],['ALMOXARIFADO','ALMOXARIFADO'],['MATERIAL DE ESCRITÓRIO','MATERIAL DE ESCRITÓRIO'],['PRODUTOS DE LIMPEZA','PRODUTOS DE LIMPEZA'],['Componente','Componente'],['Insumo','Insumo']])}
           {field('Grupo','grupo')} {field('Subgrupo','subgrupo')} {field('Marca','marca')}
           {select('Unidade estoque','unidade',[['UN','UN - Unidade'],['PC','PC - Peça'],['KG','KG - Quilograma'],['M','M - Metro'],['L','L - Litro']])}
           {select('Unidade compra','unidade_compra',[['UN','UN - Unidade'],['PC','PC - Peça'],['KG','KG - Quilograma'],['M','M - Metro'],['L','L - Litro']])}
@@ -328,7 +328,7 @@ export default function ProdutosVendasIndustrial(){
 
       {tab==='estoque'&&<section style={{padding:14}}>
         <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:11}}>
-          {field('Estoque atual','estoque_atual','number')} {field('Estoque mínimo','ponto_reposicao','number')} {field('Estoque máximo','estoque_maximo','number')} {field('Ponto de reposição','ponto_reposicao','number')}
+          {field('Estoque atual','estoque_atual','number')} {field('Ponto de reposição','ponto_reposicao','number')} {field('Estoque máximo','estoque_maximo','number')}
           <label style={{...label,gridColumn:'span 2'}}>Localização padrão<select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Sem localização</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}</option>)}</select></label>
           {field('Validade do lote (dias)','lote_validade_dias','number')}
         </div>
@@ -364,7 +364,7 @@ export default function ProdutosVendasIndustrial(){
 
     <section style={{...panel,margin:'0 10px 10px',overflow:'hidden'}}>
       <div style={{display:'flex',alignItems:'center',gap:9,padding:9,background:'#f7f9fc',borderBottom:'1px solid #d6dde6'}}>
-        <Search size={15}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Pesquisar..." style={{...input,maxWidth:360}}/><span style={{fontSize:11,color:'#667085'}}>{filtered.length} produto(s)</span><button type="button" onClick={()=>void load()} disabled={busy} style={{...btn('normal'),marginLeft:'auto'}}><RefreshCw size={14}/>Atualizar</button>
+        <Search size={15}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Pesquisar..." style={{...input,maxWidth:360}}/><select value={categoryFilter} onChange={e=>setCategoryFilter(e.target.value)} style={{...input,width:220}}><option value="TODAS">TODAS AS CATEGORIAS</option><option value="MATÉRIA-PRIMA">MATÉRIA-PRIMA</option><option value="PRENSADOS">PRENSADOS</option><option value="INJETADOS">INJETADOS</option><option value="ALMOXARIFADO">ALMOXARIFADO</option><option value="MATERIAL DE ESCRITÓRIO">MATERIAL DE ESCRITÓRIO</option><option value="PRODUTOS DE LIMPEZA">PRODUTOS DE LIMPEZA</option></select><span style={{fontSize:11,color:'#667085'}}>{filtered.length} produto(s)</span><button type="button" onClick={()=>void load()} disabled={busy} style={{...btn('normal'),marginLeft:'auto'}}><RefreshCw size={14}/>Atualizar</button>
       </div>
       <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:1050}}><thead><tr>{['Código','Descrição','Grupo','Marca','Unidade','Estoque Atual','Situação','Ações'].map(h=><th key={h} style={{textAlign:'left',padding:9,borderBottom:'1px solid #d9e1ea',fontSize:10}}>{h}</th>)}</tr></thead><tbody>{filtered.map(p=><tr key={p.id} onDoubleClick={()=>selectProduct(p)} style={{background:selectedId===p.id?'#e7eefb':'#fff',cursor:'pointer'}}><td style={{padding:9,fontSize:11,fontWeight:900}}>{p.codigo}</td><td style={{padding:9,fontSize:11}}>{p.nome}</td><td style={{padding:9,fontSize:11}}>{p.grupo||'—'}</td><td style={{padding:9,fontSize:11}}>{p.marca||'—'}</td><td style={{padding:9,fontSize:11}}>{p.unidade}</td><td style={{padding:9,fontSize:11,fontWeight:900}}>{fmt(p.estoque_atual)}</td><td style={{padding:9,fontSize:11}}><span style={{display:'inline-flex',alignItems:'center',gap:4}}><CheckCircle2 size={12} color={p.ativo?'#16a34a':'#b42318'}/>{p.ativo?'Ativo':'Inativo'}</span></td><td style={{padding:9}}><button type="button" onClick={()=>selectProduct(p)} style={{...btn('normal'),height:30,padding:'0 9px'}}><Edit3 size={13}/>Abrir</button></td></tr>)}{!filtered.length&&emptyRow('Nenhum produto encontrado.',8)}</tbody></table></div>
     </section>
