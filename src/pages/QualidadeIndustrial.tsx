@@ -174,7 +174,7 @@ export default function QualidadeIndustrial() {
         tolerancia_superior_mm: Number(upper),
         tolerancia_inferior_mm: Number(lower),
         valor_medido_mm: Number(measured),
-        instrument: instrument,
+        instrumento: instrument,
       }).select('id,inspecao_recebimento_id,numero_peca_amostrada,cavidade_molde,cota_nominal_mm,tolerancia_superior_mm,tolerancia_inferior_mm,valor_medido_mm,desvio_mm,status,instrumento').single()
       if (result.error) throw result.error
       setNotice(`Medição registrada: ${result.data.status} · desvio ${Number(result.data.desvio_mm ?? 0).toFixed(3)} mm.`)
