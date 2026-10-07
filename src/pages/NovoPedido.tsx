@@ -58,7 +58,7 @@ export default function NovoPedido(){
  const transportadorasFiltro=transportadoras.filter(t=>!busca||t.codigo.toLowerCase().includes(busca.toLowerCase())||t.razao_social.toLowerCase().includes(busca.toLowerCase())).slice(0,40)
  const produtosFiltro=produtos.filter(p=>{const q=busca.toLowerCase();return !q||p.codigo.toLowerCase().includes(q)||p.nome.toLowerCase().includes(q)||(p.referencia_interna??'').toLowerCase().includes(q)||(p.codigo_barras??'').toLowerCase().includes(q)}).slice(0,40)
 
- return <VendasLayout title={"Novo Pedido de Venda | Entrada comercial " + String.fromCharCode(0x27e1) + " estoque " + String.fromCharCode(0x27e1) + " PCP"} onRefresh={()=>void load()}>
+ return <VendasLayout title={"Novo Pedido de Venda | Entrada comercial " + String.fromCharCode(0x2794) + " estoque " + String.fromCharCode(0x27e1) + " PCP"} onRefresh={()=>void load()}>
   <div id="frmNovoPedido" className="erp-compact w-full space-y-1 bg-slate-50 text-[11px]">
    {message&&<div className="border border-green-200 bg-green-50 px-2 py-1 text-[9px] text-green-800">{message}</div>}
    <section className="rounded-[2px] border border-gray-200 bg-white p-2">
