@@ -119,7 +119,7 @@ const numberValue = (value: unknown): number => {
 const formatNumber = (value: number, digits = 0): string =>
   new Intl.NumberFormat('pt-BR', { maximumFractionDigits: digits }).format(value)
 
-const formatPercent = (value: number): string => \`\${formatNumber(value, 1)}%\`
+const formatPercent = (value: number): string => `${formatNumber(value, 1)}%`
 
 const clampPercent = (value: number): number =>
   Math.max(0, Math.min(100, value))
@@ -429,7 +429,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     return [...buckets.entries()]
       .sort(([a], [b]) => a - b)
       .map(([hour, value]) => ({
-        label: \`\${String(hour).padStart(2, '0')}:00\`,
+        label: `${String(hour).padStart(2, '0')}:00`,
         value,
       }))
   }, [pointings])
@@ -546,7 +546,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
 
       setMessage(
         created
-          ? \`OP \${created.numero_op} criada pelo fluxo transacional do PCP.\`
+          ? `OP ${created.numero_op} criada pelo fluxo transacional do PCP.`
           : 'OP criada pelo fluxo transacional do PCP.',
       )
 
@@ -781,7 +781,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
                   <tr key={machine.id} className="h-[30px] border-b border-slate-100 hover:bg-slate-50">
                     <td className="px-3 text-left">{machine.codigo}</td>
                     <td className="px-3 text-left">{machine.nome}</td>
-                    <td className={\`px-3 text-left \${statusClass(machine.status)}\`}>
+                    <td className={`px-3 text-left ${statusClass(machine.status)}`}>
                       {normalizeStatus(machine.status)}
                     </td>
                   </tr>
@@ -817,7 +817,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
                       <div className="truncate text-[10px] text-slate-500">{product.codigo}</div>
                       <div className="truncate text-[11px] text-slate-800">{product.nome}</div>
                     </div>
-                    <span className={\`shrink-0 border px-1.5 py-0.5 text-[8px] uppercase \${status.className}\`}>
+                    <span className={`shrink-0 border px-1.5 py-0.5 text-[8px] uppercase ${status.className}`}>
                       {status.label}
                     </span>
                   </div>
@@ -871,7 +871,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
                     <tr key={order.id} className="h-[31px] border-b border-slate-100 hover:bg-slate-50">
                       <td className="px-3 font-mono text-left text-[10px]">{String(order.numero_op)}</td>
                       <td className="px-3 text-left">
-                        {product ? \`\${product.codigo} · \${product.nome}\` : 'Produto não identificado'}
+                        {product ? `${product.codigo} · ${product.nome}` : 'Produto não identificado'}
                       </td>
                       <td className="px-3 text-right">
                         {formatNumber(numberValue(order.quantidade ?? order.quantidade_planejada))}
@@ -1007,7 +1007,7 @@ function StatusTile({
   return (
     <div className="bg-white px-3 py-2">
       <span className="block text-[8px] uppercase tracking-wider text-slate-500">{label}</span>
-      <strong className={\`mt-1 block text-[18px] \${className}\`}>{value}</strong>
+      <strong className={`mt-1 block text-[18px] ${className}`}>{value}</strong>
     </div>
   )
 }
