@@ -31,6 +31,7 @@ import './styles/industrial-plans.css'
 import './styles/erp-design-system-2026.css'
 import './styles/synqra-app-shell.css'
 import './styles/compras-compact.css'
+import './styles/erp-compact-global.css'
 
 import IndustrialLoginDirect from './IndustrialLoginDirect'
 
