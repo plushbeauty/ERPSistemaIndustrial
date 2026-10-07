@@ -131,13 +131,13 @@ export default function ComprasPedidoCompra() {
   return <div className="min-h-screen bg-[#F4F7FE] text-slate-900">
     <header className="border-b bg-white">
       <div className="flex min-h-[70px] items-center justify-between px-5 lg:px-8">
-        <div><p className="text-[10px] uppercase tracking-[.16em] text-[#2D8DB8]">Compras • Suprimentos</p><h1 className="text-xl font-medium text-[#123B50]">Pedido de Compra</h1></div>
+        <div><p className="text-[10px] uppercase tracking-[.16em] text-[#2D8DB8]">Compras • Suprimentos</p><h1 className="text-[13px] font-medium text-[#123B50]">Pedido de Compra</h1></div>
         <button type="button" onClick={() => location.assign('/compras')} className="flex items-center gap-2 rounded border px-3 py-2 text-xs"><ArrowLeft size={15}/>Voltar</button>
       </div>
     </header>
     <main className="mx-auto max-w-[1500px] p-5 lg:p-8">
       {(error || message) && <div role={error ? 'alert' : 'status'} className={`mb-4 rounded border p-3 text-sm ${error ? 'border-red-200 bg-red-50 text-red-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'}`}>{error || message}</div>}
-      <section className="rounded-lg border bg-white p-5">
+      <section className="rounded-[2px] border bg-white p-5">
         <div className="grid gap-4 md:grid-cols-3">
           <label className="text-xs md:col-span-2">Fornecedor
             <select required value={supplier} onChange={(event) => setSupplier(event.target.value)} className="mt-1 h-10 w-full rounded border px-3">
@@ -171,7 +171,7 @@ export default function ComprasPedidoCompra() {
         </div>
         <label className="mt-4 block text-xs font-semibold">Observações<textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Observações ou instruções de recebimento" className="mt-1 min-h-24 w-full rounded border p-3 text-sm"/></label>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-          <strong className="text-xl text-[#123B50]">TOTAL: {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+          <strong className="text-[13px] text-[#123B50]">TOTAL: {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
           <button type="button" disabled={busy} onClick={() => void save()} className="flex min-h-11 items-center gap-2 rounded bg-[#2D8DB8] px-5 text-sm text-white disabled:opacity-50"><Save size={16}/>{busy ? 'Salvando…' : 'Enviar para aprovação'}</button>
         </div>
       </section>
