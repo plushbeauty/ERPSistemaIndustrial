@@ -2,7 +2,9 @@ name: Industrial Code Quality
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - 'agent/industrial-command-center-*'
   workflow_dispatch:
 
 permissions:
