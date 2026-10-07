@@ -138,24 +138,24 @@ export default function PlanosIndustrial() {
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
         <a
-          className="inline-flex min-h-[54px] items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-black text-slate-900 hover:bg-slate-100"
+          className="inline-flex min-h-[54px] items-center gap-2 rounded-[2px] border border-slate-300 bg-white px-4 text-sm font-black text-slate-900 hover:bg-slate-100"
           href={module ? '/modulos/' + module : '/'}
         >
           <ArrowLeft size={17} /> {module ? 'Voltar ao módulo' : 'Voltar ao site'}
         </a>
 
-        <header className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
+        <header className="mt-8 rounded-[2px] border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <span className="text-xs font-black uppercase tracking-[0.18em] text-blue-700">SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL · PLANOS</span>
-              <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">Planos carregados do catálogo comercial</h1>
+              <h1 className="mt-2 text-[15px] font-black tracking-tight text-slate-950 sm:text-4xl">Planos carregados do catálogo comercial</h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700">
                 Compare a composição atualmente cadastrada no banco ERP. Recursos e valores exibidos abaixo são lidos do catálogo ativo.
               </p>
             </div>
             <a
               href="/cadastro-empresa"
-              className="inline-flex min-h-[54px] items-center justify-center rounded-lg bg-blue-600 px-5 text-sm font-black text-white hover:bg-blue-700"
+              className="inline-flex min-h-[54px] items-center justify-center rounded-[2px] bg-blue-600 px-5 text-sm font-black text-white hover:bg-blue-700"
             >
               Configurar empresa <ArrowRight className="ml-2" size={17} />
             </a>
@@ -163,17 +163,17 @@ export default function PlanosIndustrial() {
         </header>
 
         {moduleName && (
-          <div className="mt-5 flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-blue-950">
+          <div className="mt-5 flex items-center gap-3 rounded-[2px] border border-blue-200 bg-blue-50 p-4 text-blue-950">
             <Factory size={22} />
             <div>
               <small className="block text-xs font-black uppercase tracking-wide text-blue-700">MÓDULO SELECIONADO</small>
-              <strong className="text-base">{moduleName}</strong>
+              <strong className="text-[11px]">{moduleName}</strong>
             </div>
           </div>
         )}
 
         {status === 'loading' && (
-          <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-8" aria-live="polite">
+          <section className="mt-6 rounded-[2px] border border-slate-200 bg-white p-8" aria-live="polite">
             <div className="flex items-center gap-3 text-slate-700">
               <RefreshCw className="animate-spin" size={20} />
               <strong>LOADING · Carregando composição comercial real do Supabase…</strong>
@@ -182,7 +182,7 @@ export default function PlanosIndustrial() {
         )}
 
         {status === 'error' && (
-          <section className="mt-6 rounded-2xl border border-rose-300 bg-white p-8" role="alert">
+          <section className="mt-6 rounded-[2px] border border-rose-300 bg-white p-8" role="alert">
             <div className="flex items-start gap-3">
               <ShieldCheck className="mt-0.5 text-rose-700" size={22} />
               <div>
@@ -191,7 +191,7 @@ export default function PlanosIndustrial() {
                 <button
                   type="button"
                   onClick={() => void load()}
-                  className="mt-4 inline-flex min-h-[54px] items-center gap-2 rounded-lg bg-rose-600 px-4 font-black text-white hover:bg-rose-700"
+                  className="mt-4 inline-flex min-h-[54px] items-center gap-2 rounded-[2px] bg-rose-600 px-4 font-black text-white hover:bg-rose-700"
                 >
                   <RefreshCw size={17} /> Tentar novamente
                 </button>
@@ -201,7 +201,7 @@ export default function PlanosIndustrial() {
         )}
 
         {status === 'empty' && (
-          <section className="mt-6 rounded-2xl border border-amber-300 bg-white p-8" role="status">
+          <section className="mt-6 rounded-[2px] border border-amber-300 bg-white p-8" role="status">
             <strong className="text-slate-950">EMPTY · Nenhum plano comercial ativo foi encontrado.</strong>
             <p className="mt-2 text-sm text-slate-700">A tela não apresenta preços fictícios. Cadastre um plano no catálogo ERP para disponibilizá-lo.</p>
           </section>
@@ -218,7 +218,7 @@ export default function PlanosIndustrial() {
                   <article
                     key={plan.codigo}
                     className={[
-                      'flex min-h-full flex-col rounded-2xl border bg-white p-6 shadow-sm transition',
+                      'flex min-h-full flex-col rounded-[2px] border bg-white p-6 shadow-sm transition',
                       isSelected ? 'border-blue-500 ring-2 ring-blue-100' : 'border-slate-200',
                       isEnterpriseGold ? 'shadow-xl shadow-slate-900/10' : '',
                     ].join(' ')}
@@ -230,7 +230,7 @@ export default function PlanosIndustrial() {
                         onClick={() => setSelected(plan.codigo)}
                         aria-pressed={isSelected}
                         className={[
-                          'min-h-[54px] rounded-lg border px-3 text-xs font-black',
+                          'min-h-[54px] rounded-[2px] border px-3 text-xs font-black',
                           isSelected
                             ? 'border-blue-600 bg-blue-600 text-white'
                             : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-50',
@@ -246,15 +246,15 @@ export default function PlanosIndustrial() {
                       </span>
                     )}
 
-                    <h2 className="mt-4 text-2xl font-black text-slate-950">{plan.nome}</h2>
-                    <div className="mt-3 text-3xl font-black text-slate-950">
+                    <h2 className="mt-4 text-[15px] font-black text-slate-950">{plan.nome}</h2>
+                    <div className="mt-3 text-[15px] font-black text-slate-950">
                       {money(plan.preco_mensal)}
                       <small className="ml-1 text-sm font-bold text-slate-500">/mês</small>
                     </div>
                     <p className="mt-3 min-h-[48px] text-sm leading-6 text-slate-700">{plan.descricao}</p>
 
                     {moduleName && (
-                      <div className="mt-4 flex min-h-[54px] items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-black">
+                      <div className="mt-4 flex min-h-[54px] items-center gap-2 rounded-[2px] border border-slate-200 bg-slate-50 px-3 text-sm font-black">
                         {included(plan) ? <Check className="text-emerald-700" size={17} /> : <Wrench className="text-slate-500" size={17} />}
                         <span className={included(plan) ? 'text-emerald-900' : 'text-slate-700'}>
                           {included(plan) ? 'Incluído neste plano' : 'Não incluído neste plano'}
@@ -272,7 +272,7 @@ export default function PlanosIndustrial() {
                     </ul>
 
                     {isEnterpriseGold && plan.recursos.length > 0 && (
-                      <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="mt-5 rounded-[2px] border border-slate-200 bg-slate-50 p-4">
                         <h3 className="text-sm font-black uppercase tracking-wide text-slate-900">Rastreabilidade e recursos</h3>
                         <ul className="mt-2 space-y-2">
                           {plan.recursos.map((feature) => (
@@ -286,7 +286,7 @@ export default function PlanosIndustrial() {
                     )}
 
                     <a
-                      className="mt-auto inline-flex min-h-[54px] items-center justify-center rounded-lg bg-blue-600 px-4 pt-4 text-sm font-black text-white hover:bg-blue-700"
+                      className="mt-auto inline-flex min-h-[54px] items-center justify-center rounded-[2px] bg-blue-600 px-4 pt-4 text-sm font-black text-white hover:bg-blue-700"
                       href={href(plan.codigo)}
                     >
                       Escolher {plan.nome} <ArrowRight className="ml-2" size={17} />
@@ -296,11 +296,11 @@ export default function PlanosIndustrial() {
               })}
             </section>
 
-            <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <section className="mt-6 rounded-[2px] border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
                   <small className="text-xs font-black uppercase tracking-[0.16em] text-blue-700">ECOSSISTEMA DO CATÁLOGO</small>
-                  <h2 className="mt-1 text-2xl font-black text-slate-950">Novos recursos industriais disponíveis</h2>
+                  <h2 className="mt-1 text-[15px] font-black text-slate-950">Novos recursos industriais disponíveis</h2>
                   <p className="mt-1 text-sm text-slate-700">A lista abaixo é montada diretamente pelos módulos ativos cadastrados para os planos.</p>
                 </div>
                 <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-700">{current?.modulos.length ?? 0} módulos no plano selecionado</span>
@@ -308,7 +308,7 @@ export default function PlanosIndustrial() {
               <div className="mt-4 flex flex-wrap gap-2">
                 {(current?.modulos ?? []).map((code) => (
                   <a key={code} href={'/planos?modulo=' + encodeURIComponent(code) + '&plano=' + encodeURIComponent(current?.codigo ?? '')}
-                    className="inline-flex min-h-[40px] items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-800 hover:border-blue-400 hover:bg-blue-50">
+                    className="inline-flex min-h-[40px] items-center gap-2 rounded-[2px] border border-slate-200 bg-white px-3 text-xs font-black text-slate-800 hover:border-blue-400 hover:bg-blue-50">
                     <Check className="text-emerald-700" size={14} />
                     {moduleLabels[code] ?? code}
                   </a>
@@ -317,10 +317,10 @@ export default function PlanosIndustrial() {
             </section>
 
             {current && (
-              <section className="mt-6 flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+              <section className="mt-6 flex flex-col gap-5 rounded-[2px] border border-slate-200 bg-white p-6 shadow-sm lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <small className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">SUCCESS · SUA ESCOLHA</small>
-                  <h2 className="mt-1 text-2xl font-black text-slate-950">{current.nome} · {money(current.preco_mensal)}/mês</h2>
+                  <h2 className="mt-1 text-[15px] font-black text-slate-950">{current.nome} · {money(current.preco_mensal)}/mês</h2>
                   <p className="mt-1 text-sm text-slate-700">
                     {moduleName
                       ? included(current)
@@ -329,7 +329,7 @@ export default function PlanosIndustrial() {
                       : 'A composição é lida diretamente do catálogo comercial.'}
                   </p>
                 </div>
-                <a href={href(current.codigo)} className="inline-flex min-h-[54px] items-center justify-center rounded-lg bg-blue-600 px-5 font-black text-white hover:bg-blue-700">
+                <a href={href(current.codigo)} className="inline-flex min-h-[54px] items-center justify-center rounded-[2px] bg-blue-600 px-5 font-black text-white hover:bg-blue-700">
                   Continuar para cadastro <ArrowRight className="ml-2" size={17} />
                 </a>
               </section>
