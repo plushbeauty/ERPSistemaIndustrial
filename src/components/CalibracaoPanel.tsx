@@ -7,7 +7,7 @@ type Equip = {
   id: string
   empresa_id: string
   codigo: string
-  descricao: stringsssss
+  descricao: string
   fabricante: string | null
   equipamento: string | null
   numero_serie: string | null
