@@ -70,6 +70,8 @@ const ProdutosVendasIndustrial = lazyPage(() => import('./pages/ProdutosVendasIn
 const ModuloCadastroProdutos = lazyPage(() => import('./pages/cadastro-produtos/ModuloCadastroProdutos'), 'ModuloCadastroProdutos')
 const TabletDashboard = lazyPage(() => import('./pages/TabletDashboard'), 'TabletDashboard')
 const PedidoVendaCompleto = lazyPage(() => import('./pages/NovoPedido'), 'NovoPedido')
+const ImprimirPedido = lazyPage(() => import('./pages/ImprimirPedido'), 'ImprimirPedido')
+const ImprimirProduto = lazyPage(() => import('./pages/ImprimirProduto'), 'ImprimirProduto')
 const DashboardComercial = lazyPage(() => import('./pages/DashboardComercial'), 'DashboardComercial')
 const VendasCentral = lazyPage(() => import('./pages/VendasCentral'), 'default')
 const VendasCatalogoDigital = lazyPage(() => import('./pages/VendasCatalogoDigital'), 'VendasCatalogoDigital')
@@ -399,6 +401,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/pdv" element={<VendasPDV />} />
       <Route path="/vendas/tablet" element={<VendasTablet />} />
       <Route path="/vendas/novo-pedido" element={<PedidoVendaCompleto />} />
+      <Route path="/vendas/imprimir" element={<ImprimirPedido />} />
       <Route path="/configuracoes" element={<Navigate to="/configuracoes-adm" replace />} />
       <Route path="/vendas/orcamentos" element={<VendasAnaliseCustos />} />
       <Route path="/vendas/pendentes" element={<VendasStatusPedidos />} />
@@ -492,7 +495,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/inventario/auditoria" element={<AuditoriaSaldos />} />
       <Route path="/produtos" element={<ProdutosVendasIndustrial />} />
       <Route path="/produtos-vendas" element={<ProdutosVendasIndustrial />} />
-      <Route path="/produtos-vendas/imprimir" element={<ProdutosVendasIndustrial />} />
+      <Route path="/produtos-vendas/imprimir" element={<ImprimirProduto />} />
       <Route path="/cadastro-produtos" element={<ModuloCadastroProdutos />} />
       <Route path="/operacao-industrial" element={<OperacaoIndustrial />} />
       <Route path="/moldes-injecao" element={<MoldesFerramentaria />} />
