@@ -11,7 +11,7 @@ create index if not exists ix_erp_venda_itens_produto on public.erp_venda_itens 
 create or replace function public.erp_produto_calcular_margens()
 returns trigger language plpgsql security definer set search_path=pg_catalog,public as $$
 begin
- new.custo_medio:=greatest(coalesce(new.custo_medio,0),0); new.custo_ultimo:=greatest(coalesce(new.custo_ultimo,0),0); new.custo_fabricacao:=greatest(coalesce(new.custo_fabricacao,0),0); new.preco_venda:=greatest(coalesce(new.preco_venda,0),0); new.estoque_minimo:=greatest(coalesce(new.estoque_minimo,0),0); new.estoque_atual:=greatest(coalesce(new.estoque_atual,0),0); new.updated_at:=now();
+ new.custo_medio:=greatest(coalesce(new.custo_medio,0),0); new.custo_ultimo:=greatest(coalesce(new.custo_ultimo,0),0); new.custo_fabricacao:=greatest(coalesce(new.custo_fabricacao,0),0); new.preco_venda:=greatest(coalesce(new.preco_venda,0),0); new.ponto_reposicao:=greatest(coalesce(new.ponto_reposicao,0),0); new.estoque_atual:=greatest(coalesce(new.estoque_atual,0),0); new.updated_at:=now();
  if new.custo_medio>0 then new.margem_valor:=new.preco_venda-new.custo_medio; new.margem_percentual:=round((new.margem_valor/new.custo_medio)*100,4); new.markup_percentual:=new.margem_percentual; else new.margem_valor:=new.preco_venda; new.margem_percentual:=case when new.preco_venda>0 then 100 else 0 end; new.markup_percentual:=0; end if; return new;
 end; $$;
 drop trigger if exists trg_erp_produto_calcular_margens on public.erp_produtos;
