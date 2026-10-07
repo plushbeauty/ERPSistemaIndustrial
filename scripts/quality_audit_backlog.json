@@ -1,5 +1,90 @@
 {
   "generated_at": "2026-10-07T09:00:00-03:00",
   "status": "active",
-  "errors": []
+  "errors": [
+    {
+      "timestamp": "2026-10-07T12:10:29-03:00",
+      "command": "npm run type-check",
+      "file": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
+      "line": 64,
+      "error": "error TS2304: Cannot find name 'ArrowLeft'."
+    },
+    {
+      "timestamp": "2026-10-07T12:10:29-03:00",
+      "command": "npm run type-check",
+      "file": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
+      "line": 67,
+      "error": "error TS2304: Cannot find name 'productSearch'."
+    },
+    {
+      "timestamp": "2026-10-07T12:10:29-03:00",
+      "command": "npm run type-check",
+      "file": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
+      "line": 67,
+      "error": "error TS2552: Cannot find name 'setProductSearch'. Did you mean 'setProducts'?"
+    },
+    {
+      "timestamp": "2026-10-07T12:10:29-03:00",
+      "command": "npm run type-check",
+      "file": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
+      "line": 68,
+      "error": "error TS2304: Cannot find name 'productSearch'."
+    },
+    {
+      "timestamp": "2026-10-07T12:10:29-03:00",
+      "command": "npm run type-check",
+      "file": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
+      "line": 68,
+      "error": "error TS2552: Cannot find name 'setProductSearch'. Did you mean 'setProducts'?"
+    },
+    {
+      "timestamp": "2026-10-07T12:10:29-03:00",
+      "command": "npm run type-check",
+      "file": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
+      "line": 74,
+      "error": "error TS2304: Cannot find name 'X'."
+    },
+    {
+      "timestamp": "2026-10-07T12:10:29-03:00",
+      "command": "npm run type-check",
+      "file": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
+      "line": 74,
+      "error": "error TS2304: Cannot find name 'AlertTriangle'."
+    },
+    {
+      "timestamp": "2026-10-07T12:10:29-03:00",
+      "command": "npm run type-check",
+      "file": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
+      "line": 74,
+      "error": "error TS2304: Cannot find name 'CheckCircle2'."
+    },
+    {
+      "timestamp": "2026-10-07T12:10:29-03:00",
+      "command": "npm run type-check",
+      "file": "src/pages/FinancasContasPagar.tsx",
+      "line": 85,
+      "error": "error TS2304: Cannot find name 'empresaId'."
+    },
+    {
+      "timestamp": "2026-10-07T11:53:53-03:00",
+      "command": "npm run type-check",
+      "file": "src/pages/NFeEmissaoCompact.tsx",
+      "line": 20,
+      "error": "error TS1005: '}' expected."
+    },
+    {
+      "timestamp": "2026-10-07T11:53:53-03:00",
+      "command": "npm run type-check",
+      "file": "src/pages/NFeEmissaoCompact.tsx",
+      "line": 45,
+      "error": "error TS1005: ',' expected."
+    },
+    {
+      "timestamp": "2026-10-07T11:16:18-03:00",
+      "command": "npm run type-check",
+      "file": "src/AppEntryV2.tsx",
+      "line": 38,
+      "error": "error TS2307: Cannot find module './layout/ErpModuleShell' or its corresponding type declarations."
+    }
+  ]
 }
