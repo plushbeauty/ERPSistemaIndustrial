@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -12,6 +12,7 @@ import {
   Wrench,
   X,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import {
   Bar,
   BarChart,
@@ -201,7 +202,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
   const [orderMachineId, setOrderMachineId] = useState('')
   const [orderQuantity, setOrderQuantity] = useState('')
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true)
     setError('')
     setMessage('')
@@ -339,10 +340,6 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     } finally {
       setLoading(false)
     }
-  }
-
-  useEffect(() => {
-    void load()
   }, [refreshKey])
 
   const productMap = useMemo(
@@ -739,7 +736,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
                   <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
                   <XAxis type="number" tick={{ fontSize: 9 }} />
                   <YAxis type="category" dataKey="label" width={100} tick={{ fontSize: 8 }} />
-                  <Tooltip formatter={(value: number) => [\`\${formatNumber(value)} min\`, 'Tempo']} />
+                  <Tooltip formatter={(value) => [formatNumber(Number(value)) + ' min', 'Tempo']} />
                   <Bar dataKey="value" fill="#D65B61" name="Minutos" />
                 </BarChart>
               </ResponsiveContainer>
@@ -927,7 +924,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
                   <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
                   <XAxis dataKey="label" tick={{ fontSize: 8 }} />
                   <YAxis tick={{ fontSize: 8 }} />
-                  <Tooltip formatter={(value: number) => [formatNumber(value), 'Refugo']} />
+                  <Tooltip formatter={(value) => [formatNumber(Number(value)), 'Refugo']} />
                   <Bar dataKey="value" fill="#D65B61" name="Refugo" />
                 </BarChart>
               </ResponsiveContainer>
@@ -981,7 +978,7 @@ function Metric({
 }: {
   label: string
   value: string
-  icon: typeof Gauge
+  icon: LucideIcon
 }) {
   return (
     <article className="border border-slate-200 bg-white px-3 py-3">
@@ -1026,7 +1023,7 @@ function Shortcut({
   onClick,
 }: {
   label: string
-  icon: typeof Boxes
+  icon: LucideIcon
   onClick: () => void
 }) {
   return (
