@@ -82,6 +82,5 @@ export default function FinancasContasPagar({ kind = 'PAGAR' }: Props) {
       </div>
     </section>
     <FinanceiroTitulos kind={kind} />
-    {empresaId ? null : null}
   </main>
 }
