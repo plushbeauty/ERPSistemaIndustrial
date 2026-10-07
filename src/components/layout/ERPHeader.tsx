@@ -2,6 +2,7 @@ import { ArrowLeft, LogOut } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
+import synqraLogo from '../../assets/synqra/logo-synqra.png'
 import CompactButton from '../ui/CompactButton'
 
 type Operator = { name: string; email: string }
@@ -16,6 +17,7 @@ function moduleInfo(pathname: string): ModuleInfo {
   if (pathname.startsWith('/compras')) return { label: 'MENU COMPRAS', route: '/compras' }
   if (pathname.startsWith('/financeiro') || pathname.startsWith('/financas')) return { label: 'MENU FINANCEIRO', route: '/financeiro' }
   if (pathname.startsWith('/rh')) return { label: 'MENU RH', route: '/rh' }
+  if (pathname.startsWith('/manutencao')) return { label: 'MENU MANUTENÇÃO', route: '/manutencao' }
   return { label: 'MENU PRINCIPAL', route: '/erp-industrial' }
 }
 
@@ -48,8 +50,8 @@ export default function ERPHeader() {
 
   return <header className="synqra-workspace-header h-[48px] min-h-[48px]">
     <button type="button" className="synqra-workspace-brand" onClick={() => navigate('/tablet/dashboard')} title="Centro de comando">
-      <img src="/logo/sgq-erp.png" alt="SGQERP Industrial" />
-      <span><strong>SGQERP INDUSTRIAL</strong><small>CENTRAL DE CONTROLE</small></span>
+      <img src={synqraLogo} alt="SYNQRA ERP & SGQ Industrial" />
+      <span><strong>SQGPERP INDUSTRIAL</strong><small>CENTRAL DE CONTROLE</small></span>
     </button>
     <button type="button" className="synqra-master-menu" onClick={() => navigate(menu.route)} title={menu.label}>{menu.label}</button>
     <div className="flex min-w-0 items-center gap-2">
