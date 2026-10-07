@@ -62,14 +62,7 @@ export default function NovoPedido(){
   <div id="frmNovoPedido" className="erp-compact w-full space-y-1 bg-slate-50 text-[11px]">
    {message&&<div className="border border-green-200 bg-green-50 px-2 py-1 text-[9px] text-green-800">{message}</div>}
    <section className="rounded-[2px] border border-gray-200 bg-white p-2">
-    <div className="mb-1 flex items-center justify-between">
-     <div className="text-[11px] font-medium text-gray-700">IDENTIFICAÇÃO DO PEDIDO</div>
-     <div className="flex items-center gap-1">
-      <button type="button" onClick={novoPedido} className="flex h-[30px] min-h-0 w-[78px] items-center justify-center gap-1 rounded-[2px] border border-[#F97316] bg-[#F97316] px-2 py-0 text-[11px] font-medium uppercase leading-none text-white"><FilePlus2 size={13}/>Novo</button>
-      <button type="button" onClick={editarItemSelecionado} disabled={selectedItem===null} className="flex h-[30px] min-h-0 w-[82px] items-center justify-center gap-1 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-2 py-0 text-[11px] font-medium uppercase leading-none text-white disabled:opacity-50"><Edit3 size={13}/>Editar</button>
-      <button type="button" onClick={excluirItemSelecionado} disabled={selectedItem===null} className="flex h-[30px] min-h-0 w-[90px] items-center justify-center gap-1 rounded-[2px] border border-red-600 bg-red-600 px-2 py-0 text-[11px] font-medium uppercase leading-none text-white disabled:opacity-50" title="Deletar item selecionado"><Trash2 size={13}/>Deletar</button>
-     </div>
-    </div>
+    <div className="mb-1 flex items-center"><div className="text-[11px] font-medium text-gray-700">IDENTIFICAÇÃO DO PEDIDO</div></div>
     <div className="mb-1 grid grid-cols-[90px_115px_100px_minmax(170px,1fr)] items-end gap-1">
      <Field label="Nº Pedido" width="90px"><input id="edPedido" value={edPedido} readOnly className={`${inputStyle} bg-gray-100 font-medium border-dashed text-gray-500 cursor-not-allowed`}/></Field>
      <Field label="Entrada" width="115px"><input id="edDataEntrada" type="date" value={edDataEntrada} onChange={e=>setEdDataEntrada(e.target.value)} className={inputStyle}/></Field>
@@ -77,7 +70,7 @@ export default function NovoPedido(){
      <div />
     </div>
     <div className="mb-1 flex items-end gap-1">
-     <Field label="Código / CNPJ" width="220px" required><div className="flex gap-1"><input id="edCodigoCliente" ref={clienteRef} value={clienteModo==='CNPJ'?maskCnpj(edCodigoCliente):edCodigoCliente} onChange={e=>{setEdCodigoCliente(clienteModo==='CNPJ'?digits(e.target.value):e.target.value);setValidationField(null);setError('')}} placeholder={validationField==='cliente'?'Preencher...':undefined} onBlur={e=>{if(!e.target.value.trim()){setValidationField('cliente');return}void clienteBusca(e.target.value)}} className={`${inputStyle} placeholder:text-red-400 ${validationField==='cliente'?'border-red-500 bg-red-50/50':''`}/><button type="button" onClick={()=>{setBusca('');setConsulta('cliente')}} className="h-[30px] w-[30px] shrink-0 rounded-[2px] border border-gray-200 bg-gray-100"><Search size={12}/></button></div></Field>
+     <Field label="Código / CNPJ" width="220px" required><div className="flex gap-1"><input id="edCodigoCliente" ref={clienteRef} value={clienteModo==='CNPJ'?maskCnpj(edCodigoCliente):edCodigoCliente} onChange={e=>{setEdCodigoCliente(clienteModo==='CNPJ'?digits(e.target.value):e.target.value);setValidationField(null);setError('')}} placeholder={validationField==='cliente'?'Preencher...':undefined} onBlur={e=>{if(!e.target.value.trim()){setValidationField('cliente');return}void clienteBusca(e.target.value)}} className={`${inputStyle} placeholder:text-red-400 ${validationField==='cliente'?'border-red-500 bg-red-50/50':''}`}/><button type="button" onClick={()=>{setBusca('');setConsulta('cliente')}} className="h-[30px] w-[30px] shrink-0 rounded-[2px] border border-gray-200 bg-gray-100"><Search size={12}/></button></div></Field>
      <div className="flex h-[30px] items-center gap-1 pt-3">
       <button type="button" onClick={novoPedido} className="flex h-[30px] w-[72px] items-center justify-center gap-1 rounded-[2px] border border-[#F97316] bg-[#F97316] px-2 text-[10px] font-medium uppercase text-white"><FilePlus2 size={12}/>Novo</button>
       <button type="button" onClick={editarItemSelecionado} disabled={selectedItem===null} className="flex h-[30px] w-[78px] items-center justify-center gap-1 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-2 text-[10px] font-medium uppercase text-white disabled:opacity-50"><Edit3 size={12}/>Editar</button>
@@ -85,7 +78,7 @@ export default function NovoPedido(){
      </div>
     </div>
     <div className="mb-1 flex items-end gap-1">
-     <Field label="Razão Social" width="50ch" required><input id="edNomeCliente" title={edNomeCliente} value={edNomeCliente} readOnly placeholder={validationField==='cliente'?'Preencher...':undefined} className={`${inputStyle} text-ellipsis overflow-hidden placeholder:text-red-400 ${validationField==='cliente'?'border-red-500 bg-red-50/50':''`}/></Field>
+     <Field label="Razão Social" width="50ch" required><input id="edNomeCliente" title={edNomeCliente} value={edNomeCliente} readOnly placeholder={validationField==='cliente'?'Preencher...':undefined} className={`${inputStyle} text-ellipsis overflow-hidden placeholder:text-red-400 ${validationField==='cliente'?'border-red-500 bg-red-50/50':''}`}/></Field>
      <Field label="Data Entrega" width="125px"><input id="edDataEntrega" type="date" value={edDataEntrega} onChange={e=>setEdDataEntrega(e.target.value)} className={inputStyle}/></Field>
      <Field label="Condição" width="140px"><input id="edCondicaoPagamento" value={edCondicaoPagamento} onChange={e=>setEdCondicaoPagamento(e.target.value)} className={inputStyle}/></Field>
     </div>
