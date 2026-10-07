@@ -15,7 +15,7 @@ cross join (values
 where e.cnpj='39.580.235/0001-35'
 and not exists(select 1 from public.erp_setores s where s.empresa_id=e.id and s.codigo=v.codigo);
 
-insert into public.erp_produtos(empresa_id,codigo,nome,unidade,tipo,estoque_minimo,custo_medio,preco_venda)
+insert into public.erp_produtos(empresa_id,codigo,nome,unidade,tipo,ponto_reposicao,custo_medio,preco_venda)
 select e.id,v.codigo,v.nome,v.unidade,v.tipo,v.minimo,v.custo,v.preco
 from public.erp_empresas e
 cross join (values
