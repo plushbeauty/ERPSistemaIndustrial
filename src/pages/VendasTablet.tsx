@@ -107,7 +107,41 @@ export default function VendasTablet() {
       <section className="synqra-sales-module-grid" aria-label="Todos os módulos de vendas">{filteredSections.map(section => <div className="synqra-sales-section" key={section.label}><div className="synqra-sales-section-title">{section.label}</div><div className="synqra-sales-cards">{section.items.map(({ key, label, route, Icon }) => <button key={key} type="button" className="synqra-sales-card" onClick={() => navigate(route)} title={label}><span className="synqra-sales-icon" aria-hidden="true"><Icon size={52} strokeWidth={1.8} /></span><span className="synqra-sales-label">{label}</span></button>)}</div></div>)}</section>
       <footer className="synqra-tablet-footer"><span>MENU VENDAS</span><span>ERP & SGQ INDUSTRIAL</span><span>{SALES_ITEM_COUNT} módulos de vendas</span><span>{visibleCount} visíveis</span><span className="synqra-footer-slashes" aria-hidden="true"><i /><i /><i /></span></footer>
       <style>{`
-        .synqra-sales-back{display:grid;place-items:center;width:46px;height:46px;flex:0 0 auto;border:1px solid #8fd8f1;border-radius:10px;background:#edf7fc;color:#0569c8;cursor:pointer}.synqra-sales-brand-copy{display:grid;gap:5px;border-left:2px solid #39c4ef;padding-left:16px}.synqra-sales-brand-copy strong{color:#164b91;font-size:18px;font-weight:900;letter-spacing:.08em}.synqra-sales-brand-copy span{color:#64748b;font-size:9px;font-weight:800;letter-spacing:.12em}.synqra-sales-tools{display:flex;align-items:center;gap:7px}.synqra-sales-refresh{display:grid;width:34px;height:34px;place-items:center;border:1px solid #c9e5ee;border-radius:7px;background:#f7fcfe;color:#2d8db8;cursor:pointer}.synqra-sales-module-grid{position:absolute;inset:154px 0 49px;overflow:auto;padding:12px clamp(14px,3vw,38px) 24px;background:#fff}.synqra-sales-section{margin-bottom:16px}.synqra-sales-section-title{display:flex;align-items:center;gap:8px;margin-bottom:8px;color:#164b91;font-size:10px;font-weight:900;letter-spacing:.14em}.synqra-sales-section-title:after{content:"";height:1px;flex:1;background:#d9edf4}.synqra-sales-cards{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:clamp(8px,1.25vw,18px)}.synqra-sales-card{display:flex;min-width:0;aspect-ratio:1/1;flex-direction:column;align-items:center;justify-content:center;gap:9px;border:1px solid #8fd8f1;border-radius:13px;padding:10px;background:linear-gradient(180deg,#fbfdff 0%,#edf7fc 100%);box-shadow:0 2px 7px rgb(18 59 80 / 8%);color:#164b91;cursor:pointer;transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease}.synqra-sales-card:hover{transform:translateY(-2px);border-color:#2d8db8;box-shadow:0 7px 18px rgb(45 141 184 / 17%)}.synqra-sales-icon{display:grid;width:68px;height:68px;place-items:center;border-radius:14px;background:linear-gradient(145deg,#f0faff,#fff);color:#0569c8}.synqra-sales-icon svg{width:76%;height:76%}.synqra-sales-label{max-width:100%;color:#164b91;font-size:11px;font-weight:900;line-height:1.15;text-align:center;text-transform:uppercase}@media(max-width:1100px){.synqra-sales-cards{grid-template-columns:repeat(6,minmax(0,1fr))}}@media(max-width:800px){.synqra-sales-brand-copy{display:none}.synqra-sales-cards{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.synqra-sales-icon{width:52px;height:52px}.synqra-sales-label{font-size:8px}.synqra-sales-module-grid{inset:141px 0 57px;padding:10px 12px}.synqra-sales-tools{max-width:55vw}.synqra-sales-tools .synqra-search{width:100%}}
+        .synqra-tablet.synqra-sales-tablet{background:#fff;color:#123b50}
+        .synqra-sales-tablet .synqra-tablet-header{height:76px;min-height:76px;padding:0 24px;background:#fff;border-bottom:1px solid #d8eaf1;box-shadow:0 1px 5px rgb(18 59 80 / 6%)}
+        .synqra-sales-tablet .synqra-brand{gap:12px}
+        .synqra-sales-back{display:grid;place-items:center;width:42px;height:42px;flex:0 0 auto;border:1px solid #8fd8f1;border-radius:6px;background:#edf7fc;color:#0569c8;cursor:pointer}
+        .synqra-sales-brand-copy{display:grid;gap:3px;border-left:2px solid #39c4ef;padding-left:12px}
+        .synqra-sales-brand-copy strong{color:#164b91;font-size:17px;font-weight:900;letter-spacing:.07em;line-height:1}
+        .synqra-sales-brand-copy span{color:#64748b;font-size:8px;font-weight:800;letter-spacing:.12em;line-height:1.2}
+        .synqra-sales-tablet .synqra-session-text strong{color:#123b50}
+        .synqra-sales-tablet .synqra-session-text span,.synqra-sales-tablet .synqra-session-text time{color:#64748b}
+        .synqra-sales-tablet .synqra-logout{border:1px solid #b9dbe8;background:#f7fcfe;color:#164b91}
+        .synqra-sales-tablet .synqra-logout:hover{background:#edf7fc}
+        .synqra-sales-tablet .synqra-tablet-toolbar{height:74px;min-height:74px;padding:0 24px;background:#fff;border-bottom:1px solid #d8eaf1}
+        .synqra-sales-toolbar>div:first-child{display:grid;gap:3px}
+        .synqra-eyebrow{color:#2d8db8;font-size:9px;font-weight:900;letter-spacing:.14em}
+        .synqra-sales-toolbar h1{margin:0;color:#123b50;font-size:20px;font-weight:900;letter-spacing:.05em}
+        .synqra-sales-tools{display:flex;align-items:center;gap:8px}
+        .synqra-sales-tablet .synqra-search{width:280px;height:34px;border:1px solid #b9dbe8;border-radius:5px;background:#fff;color:#2d8db8}
+        .synqra-sales-tablet .synqra-search input{color:#123b50}
+        .synqra-sales-tablet .synqra-search input::placeholder{color:#78909c}
+        .synqra-sales-refresh{display:grid;width:34px;height:34px;place-items:center;border:1px solid #b9dbe8;border-radius:5px;background:#f7fcfe;color:#2d8db8;cursor:pointer}
+        .synqra-sales-module-grid{position:absolute;inset:150px 0 46px;overflow:auto;padding:18px 24px 30px;background:#fff}
+        .synqra-sales-section{margin-bottom:22px}
+        .synqra-sales-section-title{display:flex;align-items:center;gap:10px;margin-bottom:10px;color:#164b91;font-size:10px;font-weight:900;letter-spacing:.14em}
+        .synqra-sales-section-title:after{content:"";height:1px;flex:1;background:#d9edf4}
+        .synqra-sales-cards{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:12px}
+        .synqra-sales-card{box-sizing:border-box;display:flex;width:100%;min-width:0;height:154px;min-height:154px;flex-direction:column;align-items:center;justify-content:center;gap:10px;border:1px solid #b9dbe8;border-radius:10px;padding:12px 8px;background:linear-gradient(180deg,#fff 0%,#eef8fc 100%);box-shadow:0 2px 7px rgb(18 59 80 / 8%);color:#164b91;cursor:pointer;transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease}
+        .synqra-sales-card:hover{transform:translateY(-2px);border-color:#2d8db8;box-shadow:0 7px 18px rgb(45 141 184 / 17%)}
+        .synqra-sales-icon{display:grid;width:64px;height:64px;min-width:64px;min-height:64px;place-items:center;border-radius:12px;background:#f2fbfe;color:#0569c8}
+        .synqra-sales-icon svg{width:52px;height:52px;display:block}
+        .synqra-sales-label{display:flex;width:100%;min-height:30px;max-height:32px;align-items:center;justify-content:center;overflow:hidden;color:#164b91;font-size:10px;font-weight:900;line-height:1.18;text-align:center;text-transform:uppercase;white-space:normal;overflow-wrap:anywhere}
+        .synqra-sales-tablet .synqra-tablet-footer{height:46px;min-height:46px;background:#fff;border-top:1px solid #d8eaf1;color:#64748b}
+        .synqra-sales-tablet .synqra-tablet-footer span:first-child{color:#2d8db8}
+        @media(max-width:1250px){.synqra-sales-cards{grid-template-columns:repeat(6,minmax(0,1fr))}}
+        @media(max-width:900px){.synqra-sales-cards{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.synqra-sales-card{height:142px;min-height:142px}.synqra-sales-icon{width:58px;height:58px;min-width:58px;min-height:58px}.synqra-sales-icon svg{width:46px;height:46px}.synqra-sales-module-grid{inset:145px 0 54px;padding:12px}.synqra-sales-tablet .synqra-tablet-toolbar{height:69px;min-height:69px;padding:0 12px}.synqra-sales-tablet .synqra-tablet-header{height:76px;min-height:76px;padding:0 12px}.synqra-sales-tablet .synqra-search{width:min(240px,45vw)}}
+        @media(max-width:620px){.synqra-sales-brand-copy{display:none}.synqra-sales-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.synqra-sales-card{height:138px;min-height:138px}.synqra-sales-tools{max-width:65vw}.synqra-sales-tablet .synqra-search{width:100%}}
       `}</style>
     </main>
   )
