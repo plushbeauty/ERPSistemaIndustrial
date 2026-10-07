@@ -85,6 +85,13 @@
       "file": "src/AppEntryV2.tsx",
       "line": 38,
       "error": "error TS2307: Cannot find module './layout/ErpModuleShell' or its corresponding type declarations."
+    },
+    {
+      "timestamp": "2026-10-07T12:00:00-03:00",
+      "command": "local repository verification",
+      "file": "/tmp/erpcheck",
+      "line": null,
+      "error": "git clone failed: fatal: unable to access 'https://github.com/plushbeauty/ERPSistemaIndustrial.git/': Could not resolve host: github.com"
     }
   ]
 }
