@@ -46,7 +46,7 @@ export default function ERPHeader() {
   const date = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)
   const time = new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(now)
 
-  return <header className="synqra-workspace-header">
+  return <header className="synqra-workspace-header h-[48px] min-h-[48px]">
     <button type="button" className="synqra-workspace-brand" onClick={() => navigate('/tablet/dashboard')} title="Centro de comando">
       <img src="/logo/sgq-erp.png" alt="Synqra ERP Industrial" />
       <span><strong>SYNQRA ERP INDUSTRIAL</strong><small>ERP INDUSTRIAL • CENTRAL DE CONTROLE</small></span>
