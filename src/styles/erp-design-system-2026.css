@@ -285,3 +285,28 @@ body{background:#f4f8fa}
 .erp-global-surface .bg-white{background-color:#fff!important}
 .erp-global-surface .border-slate-200{border-color:#d8e6ea!important}
 .erp-global-surface .text-slate-900{color:#173b4a!important}
+
+
+/* GLOBAL OPERATIONAL MICRO-SCALE — excludes top navigation controls */
+.erp-global-surface input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.erp-global-surface select{
+  height:30px!important;
+  min-height:30px!important;
+  font-size:11px!important;
+  line-height:14px!important;
+  border-radius:2px!important;
+}
+.erp-global-surface label{
+  font-size:9px!important;
+  line-height:12px!important;
+  margin-bottom:2px;
+}
+.erp-global-surface button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button){
+  height:30px!important;
+  min-height:30px!important;
+  font-size:11px!important;
+  line-height:14px!important;
+  border-radius:2px!important;
+}
+.erp-global-surface table{font-size:11px}
+.erp-global-surface th{font-size:10px}
