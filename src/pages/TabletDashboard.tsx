@@ -1,132 +1,199 @@
 import { useEffect, useMemo, useState } from 'react'
-import { LogOut, Search, X } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import ERPHeader from '../components/layout/ERPHeader'
 import { SYNQRA_MODULES } from '../assets/synqra/icons'
-import synqraLogo from '../assets/synqra/logo-synqra.png'
 import { supabase } from '../lib/supabaseClient'
+import '../styles/synqra-workspace.css'
 import '../styles/synqra-tablet.css'
 
-type Profile = { nome: string | null; perfil: string | null }
+type Profile = {
+  role_id: string | null
+  empresa_id: string | null
+  is_master: boolean
+  nivel_admin: number
+  perfil: string
+}
 
-const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
+type RolePermission = {
+  permission_id: string
+}
 
-async function loadProfile(): Promise<Profile | null> {
+type Permission = {
+  id: string
+  codigo: string
+  modulo: string
+}
+
+const normalize = (value: string) =>
+  value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
+
+async function loadAccess(): Promise<{ profile: Profile; permissions: Set<string> }> {
   const auth = await supabase.auth.getUser()
   if (auth.error) throw auth.error
   if (!auth.data.user) {
-    window.location.href = '/login?returnTo=/tablet/dashboard'
-    return null
+    window.location.replace('/login?returnTo=/tablet/dashboard')
+    throw new Error('Sessão não autenticada.')
   }
-  const result = await supabase
+
+  const { data: row, error } = await supabase
     .from('erp_usuarios')
-    .select('nome,perfil')
+    .select('role_id,empresa_id,is_master,nivel_admin,perfil')
     .eq('auth_user_id', auth.data.user.id)
     .eq('ativo', true)
     .is('deleted_at', null)
     .maybeSingle()
-  if (result.error) throw result.error
-  return result.data ? { nome: result.data.nome ?? 'Usuário', perfil: result.data.perfil ?? '' } : null
+
+  if (error) throw error
+  if (!row) throw new Error('Usuário autenticado sem perfil ERP ativo.')
+
+  const profile: Profile = {
+    role_id: row.role_id ?? null,
+    empresa_id: row.empresa_id ?? null,
+    is_master: Boolean(row.is_master),
+    nivel_admin: Number(row.nivel_admin ?? 0),
+    perfil: String(row.perfil ?? ''),
+  }
+
+  const master =
+    profile.is_master &&
+    profile.nivel_admin >= 100 &&
+    profile.perfil.trim().toUpperCase() === 'MASTER' &&
+    profile.empresa_id === null
+
+  if (master) return { profile, permissions: new Set(['*']) }
+
+  if (!profile.role_id) {
+    throw new Error('Usuário ERP sem papel RBAC vinculado.')
+  }
+
+  const { data: assignments, error: assignmentError } = await supabase
+    .from('erp_role_permissions')
+    .select('permission_id')
+    .eq('role_id', profile.role_id)
+
+  if (assignmentError) throw assignmentError
+
+  const permissionIds = (assignments as RolePermission[]).map(row => row.permission_id)
+  if (!permissionIds.length) return { profile, permissions: new Set() }
+
+  const { data: permissionRows, error: permissionError } = await supabase
+    .from('erp_permissions')
+    .select('id,codigo,modulo')
+    .in('id', permissionIds)
+    .eq('ativo', true)
+
+  if (permissionError) throw permissionError
+
+  const permissions = new Set<string>()
+  for (const permission of (permissionRows ?? []) as Permission[]) {
+    permissions.add(permission.codigo)
+    permissions.add(permission.modulo)
+  }
+
+  return { profile, permissions }
 }
 
 export default function TabletDashboard() {
   const navigate = useNavigate()
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [now, setNow] = useState(() => new Date())
+  const [permissions, setPermissions] = useState<Set<string>>(new Set())
   const [search, setSearch] = useState('')
   const [error, setError] = useState('')
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 1000)
-    return () => window.clearInterval(timer)
-  }, [])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let alive = true
-    void loadProfile().then(value => {
-      if (alive) setProfile(value)
-    }).catch((reason: unknown) => {
-      if (alive) setError(reason instanceof Error ? reason.message : String(reason))
-    })
-    return () => { alive = false }
+    void loadAccess()
+      .then(({ profile: nextProfile, permissions: nextPermissions }) => {
+        if (!alive) return
+        setProfile(nextProfile)
+        setPermissions(nextPermissions)
+      })
+      .catch((reason: unknown) => {
+        if (!alive) return
+        setError(reason instanceof Error ? reason.message : String(reason))
+      })
+      .finally(() => {
+        if (alive) setLoading(false)
+      })
+
+    return () => {
+      alive = false
+    }
   }, [])
 
   const modules = useMemo(() => {
     const term = normalize(search.trim())
-    return term ? SYNQRA_MODULES.filter(module => normalize(module.label).includes(term)) : SYNQRA_MODULES
-  }, [search])
+    return SYNQRA_MODULES
+      .filter(module => Boolean(module.route))
+      .filter(module => module.permission ? permissions.has('*') || permissions.has(module.permission) : permissions.has('*'))
+      .filter(module => !term || normalize(module.label).includes(term))
+  }, [permissions, search])
 
-  const logout = async () => {
-    const result = await supabase.auth.signOut()
-    if (result.error) {
-      setError(result.error.message)
-      return
-    }
-    window.location.href = '/login'
-  }
+  const master = profile?.is_master === true && profile.nivel_admin >= 100 && profile.empresa_id === null
 
   return (
-    <main className="synqra-tablet">
-      <header className="synqra-tablet-header">
-        <div className="synqra-brand">
-          <img src={synqraLogo} alt="SYNQRA ERP & SGQ Industrial" />
-          <div className="synqra-brand-copy">
-            <strong>SGQERP INDUSTRIAL</strong>
-            <span>CENTRAL DE CONTROLE</span>
-          </div>
-        </div>
+    <main className="synqra-tablet synqra-tablet-operational">
+      <ERPHeader />
 
-        <button type="button" className="synqra-master-menu" onClick={() => navigate('/vendas/tablet')} title="Abrir menu de Vendas">
-          MENU VENDAS
-        </button>
-
-        <div className="synqra-session">
-          <div className="synqra-session-text">
-            <strong>{profile?.nome ?? 'Usuário'}</strong>
-            <span>{profile?.perfil || 'Perfil'}</span>
-            <time>{now.toLocaleDateString('pt-BR')} • {now.toLocaleTimeString('pt-BR')}</time>
-          </div>
-          <button type="button" className="synqra-logout" onClick={() => void logout()}>
-            <LogOut size={14} aria-hidden="true" /> SAIR
-          </button>
-        </div>
-      </header>
-
-      <section className="synqra-tablet-toolbar">
+      <section className="synqra-tablet-toolbar" aria-label="Controle da central operacional">
         <div className="synqra-toolbar-title">
-          <span>CENTRO DE COMANDO</span>
-          <strong>TABLET OPERACIONAL</strong>
+          <span>CENTRAL OPERACIONAL</span>
+          <strong>TABLET PRINCIPAL</strong>
         </div>
-        <label className="synqra-search">
-          <Search size={15} aria-hidden="true" />
-          <input value={search} onChange={event => setSearch(event.target.value)} placeholder="Pesquisar módulo" aria-label="Pesquisar módulo" />
-          {search && <button type="button" aria-label="Limpar pesquisa" onClick={() => setSearch('')}><X size={13} /></button>}
-        </label>
+        <div className="synqra-tablet-tools">
+          <span className="synqra-tablet-scope">{master ? 'MASTER' : profile?.perfil || 'USUÁRIO ERP'}</span>
+          <label className="synqra-search">
+            <Search size={14} aria-hidden="true" />
+            <input
+              value={search}
+              onChange={event => setSearch(event.target.value)}
+              placeholder="Pesquisar módulo"
+              aria-label="Pesquisar módulo"
+            />
+            {search && (
+              <button type="button" aria-label="Limpar pesquisa" onClick={() => setSearch('')}>
+                <X size={13} />
+              </button>
+            )}
+          </label>
+        </div>
       </section>
 
       {error && <div className="synqra-tablet-error" role="alert">{error}</div>}
 
-      <section className="synqra-module-grid" aria-label="Módulos do ERP">
-        {modules.map(({ key, label, route, Icon }) => (
-          <button
-            key={key}
-            type="button"
-            className="synqra-module-card"
-            disabled={!route}
-            title={route ? label : 'Módulo sem rota operacional cadastrada'}
-            onClick={() => route && navigate(route)}
-          >
-            <span className="synqra-module-icon" aria-hidden="true"><Icon size={52} strokeWidth={1.8} /></span>
-            <span className="synqra-module-label">{label}</span>
-          </button>
-        ))}
-      </section>
+      {loading ? (
+        <div className="synqra-tablet-loading" role="status">VALIDANDO ACESSO E PERMISSÕES...</div>
+      ) : (
+        <section className="synqra-module-grid" aria-label="Módulos autorizados do ERP">
+          {modules.map(({ key, label, route, Icon }) => (
+            <button
+              key={key}
+              type="button"
+              className="synqra-module-card"
+              title={label}
+              onClick={() => {
+                if (route) navigate(route)
+              }}
+            >
+              <span className="synqra-module-icon" aria-hidden="true">
+                <Icon size={32} strokeWidth={1.8} />
+              </span>
+              <span className="synqra-module-label">{label}</span>
+            </button>
+          ))}
+          {!modules.length && !error && (
+            <div className="synqra-tablet-empty">Nenhum módulo operacional autorizado para este usuário.</div>
+          )}
+        </section>
+      )}
 
       <footer className="synqra-tablet-footer">
-        <span>SYNQRA</span>
-        <span>ERP & SGQ INDUSTRIAL</span>
-        <span>{SYNQRA_MODULES.filter(module => module.route).length} módulos com rota operacional</span>
-        <span>{SYNQRA_MODULES.filter(module => !module.route).length} módulos sem rota</span>
-        <span className="synqra-footer-slashes" aria-hidden="true"><i /><i /><i /></span>
+        <span>SGQERP</span>
+        <span>CENTRAL DE CONTROLE</span>
+        <span>{modules.length} módulos visíveis</span>
+        <span>DADOS: SUPABASE</span>
       </footer>
     </main>
   )
