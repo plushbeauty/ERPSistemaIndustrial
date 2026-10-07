@@ -5,13 +5,13 @@
  */
 :root{
   --erp-font-menu:13px;
-  --erp-font-table:13px;
-  --erp-font-field:14px;
-  --erp-font-label:12px;
-  --erp-control:40px;
-  --erp-grid-row:38px;
-  --erp-grid-head:36px;
-  --erp-title:24px;
+  --erp-font-table:11px;
+  --erp-font-field:11px;
+  --erp-font-label:9px;
+  --erp-control:30px;
+  --erp-grid-row:30px;
+  --erp-grid-head:30px;
+  --erp-title:22px;
 }
 .erp-dense, .erp-dense *{box-sizing:border-box}
 .erp-dense{font-size:var(--erp-font-field)}
@@ -23,7 +23,7 @@
 .erp-dense button{height:var(--erp-control);min-height:var(--erp-control);font-size:var(--erp-font-field)}
 .erp-dense h1{font-size:var(--erp-title)}
 .erp-dense .erp-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
-.erp-dense .erp-toolbar button{min-height:40px}
+.erp-dense .erp-toolbar button{min-height:30px}
 .erp-dense .erp-sidebar-label{font-size:var(--erp-font-menu)}
 .erp-dense .erp-field-sm{width:140px}
 .erp-dense .erp-field-md{width:220px}
@@ -31,309 +31,73 @@
 .erp-dense .erp-field-xl{width:min(100%,760px)}
 .erp-dense .erp-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .erp-dense .erp-grid{width:100%;overflow:auto}
-.erp-dense .erp-grid th,.erp-dense .erp-grid td{padding:7px 9px;white-space:nowrap}
-.erp-dense .erp-grid th{font-weight:800}
-.erp-dense .erp-status{font-size:12px;font-weight:800}
-@media (min-width:1024px){
-  .erp-dense .erp-sidebar-label{font-size:13px}
-}
+.erp-dense .erp-grid th,.erp-dense .erp-grid td{padding:4px 6px;white-space:nowrap}
+.erp-dense .erp-grid th{font-weight:600}
+.erp-dense .erp-status{font-size:10px;font-weight:600}
+@media (min-width:1024px){.erp-dense .erp-sidebar-label{font-size:11px}}
 @media (max-width:1023px){
   .erp-dense .erp-sidebar-label{font-size:11px}
   .erp-dense input:not([type=checkbox]):not([type=radio]):not([type=range]),.erp-dense select{height:30px;min-height:30px;font-size:11px}
   .erp-dense button{height:30px;min-height:30px;font-size:11px}
   .erp-dense tbody tr{height:30px}
-  .erp-dense .erp-grid th,.erp-dense .erp-grid td{padding:5px 7px}
+  .erp-dense .erp-grid th,.erp-dense .erp-grid td{padding:4px 6px}
 }
 
 /* MASTER COMPACT SCALE — operational desktop/tablet controls */
 .erp-dense input:not([type=checkbox]):not([type=radio]):not([type=range]),
 .erp-dense select{
-  height:30px!important;
-  min-height:30px!important;
-  font-size:11px!important;
-  line-height:14px!important;
-  border-radius:2px!important;
+  height:30px!important;min-height:30px!important;font-size:11px!important;line-height:14px!important;border-radius:2px!important
 }
-.erp-dense label{
-  font-size:9px!important;
-  line-height:12px!important;
-  margin-bottom:2px;
-}
-.erp-dense button{
-  height:30px!important;
-  min-height:30px!important;
-  font-size:11px!important;
-  line-height:14px!important;
-  border-radius:2px!important;
-}
+.erp-dense label{font-size:9px!important;line-height:12px!important;margin-bottom:2px}
+.erp-dense button{height:30px!important;min-height:30px!important;font-size:11px!important;line-height:14px!important;border-radius:2px!important}
 .erp-dense table{font-size:11px}
 .erp-dense thead tr,.erp-dense tbody tr{height:30px}
-.erp-compact input:not([type=checkbox]):not([type=radio]):not([type=range]),
-.erp-compact select{
-  height:30px!important;
-  min-height:30px!important;
-  font-size:11px!important;
-  line-height:14px!important;
-  border-radius:2px!important;
-}
-.erp-compact label{
-  font-size:9px!important;
-  line-height:12px!important;
-  margin-bottom:2px;
-}
-.erp-compact button{
-  border-radius:2px!important;
-}
+.erp-compact input:not([type=checkbox]):not([type=radio]):not([type=range]),.erp-compact select{height:30px!important;min-height:30px!important;font-size:11px!important;line-height:14px!important;border-radius:2px!important}
+.erp-compact label{font-size:9px!important;line-height:12px!important;margin-bottom:2px}
+.erp-compact button{height:30px!important;min-height:30px!important;font-size:11px!important;line-height:14px!important;border-radius:2px!important}
 
-
-.erp-vendas aside button{min-height:40px;font-size:13px}
-.erp-vendas table{font-size:13px}
-.erp-vendas thead tr{height:38px}
-.erp-vendas tbody tr{height:40px}
-.erp-vendas .erp-toolbar button{min-height:40px;font-size:13px}
+.erp-vendas aside button{min-height:30px;font-size:11px}
+.erp-vendas table{font-size:11px}
+.erp-vendas thead tr{height:30px}
+.erp-vendas tbody tr{height:30px}
+.erp-vendas .erp-toolbar button{min-height:30px;font-size:11px}
 .erp-vendas h1,.erp-vendas h2{line-height:1.15}
 
 /* Shared control and type scale for the ERP's operational forms. */
-.erp-field-code{width:140px}
-.erp-field-number{width:160px}
-.erp-field-series{width:88px}
-.erp-field-cpf{width:190px}
-.erp-field-cnpj{width:210px}
-.erp-field-ie{width:190px}
-.erp-field-cep{width:112px}
-.erp-field-uf{width:72px}
-.erp-field-date{width:160px}
-.erp-field-datetime{width:210px}
-.erp-field-quantity{width:160px}
-.erp-field-percent{width:130px}
-.erp-field-money{width:170px}
-.erp-field-cfop{width:110px}
-.erp-field-ncm{width:130px}
-.erp-field-cest{width:140px}
-.erp-field-cst{width:120px}
-.erp-field-description{width:min(100%,420px)}
-.erp-field-name{width:min(100%,360px)}
-.erp-field-address{width:min(100%,480px)}
+.erp-field-code{width:140px}.erp-field-number{width:160px}.erp-field-series{width:88px}.erp-field-cpf{width:190px}.erp-field-cnpj{width:210px}.erp-field-ie{width:190px}.erp-field-cep{width:112px}.erp-field-uf{width:72px}.erp-field-date{width:160px}.erp-field-datetime{width:210px}.erp-field-quantity{width:160px}.erp-field-percent{width:130px}.erp-field-money{width:170px}.erp-field-cfop{width:110px}.erp-field-ncm{width:130px}.erp-field-cest{width:140px}.erp-field-cst{width:120px}.erp-field-description{width:min(100%,420px)}.erp-field-name{width:min(100%,360px)}.erp-field-address{width:min(100%,480px)}
 
-.fiscal-workspace{
-  box-sizing:border-box;
-  color:#17333F;
-  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-  font-size:13px;
-}
-.fiscal-workspace h1{font-size:22px!important;line-height:1.25;font-weight:600!important}
-.fiscal-workspace h2{font-size:16px!important;line-height:1.3;font-weight:600!important}
-.fiscal-workspace h3{font-size:14px!important;line-height:1.35;font-weight:600!important}
-.fiscal-workspace .text-3xl{font-size:22px!important;line-height:1.25}
-.fiscal-workspace .text-2xl{font-size:19px!important;line-height:1.3}
-.fiscal-workspace .text-xl{font-size:16px!important;line-height:1.3}
-.fiscal-workspace .text-base{font-size:13px!important;line-height:1.4}
-.fiscal-workspace .text-sm{font-size:12px!important;line-height:1.4}
-.fiscal-workspace .text-xs{font-size:11px!important;line-height:1.4}
-.fiscal-workspace label{font-size:9px!important;line-height:12px;font-weight:500!important;color:#334155;margin-bottom:2px}
-.fiscal-workspace label.text-xs{font-size:9px!important}
-.fiscal-workspace .font-black,.fiscal-workspace .font-extrabold,.fiscal-workspace .font-bold,
-.fiscal-workspace .font-semibold{font-weight:600!important}
-.fiscal-workspace input:not([type=checkbox]):not([type=radio]):not([type=range]),
-.fiscal-workspace select,
-.fiscal-workspace button,
-.fiscal-workspace a[role=button]{
-  box-sizing:border-box;
-  height:30px!important;
-  min-height:30px!important;
-  border-radius:2px!important;
-  font-family:inherit;
-  font-size:11px!important;
-  line-height:14px;
-}
-.fiscal-workspace input:not([type=checkbox]):not([type=radio]):not([type=range]),
-.fiscal-workspace select{
-  padding:0 9px;
-  color:#17333F;
-}
-.fiscal-workspace textarea{box-sizing:border-box;min-height:88px;border-radius:2px!important;font:inherit}
-.fiscal-workspace table{font-size:12px}
-.fiscal-workspace thead tr{height:36px}
-.fiscal-workspace tbody tr{height:38px}
-.fiscal-workspace th{font-size:11px;font-weight:600}
-.fiscal-workspace .erp-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.fiscal-workspace .erp-toolbar{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap}
-.fiscal-workspace .flex.items-end{flex-wrap:wrap}
-.fiscal-workspace .erp-toolbar label{flex:1 1 180px;min-width:160px}
-.fiscal-workspace .erp-toolbar input[type=date]{min-width:160px}
-.fiscal-workspace .erp-toolbar input[type=datetime-local]{min-width:210px}
-.fiscal-workspace .font-mono{font-variant-numeric:tabular-nums}
-.fiscal-workspace input[type=date]{min-width:160px}
-.fiscal-workspace input[type=datetime-local]{min-width:210px}
-.fiscal-workspace a.flex{height:40px!important;min-height:40px!important}
-.fiscal-workspace .rounded-xl,.fiscal-workspace .rounded-lg,.fiscal-workspace .rounded-md,.fiscal-workspace .rounded-full{border-radius:2px!important}
-.fiscal-workspace .shadow-sm{box-shadow:none!important}
-.fiscal-workspace .p-5{padding:12px!important}
-.fiscal-workspace .p-6{padding:14px!important}
-.fiscal-workspace .gap-6{gap:12px!important}
-.fiscal-workspace .gap-5{gap:10px!important}
-.fiscal-workspace .gap-4{gap:8px!important}
-.fiscal-workspace .gap-3{gap:6px!important}
-.fiscal-workspace .gap-2{gap:4px!important}
+.fiscal-workspace{box-sizing:border-box;color:#17333F;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:13px}
+.fiscal-workspace h1{font-size:22px!important;line-height:1.25;font-weight:600!important}.fiscal-workspace h2{font-size:16px!important;line-height:1.3;font-weight:600!important}.fiscal-workspace h3{font-size:14px!important;line-height:1.35;font-weight:600!important}
+.fiscal-workspace .text-3xl{font-size:22px!important;line-height:1.25}.fiscal-workspace .text-2xl{font-size:19px!important;line-height:1.3}.fiscal-workspace .text-xl{font-size:16px!important;line-height:1.3}.fiscal-workspace .text-base{font-size:13px!important;line-height:1.4}.fiscal-workspace .text-sm{font-size:12px!important;line-height:1.4}.fiscal-workspace .text-xs{font-size:11px!important;line-height:1.4}
+.fiscal-workspace label{font-size:9px!important;line-height:12px;font-weight:500!important;color:#334155;margin-bottom:2px}.fiscal-workspace label.text-xs{font-size:9px!important}
+.fiscal-workspace .font-black,.fiscal-workspace .font-extrabold,.fiscal-workspace .font-bold,.fiscal-workspace .font-semibold{font-weight:600!important}
+.fiscal-workspace input:not([type=checkbox]):not([type=radio]):not([type=range]),.fiscal-workspace select,.fiscal-workspace button,.fiscal-workspace a[role=button]{box-sizing:border-box;height:30px!important;min-height:30px!important;border-radius:2px!important;font-family:inherit;font-size:11px!important;line-height:14px}
+.fiscal-workspace input:not([type=checkbox]):not([type=radio]):not([type=range]),.fiscal-workspace select{padding:0 9px;color:#17333F}
+.fiscal-workspace textarea{box-sizing:border-box;min-height:80px;border-radius:2px!important;font:inherit}
+.fiscal-workspace table{font-size:11px}.fiscal-workspace thead tr{height:30px}.fiscal-workspace tbody tr{height:30px}.fiscal-workspace th{font-size:10px;font-weight:600}
+.fiscal-workspace .erp-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.fiscal-workspace .erp-toolbar{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap}.fiscal-workspace .flex.items-end{flex-wrap:wrap}.fiscal-workspace .erp-toolbar label{flex:1 1 180px;min-width:160px}
+.fiscal-workspace .erp-toolbar input[type=date]{min-width:160px}.fiscal-workspace .erp-toolbar input[type=datetime-local]{min-width:210px}.fiscal-workspace .font-mono{font-variant-numeric:tabular-nums}.fiscal-workspace input[type=date]{min-width:160px}.fiscal-workspace input[type=datetime-local]{min-width:210px}
+.fiscal-workspace a.flex{height:30px!important;min-height:30px!important}.fiscal-workspace .rounded-xl,.fiscal-workspace .rounded-lg,.fiscal-workspace .rounded-md,.fiscal-workspace .rounded-full{border-radius:2px!important}.fiscal-workspace .shadow-sm{box-shadow:none!important}.fiscal-workspace .p-5{padding:10px!important}.fiscal-workspace .p-6{padding:12px!important}.fiscal-workspace .gap-6{gap:10px!important}.fiscal-workspace .gap-5{gap:8px!important}.fiscal-workspace .gap-4{gap:8px!important}.fiscal-workspace .gap-3{gap:6px!important}.fiscal-workspace .gap-2{gap:4px!important}
 
-/* NF-e has a wide, data-dense grid; keep values legible and scroll the grid itself. */
-.fiscal-workspace.nfe-page{padding:16px 20px 32px}
-.fiscal-workspace.nfe-page .nfe-header{border-radius:2px;padding:14px 16px}
-.fiscal-workspace.nfe-page .nfe-header-actions{flex-wrap:wrap;justify-content:flex-end}
-.fiscal-workspace.nfe-page .nfe-fields{min-width:0;margin:0;border:0;padding:0}
-.fiscal-workspace.nfe-page .nfe-header h1{font-size:22px!important}
-.fiscal-workspace.nfe-page .nfe-header p{font-size:13px}
-.fiscal-workspace.nfe-page .nfe-card{border-radius:2px;padding:12px}
-.fiscal-workspace.nfe-page .nfe-label{font-size:12px!important;font-weight:500!important;text-transform:none}
-.fiscal-workspace.nfe-page .nfe-input,
-.fiscal-workspace.nfe-page input.nfe-table-input,
-.fiscal-workspace.nfe-page select.nfe-table-input{
-  height:40px!important;
-  min-height:40px!important;
-  border-radius:2px!important;
-  font-size:13px!important;
-  line-height:1.25!important;
-}
-.fiscal-workspace.nfe-page .nfe-grid{
-  display:grid!important;
-  grid-template-columns:repeat(12,minmax(0,1fr))!important;
-  align-items:end!important;
-  gap:8px!important;
-}
-.fiscal-workspace.nfe-page .nfe-grid>label{min-width:0;max-width:none!important}
-.fiscal-workspace.nfe-page .nfe-grid .wide-field{grid-column:span 6!important;width:auto!important}
-.fiscal-workspace.nfe-page .nfe-grid .erp-field-number,
-.fiscal-workspace.nfe-page .nfe-grid .erp-field-series,
-.fiscal-workspace.nfe-page .nfe-grid .erp-field-uf,
-.fiscal-workspace.nfe-page .nfe-grid .erp-field-cep,
-.fiscal-workspace.nfe-page .nfe-grid .erp-field-cfop{grid-column:span 2!important;width:auto!important}
-.fiscal-workspace.nfe-page .nfe-grid .erp-field-datetime,
-.fiscal-workspace.nfe-page .nfe-grid .erp-field-cnpj,
-.fiscal-workspace.nfe-page .nfe-grid .erp-field-cpf,
-.fiscal-workspace.nfe-page .nfe-grid .erp-field-ie,
-.fiscal-workspace.nfe-page .nfe-grid .erp-field-money,
-.fiscal-workspace.nfe-page .nfe-grid .erp-field-quantity{grid-column:span 3!important;width:auto!important}
-.fiscal-workspace.nfe-page .nfe-grid .erp-field-address,
-.fiscal-workspace.nfe-page .nfe-grid .erp-field-name,
-.fiscal-workspace.nfe-page .nfe-grid .erp-field-description{grid-column:span 4!important;width:auto!important}
-.fiscal-workspace.nfe-page .nfe-grid .wide-field{grid-column:span 6!important}
-.fiscal-workspace.nfe-page .nfe-table{table-layout:fixed;min-width:2800px!important}
-.fiscal-workspace.nfe-page .nfe-table th{height:36px!important;padding:6px 7px!important;font-size:11px!important}
-.fiscal-workspace.nfe-page .nfe-table td{height:48px!important;padding:4px!important}
-.fiscal-workspace.nfe-page .nfe-table td input,
-.fiscal-workspace.nfe-page .nfe-table td select{width:100%;height:40px!important;min-height:40px!important;padding:0 6px!important;font-size:13px!important}
-.fiscal-workspace.nfe-page .nfe-item-total{padding:4px 8px!important;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
-.fiscal-workspace.nfe-page .nfe-tabs button{height:40px!important;min-height:40px!important;font-size:13px!important;font-weight:500!important}
-.fiscal-workspace.nfe-page .nfe-primary,
-.fiscal-workspace.nfe-page .nfe-secondary,
-.fiscal-workspace.nfe-page .nfe-remove,
-.fiscal-workspace.nfe-page .nfe-action{height:40px!important;min-height:40px!important;font-size:13px!important}
-.fiscal-workspace.nfe-page .nfe-remove{width:40px!important}
-.fiscal-workspace.nfe-page .nfe-summary-grid strong,
-.fiscal-workspace.nfe-page .nfe-footer-total strong{font-variant-numeric:tabular-nums;white-space:nowrap}
-@media(max-width:1023px){
-  .fiscal-workspace .text-base{font-size:14px!important}
-  .fiscal-workspace .text-sm{font-size:13px!important}
-  .fiscal-workspace input:not([type=checkbox]):not([type=radio]):not([type=range]),
-  .fiscal-workspace select,.fiscal-workspace button,.fiscal-workspace a[role=button]{
-    height:44px!important;min-height:44px!important;font-size:14px!important
-  }
-  .fiscal-workspace.nfe-page{padding:10px}
-  .fiscal-workspace.nfe-page .nfe-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important}
-  .fiscal-workspace.nfe-page .nfe-input,
-  .fiscal-workspace.nfe-page .nfe-table td input,
-  .fiscal-workspace.nfe-page .nfe-table td select,
-  .fiscal-workspace.nfe-page .nfe-tabs button,
-  .fiscal-workspace.nfe-page .nfe-primary,
-  .fiscal-workspace.nfe-page .nfe-secondary,
-  .fiscal-workspace.nfe-page .nfe-remove,
-  .fiscal-workspace.nfe-page .nfe-action{height:44px!important;min-height:44px!important}
-  .fiscal-workspace.nfe-page .nfe-table td{height:52px!important}
-  .fiscal-workspace.nfe-page .nfe-grid .wide-field,
-  .fiscal-workspace.nfe-page .nfe-grid .erp-field-address,
-  .fiscal-workspace.nfe-page .nfe-grid .erp-field-name,
-  .fiscal-workspace.nfe-page .nfe-grid .erp-field-description{grid-column:span 6!important}
-}
-@media(max-width:600px){
-  .fiscal-workspace.nfe-page .nfe-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-  .fiscal-workspace.nfe-page .nfe-grid>label,
-  .fiscal-workspace.nfe-page .nfe-grid .wide-field,
-  .fiscal-workspace.nfe-page .nfe-grid .erp-field-address,
-  .fiscal-workspace.nfe-page .nfe-grid .erp-field-name,
-  .fiscal-workspace.nfe-page .nfe-grid .erp-field-description{grid-column:span 2!important}
-}
+/* NF-e legacy workspace is normalized to the same 30px operational contract. */
+.fiscal-workspace.nfe-page .nfe-input,.fiscal-workspace.nfe-page input.nfe-table-input,.fiscal-workspace.nfe-page select.nfe-table-input{height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:11px!important;line-height:14px!important}
+.fiscal-workspace.nfe-page .nfe-table th{height:30px!important;padding:4px 6px!important;font-size:10px!important}.fiscal-workspace.nfe-page .nfe-table td{height:30px!important;padding:2px 4px!important}
+.fiscal-workspace.nfe-page .nfe-table td input,.fiscal-workspace.nfe-page .nfe-table td select{width:100%;height:30px!important;min-height:30px!important;padding:0 6px!important;font-size:11px!important}
+.fiscal-workspace.nfe-page .nfe-tabs button,.fiscal-workspace.nfe-page .nfe-primary,.fiscal-workspace.nfe-page .nfe-secondary,.fiscal-workspace.nfe-page .nfe-remove,.fiscal-workspace.nfe-page .nfe-action{height:30px!important;min-height:30px!important;font-size:11px!important}.fiscal-workspace.nfe-page .nfe-remove{width:30px!important}
 
-
-/* ERP 2026 — camada visual compartilhada: cor, densidade e leitura operacional. */
 :root{--erp-blue:#2D8DB8;--erp-blue-dark:#123B50;--erp-cyan:#48B7C7;--erp-surface:#F4FBFD;--erp-green:#3A9D78;--erp-amber:#E6A34A;--erp-red:#D65B61}
-body{background:#f4f8fa}
-.erp-dense{background:linear-gradient(180deg,#f7fbfc 0%,#f1f6f8 100%);color:#173b4a}
-.erp-dense h1,.erp-dense h2{color:#123b50}
-.erp-dense .bg-slate-50{background:#f4f9fb!important}.erp-dense .bg-slate-100{background:#edf5f8!important}
-.erp-dense .border-slate-200,.erp-dense .border-slate-300{border-color:#d5e4e9!important}
-.erp-dense .text-slate-900,.erp-dense .text-slate-800{color:#173b4a!important}.erp-dense .text-slate-600,.erp-dense .text-slate-500{color:#5f7680!important}
-.erp-dense button.bg-slate-900,.erp-dense button.bg-blue-600,.erp-dense button.bg-sky-600{background:var(--erp-blue)!important;color:#fff!important}
-.erp-dense button.bg-slate-900:hover,.erp-dense button.bg-blue-600:hover,.erp-dense button.bg-sky-600:hover{background:#247b9e!important}
-.erp-dense .rounded-2xl,.erp-dense .rounded-xl,.erp-dense .rounded-lg{border-radius:4px!important}
-.erp-dense .shadow,.erp-dense .shadow-sm,.erp-dense .shadow-md{box-shadow:0 2px 10px rgba(18,59,80,.07)!important}
+body{background:#f4f8fa}.erp-dense{background:linear-gradient(180deg,#f7fbfc 0%,#f1f6f8 100%);color:#173b4a}.erp-dense h1,.erp-dense h2{color:#123b50}
+.erp-dense .bg-slate-50{background:#f4f9fb!important}.erp-dense .bg-slate-100{background:#edf5f8!important}.erp-dense .border-slate-200,.erp-dense .border-slate-300{border-color:#d5e4e9!important}.erp-dense .text-slate-900,.erp-dense .text-slate-800{color:#173b4a!important}.erp-dense .text-slate-600,.erp-dense .text-slate-500{color:#5f7680!important}
+.erp-dense button.bg-slate-900,.erp-dense button.bg-blue-600,.erp-dense button.bg-sky-600{background:var(--erp-blue)!important;color:#fff!important}.erp-dense button.bg-slate-900:hover,.erp-dense button.bg-blue-600:hover,.erp-dense button.bg-sky-600:hover{background:#247b9e!important}
+.erp-dense .rounded-2xl,.erp-dense .rounded-xl,.erp-dense .rounded-lg{border-radius:2px!important}.erp-dense .shadow,.erp-dense .shadow-sm,.erp-dense .shadow-md{box-shadow:0 1px 5px rgba(18,59,80,.06)!important}
 .erp-dense table thead{background:#eaf4f7!important;color:#285365}.erp-dense table tbody tr:nth-child(even){background:#fbfdfe}
-.erp-dense .text-emerald-600{color:#2d8b6c!important}.erp-dense .text-rose-600,.erp-dense .text-red-600{color:#c94f57!important}
-.erp-dense .bg-emerald-50{background:#eef9f4!important}.erp-dense .bg-amber-50,.erp-dense .bg-yellow-50{background:#fff8e8!important}.erp-dense .bg-rose-50,.erp-dense .bg-red-50{background:#fff0ef!important}.erp-dense .bg-sky-50,.erp-dense .bg-blue-50{background:#edf7fb!important}
+.erp-dense .text-emerald-600{color:#2d8b6c!important}.erp-dense .text-rose-600,.erp-dense .text-red-600{color:#c94f57!important}.erp-dense .bg-emerald-50{background:#eef9f4!important}.erp-dense .bg-amber-50,.erp-dense .bg-yellow-50{background:#fff8e8!important}.erp-dense .bg-rose-50,.erp-dense .bg-red-50{background:#fff0ef!important}.erp-dense .bg-sky-50,.erp-dense .bg-blue-50{background:#edf7fb!important}
 
-.erp-global-surface{min-height:100vh;background:linear-gradient(180deg,#f7fbfc 0%,#eef5f7 100%);color:#173b4a}
-.erp-global-surface input:not([type=checkbox]):not([type=radio]),.erp-global-surface select,.erp-global-surface textarea{accent-color:#2D8DB8}
-.erp-global-surface .bg-white{background-color:#fff!important}
-.erp-global-surface .border-slate-200{border-color:#d8e6ea!important}
-.erp-global-surface .text-slate-900{color:#173b4a!important}
+.erp-global-surface{min-height:100vh;background:linear-gradient(180deg,#f7fbfc 0%,#eef5f7 100%);color:#173b4a}.erp-global-surface input:not([type=checkbox]):not([type=radio]),.erp-global-surface select,.erp-global-surface textarea{accent-color:#2D8DB8}.erp-global-surface .bg-white{background-color:#fff!important}.erp-global-surface .border-slate-200{border-color:#d8e6ea!important}.erp-global-surface .text-slate-900{color:#173b4a!important}
+.erp-global-surface input:not([type=checkbox]):not([type=radio]):not([type=range]),.erp-global-surface select{height:30px!important;min-height:30px!important;font-size:11px!important;line-height:14px!important;border-radius:2px!important}.erp-global-surface label{font-size:9px!important;line-height:12px!important;margin-bottom:2px}.erp-global-surface button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button){height:30px!important;min-height:30px!important;font-size:11px!important;line-height:14px!important;border-radius:2px!important}.erp-global-surface table{font-size:11px}.erp-global-surface th{font-size:10px}
 
-
-/* GLOBAL OPERATIONAL MICRO-SCALE — excludes top navigation controls */
-.erp-global-surface input:not([type=checkbox]):not([type=radio]):not([type=range]),
-.erp-global-surface select{
-  height:30px!important;
-  min-height:30px!important;
-  font-size:11px!important;
-  line-height:14px!important;
-  border-radius:2px!important;
-}
-.erp-global-surface label{
-  font-size:9px!important;
-  line-height:12px!important;
-  margin-bottom:2px;
-}
-.erp-global-surface button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button){
-  height:30px!important;
-  min-height:30px!important;
-  font-size:11px!important;
-  line-height:14px!important;
-  border-radius:2px!important;
-}
-.erp-global-surface table{font-size:11px}
-.erp-global-surface th{font-size:10px}
-
-
-/* FINAL OPERATIONAL GEOMETRY — 30px / 11px / 9px / 2px. Applied after every legacy workspace rule. */
-.erp-dense input:not([type=checkbox]):not([type=radio]):not([type=range]),
-.erp-dense select,
-.erp-compact input:not([type=checkbox]):not([type=radio]):not([type=range]),
-.erp-compact select,
-.erp-global-surface input:not([type=checkbox]):not([type=radio]):not([type=range]),
-.erp-global-surface select,
-.fiscal-workspace input:not([type=checkbox]):not([type=radio]):not([type=range]),
-.fiscal-workspace select,
-.nfe-page input:not([type=checkbox]):not([type=radio]):not([type=range]),
-.nfe-page select{
-  height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:11px!important;line-height:14px!important;box-sizing:border-box
-}
-.erp-dense label,.erp-compact label,.erp-global-surface label,.fiscal-workspace label,.nfe-page label{
-  font-size:9px!important;line-height:12px!important;margin-bottom:2px!important;letter-spacing:.04em;text-transform:uppercase
-}
-.erp-dense button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),
-.erp-compact button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),
-.erp-global-surface button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),
-.fiscal-workspace button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),
-.nfe-page button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button){
-  height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:11px!important;line-height:14px!important
-}
+.erp-dense input:not([type=checkbox]):not([type=radio]):not([type=range]),.erp-dense select,.erp-compact input:not([type=checkbox]):not([type=radio]):not([type=range]),.erp-compact select,.erp-global-surface input:not([type=checkbox]):not([type=radio]):not([type=range]),.erp-global-surface select,.fiscal-workspace input:not([type=checkbox]):not([type=radio]):not([type=range]),.fiscal-workspace select,.nfe-page input:not([type=checkbox]):not([type=radio]):not([type=range]),.nfe-page select{height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:11px!important;line-height:14px!important;box-sizing:border-box}
+.erp-dense label,.erp-compact label,.erp-global-surface label,.fiscal-workspace label,.nfe-page label{font-size:9px!important;line-height:12px!important;margin-bottom:2px!important;letter-spacing:.04em;text-transform:uppercase}
+.erp-dense button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),.erp-compact button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),.erp-global-surface button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),.fiscal-workspace button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button),.nfe-page button:not(.v7-top-tablet):not(.v7-top-exit):not(.vendas-tablet-head button){height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:11px!important;line-height:14px!important}
 .erp-dense table,.erp-compact table,.erp-global-surface table,.fiscal-workspace table,.nfe-page table{font-size:11px!important}
 .erp-dense thead tr,.erp-dense tbody tr,.erp-compact thead tr,.erp-compact tbody tr,.erp-global-surface thead tr,.erp-global-surface tbody tr{height:30px!important}
