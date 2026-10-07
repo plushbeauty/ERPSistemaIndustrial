@@ -167,7 +167,7 @@ export default function VendasCentral() {
             <button type="button" className="sales-button sales-button--secondary sales-crud-button" onClick={openEdit} disabled={!selectedOrder}><Edit3 size={13} />EDITAR</button>
             <button type="button" className="sales-button sales-button--danger sales-crud-button" onClick={requestDelete} disabled={!selectedOrder}><Trash2 size={13} />DELETAR</button>
             <button type="button" className="sales-button sales-button--secondary sales-crud-button" onClick={() => void load()} disabled={loading}><RefreshCw size={13} className={loading ? 'animate-spin' : ''} />ATUALIZAR</button>
-          </div>v>
+          </div>
         </section>
 
         {error && <div className="sales-alert" role="alert"><CircleAlert size={17} />{error}</div>}
@@ -296,7 +296,6 @@ export default function VendasCentral() {
           </nav>
         </section>
       </main>
-    </VendasLayout>
       {confirmDelete && selectedOrder && (
         <div className="sales-delete-overlay" role="dialog" aria-modal="true" aria-labelledby="sales-delete-title">
           <section className="sales-delete-dialog">
