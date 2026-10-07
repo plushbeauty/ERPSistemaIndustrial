@@ -5,7 +5,7 @@
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-043
  * Alterações: Tipar explicitamente as props do componente para eliminar TS7031.
- * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
+ * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório2356488.
  * =========================================================================
  */
 
