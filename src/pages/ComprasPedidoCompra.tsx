@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Plus, Save, Trash2 } from 'lucide-react'
+import { Plus, Save, Trash2 } from 'lucide-react'
+import ERPHeader from '../components/layout/ERPHeader'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 
@@ -128,53 +129,44 @@ export default function ComprasPedidoCompra() {
     }
   }
 
-  return <div className="min-h-screen bg-[#F4F7FE] text-slate-900">
-    <header className="border-b bg-white">
-      <div className="flex min-h-[70px] items-center justify-between px-5 lg:px-8">
-        <div><p className="text-[10px] uppercase tracking-[.16em] text-[#2D8DB8]">Compras • Suprimentos</p><h1 className="text-[13px] font-medium text-[#123B50]">Pedido de Compra</h1></div>
-        <button type="button" onClick={() => location.assign('/compras')} className="flex items-center gap-2 rounded border px-3 py-2 text-xs"><ArrowLeft size={15}/>Voltar</button>
-      </div>
-    </header>
-    <main className="mx-auto max-w-[1500px] p-5 lg:p-8">
-      {(error || message) && <div role={error ? 'alert' : 'status'} className={`mb-4 rounded border p-3 text-sm ${error ? 'border-red-200 bg-red-50 text-red-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'}`}>{error || message}</div>}
-      <section className="rounded-[2px] border bg-white p-5">
-        <div className="grid gap-4 md:grid-cols-3">
-          <label className="text-xs md:col-span-2">Fornecedor
-            <select required value={supplier} onChange={(event) => setSupplier(event.target.value)} className="mt-1 h-10 w-full rounded border px-3">
-              <option value="">Selecionar fornecedor</option>{suppliers.map((entry) => <option key={entry.id} value={entry.id}>{entry.razao_social}</option>)}
+  return <div className="min-h-screen bg-neutral-900 text-white">
+    <ERPHeader />
+    <main className="p-2 space-y-2">
+      {(error || message) && <div role={error ? 'alert' : 'status'} className={`h-[30px] flex items-center px-2 rounded-[2px] border text-[11px] ${error ? 'border-red-500 bg-red-50/50 text-red-700' : 'border-emerald-700 bg-emerald-950 text-emerald-300'}`}>{error || message}</div>}
+      <section className="bg-neutral-950 border border-neutral-800 rounded-[2px] p-2">
+        <div className="grid grid-cols-12 gap-1.5 items-end">
+          <label className="col-span-3 text-[9px] uppercase tracking-wider text-neutral-400">Fornecedor*
+            <select required value={supplier} onChange={(event) => setSupplier(event.target.value)} className={`mt-[2px] h-[30px] w-full rounded-[2px] border px-2 text-[11px] bg-neutral-900 ${!supplier ? 'border-red-500 bg-red-50/50 text-neutral-900' : 'border-neutral-700 text-white'}`}>
+              <option value="">Preencher...</option>{suppliers.map((entry) => <option key={entry.id} value={entry.id}>{entry.razao_social}</option>)}
             </select>
           </label>
-          <label className="text-xs">Prazo de entrega<input type="date" value={delivery} onChange={(event) => setDelivery(event.target.value)} className="mt-1 h-10 w-full rounded border px-3"/></label>
-          <label className="text-xs md:col-span-2">Condição de pagamento<input value={condition} onChange={(event) => setCondition(event.target.value)} placeholder="Ex.: 30 dias" className="mt-1 h-10 w-full rounded border px-3"/></label>
-        </div>
-        <div className="mt-5 grid gap-2 md:grid-cols-[1fr_110px_140px_100px]">
-          <label className="sr-only" htmlFor="purchase-product">Produto ou matéria-prima</label>
-          <select id="purchase-product" value={product} onChange={(event) => { setProduct(event.target.value); setPrice('0') }} className="h-10 rounded border px-3">
-            <option value="">Produto / matéria-prima</option>{products.map((entry) => <option key={entry.id} value={entry.id}>{entry.codigo} — {entry.nome}</option>)}
-          </select>
-          <label className="sr-only" htmlFor="purchase-quantity">Quantidade</label><input id="purchase-quantity" type="number" min="0.0001" step="0.001" value={qty} onChange={(event) => setQty(event.target.value)} className="h-10 rounded border px-3"/>
-          <label className="sr-only" htmlFor="purchase-price">Preço unitário</label><input id="purchase-price" type="number" min="0" step="0.01" value={price} onChange={(event) => setPrice(event.target.value)} className="h-10 rounded border px-3"/>
-          <button type="button" onClick={addItem} className="flex items-center justify-center gap-1 rounded bg-[#123B50] text-xs text-white"><Plus size={15}/>Adicionar</button>
-        </div>
-        <div className="mt-5 overflow-x-auto">
-          <table className="w-full min-w-[760px] text-sm">
-            <caption className="sr-only">Itens do pedido de compra</caption>
-            <thead><tr className="bg-slate-100 text-left"><th className="p-3">Código</th><th className="p-3">Descrição</th><th className="p-3">Qtd.</th><th className="p-3">Preço Un.</th><th className="p-3">Total</th><th className="p-3"><span className="sr-only">Ações</span></th></tr></thead>
-            <tbody>{items.map((item, index) => <tr key={`${item.produto_id}-${index}`} className="border-b">
-              <td className="p-3">{item.codigo}</td><td className="p-3">{item.descricao}</td><td className="p-3">{item.quantidade} {item.unidade}</td>
-              <td className="p-3">{Number(item.valor_unitario).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-              <td className="p-3">{(Number(item.quantidade) * Number(item.valor_unitario)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-              <td className="p-3"><button type="button" aria-label={`Remover ${item.descricao}`} onClick={() => setItems((current) => current.filter((_, itemIndex) => itemIndex !== index))}><Trash2 size={15}/></button></td>
-            </tr>)}
-            {!items.length && <tr><td colSpan={6} className="p-6 text-center text-slate-500">Adicione itens ao pedido.</td></tr>}</tbody>
-          </table>
-        </div>
-        <label className="mt-4 block text-xs font-semibold">Observações<textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Observações ou instruções de recebimento" className="mt-1 min-h-24 w-full rounded border p-3 text-sm"/></label>
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-          <strong className="text-[13px] text-[#123B50]">TOTAL: {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
-          <button type="button" disabled={busy} onClick={() => void save()} className="flex min-h-11 items-center gap-2 rounded bg-[#2D8DB8] px-5 text-sm text-white disabled:opacity-50"><Save size={16}/>{busy ? 'Salvando…' : 'Enviar para aprovação'}</button>
+          <label className="col-span-2 text-[9px] uppercase tracking-wider text-neutral-400">Prazo entrega<input type="date" value={delivery} onChange={(event) => setDelivery(event.target.value)} className="mt-[2px] h-[30px] w-full rounded-[2px] border border-neutral-700 bg-neutral-900 px-2 text-[11px] text-white"/></label>
+          <label className="col-span-3 text-[9px] uppercase tracking-wider text-neutral-400">Condição pagamento<input value={condition} onChange={(event) => setCondition(event.target.value)} className="mt-[2px] h-[30px] w-full rounded-[2px] border border-neutral-700 bg-neutral-900 px-2 text-[11px] text-white"/></label>
+          <label className="col-span-4 text-[9px] uppercase tracking-wider text-neutral-400">Observações<input value={notes} onChange={(event) => setNotes(event.target.value)} className="mt-[2px] h-[30px] w-full rounded-[2px] border border-neutral-700 bg-neutral-900 px-2 text-[11px] text-white"/></label>
         </div>
       </section>
+      <section className="bg-neutral-950 border border-neutral-800 rounded-[2px] p-2">
+        <div className="grid grid-cols-12 gap-1.5 items-end">
+          <label className="col-span-4 text-[9px] uppercase tracking-wider text-neutral-400">Produto / matéria-prima*
+            <select value={product} onChange={(event) => { setProduct(event.target.value); setPrice('0') }} className={`mt-[2px] h-[30px] w-full rounded-[2px] border px-2 text-[11px] bg-neutral-900 ${!product ? 'border-red-500 bg-red-50/50 text-neutral-900' : 'border-neutral-700 text-white'}`}>
+              <option value="">Preencher...</option>{products.map((entry) => <option key={entry.id} value={entry.id}>{entry.codigo} — {entry.nome}</option>)}
+            </select>
+          </label>
+          <label className="col-span-2 text-[9px] uppercase tracking-wider text-neutral-400">Quantidade*<input type="number" min="0.0001" step="0.001" value={qty} onChange={(event) => setQty(event.target.value)} className="mt-[2px] h-[30px] w-full rounded-[2px] border border-neutral-700 bg-neutral-900 px-2 text-[11px] text-white"/></label>
+          <label className="col-span-2 text-[9px] uppercase tracking-wider text-neutral-400">Preço unitário*<input type="number" min="0" step="0.01" value={price} onChange={(event) => setPrice(event.target.value)} className="mt-[2px] h-[30px] w-full rounded-[2px] border border-neutral-700 bg-neutral-900 px-2 text-[11px] text-white"/></label>
+          <button type="button" onClick={addItem} className="col-span-2 h-[30px] rounded-[2px] bg-blue-600 text-[11px] uppercase flex items-center justify-center gap-1"><Plus size={13}/>Adicionar</button>
+          <div className="col-span-2 h-[30px] flex items-center justify-end text-[11px]">TOTAL {total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</div>
+        </div>
+      </section>
+      <section className="bg-neutral-950 border border-neutral-800 rounded-[2px] overflow-auto">
+        <table className="w-full text-[11px]">
+          <thead><tr className="h-[26px] bg-neutral-900 text-[9px] uppercase tracking-wider text-neutral-400"><th className="px-2 text-left">Código</th><th className="px-2 text-left">Part Number / Descrição</th><th className="px-2 text-right">Qtd</th><th className="px-2 text-right">Preço Un.</th><th className="px-2 text-right">IPI</th><th className="px-2 text-right">ICMS</th><th className="px-2 text-left">Centro de Custo</th><th className="px-2 text-right">Total</th><th /></tr></thead>
+          <tbody>{items.map((item,index)=><tr key={`${item.produto_id}-${index}`} className="h-[28px] border-b border-neutral-900">
+            <td className="px-2">{item.codigo}</td><td className="px-2">{item.descricao}</td><td className="px-2 text-right">{item.quantidade} {item.unidade}</td><td className="px-2 text-right">{Number(item.valor_unitario).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td><td className="px-2 text-right">—</td><td className="px-2 text-right">—</td><td className="px-2">A DEFINIR</td><td className="px-2 text-right">{(Number(item.quantidade)*Number(item.valor_unitario)).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td><td className="px-2"><button type="button" onClick={()=>setItems(current=>current.filter((_,i)=>i!==index))}><Trash2 size={13}/></button></td>
+          </tr>)}{!items.length&&<tr><td colSpan={9} className="h-[60px] text-center text-neutral-500">Nenhum item adicionado.</td></tr>}</tbody>
+        </table>
+      </section>
+      <div className="flex justify-end"><button type="button" disabled={busy} onClick={()=>void save()} className="h-[30px] rounded-[2px] bg-blue-600 px-4 text-[11px] uppercase flex items-center gap-1"><Save size={13}/>{busy?'SALVANDO…':'ENVIAR PARA APROVAÇÃO'}</button></div>
     </main>
   </div>
 }
