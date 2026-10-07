@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { FileDown, Plus, RefreshCw, Save, Send, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import ERPHeader from '../components/layout/ERPHeader'
 import CompactButton from '../components/ui/CompactButton'
 import CompactInput from '../components/ui/CompactInput'
 import CompactSelect from '../components/ui/CompactSelect'
@@ -242,17 +243,7 @@ export default function NFeEmissaoCompact() {
     updateForm('ufPlaca', transporter ? String(transporter.uf ?? '') : field(form, 'ufPlaca'))
   }
 
-  return <main className="synqra-workspace synqra-nfe">
-    <header className="synqra-workspace-header">
-      <button className="synqra-workspace-brand" type="button" onClick={() => window.location.assign('/tablet/dashboard')}>
-        <img src="/logo/sgq-erp.png" alt="Synqra ERP Industrial" />
-        <span><strong>SYNQRA ERP INDUSTRIAL</strong><small>EMISSOR SEBRAE • NF-e MODELO 55</small></span>
-      </button>
-      <button className="synqra-master-menu" type="button" onClick={() => window.location.assign('/fiscal')}>MENU FISCAL</button>
-      <div className="synqra-session"><div><strong>{company.razao_social ?? 'Emitente'}</strong><span>{field(form, 'ambiente').toUpperCase()}</span></div></div>
-    </header>
-
-    <section className="synqra-workspace-body">
+  return <main className="synqra-workspace synqra-nfe"><ERPHeader />    <section className="synqra-workspace-body">
       <div className="synqra-workspace-title">
         <div><h1>Emissor NF-e • Workspace Fiscal</h1><p>Modelo 55 • emissão compacta • dados reais do tenant</p></div>
         <CompactButton type="button" onClick={() => void load()} disabled={busy}><RefreshCw size={13} /> ATUALIZAR</CompactButton>
