@@ -76,7 +76,7 @@ export default function VendasTablet() {
       {error && <div className="sales-tablet-error" role="alert">{error}</div>}
 
       <section className="sales-module-grid" aria-label="Funções do módulo de vendas">
-        {SALES_MODULES.map(({ key, label, description, route, Icon }) => <button key={key} type="button" className="sales-module-card" onClick={() => navigate(route)} title={\`Abrir \${label}\`}><span className="sales-module-icon"><Icon size={30} strokeWidth={1.8} /></span><span className="sales-module-copy"><strong>{label}</strong><small>{description}</small></span></button>)}
+        {SALES_MODULES.map(({ key, label, description, route, Icon }) => <button key={key} type="button" className="sales-module-card" onClick={() => navigate(route)} title={'Abrir ' + label}><span className="sales-module-icon"><Icon size={30} strokeWidth={1.8} /></span><span className="sales-module-copy"><strong>{label}</strong><small>{description}</small></span></button>)}
       </section>
 
       <footer className="sales-tablet-footer"><span>VENDAS</span><span>ERP & SGQ INDUSTRIAL</span><span>Menu horizontal padronizado</span></footer>
