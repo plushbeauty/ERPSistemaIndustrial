@@ -57,6 +57,7 @@ export default function ERPHeader() {
         <strong className="block truncate text-[11px]">{operator.name}</strong>
         <span className="block text-[9px] text-slate-500">{operator.email || 'Sessão autenticada'} • {date} • {time}</span>
       </div>
+      <span className="hidden h-[30px] items-center border border-slate-700 px-2 text-[9px] font-semibold uppercase tracking-wider text-slate-300 lg:inline-flex" title="Fonte dos dados">DADOS: SUPABASE</span>
       <CompactButton type="button" onClick={() => navigate(-1)} title="Voltar"><ArrowLeft size={13} /> VOLTAR</CompactButton>
       <CompactButton type="button" tone="danger" onClick={() => void logout()} title="Sair"><LogOut size={13} /> SAIR</CompactButton>
     </div>
