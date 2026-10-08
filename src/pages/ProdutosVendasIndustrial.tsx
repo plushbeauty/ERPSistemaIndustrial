@@ -13,8 +13,8 @@ import React, { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation as useRouterLocation } from 'react-router-dom'
 import type { CSSProperties, ChangeEvent } from 'react'
 import {
-  Boxes, Check, CheckCircle2, ClipboardList, Edit3, Factory, FileText, History, Image as ImageIcon,
-  Plus, Printer, RefreshCw, RotateCcw, Save, Search, ShieldCheck, Tag, Trash2, Upload, X, FileSpreadsheet
+  Boxes, Check, CheckCircle2, Edit3, Factory, FileText, Image as ImageIcon,
+  Plus, Printer, RefreshCw, RotateCcw, Save, Search, ShieldCheck, Trash2, Upload, X, FileSpreadsheet
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 interface XlsxModule { read(buffer:ArrayBuffer,options:{type:'array'}):{SheetNames:string[];Sheets:Record<string,unknown>}; utils:{sheet_to_json<T>(sheet:unknown,options:{defval:string}):T[]} }
@@ -135,7 +135,8 @@ export default function ProdutosVendasIndustrial(){
         codigo=String(generated.data||'').trim()
         if(!codigo)throw new Error('O gerador de código não retornou um código válido.')
       }
-      const {estoque_atual:_estoqueAtual,...editableForm}=form
+      const editableForm={...form}
+      delete editableForm.estoque_atual
       const payload={...editableForm,empresa_id:companyId,codigo,nome:String(form.nome).trim(),unidade:String(form.unidade||'UN').toUpperCase(),unidade_compra:String(form.unidade_compra||'UN').toUpperCase(),unidade_venda:String(form.unidade_venda||'UN').toUpperCase()}
       const result=selectedId
         ? await supabase.from('erp_produtos').update(payload).eq('id',selectedId).eq('empresa_id',companyId).select('*').single()
