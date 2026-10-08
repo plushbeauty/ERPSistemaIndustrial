@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { BarChart3, BookOpen, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Target, Users } from 'lucide-react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import '../styles/synqra-workspace.css'
@@ -9,7 +9,6 @@ import ERPHorizontalShell from '../components/layout/ERPHorizontalShell'
 export type SalesNavItem = { label:string; href:string; icon:typeof LayoutDashboard }
 export type SalesNavSection = { label:string; items:SalesNavItem[] }
 type VendasStatus = { atrasados:number; producao:number; acabamento:number; almoxarifado:number; liberadoNF:number; totalPendente:number }
-type Operator = { nome:string|null; email:string|null }
 const normalizeStatus=(v:string)=>v.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
 const initialVendasStatus:VendasStatus={atrasados:0,producao:0,acabamento:0,almoxarifado:0,liberadoNF:0,totalPendente:0}
 
