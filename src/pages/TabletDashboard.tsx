@@ -21,8 +21,7 @@ type RolePermission = {
 
 type Permission = {
   id: string
-  codigo: string
-  modulo: string
+  code: string
 }
 
 const normalize = (value: string) =>
@@ -79,7 +78,7 @@ async function loadAccess(): Promise<{ profile: Profile; permissions: Set<string
 
   const { data: permissionRows, error: permissionError } = await supabase
     .from('erp_permissions')
-    .select('id,codigo,modulo')
+    .select('id,code')
     .in('id', permissionIds)
     .eq('ativo', true)
 
@@ -87,8 +86,9 @@ async function loadAccess(): Promise<{ profile: Profile; permissions: Set<string
 
   const permissions = new Set<string>()
   for (const permission of (permissionRows ?? []) as Permission[]) {
-    permissions.add(permission.codigo)
-    permissions.add(permission.modulo)
+    permissions.add(permission.code)
+    const moduleCode = permission.code.split('.')[0]
+    if (moduleCode) permissions.add(moduleCode)
   }
 
   return { profile, permissions }
