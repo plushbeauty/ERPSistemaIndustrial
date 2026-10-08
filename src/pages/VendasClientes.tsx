@@ -136,7 +136,7 @@ export default function VendasClientes() {
   const [selected, setSelected] = useState<string | null>(null)
   const [form, setForm] = useState<Form>(empty())
   const [open, setOpen] = useState(false)
-  const [tab, setTab] = useState<'fiscal' | 'contato' | 'endereco' | 'comercial' | 'depara'>('fiscal')
+  const [tab, setTab] = useState<'fiscal' | 'contato' | 'endereco' | 'comercial' | 'depara' | 'transportadora'>('fiscal')
   const [busy, setBusy] = useState(false)
   const [cnpjLoading, setCnpjLoading] = useState(false)
   const [message, setMessage] = useState('')
