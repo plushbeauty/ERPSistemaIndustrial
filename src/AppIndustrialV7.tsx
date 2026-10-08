@@ -201,6 +201,8 @@ export default function AppIndustrialV7() {
       </ERPHorizontalShell>
     </motion.div>
   )
+}
+
 function Feature({ title, description, icon: Icon }: { title: string; description: string; icon: LucideIcon }) { return <div className="v7-feature"><span className="v7-icon-box"><Icon size={28}/></span><h2>{title}</h2><p>{description}</p><small>Este módulo permanece integrado ao mesmo tenant ERP e às políticas de segurança do banco.</small></div>}
 
 /* Revisão 3 registrada após validação estrutural do arquivo. */
