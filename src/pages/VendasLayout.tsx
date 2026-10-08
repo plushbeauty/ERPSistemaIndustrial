@@ -61,7 +61,7 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
  const vendas=useVendasStatus()
  useEffect(()=>{if(isVendas)void vendas.load().catch(()=>undefined)},[isVendas,vendas.load])
 
- return <ERPHorizontalShell operatorName="Vanda">
+ return <ERPHorizontalShell>
   <main className="synqra-workspace-main">
     {isVendas&&<VendasStatusCards status={vendas.status} loading={vendas.loading}/>} 
     <div className="synqra-workspace-title"><div>{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div>{onRefresh&&<button className="synqra-tool-button" type="button" onClick={onRefresh}><RefreshCw size={13}/>Atualizar</button>}</div>
