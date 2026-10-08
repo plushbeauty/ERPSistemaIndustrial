@@ -23,6 +23,7 @@ import FinanceiroCustoPadrao from './pages/FinanceiroCustoPadrao'
 import AdminLogs from './pages/AdminLogs'
 import OutlookConfiguracao from './pages/OutlookConfiguracao'
 import FornecedoresIndustrial from './pages/FornecedoresIndustrial'
+import TabletMenuModal from './components/TabletMenuModal'
 
 type Field = { key: string; label: string; type?: 'text' | 'number' | 'date' | 'email'; required?: boolean }
 type Module = { name: string; title: string; description: string; icon: LucideIcon; table?: string; fields?: Field[] }
@@ -121,6 +122,7 @@ export default function AppIndustrialV7() {
   const [empresaNome, setEmpresaNome] = useState('Empresa industrial')
   const [loading, setLoading] = useState(true)
   const [clock, setClock] = useState(new Date())
+  const [tabletOpen, setTabletOpen] = useState(false)
   const [language] = useState(localStorage.getItem('erp-lang') === 'en-US' ? 'en-US' : 'pt-BR')
   useEffect(() => { const id = window.setInterval(() => setClock(new Date()), 1000); return () => window.clearInterval(id) }, [])
   const [theme] = useState<UiTheme>('light')
@@ -164,7 +166,7 @@ export default function AppIndustrialV7() {
         </div>
       </div>
       <div className="v7-top-actions">
-        <button className="v7-top-tablet" type="button" onClick={() => { location.href = '/tablet/dashboard' }} aria-label="Abrir central de módulos">
+        <button className="v7-top-tablet" type="button" onClick={() => setTabletOpen(true)} aria-label="Abrir central de módulos">
           MÓDULOS TABLET
         </button>
         <div className="v7-top-user-simple" aria-label="Usuário conectado"><span>OPERADOR</span><strong>{profile.nome || 'Usuário'}</strong></div>
@@ -205,6 +207,12 @@ export default function AppIndustrialV7() {
       <footer>FernandoSch_System • SYSNQRA ERP & SGQ INDUSTRIAL • {segment} • Ambiente isolado por empresa</footer>
 
     </main>
+
+    <TabletMenuModal
+      isOpen={tabletOpen}
+      onClose={() => setTabletOpen(false)}
+      onNavigate={(route) => { location.href = route }}
+    />
   </motion.div>
 }
 
