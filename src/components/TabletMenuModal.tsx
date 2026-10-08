@@ -2,7 +2,7 @@ import {
   Activity, AlertTriangle, BarChart3, Bell, Building2, CalendarCheck, CheckSquare,
   ClipboardX, FileSpreadsheet, FileText, Gauge, GitFork, GraduationCap, History,
   LayoutDashboard, Lock, Paperclip, SearchCode, ShieldAlert, ShieldCheck,
-  SlidersHorizontal, Truck, X,
+  SlidersHorizontal, Tablet, Truck, X,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -13,7 +13,6 @@ export type TabletMenuModule = {
   description: string
   route?: string
   icon: LucideIcon
-  accent: string
 }
 
 export type TabletMenuModalProps = {
@@ -86,7 +85,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
         </header>
 
         <div className="mt-3 grid grid-cols-11 gap-1.5 max-[1050px]:grid-cols-6 max-[700px]:grid-cols-4 max-[460px]:grid-cols-3" aria-label="Módulos do ERP">
-          {modules.map(({ key, number, label, description, route, icon: Icon, accent }) => {
+          {modules.map(({ key, number, label, description, route, icon: Icon }) => {
             const disabled = !route
 
             return (
@@ -96,8 +95,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
                 disabled={disabled}
                 aria-disabled={disabled}
                 title={disabled ? description : label}
-                className="group flex min-h-[86px] min-w-0 touch-manipulation flex-col items-center justify-center gap-[7px] rounded-[2px] border bg-[#252a34] px-1 py-1.5 text-center transition-[background,border-color,transform] duration-100 hover:-translate-y-px hover:bg-[#303642] active:translate-y-0 active:bg-[#38404d] disabled:cursor-not-allowed disabled:opacity-40"
-                style={{ borderColor: accent }}
+                className="group flex min-h-[86px] min-w-0 touch-manipulation flex-col items-center justify-center gap-[7px] rounded-[2px] border border-slate-600 bg-[#252a34] px-1 py-1.5 text-center transition-[background,border-color,transform] duration-100 hover:-translate-y-px hover:border-slate-300 hover:bg-[#303642] active:translate-y-0 active:bg-[#38404d] disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
                   if (route) {
                     onClose()
@@ -107,13 +105,13 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
               >
                 <span
                   className="grid h-10 w-10 shrink-0 place-items-center rounded-[2px] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]"
-                  style={{ backgroundColor: accent }}
+                  style={{ backgroundColor: '#2D8DB8' }}
                   aria-hidden="true"
                 >
                   <Icon size={28} strokeWidth={2.15} />
                 </span>
                 <span className="flex min-w-0 flex-col items-center gap-0.5">
-                  <small className="text-[8px] font-semibold leading-none tracking-[0.08em]" style={{ color: accent }}>{number}</small>
+                  <small className="text-[8px] font-semibold leading-none tracking-[0.08em]" style={{ color: '#67c7dc' }}>{number}</small>
                   <strong className="max-w-full text-[9px] font-semibold leading-[1.15] tracking-[0.01em] text-slate-100">{label}</strong>
                 </span>
               </button>
