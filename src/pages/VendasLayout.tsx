@@ -53,7 +53,7 @@ function moduleMenu(pathname:string):ModuleMenu{
  return{label:'MENU PRINCIPAL',route:'/erp-industrial',icon:LayoutDashboard}
 }
 
-export default function VendasLayout({children,title,subtitle,onRefresh,topContent,titleActions}:{
+export default function VendasLayout({children,title,subtitle,onRefresh,topContent,titleActions,showStatusCards}:{
  children:ReactNode;title:string;subtitle?:string;onRefresh?:()=>void;navSections?:SalesNavSection[];topContent?:ReactNode;titleActions?:ReactNode;showStatusCards?:boolean
 }){
  const {pathname}=useLocation()
