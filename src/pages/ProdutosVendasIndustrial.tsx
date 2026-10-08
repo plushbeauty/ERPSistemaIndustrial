@@ -17,6 +17,7 @@ import {
   Plus, Printer, RefreshCw, RotateCcw, Save, Search, ShieldCheck, Trash2, Upload, X, FileSpreadsheet
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import ERPHorizontalShell from '../components/layout/ERPHorizontalShell'
 interface XlsxModule { read(buffer:ArrayBuffer,options:{type:'array'}):{SheetNames:string[];Sheets:Record<string,unknown>}; utils:{sheet_to_json<T>(sheet:unknown,options:{defval:string}):T[]} }
 declare global { interface Window { XLSX?: XlsxModule } }
 
@@ -57,7 +58,7 @@ const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency
 const n=(v:unknown)=>Number(v??0)||0
 const fmt=(v:unknown)=>n(v).toLocaleString('pt-BR',{maximumFractionDigits:3})
 const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2}
-const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:12,background:'#fff',boxSizing:'border-box'}
+const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box'}
 const label:CSSProperties={display:'grid',gap:2,fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}
 const btn=(_kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid #2D8DB8',background:'#2D8DB8',color:'#fff',fontSize:11,fontWeight:500,textTransform:'uppercase',cursor:'pointer'})
 const emptyRow=(text:string,col=7)=><tr><td colSpan={col} style={{padding:22,textAlign:'center',color:'#667085'}}>{text}</td></tr>
@@ -67,6 +68,7 @@ export default function ProdutosVendasIndustrial(){
   const printMode=routerLocation.pathname==='/produtos-vendas/imprimir'
   const printId=new URLSearchParams(routerLocation.search).get('id')
   const [companyId,setCompanyId]=useState('')
+  const [operatorName,setOperatorName]=useState('Usuário ERP')
   const [products,setProducts]=useState<Product[]>([])
   const [suppliers,setSuppliers]=useState<Supplier[]>([])
   const [groups,setGroups]=useState<Group[]>([])
@@ -109,6 +111,7 @@ export default function ProdutosVendasIndustrial(){
     finally{setBusy(false)}
   }
   useEffect(()=>{void load()},[])
+  useEffect(()=>{void supabase.auth.getUser().then(async ({data})=>{if(!data.user)return;const {data:profile}=await supabase.from('erp_usuarios').select('nome').eq('auth_user_id',data.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();setOperatorName(String(profile?.nome||data.user.email||'Usuário ERP'))})},[])
 
   const filtered=useMemo(()=>{
     const q=query.trim().toLowerCase()
@@ -251,9 +254,29 @@ export default function ProdutosVendasIndustrial(){
       .catch(e=>setError(e instanceof Error?e.message:'Não foi possível enviar a foto.')).finally(()=>setBusy(false))
   }
 
-  const field=(title:string,key:keyof FormData,type='text',span=1,locked=false)=><label style={{...label,gridColumn:'span '+span}}>{title}<input type={type} value={String(form[key]??'')} readOnly={locked} disabled={!editing} onChange={e=>update(key,type==='number'?n(e.target.value):e.target.value)} style={{...input,background:locked?'#eaf3f8':editing?'#fff':'#f5f7fa',color:locked?'#17445A':'#172033',fontWeight:locked?700:400,cursor:locked?'not-allowed':'text'}}/></label>
-  const select=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{title}<select value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>{options.map(o=><option value={o[0]} key={o[0]}>{o[1]}</option>)}</select></label>
-  const check=(title:string,key:keyof FormData)=><label style={{display:'flex',alignItems:'center',gap:7,fontSize:12,fontWeight:800,color:'#344054'}}><input type="checkbox" checked={Boolean(form[key])} disabled={!editing} onChange={e=>update(key,e.target.checked)}/>{title}</label>
+  const helpFor=(title:string)=>({
+    'Descrição resumida':'Texto curto para identificação rápida do produto.',
+    'Grupo':'Grupo mestre existente; determina a classificação principal do produto.',
+    'Subgrupo':'Subdivisão do grupo usada para pesquisa e organização.',
+    'Marca':'Marca comercial do produto, quando aplicável.',
+    'Origem':'Código de origem da mercadoria conforme regra fiscal.',
+    'NCM':'Código NCM utilizado na classificação fiscal do item.',
+    'CEST':'Código CEST quando o produto estiver sujeito à substituição tributária.',
+    'CST ICMS':'Código da situação tributária do ICMS.',
+    'CSOSN':'Código de situação da operação no Simples Nacional, quando aplicável.',
+    'CFOP entrada':'CFOP padrão das entradas deste produto.',
+    'CFOP saída':'CFOP padrão das saídas deste produto.',
+    'Origem fiscal':'Informação fiscal complementar usada pela regra tributária.',
+    'Ponto de reposição':'Quantidade de referência que dispara a necessidade de reposição.',
+    'Validade lote [dias]':'Quantidade de dias de validade atribuída ao lote, quando o produto controla lote.',
+    'Localização padrão':'Localização existente no Estoque onde o item é armazenado normalmente.',
+    'Observações':'Informações complementares do cadastro; não substituem a ficha de processo.'
+  } as Record<string,string>)[title.replace(' [?]','')]||('Ajuda do campo '+title.replace(' [?]','')+'.');
+  const HelpTip=({text}:{text:string})=>{const [open,setOpen]=useState(false);return <span style={{position:'relative',display:'inline-flex',verticalAlign:'middle'}}><button type="button" aria-label="Ajuda" onClick={e=>{e.preventDefault();e.stopPropagation();setOpen(v=>!v)}} style={{width:15,height:15,padding:0,marginLeft:3,border:'1px solid #2D8DB8',borderRadius:'50%',background:'#fff',color:'#2D8DB8',fontSize:9,fontWeight:800,lineHeight:'13px',cursor:'pointer'}}>?</button>{open&&<span role="tooltip" style={{position:'absolute',zIndex:1200,left:18,top:17,width:250,padding:'7px 8px',border:'1px solid #b9cbd3',borderRadius:2,background:'#fff',boxShadow:'0 4px 12px rgba(18,59,80,.16)',fontSize:9,fontWeight:400,lineHeight:1.35,color:'#173b4a',textTransform:'none'}}>{text}</span>}</span>}
+  const fieldTitle=(title:string)=><>{title.replace(' [?]','')}{title.includes('[?]')&&<HelpTip text={helpFor(title)}/>}</>;
+  const field=(title:string,key:keyof FormData,type='text',span=1,locked=false)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input type={type} value={String(form[key]??'')} readOnly={locked} disabled={!editing} onChange={e=>update(key,type==='number'?n(e.target.value):e.target.value)} style={{...input,background:locked?'#eaf3f8':editing?'#fff':'#f5f7fa',color:locked?'#17445A':'#172033',fontWeight:locked?700:400,cursor:locked?'not-allowed':'text'}}/></label>
+  const select=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<select value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>{options.map(o=><option value={o[0]} key={o[0]}>{o[1]}</option>)}</select></label>
+  const check=(title:string,key:keyof FormData)=><label style={{display:'flex',alignItems:'center',gap:7,fontSize:10,fontWeight:700,color:'#344054'}}><input type="checkbox" checked={Boolean(form[key])} disabled={!editing} onChange={e=>update(key,e.target.checked)}/>{title}</label>
 
   if(printMode&&selectedId){
     return (
@@ -290,9 +313,9 @@ export default function ProdutosVendasIndustrial(){
       </main>
     )
   }
-  return <main style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif'}}>
-    <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:14,padding:'8px 10px 7px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
-      <div><div style={{fontSize:11,fontWeight:900,color:'#1c4bb5'}}>SYSNQRA ERP & SGQ INDUSTRIAL • CADASTRO MESTRE</div><h1 style={{margin:'2px 0 0',fontSize:18,color:'#173fae'}}>CADASTRO DE PRODUTOS</h1></div>
+  return <ERPHorizontalShell operatorName={operatorName}><main style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif'}}>
+    <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
+      <div><div style={{fontSize:11,fontWeight:900,color:'#1c4bb5'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
         <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>
         <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />
@@ -320,15 +343,15 @@ export default function ProdutosVendasIndustrial(){
         {tabItems.map(([id,title,Icon])=><button key={id} type="button" onClick={()=>{setTab(id);if(selectedId)void loadDetails()}} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 10px',border:0,borderBottom:tab===id?'3px solid #184bb4':'3px solid transparent',background:tab===id?'#fff':'transparent',color:tab===id?'#184bb4':'#344054',fontWeight:900,fontSize:10,cursor:'pointer',whiteSpace:'nowrap'}}><Icon size={14}/>{title}</button>)}
       </div>
 
-      {tab==='gerais'&&<form onSubmit={save} style={{padding:10}}>
+      {tab==='gerais'&&<form onSubmit={save} style={{padding:8}}>
         <div style={{display:'grid',gridTemplateColumns:'90px 128px minmax(250px,1fr) 180px',gap:7,alignItems:'end'}}>
           {field('Código *','codigo','text',1,true)}
           {field('Código de barras','codigo_barras','text',1,true)}
           {field('Descrição *','nome')}
-          <label style={label}>Descrição resumida [?]<input type="text" value={String(form.descricao_resumida??'')} disabled={!editing} onChange={e=>update('descricao_resumida',e.target.value)} title="Descrição curta/dimensional usado para identificar rapidamente a peça." style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
+          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>Descrição resumida <HelpTip text={helpFor('Descrição resumida')}/></span><input type="text" value={String(form.descricao_resumida??'')} disabled={!editing} onChange={e=>update('descricao_resumida',e.target.value)} title="Descrição curta/dimensional usado para identificar rapidamente a peça." style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'150px 150px 150px 95px 95px 95px',gap:7,marginTop:7,alignItems:'end'}}>
-          <label style={label}>Grupo [?]<select value={form.grupo||''} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
+        <div style={{display:'grid',gridTemplateColumns:'150px 120px 120px 64px 64px 64px',gap:7,marginTop:7,alignItems:'end'}}>
+          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>Grupo <HelpTip text={helpFor('Grupo')}/></span><select value={form.grupo||''} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
           {field('Subgrupo [?]','subgrupo')}
           {field('Marca [?]','marca')}
           {select('Un. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
@@ -341,39 +364,39 @@ export default function ProdutosVendasIndustrial(){
           {field('Ref. interna','referencia_interna')}
           {field('Ref. cliente','referencia_cliente')}
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:7,marginTop:7,alignItems:'end'}}>
+        <div style={{display:'grid',gridTemplateColumns:'82px 82px 82px 82px 82px',gap:7,marginTop:7,alignItems:'end'}}>
           {field('Peso líquido (kg)','peso_liquido','number')}{field('Peso bruto (kg)','peso_bruto','number')}{field('Comprimento (mm)','comprimento_mm','number')}{field('Largura (mm)','largura_mm','number')}{field('Altura (mm)','altura_mm','number')}
         </div>
         <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:7,marginTop:7,alignItems:'end'}}>
           {field('Custo médio','custo_medio','number')}{field('Último custo','custo_ultimo','number')}{field('Custo fabricação','custo_fabricacao','number')}{field('Preço venda','preco_venda','number')}
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'minmax(300px,1fr) 255px 175px',gap:7,marginTop:7,alignItems:'end'}}>
-          <label style={label}>OBSERVAÇÕES [?]<textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:30,padding:'5px 7px',resize:'none'}}/></label>
+        <div style={{display:'grid',gridTemplateColumns:'minmax(280px,1fr) 245px 175px',gap:7,marginTop:7,alignItems:'end'}}>
+          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:30,padding:'5px 7px',resize:'none',fontSize:11}}/></label>
           <div style={{display:'flex',alignItems:'center',gap:8,height:30,border:'1px solid #d5dde7',padding:'0 8px',background:'#fff'}}><span style={{fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}}>Situação</span>{check('Fabricado','fabricado')}{check('Comprado','comprado')}{check('Revenda','revenda')}</div>
-          <label style={label}>LOCALIZAÇÃO PADRÃO [?]<select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} title="Selecione uma localização existente do Estoque. A hierarquia depósito/rua/prateleira/caixa é mantida no cadastro de localizações." style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
+          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} title="Selecione uma localização existente do Estoque. A hierarquia depósito/rua/prateleira/caixa é mantida no cadastro de localizações." style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
         </div>
       </form>}
 
-            {tab==='fiscal'&&<section style={{padding:10}}>
-        <div style={{display:'grid',gridTemplateColumns:'100px 280px 280px 110px 110px',gap:7,alignItems:'end'}}>
+            {tab==='fiscal'&&<section style={{padding:8}}>
+        <div style={{display:'grid',gridTemplateColumns:'80px 220px 180px 95px 95px',gap:7,alignItems:'end'}}>
           {select('Situação','ativo',[['true','Ativo'],['false','Inativo']])}
           {select('Origem [?]','origem',[['0 - Nacional','0 - Nacional'],['1 - Estrangeira - Importação direta','1 - Estrangeira - Importação direta'],['2 - Estrangeira - mercado interno','2 - Estrangeira - mercado interno'],['3 - Nacional, conteúdo importação >40% e <70%','3 - Nacional, conteúdo importação >40% e <70%'],['4 - Nacional, processo produtivo básico','4 - Nacional, processo produtivo básico'],['5 - Nacional, conteúdo importação <40%','5 - Nacional, conteúdo importação <40%'],['6 - Estrangeira - importação direta, sem similar nacional','6 - Estrangeira - importação direta, sem similar nacional'],['7 - Estrangeira - mercado interno, sem similar nacional','7 - Estrangeira - mercado interno, sem similar nacional'],['8 - Nacional, conteúdo importação >70%','8 - Nacional, conteúdo importação >70%']])}
           {field('NCM [?]','ncm')}{field('CEST [?]','cest')}{field('CST ICMS [?]','cst_icms')}
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'110px 110px 110px 110px 85px 85px 85px 85px',gap:7,marginTop:7,alignItems:'end'}}>
+        <div style={{display:'grid',gridTemplateColumns:'95px 95px 95px 95px 65px 65px 65px 65px',gap:7,marginTop:7,alignItems:'end'}}>
           {field('CSOSN [?]','csosn')}{field('CFOP entrada [?]','cfop_entrada')}{field('CFOP saída [?]','cfop_saida')}{field('Origem fiscal [?]','origem_fiscal')}{field('ICMS %','aliquota_icms','number')}{field('IPI %','aliquota_ipi','number')}{field('PIS %','aliquota_pis','number')}{field('COFINS %','aliquota_cofins','number')}
         </div>
         <div style={{marginTop:7,fontSize:9,color:'#667085'}}>Use o ? para consultar o significado da sigla/código antes de preencher. NCM e CEST permanecem exclusivamente nesta aba Fiscal.</div>
       </section>}
 
             {tab==='estoque'&&<section style={{padding:10}}>
-        <div style={{display:'grid',gridTemplateColumns:'110px 110px 125px 1fr',gap:7,alignItems:'end'}}>
+        <div style={{display:'grid',gridTemplateColumns:'82px 82px 120px 1fr',gap:7,alignItems:'end'}}>
           <label style={label}>ESTOQUE ATUAL <span style={{fontSize:8,color:'#667085'}}>calculado</span><input value={fmt(form.estoque_atual)+' '+form.unidade} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
-          <label style={label}>PONTO DE REPOSIÇÃO [?]<input type="number" value={String(form.ponto_reposicao??0)} disabled={!editing} onChange={e=>update('ponto_reposicao',n(e.target.value))} title="Quantidade que dispara a necessidade de reposição; não é estoque atual." style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
+          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>PONTO DE REPOSIÇÃO <HelpTip text={helpFor('Ponto de reposição')}/></span><input type="number" value={String(form.ponto_reposicao??0)} disabled={!editing} onChange={e=>update('ponto_reposicao',n(e.target.value))} title="Quantidade que dispara a necessidade de reposição; não é estoque atual." style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
           <label style={label}>ESTOQUE MÁXIMO<input type="number" value={String(form.estoque_maximo??0)} disabled={!editing} onChange={e=>update('estoque_maximo',n(e.target.value))} style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
           <label style={label}>LOCALIZAÇÃO PADRÃO [?]<select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'115px 120px 120px 170px',gap:7,marginTop:7,alignItems:'end'}}>
+        <div style={{display:'grid',gridTemplateColumns:'82px 105px 105px 170px',gap:7,marginTop:7,alignItems:'end'}}>
           {field('VALIDADE LOTE [dias] [?]','lote_validade_dias','number')}{check('Controla lote','controla_lote')}{check('Controla série','controla_serie')}{check('Permite estoque negativo','permite_estoque_negativo')}
         </div>
         <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>MOVIMENTAÇÕES RECENTES</h2>
@@ -381,7 +404,7 @@ export default function ProdutosVendasIndustrial(){
       </section>}
 
       {tab==='producao'&&<section style={{padding:10}}>
-        <div style={{display:'grid',gridTemplateColumns:'110px 110px 100px 100px 120px 120px auto',gap:7,alignItems:'end'}}>
+        <div style={{display:'grid',gridTemplateColumns:'82px 82px 82px 82px 120px 120px auto',gap:7,alignItems:'end'}}>
           {field('PRAZO COMPRA (dias)','prazo_compra_dias','number')}{field('PRAZO PRODUÇÃO (dias)','prazo_producao_dias','number')}{field('CUSTO FABRICAÇÃO','custo_fabricacao','number')}{field('TOLERÂNCIA (%)','tolerancia_percentual','number')}
           <label style={label}>FICHA ATIVA<input value={productionFicha?('REV. '+(productionFicha.revisao||productionFicha.versao)):'Não cadastrada'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}>RENDIMENTO<input value={productionFicha?fmt(productionFicha.rendimento)+' '+productionFicha.unidade_rendimento:'—'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A'}}/></label>
@@ -392,7 +415,7 @@ export default function ProdutosVendasIndustrial(){
       </section>}
 
       {tab==='qualidade'&&<section style={{padding:10}}>
-        <div style={{display:'grid',gridTemplateColumns:'135px 160px 1fr',gap:7,alignItems:'end'}}>{select('INSPEÇÃO OBRIGATÓRIA','inspecao_qualidade_obrigatoria',[['true','Sim'],['false','Não']])}{field('NÍVEL DE QUALIDADE','nivel_qualidade')}<div style={{fontSize:9,color:'#667085',paddingBottom:6}}>Desenhos aprovados, critérios de inspeção e documentos controlados ficam vinculados ao produto.</div></div>
+        <div style={{display:'grid',gridTemplateColumns:'120px 120px 1fr',gap:7,alignItems:'end'}}>{select('INSPEÇÃO OBRIGATÓRIA','inspecao_qualidade_obrigatoria',[['true','Sim'],['false','Não']])}{field('NÍVEL DE QUALIDADE','nivel_qualidade')}<div style={{fontSize:9,color:'#667085',paddingBottom:6}}>Desenhos aprovados, critérios de inspeção e documentos controlados ficam vinculados ao produto.</div></div>
         <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DEFEITOS REGISTRADOS</h2>
         <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr>{['Data','OP','Defeito','Quantidade','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:5,borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{defects.map(d=><tr key={d.id}><td style={{padding:5}}>{new Date(d.created_at).toLocaleString('pt-BR')}</td><td style={{padding:5}}>{d.ordem_producao_id}</td><td style={{padding:5}}>{d.defeito}</td><td style={{padding:5}}>{fmt(d.quantidade)}</td><td style={{padding:5}}>{d.observacao||'—'}</td></tr>)}{!defects.length&&emptyRow('Nenhum defeito registrado para este produto.',5)}</tbody></table></div>
         <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DOCUMENTOS / DESENHOS VINCULADOS</h2>
@@ -433,5 +456,5 @@ export default function ProdutosVendasIndustrial(){
       </section>
     ) : null}
     <footer style={{padding:'7px 12px 16px',fontSize:10,color:'#667085',display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8}}><span>SYSNQRA ERP & SGQ INDUSTRIAL • Cadastro Mestre de Produtos</span><span>© FernandoSch_System — Todos os direitos reservados</span></footer>
-  </main>
+  </main></ERPHorizontalShell>
 }
