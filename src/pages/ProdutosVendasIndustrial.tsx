@@ -344,35 +344,38 @@ export default function ProdutosVendasIndustrial(){
       </div>
 
       {tab==='gerais'&&<form onSubmit={save} style={{padding:8}}>
-        <div style={{display:'grid',gridTemplateColumns:'90px 128px minmax(250px,1fr) 180px',gap:7,alignItems:'end'}}>
+        <div style={{display:'grid',gridTemplateColumns:'80px 110px 220px 170px',gap:5,alignItems:'end'}}>
           {field('Código *','codigo','text',1,true)}
           {field('Código de barras','codigo_barras','text',1,true)}
           {field('Descrição *','nome')}
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>Descrição resumida <HelpTip text={helpFor('Descrição resumida')}/></span><input type="text" value={String(form.descricao_resumida??'')} disabled={!editing} onChange={e=>update('descricao_resumida',e.target.value)} title="Descrição curta/dimensional usado para identificar rapidamente a peça." style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'150px 120px 120px 64px 64px 64px',gap:7,marginTop:7,alignItems:'end'}}>
+
+        <div style={{display:'grid',gridTemplateColumns:'120px 100px 100px 55px 55px 55px 72px 72px 78px 70px 70px',gap:5,marginTop:5,alignItems:'end'}}>
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>Grupo <HelpTip text={helpFor('Grupo')}/></span><select value={form.grupo||''} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
           {field('Subgrupo [?]','subgrupo')}
           {field('Marca [?]','marca')}
           {select('Un. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
           {select('Un. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
           {select('Un. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
+          {field('Peso líquido (kg)','peso_liquido','number')}
+          {field('Peso bruto (kg)','peso_bruto','number')}
+          {field('Comprimento (mm)','comprimento_mm','number')}
+          {field('Largura (mm)','largura_mm','number')}
+          {field('Altura (mm)','altura_mm','number')}
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'180px 1fr 150px 150px',gap:7,marginTop:7,alignItems:'end'}}>
+
+        <div style={{display:'grid',gridTemplateColumns:'120px 170px 78px 78px 78px 78px 82px 82px 180px 165px 170px',gap:5,marginTop:5,alignItems:'end'}}>
           {select('Tipo de produto','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','MATÉRIA-PRIMA'],['PRENSADOS','PRENSADOS'],['INJETADOS','INJETADOS'],['ALMOXARIFADO','ALMOXARIFADO'],['MATERIAL DE ESCRITÓRIO','MATERIAL DE ESCRITÓRIO'],['PRODUTOS DE LIMPEZA','PRODUTOS DE LIMPEZA'],['Componente','Componente'],['Insumo','Insumo']])}
           <label style={label}>Fornecedor padrão<select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{suppliers.map(s=><option value={s.id} key={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>
+          {field('Custo médio','custo_medio','number')}
+          {field('Último custo','custo_ultimo','number')}
+          {field('Custo fabricação','custo_fabricacao','number')}
+          {field('Preço venda','preco_venda','number')}
           {field('Ref. interna','referencia_interna')}
           {field('Ref. cliente','referencia_cliente')}
-        </div>
-        <div style={{display:'grid',gridTemplateColumns:'82px 82px 82px 82px 82px',gap:7,marginTop:7,alignItems:'end'}}>
-          {field('Peso líquido (kg)','peso_liquido','number')}{field('Peso bruto (kg)','peso_bruto','number')}{field('Comprimento (mm)','comprimento_mm','number')}{field('Largura (mm)','largura_mm','number')}{field('Altura (mm)','altura_mm','number')}
-        </div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:7,marginTop:7,alignItems:'end'}}>
-          {field('Custo médio','custo_medio','number')}{field('Último custo','custo_ultimo','number')}{field('Custo fabricação','custo_fabricacao','number')}{field('Preço venda','preco_venda','number')}
-        </div>
-        <div style={{display:'grid',gridTemplateColumns:'minmax(280px,1fr) 245px 175px',gap:7,marginTop:7,alignItems:'end'}}>
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:30,padding:'5px 7px',resize:'none',fontSize:11}}/></label>
-          <div style={{display:'flex',alignItems:'center',gap:8,height:30,border:'1px solid #d5dde7',padding:'0 8px',background:'#fff'}}><span style={{fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}}>Situação</span>{check('Fabricado','fabricado')}{check('Comprado','comprado')}{check('Revenda','revenda')}</div>
+          <div style={{display:'flex',alignItems:'center',gap:5,height:30,border:'1px solid #d5dde7',padding:'0 6px',background:'#fff',whiteSpace:'nowrap'}}><span style={{fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}}>Sit.</span>{check('Fab.','fabricado')}{check('Comp.','comprado')}{check('Rev.','revenda')}</div>
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} title="Selecione uma localização existente do Estoque. A hierarquia depósito/rua/prateleira/caixa é mantida no cadastro de localizações." style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
         </div>
       </form>}
