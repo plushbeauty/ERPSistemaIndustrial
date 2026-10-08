@@ -216,15 +216,15 @@ export default function VendasCentral() {
                   </tr>
                 ))}
                 {!loading && visibleOrders.length === 0 && (
-                  <tr><td colSpan={7}>
+                  <tr><td colSpan={6}>
                     <div className="sales-empty-state">
                       <ClipboardList size={26} />
-                      <strong>{query || filter !== 'todos' ? 'Nenhum pedido corresponde aos filtros.' : 'Nenhum pedido cadastrado.'}</strong>
-                      <span>{query || filter !== 'todos' ? 'Altere a pesquisa ou selecione outro status.' : 'Crie um pedido para iniciar o fluxo comercial.'}</span>
+                      <strong>{query || filter !== 'todos' ? 'Nenhum pedido corresponde aos filtros.' : 'Nenhum pedido encontrado.'}</strong>
+                      <span>{query || filter !== 'todos' ? 'Altere a pesquisa ou selecione outro status.' : 'Os pedidos cadastrados aparecerão aqui para pesquisa e acompanhamento.'}</span>
                     </div>
                   </td></tr>
                 )}
-                {loading && <tr><td colSpan={7} className="sales-loading-row" role="status">Carregando pedidos do ERP…</td></tr>}
+                {loading && <tr><td colSpan={6} className="sales-loading-row" role="status">Carregando pedidos do ERP…</td></tr>}
               </tbody>
             </table>
           </div>
