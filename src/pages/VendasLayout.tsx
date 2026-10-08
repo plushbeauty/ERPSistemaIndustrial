@@ -66,7 +66,7 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
  return <ERPHorizontalShell>
   <main className="synqra-workspace-main">
     {isVendas&&showCards&&<VendasStatusCards status={vendas.status} loading={vendas.loading}/>} 
-    <div className="synqra-workspace-title"><div>{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div>{onRefresh&&<button className="synqra-tool-button" type="button" onClick={onRefresh}><RefreshCw size={13}/>Atualizar</button>}</div>
+    <div className="synqra-workspace-title">{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<div className="synqra-title-main"><h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div>{onRefresh&&<button className="synqra-tool-button" type="button" onClick={onRefresh} title="Atualizar"><RefreshCw size={13}/></button>}</div>
     {topContent}{children}
   </main>
  </ERPHorizontalShell>
