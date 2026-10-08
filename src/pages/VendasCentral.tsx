@@ -133,13 +133,6 @@ export default function VendasCentral() {
 
         {error && <div className="sales-alert" role="alert"><CircleAlert size={17} />{error}</div>}
 
-        <section className="sales-kpis" aria-label="Resumo dos pedidos">
-          <article><span>Pedidos cadastrados</span><strong>{counts.all}</strong><small>no escopo da empresa</small></article>
-          <article><span>Em aberto</span><strong>{counts.open}</strong><small>aguardando conclusão operacional</small></article>
-          <article><span>Rascunhos</span><strong>{counts.drafts}</strong><small>podem ser editados</small></article>
-          <article className={counts.overdue ? 'sales-kpi--alert' : ''}><span>Entrega atrasada</span><strong>{counts.overdue}</strong><small>com base na data prometida</small></article>
-        </section>
-
         <section className="sales-orders-card">
           <div className="sales-filter-row" role="tablist" aria-label="Filtrar pedidos por status">
             {filters.map(({ id, label, icon: Icon }) => (
