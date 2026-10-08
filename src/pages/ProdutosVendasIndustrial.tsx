@@ -135,8 +135,7 @@ export default function ProdutosVendasIndustrial(){
         codigo=String(generated.data||'').trim()
         if(!codigo)throw new Error('O gerador de código não retornou um código válido.')
       }
-      const editableForm={...form}
-      delete editableForm.estoque_atual
+      const {estoque_atual: _estoqueAtual, ...editableForm}=form
       const payload={...editableForm,empresa_id:companyId,codigo,nome:String(form.nome).trim(),unidade:String(form.unidade||'UN').toUpperCase(),unidade_compra:String(form.unidade_compra||'UN').toUpperCase(),unidade_venda:String(form.unidade_venda||'UN').toUpperCase()}
       const result=selectedId
         ? await supabase.from('erp_produtos').update(payload).eq('id',selectedId).eq('empresa_id',companyId).select('*').single()
