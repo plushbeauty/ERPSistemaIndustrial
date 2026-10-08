@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabaseClient'
 import { ArrowDownCircle, ArrowUpCircle, ClipboardCheck, Factory, FileText, Gauge, Plus, RefreshCw, Truck, Users, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
-type Module = 'financeiro'|'expedicao'|'metrologia'|'treinamentos'|'auditoria'|'paradas'|'refugos'
+type Module = 'financeiro'|'expedicao'|'metrologia'|'treinamentos'|'auditoria'|'paradas'|'refugos'|'materiais'
 type Profile = { empresa_id:string|null; is_master:boolean }
 type Row = Record<string, unknown> & { id: string }
 
