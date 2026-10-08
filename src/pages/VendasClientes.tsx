@@ -443,7 +443,7 @@ export default function VendasClientes() {
     else await load()
   }
 
-  const deleteMapping = async (id: string) =>
+  const deleteMapping = async (id: string) => {
     const result = await supabase.from('erp_cliente_produto_de_para').delete().eq('id', id).eq('empresa_id', empresa)
     if (result.error) setError(result.error.message)
     else await load()
