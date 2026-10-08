@@ -38,12 +38,12 @@ type Movement={id:string;tipo:string;quantidade:number;origem:string|null;docume
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number;observacao:string|null;created_at:string}
 type Audit={id:string;action:string;module:string;old_data:Record<string,unknown>|null;new_data:Record<string,unknown>|null;created_at:string}
 type Attachment={id:string;nome_arquivo:string;storage_path:string;mime_type:string|null;tamanho_bytes:number|null;created_at:string}
-type Tab='gerais'|'fiscal'|'estoque'|'producao'|'qualidade'|'documentos'|'historico'
+type Tab='gerais'|'fiscal'|'estoque'|'producao'|'qualidade'
 type FormData=Omit<Product,'id'|'empresa_id'>
 
 const tabItems:Array<[Tab,string,typeof Boxes]>=[
   ['gerais','DADOS GERAIS',Boxes],['fiscal','FISCAL',FileText],['estoque','ESTOQUE',Boxes],
-  ['producao','PRODUÇÃO',Factory],['qualidade','QUALIDADE',ShieldCheck],['documentos','DOCUMENTOS',ClipboardList],['historico','HISTÓRICO',History]
+  ['producao','PRODUÇÃO',Factory],['qualidade','QUALIDADE + DOCUMENTOS',ShieldCheck]
 ]
 const empty=():FormData=>({
   codigo:'',nome:'',descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
@@ -84,6 +84,8 @@ export default function ProdutosVendasIndustrial(){
   const [audits,setAudits]=useState<Audit[]>([])
   const [attachments,setAttachments]=useState<Attachment[]>([])
   const [detailsLoaded,setDetailsLoaded]=useState(false)
+  const [productionFicha,setProductionFicha]=useState<{id:string;versao:number;rendimento:number;unidade_rendimento:string;status:string|null;revisao:string|null} | null>(null)
+  const [productionOps,setProductionOps]=useState<Array<{id:string;sequencia:number;operacao:string;maquina_id:string|null;maquina_codigo:string|null;maquina_nome:string|null;setup_min:number;ciclo_seg:number;capacidade_hora:number|null;capacidade_dia:number|null}>>([])
   const fileRef=useRef<HTMLInputElement>(null)
   const importRef=useRef<HTMLInputElement>(null)
 
@@ -133,7 +135,8 @@ export default function ProdutosVendasIndustrial(){
         codigo=String(generated.data||'').trim()
         if(!codigo)throw new Error('O gerador de código não retornou um código válido.')
       }
-      const payload={...form,empresa_id:companyId,codigo,nome:String(form.nome).trim(),unidade:String(form.unidade||'UN').toUpperCase(),unidade_compra:String(form.unidade_compra||'UN').toUpperCase(),unidade_venda:String(form.unidade_venda||'UN').toUpperCase()}
+      const {estoque_atual:_estoqueAtual,...editableForm}=form
+      const payload={...editableForm,empresa_id:companyId,codigo,nome:String(form.nome).trim(),unidade:String(form.unidade||'UN').toUpperCase(),unidade_compra:String(form.unidade_compra||'UN').toUpperCase(),unidade_venda:String(form.unidade_venda||'UN').toUpperCase()}
       const result=selectedId
         ? await supabase.from('erp_produtos').update(payload).eq('id',selectedId).eq('empresa_id',companyId).select('*').single()
         : await supabase.from('erp_produtos').insert(payload).select('*').single()
@@ -156,14 +159,25 @@ export default function ProdutosVendasIndustrial(){
     if(!selectedId||detailsLoaded)return
     setBusy(true)
     try{
-      const [m,d,a,an]=await Promise.all([
+      const [m,d,a,an,ft]=await Promise.all([
         supabase.from('erp_estoque_movimentos').select('id,tipo,quantidade,origem,documento,observacao,created_at').eq('empresa_id',companyId).eq('produto_id',selectedId).order('created_at',{ascending:false}).limit(200),
         supabase.from('erp_producao_defeitos').select('id,ordem_producao_id,defeito,quantidade,observacao,created_at').eq('empresa_id',companyId).eq('produto_id',selectedId).order('created_at',{ascending:false}).limit(200),
         supabase.from('erp_audit_logs').select('id,action,module,old_data,new_data,created_at').eq('company_id',companyId).eq('entity','erp_produtos').eq('entity_id',selectedId).order('created_at',{ascending:false}).limit(200),
-        supabase.from('erp_documentos_anexos').select('id,nome_arquivo,storage_path,mime_type,tamanho_bytes,created_at').eq('empresa_id',companyId).eq('entidade_tipo','produto').eq('entidade_id',selectedId).order('created_at',{ascending:false}).limit(200)
+        supabase.from('erp_documentos_anexos').select('id,nome_arquivo,storage_path,mime_type,tamanho_bytes,created_at').eq('empresa_id',companyId).eq('entidade_tipo','produto').eq('entidade_id',selectedId).order('created_at',{ascending:false}).limit(200),
+        supabase.from('erp_fichas_tecnicas').select('id,versao,rendimento,unidade_rendimento,status,revisao').eq('empresa_id',companyId).eq('produto_id',selectedId).eq('ativa',true).order('versao',{ascending:false}).limit(1).maybeSingle()
       ])
-      setMovements((m.data??[]) as Movement[]);setDefects((d.data??[]) as Defect[]);setAudits((a.data??[]) as Audit[]);setAttachments((an.data??[]) as Attachment[]);setDetailsLoaded(true)
-      const firstError=[m,d,a,an].find(x=>x.error);if(firstError?.error)setError(firstError.error.message)
+      setMovements((m.data??[]) as Movement[]);setDefects((d.data??[]) as Defect[]);setAudits((a.data??[]) as Audit[]);setAttachments((an.data??[]) as Attachment[])
+      setProductionFicha((ft.data??null) as {id:string;versao:number;rendimento:number;unidade_rendimento:string;status:string|null;revisao:string|null} | null)
+      if(ft.data?.id){
+        const fo=await supabase.from('erp_ficha_operacoes').select('id,sequencia,operacao,maquina_id,setup_min,ciclo_seg,capacidade_hora,capacidade_dia').eq('empresa_id',companyId).eq('ficha_id',ft.data.id).order('sequencia')
+        if(fo.error)throw fo.error
+        const machineIds=(fo.data??[]).map((x:{maquina_id:string|null})=>x.maquina_id).filter((x):x is string=>Boolean(x))
+        const machines=machineIds.length?(await supabase.from('erp_maquinas').select('id,codigo,nome').in('id',machineIds).eq('empresa_id',companyId)).data??[]:[]
+        const machineMap=new Map((machines as Array<{id:string;codigo:string;nome:string}>).map(x=>[x.id,x]))
+        setProductionOps((fo.data??[]).map((x:{id:string;sequencia:number;operacao:string;maquina_id:string|null;setup_min:number;ciclo_seg:number;capacidade_hora:number|null;capacidade_dia:number|null})=>({...x,maquina_codigo:x.maquina_id?machineMap.get(x.maquina_id)?.codigo??null:null,maquina_nome:x.maquina_id?machineMap.get(x.maquina_id)?.nome??null:null})))
+      }else setProductionOps([])
+      setDetailsLoaded(true)
+      const firstError=[m,d,a,an,ft].find(x=>x.error);if(firstError?.error)setError(firstError.error.message)
     }finally{setBusy(false)}
   }
   useEffect(()=>{if(selectedId)void loadDetails()},[selectedId])
@@ -286,8 +300,7 @@ export default function ProdutosVendasIndustrial(){
         <button type="button" onClick={()=>setEditing(true)} disabled={!selectedId} style={btn('normal')}><Edit3 size={16}/>Editar</button>
         <button type="button" onClick={()=>void save()} disabled={!editing||busy} style={btn('normal')}><Save size={16}/>Salvar</button>
         <button type="button" onClick={cancelEdit} style={btn('normal')}><RotateCcw size={16}/>Cancelar</button>
-        <button type="button" onClick={openTechnicalPrint} disabled={!selectedId} style={btn('normal')}><Printer size={16}/>Imprimir</button>
-        <button type="button" onClick={()=>setMessage('Etiqueta preparada para impressão do produto selecionado.')} disabled={!selectedId} style={btn('normal')}><Tag size={16}/>Etiqueta</button>
+        {!editing&&selectedId&&<button type="button" onClick={openTechnicalPrint} disabled={busy} style={btn('normal')}><Printer size={16}/>Imprimir</button>}
         <button type="button" onClick={()=>void deactivate()} disabled={!selectedId||busy} style={btn('danger')}><Trash2 size={16}/>Inativar</button>
         <button type="button" onClick={()=>{setSelectedId(null);setEditing(false);setForm(empty())}} style={btn('normal')}><X size={16}/>Fechar</button>
       </div>
@@ -333,9 +346,10 @@ export default function ProdutosVendasIndustrial(){
         <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:7,marginTop:7,alignItems:'end'}}>
           {field('Custo médio','custo_medio','number')}{field('Último custo','custo_ultimo','number')}{field('Custo fabricação','custo_fabricacao','number')}{field('Preço venda','preco_venda','number')}
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 190px',gap:7,marginTop:7,alignItems:'start'}}>
-          <label style={label}>Observações<textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} style={{...input,height:48,padding:6,resize:'vertical'}}/></label>
-          <div style={{...panel,padding:7}}><div style={{fontSize:9,fontWeight:700,textTransform:'uppercase',color:'#344054',marginBottom:5}}>Situação do produto</div><div style={{display:'flex',gap:10,flexWrap:'wrap'}}>{check('Fabricado','fabricado')}{check('Comprado','comprado')}{check('Revenda','revenda')}</div></div>
+        <div style={{display:'grid',gridTemplateColumns:'minmax(300px,1fr) 255px 175px',gap:7,marginTop:7,alignItems:'end'}}>
+          <label style={label}>OBSERVAÇÕES [?]<textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:30,padding:'5px 7px',resize:'none'}}/></label>
+          <div style={{display:'flex',alignItems:'center',gap:8,height:30,border:'1px solid #d5dde7',padding:'0 8px',background:'#fff'}}><span style={{fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}}>Situação</span>{check('Fabricado','fabricado')}{check('Comprado','comprado')}{check('Revenda','revenda')}</div>
+          <label style={label}>LOCALIZAÇÃO PADRÃO [?]<select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} title="Selecione uma localização existente do Estoque. A hierarquia depósito/rua/prateleira/caixa é mantida no cadastro de localizações." style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
         </div>
       </form>}
 
@@ -351,40 +365,38 @@ export default function ProdutosVendasIndustrial(){
         <div style={{marginTop:7,fontSize:9,color:'#667085'}}>Use o ? para consultar o significado da sigla/código antes de preencher. NCM e CEST permanecem exclusivamente nesta aba Fiscal.</div>
       </section>}
 
-            {tab==='estoque'&&<section style={{padding:14}}>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:11}}>
-          {field('Estoque atual','estoque_atual','number')} {field('Ponto de reposição','ponto_reposicao','number')} {field('Estoque máximo','estoque_maximo','number')}
-          <label style={{...label,gridColumn:'span 2'}}>Localização padrão<select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Sem localização</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}</option>)}</select></label>
-          {field('Validade do lote (dias)','lote_validade_dias','number')}
+            {tab==='estoque'&&<section style={{padding:10}}>
+        <div style={{display:'grid',gridTemplateColumns:'110px 110px 125px 1fr',gap:7,alignItems:'end'}}>
+          <label style={label}>ESTOQUE ATUAL <span style={{fontSize:8,color:'#667085'}}>calculado</span><input value={fmt(form.estoque_atual)+' '+form.unidade} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
+          <label style={label}>PONTO DE REPOSIÇÃO [?]<input type="number" value={String(form.ponto_reposicao??0)} disabled={!editing} onChange={e=>update('ponto_reposicao',n(e.target.value))} title="Quantidade que dispara a necessidade de reposição; não é estoque atual." style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
+          <label style={label}>ESTOQUE MÁXIMO<input type="number" value={String(form.estoque_maximo??0)} disabled={!editing} onChange={e=>update('estoque_maximo',n(e.target.value))} style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
+          <label style={label}>LOCALIZAÇÃO PADRÃO [?]<select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
         </div>
-        <div style={{display:'flex',gap:20,flexWrap:'wrap',margin:'13px 0'}}>{check('Controla lote','controla_lote')}{check('Controla série','controla_serie')}{check('Permite estoque negativo','permite_estoque_negativo')}</div>
-        <h2 style={{fontSize:14,margin:'15px 0 9px'}}>Movimentações recentes</h2>
+        <div style={{display:'grid',gridTemplateColumns:'115px 120px 120px 170px',gap:7,marginTop:7,alignItems:'end'}}>
+          {field('VALIDADE LOTE [dias] [?]','lote_validade_dias','number')}{check('Controla lote','controla_lote')}{check('Controla série','controla_serie')}{check('Permite estoque negativo','permite_estoque_negativo')}
+        </div>
+        <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>MOVIMENTAÇÕES RECENTES</h2>
         <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr>{['Data','Tipo','Quantidade','Origem','Documento','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:8,borderBottom:'1px solid #d9e1ea',fontSize:10}}>{h}</th>)}</tr></thead><tbody>{movements.map(m=><tr key={m.id}><td style={{padding:8,fontSize:11}}>{new Date(m.created_at).toLocaleString('pt-BR')}</td><td style={{padding:8,fontSize:11}}>{m.tipo}</td><td style={{padding:8,fontSize:11,fontWeight:900}}>{fmt(m.quantidade)}</td><td style={{padding:8,fontSize:11}}>{m.origem||'—'}</td><td style={{padding:8,fontSize:11}}>{m.documento||'—'}</td><td style={{padding:8,fontSize:11}}>{m.observacao||'—'}</td></tr>)}{!movements.length&&emptyRow('Nenhuma movimentação registrada para este produto.',6)}</tbody></table></div>
       </section>}
 
-      {tab==='producao'&&<section style={{padding:14}}>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:11}}>
-          {field('Prazo de compra (dias)','prazo_compra_dias','number')} {field('Prazo de produção (dias)','prazo_producao_dias','number')} {field('Custo fabricação','custo_fabricacao','number')} {field('Tolerância (%)','tolerancia_percentual','number')}
+      {tab==='producao'&&<section style={{padding:10}}>
+        <div style={{display:'grid',gridTemplateColumns:'110px 110px 100px 100px 120px 120px auto',gap:7,alignItems:'end'}}>
+          {field('PRAZO COMPRA (dias)','prazo_compra_dias','number')}{field('PRAZO PRODUÇÃO (dias)','prazo_producao_dias','number')}{field('CUSTO FABRICAÇÃO','custo_fabricacao','number')}{field('TOLERÂNCIA (%)','tolerancia_percentual','number')}
+          <label style={label}>FICHA ATIVA<input value={productionFicha?('REV. '+(productionFicha.revisao||productionFicha.versao)):'Não cadastrada'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
+          <label style={label}>RENDIMENTO<input value={productionFicha?fmt(productionFicha.rendimento)+' '+productionFicha.unidade_rendimento:'—'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A'}}/></label>
+          <button type="button" onClick={()=>{window.location.href='/ficha-engenharia?produto='+encodeURIComponent(selectedId||'')}} style={btn('normal')}>ABRIR FICHA DE PROCESSO</button>
         </div>
-        <div style={{display:'flex',gap:20,margin:'13px 0'}}>{check('Fabricado','fabricado')}{check('Comprado','comprado')}{check('Revenda','revenda')}</div>
-        <div style={{...panel,padding:13,background:'#f8fafc'}}><b style={{fontSize:13}}>Engenharia / BOM</b><p style={{fontSize:11,color:'#667085',margin:'5px 0 9px'}}>A ficha técnica, componentes e operações são mantidos no módulo de Engenharia e vinculados pelo produto.</p><button type="button" onClick={()=>{location.href='/ficha-engenharia'}} style={btn('normal')}>Abrir ficha de engenharia</button></div>
-      </section>}
+        <div style={{marginTop:8,border:'1px solid #d5dde7',overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr style={{background:'#123B50',color:'#fff'}}>{['Seq.','Operação','Máquina','Setup min','Ciclo s','Qtde/h','Qtde/dia'].map(h=><th key={h} style={{padding:'5px 6px',textAlign:'left',fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{productionOps.map(o=><tr key={o.id} style={{borderBottom:'1px solid #e5e7eb'}}><td style={{padding:'5px 6px'}}>{o.sequencia}</td><td style={{padding:'5px 6px'}}>{o.operacao}</td><td style={{padding:'5px 6px'}}>{o.maquina_codigo?o.maquina_codigo+' • '+(o.maquina_nome||''):'Não definida'}</td><td style={{padding:'5px 6px'}}>{fmt(o.setup_min)}</td><td style={{padding:'5px 6px'}}>{fmt(o.ciclo_seg)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_hora==null?'—':fmt(o.capacidade_hora)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_dia==null?'—':fmt(o.capacidade_dia)}</td></tr>)}{!productionOps.length&&<tr><td colSpan={7} style={{padding:12,textAlign:'center',color:'#667085'}}>Nenhuma operação cadastrada. Abra a ficha de processo para cadastrar máquina/posto, setup, ciclo e instruções.</td></tr>}</tbody></table></div>
+        <div style={{marginTop:7,fontSize:9,color:'#667085'}}>Máquina, setup, ciclo e capacidade vêm da ficha técnica/roteiro real; a ficha completa alimenta o PCP e a Ordem de Produção.</div>
+      </section>
 
-      {tab==='qualidade'&&<section style={{padding:14}}>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:11}}>{select('Inspeção obrigatória','inspecao_qualidade_obrigatoria',[['true','Sim'],['false','Não']])}{field('Nível de qualidade','nivel_qualidade')}</div>
-        <h2 style={{fontSize:14,margin:'16px 0 9px'}}>Defeitos registrados</h2>
-        <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr>{['Data','OP','Defeito','Quantidade','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:8,borderBottom:'1px solid #d9e1ea',fontSize:10}}>{h}</th>)}</tr></thead><tbody>{defects.map(d=><tr key={d.id}><td style={{padding:8,fontSize:11}}>{new Date(d.created_at).toLocaleString('pt-BR')}</td><td style={{padding:8,fontSize:11}}>{d.ordem_producao_id}</td><td style={{padding:8,fontSize:11,fontWeight:800}}>{d.defeito}</td><td style={{padding:8,fontSize:11}}>{fmt(d.quantidade)}</td><td style={{padding:8,fontSize:11}}>{d.observacao||'—'}</td></tr>)}{!defects.length&&emptyRow('Nenhum defeito registrado para este produto.',5)}</tbody></table></div>
-      </section>}
-
-      {tab==='documentos'&&<section style={{padding:14}}>
-        <h2 style={{fontSize:14,margin:'0 0 10px'}}>Documentos vinculados</h2>
-        <div style={{display:'grid',gap:7}}>{attachments.map(a=><div key={a.id} style={{display:'grid',gridTemplateColumns:'1fr 140px 170px',gap:8,padding:10,border:'1px solid #e4e7ec',borderRadius:6}}><b style={{fontSize:12}}>{a.nome_arquivo}</b><span style={{fontSize:11}}>{a.mime_type||'arquivo'}</span><span style={{fontSize:11}}>{a.tamanho_bytes?Math.round(a.tamanho_bytes/1024)+' KB':'—'} · {new Date(a.created_at).toLocaleDateString('pt-BR')}</span></div>)}{!attachments.length&&<div style={{padding:20,textAlign:'center',color:'#667085',border:'1px dashed #cbd5e1',borderRadius:6}}>Nenhum documento vinculado ainda.</div>}</div>
-      </section>}
-
-      {tab==='historico'&&<section style={{padding:14}}>
-        <h2 style={{fontSize:14,margin:'0 0 10px'}}>Histórico de alterações</h2>
-        <div style={{display:'grid',gap:7}}>{audits.map(a=><article key={a.id} style={{padding:10,border:'1px solid #e4e7ec',borderRadius:6,background:'#fafbfc'}}><div style={{display:'flex',justifyContent:'space-between',gap:10}}><b style={{fontSize:12}}>{a.action}</b><span style={{fontSize:10,color:'#667085'}}>{new Date(a.created_at).toLocaleString('pt-BR')}</span></div><details style={{marginTop:6}}><summary style={{cursor:'pointer',fontSize:11}}>Ver dados</summary><pre style={{fontSize:9,whiteSpace:'pre-wrap',maxHeight:220,overflow:'auto'}}>{JSON.stringify({antes:a.old_data,depois:a.new_data},null,2)}</pre></details></article>)}{!audits.length&&<div style={{padding:20,textAlign:'center',color:'#667085',border:'1px dashed #cbd5e1',borderRadius:6}}>Nenhum evento de histórico encontrado.</div>}</div>
-      </section>}
+      {tab==='qualidade'&&<section style={{padding:10}}>
+        <div style={{display:'grid',gridTemplateColumns:'135px 160px 1fr',gap:7,alignItems:'end'}}>{select('INSPEÇÃO OBRIGATÓRIA','inspecao_qualidade_obrigatoria',[['true','Sim'],['false','Não']])}{field('NÍVEL DE QUALIDADE','nivel_qualidade')}<div style={{fontSize:9,color:'#667085',paddingBottom:6}}>Desenhos aprovados, critérios de inspeção e documentos controlados ficam vinculados ao produto.</div></div>
+        <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DEFEITOS REGISTRADOS</h2>
+        <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr>{['Data','OP','Defeito','Quantidade','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:5,borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{defects.map(d=><tr key={d.id}><td style={{padding:5}}>{new Date(d.created_at).toLocaleString('pt-BR')}</td><td style={{padding:5}}>{d.ordem_producao_id}</td><td style={{padding:5}}>{d.defeito}</td><td style={{padding:5}}>{fmt(d.quantidade)}</td><td style={{padding:5}}>{d.observacao||'—'}</td></tr>)}{!defects.length&&emptyRow('Nenhum defeito registrado para este produto.',5)}</tbody></table></div>
+        <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DOCUMENTOS / DESENHOS VINCULADOS</h2>
+        <div style={{display:'grid',gap:4}}>{attachments.map(a=><div key={a.id} style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 120px 150px',gap:7,padding:'5px 6px',border:'1px solid #e4e7ec',fontSize:9}}><b>{a.nome_arquivo}</b><span>{a.mime_type||'arquivo'}</span><span>{a.tamanho_bytes?Math.round(a.tamanho_bytes/1024)+' KB':'—'} · {new Date(a.created_at).toLocaleDateString('pt-BR')}</span></div>)}{!attachments.length&&<div style={{padding:10,textAlign:'center',color:'#667085',border:'1px dashed #cbd5e1',fontSize:9}}>Nenhum desenho/documento vinculado.</div>}</div>
+      </section>
     </section>
 
     <section style={{...panel,margin:'0 10px 10px',overflow:'hidden'}}>
@@ -396,8 +408,9 @@ export default function ProdutosVendasIndustrial(){
         <label style={{...label,width:150}}>Tipo<select value={categoryFilter} onChange={e=>setCategoryFilter(e.target.value)} style={{...input,height:28}}><option value="TODAS">Todos</option><option value="MATÉRIA-PRIMA">MATÉRIA-PRIMA</option><option value="PRENSADOS">PRENSADOS</option><option value="INJETADOS">INJETADOS</option><option value="ALMOXARIFADO">ALMOXARIFADO</option><option value="MATERIAL DE ESCRITÓRIO">MATERIAL DE ESCRITÓRIO</option><option value="PRODUTOS DE LIMPEZA">PRODUTOS DE LIMPEZA</option></select></label>
         <span style={{fontSize:10,color:'#667085',paddingBottom:7}}>{filtered.length} produto(s)</span><button type="button" onClick={()=>void load()} disabled={busy} style={{...btn('normal'),height:28,marginLeft:'auto'}}><RefreshCw size={13}/>Atualizar</button>
       </div>
-      <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:1180}}><thead><tr>{['Foto','Código','Descrição','Grupo','Subgrupo','Marca','Unidade','Estoque Atual','Situação','Ações'].map(h=><th key={h} style={{textAlign:'left',padding:9,borderBottom:'1px solid #d9e1ea',fontSize:10}}>{h}</th>)}</tr></thead><tbody>{filtered.map(p=><tr key={p.id} onDoubleClick={()=>selectProduct(p)} style={{background:selectedId===p.id?'#e7eefb':'#fff',cursor:'pointer'}}><td style={{padding:4,width:42}}>{p.foto_url?<img src={p.foto_url} alt="" style={{width:32,height:28,objectFit:'contain',border:'1px solid #e2e8f0'}}/>:<ImageIcon size={18} color="#98a2b3"/>}</td><td style={{padding:6,fontSize:10,fontWeight:900}}>{p.codigo}</td><td style={{padding:6,fontSize:10}}>{p.nome}</td><td style={{padding:6,fontSize:10}}>{p.grupo||'—'}</td><td style={{padding:6,fontSize:10}}>{p.subgrupo||'—'}</td><td style={{padding:6,fontSize:10}}>{p.marca||'—'}</td><td style={{padding:6,fontSize:10}}>{p.unidade}</td><td style={{padding:6,fontSize:10,fontWeight:900}}>{fmt(p.estoque_atual)}</td><td style={{padding:6,fontSize:10}}><span style={{display:'inline-flex',alignItems:'center',gap:4}}><CheckCircle2 size={12} color={p.ativo?'#16a34a':'#b42318'}/>{p.ativo?'Ativo':'Inativo'}</span></td><td style={{padding:5}}><button type="button" onClick={()=>selectProduct(p)} style={{...btn('normal'),height:28,padding:'0 7px'}}><Edit3 size={13}/>Abrir</button></td></tr>)}{!filtered.length&&emptyRow('Nenhum produto encontrado.',8)}</tbody></table></div>
+      <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:1040}}><thead><tr>{['Foto','Código','Descrição','Grupo','Subgrupo','Marca','Unidade','Estoque Atual','Situação'].map(h=><th key={h} style={{textAlign:'left',padding:'5px 6px',borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{filtered.map(p=><tr key={p.id} onClick={()=>selectProduct(p)} onDoubleClick={()=>selectProduct(p)} style={{background:selectedId===p.id?'#e7eefb':'#fff',cursor:'pointer'}}><td style={{padding:4,width:42}}>{p.foto_url?<img src={p.foto_url} alt="" style={{width:32,height:28,objectFit:'contain',border:'1px solid #e2e8f0'}}/>:<ImageIcon size={18} color="#98a2b3"/>}</td><td style={{padding:6,fontSize:10,fontWeight:900}}>{p.codigo}</td><td style={{padding:6,fontSize:10}}>{p.nome}</td><td style={{padding:6,fontSize:10}}>{p.grupo||'—'}</td><td style={{padding:6,fontSize:10}}>{p.subgrupo||'—'}</td><td style={{padding:6,fontSize:10}}>{p.marca||'—'}</td><td style={{padding:6,fontSize:10}}>{p.unidade}</td><td style={{padding:6,fontSize:10,fontWeight:900}}>{fmt(p.estoque_atual)}</td><td style={{padding:5,fontSize:9}}><span style={{display:'inline-flex',alignItems:'center',gap:4}}><CheckCircle2 size={11} color={p.ativo?'#16a34a':'#b42318'}/>{p.ativo?'Ativo':'Inativo'}</span></td></tr>)}{!filtered.length&&emptyRow('Nenhum produto encontrado.',8)}</tbody></table></div>
     </section>
+    {selectedId&&<section style={{...panel,margin:'0 10px 10px',padding:8}}><div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:5}}><h2 style={{margin:0,fontSize:11,color:'#123B50'}}>HISTÓRICO AUTOMÁTICO DO PRODUTO</h2><span style={{fontSize:8,color:'#667085'}}>erp_audit_logs • somente consulta</span></div><div style={{maxHeight:180,overflow:'auto'}}>{audits.map(a=><div key={a.id} style={{display:'grid',gridTemplateColumns:'145px 130px 1fr',gap:7,padding:'4px 5px',borderBottom:'1px solid #edf1f5',fontSize:9}}><span>{new Date(a.created_at).toLocaleString('pt-BR')}</span><b>{a.action}</b><details><summary style={{cursor:'pointer'}}>Ver alteração</summary><pre style={{fontSize:8,whiteSpace:'pre-wrap'}}>{JSON.stringify({antes:a.old_data,depois:a.new_data},null,2)}</pre></details></div>)}{!audits.length&&<span style={{fontSize:9,color:'#667085'}}>Nenhum evento registrado.</span>}</div></section>
     <footer style={{padding:'7px 12px 16px',fontSize:10,color:'#667085',display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8}}><span>SYSNQRA ERP & SGQ INDUSTRIAL • Cadastro Mestre de Produtos</span><span>© FernandoSch_System — Todos os direitos reservados</span></footer>
   </main>
 }
