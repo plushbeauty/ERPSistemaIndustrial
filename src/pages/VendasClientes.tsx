@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Building2, Check, HelpCircle, MapPin, Pencil, Plus, RefreshCw, Search, Trash2, Truck, UserRound, X } from 'lucide-react'
+import { Building2, Check, MapPin, Pencil, Plus, RefreshCw, Search, Trash2, Truck, UserRound } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
@@ -93,13 +93,13 @@ const empty = (): Form => ({
   ativo: true,
 })
 
-const baseInput = 'h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
+const baseInput = 'h-[28px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal text-slate-900 outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100'
 const shortInput = baseInput + ' max-w-[110px]'
 function HelpTip({ text }: { text: string }) {
-  const [open, setOpen] = useState(false)
-  return <span className="relative inline-flex align-middle">
-    <button type="button" onClick={() => setOpen(value => !value)} className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full border border-sky-500 text-[9px] font-bold text-sky-700" aria-label="Ajuda"><HelpCircle size={11}/></button>
-    {open && <span className="absolute left-5 top-0 z-40 w-[280px] rounded-[2px] border border-sky-200 bg-white p-2 text-[10px] font-normal leading-4 text-slate-700 shadow-lg">{text}</span>}
+  const [open, setOpen] = useState(true)
+  return <span className="relative ml-1 inline-flex align-baseline">
+    <span role="button" tabIndex={0} aria-label="Ajuda" onClick={() => setOpen(value => !value)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setOpen(value => !value) } }} className="cursor-pointer select-none text-[10px] font-extrabold leading-none text-sky-700">?</span>
+    {open && <span className="absolute left-3 top-3 z-40 w-[260px] rounded-[2px] border border-sky-200 bg-white p-2 text-[9px] font-normal leading-4 text-slate-700 shadow-lg">{text}</span>}
   </span>
 }
 
@@ -346,7 +346,7 @@ export default function VendasClientes() {
         ? await supabase.from('erp_clientes').update(payload).eq('id', selected).eq('empresa_id', empresa)
         : await supabase.from('erp_clientes').insert(payload)
       if (result.error) throw result.error
-      setOpen(false)
+      setOpen(true)
       setMessage(selected ? 'Cliente atualizado com todos os dados informados.' : 'Cliente cadastrado com sucesso.')
       await load()
     } catch (cause) {
@@ -459,7 +459,7 @@ export default function VendasClientes() {
   ] as const
 
   return (
-    <VendasLayout title="Clientes" subtitle="Cadastro e consulta de clientes" onRefresh={() => void load()} showStatusCards={false}>
+    <VendasLayout title="Clientes" subtitle="" onRefresh={() => void load()} showStatusCards={false}>
       <main className="sales-workspace sales-detail">
         <div className="mx-auto max-w-[1700px] space-y-3">
           <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
@@ -468,11 +468,10 @@ export default function VendasClientes() {
                 <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-sky-700">VENDAS › CLIENTES</p>
                 <HelpTip text="Tela de cadastro e consulta de clientes. Use NOVO CLIENTE para abrir o cadastro na própria tela; EDITAR usa a linha selecionada." />
               </div>
-              <h1 className="text-[18px] font-semibold text-slate-950">Cadastro de Clientes</h1>
-              <p className="text-[10px] text-slate-500">Cadastro fiscal, contato, endereço, comercial, De/Para e transportadoras vinculadas.</p>
+              
             </div>
             <div className="flex flex-wrap gap-1">
-              <button type="button" onClick={openNew} className="erp-standard-button"><Plus size={12}/> NOVO CLIENTE</button>
+              <button type="button" onClick={openNew} className="erp-standard-button"><Plus size={12}/> NOVO CLIENTE</button><button type="button" onClick={() => void save()} disabled={busy} className="erp-standard-button border-emerald-800 bg-emerald-700 disabled:opacity-40"><Check size={12}/> SALVAR CLIENTE</button>
               <button type="button" disabled={!selectedClient} onClick={() => selectedClient && edit(selectedClient)} className="erp-standard-button disabled:opacity-40"><Pencil size={12}/> EDITAR</button>
               <button type="button" disabled={!selected} onClick={() => void remove()} className="erp-standard-button border-rose-700 bg-rose-700 disabled:opacity-40"><Trash2 size={12}/> EXCLUIR</button>
               <button type="button" onClick={() => void load()} className="erp-standard-button"><RefreshCw size={12}/> ATUALIZAR</button>
@@ -481,19 +480,19 @@ export default function VendasClientes() {
 
           {(message || error) && <div className={error ? 'border border-rose-300 bg-rose-50 px-2 py-1 text-[10px] text-rose-800' : 'border border-emerald-300 bg-emerald-50 px-2 py-1 text-[10px] text-emerald-800'}>{error || message}</div>}
 
-          {open && <section className="border border-slate-200 bg-white">
+          <section className="border border-slate-200 bg-white">
             <header className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-2 py-1.5">
               <div className="flex items-center gap-1.5"><span className="text-[11px] font-semibold text-sky-800">{selected ? 'EDITAR CLIENTE' : 'NOVO CLIENTE'}</span><HelpTip text="Preencha as abas da esquerda para a direita. Campos que alimentam pedidos, fiscal e comercial ficam no cadastro do cliente para evitar cadastros duplicados." /></div>
-              <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:text-slate-900" title="Fechar cadastro"><X size={14}/></button>
+              
             </header>
             <nav className="flex flex-wrap border-b border-slate-200 bg-white px-1">{tabs.map(([id, label]) => <button key={id} type="button" onClick={() => setTab(id)} className={'border-b-2 px-3 py-1.5 text-[9px] font-semibold ' + (tab === id ? 'border-sky-700 bg-sky-50 text-sky-800' : 'border-transparent text-slate-500 hover:bg-slate-50')}>{label}</button>)}</nav>
             <div className="p-2">
               {tab === 'fiscal' && <div className="space-y-2">
-                <div className="grid gap-2 md:grid-cols-[110px_110px_1fr_1fr]">
+                <div className="grid gap-1.5 md:grid-cols-[100px_100px_190px_auto]">
                   <label className="grid gap-0.5 text-[9px] font-semibold uppercase text-slate-500">Código<HelpTip text="Código interno do cliente. É gerado automaticamente e usado nas pesquisas e referências do ERP."/><input readOnly value={form.codigo} className={shortInput + ' bg-slate-100 font-mono'}/></label>
                   <label className="grid gap-0.5 text-[9px] font-semibold uppercase text-slate-500">Pessoa<HelpTip text="PJ usa CNPJ; PF usa CPF. A escolha define a máscara e a consulta fiscal."/><select value={form.tipo_pessoa} onChange={event => setForm({...form, tipo_pessoa: event.target.value})} className={baseInput}><option value="PJ">PJ</option><option value="PF">PF</option></select></label>
                   <label className="grid gap-0.5 text-[9px] font-semibold uppercase text-slate-500">CNPJ / CPF *<HelpTip text="Informe o documento fiscal. Para PJ, CONSULTAR CNPJ tenta trazer razão social, endereço e contato para conferência."/><input value={form.documento} onChange={event => setForm({...form, documento: form.tipo_pessoa === 'PJ' ? maskCnpj(event.target.value) : maskCpf(event.target.value)})} className={baseInput} placeholder={form.tipo_pessoa === 'PJ' ? '00.000.000/0000-00' : '000.000.000-00'}/></label>
-                  <div className="flex items-end"><button type="button" onClick={() => void lookupCnpj()} disabled={form.tipo_pessoa !== 'PJ' || cnpjLoading} className="erp-standard-button w-full disabled:opacity-40">{cnpjLoading ? 'CONSULTANDO...' : 'CONSULTAR CNPJ'}</button></div>
+                  <div className="flex items-end"><button type="button" onClick={() => void lookupCnpj()} disabled={form.tipo_pessoa !== 'PJ' || cnpjLoading} className="erp-standard-button disabled:opacity-40">{cnpjLoading ? 'CONSULTANDO...' : 'CONSULTAR CNPJ'}</button></div>
                 </div>
                 <div className="grid gap-2 md:grid-cols-[1.5fr_1fr_1fr]">
                   <label className="grid gap-0.5 text-[9px] font-semibold uppercase text-slate-500">Razão Social / Nome *<input value={form.nome} onChange={event => setForm({...form, nome: event.target.value})} className={baseInput}/></label>
@@ -563,8 +562,8 @@ export default function VendasClientes() {
                 <div className="overflow-x-auto"><table className="w-full min-w-[600px] text-[10px]"><thead className="bg-slate-100"><tr className="h-7 text-left"><th className="px-2">Código</th><th className="px-2">Transportadora</th><th className="px-2">CNPJ</th><th className="px-2">Cidade/UF</th><th/></tr></thead><tbody>{clientTransportLinks.filter(link => link.cliente_id === selected).map(link => { const item=transportadoras.find(row => row.id === link.transportadora_id); return item ? <tr key={link.id} className="h-7 border-t border-slate-200"><td className="px-2">{item.codigo}</td><td className="px-2">{item.razao_social}</td><td className="px-2">{item.cnpj ?? '—'}</td><td className="px-2">{[item.cidade,item.uf].filter(Boolean).join(' / ') || '—'}</td><td className="px-2 text-right"><button type="button" onClick={() => void unlinkTransportadora(link.id)} title="Desvincular transportadora" className="text-rose-700"><Trash2 size={12}/></button></td></tr> : null })}</tbody></table></div>
               </div>}
             </div>
-            <footer className="flex justify-end gap-1 border-t border-slate-200 bg-slate-50 px-2 py-1.5"><button type="button" onClick={() => setOpen(false)} className="erp-standard-button border-slate-400 bg-white text-slate-700">CANCELAR</button><button type="button" onClick={() => void save()} disabled={busy} className="erp-standard-button border-emerald-800 bg-emerald-700 disabled:opacity-40"><Check size={12}/> SALVAR CLIENTE</button></footer>
-          </section>}
+            <footer className="border-t border-slate-200 bg-slate-50 px-2 py-1.5 text-[9px] text-slate-500">SALVAMENTO PELO BOTÃO SUPERIOR • O FORMULÁRIO PERMANECE FIXO NA TELA.</footer>
+          </section>
 
           <section className="border border-slate-200 bg-white">
             <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-2 py-1">
