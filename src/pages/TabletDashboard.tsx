@@ -79,7 +79,6 @@ async function loadAccess(): Promise<{ profile: Profile; permissions: Set<string
     .from('erp_permissions')
     .select('id,code')
     .in('id', permissionIds)
-    .eq('ativo', true)
 
   if (permissionError) throw permissionError
 
