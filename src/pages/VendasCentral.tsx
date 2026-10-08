@@ -1,18 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  ArrowDownUp,
   ArrowRight,
   CalendarClock,
   CheckCircle2,
   CircleAlert,
   ClipboardList,
   FilePlus2,
-  FileText,
-  Edit3,
-  Trash2,
   PackageCheck,
-  RefreshCw,
   Search,
   XCircle,
 } from 'lucide-react'
@@ -73,9 +68,6 @@ export default function VendasCentral() {
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  const [deleteBusy, setDeleteBusy] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -121,31 +113,6 @@ export default function VendasCentral() {
   const pageCount = Math.max(1, Math.ceil(visibleOrders.length / PAGE_SIZE))
   const currentPage = Math.min(page, pageCount - 1)
   const pageOrders = visibleOrders.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)
-  const selectedOrder = orders.find((order) => order.id === selectedId) ?? null
-  const openNew = () => { setSelectedId(null); window.location.assign('/vendas/novo-pedido') }
-  const openEdit = () => {
-    if (!selectedOrder) { setError('Selecione um pedido no DBGrid antes de editar.'); return }
-    window.location.assign('/vendas/novo-pedido?pedido=' + encodeURIComponent(selectedOrder.id))
-  }
-  const requestDelete = () => {
-    if (!selectedOrder) { setError('Selecione um pedido no DBGrid antes de deletar.'); return }
-    setError('')
-    setConfirmDelete(true)
-  }
-  const deleteSelected = async () => {
-    if (!selectedOrder) return
-    setDeleteBusy(true); setError('')
-    try {
-      const tenant = await supabase.rpc('erp_current_empresa_id')
-      if (tenant.error || !tenant.data) throw tenant.error ?? new Error('Empresa não identificada.')
-      const result = await supabase.from('erp_pedidos_venda').delete().eq('id', selectedOrder.id).eq('empresa_id', String(tenant.data)).select('id').maybeSingle()
-      if (result.error) throw result.error
-      setConfirmDelete(false); setSelectedId(null); await load()
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não foi possível deletar o pedido.')
-    } finally { setDeleteBusy(false) }
-  }
-
   const counts = useMemo(() => ({
     all: orders.length,
     open: orders.filter((order) => !isCancelled(order.status) && !isInvoiced(order.status)).length,
@@ -154,19 +121,13 @@ export default function VendasCentral() {
   }), [orders])
 
   return (
-    <VendasLayout title="Pedidos de venda" subtitle="Carteira comercial • dados do ERP" onRefresh={() => void load()}>
+    <VendasLayout title="Pedidos de venda" subtitle="Carteira comercial • pesquisa e acompanhamento" showStatusCards={false}>
       <main className="sales-workspace">
         <section className="sales-page-heading">
           <div>
             <span className="sales-eyebrow">COMERCIAL / PEDIDOS</span>
             <h1>Pedidos de venda</h1>
-            <p>Acompanhe cotações, pedidos e entregas em um só lugar.</p>
-          </div>
-          <div className="sales-heading-actions">
-            <button type="button" className="sales-button sales-button--primary sales-crud-button" onClick={openNew}><FileText size={13} />NOVO</button>
-            <button type="button" className="sales-button sales-button--secondary sales-crud-button" onClick={openEdit} disabled={!selectedOrder}><Edit3 size={13} />EDITAR</button>
-            <button type="button" className="sales-button sales-button--danger sales-crud-button" onClick={requestDelete} disabled={!selectedOrder}><Trash2 size={13} />DELETAR</button>
-            <button type="button" className="sales-button sales-button--secondary sales-crud-button" onClick={() => void load()} disabled={loading}><RefreshCw size={13} className={loading ? 'animate-spin' : ''} />ATUALIZAR</button>
+            <p>Pesquise e filtre os pedidos cadastrados da empresa.</p>
           </div>
         </section>
 
@@ -195,11 +156,7 @@ export default function VendasCentral() {
               >
                 <Icon size={15} />
                 {label}
-                <span>{id === 'todos' ? counts.all : id === 'rascunho' ? counts.drafts : id === 'atrasados' ? counts.overdue : orders.filter((order) => {
-                  if (id === 'andamento') return !isDraft(order.status) && !isCancelled(order.status) && !isInvoiced(order.status)
-                  if (id === 'faturados') return isInvoiced(order.status)
-                  return isCancelled(order.status)
-                }).length}</span>
+                <span>{id === 'todos' ? counts.all : id === 'rascunho' ? counts.drafts : id === 'atrasados' ? counts.overdue : orders.filter((order) => { if (id === 'andamento') return !isDraft(order.status) && !isCancelled(order.status) && !isInvoiced(order.status); if (id === 'faturados') return isInvoiced(order.status); return isCancelled(order.status) }).length}</span>
               </button>
             ))}
           </div>
@@ -219,7 +176,7 @@ export default function VendasCentral() {
               />
               {query && <button type="button" onClick={() => setQuery('')} aria-label="Limpar pesquisa"><XCircle size={16} /></button>}
             </label>
-            <span className="sales-result-count"><ArrowDownUp size={14} /> {visibleOrders.length} resultado(s)</span>
+            <span className="sales-result-count">{visibleOrders.length} resultado(s)</span>
           </div>
 
           <div className="sales-table-scroll">
@@ -232,12 +189,11 @@ export default function VendasCentral() {
                   <th>Entrega prevista</th>
                   <th>Status</th>
                   <th className="sales-number">Total</th>
-                  <th><span className="sr-only">Ações</span></th>
                 </tr>
               </thead>
               <tbody>
                 {pageOrders.map((order) => (
-                  <tr key={order.id} className={(isOverdue(order) ? 'is-overdue ' : '') + (selectedId === order.id ? 'is-selected' : '')} onClick={() => setSelectedId(order.id)} onDoubleClick={() => window.location.assign('/vendas/pedido/' + order.id)} aria-selected={selectedId === order.id}>
+                  <tr key={order.id} className={isOverdue(order) ? "is-overdue" : ""}>
                     <td>
                       <Link className="sales-order-number" to={`/vendas/pedido/${order.id}`}>
                         PV-{String(order.numero).padStart(6, '0')}
@@ -257,18 +213,6 @@ export default function VendasCentral() {
                     </td>
                     <td><span className={`sales-status ${statusTone(order.status)}`}>{order.status}</span></td>
                     <td className="sales-number sales-total">{currency.format(Number(order.total ?? 0))}</td>
-                    <td>
-                      <div className="sales-row-actions">
-                        {isDraft(order.status) && (
-                          <Link className="sales-icon-action" to={`/vendas/novo-pedido?pedido=${encodeURIComponent(order.id)}`} aria-label={`Editar rascunho ${order.numero}`} title="Editar rascunho">
-                            <FilePlus2 size={16} />
-                          </Link>
-                        )}
-                        <Link className="sales-open-action" to={`/vendas/pedido/${order.id}`}>
-                          Abrir <ArrowRight size={14} />
-                        </Link>
-                      </div>
-                    </td>
                   </tr>
                 ))}
                 {!loading && visibleOrders.length === 0 && (
@@ -296,24 +240,6 @@ export default function VendasCentral() {
           </nav>
         </section>
       </main>
-      {confirmDelete && selectedOrder && (
-        <div className="sales-delete-overlay" role="dialog" aria-modal="true" aria-labelledby="sales-delete-title">
-          <section className="sales-delete-dialog">
-            <div className="sales-delete-icon"><Trash2 size={22} /></div>
-            <div>
-              <h2 id="sales-delete-title">Confirmar exclusão</h2>
-              <p>Tem certeza que quer deletar o pedido <strong>PV-{String(selectedOrder.numero).padStart(6, '0')}</strong>?</p>
-              <small>Esta ação será executada no banco de dados da empresa atual.</small>
-            </div>
-            <div className="sales-delete-actions">
-              <button type="button" className="sales-button sales-button--secondary" onClick={() => setConfirmDelete(false)} disabled={deleteBusy}>CANCELAR</button>
-              <button type="button" className="sales-button sales-button--danger" onClick={() => void deleteSelected()} disabled={deleteBusy}>
-                <Trash2 size={13} />{deleteBusy ? 'DELETANDO...' : 'DELETAR'}
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
     </VendasLayout>
   )
 }
