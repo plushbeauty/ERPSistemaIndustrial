@@ -155,37 +155,52 @@ export default function AppIndustrialV7() {
   if (loading) return <div className="loading-screen">Carregando SYSNQRA ERP & SGQ INDUSTRIAL…</div>
   if (!profile) return <div className="error-screen"><div className="error-screen-card"><strong>Perfil ERP não encontrado.</strong><p>A sessão autenticada não possui um usuário ERP ativo vinculado à empresa.</p><button className="primary" type="button" onClick={() => { void supabase.auth.signOut(); location.replace('/login') }}>Voltar ao login</button></div></div>
 
-  return <motion.div className={`v7-shell theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
-    <ERPHorizontalShell>
-    <header className="v7-topbar" aria-label="Barra superior do ERP">
-      <div className="v7-top-brand">
-        <div className="v7-logo-frame">
-          <img src="/logo/sgq-erp.png" alt="SGQERP" />
-        </div>
-        <div className="v7-top-title">
-          <strong>SGQERP INDUSTRIAL</strong>
-          <span>CENTRAL DE CONTROLE</span>
-        </div>
-      </div>
-      <div className="v7-top-actions">
-        <div className="v7-top-user-simple" aria-label="Usuário conectado"><span>OPERADOR</span><strong>{profile.nome || 'Usuário'}</strong></div>
-        <div className="v7-top-date" aria-label="Data e hora atual">
-          <strong>{clock.toLocaleDateString(language === 'en-US' ? 'en-US' : 'pt-BR')}</strong>
-          <span>{clock.toLocaleTimeString(language === 'en-US' ? 'en-US' : 'pt-BR')}</span>
-        </div>
-        <span className="v7-top-data">DADOS: SUPABASE</span>
-        <button className="v7-top-exit" type="button" onClick={() => void supabase.auth.signOut().then(() => { location.href = '/login' })}>SAIR</button>
-      </div>
-    </header>
-    <style>{`    <main className="v7-main v7-main-full">
-      <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={specialPath+active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{specialPath === '/vendas/clientes' ? <VendasClientesPage/> : specialPath === '/financeiro/custo-padrao' ? <FinanceiroCustoPadrao/> : specialPath === '/admin/logs' ? <AdminLogs/> : specialPath === '/outlook/configuracao' ? <OutlookConfiguracao/> : specialPath === '/compras/fornecedores' ? <FornecedoresIndustrial/> : specialPath.startsWith('/configuracoes-adm') ? <ConfiguracoesADM/> : active === 'Dashboard' ? <IndustrialCommandDashboard onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); return }; location.href = route }} /> : active === 'Configurações' || active === 'Configuração' ? <ConfiguracoesADM/> : location.pathname === '/qualidade/calibracao' ? <CalibracaoIndustrial/> : location.pathname === '/moldes-injecao' ? <MoldesFerramentaria/> : location.pathname === '/comercial' ? <ComercialSuprimentos/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
-      <footer>FernandoSch_System • SYSNQRA ERP & SGQ INDUSTRIAL • {segment} • Ambiente isolado por empresa</footer>
-
-    </main>
-    </ERPHorizontalShell>
-  </motion.div>
-}
-
+  return (
+    <motion.div className={`v7-shell theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
+      <ERPHorizontalShell operatorName={profile.nome || 'Usuário'}>
+        <main className="v7-main v7-main-full">
+          <section className="v7-content">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div key={specialPath + active} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: .2 }}>
+                {specialPath === '/vendas/clientes'
+                  ? <VendasClientesPage />
+                  : specialPath === '/financeiro/custo-padrao'
+                    ? <FinanceiroCustoPadrao />
+                    : specialPath === '/admin/logs'
+                      ? <AdminLogs />
+                      : specialPath === '/outlook/configuracao'
+                        ? <OutlookConfiguracao />
+                        : specialPath === '/compras/fornecedores'
+                          ? <FornecedoresIndustrial />
+                          : specialPath.startsWith('/configuracoes-adm')
+                            ? <ConfiguracoesADM />
+                            : active === 'Dashboard'
+                              ? <IndustrialCommandDashboard onNavigate={(route) => {
+                                  if (route === '/erp-industrial') {
+                                    setActive('Dashboard')
+                                    return
+                                  }
+                                  navigate(route)
+                                }} />
+                              : active === 'Configurações' || active === 'Configuração'
+                                ? <ConfiguracoesADM />
+                                : location.pathname === '/qualidade/calibracao'
+                                  ? <CalibracaoIndustrial />
+                                  : location.pathname === '/moldes-injecao'
+                                    ? <MoldesFerramentaria />
+                                    : location.pathname === '/comercial'
+                                      ? <ComercialSuprimentos />
+                                      : module
+                                        ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')} />
+                                        : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid} />}
+              </motion.div>
+            </AnimatePresence>
+          </section>
+          <footer>FernandoSch_System • SYSNQRA ERP & SGQ INDUSTRIAL • {segment} • Ambiente isolado por empresa</footer>
+        </main>
+      </ERPHorizontalShell>
+    </motion.div>
+  )
 function Feature({ title, description, icon: Icon }: { title: string; description: string; icon: LucideIcon }) { return <div className="v7-feature"><span className="v7-icon-box"><Icon size={28}/></span><h2>{title}</h2><p>{description}</p><small>Este módulo permanece integrado ao mesmo tenant ERP e às políticas de segurança do banco.</small></div>}
 
 /* Revisão 3 registrada após validação estrutural do arquivo. */
