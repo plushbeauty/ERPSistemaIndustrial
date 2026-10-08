@@ -72,10 +72,24 @@ export default function ConfiguracaoPermissoes() {
         && Number(actor.nivel_admin) >= 8
         && permissionResult.data === true,
       )
-      const permissionRows = await fetchAllPages<Permission>((from, to) => supabase.from('erp_permissions')
+      const permissionRows = await fetchAllPages<Permission>((from, to) => supabase
+        .from('erp_permissions')
         .select('id,code,name,description', { count: 'exact' })
         .order('code')
-        .range(from, to))
+        .range(from, to)
+        .then(({ data, error, count }) => {
+          if (error) throw error
+          return {
+            data: (data ?? []).map(item => ({
+              id: item.id,
+              code: item.code,
+              name: item.name,
+              description: item.description,
+            })),
+            error: null,
+            count: count ?? (data ?? []).length,
+          }
+        }))
 
       setActorCompany(companyId)
       setCanManage(eligible)
