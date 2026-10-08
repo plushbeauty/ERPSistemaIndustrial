@@ -73,10 +73,8 @@ export default function ConfiguracaoPermissoes() {
         && permissionResult.data === true,
       )
       const permissionRows = await fetchAllPages<Permission>((from, to) => supabase.from('erp_permissions')
-        .select('id,codigo,nome,modulo,ativo', { count: 'exact' })
-        .eq('ativo', true)
-        .order('modulo')
-        .order('codigo')
+        .select('id,code,name,description', { count: 'exact' })
+        .order('code')
         .range(from, to))
 
       setActorCompany(companyId)
