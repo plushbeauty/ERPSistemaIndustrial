@@ -4,6 +4,7 @@ import { AlertTriangle, CheckCircle, Download, Home, Landmark, List, ScrollText,
 import { supabase } from '../../lib/supabaseClient'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import LinkFieldCombobox, { type LinkOption } from '../../components/ui/LinkFieldCombobox'
+import { fetchAllPages } from '../../lib/supabasePagination'
 
 type Account = { id: string; codigo: string; nome: string; banco: string; saldo_inicial: number; ativo: boolean }
 type Transaction = {
@@ -105,24 +106,41 @@ export default function BankReconciliation() {
 
   const load = async () => {
     setError('')
-    const accountResult = await supabase.from('erp_contas_bancarias').select('id,codigo,nome,banco,saldo_inicial,ativo').eq('ativo', true).order('nome')
+    const company = await supabase.rpc('erp_current_empresa_id')
+    if (company.error || !company.data) {
+      setError(company.error?.message || 'Empresa da sessão não identificada.')
+      return
+    }
+    const tenant = String(company.data)
+    const accountResult = await supabase.from('erp_contas_bancarias')
+      .select('id,codigo,nome,banco,saldo_inicial,ativo')
+      .eq('empresa_id', tenant)
+      .eq('ativo', true)
+      .order('nome')
     if (accountResult.error) { setError(accountResult.error.message); return }
     const list = (accountResult.data || []) as Account[]
     setAccounts(list)
     const selectedAccount = accountId || list[0]?.id || ''
     if (!accountId && selectedAccount) setAccountId(selectedAccount)
-    let query = supabase.from('erp_transacoes_bancarias').select('id,data_movimento,data_valor,descricao,referencia,tipo,valor,saldo,status,conta_bancaria_id').order('data_movimento', { ascending: false }).limit(500)
-    if (selectedAccount) query = query.eq('conta_bancaria_id', selectedAccount)
-    if (date) query = query.lte('data_movimento', date)
-    if (status !== 'TODOS') query = query.eq('status', status)
-    const transactionResult = await query
-    if (transactionResult.error) setError(transactionResult.error.message)
-    else setRows((transactionResult.data || []) as Transaction[])
+    const transactions = await fetchAllPages<Transaction>((from, to) => {
+      let query = supabase.from('erp_transacoes_bancarias')
+        .select('id,data_movimento,data_valor,descricao,referencia,tipo,valor,saldo,status,conta_bancaria_id', { count: 'exact' })
+        .eq('empresa_id', tenant)
+        .order('data_movimento', { ascending: false })
+        .range(from, to)
+      if (selectedAccount) query = query.eq('conta_bancaria_id', selectedAccount)
+      if (date) query = query.lte('data_movimento', date)
+      if (status !== 'TODOS') query = query.eq('status', status)
+      return query
+    })
+    setRows(transactions)
   }
 
   useEffect(() => { void load() }, [accountId, date, status])
 
-  useEffect(() => { void (async () => { if (!accountId) { setSaldoContabil(0); return }; const r = await supabase.from('erp_fiscal_razao_lancamentos').select('debito,credito').eq('conta_bancaria_id', accountId); if (!r.error) { const opening = Number(accounts.find((account) => account.id === accountId)?.saldo_inicial ?? 0); setSaldoContabil(opening + (r.data ?? []).reduce((sum, row) => sum + Number(row.credito ?? 0) - Number(row.debito ?? 0), 0)) } })() }, [accountId])
+  useEffect(() => { void (async () => { if (!accountId) { setSaldoContabil(0); return }; const company = await supabase.rpc('erp_current_empresa_id')
+    if (company.error || !company.data) { setSaldoContabil(0); return }
+    const r = await supabase.from('erp_fiscal_razao_lancamentos').select('debito,credito').eq('empresa_id', String(company.data)).eq('conta_bancaria_id', accountId); if (!r.error) { const opening = Number(accounts.find((account) => account.id === accountId)?.saldo_inicial ?? 0); setSaldoContabil(opening + (r.data ?? []).reduce((sum, row) => sum + Number(row.credito ?? 0) - Number(row.debito ?? 0), 0)) } })() }, [accountId])
 
   const options: LinkOption[] = useMemo(() => accounts.map((account) => ({
     value: account.id,
@@ -137,21 +155,12 @@ export default function BankReconciliation() {
   const reconcile = async () => {
     if (!selected) return
     setError('')
-    const company = await supabase.rpc('erp_current_empresa_id')
-    if (company.error || !company.data) { setError(company.error?.message || 'Empresa da sessão não identificada.'); return }
-    const auth = await supabase.auth.getUser()
-    const insert = await supabase.from('erp_conciliacoes_bancarias').insert({
-      empresa_id: company.data,
-      transacao_bancaria_id: selected.id,
-      documento_tipo: 'REFERENCIA',
-      referencia_interna: reference.trim() || selected.referencia || selected.descricao,
-      valor_conciliado: selected.valor,
-      conciliado_por: auth.data.user?.id || null,
+    const result = await supabase.rpc('erp_conciliar_transacao_bancaria', {
+      p_transacao_id: selected.id,
+      p_referencia_interna: reference.trim() || null,
     })
-    if (insert.error) { setError(insert.error.message); return }
-    const update = await supabase.from('erp_transacoes_bancarias').update({ status: 'CONCILIADO' }).eq('id', selected.id)
-    if (update.error) { setError(update.error.message); return }
-    setMessage('Transação conciliada.')
+    if (result.error) { setError(result.error.message); return }
+    setMessage('Transação conciliada atomicamente.')
     setSelected(null)
     setReference('')
     await load()
