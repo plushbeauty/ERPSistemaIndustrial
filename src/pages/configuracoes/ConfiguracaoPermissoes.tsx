@@ -125,7 +125,7 @@ export default function ConfiguracaoPermissoes() {
         .range(from, to))
       const codes = new Set(permissions
         .filter(permission => assignments.some(assignment => assignment.permission_id === permission.id))
-        .map(permission => permission.codigo))
+        .map(permission => permission.code))
       if (actorCompany && canManage && role.empresa_id === actorCompany) {
         setDraft({ roleId: role.id, codigo: role.codigo, nome: role.nome, permissions: codes })
       } else {
