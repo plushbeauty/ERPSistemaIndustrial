@@ -50,3 +50,21 @@ TESTE NECESSÁRIO: type-check; lint; login real; carregamento de permissões.
 EVIDÊNCIA: schema real informado/confirmado anteriormente: id, code, name, description, created_at.
 COMMIT: 950c05620bad84ab59abf3902dc811ba24d4aed0
 DATA: 2026-10-07
+
+
+## ERR-0004
+STATUS: VALIDATING
+PRIORIDADE: P0
+CATEGORIA: BUILD/VERCEL
+ARQUIVO: src/pages/configuracoes/ConfiguracaoPermissoes.tsx
+LINHA: 75
+ROTA: /configuracoes-adm/permissoes
+SINTOMA: Vercel production commit 950c056 falhou no type-check com consulta erp_permissions usando codigo,nome,modulo,ativo enquanto o contrato real exige code,name,description.
+CAUSA: contrato de dados divergente.
+IMPACTO: bloqueia production gate.
+DEPENDÊNCIAS: schema real erp_permissions.
+CORREÇÃO: consulta alterada para id,code,name,description e order por code.
+TESTE NECESSÁRIO: npm run type-check; npm run lint:check; npm run build; verify:production; deploy Vercel.
+EVIDÊNCIA: logs Vercel dpl_GQ8r2nVa2PxBBm6LsuAYFHEdcusT.
+COMMIT: b8a9cde58bb76f00417d3b25a4606ac39545c7c0
+DATA: 2026-10-07
