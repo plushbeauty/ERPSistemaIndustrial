@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleHelp, ChevronDown, Search, UserRound } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { supabase } from '../../lib/supabaseClient'
 
 type MenuItem = {
   label: string
@@ -53,7 +54,17 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [now, setNow] = useState(() => new Date())
+  const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
   const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (operatorName !== 'Usuário ERP') return
+    void supabase.auth.getUser().then(({ data }) => {
+      const metadata = data.user?.user_metadata
+      if (typeof metadata?.nome === 'string' && metadata.nome.trim()) setSessionOperator(metadata.nome.trim())
+      else if (data.user?.email) setSessionOperator(data.user.email)
+    })
+  }, [operatorName])
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000)
@@ -111,7 +122,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
 
         <div className="erp-horizontal-session">
           <UserRound size={15} />
-          <span>{operatorName}</span>
+          <span>{operatorName === 'Usuário ERP' ? sessionOperator : operatorName}</span>
           <time dateTime={now.toISOString()}>
             {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)} {' '}
             {new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(new Date())}
