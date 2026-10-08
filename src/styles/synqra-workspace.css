@@ -65,7 +65,7 @@
 .erp-standard-button{height:26px;display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:0 9px;border:1px solid #17445A;border-radius:2px;background:#2D8DB8;color:#fff;font-size:10px;font-weight:500;line-height:1;cursor:pointer;white-space:nowrap}
 .erp-standard-button:hover{background:#17445A}
 .erp-standard-button:disabled{opacity:.5;cursor:not-allowed}
-.synqra-title-actions{display:flex;align-items:center;gap:3px;position:static!important;flex-wrap:nowrap}
+.synqra-title-actions{display:flex;align-items:center;gap:3px;position:static!important;flex:0 0 auto;flex-wrap:nowrap}.synqra-title-main{flex:1;min-width:0;text-align:center}
 .synqra-title-actions button{height:26px;min-width:68px}
 .synqra-workspace input,.synqra-workspace select,.synqra-workspace textarea{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .synqra-workspace input:focus,.synqra-workspace select:focus,.synqra-workspace textarea:focus{border-color:#2D8DB8;outline:0;box-shadow:none}
