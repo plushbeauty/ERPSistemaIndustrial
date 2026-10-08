@@ -241,7 +241,7 @@ export default function ProdutosVendasIndustrial(){
     }
   }
 
-  const choosePhoto=(e:ChangeEvent<HTMLInputElement>)=>{
+  const choosePhoto=(e:ChangeEvent<HTMLInputElement>,slot=1)=>{slot=Number(e.currentTarget.dataset.slot||slot)
     const file=e.target.files?.[0]
     if(!file||!selectedId||!companyId)return
     if(!['image/jpeg','image/png','image/webp'].includes(file.type)){setError('Use JPG, PNG ou WEBP.');return}
@@ -250,7 +250,7 @@ export default function ProdutosVendasIndustrial(){
     const path=companyId+'/'+selectedId+'/'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_')
     void supabase.storage.from('erp-produtos').upload(path,file,{upsert:true,contentType:file.type})
       .then(({error:e2})=>{if(e2)throw e2;return supabase.from('erp_produtos').update({foto_url:supabase.storage.from('erp-produtos').getPublicUrl(path).data.publicUrl}).eq('id',selectedId).eq('empresa_id',companyId)})
-      .then(({error:e3})=>{if(e3)throw e3;const url=supabase.storage.from('erp-produtos').getPublicUrl(path).data.publicUrl;setForm(prev=>({...prev,foto_url:url}));setMessage('Foto do produto atualizada.');void load()})
+      .then(async({error:e3})=>{if(e3)throw e3;const url=supabase.storage.from('erp-produtos').getPublicUrl(path).data.publicUrl;if(slot===1){const {error:e4}=await supabase.from('erp_produtos').update({foto_url:url}).eq('id',selectedId).eq('empresa_id',companyId);if(e4)throw e4}const {error:e5}=await supabase.from('erp_documentos_anexos').insert({empresa_id:companyId,entidade_tipo:'produto',entidade_id:selectedId,nome_arquivo:'FOTO_'+slot+'_'+file.name,storage_path:path,mime_type:file.type,tamanho_bytes:file.size});if(e5)throw e5;setForm(prev=>({...prev,foto_url:slot===1?url:prev.foto_url}));setMessage('Foto '+slot+' do produto atualizada.');await loadDetails();void load()})
       .catch(e=>setError(e instanceof Error?e.message:'Não foi possível enviar a foto.')).finally(()=>setBusy(false))
   }
 
@@ -273,7 +273,7 @@ export default function ProdutosVendasIndustrial(){
     'Observações':'Informações complementares do cadastro; não substituem a ficha de processo.'
   } as Record<string,string>)[title.replace(' [?]','')]||('Ajuda do campo '+title.replace(' [?]','')+'.');
   const HelpTip=({text}:{text:string})=>{const [open,setOpen]=useState(false);return <span style={{position:'relative',display:'inline-flex',verticalAlign:'baseline',marginLeft:3}}><span role="button" tabIndex={0} aria-label="Ajuda" onClick={e=>{e.preventDefault();e.stopPropagation();setOpen(v=>!v)}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setOpen(v=>!v)}}} style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:10,height:12,color:'#2D8DB8',fontSize:11,fontWeight:800,lineHeight:1,cursor:'pointer',userSelect:'none'}}>?</span>{open&&<span role="tooltip" style={{position:'absolute',zIndex:1200,left:12,top:14,width:250,padding:'7px 8px',border:'1px solid #b9cbd3',borderRadius:2,background:'#fff',boxShadow:'0 4px 12px rgba(18,59,80,.16)',fontSize:9,fontWeight:400,lineHeight:1.35,color:'#173b4a',textTransform:'none'}}>{text}</span>}</span>}
-  const fieldTitle=(title:string)=><>{title.replace(' [?]','')}{title.includes('[?]')&&<HelpTip text={helpFor(title)}/>}</>;
+  const fieldTitle=(title:string)=><span style={{display:'inline-flex',alignItems:'center',whiteSpace:'nowrap',minWidth:0}}>{title.replace(' [?]','')}{title.includes('[?]')&&<HelpTip text={helpFor(title)}/>}</span>;
   const field=(title:string,key:keyof FormData,type='text',span=1,locked=false)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input type={type} value={String(form[key]??'')} readOnly={locked} disabled={!editing} onChange={e=>update(key,type==='number'?n(e.target.value):e.target.value)} style={{...input,background:locked?'#eaf3f8':editing?'#fff':'#f5f7fa',color:locked?'#17445A':'#172033',fontWeight:locked?700:400,cursor:locked?'not-allowed':'text'}}/></label>
   const select=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<select value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>{options.map(o=><option value={o[0]} key={o[0]}>{o[1]}</option>)}</select></label>
   const check=(title:string,key:keyof FormData)=><label style={{display:'flex',alignItems:'center',gap:7,fontSize:10,fontWeight:700,color:'#344054'}}><input type="checkbox" checked={Boolean(form[key])} disabled={!editing} onChange={e=>update(key,e.target.checked)}/>{title}</label>
@@ -332,6 +332,20 @@ export default function ProdutosVendasIndustrial(){
 
     {(message||error)&&<div role="alert" style={{margin:10,padding:'9px 12px',borderRadius:6,border:'1px solid '+(error?'#fecaca':'#bbf7d0'),background:error?'#fff1f2':'#f0fdf4',color:error?'#b91c1c':'#166534',fontWeight:800,fontSize:12}}>{error||message}</div>}
 
+    {selectedId&&<section style={{...panel,margin:'10px 10px 0',padding:7}}>
+      <div style={{fontSize:9,fontWeight:700,color:'#123B50',marginBottom:5,textTransform:'uppercase'}}>Fotos do produto • catálogo digital</div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(120px,1fr))',gap:6}}>
+        {[1,2,3,4].map(slot=>{
+          const photo=attachments.find(a=>a.mime_type?.startsWith('image/')&&a.nome_arquivo.startsWith('FOTO_'+slot+'_'));
+          const url=photo?supabase.storage.from('erp-produtos').getPublicUrl(photo.storage_path).data.publicUrl:(slot===1?form.foto_url:null);
+          return <div key={slot} style={{height:105,border:'1px solid #cbd5e1',background:'#f8fafc',position:'relative',display:'grid',placeItems:'center',overflow:'hidden'}}>
+            {url?<img src={url} alt={'Foto '+slot+' do produto'} style={{width:'100%',height:'100%',objectFit:'contain'}}/>:<div style={{fontSize:9,color:'#98a2b3'}}>IMAGEM {slot}{slot===1?' • PRINCIPAL':''}</div>}
+            {editing&&<button type="button" onClick={()=>{const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}} style={{...btn('normal'),position:'absolute',right:4,bottom:4,height:24,padding:'0 7px',fontSize:9}}><Upload size={11}/> {url?'TROCAR':'ANEXAR'}</button>}
+          </div>
+        })}
+      </div>
+      <div style={{fontSize:8,color:'#667085',marginTop:4}}>A imagem 1 é a principal do cadastro; as quatro imagens podem ser usadas na apresentação do produto no catálogo digital.</div>
+    </section>
     {selectedId&&<><section style={{...panel,margin:'10px 10px 0',padding:7,display:'grid',gridTemplateColumns:'72px minmax(0,1fr) auto',gap:9,alignItems:'center',background:'#fff'}}>
       <div style={{width:72,height:60,border:'1px solid #cbd5e1',background:'#f8fafc',display:'grid',placeItems:'center',overflow:'hidden'}}>{form.foto_url?<img src={form.foto_url} alt="Foto do produto" style={{width:'100%',height:'100%',objectFit:'contain'}}/>:<ImageIcon size={22} color="#98a2b3"/>}</div>
       <div style={{minWidth:0}}><div style={{fontSize:9,fontWeight:700,color:'#667085',textTransform:'uppercase'}}>Produto selecionado</div><div style={{fontSize:13,fontWeight:700,color:'#123B50',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{form.codigo||'AUTOMÁTICO'} • {form.nome||'Sem descrição'}</div><div style={{fontSize:9,color:'#667085',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{form.descricao_resumida||'Sem descrição resumida'} · {form.grupo||'Sem grupo'} · {form.marca||'Sem marca'}</div></div>
@@ -344,17 +358,17 @@ export default function ProdutosVendasIndustrial(){
       </div>
 
       {tab==='gerais'&&<form onSubmit={save} style={{padding:8}}>
-        <div style={{display:'grid',gridTemplateColumns:'80px 110px 220px 170px',gap:5,alignItems:'end'}}>
+        <div style={{display:'grid',gridTemplateColumns:'75px 105px 300px 220px 150px 120px 120px',gap:5,alignItems:'end'}}>
           {field('Código *','codigo','text',1,true)}
           {field('Código de barras','codigo_barras','text',1,true)}
           {field('Descrição *','nome')}
-          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>Descrição resumida <HelpTip text={helpFor('Descrição resumida')}/></span><input type="text" value={String(form.descricao_resumida??'')} disabled={!editing} onChange={e=>update('descricao_resumida',e.target.value)} title="Descrição curta/dimensional usado para identificar rapidamente a peça." style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
-        </div>
-
-        <div style={{display:'grid',gridTemplateColumns:'120px 100px 100px 55px 55px 55px 72px 72px 78px 70px 70px',gap:5,marginTop:5,alignItems:'end'}}>
+          {field('Descrição resumida [?]','descricao_resumida')}
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>Grupo <HelpTip text={helpFor('Grupo')}/></span><select value={form.grupo||''} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
           {field('Subgrupo [?]','subgrupo')}
           {field('Marca [?]','marca')}
+        </div>
+
+        <div style={{display:'grid',gridTemplateColumns:'55px 55px 55px 75px 75px 75px 75px 75px 135px 170px',gap:5,marginTop:5,alignItems:'end'}}>
           {select('Un. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
           {select('Un. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
           {select('Un. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
@@ -363,6 +377,20 @@ export default function ProdutosVendasIndustrial(){
           {field('Comprimento (mm)','comprimento_mm','number')}
           {field('Largura (mm)','largura_mm','number')}
           {field('Altura (mm)','altura_mm','number')}
+          {select('Tipo de produto','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','MATÉRIA-PRIMA'],['PRENSADOS','PRENSADOS'],['INJETADOS','INJETADOS'],['ALMOXARIFADO','ALMOXARIFADO'],['MATERIAL DE ESCRITÓRIO','MATERIAL DE ESCRITÓRIO'],['PRODUTOS DE LIMPEZA','PRODUTOS DE LIMPEZA'],['Componente','Componente'],['Insumo','Insumo']])}
+          <label style={label}>Fornecedor padrão<select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{suppliers.map(s=><option value={s.id} key={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>
+        </div>
+
+        <div style={{display:'grid',gridTemplateColumns:'78px 78px 78px 78px 120px 120px 150px 150px 1fr',gap:5,marginTop:5,alignItems:'end'}}>
+          {field('Custo médio','custo_medio','number')}
+          {field('Último custo','custo_ultimo','number')}
+          {field('Custo fabricação','custo_fabricacao','number')}
+          {field('Preço venda','preco_venda','number')}
+          {field('Ref. interna','referencia_interna')}
+          {field('Ref. cliente','referencia_cliente')}
+          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:30,padding:'5px 7px',resize:'none',fontSize:11}}/></label>
+          <div style={{display:'flex',alignItems:'center',gap:5,height:30,border:'1px solid #d5dde7',padding:'0 6px',background:'#fff',whiteSpace:'nowrap'}}><span style={{fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}}>Sit.</span>{check('Fab.','fabricado')}{check('Comp.','comprado')}{check('Rev.','revenda')}</div>
+          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} title="Selecione uma localização existente do Estoque. A hierarquia depósito/rua/prateleira/caixa é mantida no cadastro de localizações." style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
         </div>
 
         <div style={{display:'grid',gridTemplateColumns:'120px 170px 78px 78px 78px 78px 82px 82px 180px 165px 170px',gap:5,marginTop:5,alignItems:'end'}}>
