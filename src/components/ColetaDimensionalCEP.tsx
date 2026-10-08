@@ -1,29 +1,29 @@
-import { useMemo, useState } from 'react';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { useMemo, useState } from 'react'
+import { CheckCircle, XCircle } from 'lucide-react'
 
-const SAMPLE_COUNT = 18;
+const SAMPLE_COUNT = 18
 
 export interface ColetaDimensionalCEPProps {
-  limiteSuperior: number;
-  limiteInferior: number;
-  lote?: string;
-  codigoProduto?: string;
-  descricaoProduto?: string;
+  limiteSuperior: number
+  limiteInferior: number
+  lote?: string
+  codigoProduto?: string
+  descricaoProduto?: string
   onAprovar?: (dados: {
-    lote?: string;
-    codigoProduto?: string;
-    valores: number[];
-    media: number;
-    desvioPadrao: number;
-    totalControlado: number;
-    numeroDefeituosos: number;
-  }) => void;
+    lote?: string
+    codigoProduto?: string
+    valores: number[]
+    media: number
+    desvioPadrao: number
+    totalControlado: number
+    numeroDefeituosos: number
+  }) => void
 }
 
 interface AmostraCEP {
-  id: number;
-  valorMedido: string;
-  valorOriginal: string;
+  id: number
+  valorMedido: string
+  valorOriginal: string
 }
 
 const criarAmostras = (): AmostraCEP[] =>
@@ -31,21 +31,23 @@ const criarAmostras = (): AmostraCEP[] =>
     id: index + 1,
     valorMedido: '',
     valorOriginal: '',
-  }));
+  }))
 
 const parseMedicao = (valor: string): number | null => {
-  const normalizado = valor.trim().replace(',', '.');
+  const normalizado = valor.trim().replace(',', '.')
+  if (!normalizado) return null
+  const numero = Number(normalizado)
+  return Number.isFinite(numero) ? numero : null
+}
 
-  if (!normalizado) {
-    return null;
-  }
+const formatarNumero = (valor: number): string =>
+  Number.isFinite(valor) ? valor.toFixed(3) : '—'
 
-  const numero = Number(normalizado);
-  return Number.isFinite(numero) ? numero : null;
-};
+const inputClass =
+  'h-7 w-full rounded-[2px] border border-[#3a404c] bg-[#1e222b] py-0.5 px-2 text-xs font-normal text-slate-200 outline-none focus:border-[#48b7c7]'
 
-const formatarNumero = (valor: number, casas = 3): string =>
-  Number.isFinite(valor) ? valor.toFixed(casas) : '—';
+const labelClass =
+  'mb-0.5 block text-[11px] font-semibold text-gray-400 uppercase tracking-wider'
 
 export default function ColetaDimensionalCEP({
   limiteSuperior,
@@ -55,84 +57,83 @@ export default function ColetaDimensionalCEP({
   descricaoProduto,
   onAprovar,
 }: ColetaDimensionalCEPProps) {
-  const [amostras, setAmostras] = useState<AmostraCEP[]>(criarAmostras);
+  const [amostras, setAmostras] = useState<AmostraCEP[]>(criarAmostras)
 
   const estatistica = useMemo(() => {
     const valores = amostras
       .map((amostra) => parseMedicao(amostra.valorMedido))
-      .filter((valor): valor is number => valor !== null);
+      .filter((valor): valor is number => valor !== null)
 
-    const totalControlado = valores.length;
+    const totalControlado = valores.length
     const numeroDefeituosos = valores.filter(
       (valor) => valor < limiteInferior || valor > limiteSuperior,
-    ).length;
+    ).length
 
     const media =
       totalControlado > 0
         ? valores.reduce((total, valor) => total + valor, 0) / totalControlado
-        : 0;
+        : 0
 
-    const somaQuadrados = valores.reduce(
-      (total, valor) => total + (valor - media) ** 2,
-      0,
-    );
+    const variancia =
+      totalControlado > 0
+        ? valores.reduce((total, valor) => total + (valor - media) ** 2, 0) /
+          totalControlado
+        : 0
 
-    const desvioPadrao =
-      totalControlado > 0 ? Math.sqrt(somaQuadrados / totalControlado) : 0;
-
-    const incompletas = totalControlado < SAMPLE_COUNT;
     const mediaForaDosLimites =
       totalControlado > 0 &&
-      (media < limiteInferior || media > limiteSuperior);
+      (media < limiteInferior || media > limiteSuperior)
 
     return {
       valores,
       totalControlado,
       numeroDefeituosos,
       media,
-      desvioPadrao,
-      incompletas,
+      desvioPadrao: Math.sqrt(variancia),
       mediaForaDosLimites,
-    };
-  }, [amostras, limiteInferior, limiteSuperior]);
+      incompletas: totalControlado < SAMPLE_COUNT,
+    }
+  }, [amostras, limiteInferior, limiteSuperior])
 
   const loteReprovado =
-    estatistica.numeroDefeituosos > 0 || estatistica.mediaForaDosLimites;
-
-  const coletaCompleta = estatistica.totalControlado === SAMPLE_COUNT;
+    estatistica.numeroDefeituosos > 0 || estatistica.mediaForaDosLimites
 
   const podeAprovar =
-    coletaCompleta &&
+    estatistica.totalControlado === SAMPLE_COUNT &&
     !loteReprovado &&
-    limiteSuperior > limiteInferior;
+    limiteSuperior > limiteInferior
 
   const atualizarMedicao = (id: number, valorMedido: string) => {
     setAmostras((atuais) =>
-      atuais.map((amostra) => {
-        if (amostra.id !== id) {
-          return amostra;
-        }
+      atuais.map((amostra) =>
+        amostra.id === id
+          ? {
+              ...amostra,
+              valorMedido,
+              valorOriginal:
+                amostra.valorOriginal === '' && valorMedido.trim() !== ''
+                  ? valorMedido
+                  : amostra.valorOriginal,
+            }
+          : amostra,
+      ),
+    )
+  }
 
-        return {
-          ...amostra,
-          valorMedido,
-          valorOriginal:
-            amostra.valorOriginal === '' && valorMedido.trim() !== ''
-              ? valorMedido
-              : amostra.valorOriginal,
-        };
-      }),
-    );
-  };
+  const atualizarOriginal = (id: number, valorOriginal: string) => {
+    setAmostras((atuais) =>
+      atuais.map((amostra) =>
+        amostra.id === id ? { ...amostra, valorOriginal } : amostra,
+      ),
+    )
+  }
 
   const limparColeta = () => {
-    setAmostras(criarAmostras());
-  };
+    setAmostras(criarAmostras())
+  }
 
   const aprovarColeta = () => {
-    if (!podeAprovar || !onAprovar) {
-      return;
-    }
+    if (!podeAprovar || !onAprovar) return
 
     onAprovar({
       lote,
@@ -142,260 +143,236 @@ export default function ColetaDimensionalCEP({
       desvioPadrao: estatistica.desvioPadrao,
       totalControlado: estatistica.totalControlado,
       numeroDefeituosos: estatistica.numeroDefeituosos,
-    });
-  };
+    })
+  }
 
   return (
-    <section className="flex h-full min-h-0 flex-col bg-[#1e222b] p-2 text-[#e2e8f0] text-[11px]">
-      <header className="mb-2 flex h-8 shrink-0 items-center justify-between border border-[#3a414d] bg-[#252a34] px-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="font-semibold uppercase tracking-wide text-[#e2e8f0]">
-            CONTROLE ESTATÍSTICO DE PROCESSO — CEP
-          </span>
-
-          {lote ? (
-            <span className="border border-[#46505e] bg-[#1e222b] px-2 py-1 font-mono text-[10px] text-[#cbd5e1]">
-              LOTE: {lote}
-            </span>
-          ) : null}
-
-          {codigoProduto ? (
-            <span className="border border-[#46505e] bg-[#1e222b] px-2 py-1 font-mono text-[10px] text-[#cbd5e1]">
-              PRODUTO: {codigoProduto}
-            </span>
-          ) : null}
-
-          {descricaoProduto ? (
-            <span className="truncate text-[10px] text-[#94a3b8]">
-              {descricaoProduto}
-            </span>
-          ) : null}
+    <section className="min-h-0 w-full space-y-1.5 rounded-[2px] bg-[#1e222b] p-1.5 text-slate-200">
+      <header className="grid grid-cols-2 gap-1.5 rounded-[2px] border border-[#3a404c] bg-[#252a34] p-1">
+        <div className="min-w-0">
+          <div className="text-xs font-bold text-gray-300 uppercase bg-[#252a34] p-1 border-b border-[#3a404c]">
+            Controle Estatístico de Processo — CEP
+          </div>
+          <div className="grid grid-cols-2 gap-1.5 p-1">
+            <div>
+              <label className={labelClass}>Lote</label>
+              <input className={inputClass} value={lote ?? ''} readOnly />
+            </div>
+            <div>
+              <label className={labelClass}>Código Produto</label>
+              <input
+                className={inputClass}
+                value={codigoProduto ?? ''}
+                readOnly
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2 font-mono text-[10px]">
-          <span className="border border-[#46505e] bg-[#1e222b] px-2 py-1">
-            LIE <strong>{limiteInferior.toFixed(2)}</strong>
-          </span>
-          <span className="border border-[#46505e] bg-[#1e222b] px-2 py-1">
-            LSE <strong>{limiteSuperior.toFixed(2)}</strong>
-          </span>
+        <div className="grid grid-cols-2 gap-1.5">
+          <div>
+            <label className={labelClass}>Descrição</label>
+            <input
+              className={inputClass}
+              value={descricaoProduto ?? ''}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Limites</label>
+            <div className="grid grid-cols-2 gap-1.5">
+              <input
+                className={inputClass}
+                value={limiteInferior.toFixed(2)}
+                readOnly
+                aria-label="Limite inferior"
+              />
+              <input
+                className={inputClass}
+                value={limiteSuperior.toFixed(2)}
+                readOnly
+                aria-label="Limite superior"
+              />
+            </div>
+          </div>
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-auto border border-[#3a414d] bg-[#20252e]">
-        <table className="w-full min-w-[760px] border-collapse">
-          <thead className="sticky top-0 z-10 bg-[#2b313c] text-[9px] uppercase tracking-wide text-[#cbd5e1]">
-            <tr className="h-7">
-              <th className="w-[54px] border border-[#3a414d] px-1 text-center font-semibold">
-                Amostra
-              </th>
-              <th className="w-[135px] border border-[#3a414d] px-1 text-left font-semibold">
-                Valor Original
-              </th>
-              <th className="w-[155px] border border-[#3a414d] px-1 text-left font-semibold">
-                Valor Medido
-              </th>
-              <th className="w-[110px] border border-[#3a414d] px-1 text-center font-semibold">
-                Avaliação
-              </th>
-              <th className="w-[145px] border border-[#3a414d] px-1 text-left font-semibold">
-                Classe do Defeito
-              </th>
-              <th className="border border-[#3a414d] px-1 text-left font-semibold">
-                Limites / Resultado
-              </th>
-            </tr>
-          </thead>
+      <section className="rounded-[2px] border border-[#3a404c] bg-[#252a34]">
+        <div className="text-xs font-bold text-gray-300 uppercase bg-[#252a34] p-1 border-b border-[#3a404c]">
+          18 Amostras — Anotação Dimensional
+        </div>
 
-          <tbody className="font-mono text-[10px]">
-            {amostras.map((amostra) => {
-              const valor = parseMedicao(amostra.valorMedido);
-              const preenchido = valor !== null;
-              const defeituoso =
-                preenchido &&
-                (valor < limiteInferior || valor > limiteSuperior);
+        <div className="space-y-1 p-1.5">
+          <div className="grid grid-cols-[42px_minmax(0,1fr)_minmax(0,1fr)_72px_100px] gap-1.5">
+            <div className={labelClass}>Nº</div>
+            <div className={labelClass}>Valor Original</div>
+            <div className={labelClass}>Valor Medido</div>
+            <div className={labelClass}>Avaliação</div>
+            <div className={labelClass}>Classe</div>
+          </div>
 
-              const classeLinha = defeituoso
-                ? 'bg-[#3a2024]'
-                : preenchido
-                  ? 'bg-[#202b27]'
-                  : 'bg-[#20252e]';
+          {amostras.map((amostra) => {
+            const valor = parseMedicao(amostra.valorMedido)
+            const preenchido = valor !== null
+            const defeituoso =
+              preenchido &&
+              (valor < limiteInferior || valor > limiteSuperior)
 
-              return (
-                <tr
-                  key={amostra.id}
-                  className={`h-8 border-b border-[#343b47] ${classeLinha}`}
-                >
-                  <td className="border-r border-[#343b47] px-1 text-center font-semibold text-[#cbd5e1]">
-                    {String(amostra.id).padStart(2, '0')}
-                  </td>
+            return (
+              <div
+                key={amostra.id}
+                className={
+                  'grid grid-cols-[42px_minmax(0,1fr)_minmax(0,1fr)_72px_100px] gap-1.5 rounded-[2px] border border-[#3a404c] p-0.5 ' +
+                  (defeituoso ? 'bg-[#3a2024]' : 'bg-[#252a34]')
+                }
+              >
+                <div className="flex h-7 items-center rounded-[2px] border border-[#3a404c] bg-[#1e222b] px-2 text-xs font-normal text-slate-200">
+                  {String(amostra.id).padStart(2, '0')}
+                </div>
 
-                  <td className="border-r border-[#343b47] px-1 text-[#94a3b8]">
-                    {amostra.valorOriginal || '—'}
-                  </td>
+                <input
+                  className={inputClass}
+                  value={amostra.valorOriginal}
+                  onChange={(event) =>
+                    atualizarOriginal(amostra.id, event.target.value)
+                  }
+                  inputMode="decimal"
+                  aria-label={'Valor original da amostra ' + amostra.id}
+                />
 
-                  <td className="border-r border-[#343b47] p-0.5">
-                    <input
-                      aria-label={`Valor medido da amostra ${amostra.id}`}
-                      value={amostra.valorMedido}
-                      onChange={(event) =>
-                        atualizarMedicao(amostra.id, event.target.value)
-                      }
-                      inputMode="decimal"
-                      placeholder="0,000"
-                      className={[
-                        'h-7 w-full rounded-[2px] border px-2',
-                        'border-[#505966] bg-[#171b22] text-right font-mono text-[11px]',
-                        'text-[#f1f5f9] outline-none transition-none',
-                        'focus:border-[#48b7c7] focus:ring-0',
-                        defeituoso
-                          ? 'border-[#d65b61] bg-[#351f23] text-[#fecaca]'
-                          : '',
-                      ].join(' ')}
-                    />
-                  </td>
+                <input
+                  className={
+                    inputClass +
+                    (defeituoso ? ' border-[#d65b61] bg-[#3a2024]' : '')
+                  }
+                  value={amostra.valorMedido}
+                  onChange={(event) =>
+                    atualizarMedicao(amostra.id, event.target.value)
+                  }
+                  inputMode="decimal"
+                  placeholder="0,000"
+                  aria-label={'Valor medido da amostra ' + amostra.id}
+                />
 
-                  <td className="border-r border-[#343b47] px-1">
-                    {preenchido ? (
-                      <div
-                        className={[
-                          'flex items-center justify-center gap-1 font-semibold uppercase',
-                          defeituoso ? 'text-[#ef6a70]' : 'text-[#4fc38b]',
-                        ].join(' ')}
-                      >
-                        {defeituoso ? (
-                          <XCircle size={15} strokeWidth={2.2} />
-                        ) : (
-                          <CheckCircle size={15} strokeWidth={2.2} />
-                        )}
-                        <span>{defeituoso ? 'Fora' : 'OK'}</span>
-                      </div>
+                <div className="flex h-7 items-center justify-center rounded-[2px] border border-[#3a404c] bg-[#1e222b]">
+                  {preenchido ? (
+                    defeituoso ? (
+                      <XCircle
+                        size={15}
+                        strokeWidth={2}
+                        className="text-[#d65b61]"
+                        aria-label="Defeituoso"
+                      />
                     ) : (
-                      <span className="block text-center text-[#64748b]">—</span>
-                    )}
-                  </td>
+                      <CheckCircle
+                        size={15}
+                        strokeWidth={2}
+                        className="text-[#3a9d78]"
+                        aria-label="Aprovado"
+                      />
+                    )
+                  ) : (
+                    <span className="text-xs font-normal text-slate-200">—</span>
+                  )}
+                </div>
 
-                  <td className="border-r border-[#343b47] px-1">
-                    <span
-                      className={
-                        defeituoso
-                          ? 'font-semibold uppercase text-[#ef6a70]'
-                          : preenchido
-                            ? 'font-semibold uppercase text-[#4fc38b]'
-                            : 'text-[#64748b]'
-                      }
-                    >
-                      {defeituoso
-                        ? 'Defeituoso'
-                        : preenchido
-                          ? 'Aprovado'
-                          : 'Pendente'}
-                    </span>
-                  </td>
+                <div className="flex h-7 items-center rounded-[2px] border border-[#3a404c] bg-[#1e222b] px-2 text-xs font-normal text-slate-200">
+                  {defeituoso
+                    ? 'Defeituoso'
+                    : preenchido
+                      ? 'Aprovado'
+                      : 'Pendente'}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </section>
 
-                  <td className="px-1 text-[9px] text-[#94a3b8]">
-                    {preenchido
-                      ? `${valor.toFixed(3)} | LIE ${limiteInferior.toFixed(2)} | LSE ${limiteSuperior.toFixed(2)}`
-                      : `LIE ${limiteInferior.toFixed(2)} | LSE ${limiteSuperior.toFixed(2)}`}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      <footer className="mt-2 shrink-0 border border-[#3a414d] bg-[#252a34]">
-        <div className="grid grid-cols-2 gap-px bg-[#3a414d] md:grid-cols-4">
-          <div className="bg-[#20252e] px-2 py-1.5">
-            <div className="text-[8px] uppercase tracking-wide text-[#94a3b8]">
-              Total Controlado
-            </div>
-            <div className="mt-0.5 font-mono text-[14px] font-semibold text-[#e2e8f0]">
-              {estatistica.totalControlado}/{SAMPLE_COUNT}
-            </div>
-          </div>
-
-          <div className="bg-[#20252e] px-2 py-1.5">
-            <div className="text-[8px] uppercase tracking-wide text-[#94a3b8]">
-              Número de Defeituosos
-            </div>
-            <div
-              className={[
-                'mt-0.5 font-mono text-[14px] font-semibold',
-                estatistica.numeroDefeituosos > 0
-                  ? 'text-[#ef6a70]'
-                  : 'text-[#4fc38b]',
-              ].join(' ')}
-            >
-              {estatistica.numeroDefeituosos}
-            </div>
-          </div>
-
-          <div className="bg-[#20252e] px-2 py-1.5">
-            <div className="text-[8px] uppercase tracking-wide text-[#94a3b8]">
-              Média Dimensional (ValMéd/s)
-            </div>
-            <div className="mt-0.5 font-mono text-[14px] font-semibold text-[#e2e8f0]">
-              {estatistica.totalControlado > 0
-                ? formatarNumero(estatistica.media)
-                : '—'}
-            </div>
-          </div>
-
-          <div className="bg-[#20252e] px-2 py-1.5">
-            <div className="text-[8px] uppercase tracking-wide text-[#94a3b8]">
-              Desvio Padrão
-            </div>
-            <div className="mt-0.5 font-mono text-[14px] font-semibold text-[#e2e8f0]">
-              {estatistica.totalControlado > 0
-                ? formatarNumero(estatistica.desvioPadrao)
-                : '—'}
-            </div>
+      <section className="grid grid-cols-2 gap-1.5 md:grid-cols-4">
+        <div className="rounded-[2px] border border-[#3a404c] bg-[#252a34] p-1">
+          <label className={labelClass}>Total Controlado</label>
+          <div className="flex h-7 items-center rounded-[2px] border border-[#3a404c] bg-[#1e222b] py-0.5 px-2 text-xs font-normal text-slate-200">
+            {estatistica.totalControlado}/{SAMPLE_COUNT}
           </div>
         </div>
 
-        <div className="flex min-h-9 items-center justify-between gap-2 border-t border-[#3a414d] px-2 py-1.5">
-          <div className="min-w-0">
-            {loteReprovado ? (
-              <div className="border border-[#8f3f46] bg-[#351f23] px-2 py-1 text-[10px] font-semibold uppercase text-[#ff8b91]">
-                LOTE REJEITADO - SEGREGE E EMITA RPNC
-              </div>
-            ) : estatistica.mediaForaDosLimites ? (
-              <div className="border border-[#8f3f46] bg-[#351f23] px-2 py-1 text-[10px] font-semibold uppercase text-[#ff8b91]">
-                LOTE REJEITADO - SEGREGE E EMITA RPNC
-              </div>
-            ) : estatistica.incompletas ? (
-              <span className="text-[9px] uppercase text-[#94a3b8]">
-                Aguardando coleta das 18 amostras.
-              </span>
-            ) : (
-              <span className="text-[9px] font-semibold uppercase text-[#4fc38b]">
-                CEP dentro dos limites — coleta apta para aprovação.
-              </span>
-            )}
+        <div className="rounded-[2px] border border-[#3a404c] bg-[#252a34] p-1">
+          <label className={labelClass}>Número de Defeituosos</label>
+          <div
+            className={
+              'flex h-7 items-center rounded-[2px] border border-[#3a404c] bg-[#1e222b] py-0.5 px-2 text-xs font-normal ' +
+              (estatistica.numeroDefeituosos > 0
+                ? 'text-[#d65b61]'
+                : 'text-[#3a9d78]')
+            }
+          >
+            {estatistica.numeroDefeituosos}
           </div>
+        </div>
 
-          <div className="flex shrink-0 items-center gap-1">
-            <button
-              type="button"
-              onClick={limparColeta}
-              className="h-7 rounded-[2px] border border-[#505966] bg-[#2b313c] px-3 text-[9px] font-semibold uppercase text-[#cbd5e1] hover:bg-[#343b47]"
-            >
-              Limpar
-            </button>
-
-            <button
-              type="button"
-              onClick={aprovarColeta}
-              disabled={!podeAprovar}
-              className="h-7 rounded-[2px] border border-[#347e61] bg-[#28694f] px-3 text-[9px] font-semibold uppercase text-white disabled:cursor-not-allowed disabled:border-[#454b55] disabled:bg-[#303640] disabled:text-[#64748b]"
-            >
-              Aprovar Coleta
-            </button>
+        <div className="rounded-[2px] border border-[#3a404c] bg-[#252a34] p-1">
+          <label className={labelClass}>Média Dimensional (ValMéd/s)</label>
+          <div className="flex h-7 items-center rounded-[2px] border border-[#3a404c] bg-[#1e222b] py-0.5 px-2 text-xs font-normal text-slate-200">
+            {estatistica.totalControlado > 0
+              ? formatarNumero(estatistica.media)
+              : '—'}
           </div>
+        </div>
+
+        <div className="rounded-[2px] border border-[#3a404c] bg-[#252a34] p-1">
+          <label className={labelClass}>Desvio Padrão</label>
+          <div className="flex h-7 items-center rounded-[2px] border border-[#3a404c] bg-[#1e222b] py-0.5 px-2 text-xs font-normal text-slate-200">
+            {estatistica.totalControlado > 0
+              ? formatarNumero(estatistica.desvioPadrao)
+              : '—'}
+          </div>
+        </div>
+      </section>
+
+      <footer
+        className={
+          'grid grid-cols-2 gap-1.5 rounded-[2px] border p-1.5 ' +
+          (loteReprovado
+            ? 'border-[#d65b61] bg-[#252a34]'
+            : 'border-[#3a404c] bg-[#252a34]')
+        }
+      >
+        <div className="min-w-0">
+          <label className={labelClass}>Status do Lote</label>
+          <div
+            className={
+              'flex h-7 items-center rounded-[2px] border border-[#3a404c] bg-[#1e222b] py-0.5 px-2 text-xs font-normal ' +
+              (loteReprovado ? 'text-[#d65b61]' : 'text-[#3a9d78]')
+            }
+          >
+            {loteReprovado
+              ? 'LOTE REJEITADO — SEGREGAR E EMITIR RPNC'
+              : estatistica.incompletas
+                ? 'COLETA EM ANDAMENTO'
+                : 'LOTE APROVADO'}
+          </div>
+        </div>
+
+        <div className="flex items-end justify-end gap-1.5">
+          <button
+            type="button"
+            onClick={limparColeta}
+            className="h-7 rounded-[2px] border border-[#3a404c] bg-[#1e222b] py-0.5 px-2 text-xs font-normal text-slate-200"
+          >
+            Limpar
+          </button>
+          <button
+            type="button"
+            disabled={!podeAprovar}
+            onClick={aprovarColeta}
+            className="h-7 rounded-[2px] border border-[#3a404c] bg-[#2d8db8] py-0.5 px-2 text-xs font-normal text-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Aprovar Coleta
+          </button>
         </div>
       </footer>
     </section>
-  );
+  )
 }
