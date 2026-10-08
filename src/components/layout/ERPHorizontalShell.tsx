@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleHelp, ChevronDown, Search, UserRound } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
@@ -47,12 +47,18 @@ const menus: MenuItem[] = [
   { label: 'Configuração', route: '/configuracoes-adm' },
 ]
 
-export default function ERPHorizontalShell({ children }: { children: React.ReactNode }) {
+export default function ERPHorizontalShell({ children, operatorName = 'Usuário ERP' }: { children: ReactNode; operatorName?: string }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [search, setSearch] = useState('')
+  const [now, setNow] = useState(() => new Date())
   const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     const close = (event: MouseEvent) => {
@@ -105,9 +111,9 @@ export default function ERPHorizontalShell({ children }: { children: React.React
 
         <div className="erp-horizontal-session">
           <UserRound size={15} />
-          <span>{'Usuário ERP'}</span>
-          <time dateTime={new Date().toISOString()}>
-            {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(new Date())} {' '}
+          <span>{operatorName}</span>
+          <time dateTime={now.toISOString()}>
+            {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)} {' '}
             {new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(new Date())}
           </time>
         </div>
