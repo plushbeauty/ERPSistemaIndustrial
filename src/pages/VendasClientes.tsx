@@ -103,20 +103,20 @@ function HelpTip({ text }: { text: string }) {
   </span>
 }
 
-const cleanDigits = (value: string) => value.replace(/\\D/g, '')
+const cleanDigits = (value: string) => value.replace(/\D/g, '')
 const maskCnpj = (value: string) => {
   const d = cleanDigits(value).slice(0, 14)
-  return d.length <= 14 ? d.replace(/^(\\d{2})(\\d)/, '$1.$2').replace(/^(\\d{2})\\.(\\d{3})(\\d)/, '$1.$2.$3').replace(/\\.(\\d{3})(\\d)/, '.$1/$2').replace(/(\\d{4})(\\d)/, '$1-$2') : d
+  return d.length <= 14 ? d.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2') : d
 }
 const maskCpf = (value: string) => {
   const d = cleanDigits(value).slice(0, 11)
-  return d.replace(/^(\\d{3})(\\d)/, '$1.$2').replace(/^(\\d{3})\\.(\\d{3})(\\d)/, '$1.$2.$3').replace(/^(\\d{3})\\.(\\d{3})\\.(\\d{3})(\\d)/, '$1.$2.$3-$4')
+  return d.replace(/^(\d{3})(\d)/, '$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/^(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3-$4')
 }
-const maskCep = (value: string) => cleanDigits(value).slice(0, 8).replace(/^(\\d{5})(\\d)/, '$1-$2')
+const maskCep = (value: string) => cleanDigits(value).slice(0, 8).replace(/^(\d{5})(\d)/, '$1-$2')
 const maskPhone = (value: string) => {
   const d = cleanDigits(value).slice(0, 11)
-  if (d.length <= 10) return d.replace(/^(\\d{2})(\\d)/, '($1) $2').replace(/(\\d{4})(\\d)/, '$1-$2')
-  return d.replace(/^(\\d{2})(\\d{5})(\\d{4}).*/, '($1) $2-$3')
+  if (d.length <= 10) return d.replace(/^(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d)/, '$1-$2')
+  return d.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3')
 }
 
 type CnpjResult = {
