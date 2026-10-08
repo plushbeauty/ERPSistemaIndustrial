@@ -127,7 +127,7 @@ export default function TabletDashboard() {
     const term = normalize(search.trim())
     return SYNQRA_MODULES
       .filter(module => Boolean(module.route))
-      .filter(module => module.permission ? permissions.has('*') || permissions.has(module.permission) : permissions.has('*'))
+      .filter(module => !module.permission || permissions.has('*') || permissions.has(module.permission))
       .filter(module => !term || normalize(module.label).includes(term))
   }, [permissions, search])
 
