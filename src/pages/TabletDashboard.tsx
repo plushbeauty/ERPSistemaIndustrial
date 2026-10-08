@@ -39,7 +39,6 @@ async function loadAccess(): Promise<{ profile: Profile; permissions: Set<string
     .from('erp_usuarios')
     .select('role_id,empresa_id,is_master,nivel_admin,perfil')
     .eq('auth_user_id', auth.data.user.id)
-    .eq('ativo', true)
     .is('deleted_at', null)
     .maybeSingle()
 
