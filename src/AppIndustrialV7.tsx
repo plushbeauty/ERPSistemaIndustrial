@@ -23,7 +23,8 @@ import FinanceiroCustoPadrao from './pages/FinanceiroCustoPadrao'
 import AdminLogs from './pages/AdminLogs'
 import OutlookConfiguracao from './pages/OutlookConfiguracao'
 import FornecedoresIndustrial from './pages/FornecedoresIndustrial'
-import ERPModuleSidebar from './components/layout/ERPModuleSidebar'
+import ERPHorizontalShell from './components/layout/ERPHorizontalShell'
+import { useNavigate } from 'react-router-dom'
 
 type Field = { key: string; label: string; type?: 'text' | 'number' | 'date' | 'email'; required?: boolean }
 type Module = { name: string; title: string; description: string; icon: LucideIcon; table?: string; fields?: Field[] }
@@ -116,6 +117,7 @@ function makePayload(fields: Field[], form: Record<string, string>) {
 }
 
 export default function AppIndustrialV7() {
+  const navigate = useNavigate()
   const [segment, setSegment] = useState(segments[0].name)
   const [active, setActive] = useState('Dashboard')
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -154,6 +156,7 @@ export default function AppIndustrialV7() {
   if (!profile) return <div className="error-screen"><div className="error-screen-card"><strong>Perfil ERP não encontrado.</strong><p>A sessão autenticada não possui um usuário ERP ativo vinculado à empresa.</p><button className="primary" type="button" onClick={() => { void supabase.auth.signOut(); location.replace('/login') }}>Voltar ao login</button></div></div>
 
   return <motion.div className={`v7-shell theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
+    <ERPHorizontalShell>
     <header className="v7-topbar" aria-label="Barra superior do ERP">
       <div className="v7-top-brand">
         <div className="v7-logo-frame">
@@ -174,37 +177,12 @@ export default function AppIndustrialV7() {
         <button className="v7-top-exit" type="button" onClick={() => void supabase.auth.signOut().then(() => { location.href = '/login' })}>SAIR</button>
       </div>
     </header>
-    <style>{`
-      .v7-topbar{position:relative;z-index:20;width:100%;min-height:104px;display:flex!important;align-items:center;justify-content:space-between;gap:20px;padding:10px 24px!important;background:#ffffff!important;border-bottom:1px solid #cbd5e1!important;color:#1e293b!important;box-sizing:border-box}
-      .v7-top-brand{display:flex!important;align-items:center;gap:18px;min-width:0}
-      .v7-logo-frame{height:80px;width:auto;min-width:210px;display:flex;align-items:center;justify-content:flex-start;background:#ffffff;box-sizing:border-box}
-      .v7-logo-frame img{display:block!important;height:100%!important;width:auto!important;max-height:none!important;object-fit:contain!important;padding:0!important}
-      .v7-top-title{display:flex;flex-direction:column;justify-content:center;border-left:1px solid #cbd5e1;padding-left:18px;line-height:1.1}
-      .v7-top-title strong{color:#1e293b!important;font-size:20px!important;font-weight:950!important;letter-spacing:-.02em;white-space:nowrap}
-      .v7-top-title span{color:#475569!important;font-size:10px!important;font-weight:900!important;letter-spacing:.14em;margin-top:5px}
-      .v7-top-actions{display:flex!important;align-items:center!important;justify-content:flex-end;gap:10px;min-width:0;flex-wrap:nowrap}
-      .v7-top-tablet,.v7-top-exit{display:inline-flex!important;align-items:center!important;justify-content:center;min-height:42px;padding:0 16px!important;border-radius:8px!important;font-size:12px!important;font-weight:950!important;cursor:pointer;white-space:nowrap;box-sizing:border-box}
-      .v7-top-tablet{background:#ea580c!important;border:1px solid #c2410c!important;color:#ffffff!important;box-shadow:0 4px 12px rgba(234,88,12,.2)}
-      .v7-top-exit{background:#ffffff!important;border:1px solid #fecaca!important;color:#991b1b!important}
-      .v7-top-user-simple{display:flex!important;flex-direction:column;justify-content:center;gap:3px;min-height:42px;padding:0 12px;border-left:1px solid #e2e8f0!important;white-space:nowrap}
-      .v7-top-user-simple span{color:#64748b!important;font-size:9px!important;font-weight:950!important;letter-spacing:.08em}
-      .v7-top-user-simple strong{color:#1e293b!important;font-size:12px!important;font-weight:950!important}
-      .v7-top-date{display:flex!important;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;min-height:42px;padding:0 12px;border-left:1px solid #e2e8f0!important;white-space:nowrap}
-      .v7-top-date strong{color:#1e293b!important;font-size:11px!important;font-weight:950!important}
-      .v7-top-date span{color:#475569!important;font-size:11px!important;font-weight:800!important}
-      .v7-top-data{display:inline-flex!important;align-items:center;min-height:34px;padding:0 10px;background:#ecfdf5!important;border:1px solid #a7f3d0!important;border-radius:7px!important;color:#065f46!important;font-size:9px!important;font-weight:950!important;white-space:nowrap}
-      .v7-top-actions button:hover{filter:brightness(.97)}
-      @media(max-width:1180px){.v7-logo-frame{height:72px;min-width:185px}.v7-top-title strong{font-size:18px!important}.v7-top-title{display:none!important}.v7-top-brand{min-width:0}}
-      @media(max-width:900px){.v7-top-date{display:none!important}.v7-top-data{display:none!important}.v7-logo-frame{height:64px;min-width:165px}}
-      @media(max-width:650px){.v7-topbar{padding:7px 10px!important;min-height:72px}.v7-logo-frame{height:54px;min-width:135px}.v7-top-user-simple{display:none!important}.v7-top-tablet,.v7-top-exit{min-height:36px;padding:0 9px!important;font-size:10px!important}.v7-top-tablet{font-size:0!important}.v7-top-tablet::after{content:'TABLET';font-size:10px}}
-    `}</style>
-    <div className="v7-shell-body-with-sidebar"><ERPModuleSidebar />
-    <main className="v7-main v7-main-full">
+    <style>{`    <main className="v7-main v7-main-full">
       <section className="v7-content"><AnimatePresence mode="wait" initial={false}><motion.div key={specialPath+active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-5}} transition={{duration:.2}}>{specialPath === '/vendas/clientes' ? <VendasClientesPage/> : specialPath === '/financeiro/custo-padrao' ? <FinanceiroCustoPadrao/> : specialPath === '/admin/logs' ? <AdminLogs/> : specialPath === '/outlook/configuracao' ? <OutlookConfiguracao/> : specialPath === '/compras/fornecedores' ? <FornecedoresIndustrial/> : specialPath.startsWith('/configuracoes-adm') ? <ConfiguracoesADM/> : active === 'Dashboard' ? <IndustrialCommandDashboard onNavigate={(route) => { if (route === '/erp-industrial') { setActive('Dashboard'); return }; location.href = route }} /> : active === 'Configurações' || active === 'Configuração' ? <ConfiguracoesADM/> : location.pathname === '/qualidade/calibracao' ? <CalibracaoIndustrial/> : location.pathname === '/moldes-injecao' ? <MoldesFerramentaria/> : location.pathname === '/comercial' ? <ComercialSuprimentos/> : module ? <IndustrialModuleWorkspace module={module} profile={profile} onBack={() => setActive('Dashboard')}/> : <Feature title={active} description="Módulo não encontrado." icon={LayoutGrid}/>}</motion.div></AnimatePresence></section>
       <footer>FernandoSch_System • SYSNQRA ERP & SGQ INDUSTRIAL • {segment} • Ambiente isolado por empresa</footer>
 
     </main>
-    </div>
+    </ERPHorizontalShell>
   </motion.div>
 }
 
