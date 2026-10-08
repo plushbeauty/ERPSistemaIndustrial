@@ -345,7 +345,7 @@ export default function ProdutosVendasIndustrial(){
         })}
       </div>
       <div style={{fontSize:8,color:'#667085',marginTop:4}}>A imagem 1 é a principal do cadastro; as quatro imagens podem ser usadas na apresentação do produto no catálogo digital.</div>
-    </section>
+    </section>}
     {selectedId&&<><section style={{...panel,margin:'10px 10px 0',padding:7,display:'grid',gridTemplateColumns:'72px minmax(0,1fr) auto',gap:9,alignItems:'center',background:'#fff'}}>
       <div style={{width:72,height:60,border:'1px solid #cbd5e1',background:'#f8fafc',display:'grid',placeItems:'center',overflow:'hidden'}}>{form.foto_url?<img src={form.foto_url} alt="Foto do produto" style={{width:'100%',height:'100%',objectFit:'contain'}}/>:<ImageIcon size={22} color="#98a2b3"/>}</div>
       <div style={{minWidth:0}}><div style={{fontSize:9,fontWeight:700,color:'#667085',textTransform:'uppercase'}}>Produto selecionado</div><div style={{fontSize:13,fontWeight:700,color:'#123B50',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{form.codigo||'AUTOMÁTICO'} • {form.nome||'Sem descrição'}</div><div style={{fontSize:9,color:'#667085',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{form.descricao_resumida||'Sem descrição resumida'} · {form.grupo||'Sem grupo'} · {form.marca||'Sem marca'}</div></div>
