@@ -9,12 +9,7 @@
  * =========================================================================
  */
 
-/*
-📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
-- Arquivo: src/pages/FornecedoresIndustrial.tsx
-- Status Atual: Revisão 3 (Compras e Qualificação de Fornecedores)
-- Total de Linhas Gerado: 32
-- Assinatura de Entrada (Primeiros 3 Imports): import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react'
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react'
 import { Check, Plus, Printer, RefreshCw, Star, Trash2, X, Filter, Pencil } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
