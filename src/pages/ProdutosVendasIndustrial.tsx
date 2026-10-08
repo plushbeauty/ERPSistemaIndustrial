@@ -319,7 +319,7 @@ export default function ProdutosVendasIndustrial(){
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
         <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>
         <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />
-        <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={16}/>Importar Excel (temporário)</button>
+        <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={13}/>Importar Excel</button>
 
         <button type="button" onClick={()=>setEditing(true)} disabled={!selectedId} style={btn('normal')}><Edit3 size={16}/>Editar</button>
         <button type="button" onClick={()=>void save()} disabled={!editing||busy} style={btn('normal')}><Save size={16}/>Salvar</button>
@@ -394,7 +394,7 @@ export default function ProdutosVendasIndustrial(){
           <label style={label}>ESTOQUE ATUAL <span style={{fontSize:8,color:'#667085'}}>calculado</span><input value={fmt(form.estoque_atual)+' '+form.unidade} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>PONTO DE REPOSIÇÃO <HelpTip text={helpFor('Ponto de reposição')}/></span><input type="number" value={String(form.ponto_reposicao??0)} disabled={!editing} onChange={e=>update('ponto_reposicao',n(e.target.value))} title="Quantidade que dispara a necessidade de reposição; não é estoque atual." style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
           <label style={label}>ESTOQUE MÁXIMO<input type="number" value={String(form.estoque_maximo??0)} disabled={!editing} onChange={e=>update('estoque_maximo',n(e.target.value))} style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
-          <label style={label}>LOCALIZAÇÃO PADRÃO [?]<select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
+          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
         </div>
         <div style={{display:'grid',gridTemplateColumns:'82px 105px 105px 170px',gap:7,marginTop:7,alignItems:'end'}}>
           {field('VALIDADE LOTE [dias] [?]','lote_validade_dias','number')}{check('Controla lote','controla_lote')}{check('Controla série','controla_serie')}{check('Permite estoque negativo','permite_estoque_negativo')}
