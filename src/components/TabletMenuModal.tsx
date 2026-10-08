@@ -16,7 +16,7 @@ export type TabletMenuModule = {
   route?: string
   icon: LucideIcon
   permission?: string
-  accent: 'green' | 'blue' | 'gray'
+  accent?: 'green' | 'blue' | 'gray'
 }
 
 export type TabletMenuModalProps = {
