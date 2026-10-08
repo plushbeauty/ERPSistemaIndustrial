@@ -411,7 +411,27 @@ export default function ProdutosVendasIndustrial(){
       </div>
       <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:1040}}><thead><tr>{['Foto','Código','Descrição','Grupo','Subgrupo','Marca','Unidade','Estoque Atual','Situação'].map(h=><th key={h} style={{textAlign:'left',padding:'5px 6px',borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{filtered.map(p=><tr key={p.id} onClick={()=>selectProduct(p)} onDoubleClick={()=>selectProduct(p)} style={{background:selectedId===p.id?'#e7eefb':'#fff',cursor:'pointer'}}><td style={{padding:4,width:42}}>{p.foto_url?<img src={p.foto_url} alt="" style={{width:32,height:28,objectFit:'contain',border:'1px solid #e2e8f0'}}/>:<ImageIcon size={18} color="#98a2b3"/>}</td><td style={{padding:6,fontSize:10,fontWeight:900}}>{p.codigo}</td><td style={{padding:6,fontSize:10}}>{p.nome}</td><td style={{padding:6,fontSize:10}}>{p.grupo||'—'}</td><td style={{padding:6,fontSize:10}}>{p.subgrupo||'—'}</td><td style={{padding:6,fontSize:10}}>{p.marca||'—'}</td><td style={{padding:6,fontSize:10}}>{p.unidade}</td><td style={{padding:6,fontSize:10,fontWeight:900}}>{fmt(p.estoque_atual)}</td><td style={{padding:5,fontSize:9}}><span style={{display:'inline-flex',alignItems:'center',gap:4}}><CheckCircle2 size={11} color={p.ativo?'#16a34a':'#b42318'}/>{p.ativo?'Ativo':'Inativo'}</span></td></tr>)}{!filtered.length&&emptyRow('Nenhum produto encontrado.',8)}</tbody></table></div>
     </section>
-    {selectedId&&<section style={{...panel,margin:'0 10px 10px',padding:8}}><div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:5}}><h2 style={{margin:0,fontSize:11,color:'#123B50'}}>HISTÓRICO AUTOMÁTICO DO PRODUTO</h2><span style={{fontSize:8,color:'#667085'}}>erp_audit_logs • somente consulta</span></div><div style={{maxHeight:180,overflow:'auto'}}>{audits.map(a=><div key={a.id} style={{display:'grid',gridTemplateColumns:'145px 130px 1fr',gap:7,padding:'4px 5px',borderBottom:'1px solid #edf1f5',fontSize:9}}><span>{new Date(a.created_at).toLocaleString('pt-BR')}</span><b>{a.action}</b><details><summary style={{cursor:'pointer'}}>Ver alteração</summary><pre style={{fontSize:8,whiteSpace:'pre-wrap'}}>{JSON.stringify({antes:a.old_data,depois:a.new_data},null,2)}</pre></details></div>)}{!audits.length&&<span style={{fontSize:9,color:'#667085'}}>Nenhum evento registrado.</span>}</div></section>}
+    {selectedId ? (
+      <section style={{...panel,margin:'0 10px 10px',padding:8}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:5}}>
+          <h2 style={{margin:0,fontSize:11,color:'#123B50'}}>HISTÓRICO AUTOMÁTICO DO PRODUTO</h2>
+          <span style={{fontSize:8,color:'#667085'}}>erp_audit_logs • somente consulta</span>
+        </div>
+        <div style={{maxHeight:180,overflow:'auto'}}>
+          {audits.map(a=>(
+            <div key={a.id} style={{display:'grid',gridTemplateColumns:'145px 130px 1fr',gap:7,padding:'4px 5px',borderBottom:'1px solid #edf1f5',fontSize:9}}>
+              <span>{new Date(a.created_at).toLocaleString('pt-BR')}</span>
+              <b>{a.action}</b>
+              <details>
+                <summary style={{cursor:'pointer'}}>Ver alteração</summary>
+                <pre style={{fontSize:8,whiteSpace:'pre-wrap'}}>{JSON.stringify({antes:a.old_data,depois:a.new_data},null,2)}</pre>
+              </details>
+            </div>
+          ))}
+          {!audits.length&&<span style={{fontSize:9,color:'#667085'}}>Nenhum evento registrado.</span>}
+        </div>
+      </section>
+    ) : null}
     <footer style={{padding:'7px 12px 16px',fontSize:10,color:'#667085',display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8}}><span>SYSNQRA ERP & SGQ INDUSTRIAL • Cadastro Mestre de Produtos</span><span>© FernandoSch_System — Todos os direitos reservados</span></footer>
   </main>
 }
