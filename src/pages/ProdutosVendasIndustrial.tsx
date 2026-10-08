@@ -249,7 +249,7 @@ export default function ProdutosVendasIndustrial(){
     setBusy(true);setError('')
     const path=companyId+'/'+selectedId+'/'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_')
     void supabase.storage.from('erp-produtos').upload(path,file,{upsert:true,contentType:file.type})
-      .then(({error:e2})=>{if(e2)throw e2;return supabase.from('erp_produtos').update({foto_url:supabase.storage.from('erp-produtos').getPublicUrl(path).data.publicUrl}).eq('id',selectedId).eq('empresa_id',companyId)})
+      .then(({error:e2})=>{if(e2)throw e2;return {error:null}})
       .then(async({error:e3})=>{if(e3)throw e3;const url=supabase.storage.from('erp-produtos').getPublicUrl(path).data.publicUrl;if(slot===1){const {error:e4}=await supabase.from('erp_produtos').update({foto_url:url}).eq('id',selectedId).eq('empresa_id',companyId);if(e4)throw e4}const {error:e5}=await supabase.from('erp_documentos_anexos').insert({empresa_id:companyId,entidade_tipo:'produto',entidade_id:selectedId,nome_arquivo:'FOTO_'+slot+'_'+file.name,storage_path:path,mime_type:file.type,tamanho_bytes:file.size});if(e5)throw e5;setForm(prev=>({...prev,foto_url:slot===1?url:prev.foto_url}));setMessage('Foto '+slot+' do produto atualizada.');await loadDetails();void load()})
       .catch(e=>setError(e instanceof Error?e.message:'Não foi possível enviar a foto.')).finally(()=>setBusy(false))
   }
