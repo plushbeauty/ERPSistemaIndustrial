@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { RefreshCw, Save } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import VendasLayout from './VendasLayout'
 
 type Config = {
   id?: string
@@ -109,80 +110,29 @@ export default function VendasConfiguracoes() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F4FBFD] text-[#17333F]">
-      <header className="sticky top-0 z-20 border-b border-[#CFE1E7] bg-white">
-        <div className="mx-auto flex min-h-[78px] max-w-[1400px] items-center justify-between gap-4 px-5 lg:px-8">
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[#2D8DB8]">ERP INDUSTRIAL • VENDAS</p>
-            <h1 className="mt-1 text-2xl font-black text-[#123B50]">Configurações Comerciais</h1>
+    <VendasLayout title="Configurações Comerciais" subtitle="Regras comerciais da empresa" onRefresh={() => void load()}>
+      <section className="sales-workspace">
+        {error && <div className="sales-alert" role="alert">{error}</div>}
+        {message && <div className="sales-alert" role="status">{message}</div>}
+        <section className="sales-orders-card">
+          <div className="sales-list-toolbar">
+            <div>
+              <span className="sales-eyebrow">COMERCIAL / CONFIGURAÇÕES</span>
+              <div style={{fontSize:11,color:'#667085'}}>Persistido em <code>erp_vendas_configuracoes</code>.</div>
+            </div>
+            <div style={{display:'flex',gap:6}}>
+              <button type="button" onClick={() => void load()} disabled={loading || saving} className="sales-button sales-button--secondary"><RefreshCw size={13}/> ATUALIZAR</button>
+              <button type="button" onClick={() => void save()} disabled={saving || loading} className="sales-button sales-button--primary"><Save size={13}/> SALVAR</button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button type="button" onClick={() => void load()} disabled={loading || saving} className="inline-flex h-11 items-center gap-2 rounded-md border border-slate-300 bg-white px-4 text-sm font-black">
-              <RefreshCw size={17} className={loading ? 'animate-spin' : ''} /> ATUALIZAR
-            </button>
-            <button type="button" onClick={() => void save()} disabled={saving || loading} className="inline-flex h-11 items-center gap-2 rounded-md bg-[#2D8DB8] px-5 text-sm font-black text-white disabled:opacity-50">
-              <Save size={17} /> SALVAR
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <section className="mx-auto max-w-[1400px] space-y-5 px-5 py-6 lg:px-8">
-        {error && <div className="rounded-md border border-rose-200 bg-rose-50 p-4 font-bold text-rose-800">{error}</div>}
-        {message && <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4 font-bold text-emerald-800">{message}</div>}
-
-        <section className="rounded-lg border border-[#CFE1E7] bg-white p-6 shadow-sm">
-          <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[#2D8DB8]">Políticas de Vendas</p>
-          <h2 className="mt-1 text-xl font-black text-[#123B50]">Regras comerciais da empresa</h2>
-          <p className="mt-1 text-sm font-semibold text-slate-500">Estas configurações são persistidas em <code>erp_vendas_configuracoes</code>.</p>
-
-          <div className="mt-6 grid gap-5 md:grid-cols-2">
-            <label className="grid gap-2 text-sm font-black">
-              Validade do orçamento (dias)
-              <input
-                type="number"
-                min={1}
-                value={config.dias_validade_orcamento}
-                onChange={event => setConfig(current => ({ ...current, dias_validade_orcamento: Number(event.target.value) }))}
-                className="h-11 rounded-md border border-slate-300 px-3 font-semibold outline-none focus:border-[#2D8DB8]"
-              />
-            </label>
-
-            <label className="grid gap-2 text-sm font-black">
-              Desconto máximo permitido (%)
-              <input
-                type="number"
-                min={0}
-                max={100}
-                step="0.01"
-                value={config.desconto_maximo_percentual}
-                onChange={event => setConfig(current => ({ ...current, desconto_maximo_percentual: Number(event.target.value) }))}
-                className="h-11 rounded-md border border-slate-300 px-3 font-semibold outline-none focus:border-[#2D8DB8]"
-              />
-            </label>
-
-            <label className="flex min-h-[64px] items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-4 text-sm font-black">
-              <input
-                type="checkbox"
-                checked={config.bloquear_pedido_sem_estoque}
-                onChange={event => setConfig(current => ({ ...current, bloquear_pedido_sem_estoque: event.target.checked }))}
-                className="h-5 w-5"
-              />
-              Bloquear pedido sem estoque disponível
-            </label>
-
-            <label className="flex min-h-[64px] items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-4 text-sm font-black">
-              <input
-                type="checkbox"
-                checked={config.exigir_pedido_cliente}
-                onChange={event => setConfig(current => ({ ...current, exigir_pedido_cliente: event.target.checked }))}
-                className="h-5 w-5"
-              />
-              Exigir referência do pedido do cliente
-            </label>
+          <div style={{display:'grid',gridTemplateColumns:'140px 180px 1fr 1fr',gap:8,padding:'10px 14px'}}>
+            <label style={{display:'grid',gap:2,fontSize:9,fontWeight:700,textTransform:'uppercase',color:'#667085'}}>Validade orçamento<input type="number" min={1} value={config.dias_validade_orcamento} onChange={event => setConfig(current => ({...current,dias_validade_orcamento:Number(event.target.value)}))} style={{height:30,border:'1px solid #cfd8dc',padding:'0 7px',fontSize:10}}/></label>
+            <label style={{display:'grid',gap:2,fontSize:9,fontWeight:700,textTransform:'uppercase',color:'#667085'}}>Desconto máximo %<input type="number" min={0} max={100} step="0.01" value={config.desconto_maximo_percentual} onChange={event => setConfig(current => ({...current,desconto_maximo_percentual:Number(event.target.value)}))} style={{height:30,border:'1px solid #cfd8dc',padding:'0 7px',fontSize:10}}/></label>
+            <label style={{display:'flex',alignItems:'center',gap:6,height:30,border:'1px solid #dfe7ea',padding:'0 7px',fontSize:9,fontWeight:700}}><input type="checkbox" checked={config.bloquear_pedido_sem_estoque} onChange={event => setConfig(current => ({...current,bloquear_pedido_sem_estoque:event.target.checked}))}/> Bloquear pedido sem estoque</label>
+            <label style={{display:'flex',alignItems:'center',gap:6,height:30,border:'1px solid #dfe7ea',padding:'0 7px',fontSize:9,fontWeight:700}}><input type="checkbox" checked={config.exigir_pedido_cliente} onChange={event => setConfig(current => ({...current,exigir_pedido_cliente:event.target.checked}))}/> Exigir pedido do cliente</label>
           </div>
         </section>
       </section>
-    </main>
+    </VendasLayout>
   )
 }
