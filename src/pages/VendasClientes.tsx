@@ -95,7 +95,15 @@ const empty = (): Form => ({
 
 const baseInput = 'h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
 const shortInput = baseInput + ' max-w-[110px]'
-function HelpTip({ text }: { text: string }) {\n  const [open, setOpen] = useState(false)\n  return <span className="relative inline-flex align-middle">\n    <button type="button" onClick={() => setOpen(value => !value)} className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full border border-sky-500 text-[9px] font-bold text-sky-700" aria-label="Ajuda"><HelpCircle size={11}/></button>\n    {open && <span className="absolute left-5 top-0 z-40 w-[280px] rounded-[2px] border border-sky-200 bg-white p-2 text-[10px] font-normal leading-4 text-slate-700 shadow-lg">{text}</span>}\n  </span>\n}\n\nconst cleanDigits = (value: string) => value.replace(/\\D/g, '')
+function HelpTip({ text }: { text: string }) {
+  const [open, setOpen] = useState(false)
+  return <span className="relative inline-flex align-middle">
+    <button type="button" onClick={() => setOpen(value => !value)} className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full border border-sky-500 text-[9px] font-bold text-sky-700" aria-label="Ajuda"><HelpCircle size={11}/></button>
+    {open && <span className="absolute left-5 top-0 z-40 w-[280px] rounded-[2px] border border-sky-200 bg-white p-2 text-[10px] font-normal leading-4 text-slate-700 shadow-lg">{text}</span>}
+  </span>
+}
+
+const cleanDigits = (value: string) => value.replace(/\\D/g, '')
 const maskCnpj = (value: string) => {
   const d = cleanDigits(value).slice(0, 14)
   return d.length <= 14 ? d.replace(/^(\\d{2})(\\d)/, '$1.$2').replace(/^(\\d{2})\\.(\\d{3})(\\d)/, '$1.$2.$3').replace(/\\.(\\d{3})(\\d)/, '.$1/$2').replace(/(\\d{4})(\\d)/, '$1-$2') : d
@@ -130,7 +138,11 @@ export default function VendasClientes() {
   const [empresa, setEmpresa] = useState('')
   const [rows, setRows] = useState<Client[]>([])
   const [products, setProducts] = useState<Product[]>([])
-  const [priceTables, setPriceTables] = useState<PriceTable[]>([])\n  const [transportadoras, setTransportadoras] = useState<Transportadora[]>([])\n  const [clientTransportLinks, setClientTransportLinks] = useState<ClientTransportLink[]>([])\n  const [transportadoraId, setTransportadoraId] = useState('')\n  const [transportadoraForm, setTransportadoraForm] = useState({ codigo: '', razao_social: '', cnpj: '', ie: '', telefone: '', cidade: '', uf: '' })
+  const [priceTables, setPriceTables] = useState<PriceTable[]>([])
+  const [transportadoras, setTransportadoras] = useState<Transportadora[]>([])
+  const [clientTransportLinks, setClientTransportLinks] = useState<ClientTransportLink[]>([])
+  const [transportadoraId, setTransportadoraId] = useState('')
+  const [transportadoraForm, setTransportadoraForm] = useState({ codigo: '', razao_social: '', cnpj: '', ie: '', telefone: '', cidade: '', uf: '' })
   const [mappings, setMappings] = useState<DePara[]>([])
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState<string | null>(null)
@@ -160,13 +172,19 @@ export default function VendasClientes() {
         supabase.from('erp_clientes').select('id,codigo,nome,nome_fantasia,documento,inscricao_estadual,inscricao_municipal,tipo_pessoa,regime_tributario,contato_nome,email,email_nfe,telefone,whatsapp,cep,endereco,numero,complemento,bairro,cidade,estado,tipo_cliente,tabela_preco_id,desconto_padrao_percentual,ativo').eq('empresa_id', empresaId).order('nome'),
         fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,descricao,estoque_atual',{count:'exact'}).eq('empresa_id', empresaId).eq('ativo', true).order('codigo').range(from,to)),
         supabase.from('erp_cliente_produto_de_para').select('id,cliente_id,produto_id,codigo_cliente,dimensoes,canal,molde,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('codigo_cliente'),
-        supabase.from('erp_tabelas_preco').select('id,codigo,nome').eq('empresa_id', empresaId).eq('ativo', true).order('nome'),\n        supabase.from('erp_transportadoras').select('id,codigo,razao_social,cnpj,ie,telefone,cidade,uf,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('razao_social'),\n        supabase.from('erp_cliente_transportadoras').select('id,cliente_id,transportadora_id').eq('empresa_id', empresaId),
+        supabase.from('erp_tabelas_preco').select('id,codigo,nome').eq('empresa_id', empresaId).eq('ativo', true).order('nome'),
+        supabase.from('erp_transportadoras').select('id,codigo,razao_social,cnpj,ie,telefone,cidade,uf,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('razao_social'),
+        supabase.from('erp_cliente_transportadoras').select('id,cliente_id,transportadora_id').eq('empresa_id', empresaId),
       ])
       if (clients.error) throw clients.error
       setRows((clients.data ?? []) as Client[])
       setProducts(productsResult)
       setMappings((mappingsResult.data ?? []) as DePara[])
-      setPriceTables((priceTablesResult.data ?? []) as PriceTable[])\n      if (transportadorasResult.error) throw transportadorasResult.error\n      if (clientTransportResult.error) throw clientTransportResult.error\n      setTransportadoras((transportadorasResult.data ?? []) as Transportadora[])\n      setClientTransportLinks((clientTransportResult.data ?? []) as ClientTransportLink[])
+      setPriceTables((priceTablesResult.data ?? []) as PriceTable[])
+      if (transportadorasResult.error) throw transportadorasResult.error
+      if (clientTransportResult.error) throw clientTransportResult.error
+      setTransportadoras((transportadorasResult.data ?? []) as Transportadora[])
+      setClientTransportLinks((clientTransportResult.data ?? []) as ClientTransportLink[])
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar clientes.')
     } finally {
@@ -436,7 +454,8 @@ export default function VendasClientes() {
     ['contato', '2. Contato'],
     ['endereco', '3. Endereço'],
     ['comercial', '4. Comercial'],
-    ['depara', '5. De/Para Produtos'],\n    ['transportadora', '6. Transportadora'],
+    ['depara', '5. De/Para Produtos'],
+    ['transportadora', '6. Transportadora'],
   ] as const
 
   return (
