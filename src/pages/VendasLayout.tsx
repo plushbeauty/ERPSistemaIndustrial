@@ -59,16 +59,76 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
  children:ReactNode;title:string;subtitle?:string;onRefresh?:()=>void;navSections?:SalesNavSection[];topContent?:ReactNode;titleActions?:ReactNode
 }){
  const {pathname}=useLocation()
+ const navigate=useNavigate()
  const tabletMode=useIsMobile()
  const isVendas=pathname.startsWith('/vendas')
  const vendas=useVendasStatus()
+ const [sidebarOpen,setSidebarOpen]=useState(true)
+ const [vendasMenuOpen,setVendasMenuOpen]=useState(isVendas)
  useEffect(()=>{if(isVendas)void vendas.load().catch(()=>undefined)},[isVendas,vendas.load])
+ useEffect(()=>{if(isVendas)setVendasMenuOpen(true)},[isVendas])
+
+ const moduleItems=[
+  {label:'Cadastro',route:'/produtos-vendas',icon:FolderKanban},
+  {label:'Vendas',route:'/vendas',icon:ShoppingCart,submenu:sections.flatMap(section=>section.items).slice(0,7)},
+  {label:'Compras',route:'/compras',icon:PackagePlus},
+  {label:'Estoque',route:'/estoque',icon:PackageSearch},
+  {label:'Financeiro',route:'/financeiro',icon:BarChart3},
+  {label:'Fiscal',route:'/fiscal',icon:FilePlus2},
+  {label:'PCP',route:'/pcp',icon:Settings2},
+  {label:'Qualidade',route:'/qualidade',icon:ClipboardList},
+  {label:'Manutenção',route:'/manutencao',icon:Settings2},
+ ] as const
+
  return <div className={`synqra-workspace ${tabletMode?'tablet-mode':''}`}>
   <ERPHeader />
-  <div className="synqra-workspace-body">
-   {isVendas&&<VendasStatusCards status={vendas.status} loading={vendas.loading}/>} 
-   <div className="synqra-workspace-title"><div>{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div>{onRefresh&&<button className="synqra-tool-button" type="button" onClick={onRefresh}><RefreshCw size={13}/>ATUALIZAR</button>}</div>
-   {topContent}{children}
+  <div className="synqra-shell-body">
+   <aside className={`synqra-sidebar ${sidebarOpen?'is-open':'is-collapsed'}`} aria-label="Navegação principal">
+    <button
+      type="button"
+      className="synqra-sidebar-toggle"
+      onClick={()=>setSidebarOpen(value=>!value)}
+      aria-label={sidebarOpen?'Recolher menu lateral':'Expandir menu lateral'}
+      title={sidebarOpen?'Recolher menu lateral':'Expandir menu lateral'}
+    >
+      {sidebarOpen ? '◀' : '▶'}
+    </button>
+    <nav className="synqra-sidebar-nav">
+     {moduleItems.map(item=>{
+      const Icon=item.icon
+      const active=pathname.startsWith(item.route)
+      const hasSub='submenu' in item && item.submenu.length>0
+      return <div key={item.label} className="synqra-sidebar-group">
+       <button
+        type="button"
+        className={`synqra-sidebar-item ${active?'is-active':''}`}
+        onClick={()=>{
+          if(item.label==='Vendas' && sidebarOpen){setVendasMenuOpen(value=>!value);return}
+          navigate(item.route)
+        }}
+        title={sidebarOpen?item.label:`Abrir ${item.label}`}
+       >
+        <Icon size={20} strokeWidth={1.9}/>
+        {sidebarOpen&&<span>{item.label}</span>}
+        {sidebarOpen&&hasSub&&<span className="synqra-sidebar-chevron">{vendasMenuOpen?'⌄':'›'}</span>}
+       </button>
+       {sidebarOpen&&hasSub&&vendasMenuOpen&&<div className="synqra-sidebar-submenu">
+        {item.submenu.map(sub=>{
+          const SubIcon=sub.icon
+          return <button key={sub.href} type="button" className={`synqra-sidebar-subitem ${pathname===sub.href?'is-active':''}`} onClick={()=>navigate(sub.href)}>
+           <SubIcon size={15}/><span>{sub.label}</span>
+          </button>
+        })}
+       </div>}
+      </div>
+     })}
+    </nav>
+   </aside>
+   <main className="synqra-workspace-main">
+    {isVendas&&<VendasStatusCards status={vendas.status} loading={vendas.loading}/>} 
+    <div className="synqra-workspace-title"><div>{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div>{onRefresh&&<button className="synqra-tool-button" type="button" onClick={onRefresh}><RefreshCw size={13}/>Atualizar</button>}</div>
+    {topContent}{children}
+   </main>
   </div>
  </div>
 }
