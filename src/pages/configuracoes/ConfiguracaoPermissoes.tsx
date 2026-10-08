@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { fetchAllPages } from '../../lib/supabasePagination'
 
 type Role = { id: string; codigo: string; nome: string; nivel: number; ativo: boolean; empresa_id: string | null }
-type Permission = { id: string; codigo: string; nome: string; modulo: string; ativo: boolean }
+type Permission = { id: string; code: string; name: string; description: string | null }
 type RolePermission = { role_id: string; permission_id: string }
 type RoleDraft = { roleId: string | null; codigo: string; nome: string; permissions: Set<string> }
 
@@ -27,7 +27,8 @@ export default function ConfiguracaoPermissoes() {
   const permissionGroups = useMemo(() => {
     const groups = new Map<string, Permission[]>()
     permissions.forEach(permission => {
-      groups.set(permission.modulo, [...(groups.get(permission.modulo) ?? []), permission])
+      const moduleCode = permission.code.split('.')[0] ?? permission.code
+      groups.set(moduleCode, [...(groups.get(moduleCode) ?? []), permission])
     })
     return Array.from(groups.entries()).sort(([left], [right]) => left.localeCompare(right, 'pt-BR'))
   }, [permissions])
@@ -51,7 +52,7 @@ export default function ConfiguracaoPermissoes() {
       const [actorResult, companyResult, permissionResult, roleRows] = await Promise.all([
         supabase.from('erp_usuarios').select('nivel_admin,empresa_id,ativo,deleted_at').eq('auth_user_id', authData.user.id).maybeSingle(),
         supabase.rpc('erp_current_empresa_id'),
-        supabase.rpc('erp_has_permission', { p_modulo: 'usuarios', p_acao: 'editar' }),
+        supabase.rpc('erp_has_permission', { p_code: 'users.update' }),
         fetchAllPages<Role>((from, to) => supabase.from('erp_roles')
           .select('id,codigo,nome,nivel,ativo,empresa_id', { count: 'exact' })
           .eq('ativo', true)
@@ -95,7 +96,7 @@ export default function ConfiguracaoPermissoes() {
         .range(from, to))
       const permissionCodes = new Set(permissionRows
         .filter(permission => assignmentRows.some(assignment => assignment.permission_id === permission.id))
-        .map(permission => permission.codigo))
+        .map(permission => permission.code))
       setDraft(companyId && eligible && currentRole.empresa_id === companyId
         ? { roleId: currentRole.id, codigo: currentRole.codigo, nome: currentRole.nome, permissions: permissionCodes }
         : { roleId: currentRole.empresa_id === null ? currentRole.id : null, codigo: currentRole.codigo, nome: currentRole.nome, permissions: permissionCodes })
@@ -217,12 +218,12 @@ export default function ConfiguracaoPermissoes() {
           <tbody>
             {loading ? <tr><td colSpan={2} className="p-8 text-center text-slate-500">Consultando permissões persistidas...</td></tr>
               : permissionGroups.map(([module, items]) => <tr key={module} className="border-t border-slate-100 even:bg-slate-50">
-                <th scope="row" className="p-4 text-left align-top"><span className="font-black capitalize text-slate-800">{module.replaceAll('_', ' ')}</span><span className="mt-1 block text-xs font-medium text-slate-500">{items.map(item => item.nome).join(' · ')}</span></th>
+                <th scope="row" className="p-4 text-left align-top"><span className="font-black capitalize text-slate-800">{module.replaceAll('_', ' ')}</span><span className="mt-1 block text-xs font-medium text-slate-500">{items.map(item => item.name).join(' · ')}</span></th>
                 <td className="p-4 text-right">
                   <div className="flex flex-wrap justify-end gap-2">
                     {items.map(item => <label key={item.id} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-semibold text-slate-700">
-                      <input type="checkbox" checked={draft.permissions.has(item.codigo)} onChange={event => togglePermission(item.codigo, event.target.checked)} disabled={!mayEdit || !isEditing || loading || busy} className="h-4 w-4 accent-blue-700" />
-                      {item.codigo.split('.').at(-1)}
+                      <input type="checkbox" checked={draft.permissions.has(item.code)} onChange={event => togglePermission(item.code, event.target.checked)} disabled={!mayEdit || !isEditing || loading || busy} className="h-4 w-4 accent-blue-700" />
+                      {item.code.split('.').at(-1)}
                     </label>)}
                   </div>
                 </td>
