@@ -52,6 +52,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+  const [helpOpen, setHelpOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
@@ -118,7 +119,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           )}
         </div>
 
-        <button type="button" className="erp-horizontal-help" title="Ajuda"><CircleHelp size={15} /> Ajuda</button>
+        <div style={{position:"relative"}}><button type="button" className="erp-horizontal-help" title="Ajuda" onClick={()=>setHelpOpen(v=>!v)} aria-expanded={helpOpen}><CircleHelp size={15} /> Ajuda</button>{helpOpen&&<div role="dialog" aria-label="Ajuda do ERP" style={{position:"absolute",right:0,top:34,zIndex:1200,width:290,padding:"9px 10px",border:"1px solid #b9cbd3",borderRadius:2,background:"#fff",boxShadow:"0 6px 16px rgba(18,59,80,.16)",fontSize:10,lineHeight:1.4,color:"#173b4a"}}><strong>Ajuda do ERP</strong><div style={{marginTop:4}}>Use o menu azul para trocar de módulo. Nos cadastros, o botão <b>?</b> ao lado do campo explica a sigla ou regra sem alterar os dados.</div><div style={{marginTop:5,color:"#647b85"}}>Tela atual: {pathname}</div></div>}</div>
 
         <div className="erp-horizontal-session">
           <UserRound size={15} />
