@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CreditCard, RefreshCw, Search, ShoppingCart, Wallet } from 'lucide-react'
+import { Search, ShoppingCart } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
@@ -13,6 +13,7 @@ const money=(n:number)=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL
 export default function VendasPDV(){
  const [products,setProducts]=useState<Product[]>([]),[boxes,setBoxes]=useState<Box[]>([]),[customers,setCustomers]=useState<Customer[]>([]),[cart,setCart]=useState<CartItem[]>([])
  const [box,setBox]=useState(''),[query,setQuery]=useState(''),[category,setCategory]=useState('TODOS'),[payment,setPayment]=useState('DINHEIRO'),[discount,setDiscount]=useState('0'),[customerId,setCustomerId]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
+ const [saleKey,setSaleKey]=useState(()=>crypto.randomUUID())
  const load=async()=>{setBusy(true);setError('');const company=await supabase.rpc('erp_current_empresa_id');if(company.error||!company.data){setError(company.error?.message||'Empresa não identificada.');setBusy(false);return}
   const [p,b,cu]=await Promise.all([
    fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,codigo_barras,nome,preco_venda,unidade,categoria,estoque_atual,permite_estoque_negativo',{count:'exact'}).eq('empresa_id',String(company.data)).eq('ativo',true).order('nome').range(from,to)),
@@ -24,13 +25,28 @@ export default function VendasPDV(){
  const categories=useMemo(()=>{const values=products.map(product=>product.categoria).filter((value):value is string=>Boolean(value?.trim()));return Array.from(new Set(values)).sort((a,b)=>a.localeCompare(b,'pt-BR'))},[products])
  const visible=useMemo(()=>{const q=query.trim().toLowerCase();return products.filter(p=>(category==='TODOS'||p.categoria===category)&&(!q||p.codigo.toLowerCase().includes(q)||p.nome.toLowerCase().includes(q)||(p.codigo_barras||'').includes(q)))},[products,query,category])
  const subtotal=cart.reduce((s,i)=>s+i.quantidade*Number(i.preco_venda||0),0),disc=Math.min(subtotal,Math.max(0,Number(discount)||0)),total=subtotal-disc
- const add=(p:Product)=>{if(!p.permite_estoque_negativo&&p.estoque_atual<=0){setError(`Produto ${p.codigo} sem estoque disponível.`);return}setError('');setCart(c=>{const found=c.find(i=>i.id===p.id);return found?c.map(i=>i.id===p.id?{...i,quantidade:i.quantidade+1}:i):[...c,{...p,quantidade:1}]})}
- const finish=async()=>{if(!box){setError('Selecione o caixa operacional.');return}if(!cart.length){setError('Carrinho vazio.');return}setBusy(true);setError('');setMessage('')
-  try{const company=await supabase.rpc('erp_current_empresa_id');if(company.error||!company.data)throw company.error||new Error('Empresa não identificada.')
-   const u=await supabase.auth.getUser();const movimento=await supabase.from('erp_caixas_movimentos').insert({empresa_id:company.data,caixa_id:box,operador_id:u.data.user?.id||null,cliente_id:customerId||null,subtotal,desconto:disc,total,forma_pagamento:payment,status:'FINALIZADA'}).select('id,numero').single();if(movimento.error)throw movimento.error
-   const itens=await supabase.from('erp_caixas_movimentos_itens').insert(cart.map(i=>({empresa_id:company.data,movimento_id:movimento.data.id,produto_id:i.id,descricao:i.nome,quantidade:i.quantidade,valor_unitario:i.preco_venda,desconto:0,total:i.quantidade*i.preco_venda})));if(itens.error)throw itens.error
-   setMessage('Venda PDV #'+movimento.data.numero+' finalizada.');setCart([]);setDiscount('')
-  }catch(e){setError(e instanceof Error?e.message:'Não foi possível finalizar o PDV.')}finally{setBusy(false)}}
+ const add=(p:Product)=>{if(!p.permite_estoque_negativo&&p.estoque_atual<=0){setError(`Produto ${p.codigo} sem estoque disponível.`);return}setError('');setSaleKey(crypto.randomUUID());setCart(c=>{const found=c.find(i=>i.id===p.id);return found?c.map(i=>i.id===p.id?{...i,quantidade:i.quantidade+1}:i):[...c,{...p,quantidade:1}]})}
+ const finish=async()=>{
+  if(!box){setError('Selecione o caixa operacional.');return}
+  if(!cart.length){setError('Carrinho vazio.');return}
+  if(!Number.isFinite(Number(discount))||Number(discount)<0||Number(discount)>subtotal){setError('Desconto inválido: confira o valor informado e o subtotal.');return}
+  setBusy(true);setError('');setMessage('')
+  try{
+   const result=await supabase.rpc('erp_pdv_finalizar_venda',{
+    p_caixa_id:box,
+    p_cliente_id:customerId||null,
+    p_forma_pagamento:payment,
+    p_desconto:disc,
+    p_chave_idempotencia:saleKey,
+    p_itens:cart.map(item=>({produto_id:item.id,quantidade:item.quantidade}))
+   })
+   if(result.error)throw result.error
+   const saved=Array.isArray(result.data)?result.data[0]:result.data
+   if(!saved||typeof saved!=='object'||!('movimento_id' in saved)||!('numero' in saved)||!('total' in saved))throw new Error('O banco não confirmou o fechamento da venda.')
+   setMessage('Venda PDV #'+String(saved.numero)+' finalizada. Total confirmado pelo banco: '+money(Number(saved.total)))
+   setCart([]);setDiscount('0');setSaleKey(crypto.randomUUID())
+  }catch(e){setError(e instanceof Error?e.message:'Não foi possível finalizar o PDV.')}finally{setBusy(false)}
+ }
  return (
   <VendasLayout title="PDV / Venda Rápida" subtitle="Frente de caixa • registrar venda, pagamento e itens" onRefresh={() => void load()} showStatusCards={false}>
    <main className="grid min-w-0 gap-2 p-2 lg:grid-cols-[minmax(0,1fr)_340px]">
@@ -40,7 +56,7 @@ export default function VendasPDV(){
        <span className="relative block"><Search size={14} className="absolute left-2 top-2 text-slate-400"/><input autoFocus value={query} onChange={event=>setQuery(event.target.value)} placeholder="Digite código ou nome do produto" className="h-[30px] w-full border border-slate-300 pl-7 pr-2 text-[11px] outline-none focus:border-[#2D8DB8]"/></span>
       </label>
       <label className="grid gap-[2px] text-[9px] font-medium uppercase tracking-wide text-slate-600">Caixa operacional
-       <select value={box} onChange={event=>setBox(event.target.value)} className="h-[30px] w-full border border-slate-300 bg-white px-2 text-[11px] outline-none focus:border-[#2D8DB8]">
+       <select value={box} onChange={event=>{setBox(event.target.value);setSaleKey(crypto.randomUUID())}} className="h-[30px] w-full border border-slate-300 bg-white px-2 text-[11px] outline-none focus:border-[#2D8DB8]">
         <option value="">Selecione o caixa</option>{boxes.map(item=><option key={item.id} value={item.id}>{item.codigo} — {item.descricao}</option>)}
        </select>
       </label>
@@ -66,24 +82,24 @@ export default function VendasPDV(){
      <div className="mt-1 max-h-[min(44vh,420px)] overflow-auto">
       {cart.map(item=><div key={item.id} className="grid grid-cols-[minmax(0,1fr)_54px_auto] items-center gap-2 border-b border-slate-100 py-2">
        <div className="min-w-0"><div className="truncate text-[10px] font-medium text-slate-800">{item.nome}</div><div className="text-[9px] text-slate-500">{money(item.preco_venda)} / {item.unidade}</div></div>
-       <input aria-label={'Quantidade '+item.nome} type="number" min="1" value={item.quantidade} onChange={event=>setCart(current=>current.map(row=>row.id===item.id?{...row,quantidade:Math.max(1,Number(event.target.value)||1)}:row))} className="h-[30px] w-full border border-slate-300 px-1 text-center text-[11px]"/>
+       <input aria-label={'Quantidade '+item.nome} type="number" min="1" value={item.quantidade} onChange={event=>{setSaleKey(crypto.randomUUID());setCart(current=>current.map(row=>row.id===item.id?{...row,quantidade:Math.max(1,Number(event.target.value)||1)}:row))}} className="h-[30px] w-full border border-slate-300 px-1 text-center text-[11px]"/>
        <strong className="text-right text-[10px]">{money(item.quantidade*item.preco_venda)}</strong>
       </div>)}
       {!cart.length&&<div className="py-10 text-center text-[11px] text-slate-500">Carrinho vazio. Selecione um produto para iniciar a venda.</div>}
      </div>
      <div className="mt-2 grid gap-2 border-t border-slate-200 pt-2">
       <label className="grid gap-[2px] text-[9px] font-medium uppercase tracking-wide text-slate-600">Cliente (opcional)
-       <select value={customerId} onChange={event=>setCustomerId(event.target.value)} className="h-[30px] w-full border border-slate-300 bg-white px-2 text-[11px]"><option value="">Consumidor não identificado</option>{customers.map(customer=><option key={customer.id} value={customer.id}>{customer.codigo?customer.codigo+' — ':''}{customer.nome}{customer.documento?' • '+customer.documento:''}</option>)}</select>
+       <select value={customerId} onChange={event=>{setCustomerId(event.target.value);setSaleKey(crypto.randomUUID())}} className="h-[30px] w-full border border-slate-300 bg-white px-2 text-[11px]"><option value="">Consumidor não identificado</option>{customers.map(customer=><option key={customer.id} value={customer.id}>{customer.codigo?customer.codigo+' — ':''}{customer.nome}{customer.documento?' • '+customer.documento:''}</option>)}</select>
       </label>
       <div className="flex items-center justify-between text-[10px]"><span>Subtotal</span><strong>{money(subtotal)}</strong></div>
-      <label className="flex items-center justify-between gap-3 text-[10px]">Desconto (R$)<input type="number" min="0" max={subtotal} step="0.01" value={discount} onChange={event=>setDiscount(event.target.value)} className="h-[30px] w-28 border border-slate-300 px-2 text-right text-[11px]"/></label>
+      <label className="flex items-center justify-between gap-3 text-[10px]">Desconto (R$)<input type="number" min="0" max={subtotal} step="0.01" value={discount} onChange={event=>{setDiscount(event.target.value);setSaleKey(crypto.randomUUID())}} className="h-[30px] w-28 border border-slate-300 px-2 text-right text-[11px]"/></label>
       <div className="flex items-center justify-between border-t border-slate-200 pt-2 text-[12px] font-semibold text-[#123B50]"><span>TOTAL</span><strong>{money(total)}</strong></div>
       <label className="grid gap-[2px] text-[9px] font-medium uppercase tracking-wide text-slate-600">Forma de pagamento
-       <select value={payment} onChange={event=>setPayment(event.target.value)} className="h-[30px] w-full border border-slate-300 bg-white px-2 text-[11px]"><option value="DINHEIRO">Dinheiro</option><option value="CARTAO">Cartão</option><option value="PIX">PIX</option></select>
+       <select value={payment} onChange={event=>{setPayment(event.target.value);setSaleKey(crypto.randomUUID())}} className="h-[30px] w-full border border-slate-300 bg-white px-2 text-[11px]"><option value="DINHEIRO">Dinheiro</option><option value="CARTAO">Cartão</option><option value="PIX">PIX</option></select>
       </label>
       {message&&<div role="status" className="border border-emerald-200 bg-emerald-50 p-2 text-[10px] text-emerald-800">{message}</div>}
       <button type="button" disabled={busy||!cart.length||!box} onClick={()=>void finish()} className="h-[32px] w-full bg-[#2D8DB8] px-2 text-[10px] font-semibold uppercase text-white hover:bg-[#236f91] focus:outline-none focus:ring-2 focus:ring-[#2D8DB8] disabled:cursor-not-allowed disabled:opacity-50">{busy?'Processando…':'Finalizar venda'}</button>
-      <button type="button" disabled={busy||!cart.length} onClick={()=>{setCart([]);setDiscount('0');setError('');setMessage('Venda em edição cancelada.')}} className="h-[30px] w-full border border-slate-300 bg-white px-2 text-[10px] font-medium text-slate-600 disabled:opacity-50">Limpar venda</button>
+      <button type="button" disabled={busy||!cart.length} onClick={()=>{setCart([]);setDiscount('0');setSaleKey(crypto.randomUUID());setError('');setMessage('Venda em edição cancelada.')}} className="h-[30px] w-full border border-slate-300 bg-white px-2 text-[10px] font-medium text-slate-600 disabled:opacity-50">Limpar venda</button>
      </div>
     </section>
    </main>
