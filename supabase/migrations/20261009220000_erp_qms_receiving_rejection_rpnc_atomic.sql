@@ -45,7 +45,7 @@ begin
     raise exception 'Selecione um setor ativo da empresa atual para assumir a RPNC.';
   end if;
 
-  if p_severidade not in ('Critica', 'Maior', 'Menor') then
+  if p_severidade is null or p_severidade not in ('Critica', 'Maior', 'Menor') then
     raise exception 'Gravidade da RPNC inválida.';
   end if;
   if nullif(btrim(p_descricao), '') is null or length(btrim(p_descricao)) < 5 then
