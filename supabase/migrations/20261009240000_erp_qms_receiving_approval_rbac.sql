@@ -30,7 +30,7 @@ begin
     raise exception 'Permissão Qualidade/Aprovar necessária para decidir inspeção.';
   end if;
 
-  if p_decisao <> 'APROVAR' then
+  if p_decisao is distinct from 'APROVAR' then
     raise exception 'Reprovação deve usar o fluxo atômico de quarentena + RPNC.';
   end if;
 
