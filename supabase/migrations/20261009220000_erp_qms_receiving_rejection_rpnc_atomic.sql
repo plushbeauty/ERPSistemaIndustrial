@@ -16,6 +16,7 @@ declare
   v_inspecao public.erp_qualidade_inspecoes_recebimento%rowtype;
   v_lote public.erp_estoque_lotes%rowtype;
   v_rpnc public.erp_rpnc;
+  v_user uuid;
   v_master boolean;
 begin
   if auth.uid() is null then
@@ -79,7 +80,13 @@ begin
 
   -- Nested calls participate in this transaction: if RPNC creation fails,
   -- the quarantine and inspection decision are rolled back as well.
-  perform public.erp_qms_decidir_inspecao_recebimento(p_inspecao_id, 'BLOQUEAR');
+  select usuario_id into v_user from public.erp_qms_current_user() limit 1;
+  if v_user is null then raise exception 'Usuário ERP ativo não identificado para registrar a decisão.'; end if;
+
+  perform public.erp_reter_lote(v_lote.id, 'Lote bloqueado pela inspeção de recebimento QMS: ' || btrim(p_descricao));
+  update public.erp_qualidade_inspecoes_recebimento
+  set status = 'BLOQUEADO', decidido_por = v_user, decidido_em = now(), updated_at = now()
+  where id = v_inspecao.id and empresa_id = v_empresa;
 
   select public.erp_sgq_abrir_rpnc(
     btrim(p_descricao),
