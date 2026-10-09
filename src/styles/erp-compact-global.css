@@ -1103,9 +1103,12 @@
   color: #111827 !important;
   font-size: 10px !important;
 }
-[data-quality-workspace] > section {
+[data-quality-workspace] > section,
+[data-quality-workspace] > div {
   max-width: none !important;
   margin: 0 !important;
+}
+[data-quality-workspace] > section {
   padding: 8px !important;
   border-radius: 2px !important;
   box-shadow: none !important;
