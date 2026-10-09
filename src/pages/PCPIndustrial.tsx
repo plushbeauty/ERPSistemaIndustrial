@@ -30,7 +30,7 @@ type FichaOp={id:string;ficha_id:string;sequencia:number;operacao:string;maquina
 type Molde={id:string;codigo:string;nome:string;tipo:string;status:string;numero_cavidades:number;cavidades:number;cavidades_ativas:number}
 type Employee={id:string;matricula:string;nome:string;cargo:string|null;status:string}
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number}
-type Ficha={id:string;produto_id:string;versao:number;rendimento:number;ativa:boolean}
+type Ficha={id:string;produto_id:string;versao:number;rendimento:number;ativa:boolean;status:string|null}
 type FItem={id:string;ficha_id:string;componente_id:string;quantidade:number;perda_percentual:number;unidade_medida?:string}
 
 function InlineIcon({name,size=18}:{name:string;size?:number}){const path=name==='Plus'?'M12 5v14M5 12h14':name==='X'?'M6 6l12 12M18 6 6 18':name==='CheckCircle2'?'M9 12l2 2 4-5':name==='XCircle'?'M8 8l8 8M16 8l-8 8':name==='ArrowLeft'?'M19 12H5M12 19l-7-7 7-7':name==='Search'?'M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm6-2 4 4':name==='RefreshCw'?'M20 11a8 8 0 0 0-14.8-4L3 9M3 4v5h5M4 13a8 8 0 0 0 14.8 4L21 15M21 20v-5h-5':'M5 12h14M12 5v14';return <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={path}/></svg>}
@@ -97,7 +97,7 @@ export default function PCPIndustrial(){
     fetchAllPages<Program>((from,to)=>supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,produto_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status,molde_id,operador_frente_id,operador_atras_id,turnos,horas_turno,eficiencia_percent,ciclo_seg,cavidades_ativas,setup_min',{count:'exact'}).eq('empresa_id',empresaId).order('inicio_planejado').range(from,to)),
     fetchAllPages<Machine>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome,tipo,status',{count:'exact'}).eq('empresa_id',empresaId).not('status','eq','INATIVA').order('codigo').range(from,to)),
     fetchAllPages<Defect>((from,to)=>supabase.from('erp_producao_defeitos').select('id,ordem_producao_id,defeito,quantidade',{count:'exact'}).eq('empresa_id',empresaId).order('created_at',{ascending:false}).range(from,to)),
-    fetchAllPages<Ficha>((from,to)=>supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,rendimento,ativa',{count:'exact'}).eq('empresa_id',empresaId).eq('ativa',true).order('versao',{ascending:false}).range(from,to)),
+    fetchAllPages<Ficha>((from,to)=>supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,rendimento,ativa,status',{count:'exact'}).eq('empresa_id',empresaId).eq('ativa',true).or('status.ilike.aprovada,status.ilike.liberada').order('versao',{ascending:false}).range(from,to)),
     fetchAllPages<FItem>((from,to)=>supabase.from('erp_ficha_itens').select('id,ficha_id,componente_id,quantidade,perda_percentual',{count:'exact'}).eq('empresa_id',empresaId).order('sequencia').range(from,to)),
     fetchAllPages<FichaOp>((from,to)=>supabase.from('erp_ficha_operacoes').select('id,ficha_id,sequencia,operacao,maquina_id,molde_id,setup_min,ciclo_seg',{count:'exact'}).eq('empresa_id',empresaId).order('sequencia').range(from,to)),
     fetchAllPages<Molde>((from,to)=>supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,numero_cavidades,cavidades,cavidades_ativas',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to)),
