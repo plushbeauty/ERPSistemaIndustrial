@@ -31,11 +31,13 @@ begin
     where s.id = p_setor_id and s.empresa_id = v_empresa and s.ativo = true
   ) then raise exception 'Setor inválido para a empresa.'; end if;
   if lower(coalesce(btrim(p_linked_entity_type), '')) = 'lote' then
-    if p_linked_entity_id is null or not exists (
-      select 1 from public.erp_estoque_lotes l
-      where l.id = p_linked_entity_id and l.empresa_id = v_empresa
-      for update
-    ) then
+    if p_linked_entity_id is null then
+      raise exception 'O lote vinculado não pertence à empresa ativa.';
+    end if;
+    perform 1 from public.erp_estoque_lotes l
+    where l.id = p_linked_entity_id and l.empresa_id = v_empresa
+    for update;
+    if not found then
       raise exception 'O lote vinculado não pertence à empresa ativa.';
     end if;
   end if;
