@@ -210,16 +210,15 @@ begin
     select 1 from public.erp_produtos p
     where p.id = p_produto_id and p.empresa_id = v_empresa and p.ativo = true
   ) then raise exception 'Selecione um insumo ativo da empresa atual.'; end if;
-  if p_fornecedor_id is not null and not exists (
+  if p_fornecedor_id is null or not exists (
     select 1 from public.erp_fornecedores f
     where f.id = p_fornecedor_id and f.empresa_id = v_empresa and f.ativo = true
-  ) then raise exception 'Fornecedor inválido ou inativo para a empresa atual.'; end if;
-  if p_localizacao_id is not null then
-    select * into v_localizacao
-    from public.erp_estoque_localizacoes
-    where id = p_localizacao_id and empresa_id = v_empresa and ativo = true;
-    if not found then raise exception 'Endereço de estoque inválido ou inativo.'; end if;
-  end if;
+  ) then raise exception 'Fornecedor ativo da empresa atual é obrigatório.'; end if;
+  if p_localizacao_id is null then raise exception 'Endereço de armazenagem é obrigatório.'; end if;
+  select * into v_localizacao
+  from public.erp_estoque_localizacoes
+  where id = p_localizacao_id and empresa_id = v_empresa and ativo = true;
+  if not found then raise exception 'Endereço de estoque inválido ou inativo.'; end if;
 
   if nullif(btrim(p_lote_fornecedor), '') is null then raise exception 'Lote do fornecedor é obrigatório.'; end if;
   if p_quantidade is null or p_quantidade <= 0 then raise exception 'Quantidade de recebimento deve ser maior que zero.'; end if;
