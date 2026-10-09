@@ -153,9 +153,17 @@ export default function FichaEngenharia(){
  async function save(){
   if(!kind)return setNotice('Selecione o tipo de ficha.')
   if(!productId||!products.some(item=>item.id===productId))return setNotice('Selecione um produto real da empresa atual.')
-  if((kind==='PRENSADOS'||kind==='INJETADOS'||kind==='ESTAMPARIA')&&(!spec.moldeId||Number(spec.cavidades)<=0))return setNotice('Para Prensados, Injetados e Estampo, informe o molde/estampo e a quantidade de cavidades.')
-  if(bom.some(x=>!x.componente_id||Number(x.quantidade)<=0||Number(x.perda_percentual)<0))return setNotice('Preencha todos os materiais da BOM com quantidade e perda válidas.')
-  if(ops.some(x=>!x.operacao.trim()||Number(x.setup_min)<0||Number(x.ciclo_seg)<0))return setNotice('Preencha todas as operações e tempos.')
+  if(!processCode.trim()||!processName.trim())return setNotice('Código da ficha e nome do processo são obrigatórios.')
+  if(!Number.isInteger(Number(version))||Number(version)<1)return setNotice('A revisão deve ser um número inteiro maior ou igual a 1.')
+  if(!Number.isFinite(Number(rendimento))||Number(rendimento)<=0||!unit.trim())return setNotice('Informe rendimento maior que zero e unidade válida.')
+  if((kind==='PRENSADOS'||kind==='INJETADOS'||kind==='ESTAMPARIA')){
+   const total=Number(spec.cavidades),ativas=Number(spec.cavidadesAtivas)
+   if(!spec.moldeId||!molds.some(item=>item.id===spec.moldeId)||!Number.isFinite(total)||total<=0||!Number.isFinite(ativas)||ativas<=0||ativas>total)return setNotice('Selecione molde/estampo ativo e informe cavidades ativas válidas, sem exceder o total.')
+  }
+  if(!bom.length||bom.some(x=>!x.componente_id||!products.some(p=>p.id===x.componente_id)||x.componente_id===productId||!Number.isFinite(Number(x.quantidade))||Number(x.quantidade)<=0||!Number.isFinite(Number(x.perda_percentual))||Number(x.perda_percentual)<0))return setNotice('BOM inválida: selecione componentes mestres diferentes do produto final, com quantidade positiva e perda válida.')
+  if(new Set(bom.map(x=>x.sequencia)).size!==bom.length||bom.some(x=>!Number.isInteger(Number(x.sequencia))||Number(x.sequencia)<1))return setNotice('A sequência dos componentes da BOM deve ser inteira, positiva e única.')
+  if(!ops.length||ops.some(x=>!x.operacao.trim()||!Number.isInteger(Number(x.sequencia))||Number(x.sequencia)<1||!Number.isFinite(Number(x.setup_min))||Number(x.setup_min)<0||!Number.isFinite(Number(x.ciclo_seg))||Number(x.ciclo_seg)<0||(x.maquina_id&&!machines.some(m=>m.id===x.maquina_id))||(x.molde_id&&!molds.some(m=>m.id===x.molde_id))))return setNotice('Roteiro inválido: revise sequência, operação, máquina/molde ativos e tempos de setup/ciclo.')
+  if(new Set(ops.map(x=>x.sequencia)).size!==ops.length)return setNotice('A sequência das operações deve ser única.')
   setBusy(true);setNotice('')
   try{
    const payload={kind,processCode,processName,notes,spec,updatedAt:new Date().toISOString()}
