@@ -28,8 +28,8 @@ const configs: Record<string, ModuleConfig> = {
     {key:'codigo',label:'Código da regra',required:true},{key:'cfop',label:'CFOP',required:true},{key:'ncm_sufixo',label:'Sufixo NCM'},{key:'uf_origem',label:'UF origem'},{key:'uf_destino',label:'UF destino'},{key:'aliquota_icms',label:'ICMS (%)',type:'number'},{key:'aliquota_ipi',label:'IPI (%)',type:'number'},{key:'aliquota_pis',label:'PIS (%)',type:'number'},{key:'aliquota_cofins',label:'COFINS (%)',type:'number'},{key:'cst_csosn',label:'CST/CSOSN'},{key:'tipo_operacao',label:'Tipo de operação',type:'select',options:['entrada_compra','entrada_devolucao','saida_venda','saida_remessa'],required:true}] },
   'rh-funcionarios': { title:'RH Industrial · Funcionários', subtitle:'Cadastro de operadores e taxa horária para custo MOD', table:'rh_funcionarios', search:['matricula','nome_completo','cargo','departamento'], columns:['matricula','nome_completo','cargo','departamento','taxa_horaria','status'], fields:[
     {key:'matricula',label:'Matrícula',required:true},{key:'nome_completo',label:'Nome completo',required:true},{key:'cpf',label:'CPF'},{key:'rg',label:'RG'},{key:'data_admissao',label:'Admissão',type:'date',required:true},{key:'cargo',label:'Cargo/função',required:true},{key:'departamento',label:'Departamento',type:'select',options:['engenharia','pcp','producao','qualidade','almoxarifado','administrativo'],required:true},{key:'taxa_horaria',label:'Taxa horária MOD',type:'number'},{key:'status',label:'Status',type:'select',options:['ativo','afastado','desligado'],required:true}] },
-  'rh-turnos': { title:'RH Industrial · Turnos e escalas', subtitle:'Jornada de trabalho para planejamento de capacidade', table:'rh_turnos', search:['codigo','nome','tipo_escala'], columns:['codigo','nome','inicio','fim','tipo_escala','carga_mensal'], fields:[
-    {key:'codigo',label:'Código do turno',required:true},{key:'nome',label:'Nome do turno',required:true},{key:'inicio',label:'Início (HH:MM)',required:true},{key:'fim',label:'Fim (HH:MM)',required:true},{key:'intervalo_minutos',label:'Intervalo (min)',type:'number'},{key:'tipo_escala',label:'Escala',type:'select',options:['5x2','6x2','12x36'],required:true},{key:'carga_mensal',label:'Carga mensal (h)',type:'number',required:true}] },
+  'rh-turnos': { title:'RH Industrial · Turnos e escalas', subtitle:'Jornada de trabalho para planejamento de capacidade', table:'rh_turnos', search:['codigo','nome','tipo_escala'], columns:['codigo','nome','inicio','termino','escala','carga_horaria_mensal'], fields:[
+    {key:'codigo',label:'Código do turno',required:true},{key:'nome',label:'Nome do turno',required:true},{key:'inicio',label:'Início (HH:MM)',required:true},{key:'termino',label:'Término (HH:MM)',required:true},{key:'intervalo_inicio',label:'Início do intervalo'},{key:'intervalo_fim',label:'Fim do intervalo'},{key:'escala',label:'Escala',type:'select',options:['5x2','6x2','12x36'],required:true},{key:'carga_horaria_mensal',label:'Carga mensal (h)',type:'number',required:true}] },
   'rh-epis': { title:'RH Industrial · EPIs e CA', subtitle:'Controle de validade do CA e entregas por funcionário', table:'rh_epis', search:['codigo','nome','numero_ca'], columns:['codigo','nome','numero_ca','ca_valido_ate','periodicidade_troca_dias'], fields:[
     {key:'codigo',label:'Código do EPI',required:true},{key:'nome',label:'Equipamento',required:true},{key:'numero_ca',label:'Número CA',required:true},{key:'ca_valido_ate',label:'Validade do CA',type:'date'},{key:'periodicidade_troca_dias',label:'Troca obrigatória (dias)',type:'number',required:true}] },
 }
@@ -45,8 +45,13 @@ function parseValue(field: Field, raw: string): unknown {
   return raw.trim() === '' ? null : raw
 }
 export default function IndustrialDataWorkspace() {
-  const slug = window.location.pathname.split('/').filter(Boolean).slice(-1)[0] ?? ''
-  const config = configs[slug]
+  const routeConfigs: Record<string, string> = {
+    '/engenharia/produtos':'engenharia-produtos','/engenharia/bom':'engenharia-bom','/engenharia/roteiros':'engenharia-roteiros',
+    '/estoque/enderecos':'estoque-enderecos','/qualidade/especificacoes':'qualidade-especificacoes','/qualidade/fmea':'qualidade-fmea',
+    '/qualidade/rnc-capa':'qualidade-rnc','/pcp/ordens-industriais':'pcp-ordens','/pcp/apontamentos':'pcp-apontamentos',
+    '/fiscal/parametros':'fiscal-parametros','/rh/funcionarios':'rh-funcionarios','/rh/turnos':'rh-turnos','/rh/epis':'rh-epis'
+  }
+  const config = configs[routeConfigs[window.location.pathname] ?? '']
   const [rows,setRows] = useState<Record<string, unknown>[]>([])
   const [form,setForm] = useState<Record<string,string>>({})
   const [search,setSearch] = useState('')
