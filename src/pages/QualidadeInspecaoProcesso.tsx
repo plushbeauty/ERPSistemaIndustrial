@@ -8,7 +8,7 @@ type Lookup = LookupRecord
 type Machine = { id: string; codigo: string; nome: string; tipo: string | null }
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; status_inspecao: string | null }
 type Instrument = { id: string; codigo: string; descricao: string; status: string; proxima_calibracao: string | null }
-type Plan = { id: string; produto_id: string; codigo: string; caracteristica: string | null; unidade: string | null; nominal: number | null; limite_inferior: number | null; limite_superior: number | null; frequencia: string | null; metodo_inspecao: string; tipo_inspecao: string; instrumento_id: string | null; status: string | null; vigencia_inicio: string | null; vigencia_fim: string | null; aprovador_id: string | null; revisao: number }
+type Plan = { id: string; produto_id: string; codigo: string; caracteristica: string | null; unidade: string | null; nominal: number | null; limite_inferior: number | null; limite_superior: number | null; frequencia: string | null; metodo_inspecao: string; tipo_inspecao: string; instrumento_id: string | null; status: string | null; vigencia_inicio: string | null; vigencia_fim: string | null; aprovador_id: string | null; aprovado_em: string | null; revisao: number }
 type InspectionRow = { id: string; produto_id: string | null; ordem_producao_id: string | null; maquina_id: string | null; tipo: string; resultado: string; quantidade_inspecionada: number; quantidade_aprovada: number; quantidade_reprovada: number; observacao: string | null; inspetor_nome: string | null; medicoes: unknown; acao_bloqueio: string | null }
 
 type Measurement = { plano_inspecao_id: string; instrumento_id: string | null; caracteristica: string; nominal: string; encontrado: string; unidade: string; limite_inferior: number | null; limite_superior: number | null; metodo_inspecao: string }
@@ -76,7 +76,7 @@ export default function QualidadeInspecaoProcesso({ inspectionType = 'PROCESSO' 
         supabase.from('erp_maquinas').select('id,codigo,nome,tipo').eq('empresa_id', company.data).not('status', 'eq', 'INATIVA').order('codigo'),
         supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,status_inspecao').eq('empresa_id', company.data).order('created_at', { ascending: false }).limit(2000),
         supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao').eq('empresa_id', company.data).order('codigo'),
-        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,metodo_inspecao,tipo_inspecao,instrumento_id,status,vigencia_inicio,vigencia_fim,aprovador_id,revisao').eq('empresa_id', company.data).order('codigo'),
+        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,metodo_inspecao,tipo_inspecao,instrumento_id,status,vigencia_inicio,vigencia_fim,aprovador_id,aprovado_em,revisao').eq('empresa_id', company.data).order('codigo'),
         supabase.from('erp_inspecoes').select('id,produto_id,ordem_producao_id,maquina_id,tipo,resultado,quantidade_inspecionada,quantidade_aprovada,quantidade_reprovada,observacao,inspetor_nome,medicoes,acao_bloqueio').eq('empresa_id', company.data).order('created_at', { ascending: false }).limit(100),
       ])
       for (const result of [productsResult, opsResult, machinesResult, lotsResult, instrumentsResult, plansResult, inspectionsResult]) if (result.error) throw result.error
@@ -97,7 +97,7 @@ export default function QualidadeInspecaoProcesso({ inspectionType = 'PROCESSO' 
   useEffect(() => { void load() }, [])
 
   const today = new Date().toISOString().slice(0, 10)
-  const isPlanEffective = (plan: Plan) => plan.tipo_inspecao === inspectionType && (plan.status ?? '').toUpperCase() === 'ATIVO' && Boolean(plan.aprovador_id) && (!plan.vigencia_inicio || plan.vigencia_inicio <= today) && (!plan.vigencia_fim || plan.vigencia_fim >= today) && (!['DIMENSIONAL','FUNCIONAL'].includes(plan.metodo_inspecao) || instruments.some(item => item.id === plan.instrumento_id && validInstrument(item)))
+  const isPlanEffective = (plan: Plan) => plan.tipo_inspecao === inspectionType && (plan.status ?? '').toUpperCase() === 'ATIVO' && Boolean(plan.aprovador_id) && Boolean(plan.aprovado_em) && (!plan.vigencia_inicio || plan.vigencia_inicio <= today) && (!plan.vigencia_fim || plan.vigencia_fim >= today) && (!['DIMENSIONAL','FUNCIONAL'].includes(plan.metodo_inspecao) || instruments.some(item => item.id === plan.instrumento_id && validInstrument(item)))
   const effectivePlans = plans.filter(isPlanEffective)
 
   function addMeasurement(plan: Plan) {
