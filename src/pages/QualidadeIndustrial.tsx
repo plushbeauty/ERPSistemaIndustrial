@@ -123,7 +123,8 @@ export default function QualidadeIndustrial() {
   const currentProduct = products.find((product) => product.id === currentReceivingLot?.produto_id) ?? null
   const today = new Date().toISOString().slice(0, 10)
   const validInstruments = instruments.filter(item => item.status.toUpperCase() === 'APROVADO' && Boolean(item.proxima_calibracao && item.proxima_calibracao >= today))
-  const isEffectiveSpec = (item: Specification) => (item.status ?? '').toUpperCase() === 'ATIVO' && Boolean(item.aprovador_id) && (!item.vigencia_inicio || item.vigencia_inicio <= today) && (!item.vigencia_fim || item.vigencia_fim >= today) && (!['DIMENSIONAL','FUNCIONAL'].includes(item.metodo_inspecao) || validInstruments.some(instrumentItem => instrumentItem.id === item.instrumento_id))
+  const isCurrentSpec = (item: Specification) => (item.status ?? '').toUpperCase() === 'ATIVO' && (!item.vigencia_inicio || item.vigencia_inicio <= today) && (!item.vigencia_fim || item.vigencia_fim >= today)
+  const isEffectiveSpec = (item: Specification) => isCurrentSpec(item) && Boolean(item.aprovador_id) && (!['DIMENSIONAL','FUNCIONAL'].includes(item.metodo_inspecao) || validInstruments.some(instrumentItem => instrumentItem.id === item.instrumento_id))
   const activeSpecsForReceiving = specifications.filter(item => item.produto_id === currentReceivingLot?.produto_id && item.tipo_inspecao === 'RECEBIMENTO' && isEffectiveSpec(item))
   const activeDimensionalSpecsForReceiving = activeSpecsForReceiving.filter(item => item.metodo_inspecao === 'DIMENSIONAL' && item.nominal !== null && item.limite_inferior !== null && item.limite_superior !== null)
   const selectedSpec = activeDimensionalSpecsForReceiving.find(item => item.id === selectedSpecId) ?? null
@@ -176,8 +177,11 @@ export default function QualidadeIndustrial() {
       if (decision === 'APROVAR') {
         const lot = lots.find(item => item.id === receiving.lote_id)
         if (!lot) throw new Error('O lote da inspeção não está disponível na empresa atual.')
-        const activeSpecs = specifications.filter(item => item.produto_id === lot.produto_id && item.tipo_inspecao === 'RECEBIMENTO' && isEffectiveSpec(item))
-        if (!activeSpecs.length) throw new Error('SEM ESPECIFICAÇÃO: o lote não pode ser aprovado automaticamente. Cadastre critérios técnicos vigentes para este produto na Engenharia/Qualidade.')
+        const currentSpecs = specifications.filter(item => item.produto_id === lot.produto_id && item.tipo_inspecao === 'RECEBIMENTO' && isCurrentSpec(item))
+        if (!currentSpecs.length) throw new Error('SEM ESPECIFICAÇÃO: o lote não pode ser aprovado automaticamente. Cadastre critérios técnicos vigentes para este produto na Qualidade > Especificações Técnicas.')
+        if (currentSpecs.some(item => !isEffectiveSpec(item))) throw new Error('Liberação bloqueada: há especificação vigente sem aprovador válido ou com instrumento não aprovado/calibração vencida.')
+        if (currentSpecs.some(item => item.metodo_inspecao !== 'DIMENSIONAL')) throw new Error('Liberação bloqueada: inspeções VISUAL, FUNCIONAL ou DOCUMENTAL precisam de checklist de evidência dedicado antes da aprovação automática.')
+        const activeSpecs = currentSpecs
         if (receiving.defeitos_encontrados > receiving.criterio_ac) throw new Error('A quantidade de defeitos excede o critério Ac; o lote não pode ser aprovado.')
         const dimensionalSpecs = activeSpecs.filter(item => item.metodo_inspecao === 'DIMENSIONAL'
         if (dimensionalSpecs.some(item => item.nominal === null || item.limite_inferior === null || item.limite_superior === null)) {
@@ -268,7 +272,7 @@ export default function QualidadeIndustrial() {
         tolerancia_superior_mm: upperTolerance,
         tolerancia_inferior_mm: lowerTolerance,
         valor_medido_mm: value,
-        instrumento: selectedInstrument?.codigo ?? null,
+        instrumento: selectedInstrument.codigo,
       }))
       const result = await supabase.from('erp_qualidade_inspecoes_dimensionais').insert(payload)
       if (result.error) throw result.error
