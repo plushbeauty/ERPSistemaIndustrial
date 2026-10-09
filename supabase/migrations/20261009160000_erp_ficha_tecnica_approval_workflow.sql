@@ -82,4 +82,5 @@ end;
 $$;
 
 revoke all on function public.erp_qualidade_aprovar_ficha_tecnica(uuid) from public, anon;
+revoke all on function public.erp_guard_ficha_tecnica_status() from public, anon, authenticated;
 grant execute on function public.erp_qualidade_aprovar_ficha_tecnica(uuid) to authenticated;
