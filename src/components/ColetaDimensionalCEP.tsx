@@ -6,6 +6,7 @@ const SAMPLE_COUNT = 18
 export interface ColetaDimensionalCEPProps {
   limiteSuperior: number
   limiteInferior: number
+  nominal: number
   lote?: string
   codigoProduto?: string
   descricaoProduto?: string
@@ -17,20 +18,23 @@ export interface ColetaDimensionalCEPProps {
     desvioPadrao: number
     totalControlado: number
     numeroDefeituosos: number
+    cp: number | null
+    cpl: number | null
+    cpu: number | null
+    cpk: number | null
+    amplitude: number
   }) => void
 }
 
 interface AmostraCEP {
   id: number
   valorMedido: string
-  valorOriginal: string
 }
 
 const criarAmostras = (): AmostraCEP[] =>
   Array.from({ length: SAMPLE_COUNT }, (_, index) => ({
     id: index + 1,
     valorMedido: '',
-    valorOriginal: '',
   }))
 
 const parseMedicao = (valor: string): number | null => {
@@ -44,14 +48,15 @@ const formatarNumero = (valor: number): string =>
   Number.isFinite(valor) ? valor.toFixed(3) : '—'
 
 const inputClass =
-  'h-7 w-full rounded-[2px] border border-[#3a404c] bg-[#1e222b] py-0.5 px-2 text-xs font-normal text-slate-200 outline-none focus:border-[#48b7c7]'
+  'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal text-slate-800 outline-none focus:border-[#2D8DB8]'
 
 const labelClass =
-  'mb-0.5 block text-[11px] font-semibold text-gray-400 uppercase tracking-wider'
+  'mb-[2px] block text-[9px] font-semibold text-slate-500 uppercase tracking-wider'
 
 export default function ColetaDimensionalCEP({
   limiteSuperior,
   limiteInferior,
+  nominal,
   lote,
   codigoProduto,
   descricaoProduto,
@@ -74,22 +79,29 @@ export default function ColetaDimensionalCEP({
         ? valores.reduce((total, valor) => total + valor, 0) / totalControlado
         : 0
 
-    const variancia =
-      totalControlado > 0
-        ? valores.reduce((total, valor) => total + (valor - media) ** 2, 0) /
-          totalControlado
-        : 0
-
-    const mediaForaDosLimites =
-      totalControlado > 0 &&
-      (media < limiteInferior || media > limiteSuperior)
+    const somaQuadrados = valores.reduce((total, valor) => total + (valor - media) ** 2, 0)
+    // Sample standard deviation (n-1) is used for Cp/Cpk estimation.
+    const variancia = totalControlado > 1 ? somaQuadrados / (totalControlado - 1) : 0
+    const desvioPadrao = Math.sqrt(variancia)
+    const capacidadeDefinida = totalControlado > 1 && desvioPadrao > 0 && limiteSuperior > limiteInferior
+    const cp = capacidadeDefinida ? (limiteSuperior - limiteInferior) / (6 * desvioPadrao) : null
+    const cpu = capacidadeDefinida ? (limiteSuperior - media) / (3 * desvioPadrao) : null
+    const cpl = capacidadeDefinida ? (media - limiteInferior) / (3 * desvioPadrao) : null
+    const cpk = cpu !== null && cpl !== null ? Math.min(cpu, cpl) : null
+    const mediaForaDosLimites = totalControlado > 0 && (media < limiteInferior || media > limiteSuperior)
+    const amplitude = totalControlado > 0 ? Math.max(...valores) - Math.min(...valores) : 0
 
     return {
       valores,
       totalControlado,
       numeroDefeituosos,
       media,
-      desvioPadrao: Math.sqrt(variancia),
+      desvioPadrao,
+      cp,
+      cpu,
+      cpl,
+      cpk,
+      amplitude,
       mediaForaDosLimites,
       incompletas: totalControlado < SAMPLE_COUNT,
     }
@@ -112,26 +124,7 @@ export default function ColetaDimensionalCEP({
 
   const atualizarMedicao = (id: number, valorMedido: string) => {
     setAmostras((atuais) =>
-      atuais.map((amostra) =>
-        amostra.id === id
-          ? {
-              ...amostra,
-              valorMedido,
-              valorOriginal:
-                amostra.valorOriginal === '' && valorMedido.trim() !== ''
-                  ? valorMedido
-                  : amostra.valorOriginal,
-            }
-          : amostra,
-      ),
-    )
-  }
-
-  const atualizarOriginal = (id: number, valorOriginal: string) => {
-    setAmostras((atuais) =>
-      atuais.map((amostra) =>
-        amostra.id === id ? { ...amostra, valorOriginal } : amostra,
-      ),
+      atuais.map((amostra) => amostra.id === id ? { ...amostra, valorMedido } : amostra),
     )
   }
 
@@ -150,14 +143,19 @@ export default function ColetaDimensionalCEP({
       desvioPadrao: estatistica.desvioPadrao,
       totalControlado: estatistica.totalControlado,
       numeroDefeituosos: estatistica.numeroDefeituosos,
+      cp: estatistica.cp,
+      cpl: estatistica.cpl,
+      cpu: estatistica.cpu,
+      cpk: estatistica.cpk,
+      amplitude: estatistica.amplitude,
     })
   }
 
   return (
-    <section className="min-h-0 w-full space-y-1.5 rounded-[2px] bg-[#1e222b] p-1.5 text-slate-200">
-      <header className="grid grid-cols-2 gap-1.5 rounded-[2px] border border-[#3a404c] bg-[#252a34] p-1">
+    <section className="min-h-0 w-full space-y-2 rounded-[2px] border border-slate-200 bg-white p-2 text-slate-800">
+      <header className="grid grid-cols-2 gap-1.5 rounded-[2px] border border-slate-300 bg-slate-50 p-1">
         <div className="min-w-0">
-          <div className="text-xs font-bold text-gray-300 uppercase bg-[#252a34] p-1 border-b border-[#3a404c]">
+          <div className="text-[10px] font-bold text-slate-700 uppercase bg-slate-50 p-1 border-b border-slate-300">
             Controle Estatístico de Processo — CEP
           </div>
           <div className="grid grid-cols-2 gap-1.5 p-1">
@@ -205,15 +203,15 @@ export default function ColetaDimensionalCEP({
         </div>
       </header>
 
-      <section className="rounded-[2px] border border-[#3a404c] bg-[#252a34]">
-        <div className="text-xs font-bold text-gray-300 uppercase bg-[#252a34] p-1 border-b border-[#3a404c]">
+      <section className="rounded-[2px] border border-slate-300 bg-slate-50">
+        <div className="text-[10px] font-bold text-slate-700 uppercase bg-slate-50 p-1 border-b border-slate-300">
           18 Amostras — Anotação Dimensional
         </div>
 
         <div className="space-y-1 p-1.5">
           <div className="grid grid-cols-[42px_minmax(0,1fr)_minmax(0,1fr)_72px_100px] gap-1.5">
             <div className={labelClass}>Nº</div>
-            <div className={labelClass}>Valor Original</div>
+            <div className={labelClass}>Nominal</div>
             <div className={labelClass}>Valor Medido</div>
             <div className={labelClass}>Avaliação</div>
             <div className={labelClass}>Classe</div>
@@ -230,28 +228,22 @@ export default function ColetaDimensionalCEP({
               <div
                 key={amostra.id}
                 className={
-                  'grid grid-cols-[42px_minmax(0,1fr)_minmax(0,1fr)_72px_100px] gap-1.5 rounded-[2px] border border-[#3a404c] p-0.5 ' +
-                  (defeituoso ? 'bg-[#3a2024]' : 'bg-[#252a34]')
+                  'grid grid-cols-[42px_minmax(0,1fr)_minmax(0,1fr)_72px_100px] gap-1.5 rounded-[2px] border border-slate-300 p-0.5 ' +
+                  (defeituoso ? 'bg-rose-50' : 'bg-slate-50')
                 }
               >
-                <div className="flex h-7 items-center rounded-[2px] border border-[#3a404c] bg-[#1e222b] px-2 text-xs font-normal text-slate-200">
+                <div className="flex h-[30px] items-center rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal text-slate-800">
                   {String(amostra.id).padStart(2, '0')}
                 </div>
 
-                <input
-                  className={inputClass}
-                  value={amostra.valorOriginal}
-                  onChange={(event) =>
-                    atualizarOriginal(amostra.id, event.target.value)
-                  }
-                  inputMode="decimal"
-                  aria-label={'Valor original da amostra ' + amostra.id}
-                />
+                <div className="flex h-[30px] items-center rounded-[2px] border border-slate-300 bg-slate-50 px-2 text-[10px] text-slate-700" aria-label={'Nominal da amostra ' + amostra.id}>
+                  {formatarNumero(nominal)}
+                </div>
 
                 <input
                   className={
                     inputClass +
-                    (defeituoso ? ' border-[#d65b61] bg-[#3a2024]' : '')
+                    (defeituoso ? ' border-rose-300 bg-rose-50' : '')
                   }
                   value={amostra.valorMedido}
                   onChange={(event) =>
@@ -262,29 +254,29 @@ export default function ColetaDimensionalCEP({
                   aria-label={'Valor medido da amostra ' + amostra.id}
                 />
 
-                <div className="flex h-7 items-center justify-center rounded-[2px] border border-[#3a404c] bg-[#1e222b]">
+                <div className="flex h-[30px] items-center justify-center rounded-[2px] border border-slate-300 bg-white">
                   {preenchido ? (
                     defeituoso ? (
                       <XCircle
                         size={15}
                         strokeWidth={2}
-                        className="text-[#d65b61]"
+                        className="text-rose-700"
                         aria-label="Defeituoso"
                       />
                     ) : (
                       <CheckCircle
                         size={15}
                         strokeWidth={2}
-                        className="text-[#3a9d78]"
+                        className="text-emerald-700"
                         aria-label="Aprovado"
                       />
                     )
                   ) : (
-                    <span className="text-xs font-normal text-slate-200">—</span>
+                    <span className="text-[10px] font-normal text-slate-800">—</span>
                   )}
                 </div>
 
-                <div className="flex h-7 items-center rounded-[2px] border border-[#3a404c] bg-[#1e222b] px-2 text-xs font-normal text-slate-200">
+                <div className="flex h-[30px] items-center rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal text-slate-800">
                   {defeituoso
                     ? 'Defeituoso'
                     : preenchido
@@ -297,44 +289,50 @@ export default function ColetaDimensionalCEP({
         </div>
       </section>
 
-      <section className="grid grid-cols-2 gap-1.5 md:grid-cols-4">
-        <div className="rounded-[2px] border border-[#3a404c] bg-[#252a34] p-1">
+      <section className="grid grid-cols-2 gap-1.5 md:grid-cols-3 xl:grid-cols-6">
+        <div className="rounded-[2px] border border-slate-300 bg-slate-50 p-1">
           <label className={labelClass}>Total Controlado</label>
-          <div className="flex h-7 items-center rounded-[2px] border border-[#3a404c] bg-[#1e222b] py-0.5 px-2 text-xs font-normal text-slate-200">
+          <div className="flex h-[30px] items-center rounded-[2px] border border-slate-300 bg-white py-0.5 px-2 text-[10px] font-normal text-slate-800">
             {estatistica.totalControlado}/{SAMPLE_COUNT}
           </div>
         </div>
 
-        <div className="rounded-[2px] border border-[#3a404c] bg-[#252a34] p-1">
+        <div className="rounded-[2px] border border-slate-300 bg-slate-50 p-1">
           <label className={labelClass}>Número de Defeituosos</label>
           <div
             className={
-              'flex h-7 items-center rounded-[2px] border border-[#3a404c] bg-[#1e222b] py-0.5 px-2 text-xs font-normal ' +
+              'flex h-[30px] items-center rounded-[2px] border border-slate-300 bg-white py-0.5 px-2 text-[10px] font-normal ' +
               (estatistica.numeroDefeituosos > 0
-                ? 'text-[#d65b61]'
-                : 'text-[#3a9d78]')
+                ? 'text-rose-700'
+                : 'text-emerald-700')
             }
           >
             {estatistica.numeroDefeituosos}
           </div>
         </div>
 
-        <div className="rounded-[2px] border border-[#3a404c] bg-[#252a34] p-1">
+        <div className="rounded-[2px] border border-slate-300 bg-slate-50 p-1">
           <label className={labelClass}>Média Dimensional (ValMéd/s)</label>
-          <div className="flex h-7 items-center rounded-[2px] border border-[#3a404c] bg-[#1e222b] py-0.5 px-2 text-xs font-normal text-slate-200">
+          <div className="flex h-[30px] items-center rounded-[2px] border border-slate-300 bg-white py-0.5 px-2 text-[10px] font-normal text-slate-800">
             {estatistica.totalControlado > 0
               ? formatarNumero(estatistica.media)
               : '—'}
           </div>
         </div>
 
-        <div className="rounded-[2px] border border-[#3a404c] bg-[#252a34] p-1">
-          <label className={labelClass}>Desvio Padrão</label>
-          <div className="flex h-7 items-center rounded-[2px] border border-[#3a404c] bg-[#1e222b] py-0.5 px-2 text-xs font-normal text-slate-200">
-            {estatistica.totalControlado > 0
-              ? formatarNumero(estatistica.desvioPadrao)
-              : '—'}
+        <div className="rounded-[2px] border border-slate-300 bg-slate-50 p-1">
+          <label className={labelClass}>Desvio padrão amostral</label>
+          <div className="flex h-[30px] items-center rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal text-slate-800">
+            {estatistica.totalControlado > 1 ? formatarNumero(estatistica.desvioPadrao) : '—'}
           </div>
+        </div>
+        <div className="rounded-[2px] border border-slate-300 bg-slate-50 p-1">
+          <label className={labelClass}>Cp</label>
+          <div className="flex h-[30px] items-center rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal text-slate-800">{estatistica.cp === null ? '—' : estatistica.cp.toFixed(3)}</div>
+        </div>
+        <div className="rounded-[2px] border border-slate-300 bg-slate-50 p-1">
+          <label className={labelClass}>Cpk</label>
+          <div className={'flex h-[30px] items-center rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal ' + (estatistica.cpk !== null && estatistica.cpk < 1 ? 'text-rose-700' : 'text-slate-800')}>{estatistica.cpk === null ? '—' : estatistica.cpk.toFixed(3)}</div>
         </div>
       </section>
 
@@ -342,16 +340,16 @@ export default function ColetaDimensionalCEP({
         className={
           'grid grid-cols-2 gap-1.5 rounded-[2px] border p-1.5 ' +
           (loteReprovado
-            ? 'border-[#d65b61] bg-[#252a34]'
-            : 'border-[#3a404c] bg-[#252a34]')
+            ? 'border-rose-300 bg-slate-50'
+            : 'border-slate-300 bg-slate-50')
         }
       >
         <div className="min-w-0">
           <label className={labelClass}>Status do Lote</label>
           <div
             className={
-              'flex h-7 items-center rounded-[2px] border border-[#3a404c] bg-[#1e222b] py-0.5 px-2 text-xs font-normal ' +
-              (loteReprovado ? 'text-[#d65b61]' : 'text-[#3a9d78]')
+              'flex h-[30px] items-center rounded-[2px] border border-slate-300 bg-white py-0.5 px-2 text-[10px] font-normal ' +
+              (loteReprovado ? 'text-rose-700' : 'text-emerald-700')
             }
           >
             {!limitesValidos
@@ -368,7 +366,7 @@ export default function ColetaDimensionalCEP({
           <button
             type="button"
             onClick={limparColeta}
-            className="h-7 rounded-[2px] border border-[#3a404c] bg-[#1e222b] py-0.5 px-2 text-xs font-normal text-slate-200"
+            className="h-[30px] rounded-[2px] border border-slate-300 bg-white py-0.5 px-2 text-[10px] font-normal text-slate-800"
           >
             Limpar
           </button>
@@ -376,7 +374,7 @@ export default function ColetaDimensionalCEP({
             type="button"
             disabled={!podeRegistrar}
             onClick={registrarColeta}
-            className="h-7 rounded-[2px] border border-[#3a404c] bg-[#2d8db8] py-0.5 px-2 text-xs font-normal text-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+            className="h-[30px] rounded-[2px] border border-slate-300 bg-[#2D8DB8] py-0.5 px-2 text-[10px] font-normal text-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Registrar 18 amostras
           </button>
