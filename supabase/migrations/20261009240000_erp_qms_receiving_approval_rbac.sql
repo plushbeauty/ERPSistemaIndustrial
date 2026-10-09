@@ -44,7 +44,7 @@ begin
   if not found then
     raise exception 'Inspeção de recebimento não encontrada na empresa atual.';
   end if;
-  if v_inspecao.status <> 'PENDENTE' then
+  if v_inspecao.status is distinct from 'PENDENTE' then
     raise exception 'Somente inspeção pendente pode ser aprovada.';
   end if;
   if v_inspecao.defeitos_encontrados > v_inspecao.criterio_ac
