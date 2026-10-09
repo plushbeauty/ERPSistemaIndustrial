@@ -230,7 +230,7 @@ export default function PCPIndustrial(){
    shiftsPerDay: Number(progForm.turnos),
    hoursPerShift: Number(progForm.horas_turno)
   })
-  if(estimatedEnd && estimatedEnd !== progForm.fim){
+  if(estimatedEnd){
    setProgForm(current=>current.fim===estimatedEnd?current:{...current,fim:estimatedEnd})
   }
  },[progForm.inicio,progForm.quantidade,progForm.ciclo_seg,progForm.cavidades_ativas,progForm.eficiencia,progForm.setup_min,progForm.turnos,progForm.horas_turno])
