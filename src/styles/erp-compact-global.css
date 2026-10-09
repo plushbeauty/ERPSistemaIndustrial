@@ -997,8 +997,7 @@
     padding: 4px !important;
   }
   .pcp-industrial-shell .pcp-sidebar-brand div,
-  .pcp-industrial-shell .pcp-side-section,
-  .pcp-industrial-shell .pcp-side-item:not(.active) {
+  .pcp-industrial-shell .pcp-side-section {
     display: none !important;
   }
   .pcp-industrial-shell .pcp-side-item {
