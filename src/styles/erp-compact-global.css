@@ -360,3 +360,63 @@
   text-align: center;
   color: #64748b;
 }
+
+
+/* Qualidade em processo/final: densidade compacta sem atingir outros módulos. */
+[data-quality-workspace] button {
+  box-sizing: border-box;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+}
+[data-quality-workspace] button svg {
+  width: 14px !important;
+  height: 14px !important;
+  flex: 0 0 auto;
+}
+[data-quality-workspace] label {
+  gap: 2px !important;
+  font-size: 9px !important;
+  line-height: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+[data-quality-workspace] section.rounded-\\[2px\\] {
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+[data-quality-workspace] .p-5,
+[data-quality-workspace] .p-4 {
+  padding: 8px !important;
+}
+[data-quality-workspace] .gap-5,
+[data-quality-workspace] .gap-4 {
+  gap: 8px !important;
+}
+[data-quality-workspace] table {
+  border-collapse: collapse;
+  font-size: 10px !important;
+}
+[data-quality-workspace] table th,
+[data-quality-workspace] table td {
+  height: 32px !important;
+  padding: 4px 6px !important;
+  vertical-align: middle;
+}
+[data-quality-workspace] table th {
+  font-size: 9px !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+[data-quality-workspace] table tbody tr:hover {
+  background-color: rgba(250, 250, 250, .9);
+}
+[data-quality-workspace] table td[colspan] {
+  text-align: center;
+}
