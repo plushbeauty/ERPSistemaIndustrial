@@ -41,9 +41,9 @@ const blank:FormState={
  zona1:'',zona2:'',zona3:'',zona4:'',imagem_url:'',observacoes_setup:'',observacoes:''
 }
 
-const field='mt-2 h-[54px] w-full rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none transition focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
-const label='block text-sm font-bold uppercase tracking-wide text-slate-800'
-const card='rounded-md border border-slate-200 bg-white p-5 shadow-sm'
+const field='h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] font-medium text-slate-900 outline-none focus:border-[#2D8DB8]'
+const label='grid gap-[2px] text-[9px] font-medium uppercase tracking-wide text-slate-600'
+const card='rounded-[2px] border border-slate-200 bg-white p-2 shadow-none'
 
 export default function FichasProcesso(){
  const [form,setForm]=useState<FormState>(blank)
@@ -175,34 +175,34 @@ export default function FichasProcesso(){
  }
 
  return <main className="erp-global-surface erp-compact min-h-screen bg-slate-100 text-slate-900">
-  <div className="sticky top-0 z-30 border-b border-slate-700 bg-slate-900 px-4 py-3 text-white shadow-lg">
-   <div className="mx-auto flex max-w-[1700px] items-center justify-between gap-4">
-    <div><p className="text-sm font-bold uppercase tracking-[0.18em] text-sky-300">ERP INDUSTRIAL • ENGENHARIA</p><h1 className="text-xl font-extrabold sm:text-2xl">Ficha de Processo Premium</h1></div>
+  <div className="sticky top-0 z-30 border-b border-slate-700 bg-slate-900 px-4 py-1 text-white shadow-lg">
+   <div className="mx-auto flex max-w-[1700px] items-center justify-between gap-2">
+    <div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-sky-300">ERP INDUSTRIAL • ENGENHARIA</p><h1 className="text-[14px] font-extrabold sm:text-[16px]">Ficha de Processo Premium</h1></div>
     <div className="flex flex-wrap items-center justify-end gap-2">
-     <button type="button" onClick={newFicha} className="rounded-md border border-slate-500 px-4 h-[54px] text-sm font-bold text-white hover:bg-slate-800"><FileDown size={16} className="mr-2 inline"/>NOVO</button>
-     <button type="button" onClick={()=>void save()} disabled={busy} className="rounded-md bg-sky-600 px-5 h-[54px] text-sm font-extrabold text-white hover:bg-sky-500 disabled:opacity-50"><Save size={16} className="mr-2 inline"/>{busy?'GRAVANDO…':'GRAVAR'}</button>
-     <button type="button" onClick={()=>window.print()} className="rounded-md border border-slate-500 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800"><Printer size={16} className="mr-2 inline"/>IMPRIMIR</button>
+     <button type="button" onClick={newFicha} className="rounded-md border border-slate-500 px-4 h-[30px] text-[10px] font-bold text-white hover:bg-slate-800"><FileDown size={16} className="mr-2 inline"/>NOVO</button>
+     <button type="button" onClick={()=>void save()} disabled={busy} className="rounded-md bg-sky-600 px-2 h-[30px] text-[10px] font-extrabold text-white hover:bg-sky-500 disabled:opacity-50"><Save size={16} className="mr-2 inline"/>{busy?'GRAVANDO…':'GRAVAR'}</button>
+     <button type="button" onClick={()=>window.print()} className="rounded-md border border-slate-500 px-4 py-2 text-[10px] font-bold text-white hover:bg-slate-800"><Printer size={16} className="mr-2 inline"/>IMPRIMIR</button>
      <button type="button" onClick={()=>void load()} className="rounded-md border border-slate-500 p-2.5 text-white hover:bg-slate-800" title="Atualizar"><RotateCcw size={18}/></button>
-     <button type="button" onClick={()=>void remove()} disabled={!form.id||busy} className="rounded-md bg-red-700 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-600 disabled:opacity-40"><Trash2 size={16} className="mr-2 inline"/>DELETAR</button>
+     <button type="button" onClick={()=>void remove()} disabled={!form.id||busy} className="rounded-md bg-red-700 px-4 py-2 text-[10px] font-extrabold text-white hover:bg-red-600 disabled:opacity-40"><Trash2 size={16} className="mr-2 inline"/>DELETAR</button>
     </div>
    </div>
   </div>
 
-  <div className="mx-auto grid max-w-[1700px] grid-cols-1 gap-5 p-4 lg:grid-cols-[290px_minmax(0,1fr)]">
+  <div className="mx-auto grid max-w-[1700px] grid-cols-1 gap-2 p-2 lg:grid-cols-[290px_minmax(0,1fr)]">
    <aside className="rounded-md border border-slate-200 bg-white shadow-sm">
-    <div className="border-b border-slate-200 p-4"><p className="text-xs font-extrabold uppercase tracking-wider text-slate-600">FICHAS CADASTRADAS</p><div className="mt-3 flex gap-2"><input className="min-h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-base text-slate-900" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código / status"/><button type="button" className="rounded-md bg-slate-900 px-3 text-white" title="Pesquisar"><Search size={18}/></button></div></div>
+    <div className="border-b border-slate-200 p-2"><p className="text-[9px] font-extrabold uppercase tracking-wider text-slate-600">FICHAS CADASTRADAS</p><div className="mt-3 flex gap-2"><input className="h-[30px] w-full rounded-md border border-slate-300 bg-white px-3 text-[11px] text-slate-900" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código / status"/><button type="button" className="rounded-md bg-slate-900 px-3 text-white" title="Pesquisar"><Search size={18}/></button></div></div>
     <div className="max-h-[70vh] overflow-auto p-2">
-     {filtered.map(x=><button key={x.id} type="button" onClick={()=>openFicha(x)} className={x.id===form.id?'mb-2 w-full rounded-md border border-sky-400 bg-sky-50 p-3 text-left text-slate-900':'mb-2 w-full rounded-md border border-slate-200 bg-white p-3 text-left text-slate-900 hover:border-sky-300 hover:bg-slate-50'}><b className="block text-base">{x.codigo_ficha}</b><span className="block text-sm text-slate-700">{products.find(p=>p.id===x.produto_id)?.nome||'Produto não identificado'}</span><span className="mt-1 inline-block rounded bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700">Rev. {x.revisao} • {x.status}</span></button>)}
-     {!filtered.length&&<div className="p-5 text-center text-sm font-semibold text-slate-600">Nenhuma ficha cadastrada.</div>}
+     {filtered.map(x=><button key={x.id} type="button" onClick={()=>openFicha(x)} className={x.id===form.id?'mb-2 w-full rounded-md border border-sky-400 bg-sky-50 p-2 text-left text-slate-900':'mb-2 w-full rounded-md border border-slate-200 bg-white p-2 text-left text-slate-900 hover:border-sky-300 hover:bg-slate-50'}><b className="block text-[11px]">{x.codigo_ficha}</b><span className="block text-[10px] text-slate-700">{products.find(p=>p.id===x.produto_id)?.nome||'Produto não identificado'}</span><span className="mt-1 inline-block rounded bg-slate-100 px-2 py-1 text-[9px] font-bold text-slate-700">Rev. {x.revisao} • {x.status}</span></button>)}
+     {!filtered.length&&<div className="p-2 text-center text-[10px] font-semibold text-slate-600">Nenhuma ficha cadastrada.</div>}
     </div>
    </aside>
 
    <section className="min-w-0 space-y-5">
-    {(error||message)&&<div className={error?'rounded-md border border-red-200 bg-red-50 p-4 text-base font-bold text-red-800':'rounded-md border border-emerald-200 bg-emerald-50 p-4 text-base font-bold text-emerald-800'}>{error||message}</div>}
+    {(error||message)&&<div className={error?'rounded-md border border-red-200 bg-red-50 p-2 text-[11px] font-bold text-red-800':'rounded-md border border-emerald-200 bg-emerald-50 p-2 text-[11px] font-bold text-emerald-800'}>{error||message}</div>}
 
     <section className={card}>
-     <div className="mb-5 flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-4"><div><p className="text-sm font-extrabold uppercase tracking-wider text-sky-700">1. IDENTIFICAÇÃO DO PRODUTO E FERRAMENTAL</p><h2 className="mt-1 text-xl font-extrabold text-slate-900">Cadastro mestre da ficha</h2></div><span className="rounded-md bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700">Status: {form.status}</span></div>
-     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+     <div className="mb-2 flex flex-wrap items-end justify-between gap-2 border-b border-slate-200 pb-2"><div><p className="text-[10px] font-extrabold uppercase tracking-wider text-sky-700">1. IDENTIFICAÇÃO DO PRODUTO E FERRAMENTAL</p><h2 className="mt-1 text-[14px] font-extrabold text-slate-900">Cadastro mestre da ficha</h2></div><span className="rounded-md bg-slate-100 px-3 py-2 text-[10px] font-bold text-slate-700">Status: {form.status}</span></div>
+     <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
       <label className={label}>CÓD. DA FICHA<input className={field} value={form.codigo_ficha} onChange={e=>update('codigo_ficha',e.target.value)} placeholder="FCH-2026-089"/></label>
       <label className={label}>REVISÃO<input className={field} type="number" min="0" value={form.revisao} onChange={e=>update('revisao',e.target.value)}/></label>
       <EntityCodeLookup label="CÓDIGO DO CLIENTE" value={form.codigo_cliente} records={clients.map(client=>({id:client.codigo,codigo:client.codigo,nome:client.nome,documento:client.documento,codigo_cliente:client.codigo}))} onChange={v=>update('codigo_cliente',v)} onSelect={client=>update('codigo_cliente',client.codigo??client.id)} helper="Digite o código exato do cliente ou abra a lupa para consultar." />
@@ -212,7 +212,7 @@ export default function FichasProcesso(){
       <div><EntityCodeLookup label="RECURSO / MÁQUINA" value={form.maquina_id} records={machines.map(m=>({id:m.id,codigo:m.codigo,nome:m.nome,dimensoes:m.tipo}))} onChange={v=>update('maquina_id',v)} onSelect={r=>update('maquina_id',r.id)} helper="Código direto ou lupa de consulta."/></div>
       <label className={label}>STATUS DA REVISÃO<select className={field} value={form.status} onChange={e=>update('status',e.target.value as Status)}><option>RASCUNHO</option><option>EM_ANALISE</option><option>APROVADA</option><option>LIBERADA</option><option>OBSOLETA</option></select></label>
      </div>
-     <div className="mt-4 grid grid-cols-1 gap-3 rounded-md bg-slate-50 p-4 text-base md:grid-cols-3">
+     <div className="mt-2 grid grid-cols-1 gap-2 rounded-md bg-slate-50 p-2 text-[11px] md:grid-cols-3">
       <div><b className="text-slate-800">Produto:</b> <span>{product?.codigo||'—'} • {product?.nome||'Não selecionado'}</span></div>
       <div><b className="text-slate-800">Ferramental:</b> <span>{tool?.codigo||'—'} • {tool?.nome||'Não selecionado'}</span></div>
       <div><b className="text-slate-800">Máquina:</b> <span>{machine?.codigo||'—'} • {machine?.nome||'Não selecionada'}</span></div>
@@ -220,36 +220,36 @@ export default function FichasProcesso(){
     </section>
 
     <section className={card}>
-     <div className="mb-5 border-b border-slate-200 pb-4"><p className="text-sm font-extrabold uppercase tracking-wider text-sky-700">2. CONFIGURAÇÃO DE PARÂMETROS CRÍTICOS DA MÁQUINA</p><h2 className="mt-1 text-xl font-extrabold text-slate-900">Parâmetros que alimentam o PCP</h2><p className="mt-1 text-base text-slate-600">Valores numéricos são armazenados na ficha e podem ser usados para cálculo de ciclo, capacidade e setup.</p></div>
-     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+     <div className="mb-2 border-b border-slate-200 pb-2"><p className="text-[10px] font-extrabold uppercase tracking-wider text-sky-700">2. CONFIGURAÇÃO DE PARÂMETROS CRÍTICOS DA MÁQUINA</p><h2 className="mt-1 text-[14px] font-extrabold text-slate-900">Parâmetros que alimentam o PCP</h2><p className="mt-1 text-[11px] text-slate-600">Valores numéricos são armazenados na ficha e podem ser usados para cálculo de ciclo, capacidade e setup.</p></div>
+     <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
       {[
        ['Força de fechamento / tonelagem','forca_fechamento','Ton / Bar'],['Pressão de trabalho','pressao_trabalho','Bar'],['Temperatura de trabalho','temperatura_trabalho','°C'],['Pressão de injeção / recalque','pressao_injecao','MPa'],
        ['Tempo de ciclo nominal','ciclo_seg','Segundos'],['Peso líquido da peça','peso_peca','kg'],['Peso canal / refugo','peso_canal','kg'],['Cavidades ativas','cavidades_ativas','un']
-      ].map(([l,k,u])=><label key={k} className={label}>{l}<div className="mt-2 flex"><input className="min-h-12 w-full rounded-l-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100" type="number" step="any" value={form[k as keyof FormState] as string} onChange={e=>update(k as keyof FormState,e.target.value as never)}/><span className="grid min-w-24 place-items-center rounded-r-md border border-l-0 border-slate-300 bg-slate-100 px-2 text-sm font-bold text-slate-700">{u}</span></div></label>)}
+      ].map(([l,k,u])=><label key={k} className={label}>{l}<div className="mt-2 flex"><input className="h-[30px] w-full rounded-l-md border border-slate-300 bg-white px-3 text-[11px] font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100" type="number" step="any" value={form[k as keyof FormState] as string} onChange={e=>update(k as keyof FormState,e.target.value as never)}/><span className="grid min-w-24 place-items-center rounded-r-md border border-l-0 border-slate-300 bg-slate-100 px-2 text-[10px] font-bold text-slate-700">{u}</span></div></label>)}
      </div>
-     <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
-      <div className="rounded-md border border-sky-200 bg-sky-50 p-4"><p className="text-xs font-extrabold uppercase tracking-wide text-sky-800">CAPACIDADE NOMINAL</p><p className="mt-1 text-2xl font-black text-slate-950">{Number(form.ciclo_seg)>0&&Number(form.cavidades_ativas)>0?((3600/Number(form.ciclo_seg))*Number(form.cavidades_ativas)).toFixed(1):'—'} <span className="text-sm font-bold">peças/h</span></p><p className="mt-1 text-sm font-semibold text-slate-700">Base: ciclo nominal × cavidades ativas.</p></div>
-      <div className="rounded-md border border-slate-200 bg-white p-4"><p className="text-xs font-extrabold uppercase tracking-wide text-slate-600">MASSA DA PEÇA</p><p className="mt-1 text-2xl font-black text-slate-950">{form.peso_peca||'—'} <span className="text-sm font-bold">kg</span></p><p className="mt-1 text-sm font-semibold text-slate-700">Peso líquido unitário.</p></div>
-      <div className="rounded-md border border-slate-200 bg-white p-4"><p className="text-xs font-extrabold uppercase tracking-wide text-slate-600">CANAL / REFUGO</p><p className="mt-1 text-2xl font-black text-slate-950">{form.peso_canal||'—'} <span className="text-sm font-bold">kg</span></p><p className="mt-1 text-sm font-semibold text-slate-700">Massa informada para o canal/refugo.</p></div>
+     <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-3">
+      <div className="rounded-md border border-sky-200 bg-sky-50 p-2"><p className="text-[9px] font-extrabold uppercase tracking-wide text-sky-800">CAPACIDADE NOMINAL</p><p className="mt-1 text-[16px] font-black text-slate-950">{Number(form.ciclo_seg)>0&&Number(form.cavidades_ativas)>0?((3600/Number(form.ciclo_seg))*Number(form.cavidades_ativas)).toFixed(1):'—'} <span className="text-[10px] font-bold">peças/h</span></p><p className="mt-1 text-[10px] font-semibold text-slate-700">Base: ciclo nominal × cavidades ativas.</p></div>
+      <div className="rounded-md border border-slate-200 bg-white p-2"><p className="text-[9px] font-extrabold uppercase tracking-wide text-slate-600">MASSA DA PEÇA</p><p className="mt-1 text-[16px] font-black text-slate-950">{form.peso_peca||'—'} <span className="text-[10px] font-bold">kg</span></p><p className="mt-1 text-[10px] font-semibold text-slate-700">Peso líquido unitário.</p></div>
+      <div className="rounded-md border border-slate-200 bg-white p-2"><p className="text-[9px] font-extrabold uppercase tracking-wide text-slate-600">CANAL / REFUGO</p><p className="mt-1 text-[16px] font-black text-slate-950">{form.peso_canal||'—'} <span className="text-[10px] font-bold">kg</span></p><p className="mt-1 text-[10px] font-semibold text-slate-700">Massa informada para o canal/refugo.</p></div>
      </div>
-     <div className="mt-5 rounded-md border border-slate-200 bg-slate-50 p-4"><h3 className="text-base font-extrabold text-slate-900">Temperatura das zonas / aquecimento</h3><div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">{[['Zona 1','zona1'],['Zona 2','zona2'],['Zona 3','zona3'],['Zona 4','zona4']].map(([l,k])=><label key={k} className={label}>{l}<input className={field} value={form[k as keyof FormState] as string} onChange={e=>update(k as keyof FormState,e.target.value as never)} placeholder="°C"/></label>)}</div></div>
+     <div className="mt-2 rounded-md border border-slate-200 bg-slate-50 p-2"><h3 className="text-[11px] font-extrabold text-slate-900">Temperatura das zonas / aquecimento</h3><div className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4">{[['Zona 1','zona1'],['Zona 2','zona2'],['Zona 3','zona3'],['Zona 4','zona4']].map(([l,k])=><label key={k} className={label}>{l}<input className={field} value={form[k as keyof FormState] as string} onChange={e=>update(k as keyof FormState,e.target.value as never)} placeholder="°C"/></label>)}</div></div>
     </section>
 
     <section className={card}>
-     <div className="mb-4"><p className="text-sm font-extrabold uppercase tracking-wider text-sky-700">3. CONTROLE VISUAL</p><h2 className="mt-1 text-xl font-extrabold text-slate-900">Imagem técnica da peça / molde</h2></div>
-     <div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==='Enter'||e.key===' ')fileRef.current?.click()}} onClick={()=>fileRef.current?.click()} onDragOver={e=>{e.preventDefault();setDragging(true)}} onDragLeave={()=>setDragging(false)} onDrop={(e:DragEvent<HTMLDivElement>)=>{e.preventDefault();setDragging(false);void handleFile(e.dataTransfer.files?.[0])}} className={'flex min-h-44 w-full cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed px-6 text-center transition '+(dragging?'border-sky-700 bg-sky-50':'border-indigo-400 bg-slate-50 hover:border-sky-600 hover:bg-sky-50')}>
-      {preview?<img src={preview} alt="Imagem técnica da ficha" className="max-h-72 rounded-md object-contain"/>:<><Upload size={40} className="text-indigo-600"/><span className="mt-3 text-lg font-extrabold text-slate-800">CLIQUE OU ARRASTE A IMAGEM TÉCNICA DA PEÇA AQUI</span><span className="mt-1 text-base text-slate-600">PNG ou JPG • Máximo 5 MB • visualização otimizada para tablet</span></>}
+     <div className="mb-4"><p className="text-[10px] font-extrabold uppercase tracking-wider text-sky-700">3. CONTROLE VISUAL</p><h2 className="mt-1 text-[14px] font-extrabold text-slate-900">Imagem técnica da peça / molde</h2></div>
+     <div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==='Enter'||e.key===' ')fileRef.current?.click()}} onClick={()=>fileRef.current?.click()} onDragOver={e=>{e.preventDefault();setDragging(true)}} onDragLeave={()=>setDragging(false)} onDrop={(e:DragEvent<HTMLDivElement>)=>{e.preventDefault();setDragging(false);void handleFile(e.dataTransfer.files?.[0])}} className={'flex min-h-28 w-full cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed px-6 text-center transition '+(dragging?'border-sky-700 bg-sky-50':'border-indigo-400 bg-slate-50 hover:border-sky-600 hover:bg-sky-50')}>
+      {preview?<img src={preview} alt="Imagem técnica da ficha" className="max-h-72 rounded-md object-contain"/>:<><Upload size={40} className="text-indigo-600"/><span className="mt-3 text-lg font-extrabold text-slate-800">CLIQUE OU ARRASTE A IMAGEM TÉCNICA DA PEÇA AQUI</span><span className="mt-1 text-[11px] text-slate-600">PNG ou JPG • Máximo 5 MB • visualização otimizada para tablet</span></>}
      </div>
      <input ref={fileRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={e=>void handleFile(e.target.files?.[0])}/>
     </section>
 
     <section className={card}>
-     <div className="mb-4"><p className="text-sm font-extrabold uppercase tracking-wider text-sky-700">4. INSTRUÇÕES DE SETUP E SEGURANÇA OPERACIONAL</p><h2 className="mt-1 text-xl font-extrabold text-slate-900">Orientações obrigatórias para o operador</h2></div>
-     <textarea className="min-h-36 w-full rounded-md border border-slate-300 bg-white p-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100" value={form.observacoes_setup} onChange={e=>update('observacoes_setup',e.target.value)} placeholder="Pré-aquecimento, fixação, desmoldante, sequência de setup, pontos de segurança…"/>
-     <textarea className="mt-4 min-h-28 w-full rounded-md border border-slate-300 bg-white p-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100" value={form.observacoes} onChange={e=>update('observacoes',e.target.value)} placeholder="Observações gerais da Engenharia de Processos…"/>
-     <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
-      <span className="text-base font-semibold text-slate-600">Ficha {form.id?'existente no Supabase':'nova'} • {form.status}</span>
-      <div className="flex gap-2"><button type="button" onClick={newFicha} className="rounded-md border border-slate-400 bg-white px-5 py-3 text-base font-extrabold text-slate-800 hover:bg-slate-50"><X size={17} className="mr-2 inline"/>LIMPAR</button><button type="button" onClick={()=>void save()} disabled={busy} className="rounded-md bg-sky-700 px-6 py-3 text-base font-extrabold text-white shadow-sm hover:bg-sky-600 disabled:opacity-50"><Save size={18} className="mr-2 inline"/>GRAVAR FICHA</button></div>
+     <div className="mb-4"><p className="text-[10px] font-extrabold uppercase tracking-wider text-sky-700">4. INSTRUÇÕES DE SETUP E SEGURANÇA OPERACIONAL</p><h2 className="mt-1 text-[14px] font-extrabold text-slate-900">Orientações obrigatórias para o operador</h2></div>
+     <textarea className="min-h-20 w-full rounded-md border border-slate-300 bg-white p-2 text-[11px] font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100" value={form.observacoes_setup} onChange={e=>update('observacoes_setup',e.target.value)} placeholder="Pré-aquecimento, fixação, desmoldante, sequência de setup, pontos de segurança…"/>
+     <textarea className="mt-2 min-h-16 w-full rounded-md border border-slate-300 bg-white p-2 text-[11px] font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100" value={form.observacoes} onChange={e=>update('observacoes',e.target.value)} placeholder="Observações gerais da Engenharia de Processos…"/>
+     <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-4">
+      <span className="text-[11px] font-semibold text-slate-600">Ficha {form.id?'existente no Supabase':'nova'} • {form.status}</span>
+      <div className="flex gap-2"><button type="button" onClick={newFicha} className="rounded-md border border-slate-400 bg-white px-2 py-1 text-[11px] font-extrabold text-slate-800 hover:bg-slate-50"><X size={17} className="mr-2 inline"/>LIMPAR</button><button type="button" onClick={()=>void save()} disabled={busy} className="rounded-md bg-sky-700 px-6 py-1 text-[11px] font-extrabold text-white shadow-sm hover:bg-sky-600 disabled:opacity-50"><Save size={18} className="mr-2 inline"/>GRAVAR FICHA</button></div>
      </div>
     </section>
    </section>
