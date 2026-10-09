@@ -3,7 +3,7 @@ import { Printer, RotateCcw, Save } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 
-type PFMEARow = { id: string; codigo: string; processo: string; etapa: string; falha: string; severidade: number; ocorrencia: number; deteccao: number; rpn: number; acao: string | null; responsavel: string | null; data_limite: string | null; status: string }
+type PFMEARow = { id: string; codigo: string; processo: string; etapa: string; falha: string; efeito: string; causa: string; controle: string; severidade: number; ocorrencia: number; deteccao: number; rpn: number; acao: string | null; responsavel: string | null; data_limite: string | null; status: string }
 
 const inputClass = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-0'
 const labelClass = 'grid min-w-0 gap-[2px] text-[9px] font-medium uppercase tracking-wide text-slate-600'
@@ -27,13 +27,15 @@ export default function QualidadePFMEA() {
   const [acao, setAcao] = useState('')
   const [responsavel, setResponsavel] = useState('')
   const [dataLimite, setDataLimite] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [status, setStatus] = useState('ABERTO')
   const [rows, setRows] = useState<PFMEARow[]>([])
   const [loadingRows, setLoadingRows] = useState(true)
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
 
   const npr = useMemo(() => gravidade * ocorrencia * deteccao, [gravidade, ocorrencia, deteccao])
-  const filteredRows = useMemo(() => rows.filter(row => !query.trim() || [row.codigo, row.processo, row.etapa, row.falha, row.status, row.acao ?? '', row.responsavel ?? ''].join(' ').toLocaleLowerCase('pt-BR').includes(query.trim().toLocaleLowerCase('pt-BR'))), [rows, query])
+  const filteredRows = useMemo(() => rows.filter(row => !query.trim() || [row.codigo, row.processo, row.etapa, row.falha, row.efeito, row.causa, row.controle, row.status, row.acao ?? '', row.responsavel ?? ''].join(' ').toLocaleLowerCase('pt-BR').includes(query.trim().toLocaleLowerCase('pt-BR'))), [rows, query])
   const pageSize = 25
   const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize))
   const visibleRows = filteredRows.slice((page - 1) * pageSize, page * pageSize)
@@ -45,7 +47,7 @@ export default function QualidadePFMEA() {
       if (company.error || !company.data) throw company.error ?? new Error('Empresa não identificada na sessão atual.')
       const companyId = String(company.data)
       const data = await fetchAllPages<PFMEARow>((from, to) => supabase.from('erp_fmea')
-        .select('id,codigo,processo,etapa,falha,severidade,ocorrencia,deteccao,rpn,acao,responsavel,data_limite,status', { count: 'exact' })
+        .select('id,codigo,processo,etapa,falha,efeito,causa,controle,severidade,ocorrencia,deteccao,rpn,acao,responsavel,data_limite,status', { count: 'exact' })
         .eq('empresa_id', companyId)
         .order('rpn', { ascending: false })
         .order('codigo')
@@ -62,7 +64,7 @@ export default function QualidadePFMEA() {
   useEffect(() => { void load() }, [])
   useEffect(() => { setPage(current => Math.min(current, pageCount)) }, [pageCount])
 
-  const reset = () => {
+  const reset = (keepMessage = false) => {
     setCodigo('')
     setProcesso('')
     setEtapa('')
@@ -76,8 +78,13 @@ export default function QualidadePFMEA() {
     setAcao('')
     setResponsavel('')
     setDataLimite('')
-    setMessage('')
-    setMessageType('')
+    setEditingId(null)
+    setStatus('ABERTO')
+    if (!keepMessage) { setMessage(''); setMessageType('') }
+  }
+
+  const editRow = (row: PFMEARow) => {
+    setEditingId(row.id); setCodigo(row.codigo); setProcesso(row.processo); setEtapa(row.etapa); setFalha(row.falha); setEfeito(row.efeito ?? ''); setCausa(row.causa ?? ''); setControle(row.controle ?? ''); setGravidade(row.severidade); setOcorrencia(row.ocorrencia); setDeteccao(row.deteccao); setAcao(row.acao ?? ''); setResponsavel(row.responsavel ?? ''); setDataLimite(row.data_limite ?? ''); setStatus(row.status || 'ABERTO'); setMessage(''); setMessageType('')
   }
 
   const save = async () => {
@@ -100,7 +107,7 @@ export default function QualidadePFMEA() {
       if (emp.error) throw emp.error
       if (!emp.data) throw new Error('Empresa não identificada na sessão atual.')
 
-      const result = await supabase.from('erp_fmea').upsert({
+      const payload = {
         empresa_id: String(emp.data),
         codigo: codigo.trim(),
         processo: processo.trim(),
@@ -115,11 +122,15 @@ export default function QualidadePFMEA() {
         severidade: gravidade,
         ocorrencia,
         deteccao,
-        status: 'ABERTO',
-      }, { onConflict: 'empresa_id,codigo' })
-
+        status,
+      }
+      const updating = Boolean(editingId)
+      const result = editingId
+        ? await supabase.from('erp_fmea').update(payload).eq('id', editingId).eq('empresa_id', String(emp.data)).select('id').single()
+        : await supabase.from('erp_fmea').insert(payload).select('id').single()
       if (result.error) throw result.error
-      setMessage('PFMEA gravado com sucesso no banco de dados da empresa atual.')
+      reset(true)
+      setMessage(updating ? 'PFMEA atualizado com sucesso.' : 'PFMEA cadastrado com sucesso.')
       setMessageType('success')
       await load()
     } catch (causeError) {
@@ -157,7 +168,7 @@ export default function QualidadePFMEA() {
           </div>
           <div className="flex flex-wrap gap-1.5">
             <button type="button" className={`${buttonClass} border-slate-300 bg-white text-slate-700 hover:bg-slate-50`} onClick={reset} disabled={busy}><RotateCcw size={12}/> NOVO</button>
-            <button type="button" className={`${buttonClass} border-[#2D8DB8] bg-[#2D8DB8] text-white hover:bg-[#24769A]`} onClick={() => void save()} disabled={busy}><Save size={12}/> {busy ? 'SALVANDO…' : 'SALVAR PFMEA'}</button>
+            <button type="button" className={`${buttonClass} border-[#2D8DB8] bg-[#2D8DB8] text-white hover:bg-[#24769A]`} onClick={() => void save()} disabled={busy}><Save size={12}/> {busy ? 'SALVANDO…' : editingId ? 'ATUALIZAR PFMEA' : 'SALVAR PFMEA'}</button>
             <button type="button" className={`${buttonClass} border-slate-300 bg-white text-slate-700 hover:bg-slate-50`} onClick={() => window.print()}><Printer size={12}/> IMPRIMIR</button>
           </div>
         </header>
@@ -170,7 +181,7 @@ export default function QualidadePFMEA() {
             <label className={labelClass}>Código PFMEA *<input className={inputClass} value={codigo} onChange={(event) => setCodigo(event.target.value)} maxLength={80} required placeholder="Código único da análise"/></label>
             <label className={labelClass}>Processo / Operação *<input className={inputClass} value={processo} onChange={(event) => setProcesso(event.target.value)} maxLength={200} required placeholder="Processo analisado"/></label>
             <label className={labelClass}>Etapa do processo<input className={inputClass} value={etapa} onChange={(event) => setEtapa(event.target.value)} maxLength={200} placeholder="Etapa / operação"/></label>
-            <label className={labelClass}>Status<input className={`${inputClass} bg-slate-50`} value="ABERTO" readOnly aria-label="Status inicial da análise"/></label>
+            <label className={labelClass}>Status<input className={`${inputClass} bg-slate-50`} value={status} readOnly aria-label="Status da análise"/></label>
           </div>
         </section>
 
@@ -213,7 +224,7 @@ export default function QualidadePFMEA() {
             <h2 className="text-[11px] font-semibold">05 · REGISTROS PFMEA DA EMPRESA</h2>
             <input className={inputClass + ' max-w-[280px]'} value={query} onChange={(event) => { setQuery(event.target.value); setPage(1) }} aria-label="Pesquisar registros PFMEA" placeholder="Buscar código, processo, falha ou responsável" />
           </div>
-          {loadingRows ? <p className="p-2 text-[11px] text-slate-500" role="status">Carregando registros PFMEA…</p> : <div className="overflow-x-auto"><table className="w-full min-w-[1000px] border-collapse text-[10px]"><thead className="bg-[#123B50] text-left text-white"><tr><th className="p-2">Código</th><th className="p-2">Processo / etapa</th><th className="p-2">Modo de falha</th><th className="p-2">G</th><th className="p-2">O</th><th className="p-2">D</th><th className="p-2">NPR</th><th className="p-2">Ação</th><th className="p-2">Responsável</th><th className="p-2">Data limite</th><th className="p-2">Status</th></tr></thead><tbody>{visibleRows.map(row => <tr key={row.id} className="border-b border-slate-200 even:bg-slate-50"><td className="p-2">{row.codigo}</td><td className="p-2">{row.processo}{row.etapa ? ` / ${row.etapa}` : ''}</td><td className="p-2">{row.falha}</td><td className="p-2 tabular-nums">{row.severidade}</td><td className="p-2 tabular-nums">{row.ocorrencia}</td><td className="p-2 tabular-nums">{row.deteccao}</td><td className="p-2 font-semibold tabular-nums">{row.rpn}</td><td className="p-2">{row.acao || '—'}</td><td className="p-2">{row.responsavel || '—'}</td><td className="p-2">{row.data_limite ? new Date(`${row.data_limite}T12:00:00`).toLocaleDateString('pt-BR') : '—'}</td><td className="p-2">{row.status}</td></tr>)}{!visibleRows.length && <tr><td className="p-3 text-center text-slate-500" colSpan={11}>Nenhum registro PFMEA encontrado para esta empresa e filtro.</td></tr>}</tbody></table></div>}
+          {loadingRows ? <p className="p-2 text-[11px] text-slate-500" role="status">Carregando registros PFMEA…</p> : <div className="overflow-x-auto"><table className="w-full min-w-[1320px] border-collapse text-[10px]"><thead className="bg-[#123B50] text-left text-white"><tr><th className="p-2">Código</th><th className="p-2">Processo / etapa</th><th className="p-2">Modo de falha</th><th className="p-2">Efeito / causa / controle</th><th className="p-2">G</th><th className="p-2">O</th><th className="p-2">D</th><th className="p-2">NPR</th><th className="p-2">Ação</th><th className="p-2">Responsável</th><th className="p-2">Data limite</th><th className="p-2">Status</th><th className="p-2">Ações</th></tr></thead><tbody>{visibleRows.map(row => <tr key={row.id} className="border-b border-slate-200 even:bg-slate-50"><td className="p-2">{row.codigo}</td><td className="p-2">{row.processo}{row.etapa ? ` / ${row.etapa}` : ''}</td><td className="p-2">{row.falha}</td><td className="p-2"><div>Efeito: {row.efeito || "—"}</div><div>Causa: {row.causa || "—"}</div><div>Controle: {row.controle || "—"}</div></td><td className="p-2 tabular-nums">{row.severidade}</td><td className="p-2 tabular-nums">{row.ocorrencia}</td><td className="p-2 tabular-nums">{row.deteccao}</td><td className="p-2 font-semibold tabular-nums">{row.rpn}</td><td className="p-2">{row.acao || '—'}</td><td className="p-2">{row.responsavel || '—'}</td><td className="p-2">{row.data_limite ? new Date(`${row.data_limite}T12:00:00`).toLocaleDateString('pt-BR') : '—'}</td><td className="p-2">{row.status}</td><td className="p-2"><button type="button" className={buttonClass} disabled={busy} onClick={() => editRow(row)}>Editar</button></td></tr>)}{!visibleRows.length && <tr><td className="p-3 text-center text-slate-500" colSpan={13}>Nenhum registro PFMEA encontrado para esta empresa e filtro.</td></tr>}</tbody></table></div>}
           {filteredRows.length > pageSize && <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-2 text-[10px]"><span>Exibindo {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, filteredRows.length)} de {filteredRows.length}</span><div className="flex items-center gap-2"><button type="button" className={buttonClass} disabled={page === 1} onClick={() => setPage(current => Math.max(1, current - 1))}>Anterior</button><span>Página {page} de {pageCount}</span><button type="button" className={buttonClass} disabled={page === pageCount} onClick={() => setPage(current => Math.min(pageCount, current + 1))}>Próxima</button></div></div>}
         </section>
       </div>

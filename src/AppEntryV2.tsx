@@ -117,7 +117,7 @@ const AjusteGlobal = lazyPage(() => import('./pages/AjusteGlobal'), 'default')
 const CatalogoDigital = lazyPage(() => import('./pages/CatalogoDigital'), 'CatalogoDigital')
 const FichasProcesso = lazyPage(() => import('./pages/FichasProcesso'), 'FichasProcesso')
 const AssistenteAjudaERP = lazyPage(() => import('./pages/AssistenteAjudaERP'), 'AssistenteAjudaERP')
-const ComprasSolicitacaoManual = lazyPage(() => import('./pages/ComprasSolicitacaoManual'), 'ComprasSolicitacaoManual')
+
 const ExpedicaoPortaria = lazyPage(() => import('./pages/ExpedicaoPortaria'), 'ExpedicaoPortaria')
 const EngenhariaRevisoesBOM = lazyPage(() => import('./pages/EngenhariaRevisoesBOM'), 'EngenhariaRevisoesBOM')
 const EngenhariaCentral = lazyPage(() => import('./pages/EngenhariaCentral'), 'EngenhariaCentral')
@@ -522,8 +522,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras/pedidos" element={<Navigate to="/compras/pedido" replace />} />
       <Route path="/compras/ordem-compra" element={<Navigate to="/compras/pedido" replace />} />
       <Route path="/compras/fornecedores" element={<ComprasRoute><FornecedoresIndustrial /></ComprasRoute>} />
-      <Route path="/compras/solicitacao-manual" element={<ComprasRoute><ComprasSolicitacaoManual /></ComprasRoute>} />
-      <Route path="/solicitacao-compra" element={<ComprasRoute><SolicitacaoCompra /></ComprasRoute>} />
+      <Route path="/compras/solicitacao-manual" element={<ComprasRoute><SolicitacaoCompra /></ComprasRoute>} />
+      <Route path="/solicitacao-compra" element={<Navigate to="/compras/solicitacao-manual" replace />} />
       <Route path="/fornecedores" element={<Navigate to="/compras/fornecedores" replace />} />
       <Route path="/clientes" element={<ClientesIndustrial />} />
       <Route path="/tabela-precos" element={<AjusteGlobal />} />
