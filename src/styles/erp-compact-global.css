@@ -473,8 +473,28 @@
 .erp-stock-receiving .gap-3 {
   gap: 8px !important;
 }
-.erp-stock-receiving .rounded-md {
+.erp-stock-receiving .rounded-md,
+.erp-stock-receiving .rounded-full {
   border-radius: 2px !important;
+}
+.erp-stock-receiving .h-7.w-7 {
+  width: 20px !important;
+  height: 20px !important;
+  font-size: 10px !important;
+}
+.erp-stock-receiving h2,
+.erp-stock-receiving .text-lg {
+  font-size: 12px !important;
+  line-height: 16px !important;
+}
+.erp-stock-receiving .text-sm {
+  font-size: 10px !important;
+}
+.erp-stock-receiving .mb-4 {
+  margin-bottom: 8px !important;
+}
+.erp-stock-receiving .pb-3 {
+  padding-bottom: 8px !important;
 }
 .erp-stock-receiving table {
   border-collapse: collapse;
