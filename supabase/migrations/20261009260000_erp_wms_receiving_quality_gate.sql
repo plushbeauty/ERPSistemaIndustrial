@@ -49,6 +49,7 @@ declare
   v_quarentena uuid;
   v_saldo numeric;
   v_disponivel numeric;
+  v_bloqueada numeric;
   v_localizacao_id uuid;
   v_master boolean;
 begin
@@ -85,6 +86,11 @@ begin
   end if;
 
   v_disponivel := coalesce(v_lote.quantidade_disponivel, 0);
+  v_bloqueada := v_disponivel;
+  if v_disponivel <= 0 and upper(coalesce(v_lote.status_inspecao, '')) = 'AGUARDANDO' then
+    -- Incoming material not yet released to stock is still a blocked quantity.
+    v_bloqueada := greatest(0, coalesce(v_lote.quantidade_recebida, 0));
+  end if;
   if upper(coalesce(v_lote.status_inspecao, '')) = 'RETIDO' and v_disponivel > 0 then
     raise exception 'Lote já retido com saldo disponível inconsistente; reconcilie o estoque antes de continuar.';
   end if;
@@ -152,15 +158,15 @@ begin
 
   if v_quarentena is not null then
     update public.erp_quarentenas_lotes
-    set motivo = btrim(p_motivo), lote_rastreabilidade_id = coalesce(v_trace.id, lote_rastreabilidade_id), quantidade_retirada = coalesce(quantidade_retirada, 0) + v_disponivel
+    set motivo = btrim(p_motivo), lote_rastreabilidade_id = coalesce(v_trace.id, lote_rastreabilidade_id), quantidade_retirada = coalesce(quantidade_retirada, 0) + v_disponivel, quantidade_bloqueada = coalesce(quantidade_bloqueada, 0) + v_bloqueada
     where id = v_quarentena and empresa_id = v_empresa;
     return v_quarentena;
   end if;
 
   insert into public.erp_quarentenas_lotes (
-    empresa_id, lote_id, lote_rastreabilidade_id, motivo, criado_por, quantidade_retirada
+    empresa_id, lote_id, lote_rastreabilidade_id, motivo, criado_por, quantidade_retirada, quantidade_bloqueada
   ) values (
-    v_empresa, v_lote.id, v_trace.id, btrim(p_motivo), auth.uid(), v_disponivel
+    v_empresa, v_lote.id, v_trace.id, btrim(p_motivo), auth.uid(), v_disponivel, v_bloqueada
   ) returning id into v_quarentena;
 
   return v_quarentena;
