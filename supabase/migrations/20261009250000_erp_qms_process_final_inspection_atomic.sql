@@ -164,15 +164,8 @@ begin
     raise exception 'Critério dimensional/funcional exige limites técnicos e instrumento aprovado com calibração vigente.';
   end if;
 
-  if exists (
-    select 1
-    from jsonb_array_elements(p_medicoes) m
-    join public.erp_planos_inspecao s
-      on s.id = nullif(m->>'plano_inspecao_id', '')::uuid
-      and s.empresa_id = v_empresa
-      and s.produto_id = p_produto_id
-    where s.metodo_inspecao not in ('VISUAL', 'DOCUMENTAL')
-      and replace(btrim(coalesce(m->>'encontrado', '')), ',', '.') !~ '^[+-]?[0-9]+([.][0-9]+)?
+  if p_resultado = 'APROVADO' then
+    if p_quantidade_reprovada > 0 or p_acao_bloqueio is not null then
       raise exception 'Inspeção aprovada não pode ter quantidade reprovada nem ação de bloqueio.';
     end if;
 
@@ -183,20 +176,33 @@ begin
         on s.id = nullif(m->>'plano_inspecao_id', '')::uuid
         and s.empresa_id = v_empresa
         and s.produto_id = p_produto_id
-      where
-        case
-          when s.metodo_inspecao in ('VISUAL', 'DOCUMENTAL') then
-            upper(btrim(coalesce(m->>'encontrado', ''))) not in ('OK', 'CONFORME', 'APROVADO', 'SIM')
-          else
-            nullif(replace(btrim(coalesce(m->>'encontrado', '')), ',', '.'), '') is null
-            or (s.limite_inferior is not null and replace(btrim(m->>'encontrado'), ',', '.')::numeric < s.limite_inferior)
-            or (s.limite_superior is not null and replace(btrim(m->>'encontrado'), ',', '.')::numeric > s.limite_superior)
-        end
+      where coalesce(s.metodo_inspecao, '') not in ('VISUAL', 'DOCUMENTAL')
+        and nullif(replace(btrim(coalesce(m->>'encontrado', '')), ',', '.'), '') is null
+    ) then
+      raise exception 'Características quantitativas exigem valor medido numérico.';
+    end if;
+
+    if exists (
+      select 1
+      from jsonb_array_elements(p_medicoes) m
+      join public.erp_planos_inspecao s
+        on s.id = nullif(m->>'plano_inspecao_id', '')::uuid
+        and s.empresa_id = v_empresa
+        and s.produto_id = p_produto_id
+      where case
+        when s.metodo_inspecao in ('VISUAL', 'DOCUMENTAL') then
+          upper(btrim(coalesce(m->>'encontrado', ''))) not in ('OK', 'CONFORME', 'APROVADO', 'SIM')
+        else
+          nullif(replace(btrim(coalesce(m->>'encontrado', '')), ',', '.'), '') is null
+          or (s.limite_inferior is not null and replace(btrim(m->>'encontrado'), ',', '.')::numeric < s.limite_inferior)
+          or (s.limite_superior is not null and replace(btrim(m->>'encontrado'), ',', '.')::numeric > s.limite_superior)
+      end
     ) then
       raise exception 'Uma ou mais características não atendem aos critérios aprovados; o laudo não pode ser aprovado.';
     end if;
   else
-    if p_quantidade_reprovada <= 0 or p_acao_bloqueio is null or p_acao_bloqueio not in ('BLOQUEAR_LOTE', 'RETER_RETRABALHO', 'SEGREGAR') then
+    if p_quantidade_reprovada <= 0 or p_acao_bloqueio is null
+       or p_acao_bloqueio not in ('BLOQUEAR_LOTE', 'RETER_RETRABALHO', 'SEGREGAR') then
       raise exception 'Resultado não aprovado exige quantidade reprovada e ação de bloqueio válida.';
     end if;
     if p_setor_id is null or not exists (
