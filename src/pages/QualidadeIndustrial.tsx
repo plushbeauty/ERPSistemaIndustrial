@@ -183,7 +183,7 @@ export default function QualidadeIndustrial() {
         if (currentSpecs.some(item => item.metodo_inspecao !== 'DIMENSIONAL')) throw new Error('Liberação bloqueada: inspeções VISUAL, FUNCIONAL ou DOCUMENTAL precisam de checklist de evidência dedicado antes da aprovação automática.')
         const activeSpecs = currentSpecs
         if (receiving.defeitos_encontrados > receiving.criterio_ac) throw new Error('A quantidade de defeitos excede o critério Ac; o lote não pode ser aprovado.')
-        const dimensionalSpecs = activeSpecs.filter(item => item.metodo_inspecao === 'DIMENSIONAL'
+        const dimensionalSpecs = activeSpecs.filter(item => item.metodo_inspecao === 'DIMENSIONAL')
         if (dimensionalSpecs.some(item => item.nominal === null || item.limite_inferior === null || item.limite_superior === null)) {
           throw new Error('Há especificações dimensionais incompletas: informe nominal e limites inferior/superior antes da liberação.')
         }
