@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Boxes, RefreshCw, Play, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 
 type Product={id:string;codigo:string;nome:string;estoque_atual:number;fabricado:boolean}
 type Need={id:string;componente_id:string;nivel:number;quantidade_bruta:number;estoque_atual:number;reservado:number;quantidade_disponivel:number;necessidade_liquida:number;sugestao:string}
@@ -61,7 +62,7 @@ export default function MRPIndustrial(){
   <section className="industrial-panel" style={{marginBottom:16}}>
    <div className="process-section-heading"><span>EXECUTAR MRP</span><h2>Demanda de fabricação</h2><p>O cálculo usa a ficha técnica ativa e percorre BOMs filhas sem permitir ciclos.</p></div>
    <div className="process-form-grid">
-    <label>Produto raiz<select value={productId} onChange={e=>setProductId(e.target.value)}><option value="">Selecione o produto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select></label>
+    <EntityCodeLookup label="Produto raiz" value={productId} records={products.map(product=>({id:product.id,codigo:product.codigo,nome:product.nome,estoque_atual:product.estoque_atual}))} onChange={setProductId} onSelect={product=>setProductId(product.id)} required helper="Selecione o produto fabricado pela busca de código."/>
     <label>Quantidade<input type="number" min="0.001" step="0.001" value={quantity} onChange={e=>setQuantity(e.target.value)}/></label>
     <label>Referência da demanda<input value={demandRef} onChange={e=>setDemandRef(e.target.value)} placeholder="Pedido, OP, previsão…"/></label>
     <div style={{display:'flex',alignItems:'end'}}><button className="industrial-primary" type="button" onClick={()=>void calculate()} disabled={busy}><Play size={16}/>{busy?'Calculando…':'Calcular MRP'}</button></div>
