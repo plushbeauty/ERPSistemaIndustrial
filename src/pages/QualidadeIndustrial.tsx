@@ -7,7 +7,8 @@ import ColetaDimensionalCEP from '../components/ColetaDimensionalCEP'
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; fornecedor_id: string | null; nf_numero: string | null; quantidade_recebida: number; status_inspecao: string | null }
 type Supplier = { id: string; razao_social: string }
 type Product = { id: string; codigo: string; nome: string }
-type Specification = { id: string; produto_id: string; codigo: string; caracteristica: string; unidade: string | null; nominal: number | null; tipo_inspecao: string; limite_inferior: number | null; limite_superior: number | null; frequencia: string | null; status: string | null; vigencia_inicio: string | null; vigencia_fim: string | null; aprovador_id: string | null; revisao: number }
+type Instrument = { id: string; codigo: string; descricao: string; status: string; proxima_calibracao: string | null }
+type Specification = { id: string; produto_id: string; codigo: string; caracteristica: string; unidade: string | null; nominal: number | null; tipo_inspecao: string; metodo_inspecao: string; instrumento_id: string | null; limite_inferior: number | null; limite_superior: number | null; frequencia: string | null; status: string | null; vigencia_inicio: string | null; vigencia_fim: string | null; aprovador_id: string | null; revisao: number }
 type Receiving = { id: string; lote_id: string; fornecedor_id: string | null; tamanho_lote: number; nivel_inspecao: 'G-II' | 'G-III'; aql: number; tamanho_amostra: number; defeitos_encontrados: number; criterio_ac: number; criterio_re: number; status: 'PENDENTE' | 'APROVADO' | 'BLOQUEADO'; created_at: string }
 type Dimensional = { id: string; inspecao_recebimento_id: string | null; plano_inspecao_id: string | null; numero_peca_amostrada: number; cavidade_molde: string | null; cota_nominal_mm: number; tolerancia_superior_mm: number; tolerancia_inferior_mm: number; valor_medido_mm: number | null; desvio_mm: number | null; status: 'PENDENTE' | 'OK' | 'NOK'; instrumento: string | null }
 type Genealogy = { id: string; lote_interno: string; lote_fornecedor: string | null; produto: string; fornecedor: string; operador: string; maquina: string; apontado_em: string | null; pedido: string | null }
@@ -51,6 +52,7 @@ export default function QualidadeIndustrial() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [specifications, setSpecifications] = useState<Specification[]>([])
+  const [instruments, setInstruments] = useState<Instrument[]>([])
   const [receivings, setReceivings] = useState<Receiving[]>([])
   const [dimensionals, setDimensionals] = useState<Dimensional[]>([])
   const [selectedReceiving, setSelectedReceiving] = useState('')
@@ -62,7 +64,7 @@ export default function QualidadeIndustrial() {
   const [defects, setDefects] = useState('0')
   const [ac, setAc] = useState('1')
   const [re, setRe] = useState('2')
-  const [instrument, setInstrument] = useState('Paquímetro')
+  
   const [piece, setPiece] = useState('1')
   const [cavity, setCavity] = useState('')
   const [measured, setMeasured] = useState('')
@@ -82,11 +84,12 @@ export default function QualidadeIndustrial() {
       if (!current.data) throw new Error('Empresa da sessão não identificada.')
       const id = String(current.data)
       setCompanyId(id)
-      const [lotResult, supplierResult, productResult, specificationResult, receivingResult, dimensionalResult] = await Promise.all([
+      const [lotResult, supplierResult, productResult, specificationResult, instrumentResult, receivingResult, dimensionalResult] = await Promise.all([
         supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,fornecedor_id,nf_numero,quantidade_recebida,status_inspecao').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
         supabase.from('erp_fornecedores').select('id,razao_social').eq('empresa_id', id).order('razao_social').limit(500),
         supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', id).eq('ativo', true).order('codigo').limit(2000),
-        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,tipo_inspecao,limite_inferior,limite_superior,frequencia,status,vigencia_inicio,vigencia_fim,aprovador_id,revisao').eq('empresa_id', id).order('codigo').limit(2000),
+        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,tipo_inspecao,metodo_inspecao,instrumento_id,limite_inferior,limite_superior,frequencia,status,vigencia_inicio,vigencia_fim,aprovador_id,revisao').eq('empresa_id', id).order('codigo').limit(2000),
+        supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao').eq('empresa_id', id).order('codigo').limit(1000),
         supabase.from('erp_qualidade_inspecoes_recebimento').select('id,lote_id,fornecedor_id,tamanho_lote,nivel_inspecao,aql,tamanho_amostra,defeitos_encontrados,criterio_ac,criterio_re,status,created_at').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
         supabase.from('erp_qualidade_inspecoes_dimensionais').select('id,inspecao_recebimento_id,plano_inspecao_id,numero_peca_amostrada,cavidade_molde,cota_nominal_mm,tolerancia_superior_mm,tolerancia_inferior_mm,valor_medido_mm,desvio_mm,status,instrumento').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
       ])
@@ -94,12 +97,14 @@ export default function QualidadeIndustrial() {
       if (supplierResult.error) throw supplierResult.error
       if (productResult.error) throw productResult.error
       if (specificationResult.error) throw specificationResult.error
+      if (instrumentResult.error) throw instrumentResult.error
       if (receivingResult.error) throw receivingResult.error
       if (dimensionalResult.error) throw dimensionalResult.error
       setLots((lotResult.data ?? []) as Lot[])
       setSuppliers((supplierResult.data ?? []) as Supplier[])
       setProducts((productResult.data ?? []) as Product[])
       setSpecifications((specificationResult.data ?? []) as Specification[])
+      setInstruments((instrumentResult.data ?? []) as Instrument[])
       setReceivings((receivingResult.data ?? []) as Receiving[])
       setDimensionals((dimensionalResult.data ?? []) as Dimensional[])
     } catch (cause) {
@@ -117,9 +122,12 @@ export default function QualidadeIndustrial() {
   const currentReceivingLot = lots.find((lot) => lot.id === currentReceiving?.lote_id) ?? null
   const currentProduct = products.find((product) => product.id === currentReceivingLot?.produto_id) ?? null
   const today = new Date().toISOString().slice(0, 10)
-  const isEffectiveSpec = (item: Specification) => (item.status ?? '').toUpperCase() === 'ATIVO' && Boolean(item.aprovador_id) && (!item.vigencia_inicio || item.vigencia_inicio <= today) && (!item.vigencia_fim || item.vigencia_fim >= today)
+  const validInstruments = instruments.filter(item => item.status.toUpperCase() === 'APROVADO' && Boolean(item.proxima_calibracao && item.proxima_calibracao >= today))
+  const isEffectiveSpec = (item: Specification) => (item.status ?? '').toUpperCase() === 'ATIVO' && Boolean(item.aprovador_id) && (!item.vigencia_inicio || item.vigencia_inicio <= today) && (!item.vigencia_fim || item.vigencia_fim >= today) && (!['DIMENSIONAL','FUNCIONAL'].includes(item.metodo_inspecao) || validInstruments.some(instrumentItem => instrumentItem.id === item.instrumento_id))
   const activeSpecsForReceiving = specifications.filter(item => item.produto_id === currentReceivingLot?.produto_id && item.tipo_inspecao === 'RECEBIMENTO' && isEffectiveSpec(item))
-  const selectedSpec = activeSpecsForReceiving.find(item => item.id === selectedSpecId) ?? null
+  const activeDimensionalSpecsForReceiving = activeSpecsForReceiving.filter(item => item.metodo_inspecao === 'DIMENSIONAL' && item.nominal !== null && item.limite_inferior !== null && item.limite_superior !== null)
+  const selectedSpec = activeDimensionalSpecsForReceiving.find(item => item.id === selectedSpecId) ?? null
+  const selectedInstrument = selectedSpec ? validInstruments.find(item => item.id === selectedSpec.instrumento_id) ?? null : null
   const dimensionalPreview = measured !== '' && selectedSpec?.nominal != null ? Number(measured) - Number(selectedSpec.nominal) : null
   const dimensionalStatus = dimensionalPreview === null || !selectedSpec || selectedSpec.limite_inferior === null || selectedSpec.limite_superior === null ? 'PENDENTE' : Number(measured) >= selectedSpec.limite_inferior && Number(measured) <= selectedSpec.limite_superior ? 'OK' : 'NOK'
 
@@ -171,7 +179,7 @@ export default function QualidadeIndustrial() {
         const activeSpecs = specifications.filter(item => item.produto_id === lot.produto_id && item.tipo_inspecao === 'RECEBIMENTO' && isEffectiveSpec(item))
         if (!activeSpecs.length) throw new Error('SEM ESPECIFICAÇÃO: o lote não pode ser aprovado automaticamente. Cadastre critérios técnicos vigentes para este produto na Engenharia/Qualidade.')
         if (receiving.defeitos_encontrados > receiving.criterio_ac) throw new Error('A quantidade de defeitos excede o critério Ac; o lote não pode ser aprovado.')
-        const dimensionalSpecs = activeSpecs.filter(item => item.limite_inferior !== null || item.limite_superior !== null)
+        const dimensionalSpecs = activeSpecs.filter(item => item.metodo_inspecao === 'DIMENSIONAL'
         if (dimensionalSpecs.some(item => item.nominal === null || item.limite_inferior === null || item.limite_superior === null)) {
           throw new Error('Há especificações dimensionais incompletas: informe nominal e limites inferior/superior antes da liberação.')
         }
@@ -198,7 +206,7 @@ export default function QualidadeIndustrial() {
     setError(''); setNotice('')
     if (!selectedReceiving) return setInvalid('receiving')
     if (!selectedSpec || selectedSpec.nominal === null || selectedSpec.limite_inferior === null || selectedSpec.limite_superior === null) {
-      setError('Selecione uma especificação ativa com nominal e os dois limites técnicos.')
+      setError('Selecione uma especificação dimensional ativa com nominal e os dois limites técnicos.')
       return
     }
     if (!piece || measured.trim() === '' || !Number.isFinite(Number(measured))) return setInvalid('dimensional')
@@ -208,6 +216,7 @@ export default function QualidadeIndustrial() {
       const upperTolerance = Number(selectedSpec.limite_superior) - nominalValue
       const lowerTolerance = nominalValue - Number(selectedSpec.limite_inferior)
       if (upperTolerance < 0 || lowerTolerance < 0) throw new Error('O nominal cadastrado está fora dos limites da especificação.')
+      if (!selectedInstrument) throw new Error('O instrumento da especificação não está aprovado ou está com calibração vencida.')
       const result = await supabase.from('erp_qualidade_inspecoes_dimensionais').insert({
         empresa_id: companyId,
         inspecao_recebimento_id: selectedReceiving,
@@ -218,7 +227,7 @@ export default function QualidadeIndustrial() {
         tolerancia_superior_mm: upperTolerance,
         tolerancia_inferior_mm: lowerTolerance,
         valor_medido_mm: Number(measured),
-        instrumento: instrument,
+        instrumento: selectedInstrument.codigo,
       }).select('id,inspecao_recebimento_id,plano_inspecao_id,numero_peca_amostrada,cavidade_molde,cota_nominal_mm,tolerancia_superior_mm,tolerancia_inferior_mm,valor_medido_mm,desvio_mm,status,instrumento').single()
       if (result.error) throw result.error
       setNotice(`Medição registrada para ${selectedSpec.codigo}: ${result.data.status} · desvio ${Number(result.data.desvio_mm ?? 0).toFixed(3)} mm.`)
@@ -238,6 +247,7 @@ export default function QualidadeIndustrial() {
       setError('Selecione uma inspeção e uma especificação dimensional completa antes da coleta CEP.')
       return
     }
+    if (!selectedInstrument) { setError('A especificação precisa de instrumento aprovado e com calibração vigente.'); return }
     if (data.valores.length !== 18 || data.totalControlado !== 18) {
       setError('A coleta CEP precisa conter exatamente 18 medições válidas.')
       return
@@ -258,7 +268,7 @@ export default function QualidadeIndustrial() {
         tolerancia_superior_mm: upperTolerance,
         tolerancia_inferior_mm: lowerTolerance,
         valor_medido_mm: value,
-        instrumento,
+        instrumento: selectedInstrument?.codigo ?? null,
       }))
       const result = await supabase.from('erp_qualidade_inspecoes_dimensionais').insert(payload)
       if (result.error) throw result.error
@@ -364,14 +374,14 @@ export default function QualidadeIndustrial() {
         {tab === 'dimensional' && <section className="qms-panel">
           <div className="qms-grid qms-grid-9">
             <label className={labelClass()}>Inspeção<select className={fieldClass(invalid === 'receiving')} value={selectedReceiving} onChange={(e) => { setSelectedReceiving(e.target.value); setSelectedSpecId(''); setMeasured(''); setInvalid(null) }}><option value="">Preencher...</option>{receivings.map((row) => <option key={row.id} value={row.id}>{row.id.slice(0, 8)} · {row.status}</option>)}</select></label>
-            <label className={labelClass()}>Especificação mestre<select className={fieldClass(!selectedSpecId)} value={selectedSpecId} onChange={(e) => { setSelectedSpecId(e.target.value); setMeasured(''); setInvalid(null) }}><option value="">Selecione especificação</option>{activeSpecsForReceiving.map(spec => <option key={spec.id} value={spec.id}>{spec.codigo} · {spec.caracteristica}</option>)}</select></label>
+            <label className={labelClass()}>Especificação mestre<select className={fieldClass(!selectedSpecId)} value={selectedSpecId} onChange={(e) => { setSelectedSpecId(e.target.value); setMeasured(''); setInvalid(null) }}><option value="">Selecione especificação</option>{activeDimensionalSpecsForReceiving.map(spec => <option key={spec.id} value={spec.id}>{spec.codigo} · {spec.caracteristica}</option>)}</select></label>
             <label className={labelClass()}>Nº peça<input className={fieldClass(false)} type="number" min="1" value={piece} onChange={(e) => setPiece(e.target.value)} /></label>
             <label className={labelClass()}>Cavidade<input className={fieldClass(false)} value={cavity} onChange={(e) => setCavity(e.target.value)} placeholder="Preencher..." /></label>
             <label className={labelClass()}>Cota nominal<input className={fieldClass(false)} type="number" value={selectedSpec?.nominal ?? ''} readOnly /></label>
             <label className={labelClass()}>Tol. superior +<input className={fieldClass(false)} type="number" value={selectedSpec?.nominal != null && selectedSpec.limite_superior != null ? Number(selectedSpec.limite_superior) - Number(selectedSpec.nominal) : ''} readOnly /></label>
             <label className={labelClass()}>Tol. inferior -<input className={fieldClass(false)} type="number" value={selectedSpec?.nominal != null && selectedSpec.limite_inferior != null ? Number(selectedSpec.nominal) - Number(selectedSpec.limite_inferior) : ''} readOnly /></label>
             <label className={labelClass()}>Valor medido<input className={fieldClass(invalid === 'dimensional' && !measured)} type="number" step="0.00001" value={measured} onChange={(e) => { setMeasured(e.target.value); setInvalid(null) }} onBlur={() => { if (!measured) setInvalid('dimensional') }} placeholder="Preencher..." /></label>
-            <label className={labelClass()}>Instrumento<select className={fieldClass(false)} value={instrument} onChange={(e) => setInstrument(e.target.value)}><option>Paquímetro</option><option>Micrômetro</option><option>Tridimensional</option></select></label>
+            <label className={labelClass()}>Instrumento vinculado<input className={fieldClass(false)} value={selectedInstrument ? `${selectedInstrument.codigo} · ${selectedInstrument.descricao}` : 'Sem instrumento calibrado'} readOnly /></label>
           </div>
           <div className="qms-measure-status">DESVIO: <strong>{dimensionalPreview === null ? '—' : dimensionalPreview.toFixed(5)} mm</strong> · STATUS: <strong className={dimensionalStatus === 'OK' ? 'blue-status' : dimensionalStatus === 'NOK' ? 'red-status' : ''}>{dimensionalStatus}</strong><button className="qms-btn" type="button" disabled={busy} onClick={() => void saveDimensional()}>REGISTRAR MEDIÇÃO</button></div>
           <div className="qms-table-wrap qms-mt"><table><thead><tr><th>Especificação</th><th>Nº Peça</th><th>Cavidade</th><th>Nominal mm</th><th>Sup. +</th><th>Inf. -</th><th>Medido</th><th>Desvio</th><th>Status</th><th>Instrumento</th></tr></thead><tbody>{dimensionals.filter((row) => !selectedReceiving || row.inspecao_recebimento_id === selectedReceiving).map((row) => <tr key={row.id}><td>{specifications.find(spec=>spec.id===row.plano_inspecao_id)?.codigo || '—'}</td><td className="num">{row.numero_peca_amostrada}</td><td>{row.cavidade_molde || '—'}</td><td className="num">{row.cota_nominal_mm}</td><td className="num">{row.tolerancia_superior_mm}</td><td className="num">{row.tolerancia_inferior_mm}</td><td className="num">{row.valor_medido_mm ?? '—'}</td><td className="num">{row.desvio_mm ?? '—'}</td><td><span className={row.status === 'OK' ? 'status-ok' : row.status === 'NOK' ? 'status-nok' : 'status-pending'}>{row.status}</span></td><td>{row.instrumento || '—'}</td></tr>)}</tbody></table></div>
