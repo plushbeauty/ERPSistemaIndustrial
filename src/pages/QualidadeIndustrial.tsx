@@ -279,6 +279,7 @@ export default function QualidadeIndustrial() {
         {(error || notice) && <div className={error ? 'qms-message error' : 'qms-message'}>{error || notice}</div>}
 
         {tab === 'recebimento' && <section className="qms-panel">
+          {selectedLotData && !specifications.some(item => item.produto_id === selectedLotData.produto_id && (item.status ?? '').toUpperCase() === 'ATIVO') && <div role="alert" className="qms-message error">SEM ESPECIFICAÇÃO — este lote não pode ser aprovado até existir critério técnico ativo para o produto.</div>}
           <div className="qms-grid qms-grid-6">
             <label className={labelClass()}>Lote / NF XML<select className={fieldClass(invalid === 'lote')} value={selectedLot} onChange={(e) => { setSelectedLot(e.target.value); setInvalid(null) }}><option value="">Preencher...</option>{lots.map((lot) => <option key={lot.id} value={lot.id}>{lot.lote_interno} · NF {lot.nf_numero || '—'} · {supplierMap.get(lot.fornecedor_id || '') || 'Fornecedor não vinculado'}</option>)}</select></label>
             <label className={labelClass()}>Fornecedor<input className={fieldClass(false)} readOnly value={selectedLotData ? supplierMap.get(selectedLotData.fornecedor_id || '') || 'Fornecedor não vinculado' : ''} placeholder="Preencher..." /></label>
