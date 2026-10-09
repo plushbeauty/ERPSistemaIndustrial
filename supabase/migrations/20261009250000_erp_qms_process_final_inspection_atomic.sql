@@ -41,12 +41,12 @@ begin
     raise exception 'Permissão Qualidade/Criar necessária para registrar laudo.';
   end if;
 
-  if p_tipo not in ('PROCESSO_METROLOGIA', 'FINAL') then
+  if p_tipo is null or p_tipo not in ('PROCESSO_METROLOGIA', 'FINAL') then
     raise exception 'Tipo de inspeção inválido.';
   end if;
   v_tipo_plano := case when p_tipo = 'FINAL' then 'FINAL' else 'PROCESSO' end;
 
-  if p_resultado not in ('APROVADO', 'REPROVADO', 'CONDICIONAL') then
+  if p_resultado is null or p_resultado not in ('APROVADO', 'REPROVADO', 'CONDICIONAL') then
     raise exception 'Resultado de inspeção inválido.';
   end if;
   if p_quantidade_inspecionada is null or p_quantidade_inspecionada <= 0
@@ -103,7 +103,7 @@ begin
        or s.aprovado_em is null
        or (s.vigencia_inicio is not null and s.vigencia_inicio > current_date)
        or (s.vigencia_fim is not null and s.vigencia_fim < current_date)
-       or s.metodo_inspecao is distinct from m->>'metodo_inspecao'
+       or s.metodo_inspecao is distinct from (m->>'metodo_inspecao')
   ) then
     raise exception 'Laudo contém critério sem plano aprovado/vigente para o produto e etapa selecionados.';
   end if;
@@ -157,7 +157,7 @@ begin
       raise exception 'Uma ou mais características não atendem aos critérios aprovados; o laudo não pode ser aprovado.';
     end if;
   else
-    if p_quantidade_reprovada <= 0 or p_acao_bloqueio not in ('BLOQUEAR_LOTE', 'RETER_RETRABALHO', 'SEGREGAR') then
+    if p_quantidade_reprovada <= 0 or p_acao_bloqueio is null or p_acao_bloqueio not in ('BLOQUEAR_LOTE', 'RETER_RETRABALHO', 'SEGREGAR') then
       raise exception 'Resultado não aprovado exige quantidade reprovada e ação de bloqueio válida.';
     end if;
     if p_setor_id is null or not exists (
