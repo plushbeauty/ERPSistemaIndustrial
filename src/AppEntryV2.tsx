@@ -57,6 +57,7 @@ const AnoFiscal = lazyPage(() => import('./features/fiscal/AnoFiscal'), 'default
 const AssistenteRetificacao = lazyPage(() => import('./features/controladoria/AssistenteRetificacao'), 'default')
 const Master = lazyPage(() => import('./pages/Master'), 'Master')
 const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
+const IndustrialDataWorkspace = lazyPage(() => import('./pages/IndustrialDataWorkspace'), 'default')
 const PCPOrdens = lazyPage(() => import('./pages/PCPOrdens'), 'default')
 const PCPParadas = lazyPage(() => import('./pages/PCPParadas'), 'PCPParadas')
 const PCPSequenciamento = lazyPage(() => import('./pages/PCPSequenciamento'), 'PCPSequenciamento')
@@ -446,6 +447,20 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/classificacao-fiscal" element={<ClassificacaoFiscal />} />
       <Route path="/vendas/razao-geral" element={<PainelRazaoGeral />} />
       <Route path="/pcp" element={<PCPIndustrial />} />
+      <Route path="/engenharia/produtos" element={<IndustrialDataWorkspace />} />
+      <Route path="/engenharia/bom" element={<IndustrialDataWorkspace />} />
+      <Route path="/engenharia/roteiros" element={<IndustrialDataWorkspace />} />
+      <Route path="/estoque/enderecos" element={<IndustrialDataWorkspace />} />
+      <Route path="/estoque/movimentacoes" element={<EstoqueAlmoxarifado />} />
+      <Route path="/qualidade/especificacoes" element={<IndustrialDataWorkspace />} />
+      <Route path="/qualidade/fmea" element={<IndustrialDataWorkspace />} />
+      <Route path="/qualidade/rnc-capa" element={<IndustrialDataWorkspace />} />
+      <Route path="/qualidade/cep" element={<QualidadeIndustrial />} />
+      <Route path="/pcp/apontamentos" element={<IndustrialDataWorkspace />} />
+      <Route path="/fiscal/parametros" element={<IndustrialDataWorkspace />} />
+      <Route path="/rh/funcionarios" element={<IndustrialDataWorkspace />} />
+      <Route path="/rh/turnos" element={<IndustrialDataWorkspace />} />
+      <Route path="/rh/epis" element={<IndustrialDataWorkspace />} />
       <Route path="/pcp/engenharia-bom" element={<EngenhariaBOM />} />
       <Route path="/pcp/roteiro-operacoes" element={<RoteiroOperacoes />} />
       <Route path="/pcp/ficha-processo" element={<FichaProcesso />} />
