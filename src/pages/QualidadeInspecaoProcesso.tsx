@@ -11,7 +11,7 @@ type Instrument = { id: string; codigo: string; descricao: string; status: strin
 type Plan = { id: string; produto_id: string; codigo: string; caracteristica: string | null; unidade: string | null; nominal: number | null; limite_inferior: number | null; limite_superior: number | null; frequencia: string | null; metodo_inspecao: string; tipo_inspecao: string; instrumento_id: string | null; status: string | null }
 type InspectionRow = { id: string; produto_id: string | null; ordem_producao_id: string | null; maquina_id: string | null; tipo: string; resultado: string; quantidade_inspecionada: number; quantidade_aprovada: number; quantidade_reprovada: number; observacao: string | null; inspetor_nome: string | null; medicoes: unknown; acao_bloqueio: string | null }
 
-type Measurement = { caracteristica: string; nominal: string; encontrado: string; unidade: string; limite_inferior: number | null; limite_superior: number | null; metodo_inspecao: string }
+type Measurement = { plano_inspecao_id: string; instrumento_id: string | null; caracteristica: string; nominal: string; encontrado: string; unidade: string; limite_inferior: number | null; limite_superior: number | null; metodo_inspecao: string }
 
 function evaluateMeasurement(item: Measurement): 'OK' | 'NOK' | 'PENDENTE' | 'SEM CRITÉRIO' {
   if (!item.encontrado.trim()) return 'PENDENTE'
@@ -94,9 +94,9 @@ export default function QualidadeInspecaoProcesso() {
 
   useEffect(() => { void load() }, [])
 
-  function addMeasurement(plan?: Plan) {
-    if (plan?.instrumento_id) setInstrument(plan.instrumento_id)
-    setMedicoes(rows => [...rows, { caracteristica: plan?.caracteristica || '', nominal: plan?.nominal == null ? '' : String(plan.nominal), encontrado: '', unidade: plan?.unidade || '', limite_inferior: plan?.limite_inferior ?? null, limite_superior: plan?.limite_superior ?? null, metodo_inspecao: plan?.metodo_inspecao ?? 'DIMENSIONAL' }])
+  function addMeasurement(plan: Plan) {
+    if (plan.instrumento_id) setInstrument(plan.instrumento_id)
+    setMedicoes(rows => [...rows, { plano_inspecao_id: plan.id, instrumento_id: plan.instrumento_id, caracteristica: plan.caracteristica || '', nominal: plan.nominal == null ? '' : String(plan.nominal), encontrado: '', unidade: plan.unidade || '', limite_inferior: plan.limite_inferior ?? null, limite_superior: plan.limite_superior ?? null, metodo_inspecao: plan.metodo_inspecao }])
   }
 
   function resetForm() {
@@ -127,9 +127,6 @@ export default function QualidadeInspecaoProcesso() {
       const user = await supabase.auth.getUser()
       if (company.error || !company.data) throw company.error ?? new Error('Empresa não identificada.')
       if (!produto) throw new Error('Informe o produto.')
-      if (!instrument) throw new Error('Selecione o instrumento de medição.')
-      const selectedInstrument = instruments.find(item => item.id === instrument)
-      if (!selectedInstrument || !validInstrument(selectedInstrument)) throw new Error('Instrumento bloqueado: somente calibração APROVADA e vigente pode participar da inspeção.')
       const inspected = Number(quantidadeInspecionada)
       const approved = Number(quantidadeAprovada)
       const rejected = Number(quantidadeReprovada)
@@ -143,7 +140,22 @@ export default function QualidadeInspecaoProcesso() {
       if (medicoes.some(item => item.limite_inferior !== null && item.limite_superior !== null && item.limite_inferior > item.limite_superior)) {
         throw new Error('O limite mínimo não pode ser maior que o limite máximo.')
       }
-      const evaluatedMeasurements = medicoes.map(item => ({ ...item, status: evaluateMeasurement(item) }))
+      const invalidPlan = medicoes.some(item => {
+        const plan = plans.find(candidate => candidate.id === item.plano_inspecao_id && candidate.produto_id === produto && candidate.tipo_inspecao === 'PROCESSO' && (candidate.status ?? '').toUpperCase() === 'ATIVO')
+        if (!plan || plan.metodo_inspecao !== item.metodo_inspecao) return true
+        if (plan.metodo_inspecao === 'DIMENSIONAL' || plan.metodo_inspecao === 'FUNCIONAL') {
+          return plan.nominal == null || item.nominal !== String(plan.nominal) || item.limite_inferior !== plan.limite_inferior || item.limite_superior !== plan.limite_superior
+        }
+        return false
+      })
+      if (invalidPlan) throw new Error('Um critério foi alterado ou deixou de estar ativo. Recarregue o plano mestre da Qualidade antes de salvar.')
+      const evaluatedMeasurements = medicoes.map(item => ({ ...item, instrumento_id: item.instrumento_id || instrument || null, status: evaluateMeasurement(item) }))
+      for (const item of evaluatedMeasurements) {
+        if (!['VISUAL','DOCUMENTAL'].includes(item.metodo_inspecao)) {
+          const selectedInstrument = instruments.find(candidate => candidate.id === item.instrumento_id)
+          if (!selectedInstrument || !validInstrument(selectedInstrument)) throw new Error('Cada critério dimensional/funcional precisa de instrumento aprovado e com calibração vigente.')
+        }
+      }
       const invalidNumericReading = evaluatedMeasurements.some(item => !['VISUAL','DOCUMENTAL'].includes(item.metodo_inspecao) && (item.limite_inferior !== null || item.limite_superior !== null) && !Number.isFinite(Number(item.encontrado.trim().replace(',', '.'))))
       if (invalidNumericReading) throw new Error('Informe valores numéricos válidos para as características com limites técnicos.')
       if (evaluatedMeasurements.some(item => item.status === 'PENDENTE' || item.status === 'SEM CRITÉRIO')) throw new Error('Conclua cada critério: valores numéricos dentro dos limites ou CONFORME/NÃO CONFORME para visual/documental.')
@@ -206,10 +218,10 @@ export default function QualidadeInspecaoProcesso() {
         <label className={label}>INSPETOR RESPONSÁVEL<input className={input} value={inspetor} onChange={event => setInspetor(event.target.value)} placeholder="Nome do inspetor"/></label>
       </div></section>
 
-      <section className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-[13px] font-extrabold">2. PLANO / MEDIÇÕES TÉCNICAS</h2><p className="mt-1 text-sm text-slate-600">Use critérios ativos do produto para a etapa PROCESSO. Critérios visuais/documentais aceitam CONFORME ou NÃO CONFORME; dimensionais exigem limites.</p></div><div className="flex flex-wrap gap-2">{plans.filter(plan => plan.produto_id === produto && plan.tipo_inspecao === 'PROCESSO' && (plan.status ?? '').toUpperCase() === 'ATIVO').slice(0,12).map(plan => <button key={plan.id} type="button" onClick={() => addMeasurement(plan)} className="rounded-[2px] border border-slate-300 bg-white px-3 py-2 text-xs font-extrabold text-slate-800 hover:bg-slate-50">{plan.codigo} • {plan.caracteristica || 'Característica'}</button>)}<button type="button" onClick={() => addMeasurement()} className="inline-flex items-center gap-1 rounded-[2px] bg-slate-900 px-3 py-2 text-xs font-extrabold text-white"><Plus size={15}/> Medição manual</button></div></div>
+      <section className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-[13px] font-extrabold">2. PLANO / MEDIÇÕES TÉCNICAS</h2><p className="mt-1 text-sm text-slate-600">Use critérios ativos do produto para a etapa PROCESSO. Critérios visuais/documentais aceitam CONFORME ou NÃO CONFORME; dimensionais exigem limites.</p></div><div className="flex flex-wrap gap-2">{plans.filter(plan => plan.produto_id === produto && plan.tipo_inspecao === 'PROCESSO' && (plan.status ?? '').toUpperCase() === 'ATIVO').slice(0,12).map(plan => <button key={plan.id} type="button" onClick={() => addMeasurement(plan)} className="rounded-[2px] border border-slate-300 bg-white px-3 py-2 text-xs font-extrabold text-slate-800 hover:bg-slate-50">{plan.codigo} • {plan.caracteristica || 'Característica'}</button>)}</div></div>
         <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[850px] border-collapse text-[11px]"><thead className="bg-slate-900 text-white"><tr><th className="p-3 text-left">Característica</th><th className="p-3 text-left">Valor nominal</th><th className="p-3 text-left">Unidade</th><th className="p-3 text-left">Valor encontrado</th><th className="p-3 text-left">Limites</th><th className="p-3 text-left">Situação</th><th className="p-3"></th></tr></thead><tbody>
-          {medicoes.map((row, index) => <tr key={index} className="border-b border-slate-200"><td className="p-2"><input className={input} value={row.caracteristica} onChange={event => setMedicoes(rows => rows.map((item, rowIndex) => rowIndex === index ? { ...item, caracteristica: event.target.value } : item))}/></td><td className="p-2"><input className={input} value={row.nominal} onChange={event => setMedicoes(rows => rows.map((item, rowIndex) => rowIndex === index ? { ...item, nominal: event.target.value } : item))}/></td><td className="p-2"><input className={input} value={row.unidade} onChange={event => setMedicoes(rows => rows.map((item, rowIndex) => rowIndex === index ? { ...item, unidade: event.target.value } : item))}/></td><td className="p-2"><input className={input} value={row.encontrado} placeholder={row.metodo_inspecao === 'VISUAL' || row.metodo_inspecao === 'DOCUMENTAL' ? 'CONFORME / NÃO CONFORME' : 'Valor medido'} onChange={event => setMedicoes(rows => rows.map((item, rowIndex) => rowIndex === index ? { ...item, encontrado: event.target.value } : item))}/></td><td className="p-2"><div className="grid min-w-[150px] grid-cols-2 gap-1"><label className="grid gap-[2px] text-[9px] font-medium uppercase text-slate-600">MÍN.<input aria-label={`Limite mínimo de ${row.caracteristica || 'medição'}`} className={input} type="number" step="any" value={row.limite_inferior ?? ''} onChange={event => setMedicoes(rows => rows.map((item, rowIndex) => rowIndex === index ? { ...item, limite_inferior: event.target.value.trim() === '' ? null : Number(event.target.value) } : item))}/></label><label className="grid gap-[2px] text-[9px] font-medium uppercase text-slate-600">MÁX.<input aria-label={`Limite máximo de ${row.caracteristica || 'medição'}`} className={input} type="number" step="any" value={row.limite_superior ?? ''} onChange={event => setMedicoes(rows => rows.map((item, rowIndex) => rowIndex === index ? { ...item, limite_superior: event.target.value.trim() === '' ? null : Number(event.target.value) } : item))}/></label></div></td><td className="p-2"><span className={evaluateMeasurement(row) === 'NOK' ? 'font-bold text-red-700' : evaluateMeasurement(row) === 'OK' ? 'font-bold text-emerald-700' : 'text-slate-500'}>{evaluateMeasurement(row)}</span></td><td className="p-2"><button type="button" onClick={() => setMedicoes(rows => rows.filter((_, rowIndex) => rowIndex !== index))} className="rounded-[2px] border border-rose-300 p-3 text-rose-800" title="Remover medição"><Trash2 size={17}/></button></td></tr>)}
-          {!medicoes.length && <tr><td colSpan={7} className="p-8 text-center font-semibold text-slate-600">Nenhuma característica adicionada. Se houver Plano de Inspeção, use um dos critérios acima; caso contrário, adicione uma medição manual.</td></tr>}
+          {medicoes.map((row, index) => <tr key={index} className="border-b border-slate-200"><td className="p-2"><input className={input} value={row.caracteristica} readOnly/></td><td className="p-2"><input className={input} value={row.nominal} readOnly/></td><td className="p-2"><input className={input} value={row.unidade} readOnly/></td><td className="p-2"><input className={input} value={row.encontrado} placeholder={row.metodo_inspecao === 'VISUAL' || row.metodo_inspecao === 'DOCUMENTAL' ? 'CONFORME / NÃO CONFORME' : 'Valor medido'} onChange={event => setMedicoes(rows => rows.map((item, rowIndex) => rowIndex === index ? { ...item, encontrado: event.target.value } : item))}/></td><td className="p-2 whitespace-nowrap">{row.limite_inferior ?? '—'} a {row.limite_superior ?? '—'}</td><td className="p-2"><span className={evaluateMeasurement(row) === 'NOK' ? 'font-bold text-red-700' : evaluateMeasurement(row) === 'OK' ? 'font-bold text-emerald-700' : 'text-slate-500'}>{evaluateMeasurement(row)}</span></td><td className="p-2"><button type="button" onClick={() => setMedicoes(rows => rows.filter((_, rowIndex) => rowIndex !== index))} className="rounded-[2px] border border-rose-300 p-3 text-rose-800" title="Remover medição"><Trash2 size={17}/></button></td></tr>)}
+          {!medicoes.length && <tr><td colSpan={7} className="p-8 text-center font-semibold text-slate-600">Nenhuma característica adicionada. Selecione um critério mestre ativo da etapa PROCESSO; os limites não são editados no laudo.</td></tr>}
         </tbody></table></div>
       </section>
 
