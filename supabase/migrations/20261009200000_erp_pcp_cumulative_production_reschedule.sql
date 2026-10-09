@@ -98,6 +98,21 @@ begin
     for update;
   end if;
 
+  if v_program.id is not null and exists (
+    select 1
+    from public.erp_pcp_programacoes earlier
+    where earlier.empresa_id = v_empresa
+      and earlier.maquina_id = v_program.maquina_id
+      and earlier.id <> v_program.id
+      and lower(coalesce(earlier.status, '')) not in ('cancelada','cancelado','concluída','concluida','concluído','concluido')
+      and (
+        earlier.inicio_planejado < v_program.inicio_planejado
+        or (earlier.inicio_planejado = v_program.inicio_planejado and earlier.id < v_program.id)
+      )
+  ) then
+    raise exception 'Há uma programação ativa anterior nesta máquina. Registre a produção na sequência cronológica para preservar o calendário.';
+  end if;
+
   insert into public.erp_producao_conferencias (
     empresa_id, ordem_producao_id, produto_id, quantidade_planejada, quantidade_encontrada,
     quantidade_defeituosa, quantidade_lancada_estoque, quantidade_lancada_refugo, status,
