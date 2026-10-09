@@ -273,7 +273,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
               <h2 className="text-lg font-black text-slate-950">Identificação do insumo comercial</h2>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
               <EntityCodeLookup
                 label="Insumo mestre"
                 value={produtoId}
@@ -288,6 +288,22 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
                 placeholder="Código do insumo"
                 helper={produtoDescricao || 'Use a lupa para selecionar o cadastro mestre do insumo.'}
               />
+
+              <label className="text-sm font-extrabold uppercase tracking-wide text-slate-800">
+                Fornecedor
+                <select value={fornecedorId} onChange={event => setFornecedorId(event.target.value)} required className="mt-2 h-[54px] w-full rounded-md border border-slate-300 bg-white px-3 text-base font-semibold outline-none focus:border-sky-600">
+                  <option value="">Selecione fornecedor...</option>
+                  {suppliers.map(supplier => <option key={supplier.id} value={supplier.id}>{supplier.razao_social}</option>)}
+                </select>
+              </label>
+
+              <label className="text-sm font-extrabold uppercase tracking-wide text-slate-800">
+                Endereço de armazenagem
+                <select value={locationId} onChange={event => setLocationId(event.target.value)} required className="mt-2 h-[54px] w-full rounded-md border border-slate-300 bg-white px-3 text-base font-semibold outline-none focus:border-sky-600">
+                  <option value="">Selecione endereço...</option>
+                  {locations.map(location => <option key={location.id} value={location.id}>{location.codigo} · {location.nome}</option>)}
+                </select>
+              </label>
 
               <label className="text-sm font-extrabold uppercase tracking-wide text-slate-800">
                 NF-e de entrada
@@ -371,6 +387,17 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
                 <option value="REPROVADO">REPROVADO / RETER LOTE</option>
               </select>
             </div>
+            {laudoStatus === 'REPROVADO' && <div className="mt-2 grid grid-cols-1 gap-2 border border-rose-200 bg-rose-50/60 p-2 md:grid-cols-3">
+              <label className="text-[9px] font-semibold uppercase tracking-wider text-slate-600">Setor responsável pela RPNC
+                <select value={rpncSectorId} onChange={event => setRpncSectorId(event.target.value)} required className="mt-1 h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px]"><option value="">Selecione setor...</option>{sectors.map(sector => <option key={sector.id} value={sector.id}>{sector.nome}</option>)}</select>
+              </label>
+              <label className="text-[9px] font-semibold uppercase tracking-wider text-slate-600">Gravidade
+                <select value={rpncSeverity} onChange={event => setRpncSeverity(event.target.value as 'Critica' | 'Maior' | 'Menor' | '')} required className="mt-1 h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px]"><option value="">Selecione gravidade...</option><option value="Critica">Crítica</option><option value="Maior">Maior</option><option value="Menor">Menor</option></select>
+              </label>
+              <label className="text-[9px] font-semibold uppercase tracking-wider text-slate-600">Descrição da não conformidade
+                <input value={rpncDescription} onChange={event => setRpncDescription(event.target.value)} required minLength={5} placeholder="Descreva o defeito do certificado..." className="mt-1 h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px]" />
+              </label>
+            </div>}
           </section>
 
           <section className="rounded-md border border-slate-300 bg-white p-5 shadow-sm">
