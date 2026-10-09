@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, ClipboardList, RefreshCw, Save, Search, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { useLocation } from 'react-router-dom'
 
 type Field = { key: string; label: string; type?: 'text'|'number'|'date'|'select'|'textarea'; options?: string[]; required?: boolean }
 type ModuleConfig = { title: string; subtitle: string; table: string; fields: Field[]; search: string[]; columns: string[] }
@@ -49,13 +50,14 @@ function parseValue(field: Field, raw: string): unknown {
   return raw.trim() === '' ? null : raw
 }
 export default function IndustrialDataWorkspace() {
+  const location = useLocation()
   const routeConfigs: Record<string, string> = {
     '/engenharia/produtos':'engenharia-produtos','/engenharia/bom':'engenharia-bom','/engenharia/roteiros':'engenharia-roteiros',
     '/estoque/enderecos':'estoque-enderecos','/estoque/movimentacoes':'estoque-movimentacoes','/qualidade/cep':'qualidade-cep','/qualidade/especificacoes':'qualidade-especificacoes','/qualidade/fmea':'qualidade-fmea',
     '/qualidade/rnc-capa':'qualidade-rnc','/pcp/ordens-industriais':'pcp-ordens','/pcp/apontamentos':'pcp-apontamentos',
     '/fiscal/parametros':'fiscal-parametros','/rh/funcionarios':'rh-funcionarios','/rh/turnos':'rh-turnos','/rh/epis':'rh-epis'
   }
-  const config = configs[routeConfigs[window.location.pathname] ?? '']
+  const config = configs[routeConfigs[location.pathname] ?? '']
   const [rows,setRows] = useState<Record<string, unknown>[]>([])
   const [form,setForm] = useState<Record<string,string>>({})
   const [search,setSearch] = useState('')
