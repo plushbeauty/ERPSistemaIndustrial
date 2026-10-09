@@ -323,7 +323,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
                     <p className="text-[10px] text-slate-600">{certificado?.name ?? 'Nenhum PDF anexado'}</p>
                   </div>
                 </div>
-                <button type="button" onClick={() => fileInputRef.current?.click()} className="inline-flex h-11 items-center gap-2 rounded-[2px] border border-slate-400 bg-white px-4 text-sm font-black hover:bg-slate-100">
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-medium hover:bg-slate-100">
                   <Search className="h-[14px] w-[14px]" /> SELECIONAR PDF
                 </button>
               </div>
