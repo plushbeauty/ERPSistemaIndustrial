@@ -69,6 +69,7 @@ const QualidadeInstrumentosCadastro = lazyPage(() => import('./pages/QualidadeIn
 const QualidadeSGQAvancado = lazyPage(() => import('./pages/SgqManagementCompact'), 'default')
 const AcompanhamentoNaoConformidade = lazyPage(() => import('./pages/AcompanhamentoNaoConformidade'), 'AcompanhamentoNaoConformidade')
 const EstoqueAlmoxarifado = lazyPage(() => import('./pages/EstoqueAlmoxarifadoCompact'), 'default')
+const EstoqueSaldosLote = lazyPage(() => import('./pages/estoque/EstoqueSaldosLote'), 'default')
 const ProdutosVendasIndustrial = lazyPage(() => import('./pages/ProdutosVendasIndustrial'), 'ProdutosVendasIndustrial')
 const ModuloCadastroProdutos = lazyPage(() => import('./pages/cadastro-produtos/ModuloCadastroProdutos'), 'ModuloCadastroProdutos')
 const TabletDashboard = lazyPage(() => import('./pages/TabletDashboard'), 'TabletDashboard')
@@ -494,6 +495,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/chao-fabrica" element={<OperacaoIndustrial />} />
       <Route path="/almoxarifado" element={<EstoqueAlmoxarifado />} />
       <Route path="/estoque/saldos" element={<EstoqueAlmoxarifado />} />
+      <Route path="/estoque/saldos-lote" element={<EstoqueSaldosLote />} />
       <Route path="/estoque/ajustes" element={<EstoqueAjustes />} />
       <Route path="/estoque/separacao" element={<EstoqueSeparacao />} />
       <Route path="/estoque/etiquetas" element={<EstoqueEtiquetas />} />
