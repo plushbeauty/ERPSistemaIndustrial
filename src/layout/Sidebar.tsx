@@ -43,7 +43,11 @@ export default function Sidebar() {
                 title={!isExpanded ? label : !route ? `${label} — sem rota operacional cadastrada` : undefined}
                 onClick={() => {
                   if (!route) return
-                  navigate(route)
+                  if (key === 'manutencao') {
+                    window.open(route, '_blank', 'noopener,noreferrer')
+                  } else {
+                    navigate(route)
+                  }
                   closeMobileSidebar()
                 }}
               >
