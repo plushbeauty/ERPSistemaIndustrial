@@ -13,6 +13,7 @@ declare
   v_empresa uuid;
   v_inspecao public.erp_qualidade_inspecoes_recebimento%rowtype;
   v_lote public.erp_estoque_lotes%rowtype;
+  v_trace public.erp_estoque_lotes_rastreabilidade%rowtype;
   v_user uuid;
   v_master boolean;
 begin
@@ -62,8 +63,10 @@ begin
   if not found then
     raise exception 'Lote da inspeção não encontrado na empresa atual.';
   end if;
-  if upper(coalesce(v_lote.status_inspecao, '')) = 'RETIDO' then
-    raise exception 'O lote já está retido; resolva a quarentena antes de aprovar.';
+  if upper(coalesce(v_lote.status_inspecao, '')) <> 'AGUARDANDO'
+     or coalesce(v_lote.quantidade_disponivel, 0) <> 0
+     or v_lote.quantidade_recebida <= 0 then
+    raise exception 'Somente lote aguardando inspeção, ainda sem saldo liberado, pode entrar no saldo ativo.';
   end if;
 
   if not exists (
@@ -143,18 +146,49 @@ begin
     raise exception 'Usuário ERP ativo não identificado para registrar a decisão.';
   end if;
 
-  update public.erp_estoque_lotes
-  set status_inspecao = 'APROVADO'
-  where id = v_lote.id and empresa_id = v_empresa;
-
   if v_inspecao.lote_rastreabilidade_id is not null then
-    update public.erp_estoque_lotes_rastreabilidade
-    set status_qualidade = 'APROVADO'
-    where id = v_inspecao.lote_rastreabilidade_id and empresa_id = v_empresa;
+    select * into v_trace
+    from public.erp_estoque_lotes_rastreabilidade
+    where id = v_inspecao.lote_rastreabilidade_id
+      and empresa_id = v_empresa
+      and produto_id = v_lote.produto_id
+    for update;
+  else
+    select * into v_trace
+    from public.erp_estoque_lotes_rastreabilidade
+    where empresa_id = v_empresa
+      and produto_id = v_lote.produto_id
+      and lote_fornecedor = v_lote.lote_fornecedor
+    for update;
   end if;
 
+  if not found then
+    raise exception 'Lote sem registro de rastreabilidade/certificado; não é possível liberar saldo.';
+  end if;
+  if v_trace.status_qualidade is distinct from 'RETIDO'
+     or coalesce(v_trace.quantidade_disponivel, 0) <> 0 then
+    raise exception 'O certificado/rastreabilidade não está aguardando liberação de Qualidade.';
+  end if;
+
+  -- Release the physical stock only after the receiving decision is approved.
+  perform public.fn_incrementar_saldo_almoxarifado(v_empresa, v_lote.produto_id, v_lote.quantidade_recebida);
+
+  update public.erp_estoque_lotes
+  set status_inspecao = 'APROVADO',
+      quantidade_disponivel = quantidade_recebida
+  where id = v_lote.id and empresa_id = v_empresa;
+
+  update public.erp_estoque_lotes_rastreabilidade
+  set status_qualidade = 'APROVADO',
+      quantidade_disponivel = quantidade_inicial
+  where id = v_trace.id and empresa_id = v_empresa;
+
   update public.erp_qualidade_inspecoes_recebimento
-  set status = 'APROVADO', decidido_por = v_user, decidido_em = now(), updated_at = now()
+  set status = 'APROVADO',
+      lote_rastreabilidade_id = v_trace.id,
+      decidido_por = v_user,
+      decidido_em = now(),
+      updated_at = now()
   where id = v_inspecao.id and empresa_id = v_empresa;
 end;
 $$;
