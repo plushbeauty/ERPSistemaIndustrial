@@ -322,7 +322,8 @@ $$;
 revoke all on function public.erp_wms_receber_lote_com_qualidade(uuid, uuid, uuid, text, text, numeric, text, text, uuid, text, text) from public, anon;
 grant execute on function public.erp_wms_receber_lote_com_qualidade(uuid, uuid, uuid, text, text, numeric, text, text, uuid, text, text) to authenticated;
 
--- Backward-compatible RPC now registers the lot in a quality hold; it never increments stock.
+-- Retire the legacy signature: it cannot express supplier, WMS address or RPNC ownership.
+-- New receipts must use erp_wms_receber_lote_com_qualidade.
 create or replace function public.fn_receber_lote_almoxarifado(
   p_empresa_id uuid,
   p_produto_id uuid,
@@ -336,21 +337,10 @@ returns uuid
 language plpgsql
 security definer
 set search_path = pg_catalog, public
-as $$
-declare
-  v_empresa uuid := public.erp_current_empresa_id();
-  v_result jsonb;
+as $
 begin
-  if v_empresa is null or p_empresa_id is distinct from v_empresa then
-    raise exception 'Empresa do recebimento inválida para a sessão atual.';
-  end if;
-  v_result := public.erp_wms_receber_lote_com_qualidade(
-    p_produto_id, null, null, p_nf_numero, p_lote_fornecedor, p_quantidade,
-    p_status_qualidade, p_certificado_path, null, null, null
-  );
-  return (v_result->>'rastreabilidade_id')::uuid;
+  raise exception 'RPC legado desativado. Use erp_wms_receber_lote_com_qualidade para registrar fornecedor, endereço e gate SGQ.';
 end;
-$$;
+$;
 
-revoke all on function public.fn_receber_lote_almoxarifado(uuid, uuid, text, text, numeric, text, text) from public, anon;
-grant execute on function public.fn_receber_lote_almoxarifado(uuid, uuid, text, text, numeric, text, text) to authenticated;
+revoke all on function public.fn_receber_lote_almoxarifado(uuid, uuid, text, text, numeric, text, text) from public, anon, authenticated;
