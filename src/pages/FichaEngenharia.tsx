@@ -88,7 +88,7 @@ export default function FichaEngenharia(){
    const empresaId=await company()
    const fichaQuery=supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,rendimento,unidade_rendimento,observacoes,ativa,status,revisao').eq('empresa_id',empresaId).eq('produto_id',id)
    const f=requestedRevision==null
-    ? await fichaQuery.eq('ativa',true).order('versao',{ascending:false}).limit(1).maybeSingle()
+    ? await fichaQuery.order('ativa',{ascending:false}).order('versao',{ascending:false}).limit(1).maybeSingle()
     : await fichaQuery.eq('versao',requestedRevision).maybeSingle()
    if(f.error)throw f.error
    if(!f.data){
