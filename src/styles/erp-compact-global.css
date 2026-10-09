@@ -177,3 +177,35 @@
 .pcp-industrial-shell .crud-table-wrap tbody tr:hover {
   background: rgba(250, 250, 250, .8);
 }
+
+/* FMEA live risk score — visualizes the database-generated RPN formula. */
+.fmea-rpn-preview {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 12px;
+  padding: 8px 10px;
+  border: 1px solid #c9dde5;
+  border-left: 3px solid #2d8db8;
+  border-radius: 2px;
+  background: #f1fafc;
+}
+.fmea-rpn-preview span {
+  color: #526b77;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+.fmea-rpn-preview strong {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  color: #123b50;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.fmea-rpn-preview small {
+  color: #526b77;
+  font-size: 10px;
+  line-height: 1.4;
+}
