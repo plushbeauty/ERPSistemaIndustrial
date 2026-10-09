@@ -7,13 +7,13 @@ import QualitySidebar from '../components/quality/QualitySidebar'
 type Lookup = LookupRecord
 type Machine = { id: string; codigo: string; nome: string; tipo: string | null }
 type Instrument = { id: string; codigo: string; descricao: string; status: string; proxima_calibracao: string | null }
-type Plan = { id: string; codigo: string; caracteristica: string | null; unidade: string | null; frequencia: string | null; status: string | null }
+type Plan = { id: string; codigo: string; produto_id: string | null; caracteristica: string | null; unidade: string | null; limite_inferior: number | null; limite_superior: number | null; frequencia: string | null; status: string | null }
 type InspectionRow = { id: string; produto_id: string | null; ordem_producao_id: string | null; maquina_id: string | null; tipo: string; resultado: string; quantidade_inspecionada: number; quantidade_aprovada: number; quantidade_reprovada: number; observacao: string | null; inspetor_nome: string | null; medicoes: unknown; acao_bloqueio: string | null }
 
-type Measurement = { caracteristica: string; nominal: string; encontrado: string; unidade: string }
+type Measurement = { caracteristica: string; nominal: string; encontrado: string; unidade: string; limiteInferior: string; limiteSuperior: string }
 
-const input = 'h-[54px] w-full rounded-[2px] border border-slate-300 bg-white px-3 text-[11px] font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
-const label = 'grid gap-2 text-sm font-extrabold uppercase tracking-wide text-slate-800'
+const input = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100'
+const label = 'grid gap-0.5 text-[9px] font-bold uppercase tracking-wide text-slate-700'
 
 function validInstrument(item: Instrument): boolean {
   const today = new Date().toISOString().slice(0, 10)
@@ -54,7 +54,7 @@ export default function QualidadeInspecaoProcesso() {
         supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,status').eq('empresa_id', company.data).order('numero_op', { ascending: false }).limit(2000),
         supabase.from('erp_maquinas').select('id,codigo,nome,tipo').eq('empresa_id', company.data).not('status', 'eq', 'INATIVA').order('codigo'),
         supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao').eq('empresa_id', company.data).order('codigo'),
-        supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,frequencia,status').eq('empresa_id', company.data).order('codigo'),
+        supabase.from('erp_planos_inspecao').select('id,codigo,produto_id,caracteristica,unidade,limite_inferior,limite_superior,frequencia,status').eq('empresa_id', company.data).order('codigo'),
         supabase.from('erp_inspecoes').select('id,produto_id,ordem_producao_id,maquina_id,tipo,resultado,quantidade_inspecionada,quantidade_aprovada,quantidade_reprovada,observacao,inspetor_nome,medicoes,acao_bloqueio').eq('empresa_id', company.data).order('created_at', { ascending: false }).limit(100),
       ])
       for (const result of [productsResult, opsResult, machinesResult, instrumentsResult, plansResult, inspectionsResult]) if (result.error) throw result.error
@@ -74,7 +74,7 @@ export default function QualidadeInspecaoProcesso() {
   useEffect(() => { void load() }, [])
 
   function addMeasurement(plan?: Plan) {
-    setMedicoes(rows => [...rows, { caracteristica: plan?.caracteristica || '', nominal: '', encontrado: '', unidade: plan?.unidade || '' }])
+    setMedicoes(rows => [...rows, { caracteristica: plan?.caracteristica || '', nominal: '', encontrado: '', unidade: plan?.unidade || '', limiteInferior: plan?.limite_inferior == null ? '' : String(plan.limite_inferior), limiteSuperior: plan?.limite_superior == null ? '' : String(plan.limite_superior) }])
   }
 
   function resetForm() {
@@ -113,6 +113,18 @@ export default function QualidadeInspecaoProcesso() {
       if (!Number.isFinite(approved) || approved < 0 || !Number.isFinite(rejected) || rejected < 0) throw new Error('Informe quantidades aprovadas e reprovadas válidas.')
       if (approved + rejected !== inspected) throw new Error('Aprovadas + reprovadas deve ser igual à quantidade inspecionada.')
       if (!medicoes.length || medicoes.some(item => !item.caracteristica.trim() || !item.encontrado.trim())) throw new Error('Registre ao menos uma característica e seu valor encontrado.')
+      const missingSpecification = medicoes.some(item => item.limiteInferior === '' && item.limiteSuperior === '')
+      if (resultado === 'APROVADO' && missingSpecification) throw new Error('Não é permitido aprovar medição sem limites de especificação cadastrados no Plano de Inspeção.')
+      const outOfSpecification = medicoes.some(item => {
+        const measured = Number(item.encontrado)
+        if (!Number.isFinite(measured)) return true
+        if (item.limiteInferior !== '' && measured < Number(item.limiteInferior)) return true
+        if (item.limiteSuperior !== '' && measured > Number(item.limiteSuperior)) return true
+        return false
+      })
+      if (outOfSpecification && resultado !== 'REPROVADO') throw new Error('Há medição fora dos limites cadastrados. O resultado deve ser REPROVADO e o lote deve ser bloqueado/segregado.')
+      if (resultado === 'APROVADO' && rejected > 0) throw new Error('Uma inspeção aprovada não pode registrar quantidade reprovada maior que zero.')
+      if (resultado === 'REPROVADO' && rejected <= 0) throw new Error('Uma inspeção reprovada deve registrar quantidade reprovada maior que zero.')
       if (resultado !== 'APROVADO' && acaoBloqueio === 'NENHUMA') throw new Error('Inspeção não aprovada exige uma ação de bloqueio.')
       const result = await supabase.from('erp_inspecoes').insert({
         empresa_id: company.data,
@@ -127,7 +139,7 @@ export default function QualidadeInspecaoProcesso() {
         quantidade_reprovada: rejected,
         observacao: obs.trim() || null,
         inspetor_nome: inspetor.trim() || null,
-        medicoes: medicoes.map(item => ({ ...item, caracteristica: item.caracteristica.trim(), nominal: item.nominal.trim(), encontrado: item.encontrado.trim(), unidade: item.unidade.trim() })),
+        medicoes: medicoes.map(item => ({ ...item, caracteristica: item.caracteristica.trim(), nominal: item.nominal.trim(), encontrado: item.encontrado.trim(), unidade: item.unidade.trim(), limiteInferior: item.limiteInferior, limiteSuperior: item.limiteSuperior })),
         acao_bloqueio: resultado === 'APROVADO' ? 'NENHUMA' : acaoBloqueio,
         criado_por: user.data.user?.id || null,
       })
@@ -144,9 +156,9 @@ export default function QualidadeInspecaoProcesso() {
 
   return <main data-quality-workspace className="min-h-screen bg-slate-100 text-slate-900">
     <header className="border-b border-slate-700 bg-slate-900 px-4 py-3 text-white"><div className="mx-auto flex max-w-[1800px] items-center justify-between gap-3"><div><p className="text-sm font-extrabold uppercase tracking-widest text-sky-300">MÓDULO: QUALIDADE • INSPEÇÃO EM PROCESSO</p><h1 className="text-[15px] font-extrabold">Laudo de Inspeção de Produto</h1><p className="mt-1 text-sm text-slate-300">Inspeção ligada a produto, OP, máquina, instrumento calibrado e registros reais.</p></div><div className="flex flex-wrap gap-2"><button type="button" onClick={resetForm} className="rounded-[2px] border border-slate-500 px-4 py-3 text-[11px] font-extrabold text-white"><Plus className="mr-2 inline" size={18}/> NOVA INSPEÇÃO</button><button type="button" onClick={() => void save()} disabled={busy} className="rounded-[2px] bg-sky-600 px-5 py-3 text-[11px] font-extrabold text-white"><Save className="mr-2 inline" size={18}/> SALVAR LAUDO</button><button type="button" onClick={() => window.print()} className="rounded-[2px] border border-slate-500 px-4 py-3 text-[11px] font-extrabold text-white"><Printer className="mr-2 inline" size={18}/> IMPRIMIR</button></div></div></header>
-    <div className="mx-auto grid max-w-[1800px] grid-cols-1 gap-5 p-4 lg:grid-cols-[280px_minmax(0,1fr)]"><QualitySidebar active="/qualidade/inspecao-processo"/><section className="min-w-0 space-y-5">
+    <div className="mx-auto grid max-w-[1800px] grid-cols-1 gap-3 p-3 lg:grid-cols-[240px_minmax(0,1fr)]"><QualitySidebar active="/qualidade/inspecao-processo"/><section className="min-w-0 space-y-5">
       {(error || notice) && <div className={error ? 'rounded-[2px] border border-red-200 bg-red-50 p-4 text-[11px] font-bold text-red-800' : 'rounded-[2px] border border-emerald-200 bg-emerald-50 p-4 text-[11px] font-bold text-emerald-800'}>{error || notice}</div>}
-      <section className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm"><h2 className="text-[13px] font-extrabold">1. AMARRAÇÃO DE ENTIDADES DA PRODUÇÃO</h2><div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="rounded-[2px] border border-slate-200 bg-white p-3"><h2 className="text-[11px] font-extrabold">1. AMARRAÇÃO DE ENTIDADES DA PRODUÇÃO</h2><div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
         <EntityCodeLookup label="ITEM / PEÇA" value={produto} records={products} onChange={setProduto} onSelect={record => setProduto(record.id)} required/>
         <EntityCodeLookup label="Nº DA OP" value={op} records={ops} onChange={setOp} onSelect={record => setOp(record.id)} helper="OP real do PCP."/>
         <EntityCodeLookup label="MÁQUINA / POSTO" value={machine} records={machines} onChange={setMachine} onSelect={record => setMachine(record.id)}/>
@@ -154,22 +166,22 @@ export default function QualidadeInspecaoProcesso() {
         <label className={label}>INSPETOR RESPONSÁVEL<input className={input} value={inspetor} onChange={event => setInspetor(event.target.value)} placeholder="Nome do inspetor"/></label>
       </div></section>
 
-      <section className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-[13px] font-extrabold">2. PLANO / MEDIÇÕES TÉCNICAS</h2><p className="mt-1 text-sm text-slate-600">Use critérios cadastrados no banco ou adicione uma característica explicitamente na inspeção.</p></div><div className="flex flex-wrap gap-2">{plans.slice(0,12).map(plan => <button key={plan.id} type="button" onClick={() => addMeasurement(plan)} className="rounded-[2px] border border-slate-300 bg-white px-3 py-2 text-xs font-extrabold text-slate-800 hover:bg-slate-50">{plan.codigo} • {plan.caracteristica || 'Característica'}</button>)}<button type="button" onClick={() => addMeasurement()} className="inline-flex items-center gap-1 rounded-[2px] bg-slate-900 px-3 py-2 text-xs font-extrabold text-white"><Plus size={15}/> Medição manual</button></div></div>
-        <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[850px] border-collapse text-[11px]"><thead className="bg-slate-900 text-white"><tr><th className="p-3 text-left">Característica</th><th className="p-3 text-left">Valor nominal</th><th className="p-3 text-left">Unidade</th><th className="p-3 text-left">Valor encontrado</th><th className="p-3"></th></tr></thead><tbody>
-          {medicoes.map((row, index) => <tr key={index} className="border-b border-slate-200"><td className="p-2"><input className={input} value={row.caracteristica} onChange={event => setMedicoes(rows => rows.map((item, rowIndex) => rowIndex === index ? { ...item, caracteristica: event.target.value } : item))}/></td><td className="p-2"><input className={input} value={row.nominal} onChange={event => setMedicoes(rows => rows.map((item, rowIndex) => rowIndex === index ? { ...item, nominal: event.target.value } : item))}/></td><td className="p-2"><input className={input} value={row.unidade} onChange={event => setMedicoes(rows => rows.map((item, rowIndex) => rowIndex === index ? { ...item, unidade: event.target.value } : item))}/></td><td className="p-2"><input className={input} value={row.encontrado} onChange={event => setMedicoes(rows => rows.map((item, rowIndex) => rowIndex === index ? { ...item, encontrado: event.target.value } : item))}/></td><td className="p-2"><button type="button" onClick={() => setMedicoes(rows => rows.filter((_, rowIndex) => rowIndex !== index))} className="rounded-[2px] border border-rose-300 p-3 text-rose-800" title="Remover medição"><Trash2 size={17}/></button></td></tr>)}
+      <section className="rounded-[2px] border border-slate-200 bg-white p-3"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-[11px] font-extrabold">2. PLANO / MEDIÇÕES TÉCNICAS</h2><p className="mt-1 text-[10px] text-slate-600">A aprovação dimensional exige limites de especificação cadastrados no plano.</p></div><div className="flex flex-wrap gap-2">{plans.filter(plan => !produto || !plan.produto_id || plan.produto_id === produto).slice(0,12).map(plan => <button key={plan.id} type="button" onClick={() => addMeasurement(plan)} className="h-[30px] rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-bold text-slate-800 hover:bg-slate-50">{plan.codigo} • {plan.caracteristica || 'Característica'}</button>)}<button type="button" onClick={() => addMeasurement()} className="inline-flex h-[30px] items-center gap-1 rounded-[2px] bg-slate-900 px-2 text-[10px] font-bold text-white"><Plus size={13}/> Medição manual</button></div></div>
+        <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[980px] border-collapse text-[10px]"><thead className="bg-slate-900 text-white"><tr><th className="p-2 text-left">Característica</th><th className="p-2 text-left">Valor nominal</th><th className="p-2 text-left">LIE / LSE</th><th className="p-2 text-left">Unidade</th><th className="p-2 text-left">Valor encontrado</th><th className="p-2"></th></tr></thead><tbody>
+          {medicoes.map((row, index) => <tr key={index} className="h-9 border-b border-slate-200"><td className="p-2"><input className={input} value={row.caracteristica} onChange={event => setMedicoes(rows => rows.map((item, rowIndex) => rowIndex === index ? { ...item, caracteristica: event.target.value } : item))}/></td><td className="p-2"><input className={input} value={row.nominal} onChange={event => setMedicoes(rows => rows.map((item, rowIndex) => rowIndex === index ? { ...item, nominal: event.target.value } : item))}/></td><td className="p-2"><span className="text-[10px] tabular-nums text-slate-700">{row.limiteInferior || '—'} / {row.limiteSuperior || '—'}</span></td><td className="p-2"><input className={input} value={row.unidade} onChange={event => setMedicoes(rows => rows.map((item, rowIndex) => rowIndex === index ? { ...item, unidade: event.target.value } : item))}/></td><td className="p-2"><input className={input} value={row.encontrado} onChange={event => setMedicoes(rows => rows.map((item, rowIndex) => rowIndex === index ? { ...item, encontrado: event.target.value } : item))}/></td><td className="p-2"><button type="button" onClick={() => setMedicoes(rows => rows.filter((_, rowIndex) => rowIndex !== index))} className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[2px] border border-rose-300 text-rose-800" title="Remover medição"><Trash2 size={14}/></button></td></tr>)}
           {!medicoes.length && <tr><td colSpan={5} className="p-8 text-center font-semibold text-slate-600">Nenhuma característica adicionada. Se houver Plano de Inspeção, use um dos critérios acima; caso contrário, adicione uma medição manual.</td></tr>}
         </tbody></table></div>
       </section>
 
-      <section className="grid grid-cols-1 gap-5 xl:grid-cols-2"><div className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm"><h2 className="text-[13px] font-extrabold">3. QUANTIDADE E DECISÃO</h2><div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+      <section className="grid grid-cols-1 gap-3 xl:grid-cols-2"><div className="rounded-[2px] border border-slate-200 bg-white p-3"><h2 className="text-[11px] font-extrabold">3. QUANTIDADE E DECISÃO</h2><div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
         <label className={label}>QTD. INSPECIONADA<input className={input} type="number" min="1" step="any" value={quantidadeInspecionada} onChange={event => setQuantidadeInspecionada(event.target.value)}/></label>
         <label className={label}>QTD. APROVADA<input className={input} type="number" min="0" step="any" value={quantidadeAprovada} onChange={event => setQuantidadeAprovada(event.target.value)}/></label>
         <label className={label}>QTD. REPROVADA<input className={input} type="number" min="0" step="any" value={quantidadeReprovada} onChange={event => setQuantidadeReprovada(event.target.value)}/></label>
         <label className={label}>RESULTADO<select className={input} value={resultado} onChange={event => setResultado(event.target.value)}><option>APROVADO</option><option>REPROVADO</option><option>CONDICIONAL</option></select></label>
         <label className={label}>AÇÃO DE BLOQUEIO<select className={input} value={acaoBloqueio} onChange={event => setAcaoBloqueio(event.target.value)}><option>NENHUMA</option><option>BLOQUEAR_LOTE</option><option>RETER_RETRABALHO</option><option>SEGREGAR</option></select></label>
-      </div></div><div className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm"><h2 className="text-[13px] font-extrabold">OBSERVAÇÕES DO INSPETOR</h2><textarea className="mt-4 min-h-40 w-full rounded-[2px] border border-slate-300 bg-white p-3 text-[11px] text-slate-900" value={obs} onChange={event => setObs(event.target.value)} placeholder="Registre evidências, desvios e decisão técnica."/></div></section>
+      </div></div><div className="rounded-[2px] border border-slate-200 bg-white p-3"><h2 className="text-[11px] font-extrabold">OBSERVAÇÕES DO INSPETOR</h2><textarea className="mt-3 min-h-24 w-full rounded-[2px] border border-slate-300 bg-white p-2 text-[10px] text-slate-900" value={obs} onChange={event => setObs(event.target.value)} placeholder="Registre evidências, desvios e decisão técnica."/></div></section>
 
-      <section className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm"><h2 className="text-[13px] font-extrabold">4. HISTÓRICO RECENTE</h2><div className="mt-4 overflow-x-auto"><table className="w-full min-w-[1000px] text-left text-sm"><thead className="bg-slate-900 text-white"><tr><th className="p-3">Tipo</th><th className="p-3">Resultado</th><th className="p-3">Inspecionada</th><th className="p-3">Aprovada</th><th className="p-3">Reprovada</th><th className="p-3">OP</th><th className="p-3">Ação</th></tr></thead><tbody>{history.map(item => <tr key={item.id} className="h-[54px] border-b border-slate-200"><td className="p-3">{item.tipo}</td><td className="p-3 font-bold">{item.resultado}</td><td className="p-3">{item.quantidade_inspecionada}</td><td className="p-3">{item.quantidade_aprovada}</td><td className="p-3">{item.quantidade_reprovada}</td><td className="p-3">{item.ordem_producao_id || '—'}</td><td className="p-3">{item.acao_bloqueio || '—'}</td></tr>)}{!history.length && <tr><td colSpan={7} className="p-6 text-center text-slate-600">Nenhuma inspeção registrada.</td></tr>}</tbody></table></div></section>
+      <section className="rounded-[2px] border border-slate-200 bg-white p-3"><h2 className="text-[11px] font-extrabold">4. HISTÓRICO RECENTE</h2><div className="mt-3 overflow-x-auto"><table className="w-full min-w-[1000px] text-left text-[10px]"><thead className="bg-slate-900 text-white"><tr><th className="p-2">Tipo</th><th className="p-2">Resultado</th><th className="p-2">Inspecionada</th><th className="p-2">Aprovada</th><th className="p-2">Reprovada</th><th className="p-2">OP</th><th className="p-2">Ação</th></tr></thead><tbody>{history.map(item => <tr key={item.id} className="h-8 border-b border-slate-200"><td className="p-2">{item.tipo}</td><td className="p-2 font-bold">{item.resultado}</td><td className="p-2">{item.quantidade_inspecionada}</td><td className="p-2">{item.quantidade_aprovada}</td><td className="p-2">{item.quantidade_reprovada}</td><td className="p-2">{item.ordem_producao_id || '—'}</td><td className="p-2">{item.acao_bloqueio || '—'}</td></tr>)}{!history.length && <tr><td colSpan={7} className="p-6 text-center text-slate-600">Nenhuma inspeção registrada.</td></tr>}</tbody></table></div></section>
     </section></div>
   </main>
 }
