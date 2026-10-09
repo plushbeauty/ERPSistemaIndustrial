@@ -177,6 +177,8 @@ export default function QualidadeInspecaoProcesso({ inspectionType = 'PROCESSO' 
       if (evaluatedMeasurements.some(item => item.status === 'PENDENTE' || item.status === 'SEM CRITÉRIO')) throw new Error('Conclua cada critério: valores numéricos dentro dos limites ou CONFORME/NÃO CONFORME para visual/documental.')
       const hasOutOfSpec = evaluatedMeasurements.some(item => item.status === 'NOK')
       const effectiveResult = hasOutOfSpec ? 'REPROVADO' : resultado
+      if (effectiveResult === 'APROVADO' && rejected !== 0) throw new Error('Inspeção aprovada não pode conter quantidade reprovada.')
+      if (effectiveResult === 'APROVADO' && approved !== inspected) throw new Error('Em uma inspeção aprovada, toda a quantidade inspecionada deve estar aprovada.')
       if (hasOutOfSpec && rejected <= 0) throw new Error('Há medição fora dos limites; registre quantidade reprovada maior que zero.')
       if (effectiveResult !== 'APROVADO' && rejected <= 0) throw new Error('Inspeção não aprovada exige quantidade reprovada maior que zero.')
       if (effectiveResult !== 'APROVADO' && acaoBloqueio === 'NENHUMA') throw new Error('Inspeção não aprovada exige uma ação de bloqueio.')
