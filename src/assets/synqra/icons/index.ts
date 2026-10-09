@@ -79,6 +79,7 @@ export const SYNQRA_MODULES: readonly SynqraModule[] = [
   { key: 'pcp-ordens-industriais', label: 'PCP · Ordens industriais', route: '/pcp/ordens-industriais', Icon: Factory },
   { key: 'pcp-apontamentos-industriais', label: 'PCP · Apontamentos', route: '/pcp/apontamentos', Icon: ClipboardList },
   { key: 'fiscal-parametros-industriais', label: 'Fiscal · Parâmetros', route: '/fiscal/parametros', permission: 'fiscal.ver', Icon: FileText },
+  { key: 'fiscal-nfe-entradas', label: 'Fiscal · NF-e Entrada', route: '/fiscal/nfe-entradas', permission: 'fiscal.ver', Icon: FileText },
   { key: 'rh-funcionarios-industriais', label: 'RH · Funcionários', route: '/rh/funcionarios', Icon: Users },
   { key: 'rh-turnos-industriais', label: 'RH · Turnos', route: '/rh/turnos', Icon: CalendarDays },
   { key: 'rh-epis-industriais', label: 'RH · EPIs / CA', route: '/rh/epis', Icon: ShieldCheck },
