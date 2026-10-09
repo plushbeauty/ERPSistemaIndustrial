@@ -8,13 +8,19 @@ type Lookup = LookupRecord
 type Machine = { id: string; codigo: string; nome: string; tipo: string | null }
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; status_inspecao: string | null }
 type Instrument = { id: string; codigo: string; descricao: string; status: string; proxima_calibracao: string | null }
-type Plan = { id: string; produto_id: string; codigo: string; caracteristica: string | null; unidade: string | null; limite_inferior: number | null; limite_superior: number | null; frequencia: string | null; status: string | null }
+type Plan = { id: string; produto_id: string; codigo: string; caracteristica: string | null; unidade: string | null; nominal: number | null; limite_inferior: number | null; limite_superior: number | null; frequencia: string | null; metodo_inspecao: string; tipo_inspecao: string; instrumento_id: string | null; status: string | null }
 type InspectionRow = { id: string; produto_id: string | null; ordem_producao_id: string | null; maquina_id: string | null; tipo: string; resultado: string; quantidade_inspecionada: number; quantidade_aprovada: number; quantidade_reprovada: number; observacao: string | null; inspetor_nome: string | null; medicoes: unknown; acao_bloqueio: string | null }
 
-type Measurement = { caracteristica: string; nominal: string; encontrado: string; unidade: string; limite_inferior: number | null; limite_superior: number | null }
+type Measurement = { caracteristica: string; nominal: string; encontrado: string; unidade: string; limite_inferior: number | null; limite_superior: number | null; metodo_inspecao: string }
 
 function evaluateMeasurement(item: Measurement): 'OK' | 'NOK' | 'PENDENTE' | 'SEM CRITÉRIO' {
   if (!item.encontrado.trim()) return 'PENDENTE'
+  if (item.metodo_inspecao === 'VISUAL' || item.metodo_inspecao === 'DOCUMENTAL') {
+    const answer = item.encontrado.trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toUpperCase()
+    if (['OK','CONFORME','APROVADO','SIM'].includes(answer)) return 'OK'
+    if (['NOK','NAO CONFORME','REPROVADO','NAO','FALHA'].includes(answer)) return 'NOK'
+    return 'PENDENTE'
+  }
   if (item.limite_inferior === null && item.limite_superior === null) return 'SEM CRITÉRIO'
   const value = Number(item.encontrado.trim().replace(',', '.'))
   if (!Number.isFinite(value)) return 'PENDENTE'
@@ -68,7 +74,7 @@ export default function QualidadeInspecaoProcesso() {
         supabase.from('erp_maquinas').select('id,codigo,nome,tipo').eq('empresa_id', company.data).not('status', 'eq', 'INATIVA').order('codigo'),
         supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,status_inspecao').eq('empresa_id', company.data).order('created_at', { ascending: false }).limit(2000),
         supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao').eq('empresa_id', company.data).order('codigo'),
-        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,limite_inferior,limite_superior,frequencia,status').eq('empresa_id', company.data).order('codigo'),
+        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,metodo_inspecao,tipo_inspecao,instrumento_id,status').eq('empresa_id', company.data).order('codigo'),
         supabase.from('erp_inspecoes').select('id,produto_id,ordem_producao_id,maquina_id,tipo,resultado,quantidade_inspecionada,quantidade_aprovada,quantidade_reprovada,observacao,inspetor_nome,medicoes,acao_bloqueio').eq('empresa_id', company.data).order('created_at', { ascending: false }).limit(100),
       ])
       for (const result of [productsResult, opsResult, machinesResult, lotsResult, instrumentsResult, plansResult, inspectionsResult]) if (result.error) throw result.error
@@ -89,7 +95,7 @@ export default function QualidadeInspecaoProcesso() {
   useEffect(() => { void load() }, [])
 
   function addMeasurement(plan?: Plan) {
-    setMedicoes(rows => [...rows, { caracteristica: plan?.caracteristica || '', nominal: '', encontrado: '', unidade: plan?.unidade || '', limite_inferior: plan?.limite_inferior ?? null, limite_superior: plan?.limite_superior ?? null }])
+    setMedicoes(rows => [...rows, { caracteristica: plan?.caracteristica || '', nominal: plan?.nominal == null ? '' : String(plan.nominal), encontrado: '', unidade: plan?.unidade || '', limite_inferior: plan?.limite_inferior ?? null, limite_superior: plan?.limite_superior ?? null, metodo_inspecao: plan?.metodo_inspecao ?? 'DIMENSIONAL' }])
   }
 
   function resetForm() {
@@ -130,15 +136,16 @@ export default function QualidadeInspecaoProcesso() {
       if (!Number.isFinite(approved) || approved < 0 || !Number.isFinite(rejected) || rejected < 0) throw new Error('Informe quantidades aprovadas e reprovadas válidas.')
       if (approved + rejected !== inspected) throw new Error('Aprovadas + reprovadas deve ser igual à quantidade inspecionada.')
       if (!medicoes.length || medicoes.some(item => !item.caracteristica.trim() || !item.encontrado.trim())) throw new Error('Registre ao menos uma característica e seu valor encontrado.')
-      if (medicoes.some(item => item.limite_inferior === null && item.limite_superior === null)) {
-        throw new Error('Toda medição precisa de pelo menos um limite técnico. Preencha os limites na grade ou selecione um critério cadastrado; sem especificação, a inspeção não pode ser aprovada.')
+      if (medicoes.some(item => item.limite_inferior === null && item.limite_superior === null && !['VISUAL','DOCUMENTAL'].includes(item.metodo_inspecao))) {
+        throw new Error('Toda medição dimensional ou funcional precisa de limite técnico. Para visual/documental, use CONFORME ou NÃO CONFORME.')
       }
       if (medicoes.some(item => item.limite_inferior !== null && item.limite_superior !== null && item.limite_inferior > item.limite_superior)) {
         throw new Error('O limite mínimo não pode ser maior que o limite máximo.')
       }
       const evaluatedMeasurements = medicoes.map(item => ({ ...item, status: evaluateMeasurement(item) }))
-      const invalidNumericReading = evaluatedMeasurements.some(item => (item.limite_inferior !== null || item.limite_superior !== null) && !Number.isFinite(Number(item.encontrado.trim().replace(',', '.'))))
+      const invalidNumericReading = evaluatedMeasurements.some(item => !['VISUAL','DOCUMENTAL'].includes(item.metodo_inspecao) && (item.limite_inferior !== null || item.limite_superior !== null) && !Number.isFinite(Number(item.encontrado.trim().replace(',', '.'))))
       if (invalidNumericReading) throw new Error('Informe valores numéricos válidos para as características com limites técnicos.')
+      if (evaluatedMeasurements.some(item => item.status === 'PENDENTE' || item.status === 'SEM CRITÉRIO')) throw new Error('Conclua cada critério: valores numéricos dentro dos limites ou CONFORME/NÃO CONFORME para visual/documental.')
       const hasOutOfSpec = evaluatedMeasurements.some(item => item.status === 'NOK')
       const effectiveResult = hasOutOfSpec ? 'REPROVADO' : resultado
       if (hasOutOfSpec && rejected <= 0) throw new Error('Há medição fora dos limites; registre quantidade reprovada maior que zero.')
