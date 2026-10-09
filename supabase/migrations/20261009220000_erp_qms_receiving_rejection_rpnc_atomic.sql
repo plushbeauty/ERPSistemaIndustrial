@@ -83,7 +83,9 @@ begin
   select usuario_id into v_user from public.erp_qms_current_user() limit 1;
   if v_user is null then raise exception 'Usuário ERP ativo não identificado para registrar a decisão.'; end if;
 
-  perform public.erp_reter_lote(v_lote.id, 'Lote bloqueado pela inspeção de recebimento QMS: ' || btrim(p_descricao));
+  if upper(coalesce(v_lote.status_inspecao, '')) <> 'RETIDO' then
+    perform public.erp_reter_lote(v_lote.id, 'Lote bloqueado pela inspeção de recebimento QMS: ' || btrim(p_descricao));
+  end if;
   update public.erp_qualidade_inspecoes_recebimento
   set status = 'BLOQUEADO', decidido_por = v_user, decidido_em = now(), updated_at = now()
   where id = v_inspecao.id and empresa_id = v_empresa;
