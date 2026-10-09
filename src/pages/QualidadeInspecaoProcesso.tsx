@@ -114,6 +114,7 @@ export default function QualidadeInspecaoProcesso() {
     setBusy(true)
     setError('')
     setNotice('')
+    let lotRetained = false
     try {
       const company = await supabase.rpc('erp_current_empresa_id')
       const user = await supabase.auth.getUser()
@@ -141,7 +142,6 @@ export default function QualidadeInspecaoProcesso() {
       if (effectiveResult !== 'APROVADO' && !lote) throw new Error('Selecione o lote real que será retido em quarentena.')
       const selectedLot = lots.find(item => item.id === lote)
       if (lote && (!selectedLot || selectedLot.produto_id !== produto)) throw new Error('O lote selecionado não pertence ao produto inspecionado.')
-      let lotRetained = false
       if (effectiveResult !== 'APROVADO' && lote) {
         const hold = await supabase.rpc('erp_reter_lote', { p_lote_id: lote, p_motivo: `Inspeção de processo ${effectiveResult}: ${obs.trim() || 'desvio nos critérios técnicos'}` })
         if (hold.error) throw hold.error
