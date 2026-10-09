@@ -9,6 +9,7 @@ type Lookup = LookupRecord
 type Machine = { id: string; codigo: string; nome: string; tipo: string | null }
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; status_inspecao: string | null }
 type Instrument = { id: string; codigo: string; descricao: string; status: string; proxima_calibracao: string | null }
+type Sector = { id: string; nome: string; ativo: boolean }
 type Plan = { id: string; produto_id: string; codigo: string; caracteristica: string | null; unidade: string | null; nominal: number | null; limite_inferior: number | null; limite_superior: number | null; frequencia: string | null; metodo_inspecao: string; tipo_inspecao: string; instrumento_id: string | null; status: string | null; vigencia_inicio: string | null; vigencia_fim: string | null; aprovador_id: string | null; aprovado_em: string | null; revisao: number }
 type InspectionRow = { id: string; produto_id: string | null; ordem_producao_id: string | null; maquina_id: string | null; tipo: string; resultado: string; quantidade_inspecionada: number; quantidade_aprovada: number; quantidade_reprovada: number; observacao: string | null; inspetor_nome: string | null; medicoes: unknown; acao_bloqueio: string | null }
 
@@ -47,6 +48,10 @@ export default function QualidadeInspecaoProcesso({ inspectionType = 'PROCESSO' 
   const [lots, setLots] = useState<Lot[]>([])
   const [lote, setLote] = useState('')
   const [instruments, setInstruments] = useState<Instrument[]>([])
+  const [sectors, setSectors] = useState<Sector[]>([])
+  const [rpncSectorId, setRpncSectorId] = useState('')
+  const [rpncSeverity, setRpncSeverity] = useState<'Critica' | 'Maior' | 'Menor' | ''>('')
+  const [rpncDescription, setRpncDescription] = useState('')
   const [plans, setPlans] = useState<Plan[]>([])
   const [history, setHistory] = useState<InspectionRow[]>([])
   const [produto, setProduto] = useState('')
@@ -71,7 +76,7 @@ export default function QualidadeInspecaoProcesso({ inspectionType = 'PROCESSO' 
     try {
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error || !company.data) throw company.error ?? new Error('Empresa não identificada.')
-      const [productsResult, opsResult, machinesResult, lotsResult, instrumentsResult, plansResult, inspectionsResult] = await Promise.all([
+      const [productsResult, opsResult, machinesResult, lotsResult, instrumentsResult, plansResult, inspectionsResult, sectorsResult] = await Promise.all([
         fetchAllPages((from, to) => supabase.from('erp_produtos').select('id,codigo,nome,descricao', { count: 'exact' }).eq('empresa_id', company.data).eq('ativo', true).order('codigo').order('id').range(from, to)),
         fetchAllPages((from, to) => supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,status', { count: 'exact' }).eq('empresa_id', company.data).order('numero_op', { ascending: false }).order('id').range(from, to)),
         fetchAllPages<Machine>((from, to) => supabase.from('erp_maquinas').select('id,codigo,nome,tipo', { count: 'exact' }).eq('empresa_id', company.data).not('status', 'eq', 'INATIVA').order('codigo').order('id').range(from, to)),
@@ -79,12 +84,14 @@ export default function QualidadeInspecaoProcesso({ inspectionType = 'PROCESSO' 
         fetchAllPages<Instrument>((from, to) => supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao', { count: 'exact' }).eq('empresa_id', company.data).order('codigo').order('id').range(from, to)),
         fetchAllPages<Plan>((from, to) => supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,metodo_inspecao,tipo_inspecao,instrumento_id,status,vigencia_inicio,vigencia_fim,aprovador_id,aprovado_em,revisao', { count: 'exact' }).eq('empresa_id', company.data).order('codigo').order('id').range(from, to)),
         fetchAllPages<InspectionRow>((from, to) => supabase.from('erp_inspecoes').select('id,produto_id,ordem_producao_id,maquina_id,tipo,resultado,quantidade_inspecionada,quantidade_aprovada,quantidade_reprovada,observacao,inspetor_nome,medicoes,acao_bloqueio', { count: 'exact' }).eq('empresa_id', company.data).order('created_at', { ascending: false }).order('id').range(from, to)),
+        fetchAllPages<Sector>((from, to) => supabase.from('erp_setores').select('id,nome,ativo', { count: 'exact' }).eq('empresa_id', company.data).eq('ativo', true).order('nome').order('id').range(from, to)),
       ])
       setProducts(productsResult as Lookup[])
       setOps(opsResult.map(row => ({ id: String(row.id), codigo: String(row.numero_op), nome: String(row.status), documento: String(row.produto_id ?? '') })) as Lookup[])
       setMachines(machinesResult)
       setLots(lotsResult)
       setInstruments(instrumentsResult)
+      setSectors(sectorsResult)
       setPlans(plansResult)
       setHistory(inspectionsResult)
     } catch (cause) {
@@ -119,6 +126,9 @@ export default function QualidadeInspecaoProcesso({ inspectionType = 'PROCESSO' 
     setQuantidadeReprovada('')
     setObs('')
     setMedicoes([])
+    setRpncSectorId('')
+    setRpncSeverity('')
+    setRpncDescription('')
     setNotice('Nova inspeção pronta para preenchimento.')
     setError('')
   }
