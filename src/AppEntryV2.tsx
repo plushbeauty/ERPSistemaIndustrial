@@ -466,6 +466,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/rh/funcionarios" element={<IndustrialDataWorkspace />} />
       <Route path="/rh/turnos" element={<IndustrialDataWorkspace />} />
       <Route path="/rh/epis" element={<IndustrialDataWorkspace />} />
+      <Route path="/rh/epis/entregas" element={<IndustrialDataWorkspace />} />
       <Route path="/pcp/engenharia-bom" element={<EngenhariaBOM />} />
       <Route path="/pcp/roteiro-operacoes" element={<RoteiroOperacoes />} />
       <Route path="/pcp/ficha-processo" element={<FichaProcesso />} />
