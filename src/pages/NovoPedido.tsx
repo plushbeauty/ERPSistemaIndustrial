@@ -61,17 +61,7 @@ export default function NovoPedido(){
  const transportadorasFiltro=transportadoras.filter(t=>!busca||t.codigo.toLowerCase().includes(busca.toLowerCase())||t.razao_social.toLowerCase().includes(busca.toLowerCase())).slice(0,40)
  const produtosFiltro=produtos.filter(p=>{const q=busca.toLowerCase();return !q||p.codigo.toLowerCase().includes(q)||p.nome.toLowerCase().includes(q)||(p.referencia_interna??'').toLowerCase().includes(q)||(p.codigo_barras??'').toLowerCase().includes(q)}).slice(0,40)
 
- const titleActions=(
-  <>
-   <button id="btnNovo" type="button" onClick={novoPedido} className="erp-standard-button"><FilePlus2 size={11}/>NOVO</button>
-   <button id="btnSalvar" type="button" disabled={loading} onClick={()=>void save(false)} className="erp-standard-button"><Save size={11}/>SALVAR</button>
-   <button id="btnCancelar" type="button" onClick={novoPedido} className="erp-standard-button"><XCircleIconFallback/></button>
-   <button id="btnLimpar" type="button" onClick={novoPedido} className="erp-standard-button"><Trash2 size={11}/>LIMPAR</button>
-   <button id="btnImprimir" type="button" onClick={()=>window.print()} className="erp-standard-button"><PrinterIconFallback/></button>
-  </>
- )
-
- return <VendasLayout title="Novo Pedido de Venda" subtitle="Entrada comercial • estoque • PCP" titleActions={titleActions} showStatusCards={false}>
+ return <VendasLayout title="Novo Pedido de Venda" subtitle="Entrada comercial • estoque • PCP" showStatusCards={false}>
   <div id="frmNovoPedido" className="erp-compact w-full space-y-2 bg-white text-[11px] text-slate-700">
    {message&&<div role="status" className="border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-[10px] text-emerald-800">{message}</div>}
    {error&&<div role="alert" className="border border-red-200 bg-red-50 px-2 py-1.5 text-[10px] text-red-700">{error}</div>}
