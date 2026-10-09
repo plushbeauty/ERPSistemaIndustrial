@@ -294,3 +294,139 @@ $$;
 
 REVOKE ALL ON FUNCTION public.erp_mrp_explodir(uuid, numeric, text) FROM anon;
 GRANT EXECUTE ON FUNCTION public.erp_mrp_explodir(uuid, numeric, text) TO authenticated;
+
+-- Save a process-sheet draft and all BOM/route rows in one database transaction.
+CREATE OR REPLACE FUNCTION public.erp_salvar_ficha_tecnica_rascunho(
+  p_produto_id uuid,
+  p_versao integer,
+  p_codigo text,
+  p_titulo text,
+  p_rendimento numeric,
+  p_unidade_rendimento text,
+  p_observacoes jsonb,
+  p_itens jsonb,
+  p_operacoes jsonb
+)
+RETURNS public.erp_fichas_tecnicas
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = pg_catalog, public
+AS $$
+DECLARE
+  v_empresa uuid := public.erp_current_empresa_id();
+  v_ficha public.erp_fichas_tecnicas;
+BEGIN
+  IF v_empresa IS NULL THEN
+    RAISE EXCEPTION 'ERP_TENANT_NOT_FOUND';
+  END IF;
+  IF p_produto_id IS NULL OR p_versao IS NULL OR p_versao < 1 THEN
+    RAISE EXCEPTION 'ERP_PROCESS_SHEET_INVALID_INPUT';
+  END IF;
+  IF p_rendimento IS NULL OR p_rendimento <= 0 OR NULLIF(btrim(coalesce(p_unidade_rendimento, '')), '') IS NULL THEN
+    RAISE EXCEPTION 'ERP_PROCESS_SHEET_INVALID_YIELD';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM public.erp_produtos p
+    WHERE p.id = p_produto_id AND p.empresa_id = v_empresa AND p.ativo = true
+  ) THEN
+    RAISE EXCEPTION 'ERP_PROCESS_SHEET_PRODUCT_NOT_IN_TENANT';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.erp_fichas_tecnicas f
+    WHERE f.empresa_id = v_empresa AND f.produto_id = p_produto_id AND f.versao >= p_versao
+  ) THEN
+    RAISE EXCEPTION 'ERP_PROCESS_SHEET_REVISION_MUST_INCREASE';
+  END IF;
+  IF p_itens IS NULL OR jsonb_typeof(p_itens) <> 'array' OR jsonb_array_length(p_itens) = 0 THEN
+    RAISE EXCEPTION 'ERP_PROCESS_SHEET_BOM_REQUIRED';
+  END IF;
+  IF p_operacoes IS NULL OR jsonb_typeof(p_operacoes) <> 'array' OR jsonb_array_length(p_operacoes) = 0 THEN
+    RAISE EXCEPTION 'ERP_PROCESS_SHEET_ROUTE_REQUIRED';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM jsonb_array_elements(p_itens) AS items(item)
+    LEFT JOIN public.erp_produtos p
+      ON p.id = NULLIF(items.item->>'componente_id', '')::uuid
+     AND p.empresa_id = v_empresa
+     AND p.ativo = true
+    WHERE p.id IS NULL
+  ) THEN
+    RAISE EXCEPTION 'ERP_PROCESS_SHEET_COMPONENT_NOT_IN_TENANT';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM jsonb_array_elements(p_operacoes) AS operations(item)
+    LEFT JOIN public.erp_maquinas m
+      ON m.id = NULLIF(operations.item->>'maquina_id', '')::uuid
+     AND m.empresa_id = v_empresa
+     AND upper(coalesce(m.status, '')) <> 'INATIVA'
+    WHERE NULLIF(operations.item->>'maquina_id', '') IS NOT NULL
+      AND m.id IS NULL
+  ) THEN
+    RAISE EXCEPTION 'ERP_PROCESS_SHEET_MACHINE_NOT_IN_TENANT';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM jsonb_array_elements(p_operacoes) AS operations(item)
+    LEFT JOIN public.erp_moldes mold
+      ON mold.id = NULLIF(operations.item->>'molde_id', '')::uuid
+     AND mold.empresa_id = v_empresa
+     AND mold.ativo = true
+    WHERE NULLIF(operations.item->>'molde_id', '') IS NOT NULL
+      AND mold.id IS NULL
+  ) THEN
+    RAISE EXCEPTION 'ERP_PROCESS_SHEET_MOLD_NOT_IN_TENANT';
+  END IF;
+
+  INSERT INTO public.erp_fichas_tecnicas (
+    empresa_id, produto_id, versao, revisao, codigo, titulo, status,
+    rendimento, unidade_rendimento, observacoes, ativa
+  )
+  VALUES (
+    v_empresa, p_produto_id, p_versao, p_versao::text,
+    NULLIF(btrim(coalesce(p_codigo, '')), ''),
+    NULLIF(btrim(coalesce(p_titulo, '')), ''),
+    'rascunho', p_rendimento, btrim(p_unidade_rendimento),
+    p_observacoes::text, false
+  )
+  RETURNING * INTO v_ficha;
+
+  INSERT INTO public.erp_ficha_itens (
+    empresa_id, ficha_id, componente_id, quantidade, perda_percentual,
+    lote_obrigatorio, tipo_item, sequencia
+  )
+  SELECT
+    v_empresa, v_ficha.id,
+    (item->>'componente_id')::uuid,
+    (item->>'quantidade')::numeric,
+    COALESCE(NULLIF(item->>'perda_percentual', '')::numeric, 0),
+    COALESCE(NULLIF(item->>'lote_obrigatorio', '')::boolean, false),
+    COALESCE(NULLIF(item->>'tipo_item', ''), 'COMPRADO'),
+    COALESCE(NULLIF(item->>'sequencia', '')::integer, 10)
+  FROM jsonb_array_elements(p_itens) AS items(item);
+
+  INSERT INTO public.erp_ficha_operacoes (
+    empresa_id, ficha_id, sequencia, operacao, maquina_id, molde_id,
+    setup_min, ciclo_seg, instrucoes
+  )
+  SELECT
+    v_empresa, v_ficha.id,
+    COALESCE(NULLIF(item->>'sequencia', '')::integer, 10),
+    btrim(coalesce(item->>'operacao', '')),
+    NULLIF(item->>'maquina_id', '')::uuid,
+    NULLIF(item->>'molde_id', '')::uuid,
+    COALESCE(NULLIF(item->>'setup_min', '')::numeric, 0),
+    COALESCE(NULLIF(item->>'ciclo_seg', '')::numeric, 0),
+    NULLIF(btrim(coalesce(item->>'instrucoes', '')), '')
+  FROM jsonb_array_elements(p_operacoes) AS operations(item);
+
+  RETURN v_ficha;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.erp_salvar_ficha_tecnica_rascunho(uuid, integer, text, text, numeric, text, jsonb, jsonb, jsonb) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.erp_salvar_ficha_tecnica_rascunho(uuid, integer, text, text, numeric, text, jsonb, jsonb, jsonb) TO authenticated;
