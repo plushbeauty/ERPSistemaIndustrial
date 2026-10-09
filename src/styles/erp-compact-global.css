@@ -210,6 +210,24 @@
   line-height: 1.4;
 }
 
+/* Dense DBGrid baseline for modules explicitly opting into the compact surface. */
+.erp-global-surface.erp-compact table {
+  border-collapse: collapse;
+  font-size: 10px;
+}
+.erp-global-surface.erp-compact th,
+.erp-global-surface.erp-compact td {
+  height: 32px;
+  padding: 4px 6px;
+  vertical-align: middle;
+}
+.erp-global-surface.erp-compact th {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
 /* Compact buttons when the surface and compact mode share the same root. */
 .erp-global-surface.erp-compact button:not(.nfe-primary):not(.nfe-secondary):not(.nfe-action) {
   box-sizing: border-box;
