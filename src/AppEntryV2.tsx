@@ -458,7 +458,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/fmea" element={<IndustrialDataWorkspace />} />
       <Route path="/qualidade/rnc-capa" element={<IndustrialDataWorkspace />} />
       <Route path="/qualidade/cep" element={<IndustrialDataWorkspace />} />
-      <Route path="/pcp/ordens-industriais" element={<IndustrialDataWorkspace />} />
+      <Route path="/pcp/ordens-industriais" element={<PCPExecucaoIndustrial />} />
       <Route path="/pcp/apontamentos" element={<PCPExecucaoIndustrial />} />
       <Route path="/fiscal/parametros" element={<IndustrialDataWorkspace />} />
       <Route path="/fiscal/nfe-entradas" element={<IndustrialDataWorkspace />} />
