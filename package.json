@@ -10,7 +10,7 @@
     "dev": "vite",
     "build": "tsc && vite build --emptyOutDir",
     "build:vercel": "npm run verify:production",
-    "build:verified": "npm run verify:supabase-env && npm run verify:supabase-guard && npm run verify:deploy-integrity && npm run verify:lockfile && npm run verify:lazy-imports && npm run lint:check && npm run audit:all && npm run build && npm run verify:build",
+    "build:verified": "npm run verify:supabase-env && npm run verify:supabase-guard && npm run verify:deploy-integrity && npm run verify:lockfile && npm run verify:lazy-imports && npm run verify:industrial-workflows && npm run lint:check && npm run audit:all && npm run build && npm run verify:build",
     "type-check": "tsc --noEmit",
     "verify:supabase-env": "node scripts/verify-supabase-env.mjs",
     "verify:supabase-guard": "node scripts/verify-supabase-guard.mjs",
@@ -30,11 +30,12 @@
     "audit:security": "npm run audit:global && npm run audit:brutal",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "lint:check": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "verify:production": "npm run verify:supabase-env && npm run verify:supabase-guard && npm run verify:deploy-integrity && npm run verify:lockfile && npm run verify:vercel-config && npm run verify:ci-policy && npm run type-check && npm run lint:check && npm run audit:all && npm run verify:lazy-imports && npm run build && npm run verify:build && npm run verify-routes",
+    "verify:production": "npm run verify:supabase-env && npm run verify:supabase-guard && npm run verify:deploy-integrity && npm run verify:lockfile && npm run verify:vercel-config && npm run verify:ci-policy && npm run verify:nfe-contract && npm run verify:industrial-workflows && npm run type-check && npm run lint:check && npm run audit:all && npm run verify:lazy-imports && npm run build && npm run verify:build && npm run verify-routes",
     "audit:production": "npm run verify:supabase-env && npm run verify:supabase-guard && npm run verify:deploy-integrity && npm run verify:lockfile && npm run verify:vercel-config && npm run verify:lazy-imports && npm run audit:all && npm run lint:check && npm run build && npm run verify:build && npm run verify-routes",
-    "verify:release": "npm run verify:supabase-env && npm run verify:supabase-guard && npm run verify:deploy-integrity && npm run verify:lockfile && npm run verify:vercel-config && npm run verify:ci-policy && npm run type-check && npm run lint:check && npm run audit:global && npm run audit:brutal && npm run audit:interactions && npm run verify:lazy-imports && npm run verify:nfe-contract && npm run build && npm run verify:build && npm run verify-routes",
+    "verify:release": "npm run verify:supabase-env && npm run verify:supabase-guard && npm run verify:deploy-integrity && npm run verify:lockfile && npm run verify:vercel-config && npm run verify:ci-policy && npm run type-check && npm run lint:check && npm run audit:global && npm run audit:brutal && npm run audit:interactions && npm run verify:lazy-imports && npm run verify:nfe-contract && npm run verify:industrial-workflows && npm run build && npm run verify:build && npm run verify-routes",
     "verify:public-naming": "node scripts/verify-public-naming.mjs",
-    "verify-routes": "node scripts/verify-routes.mjs"
+    "verify-routes": "node scripts/verify-routes.mjs",
+    "verify:industrial-workflows": "node scripts/verify-industrial-workflows.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",
