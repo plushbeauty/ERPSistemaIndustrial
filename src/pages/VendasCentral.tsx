@@ -99,6 +99,7 @@ export default function VendasCentral() {
         order.numero,
         order.pedido_cliente ?? '',
         order.status,
+        order.vendedor_nome ?? '',
         order.cliente?.nome ?? '',
         order.cliente?.codigo ?? '',
       ].join(' '))
