@@ -60,14 +60,16 @@ export default function PCPAcabamento() {
         } as OP
       })
       setOps(mapped)
-      const selected = mapped.find(item => item.id === op)
-      if (selected) setRecebida(Math.min(recebida, selected.quantidade_boa_disponivel))
+      setRecebida(current => {
+        const selected = mapped.find(item => item.id === op)
+        return selected ? Math.min(current, selected.quantidade_boa_disponivel) : current
+      })
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao calcular saldo bom disponível para acabamento.')
     } finally {
       setBusy(false)
     }
-  }, [op, recebida])
+  }, [op])
 
   useEffect(() => { void load() }, [load])
 
