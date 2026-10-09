@@ -101,7 +101,7 @@ export default function QualidadePFMEA() {
 
   useEffect(() => { void loadRecords() }, [loadRecords])
 
-  const updateField = <K extends keyof FmeaForm>(key: K, value: FmeaForm[K]) => {
+  const updateField = <K extends keyof FmeaForm,>(key: K, value: FmeaForm[K]) => {
     setForm(current => ({ ...current, [key]: value }))
   }
 
