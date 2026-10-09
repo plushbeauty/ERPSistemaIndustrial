@@ -7,8 +7,8 @@ set search_path = pg_catalog, public
 as $$
 begin
   if tg_op = 'INSERT' then
-    if coalesce(new.status, 'rascunho') <> 'rascunho' then
-      raise exception 'Nova ficha técnica deve iniciar em rascunho e passar pela aprovação formal.';
+    if coalesce(new.status, 'rascunho') <> 'rascunho' or coalesce(new.ativa, false) = true then
+      raise exception 'Nova ficha técnica deve iniciar inativa e em rascunho, passando pela aprovação formal.';
     end if;
     return new;
   end if;
