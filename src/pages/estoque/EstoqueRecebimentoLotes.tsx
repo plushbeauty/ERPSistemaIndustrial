@@ -80,6 +80,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
   }
 
   const handleCertificateChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSignedCertificate(null)
     const file = event.target.files?.[0] ?? null
     if (!file) {
       setCertificado(null)
