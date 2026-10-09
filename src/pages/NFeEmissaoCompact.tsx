@@ -113,7 +113,7 @@ export default function NFeEmissaoCompact() {
         setForm(current => ({
           ...current,
           serie: String(cfg.serie_nfe ?? ''),
-          numero: String(cfg.proximo_numero_nfe ?? ''),
+          numero: '',
           ambiente: String(cfg.ambiente ?? 'homologacao'),
         }))
       }
@@ -182,7 +182,7 @@ export default function NFeEmissaoCompact() {
     return null
   }
 
-  const saveDraft = async (): Promise<string | null> => {
+  const saveDraft = async (reservedNumber?: number, existingDocumentId?: string): Promise<string | null> => {
     setBusy(true)
     setError('')
     setMessage('')
@@ -191,7 +191,7 @@ export default function NFeEmissaoCompact() {
       if (validation) throw new Error(validation)
       const payload = {
         empresa_id: companyId, tipo: field(form, 'operacao') === '1' ? 'NF-e' : 'NF-e Entrada', modelo: '55',
-        serie: onlyDigits(field(form, 'serie'), 3), numero: field(form, 'numero') ? Number(field(form, 'numero')) : null,
+        serie: onlyDigits(field(form, 'serie'), 3), numero: reservedNumber ?? (field(form, 'numero') ? Number(field(form, 'numero')) : null),
         status: 'Rascunho', natureza_operacao: field(form, 'natureza'), cfop: onlyDigits(field(form, 'cfop'), 4),
         ambiente: field(form, 'ambiente') || 'homologacao', data_emissao: new Date(field(form, 'emissao')).toISOString(),
         data_saida: field(form, 'saida') ? new Date(field(form, 'saida')).toISOString() : null,
@@ -218,10 +218,11 @@ export default function NFeEmissaoCompact() {
         icms_aliquota: numberValue(item.icms), ipi_aliquota: numberValue(item.ipi),
         pis_aliquota: numberValue(item.pis), cofins_aliquota: numberValue(item.cofins),
       }))
-      const result = await supabase.rpc('erp_salvar_rascunho_nfe', { p_documento_id: documentId, p_documento: payload, p_itens: rows })
+      const result = await supabase.rpc('erp_salvar_rascunho_nfe', { p_documento_id: existingDocumentId ?? documentId, p_documento: payload, p_itens: rows })
       if (result.error || !result.data) throw new Error(result.error?.message || 'Não foi possível salvar o rascunho.')
       const savedId = String(result.data)
       setDocumentId(savedId)
+      if (reservedNumber !== undefined) setForm(current => ({ ...current, numero: String(reservedNumber) }))
       setDocumentStatus('Rascunho')
       setMessage('NF-e gravada como rascunho. A transmissão fiscal ainda não foi executada.')
       return savedId
@@ -244,11 +245,23 @@ export default function NFeEmissaoCompact() {
     setMessage('')
     let submittedDocumentId: string | null = null
     try {
-      const id = await saveDraft()
+      let id = await saveDraft()
       if (!id) return
       submittedDocumentId = id
+      let reservedNumber = Number(field(form, 'numero'))
+      if (!Number.isInteger(reservedNumber) || reservedNumber <= 0) {
+        const reservation = await supabase.rpc('erp_reservar_numero_nfe', { p_serie: Number(onlyDigits(field(form, 'serie'), 3)) })
+        if (reservation.error) throw reservation.error
+        reservedNumber = Number(reservation.data)
+        if (!Number.isInteger(reservedNumber) || reservedNumber <= 0) throw new Error('O banco não retornou um número fiscal reservado válido.')
+      }
+      setForm(current => ({ ...current, numero: String(reservedNumber) }))
+      const savedWithNumber = await saveDraft(reservedNumber, id)
+      if (!savedWithNumber) return
+      id = savedWithNumber
+      submittedDocumentId = id
       setBusy(true)
-      setMessage('Preparando transmissão fiscal...')
+      setMessage('Número reservado e rascunho persistido. Preparando transmissão fiscal...')
       const result = await supabase.functions.invoke('emitir-nfe', { body: { documento_id: id } })
       if (result.error) throw result.error
       const data = result.data as { ok?: boolean; status?: string; error?: string; chave_acesso?: string; protocolo_autorizacao?: string; xml_storage_path?: string; pdf_storage_path?: string; danfe_disponivel?: boolean }
@@ -259,7 +272,7 @@ export default function NFeEmissaoCompact() {
       }
       if (data?.ok !== true) throw new Error(data?.error || 'O integrador não confirmou a solicitação fiscal.')
       if (data.status !== 'Autorizada') throw new Error('O integrador retornou um estado fiscal não reconhecido; a autorização não foi confirmada.')
-      if (!/^\\d{44}$/.test(data.chave_acesso ?? '') || !data.protocolo_autorizacao?.trim() || !data.xml_storage_path?.trim()) {
+      if (!/^\d{44}$/.test(data.chave_acesso ?? '') || !data.protocolo_autorizacao?.trim() || !data.xml_storage_path?.trim()) {
         throw new Error('A resposta não confirmou chave de acesso, protocolo e XML armazenado; a autorização não foi confirmada.')
       }
       setDocumentStatus('Autorizada')
@@ -280,7 +293,7 @@ export default function NFeEmissaoCompact() {
         } else if (
           persisted.data?.status === 'Autorizada' &&
           persistedInvoice.data?.status === 'Autorizada' &&
-          /^\\d{44}$/.test(persistedInvoice.data.chave_acesso ?? '') &&
+          /^\d{44}$/.test(persistedInvoice.data.chave_acesso ?? '') &&
           Boolean(persistedInvoice.data.protocolo_autorizacao?.trim()) &&
           Boolean(persistedInvoice.data.xml_autorizado_path?.trim()) &&
           persisted.data.chave_acesso === persistedInvoice.data.chave_acesso &&
