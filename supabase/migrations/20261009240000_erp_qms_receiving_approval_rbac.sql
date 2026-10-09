@@ -172,6 +172,13 @@ begin
 
   -- Release the physical stock only after the receiving decision is approved.
   perform public.fn_incrementar_saldo_almoxarifado(v_empresa, v_lote.produto_id, v_lote.quantidade_recebida);
+  insert into public.erp_estoque_movimentos (
+    empresa_id, produto_id, tipo, quantidade, origem, documento, observacao
+  ) values (
+    v_empresa, v_lote.produto_id, 'entrada', v_lote.quantidade_recebida,
+    'Qualidade/Recebimento', v_lote.lote_interno,
+    'Liberação de saldo após aprovação da inspeção de recebimento'
+  );
 
   update public.erp_estoque_lotes
   set status_inspecao = 'APROVADO',
