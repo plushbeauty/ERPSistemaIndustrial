@@ -35,7 +35,7 @@ const configs: Record<string, ModuleConfig> = {
   'rh-turnos': { title:'RH Industrial · Turnos e escalas', subtitle:'Jornada de trabalho para planejamento de capacidade', table:'rh_turnos', search:['codigo','nome','tipo_escala'], columns:['codigo','nome','inicio','termino','escala','carga_horaria_mensal'], fields:[
     {key:'codigo',label:'Código do turno',required:true},{key:'nome',label:'Nome do turno',required:true},{key:'inicio',label:'Início (HH:MM)',required:true},{key:'termino',label:'Término (HH:MM)',required:true},{key:'intervalo_inicio',label:'Início do intervalo'},{key:'intervalo_fim',label:'Fim do intervalo'},{key:'escala',label:'Escala',type:'select',options:['5x2','6x2','12x36'],required:true},{key:'carga_horaria_mensal',label:'Carga mensal (h)',type:'number',required:true}] },
   'rh-epis': { title:'RH Industrial · EPIs e CA', subtitle:'Controle de validade do CA e entregas por funcionário', table:'rh_epis', search:['codigo','nome','numero_ca'], columns:['codigo','nome','numero_ca','ca_valido_ate','periodicidade_troca_dias'], fields:[
-    {key:'codigo',label:'Código do EPI',required:true},{key:'nome',label:'Equipamento',required:true},{key:'numero_ca',label:'Número CA',required:true},{key:'ca_valido_ate',label:'Validade do CA',type:'date'},{key:'periodicidade_troca_dias',label:'Troca obrigatória (dias)',type:'number',required:true}] },
+    {key:'codigo',label:'Código do EPI',required:true},{key:'nome',label:'Equipamento',required:true},{key:'numero_ca',label:'Número CA',required:true},{key:'ca_valido_ate',label:'Validade do CA',type:'date',required:true},{key:'periodicidade_troca_dias',label:'Troca obrigatória (dias)',type:'number',required:true}] },
 }
 const cls='h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] text-slate-800 outline-none focus:border-sky-600'
 const label='mb-[2px] block text-[9px] font-bold uppercase tracking-wider text-slate-600'
@@ -90,7 +90,6 @@ export default function IndustrialDataWorkspace() {
         if(raw.trim()!=='') payload[field.key]=parseValue(field,raw)
         else if(field.type==='number') payload[field.key]=0
       }
-      if(config.table==='qualidade_fmea') payload.npr=npr
       setBusy(true)
       const result=editing
         ? await supabase.from(config.table).update(payload).eq('id',editing).select('id').single()
