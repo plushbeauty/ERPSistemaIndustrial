@@ -182,6 +182,9 @@ begin
      or coalesce(v_trace.quantidade_disponivel, 0) <> 0 then
     raise exception 'O certificado/rastreabilidade não está aguardando liberação de Qualidade.';
   end if;
+  if abs(coalesce(v_trace.quantidade_inicial, 0) - v_lote.quantidade_recebida) > 0.0001 then
+    raise exception 'Quantidade recebida diverge do registro de rastreabilidade; reconcilie antes de liberar.';
+  end if;
 
   -- Release the physical stock only after the receiving decision is approved.
   perform public.fn_incrementar_saldo_almoxarifado(v_empresa, v_lote.produto_id, v_lote.quantidade_recebida);
