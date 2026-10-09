@@ -1,6 +1,6 @@
 /* ERP INDUSTRIAL UI PASS 2026 — global readability and tablet */
 html,body,#root{font-size:16px!important}
-button,input,select,textarea,table{font-size:16px!important}
+/* Os tamanhos operacionais são definidos por cada shell ERP; não forçar 16px globalmente. */
 .v7-topbar{min-height:82px!important;height:82px!important;padding:10px 22px!important}
 .v7-top-brand{min-width:250px!important;padding:6px 8px!important;gap:14px!important}
 .v7-top-brand img{width:56px!important;height:56px!important}
@@ -211,3 +211,64 @@ button,input,select,textarea,table{font-size:16px!important}
 @media(max-width:1100px){.process-form-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.process-form-span-2{grid-column:span 2}.process-sheet-table{min-width:1200px}.process-sheet-table-panel{overflow:auto}.process-sheet-two-columns{grid-template-columns:1fr}}
 @media(max-width:700px){.process-sheet-page{padding:8px!important}.process-sheet-header{flex-direction:column}.process-sheet-header h1{font-size:24px!important}.process-sheet-toolbar{overflow:auto}.process-sheet-toolbar-status{display:none}.process-sheet-module-title{align-items:flex-start;gap:10px;flex-direction:column}.process-form-grid{grid-template-columns:1fr}.process-form-span-2{grid-column:auto}.process-sheet-approval{grid-template-columns:1fr}.process-sheet-approval>div{border-right:0;border-bottom:1px solid #C9DCE3}.process-sheet-approval>div:last-child{border-bottom:0}}
 @media print{.process-sheet-page{padding:0!important;background:#fff!important}.v7-topbar,.v7-sidebar,.process-sheet-actions,.process-sheet-toolbar,.industrial-notice{display:none!important}.process-sheet-header{border:0;box-shadow:none}.process-sheet-page .industrial-panel{box-shadow:none!important}.process-sheet-table-panel{overflow:visible!important}.process-sheet-table{min-width:0!important;font-size:9px!important}.process-sheet-table th,.process-sheet-table td{padding:3px!important}.process-sheet-page input,.process-sheet-page select,.process-sheet-page textarea{border:0!important;background:transparent!important}}
+
+
+/* PREMIUM COMPACT PASS — formulários operacionais e telas industriais legadas */
+.qms-control-page{font-size:11px!important;background:#F4FBFD!important;color:#17333F!important}
+.qms-control-page input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.qms-control-page select,.qms-control-page textarea{height:30px!important;min-height:30px!important;font-size:10px!important;line-height:14px!important;border:1px solid #B9CBD3!important;border-radius:2px!important;padding:0 7px!important}
+.qms-control-page textarea{height:72px!important;min-height:72px!important;padding:6px 7px!important}
+.qms-control-page button{height:30px!important;min-height:30px!important;font-size:10px!important;border-radius:2px!important}
+.qms-control-page h1{font-size:22px!important;line-height:1.2!important}
+.qms-control-page h2{font-size:16px!important;line-height:1.25!important}
+.qms-control-page h3{font-size:13px!important;line-height:1.3!important}
+.qms-status-row span,.qms-doc small,.qms-control-page p,.qms-history article{font-size:10px!important;line-height:1.4}
+.qms-document-paper{font-size:11px!important}
+.erp-page-v3{padding:8px!important;max-width:none!important;background:#F4FBFD!important;color:#17333F!important;font-size:11px!important}
+.erp-page-header-v3{gap:10px!important;margin-bottom:8px!important}
+.erp-page-header-v3 h1{font-size:20px!important;line-height:1.2!important;margin:2px 0!important;color:#123B50!important}
+.erp-page-header-v3 p,.erp-card-v3 p{font-size:10px!important;color:#536B76!important}
+.erp-eyebrow{font-size:9px!important;letter-spacing:.1em!important}
+.erp-card-v3,.erp-card-inner{background:#fff!important;border:1px solid #CFE1E7!important;border-radius:2px!important;box-shadow:none!important;padding:10px!important;color:#17333F!important}
+.erp-table-head-v3{gap:8px!important;margin-bottom:8px!important}
+.erp-table-head-v3 h2,.erp-card-v3 h2{font-size:15px!important;margin:0 0 3px!important;color:#123B50!important}
+.erp-table-v3{font-size:10px!important;border-collapse:collapse!important}
+.erp-table-v3 th{font-size:9px!important;padding:0 6px!important;height:32px!important;background:#EAF2F5!important;color:#17333F!important}
+.erp-table-v3 td{height:32px!important;padding:0 6px!important;border-bottom:1px solid #D7E3E7!important}
+.erp-badge-ok,.erp-badge-warn,.erp-badge-danger{font-size:9px!important;padding:3px 5px!important;border-radius:2px!important}
+.erp-btn-primary,.erp-btn-secondary,.erp-tabs-v3 button{height:30px!important;min-height:30px!important;padding:0 9px!important;border-radius:2px!important;font-size:10px!important}
+.erp-page-v3 label{gap:2px!important;font-size:9px!important;font-weight:500!important}
+.erp-page-v3 input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.erp-page-v3 select,.erp-page-v3 textarea{height:30px!important;min-height:30px!important;padding:0 7px!important;font-size:10px!important;border-radius:2px!important}
+.erp-page-v3 textarea{height:72px!important;min-height:72px!important;padding:6px 7px!important}
+.process-sheet-page{padding:8px!important;font-size:11px!important}
+.process-sheet-header{gap:10px!important;padding:10px!important;border-radius:2px!important}
+.process-sheet-header h1{font-size:20px!important;line-height:1.2!important}
+.process-sheet-header p{font-size:10px!important}
+.process-sheet-actions button,.process-sheet-operation-head .industrial-secondary{height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:10px!important}
+.process-sheet-toolbar{min-height:32px!important}
+.process-sheet-toolbar button{height:30px!important;font-size:10px!important;padding:0 9px!important}
+.process-sheet-module-title{padding:6px 10px!important}
+.process-sheet-module-title b{font-size:13px!important}
+.process-sheet-module-title span,.process-sheet-document-id span,.process-sheet-document-id small{font-size:9px!important}
+.process-sheet-document-id strong{font-size:12px!important}
+.process-sheet-page .industrial-panel{border-radius:2px!important;box-shadow:none!important}
+.process-sheet-selector,.process-sheet-operation-head,.process-sheet-two-columns article,.process-sheet-history{padding:8px!important}
+.process-section-heading{margin-bottom:6px!important}
+.process-section-heading span{font-size:9px!important}
+.process-section-heading h2{font-size:15px!important}
+.process-section-heading p{font-size:10px!important}
+.process-form-grid{gap:6px!important}
+.process-form-grid label,.process-sheet-two-columns label{gap:2px!important;font-size:9px!important;font-weight:500!important}
+.process-sheet-page input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.process-sheet-page select,.process-sheet-page textarea{height:30px!important;min-height:30px!important;padding:0 7px!important;font-size:10px!important;border-radius:2px!important}
+.process-sheet-page textarea{height:56px!important;min-height:56px!important;padding:5px 7px!important}
+.process-sheet-table{font-size:10px!important}
+.process-sheet-table th{height:32px!important;padding:0 6px!important;font-size:9px!important}
+.process-sheet-table td{height:32px!important;padding:0 6px!important}
+.process-sheet-table td input,.process-sheet-table td select,.process-sheet-table td textarea{height:28px!important;min-height:28px!important;font-size:9px!important;padding:0 5px!important}
+.process-sheet-approval>div{min-height:62px!important;padding:8px!important}
+.process-sheet-approval span,.process-sheet-approval small{font-size:9px!important}
+.process-sheet-approval strong{font-size:11px!important}
+.process-history-row{font-size:10px!important;padding:5px 0!important}
+@media(max-width:700px){.process-sheet-page{padding:6px!important}.process-sheet-header h1{font-size:18px!important}}
