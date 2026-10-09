@@ -203,7 +203,7 @@ export default function PCPIndustrial(){
   if(f>b&&!destinationLocation){setError('Selecione o endereço de destino para entrada do produto bom no estoque.');return}
   const defectsJson=defectText.split('\n').map(x=>x.trim()).filter(Boolean).map(x=>{const parts=x.split(':');return{defeito:parts[0].trim(),quantidade:Number(parts[1]||0),observacao:parts.slice(2).join(':').trim()||null}}).filter(x=>x.defeito&&x.quantidade>0)
   const defectTotal=defectsJson.reduce((sum,item)=>sum+item.quantidade,0)
-  if((b>0&&defectTotal!==b)||(b===0&&defectTotal>0)){setError('A soma das quantidades por defeito deve ser igual à quantidade defeituosa informada.');return}
+  if((b>0&&Math.abs(defectTotal-b)>0.000001)||(b===0&&defectTotal>0.000001)){setError('A soma das quantidades por defeito deve ser igual à quantidade defeituosa informada.');return}
   setBusy(true);setError('');setMessage('')
   try{
    const {data,error}=await supabase.rpc('erp_pcp_registrar_conferencia_producao',{p_ordem_producao_id:selectedOp,p_programacao_id:selectedProductionProgram,p_quantidade_encontrada:f,p_quantidade_defeituosa:b,p_defeitos:defectsJson,p_localizacao_destino_id:destinationLocation||null,p_acabamento:false,p_observacao:'Conferência realizada no PCP; saldo e calendário recalculados atomicamente'})
