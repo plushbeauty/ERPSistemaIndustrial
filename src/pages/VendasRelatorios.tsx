@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Printer, RefreshCw, Search } from 'lucide-react'
+import { Printer, Search } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
 
 type Order = {
