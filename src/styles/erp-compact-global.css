@@ -416,3 +416,69 @@
 [data-quality-workspace] table td[colspan] {
   text-align: center;
 }
+
+
+/* Recebimento WMS: entrada, certificado e rastreabilidade na densidade industrial. */
+.erp-stock-receiving button {
+  box-sizing: border-box;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+}
+.erp-stock-receiving button svg,
+.erp-stock-receiving header svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+.erp-stock-receiving label {
+  gap: 2px !important;
+  font-size: 9px !important;
+  line-height: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+.erp-stock-receiving input:not([type="file"]):not([type="checkbox"]):not([type="radio"]),
+.erp-stock-receiving select {
+  height: 30px !important;
+  min-height: 30px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+}
+.erp-stock-receiving .p-5,
+.erp-stock-receiving .p-4 {
+  padding: 8px !important;
+}
+.erp-stock-receiving .gap-4,
+.erp-stock-receiving .gap-3 {
+  gap: 8px !important;
+}
+.erp-stock-receiving .rounded-md {
+  border-radius: 2px !important;
+}
+.erp-stock-receiving table {
+  border-collapse: collapse;
+  font-size: 10px !important;
+}
+.erp-stock-receiving table th,
+.erp-stock-receiving table td {
+  height: 32px !important;
+  padding: 4px 6px !important;
+  vertical-align: middle;
+}
+.erp-stock-receiving table th {
+  font-size: 9px !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.erp-stock-receiving table tbody tr:hover {
+  background-color: rgba(250, 250, 250, .9);
+}
+.erp-stock-receiving table td[colspan] {
+  text-align: center;
+}
