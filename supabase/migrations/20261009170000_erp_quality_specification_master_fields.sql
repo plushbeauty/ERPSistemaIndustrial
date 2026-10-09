@@ -227,6 +227,12 @@ AS $$
 DECLARE
   v_dados_tecnicos_alterados boolean;
 BEGIN
+  IF lower(coalesce(OLD.status, '')) = 'rascunho'
+     AND lower(coalesce(NEW.status, '')) = 'rascunho'
+     AND NEW.revisao = OLD.revisao THEN
+    RETURN NEW;
+  END IF;
+
   IF NEW.revisao < OLD.revisao THEN
     RAISE EXCEPTION 'A revisão da especificação não pode retroceder.';
   END IF;
