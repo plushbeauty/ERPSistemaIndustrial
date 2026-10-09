@@ -446,6 +446,9 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/classificacao-fiscal" element={<ClassificacaoFiscal />} />
       <Route path="/vendas/razao-geral" element={<PainelRazaoGeral />} />
       <Route path="/pcp" element={<PCPIndustrial />} />
+      <Route path="/pcp/mrp" element={<MRPIndustrial />} />
+      <Route path="/pcp/fila" element={<PCPOrdens />} />
+      <Route path="/pcp/capacidade" element={<PCPIndustrial />} />
       <Route path="/pcp/engenharia-bom" element={<EngenhariaBOM />} />
       <Route path="/pcp/roteiro-operacoes" element={<RoteiroOperacoes />} />
       <Route path="/pcp/ficha-processo" element={<FichaProcesso />} />
@@ -480,6 +483,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/genealogia-lote" element={<QualidadeGenealogiaLote />} />
       <Route path="/qualidade/quarentena" element={<QualidadeQuarentena />} />
       <Route path="/estoque" element={<EstoqueAlmoxarifado />} />
+      <Route path="/recebimento/nfe" element={<RecebimentoMateriais />} />
+      <Route path="/chao-fabrica" element={<OperacaoIndustrial />} />
       <Route path="/almoxarifado" element={<EstoqueAlmoxarifado />} />
       <Route path="/estoque/saldos" element={<EstoqueAlmoxarifado />} />
       <Route path="/estoque/ajustes" element={<EstoqueAjustes />} />
