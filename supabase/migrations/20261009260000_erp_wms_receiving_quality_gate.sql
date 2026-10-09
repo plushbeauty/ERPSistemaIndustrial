@@ -152,15 +152,15 @@ begin
 
   if v_quarentena is not null then
     update public.erp_quarentenas_lotes
-    set motivo = btrim(p_motivo), lote_rastreabilidade_id = coalesce(v_trace.id, lote_rastreabilidade_id)
+    set motivo = btrim(p_motivo), lote_rastreabilidade_id = coalesce(v_trace.id, lote_rastreabilidade_id), quantidade_retirada = coalesce(quantidade_retirada, 0) + v_disponivel
     where id = v_quarentena and empresa_id = v_empresa;
     return v_quarentena;
   end if;
 
   insert into public.erp_quarentenas_lotes (
-    empresa_id, lote_id, lote_rastreabilidade_id, motivo, criado_por
+    empresa_id, lote_id, lote_rastreabilidade_id, motivo, criado_por, quantidade_retirada
   ) values (
-    v_empresa, v_lote.id, v_trace.id, btrim(p_motivo), auth.uid()
+    v_empresa, v_lote.id, v_trace.id, btrim(p_motivo), auth.uid(), v_disponivel
   ) returning id into v_quarentena;
 
   return v_quarentena;
