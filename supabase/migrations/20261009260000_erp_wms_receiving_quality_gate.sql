@@ -225,7 +225,7 @@ begin
   if p_status_certificado is null or p_status_certificado not in ('APROVADO', 'REPROVADO') then
     raise exception 'Parecer do certificado inválido.';
   end if;
-  v_prefix := 'empresas/' || v_empresa::text || '/recebimento-lotes/';
+  v_prefix := v_empresa::text || '/recebimento-lotes/';
   if p_certificado_path is null or left(p_certificado_path, length(v_prefix)) <> v_prefix then
     raise exception 'O certificado deve estar armazenado no caminho privado da empresa atual.';
   end if;
