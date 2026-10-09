@@ -482,3 +482,188 @@
 .erp-stock-receiving table td[colspan] {
   text-align: center;
 }
+
+
+/* Engenharia / Ficha de Processo: densidade e controles iguais ao padrão Novo Pedido. */
+.process-sheet-page {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 8px !important;
+  background: #F4FBFD !important;
+  color: #111827 !important;
+  font-size: 10px !important;
+}
+.process-sheet-page .process-sheet-header {
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+.process-sheet-page .process-sheet-header h1 {
+  margin: 0 0 2px !important;
+  font-size: 16px !important;
+  line-height: 20px !important;
+  letter-spacing: 0 !important;
+}
+.process-sheet-page .process-sheet-header p {
+  font-size: 10px !important;
+  line-height: 14px !important;
+}
+.process-sheet-page .process-sheet-actions {
+  gap: 4px !important;
+}
+.process-sheet-page button:not(.industrial-panel),
+.process-sheet-page .industrial-primary,
+.process-sheet-page .industrial-secondary,
+.process-sheet-page .industrial-danger {
+  box-sizing: border-box;
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.process-sheet-page .process-sheet-toolbar {
+  min-height: 32px !important;
+  gap: 0 !important;
+  padding: 0 4px !important;
+  border-radius: 2px !important;
+}
+.process-sheet-page .process-sheet-toolbar button {
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  font-size: 10px !important;
+}
+.process-sheet-page .process-sheet-toolbar-status {
+  font-size: 9px !important;
+}
+.process-sheet-page .process-sheet-module-title {
+  padding: 8px !important;
+  border-radius: 2px !important;
+}
+.process-sheet-page .process-sheet-module-title b,
+.process-sheet-page .process-sheet-document-id strong {
+  font-size: 12px !important;
+  line-height: 16px !important;
+}
+.process-sheet-page .process-sheet-module-title span,
+.process-sheet-page .process-sheet-document-id span,
+.process-sheet-page .process-sheet-document-id small {
+  font-size: 9px !important;
+}
+.process-sheet-page .industrial-panel {
+  margin-top: 8px !important;
+  margin-bottom: 8px !important;
+  padding: 8px !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+.process-sheet-page .process-section-heading {
+  margin-bottom: 8px !important;
+}
+.process-sheet-page .process-section-heading span {
+  font-size: 9px !important;
+  line-height: 11px !important;
+  letter-spacing: .05em !important;
+}
+.process-sheet-page .process-section-heading h2 {
+  margin: 2px 0 !important;
+  font-size: 12px !important;
+  line-height: 16px !important;
+}
+.process-sheet-page .process-section-heading p {
+  font-size: 10px !important;
+  line-height: 14px !important;
+}
+.process-sheet-page .process-form-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+  gap: 8px !important;
+}
+.process-sheet-page .process-form-grid label {
+  display: flex !important;
+  min-width: 0;
+  flex-direction: column !important;
+  gap: 2px !important;
+  font-size: 9px !important;
+  line-height: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+.process-sheet-page .process-form-grid input:not([type="checkbox"]):not([type="radio"]),
+.process-sheet-page .process-form-grid select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 8px !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 2px !important;
+  background: #FFFFFF !important;
+  color: #111827 !important;
+  font-size: 10px !important;
+  font-weight: 400 !important;
+  outline-offset: 1px;
+}
+.process-sheet-page .process-form-grid textarea {
+  min-height: 58px !important;
+  padding: 6px 8px !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 2px !important;
+  background: #FFFFFF !important;
+  color: #111827 !important;
+  font-size: 10px !important;
+}
+.process-sheet-page .process-form-grid input[type="file"] {
+  padding: 2px !important;
+  font-size: 9px !important;
+}
+.process-sheet-page .rounded-full {
+  border-radius: 2px !important;
+}
+.process-sheet-page .h-7.w-7 {
+  width: 20px !important;
+  height: 20px !important;
+  font-size: 10px !important;
+}
+.process-sheet-page .industrial-table-scroll {
+  max-width: 100%;
+  margin-top: 8px !important;
+}
+.process-sheet-page .industrial-table {
+  width: 100%;
+  border-collapse: collapse !important;
+  font-size: 10px !important;
+}
+.process-sheet-page .industrial-table th,
+.process-sheet-page .industrial-table td {
+  height: 32px !important;
+  padding: 4px 6px !important;
+  vertical-align: middle !important;
+}
+.process-sheet-page .industrial-table th {
+  font-size: 9px !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap;
+}
+.process-sheet-page .industrial-table tbody tr:hover {
+  background: rgba(250, 250, 250, .9) !important;
+}
+.process-sheet-page .industrial-table td[colspan] {
+  text-align: center !important;
+}
+.process-sheet-page .process-sheet-page svg,
+.process-sheet-page svg {
+  width: 14px !important;
+  height: 14px !important;
+  flex: 0 0 auto;
+}
