@@ -32,7 +32,7 @@ type Kind='PRENSADOS'|'INJETADOS'|'ACABAMENTO'|'ESTAMPARIA'|'DIVERSOS'
 type Ficha={id:string;produto_id:string;versao:number;rendimento:number;unidade_rendimento:string;observacoes:string|null;ativa:boolean;status:string|null;revisao:string|null}
 type BomRow={id?:string;componente_id:string;quantidade:string;perda_percentual:string;lote_obrigatorio:boolean;tipo_item:'COMPRADO'|'FABRICADO';sequencia:number}
 type OpRow={id?:string;sequencia:number;operacao:string;maquina_id:string;molde_id:string;setup_min:string;ciclo_seg:string;instrucoes:string}
-type QualityRow={id?:string;codigo:string;caracteristica:string;unidade:string;nominal:string;limite_inferior:string;limite_superior:string;frequencia:string;status:string}
+type QualityRow={id?:string;codigo:string;caracteristica:string;unidade:string;limite_inferior:string;limite_superior:string;frequencia:string;status:string}
 
 const kinds:{id:Kind;title:string;description:string;icon:LucideIcon}[]=[
  {id:'PRENSADOS',title:'Ficha de Processo — Prensados',description:'Composto, pré-forma, prensa, molde, pressão, temperatura, cura e pós-cura.',icon:CircleDot},
@@ -44,7 +44,7 @@ const kinds:{id:Kind;title:string;description:string;icon:LucideIcon}[]=[
 
 const emptyBom=():BomRow=>({componente_id:'',quantidade:'1',perda_percentual:'0',lote_obrigatorio:false,tipo_item:'COMPRADO',sequencia:10})
 const emptyOp=():OpRow=>({sequencia:10,operacao:'',maquina_id:'',molde_id:'',setup_min:'0',ciclo_seg:'0',instrucoes:''})
-const emptyQuality=():QualityRow=>({codigo:'',caracteristica:'',unidade:'',nominal:'',limite_inferior:'',limite_superior:'',frequencia:'100%',status:'ativo'})
+const emptyQuality=():QualityRow=>({codigo:'',caracteristica:'',unidade:'',limite_inferior:'',limite_superior:'',frequencia:'100%',status:'ativo'})
 const errorText=(e:unknown)=>e instanceof Error?e.message:String((e as {message?:string})?.message??'Operação recusada pelo banco.')
 
 export default function FichaEngenharia(){
@@ -88,7 +88,14 @@ export default function FichaEngenharia(){
     ? await fichaQuery.eq('ativa',true).order('versao',{ascending:false}).limit(1).maybeSingle()
     : await fichaQuery.eq('versao',requestedRevision).maybeSingle()
    if(f.error)throw f.error
-   if(!f.data){resetForm(true,id);return}
+   if(!f.data){
+    resetForm(true,id)
+    const qi=await supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,limite_inferior,limite_superior,frequencia,status').eq('empresa_id',empresaId).eq('produto_id',id).order('codigo').limit(200)
+    if(qi.error)throw qi.error
+    const loadedQuality: QualityRow[]=(qi.data??[]).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status}))
+    setQuality(loadedQuality)
+    return
+   }
    const current=f.data as Ficha
    setFicha(current);setVersion(String(current.versao));setRendimento(String(current.rendimento));setUnit(current.unidade_rendimento)
    try{const j=JSON.parse(current.observacoes||'{}');setKind((j.kind||selectedKind) as Kind);setProcessCode(j.processCode||'');setProcessName(j.processName||'');setNotes(j.notes||'');setSpec(j.spec||{})}catch{setSpec({})}
@@ -100,7 +107,7 @@ export default function FichaEngenharia(){
    if(bi.error)throw bi.error;if(ro.error)throw ro.error;if(qi.error)throw qi.error
    setBom((bi.data??[]).map(x=>({id:x.id,componente_id:x.componente_id,quantidade:String(x.quantidade),perda_percentual:String(x.perda_percentual),lote_obrigatorio:Boolean(x.lote_obrigatorio),tipo_item:x.tipo_item,sequencia:x.sequencia})))
    setOps((ro.data??[]).map(x=>({id:x.id,sequencia:x.sequencia,operacao:x.operacao,maquina_id:x.maquina_id??'',molde_id:x.molde_id??'',setup_min:String(x.setup_min),ciclo_seg:String(x.ciclo_seg),instrucoes:x.instrucoes??''})))
-   const loadedQuality: QualityRow[] = (qi.data??[]).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',nominal:'',limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status})); setQuality(loadedQuality.length ? loadedQuality : [emptyQuality()])
+   const loadedQuality: QualityRow[] = (qi.data??[]).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status})); setQuality(loadedQuality)
   }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
  }
  function resetForm(keepProduct=false,id=''){
@@ -110,7 +117,6 @@ export default function FichaEngenharia(){
  function setS(k:string,v:string){setSpec(x=>({...x,[k]:v}))}
  function setBomField(i:number,k:keyof BomRow,v:string|boolean){setBom(r=>r.map((x,n)=>n===i?{...x,[k]:v}:x))}
  function setOpField(i:number,k:keyof OpRow,v:string|number){setOps(r=>r.map((x,n)=>n===i?{...x,[k]:v}:x))}
- function setQualityField(i:number,k:keyof QualityRow,v:string){setQuality(r=>r.map((x,n)=>n===i?{...x,[k]:v}:x))}
  function setPhoto(key:'fotoPrincipal'|'fotoSecundaria',file:File|null){if(!file)return;if(file.size>2*1024*1024){setNotice('A foto deve ter no máximo 2 MB.');return}if(!file.type.startsWith('image/')){setNotice('Selecione um arquivo de imagem.');return}const reader=new FileReader();reader.onload=()=>setS(key,String(reader.result));reader.readAsDataURL(file)}
 
  async function save(){
@@ -133,12 +139,7 @@ export default function FichaEngenharia(){
    const ib=await supabase.from('erp_ficha_itens').insert(bom.map(x=>({empresa_id:empresaId,ficha_id:fichaId,componente_id:x.componente_id,quantidade:Number(x.quantidade),perda_percentual:Number(x.perda_percentual),lote_obrigatorio:x.lote_obrigatorio,tipo_item:x.tipo_item,sequencia:x.sequencia})));if(ib.error)throw ib.error
    const dops=await supabase.from('erp_ficha_operacoes').delete().eq('empresa_id',empresaId).eq('ficha_id',fichaId);if(dops.error)throw dops.error
    const io=await supabase.from('erp_ficha_operacoes').insert(ops.map(x=>({empresa_id:empresaId,ficha_id:fichaId,sequencia:x.sequencia,operacao:x.operacao.trim(),maquina_id:x.maquina_id||null,molde_id:x.molde_id||null,setup_min:Number(x.setup_min),ciclo_seg:Number(x.ciclo_seg),instrucoes:x.instrucoes.trim()||null})));if(io.error)throw io.error
-   for(const q of quality.filter(x=>x.caracteristica.trim())){
-    const qp={empresa_id:empresaId,codigo:q.codigo.trim()||('CQ-'+Date.now()),produto_id:productId,caracteristica:q.caracteristica.trim(),unidade:q.unidade.trim()||null,limite_inferior:q.limite_inferior===''?null:Number(q.limite_inferior),limite_superior:q.limite_superior===''?null:Number(q.limite_superior),frequencia:q.frequencia.trim()||'100%',status:q.status}
-    const qr=q.id?await supabase.from('erp_planos_inspecao').update(qp).eq('id',q.id).eq('empresa_id',empresaId):await supabase.from('erp_planos_inspecao').insert(qp)
-    if(qr.error)throw qr.error
-   }
-   const historyUpdate=await supabase.from('erp_fichas_tecnicas').update({ativa:false,status:'obsoleta'}).eq('empresa_id',empresaId).eq('produto_id',productId).lt('versao',Number(version)).neq('id',String(saved.data.id))
+const historyUpdate=await supabase.from('erp_fichas_tecnicas').update({ativa:false,status:'obsoleta'}).eq('empresa_id',empresaId).eq('produto_id',productId).lt('versao',Number(version)).neq('id',String(saved.data.id))
    setFicha(saved.data as Ficha);setRequestedVersion(Number(version));setCatalog(rows=>[{id:String(saved.data.id),produto_id:productId,versao:Number(version),observacoes:JSON.stringify(payload),ativa:true,status:'rascunho',revisao:String(version)},...rows.filter(x=>x.id!==String(saved.data.id)).map(row=>!historyUpdate.error&&row.produto_id===productId&&row.versao<Number(version)?{...row,ativa:false,status:'obsoleta'}:row)]);setNotice(historyUpdate.error?('Revisão '+version+' gravada, mas não foi possível marcar as anteriores como históricas: '+historyUpdate.error.message):'Nova revisão da ficha de processo gravada: parâmetros, ferramental, fotos, materiais, roteiro e controles de qualidade registrados.')
   }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
  }
@@ -205,9 +206,8 @@ export default function FichaEngenharia(){
   </section>
 
   <section className="industrial-panel process-sheet-table-panel">
-   <div className="process-section-heading"><span>5 • CONTROLE DE QUALIDADE</span><h2>Características e critérios de aceitação</h2><p>Controle ligado ao processo, não apenas um texto livre.</p></div>
-   <div className="industrial-table-scroll"><table className="industrial-table process-sheet-table"><thead><tr><th>Código</th><th>Característica</th><th>Un.</th><th>Nominal</th><th>Mín.</th><th>Máx.</th><th>Frequência</th><th>Status</th><th></th></tr></thead><tbody>{quality.map((r,i)=><tr key={r.id||i}><td><input value={r.codigo} onChange={e=>setQualityField(i,'codigo',e.target.value)}/></td><td><input value={r.caracteristica} onChange={e=>setQualityField(i,'caracteristica',e.target.value)} placeholder="Dimensão, dureza, peso, aparência…"/></td><td><input value={r.unidade} onChange={e=>setQualityField(i,'unidade',e.target.value)}/></td><td><input value={r.nominal} onChange={e=>setQualityField(i,'nominal',e.target.value)}/></td><td><input value={r.limite_inferior} onChange={e=>setQualityField(i,'limite_inferior',e.target.value)}/></td><td><input value={r.limite_superior} onChange={e=>setQualityField(i,'limite_superior',e.target.value)}/></td><td><input value={r.frequencia} onChange={e=>setQualityField(i,'frequencia',e.target.value)}/></td><td><select value={r.status} onChange={e=>setQualityField(i,'status',e.target.value)}><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></td><td><button className="icon-button danger" onClick={()=>setQuality(x=>x.length===1?[emptyQuality()]:x.filter((_,n)=>n!==i))}><Trash2 size={16}/></button></td></tr>)}</tbody></table></div>
-   <button className="industrial-secondary process-add-row" onClick={()=>setQuality(r=>[...r,emptyQuality()])}><Plus size={16}/>Adicionar controle</button>
+   <div className="process-section-heading"><span>5 • CONTROLE DE QUALIDADE</span><h2>Especificações técnicas vinculadas</h2><p>Cadastro mestre controlado pela Qualidade. Consulte ou altere os critérios em <a href="/qualidade/especificacoes" className="font-semibold text-sky-700 underline">Qualidade → Especificações Técnicas</a>; esta ficha apenas apresenta os critérios associados ao produto.</p></div>
+   <div className="industrial-table-scroll"><table className="industrial-table process-sheet-table"><thead><tr><th>Código</th><th>Característica</th><th>Un.</th><th>Mín.</th><th>Máx.</th><th>Frequência</th><th>Status</th></tr></thead><tbody>{quality.filter(r=>r.caracteristica.trim()).map((r,i)=><tr key={r.id||i}><td>{r.codigo||'—'}</td><td>{r.caracteristica}</td><td>{r.unidade||'—'}</td><td>{r.limite_inferior||'—'}</td><td>{r.limite_superior||'—'}</td><td>{r.frequencia||'—'}</td><td>{r.status||'—'}</td></tr>)}{!quality.some(r=>r.caracteristica.trim())&&<tr><td colSpan={7}>Nenhuma especificação cadastrada para este produto.</td></tr>}</tbody></table></div>
   </section>
 
   <section className="process-sheet-approval"><div><span>ENGENHARIA / PROCESSO</span><strong>{spec.responsavel||'Responsável não informado'}</strong><small>Revisão {version}</small></div><div><span>QUALIDADE</span><strong>Liberação da ficha</strong><small>Critérios de aceitação registrados</small></div><div><span>PCP / PRODUÇÃO</span><strong>Documento operacional</strong><small>Disponível para roteiro e OP</small></div></section>
