@@ -18,6 +18,9 @@ begin
     if new.status = 'ativo' and old.status is distinct from new.status then
       raise exception 'Ativação de especificação só pode ocorrer pelo fluxo formal de aprovação.';
     end if;
+    if new.status = 'inativo' and old.status = 'ativo' then
+      raise exception 'Inativação de especificação ativa exige permissão formal da Qualidade.';
+    end if;
     if old.status = 'ativo' and (
       new.empresa_id is distinct from old.empresa_id
       or new.produto_id is distinct from old.produto_id
@@ -128,6 +131,39 @@ begin
 end;
 $$;
 
+create or replace function public.erp_qualidade_inativar_especificacao(p_especificacao_id uuid)
+returns public.erp_planos_inspecao
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $
+declare
+  v_empresa uuid := public.erp_current_empresa_id();
+  v_spec public.erp_planos_inspecao;
+begin
+  if not public.erp_is_master() and not public.erp_has_permission('qualidade', 'aprovar') then
+    raise exception 'Sem permissão para inativar especificações técnicas.';
+  end if;
+
+  select p.* into v_spec
+  from public.erp_planos_inspecao p
+  where p.id = p_especificacao_id
+    and (public.erp_is_master() or p.empresa_id = v_empresa)
+  for update;
+  if not found then raise exception 'Especificação não encontrada na empresa autorizada.'; end if;
+  if v_spec.status <> 'ativo' then raise exception 'Somente especificações ativas podem ser inativadas por este fluxo.'; end if;
+
+  perform set_config('app.erp_spec_approval', 'approval', true);
+  update public.erp_planos_inspecao
+  set status = 'inativo'
+  where id = v_spec.id and empresa_id = v_spec.empresa_id
+  returning * into v_spec;
+  return v_spec;
+end;
+$;
+
 revoke all on function public.erp_guard_erp_planos_inspecao_approval() from public, anon, authenticated;
 revoke all on function public.erp_qualidade_aprovar_especificacao(uuid) from public, anon;
 grant execute on function public.erp_qualidade_aprovar_especificacao(uuid) to authenticated;
+revoke all on function public.erp_qualidade_inativar_especificacao(uuid) from public, anon;
+grant execute on function public.erp_qualidade_inativar_especificacao(uuid) to authenticated;
