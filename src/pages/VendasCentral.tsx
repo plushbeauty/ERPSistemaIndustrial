@@ -121,16 +121,8 @@ export default function VendasCentral() {
   }), [orders])
 
   return (
-    <VendasLayout title="Pedidos de venda" subtitle="Carteira comercial • pesquisa e acompanhamento" showStatusCards={false}>
+    <VendasLayout title="Pedidos de venda" showStatusCards={false}>
       <main className="sales-workspace">
-        <section className="sales-page-heading">
-          <div>
-            <span className="sales-eyebrow">COMERCIAL / PEDIDOS</span>
-            <h1>Pedidos de venda</h1>
-            <p>Pesquise e filtre os pedidos cadastrados da empresa.</p>
-          </div>
-        </section>
-
         {error && <div className="sales-alert" role="alert"><CircleAlert size={17} />{error}</div>}
 
         <section className="sales-orders-card">
