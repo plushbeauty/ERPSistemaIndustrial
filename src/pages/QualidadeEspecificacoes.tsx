@@ -29,6 +29,7 @@ type Specification = {
   aprovador_id: string | null
   status: string | null
 }
+type HistoryRevision = { id: string; plano_inspecao_id: string; revisao: number; dados: Record<string, unknown>; alterado_por: string | null; alterado_em: string }
 type FormState = {
   id: string
   produto_id: string
@@ -66,6 +67,7 @@ export default function QualidadeEspecificacoes() {
   const [instruments, setInstruments] = useState<Instrument[]>([])
   const [users, setUsers] = useState<QualityUser[]>([])
   const [rows, setRows] = useState<Specification[]>([])
+  const [historyRows, setHistoryRows] = useState<HistoryRevision[]>([])
   const [form, setForm] = useState<FormState>(emptyForm)
   const [query, setQuery] = useState('')
   const [showInactive, setShowInactive] = useState(false)
@@ -81,21 +83,24 @@ export default function QualidadeEspecificacoes() {
       if (company.error) throw company.error
       if (!company.data) throw new Error('Empresa da sessão não identificada.')
       const id = String(company.data)
-      const [productResult, specResult, instrumentResult, userResult] = await Promise.all([
+      const [productResult, specResult, instrumentResult, userResult, historyResult] = await Promise.all([
         supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', id).eq('ativo', true).order('codigo').limit(2000),
         supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,grupo_material,tipo_inspecao,metodo_inspecao,condicao_armazenamento,instrumento_id,revisao,vigencia_inicio,vigencia_fim,responsavel_id,aprovador_id,status').eq('empresa_id', id).order('codigo').limit(2000),
         supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao').eq('empresa_id', id).order('codigo').limit(1000),
         supabase.from('erp_usuarios').select('auth_user_id,nome').eq('empresa_id', id).eq('ativo', true).order('nome').limit(500),
+        supabase.from('erp_planos_inspecao_revisoes').select('id,plano_inspecao_id,revisao,dados,alterado_por,alterado_em').eq('empresa_id', id).order('alterado_em',{ascending:false}).limit(1000),
       ])
       if (productResult.error) throw productResult.error
       if (specResult.error) throw specResult.error
       if (instrumentResult.error) throw instrumentResult.error
       if (userResult.error) throw userResult.error
+      if (historyResult.error) throw historyResult.error
       setEmpresaId(id)
       setProducts((productResult.data ?? []) as Product[])
       setRows((specResult.data ?? []) as Specification[])
       setInstruments((instrumentResult.data ?? []) as Instrument[])
       setUsers((userResult.data ?? []) as QualityUser[])
+      setHistoryRows((historyResult.data ?? []) as HistoryRevision[])
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar especificações técnicas.')
     } finally {
@@ -167,6 +172,17 @@ export default function QualidadeEspecificacoes() {
       return
     }
     if (!Number.isInteger(Number(form.revisao)) || Number(form.revisao) < 1) { setError('A revisão deve ser um inteiro maior que zero.'); return }
+    const existing = form.id ? rows.find(row => row.id === form.id) : null
+    const technicalChanged = Boolean(existing && (
+      existing.produto_id !== form.produto_id || existing.codigo !== form.codigo.trim() || existing.caracteristica !== form.caracteristica.trim() ||
+      (existing.unidade ?? null) !== (form.unidade.trim() || null) || existing.nominal !== nominal || existing.limite_inferior !== lower || existing.limite_superior !== upper ||
+      (existing.frequencia ?? '100%') !== (form.frequencia.trim() || '100%') || (existing.grupo_material ?? null) !== (form.grupo_material.trim() || null) ||
+      existing.tipo_inspecao !== form.tipo_inspecao || existing.metodo_inspecao !== form.metodo_inspecao ||
+      (existing.condicao_armazenamento ?? null) !== (form.condicao_armazenamento.trim() || null) || (existing.instrumento_id ?? null) !== (form.instrumento_id || null) ||
+      (existing.vigencia_inicio ?? null) !== (form.vigencia_inicio || null) || (existing.vigencia_fim ?? null) !== (form.vigencia_fim || null) ||
+      (existing.responsavel_id ?? null) !== (form.responsavel_id || null) || (existing.aprovador_id ?? null) !== (form.aprovador_id || null)
+    ))
+    if (technicalChanged && existing && Number(form.revisao) <= existing.revisao) { setError('Critérios técnicos alterados: incremente a revisão acima de ' + existing.revisao + ' para preservar o histórico.'); return }
     if (form.vigencia_inicio && form.vigencia_fim && form.vigencia_fim < form.vigencia_inicio) { setError('A vigência final não pode anteceder a vigência inicial.'); return }
     if (form.status === 'ativo' && form.vigencia_fim && form.vigencia_fim < today) { setError('Uma especificação vencida não pode permanecer ativa.'); return }
     if (form.status === 'ativo' && !form.aprovador_id) { setError('Especificação ativa exige um aprovador responsável.'); return }
@@ -280,7 +296,8 @@ export default function QualidadeEspecificacoes() {
           </tbody></table></div>
         </section>
       </div>
-      <div className="flex items-center gap-2 text-[10px] text-slate-500"><ShieldCheck size={13}/> O cadastro mestre controla etapa, método, limites, frequência, armazenamento, instrumento, revisão, vigência e responsáveis; inativação preserva o histórico e as consultas são limitadas à empresa autenticada.</div>
+      {form.id && <section className="border border-slate-200 bg-white"><div className="border-b border-slate-200 p-3"><h2 className="text-[12px] font-semibold">Histórico imutável da especificação</h2><p className="text-[10px] text-slate-500">Alterações técnicas gravam um snapshot da revisão anterior; a revisão atual permanece no cadastro mestre.</p></div><div className="overflow-x-auto"><table className="w-full min-w-[700px] text-left"><thead className="bg-slate-100"><tr><th>Rev.</th><th>Código</th><th>Característica</th><th>Nominal</th><th>Limites</th><th>Alterado em</th><th>Responsável</th></tr></thead><tbody>{historyRows.filter(item=>item.plano_inspecao_id===form.id).map(item=>{const snapshot=item.dados;return <tr key={item.id} className="border-t border-slate-100"><td>{item.revisao}</td><td>{String(snapshot.codigo??'—')}</td><td>{String(snapshot.caracteristica??'—')}</td><td>{String(snapshot.nominal??'—')}</td><td>{String(snapshot.limite_inferior??'—')} a {String(snapshot.limite_superior??'—')}</td><td>{new Date(item.alterado_em).toLocaleString('pt-BR')}</td><td>{users.find(user=>user.auth_user_id===item.alterado_por)?.nome||item.alterado_por?.slice(0,8)||'—'}</td></tr>})}{!historyRows.some(item=>item.plano_inspecao_id===form.id)&&<tr><td colSpan={7} className="p-3 text-center text-[10px] text-slate-500">Nenhuma revisão anterior registrada.</td></tr>}</tbody></table></div></section>}
+      <div className="flex items-center gap-2 text-[10px] text-slate-500"><ShieldCheck size={13}/> O cadastro mestre controla etapa, método, limites, frequência, armazenamento, instrumento, revisão, vigência e responsáveis; alterações técnicas preservam snapshot e as consultas são limitadas à empresa autenticada.</div>
     </div>
   </main>
 }
