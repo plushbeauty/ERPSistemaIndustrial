@@ -1006,3 +1006,90 @@
     font-size: 0 !important;
   }
 }
+
+
+/* PFMEA / análise de risco no padrão compacto industrial. */
+.fmea-industrial-page {
+  max-width: none !important;
+  min-height: 0 !important;
+  padding: 8px !important;
+  background: #F4FBFD !important;
+  color: #111827 !important;
+  font-size: 10px !important;
+}
+.fmea-industrial-page .pcp-toolbar {
+  padding: 8px !important;
+  margin-bottom: 8px !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 2px !important;
+  background: #FFFFFF !important;
+  box-shadow: none !important;
+}
+.fmea-industrial-page h1 {
+  margin: 2px 0 !important;
+  font-size: 16px !important;
+  line-height: 20px !important;
+}
+.fmea-industrial-page label {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  font-size: 9px !important;
+  line-height: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+.fmea-industrial-page input:not([type="checkbox"]):not([type="radio"]),
+.fmea-industrial-page select {
+  box-sizing: border-box;
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+  font-weight: 400 !important;
+}
+.fmea-industrial-page textarea {
+  min-height: 58px !important;
+  padding: 6px 8px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+}
+.fmea-industrial-page button {
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+  box-shadow: none !important;
+}
+.fmea-industrial-page table {
+  width: 100%;
+  border-collapse: collapse !important;
+  font-size: 10px !important;
+}
+.fmea-industrial-page th,
+.fmea-industrial-page td {
+  height: 32px !important;
+  padding: 4px 6px !important;
+  vertical-align: middle !important;
+}
+.fmea-industrial-page th {
+  font-size: 9px !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+.fmea-industrial-page tbody tr:hover {
+  background: #FAFAFA !important;
+}
+.fmea-industrial-page .rounded-lg,
+.fmea-industrial-page .rounded-xl,
+.fmea-industrial-page .rounded-full {
+  border-radius: 2px !important;
+}
+.fmea-industrial-page .shadow,
+.fmea-industrial-page .shadow-sm,
+.fmea-industrial-page .shadow-md {
+  box-shadow: none !important;
+}
