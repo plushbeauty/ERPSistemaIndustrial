@@ -66,7 +66,7 @@ $$;
 
 drop trigger if exists trg_erp_qms_validar_vinculo_dimensional on public.erp_qualidade_inspecoes_dimensionais;
 create trigger trg_erp_qms_validar_vinculo_dimensional
-before insert or update of empresa_id, inspecao_recebimento_id, plano_inspecao_id
+before insert or update
 on public.erp_qualidade_inspecoes_dimensionais
 for each row execute function public.erp_qms_validar_vinculo_dimensional();
 
