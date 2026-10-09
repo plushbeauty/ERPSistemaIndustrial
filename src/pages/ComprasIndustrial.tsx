@@ -19,7 +19,7 @@ const date=(v:string|null)=>v?new Date(v).toLocaleDateString('pt-BR'):'—'
 
 export default function ComprasIndustrial({initialTab='dashboard'}:{initialTab?:Tab}){
  const hostedBySynqra=useSynqraLayout()
- const [tab,setTab]=useState<Tab>(initialTab),[nome,setNome]=useState('Usuário'),[suppliers,setSuppliers]=useState<Supplier[]>([]),[products,setProducts]=useState<Product[]>([]),[purchases,setPurchases]=useState<Purchase[]>([]),[requests,setRequests]=useState<Request[]>([]),[busy,setBusy]=useState(false),[query,setQuery]=useState(''),[message,setMessage]=useState(''),[showForm,setShowForm]=useState(false)
+ const [tab]=useState<Tab>(initialTab),[nome,setNome]=useState('Usuário'),[suppliers,setSuppliers]=useState<Supplier[]>([]),[products,setProducts]=useState<Product[]>([]),[purchases,setPurchases]=useState<Purchase[]>([]),[requests,setRequests]=useState<Request[]>([]),[busy,setBusy]=useState(false),[query,setQuery]=useState(''),[message,setMessage]=useState(''),[showForm,setShowForm]=useState(false)
  const [form,setForm]=useState({fornecedor_id:'',produto_id:'',quantidade:'1',valor_unitario:'0',data_prevista:'',centro_custo:'',local_entrega:'',condicao_pagamento:'',referencia_cotacao:'',especificacao_tecnica:'',observacoes:''})
  async function load(){setBusy(true);try{
   if(!hostedBySynqra){const u=await supabase.auth.getUser();if(u.data.user){const p=await supabase.from('erp_usuarios').select('nome').eq('auth_user_id',u.data.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();if(p.data?.nome)setNome(p.data.nome)}}
