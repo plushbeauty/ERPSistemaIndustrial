@@ -11,6 +11,7 @@ type Specification = {
   codigo: string
   caracteristica: string
   unidade: string | null
+  nominal: number | null
   limite_inferior: number | null
   limite_superior: number | null
   frequencia: string | null
@@ -22,13 +23,14 @@ type FormState = {
   codigo: string
   caracteristica: string
   unidade: string
+  nominal: string
   limite_inferior: string
   limite_superior: string
   frequencia: string
   status: 'ativo' | 'inativo'
 }
 const emptyForm: FormState = {
-  id: '', produto_id: '', codigo: '', caracteristica: '', unidade: '',
+  id: '', produto_id: '', codigo: '', caracteristica: '', unidade: '', nominal: '',
   limite_inferior: '', limite_superior: '', frequencia: '100%', status: 'ativo',
 }
 const input = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] outline-none focus:border-[#2D8DB8]'
@@ -55,7 +57,7 @@ export default function QualidadeEspecificacoes() {
       const id = String(company.data)
       const [productResult, specResult] = await Promise.all([
         supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', id).eq('ativo', true).order('codigo').limit(2000),
-        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,limite_inferior,limite_superior,frequencia,status').eq('empresa_id', id).order('codigo').limit(2000),
+        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,status').eq('empresa_id', id).order('codigo').limit(2000),
       ])
       if (productResult.error) throw productResult.error
       if (specResult.error) throw specResult.error
@@ -76,7 +78,7 @@ export default function QualidadeEspecificacoes() {
     return rows.filter(row => {
       if (!showInactive && (row.status ?? '').toLowerCase() !== 'ativo') return false
       const product = products.find(item => item.id === row.produto_id)
-      return !term || [row.codigo, row.caracteristica, row.unidade, row.frequencia, product?.codigo, product?.nome]
+      return !term || [row.codigo, row.caracteristica, row.unidade, row.nominal, row.frequencia, product?.codigo, product?.nome]
         .some(value => String(value ?? '').toLowerCase().includes(term))
     })
   }, [rows, products, query, showInactive])
@@ -85,6 +87,7 @@ export default function QualidadeEspecificacoes() {
     setForm({
       id: row.id, produto_id: row.produto_id, codigo: row.codigo,
       caracteristica: row.caracteristica, unidade: row.unidade ?? '',
+      nominal: row.nominal == null ? '' : String(row.nominal),
       limite_inferior: row.limite_inferior == null ? '' : String(row.limite_inferior),
       limite_superior: row.limite_superior == null ? '' : String(row.limite_superior),
       frequencia: row.frequencia ?? '100%',
@@ -116,8 +119,15 @@ export default function QualidadeEspecificacoes() {
       setError('O limite mínimo não pode ser maior que o limite máximo.')
       return
     }
+    const nominal = form.nominal.trim() === '' ? null : Number(form.nominal)
+    if (nominal !== null && !Number.isFinite(nominal)) { setError('O nominal precisa ser um número válido.'); return }
+    if (nominal !== null && ((lower !== null && nominal < lower) || (upper !== null && nominal > upper))) { setError('O nominal deve ficar entre os limites técnicos cadastrados.'); return }
     if (lower === null && upper === null && form.status === 'ativo') {
       setError('Uma especificação ativa precisa de pelo menos um limite técnico.')
+      return
+    }
+    if (lower !== null && upper !== null && form.status === 'ativo' && nominal === null) {
+      setError('Especificações dimensionais ativas com dois limites precisam de nominal para habilitar a coleta CEP.')
       return
     }
 
@@ -129,6 +139,7 @@ export default function QualidadeEspecificacoes() {
         codigo: form.codigo.trim(),
         caracteristica: form.caracteristica.trim(),
         unidade: form.unidade.trim() || null,
+        nominal,
         limite_inferior: lower,
         limite_superior: upper,
         frequencia: form.frequencia.trim() || '100%',
@@ -157,6 +168,9 @@ export default function QualidadeEspecificacoes() {
       const next = (row.status ?? '').toLowerCase() === 'ativo' ? 'inativo' : 'ativo'
       if (next === 'ativo' && row.limite_inferior == null && row.limite_superior == null) {
         throw new Error('Não é possível ativar uma especificação sem limite técnico.')
+      }
+      if (next === 'ativo' && row.limite_inferior != null && row.limite_superior != null && row.nominal == null) {
+        throw new Error('Não é possível ativar uma especificação dimensional sem nominal.')
       }
       const result = await supabase.from('erp_planos_inspecao').update({ status: next }).eq('id', row.id).eq('empresa_id', empresaId)
       if (result.error) throw result.error
@@ -187,6 +201,7 @@ export default function QualidadeEspecificacoes() {
             <label className={label}>Código da especificação<input className={input} value={form.codigo} onChange={event => setForm(current => ({ ...current, codigo: event.target.value }))} placeholder="Ex.: DIV-001" required/></label>
             <label className={label}>Característica técnica<input className={input} value={form.caracteristica} onChange={event => setForm(current => ({ ...current, caracteristica: event.target.value }))} placeholder="Comprimento, diâmetro, aparência..." required/></label>
             <label className={label}>Unidade de medida<input className={input} value={form.unidade} onChange={event => setForm(current => ({ ...current, unidade: event.target.value }))} placeholder="mm, g, N, visual"/></label>
+            <label className={label}>Nominal<input className={input} type="number" step="any" value={form.nominal} onChange={event => setForm(current => ({ ...current, nominal: event.target.value }))} placeholder="Valor nominal"/></label>
             <div className="grid grid-cols-2 gap-2"><label className={label}>Limite mínimo<input className={input} type="number" step="any" value={form.limite_inferior} onChange={event => setForm(current => ({ ...current, limite_inferior: event.target.value }))}/></label><label className={label}>Limite máximo<input className={input} type="number" step="any" value={form.limite_superior} onChange={event => setForm(current => ({ ...current, limite_superior: event.target.value }))}/></label></div>
             <label className={label}>Frequência de inspeção<input className={input} value={form.frequencia} onChange={event => setForm(current => ({ ...current, frequencia: event.target.value }))} placeholder="100%, por hora, por lote..."/></label>
             <label className={label}>Status<select className={input} value={form.status} onChange={event => setForm(current => ({ ...current, status: event.target.value as FormState['status'] }))}><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></label>
@@ -195,9 +210,9 @@ export default function QualidadeEspecificacoes() {
         </section>
         <section className="min-w-0 border border-slate-200 bg-white">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 p-3"><div><h2 className="text-[12px] font-semibold">Especificações cadastradas</h2><p className="text-[10px] text-slate-500">{visibleRows.length} registros visíveis • dados reais por empresa</p></div><div className="flex flex-wrap items-center gap-2"><div className="flex items-center gap-1"><Search size={13}/><input className="h-[30px] w-[220px] rounded-[2px] border border-slate-300 px-2 text-[11px]" value={query} onChange={event => setQuery(event.target.value)} placeholder="Código, produto ou característica"/></div><label className="flex items-center gap-1 text-[10px] normal-case"><input type="checkbox" checked={showInactive} onChange={event => setShowInactive(event.target.checked)}/> Incluir inativas</label></div></div>
-          <div className="overflow-x-auto"><table className="w-full min-w-[780px] text-left"><thead className="bg-slate-100"><tr><th>Código</th><th>Produto</th><th>Característica</th><th>Limites</th><th>Frequência</th><th>Status</th><th>Ações</th></tr></thead><tbody>
-            {visibleRows.map(row => { const product = products.find(item => item.id === row.produto_id); return <tr key={row.id} className="border-t border-slate-100"><td className="font-semibold">{row.codigo}</td><td>{product ? `${product.codigo} — ${product.nome}` : 'Produto não localizado'}</td><td>{row.caracteristica}{row.unidade ? ` (${row.unidade})` : ''}</td><td>{row.limite_inferior ?? '−∞'} a {row.limite_superior ?? '+∞'}</td><td>{row.frequencia || '—'}</td><td>{row.status || '—'}</td><td><div className="flex gap-1"><button type="button" className="border border-slate-300 px-2" onClick={() => edit(row)}><Check size={12} className="mr-1 inline"/> Editar</button><button type="button" className="border border-slate-300 px-2" disabled={busy} onClick={() => void toggleStatus(row)}>{(row.status ?? '').toLowerCase() === 'ativo' ? 'Inativar' : 'Ativar'}</button></div></td></tr> }) }
-            {!visibleRows.length && <tr><td colSpan={7} className="p-6 text-center text-[11px] text-slate-500">{busy ? 'Carregando dados...' : 'Nenhuma especificação para os filtros atuais.'}</td></tr>}
+          <div className="overflow-x-auto"><table className="w-full min-w-[780px] text-left"><thead className="bg-slate-100"><tr><th>Código</th><th>Produto</th><th>Característica</th><th>Nominal</th><th>Limites</th><th>Frequência</th><th>Status</th><th>Ações</th></tr></thead><tbody>
+            {visibleRows.map(row => { const product = products.find(item => item.id === row.produto_id); return <tr key={row.id} className="border-t border-slate-100"><td className="font-semibold">{row.codigo}</td><td>{product ? `${product.codigo} — ${product.nome}` : 'Produto não localizado'}</td><td>{row.caracteristica}{row.unidade ? ` (${row.unidade})` : ''}</td><td>{row.nominal ?? '—'}</td><td>{row.limite_inferior ?? '−∞'} a {row.limite_superior ?? '+∞'}</td><td>{row.frequencia || '—'}</td><td>{row.status || '—'}</td><td><div className="flex gap-1"><button type="button" className="border border-slate-300 px-2" onClick={() => edit(row)}><Check size={12} className="mr-1 inline"/> Editar</button><button type="button" className="border border-slate-300 px-2" disabled={busy} onClick={() => void toggleStatus(row)}>{(row.status ?? '').toLowerCase() === 'ativo' ? 'Inativar' : 'Ativar'}</button></div></td></tr> }) }
+            {!visibleRows.length && <tr><td colSpan={8} className="p-6 text-center text-[11px] text-slate-500">{busy ? 'Carregando dados...' : 'Nenhuma especificação para os filtros atuais.'}</td></tr>}
           </tbody></table></div>
         </section>
       </div>
