@@ -142,3 +142,68 @@ on public.erp_qualidade_inspecoes_dimensionais
 for each row execute function public.erp_qms_validar_vinculo_dimensional();
 
 revoke all on function public.erp_qms_validar_vinculo_dimensional() from public, anon, authenticated;
+
+-- Preserve immutable snapshots when technical acceptance criteria change.
+CREATE TABLE IF NOT EXISTS public.erp_planos_inspecao_revisoes (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  empresa_id uuid NOT NULL REFERENCES public.erp_empresas(id),
+  plano_inspecao_id uuid NOT NULL REFERENCES public.erp_planos_inspecao(id) ON DELETE RESTRICT,
+  revisao integer NOT NULL CHECK (revisao > 0),
+  dados jsonb NOT NULL,
+  alterado_por uuid NULL REFERENCES auth.users(id) ON DELETE SET NULL,
+  alterado_em timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (empresa_id, plano_inspecao_id, revisao)
+);
+
+ALTER TABLE public.erp_planos_inspecao_revisoes ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS erp_planos_inspecao_revisoes_tenant_read ON public.erp_planos_inspecao_revisoes;
+CREATE POLICY erp_planos_inspecao_revisoes_tenant_read
+  ON public.erp_planos_inspecao_revisoes
+  FOR SELECT TO authenticated
+  USING (empresa_id = public.erp_current_empresa_id());
+REVOKE ALL ON TABLE public.erp_planos_inspecao_revisoes FROM anon;
+REVOKE INSERT, UPDATE, DELETE ON TABLE public.erp_planos_inspecao_revisoes FROM authenticated;
+GRANT SELECT ON TABLE public.erp_planos_inspecao_revisoes TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.erp_qms_preservar_revisao_plano_inspecao()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+DECLARE
+  v_dados_tecnicos_alterados boolean;
+BEGIN
+  IF NEW.revisao < OLD.revisao THEN
+    RAISE EXCEPTION 'A revisão da especificação não pode retroceder.';
+  END IF;
+
+  v_dados_tecnicos_alterados :=
+    (to_jsonb(NEW) - ARRAY['id','created_at','updated_at','status','revisao'])
+    IS DISTINCT FROM
+    (to_jsonb(OLD) - ARRAY['id','created_at','updated_at','status','revisao']);
+
+  IF v_dados_tecnicos_alterados THEN
+    IF NEW.revisao <= OLD.revisao THEN
+      RAISE EXCEPTION 'Ao alterar critérios técnicos, incremente a revisão da especificação.';
+    END IF;
+
+    INSERT INTO public.erp_planos_inspecao_revisoes (
+      empresa_id, plano_inspecao_id, revisao, dados, alterado_por
+    )
+    VALUES (
+      OLD.empresa_id, OLD.id, OLD.revisao, to_jsonb(OLD), auth.uid()
+    )
+    ON CONFLICT (empresa_id, plano_inspecao_id, revisao) DO NOTHING;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_erp_qms_preservar_revisao_plano ON public.erp_planos_inspecao;
+CREATE TRIGGER trg_erp_qms_preservar_revisao_plano
+BEFORE UPDATE ON public.erp_planos_inspecao
+FOR EACH ROW EXECUTE FUNCTION public.erp_qms_preservar_revisao_plano_inspecao();
+
+REVOKE ALL ON FUNCTION public.erp_qms_preservar_revisao_plano_inspecao() FROM PUBLIC, anon, authenticated;
