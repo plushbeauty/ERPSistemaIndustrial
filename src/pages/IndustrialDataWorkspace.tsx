@@ -12,7 +12,7 @@ const configs: Record<string, ModuleConfig> = {
   'engenharia-bom': { title:'Engenharia · Estrutura BOM', subtitle:'Estrutura multinível e cálculo de perdas de fabricação', table:'engenharia_bom', search:['codigo_bom','versao','status'], columns:['codigo_bom','produto_pai_id','versao','status','vigente_desde'], fields:[
     {key:'codigo_bom',label:'Código BOM',required:true},{key:'produto_pai_id',label:'Produto pai (UUID)',required:true},{key:'versao',label:'Versão',required:true},{key:'status',label:'Status',type:'select',options:commonStatus,required:true},{key:'vigente_desde',label:'Vigente desde',type:'date',required:true},{key:'vigente_ate',label:'Vigente até',type:'date'},{key:'observacoes',label:'Observações',type:'textarea'}] },
   'engenharia-roteiros': { title:'Engenharia · Roteiros de fabricação', subtitle:'Sequenciamento e tempos padrão por produto', table:'pcp_roteiros', search:['codigo','versao'], columns:['codigo','produto_id','versao','ativo'], fields:[
-    {key:'codigo',label:'Código do roteiro',required:true},{key:'produto_id',label:'Produto (UUID)',required:true},{key:'versao',label:'Versão',required:true},{key:'etapas',label:'Etapas (JSON)',type:'textarea',required:true},{key:'ativo',label:'Ativo (true/false)',required:true}] },
+    {key:'codigo',label:'Código do roteiro',required:true},{key:'produto_id',label:'Produto (UUID)',required:true},{key:'versao',label:'Versão',required:true},{key:'etapas',label:'Etapas (JSON)',type:'textarea',required:true},{key:'ativo',label:'Ativo',type:'select',options:['true','false'],required:true}] },
   'estoque-movimentacoes': { title:'WMS · Movimentações de estoque', subtitle:'Entradas, saídas, transferências e rastreabilidade por lote', table:'estoque_movimentacoes', search:['tipo','documento_origem','observacoes'], columns:['tipo','produto_id','lote_id','quantidade','endereco_origem_id','endereco_destino_id','ocorrido_em'], fields:[
     {key:'tipo',label:'Tipo de movimentação',type:'select',options:['entrada_nf','requisicao_producao','retorno_producao','transferencia','ajuste_inventario'],required:true},{key:'produto_id',label:'Produto (UUID)',required:true},{key:'lote_id',label:'Lote (UUID)',required:true},{key:'quantidade',label:'Quantidade',type:'number',required:true},{key:'endereco_origem_id',label:'Endereço origem (UUID)'},{key:'endereco_destino_id',label:'Endereço destino (UUID)'},{key:'documento_origem',label:'Documento de origem'},{key:'responsavel_id',label:'Responsável (UUID)'},{key:'ocorrido_em',label:'Data/hora ISO'},{key:'observacoes',label:'Observações',type:'textarea'}] },
   'qualidade-cep': { title:'SGQ · CEP e cartas de controle', subtitle:'Medições reais com limites superior, nominal e inferior', table:'qualidade_cep_medicoes', search:['parametro','amostra_numero'], columns:['produto_id','parametro','amostra_numero','valor_medido','limite_superior','nominal','limite_inferior','medido_em'], fields:[
@@ -42,6 +42,7 @@ const cls='h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 t
 const label='mb-[2px] block text-[9px] font-bold uppercase tracking-wider text-slate-600'
 const btn='inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-semibold hover:bg-slate-50 disabled:opacity-50'
 function parseValue(field: Field, raw: string): unknown {
+  if (field.key === 'ativo' && (raw === 'true' || raw === 'false')) return raw === 'true'
   if (field.type === 'number') return raw === '' ? null : Number(raw)
   if (field.type === 'textarea' && ['parametros','etapas','acoes_recomendadas','evidencia_urls','cinco_porques','ishikawa','plano_5w2h'].includes(field.key)) {
     if (!raw.trim()) return field.key === 'parametros' || field.key === 'etapas' || field.key === 'acoes_recomendadas' || field.key === 'evidencia_urls' || field.key === 'cinco_porques' || field.key === 'plano_5w2h' ? [] : {}
@@ -68,7 +69,7 @@ export default function IndustrialDataWorkspace() {
   const load = useCallback(async () => {
     if (!config) return
     setLoading(true); setError(null)
-    const result = await supabase.from(config.table).select('*').order('created_at',{ascending:false}).limit(500)
+    const result = await supabase.from(config.table).select('*').limit(500)
     if (result.error) setError(result.error.message)
     else setRows((result.data ?? []) as Record<string,unknown>[])
     setLoading(false)
