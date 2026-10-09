@@ -12,7 +12,7 @@ begin
         (limite_inferior is null or nominal >= limite_inferior)
         and (limite_superior is null or nominal <= limite_superior)
       )
-    );
+    ) not valid;
 exception when duplicate_object then null;
 end;
 $$;
