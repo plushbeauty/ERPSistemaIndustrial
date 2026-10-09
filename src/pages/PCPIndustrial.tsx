@@ -300,7 +300,7 @@ const tabs:[Tab,string,string][]=[['visao','Visão geral','Gauge'],['novaop','Cr
    <div className="pcp-side-spacer"/>
    <button className="pcp-side-item" onClick={()=>window.location.href='/manual-usuario'}><span><CircleHelp size={14}/></span> MANUAL</button>
   </nav>}
-  <section className="pcp-main">
+  <section className="pcp-main" style={hostedBySynqra ? { gridColumn: "1 / -1", width: "100%", minWidth: 0 } : undefined}>
    {hostedBySynqra && <>
     <nav aria-label="Navegação rápida do PCP" className="mb-2 flex min-w-0 gap-1 overflow-x-auto border border-[#cbdde5] bg-white p-1.5">
      {tabs.map(([id,label])=><button key={id} type="button" aria-current={tab===id?'page':undefined} onClick={()=>selectTab(id)} className={`h-[30px] shrink-0 border px-2.5 text-[10px] font-medium uppercase tracking-wide ${tab===id?'border-[#17445A] bg-[#17445A] text-white':'border-[#d5e1e7] bg-white text-[#234d61] hover:bg-[#edf7fb]'}`}>{label}</button>)}
