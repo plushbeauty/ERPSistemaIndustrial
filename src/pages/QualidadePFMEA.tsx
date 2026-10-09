@@ -156,9 +156,15 @@ export default function QualidadePFMEA() {
       if (!result.data) throw new Error('O banco não retornou a análise PFMEA gravada.')
       const saved = result.data as FmeaRecord
       setForm(formFromRecord(saved))
-      await loadRecords(false)
-      setMessage('PFMEA gravada no banco. NPR calculado pelo PostgreSQL e registro atualizado na lista.')
-      setMessageIsError(false)
+      const refreshed = await supabase.from('erp_fmea').select(columns).eq('empresa_id', empresaId).order('updated_at', { ascending: false }).limit(500)
+      if (refreshed.error) {
+        setMessage('PFMEA gravada, mas a lista não pôde ser atualizada: ' + refreshed.error.message)
+        setMessageIsError(true)
+      } else {
+        setRows((refreshed.data ?? []) as FmeaRecord[])
+        setMessage('PFMEA gravada no banco. NPR calculado pelo PostgreSQL e lista atualizada.')
+        setMessageIsError(false)
+      }
     } catch (error) {
       setMessage(errorText(error))
       setMessageIsError(true)
