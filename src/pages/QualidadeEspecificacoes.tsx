@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Check, Plus, RefreshCw, Save, Search, ShieldCheck, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import VendasLayout from './VendasLayout'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
 import QualitySidebar from '../components/quality/QualitySidebar'
 
@@ -273,7 +274,7 @@ export default function QualidadeEspecificacoes() {
     }
   }
 
-  return <main data-quality-workspace className="erp-global-surface erp-compact min-h-screen bg-slate-50 text-slate-900">
+  return <VendasLayout title="Qualidade / Especificações" subtitle="Planos mestres controlados por revisão, vigência e aprovação." showStatusCards={false}><main data-quality-workspace className="erp-global-surface erp-compact min-h-0 bg-slate-50 text-slate-900">
     <header className="border-b border-slate-700 bg-slate-900 px-4 py-3 text-white">
       <div className="mx-auto flex max-w-[1700px] flex-wrap items-center justify-between gap-3">
         <div><p className="text-[9px] font-medium uppercase tracking-widest text-sky-300">SGQ • CADASTRO MESTRE</p><h1 className="text-[15px] font-semibold">Especificações Técnicas</h1><p className="mt-1 text-[10px] text-slate-300">Critérios controlados pela Qualidade e consumidos pelas inspeções e pelo recebimento.</p></div>
@@ -318,5 +319,5 @@ export default function QualidadeEspecificacoes() {
       {form.id && <section className="border border-slate-200 bg-white"><div className="border-b border-slate-200 p-3"><h2 className="text-[12px] font-semibold">Histórico imutável da especificação</h2><p className="text-[10px] text-slate-500">Alterações técnicas gravam um snapshot da revisão anterior; a revisão atual permanece no cadastro mestre.</p></div><div className="overflow-x-auto"><table className="w-full min-w-[700px] text-left"><thead className="bg-slate-100"><tr><th>Rev.</th><th>Código</th><th>Característica</th><th>Nominal</th><th>Limites</th><th>Alterado em</th><th>Responsável</th></tr></thead><tbody>{historyRows.filter(item=>item.plano_inspecao_id===form.id).map(item=>{const snapshot=item.dados;return <tr key={item.id} className="border-t border-slate-100"><td>{item.revisao}</td><td>{String(snapshot.codigo??'—')}</td><td>{String(snapshot.caracteristica??'—')}</td><td>{String(snapshot.nominal??'—')}</td><td>{String(snapshot.limite_inferior??'—')} a {String(snapshot.limite_superior??'—')}</td><td>{new Date(item.alterado_em).toLocaleString('pt-BR')}</td><td>{users.find(user=>user.auth_user_id===item.alterado_por)?.nome||item.alterado_por?.slice(0,8)||'—'}</td></tr>})}{!historyRows.some(item=>item.plano_inspecao_id===form.id)&&<tr><td colSpan={7} className="p-3 text-center text-[10px] text-slate-500">Nenhuma revisão anterior registrada.</td></tr>}</tbody></table></div></section>}
       <div className="flex items-center gap-2 text-[10px] text-slate-500"><ShieldCheck size={13}/> O cadastro mestre controla etapa, método, limites, frequência, armazenamento, instrumento, revisão, vigência e responsáveis; alterações técnicas preservam snapshot e as consultas são limitadas à empresa autenticada.</div>
     </div>
-  </main>
+  </main></VendasLayout>
 }
