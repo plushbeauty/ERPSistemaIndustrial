@@ -7,7 +7,7 @@ import ColetaDimensionalCEP from '../components/ColetaDimensionalCEP'
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; fornecedor_id: string | null; nf_numero: string | null; quantidade_recebida: number; status_inspecao: string | null }
 type Supplier = { id: string; razao_social: string }
 type Product = { id: string; codigo: string; nome: string }
-type Specification = { id: string; produto_id: string; codigo: string; caracteristica: string; unidade: string | null; nominal: number | null; limite_inferior: number | null; limite_superior: number | null; frequencia: string | null; status: string | null }
+type Specification = { id: string; produto_id: string; codigo: string; caracteristica: string; unidade: string | null; nominal: number | null; tipo_inspecao: string; limite_inferior: number | null; limite_superior: number | null; frequencia: string | null; status: string | null }
 type Receiving = { id: string; lote_id: string; fornecedor_id: string | null; tamanho_lote: number; nivel_inspecao: 'G-II' | 'G-III'; aql: number; tamanho_amostra: number; defeitos_encontrados: number; criterio_ac: number; criterio_re: number; status: 'PENDENTE' | 'APROVADO' | 'BLOQUEADO'; created_at: string }
 type Dimensional = { id: string; inspecao_recebimento_id: string | null; plano_inspecao_id: string | null; numero_peca_amostrada: number; cavidade_molde: string | null; cota_nominal_mm: number; tolerancia_superior_mm: number; tolerancia_inferior_mm: number; valor_medido_mm: number | null; desvio_mm: number | null; status: 'PENDENTE' | 'OK' | 'NOK'; instrumento: string | null }
 type Genealogy = { id: string; lote_interno: string; lote_fornecedor: string | null; produto: string; fornecedor: string; operador: string; maquina: string; apontado_em: string | null; pedido: string | null }
@@ -86,7 +86,7 @@ export default function QualidadeIndustrial() {
         supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,fornecedor_id,nf_numero,quantidade_recebida,status_inspecao').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
         supabase.from('erp_fornecedores').select('id,razao_social').eq('empresa_id', id).order('razao_social').limit(500),
         supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', id).eq('ativo', true).order('codigo').limit(2000),
-        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,status').eq('empresa_id', id).order('codigo').limit(2000),
+        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,tipo_inspecao,limite_inferior,limite_superior,frequencia,status').eq('empresa_id', id).order('codigo').limit(2000),
         supabase.from('erp_qualidade_inspecoes_recebimento').select('id,lote_id,fornecedor_id,tamanho_lote,nivel_inspecao,aql,tamanho_amostra,defeitos_encontrados,criterio_ac,criterio_re,status,created_at').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
         supabase.from('erp_qualidade_inspecoes_dimensionais').select('id,inspecao_recebimento_id,plano_inspecao_id,numero_peca_amostrada,cavidade_molde,cota_nominal_mm,tolerancia_superior_mm,tolerancia_inferior_mm,valor_medido_mm,desvio_mm,status,instrumento').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
       ])
@@ -116,7 +116,7 @@ export default function QualidadeIndustrial() {
   const currentReceiving = receivings.find((row) => row.id === selectedReceiving) ?? null
   const currentReceivingLot = lots.find((lot) => lot.id === currentReceiving?.lote_id) ?? null
   const currentProduct = products.find((product) => product.id === currentReceivingLot?.produto_id) ?? null
-  const activeSpecsForReceiving = specifications.filter(item => item.produto_id === currentReceivingLot?.produto_id && (item.status ?? '').toUpperCase() === 'ATIVO')
+  const activeSpecsForReceiving = specifications.filter(item => item.produto_id === currentReceivingLot?.produto_id && item.tipo_inspecao === 'RECEBIMENTO' && (item.status ?? '').toUpperCase() === 'ATIVO')
   const selectedSpec = activeSpecsForReceiving.find(item => item.id === selectedSpecId) ?? null
   const dimensionalPreview = measured !== '' && selectedSpec?.nominal != null ? Number(measured) - Number(selectedSpec.nominal) : null
   const dimensionalStatus = dimensionalPreview === null || !selectedSpec || selectedSpec.limite_inferior === null || selectedSpec.limite_superior === null ? 'PENDENTE' : Number(measured) >= selectedSpec.limite_inferior && Number(measured) <= selectedSpec.limite_superior ? 'OK' : 'NOK'
@@ -166,7 +166,7 @@ export default function QualidadeIndustrial() {
       if (decision === 'APROVAR') {
         const lot = lots.find(item => item.id === receiving.lote_id)
         if (!lot) throw new Error('O lote da inspeção não está disponível na empresa atual.')
-        const activeSpecs = specifications.filter(item => item.produto_id === lot.produto_id && (item.status ?? '').toUpperCase() === 'ATIVO')
+        const activeSpecs = specifications.filter(item => item.produto_id === lot.produto_id && item.tipo_inspecao === 'RECEBIMENTO' && (item.status ?? '').toUpperCase() === 'ATIVO')
         if (!activeSpecs.length) throw new Error('SEM ESPECIFICAÇÃO: o lote não pode ser aprovado automaticamente. Cadastre critérios técnicos vigentes para este produto na Engenharia/Qualidade.')
         if (receiving.defeitos_encontrados > receiving.criterio_ac) throw new Error('A quantidade de defeitos excede o critério Ac; o lote não pode ser aprovado.')
         const dimensionalSpecs = activeSpecs.filter(item => item.limite_inferior !== null || item.limite_superior !== null)
@@ -341,7 +341,7 @@ export default function QualidadeIndustrial() {
         {(error || notice) && <div className={error ? 'qms-message error' : 'qms-message'}>{error || notice}</div>}
 
         {tab === 'recebimento' && <section className="qms-panel">
-          {selectedLotData && !specifications.some(item => item.produto_id === selectedLotData.produto_id && (item.status ?? '').toUpperCase() === 'ATIVO') && <div role="alert" className="qms-message error">SEM ESPECIFICAÇÃO — este lote não pode ser aprovado até existir critério técnico ativo para o produto.</div>}
+          {selectedLotData && !specifications.some(item => item.produto_id === selectedLotData.produto_id && item.tipo_inspecao === 'RECEBIMENTO' && (item.status ?? '').toUpperCase() === 'ATIVO') && <div role="alert" className="qms-message error">SEM ESPECIFICAÇÃO — este lote não pode ser aprovado até existir critério técnico ativo para o produto.</div>}
           <div className="qms-grid qms-grid-6">
             <label className={labelClass()}>Lote / NF XML<select className={fieldClass(invalid === 'lote')} value={selectedLot} onChange={(e) => { setSelectedLot(e.target.value); setInvalid(null) }}><option value="">Preencher...</option>{lots.map((lot) => <option key={lot.id} value={lot.id}>{lot.lote_interno} · NF {lot.nf_numero || '—'} · {supplierMap.get(lot.fornecedor_id || '') || 'Fornecedor não vinculado'}</option>)}</select></label>
             <label className={labelClass()}>Fornecedor<input className={fieldClass(false)} readOnly value={selectedLotData ? supplierMap.get(selectedLotData.fornecedor_id || '') || 'Fornecedor não vinculado' : ''} placeholder="Preencher..." /></label>
