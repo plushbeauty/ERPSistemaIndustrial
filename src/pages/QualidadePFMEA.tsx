@@ -55,6 +55,12 @@ const formFromRecord = (row: FmeaRecord): FmeaForm => ({
 })
 const errorText = (error: unknown) => error instanceof Error ? error.message : String((error as { message?: string } | null)?.message ?? 'Operação recusada pelo banco.')
 
+const currentCompanyId = async () => {
+  const result = await supabase.rpc('erp_current_empresa_id')
+  if (result.error || !result.data) throw new Error(result.error?.message || 'Empresa da sessão não identificada.')
+  return String(result.data)
+}
+
 export default function QualidadePFMEA() {
   const [rows, setRows] = useState<FmeaRecord[]>([])
   const [form, setForm] = useState<FmeaForm>(emptyForm)
@@ -75,16 +81,10 @@ export default function QualidadePFMEA() {
     })
   }, [rows, query, statusFilter])
 
-  const currentCompany = async () => {
-    const result = await supabase.rpc('erp_current_empresa_id')
-    if (result.error || !result.data) throw new Error(result.error?.message || 'Empresa da sessão não identificada.')
-    return String(result.data)
-  }
-
   const loadRecords = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true)
     try {
-      const empresaId = await currentCompany()
+      const empresaId = await currentCompanyId()
       const result = await supabase.from('erp_fmea').select(columns).eq('empresa_id', empresaId).order('updated_at', { ascending: false }).limit(500)
       if (result.error) throw result.error
       setCompanyId(empresaId)
@@ -132,7 +132,7 @@ export default function QualidadePFMEA() {
     setMessage('')
     setMessageIsError(false)
     try {
-      const empresaId = await currentCompany()
+      const empresaId = await currentCompanyId()
       const payload = {
         codigo: form.codigo.trim(),
         processo: form.processo.trim(),
