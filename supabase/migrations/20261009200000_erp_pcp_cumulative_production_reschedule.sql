@@ -85,6 +85,9 @@ begin
   if abs(v_defeito_total - p_quantidade_defeituosa) > 0.000001 then
     raise exception 'A soma das quantidades por defeito deve corresponder ao refugo informado.';
   end if;
+  if p_quantidade_encontrada > p_quantidade_defeituosa and p_localizacao_destino_id is null then
+    raise exception 'Endereço de destino obrigatório para entrada de quantidade boa no WMS.';
+  end if;
   if p_localizacao_destino_id is not null and not exists (
     select 1 from public.erp_estoque_localizacoes l
     where l.id = p_localizacao_destino_id and l.empresa_id = v_empresa and l.ativo = true
