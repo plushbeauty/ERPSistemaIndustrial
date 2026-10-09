@@ -57,6 +57,7 @@ export default function Sidebar() {
             )
           })}
         </nav>
+        {activeSubmodules.length > 0 && <section className="synqra-sidebar-subnav" aria-label="Submódulos"><p className="synqra-sidebar-caption">SUBMÓDULOS</p><nav className="synqra-sidebar-nav" aria-label="Navegação do submódulo">{activeSubmodules.map(item => { const active = location.pathname === item.route; return <button key={item.route} type="button" className={"synqra-sidebar-link synqra-sidebar-sublink" + (active ? " is-active" : "")} aria-current={active ? "page" : undefined} title={item.label} onClick={() => { navigate(item.route); closeMobileSidebar() }}><span className="synqra-sidebar-link-label">{item.label}</span></button> })}</nav></section>}
         <div className="synqra-sidebar-footer">
           <span className="synqra-slashes" aria-hidden="true"><i /><i /><i /></span>
           <span className="synqra-sidebar-footer-copy">ERP & SGQ INDUSTRIAL</span>
