@@ -342,10 +342,10 @@ returns uuid
 language plpgsql
 security definer
 set search_path = pg_catalog, public
-as $
+as $$
 begin
   raise exception 'RPC legado desativado. Use erp_wms_receber_lote_com_qualidade para registrar fornecedor, endereço e gate SGQ.';
 end;
-$;
+$$;
 
 revoke all on function public.fn_receber_lote_almoxarifado(uuid, uuid, text, text, numeric, text, text) from public, anon, authenticated;
