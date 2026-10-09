@@ -186,10 +186,12 @@ begin
   ) returning * into v_inspecao;
 
   if p_resultado <> 'APROVADO' then
-    perform public.erp_reter_lote(
-      p_lote_id,
-      'Inspeção ' || v_tipo_plano || ' ' || p_resultado || ': ' || btrim(p_descricao_rpnc)
-    );
+    if upper(coalesce(v_lote.status_inspecao, '')) <> 'RETIDO' then
+      perform public.erp_reter_lote(
+        p_lote_id,
+        'Inspeção ' || v_tipo_plano || ' ' || p_resultado || ': ' || btrim(p_descricao_rpnc)
+      );
+    end if;
     select public.erp_sgq_abrir_rpnc(
       btrim(p_descricao_rpnc),
       case when p_tipo = 'FINAL' then 'Inspeção final' else 'Inspeção em processo' end,
