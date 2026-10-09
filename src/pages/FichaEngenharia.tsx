@@ -69,7 +69,7 @@ export default function FichaEngenharia(){
    const empresaId=await company()
    const [p,m,md,fc]=await Promise.all([
     supabase.from('erp_produtos').select('id,codigo,nome,unidade').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(2000),
-    supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id',empresaId).not('status','eq','INATIVA').order('codigo').limit(500),
+    supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id',empresaId).order('codigo').limit(500),
     supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades,cavidades_ativas,ativo').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(1000),
     supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,observacoes,ativa,status,revisao').eq('empresa_id',empresaId).order('updated_at',{ascending:false}).limit(1000)
    ])
@@ -92,9 +92,9 @@ export default function FichaEngenharia(){
    if(f.error)throw f.error
    if(!f.data){
     resetForm(true,id);setKind(selectedKind)
-    const qi=await supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,status').eq('empresa_id',empresaId).eq('produto_id',id).order('codigo').limit(200)
+    const qi=await supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,status,vigencia_inicio,vigencia_fim,aprovador_id,aprovado_em').eq('empresa_id',empresaId).eq('produto_id',id).eq('status','ativo').not('aprovador_id','is',null).not('aprovado_em','is',null).order('codigo').limit(200)
     if(qi.error)throw qi.error
-    const loadedQuality:QualityRow[]=(qi.data??[]).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',nominal:x.nominal==null?'':String(x.nominal),limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status}))
+    const today=new Date().toISOString().slice(0,10);const loadedQuality:QualityRow[]=(qi.data??[]).filter(x=>(!x.vigencia_inicio||x.vigencia_inicio<=today)&&(!x.vigencia_fim||x.vigencia_fim>=today)).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',nominal:x.nominal==null?'':String(x.nominal),limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status}))
     setQuality(loadedQuality)
     return
    }
@@ -109,7 +109,7 @@ export default function FichaEngenharia(){
    if(bi.error)throw bi.error;if(ro.error)throw ro.error;if(qi.error)throw qi.error
    setBom((bi.data??[]).map(x=>({id:x.id,componente_id:x.componente_id,quantidade:String(x.quantidade),perda_percentual:String(x.perda_percentual),lote_obrigatorio:Boolean(x.lote_obrigatorio),tipo_item:x.tipo_item,sequencia:x.sequencia})))
    setOps((ro.data??[]).map(x=>({id:x.id,sequencia:x.sequencia,operacao:x.operacao,maquina_id:x.maquina_id??'',molde_id:x.molde_id??'',setup_min:String(x.setup_min),ciclo_seg:String(x.ciclo_seg),instrucoes:x.instrucoes??''})))
-   const loadedQuality:QualityRow[]=(qi.data??[]).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',nominal:x.nominal==null?'':String(x.nominal),limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status}))
+   const today=new Date().toISOString().slice(0,10);const loadedQuality:QualityRow[]=(qi.data??[]).filter(x=>(!x.vigencia_inicio||x.vigencia_inicio<=today)&&(!x.vigencia_fim||x.vigencia_fim>=today)).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',nominal:x.nominal==null?'':String(x.nominal),limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status}))
    setQuality(loadedQuality)
   }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
  }
