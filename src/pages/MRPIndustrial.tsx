@@ -45,6 +45,10 @@ export default function MRPIndustrial(){
   if(!productId||qty<=0){setError('Selecione o produto e informe uma quantidade maior que zero.');return}
   setBusy(true);setError('');setMessage('')
   try{
+   if(!companyId)throw new Error('Empresa da sessão não identificada.')
+   const ficha=await supabase.from('erp_fichas_tecnicas').select('id,status,versao').eq('empresa_id',companyId).eq('produto_id',productId).eq('ativa',true).or('status.ilike.aprovada,status.ilike.liberada').order('versao',{ascending:false}).limit(1).maybeSingle()
+   if(ficha.error)throw ficha.error
+   if(!ficha.data)throw new Error('MRP bloqueado: o produto não possui ficha de processo aprovada/liberada.')
    const r=await supabase.rpc('erp_mrp_explodir',{p_produto_id:productId,p_quantidade:qty,p_demanda_ref:demandRef.trim()||null})
    if(r.error)throw r.error
    const runId=String(r.data);setSelectedRun(runId);setMessage('MRP calculado pela estrutura multinível da ficha técnica, considerando perda, estoque e reservas.');await load();await loadNeeds(runId)
