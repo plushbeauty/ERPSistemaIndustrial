@@ -103,6 +103,9 @@ export default function QualidadeEspecificacoes() {
 
   useEffect(() => { void load() }, [load])
 
+  const today = new Date().toISOString().slice(0, 10)
+  const validInstruments = useMemo(() => instruments.filter(item => item.status.toUpperCase() === 'APROVADO' && Boolean(item.proxima_calibracao && item.proxima_calibracao >= today)), [instruments, today])
+
   const visibleRows = useMemo(() => {
     const term = query.trim().toLowerCase()
     return rows.filter(row => {
@@ -163,6 +166,7 @@ export default function QualidadeEspecificacoes() {
     }
     if (!Number.isInteger(Number(form.revisao)) || Number(form.revisao) < 1) { setError('A revisão deve ser um inteiro maior que zero.'); return }
     if (form.instrumento_id && !instruments.some(item => item.id === form.instrumento_id)) { setError('Selecione um instrumento cadastrado na empresa atual.'); return }
+    if (form.status === 'ativo' && !['VISUAL','DOCUMENTAL'].includes(form.metodo_inspecao) && !validInstruments.some(item => item.id === form.instrumento_id)) { setError('Especificação dimensional/funcional ativa exige instrumento aprovado e com calibração vigente.'); return }
     if (form.responsavel_id && !users.some(user => user.auth_user_id === form.responsavel_id)) { setError('Responsável inválido para a empresa atual.'); return }
     if (form.aprovador_id && !users.some(user => user.auth_user_id === form.aprovador_id)) { setError('Aprovador inválido para a empresa atual.'); return }
     if (lower !== null && upper !== null && form.status === 'ativo' && nominal === null) {
@@ -214,6 +218,9 @@ export default function QualidadeEspecificacoes() {
       }
       if (next === 'ativo' && row.limite_inferior != null && row.limite_superior != null && row.nominal == null) {
         throw new Error('Não é possível ativar uma especificação dimensional sem nominal.')
+      }
+      if (next === 'ativo' && !['VISUAL','DOCUMENTAL'].includes(row.metodo_inspecao) && !validInstruments.some(item => item.id === row.instrumento_id)) {
+        throw new Error('Não é possível ativar: o instrumento precisa estar aprovado e com calibração vigente.')
       }
       const result = await supabase.from('erp_planos_inspecao').update({ status: next }).eq('id', row.id).eq('empresa_id', empresaId)
       if (result.error) throw result.error
