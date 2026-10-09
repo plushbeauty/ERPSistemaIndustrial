@@ -24,6 +24,7 @@ type Specification = {
   instrumento_id: string | null
   revisao: number
   vigencia_inicio: string | null
+  vigencia_fim: string | null
   responsavel_id: string | null
   aprovador_id: string | null
   status: string | null
@@ -45,6 +46,7 @@ type FormState = {
   instrumento_id: string
   revisao: string
   vigencia_inicio: string
+  vigencia_fim: string
   responsavel_id: string
   aprovador_id: string
   status: 'ativo' | 'inativo'
@@ -53,7 +55,7 @@ const emptyForm: FormState = {
   id: '', produto_id: '', codigo: '', caracteristica: '', unidade: '', nominal: '',
   limite_inferior: '', limite_superior: '', frequencia: '100%', grupo_material: '',
   tipo_inspecao: 'RECEBIMENTO', metodo_inspecao: 'DIMENSIONAL', condicao_armazenamento: '',
-  instrumento_id: '', revisao: '1', vigencia_inicio: '', responsavel_id: '', aprovador_id: '', status: 'ativo',
+  instrumento_id: '', revisao: '1', vigencia_inicio: '', vigencia_fim: '', responsavel_id: '', aprovador_id: '', status: 'ativo',
 }
 const input = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] outline-none focus:border-[#2D8DB8]'
 const label = 'grid gap-[2px] text-[9px] font-medium uppercase tracking-wide text-slate-600'
@@ -81,7 +83,7 @@ export default function QualidadeEspecificacoes() {
       const id = String(company.data)
       const [productResult, specResult, instrumentResult, userResult] = await Promise.all([
         supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', id).eq('ativo', true).order('codigo').limit(2000),
-        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,grupo_material,tipo_inspecao,metodo_inspecao,condicao_armazenamento,instrumento_id,revisao,vigencia_inicio,responsavel_id,aprovador_id,status').eq('empresa_id', id).order('codigo').limit(2000),
+        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,grupo_material,tipo_inspecao,metodo_inspecao,condicao_armazenamento,instrumento_id,revisao,vigencia_inicio,vigencia_fim,responsavel_id,aprovador_id,status').eq('empresa_id', id).order('codigo').limit(2000),
         supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao').eq('empresa_id', id).order('codigo').limit(1000),
         supabase.from('erp_usuarios').select('auth_user_id,nome').eq('empresa_id', id).eq('ativo', true).order('nome').limit(500),
       ])
@@ -127,7 +129,7 @@ export default function QualidadeEspecificacoes() {
       grupo_material: row.grupo_material ?? '', tipo_inspecao: (row.tipo_inspecao ?? 'RECEBIMENTO') as FormState['tipo_inspecao'],
       metodo_inspecao: (row.metodo_inspecao ?? 'DIMENSIONAL') as FormState['metodo_inspecao'],
       condicao_armazenamento: row.condicao_armazenamento ?? '', instrumento_id: row.instrumento_id ?? '',
-      revisao: String(row.revisao ?? 1), vigencia_inicio: row.vigencia_inicio ?? '',
+      revisao: String(row.revisao ?? 1), vigencia_inicio: row.vigencia_inicio ?? '', vigencia_fim: row.vigencia_fim ?? '',
       responsavel_id: row.responsavel_id ?? '', aprovador_id: row.aprovador_id ?? '',
       status: (row.status ?? 'ativo').toLowerCase() === 'inativo' ? 'inativo' : 'ativo',
     })
@@ -165,6 +167,9 @@ export default function QualidadeEspecificacoes() {
       return
     }
     if (!Number.isInteger(Number(form.revisao)) || Number(form.revisao) < 1) { setError('A revisão deve ser um inteiro maior que zero.'); return }
+    if (form.vigencia_inicio && form.vigencia_fim && form.vigencia_fim < form.vigencia_inicio) { setError('A vigência final não pode anteceder a vigência inicial.'); return }
+    if (form.status === 'ativo' && form.vigencia_fim && form.vigencia_fim < today) { setError('Uma especificação vencida não pode permanecer ativa.'); return }
+    if (form.status === 'ativo' && !form.aprovador_id) { setError('Especificação ativa exige um aprovador responsável.'); return }
     if (form.instrumento_id && !instruments.some(item => item.id === form.instrumento_id)) { setError('Selecione um instrumento cadastrado na empresa atual.'); return }
     if (form.status === 'ativo' && !['VISUAL','DOCUMENTAL'].includes(form.metodo_inspecao) && !validInstruments.some(item => item.id === form.instrumento_id)) { setError('Especificação dimensional/funcional ativa exige instrumento aprovado e com calibração vigente.'); return }
     if (form.responsavel_id && !users.some(user => user.auth_user_id === form.responsavel_id)) { setError('Responsável inválido para a empresa atual.'); return }
@@ -188,7 +193,7 @@ export default function QualidadeEspecificacoes() {
         frequencia: form.frequencia.trim() || '100%',
         grupo_material: form.grupo_material.trim() || null, tipo_inspecao: form.tipo_inspecao,
         metodo_inspecao: form.metodo_inspecao, condicao_armazenamento: form.condicao_armazenamento.trim() || null,
-        instrumento_id: form.instrumento_id || null, revisao: Number(form.revisao), vigencia_inicio: form.vigencia_inicio || null,
+        instrumento_id: form.instrumento_id || null, revisao: Number(form.revisao), vigencia_inicio: form.vigencia_inicio || null, vigencia_fim: form.vigencia_fim || null,
         responsavel_id: form.responsavel_id || null, aprovador_id: form.aprovador_id || null,
         status: form.status,
       }
@@ -258,7 +263,7 @@ export default function QualidadeEspecificacoes() {
             </div>
             <label className={label}>Condição de armazenamento<textarea className="min-h-16 w-full rounded-[2px] border border-slate-300 bg-white px-2 py-1 text-[11px] outline-none focus:border-[#2D8DB8]" value={form.condicao_armazenamento} onChange={event => setForm(current => ({ ...current, condicao_armazenamento: event.target.value }))} placeholder="Local fresco, embalagem hermética, proteção..."/></label>
             <label className={label}>Instrumento de medição<select className={input} value={form.instrumento_id} onChange={event => setForm(current => ({ ...current, instrumento_id: event.target.value }))}><option value="">Sem instrumento vinculado</option>{instruments.map(instrument => <option key={instrument.id} value={instrument.id}>{instrument.codigo} — {instrument.descricao}{instrument.proxima_calibracao ? ` • calib. ${instrument.proxima_calibracao}` : ''}</option>)}</select></label>
-            <div className="grid grid-cols-2 gap-2"><label className={label}>Revisão<input className={input} type="number" min="1" step="1" value={form.revisao} onChange={event => setForm(current => ({ ...current, revisao: event.target.value }))}/></label><label className={label}>Vigência inicial<input className={input} type="date" value={form.vigencia_inicio} onChange={event => setForm(current => ({ ...current, vigencia_inicio: event.target.value }))}/></label></div>
+            <div className="grid grid-cols-3 gap-2"><label className={label}>Revisão<input className={input} type="number" min="1" step="1" value={form.revisao} onChange={event => setForm(current => ({ ...current, revisao: event.target.value }))}/></label><label className={label}>Vigência inicial<input className={input} type="date" value={form.vigencia_inicio} onChange={event => setForm(current => ({ ...current, vigencia_inicio: event.target.value }))}/></label><label className={label}>Vigência final<input className={input} type="date" value={form.vigencia_fim} onChange={event => setForm(current => ({ ...current, vigencia_fim: event.target.value }))}/></label></div>
             <div className="grid grid-cols-2 gap-2"><label className={label}>Responsável<select className={input} value={form.responsavel_id} onChange={event => setForm(current => ({ ...current, responsavel_id: event.target.value }))}><option value="">Não definido</option>{users.filter(user => user.auth_user_id).map(user => <option key={user.auth_user_id} value={user.auth_user_id as string}>{user.nome}</option>)}</select></label><label className={label}>Aprovador<select className={input} value={form.aprovador_id} onChange={event => setForm(current => ({ ...current, aprovador_id: event.target.value }))}><option value="">Não definido</option>{users.filter(user => user.auth_user_id).map(user => <option key={user.auth_user_id} value={user.auth_user_id as string}>{user.nome}</option>)}</select></label></div>
             <label className={label}>Nominal<input className={input} type="number" step="any" value={form.nominal} onChange={event => setForm(current => ({ ...current, nominal: event.target.value }))} placeholder="Valor nominal"/></label>
             <div className="grid grid-cols-2 gap-2"><label className={label}>Limite mínimo<input className={input} type="number" step="any" value={form.limite_inferior} onChange={event => setForm(current => ({ ...current, limite_inferior: event.target.value }))}/></label><label className={label}>Limite máximo<input className={input} type="number" step="any" value={form.limite_superior} onChange={event => setForm(current => ({ ...current, limite_superior: event.target.value }))}/></label></div>
