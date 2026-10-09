@@ -68,6 +68,7 @@ export default function NFeEmissaoCompact() {
   const [form, setForm] = useState<TextMap>(initialForm)
   const [items, setItems] = useState<Item[]>([newItem()])
   const [documentId, setDocumentId] = useState<string | null>(null)
+  const [documentStatus, setDocumentStatus] = useState('Rascunho')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
@@ -181,7 +182,7 @@ export default function NFeEmissaoCompact() {
     return null
   }
 
-  const saveDraft = async () => {
+  const saveDraft = async (): Promise<string | null> => {
     setBusy(true)
     setError('')
     setMessage('')
@@ -219,17 +220,128 @@ export default function NFeEmissaoCompact() {
       }))
       const result = await supabase.rpc('erp_salvar_rascunho_nfe', { p_documento_id: documentId, p_documento: payload, p_itens: rows })
       if (result.error || !result.data) throw new Error(result.error?.message || 'Não foi possível salvar o rascunho.')
-      setDocumentId(String(result.data))
-      setMessage('NF-e gravada como rascunho. A transmissão à SEFAZ não foi executada.')
+      const savedId = String(result.data)
+      setDocumentId(savedId)
+      setDocumentStatus('Rascunho')
+      setMessage('NF-e gravada como rascunho. A transmissão fiscal ainda não foi executada.')
+      return savedId
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao salvar NF-e.')
+      return null
     } finally {
       setBusy(false)
     }
   }
 
+  const transmitNfe = async () => {
+    if (busy) return
+    if (documentStatus !== 'Rascunho') {
+      setError('Este documento não está mais em rascunho. Consulte a carteira fiscal antes de qualquer nova tentativa.')
+      return
+    }
+    if (!window.confirm('Transmitir a NF-e modelo 55 ao integrador fiscal? A autorização só será confirmada após validar chave, protocolo e XML retornados.')) return
+    setError('')
+    setMessage('')
+    let submittedDocumentId: string | null = null
+    try {
+      const id = await saveDraft()
+      if (!id) return
+      submittedDocumentId = id
+      setBusy(true)
+      setMessage('Preparando transmissão fiscal...')
+      const result = await supabase.functions.invoke('emitir-nfe', { body: { documento_id: id } })
+      if (result.error) throw result.error
+      const data = result.data as { ok?: boolean; status?: string; error?: string; chave_acesso?: string; protocolo_autorizacao?: string; xml_storage_path?: string; pdf_storage_path?: string; danfe_disponivel?: boolean }
+      if (data?.status === 'Processando') {
+        setDocumentStatus('Processando')
+        setMessage(data.error || 'Solicitação aceita pelo integrador; a autorização ainda não foi confirmada.')
+        return
+      }
+      if (data?.ok !== true) throw new Error(data?.error || 'O integrador não confirmou a solicitação fiscal.')
+      if (data.status !== 'Autorizada') throw new Error('O integrador retornou um estado fiscal não reconhecido; a autorização não foi confirmada.')
+      if (!/^\\d{44}$/.test(data.chave_acesso ?? '') || !data.protocolo_autorizacao?.trim() || !data.xml_storage_path?.trim()) {
+        throw new Error('A resposta não confirmou chave de acesso, protocolo e XML armazenado; a autorização não foi confirmada.')
+      }
+      setDocumentStatus('Autorizada')
+      setMessage(\`NF-e autorizada. Protocolo: \${data.protocolo_autorizacao}.\${data.danfe_disponivel ? ' DANFE disponível para download.' : ' O DANFE ainda não foi disponibilizado pelo integrador.'}\`)
+    } catch (cause) {
+      const failure = cause instanceof Error ? cause.message : 'Falha na transmissão fiscal.'
+      if (submittedDocumentId) {
+        const [persisted, persistedInvoice] = await Promise.all([
+          supabase.from('erp_documentos_fiscais').select('status,chave_acesso,xml_storage_path,pdf_storage_path').eq('id', submittedDocumentId).eq('empresa_id', companyId).maybeSingle(),
+          supabase.from('erp_notas_fiscais').select('status,chave_acesso,protocolo_autorizacao,xml_autorizado_path,danfe_pdf_path').eq('documento_id', submittedDocumentId).maybeSingle(),
+        ])
+        if (persisted.error || persistedInvoice.error) {
+          setDocumentStatus('Não confirmado')
+          setError(\`\${failure} Não foi possível confirmar o estado persistido; consulte a carteira fiscal antes de tentar novamente.\`)
+        } else if (persisted.data?.status === 'Processando' || persistedInvoice.data?.status === 'Processando') {
+          setDocumentStatus('Processando')
+          setError(\`\${failure} O documento permanece em processamento; não retransmita até consultar as pendências.\`)
+        } else if (
+          persisted.data?.status === 'Autorizada' &&
+          persistedInvoice.data?.status === 'Autorizada' &&
+          /^\\d{44}$/.test(persistedInvoice.data.chave_acesso ?? '') &&
+          Boolean(persistedInvoice.data.protocolo_autorizacao?.trim()) &&
+          Boolean(persistedInvoice.data.xml_autorizado_path?.trim()) &&
+          persisted.data.chave_acesso === persistedInvoice.data.chave_acesso &&
+          persisted.data.xml_storage_path === persistedInvoice.data.xml_autorizado_path
+        ) {
+          setDocumentStatus('Autorizada')
+          setError(\`\${failure} O banco registra autorização, chave, protocolo e XML compatíveis; confira a carteira fiscal antes de seguir.\`)
+        } else {
+          setDocumentStatus(persisted.data?.status || persistedInvoice.data?.status || 'Não confirmado')
+          setError(failure)
+        }
+      } else {
+        setError(failure)
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const downloadDanfe = async () => {
+    if (!documentId || documentStatus !== 'Autorizada') {
+      setError('O DANFE só pode ser baixado após autorização confirmada.')
+      return
+    }
+    setBusy(true)
+    setError('')
+    setMessage('')
+    try {
+      const [documentResult, invoiceResult] = await Promise.all([
+        supabase.from('erp_documentos_fiscais').select('status,pdf_storage_path').eq('id', documentId).eq('empresa_id', companyId).single(),
+        supabase.from('erp_notas_fiscais').select('status,danfe_pdf_path').eq('documento_id', documentId).maybeSingle(),
+      ])
+      if (documentResult.error) throw documentResult.error
+      if (invoiceResult.error) throw invoiceResult.error
+      if (documentResult.data.status !== 'Autorizada' || invoiceResult.data?.status !== 'Autorizada') {
+        throw new Error('A carteira fiscal não confirma autorização nos dois registros.')
+      }
+      const path = documentResult.data.pdf_storage_path || invoiceResult.data?.danfe_pdf_path
+      if (!path) throw new Error('O integrador não disponibilizou o PDF do DANFE. Consulte a carteira fiscal; nenhum PDF foi fabricado.')
+      const download = await supabase.storage.from('documentos-erp').download(path)
+      if (download.error) throw download.error
+      const url = URL.createObjectURL(download.data)
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = \`DANFE-\${field(form, 'numero') || documentId}.pdf\`
+      document.body.appendChild(anchor)
+      anchor.click()
+      anchor.remove()
+      URL.revokeObjectURL(url)
+      setMessage('DANFE original do integrador baixado do Storage.')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao baixar DANFE.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+
   const newDocument = () => {
     setDocumentId(null)
+    setDocumentStatus('Rascunho')
     setItems([newItem()])
     setCustomer({})
     setMessage('')
@@ -251,10 +363,11 @@ export default function NFeEmissaoCompact() {
       {(error || message) ? <div className={`synqra-nfe-alert ${error ? 'error' : 'ok'}`}>{error || message}</div> : null}
       <div className="synqra-nfe-actions">
         <CompactButton type="button" onClick={newDocument}><Plus size={13} /> NOVA</CompactButton>
-        <CompactButton type="button" tone="primary" onClick={() => void saveDraft()} disabled={busy}><Save size={13} /> SALVAR / VALIDAR</CompactButton>
-        <CompactButton type="button" tone="orange" disabled={!documentId || busy}><Send size={13} /> EMITIR</CompactButton>
-        <CompactButton type="button" disabled={!documentId}><FileDown size={13} /> DANFE PDF</CompactButton>
-        <CompactButton type="button" tone="danger" disabled={!documentId}><X size={13} /> CANCELAR</CompactButton>
+        <CompactButton type="button" tone="primary" onClick={() => void saveDraft()} disabled={busy || documentStatus !== 'Rascunho'}><Save size={13} /> SALVAR / VALIDAR</CompactButton>
+        <CompactButton type="button" tone="orange" onClick={() => void transmitNfe()} disabled={busy || documentStatus !== 'Rascunho'}><Send size={13} /> EMITIR</CompactButton>
+        <CompactButton type="button" onClick={() => void downloadDanfe()} disabled={!documentId || documentStatus !== 'Autorizada' || busy}><FileDown size={13} /> DANFE PDF</CompactButton>
+        <CompactButton type="button" tone="danger" disabled title="Cancelamento exige fluxo de evento fiscal próprio; nenhum evento é enviado por este botão."><X size={13} /> CANCELAR INDISPONÍVEL</CompactButton>
+        <span className="self-center text-[10px] text-slate-600">STATUS: <strong>{documentStatus}</strong></span>
       </div>
 
       <Section title="01 • IDE — IDENTIFICAÇÃO DO DOCUMENTO FISCAL">
