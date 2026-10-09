@@ -157,7 +157,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         })}
       </nav>
 
-      <main className="erp-horizontal-workspace">
+      <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.startsWith('/nfe') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
       </main>
 
@@ -184,6 +184,15 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-dropdown button{display:block;width:100%;min-height:29px;padding:5px 12px;border:0;background:#fff;color:#234d61;text-align:left;font-size:11px;cursor:pointer}
         .erp-horizontal-dropdown button:hover{background:#edf7fb;color:#1f7195}
         .erp-horizontal-workspace{min-width:0;min-height:calc(100vh - 78px);padding:8px;box-sizing:border-box}
+        .erp-horizontal-workspace-compact h1{font-size:18px!important;line-height:1.2!important;font-weight:500!important}
+        .erp-horizontal-workspace-compact h2{font-size:15px!important;line-height:1.25!important;font-weight:500!important}
+        .erp-horizontal-workspace-compact h3{font-size:13px!important;line-height:1.3!important;font-weight:500!important}
+        .erp-horizontal-workspace-compact p{font-size:10px!important;line-height:1.4!important}
+        .erp-horizontal-workspace-compact table{font-size:10px!important}
+        .erp-horizontal-workspace-compact th{font-size:9px!important;font-weight:500!important}
+        .erp-horizontal-workspace-compact button{font-size:10px}
+        .erp-horizontal-workspace-compact label{font-size:9px}
+        .erp-horizontal-workspace-compact input,.erp-horizontal-workspace-compact select,.erp-horizontal-workspace-compact textarea{font-size:10px}
         @media(max-width:950px){.erp-horizontal-brand strong{display:none}.erp-horizontal-search{width:36vw}.erp-horizontal-menu-button{padding:0 7px}.erp-horizontal-session time{display:none}}
         @media(max-width:700px){.erp-horizontal-header{gap:5px}.erp-horizontal-help{font-size:0}.erp-horizontal-search{width:42vw;min-width:160px}.erp-horizontal-session span{display:none}.erp-horizontal-menu{overflow-x:auto}}
       `}</style>
