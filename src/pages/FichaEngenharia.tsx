@@ -52,12 +52,13 @@ export default function FichaEngenharia(){
  const [ficha,setFicha]=useState<Ficha|null>(null),[productId,setProductId]=useState(''),[productCode,setProductCode]=useState(''),[version,setVersion]=useState('1'),[requestedVersion,setRequestedVersion]=useState<number|null>(null),[rendimento,setRendimento]=useState('1'),[unit,setUnit]=useState('UN')
  const [processCode,setProcessCode]=useState(''),[processName,setProcessName]=useState(''),[notes,setNotes]=useState('')
  const [bom,setBom]=useState<BomRow[]>([emptyBom()]),[ops,setOps]=useState<OpRow[]>([emptyOp()]),[quality,setQuality]=useState<QualityRow[]>([emptyQuality()])
- const [spec,setSpec]=useState<Record<string,string>>({}),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[search,setSearch]=useState(''),[catalogKind,setCatalogKind]=useState<Kind|''>(''),[catalogMold,setCatalogMold]=useState('')
+ const [spec,setSpec]=useState<Record<string,string>>({}),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[search,setSearch]=useState(''),[catalogKind,setCatalogKind]=useState<Kind|''>(''),[catalogMold,setCatalogMold]=useState(''),[canApproveRevision,setCanApproveRevision]=useState(false)
 
  const selected=useMemo(()=>products.find(p=>p.id===productId),[products,productId])
  useEffect(()=>{void loadBase()},[])
  useEffect(()=>{if(selected)setProductCode(selected.codigo)},[selected])
  useEffect(()=>{if(!productId||!kind)return;void loadFicha(productId,kind,requestedVersion??undefined)},[productId,kind,requestedVersion])
+ useEffect(()=>{let mounted=true;void(async()=>{try{const [master,permission]=await Promise.all([supabase.rpc('erp_is_master'),supabase.rpc('erp_has_permission',{p_modulo:'qualidade',p_acao:'aprovar'})]);if(mounted)setCanApproveRevision((!master.error&&master.data===true)||(!permission.error&&permission.data===true))}catch{if(mounted)setCanApproveRevision(false)}})();return()=>{mounted=false}},[])
 
  async function company(){const r=await supabase.rpc('erp_current_empresa_id');if(r.error||!r.data)throw new Error('Empresa da sessão não identificada.');return String(r.data)}
  async function loadBase(){
@@ -119,6 +120,21 @@ export default function FichaEngenharia(){
  function setOpField(i:number,k:keyof OpRow,v:string|number){setOps(r=>r.map((x,n)=>n===i?{...x,[k]:v}:x))}
  function setPhoto(key:'fotoPrincipal'|'fotoSecundaria',file:File|null){if(!file)return;if(file.size>2*1024*1024){setNotice('A foto deve ter no máximo 2 MB.');return}if(!file.type.startsWith('image/')){setNotice('Selecione um arquivo de imagem.');return}const reader=new FileReader();reader.onload=()=>setS(key,String(reader.result));reader.readAsDataURL(file)}
 
+ async function approveRevision(){
+  if(!ficha){setNotice('Grave a revisão antes de solicitar aprovação.');return}
+  if(!canApproveRevision){setNotice('Aprovação restrita ao Master ou ao perfil com permissão Qualidade/Aprovar.');return}
+  if(!['rascunho','em_analise'].includes((ficha.status||'').toLowerCase())){setNotice('Somente revisões em rascunho ou análise podem ser aprovadas.');return}
+  setBusy(true);setNotice('')
+  try{
+   const result=await supabase.rpc('erp_qualidade_aprovar_ficha_tecnica',{p_ficha_id:ficha.id})
+   if(result.error)throw result.error
+   const approved=result.data as Ficha
+   setFicha(approved);setRequestedVersion(Number(approved.versao))
+   await loadBase()
+   setNotice('Revisão aprovada pela permissão de Qualidade e ativada para PCP/MRP.')
+  }catch(cause){setNotice(cause instanceof Error?cause.message:'Falha ao aprovar a revisão da ficha.')}
+  finally{setBusy(false)}
+ }
  async function save(){
   if(!kind)return setNotice('Selecione o tipo de ficha.')
   if(!productId)return setNotice('Selecione o produto produzido.')
@@ -132,14 +148,14 @@ export default function FichaEngenharia(){
   try{
    const empresaId=await company()
    const payload={kind,processCode,processName,notes,spec,updatedAt:new Date().toISOString()}
-   const saved=await supabase.from('erp_fichas_tecnicas').insert({empresa_id:empresaId,produto_id:productId,versao:Number(version),revisao:String(version),status:'rascunho',rendimento:Number(rendimento)||1,unidade_rendimento:unit.trim()||'UN',observacoes:JSON.stringify(payload),ativa:true}).select('id,produto_id,versao,rendimento,unidade_rendimento,observacoes,ativa,status,revisao').single()
+   const saved=await supabase.from('erp_fichas_tecnicas').insert({empresa_id:empresaId,produto_id:productId,versao:Number(version),revisao:String(version),status:'rascunho',rendimento:Number(rendimento)||1,unidade_rendimento:unit.trim()||'UN',observacoes:JSON.stringify(payload),ativa:false}).select('id,produto_id,versao,rendimento,unidade_rendimento,observacoes,ativa,status,revisao').single()
    if(saved.error)throw saved.error
    const fichaId=String(saved.data.id)
    const db=await supabase.from('erp_ficha_itens').delete().eq('empresa_id',empresaId).eq('ficha_id',fichaId);if(db.error)throw db.error
    const ib=await supabase.from('erp_ficha_itens').insert(bom.map(x=>({empresa_id:empresaId,ficha_id:fichaId,componente_id:x.componente_id,quantidade:Number(x.quantidade),perda_percentual:Number(x.perda_percentual),lote_obrigatorio:x.lote_obrigatorio,tipo_item:x.tipo_item,sequencia:x.sequencia})));if(ib.error)throw ib.error
    const dops=await supabase.from('erp_ficha_operacoes').delete().eq('empresa_id',empresaId).eq('ficha_id',fichaId);if(dops.error)throw dops.error
    const io=await supabase.from('erp_ficha_operacoes').insert(ops.map(x=>({empresa_id:empresaId,ficha_id:fichaId,sequencia:x.sequencia,operacao:x.operacao.trim(),maquina_id:x.maquina_id||null,molde_id:x.molde_id||null,setup_min:Number(x.setup_min),ciclo_seg:Number(x.ciclo_seg),instrucoes:x.instrucoes.trim()||null})));if(io.error)throw io.error
-setFicha(saved.data as Ficha);setRequestedVersion(Number(version));setCatalog(rows=>[{id:String(saved.data.id),produto_id:productId,versao:Number(version),observacoes:JSON.stringify(payload),ativa:true,status:'rascunho',revisao:String(version)},...rows.filter(x=>x.id!==String(saved.data.id))]);setNotice('Nova revisão gravada em rascunho. A revisão aprovada anterior permanece disponível para o PCP até a Qualidade liberar esta versão.')
+setFicha(saved.data as Ficha);setRequestedVersion(Number(version));setCatalog(rows=>[{id:String(saved.data.id),produto_id:productId,versao:Number(version),observacoes:JSON.stringify(payload),ativa:false,status:'rascunho',revisao:String(version)},...rows.filter(x=>x.id!==String(saved.data.id))]);setNotice('Nova revisão gravada em rascunho. A revisão aprovada anterior permanece disponível para o PCP até a Qualidade liberar esta versão.')
   }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
  }
 
@@ -225,7 +241,7 @@ setFicha(saved.data as Ficha);setRequestedVersion(Number(version));setCatalog(ro
    <div className="industrial-table-scroll"><table className="industrial-table process-sheet-table"><thead><tr><th>Código</th><th>Característica</th><th>Un.</th><th>Mín.</th><th>Máx.</th><th>Frequência</th><th>Status</th></tr></thead><tbody>{quality.filter(r=>r.caracteristica.trim()).map((r,i)=><tr key={r.id||i}><td>{r.codigo||'—'}</td><td>{r.caracteristica}</td><td>{r.unidade||'—'}</td><td>{r.limite_inferior||'—'}</td><td>{r.limite_superior||'—'}</td><td>{r.frequencia||'—'}</td><td>{r.status||'—'}</td></tr>)}{!quality.some(r=>r.caracteristica.trim())&&<tr><td colSpan={7}>Nenhuma especificação cadastrada para este produto.</td></tr>}</tbody></table></div>
   </section>
 
-  <section className="process-sheet-approval"><div><span>ENGENHARIA / PROCESSO</span><strong>{spec.responsavel||'Responsável não informado'}</strong><small>Revisão {version}</small></div><div><span>QUALIDADE</span><strong>{ficha?.status||'rascunho'}</strong><small>{['aprovada','liberada'].includes((ficha?.status||'').toLowerCase())?'Revisão liberada para o PCP.':'Aguardando fluxo formal de aprovação.'}</small></div><div><span>PCP / PRODUÇÃO</span><strong>{['aprovada','liberada'].includes((ficha?.status||'').toLowerCase())?'Disponível para PCP/OP':'Bloqueada para PCP/OP'}</strong><small>Somente revisão aprovada/liberada pode alimentar a programação.</small></div></section>
+  <section className="process-sheet-approval"><div><span>ENGENHARIA / PROCESSO</span><strong>{spec.responsavel||'Responsável não informado'}</strong><small>Revisão {version}</small></div><div><span>QUALIDADE</span><strong>{ficha?.status||'rascunho'}</strong><small>{['aprovada','liberada'].includes((ficha?.status||'').toLowerCase())?'Revisão liberada para o PCP.':'Aguardando fluxo formal de aprovação.'}</small>{ficha&&['rascunho','em_analise'].includes((ficha.status||'').toLowerCase())&&<><button type="button" disabled={busy||!canApproveRevision} onClick={()=>void approveRevision()} className="mt-2 h-[30px] border border-slate-300 px-2 text-[10px] font-semibold disabled:opacity-50">Aprovar revisão</button>{!canApproveRevision&&<small className="block text-[10px] text-slate-500">Aprovação restrita ao Master/Qualidade.</small>}</>}</div><div><span>PCP / PRODUÇÃO</span><strong>{['aprovada','liberada'].includes((ficha?.status||'').toLowerCase())?'Disponível para PCP/OP':'Bloqueada para PCP/OP'}</strong><small>Somente revisão aprovada/liberada pode alimentar a programação.</small></div></section>
   {notice&&<div className="industrial-notice" role="status">{notice}</div>}
  </main>
 }
