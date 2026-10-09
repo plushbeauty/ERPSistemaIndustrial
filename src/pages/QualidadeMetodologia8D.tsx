@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { CheckCircle2, FileText, Plus, Printer, Save } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import VendasLayout from './VendasLayout'
 
 type Rnc = { id: string; numero_rpnc: string; descricao_nao_conformidade: string }
 type Protocol8D = {
@@ -161,6 +162,7 @@ export default function QualidadeMetodologia8D() {
   }
 
   return (
+    <VendasLayout title="Qualidade / Metodologia 8D" subtitle="Tratativa de anomalias • RPNC • causa raiz • ações corretivas e preventivas">
     <main className="erp-global-surface erp-compact min-h-screen bg-slate-100 px-3 py-3 text-slate-900 sm:px-4">
       <div className="mx-auto max-w-[1800px]">
         <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-300 bg-white px-3 py-2">
@@ -233,5 +235,6 @@ export default function QualidadeMetodologia8D() {
         </section>
       </div>
     </main>
+    </VendasLayout>
   )
 }
