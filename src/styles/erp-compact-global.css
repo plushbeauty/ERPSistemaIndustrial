@@ -210,6 +210,15 @@
   line-height: 1.4;
 }
 
+/* Compact buttons when the surface and compact mode share the same root. */
+.erp-global-surface.erp-compact button:not(.nfe-primary):not(.nfe-secondary):not(.nfe-action) {
+  box-sizing: border-box;
+  min-height: 30px;
+  height: 30px;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+}
+
 /* Inspeção em processo: compacto e coerente com o padrão de Novo Pedido. */
 [data-quality-workspace] label {
   gap: 2px !important;
