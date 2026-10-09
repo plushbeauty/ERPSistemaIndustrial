@@ -115,3 +115,65 @@
   border-radius: 2px !important;
   font-size: 10px !important;
 }
+
+/* PCP forecast and compact operational controls — scoped to the PCP module. */
+.pcp-industrial-shell .pcp-modal-form input,
+.pcp-industrial-shell .pcp-modal-form select,
+.pcp-industrial-shell .pcp-modal-form textarea,
+.pcp-industrial-shell .pcp-form-grid-modern input,
+.pcp-industrial-shell .pcp-form-grid-modern select {
+  box-sizing: border-box;
+  min-height: 30px;
+  height: 30px;
+  border-radius: 2px;
+  padding: 4px 7px;
+  font-size: 11px;
+}
+.pcp-industrial-shell .pcp-modal-form label,
+.pcp-industrial-shell .pcp-form-grid-modern label {
+  gap: 2px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.pcp-industrial-shell .pcp-modal-form button,
+.pcp-industrial-shell .pcp-form-grid-modern button {
+  min-height: 30px;
+  border-radius: 2px;
+  font-size: 10px;
+}
+.pcp-schedule-forecast {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 3px;
+  padding: 8px 10px;
+  border: 1px solid #b9dce6;
+  border-left: 3px solid #2d8db8;
+  background: #f1fafc;
+  color: #123b50;
+  font-size: 10px;
+}
+.pcp-schedule-forecast strong {
+  font-size: 9px;
+  letter-spacing: .06em;
+}
+.pcp-schedule-forecast span,
+.pcp-schedule-forecast small {
+  line-height: 1.4;
+}
+.pcp-schedule-forecast small {
+  color: #526b77;
+}
+.pcp-industrial-shell .pcp-mini-table th,
+.pcp-industrial-shell .pcp-mini-table td,
+.pcp-industrial-shell .crud-table-wrap th,
+.pcp-industrial-shell .crud-table-wrap td {
+  height: 32px;
+  box-sizing: border-box;
+  padding: 4px 6px;
+}
+.pcp-industrial-shell .pcp-mini-table tbody tr:hover,
+.pcp-industrial-shell .crud-table-wrap tbody tr:hover {
+  background: rgba(250, 250, 250, .8);
+}
