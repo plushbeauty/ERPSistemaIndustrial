@@ -39,6 +39,7 @@ export default function MRPIndustrial(){
  }
  async function loadNeeds(runId:string, tenantId=companyId){
   setSelectedRun(runId)
+  setNeeds([])
   if(!tenantId){setError('Empresa da sessão não identificada.');return}
   try{
    const rows=await fetchAllPages<Need>((from,to)=>supabase.from('erp_mrp_necessidades').select('id,componente_id,nivel,quantidade_bruta,estoque_atual,reservado,quantidade_disponivel,necessidade_liquida,sugestao',{count:'exact'}).eq('empresa_id',tenantId).eq('run_id',runId).order('nivel').order('componente_id').order('id').range(from,to))
