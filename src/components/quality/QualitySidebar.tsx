@@ -18,7 +18,7 @@ const items = [
   { label: 'Inspeções de lotes', path: '/qualidade/liberacao-lote', icon: ClipboardList },
   { label: 'Inspeção em processo', path: '/qualidade/inspecao-processo', icon: ListChecks },
   { label: 'Matriz FMEA / PFMEA', path: '/qualidade/pfmea', icon: AlertTriangle },
-  { label: 'RNC e planos CAPA', path: '/qualidade/rnc', icon: ShieldX },
+  { label: 'RNC e planos CAPA', path: '/qualidade/metodologia-8d', icon: ShieldX },
   { label: 'Painel CEP / gráficos', path: '/qualidade/dashboard-rnc', icon: BarChart3 },
   { label: 'Quarentena de lotes', path: '/qualidade/quarentena', icon: History },
   { label: 'Especificações e documentos', path: '/qualidade/documentos', icon: FileText },
