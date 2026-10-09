@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactElement } from 'react'
+import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactElement } from 'react'
 import { CheckCircle, FileText, Inbox, Save, Search, Upload, X } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
+import { fetchAllPages } from '../../lib/supabasePagination'
+import VendasLayout from '../VendasLayout'
 import EntityCodeLookup, { type LookupRecord } from '../../components/industrial/EntityCodeLookup'
 
 type Product = LookupRecord & {
@@ -9,12 +11,15 @@ type Product = LookupRecord & {
 }
 
 type QualityStatus = 'APROVADO' | 'REPROVADO'
+type LotTrace = { id: string; produto_id: string; nf_numero: string | null; lote_fornecedor: string; quantidade_inicial: number; quantidade_disponivel: number; status_qualidade: QualityStatus; certificado_path: string | null; created_at: string }
 
 const numberFormat = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 3 })
 
 export default function EstoqueRecebimentoLotes(): ReactElement {
   const [empresaId, setEmpresaId] = useState('')
   const [products, setProducts] = useState<Product[]>([])
+  const [lots, setLots] = useState<LotTrace[]>([])
+  const [signedCertificate, setSignedCertificate] = useState<{ path: string; url: string } | null>(null)
   const [produtoId, setProdutoId] = useState('')
   const [produtoDescricao, setProdutoDescricao] = useState('')
   const [notaFiscal, setNotaFiscal] = useState('')
@@ -28,40 +33,28 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
   const [success, setSuccess] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    let alive = true
-
-    void (async () => {
-      setLoading(true)
+  const loadData = useCallback(async () => {
+    setLoading(true)
+    setError('')
+    try {
       const tenant = await supabase.rpc('erp_current_empresa_id')
-      if (tenant.error || !tenant.data) {
-        if (alive) {
-          setError(tenant.error?.message ?? 'Não foi possível identificar a empresa da sessão.')
-          setLoading(false)
-        }
-        return
-      }
-
-      const result = await supabase
-        .from('erp_produtos')
-        .select('id,codigo,nome,descricao,unidade,estoque_atual,ativo')
-        .eq('empresa_id', tenant.data)
-        .eq('ativo', true)
-        .order('codigo')
-        .limit(2000)
-
-      if (alive) {
-        if (result.error) setError(result.error.message)
-        setEmpresaId(tenant.data)
-        setProducts((result.data ?? []) as Product[])
-        setLoading(false)
-      }
-    })()
-
-    return () => {
-      alive = false
+      if (tenant.error || !tenant.data) throw tenant.error ?? new Error('Não foi possível identificar a empresa da sessão.')
+      const tenantId = String(tenant.data)
+      const [productRows, lotRows] = await Promise.all([
+        fetchAllPages<Product>((from, to) => supabase.from('erp_produtos').select('id,codigo,nome,descricao,unidade,estoque_atual,ativo', { count: 'exact' }).eq('empresa_id', tenantId).eq('ativo', true).order('codigo').order('id').range(from, to)),
+        fetchAllPages<LotTrace>((from, to) => supabase.from('erp_estoque_lotes_rastreabilidade').select('id,produto_id,nf_numero,lote_fornecedor,quantidade_inicial,quantidade_disponivel,status_qualidade,certificado_path,created_at', { count: 'exact' }).eq('empresa_id', tenantId).order('created_at', { ascending: false }).order('id').range(from, to)),
+      ])
+      setEmpresaId(tenantId)
+      setProducts(productRows)
+      setLots(lotRows)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao carregar recebimentos e lotes.')
+    } finally {
+      setLoading(false)
     }
   }, [])
+
+  useEffect(() => { void loadData() }, [loadData])
 
   const handleProductChange = (value: string) => {
     setProdutoId(value)
