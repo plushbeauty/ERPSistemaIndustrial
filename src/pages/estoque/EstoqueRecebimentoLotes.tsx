@@ -40,7 +40,8 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
         const tenantId = String(tenant.data)
         const allProducts: Product[] = []
         let from = 0
-        while (true) {
+        let hasMore = true
+        while (hasMore) {
           const result = await supabase.from('erp_produtos')
             .select('id,codigo,nome,descricao,unidade,estoque_atual,ativo', { count: 'exact' })
             .eq('empresa_id', tenantId)
@@ -50,8 +51,11 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
           if (result.error) throw result.error
           const page = (result.data ?? []) as Product[]
           allProducts.push(...page)
-          if (page.length < 1000 || allProducts.length >= (result.count ?? allProducts.length)) break
-          from += page.length
+          if (page.length < 1000 || allProducts.length >= (result.count ?? allProducts.length)) {
+            hasMore = false
+          } else {
+            from += page.length
+          }
         }
         if (alive) {
           setEmpresaId(tenantId)
