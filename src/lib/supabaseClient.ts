@@ -1,6 +1,6 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 
-const AUTH_STORAGE_KEY = 'erp-industrial-auth'
+const AUTH_STORAGE_KEY = 'erp-industrial-authssssssssssssssssss'
 const SUPABASE_URL_ENV = 'VITE_SUPABASE_URL'
 const SUPABASE_PUBLISHABLE_KEY_ENV = 'VITE_SUPABASE_PUBLISHABLE_KEY'
 const SUPABASE_ANON_KEY_ENV = 'VITE_SUPABASE_ANON_KEY'
