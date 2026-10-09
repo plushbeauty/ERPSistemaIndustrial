@@ -57,6 +57,7 @@ const AnoFiscal = lazyPage(() => import('./features/fiscal/AnoFiscal'), 'default
 const AssistenteRetificacao = lazyPage(() => import('./features/controladoria/AssistenteRetificacao'), 'default')
 const Master = lazyPage(() => import('./pages/Master'), 'Master')
 const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
+const PCPDemanda = lazyPage(() => import('./pages/PCPDemanda'), 'PCPDemanda')
 const PCPOrdens = lazyPage(() => import('./pages/PCPOrdens'), 'default')
 const PCPParadas = lazyPage(() => import('./pages/PCPParadas'), 'PCPParadas')
 const PCPSequenciamento = lazyPage(() => import('./pages/PCPSequenciamento'), 'PCPSequenciamento')
@@ -424,26 +425,26 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/metas" element={<VendasMetas />} />
       <Route path="/vendas/relatorios" element={<VendasRelatorios />} />
       <Route path="/vendas/configuracoes" element={<ConfiguracoesADMPage />} />
-      <Route path="/vendas/produtos" element={<ProdutosVendasIndustrial />} />
-      <Route path="/vendas/estoque" element={<EstoqueAlmoxarifado />} />
-      <Route path="/vendas/expedicao" element={<ExpedicaoPortaria />} />
-      <Route path="/vendas/fiscal" element={<NFeEmissao />} />
-      <Route path="/vendas/rh" element={<RHIndustrial />} />
-      <Route path="/vendas/engenharia" element={<EngenhariaCentral />} />
+      <Route path="/vendas/produtos" element={<Navigate to="/produtos" replace />} />
+      <Route path="/vendas/estoque" element={<Navigate to="/estoque" replace />} />
+      <Route path="/vendas/expedicao" element={<Navigate to="/expedicao/portaria" replace />} />
+      <Route path="/vendas/fiscal" element={<Navigate to="/fiscal/emissao" replace />} />
+      <Route path="/vendas/rh" element={<Navigate to="/rh" replace />} />
+      <Route path="/vendas/engenharia" element={<Navigate to="/engenharia" replace />} />
       <Route path="/vendas/materiais" element={<CentraisIndustriais module="materiais" />} />
-      <Route path="/vendas/mrp" element={<MRPIndustrial />} />
-      <Route path="/vendas/pcp" element={<PCPIndustrial />} />
-      <Route path="/vendas/chao-de-fabrica" element={<OperacaoIndustrial />} />
-      <Route path="/vendas/qualidade" element={<QualidadeIndustrial />} />
+      <Route path="/vendas/mrp" element={<Navigate to="/mrp" replace />} />
+      <Route path="/vendas/pcp" element={<Navigate to="/pcp" replace />} />
+      <Route path="/vendas/chao-de-fabrica" element={<Navigate to="/operacao-industrial" replace />} />
+      <Route path="/vendas/qualidade" element={<Navigate to="/qualidade" replace />} />
       <Route path="/vendas/sgq" element={<QualidadeSGQAvancado />} />
-      <Route path="/vendas/conciliacao" element={<BankingReconciliation />} />
-      <Route path="/vendas/importador" element={<BankingStatementImporter />} />
-      <Route path="/vendas/ano-fiscal" element={<AnoFiscal />} />
-      <Route path="/vendas/fluxo-caixa" element={<FinanceiroFluxoCaixa />} />
-      <Route path="/vendas/balanco" element={<BalancoEstoque />} />
-      <Route path="/vendas/auditoria" element={<PainelLucratividade />} />
+      <Route path="/vendas/conciliacao" element={<Navigate to="/financeiro/reconciliacao" replace />} />
+      <Route path="/vendas/importador" element={<Navigate to="/financeiro/importar-extratos" replace />} />
+      <Route path="/vendas/ano-fiscal" element={<Navigate to="/financeiro/ano-fiscal" replace />} />
+      <Route path="/vendas/fluxo-caixa" element={<Navigate to="/financeiro/fluxo-caixa" replace />} />
+      <Route path="/vendas/balanco" element={<Navigate to="/inventario/balanco" replace />} />
+      <Route path="/vendas/auditoria" element={<Navigate to="/controladoria/lucratividade" replace />} />
       <Route path="/vendas/classificacao-fiscal" element={<ClassificacaoFiscal />} />
-      <Route path="/vendas/razao-geral" element={<PainelRazaoGeral />} />
+      <Route path="/vendas/razao-geral" element={<Navigate to="/controladoria/razao-geral" replace />} />
       <Route path="/pcp" element={<PCPIndustrial />} />
       <Route path="/pcp/engenharia-bom" element={<EngenhariaBOM />} />
       <Route path="/pcp/roteiro-operacoes" element={<RoteiroOperacoes />} />
@@ -452,15 +453,15 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/painel-ordens" element={<PainelOrdensProducao />} />
       <Route path="/pcp/apuracao-turno" element={<ApuracaoTurno />} />
       <Route path="/pcp/ordens" element={<PCPOrdens />} />
-      <Route path="/pcp/demanda" element={<PCPIndustrial />} />
-      <Route path="/pcp/materiais" element={<PCPIndustrial />} />
+      <Route path="/pcp/demanda" element={<PCPDemanda />} />
+      <Route path="/pcp/materiais" element={<CentraisIndustriais module="materiais" />} />
       <Route path="/pcp/paradas" element={<PCPParadas />} />
       <Route path="/pcp/sequenciamento" element={<PCPSequenciamento />} />
       <Route path="/pcp/planejamento" element={<PCPPlanejamentoIndustrial />} />
       <Route path="/pcp/dashboard-oee" element={<PCPDashboardOEE />} />
       <Route path="/pcp/tablet-operador" element={<PCPTabletOperador />} />
       <Route path="/qualidade" element={<QualidadeIndustrial />} />
-      <Route path="/qualidade/instrumentos" element={<QualidadeIndustrial />} />
+      <Route path="/qualidade/instrumentos" element={<CalibracaoIndustrial />} />
       <Route path="/qualidade/liberacao-lote" element={<AcompanhamentoNaoConformidade />} />
       <Route path="/qualidade/dashboard-rnc" element={<QualidadeDashboardRNC />} />
       <Route path="/qualidade/pfmea" element={<QualidadePFMEA />} />
@@ -473,13 +474,13 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/metrologia" element={<CentraisIndustriais module="metrologia" />} />
       <Route path="/qualidade/calibracao" element={<CalibracaoIndustrial />} />
       <Route path="/qualidade/editor-it" element={<QualidadeEditorIT />} />
-      <Route path="/qualidade/procedimentos" element={<DocumentosQualidadeControle />} />
+      <Route path="/qualidade/procedimentos" element={<Navigate to="/qualidade/documentos" replace />} />
       <Route path="/qualidade/assinatura-it" element={<QualidadeAssinaturaIT />} />
       <Route path="/qualidade/genealogia-lote" element={<QualidadeGenealogiaLote />} />
       <Route path="/qualidade/quarentena" element={<QualidadeQuarentena />} />
       <Route path="/estoque" element={<EstoqueAlmoxarifado />} />
-      <Route path="/almoxarifado" element={<EstoqueAlmoxarifado />} />
-      <Route path="/estoque/saldos" element={<EstoqueAlmoxarifado />} />
+      <Route path="/almoxarifado" element={<Navigate to="/estoque" replace />} />
+      <Route path="/estoque/saldos" element={<Navigate to="/estoque" replace />} />
       <Route path="/estoque/ajustes" element={<EstoqueAjustes />} />
       <Route path="/estoque/separacao" element={<EstoqueSeparacao />} />
       <Route path="/estoque/etiquetas" element={<EstoqueEtiquetas />} />
@@ -490,11 +491,11 @@ function AppIndustrialAuthenticated() {
       <Route path="/inventario/depreciacao" element={<RegrasDepreciacao />} />
       <Route path="/inventario/auditoria" element={<AuditoriaSaldos />} />
       <Route path="/produtos" element={<ProdutosVendasIndustrial />} />
-      <Route path="/produtos-vendas" element={<ProdutosVendasIndustrial />} />
+      <Route path="/produtos-vendas" element={<Navigate to="/produtos" replace />} />
       <Route path="/cadastro-produtos" element={<ModuloCadastroProdutos />} />
       <Route path="/operacao-industrial" element={<OperacaoIndustrial />} />
       <Route path="/moldes-injecao" element={<MoldesFerramentaria />} />
-      <Route path="/ficha-engenharia" element={<FichaEngenharia />} />
+      <Route path="/ficha-engenharia" element={<Navigate to="/engenharia/ficha" replace />} />
       <Route path="/mrp" element={<MRPIndustrial />} />
       <Route path="/qualidade/refugos" element={<CentraisIndustriais module="refugos" />} />
       <Route path="/central-custos-industrial" element={<CentralCustosIndustrial />} />
@@ -519,14 +520,14 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras/cotacoes" element={<Navigate to="/compras/rfq" replace />} />
       <Route path="/compras/pedido" element={<ComprasRoute><PedidoCompra /></ComprasRoute>} />
       <Route path="/compras/pedidos" element={<Navigate to="/compras/pedido" replace />} />
-      <Route path="/compras/ordem-compra" element={<ComprasRoute><PedidoCompra /></ComprasRoute>} />
+      <Route path="/compras/ordem-compra" element={<Navigate to="/compras/pedido" replace />} />
       <Route path="/compras/fornecedores" element={<ComprasRoute><FornecedoresIndustrial /></ComprasRoute>} />
       <Route path="/compras/solicitacao-manual" element={<ComprasRoute><ComprasSolicitacaoManual /></ComprasRoute>} />
       <Route path="/solicitacao-compra" element={<ComprasRoute><SolicitacaoCompra /></ComprasRoute>} />
       <Route path="/fornecedores" element={<FornecedoresIndustrial />} />
       <Route path="/clientes" element={<ClientesIndustrial />} />
       <Route path="/tabela-precos" element={<AjusteGlobal />} />
-      <Route path="/tabelas-preco" element={<AjusteGlobal />} />
+      <Route path="/tabelas-preco" element={<Navigate to="/tabela-precos" replace />} />
       <Route path="/catalogo" element={<CatalogoDigital />} />
       <Route path="/fiscal" element={<Fiscal />} />
       <Route path="/fiscal/compras" element={<ComprasRoute><FiscalCompras /></ComprasRoute>} />
@@ -553,9 +554,9 @@ function AppIndustrialAuthenticated() {
       <Route path="/planos" element={<PlanosIndustrial />} />
       <Route path="/teste-erp" element={<TesteERP />} />
       <Route path="/usuarios-admin" element={<UsuariosAdmin />} />
-      <Route path="/usuarios" element={<UsuariosAdmin />} />
+      <Route path="/usuarios" element={<Navigate to="/usuarios-admin" replace />} />
       <Route path="/configuracoes-adm/*" element={<ConfiguracoesADMPage />} />
-      <Route path="/documentos-qualidade" element={<DocumentosQualidadeControle />} />
+      <Route path="/documentos-qualidade" element={<Navigate to="/qualidade/documentos" replace />} />
       <Route path="/recebimento-materiais" element={<RecebimentoMateriais />} />
       <Route path="/manual-usuario" element={<ManualUsuario />} />
       <Route path="/rh" element={<RHIndustrial />} />
@@ -563,17 +564,17 @@ function AppIndustrialAuthenticated() {
       <Route path="/setup-adm-inicial" element={<SetupADMInicial />} />
       <Route path="/configuracao-lote" element={<ConfiguracaoLote />} />
       <Route path="/configuracao-lote-pcp" element={<ConfiguracaoLotePCP />} />
-      <Route path="/custos" element={<CentralCustosIndustrial />} />
+      <Route path="/custos" element={<Navigate to="/central-custos-industrial" replace />} />
       <Route path="/ajuda/assistente" element={<AssistenteAjudaERP />} />
-      <Route path="/ajuda" element={<AssistenteAjudaERP />} />
-      <Route path="/compras/solicitacao" element={<ComprasRoute><ComprasSolicitacaoManual /></ComprasRoute>} />
+      <Route path="/ajuda" element={<Navigate to="/ajuda/assistente" replace />} />
+      <Route path="/compras/solicitacao" element={<Navigate to="/compras/solicitacao-manual" replace />} />
       <Route path="/compras/solicitacoes" element={<Navigate to="/compras/requisicoes" replace />} />
       <Route path="/compras-solicitacao" element={<ComprasSolicitacaoManual />} />
       <Route path="/manutencao/ordens" element={<ManutencaoOrdens />} />
-      <Route path="/fiscal/carteira" element={<FiscalCarteiraNFe />} />
+      <Route path="/fiscal/carteira" element={<Navigate to="/fiscal/carteira-nfe" replace />} />
       <Route path="/qualidade/rnc" element={<QualidadeRNC />} />
-      <Route path="/estoque/recebimento" element={<EstoqueRecebimentoLotes />} />
-      <Route path="/fichas-processo" element={<FichasProcesso />} />
+      <Route path="/estoque/recebimento" element={<Navigate to="/estoque/recebimento-lotes" replace />} />
+      <Route path="/fichas-processo" element={<Navigate to="/engenharia/fichas-processo" replace />} />
       <Route path="/processos/injecao" element={<InjecaoIndustrial />} />
       <Route path="/processos/prensados" element={<ProcessoIndustrialPage />} />
       <Route path="/processos/estamparia" element={<ProcessoIndustrialPage />} />
