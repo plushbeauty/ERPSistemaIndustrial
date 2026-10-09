@@ -15,6 +15,7 @@ type LotTrace = { id: string; produto_id: string; nf_numero: string | null; lote
 type Supplier = { id: string; razao_social: string; ativo: boolean }
 type StockLocation = { id: string; codigo: string; nome: string; almoxarifado_id: string; tipo: string; ativo: boolean }
 type Sector = { id: string; nome: string; ativo: boolean }
+type StorageSpec = { id: string; codigo: string; caracteristica: string; metodo_inspecao: string; grupo_material: string | null; condicao_armazenamento: string | null; status: string | null; vigencia_inicio: string | null; vigencia_fim: string | null; aprovador_id: string | null; aprovado_em: string | null }
 
 const numberFormat = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 3 })
 
@@ -24,6 +25,8 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [locations, setLocations] = useState<StockLocation[]>([])
   const [sectors, setSectors] = useState<Sector[]>([])
+  const [productSpecs, setProductSpecs] = useState<StorageSpec[]>([])
+  const [specLoading, setSpecLoading] = useState(false)
   const [lots, setLots] = useState<LotTrace[]>([])
   const [signedCertificate, setSignedCertificate] = useState<{ path: string; url: string } | null>(null)
   const [produtoId, setProdutoId] = useState('')
@@ -72,6 +75,39 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
   }, [])
 
   useEffect(() => { void loadData() }, [loadData])
+
+  useEffect(() => {
+    let mounted = true
+    const loadProductSpecs = async () => {
+      if (!empresaId || !produtoId) {
+        setProductSpecs([])
+        setSpecLoading(false)
+        return
+      }
+      setSpecLoading(true)
+      try {
+        const rows = await fetchAllPages<StorageSpec>((from, to) => supabase
+          .from('erp_planos_inspecao')
+          .select('id,codigo,caracteristica,metodo_inspecao,grupo_material,condicao_armazenamento,status,vigencia_inicio,vigencia_fim,aprovador_id,aprovado_em', { count: 'exact' })
+          .eq('empresa_id', empresaId)
+          .eq('produto_id', produtoId)
+          .eq('tipo_inspecao', 'RECEBIMENTO')
+          .order('codigo')
+          .order('id')
+          .range(from, to))
+        if (mounted) setProductSpecs(rows)
+      } catch (cause) {
+        if (mounted) {
+          setProductSpecs([])
+          setError(cause instanceof Error ? cause.message : 'Falha ao consultar especificações de recebimento.')
+        }
+      } finally {
+        if (mounted) setSpecLoading(false)
+      }
+    }
+    void loadProductSpecs()
+    return () => { mounted = false }
+  }, [empresaId, produtoId])
 
   const handleProductChange = (value: string) => {
     setProdutoId(value)
@@ -317,6 +353,32 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
               </label>
             </div>
           </section>
+
+          {produtoId && <section className="border border-slate-300 bg-white p-2">
+            <div className="mb-2 flex items-center justify-between gap-2 border-b border-slate-200 pb-2">
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-slate-800">Especificação técnica e armazenamento — Qualidade</h2>
+              <span className="text-[9px] text-slate-500">{specLoading ? 'CONSULTANDO...' : 'SOMENTE LEITURA'}</span>
+            </div>
+            {specLoading ? <div className="h-[30px] animate-pulse bg-slate-100" /> : productSpecs.filter(spec => {
+              const today = new Date().toISOString().slice(0, 10)
+              return (spec.status || '').toLowerCase() === 'ativo'
+                && Boolean(spec.aprovador_id)
+                && Boolean(spec.aprovado_em)
+                && (!spec.vigencia_inicio || spec.vigencia_inicio <= today)
+                && (!spec.vigencia_fim || spec.vigencia_fim >= today)
+            }).length ? productSpecs.filter(spec => {
+              const today = new Date().toISOString().slice(0, 10)
+              return (spec.status || '').toLowerCase() === 'ativo'
+                && Boolean(spec.aprovador_id)
+                && Boolean(spec.aprovado_em)
+                && (!spec.vigencia_inicio || spec.vigencia_inicio <= today)
+                && (!spec.vigencia_fim || spec.vigencia_fim >= today)
+            }).map(spec => <div key={spec.id} className="grid grid-cols-1 gap-1 border-b border-slate-100 py-2 md:grid-cols-[130px_minmax(0,1fr)_minmax(0,1.2fr)]">
+              <p className="text-[10px] font-semibold text-slate-800">{spec.codigo} · {spec.grupo_material || 'Grupo não informado'}</p>
+              <p className="text-[10px] text-slate-700">{spec.caracteristica} · {spec.metodo_inspecao}</p>
+              <p className="text-[10px] text-slate-600">Armazenamento: {spec.condicao_armazenamento || 'Condição não definida — consultar Qualidade antes da liberação.'}</p>
+            </div>) : <div className="border border-amber-300 bg-amber-50 p-2 text-[10px] font-semibold text-amber-900">SEM ESPECIFICAÇÃO APROVADA E VIGENTE. O recebimento poderá ser registrado em espera, mas não será liberado ao estoque sem plano mestre aprovado.</div>}
+          </section>}
 
           <section className="rounded-md border border-slate-300 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center gap-2 border-b border-slate-200 pb-3">
