@@ -461,7 +461,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/ordens-industriais" element={<IndustrialDataWorkspace />} />
       <Route path="/pcp/apontamentos" element={<PCPExecucaoIndustrial />} />
       <Route path="/fiscal/parametros" element={<IndustrialDataWorkspace />} />
-      <Route path="/fiscal/custos-industriais" element={<CentralCustosIndustrial />}
+      <Route path="/fiscal/custos-industriais" element={<CentralCustosIndustrial />} />
       <Route path="/rh/funcionarios" element={<IndustrialDataWorkspace />} />
       <Route path="/rh/turnos" element={<IndustrialDataWorkspace />} />
       <Route path="/rh/epis" element={<IndustrialDataWorkspace />} />
