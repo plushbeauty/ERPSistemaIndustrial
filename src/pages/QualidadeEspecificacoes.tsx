@@ -5,6 +5,8 @@ import EntityCodeLookup, { type LookupRecord } from '../components/industrial/En
 import QualitySidebar from '../components/quality/QualitySidebar'
 
 type Product = LookupRecord
+type Instrument = { id: string; codigo: string; descricao: string; status: string; proxima_calibracao: string | null }
+type QualityUser = { auth_user_id: string | null; nome: string }
 type Specification = {
   id: string
   produto_id: string
@@ -15,6 +17,15 @@ type Specification = {
   limite_inferior: number | null
   limite_superior: number | null
   frequencia: string | null
+  grupo_material: string | null
+  tipo_inspecao: string
+  metodo_inspecao: string
+  condicao_armazenamento: string | null
+  instrumento_id: string | null
+  revisao: number
+  vigencia_inicio: string | null
+  responsavel_id: string | null
+  aprovador_id: string | null
   status: string | null
 }
 type FormState = {
@@ -27,11 +38,22 @@ type FormState = {
   limite_inferior: string
   limite_superior: string
   frequencia: string
+  grupo_material: string
+  tipo_inspecao: 'RECEBIMENTO' | 'PROCESSO' | 'FINAL' | 'EXPEDICAO'
+  metodo_inspecao: 'VISUAL' | 'DIMENSIONAL' | 'FUNCIONAL' | 'DOCUMENTAL'
+  condicao_armazenamento: string
+  instrumento_id: string
+  revisao: string
+  vigencia_inicio: string
+  responsavel_id: string
+  aprovador_id: string
   status: 'ativo' | 'inativo'
 }
 const emptyForm: FormState = {
   id: '', produto_id: '', codigo: '', caracteristica: '', unidade: '', nominal: '',
-  limite_inferior: '', limite_superior: '', frequencia: '100%', status: 'ativo',
+  limite_inferior: '', limite_superior: '', frequencia: '100%', grupo_material: '',
+  tipo_inspecao: 'RECEBIMENTO', metodo_inspecao: 'DIMENSIONAL', condicao_armazenamento: '',
+  instrumento_id: '', revisao: '1', vigencia_inicio: '', responsavel_id: '', aprovador_id: '', status: 'ativo',
 }
 const input = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] outline-none focus:border-[#2D8DB8]'
 const label = 'grid gap-[2px] text-[9px] font-medium uppercase tracking-wide text-slate-600'
@@ -39,6 +61,8 @@ const label = 'grid gap-[2px] text-[9px] font-medium uppercase tracking-wide tex
 export default function QualidadeEspecificacoes() {
   const [empresaId, setEmpresaId] = useState('')
   const [products, setProducts] = useState<Product[]>([])
+  const [instruments, setInstruments] = useState<Instrument[]>([])
+  const [users, setUsers] = useState<QualityUser[]>([])
   const [rows, setRows] = useState<Specification[]>([])
   const [form, setForm] = useState<FormState>(emptyForm)
   const [query, setQuery] = useState('')
@@ -55,15 +79,21 @@ export default function QualidadeEspecificacoes() {
       if (company.error) throw company.error
       if (!company.data) throw new Error('Empresa da sessão não identificada.')
       const id = String(company.data)
-      const [productResult, specResult] = await Promise.all([
+      const [productResult, specResult, instrumentResult, userResult] = await Promise.all([
         supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', id).eq('ativo', true).order('codigo').limit(2000),
-        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,status').eq('empresa_id', id).order('codigo').limit(2000),
+        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,grupo_material,tipo_inspecao,metodo_inspecao,condicao_armazenamento,instrumento_id,revisao,vigencia_inicio,responsavel_id,aprovador_id,status').eq('empresa_id', id).order('codigo').limit(2000),
+        supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao').eq('empresa_id', id).order('codigo').limit(1000),
+        supabase.from('erp_usuarios').select('auth_user_id,nome').eq('empresa_id', id).eq('ativo', true).order('nome').limit(500),
       ])
       if (productResult.error) throw productResult.error
       if (specResult.error) throw specResult.error
+      if (instrumentResult.error) throw instrumentResult.error
+      if (userResult.error) throw userResult.error
       setEmpresaId(id)
       setProducts((productResult.data ?? []) as Product[])
       setRows((specResult.data ?? []) as Specification[])
+      setInstruments((instrumentResult.data ?? []) as Instrument[])
+      setUsers((userResult.data ?? []) as QualityUser[])
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar especificações técnicas.')
     } finally {
@@ -78,7 +108,7 @@ export default function QualidadeEspecificacoes() {
     return rows.filter(row => {
       if (!showInactive && (row.status ?? '').toLowerCase() !== 'ativo') return false
       const product = products.find(item => item.id === row.produto_id)
-      return !term || [row.codigo, row.caracteristica, row.unidade, row.nominal, row.frequencia, product?.codigo, product?.nome]
+      return !term || [row.codigo, row.caracteristica, row.unidade, row.nominal, row.frequencia, row.grupo_material, row.tipo_inspecao, product?.codigo, product?.nome]
         .some(value => String(value ?? '').toLowerCase().includes(term))
     })
   }, [rows, products, query, showInactive])
@@ -91,6 +121,11 @@ export default function QualidadeEspecificacoes() {
       limite_inferior: row.limite_inferior == null ? '' : String(row.limite_inferior),
       limite_superior: row.limite_superior == null ? '' : String(row.limite_superior),
       frequencia: row.frequencia ?? '100%',
+      grupo_material: row.grupo_material ?? '', tipo_inspecao: (row.tipo_inspecao ?? 'RECEBIMENTO') as FormState['tipo_inspecao'],
+      metodo_inspecao: (row.metodo_inspecao ?? 'DIMENSIONAL') as FormState['metodo_inspecao'],
+      condicao_armazenamento: row.condicao_armazenamento ?? '', instrumento_id: row.instrumento_id ?? '',
+      revisao: String(row.revisao ?? 1), vigencia_inicio: row.vigencia_inicio ?? '',
+      responsavel_id: row.responsavel_id ?? '', aprovador_id: row.aprovador_id ?? '',
       status: (row.status ?? 'ativo').toLowerCase() === 'inativo' ? 'inativo' : 'ativo',
     })
     setError('')
@@ -122,10 +157,14 @@ export default function QualidadeEspecificacoes() {
     const nominal = form.nominal.trim() === '' ? null : Number(form.nominal)
     if (nominal !== null && !Number.isFinite(nominal)) { setError('O nominal precisa ser um número válido.'); return }
     if (nominal !== null && ((lower !== null && nominal < lower) || (upper !== null && nominal > upper))) { setError('O nominal deve ficar entre os limites técnicos cadastrados.'); return }
-    if (lower === null && upper === null && form.status === 'ativo') {
-      setError('Uma especificação ativa precisa de pelo menos um limite técnico.')
+    if (lower === null && upper === null && form.status === 'ativo' && !['VISUAL','DOCUMENTAL'].includes(form.metodo_inspecao)) {
+      setError('Especificações dimensionais ou funcionais ativas precisam de ao menos um limite técnico.')
       return
     }
+    if (!Number.isInteger(Number(form.revisao)) || Number(form.revisao) < 1) { setError('A revisão deve ser um inteiro maior que zero.'); return }
+    if (form.instrumento_id && !instruments.some(item => item.id === form.instrumento_id)) { setError('Selecione um instrumento cadastrado na empresa atual.'); return }
+    if (form.responsavel_id && !users.some(user => user.auth_user_id === form.responsavel_id)) { setError('Responsável inválido para a empresa atual.'); return }
+    if (form.aprovador_id && !users.some(user => user.auth_user_id === form.aprovador_id)) { setError('Aprovador inválido para a empresa atual.'); return }
     if (lower !== null && upper !== null && form.status === 'ativo' && nominal === null) {
       setError('Especificações dimensionais ativas com dois limites precisam de nominal para habilitar a coleta CEP.')
       return
@@ -143,6 +182,10 @@ export default function QualidadeEspecificacoes() {
         limite_inferior: lower,
         limite_superior: upper,
         frequencia: form.frequencia.trim() || '100%',
+        grupo_material: form.grupo_material.trim() || null, tipo_inspecao: form.tipo_inspecao,
+        metodo_inspecao: form.metodo_inspecao, condicao_armazenamento: form.condicao_armazenamento.trim() || null,
+        instrumento_id: form.instrumento_id || null, revisao: Number(form.revisao), vigencia_inicio: form.vigencia_inicio || null,
+        responsavel_id: form.responsavel_id || null, aprovador_id: form.aprovador_id || null,
         status: form.status,
       }
       const result = form.id
@@ -166,8 +209,8 @@ export default function QualidadeEspecificacoes() {
     setBusy(true)
     try {
       const next = (row.status ?? '').toLowerCase() === 'ativo' ? 'inativo' : 'ativo'
-      if (next === 'ativo' && row.limite_inferior == null && row.limite_superior == null) {
-        throw new Error('Não é possível ativar uma especificação sem limite técnico.')
+      if (next === 'ativo' && row.limite_inferior == null && row.limite_superior == null && !['VISUAL','DOCUMENTAL'].includes(row.metodo_inspecao)) {
+        throw new Error('Especificação dimensional ou funcional sem limite técnico não pode ser ativada.')
       }
       if (next === 'ativo' && row.limite_inferior != null && row.limite_superior != null && row.nominal == null) {
         throw new Error('Não é possível ativar uma especificação dimensional sem nominal.')
