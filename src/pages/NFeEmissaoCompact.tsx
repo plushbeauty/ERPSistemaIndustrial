@@ -355,6 +355,7 @@ export default function NFeEmissaoCompact() {
   const newDocument = () => {
     setDocumentId(null)
     setDocumentStatus('Rascunho')
+    setForm(current => ({ ...initialForm, serie: current.serie, ambiente: current.ambiente, numero: '', emissao: new Date().toISOString().slice(0, 16), saida: new Date().toISOString().slice(0, 16) }))
     setItems([newItem()])
     setCustomer({})
     setMessage('')
