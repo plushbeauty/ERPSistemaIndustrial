@@ -24,9 +24,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { Factory, Plus, Save, Trash2, X, Search, Printer, CircleDot, Paintbrush, Stamp, Boxes, ChevronRight, CheckCircle2, Image as ImageIcon } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
+import VendasLayout from './VendasLayout'
 
 type Product={id:string;codigo:string;nome:string;unidade:string|null}
-type Machine={id:string;codigo:string;nome:string}
+type Machine={id:string;codigo:string;nome:string;ativo:boolean}
 type Mold={id:string;codigo:string;nome:string;tipo:string;status:string;produto_id:string|null;numero_cavidades:number;cavidades:number;cavidades_ativas:number;ativo:boolean}
 type Kind='PRENSADOS'|'INJETADOS'|'ACABAMENTO'|'ESTAMPARIA'|'DIVERSOS'
 type Ficha={id:string;produto_id:string;versao:number;rendimento:number;unidade_rendimento:string;observacoes:string|null;ativa:boolean;status:string|null;revisao:string|null}
@@ -52,7 +54,7 @@ export default function FichaEngenharia(){
  const [ficha,setFicha]=useState<Ficha|null>(null),[productId,setProductId]=useState(''),[productCode,setProductCode]=useState(''),[version,setVersion]=useState('1'),[requestedVersion,setRequestedVersion]=useState<number|null>(null),[rendimento,setRendimento]=useState('1'),[unit,setUnit]=useState('UN')
  const [processCode,setProcessCode]=useState(''),[processName,setProcessName]=useState(''),[notes,setNotes]=useState('')
  const [bom,setBom]=useState<BomRow[]>([emptyBom()]),[ops,setOps]=useState<OpRow[]>([emptyOp()]),[quality,setQuality]=useState<QualityRow[]>([emptyQuality()])
- const [spec,setSpec]=useState<Record<string,string>>({}),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[search,setSearch]=useState(''),[catalogKind,setCatalogKind]=useState<Kind|''>(''),[catalogMold,setCatalogMold]=useState(''),[canApproveRevision,setCanApproveRevision]=useState(false)
+ const [spec,setSpec]=useState<Record<string,string>>({}),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[search,setSearch]=useState(''),[catalogKind,setCatalogKind]=useState<Kind|''>(''),[catalogMold,setCatalogMold]=useState(''),[canApproveRevision,setCanApproveRevision]=useState(false),[photoPreview,setPhotoPreview]=useState<{fotoPrincipal:string;fotoSecundaria:string}>({fotoPrincipal:'',fotoSecundaria:''})
 
  const selected=useMemo(()=>products.find(p=>p.id===productId),[products,productId])
  const formStatus=ficha&&Number(version)===ficha.versao?(ficha.status||'rascunho'):'rascunho'
@@ -67,15 +69,13 @@ export default function FichaEngenharia(){
   setLoading(true)
   try{
    const empresaId=await company()
-   const [p,m,md,fc]=await Promise.all([
-    supabase.from('erp_produtos').select('id,codigo,nome,unidade').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(2000),
-    supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id',empresaId).order('codigo').limit(500),
-    supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades,cavidades_ativas,ativo').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(1000),
-    supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,observacoes,ativa,status,revisao').eq('empresa_id',empresaId).order('updated_at',{ascending:false}).limit(1000)
+   const [productRows,machineRows,moldRows,catalogRows]=await Promise.all([
+    fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,unidade',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').order('id').range(from,to)),
+    fetchAllPages<Machine>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome,ativo',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').order('id').range(from,to)),
+    fetchAllPages<Mold>((from,to)=>supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades,cavidades_ativas,ativo',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').order('id').range(from,to)),
+    fetchAllPages<{id:string;produto_id:string;versao:number;observacoes:string|null;ativa:boolean;status:string|null;revisao:string|null}>((from,to)=>supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,observacoes,ativa,status,revisao',{count:'exact'}).eq('empresa_id',empresaId).order('updated_at',{ascending:false}).order('id').range(from,to))
    ])
-   if(p.error)throw p.error;if(m.error)throw m.error;if(md.error)throw md.error;if(fc.error)throw fc.error
-   const productRows=(p.data??[]) as Product[]
-   setProducts(productRows);setMachines((m.data??[]) as Machine[]);setMolds((md.data??[]) as Mold[]);setCatalog((fc.data??[]) as {id:string;produto_id:string;versao:number;observacoes:string|null;ativa:boolean;status:string|null;revisao:string|null}[])
+   setProducts(productRows);setMachines(machineRows);setMolds(moldRows);setCatalog(catalogRows)
    const requested=new URLSearchParams(window.location.search).get('produto')
    if(requested){const byId=productRows.find(x=>x.id===requested);const byCode=productRows.find(x=>x.codigo.toLowerCase()===requested.toLowerCase());const target=byId||byCode;if(target){setProductId(target.id);setProductCode(target.codigo)}}
   }catch(e){setNotice(errorText(e))}finally{setLoading(false)}
