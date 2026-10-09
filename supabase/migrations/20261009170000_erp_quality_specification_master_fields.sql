@@ -23,3 +23,44 @@ alter table public.erp_planos_inspecao
 
 create index if not exists idx_erp_planos_inspecao_tipo_status
   on public.erp_planos_inspecao(empresa_id, tipo_inspecao, status, codigo);
+
+-- Impede vínculos cruzados entre empresas mesmo em chamadas diretas à Data API.
+create or replace function public.erp_validar_plano_inspecao_referencias()
+returns trigger
+language plpgsql
+security invoker
+set search_path = pg_catalog, public
+as $$
+begin
+  if new.instrumento_id is not null and not exists (
+    select 1 from public.erp_equipamentos_medicao i
+    where i.id = new.instrumento_id and i.empresa_id = new.empresa_id
+  ) then
+    raise exception 'Instrumento de medição deve pertencer à mesma empresa da especificação.';
+  end if;
+
+  if new.responsavel_id is not null and not exists (
+    select 1 from public.erp_usuarios u
+    where u.auth_user_id = new.responsavel_id and u.empresa_id = new.empresa_id and u.ativo = true
+  ) then
+    raise exception 'Responsável deve ser usuário ativo da mesma empresa.';
+  end if;
+
+  if new.aprovador_id is not null and not exists (
+    select 1 from public.erp_usuarios u
+    where u.auth_user_id = new.aprovador_id and u.empresa_id = new.empresa_id and u.ativo = true
+  ) then
+    raise exception 'Aprovador deve ser usuário ativo da mesma empresa.';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_erp_validar_plano_inspecao_referencias on public.erp_planos_inspecao;
+create trigger trg_erp_validar_plano_inspecao_referencias
+before insert or update of empresa_id, instrumento_id, responsavel_id, aprovador_id
+on public.erp_planos_inspecao
+for each row execute function public.erp_validar_plano_inspecao_referencias();
+
+revoke all on function public.erp_validar_plano_inspecao_referencias() from public, anon, authenticated;
