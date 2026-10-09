@@ -24,7 +24,17 @@ export const supabaseEnvironmentMismatch = supabaseUrl !== CANONICAL_SUPABASE_UR
 export const supabaseUrlExportada = supabaseUrl
 export const supabaseKeyExportada = supabaseKey
 
-const authStorage = typeof window !== 'undefined' ? window.localStorage : undefined
+// A sessão fica restrita à aba; fechar a aba elimina o armazenamento da sessão.
+// Limpa a sessão persistente antiga para evitar login automático após atualizar o ERP.
+if (typeof window !== 'undefined') {
+  try {
+    window.localStorage.removeItem(AUTH_STORAGE_KEY)
+  } catch {
+    // Storage pode estar bloqueado pelo navegador; não interrompe o bootstrap.
+  }
+}
+
+const authStorage = typeof window !== 'undefined' ? window.sessionStorage : undefined
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey, {
   auth: {
