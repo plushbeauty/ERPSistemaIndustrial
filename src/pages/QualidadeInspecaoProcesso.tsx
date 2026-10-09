@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Plus, Printer, Save, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
 import QualitySidebar from '../components/quality/QualitySidebar'
 
@@ -71,22 +72,21 @@ export default function QualidadeInspecaoProcesso({ inspectionType = 'PROCESSO' 
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error || !company.data) throw company.error ?? new Error('Empresa não identificada.')
       const [productsResult, opsResult, machinesResult, lotsResult, instrumentsResult, plansResult, inspectionsResult] = await Promise.all([
-        supabase.from('erp_produtos').select('id,codigo,nome,descricao').eq('empresa_id', company.data).eq('ativo', true).order('codigo').limit(2000),
-        supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,status').eq('empresa_id', company.data).order('numero_op', { ascending: false }).limit(2000),
-        supabase.from('erp_maquinas').select('id,codigo,nome,tipo').eq('empresa_id', company.data).not('status', 'eq', 'INATIVA').order('codigo'),
-        supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,status_inspecao').eq('empresa_id', company.data).order('created_at', { ascending: false }).limit(2000),
-        supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao').eq('empresa_id', company.data).order('codigo'),
-        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,metodo_inspecao,tipo_inspecao,instrumento_id,status,vigencia_inicio,vigencia_fim,aprovador_id,aprovado_em,revisao').eq('empresa_id', company.data).order('codigo'),
-        supabase.from('erp_inspecoes').select('id,produto_id,ordem_producao_id,maquina_id,tipo,resultado,quantidade_inspecionada,quantidade_aprovada,quantidade_reprovada,observacao,inspetor_nome,medicoes,acao_bloqueio').eq('empresa_id', company.data).order('created_at', { ascending: false }).limit(100),
+        fetchAllPages((from, to) => supabase.from('erp_produtos').select('id,codigo,nome,descricao', { count: 'exact' }).eq('empresa_id', company.data).eq('ativo', true).order('codigo').order('id').range(from, to)),
+        fetchAllPages((from, to) => supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,status', { count: 'exact' }).eq('empresa_id', company.data).order('numero_op', { ascending: false }).order('id').range(from, to)),
+        fetchAllPages<Machine>((from, to) => supabase.from('erp_maquinas').select('id,codigo,nome,tipo', { count: 'exact' }).eq('empresa_id', company.data).not('status', 'eq', 'INATIVA').order('codigo').order('id').range(from, to)),
+        fetchAllPages<Lot>((from, to) => supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,status_inspecao', { count: 'exact' }).eq('empresa_id', company.data).order('created_at', { ascending: false }).order('id').range(from, to)),
+        fetchAllPages<Instrument>((from, to) => supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao', { count: 'exact' }).eq('empresa_id', company.data).order('codigo').order('id').range(from, to)),
+        fetchAllPages<Plan>((from, to) => supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,metodo_inspecao,tipo_inspecao,instrumento_id,status,vigencia_inicio,vigencia_fim,aprovador_id,aprovado_em,revisao', { count: 'exact' }).eq('empresa_id', company.data).order('codigo').order('id').range(from, to)),
+        fetchAllPages<InspectionRow>((from, to) => supabase.from('erp_inspecoes').select('id,produto_id,ordem_producao_id,maquina_id,tipo,resultado,quantidade_inspecionada,quantidade_aprovada,quantidade_reprovada,observacao,inspetor_nome,medicoes,acao_bloqueio', { count: 'exact' }).eq('empresa_id', company.data).order('created_at', { ascending: false }).order('id').range(from, to)),
       ])
-      for (const result of [productsResult, opsResult, machinesResult, lotsResult, instrumentsResult, plansResult, inspectionsResult]) if (result.error) throw result.error
-      setProducts((productsResult.data ?? []) as Lookup[])
-      setOps((opsResult.data ?? []).map(row => ({ id: String(row.id), codigo: String(row.numero_op), nome: String(row.status), documento: String(row.produto_id ?? '') })) as Lookup[])
-      setMachines((machinesResult.data ?? []) as Machine[])
-      setLots((lotsResult.data ?? []) as Lot[])
-      setInstruments((instrumentsResult.data ?? []) as Instrument[])
-      setPlans((plansResult.data ?? []) as Plan[])
-      setHistory((inspectionsResult.data ?? []) as InspectionRow[])
+      setProducts(productsResult as Lookup[])
+      setOps(opsResult.map(row => ({ id: String(row.id), codigo: String(row.numero_op), nome: String(row.status), documento: String(row.produto_id ?? '') })) as Lookup[])
+      setMachines(machinesResult)
+      setLots(lotsResult)
+      setInstruments(instrumentsResult)
+      setPlans(plansResult)
+      setHistory(inspectionsResult)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar a inspeção em processo.')
     } finally {
