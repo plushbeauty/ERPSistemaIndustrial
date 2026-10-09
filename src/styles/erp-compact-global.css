@@ -24,10 +24,13 @@
 .erp-global-surface button {
   border-radius: 2px !important;
 }
+.erp-global-surface.erp-compact button:not(.nfe-primary):not(.nfe-secondary):not(.nfe-action),
 .erp-global-surface .erp-compact button:not(.nfe-primary):not(.nfe-secondary):not(.nfe-action) {
   min-height: 30px;
 }
+.erp-global-surface.erp-compact input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .erp-global-surface .erp-compact input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.erp-global-surface.erp-compact select,
 .erp-global-surface .erp-compact select {
   height: 30px !important;
   min-height: 30px !important;
@@ -46,14 +49,20 @@
 
 /* Grades operacionais: somente componentes que adotam as classes industriais.
    O escopo não alcança documentos fiscais nem tabelas públicas. */
+.erp-global-surface.erp-compact .industrial-table,
 .erp-global-surface .erp-compact .industrial-table,
+.erp-global-surface.erp-compact .sgq-table table,
 .erp-global-surface .erp-compact .sgq-table table {
   width: 100%;
   border-collapse: collapse;
   font-size: 10px;
 }
+.erp-global-surface.erp-compact .industrial-table th,
+.erp-global-surface.erp-compact .industrial-table td,
 .erp-global-surface .erp-compact .industrial-table th,
 .erp-global-surface .erp-compact .industrial-table td,
+.erp-global-surface.erp-compact .sgq-table th,
+.erp-global-surface.erp-compact .sgq-table td,
 .erp-global-surface .erp-compact .sgq-table th,
 .erp-global-surface .erp-compact .sgq-table td {
   box-sizing: border-box;
@@ -61,7 +70,9 @@
   padding: 4px 6px;
   vertical-align: middle;
 }
+.erp-global-surface.erp-compact .industrial-table th,
 .erp-global-surface .erp-compact .industrial-table th,
+.erp-global-surface.erp-compact .sgq-table th,
 .erp-global-surface .erp-compact .sgq-table th {
   font-size: 9px;
   font-weight: 500;
@@ -69,16 +80,22 @@
   text-transform: uppercase;
   white-space: nowrap;
 }
+.erp-global-surface.erp-compact .industrial-table tbody tr:hover,
 .erp-global-surface .erp-compact .industrial-table tbody tr:hover,
+.erp-global-surface.erp-compact .sgq-table tbody tr:hover,
 .erp-global-surface .erp-compact .sgq-table tbody tr:hover {
   background-color: rgba(250, 250, 250, .8);
 }
+.erp-global-surface.erp-compact .industrial-table td.num,
 .erp-global-surface .erp-compact .industrial-table td.num,
+.erp-global-surface.erp-compact .sgq-table td.num,
 .erp-global-surface .erp-compact .sgq-table td.num {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+.erp-global-surface.erp-compact .industrial-table td[colspan],
 .erp-global-surface .erp-compact .industrial-table td[colspan],
+.erp-global-surface.erp-compact .sgq-table td[colspan],
 .erp-global-surface .erp-compact .sgq-table td[colspan] {
   text-align: center;
 }
