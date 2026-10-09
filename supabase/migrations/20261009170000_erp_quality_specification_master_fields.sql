@@ -95,44 +95,94 @@ alter table public.erp_qualidade_inspecoes_dimensionais
 create index if not exists idx_qms_dimensional_plan
   on public.erp_qualidade_inspecoes_dimensionais(empresa_id, inspecao_recebimento_id, plano_inspecao_id);
 
-create or replace function public.erp_qms_validar_vinculo_dimensional()
-returns trigger
-language plpgsql
-set search_path = pg_catalog, public
-as $$
-declare
+CREATE OR REPLACE FUNCTION public.erp_qms_validar_vinculo_dimensional()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, public
+AS $$
+DECLARE
   v_spec_empresa uuid;
   v_spec_produto uuid;
+  v_spec_status text;
+  v_spec_tipo text;
+  v_spec_metodo text;
+  v_spec_inicio date;
+  v_spec_fim date;
+  v_spec_aprovador uuid;
+  v_spec_instrumento uuid;
   v_lote_produto uuid;
-begin
-  if new.plano_inspecao_id is null then
-    return new;
-  end if;
+  v_inst_codigo text;
+  v_inst_status text;
+  v_inst_calibracao date;
+BEGIN
+  IF NEW.plano_inspecao_id IS NULL THEN
+    IF TG_OP = 'INSERT' THEN
+      RAISE EXCEPTION 'A medição dimensional exige vínculo com a especificação técnica vigente.';
+    END IF;
+    IF OLD.plano_inspecao_id IS NULL THEN
+      RETURN NEW;
+    END IF;
+    RAISE EXCEPTION 'Não é permitido remover o vínculo da medição com sua especificação técnica.';
+  END IF;
 
-  select p.empresa_id, p.produto_id
-    into v_spec_empresa, v_spec_produto
-  from public.erp_planos_inspecao p
-  where p.id = new.plano_inspecao_id;
+  SELECT p.empresa_id, p.produto_id, p.status, p.tipo_inspecao, p.metodo_inspecao,
+         p.vigencia_inicio, p.vigencia_fim, p.aprovador_id, p.instrumento_id
+    INTO v_spec_empresa, v_spec_produto, v_spec_status, v_spec_tipo, v_spec_metodo,
+         v_spec_inicio, v_spec_fim, v_spec_aprovador, v_spec_instrumento
+  FROM public.erp_planos_inspecao p
+  WHERE p.id = NEW.plano_inspecao_id;
 
-  if not found or v_spec_empresa is distinct from new.empresa_id then
-    raise exception 'Especificação técnica inexistente ou pertencente a outra empresa.';
-  end if;
+  IF NOT FOUND OR v_spec_empresa IS DISTINCT FROM NEW.empresa_id THEN
+    RAISE EXCEPTION 'Especificação técnica inexistente ou pertencente a outra empresa.';
+  END IF;
 
-  if new.inspecao_recebimento_id is not null then
-    select l.produto_id into v_lote_produto
-    from public.erp_qualidade_inspecoes_recebimento r
-    join public.erp_estoque_lotes l
-      on l.id = r.lote_id and l.empresa_id = r.empresa_id
-    where r.id = new.inspecao_recebimento_id
-      and r.empresa_id = new.empresa_id;
+  IF upper(coalesce(v_spec_status, '')) <> 'ATIVO'
+     OR v_spec_aprovador IS NULL
+     OR (v_spec_inicio IS NOT NULL AND v_spec_inicio > current_date)
+     OR (v_spec_fim IS NOT NULL AND v_spec_fim < current_date) THEN
+    RAISE EXCEPTION 'A medição exige uma especificação ativa, aprovada e dentro da vigência.';
+  END IF;
 
-    if not found or v_lote_produto is distinct from v_spec_produto then
-      raise exception 'A especificação técnica não pertence ao produto do lote inspecionado.';
-    end if;
-  end if;
+  IF NEW.inspecao_recebimento_id IS NOT NULL AND upper(coalesce(v_spec_tipo, '')) <> 'RECEBIMENTO' THEN
+    RAISE EXCEPTION 'A inspeção de recebimento exige especificação do tipo RECEBIMENTO.';
+  END IF;
 
-  return new;
-end;
+  IF upper(coalesce(v_spec_metodo, '')) IN ('DIMENSIONAL', 'FUNCIONAL') THEN
+    IF v_spec_instrumento IS NULL THEN
+      RAISE EXCEPTION 'A especificação exige instrumento de medição vinculado.';
+    END IF;
+
+    SELECT i.codigo, i.status, i.proxima_calibracao
+      INTO v_inst_codigo, v_inst_status, v_inst_calibracao
+    FROM public.erp_equipamentos_medicao i
+    WHERE i.id = v_spec_instrumento
+      AND i.empresa_id = NEW.empresa_id;
+
+    IF NOT FOUND OR upper(coalesce(v_inst_status, '')) <> 'APROVADO'
+       OR v_inst_calibracao IS NULL OR v_inst_calibracao < current_date THEN
+      RAISE EXCEPTION 'O instrumento vinculado não está aprovado ou está com calibração vencida.';
+    END IF;
+
+    IF btrim(coalesce(NEW.instrumento, '')) IS DISTINCT FROM btrim(coalesce(v_inst_codigo, '')) THEN
+      RAISE EXCEPTION 'O instrumento registrado não corresponde ao instrumento da especificação vigente.';
+    END IF;
+  END IF;
+
+  IF NEW.inspecao_recebimento_id IS NOT NULL THEN
+    SELECT l.produto_id INTO v_lote_produto
+    FROM public.erp_qualidade_inspecoes_recebimento r
+    JOIN public.erp_estoque_lotes l
+      ON l.id = r.lote_id AND l.empresa_id = r.empresa_id
+    WHERE r.id = NEW.inspecao_recebimento_id
+      AND r.empresa_id = NEW.empresa_id;
+
+    IF NOT FOUND OR v_lote_produto IS DISTINCT FROM v_spec_produto THEN
+      RAISE EXCEPTION 'A especificação técnica não pertence ao produto do lote inspecionado.';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
 $$;
 
 drop trigger if exists trg_erp_qms_validar_vinculo_dimensional on public.erp_qualidade_inspecoes_dimensionais;
