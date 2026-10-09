@@ -129,6 +129,14 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
       setError('Selecione o insumo mestre pela lupa.')
       return
     }
+    if (!fornecedorId || !suppliers.some(item => item.id === fornecedorId)) {
+      setError('Selecione um fornecedor ativo do cadastro mestre.')
+      return
+    }
+    if (!locationId || !locations.some(item => item.id === locationId)) {
+      setError('Selecione um endereço de estoque ativo.')
+      return
+    }
     if (!loteFornecedor.trim()) {
       setError('O lote do fornecedor é obrigatório.')
       return
@@ -141,9 +149,19 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
       setError('Anexe o certificado químico em PDF antes de integrar o lote.')
       return
     }
-    if (laudoStatus !== 'APROVADO') {
-      setError('Ação interrompida: lote com laudo REPROVADO não pode entrar no saldo ativo.')
-      return
+    if (laudoStatus === 'REPROVADO') {
+      if (!rpncSectorId || !sectors.some(item => item.id === rpncSectorId)) {
+        setError('Selecione o setor responsável pela RPNC do certificado reprovado.')
+        return
+      }
+      if (!rpncSeverity) {
+        setError('Selecione a gravidade da não conformidade.')
+        return
+      }
+      if (rpncDescription.trim().length < 5) {
+        setError('Descreva a não conformidade do certificado com pelo menos 5 caracteres.')
+        return
+      }
     }
 
     setBusy(true)
@@ -162,25 +180,37 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
 
       if (upload.error) throw upload.error
 
-      const result = await supabase.rpc('fn_receber_lote_almoxarifado', {
-        p_empresa_id: empresaId,
+      const result = await supabase.rpc('erp_wms_receber_lote_com_qualidade', {
         p_produto_id: produtoId,
+        p_fornecedor_id: fornecedorId,
+        p_localizacao_id: locationId,
         p_nf_numero: notaFiscal.trim() || null,
         p_lote_fornecedor: loteFornecedor.trim(),
         p_quantidade: quantidade,
-        p_status_qualidade: laudoStatus,
+        p_status_certificado: laudoStatus,
         p_certificado_path: certificatePath,
+        p_setor_id: laudoStatus === 'REPROVADO' ? rpncSectorId : null,
+        p_severidade: laudoStatus === 'REPROVADO' ? rpncSeverity : null,
+        p_descricao_rpnc: laudoStatus === 'REPROVADO' ? rpncDescription.trim() : null,
       })
 
       if (result.error) throw result.error
-
+      const resultData = result.data && typeof result.data === 'object' ? result.data as { lote_interno?: string; numero_rpnc?: string } : null
       const selected = products.find(product => product.id === produtoId)
-      setSuccess(`Lote ${loteFornecedor.trim()} recebido com sucesso. ${numberFormat.format(quantidade)} ${selected?.unidade ?? 'kg'} integrados ao saldo físico.`)
+      setSuccess(laudoStatus === 'APROVADO'
+        ? `Lote interno ${resultData?.lote_interno || 'registrado'} recebido: ${numberFormat.format(quantidade)} ${selected?.unidade ?? 'kg'}. Aguardando inspeção formal da Qualidade; saldo disponível permanece zero.`
+        : `Lote interno ${resultData?.lote_interno || 'registrado'} retido em quarentena. RPNC ${resultData?.numero_rpnc || 'vinculada'} aberta; nenhum saldo foi liberado.`)
       setSignedCertificate(null)
       setNotaFiscal('')
       setLoteFornecedor('')
       setQuantidade(0)
       setCertificado(null)
+      setFornecedorId('')
+      setLocationId('')
+      setRpncSectorId('')
+      setRpncSeverity('')
+      setRpncDescription('')
+      setLaudoStatus('APROVADO')
       if (fileInputRef.current) fileInputRef.current.value = ''
       await loadData()
     } catch (err) {
