@@ -6,9 +6,6 @@ type Product = { id: string; codigo: string; descricao_tecnica: string; unidade_
 type Order = { id: string; numero: string; produto_id: string; roteiro_id: string | null; quantidade_planejada: number; aberta_em: string; entrega_prevista: string | null; status: string }
 type Failure = { id: string; codigo: string; descricao: string }
 type Entry = { id: string; ordem_producao_id: string; operacao_codigo: string; centro_trabalho: string; setup_inicio: string | null; setup_fim: string | null; producao_inicio: string | null; producao_fim: string | null; pecas_boas: number; pecas_refugadas: number; motivo_parada: string | null; observacoes: string | null; created_at: string }
-type Bom = { id: string; produto_pai_id: string; status: string; vigente_desde: string; vigente_ate: string | null }
-type BomItem = { bom_id: string; componente_id: string; quantidade_liquida: number; perda_percentual: number; quantidade_bruta: number }
-type Stock = { produto_id: string; quantidade: number }
 
 const field = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100'
 const label = 'mb-[2px] block text-[9px] font-bold uppercase tracking-wider text-slate-600'
@@ -26,9 +23,6 @@ export default function PCPExecucaoIndustrial() {
   const [orders, setOrders] = useState<Order[]>([])
   const [entries, setEntries] = useState<Entry[]>([])
   const [failures, setFailures] = useState<Failure[]>([])
-  const [bom, setBom] = useState<Bom[]>([])
-  const [bomItems, setBomItems] = useState<BomItem[]>([])
-  const [stock, setStock] = useState<Stock[]>([])
   const [query, setQuery] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -46,18 +40,15 @@ export default function PCPExecucaoIndustrial() {
       if (tenant.error) throw tenant.error
       if (typeof tenant.data !== 'string' || !tenant.data) throw new Error('Empresa da sessão não identificada; operação bloqueada.')
       const companyId = tenant.data
-      const [p, o, a, f, b, bi, s] = await Promise.all([
+      const [p, o, a, f] = await Promise.all([
         supabase.from('engenharia_produtos').select('id,codigo,descricao_tecnica,unidade_medida').eq('empresa_id', companyId).eq('ativo', true).order('codigo').limit(3000),
         supabase.from('pcp_ordens_producao').select('id,numero,produto_id,roteiro_id,quantidade_planejada,aberta_em,entrega_prevista,status').eq('empresa_id', companyId).order('created_at', { ascending: false }).limit(1000),
         supabase.from('pcp_apontamentos').select('id,ordem_producao_id,operacao_codigo,centro_trabalho,setup_inicio,setup_fim,producao_inicio,producao_fim,pecas_boas,pecas_refugadas,motivo_parada,observacoes,created_at').eq('empresa_id', companyId).order('created_at', { ascending: false }).limit(1000),
         supabase.from('qualidade_motivos_falha').select('id,codigo,descricao').eq('empresa_id', companyId).eq('ativo', true).order('codigo').limit(1000),
-        supabase.from('engenharia_bom').select('id,produto_pai_id,status,vigente_desde,vigente_ate').eq('empresa_id', companyId).eq('status', 'ativo').limit(3000),
-        supabase.from('engenharia_bom_componentes').select('bom_id,componente_id,quantidade_liquida,perda_percentual,quantidade_bruta').eq('empresa_id', companyId).limit(10000),
-        supabase.from('estoque_saldos').select('produto_id,quantidade').eq('empresa_id', companyId).limit(10000)
       ])
-      for (const result of [p,o,a,f,b,bi,s]) if (result.error) throw result.error
+      for (const result of [p,o,a,f]) if (result.error) throw result.error
       setProducts((p.data ?? []) as Product[]); setOrders((o.data ?? []) as Order[]); setEntries((a.data ?? []) as Entry[])
-      setFailures((f.data ?? []) as Failure[]); setBom((b.data ?? []) as Bom[]); setBomItems((bi.data ?? []) as BomItem[]); setStock((s.data ?? []) as Stock[])
+      setFailures((f.data ?? []) as Failure[])
     } catch (e) { setError(errText(e)) } finally { setBusy(false) }
   }, [])
 
