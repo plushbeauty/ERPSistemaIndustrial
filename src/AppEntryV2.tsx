@@ -128,7 +128,6 @@ const FinanceiroGraficoDesvios = lazyPage(() => import('./pages/FinanceiroGrafic
 const ExpedicaoRoteirizacao = lazyPage(() => import('./pages/ExpedicaoRoteirizacao'), 'ExpedicaoRoteirizacao')
 const QualidadePFMEA = lazyPage(() => import('./pages/QualidadePFMEA'), 'QualidadePFMEA')
 const ManutencaoOrdens = lazyPage(() => import('./pages/ManutencaoOrdens'), 'ManutencaoOrdens')
-const ManutencaoVisualLab = lazyPage(() => import('./pages/manutencao/ManutencaoVisualLab'), 'default')
 const PCPTabletOperador = lazyPage(() => import('./pages/PCPTabletOperador'), 'PCPTabletOperador')
 const EstoqueAjustes = lazyPage(() => import('./pages/EstoqueAjustes'), 'EstoqueAjustes')
 const EstoqueSeparacao = lazyPage(() => import('./pages/EstoqueSeparacao'), 'EstoqueSeparacao')
@@ -290,7 +289,6 @@ export default function AppEntryV2() {
   if (path === '/cadastro-master' || path === '/configuracao-adm-master') return <PublicPage><SetupADMInicial /></PublicPage>
   if (path === '/blog') return <PublicPage><Blog /></PublicPage>
   if (path === '/contato') return <PublicPage><Contato /></PublicPage>
-  if (path === '/manutencao/laboratorio-visual') return <PublicPage><ManutencaoVisualLab /></PublicPage>
   if (path === '/preview/icones') return <PublicPage><IndustrialVisualShowcase /></PublicPage>
   if (path.startsWith('/modulos/')) return <PublicPage><PublicModuleOverview /></PublicPage>
   return <AppIndustrialAuthenticated />
@@ -574,7 +572,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras/solicitacoes" element={<Navigate to="/compras/requisicoes" replace />} />
       <Route path="/compras-solicitacao" element={<ComprasSolicitacaoManual />} />
       <Route path="/manutencao/ordens" element={<ManutencaoOrdens />} />
-      <Route path="/manutencao/laboratorio-visual" element={<ManutencaoVisualLab />} />
+      <Route path="/manutencao/laboratorio-visual" element={<Navigate to="/manutencao/ordens" replace />} />
       <Route path="/fiscal/carteira" element={<FiscalCarteiraNFe />} />
       <Route path="/qualidade/rnc" element={<QualidadeRNC />} />
       <Route path="/estoque/recebimento" element={<EstoqueRecebimentoLotes />} />
