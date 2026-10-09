@@ -452,6 +452,9 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/classificacao-fiscal" element={<ClassificacaoFiscal />} />
       <Route path="/vendas/razao-geral" element={<PainelRazaoGeral />} />
       <Route path="/pcp" element={<PCPIndustrial />} />
+      <Route path="/pcp/nova-op" element={<PCPIndustrial />} />
+      <Route path="/pcp/programacao" element={<PCPIndustrial />} />
+      <Route path="/pcp/apontamento" element={<PCPIndustrial />} />
       <Route path="/pcp/mrp" element={<MRPIndustrial />} />
       <Route path="/pcp/fila" element={<PCPOrdens />} />
       <Route path="/pcp/capacidade" element={<PCPIndustrial />} />
