@@ -2,10 +2,14 @@ import NovoPedido from '../NovoPedido'
 
 /**
  * Laboratório visual de manutenção.
- * Reutiliza o componente real de Novo Pedido sem duplicar markup,
- * sem dados fictícios e sem divergir do padrão visual aprovado.
- * A tela é uma cópia funcional exata da referência /vendas/novo-pedido.
+ * Renderiza a tela comercial canônica completa, com seus fluxos reais,
+ * consultas Supabase e componentes compartilhados. O escopo visual adicional
+ * existe apenas nesta rota de teste; não altera a tela de produção de vendas.
  */
 export default function LaboratorioVisual() {
-  return <NovoPedido />
+  return (
+    <div className="erp-global-surface erp-visual-test-surface min-h-screen">
+      <NovoPedido />
+    </div>
+  )
 }
