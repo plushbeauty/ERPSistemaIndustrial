@@ -229,9 +229,9 @@ BEGIN
   END IF;
 
   v_dados_tecnicos_alterados :=
-    (to_jsonb(NEW) - ARRAY['id','created_at','updated_at','status','revisao'])
+    (to_jsonb(NEW) - ARRAY['id','created_at','updated_at','status','revisao','aprovador_id','aprovado_em'])
     IS DISTINCT FROM
-    (to_jsonb(OLD) - ARRAY['id','created_at','updated_at','status','revisao']);
+    (to_jsonb(OLD) - ARRAY['id','created_at','updated_at','status','revisao','aprovador_id','aprovado_em']);
 
   IF v_dados_tecnicos_alterados AND NEW.revisao <= OLD.revisao THEN
     RAISE EXCEPTION 'Ao alterar critérios técnicos, incremente a revisão da especificação.';
