@@ -136,7 +136,7 @@ returns public.erp_planos_inspecao
 language plpgsql
 security definer
 set search_path = pg_catalog, public
-as $
+as $$
 declare
   v_empresa uuid := public.erp_current_empresa_id();
   v_spec public.erp_planos_inspecao;
@@ -160,7 +160,7 @@ begin
   returning * into v_spec;
   return v_spec;
 end;
-$;
+$$;
 
 revoke all on function public.erp_guard_erp_planos_inspecao_approval() from public, anon, authenticated;
 revoke all on function public.erp_qualidade_aprovar_especificacao(uuid) from public, anon;
