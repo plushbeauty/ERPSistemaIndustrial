@@ -63,11 +63,12 @@ export default function FichaEngenharia(){
  async function loadBase(){
   setLoading(true)
   try{
+   const empresaId=await company()
    const[p,m,md,fc]=await Promise.all([
-    supabase.from('erp_produtos').select('id,codigo,nome,unidade').eq('ativo',true).order('codigo').limit(2000),
-    supabase.from('erp_maquinas').select('id,codigo,nome').not('status','eq','INATIVA').order('codigo').limit(500),
-    supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades,cavidades_ativas,ativo').eq('ativo',true).order('codigo').limit(1000),
-    supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,observacoes').eq('ativa',true).order('updated_at',{ascending:false}).limit(1000)
+    supabase.from('erp_produtos').select('id,codigo,nome,unidade').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(2000),
+    supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id',empresaId).not('status','eq','INATIVA').order('codigo').limit(500),
+    supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades,cavidades_ativas,ativo').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(1000),
+    supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,observacoes').eq('empresa_id',empresaId).eq('ativa',true).order('updated_at',{ascending:false}).limit(1000)
    ])
    if(p.error)throw p.error;if(m.error)throw m.error;if(md.error)throw md.error;if(fc.error)throw fc.error
    const productRows=(p.data??[]) as Product[]
