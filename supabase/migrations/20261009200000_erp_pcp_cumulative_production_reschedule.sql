@@ -39,6 +39,9 @@ declare
   v_setup_hours numeric;
   v_run_hours numeric;
   v_duration_seconds numeric;
+  v_shift_start timestamptz;
+  v_workdays numeric;
+  v_off_hours numeric;
   v_rescheduled integer := 0;
 begin
   if v_empresa is null then
@@ -190,7 +193,10 @@ begin
           and p.maquina_id = v_machine_id
           and (
             p.id = v_program_id
-            or lower(coalesce(p.status, '')) not in ('cancelada','cancelado','concluída','concluida','concluído','concluido')
+            or (
+              lower(coalesce(p.status, '')) not in ('cancelada','cancelado','concluída','concluida','concluído','concluido')
+              and p.inicio_planejado >= coalesce(v_program.inicio_planejado, now())
+            )
           )
         order by case when p.id = v_program_id then 0 else 1 end, p.inicio_planejado, p.id
         for update
@@ -207,15 +213,23 @@ begin
 
         if v_remaining <= 0 then continue; end if;
 
+        v_daily_hours := least(24, greatest(0.5, coalesce(v_row.turnos, 1) * coalesce(v_row.horas_turno, 8)));
         if v_row.id = v_program_id then
           v_start := now();
         else
           v_start := v_row.inicio_planejado;
           if v_cursor is not null then v_start := greatest(v_start, v_cursor); end if;
           if v_start <= now() then v_start := now(); end if;
+          -- Use the program's originally configured start time as the daily shift anchor.
+          v_shift_start := date_trunc('day', v_start)
+            + (v_row.inicio_planejado - date_trunc('day', v_row.inicio_planejado));
+          if v_start < v_shift_start then
+            v_start := v_shift_start;
+          elsif v_start >= v_shift_start + v_daily_hours * interval '1 hour' then
+            v_start := v_shift_start + interval '1 day';
+          end if;
         end if;
 
-        v_daily_hours := greatest(0.5, coalesce(v_row.turnos, 1) * coalesce(v_row.horas_turno, 8));
         v_efficiency := greatest(0.01, least(1, coalesce(v_row.eficiencia_percent, 85) / 100.0));
         v_cycle := greatest(0, coalesce(v_row.ciclo_seg, 0));
         v_cavities := greatest(1, coalesce(v_row.cavidades_ativas, 1));
@@ -223,7 +237,9 @@ begin
 
         if v_cycle > 0 then
           v_run_hours := (v_remaining * v_cycle / v_cavities / 3600.0 / v_efficiency) + v_setup_hours;
-          v_duration_seconds := (v_run_hours / v_daily_hours) * 86400.0;
+          v_workdays := ceil(v_run_hours / v_daily_hours);
+          v_off_hours := greatest(0, v_workdays - 1) * greatest(0, 24 - v_daily_hours);
+          v_duration_seconds := (v_run_hours + v_off_hours) * 3600.0;
         else
           v_duration_seconds := greatest(0, extract(epoch from (v_row.fim_planejado - v_row.inicio_planejado)));
         end if;
