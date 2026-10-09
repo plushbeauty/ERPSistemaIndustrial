@@ -40,6 +40,7 @@ const IndustrialVisualShowcase = lazyPage(() => import('./components/IndustrialV
 const Blog = lazyPage(() => import('./pages/Blog'), 'Blog')
 const Contato = lazyPage(() => import('./pages/Contato'), 'Contato')
 const Fiscal = lazyPage(() => import('./pages/Fiscal'), 'Fiscal')
+const CustoMedioIndustrial = lazyPage(() => import('./pages/fiscal/CustoMedioIndustrial'), 'default')
 const NFeEmissao = lazyPage(() => import('./pages/NFeEmissaoCompact'), 'NFeEmissao')
 const FiscalPrevisaoCaixa = lazyPage(() => import('./pages/FiscalPrevisaoCaixa'), 'FiscalPrevisaoCaixa')
 const FiscalCarteiraNFe = lazyPage(() => import('./pages/FiscalCarteiraNFe'), 'FiscalCarteiraNFe')
@@ -546,6 +547,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/tabelas-preco" element={<AjusteGlobal />} />
       <Route path="/catalogo" element={<CatalogoDigital />} />
       <Route path="/fiscal" element={<Fiscal />} />
+      <Route path="/fiscal/custo-medio-industrial" element={<CustoMedioIndustrial />} />
       <Route path="/fiscal/compras" element={<ComprasRoute><FiscalCompras /></ComprasRoute>} />
       <Route path="/compras/analise-precos" element={<ComprasRoute><ComprasAnalisePrecos /></ComprasRoute>} />
       <Route path="/compras/relatorios" element={<ComprasRoute><ComprasRelatorios /></ComprasRoute>} />
