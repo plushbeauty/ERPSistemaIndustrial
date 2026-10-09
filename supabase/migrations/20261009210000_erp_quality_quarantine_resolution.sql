@@ -7,6 +7,9 @@ alter table public.erp_quarentenas_lotes
 alter table public.erp_quarentenas_lotes
   add column if not exists quantidade_retirada numeric not null default 0
     check (quantidade_retirada >= 0);
+alter table public.erp_quarentenas_lotes
+  add column if not exists quantidade_bloqueada numeric not null default 0
+    check (quantidade_bloqueada >= 0);
 
 create or replace function public.erp_qualidade_decidir_quarentena(
   p_quarentena_id uuid,
@@ -25,6 +28,7 @@ declare
   v_trace public.erp_estoque_lotes_rastreabilidade%rowtype;
   v_localizacao_id uuid;
   v_quantidade_retirada numeric := 0;
+  v_quantidade_bloqueada numeric := 0;
   v_quantidade_remover numeric := 0;
   v_saldo numeric;
 begin
@@ -74,6 +78,7 @@ begin
   end if;
 
   v_quantidade_retirada := coalesce(v_quarentena.quantidade_retirada, 0);
+  v_quantidade_bloqueada := coalesce(v_quarentena.quantidade_bloqueada, 0);
   if v_quarentena.lote_rastreabilidade_id is not null then
     select * into v_trace
     from public.erp_estoque_lotes_rastreabilidade
@@ -86,7 +91,7 @@ begin
   end if;
 
   if p_decisao = 'LIBERADO' then
-    if v_quantidade_retirada > 0 then
+    if v_quantidade_bloqueada > 0 then
     if coalesce(v_lote.quantidade_disponivel, 0) > 0 then
       raise exception 'O lote já possui saldo disponível apesar de haver quantidade retida registrada; reconcilie antes de liberar.';
     end if;
@@ -109,25 +114,25 @@ begin
       raise exception 'Endereço ativo do lote não foi localizado; corrija o WMS antes de liberar.';
     end if;
 
-    perform public.fn_incrementar_saldo_almoxarifado(v_empresa, v_lote.produto_id, v_quantidade_retirada);
+    perform public.fn_incrementar_saldo_almoxarifado(v_empresa, v_lote.produto_id, v_quantidade_bloqueada);
     insert into public.erp_estoque_movimentos (
       empresa_id, produto_id, tipo, quantidade, origem, documento, ordem_producao_id,
       localizacao_destino_id, observacao
     ) values (
-      v_empresa, v_lote.produto_id, 'entrada', v_quantidade_retirada, 'qualidade',
+      v_empresa, v_lote.produto_id, 'entrada', v_quantidade_bloqueada, 'qualidade',
       v_lote.lote_interno, null, v_localizacao_id,
       'Liberação formal da quarentena ' || v_quarentena.id::text || ': ' || btrim(p_motivo)
     );
 
     update public.erp_estoque_lotes
     set status_inspecao = 'APROVADO',
-        quantidade_disponivel = coalesce(quantidade_disponivel, 0) + v_quantidade_retirada
+        quantidade_disponivel = coalesce(quantidade_disponivel, 0) + v_quantidade_bloqueada
     where id = v_lote.id and empresa_id = v_empresa;
 
     if v_quarentena.lote_rastreabilidade_id is not null then
       update public.erp_estoque_lotes_rastreabilidade
       set status_qualidade = 'APROVADO',
-          quantidade_disponivel = coalesce(quantidade_disponivel, 0) + v_quantidade_retirada
+          quantidade_disponivel = coalesce(quantidade_disponivel, 0) + v_quantidade_bloqueada
       where id = v_quarentena.lote_rastreabilidade_id and empresa_id = v_empresa;
     end if;
     else
@@ -142,8 +147,8 @@ begin
     end if;
   else
     if p_decisao in ('SUCATA','RETRABALHO') and coalesce(v_lote.quantidade_disponivel, 0) > 0 then
-      if v_quantidade_retirada > 0 then
-        raise exception 'O lote possui saldo ativo além da quantidade retida registrada; reconcilie antes de concluir.';
+      if v_quantidade_bloqueada > 0 then
+        raise exception 'O lote possui saldo ativo além da quantidade bloqueada registrada; reconcilie antes de concluir.';
       end if;
       v_quantidade_remover := coalesce(v_lote.quantidade_disponivel, 0);
 
@@ -188,6 +193,7 @@ begin
       set quantidade_retirada = v_quantidade_remover
       where id = v_quarentena.id and empresa_id = v_empresa;
       v_quantidade_retirada := v_quantidade_remover;
+      v_quantidade_bloqueada := v_quantidade_remover;
     end if;
 
     update public.erp_estoque_lotes
@@ -207,7 +213,8 @@ begin
       decisao_em = now(),
       liberado_por = case when p_decisao = 'LIBERADO' then auth.uid() else liberado_por end,
       liberado_em = case when p_decisao = 'LIBERADO' then now() else liberado_em end,
-      quantidade_retirada = greatest(coalesce(quantidade_retirada, 0), v_quantidade_retirada)
+      quantidade_retirada = greatest(coalesce(quantidade_retirada, 0), v_quantidade_retirada),
+      quantidade_bloqueada = greatest(coalesce(quantidade_bloqueada, 0), v_quantidade_bloqueada)
   where id = v_quarentena.id and empresa_id = v_empresa
   returning * into v_quarentena;
 
