@@ -49,6 +49,7 @@ declare
   v_quarentena uuid;
   v_saldo numeric;
   v_disponivel numeric;
+  v_localizacao_id uuid;
   v_master boolean;
 begin
   if auth.uid() is null then raise exception 'Autenticação obrigatória.'; end if;
@@ -73,6 +74,14 @@ begin
      and not coalesce(public.erp_has_permission('qualidade', 'aprovar'), false)
      and not coalesce(public.erp_has_permission('estoque', 'movimentar'), false) then
     raise exception 'Permissão de Qualidade ou movimentação de Estoque necessária para reter lote.';
+  end if;
+
+  if v_lote.localizacao is not null then
+    select id into v_localizacao_id
+    from public.erp_estoque_localizacoes
+    where empresa_id = v_empresa and ativo = true
+      and codigo || ' · ' || nome = v_lote.localizacao
+    limit 1;
   end if;
 
   v_disponivel := coalesce(v_lote.quantidade_disponivel, 0);
@@ -116,10 +125,10 @@ begin
     end if;
 
     insert into public.erp_estoque_movimentos (
-      empresa_id, produto_id, tipo, quantidade, origem, documento, observacao
+      empresa_id, produto_id, tipo, quantidade, origem, documento, observacao, localizacao_origem_id
     ) values (
       v_empresa, v_lote.produto_id, 'saida', v_disponivel,
-      'Quarentena Qualidade', v_lote.lote_interno, btrim(p_motivo)
+      'Quarentena Qualidade', v_lote.lote_interno, btrim(p_motivo), v_localizacao_id
     );
   end if;
 
@@ -127,7 +136,7 @@ begin
   set quantidade_disponivel = 0, status_inspecao = 'RETIDO'
   where id = v_lote.id and empresa_id = v_empresa;
 
-  if found and v_trace.id is not null then
+  if v_trace.id is not null then
     update public.erp_estoque_lotes_rastreabilidade
     set quantidade_disponivel = 0,
         status_qualidade = case when status_qualidade = 'REPROVADO' then 'REPROVADO' else 'RETIDO' end
