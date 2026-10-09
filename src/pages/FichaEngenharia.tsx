@@ -135,6 +135,7 @@ export default function FichaEngenharia(){
   }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
  }
 
+ const filteredCatalog = filteredCatalog;
  if(loading)return <main className="industrial-form-page"><div className="industrial-panel">Carregando Fichas de Processo…</div></main>
  if(!kind)return <main className="industrial-form-page process-sheet-page">
   <header className="process-sheet-header"><div><span className="industrial-eyebrow">INDUSTRIA ERP • ENGENHARIA / PROCESSOS</span><h1>Fichas de Processo</h1><p>Selecione a tecnologia ou localize uma ficha já cadastrada.</p></div><button className="industrial-secondary" type="button" onClick={()=>resetForm(false)}><X size={14}/> Limpar</button></header>
@@ -156,7 +157,7 @@ export default function FichaEngenharia(){
    </div>
    <div className="industrial-table-scroll" style={{marginTop:10}}><table className="industrial-table process-sheet-table"><thead><tr><th>Tipo</th><th>Produto</th><th>Ficha</th><th>Molde / Estampo</th><th>Cavidades</th><th>Rev.</th><th>Ação</th></tr></thead><tbody>
     {catalog.filter(row=>{const j=(()=>{try{return JSON.parse(row.observacoes||'{}')}catch{return {}}})();const prod=products.find(p=>p.id===row.produto_id);const mold=molds.find(m=>m.id===j.spec?.moldeId);const hay=[j.kind,j.processCode,j.processName,prod?.codigo,prod?.nome,mold?.codigo,mold?.nome].join(' ').toLowerCase();return (!search.trim()||hay.includes(search.trim().toLowerCase()))&&(!catalogKind||j.kind===catalogKind)&&(!catalogMold||j.spec?.moldeId===catalogMold)}).map(row=>{const j=(()=>{try{return JSON.parse(row.observacoes||'{}')}catch{return {}}})();const prod=products.find(p=>p.id===row.produto_id);const mold=molds.find(m=>m.id===j.spec?.moldeId);return <tr key={row.id}><td>{j.kind||'—'}</td><td>{prod?.codigo||'—'} — {prod?.nome||'Produto'}</td><td>{j.processCode||'—'}</td><td>{mold?mold.codigo+' — '+mold.nome:'—'}</td><td>{mold?.cavidades??'—'}</td><td>{row.versao}</td><td><button className="industrial-secondary" onClick={()=>{setKind((j.kind||'DIVERSOS') as Kind);setProductId(row.produto_id);setVersion(String(row.versao));void loadFicha(row.produto_id,(j.kind||'DIVERSOS') as Kind)}}><Search size={14}/> Abrir</button></td></tr>})}
-    {!catalog.length&&<tr><td colSpan={7} style={{padding:10,textAlign:'center'}}>Nenhuma ficha ativa encontrada para a empresa atual.</td></tr>}
+    {!filteredCatalog.length&&<tr><td colSpan={7} style={{padding:10,textAlign:'center'}}>Nenhuma ficha encontrada para os filtros informados.</td></tr>}
    </tbody></table></div>
   </section>
  </main>
