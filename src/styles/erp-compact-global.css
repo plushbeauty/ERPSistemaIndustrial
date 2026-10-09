@@ -215,10 +215,13 @@
   border-collapse: collapse;
   font-size: 10px;
 }
+.erp-global-surface.erp-compact tr {
+  height: 32px !important;
+}
 .erp-global-surface.erp-compact th,
 .erp-global-surface.erp-compact td {
-  height: 32px;
-  padding: 4px 6px;
+  height: 32px !important;
+  padding: 4px 6px !important;
   vertical-align: middle;
 }
 .erp-global-surface.erp-compact th {
