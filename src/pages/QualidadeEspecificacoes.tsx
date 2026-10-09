@@ -160,8 +160,8 @@ export default function QualidadeEspecificacoes() {
     const nominal = form.nominal.trim() === '' ? null : Number(form.nominal)
     if (nominal !== null && !Number.isFinite(nominal)) { setError('O nominal precisa ser um número válido.'); return }
     if (nominal !== null && ((lower !== null && nominal < lower) || (upper !== null && nominal > upper))) { setError('O nominal deve ficar entre os limites técnicos cadastrados.'); return }
-    if (lower === null && upper === null && form.status === 'ativo' && !['VISUAL','DOCUMENTAL'].includes(form.metodo_inspecao)) {
-      setError('Especificações dimensionais ou funcionais ativas precisam de ao menos um limite técnico.')
+    if (form.status === 'ativo' && !['VISUAL','DOCUMENTAL'].includes(form.metodo_inspecao) && (nominal === null || (lower === null && upper === null))) {
+      setError('Especificações dimensionais ou funcionais ativas precisam de nominal e ao menos um limite técnico.')
       return
     }
     if (!Number.isInteger(Number(form.revisao)) || Number(form.revisao) < 1) { setError('A revisão deve ser um inteiro maior que zero.'); return }
@@ -216,8 +216,8 @@ export default function QualidadeEspecificacoes() {
       if (next === 'ativo' && row.limite_inferior == null && row.limite_superior == null && !['VISUAL','DOCUMENTAL'].includes(row.metodo_inspecao)) {
         throw new Error('Especificação dimensional ou funcional sem limite técnico não pode ser ativada.')
       }
-      if (next === 'ativo' && row.limite_inferior != null && row.limite_superior != null && row.nominal == null) {
-        throw new Error('Não é possível ativar uma especificação dimensional sem nominal.')
+      if (next === 'ativo' && !['VISUAL','DOCUMENTAL'].includes(row.metodo_inspecao) && (row.nominal == null || (row.limite_inferior == null && row.limite_superior == null))) {
+        throw new Error('Não é possível ativar uma especificação dimensional/funcional sem nominal e limite técnico.')
       }
       if (next === 'ativo' && !['VISUAL','DOCUMENTAL'].includes(row.metodo_inspecao) && !validInstruments.some(item => item.id === row.instrumento_id)) {
         throw new Error('Não é possível ativar: o instrumento precisa estar aprovado e com calibração vigente.')
