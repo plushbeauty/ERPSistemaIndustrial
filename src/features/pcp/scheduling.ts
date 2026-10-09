@@ -52,6 +52,15 @@ export function estimateProgramEnd(input: ProgramEstimateInput): string | null {
   return `${endDate.getFullYear()}-${pad(endDate.getMonth() + 1)}-${pad(endDate.getDate())}T${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`;
 }
 
+/**
+ * Returns the remaining target of GOOD units.
+ * `produced` is the total quantity found and `rejected` is included in it,
+ * so rejected pieces must not count toward the good production target.
+ * Example: target 5,000; found 4,500; rejected 500 => 1,000 good units remain.
+ */
 export function getProgramRemaining(planned: number, produced: number, rejected: number): number {
-  return Math.max(0, Number(planned || 0) - Math.max(0, Number(produced || 0)) - Math.max(0, Number(rejected || 0)));
+  const found = Math.max(0, Number(produced || 0));
+  const scrap = Math.min(found, Math.max(0, Number(rejected || 0)));
+  const good = Math.max(0, found - scrap);
+  return Math.max(0, Number(planned || 0) - good);
 }
