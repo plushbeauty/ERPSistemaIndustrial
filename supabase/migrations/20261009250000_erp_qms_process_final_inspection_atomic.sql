@@ -202,6 +202,11 @@ begin
         'Inspeção ' || v_tipo_plano || ' ' || p_resultado || ': ' || btrim(p_descricao_rpnc)
       );
     end if;
+    update public.erp_estoque_lotes_rastreabilidade
+    set status_qualidade = 'REPROVADO', quantidade_disponivel = 0
+    where empresa_id = v_empresa
+      and produto_id = p_produto_id
+      and lote_fornecedor = v_lote.lote_fornecedor;
     select public.erp_sgq_abrir_rpnc(
       btrim(p_descricao_rpnc),
       case when p_tipo = 'FINAL' then 'Inspeção final' else 'Inspeção em processo' end,
