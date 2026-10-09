@@ -77,7 +77,7 @@ export default function ProdutosVendasIndustrial(){
   const [form,setForm]=useState<FormData>(empty())
   const [editing,setEditing]=useState(false)
   const [tab,setTab]=useState<Tab>('gerais')
-  const [query,setQuery]=useState(''),[categoryFilter,setCategoryFilter]=useState('TODAS'),[groupFilter,setGroupFilter]=useState('TODAS'),[subgroupFilter,setSubgroupFilter]=useState('TODOS'),[brandFilter,setBrandFilter]=useState('TODAS')
+  const [query,setQuery]=useState(''),[groupFilter,setGroupFilter]=useState('TODAS')
   const [busy,setBusy]=useState(false)
   const [message,setMessage]=useState('')
   const [error,setError]=useState('')
@@ -115,8 +115,8 @@ export default function ProdutosVendasIndustrial(){
 
   const filtered=useMemo(()=>{
     const q=query.trim().toLowerCase()
-    return products.filter(p=>(!q||(p.codigo+' '+p.nome+' '+(p.codigo_barras||'')+' '+(p.grupo||'')+' '+(p.subgrupo||'')+' '+(p.marca||'')+' '+(p.categoria||'')).toLowerCase().includes(q))&&(categoryFilter==='TODAS'||String(p.categoria||'').toUpperCase()===categoryFilter)&&(groupFilter==='TODAS'||String(p.grupo||'')===groupFilter)&&(subgroupFilter==='TODOS'||String(p.subgrupo||'')===subgroupFilter)&&(brandFilter==='TODAS'||String(p.marca||'')===brandFilter))
-  },[products,query,categoryFilter,groupFilter,subgroupFilter,brandFilter])
+    return products.filter(p=>(!q||(p.codigo+' '+p.nome+' '+(p.codigo_barras||'')+' '+(p.grupo||'')+' '+(p.subgrupo||'')+' '+(p.marca||'')+' '+(p.categoria||'')).toLowerCase().includes(q))&&(groupFilter==='TODAS'||String(p.grupo||'')===groupFilter))
+  },[products,query,groupFilter])
 
   const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
   const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
@@ -454,9 +454,6 @@ export default function ProdutosVendasIndustrial(){
       <div style={{display:'flex',alignItems:'end',gap:6,padding:7,background:'#f7f9fc',borderBottom:'1px solid #d6dde6',flexWrap:'wrap'}}>
         <Search size={14}/><label style={{...label,width:250}}>Pesquisar<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código, descrição, grupo..." style={{...input,height:28}}/></label>
         <label style={{...label,width:130}}>Grupo<select value={groupFilter} onChange={e=>setGroupFilter(e.target.value)} style={{...input,height:28}}><option value="TODAS">Todos</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
-        <label style={{...label,width:130}}>Subgrupo<select value={subgroupFilter} onChange={e=>setSubgroupFilter(e.target.value)} style={{...input,height:28}}><option value="TODOS">Todos</option>{Array.from(new Set(products.map(p=>p.subgrupo).filter(Boolean) as string[])).sort().map(x=><option key={x} value={x}>{x}</option>)}</select></label>
-        <label style={{...label,width:130}}>Marca<select value={brandFilter} onChange={e=>setBrandFilter(e.target.value)} style={{...input,height:28}}><option value="TODAS">Todas</option>{Array.from(new Set(products.map(p=>p.marca).filter(Boolean) as string[])).sort().map(x=><option key={x} value={x}>{x}</option>)}</select></label>
-        <label style={{...label,width:150}}>Tipo<select value={categoryFilter} onChange={e=>setCategoryFilter(e.target.value)} style={{...input,height:28}}><option value="TODAS">Todos</option><option value="MATÉRIA-PRIMA">MATÉRIA-PRIMA</option><option value="PRENSADOS">PRENSADOS</option><option value="INJETADOS">INJETADOS</option><option value="ALMOXARIFADO">ALMOXARIFADO</option><option value="MATERIAL DE ESCRITÓRIO">MATERIAL DE ESCRITÓRIO</option><option value="PRODUTOS DE LIMPEZA">PRODUTOS DE LIMPEZA</option></select></label>
         <span style={{fontSize:10,color:'#667085',paddingBottom:7}}>{filtered.length} produto(s)</span><button type="button" onClick={()=>void load()} disabled={busy} style={{...btn('normal'),height:28,marginLeft:'auto'}}><RefreshCw size={13}/>Atualizar</button>
       </div>
       <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:1040}}><thead><tr>{['Foto','Código','Descrição','Grupo','Subgrupo','Marca','Unidade','Estoque Atual','Situação'].map(h=><th key={h} style={{textAlign:'left',padding:'5px 6px',borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{filtered.map(p=><tr key={p.id} onClick={()=>selectProduct(p)} onDoubleClick={()=>selectProduct(p)} style={{background:selectedId===p.id?'#e7eefb':'#fff',cursor:'pointer'}}><td style={{padding:4,width:42}}>{p.foto_url?<img src={p.foto_url} alt="" style={{width:32,height:28,objectFit:'contain',border:'1px solid #e2e8f0'}}/>:<ImageIcon size={18} color="#98a2b3"/>}</td><td style={{padding:6,fontSize:10,fontWeight:900}}>{p.codigo}</td><td style={{padding:6,fontSize:10}}>{p.nome}</td><td style={{padding:6,fontSize:10}}>{p.grupo||'—'}</td><td style={{padding:6,fontSize:10}}>{p.subgrupo||'—'}</td><td style={{padding:6,fontSize:10}}>{p.marca||'—'}</td><td style={{padding:6,fontSize:10}}>{p.unidade}</td><td style={{padding:6,fontSize:10,fontWeight:900}}>{fmt(p.estoque_atual)}</td><td style={{padding:5,fontSize:9}}><span style={{display:'inline-flex',alignItems:'center',gap:4}}><CheckCircle2 size={11} color={p.ativo?'#16a34a':'#b42318'}/>{p.ativo?'Ativo':'Inativo'}</span></td></tr>)}{!filtered.length&&emptyRow('Nenhum produto encontrado.',8)}</tbody></table></div>
