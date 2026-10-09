@@ -142,7 +142,7 @@ export default function FichaEngenharia(){
   try{
    const empresaId=await company()
    const safeName=file.name.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'-').slice(-100)||'imagem'
-   const path=`empresas/${empresaId}/fichas-processo/${crypto.randomUUID()}-${safeName}`
+   const path=`${empresaId}/fichas-processo/${crypto.randomUUID()}-${safeName}`
    const uploaded=await supabase.storage.from('documentos-erp').upload(path,file,{contentType:file.type,upsert:false})
    if(uploaded.error)throw uploaded.error
    setS(key,path)
