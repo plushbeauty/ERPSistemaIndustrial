@@ -784,3 +784,226 @@
 .pcp-industrial-shell table tbody tr:hover {
   background: rgba(250, 250, 250, .9) !important;
 }
+
+
+/* PCP workspace: sidebar discreta, painel branco e densidade industrial. */
+.pcp-industrial-shell {
+  background: #F4FBFD !important;
+  color: #111827 !important;
+}
+.pcp-industrial-shell .pcp-sidebar {
+  box-sizing: border-box;
+  width: 184px !important;
+  min-width: 184px !important;
+  padding: 8px !important;
+  gap: 4px !important;
+  background: #123B50 !important;
+  border-right: 1px solid #244F63 !important;
+  overflow-y: auto;
+}
+.pcp-industrial-shell .pcp-sidebar-brand {
+  min-height: 44px !important;
+  gap: 6px !important;
+  padding: 4px !important;
+  margin-bottom: 4px !important;
+}
+.pcp-industrial-shell .pcp-sidebar-brand img {
+  width: 30px !important;
+  height: 30px !important;
+  object-fit: contain;
+}
+.pcp-industrial-shell .pcp-sidebar-brand strong {
+  font-size: 9px !important;
+  line-height: 12px !important;
+  letter-spacing: .02em;
+}
+.pcp-industrial-shell .pcp-sidebar-brand small {
+  font-size: 8px !important;
+  line-height: 10px !important;
+}
+.pcp-industrial-shell .pcp-side-section {
+  padding: 8px 4px 3px !important;
+  font-size: 8px !important;
+  line-height: 10px !important;
+  letter-spacing: .06em !important;
+}
+.pcp-industrial-shell .pcp-side-item {
+  box-sizing: border-box;
+  min-height: 30px !important;
+  height: 30px !important;
+  gap: 6px !important;
+  padding: 0 7px !important;
+  border-radius: 2px !important;
+  font-size: 9px !important;
+  line-height: 11px !important;
+  font-weight: 600 !important;
+}
+.pcp-industrial-shell .pcp-side-item span {
+  font-size: 12px !important;
+  line-height: 14px !important;
+}
+.pcp-industrial-shell .pcp-main {
+  min-width: 0;
+  background: #F4FBFD !important;
+}
+.pcp-industrial-shell .pcp-topbar {
+  box-sizing: border-box;
+  min-height: 48px !important;
+  height: 48px !important;
+  padding: 0 10px !important;
+  gap: 8px !important;
+  background: #FFFFFF !important;
+  border-bottom: 1px solid #CBD5E1 !important;
+  box-shadow: none !important;
+}
+.pcp-industrial-shell .pcp-top-title strong {
+  font-size: 12px !important;
+  line-height: 15px !important;
+}
+.pcp-industrial-shell .pcp-top-title small,
+.pcp-industrial-shell .pcp-top-actions {
+  font-size: 9px !important;
+}
+.pcp-industrial-shell .pcp-top-actions {
+  gap: 6px !important;
+}
+.pcp-industrial-shell .pcp-page-head {
+  margin: 0 0 8px !important;
+  padding: 8px !important;
+  border-bottom: 1px solid #CBD5E1 !important;
+  background: #FFFFFF !important;
+}
+.pcp-industrial-shell .pcp-page-heading-row h1 {
+  margin: 2px 0 !important;
+  font-size: 16px !important;
+  line-height: 20px !important;
+  letter-spacing: 0 !important;
+}
+.pcp-industrial-shell .pcp-page-heading-row p,
+.pcp-industrial-shell .pcp-page-heading-row span {
+  font-size: 9px !important;
+  line-height: 13px !important;
+}
+.pcp-industrial-shell .pcp-content {
+  padding: 8px !important;
+  gap: 8px !important;
+}
+.pcp-industrial-shell .pcp-dash-card,
+.pcp-industrial-shell .pcp-modern-panel,
+.pcp-industrial-shell .pcp-timeline-card,
+.pcp-industrial-shell .pcp-newop-card,
+.pcp-industrial-shell .pcp-code-card {
+  padding: 8px !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 2px !important;
+  background: #FFFFFF !important;
+  box-shadow: none !important;
+}
+.pcp-industrial-shell .pcp-dashboard-grid,
+.pcp-industrial-shell .pcp-dashboard-tables,
+.pcp-industrial-shell .pcp-capacity-grid,
+.pcp-industrial-shell .pcp-newop-grid {
+  gap: 8px !important;
+}
+.pcp-industrial-shell .pcp-modern-panel-head {
+  padding: 0 0 6px !important;
+  margin-bottom: 8px !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+}
+.pcp-industrial-shell .pcp-modern-panel-head h2,
+.pcp-industrial-shell .pcp-modern-panel-head strong {
+  font-size: 12px !important;
+  line-height: 16px !important;
+}
+.pcp-industrial-shell .pcp-modern-panel-head p,
+.pcp-industrial-shell .pcp-help-text,
+.pcp-industrial-shell .pcp-info,
+.pcp-industrial-shell .pcp-empty {
+  font-size: 9px !important;
+  line-height: 13px !important;
+}
+.pcp-industrial-shell .pcp-status-row {
+  min-height: 32px !important;
+  padding: 4px 6px !important;
+  border-radius: 2px !important;
+}
+.pcp-industrial-shell .pcp-mini-table th,
+.pcp-industrial-shell .pcp-mini-table td,
+.pcp-industrial-shell .pcp-newop-table th,
+.pcp-industrial-shell .pcp-newop-table td {
+  height: 32px !important;
+  padding: 4px 6px !important;
+  font-size: 10px !important;
+  vertical-align: middle !important;
+}
+.pcp-industrial-shell .pcp-mini-table th,
+.pcp-industrial-shell .pcp-newop-table th {
+  font-size: 9px !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+.pcp-industrial-shell .pcp-mini-table tbody tr:hover,
+.pcp-industrial-shell .pcp-newop-table tbody tr:hover {
+  background: #FAFAFA !important;
+}
+.pcp-industrial-shell .pcp-calendar-controls,
+.pcp-industrial-shell .pcp-section-toolbar,
+.pcp-industrial-shell .pcp-list-actions,
+.pcp-industrial-shell .pcp-row-actions,
+.pcp-industrial-shell .pcp-modal-footer,
+.pcp-industrial-shell .pcp-newop-actions {
+  gap: 4px !important;
+}
+.pcp-industrial-shell .pcp-gantt-bar {
+  border-radius: 2px !important;
+  font-size: 9px !important;
+  line-height: 11px !important;
+  box-shadow: none !important;
+}
+.pcp-industrial-shell .pcp-timeline-corner,
+.pcp-industrial-shell .pcp-day-head,
+.pcp-industrial-shell .pcp-machine-label {
+  font-size: 9px !important;
+}
+.pcp-industrial-shell .pcp-modal-backdrop {
+  padding: 12px !important;
+}
+.pcp-industrial-shell .pcp-modal {
+  max-width: min(980px, calc(100vw - 24px)) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .16) !important;
+}
+.pcp-industrial-shell .pcp-modal-head {
+  min-height: 40px !important;
+  padding: 6px 8px !important;
+}
+.pcp-industrial-shell .pcp-modal-head h2 {
+  font-size: 12px !important;
+}
+@media (max-width: 860px) {
+  .pcp-industrial-shell .pcp-sidebar {
+    width: 156px !important;
+    min-width: 156px !important;
+  }
+  .pcp-industrial-shell .pcp-top-clock,
+  .pcp-industrial-shell .pcp-supabase-dot {
+    display: none !important;
+  }
+}
+@media (max-width: 640px) {
+  .pcp-industrial-shell .pcp-sidebar {
+    width: 52px !important;
+    min-width: 52px !important;
+    padding: 4px !important;
+  }
+  .pcp-industrial-shell .pcp-sidebar-brand div,
+  .pcp-industrial-shell .pcp-side-section,
+  .pcp-industrial-shell .pcp-side-item:not(.active) {
+    display: none !important;
+  }
+  .pcp-industrial-shell .pcp-side-item {
+    justify-content: center !important;
+    padding: 0 !important;
+    font-size: 0 !important;
+  }
+}
