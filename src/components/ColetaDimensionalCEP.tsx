@@ -9,7 +9,7 @@ export interface ColetaDimensionalCEPProps {
   lote?: string
   codigoProduto?: string
   descricaoProduto?: string
-  onAprovar?: (dados: {
+  onRegistrar?: (dados: {
     lote?: string
     codigoProduto?: string
     valores: number[]
@@ -55,7 +55,7 @@ export default function ColetaDimensionalCEP({
   lote,
   codigoProduto,
   descricaoProduto,
-  onAprovar,
+  onRegistrar,
 }: ColetaDimensionalCEPProps) {
   const [amostras, setAmostras] = useState<AmostraCEP[]>(criarAmostras)
 
@@ -105,11 +105,10 @@ export default function ColetaDimensionalCEP({
     estatistica.numeroDefeituosos > 0 ||
     estatistica.mediaForaDosLimites
 
-  const podeAprovar =
-    Boolean(onAprovar) &&
+  const podeRegistrar =
+    Boolean(onRegistrar) &&
     limitesValidos &&
-    estatistica.totalControlado === SAMPLE_COUNT &&
-    !loteReprovado
+    estatistica.totalControlado === SAMPLE_COUNT
 
   const atualizarMedicao = (id: number, valorMedido: string) => {
     setAmostras((atuais) =>
@@ -140,10 +139,10 @@ export default function ColetaDimensionalCEP({
     setAmostras(criarAmostras())
   }
 
-  const aprovarColeta = () => {
-    if (!podeAprovar || !onAprovar) return
+  const registrarColeta = () => {
+    if (!podeRegistrar || !onRegistrar) return
 
-    onAprovar({
+    onRegistrar({
       lote,
       codigoProduto,
       valores: estatistica.valores,
@@ -375,11 +374,11 @@ export default function ColetaDimensionalCEP({
           </button>
           <button
             type="button"
-            disabled={!podeAprovar}
-            onClick={aprovarColeta}
+            disabled={!podeRegistrar}
+            onClick={registrarColeta}
             className="h-7 rounded-[2px] border border-[#3a404c] bg-[#2d8db8] py-0.5 px-2 text-xs font-normal text-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Aprovar Coleta
+            Registrar 18 amostras
           </button>
         </div>
       </footer>
