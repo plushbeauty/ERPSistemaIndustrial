@@ -6,6 +6,13 @@ language plpgsql
 set search_path = pg_catalog, public
 as $$
 begin
+  if tg_op = 'INSERT' then
+    if coalesce(new.status, 'rascunho') <> 'rascunho' then
+      raise exception 'Nova ficha técnica deve iniciar em rascunho e passar pela aprovação formal.';
+    end if;
+    return new;
+  end if;
+
   if (new.status is distinct from old.status or new.ativa is distinct from old.ativa)
      and coalesce(current_setting('app.erp_ficha_approval', true), '') <> 'approval' then
     raise exception 'Status e ativação da ficha técnica só podem ser alterados pelo fluxo formal de aprovação.';
@@ -13,6 +20,11 @@ begin
   return new;
 end;
 $$;
+
+drop trigger if exists trg_erp_guard_ficha_tecnica_insert on public.erp_fichas_tecnicas;
+create trigger trg_erp_guard_ficha_tecnica_insert
+before insert on public.erp_fichas_tecnicas
+for each row execute function public.erp_guard_ficha_tecnica_status();
 
 drop trigger if exists trg_erp_guard_ficha_tecnica_status on public.erp_fichas_tecnicas;
 create trigger trg_erp_guard_ficha_tecnica_status
