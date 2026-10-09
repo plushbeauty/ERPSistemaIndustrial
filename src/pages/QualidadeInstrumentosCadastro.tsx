@@ -76,11 +76,11 @@ export default function QualidadeInstrumentosCadastro() {
         tag: form.tag.trim(),
         numero_serie: form.numero_serie.trim(),
         equipamento: form.equipamento.trim(),
-        fabricante: form.fabricante.trim() || null,
-        faixa_medicao: form.faixa_medicao.trim() || null,
-        resolucao: form.resolucao.trim() || null,
-        setor: form.setor.trim() || null,
-        responsavel: form.responsavel.trim() || null,
+        fabricante: form.fabricante.trim(),
+        faixa_medicao: form.faixa_medicao.trim(),
+        resolucao: form.resolucao.trim(),
+        setor: form.setor.trim(),
+        responsavel: form.responsavel.trim(),
         ativo: form.ativo,
       }
       const result = form.id
