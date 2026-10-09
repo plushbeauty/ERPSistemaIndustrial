@@ -59,7 +59,7 @@ const n=(v:unknown)=>Number(v??0)||0
 const fmt=(v:unknown)=>n(v).toLocaleString('pt-BR',{maximumFractionDigits:3})
 const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2}
 const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box'}
-const label:CSSProperties={display:'grid',gap:3,minWidth:0,fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}
+const label:CSSProperties={display:'grid',gap:3,minWidth:0,fontSize:9,lineHeight:'11px',fontWeight:500,color:'#344054',textTransform:'uppercase',overflowWrap:'anywhere'}
 const btn=(_kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid #2D8DB8',background:'#2D8DB8',color:'#fff',fontSize:11,fontWeight:500,textTransform:'uppercase',cursor:'pointer'})
 const emptyRow=(text:string,col=7)=><tr><td colSpan={col} style={{padding:22,textAlign:'center',color:'#667085'}}>{text}</td></tr>
 
@@ -313,7 +313,16 @@ export default function ProdutosVendasIndustrial(){
       </main>
     )
   }
-  return <ERPHorizontalShell operatorName={operatorName}><main style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif'}}>
+  return <ERPHorizontalShell operatorName={operatorName}><main className="product-master-screen" style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif',background:'#fff'}}>
+    <style>{`
+      .product-master-screen label{min-width:0}
+      .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}
+      .product-master-screen .product-form-grid>*{min-width:0}
+      .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%}
+      .product-master-screen .product-form-grid label>span{max-width:100%;line-height:11px}
+      @media(max-width:1150px){.product-master-screen .product-general-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}.product-master-screen .product-measure-row{grid-template-columns:repeat(5,minmax(0,1fr))!important}.product-master-screen .product-commercial-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+      @media(max-width:700px){.product-master-screen .product-general-row,.product-master-screen .product-measure-row,.product-master-screen .product-commercial-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3){grid-column:span 2!important}.product-master-screen .product-commercial-row>*{grid-column:span 1!important}}
+    `}</style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:900,color:'#1c4bb5'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
@@ -358,7 +367,7 @@ export default function ProdutosVendasIndustrial(){
       </div>
 
       {tab==='gerais'&&<form onSubmit={save} style={{padding:8}}>
-        <div style={{display:'grid',gridTemplateColumns:'75px 105px 300px 220px 150px 120px 120px',gap:5,alignItems:'end'}}>
+        <div className="product-form-grid product-general-row" style={{display:'grid',gridTemplateColumns:'75px 105px minmax(190px,2fr) minmax(145px,1.5fr) minmax(115px,1fr) minmax(100px,.85fr) minmax(100px,.85fr)',gap:8,alignItems:'end'}}>
           {field('Código *','codigo','text',1,true)}
           {field('Código de barras','codigo_barras','text',1,true)}
           {field('Descrição *','nome')}
@@ -368,7 +377,7 @@ export default function ProdutosVendasIndustrial(){
           {field('Marca [?]','marca')}
         </div>
 
-        <div style={{display:'grid',gridTemplateColumns:'55px 55px 55px repeat(5,minmax(72px,1fr)) minmax(125px,1.4fr) minmax(150px,1.6fr)',gap:8,marginTop:7,alignItems:'end'}}>
+        <div className="product-form-grid product-measure-row" style={{display:'grid',gridTemplateColumns:'55px 55px 55px repeat(5,minmax(72px,.8fr)) minmax(125px,1.3fr) minmax(150px,1.5fr)',gap:8,marginTop:8,alignItems:'end'}}>
           {select('Un. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
           {select('Un. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
           {select('Un. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
@@ -381,7 +390,7 @@ export default function ProdutosVendasIndustrial(){
           <label style={label}>Fornecedor padrão<select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{suppliers.map(s=><option value={s.id} key={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>
         </div>
 
-        <div style={{display:'grid',gridTemplateColumns:'78px 78px 78px 78px 120px 120px minmax(150px,1fr) auto minmax(180px,1.2fr)',gap:8,marginTop:7,alignItems:'end'}}>
+        <div className="product-form-grid product-commercial-row" style={{display:'grid',gridTemplateColumns:'78px 78px 78px 78px 120px 120px minmax(150px,1fr) max-content minmax(180px,1.2fr)',gap:8,marginTop:8,alignItems:'end'}}>
           {field('Custo médio','custo_medio','number')}
           {field('Último custo','custo_ultimo','number')}
           {field('Custo fabricação','custo_fabricacao','number')}
