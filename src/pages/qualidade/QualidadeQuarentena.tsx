@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type ReactElement } from 'react'
 import { AlertTriangle, Ban, LockKeyhole, RefreshCw, Search, ShieldCheck } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
+import VendasLayout from '../VendasLayout'
 
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; quantidade_disponivel: number; status_inspecao: string | null }
 type Product = { codigo: string; nome: string }
@@ -110,7 +111,8 @@ export default function QualidadeQuarentena(): ReactElement {
   }
 
   return (
-    <main className="erp-global-surface erp-compact min-h-screen bg-slate-50 p-4 md:p-6 text-slate-900">
+    <VendasLayout title="Qualidade / Quarentena" subtitle="Bloqueio físico e sistêmico, rastreabilidade e resolução controlada." showStatusCards={false}>
+    <main data-quality-workspace className="erp-global-surface erp-compact min-h-0 bg-slate-50 p-2 text-slate-900">
       <section className="mx-auto max-w-7xl rounded-xl border border-slate-200 bg-white shadow-sm">
         <header className="flex flex-col gap-3 border-b border-slate-200 p-5 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3"><ShieldCheck className="h-7 w-7 text-rose-700" /><div><p className="text-xs font-black uppercase tracking-widest text-slate-500">Qualidade</p><h1 className="text-xl font-black">Central de Bloqueio e Quarentena</h1></div></div>
@@ -147,5 +149,6 @@ export default function QualidadeQuarentena(): ReactElement {
         </div>
       </section>
     </main>
+    </VendasLayout>
   )
 }
