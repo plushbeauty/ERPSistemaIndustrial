@@ -14,6 +14,7 @@ declare
   v_inspecao public.erp_qualidade_inspecoes_recebimento%rowtype;
   v_lote public.erp_estoque_lotes%rowtype;
   v_trace public.erp_estoque_lotes_rastreabilidade%rowtype;
+  v_localizacao_id uuid;
   v_user uuid;
   v_master boolean;
 begin
@@ -67,6 +68,17 @@ begin
      or coalesce(v_lote.quantidade_disponivel, 0) <> 0
      or v_lote.quantidade_recebida <= 0 then
     raise exception 'Somente lote aguardando inspeção, ainda sem saldo liberado, pode entrar no saldo ativo.';
+  end if;
+  if nullif(btrim(v_lote.localizacao), '') is null then
+    raise exception 'O lote precisa ter endereço WMS antes da liberação do saldo.';
+  end if;
+  select id into v_localizacao_id
+  from public.erp_estoque_localizacoes
+  where empresa_id = v_empresa and ativo = true
+    and codigo || ' · ' || nome = v_lote.localizacao
+  limit 1;
+  if v_localizacao_id is null then
+    raise exception 'O endereço WMS do lote não existe ou está inativo.';
   end if;
 
   if not exists (
@@ -173,11 +185,11 @@ begin
   -- Release the physical stock only after the receiving decision is approved.
   perform public.fn_incrementar_saldo_almoxarifado(v_empresa, v_lote.produto_id, v_lote.quantidade_recebida);
   insert into public.erp_estoque_movimentos (
-    empresa_id, produto_id, tipo, quantidade, origem, documento, observacao
+    empresa_id, produto_id, tipo, quantidade, origem, documento, observacao, localizacao_destino_id
   ) values (
     v_empresa, v_lote.produto_id, 'entrada', v_lote.quantidade_recebida,
     'Qualidade/Recebimento', v_lote.lote_interno,
-    'Liberação de saldo após aprovação da inspeção de recebimento'
+    'Liberação de saldo após aprovação da inspeção de recebimento', v_localizacao_id
   );
 
   update public.erp_estoque_lotes
