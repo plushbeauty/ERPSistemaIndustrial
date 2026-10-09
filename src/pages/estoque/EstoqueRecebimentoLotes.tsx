@@ -189,7 +189,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
       <div className="mx-auto max-w-7xl">
         <header className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
           <div className="flex items-center gap-3">
-            <Inbox className="h-4 w-4 text-sky-700" aria-hidden="true" />
+            <Inbox className="h-[14px] w-[14px] text-sky-700" aria-hidden="true" />
             <div>
               <p className="text-[9px] font-semibold uppercase tracking-wider text-slate-500">Almoxarifado &gt; Recebimento de insumos</p>
               <h1 className="text-[12px] font-semibold tracking-tight text-slate-950">Recebimento de matéria-prima e laudo do fornecedor</h1>
@@ -202,7 +202,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
               onClick={() => fileInputRef.current?.click()}
               className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-medium text-slate-800 hover:bg-slate-50"
             >
-              <Upload className="h-4 w-4" /> UPLOAD CERTIFICADO QUÍMICO
+              <Upload className="h-[14px] w-[14px]" /> UPLOAD CERTIFICADO QUÍMICO
             </button>
             <button
               form="recebimento-lote-form"
@@ -210,7 +210,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
               disabled={busy || loading}
               className="inline-flex h-[30px] items-center gap-1 rounded-[2px] bg-sky-700 px-2 text-[10px] font-medium text-white hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <Save className="h-4 w-4" /> {busy ? 'INTEGRANDO...' : 'INTEGRAR AO SALDO REAL'}
+              <Save className="h-[14px] w-[14px]" /> {busy ? 'INTEGRANDO...' : 'INTEGRAR AO SALDO REAL'}
             </button>
           </div>
         </header>
@@ -264,14 +264,14 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
             </div>
           </section>
 
-          <section className="rounded-md border border-slate-300 bg-white p-5 shadow-sm">
-            <div className="mb-4 flex items-center gap-2 border-b border-slate-200 pb-3">
+          <section className="rounded-[2px] border border-slate-300 bg-white p-5 shadow-sm">
+            <div className="mb-2 flex items-center gap-2 border-b border-slate-200 pb-3">
               <span className="grid h-7 w-7 place-items-center rounded-full bg-sky-100 text-sm font-black text-sky-800">2</span>
               <h2 className="text-lg font-black text-slate-950">Certificação da matéria-prima</h2>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="text-sm font-extrabold uppercase tracking-wide text-slate-800">
+            <div className="grid gap-2 md:grid-cols-3">
+              <label className="block text-[9px] font-semibold uppercase tracking-wider text-slate-500">
                 Lote do fornecedor
                 <input
                   value={loteFornecedor}
@@ -282,7 +282,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
                 />
               </label>
 
-              <label className="text-sm font-extrabold uppercase tracking-wide text-slate-800">
+              <label className="block text-[9px] font-semibold uppercase tracking-wider text-slate-500">
                 Quantidade líquida da nota
                 <div className="mt-[2px] flex">
                   <input
@@ -300,26 +300,38 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
                   </span>
                 </div>
               </label>
+
+              <label className="block text-[9px] font-semibold uppercase tracking-wider text-slate-500">
+                Validade do lote
+                <input
+                  type="date"
+                  value={validade}
+                  onChange={event => setValidade(event.target.value)}
+                  min={new Date().toISOString().slice(0, 10)}
+                  className="mt-[2px] h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-medium outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100"
+                  required
+                />
+              </label>
             </div>
 
             <div className="mt-2 rounded-[2px] border border-slate-200 bg-slate-50 p-2">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <FileText className="h-4 w-4 text-sky-700" aria-hidden="true" />
+                  <FileText className="h-[14px] w-[14px] text-sky-700" aria-hidden="true" />
                   <div>
                     <p className="text-[9px] font-semibold uppercase tracking-wider text-slate-700">Certificado de análise</p>
                     <p className="text-[10px] text-slate-600">{certificado?.name ?? 'Nenhum PDF anexado'}</p>
                   </div>
                 </div>
-                <button type="button" onClick={() => fileInputRef.current?.click()} className="inline-flex h-11 items-center gap-2 rounded-md border border-slate-400 bg-white px-4 text-sm font-black hover:bg-slate-100">
-                  <Search className="h-4 w-4" /> SELECIONAR PDF
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="inline-flex h-11 items-center gap-2 rounded-[2px] border border-slate-400 bg-white px-4 text-sm font-black hover:bg-slate-100">
+                  <Search className="h-[14px] w-[14px]" /> SELECIONAR PDF
                 </button>
               </div>
             </div>
 
-            <div className={`mt-4 flex flex-wrap items-center justify-between gap-4 rounded-md border p-4 ${laudoStatus === 'APROVADO' ? 'border-emerald-200 bg-emerald-50' : 'border-rose-200 bg-rose-50'}`}>
+            <div className={`mt-2 flex flex-wrap items-center justify-between gap-2 rounded-[2px] border p-2 ${laudoStatus === 'APROVADO' ? 'border-emerald-200 bg-emerald-50' : 'border-rose-200 bg-rose-50'}`}>
               <div className="flex items-center gap-3">
-                <CheckCircle className={`h-4 w-4 ${laudoStatus === 'APROVADO' ? 'text-emerald-700' : 'text-rose-700'}`} aria-hidden="true" />
+                <CheckCircle className={`h-[14px] w-[14px] ${laudoStatus === 'APROVADO' ? 'text-emerald-700' : 'text-rose-700'}`} aria-hidden="true" />
                 <div>
                   <p className="text-sm font-black uppercase text-slate-900">Parecer técnico do certificado</p>
                   <p className="text-sm font-medium text-slate-700">Laudo reprovado bloqueia a integração do saldo.</p>
@@ -336,7 +348,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
             </div>
           </section>
 
-          <section className="rounded-md border border-slate-300 bg-white p-5 shadow-sm">
+          <section className="rounded-[2px] border border-slate-300 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between gap-2">
               <div>
                 <h2 className="text-lg font-black text-slate-950">Rastreabilidade e isolamento por empresa</h2>
