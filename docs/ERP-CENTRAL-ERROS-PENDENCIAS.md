@@ -80,3 +80,7 @@ Atualizado nesta execução. Este registro é acumulativo e pode ser usado na tr
 
 
 - **PCP / Ordens de Produção:** eliminada a chamada duplicada de MRP no fluxo de criação. O MRP agora é executado uma vez; se falhar depois de a OP ser criada, a interface informa que a OP já existe e orienta reexecutar MRP sem criar uma segunda OP.
+
+
+- **Custo padrão / BOM:** a explosão MRP não é mais executada automaticamente a cada digitação de quantidade; o usuário aciona CALCULAR BOM, as necessidades são filtradas por empresa e a gravação do preço é escopada à empresa.
+- **Etiquetas / NF-e:** quando há mais de uma NF-e autorizada com o mesmo número, a série passa a ser solicitada; uma NF-e encontrada sem itens não é substituída silenciosamente pelos itens de um pedido.

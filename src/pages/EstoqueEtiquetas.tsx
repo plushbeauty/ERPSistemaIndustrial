@@ -5,12 +5,14 @@ import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 
 type Item = { id: string; codigo: string; descricao: string; quantidade: number }
+type InvoiceHeader = { id: string; numero: number; serie: string | number | null; status: string; modelo: string }
 type InvoiceItem = { id: string; produto_id: string | null; codigo_produto: string; descricao_produto: string; quantidade: number }
 type OrderItem = { id: string; produto_id: string | null; descricao: string; quantidade: number }
 type Product = { id: string; codigo: string }
 
 export default function EstoqueEtiquetas() {
   const [ref, setRef] = useState('')
+  const [serie, setSerie] = useState('')
   const [sourceLabel, setSourceLabel] = useState('')
   const [items, setItems] = useState<Item[]>([])
   const [selected, setSelected] = useState<Record<string, boolean>>({})
@@ -33,30 +35,37 @@ export default function EstoqueEtiquetas() {
       let mapped: Item[] = []
       let source = ''
 
-      const invoice = await supabase.from('erp_documentos_fiscais')
-        .select('id,numero,serie,status,modelo')
+      const invoiceRows = await fetchAllPages<InvoiceHeader>((from, to) => supabase.from('erp_documentos_fiscais')
+        .select('id,numero,serie,status,modelo', { count: 'exact' })
         .eq('empresa_id', empresaId)
         .eq('numero', number)
         .eq('modelo', '55')
         .eq('status', 'Autorizada')
         .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      if (invoice.error) throw invoice.error
-      if (invoice.data) {
-        const invoiceData = invoice.data
+        .range(from, to))
+      const matchingInvoices = serie.trim() ? invoiceRows.filter(row => String(row.serie ?? '') === serie.trim()) : invoiceRows
+      if (!serie.trim() && matchingInvoices.length > 1) {
+        setSourceLabel('')
+        setMsg('Há mais de uma NF-e autorizada com esse número. Informe a série para evitar imprimir etiquetas do documento errado.')
+        return
+      }
+      const invoiceData = matchingInvoices[0]
+      if (invoiceData) {
         const invoiceItems = await fetchAllPages<InvoiceItem>((from, to) => supabase.from('erp_documentos_fiscais_itens')
           .select('id,produto_id,codigo_produto,descricao_produto,quantidade', { count: 'exact' })
           .eq('empresa_id', empresaId)
           .eq('documento_id', invoiceData.id)
           .range(from, to))
-        if (invoiceItems.length) {
-          mapped = invoiceItems.map(row => ({ id: 'nfe-' + row.id, codigo: row.codigo_produto, descricao: row.descricao_produto, quantidade: Number(row.quantidade || 0) }))
-          source = 'NF-e ' + String(invoiceData.numero) + ' / série ' + String(invoiceData.serie)
+        if (!invoiceItems.length) {
+          setSourceLabel('')
+          setMsg('A NF-e autorizada foi localizada, mas não possui itens cadastrados. Nenhum pedido substituto foi usado.')
+          return
         }
+        mapped = invoiceItems.map(row => ({ id: 'nfe-' + row.id, codigo: row.codigo_produto, descricao: row.descricao_produto, quantidade: Number(row.quantidade || 0) }))
+        source = 'NF-e ' + String(invoiceData.numero) + ' / série ' + String(invoiceData.serie)
       }
 
-      if (!mapped.length) {
+      if (!mapped.length && !serie.trim()) {
         const order = await supabase.from('erp_pedidos_venda')
           .select('id,numero')
           .eq('empresa_id', empresaId)
@@ -86,7 +95,7 @@ export default function EstoqueEtiquetas() {
 
       if (!mapped.length) {
         setSourceLabel('')
-        setMsg('Nenhum item encontrado para uma NF-e autorizada ou pedido desta empresa.')
+        setMsg(serie.trim() ? 'NF-e ' + number + ' / série ' + serie.trim() + ' não encontrada nesta empresa.' : 'Nenhum item encontrado para uma NF-e autorizada ou pedido desta empresa.')
         return
       }
       setItems(mapped)
@@ -121,9 +130,12 @@ export default function EstoqueEtiquetas() {
         { label: 'IMPRIMIR ETIQUETAS', type: 'success', icon: <Printer size={18} />, onClick: print }
       ]}>
         <SectionCard title="1. Referência do documento">
-          <div className="grid gap-2 md:grid-cols-[minmax(220px,1fr)_auto]">
-            <Field label="Número da NF-e autorizada ou número do pedido" required>
-              <input value={ref} onChange={event => setRef(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') void fetchData() }} placeholder="Digite o número exato" inputMode="numeric" />
+          <div className="grid gap-2 md:grid-cols-[minmax(220px,1fr)_minmax(100px,180px)_auto]">
+            <Field label="Número da NF-e ou do pedido" required>
+              <input value={ref} onChange={event => setRef(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') void fetchData() }} placeholder="Número exato" inputMode="numeric" />
+            </Field>
+            <Field label="Série NF-e (se aplicável)">
+              <input value={serie} onChange={event => setSerie(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') void fetchData() }} placeholder="Ex.: 1" inputMode="numeric" />
             </Field>
             <div className="flex items-end"><ToolbarButton tone="primary" disabled={busy} onClick={() => void fetchData()}><Search size={16} /> {busy ? 'CONSULTANDO…' : 'BUSCAR'}</ToolbarButton></div>
           </div>
