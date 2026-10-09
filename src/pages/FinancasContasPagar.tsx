@@ -34,8 +34,8 @@ export default function FinancasContasPagar({ kind = 'PAGAR' }: Props) {
       if (empresa.error || !empresa.data) { if(active) setError(empresa.error?.message ?? 'Empresa da sessão não localizada.'); return }
       const id = String(empresa.data)
       const [parcelas, pagamentos] = await Promise.all([
-        supabase.from('erp_financeiro_parcelas').select('valor,saldo,vencimento,status').eq('empresa_id',id).eq('status','ABERTO').gte('vencimento','2026-01-01').lt('vencimento','2027-01-01'),
-        supabase.from('erp_financeiro_baixas').select('valor,ocorrido_em').eq('empresa_id',id).gte('ocorrido_em','2026-01-01T00:00:00').lt('ocorrido_em','2027-01-01T00:00:00')
+        supabase.from('erp_financeiro_parcelas').select('valor,saldo,vencimento,status').eq('empresa_id',id).eq('status','ABERTO').gte('vencimento', year + '-01-01').lt('vencimento', (year + 1) + '-01-01'),
+        supabase.from('erp_financeiro_baixas').select('valor,ocorrido_em').eq('empresa_id',id).gte('ocorrido_em', year + '-01-01T00:00:00').lt('ocorrido_em', (year + 1) + '-01-01T00:00:00')
       ])
       if (!active) return
       if (parcelas.error) { setError(parcelas.error.message); return }
@@ -57,10 +57,10 @@ export default function FinancasContasPagar({ kind = 'PAGAR' }: Props) {
     const monthPaid = baixas.filter(row => { const d=new Date(row.ocorrido_em); return d.getUTCFullYear()===currentYear && d.getUTCMonth()+1===currentMonth }).reduce((sum,row)=>sum+Number(row.valor || 0),0)
     const count = rows.length
     return [
-      ['A PAGAR EM 2026',due],
+      [`A PAGAR EM ${currentYear}`,due],
       ['VENCIDO',overdue],
       ['VENCIMENTO NO MÊS',monthDue],
-      ['PAGAMENTOS 2026',annualPaid],
+      [`PAGAMENTOS ${currentYear}`,annualPaid],
       ['PAGAMENTOS NO MÊS',monthPaid],
       ['TÍTULOS ABERTOS',count],
     ] as const
