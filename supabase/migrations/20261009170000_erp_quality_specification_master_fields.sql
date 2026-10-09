@@ -183,11 +183,11 @@ BEGIN
     IS DISTINCT FROM
     (to_jsonb(OLD) - ARRAY['id','created_at','updated_at','status','revisao']);
 
-  IF v_dados_tecnicos_alterados THEN
-    IF NEW.revisao <= OLD.revisao THEN
-      RAISE EXCEPTION 'Ao alterar critérios técnicos, incremente a revisão da especificação.';
-    END IF;
+  IF v_dados_tecnicos_alterados AND NEW.revisao <= OLD.revisao THEN
+    RAISE EXCEPTION 'Ao alterar critérios técnicos, incremente a revisão da especificação.';
+  END IF;
 
+  IF v_dados_tecnicos_alterados OR NEW.revisao > OLD.revisao THEN
     INSERT INTO public.erp_planos_inspecao_revisoes (
       empresa_id, plano_inspecao_id, revisao, dados, alterado_por
     )
