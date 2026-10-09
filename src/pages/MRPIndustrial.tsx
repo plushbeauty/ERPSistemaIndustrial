@@ -34,7 +34,7 @@ export default function MRPIndustrial(){
    if(runResult.error)throw runResult.error
    const runRows=(runResult.data??[]) as Run[]
    setProducts(productRows);setRuns(runRows)
-   if(!selectedRun&&runRows[0]){setSelectedRun(runRows[0].id);await loadNeeds(runRows[0].id,tenantId)}
+   if(!runRows.length){setSelectedRun('');setNeeds([])}else if(!selectedRun||!runRows.some(run=>run.id===selectedRun)){setSelectedRun(runRows[0].id);await loadNeeds(runRows[0].id,tenantId)}
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar MRP.')}finally{setBusy(false)}
  }
  async function loadNeeds(runId:string, tenantId=companyId){
