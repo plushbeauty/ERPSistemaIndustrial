@@ -93,13 +93,13 @@ const empty = (): Form => ({
   ativo: true,
 })
 
-const baseInput = 'h-[28px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal text-slate-900 outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100'
+const baseInput = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal text-slate-900 outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100'
 const shortInput = baseInput + ' max-w-[110px]'
 function HelpTip({ text }: { text: string }) {
-  const [open, setOpen] = useState(true)
-  return <span className="relative ml-1 inline-flex align-baseline">
+  const [open, setOpen] = useState(false)
+  return <span className="relative ml-1 inline-flex align-baseline" onMouseLeave={() => setOpen(false)}>
     <span role="button" tabIndex={0} aria-label="Ajuda" onClick={() => setOpen(value => !value)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setOpen(value => !value) } }} className="cursor-pointer select-none text-[10px] font-extrabold leading-none text-sky-700">?</span>
-    {open && <span className="absolute left-3 top-3 z-40 w-[260px] rounded-[2px] border border-sky-200 bg-white p-2 text-[9px] font-normal leading-4 text-slate-700 shadow-lg">{text}</span>}
+    {open && <span className="absolute left-0 top-full z-40 mt-1 w-[260px] max-w-[80vw] rounded-[2px] border border-sky-200 bg-white p-2 text-[9px] font-normal leading-4 text-slate-700 shadow-lg">{text}</span>}
   </span>
 }
 

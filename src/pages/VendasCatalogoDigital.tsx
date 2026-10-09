@@ -306,7 +306,7 @@ export default function VendasCatalogoDigital() {
                       onClick={() => setDetalhe(produto)}
                       className="block w-full text-left"
                     >
-                      <div className="relative flex h-40 items-center justify-center overflow-hidden bg-slate-50">
+                      <div className="relative flex h-28 items-center justify-center overflow-hidden bg-slate-50">
                         {produto.foto_url ? (
                           <img
                             src={produto.foto_url}
@@ -335,7 +335,7 @@ export default function VendasCatalogoDigital() {
                         <h2 className="mt-1 min-h-8 text-[11px] font-medium leading-4 text-[#123B50]">
                           {produto.nome}
                         </h2>
-                        <p className="mt-1 line-clamp-2 min-h-7 text-[8px] leading-3 text-slate-500">{produto.descricao || "Sem descrição cadastrada."}</p>
+                        <p className="mt-1 line-clamp-3 min-h-10 text-[10px] leading-[14px] text-slate-600">{produto.descricao || "Sem descrição cadastrada."}</p>
                         <div className="mt-2 flex items-end justify-between gap-1">
                           <div>
                             <span className="block text-[8px] text-slate-400">Preço de venda</span>

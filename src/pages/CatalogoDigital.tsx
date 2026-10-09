@@ -270,7 +270,7 @@ export default function CatalogoDigital() {
                     <td>
                       <div className="product">
                         {image ? <img src={image} alt="" loading="lazy" /> : <span className="fallback">P</span>}
-                        <div><strong>{product.nome}</strong><small>{product.categoria || product.volume || 'Sem categoria informada'}</small></div>
+                        <div className="min-w-0"><strong>{product.nome}</strong><small className="product-description">{product.descricao?.trim() || product.categoria || product.volume || 'Descrição não cadastrada'}</small></div>
                       </div>
                     </td>
                     <td className="number">{product.peso_liquido == null ? '—' : numberFormat.format(product.peso_liquido) + ' kg'}</td>

@@ -3,19 +3,17 @@ import { Plus, Save } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout from './VendasLayout'
 
-type Func={id:string;nome:string;matricula:string|null}
-type Meta={id:string;competencia:string;meta_faturamento:number;meta_pedidos:number}
 const brl=(n:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(n)
 
 export default function VendasMetas(){
  const [empresa,setEmpresa]=useState('')
- const [func,setFunc]=useState<Func[]>([])
- const [meta,setMeta]=useState<Meta|null>(null)
  const [mes,setMes]=useState(new Date().toISOString().slice(0,7))
  const [valor,setValor]=useState('0')
  const [pedidos,setPedidos]=useState('0')
  const [realizado,setRealizado]=useState(0)
+ const [pedidosRealizados,setPedidosRealizados]=useState(0)
  const [msg,setMsg]=useState('')
+ const [saving,setSaving]=useState(false)
 
  const load=async()=>{
   const e=await supabase.rpc('erp_current_empresa_id')
@@ -24,56 +22,68 @@ export default function VendasMetas(){
   setEmpresa(id)
   const nextMonth=new Date(mes+'-01T00:00:00')
   nextMonth.setMonth(nextMonth.getMonth()+1)
-  const [f,m,p]=await Promise.all([
-   supabase.from('erp_funcionarios').select('id,nome,matricula').eq('empresa_id',id).eq('status','ATIVO').order('nome'),
+  const [m,p]=await Promise.all([
    supabase.from('erp_vendas_metas').select('id,competencia,meta_faturamento,meta_pedidos').eq('empresa_id',id).eq('competencia',mes+'-01').maybeSingle(),
-   supabase.from('erp_pedidos_venda').select('total,status').eq('empresa_id',id).gte('data_entrega_prometida',mes+'-01').lt('data_entrega_prometida',nextMonth.toISOString().slice(0,10))
+   supabase.from('erp_pedidos_venda').select('total,status,data_entrada').eq('empresa_id',id).eq('status','faturado').gte('data_entrada',mes+'-01').lt('data_entrada',nextMonth.toISOString().slice(0,10))
   ])
-  if(f.error||m.error||p.error){setMsg(f.error?.message||m.error?.message||p.error?.message||'Falha ao carregar metas.');return}
-  setFunc((f.data??[]) as Func[])
-  setMeta((m.data??null) as Meta|null)
+  if(m.error||p.error){setMsg(m.error?.message||p.error?.message||'Falha ao carregar metas.');return}
   setValor(String(Number(m.data?.meta_faturamento??0)))
   setPedidos(String(Number(m.data?.meta_pedidos??0)))
-  setRealizado((p.data??[]).filter(x=>x.status!=='cancelado').reduce((s,x)=>s+Number(x.total??0),0))
+  const validOrders=p.data??[]
+  setRealizado(validOrders.reduce((sum,row)=>sum+Number(row.total??0),0))
+  setPedidosRealizados(validOrders.length)
  }
  useEffect(()=>{void load()},[mes])
 
  const save=async()=>{
-  const r=await supabase.from('erp_vendas_metas').upsert({empresa_id:empresa,competencia:mes+'-01',meta_faturamento:Number(valor)||0,meta_pedidos:Number(pedidos)||0},{onConflict:'empresa_id,competencia'})
-  setMsg(r.error?r.error.message:'Meta gravada com sucesso.')
-  if(!r.error)void load()
+  const faturamento=Number(valor),quantidade=Number(pedidos)
+  if(!empresa){setMsg('Empresa não identificada. Atualize a tela antes de gravar.');return}
+  if(!Number.isFinite(faturamento)||faturamento<0||!Number.isInteger(quantidade)||quantidade<0){setMsg('Informe faturamento maior ou igual a zero e quantidade inteira de pedidos maior ou igual a zero.');return}
+  setSaving(true)
+  try{
+   const r=await supabase.from('erp_vendas_metas').upsert({empresa_id:empresa,competencia:mes+'-01',meta_faturamento:faturamento,meta_pedidos:quantidade},{onConflict:'empresa_id,competencia'})
+   if(r.error)throw r.error
+   setMsg('Meta gravada com sucesso.')
+   await load()
+  }catch(cause){
+   setMsg(cause instanceof Error?cause.message:'Não foi possível gravar as metas.')
+  }finally{setSaving(false)}
  }
 
- const pct=Math.min((realizado/(Number(valor)||1))*100,999)
- return <VendasLayout title='Metas comerciais' subtitle='Metas, atingimento e desempenho da equipe' onRefresh={()=>void load()}>
+ const pct=Number(valor)>0?Math.min((realizado/Number(valor))*100,999):0
+ const pctPedidos=Number(pedidos)>0?Math.min((pedidosRealizados/Number(pedidos))*100,999):0
+ const metrics=[
+  {label:'Faturamento',actual:realizado,target:Number(valor)||0,actualLabel:brl(realizado),targetLabel:brl(Number(valor)||0),percent:pct},
+  {label:'Quantidade de pedidos',actual:pedidosRealizados,target:Number(pedidos)||0,actualLabel:String(pedidosRealizados),targetLabel:String(Number(pedidos)||0),percent:pctPedidos},
+ ]
+ return <VendasLayout title='Metas comerciais' subtitle='Duas metas acompanhadas: faturamento e quantidade de pedidos' onRefresh={()=>void load()} showStatusCards={false}>
   <main className='sales-workspace sales-detail'>
    <section className='sales-orders-card'>
     <div className='sales-list-toolbar'>
      <div style={{flex:1}}>
       <span className='sales-eyebrow'>COMERCIAL / METAS</span>
-      <h1 style={{margin:'6px 0 3px',fontSize:22,fontWeight:650,color:'#17333f'}}>Controle de metas da equipe comercial</h1>
-      <p style={{margin:0,fontSize:11,color:'#71838a'}}>Defina competência, faturamento e quantidade de pedidos.</p>
+      <h2 style={{margin:'4px 0',fontSize:15,fontWeight:650,color:'#17333f'}}>Metas da empresa</h2>
+      <p style={{margin:0,fontSize:10,color:'#71838a'}}>Realizado considera apenas pedidos com status faturado, pela data de entrada disponível no pedido. Não substitui o relatório fiscal por data de emissão da NF-e.</p>
      </div>
      <div style={{display:'flex',alignItems:'center',gap:7,flexWrap:'wrap'}}>
-      <label style={{display:'flex',alignItems:'center',gap:6,fontSize:10,color:'#526a73'}}>Competência<input type='month' value={mes} onChange={e=>setMes(e.target.value)} style={{height:30,border:'1px solid #d3e0e3',borderRadius:4,padding:'0 7px',fontSize:11}}/></label>
-      <button type='button' className='sales-button sales-button--secondary' onClick={()=>{setValor('0');setPedidos('0');setMsg('Nova meta pronta para preenchimento.')}}><Plus size={13}/>Nova meta</button>
-      <button type='button' className='sales-button sales-button--primary' onClick={()=>void save()}><Save size={13}/>Gravar</button>
+      <label style={{display:'flex',alignItems:'center',gap:6,fontSize:10,color:'#526a73'}}>Competência<input type='month' value={mes} onChange={e=>setMes(e.target.value)} style={{height:30,border:'1px solid #d3e0e3',borderRadius:2,padding:'0 7px',fontSize:11}}/></label>
+      <button type='button' className='sales-button sales-button--secondary' onClick={()=>{setValor('0');setPedidos('0');setMsg('Preencha as duas metas e grave para salvar.')}}><Plus size={13}/>Nova meta</button>
+      <button type='button' className='sales-button sales-button--primary' disabled={saving} onClick={()=>void save()}><Save size={13}/>{saving?'Gravando…':'Gravar'}</button>
      </div>
     </div>
-    <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:10,padding:'0 14px 14px'}}>
-     <label style={{display:'grid',gap:4,fontSize:10,fontWeight:600,color:'#526a73'}}>Meta de faturamento<input type='number' min='0' step='0.01' value={valor} onChange={e=>setValor(e.target.value)} style={{height:30,border:'1px solid #d3e0e3',borderRadius:4,padding:'0 8px',fontSize:11}}/></label>
-     <label style={{display:'grid',gap:4,fontSize:10,fontWeight:600,color:'#526a73'}}>Meta de pedidos<input type='number' min='0' step='1' value={pedidos} onChange={e=>setPedidos(e.target.value)} style={{height:30,border:'1px solid #d3e0e3',borderRadius:4,padding:'0 8px',fontSize:11}}/></label>
-     <div style={{border:'1px solid #dfe8ea',background:'#f7f9fa',padding:'7px 10px'}}><span style={{fontSize:10,color:'#71838a'}}>Realizado</span><strong style={{display:'block',marginTop:3,fontSize:18,color:'#123b50'}}>{brl(realizado)}</strong></div>
+    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(190px,1fr))',gap:8,padding:'0 12px 12px'}}>
+     <label style={{display:'grid',gap:2,fontSize:9,fontWeight:600,textTransform:'uppercase',color:'#526a73'}}>Meta de faturamento<input type='number' min='0' step='0.01' value={valor} onChange={e=>setValor(e.target.value)} style={{height:30,border:'1px solid #d3e0e3',borderRadius:2,padding:'0 8px',fontSize:11}}/></label>
+     <label style={{display:'grid',gap:2,fontSize:9,fontWeight:600,textTransform:'uppercase',color:'#526a73'}}>Meta de pedidos<input type='number' min='0' step='1' value={pedidos} onChange={e=>setPedidos(e.target.value)} style={{height:30,border:'1px solid #d3e0e3',borderRadius:2,padding:'0 8px',fontSize:11}}/></label>
     </div>
-    {msg&&<div style={{margin:'0 14px 12px',padding:'8px 10px',border:'1px solid #cce1e6',background:'#f1f8fa',color:'#315c69',fontSize:10}}>{msg}</div>}
-    <div className='sales-table-scroll'>
-     <table className='sales-orders-table'>
-      <thead><tr><th>Vendedor</th><th>Meta de faturamento</th><th>Realizado</th><th>Atingimento</th></tr></thead>
-      <tbody>
-       {func.map(f=><tr key={f.id}><td className='sales-client-name'>{f.nome}</td><td>{brl(Number(valor)||0)}</td><td>{brl(realizado)}</td><td><div style={{display:'flex',alignItems:'center',gap:8}}><div style={{height:6,flex:1,background:'#e5edef'}}><div style={{height:'100%',width:String(Math.min(pct,100))+'%',background:'#2D8DB8'}}/></div><strong style={{fontSize:10}}>{pct.toFixed(0)}%</strong></div></td></tr>)}
-       {!func.length&&<tr><td colSpan={4} className='sales-empty-state'>Nenhum vendedor ativo cadastrado.</td></tr>}
-      </tbody>
-     </table>
+    {msg&&<div role='status' style={{margin:'0 12px 10px',padding:'7px 9px',border:'1px solid #cce1e6',background:'#f1f8fa',color:'#315c69',fontSize:10}}>{msg}</div>}
+    <div style={{padding:'0 12px 12px'}}>
+     <div style={{marginBottom:8,fontSize:10,fontWeight:650,color:'#123b50'}}>Atingimento no período</div>
+     <div style={{display:'grid',gap:12}}>
+      {metrics.map(metric=><div key={metric.label} style={{display:'grid',gap:4}}>
+       <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',gap:8,fontSize:10}}><strong style={{color:'#123b50'}}>{metric.label}</strong><span style={{color:'#526a73'}}>{metric.actualLabel} de {metric.targetLabel} • {metric.percent.toFixed(0)}%</span></div>
+       <div role='img' aria-label={metric.label+': '+metric.percent.toFixed(0)+' por cento da meta'} style={{height:12,background:'#e5edef',border:'1px solid #d3e0e3',overflow:'hidden'}}><div style={{height:'100%',width:String(Math.min(metric.percent,100))+'%',background:metric.percent>=100?'#3A9D78':'#2D8DB8',transition:'width 180ms ease'}}/></div>
+      </div>)}
+     </div>
     </div>
    </section>
   </main>

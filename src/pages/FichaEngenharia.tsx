@@ -186,7 +186,45 @@ export default function FichaEngenharia(){
 
   <section className="industrial-panel process-sheet-table-panel">
    <div className="process-section-heading"><span>3 • MATERIAIS / BOM</span><h2>Materiais consumidos pelo processo</h2><p>O PCP/MRP usa esta estrutura para calcular necessidade e o Almoxarifado para rastrear lotes.</p></div>
-   <div className="industrial-table-scroll"><table className="industrial-table process-sheet-table"><thead><tr><th>Seq.</th><th>Componente</th><th>Qtd.</th><th>Un.</th><th>Perda %</th><th>Lote</th><th>Origem</th><th></th></tr></thead><tbody>{bom.map((r,i)=>{const p=products.find(x=>x.id===r.componente_id);return <tr key={r.id||i}><td>{r.sequencia}</td><td><select value={r.componente_id} onChange={e=>setBomField(i,'componente_id',e.target.value)}><option value="">Selecionar</option>{products.filter(p=>p.id!==productId).map(p=><option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select></td><td><input type="number" min="0.001" step="0.001" value={r.quantidade} onChange={e=>setBomField(i,'quantidade',e.target.value)}/></td><td>{p?.unidade||'UN'}</td><td><input type="number" min="0" step="0.01" value={r.perda_percentual} onChange={e=>setBomField(i,'perda_percentual',e.target.value)}/></td><td><input type="checkbox" checked={r.lote_obrigatorio} onChange={e=>setBomField(i,'lote_obrigatorio',e.target.checked)}/></td><td><select value={r.tipo_item} onChange={e=>setBomField(i,'tipo_item',e.target.value as BomRow['tipo_item'])}><option value="COMPRADO">Comprado</option><option value="FABRICADO">Fabricado</option></select></td><td><button className="icon-button danger" onClick={()=>setBom(x=>x.length===1?[emptyBom()]:x.filter((_,n)=>n!==i))}><Trash2 size={16}/></button></td></tr>})}</tbody></table></div>
+   <div className="industrial-table-scroll">
+        <table className="industrial-table process-sheet-table">
+          <thead>
+            <tr>
+              <th>Seq.</th><th>Componente</th><th>Qtd.</th><th>Un.</th>
+              <th>Perda %</th><th>Lote</th><th>Origem</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {bom.map((row, index) => {
+              const component = products.find((item) => item.id === row.componente_id)
+              return (
+                <tr key={row.id || index}>
+                  <td>{row.sequencia}</td>
+                  <td>
+                    <select value={row.componente_id} onChange={(event) => setBomField(index, 'componente_id', event.target.value)}>
+                      <option value="">Selecionar</option>
+                      {products.filter((item) => item.id !== productId).map((item) => (
+                        <option key={item.id} value={item.id}>{item.codigo} — {item.nome}</option>
+                      ))}
+                    </select>
+                  </td>
+                  <td><input type="number" min="0.001" step="0.001" value={row.quantidade} onChange={(event) => setBomField(index, 'quantidade', event.target.value)} /></td>
+                  <td>{component?.unidade || 'UN'}</td>
+                  <td><input type="number" min="0" step="0.01" value={row.perda_percentual} onChange={(event) => setBomField(index, 'perda_percentual', event.target.value)} /></td>
+                  <td><input type="checkbox" checked={row.lote_obrigatorio} onChange={(event) => setBomField(index, 'lote_obrigatorio', event.target.checked)} /></td>
+                  <td>
+                    <select value={row.tipo_item} onChange={(event) => setBomField(index, 'tipo_item', event.target.value as BomRow['tipo_item'])}>
+                      <option value="COMPRADO">Comprado</option>
+                      <option value="FABRICADO">Fabricado</option>
+                    </select>
+                  </td>
+                  <td><button type="button" className="icon-button danger" aria-label="Remover material" onClick={() => setBom((items) => items.length === 1 ? [emptyBom()] : items.filter((_, itemIndex) => itemIndex !== index))}><Trash2 size={16} /></button></td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
    <button className="industrial-secondary process-add-row" onClick={()=>setBom(r=>[...r,{...emptyBom(),sequencia:(r.at(-1)?.sequencia||0)+10}])}><Plus size={16}/>Adicionar material</button>
   </section>
 

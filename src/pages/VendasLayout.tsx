@@ -34,7 +34,7 @@ export function VendasStatusCards({status,loading}:{status:VendasStatus;loading:
 export const sections:SalesNavSection[]=[
  {label:'VISÃO GERAL',items:[{label:'Dashboard comercial',href:'/vendas',icon:LayoutDashboard}]},
  {label:'OPERAÇÃO',items:[{label:'Status do pedido',href:'/vendas/status',icon:ClipboardList},{label:'Novo pedido',href:'/vendas/novo-pedido',icon:FilePlus2},{label:'PDV / venda rápida',href:'/vendas/pdv',icon:ShoppingCart}]},
- {label:'COMERCIAL',items:[{label:'Clientes',href:'/vendas/clientes',icon:Users},{label:'Orçamentos e custos',href:'/vendas/orcamentos',icon:PackageSearch},{label:'Análise de custos',href:'/vendas/analise-custos',icon:PackageSearch},{label:'Metas',href:'/vendas/metas',icon:Target},{label:'Vendedores / comissões',href:'/comissoes/perfil',icon:Users},{label:'Relatórios',href:'/vendas/relatorios',icon:BookOpen}]},
+ {label:'COMERCIAL',items:[{label:'Clientes',href:'/vendas/clientes',icon:Users},{label:'Orçamentos e custos',href:'/vendas/orcamentos',icon:PackageSearch},{label:'Metas',href:'/vendas/metas',icon:Target},{label:'Vendedores / comissões',href:'/comissoes/perfil',icon:Users},{label:'Relatórios',href:'/vendas/relatorios',icon:BookOpen}]},
  {label:'FERRAMENTAS',items:[{label:'Catálogo digital',href:'/vendas/catalogo-digital',icon:BookOpen},{label:'Gestão do catálogo',href:'/vendas/catalogo-digital/gestao',icon:BookOpen},{label:'Ajuste global / preços',href:'/vendas/reajuste',icon:Settings2}]},
 ]
 
@@ -61,7 +61,9 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
  const vendas=useVendasStatus()
  useEffect(()=>{if(isVendas)void vendas.load().catch(()=>undefined)},[isVendas,vendas.load])
 
- const showCards=showStatusCards ?? true
+ const pathsWithoutStatusCards=['/vendas/catalogo-digital','/vendas/catalogo-digital/gestao','/vendas/orcamentos','/vendas/analise-custos','/vendas/metas']
+ const routeHidesCards=pathsWithoutStatusCards.some((route)=>pathname===route||pathname.startsWith(route+'/'))
+ const showCards=showStatusCards ?? !routeHidesCards
 
  return <ERPHorizontalShell>
   <main className="synqra-workspace-main">

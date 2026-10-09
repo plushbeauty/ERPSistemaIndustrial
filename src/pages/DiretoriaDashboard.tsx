@@ -9,7 +9,7 @@ type PendingRow = {
   codigo: string;
   origem: string;
   impacto: string;
-  valor: number;
+  valor: number | null;
   urgencia: "ALTA" | "MÉDIA" | "BAIXA";
 };
 
@@ -49,14 +49,19 @@ export default function DiretoriaDashboard() {
     setLoading(true);
     const current = await supabase.rpc("erp_current_empresa_id");
     const empresaAtual = current.error || !current.data ? null : String(current.data);
-    if (empresaAtual) setEmpresaId(empresaAtual);
+    if (!empresaAtual) {
+      setNotice("Empresa não identificada; indicadores bloqueados para evitar mistura de dados entre empresas.");
+      setOpsAbertas(0); setRncCount(0); setCalibracoesVencendo(0); setRevenue([]); setOee([]); setPending([]); setLoading(false);
+      return;
+    }
+    setEmpresaId(empresaAtual);
     const [opsResult, rncResult, calibrationResult, nfeResult, apontamentosResult, reservationsResult] = await Promise.all([
-      supabase.from("erp_ordens_producao").select("id,status").in("status", ["ABERTA", "PLANEJADA", "EM_PRODUCAO", "EM_ANDAMENTO"]),
-      supabase.from("erp_rncs").select("id,status").not("status", "in", "(ENCERRADA,CANCELADA,FECHADA)"),
-      supabase.from("erp_equipamentos_medicao").select("id").lte("proxima_calibracao", new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)),
-      supabase.from("erp_documentos_fiscais").select("id,valor_total,status,data_emissao").eq("empresa_id", empresaAtual ?? "").eq("status", "Autorizada").order("data_emissao", { ascending: true }).limit(500),
-      supabase.from("erp_producao_apontamentos").select("ordem_producao_id,quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim").order("created_at", { ascending: false }).limit(500),
-      supabase.from("erp_estoque_reservas").select("id,quantidade, status, pedido_item_id").eq("status", "ATIVA").order("created_at", { ascending: false }).limit(20),
+      supabase.from("erp_ordens_producao").select("id,status").eq("empresa_id", empresaAtual).in("status", ["ABERTA", "PLANEJADA", "EM_PRODUCAO", "EM_ANDAMENTO"]),
+      supabase.from("erp_rncs").select("id,status").eq("empresa_id", empresaAtual).not("status", "in", "(ENCERRADA,CANCELADA,FECHADA)"),
+      supabase.from("erp_equipamentos_medicao").select("id").eq("empresa_id", empresaAtual).lte("proxima_calibracao", new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)),
+      supabase.from("erp_documentos_fiscais").select("id,valor_total,status,data_emissao").eq("empresa_id", empresaAtual).eq("status", "Autorizada").order("data_emissao", { ascending: true }).limit(500),
+      supabase.from("erp_producao_apontamentos").select("ordem_producao_id,quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim").eq("empresa_id", empresaAtual).order("created_at", { ascending: false }).limit(500),
+      supabase.from("erp_estoque_reservas").select("id,quantidade, status, pedido_item_id").eq("empresa_id", empresaAtual).eq("status", "ATIVA").order("created_at", { ascending: false }).limit(20),
     ]);
 
     const queryErrors = [opsResult.error, rncResult.error, calibrationResult.error, nfeResult.error, apontamentosResult.error, reservationsResult.error].filter(Boolean);
@@ -77,7 +82,7 @@ export default function DiretoriaDashboard() {
     const orderIds = [...new Set(apontamentos.map(row => row.ordem_producao_id).filter((id): id is string => Boolean(id)))];
     let orders: OrderRow[] = [];
     if (orderIds.length > 0) {
-      const orderResult = await supabase.from("erp_ordens_producao").select("id,velocidade_nominal_hora").in("id", orderIds);
+      const orderResult = await supabase.from("erp_ordens_producao").select("id,velocidade_nominal_hora").eq("empresa_id", empresaAtual).in("id", orderIds);
       orders = (orderResult.data ?? []) as OrderRow[];
     }
     const speedByOrder = new Map(orders.map(row => [row.id, numberValue(row.velocidade_nominal_hora)]));
@@ -121,7 +126,7 @@ export default function DiretoriaDashboard() {
       codigo: String(row.pedido_item_id ?? row.id).slice(0, 8).toUpperCase(),
       origem: "MRP / Estoque",
       impacto: `Reserva ${numberValue(row.quantidade)}u`,
-      valor: 0,
+      valor: null,
       urgencia: "MÉDIA",
     })));
 
@@ -211,7 +216,7 @@ export default function DiretoriaDashboard() {
               <table className="w-full min-w-[800px]">
                 <thead className="bg-slate-100"><tr><th className="h-[54px] px-4 text-left">Cód Doc</th><th className="px-4 text-left">Origem / Setor</th><th className="px-4 text-left">Impacto</th><th className="px-4 text-right">Valor (R$)</th><th className="px-4 text-left">Urgência</th></tr></thead>
                 <tbody>
-                  {pending.map((row) => <tr key={row.codigo} className="border-t border-slate-100"><td className="h-[54px] px-4 font-bold text-sky-900">{row.codigo}</td><td className="px-4 font-semibold">{row.origem}</td><td className="px-4">{row.impacto}</td><td className="px-4 text-right font-semibold">{row.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td><td className="px-4"><span className={`rounded-full px-3 py-1 text-xs font-black ${row.urgencia === "ALTA" ? "bg-rose-100 text-rose-900" : "bg-amber-100 text-amber-900"}`}>{row.urgencia}</span></td></tr>)}
+                  {pending.map((row) => <tr key={row.codigo} className="border-t border-slate-100"><td className="h-[54px] px-4 font-bold text-sky-900">{row.codigo}</td><td className="px-4 font-semibold">{row.origem}</td><td className="px-4">{row.impacto}</td><td className="px-4 text-right font-semibold">{row.valor === null ? "—" : row.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td><td className="px-4"><span className={`rounded-full px-3 py-1 text-xs font-black ${row.urgencia === "ALTA" ? "bg-rose-100 text-rose-900" : "bg-amber-100 text-amber-900"}`}>{row.urgencia}</span></td></tr>)}
                   {pending.length === 0 && <tr><td colSpan={5} className="p-8 text-center font-semibold text-slate-500">Nenhuma requisição pendente encontrada.</td></tr>}
                 </tbody>
               </table>

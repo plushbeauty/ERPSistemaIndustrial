@@ -77,7 +77,6 @@ export default function SgqManagementCompact() {
     setError(''); setNotice('')
     if (!description.trim()) { setError('Descrição detalhada da falha é obrigatória.'); return }
     if (!lot.trim()) { setError('Lote afetado é obrigatório.'); return }
-    setBusy(true)
     if (!sectorId) { setError('Setor responsável é obrigatório.'); return }
     setBusy(true)
     try {
