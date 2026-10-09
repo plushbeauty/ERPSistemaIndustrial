@@ -40,6 +40,9 @@ declare
   v_run_hours numeric;
   v_duration_seconds numeric;
   v_shift_start timestamptz;
+  v_shift_end timestamptz;
+  v_hours_today numeric;
+  v_remaining_after_today numeric;
   v_workdays numeric;
   v_off_hours numeric;
   v_rescheduled integer := 0;
@@ -220,15 +223,17 @@ begin
           v_start := v_row.inicio_planejado;
           if v_cursor is not null then v_start := greatest(v_start, v_cursor); end if;
           if v_start <= now() then v_start := now(); end if;
-          -- Use the program's originally configured start time as the daily shift anchor.
-          v_shift_start := date_trunc('day', v_start)
-            + (v_row.inicio_planejado - date_trunc('day', v_row.inicio_planejado));
-          if v_start < v_shift_start then
-            v_start := v_shift_start;
-          elsif v_start >= v_shift_start + v_daily_hours * interval '1 hour' then
-            v_start := v_shift_start + interval '1 day';
-          end if;
         end if;
+        -- Use the original start time as a shift anchor; do not place downstream work outside the daily window.
+        v_shift_start := date_trunc('day', v_start)
+          + (v_row.inicio_planejado - date_trunc('day', v_row.inicio_planejado));
+        if v_start < v_shift_start then
+          v_start := v_shift_start;
+        elsif v_start >= v_shift_start + v_daily_hours * interval '1 hour' then
+          v_start := v_shift_start + interval '1 day';
+          v_shift_start := v_shift_start + interval '1 day';
+        end if;
+        v_shift_end := v_shift_start + v_daily_hours * interval '1 hour';
 
         v_efficiency := greatest(0.01, least(1, coalesce(v_row.eficiencia_percent, 85) / 100.0));
         v_cycle := greatest(0, coalesce(v_row.ciclo_seg, 0));
@@ -237,9 +242,16 @@ begin
 
         if v_cycle > 0 then
           v_run_hours := (v_remaining * v_cycle / v_cavities / 3600.0 / v_efficiency) + v_setup_hours;
-          v_workdays := ceil(v_run_hours / v_daily_hours);
-          v_off_hours := greatest(0, v_workdays - 1) * greatest(0, 24 - v_daily_hours);
-          v_duration_seconds := (v_run_hours + v_off_hours) * 3600.0;
+          v_hours_today := greatest(0, extract(epoch from (v_shift_end - v_start)) / 3600.0);
+          if v_run_hours <= v_hours_today then
+            v_duration_seconds := v_run_hours * 3600.0;
+          else
+            v_remaining_after_today := v_run_hours - v_hours_today;
+            v_workdays := ceil(v_remaining_after_today / v_daily_hours);
+            v_off_hours := greatest(0, 24 - v_daily_hours)
+              + greatest(0, v_workdays - 1) * greatest(0, 24 - v_daily_hours);
+            v_duration_seconds := (v_hours_today + v_off_hours + v_remaining_after_today) * 3600.0;
+          end if;
         else
           v_duration_seconds := greatest(0, extract(epoch from (v_row.fim_planejado - v_row.inicio_planejado)));
         end if;
