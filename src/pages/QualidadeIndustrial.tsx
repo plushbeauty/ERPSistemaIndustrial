@@ -260,7 +260,7 @@ export default function QualidadeIndustrial() {
     }
   }
 
-  const saveCepMeasurements = async (data: { valores: number[]; media: number; desvioPadrao: number; totalControlado: number; numeroDefeituosos: number; cp: number | null; cpl: number | null; cpu: number | null; cpk: number | null; amplitude: number }) => {
+  const saveCepMeasurements = async (data: { valores: number[]; media: number; desvioPadrao: number; totalControlado: number; numeroDefeituosos: number; cp: number | null; cpl: number | null; cpu: number | null; cpk: number | null; amplitude: number; amplitudeMovelMedia: number; limiteControleSuperior: number | null; limiteControleInferior: number | null }) => {
     setError(''); setNotice('')
     if (!selectedReceiving || !selectedSpec || selectedSpec.nominal === null || selectedSpec.limite_inferior === null || selectedSpec.limite_superior === null) {
       setError('Selecione uma inspeção e uma especificação dimensional completa antes da coleta CEP.')
@@ -291,7 +291,7 @@ export default function QualidadeIndustrial() {
       }))
       const result = await supabase.from('erp_qualidade_inspecoes_dimensionais').insert(payload)
       if (result.error) throw result.error
-      setNotice(`CEP registrado no banco: 18 amostras; média ${data.media.toFixed(5)} mm; desvio padrão amostral ${data.desvioPadrao.toFixed(5)} mm; Cp ${data.cp === null ? '—' : data.cp.toFixed(3)}; Cpk ${data.cpk === null ? '—' : data.cpk.toFixed(3)}; amplitude ${data.amplitude.toFixed(5)} mm; ${data.numeroDefeituosos} NOK.`)
+      setNotice(`CEP registrado no banco: 18 amostras; média ${data.media.toFixed(5)} mm; desvio padrão amostral ${data.desvioPadrao.toFixed(5)} mm; Cp ${data.cp === null ? '—' : data.cp.toFixed(3)}; Cpk ${data.cpk === null ? '—' : data.cpk.toFixed(3)}; MR̄ ${data.amplitudeMovelMedia.toFixed(5)} mm; LSC ${data.limiteControleSuperior === null ? '—' : data.limiteControleSuperior.toFixed(5)} mm; LIC ${data.limiteControleInferior === null ? '—' : data.limiteControleInferior.toFixed(5)} mm; amplitude ${data.amplitude.toFixed(5)} mm; ${data.numeroDefeituosos} NOK.`)
       await load()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao gravar coleta CEP.')
