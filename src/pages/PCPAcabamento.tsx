@@ -39,7 +39,7 @@ export default function PCPAcabamento() {
           supabase.from('erp_producao_apontamentos').select('ordem_producao_id,quantidade_boa', { count: 'exact' }).eq('empresa_id', empresaId).range(from, to)),
         fetchAllPages<FinishingPosting>((from, to) =>
           supabase.from('erp_acabamentos').select('ordem_producao_id,quantidade_recebida', { count: 'exact' }).eq('empresa_id', empresaId).range(from, to)),
-        supabase.from('erp_postos_trabalho').select('id,codigo_posto,nome_posto').eq('ativo', true).order('codigo_posto'),
+        supabase.from('erp_postos_trabalho').select('id,codigo_posto,nome_posto').eq('empresa_id', empresaId).eq('ativo', true).order('codigo_posto').order('id'),
       ])
       if (workCentersResult.error) throw workCentersResult.error
       const workCenters = (workCentersResult.data ?? []) as WorkCenter[]
