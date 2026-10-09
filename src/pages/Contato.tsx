@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react'
-import { ArrowLeft, Mail, Send, ShieldCheck, Wrench } from 'lucide-react'
+import { ArrowLeft, Mail, Send, ShieldCheck } from 'lucide-react'
 
 export default function Contato() {
   const [nome, setNome] = useState('')
@@ -20,7 +20,7 @@ export default function Contato() {
       <div className="public-contact-shell">
         <header className="public-contact-header">
           <a href="/" className="public-brand" aria-label="SYSNQRA ERP & SGQ INDUSTRIAL"><img src="/logo/sgq-erp.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" /></a>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}><a className="contact-back" href="/"><ArrowLeft size={17} /> Voltar ao site</a><a href="/manutencao/laboratorio-visual" aria-label="Abrir teste visual de manutenção" title="Teste temporário do módulo Manutenção" style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 9px", border: "1px solid #cbd5e1", borderRadius: 3, color: "#123b50", background: "#fff", fontSize: 11, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}><Wrench size={13} /> Teste Manutenção</a></div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}><a className="contact-back" href="/"><ArrowLeft size={17} /> Voltar ao site</a></div>
         </header>
 
         <section className="public-contact-grid">
