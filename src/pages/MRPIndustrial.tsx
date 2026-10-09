@@ -27,10 +27,12 @@ export default function MRPIndustrial(){
    if(company.error||!company.data)throw company.error??new Error('Empresa da sessão não identificada.')
    const tenantId=String(company.data)
    setCompanyId(tenantId)
-   const[productRows,runRows]=await Promise.all([
+   const[productRows,runResult]=await Promise.all([
     fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,fabricado',{count:'exact'}).eq('empresa_id',tenantId).eq('ativo',true).order('codigo').order('id').range(from,to)),
-    fetchAllPages<Run>((from,to)=>supabase.from('erp_mrp_runs').select('id,produto_raiz_id,quantidade_raiz,demanda_ref,status,created_at',{count:'exact'}).eq('empresa_id',tenantId).order('created_at',{ascending:false}).order('id').range(from,Math.min(to,from+99)))
+    supabase.from('erp_mrp_runs').select('id,produto_raiz_id,quantidade_raiz,demanda_ref,status,created_at').eq('empresa_id',tenantId).order('created_at',{ascending:false}).order('id').limit(100)
    ])
+   if(runResult.error)throw runResult.error
+   const runRows=(runResult.data??[]) as Run[]
    setProducts(productRows);setRuns(runRows)
    if(!selectedRun&&runRows[0]){setSelectedRun(runRows[0].id);await loadNeeds(runRows[0].id,tenantId)}
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar MRP.')}finally{setBusy(false)}
