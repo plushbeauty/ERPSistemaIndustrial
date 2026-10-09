@@ -43,17 +43,33 @@ export default function PCPDashboardOEE() {
       return
     }
     const empresaId = String(company.data)
-    const [a, o] = await Promise.all([
-      supabase.from('erp_producao_apontamentos').select('ordem_producao_id,quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim').eq('empresa_id', empresaId).gte('inicio', since).limit(10000),
-      supabase.from('erp_ordens_producao').select('id,quantidade_planejada,velocidade_nominal_hora,tempo_estimado_horas').eq('empresa_id', empresaId).limit(10000),
-    ])
-    if (a.error || o.error) {
-      setError(a.error?.message ?? o.error?.message ?? 'Falha ao carregar o OEE.')
+    const o = await supabase.from('erp_ordens_producao')
+      .select('id,quantidade_planejada,velocidade_nominal_hora,tempo_estimado_horas')
+      .eq('empresa_id', empresaId)
+      .limit(10000)
+    if (o.error) {
+      setError(o.error.message)
+      setRows([])
+      setOrdens([])
+      setLoading(false)
+      return
+    }
+    const scopedOrders = (o.data ?? []) as Ordem[]
+    const orderIds = scopedOrders.map(order => order.id)
+    const a = orderIds.length
+      ? await supabase.from('erp_producao_apontamentos')
+          .select('ordem_producao_id,quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim')
+          .in('ordem_producao_id', orderIds)
+          .gte('inicio', since)
+          .limit(10000)
+      : { data: [], error: null }
+    if (a.error) {
+      setError(a.error.message)
       setRows([])
       setOrdens([])
     } else {
       setRows((a.data ?? []) as Apontamento[])
-      setOrdens((o.data ?? []) as Ordem[])
+      setOrdens(scopedOrders)
     }
     setLoading(false)
   }
