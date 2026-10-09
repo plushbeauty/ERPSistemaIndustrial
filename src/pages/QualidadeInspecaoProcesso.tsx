@@ -106,6 +106,7 @@ export default function QualidadeInspecaoProcesso({ inspectionType = 'PROCESSO' 
   const today = new Date().toISOString().slice(0, 10)
   const isPlanEffective = (plan: Plan) => plan.tipo_inspecao === inspectionType && (plan.status ?? '').toUpperCase() === 'ATIVO' && Boolean(plan.aprovador_id) && Boolean(plan.aprovado_em) && (!plan.vigencia_inicio || plan.vigencia_inicio <= today) && (!plan.vigencia_fim || plan.vigencia_fim >= today) && (!['DIMENSIONAL','FUNCIONAL'].includes(plan.metodo_inspecao) || instruments.some(item => item.id === plan.instrumento_id && validInstrument(item)))
   const effectivePlans = plans.filter(isPlanEffective)
+  const requiresRpnC = resultado !== 'APROVADO' || Number(quantidadeReprovada) > 0 || medicoes.some(item => evaluateMeasurement(item) === 'NOK')
 
   function addMeasurement(plan: Plan) {
     if (plan.instrumento_id) setInstrument(plan.instrumento_id)
@@ -137,10 +138,8 @@ export default function QualidadeInspecaoProcesso({ inspectionType = 'PROCESSO' 
     setBusy(true)
     setError('')
     setNotice('')
-    let lotRetained = false
     try {
       const company = await supabase.rpc('erp_current_empresa_id')
-      const user = await supabase.auth.getUser()
       if (company.error || !company.data) throw company.error ?? new Error('Empresa não identificada.')
       if (!produto) throw new Error('Informe o produto.')
       if (inspectionType === 'FINAL' && !lote) throw new Error('Inspeção final exige um lote de produto acabado rastreável.')
@@ -185,38 +184,36 @@ export default function QualidadeInspecaoProcesso({ inspectionType = 'PROCESSO' 
       if (effectiveResult !== 'APROVADO' && !lote) throw new Error('Selecione o lote real que será retido em quarentena.')
       const selectedLot = lots.find(item => item.id === lote)
       if (lote && (!selectedLot || selectedLot.produto_id !== produto)) throw new Error('O lote selecionado não pertence ao produto inspecionado.')
-      if (effectiveResult !== 'APROVADO' && lote) {
-        if (selectedLot?.status_inspecao?.toUpperCase() === 'RETIDO') {
-          lotRetained = true
-        } else {
-          const hold = await supabase.rpc('erp_reter_lote', { p_lote_id: lote, p_motivo: `Inspeção de processo ${effectiveResult}: ${obs.trim() || 'desvio nos critérios técnicos'}` })
-          if (hold.error) throw hold.error
-          lotRetained = true
-        }
+      if (effectiveResult !== 'APROVADO') {
+        if (!rpncSectorId || !sectors.some(sector => sector.id === rpncSectorId)) throw new Error('Selecione setor ativo responsável pela RPNC.')
+        if (!rpncSeverity) throw new Error('Selecione a gravidade da não conformidade.')
+        if (rpncDescription.trim().length < 5) throw new Error('Descreva a não conformidade com pelo menos 5 caracteres.')
       }
-      const result = await supabase.from('erp_inspecoes').insert({
-        empresa_id: company.data,
-        produto_id: produto,
-        lote_id: lote || null,
-        ordem_producao_id: op || null,
-        maquina_id: machine || null,
-        tipo: inspectionType === 'FINAL' ? 'FINAL' : 'PROCESSO_METROLOGIA',
-        resultado: effectiveResult,
-        quantidade_inspecionada: inspected,
-        quantidade_aprovada: approved,
-        quantidade_reprovada: rejected,
-        observacao: obs.trim() || null,
-        inspetor_nome: inspetor.trim() || null,
-        medicoes: evaluatedMeasurements.map(item => ({ ...item, caracteristica: item.caracteristica.trim(), nominal: item.nominal.trim(), encontrado: item.encontrado.trim(), unidade: item.unidade.trim() })),
-        acao_bloqueio: effectiveResult === 'APROVADO' ? 'NENHUMA' : acaoBloqueio,
-        criado_por: user.data.user?.id || null,
+      const result = await supabase.rpc('erp_qms_registrar_inspecao_processo', {
+        p_produto_id: produto,
+        p_lote_id: lote || null,
+        p_ordem_producao_id: op || null,
+        p_maquina_id: machine || null,
+        p_tipo: inspectionType === 'FINAL' ? 'FINAL' : 'PROCESSO_METROLOGIA',
+        p_resultado: effectiveResult,
+        p_quantidade_inspecionada: inspected,
+        p_quantidade_aprovada: approved,
+        p_quantidade_reprovada: rejected,
+        p_observacao: obs.trim() || null,
+        p_inspetor_nome: inspetor.trim() || null,
+        p_medicoes: evaluatedMeasurements.map(item => ({ ...item, caracteristica: item.caracteristica.trim(), nominal: item.nominal.trim(), encontrado: item.encontrado.trim(), unidade: item.unidade.trim() })),
+        p_acao_bloqueio: effectiveResult === 'APROVADO' ? 'NENHUMA' : acaoBloqueio,
+        p_setor_id: effectiveResult === 'APROVADO' ? null : rpncSectorId,
+        p_severidade: effectiveResult === 'APROVADO' ? null : rpncSeverity,
+        p_descricao_rpnc: effectiveResult === 'APROVADO' ? null : rpncDescription.trim(),
       })
       if (result.error) throw result.error
-      setNotice('Laudo de inspeção salvo no banco real.')
+      const response = result.data && typeof result.data === 'object' ? result.data as { numero_rpnc?: string } : null
       resetForm()
+      setNotice(effectiveResult === 'APROVADO' ? 'Laudo de inspeção aprovado e salvo no banco real.' : `Laudo salvo; lote retido em quarentena e RPNC ${response?.numero_rpnc || 'vinculada'} aberta na mesma transação.`)
       await load()
     } catch (cause) {
-      setError(lotRetained ? `O lote foi retido em quarentena, mas o laudo não foi confirmado: ${cause instanceof Error ? cause.message : 'falha ao salvar inspeção'}` : cause instanceof Error ? cause.message : 'Falha ao salvar inspeção.')
+      setError(cause instanceof Error ? cause.message : 'Falha ao salvar inspeção.')
     } finally {
       setBusy(false)
     }
