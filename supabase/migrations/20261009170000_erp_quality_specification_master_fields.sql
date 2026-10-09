@@ -10,7 +10,8 @@ alter table public.erp_planos_inspecao
   add column if not exists vigencia_inicio date,
   add column if not exists vigencia_fim date,
   add column if not exists responsavel_id uuid null references auth.users(id) on delete set null,
-  add column if not exists aprovador_id uuid null references auth.users(id) on delete set null;
+  add column if not exists aprovador_id uuid null references auth.users(id) on delete set null,
+  add column if not exists aprovado_em timestamptz;
 
 alter table public.erp_planos_inspecao
   drop constraint if exists erp_planos_inspecao_tipo_inspecao_check,
