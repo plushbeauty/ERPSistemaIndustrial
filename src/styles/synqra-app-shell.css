@@ -106,3 +106,10 @@
   .synqra-app-content { margin-left: 0; padding: calc(var(--synqra-header-height) + 8px) 8px 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .synqra-sidebar, .synqra-app-header, .synqra-app-content { transition: none; } }
+
+/* Dense industrial submodule navigation: 30px controls, compact typography. */
+.synqra-sidebar-subnav { min-height: 0; overflow: auto; border-top: 1px solid #e2e8f0; padding-top: 4px; }
+.synqra-sidebar-subnav .synqra-sidebar-caption { margin: 4px 10px; font-size: 9px; letter-spacing: .08em; }
+.synqra-sidebar-subnav .synqra-sidebar-link { min-height: 30px; height: 30px; padding: 0 8px 0 14px; border-radius: 2px; font-size: 10px; }
+.synqra-sidebar-subnav .synqra-sidebar-link-label { font-size: 10px; line-height: 1; }
+.synqra-sidebar-subnav .synqra-sidebar-link.is-active { background: #eef6fa; color: #17445a; box-shadow: inset 2px 0 #2d8db8; }
