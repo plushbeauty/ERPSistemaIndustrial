@@ -32,7 +32,7 @@ type Kind='PRENSADOS'|'INJETADOS'|'ACABAMENTO'|'ESTAMPARIA'|'DIVERSOS'
 type Ficha={id:string;produto_id:string;versao:number;rendimento:number;unidade_rendimento:string;observacoes:string|null;ativa:boolean;status:string|null;revisao:string|null}
 type BomRow={id?:string;componente_id:string;quantidade:string;perda_percentual:string;lote_obrigatorio:boolean;tipo_item:'COMPRADO'|'FABRICADO';sequencia:number}
 type OpRow={id?:string;sequencia:number;operacao:string;maquina_id:string;molde_id:string;setup_min:string;ciclo_seg:string;instrucoes:string}
-type QualityRow={id?:string;codigo:string;caracteristica:string;unidade:string;limite_inferior:string;limite_superior:string;frequencia:string;status:string}
+type QualityRow={id?:string;codigo:string;caracteristica:string;unidade:string;nominal:string;limite_inferior:string;limite_superior:string;frequencia:string;status:string}
 
 const kinds:{id:Kind;title:string;description:string;icon:LucideIcon}[]=[
  {id:'PRENSADOS',title:'Ficha de Processo — Prensados',description:'Composto, pré-forma, prensa, molde, pressão, temperatura, cura e pós-cura.',icon:CircleDot},
@@ -44,7 +44,7 @@ const kinds:{id:Kind;title:string;description:string;icon:LucideIcon}[]=[
 
 const emptyBom=():BomRow=>({componente_id:'',quantidade:'1',perda_percentual:'0',lote_obrigatorio:false,tipo_item:'COMPRADO',sequencia:10})
 const emptyOp=():OpRow=>({sequencia:10,operacao:'',maquina_id:'',molde_id:'',setup_min:'0',ciclo_seg:'0',instrucoes:''})
-const emptyQuality=():QualityRow=>({codigo:'',caracteristica:'',unidade:'',limite_inferior:'',limite_superior:'',frequencia:'100%',status:'ativo'})
+const emptyQuality=():QualityRow=>({codigo:'',caracteristica:'',unidade:'',nominal:'',limite_inferior:'',limite_superior:'',frequencia:'100%',status:'ativo'})
 const errorText=(e:unknown)=>e instanceof Error?e.message:String((e as {message?:string})?.message??'Operação recusada pelo banco.')
 
 export default function FichaEngenharia(){
@@ -91,9 +91,9 @@ export default function FichaEngenharia(){
    if(f.error)throw f.error
    if(!f.data){
     resetForm(true,id)
-    const qi=await supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,limite_inferior,limite_superior,frequencia,status').eq('empresa_id',empresaId).eq('produto_id',id).order('codigo').limit(200)
+    const qi=await supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,status').eq('empresa_id',empresaId).eq('produto_id',id).order('codigo').limit(200)
     if(qi.error)throw qi.error
-    const loadedQuality: QualityRow[]=(qi.data??[]).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status}))
+    const loadedQuality: QualityRow[]=(qi.data??[]).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',nominal:x.nominal==null?'':String(x.nominal),limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status}))
     setQuality(loadedQuality)
     return
    }
@@ -238,7 +238,7 @@ setFicha(saved.data as Ficha);setRequestedVersion(Number(version));setCatalog(ro
 
   <section className="industrial-panel process-sheet-table-panel">
    <div className="process-section-heading"><span>5 • CONTROLE DE QUALIDADE</span><h2>Especificações técnicas vinculadas</h2><p>Cadastro mestre controlado pela Qualidade. Consulte ou altere os critérios em <a href="/qualidade/especificacoes" className="font-semibold text-sky-700 underline">Qualidade → Especificações Técnicas</a>; esta ficha apenas apresenta os critérios associados ao produto.</p></div>
-   <div className="industrial-table-scroll"><table className="industrial-table process-sheet-table"><thead><tr><th>Código</th><th>Característica</th><th>Un.</th><th>Mín.</th><th>Máx.</th><th>Frequência</th><th>Status</th></tr></thead><tbody>{quality.filter(r=>r.caracteristica.trim()).map((r,i)=><tr key={r.id||i}><td>{r.codigo||'—'}</td><td>{r.caracteristica}</td><td>{r.unidade||'—'}</td><td>{r.limite_inferior||'—'}</td><td>{r.limite_superior||'—'}</td><td>{r.frequencia||'—'}</td><td>{r.status||'—'}</td></tr>)}{!quality.some(r=>r.caracteristica.trim())&&<tr><td colSpan={7}>Nenhuma especificação cadastrada para este produto.</td></tr>}</tbody></table></div>
+   <div className="industrial-table-scroll"><table className="industrial-table process-sheet-table"><thead><tr><th>Código</th><th>Característica</th><th>Un.</th><th>Nominal</th><th>Mín.</th><th>Máx.</th><th>Frequência</th><th>Status</th></tr></thead><tbody>{quality.filter(r=>r.caracteristica.trim()).map((r,i)=><tr key={r.id||i}><td>{r.codigo||'—'}</td><td>{r.caracteristica}</td><td>{r.unidade||'—'}</td><td>{r.nominal||'—'}</td><td>{r.limite_inferior||'—'}</td><td>{r.limite_superior||'—'}</td><td>{r.frequencia||'—'}</td><td>{r.status||'—'}</td></tr>)}{!quality.some(r=>r.caracteristica.trim())&&<tr><td colSpan={8}>Nenhuma especificação cadastrada para este produto.</td></tr>}</tbody></table></div>
   </section>
 
   <section className="process-sheet-approval"><div><span>ENGENHARIA / PROCESSO</span><strong>{spec.responsavel||'Responsável não informado'}</strong><small>Revisão {version}</small></div><div><span>QUALIDADE</span><strong>{ficha?.status||'rascunho'}</strong><small>{['aprovada','liberada'].includes((ficha?.status||'').toLowerCase())?'Revisão liberada para o PCP.':'Aguardando fluxo formal de aprovação.'}</small>{ficha&&['rascunho','em_analise'].includes((ficha.status||'').toLowerCase())&&<><button type="button" disabled={busy||!canApproveRevision} onClick={()=>void approveRevision()} className="mt-2 h-[30px] border border-slate-300 px-2 text-[10px] font-semibold disabled:opacity-50">Aprovar revisão</button>{!canApproveRevision&&<small className="block text-[10px] text-slate-500">Aprovação restrita ao Master/Qualidade.</small>}</>}</div><div><span>PCP / PRODUÇÃO</span><strong>{['aprovada','liberada'].includes((ficha?.status||'').toLowerCase())?'Disponível para PCP/OP':'Bloqueada para PCP/OP'}</strong><small>Somente revisão aprovada/liberada pode alimentar a programação.</small></div></section>
