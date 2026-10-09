@@ -147,6 +147,7 @@ const QualidadeListaMestre = lazyPage(() => import('./pages/QualidadeListaMestre
 const QualidadeAuditoria5S = lazyPage(() => import('./pages/QualidadeAuditoria5S'), 'QualidadeAuditoria5S')
 const QualidadeMetodologia8D = lazyPage(() => import('./pages/QualidadeMetodologia8D'), 'QualidadeMetodologia8D')
 const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspecaoProcesso'), 'QualidadeInspecaoProcesso')
+const QualidadeInspecoesIndustrial = lazyPage(() => import('./pages/QualidadeInspecoesIndustrial'), 'default')
 const MoldesFerramentaria = lazyPage(() => import('./pages/MoldesFerramentaria'), 'MoldesFerramentaria')
 const OperacaoIndustrial = lazyPage(() => import('./pages/OperacaoIndustrial'), 'OperacaoIndustrial')
 const InjecaoIndustrial = lazyPage(() => import('./pages/InjecaoIndustrial'), 'InjecaoIndustrial')
@@ -466,6 +467,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/pfmea" element={<QualidadePFMEA />} />
       <Route path="/qualidade/documentos" element={<DocumentosQualidadeControle />} />
       <Route path="/qualidade/inspecao-processo" element={<QualidadeInspecaoProcesso />} />
+      <Route path="/qualidade/inspecoes" element={<QualidadeInspecoesIndustrial />} />
       <Route path="/qualidade/metodologia-8d" element={<QualidadeMetodologia8D />} />
       <Route path="/qualidade/auditoria-5s" element={<QualidadeAuditoria5S />} />
       <Route path="/qualidade/lista-mestre" element={<QualidadeListaMestre />} />
