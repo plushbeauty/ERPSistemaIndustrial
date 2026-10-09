@@ -47,11 +47,11 @@ const initialForm: TextMap = {
 }
 
 const numberValue = (value: string): number => {
-  const normalized = value.trim().replace(/\\./g, '').replace(',', '.')
+  const normalized = value.trim().replace(/\./g, '').replace(',', '.')
   const parsed = Number(normalized)
   return Number.isFinite(parsed) ? parsed : 0
 }
-const onlyDigits = (value: string, max: number): string => value.replace(/\\D/g, '').slice(0, max)
+const onlyDigits = (value: string, max: number): string => value.replace(/\D/g, '').slice(0, max)
 const money = (value: number): string => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 const field = (map: TextMap, key: string): string => map[key] ?? ''
 
