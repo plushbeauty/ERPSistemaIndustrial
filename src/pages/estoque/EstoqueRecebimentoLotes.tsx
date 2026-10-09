@@ -494,7 +494,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
                     <td className="h-8 px-2 font-medium">{lot.lote_fornecedor}</td>
                     <td className="h-8 px-2 text-right tabular-nums">{numberFormat.format(lot.quantidade_inicial)}</td>
                     <td className="h-8 px-2 text-right tabular-nums">{numberFormat.format(lot.quantidade_disponivel)}</td>
-                    <td className="h-8 px-2"><span className={lot.status_qualidade === 'APROVADO' ? 'font-semibold text-emerald-700' : 'font-semibold text-rose-700'}>{lot.status_qualidade}</span></td>
+                    <td className="h-8 px-2"><span className={lot.status_qualidade === 'APROVADO' ? 'font-semibold text-emerald-700' : lot.status_qualidade === 'RETIDO' ? 'font-semibold text-amber-700' : 'font-semibold text-rose-700'}>{lot.status_qualidade}</span></td>
                     <td className="h-8 px-2">{new Date(lot.created_at).toLocaleDateString('pt-BR')}</td>
                     <td className="h-8 px-2 text-center">{lot.certificado_path ? <div className="inline-flex items-center justify-center gap-1">{hasSignedLink && signedCertificate && <a href={signedCertificate.url} target="_blank" rel="noreferrer" className="text-sky-700 underline">ABRIR PDF</a>}<button type="button" onClick={() => void prepareCertificateLink(lot.certificado_path!)} className="h-[30px] border border-slate-300 bg-white px-2 text-[9px] font-semibold">GERAR LINK</button></div> : <span className="text-slate-400">SEM CERTIFICADO</span>}</td>
                   </tr>
