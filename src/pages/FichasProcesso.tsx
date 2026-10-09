@@ -174,7 +174,7 @@ export default function FichasProcesso(){
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível excluir a ficha.')}finally{setBusy(false)}
  }
 
- return <main className="min-h-screen bg-slate-100 text-slate-900">
+ return <main className="erp-global-surface erp-compact min-h-screen bg-slate-100 text-slate-900">
   <div className="sticky top-0 z-30 border-b border-slate-700 bg-slate-900 px-4 py-3 text-white shadow-lg">
    <div className="mx-auto flex max-w-[1700px] items-center justify-between gap-4">
     <div><p className="text-sm font-bold uppercase tracking-[0.18em] text-sky-300">ERP INDUSTRIAL • ENGENHARIA</p><h1 className="text-xl font-extrabold sm:text-2xl">Ficha de Processo Premium</h1></div>
