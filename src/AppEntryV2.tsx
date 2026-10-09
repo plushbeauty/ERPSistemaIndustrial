@@ -73,6 +73,7 @@ const ProdutosVendasIndustrial = lazyPage(() => import('./pages/ProdutosVendasIn
 const ModuloCadastroProdutos = lazyPage(() => import('./pages/cadastro-produtos/ModuloCadastroProdutos'), 'ModuloCadastroProdutos')
 const TabletDashboard = lazyPage(() => import('./pages/TabletDashboard'), 'TabletDashboard')
 const PedidoVendaCompleto = lazyPage(() => import('./pages/NovoPedido'), 'NovoPedido')
+const LaboratorioVisual = lazyPage(() => import('./pages/manutencao/LaboratorioVisual'), 'default')
 const DashboardComercial = lazyPage(() => import('./pages/DashboardComercial'), 'DashboardComercial')
 const VendasCentral = lazyPage(() => import('./pages/VendasCentral'), 'default')
 const VendasCatalogoDigital = lazyPage(() => import('./pages/VendasCatalogoDigital'), 'VendasCatalogoDigital')
@@ -583,7 +584,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras/solicitacoes" element={<Navigate to="/compras/requisicoes" replace />} />
       <Route path="/compras-solicitacao" element={<ComprasSolicitacaoManual />} />
       <Route path="/manutencao/ordens" element={<ManutencaoOrdens />} />
-      <Route path="/manutencao/laboratorio-visual" element={<PedidoVendaCompleto />} />
+      <Route path="/manutencao/laboratorio-visual" element={<LaboratorioVisual />} />
       <Route path="/fiscal/carteira" element={<FiscalCarteiraNFe />} />
       <Route path="/qualidade/rnc" element={<QualidadeRNC />} />
       <Route path="/estoque/recebimento" element={<EstoqueRecebimentoLotes />} />
