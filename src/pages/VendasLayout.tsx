@@ -61,7 +61,9 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
  const vendas=useVendasStatus()
  useEffect(()=>{if(isVendas)void vendas.load().catch(()=>undefined)},[isVendas,vendas.load])
 
- const showCards=showStatusCards ?? true
+ const pathsWithoutStatusCards=['/vendas/catalogo-digital','/vendas/catalogo-digital/gestao','/vendas/orcamentos','/vendas/analise-custos','/vendas/metas']
+ const routeHidesCards=pathsWithoutStatusCards.some((route)=>pathname===route||pathname.startsWith(route+'/'))
+ const showCards=showStatusCards ?? !routeHidesCards
 
  return <ERPHorizontalShell>
   <main className="synqra-workspace-main">
