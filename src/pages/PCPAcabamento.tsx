@@ -7,6 +7,7 @@ import { fetchAllPages } from '../lib/supabasePagination'
 type OP = LookupRecord & { quantidade_boa_disponivel: number }
 type ProductionPosting = { ordem_producao_id: string; quantidade_boa: number | null }
 type FinishingPosting = { ordem_producao_id: string; quantidade_recebida: number | null }
+type WorkCenter = { id: string; codigo_posto: string; nome_posto: string }
 
 const input = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] text-slate-900 outline-none focus:border-[#2D8DB8]'
 const label = 'grid gap-[2px] text-[9px] font-medium uppercase tracking-wide text-slate-600'
@@ -14,7 +15,8 @@ const label = 'grid gap-[2px] text-[9px] font-medium uppercase tracking-wide tex
 export default function PCPAcabamento() {
   const [ops, setOps] = useState<OP[]>([])
   const [op, setOp] = useState('')
-  const [posto, setPosto] = useState('Bancada de Rebarbação Manual')
+  const [posto, setPosto] = useState('')
+  const [postos, setPostos] = useState<WorkCenter[]>([])
   const [recebida, setRecebida] = useState(0)
   const [acabada, setAcabada] = useState(0)
   const [refugo, setRefugo] = useState(0)
@@ -30,14 +32,19 @@ export default function PCPAcabamento() {
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
       const empresaId = String(company.data)
-      const [orders, production, finishing] = await Promise.all([
+      const [orders, production, finishing, workCentersResult] = await Promise.all([
         fetchAllPages<{ id: string; numero_op: string | null; numero: string | number | null; quantidade: number | null }>((from, to) =>
           supabase.from('erp_ordens_producao').select('id,numero_op,numero,quantidade', { count: 'exact' }).eq('empresa_id', empresaId).order('created_at', { ascending: false }).range(from, to)),
         fetchAllPages<ProductionPosting>((from, to) =>
           supabase.from('erp_producao_apontamentos').select('ordem_producao_id,quantidade_boa', { count: 'exact' }).eq('empresa_id', empresaId).range(from, to)),
         fetchAllPages<FinishingPosting>((from, to) =>
           supabase.from('erp_acabamentos').select('ordem_producao_id,quantidade_recebida', { count: 'exact' }).eq('empresa_id', empresaId).range(from, to)),
+        supabase.from('erp_postos_trabalho').select('id,codigo_posto,nome_posto').eq('ativo', true).order('codigo_posto'),
       ])
+      if (workCentersResult.error) throw workCentersResult.error
+      const workCenters = (workCentersResult.data ?? []) as WorkCenter[]
+      setPostos(workCenters)
+      setPosto(current => workCenters.some(item => item.nome_posto === current) ? current : workCenters[0]?.nome_posto ?? '')
       const goodByOrder = new Map<string, number>()
       for (const posting of production) {
         const key = posting.ordem_producao_id
@@ -92,6 +99,7 @@ export default function PCPAcabamento() {
     setError('')
     setMsg('')
     if (!op) { setError('Selecione uma OP de origem.'); return }
+    if (!postos.some(item => item.nome_posto === posto)) { setError('Cadastre/ative um posto de trabalho antes de registrar acabamento.'); return }
     if (!Number.isFinite(recebida) || !Number.isFinite(acabada) || !Number.isFinite(refugo) || !Number.isFinite(retrabalho) || recebida <= 0) {
       setError('Informe quantidades válidas maiores que zero para o lote recebido.')
       return
@@ -147,7 +155,7 @@ export default function PCPAcabamento() {
           <h2 className="mb-2 text-[12px] font-semibold">Registro de acabamento</h2>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div className="md:col-span-2"><EntityCodeLookup label="OP DE ORIGEM" value={op} records={ops} onChange={setOp} onSelect={record => selecionarOp(record.id)} required compact helper="Selecione uma OP com saldo bom disponível. O saldo é calculado pelos apontamentos de produção menos o que já entrou em acabamento."/></div>
-            <label className={label}>Posto de trabalho<select className={input} value={posto} onChange={event => setPosto(event.target.value)}><option>Bancada de Rebarbação Manual</option><option>Posto de Pintura / Jateamento</option><option>Embalagem</option></select></label>
+            <label className={label}>Posto de trabalho<select className={input} value={posto} onChange={event => setPosto(event.target.value)} required><option value="">Selecione posto cadastrado…</option>{postos.map(item => <option key={item.id} value={item.nome_posto}>{item.codigo_posto} — {item.nome_posto}</option>)}</select></label>
             <label className={label}>Quantidade recebida<input className={input} type="number" min="0.001" step="0.001" max={saldoBom} value={recebida} onChange={event => setRecebida(Number(event.target.value))}/></label>
             <label className={label}>Quantidade acabada<input className={input} type="number" min="0" step="0.001" value={acabada} onChange={event => setAcabada(Number(event.target.value))}/></label>
             <label className={label}>Quantidade de refugo<input className={input} type="number" min="0" step="0.001" value={refugo} onChange={event => setRefugo(Number(event.target.value))}/></label>
