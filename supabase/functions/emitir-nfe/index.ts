@@ -196,7 +196,6 @@ Deno.serve(async (req: Request) => {
     if (!itens?.length) return response({ error: "A NF-e precisa de pelo menos um item." }, 422);
 
     const documento = normalizedDocument(doc.destinatario_documento);
-    const isCpf = documento.length === 11;
     const isCnpj = documento.length === 14;
     const uf = text(doc.destinatario_uf).toUpperCase();
     const destinatarioNome = text(doc.destinatario_nome);
@@ -342,7 +341,6 @@ Deno.serve(async (req: Request) => {
     const current=text(last.status);
     const chave=digits(last.chaveAcesso ?? last.chave_acesso);
     const protocolo=text(last.nProt ?? last.protocolo);
-    const motivo=text(last.xMotivo ?? last.motivo ?? last.errorMessage);
     if(current==="issued") {
       const xmlRes=await fetch(BASE+"/nfe/invoices/"+encodeURIComponent(invoiceId)+"/xml",{headers:{"x-api-key":apiKey}});
       if (!xmlRes.ok || chave.length !== 44 || !protocolo) {
