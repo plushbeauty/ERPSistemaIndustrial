@@ -115,8 +115,7 @@ export default function QualidadePFMEA() {
     }
     setBusy(true)
     try {
-      const result = await supabase.from('erp_fmea').upsert({
-        empresa_id: empresaId,
+      const payload = {
         codigo: form.codigo.trim(),
         processo: form.processo.trim(),
         etapa: form.etapa.trim(),
@@ -131,7 +130,10 @@ export default function QualidadePFMEA() {
         responsavel: form.responsavel.trim() || null,
         data_limite: form.data_limite || null,
         status: form.status,
-      }, { onConflict: 'empresa_id,codigo' })
+      }
+      const result = selectedId
+        ? await supabase.from('erp_fmea').update(payload).eq('id', selectedId).eq('empresa_id', empresaId)
+        : await supabase.from('erp_fmea').insert({ ...payload, empresa_id: empresaId })
       if (result.error) throw result.error
       setMessage('PFMEA gravado. NPR calculado pelo banco com base em S × O × D.')
       await load()
