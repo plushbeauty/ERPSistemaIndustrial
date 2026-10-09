@@ -229,6 +229,12 @@ begin
   if p_certificado_path is null or left(p_certificado_path, length(v_prefix)) <> v_prefix then
     raise exception 'O certificado deve estar armazenado no caminho privado da empresa atual.';
   end if;
+  if not exists (
+    select 1 from storage.objects
+    where bucket_id = 'documentos-erp' and name = p_certificado_path
+  ) then
+    raise exception 'O arquivo de certificado não existe no bucket privado de documentos.';
+  end if;
 
   if p_status_certificado = 'REPROVADO' then
     if not coalesce(public.erp_has_permission('qualidade', 'criar'), false) then
