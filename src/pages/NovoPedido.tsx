@@ -79,7 +79,7 @@ export default function NovoPedido(){
    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
     <div><div className="text-[9px] uppercase tracking-wide text-slate-500">Vendas / Pedidos / Novo</div><h2 className="mt-0.5 text-[18px] font-semibold text-slate-800">Entrada de Pedido</h2></div>
     <div className="flex flex-wrap items-center gap-1">
-     <span className="mr-1 text-[10px] text-slate-500">{edPedido?\`Pedido nº ${edPedido}\`:'Novo pedido'}</span>
+     <span className="mr-1 text-[10px] text-slate-500">{edPedido ? `Pedido nº ${edPedido}` : 'Novo pedido'}</span>
      <button type="button" disabled={loading} onClick={()=>void save(false)} className="flex h-[30px] items-center gap-1 rounded-[2px] border border-blue-700 bg-blue-600 px-3 text-[11px] font-medium text-white hover:bg-blue-700 disabled:opacity-50"><Save size={12}/>Salvar rascunho</button>
      <button type="button" disabled={loading} onClick={()=>void save(true)} className="flex h-[30px] items-center gap-1 rounded-[2px] border border-emerald-700 bg-emerald-600 px-3 text-[11px] font-medium text-white hover:bg-emerald-700 disabled:opacity-50"><Check size={12}/>Confirmar pedido</button>
      <button type="button" onClick={()=>window.print()} className="flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2.5 text-[11px] text-slate-700 hover:bg-slate-50"><Printer size={12}/>Imprimir</button>
