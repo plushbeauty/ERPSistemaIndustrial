@@ -172,7 +172,12 @@ export default function TabletDashboard() {
               className="synqra-module-card"
               title={label}
               onClick={() => {
-                if (route) navigate(route)
+                if (!route) return
+                if (key === 'manutencao') {
+                  window.open(route, '_blank', 'noopener,noreferrer')
+                } else {
+                  navigate(route)
+                }
               }}
             >
               <span className="synqra-module-icon" aria-hidden="true">
