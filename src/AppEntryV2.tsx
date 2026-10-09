@@ -468,6 +468,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/dashboard-oee" element={<PCPDashboardOEE />} />
       <Route path="/pcp/tablet-operador" element={<PCPTabletOperador />} />
       <Route path="/qualidade" element={<QualidadeIndustrial />} />
+      <Route path="/qualidade/recebimento" element={<QualidadeIndustrial />} />
       <Route path="/qualidade/especificacoes" element={<QualidadeEspecificacoes />} />
       <Route path="/qualidade/instrumentos" element={<QualidadeInstrumentosCadastro />} />
       <Route path="/qualidade/liberacao-lote" element={<AcompanhamentoNaoConformidade />} />
@@ -475,6 +476,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/pfmea" element={<QualidadePFMEA />} />
       <Route path="/qualidade/documentos" element={<DocumentosQualidadeControle />} />
       <Route path="/qualidade/inspecao-processo" element={<QualidadeInspecaoProcesso />} />
+      <Route path="/qualidade/inspecao-final" element={<QualidadeInspecaoProcesso inspectionType="FINAL" />} />
       <Route path="/qualidade/metodologia-8d" element={<QualidadeMetodologia8D />} />
       <Route path="/qualidade/auditoria-5s" element={<QualidadeAuditoria5S />} />
       <Route path="/qualidade/lista-mestre" element={<QualidadeListaMestre />} />
