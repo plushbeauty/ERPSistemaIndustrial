@@ -260,7 +260,7 @@ export default function QualidadeIndustrial() {
     }
   }
 
-  const saveCepMeasurements = async (data: { valores: number[]; media: number; desvioPadrao: number; totalControlado: number; numeroDefeituosos: number }) => {
+  const saveCepMeasurements = async (data: { valores: number[]; media: number; desvioPadrao: number; totalControlado: number; numeroDefeituosos: number; cp: number | null; cpl: number | null; cpu: number | null; cpk: number | null; amplitude: number }) => {
     setError(''); setNotice('')
     if (!selectedReceiving || !selectedSpec || selectedSpec.nominal === null || selectedSpec.limite_inferior === null || selectedSpec.limite_superior === null) {
       setError('Selecione uma inspeção e uma especificação dimensional completa antes da coleta CEP.')
@@ -291,7 +291,7 @@ export default function QualidadeIndustrial() {
       }))
       const result = await supabase.from('erp_qualidade_inspecoes_dimensionais').insert(payload)
       if (result.error) throw result.error
-      setNotice(`CEP registrado no banco: 18 amostras, média ${data.media.toFixed(5)} mm, desvio padrão ${data.desvioPadrao.toFixed(5)} mm, ${data.numeroDefeituosos} NOK.`)
+      setNotice(`CEP registrado no banco: 18 amostras; média ${data.media.toFixed(5)} mm; desvio padrão amostral ${data.desvioPadrao.toFixed(5)} mm; Cp ${data.cp === null ? '—' : data.cp.toFixed(3)}; Cpk ${data.cpk === null ? '—' : data.cpk.toFixed(3)}; amplitude ${data.amplitude.toFixed(5)} mm; ${data.numeroDefeituosos} NOK.`)
       await load()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao gravar coleta CEP.')
@@ -412,7 +412,7 @@ export default function QualidadeIndustrial() {
           <div className="qms-measure-status">DESVIO: <strong>{dimensionalPreview === null ? '—' : dimensionalPreview.toFixed(5)} mm</strong> · STATUS: <strong className={dimensionalStatus === 'OK' ? 'blue-status' : dimensionalStatus === 'NOK' ? 'red-status' : ''}>{dimensionalStatus}</strong><button className="qms-btn" type="button" disabled={busy} onClick={() => void saveDimensional()}>REGISTRAR MEDIÇÃO</button></div>
           <div className="qms-table-wrap qms-mt"><table><thead><tr><th>Especificação</th><th>Nº Peça</th><th>Cavidade</th><th>Nominal mm</th><th>Sup. +</th><th>Inf. -</th><th>Medido</th><th>Desvio</th><th>Status</th><th>Instrumento</th></tr></thead><tbody>{dimensionals.filter((row) => !selectedReceiving || row.inspecao_recebimento_id === selectedReceiving).map((row) => <tr key={row.id}><td>{specifications.find(spec=>spec.id===row.plano_inspecao_id)?.codigo || '—'}</td><td className="num">{row.numero_peca_amostrada}</td><td>{row.cavidade_molde || '—'}</td><td className="num">{row.cota_nominal_mm}</td><td className="num">{row.tolerancia_superior_mm}</td><td className="num">{row.tolerancia_inferior_mm}</td><td className="num">{row.valor_medido_mm ?? '—'}</td><td className="num">{row.desvio_mm ?? '—'}</td><td><span className={row.status === 'OK' ? 'status-ok' : row.status === 'NOK' ? 'status-nok' : 'status-pending'}>{row.status}</span></td><td>{row.instrumento || '—'}</td></tr>)}</tbody></table></div>
           {selectedSpec && selectedSpec.nominal !== null && selectedSpec.limite_inferior !== null && selectedSpec.limite_superior !== null
-            ? <div className="qms-mt"><ColetaDimensionalCEP limiteInferior={Number(selectedSpec.limite_inferior)} limiteSuperior={Number(selectedSpec.limite_superior)} lote={currentReceivingLot?.lote_interno} codigoProduto={currentProduct?.codigo} descricaoProduto={selectedSpec.caracteristica + (selectedSpec.unidade ? ` (${selectedSpec.unidade})` : '')} onRegistrar={data => { void saveCepMeasurements(data) }}/></div>
+            ? <div className="qms-mt"><ColetaDimensionalCEP limiteInferior={Number(selectedSpec.limite_inferior)} limiteSuperior={Number(selectedSpec.limite_superior)} nominal={Number(selectedSpec.nominal)} lote={currentReceivingLot?.lote_interno} codigoProduto={currentProduct?.codigo} descricaoProduto={selectedSpec.caracteristica + (selectedSpec.unidade ? ` (${selectedSpec.unidade})` : '')} onRegistrar={data => { void saveCepMeasurements(data) }}/></div>
             : <div className="qms-message qms-mt">Selecione uma especificação técnica ativa com nominal e limites completos para habilitar a coleta CEP de 18 amostras.</div>}
         </section>}
 
