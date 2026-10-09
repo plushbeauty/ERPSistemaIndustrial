@@ -1,54 +1,75 @@
-import { Link } from 'react-router-dom'
+import {
+  AlertTriangle,
+  BarChart3,
+  ClipboardList,
+  FileText,
+  Gauge,
+  History,
+  ListChecks,
+  ShieldCheck,
+  ShieldX,
+  Wrench,
+} from 'lucide-react'
+import { NavLink } from 'react-router-dom'
 import { useSynqraLayout } from '../../layout/SynqraLayoutContext'
 
 const items = [
-  ['Dashboard SGQ', '/qualidade/dashboard-rnc'],
-  ['Qualidade Geral', '/qualidade'],
-  ['Inspeção em Processo', '/qualidade/inspecao-processo'],
-  ['Registro RPNC / CAPA', '/qualidade/rnc'],
-  ['8D — Ações Corretivas', '/qualidade/metodologia-8d'],
-  ['Auditoria 5S', '/qualidade/auditoria-5s'],
-  ['PFMEA / Risco', '/qualidade/pfmea'],
-  ['Procedimentos e documentos', '/qualidade/documentos'],
-  ['Lista Mestre', '/qualidade/lista-mestre'],
-  ['Relatórios SGQ', '/qualidade/relatorios-documentos'],
-  ['Calibração / Metrologia', '/qualidade/metrologia'],
+  { label: 'Visão geral da Qualidade', path: '/qualidade', icon: ShieldCheck },
+  { label: 'Inspeções de lotes', path: '/qualidade/liberacao-lote', icon: ClipboardList },
+  { label: 'Inspeção em processo', path: '/qualidade/inspecao-processo', icon: ListChecks },
+  { label: 'Matriz FMEA / PFMEA', path: '/qualidade/pfmea', icon: AlertTriangle },
+  { label: 'RNC e planos CAPA', path: '/qualidade/rnc', icon: ShieldX },
+  { label: 'Painel CEP / gráficos', path: '/qualidade/dashboard-rnc', icon: BarChart3 },
+  { label: 'Quarentena de lotes', path: '/qualidade/quarentena', icon: History },
+  { label: 'Especificações e documentos', path: '/qualidade/documentos', icon: FileText },
+  { label: 'Procedimentos', path: '/qualidade/procedimentos', icon: FileText },
+  { label: 'Metrologia / calibração', path: '/qualidade/metrologia', icon: Gauge },
+  { label: 'Auditoria 5S', path: '/qualidade/auditoria-5s', icon: Wrench },
 ]
 
 export default function QualitySidebar({ active }: { active: string }) {
   const hostedBySynqra = useSynqraLayout()
 
   return (
-    <aside className={hostedBySynqra
-      ? 'col-span-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm'
-      : 'hidden rounded-xl border border-slate-200 bg-white shadow-sm lg:block'}>
-      {!hostedBySynqra && <div className="rounded-t-xl border-b border-slate-700 bg-slate-900 p-4 text-white">
-        <p className="text-xs font-black uppercase tracking-widest text-sky-300">QUALIDADE</p>
-        <h2 className="mt-1 text-lg font-extrabold">Workspace Industrial</h2>
-      </div>}
+    <aside
+      className={hostedBySynqra
+        ? 'col-span-full min-w-0 overflow-hidden border border-slate-200 bg-white'
+        : 'hidden border border-slate-200 bg-white lg:block'}
+    >
+      {!hostedBySynqra && (
+        <div className="border-b border-slate-200 bg-white px-3 py-2">
+          <div className="flex items-center gap-2 text-slate-800">
+            <ShieldCheck size={16} aria-hidden="true" />
+            <p className="text-[11px] font-semibold uppercase tracking-wide">Qualidade</p>
+          </div>
+          <p className="mt-1 text-[10px] text-slate-500">Workspace Industrial</p>
+        </div>
+      )}
       <nav
         aria-label="Navegação da qualidade"
         className={hostedBySynqra
-          ? 'flex min-w-0 gap-1 overflow-x-auto p-2'
-          : 'p-2'}
+          ? 'flex min-w-0 gap-1 overflow-x-auto p-1'
+          : 'space-y-px p-1'}
       >
-        {items.map(([label, path]) => (
-          <Link
+        {items.map(({ label, path, icon: Icon }) => (
+          <NavLink
             key={path}
             to={path}
             aria-current={active === path ? 'page' : undefined}
-            className={`${hostedBySynqra
-              ? 'min-h-10 flex-none whitespace-nowrap px-3 text-xs'
-              : 'mb-1 min-h-11 w-full px-3 py-2 text-left text-sm'} flex items-center rounded-lg ${
-              active === path
-                ? hostedBySynqra
-                  ? 'bg-blue-50 font-extrabold text-[#0052cc] ring-1 ring-blue-100'
-                  : 'bg-sky-100 font-extrabold text-sky-900'
-                : 'font-semibold text-slate-700 hover:bg-slate-100 hover:text-[#0052cc]'
-            }`}
+            className={({ isActive }) => {
+              const selected = isActive || active === path
+              return `${hostedBySynqra
+                ? 'min-h-8 flex-none gap-1.5 whitespace-nowrap px-2 text-[10px]'
+                : 'min-h-8 w-full gap-2 px-2 text-left text-[11px]'} flex items-center rounded-[2px] border-l-2 transition-colors ${
+                selected
+                  ? 'border-[#2D8DB8] bg-neutral-100 font-semibold text-[#123B50]'
+                  : 'border-transparent font-medium text-slate-600 hover:bg-slate-50 hover:text-[#123B50]'
+              }`
+            }}
           >
-            {label}
-          </Link>
+            <Icon size={hostedBySynqra ? 14 : 14} strokeWidth={1.8} aria-hidden="true" />
+            <span>{label}</span>
+          </NavLink>
         ))}
       </nav>
     </aside>
