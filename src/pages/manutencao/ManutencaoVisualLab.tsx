@@ -3,8 +3,8 @@ import {
   Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, Bell, CalendarClock,
   CheckCircle2, ChevronDown, ChevronRight, CircleHelp, ClipboardCheck, Clock3,
   Command, Download, FileText, Filter, Gauge, History, LayoutDashboard, MoreHorizontal,
-  Package, Plus, RefreshCw, Search, Settings2, ShieldCheck, SlidersHorizontal,
-  Sparkles, Wrench, X, Zap, Cog, CalendarDays, ChartNoAxesCombined, CircleDot,
+  Plus, RefreshCw, Search, Settings2, ShieldCheck, SlidersHorizontal,
+  Sparkles, Wrench, X, Zap, Cog, CalendarDays, ChartNoAxesCombined,
 } from 'lucide-react'
 
 type Ordem = {
@@ -131,7 +131,7 @@ export default function ManutencaoVisualLab() {
 
   return (
     <main className="ml-lab">
-      <style>{\`
+      <style>{`
         .ml-lab{--ink:#123b50;--muted:#637986;--line:#d8e4e9;--blue:#2d8db8;--cyan:#48b7c7;--bg:#f2f7f9;min-height:100vh;background:var(--bg);color:#183b4a;font:11px/1.4 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
         .ml-lab *{box-sizing:border-box}.ml-layout{display:grid;grid-template-columns:184px minmax(0,1fr);min-height:100vh}
         .ml-sidebar{background:#102f40;color:#d8e8ef;padding:10px 8px;display:flex;flex-direction:column;gap:12px;min-height:100vh}
@@ -164,7 +164,7 @@ export default function ManutencaoVisualLab() {
         @media(max-width:1180px){.ml-overview-grid,.ml-section-grid{grid-template-columns:minmax(0,1fr)}.ml-content{padding:14px}.ml-topbar{padding:0 14px}}
         @media(max-width:1000px){.ml-layout{grid-template-columns:54px minmax(0,1fr)}.ml-sidebar{padding:12px 6px}.ml-brand{justify-content:center;padding:3px 0 14px}.ml-brand-copy,.ml-side-caption,.ml-nav-label,.ml-nav-count,.ml-sidebar-foot-copy{display:none}.ml-nav button{justify-content:center;padding:0}.ml-sidebar-foot{justify-content:center;padding:10px 0}.ml-detail-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
         @media(max-width:680px){.ml-layout{grid-template-columns:1fr}.ml-sidebar{display:none}.ml-topbar{height:44px;min-height:44px;padding:0 9px}.ml-crumb{font-size:8px;gap:4px}.ml-crumb span:nth-of-type(1),.ml-crumb svg:nth-of-type(2){display:none}.ml-live{display:none}.ml-content{padding:12px 8px 20px}.ml-title-row{display:block}.ml-title-row h1{font-size:20px}.ml-title-actions{justify-content:flex-start;margin-top:11px}.ml-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.ml-kpi{padding:9px}.ml-kpi-value{font-size:21px}.ml-panel-head{padding:0 8px}.ml-filterbar{padding:7px;gap:5px}.ml-search{flex-basis:100%}.ml-filter-extra{width:100%}.ml-select{flex:1;min-width:0}.ml-table{min-width:760px}.ml-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ml-bottom-strip{align-items:flex-start;flex-direction:column}.ml-title-actions .ml-btn{flex:1}.ml-title-actions .ml-icon-btn{flex:none}.ml-event{grid-template-columns:55px 12px minmax(0,1fr)}}
-      \`}</style>
+      `}</style>
       <div className="ml-layout">
         <aside className="ml-sidebar">
           <div className="ml-brand"><div className="ml-brand-mark"><Wrench size={16}/></div><div className="ml-brand-copy"><strong>SGQERP</strong><small>INDUSTRIAL · CMMS</small></div></div>
