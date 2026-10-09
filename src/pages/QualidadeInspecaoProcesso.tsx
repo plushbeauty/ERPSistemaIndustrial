@@ -148,7 +148,7 @@ export default function QualidadeInspecaoProcesso({ inspectionType = 'PROCESSO' 
       const rejected = Number(quantidadeReprovada)
       if (!Number.isFinite(inspected) || inspected <= 0) throw new Error('Informe a quantidade inspecionada.')
       if (!Number.isFinite(approved) || approved < 0 || !Number.isFinite(rejected) || rejected < 0) throw new Error('Informe quantidades aprovadas e reprovadas válidas.')
-      if (approved + rejected !== inspected) throw new Error('Aprovadas + reprovadas deve ser igual à quantidade inspecionada.')
+      if (Math.abs(approved + rejected - inspected) > 1e-9) throw new Error('Aprovadas + reprovadas deve ser igual à quantidade inspecionada.')
       if (!medicoes.length || medicoes.some(item => !item.caracteristica.trim() || !item.encontrado.trim())) throw new Error('Registre ao menos uma característica e seu valor encontrado.')
       if (medicoes.some(item => item.limite_inferior === null && item.limite_superior === null && !['VISUAL','DOCUMENTAL'].includes(item.metodo_inspecao))) {
         throw new Error('Toda medição dimensional ou funcional precisa de limite técnico. Para visual/documental, use CONFORME ou NÃO CONFORME.')
