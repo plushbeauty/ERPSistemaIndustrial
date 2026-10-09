@@ -177,22 +177,20 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
   }
 
   return (
-    <main className="min-h-screen bg-[#f4fbfd] p-4 text-slate-900 md:p-6">
-      <div className="mx-auto max-w-7xl">
-        <header className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-300 pb-4">
-          <div className="flex items-center gap-3">
-            <Inbox className="h-7 w-7 text-sky-700" aria-hidden="true" />
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.16em] text-sky-700">Almoxarifado &gt; Recebimento de insumos</p>
-              <h1 className="text-2xl font-black tracking-tight text-slate-950">Recebimento de matéria-prima e laudo do fornecedor</h1>
-            </div>
+    <VendasLayout title="Estoque / Recebimento de lotes" subtitle="Certificado do fornecedor • rastreabilidade por lote • entrada real no saldo" showStatusCards={false}>
+    <main data-stock-receiving className="erp-global-surface erp-compact erp-stock-receiving min-h-screen bg-[#f4fbfd] p-2 text-slate-900">
+      <div className="mx-auto max-w-[1800px]">
+        <header className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-slate-300 pb-2">
+          <div className="flex items-center gap-2">
+            <Inbox className="h-4 w-4 text-sky-700" aria-hidden="true" />
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-sky-700">Entrada controlada • certificado PDF • saldo real</p>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <input ref={fileInputRef} type="file" accept="application/pdf,.pdf" onChange={handleCertificateChange} className="sr-only" />
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="inline-flex h-[54px] items-center gap-2 rounded-md border border-slate-400 bg-white px-4 text-sm font-black text-slate-800 shadow-sm hover:bg-slate-50"
+              className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-400 bg-white px-2.5 text-[10px] font-semibold text-slate-800 hover:bg-slate-50"
             >
               <Upload className="h-4 w-4" /> UPLOAD CERTIFICADO QUÍMICO
             </button>
@@ -200,7 +198,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
               form="recebimento-lote-form"
               type="submit"
               disabled={busy || loading}
-              className="inline-flex h-[54px] items-center gap-2 rounded-md bg-sky-700 px-5 text-sm font-black text-white shadow-sm hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-[30px] items-center gap-1 rounded-[2px] bg-sky-700 px-3 text-[10px] font-semibold text-white hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Save className="h-4 w-4" /> {busy ? 'INTEGRANDO...' : 'INTEGRAR AO SALDO REAL'}
             </button>
@@ -340,7 +338,41 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
             </div>
           </section>
         </form>
+
+        <section className="mt-2 border border-slate-300 bg-white p-2">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
+            <div>
+              <h2 className="text-[12px] font-semibold text-slate-900">Rastreabilidade de lotes recebidos</h2>
+              <p className="text-[10px] text-slate-500">Lotes e certificados vinculados ao tenant atual. O saldo disponível vem do banco.</p>
+            </div>
+            <span className="text-[10px] tabular-nums text-slate-600">{loading ? 'CARREGANDO...' : `${lots.length} LOTES`}</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[900px] border-collapse text-[10px]">
+              <thead className="bg-slate-100 text-left text-slate-600"><tr><th className="h-8 px-2 text-[9px]">Insumo</th><th className="h-8 px-2 text-[9px]">NF-e</th><th className="h-8 px-2 text-[9px]">Lote fornecedor</th><th className="h-8 px-2 text-right text-[9px]">Qtd. inicial</th><th className="h-8 px-2 text-right text-[9px]">Disponível</th><th className="h-8 px-2 text-[9px]">Qualidade</th><th className="h-8 px-2 text-[9px]">Entrada</th><th className="h-8 px-2 text-center text-[9px]">Certificado</th></tr></thead>
+              <tbody>
+                {loading && Array.from({ length: 3 }, (_, index) => <tr key={`skeleton-${index}`}><td colSpan={8} className="p-0"><div className="my-1 h-[30px] animate-pulse bg-slate-100"/></td></tr>)}
+                {!loading && lots.map(lot => {
+                  const product = products.find(item => item.id === lot.produto_id)
+                  const hasSignedLink = signedCertificate?.path === lot.certificado_path
+                  return <tr key={lot.id} className="border-b border-slate-200 hover:bg-neutral-50/80">
+                    <td className="h-8 px-2">{product ? `${product.codigo ?? ''} · ${product.nome ?? ''}` : lot.produto_id}</td>
+                    <td className="h-8 px-2">{lot.nf_numero || '—'}</td>
+                    <td className="h-8 px-2 font-medium">{lot.lote_fornecedor}</td>
+                    <td className="h-8 px-2 text-right tabular-nums">{numberFormat.format(lot.quantidade_inicial)}</td>
+                    <td className="h-8 px-2 text-right tabular-nums">{numberFormat.format(lot.quantidade_disponivel)}</td>
+                    <td className="h-8 px-2"><span className={lot.status_qualidade === 'APROVADO' ? 'font-semibold text-emerald-700' : 'font-semibold text-rose-700'}>{lot.status_qualidade}</span></td>
+                    <td className="h-8 px-2">{new Date(lot.created_at).toLocaleDateString('pt-BR')}</td>
+                    <td className="h-8 px-2 text-center">{lot.certificado_path ? <div className="inline-flex items-center justify-center gap-1">{hasSignedLink && signedCertificate && <a href={signedCertificate.url} target="_blank" rel="noreferrer" className="text-sky-700 underline">ABRIR PDF</a>}<button type="button" onClick={() => void prepareCertificateLink(lot.certificado_path!)} className="h-[30px] border border-slate-300 bg-white px-2 text-[9px] font-semibold">GERAR LINK</button></div> : <span className="text-slate-400">SEM CERTIFICADO</span>}</td>
+                  </tr>
+                })}
+                {!loading && !lots.length && <tr><td colSpan={8} className="h-16 text-center text-[10px] text-slate-500">Nenhum lote rastreável recebido para esta empresa.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
     </main>
+    </VendasLayout>
   )
 }
