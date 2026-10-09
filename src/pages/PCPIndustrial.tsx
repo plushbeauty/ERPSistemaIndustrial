@@ -276,7 +276,7 @@ const heightBucket=(ratio:number)=>{
 const tabs:[Tab,string,string][]=[['visao','Visão geral','Gauge'],['novaop','Criar Nova OP','Plus'],['pedidos','Pedidos / Demanda','ClipboardList'],['ops','Ordens de Produção','Factory'],['materiais','Materiais / MRP','Package'],['producao','Apontar produção','Play'],['programacao','Programação / Gantt','CalendarDays'],['capacidade','Capacidade / Máquinas','Wrench'],['qualidade','Qualidade / Defeitos','ShieldCheck']]
 
  return <main className={`pcp-modern-page pcp-industrial-shell${hostedBySynqra?' pcp-hosted-by-synqra':''}`}>
-  <nav className={`pcp-sidebar${hostedBySynqra?' pcp-sidebar-context':''}`} aria-label="Navegação do PCP">
+  {!hostedBySynqra && <nav className="pcp-sidebar" aria-label="Navegação do PCP">
    <div className="pcp-sidebar-brand"><img src="/logo/sgq-erp.png" alt="SYNQRA ERP & SGQ INDUSTRIAL"/><div><strong>SYNQRA ERP & SGQ INDUSTRIAL</strong><small>PCP INDUSTRIAL</small></div></div>
    <button className="pcp-side-item" onClick={()=>window.location.href='/erp-industrial'}><span><LayoutDashboard size={14}/></span> DASHBOARD</button>
    <div className="pcp-side-section">PLANEJAMENTO E CONTROLE</div>
@@ -299,8 +299,16 @@ const tabs:[Tab,string,string][]=[['visao','Visão geral','Gauge'],['novaop','Cr
    <button className="pcp-side-item" onClick={()=>window.location.href='/central-custos-industrial'}><span><FileText size={14}/></span> RELATÓRIOS / CUSTOS</button>
    <div className="pcp-side-spacer"/>
    <button className="pcp-side-item" onClick={()=>window.location.href='/manual-usuario'}><span><CircleHelp size={14}/></span> MANUAL</button>
-  </nav>
+  </nav>}
   <section className="pcp-main">
+   {hostedBySynqra && <>
+    <nav aria-label="Navegação rápida do PCP" className="mb-2 flex min-w-0 gap-1 overflow-x-auto border border-[#cbdde5] bg-white p-1.5">
+     {tabs.map(([id,label])=><button key={id} type="button" aria-current={tab===id?'page':undefined} onClick={()=>selectTab(id)} className={`h-[30px] shrink-0 border px-2.5 text-[10px] font-medium uppercase tracking-wide ${tab===id?'border-[#17445A] bg-[#17445A] text-white':'border-[#d5e1e7] bg-white text-[#234d61] hover:bg-[#edf7fb]'}`}>{label}</button>)}
+    </nav>
+    <nav aria-label="Atalhos do PCP e qualidade" className="mb-3 flex min-w-0 gap-1 overflow-x-auto border-b border-[#cbdde5] pb-2">
+     {[['Planejamento avançado','/pcp/planejamento'],['Sequenciamento','/pcp/sequenciamento'],['Dashboard OEE','/pcp/dashboard-oee'],['Apuração de turno','/pcp/apuracao-turno'],['Acabamento','/pcp/acabamento'],['Paradas / Setup','/pcp/paradas'],['BOM','/pcp/engenharia-bom'],['Ficha de processo','/pcp/ficha-processo'],['RPNC / CAPA','/qualidade/rnc']].map(([label,route])=><button key={route} type="button" onClick={()=>{window.location.href=route}} className="h-[27px] shrink-0 border border-[#cbdde5] bg-[#f7fafc] px-2 text-[10px] text-[#234d61] hover:border-[#2D8DB8] hover:bg-[#edf7fb]">{label}</button>)}
+    </nav>
+   </> }
    {!hostedBySynqra&&<header className="pcp-topbar">
     <div className="pcp-top-title"><button className="pcp-top-tablet" onClick={()=>window.location.href='/erp-industrial?tablet=1'}><LayoutDashboard size={14}/> TABLET</button><div><strong>PCP Industrial</strong><small>PCP · PLANEJAMENTO E CONTROLE DA PRODUÇÃO</small></div></div>
     <div className="pcp-top-actions"><span className="pcp-supabase-dot"><i/> DADOS SUPABASE</span><span className="pcp-top-user"><i/>{profileName}</span><span className="pcp-top-clock">{clock.toLocaleDateString('pt-BR')} · {clock.toLocaleTimeString('pt-BR')}</span><button type="button" className="pcp-top-light" onClick={()=>document.documentElement.classList.toggle("dark")}>â˜¼ Light</button><button className="pcp-top-exit" onClick={()=>void supabase.auth.signOut().then(()=>window.location.replace('/login'))}>Sair</button></div>
