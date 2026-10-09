@@ -44,6 +44,7 @@ export type DbERPUsuario = {
 
 export function narrowERPProfile(user: DbERPUsuario, empresa: EmpresaERPAuth | null): AuthProfile {
   if (user.ativo !== true) throw new Error('ERP_USUARIO_INATIVO');
+  if (user.deleted_at !== null) throw new Error('ERP_USUARIO_EXCLUIDO');
   if (!user.auth_user_id) throw new Error('ERP_USUARIO_SEM_AUTH_ID');
 
   const perfil = String(user.perfil ?? '').trim().toUpperCase();
@@ -53,7 +54,7 @@ export function narrowERPProfile(user: DbERPUsuario, empresa: EmpresaERPAuth | n
   const isStrictMaster =
     user.is_master === true &&
     perfil === 'MASTER' &&
-    nivel >= 100 &&
+    nivel === 100 &&
     user.empresa_id === null &&
     (user.setor_id === null || user.setor_id === undefined);
 
@@ -76,7 +77,9 @@ export function narrowERPProfile(user: DbERPUsuario, empresa: EmpresaERPAuth | n
   }
 
   if (!user.empresa_id) throw new Error('ERP_USUARIO_SEM_EMPRESA');
-  if (!empresa || empresa.ativo !== true) throw new Error('ERP_EMPRESA_INATIVA_OU_AUSENTE');
+  if (!empresa || empresa.ativo !== true || empresa.id !== user.empresa_id) {
+    throw new Error('ERP_EMPRESA_INATIVA_OU_AUSENTE');
+  }
 
   return {
     id: user.id,
