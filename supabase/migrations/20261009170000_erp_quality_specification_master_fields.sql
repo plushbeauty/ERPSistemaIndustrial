@@ -28,7 +28,7 @@ create index if not exists idx_erp_planos_inspecao_tipo_status
 create or replace function public.erp_validar_plano_inspecao_referencias()
 returns trigger
 language plpgsql
-security invoker
+security definer
 set search_path = pg_catalog, public
 as $$
 begin
