@@ -2,12 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Check, ClipboardCheck, RefreshCw, Search, ShieldCheck, TriangleAlert, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout from './VendasLayout'
+import ColetaDimensionalCEP from '../components/ColetaDimensionalCEP'
 
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; fornecedor_id: string | null; nf_numero: string | null; quantidade_recebida: number; status_inspecao: string | null }
 type Supplier = { id: string; razao_social: string }
-type Specification = { id: string; produto_id: string; codigo: string; caracteristica: string; unidade: string | null; limite_inferior: number | null; limite_superior: number | null; frequencia: string | null; status: string | null }
+type Product = { id: string; codigo: string; nome: string }
+type Specification = { id: string; produto_id: string; codigo: string; caracteristica: string; unidade: string | null; nominal: number | null; limite_inferior: number | null; limite_superior: number | null; frequencia: string | null; status: string | null }
 type Receiving = { id: string; lote_id: string; fornecedor_id: string | null; tamanho_lote: number; nivel_inspecao: 'G-II' | 'G-III'; aql: number; tamanho_amostra: number; defeitos_encontrados: number; criterio_ac: number; criterio_re: number; status: 'PENDENTE' | 'APROVADO' | 'BLOQUEADO'; created_at: string }
-type Dimensional = { id: string; inspecao_recebimento_id: string | null; numero_peca_amostrada: number; cavidade_molde: string | null; cota_nominal_mm: number; tolerancia_superior_mm: number; tolerancia_inferior_mm: number; valor_medido_mm: number | null; desvio_mm: number | null; status: 'PENDENTE' | 'OK' | 'NOK'; instrumento: string | null }
+type Dimensional = { id: string; inspecao_recebimento_id: string | null; plano_inspecao_id: string | null; numero_peca_amostrada: number; cavidade_molde: string | null; cota_nominal_mm: number; tolerancia_superior_mm: number; tolerancia_inferior_mm: number; valor_medido_mm: number | null; desvio_mm: number | null; status: 'PENDENTE' | 'OK' | 'NOK'; instrumento: string | null }
 type Genealogy = { id: string; lote_interno: string; lote_fornecedor: string | null; produto: string; fornecedor: string; operador: string; maquina: string; apontado_em: string | null; pedido: string | null }
 
 const levels = [
@@ -47,10 +49,12 @@ export default function QualidadeIndustrial() {
   const [companyId, setCompanyId] = useState('')
   const [lots, setLots] = useState<Lot[]>([])
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [specifications, setSpecifications] = useState<Specification[]>([])
   const [receivings, setReceivings] = useState<Receiving[]>([])
   const [dimensionals, setDimensionals] = useState<Dimensional[]>([])
   const [selectedReceiving, setSelectedReceiving] = useState('')
+  const [selectedSpecId, setSelectedSpecId] = useState('')
   const [selectedLot, setSelectedLot] = useState('')
   const [lotSize, setLotSize] = useState('')
   const [level, setLevel] = useState<'G-II' | 'G-III'>('G-II')
@@ -81,20 +85,23 @@ export default function QualidadeIndustrial() {
       if (!current.data) throw new Error('Empresa da sessão não identificada.')
       const id = String(current.data)
       setCompanyId(id)
-      const [lotResult, supplierResult, specificationResult, receivingResult, dimensionalResult] = await Promise.all([
+      const [lotResult, supplierResult, productResult, specificationResult, receivingResult, dimensionalResult] = await Promise.all([
         supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,fornecedor_id,nf_numero,quantidade_recebida,status_inspecao').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
         supabase.from('erp_fornecedores').select('id,razao_social').eq('empresa_id', id).order('razao_social').limit(500),
-        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,limite_inferior,limite_superior,frequencia,status').eq('empresa_id', id).order('codigo').limit(2000),
+        supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', id).eq('ativo', true).order('codigo').limit(2000),
+        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,status').eq('empresa_id', id).order('codigo').limit(2000),
         supabase.from('erp_qualidade_inspecoes_recebimento').select('id,lote_id,fornecedor_id,tamanho_lote,nivel_inspecao,aql,tamanho_amostra,defeitos_encontrados,criterio_ac,criterio_re,status,created_at').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
-        supabase.from('erp_qualidade_inspecoes_dimensionais').select('id,inspecao_recebimento_id,numero_peca_amostrada,cavidade_molde,cota_nominal_mm,tolerancia_superior_mm,tolerancia_inferior_mm,valor_medido_mm,desvio_mm,status,instrumento').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
+        supabase.from('erp_qualidade_inspecoes_dimensionais').select('id,inspecao_recebimento_id,plano_inspecao_id,numero_peca_amostrada,cavidade_molde,cota_nominal_mm,tolerancia_superior_mm,tolerancia_inferior_mm,valor_medido_mm,desvio_mm,status,instrumento').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
       ])
       if (lotResult.error) throw lotResult.error
       if (supplierResult.error) throw supplierResult.error
+      if (productResult.error) throw productResult.error
       if (specificationResult.error) throw specificationResult.error
       if (receivingResult.error) throw receivingResult.error
       if (dimensionalResult.error) throw dimensionalResult.error
       setLots((lotResult.data ?? []) as Lot[])
       setSuppliers((supplierResult.data ?? []) as Supplier[])
+      setProducts((productResult.data ?? []) as Product[])
       setSpecifications((specificationResult.data ?? []) as Specification[])
       setReceivings((receivingResult.data ?? []) as Receiving[])
       setDimensionals((dimensionalResult.data ?? []) as Dimensional[])
@@ -110,6 +117,10 @@ export default function QualidadeIndustrial() {
   const selectedLotData = lots.find((lot) => lot.id === selectedLot) ?? null
   const calculatedSample = lotSize ? sampleSize(Number(lotSize), level) : 0
   const currentReceiving = receivings.find((row) => row.id === selectedReceiving) ?? null
+  const currentReceivingLot = lots.find((lot) => lot.id === currentReceiving?.lote_id) ?? null
+  const currentProduct = products.find((product) => product.id === currentReceivingLot?.produto_id) ?? null
+  const activeSpecsForReceiving = specifications.filter(item => item.produto_id === currentReceivingLot?.produto_id && (item.status ?? '').toUpperCase() === 'ATIVO')
+  const selectedSpec = activeSpecsForReceiving.find(item => item.id === selectedSpecId) ?? null
   const dimensionalPreview = measured && nominal ? Number(measured) - Number(nominal) : null
   const dimensionalStatus = dimensionalPreview === null ? 'PENDENTE' : dimensionalPreview >= -Number(lower || 0) && dimensionalPreview <= Number(upper || 0) ? 'OK' : 'NOK'
 
@@ -141,6 +152,7 @@ export default function QualidadeIndustrial() {
       if (result.error) throw result.error
       setNotice('Inspeção de recebimento registrada no banco real.')
       setSelectedReceiving(result.data.id)
+      setSelectedSpecId('')
       await load()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao registrar inspeção.')
@@ -160,10 +172,15 @@ export default function QualidadeIndustrial() {
         const activeSpecs = specifications.filter(item => item.produto_id === lot.produto_id && (item.status ?? '').toUpperCase() === 'ATIVO')
         if (!activeSpecs.length) throw new Error('SEM ESPECIFICAÇÃO: o lote não pode ser aprovado automaticamente. Cadastre critérios técnicos vigentes para este produto na Engenharia/Qualidade.')
         if (receiving.defeitos_encontrados > receiving.criterio_ac) throw new Error('A quantidade de defeitos excede o critério Ac; o lote não pode ser aprovado.')
-        if (activeSpecs.some(item => item.limite_inferior !== null || item.limite_superior !== null)) {
-          const measurements = dimensionals.filter(item => item.inspecao_recebimento_id === receiving.id)
-          if (!measurements.length) throw new Error('A especificação possui limites dimensionais; registre as medições da amostra antes de aprovar o lote.')
-          if (measurements.some(item => item.status !== 'OK')) throw new Error('Há medições dimensionais pendentes ou fora de especificação; o lote não pode ser aprovado.')
+        const dimensionalSpecs = activeSpecs.filter(item => item.limite_inferior !== null || item.limite_superior !== null)
+        if (dimensionalSpecs.some(item => item.nominal === null || item.limite_inferior === null || item.limite_superior === null)) {
+          throw new Error('Há especificações dimensionais incompletas: informe nominal e limites inferior/superior antes da liberação.')
+        }
+        const measurements = dimensionals.filter(item => item.inspecao_recebimento_id === receiving.id)
+        for (const spec of dimensionalSpecs) {
+          const specMeasurements = measurements.filter(item => item.plano_inspecao_id === spec.id)
+          if (!specMeasurements.length) throw new Error(`Falta medir a especificação ${spec.codigo} — ${spec.caracteristica}.`)
+          if (specMeasurements.some(item => item.status !== 'OK')) throw new Error(`A especificação ${spec.codigo} possui amostra NOK/pendente; o lote não pode ser aprovado.`)
         }
       }
       const result = await supabase.rpc('erp_qms_decidir_inspecao_recebimento', { p_inspecao_id: receiving.id, p_decisao: decision })
@@ -181,27 +198,75 @@ export default function QualidadeIndustrial() {
   const saveDimensional = async () => {
     setError(''); setNotice('')
     if (!selectedReceiving) return setInvalid('receiving')
-    if (!piece || !nominal || !upper || !lower || !measured) return setInvalid('dimensional')
+    if (!selectedSpec || selectedSpec.nominal === null || selectedSpec.limite_inferior === null || selectedSpec.limite_superior === null) {
+      setError('Selecione uma especificação ativa com nominal e os dois limites técnicos.')
+      return
+    }
+    if (!piece || measured.trim() === '' || !Number.isFinite(Number(measured))) return setInvalid('dimensional')
     setBusy(true)
     try {
+      const nominalValue = Number(selectedSpec.nominal)
+      const upperTolerance = Number(selectedSpec.limite_superior) - nominalValue
+      const lowerTolerance = nominalValue - Number(selectedSpec.limite_inferior)
+      if (upperTolerance < 0 || lowerTolerance < 0) throw new Error('O nominal cadastrado está fora dos limites da especificação.')
       const result = await supabase.from('erp_qualidade_inspecoes_dimensionais').insert({
         empresa_id: companyId,
         inspecao_recebimento_id: selectedReceiving,
+        plano_inspecao_id: selectedSpec.id,
         numero_peca_amostrada: Number(piece),
         cavidade_molde: cavity || null,
-        cota_nominal_mm: Number(nominal),
-        tolerancia_superior_mm: Number(upper),
-        tolerancia_inferior_mm: Number(lower),
+        cota_nominal_mm: nominalValue,
+        tolerancia_superior_mm: upperTolerance,
+        tolerancia_inferior_mm: lowerTolerance,
         valor_medido_mm: Number(measured),
         instrumento: instrument,
-      }).select('id,inspecao_recebimento_id,numero_peca_amostrada,cavidade_molde,cota_nominal_mm,tolerancia_superior_mm,tolerancia_inferior_mm,valor_medido_mm,desvio_mm,status,instrumento').single()
+      }).select('id,inspecao_recebimento_id,plano_inspecao_id,numero_peca_amostrada,cavidade_molde,cota_nominal_mm,tolerancia_superior_mm,tolerancia_inferior_mm,valor_medido_mm,desvio_mm,status,instrumento').single()
       if (result.error) throw result.error
-      setNotice(`Medição registrada: ${result.data.status} · desvio ${Number(result.data.desvio_mm ?? 0).toFixed(3)} mm.`)
+      setNotice(`Medição registrada para ${selectedSpec.codigo}: ${result.data.status} · desvio ${Number(result.data.desvio_mm ?? 0).toFixed(3)} mm.`)
       setMeasured('')
       setPiece(String(Number(piece) + 1))
       await load()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao registrar medição.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const saveCepMeasurements = async (data: { valores: number[]; media: number; desvioPadrao: number; totalControlado: number; numeroDefeituosos: number }) => {
+    setError(''); setNotice('')
+    if (!selectedReceiving || !selectedSpec || selectedSpec.nominal === null || selectedSpec.limite_inferior === null || selectedSpec.limite_superior === null) {
+      setError('Selecione uma inspeção e uma especificação dimensional completa antes da coleta CEP.')
+      return
+    }
+    if (data.valores.length !== 18 || data.totalControlado !== 18) {
+      setError('A coleta CEP precisa conter exatamente 18 medições válidas.')
+      return
+    }
+    setBusy(true)
+    try {
+      const startPiece = Math.max(0, ...dimensionals.filter(row => row.inspecao_recebimento_id === selectedReceiving).map(row => row.numero_peca_amostrada)) + 1
+      const nominalValue = Number(selectedSpec.nominal)
+      const upperTolerance = Number(selectedSpec.limite_superior) - nominalValue
+      const lowerTolerance = nominalValue - Number(selectedSpec.limite_inferior)
+      const payload = data.valores.map((value, index) => ({
+        empresa_id: companyId,
+        inspecao_recebimento_id: selectedReceiving,
+        plano_inspecao_id: selectedSpec.id,
+        numero_peca_amostrada: startPiece + index,
+        cavidade_molde: cavity || null,
+        cota_nominal_mm: nominalValue,
+        tolerancia_superior_mm: upperTolerance,
+        tolerancia_inferior_mm: lowerTolerance,
+        valor_medido_mm: value,
+        instrumento,
+      }))
+      const result = await supabase.from('erp_qualidade_inspecoes_dimensionais').insert(payload)
+      if (result.error) throw result.error
+      setNotice(`CEP registrado no banco: 18 amostras, média ${data.media.toFixed(5)} mm, desvio padrão ${data.desvioPadrao.toFixed(5)} mm, ${data.numeroDefeituosos} NOK.`)
+      await load()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao gravar coleta CEP.')
     } finally {
       setBusy(false)
     }
