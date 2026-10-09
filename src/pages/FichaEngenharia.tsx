@@ -55,6 +55,8 @@ export default function FichaEngenharia(){
  const [spec,setSpec]=useState<Record<string,string>>({}),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[search,setSearch]=useState(''),[catalogKind,setCatalogKind]=useState<Kind|''>(''),[catalogMold,setCatalogMold]=useState(''),[canApproveRevision,setCanApproveRevision]=useState(false)
 
  const selected=useMemo(()=>products.find(p=>p.id===productId),[products,productId])
+ const formStatus=ficha&&Number(version)===ficha.versao?(ficha.status||'rascunho'):'rascunho'
+ const formRevisionActive=Boolean(ficha&&Number(version)===ficha.versao&&ficha.ativa)
  useEffect(()=>{void loadBase()},[])
  useEffect(()=>{if(selected)setProductCode(selected.codigo)},[selected])
  useEffect(()=>{if(!productId||!kind)return;void loadFicha(productId,kind,requestedVersion??undefined)},[productId,kind,requestedVersion])
@@ -122,6 +124,7 @@ export default function FichaEngenharia(){
 
  async function approveRevision(){
   if(!ficha){setNotice('Grave a revisão antes de solicitar aprovação.');return}
+  if(Number(version)!==ficha.versao){setNotice('Grave a nova revisão antes de solicitar aprovação.');return}
   if(!canApproveRevision){setNotice('Aprovação restrita ao Master ou ao perfil com permissão Qualidade/Aprovar.');return}
   if(!['rascunho','em_analise'].includes((ficha.status||'').toLowerCase())){setNotice('Somente revisões em rascunho ou análise podem ser aprovadas.');return}
   setBusy(true);setNotice('')
@@ -208,7 +211,7 @@ setFicha(saved.data as Ficha);setRequestedVersion(Number(version));setCatalog(ro
     <label>Código do produto<input value={productCode} list="produto-codigos" onChange={e=>{const code=e.target.value.trim();setProductCode(e.target.value);const p=products.find(x=>x.codigo.toLowerCase()===code.toLowerCase());if(p){setRequestedVersion(null);setProductId(p.id)}}} placeholder="Digite o código da peça"/><datalist id="produto-codigos">{products.map(p=><option key={p.id} value={p.codigo}>{p.nome}</option>)}</datalist></label>
     <label>Produto / peça<select value={productId} onChange={e=>{setRequestedVersion(null);setProductId(e.target.value);const p=products.find(x=>x.id===e.target.value);setProductCode(p?.codigo||'')}}><option value="">Selecione o produto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select></label>
     <label>Código da ficha<input value={processCode} onChange={e=>setProcessCode(e.target.value)}/></label>
-    <label>Revisão<input type="number" min="1" value={version} onChange={e=>setVersion(e.target.value)}/></label><label>Status da revisão<input value={ficha?.status||'rascunho'} readOnly/><small className="text-[10px] font-medium text-slate-500">O PCP aceita somente revisões APROVADAS/LIBERADAS.</small></label>
+    <label>Revisão<input type="number" min="1" value={version} onChange={e=>setVersion(e.target.value)}/></label><label>Status da revisão<input value={formStatus} readOnly/><small className="text-[10px] font-medium text-slate-500">O PCP aceita somente revisões APROVADAS/LIBERADAS.</small></label>
     <label>Nome do processo<input value={processName} onChange={e=>setProcessName(e.target.value)}/></label>
     <label>Rendimento<input type="number" min="0.001" step="0.001" value={rendimento} onChange={e=>setRendimento(e.target.value)}/></label>
     <label>Unidade<input value={unit} onChange={e=>setUnit(e.target.value.toUpperCase())}/></label>
@@ -241,7 +244,7 @@ setFicha(saved.data as Ficha);setRequestedVersion(Number(version));setCatalog(ro
    <div className="industrial-table-scroll"><table className="industrial-table process-sheet-table"><thead><tr><th>Código</th><th>Característica</th><th>Un.</th><th>Nominal</th><th>Mín.</th><th>Máx.</th><th>Frequência</th><th>Status</th></tr></thead><tbody>{quality.filter(r=>r.caracteristica.trim()).map((r,i)=><tr key={r.id||i}><td>{r.codigo||'—'}</td><td>{r.caracteristica}</td><td>{r.unidade||'—'}</td><td>{r.nominal||'—'}</td><td>{r.limite_inferior||'—'}</td><td>{r.limite_superior||'—'}</td><td>{r.frequencia||'—'}</td><td>{r.status||'—'}</td></tr>)}{!quality.some(r=>r.caracteristica.trim())&&<tr><td colSpan={8}>Nenhuma especificação cadastrada para este produto.</td></tr>}</tbody></table></div>
   </section>
 
-  <section className="process-sheet-approval"><div><span>ENGENHARIA / PROCESSO</span><strong>{spec.responsavel||'Responsável não informado'}</strong><small>Revisão {version}</small></div><div><span>QUALIDADE</span><strong>{ficha?.status||'rascunho'}</strong><small>{['aprovada','liberada'].includes((ficha?.status||'').toLowerCase())?'Revisão liberada para o PCP.':'Aguardando fluxo formal de aprovação.'}</small>{ficha&&['rascunho','em_analise'].includes((ficha.status||'').toLowerCase())&&<><button type="button" disabled={busy||!canApproveRevision} onClick={()=>void approveRevision()} className="mt-2 h-[30px] border border-slate-300 px-2 text-[10px] font-semibold disabled:opacity-50">Aprovar revisão</button>{!canApproveRevision&&<small className="block text-[10px] text-slate-500">Aprovação restrita ao Master/Qualidade.</small>}</>}</div><div><span>PCP / PRODUÇÃO</span><strong>{['aprovada','liberada'].includes((ficha?.status||'').toLowerCase())?'Disponível para PCP/OP':'Bloqueada para PCP/OP'}</strong><small>Somente revisão aprovada/liberada pode alimentar a programação.</small></div></section>
+  <section className="process-sheet-approval"><div><span>ENGENHARIA / PROCESSO</span><strong>{spec.responsavel||'Responsável não informado'}</strong><small>Revisão {version}</small></div><div><span>QUALIDADE</span><strong>{formStatus}</strong><small>{['aprovada','liberada'].includes(formStatus.toLowerCase())&&formRevisionActive?'Revisão liberada para o PCP.':'Aguardando fluxo formal de aprovação.'}</small>{ficha&&Number(version)===ficha.versao&&['rascunho','em_analise'].includes(formStatus.toLowerCase())&&<><button type="button" disabled={busy||!canApproveRevision} onClick={()=>void approveRevision()} className="mt-2 h-[30px] border border-slate-300 px-2 text-[10px] font-semibold disabled:opacity-50">Aprovar revisão</button>{!canApproveRevision&&<small className="block text-[10px] text-slate-500">Aprovação restrita ao Master/Qualidade.</small>}</>}</div><div><span>PCP / PRODUÇÃO</span><strong>{['aprovada','liberada'].includes(formStatus.toLowerCase())&&formRevisionActive?'Disponível para PCP/OP':'Bloqueada para PCP/OP'}</strong><small>Somente revisão aprovada/liberada pode alimentar a programação.</small></div></section>
   {notice&&<div className="industrial-notice" role="status">{notice}</div>}
  </main>
 }
