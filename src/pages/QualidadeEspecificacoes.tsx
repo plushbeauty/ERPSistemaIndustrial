@@ -190,6 +190,12 @@ export default function QualidadeEspecificacoes() {
     if (form.status === 'ativo' && !['VISUAL','DOCUMENTAL'].includes(form.metodo_inspecao) && !validInstruments.some(item => item.id === form.instrumento_id)) { setError('Especificação dimensional/funcional ativa exige instrumento aprovado e com calibração vigente.'); return }
     if (form.responsavel_id && !users.some(user => user.auth_user_id === form.responsavel_id)) { setError('Responsável inválido para a empresa atual.'); return }
     if (form.aprovador_id && !users.some(user => user.auth_user_id === form.aprovador_id)) { setError('Aprovador inválido para a empresa atual.'); return }
+    if (form.status === 'ativo' && (!form.responsavel_id || !form.aprovador_id)) { setError('Especificação ativa exige responsável e aprovador vinculados a usuários ativos da empresa.'); return }
+    if (form.status === 'ativo' && ['DIMENSIONAL','FUNCIONAL'].includes(form.metodo_inspecao)) {
+      const instrument = instruments.find(item => item.id === form.instrumento_id)
+      const today = new Date().toISOString().slice(0, 10)
+      if (!instrument || instrument.status.toUpperCase() !== 'APROVADO' || !instrument.proxima_calibracao || instrument.proxima_calibracao < today) { setError('Especificação dimensional/funcional ativa exige instrumento aprovado e com calibração vigente.'); return }
+    }
     if (lower !== null && upper !== null && form.status === 'ativo' && nominal === null) {
       setError('Especificações dimensionais ativas com dois limites precisam de nominal para habilitar a coleta CEP.')
       return
