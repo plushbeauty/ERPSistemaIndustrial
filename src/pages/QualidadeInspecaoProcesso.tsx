@@ -143,9 +143,13 @@ export default function QualidadeInspecaoProcesso() {
       const selectedLot = lots.find(item => item.id === lote)
       if (lote && (!selectedLot || selectedLot.produto_id !== produto)) throw new Error('O lote selecionado não pertence ao produto inspecionado.')
       if (effectiveResult !== 'APROVADO' && lote) {
-        const hold = await supabase.rpc('erp_reter_lote', { p_lote_id: lote, p_motivo: `Inspeção de processo ${effectiveResult}: ${obs.trim() || 'desvio nos critérios técnicos'}` })
-        if (hold.error) throw hold.error
-        lotRetained = true
+        if (selectedLot?.status_inspecao?.toUpperCase() === 'RETIDO') {
+          lotRetained = true
+        } else {
+          const hold = await supabase.rpc('erp_reter_lote', { p_lote_id: lote, p_motivo: `Inspeção de processo ${effectiveResult}: ${obs.trim() || 'desvio nos critérios técnicos'}` })
+          if (hold.error) throw hold.error
+          lotRetained = true
+        }
       }
       const result = await supabase.from('erp_inspecoes').insert({
         empresa_id: company.data,
