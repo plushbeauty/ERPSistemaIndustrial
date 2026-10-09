@@ -9,9 +9,6 @@ type Produto={id:string;codigo:string;nome:string;unidade:string;unidade_venda:s
 type Transportadora={id:string;codigo:string;razao_social:string}
 type Item={produto_id:string;codigo:string;descricao:string;quantidade:number;unidade:string;valor_unitario:number;desconto:number;estoque:number;preco_custo_industrial:number}
 
-const XCircleIconFallback=()=> <><XCircle size={11}/>CANCELAR</>
-const PrinterIconFallback=()=> <><Printer size={11}/>IMPRIMIR</>
-
 const inputStyle='h-[30px] w-full rounded-[2px] border border-gray-300 bg-white px-1.5 py-0.5 text-[11px] leading-4 text-gray-800 outline-none focus:border-blue-600 focus:ring-0'
 const labelStyle='mb-0.5 block text-[9px] font-medium uppercase tracking-wide text-gray-500'
 const buttonStyle='flex h-[30px] items-center justify-center gap-1 rounded-[2px] px-2.5 py-0.5 text-[11px] font-medium'
