@@ -78,10 +78,8 @@ const VendasAnaliseCustos = lazyPage(() => import('./pages/VendasAnaliseCustos')
 const VendasDashboardGraficos = lazyPage(() => import('./pages/VendasDashboardGraficos'), 'VendasDashboardGraficos')
 const VendasMetas = lazyPage(() => import('./pages/VendasMetas'), 'VendasMetas')
 const VendasRelatorios = lazyPage(() => import('./pages/VendasRelatorios'), 'VendasRelatorios')
-const VendasStatusPedidos = lazyPage(() => import('./pages/VendasStatusPedidos'), 'VendasStatusPedidos')
 const VendasPedidoStatus = lazyPage(() => import('./pages/VendasPedidoStatus'), 'VendasPedidoStatus')
 const VendasCatalogoDigitalGestao = lazyPage(() => import('./pages/VendasCatalogoDigitalGestao'), 'VendasCatalogoDigitalGestao')
-const VendasCarteira = lazyPage(() => import('./pages/VendasCarteira'), 'VendasCarteira')
 const VendasPDV = lazyPage(() => import('./pages/VendasPDV'), 'default')
 const VendasTablet = lazyPage(() => import('./pages/VendasTablet'), 'default')
 const ComprasRFQ = lazyPage(() => import('./pages/ComprasRFQ'), 'default')
@@ -396,13 +394,13 @@ function AppIndustrialAuthenticated() {
       <Route path="/tablet/home" element={<TabletDashboard />} />
       <Route path="/vendas" element={<DashboardComercial />} />
       <Route path="/vendas/dashboard" element={<DashboardComercial />} />
-      <Route path="/vendas/pedidos" element={<VendasCentral />} />
+      <Route path="/vendas/pedidos" element={<Navigate to="/vendas/status" replace />} />
       <Route path="/vendas/pdv" element={<VendasPDV />} />
       <Route path="/vendas/tablet" element={<VendasTablet />} />
       <Route path="/vendas/novo-pedido" element={<PedidoVendaCompleto />} />
       <Route path="/configuracoes" element={<Navigate to="/configuracoes-adm" replace />} />
       <Route path="/vendas/orcamentos" element={<VendasAnaliseCustos />} />
-      <Route path="/vendas/pendentes" element={<VendasStatusPedidos />} />
+      <Route path="/vendas/pendentes" element={<Navigate to="/vendas/status" replace />} />
       <Route path="/vendas/reajuste" element={<TabelaPrecos />} />
       <Route path="/financeiro/lista-precos-cliente" element={<BankingListaPrecosCliente />} />
       <Route path="/financeiro/ano-fiscal" element={<AnoFiscal />} />
@@ -410,8 +408,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/financeiro/contas-pagar" element={<FinanceiroContasPagar kind="PAGAR" />} />
       <Route path="/financeiro/contas-receber" element={<FinanceiroContasReceber kind="RECEBER" />} />
       <Route path="/financeiro/caixa" element={<FinanceiroDashboardCaixa />} />
-      <Route path="/vendas/carteira" element={<VendasCarteira />} />
-      <Route path="/vendas/status" element={<VendasStatusPedidos />} />
+      <Route path="/vendas/carteira" element={<Navigate to="/vendas/status" replace />} />
+      <Route path="/vendas/status" element={<VendasCentral />} />
       <Route path="/controladoria/retificacao-pedido/:pedidoId" element={<RetificacaoPedido />} />
       <Route path="/comissoes" element={<Navigate to="/comissoes/regras" replace />} />
       <Route path="/comissoes/regras" element={<CadastroRegrasComissao />} />
