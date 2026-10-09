@@ -59,7 +59,7 @@ const n=(v:unknown)=>Number(v??0)||0
 const fmt=(v:unknown)=>n(v).toLocaleString('pt-BR',{maximumFractionDigits:3})
 const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2}
 const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box'}
-const label:CSSProperties={display:'grid',gap:2,fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}
+const label:CSSProperties={display:'grid',gap:3,minWidth:0,fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}
 const btn=(_kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid #2D8DB8',background:'#2D8DB8',color:'#fff',fontSize:11,fontWeight:500,textTransform:'uppercase',cursor:'pointer'})
 const emptyRow=(text:string,col=7)=><tr><td colSpan={col} style={{padding:22,textAlign:'center',color:'#667085'}}>{text}</td></tr>
 
@@ -368,7 +368,7 @@ export default function ProdutosVendasIndustrial(){
           {field('Marca [?]','marca')}
         </div>
 
-        <div style={{display:'grid',gridTemplateColumns:'55px 55px 55px 75px 75px 75px 75px 75px 135px 170px',gap:5,marginTop:5,alignItems:'end'}}>
+        <div style={{display:'grid',gridTemplateColumns:'55px 55px 55px repeat(5,minmax(72px,1fr)) minmax(125px,1.4fr) minmax(150px,1.6fr)',gap:8,marginTop:7,alignItems:'end'}}>
           {select('Un. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
           {select('Un. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
           {select('Un. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
@@ -381,7 +381,7 @@ export default function ProdutosVendasIndustrial(){
           <label style={label}>Fornecedor padrão<select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{suppliers.map(s=><option value={s.id} key={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>
         </div>
 
-        <div style={{display:'grid',gridTemplateColumns:'78px 78px 78px 78px 120px 120px 150px 150px 1fr',gap:5,marginTop:5,alignItems:'end'}}>
+        <div style={{display:'grid',gridTemplateColumns:'78px 78px 78px 78px 120px 120px minmax(150px,1fr) auto minmax(180px,1.2fr)',gap:8,marginTop:7,alignItems:'end'}}>
           {field('Custo médio','custo_medio','number')}
           {field('Último custo','custo_ultimo','number')}
           {field('Custo fabricação','custo_fabricacao','number')}
@@ -393,19 +393,6 @@ export default function ProdutosVendasIndustrial(){
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} title="Selecione uma localização existente do Estoque. A hierarquia depósito/rua/prateleira/caixa é mantida no cadastro de localizações." style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
         </div>
 
-        <div style={{display:'grid',gridTemplateColumns:'120px 170px 78px 78px 78px 78px 82px 82px 180px 165px 170px',gap:5,marginTop:5,alignItems:'end'}}>
-          {select('Tipo de produto','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','MATÉRIA-PRIMA'],['PRENSADOS','PRENSADOS'],['INJETADOS','INJETADOS'],['ALMOXARIFADO','ALMOXARIFADO'],['MATERIAL DE ESCRITÓRIO','MATERIAL DE ESCRITÓRIO'],['PRODUTOS DE LIMPEZA','PRODUTOS DE LIMPEZA'],['Componente','Componente'],['Insumo','Insumo']])}
-          <label style={label}>Fornecedor padrão<select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{suppliers.map(s=><option value={s.id} key={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>
-          {field('Custo médio','custo_medio','number')}
-          {field('Último custo','custo_ultimo','number')}
-          {field('Custo fabricação','custo_fabricacao','number')}
-          {field('Preço venda','preco_venda','number')}
-          {field('Ref. interna','referencia_interna')}
-          {field('Ref. cliente','referencia_cliente')}
-          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:30,padding:'5px 7px',resize:'none',fontSize:11}}/></label>
-          <div style={{display:'flex',alignItems:'center',gap:5,height:30,border:'1px solid #d5dde7',padding:'0 6px',background:'#fff',whiteSpace:'nowrap'}}><span style={{fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}}>Sit.</span>{check('Fab.','fabricado')}{check('Comp.','comprado')}{check('Rev.','revenda')}</div>
-          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} title="Selecione uma localização existente do Estoque. A hierarquia depósito/rua/prateleira/caixa é mantida no cadastro de localizações." style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
-        </div>
       </form>}
 
             {tab==='fiscal'&&<section style={{padding:8}}>
@@ -435,11 +422,11 @@ export default function ProdutosVendasIndustrial(){
       </section>}
 
       {tab==='producao'&&<section style={{padding:10}}>
-        <div style={{display:'grid',gridTemplateColumns:'82px 82px 82px 82px 120px 120px auto',gap:7,alignItems:'end'}}>
+        <div style={{display:'grid',gridTemplateColumns:'82px 82px 82px 82px 120px 120px max-content',gap:7,alignItems:'end'}}>
           {field('PRAZO COMPRA (dias)','prazo_compra_dias','number')}{field('PRAZO PRODUÇÃO (dias)','prazo_producao_dias','number')}{field('CUSTO FABRICAÇÃO','custo_fabricacao','number')}{field('TOLERÂNCIA (%)','tolerancia_percentual','number')}
           <label style={label}>FICHA ATIVA<input value={productionFicha?('REV. '+(productionFicha.revisao||productionFicha.versao)):'Não cadastrada'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}>RENDIMENTO<input value={productionFicha?fmt(productionFicha.rendimento)+' '+productionFicha.unidade_rendimento:'—'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A'}}/></label>
-          <button type="button" onClick={()=>{window.location.href='/ficha-engenharia?produto='+encodeURIComponent(selectedId||'')}} style={btn('normal')}>ABRIR FICHA DE PROCESSO</button>
+          <button type="button" onClick={()=>{window.location.href='/ficha-engenharia?produto='+encodeURIComponent(selectedId||'')}} style={{...btn('normal'),width:'max-content',maxWidth:'100%',whiteSpace:'nowrap',padding:'0 8px',fontSize:10}}>ABRIR FICHA DE PROCESSO</button>
         </div>
         <div style={{marginTop:8,border:'1px solid #d5dde7',overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr style={{background:'#123B50',color:'#fff'}}>{['Seq.','Operação','Máquina','Setup min','Ciclo s','Qtde/h','Qtde/dia'].map(h=><th key={h} style={{padding:'5px 6px',textAlign:'left',fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{productionOps.map(o=><tr key={o.id} style={{borderBottom:'1px solid #e5e7eb'}}><td style={{padding:'5px 6px'}}>{o.sequencia}</td><td style={{padding:'5px 6px'}}>{o.operacao}</td><td style={{padding:'5px 6px'}}>{o.maquina_codigo?o.maquina_codigo+' • '+(o.maquina_nome||''):'Não definida'}</td><td style={{padding:'5px 6px'}}>{fmt(o.setup_min)}</td><td style={{padding:'5px 6px'}}>{fmt(o.ciclo_seg)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_hora==null?'—':fmt(o.capacidade_hora)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_dia==null?'—':fmt(o.capacidade_dia)}</td></tr>)}{!productionOps.length&&<tr><td colSpan={7} style={{padding:12,textAlign:'center',color:'#667085'}}>Nenhuma operação cadastrada. Abra a ficha de processo para cadastrar máquina/posto, setup, ciclo e instruções.</td></tr>}</tbody></table></div>
         <div style={{marginTop:7,fontSize:9,color:'#667085'}}>Máquina, setup, ciclo e capacidade vêm da ficha técnica/roteiro real; a ficha completa alimenta o PCP e a Ordem de Produção.</div>
