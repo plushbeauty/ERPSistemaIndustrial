@@ -112,6 +112,35 @@ begin
   end if;
 
   if exists (
+    select m->>'plano_inspecao_id'
+    from jsonb_array_elements(p_medicoes) m
+    group by m->>'plano_inspecao_id'
+    having count(*) > 1
+  ) then
+    raise exception 'O laudo contém característica duplicada.';
+  end if;
+
+  if exists (
+    select 1
+    from public.erp_planos_inspecao s
+    where s.empresa_id = v_empresa
+      and s.produto_id = p_produto_id
+      and upper(s.tipo_inspecao) = v_tipo_plano
+      and upper(coalesce(s.status, '')) = 'ATIVO'
+      and s.aprovador_id is not null
+      and s.aprovado_em is not null
+      and (s.vigencia_inicio is null or s.vigencia_inicio <= current_date)
+      and (s.vigencia_fim is null or s.vigencia_fim >= current_date)
+      and not exists (
+        select 1
+        from jsonb_array_elements(p_medicoes) m
+        where nullif(m->>'plano_inspecao_id', '')::uuid = s.id
+      )
+  ) then
+    raise exception 'Laudo incompleto: inclua todas as características ativas do plano de inspeção.';
+  end if;
+
+  if exists (
     select 1
     from jsonb_array_elements(p_medicoes) m
     join public.erp_planos_inspecao s
