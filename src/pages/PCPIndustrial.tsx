@@ -133,6 +133,8 @@ export default function PCPIndustrial(){
   if(!opForm.produto_id||quantidade<=0){setError('Produto e quantidade maior que zero são obrigatórios.');return}
   setBusy(true);setError('');setMessage('')
   try{
+   const approvedFicha=fichas.find(ficha=>ficha.produto_id===opForm.produto_id)
+   if(!approvedFicha)throw new Error('Criação da OP bloqueada: o produto não possui ficha de processo aprovada/liberada.')
    const product=products.find(p=>p.id===opForm.produto_id)
    const created=await supabase.rpc('erp_criar_ordem_producao_v2',{
     p_produto_id:opForm.produto_id,
