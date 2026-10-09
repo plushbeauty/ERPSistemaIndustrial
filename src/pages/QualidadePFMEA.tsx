@@ -24,40 +24,40 @@ export default function QualidadePFMEA() {
     setMessage(r.error?.message||"Revisão PFMEA gravada no banco.");
   };
   const novo=()=>{setCodigo("");setProcesso("");setFalha("");setEfeito("");setMessage("");};
-  return <main className="min-h-screen bg-slate-50 text-slate-900 p-4 md:p-6"><div className="mx-auto max-w-7xl">
-    <header className="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
-      <div><p className="text-sm font-bold text-slate-600">QUALIDADE &gt; ENGENHARIA DE RISCOS</p><h1 className="text-2xl font-black">Matriz PFMEA</h1></div>
-      <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={novo} className="rounded-md border px-4 py-3 text-base font-bold">➕ NOVO MAPEAMENTO</button>
-        <button type="button" onClick={()=>void save()} className="rounded-md bg-slate-900 px-4 py-3 text-base font-bold text-white">💾 SALVAR REVISÃO</button>
+  return <main className="min-h-screen bg-[#F4FBFD] text-[#123B50] p-2"><div className="mx-auto max-w-[1600px] space-y-2">
+    <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-white px-2 py-1">
+      <div><p className="text-[9px] font-medium uppercase tracking-wider text-slate-500">QUALIDADE &gt; ENGENHARIA DE RISCOS</p><h1 className="text-[13px] font-semibold uppercase">Matriz PFMEA</h1></div>
+      <div className="flex flex-wrap gap-1">
+        <button type="button" onClick={novo} className="h-[30px] rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-medium hover:bg-slate-50 focus-visible:outline focus-visible:outline-1 focus-visible:outline-[#2D8DB8]">➕ NOVO MAPEAMENTO</button>
+        <button type="button" onClick={()=>void save()} className="h-[30px] rounded-[2px] bg-[#2D8DB8] px-2 text-[10px] font-medium text-white hover:bg-[#24799f] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-[#2D8DB8]">💾 SALVAR REVISÃO</button>
         <button type="button" onClick={()=>window.print()} className="rounded-md border px-4 py-3 text-base font-bold">🖨️ EMITIR MATRIZ</button>
       </div>
     </header>
-    <section className="mt-5 grid gap-5 lg:grid-cols-2">
-      <div className="rounded-md border bg-white p-5 shadow-sm">
-        <h2 className="text-xl font-bold">1. Identificação do Processo</h2>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
+    <section className="grid gap-2 lg:grid-cols-2">
+      <div className="rounded-[2px] border border-slate-200 bg-white p-2">
+        <h2 className="border-b border-slate-200 pb-1 text-[11px] font-semibold uppercase">1. Identificação do Processo</h2>
+        <div className="mt-2 grid gap-2 md:grid-cols-2">
           <EntityCodeLookup label="Ficha Origem" value="" onChange={()=>undefined} entityType="ficha"/>
           <EntityCodeLookup label="Equipamento" value="" onChange={()=>undefined} entityType="machine"/>
-          <label className="text-base font-semibold">Código<input value={codigo} onChange={e=>setCodigo(e.target.value)} className="mt-1 w-full rounded-md border p-3 text-slate-900" placeholder="Código PFMEA"/></label>
+          <label className="grid gap-[2px] text-[9px] font-medium uppercase tracking-wider text-slate-600">Código<input value={codigo} onChange={e=>setCodigo(e.target.value)} className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]" placeholder="Código PFMEA"/></label>
           <label className="text-base font-semibold">Operação Alvo<input value={processo} onChange={e=>setProcesso(e.target.value)} className="mt-1 w-full rounded-md border p-3 text-slate-900" placeholder="Estampagem / Prensa"/></label>
-          <label className="text-base font-semibold md:col-span-2">Responsável<input className="mt-1 w-full rounded-md border p-3 text-base text-slate-900" placeholder="Responsável pela análise"/></label>
+          <label className="grid gap-[2px] text-[9px] font-medium uppercase tracking-wider text-slate-600 md:col-span-2">Responsável<input className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]" placeholder="Responsável pela análise"/></label>
         </div>
       </div>
       <div className="rounded-md border bg-white p-5 shadow-sm">
         <h2 className="text-xl font-bold">2. Modo de Falha e Risco</h2>
-        <div className="mt-4 space-y-4">
-          <label className="block text-base font-semibold">Modo da Falha<input value={falha} onChange={e=>setFalha(e.target.value)} className="mt-1 w-full rounded-md border p-3" placeholder="Descreva o modo de falha"/></label>
+        <div className="mt-2 space-y-2">
+          <label className="grid gap-[2px] text-[9px] font-medium uppercase tracking-wider text-slate-600">Modo da Falha<input value={falha} onChange={e=>setFalha(e.target.value)} className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]" placeholder="Descreva o modo de falha"/></label>
           <label className="block text-base font-semibold">Efeito da Falha<input value={efeito} onChange={e=>setEfeito(e.target.value)} className="mt-1 w-full rounded-md border p-3" placeholder="Descreva o efeito"/></label>
-          <div className="overflow-x-auto"><table className="w-full text-base"><thead><tr className="h-[54px] border-b"><th>G</th><th>O</th><th>D</th><th>NPR</th></tr></thead><tbody><tr className="h-[54px] border-b">
-            <td><input type="number" min="1" max="10" value={gravidade} onChange={e=>setGravidade(Number(e.target.value))} className="w-20 rounded border p-2"/></td>
+          <div className="overflow-x-auto"><table className="w-full text-[10px]"><thead><tr className="h-[32px] border-b border-slate-200 bg-slate-50 text-[9px] uppercase tracking-wider"><th>G</th><th>O</th><th>D</th><th>NPR</th></tr></thead><tbody><tr className="h-[54px] border-b">
+            <td><input type="number" min="1" max="10" value={gravidade} onChange={e=>setGravidade(Number(e.target.value))} className="h-[30px] w-16 rounded-[2px] border border-slate-300 px-2 text-right text-[10px] focus:border-[#2D8DB8] focus:outline-none"/></td>
             <td><input type="number" min="1" max="10" value={ocorrencia} onChange={e=>setOcorrencia(Number(e.target.value))} className="w-20 rounded border p-2"/></td>
             <td><input type="number" min="1" max="10" value={deteccao} onChange={e=>setDeteccao(Number(e.target.value))} className="w-20 rounded border p-2"/></td>
-            <td className="text-2xl font-black">{npr}</td>
+            <td className="text-[12px] font-semibold tabular-nums">{npr}</td>
           </tr></tbody></table></div>
         </div>
       </div>
     </section>
-    {message&&<div role="status" className="mt-4 rounded-md border bg-white p-4 font-semibold">{message}</div>}
+    {message&&<div role="status" className="mt-2 rounded-[2px] border border-slate-200 bg-white p-2 text-[10px] font-medium">{message}</div>}
   </div></main>
 }

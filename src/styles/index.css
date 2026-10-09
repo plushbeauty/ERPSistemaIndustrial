@@ -117,3 +117,35 @@ table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!i
   mask-image:linear-gradient(to right,transparent 0,#000 16px,#000 calc(100% - 16px),transparent 100%);
   -webkit-mask-image:linear-gradient(to right,transparent 0,#000 16px,#000 calc(100% - 16px),transparent 100%);
 }
+
+
+/* Premium Industrial Density — route-wide ERP baseline, scoped away from public/login screens. */
+.erp-global-surface{font-size:10px!important;color:#334155}
+.erp-global-surface button:not([role="switch"]):not([data-size="large"]){box-sizing:border-box;min-height:30px!important;height:30px!important;padding-top:0!important;padding-bottom:0!important;border-radius:2px!important;font-size:10px!important;line-height:1.15!important;transition:background-color .12s ease,border-color .12s ease,color .12s ease,box-shadow .12s ease}
+.erp-global-surface button svg{width:auto;max-width:16px!important;height:auto;max-height:16px!important;flex-shrink:0}
+.erp-global-surface input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
+.erp-global-surface select{box-sizing:border-box;min-height:30px!important;height:30px!important;padding:0 8px!important;border-radius:2px!important;font-size:10px!important;line-height:1.15!important}
+.erp-global-surface input[type="number"]{text-align:right;font-variant-numeric:tabular-nums}
+.erp-global-surface label{font-size:9px!important;font-weight:600!important;line-height:1.15!important;letter-spacing:.06em!important;text-transform:uppercase!important;margin-bottom:2px!important}
+.erp-global-surface table{width:100%;border-collapse:collapse;font-size:10px!important;font-variant-numeric:tabular-nums}
+.erp-global-surface thead th{height:32px!important;padding:4px 8px!important;background:#f1f5f9!important;color:#475569!important;border-bottom:1px solid #dbe2ea!important;font-size:9px!important;font-weight:600!important;letter-spacing:.04em;text-transform:uppercase;vertical-align:middle}
+.erp-global-surface tbody tr{height:32px!important}
+.erp-global-surface tbody td{height:32px!important;padding:3px 8px!important;border-bottom:1px solid #e5e7eb!important;color:#334155!important;font-size:10px!important;vertical-align:middle}
+.erp-global-surface tbody tr:hover{background:rgba(245,245,245,.8)!important}
+.erp-global-surface tbody td[colspan]{height:64px!important;padding:8px!important;text-align:center!important;color:#64748b!important;font-size:10px!important}
+.erp-global-surface .animate-pulse{min-height:30px}
+.erp-global-surface :is(input,select,button,textarea):focus-visible{outline:0;box-shadow:0 0 0 1px #2D8DB8!important;border-color:#2D8DB8!important}
+.erp-global-surface .erp-card,.erp-global-surface section,.erp-global-surface article,.erp-global-surface [role="dialog"]{border-radius:2px}
+.erp-global-surface .tablet-mode input,.erp-global-surface .tablet-mode select,.erp-global-surface .tablet-mode button{min-height:30px!important;height:30px!important;padding-top:0!important;padding-bottom:0!important;font-size:10px!important}
+@media(prefers-reduced-motion:reduce){.erp-global-surface *{transition:none!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
+
+.erp-global-surface h1{font-size:15px!important;line-height:1.25!important;font-weight:650!important;letter-spacing:-.01em!important}
+.erp-global-surface h2{font-size:12px!important;line-height:1.25!important;font-weight:650!important}
+.erp-global-surface h3{font-size:11px!important;line-height:1.25!important;font-weight:650!important}
+.erp-global-surface p{font-size:10px!important;line-height:1.4!important}
+.erp-global-surface :is(.text-3xl,.text-2xl,.text-xl){font-size:13px!important;line-height:1.25!important}
+.erp-global-surface :is(.text-sm,.text-base,.text-xs){font-size:10px!important;line-height:1.3!important}
+.erp-global-surface :is(.p-4,.p-5,.p-6){padding:8px!important}
+.erp-global-surface :is(.px-4,.px-5,.px-6){padding-left:8px!important;padding-right:8px!important}
+.erp-global-surface :is(.py-4,.py-5,.py-6){padding-top:6px!important;padding-bottom:6px!important}
+.erp-global-surface :is(.gap-4,.gap-5,.gap-6){gap:8px!important}
