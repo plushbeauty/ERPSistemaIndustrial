@@ -95,13 +95,21 @@ export default function ColetaDimensionalCEP({
     }
   }, [amostras, limiteInferior, limiteSuperior])
 
+  const limitesValidos =
+    Number.isFinite(limiteInferior) &&
+    Number.isFinite(limiteSuperior) &&
+    limiteSuperior > limiteInferior
+
   const loteReprovado =
-    estatistica.numeroDefeituosos > 0 || estatistica.mediaForaDosLimites
+    !limitesValidos ||
+    estatistica.numeroDefeituosos > 0 ||
+    estatistica.mediaForaDosLimites
 
   const podeAprovar =
+    Boolean(onAprovar) &&
+    limitesValidos &&
     estatistica.totalControlado === SAMPLE_COUNT &&
-    !loteReprovado &&
-    limiteSuperior > limiteInferior
+    !loteReprovado
 
   const atualizarMedicao = (id: number, valorMedido: string) => {
     setAmostras((atuais) =>
@@ -347,11 +355,13 @@ export default function ColetaDimensionalCEP({
               (loteReprovado ? 'text-[#d65b61]' : 'text-[#3a9d78]')
             }
           >
-            {loteReprovado
-              ? 'LOTE REJEITADO — SEGREGAR E EMITIR RPNC'
-              : estatistica.incompletas
-                ? 'COLETA EM ANDAMENTO'
-                : 'LOTE APROVADO'}
+            {!limitesValidos
+              ? 'LIMITES INVÁLIDOS — REVISAR FICHA TÉCNICA'
+              : loteReprovado
+                ? 'LOTE REJEITADO — SEGREGAR E EMITIR RPNC'
+                : estatistica.incompletas
+                  ? 'COLETA EM ANDAMENTO'
+                  : 'LOTE APROVADO'}
           </div>
         </div>
 
