@@ -15,6 +15,7 @@ declare
   v_empresa uuid;
   v_inspecao public.erp_qualidade_inspecoes_recebimento%rowtype;
   v_lote public.erp_estoque_lotes%rowtype;
+  v_trace public.erp_estoque_lotes_rastreabilidade%rowtype;
   v_rpnc public.erp_rpnc;
   v_user uuid;
   v_master boolean;
@@ -86,8 +87,25 @@ begin
   if upper(coalesce(v_lote.status_inspecao, '')) <> 'RETIDO' then
     perform public.erp_reter_lote(v_lote.id, 'Lote bloqueado pela inspeção de recebimento QMS: ' || btrim(p_descricao));
   end if;
+  select * into v_trace
+  from public.erp_estoque_lotes_rastreabilidade
+  where empresa_id = v_empresa
+    and produto_id = v_lote.produto_id
+    and lote_fornecedor = v_lote.lote_fornecedor
+  for update;
+
+  if found then
+    update public.erp_estoque_lotes_rastreabilidade
+    set status_qualidade = 'REPROVADO', quantidade_disponivel = 0
+    where id = v_trace.id and empresa_id = v_empresa;
+  end if;
+
   update public.erp_qualidade_inspecoes_recebimento
-  set status = 'BLOQUEADO', decidido_por = v_user, decidido_em = now(), updated_at = now()
+  set status = 'BLOQUEADO',
+      lote_rastreabilidade_id = coalesce(v_trace.id, lote_rastreabilidade_id),
+      decidido_por = v_user,
+      decidido_em = now(),
+      updated_at = now()
   where id = v_inspecao.id and empresa_id = v_empresa;
 
   select public.erp_sgq_abrir_rpnc(
