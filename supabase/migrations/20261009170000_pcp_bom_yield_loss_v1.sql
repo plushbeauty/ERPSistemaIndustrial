@@ -82,7 +82,26 @@ begin
 end;
 $$;
 
+create or replace function public.erp_pcp_bom_adicionar(
+  p_produto_pai_id uuid,
+  p_produto_id uuid,
+  p_sku_insumo text,
+  p_qtd numeric,
+  p_unidade text,
+  p_custo_unitario numeric
+) returns uuid
+language sql
+security invoker
+set search_path = public
+as $
+  select public.erp_pcp_bom_adicionar(
+    p_produto_pai_id, p_produto_id, p_sku_insumo, p_qtd, p_unidade, p_custo_unitario, 100, 0, 0
+  );
+$;
+
 revoke all on function public.erp_pcp_bom_adicionar(uuid,uuid,text,numeric,text,numeric,numeric,numeric,numeric) from public, anon;
 grant execute on function public.erp_pcp_bom_adicionar(uuid,uuid,text,numeric,text,numeric,numeric,numeric,numeric) to authenticated;
+revoke all on function public.erp_pcp_bom_adicionar(uuid,uuid,text,numeric,text,numeric) from public, anon;
+grant execute on function public.erp_pcp_bom_adicionar(uuid,uuid,text,numeric,text,numeric) to authenticated;
 
 commit;
