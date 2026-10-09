@@ -44,7 +44,10 @@ export function estimateProgramEnd(input: ProgramEstimateInput): string | null {
 
   const capacityDays = Math.floor(totalHours / dailyCapacity);
   const remainingHours = totalHours - capacityDays * dailyCapacity;
-  const endDate = new Date(startDate.getTime() + (capacityDays * 24 + remainingHours) * 60 * 60 * 1000);
+  const elapsedHours = remainingHours === 0 && totalHours > 0
+    ? Math.max(0, capacityDays - 1) * 24 + dailyCapacity
+    : capacityDays * 24 + remainingHours;
+  const endDate = new Date(startDate.getTime() + elapsedHours * 60 * 60 * 1000);
   const pad = (value: number) => String(value).padStart(2, '0');
   return `${endDate.getFullYear()}-${pad(endDate.getMonth() + 1)}-${pad(endDate.getDate())}T${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`;
 }
