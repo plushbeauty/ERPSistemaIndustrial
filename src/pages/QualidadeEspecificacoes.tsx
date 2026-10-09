@@ -119,7 +119,7 @@ export default function QualidadeEspecificacoes() {
   const visibleRows = useMemo(() => {
     const term = query.trim().toLowerCase()
     return rows.filter(row => {
-      if (!showInactive && (row.status ?? '').toLowerCase() !== 'ativo') return false
+      if (!showInactive && (row.status ?? '').toLowerCase() === 'inativo') return false
       const product = products.find(item => item.id === row.produto_id)
       return !term || [row.codigo, row.caracteristica, row.unidade, row.nominal, row.vigencia_inicio, row.vigencia_fim, row.frequencia, row.grupo_material, row.tipo_inspecao, product?.codigo, product?.nome]
         .some(value => String(value ?? '').toLowerCase().includes(term))
