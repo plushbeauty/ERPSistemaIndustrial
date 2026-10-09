@@ -102,6 +102,7 @@ export default function VendasRelatorios() {
             <div>
               <h2 className="text-[11px] font-medium text-[#123B50]">Relatório de Pedidos</h2>
               <p className="text-[11px] font-semibold text-slate-500">{filtered.length} pedido(s) • total filtrado {money(total)}</p>
+            </div>
             <button type="button" onClick={() => window.print()} className="print-hidden inline-flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px] font-medium"><Printer size={13}/> IMPRIMIR RELATÓRIO</button>
             </div>
           </div>
