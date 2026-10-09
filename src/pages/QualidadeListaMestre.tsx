@@ -116,7 +116,7 @@ export default function QualidadeListaMestre() {
   }, [pageCount])
 
   return (
-    <main data-quality-workspace className="min-h-screen bg-slate-100 text-slate-900">
+    <main data-quality-workspace className="erp-global-surface erp-compact min-h-screen bg-slate-100 text-slate-900">
       <header className="border-b border-slate-700 bg-slate-900 px-4 py-3 text-white">
         <div className="mx-auto flex max-w-[1800px] items-center justify-between gap-3">
           <div>
