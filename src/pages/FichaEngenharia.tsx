@@ -49,7 +49,7 @@ const errorText=(e:unknown)=>e instanceof Error?e.message:String((e as {message?
 
 export default function FichaEngenharia(){
  const [kind,setKind]=useState<Kind|null>(null),[products,setProducts]=useState<Product[]>([]),[machines,setMachines]=useState<Machine[]>([]),[molds,setMolds]=useState<Mold[]>([]),[catalog,setCatalog]=useState<{id:string;produto_id:string;versao:number;observacoes:string|null}[]>([])
- const [ficha,setFicha]=useState<Ficha|null>(null),[productId,setProductId]=useState(''),[productCode,setProductCode]=useState(''),[version,setVersion]=useState('1'),[rendimento,setRendimento]=useState('1'),[unit,setUnit]=useState('UN')
+ const [ficha,setFicha]=useState<Ficha|null>(null),[productId,setProductId]=useState(''),[productCode,setProductCode]=useState(''),[version,setVersion]=useState('1'),[requestedVersion,setRequestedVersion]=useState<number|null>(null),[rendimento,setRendimento]=useState('1'),[unit,setUnit]=useState('UN')
  const [processCode,setProcessCode]=useState(''),[processName,setProcessName]=useState(''),[notes,setNotes]=useState('')
  const [bom,setBom]=useState<BomRow[]>([emptyBom()]),[ops,setOps]=useState<OpRow[]>([emptyOp()]),[quality,setQuality]=useState<QualityRow[]>([emptyQuality()])
  const [spec,setSpec]=useState<Record<string,string>>({}),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[search,setSearch]=useState(''),[catalogKind,setCatalogKind]=useState<Kind|''>(''),[catalogMold,setCatalogMold]=useState('')
@@ -57,7 +57,7 @@ export default function FichaEngenharia(){
  const selected=useMemo(()=>products.find(p=>p.id===productId),[products,productId])
  useEffect(()=>{void loadBase()},[])
  useEffect(()=>{if(selected)setProductCode(selected.codigo)},[selected])
- useEffect(()=>{if(!productId||!kind)return;void loadFicha(productId,kind)},[productId,kind])
+ useEffect(()=>{if(!productId||!kind)return;void loadFicha(productId,kind,requestedVersion??undefined)},[productId,kind,requestedVersion])
 
  async function company(){const r=await supabase.rpc('erp_current_empresa_id');if(r.error||!r.data)throw new Error('Empresa da sessão não identificada.');return String(r.data)}
  async function loadBase(){
@@ -68,7 +68,7 @@ export default function FichaEngenharia(){
     supabase.from('erp_produtos').select('id,codigo,nome,unidade').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(2000),
     supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id',empresaId).not('status','eq','INATIVA').order('codigo').limit(500),
     supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades,cavidades_ativas,ativo').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(1000),
-    supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,observacoes').eq('empresa_id',empresaId).eq('ativa',true).order('updated_at',{ascending:false}).limit(1000)
+    supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,observacoes').eq('empresa_id',empresaId).eq('ativa',true).order('versao',{ascending:false}).order('updated_at',{ascending:false}).limit(1000)
    ])
    if(p.error)throw p.error;if(m.error)throw m.error;if(md.error)throw md.error;if(fc.error)throw fc.error
    const productRows=(p.data??[]) as Product[]
@@ -77,13 +77,16 @@ export default function FichaEngenharia(){
    if(requested){const byId=productRows.find(x=>x.id===requested);const byCode=productRows.find(x=>x.codigo.toLowerCase()===requested.toLowerCase());const target=byId||byCode;if(target){setProductId(target.id);setProductCode(target.codigo)}}
   }catch(e){setNotice(errorText(e))}finally{setLoading(false)}
  }
- async function loadFicha(id:string, selectedKind:Kind|null=kind){
+ async function loadFicha(id:string, selectedKind:Kind|null=kind, requestedRevision?:number){
   if(!id||!selectedKind)return
   setKind(selectedKind)
   setBusy(true);setNotice('')
   try{
    const empresaId=await company()
-   const f=await supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,rendimento,unidade_rendimento,observacoes,ativa').eq('empresa_id',empresaId).eq('produto_id',id).eq('ativa',true).order('versao',{ascending:false}).limit(1).maybeSingle()
+   const fichaQuery=supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,rendimento,unidade_rendimento,observacoes,ativa').eq('empresa_id',empresaId).eq('produto_id',id)
+   const f=requestedRevision==null
+    ? await fichaQuery.eq('ativa',true).order('versao',{ascending:false}).limit(1).maybeSingle()
+    : await fichaQuery.eq('versao',requestedRevision).maybeSingle()
    if(f.error)throw f.error
    if(!f.data){resetForm(true,id);return}
    const current=f.data as Ficha
@@ -101,7 +104,7 @@ export default function FichaEngenharia(){
   }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
  }
  function resetForm(keepProduct=false,id=''){
-  setFicha(null);if(!keepProduct){setProductId('');setKind(null)}else setProductId(id)
+  setFicha(null);setRequestedVersion(null);if(!keepProduct){setProductId('');setKind(null)}else setProductId(id)
   setVersion('1');setRendimento('1');setUnit('UN');setProcessCode('');setProcessName('');setNotes('');setSpec({});setBom([emptyBom()]);setOps([emptyOp()]);setQuality([emptyQuality()])
  }
  function setS(k:string,v:string){setSpec(x=>({...x,[k]:v}))}
@@ -116,11 +119,14 @@ export default function FichaEngenharia(){
   if((kind==='PRENSADOS'||kind==='INJETADOS'||kind==='ESTAMPARIA')&&(!spec.moldeId||Number(spec.cavidades)<=0))return setNotice('Para Prensados, Injetados e Estampo, informe o molde/estampo e a quantidade de cavidades.')
   if(bom.some(x=>!x.componente_id||Number(x.quantidade)<=0))return setNotice('Preencha todos os materiais da BOM.')
   if(ops.some(x=>!x.operacao.trim()||Number(x.setup_min)<0||Number(x.ciclo_seg)<0))return setNotice('Preencha todas as operações e tempos.')
+  const latestVersion=Math.max(0,...catalog.filter(row=>row.produto_id===productId).map(row=>Number(row.versao)||0))
+  if(!Number.isInteger(Number(version))||Number(version)<1)return setNotice('Informe uma revisão inteira maior ou igual a 1.')
+  if(latestVersion>0&&Number(version)<=latestVersion)return setNotice(`Revisão protegida: a última versão cadastrada é ${latestVersion}. Grave como revisão ${latestVersion+1} para preservar o histórico.`)
   setBusy(true);setNotice('')
   try{
    const empresaId=await company()
    const payload={kind,processCode,processName,notes,spec,updatedAt:new Date().toISOString()}
-   const saved=await supabase.from('erp_fichas_tecnicas').upsert({empresa_id:empresaId,produto_id:productId,versao:Number(version),rendimento:Number(rendimento)||1,unidade_rendimento:unit.trim()||'UN',observacoes:JSON.stringify(payload),ativa:true},{onConflict:'empresa_id,produto_id,versao'}).select('id,produto_id,versao,rendimento,unidade_rendimento,observacoes,ativa').single()
+   const saved=await supabase.from('erp_fichas_tecnicas').insert({empresa_id:empresaId,produto_id:productId,versao:Number(version),rendimento:Number(rendimento)||1,unidade_rendimento:unit.trim()||'UN',observacoes:JSON.stringify(payload),ativa:true}).select('id,produto_id,versao,rendimento,unidade_rendimento,observacoes,ativa').single()
    if(saved.error)throw saved.error
    const fichaId=String(saved.data.id)
    const db=await supabase.from('erp_ficha_itens').delete().eq('empresa_id',empresaId).eq('ficha_id',fichaId);if(db.error)throw db.error
@@ -132,7 +138,7 @@ export default function FichaEngenharia(){
     const qr=q.id?await supabase.from('erp_planos_inspecao').update(qp).eq('id',q.id).eq('empresa_id',empresaId):await supabase.from('erp_planos_inspecao').insert(qp)
     if(qr.error)throw qr.error
    }
-   setFicha(saved.data as Ficha);setCatalog(rows=>[{id:String(saved.data.id),produto_id:productId,versao:Number(version),observacoes:JSON.stringify(payload)},...rows.filter(x=>x.id!==String(saved.data.id))]);setNotice('Ficha de processo gravada: parâmetros, ferramental, fotos, materiais, roteiro e controles de qualidade registrados.')
+   setFicha(saved.data as Ficha);setRequestedVersion(Number(version));setCatalog(rows=>[{id:String(saved.data.id),produto_id:productId,versao:Number(version),observacoes:JSON.stringify(payload)},...rows.filter(x=>x.id!==String(saved.data.id))]);setNotice('Nova revisão da ficha de processo gravada: parâmetros, ferramental, fotos, materiais, roteiro e controles de qualidade registrados.')
   }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
  }
 
@@ -147,7 +153,7 @@ export default function FichaEngenharia(){
     <label>Molde / estampo<select value={catalogMold} onChange={e=>setCatalogMold(e.target.value)}><option value="">Todos</option>{molds.map(m=><option key={m.id} value={m.id}>{m.codigo} — {m.nome} • {m.cavidades} cav.</option>)}</select></label>
    </div>
    <div className="industrial-table-scroll" style={{marginTop:16}}><table className="industrial-table process-sheet-table"><thead><tr><th>Tipo</th><th>Produto</th><th>Ficha</th><th>Molde / Estampo</th><th>Cavidades</th><th>Rev.</th><th>Ação</th></tr></thead><tbody>{
-    catalog.filter(row=>{const j=(()=>{try{return JSON.parse(row.observacoes||'{}')}catch{return {}}})();const prod=products.find(p=>p.id===row.produto_id);const mold=molds.find(m=>m.id===j.spec?.moldeId);const hay=[j.kind,j.processCode,j.processName,prod?.codigo,prod?.nome,mold?.codigo,mold?.nome].join(' ').toLowerCase();return (!search.trim()||hay.includes(search.trim().toLowerCase()))&&(!catalogKind||j.kind===catalogKind)&&(!catalogMold||j.spec?.moldeId===catalogMold)}).map(row=>{const j=(()=>{try{return JSON.parse(row.observacoes||'{}')}catch{return {}}})();const prod=products.find(p=>p.id===row.produto_id);const mold=molds.find(m=>m.id===j.spec?.moldeId);return <tr key={row.id}><td>{j.kind||'—'}</td><td>{prod?.codigo||'—'} — {prod?.nome||'Produto'}</td><td>{j.processCode||'—'}</td><td>{mold?mold.codigo+' — '+mold.nome:'—'}</td><td>{mold?.cavidades??'—'}</td><td>{row.versao}</td><td><button className="industrial-secondary" onClick={()=>{setKind((j.kind||'DIVERSOS') as Kind);setProductId(row.produto_id);setVersion(String(row.versao));void loadFicha(row.produto_id,(j.kind||'DIVERSOS') as Kind)}}><Search size={14}/> Abrir</button></td></tr>})}</tbody></table></div>
+    catalog.filter(row=>{const j=(()=>{try{return JSON.parse(row.observacoes||'{}')}catch{return {}}})();const prod=products.find(p=>p.id===row.produto_id);const mold=molds.find(m=>m.id===j.spec?.moldeId);const hay=[j.kind,j.processCode,j.processName,prod?.codigo,prod?.nome,mold?.codigo,mold?.nome].join(' ').toLowerCase();return (!search.trim()||hay.includes(search.trim().toLowerCase()))&&(!catalogKind||j.kind===catalogKind)&&(!catalogMold||j.spec?.moldeId===catalogMold)}).map(row=>{const j=(()=>{try{return JSON.parse(row.observacoes||'{}')}catch{return {}}})();const prod=products.find(p=>p.id===row.produto_id);const mold=molds.find(m=>m.id===j.spec?.moldeId);return <tr key={row.id}><td>{j.kind||'—'}</td><td>{prod?.codigo||'—'} — {prod?.nome||'Produto'}</td><td>{j.processCode||'—'}</td><td>{mold?mold.codigo+' — '+mold.nome:'—'}</td><td>{mold?.cavidades??'—'}</td><td>{row.versao}</td><td><button className="industrial-secondary" onClick={()=>{setKind((j.kind||'DIVERSOS') as Kind);setProductId(row.produto_id);setVersion(String(row.versao));setRequestedVersion(Number(row.versao))}}><Search size={14}/> Abrir</button></td></tr>})}</tbody></table></div>
   </section>
    {(kind==='PRENSADOS'||kind==='INJETADOS'||kind==='ESTAMPARIA')&&<div className="industrial-panel" style={{marginTop:16,background:'#f7fbfc'}}><div className="process-section-heading"><span>FERRAMENTAL PRINCIPAL</span><h2>Molde / Estampo</h2><p>O número do ferramental e a quantidade de cavidades são dados mestres usados para planejamento e rastreabilidade.</p></div><div className="process-form-grid"><label>Número / código do molde<select value={spec.moldeId||''} onChange={e=>{const m=molds.find(x=>x.id===e.target.value);setS('moldeId',e.target.value);setS('moldeCodigo',m?.codigo||'');setS('cavidades',String(m?.cavidades??''));setS('cavidadesAtivas',String(m?.cavidades_ativas??''))}}><option value="">Selecionar ferramental</option>{molds.filter(m=>!m.produto_id||m.produto_id===productId).map(m=><option key={m.id} value={m.id}>{m.codigo} — {m.nome} • {m.cavidades} cav.</option>)}</select></label><label>Número do molde<input value={spec.moldeCodigo||''} readOnly placeholder="Preenchido pelo cadastro do molde"/></label><label>Total de cavidades<input type="number" min="1" value={spec.cavidades||''} onChange={e=>setS('cavidades',e.target.value)}/></label><label>Cavidades ativas<input type="number" min="0" value={spec.cavidadesAtivas||''} onChange={e=>setS('cavidadesAtivas',e.target.value)}/></label><label>Revisão do molde / estampo<input value={spec.moldeRevisao||''} onChange={e=>setS('moldeRevisao',e.target.value)}/></label></div></div>}
    <div className="industrial-panel" style={{marginTop:16,background:'#f7fbfc'}}><div className="process-section-heading"><span>IDENTIFICAÇÃO VISUAL</span><h2>Foto da peça / ferramental / setup</h2></div><div className="process-form-grid"><label>Foto principal<input type="file" accept="image/*" onChange={e=>setPhoto('fotoPrincipal',e.target.files?.[0]??null)}/><input value={spec.fotoPrincipal||''} onChange={e=>setS('fotoPrincipal',e.target.value)} placeholder="ou URL https://…"/></label><label>Foto secundária<input type="file" accept="image/*" onChange={e=>setPhoto('fotoSecundaria',e.target.files?.[0]??null)}/><input value={spec.fotoSecundaria||''} onChange={e=>setS('fotoSecundaria',e.target.value)} placeholder="ou URL https://…"/></label></div>{(spec.fotoPrincipal||spec.fotoSecundaria)&&<div className="grid md:grid-cols-2 gap-4" style={{marginTop:12}}>{[spec.fotoPrincipal,spec.fotoSecundaria].filter(Boolean).map((src,i)=><figure key={src} style={{margin:0}}><img src={src} alt={i?'Foto secundária da ficha':'Foto principal da ficha'} style={{width:'100%',maxHeight:260,objectFit:'contain',border:'1px solid #d7e6eb',borderRadius:12,background:'#fff'}} onError={e=>{e.currentTarget.style.display='none'}}/><figcaption><ImageIcon size={14}/> Foto {i+1}</figcaption></figure>)}</div>}</div>
@@ -159,15 +165,15 @@ export default function FichaEngenharia(){
 
  return <main className="industrial-form-page process-sheet-page">
   <header className="process-sheet-header"><div><span className="industrial-eyebrow">INDUSTRIA ERP • ENGENHARIA / PROCESSOS</span><h1>{kinds.find(x=>x.id===kind)?.title}</h1><p>Ficha operacional completa para orientar Engenharia, PCP, Produção e Qualidade.</p></div><div className="process-sheet-actions"><button className="industrial-secondary" onClick={()=>setKind(null)}><X size={16}/>Tipos</button><button className="industrial-secondary" onClick={()=>window.print()}><Printer size={16}/>Imprimir</button><button className="industrial-primary" onClick={()=>void save()} disabled={busy}><Save size={16}/>{busy?'Gravando…':'Gravar'}</button></div></header>
-  <div className="process-sheet-toolbar"><button onClick={()=>resetForm(false)}>Novo</button><button onClick={()=>void save()} disabled={busy}>Gravar</button><button onClick={()=>productId&&void loadFicha(productId)} disabled={busy}><Search size={15}/>Pesquisar</button><button onClick={()=>window.print()}><Printer size={15}/>Imprimir</button><span className="process-sheet-toolbar-status">{notice||'Documento operacional controlado'}</span></div>
+  <div className="process-sheet-toolbar"><button onClick={()=>resetForm(false)}>Novo</button><button onClick={()=>void save()} disabled={busy}>Gravar</button><button onClick={()=>{setRequestedVersion(null);if(productId)void loadFicha(productId,kind,undefined)}} disabled={busy}><Search size={15}/>Pesquisar</button><button onClick={()=>window.print()}><Printer size={15}/>Imprimir</button><span className="process-sheet-toolbar-status">{notice||'Documento operacional controlado'}</span></div>
 
   <section className="process-sheet-module-title"><div><b>FICHA DE PROCESSO {kind}</b><span>Engenharia • PCP • Produção • Qualidade</span></div><div className="process-sheet-document-id"><span>Código</span><strong>{processCode||'—'}</strong><small>Revisão {version}</small></div></section>
 
   <section className="industrial-panel">
    <div className="process-section-heading"><span>1 • IDENTIFICAÇÃO E CONTROLE DO DOCUMENTO</span><h2>Dados mestres</h2></div>
    <div className="process-form-grid">
-    <label>Código do produto<input value={productCode} list="produto-codigos" onChange={e=>{const code=e.target.value.trim();setProductCode(e.target.value);const p=products.find(x=>x.codigo.toLowerCase()===code.toLowerCase());if(p)setProductId(p.id)}} placeholder="Digite o código da peça"/><datalist id="produto-codigos">{products.map(p=><option key={p.id} value={p.codigo}>{p.nome}</option>)}</datalist></label>
-    <label>Produto / peça<select value={productId} onChange={e=>{setProductId(e.target.value);const p=products.find(x=>x.id===e.target.value);setProductCode(p?.codigo||'')}}><option value="">Selecione o produto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select></label>
+    <label>Código do produto<input value={productCode} list="produto-codigos" onChange={e=>{const code=e.target.value.trim();setProductCode(e.target.value);const p=products.find(x=>x.codigo.toLowerCase()===code.toLowerCase());if(p){setRequestedVersion(null);setProductId(p.id)}}} placeholder="Digite o código da peça"/><datalist id="produto-codigos">{products.map(p=><option key={p.id} value={p.codigo}>{p.nome}</option>)}</datalist></label>
+    <label>Produto / peça<select value={productId} onChange={e=>{setRequestedVersion(null);setProductId(e.target.value);const p=products.find(x=>x.id===e.target.value);setProductCode(p?.codigo||'')}}><option value="">Selecione o produto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select></label>
     <label>Código da ficha<input value={processCode} onChange={e=>setProcessCode(e.target.value)}/></label>
     <label>Revisão<input type="number" min="1" value={version} onChange={e=>setVersion(e.target.value)}/></label>
     <label>Nome do processo<input value={processName} onChange={e=>setProcessName(e.target.value)}/></label>
