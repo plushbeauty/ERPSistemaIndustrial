@@ -24,7 +24,7 @@ begin
   if v_empresa_id is null or p_empresa_id is null or p_empresa_id <> v_empresa_id then
     raise exception 'Empresa do recebimento inválida para a sessão atual.';
   end if;
-  if p_status_qualidade <> 'APROVADO' then
+  if p_status_qualidade is distinct from 'APROVADO' then
     raise exception 'Ação interrompida: lote com laudo REPROVADO não pode entrar no saldo ativo.';
   end if;
   if p_produto_id is null or p_quantidade is null or p_quantidade <= 0 then
