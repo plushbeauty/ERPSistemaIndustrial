@@ -6,6 +6,7 @@ import QualitySidebar from '../components/quality/QualitySidebar'
 
 type Lookup = LookupRecord
 type Machine = { id: string; codigo: string; nome: string; tipo: string | null }
+type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; status_inspecao: string | null }
 type Instrument = { id: string; codigo: string; descricao: string; status: string; proxima_calibracao: string | null }
 type Plan = { id: string; produto_id: string; codigo: string; caracteristica: string | null; unidade: string | null; limite_inferior: number | null; limite_superior: number | null; frequencia: string | null; status: string | null }
 type InspectionRow = { id: string; produto_id: string | null; ordem_producao_id: string | null; maquina_id: string | null; tipo: string; resultado: string; quantidade_inspecionada: number; quantidade_aprovada: number; quantidade_reprovada: number; observacao: string | null; inspetor_nome: string | null; medicoes: unknown; acao_bloqueio: string | null }
@@ -34,6 +35,8 @@ export default function QualidadeInspecaoProcesso() {
   const [products, setProducts] = useState<Lookup[]>([])
   const [ops, setOps] = useState<Lookup[]>([])
   const [machines, setMachines] = useState<Machine[]>([])
+  const [lots, setLots] = useState<Lot[]>([])
+  const [lote, setLote] = useState('')
   const [instruments, setInstruments] = useState<Instrument[]>([])
   const [plans, setPlans] = useState<Plan[]>([])
   const [history, setHistory] = useState<InspectionRow[]>([])
@@ -59,18 +62,20 @@ export default function QualidadeInspecaoProcesso() {
     try {
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error || !company.data) throw company.error ?? new Error('Empresa não identificada.')
-      const [productsResult, opsResult, machinesResult, instrumentsResult, plansResult, inspectionsResult] = await Promise.all([
+      const [productsResult, opsResult, machinesResult, lotsResult, instrumentsResult, plansResult, inspectionsResult] = await Promise.all([
         supabase.from('erp_produtos').select('id,codigo,nome,descricao').eq('empresa_id', company.data).eq('ativo', true).order('codigo').limit(2000),
         supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,status').eq('empresa_id', company.data).order('numero_op', { ascending: false }).limit(2000),
         supabase.from('erp_maquinas').select('id,codigo,nome,tipo').eq('empresa_id', company.data).not('status', 'eq', 'INATIVA').order('codigo'),
+        supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,status_inspecao').eq('empresa_id', company.data).order('created_at', { ascending: false }).limit(2000),
         supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao').eq('empresa_id', company.data).order('codigo'),
         supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,limite_inferior,limite_superior,frequencia,status').eq('empresa_id', company.data).order('codigo'),
         supabase.from('erp_inspecoes').select('id,produto_id,ordem_producao_id,maquina_id,tipo,resultado,quantidade_inspecionada,quantidade_aprovada,quantidade_reprovada,observacao,inspetor_nome,medicoes,acao_bloqueio').eq('empresa_id', company.data).order('created_at', { ascending: false }).limit(100),
       ])
-      for (const result of [productsResult, opsResult, machinesResult, instrumentsResult, plansResult, inspectionsResult]) if (result.error) throw result.error
+      for (const result of [productsResult, opsResult, machinesResult, lotsResult, instrumentsResult, plansResult, inspectionsResult]) if (result.error) throw result.error
       setProducts((productsResult.data ?? []) as Lookup[])
       setOps((opsResult.data ?? []).map(row => ({ id: String(row.id), codigo: String(row.numero_op), nome: String(row.status), documento: String(row.produto_id ?? '') })) as Lookup[])
       setMachines((machinesResult.data ?? []) as Machine[])
+      setLots((lotsResult.data ?? []) as Lot[])
       setInstruments((instrumentsResult.data ?? []) as Instrument[])
       setPlans((plansResult.data ?? []) as Plan[])
       setHistory((inspectionsResult.data ?? []) as InspectionRow[])
@@ -89,6 +94,7 @@ export default function QualidadeInspecaoProcesso() {
 
   function resetForm() {
     setProduto('')
+    setLote('')
     setOp('')
     setMachine('')
     setInstrument('')
@@ -129,11 +135,22 @@ export default function QualidadeInspecaoProcesso() {
       const hasOutOfSpec = evaluatedMeasurements.some(item => item.status === 'NOK')
       const effectiveResult = hasOutOfSpec ? 'REPROVADO' : resultado
       if (hasOutOfSpec && rejected <= 0) throw new Error('Há medição fora dos limites; registre quantidade reprovada maior que zero.')
+      if (effectiveResult !== 'APROVADO' && rejected <= 0) throw new Error('Inspeção não aprovada exige quantidade reprovada maior que zero.')
       if (effectiveResult !== 'APROVADO' && acaoBloqueio === 'NENHUMA') throw new Error('Inspeção não aprovada exige uma ação de bloqueio.')
+      if (effectiveResult === 'APROVADO' && acaoBloqueio !== 'NENHUMA') throw new Error('Remova a ação de bloqueio ou marque a inspeção como não aprovada.')
+      if (effectiveResult !== 'APROVADO' && !lote) throw new Error('Selecione o lote real que será retido em quarentena.')
+      const selectedLot = lots.find(item => item.id === lote)
+      if (lote && (!selectedLot || selectedLot.produto_id !== produto)) throw new Error('O lote selecionado não pertence ao produto inspecionado.')
+      let lotRetained = false
+      if (effectiveResult !== 'APROVADO' && lote) {
+        const hold = await supabase.rpc('erp_reter_lote', { p_lote_id: lote, p_motivo: `Inspeção de processo ${effectiveResult}: ${obs.trim() || 'desvio nos critérios técnicos'}` })
+        if (hold.error) throw hold.error
+        lotRetained = true
+      }
       const result = await supabase.from('erp_inspecoes').insert({
         empresa_id: company.data,
         produto_id: produto,
-        lote_id: null,
+        lote_id: lote || null,
         ordem_producao_id: op || null,
         maquina_id: machine || null,
         tipo: 'PROCESSO_METROLOGIA',
@@ -152,7 +169,7 @@ export default function QualidadeInspecaoProcesso() {
       resetForm()
       await load()
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Falha ao salvar inspeção.')
+      setError(lotRetained ? `O lote foi retido em quarentena, mas o laudo não foi confirmado: ${cause instanceof Error ? cause.message : 'falha ao salvar inspeção'}` : cause instanceof Error ? cause.message : 'Falha ao salvar inspeção.')
     } finally {
       setBusy(false)
     }
@@ -163,7 +180,8 @@ export default function QualidadeInspecaoProcesso() {
     <div className="mx-auto grid max-w-[1800px] grid-cols-1 gap-5 p-4 lg:grid-cols-[280px_minmax(0,1fr)]"><QualitySidebar active="/qualidade/inspecao-processo"/><section className="min-w-0 space-y-5">
       {(error || notice) && <div className={error ? 'rounded-[2px] border border-red-200 bg-red-50 p-4 text-[11px] font-bold text-red-800' : 'rounded-[2px] border border-emerald-200 bg-emerald-50 p-4 text-[11px] font-bold text-emerald-800'}>{error || notice}</div>}
       <section className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm"><h2 className="text-[13px] font-extrabold">1. AMARRAÇÃO DE ENTIDADES DA PRODUÇÃO</h2><div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <EntityCodeLookup label="ITEM / PEÇA" value={produto} records={products} onChange={setProduto} onSelect={record => setProduto(record.id)} required/>
+        <EntityCodeLookup label="ITEM / PEÇA" value={produto} records={products} onChange={value => { setProduto(value); if (lote && lots.find(item => item.id === lote)?.produto_id !== value) setLote('') }} onSelect={record => { setProduto(record.id); if (lote && lots.find(item => item.id === lote)?.produto_id !== record.id) setLote('') }} required/>
+        <EntityCodeLookup label="LOTE / RASTREABILIDADE" value={lote} records={lots.filter(item => item.produto_id === produto).map(item => ({ id: item.id, codigo: item.lote_interno, nome: item.status_inspecao ? `Status: ${item.status_inspecao}` : 'Sem inspeção registrada', documento: item.lote_fornecedor ?? undefined }))} onChange={setLote} onSelect={record => setLote(record.id)} helper="Obrigatório para retenção ou bloqueio."/>
         <EntityCodeLookup label="Nº DA OP" value={op} records={ops} onChange={setOp} onSelect={record => setOp(record.id)} helper="OP real do PCP."/>
         <EntityCodeLookup label="MÁQUINA / POSTO" value={machine} records={machines} onChange={setMachine} onSelect={record => setMachine(record.id)}/>
         <EntityCodeLookup label="INSTRUMENTO DE MEDIÇÃO" value={instrument} records={instruments.map(item => ({ ...item, nome: validInstrument(item) ? item.descricao : item.descricao + ' • BLOQUEADO' }))} onChange={setInstrument} onSelect={record => setInstrument(record.id)} required helper="Somente instrumentos aprovados e vigentes."/>
