@@ -11,17 +11,28 @@ type Product = LookupRecord & {
 }
 
 type QualityStatus = 'APROVADO' | 'REPROVADO'
-type LotTrace = { id: string; produto_id: string; nf_numero: string | null; lote_fornecedor: string; quantidade_inicial: number; quantidade_disponivel: number; status_qualidade: QualityStatus; certificado_path: string | null; created_at: string }
+type LotTrace = { id: string; produto_id: string; nf_numero: string | null; lote_fornecedor: string; quantidade_inicial: number; quantidade_disponivel: number; status_qualidade: QualityStatus | 'RETIDO'; certificado_path: string | null; created_at: string }
+type Supplier = { id: string; razao_social: string; ativo: boolean }
+type StockLocation = { id: string; codigo: string; nome: string; almoxarifado_id: string; tipo: string; ativo: boolean }
+type Sector = { id: string; nome: string; ativo: boolean }
 
 const numberFormat = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 3 })
 
 export default function EstoqueRecebimentoLotes(): ReactElement {
   const [empresaId, setEmpresaId] = useState('')
   const [products, setProducts] = useState<Product[]>([])
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [locations, setLocations] = useState<StockLocation[]>([])
+  const [sectors, setSectors] = useState<Sector[]>([])
   const [lots, setLots] = useState<LotTrace[]>([])
   const [signedCertificate, setSignedCertificate] = useState<{ path: string; url: string } | null>(null)
   const [produtoId, setProdutoId] = useState('')
   const [produtoDescricao, setProdutoDescricao] = useState('')
+  const [fornecedorId, setFornecedorId] = useState('')
+  const [locationId, setLocationId] = useState('')
+  const [rpncSectorId, setRpncSectorId] = useState('')
+  const [rpncSeverity, setRpncSeverity] = useState<'Critica' | 'Maior' | 'Menor' | ''>('')
+  const [rpncDescription, setRpncDescription] = useState('')
   const [notaFiscal, setNotaFiscal] = useState('')
   const [loteFornecedor, setLoteFornecedor] = useState('')
   const [quantidade, setQuantidade] = useState<number>(0)
@@ -40,13 +51,19 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
       const tenant = await supabase.rpc('erp_current_empresa_id')
       if (tenant.error || !tenant.data) throw tenant.error ?? new Error('Não foi possível identificar a empresa da sessão.')
       const tenantId = String(tenant.data)
-      const [productRows, lotRows] = await Promise.all([
+      const [productRows, lotRows, supplierRows, locationRows, sectorRows] = await Promise.all([
         fetchAllPages<Product>((from, to) => supabase.from('erp_produtos').select('id,codigo,nome,descricao,unidade,estoque_atual,ativo', { count: 'exact' }).eq('empresa_id', tenantId).eq('ativo', true).order('codigo').order('id').range(from, to)),
         fetchAllPages<LotTrace>((from, to) => supabase.from('erp_estoque_lotes_rastreabilidade').select('id,produto_id,nf_numero,lote_fornecedor,quantidade_inicial,quantidade_disponivel,status_qualidade,certificado_path,created_at', { count: 'exact' }).eq('empresa_id', tenantId).order('created_at', { ascending: false }).order('id').range(from, to)),
+        fetchAllPages<Supplier>((from, to) => supabase.from('erp_fornecedores').select('id,razao_social,ativo', { count: 'exact' }).eq('empresa_id', tenantId).eq('ativo', true).order('razao_social').order('id').range(from, to)),
+        fetchAllPages<StockLocation>((from, to) => supabase.from('erp_estoque_localizacoes').select('id,codigo,nome,almoxarifado_id,tipo,ativo', { count: 'exact' }).eq('empresa_id', tenantId).eq('ativo', true).order('codigo').order('id').range(from, to)),
+        fetchAllPages<Sector>((from, to) => supabase.from('erp_setores').select('id,nome,ativo', { count: 'exact' }).eq('empresa_id', tenantId).eq('ativo', true).order('nome').order('id').range(from, to)),
       ])
       setEmpresaId(tenantId)
       setProducts(productRows)
       setLots(lotRows)
+      setSuppliers(supplierRows)
+      setLocations(locationRows)
+      setSectors(sectorRows)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar recebimentos e lotes.')
     } finally {
