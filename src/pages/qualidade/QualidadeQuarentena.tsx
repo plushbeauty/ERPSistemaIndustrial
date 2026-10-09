@@ -77,7 +77,7 @@ export default function QualidadeQuarentena(): ReactElement {
       if (rpcError) throw rpcError
       setMessage('Lote retido. Quarentena ' + String(data) + ' registrada; movimentos de estoque ficam bloqueados até decisão formal.')
       setReason('')
-      setLot(current => current ? { ...current, status_inspecao: 'RETIDO' } : current)
+      setLot(current => current ? { ...current, status_inspecao: 'RETIDO', quantidade_disponivel: 0 } : current)
       await carregar()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Falha ao reter lote.')
