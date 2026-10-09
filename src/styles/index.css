@@ -160,6 +160,20 @@ table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!i
   font-size:10px!important;
   line-height:1.2;
 }
+.erp-global-density textarea,
+.module-workspace-v3 textarea,
+.industrial-form-page textarea,
+.pcp-page textarea,
+.process-sheet-page textarea,
+.sgq-advanced textarea,
+.erp-page-v3 textarea,
+.v7-content textarea,
+.operational-frame-content textarea,
+.erp4-demo textarea{
+  height:auto!important;
+  min-height:60px!important;
+  resize:vertical;
+}
 .erp-global-density :is(input,select,textarea),
 .module-workspace-v3 :is(input,select,textarea),
 .industrial-form-page :is(input,select,textarea),
@@ -201,7 +215,8 @@ table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!i
 .erp4-demo label,
 .erp-form-field>label,
 .erp-form-label{
-  display:block;
+  display:grid;
+  gap:2px;
   margin:0 0 2px!important;
   color:#64748b!important;
   font-size:9px!important;
