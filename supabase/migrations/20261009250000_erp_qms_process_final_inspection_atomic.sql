@@ -196,12 +196,10 @@ begin
   ) returning * into v_inspecao;
 
   if p_resultado <> 'APROVADO' then
-    if upper(coalesce(v_lote.status_inspecao, '')) <> 'RETIDO' then
-      perform public.erp_reter_lote(
-        p_lote_id,
-        'Inspeção ' || v_tipo_plano || ' ' || p_resultado || ': ' || btrim(p_descricao_rpnc)
-      );
-    end if;
+    perform public.erp_reter_lote(
+      p_lote_id,
+      'Inspeção ' || v_tipo_plano || ' ' || p_resultado || ': ' || btrim(p_descricao_rpnc)
+    );
     update public.erp_estoque_lotes_rastreabilidade
     set status_qualidade = 'REPROVADO', quantidade_disponivel = 0
     where empresa_id = v_empresa
