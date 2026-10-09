@@ -451,13 +451,15 @@ function AppIndustrialAuthenticated() {
       <Route path="/engenharia/bom" element={<IndustrialDataWorkspace />} />
       <Route path="/engenharia/roteiros" element={<IndustrialDataWorkspace />} />
       <Route path="/estoque/enderecos" element={<IndustrialDataWorkspace />} />
-      <Route path="/estoque/movimentacoes" element={<EstoqueAlmoxarifado />} />
+      <Route path="/estoque/movimentacoes" element={<IndustrialDataWorkspace />} />
       <Route path="/qualidade/especificacoes" element={<IndustrialDataWorkspace />} />
       <Route path="/qualidade/fmea" element={<IndustrialDataWorkspace />} />
       <Route path="/qualidade/rnc-capa" element={<IndustrialDataWorkspace />} />
-      <Route path="/qualidade/cep" element={<QualidadeIndustrial />} />
+      <Route path="/qualidade/cep" element={<IndustrialDataWorkspace />} />
+      <Route path="/pcp/ordens-industriais" element={<IndustrialDataWorkspace />} />
       <Route path="/pcp/apontamentos" element={<IndustrialDataWorkspace />} />
       <Route path="/fiscal/parametros" element={<IndustrialDataWorkspace />} />
+      <Route path="/fiscal/custos-industriais" element={<CentralCustosIndustrial />}
       <Route path="/rh/funcionarios" element={<IndustrialDataWorkspace />} />
       <Route path="/rh/turnos" element={<IndustrialDataWorkspace />} />
       <Route path="/rh/epis" element={<IndustrialDataWorkspace />} />
