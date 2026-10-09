@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, CreditCard, RefreshCw, Search, ShoppingCart, Wallet } from 'lucide-react'
+import { CreditCard, RefreshCw, Search, ShoppingCart, Wallet } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
@@ -21,7 +21,7 @@ export default function VendasPDV(){
   ])
   setProducts(p);setBoxes(b);setCustomers(cu);if(!box&&b[0])setBox(b[0].id);setBusy(false)}
  useEffect(()=>{void load()},[])
- const categories=useMemo(()=>Array.from(new Set(products.map(p=>p.categoria).filter((value):value is string=>Boolean(value?.trim()))).sort((a,b)=>a.localeCompare(b,'pt-BR')),[products])
+ const categories=useMemo(()=>{const values=products.map(product=>product.categoria).filter((value):value is string=>Boolean(value?.trim()));return Array.from(new Set(values)).sort((a,b)=>a.localeCompare(b,'pt-BR'))},[products])
  const visible=useMemo(()=>{const q=query.trim().toLowerCase();return products.filter(p=>(category==='TODOS'||p.categoria===category)&&(!q||p.codigo.toLowerCase().includes(q)||p.nome.toLowerCase().includes(q)||(p.codigo_barras||'').includes(q)))},[products,query,category])
  const subtotal=cart.reduce((s,i)=>s+i.quantidade*Number(i.preco_venda||0),0),disc=Math.min(subtotal,Math.max(0,Number(discount)||0)),total=subtotal-disc
  const add=(p:Product)=>{if(!p.permite_estoque_negativo&&p.estoque_atual<=0){setError(`Produto ${p.codigo} sem estoque disponível.`);return}setError('');setCart(c=>{const found=c.find(i=>i.id===p.id);return found?c.map(i=>i.id===p.id?{...i,quantidade:i.quantidade+1}:i):[...c,{...p,quantidade:1}]})}
