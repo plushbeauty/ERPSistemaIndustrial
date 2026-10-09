@@ -55,7 +55,10 @@ begin
      or p_quantidade_aprovada + p_quantidade_reprovada <> p_quantidade_inspecionada then
     raise exception 'Quantidades inspecionada, aprovada e reprovada são inconsistentes.';
   end if;
-  if jsonb_typeof(p_medicoes) is distinct from 'array' or jsonb_array_length(p_medicoes) = 0 then
+  if jsonb_typeof(p_medicoes) is distinct from 'array' then
+    raise exception 'O laudo deve conter medições em formato de lista.';
+  end if;
+  if jsonb_array_length(p_medicoes) = 0 then
     raise exception 'O laudo deve conter ao menos uma medição ou verificação vinculada ao plano mestre.';
   end if;
   if not exists (
@@ -227,7 +230,7 @@ grant execute on function public.erp_qms_registrar_inspecao_processo(uuid, uuid,
   end if;
 
   if p_resultado = 'APROVADO' then
-    if p_quantidade_reprovada <> 0 or p_acao_bloqueio <> 'NENHUMA' then
+    if p_quantidade_reprovada <> 0 or p_acao_bloqueio is distinct from 'NENHUMA' then
       raise exception 'Inspeção aprovada não pode ter quantidade reprovada nem ação de bloqueio.';
     end if;
 
