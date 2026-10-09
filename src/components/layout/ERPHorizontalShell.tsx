@@ -40,8 +40,40 @@ const menus: MenuItem[] = [
   { label: 'Estoque', route: '/estoque' },
   { label: 'Financeiro', route: '/financeiro/custo-padrao' },
   { label: 'Fiscal', route: '/fiscal' },
-  { label: 'PCP', route: '/pcp' },
-  { label: 'Qualidade', route: '/qualidade' },
+  { label: 'PCP', route: '/pcp', children: [
+    { label: 'Painel de controle PCP', route: '/pcp' },
+    { label: 'Ordens de produção', route: '/pcp/ordens' },
+    { label: 'Demanda / pedidos', route: '/pcp/demanda' },
+    { label: 'Planejamento e capacidade', route: '/pcp/planejamento' },
+    { label: 'Sequenciamento de máquinas', route: '/pcp/sequenciamento' },
+    { label: 'Programação / Gantt', route: '/pcp/programacao' },
+    { label: 'Dashboard OEE', route: '/pcp/dashboard-oee' },
+    { label: 'Apuração de turno', route: '/pcp/apuracao-turno' },
+    { label: 'Apontamento no tablet', route: '/pcp/tablet-operador' },
+    { label: 'Acabamento', route: '/pcp/acabamento' },
+    { label: 'Paradas / Setup', route: '/pcp/paradas' },
+    { label: 'Estrutura BOM', route: '/pcp/engenharia-bom' },
+    { label: 'Roteiro de operações', route: '/pcp/roteiro-operacoes' },
+    { label: 'Ficha de processo', route: '/pcp/ficha-processo' },
+    { label: 'Postos de trabalho', route: '/pcp/postos-trabalho' },
+  ] },
+  { label: 'Qualidade / SGQ', route: '/qualidade', children: [
+    { label: 'Dashboard SGQ / RPNC', route: '/qualidade/dashboard-rnc' },
+    { label: 'Registrar RPNC / CAPA', route: '/qualidade/rnc' },
+    { label: 'Tratativa 8D / causa raiz', route: '/qualidade/metodologia-8d' },
+    { label: 'PFMEA / análise de risco', route: '/qualidade/pfmea' },
+    { label: 'Inspeção em processo', route: '/qualidade/inspecao-processo' },
+    { label: 'Inspeção final', route: '/qualidade/inspecao-final' },
+    { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
+    { label: 'Documentos e procedimentos', route: '/qualidade/documentos' },
+    { label: 'Lista mestra', route: '/qualidade/lista-mestre' },
+    { label: 'Metrologia', route: '/qualidade/metrologia' },
+    { label: 'Calibração', route: '/qualidade/calibracao' },
+    { label: 'Quarentena de lotes', route: '/qualidade/quarentena' },
+    { label: 'Genealogia de lotes', route: '/qualidade/genealogia-lote' },
+    { label: 'Auditoria 5S', route: '/qualidade/auditoria-5s' },
+    { label: 'Relatórios SGQ', route: '/qualidade/relatorios-documentos' },
+  ] },
   { label: 'Manutenção', route: '/manutencao' },
   { label: 'Relatórios', route: '/relatorios' },
   { label: 'Configuração', route: '/configuracoes-adm' },
@@ -179,7 +211,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-menu-item{position:relative;display:flex;align-items:stretch}
         .erp-horizontal-menu-button{height:31px;display:inline-flex;align-items:center;gap:3px;padding:0 10px;border:0;border-right:1px solid rgba(255,255,255,.18);background:#2D8DB8;color:#fff;font-size:10px;font-weight:500;cursor:pointer}
         .erp-horizontal-menu-button:hover,.erp-horizontal-menu-button.is-active{background:#17445A;color:#fff}
-        .erp-horizontal-dropdown{position:absolute;top:31px;left:0;min-width:210px;padding:4px 0;background:#fff;border:1px solid #b9cbd3;box-shadow:0 5px 14px rgba(18,59,80,.14)}
+        .erp-horizontal-dropdown{position:absolute;top:31px;left:0;min-width:240px;max-height:min(70vh,520px);overflow-y:auto;padding:4px 0;background:#fff;border:1px solid #b9cbd3;box-shadow:0 5px 14px rgba(18,59,80,.14)}
         .erp-horizontal-dropdown button{display:block;width:100%;min-height:29px;padding:5px 12px;border:0;background:#fff;color:#234d61;text-align:left;font-size:11px;cursor:pointer}
         .erp-horizontal-dropdown button:hover{background:#edf7fb;color:#1f7195}
         .erp-horizontal-workspace{min-width:0;min-height:calc(100vh - 78px);padding:8px;box-sizing:border-box}

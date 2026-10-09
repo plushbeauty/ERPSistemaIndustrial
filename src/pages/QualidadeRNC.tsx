@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { FileText, RefreshCw, Save, ShieldCheck, Upload, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
 
 type Rpn = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; sgq_origem: string; sgq_severidade: string; lote_afetado: string | null; quantidade_segregada: number; status: string; criado_em: string }
@@ -26,6 +27,7 @@ export default function QualidadeRNC() {
   const [selectedRnc, setSelectedRnc] = useState('')
   const [description, setDescription] = useState('')
   const [origin, setOrigin] = useState('Processo')
+  const [severity, setSeverity] = useState<'Menor' | 'Maior' | 'Critica'>('Menor')
   const [sectorId, setSectorId] = useState('')
   const [lot, setLot] = useState('')
   const [segregated, setSegregated] = useState('0')
@@ -43,15 +45,14 @@ export default function QualidadeRNC() {
       if (!current.data) throw new Error('Empresa da sessão não identificada.')
       const id = String(current.data); setCompanyId(id)
       const [r, a, u, s, d] = await Promise.all([
-        supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,sgq_origem,sgq_severidade,lote_afetado,quantidade_segregada,status,criado_em').eq('empresa_id', id).not('sgq_origem', 'is', null).order('criado_em', { ascending: false }).limit(500),
-        supabase.from('erp_sgq_capa_acoes').select('id,rpnc_id,tipo,descricao,causa_raiz,responsavel_id,prazo,status,acao_o_que,acao_por_que,acao_onde,acao_quem,acao_quando,acao_como,acao_quanto').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
-        supabase.from('erp_usuarios').select('id,nome,email').eq('empresa_id', id).eq('ativo', true).is('deleted_at', null).order('nome').limit(500),
-        supabase.from('erp_setores').select('id,nome').eq('empresa_id', id).eq('ativo', true).order('nome').limit(500),
-        supabase.from('erp_documentos_qualidade').select('id,codigo,titulo,tipo,revisao,data_revisao,preparado_por,pdf_storage_path,status').eq('empresa_id', id).order('codigo').limit(500),
+        fetchAllPages<Rpn>((from, to) => supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,sgq_origem,sgq_severidade,lote_afetado,quantidade_segregada,status,criado_em', { count: 'exact' }).eq('empresa_id', id).not('sgq_origem', 'is', null).order('criado_em', { ascending: false }).order('id').range(from, to)),
+        fetchAllPages<Capa>((from, to) => supabase.from('erp_sgq_capa_acoes').select('id,rpnc_id,tipo,descricao,causa_raiz,responsavel_id,prazo,status,acao_o_que,acao_por_que,acao_onde,acao_quem,acao_quando,acao_como,acao_quanto', { count: 'exact' }).eq('empresa_id', id).order('created_at', { ascending: false }).order('id').range(from, to)),
+        fetchAllPages<User>((from, to) => supabase.from('erp_usuarios').select('id,nome,email', { count: 'exact' }).eq('empresa_id', id).eq('ativo', true).is('deleted_at', null).order('nome').order('id').range(from, to)),
+        fetchAllPages<Sector>((from, to) => supabase.from('erp_setores').select('id,nome', { count: 'exact' }).eq('empresa_id', id).eq('ativo', true).order('nome').order('id').range(from, to)),
+        fetchAllPages<Doc>((from, to) => supabase.from('erp_documentos_qualidade').select('id,codigo,titulo,tipo,revisao,data_revisao,preparado_por,pdf_storage_path,status', { count: 'exact' }).eq('empresa_id', id).order('codigo').order('id').range(from, to)),
       ])
-      if (r.error || a.error || u.error || s.error || d.error) throw r.error ?? a.error ?? u.error ?? s.error ?? d.error
-      setRncs((r.data ?? []) as Rpn[]); setActions((a.data ?? []) as Capa[]); setUsers((u.data ?? []) as User[]); setSectors((s.data ?? []) as Sector[]); setDocs((d.data ?? []) as Doc[])
-      if (!selectedRnc && r.data?.[0]) setSelectedRnc(r.data[0].id)
+      setRncs(r); setActions(a); setUsers(u); setSectors(s); setDocs(d)
+      if (!selectedRnc && r[0]) setSelectedRnc(r[0].id)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar SGQ.')
     } finally { setBusy(false) }
@@ -77,7 +78,6 @@ export default function QualidadeRNC() {
     setError(''); setNotice('')
     if (!description.trim()) { setError('Descrição detalhada da falha é obrigatória.'); return }
     if (!lot.trim()) { setError('Lote afetado é obrigatório.'); return }
-    setBusy(true)
     if (!sectorId) { setError('Setor responsável é obrigatório.'); return }
     setBusy(true)
     try {
@@ -85,7 +85,7 @@ export default function QualidadeRNC() {
       if (lotResult.error) throw lotResult.error
       if (!lotResult.data) throw new Error('Lote afetado não encontrado na empresa atual.')
       const result = await supabase.rpc('erp_sgq_abrir_rpnc', {
-        p_descricao: description.trim(), p_origem: origin, p_severidade: 'Menor', p_setor_id: sectorId,
+        p_descricao: description.trim(), p_origem: origin, p_severidade: severity, p_setor_id: sectorId,
         p_linked_entity_type: 'lote', p_linked_entity_id: lotResult.data.id,
       })
       if (result.error) throw result.error
@@ -160,9 +160,10 @@ export default function QualidadeRNC() {
         {(error || notice) && <div className={error ? 'sgq-message error' : 'sgq-message'}>{error || notice}</div>}
 
         {tab === 'rnc' && <section className="sgq-panel">
-          <div className="sgq-grid sgq-grid-5">
+          <div className="sgq-grid sgq-grid-6">
             <label className={label}>Código RNC<input className={field(false)} readOnly value={selected?.numero_rpnc ?? 'Gerado pelo banco'} /></label>
             <label className={label}>Origem<select className={field(false)} value={origin} onChange={(e) => setOrigin(e.target.value)}><option>Cliente</option><option>Processo</option><option>Fornecedor</option></select></label>
+            <label className={label}>Severidade<select className={field(false)} value={severity} onChange={(e) => setSeverity(e.target.value as typeof severity)}><option value="Menor">Menor</option><option value="Maior">Maior</option><option value="Critica">Crítica</option></select></label>
             <label className={label}>Setor responsável<select className={field(!sectorId)} value={sectorId} onChange={(e) => setSectorId(e.target.value)}><option value="">Preencher...</option>{sectors.map((sector) => <option key={sector.id} value={sector.id}>{sector.nome}</option>)}</select></label>
             <label className={label}>Lote afetado<input className={field(!lot && !selected)} value={lot} onChange={(e) => setLot(e.target.value)} placeholder="Preencher..." /></label>
             <label className={label}>Qtd. segregada<input className={field(false)} type="number" min="0" value={segregated} onChange={(e) => setSegregated(e.target.value)} /></label>

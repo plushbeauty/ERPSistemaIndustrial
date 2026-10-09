@@ -40,6 +40,7 @@ const IndustrialVisualShowcase = lazyPage(() => import('./components/IndustrialV
 const Blog = lazyPage(() => import('./pages/Blog'), 'Blog')
 const Contato = lazyPage(() => import('./pages/Contato'), 'Contato')
 const Fiscal = lazyPage(() => import('./pages/Fiscal'), 'Fiscal')
+const CustoMedioIndustrial = lazyPage(() => import('./pages/fiscal/CustoMedioIndustrial'), 'default')
 const NFeEmissao = lazyPage(() => import('./pages/NFeEmissaoCompact'), 'NFeEmissao')
 const FiscalPrevisaoCaixa = lazyPage(() => import('./pages/FiscalPrevisaoCaixa'), 'FiscalPrevisaoCaixa')
 const FiscalCarteiraNFe = lazyPage(() => import('./pages/FiscalCarteiraNFe'), 'FiscalCarteiraNFe')
@@ -58,19 +59,23 @@ const AssistenteRetificacao = lazyPage(() => import('./features/controladoria/As
 const Master = lazyPage(() => import('./pages/Master'), 'Master')
 const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
 const PCPOrdens = lazyPage(() => import('./pages/PCPOrdens'), 'default')
+const PCPAcabamento = lazyPage(() => import('./pages/PCPAcabamento'), 'PCPAcabamento')
 const PCPParadas = lazyPage(() => import('./pages/PCPParadas'), 'PCPParadas')
 const PCPSequenciamento = lazyPage(() => import('./pages/PCPSequenciamento'), 'PCPSequenciamento')
 const PCPPlanejamentoIndustrial = lazyPage(() => import('./pages/PCPPlanejamentoIndustrial'), 'PCPPlanejamentoIndustrial')
 const MRPIndustrial = lazyPage(() => import('./pages/MRPIndustrial'), 'MRPIndustrial')
 const CentraisIndustriais = lazyPage(() => import('./pages/CentraisIndustriais'), 'CentraisIndustriais')
 const QualidadeIndustrial = lazyPage(() => import('./pages/QualidadeIndustrial'), 'QualidadeIndustrial')
+const QualidadeInstrumentosCadastro = lazyPage(() => import('./pages/QualidadeInstrumentosCadastro'), 'QualidadeInstrumentosCadastro')
 const QualidadeSGQAvancado = lazyPage(() => import('./pages/SgqManagementCompact'), 'default')
 const AcompanhamentoNaoConformidade = lazyPage(() => import('./pages/AcompanhamentoNaoConformidade'), 'AcompanhamentoNaoConformidade')
 const EstoqueAlmoxarifado = lazyPage(() => import('./pages/EstoqueAlmoxarifadoCompact'), 'default')
+const EstoqueSaldosLote = lazyPage(() => import('./pages/estoque/EstoqueSaldosLote'), 'default')
 const ProdutosVendasIndustrial = lazyPage(() => import('./pages/ProdutosVendasIndustrial'), 'ProdutosVendasIndustrial')
 const ModuloCadastroProdutos = lazyPage(() => import('./pages/cadastro-produtos/ModuloCadastroProdutos'), 'ModuloCadastroProdutos')
 const TabletDashboard = lazyPage(() => import('./pages/TabletDashboard'), 'TabletDashboard')
 const PedidoVendaCompleto = lazyPage(() => import('./pages/NovoPedido'), 'NovoPedido')
+const LaboratorioVisual = lazyPage(() => import('./pages/manutencao/LaboratorioVisual'), 'default')
 const DashboardComercial = lazyPage(() => import('./pages/DashboardComercial'), 'DashboardComercial')
 const VendasCentral = lazyPage(() => import('./pages/VendasCentral'), 'default')
 const VendasCatalogoDigital = lazyPage(() => import('./pages/VendasCatalogoDigital'), 'VendasCatalogoDigital')
@@ -103,6 +108,7 @@ const DocumentosQualidadeControle = lazyPage(() => import('./pages/DocumentosQua
 const RecebimentoMateriais = lazyPage(() => import('./pages/RecebimentoMateriais'), 'RecebimentoMateriais')
 const ManualUsuario = lazyPage(() => import('./pages/ManualUsuario'), 'ManualUsuario')
 const RHIndustrial = lazyPage(() => import('./pages/RHIndustrial'), 'RHIndustrial')
+const RHSegurancaOperacional = lazyPage(() => import('./pages/rh/RHIndustrial'), 'default')
 const ModuleOverviewIndustrial = lazyPage(() => import('./pages/ModuleOverviewIndustrial'), 'ModuleOverviewIndustrial')
 const SetupADMInicial = lazyPage(() => import('./pages/SetupADMInicial'), 'SetupADMInicial')
 const RecuperarSenha = lazyPage(() => import('./pages/RecuperarSenha'), 'RecuperarSenha')
@@ -147,6 +153,7 @@ const QualidadeListaMestre = lazyPage(() => import('./pages/QualidadeListaMestre
 const QualidadeAuditoria5S = lazyPage(() => import('./pages/QualidadeAuditoria5S'), 'QualidadeAuditoria5S')
 const QualidadeMetodologia8D = lazyPage(() => import('./pages/QualidadeMetodologia8D'), 'QualidadeMetodologia8D')
 const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspecaoProcesso'), 'QualidadeInspecaoProcesso')
+const QualidadeEspecificacoes = lazyPage(() => import('./pages/QualidadeEspecificacoes'), 'QualidadeEspecificacoes')
 const MoldesFerramentaria = lazyPage(() => import('./pages/MoldesFerramentaria'), 'MoldesFerramentaria')
 const OperacaoIndustrial = lazyPage(() => import('./pages/OperacaoIndustrial'), 'OperacaoIndustrial')
 const InjecaoIndustrial = lazyPage(() => import('./pages/InjecaoIndustrial'), 'InjecaoIndustrial')
@@ -244,7 +251,7 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
 
   const { data: profile, error: profileError } = await supabase
     .from('erp_usuarios')
-    .select('id, auth_user_id, empresa_id, perfil, nivel_admin, is_master, ativo, deleted_at')
+    .select('id, auth_user_id, empresa_id, perfil, nivel_admin, is_master, ativo, deleted_at, setor_id')
     .eq('auth_user_id', session.user.id)
     .eq('ativo', true)
     .is('deleted_at', null)
@@ -257,9 +264,14 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
   }
 
   const role = String(profile.perfil ?? '').trim().toUpperCase()
-  const master = Boolean(profile.is_master) && Number(profile.nivel_admin ?? 0) >= 100 && role === 'MASTER' && profile.empresa_id === null
+  const nivelAdmin = Number(profile.nivel_admin ?? 0)
+  const master = profile.is_master === true && nivelAdmin === 100 && role === 'MASTER' && profile.empresa_id === null && (profile.setor_id === null || profile.setor_id === undefined)
 
   if (master) return { ok: true, master: true, reason: '', profile }
+
+  if (profile.is_master === true || role === 'MASTER' || nivelAdmin === 100) {
+    return { ok: false, master: false, reason: 'Registro Master inconsistente. Acesso bloqueado.', profile }
+  }
 
   if (!profile.empresa_id) {
     return { ok: false, master: false, reason: 'UsuÃ¡rio autenticado sem empresa vinculada.', profile }
@@ -273,7 +285,7 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
     .maybeSingle()
 
   if (empresaError) throw empresaError
-  if (!empresa?.ativo) return { ok: false, master: false, reason: 'Empresa ERP inativa ou inexistente.', profile }
+  if (!empresa?.ativo || empresa.id !== profile.empresa_id) return { ok: false, master: false, reason: 'Empresa ERP inativa, divergente ou inexistente.', profile }
 
   return { ok: true, master: false, reason: '', profile }
 }
@@ -445,6 +457,12 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/classificacao-fiscal" element={<ClassificacaoFiscal />} />
       <Route path="/vendas/razao-geral" element={<PainelRazaoGeral />} />
       <Route path="/pcp" element={<PCPIndustrial />} />
+      <Route path="/pcp/nova-op" element={<PCPIndustrial />} />
+      <Route path="/pcp/programacao" element={<PCPIndustrial />} />
+      <Route path="/pcp/apontamento" element={<PCPIndustrial />} />
+      <Route path="/pcp/mrp" element={<MRPIndustrial />} />
+      <Route path="/pcp/fila" element={<PCPOrdens />} />
+      <Route path="/pcp/capacidade" element={<PCPIndustrial />} />
       <Route path="/pcp/engenharia-bom" element={<EngenhariaBOM />} />
       <Route path="/pcp/roteiro-operacoes" element={<RoteiroOperacoes />} />
       <Route path="/pcp/ficha-processo" element={<FichaProcesso />} />
@@ -452,6 +470,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/painel-ordens" element={<PainelOrdensProducao />} />
       <Route path="/pcp/apuracao-turno" element={<ApuracaoTurno />} />
       <Route path="/pcp/ordens" element={<PCPOrdens />} />
+      <Route path="/pcp/acabamento" element={<PCPAcabamento />} />
+      <Route path="/producao/acabamento" element={<PCPAcabamento />} />
       <Route path="/pcp/demanda" element={<PCPIndustrial />} />
       <Route path="/pcp/materiais" element={<PCPIndustrial />} />
       <Route path="/pcp/paradas" element={<PCPParadas />} />
@@ -460,12 +480,15 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/dashboard-oee" element={<PCPDashboardOEE />} />
       <Route path="/pcp/tablet-operador" element={<PCPTabletOperador />} />
       <Route path="/qualidade" element={<QualidadeIndustrial />} />
-      <Route path="/qualidade/instrumentos" element={<QualidadeIndustrial />} />
+      <Route path="/qualidade/recebimento" element={<QualidadeIndustrial />} />
+      <Route path="/qualidade/especificacoes" element={<QualidadeEspecificacoes />} />
+      <Route path="/qualidade/instrumentos" element={<QualidadeInstrumentosCadastro />} />
       <Route path="/qualidade/liberacao-lote" element={<AcompanhamentoNaoConformidade />} />
       <Route path="/qualidade/dashboard-rnc" element={<QualidadeDashboardRNC />} />
       <Route path="/qualidade/pfmea" element={<QualidadePFMEA />} />
       <Route path="/qualidade/documentos" element={<DocumentosQualidadeControle />} />
       <Route path="/qualidade/inspecao-processo" element={<QualidadeInspecaoProcesso />} />
+      <Route path="/qualidade/inspecao-final" element={<QualidadeInspecaoProcesso inspectionType="FINAL" />} />
       <Route path="/qualidade/metodologia-8d" element={<QualidadeMetodologia8D />} />
       <Route path="/qualidade/auditoria-5s" element={<QualidadeAuditoria5S />} />
       <Route path="/qualidade/lista-mestre" element={<QualidadeListaMestre />} />
@@ -478,8 +501,11 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/genealogia-lote" element={<QualidadeGenealogiaLote />} />
       <Route path="/qualidade/quarentena" element={<QualidadeQuarentena />} />
       <Route path="/estoque" element={<EstoqueAlmoxarifado />} />
+      <Route path="/recebimento/nfe" element={<RecebimentoMateriais />} />
+      <Route path="/chao-fabrica" element={<OperacaoIndustrial />} />
       <Route path="/almoxarifado" element={<EstoqueAlmoxarifado />} />
       <Route path="/estoque/saldos" element={<EstoqueAlmoxarifado />} />
+      <Route path="/estoque/saldos-lote" element={<EstoqueSaldosLote />} />
       <Route path="/estoque/ajustes" element={<EstoqueAjustes />} />
       <Route path="/estoque/separacao" element={<EstoqueSeparacao />} />
       <Route path="/estoque/etiquetas" element={<EstoqueEtiquetas />} />
@@ -529,6 +555,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/tabelas-preco" element={<AjusteGlobal />} />
       <Route path="/catalogo" element={<CatalogoDigital />} />
       <Route path="/fiscal" element={<Fiscal />} />
+      <Route path="/fiscal/custo-medio-industrial" element={<CustoMedioIndustrial />} />
       <Route path="/fiscal/compras" element={<ComprasRoute><FiscalCompras /></ComprasRoute>} />
       <Route path="/compras/analise-precos" element={<ComprasRoute><ComprasAnalisePrecos /></ComprasRoute>} />
       <Route path="/compras/relatorios" element={<ComprasRoute><ComprasRelatorios /></ComprasRoute>} />
@@ -559,6 +586,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/recebimento-materiais" element={<RecebimentoMateriais />} />
       <Route path="/manual-usuario" element={<ManualUsuario />} />
       <Route path="/rh" element={<RHIndustrial />} />
+      <Route path="/rh/seguranca-operacional" element={<RHSegurancaOperacional />} />
       <Route path="/module-overview" element={<ModuleOverviewIndustrial module="erp" />} />
       <Route path="/setup-adm-inicial" element={<SetupADMInicial />} />
       <Route path="/configuracao-lote" element={<ConfiguracaoLote />} />
@@ -570,6 +598,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras/solicitacoes" element={<Navigate to="/compras/requisicoes" replace />} />
       <Route path="/compras-solicitacao" element={<ComprasSolicitacaoManual />} />
       <Route path="/manutencao/ordens" element={<ManutencaoOrdens />} />
+      <Route path="/manutencao/laboratorio-visual" element={<LaboratorioVisual />} />
       <Route path="/fiscal/carteira" element={<FiscalCarteiraNFe />} />
       <Route path="/qualidade/rnc" element={<QualidadeRNC />} />
       <Route path="/estoque/recebimento" element={<EstoqueRecebimentoLotes />} />

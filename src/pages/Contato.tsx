@@ -20,7 +20,7 @@ export default function Contato() {
       <div className="public-contact-shell">
         <header className="public-contact-header">
           <a href="/" className="public-brand" aria-label="SYSNQRA ERP & SGQ INDUSTRIAL"><img src="/logo/sgq-erp.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" /></a>
-          <a className="contact-back" href="/"><ArrowLeft size={17} /> Voltar ao site</a>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}><a className="contact-back" href="/"><ArrowLeft size={17} /> Voltar ao site</a></div>
         </header>
 
         <section className="public-contact-grid">

@@ -4,7 +4,10 @@ import { useSynqraLayout } from '../../layout/SynqraLayoutContext'
 const items = [
   ['Dashboard SGQ', '/qualidade/dashboard-rnc'],
   ['Qualidade Geral', '/qualidade'],
+  ['Inspeção de Recebimento', '/qualidade/recebimento'],
+  ['Especificações Técnicas', '/qualidade/especificacoes'],
   ['Inspeção em Processo', '/qualidade/inspecao-processo'],
+  ['Inspeção Final', '/qualidade/inspecao-final'],
   ['Registro RPNC / CAPA', '/qualidade/rnc'],
   ['8D — Ações Corretivas', '/qualidade/metodologia-8d'],
   ['Auditoria 5S', '/qualidade/auditoria-5s'],
@@ -20,11 +23,11 @@ export default function QualitySidebar({ active }: { active: string }) {
 
   return (
     <aside className={hostedBySynqra
-      ? 'col-span-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm'
-      : 'hidden rounded-xl border border-slate-200 bg-white shadow-sm lg:block'}>
+      ? 'col-span-full min-w-0 overflow-hidden rounded-[2px] border border-slate-200 bg-white shadow-none'
+      : 'hidden rounded-[2px] border border-slate-200 bg-white shadow-sm lg:block'}>
       {!hostedBySynqra && <div className="rounded-t-xl border-b border-slate-700 bg-slate-900 p-4 text-white">
-        <p className="text-xs font-black uppercase tracking-widest text-sky-300">QUALIDADE</p>
-        <h2 className="mt-1 text-lg font-extrabold">Workspace Industrial</h2>
+        <p className="text-[9px] font-medium uppercase tracking-widest text-sky-300">QUALIDADE</p>
+        <h2 className="mt-1 text-[12px] font-semibold">Workspace Industrial</h2>
       </div>}
       <nav
         aria-label="Navegação da qualidade"
@@ -38,8 +41,8 @@ export default function QualitySidebar({ active }: { active: string }) {
             to={path}
             aria-current={active === path ? 'page' : undefined}
             className={`${hostedBySynqra
-              ? 'min-h-10 flex-none whitespace-nowrap px-3 text-xs'
-              : 'mb-1 min-h-11 w-full px-3 py-2 text-left text-sm'} flex items-center rounded-lg ${
+              ? 'min-h-[30px] flex-none whitespace-nowrap px-2 text-[10px]'
+              : 'mb-1 min-h-[30px] w-full px-2 py-1 text-left text-[10px]'} flex items-center rounded-lg ${
               active === path
                 ? hostedBySynqra
                   ? 'bg-blue-50 font-extrabold text-[#0052cc] ring-1 ring-blue-100'

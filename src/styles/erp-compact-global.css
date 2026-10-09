@@ -24,10 +24,13 @@
 .erp-global-surface button {
   border-radius: 2px !important;
 }
+.erp-global-surface.erp-compact button:not(.nfe-primary):not(.nfe-secondary):not(.nfe-action),
 .erp-global-surface .erp-compact button:not(.nfe-primary):not(.nfe-secondary):not(.nfe-action) {
   min-height: 30px;
 }
+.erp-global-surface.erp-compact input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .erp-global-surface .erp-compact input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.erp-global-surface.erp-compact select,
 .erp-global-surface .erp-compact select {
   height: 30px !important;
   min-height: 30px !important;
@@ -46,14 +49,20 @@
 
 /* Grades operacionais: somente componentes que adotam as classes industriais.
    O escopo não alcança documentos fiscais nem tabelas públicas. */
+.erp-global-surface.erp-compact .industrial-table,
 .erp-global-surface .erp-compact .industrial-table,
+.erp-global-surface.erp-compact .sgq-table table,
 .erp-global-surface .erp-compact .sgq-table table {
   width: 100%;
   border-collapse: collapse;
   font-size: 10px;
 }
+.erp-global-surface.erp-compact .industrial-table th,
+.erp-global-surface.erp-compact .industrial-table td,
 .erp-global-surface .erp-compact .industrial-table th,
 .erp-global-surface .erp-compact .industrial-table td,
+.erp-global-surface.erp-compact .sgq-table th,
+.erp-global-surface.erp-compact .sgq-table td,
 .erp-global-surface .erp-compact .sgq-table th,
 .erp-global-surface .erp-compact .sgq-table td {
   box-sizing: border-box;
@@ -61,7 +70,9 @@
   padding: 4px 6px;
   vertical-align: middle;
 }
+.erp-global-surface.erp-compact .industrial-table th,
 .erp-global-surface .erp-compact .industrial-table th,
+.erp-global-surface.erp-compact .sgq-table th,
 .erp-global-surface .erp-compact .sgq-table th {
   font-size: 9px;
   font-weight: 500;
@@ -69,16 +80,22 @@
   text-transform: uppercase;
   white-space: nowrap;
 }
+.erp-global-surface.erp-compact .industrial-table tbody tr:hover,
 .erp-global-surface .erp-compact .industrial-table tbody tr:hover,
+.erp-global-surface.erp-compact .sgq-table tbody tr:hover,
 .erp-global-surface .erp-compact .sgq-table tbody tr:hover {
   background-color: rgba(250, 250, 250, .8);
 }
+.erp-global-surface.erp-compact .industrial-table td.num,
 .erp-global-surface .erp-compact .industrial-table td.num,
+.erp-global-surface.erp-compact .sgq-table td.num,
 .erp-global-surface .erp-compact .sgq-table td.num {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+.erp-global-surface.erp-compact .industrial-table td[colspan],
 .erp-global-surface .erp-compact .industrial-table td[colspan],
+.erp-global-surface.erp-compact .sgq-table td[colspan],
 .erp-global-surface .erp-compact .sgq-table td[colspan] {
   text-align: center;
 }
@@ -114,4 +131,1068 @@
   min-height: 26px !important;
   border-radius: 2px !important;
   font-size: 10px !important;
+}
+
+/* PCP forecast and compact operational controls — scoped to the PCP module. */
+.pcp-industrial-shell .pcp-modal-form input,
+.pcp-industrial-shell .pcp-modal-form select,
+.pcp-industrial-shell .pcp-modal-form textarea,
+.pcp-industrial-shell .pcp-form-grid-modern input,
+.pcp-industrial-shell .pcp-form-grid-modern select {
+  box-sizing: border-box;
+  min-height: 30px;
+  height: 30px;
+  border-radius: 2px;
+  padding: 4px 7px;
+  font-size: 11px;
+}
+.pcp-industrial-shell .pcp-modal-form label,
+.pcp-industrial-shell .pcp-form-grid-modern label {
+  gap: 2px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.pcp-industrial-shell .pcp-modal-form button,
+.pcp-industrial-shell .pcp-form-grid-modern button {
+  min-height: 30px;
+  border-radius: 2px;
+  font-size: 10px;
+}
+.pcp-schedule-forecast {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 3px;
+  padding: 8px 10px;
+  border: 1px solid #b9dce6;
+  border-left: 3px solid #2d8db8;
+  background: #f1fafc;
+  color: #123b50;
+  font-size: 10px;
+}
+.pcp-schedule-forecast strong {
+  font-size: 9px;
+  letter-spacing: .06em;
+}
+.pcp-schedule-forecast span,
+.pcp-schedule-forecast small {
+  line-height: 1.4;
+}
+.pcp-schedule-forecast small {
+  color: #526b77;
+}
+.pcp-industrial-shell .pcp-mini-table th,
+.pcp-industrial-shell .pcp-mini-table td,
+.pcp-industrial-shell .crud-table-wrap th,
+.pcp-industrial-shell .crud-table-wrap td {
+  height: 32px;
+  box-sizing: border-box;
+  padding: 4px 6px;
+}
+.pcp-industrial-shell .pcp-mini-table tbody tr:hover,
+.pcp-industrial-shell .crud-table-wrap tbody tr:hover {
+  background: rgba(250, 250, 250, .8);
+}
+
+/* FMEA live risk score — visualizes the database-generated RPN formula. */
+.fmea-rpn-preview {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 12px;
+  padding: 8px 10px;
+  border: 1px solid #c9dde5;
+  border-left: 3px solid #2d8db8;
+  border-radius: 2px;
+  background: #f1fafc;
+}
+.fmea-rpn-preview span {
+  color: #526b77;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+.fmea-rpn-preview strong {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  color: #123b50;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.fmea-rpn-preview small {
+  color: #526b77;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+/* Dense DBGrid baseline for modules explicitly opting into the compact surface. */
+.erp-global-surface.erp-compact table {
+  border-collapse: collapse;
+  font-size: 10px;
+}
+.erp-global-surface.erp-compact tr {
+  height: 32px !important;
+}
+.erp-global-surface.erp-compact th,
+.erp-global-surface.erp-compact td {
+  height: 32px !important;
+  padding: 4px 6px !important;
+  vertical-align: middle;
+}
+.erp-global-surface.erp-compact th {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+/* Compact buttons when the surface and compact mode share the same root. */
+.erp-global-surface.erp-compact button:not(.nfe-primary):not(.nfe-secondary):not(.nfe-action) {
+  box-sizing: border-box;
+  min-height: 30px;
+  height: 30px;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+}
+
+/* Inspeção em processo: compacto e coerente com o padrão de Novo Pedido. */
+[data-quality-workspace] label {
+  gap: 2px !important;
+  font-size: 9px !important;
+  line-height: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: .04em;
+}
+[data-quality-workspace] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+[data-quality-workspace] select {
+  box-sizing: border-box;
+  height: 30px !important;
+  min-height: 30px !important;
+  border-radius: 2px !important;
+  padding: 4px 7px !important;
+  font-size: 11px !important;
+}
+[data-quality-workspace] textarea {
+  min-height: 76px !important;
+  border-radius: 2px !important;
+  padding: 6px 7px !important;
+  font-size: 11px !important;
+}
+[data-quality-workspace] button {
+  min-height: 30px;
+  border-radius: 2px !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  font-size: 10px !important;
+}
+[data-quality-workspace] table {
+  border-collapse: collapse;
+  font-size: 10px;
+}
+[data-quality-workspace] th,
+[data-quality-workspace] td {
+  height: 32px;
+  padding: 4px 6px !important;
+  vertical-align: middle;
+}
+[data-quality-workspace] th {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+
+/* Laboratório visual: validação isolada do padrão premium sem alterar a rota real de Vendas. */
+.erp-visual-test-surface #frmNovoPedido {
+  color: #1f2937;
+  font-size: 10px;
+}
+.erp-visual-test-surface #frmNovoPedido label {
+  display: block;
+  margin-bottom: 2px;
+  color: #64748b;
+  font-size: 9px !important;
+  line-height: 11px;
+  font-weight: 600;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+.erp-visual-test-surface #frmNovoPedido input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.erp-visual-test-surface #frmNovoPedido select,
+.erp-visual-test-surface #frmNovoPedido button {
+  box-sizing: border-box;
+  height: 30px !important;
+  min-height: 30px !important;
+  border-radius: 2px !important;
+  font-size: 10px;
+}
+.erp-visual-test-surface #frmNovoPedido button[class*="w-6"],
+.erp-visual-test-surface #frmNovoPedido button[class*="h-6"] {
+  width: 30px !important;
+  min-width: 30px !important;
+}
+.erp-visual-test-surface #frmNovoPedido input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+.erp-visual-test-surface #frmNovoPedido select:focus {
+  border-color: #2d8db8 !important;
+  outline: 1px solid rgba(45, 141, 184, .18);
+  outline-offset: 0;
+  box-shadow: none !important;
+}
+.erp-visual-test-surface #frmNovoPedido table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+.erp-visual-test-surface #frmNovoPedido thead tr,
+.erp-visual-test-surface #frmNovoPedido tbody tr {
+  height: 32px !important;
+}
+.erp-visual-test-surface #frmNovoPedido thead th {
+  height: 32px !important;
+  padding-top: 0;
+  padding-bottom: 0;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 9px !important;
+  font-weight: 600;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.erp-visual-test-surface #frmNovoPedido tbody td {
+  height: 32px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+.erp-visual-test-surface #frmNovoPedido tbody tr:hover {
+  background-color: rgba(250, 250, 250, .9) !important;
+}
+.erp-visual-test-surface #frmNovoPedido tbody td[colspan] {
+  height: 64px;
+  text-align: center;
+  color: #64748b;
+}
+
+
+/* Qualidade em processo/final: densidade compacta sem atingir outros módulos. */
+[data-quality-workspace] button {
+  box-sizing: border-box;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+}
+[data-quality-workspace] button svg {
+  width: 14px !important;
+  height: 14px !important;
+  flex: 0 0 auto;
+}
+[data-quality-workspace] label {
+  gap: 2px !important;
+  font-size: 9px !important;
+  line-height: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+[data-quality-workspace] .p-5,
+[data-quality-workspace] .p-4 {
+  padding: 8px !important;
+}
+[data-quality-workspace] .gap-5,
+[data-quality-workspace] .gap-4 {
+  gap: 8px !important;
+}
+[data-quality-workspace] table {
+  border-collapse: collapse;
+  font-size: 10px !important;
+}
+[data-quality-workspace] table th,
+[data-quality-workspace] table td {
+  height: 32px !important;
+  padding: 4px 6px !important;
+  vertical-align: middle;
+}
+[data-quality-workspace] table th {
+  font-size: 9px !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+[data-quality-workspace] table tbody tr:hover {
+  background-color: rgba(250, 250, 250, .9);
+}
+[data-quality-workspace] table td[colspan] {
+  text-align: center;
+}
+
+
+/* Recebimento WMS: entrada, certificado e rastreabilidade na densidade industrial. */
+.erp-stock-receiving button {
+  box-sizing: border-box;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+}
+.erp-stock-receiving button svg,
+.erp-stock-receiving header svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+.erp-stock-receiving label {
+  gap: 2px !important;
+  font-size: 9px !important;
+  line-height: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+.erp-stock-receiving input:not([type="file"]):not([type="checkbox"]):not([type="radio"]),
+.erp-stock-receiving select {
+  height: 30px !important;
+  min-height: 30px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+}
+.erp-stock-receiving .p-5,
+.erp-stock-receiving .p-4 {
+  padding: 8px !important;
+}
+.erp-stock-receiving .gap-4,
+.erp-stock-receiving .gap-3 {
+  gap: 8px !important;
+}
+.erp-stock-receiving .rounded-md,
+.erp-stock-receiving .rounded-full {
+  border-radius: 2px !important;
+}
+.erp-stock-receiving .h-7.w-7 {
+  width: 20px !important;
+  height: 20px !important;
+  font-size: 10px !important;
+}
+.erp-stock-receiving h2,
+.erp-stock-receiving .text-lg {
+  font-size: 12px !important;
+  line-height: 16px !important;
+}
+.erp-stock-receiving .text-sm {
+  font-size: 10px !important;
+}
+.erp-stock-receiving .mb-4 {
+  margin-bottom: 8px !important;
+}
+.erp-stock-receiving .pb-3 {
+  padding-bottom: 8px !important;
+}
+.erp-stock-receiving table {
+  border-collapse: collapse;
+  font-size: 10px !important;
+}
+.erp-stock-receiving table th,
+.erp-stock-receiving table td {
+  height: 32px !important;
+  padding: 4px 6px !important;
+  vertical-align: middle;
+}
+.erp-stock-receiving table th {
+  font-size: 9px !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.erp-stock-receiving table tbody tr:hover {
+  background-color: rgba(250, 250, 250, .9);
+}
+.erp-stock-receiving table td[colspan] {
+  text-align: center;
+}
+
+
+/* Engenharia / Ficha de Processo: densidade e controles iguais ao padrão Novo Pedido. */
+.process-sheet-page {
+  min-height: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 8px !important;
+  background: #F4FBFD !important;
+  color: #111827 !important;
+  font-size: 10px !important;
+}
+.process-sheet-page .process-sheet-header {
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+.process-sheet-page .process-sheet-header h1 {
+  margin: 0 0 2px !important;
+  font-size: 16px !important;
+  line-height: 20px !important;
+  letter-spacing: 0 !important;
+}
+.process-sheet-page .process-sheet-header p {
+  font-size: 10px !important;
+  line-height: 14px !important;
+}
+.process-sheet-page .process-sheet-actions {
+  gap: 4px !important;
+}
+.process-sheet-page button:not(.industrial-panel),
+.process-sheet-page .industrial-primary,
+.process-sheet-page .industrial-secondary,
+.process-sheet-page .industrial-danger {
+  box-sizing: border-box;
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.process-sheet-page .process-sheet-toolbar {
+  min-height: 32px !important;
+  gap: 0 !important;
+  padding: 0 4px !important;
+  border-radius: 2px !important;
+}
+.process-sheet-page .process-sheet-toolbar button {
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  font-size: 10px !important;
+}
+.process-sheet-page .process-sheet-toolbar-status {
+  font-size: 9px !important;
+}
+.process-sheet-page .process-sheet-module-title {
+  padding: 8px !important;
+  border-radius: 2px !important;
+}
+.process-sheet-page .process-sheet-module-title b,
+.process-sheet-page .process-sheet-document-id strong {
+  font-size: 12px !important;
+  line-height: 16px !important;
+}
+.process-sheet-page .process-sheet-module-title span,
+.process-sheet-page .process-sheet-document-id span,
+.process-sheet-page .process-sheet-document-id small {
+  font-size: 9px !important;
+}
+.process-sheet-page .industrial-panel {
+  margin-top: 8px !important;
+  margin-bottom: 8px !important;
+  padding: 8px !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+.process-sheet-page .process-section-heading {
+  margin-bottom: 8px !important;
+}
+.process-sheet-page .process-section-heading span {
+  font-size: 9px !important;
+  line-height: 11px !important;
+  letter-spacing: .05em !important;
+}
+.process-sheet-page .process-section-heading h2 {
+  margin: 2px 0 !important;
+  font-size: 12px !important;
+  line-height: 16px !important;
+}
+.process-sheet-page .process-section-heading p {
+  font-size: 10px !important;
+  line-height: 14px !important;
+}
+.process-sheet-page .process-form-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+  gap: 8px !important;
+}
+.process-sheet-page .process-form-grid label {
+  display: flex !important;
+  min-width: 0;
+  flex-direction: column !important;
+  gap: 2px !important;
+  font-size: 9px !important;
+  line-height: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+.process-sheet-page .process-form-grid input:not([type="checkbox"]):not([type="radio"]),
+.process-sheet-page .process-form-grid select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 8px !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 2px !important;
+  background: #FFFFFF !important;
+  color: #111827 !important;
+  font-size: 10px !important;
+  font-weight: 400 !important;
+  outline-offset: 1px;
+}
+.process-sheet-page .process-form-grid textarea {
+  min-height: 58px !important;
+  padding: 6px 8px !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 2px !important;
+  background: #FFFFFF !important;
+  color: #111827 !important;
+  font-size: 10px !important;
+}
+.process-sheet-page .process-form-grid input[type="file"] {
+  padding: 2px !important;
+  font-size: 9px !important;
+}
+.process-sheet-page .rounded-full {
+  border-radius: 2px !important;
+}
+.process-sheet-page .h-7.w-7 {
+  width: 20px !important;
+  height: 20px !important;
+  font-size: 10px !important;
+}
+.process-sheet-page .industrial-table-scroll {
+  max-width: 100%;
+  margin-top: 8px !important;
+}
+.process-sheet-page .industrial-table {
+  width: 100%;
+  border-collapse: collapse !important;
+  font-size: 10px !important;
+}
+.process-sheet-page .industrial-table th,
+.process-sheet-page .industrial-table td {
+  height: 32px !important;
+  padding: 4px 6px !important;
+  vertical-align: middle !important;
+}
+.process-sheet-page .industrial-table th {
+  font-size: 9px !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap;
+}
+.process-sheet-page .industrial-table tbody tr:hover {
+  background: rgba(250, 250, 250, .9) !important;
+}
+.process-sheet-page .industrial-table td[colspan] {
+  text-align: center !important;
+}
+.process-sheet-page .process-sheet-page svg,
+.process-sheet-page svg {
+  width: 14px !important;
+  height: 14px !important;
+  flex: 0 0 auto;
+}
+
+
+/* PCP industrial: mesma densidade de formulário e DBGrid da tela Novo Pedido. */
+.pcp-industrial-shell {
+  font-size: 10px !important;
+}
+.pcp-industrial-shell label {
+  gap: 2px !important;
+  font-size: 9px !important;
+  line-height: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+.pcp-industrial-shell input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.pcp-industrial-shell select {
+  box-sizing: border-box;
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+  font-weight: 400 !important;
+}
+.pcp-industrial-shell textarea {
+  min-height: 58px !important;
+  padding: 6px 8px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+}
+.pcp-industrial-shell button {
+  box-sizing: border-box;
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+.pcp-industrial-shell .text-base,
+.pcp-industrial-shell .text-sm {
+  font-size: 10px !important;
+}
+.pcp-industrial-shell .text-2xl {
+  font-size: 16px !important;
+  line-height: 20px !important;
+}
+.pcp-industrial-shell .rounded-md,
+.pcp-industrial-shell .rounded-lg,
+.pcp-industrial-shell .rounded-xl,
+.pcp-industrial-shell .rounded-full {
+  border-radius: 2px !important;
+}
+.pcp-industrial-shell .shadow,
+.pcp-industrial-shell .shadow-sm,
+.pcp-industrial-shell .shadow-md {
+  box-shadow: none !important;
+}
+.pcp-industrial-shell table {
+  width: 100%;
+  border-collapse: collapse !important;
+  font-size: 10px !important;
+}
+.pcp-industrial-shell table th,
+.pcp-industrial-shell table td {
+  height: 32px !important;
+  padding: 4px 6px !important;
+  vertical-align: middle !important;
+}
+.pcp-industrial-shell table th {
+  font-size: 9px !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+.pcp-industrial-shell table tbody tr:hover {
+  background: rgba(250, 250, 250, .9) !important;
+}
+
+
+/* PCP workspace: sidebar discreta, painel branco e densidade industrial. */
+.pcp-industrial-shell {
+  background: #F4FBFD !important;
+  color: #111827 !important;
+}
+.pcp-industrial-shell .pcp-sidebar {
+  box-sizing: border-box;
+  width: 184px !important;
+  min-width: 184px !important;
+  padding: 8px !important;
+  gap: 4px !important;
+  background: #123B50 !important;
+  border-right: 1px solid #244F63 !important;
+  overflow-y: auto;
+}
+.pcp-industrial-shell .pcp-sidebar-brand {
+  min-height: 44px !important;
+  gap: 6px !important;
+  padding: 4px !important;
+  margin-bottom: 4px !important;
+}
+.pcp-industrial-shell .pcp-sidebar-brand img {
+  width: 30px !important;
+  height: 30px !important;
+  object-fit: contain;
+}
+.pcp-industrial-shell .pcp-sidebar-brand strong {
+  font-size: 9px !important;
+  line-height: 12px !important;
+  letter-spacing: .02em;
+}
+.pcp-industrial-shell .pcp-sidebar-brand small {
+  font-size: 8px !important;
+  line-height: 10px !important;
+}
+.pcp-industrial-shell .pcp-side-section {
+  padding: 8px 4px 3px !important;
+  font-size: 8px !important;
+  line-height: 10px !important;
+  letter-spacing: .06em !important;
+}
+.pcp-industrial-shell .pcp-side-item {
+  box-sizing: border-box;
+  min-height: 30px !important;
+  height: 30px !important;
+  gap: 6px !important;
+  padding: 0 7px !important;
+  border-radius: 2px !important;
+  font-size: 9px !important;
+  line-height: 11px !important;
+  font-weight: 600 !important;
+}
+.pcp-industrial-shell .pcp-side-item span {
+  font-size: 12px !important;
+  line-height: 14px !important;
+}
+.pcp-industrial-shell .pcp-main {
+  min-width: 0;
+  background: #F4FBFD !important;
+}
+.pcp-industrial-shell .pcp-topbar {
+  box-sizing: border-box;
+  min-height: 48px !important;
+  height: 48px !important;
+  padding: 0 10px !important;
+  gap: 8px !important;
+  background: #FFFFFF !important;
+  border-bottom: 1px solid #CBD5E1 !important;
+  box-shadow: none !important;
+}
+.pcp-industrial-shell .pcp-top-title strong {
+  font-size: 12px !important;
+  line-height: 15px !important;
+}
+.pcp-industrial-shell .pcp-top-title small,
+.pcp-industrial-shell .pcp-top-actions {
+  font-size: 9px !important;
+}
+.pcp-industrial-shell .pcp-top-actions {
+  gap: 6px !important;
+}
+.pcp-industrial-shell .pcp-page-head {
+  margin: 0 0 8px !important;
+  padding: 8px !important;
+  border-bottom: 1px solid #CBD5E1 !important;
+  background: #FFFFFF !important;
+}
+.pcp-industrial-shell .pcp-page-heading-row h1 {
+  margin: 2px 0 !important;
+  font-size: 16px !important;
+  line-height: 20px !important;
+  letter-spacing: 0 !important;
+}
+.pcp-industrial-shell .pcp-page-heading-row p,
+.pcp-industrial-shell .pcp-page-heading-row span {
+  font-size: 9px !important;
+  line-height: 13px !important;
+}
+.pcp-industrial-shell .pcp-content {
+  padding: 8px !important;
+  gap: 8px !important;
+}
+.pcp-industrial-shell .pcp-dash-card,
+.pcp-industrial-shell .pcp-modern-panel,
+.pcp-industrial-shell .pcp-timeline-card,
+.pcp-industrial-shell .pcp-newop-card,
+.pcp-industrial-shell .pcp-code-card {
+  padding: 8px !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 2px !important;
+  background: #FFFFFF !important;
+  box-shadow: none !important;
+}
+.pcp-industrial-shell .pcp-dashboard-grid,
+.pcp-industrial-shell .pcp-dashboard-tables,
+.pcp-industrial-shell .pcp-capacity-grid,
+.pcp-industrial-shell .pcp-newop-grid {
+  gap: 8px !important;
+}
+.pcp-industrial-shell .pcp-modern-panel-head {
+  padding: 0 0 6px !important;
+  margin-bottom: 8px !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+}
+.pcp-industrial-shell .pcp-modern-panel-head h2,
+.pcp-industrial-shell .pcp-modern-panel-head strong {
+  font-size: 12px !important;
+  line-height: 16px !important;
+}
+.pcp-industrial-shell .pcp-modern-panel-head p,
+.pcp-industrial-shell .pcp-help-text,
+.pcp-industrial-shell .pcp-info,
+.pcp-industrial-shell .pcp-empty {
+  font-size: 9px !important;
+  line-height: 13px !important;
+}
+.pcp-industrial-shell .pcp-status-row {
+  min-height: 32px !important;
+  padding: 4px 6px !important;
+  border-radius: 2px !important;
+}
+.pcp-industrial-shell .pcp-mini-table th,
+.pcp-industrial-shell .pcp-mini-table td,
+.pcp-industrial-shell .pcp-newop-table th,
+.pcp-industrial-shell .pcp-newop-table td {
+  height: 32px !important;
+  padding: 4px 6px !important;
+  font-size: 10px !important;
+  vertical-align: middle !important;
+}
+.pcp-industrial-shell .pcp-mini-table th,
+.pcp-industrial-shell .pcp-newop-table th {
+  font-size: 9px !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+.pcp-industrial-shell .pcp-mini-table tbody tr:hover,
+.pcp-industrial-shell .pcp-newop-table tbody tr:hover {
+  background: #FAFAFA !important;
+}
+.pcp-industrial-shell .pcp-calendar-controls,
+.pcp-industrial-shell .pcp-section-toolbar,
+.pcp-industrial-shell .pcp-list-actions,
+.pcp-industrial-shell .pcp-row-actions,
+.pcp-industrial-shell .pcp-modal-footer,
+.pcp-industrial-shell .pcp-newop-actions {
+  gap: 4px !important;
+}
+.pcp-industrial-shell .pcp-gantt-bar {
+  border-radius: 2px !important;
+  font-size: 9px !important;
+  line-height: 11px !important;
+  box-shadow: none !important;
+}
+.pcp-industrial-shell .pcp-timeline-corner,
+.pcp-industrial-shell .pcp-day-head,
+.pcp-industrial-shell .pcp-machine-label {
+  font-size: 9px !important;
+}
+.pcp-industrial-shell .pcp-modal-backdrop {
+  padding: 12px !important;
+}
+.pcp-industrial-shell .pcp-modal {
+  max-width: min(980px, calc(100vw - 24px)) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .16) !important;
+}
+.pcp-industrial-shell .pcp-modal-head {
+  min-height: 40px !important;
+  padding: 6px 8px !important;
+}
+.pcp-industrial-shell .pcp-modal-head h2 {
+  font-size: 12px !important;
+}
+@media (max-width: 860px) {
+  .pcp-industrial-shell .pcp-sidebar {
+    width: 156px !important;
+    min-width: 156px !important;
+  }
+  .pcp-industrial-shell .pcp-top-clock,
+  .pcp-industrial-shell .pcp-supabase-dot {
+    display: none !important;
+  }
+}
+@media (max-width: 640px) {
+  .pcp-industrial-shell .pcp-sidebar {
+    width: 52px !important;
+    min-width: 52px !important;
+    padding: 4px !important;
+  }
+  .pcp-industrial-shell .pcp-sidebar-brand div,
+  .pcp-industrial-shell .pcp-side-section {
+    display: none !important;
+  }
+  .pcp-industrial-shell .pcp-side-item {
+    justify-content: center !important;
+    padding: 0 !important;
+    font-size: 0 !important;
+  }
+}
+
+
+/* PFMEA / análise de risco no padrão compacto industrial. */
+.fmea-industrial-page {
+  max-width: none !important;
+  min-height: 0 !important;
+  padding: 8px !important;
+  background: #F4FBFD !important;
+  color: #111827 !important;
+  font-size: 10px !important;
+}
+.fmea-industrial-page .pcp-toolbar {
+  padding: 8px !important;
+  margin-bottom: 8px !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 2px !important;
+  background: #FFFFFF !important;
+  box-shadow: none !important;
+}
+.fmea-industrial-page h1 {
+  margin: 2px 0 !important;
+  font-size: 16px !important;
+  line-height: 20px !important;
+}
+.fmea-industrial-page label {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  font-size: 9px !important;
+  line-height: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+.fmea-industrial-page input:not([type="checkbox"]):not([type="radio"]),
+.fmea-industrial-page select {
+  box-sizing: border-box;
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+  font-weight: 400 !important;
+}
+.fmea-industrial-page textarea {
+  min-height: 58px !important;
+  padding: 6px 8px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+}
+.fmea-industrial-page button {
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+  box-shadow: none !important;
+}
+.fmea-industrial-page table {
+  width: 100%;
+  border-collapse: collapse !important;
+  font-size: 10px !important;
+}
+.fmea-industrial-page th,
+.fmea-industrial-page td {
+  height: 32px !important;
+  padding: 4px 6px !important;
+  vertical-align: middle !important;
+}
+.fmea-industrial-page th {
+  font-size: 9px !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+.fmea-industrial-page tbody tr:hover {
+  background: #FAFAFA !important;
+}
+.fmea-industrial-page .rounded-lg,
+.fmea-industrial-page .rounded-xl,
+.fmea-industrial-page .rounded-full {
+  border-radius: 2px !important;
+}
+.fmea-industrial-page .shadow,
+.fmea-industrial-page .shadow-sm,
+.fmea-industrial-page .shadow-md {
+  box-shadow: none !important;
+}
+
+
+/* SGQ workspaces: especificações, metrologia, inspeção e quarentena. */
+[data-quality-workspace] {
+  min-height: 0 !important;
+  padding: 8px !important;
+  background: #F4FBFD !important;
+  color: #111827 !important;
+  font-size: 10px !important;
+}
+[data-quality-workspace] > section,
+[data-quality-workspace] > div {
+  max-width: none !important;
+  margin: 0 !important;
+}
+[data-quality-workspace] > section {
+  padding: 8px !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+[data-quality-workspace] > section > header {
+  gap: 8px !important;
+  padding: 8px !important;
+}
+[data-quality-workspace] h1,
+[data-quality-workspace] .text-xl {
+  margin: 2px 0 !important;
+  font-size: 16px !important;
+  line-height: 20px !important;
+}
+[data-quality-workspace] h2,
+[data-quality-workspace] .text-lg {
+  font-size: 12px !important;
+  line-height: 16px !important;
+}
+[data-quality-workspace] .text-sm {
+  font-size: 10px !important;
+}
+[data-quality-workspace] .text-xs {
+  font-size: 9px !important;
+}
+[data-quality-workspace] label {
+  gap: 2px !important;
+  font-size: 9px !important;
+  line-height: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+[data-quality-workspace] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+[data-quality-workspace] select {
+  box-sizing: border-box;
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+  font-weight: 400 !important;
+}
+[data-quality-workspace] textarea {
+  min-height: 58px !important;
+  padding: 6px 8px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+}
+[data-quality-workspace] button {
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border-radius: 2px !important;
+  font-size: 10px !important;
+  box-shadow: none !important;
+}
+[data-quality-workspace] table {
+  width: 100%;
+  border-collapse: collapse !important;
+  font-size: 10px !important;
+}
+[data-quality-workspace] th,
+[data-quality-workspace] td {
+  height: 32px !important;
+  padding: 4px 6px !important;
+  vertical-align: middle !important;
+}
+[data-quality-workspace] th {
+  font-size: 9px !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+[data-quality-workspace] tbody tr:hover {
+  background: #FAFAFA !important;
+}
+[data-quality-workspace] .rounded-lg,
+[data-quality-workspace] .rounded-xl,
+[data-quality-workspace] .rounded-full {
+  border-radius: 2px !important;
+}
+[data-quality-workspace] .shadow,
+[data-quality-workspace] .shadow-sm,
+[data-quality-workspace] .shadow-md {
+  box-shadow: none !important;
 }

@@ -24,15 +24,20 @@ import { useEffect, useMemo, useState } from 'react'
 import { Factory, Plus, Save, Trash2, X, Search, Printer, CircleDot, Paintbrush, Stamp, Boxes, ChevronRight, CheckCircle2, Image as ImageIcon } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
+import VendasLayout from './VendasLayout'
 
 type Product={id:string;codigo:string;nome:string;unidade:string|null}
-type Machine={id:string;codigo:string;nome:string}
+type Machine={id:string;codigo:string;nome:string;ativo:boolean}
 type Mold={id:string;codigo:string;nome:string;tipo:string;status:string;produto_id:string|null;numero_cavidades:number;cavidades:number;cavidades_ativas:number;ativo:boolean}
 type Kind='PRENSADOS'|'INJETADOS'|'ACABAMENTO'|'ESTAMPARIA'|'DIVERSOS'
-type Ficha={id:string;produto_id:string;versao:number;rendimento:number;unidade_rendimento:string;observacoes:string|null;ativa:boolean}
+type Ficha={id:string;produto_id:string;versao:number;rendimento:number;unidade_rendimento:string;observacoes:string|null;ativa:boolean;status:string|null;revisao:string|null}
 type BomRow={id?:string;componente_id:string;quantidade:string;perda_percentual:string;lote_obrigatorio:boolean;tipo_item:'COMPRADO'|'FABRICADO';sequencia:number}
 type OpRow={id?:string;sequencia:number;operacao:string;maquina_id:string;molde_id:string;setup_min:string;ciclo_seg:string;instrucoes:string}
 type QualityRow={id?:string;codigo:string;caracteristica:string;unidade:string;nominal:string;limite_inferior:string;limite_superior:string;frequencia:string;status:string}
+type BomDbRow={id:string;componente_id:string;quantidade:number;perda_percentual:number;lote_obrigatorio:boolean;tipo_item:'COMPRADO'|'FABRICADO';sequencia:number}
+type OpDbRow={id:string;sequencia:number;operacao:string;maquina_id:string|null;molde_id:string|null;setup_min:number;ciclo_seg:number;instrucoes:string|null}
+type QualityDbRow={id:string;codigo:string;caracteristica:string;unidade:string|null;nominal:number|null;limite_inferior:number|null;limite_superior:number|null;frequencia:string|null;status:string|null;vigencia_inicio:string|null;vigencia_fim:string|null;aprovador_id:string|null;aprovado_em:string|null}
 
 const kinds:{id:Kind;title:string;description:string;icon:LucideIcon}[]=[
  {id:'PRENSADOS',title:'Ficha de Processo — Prensados',description:'Composto, pré-forma, prensa, molde, pressão, temperatura, cura e pós-cura.',icon:CircleDot},
@@ -48,95 +53,156 @@ const emptyQuality=():QualityRow=>({codigo:'',caracteristica:'',unidade:'',nomin
 const errorText=(e:unknown)=>e instanceof Error?e.message:String((e as {message?:string})?.message??'Operação recusada pelo banco.')
 
 export default function FichaEngenharia(){
- const [kind,setKind]=useState<Kind|null>(null),[products,setProducts]=useState<Product[]>([]),[machines,setMachines]=useState<Machine[]>([]),[molds,setMolds]=useState<Mold[]>([]),[catalog,setCatalog]=useState<{id:string;produto_id:string;versao:number;observacoes:string|null}[]>([])
- const [ficha,setFicha]=useState<Ficha|null>(null),[productId,setProductId]=useState(''),[productCode,setProductCode]=useState(''),[version,setVersion]=useState('1'),[rendimento,setRendimento]=useState('1'),[unit,setUnit]=useState('UN')
+ const [kind,setKind]=useState<Kind|null>(null),[products,setProducts]=useState<Product[]>([]),[machines,setMachines]=useState<Machine[]>([]),[molds,setMolds]=useState<Mold[]>([]),[catalog,setCatalog]=useState<{id:string;produto_id:string;versao:number;observacoes:string|null;ativa:boolean;status:string|null;revisao:string|null}[]>([])
+ const [ficha,setFicha]=useState<Ficha|null>(null),[productId,setProductId]=useState(''),[productCode,setProductCode]=useState(''),[version,setVersion]=useState('1'),[requestedVersion,setRequestedVersion]=useState<number|null>(null),[rendimento,setRendimento]=useState('1'),[unit,setUnit]=useState('UN')
  const [processCode,setProcessCode]=useState(''),[processName,setProcessName]=useState(''),[notes,setNotes]=useState('')
  const [bom,setBom]=useState<BomRow[]>([emptyBom()]),[ops,setOps]=useState<OpRow[]>([emptyOp()]),[quality,setQuality]=useState<QualityRow[]>([emptyQuality()])
- const [spec,setSpec]=useState<Record<string,string>>({}),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[search,setSearch]=useState(''),[catalogKind,setCatalogKind]=useState<Kind|''>(''),[catalogMold,setCatalogMold]=useState('')
+ const [spec,setSpec]=useState<Record<string,string>>({}),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[search,setSearch]=useState(''),[catalogKind,setCatalogKind]=useState<Kind|''>(''),[catalogMold,setCatalogMold]=useState(''),[canApproveRevision,setCanApproveRevision]=useState(false),[photoPreview,setPhotoPreview]=useState<{fotoPrincipal:string;fotoSecundaria:string}>({fotoPrincipal:'',fotoSecundaria:''})
 
  const selected=useMemo(()=>products.find(p=>p.id===productId),[products,productId])
+ const formStatus=ficha&&Number(version)===ficha.versao?(ficha.status||'rascunho'):'rascunho'
+ const formRevisionActive=Boolean(ficha&&Number(version)===ficha.versao&&ficha.ativa)
  useEffect(()=>{void loadBase()},[])
  useEffect(()=>{if(selected)setProductCode(selected.codigo)},[selected])
- useEffect(()=>{if(!productId||!kind)return;void loadFicha(productId,kind)},[productId,kind])
+ useEffect(()=>{
+  let mounted=true
+  const resolvePreview=async(value:string|undefined)=>{
+   if(!value)return ''
+   if(value.startsWith('data:')||/^https?:\/\//i.test(value))return value
+   try{const result=await supabase.storage.from('documentos-erp').createSignedUrl(value,300);return result.error?'':result.data?.signedUrl??''}catch{return ''}
+  }
+  void Promise.all([resolvePreview(spec.fotoPrincipal),resolvePreview(spec.fotoSecundaria)]).then(([fotoPrincipal,fotoSecundaria])=>{if(mounted)setPhotoPreview({fotoPrincipal,fotoSecundaria})})
+  return()=>{mounted=false}
+ },[spec.fotoPrincipal,spec.fotoSecundaria])
+ useEffect(()=>{if(!productId||!kind)return;void loadFicha(productId,kind,requestedVersion??undefined)},[productId,kind,requestedVersion])
+ useEffect(()=>{let mounted=true;void(async()=>{try{const [master,permission]=await Promise.all([supabase.rpc('erp_is_master'),supabase.rpc('erp_has_permission',{p_modulo:'qualidade',p_acao:'aprovar'})]);if(mounted)setCanApproveRevision((!master.error&&master.data===true)||(!permission.error&&permission.data===true))}catch{if(mounted)setCanApproveRevision(false)}})();return()=>{mounted=false}},[])
 
  async function company(){const r=await supabase.rpc('erp_current_empresa_id');if(r.error||!r.data)throw new Error('Empresa da sessão não identificada.');return String(r.data)}
+ async function loadQualityRows(empresaId:string,id:string):Promise<QualityRow[]>{
+  const rows=await fetchAllPages<QualityDbRow>((from,to)=>supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,status,vigencia_inicio,vigencia_fim,aprovador_id,aprovado_em',{count:'exact'}).eq('empresa_id',empresaId).eq('produto_id',id).eq('tipo_inspecao','PROCESSO').eq('status','ativo').not('aprovador_id','is',null).not('aprovado_em','is',null).order('codigo').order('id').range(from,to))
+  const now=new Date();const today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`
+  return rows.filter(x=>(!x.vigencia_inicio||x.vigencia_inicio<=today)&&(!x.vigencia_fim||x.vigencia_fim>=today)).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',nominal:x.nominal==null?'':String(x.nominal),limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status??''}))
+ }
  async function loadBase(){
   setLoading(true)
   try{
-   const[p,m,md,fc]=await Promise.all([
-    supabase.from('erp_produtos').select('id,codigo,nome,unidade').eq('ativo',true).order('codigo').limit(2000),
-    supabase.from('erp_maquinas').select('id,codigo,nome').not('status','eq','INATIVA').order('codigo').limit(500),
-    supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades,cavidades_ativas,ativo').eq('ativo',true).order('codigo').limit(1000),
-    supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,observacoes').eq('ativa',true).order('updated_at',{ascending:false}).limit(1000)
+   const empresaId=await company()
+   const [productRows,machineRows,moldRows,catalogRows]=await Promise.all([
+    fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,unidade',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').order('id').range(from,to)),
+    fetchAllPages<Machine>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome,ativo',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').order('id').range(from,to)),
+    fetchAllPages<Mold>((from,to)=>supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades,cavidades_ativas,ativo',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').order('id').range(from,to)),
+    fetchAllPages<{id:string;produto_id:string;versao:number;observacoes:string|null;ativa:boolean;status:string|null;revisao:string|null}>((from,to)=>supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,observacoes,ativa,status,revisao',{count:'exact'}).eq('empresa_id',empresaId).order('updated_at',{ascending:false}).order('id').range(from,to))
    ])
-   if(p.error)throw p.error;if(m.error)throw m.error;if(md.error)throw md.error;if(fc.error)throw fc.error
-   const productRows=(p.data??[]) as Product[]
-   setProducts(productRows);setMachines((m.data??[]) as Machine[]);setMolds((md.data??[]) as Mold[]);setCatalog((fc.data??[]) as {id:string;produto_id:string;versao:number;observacoes:string|null}[])
+   setProducts(productRows);setMachines(machineRows);setMolds(moldRows);setCatalog(catalogRows)
    const requested=new URLSearchParams(window.location.search).get('produto')
    if(requested){const byId=productRows.find(x=>x.id===requested);const byCode=productRows.find(x=>x.codigo.toLowerCase()===requested.toLowerCase());const target=byId||byCode;if(target){setProductId(target.id);setProductCode(target.codigo)}}
   }catch(e){setNotice(errorText(e))}finally{setLoading(false)}
  }
- async function loadFicha(id:string, selectedKind:Kind|null=kind){
+
+ async function loadFicha(id:string, selectedKind:Kind|null=kind, targetVersion?:number){
   if(!id||!selectedKind)return
-  setKind(selectedKind)
-  setBusy(true);setNotice('')
+  setKind(selectedKind);setBusy(true);setNotice('')
   try{
    const empresaId=await company()
-   const f=await supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,rendimento,unidade_rendimento,observacoes,ativa').eq('empresa_id',empresaId).eq('produto_id',id).eq('ativa',true).order('versao',{ascending:false}).limit(1).maybeSingle()
+   let query=supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,rendimento,unidade_rendimento,observacoes,ativa,status,revisao').eq('empresa_id',empresaId).eq('produto_id',id)
+   if(targetVersion!==undefined)query=query.eq('versao',targetVersion)
+   const f=await query.order('versao',{ascending:false}).limit(1).maybeSingle()
    if(f.error)throw f.error
-   if(!f.data){resetForm(true,id);return}
+   if(!f.data){
+    resetForm(true,id);setKind(selectedKind)
+    setQuality(await loadQualityRows(empresaId,id))
+    return
+   }
    const current=f.data as Ficha
-   setFicha(current);setVersion(String(current.versao));setRendimento(String(current.rendimento));setUnit(current.unidade_rendimento)
+   setFicha(current);setVersion(String(current.versao));setRequestedVersion(Number(current.versao));setRendimento(String(current.rendimento));setUnit(current.unidade_rendimento)
    try{const j=JSON.parse(current.observacoes||'{}');setKind((j.kind||selectedKind) as Kind);setProcessCode(j.processCode||'');setProcessName(j.processName||'');setNotes(j.notes||'');setSpec(j.spec||{})}catch{setSpec({})}
-   const[bi,ro,qi]=await Promise.all([
-    supabase.from('erp_ficha_itens').select('id,componente_id,quantidade,perda_percentual,lote_obrigatorio,tipo_item,sequencia').eq('empresa_id',empresaId).eq('ficha_id',current.id).order('sequencia'),
-    supabase.from('erp_ficha_operacoes').select('id,sequencia,operacao,maquina_id,molde_id,setup_min,ciclo_seg,instrucoes').eq('empresa_id',empresaId).eq('ficha_id',current.id).order('sequencia'),
-    supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,limite_inferior,limite_superior,frequencia,status').eq('empresa_id',empresaId).eq('produto_id',id).order('codigo').limit(200)
+   const [bomRows,operationRows,loadedQuality]=await Promise.all([
+    fetchAllPages<BomDbRow>((from,to)=>supabase.from('erp_ficha_itens').select('id,componente_id,quantidade,perda_percentual,lote_obrigatorio,tipo_item,sequencia',{count:'exact'}).eq('empresa_id',empresaId).eq('ficha_id',current.id).order('sequencia').order('id').range(from,to)),
+    fetchAllPages<OpDbRow>((from,to)=>supabase.from('erp_ficha_operacoes').select('id,sequencia,operacao,maquina_id,molde_id,setup_min,ciclo_seg,instrucoes',{count:'exact'}).eq('empresa_id',empresaId).eq('ficha_id',current.id).order('sequencia').order('id').range(from,to)),
+    loadQualityRows(empresaId,id)
    ])
-   if(bi.error)throw bi.error;if(ro.error)throw ro.error;if(qi.error)throw qi.error
-   setBom((bi.data??[]).map(x=>({id:x.id,componente_id:x.componente_id,quantidade:String(x.quantidade),perda_percentual:String(x.perda_percentual),lote_obrigatorio:Boolean(x.lote_obrigatorio),tipo_item:x.tipo_item,sequencia:x.sequencia})))
-   setOps((ro.data??[]).map(x=>({id:x.id,sequencia:x.sequencia,operacao:x.operacao,maquina_id:x.maquina_id??'',molde_id:x.molde_id??'',setup_min:String(x.setup_min),ciclo_seg:String(x.ciclo_seg),instrucoes:x.instrucoes??''})))
-   const loadedQuality: QualityRow[] = (qi.data??[]).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',nominal:'',limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status})); setQuality(loadedQuality.length ? loadedQuality : [emptyQuality()])
+   setBom(bomRows.map(x=>({id:x.id,componente_id:x.componente_id,quantidade:String(x.quantidade),perda_percentual:String(x.perda_percentual),lote_obrigatorio:Boolean(x.lote_obrigatorio),tipo_item:x.tipo_item,sequencia:x.sequencia})))
+   setOps(operationRows.map(x=>({id:x.id,sequencia:x.sequencia,operacao:x.operacao,maquina_id:x.maquina_id??'',molde_id:x.molde_id??'',setup_min:String(x.setup_min),ciclo_seg:String(x.ciclo_seg),instrucoes:x.instrucoes??''})))
+   setQuality(loadedQuality)
   }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
  }
+
  function resetForm(keepProduct=false,id=''){
   setFicha(null);if(!keepProduct){setProductId('');setKind(null)}else setProductId(id)
-  setVersion('1');setRendimento('1');setUnit('UN');setProcessCode('');setProcessName('');setNotes('');setSpec({});setBom([emptyBom()]);setOps([emptyOp()]);setQuality([emptyQuality()])
+  setRequestedVersion(null);setVersion('1');setRendimento('1');setUnit('UN');setProcessCode('');setProcessName('');setNotes('');setSpec({});setBom([emptyBom()]);setOps([emptyOp()]);setQuality([])
  }
  function setS(k:string,v:string){setSpec(x=>({...x,[k]:v}))}
  function setBomField(i:number,k:keyof BomRow,v:string|boolean){setBom(r=>r.map((x,n)=>n===i?{...x,[k]:v}:x))}
  function setOpField(i:number,k:keyof OpRow,v:string|number){setOps(r=>r.map((x,n)=>n===i?{...x,[k]:v}:x))}
- function setQualityField(i:number,k:keyof QualityRow,v:string){setQuality(r=>r.map((x,n)=>n===i?{...x,[k]:v}:x))}
- function setPhoto(key:'fotoPrincipal'|'fotoSecundaria',file:File|null){if(!file)return;if(file.size>2*1024*1024){setNotice('A foto deve ter no máximo 2 MB.');return}if(!file.type.startsWith('image/')){setNotice('Selecione um arquivo de imagem.');return}const reader=new FileReader();reader.onload=()=>setS(key,String(reader.result));reader.readAsDataURL(file)}
+ async function setPhoto(key:'fotoPrincipal'|'fotoSecundaria',file:File|null){
+  if(!file){setS(key,'');return}
+  if(file.size>2*1024*1024){setNotice('A foto deve ter no máximo 2 MB.');return}
+  if(!file.type.startsWith('image/')){setNotice('Selecione um arquivo de imagem.');return}
+  setNotice('Enviando imagem para o armazenamento privado…')
+  try{
+   const empresaId=await company()
+   const safeName=file.name.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'-').slice(-100)||'imagem'
+   const path=`${empresaId}/fichas-processo/${crypto.randomUUID()}-${safeName}`
+   const uploaded=await supabase.storage.from('documentos-erp').upload(path,file,{contentType:file.type,upsert:false})
+   if(uploaded.error)throw uploaded.error
+   setS(key,path)
+   setNotice('Imagem armazenada no bucket privado e vinculada à ficha.')
+  }catch(error){setNotice(errorText(error))}
+ }
 
  async function save(){
   if(!kind)return setNotice('Selecione o tipo de ficha.')
-  if(!productId)return setNotice('Selecione o produto produzido.')
-  if((kind==='PRENSADOS'||kind==='INJETADOS'||kind==='ESTAMPARIA')&&(!spec.moldeId||Number(spec.cavidades)<=0))return setNotice('Para Prensados, Injetados e Estampo, informe o molde/estampo e a quantidade de cavidades.')
-  if(bom.some(x=>!x.componente_id||Number(x.quantidade)<=0))return setNotice('Preencha todos os materiais da BOM.')
-  if(ops.some(x=>!x.operacao.trim()||Number(x.setup_min)<0||Number(x.ciclo_seg)<0))return setNotice('Preencha todas as operações e tempos.')
+  if(!productId||!products.some(item=>item.id===productId))return setNotice('Selecione um produto real da empresa atual.')
+  if(!processCode.trim()||!processName.trim())return setNotice('Código da ficha e nome do processo são obrigatórios.')
+  if(!Number.isInteger(Number(version))||Number(version)<1)return setNotice('A revisão deve ser um número inteiro maior ou igual a 1.')
+  if(!Number.isFinite(Number(rendimento))||Number(rendimento)<=0||!unit.trim())return setNotice('Informe rendimento maior que zero e unidade válida.')
+  if((kind==='PRENSADOS'||kind==='INJETADOS'||kind==='ESTAMPARIA')){
+   const total=Number(spec.cavidades),ativas=Number(spec.cavidadesAtivas)
+   if(!spec.moldeId||!molds.some(item=>item.id===spec.moldeId)||!Number.isFinite(total)||total<=0||!Number.isFinite(ativas)||ativas<=0||ativas>total)return setNotice('Selecione molde/estampo ativo e informe cavidades ativas válidas, sem exceder o total.')
+  }
+  if(!bom.length||bom.some(x=>!x.componente_id||!products.some(p=>p.id===x.componente_id)||x.componente_id===productId||!Number.isFinite(Number(x.quantidade))||Number(x.quantidade)<=0||!Number.isFinite(Number(x.perda_percentual))||Number(x.perda_percentual)<0))return setNotice('BOM inválida: selecione componentes mestres diferentes do produto final, com quantidade positiva e perda válida.')
+  if(new Set(bom.map(x=>x.sequencia)).size!==bom.length||bom.some(x=>!Number.isInteger(Number(x.sequencia))||Number(x.sequencia)<1))return setNotice('A sequência dos componentes da BOM deve ser inteira, positiva e única.')
+  if(!ops.length||ops.some(x=>!x.operacao.trim()||!Number.isInteger(Number(x.sequencia))||Number(x.sequencia)<1||!Number.isFinite(Number(x.setup_min))||Number(x.setup_min)<0||!Number.isFinite(Number(x.ciclo_seg))||Number(x.ciclo_seg)<0||(x.maquina_id&&!machines.some(m=>m.id===x.maquina_id))||(x.molde_id&&!molds.some(m=>m.id===x.molde_id))))return setNotice('Roteiro inválido: revise sequência, operação, máquina/molde ativos e tempos de setup/ciclo.')
+  if(new Set(ops.map(x=>x.sequencia)).size!==ops.length)return setNotice('A sequência das operações deve ser única.')
   setBusy(true);setNotice('')
   try{
-   const empresaId=await company()
    const payload={kind,processCode,processName,notes,spec,updatedAt:new Date().toISOString()}
-   const saved=await supabase.from('erp_fichas_tecnicas').upsert({empresa_id:empresaId,produto_id:productId,versao:Number(version),rendimento:Number(rendimento)||1,unidade_rendimento:unit.trim()||'UN',observacoes:JSON.stringify(payload),ativa:true},{onConflict:'empresa_id,produto_id,versao'}).select('id,produto_id,versao,rendimento,unidade_rendimento,observacoes,ativa').single()
+   const saved=await supabase.rpc('erp_salvar_ficha_tecnica_rascunho',{
+    p_produto_id:productId,p_versao:Number(version),p_codigo:processCode.trim()||null,p_titulo:processName.trim()||null,
+    p_rendimento:Number(rendimento)||1,p_unidade_rendimento:unit.trim()||'UN',p_observacoes:payload,
+    p_itens:bom.map(x=>({componente_id:x.componente_id,quantidade:Number(x.quantidade),perda_percentual:Number(x.perda_percentual),lote_obrigatorio:x.lote_obrigatorio,tipo_item:x.tipo_item,sequencia:x.sequencia})),
+    p_operacoes:ops.map(x=>({sequencia:x.sequencia,operacao:x.operacao.trim(),maquina_id:x.maquina_id||null,molde_id:x.molde_id||null,setup_min:Number(x.setup_min),ciclo_seg:Number(x.ciclo_seg),instrucoes:x.instrucoes.trim()||null}))
+   })
    if(saved.error)throw saved.error
-   const fichaId=String(saved.data.id)
-   const db=await supabase.from('erp_ficha_itens').delete().eq('empresa_id',empresaId).eq('ficha_id',fichaId);if(db.error)throw db.error
-   const ib=await supabase.from('erp_ficha_itens').insert(bom.map(x=>({empresa_id:empresaId,ficha_id:fichaId,componente_id:x.componente_id,quantidade:Number(x.quantidade),perda_percentual:Number(x.perda_percentual),lote_obrigatorio:x.lote_obrigatorio,tipo_item:x.tipo_item,sequencia:x.sequencia})));if(ib.error)throw ib.error
-   const dops=await supabase.from('erp_ficha_operacoes').delete().eq('empresa_id',empresaId).eq('ficha_id',fichaId);if(dops.error)throw dops.error
-   const io=await supabase.from('erp_ficha_operacoes').insert(ops.map(x=>({empresa_id:empresaId,ficha_id:fichaId,sequencia:x.sequencia,operacao:x.operacao.trim(),maquina_id:x.maquina_id||null,molde_id:x.molde_id||null,setup_min:Number(x.setup_min),ciclo_seg:Number(x.ciclo_seg),instrucoes:x.instrucoes.trim()||null})));if(io.error)throw io.error
-   for(const q of quality.filter(x=>x.caracteristica.trim())){
-    const qp={empresa_id:empresaId,codigo:q.codigo.trim()||('CQ-'+Date.now()),produto_id:productId,caracteristica:q.caracteristica.trim(),unidade:q.unidade.trim()||null,limite_inferior:q.limite_inferior===''?null:Number(q.limite_inferior),limite_superior:q.limite_superior===''?null:Number(q.limite_superior),frequencia:q.frequencia.trim()||'100%',status:q.status}
-    const qr=q.id?await supabase.from('erp_planos_inspecao').update(qp).eq('id',q.id).eq('empresa_id',empresaId):await supabase.from('erp_planos_inspecao').insert(qp)
-    if(qr.error)throw qr.error
-   }
-   setFicha(saved.data as Ficha);setCatalog(rows=>[{id:String(saved.data.id),produto_id:productId,versao:Number(version),observacoes:JSON.stringify(payload)},...rows.filter(x=>x.id!==String(saved.data.id))]);setNotice('Ficha de processo gravada: parâmetros, ferramental, fotos, materiais, roteiro e controles de qualidade registrados.')
+   const savedData=(Array.isArray(saved.data)?saved.data[0]:saved.data) as Ficha|null
+   if(!savedData?.id)throw new Error('O banco não retornou a revisão gravada.')
+   setFicha(savedData);setVersion(String(savedData.versao));setRequestedVersion(Number(savedData.versao))
+   setCatalog(rows=>[{id:String(savedData.id),produto_id:productId,versao:Number(savedData.versao),observacoes:JSON.stringify(payload),ativa:false,status:'rascunho',revisao:String(savedData.versao)},...rows.filter(x=>x.id!==String(savedData.id))])
+   setNotice('Nova revisão gravada atomicamente em rascunho. A revisão aprovada anterior permanece disponível para o PCP até a Qualidade liberar esta versão.')
   }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
  }
 
- if(loading)return <main className="industrial-form-page"><div className="industrial-panel">Carregando Fichas de Processo…</div></main>
- if(!kind)return <main className="industrial-form-page process-sheet-page">
+
+ async function approveFicha(){
+  if(!ficha?.id)return setNotice('Grave a ficha antes de solicitar aprovação.')
+  if(Number(version)!==ficha.versao)return setNotice('Grave a nova revisão antes de solicitar aprovação.')
+  if(!canApproveRevision)return setNotice('Aprovação restrita ao Master ou ao perfil com permissão Qualidade/Aprovar.')
+  if(!['rascunho','em_analise'].includes((ficha.status||'').toLowerCase()))return setNotice('Somente revisões em rascunho ou análise podem ser aprovadas.')
+  setBusy(true);setNotice('')
+  try{
+   const result=await supabase.rpc('erp_qualidade_aprovar_ficha_tecnica',{p_ficha_id:ficha.id})
+   if(result.error)throw result.error
+   const data=(Array.isArray(result.data)?result.data[0]:result.data) as Ficha|null
+   if(!data?.id)throw new Error('A aprovação não retornou a ficha técnica atualizada.')
+   setFicha(data);setRequestedVersion(Number(data.versao))
+   setCatalog(rows=>rows.map(row=>row.produto_id!==data.produto_id?row:row.id===data.id?{...row,ativa:true,status:'aprovada'}:row.ativa?{...row,ativa:false,status:'obsoleta'}:row))
+   setNotice('Ficha técnica aprovada pela Qualidade e liberada para MRP/PCP.')
+  }catch(error){setNotice(errorText(error))}
+  finally{setBusy(false)}
+ }
+
+ if(loading)return <VendasLayout title="Engenharia / Fichas de Processo" subtitle="BOM multinível, roteiro de fabricação, parâmetros e revisões controladas." showStatusCards={false}><main className="industrial-form-page process-sheet-page erp-global-surface erp-compact"><div className="industrial-panel">Carregando Fichas de Processo…</div></main></VendasLayout>
+ if(!kind)return <VendasLayout title="Engenharia / Fichas de Processo" subtitle="BOM multinível, roteiro de fabricação, parâmetros e revisões controladas." showStatusCards={false}><main className="industrial-form-page process-sheet-page erp-global-surface erp-compact">
   <header className="process-sheet-header"><div><span className="industrial-eyebrow">INDUSTRIA ERP • ENGENHARIA / PROCESSOS</span><h1>Fichas de Processo</h1><p>Catálogo controlado por tecnologia, produto, molde/estampo e revisão.</p></div><button className="industrial-secondary" type="button" onClick={()=>resetForm(false)}><X size={16}/> Limpar</button></header>
   <section className="industrial-panel" style={{marginBottom:16}}>
    <div className="process-section-heading"><span>LOCALIZAR FICHA</span><h2>Filtros de engenharia</h2><p>Pesquise por código da ficha, produto, número do molde/estampo ou tecnologia.</p></div>
@@ -145,36 +211,36 @@ export default function FichaEngenharia(){
     <label>Tipo de processo<select value={catalogKind} onChange={e=>setCatalogKind(e.target.value as Kind|'')}><option value="">Todos</option>{kinds.map(k=><option key={k.id} value={k.id}>{k.id}</option>)}</select></label>
     <label>Molde / estampo<select value={catalogMold} onChange={e=>setCatalogMold(e.target.value)}><option value="">Todos</option>{molds.map(m=><option key={m.id} value={m.id}>{m.codigo} — {m.nome} • {m.cavidades} cav.</option>)}</select></label>
    </div>
-   <div className="industrial-table-scroll" style={{marginTop:16}}><table className="industrial-table process-sheet-table"><thead><tr><th>Tipo</th><th>Produto</th><th>Ficha</th><th>Molde / Estampo</th><th>Cavidades</th><th>Rev.</th><th>Ação</th></tr></thead><tbody>{
-    catalog.filter(row=>{const j=(()=>{try{return JSON.parse(row.observacoes||'{}')}catch{return {}}})();const prod=products.find(p=>p.id===row.produto_id);const mold=molds.find(m=>m.id===j.spec?.moldeId);const hay=[j.kind,j.processCode,j.processName,prod?.codigo,prod?.nome,mold?.codigo,mold?.nome].join(' ').toLowerCase();return (!search.trim()||hay.includes(search.trim().toLowerCase()))&&(!catalogKind||j.kind===catalogKind)&&(!catalogMold||j.spec?.moldeId===catalogMold)}).map(row=>{const j=(()=>{try{return JSON.parse(row.observacoes||'{}')}catch{return {}}})();const prod=products.find(p=>p.id===row.produto_id);const mold=molds.find(m=>m.id===j.spec?.moldeId);return <tr key={row.id}><td>{j.kind||'—'}</td><td>{prod?.codigo||'—'} — {prod?.nome||'Produto'}</td><td>{j.processCode||'—'}</td><td>{mold?mold.codigo+' — '+mold.nome:'—'}</td><td>{mold?.cavidades??'—'}</td><td>{row.versao}</td><td><button className="industrial-secondary" onClick={()=>{setKind((j.kind||'DIVERSOS') as Kind);setProductId(row.produto_id);setVersion(String(row.versao));void loadFicha(row.produto_id,(j.kind||'DIVERSOS') as Kind)}}><Search size={14}/> Abrir</button></td></tr>})}</tbody></table></div>
+   <div className="industrial-table-scroll" style={{marginTop:16}}><table className="industrial-table process-sheet-table"><thead><tr><th>Tipo</th><th>Produto</th><th>Ficha</th><th>Molde / Estampo</th><th>Cavidades</th><th>Status</th><th>Situação</th><th>Rev.</th><th>Ação</th></tr></thead><tbody>{
+    catalog.filter(row=>{const j=(()=>{try{return JSON.parse(row.observacoes||'{}')}catch{return {}}})();const prod=products.find(p=>p.id===row.produto_id);const mold=molds.find(m=>m.id===j.spec?.moldeId);const hay=[j.kind,j.processCode,j.processName,prod?.codigo,prod?.nome,mold?.codigo,mold?.nome].join(' ').toLowerCase();return (!search.trim()||hay.includes(search.trim().toLowerCase()))&&(!catalogKind||j.kind===catalogKind)&&(!catalogMold||j.spec?.moldeId===catalogMold)}).map(row=>{const j=(()=>{try{return JSON.parse(row.observacoes||'{}')}catch{return {}}})();const prod=products.find(p=>p.id===row.produto_id);const mold=molds.find(m=>m.id===j.spec?.moldeId);return <tr key={row.id}><td>{j.kind||'—'}</td><td>{prod?.codigo||'—'} — {prod?.nome||'Produto'}</td><td>{j.processCode||'—'}</td><td>{mold?mold.codigo+' — '+mold.nome:'—'}</td><td>{mold?.cavidades??'—'}</td><td>{row.status||'rascunho'}</td><td><span className={row.ativa?'text-emerald-700 font-semibold':'text-slate-500'}>{row.ativa?'ATIVA':'HISTÓRICA'}</span></td><td>{row.versao}</td><td><button className="industrial-secondary" onClick={()=>{setKind((j.kind||'DIVERSOS') as Kind);setProductId(row.produto_id);setVersion(String(row.versao));setRequestedVersion(Number(row.versao))}}><Search size={14}/> Abrir</button></td></tr>})}</tbody></table></div>
   </section>
    {(kind==='PRENSADOS'||kind==='INJETADOS'||kind==='ESTAMPARIA')&&<div className="industrial-panel" style={{marginTop:16,background:'#f7fbfc'}}><div className="process-section-heading"><span>FERRAMENTAL PRINCIPAL</span><h2>Molde / Estampo</h2><p>O número do ferramental e a quantidade de cavidades são dados mestres usados para planejamento e rastreabilidade.</p></div><div className="process-form-grid"><label>Número / código do molde<select value={spec.moldeId||''} onChange={e=>{const m=molds.find(x=>x.id===e.target.value);setS('moldeId',e.target.value);setS('moldeCodigo',m?.codigo||'');setS('cavidades',String(m?.cavidades??''));setS('cavidadesAtivas',String(m?.cavidades_ativas??''))}}><option value="">Selecionar ferramental</option>{molds.filter(m=>!m.produto_id||m.produto_id===productId).map(m=><option key={m.id} value={m.id}>{m.codigo} — {m.nome} • {m.cavidades} cav.</option>)}</select></label><label>Número do molde<input value={spec.moldeCodigo||''} readOnly placeholder="Preenchido pelo cadastro do molde"/></label><label>Total de cavidades<input type="number" min="1" value={spec.cavidades||''} onChange={e=>setS('cavidades',e.target.value)}/></label><label>Cavidades ativas<input type="number" min="0" value={spec.cavidadesAtivas||''} onChange={e=>setS('cavidadesAtivas',e.target.value)}/></label><label>Revisão do molde / estampo<input value={spec.moldeRevisao||''} onChange={e=>setS('moldeRevisao',e.target.value)}/></label></div></div>}
-   <div className="industrial-panel" style={{marginTop:16,background:'#f7fbfc'}}><div className="process-section-heading"><span>IDENTIFICAÇÃO VISUAL</span><h2>Foto da peça / ferramental / setup</h2></div><div className="process-form-grid"><label>Foto principal<input type="file" accept="image/*" onChange={e=>setPhoto('fotoPrincipal',e.target.files?.[0]??null)}/><input value={spec.fotoPrincipal||''} onChange={e=>setS('fotoPrincipal',e.target.value)} placeholder="ou URL https://…"/></label><label>Foto secundária<input type="file" accept="image/*" onChange={e=>setPhoto('fotoSecundaria',e.target.files?.[0]??null)}/><input value={spec.fotoSecundaria||''} onChange={e=>setS('fotoSecundaria',e.target.value)} placeholder="ou URL https://…"/></label></div>{(spec.fotoPrincipal||spec.fotoSecundaria)&&<div className="grid md:grid-cols-2 gap-4" style={{marginTop:12}}>{[spec.fotoPrincipal,spec.fotoSecundaria].filter(Boolean).map((src,i)=><figure key={src} style={{margin:0}}><img src={src} alt={i?'Foto secundária da ficha':'Foto principal da ficha'} style={{width:'100%',maxHeight:260,objectFit:'contain',border:'1px solid #d7e6eb',borderRadius:12,background:'#fff'}} onError={e=>{e.currentTarget.style.display='none'}}/><figcaption><ImageIcon size={14}/> Foto {i+1}</figcaption></figure>)}</div>}</div>
-  <section className="industrial-panel" style={{marginBottom:16}}><div className="process-section-heading"><span>CRIAR NOVA FICHA</span><h2>Escolha a tecnologia</h2><p>Cada modelo possui parâmetros próprios; moldes, cavidades e ferramental ficam rastreáveis.</p></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{kinds.map(k=>{const I=k.icon;return <button key={k.id} type="button" className="industrial-panel text-left" style={{cursor:'pointer',border:'2px solid #d7e6eb'}} onClick={()=>{resetForm(false);setKind(k.id);setProcessName(k.title.replace('Ficha de Processo — ',''));setProcessCode('FP-'+k.id+'-001')}}><div className="flex items-center gap-4"><span style={{display:'grid',placeItems:'center',width:64,height:64,borderRadius:16,background:'#eef7f9'}}><I size={34}/></span><div><strong style={{fontSize:20}}>{k.title}</strong><p style={{marginTop:5,color:'#5a6d75'}}>{k.description}</p></div><ChevronRight style={{marginLeft:'auto'}}/></div></button>})}</div></section>
+   <div className="industrial-panel" style={{marginTop:16,background:'#f7fbfc'}}><div className="process-section-heading"><span>IDENTIFICAÇÃO VISUAL</span><h2>Foto da peça / ferramental / setup</h2></div><div className="process-form-grid"><label>Foto principal<input type="file" accept="image/*" onChange={e=>void setPhoto('fotoPrincipal',e.target.files?.[0]??null)}/><input value={spec.fotoPrincipal?.startsWith('http')?spec.fotoPrincipal:''} onChange={e=>setS('fotoPrincipal',e.target.value)} placeholder="URL externa opcional — imagem enviada fica vinculada"/></label><label>Foto secundária<input type="file" accept="image/*" onChange={e=>void setPhoto('fotoSecundaria',e.target.files?.[0]??null)}/><input value={spec.fotoSecundaria?.startsWith('http')?spec.fotoSecundaria:''} onChange={e=>setS('fotoSecundaria',e.target.value)} placeholder="URL externa opcional — imagem enviada fica vinculada"/></label></div>{(photoPreview.fotoPrincipal||photoPreview.fotoSecundaria)&&<div className="grid md:grid-cols-2 gap-2" style={{marginTop:8}}>{[photoPreview.fotoPrincipal,photoPreview.fotoSecundaria].filter(Boolean).map((src,i)=><figure key={src} style={{margin:0}}><img src={src} alt={i?'Foto secundária da ficha':'Foto principal da ficha'} style={{width:'100%',maxHeight:160,objectFit:'contain',border:'1px solid #cbd5e1',borderRadius:2,background:'#fff'}} onError={e=>{e.currentTarget.style.display='none'}}/><figcaption><ImageIcon size={14}/> Foto {i+1}</figcaption></figure>)}</div>}</div>
+  <section className="industrial-panel" style={{marginBottom:16}}><div className="process-section-heading"><span>CRIAR NOVA FICHA</span><h2>Escolha a tecnologia</h2><p>Cada modelo possui parâmetros próprios; moldes, cavidades e ferramental ficam rastreáveis.</p></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{kinds.map(k=>{const I=k.icon;return <button key={k.id} type="button" className="industrial-panel text-left" style={{cursor:'pointer',border:'1px solid #cbd5e1'}} onClick={()=>{resetForm(false);setKind(k.id);setProcessName(k.title.replace('Ficha de Processo — ',''));setProcessCode('FP-'+k.id+'-001')}}><div className="flex items-center gap-4"><span style={{display:'grid',placeItems:'center',width:32,height:32,borderRadius:2,background:'#eef7f9'}}><I size={16}/></span><div><strong style={{fontSize:12}}>{k.title}</strong><p style={{marginTop:2,color:'#5a6d75',fontSize:10,lineHeight:'14px'}}>{k.description}</p></div><ChevronRight style={{marginLeft:'auto'}}/></div></button>})}</div></section>
   <section className="industrial-panel"><div className="process-section-heading"><span>PADRÃO INDUSTRIAL</span><h2>Documento único e controlado</h2></div><div className="grid md:grid-cols-3 gap-4"><Info title="Engenharia" text="Produto, revisão, desenho, material, molde/ferramental, parâmetros e roteiro."/><Info title="PCP / Produção" text="BOM, operações, máquina, setup, ciclo e instruções de trabalho."/><Info title="Qualidade" text="Características, limites, frequência, evidências e liberação."/><Info title="Fotos" text="Imagem principal da peça, molde, ferramenta ou setup para identificação visual."/><Info title="Rastreabilidade" text="Número do molde/estampo, cavidades ativas e revisão ficam vinculados à ficha."/><Info title="Pesquisa" text="Filtros por tecnologia, produto, ficha e ferramental."/></div></section>
- </main>
+ </main></VendasLayout>
 
  const labels=kind==='PRENSADOS'?['Composto / material','Código do composto','Dureza alvo','Prensa','Molde','Pressão de prensagem','Temperatura','Tempo de cura','Pós-cura','Desmoldante / agente']:kind==='INJETADOS'?['Matéria-prima','Código da MP','Cor / pigmento','Máquina injetora','Tonelagem mínima','Tonelagem máxima','Molde','Nº cavidades','Secagem do material','Temperatura do molde','Pressão de injeção','Velocidade de injeção','Comutação','Pressão de recalque','Tempo de recalque','Resfriamento','Dosagem','Contrapressão','Descompressão','Ciclo alvo','Câmara quente']:kind==='ESTAMPARIA'?['Material / chapa','Espessura','Largura do blank','Comprimento do blank','Prensa','Tonelagem','Ferramenta / estampo','Curso','Velocidade','Avanço','Passo','Lubrificação','Operações de corte','Operações de dobra','Operações de conformação','Rebarba máxima']:kind==='ACABAMENTO'?['Tipo de acabamento','Preparação da superfície','Equipamento','Ferramenta / abrasivo','Produto químico / tinta','Diluição / mistura','Velocidade de aplicação','Pressão','Temperatura de secagem','Tempo de secagem','Tempo de cura','Espessura alvo','Método de inspeção','Embalagem']:['Tipo de processo','Objetivo','Equipamento','Ferramenta / dispositivo','Material de entrada','Parâmetro 1','Parâmetro 2','Parâmetro 3','Tempo padrão','Critério de aceitação','EPI / segurança','Instrução especial']
 
- return <main className="industrial-form-page process-sheet-page">
-  <header className="process-sheet-header"><div><span className="industrial-eyebrow">INDUSTRIA ERP • ENGENHARIA / PROCESSOS</span><h1>{kinds.find(x=>x.id===kind)?.title}</h1><p>Ficha operacional completa para orientar Engenharia, PCP, Produção e Qualidade.</p></div><div className="process-sheet-actions"><button className="industrial-secondary" onClick={()=>setKind(null)}><X size={16}/>Tipos</button><button className="industrial-secondary" onClick={()=>window.print()}><Printer size={16}/>Imprimir</button><button className="industrial-primary" onClick={()=>void save()} disabled={busy}><Save size={16}/>{busy?'Gravando…':'Gravar'}</button></div></header>
-  <div className="process-sheet-toolbar"><button onClick={()=>resetForm(false)}>Novo</button><button onClick={()=>void save()} disabled={busy}>Gravar</button><button onClick={()=>productId&&void loadFicha(productId)} disabled={busy}><Search size={15}/>Pesquisar</button><button onClick={()=>window.print()}><Printer size={15}/>Imprimir</button><span className="process-sheet-toolbar-status">{notice||'Documento operacional controlado'}</span></div>
+ return <VendasLayout title="Engenharia / Fichas de Processo" subtitle="BOM multinível, roteiro de fabricação, parâmetros e revisões controladas." showStatusCards={false}><main className="industrial-form-page process-sheet-page erp-global-surface erp-compact">
+  <header className="process-sheet-header"><div><span className="industrial-eyebrow">INDUSTRIA ERP • ENGENHARIA / PROCESSOS</span><h1>{kinds.find(x=>x.id===kind)?.title}</h1><p>Ficha operacional completa para orientar Engenharia, PCP, Produção e Qualidade.</p></div><div className="process-sheet-actions"><button className="industrial-secondary" onClick={()=>setKind(null)}><X size={16}/>Tipos</button><button className="industrial-secondary" onClick={()=>window.print()}><Printer size={16}/>Imprimir</button>{ficha?.id&&Number(version)===ficha.versao&&['rascunho','em_analise'].includes((ficha.status||'').toLowerCase())&&<button className="industrial-secondary" onClick={()=>void approveFicha()} disabled={busy||!canApproveRevision}><CheckCircle2 size={16}/>Aprovar / liberar</button>}<button className="industrial-primary" onClick={()=>void save()} disabled={busy}><Save size={16}/>{busy?'Gravando…':'Gravar'}</button></div></header>
+  <div className="process-sheet-toolbar"><button onClick={()=>resetForm(false)}>Novo</button><button onClick={()=>void save()} disabled={busy}>Gravar</button><button onClick={()=>{setRequestedVersion(null);if(productId)void loadFicha(productId,kind,undefined)}} disabled={busy}><Search size={15}/>Pesquisar</button><button onClick={()=>window.print()}><Printer size={15}/>Imprimir</button><span className="process-sheet-toolbar-status">{notice||'Documento operacional controlado'}</span></div>
 
   <section className="process-sheet-module-title"><div><b>FICHA DE PROCESSO {kind}</b><span>Engenharia • PCP • Produção • Qualidade</span></div><div className="process-sheet-document-id"><span>Código</span><strong>{processCode||'—'}</strong><small>Revisão {version}</small></div></section>
 
   <section className="industrial-panel">
    <div className="process-section-heading"><span>1 • IDENTIFICAÇÃO E CONTROLE DO DOCUMENTO</span><h2>Dados mestres</h2></div>
    <div className="process-form-grid">
-    <label>Código do produto<input value={productCode} list="produto-codigos" onChange={e=>{const code=e.target.value.trim();setProductCode(e.target.value);const p=products.find(x=>x.codigo.toLowerCase()===code.toLowerCase());if(p)setProductId(p.id)}} placeholder="Digite o código da peça"/><datalist id="produto-codigos">{products.map(p=><option key={p.id} value={p.codigo}>{p.nome}</option>)}</datalist></label>
-    <label>Produto / peça<select value={productId} onChange={e=>{setProductId(e.target.value);const p=products.find(x=>x.id===e.target.value);setProductCode(p?.codigo||'')}}><option value="">Selecione o produto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select></label>
+    <label>Código do produto<input value={productCode} list="produto-codigos" onChange={e=>{const code=e.target.value.trim();setProductCode(e.target.value);const p=products.find(x=>x.codigo.toLowerCase()===code.toLowerCase());if(p){setRequestedVersion(null);setProductId(p.id)}}} placeholder="Digite o código da peça"/><datalist id="produto-codigos">{products.map(p=><option key={p.id} value={p.codigo}>{p.nome}</option>)}</datalist></label>
+    <label>Produto / peça<select value={productId} onChange={e=>{setRequestedVersion(null);setProductId(e.target.value);const p=products.find(x=>x.id===e.target.value);setProductCode(p?.codigo||'')}}><option value="">Selecione o produto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select></label>
     <label>Código da ficha<input value={processCode} onChange={e=>setProcessCode(e.target.value)}/></label>
-    <label>Revisão<input type="number" min="1" value={version} onChange={e=>setVersion(e.target.value)}/></label>
+    <label>Revisão<input type="number" min="1" value={version} onChange={e=>setVersion(e.target.value)}/></label><label>Status da revisão<input value={formStatus} readOnly/><small className="text-[10px] font-medium text-slate-500">O PCP aceita somente revisões APROVADAS/LIBERADAS.</small></label>
     <label>Nome do processo<input value={processName} onChange={e=>setProcessName(e.target.value)}/></label>
     <label>Rendimento<input type="number" min="0.001" step="0.001" value={rendimento} onChange={e=>setRendimento(e.target.value)}/></label>
     <label>Unidade<input value={unit} onChange={e=>setUnit(e.target.value.toUpperCase())}/></label>
     <label>Desenho / especificação<input value={spec.desenho||''} onChange={e=>setS('desenho',e.target.value)} placeholder="Código e revisão do desenho"/></label>
-    <label>Responsável<input value={spec.responsavel||''} onChange={e=>setS('responsavel',e.target.value)}/></label>
-    <label>Data de aprovação<input type="date" value={spec.dataAprovacao||''} onChange={e=>setS('dataAprovacao',e.target.value)}/></label>
+    <label>Responsável técnico (documento)<input value={spec.responsavel||''} onChange={e=>setS('responsavel',e.target.value)}/></label>
+    <label>Data de referência do processo<input type="date" value={spec.dataAprovacao||''} onChange={e=>setS('dataAprovacao',e.target.value)}/></label>
    </div>
   </section>
 
@@ -197,14 +263,13 @@ export default function FichaEngenharia(){
   </section>
 
   <section className="industrial-panel process-sheet-table-panel">
-   <div className="process-section-heading"><span>5 • CONTROLE DE QUALIDADE</span><h2>Características e critérios de aceitação</h2><p>Controle ligado ao processo, não apenas um texto livre.</p></div>
-   <div className="industrial-table-scroll"><table className="industrial-table process-sheet-table"><thead><tr><th>Código</th><th>Característica</th><th>Un.</th><th>Nominal</th><th>Mín.</th><th>Máx.</th><th>Frequência</th><th>Status</th><th></th></tr></thead><tbody>{quality.map((r,i)=><tr key={r.id||i}><td><input value={r.codigo} onChange={e=>setQualityField(i,'codigo',e.target.value)}/></td><td><input value={r.caracteristica} onChange={e=>setQualityField(i,'caracteristica',e.target.value)} placeholder="Dimensão, dureza, peso, aparência…"/></td><td><input value={r.unidade} onChange={e=>setQualityField(i,'unidade',e.target.value)}/></td><td><input value={r.nominal} onChange={e=>setQualityField(i,'nominal',e.target.value)}/></td><td><input value={r.limite_inferior} onChange={e=>setQualityField(i,'limite_inferior',e.target.value)}/></td><td><input value={r.limite_superior} onChange={e=>setQualityField(i,'limite_superior',e.target.value)}/></td><td><input value={r.frequencia} onChange={e=>setQualityField(i,'frequencia',e.target.value)}/></td><td><select value={r.status} onChange={e=>setQualityField(i,'status',e.target.value)}><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></td><td><button className="icon-button danger" onClick={()=>setQuality(x=>x.length===1?[emptyQuality()]:x.filter((_,n)=>n!==i))}><Trash2 size={16}/></button></td></tr>)}</tbody></table></div>
-   <button className="industrial-secondary process-add-row" onClick={()=>setQuality(r=>[...r,emptyQuality()])}><Plus size={16}/>Adicionar controle</button>
+   <div className="process-section-heading"><span>5 • CONTROLE DE QUALIDADE</span><h2>Especificações técnicas vinculadas</h2><p>Cadastro mestre controlado pela Qualidade. Consulte ou altere os critérios em <a href="/qualidade/especificacoes" className="font-semibold text-sky-700 underline">Qualidade → Especificações Técnicas</a>; esta ficha apenas apresenta os critérios associados ao produto.</p></div>
+   <div className="industrial-table-scroll"><table className="industrial-table process-sheet-table"><thead><tr><th>Código</th><th>Característica</th><th>Un.</th><th>Nominal</th><th>Mín.</th><th>Máx.</th><th>Frequência</th><th>Status</th></tr></thead><tbody>{quality.filter(r=>r.caracteristica.trim()).map((r,i)=><tr key={r.id||i}><td>{r.codigo||'—'}</td><td>{r.caracteristica}</td><td>{r.unidade||'—'}</td><td>{r.nominal||'—'}</td><td>{r.limite_inferior||'—'}</td><td>{r.limite_superior||'—'}</td><td>{r.frequencia||'—'}</td><td>{r.status||'—'}</td></tr>)}{!quality.some(r=>r.caracteristica.trim())&&<tr><td colSpan={8}>Nenhuma especificação cadastrada para este produto.</td></tr>}</tbody></table></div>
   </section>
 
-  <section className="process-sheet-approval"><div><span>ENGENHARIA / PROCESSO</span><strong>{spec.responsavel||'Responsável não informado'}</strong><small>Revisão {version}</small></div><div><span>QUALIDADE</span><strong>Liberação da ficha</strong><small>Critérios de aceitação registrados</small></div><div><span>PCP / PRODUÇÃO</span><strong>Documento operacional</strong><small>Disponível para roteiro e OP</small></div></section>
+  <section className="process-sheet-approval"><div><span>ENGENHARIA / PROCESSO</span><strong>{spec.responsavel||'Responsável não informado'}</strong><small>Revisão {version}</small></div><div><span>QUALIDADE</span><strong>{formStatus}</strong><small>{['aprovada','liberada'].includes(formStatus.toLowerCase())&&formRevisionActive?'Revisão liberada para o PCP.':'Aguardando fluxo formal de aprovação.'}</small>{ficha&&Number(version)===ficha.versao&&['rascunho','em_analise'].includes(formStatus.toLowerCase())&&!canApproveRevision&&<small className="block text-[10px] text-slate-500">Aprovação restrita ao Master/Qualidade.</small>}</div><div><span>PCP / PRODUÇÃO</span><strong>{['aprovada','liberada'].includes(formStatus.toLowerCase())&&formRevisionActive?'Disponível para PCP/OP':'Bloqueada para PCP/OP'}</strong><small>Somente revisão aprovada/liberada pode alimentar a programação.</small></div></section>
   {notice&&<div className="industrial-notice" role="status">{notice}</div>}
- </main>
+ </main></VendasLayout>
 }
 
 function Info({title,text}:{title:string;text:string}){return <div className="industrial-panel" style={{background:'#f7fbfc'}}><CheckCircle2 size={20}/><strong style={{display:'block',marginTop:8}}>{title}</strong><p style={{color:'#5a6d75'}}>{text}</p></div>}
