@@ -127,36 +127,18 @@ export default function PCPExecucaoIndustrial() {
     } catch (e) { setError(errText(e)) } finally { setBusy(false) }
   }
 
-  function runMrp() {
+  async function runMrp() {
     setError(''); setNotice('')
     const rootQty = Number(mrpQty)
     if (!mrpRoot || !Number.isFinite(rootQty) || rootQty <= 0) { setError('Selecione o produto acabado e uma quantidade válida.'); return }
-    const active = bom.filter(b => b.produto_pai_id === mrpRoot && b.status === 'ativo' && b.vigente_desde <= today() && (!b.vigente_ate || b.vigente_ate >= today()))
-    if (!active.length) { setMrpResult([]); setError('Não há BOM ativa e vigente para o produto selecionado.'); return }
-    const stockMap = new Map<string, number>()
-    for (const row of stock) stockMap.set(row.produto_id, (stockMap.get(row.produto_id) ?? 0) + Number(row.quantidade || 0))
-    const accum = new Map<string, { qty: number; loss: number }>()
-    const visited = new Set<string>()
-    const explode = (parent: string, qty: number, depth: number) => {
-      if (depth > 20) throw new Error('BOM excede 20 níveis ou contém ciclo; MRP cancelado para evitar necessidade incorreta.')
-      if (visited.has(parent) && depth > 1) { /* shared subassemblies are allowed */ }
-      const activeBomIds = active.filter(b => b.produto_pai_id === parent).map(b => b.id)
-      for (const item of bomItems.filter(i => activeBomIds.includes(i.bom_id))) {
-        const gross = qty * Number(item.quantidade_bruta || (item.quantidade_liquida / (1 - Number(item.perda_percentual || 0) / 100)))
-        const prior = accum.get(item.componente_id) ?? { qty: 0, loss: 0 }
-        accum.set(item.componente_id, { qty: prior.qty + gross, loss: prior.loss + Math.max(0, gross - qty * Number(item.quantidade_liquida)) })
-        explode(item.componente_id, gross, depth + 1)
-      }
-    }
+    setBusy(true)
     try {
-      explode(mrpRoot, rootQty, 1)
-      const rows = [...accum.entries()].map(([id, value]) => {
-        const p = productMap.get(id)
-        const balance = stockMap.get(id) ?? 0
-        return { id, codigo: p?.codigo ?? '—', descricao: p?.descricao_tecnica ?? 'Componente não cadastrado', necessidade: value.qty, saldo: balance, liquida: Math.max(0, value.qty - balance), perda: value.loss }
-      }).sort((a,b) => a.codigo.localeCompare(b.codigo))
-      setMrpResult(rows); setNotice('Explosão calculada em memória com BOM vigente e saldo consultado no banco; revise antes de converter em OP/compra.')
-    } catch (e) { setMrpResult([]); setError(errText(e)) }
+      const result = await supabase.rpc('erp_pcp_mrp_explodir', { p_produto_pai_id: mrpRoot, p_quantidade: rootQty })
+      if (result.error) throw result.error
+      const rows = (result.data ?? []) as Array<{produto_id:string;codigo:string;descricao:string;nivel:number;necessidade_bruta:number;saldo_disponivel:number;necessidade_liquida:number;perda_estimada:number}>
+      setMrpResult(rows.map(r => ({ id:r.produto_id, codigo:r.codigo, descricao:r.descricao, necessidade:Number(r.necessidade_bruta), saldo:Number(r.saldo_disponivel), liquida:Number(r.necessidade_liquida), perda:Number(r.perda_estimada) })))
+      setNotice(rows.length ? 'MRP multinível calculado no PostgreSQL com BOM vigente, perdas e saldo atual.' : 'A BOM vigente não contém componentes para esta demanda.')
+    } catch (e) { setMrpResult([]); setError(errText(e)) } finally { setBusy(false) }
   }
 
   const tabs = [{id:'ordens',label:'Ordens de produção',icon:ClipboardList},{id:'apontamentos',label:'Chão de fábrica',icon:Activity},{id:'mrp',label:'MRP I / materiais',icon:Boxes},{id:'gantt',label:'Capacidade / Gantt',icon:CalendarClock}] as const
