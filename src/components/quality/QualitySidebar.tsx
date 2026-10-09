@@ -4,6 +4,11 @@ import { useSynqraLayout } from '../../layout/SynqraLayoutContext'
 const items = [
   ['Dashboard SGQ', '/qualidade/dashboard-rnc'],
   ['Qualidade Geral', '/qualidade'],
+  ['Especificações Técnicas', '/qualidade/especificacoes'],
+  ['Inspeções de Lotes', '/qualidade/inspecoes'],
+  ['Matriz FMEA / PFMEA', '/qualidade/fmea'],
+  ['RNC & Planos CAPA', '/qualidade/rnc-capa'],
+  ['CEP / Cartas de Controle', '/qualidade/cep'],
   ['Inspeção em Processo', '/qualidade/inspecao-processo'],
   ['Registro RPNC / CAPA', '/qualidade/rnc'],
   ['8D — Ações Corretivas', '/qualidade/metodologia-8d'],
