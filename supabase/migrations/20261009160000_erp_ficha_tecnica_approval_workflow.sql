@@ -337,10 +337,16 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'ERP_PROCESS_SHEET_REVISION_MUST_INCREASE';
   END IF;
-  IF p_itens IS NULL OR jsonb_typeof(p_itens) <> 'array' OR jsonb_array_length(p_itens) = 0 THEN
+  IF p_itens IS NULL OR jsonb_typeof(p_itens) <> 'array' THEN
     RAISE EXCEPTION 'ERP_PROCESS_SHEET_BOM_REQUIRED';
   END IF;
-  IF p_operacoes IS NULL OR jsonb_typeof(p_operacoes) <> 'array' OR jsonb_array_length(p_operacoes) = 0 THEN
+  IF jsonb_array_length(p_itens) = 0 THEN
+    RAISE EXCEPTION 'ERP_PROCESS_SHEET_BOM_REQUIRED';
+  END IF;
+  IF p_operacoes IS NULL OR jsonb_typeof(p_operacoes) <> 'array' THEN
+    RAISE EXCEPTION 'ERP_PROCESS_SHEET_ROUTE_REQUIRED';
+  END IF;
+  IF jsonb_array_length(p_operacoes) = 0 THEN
     RAISE EXCEPTION 'ERP_PROCESS_SHEET_ROUTE_REQUIRED';
   END IF;
 
