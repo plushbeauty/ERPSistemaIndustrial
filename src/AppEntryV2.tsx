@@ -59,6 +59,7 @@ const Master = lazyPage(() => import('./pages/Master'), 'Master')
 const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
 const IndustrialDataWorkspace = lazyPage(() => import('./pages/IndustrialDataWorkspace'), 'default')
 const PCPOrdens = lazyPage(() => import('./pages/PCPOrdens'), 'default')
+const PCPExecucaoIndustrial = lazyPage(() => import('./pages/PCPExecucaoIndustrial'), 'default')
 const PCPParadas = lazyPage(() => import('./pages/PCPParadas'), 'PCPParadas')
 const PCPSequenciamento = lazyPage(() => import('./pages/PCPSequenciamento'), 'PCPSequenciamento')
 const PCPPlanejamentoIndustrial = lazyPage(() => import('./pages/PCPPlanejamentoIndustrial'), 'PCPPlanejamentoIndustrial')
@@ -457,7 +458,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/rnc-capa" element={<IndustrialDataWorkspace />} />
       <Route path="/qualidade/cep" element={<IndustrialDataWorkspace />} />
       <Route path="/pcp/ordens-industriais" element={<IndustrialDataWorkspace />} />
-      <Route path="/pcp/apontamentos" element={<IndustrialDataWorkspace />} />
+      <Route path="/pcp/apontamentos" element={<PCPExecucaoIndustrial />} />
       <Route path="/fiscal/parametros" element={<IndustrialDataWorkspace />} />
       <Route path="/fiscal/custos-industriais" element={<CentralCustosIndustrial />}
       <Route path="/rh/funcionarios" element={<IndustrialDataWorkspace />} />
