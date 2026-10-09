@@ -77,7 +77,7 @@ begin
   for update;
 
   if not found then raise exception 'Especificação não encontrada na empresa autorizada.'; end if;
-  if v_spec.status = 'ativo' and v_spec.aprovador_id is not null then
+  if v_spec.status = 'ativo' and v_spec.aprovado_em is not null then
     raise exception 'Esta revisão já está aprovada e ativa. Crie uma nova revisão para alterar os critérios.';
   end if;
   if coalesce(trim(v_spec.codigo), '') = '' or coalesce(trim(v_spec.caracteristica), '') = '' then
