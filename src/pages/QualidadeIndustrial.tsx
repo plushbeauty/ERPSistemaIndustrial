@@ -7,6 +7,7 @@ import ColetaDimensionalCEP from '../components/ColetaDimensionalCEP'
 
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; fornecedor_id: string | null; nf_numero: string | null; quantidade_recebida: number; status_inspecao: string | null }
 type Supplier = { id: string; razao_social: string }
+type Sector = { id: string; nome: string; ativo: boolean }
 type Product = { id: string; codigo: string; nome: string }
 type Instrument = { id: string; codigo: string; descricao: string; status: string; proxima_calibracao: string | null }
 type Specification = { id: string; produto_id: string; codigo: string; caracteristica: string; unidade: string | null; nominal: number | null; tipo_inspecao: string; metodo_inspecao: string; instrumento_id: string | null; limite_inferior: number | null; limite_superior: number | null; frequencia: string | null; grupo_material: string | null; condicao_armazenamento: string | null; status: string | null; vigencia_inicio: string | null; vigencia_fim: string | null; aprovador_id: string | null; aprovado_em: string | null; revisao: number }
@@ -51,6 +52,10 @@ export default function QualidadeIndustrial() {
   const [companyId, setCompanyId] = useState('')
   const [lots, setLots] = useState<Lot[]>([])
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [sectors, setSectors] = useState<Sector[]>([])
+  const [rpncSectorId, setRpncSectorId] = useState('')
+  const [rpncSeverity, setRpncSeverity] = useState<'Critica' | 'Maior' | 'Menor' | ''>('')
+  const [rpncDescription, setRpncDescription] = useState('')
   const [products, setProducts] = useState<Product[]>([])
   const [specifications, setSpecifications] = useState<Specification[]>([])
   const [instruments, setInstruments] = useState<Instrument[]>([])
@@ -85,7 +90,7 @@ export default function QualidadeIndustrial() {
       if (!current.data) throw new Error('Empresa da sessão não identificada.')
       const id = String(current.data)
       setCompanyId(id)
-      const [lotResult, supplierResult, productResult, specificationResult, instrumentResult, receivingResult, dimensionalResult] = await Promise.all([
+      const [lotResult, supplierResult, productResult, specificationResult, instrumentResult, receivingResult, dimensionalResult, sectorResult] = await Promise.all([
         fetchAllPages<Lot>((from, to) => supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,fornecedor_id,nf_numero,quantidade_recebida,status_inspecao', { count: 'exact' }).eq('empresa_id', id).order('created_at', { ascending: false }).range(from, to)),
         fetchAllPages<Supplier>((from, to) => supabase.from('erp_fornecedores').select('id,razao_social', { count: 'exact' }).eq('empresa_id', id).order('razao_social').range(from, to)),
         fetchAllPages<Product>((from, to) => supabase.from('erp_produtos').select('id,codigo,nome', { count: 'exact' }).eq('empresa_id', id).eq('ativo', true).order('codigo').range(from, to)),
@@ -93,9 +98,11 @@ export default function QualidadeIndustrial() {
         fetchAllPages<Instrument>((from, to) => supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao', { count: 'exact' }).eq('empresa_id', id).order('codigo').range(from, to)),
         fetchAllPages<Receiving>((from, to) => supabase.from('erp_qualidade_inspecoes_recebimento').select('id,lote_id,fornecedor_id,tamanho_lote,nivel_inspecao,aql,tamanho_amostra,defeitos_encontrados,criterio_ac,criterio_re,status,created_at', { count: 'exact' }).eq('empresa_id', id).order('created_at', { ascending: false }).range(from, to)),
         fetchAllPages<Dimensional>((from, to) => supabase.from('erp_qualidade_inspecoes_dimensionais').select('id,inspecao_recebimento_id,plano_inspecao_id,numero_peca_amostrada,cavidade_molde,cota_nominal_mm,tolerancia_superior_mm,tolerancia_inferior_mm,valor_medido_mm,desvio_mm,status,instrumento', { count: 'exact' }).eq('empresa_id', id).order('created_at', { ascending: false }).range(from, to)),
+        fetchAllPages<Sector>((from, to) => supabase.from('erp_setores').select('id,nome,ativo', { count: 'exact' }).eq('empresa_id', id).eq('ativo', true).order('nome').range(from, to)),
       ])
       setLots(lotResult)
       setSuppliers(supplierResult)
+      setSectors(sectorResult)
       setProducts(productResult)
       setSpecifications(specificationResult)
       setInstruments(instrumentResult)
@@ -167,6 +174,11 @@ export default function QualidadeIndustrial() {
   const decide = async (decision: 'APROVAR' | 'BLOQUEAR', receivingId = selectedReceiving) => {
     const receiving = receivings.find(row => row.id === receivingId)
     if (!receiving) { setError('Selecione uma inspeção de recebimento válida.'); return }
+    if (decision === 'BLOQUEAR') {
+      if (!rpncSectorId || !sectors.some(sector => sector.id === rpncSectorId)) { setError('Selecione um setor ativo responsável pela RPNC antes de bloquear o lote.'); return }
+      if (!rpncSeverity) { setError('Selecione a gravidade da não conformidade antes de bloquear o lote.'); return }
+      if (rpncDescription.trim().length < 5) { setError('Descreva a não conformidade com pelo menos 5 caracteres antes de bloquear o lote.'); return }
+    }
     setBusy(true); setError(''); setNotice('')
     try {
       if (decision === 'APROVAR') {
@@ -189,10 +201,18 @@ export default function QualidadeIndustrial() {
           if (specMeasurements.some(item => item.status !== 'OK')) throw new Error(`A especificação ${spec.codigo} possui amostra NOK/pendente; o lote não pode ser aprovado.`)
         }
       }
-      const result = await supabase.rpc('erp_qms_decidir_inspecao_recebimento', { p_inspecao_id: receiving.id, p_decisao: decision })
-      if (result.error) throw result.error
+      if (decision === 'BLOQUEAR') {
+        const result = await supabase.rpc('erp_qms_reprovar_recebimento_com_rpnc', { p_inspecao_id: receiving.id, p_setor_id: rpncSectorId, p_severidade: rpncSeverity, p_descricao: rpncDescription.trim() })
+        if (result.error) throw result.error
+        const rpncNumber = result.data && typeof result.data === 'object' ? (result.data as { numero_rpnc?: string }).numero_rpnc : null
+        setNotice(`Lote bloqueado e enviado para quarentena. RPNC ${rpncNumber || 'vinculada'} registrada.`)
+        setRpncDescription('')
+      } else {
+        const result = await supabase.rpc('erp_qms_decidir_inspecao_recebimento', { p_inspecao_id: receiving.id, p_decisao: decision })
+        if (result.error) throw result.error
+        setNotice('Lote aprovado e liberado no status de inspeção.')
+      }
       setSelectedReceiving(receiving.id)
-      setNotice(decision === 'APROVAR' ? 'Lote aprovado e liberado no status de inspeção.' : 'Lote bloqueado e enviado para quarentena.')
       await load()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha na decisão do lote.')
@@ -368,7 +388,13 @@ export default function QualidadeIndustrial() {
             <label className={labelClass()}>Critério Re<input className={fieldClass(invalid === 'criteria')} type="number" min="1" value={re} onChange={(e) => { setRe(e.target.value); setInvalid(null) }} /></label>
             <div className="qms-actions"><button className="qms-btn" type="button" disabled={busy} onClick={() => void saveReceiving()}><ClipboardCheck size={13}/> REGISTRAR INSPEÇÃO</button></div>
           </div>
-          <div className="qms-table-wrap qms-mt"><table><thead><tr><th>Lote</th><th>NF</th><th>Fornecedor</th><th>Grau</th><th>AQL</th><th>Amostra</th><th>Def.</th><th>Ac</th><th>Re</th><th>Status</th><th>Ação</th></tr></thead><tbody>{receivings.map((row) => { const lot = lots.find((item) => item.id === row.lote_id); return <tr key={row.id}><td>{lot?.lote_interno || row.lote_id}</td><td>{lot?.nf_numero || '—'}</td><td>{supplierMap.get(row.fornecedor_id || '') || '—'}</td><td>{row.nivel_inspecao}</td><td className="num">{row.aql}</td><td className="num">{row.tamanho_amostra}</td><td className="num">{row.defeitos_encontrados}</td><td className="num">{row.criterio_ac}</td><td className="num">{row.criterio_re}</td><td><span className={row.status === 'APROVADO' ? 'status-ok' : row.status === 'BLOQUEADO' ? 'status-nok' : 'status-pending'}>{row.status}</span></td><td><button className="qms-mini" type="button" onClick={() => setSelectedReceiving(row.id)}>USAR</button>{row.status === 'PENDENTE' && <><button className="qms-mini approve" type="button" disabled={busy} onClick={() => void decide('APROVAR', row.id)}><Check size={12}/> APROVAR</button><button className="qms-mini block" type="button" disabled={busy} onClick={() => void decide('BLOQUEAR', row.id)}><X size={12}/> BLOQUEAR</button></>}</td></tr>})}</tbody></table></div>
+          <div className="qms-grid qms-grid-4 qms-mt border border-rose-200 bg-rose-50/60 p-2">
+            <label className={labelClass()}>Setor responsável pela RPNC<select className={fieldClass(!rpncSectorId)} value={rpncSectorId} onChange={event => setRpncSectorId(event.target.value)}><option value="">Selecione setor ativo...</option>{sectors.map(sector => <option key={sector.id} value={sector.id}>{sector.nome}</option>)}</select></label>
+            <label className={labelClass()}>Gravidade da não conformidade<select className={fieldClass(!rpncSeverity)} value={rpncSeverity} onChange={event => setRpncSeverity(event.target.value as 'Critica' | 'Maior' | 'Menor' | '')}><option value="">Selecione gravidade...</option><option value="Critica">Crítica</option><option value="Maior">Maior</option><option value="Menor">Menor</option></select></label>
+            <label className={labelClass()}>Descrição da não conformidade<input className={fieldClass(rpncDescription.trim().length < 5)} value={rpncDescription} onChange={event => setRpncDescription(event.target.value)} placeholder="Descreva o defeito observado..." /></label>
+            <p className="self-end text-[10px] leading-4 text-rose-900">A ação BLOQUEAR registra quarentena e RPNC na mesma transação. Informe setor, gravidade e causa observada.</p>
+          </div>
+          <div className="qms-table-wrap qms-mt"><table><thead><tr><th>Lote</th><th>NF</th><th>Fornecedor</th><th>Grau</th><th>AQL</th><th>Amostra</th><th>Def.</th><th>Ac</th><th>Re</th><th>Status</th><th>Ação</th></tr></thead><tbody>{receivings.map((row) => { const lot = lots.find((item) => item.id === row.lote_id); return <tr key={row.id}><td>{lot?.lote_interno || row.lote_id}</td><td>{lot?.nf_numero || '—'}</td><td>{supplierMap.get(row.fornecedor_id || '') || '—'}</td><td>{row.nivel_inspecao}</td><td className="num">{row.aql}</td><td className="num">{row.tamanho_amostra}</td><td className="num">{row.defeitos_encontrados}</td><td className="num">{row.criterio_ac}</td><td className="num">{row.criterio_re}</td><td><span className={row.status === 'APROVADO' ? 'status-ok' : row.status === 'BLOQUEADO' ? 'status-nok' : 'status-pending'}>{row.status}</span></td><td><button className="qms-mini" type="button" onClick={() => setSelectedReceiving(row.id)}>USAR</button>{row.status === 'PENDENTE' && <><button className="qms-mini approve" type="button" disabled={busy} onClick={() => void decide('APROVAR', row.id)}><Check size={12}/> APROVAR</button><button className="qms-mini block" type="button" disabled={busy} onClick={() => void decide('BLOQUEAR', row.id)}><X size={12}/> BLOQUEAR + RPNC</button></>}</td></tr>})}</tbody></table></div>
         </section>}
 
         {tab === 'dimensional' && <section className="qms-panel">
