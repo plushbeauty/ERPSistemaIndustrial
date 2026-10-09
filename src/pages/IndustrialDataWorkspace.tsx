@@ -74,15 +74,17 @@ export default function IndustrialDataWorkspace() {
     setLoading(false)
   },[config])
   useEffect(()=>{ void load() },[load])
-  const visible = useMemo(()=> rows.filter(row => !search || config.search.some(key=>String(row[key] ?? '').toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR')))),[rows,search,config])
+  const visible = useMemo(()=> rows.filter(row => !search || (config?.search ?? []).some(key=>String(row[key] ?? '').toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR')))),[rows,search,config])
   const npr = Number(form.severidade||0)*Number(form.ocorrencia||0)*Number(form.deteccao||0)
   function reset() { setForm({}); setEditing(null); setError(null) }
   function edit(row: Record<string,unknown>) {
+    if (!config) return
     const next: Record<string,string>={}
     config.fields.forEach(field => { const value=row[field.key]; next[field.key]=value == null ? '' : typeof value === 'object' ? JSON.stringify(value,null,2) : String(value) })
     setForm(next); setEditing(String(row.id)); setError(null)
   }
   async function save() {
+    if (!config) { setError('Módulo não encontrado para esta rota.'); return }
     setError(null)
     try {
       const payload: Record<string,unknown>={}
