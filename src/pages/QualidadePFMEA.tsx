@@ -97,7 +97,7 @@ export default function QualidadePFMEA() {
         required
         value={value}
         onChange={(event) => setValue(event.target.value === '' ? 0 : Number(event.target.value))}
-        onBlur={() => setValue((current) => Math.min(10, Math.max(1, Number.isFinite(current) ? Math.trunc(current) : 1)))}
+        onBlur={() => setValue(Math.min(10, Math.max(1, Number.isFinite(value) ? Math.trunc(value) : 1)))}
       />
     </label>
   )
