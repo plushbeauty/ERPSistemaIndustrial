@@ -432,7 +432,7 @@ export default function ProdutosVendasIndustrial(){
 
       {tab==='producao'&&<section style={{padding:10}}>
         <div style={{display:'grid',gridTemplateColumns:'82px 82px 82px 82px 120px 120px max-content',gap:7,alignItems:'end'}}>
-          {field('PRAZO COMPRA (dias)','prazo_compra_dias','number')}{field('PRAZO PRODUÇÃO (dias)','prazo_producao_dias','number')}{field('CUSTO FABRICAÇÃO','custo_fabricacao','number')}{field('TOLERÂNCIA (%)','tolerancia_percentual','number')}
+          {field('PRAZO COMPRA (dias)','prazo_compra_dias','number')}{field('PRAZO PRODUÇÃO (dias)','prazo_producao_dias','number')}{field('CUSTO FAB.','custo_fabricacao','number')}{field('TOLERÂNCIA (%)','tolerancia_percentual','number')}
           <label style={label}>FICHA ATIVA<input value={productionFicha?('REV. '+(productionFicha.revisao||productionFicha.versao)):'Não cadastrada'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}>RENDIMENTO<input value={productionFicha?fmt(productionFicha.rendimento)+' '+productionFicha.unidade_rendimento:'—'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A'}}/></label>
           <button type="button" onClick={()=>{window.location.href='/ficha-engenharia?produto='+encodeURIComponent(selectedId||'')}} style={{...btn('normal'),width:'max-content',maxWidth:'100%',whiteSpace:'nowrap',padding:'0 8px',fontSize:10}}>ABRIR FICHA DE PROCESSO</button>
