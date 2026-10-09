@@ -144,6 +144,7 @@ begin
             and m.inspecao_recebimento_id = v_inspecao.id
             and m.plano_inspecao_id = s.id
             and upper(coalesce(m.status, '')) = 'OK'
+            and m.valor_medido_mm between s.limite_inferior and s.limite_superior
         )
       )
   ) then
