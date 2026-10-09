@@ -64,8 +64,3 @@ on public.erp_planos_inspecao
 for each row execute function public.erp_validar_plano_inspecao_referencias();
 
 revoke all on function public.erp_validar_plano_inspecao_referencias() from public, anon, authenticated;
-
--- Registra retrabalho separadamente no apontamento de acabamento.
-alter table public.erp_acabamentos
-  add column if not exists quantidade_retrabalho numeric(14,3) not null default 0
-  check (quantidade_retrabalho >= 0);
