@@ -289,6 +289,7 @@ export default function AppEntryV2() {
   if (path === '/cadastro-master' || path === '/configuracao-adm-master') return <PublicPage><SetupADMInicial /></PublicPage>
   if (path === '/blog') return <PublicPage><Blog /></PublicPage>
   if (path === '/contato') return <PublicPage><Contato /></PublicPage>
+  if (path === '/manutencao/laboratorio-visual') return <PublicPage><ManutencaoVisualLab /></PublicPage>
   if (path === '/preview/icones') return <PublicPage><IndustrialVisualShowcase /></PublicPage>
   if (path.startsWith('/modulos/')) return <PublicPage><PublicModuleOverview /></PublicPage>
   return <AppIndustrialAuthenticated />
