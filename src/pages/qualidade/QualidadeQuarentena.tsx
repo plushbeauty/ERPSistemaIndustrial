@@ -64,7 +64,7 @@ export default function QualidadeQuarentena(): ReactElement {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4 md:p-6 text-slate-900">
+    <main className="erp-global-surface erp-compact min-h-screen bg-slate-50 p-4 md:p-6 text-slate-900">
       <section className="mx-auto max-w-7xl rounded-xl border border-slate-200 bg-white shadow-sm">
         <header className="flex flex-col gap-3 border-b border-slate-200 p-5 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3"><ShieldCheck className="h-7 w-7 text-rose-700" /><div><p className="text-xs font-black uppercase tracking-widest text-slate-500">Qualidade</p><h1 className="text-xl font-black">Central de Bloqueio e Quarentena</h1></div></div>
