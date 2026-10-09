@@ -104,7 +104,7 @@ begin
      and coalesce(v_trace.quantidade_disponivel, 0) > 0 then
     raise exception 'Rastreabilidade já retida com saldo disponível inconsistente.';
   end if;
-  if found and v_disponivel > 0
+  if found
      and abs(coalesce(v_trace.quantidade_disponivel, 0) - v_disponivel) > 0.0001 then
     raise exception 'Saldo do lote e saldo da rastreabilidade divergem; reconcilie antes da quarentena.';
   end if;
