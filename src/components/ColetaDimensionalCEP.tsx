@@ -23,6 +23,9 @@ export interface ColetaDimensionalCEPProps {
     cpu: number | null
     cpk: number | null
     amplitude: number
+    amplitudeMovelMedia: number
+    limiteControleSuperior: number | null
+    limiteControleInferior: number | null
   }) => void
 }
 
@@ -65,9 +68,15 @@ export default function ColetaDimensionalCEP({
   const [amostras, setAmostras] = useState<AmostraCEP[]>(criarAmostras)
 
   const estatistica = useMemo(() => {
-    const valores = amostras
-      .map((amostra) => parseMedicao(amostra.valorMedido))
-      .filter((valor): valor is number => valor !== null)
+    const leiturasOrdenadas = amostras.map((amostra) => parseMedicao(amostra.valorMedido))
+    const valores = leiturasOrdenadas.filter((valor): valor is number => valor !== null)
+    const amplitudesMoveis = leiturasOrdenadas.slice(1).flatMap((valorAtual, indice) => {
+      const anterior = leiturasOrdenadas[indice]
+      return valorAtual !== null && anterior !== null ? [Math.abs(valorAtual - anterior)] : []
+    })
+    const amplitudeMovelMedia = amplitudesMoveis.length > 0
+      ? amplitudesMoveis.reduce((total, valor) => total + valor, 0) / amplitudesMoveis.length
+      : 0
 
     const totalControlado = valores.length
     const numeroDefeituosos = valores.filter(
@@ -80,14 +89,17 @@ export default function ColetaDimensionalCEP({
         : 0
 
     const somaQuadrados = valores.reduce((total, valor) => total + (valor - media) ** 2, 0)
-    // Sample standard deviation (n-1) is used for Cp/Cpk estimation.
     const variancia = totalControlado > 1 ? somaQuadrados / (totalControlado - 1) : 0
     const desvioPadrao = Math.sqrt(variancia)
-    const capacidadeDefinida = totalControlado > 1 && desvioPadrao > 0 && limiteSuperior > limiteInferior
-    const cp = capacidadeDefinida ? (limiteSuperior - limiteInferior) / (6 * desvioPadrao) : null
-    const cpu = capacidadeDefinida ? (limiteSuperior - media) / (3 * desvioPadrao) : null
-    const cpl = capacidadeDefinida ? (media - limiteInferior) / (3 * desvioPadrao) : null
+    // Individuals chart: within-process sigma estimated by moving-range average / d2 (n=2).
+    const sigmaDentro = amplitudeMovelMedia / 1.128
+    const capacidadeDefinida = totalControlado > 1 && sigmaDentro > 0 && limiteSuperior > limiteInferior
+    const cp = capacidadeDefinida ? (limiteSuperior - limiteInferior) / (6 * sigmaDentro) : null
+    const cpu = capacidadeDefinida ? (limiteSuperior - media) / (3 * sigmaDentro) : null
+    const cpl = capacidadeDefinida ? (media - limiteInferior) / (3 * sigmaDentro) : null
     const cpk = cpu !== null && cpl !== null ? Math.min(cpu, cpl) : null
+    const limiteControleSuperior = amplitudeMovelMedia > 0 ? media + 2.66 * amplitudeMovelMedia : null
+    const limiteControleInferior = amplitudeMovelMedia > 0 ? media - 2.66 * amplitudeMovelMedia : null
     const mediaForaDosLimites = totalControlado > 0 && (media < limiteInferior || media > limiteSuperior)
     const amplitude = totalControlado > 0 ? Math.max(...valores) - Math.min(...valores) : 0
 
@@ -102,6 +114,9 @@ export default function ColetaDimensionalCEP({
       cpl,
       cpk,
       amplitude,
+      amplitudeMovelMedia,
+      limiteControleSuperior,
+      limiteControleInferior,
       mediaForaDosLimites,
       incompletas: totalControlado < SAMPLE_COUNT,
     }
@@ -151,6 +166,9 @@ export default function ColetaDimensionalCEP({
       cpu: estatistica.cpu,
       cpk: estatistica.cpk,
       amplitude: estatistica.amplitude,
+      amplitudeMovelMedia: estatistica.amplitudeMovelMedia,
+      limiteControleSuperior: estatistica.limiteControleSuperior,
+      limiteControleInferior: estatistica.limiteControleInferior,
     })
   }
 
