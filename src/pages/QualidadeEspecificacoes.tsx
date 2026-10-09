@@ -127,6 +127,7 @@ export default function QualidadeEspecificacoes() {
 
   function edit(row: Specification) {
     const isDraft = (row.status ?? '').toLowerCase() === 'rascunho'
+    const nextRevision = Math.max(0, ...rows.filter(item => item.produto_id === row.produto_id && item.codigo === row.codigo && item.tipo_inspecao === row.tipo_inspecao).map(item => item.revisao)) + 1
     setForm({
       id: isDraft ? row.id : '', produto_id: row.produto_id, codigo: row.codigo,
       caracteristica: row.caracteristica, unidade: row.unidade ?? '',
@@ -137,7 +138,7 @@ export default function QualidadeEspecificacoes() {
       grupo_material: row.grupo_material ?? '', tipo_inspecao: (row.tipo_inspecao ?? 'RECEBIMENTO') as FormState['tipo_inspecao'],
       metodo_inspecao: (row.metodo_inspecao ?? 'DIMENSIONAL') as FormState['metodo_inspecao'],
       condicao_armazenamento: row.condicao_armazenamento ?? '', instrumento_id: row.instrumento_id ?? '',
-      revisao: String(isDraft ? row.revisao ?? 1 : Number(row.revisao ?? 1) + 1), vigencia_inicio: row.vigencia_inicio ?? '', vigencia_fim: row.vigencia_fim ?? '',
+      revisao: String(isDraft ? row.revisao ?? 1 : nextRevision), vigencia_inicio: row.vigencia_inicio ?? '', vigencia_fim: row.vigencia_fim ?? '',
       responsavel_id: row.responsavel_id ?? '', aprovador_id: '',
       status: 'rascunho',
     })
@@ -193,7 +194,7 @@ export default function QualidadeEspecificacoes() {
     if (!['VISUAL','DOCUMENTAL'].includes(form.metodo_inspecao) && !validInstruments.some(item => item.id === form.instrumento_id)) { setError('Especificação dimensional/funcional ativa exige instrumento aprovado e com calibração vigente.'); return }
     if (form.responsavel_id && !users.some(user => user.auth_user_id === form.responsavel_id)) { setError('Responsável inválido para a empresa atual.'); return }
     if (form.aprovador_id && !users.some(user => user.auth_user_id === form.aprovador_id)) { setError('Aprovador inválido para a empresa atual.'); return }
-    if (form.status === 'ativo' && (!form.responsavel_id || !form.aprovador_id)) { setError('Especificação ativa exige responsável e aprovador vinculados a usuários ativos da empresa.'); return }
+    if (!form.responsavel_id) { setError('Defina o responsável técnico pela especificação antes de gravar o rascunho.'); return }
     if (['DIMENSIONAL','FUNCIONAL'].includes(form.metodo_inspecao)) {
       const instrument = instruments.find(item => item.id === form.instrumento_id)
       const today = new Date().toISOString().slice(0, 10)
