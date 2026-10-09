@@ -286,3 +286,80 @@
   text-transform: uppercase;
   letter-spacing: .04em;
 }
+
+
+/* Laboratório visual: validação isolada do padrão premium sem alterar a rota real de Vendas. */
+.erp-visual-test-surface #frmNovoPedido {
+  color: #1f2937;
+  font-size: 10px;
+}
+.erp-visual-test-surface #frmNovoPedido label {
+  display: block;
+  margin-bottom: 2px;
+  color: #64748b;
+  font-size: 9px !important;
+  line-height: 11px;
+  font-weight: 600;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+.erp-visual-test-surface #frmNovoPedido input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.erp-visual-test-surface #frmNovoPedido select,
+.erp-visual-test-surface #frmNovoPedido button {
+  box-sizing: border-box;
+  height: 30px !important;
+  min-height: 30px !important;
+  border-radius: 2px !important;
+  font-size: 10px;
+}
+.erp-visual-test-surface #frmNovoPedido button[class*="w-6"],
+.erp-visual-test-surface #frmNovoPedido button[class*="h-6"] {
+  width: 30px !important;
+  min-width: 30px !important;
+}
+.erp-visual-test-surface #frmNovoPedido input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+.erp-visual-test-surface #frmNovoPedido select:focus {
+  border-color: #2d8db8 !important;
+  outline: 1px solid rgba(45, 141, 184, .18);
+  outline-offset: 0;
+  box-shadow: none !important;
+}
+.erp-visual-test-surface #frmNovoPedido table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+.erp-visual-test-surface #frmNovoPedido thead tr,
+.erp-visual-test-surface #frmNovoPedido tbody tr {
+  height: 32px !important;
+}
+.erp-visual-test-surface #frmNovoPedido thead th {
+  height: 32px !important;
+  padding-top: 0;
+  padding-bottom: 0;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 9px !important;
+  font-weight: 600;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.erp-visual-test-surface #frmNovoPedido tbody td {
+  height: 32px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+.erp-visual-test-surface #frmNovoPedido tbody tr:hover {
+  background-color: rgba(250, 250, 250, .9) !important;
+}
+.erp-visual-test-surface #frmNovoPedido tbody td[colspan] {
+  height: 64px;
+  text-align: center;
+  color: #64748b;
+}
+.erp-visual-test-surface #frmNovoPedido .text-\\[18px\\] {
+  font-size: 16px;
+}
