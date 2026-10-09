@@ -20,7 +20,6 @@ type Revision = {
 
 export default function EngenhariaRevisoesBOM() {
   const navigate = useNavigate()
-  const [empresaId, setEmpresaId] = useState('')
   const [products, setProducts] = useState<Product[]>([])
   const [productId, setProductId] = useState('')
   const [revisions, setRevisions] = useState<Revision[]>([])
@@ -38,7 +37,6 @@ export default function EngenhariaRevisoesBOM() {
       const id = String(company.data)
       const result = await supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', id).eq('ativo', true).order('codigo').limit(2000)
       if (result.error) throw result.error
-      setEmpresaId(id)
       setProducts((result.data ?? []) as Product[])
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar produtos da empresa.')
