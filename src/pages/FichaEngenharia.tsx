@@ -68,7 +68,7 @@ export default function FichaEngenharia(){
   let mounted=true
   const resolvePreview=async(value:string|undefined)=>{
    if(!value)return ''
-   if(value.startsWith('data:')||/^https?:\\/\\//i.test(value))return value
+   if(value.startsWith('data:')||/^https?:\/\//i.test(value))return value
    try{const result=await supabase.storage.from('documentos-erp').createSignedUrl(value,300);return result.error?'':result.data?.signedUrl??''}catch{return ''}
   }
   void Promise.all([resolvePreview(spec.fotoPrincipal),resolvePreview(spec.fotoSecundaria)]).then(([fotoPrincipal,fotoSecundaria])=>{if(mounted)setPhotoPreview({fotoPrincipal,fotoSecundaria})})
