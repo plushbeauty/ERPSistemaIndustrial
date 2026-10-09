@@ -102,7 +102,7 @@ export default function QualidadeRNC() {
     try {
       const result = await supabase.from('erp_sgq_rpnc_ishikawa').upsert({ empresa_id: companyId, rpnc_id: selected.id, ...sixM }, { onConflict: 'empresa_id,rpnc_id' }).select('id,rpnc_id,metodo,mao_de_obra,material,maquina,meio_ambiente,medicao').single()
       if (result.error) throw result.error
-      setIshikawa(result.data as Ishikawa); setNotice('Análise de causa raiz 6M salva no banco real.')
+      setNotice('Análise de causa raiz 6M salva no banco real.')
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao salvar Ishikawa.') }
     finally { setBusy(false) }
   }
