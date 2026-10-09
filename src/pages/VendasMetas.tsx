@@ -3,12 +3,10 @@ import { Plus, Save } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout from './VendasLayout'
 
-type Meta={id:string;competencia:string;meta_faturamento:number;meta_pedidos:number}
 const brl=(n:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(n)
 
 export default function VendasMetas(){
  const [empresa,setEmpresa]=useState('')
- const [meta,setMeta]=useState<Meta|null>(null)
  const [mes,setMes]=useState(new Date().toISOString().slice(0,7))
  const [valor,setValor]=useState('0')
  const [pedidos,setPedidos]=useState('0')
@@ -28,10 +26,9 @@ export default function VendasMetas(){
    supabase.from('erp_pedidos_venda').select('total,status').eq('empresa_id',id).gte('data_entrega_prometida',mes+'-01').lt('data_entrega_prometida',nextMonth.toISOString().slice(0,10))
   ])
   if(m.error||p.error){setMsg(m.error?.message||p.error?.message||'Falha ao carregar metas.');return}
-  setMeta((m.data??null) as Meta|null)
   setValor(String(Number(m.data?.meta_faturamento??0)))
   setPedidos(String(Number(m.data?.meta_pedidos??0)))
-  const validOrders=(p.data??[]).filter(x=>!String(x.status??'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').includes('cancel'))
+  const validOrders=(p.data??[]).filter(x=>!String(x.status??'').toLowerCase().includes('cancel'))
   setRealizado(validOrders.reduce((sum,row)=>sum+Number(row.total??0),0))
   setPedidosRealizados(validOrders.length)
  }
