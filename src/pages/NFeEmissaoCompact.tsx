@@ -276,7 +276,7 @@ export default function NFeEmissaoCompact() {
         throw new Error('A resposta não confirmou chave de acesso, protocolo e XML armazenado; a autorização não foi confirmada.')
       }
       setDocumentStatus('Autorizada')
-      setMessage(\`NF-e autorizada. Protocolo: \${data.protocolo_autorizacao}.\${data.danfe_disponivel ? ' DANFE disponível para download.' : ' O DANFE ainda não foi disponibilizado pelo integrador.'}\`)
+      setMessage(`NF-e autorizada. Protocolo: ${data.protocolo_autorizacao}.${data.danfe_disponivel ? ' DANFE disponível para download.' : ' O DANFE ainda não foi disponibilizado pelo integrador.'}`)
     } catch (cause) {
       const failure = cause instanceof Error ? cause.message : 'Falha na transmissão fiscal.'
       if (submittedDocumentId) {
@@ -286,10 +286,10 @@ export default function NFeEmissaoCompact() {
         ])
         if (persisted.error || persistedInvoice.error) {
           setDocumentStatus('Não confirmado')
-          setError(\`\${failure} Não foi possível confirmar o estado persistido; consulte a carteira fiscal antes de tentar novamente.\`)
+          setError(`${failure} Não foi possível confirmar o estado persistido; consulte a carteira fiscal antes de tentar novamente.`)
         } else if (persisted.data?.status === 'Processando' || persistedInvoice.data?.status === 'Processando') {
           setDocumentStatus('Processando')
-          setError(\`\${failure} O documento permanece em processamento; não retransmita até consultar as pendências.\`)
+          setError(`${failure} O documento permanece em processamento; não retransmita até consultar as pendências.`)
         } else if (
           persisted.data?.status === 'Autorizada' &&
           persistedInvoice.data?.status === 'Autorizada' &&
@@ -300,7 +300,7 @@ export default function NFeEmissaoCompact() {
           persisted.data.xml_storage_path === persistedInvoice.data.xml_autorizado_path
         ) {
           setDocumentStatus('Autorizada')
-          setError(\`\${failure} O banco registra autorização, chave, protocolo e XML compatíveis; confira a carteira fiscal antes de seguir.\`)
+          setError(`${failure} O banco registra autorização, chave, protocolo e XML compatíveis; confira a carteira fiscal antes de seguir.`)
         } else {
           setDocumentStatus(persisted.data?.status || persistedInvoice.data?.status || 'Não confirmado')
           setError(failure)
@@ -338,7 +338,7 @@ export default function NFeEmissaoCompact() {
       const url = URL.createObjectURL(download.data)
       const anchor = document.createElement('a')
       anchor.href = url
-      anchor.download = \`DANFE-\${field(form, 'numero') || documentId}.pdf\`
+      anchor.download = `DANFE-${field(form, 'numero') || documentId}.pdf`
       document.body.appendChild(anchor)
       anchor.click()
       anchor.remove()
