@@ -34,9 +34,18 @@ export default function PCPDashboardOEE() {
     setLoading(true)
     setError('')
     const since = new Date(Date.now() - Number(period) * 86400000).toISOString()
+    const company = await supabase.rpc('erp_current_empresa_id')
+    if (company.error || !company.data) {
+      setError(company.error?.message ?? 'Empresa da sessão não identificada.')
+      setRows([])
+      setOrdens([])
+      setLoading(false)
+      return
+    }
+    const empresaId = String(company.data)
     const [a, o] = await Promise.all([
-      supabase.from('erp_producao_apontamentos').select('ordem_producao_id,quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim').gte('inicio', since).limit(10000),
-      supabase.from('erp_ordens_producao').select('id,quantidade_planejada,velocidade_nominal_hora,tempo_estimado_horas').limit(10000),
+      supabase.from('erp_producao_apontamentos').select('ordem_producao_id,quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim').eq('empresa_id', empresaId).gte('inicio', since).limit(10000),
+      supabase.from('erp_ordens_producao').select('id,quantidade_planejada,velocidade_nominal_hora,tempo_estimado_horas').eq('empresa_id', empresaId).limit(10000),
     ])
     if (a.error || o.error) {
       setError(a.error?.message ?? o.error?.message ?? 'Falha ao carregar o OEE.')
