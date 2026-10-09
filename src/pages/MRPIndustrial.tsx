@@ -9,6 +9,7 @@ type Run={id:string;produto_raiz_id:string;quantidade_raiz:number;demanda_ref:st
 export default function MRPIndustrial(){
  const[products,setProducts]=useState<Product[]>([])
  const[runs,setRuns]=useState<Run[]>([])
+ const[companyId,setCompanyId]=useState('')
  const[needs,setNeeds]=useState<Need[]>([])
  const[productId,setProductId]=useState('')
  const[quantity,setQuantity]=useState('')
@@ -19,18 +20,23 @@ export default function MRPIndustrial(){
  async function load(){
   setBusy(true);setError('')
   try{
+   const company=await supabase.rpc('erp_current_empresa_id')
+   if(company.error||!company.data)throw company.error??new Error('Empresa da sessão não identificada.')
+   const tenantId=String(company.data)
+   setCompanyId(tenantId)
    const[p,r]=await Promise.all([
-    supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,fabricado').eq('ativo',true).order('codigo').limit(3000),
-    supabase.from('erp_mrp_runs').select('id,produto_raiz_id,quantidade_raiz,demanda_ref,status,created_at').order('created_at',{ascending:false}).limit(100)
+    supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,fabricado').eq('empresa_id',tenantId).eq('ativo',true).order('codigo').limit(3000),
+    supabase.from('erp_mrp_runs').select('id,produto_raiz_id,quantidade_raiz,demanda_ref,status,created_at').eq('empresa_id',tenantId).order('created_at',{ascending:false}).limit(100)
    ])
    if(p.error)throw p.error;if(r.error)throw r.error
    setProducts((p.data??[]) as Product[]);setRuns((r.data??[]) as Run[])
-   if(!selectedRun&&r.data?.[0]){setSelectedRun(r.data[0].id);await loadNeeds(r.data[0].id)}
+   if(!selectedRun&&r.data?.[0]){setSelectedRun(r.data[0].id);await loadNeeds(r.data[0].id,tenantId)}
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar MRP.')}finally{setBusy(false)}
  }
- async function loadNeeds(runId:string){
+ async function loadNeeds(runId:string, tenantId=companyId){
   setSelectedRun(runId)
-  const r=await supabase.from('erp_mrp_necessidades').select('id,componente_id,nivel,quantidade_bruta,estoque_atual,reservado,quantidade_disponivel,necessidade_liquida,sugestao').eq('run_id',runId).order('nivel').order('componente_id')
+  if(!tenantId){setError('Empresa da sessão não identificada.');return}
+  const r=await supabase.from('erp_mrp_necessidades').select('id,componente_id,nivel,quantidade_bruta,estoque_atual,reservado,quantidade_disponivel,necessidade_liquida,sugestao').eq('empresa_id',tenantId).eq('run_id',runId).order('nivel').order('componente_id')
   if(r.error)setError(r.error.message);else setNeeds((r.data??[]) as Need[])
  }
  useEffect(()=>{void load()},[])
@@ -45,7 +51,7 @@ export default function MRPIndustrial(){
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível executar o MRP.')}finally{setBusy(false)}
  }
  const productName=(id:string)=>{const p=products.find(x=>x.id===id);return p?p.codigo+' • '+p.nome:id}
- return <main className="industrial-form-page">
+ return <main className="industrial-form-page erp-global-surface erp-compact">
   <header className="process-sheet-header"><div><button className="industrial-secondary" type="button" onClick={()=>location.href='/pcp'}><ArrowLeft size={16}/> PCP</button><span className="industrial-eyebrow">PLANEJAMENTO • MRP MULTINÍVEL</span><h1>Necessidades de Materiais</h1><p>Explosão BOM → estoque disponível → necessidade líquida → sugestão de compra ou produção.</p></div><button className="industrial-secondary" onClick={()=>void load()} disabled={busy}><RefreshCw size={16}/> Atualizar</button></header>
   {(message||error)&&<div className={error?'error':'notice'} style={{margin:'12px 0'}}>{error||message}</div>}
   <section className="industrial-panel" style={{marginBottom:16}}>
