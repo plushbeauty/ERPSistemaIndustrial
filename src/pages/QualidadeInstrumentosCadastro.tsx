@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Plus, RefreshCw, Save, ShieldCheck, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import VendasLayout from './VendasLayout'
 
 type Instrument = {
   id?: string
@@ -115,7 +116,7 @@ export default function QualidadeInstrumentosCadastro() {
     }
   }
 
-  return <main className="erp-global-surface erp-compact min-h-screen bg-slate-50 text-slate-900">
+  return <VendasLayout title="Qualidade / Instrumentos" subtitle="Cadastro, calibração, status e rastreabilidade metrológica." showStatusCards={false}><main data-quality-workspace className="erp-global-surface erp-compact min-h-0 bg-slate-50 text-slate-900">
     <header className="border-b border-slate-700 bg-slate-900 px-3 py-2 text-white">
       <div className="mx-auto flex max-w-[1700px] flex-wrap items-center justify-between gap-2">
         <div><p className="text-[9px] font-medium uppercase tracking-widest text-sky-300">SGQ • METROLOGIA</p><h1 className="text-[15px] font-semibold">Instrumentos de Medição</h1><p className="text-[10px] text-slate-300">Cadastro por empresa; calibração e validade são controladas no módulo de metrologia.</p></div>
@@ -150,5 +151,5 @@ export default function QualidadeInstrumentosCadastro() {
       </div>
       <div className="flex items-center gap-2 text-[10px] text-slate-500"><ShieldCheck size={13}/> Nenhum instrumento de outra empresa é carregado, editado ou inativado por esta tela.</div>
     </div>
-  </main>
+  </main></VendasLayout>
 }
