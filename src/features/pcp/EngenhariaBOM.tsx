@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 
 type Product = { id: string; codigo: string; nome: string }
-type BomItem = { id: string; sku_insumo: string; qtd: number; unidade: string; custo_unitario: number; rendimento_percentual: number; perda_galvanica_percentual: number; perda_mecanica_percentual: number }
+type BomItem = { id: string; produto_pai_id: string; produto_id: string; sku_insumo: string; qtd: number; unidade: string; custo_unitario: number; rendimento_percentual: number; perda_galvanica_percentual: number; perda_mecanica_percentual: number }
+type BomTreeRow = BomItem & { depth: number }
 
 const inputClass = 'h-[30px] min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] text-slate-800 outline-none transition focus:border-sky-600 focus:ring-1 focus:ring-sky-600'
 const buttonClass = 'inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border px-2 text-[10px] font-medium transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sky-600 disabled:cursor-not-allowed disabled:opacity-50'
@@ -47,10 +48,10 @@ export default function EngenhariaBOM() {
       if (produtoPai) {
         const bomResult = await supabase
           .from('erp_pcp_bom_itens')
-          .select('id,sku_insumo,qtd,unidade,custo_unitario,rendimento_percentual,perda_galvanica_percentual,perda_mecanica_percentual')
+          .select('id,produto_pai_id,produto_id,sku_insumo,qtd,unidade,custo_unitario,rendimento_percentual,perda_galvanica_percentual,perda_mecanica_percentual')
           .eq('empresa_id', companyId)
-          .eq('produto_pai_id', produtoPai)
           .order('created_at')
+          .limit(5000)
         if (bomResult.error) throw bomResult.error
         setItens((bomResult.data ?? []) as BomItem[])
       } else {
@@ -109,7 +110,19 @@ export default function EngenhariaBOM() {
   }
 
   const quantidadePlanejada = (item: BomItem) => Number(item.qtd || 0) / (Number(item.rendimento_percentual || 100) / 100) * (1 + (Number(item.perda_galvanica_percentual || 0) + Number(item.perda_mecanica_percentual || 0)) / 100)
-  const custoTotal = itens.reduce((sum, item) => sum + quantidadePlanejada(item) * Number(item.custo_unitario || 0), 0)
+  const treeRows: BomTreeRow[] = []
+  const walkTree = (parentId: string, depth: number, path: Set<string>) => {
+    for (const item of itens.filter(row => row.produto_pai_id === parentId)) {
+      treeRows.push({ ...item, depth })
+      if (!path.has(item.produto_id)) {
+        const nextPath = new Set(path)
+        nextPath.add(item.produto_id)
+        walkTree(item.produto_id, depth + 1, nextPath)
+      }
+    }
+  }
+  if (produtoPai) walkTree(produtoPai, 0, new Set([produtoPai]))
+  const custoTotal = itens.filter(item => item.produto_pai_id === produtoPai).reduce((sum, item) => sum + quantidadePlanejada(item) * Number(item.custo_unitario || 0), 0)
   const produtoSelecionado = produtos.find(item => item.id === produtoPai)
 
   return (
@@ -173,7 +186,7 @@ export default function EngenhariaBOM() {
         <section className="overflow-hidden border border-slate-200 bg-white">
           <div className="flex h-[30px] items-center justify-between border-b border-slate-200 px-2">
             <h2 className="text-[10px] font-semibold uppercase tracking-wider">Componentes da estrutura</h2>
-            <span className="text-[10px] text-slate-500">{itens.length} componente(s)</span>
+            <span className="text-[10px] text-slate-500">{treeRows.length} item(ns) na árvore</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left text-[10px]">
@@ -191,9 +204,9 @@ export default function EngenhariaBOM() {
                 </tr>
               </thead>
               <tbody>
-                {itens.map(item => (
+                {treeRows.map(item => (
                   <tr key={item.id} className="h-[32px] border-t border-slate-100 hover:bg-slate-50/80">
-                    <td className="px-2">{item.sku_insumo}</td>
+                    <td className="px-2" style={{ paddingLeft: 8 + item.depth * 16 }}><span className="mr-1 text-slate-400">{item.depth > 0 ? "↳" : "•"}</span>{item.sku_insumo}{produtos.find(product => product.id === item.produto_id)?.nome ? <span className="ml-2 text-slate-500">{produtos.find(product => product.id === item.produto_id)?.nome}</span> : null}</td>
                     <td className="px-2 text-right tabular-nums">{Number(item.qtd).toLocaleString('pt-BR', { maximumFractionDigits: 6 })}</td>
                     <td className="px-2">{item.unidade}</td>
                     <td className="px-2 text-right tabular-nums">{Number(item.rendimento_percentual).toLocaleString('pt-BR', { maximumFractionDigits: 4 })}</td>
@@ -204,8 +217,8 @@ export default function EngenhariaBOM() {
                     <td className="px-2 text-right tabular-nums">{(quantidadePlanejada(item) * Number(item.custo_unitario)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                   </tr>
                 ))}
-                {!busy && itens.length === 0 ? <tr><td colSpan={9} className="h-[56px] px-2 text-center text-[10px] text-slate-500">Selecione um produto para consultar a estrutura ou adicione o primeiro componente.</td></tr> : null}
-                {busy && itens.length === 0 ? <tr><td colSpan={9} className="h-[32px] animate-pulse bg-slate-50 px-2 text-center text-[10px] text-slate-500">Carregando estrutura…</td></tr> : null}
+                {!busy && treeRows.length === 0 ? <tr><td colSpan={9} className="h-[56px] px-2 text-center text-[10px] text-slate-500">Selecione um produto para consultar a estrutura ou adicione o primeiro componente.</td></tr> : null}
+                {busy && treeRows.length === 0 ? <tr><td colSpan={9} className="h-[32px] animate-pulse bg-slate-50 px-2 text-center text-[10px] text-slate-500">Carregando estrutura…</td></tr> : null}
               </tbody>
               <tfoot className="border-t border-slate-200 bg-slate-50">
                 <tr className="h-[30px]"><td colSpan={8} className="px-2 text-right text-[9px] font-semibold uppercase tracking-wider">Custo estimado com rendimento e perdas</td><td className="px-2 text-right text-[10px] font-semibold tabular-nums">{custoTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td></tr>
