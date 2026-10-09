@@ -26,6 +26,7 @@ export default function QualidadeRNC() {
   const [selectedRnc, setSelectedRnc] = useState('')
   const [description, setDescription] = useState('')
   const [origin, setOrigin] = useState('Processo')
+  const [severity, setSeverity] = useState<'Menor' | 'Maior' | 'Critica'>('Menor')
   const [sectorId, setSectorId] = useState('')
   const [lot, setLot] = useState('')
   const [segregated, setSegregated] = useState('0')
@@ -84,7 +85,7 @@ export default function QualidadeRNC() {
       if (lotResult.error) throw lotResult.error
       if (!lotResult.data) throw new Error('Lote afetado não encontrado na empresa atual.')
       const result = await supabase.rpc('erp_sgq_abrir_rpnc', {
-        p_descricao: description.trim(), p_origem: origin, p_severidade: 'Menor', p_setor_id: sectorId,
+        p_descricao: description.trim(), p_origem: origin, p_severidade: severity, p_setor_id: sectorId,
         p_linked_entity_type: 'lote', p_linked_entity_id: lotResult.data.id,
       })
       if (result.error) throw result.error
@@ -159,9 +160,10 @@ export default function QualidadeRNC() {
         {(error || notice) && <div className={error ? 'sgq-message error' : 'sgq-message'}>{error || notice}</div>}
 
         {tab === 'rnc' && <section className="sgq-panel">
-          <div className="sgq-grid sgq-grid-5">
+          <div className="sgq-grid sgq-grid-6">
             <label className={label}>Código RNC<input className={field(false)} readOnly value={selected?.numero_rpnc ?? 'Gerado pelo banco'} /></label>
             <label className={label}>Origem<select className={field(false)} value={origin} onChange={(e) => setOrigin(e.target.value)}><option>Cliente</option><option>Processo</option><option>Fornecedor</option></select></label>
+            <label className={label}>Severidade<select className={field(false)} value={severity} onChange={(e) => setSeverity(e.target.value as typeof severity)}><option value="Menor">Menor</option><option value="Maior">Maior</option><option value="Critica">Crítica</option></select></label>
             <label className={label}>Setor responsável<select className={field(!sectorId)} value={sectorId} onChange={(e) => setSectorId(e.target.value)}><option value="">Preencher...</option>{sectors.map((sector) => <option key={sector.id} value={sector.id}>{sector.nome}</option>)}</select></label>
             <label className={label}>Lote afetado<input className={field(!lot && !selected)} value={lot} onChange={(e) => setLot(e.target.value)} placeholder="Preencher..." /></label>
             <label className={label}>Qtd. segregada<input className={field(false)} type="number" min="0" value={segregated} onChange={(e) => setSegregated(e.target.value)} /></label>
