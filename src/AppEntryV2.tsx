@@ -148,6 +148,7 @@ const QualidadeListaMestre = lazyPage(() => import('./pages/QualidadeListaMestre
 const QualidadeAuditoria5S = lazyPage(() => import('./pages/QualidadeAuditoria5S'), 'QualidadeAuditoria5S')
 const QualidadeMetodologia8D = lazyPage(() => import('./pages/QualidadeMetodologia8D'), 'QualidadeMetodologia8D')
 const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspecaoProcesso'), 'QualidadeInspecaoProcesso')
+const QualidadeEspecificacoes = lazyPage(() => import('./pages/QualidadeEspecificacoes'), 'QualidadeEspecificacoes')
 const MoldesFerramentaria = lazyPage(() => import('./pages/MoldesFerramentaria'), 'MoldesFerramentaria')
 const OperacaoIndustrial = lazyPage(() => import('./pages/OperacaoIndustrial'), 'OperacaoIndustrial')
 const InjecaoIndustrial = lazyPage(() => import('./pages/InjecaoIndustrial'), 'InjecaoIndustrial')
@@ -462,6 +463,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/dashboard-oee" element={<PCPDashboardOEE />} />
       <Route path="/pcp/tablet-operador" element={<PCPTabletOperador />} />
       <Route path="/qualidade" element={<QualidadeIndustrial />} />
+      <Route path="/qualidade/especificacoes" element={<QualidadeEspecificacoes />} />
       <Route path="/qualidade/instrumentos" element={<QualidadeIndustrial />} />
       <Route path="/qualidade/liberacao-lote" element={<AcompanhamentoNaoConformidade />} />
       <Route path="/qualidade/dashboard-rnc" element={<QualidadeDashboardRNC />} />
