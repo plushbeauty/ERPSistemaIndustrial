@@ -24,6 +24,7 @@ type Order = {
   data_entrada: string | null
   data_entrega_prometida: string | null
   cliente_id: string | null
+  vendedor_nome: string | null
   cliente: { nome: string; codigo: string | null } | null
 }
 
@@ -77,7 +78,7 @@ export default function VendasCentral() {
       if (tenant.error || !tenant.data) throw tenant.error ?? new Error('Empresa não identificada.')
       const result = await fetchAllPages((from, to) => supabase
         .from('erp_pedidos_venda')
-        .select('id,numero,pedido_cliente,status,total,data_entrada,data_entrega_prometida,cliente_id,cliente:erp_clientes(nome,codigo)', { count: 'exact' })
+        .select('id,numero,pedido_cliente,status,total,data_entrada,data_entrega_prometida,cliente_id,vendedor_nome,cliente:erp_clientes(nome,codigo)', { count: 'exact' })
         .eq('empresa_id', String(tenant.data))
         .order('numero', { ascending: false })
         .range(from, to))
@@ -121,7 +122,7 @@ export default function VendasCentral() {
   }), [orders])
 
   return (
-    <VendasLayout title="Pedidos de venda" showStatusCards={false}>
+    <VendasLayout title="Status do pedido" showStatusCards={false}>
       <main className="sales-workspace">
         {error && <div className="sales-alert" role="alert"><CircleAlert size={17} />{error}</div>}
 
@@ -170,6 +171,7 @@ export default function VendasCentral() {
                 <tr>
                   <th>Pedido</th>
                   <th>Cliente</th>
+                  <th>Vendedor</th>
                   <th>Data</th>
                   <th>Entrega prevista</th>
                   <th>Status</th>
@@ -189,6 +191,7 @@ export default function VendasCentral() {
                       <strong className="sales-client-name">{order.cliente?.nome ?? 'Cliente não identificado'}</strong>
                       {order.cliente?.codigo && <small className="sales-secondary-line">Cód. {order.cliente.codigo}</small>}
                     </td>
+                    <td>{order.vendedor_nome || '—'}</td>
                     <td>{formatDate(order.data_entrada)}</td>
                     <td>
                       <span className={isOverdue(order) ? 'sales-delivery sales-delivery--late' : 'sales-delivery'}>
@@ -201,7 +204,7 @@ export default function VendasCentral() {
                   </tr>
                 ))}
                 {!loading && visibleOrders.length === 0 && (
-                  <tr><td colSpan={6}>
+                  <tr><td colSpan={7}>
                     <div className="sales-empty-state">
                       <ClipboardList size={26} />
                       <strong>{query || filter !== 'todos' ? 'Nenhum pedido corresponde aos filtros.' : 'Nenhum pedido encontrado.'}</strong>
@@ -209,7 +212,7 @@ export default function VendasCentral() {
                     </div>
                   </td></tr>
                 )}
-                {loading && <tr><td colSpan={6} className="sales-loading-row" role="status">Carregando pedidos do ERP…</td></tr>}
+                {loading && <tr><td colSpan={7} className="sales-loading-row" role="status">Carregando pedidos do ERP…</td></tr>}
               </tbody>
             </table>
           </div>
