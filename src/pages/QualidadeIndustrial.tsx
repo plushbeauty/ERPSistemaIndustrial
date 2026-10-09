@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Check, ClipboardCheck, RefreshCw, Search, ShieldCheck, TriangleAlert, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
 import ColetaDimensionalCEP from '../components/ColetaDimensionalCEP'
 
@@ -85,28 +86,21 @@ export default function QualidadeIndustrial() {
       const id = String(current.data)
       setCompanyId(id)
       const [lotResult, supplierResult, productResult, specificationResult, instrumentResult, receivingResult, dimensionalResult] = await Promise.all([
-        supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,fornecedor_id,nf_numero,quantidade_recebida,status_inspecao').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
-        supabase.from('erp_fornecedores').select('id,razao_social').eq('empresa_id', id).order('razao_social').limit(500),
-        supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', id).eq('ativo', true).order('codigo').limit(2000),
-        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,tipo_inspecao,metodo_inspecao,instrumento_id,limite_inferior,limite_superior,frequencia,grupo_material,condicao_armazenamento,status,vigencia_inicio,vigencia_fim,aprovador_id,aprovado_em,revisao').eq('empresa_id', id).order('codigo').limit(2000),
-        supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao').eq('empresa_id', id).order('codigo').limit(1000),
-        supabase.from('erp_qualidade_inspecoes_recebimento').select('id,lote_id,fornecedor_id,tamanho_lote,nivel_inspecao,aql,tamanho_amostra,defeitos_encontrados,criterio_ac,criterio_re,status,created_at').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
-        supabase.from('erp_qualidade_inspecoes_dimensionais').select('id,inspecao_recebimento_id,plano_inspecao_id,numero_peca_amostrada,cavidade_molde,cota_nominal_mm,tolerancia_superior_mm,tolerancia_inferior_mm,valor_medido_mm,desvio_mm,status,instrumento').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
+        fetchAllPages<Lot>((from, to) => supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,fornecedor_id,nf_numero,quantidade_recebida,status_inspecao', { count: 'exact' }).eq('empresa_id', id).order('created_at', { ascending: false }).range(from, to)),
+        fetchAllPages<Supplier>((from, to) => supabase.from('erp_fornecedores').select('id,razao_social', { count: 'exact' }).eq('empresa_id', id).order('razao_social').range(from, to)),
+        fetchAllPages<Product>((from, to) => supabase.from('erp_produtos').select('id,codigo,nome', { count: 'exact' }).eq('empresa_id', id).eq('ativo', true).order('codigo').range(from, to)),
+        fetchAllPages<Specification>((from, to) => supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,nominal,tipo_inspecao,metodo_inspecao,instrumento_id,limite_inferior,limite_superior,frequencia,grupo_material,condicao_armazenamento,status,vigencia_inicio,vigencia_fim,aprovador_id,aprovado_em,revisao', { count: 'exact' }).eq('empresa_id', id).order('codigo').range(from, to)),
+        fetchAllPages<Instrument>((from, to) => supabase.from('erp_equipamentos_medicao').select('id,codigo,descricao,status,proxima_calibracao', { count: 'exact' }).eq('empresa_id', id).order('codigo').range(from, to)),
+        fetchAllPages<Receiving>((from, to) => supabase.from('erp_qualidade_inspecoes_recebimento').select('id,lote_id,fornecedor_id,tamanho_lote,nivel_inspecao,aql,tamanho_amostra,defeitos_encontrados,criterio_ac,criterio_re,status,created_at', { count: 'exact' }).eq('empresa_id', id).order('created_at', { ascending: false }).range(from, to)),
+        fetchAllPages<Dimensional>((from, to) => supabase.from('erp_qualidade_inspecoes_dimensionais').select('id,inspecao_recebimento_id,plano_inspecao_id,numero_peca_amostrada,cavidade_molde,cota_nominal_mm,tolerancia_superior_mm,tolerancia_inferior_mm,valor_medido_mm,desvio_mm,status,instrumento', { count: 'exact' }).eq('empresa_id', id).order('created_at', { ascending: false }).range(from, to)),
       ])
-      if (lotResult.error) throw lotResult.error
-      if (supplierResult.error) throw supplierResult.error
-      if (productResult.error) throw productResult.error
-      if (specificationResult.error) throw specificationResult.error
-      if (instrumentResult.error) throw instrumentResult.error
-      if (receivingResult.error) throw receivingResult.error
-      if (dimensionalResult.error) throw dimensionalResult.error
-      setLots((lotResult.data ?? []) as Lot[])
-      setSuppliers((supplierResult.data ?? []) as Supplier[])
-      setProducts((productResult.data ?? []) as Product[])
-      setSpecifications((specificationResult.data ?? []) as Specification[])
-      setInstruments((instrumentResult.data ?? []) as Instrument[])
-      setReceivings((receivingResult.data ?? []) as Receiving[])
-      setDimensionals((dimensionalResult.data ?? []) as Dimensional[])
+      setLots(lotResult)
+      setSuppliers(supplierResult)
+      setProducts(productResult)
+      setSpecifications(specificationResult)
+      setInstruments(instrumentResult)
+      setReceivings(receivingResult)
+      setDimensionals(dimensionalResult)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar Qualidade.')
     } finally {
