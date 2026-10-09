@@ -104,7 +104,7 @@ export default function FichaEngenharia(){
    const [bi,ro,qi]=await Promise.all([
     supabase.from('erp_ficha_itens').select('id,componente_id,quantidade,perda_percentual,lote_obrigatorio,tipo_item,sequencia').eq('empresa_id',empresaId).eq('ficha_id',current.id).order('sequencia'),
     supabase.from('erp_ficha_operacoes').select('id,sequencia,operacao,maquina_id,molde_id,setup_min,ciclo_seg,instrucoes').eq('empresa_id',empresaId).eq('ficha_id',current.id).order('sequencia'),
-    supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,status').eq('empresa_id',empresaId).eq('produto_id',id).order('codigo').limit(200)
+    supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,status,vigencia_inicio,vigencia_fim,aprovador_id,aprovado_em').eq('empresa_id',empresaId).eq('produto_id',id).eq('status','ativo').not('aprovador_id','is',null).not('aprovado_em','is',null).order('codigo').limit(200)
    ])
    if(bi.error)throw bi.error;if(ro.error)throw ro.error;if(qi.error)throw qi.error
    setBom((bi.data??[]).map(x=>({id:x.id,componente_id:x.componente_id,quantidade:String(x.quantidade),perda_percentual:String(x.perda_percentual),lote_obrigatorio:Boolean(x.lote_obrigatorio),tipo_item:x.tipo_item,sequencia:x.sequencia})))
