@@ -4,6 +4,7 @@ import { useSynqraLayout } from '../../layout/SynqraLayoutContext'
 const items = [
   ['Dashboard SGQ', '/qualidade/dashboard-rnc'],
   ['Qualidade Geral', '/qualidade'],
+  ['Especificações Técnicas', '/qualidade/especificacoes'],
   ['Inspeção em Processo', '/qualidade/inspecao-processo'],
   ['Registro RPNC / CAPA', '/qualidade/rnc'],
   ['8D — Ações Corretivas', '/qualidade/metodologia-8d'],
