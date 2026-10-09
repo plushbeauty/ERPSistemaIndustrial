@@ -41,6 +41,7 @@ declare
   v_duration_seconds numeric;
   v_shift_start timestamptz;
   v_shift_end timestamptz;
+  v_conflict_end timestamptz;
   v_hours_today numeric;
   v_remaining_after_today numeric;
   v_workdays numeric;
@@ -256,6 +257,52 @@ begin
           v_duration_seconds := greatest(0, extract(epoch from (v_row.fim_planejado - v_row.inicio_planejado)));
         end if;
         v_end := v_start + make_interval(secs => greatest(60, v_duration_seconds)::double precision);
+
+        -- A rescheduled program must not overlap the same mold on another machine.
+        if v_row.molde_id is not null then
+          loop
+            select p2.fim_planejado into v_conflict_end
+            from public.erp_pcp_programacoes p2
+            where p2.empresa_id = v_empresa
+              and p2.id <> v_row.id
+              and p2.maquina_id is distinct from v_machine_id
+              and p2.molde_id = v_row.molde_id
+              and lower(coalesce(p2.status, '')) not in ('cancelada','cancelado','concluída','concluida','concluído','concluido')
+              and p2.inicio_planejado < v_end
+              and p2.fim_planejado > v_start
+            order by p2.fim_planejado desc, p2.id
+            limit 1
+            for update;
+            if v_conflict_end is null then exit; end if;
+
+            v_start := v_conflict_end;
+            v_shift_start := date_trunc('day', v_start)
+              + (v_row.inicio_planejado - date_trunc('day', v_row.inicio_planejado));
+            if v_start < v_shift_start then
+              v_start := v_shift_start;
+            elsif v_start >= v_shift_start + v_daily_hours * interval '1 hour' then
+              v_start := v_shift_start + interval '1 day';
+              v_shift_start := v_shift_start + interval '1 day';
+            end if;
+            v_shift_end := v_shift_start + v_daily_hours * interval '1 hour';
+
+            if v_cycle > 0 then
+              v_hours_today := greatest(0, extract(epoch from (v_shift_end - v_start)) / 3600.0);
+              if v_run_hours <= v_hours_today then
+                v_duration_seconds := v_run_hours * 3600.0;
+              else
+                v_remaining_after_today := v_run_hours - v_hours_today;
+                v_workdays := ceil(v_remaining_after_today / v_daily_hours);
+                v_off_hours := greatest(0, 24 - v_daily_hours)
+                  + greatest(0, v_workdays - 1) * greatest(0, 24 - v_daily_hours);
+                v_duration_seconds := (v_hours_today + v_off_hours + v_remaining_after_today) * 3600.0;
+              end if;
+            else
+              v_duration_seconds := greatest(0, extract(epoch from (v_row.fim_planejado - v_row.inicio_planejado)));
+            end if;
+            v_end := v_start + make_interval(secs => greatest(60, v_duration_seconds)::double precision);
+          end loop;
+        end if;
 
         update public.erp_pcp_programacoes
         set inicio_planejado = v_start,
