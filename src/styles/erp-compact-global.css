@@ -486,6 +486,7 @@
 
 /* Engenharia / Ficha de Processo: densidade e controles iguais ao padrão Novo Pedido. */
 .process-sheet-page {
+  min-height: 0 !important;
   max-width: none !important;
   margin: 0 !important;
   padding: 8px !important;
