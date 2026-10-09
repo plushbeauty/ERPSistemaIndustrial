@@ -37,7 +37,9 @@ function validInstrument(item: Instrument): boolean {
   return item.status.toUpperCase() === 'APROVADO' && Boolean(item.proxima_calibracao && item.proxima_calibracao >= today)
 }
 
-export default function QualidadeInspecaoProcesso() {
+type InspectionKind = 'PROCESSO' | 'FINAL'
+
+export default function QualidadeInspecaoProcesso({ inspectionType = 'PROCESSO' }: { inspectionType?: InspectionKind }) {
   const [products, setProducts] = useState<Lookup[]>([])
   const [ops, setOps] = useState<Lookup[]>([])
   const [machines, setMachines] = useState<Machine[]>([])
@@ -95,7 +97,7 @@ export default function QualidadeInspecaoProcesso() {
   useEffect(() => { void load() }, [])
 
   const today = new Date().toISOString().slice(0, 10)
-  const isPlanEffective = (plan: Plan) => plan.tipo_inspecao === 'PROCESSO' && (plan.status ?? '').toUpperCase() === 'ATIVO' && Boolean(plan.aprovador_id) && (!plan.vigencia_inicio || plan.vigencia_inicio <= today) && (!plan.vigencia_fim || plan.vigencia_fim >= today) && (!['DIMENSIONAL','FUNCIONAL'].includes(plan.metodo_inspecao) || instruments.some(item => item.id === plan.instrumento_id && validInstrument(item)))
+  const isPlanEffective = (plan: Plan) => plan.tipo_inspecao === inspectionType && (plan.status ?? '').toUpperCase() === 'ATIVO' && Boolean(plan.aprovador_id) && (!plan.vigencia_inicio || plan.vigencia_inicio <= today) && (!plan.vigencia_fim || plan.vigencia_fim >= today) && (!['DIMENSIONAL','FUNCIONAL'].includes(plan.metodo_inspecao) || instruments.some(item => item.id === plan.instrumento_id && validInstrument(item)))
   const effectivePlans = plans.filter(isPlanEffective)
 
   function addMeasurement(plan: Plan) {
@@ -131,6 +133,7 @@ export default function QualidadeInspecaoProcesso() {
       const user = await supabase.auth.getUser()
       if (company.error || !company.data) throw company.error ?? new Error('Empresa não identificada.')
       if (!produto) throw new Error('Informe o produto.')
+      if (inspectionType === 'FINAL' && !lote) throw new Error('Inspeção final exige um lote de produto acabado rastreável.')
       const inspected = Number(quantidadeInspecionada)
       const approved = Number(quantidadeAprovada)
       const rejected = Number(quantidadeReprovada)
@@ -145,7 +148,7 @@ export default function QualidadeInspecaoProcesso() {
         throw new Error('O limite mínimo não pode ser maior que o limite máximo.')
       }
       const invalidPlan = medicoes.some(item => {
-        const plan = plans.find(candidate => candidate.id === item.plano_inspecao_id && candidate.produto_id === produto && candidate.tipo_inspecao === 'PROCESSO' && (candidate.status ?? '').toUpperCase() === 'ATIVO')
+        const plan = plans.find(candidate => candidate.id === item.plano_inspecao_id && candidate.produto_id === produto && candidate.tipo_inspecao === inspectionType && (candidate.status ?? '').toUpperCase() === 'ATIVO')
         if (!plan || !isPlanEffective(plan) || plan.metodo_inspecao !== item.metodo_inspecao) return true
         if (plan.metodo_inspecao === 'DIMENSIONAL' || plan.metodo_inspecao === 'FUNCIONAL') {
           return plan.nominal == null || item.nominal !== String(plan.nominal) || item.limite_inferior !== plan.limite_inferior || item.limite_superior !== plan.limite_superior
@@ -187,7 +190,7 @@ export default function QualidadeInspecaoProcesso() {
         lote_id: lote || null,
         ordem_producao_id: op || null,
         maquina_id: machine || null,
-        tipo: 'PROCESSO_METROLOGIA',
+        tipo: inspectionType === 'FINAL' ? 'FINAL' : 'PROCESSO_METROLOGIA',
         resultado: effectiveResult,
         quantidade_inspecionada: inspected,
         quantidade_aprovada: approved,
@@ -210,8 +213,8 @@ export default function QualidadeInspecaoProcesso() {
   }
 
   return <main data-quality-workspace className="erp-global-surface erp-compact min-h-screen bg-slate-100 text-slate-900">
-    <header className="border-b border-slate-700 bg-slate-900 px-4 py-3 text-white"><div className="mx-auto flex max-w-[1800px] items-center justify-between gap-3"><div><p className="text-sm font-extrabold uppercase tracking-widest text-sky-300">MÓDULO: QUALIDADE • INSPEÇÃO EM PROCESSO</p><h1 className="text-[15px] font-extrabold">Laudo de Inspeção de Produto</h1><p className="mt-1 text-sm text-slate-300">Inspeção ligada a produto, OP, máquina, instrumento calibrado e registros reais.</p></div><div className="flex flex-wrap gap-2"><button type="button" onClick={resetForm} className="rounded-[2px] border border-slate-500 px-4 py-3 text-[11px] font-extrabold text-white"><Plus className="mr-2 inline" size={18}/> NOVA INSPEÇÃO</button><button type="button" onClick={() => void save()} disabled={busy} className="rounded-[2px] bg-sky-600 px-5 py-3 text-[11px] font-extrabold text-white"><Save className="mr-2 inline" size={18}/> SALVAR LAUDO</button><button type="button" onClick={() => window.print()} className="rounded-[2px] border border-slate-500 px-4 py-3 text-[11px] font-extrabold text-white"><Printer className="mr-2 inline" size={18}/> IMPRIMIR</button></div></div></header>
-    <div className="mx-auto grid max-w-[1800px] grid-cols-1 gap-5 p-4 lg:grid-cols-[280px_minmax(0,1fr)]"><QualitySidebar active="/qualidade/inspecao-processo"/><section className="min-w-0 space-y-5">
+    <header className="border-b border-slate-700 bg-slate-900 px-4 py-3 text-white"><div className="mx-auto flex max-w-[1800px] items-center justify-between gap-3"><div><p className="text-[9px] font-medium uppercase tracking-widest text-sky-300">MÓDULO: QUALIDADE • {inspectionType === 'FINAL' ? 'INSPEÇÃO FINAL' : 'INSPEÇÃO EM PROCESSO'}</p><h1 className="text-[15px] font-semibold">Laudo de Inspeção {inspectionType === 'FINAL' ? 'Final' : 'em Processo'}</h1><p className="mt-1 text-[10px] text-slate-300">Critérios técnicos do produto, rastreabilidade de lote e medições conforme plano vigente.</p></div><div className="flex flex-wrap gap-2"><button type="button" onClick={resetForm} className="rounded-[2px] border border-slate-500 px-4 py-3 text-[11px] font-extrabold text-white"><Plus className="mr-2 inline" size={18}/> NOVA INSPEÇÃO</button><button type="button" onClick={() => void save()} disabled={busy} className="rounded-[2px] bg-sky-600 px-5 py-3 text-[11px] font-extrabold text-white"><Save className="mr-2 inline" size={18}/> SALVAR LAUDO</button><button type="button" onClick={() => window.print()} className="rounded-[2px] border border-slate-500 px-4 py-3 text-[11px] font-extrabold text-white"><Printer className="mr-2 inline" size={18}/> IMPRIMIR</button></div></div></header>
+    <div className="mx-auto grid max-w-[1800px] grid-cols-1 gap-5 p-4 lg:grid-cols-[280px_minmax(0,1fr)]"><QualitySidebar active={inspectionType === 'FINAL' ? '/qualidade/inspecao-final' : '/qualidade/inspecao-processo'}/><section className="min-w-0 space-y-5">
       {(error || notice) && <div className={error ? 'rounded-[2px] border border-red-200 bg-red-50 p-4 text-[11px] font-bold text-red-800' : 'rounded-[2px] border border-emerald-200 bg-emerald-50 p-4 text-[11px] font-bold text-emerald-800'}>{error || notice}</div>}
       <section className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm"><h2 className="text-[13px] font-extrabold">1. AMARRAÇÃO DE ENTIDADES DA PRODUÇÃO</h2><div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <EntityCodeLookup label="ITEM / PEÇA" value={produto} records={products} onChange={value => { setProduto(value); if (lote && lots.find(item => item.id === lote)?.produto_id !== value) setLote('') }} onSelect={record => { setProduto(record.id); if (lote && lots.find(item => item.id === lote)?.produto_id !== record.id) setLote('') }} required/>
