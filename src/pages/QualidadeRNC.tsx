@@ -79,9 +79,10 @@ export default function QualidadeRNC() {
     if (!Number.isFinite(segregatedQuantity) || segregatedQuantity < 0) { setError('A quantidade segregada deve ser zero ou maior.'); return }
     setBusy(true)
     try {
-      const lotResult = await supabase.from('erp_estoque_lotes').select('id').eq('empresa_id', companyId).or(`lote_interno.eq.${lot.trim()},lote_fornecedor.eq.${lot.trim()}`).maybeSingle()
+      const lotResult = await supabase.from('erp_estoque_lotes').select('id,quantidade_disponivel').eq('empresa_id', companyId).or(`lote_interno.eq.${lot.trim()},lote_fornecedor.eq.${lot.trim()}`).maybeSingle()
       if (lotResult.error) throw lotResult.error
       if (!lotResult.data) throw new Error('Lote afetado não encontrado na empresa atual.')
+      if (segregatedQuantity > Number(lotResult.data.quantidade_disponivel ?? 0)) throw new Error('A quantidade segregada não pode superar o saldo disponível do lote.')
       const result = await supabase.rpc('erp_sgq_abrir_rpnc', {
         p_descricao: description.trim(), p_origem: origin, p_severidade: 'Menor', p_setor_id: sectorId,
         p_linked_entity_type: 'lote', p_linked_entity_id: lotResult.data.id,
