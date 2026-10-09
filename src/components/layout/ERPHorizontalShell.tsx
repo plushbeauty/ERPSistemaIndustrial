@@ -18,12 +18,11 @@ const menus: MenuItem[] = [
   ] },
   { label: 'Vendas', route: '/vendas', children: [
     { label: 'Dashboard comercial', route: '/vendas' },
-    { label: 'Pedidos de venda', route: '/vendas/pedidos' },
-    { label: 'Novo pedido', route: '/vendas/novo-pedido' },
-    { label: 'Pedidos pendentes', route: '/vendas/pendentes' },
     { label: 'Status do pedido', route: '/vendas/status' },
-    { label: 'Carteira de pedidos', route: '/vendas/carteira' },
+    { label: 'Novo pedido', route: '/vendas/novo-pedido' },
     { label: 'PDV / venda rápida', route: '/vendas/pdv' },
+    { label: 'Catálogo digital', route: '/vendas/catalogo-digital' },
+    { label: 'Gestão do catálogo', route: '/vendas/catalogo-digital/gestao' },
     { label: 'Clientes', route: '/vendas/clientes' },
     { label: 'Orçamentos e custos', route: '/vendas/orcamentos' },
     { label: 'Análise de custos', route: '/vendas/analise-custos' },
@@ -189,7 +188,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-workspace-compact h3{font-size:13px!important;line-height:1.3!important;font-weight:500!important}
         .erp-horizontal-workspace-compact p{font-size:10px!important;line-height:1.4!important}
         .erp-horizontal-workspace-compact table{font-size:10px!important}
-        .erp-horizontal-workspace-compact th{font-size:9px!important;font-weight:500!important}
+        .erp-horizontal-workspace-compact tbody td{font-size:10px!important;line-height:1.25!important}
+        .erp-horizontal-workspace-compact thead th{font-size:9px!important;line-height:1.2!important;font-weight:500!important}
         .erp-horizontal-workspace-compact button{font-size:10px}
         .erp-horizontal-workspace-compact label{font-size:9px}
         .erp-horizontal-workspace-compact input,.erp-horizontal-workspace-compact select,.erp-horizontal-workspace-compact textarea{font-size:10px}
