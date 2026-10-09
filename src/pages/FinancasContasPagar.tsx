@@ -30,6 +30,7 @@ export default function FinancasContasPagar({ kind = 'PAGAR' }: Props) {
   useEffect(() => {
     let active = true
     void (async () => {
+      const year = new Date().getFullYear()
       const empresa = await supabase.rpc('erp_current_empresa_id')
       if (empresa.error || !empresa.data) { if(active) setError(empresa.error?.message ?? 'Empresa da sessão não localizada.'); return }
       const id = String(empresa.data)
