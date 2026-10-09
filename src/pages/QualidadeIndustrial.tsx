@@ -181,7 +181,7 @@ export default function QualidadeIndustrial() {
         const currentSpecs = specifications.filter(item => item.produto_id === lot.produto_id && item.tipo_inspecao === 'RECEBIMENTO' && isCurrentSpec(item))
         if (!currentSpecs.length) throw new Error('SEM ESPECIFICAÇÃO: o lote não pode ser aprovado automaticamente. Cadastre critérios técnicos vigentes para este produto na Qualidade > Especificações Técnicas.')
         if (currentSpecs.some(item => !isEffectiveSpec(item))) throw new Error('Liberação bloqueada: há especificação vigente sem aprovador válido ou com instrumento não aprovado/calibração vencida.')
-        if (currentSpecs.some(item => item.metodo_inspecao !== 'DIMENSIONAL')) throw new Error('Liberação bloqueada: inspeções VISUAL, FUNCIONAL ou DOCUMENTAL precisam de checklist de evidência dedicado antes da aprovação automática.')
+        if (currentSpecs.some(item => !['DIMENSIONAL','VISUAL'].includes(item.metodo_inspecao))) throw new Error('Liberação bloqueada: critérios FUNCIONAL/DOCUMENTAL exigem checklist de evidência dedicado; inspeção visual é controlada pela amostragem e critérios Ac/Re.')
         const activeSpecs = currentSpecs
         if (receiving.defeitos_encontrados > receiving.criterio_ac) throw new Error('A quantidade de defeitos excede o critério Ac; o lote não pode ser aprovado.')
         const dimensionalSpecs = activeSpecs.filter(item => item.metodo_inspecao === 'DIMENSIONAL')
