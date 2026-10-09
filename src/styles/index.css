@@ -117,3 +117,215 @@ table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!i
   mask-image:linear-gradient(to right,transparent 0,#000 16px,#000 calc(100% - 16px),transparent 100%);
   -webkit-mask-image:linear-gradient(to right,transparent 0,#000 16px,#000 calc(100% - 16px),transparent 100%);
 }
+
+
+/* PREMIUM INDUSTRIAL DENSITY — camada final comum aos workspaces operacionais.
+   Escopo deliberadamente restrito às telas ERP; autenticação e diálogos nativos permanecem intactos. */
+:root{
+  --erp-density-control:30px;
+  --erp-density-row:32px;
+  --erp-density-label:9px;
+  --erp-density-data:10px;
+  --erp-density-head:9px;
+  --erp-density-radius:2px;
+  --erp-density-focus:rgba(45,141,184,.14);
+}
+.erp-global-density,
+.module-workspace-v3,
+.industrial-form-page,
+.pcp-page,
+.process-sheet-page,
+.sgq-advanced,
+.erp-page-v3,
+.v7-content,
+.operational-frame-content,
+.erp4-demo{
+  font-size:10px!important;
+  color:#263943;
+}
+.erp-global-density :is(input,select,textarea,button),
+.module-workspace-v3 :is(input,select,textarea,button),
+.industrial-form-page :is(input,select,textarea,button),
+.pcp-page :is(input,select,textarea,button),
+.process-sheet-page :is(input,select,textarea,button),
+.sgq-advanced :is(input,select,textarea,button),
+.erp-page-v3 :is(input,select,textarea,button),
+.v7-content :is(input,select,textarea,button),
+.operational-frame-content :is(input,select,textarea,button),
+.erp4-demo :is(input,select,textarea,button){
+  box-sizing:border-box;
+  min-height:var(--erp-density-control)!important;
+  height:var(--erp-density-control);
+  border-radius:var(--erp-density-radius)!important;
+  font-size:10px!important;
+  line-height:1.2;
+}
+.erp-global-density :is(input,select,textarea),
+.module-workspace-v3 :is(input,select,textarea),
+.industrial-form-page :is(input,select,textarea),
+.pcp-page :is(input,select,textarea),
+.process-sheet-page :is(input,select,textarea),
+.sgq-advanced :is(input,select,textarea),
+.erp-page-v3 :is(input,select,textarea),
+.v7-content :is(input,select,textarea),
+.operational-frame-content :is(input,select,textarea),
+.erp4-demo :is(input,select,textarea){
+  padding:4px 8px!important;
+  border:1px solid #cbd5e1!important;
+  background:#fff!important;
+  color:#263943!important;
+}
+.erp-global-density :is(input,select,textarea):focus,
+.module-workspace-v3 :is(input,select,textarea):focus,
+.industrial-form-page :is(input,select,textarea):focus,
+.pcp-page :is(input,select,textarea):focus,
+.process-sheet-page :is(input,select,textarea):focus,
+.sgq-advanced :is(input,select,textarea):focus,
+.erp-page-v3 :is(input,select,textarea):focus,
+.v7-content :is(input,select,textarea):focus,
+.operational-frame-content :is(input,select,textarea):focus,
+.erp4-demo :is(input,select,textarea):focus{
+  border-color:#2d8db8!important;
+  outline:0;
+  box-shadow:0 0 0 1px var(--erp-density-focus)!important;
+}
+.erp-global-density label,
+.module-workspace-v3 label,
+.industrial-form-page label,
+.pcp-page label,
+.process-sheet-page label,
+.sgq-advanced label,
+.erp-page-v3 label,
+.v7-content label,
+.operational-frame-content label,
+.erp4-demo label,
+.erp-form-field>label,
+.erp-form-label{
+  display:block;
+  margin:0 0 2px!important;
+  color:#64748b!important;
+  font-size:9px!important;
+  font-weight:700!important;
+  line-height:11px!important;
+  letter-spacing:.08em!important;
+  text-transform:uppercase;
+}
+.erp-global-density :is(table,.industrial-table,.mw3-table-wrap table,.sgq-adv-table table),
+.module-workspace-v3 :is(table,.industrial-table,.mw3-table-wrap table),
+.industrial-form-page :is(table,.industrial-table),
+.pcp-page table,
+.process-sheet-page table,
+.sgq-advanced table,
+.erp-page-v3 table,
+.v7-content table,
+.operational-frame-content table,
+.erp4-demo table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:var(--erp-density-data)!important;
+}
+.erp-global-density :is(thead th,table th),
+.module-workspace-v3 :is(thead th,table th),
+.industrial-form-page :is(thead th,table th),
+.pcp-page :is(thead th,table th),
+.process-sheet-page :is(thead th,table th),
+.sgq-advanced :is(thead th,table th),
+.erp-page-v3 :is(thead th,table th),
+.v7-content :is(thead th,table th),
+.operational-frame-content :is(thead th,table th),
+.erp4-demo :is(thead th,table th){
+  height:var(--erp-density-row)!important;
+  padding:5px 8px!important;
+  background:#f1f5f7!important;
+  color:#536874!important;
+  font-size:var(--erp-density-head)!important;
+  font-weight:700!important;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  vertical-align:middle;
+  border-bottom:1px solid #dbe4e8!important;
+}
+.erp-global-density :is(tbody td,table td),
+.module-workspace-v3 :is(tbody td,table td),
+.industrial-form-page :is(tbody td,table td),
+.pcp-page :is(tbody td,table td),
+.process-sheet-page :is(tbody td,table td),
+.sgq-advanced :is(tbody td,table td),
+.erp-page-v3 :is(tbody td,table td),
+.v7-content :is(tbody td,table td),
+.operational-frame-content :is(tbody td,table td),
+.erp4-demo :is(tbody td,table td){
+  height:var(--erp-density-row)!important;
+  padding:4px 8px!important;
+  color:#263943!important;
+  font-size:var(--erp-density-data)!important;
+  line-height:1.25;
+  vertical-align:middle;
+  border-bottom:1px solid #e5ebee!important;
+}
+.erp-global-density tbody tr:hover,
+.module-workspace-v3 tbody tr:hover,
+.industrial-form-page tbody tr:hover,
+.pcp-page tbody tr:hover,
+.process-sheet-page tbody tr:hover,
+.sgq-advanced tbody tr:hover,
+.erp-page-v3 tbody tr:hover,
+.v7-content tbody tr:hover,
+.operational-frame-content tbody tr:hover,
+.erp4-demo tbody tr:hover{
+  background:rgba(245,247,248,.82)!important;
+}
+.erp-global-density :is(.industrial-panel,.mw3-card,.industrial-modal,.mw3-modal,.erp-card,.resource-card,.crud-list,.pcp-modern-panel),
+.module-workspace-v3 :is(.mw3-card,.mw3-actions,.mw3-table-wrap),
+.industrial-form-page .industrial-panel,
+.process-sheet-page .industrial-panel,
+.sgq-advanced :is(article,.sgq-adv-table){
+  border-radius:2px!important;
+  box-shadow:0 1px 2px rgba(15,23,42,.035)!important;
+}
+.erp-global-density :is(.industrial-primary,.industrial-secondary,.mw3-btn,.mw3-search button,.icon-button),
+.module-workspace-v3 :is(.mw3-btn,.mw3-action-strip button,.mw3-search button),
+.industrial-form-page :is(.industrial-primary,.industrial-secondary,.icon-button),
+.pcp-page :is(button),
+.process-sheet-page :is(button),
+.sgq-advanced :is(button){
+  min-height:30px!important;
+  height:30px;
+  padding:4px 9px!important;
+  border-radius:2px!important;
+  font-size:10px!important;
+  font-weight:600;
+}
+.erp-global-density :is(.mw3-table-wrap,.industrial-table-scroll,.sgq-adv-table),
+.module-workspace-v3 .mw3-table-wrap,
+.industrial-form-page .industrial-table-scroll{
+  border:1px solid #dbe4e8!important;
+  border-radius:2px!important;
+}
+.erp-global-density .mw3-empty,
+.module-workspace-v3 .mw3-empty{
+  min-height:96px;
+  padding:24px 12px!important;
+  font-size:10px!important;
+}
+.erp-global-density .mw3-table-wrap tbody:empty::after,
+.module-workspace-v3 .mw3-table-wrap tbody:empty::after{
+  content:"Nenhum registro encontrado";
+  display:table-cell;
+  padding:20px;
+  text-align:center;
+  color:#64748b;
+}
+@media(prefers-reduced-motion:no-preference){
+  .erp-global-density tbody tr,
+  .module-workspace-v3 tbody tr,
+  .industrial-form-page tbody tr,
+  .pcp-page tbody tr,
+  .process-sheet-page tbody tr,
+  .sgq-advanced tbody tr,
+  .erp-page-v3 tbody tr,
+  .v7-content tbody tr{transition:background-color .12s ease}
+}
+@media(max-width:700px){
+  .erp-global-density :is(.industrial-toolbar,.mw3-form-grid,.process-sheet-selector,.sgq-adv-form){gap:7px}
+}
