@@ -38,6 +38,7 @@ begin
       or new.vigencia_fim is distinct from old.vigencia_fim
       or new.responsavel_id is distinct from old.responsavel_id
       or new.aprovador_id is distinct from old.aprovador_id
+      or new.aprovado_em is distinct from old.aprovado_em
     ) then
       raise exception 'Especificação ativa é imutável. Crie uma nova revisão para alterar critérios.';
     end if;
@@ -119,7 +120,7 @@ begin
     and id <> v_spec.id;
 
   update public.erp_planos_inspecao
-  set status = 'ativo', aprovador_id = auth.uid()
+  set status = 'ativo', aprovador_id = auth.uid(), aprovado_em = now()
   where id = v_spec.id and empresa_id = v_spec.empresa_id
   returning * into v_spec;
 
