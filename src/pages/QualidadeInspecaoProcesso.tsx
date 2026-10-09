@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Plus, Printer, Save, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import VendasLayout from './VendasLayout'
 import { fetchAllPages } from '../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
 import QualitySidebar from '../components/quality/QualitySidebar'
@@ -221,7 +222,7 @@ export default function QualidadeInspecaoProcesso({ inspectionType = 'PROCESSO' 
     }
   }
 
-  return <main data-quality-workspace className="erp-global-surface erp-compact min-h-screen bg-slate-100 text-slate-900">
+  return <VendasLayout title="Qualidade / Inspeção de Processo" subtitle="Laudo de processo/final com características aprovadas, medições e RPNC." showStatusCards={false}><main data-quality-workspace className="erp-global-surface erp-compact min-h-0 bg-slate-100 text-slate-900">
     <header className="border-b border-slate-700 bg-slate-900 px-4 py-3 text-white"><div className="mx-auto flex max-w-[1800px] items-center justify-between gap-3"><div><p className="text-[9px] font-medium uppercase tracking-widest text-sky-300">MÓDULO: QUALIDADE • {inspectionType === 'FINAL' ? 'INSPEÇÃO FINAL' : 'INSPEÇÃO EM PROCESSO'}</p><h1 className="text-[15px] font-semibold">Laudo de Inspeção {inspectionType === 'FINAL' ? 'Final' : 'em Processo'}</h1><p className="mt-1 text-[10px] text-slate-300">Critérios técnicos do produto, rastreabilidade de lote e medições conforme plano vigente.</p></div><div className="flex flex-wrap gap-2"><button type="button" onClick={resetForm} className="rounded-[2px] border border-slate-500 px-4 py-3 text-[11px] font-extrabold text-white"><Plus className="mr-2 inline" size={18}/> NOVA INSPEÇÃO</button><button type="button" onClick={() => void save()} disabled={busy} className="rounded-[2px] bg-sky-600 px-5 py-3 text-[11px] font-extrabold text-white"><Save className="mr-2 inline" size={18}/> SALVAR LAUDO</button><button type="button" onClick={() => window.print()} className="rounded-[2px] border border-slate-500 px-4 py-3 text-[11px] font-extrabold text-white"><Printer className="mr-2 inline" size={18}/> IMPRIMIR</button></div></div></header>
     <div className="mx-auto grid max-w-[1800px] grid-cols-1 gap-5 p-4 lg:grid-cols-[280px_minmax(0,1fr)]"><QualitySidebar active={inspectionType === 'FINAL' ? '/qualidade/inspecao-final' : '/qualidade/inspecao-processo'}/><section className="min-w-0 space-y-5">
       {(error || notice) && <div className={error ? 'rounded-[2px] border border-red-200 bg-red-50 p-4 text-[11px] font-bold text-red-800' : 'rounded-[2px] border border-emerald-200 bg-emerald-50 p-4 text-[11px] font-bold text-emerald-800'}>{error || notice}</div>}
@@ -257,5 +258,5 @@ export default function QualidadeInspecaoProcesso({ inspectionType = 'PROCESSO' 
 
       <section className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm"><h2 className="text-[13px] font-extrabold">4. HISTÓRICO RECENTE</h2><div className="mt-4 overflow-x-auto"><table className="w-full min-w-[1000px] text-left text-sm"><thead className="bg-slate-900 text-white"><tr><th className="p-3">Tipo</th><th className="p-3">Resultado</th><th className="p-3">Inspecionada</th><th className="p-3">Aprovada</th><th className="p-3">Reprovada</th><th className="p-3">OP</th><th className="p-3">Ação</th></tr></thead><tbody>{history.map(item => <tr key={item.id} className="h-[54px] border-b border-slate-200"><td className="p-3">{item.tipo}</td><td className="p-3 font-bold">{item.resultado}</td><td className="p-3">{item.quantidade_inspecionada}</td><td className="p-3">{item.quantidade_aprovada}</td><td className="p-3">{item.quantidade_reprovada}</td><td className="p-3">{item.ordem_producao_id || '—'}</td><td className="p-3">{item.acao_bloqueio || '—'}</td></tr>)}{!history.length && <tr><td colSpan={7} className="p-6 text-center text-slate-600">Nenhuma inspeção registrada.</td></tr>}</tbody></table></div></section>
     </section></div>
-  </main>
+  </main></VendasLayout>
 }
