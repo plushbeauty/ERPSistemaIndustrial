@@ -81,7 +81,22 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
       return
     }
     setError('')
+    setSignedCertificate(null)
     setCertificado(file)
+  }
+
+  const prepareCertificateLink = async (path: string) => {
+    setError('')
+    setSuccess('')
+    try {
+      const result = await supabase.storage.from('documentos-erp').createSignedUrl(path, 60)
+      if (result.error) throw result.error
+      if (!result.data?.signedUrl) throw new Error('Não foi possível gerar o link temporário do certificado.')
+      setSignedCertificate({ path, url: result.data.signedUrl })
+      setSuccess('Link do certificado gerado. Ele expira em 60 segundos.')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao abrir o certificado.')
+    }
   }
 
   const efetivarEntrada = async (event: FormEvent<HTMLFormElement>) => {
@@ -144,11 +159,13 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
 
       const selected = products.find(product => product.id === produtoId)
       setSuccess(`Lote ${loteFornecedor.trim()} recebido com sucesso. ${numberFormat.format(quantidade)} ${selected?.unidade ?? 'kg'} integrados ao saldo físico.`)
+      setSignedCertificate(null)
       setNotaFiscal('')
       setLoteFornecedor('')
       setQuantidade(0)
       setCertificado(null)
       if (fileInputRef.current) fileInputRef.current.value = ''
+      await loadData()
     } catch (err) {
       if (certificatePath) {
         await supabase.storage.from('documentos-erp').remove([certificatePath])
