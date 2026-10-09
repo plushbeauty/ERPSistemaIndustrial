@@ -49,7 +49,7 @@ export default function PCPDemanda(){
    const checks=await Promise.all(targetRows.map(row=>supabase.from('erp_fichas_tecnicas').select('id,status,versao').eq('empresa_id',tenantId).eq('produto_id',row.id).eq('ativa',true).or('status.ilike.aprovada,status.ilike.liberada').order('versao',{ascending:false}).limit(1).maybeSingle()))
    const failedCheck=checks.find(result=>result.error)
    if(failedCheck?.error)throw failedCheck.error
-   const missing=targetRows.filter((row,index)=>!checks[index].data)
+   const missing=targetRows.filter((row,index)=>!checks[index]?.data)
    if(missing.length)throw new Error('Geração bloqueada: falta ficha de processo aprovada/liberada para '+missing.map(row=>row.codigo).join(', ')+'.')
    for(const row of targetRows){
     const pedidoId=row.pedidosIds.length===1?row.pedidosIds[0]:null
