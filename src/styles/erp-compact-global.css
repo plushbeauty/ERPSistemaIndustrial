@@ -209,3 +209,50 @@
   font-size: 10px;
   line-height: 1.4;
 }
+
+/* Inspeção em processo: compacto e coerente com o padrão de Novo Pedido. */
+[data-quality-workspace] label {
+  gap: 2px !important;
+  font-size: 9px !important;
+  line-height: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: .04em;
+}
+[data-quality-workspace] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+[data-quality-workspace] select {
+  box-sizing: border-box;
+  height: 30px !important;
+  min-height: 30px !important;
+  border-radius: 2px !important;
+  padding: 4px 7px !important;
+  font-size: 11px !important;
+}
+[data-quality-workspace] textarea {
+  min-height: 76px !important;
+  border-radius: 2px !important;
+  padding: 6px 7px !important;
+  font-size: 11px !important;
+}
+[data-quality-workspace] button {
+  min-height: 30px;
+  border-radius: 2px !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  font-size: 10px !important;
+}
+[data-quality-workspace] table {
+  border-collapse: collapse;
+  font-size: 10px;
+}
+[data-quality-workspace] th,
+[data-quality-workspace] td {
+  height: 32px;
+  padding: 4px 6px !important;
+  vertical-align: middle;
+}
+[data-quality-workspace] th {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
