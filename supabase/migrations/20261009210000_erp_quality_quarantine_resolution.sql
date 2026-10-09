@@ -62,6 +62,17 @@ begin
   for update;
   if not found then raise exception 'Lote de estoque vinculado à quarentena não foi encontrado.'; end if;
 
+  if p_decisao = 'LIBERADO' and exists (
+    select 1
+    from public.erp_rpnc r
+    where r.empresa_id = v_empresa
+      and lower(coalesce(r.sgq_vinculo_tipo, '')) = 'lote'
+      and r.sgq_vinculo_id = v_quarentena.lote_id
+      and lower(coalesce(r.status, '')) <> 'encerrada'
+  ) then
+    raise exception 'Liberação bloqueada: encerre a RPNC vinculada ao lote após validar as ações corretivas.';
+  end if;
+
   v_quantidade_retirada := coalesce(v_quarentena.quantidade_retirada, 0);
   if v_quarentena.lote_rastreabilidade_id is not null then
     select * into v_trace
