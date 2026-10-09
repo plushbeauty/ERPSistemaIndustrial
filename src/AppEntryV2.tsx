@@ -58,6 +58,7 @@ const AssistenteRetificacao = lazyPage(() => import('./features/controladoria/As
 const Master = lazyPage(() => import('./pages/Master'), 'Master')
 const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
 const PCPOrdens = lazyPage(() => import('./pages/PCPOrdens'), 'default')
+const PCPAcabamento = lazyPage(() => import('./pages/PCPAcabamento'), 'PCPAcabamento')
 const PCPParadas = lazyPage(() => import('./pages/PCPParadas'), 'PCPParadas')
 const PCPSequenciamento = lazyPage(() => import('./pages/PCPSequenciamento'), 'PCPSequenciamento')
 const PCPPlanejamentoIndustrial = lazyPage(() => import('./pages/PCPPlanejamentoIndustrial'), 'PCPPlanejamentoIndustrial')
@@ -456,6 +457,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/painel-ordens" element={<PainelOrdensProducao />} />
       <Route path="/pcp/apuracao-turno" element={<ApuracaoTurno />} />
       <Route path="/pcp/ordens" element={<PCPOrdens />} />
+      <Route path="/pcp/acabamento" element={<PCPAcabamento />} />
+      <Route path="/producao/acabamento" element={<PCPAcabamento />} />
       <Route path="/pcp/demanda" element={<PCPIndustrial />} />
       <Route path="/pcp/materiais" element={<PCPIndustrial />} />
       <Route path="/pcp/paradas" element={<PCPParadas />} />
