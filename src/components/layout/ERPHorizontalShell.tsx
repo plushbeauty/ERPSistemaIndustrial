@@ -46,7 +46,7 @@ const menus: MenuItem[] = [
     { label: 'Demanda / pedidos', route: '/pcp/demanda' },
     { label: 'Planejamento e capacidade', route: '/pcp/planejamento' },
     { label: 'Sequenciamento de máquinas', route: '/pcp/sequenciamento' },
-    { label: 'Programação / Gantt', route: '/pcp' },
+    { label: 'Programação / Gantt', route: '/pcp/programacao' },
     { label: 'Dashboard OEE', route: '/pcp/dashboard-oee' },
     { label: 'Apuração de turno', route: '/pcp/apuracao-turno' },
     { label: 'Apontamento no tablet', route: '/pcp/tablet-operador' },
@@ -211,7 +211,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-menu-item{position:relative;display:flex;align-items:stretch}
         .erp-horizontal-menu-button{height:31px;display:inline-flex;align-items:center;gap:3px;padding:0 10px;border:0;border-right:1px solid rgba(255,255,255,.18);background:#2D8DB8;color:#fff;font-size:10px;font-weight:500;cursor:pointer}
         .erp-horizontal-menu-button:hover,.erp-horizontal-menu-button.is-active{background:#17445A;color:#fff}
-        .erp-horizontal-dropdown{position:absolute;top:31px;left:0;min-width:210px;padding:4px 0;background:#fff;border:1px solid #b9cbd3;box-shadow:0 5px 14px rgba(18,59,80,.14)}
+        .erp-horizontal-dropdown{position:absolute;top:31px;left:0;min-width:240px;max-height:min(70vh,520px);overflow-y:auto;padding:4px 0;background:#fff;border:1px solid #b9cbd3;box-shadow:0 5px 14px rgba(18,59,80,.14)}
         .erp-horizontal-dropdown button{display:block;width:100%;min-height:29px;padding:5px 12px;border:0;background:#fff;color:#234d61;text-align:left;font-size:11px;cursor:pointer}
         .erp-horizontal-dropdown button:hover{background:#edf7fb;color:#1f7195}
         .erp-horizontal-workspace{min-width:0;min-height:calc(100vh - 78px);padding:8px;box-sizing:border-box}
