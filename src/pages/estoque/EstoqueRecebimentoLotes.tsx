@@ -216,7 +216,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
     let certificatePath = ''
     try {
       const safeName = certificado.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-      certificatePath = `empresas/${empresaId}/recebimento-lotes/${crypto.randomUUID()}-${safeName}`
+      certificatePath = `${empresaId}/recebimento-lotes/${crypto.randomUUID()}-${safeName}`
 
       const upload = await supabase.storage
         .from('documentos-erp')
