@@ -385,10 +385,6 @@
   letter-spacing: .045em;
   text-transform: uppercase;
 }
-[data-quality-workspace] section.rounded-\\[2px\\] {
-  border-radius: 2px !important;
-  box-shadow: none !important;
-}
 [data-quality-workspace] .p-5,
 [data-quality-workspace] .p-4 {
   padding: 8px !important;
