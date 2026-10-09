@@ -58,6 +58,7 @@ export default function PCPIndustrial(){
   '/pcp/demanda': 'pedidos',
   '/pcp/materiais': 'materiais',
   '/pcp/programacao': 'programacao',
+  '/pcp/capacidade': 'capacidade',
   '/pcp/apontamento': 'producao',
   '/pcp/nova-op': 'novaop'
  }
