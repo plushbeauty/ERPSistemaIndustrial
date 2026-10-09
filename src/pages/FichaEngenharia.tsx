@@ -66,22 +66,89 @@ export default function FichaEngenharia(){
  async function loadBase(){
   setLoading(true)
   try{
-    const payload={kind,processCode,processName,notes,spec,updatedAt:new Date().toISOString()}
-    const saved=await supabase.rpc('erp_salvar_ficha_tecnica_rascunho',{
-     p_produto_id:productId,
-     p_versao:Number(version),
-     p_codigo:processCode.trim()||null,
-     p_titulo:processName.trim()||null,
-     p_rendimento:Number(rendimento)||1,
-     p_unidade_rendimento:unit.trim()||'UN',
-     p_observacoes:payload,
-     p_itens:bom.map(x=>({componente_id:x.componente_id,quantidade:Number(x.quantidade),perda_percentual:Number(x.perda_percentual),lote_obrigatorio:x.lote_obrigatorio,tipo_item:x.tipo_item,sequencia:x.sequencia})),
-     p_operacoes:ops.map(x=>({sequencia:x.sequencia,operacao:x.operacao.trim(),maquina_id:x.maquina_id||null,molde_id:x.molde_id||null,setup_min:Number(x.setup_min),ciclo_seg:Number(x.ciclo_seg),instrucoes:x.instrucoes.trim()||null}))
-    })
-    if(saved.error)throw saved.error
-    const savedData=(Array.isArray(saved.data)?saved.data[0]:saved.data) as Ficha|null
-    if(!savedData?.id)throw new Error('O banco não retornou a revisão gravada.')
-setFicha(savedData);setRequestedVersion(Number(version));setCatalog(rows=>[{id:String(savedData.id),produto_id:productId,versao:Number(version),observacoes:JSON.stringify(payload),ativa:false,status:'rascunho',revisao:String(version)},...rows.filter(x=>x.id!==String(savedData.id))]);setNotice('Nova revisão gravada atomicamente em rascunho. A revisão aprovada anterior permanece disponível para o PCP até a Qualidade liberar esta versão.')
+   const empresaId=await company()
+   const [p,m,md,fc]=await Promise.all([
+    supabase.from('erp_produtos').select('id,codigo,nome,unidade').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(2000),
+    supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id',empresaId).not('status','eq','INATIVA').order('codigo').limit(500),
+    supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades,cavidades_ativas,ativo').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(1000),
+    supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,observacoes,ativa,status,revisao').eq('empresa_id',empresaId).order('updated_at',{ascending:false}).limit(1000)
+   ])
+   if(p.error)throw p.error;if(m.error)throw m.error;if(md.error)throw md.error;if(fc.error)throw fc.error
+   const productRows=(p.data??[]) as Product[]
+   setProducts(productRows);setMachines((m.data??[]) as Machine[]);setMolds((md.data??[]) as Mold[]);setCatalog((fc.data??[]) as {id:string;produto_id:string;versao:number;observacoes:string|null;ativa:boolean;status:string|null;revisao:string|null}[])
+   const requested=new URLSearchParams(window.location.search).get('produto')
+   if(requested){const byId=productRows.find(x=>x.id===requested);const byCode=productRows.find(x=>x.codigo.toLowerCase()===requested.toLowerCase());const target=byId||byCode;if(target){setProductId(target.id);setProductCode(target.codigo)}}
+  }catch(e){setNotice(errorText(e))}finally{setLoading(false)}
+ }
+
+ async function loadFicha(id:string, selectedKind:Kind|null=kind, targetVersion?:number){
+  if(!id||!selectedKind)return
+  setKind(selectedKind);setBusy(true);setNotice('')
+  try{
+   const empresaId=await company()
+   let query=supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,rendimento,unidade_rendimento,observacoes,ativa,status,revisao').eq('empresa_id',empresaId).eq('produto_id',id)
+   if(targetVersion!==undefined)query=query.eq('versao',targetVersion)
+   const f=await query.order('versao',{ascending:false}).limit(1).maybeSingle()
+   if(f.error)throw f.error
+   if(!f.data){
+    resetForm(true,id);setKind(selectedKind)
+    const qi=await supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,status').eq('empresa_id',empresaId).eq('produto_id',id).order('codigo').limit(200)
+    if(qi.error)throw qi.error
+    const loadedQuality:QualityRow[]=(qi.data??[]).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',nominal:x.nominal==null?'':String(x.nominal),limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status}))
+    setQuality(loadedQuality)
+    return
+   }
+   const current=f.data as Ficha
+   setFicha(current);setVersion(String(current.versao));setRequestedVersion(Number(current.versao));setRendimento(String(current.rendimento));setUnit(current.unidade_rendimento)
+   try{const j=JSON.parse(current.observacoes||'{}');setKind((j.kind||selectedKind) as Kind);setProcessCode(j.processCode||'');setProcessName(j.processName||'');setNotes(j.notes||'');setSpec(j.spec||{})}catch{setSpec({})}
+   const [bi,ro,qi]=await Promise.all([
+    supabase.from('erp_ficha_itens').select('id,componente_id,quantidade,perda_percentual,lote_obrigatorio,tipo_item,sequencia').eq('empresa_id',empresaId).eq('ficha_id',current.id).order('sequencia'),
+    supabase.from('erp_ficha_operacoes').select('id,sequencia,operacao,maquina_id,molde_id,setup_min,ciclo_seg,instrucoes').eq('empresa_id',empresaId).eq('ficha_id',current.id).order('sequencia'),
+    supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,nominal,limite_inferior,limite_superior,frequencia,status').eq('empresa_id',empresaId).eq('produto_id',id).order('codigo').limit(200)
+   ])
+   if(bi.error)throw bi.error;if(ro.error)throw ro.error;if(qi.error)throw qi.error
+   setBom((bi.data??[]).map(x=>({id:x.id,componente_id:x.componente_id,quantidade:String(x.quantidade),perda_percentual:String(x.perda_percentual),lote_obrigatorio:Boolean(x.lote_obrigatorio),tipo_item:x.tipo_item,sequencia:x.sequencia})))
+   setOps((ro.data??[]).map(x=>({id:x.id,sequencia:x.sequencia,operacao:x.operacao,maquina_id:x.maquina_id??'',molde_id:x.molde_id??'',setup_min:String(x.setup_min),ciclo_seg:String(x.ciclo_seg),instrucoes:x.instrucoes??''})))
+   const loadedQuality:QualityRow[]=(qi.data??[]).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',nominal:x.nominal==null?'':String(x.nominal),limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status}))
+   setQuality(loadedQuality)
+  }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
+ }
+
+ function resetForm(keepProduct=false,id=''){
+  setFicha(null);if(!keepProduct){setProductId('');setKind(null)}else setProductId(id)
+  setRequestedVersion(null);setVersion('1');setRendimento('1');setUnit('UN');setProcessCode('');setProcessName('');setNotes('');setSpec({});setBom([emptyBom()]);setOps([emptyOp()]);setQuality([])
+ }
+ function setS(k:string,v:string){setSpec(x=>({...x,[k]:v}))}
+ function setBomField(i:number,k:keyof BomRow,v:string|boolean){setBom(r=>r.map((x,n)=>n===i?{...x,[k]:v}:x))}
+ function setOpField(i:number,k:keyof OpRow,v:string|number){setOps(r=>r.map((x,n)=>n===i?{...x,[k]:v}:x))}
+ function setPhoto(key:'fotoPrincipal'|'fotoSecundaria',file:File|null){
+  if(!file)return
+  if(file.size>2*1024*1024){setNotice('A foto deve ter no máximo 2 MB.');return}
+  if(!file.type.startsWith('image/')){setNotice('Selecione um arquivo de imagem.');return}
+  const reader=new FileReader();reader.onload=()=>setS(key,String(reader.result));reader.readAsDataURL(file)
+ }
+
+ async function save(){
+  if(!kind)return setNotice('Selecione o tipo de ficha.')
+  if(!productId||!products.some(item=>item.id===productId))return setNotice('Selecione um produto real da empresa atual.')
+  if((kind==='PRENSADOS'||kind==='INJETADOS'||kind==='ESTAMPARIA')&&(!spec.moldeId||Number(spec.cavidades)<=0))return setNotice('Para Prensados, Injetados e Estampo, informe o molde/estampo e a quantidade de cavidades.')
+  if(bom.some(x=>!x.componente_id||Number(x.quantidade)<=0||Number(x.perda_percentual)<0))return setNotice('Preencha todos os materiais da BOM com quantidade e perda válidas.')
+  if(ops.some(x=>!x.operacao.trim()||Number(x.setup_min)<0||Number(x.ciclo_seg)<0))return setNotice('Preencha todas as operações e tempos.')
+  setBusy(true);setNotice('')
+  try{
+   const payload={kind,processCode,processName,notes,spec,updatedAt:new Date().toISOString()}
+   const saved=await supabase.rpc('erp_salvar_ficha_tecnica_rascunho',{
+    p_produto_id:productId,p_versao:Number(version),p_codigo:processCode.trim()||null,p_titulo:processName.trim()||null,
+    p_rendimento:Number(rendimento)||1,p_unidade_rendimento:unit.trim()||'UN',p_observacoes:payload,
+    p_itens:bom.map(x=>({componente_id:x.componente_id,quantidade:Number(x.quantidade),perda_percentual:Number(x.perda_percentual),lote_obrigatorio:x.lote_obrigatorio,tipo_item:x.tipo_item,sequencia:x.sequencia})),
+    p_operacoes:ops.map(x=>({sequencia:x.sequencia,operacao:x.operacao.trim(),maquina_id:x.maquina_id||null,molde_id:x.molde_id||null,setup_min:Number(x.setup_min),ciclo_seg:Number(x.ciclo_seg),instrucoes:x.instrucoes.trim()||null}))
+   })
+   if(saved.error)throw saved.error
+   const savedData=(Array.isArray(saved.data)?saved.data[0]:saved.data) as Ficha|null
+   if(!savedData?.id)throw new Error('O banco não retornou a revisão gravada.')
+   setFicha(savedData);setVersion(String(savedData.versao));setRequestedVersion(Number(savedData.versao))
+   setCatalog(rows=>[{id:String(savedData.id),produto_id:productId,versao:Number(savedData.versao),observacoes:JSON.stringify(payload),ativa:false,status:'rascunho',revisao:String(savedData.versao)},...rows.filter(x=>x.id!==String(savedData.id))])
+   setNotice('Nova revisão gravada atomicamente em rascunho. A revisão aprovada anterior permanece disponível para o PCP até a Qualidade liberar esta versão.')
   }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
  }
 
