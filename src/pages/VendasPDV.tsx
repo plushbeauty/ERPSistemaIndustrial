@@ -25,7 +25,7 @@ export default function VendasPDV(){
  const categories=useMemo(()=>{const values=products.map(product=>product.categoria).filter((value):value is string=>Boolean(value?.trim()));return Array.from(new Set(values)).sort((a,b)=>a.localeCompare(b,'pt-BR'))},[products])
  const visible=useMemo(()=>{const q=query.trim().toLowerCase();return products.filter(p=>(category==='TODOS'||p.categoria===category)&&(!q||p.codigo.toLowerCase().includes(q)||p.nome.toLowerCase().includes(q)||(p.codigo_barras||'').includes(q)))},[products,query,category])
  const subtotal=cart.reduce((s,i)=>s+i.quantidade*Number(i.preco_venda||0),0),disc=Math.min(subtotal,Math.max(0,Number(discount)||0)),total=subtotal-disc
- const add=(p:Product)=>{if(!p.permite_estoque_negativo&&p.estoque_atual<=0){setError(`Produto ${p.codigo} sem estoque disponível.`);return}setError('');setSaleKey(crypto.randomUUID());setCart(c=>{const found=c.find(i=>i.id===p.id);return found?c.map(i=>i.id===p.id?{...i,quantidade:i.quantidade+1}:i):[...c,{...p,quantidade:1}]})}
+ const add=(p:Product)=>{if(p.estoque_atual<=0){setError(`Produto ${p.codigo} sem estoque disponível.`);return}setError('');setSaleKey(crypto.randomUUID());setCart(c=>{const found=c.find(i=>i.id===p.id);return found?c.map(i=>i.id===p.id?{...i,quantidade:i.quantidade+1}:i):[...c,{...p,quantidade:1}]})}
  const finish=async()=>{
   if(!box){setError('Selecione o caixa operacional.');return}
   if(!cart.length){setError('Carrinho vazio.');return}

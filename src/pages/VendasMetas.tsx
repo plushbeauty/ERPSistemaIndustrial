@@ -40,10 +40,14 @@ export default function VendasMetas(){
   if(!empresa){setMsg('Empresa não identificada. Atualize a tela antes de gravar.');return}
   if(!Number.isFinite(faturamento)||faturamento<0||!Number.isInteger(quantidade)||quantidade<0){setMsg('Informe faturamento maior ou igual a zero e quantidade inteira de pedidos maior ou igual a zero.');return}
   setSaving(true)
-  const r=await supabase.from('erp_vendas_metas').upsert({empresa_id:empresa,competencia:mes+'-01',meta_faturamento:faturamento,meta_pedidos:quantidade},{onConflict:'empresa_id,competencia'})
-  setMsg(r.error?r.error.message:'Meta gravada com sucesso.')
-  if(!r.error)void load()
-  setSaving(false)
+  try{
+   const r=await supabase.from('erp_vendas_metas').upsert({empresa_id:empresa,competencia:mes+'-01',meta_faturamento:faturamento,meta_pedidos:quantidade},{onConflict:'empresa_id,competencia'})
+   if(r.error)throw r.error
+   setMsg('Meta gravada com sucesso.')
+   await load()
+  }catch(cause){
+   setMsg(cause instanceof Error?cause.message:'Não foi possível gravar as metas.')
+  }finally{setSaving(false)}
  }
 
  const pct=Number(valor)>0?Math.min((realizado/Number(valor))*100,999):0
