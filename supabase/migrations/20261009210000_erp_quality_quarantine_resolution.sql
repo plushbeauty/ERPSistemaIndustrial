@@ -74,7 +74,8 @@ begin
     end if;
   end if;
 
-  if p_decisao = 'LIBERADO' and v_quantidade_retirada > 0 then
+  if p_decisao = 'LIBERADO' then
+    if v_quantidade_retirada > 0 then
     if coalesce(v_lote.quantidade_disponivel, 0) > 0 then
       raise exception 'O lote já possui saldo disponível apesar de haver quantidade retida registrada; reconcilie antes de liberar.';
     end if;
@@ -117,6 +118,16 @@ begin
       set status_qualidade = 'APROVADO',
           quantidade_disponivel = coalesce(quantidade_disponivel, 0) + v_quantidade_retirada
       where id = v_quarentena.lote_rastreabilidade_id and empresa_id = v_empresa;
+    end if;
+    else
+      update public.erp_estoque_lotes
+      set status_inspecao = 'APROVADO'
+      where id = v_lote.id and empresa_id = v_empresa;
+      if v_quarentena.lote_rastreabilidade_id is not null then
+        update public.erp_estoque_lotes_rastreabilidade
+        set status_qualidade = 'APROVADO'
+        where id = v_quarentena.lote_rastreabilidade_id and empresa_id = v_empresa;
+      end if;
     end if;
   else
     if p_decisao in ('SUCATA','RETRABALHO') and coalesce(v_lote.quantidade_disponivel, 0) > 0 then
