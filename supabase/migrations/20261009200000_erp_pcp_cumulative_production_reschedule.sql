@@ -20,6 +20,7 @@ declare
   v_op record;
   v_conf uuid;
   v_boa numeric;
+  v_defeito_total numeric;
   v_acumulada numeric;
   v_saldo numeric;
   v_defeito jsonb;
@@ -58,6 +59,13 @@ begin
   end if;
   if jsonb_typeof(coalesce(p_defeitos, '[]'::jsonb)) is distinct from 'array' then
     raise exception 'Lista de defeitos inválida';
+  end if;
+  select coalesce(sum(greatest(0, coalesce(nullif(defect.value->>'quantidade', '')::numeric, 0))), 0)
+  into v_defeito_total
+  from jsonb_array_elements(coalesce(p_defeitos, '[]'::jsonb)) as defect(value)
+  where coalesce(btrim(defect.value->>'defeito'), '') <> '';
+  if abs(v_defeito_total - p_quantidade_defeituosa) > 0.000001 then
+    raise exception 'A soma das quantidades por defeito deve corresponder ao refugo informado.';
   end if;
   if p_localizacao_destino_id is not null and not exists (
     select 1 from public.erp_estoque_localizacoes l
