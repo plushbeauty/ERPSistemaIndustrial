@@ -36,6 +36,11 @@ export default function QualidadeInspecoesIndustrial() {
   const [amostra, setAmostra] = useState('1')
   const [resultado, setResultado] = useState<InspectionRow['resultado']>('aprovado')
   const [observacoes, setObservacoes] = useState('')
+  const [parametro, setParametro] = useState('')
+  const [nominal, setNominal] = useState('')
+  const [tolMais, setTolMais] = useState('')
+  const [tolMenos, setTolMenos] = useState('')
+  const [medido, setMedido] = useState('')
 
   async function load() {
     setLoading(true)
@@ -70,22 +75,25 @@ export default function QualidadeInspecoesIndustrial() {
 
   async function saveInspection() {
     setError(null)
-    if (!produtoId || !loteId || Number(quantidade) < 0 || Number(amostra) < 0) {
+    if (!produtoId || !loteId || Number(quantidade) < 0 || Number(amostra) < 0 || !parametro.trim() || nominal === '' || tolMais === '' || tolMenos === '' || medido === '') {
       setError('Informe item, lote, quantidade e tamanho de amostra válidos.')
       return
     }
+    const n = Number(nominal), plus = Number(tolMais), minus = Number(tolMenos), value = Number(medido)
+    if (![n, plus, minus, value].every(Number.isFinite) || plus < 0 || minus < 0) { setError('Informe medição e tolerâncias válidas.'); return }
+    const measurement = { numero_peca: 1, parametro: parametro.trim(), valor_nominal: n, tolerancia_superior: plus, tolerancia_inferior: minus, valor_medido: value, limite_superior: n + plus, limite_inferior: n - minus, status: value >= n - minus && value <= n + plus ? 'pass' : 'fail' }
     setSaving(true)
     const resultInsert = await supabase.from('qualidade_inspecoes').insert({
       tipo, produto_id: produtoId, lote_id: loteId,
-      quantidade_total: Number(quantidade), tamanho_amostra: Number(amostra),
-      resultado, observacoes: observacoes.trim() || null,
+      quantidade_total: Number(quantidade), tamanho_amostra: Number(amostra), medicoes: [measurement],
+      resultado: measurement.status === 'fail' ? 'reprovado' : resultado, observacoes: observacoes.trim() || null,
     })
     setSaving(false)
     if (resultInsert.error) {
       setError(resultInsert.error.message)
       return
     }
-    setObservacoes('')
+    setObservacoes(''); setParametro(''); setNominal(''); setTolMais(''); setTolMenos(''); setMedido('')
     await load()
   }
 
@@ -125,7 +133,7 @@ export default function QualidadeInspecoesIndustrial() {
           <label><span className={labelClass}>RESULTADO</span><select className={fieldClass} value={resultado} onChange={event => setResultado(event.target.value as InspectionRow['resultado'])}><option value="aprovado">Aprovado</option><option value="reprovado">Reprovado</option><option value="aprovado_com_restricao">Com restrição</option></select></label>
           <label><span className={labelClass}>QUANTIDADE TOTAL</span><input className={fieldClass} type="number" min="0" step="0.001" value={quantidade} onChange={event => setQuantidade(event.target.value)} /></label>
           <label><span className={labelClass}>TAMANHO DA AMOSTRA</span><input className={fieldClass} type="number" min="0" step="1" value={amostra} onChange={event => setAmostra(event.target.value)} /></label>
-          <label className="sm:col-span-3"><span className={labelClass}>OBSERVAÇÕES TÉCNICAS</span><input className={fieldClass} value={observacoes} onChange={event => setObservacoes(event.target.value)} maxLength={2000} /></label>
+          <label className="sm:col-span-3"><span className={labelClass}>OBSERVAÇÕES TÉCNICAS</span><input className={fieldClass} value={observacoes} onChange={event => setObservacoes(event.target.value)} maxLength={2000} /></label><label><span className={labelClass}>PARÂMETRO / COTA</span><input className={fieldClass} value={parametro} onChange={event => setParametro(event.target.value)} placeholder="Ex.: diâmetro" /></label><label><span className={labelClass}>VALOR NOMINAL</span><input className={fieldClass} type="number" step="any" value={nominal} onChange={event => setNominal(event.target.value)} /></label><label><span className={labelClass}>TOLERÂNCIA +</span><input className={fieldClass} type="number" min="0" step="any" value={tolMais} onChange={event => setTolMais(event.target.value)} /></label><label><span className={labelClass}>TOLERÂNCIA −</span><input className={fieldClass} type="number" min="0" step="any" value={tolMenos} onChange={event => setTolMenos(event.target.value)} /></label><label><span className={labelClass}>VALOR MEDIDO</span><input className={fieldClass} type="number" step="any" value={medido} onChange={event => setMedido(event.target.value)} /></label>
           <div className="flex items-end"><button className="h-[30px] w-full rounded-[2px] bg-sky-700 px-3 text-[10px] font-semibold text-white hover:bg-sky-800 disabled:opacity-50" onClick={() => void saveInspection()} disabled={saving || loading}>{saving ? 'Salvando…' : 'Salvar inspeção'}</button></div>
         </div>
         {error && <p role="alert" className="mt-2 flex items-center gap-1 text-[10px] text-red-700"><AlertTriangle size={13} /> {error}</p>}
