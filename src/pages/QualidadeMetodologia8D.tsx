@@ -163,7 +163,7 @@ export default function QualidadeMetodologia8D() {
 
   return (
     <VendasLayout title="Qualidade / Metodologia 8D" subtitle="Tratativa de anomalias • RPNC • causa raiz • ações corretivas e preventivas">
-    <main className="erp-global-surface erp-compact min-h-screen bg-slate-100 px-3 py-3 text-slate-900 sm:px-4">
+    <main data-quality-workspace className="erp-global-surface erp-compact min-h-0 bg-slate-50 p-2 text-slate-900">
       <div className="mx-auto max-w-[1800px]">
         <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-300 bg-white px-3 py-2">
           <div>
