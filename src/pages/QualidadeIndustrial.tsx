@@ -5,6 +5,7 @@ import VendasLayout from './VendasLayout'
 
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; fornecedor_id: string | null; nf_numero: string | null; quantidade_recebida: number; status_inspecao: string | null }
 type Supplier = { id: string; razao_social: string }
+type Specification = { id: string; produto_id: string; codigo: string; caracteristica: string; unidade: string | null; limite_inferior: number | null; limite_superior: number | null; frequencia: string | null; status: string | null }
 type Receiving = { id: string; lote_id: string; fornecedor_id: string | null; tamanho_lote: number; nivel_inspecao: 'G-II' | 'G-III'; aql: number; tamanho_amostra: number; defeitos_encontrados: number; criterio_ac: number; criterio_re: number; status: 'PENDENTE' | 'APROVADO' | 'BLOQUEADO'; created_at: string }
 type Dimensional = { id: string; inspecao_recebimento_id: string | null; numero_peca_amostrada: number; cavidade_molde: string | null; cota_nominal_mm: number; tolerancia_superior_mm: number; tolerancia_inferior_mm: number; valor_medido_mm: number | null; desvio_mm: number | null; status: 'PENDENTE' | 'OK' | 'NOK'; instrumento: string | null }
 type Genealogy = { id: string; lote_interno: string; lote_fornecedor: string | null; produto: string; fornecedor: string; operador: string; maquina: string; apontado_em: string | null; pedido: string | null }
@@ -46,6 +47,7 @@ export default function QualidadeIndustrial() {
   const [companyId, setCompanyId] = useState('')
   const [lots, setLots] = useState<Lot[]>([])
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [specifications, setSpecifications] = useState<Specification[]>([])
   const [receivings, setReceivings] = useState<Receiving[]>([])
   const [dimensionals, setDimensionals] = useState<Dimensional[]>([])
   const [selectedReceiving, setSelectedReceiving] = useState('')
@@ -79,18 +81,21 @@ export default function QualidadeIndustrial() {
       if (!current.data) throw new Error('Empresa da sessão não identificada.')
       const id = String(current.data)
       setCompanyId(id)
-      const [lotResult, supplierResult, receivingResult, dimensionalResult] = await Promise.all([
+      const [lotResult, supplierResult, specificationResult, receivingResult, dimensionalResult] = await Promise.all([
         supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,fornecedor_id,nf_numero,quantidade_recebida,status_inspecao').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
         supabase.from('erp_fornecedores').select('id,razao_social').eq('empresa_id', id).order('razao_social').limit(500),
+        supabase.from('erp_planos_inspecao').select('id,produto_id,codigo,caracteristica,unidade,limite_inferior,limite_superior,frequencia,status').eq('empresa_id', id).order('codigo').limit(2000),
         supabase.from('erp_qualidade_inspecoes_recebimento').select('id,lote_id,fornecedor_id,tamanho_lote,nivel_inspecao,aql,tamanho_amostra,defeitos_encontrados,criterio_ac,criterio_re,status,created_at').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
         supabase.from('erp_qualidade_inspecoes_dimensionais').select('id,inspecao_recebimento_id,numero_peca_amostrada,cavidade_molde,cota_nominal_mm,tolerancia_superior_mm,tolerancia_inferior_mm,valor_medido_mm,desvio_mm,status,instrumento').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
       ])
       if (lotResult.error) throw lotResult.error
       if (supplierResult.error) throw supplierResult.error
+      if (specificationResult.error) throw specificationResult.error
       if (receivingResult.error) throw receivingResult.error
       if (dimensionalResult.error) throw dimensionalResult.error
       setLots((lotResult.data ?? []) as Lot[])
       setSuppliers((supplierResult.data ?? []) as Supplier[])
+      setSpecifications((specificationResult.data ?? []) as Specification[])
       setReceivings((receivingResult.data ?? []) as Receiving[])
       setDimensionals((dimensionalResult.data ?? []) as Dimensional[])
     } catch (cause) {
@@ -144,12 +149,26 @@ export default function QualidadeIndustrial() {
     }
   }
 
-  const decide = async (decision: 'APROVAR' | 'BLOQUEAR') => {
-    if (!currentReceiving) return
+  const decide = async (decision: 'APROVAR' | 'BLOQUEAR', receivingId = selectedReceiving) => {
+    const receiving = receivings.find(row => row.id === receivingId)
+    if (!receiving) { setError('Selecione uma inspeção de recebimento válida.'); return }
     setBusy(true); setError(''); setNotice('')
     try {
-      const result = await supabase.rpc('erp_qms_decidir_inspecao_recebimento', { p_inspecao_id: currentReceiving.id, p_decisao: decision })
+      if (decision === 'APROVAR') {
+        const lot = lots.find(item => item.id === receiving.lote_id)
+        if (!lot) throw new Error('O lote da inspeção não está disponível na empresa atual.')
+        const activeSpecs = specifications.filter(item => item.produto_id === lot.produto_id && (item.status ?? '').toUpperCase() === 'ATIVO')
+        if (!activeSpecs.length) throw new Error('SEM ESPECIFICAÇÃO: o lote não pode ser aprovado automaticamente. Cadastre critérios técnicos vigentes para este produto na Engenharia/Qualidade.')
+        if (receiving.defeitos_encontrados > receiving.criterio_ac) throw new Error('A quantidade de defeitos excede o critério Ac; o lote não pode ser aprovado.')
+        if (activeSpecs.some(item => item.limite_inferior !== null || item.limite_superior !== null)) {
+          const measurements = dimensionals.filter(item => item.inspecao_recebimento_id === receiving.id)
+          if (!measurements.length) throw new Error('A especificação possui limites dimensionais; registre as medições da amostra antes de aprovar o lote.')
+          if (measurements.some(item => item.status !== 'OK')) throw new Error('Há medições dimensionais pendentes ou fora de especificação; o lote não pode ser aprovado.')
+        }
+      }
+      const result = await supabase.rpc('erp_qms_decidir_inspecao_recebimento', { p_inspecao_id: receiving.id, p_decisao: decision })
       if (result.error) throw result.error
+      setSelectedReceiving(receiving.id)
       setNotice(decision === 'APROVAR' ? 'Lote aprovado e liberado no status de inspeção.' : 'Lote bloqueado e enviado para quarentena.')
       await load()
     } catch (cause) {
@@ -274,7 +293,7 @@ export default function QualidadeIndustrial() {
             <label className={labelClass()}>Critério Re<input className={fieldClass(invalid === 'criteria')} type="number" min="1" value={re} onChange={(e) => { setRe(e.target.value); setInvalid(null) }} /></label>
             <div className="qms-actions"><button className="qms-btn" type="button" disabled={busy} onClick={() => void saveReceiving()}><ClipboardCheck size={13}/> REGISTRAR INSPEÇÃO</button></div>
           </div>
-          <div className="qms-table-wrap qms-mt"><table><thead><tr><th>Lote</th><th>NF</th><th>Fornecedor</th><th>Grau</th><th>AQL</th><th>Amostra</th><th>Def.</th><th>Ac</th><th>Re</th><th>Status</th><th>Ação</th></tr></thead><tbody>{receivings.map((row) => { const lot = lots.find((item) => item.id === row.lote_id); return <tr key={row.id}><td>{lot?.lote_interno || row.lote_id}</td><td>{lot?.nf_numero || '—'}</td><td>{supplierMap.get(row.fornecedor_id || '') || '—'}</td><td>{row.nivel_inspecao}</td><td className="num">{row.aql}</td><td className="num">{row.tamanho_amostra}</td><td className="num">{row.defeitos_encontrados}</td><td className="num">{row.criterio_ac}</td><td className="num">{row.criterio_re}</td><td><span className={row.status === 'APROVADO' ? 'status-ok' : row.status === 'BLOQUEADO' ? 'status-nok' : 'status-pending'}>{row.status}</span></td><td><button className="qms-mini" type="button" onClick={() => setSelectedReceiving(row.id)}>USAR</button>{row.status === 'PENDENTE' && <><button className="qms-mini approve" type="button" disabled={busy} onClick={() => void (setSelectedReceiving(row.id), decide('APROVAR'))}><Check size={12}/> APROVAR</button><button className="qms-mini block" type="button" disabled={busy} onClick={() => void (setSelectedReceiving(row.id), decide('BLOQUEAR'))}><X size={12}/> BLOQUEAR</button></>}</td></tr>})}</tbody></table></div>
+          <div className="qms-table-wrap qms-mt"><table><thead><tr><th>Lote</th><th>NF</th><th>Fornecedor</th><th>Grau</th><th>AQL</th><th>Amostra</th><th>Def.</th><th>Ac</th><th>Re</th><th>Status</th><th>Ação</th></tr></thead><tbody>{receivings.map((row) => { const lot = lots.find((item) => item.id === row.lote_id); return <tr key={row.id}><td>{lot?.lote_interno || row.lote_id}</td><td>{lot?.nf_numero || '—'}</td><td>{supplierMap.get(row.fornecedor_id || '') || '—'}</td><td>{row.nivel_inspecao}</td><td className="num">{row.aql}</td><td className="num">{row.tamanho_amostra}</td><td className="num">{row.defeitos_encontrados}</td><td className="num">{row.criterio_ac}</td><td className="num">{row.criterio_re}</td><td><span className={row.status === 'APROVADO' ? 'status-ok' : row.status === 'BLOQUEADO' ? 'status-nok' : 'status-pending'}>{row.status}</span></td><td><button className="qms-mini" type="button" onClick={() => setSelectedReceiving(row.id)}>USAR</button>{row.status === 'PENDENTE' && <><button className="qms-mini approve" type="button" disabled={busy} onClick={() => void decide('APROVAR', row.id)}><Check size={12}/> APROVAR</button><button className="qms-mini block" type="button" disabled={busy} onClick={() => void decide('BLOQUEAR', row.id)}><X size={12}/> BLOQUEAR</button></>}</td></tr>})}</tbody></table></div>
         </section>}
 
         {tab === 'dimensional' && <section className="qms-panel">
