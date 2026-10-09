@@ -29,6 +29,7 @@ type Machine={id:string;codigo:string;nome:string;tipo:string|null;status:string
 type FichaOp={id:string;ficha_id:string;sequencia:number;operacao:string;maquina_id:string|null;molde_id:string|null;setup_min:number;ciclo_seg:number}
 type Molde={id:string;codigo:string;nome:string;tipo:string;status:string;numero_cavidades:number;cavidades:number;cavidades_ativas:number}
 type Employee={id:string;matricula:string;nome:string;cargo:string|null;status:string}
+type Location={id:string;codigo:string;nome:string}
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number}
 type Ficha={id:string;produto_id:string;versao:number;rendimento:number;ativa:boolean;status:string|null}
 type FItem={id:string;ficha_id:string;componente_id:string;quantidade:number;perda_percentual:number;unidade_medida?:string}
@@ -76,7 +77,8 @@ export default function PCPIndustrial(){
  const [fichaOps,setFichaOps]=useState<FichaOp[]>([])
  const [molds,setMolds]=useState<Molde[]>([])
  const [employees,setEmployees]=useState<Employee[]>([])
- const [selectedOp,setSelectedOp]=useState(''),[found,setFound]=useState(''),[bad,setBad]=useState(''),[defectText,setDefectText]=useState(''),[destinationLocation,setDestinationLocation]=useState(''),[query,setQuery]=useState('')
+ const [locations,setLocations]=useState<Location[]>([])
+ const [selectedOp,setSelectedOp]=useState(''),[selectedProductionProgram,setSelectedProductionProgram]=useState(''),[found,setFound]=useState(''),[bad,setBad]=useState(''),[defectText,setDefectText]=useState(''),[destinationLocation,setDestinationLocation]=useState(''),[query,setQuery]=useState('')
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
  const [doubleMold,setDoubleMold]=useState(false),[nominalRate,setNominalRate]=useState('30'),[machineForAnalysis,setMachineForAnalysis]=useState(''),[analysisStart,setAnalysisStart]=useState('')
  const [profileName,setProfileName]=useState('UsuÃ¡rio'),[clock,setClock]=useState(new Date())
@@ -90,7 +92,7 @@ export default function PCPIndustrial(){
    if(company.error||!company.data)throw company.error??new Error('Empresa da sessão não identificada.')
    const empresaId=String(company.data)
    setCompanyId(empresaId)
-   const [o,cl,op,p,pr,m,d,f,fi,fo,mo,em]=await Promise.all([
+   const [o,cl,op,p,pr,m,d,f,fi,fo,mo,em,loc]=await Promise.all([
     fetchAllPages<Order>((from,to)=>supabase.from('erp_pedidos_venda').select('id,numero,cliente_id,status,total',{count:'exact'}).eq('empresa_id',empresaId).order('numero',{ascending:false}).range(from,to)),
     fetchAllPages<Client>((from,to)=>supabase.from('erp_clientes').select('id,nome,codigo',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('nome').range(from,to)),
     fetchAllPages<OP>((from,to)=>supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade,quantidade_planejada,quantidade_produzida,status,pedido_venda_id,data_prevista',{count:'exact'}).eq('empresa_id',empresaId).order('criado_em',{ascending:false}).range(from,to)),
@@ -102,9 +104,10 @@ export default function PCPIndustrial(){
     fetchAllPages<FItem>((from,to)=>supabase.from('erp_ficha_itens').select('id,ficha_id,componente_id,quantidade,perda_percentual',{count:'exact'}).eq('empresa_id',empresaId).order('sequencia').range(from,to)),
     fetchAllPages<FichaOp>((from,to)=>supabase.from('erp_ficha_operacoes').select('id,ficha_id,sequencia,operacao,maquina_id,molde_id,setup_min,ciclo_seg',{count:'exact'}).eq('empresa_id',empresaId).order('sequencia').range(from,to)),
     fetchAllPages<Molde>((from,to)=>supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,numero_cavidades,cavidades,cavidades_ativas',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to)),
-    fetchAllPages<Employee>((from,to)=>supabase.from('erp_funcionarios').select('id,matricula,nome,cargo,status',{count:'exact'}).eq('empresa_id',empresaId).eq('status','ativo').order('nome').range(from,to))
+    fetchAllPages<Employee>((from,to)=>supabase.from('erp_funcionarios').select('id,matricula,nome,cargo,status',{count:'exact'}).eq('empresa_id',empresaId).eq('status','ativo').order('nome').range(from,to)),
+    fetchAllPages<Location>((from,to)=>supabase.from('erp_estoque_localizacoes').select('id,codigo,nome',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to))
    ])
-   setOrders(o);setClients(cl);setOps(op);setProducts(p);setPrograms(pr);setMachines(m);setDefects(d);setFichas(f);setFitems(fi);setFichaOps(fo);setMolds(mo);setEmployees(em)
+   setOrders(o);setClients(cl);setOps(op);setProducts(p);setPrograms(pr);setMachines(m);setDefects(d);setFichas(f);setFitems(fi);setFichaOps(fo);setMolds(mo);setEmployees(em);setLocations(loc)
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar PCP.')}finally{setBusy(false)}
  }
  useEffect(()=>{void load()},[])
@@ -168,7 +171,7 @@ export default function PCPIndustrial(){
   if(mold?.status?.toUpperCase().includes('MANUT')){setError('O molde selecionado estÃ¡ em manutenÃ§Ã£o e nÃ£o pode receber programaÃ§Ã£o.');return}
   const start=new Date(progForm.inicio)
   const end=new Date(progForm.fim)
-  const activePrograms=programs.filter(p=>p.status.toLowerCase()!=='cancelada')
+  const activePrograms=programs.filter(p=>!['cancelada','cancelado','concluída','concluida','concluído','concluido'].includes(p.status.toLowerCase()))
   const overlaps=(p:Program)=>start<new Date(p.fim_planejado)&&end>new Date(p.inicio_planejado)
   const machineConflict=activePrograms.some(p=>p.maquina_id===progForm.maquina_id&&overlaps(p))
   if(machineConflict){setError('Conflito de horÃ¡rio: a injetora jÃ¡ possui uma programaÃ§Ã£o nesse intervalo.');return}
@@ -192,17 +195,23 @@ export default function PCPIndustrial(){
 
  async function confirmProduction(){
   if(!selectedOp){setError('Selecione uma OP.');return}
+  const productionPrograms=programs.filter(p=>p.ordem_producao_id===selectedOp&&!['cancelada','cancelado','concluída','concluida','concluído','concluido'].includes(String(p.status||'').toLowerCase()))
+  if(!productionPrograms.length){setError('A OP precisa ter uma programação ativa antes do apontamento de produção.');return}
+  if(!selectedProductionProgram||!productionPrograms.some(p=>p.id===selectedProductionProgram)){setError('Selecione a programação/máquina em que a produção foi realizada.');return}
   const f=Number(found),b=Number(bad)
-  if(f<0||b<0||b>f){setError('Quantidade encontrada/defeituosa invÃ¡lida.');return}
+  if(!Number.isFinite(f)||!Number.isFinite(b)||f<=0||b<0||b>f){setError('Quantidade encontrada deve ser maior que zero; quantidade defeituosa deve ficar entre zero e a encontrada.');return}
+  if(f>b&&!destinationLocation){setError('Selecione o endereço de destino para entrada do produto bom no estoque.');return}
   const defectsJson=defectText.split('\n').map(x=>x.trim()).filter(Boolean).map(x=>{const parts=x.split(':');return{defeito:parts[0].trim(),quantidade:Number(parts[1]||0),observacao:parts.slice(2).join(':').trim()||null}}).filter(x=>x.defeito&&x.quantidade>0)
-  setBusy(true);setError('')
+  const defectTotal=defectsJson.reduce((sum,item)=>sum+item.quantidade,0)
+  if((b>0&&defectTotal!==b)||(b===0&&defectTotal>0)){setError('A soma das quantidades por defeito deve ser igual à quantidade defeituosa informada.');return}
+  setBusy(true);setError('');setMessage('')
   try{
-   const {data,error}=await supabase.rpc('erp_registrar_conferencia_producao',{p_ordem_producao_id:selectedOp,p_quantidade_encontrada:f,p_quantidade_defeituosa:b,p_defeitos:defectsJson,p_localizacao_destino_id:destinationLocation||null,p_acabamento:false,p_observacao:'ConferÃªncia realizada no PCP'})
+   const {data,error}=await supabase.rpc('erp_pcp_registrar_conferencia_producao',{p_ordem_producao_id:selectedOp,p_programacao_id:selectedProductionProgram,p_quantidade_encontrada:f,p_quantidade_defeituosa:b,p_defeitos:defectsJson,p_localizacao_destino_id:destinationLocation||null,p_acabamento:false,p_observacao:'Conferência realizada no PCP; saldo e calendário recalculados atomicamente'})
    if(error)throw error
-   const r=data as {quantidade_boa?:number;saldo_producao?:number}
-   setMessage('ConferÃªncia registrada: '+Number(r.quantidade_boa||0)+' boas, '+b+' em refugo. Saldo de produÃ§Ã£o: '+Number(r.saldo_producao||0)+'.')
+   const r=data as {quantidade_boa?:number;quantidade_produzida_acumulada?:number;saldo_producao?:number;programacoes_recalculadas?:number}
+   setMessage('Conferência registrada: '+Number(r.quantidade_boa||0)+' boas nesta entrada; produção acumulada '+Number(r.quantidade_produzida_acumulada||0)+', refugo '+b+' e saldo OP '+Number(r.saldo_producao||0)+'. Programações recalculadas: '+Number(r.programacoes_recalculadas||0)+'.')
    setFound('');setBad('');setDefectText('');await load()
-  }catch(e){setError(e instanceof Error?e.message:'NÃ£o foi possÃ­vel registrar a produÃ§Ã£o.')}finally{setBusy(false)}
+  }catch(e){setError(e instanceof Error?e.message:'Não foi possível registrar a produção.')}finally{setBusy(false)}
  }
 
  const analysisMachine=machines.find(m=>m.id===machineForAnalysis)||machines[0]
@@ -222,6 +231,10 @@ export default function PCPIndustrial(){
   const next = routeTabMap[location.pathname] ?? 'visao'
   setTab((current)=> current === next ? current : next)
  },[location.pathname, routeTabMap])
+ useEffect(()=>{
+  const candidates=programs.filter(p=>p.ordem_producao_id===selectedOp&&!['cancelada','cancelado','concluída','concluida','concluído','concluido'].includes(String(p.status||'').toLowerCase()))
+  setSelectedProductionProgram(current=>current&&candidates.some(p=>p.id===current)?current:candidates.length===1?candidates[0].id:'')
+ },[selectedOp,programs])
  useEffect(()=>{
   const estimatedEnd = estimateProgramEnd({
    start: progForm.inicio,
@@ -349,13 +362,14 @@ const tabs:[Tab,string,string][]=[['visao','VisÃ£o geral','Gauge'],['novaop','
    <section className="rounded-md border border-slate-200 bg-white p-5 shadow-sm">
     <div className="mb-5 flex items-start justify-between gap-4 border-b border-slate-200 pb-4"><div><span className="text-sm font-extrabold uppercase tracking-wider text-sky-700">CONFERÃŠNCIA DE PRODUÃ‡ÃƒO</span><h2 className="mt-1 text-2xl font-extrabold text-slate-900">Apontamento de ProduÃ§Ã£o</h2><p className="mt-1 text-base text-slate-600">Registre exatamente o que saiu da fÃ¡brica nesta OP.</p></div><InlineIcon name="Play" size={26}/></div>
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-     <div className="md:col-span-2"><EntityCodeLookup label="OP" value={selectedOp} records={ops.map(o=>({id:o.id,codigo:o.numero_op,nome:'Planejado '+o.quantidade}))} onChange={setSelectedOp} onSelect={o=>setSelectedOp(o.id)} helper="Digite o nÃºmero da OP ou use a lupa."/></div>
+     <div className="md:col-span-2"><EntityCodeLookup label="OP" value={selectedOp} records={ops.map(o=>({id:o.id,codigo:o.numero_op,nome:'Planejado '+o.quantidade}))} onChange={value=>{setSelectedOp(value);setSelectedProductionProgram('')}} onSelect={o=>{setSelectedOp(o.id);setSelectedProductionProgram('')}} helper="Digite o número da OP ou use a lupa."/></div>
+     <label className="grid gap-2 text-sm font-extrabold text-slate-800 md:col-span-2">PROGRAMAÇÃO / MÁQUINA<select className="min-h-12 rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600" value={selectedProductionProgram} onChange={e=>setSelectedProductionProgram(e.target.value)}><option value="">Selecione a programação ativa</option>{programs.filter(p=>p.ordem_producao_id===selectedOp&&!['cancelada','cancelado','concluída','concluida','concluído','concluido'].includes(String(p.status||'').toLowerCase())).map(p=><option key={p.id} value={p.id}>{machines.find(m=>m.id===p.maquina_id)?.codigo||'Máquina'} · {new Date(p.inicio_planejado).toLocaleString('pt-BR')} · saldo {Math.max(0,Number(p.quantidade_planejada||0)-Number(p.quantidade_produzida||0))}</option>)}</select></label>
      <label className="grid gap-2 text-sm font-extrabold text-slate-800">QUANTIDADE ENCONTRADA<input className="min-h-12 rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100" type="number" min="0" step="any" value={found} onChange={e=>setFound(e.target.value)} inputMode="decimal"/></label>
      <label className="grid gap-2 text-sm font-extrabold text-slate-800">QUANTIDADE DEFEITUOSA<input className="min-h-12 rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100" type="number" min="0" step="any" value={bad} onChange={e=>setBad(e.target.value)} inputMode="decimal"/></label>
-     <label className="grid gap-2 text-sm font-extrabold text-slate-800 md:col-span-2">LOCALIZAÃ‡ÃƒO DE DESTINO<input className="min-h-12 rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100" value={destinationLocation} onChange={e=>setDestinationLocation(e.target.value)} placeholder="CÃ³digo da localizaÃ§Ã£o do estoque"/></label>
+     <label className="grid gap-2 text-sm font-extrabold text-slate-800 md:col-span-2">LOCALIZAÇÃO DE DESTINO<select className="min-h-12 rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600" value={destinationLocation} onChange={e=>setDestinationLocation(e.target.value)}><option value="">Selecione endereço ativo</option>{locations.map(location=><option key={location.id} value={location.id}>{location.codigo} · {location.nome}</option>)}</select></label>
      <label className="grid gap-2 text-sm font-extrabold text-slate-800 md:col-span-2">DETALHES DE QUALIDADE<textarea className="min-h-32 rounded-md border border-slate-300 bg-white p-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100" rows={4} value={defectText} onChange={e=>setDefectText(e.target.value)} placeholder="Defeito:quantidade:observaÃ§Ã£o â€” um por linha"/></label>
     </div>
-    <div className="mt-5 flex items-center justify-between gap-3 border-t border-slate-200 pt-4"><span className="text-base font-semibold text-slate-600">Boa = encontrada âˆ’ defeituosa.</span><button type="button" className="rounded-md bg-sky-700 px-6 py-3 text-base font-extrabold text-white shadow-sm hover:bg-sky-600 disabled:opacity-50" disabled={busy||!selectedOp} onClick={()=>void confirmProduction()}><InlineIcon name="Play" size={21}/>{busy?'LanÃ§andoâ€¦':'CONFERIR E LANÃ‡AR'}</button></div>
+    <div className="mt-5 flex items-center justify-between gap-3 border-t border-slate-200 pt-4"><span className="text-base font-semibold text-slate-600">Boa = encontrada âˆ’ defeituosa.</span><button type="button" className="rounded-md bg-sky-700 px-6 py-3 text-base font-extrabold text-white shadow-sm hover:bg-sky-600 disabled:opacity-50" disabled={busy||!selectedOp||!selectedProductionProgram} onClick={()=>void confirmProduction()}><InlineIcon name="Play" size={21}/>{busy?'LanÃ§andoâ€¦':'CONFERIR E LANÃ‡AR'}</button></div>
    </section>
    <section className="rounded-md border border-slate-200 bg-slate-900 p-5 text-white shadow-sm"><div className="mb-5 border-b border-slate-700 pb-4"><span className="text-sm font-extrabold uppercase tracking-wider text-sky-300">STATUS UNIFICADO DA OP</span><h2 className="mt-1 text-2xl font-extrabold text-white">{current?current.numero_op:'Selecione uma OP'}</h2><p className="mt-1 text-base text-slate-300">{current?'Indicadores das programaÃ§Ãµes e apontamentos reais.':'Digite ou consulte uma OP para acompanhar os nÃºmeros.'}</p></div>
     <div className="grid grid-cols-2 gap-3"><article className="rounded-md border border-slate-700 bg-slate-800 p-4"><small className="text-sm font-bold text-slate-300">PLANEJADO</small><strong className="mt-3 block text-4xl font-extrabold text-white">{current?.quantidade??0}</strong><em className="mt-1 block text-sm not-italic text-slate-400">Plano da OP</em></article><article className="rounded-md border border-slate-700 bg-slate-800 p-4"><small className="text-sm font-bold text-slate-300">ENCONTRADO</small><strong className="mt-3 block text-4xl font-extrabold text-white">{productionFound}</strong><em className="mt-1 block text-sm not-italic text-slate-400">Apontado</em></article><article className="rounded-md border border-red-800 bg-red-950/50 p-4"><small className="text-sm font-bold text-red-200">DEFEITOS</small><strong className="mt-3 block text-4xl font-extrabold text-white">{productionBad}</strong><em className="mt-1 block text-sm not-italic text-red-200">Refugo</em></article><article className="rounded-md border border-emerald-800 bg-emerald-950/50 p-4"><small className="text-sm font-bold text-emerald-200">BOAS</small><strong className="mt-3 block text-4xl font-extrabold text-white">{productionGood}</strong><em className="mt-1 block text-sm not-italic text-emerald-200">Quantidade boa</em></article></div>
