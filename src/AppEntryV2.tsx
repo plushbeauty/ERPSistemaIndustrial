@@ -251,7 +251,7 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
 
   const { data: profile, error: profileError } = await supabase
     .from('erp_usuarios')
-    .select('id, auth_user_id, empresa_id, perfil, nivel_admin, is_master, ativo, deleted_at')
+    .select('id, auth_user_id, empresa_id, perfil, nivel_admin, is_master, ativo, deleted_at, setor_id')
     .eq('auth_user_id', session.user.id)
     .eq('ativo', true)
     .is('deleted_at', null)
@@ -264,9 +264,14 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
   }
 
   const role = String(profile.perfil ?? '').trim().toUpperCase()
-  const master = Boolean(profile.is_master) && Number(profile.nivel_admin ?? 0) >= 100 && role === 'MASTER' && profile.empresa_id === null
+  const nivelAdmin = Number(profile.nivel_admin ?? 0)
+  const master = profile.is_master === true && nivelAdmin === 100 && role === 'MASTER' && profile.empresa_id === null && (profile.setor_id === null || profile.setor_id === undefined)
 
   if (master) return { ok: true, master: true, reason: '', profile }
+
+  if (profile.is_master === true || role === 'MASTER' || nivelAdmin === 100) {
+    return { ok: false, master: false, reason: 'Registro Master inconsistente. Acesso bloqueado.', profile }
+  }
 
   if (!profile.empresa_id) {
     return { ok: false, master: false, reason: 'UsuÃ¡rio autenticado sem empresa vinculada.', profile }
@@ -280,7 +285,7 @@ async function validarAcessoERP(session: Session | null): Promise<AccessResult> 
     .maybeSingle()
 
   if (empresaError) throw empresaError
-  if (!empresa?.ativo) return { ok: false, master: false, reason: 'Empresa ERP inativa ou inexistente.', profile }
+  if (!empresa?.ativo || empresa.id !== profile.empresa_id) return { ok: false, master: false, reason: 'Empresa ERP inativa, divergente ou inexistente.', profile }
 
   return { ok: true, master: false, reason: '', profile }
 }
