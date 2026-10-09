@@ -272,7 +272,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
 
   return (
     <VendasLayout title="Estoque / Recebimento de lotes" subtitle="Certificado do fornecedor • rastreabilidade por lote • entrada real no saldo" showStatusCards={false}>
-    <main data-stock-receiving className="erp-global-surface erp-compact erp-stock-receiving min-h-screen bg-[#f4fbfd] p-2 text-slate-900">
+    <main data-stock-receiving className="erp-global-surface erp-compact erp-stock-receiving min-h-0 bg-[#f4fbfd] p-2 text-slate-900">
       <div className="mx-auto max-w-[1800px]">
         <header className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-slate-300 pb-2">
           <div className="flex items-center gap-2">
