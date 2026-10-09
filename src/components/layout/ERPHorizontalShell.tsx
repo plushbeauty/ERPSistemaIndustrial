@@ -156,7 +156,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         })}
       </nav>
 
-      <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.startsWith('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
+      <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
       </main>
 
