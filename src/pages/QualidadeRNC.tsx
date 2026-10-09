@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { FileText, RefreshCw, Save, ShieldCheck, Upload, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
 
 type Rpn = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; sgq_origem: string; sgq_severidade: string; lote_afetado: string | null; quantidade_segregada: number; status: string; criado_em: string }
@@ -44,15 +45,14 @@ export default function QualidadeRNC() {
       if (!current.data) throw new Error('Empresa da sessão não identificada.')
       const id = String(current.data); setCompanyId(id)
       const [r, a, u, s, d] = await Promise.all([
-        supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,sgq_origem,sgq_severidade,lote_afetado,quantidade_segregada,status,criado_em').eq('empresa_id', id).not('sgq_origem', 'is', null).order('criado_em', { ascending: false }).limit(500),
-        supabase.from('erp_sgq_capa_acoes').select('id,rpnc_id,tipo,descricao,causa_raiz,responsavel_id,prazo,status,acao_o_que,acao_por_que,acao_onde,acao_quem,acao_quando,acao_como,acao_quanto').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
-        supabase.from('erp_usuarios').select('id,nome,email').eq('empresa_id', id).eq('ativo', true).is('deleted_at', null).order('nome').limit(500),
-        supabase.from('erp_setores').select('id,nome').eq('empresa_id', id).eq('ativo', true).order('nome').limit(500),
-        supabase.from('erp_documentos_qualidade').select('id,codigo,titulo,tipo,revisao,data_revisao,preparado_por,pdf_storage_path,status').eq('empresa_id', id).order('codigo').limit(500),
+        fetchAllPages<Rpn>((from, to) => supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,sgq_origem,sgq_severidade,lote_afetado,quantidade_segregada,status,criado_em', { count: 'exact' }).eq('empresa_id', id).not('sgq_origem', 'is', null).order('criado_em', { ascending: false }).order('id').range(from, to)),
+        fetchAllPages<Capa>((from, to) => supabase.from('erp_sgq_capa_acoes').select('id,rpnc_id,tipo,descricao,causa_raiz,responsavel_id,prazo,status,acao_o_que,acao_por_que,acao_onde,acao_quem,acao_quando,acao_como,acao_quanto', { count: 'exact' }).eq('empresa_id', id).order('created_at', { ascending: false }).order('id').range(from, to)),
+        fetchAllPages<User>((from, to) => supabase.from('erp_usuarios').select('id,nome,email', { count: 'exact' }).eq('empresa_id', id).eq('ativo', true).is('deleted_at', null).order('nome').order('id').range(from, to)),
+        fetchAllPages<Sector>((from, to) => supabase.from('erp_setores').select('id,nome', { count: 'exact' }).eq('empresa_id', id).eq('ativo', true).order('nome').order('id').range(from, to)),
+        fetchAllPages<Doc>((from, to) => supabase.from('erp_documentos_qualidade').select('id,codigo,titulo,tipo,revisao,data_revisao,preparado_por,pdf_storage_path,status', { count: 'exact' }).eq('empresa_id', id).order('codigo').order('id').range(from, to)),
       ])
-      if (r.error || a.error || u.error || s.error || d.error) throw r.error ?? a.error ?? u.error ?? s.error ?? d.error
-      setRncs((r.data ?? []) as Rpn[]); setActions((a.data ?? []) as Capa[]); setUsers((u.data ?? []) as User[]); setSectors((s.data ?? []) as Sector[]); setDocs((d.data ?? []) as Doc[])
-      if (!selectedRnc && r.data?.[0]) setSelectedRnc(r.data[0].id)
+      setRncs(r); setActions(a); setUsers(u); setSectors(s); setDocs(d)
+      if (!selectedRnc && r[0]) setSelectedRnc(r[0].id)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar SGQ.')
     } finally { setBusy(false) }
