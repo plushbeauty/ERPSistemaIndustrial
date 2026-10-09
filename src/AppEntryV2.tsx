@@ -583,7 +583,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras/solicitacoes" element={<Navigate to="/compras/requisicoes" replace />} />
       <Route path="/compras-solicitacao" element={<ComprasSolicitacaoManual />} />
       <Route path="/manutencao/ordens" element={<ManutencaoOrdens />} />
-      <Route path="/manutencao/laboratorio-visual" element={<Navigate to="/manutencao/ordens" replace />} />
+      <Route path="/manutencao/laboratorio-visual" element={<PedidoVendaCompleto />} />
       <Route path="/fiscal/carteira" element={<FiscalCarteiraNFe />} />
       <Route path="/qualidade/rnc" element={<QualidadeRNC />} />
       <Route path="/estoque/recebimento" element={<EstoqueRecebimentoLotes />} />
