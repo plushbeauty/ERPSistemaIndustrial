@@ -60,6 +60,17 @@ begin
   if jsonb_typeof(coalesce(p_defeitos, '[]'::jsonb)) is distinct from 'array' then
     raise exception 'Lista de defeitos inválida';
   end if;
+  if exists (
+    select 1
+    from jsonb_array_elements(coalesce(p_defeitos, '[]'::jsonb)) as defect(value)
+    where coalesce(btrim(defect.value->>'defeito'), '') <> ''
+      and (
+        coalesce(nullif(defect.value->>'quantidade', '')::numeric, 0) < 0
+        or coalesce(nullif(defect.value->>'quantidade', '')::numeric, 0)::text in ('NaN', 'Infinity', '-Infinity')
+      )
+  ) then
+    raise exception 'Quantidade por defeito inválida.';
+  end if;
   select coalesce(sum(greatest(0, coalesce(nullif(defect.value->>'quantidade', '')::numeric, 0))), 0)
   into v_defeito_total
   from jsonb_array_elements(coalesce(p_defeitos, '[]'::jsonb)) as defect(value)
