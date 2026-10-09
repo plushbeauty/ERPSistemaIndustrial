@@ -353,6 +353,35 @@ export default function ColetaDimensionalCEP({
         </div>
       </section>
 
+      <section className="rounded-[2px] border border-slate-300 bg-white p-2">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-800">Gráfico CEP — indivíduos (I)</h3>
+            <p className="text-[9px] text-slate-500">Amostras sequenciais com limites de especificação e limites de controle estimados pela amplitude móvel.</p>
+          </div>
+          <span className="text-[9px] tabular-nums text-slate-500">{estatistica.totalControlado}/{SAMPLE_COUNT} leituras</span>
+        </div>
+        {grafico ? <svg viewBox={`0 0 ${grafico.width} ${grafico.height}`} width="100%" role="img" aria-label="Gráfico de controle de indivíduos com medições, limites de especificação e limites de controle">
+          {[0, 1, 2, 3].map(index => <line key={index} x1="30" y1={22 + (index + 1) * 29.2} x2="694" y2={22 + (index + 1) * 29.2} stroke="#e2e8f0" strokeWidth="1" />)}
+          <line x1="30" y1={grafico.yLimiteSuperior} x2="694" y2={grafico.yLimiteSuperior} stroke="#d65b61" strokeWidth="1.5" strokeDasharray="5 4" />
+          <line x1="30" y1={grafico.yLimiteInferior} x2="694" y2={grafico.yLimiteInferior} stroke="#d65b61" strokeWidth="1.5" strokeDasharray="5 4" />
+          <text x="3" y={grafico.yLimiteSuperior - 3} fontSize="9" fill="#b91c1c">LSE</text>
+          <text x="3" y={grafico.yLimiteInferior - 3} fontSize="9" fill="#b91c1c">LIE</text>
+          {grafico.yUcl !== null && <><line x1="30" y1={grafico.yUcl} x2="694" y2={grafico.yUcl} stroke="#2D8DB8" strokeWidth="1.25" strokeDasharray="3 3" /><text x="3" y={grafico.yUcl - 3} fontSize="9" fill="#0369a1">LSC</text></>}
+          {grafico.yLcl !== null && <><line x1="30" y1={grafico.yLcl} x2="694" y2={grafico.yLcl} stroke="#2D8DB8" strokeWidth="1.25" strokeDasharray="3 3" /><text x="3" y={grafico.yLcl - 3} fontSize="9" fill="#0369a1">LIC</text></>}
+          {grafico.yMedia !== null && <><line x1="30" y1={grafico.yMedia} x2="694" y2={grafico.yMedia} stroke="#0f766e" strokeWidth="1.25" /><text x="3" y={grafico.yMedia - 3} fontSize="9" fill="#0f766e">X̄</text></>}
+          {grafico.segmentos.map((segmento, index) => <line key={`segment-${index}`} x1={segmento.x1} y1={segmento.y1} x2={segmento.x2} y2={segmento.y2} stroke="#334155" strokeWidth="1.5" />)}
+          {grafico.pontos.map((ponto, index) => ponto && <circle key={`point-${index}`} cx={ponto.x} cy={ponto.y} r="3.5" fill={ponto.foraEspecificacao ? '#d65b61' : '#2D8DB8'} stroke="#ffffff" strokeWidth="1" />)}
+          {[0, 3, 6, 9, 12, 15, 17].map(index => <text key={`tick-${index}`} x={grafico.x(index)} y={grafico.height - 4} textAnchor="middle" fontSize="9" fill="#64748b">{index + 1}</text>)}
+        </svg> : <p className="py-4 text-center text-[10px] text-slate-500">Limites de especificação inválidos. Confira o plano mestre aprovado.</p>}
+        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[9px] text-slate-600">
+          <span><span className="mr-1 inline-block h-2 w-3 bg-rose-600"/>LSE/LIE — especificação</span>
+          <span><span className="mr-1 inline-block h-2 w-3 bg-sky-600"/>LSC/LIC — controle I-MR</span>
+          <span><span className="mr-1 inline-block h-2 w-3 bg-teal-700"/>X̄ — média</span>
+        </div>
+        <p className="mt-2 border-t border-slate-200 pt-2 text-[9px] leading-4 text-slate-500">Cp/Cpk estimados pela amplitude móvel média (σ dentro = MR̄/1,128). Os índices não substituem a verificação de estabilidade do processo nem os critérios específicos do cliente.</p>
+      </section>
+
       <section className="grid grid-cols-2 gap-1.5 md:grid-cols-3 xl:grid-cols-6">
         <div className="rounded-[2px] border border-slate-300 bg-slate-50 p-1">
           <label className={labelClass}>Amostras válidas</label>
