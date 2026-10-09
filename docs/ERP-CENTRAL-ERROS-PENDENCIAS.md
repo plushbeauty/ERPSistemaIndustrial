@@ -68,3 +68,12 @@ Atualizado nesta execução. Este registro é acumulativo e pode ser usado na tr
 - **Central Comercial antiga:** removida a gravação direta duplicada de pedidos/itens; a central consulta dados reais e encaminha para telas canônicas de Vendas.
 - **Clientes:** /clientes redireciona para o cadastro completo /vendas/clientes para evitar formulários mestre concorrentes.
 - **Pendências de validação real:** aplicar e verificar migrations de comissão e PDV no Supabase; consolidar campos comerciais extras do pedido de compra em transação; validar emissão NF-e/integração, RLS e fluxos autenticados por empresa.
+
+
+## Auditoria adicional de escopo e dados reais — 2026-10-09
+
+- **Diretoria:** todos os indicadores agora exigem empresa ativa e filtram por empresa; quando não há empresa, os indicadores são bloqueados em vez de consultar globalmente. Reservas sem valor financeiro associado são exibidas como “—”, não como R$ 0,00.
+- **Financeiro / Fluxo de caixa:** consulta lançamentos apenas da empresa atual e calcula entradas/saídas liquidadas, valores em aberto e projeção líquida dos lançamentos. Os indicadores deixam explícito que não incluem saldo inicial bancário.
+- **PCP / Ordens:** explosão MRP, consulta de componentes e gravação de parâmetros são escopadas pela empresa atual.
+- **PCP / Sequenciamento:** atualização de posições tem escopo por empresa e tentativa de reversão se a segunda gravação falhar; a solução definitiva continua sendo uma RPC transacional.
+- **Etiquetas:** validação do tipo exige captura segura do resultado da consulta antes de acessar o documento.

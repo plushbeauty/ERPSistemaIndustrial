@@ -44,14 +44,15 @@ export default function EstoqueEtiquetas() {
         .maybeSingle()
       if (invoice.error) throw invoice.error
       if (invoice.data) {
+        const invoiceData = invoice.data
         const invoiceItems = await fetchAllPages<InvoiceItem>((from, to) => supabase.from('erp_documentos_fiscais_itens')
           .select('id,produto_id,codigo_produto,descricao_produto,quantidade', { count: 'exact' })
           .eq('empresa_id', empresaId)
-          .eq('documento_id', invoice.data.id)
+          .eq('documento_id', invoiceData.id)
           .range(from, to))
         if (invoiceItems.length) {
           mapped = invoiceItems.map(row => ({ id: 'nfe-' + row.id, codigo: row.codigo_produto, descricao: row.descricao_produto, quantidade: Number(row.quantidade || 0) }))
-          source = 'NF-e ' + String(invoice.data.numero) + ' / série ' + String(invoice.data.serie)
+          source = 'NF-e ' + String(invoiceData.numero) + ' / série ' + String(invoiceData.serie)
         }
       }
 
@@ -63,10 +64,11 @@ export default function EstoqueEtiquetas() {
           .maybeSingle()
         if (order.error) throw order.error
         if (order.data) {
+          const orderData = order.data
           const orderItems = await fetchAllPages<OrderItem>((from, to) => supabase.from('erp_pedidos_venda_itens')
             .select('id,produto_id,descricao,quantidade', { count: 'exact' })
             .eq('empresa_id', empresaId)
-            .eq('pedido_id', order.data.id)
+            .eq('pedido_id', orderData.id)
             .range(from, to))
           const productIds = [...new Set(orderItems.map(row => row.produto_id).filter((id): id is string => Boolean(id)))]
           const products = productIds.length ? await fetchAllPages<Product>((from, to) => supabase.from('erp_produtos')
@@ -78,7 +80,7 @@ export default function EstoqueEtiquetas() {
             const product = products.find(candidate => candidate.id === row.produto_id)
             return { id: 'pv-' + row.id, codigo: product?.codigo ?? '', descricao: row.descricao || 'Produto sem descrição no item', quantidade: Number(row.quantidade || 0) }
           })
-          source = 'Pedido PV-' + String(order.data.numero)
+          source = 'Pedido PV-' + String(orderData.numero)
         }
       }
 

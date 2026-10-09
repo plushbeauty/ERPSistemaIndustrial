@@ -42,18 +42,27 @@ export default function PCPSequenciamento() {
     const currentIndex = column.ops.findIndex(item => item.id === op.id)
     const nextIndex = currentIndex + delta
     if (currentIndex < 0 || nextIndex < 0 || nextIndex >= column.ops.length) return
+    const current = column.ops[currentIndex]
+    const next = column.ops[nextIndex]
+    let currentUpdated = false
+    let nextUpdated = false
     setBusyId(op.id)
     setError('')
     try {
-      const current = column.ops[currentIndex]
-      const next = column.ops[nextIndex]
       const first = await supabase.from('erp_ordens_producao').update({ ordem_sequencia: nextIndex + 1 }).eq('id', current.id).eq('empresa_id', empresaId).eq('maquina_id', column.machine.id)
       if (first.error) throw first.error
+      currentUpdated = true
       const second = await supabase.from('erp_ordens_producao').update({ ordem_sequencia: currentIndex + 1 }).eq('id', next.id).eq('empresa_id', empresaId).eq('maquina_id', column.machine.id)
       if (second.error) throw second.error
+      nextUpdated = true
       await load()
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não foi possível atualizar a sequência. Atualize e confira a fila antes de repetir.')
+      if (currentUpdated && !nextUpdated) {
+        const rollback = await supabase.from('erp_ordens_producao').update({ ordem_sequencia: currentIndex + 1 }).eq('id', current.id).eq('empresa_id', empresaId).eq('maquina_id', column.machine.id)
+        setError(rollback.error ? 'Falha parcial no sequenciamento e a reversão também falhou. Atualize a fila e confira as posições antes de repetir.' : 'A segunda atualização falhou; a posição anterior foi restaurada. Atualize a fila antes de tentar novamente.')
+      } else {
+        setError(cause instanceof Error ? cause.message : 'Não foi possível atualizar a sequência. Atualize e confira a fila antes de repetir.')
+      }
     } finally {
       setBusyId(null)
     }
