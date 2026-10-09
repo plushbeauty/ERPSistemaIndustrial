@@ -198,18 +198,22 @@ begin
         v_remaining := greatest(coalesce(v_row.quantidade_planejada, 0) - coalesce(v_row.quantidade_produzida, 0), 0);
         if v_row.id = v_program_id and v_remaining <= 0 then
           update public.erp_pcp_programacoes
-          set fim_planejado = greatest(now(), inicio_planejado), status = 'Concluída'
+          set inicio_planejado = least(inicio_planejado, now()), fim_planejado = now(), status = 'Concluída'
           where id = v_row.id and empresa_id = v_empresa;
-          v_cursor := greatest(now(), v_row.inicio_planejado);
+          v_cursor := now();
           v_rescheduled := v_rescheduled + 1;
           continue;
         end if;
 
         if v_remaining <= 0 then continue; end if;
 
-        v_start := v_row.inicio_planejado;
-        if v_cursor is not null then v_start := greatest(v_start, v_cursor); end if;
-        if v_start <= now() then v_start := greatest(v_start, now()); end if;
+        if v_row.id = v_program_id then
+          v_start := now();
+        else
+          v_start := v_row.inicio_planejado;
+          if v_cursor is not null then v_start := greatest(v_start, v_cursor); end if;
+          if v_start <= now() then v_start := now(); end if;
+        end if;
 
         v_daily_hours := greatest(0.5, coalesce(v_row.turnos, 1) * coalesce(v_row.horas_turno, 8));
         v_efficiency := greatest(0.01, least(1, coalesce(v_row.eficiencia_percent, 85) / 100.0));
