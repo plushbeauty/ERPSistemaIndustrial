@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
-import { BarChart3, BookOpen, ClipboardList, FilePlus2, FolderKanban, LayoutDashboard, ListChecks, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Target, Users } from 'lucide-react'
+import { BarChart3, BookOpen, ClipboardList, FilePlus2, LayoutDashboard, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Target, Users } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -33,7 +33,7 @@ export function VendasStatusCards({status,loading}:{status:VendasStatus;loading:
 
 export const sections:SalesNavSection[]=[
  {label:'VISÃO GERAL',items:[{label:'Dashboard comercial',href:'/vendas',icon:LayoutDashboard}]},
- {label:'OPERAÇÃO',items:[{label:'Pedidos de venda',href:'/vendas/pedidos',icon:ClipboardList},{label:'Novo pedido',href:'/vendas/novo-pedido',icon:FilePlus2},{label:'Pedidos pendentes',href:'/vendas/pendentes',icon:ListChecks},{label:'Status do pedido',href:'/vendas/status',icon:ListChecks},{label:'Carteira de pedidos',href:'/vendas/carteira',icon:FolderKanban},{label:'PDV / venda rápida',href:'/vendas/pdv',icon:ShoppingCart}]},
+ {label:'OPERAÇÃO',items:[{label:'Status do pedido',href:'/vendas/status',icon:ClipboardList},{label:'Novo pedido',href:'/vendas/novo-pedido',icon:FilePlus2},{label:'PDV / venda rápida',href:'/vendas/pdv',icon:ShoppingCart}]},
  {label:'COMERCIAL',items:[{label:'Clientes',href:'/vendas/clientes',icon:Users},{label:'Orçamentos e custos',href:'/vendas/orcamentos',icon:PackageSearch},{label:'Análise de custos',href:'/vendas/analise-custos',icon:PackageSearch},{label:'Metas',href:'/vendas/metas',icon:Target},{label:'Vendedores / comissões',href:'/comissoes/perfil',icon:Users},{label:'Relatórios',href:'/vendas/relatorios',icon:BookOpen}]},
  {label:'FERRAMENTAS',items:[{label:'Catálogo digital',href:'/vendas/catalogo-digital',icon:BookOpen},{label:'Gestão do catálogo',href:'/vendas/catalogo-digital/gestao',icon:BookOpen},{label:'Ajuste global / preços',href:'/vendas/reajuste',icon:Settings2}]},
 ]
