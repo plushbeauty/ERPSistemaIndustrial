@@ -110,7 +110,10 @@ export default function ColetaDimensionalCEP({
   const limitesValidos =
     Number.isFinite(limiteInferior) &&
     Number.isFinite(limiteSuperior) &&
-    limiteSuperior > limiteInferior
+    Number.isFinite(nominal) &&
+    limiteSuperior > limiteInferior &&
+    nominal >= limiteInferior &&
+    nominal <= limiteSuperior
 
   const loteReprovado =
     !limitesValidos ||
@@ -291,7 +294,7 @@ export default function ColetaDimensionalCEP({
 
       <section className="grid grid-cols-2 gap-1.5 md:grid-cols-3 xl:grid-cols-6">
         <div className="rounded-[2px] border border-slate-300 bg-slate-50 p-1">
-          <label className={labelClass}>Total Controlado</label>
+          <label className={labelClass}>Amostras válidas</label>
           <div className="flex h-[30px] items-center rounded-[2px] border border-slate-300 bg-white py-0.5 px-2 text-[10px] font-normal text-slate-800">
             {estatistica.totalControlado}/{SAMPLE_COUNT}
           </div>
@@ -312,7 +315,7 @@ export default function ColetaDimensionalCEP({
         </div>
 
         <div className="rounded-[2px] border border-slate-300 bg-slate-50 p-1">
-          <label className={labelClass}>Média Dimensional (ValMéd/s)</label>
+          <label className={labelClass}>Média amostral</label>
           <div className="flex h-[30px] items-center rounded-[2px] border border-slate-300 bg-white py-0.5 px-2 text-[10px] font-normal text-slate-800">
             {estatistica.totalControlado > 0
               ? formatarNumero(estatistica.media)
@@ -332,7 +335,7 @@ export default function ColetaDimensionalCEP({
         </div>
         <div className="rounded-[2px] border border-slate-300 bg-slate-50 p-1">
           <label className={labelClass}>Cpk</label>
-          <div className={'flex h-[30px] items-center rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal ' + (estatistica.cpk !== null && estatistica.cpk < 1 ? 'text-rose-700' : 'text-slate-800')}>{estatistica.cpk === null ? '—' : estatistica.cpk.toFixed(3)}</div>
+          <div className={'flex h-[30px] items-center rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal ' + 'text-slate-800'}>{estatistica.cpk === null ? '—' : estatistica.cpk.toFixed(3)}</div>
         </div>
       </section>
 
@@ -374,7 +377,7 @@ export default function ColetaDimensionalCEP({
             type="button"
             disabled={!podeRegistrar}
             onClick={registrarColeta}
-            className="h-[30px] rounded-[2px] border border-slate-300 bg-[#2D8DB8] py-0.5 px-2 text-[10px] font-normal text-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+            className="h-[30px] rounded-[2px] border border-slate-300 bg-[#2D8DB8] py-0.5 px-2 text-[10px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
           >
             Registrar 18 amostras
           </button>
