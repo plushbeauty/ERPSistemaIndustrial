@@ -89,7 +89,7 @@ export default function PCPDashboardOEE() {
       const op = byOrder.get(row.ordem_producao_id)
       const duration = row.inicio && row.fim ? Math.max(0, (new Date(row.fim).getTime() - new Date(row.inicio).getTime()) / 60000) : 0
       const stop = Math.max(0, Number(row.paradas_min) || 0) + Math.max(0, Number(row.setup_min) || 0)
-      planned += op ? Math.max(0, Number(op.tempo_estimado_horas) || 0) * 60 : duration
+      planned += duration
       downtime += Math.min(duration, stop)
       runtime += Math.max(0, duration - stop)
       good += Math.max(0, Number(row.quantidade_boa) || 0)
@@ -99,7 +99,7 @@ export default function PCPDashboardOEE() {
     }
 
     const availability = planned > 0 ? clamp(((planned - downtime) / planned) * 100) : 0
-    const performance = idealPieces > 0 ? clamp((good / idealPieces) * 100) : 0
+    const performance = idealPieces > 0 ? clamp(((good + scrap) / idealPieces) * 100) : 0
     const quality = good + scrap > 0 ? clamp((good / (good + scrap)) * 100) : 0
     const oee = (availability * performance * quality) / 10000
     return { availability, performance, quality, oee, planned, downtime, runtime, good, scrap }
@@ -115,7 +115,7 @@ export default function PCPDashboardOEE() {
       const duration = row.inicio && row.fim ? Math.max(0, (new Date(row.fim).getTime() - new Date(row.inicio).getTime()) / 60000) : 0
       const stop = Math.min(duration, Math.max(0, Number(row.paradas_min) || 0) + Math.max(0, Number(row.setup_min) || 0))
       const item = map.get(key) ?? { planned: 0, stop: 0, good: 0, scrap: 0, ideal: 0 }
-      item.planned += op ? Math.max(0, Number(op.tempo_estimado_horas) || 0) * 60 : duration
+      item.planned += duration
       item.stop += stop
       item.good += Math.max(0, Number(row.quantidade_boa) || 0)
       item.scrap += Math.max(0, Number(row.quantidade_refugo) || 0)
@@ -124,7 +124,7 @@ export default function PCPDashboardOEE() {
     }
     return [...map.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([dia, x]) => {
       const availability = x.planned ? clamp(((x.planned - x.stop) / x.planned) * 100) : 0
-      const performance = x.ideal ? clamp((x.good / x.ideal) * 100) : 0
+      const performance = x.ideal ? clamp(((x.good + x.scrap) / x.ideal) * 100) : 0
       const quality = x.good + x.scrap ? clamp((x.good / (x.good + x.scrap)) * 100) : 0
       return { dia: dia.slice(5).replace('-', '/'), disponibilidade: availability, performance, qualidade: quality, oee: availability * performance * quality / 10000 }
     })
