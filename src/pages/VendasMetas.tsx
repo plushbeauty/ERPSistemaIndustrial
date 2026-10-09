@@ -13,6 +13,7 @@ export default function VendasMetas(){
  const [realizado,setRealizado]=useState(0)
  const [pedidosRealizados,setPedidosRealizados]=useState(0)
  const [msg,setMsg]=useState('')
+ const [saving,setSaving]=useState(false)
 
  const load=async()=>{
   const e=await supabase.rpc('erp_current_empresa_id')
@@ -23,21 +24,26 @@ export default function VendasMetas(){
   nextMonth.setMonth(nextMonth.getMonth()+1)
   const [m,p]=await Promise.all([
    supabase.from('erp_vendas_metas').select('id,competencia,meta_faturamento,meta_pedidos').eq('empresa_id',id).eq('competencia',mes+'-01').maybeSingle(),
-   supabase.from('erp_pedidos_venda').select('total,status').eq('empresa_id',id).gte('data_entrega_prometida',mes+'-01').lt('data_entrega_prometida',nextMonth.toISOString().slice(0,10))
+   supabase.from('erp_pedidos_venda').select('total,status,data_entrada').eq('empresa_id',id).eq('status','faturado').gte('data_entrada',mes+'-01').lt('data_entrada',nextMonth.toISOString().slice(0,10))
   ])
   if(m.error||p.error){setMsg(m.error?.message||p.error?.message||'Falha ao carregar metas.');return}
   setValor(String(Number(m.data?.meta_faturamento??0)))
   setPedidos(String(Number(m.data?.meta_pedidos??0)))
-  const validOrders=(p.data??[]).filter(x=>!String(x.status??'').toLowerCase().includes('cancel'))
+  const validOrders=p.data??[]
   setRealizado(validOrders.reduce((sum,row)=>sum+Number(row.total??0),0))
   setPedidosRealizados(validOrders.length)
  }
  useEffect(()=>{void load()},[mes])
 
  const save=async()=>{
-  const r=await supabase.from('erp_vendas_metas').upsert({empresa_id:empresa,competencia:mes+'-01',meta_faturamento:Number(valor)||0,meta_pedidos:Number(pedidos)||0},{onConflict:'empresa_id,competencia'})
+  const faturamento=Number(valor),quantidade=Number(pedidos)
+  if(!empresa){setMsg('Empresa não identificada. Atualize a tela antes de gravar.');return}
+  if(!Number.isFinite(faturamento)||faturamento<0||!Number.isInteger(quantidade)||quantidade<0){setMsg('Informe faturamento maior ou igual a zero e quantidade inteira de pedidos maior ou igual a zero.');return}
+  setSaving(true)
+  const r=await supabase.from('erp_vendas_metas').upsert({empresa_id:empresa,competencia:mes+'-01',meta_faturamento:faturamento,meta_pedidos:quantidade},{onConflict:'empresa_id,competencia'})
   setMsg(r.error?r.error.message:'Meta gravada com sucesso.')
   if(!r.error)void load()
+  setSaving(false)
  }
 
  const pct=Number(valor)>0?Math.min((realizado/Number(valor))*100,999):0
@@ -53,12 +59,12 @@ export default function VendasMetas(){
      <div style={{flex:1}}>
       <span className='sales-eyebrow'>COMERCIAL / METAS</span>
       <h2 style={{margin:'4px 0',fontSize:15,fontWeight:650,color:'#17333f'}}>Metas da empresa</h2>
-      <p style={{margin:0,fontSize:10,color:'#71838a'}}>Os valores realizados são consolidados da empresa; esta tela não atribui vendas individuais sem vínculo confirmado ao vendedor.</p>
+      <p style={{margin:0,fontSize:10,color:'#71838a'}}>Realizado considera apenas pedidos com status faturado, pela data de entrada disponível no pedido. Não substitui o relatório fiscal por data de emissão da NF-e.</p>
      </div>
      <div style={{display:'flex',alignItems:'center',gap:7,flexWrap:'wrap'}}>
       <label style={{display:'flex',alignItems:'center',gap:6,fontSize:10,color:'#526a73'}}>Competência<input type='month' value={mes} onChange={e=>setMes(e.target.value)} style={{height:30,border:'1px solid #d3e0e3',borderRadius:2,padding:'0 7px',fontSize:11}}/></label>
       <button type='button' className='sales-button sales-button--secondary' onClick={()=>{setValor('0');setPedidos('0');setMsg('Preencha as duas metas e grave para salvar.')}}><Plus size={13}/>Nova meta</button>
-      <button type='button' className='sales-button sales-button--primary' onClick={()=>void save()}><Save size={13}/>Gravar</button>
+      <button type='button' className='sales-button sales-button--primary' disabled={saving} onClick={()=>void save()}><Save size={13}/>{saving?'Gravando…':'Gravar'}</button>
      </div>
     </div>
     <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(190px,1fr))',gap:8,padding:'0 12px 12px'}}>
