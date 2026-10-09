@@ -117,6 +117,8 @@ export default function PCPIndustrial(){
  },[location.pathname, routeTabMap])
  useEffect(()=>{if(hostedBySynqra)return;let alive=true;void supabase.auth.getUser().then(async({data})=>{if(!alive||!data.user)return;const r=await supabase.from('erp_usuarios').select('nome').eq('auth_user_id',data.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();if(alive)setProfileName(r.data?.nome||data.user.email?.split('@')[0]||'UsuÃ¡rio')});const id=window.setInterval(()=>setClock(new Date()),1000);return()=>{alive=false;window.clearInterval(id)}},[hostedBySynqra])
 
+ const activeScheduledPrograms=programs.filter(p=>!['cancelada','cancelado','concluída','concluida','concluído','concluido'].includes(String(p.status||'').toLowerCase()))
+ const productionPrograms=activeScheduledPrograms.filter(p=>p.ordem_producao_id===selectedOp&&!activeScheduledPrograms.some(other=>other.maquina_id===p.maquina_id&&other.id!==p.id&&(new Date(other.inicio_planejado)<new Date(p.inicio_planejado)||(new Date(other.inicio_planejado).getTime()===new Date(p.inicio_planejado).getTime()&&other.id<p.id))))
  const current=ops.find(o=>o.id===selectedOp)
  const currentPrograms=programs.filter(p=>p.ordem_producao_id===selectedOp)
  const productionFound=currentPrograms.reduce((s,p)=>s+Number(p.quantidade_produzida||0),0)
@@ -195,7 +197,6 @@ export default function PCPIndustrial(){
 
  async function confirmProduction(){
   if(!selectedOp){setError('Selecione uma OP.');return}
-  const productionPrograms=programs.filter(p=>p.ordem_producao_id===selectedOp&&!['cancelada','cancelado','concluída','concluida','concluído','concluido'].includes(String(p.status||'').toLowerCase()))
   if(!productionPrograms.length){setError('A OP precisa ter uma programação ativa antes do apontamento de produção.');return}
   if(!selectedProductionProgram||!productionPrograms.some(p=>p.id===selectedProductionProgram)){setError('Selecione a programação/máquina em que a produção foi realizada.');return}
   const f=Number(found),b=Number(bad)
@@ -232,7 +233,7 @@ export default function PCPIndustrial(){
   setTab((current)=> current === next ? current : next)
  },[location.pathname, routeTabMap])
  useEffect(()=>{
-  const candidates=programs.filter(p=>p.ordem_producao_id===selectedOp&&!['cancelada','cancelado','concluída','concluida','concluído','concluido'].includes(String(p.status||'').toLowerCase()))
+  const candidates=productionPrograms
   setSelectedProductionProgram(current=>current&&candidates.some(p=>p.id===current)?current:candidates.length===1?candidates[0].id:'')
  },[selectedOp,programs])
  useEffect(()=>{
@@ -363,7 +364,7 @@ const tabs:[Tab,string,string][]=[['visao','VisÃ£o geral','Gauge'],['novaop','
     <div className="mb-5 flex items-start justify-between gap-4 border-b border-slate-200 pb-4"><div><span className="text-sm font-extrabold uppercase tracking-wider text-sky-700">CONFERÃŠNCIA DE PRODUÃ‡ÃƒO</span><h2 className="mt-1 text-2xl font-extrabold text-slate-900">Apontamento de ProduÃ§Ã£o</h2><p className="mt-1 text-base text-slate-600">Registre exatamente o que saiu da fÃ¡brica nesta OP.</p></div><InlineIcon name="Play" size={26}/></div>
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
      <div className="md:col-span-2"><EntityCodeLookup label="OP" value={selectedOp} records={ops.map(o=>({id:o.id,codigo:o.numero_op,nome:'Planejado '+o.quantidade}))} onChange={value=>{setSelectedOp(value);setSelectedProductionProgram('')}} onSelect={o=>{setSelectedOp(o.id);setSelectedProductionProgram('')}} helper="Digite o número da OP ou use a lupa."/></div>
-     <label className="grid gap-2 text-sm font-extrabold text-slate-800 md:col-span-2">PROGRAMAÇÃO / MÁQUINA<select className="min-h-12 rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600" value={selectedProductionProgram} onChange={e=>setSelectedProductionProgram(e.target.value)}><option value="">Selecione a programação ativa</option>{programs.filter(p=>p.ordem_producao_id===selectedOp&&!['cancelada','cancelado','concluída','concluida','concluído','concluido'].includes(String(p.status||'').toLowerCase())).map(p=><option key={p.id} value={p.id}>{machines.find(m=>m.id===p.maquina_id)?.codigo||'Máquina'} · {new Date(p.inicio_planejado).toLocaleString('pt-BR')} · saldo {Math.max(0,Number(p.quantidade_planejada||0)-Number(p.quantidade_produzida||0))}</option>)}</select></label>
+     <label className="grid gap-2 text-sm font-extrabold text-slate-800 md:col-span-2">PROGRAMAÇÃO / MÁQUINA<select className="min-h-12 rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600" value={selectedProductionProgram} onChange={e=>setSelectedProductionProgram(e.target.value)}><option value="">Selecione a programação ativa</option>{productionPrograms.map(p=><option key={p.id} value={p.id}>{machines.find(m=>m.id===p.maquina_id)?.codigo||'Máquina'} · {new Date(p.inicio_planejado).toLocaleString('pt-BR')} · saldo {Math.max(0,Number(p.quantidade_planejada||0)-Number(p.quantidade_produzida||0))}</option>)}</select></label>
      <label className="grid gap-2 text-sm font-extrabold text-slate-800">QUANTIDADE ENCONTRADA<input className="min-h-12 rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100" type="number" min="0" step="any" value={found} onChange={e=>setFound(e.target.value)} inputMode="decimal"/></label>
      <label className="grid gap-2 text-sm font-extrabold text-slate-800">QUANTIDADE DEFEITUOSA<input className="min-h-12 rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100" type="number" min="0" step="any" value={bad} onChange={e=>setBad(e.target.value)} inputMode="decimal"/></label>
      <label className="grid gap-2 text-sm font-extrabold text-slate-800 md:col-span-2">LOCALIZAÇÃO DE DESTINO<select className="min-h-12 rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600" value={destinationLocation} onChange={e=>setDestinationLocation(e.target.value)}><option value="">Selecione endereço ativo</option>{locations.map(location=><option key={location.id} value={location.id}>{location.codigo} · {location.nome}</option>)}</select></label>
