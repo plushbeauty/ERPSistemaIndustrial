@@ -10,12 +10,12 @@ type Epi={id:string;codigo:string;nome:string;ca_numero:string;ca_validade:strin
 type Delivery={id:string;funcionario_id:string;epi_id:string;quantidade:number;entregue_em:string;proxima_troca_em:string;confirmado_recebimento:boolean;observacao:string|null}
 type Validation<T> = { ok: true; data: T } | { ok: false; error: string }
 function validateEmployee(v: {matricula:string;nome_completo:string;cpf:string;rg:string;data_admissao:string;cargo_funcao:string;departamento:string;custo_hora_mod:string}): Validation<{matricula:string;nome_completo:string;cpf:string;rg:string;data_admissao:string;cargo_funcao:string;departamento:string;custo_hora_mod:number}> {
- const cpf=v.cpf.replace(/\\D/g,'')
+ const cpf=v.cpf.replace(/\D/g,'')
  if(!v.matricula.trim()||v.matricula.trim().length>32)return{ok:false,error:'Matrícula é obrigatória (até 32 caracteres).'}
  if(v.nome_completo.trim().length<3||v.nome_completo.trim().length>160)return{ok:false,error:'Informe o nome completo (3 a 160 caracteres).'}
- if(!/^\\d{11}$/.test(cpf))return{ok:false,error:'CPF deve conter 11 dígitos.'}
+ if(!/^\d{11}$/.test(cpf))return{ok:false,error:'CPF deve conter 11 dígitos.'}
  if(v.rg.trim().length>30)return{ok:false,error:'RG deve ter até 30 caracteres.'}
- if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(v.data_admissao))return{ok:false,error:'Data de admissão inválida.'}
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(v.data_admissao))return{ok:false,error:'Data de admissão inválida.'}
  if(v.cargo_funcao.trim().length<2||v.cargo_funcao.trim().length>100)return{ok:false,error:'Cargo/função deve ter de 2 a 100 caracteres.'}
  if(!['ENGENHARIA','PCP','PRODUCAO','QUALIDADE','ALMOXARIFADO','MANUTENCAO','FISCAL','ADMINISTRATIVO','OUTRO'].includes(v.departamento))return{ok:false,error:'Departamento inválido.'}
  const rate=Number(v.custo_hora_mod);if(!Number.isFinite(rate)||rate<0)return{ok:false,error:'Taxa horária deve ser zero ou positiva.'}
@@ -25,7 +25,7 @@ function validateShift(v: {codigo:string;nome:string;hora_inicio:string;hora_fim
  const interval=Number(v.intervalo_minutos),hours=Number(v.carga_mensal_horas)
  if(!v.codigo.trim()||v.codigo.trim().length>20)return{ok:false,error:'Código do turno é obrigatório (até 20 caracteres).'}
  if(v.nome.trim().length<2||v.nome.trim().length>100)return{ok:false,error:'Nome do turno deve ter de 2 a 100 caracteres.'}
- if(!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(v.hora_inicio)||!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(v.hora_fim)||v.hora_inicio===v.hora_fim)return{ok:false,error:'Informe horários válidos e diferentes para início e término.'}
+ if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(v.hora_inicio)||!/^([01]\d|2[0-3]):[0-5]\d$/.test(v.hora_fim)||v.hora_inicio===v.hora_fim)return{ok:false,error:'Informe horários válidos e diferentes para início e término.'}
  if(!Number.isInteger(interval)||interval<0||interval>720)return{ok:false,error:'Intervalo deve estar entre 0 e 720 minutos.'}
  if(!['5X2','6X2','12X36','6X1','PERSONALIZADA'].includes(v.escala))return{ok:false,error:'Escala de trabalho inválida.'}
  if(!Number.isFinite(hours)||hours<=0||hours>300)return{ok:false,error:'Carga mensal deve ser maior que zero e até 300 horas.'}
@@ -36,7 +36,7 @@ function validateEpi(v: {codigo:string;nome:string;ca_numero:string;ca_validade:
  if(!v.codigo.trim()||v.codigo.trim().length>30)return{ok:false,error:'Código do EPI é obrigatório (até 30 caracteres).'}
  if(v.nome.trim().length<2||v.nome.trim().length>160)return{ok:false,error:'Nome do EPI deve ter de 2 a 160 caracteres.'}
  if(!v.ca_numero.trim()||v.ca_numero.trim().length>40)return{ok:false,error:'Número do CA é obrigatório (até 40 caracteres).'}
- if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(v.ca_validade))return{ok:false,error:'Validade do CA inválida.'}
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(v.ca_validade))return{ok:false,error:'Validade do CA inválida.'}
  if(!Number.isInteger(days)||days<=0||days>3650)return{ok:false,error:'Periodicidade deve ser de 1 a 3650 dias.'}
  return{ok:true,data:{...v,codigo:v.codigo.trim(),nome:v.nome.trim(),ca_numero:v.ca_numero.trim(),periodicidade_troca_dias:days}}
 }
