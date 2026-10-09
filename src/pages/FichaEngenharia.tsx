@@ -122,22 +122,6 @@ export default function FichaEngenharia(){
  function setOpField(i:number,k:keyof OpRow,v:string|number){setOps(r=>r.map((x,n)=>n===i?{...x,[k]:v}:x))}
  function setPhoto(key:'fotoPrincipal'|'fotoSecundaria',file:File|null){if(!file)return;if(file.size>2*1024*1024){setNotice('A foto deve ter no máximo 2 MB.');return}if(!file.type.startsWith('image/')){setNotice('Selecione um arquivo de imagem.');return}const reader=new FileReader();reader.onload=()=>setS(key,String(reader.result));reader.readAsDataURL(file)}
 
- async function approveRevision(){
-  if(!ficha){setNotice('Grave a revisão antes de solicitar aprovação.');return}
-  if(Number(version)!==ficha.versao){setNotice('Grave a nova revisão antes de solicitar aprovação.');return}
-  if(!canApproveRevision){setNotice('Aprovação restrita ao Master ou ao perfil com permissão Qualidade/Aprovar.');return}
-  if(!['rascunho','em_analise'].includes((ficha.status||'').toLowerCase())){setNotice('Somente revisões em rascunho ou análise podem ser aprovadas.');return}
-  setBusy(true);setNotice('')
-  try{
-   const result=await supabase.rpc('erp_qualidade_aprovar_ficha_tecnica',{p_ficha_id:ficha.id})
-   if(result.error)throw result.error
-   const approved=result.data as Ficha
-   setFicha(approved);setRequestedVersion(Number(approved.versao))
-   await loadBase()
-   setNotice('Revisão aprovada pela permissão de Qualidade e ativada para PCP/MRP.')
-  }catch(cause){setNotice(cause instanceof Error?cause.message:'Falha ao aprovar a revisão da ficha.')}
-  finally{setBusy(false)}
- }
  async function save(){
   if(!kind)return setNotice('Selecione o tipo de ficha.')
   if(!productId)return setNotice('Selecione o produto produzido.')
@@ -165,6 +149,9 @@ setFicha(saved.data as Ficha);setRequestedVersion(Number(version));setCatalog(ro
 
  async function approveFicha(){
   if(!ficha?.id)return setNotice('Grave a ficha antes de solicitar aprovação.')
+  if(Number(version)!==ficha.versao)return setNotice('Grave a nova revisão antes de solicitar aprovação.')
+  if(!canApproveRevision)return setNotice('Aprovação restrita ao Master ou ao perfil com permissão Qualidade/Aprovar.')
+  if(!['rascunho','em_analise'].includes((ficha.status||'').toLowerCase()))return setNotice('Somente revisões em rascunho ou análise podem ser aprovadas.')
   setBusy(true);setNotice('')
   try{
    const result=await supabase.rpc('erp_qualidade_aprovar_ficha_tecnica',{p_ficha_id:ficha.id})
@@ -200,7 +187,7 @@ setFicha(saved.data as Ficha);setRequestedVersion(Number(version));setCatalog(ro
  const labels=kind==='PRENSADOS'?['Composto / material','Código do composto','Dureza alvo','Prensa','Molde','Pressão de prensagem','Temperatura','Tempo de cura','Pós-cura','Desmoldante / agente']:kind==='INJETADOS'?['Matéria-prima','Código da MP','Cor / pigmento','Máquina injetora','Tonelagem mínima','Tonelagem máxima','Molde','Nº cavidades','Secagem do material','Temperatura do molde','Pressão de injeção','Velocidade de injeção','Comutação','Pressão de recalque','Tempo de recalque','Resfriamento','Dosagem','Contrapressão','Descompressão','Ciclo alvo','Câmara quente']:kind==='ESTAMPARIA'?['Material / chapa','Espessura','Largura do blank','Comprimento do blank','Prensa','Tonelagem','Ferramenta / estampo','Curso','Velocidade','Avanço','Passo','Lubrificação','Operações de corte','Operações de dobra','Operações de conformação','Rebarba máxima']:kind==='ACABAMENTO'?['Tipo de acabamento','Preparação da superfície','Equipamento','Ferramenta / abrasivo','Produto químico / tinta','Diluição / mistura','Velocidade de aplicação','Pressão','Temperatura de secagem','Tempo de secagem','Tempo de cura','Espessura alvo','Método de inspeção','Embalagem']:['Tipo de processo','Objetivo','Equipamento','Ferramenta / dispositivo','Material de entrada','Parâmetro 1','Parâmetro 2','Parâmetro 3','Tempo padrão','Critério de aceitação','EPI / segurança','Instrução especial']
 
  return <main className="industrial-form-page process-sheet-page">
-  <header className="process-sheet-header"><div><span className="industrial-eyebrow">INDUSTRIA ERP • ENGENHARIA / PROCESSOS</span><h1>{kinds.find(x=>x.id===kind)?.title}</h1><p>Ficha operacional completa para orientar Engenharia, PCP, Produção e Qualidade.</p></div><div className="process-sheet-actions"><button className="industrial-secondary" onClick={()=>setKind(null)}><X size={16}/>Tipos</button><button className="industrial-secondary" onClick={()=>window.print()}><Printer size={16}/>Imprimir</button>{ficha?.id&&['rascunho','em_analise'].includes((ficha.status||'').toLowerCase())&&<button className="industrial-secondary" onClick={()=>void approveFicha()} disabled={busy}><CheckCircle2 size={16}/>Aprovar / liberar</button>}<button className="industrial-primary" onClick={()=>void save()} disabled={busy}><Save size={16}/>{busy?'Gravando…':'Gravar'}</button></div></header>
+  <header className="process-sheet-header"><div><span className="industrial-eyebrow">INDUSTRIA ERP • ENGENHARIA / PROCESSOS</span><h1>{kinds.find(x=>x.id===kind)?.title}</h1><p>Ficha operacional completa para orientar Engenharia, PCP, Produção e Qualidade.</p></div><div className="process-sheet-actions"><button className="industrial-secondary" onClick={()=>setKind(null)}><X size={16}/>Tipos</button><button className="industrial-secondary" onClick={()=>window.print()}><Printer size={16}/>Imprimir</button>{ficha?.id&&Number(version)===ficha.versao&&['rascunho','em_analise'].includes((ficha.status||'').toLowerCase())&&<button className="industrial-secondary" onClick={()=>void approveFicha()} disabled={busy||!canApproveRevision}><CheckCircle2 size={16}/>Aprovar / liberar</button>}<button className="industrial-primary" onClick={()=>void save()} disabled={busy}><Save size={16}/>{busy?'Gravando…':'Gravar'}</button></div></header>
   <div className="process-sheet-toolbar"><button onClick={()=>resetForm(false)}>Novo</button><button onClick={()=>void save()} disabled={busy}>Gravar</button><button onClick={()=>{setRequestedVersion(null);if(productId)void loadFicha(productId,kind,undefined)}} disabled={busy}><Search size={15}/>Pesquisar</button><button onClick={()=>window.print()}><Printer size={15}/>Imprimir</button><span className="process-sheet-toolbar-status">{notice||'Documento operacional controlado'}</span></div>
 
   <section className="process-sheet-module-title"><div><b>FICHA DE PROCESSO {kind}</b><span>Engenharia • PCP • Produção • Qualidade</span></div><div className="process-sheet-document-id"><span>Código</span><strong>{processCode||'—'}</strong><small>Revisão {version}</small></div></section>
@@ -244,7 +231,7 @@ setFicha(saved.data as Ficha);setRequestedVersion(Number(version));setCatalog(ro
    <div className="industrial-table-scroll"><table className="industrial-table process-sheet-table"><thead><tr><th>Código</th><th>Característica</th><th>Un.</th><th>Nominal</th><th>Mín.</th><th>Máx.</th><th>Frequência</th><th>Status</th></tr></thead><tbody>{quality.filter(r=>r.caracteristica.trim()).map((r,i)=><tr key={r.id||i}><td>{r.codigo||'—'}</td><td>{r.caracteristica}</td><td>{r.unidade||'—'}</td><td>{r.nominal||'—'}</td><td>{r.limite_inferior||'—'}</td><td>{r.limite_superior||'—'}</td><td>{r.frequencia||'—'}</td><td>{r.status||'—'}</td></tr>)}{!quality.some(r=>r.caracteristica.trim())&&<tr><td colSpan={8}>Nenhuma especificação cadastrada para este produto.</td></tr>}</tbody></table></div>
   </section>
 
-  <section className="process-sheet-approval"><div><span>ENGENHARIA / PROCESSO</span><strong>{spec.responsavel||'Responsável não informado'}</strong><small>Revisão {version}</small></div><div><span>QUALIDADE</span><strong>{formStatus}</strong><small>{['aprovada','liberada'].includes(formStatus.toLowerCase())&&formRevisionActive?'Revisão liberada para o PCP.':'Aguardando fluxo formal de aprovação.'}</small>{ficha&&Number(version)===ficha.versao&&['rascunho','em_analise'].includes(formStatus.toLowerCase())&&<><button type="button" disabled={busy||!canApproveRevision} onClick={()=>void approveRevision()} className="mt-2 h-[30px] border border-slate-300 px-2 text-[10px] font-semibold disabled:opacity-50">Aprovar revisão</button>{!canApproveRevision&&<small className="block text-[10px] text-slate-500">Aprovação restrita ao Master/Qualidade.</small>}</>}</div><div><span>PCP / PRODUÇÃO</span><strong>{['aprovada','liberada'].includes(formStatus.toLowerCase())&&formRevisionActive?'Disponível para PCP/OP':'Bloqueada para PCP/OP'}</strong><small>Somente revisão aprovada/liberada pode alimentar a programação.</small></div></section>
+  <section className="process-sheet-approval"><div><span>ENGENHARIA / PROCESSO</span><strong>{spec.responsavel||'Responsável não informado'}</strong><small>Revisão {version}</small></div><div><span>QUALIDADE</span><strong>{formStatus}</strong><small>{['aprovada','liberada'].includes(formStatus.toLowerCase())&&formRevisionActive?'Revisão liberada para o PCP.':'Aguardando fluxo formal de aprovação.'}</small>{ficha&&Number(version)===ficha.versao&&['rascunho','em_analise'].includes(formStatus.toLowerCase())&&!canApproveRevision&&<small className="block text-[10px] text-slate-500">Aprovação restrita ao Master/Qualidade.</small>}</div><div><span>PCP / PRODUÇÃO</span><strong>{['aprovada','liberada'].includes(formStatus.toLowerCase())&&formRevisionActive?'Disponível para PCP/OP':'Bloqueada para PCP/OP'}</strong><small>Somente revisão aprovada/liberada pode alimentar a programação.</small></div></section>
   {notice&&<div className="industrial-notice" role="status">{notice}</div>}
  </main>
 }
