@@ -177,7 +177,182 @@ begin
         and s.empresa_id = v_empresa
         and s.produto_id = p_produto_id
       where coalesce(s.metodo_inspecao, '') not in ('VISUAL', 'DOCUMENTAL')
-        and nullif(replace(btrim(coalesce(m->>'encontrado', '')), ',', '.'), '') is null
+        and (
+          nullif(replace(btrim(coalesce(m->>'encontrado', '')), ',', '.'), '') is null
+          or replace(btrim(coalesce(m->>'encontrado', '')), ',', '.') !~ '^[+-]?[0-9]+([.][0-9]+)?
+    ) then
+      raise exception 'Características quantitativas exigem valor medido numérico.';
+    end if;
+
+    if exists (
+      select 1
+      from jsonb_array_elements(p_medicoes) m
+      join public.erp_planos_inspecao s
+        on s.id = nullif(m->>'plano_inspecao_id', '')::uuid
+        and s.empresa_id = v_empresa
+        and s.produto_id = p_produto_id
+      where case
+        when s.metodo_inspecao in ('VISUAL', 'DOCUMENTAL') then
+          upper(btrim(coalesce(m->>'encontrado', ''))) not in ('OK', 'CONFORME', 'APROVADO', 'SIM')
+        else
+          nullif(replace(btrim(coalesce(m->>'encontrado', '')), ',', '.'), '') is null
+          or (s.limite_inferior is not null and replace(btrim(m->>'encontrado'), ',', '.')::numeric < s.limite_inferior)
+          or (s.limite_superior is not null and replace(btrim(m->>'encontrado'), ',', '.')::numeric > s.limite_superior)
+      end
+    ) then
+      raise exception 'Uma ou mais características não atendem aos critérios aprovados; o laudo não pode ser aprovado.';
+    end if;
+  else
+    if p_quantidade_reprovada <= 0 or p_acao_bloqueio is null
+       or p_acao_bloqueio not in ('BLOQUEAR_LOTE', 'RETER_RETRABALHO', 'SEGREGAR') then
+      raise exception 'Resultado não aprovado exige quantidade reprovada e ação de bloqueio válida.';
+    end if;
+    if p_setor_id is null or not exists (
+      select 1 from public.erp_setores s
+      where s.id = p_setor_id and s.empresa_id = v_empresa and s.ativo = true
+    ) then
+      raise exception 'Selecione setor ativo responsável pela RPNC.';
+    end if;
+    if p_severidade is null or p_severidade not in ('Critica', 'Maior', 'Menor') then
+      raise exception 'Selecione gravidade válida para a RPNC.';
+    end if;
+    if nullif(btrim(p_descricao_rpnc), '') is null or length(btrim(p_descricao_rpnc)) < 5 then
+      raise exception 'Descreva a não conformidade com pelo menos 5 caracteres.';
+    end if;
+  end if;
+
+  insert into public.erp_inspecoes (
+    empresa_id, produto_id, lote_id, ordem_producao_id, maquina_id, tipo, resultado,
+    quantidade_inspecionada, quantidade_aprovada, quantidade_reprovada,
+    observacao, inspetor_nome, medicoes, acao_bloqueio, criado_por
+  ) values (
+    v_empresa, p_produto_id, p_lote_id, p_ordem_producao_id, p_maquina_id, p_tipo, p_resultado,
+    p_quantidade_inspecionada, p_quantidade_aprovada, p_quantidade_reprovada,
+    nullif(btrim(p_observacao), ''), nullif(btrim(p_inspetor_nome), ''), p_medicoes,
+    case when p_resultado = 'APROVADO' then 'NENHUMA' else p_acao_bloqueio end, auth.uid()
+  ) returning * into v_inspecao;
+
+  if p_resultado <> 'APROVADO' then
+    perform public.erp_reter_lote(
+      p_lote_id,
+      'Inspeção ' || v_tipo_plano || ' ' || p_resultado || ': ' || btrim(p_descricao_rpnc)
+    );
+    update public.erp_estoque_lotes_rastreabilidade
+    set status_qualidade = 'REPROVADO', quantidade_disponivel = 0
+    where empresa_id = v_empresa
+      and produto_id = p_produto_id
+      and lote_fornecedor = v_lote.lote_fornecedor;
+    select public.erp_sgq_abrir_rpnc(
+      btrim(p_descricao_rpnc),
+      case when p_tipo = 'FINAL' then 'Inspeção final' else 'Inspeção em processo' end,
+      p_severidade,
+      p_setor_id,
+      'lote',
+      p_lote_id
+    ) into v_rpnc;
+
+    return jsonb_build_object(
+      'inspecao_id', v_inspecao.id,
+      'rpnc_id', v_rpnc.id,
+      'numero_rpnc', v_rpnc.numero_rpnc
+    );
+  end if;
+
+  return jsonb_build_object('inspecao_id', v_inspecao.id, 'rpnc_id', null, 'numero_rpnc', null);
+end;
+$$;
+
+revoke all on function public.erp_qms_registrar_inspecao_processo(uuid, uuid, uuid, uuid, text, text, numeric, numeric, numeric, text, text, jsonb, text, uuid, text, text) from public, anon;
+grant execute on function public.erp_qms_registrar_inspecao_processo(uuid, uuid, uuid, uuid, text, text, numeric, numeric, numeric, text, text, jsonb, text, uuid, text, text) to authenticated;
+
+  ) then
+    raise exception 'Medições dimensionais/funcionais devem conter valores numéricos válidos.';
+  end if;
+
+  if p_resultado = 'APROVADO' then
+    if p_quantidade_reprovada <> 0 or p_acao_bloqueio is distinct from 'NENHUMA' then
+      raise exception 'Inspeção aprovada não pode ter quantidade reprovada nem ação de bloqueio.';
+    end if;
+
+    if exists (
+      select 1
+      from jsonb_array_elements(p_medicoes) m
+      join public.erp_planos_inspecao s
+        on s.id = nullif(m->>'plano_inspecao_id', '')::uuid
+        and s.empresa_id = v_empresa
+        and s.produto_id = p_produto_id
+      where
+        case
+          when s.metodo_inspecao in ('VISUAL', 'DOCUMENTAL') then
+            upper(btrim(coalesce(m->>'encontrado', ''))) not in ('OK', 'CONFORME', 'APROVADO', 'SIM')
+          else
+            nullif(replace(btrim(coalesce(m->>'encontrado', '')), ',', '.'), '') is null
+            or (s.limite_inferior is not null and replace(btrim(m->>'encontrado'), ',', '.')::numeric < s.limite_inferior)
+            or (s.limite_superior is not null and replace(btrim(m->>'encontrado'), ',', '.')::numeric > s.limite_superior)
+        end
+    ) then
+      raise exception 'Uma ou mais características não atendem aos critérios aprovados; o laudo não pode ser aprovado.';
+    end if;
+  else
+    if p_quantidade_reprovada <= 0 or p_acao_bloqueio is null or p_acao_bloqueio not in ('BLOQUEAR_LOTE', 'RETER_RETRABALHO', 'SEGREGAR') then
+      raise exception 'Resultado não aprovado exige quantidade reprovada e ação de bloqueio válida.';
+    end if;
+    if p_setor_id is null or not exists (
+      select 1 from public.erp_setores s
+      where s.id = p_setor_id and s.empresa_id = v_empresa and s.ativo = true
+    ) then
+      raise exception 'Selecione setor ativo responsável pela RPNC.';
+    end if;
+    if p_severidade is null or p_severidade not in ('Critica', 'Maior', 'Menor') then
+      raise exception 'Selecione gravidade válida para a RPNC.';
+    end if;
+    if nullif(btrim(p_descricao_rpnc), '') is null or length(btrim(p_descricao_rpnc)) < 5 then
+      raise exception 'Descreva a não conformidade com pelo menos 5 caracteres.';
+    end if;
+  end if;
+
+  insert into public.erp_inspecoes (
+    empresa_id, produto_id, lote_id, ordem_producao_id, maquina_id, tipo, resultado,
+    quantidade_inspecionada, quantidade_aprovada, quantidade_reprovada,
+    observacao, inspetor_nome, medicoes, acao_bloqueio, criado_por
+  ) values (
+    v_empresa, p_produto_id, p_lote_id, p_ordem_producao_id, p_maquina_id, p_tipo, p_resultado,
+    p_quantidade_inspecionada, p_quantidade_aprovada, p_quantidade_reprovada,
+    nullif(btrim(p_observacao), ''), nullif(btrim(p_inspetor_nome), ''), p_medicoes,
+    case when p_resultado = 'APROVADO' then 'NENHUMA' else p_acao_bloqueio end, auth.uid()
+  ) returning * into v_inspecao;
+
+  if p_resultado <> 'APROVADO' then
+    if upper(coalesce(v_lote.status_inspecao, '')) <> 'RETIDO' then
+      perform public.erp_reter_lote(
+        p_lote_id,
+        'Inspeção ' || v_tipo_plano || ' ' || p_resultado || ': ' || btrim(p_descricao_rpnc)
+      );
+    end if;
+    select public.erp_sgq_abrir_rpnc(
+      btrim(p_descricao_rpnc),
+      case when p_tipo = 'FINAL' then 'Inspeção final' else 'Inspeção em processo' end,
+      p_severidade,
+      p_setor_id,
+      'lote',
+      p_lote_id
+    ) into v_rpnc;
+
+    return jsonb_build_object(
+      'inspecao_id', v_inspecao.id,
+      'rpnc_id', v_rpnc.id,
+      'numero_rpnc', v_rpnc.numero_rpnc
+    );
+  end if;
+
+  return jsonb_build_object('inspecao_id', v_inspecao.id, 'rpnc_id', null, 'numero_rpnc', null);
+end;
+$$;
+
+revoke all on function public.erp_qms_registrar_inspecao_processo(uuid, uuid, uuid, uuid, text, text, numeric, numeric, numeric, text, text, jsonb, text, uuid, text, text) from public, anon;
+grant execute on function public.erp_qms_registrar_inspecao_processo(uuid, uuid, uuid, uuid, text, text, numeric, numeric, numeric, text, text, jsonb, text, uuid, text, text) to authenticated;
+
+        )
     ) then
       raise exception 'Características quantitativas exigem valor medido numérico.';
     end if;
