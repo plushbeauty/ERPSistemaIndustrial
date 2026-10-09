@@ -84,3 +84,213 @@ $$;
 revoke all on function public.erp_qualidade_aprovar_ficha_tecnica(uuid) from public, anon;
 revoke all on function public.erp_guard_ficha_tecnica_status() from public, anon, authenticated;
 grant execute on function public.erp_qualidade_aprovar_ficha_tecnica(uuid) to authenticated;
+
+-- Enforce approved revisions and use output yield in the multilevel BOM explosion.
+CREATE OR REPLACE FUNCTION public.erp_mrp_explodir(
+  p_produto_id uuid,
+  p_quantidade numeric,
+  p_demanda_ref text DEFAULT NULL
+)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = pg_catalog, public
+AS $$
+DECLARE
+  v_empresa uuid := public.erp_current_empresa_id();
+  v_run uuid;
+  v_missing uuid;
+BEGIN
+  IF v_empresa IS NULL THEN
+    RAISE EXCEPTION 'ERP_TENANT_NOT_FOUND';
+  END IF;
+
+  IF p_produto_id IS NULL OR p_quantidade IS NULL OR p_quantidade <= 0 THEN
+    RAISE EXCEPTION 'MRP_INVALID_INPUT';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM public.erp_produtos p
+    WHERE p.id = p_produto_id AND p.empresa_id = v_empresa AND p.ativo = true
+  ) THEN
+    RAISE EXCEPTION 'MRP_PRODUCT_NOT_IN_TENANT';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM public.erp_fichas_tecnicas f
+    WHERE f.empresa_id = v_empresa AND f.produto_id = p_produto_id AND f.ativa = true
+      AND lower(coalesce(f.status, '')) IN ('aprovada', 'liberada')
+  ) THEN RAISE EXCEPTION 'MRP_PROCESS_SHEET_NOT_APPROVED'; END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM public.erp_fichas_tecnicas f
+    WHERE f.empresa_id = v_empresa AND f.produto_id = p_produto_id AND f.ativa = true
+      AND lower(coalesce(f.status, '')) IN ('aprovada', 'liberada')
+      AND coalesce(f.rendimento, 0) <= 0
+  ) THEN RAISE EXCEPTION 'MRP_PROCESS_SHEET_INVALID_YIELD'; END IF;
+
+
+  -- Manufactured components must have an approved, valid child BOM; otherwise do not treat them as purchasable.
+  WITH RECURSIVE explosao_validacao AS (
+    SELECT fi.componente_id, 1 AS nivel,
+      p_quantidade / NULLIF(f.rendimento, 0) * fi.quantidade * (1 + fi.perda_percentual / 100.0) AS quantidade,
+      ARRAY[p_produto_id, fi.componente_id]::uuid[] AS caminho
+    FROM public.erp_ficha_itens fi
+    JOIN public.erp_fichas_tecnicas f ON f.id = fi.ficha_id
+      AND f.empresa_id = v_empresa AND f.produto_id = p_produto_id AND f.ativa = true
+      AND lower(coalesce(f.status, '')) IN ('aprovada', 'liberada')
+    WHERE fi.empresa_id = v_empresa
+    UNION ALL
+    SELECT child.componente_id, e.nivel + 1,
+      e.quantidade / NULLIF(cf.rendimento, 0) * child.quantidade * (1 + child.perda_percentual / 100.0),
+      e.caminho || child.componente_id
+    FROM explosao_validacao e
+    JOIN public.erp_fichas_tecnicas cf ON cf.empresa_id = v_empresa
+      AND cf.produto_id = e.componente_id AND cf.ativa = true
+      AND lower(coalesce(cf.status, '')) IN ('aprovada', 'liberada')
+    JOIN public.erp_ficha_itens child ON child.ficha_id = cf.id AND child.empresa_id = v_empresa
+    WHERE e.nivel < 50 AND NOT child.componente_id = ANY(e.caminho)
+  )
+  SELECT e.componente_id INTO v_missing
+  FROM explosao_validacao e
+  JOIN public.erp_produtos p ON p.id = e.componente_id AND p.empresa_id = v_empresa
+  LEFT JOIN LATERAL (
+    SELECT f.id, f.rendimento FROM public.erp_fichas_tecnicas f
+    WHERE f.empresa_id = v_empresa AND f.produto_id = e.componente_id AND f.ativa = true
+      AND lower(coalesce(f.status, '')) IN ('aprovada', 'liberada')
+    ORDER BY f.versao DESC LIMIT 1
+  ) child_ficha ON true
+  WHERE coalesce(p.fabricado, false) = true
+    AND (child_ficha.id IS NULL OR coalesce(child_ficha.rendimento, 0) <= 0)
+  LIMIT 1;
+
+  IF v_missing IS NOT NULL THEN
+    RAISE EXCEPTION 'MRP_COMPONENT_PROCESS_SHEET_NOT_APPROVED_OR_INVALID:%', v_missing;
+  END IF;
+
+  INSERT INTO public.erp_mrp_runs (
+    empresa_id, produto_raiz_id, quantidade_raiz, demanda_ref, criado_por
+  )
+  SELECT v_empresa, p_produto_id, p_quantidade, p_demanda_ref, u.id
+  FROM public.erp_usuarios u
+  WHERE u.auth_user_id = auth.uid()
+    AND u.empresa_id = v_empresa
+    AND u.ativo = true
+  LIMIT 1
+  RETURNING id INTO v_run;
+
+  IF v_run IS NULL THEN
+    RAISE EXCEPTION 'MRP_USER_NOT_AUTHORIZED';
+  END IF;
+
+  WITH RECURSIVE explosao AS (
+    SELECT
+      fi.componente_id,
+      1 AS nivel,
+      p_quantidade / NULLIF(f.rendimento, 0) * fi.quantidade * (1 + fi.perda_percentual / 100.0) AS quantidade,
+      ARRAY[p_produto_id, fi.componente_id]::uuid[] AS caminho
+    FROM public.erp_ficha_itens fi
+    JOIN public.erp_fichas_tecnicas f
+      ON f.id = fi.ficha_id
+     AND f.empresa_id = v_empresa
+     AND f.produto_id = p_produto_id
+     AND f.ativa = true
+     AND lower(coalesce(f.status, '')) IN ('aprovada', 'liberada')
+    WHERE fi.empresa_id = v_empresa
+
+    UNION ALL
+
+    SELECT
+      child.componente_id,
+      e.nivel + 1,
+      e.quantidade / NULLIF(cf.rendimento, 0) * child.quantidade * (1 + child.perda_percentual / 100.0),
+      e.caminho || child.componente_id
+    FROM explosao e
+    JOIN public.erp_fichas_tecnicas cf
+      ON cf.empresa_id = v_empresa
+     AND cf.produto_id = e.componente_id
+     AND cf.ativa = true
+     AND lower(coalesce(cf.status, '')) IN ('aprovada', 'liberada')
+    JOIN public.erp_ficha_itens child
+      ON child.ficha_id = cf.id
+     AND child.empresa_id = v_empresa
+    WHERE e.nivel < 50
+      AND NOT child.componente_id = ANY(e.caminho)
+  ),
+  consol AS (
+    SELECT componente_id, max(nivel) AS nivel, sum(quantidade) AS quantidade_bruta
+    FROM explosao
+    GROUP BY componente_id
+  )
+  INSERT INTO public.erp_mrp_necessidades (
+    empresa_id, run_id, produto_raiz_id, componente_id, nivel,
+    quantidade_bruta, estoque_atual, reservado, quantidade_disponivel,
+    necessidade_liquida, sugestao
+  )
+  SELECT
+    v_empresa,
+    v_run,
+    p_produto_id,
+    c.componente_id,
+    c.nivel,
+    c.quantidade_bruta,
+    COALESCE(p.estoque_atual, 0),
+    COALESCE((
+      SELECT sum(r.quantidade)
+      FROM public.erp_estoque_reservas r
+      WHERE r.empresa_id = v_empresa
+        AND r.produto_id = c.componente_id
+    ), 0),
+    GREATEST(
+      COALESCE(p.estoque_atual, 0) -
+      COALESCE((
+        SELECT sum(r.quantidade)
+        FROM public.erp_estoque_reservas r
+        WHERE r.empresa_id = v_empresa
+          AND r.produto_id = c.componente_id
+      ), 0),
+      0
+    ),
+    GREATEST(
+      c.quantidade_bruta -
+      GREATEST(
+        COALESCE(p.estoque_atual, 0) -
+        COALESCE((
+          SELECT sum(r.quantidade)
+          FROM public.erp_estoque_reservas r
+          WHERE r.empresa_id = v_empresa
+            AND r.produto_id = c.componente_id
+        ), 0),
+        0
+      ),
+      0
+    ),
+    CASE
+      WHEN GREATEST(
+        c.quantidade_bruta -
+        GREATEST(
+          COALESCE(p.estoque_atual, 0) -
+          COALESCE((
+            SELECT sum(r.quantidade)
+            FROM public.erp_estoque_reservas r
+            WHERE r.empresa_id = v_empresa
+              AND r.produto_id = c.componente_id
+          ), 0),
+          0
+        ),
+        0
+      ) = 0 THEN 'SEM_NECESSIDADE'
+      WHEN COALESCE(p.fabricado, false) THEN 'PRODUZIR'
+      ELSE 'COMPRAR'
+    END
+  FROM consol c
+  JOIN public.erp_produtos p
+    ON p.id = c.componente_id
+   AND p.empresa_id = v_empresa;
+
+  RETURN v_run;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.erp_mrp_explodir(uuid, numeric, text) FROM anon;
+GRANT EXECUTE ON FUNCTION public.erp_mrp_explodir(uuid, numeric, text) TO authenticated;
