@@ -49,11 +49,13 @@ begin
     raise exception 'Responsável deve ser usuário ativo da mesma empresa.';
   end if;
 
-  if new.aprovador_id is not null and not exists (
-    select 1 from public.erp_usuarios u
-    where u.auth_user_id = new.aprovador_id and u.empresa_id = new.empresa_id and u.ativo = true
-  ) then
-    raise exception 'Aprovador deve ser usuário ativo da mesma empresa.';
+  if new.aprovador_id is not null
+     and not (new.aprovador_id = auth.uid() and public.erp_is_master())
+     and not exists (
+       select 1 from public.erp_usuarios u
+       where u.auth_user_id = new.aprovador_id and u.empresa_id = new.empresa_id and u.ativo = true
+     ) then
+    raise exception 'Aprovador deve ser usuário ativo da mesma empresa ou Master autorizado.';
   end if;
 
   return new;
