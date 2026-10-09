@@ -109,6 +109,16 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
     return () => { mounted = false }
   }, [empresaId, produtoId])
 
+  const now = new Date()
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const activeProductSpecs = productSpecs.filter(spec =>
+    (spec.status || '').toLowerCase() === 'ativo'
+    && Boolean(spec.aprovador_id)
+    && Boolean(spec.aprovado_em)
+    && (!spec.vigencia_inicio || spec.vigencia_inicio <= today)
+    && (!spec.vigencia_fim || spec.vigencia_fim >= today)
+  )
+
   const handleProductChange = (value: string) => {
     setProdutoId(value)
     const selected = products.find(product => product.id === value)
@@ -359,21 +369,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
               <h2 className="text-[11px] font-semibold uppercase tracking-wider text-slate-800">Especificação técnica e armazenamento — Qualidade</h2>
               <span className="text-[9px] text-slate-500">{specLoading ? 'CONSULTANDO...' : 'SOMENTE LEITURA'}</span>
             </div>
-            {specLoading ? <div className="h-[30px] animate-pulse bg-slate-100" /> : productSpecs.filter(spec => {
-              const today = new Date().toISOString().slice(0, 10)
-              return (spec.status || '').toLowerCase() === 'ativo'
-                && Boolean(spec.aprovador_id)
-                && Boolean(spec.aprovado_em)
-                && (!spec.vigencia_inicio || spec.vigencia_inicio <= today)
-                && (!spec.vigencia_fim || spec.vigencia_fim >= today)
-            }).length ? productSpecs.filter(spec => {
-              const today = new Date().toISOString().slice(0, 10)
-              return (spec.status || '').toLowerCase() === 'ativo'
-                && Boolean(spec.aprovador_id)
-                && Boolean(spec.aprovado_em)
-                && (!spec.vigencia_inicio || spec.vigencia_inicio <= today)
-                && (!spec.vigencia_fim || spec.vigencia_fim >= today)
-            }).map(spec => <div key={spec.id} className="grid grid-cols-1 gap-1 border-b border-slate-100 py-2 md:grid-cols-[130px_minmax(0,1fr)_minmax(0,1.2fr)]">
+            {specLoading ? <div className="h-[30px] animate-pulse bg-slate-100" /> : activeProductSpecs.length ? activeProductSpecs.map(spec => <div key={spec.id} className="grid grid-cols-1 gap-1 border-b border-slate-100 py-2 md:grid-cols-[130px_minmax(0,1fr)_minmax(0,1.2fr)]">
               <p className="text-[10px] font-semibold text-slate-800">{spec.codigo} · {spec.grupo_material || 'Grupo não informado'}</p>
               <p className="text-[10px] text-slate-700">{spec.caracteristica} · {spec.metodo_inspecao}</p>
               <p className="text-[10px] text-slate-600">Armazenamento: {spec.condicao_armazenamento || 'Condição não definida — consultar Qualidade antes da liberação.'}</p>
