@@ -77,8 +77,9 @@ export default function QualidadeRNC() {
     setError(''); setNotice('')
     if (!description.trim()) { setError('Descrição detalhada da falha é obrigatória.'); return }
     if (!lot.trim()) { setError('Lote afetado é obrigatório.'); return }
-    setBusy(true)
     if (!sectorId) { setError('Setor responsável é obrigatório.'); return }
+    const segregatedQuantity = Number(segregated)
+    if (!Number.isFinite(segregatedQuantity) || segregatedQuantity < 0) { setError('A quantidade segregada deve ser zero ou maior.'); return }
     setBusy(true)
     try {
       const lotResult = await supabase.from('erp_estoque_lotes').select('id').eq('empresa_id', companyId).or(`lote_interno.eq.${lot.trim()},lote_fornecedor.eq.${lot.trim()}`).maybeSingle()
@@ -93,7 +94,7 @@ export default function QualidadeRNC() {
       const createdId = String(result.data.id)
       const update = await supabase.from('erp_rpnc').update({ lote_afetado: lot.trim(), quantidade_segregada: Number(segregated || 0) }).eq('id', createdId).eq('empresa_id', companyId)
       if (update.error) throw update.error
-      setSelectedRnc(createdId); setDescription(''); setLot(''); setSegregated('0'); setNotice('RNC aberta no banco real com lote e quantidade segregada.'); await load()
+      setSelectedRnc(createdId); setDescription(''); setLot(''); setSegregated('0'); setNotice('RNC aberta; o lote vinculado foi enviado para quarentena transacional.'); await load()
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao abrir RNC.') }
     finally { setBusy(false) }
   }
