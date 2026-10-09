@@ -1,16 +1,187 @@
-import { ArrowLeft, Plus } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { ArrowLeft, Plus, RefreshCw } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
-type Product={id:string;codigo:string;nome:string}
-type Row={id:string;sku_insumo:string;qtd:number;unidade:string;custo_unitario:number}
-const input='h-7 rounded-md border border-gray-200 bg-white px-2 text-[11px]'
-const label='mb-0.5 text-[10px] font-bold uppercase text-gray-500'
-const button='inline-flex h-7 items-center justify-center gap-1 rounded-md px-2 text-[11px] font-bold'
-export default function EngenhariaBOM(){
- const nav=useNavigate(),[pai,setPai]=useState(''),[sku,setSku]=useState(''),[qtd,setQtd]=useState('1'),[un,setUn]=useState('UN'),[custo,setCusto]=useState('0'),[products,setProducts]=useState<Product[]>([]),[rows,setRows]=useState<Row[]>([]),[error,setError]=useState('')
- const load=async()=>{const p=await supabase.from('erp_produtos').select('id,codigo,nome').eq('ativo',true).order('codigo').limit(3000);if(p.error)throw p.error;setProducts((p.data??[]) as Product[]);if(pai){const r=await supabase.from('erp_pcp_bom_itens').select('id,sku_insumo,qtd,unidade,custo_unitario').eq('produto_pai_id',pai).order('created_at');if(r.error)throw r.error;setRows((r.data??[]) as Row[])}}
- useEffect(()=>{void load().catch(e=>setError(e instanceof Error?e.message:'Falha ao carregar BOM.'))},[pai])
- const add=async()=>{const p=products.find(x=>x.codigo===sku);if(!p||!pai){setError('Selecione o produto pai e um insumo cadastrado.');return}const r=await supabase.rpc('erp_pcp_bom_adicionar',{p_produto_pai_id:pai,p_produto_id:p.id,p_sku_insumo:p.codigo,p_qtd:Number(qtd),p_unidade:un,p_custo_unitario:Number(custo)});if(r.error)setError(r.error.message);else{setSku('');await load()}}
- return <main className="min-h-screen bg-slate-50 p-3"><div className="space-y-2"><div className="flex items-center gap-2"><button onClick={()=>nav('/engenharia')} className={button+' border border-gray-200 bg-white text-gray-600'}><ArrowLeft size={12}/>Voltar</button><b className="text-[13px]">ENGENHARIA DE PRODUTO (BOM)</b></div>{error&&<div className="border border-red-200 bg-red-50 p-1 text-[10px] text-red-700">{error}</div>}<section className="rounded-md border border-gray-200 bg-white p-2"><div className="flex items-end gap-2"><div className="min-w-0 flex-1"><label className={label}>Produto a Fabricar</label><select className={input+' w-full'} value={pai} onChange={e=>setPai(e.target.value)}><option value="">Selecione</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} - {p.nome}</option>)}</select></div></div></section><section className="rounded-md border border-gray-200 bg-gray-50 p-2"><div className="flex items-end gap-2"><div className="w-[140px]"><label className={label}>Matéria-Prima</label><input className={input+' w-[140px]'} value={sku} onChange={e=>setSku(e.target.value)}/></div><div className="w-[70px]"><label className={label}>Qtd Insumo</label><input className={input+' w-[70px]'} value={qtd} onChange={e=>setQtd(e.target.value)}/></div><div className="w-[60px]"><label className={label}>Unidade</label><input className={input+' w-[60px]'} value={un} onChange={e=>setUn(e.target.value)}/></div><div className="w-[90px]"><label className={label}>Custo Est. UN</label><input className={input+' w-[90px]'} value={custo} onChange={e=>setCusto(e.target.value)}/></div><button onClick={()=>void add()} className={button+' w-[80px] bg-blue-600 text-white'}><Plus size={12}/>Adicionar</button></div></section><section className="h-[200px] overflow-auto rounded-md border border-gray-200 bg-white"><table className="w-full text-[10px]"><thead className="sticky top-0 bg-slate-700 text-white"><tr className="h-7"><th>SKU</th><th>Qtd</th><th>Un</th><th>Custo UN</th><th>Custo Total</th></tr></thead><tbody>{rows.map(r=><tr key={r.id} className="h-[26px] even:bg-slate-50"><td>{r.sku_insumo}</td><td>{r.qtd}</td><td>{r.unidade}</td><td>{Number(r.custo_unitario).toFixed(2)}</td><td>{(Number(r.qtd)*Number(r.custo_unitario)).toFixed(2)}</td></tr>)}</tbody></table></section></div></main>
+
+type Product = { id: string; codigo: string; nome: string }
+type BomItem = { id: string; sku_insumo: string; qtd: number; unidade: string; custo_unitario: number }
+
+const inputClass = 'h-[30px] min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] text-slate-800 outline-none transition focus:border-sky-600 focus:ring-1 focus:ring-sky-600'
+const buttonClass = 'inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border px-2 text-[10px] font-medium transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sky-600 disabled:cursor-not-allowed disabled:opacity-50'
+const labelClass = 'mb-[2px] block text-[9px] font-semibold uppercase tracking-wider text-slate-500'
+
+export default function EngenhariaBOM() {
+  const navigate = useNavigate()
+  const [empresaId, setEmpresaId] = useState('')
+  const [produtoPai, setProdutoPai] = useState('')
+  const [skuInsumo, setSkuInsumo] = useState('')
+  const [quantidade, setQuantidade] = useState('1')
+  const [unidade, setUnidade] = useState('UN')
+  const [custoUnitario, setCustoUnitario] = useState('0')
+  const [produtos, setProdutos] = useState<Product[]>([])
+  const [itens, setItens] = useState<BomItem[]>([])
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+
+  const load = useCallback(async () => {
+    setBusy(true)
+    setError('')
+    try {
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
+      const companyId = String(company.data)
+      const productResult = await supabase
+        .from('erp_produtos')
+        .select('id,codigo,nome')
+        .eq('empresa_id', companyId)
+        .eq('ativo', true)
+        .order('codigo')
+        .limit(3000)
+      if (productResult.error) throw productResult.error
+      setEmpresaId(companyId)
+      setProdutos((productResult.data ?? []) as Product[])
+      if (produtoPai) {
+        const bomResult = await supabase
+          .from('erp_pcp_bom_itens')
+          .select('id,sku_insumo,qtd,unidade,custo_unitario')
+          .eq('empresa_id', companyId)
+          .eq('produto_pai_id', produtoPai)
+          .order('created_at')
+        if (bomResult.error) throw bomResult.error
+        setItens((bomResult.data ?? []) as BomItem[])
+      } else {
+        setItens([])
+      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao carregar a estrutura de materiais.')
+    } finally {
+      setBusy(false)
+    }
+  }, [produtoPai])
+
+  useEffect(() => { void load() }, [load])
+
+  const addItem = async () => {
+    setError('')
+    setMessage('')
+    const component = produtos.find(item => item.codigo.trim().toLowerCase() === skuInsumo.trim().toLowerCase())
+    const qty = Number(quantidade)
+    const cost = Number(custoUnitario)
+    if (!empresaId) { setError('Empresa da sessão não identificada.'); return }
+    if (!produtoPai) { setError('Selecione o produto pai.'); return }
+    if (produtoPai === component?.id) { setError('O produto acabado não pode ser insumo de si mesmo.'); return }
+    if (!component) { setError('Informe o código de um produto/insumo cadastrado nesta empresa.'); return }
+    if (!Number.isFinite(qty) || qty <= 0) { setError('A quantidade do componente deve ser maior que zero.'); return }
+    if (!unidade.trim()) { setError('Informe a unidade de medida.'); return }
+    if (!Number.isFinite(cost) || cost < 0) { setError('O custo unitário não pode ser negativo.'); return }
+
+    setBusy(true)
+    try {
+      const result = await supabase.rpc('erp_pcp_bom_adicionar', {
+        p_produto_pai_id: produtoPai,
+        p_produto_id: component.id,
+        p_sku_insumo: component.codigo,
+        p_qtd: qty,
+        p_unidade: unidade.trim(),
+        p_custo_unitario: cost,
+      })
+      if (result.error) throw result.error
+      setSkuInsumo('')
+      setMessage('Componente adicionado à estrutura de materiais.')
+      await load()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível adicionar o componente.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const custoTotal = itens.reduce((sum, item) => sum + Number(item.qtd || 0) * Number(item.custo_unitario || 0), 0)
+  const produtoSelecionado = produtos.find(item => item.id === produtoPai)
+
+  return (
+    <main className="min-h-screen bg-[#F4FBFD] p-2 text-[#123B50]">
+      <div className="mx-auto max-w-[1600px] space-y-2">
+        <header className="flex min-h-[38px] items-center justify-between gap-2 border-b border-slate-200 bg-white px-2 py-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <button type="button" onClick={() => navigate('/engenharia')} className={buttonClass + ' border-slate-300 bg-white'}><ArrowLeft size={14} /> VOLTAR</button>
+            <h1 className="truncate text-[12px] font-semibold">ENGENHARIA · ESTRUTURA DE MATERIAIS (BOM)</h1>
+          </div>
+          <button type="button" onClick={() => void load()} disabled={busy} className={buttonClass + ' border-slate-300 bg-white'}><RefreshCw size={13} /> ATUALIZAR</button>
+        </header>
+
+        {error ? <div role="alert" className="border border-red-300 bg-red-50 px-2 py-1 text-[10px] text-red-800">{error}</div> : null}
+        {message ? <div role="status" className="border border-emerald-300 bg-emerald-50 px-2 py-1 text-[10px] text-emerald-800">{message}</div> : null}
+
+        <section className="border border-slate-200 bg-white p-2">
+          <label className={labelClass} htmlFor="bom-produto-pai">Produto a fabricar</label>
+          <select id="bom-produto-pai" className={inputClass + ' w-full max-w-[760px]'} value={produtoPai} onChange={event => setProdutoPai(event.target.value)}>
+            <option value="">Selecione o produto acabado ou subconjunto</option>
+            {produtos.map(item => <option key={item.id} value={item.id}>{item.codigo} · {item.nome}</option>)}
+          </select>
+          {produtoSelecionado ? <p className="mt-1 text-[10px] text-slate-500">Estrutura do item: {produtoSelecionado.codigo} · {produtoSelecionado.nome}</p> : null}
+        </section>
+
+        <section className="border border-slate-200 bg-white p-2">
+          <div className="grid grid-cols-1 items-end gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(180px,1.4fr)_100px_90px_120px_100px]">
+            <div>
+              <label className={labelClass} htmlFor="bom-insumo">Código do componente</label>
+              <input id="bom-insumo" className={inputClass + ' w-full'} list="bom-insumos" value={skuInsumo} onChange={event => setSkuInsumo(event.target.value)} placeholder="Código cadastrado" />
+              <datalist id="bom-insumos">{produtos.map(item => <option key={item.id} value={item.codigo}>{item.nome}</option>)}</datalist>
+            </div>
+            <div>
+              <label className={labelClass} htmlFor="bom-quantidade">Qtd. por unidade</label>
+              <input id="bom-quantidade" className={inputClass + ' w-full text-right'} type="number" min="0.000001" step="0.000001" value={quantidade} onChange={event => setQuantidade(event.target.value)} />
+            </div>
+            <div>
+              <label className={labelClass} htmlFor="bom-unidade">Unidade</label>
+              <input id="bom-unidade" className={inputClass + ' w-full'} maxLength={8} value={unidade} onChange={event => setUnidade(event.target.value)} />
+            </div>
+            <div>
+              <label className={labelClass} htmlFor="bom-custo">Custo unitário estimado</label>
+              <input id="bom-custo" className={inputClass + ' w-full text-right'} type="number" min="0" step="0.000001" value={custoUnitario} onChange={event => setCustoUnitario(event.target.value)} />
+            </div>
+            <button type="button" disabled={busy} onClick={() => void addItem()} className={buttonClass + ' border-sky-700 bg-sky-700 text-white hover:bg-sky-800'}><Plus size={14} /> ADICIONAR</button>
+          </div>
+        </section>
+
+        <section className="overflow-hidden border border-slate-200 bg-white">
+          <div className="flex h-[30px] items-center justify-between border-b border-slate-200 px-2">
+            <h2 className="text-[10px] font-semibold uppercase tracking-wider">Componentes da estrutura</h2>
+            <span className="text-[10px] text-slate-500">{itens.length} componente(s)</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left text-[10px]">
+              <thead className="bg-slate-100 text-[9px] uppercase tracking-wider text-slate-600">
+                <tr className="h-[30px]">
+                  <th className="px-2 font-semibold">Código do componente</th>
+                  <th className="w-[130px] px-2 text-right font-semibold">Quantidade</th>
+                  <th className="w-[90px] px-2 font-semibold">Un.</th>
+                  <th className="w-[150px] px-2 text-right font-semibold">Custo unitário</th>
+                  <th className="w-[150px] px-2 text-right font-semibold">Custo estendido</th>
+                </tr>
+              </thead>
+              <tbody>
+                {itens.map(item => (
+                  <tr key={item.id} className="h-[32px] border-t border-slate-100 hover:bg-slate-50/80">
+                    <td className="px-2">{item.sku_insumo}</td>
+                    <td className="px-2 text-right tabular-nums">{Number(item.qtd).toLocaleString('pt-BR', { maximumFractionDigits: 6 })}</td>
+                    <td className="px-2">{item.unidade}</td>
+                    <td className="px-2 text-right tabular-nums">{Number(item.custo_unitario).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</td>
+                    <td className="px-2 text-right tabular-nums">{(Number(item.qtd) * Number(item.custo_unitario)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                  </tr>
+                ))}
+                {!busy && itens.length === 0 ? <tr><td colSpan={5} className="h-[56px] px-2 text-center text-[10px] text-slate-500">Selecione um produto para consultar a estrutura ou adicione o primeiro componente.</td></tr> : null}
+                {busy && itens.length === 0 ? <tr><td colSpan={5} className="h-[32px] animate-pulse bg-slate-50 px-2 text-center text-[10px] text-slate-500">Carregando estrutura…</td></tr> : null}
+              </tbody>
+              <tfoot className="border-t border-slate-200 bg-slate-50">
+                <tr className="h-[30px]"><td colSpan={4} className="px-2 text-right text-[9px] font-semibold uppercase tracking-wider">Custo estimado da estrutura (sem rendimento/perdas)</td><td className="px-2 text-right text-[10px] font-semibold tabular-nums">{custoTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td></tr>
+              </tfoot>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  )
 }
