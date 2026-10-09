@@ -111,7 +111,7 @@ const ConfiguracaoLote = lazyPage(() => import('./pages/ConfiguracaoLote'), 'Con
 const FichaEngenharia = lazyPage(() => import('./pages/FichaEngenharia'), 'FichaEngenharia')
 const ConfiguracaoLotePCP = lazyPage(() => import('./pages/ConfiguracaoLotePCP'), 'ConfiguracaoLotePCP')
 const FornecedoresIndustrial = lazyPage(() => import('./pages/FornecedoresIndustrial'), 'FornecedoresIndustrial')
-const ClientesIndustrial = lazyPage(() => import('./pages/ClientesIndustrial'), 'ClientesIndustrial')
+
 const TabelaPrecos = lazyPage(() => import('./pages/TabelaPrecos'), 'TabelaPrecos')
 const AjusteGlobal = lazyPage(() => import('./pages/AjusteGlobal'), 'default')
 const CatalogoDigital = lazyPage(() => import('./pages/CatalogoDigital'), 'CatalogoDigital')
@@ -525,7 +525,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras/solicitacao-manual" element={<ComprasRoute><SolicitacaoCompra /></ComprasRoute>} />
       <Route path="/solicitacao-compra" element={<Navigate to="/compras/solicitacao-manual" replace />} />
       <Route path="/fornecedores" element={<Navigate to="/compras/fornecedores" replace />} />
-      <Route path="/clientes" element={<ClientesIndustrial />} />
+      <Route path="/clientes" element={<Navigate to="/vendas/clientes" replace />} />
       <Route path="/tabela-precos" element={<AjusteGlobal />} />
       <Route path="/tabelas-preco" element={<Navigate to="/tabela-precos" replace />} />
       <Route path="/catalogo" element={<CatalogoDigital />} />

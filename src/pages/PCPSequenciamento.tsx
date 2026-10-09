@@ -1,9 +1,84 @@
-import {useEffect,useMemo,useState} from 'react'
-import {RefreshCw,Download} from 'lucide-react'
-import {supabase} from '../lib/supabaseClient'
-type M={id:string;codigo:string;nome:string};type O={id:string;numero_op:number;produto_id:string|null;maquina_id:string|null;status:string;ordem_sequencia:number|null}
-export default function PCPSequenciamento(){const[m,setM]=useState<M[]>([]),[o,setO]=useState<O[]>([]),[p,setP]=useState<Record<string,string>>({}),[err,setErr]=useState('')
-const load=async()=>{const[a,b]=await Promise.all([supabase.from('erp_maquinas').select('id,codigo,nome').eq('ativo',true).order('codigo'),supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,ordem_sequencia').not('maquina_id','is',null).order('ordem_sequencia',{ascending:true,nullsFirst:false})]);if(a.error)throw a.error;if(b.error)throw b.error;const ids=(b.data??[]).map(x=>String(x.produto_id??'')).filter(Boolean);const c=ids.length?await supabase.from('erp_produtos').select('id,codigo').in('id',ids):{data:[],error:null};if(c.error)throw c.error;setM((a.data??[])as M[]);setO((b.data??[])as O[]);setP(Object.fromEntries((c.data??[]).map(x=>[x.id,x.codigo])))};useEffect(()=>{void load().catch(e=>setErr(e instanceof Error?e.message:'Falha ao carregar'))},[])
-const cols=useMemo(()=>m.map(x=>({m:x,ops:o.filter(y=>y.maquina_id===x.id).sort((a,b)=>(a.ordem_sequencia??999999)-(b.ordem_sequencia??999999))})),[m,o])
-const move=async(op:O,d:number)=>{const c=cols.find(x=>x.m.id===op.maquina_id);if(!c)return;const i=c.ops.findIndex(x=>x.id===op.id),j=i+d;if(j<0||j>=c.ops.length)return;const a=await supabase.from('erp_ordens_producao').update({ordem_sequencia:j+1}).eq('id',c.ops[i].id);if(a.error)throw a.error;const b=await supabase.from('erp_ordens_producao').update({ordem_sequencia:i+1}).eq('id',c.ops[j].id);if(b.error)throw b.error;await load()}
-return <main className="min-h-screen bg-slate-50 p-6 text-slate-900"><div className="mx-auto max-w-[1700px]"><header className="flex flex-wrap items-center border-b border-slate-200 pb-4"><div><p className="text-sm font-black text-sky-700">PCP › OPERAÇÕES › SEQUENCIAMENTO LINEAR</p><h1 className="text-2xl font-black">Sequenciamento por Work Center</h1></div><div className="ml-auto flex gap-2"><button type="button" onClick={()=>void load()} className="h-[54px] rounded-md border bg-white px-4 font-black"><RefreshCw className="mr-2 inline" size={17}/>RECOMPOR SEQUÊNCIA</button><button type="button" onClick={()=>window.print()} className="h-[54px] rounded-md bg-slate-800 px-4 font-black text-white"><Download className="mr-2 inline" size={17}/>EXPORTAR PLANILHA</button></div></header>{err&&<div className="my-4 rounded-md border border-rose-300 bg-rose-50 p-4 font-bold text-rose-800">{err}</div>}<div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">{cols.map(c=><section key={c.m.id} className="rounded-md border border-slate-200 bg-white shadow-sm"><div className="border-b bg-slate-100 p-4"><h2 className="text-lg font-black">WORK CENTER • {c.m.codigo}</h2><p className="font-semibold text-slate-600">{c.m.nome}</p></div>{c.ops.length?c.ops.map((x,i)=><div key={x.id} className="flex h-[54px] items-center gap-2 border-b px-3"><div className="min-w-0 flex-1"><b>Posição {i+1}: OP-{x.numero_op}</b><span className="ml-2 text-slate-600">{p[x.produto_id??'']??'Produto'}</span><div className="text-xs text-slate-500">{x.status}</div></div><button type="button" disabled={i===0} onClick={()=>void move(x,-1)} className="rounded border px-2 py-1 disabled:opacity-30">↑</button><button type="button" disabled={i===c.ops.length-1} onClick={()=>void move(x,1)} className="rounded border px-2 py-1 disabled:opacity-30">↓</button></div>):<div className="p-8 text-center font-semibold text-slate-500">Nenhuma OP em fila.</div>}</section>)}</div></div></main>}
+import { useEffect, useMemo, useState } from 'react'
+import { RefreshCw, Download } from 'lucide-react'
+import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
+
+type Machine = { id: string; codigo: string; nome: string }
+type Order = { id: string; numero_op: number; produto_id: string | null; maquina_id: string | null; status: string; ordem_sequencia: number | null }
+type Product = { id: string; codigo: string }
+
+export default function PCPSequenciamento() {
+  const [machines, setMachines] = useState<Machine[]>([])
+  const [orders, setOrders] = useState<Order[]>([])
+  const [productCodes, setProductCodes] = useState<Record<string, string>>({})
+  const [empresaId, setEmpresaId] = useState('')
+  const [busyId, setBusyId] = useState<string | null>(null)
+  const [error, setError] = useState('')
+
+  const load = async () => {
+    setError('')
+    const company = await supabase.rpc('erp_current_empresa_id')
+    if (company.error || !company.data) throw company.error ?? new Error('Empresa não identificada na sessão atual.')
+    const companyId = String(company.data)
+    const [machineRows, orderRows] = await Promise.all([
+      fetchAllPages<Machine>((from, to) => supabase.from('erp_maquinas').select('id,codigo,nome', { count: 'exact' }).eq('empresa_id', companyId).eq('ativo', true).order('codigo').range(from, to)),
+      fetchAllPages<Order>((from, to) => supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,ordem_sequencia', { count: 'exact' }).eq('empresa_id', companyId).not('maquina_id', 'is', null).order('ordem_sequencia', { ascending: true, nullsFirst: false }).range(from, to))
+    ])
+    const productIds = [...new Set(orderRows.map(row => row.produto_id).filter((id): id is string => Boolean(id)))]
+    const products = productIds.length ? await fetchAllPages<Product>((from, to) => supabase.from('erp_produtos').select('id,codigo', { count: 'exact' }).eq('empresa_id', companyId).in('id', productIds).range(from, to)) : []
+    setEmpresaId(companyId)
+    setMachines(machineRows)
+    setOrders(orderRows)
+    setProductCodes(Object.fromEntries(products.map(product => [product.id, product.codigo])))
+  }
+
+  useEffect(() => { void load().catch(cause => setError(cause instanceof Error ? cause.message : 'Falha ao carregar o sequenciamento.')) }, [])
+
+  const columns = useMemo(() => machines.map(machine => ({ machine, ops: orders.filter(order => order.maquina_id === machine.id).sort((a, b) => (a.ordem_sequencia ?? 999999) - (b.ordem_sequencia ?? 999999)) })), [machines, orders])
+
+  const move = async (op: Order, delta: number) => {
+    const column = columns.find(item => item.machine.id === op.maquina_id)
+    if (!column || !empresaId || busyId) return
+    const currentIndex = column.ops.findIndex(item => item.id === op.id)
+    const nextIndex = currentIndex + delta
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= column.ops.length) return
+    setBusyId(op.id)
+    setError('')
+    try {
+      const current = column.ops[currentIndex]
+      const next = column.ops[nextIndex]
+      const first = await supabase.from('erp_ordens_producao').update({ ordem_sequencia: nextIndex + 1 }).eq('id', current.id).eq('empresa_id', empresaId).eq('maquina_id', column.machine.id)
+      if (first.error) throw first.error
+      const second = await supabase.from('erp_ordens_producao').update({ ordem_sequencia: currentIndex + 1 }).eq('id', next.id).eq('empresa_id', empresaId).eq('maquina_id', column.machine.id)
+      if (second.error) throw second.error
+      await load()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível atualizar a sequência. Atualize e confira a fila antes de repetir.')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  return <main className="min-h-screen bg-slate-50 p-4 text-slate-900">
+    <div className="mx-auto max-w-[1700px]">
+      <header className="flex flex-wrap items-center gap-3 border-b border-slate-200 pb-3">
+        <div><p className="text-[10px] font-semibold text-sky-700">PCP › OPERAÇÕES › SEQUENCIAMENTO LINEAR</p><h1 className="text-lg font-semibold">Sequenciamento por Work Center</h1></div>
+        <div className="ml-auto flex gap-2">
+          <button type="button" onClick={() => void load().catch(cause => setError(cause instanceof Error ? cause.message : 'Falha ao atualizar.'))} className="h-[30px] rounded-[2px] border bg-white px-3 text-[10px]"><RefreshCw className="mr-1 inline" size={13} /> Recompor sequência</button>
+          <button type="button" onClick={() => window.print()} className="h-[30px] rounded-[2px] bg-slate-800 px-3 text-[10px] text-white"><Download className="mr-1 inline" size={13} /> Exportar / imprimir</button>
+        </div>
+      </header>
+      {error && <div role="alert" className="my-3 border border-rose-300 bg-rose-50 p-2 text-[10px] text-rose-800">{error}</div>}
+      <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {columns.map(column => <section key={column.machine.id} className="rounded-[2px] border border-slate-200 bg-white">
+          <div className="border-b bg-slate-100 p-3"><h2 className="text-[11px] font-semibold">WORK CENTER • {column.machine.codigo}</h2><p className="text-[10px] text-slate-600">{column.machine.nome}</p></div>
+          {column.ops.length ? column.ops.map((order, index) => <div key={order.id} className="flex min-h-[42px] items-center gap-2 border-b px-2 py-1">
+            <div className="min-w-0 flex-1"><b className="text-[10px]">Posição {index + 1}: OP-{order.numero_op}</b><span className="ml-2 text-[10px] text-slate-600">{productCodes[order.produto_id ?? ''] ?? 'Produto'}</span><div className="text-[9px] text-slate-500">{order.status}</div></div>
+            <button type="button" disabled={index === 0 || busyId !== null} onClick={() => void move(order, -1)} className="rounded-[2px] border px-2 py-1 text-[10px] disabled:opacity-30" aria-label={'Mover OP ' + order.numero_op + ' para cima'}>↑</button>
+            <button type="button" disabled={index === column.ops.length - 1 || busyId !== null} onClick={() => void move(order, 1)} className="rounded-[2px] border px-2 py-1 text-[10px] disabled:opacity-30" aria-label={'Mover OP ' + order.numero_op + ' para baixo'}>↓</button>
+          </div>) : <div className="p-5 text-center text-[10px] text-slate-500">Nenhuma OP em fila.</div>}
+        </section>)}
+      </div>
+    </div>
+  </main>
+}

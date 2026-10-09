@@ -167,7 +167,7 @@ export default function QualidadePFMEA() {
             <h1 className="text-[15px] font-semibold leading-5">Matriz PFMEA — Análise de Modo e Efeito de Falha</h1>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            <button type="button" className={`${buttonClass} border-slate-300 bg-white text-slate-700 hover:bg-slate-50`} onClick={reset} disabled={busy}><RotateCcw size={12}/> NOVO</button>
+            <button type="button" className={`${buttonClass} border-slate-300 bg-white text-slate-700 hover:bg-slate-50`} onClick={() => reset()} disabled={busy}><RotateCcw size={12}/> NOVO</button>
             <button type="button" className={`${buttonClass} border-[#2D8DB8] bg-[#2D8DB8] text-white hover:bg-[#24769A]`} onClick={() => void save()} disabled={busy}><Save size={12}/> {busy ? 'SALVANDO…' : editingId ? 'ATUALIZAR PFMEA' : 'SALVAR PFMEA'}</button>
             <button type="button" className={`${buttonClass} border-slate-300 bg-white text-slate-700 hover:bg-slate-50`} onClick={() => window.print()}><Printer size={12}/> IMPRIMIR</button>
           </div>

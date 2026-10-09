@@ -56,3 +56,15 @@ Atualizado nesta execução. Este registro é acumulativo e pode ser usado na tr
 - Aplicar em ambiente de desenvolvimento e testar as migrations/RPCs de PDV, compras/estoque, expedição e manutenção, incluindo retry idempotente, saldo concorrente, falta de permissão e empresa incorreta. A RPC da separação registra rastreabilidade, mas deliberadamente não reserva/baixa saldo até haver contrato de negócio e razão de estoque confirmado para este fluxo.
 - Executar verificação visual e de teclado em desktop/tablet/mobile; o browser atualmente aponta para `/login`, sem sessão autenticada.
 - O lint global anteriormente terminou sem erros e com 71 avisos de identificadores não usados; a contagem deve ser revalidada e avisos só devem ser removidos quando forem código morto comprovado.
+
+
+## Auditoria complementar de campos, duplicações e escopo — 2026-10-09
+
+- **PDV:** a finalização usa a RPC transacional existente e chave de idempotência; a RPC precisa estar instalada no Supabase de destino antes do uso real.
+- **Compras / RFQ:** resposta editável com preço, frete, desconto, prazo, condição de pagamento, validade e observações; fornecedor sem preço não participa do cálculo de menor custo.
+- **PFMEA:** edição por ID + empresa preserva o registro existente; efeito, causa e controle ficam visíveis na grade.
+- **Estoque / etiquetas:** busca por NF-e autorizada ou pedido, escopo explícito pela empresa e impressão somente das etiquetas selecionadas.
+- **PCP / sequenciamento:** consultas e atualizações escopadas à empresa; a troca de posição ainda usa duas atualizações e precisa de RPC transacional para eliminar risco de falha parcial.
+- **Central Comercial antiga:** removida a gravação direta duplicada de pedidos/itens; a central consulta dados reais e encaminha para telas canônicas de Vendas.
+- **Clientes:** /clientes redireciona para o cadastro completo /vendas/clientes para evitar formulários mestre concorrentes.
+- **Pendências de validação real:** aplicar e verificar migrations de comissão e PDV no Supabase; consolidar campos comerciais extras do pedido de compra em transação; validar emissão NF-e/integração, RLS e fluxos autenticados por empresa.
