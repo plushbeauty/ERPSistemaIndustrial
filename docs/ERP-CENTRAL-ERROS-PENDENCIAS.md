@@ -77,3 +77,6 @@ Atualizado nesta execução. Este registro é acumulativo e pode ser usado na tr
 - **PCP / Ordens:** explosão MRP, consulta de componentes e gravação de parâmetros são escopadas pela empresa atual.
 - **PCP / Sequenciamento:** atualização de posições tem escopo por empresa e tentativa de reversão se a segunda gravação falhar; a solução definitiva continua sendo uma RPC transacional.
 - **Etiquetas:** validação do tipo exige captura segura do resultado da consulta antes de acessar o documento.
+
+
+- **PCP / Ordens de Produção:** eliminada a chamada duplicada de MRP no fluxo de criação. O MRP agora é executado uma vez; se falhar depois de a OP ser criada, a interface informa que a OP já existe e orienta reexecutar MRP sem criar uma segunda OP.
