@@ -130,6 +130,49 @@ export default function ColetaDimensionalCEP({
     nominal >= limiteInferior &&
     nominal <= limiteSuperior
 
+  const grafico = useMemo(() => {
+    if (!limitesValidos) return null
+    const leituras = amostras.map(amostra => parseMedicao(amostra.valorMedido))
+    const validas = leituras.filter((valor): valor is number => valor !== null)
+    const candidatos = [
+      limiteInferior,
+      limiteSuperior,
+      ...validas,
+      ...(estatistica.limiteControleSuperior === null ? [] : [estatistica.limiteControleSuperior]),
+      ...(estatistica.limiteControleInferior === null ? [] : [estatistica.limiteControleInferior]),
+    ]
+    const minimo = Math.min(...candidatos)
+    const maximo = Math.max(...candidatos)
+    const amplitude = maximo - minimo || limiteSuperior - limiteInferior
+    const minimoGrafico = minimo - amplitude * 0.12
+    const maximoGrafico = maximo + amplitude * 0.12
+    const width = 720
+    const height = 190
+    const x = (index: number) => 34 + index * (width - 68) / (SAMPLE_COUNT - 1)
+    const y = (value: number) => height - 22 - ((value - minimoGrafico) / (maximoGrafico - minimoGrafico)) * (height - 44)
+    const segmentos = leituras.slice(1).flatMap((atual, index) => {
+      const anterior = leituras[index]
+      return atual !== null && anterior !== null
+        ? [{ x1: x(index), y1: y(anterior), x2: x(index + 1), y2: y(atual) }]
+        : []
+    })
+    const pontos = leituras.map((value, index) => value === null ? null : ({
+      x: x(index),
+      y: y(value),
+      value,
+      foraEspecificacao: value < limiteInferior || value > limiteSuperior,
+    }))
+    return {
+      width, height, pontos, segmentos,
+      yLimiteSuperior: y(limiteSuperior),
+      yLimiteInferior: y(limiteInferior),
+      yMedia: estatistica.totalControlado > 0 ? y(estatistica.media) : null,
+      yUcl: estatistica.limiteControleSuperior === null ? null : y(estatistica.limiteControleSuperior),
+      yLcl: estatistica.limiteControleInferior === null ? null : y(estatistica.limiteControleInferior),
+      x, y,
+    }
+  }, [amostras, limitesValidos, limiteInferior, limiteSuperior, estatistica.media, estatistica.totalControlado, estatistica.limiteControleSuperior, estatistica.limiteControleInferior])
+
   const loteReprovado =
     !limitesValidos ||
     estatistica.numeroDefeituosos > 0 ||
