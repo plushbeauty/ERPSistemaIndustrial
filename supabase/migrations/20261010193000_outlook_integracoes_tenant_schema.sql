@@ -32,7 +32,6 @@ create table if not exists public.outlook_regras_pedidos (
   constraint outlook_regras_empresa_integracao_fk
     foreign key (empresa_id, integracao_id)
     references public.outlook_integracoes(empresa_id,id) on delete cascade,
-  constraint outlook_regras_empresa_integracao_unique unique (empresa_id,integracao_id)
 );
 
 create index if not exists outlook_integracoes_empresa_created_idx
