@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleHelp, ChevronDown, Search, UserRound } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
+import ERPStatusLegend from './ERPStatusLegend'
 
 type MenuItem = {
   label: string
@@ -163,12 +164,27 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         })}
       </nav>
 
+      <div className="erp-global-status-row"><span>STATUS DO ERP</span><ERPStatusLegend /><small>OK · NOK · Atenção · Em andamento · Aprovação</small></div>
+
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
       </main>
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:#f4f8fa;color:#173b4a}
+        .erp-global-status-row{min-height:27px;display:flex;align-items:center;gap:10px;padding:2px 12px;background:#f8fbfc;border-bottom:1px solid #dbe5e9;color:#536b77;font-size:9px;box-sizing:border-box}
+        .erp-global-status-row>span{font-weight:700;letter-spacing:.08em}
+        .erp-global-status-row>small{margin-left:auto;font-size:9px}
+        .erp-status-legend{position:relative;font-size:10px;color:#173b4a}
+        .erp-status-legend summary{display:inline-flex;align-items:center;gap:4px;min-height:22px;cursor:pointer;list-style:none;border:1px solid #cbd8de;background:#fff;padding:0 7px;border-radius:2px;font-weight:600}
+        .erp-status-legend summary::-webkit-details-marker{display:none}
+        .erp-status-legend-panel{position:absolute;top:25px;left:0;z-index:1500;width:min(360px,90vw);padding:8px;background:#fff;border:1px solid #cbd8de;box-shadow:0 8px 22px rgba(18,59,80,.16);display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .erp-status-legend-item{display:flex;align-items:flex-start;gap:6px;min-width:0}
+        .erp-status-legend-dot{width:9px;height:9px;flex:0 0 9px;border-radius:50%;margin-top:2px}
+        .erp-status-legend-item strong{display:block;font-size:10px;font-weight:700}
+        .erp-status-legend-item small{display:block;font-size:9px;line-height:1.3;color:#647b85}
+        .erp-status-legend-panel>p{grid-column:1/-1;margin:0;padding-top:5px;border-top:1px solid #e2e8f0;font-size:9px;color:#647b85}
+        @media print{ @page{size:A4;margin:12mm} .erp-horizontal-header,.erp-horizontal-menu,.erp-global-status-row,.print\:hidden,.erp-horizontal-help{display:none!important} .erp-horizontal-shell,.erp-horizontal-workspace{min-height:0!important;background:#fff!important;padding:0!important} .erp-horizontal-workspace *{box-shadow:none!important;backdrop-filter:none!important} thead{display:table-header-group} tr{break-inside:avoid} }
         .erp-horizontal-header{height:46px;display:flex;align-items:center;gap:12px;padding:0 10px;background:#fff;border-bottom:1px solid #d6e2e7;box-sizing:border-box}
         .erp-horizontal-brand{height:34px;display:flex;align-items:center;gap:8px;border:0;background:transparent;color:#123b50;cursor:pointer;padding:0 6px;white-space:nowrap}
         .erp-horizontal-brand img{height:30px;width:auto;object-fit:contain}
@@ -201,7 +217,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-workspace-compact label{font-size:9px}
         .erp-horizontal-workspace-compact input,.erp-horizontal-workspace-compact select,.erp-horizontal-workspace-compact textarea{font-size:10px}
         @media(max-width:950px){.erp-horizontal-brand strong{display:none}.erp-horizontal-search{width:36vw}.erp-horizontal-menu-button{padding:0 7px}.erp-horizontal-session time{display:none}}
-        @media(max-width:700px){.erp-horizontal-header{gap:5px}.erp-horizontal-help{font-size:0}.erp-horizontal-search{width:42vw;min-width:160px}.erp-horizontal-session span{display:none}.erp-horizontal-menu{overflow-x:auto}}
+        @media(max-width:700px){.erp-global-status-row>small{display:none}.erp-horizontal-header{gap:5px}.erp-horizontal-help{font-size:0}.erp-horizontal-search{width:42vw;min-width:160px}.erp-horizontal-session span{display:none}.erp-horizontal-menu{overflow-x:auto}}
       `}</style>
     </div>
   )
