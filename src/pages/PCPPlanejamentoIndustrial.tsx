@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, CalendarDays, CheckCircle2, Factory, Gauge, Plus, RefreshCw, Save, Shuffle, Target, Boxes } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
 type Product={id:string;codigo:string;nome:string;estoque_atual:number}
 type MPS={id:string;produto_id:string;periodo_inicio:string;periodo_fim:string;quantidade_prevista:number;estoque_alvo:number;demanda_confirmada:number;status:string}
@@ -33,16 +34,15 @@ export default function PCPPlanejamentoIndustrial(){
    if(tenant.error||typeof tenant.data!=='string'||!tenant.data) throw tenant.error??new Error('Empresa da sessão não identificada; planejamento bloqueado.')
    const empresaId=tenant.data
    const [p,m,o,c,pr,ma,a]=await Promise.all([
-    supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(3000),
-    supabase.from('erp_pcp_planos_mestres').select('id,produto_id,periodo_inicio,periodo_fim,quantidade_prevista,estoque_alvo,demanda_confirmada,status').eq('empresa_id',empresaId).order('periodo_inicio').limit(1000),
-    supabase.from('erp_pcp_ordens_planejadas').select('id,produto_id,quantidade,data_necessaria,origem,status').eq('empresa_id',empresaId).order('data_necessaria').limit(1000),
-    supabase.from('erp_postos_trabalho').select('id,codigo_posto,nome_posto,taxa_hora,ativo').eq('empresa_id',empresaId).eq('ativo',true).order('codigo_posto'),
-    supabase.from('erp_pcp_programacoes').select('id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,status').eq('empresa_id',empresaId).neq('status','cancelada').order('inicio_planejado').limit(3000),
-    supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('empresa_id',empresaId).not('status','eq','INATIVA').order('codigo'),
-    supabase.from('erp_pcp_alertas').select('id,tipo,severidade,mensagem,status,created_at').eq('empresa_id',empresaId).neq('status','RESOLVIDO').order('created_at',{ascending:false}).limit(500)
+    fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to)),
+    fetchAllPages<MPS>((from,to)=>supabase.from('erp_pcp_planos_mestres').select('id,produto_id,periodo_inicio,periodo_fim,quantidade_prevista,estoque_alvo,demanda_confirmada,status',{count:'exact'}).eq('empresa_id',empresaId).order('periodo_inicio').range(from,to)),
+    fetchAllPages<Planned>((from,to)=>supabase.from('erp_pcp_ordens_planejadas').select('id,produto_id,quantidade,data_necessaria,origem,status',{count:'exact'}).eq('empresa_id',empresaId).order('data_necessaria').range(from,to)),
+    fetchAllPages<Center>((from,to)=>supabase.from('erp_postos_trabalho').select('id,codigo_posto,nome_posto,taxa_hora,ativo',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo_posto').range(from,to)),
+    fetchAllPages<Program>((from,to)=>supabase.from('erp_pcp_programacoes').select('id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,status',{count:'exact'}).eq('empresa_id',empresaId).neq('status','cancelada').order('inicio_planejado').range(from,to)),
+    fetchAllPages<Machine>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome,status',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to)),
+    fetchAllPages<AlertRow>((from,to)=>supabase.from('erp_pcp_alertas').select('id,tipo,severidade,mensagem,status,created_at',{count:'exact'}).eq('empresa_id',empresaId).neq('status','RESOLVIDO').order('created_at',{ascending:false}).range(from,to))
    ])
-   for(const r of [p,m,o,c,pr,ma,a]) if(r.error) throw r.error
-   setProducts((p.data??[]) as Product[]);setMps((m.data??[]) as MPS[]);setPlanned((o.data??[]) as Planned[]);setCenters((c.data??[]) as Center[]);setPrograms((pr.data??[]) as Program[]);setMachines((ma.data??[]) as Machine[]);setAlerts((a.data??[]) as AlertRow[])
+   setProducts(p);setMps(m);setPlanned(o);setCenters(c);setPrograms(pr);setMachines(ma);setAlerts(a)
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar planejamento PCP.')}
   finally{setBusy(false)}
  }
