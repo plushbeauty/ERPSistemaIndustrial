@@ -74,7 +74,6 @@ const PCPPlanejamentoIndustrial = lazyPage(() => import('./pages/PCPPlanejamento
 const MRPIndustrial = lazyPage(() => import('./pages/MRPIndustrial'), 'MRPIndustrial')
 const CentraisIndustriais = lazyPage(() => import('./pages/CentraisIndustriais'), 'CentraisIndustriais')
 const QualidadeIndustrial = lazyPage(() => import('./pages/QualidadeIndustrial'), 'QualidadeIndustrial')
-const QualidadeSGQAvancado = lazyPage(() => import('./pages/SgqManagementCompact'), 'default')
 const AcompanhamentoNaoConformidade = lazyPage(() => import('./pages/AcompanhamentoNaoConformidade'), 'AcompanhamentoNaoConformidade')
 const EstoqueAlmoxarifado = lazyPage(() => import('./pages/EstoqueAlmoxarifadoCompact'), 'default')
 const ProdutosVendasIndustrial = lazyPage(() => import('./pages/ProdutosVendasIndustrial'), 'ProdutosVendasIndustrial')
@@ -451,7 +450,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/pcp" element={<QualityPlanGate>{<PCPIndustrial />}</QualityPlanGate>} />
       <Route path="/vendas/chao-de-fabrica" element={<QualityPlanGate>{<OperacaoIndustrial />}</QualityPlanGate>} />
       <Route path="/vendas/qualidade" element={<QualityPlanGate>{<QualidadeIndustrial />}</QualityPlanGate>} />
-      <Route path="/vendas/sgq" element={<QualityPlanGate>{<QualidadeSGQAvancado />}</QualityPlanGate>} />
+      <Route path="/vendas/sgq" element={<QualityPlanGate><QualidadeRNC /></QualityPlanGate>} />
       <Route path="/vendas/conciliacao" element={<QualityPlanGate>{<BankingReconciliation />}</QualityPlanGate>} />
       <Route path="/vendas/importador" element={<QualityPlanGate>{<BankingStatementImporter />}</QualityPlanGate>} />
       <Route path="/vendas/ano-fiscal" element={<QualityPlanGate>{<AnoFiscal />}</QualityPlanGate>} />
