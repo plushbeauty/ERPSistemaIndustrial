@@ -79,8 +79,14 @@ export default function PCPAgendaMaquinas(){
  }
  async function moveSlot(slot:Slot,direction:number){
   const row=cellSlots(slot.maquina_id,new Date(slot.data_hora_inicio));const index=row.findIndex(x=>x.id===slot.id);const other=row[index+direction]
-  if(!other)return
-  setError('A sequência só pode ser alterada sem sobrepor intervalos. Edite os horários para reordenar a máquina; a validação do banco bloqueará conflitos.')
+  if(!other){setError('Não existe outra programação nessa direção para trocar de posição.');return}
+  setBusy(true);setError('');setNotice('')
+  try{
+   const result=await supabase.rpc('erp_pcp_reordenar_agenda_maquinas',{p_agenda_id:slot.id,p_vizinha_id:other.id})
+   if(result.error)throw result.error
+   setNotice('Sequência reordenada com troca transacional dos intervalos, sem sobreposição.')
+   await load()
+  }catch(e){setError(messageOf(e))}finally{setBusy(false)}
  }
  return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-4 print:bg-white print:p-0">
   <div className="mx-auto max-w-[1800px]">
