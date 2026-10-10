@@ -11,7 +11,8 @@ type Capa = { id: string; rpnc_id: string; tipo: string; descricao: string; caus
 type CapaRecord = { id: string; rpnc_id: string | null; codigo: string; origem: string; descricao: string; plano_5w2h: unknown; status: string; created_at: string }
 type DocBase = { id: string; codigo: string; titulo: string; area: string | null; revisao: number; data_revisao: string | null; responsavel_id: string | null; status: string }
 type Attachment = { id: string; documento_id: string; nome_arquivo: string; storage_path: string; revisao: number; status: string; criado_em: string }
-type User = { id: string; nome: string | null; email: string | null }
+type ReadReceipt = { id: string; documento_id: string; revisao: number; usuario_id: string; distribuido_em: string; lido_em: string | null }
+type User = { id: string; nome: string | null; email: string | null; auth_user_id: string | null; setor_id: string | null; ativo: boolean; deleted_at: string | null }
 type Sector = { id: string; nome: string }
 type Doc = { id: string; codigo: string; titulo: string; tipo: string | null; revisao: number; data_revisao: string | null; preparado_por: string | null; pdf_storage_path: string | null; nome_arquivo: string | null; status: string }
 
@@ -47,6 +48,9 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
   const [sectors, setSectors] = useState<Sector[]>([])
   const [docs, setDocs] = useState<Doc[]>([])
   const [docAttachments, setDocAttachments] = useState<Attachment[]>([])
+  const [readReceipts, setReadReceipts] = useState<ReadReceipt[]>([])
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [distributionSectors, setDistributionSectors] = useState<string[]>([])
   const [selectedRnc, setSelectedRnc] = useState('')
   const [description, setDescription] = useState('')
   const [origin, setOrigin] = useState('Processo')
@@ -66,15 +70,19 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
       if (current.error) throw current.error
       if (!current.data) throw new Error('Empresa da sessão não identificada.')
       const id = String(current.data); setCompanyId(id)
-      const [r, a, u, s, d, attachments] = await Promise.all([
+      const [r, a, u, s, d, attachments, receipts] = await Promise.all([
         fetchAllPages<Rpn>((from, to) => supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,origem,gravidade,lote_producao,quantidade_segregada,bloqueia_lote,setor_envolvido_id,status,criado_em',{count:'exact'}).eq('empresa_id', id).order('criado_em', { ascending: false }).range(from, to)),
         fetchAllPages<CapaRecord>((from, to) => supabase.from('qualidade_rnc_capa').select('id,rpnc_id,codigo,origem,descricao,plano_5w2h,status,created_at',{count:'exact'}).eq('empresa_id', id).order('created_at', { ascending: false }).range(from, to)),
-        fetchAllPages<User>((from, to) => supabase.from('erp_usuarios').select('id,nome,email',{count:'exact'}).eq('empresa_id', id).eq('ativo', true).is('deleted_at', null).order('nome').range(from, to)),
+        fetchAllPages<User>((from, to) => supabase.from('erp_usuarios').select('id,nome,email,auth_user_id,setor_id,ativo,deleted_at',{count:'exact'}).eq('empresa_id', id).eq('ativo', true).is('deleted_at', null).order('nome').range(from, to)),
         fetchAllPages<Sector>((from, to) => supabase.from('erp_setores').select('id,nome',{count:'exact'}).eq('empresa_id', id).eq('ativo', true).order('nome').range(from, to)),
         fetchAllPages<DocBase>((from, to) => supabase.from('erp_documentos_qualidade').select('id,codigo,titulo,area,revisao,data_revisao,responsavel_id,status',{count:'exact'}).eq('empresa_id', id).order('codigo').range(from, to)),
         fetchAllPages<Attachment>((from, to) => supabase.from('erp_documentos_qualidade_anexos').select('id,documento_id,nome_arquivo,storage_path,revisao,status,criado_em',{count:'exact'}).eq('empresa_id', id).order('revisao', { ascending: false }).order('criado_em', { ascending: false }).range(from, to)),
+        fetchAllPages<ReadReceipt>((from, to) => supabase.from('erp_documentos_qualidade_leituras').select('id,documento_id,revisao,usuario_id,distribuido_em,lido_em',{count:'exact'}).eq('empresa_id', id).order('distribuido_em', { ascending: false }).range(from, to)),
       ])
-      setRncs(r); setActions(a.flatMap(actionsFromCapa)); setUsers(u); setSectors(s)
+      setRncs(r); setActions(a.flatMap(actionsFromCapa)); setUsers(u); setSectors(s); setReadReceipts(receipts)
+      const auth = await supabase.auth.getUser()
+      if (auth.error || !auth.data.user) throw auth.error ?? new Error('Sessão não autenticada.')
+      setCurrentUserId(u.find(user => user.auth_user_id === auth.data.user.id)?.id ?? null)
       const userNames = new Map<string, string>(u.map(user => [user.id, user.nome || user.email || '—'] as const))
       const activeAttachments = new Map<string, { storage_path: string; nome_arquivo: string }>()
       for (const attachment of attachments) {
@@ -214,6 +222,34 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
     if (signed.data?.signedUrl) window.open(signed.data.signedUrl, '_blank', 'noopener,noreferrer')
   }
 
+
+  const distributeForReading = async (doc: Doc) => {
+    setBusy(true); setError(''); setNotice('')
+    try {
+      if (!companyId) throw new Error('Empresa da sessão não identificada.')
+      const targets = users.filter(user => user.id !== currentUserId && user.ativo && !user.deleted_at && (distributionSectors.length === 0 || (user.setor_id !== null && distributionSectors.includes(user.setor_id))))
+      if (!targets.length) throw new Error('Nenhum usuário ativo corresponde à distribuição selecionada.')
+      const rows = targets.map(user => ({ empresa_id: companyId, documento_id: doc.id, revisao: Math.max(1, Number(doc.revisao) || 1), usuario_id: user.id }))
+      const result = await supabase.from('erp_documentos_qualidade_leituras').upsert(rows, { onConflict: 'empresa_id,documento_id,revisao,usuario_id', ignoreDuplicates: true })
+      if (result.error) throw result.error
+      setNotice('Distribuição de leitura registrada para ' + targets.length + ' usuários ativos.')
+      await load()
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao distribuir documento para leitura.') }
+    finally { setBusy(false) }
+  }
+
+  const confirmRead = async (receipt: ReadReceipt) => {
+    setBusy(true); setError(''); setNotice('')
+    try {
+      if (!companyId || !currentUserId || receipt.usuario_id !== currentUserId) throw new Error('Só é possível confirmar a própria leitura.')
+      const result = await supabase.from('erp_documentos_qualidade_leituras').update({ lido_em: new Date().toISOString() }).eq('empresa_id', companyId).eq('id', receipt.id).eq('usuario_id', currentUserId).is('lido_em', null)
+      if (result.error) throw result.error
+      setNotice('Leitura confirmada para a revisão ' + receipt.revisao + '.')
+      await load()
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao confirmar leitura.') }
+    finally { setBusy(false) }
+  }
+
   const openAttachment = async (attachment: Attachment) => {
     const signed = await supabase.storage.from('erp-qualidade-anexos').createSignedUrl(attachment.storage_path, 3600)
     if (signed.error) { setError(signed.error.message); return }
@@ -268,9 +304,15 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
         </section>}
 
         {tab === 'ged' && <section className="sgq-panel">
-          <div className="sgq-table"><table><thead><tr><th>Código</th><th>Nome do documento</th><th>Tipo</th><th>Rev.</th><th>Última revisão</th><th>Elaborado por</th><th>PDF Storage</th><th>Ação</th></tr></thead><tbody>{docs.map((doc) => <tr key={doc.id}><td>{doc.codigo}</td><td>{doc.titulo}</td><td>{doc.tipo || '—'}</td><td className="num">{doc.revisao}</td><td>{doc.data_revisao ? new Date(doc.data_revisao).toLocaleDateString('pt-BR') : '—'}</td><td>{doc.preparado_por || '—'}</td><td>{doc.pdf_storage_path ? <button className="link-btn" type="button" onClick={() => void openPdf(doc)}>ABRIR PDF REAL</button> : 'SEM PDF'}</td><td><label className={btn + ' cursor-pointer'}><Upload size={13}/> ANEXAR PDF<input className="hidden" type="file" accept="application/pdf" disabled={busy} onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadPdf(doc, file); e.currentTarget.value = '' }} /></label></td></tr>)}</tbody></table></div>
+          <div className="mb-2 flex flex-wrap items-end gap-2">
+            <label className={label}>Setores para distribuição (opcional)<select multiple className={field(false) + ' min-h-[62px]'} value={distributionSectors} onChange={(e) => setDistributionSectors(Array.from(e.currentTarget.selectedOptions, option => option.value))}>{sectors.map(sector => <option key={sector.id} value={sector.id}>{sector.nome}</option>)}</select></label>
+            <span className="text-[10px] text-slate-600">Sem setor selecionado, distribui para todos os usuários ativos da empresa.</span>
+          </div>
+          <div className="sgq-table"><table><thead><tr><th>Código</th><th>Nome do documento</th><th>Tipo</th><th>Rev.</th><th>Última revisão</th><th>Elaborado por</th><th>PDF Storage</th><th>Ação</th></tr></thead><tbody>{docs.map((doc) => <tr key={doc.id}><td>{doc.codigo}</td><td>{doc.titulo}</td><td>{doc.tipo || '—'}</td><td className="num">{doc.revisao}</td><td>{doc.data_revisao ? new Date(doc.data_revisao).toLocaleDateString('pt-BR') : '—'}</td><td>{doc.preparado_por || '—'}</td><td>{doc.pdf_storage_path ? <button className="link-btn" type="button" onClick={() => void openPdf(doc)}>ABRIR PDF REAL</button> : 'SEM PDF'}</td><td><div className="flex gap-1"><label className={btn + ' cursor-pointer'}><Upload size={13}/> PDF<input className="hidden" type="file" accept="application/pdf" disabled={busy} onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadPdf(doc, file); e.currentTarget.value = '' }} /></label><button className="link-btn" type="button" disabled={busy} onClick={() => void distributeForReading(doc)}>DISTRIBUIR</button></div></td></tr>)}</tbody></table></div>
           <h3 className="mt-3 text-[11px] font-bold uppercase tracking-wide">Histórico de revisões de PDF</h3>
           <div className="sgq-table"><table><thead><tr><th>Documento</th><th>Revisão</th><th>Arquivo</th><th>Status</th><th>Data</th><th>Ação</th></tr></thead><tbody>{docAttachments.map((attachment) => { const doc = docs.find(item => item.id === attachment.documento_id); return <tr key={attachment.id}><td>{doc?.codigo || '—'}</td><td className="num">{attachment.revisao}</td><td>{attachment.nome_arquivo}</td><td>{attachment.status}</td><td>{attachment.criado_em ? new Date(attachment.criado_em).toLocaleString('pt-BR') : '—'}</td><td><button className="link-btn" type="button" onClick={() => void openAttachment(attachment)}>ABRIR VERSÃO</button></td></tr>})}</tbody></table></div>
+          <h3 className="mt-3 text-[11px] font-bold uppercase tracking-wide">Confirmações de leitura</h3>
+          <div className="sgq-table"><table><thead><tr><th>Documento</th><th>Rev.</th><th>Usuário</th><th>Distribuído</th><th>Leitura</th><th>Ação</th></tr></thead><tbody>{readReceipts.map(receipt => { const doc = docs.find(item => item.id === receipt.documento_id); const user = users.find(item => item.id === receipt.usuario_id); const own = receipt.usuario_id === currentUserId; return <tr key={receipt.id}><td>{doc?.codigo || '—'}</td><td className="num">{receipt.revisao}</td><td>{user?.nome || user?.email || 'Usuário'}</td><td>{new Date(receipt.distribuido_em).toLocaleString('pt-BR')}</td><td>{receipt.lido_em ? new Date(receipt.lido_em).toLocaleString('pt-BR') : 'PENDENTE'}</td><td>{own && !receipt.lido_em ? <button className="link-btn" type="button" disabled={busy} onClick={() => void confirmRead(receipt)}>CONFIRMAR LEITURA</button> : own ? 'CONFIRMADA' : '—'}</td></tr>})}</tbody></table></div>
         </section>}
       </div>
       <style>{`
