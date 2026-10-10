@@ -448,8 +448,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/mrp" element={<QualityPlanGate>{<MRPIndustrial />}</QualityPlanGate>} />
       <Route path="/vendas/pcp" element={<QualityPlanGate>{<PCPIndustrial />}</QualityPlanGate>} />
       <Route path="/vendas/chao-de-fabrica" element={<QualityPlanGate>{<OperacaoIndustrial />}</QualityPlanGate>} />
-      <Route path="/vendas/qualidade" element={<QualidadeIndustrial />} />
-      <Route path="/vendas/sgq" element={<QualidadeSGQAvancado />} />
+      <Route path="/vendas/qualidade" element={<QualityPlanGate>{<QualidadeIndustrial />}</QualityPlanGate>} />
+      <Route path="/vendas/sgq" element={<QualityPlanGate>{<QualidadeSGQAvancado />}</QualityPlanGate>} />
       <Route path="/vendas/conciliacao" element={<QualityPlanGate>{<BankingReconciliation />}</QualityPlanGate>} />
       <Route path="/vendas/importador" element={<QualityPlanGate>{<BankingStatementImporter />}</QualityPlanGate>} />
       <Route path="/vendas/ano-fiscal" element={<QualityPlanGate>{<AnoFiscal />}</QualityPlanGate>} />
