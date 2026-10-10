@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useParams } from 'react-router-dom'
 import { FilePlus2, FileText, History, RefreshCw, Save, Search, ShieldCheck } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import VendasLayout from '../VendasLayout'
@@ -26,6 +27,7 @@ function dateTime(value: string) {
 }
 
 export default function GEDDocumentos() {
+  const { id: routeRevisionId } = useParams<{ id: string }>()
   const [companyId, setCompanyId] = useState('')
   const [revisions, setRevisions] = useState<Revision[]>([])
   const [selectedId, setSelectedId] = useState('')
@@ -64,6 +66,12 @@ export default function GEDDocumentos() {
   }, [selectedId])
 
   useEffect(() => { void load() }, [load])
+
+  useEffect(() => {
+    if (!routeRevisionId || loading || !revisions.length) return
+    const routeRevision = revisions.find(row => row.id === routeRevisionId)
+    if (routeRevision && selectedId !== routeRevision.id) editRevision(routeRevision)
+  }, [routeRevisionId, loading, revisions, selectedId])
 
   const documents = useMemo(() => {
     const latest = new Map<string, Revision>()
