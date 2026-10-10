@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { FolderGit2, LineChart, ShieldCheck } from 'lucide-react'
 import { useSynqraLayout } from '../../layout/SynqraLayoutContext'
 
 const items = [
@@ -8,7 +9,6 @@ const items = [
   ['Inspeções de Lotes', '/qualidade/inspecoes'],
   ['Matriz FMEA / PFMEA', '/qualidade/fmea'],
   ['RNC & Planos CAPA', '/qualidade/rnc-capa'],
-  ['CEP / Cartas de Controle', '/qualidade/cep'],
   ['Inspeção em Processo', '/qualidade/inspecao-processo'],
   ['Registro RPNC / CAPA', '/qualidade/rnc'],
   ['8D — Ações Corretivas', '/qualidade/metodologia-8d'],
@@ -55,6 +55,18 @@ export default function QualitySidebar({ active }: { active: string }) {
             {label}
           </Link>
         ))}
+      
+        <div className={hostedBySynqra ? 'flex flex-none items-center gap-1 border-l border-slate-200 pl-2' : 'mt-2 border-t border-slate-200 pt-2'}>
+          <div className={hostedBySynqra ? 'flex h-8 items-center gap-1 whitespace-nowrap px-2 text-[10px] font-bold uppercase text-[#123B50]' : 'mb-1 flex h-8 items-center gap-2 px-2 text-[10px] font-bold uppercase text-[#123B50]'}>
+            <ShieldCheck size={16} /> Gestão da Qualidade
+          </div>
+          <Link to="/qualidade/ged-documentos" aria-current={active === '/qualidade/ged-documentos' ? 'page' : undefined} className={`flex h-8 items-center gap-1 whitespace-nowrap border px-2 text-[10px] font-semibold ${active.startsWith('/qualidade/ged-documentos') ? 'border-[#2D8DB8] bg-sky-50 text-[#123B50]' : 'border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
+            <FolderGit2 size={14} /> Controle Documental GED
+          </Link>
+          <Link to="/qualidade/cep" aria-current={active === '/qualidade/cep' ? 'page' : undefined} className={`flex h-8 items-center gap-1 whitespace-nowrap border px-2 text-[10px] font-semibold ${active === '/qualidade/cep' ? 'border-[#2D8DB8] bg-sky-50 text-[#123B50]' : 'border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
+            <LineChart size={14} /> Cartas de Controle CEP
+          </Link>
+        </div>
       </nav>
     </aside>
   )
