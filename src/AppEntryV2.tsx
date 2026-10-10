@@ -21,6 +21,7 @@ function lazyPage<P extends object>(
   })
 }
 import ERPStatusLegend from './components/layout/ERPStatusLegend'
+import PCPPageHelp from './components/industrial/PCPPageHelp'
 import './styles/industrial-login.css'
 import './styles/forms-premium.css'
 import './styles/manual-usuario-2026.css'
@@ -623,6 +624,7 @@ function AppIndustrialAuthenticated() {
       <Suspense fallback={<LoadingSkeleton />}>
         <div className="erp-global-surface">
           {protectedRoutes}
+          <PCPPageHelp />
           <ERPStatusLegend />
         </div>
       </Suspense>
