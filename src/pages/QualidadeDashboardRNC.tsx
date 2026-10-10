@@ -107,7 +107,7 @@ export default function QualidadeDashboardRNC() {
 
           {error && <div role="alert" className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 p-4 font-semibold text-rose-900"><span>{error}</span><button type="button" onClick={() => void load()} className="rounded-md border border-rose-300 bg-white px-3 py-2 font-bold">Tentar novamente</button></div>}
           {loading && !error ? <p role="status" className="mt-5 rounded-lg border border-slate-200 bg-white p-6 text-center font-semibold text-slate-600">Carregando indicadores reais do SGQ…</p> : !error && <>
-            <section className="mt-3 grid gap-2 sm:grid-cols-3 xl:grid-cols-6">
+            <section className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <Metric icon={AlertTriangle} label="RNCs em aberto" value={openCount}/>
               <Metric icon={CheckCircle2} label="Ações com eficácia verificada" value={verifiedCount}/>
               <Metric icon={BarChart3} label="Revisões documentais pendentes" value={pendingReviewCount}/>
@@ -140,12 +140,12 @@ export default function QualidadeDashboardRNC() {
 }
 
 function Metric({ icon: Icon, label, value }: { icon: typeof AlertTriangle; label: string; value: number }) {
-  return <article className="flex min-h-[76px] items-center gap-2 rounded-md border border-sky-200 bg-gradient-to-br from-white to-sky-50 p-3 shadow-sm"><span className="grid size-9 shrink-0 place-items-center rounded-md bg-[#123B50] text-white"><Icon size={17}/></span><div><p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">{label}</p><b className="text-xl font-semibold text-[#123B50]">{value}</b></div></article>
+  return <article className="flex min-h-[88px] items-center gap-3 rounded-md border border-sky-200 bg-gradient-to-br from-white to-sky-50 p-4 shadow-sm"><span className="grid size-10 shrink-0 place-items-center rounded-md bg-[#123B50] text-white"><Icon size={17}/></span><div><p className="text-[11px] font-bold uppercase tracking-wide text-slate-600">{label}</p><b className="text-2xl font-semibold text-[#123B50]">{value}</b></div></article>
 }
 
 function ChartCard({ title, description, children, accent = 'blue' }: { title: string; description: string; children: ReactNode; accent?: 'blue' | 'violet' | 'amber' | 'cyan' | 'teal' }) {
   const accents = { blue: 'border-l-[#2D8DB8]', violet: 'border-l-violet-500', amber: 'border-l-amber-500', cyan: 'border-l-cyan-500', teal: 'border-l-teal-500' }
-  return <section className={`min-w-0 rounded-md border border-slate-200 border-l-[3px] ${accents[accent]} bg-white/95 p-3 shadow-sm`}><h2 className="text-sm font-semibold text-[#123B50]">{title}</h2><p className="mt-1 text-[10px] text-slate-600">{description}</p><div className="mt-2">{children}</div></section>
+  return <section className={`min-w-0 rounded-md border border-slate-200 border-l-[3px] ${accents[accent]} bg-white/95 p-3 shadow-sm`}><h2 className="text-sm font-semibold text-[#123B50]">{title}</h2><p className="mt-1 text-[11px] leading-5 text-slate-600">{description}</p><div className="mt-2">{children}</div></section>
 }
 
 function AccessibleSummary({ rows }: { rows: DepartmentCount[] }) {
