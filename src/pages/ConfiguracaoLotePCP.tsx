@@ -4,7 +4,6 @@
  * - Status Atual: Revisão 1 (Módulo Industrial Avançado)
  * - Total de Linhas Gerado: 185
  * - Assinatura de Entrada (Primeiros 3 Imports): import { useEffect, useMemo, useState } from 'react' | import { ArrowDown, ArrowUp, CheckCircle2, Factory, Save, ShieldCheck } from 'lucide-react' | import { supabase } from '../lib/supabaseClient'
-import { fetchAllPages } from '../lib/supabasePagination'
  * - Regra de Negócio Senior/Nomus Incorporada: regra de lote configurável, geração por OP e visão de carga/capacidade com dados operacionais.
  */
 import { fetchAllPages } from '../lib/supabasePagination'
