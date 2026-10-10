@@ -8,6 +8,17 @@ alter table public.erp_qualidade_documentos_revisoes
   add column if not exists url_anexo text,
   add column if not exists nome_arquivo text;
 
+-- Allow cleanup of an uploaded file when its revision transaction fails, but only within its tenant folder.
+drop policy if exists erp_qms_anexos_storage_delete on storage.objects;
+create policy erp_qms_anexos_storage_delete
+  on storage.objects
+  for delete
+  to authenticated
+  using (
+    bucket_id = 'erp-qualidade-anexos'
+    and (storage.foldername(name))[1] = public.erp_current_empresa_id()::text
+  );
+
 -- Keep the currently approved revision active until a new revision is approved.
 -- All file paths must be scoped to the authenticated tenant's Storage folder.
 drop function if exists public.erp_salvar_revisao_documento(text, text, text, text, text);
