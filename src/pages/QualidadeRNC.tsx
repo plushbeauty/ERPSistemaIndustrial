@@ -82,7 +82,8 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
       setRncs(r); setActions(a.flatMap(actionsFromCapa)); setUsers(u); setSectors(s); setReadReceipts(receipts)
       const auth = await supabase.auth.getUser()
       if (auth.error || !auth.data.user) throw auth.error ?? new Error('Sessão não autenticada.')
-      setCurrentUserId(u.find(user => user.auth_user_id === auth.data.user.id)?.id ?? null)
+      const authUserId = auth.data.user.id
+      setCurrentUserId(u.find(user => user.auth_user_id === authUserId)?.id ?? null)
       const userNames = new Map<string, string>(u.map(user => [user.id, user.nome || user.email || '—'] as const))
       const activeAttachments = new Map<string, { storage_path: string; nome_arquivo: string }>()
       for (const attachment of attachments) {
@@ -227,6 +228,7 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
     setBusy(true); setError(''); setNotice('')
     try {
       if (!companyId) throw new Error('Empresa da sessão não identificada.')
+      if (!currentUserId) throw new Error('Perfil ERP ativo não identificado para distribuir documentos.')
       const targets = users.filter(user => user.id !== currentUserId && user.ativo && !user.deleted_at && (distributionSectors.length === 0 || (user.setor_id !== null && distributionSectors.includes(user.setor_id))))
       if (!targets.length) throw new Error('Nenhum usuário ativo corresponde à distribuição selecionada.')
       const rows = targets.map(user => ({ empresa_id: companyId, documento_id: doc.id, revisao: Math.max(1, Number(doc.revisao) || 1), usuario_id: user.id }))
