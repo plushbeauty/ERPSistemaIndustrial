@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, CalendarRange, FileSliders } from 'lucide-react'
+import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 
