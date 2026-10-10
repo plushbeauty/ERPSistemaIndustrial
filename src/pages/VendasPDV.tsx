@@ -124,7 +124,7 @@ export default function VendasPDV() {
       return
     }
     setError('')
-    setCart(current => current.map(currentItem => currentItem.id === productId ? { ...currentItem, quantidade } : currentItem))
+    setCart(current => current.map(currentItem => currentItem.id === productId ? { ...currentItem, quantidade: quantity } : currentItem))
   }
 
   const finish = async () => {
