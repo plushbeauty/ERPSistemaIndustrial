@@ -472,7 +472,7 @@ export default function VendasClientes() {
             </div>
             <div className="flex flex-wrap gap-1">
               <button type="button" onClick={openNew} className="erp-standard-button"><Plus size={12}/> NOVO CLIENTE</button><button type="button" onClick={() => void save()} disabled={busy} className="erp-standard-button border-emerald-800 bg-emerald-700 disabled:opacity-40"><Check size={12}/> SALVAR CLIENTE</button>
-              <button type="button" disabled={!selectedClient} onClick={() => selectedClient && edit(selectedClient)} className="erp-standard-button disabled:opacity-40"><Pencil size={12}/> EDITAR</button>
+              <button type="button" disabled={!selectedClient} onClick={() => selectedClient && edit(selectedClient)} className="erp-standard-button erp-edit-button disabled:opacity-40"><Pencil size={12}/> EDITAR</button>
               <button type="button" disabled={!selected} onClick={() => void remove()} className="erp-standard-button border-rose-700 bg-rose-700 disabled:opacity-40"><Trash2 size={12}/> EXCLUIR</button>
               <button type="button" onClick={() => void load()} className="erp-standard-button"><RefreshCw size={12}/> ATUALIZAR</button>
             </div>
