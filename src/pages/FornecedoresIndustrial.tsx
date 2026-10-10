@@ -50,7 +50,7 @@ export default function FornecedoresIndustrial(){
       <div><div style={{fontSize:9,color:'#2D8DB8',fontWeight:700}}>COMPRAS • CADASTRO MESTRE</div><h1 style={{margin:'2px 0',fontSize:16,color:'#123B50',fontWeight:600}}>Fornecedores</h1><div style={{fontSize:9,color:'#667085'}}>Cadastro, qualificação, documentos e desempenho de entrega.</div></div>
       <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
        <button type="button" style={button('primary')} onClick={openNew}><Plus size={12}/>NOVO</button>
-       <button type="button" style={button(selected?'normal':'disabled')} disabled={!selected} onClick={openEdit}><Pencil size={12}/>EDITAR</button>
+       <button type="button" className="erp-edit-button" style={button(selected?'normal':'disabled')} disabled={!selected} onClick={openEdit}><Pencil size={12}/>EDITAR</button>
        <button type="button" style={button(selected?'danger':'disabled')} disabled={!selected} onClick={()=>void remove()}><Trash2 size={12}/>EXCLUIR</button>
        <button type="button" style={button('normal')} onClick={()=>setFilterOpen(v=>!v)}><Filter size={12}/>FILTRO</button>
        <button type="button" style={button('normal')} onClick={()=>void load()} disabled={busy}><RefreshCw size={12}/>ATUALIZAR</button>
