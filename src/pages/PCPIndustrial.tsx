@@ -250,6 +250,7 @@ const heightBucket=(ratio:number)=>{
 const tabs:[Tab,string,string][]=[['visao','VisÃ£o geral','Gauge'],['novaop','Criar Nova OP','Plus'],['pedidos','Pedidos / Demanda','ClipboardList'],['ops','Ordens de ProduÃ§Ã£o','Factory'],['materiais','Materiais / MRP','Package'],['producao','Apontar produÃ§Ã£o','Play'],['programacao','ProgramaÃ§Ã£o / Gantt','CalendarDays'],['capacidade','Capacidade / MÃ¡quinas','Wrench'],['qualidade','Qualidade / Defeitos','ShieldCheck']]
 
  return <main className={`pcp-modern-page pcp-industrial-shell${hostedBySynqra?' pcp-hosted-by-synqra':''}`}>
+  {!hostedBySynqra && (
   <nav className={`pcp-sidebar${hostedBySynqra?' pcp-sidebar-context':''}`} aria-label="Navegação do PCP">
    <div className="pcp-sidebar-brand"><img src="/logo/sgq-erp.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL"/><div><strong>SYSNQRA ERP & SGQ INDUSTRIAL</strong><small>PCP INDUSTRIAL</small></div></div>
    <button className="pcp-side-item" onClick={()=>window.location.href='/erp-industrial'}><span>âŒ‚</span> DASHBOARD</button>
@@ -273,6 +274,8 @@ const tabs:[Tab,string,string][]=[['visao','VisÃ£o geral','Gauge'],['novaop','
    <div className="pcp-side-spacer"/>
    <button className="pcp-side-item" onClick={()=>window.location.href='/manual-usuario'}><span>?</span> MANUAL</button>
   </nav>
+
+  )}
   <section className="pcp-main">
    {!hostedBySynqra&&<header className="pcp-topbar">
     <div className="pcp-top-title"><button className="pcp-top-tablet" onClick={()=>window.location.href='/erp-industrial?tablet=1'}>â–¦ TABLET</button><div><strong>PCP Industrial</strong><small>PCP â€¢ PLANEJAMENTO E CONTROLE DA PRODUÃ‡ÃƒO</small></div></div>
