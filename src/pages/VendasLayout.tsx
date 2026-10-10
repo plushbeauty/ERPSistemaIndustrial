@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import '../styles/synqra-workspace.css'
 import ERPHorizontalShell from '../components/layout/ERPHorizontalShell'
+import { SynqraLayoutProvider } from '../layout/SynqraLayoutContext'
 
 export type SalesNavItem = { label:string; href:string; icon:typeof LayoutDashboard }
 export type SalesNavSection = { label:string; items:SalesNavItem[] }
@@ -64,10 +65,12 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
  const showCards=showStatusCards ?? true
 
  return <ERPHorizontalShell>
+  <SynqraLayoutProvider>
   <main className="synqra-workspace-main">
     {isVendas&&showCards&&<VendasStatusCards status={vendas.status} loading={vendas.loading}/>} 
     <div className="synqra-workspace-title">{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<div className="synqra-title-main"><h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div>{onRefresh&&<button className="synqra-tool-button" type="button" onClick={onRefresh} title="Atualizar"><RefreshCw size={13}/></button>}</div>
     {topContent}{children}
   </main>
+  </SynqraLayoutProvider>
  </ERPHorizontalShell>
 }
