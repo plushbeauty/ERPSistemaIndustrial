@@ -96,13 +96,12 @@ export default function QualidadeEspecificacoesTecnicas() {
       setTenantId(company.data)
       setProducts(productRows)
       setSpecs(specRows)
-      if (selectedId && !specRows.some((spec) => spec.id === selectedId)) setSelectedId('')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível carregar o catálogo técnico e as especificações.')
     } finally {
       setLoading(false)
     }
-  }, [selectedId])
+  }, [])
 
   useEffect(() => { void load() }, [load])
 
@@ -306,7 +305,7 @@ export default function QualidadeEspecificacoesTecnicas() {
                     <tbody>{form.parametros.map((parameter, index) => <tr key={index} className="border-t border-slate-200 align-top">
                       <td className="p-1"><input value={parameter.codigo} onChange={(event) => updateParameter(index, 'codigo', event.target.value)} aria-label={`Código do critério ${index + 1}`} className="h-[28px] w-[72px] border border-slate-300 bg-white px-1.5 text-[10px]"/></td>
                       <td className="p-1"><input value={parameter.caracteristica} onChange={(event) => updateParameter(index, 'caracteristica', event.target.value)} aria-label={`Característica ${index + 1}`} className="h-[28px] w-[135px] border border-slate-300 bg-white px-1.5 text-[10px]"/></td>
-                      <td className="p-1"><select value={parameter.tipo} onChange={(event) => updateParameter(index, 'tipo', event.target.value as SpecParameter['tipo'])} aria-label={`Tipo ${index + 1}`} className="h-[28px] w-[105px] border border-slate-300 bg-white px-1 text-[10px]"><option value="numerico">Numérico</option><option value="visual">Visual</option><option value="texto">Texto</option><option value="certificado">Certificado</option></select></td>
+                      <td className="p-1"><select value={parameter.tipo} onChange={(event) => { const value = event.target.value; if (value === 'numerico' || value === 'visual' || value === 'texto' || value === 'certificado') updateParameter(index, 'tipo', value) }} aria-label={`Tipo ${index + 1}`} className="h-[28px] w-[105px] border border-slate-300 bg-white px-1 text-[10px]"><option value="numerico">Numérico</option><option value="visual">Visual</option><option value="texto">Texto</option><option value="certificado">Certificado</option></select></td>
                       <td className="p-1"><input value={parameter.unidade} onChange={(event) => updateParameter(index, 'unidade', event.target.value)} aria-label={`Unidade ${index + 1}`} className="h-[28px] w-[54px] border border-slate-300 bg-white px-1 text-[10px]"/></td>
                       <td className="p-1"><input type="number" step="any" value={parameter.nominal ?? ''} onChange={(event) => updateParameter(index, 'nominal', event.target.value === '' ? null : Number(event.target.value))} aria-label={`Nominal ${index + 1}`} className="h-[28px] w-[80px] border border-slate-300 bg-white px-1 text-[10px]" disabled={parameter.tipo !== 'numerico'}/></td>
                       <td className="p-1"><input type="number" min="0" step="any" value={parameter.tolerancia_inferior ?? ''} onChange={(event) => updateParameter(index, 'tolerancia_inferior', event.target.value === '' ? null : Number(event.target.value))} aria-label={`Tolerância inferior ${index + 1}`} className="h-[28px] w-[70px] border border-slate-300 bg-white px-1 text-[10px]" disabled={parameter.tipo !== 'numerico'}/></td>
