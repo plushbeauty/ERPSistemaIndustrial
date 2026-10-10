@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Check, ClipboardCheck, RefreshCw, Search, ShieldCheck, TriangleAlert, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout from './VendasLayout'
+import QualitySPCChart from '../components/industrial/QualitySPCChart'
 
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; fornecedor_id: string | null; nf_numero: string | null; quantidade_recebida: number; status_inspecao: string | null }
 type Supplier = { id: string; razao_social: string }
@@ -289,6 +290,7 @@ export default function QualidadeIndustrial() {
             <label className={labelClass()}>Instrumento<select className={fieldClass(false)} value={instrument} onChange={(e) => setInstrument(e.target.value)}><option>Paquímetro</option><option>Micrômetro</option><option>Tridimensional</option></select></label>
           </div>
           <div className="qms-measure-status">DESVIO: <strong>{dimensionalPreview === null ? '—' : dimensionalPreview.toFixed(5)} mm</strong> · STATUS: <strong className={dimensionalStatus === 'OK' ? 'blue-status' : dimensionalStatus === 'NOK' ? 'red-status' : ''}>{dimensionalStatus}</strong><button className="qms-btn" type="button" disabled={busy} onClick={() => void saveDimensional()}>REGISTRAR MEDIÇÃO</button></div>
+          <QualitySPCChart measurements={dimensionals.filter((row) => !selectedReceiving || row.inspecao_recebimento_id === selectedReceiving)} />
           <div className="qms-table-wrap qms-mt"><table><thead><tr><th>Nº Peça</th><th>Cavidade</th><th>Nominal mm</th><th>Sup. +</th><th>Inf. -</th><th>Medido</th><th>Desvio</th><th>Status</th><th>Instrumento</th></tr></thead><tbody>{dimensionals.filter((row) => !selectedReceiving || row.inspecao_recebimento_id === selectedReceiving).map((row) => <tr key={row.id}><td className="num">{row.numero_peca_amostrada}</td><td>{row.cavidade_molde || '—'}</td><td className="num">{row.cota_nominal_mm}</td><td className="num">{row.tolerancia_superior_mm}</td><td className="num">{row.tolerancia_inferior_mm}</td><td className="num">{row.valor_medido_mm ?? '—'}</td><td className="num">{row.desvio_mm ?? '—'}</td><td><span className={row.status === 'OK' ? 'status-ok' : row.status === 'NOK' ? 'status-nok' : 'status-pending'}>{row.status}</span></td><td>{row.instrumento || '—'}</td></tr>)}</tbody></table></div>
         </section>}
 
