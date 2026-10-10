@@ -102,17 +102,14 @@ export default function VendasPDV() {
       setError(`O produto ${product.codigo} está sem saldo físico disponível.`)
       return
     }
-    setCart(current => {
-      const existing = current.find(item => item.id === product.id)
-      if (existing) {
-        if (existing.quantidade + 1 > product.estoque_atual) {
-          setError(`Saldo insuficiente para adicionar mais unidades de ${product.codigo}.`)
-          return current
-        }
-        return current.map(item => item.id === product.id ? { ...item, quantidade: item.quantidade + 1 } : item)
-      }
-      return [...current, { ...product, quantidade: 1 }]
-    })
+    const existing = cart.find(item => item.id === product.id)
+    if (existing && existing.quantidade + 1 > product.estoque_atual) {
+      setError(`Saldo insuficiente para adicionar mais unidades de ${product.codigo}.`)
+      return
+    }
+    setCart(current => existing
+      ? current.map(item => item.id === product.id ? { ...item, quantidade: item.quantidade + 1 } : item)
+      : [...current, { ...product, quantidade: 1 }])
   }
 
   const setQuantity = (productId: string, quantity: number) => {
