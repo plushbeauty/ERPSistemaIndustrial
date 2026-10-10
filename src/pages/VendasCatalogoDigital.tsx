@@ -6,7 +6,9 @@ import { useNavigate } from 'react-router-dom'
 
 type EmpresaCatalogo = { razao_social:string; nome_fantasia:string|null; cnpj:string; telefone:string|null; email:string|null; site:string|null }
 
-type BomItem = { id:string; produto_id:string; sku_insumo:string; qtd:number; unidade:string; custo_unitario:number; nome_componente?:string }\n\ntype Produto = {
+type BomItem = { id:string; produto_id:string; sku_insumo:string; qtd:number; unidade:string; custo_unitario:number; nome_componente?:string }
+
+type Produto = {
   id: string
   codigo: string
   nome: string
