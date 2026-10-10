@@ -123,13 +123,13 @@ export default function QualidadeListaMestre() {
             <p className="text-sm font-extrabold uppercase tracking-widest text-sky-300">
               QUALIDADE &gt; SGQ &gt; LISTA MESTRE
             </p>
-            <h1 className="text-2xl font-extrabold">Lista Mestre de Documentos</h1>
+            <h1 className="text-[16px] font-bold">Lista Mestre de Documentos</h1>
           </div>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => window.print()}
-              className="rounded-md bg-sky-600 px-5 py-3 text-base font-extrabold text-white"
+              className="inline-flex h-[30px] items-center rounded-[2px] bg-[#2D8DB8] px-3 text-[11px] font-bold text-white"
             >
               <Printer className="mr-2 inline" size={18} />
               IMPRIMIR LISTA MESTRE
@@ -137,7 +137,7 @@ export default function QualidadeListaMestre() {
             <button
               type="button"
               onClick={() => window.print()}
-              className="rounded-md border border-slate-500 px-5 py-3 text-base font-extrabold text-white"
+              className="inline-flex h-[30px] items-center rounded-[2px] border border-slate-500 px-3 text-[11px] font-bold text-white"
             >
               <Printer className="mr-2 inline" size={18} />
               IMPRIMIR ÍNDICE DE PASTA
@@ -157,22 +157,22 @@ export default function QualidadeListaMestre() {
           )}
 
           <div className="flex flex-col gap-3 border-b border-slate-200 pb-4 md:flex-row">
-            <label className="flex-1 text-sm font-extrabold text-slate-800">
+            <label className="flex-1 text-[10px] font-bold uppercase tracking-wide text-slate-700">
               PESQUISAR
               <input
-                className="mt-2 min-h-12 w-full rounded-md border border-slate-300 bg-white px-3 text-base text-slate-900"
+                className="mt-[2px] h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] text-slate-900 outline-none focus:border-[#2D8DB8]"
                 value={q}
                 onChange={(event) => setQ(event.target.value)}
                 placeholder="Código, título, setor ou departamento"
               />
             </label>
 
-            <label className="w-full text-sm font-extrabold text-slate-800 md:w-64">
+            <label className="w-full text-[10px] font-bold uppercase tracking-wide text-slate-700 md:w-64">
               DEPARTAMENTO
               <select
                 value={departamento}
                 onChange={(event) => setDepartamento(event.target.value)}
-                className="mt-2 min-h-12 w-full rounded-md border border-slate-300 bg-white px-3 text-base text-slate-900"
+                className="mt-[2px] h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] text-slate-900 outline-none focus:border-[#2D8DB8]"
               >
                 <option value="TODOS">Todos os departamentos</option>
                 {departamentos.map((item) => (
@@ -196,12 +196,12 @@ export default function QualidadeListaMestre() {
               </select>
             </label>
 
-            <label className="flex items-center gap-3 self-end rounded-md border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-extrabold text-slate-800">
+            <label className="flex items-center gap-2 self-end rounded-[2px] border border-slate-300 bg-slate-50 px-3 py-2 text-[11px] font-semibold text-slate-800">
               <input
                 type="checkbox"
                 checked={incluirFormularios}
                 onChange={(event) => setIncluirFormularios(event.target.checked)}
-                className="h-5 w-5"
+                className="h-4 w-4"
               />
               Incluir formulários/anexos
             </label>
