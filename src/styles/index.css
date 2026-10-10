@@ -357,3 +357,36 @@ table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!i
   .stock-workspace .module-search{flex:1 1 220px}
 }
 @media(prefers-reduced-motion:reduce){.erp-premium-sidebar-parent,.erp-premium-sidebar-child,.stock-workspace *{transition:none!important;animation:none!important}}
+
+
+/* Apply the same operational contract to every page rendered inside the authenticated ERP shell. */
+.erp-premium-shell-body>.erp-horizontal-workspace :is(input:not([type=checkbox]):not([type=radio]):not([type=range]),select,button,[role=combobox]){
+  box-sizing:border-box;min-height:30px!important;height:30px!important;border-radius:3px!important;
+  font-size:11px!important;line-height:14px!important;
+}
+.erp-premium-shell-body>.erp-horizontal-workspace textarea{
+  border-radius:3px!important;font-size:11px!important;line-height:1.4;
+}
+.erp-premium-shell-body>.erp-horizontal-workspace label{
+  font-size:9px!important;font-weight:700!important;letter-spacing:.05em;
+  text-transform:uppercase;color:#64748b;
+}
+.erp-premium-shell-body>.erp-horizontal-workspace table{font-size:10px!important;border-collapse:separate;border-spacing:0}
+.erp-premium-shell-body>.erp-horizontal-workspace table thead tr{height:32px!important}
+.erp-premium-shell-body>.erp-horizontal-workspace table tbody tr{height:32px!important}
+.erp-premium-shell-body>.erp-horizontal-workspace table th{
+  font-size:9px!important;font-weight:800!important;letter-spacing:.06em;text-transform:uppercase;
+  color:#64748b;background:#f6fafc;
+}
+.erp-premium-shell-body>.erp-horizontal-workspace table td{padding:4px 6px!important;vertical-align:middle}
+.erp-premium-shell-body>.erp-horizontal-workspace table tbody tr:hover{background:#f3f8fb}
+.erp-premium-shell-body>.erp-horizontal-workspace :is(button,a[role=button]){
+  transition:background-color .15s ease,color .15s ease,border-color .15s ease;
+}
+.erp-premium-shell-body>.erp-horizontal-workspace :is(button,a[role=button]):focus-visible{
+  outline:2px solid rgba(45,141,184,.35);outline-offset:1px;
+}
+@media(max-width:640px){
+  .erp-premium-sidebar{width:54px!important;min-width:54px!important;flex-basis:54px!important}
+  .erp-premium-shell-body>.erp-horizontal-workspace{width:calc(100% - 54px)!important}
+}
