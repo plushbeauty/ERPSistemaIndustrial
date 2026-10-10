@@ -70,7 +70,16 @@ export default function GEDDocumentos() {
   useEffect(() => {
     if (!routeRevisionId || loading || !revisions.length) return
     const routeRevision = revisions.find(row => row.id === routeRevisionId)
-    if (routeRevision && selectedId !== routeRevision.id) editRevision(routeRevision)
+    if (routeRevision && selectedId !== routeRevision.id) {
+      setSelectedId(routeRevision.id)
+      setCodigo(routeRevision.codigo_documento)
+      setTitulo(routeRevision.titulo_documento)
+      setDepartamento(routeRevision.departamento || 'QUALIDADE')
+      setConteudo(routeRevision.conteudo_texto)
+      setMotivo('')
+      setNotice('')
+      setError('')
+    }
   }, [routeRevisionId, loading, revisions, selectedId])
 
   const documents = useMemo(() => {
