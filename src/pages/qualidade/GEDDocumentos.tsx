@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { ChevronDown, ChevronRight, FilePlus2, FileText, History, RefreshCw, Save, Search, ShieldCheck } from 'lucide-react'
+import { FilePlus2, FileText, History, RefreshCw, Save, Search, ShieldCheck } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import VendasLayout from '../VendasLayout'
 
@@ -251,8 +251,8 @@ export default function GEDDocumentos() {
           <div className="min-h-0 flex-1 overflow-y-auto p-3">
             <div className="mb-4 rounded-[5px] border border-neutral-100 bg-neutral-50/70 p-3">
               <p className="text-[9px] font-semibold uppercase tracking-wider text-neutral-500">DOCUMENTO SELECIONADO</p>
-              <p className="mt-1 text-[11px] font-semibold text-neutral-800">{selected?.codigo_documento ?? codigo || 'Nenhum documento'}</p>
-              <p className="mt-1 text-[10px] leading-4 text-neutral-500">{selected?.titulo_documento ?? titulo || 'Selecione um documento na árvore.'}</p>
+              <p className="mt-1 text-[11px] font-semibold text-neutral-800">{selected?.codigo_documento ?? (codigo || 'Nenhum documento')}</p>
+              <p className="mt-1 text-[10px] leading-4 text-neutral-500">{selected?.titulo_documento ?? (titulo || 'Selecione um documento na árvore.')}</p>
             </div>
             <h3 className="mb-3 text-[9px] font-bold uppercase tracking-[.12em] text-neutral-500">Trilha de versões</h3>
             {history.length ? <ol className="space-y-0">{history.map((row, index) => <li key={row.id} className="relative border-l border-neutral-200 pb-4 pl-4 last:pb-1">
