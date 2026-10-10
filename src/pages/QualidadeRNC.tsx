@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { FileText, RefreshCw, Save, ShieldCheck, Upload, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import VendasLayout from './VendasLayout'
+import { useLocation } from 'react-router-dom'
+import QualitySidebar from '../components/quality/QualitySidebar'
 
 type Rpn = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; sgq_origem: string; sgq_severidade: string; lote_afetado: string | null; quantidade_segregada: number; status: string; criado_em: string }
 type Ishikawa = { id: string; rpnc_id: string; metodo: string | null; mao_de_obra: string | null; material: string | null; maquina: string | null; meio_ambiente: string | null; medicao: string | null }
@@ -15,6 +16,7 @@ const label = 'grid gap-[2px] text-[9px] font-medium uppercase text-slate-600'
 const btn = 'inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-medium text-white'
 
 export default function QualidadeRNC() {
+  const location = useLocation()
   const [tab, setTab] = useState<'rnc' | 'capa' | 'ged'>('rnc')
   const [companyId, setCompanyId] = useState('')
   const [rncs, setRncs] = useState<Rpn[]>([])
@@ -149,7 +151,7 @@ export default function QualidadeRNC() {
   }
 
   return (
-    <VendasLayout title="SGQ" subtitle="RNC 6M • CAPA 5W2H • GED controlado">
+    <main className="min-h-screen bg-[#F4FBFD] text-[#123B50]"><div className="mx-auto max-w-[1800px] space-y-3 p-3"><QualitySidebar active={location.pathname} /><div className="sgq-compact">
       <div className="sgq-compact">
         <div className="sgq-tabs">
           <button className={tab === 'rnc' ? 'active' : ''} type="button" onClick={() => setTab('rnc')}><ShieldCheck size={13}/> 01 · RNC / ISHIKAWA 6M</button>
@@ -202,6 +204,6 @@ export default function QualidadeRNC() {
       <style>{`
         .sgq-compact{padding:8px;background:#f4f7fe}.sgq-tabs{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-bottom:6px}.sgq-tabs button{height:30px;display:inline-flex;align-items:center;gap:4px;padding:0 9px;border:1px solid #cbd5e1;border-radius:2px;background:#fff;color:#123b50;font-size:10px;font-weight:500}.sgq-tabs button.active,.sgq-tabs button.refresh{background:#2d8db8;border-color:#2d8db8;color:#fff}.sgq-tabs .refresh{margin-left:auto}.sgq-panel{border:1px solid #cbd5e1;background:#fff;border-radius:2px;padding:8px}.sgq-grid{display:grid;gap:6px}.sgq-grid-5{grid-template-columns:1fr 1fr 1fr .8fr 1fr}.sgq-grid-6{grid-template-columns:repeat(6,minmax(0,1fr))}.sgq-grid-2{grid-template-columns:2fr 1fr}.sgq-mt{margin-top:6px}.sgq-action{display:flex;align-items:end}.sgq-save-row{display:flex;justify-content:flex-end;margin-top:6px}.sgq-textarea{width:100%;min-height:60px;padding:5px 7px;border:1px solid #cbd5e1;border-radius:2px;font-size:12px;outline:none;resize:vertical}.sgq-textarea:focus{border-color:#2d8db8}.sgq-table{overflow:auto;border:1px solid #dbe3e8;margin-top:6px}.sgq-table table{width:100%;border-collapse:collapse;font-size:10px}.sgq-table th,.sgq-table td{height:28px;padding:3px 6px;border-bottom:1px solid #e2e8f0;white-space:nowrap;text-align:left}.sgq-table th{background:#f1f5f9;color:#475569;font-size:9px;font-weight:500;text-transform:uppercase}.sgq-table td.num{text-align:right;font-variant-numeric:tabular-nums}.sgq-table tr.selected{background:#e8f5fb}.link-btn{height:26px;border:1px solid #2d8db8;border-radius:2px;background:#fff;color:#2d8db8;padding:0 7px;font-size:9px;font-weight:500}.sgq-message{margin-bottom:6px;padding:6px 8px;border:1px solid #b7d8e5;background:#f4fbfd;color:#17445a;font-size:10px}.sgq-message.error{border-color:#fca5a5;background:#fff1f2;color:#991b1b}@media(max-width:1000px){.sgq-grid-5{grid-template-columns:repeat(3,minmax(0,1fr))}.sgq-grid-6{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:650px){.sgq-grid-5,.sgq-grid-6,.sgq-grid-2{grid-template-columns:1fr}.sgq-tabs .refresh{margin-left:0}}
       `}</style>
-    </VendasLayout>
+    </div></main>
   )
 }
