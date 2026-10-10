@@ -187,7 +187,7 @@ export default function QualidadeIndustrial() {
       const existingMeasurements = Array.isArray(currentReceiving.medicoes) ? currentReceiving.medicoes : []
       const result = await supabase.from('qualidade_inspecoes').update({ medicoes: [...existingMeasurements, measurement] }).eq('empresa_id', companyId).eq('id', currentReceiving.id)
       if (result.error) throw result.error
-      setNotice(`Medição registrada: ${result.data.status} · desvio ${Number(result.data.desvio_mm ?? 0).toFixed(3)} mm.`)
+      setNotice(`Medição registrada: ${measurement.status} · desvio ${Number(measurement.desvio_mm).toFixed(3)} mm.`)
       setMeasured('')
       setPiece(String(Number(piece) + 1))
       await load()
