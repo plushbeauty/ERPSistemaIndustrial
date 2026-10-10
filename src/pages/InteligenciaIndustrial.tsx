@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Boxes, Calculator, ClipboardCheck, FileCheck2, Factory, RefreshCw, ArrowRight } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
-type Product={id:string;codigo:string;nome:string;estoque_atual:number;custo_medio:number;custo_fabricacao:number;preco_venda:number}
+type Product={id:string;codigo:string;nome:string;estoque_atual:number;custo_fabricacao:number;preco_venda:number}
 type Movement={produto_id:string;tipo:string;quantidade:number;created_at:string}
 type OP={id:string;produto_id:string;quantidade:number;status:string;data_prevista:string|null}
 type Finance={id:string;descricao:string;valor:number;vencimento:string;status:string;tipo:string}
@@ -30,16 +30,22 @@ export default function InteligenciaIndustrial(){
  async function load(){
   setBusy(true);setError('')
   try{
-   const [p,m,o,f,i,d]=await Promise.all([
-    supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,custo_medio,custo_fabricacao,preco_venda').eq('ativo',true).order('codigo').limit(3000),
-    supabase.from('erp_estoque_movimentos').select('produto_id,tipo,quantidade,created_at').order('created_at',{ascending:false}).limit(10000),
-    supabase.from('erp_ordens_producao').select('id,produto_id,quantidade,status,data_prevista').order('criado_em',{ascending:false}).limit(3000),
-    supabase.from('erp_financeiro').select('id,descricao,valor,vencimento,status,tipo').order('vencimento').limit(5000),
-    supabase.from('erp_inspecoes').select('resultado,quantidade_inspecionada,quantidade_aprovada,quantidade_reprovada').limit(3000),
-    supabase.from('erp_documentos_qualidade').select('id,codigo,titulo,status,revisao').order('updated_at',{ascending:false}).limit(1000)
+   const tenant=await supabase.rpc('erp_current_empresa_id')
+   if(tenant.error||typeof tenant.data!=='string'||!tenant.data) throw tenant.error??new Error('Empresa da sessão não identificada; inteligência industrial bloqueada.')
+   const empresaId=tenant.data
+   const [p,m,o,f,i,d,costs]=await Promise.all([
+    supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,preco_venda').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(3000),
+    supabase.from('erp_estoque_movimentos').select('produto_id,tipo,quantidade,created_at').eq('empresa_id',empresaId).order('created_at',{ascending:false}).limit(10000),
+    supabase.from('erp_ordens_producao').select('id,produto_id,quantidade,status,data_prevista').eq('empresa_id',empresaId).order('criado_em',{ascending:false}).limit(3000),
+    supabase.from('erp_financeiro_lancamentos').select('id,descricao,valor,vencimento,status,tipo').eq('empresa_id',empresaId).order('vencimento').limit(5000),
+    supabase.from('erp_inspecoes').select('resultado,quantidade_inspecionada,quantidade_aprovada,quantidade_reprovada').eq('empresa_id',empresaId).limit(3000),
+    supabase.from('erp_documentos_qualidade').select('id,codigo,titulo,status,revisao').eq('empresa_id',empresaId).order('updated_at',{ascending:false}).limit(1000),
+    supabase.from('erp_custos_produtos').select('produto_id,custo_fabricacao,custo_total,created_at').eq('empresa_id',empresaId).order('created_at',{ascending:false}).limit(5000)
    ])
-   for(const r of [p,m,o,f,i,d]) if(r.error) throw r.error
-   setProducts((p.data??[]) as Product[]);setMovements((m.data??[]) as Movement[]);setOps((o.data??[]) as OP[]);setFinance((f.data??[]) as Finance[]);setInspections((i.data??[]) as Inspection[]);setDocs((d.data??[]) as Doc[])
+   for(const r of [p,m,o,f,i,d,costs]) if(r.error) throw r.error
+   const latestCostByProduct=new Map<string,number>()
+   for(const row of costs.data??[]) if(!latestCostByProduct.has(row.produto_id)) latestCostByProduct.set(row.produto_id,Number(row.custo_fabricacao||row.custo_total||0))
+   setProducts((p.data??[]).map(row=>({...row,custo_fabricacao:latestCostByProduct.get(row.id)??0})) as Product[]);setMovements((m.data??[]) as Movement[]);setOps((o.data??[]) as OP[]);setFinance((f.data??[]) as Finance[]);setInspections((i.data??[]) as Inspection[]);setDocs((d.data??[]) as Doc[])
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar Torre de Inteligência Industrial.')}
   finally{setBusy(false)}
  }
@@ -63,7 +69,7 @@ export default function InteligenciaIndustrial(){
  }).sort((a,b)=>a.projected-b.projected),[products,movements,openOps,days])
  const stockAlerts=stockProjection.filter(x=>x.projected<0||Number(x.estoque_atual||0)<=0)
  const inspectionStats=useMemo(()=>{const inspected=inspections.reduce((s,x)=>s+Number(x.quantidade_inspecionada||0),0);const rejected=inspections.reduce((s,x)=>s+Number(x.quantidade_reprovada||0),0);return {inspected,rejected,rate:inspected?((inspected-rejected)/inspected)*100:0}},[inspections])
- const costRows=useMemo(()=>products.map(p=>{const cost=Number(p.custo_fabricacao||p.custo_medio||0);const suggested=cost*(1+markup/100);return {...p,cost,suggested,delta:Number(p.preco_venda||0)-suggested}}).filter(x=>x.cost>0).sort((a,b)=>a.delta-b.delta),[products,markup])
+ const costRows=useMemo(()=>products.map(p=>{const cost=Number(p.custo_fabricacao||0);const suggested=cost*(1+markup/100);return {...p,cost,suggested,delta:Number(p.preco_venda||0)-suggested}}).filter(x=>x.cost>0).sort((a,b)=>a.delta-b.delta),[products,markup])
  const docReady=useMemo(()=>{const released=docs.filter(d=>['liberada','vigente','aprovada'].includes(String(d.status||'').toLowerCase())).length;return {total:docs.length,released}},[docs])
 
  return <main className="erp-page-v3 intelligence-page" style={{maxWidth:1600,margin:'0 auto',padding:24}}>
