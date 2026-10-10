@@ -23,7 +23,7 @@ function requiredPlan(path: string): Plan {
   const goldRoutes = [
     '/qualidade/especificacoes', '/qualidade/fmea', '/qualidade/pfmea', '/qualidade/rnc-capa',
     '/engenharia/bom', '/pcp/engenharia-bom', '/pcp/ordens', '/pcp/ordens-industriais',
-    '/pcp/apontamentos',
+    '/pcp/apontamentos', '/pcp/painel-ordens',
   ]
   if (goldRoutes.includes(path)) return 'OURO'
 
@@ -37,7 +37,7 @@ function requiredPlan(path: string): Plan {
     path.startsWith('/fiscal') ||
     path.startsWith('/financeiro') ||
     path.startsWith('/rh') ||
-    ['/central-custos-industrial', '/custos', '/vendas/fiscal', '/vendas/rh', '/vendas/engenharia'].includes(path)
+    ['/central-custos-industrial', '/custos', '/vendas/fiscal', '/vendas/rh', '/vendas/engenharia', '/documentos-qualidade', '/configuracao-lote-pcp'].includes(path)
   ) return 'DIAMANTE'
 
   return 'BASICO'
