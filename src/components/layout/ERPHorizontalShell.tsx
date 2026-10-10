@@ -7,6 +7,7 @@ import { supabase } from '../../lib/supabaseClient'
 type MenuItem = {
   label: string
   route: string
+  icon?: LucideIcon
   children?: MenuItem[]
 }
 
