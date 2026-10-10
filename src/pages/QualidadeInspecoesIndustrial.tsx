@@ -83,10 +83,16 @@ export default function QualidadeInspecoesIndustrial() {
     if (![n, plus, minus, value].every(Number.isFinite) || plus < 0 || minus < 0) { setError('Informe medição e tolerâncias válidas.'); return }
     const measurement = { numero_peca: 1, parametro: parametro.trim(), valor_nominal: n, tolerancia_superior: plus, tolerancia_inferior: minus, valor_medido: value, limite_superior: n + plus, limite_inferior: n - minus, status: value >= n - minus && value <= n + plus ? 'pass' : 'fail' }
     setSaving(true)
-    const resultInsert = await supabase.from('qualidade_inspecoes').insert({
-      tipo, produto_id: produtoId, lote_id: loteId,
-      quantidade_total: Number(quantidade), tamanho_amostra: Number(amostra), medicoes: [measurement],
-      resultado: measurement.status === 'fail' ? 'reprovado' : resultado, observacoes: observacoes.trim() || null,
+    const inspectionResult = measurement.status === 'fail' ? 'reprovado' : resultado
+    const resultInsert = await supabase.rpc('erp_salvar_inspecao_lote', {
+      p_tipo: tipo,
+      p_produto_id: produtoId,
+      p_lote_id: loteId,
+      p_quantidade_total: Number(quantidade),
+      p_tamanho_amostra: Number(amostra),
+      p_medicoes: [measurement],
+      p_resultado: inspectionResult,
+      p_observacoes: observacoes.trim() || null,
     })
     setSaving(false)
     if (resultInsert.error) {
