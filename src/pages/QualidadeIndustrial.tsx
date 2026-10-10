@@ -129,7 +129,8 @@ export default function QualidadeIndustrial() {
 
   const saveReceiving = async () => {
     setInvalid(null); setError(''); setNotice('')
-    if (!selectedLot) return setInvalid('lote')
+    if (!selectedLot || !selectedLotData) return setInvalid('lote')
+    const lotData = selectedLotData
     if (!lotSize || Number(lotSize) <= 0) return setInvalid('loteSize')
     if (!aql || Number(aql) <= 0) return setInvalid('aql')
     if (!ac || !re || Number(re) <= Number(ac)) return setInvalid('criteria')
@@ -142,13 +143,13 @@ export default function QualidadeIndustrial() {
       const result = await supabase.from('qualidade_inspecoes').insert({
         empresa_id: companyId,
         tipo: 'recebimento',
-        produto_id: selectedLotData.produto_id,
+        produto_id: lotData.produto_id,
         lote_id: selectedLot,
         quantidade_total: Number(lotSize),
         tamanho_amostra: calculatedSample,
         medicoes: [],
         resultado: 'aprovado_com_restricao',
-        observacoes: JSON.stringify({ fornecedor_id: selectedLotData.fornecedor_id, lote_rastreabilidade_id: rastreio.data?.id ?? null, nivel_inspecao: level, aql: Number(aql), defeitos_encontrados: Number(defects || 0), criterio_ac: Number(ac), criterio_re: Number(re) }),
+        observacoes: JSON.stringify({ fornecedor_id: lotData.fornecedor_id, lote_rastreabilidade_id: rastreio.data?.id ?? null, nivel_inspecao: level, aql: Number(aql), defeitos_encontrados: Number(defects || 0), criterio_ac: Number(ac), criterio_re: Number(re) }),
       }).select('id').single()
       if (result.error) throw result.error
       setNotice('Inspeção de recebimento registrada no banco real.')
@@ -183,7 +184,7 @@ export default function QualidadeIndustrial() {
     setBusy(true)
     try {
       if (!currentReceiving) throw new Error('Inspeção de recebimento não encontrada.')
-      const measurement = { id: crypto.randomUUID(), numero_peca_amostrada: Number(piece), cavidade_molde: cavity || null, cota_nominal_mm: Number(nominal), tolerancia_superior_mm: Number(upper), tolerancia_inferior_mm: Number(lower), valor_medido_mm: Number(measured), desvio_mm: Number(measured) - Number(nominal), status: dimensionalStatus, instrumento }
+      const measurement = { id: crypto.randomUUID(), numero_peca_amostrada: Number(piece), cavidade_molde: cavity || null, cota_nominal_mm: Number(nominal), tolerancia_superior_mm: Number(upper), tolerancia_inferior_mm: Number(lower), valor_medido_mm: Number(measured), desvio_mm: Number(measured) - Number(nominal), status: dimensionalStatus, instrumento: instrument }
       const existingMeasurements = Array.isArray(currentReceiving.medicoes) ? currentReceiving.medicoes : []
       const result = await supabase.from('qualidade_inspecoes').update({ medicoes: [...existingMeasurements, measurement] }).eq('empresa_id', companyId).eq('id', currentReceiving.id)
       if (result.error) throw result.error
