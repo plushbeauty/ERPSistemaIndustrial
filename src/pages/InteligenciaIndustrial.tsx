@@ -55,8 +55,8 @@ export default function InteligenciaIndustrial(){
  const openOps=useMemo(()=>ops.filter(o=>openStatuses.has(String(o.status||'').toLowerCase())),[ops])
  const horizonEnd=useMemo(()=>{const d=new Date();d.setDate(d.getDate()+days);return d.toISOString().slice(0,10)},[days])
  const due=useMemo(()=>finance.filter(x=>x.vencimento&&x.vencimento<=horizonEnd&&!['pago','liquidado','cancelado','cancelada'].includes(String(x.status||'').toLowerCase())),[finance,horizonEnd])
- const receive=useMemo(()=>due.filter(x=>!String(x.tipo||'').toUpperCase().includes('PAG')).reduce((s,x)=>s+Number(x.valor||0),0),[due])
- const pay=useMemo(()=>due.filter(x=>String(x.tipo||'').toUpperCase().includes('PAG')).reduce((s,x)=>s+Number(x.valor||0),0),[due])
+ const receive=useMemo(()=>due.filter(x=>String(x.tipo||'').trim().toUpperCase()==='RECEITA').reduce((s,x)=>s+Number(x.valor||0),0),[due])
+ const pay=useMemo(()=>due.filter(x=>String(x.tipo||'').trim().toUpperCase()==='DESPESA').reduce((s,x)=>s+Number(x.valor||0),0),[due])
  const stockProjection=useMemo(()=>products.map(p=>{
    const cutoff=Date.now()-30*86400000
    const recent=movements.filter(m=>m.produto_id===p.id&&new Date(m.created_at).getTime()>=cutoff)
