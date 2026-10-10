@@ -56,7 +56,7 @@ export default function TesteERP() {
     } finally { setBusy(false) }
   }
 
-  return <main className="pcp-page" style={{ padding: 28, maxWidth: 1100, margin: '0 auto' }}>
+  if (!import.meta.env.DEV) return <main className="pcp-page" style={{ padding: 24, maxWidth: 900, margin: '0 auto' }}><section className="border border-amber-300 bg-amber-50 p-4 text-slate-900"><h1 className="text-lg font-bold">Diagnóstico de CRUD indisponível em produção</h1><p className="mt-2 text-sm">Esta ferramenta executa gravações e exclusões de teste no banco. Ela fica restrita ao ambiente de desenvolvimento para impedir registros de teste em produção.</p><a className="mt-3 inline-flex h-[30px] items-center border border-slate-300 bg-white px-3 text-[11px] font-semibold" href="/erp-industrial">Voltar ao ERP</a></section></main>\n\n  return <main className="pcp-page" style={{ padding: 28, maxWidth: 1100, margin: '0 auto' }}>
     <button className="secondary-v2" type="button" onClick={() => { window.location.href = '/erp-industrial' }}>← Voltar ao ERP</button>
     <div style={{ marginTop: 18 }}><span className="v2-eyebrow">QA • TRANSAÇÃO REAL</span><h1 style={{ fontSize: 38, margin: '6px 0' }}>Teste completo do ERP</h1><p style={{ color: '#64748b', fontSize: 17 }}>Executa operações reais no Supabase usando sua empresa autenticada e remove os registros temporários ao final. Não usa mock nem dados permanentes.</p></div>
     <section style={{ marginTop: 22, background: '#fff', border: '1px solid #dfe7e4', borderRadius: 20, padding: 24 }}>
