@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabaseClient'
 type MenuItem = {
   label: string
   route: string
-  children?: Array<{ label: string; route: string }>
+  children?: MenuItem[]
 }
 
 const menus: MenuItem[] = [
@@ -47,6 +47,12 @@ const menus: MenuItem[] = [
     { label: 'Capacidade / Gantt', route: '/pcp/capacidade' },
     { label: 'Sequenciamento', route: '/pcp/sequenciamento' },
     { label: 'MRP II', route: '/pcp/mrp-ii' },
+    { label: 'Fichas de Processo', route: '/ficha-engenharia', children: [
+      { label: 'Prensados', route: '/ficha-engenharia?tipo=PRENSADOS' },
+      { label: 'Injetados', route: '/ficha-engenharia?tipo=INJETADOS' },
+      { label: 'Estampos', route: '/ficha-engenharia?tipo=ESTAMPARIA' },
+      { label: 'Corte e Vinco', route: '/ficha-engenharia?tipo=CORTE_VINCO' },
+    ] },
   ] },
   { label: 'Qualidade', route: '/qualidade' },
   { label: 'Manutenção', route: '/manutencao' },
@@ -58,6 +64,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+  const [openSubMenu, setOpenSubMenu] = useState<string | null>(null)
   const [helpOpen, setHelpOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [now, setNow] = useState(() => new Date())
@@ -90,11 +97,12 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   useEffect(() => {
     setOpenMenu(null)
   }, [pathname])
+  const flattenMenu = (items: MenuItem[], prefix = ''): Array<{ label: string; route: string }> => items.flatMap(item => [
+    { label: prefix ? `${prefix} / ${item.label}` : item.label, route: item.route },
+    ...(item.children ? flattenMenu(item.children, prefix ? `${prefix} / ${item.label}` : item.label) : []),
+  ])
   const filtered = search.trim()
-    ? menus.flatMap(menu => [
-        { label: menu.label, route: menu.route },
-        ...(menu.children ?? []).map(child => ({ label: `${menu.label} / ${child.label}`, route: child.route })),
-      ]).filter(item => item.label.toLowerCase().includes(search.trim().toLowerCase()))
+    ? flattenMenu(menus).filter(item => item.label.toLowerCase().includes(search.trim().toLowerCase()))
     : []
 
   const contextualHelp = pathname.startsWith('/pcp/mrp-ii')
@@ -117,6 +125,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
 
   const go = (route: string) => {
     setOpenMenu(null)
+    setOpenSubMenu(null)
     setSearch('')
     navigate(route)
   }
@@ -176,12 +185,19 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             {hasChildren && expanded && <div className="erp-horizontal-dropdown">
               {menu.children?.map(child => {
                 const childActive = pathname === child.route || pathname.startsWith(child.route + '/')
-                return <button
-                  type="button"
-                  key={child.route}
-                  className={childActive ? 'is-active' : ''}
-                  onClick={() => go(child.route)}
-                >{child.label}</button>
+                const childHasChildren = Boolean(child.children?.length)
+                const childExpanded = openSubMenu === child.label
+                return <div className="erp-horizontal-dropdown-item" key={child.label}>
+                  <button
+                    type="button"
+                    className={childActive ? 'is-active' : ''}
+                    aria-expanded={childHasChildren ? childExpanded : undefined}
+                    onClick={() => childHasChildren ? setOpenSubMenu(value => value === child.label ? null : child.label) : go(child.route)}
+                  >{child.label}{childHasChildren && <ChevronRight size={12} />}</button>
+                  {childHasChildren && childExpanded && <div className="erp-horizontal-subdropdown">
+                    {child.children?.map(sub => <button type="button" key={sub.route} className={pathname === sub.route.split('?')[0] && window.location.search === (sub.route.includes('?') ? `?${sub.route.split('?')[1]}` : '') ? 'is-active' : ''} onClick={() => go(sub.route)}>{sub.label}</button>)}
+                  </div>}
+                </div>
               })}
             </div>}
           </div>
@@ -223,6 +239,11 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-menu-item{position:relative;display:flex;align-items:stretch}
         .erp-horizontal-menu-button{height:31px;display:inline-flex;align-items:center;gap:3px;padding:0 10px;border:0;border-right:1px solid rgba(255,255,255,.18);background:#2D8DB8;color:#fff;font-size:10px;font-weight:500;cursor:pointer}
         .erp-horizontal-menu-button:hover,.erp-horizontal-menu-button.is-active{background:#17445A;color:#fff}
+        .erp-horizontal-dropdown-item{position:relative;min-width:0}
+        .erp-horizontal-dropdown-item>button{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;text-align:left}
+        .erp-horizontal-subdropdown{position:absolute;left:100%;top:0;z-index:1400;min-width:190px;padding:4px;background:#fff;border:1px solid #cbd8de;box-shadow:0 8px 22px rgba(18,59,80,.16)}
+        .erp-horizontal-subdropdown button{display:flex;width:100%;min-height:30px;align-items:center;text-align:left;padding:5px 9px;border:0;background:#fff;color:#173b4a;font-size:10px;white-space:nowrap;cursor:pointer}
+        .erp-horizontal-subdropdown button:hover,.erp-horizontal-subdropdown button.is-active{background:#eaf5f8;color:#123b50}
         .erp-horizontal-dropdown{position:absolute;top:31px;left:0;min-width:210px;padding:4px 0;background:#fff;border:1px solid #b9cbd3;box-shadow:0 5px 14px rgba(18,59,80,.14)}
         .erp-horizontal-dropdown button{display:block;width:100%;min-height:29px;padding:5px 12px;border:0;background:#fff;color:#234d61;text-align:left;font-size:11px;cursor:pointer}
         .erp-horizontal-dropdown button:hover{background:#edf7fb;color:#1f7195}
