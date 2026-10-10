@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Copy, Filter, Minus, Plus, Search, Send, ShoppingBag, X } from 'lucide-react'
+import { Copy, Filter, LayoutGrid, List, Minus, Plus, Search, Send, ShoppingBag, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout from './VendasLayout'
 
@@ -31,6 +31,7 @@ export default function VendasCatalogoDigital() {
   const [empresa, setEmpresa] = useState<EmpresaCatalogo | null>(null)
   const [filtro, setFiltro] = useState('')
   const [categoria, setCategoria] = useState('TODOS')
+  const [visualizacao, setVisualizacao] = useState<'grade' | 'lista'>('grade')
   const [quantidades, setQuantidades] = useState<Record<string, number>>({})
   const [detalhe, setDetalhe] = useState<Produto | null>(null)
   const [cartOpen, setCartOpen] = useState(false)
@@ -240,6 +241,10 @@ export default function VendasCatalogoDigital() {
               <Filter size={13} />
               {rows.length} produtos
             </div>
+            <div className="flex items-center gap-1 border border-slate-200 bg-white p-0.5" aria-label="Modo de visualização">
+              <button type="button" title="Visualizar em grade" aria-pressed={visualizacao === 'grade'} onClick={() => setVisualizacao('grade')} className={'flex h-7 w-7 items-center justify-center ' + (visualizacao === 'grade' ? 'bg-[#123B50] text-white' : 'text-slate-600 hover:bg-slate-100')}><LayoutGrid size={13}/></button>
+              <button type="button" title="Visualizar em lista" aria-pressed={visualizacao === 'lista'} onClick={() => setVisualizacao('lista')} className={'flex h-7 w-7 items-center justify-center ' + (visualizacao === 'lista' ? 'bg-[#123B50] text-white' : 'text-slate-600 hover:bg-slate-100')}><List size={13}/></button>
+            </div>
           </div>
 
           <div className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-white px-2 py-1.5">
@@ -283,7 +288,7 @@ export default function VendasCatalogoDigital() {
               Carregando catálogo...
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <div className={visualizacao === 'grade' ? 'grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' : 'grid grid-cols-1 gap-1'}>
               {rows.map((produto, index) => {
                 const quantity = quantidades[produto.id] ?? 0
                 const grupo = produto.grupo || 'SEM GRUPO'
@@ -300,13 +305,13 @@ export default function VendasCatalogoDigital() {
                         </span>
                       </div>
                     ) : null}
-                    <article className="group overflow-hidden border border-slate-200 bg-white transition-shadow hover:shadow-md">
+                    <article className={visualizacao === 'grade' ? 'group overflow-hidden border border-slate-200 bg-white transition-shadow hover:shadow-md' : 'group flex flex-col gap-0 overflow-hidden border border-slate-200 bg-white transition-colors hover:bg-slate-50/70 md:flex-row'}>
                     <button
                       type="button"
                       onClick={() => setDetalhe(produto)}
                       className="block w-full text-left"
                     >
-                      <div className="relative flex h-40 items-center justify-center overflow-hidden bg-slate-50">
+                      <div className={visualizacao === 'grade' ? 'relative flex h-40 items-center justify-center overflow-hidden bg-slate-50' : 'relative flex h-24 shrink-0 items-center justify-center overflow-hidden bg-slate-50 md:w-32'}>
                         {produto.foto_url ? (
                           <img
                             src={produto.foto_url}
@@ -330,7 +335,7 @@ export default function VendasCatalogoDigital() {
                            </span>
                          )}
                       </div>
-                      <div className="p-2.5">
+                      <div className={visualizacao === 'grade' ? 'p-2.5' : 'min-w-0 flex-1 p-2'}>
                         <div className="flex items-center justify-between gap-2"><span className="font-mono text-[8px] text-slate-400">{produto.codigo}</span>{produto.subgrupo&&<span className="truncate text-[8px] text-slate-400">{produto.subgrupo}</span>}</div>
                         <h2 className="mt-1 min-h-8 text-[11px] font-medium leading-4 text-[#123B50]">
                           {produto.nome}
