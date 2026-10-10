@@ -8,7 +8,7 @@ type Tool = { id: string; codigo: string; nome: string; tipo: string }
 type Machine = { id: string; codigo: string; nome: string; tipo: string | null }
 type Category = 'INJETADOS' | 'PRENSADOS' | 'ESTAMPARIA' | 'MECANICA' | 'TRATAMENTO_SUPERFICIAL' | 'PINTURA_QUIMICA' | 'CORTE_VINCO'
 type Param = { key: string; label: string; unit: string; type?: 'number' | 'text'; required?: boolean; step?: string }
-type Saved = { id: string; codigo_ficha: string; produto_id: string; categoria_processo: Category; versao_ficha: number; status: string; parametros_tecnicos: Record<string, unknown>; revisao?: number }
+type Saved = { id: string; codigo_ficha: string; produto_id: string; ferramenta_id?: string | null; maquina_id?: string | null; categoria_processo: Category; versao_ficha: number; status: string; parametros_tecnicos: Record<string, unknown>; revisao?: number }
 const categories: { value: Category; label: string }[] = [
  { value: 'INJETADOS', label: 'Injetados' }, { value: 'PRENSADOS', label: 'Prensados' },
  { value: 'ESTAMPARIA', label: 'Estampos / Estamparia' }, { value: 'MECANICA', label: 'Mecânica' },
@@ -125,7 +125,7 @@ export default function PCPFichasProcesso() {
     supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', tenant.data).eq('ativo', true).order('codigo').limit(3000),
     supabase.from('erp_ferramentas_industriais').select('id,codigo,nome,tipo').eq('empresa_id', tenant.data).eq('ativo', true).order('codigo').limit(2000),
     supabase.from('erp_maquinas').select('id,codigo,nome,tipo').eq('empresa_id', tenant.data).not('status', 'eq', 'INATIVA').order('codigo').limit(2000),
-    supabase.from('erp_fichas_processo').select('id,codigo_ficha,produto_id,categoria_processo,versao_ficha,status,parametros_tecnicos,revisao').eq('empresa_id', tenant.data).order('codigo_ficha').limit(1000),
+    supabase.from('erp_fichas_processo').select('id,codigo_ficha,produto_id,ferramenta_id,maquina_id,categoria_processo,versao_ficha,status,parametros_tecnicos,revisao').eq('empresa_id', tenant.data).order('codigo_ficha').limit(1000),
    ])
    for (const result of [p, t, m, f]) if (result.error) throw result.error
    setProducts((p.data ?? []) as Product[]); setTools((t.data ?? []) as Tool[]); setMachines((m.data ?? []) as Machine[]); setRows((f.data ?? []) as Saved[])
@@ -142,7 +142,7 @@ export default function PCPFichasProcesso() {
 
  function openRow(row: Saved) {
   setCode(row.codigo_ficha); setProductId(row.produto_id); setCategory(row.categoria_processo)
-  setVersion(String(row.versao_ficha ?? row.revisao ?? 1)); setStatus(row.status)
+  setVersion(String(row.versao_ficha ?? row.revisao ?? 1)); setStatus(row.status); setToolId(row.ferramenta_id ?? ''); setMachineId(row.maquina_id ?? '')
   setParams({ ...blankParameters(row.categoria_processo), ...Object.fromEntries(Object.entries(row.parametros_tecnicos ?? {}).map(([k,v]) => [k, String(v ?? '')])) })
   setToolId(''); setMachineId(''); setApprovedAt(''); setSignature(''); setInstructions(String(row.parametros_tecnicos?.instrucoes_setup ?? ''))
   setSearchParams({ tipo: row.categoria_processo, produto: row.produto_id })
