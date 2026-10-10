@@ -26,6 +26,8 @@ export default function PCPAgendaMaquinas(){
  const [orders,setOrders]=useState<Order[]>([])
  const [slots,setSlots]=useState<Slot[]>([])
  const [calendar,setCalendar]=useState<Calendar>({dias_trabalho:['seg','ter','qua','qui','sex'],horario_inicio_jornada:'06:00:00',horario_fim_jornada:'22:00:00'})
+ const [calendarDraft,setCalendarDraft]=useState<Calendar>({dias_trabalho:['seg','ter','qua','qui','sex'],horario_inicio_jornada:'06:00',horario_fim_jornada:'22:00'})
+ const [calendarOpen,setCalendarOpen]=useState(false)
  const [weekStart,setWeekStart]=useState(()=>monday(new Date()))
  const [selected,setSelected]=useState<Cell|null>(null)
  const [busy,setBusy]=useState(false)
@@ -48,7 +50,7 @@ export default function PCPAgendaMaquinas(){
    ])
    for(const r of [m,o,mo,a,c])if(r.error)throw r.error
    setMachines((m.data??[]) as Machine[]);setOrders((o.data??[]) as Order[]);setMolds((mo.data??[]) as Mold[]);setSlots((a.data??[]) as Slot[])
-   if(c.data)setCalendar(c.data as Calendar)
+   if(c.data){setCalendar(c.data as Calendar);setCalendarDraft(c.data as Calendar)}
   }catch(e){setError(messageOf(e))}
   finally{setBusy(false)}
  },[weekStart])
@@ -60,6 +62,17 @@ export default function PCPAgendaMaquinas(){
  const weekLabel=useMemo(()=>`Semana ${Math.ceil((weekStart.getDate()+6)/7)} · ${weekStart.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})} a ${days[6].toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}`,[weekStart,days])
  const cellSlots=(machineId:string,date:Date)=>slots.filter(s=>s.maquina_id===machineId&&new Date(s.data_hora_inicio).toDateString()===date.toDateString()).sort((a,b)=>a.data_hora_inicio.localeCompare(b.data_hora_inicio))
  const selectCell=(machine:Machine,date:Date)=>{setSelected({machine,date});setError('');setNotice('');const start=new Date(date);const [h='06',min='00']=calendar.horario_inicio_jornada.split(':');start.setHours(Number(h),Number(min),0,0);const end=new Date(start);end.setHours(end.getHours()+1);setForm({ordem_producao_id:'',molde_id:'',quantidade_programada:'1',lote_producao:'',data_hora_inicio:localValue(start),data_hora_fim:localValue(end),status:'planejada'})}
+ async function saveCalendar(e:React.FormEvent<HTMLFormElement>){
+  e.preventDefault();if(!company)return
+  if(calendarDraft.dias_trabalho.length===0){setError('Selecione ao menos um dia de trabalho.');return}
+  if(calendarDraft.horario_fim_jornada.slice(0,5)<=calendarDraft.horario_inicio_jornada.slice(0,5)){setError('O fim da jornada deve ser posterior ao início.');return}
+  setBusy(true);setError('');setNotice('')
+  try{
+   const r=await supabase.from('erp_pcp_calendario_trabalho').upsert({empresa_id:company,dias_trabalho:calendarDraft.dias_trabalho,horario_inicio_jornada:calendarDraft.horario_inicio_jornada.slice(0,5),horario_fim_jornada:calendarDraft.horario_fim_jornada.slice(0,5),updated_at:new Date().toISOString()},{onConflict:'empresa_id'})
+   if(r.error)throw r.error
+   setCalendar(calendarDraft);setCalendarOpen(false);setNotice('Calendário de trabalho salvo para a empresa.')
+  }catch(e){setError(messageOf(e))}finally{setBusy(false)}
+ }
  async function save(e:React.FormEvent<HTMLFormElement>){
   e.preventDefault();if(!selected||!company)return
   const start=new Date(form.data_hora_inicio),end=new Date(form.data_hora_fim),qty=Number(form.quantidade_programada)
@@ -96,8 +109,9 @@ export default function PCPAgendaMaquinas(){
    <header className="mb-3 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2 print:mb-2">
     <span className="flex h-8 w-8 items-center justify-center bg-[#123B50] text-white"><CalendarRange size={17}/></span>
     <div><p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#2D8DB8]">MANUFATURA / PCP</p><h1 className="text-[16px] font-semibold leading-5">Agenda de máquinas · capacidade finita</h1><p className="text-[10px] text-slate-500">{weekLabel} · Jornada {calendar.horario_inicio_jornada.slice(0,5)}–{calendar.horario_fim_jornada.slice(0,5)}</p></div>
-    <div className="ml-auto flex flex-wrap gap-1 print:hidden"><button className={btn} onClick={()=>setWeekStart(d=>{const x=new Date(d);x.setDate(x.getDate()-7);return x})}>← Semana</button><button className={btn} onClick={()=>setWeekStart(monday(new Date()))}>Hoje</button><button className={btn} onClick={()=>setWeekStart(d=>{const x=new Date(d);x.setDate(x.getDate()+7);return x})}>Semana →</button><button className={btn} onClick={()=>void load()} disabled={busy}><RefreshCw size={12}/> Atualizar</button><button className={btn} onClick={()=>window.print()}><Printer size={12}/> Imprimir</button></div>
+    <div className="ml-auto flex flex-wrap gap-1 print:hidden"><button className={btn} onClick={()=>setWeekStart(d=>{const x=new Date(d);x.setDate(x.getDate()-7);return x})}>← Semana</button><button className={btn} onClick={()=>setWeekStart(monday(new Date()))}>Hoje</button><button className={btn} onClick={()=>setWeekStart(d=>{const x=new Date(d);x.setDate(x.getDate()+7);return x})}>Semana →</button><button className={btn} onClick={()=>setCalendarOpen(v=>!v)}>Jornada</button><button className={btn} onClick={()=>void load()} disabled={busy}><RefreshCw size={12}/> Atualizar</button><button className={btn} onClick={()=>window.print()}><Printer size={12}/> Imprimir</button></div>
    </header>
+   {calendarOpen&&<form onSubmit={saveCalendar} className="mb-2 border border-slate-200 bg-white p-2 print:hidden"><div className="mb-2 flex flex-wrap items-end gap-3"><div><span className={label}>Dias de trabalho</span><div className="flex flex-wrap gap-2">{weekdays.map(d=><label key={d.key} className="flex items-center gap-1 text-[9px]"><input type="checkbox" checked={calendarDraft.dias_trabalho.includes(d.key)} onChange={e=>setCalendarDraft(v=>({...v,dias_trabalho:e.target.checked?[...v.dias_trabalho,d.key]:v.dias_trabalho.filter(k=>k!==d.key)}))}/>{d.label}</label>)}</div></div><label className={label}>Início da jornada<input className={input} type="time" value={calendarDraft.horario_inicio_jornada.slice(0,5)} onChange={e=>setCalendarDraft(v=>({...v,horario_inicio_jornada:e.target.value}))} required/></label><label className={label}>Fim da jornada<input className={input} type="time" value={calendarDraft.horario_fim_jornada.slice(0,5)} onChange={e=>setCalendarDraft(v=>({...v,horario_fim_jornada:e.target.value}))} required/></label><button type="submit" className={primary} disabled={busy}>Salvar jornada da empresa</button></div><p className="text-[9px] text-slate-500">Dias e horário aplicados ao filtro semanal e validados ao gravar uma programação.</p></form>}
    <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 border border-slate-200 bg-white px-2 py-1.5 text-[9px]"><span className="font-bold uppercase text-slate-600">Legenda</span><span className="flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-emerald-600"/>Concluída / liberada</span><span className="flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-sky-600"/>Em execução</span><span className="flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-amber-500"/>Planejada / pendente</span><span className="flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-rose-600"/>Bloqueada / cancelada</span><span className="ml-auto text-slate-500">Clique em uma célula máquina/dia para consultar e programar OPs</span></div>
    {error&&<div role="alert" className="mb-2 flex items-start gap-2 border border-rose-300 bg-rose-50 p-2 text-[10px] text-rose-800"><CircleAlert size={13}/>{error}</div>}
    {notice&&<div role="status" className="mb-2 border border-emerald-300 bg-emerald-50 p-2 text-[10px] text-emerald-800">{notice}</div>}
