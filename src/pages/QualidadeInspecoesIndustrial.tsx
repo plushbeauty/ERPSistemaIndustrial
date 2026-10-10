@@ -15,13 +15,14 @@ type InspectionRow = {
 }
 
 type ProductRow = { id: string; codigo: string; descricao_tecnica: string }
-type LotRow = { id: string; numero_lote: string; status: 'liberado' | 'bloqueado' | 'quarentena' }
+type LotRow = { id: string; produto_id: string; numero_lote: string; status: 'liberado' | 'bloqueado' | 'quarentena' }
 
 const fieldClass = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] text-slate-800 outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100'
 const labelClass = 'mb-[2px] block text-[9px] font-bold uppercase tracking-wider text-slate-600'
 const buttonClass = 'inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50'
 
 export default function QualidadeInspecoesIndustrial() {
+  const [companyId, setCompanyId] = useState('')
   const [rows, setRows] = useState<InspectionRow[]>([])
   const [products, setProducts] = useState<ProductRow[]>([])
   const [lots, setLots] = useState<LotRow[]>([])
@@ -45,10 +46,17 @@ export default function QualidadeInspecoesIndustrial() {
   async function load() {
     setLoading(true)
     setError(null)
+    const tenant = await supabase.rpc('erp_current_empresa_id')
+    if (tenant.error || typeof tenant.data !== 'string' || !tenant.data) {
+      setError(tenant.error?.message ?? 'Empresa ativa não identificada.')
+      setLoading(false)
+      return
+    }
+    setCompanyId(tenant.data)
     const [inspectionResult, productResult, lotResult] = await Promise.all([
-      supabase.from('qualidade_inspecoes').select('id,tipo,produto_id,lote_id,quantidade_total,tamanho_amostra,resultado,observacoes,created_at').order('created_at', { ascending: false }).limit(500),
-      supabase.from('engenharia_produtos').select('id,codigo,descricao_tecnica').eq('ativo', true).order('codigo').limit(1000),
-      supabase.from('estoque_lotes').select('id,numero_lote,status').order('numero_lote').limit(1000),
+      supabase.from('qualidade_inspecoes').select('id,tipo,produto_id,lote_id,quantidade_total,tamanho_amostra,resultado,observacoes,created_at').eq('empresa_id', tenant.data).order('created_at', { ascending: false }).limit(500),
+      supabase.from('engenharia_produtos').select('id,codigo,descricao_tecnica').eq('empresa_id', tenant.data).eq('ativo', true).order('codigo').limit(1000),
+      supabase.from('estoque_lotes').select('id,produto_id,numero_lote,status').eq('empresa_id', tenant.data).order('numero_lote').limit(1000),
     ])
     const failure = inspectionResult.error ?? productResult.error ?? lotResult.error
     if (failure) setError(failure.message)
@@ -133,13 +141,13 @@ export default function QualidadeInspecoesIndustrial() {
       <section className="mb-3 border border-slate-200 bg-white p-3">
         <h2 className="mb-2 flex items-center gap-1 text-xs font-semibold"><ClipboardCheck size={14} /> Registrar inspeção</h2>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-          <label><span className={labelClass}>TIPO</span><select className={fieldClass} value={tipo} onChange={event => setTipo(event.target.value as InspectionRow['tipo'])}><option value="recebimento">Recebimento</option><option value="processo">Processo</option><option value="produto_final">Produto final</option></select></label>
-          <label className="sm:col-span-2"><span className={labelClass}>ITEM</span><select className={fieldClass} value={produtoId} onChange={event => { setProdutoId(event.target.value); setLoteId('') }}><option value="">Selecionar item…</option>{products.map(product => <option key={product.id} value={product.id}>{product.codigo} — {product.descricao_tecnica}</option>)}</select></label>
-          <label className="sm:col-span-2"><span className={labelClass}>LOTE</span><select className={fieldClass} value={loteId} onChange={event => setLoteId(event.target.value)}><option value="">Selecionar lote…</option>{lots.filter(lot => !produtoId || rows.some(row => row.produto_id === produtoId && row.lote_id === lot.id) || lot.status !== 'bloqueado').map(lot => <option key={lot.id} value={lot.id}>{lot.numero_lote} · {lot.status}</option>)}</select></label>
-          <label><span className={labelClass}>RESULTADO</span><select className={fieldClass} value={resultado} onChange={event => setResultado(event.target.value as InspectionRow['resultado'])}><option value="aprovado">Aprovado</option><option value="reprovado">Reprovado</option><option value="aprovado_com_restricao">Com restrição</option></select></label>
-          <label><span className={labelClass}>QUANTIDADE TOTAL</span><input className={fieldClass} type="number" min="0" step="0.001" value={quantidade} onChange={event => setQuantidade(event.target.value)} /></label>
-          <label><span className={labelClass}>TAMANHO DA AMOSTRA</span><input className={fieldClass} type="number" min="0" step="1" value={amostra} onChange={event => setAmostra(event.target.value)} /></label>
-          <label className="sm:col-span-3"><span className={labelClass}>OBSERVAÇÕES TÉCNICAS</span><input className={fieldClass} value={observacoes} onChange={event => setObservacoes(event.target.value)} maxLength={2000} /></label><label><span className={labelClass}>PARÂMETRO / COTA</span><input className={fieldClass} value={parametro} onChange={event => setParametro(event.target.value)} placeholder="Ex.: diâmetro" /></label><label><span className={labelClass}>VALOR NOMINAL</span><input className={fieldClass} type="number" step="any" value={nominal} onChange={event => setNominal(event.target.value)} /></label><label><span className={labelClass}>TOLERÂNCIA +</span><input className={fieldClass} type="number" min="0" step="any" value={tolMais} onChange={event => setTolMais(event.target.value)} /></label><label><span className={labelClass}>TOLERÂNCIA −</span><input className={fieldClass} type="number" min="0" step="any" value={tolMenos} onChange={event => setTolMenos(event.target.value)} /></label><label><span className={labelClass}>VALOR MEDIDO</span><input className={fieldClass} type="number" step="any" value={medido} onChange={event => setMedido(event.target.value)} /></label>
+          <label title="Selecione a etapa de inspeção: recebimento, processo produtivo ou produto final."><span className={labelClass}>TIPO</span><select className={fieldClass} value={tipo} onChange={event => setTipo(event.target.value as InspectionRow['tipo'])}><option value="recebimento">Recebimento</option><option value="processo">Processo</option><option value="produto_final">Produto final</option></select></label>
+          <label title="Selecione o produto ativo cadastrado na empresa."><span className={labelClass}>ITEM</span><select className={fieldClass} value={produtoId} onChange={event => { setProdutoId(event.target.value); setLoteId('') }}><option value="">Selecionar item…</option>{products.map(product => <option key={product.id} value={product.id}>{product.codigo} — {product.descricao_tecnica}</option>)}</select></label>
+          <label title="Selecione um lote do produto escolhido. Lotes bloqueados não podem ser selecionados."><span className={labelClass}>LOTE</span><select className={fieldClass} value={loteId} onChange={event => setLoteId(event.target.value)}><option value="">Selecionar lote…</option>{lots.filter(lot => (!produtoId || lot.produto_id === produtoId) && lot.status !== 'bloqueado').map(lot => <option key={lot.id} value={lot.id}>{lot.numero_lote} · {lot.status}</option>)}</select></label>
+          <label title="Resultado global da amostragem. Uma medição fora da tolerância força reprovação e quarentena."><span className={labelClass}>RESULTADO</span><select className={fieldClass} value={resultado} onChange={event => setResultado(event.target.value as InspectionRow['resultado'])}><option value="aprovado">Aprovado</option><option value="reprovado">Reprovado</option><option value="aprovado_com_restricao">Com restrição</option></select></label>
+          <label title="Quantidade total de unidades do lote, em unidade de estoque."><span className={labelClass}>QUANTIDADE TOTAL</span><input className={fieldClass} type="number" min="0" step="0.001" value={quantidade} onChange={event => setQuantidade(event.target.value)} /></label>
+          <label title="Número inteiro de unidades inspecionadas do lote."><span className={labelClass}>TAMANHO DA AMOSTRA</span><input className={fieldClass} type="number" min="0" step="1" value={amostra} onChange={event => setAmostra(event.target.value)} /></label>
+          <label title="Registre evidências, condição observada e informação necessária para rastreabilidade."><span className={labelClass}>OBSERVAÇÕES TÉCNICAS</span><input className={fieldClass} value={observacoes} onChange={event => setObservacoes(event.target.value)} maxLength={2000} /></label><label title="Nome da característica medida, por exemplo diâmetro ou comprimento."><span className={labelClass}>PARÂMETRO / COTA</span><input className={fieldClass} value={parametro} onChange={event => setParametro(event.target.value)} placeholder="Ex.: diâmetro" /></label><label title="Valor de referência da especificação, na unidade da característica medida."><span className={labelClass}>VALOR NOMINAL</span><input className={fieldClass} type="number" step="any" value={nominal} onChange={event => setNominal(event.target.value)} /></label><label title="Desvio positivo permitido acima do valor nominal, na mesma unidade da cota."><span className={labelClass}>TOLERÂNCIA +</span><input className={fieldClass} type="number" min="0" step="any" value={tolMais} onChange={event => setTolMais(event.target.value)} /></label><label title="Desvio absoluto permitido abaixo do valor nominal, na mesma unidade da cota."><span className={labelClass}>TOLERÂNCIA −</span><input className={fieldClass} type="number" min="0" step="any" value={tolMenos} onChange={event => setTolMenos(event.target.value)} /></label><label title="Valor lido no instrumento calibrado, na mesma unidade do nominal e das tolerâncias."><span className={labelClass}>VALOR MEDIDO</span><input className={fieldClass} type="number" step="any" value={medido} onChange={event => setMedido(event.target.value)} /></label>
           <div className="flex items-end"><button className="h-[30px] w-full rounded-[2px] bg-sky-700 px-3 text-[10px] font-semibold text-white hover:bg-sky-800 disabled:opacity-50" onClick={() => void saveInspection()} disabled={saving || loading}>{saving ? 'Salvando…' : 'Salvar inspeção'}</button></div>
         </div>
         {error && <p role="alert" className="mt-2 flex items-center gap-1 text-[10px] text-red-700"><AlertTriangle size={13} /> {error}</p>}
