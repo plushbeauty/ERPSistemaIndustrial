@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, Search, UserRound, Home, Database, ShoppingCart, ShoppingBasket, Package, Wallet, ReceiptText, Factory, ShieldCheck, Wrench, ChartNoAxesCombined, Settings, ChevronRight } from 'lucide-react'
+import { CircleHelp, ChevronDown, Search, UserRound, Home, Database, ShoppingCart, ShoppingBasket, Package, Wallet, ReceiptText, Factory, ShieldCheck, Wrench, BarChart3, Settings, ChevronRight } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 
@@ -87,6 +87,10 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   }, [])
 
   const current = menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
+  useEffect(() => {
+    const activeMenu = menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
+    setOpenMenu(activeMenu?.children?.length ? activeMenu.label : null)
+  }, [pathname])
   const filtered = search.trim()
     ? menus.flatMap(menu => [
         { label: menu.label, route: menu.route },
@@ -143,7 +147,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           {menus.map(menu => {
             const active = current?.label === menu.label
             const hasChildren = Boolean(menu.children?.length)
-            const expanded = openMenu === menu.label || (active && hasChildren)
+            const expanded = openMenu === menu.label
             const Icon = menu.label === 'Início' ? Home : menu.label === 'Cadastros' ? Database : menu.label === 'Vendas' ? ShoppingCart : menu.label === 'Compras' ? ShoppingBasket : menu.label === 'Estoque' ? Package : menu.label === 'Financeiro' ? Wallet : menu.label === 'Fiscal' ? ReceiptText : menu.label === 'Manufatura / PCP' ? Factory : menu.label === 'Qualidade' ? ShieldCheck : menu.label === 'Manutenção' ? Wrench : menu.label === 'Relatórios' ? ChartNoAxesCombined : Settings
             return <section className="erp-premium-sidebar-section" key={menu.label}>
               <button type="button" className={`erp-premium-sidebar-parent ${active ? 'is-active' : ''}`} onClick={() => hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)} aria-expanded={hasChildren ? expanded : undefined}>
