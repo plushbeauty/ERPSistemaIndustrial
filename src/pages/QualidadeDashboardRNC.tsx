@@ -56,7 +56,7 @@ export default function QualidadeDashboardRNC() {
 
   const openByDepartment = useMemo<DepartmentCount[]>(() => {
     const counts = new Map<string, number>()
-    rncs.filter((row) => row.status.trim().toLocaleLowerCase('pt-BR') !== 'encerrada').forEach((row) => {
+    rncs.filter((row) => (row.status || '').trim().toLocaleLowerCase('pt-BR') !== 'encerrada').forEach((row) => {
       const department = row.setor?.nome || 'Sem setor definido'
       counts.set(department, (counts.get(department) ?? 0) + 1)
     })
