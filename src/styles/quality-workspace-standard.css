@@ -1,0 +1,46 @@
+/* Compact, consistent operational controls for every Quality workspace.
+   The Orders screen is the reference: dense fields, readable text, square corners. */
+main:has(aside[aria-label="Navegação da qualidade"]) button {
+  box-sizing: border-box;
+  min-height: 30px;
+  height: 30px;
+  padding: 0 9px;
+  border-radius: 2px;
+  font-size: 11px;
+  line-height: 1.15;
+}
+main:has(aside[aria-label="Navegação da qualidade"]) input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+main:has(aside[aria-label="Navegação da qualidade"]) select {
+  box-sizing: border-box;
+  min-height: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 2px;
+  font-size: 11px;
+}
+main:has(aside[aria-label="Navegação da qualidade"]) textarea {
+  border-radius: 2px;
+  padding: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+main:has(aside[aria-label="Navegação da qualidade"]) label {
+  line-height: 1.35;
+}
+main:has(aside[aria-label="Navegação da qualidade"]) button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+main:has(aside[aria-label="Navegação da qualidade"]) button:focus-visible,
+main:has(aside[aria-label="Navegação da qualidade"]) input:focus-visible,
+main:has(aside[aria-label="Navegação da qualidade"]) select:focus-visible,
+main:has(aside[aria-label="Navegação da qualidade"]) textarea:focus-visible {
+  outline: 2px solid #2D8DB8;
+  outline-offset: 1px;
+}
+@media (max-width: 640px) {
+  main:has(aside[aria-label="Navegação da qualidade"]) {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
