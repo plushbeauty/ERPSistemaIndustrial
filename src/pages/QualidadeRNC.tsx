@@ -5,11 +5,11 @@ import { useLocation } from 'react-router-dom'
 import QualitySidebar from '../components/quality/QualitySidebar'
 
 type Rpn = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; sgq_origem: string; sgq_severidade: string; lote_afetado: string | null; quantidade_segregada: number; status: string; criado_em: string }
-type Ishikawa = { id: string; rpnc_id: string; metodo: string | null; mao_de_obra: string | null; material: string | null; maquina: string | null; meio_ambiente: string | null; medicao: string | null }
+type Ishikawa = { id: string; rpnc_id: string; efeito: string; metodo: string | null; mao_de_obra: string | null; material: string | null; maquina: string | null; meio_ambiente: string | null; medicao: string | null }
 type Capa = { id: string; rpnc_id: string; tipo: string; descricao: string; causa_raiz: string | null; responsavel_id: string; prazo: string; status: string; acao_o_que: string | null; acao_por_que: string | null; acao_onde: string | null; acao_quem: string | null; acao_quando: string | null; acao_como: string | null; acao_quanto: number | null }
 type User = { id: string; nome: string | null; email: string | null }
 type Sector = { id: string; nome: string }
-type Doc = { id: string; codigo: string; titulo: string; tipo: string | null; revisao: number; data_revisao: string | null; preparado_por: string | null; pdf_storage_path: string | null; status: string }
+type Doc = { id: string; codigo: string; titulo: string; tipo: string | null; revisao: number; data_revisao: string | null; preparado_por: string | null; pdf_storage_path: string | null; nome_arquivo: string | null; status: string }
 
 const field = (bad = false) => `h-[30px] w-full rounded-[2px] border px-2 text-[12px] outline-none ${bad ? 'border-red-500 bg-red-50/50 placeholder:text-red-400' : 'border-slate-300 bg-white focus:border-[#2D8DB8]'}`
 const label = 'grid gap-[2px] text-[9px] font-medium uppercase text-slate-600'
@@ -44,15 +44,27 @@ export default function QualidadeRNC() {
       if (current.error) throw current.error
       if (!current.data) throw new Error('Empresa da sessão não identificada.')
       const id = String(current.data); setCompanyId(id)
-      const [r, a, u, s, d] = await Promise.all([
+      const [r, a, u, s, d, attachments] = await Promise.all([
         supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,sgq_origem,sgq_severidade,lote_afetado,quantidade_segregada,status,criado_em').eq('empresa_id', id).not('sgq_origem', 'is', null).order('criado_em', { ascending: false }).limit(500),
         supabase.from('erp_sgq_capa_acoes').select('id,rpnc_id,tipo,descricao,causa_raiz,responsavel_id,prazo,status,acao_o_que,acao_por_que,acao_onde,acao_quem,acao_quando,acao_como,acao_quanto').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
         supabase.from('erp_usuarios').select('id,nome,email').eq('empresa_id', id).eq('ativo', true).is('deleted_at', null).order('nome').limit(500),
         supabase.from('erp_setores').select('id,nome').eq('empresa_id', id).eq('ativo', true).order('nome').limit(500),
-        supabase.from('erp_documentos_qualidade').select('id,codigo,titulo,tipo,revisao,data_revisao,preparado_por,pdf_storage_path,status').eq('empresa_id', id).order('codigo').limit(500),
+        supabase.from('erp_documentos_qualidade').select('id,codigo,titulo,area,revisao,data_revisao,responsavel_id,status').eq('empresa_id', id).order('codigo').limit(500),
+        supabase.from('erp_documentos_qualidade_anexos').select('id,documento_id,nome_arquivo,storage_path,revisao,status,criado_em').eq('empresa_id', id).order('revisao', { ascending: false }).order('criado_em', { ascending: false }).limit(1000),
       ])
-      if (r.error || a.error || u.error || s.error || d.error) throw r.error ?? a.error ?? u.error ?? s.error ?? d.error
-      setRncs((r.data ?? []) as Rpn[]); setActions((a.data ?? []) as Capa[]); setUsers((u.data ?? []) as User[]); setSectors((s.data ?? []) as Sector[]); setDocs((d.data ?? []) as Doc[])
+      if (r.error || a.error || u.error || s.error || d.error || attachments.error) throw r.error ?? a.error ?? u.error ?? s.error ?? d.error ?? attachments.error
+      setRncs((r.data ?? []) as Rpn[]); setActions((a.data ?? []) as Capa[]); setUsers((u.data ?? []) as User[]); setSectors((s.data ?? []) as Sector[])
+      const userNames = new Map<string, string>((u.data ?? []).map(user => [user.id, user.nome || user.email || '—'] as const))
+      const activeAttachments = new Map<string, { storage_path: string; nome_arquivo: string }>()
+      for (const attachment of attachments.data ?? []) {
+        if (attachment.status.toLowerCase() === 'vigente' && !activeAttachments.has(attachment.documento_id)) {
+          activeAttachments.set(attachment.documento_id, { storage_path: attachment.storage_path, nome_arquivo: attachment.nome_arquivo })
+        }
+      }
+      setDocs((d.data ?? []).map(doc => {
+        const attachment = activeAttachments.get(doc.id)
+        return { id: doc.id, codigo: doc.codigo, titulo: doc.titulo, tipo: doc.area, revisao: doc.revisao, data_revisao: doc.data_revisao, preparado_por: doc.responsavel_id ? userNames.get(doc.responsavel_id) ?? null : null, pdf_storage_path: attachment?.storage_path ?? null, nome_arquivo: attachment?.nome_arquivo ?? null, status: doc.status }
+      }))
       if (!selectedRnc && r.data?.[0]) setSelectedRnc(r.data[0].id)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar SGQ.')
@@ -64,7 +76,7 @@ export default function QualidadeRNC() {
   useEffect(() => {
     if (!selectedRnc || !companyId) { setIshikawa(null); return }
     void (async () => {
-      const result = await supabase.from('erp_sgq_rpnc_ishikawa').select('id,rpnc_id,metodo,mao_de_obra,material,maquina,meio_ambiente,medicao').eq('empresa_id', companyId).eq('rpnc_id', selectedRnc).maybeSingle()
+      const result = await supabase.from('erp_qualidade_ishikawa').select('id,rpnc_id,efeito,metodo,mao_de_obra,material,maquina,meio_ambiente,medicao').eq('empresa_id', companyId).eq('rpnc_id', selectedRnc).maybeSingle()
       if (!result.error) {
         setIshikawa(result.data as Ishikawa | null)
         if (result.data) setSixM({ metodo: result.data.metodo ?? '', mao_de_obra: result.data.mao_de_obra ?? '', material: result.data.material ?? '', maquina: result.data.maquina ?? '', meio_ambiente: result.data.meio_ambiente ?? '', medicao: result.data.medicao ?? '' })
@@ -79,7 +91,6 @@ export default function QualidadeRNC() {
     setError(''); setNotice('')
     if (!description.trim()) { setError('Descrição detalhada da falha é obrigatória.'); return }
     if (!lot.trim()) { setError('Lote afetado é obrigatório.'); return }
-    setBusy(true)
     if (!sectorId) { setError('Setor responsável é obrigatório.'); return }
     setBusy(true)
     try {
@@ -104,7 +115,7 @@ export default function QualidadeRNC() {
     if (!selected) return
     setBusy(true); setError(''); setNotice('')
     try {
-      const result = await supabase.from('erp_sgq_rpnc_ishikawa').upsert({ empresa_id: companyId, rpnc_id: selected.id, ...sixM }, { onConflict: 'empresa_id,rpnc_id' }).select('id,rpnc_id,metodo,mao_de_obra,material,maquina,meio_ambiente,medicao').single()
+      const result = await supabase.from('erp_qualidade_ishikawa').upsert({ empresa_id: companyId, rpnc_id: selected.id, efeito: selected.descricao_nao_conformidade, ...sixM }, { onConflict: 'empresa_id,rpnc_id' }).select('id,rpnc_id,efeito,metodo,mao_de_obra,material,maquina,meio_ambiente,medicao').single()
       if (result.error) throw result.error
       setIshikawa(result.data as Ishikawa); setNotice('Análise de causa raiz 6M salva no banco real.')
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao salvar Ishikawa.') }
@@ -129,23 +140,42 @@ export default function QualidadeRNC() {
   }
 
   const uploadPdf = async (doc: Doc, file: File) => {
-    if (file.type !== 'application/pdf') { setError('Somente PDF é aceito pelo GED.'); return }
+    if (file.type && file.type !== 'application/pdf') { setError('Somente PDF é aceito pelo GED.'); return }
+    if (!file.name.toLowerCase().endsWith('.pdf')) { setError('O arquivo precisa ter extensão PDF.'); return }
     setBusy(true); setError(''); setNotice('')
+    let uploadedPath: string | null = null
     try {
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '_')
-      const path = `${companyId}/${doc.id}/${Date.now()}-${safeName}`
-      const upload = await supabase.storage.from('erp-documentos-qualidade').upload(path, file, { upsert: true, contentType: 'application/pdf' })
+      const path = companyId + '/documentos/' + doc.id + '/' + Date.now() + '-' + safeName
+      const upload = await supabase.storage.from('erp-qualidade-anexos').upload(path, file, { upsert: false, contentType: 'application/pdf' })
       if (upload.error) throw upload.error
-      const update = await supabase.from('erp_documentos_qualidade').update({ pdf_storage_path: path }).eq('id', doc.id).eq('empresa_id', companyId)
-      if (update.error) throw update.error
-      setNotice(`PDF real anexado ao GED: ${doc.codigo}.`); await load()
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao anexar PDF no Storage.') }
-    finally { setBusy(false) }
+      uploadedPath = path
+
+      const auth = await supabase.auth.getUser()
+      if (auth.error || !auth.data.user) throw auth.error ?? new Error('Sessão não autenticada.')
+      const profile = await supabase.from('erp_usuarios').select('id').eq('auth_user_id', auth.data.user.id).eq('empresa_id', companyId).eq('ativo', true).is('deleted_at', null).maybeSingle()
+      if (profile.error || !profile.data?.id) throw profile.error ?? new Error('Usuário ERP ativo não encontrado.')
+
+      const saved = await supabase.rpc('erp_documento_qualidade_anexo_substituir', {
+        p_documento_id: doc.id,
+        p_nome_arquivo: file.name,
+        p_storage_path: path,
+        p_tipo_mime: 'application/pdf',
+        p_tamanho_bytes: file.size,
+      })
+      if (saved.error) throw saved.error
+      uploadedPath = null
+      setNotice('PDF registrado no GED: ' + doc.codigo + '. A revisão anterior do anexo foi preservada no histórico.')
+      await load()
+    } catch (cause) {
+      if (uploadedPath) await supabase.storage.from('erp-qualidade-anexos').remove([uploadedPath])
+      setError(cause instanceof Error ? cause.message : 'Falha ao anexar PDF no Storage.')
+    } finally { setBusy(false) }
   }
 
   const openPdf = async (doc: Doc) => {
     if (!doc.pdf_storage_path) return
-    const signed = await supabase.storage.from('erp-documentos-qualidade').createSignedUrl(doc.pdf_storage_path, 3600)
+    const signed = await supabase.storage.from('erp-qualidade-anexos').createSignedUrl(doc.pdf_storage_path, 3600)
     if (signed.error) { setError(signed.error.message); return }
     if (signed.data?.signedUrl) window.open(signed.data.signedUrl, '_blank', 'noopener,noreferrer')
   }

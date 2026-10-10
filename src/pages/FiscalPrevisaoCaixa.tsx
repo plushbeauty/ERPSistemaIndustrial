@@ -28,6 +28,8 @@ interface FinanceRow {
 
 const money = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const horizons = [0, 5, 10, 15, 30, 60, 90]
+const isPayable = (tipo: string) => ['despesa', 'pagar', 'pagamento'].includes(String(tipo || '').trim().toLowerCase())
+const isSettled = (status: string) => ['pago', 'liquidado', 'baixado', 'cancelado', 'cancelada'].includes(String(status || '').trim().toLowerCase())
 
 export default function FiscalPrevisaoCaixa() {
   const [allowed, setAllowed] = useState<boolean | null>(null)
@@ -51,14 +53,16 @@ export default function FiscalPrevisaoCaixa() {
 
       const profile = await supabase
         .from('erp_usuarios')
-        .select('id, nivel_admin, setor_id, ativo, erp_setores(codigo, nome)')
+        .select('id, empresa_id, nivel_admin, setor_id, ativo, deleted_at, erp_setores(codigo, nome)')
         .eq('auth_user_id', user.id)
+        .eq('ativo', true)
+        .is('deleted_at', null)
         .maybeSingle()
       if (profile.error) throw profile.error
 
       const u = profile.data
       const s = Array.isArray(u?.erp_setores) ? u.erp_setores[0] : u?.erp_setores
-      const ok = !!u?.ativo && (
+      const ok = !!u?.ativo && !!u?.empresa_id && (
         Number(u?.nivel_admin || 0) >= 100 ||
         ['ADM', 'ADMIN', 'FISCAL'].includes(String(s?.codigo || '').toUpperCase()) ||
         String(s?.nome || '').toUpperCase().includes('FISCAL')
@@ -67,15 +71,17 @@ export default function FiscalPrevisaoCaixa() {
       setAllowed(ok)
       if (!ok) {
         setRows([])
+        if (!u?.empresa_id) setError('A sessão não possui empresa selecionada. O financeiro não consulta dados globais sem escopo de empresa.')
         return
       }
 
       const result = await supabase
-        .from('erp_financeiro')
-        .select('id, descricao, valor, vencimento, status, tipo, documento, categoria')
+        .from('erp_financeiro_lancamentos')
+        .select('id, descricao, valor, vencimento, status, tipo, categoria')
+        .eq('empresa_id', u.empresa_id)
         .order('vencimento', { ascending: true })
       if (result.error) throw result.error
-      setRows((result.data ?? []) as FinanceRow[])
+      setRows((result.data ?? []).map(row => ({ ...row, vencimento: row.vencimento ?? '', documento: null })) as FinanceRow[])
     } catch (cause) {
       setRows([])
       setAllowed(false)
@@ -98,11 +104,11 @@ export default function FiscalPrevisaoCaixa() {
   const due = useMemo(() => rows.filter(r => r.vencimento && r.vencimento <= end), [rows, end])
 
   const receber = useMemo(() => due
-    .filter(r => !String(r.tipo || '').toUpperCase().includes('PAG') && !['pago', 'PAGO'].includes(r.status))
+    .filter(r => !isPayable(r.tipo) && !isSettled(r.status))
     .reduce((s, r) => s + Number(r.valor || 0), 0), [due])
 
   const pagar = useMemo(() => due
-    .filter(r => String(r.tipo || '').toUpperCase().includes('PAG') && !['pago', 'PAGO'].includes(r.status))
+    .filter(r => isPayable(r.tipo) && !isSettled(r.status))
     .reduce((s, r) => s + Number(r.valor || 0), 0), [due])
 
   if (allowed === null) {
@@ -218,7 +224,7 @@ export default function FiscalPrevisaoCaixa() {
               <table className="w-full border-collapse text-left text-base">
                 <thead><tr className="border-b bg-slate-50 font-semibold text-slate-700"><th className="p-3">Descrição</th><th className="p-3">Documento</th><th className="p-3">Vencimento</th><th className="p-3 text-right">Valor</th></tr></thead>
                 <tbody>
-                  {due.filter(row => open === 'receber' ? !String(row.tipo || '').toUpperCase().includes('PAG') : String(row.tipo || '').toUpperCase().includes('PAG')).map(row => (
+                  {due.filter(row => open === 'receber' ? !isPayable(row.tipo) : isPayable(row.tipo)).map(row => (
                     <tr key={row.id} className="border-b border-slate-100">
                       <td className="p-3 font-medium">{row.descricao}</td>
                       <td className="p-3 text-slate-600">{row.documento || 'Sem documento'}</td>
@@ -229,7 +235,7 @@ export default function FiscalPrevisaoCaixa() {
                 </tbody>
               </table>
             </div>
-            {!due.filter(row => open === 'receber' ? !String(row.tipo || '').toUpperCase().includes('PAG') : String(row.tipo || '').toUpperCase().includes('PAG')).length && (
+            {!due.filter(row => open === 'receber' ? !isPayable(row.tipo) : isPayable(row.tipo)).length && (
               <p className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-base text-slate-500">Nenhum título localizado para o horizonte de dias selecionado.</p>
             )}
           </div>
