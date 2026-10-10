@@ -18,8 +18,28 @@ function normalizePlan(value: unknown): Plan | null {
 
 function requiredPlan(path: string): Plan {
   if (path === '/qualidade/inspecoes') return 'BASICO'
-  if (['/qualidade/especificacoes', '/qualidade/fmea', '/qualidade/pfmea', '/qualidade/rnc-capa'].includes(path)) return 'OURO'
-  return 'DIAMANTE'
+
+  const goldRoutes = [
+    '/qualidade/especificacoes', '/qualidade/fmea', '/qualidade/pfmea', '/qualidade/rnc-capa',
+    '/engenharia/bom', '/pcp/engenharia-bom', '/pcp/ordens', '/pcp/ordens-industriais',
+    '/pcp/apontamentos',
+  ]
+  if (goldRoutes.includes(path)) return 'OURO'
+
+  // Premium features are Diamond by default, including GED/CEP, advanced Quality,
+  // machine scheduling, process sheets, Fiscal/Costs and Industrial HR.
+  if (
+    path.startsWith('/qualidade/') ||
+    path === '/qualidade' ||
+    path.startsWith('/pcp') ||
+    path.startsWith('/engenharia') ||
+    path.startsWith('/fiscal') ||
+    path.startsWith('/financeiro') ||
+    path.startsWith('/rh') ||
+    ['/central-custos-industrial', '/custos', '/vendas/fiscal', '/vendas/rh', '/vendas/engenharia'].includes(path)
+  ) return 'DIAMANTE'
+
+  return 'BASICO'
 }
 
 export default function QualityPlanGate({ children }: { children: ReactNode }) {
