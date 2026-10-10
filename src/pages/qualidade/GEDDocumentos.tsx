@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { useParams } from 'react-router-dom'
 import { CircleHelp, FilePlus2, FileText, History, RefreshCw, Save, Search, ShieldCheck, X } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
-import VendasLayout from '../VendasLayout'
+import QualitySidebar from '../../components/quality/QualitySidebar'
 
 type Revision = {
   id: string
@@ -19,7 +19,7 @@ type Revision = {
   data_vigencia: string | null
 }
 
-const field = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] text-slate-800 outline-none focus:border-[#2D8DB8]'
+const field = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] text-slate-800 outline-none focus:border-[#2D8DB8]'
 const label = 'mb-[2px] block text-[9px] font-bold uppercase tracking-wider text-neutral-500'
 
 function dateTime(value: string) {
@@ -163,7 +163,7 @@ export default function GEDDocumentos() {
   const activeDoc = selected ?? (codigo ? revisions.find(row => row.codigo_documento === codigo) ?? null : null)
   const history = revisions.filter(row => row.codigo_documento === (selected?.codigo_documento ?? codigo)).sort((a, b) => b.revisao - a.revisao)
 
-  return <VendasLayout title="GED · Gestão Eletrônica de Documentos" subtitle="Documentos controlados, revisão automática e rastreabilidade do SGQ" onRefresh={() => void load()}>
+  return <main className="min-h-screen bg-[#F4FBFD] text-neutral-800"><div className="mx-auto max-w-[1800px] space-y-3 p-3"><QualitySidebar active="/qualidade/ged-documentos" />
     <div className="min-h-[calc(100vh-96px)] bg-[#F7F9FC] text-neutral-800">
       <div className="flex h-[42px] items-center justify-between border-b border-neutral-200 bg-white px-3">
         <div className="flex min-w-0 items-center gap-2">
@@ -296,5 +296,5 @@ export default function GEDDocumentos() {
         </aside>
       </div>
     </div>
-  </VendasLayout>
+  </div></main>
 }
