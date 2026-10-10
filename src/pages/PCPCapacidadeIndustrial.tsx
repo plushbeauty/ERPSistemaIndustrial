@@ -5,12 +5,12 @@ import { supabase } from '../lib/supabaseClient'
 type Order = { id: string; numero: string; produto_id: string; quantidade_planejada: number; entrega_prevista: string | null; status: string }
 type Product = { id: string; codigo: string; descricao_tecnica: string }
 type Schedule = { id: string; ordem_producao_id: string; centro_trabalho: string; inicio_planejado: string; fim_planejado: string; setup_minutos: number; quantidade_planejada: number; prioridade: number; status: string; observacoes: string | null }
-const input = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] focus:border-sky-600 focus:outline-none'
-const label = 'mb-[2px] block text-[9px] font-bold uppercase tracking-wider text-slate-600'
-const btn = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-slate-300 bg-white px-2.5 text-[10px] font-bold uppercase hover:bg-slate-50 disabled:opacity-50'
-const primary = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-sky-700 bg-sky-700 px-3 text-[10px] font-bold uppercase text-white hover:bg-sky-800 disabled:opacity-50'
-const th = 'h-[32px] bg-slate-100 px-2 text-left text-[9px] font-bold uppercase tracking-wide text-slate-600'
-const td = 'h-[32px] border-t border-slate-100 px-2 text-[10px] text-slate-700'
+const input = 'erp-premium-input w-full'
+const label = 'erp-premium-label'
+const btn = 'erp-premium-button erp-premium-button-secondary'
+const primary = 'erp-premium-button'
+const th = 'h-[32px] bg-slate-50/90 px-2 text-left text-[9px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200'
+const td = 'h-[32px] border-t border-slate-100 px-2 text-[10px] text-slate-700 transition-colors'
 const localInputDate = (d: Date) => { const v = new Date(d.getTime() - d.getTimezoneOffset() * 60000); return v.toISOString().slice(0,16) }
 const errText = (e: unknown) => e instanceof Error ? e.message : 'Falha na programação de capacidade.'
 
