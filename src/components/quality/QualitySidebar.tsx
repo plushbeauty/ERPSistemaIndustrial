@@ -4,7 +4,7 @@ import { Activity, BookOpenCheck, CircleHelp, ClipboardCheck, ClipboardList, Fil
 
 const items = [
   ['Visão Geral da Qualidade', '/qualidade'],
-  ['Cadastro de Documentos', '/qualidade/ged-documentos'],
+  ['Cadastro de Documentos', '/qualidade/documentos'],
   ['Indicadores RNC / CAPA', '/qualidade/dashboard-rnc'],
   ['Especificações Técnicas', '/qualidade/especificacoes'],
   ['Inspeções de Lotes', '/qualidade/inspecoes'],
@@ -15,6 +15,7 @@ const items = [
   ['8D — Ações Corretivas', '/qualidade/metodologia-8d'],
   ['Auditoria 5S', '/qualidade/auditoria-5s'],
   ['PFMEA / Risco', '/qualidade/pfmea'],
+  ['Controle Documental GED', '/qualidade/ged-documentos'],
   ['Lista Mestre', '/qualidade/lista-mestre'],
   ['Relatórios SGQ', '/qualidade/relatorios-documentos'],
   ['Calibração / Metrologia', '/qualidade/metrologia'],
