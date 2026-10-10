@@ -67,7 +67,7 @@ export default function FiscalPrevisaoCaixa() {
       const setorNome = String(s?.nome || '').trim().toUpperCase()
       const ok = !!u?.ativo && !!u?.empresa_id && (
         !!u?.is_master || ['ADMIN', 'ADMINISTRADOR', 'FINANCEIRO', 'FISCAL', 'DIRETOR'].includes(perfil) ||
-        ['ADM', 'ADMIN', 'FINANCEIRO', 'FISCAL'].includes(setorCodigo) || setorNome.includes('FINANCEIRO') || setorNome.includes('FISCAL') ||
+        ['ADM', 'ADMIN', 'FINANCEIRO', 'FISCAL'].includes(setorCodigo) || setorNome.includes('FINANCEIRO') || setorNome.includes('FISCAL')
       )
 
       setAllowed(ok)
