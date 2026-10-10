@@ -114,11 +114,29 @@ export default function GEDDocumentos() {
       if (result.error) throw result.error
       const saved = result.data as { codigo_documento?: string; revisao?: number; status?: string } | null
       setNotice('Revisão ' + String(saved?.revisao ?? '') + ' criada com status ' + String(saved?.status ?? 'EM_REVISAO') + '.')
+      if (typeof saved?.id === 'string') setSelectedId(saved.id)
       await load()
       setCodigo(saved?.codigo_documento ?? codigo.trim().toUpperCase())
       setMotivo('')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível salvar a nova revisão.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function activateSelected() {
+    if (!selected) return
+    setBusy(true)
+    setError('')
+    setNotice('')
+    try {
+      const result = await supabase.rpc('erp_ativar_revisao_documento', { p_revisao_id: selected.id })
+      if (result.error) throw result.error
+      setNotice('Documento ' + selected.codigo_documento + ' Rev. ' + String(selected.revisao).padStart(2, '0') + ' ativado como vigente.')
+      await load()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível ativar a revisão.')
     } finally {
       setBusy(false)
     }
@@ -140,7 +158,7 @@ export default function GEDDocumentos() {
             <label><span className={label}>Título do procedimento *</span><input className={field} value={titulo} onChange={e => setTitulo(e.target.value)} required maxLength={255} placeholder="Inspeção de recebimento"/></label>
             <label><span className={label}>Departamento</span><input className={field} value={departamento} onChange={e => setDepartamento(e.target.value)} maxLength={100}/></label>
           </div>
-          {selected && <div className="flex flex-wrap items-center gap-2 border border-sky-100 bg-sky-50 px-2 py-1 text-[9px] text-sky-900"><ShieldCheck size={14}/> Visualizando Rev. {String(selected.revisao).padStart(2, '0')} · {selected.status} · {selected.responsavel} · {dateTime(selected.criado_em)}<span className="ml-auto">Ao salvar, uma nova revisão será criada.</span></div>}
+          {selected && <div className="flex flex-wrap items-center gap-2 border border-sky-100 bg-sky-50 px-2 py-1 text-[9px] text-sky-900"><ShieldCheck size={14}/> Visualizando Rev. {String(selected.revisao).padStart(2, '0')} · {selected.status} · {selected.responsavel} · {dateTime(selected.criado_em)}<span className="ml-auto">Ao salvar, uma nova revisão será criada.</span>{selected.status === 'EM_REVISAO' && <button type="button" disabled={busy} onClick={() => void activateSelected()} className="inline-flex h-[26px] items-center gap-1 bg-emerald-700 px-2 font-bold text-white disabled:opacity-50"><ShieldCheck size={13}/> APROVAR E ATIVAR</button>}</div>}
           <label><span className={label}>Conteúdo do procedimento *</span><textarea className="min-h-[360px] w-full resize-y rounded-[2px] border border-slate-300 bg-white p-3 text-[11px] leading-5 text-slate-800 outline-none focus:border-[#2D8DB8]" value={conteudo} onChange={e => setConteudo(e.target.value)} required placeholder={'1. OBJETIVO\nDescreva o objetivo do procedimento.\n\n2. RESPONSABILIDADES\nDefina os responsáveis.\n\n3. MÉTODO\nDescreva a sequência operacional e os critérios de aceitação.'}/></label>
           <label><span className={label}>Motivo da alteração / revisão</span><input className={field} value={motivo} onChange={e => setMotivo(e.target.value)} maxLength={1000} placeholder="Descreva o motivo para rastreabilidade da alteração"/></label>
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3"><p className="text-[9px] text-slate-500">Salvar gera uma revisão imutável com numeração automática e status EM REVISÃO.</p><button disabled={busy} className="inline-flex h-[30px] items-center gap-2 bg-[#2D8DB8] px-4 text-[10px] font-bold text-white disabled:opacity-50"><Save size={14}/>{busy ? 'SALVANDO…' : 'SALVAR NOVA REVISÃO'}</button></div>
