@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Activity, BookOpenCheck, ClipboardCheck, ClipboardList, FileText, FolderGit2, Gauge, ListChecks, LineChart, SearchCheck, ShieldCheck, Target, Wrench } from 'lucide-react'
+import { Activity, BookOpenCheck, CircleHelp, ClipboardCheck, ClipboardList, FileText, FolderGit2, Gauge, ListChecks, LineChart, SearchCheck, ShieldCheck, Target, Wrench, X } from 'lucide-react'
 import { useSynqraLayout } from '../../layout/SynqraLayoutContext'
 
 const items = [
@@ -24,6 +25,15 @@ const itemIcons = [Activity, Gauge, SearchCheck, ClipboardCheck, Target, ListChe
 
 export default function QualitySidebar({ active }: { active: string }) {
   const hostedBySynqra = useSynqraLayout()
+  const [helpOpen, setHelpOpen] = useState(false)
+  const activeLabel = items.find(([, path]) => path === active)?.[0] ?? (active.includes('ged-documentos') ? 'Controle Documental GED' : active.includes('cep') ? 'Cartas de Controle CEP' : 'Gestão da Qualidade')
+  const helpText = active.includes('inspec') ? 'Selecione o lote e a especificação aprovada aplicável. Registre evidências e só libere o material após concluir a avaliação conforme o procedimento da empresa.'
+    : active.includes('especificacoes') ? 'Mantenha critérios, tolerâncias, métodos de verificação, revisão e aprovação conforme desenhos e requisitos validados. Não use limites presumidos.'
+    : active.includes('ged-documentos') || active.includes('documentos') || active.includes('lista-mestre') ? 'Consulte a revisão vigente, confirme a área responsável e mantenha histórico, aprovação e distribuição controlada das cópias.'
+    : active.includes('rnc') || active.includes('capa') || active.includes('metodologia-8d') ? 'Registre contenção, causa raiz, responsáveis, prazos, evidências e verificação de eficácia antes de encerrar a ocorrência.'
+    : active.includes('fmea') || active.includes('pfmea') ? 'Revise modos de falha, efeitos, causas, controles preventivos/detectivos e ações com base no processo real.'
+    : active.includes('metrologia') || active.includes('cep') ? 'Utilize instrumentos válidos e critérios aprovados; registre os resultados e investigue desvios antes de liberar o processo.'
+    : 'Use este painel para acompanhar indicadores do SGQ e acessar inspeções, documentos, riscos, auditorias e ações corretivas. Os números devem refletir registros reais da empresa.'
 
   return (
     <aside className={hostedBySynqra
@@ -73,7 +83,14 @@ export default function QualitySidebar({ active }: { active: string }) {
             <LineChart size={14} /> Cartas de Controle CEP
           </Link>
         </div>
+        <button type="button" onClick={() => setHelpOpen(value => !value)} aria-expanded={helpOpen} aria-controls="quality-context-help" className={hostedBySynqra ? 'ml-auto flex h-8 flex-none items-center gap-1.5 border border-[#2D8DB8] bg-[#E5F3F8] px-2 text-[10px] font-semibold text-[#123B50] hover:bg-[#D4EAF3]' : 'mt-2 flex h-8 w-full items-center gap-2 border border-sky-200 bg-sky-50 px-3 text-[10px] font-semibold text-[#123B50] hover:bg-sky-100'}>
+          {helpOpen ? <X size={14} /> : <CircleHelp size={14} />} {helpOpen ? 'Fechar ajuda' : 'Ajuda desta tela'}
+        </button>
       </nav>
+      {helpOpen && <section id="quality-context-help" className="border-t border-sky-200 bg-gradient-to-r from-[#EAF5F9] to-[#F5FAFC] p-3 text-[#123B50]" role="region" aria-label="Ajuda contextual da qualidade">
+        <div className="flex items-center gap-2 text-[11px] font-semibold"><CircleHelp size={15} /> {activeLabel}</div>
+        <p className="mt-1 text-[10px] leading-relaxed text-slate-700">{helpText}</p>
+      </section>}
     </aside>
   )
 }
