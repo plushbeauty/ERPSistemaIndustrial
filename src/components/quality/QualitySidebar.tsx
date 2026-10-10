@@ -6,6 +6,7 @@ import { Activity, BookOpenCheck, CircleHelp, ClipboardCheck, ClipboardList, Fil
 const items = [
   ['Visão Geral da Qualidade', '/qualidade'],
   ['Cadastro de Documentos', '/qualidade/documentos'],
+  ['Procedimentos e PDFs', '/qualidade/procedimentos'],
   ['Indicadores RNC / CAPA', '/qualidade/dashboard-rnc'],
   ['Especificações Técnicas', '/qualidade/especificacoes'],
   ['Inspeções de Lotes', '/qualidade/inspecoes'],
@@ -30,7 +31,7 @@ const items = [
   ['Assinatura de Instruções de Trabalho', '/qualidade/assinatura-it'],
 ]
 
-const itemIcons = [Gauge, FileText, Activity, SearchCheck, ClipboardCheck, ClipboardList, Target, Target, ListChecks, ShieldCheck, BookOpenCheck, ClipboardList, ClipboardCheck, ShieldCheck, Wrench, Gauge, FolderGit2, FileText, FileText, ClipboardList, ShieldCheck, ClipboardList, FileText, ShieldCheck]
+const itemIcons = [Gauge, FileText, FileText, Activity, SearchCheck, ClipboardCheck, ClipboardList, Target, Target, ListChecks, ShieldCheck, BookOpenCheck, ClipboardList, ClipboardCheck, ShieldCheck, Wrench, Gauge, FolderGit2, FileText, FileText, ClipboardList, ShieldCheck, ClipboardList, FileText, ShieldCheck]
 
 export default function QualitySidebar({ active }: { active: string }) {
   const [helpOpen, setHelpOpen] = useState(false)
