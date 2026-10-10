@@ -7,7 +7,8 @@ type Mold = { id:string; codigo:string; nome:string; status:string; ativo:boolea
 type Order = { id:string; numero_op:string|number; produto_id:string|null; maquina_id:string|null; status:string }
 type Slot = { id:string; maquina_id:string; ordem_producao_id:string; molde_id:string|null; quantidade_programada:number; lote_producao:string|null; data_hora_inicio:string; data_hora_fim:string; status:string }
 type Calendar = { dias_trabalho:string[]; horario_inicio_jornada:string; horario_fim_jornada:string }
-type Cell = { machine:Machine; date:Date }\ntype ProcessCycle = { produto_id:string; ciclo_seg:number|null; cavidades_ativas:number|null; parametros_tecnicos:Record<string,unknown>|null }
+type Cell = { machine:Machine; date:Date }
+type ProcessCycle = { produto_id:string; ciclo_seg:number|null; cavidades_ativas:number|null; parametros_tecnicos:Record<string,unknown>|null }
 const input='erp-premium-input w-full'
 const label='erp-premium-label'
 const btn='erp-premium-button erp-premium-button-secondary'
@@ -23,7 +24,8 @@ export default function PCPAgendaMaquinas(){
  const [company,setCompany]=useState('')
  const [machines,setMachines]=useState<Machine[]>([])
  const [molds,setMolds]=useState<Mold[]>([])
- const [orders,setOrders]=useState<Order[]>([])\n const [processCycles,setProcessCycles]=useState<ProcessCycle[]>([])
+ const [orders,setOrders]=useState<Order[]>([])
+ const [processCycles,setProcessCycles]=useState<ProcessCycle[]>([])
  const [slots,setSlots]=useState<Slot[]>([])
  const [calendar,setCalendar]=useState<Calendar>({dias_trabalho:['seg','ter','qua','qui','sex'],horario_inicio_jornada:'06:00:00',horario_fim_jornada:'22:00:00'})
  const [calendarDraft,setCalendarDraft]=useState<Calendar>({dias_trabalho:['seg','ter','qua','qui','sex'],horario_inicio_jornada:'06:00',horario_fim_jornada:'22:00'})
@@ -58,7 +60,17 @@ export default function PCPAgendaMaquinas(){
  const days=useMemo(()=>Array.from({length:7},(_,i)=>{const d=new Date(weekStart);d.setDate(d.getDate()+i);return d}),[weekStart])
  const visibleDays=days.filter(d=>calendar.dias_trabalho.includes(dayKey(d)))
  const orderMap=useMemo(()=>new Map(orders.map(o=>[o.id,o])),[orders])
- const moldMap=useMemo(()=>new Map(molds.map(m=>[m.id,m])),[molds])\n const calculateEnd=(orderId:string,quantity:string,startValue:string)=>{\n  const order=orderMap.get(orderId);const ficha=processCycles.find(row=>row.produto_id===order?.produto_id)\n  const technicalCycle=Number(ficha?.parametros_tecnicos?.tempo_ciclo_seg??0)\n  const cycle=Number(ficha?.ciclo_seg??technicalCycle)\n  const cavities=Number(ficha?.cavidades_ativas??ficha?.parametros_tecnicos?.cavidades_ativas??1)\n  const qty=Number(quantity);const start=new Date(startValue)\n  if(!order||!Number.isFinite(cycle)||cycle<=0||!Number.isFinite(qty)||qty<=0||!Number.isFinite(start.getTime()))return ''\n  const seconds=Math.ceil(qty*cycle/Math.max(1,cavities))\n  return localValue(new Date(start.getTime()+seconds*1000))\n }
+ const moldMap=useMemo(()=>new Map(molds.map(m=>[m.id,m])),[molds])
+ const calculateEnd=(orderId:string,quantity:string,startValue:string)=>{
+  const order=orderMap.get(orderId);const ficha=processCycles.find(row=>row.produto_id===order?.produto_id)
+  const technicalCycle=Number(ficha?.parametros_tecnicos?.tempo_ciclo_seg??0)
+  const cycle=Number(ficha?.ciclo_seg??technicalCycle)
+  const cavities=Number(ficha?.cavidades_ativas??ficha?.parametros_tecnicos?.cavidades_ativas??1)
+  const qty=Number(quantity);const start=new Date(startValue)
+  if(!order||!Number.isFinite(cycle)||cycle<=0||!Number.isFinite(qty)||qty<=0||!Number.isFinite(start.getTime()))return ''
+  const seconds=Math.ceil(qty*cycle/Math.max(1,cavities))
+  return localValue(new Date(start.getTime()+seconds*1000))
+ }
  const weekLabel=useMemo(()=>`Semana ${Math.ceil((weekStart.getDate()+6)/7)} · ${weekStart.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})} a ${days[6].toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}`,[weekStart,days])
  const cellSlots=(machineId:string,date:Date)=>slots.filter(s=>s.maquina_id===machineId&&new Date(s.data_hora_inicio).toDateString()===date.toDateString()).sort((a,b)=>a.data_hora_inicio.localeCompare(b.data_hora_inicio))
  const selectCell=(machine:Machine,date:Date)=>{setSelected({machine,date});setError('');setNotice('');const start=new Date(date);const [h='06',min='00']=calendar.horario_inicio_jornada.split(':');start.setHours(Number(h),Number(min),0,0);const end=new Date(start);end.setHours(end.getHours()+1);setForm({ordem_producao_id:'',molde_id:'',quantidade_programada:'1',lote_producao:'',data_hora_inicio:localValue(start),data_hora_fim:localValue(end),status:'planejada'})}
