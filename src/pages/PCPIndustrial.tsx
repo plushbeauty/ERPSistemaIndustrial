@@ -82,7 +82,7 @@ export default function PCPIndustrial(){
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
  const [doubleMold,setDoubleMold]=useState(false),[nominalRate,setNominalRate]=useState('30'),[machineForAnalysis,setMachineForAnalysis]=useState(''),[analysisStart,setAnalysisStart]=useState('')
  const [profileName,setProfileName]=useState('UsuÃ¡rio'),[clock,setClock]=useState(new Date())
- const [opForm,setOpForm]=useState<NovaOPForm>({pedido_venda_id:'',produto_id:'',cliente_id:'',quantidade:'',data_emissao:new Date().toISOString().slice(0,10),data_prevista:'',status:'pendente',prioridade:'ALTA',observacoes:''})
+ const [opForm,setOpForm]=useState<NovaOPForm>({pedido_venda_id:'',pedido_item_id:'',produto_id:'',cliente_id:'',quantidade:'',data_emissao:new Date().toISOString().slice(0,10),data_prevista:'',status:'pendente',prioridade:'ALTA',observacoes:''})
  const [progForm,setProgForm]=useState({ordem_producao_id:'',maquina_id:'',molde_id:'',operador_frente_id:'',operador_atras_id:'',inicio:'',fim:'',quantidade:'',status:'Programada',turnos:'1',horas_turno:'8',eficiencia:'85',ciclo_seg:'0',cavidades_ativas:'1',setup_min:'0'})
 
  async function load(){
@@ -128,7 +128,7 @@ export default function PCPIndustrial(){
  const filteredOps=ops.filter(o=>!query||o.numero_op.toLowerCase().includes(query.toLowerCase())||String(o.status).toLowerCase().includes(query.toLowerCase()))
  const schedule=useMemo(()=>programs.map(p=>({...p,op:ops.find(o=>o.id===p.ordem_producao_id),machine:machines.find(m=>m.id===p.maquina_id),product:products.find(x=>x.id===p.produto_id)})),[programs,ops,machines,products])
 
- function openNewOP(){setError('');setMessage('');setOpForm({pedido_venda_id:'',produto_id:'',cliente_id:'',quantidade:'',data_emissao:new Date().toISOString().slice(0,10),data_prevista:'',status:'pendente',prioridade:'ALTA',observacoes:''});setModal('op')}
+ function openNewOP(){setError('');setMessage('');setOpForm({pedido_venda_id:'',pedido_item_id:'',produto_id:'',cliente_id:'',quantidade:'',data_emissao:new Date().toISOString().slice(0,10),data_prevista:'',status:'pendente',prioridade:'ALTA',observacoes:''});setModal('op')}
  function processForOp(opId:string){const op=ops.find(x=>x.id===opId);const ficha=op?fichas.find(f=>f.produto_id===op.produto_id):undefined;return ficha?fichaOps.filter(x=>x.ficha_id===ficha.id).sort((a,b)=>a.sequencia-b.sequencia):[]}
  function openProgram(opId=selectedOp){setError('');setMessage('');const op=ops.find(o=>o.id===opId);const process=processForOp(opId)[0];const mold=process?.molde_id||'';const machine=process?.maquina_id||'';const cav=mold?(molds.find(x=>x.id===mold)?.cavidades_ativas||molds.find(x=>x.id===mold)?.numero_cavidades||1):1;const cycle=process?.ciclo_seg||0;const setup=process?.setup_min||0;setProgForm({ordem_producao_id:opId,maquina_id:machine,molde_id:mold,operador_frente_id:'',operador_atras_id:'',inicio:'',fim:'',quantidade:opId?String(op?.quantidade||''):'',status:'Programada',turnos:'1',horas_turno:'8',eficiencia:'85',ciclo_seg:String(cycle),cavidades_ativas:String(cav),setup_min:String(setup)});setModal('programacao')}
 
