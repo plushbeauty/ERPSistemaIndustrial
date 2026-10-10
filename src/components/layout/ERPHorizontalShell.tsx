@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleHelp, ChevronDown, Search, UserRound } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
-import ERPStatusLegend from './ERPStatusLegend'
 
 type MenuItem = {
   label: string
@@ -163,8 +162,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           )
         })}
       </nav>
-
-      <div className="erp-global-status-row"><span>STATUS DO ERP</span><ERPStatusLegend /><small>OK · NOK · Atenção · Em andamento · Aprovação</small></div>
 
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
