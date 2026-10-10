@@ -550,7 +550,7 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
                   <td className="px-3 py-2"><div className="space-y-1">{installments.map(item=><div key={item.id} className="flex items-center gap-2 text-xs"><span>#{item.numero} · {item.vencimento} · {currency(item.valor)} · saldo {currency(item.saldo)} · {item.status}</span>{item.saldo>0&&<button type="button" onClick={()=>{setPayment({title,installment:item});setPaymentValue(item.saldo.toFixed(2));setPaymentMethod('')}} className="shrink-0 border border-sky-700 px-2 py-1 text-[11px] text-sky-900">Baixar</button>}</div>)}</div></td>
                   <td className="px-3 py-2 tabular-nums">{currency(title.valor_total)}<div className="text-xs text-slate-600">{currency(balance)} em aberto</div></td>
                   <td className="px-3 py-2">{title.status}</td>
-                  <td className="px-3 py-2">{title.origem_tipo==='MANUAL'&&title.status==='ABERTO'&&balance===title.valor_total&&<button type="button" onClick={()=>editTitle(title)} aria-label="Editar título manual" className="inline-flex items-center gap-1 border border-slate-300 px-2 py-1 text-xs"><Edit3 size={13}/>Editar</button>}</td>
+                  <td className="px-3 py-2">{title.origem_tipo==='MANUAL'&&title.status==='ABERTO'&&balance===title.valor_total&&<button type="button" onClick={()=>editTitle(title)} aria-label="Editar título manual" className="erp-edit-button"><Edit3 size={13}/>Editar</button>}</td>
                 </tr>
               })}
               {!loading&&!filtered.length&&<tr><td colSpan={7} className="px-3 py-10 text-center text-slate-600">Nenhum título registrado para esta empresa.</td></tr>}
