@@ -467,7 +467,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/estoque/movimentacoes" element={<IndustrialDataWorkspace />} />
       <Route path="/qualidade/especificacoes" element={<QualityPlanGate><QualidadeEspecificacoesTecnicas /></QualityPlanGate>} />
       <Route path="/qualidade/fmea" element={<QualityPlanGate><QualidadeFMEA /></QualityPlanGate>} />
-      <Route path="/qualidade/rnc-capa" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
+      <Route path="/qualidade/rnc-capa" element={<QualityPlanGate><QualidadeRNC /></QualityPlanGate>} />
       <Route path="/qualidade/cep" element={<QualityPlanGate><QualidadeCEP /></QualityPlanGate>} />
       <Route path="/qualidade/ged-documentos" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
       <Route path="/qualidade/ged-documentos/nova" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
