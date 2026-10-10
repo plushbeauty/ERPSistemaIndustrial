@@ -8,20 +8,27 @@ const items = [
   ['Indicadores RNC / CAPA', '/qualidade/dashboard-rnc'],
   ['Especificações Técnicas', '/qualidade/especificacoes'],
   ['Inspeções de Lotes', '/qualidade/inspecoes'],
-  ['Matriz FMEA / PFMEA', '/qualidade/fmea'],
+  ['Recebimento e Inspeção Dimensional', '/qualidade/industrial'],
+  ['Matriz FMEA', '/qualidade/fmea'],
+  ['PFMEA / Risco', '/qualidade/pfmea'],
   ['RNC & Planos CAPA', '/qualidade/rnc-capa'],
-  ['Inspeção em Processo', '/qualidade/inspecao-processo'],
   ['Registro RPNC / CAPA', '/qualidade/rnc'],
   ['8D — Ações Corretivas', '/qualidade/metodologia-8d'],
   ['Auditoria 5S', '/qualidade/auditoria-5s'],
-  ['PFMEA / Risco', '/qualidade/pfmea'],
+  ['Inspeção em Processo', '/qualidade/inspecao-processo'],
+  ['Liberação de Lotes', '/qualidade/liberacao-lote'],
+  ['Calibração / Metrologia', '/qualidade/calibracao'],
+  ['Instrumentos e Metrologia', '/qualidade/metrologia'],
   ['Controle Documental GED', '/qualidade/ged-documentos'],
   ['Lista Mestre', '/qualidade/lista-mestre'],
   ['Relatórios SGQ', '/qualidade/relatorios-documentos'],
-  ['Calibração / Metrologia', '/qualidade/metrologia'],
+  ['Genealogia de Lotes', '/qualidade/genealogia-lote'],
+  ['Quarentena de Lotes', '/qualidade/quarentena'],
+  ['Editor de Instruções de Trabalho', '/qualidade/editor-it'],
+  ['Assinatura de Instruções de Trabalho', '/qualidade/assinatura-it'],
 ]
 
-const itemIcons = [Activity, Gauge, SearchCheck, ClipboardCheck, Target, ListChecks, ClipboardList, ShieldCheck, BookOpenCheck, ClipboardList, Target, FileText, FileText, FileText, Wrench]
+const itemIcons = [Gauge, FileText, Activity, SearchCheck, ClipboardCheck, ClipboardList, Target, Target, ListChecks, ShieldCheck, BookOpenCheck, ClipboardList, ClipboardCheck, ShieldCheck, Wrench, Gauge, FolderGit2, FileText, FileText, ClipboardList, ShieldCheck, FileText, ShieldCheck]
 
 export default function QualitySidebar({ active }: { active: string }) {
   const [helpOpen, setHelpOpen] = useState(false)
