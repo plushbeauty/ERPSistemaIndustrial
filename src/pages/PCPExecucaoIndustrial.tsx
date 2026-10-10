@@ -3,7 +3,7 @@ import { Activity, AlertTriangle, Boxes, ClipboardList, Factory, Printer, Refres
 import { supabase } from '../lib/supabaseClient'
 
 type Product = { id:string; codigo:string; nome:string; unidade:string|null }
-type Order = { id:string; numero_op:number|string; produto_id:string|null; quantidade_planejada:number|null; quantidade_produzida:number|null; status:string; data_prevista:string|null; maquina_id:string|null }
+type Order = { id:string; numero_op:number|string; produto_id:string|null; quantidade:number|null; quantidade_planejada:number|null; quantidade_produzida:number|null; status:string; data_prevista:string|null; maquina_id:string|null }
 type Machine = { id:string; codigo:string; nome:string }
 type Process = { id:string; codigo:string; nome:string }
 type Entry = { id:string; ordem_producao_id:string; maquina_id:string|null; processo_id:string|null; inicio_em:string|null; fim_em:string|null; quantidade_planejada:number|null; quantidade_boa:number|null; quantidade_refugada:number|null; motivo_parada:string|null; observacoes:string|null; created_at:string }
