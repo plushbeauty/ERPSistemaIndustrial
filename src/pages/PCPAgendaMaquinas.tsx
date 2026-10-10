@@ -65,6 +65,9 @@ export default function PCPAgendaMaquinas(){
   const start=new Date(form.data_hora_inicio),end=new Date(form.data_hora_fim),qty=Number(form.quantidade_programada)
   if(!form.ordem_producao_id||!Number.isFinite(qty)||qty<=0||!Number.isFinite(start.getTime())||!Number.isFinite(end.getTime())||end<=start){setError('Informe OP, quantidade positiva e intervalo válido.');return}
   if(start.toDateString()!==selected.date.toDateString()||end.toDateString()!==selected.date.toDateString()){setError('O início e o término precisam estar dentro do dia selecionado.');return}
+  const toMinutes=(value:string)=>{const [hour='0',minute='0']=value.split(':');return Number(hour)*60+Number(minute)}
+  const startMinutes=start.getHours()*60+start.getMinutes(),endMinutes=end.getHours()*60+end.getMinutes()
+  if(!calendar.dias_trabalho.includes(dayKey(selected.date))||startMinutes<toMinutes(calendar.horario_inicio_jornada)||endMinutes>toMinutes(calendar.horario_fim_jornada)){setError('A programação deve respeitar os dias e o horário de jornada configurados para a empresa.');return}
   setBusy(true);setError('');setNotice('')
   try{
    const r=await supabase.from('pcp_agenda_maquinas').insert({empresa_id:company,maquina_id:selected.machine.id,ordem_producao_id:form.ordem_producao_id,molde_id:form.molde_id||null,quantidade_programada:qty,lote_producao:form.lote_producao.trim()||null,data_hora_inicio:start.toISOString(),data_hora_fim:end.toISOString(),status:form.status})
