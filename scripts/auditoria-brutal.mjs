@@ -102,7 +102,11 @@ for (const page of pagePaths) {
   const editWords = (t.match(/(?:Editar|edit\()/gi) || []).length
   const editButtons = (t.match(/erp-edit-button|erp-row-action/g) || []).length
   const largeControls = (t.match(/\b(?:h-10|h-11|h-12|min-h-10|min-h-11|min-h-12)\b/g) || []).length
-  const fakeMarkers = (t.match(/\b(?:mock|fake|fict[ií]cio|tempor[aá]rio|TODO|FIXME)\b/gi) || []).length
+  const markerPattern = /(?<![A-Za-zÀ-ÿ0-9_])(?:mock|fake|fict[ií]cio|tempor[aá]rio|TODO|FIXME)(?![A-Za-zÀ-ÿ0-9_])/gi
+  const fakeMarkers = [...t.matchAll(markerPattern)].filter(match => {
+    const context = t.slice(Math.max(0, (match.index ?? 0) - 35), Math.min(t.length, (match.index ?? 0) + match[0].length + 35))
+    return !/nenhum dado fict[ií]cio (?:foi )?(?:inclu[ií]do|criado)|n[aã]o cria dados fict[ií]cios/i.test(context)
+  }).length
   const alias = /^import [A-Za-z0-9_]+ from ['"][.][/]\S+['"]\s*\nexport default [A-Za-z0-9_]+/m.test(t)
   pageAudit.push({page, buttons, controls, editWords, editActions, editButtons, largeControls, fakeMarkers, compact: t.includes('erp-compact'), alias})
   if (alias) warn('PAGE ALIAS: '+page+' — revisar para não contar como módulo independente.')
