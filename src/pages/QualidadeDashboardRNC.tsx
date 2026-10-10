@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { AlertTriangle, BarChart3, CheckCircle2, ClipboardCheck, Gauge, RefreshCw } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import QualitySidebar from '../components/quality/QualitySidebar'
@@ -16,6 +17,7 @@ const COLORS = ['#15803d', '#dc2626', '#64748b']
 const pendingStates = new Set(['rascunho', 'em_revisao', 'solicitada_alteracao'])
 
 export default function QualidadeDashboardRNC() {
+  const location = useLocation()
   const [rncs, setRncs] = useState<Rpn[]>([])
   const [actions, setActions] = useState<Capa[]>([])
   const [documents, setDocuments] = useState<Document[]>([])
@@ -94,7 +96,7 @@ export default function QualidadeDashboardRNC() {
   return (
     <main data-quality-workspace className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,_rgba(45,141,184,0.16),_transparent_42%),linear-gradient(135deg,#edf7fb_0%,#f4f7fc_52%,#edf2fa_100%)] p-3 text-slate-900 md:p-4">
       <div className="mx-auto grid max-w-[1800px] gap-3 grid-cols-1">
-        <QualitySidebar active="/qualidade" />
+        <QualitySidebar active={location.pathname} />
         <div className="min-w-0">
           <header className="flex flex-wrap items-end gap-4 rounded-md border border-sky-200 bg-gradient-to-r from-[#123B50] via-[#185c78] to-[#2D8DB8] p-4 text-white shadow-sm">
             <div>
