@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { Activity, Gauge, RefreshCw, Save, Sigma } from 'lucide-react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { supabase } from '../../lib/supabaseClient'
-import VendasLayout from '../VendasLayout'
+import QualitySidebar from '../../components/quality/QualitySidebar'
 
 type Product = { id: string; codigo: string; descricao_tecnica: string }
 type Measurement = {
@@ -146,8 +146,7 @@ export default function QualidadeCEP() {
     }
   }
 
-  return <VendasLayout title="CEP · Cartas de Controle" subtitle="Controle estatístico do processo com medições reais" onRefresh={() => void load()}>
-    <div className="grid gap-3 bg-[#F4FBFD] p-3">
+  return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900"><QualitySidebar active="/qualidade/cep" /><div className="grid gap-3 bg-[#F4FBFD] p-3">
       <section className="border border-slate-200 bg-white">
         <header className="flex h-10 items-center gap-2 border-b border-slate-200 px-3"><Activity size={16} className="text-[#2D8DB8]"/><h2 className="text-[10px] font-bold uppercase tracking-wider text-[#123B50]">Característica monitorada</h2><button type="button" onClick={() => void load()} className={button + ' ml-auto'}><RefreshCw size={13}/> ATUALIZAR</button></header>
         <div className="grid gap-2 p-3 md:grid-cols-[minmax(220px,1.2fr)_minmax(160px,.8fr)]">
@@ -188,6 +187,5 @@ export default function QualidadeCEP() {
         <header className="flex h-9 items-center justify-between border-b border-slate-200 px-3"><h3 className="text-[10px] font-bold uppercase tracking-wider text-[#123B50]">Histórico de medições</h3><span className="text-[9px] text-slate-500">{filtered.length} linhas</span></header>
         <div className="max-h-[360px] overflow-auto"><table className="w-full border-collapse text-left text-[10px]"><thead className="sticky top-0 bg-slate-50 text-[9px] uppercase text-slate-500"><tr>{['Amostra','Parâmetro','Medido (mm)','Nominal (mm)','LST (mm)','LIT (mm)','Data/hora'].map(item => <th key={item} className="h-8 border-b border-slate-200 px-2 font-bold">{item}</th>)}</tr></thead><tbody>{filtered.slice().reverse().map(row => <tr key={row.id} className="h-8 border-b border-slate-100 hover:bg-sky-50"><td className="px-2">{row.amostra_numero}</td><td className="px-2">{row.parametro}</td><td className="px-2 text-right tabular-nums">{fixed(Number(row.valor_medido))}</td><td className="px-2 text-right tabular-nums">{fixed(Number(row.nominal))}</td><td className="px-2 text-right tabular-nums">{fixed(Number(row.limite_superior))}</td><td className="px-2 text-right tabular-nums">{fixed(Number(row.limite_inferior))}</td><td className="px-2">{new Date(row.medido_em).toLocaleString('pt-BR')}</td></tr>)}</tbody></table></div>
       </section>
-    </div>
-  </VendasLayout>
+    </div></main>
 }
