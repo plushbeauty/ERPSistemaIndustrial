@@ -159,30 +159,38 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         </div>
       </header>
 
-      <div className="erp-premium-shell-body">
-        <aside className="erp-premium-sidebar" aria-label="Navegação de módulos">
-          <div className="erp-premium-sidebar-heading">MÓDULOS OPERACIONAIS</div>
-          {menus.map(menu => {
-            const active = current?.label === menu.label
-            const hasChildren = Boolean(menu.children?.length)
-            const expanded = openMenu === menu.label
-            const Icon = menu.label === 'Início' ? Home : menu.label === 'Cadastros' ? Database : menu.label === 'Vendas' ? ShoppingCart : menu.label === 'Compras' ? ShoppingBasket : menu.label === 'Estoque' ? Package : menu.label === 'Financeiro' ? Wallet : menu.label === 'Fiscal' ? ReceiptText : menu.label === 'Manufatura / PCP' ? Factory : menu.label === 'Qualidade' ? ShieldCheck : menu.label === 'Manutenção' ? Wrench : menu.label === 'Relatórios' ? BarChart3 : Settings
-            return <section className="erp-premium-sidebar-section" key={menu.label}>
-              <button type="button" className={`erp-premium-sidebar-parent ${active ? 'is-active' : ''}`} onClick={() => hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)} aria-expanded={hasChildren ? expanded : undefined}>
-                <Icon size={16} strokeWidth={1.8}/><span>{menu.label}</span>{hasChildren && (expanded ? <ChevronDown size={13}/> : <ChevronRight size={13}/>)}
-              </button>
-              {hasChildren && expanded && <div className="erp-premium-sidebar-children">{menu.children?.map(child => {
+      <nav className="erp-horizontal-menu" aria-label="Menu principal do ERP">
+        {menus.map(menu => {
+          const hasChildren = Boolean(menu.children?.length)
+          const active = current?.label === menu.label
+          const expanded = openMenu === menu.label
+          return <div className="erp-horizontal-menu-item" key={menu.label}>
+            <button
+              type="button"
+              className={`erp-horizontal-menu-button ${active ? 'is-active' : ''}`}
+              onClick={() => hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)}
+              aria-expanded={hasChildren ? expanded : undefined}
+            >
+              {menu.label}
+              {hasChildren && (expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />)}
+            </button>
+            {hasChildren && expanded && <div className="erp-horizontal-dropdown">
+              {menu.children?.map(child => {
                 const childActive = pathname === child.route || pathname.startsWith(child.route + '/')
-                return <button type="button" key={child.route} className={`erp-premium-sidebar-child ${childActive ? 'is-active' : ''}`} onClick={() => go(child.route)}><span className="erp-premium-sidebar-child-dot"/><span>{child.label}</span></button>
-              })}</div>}
-            </section>
-          })}
-          <div className="erp-premium-sidebar-footer"><span className="erp-status-dot" data-status="andamento"/><span>Conexão de sessão ativa</span></div>
-        </aside>
+                return <button
+                  type="button"
+                  key={child.route}
+                  className={childActive ? 'is-active' : ''}
+                  onClick={() => go(child.route)}
+                >{child.label}</button>
+              })}
+            </div>}
+          </div>
+        })}
+      </nav>
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
       </main>
-      </div>
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:#f4f8fa;color:#173b4a}
@@ -233,27 +241,12 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         @media(max-width:950px){.erp-horizontal-brand strong{display:none}.erp-horizontal-search{width:36vw}.erp-horizontal-menu-button{padding:0 7px}.erp-horizontal-session time{display:none}}
         @media(max-width:700px){.erp-global-status-row>small{display:none}.erp-horizontal-header{gap:5px}.erp-horizontal-help{font-size:0}.erp-horizontal-search{width:42vw;min-width:160px}.erp-horizontal-session span{display:none}.erp-horizontal-menu{overflow-x:auto}}
 
-        .erp-premium-shell-body{display:flex;align-items:stretch;min-height:calc(100vh - 44px)}
-        .erp-premium-sidebar{position:sticky;top:44px;align-self:flex-start;display:flex;flex-direction:column;gap:2px;width:240px;min-width:240px;max-height:calc(100vh - 44px);overflow:auto;padding:10px 8px 12px;background:rgba(255,255,255,.78);backdrop-filter:blur(14px);border-right:1px solid rgba(203,213,225,.65);color:#475569}
-        .erp-premium-sidebar-heading{padding:5px 8px 9px;font-size:9px;font-weight:800;letter-spacing:.12em;color:#94a3b8}
-        .erp-premium-sidebar-section{display:grid;gap:2px}
-        .erp-premium-sidebar-parent{display:flex;align-items:center;gap:9px;width:100%;height:36px;min-height:36px;padding:0 9px;border:1px solid transparent;border-radius:3px;background:transparent;color:#475569;text-align:left;font-size:11px;font-weight:500;letter-spacing:-.01em;transition:background-color .15s,color .15s,border-color .15s}
-        .erp-premium-sidebar-parent>span{flex:1}
-        .erp-premium-sidebar-parent:hover{background:rgba(59,130,246,.045);color:#1d4ed8}
-        .erp-premium-sidebar-parent.is-active{border-left:2px solid #2563eb;background:rgba(59,130,246,.07);color:#1d4ed8;font-weight:700}
-        .erp-premium-sidebar-children{display:grid;gap:1px;margin:0 0 5px 19px;padding:2px 0 2px 8px;border-left:1px solid #e2e8f0;animation:erpSidebarReveal .16s ease-out}
-        .erp-premium-sidebar-child{display:flex;align-items:center;gap:7px;width:100%;height:30px;min-height:30px;padding:0 7px;border:1px solid transparent;border-radius:2px;background:transparent;color:#64748b;text-align:left;font-size:10px;font-weight:500;transition:background-color .12s,color .12s}
-        .erp-premium-sidebar-child-dot{width:4px;height:4px;flex:0 0 4px;border-radius:50%;background:#cbd5e1}
-        .erp-premium-sidebar-child:hover{background:rgba(59,130,246,.05);color:#1d4ed8}
-        .erp-premium-sidebar-child.is-active{border-left:2px solid #2563eb;background:rgba(59,130,246,.07);color:#1d4ed8;font-weight:700}
-        .erp-premium-sidebar-child.is-active .erp-premium-sidebar-child-dot{background:#2563eb}
-        .erp-premium-sidebar-footer{display:flex;align-items:center;gap:7px;margin-top:auto;padding:12px 8px 2px;color:#94a3b8;font-size:9px;border-top:1px solid rgba(226,232,240,.7)}
-        .erp-premium-shell-body>.erp-horizontal-workspace{flex:1;width:calc(100% - 240px);min-width:0}
-        .erp-horizontal-menu{display:none!important}
-        @keyframes erpSidebarReveal{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
-        @media(max-width:850px){.erp-premium-sidebar{width:210px;min-width:210px}.erp-premium-shell-body>.erp-horizontal-workspace{width:calc(100% - 210px)}}
-        @media(max-width:640px){.erp-premium-shell-body{min-height:calc(100vh - 44px)}.erp-premium-sidebar{width:54px;min-width:54px;padding:8px 4px}.erp-premium-sidebar-heading,.erp-premium-sidebar-parent>span,.erp-premium-sidebar-parent>svg:last-child,.erp-premium-sidebar-children,.erp-premium-sidebar-footer{display:none!important}.erp-premium-sidebar-parent{justify-content:center;padding:0}.erp-premium-sidebar-parent.is-active{border-left-width:2px}.erp-premium-shell-body>.erp-horizontal-workspace{width:calc(100% - 54px);padding:5px}.erp-premium-sidebar-section{position:relative}.erp-premium-sidebar-section:focus-within .erp-premium-sidebar-children{display:grid!important;position:absolute;left:44px;top:0;z-index:1200;width:210px;margin:0;padding:6px;border:1px solid #dbe3ec;border-radius:3px;background:rgba(255,255,255,.97);box-shadow:0 12px 30px rgba(15,23,42,.12);backdrop-filter:blur(14px)}}
-        @media(prefers-reduced-motion:reduce){.erp-premium-sidebar-children,.erp-premium-sidebar-parent,.erp-premium-sidebar-child{animation:none!important;transition:none!important}}
+        .erp-horizontal-menu{display:flex!important;position:relative;z-index:900}
+        .erp-horizontal-menu-button.is-active{background:#17445A;color:#fff;box-shadow:inset 0 -2px #8bd6f0}
+        .erp-horizontal-dropdown button.is-active{background:#edf7fb;color:#176487;font-weight:700;border-left:2px solid #2D8DB8}
+        .erp-horizontal-workspace{width:100%;max-width:100%;min-width:0}
+        @media(max-width:700px){.erp-horizontal-menu{overflow-x:auto;overscroll-behavior-x:contain}.erp-horizontal-menu-item{flex:0 0 auto}.erp-horizontal-dropdown{position:fixed;top:auto;left:6px;right:6px;max-height:65vh;overflow:auto;z-index:1500}.erp-horizontal-menu-button{min-width:max-content}}
+        @media(prefers-reduced-motion:reduce){.erp-horizontal-menu-button,.erp-horizontal-dropdown{transition:none!important}}
       `}</style>
     </div>
   )
