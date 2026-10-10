@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 
 type Machine = { id:string; codigo:string; nome:string; status:string|null; ativo:boolean }
 type Mold = { id:string; codigo:string; nome:string; status:string; ativo:boolean }
-type Order = { id:string; numero_op:string|number; produto_id:string|null; maquina_id:string|null; status:string; ordem_sequencia:number|null }
+type Order = { id:string; numero_op:string|number; produto_id:string|null; maquina_id:string|null; status:string }
 type Slot = { id:string; maquina_id:string; ordem_producao_id:string; molde_id:string|null; quantidade_programada:number; lote_producao:string|null; data_hora_inicio:string; data_hora_fim:string; status:string }
 type Calendar = { dias_trabalho:string[]; horario_inicio_jornada:string; horario_fim_jornada:string }
 type Cell = { machine:Machine; date:Date }
@@ -43,7 +43,7 @@ export default function PCPAgendaMaquinas(){
    const start=new Date(weekStart);const end=new Date(start);end.setDate(end.getDate()+7)
    const [m,o,mo,a,c]=await Promise.all([
     supabase.from('erp_maquinas').select('id,codigo,nome,status,ativo').eq('empresa_id',id).eq('ativo',true).order('codigo'),
-    supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,ordem_sequencia').eq('empresa_id',id).not('status','in','(concluida,cancelada,cancelado)').order('numero_op',{ascending:false}).limit(2000),
+    supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status').eq('empresa_id',id).not('status','in','(concluida,cancelada,cancelado)').order('numero_op',{ascending:false}).limit(2000),
     supabase.from('erp_moldes').select('id,codigo,nome,status,ativo').eq('empresa_id',id).eq('ativo',true).order('codigo'),
     supabase.from('pcp_agenda_maquinas').select('id,maquina_id,ordem_producao_id,molde_id,quantidade_programada,lote_producao,data_hora_inicio,data_hora_fim,status').eq('empresa_id',id).neq('status','cancelada').gte('data_hora_inicio',start.toISOString()).lt('data_hora_inicio',end.toISOString()).order('data_hora_inicio').limit(5000),
     supabase.from('erp_pcp_calendario_trabalho').select('dias_trabalho,horario_inicio_jornada,horario_fim_jornada').eq('empresa_id',id).maybeSingle()
