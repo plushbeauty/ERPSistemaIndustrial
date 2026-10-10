@@ -19,13 +19,14 @@ type Doc = { id: string; codigo: string; titulo: string; tipo: string | null; re
 const jsonRecord = (value: unknown): Record<string, unknown> | null => typeof value === 'object' && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : null
 const stringField = (value: unknown, fallback = ''): string => typeof value === 'string' ? value : fallback
 const actionsFromCapa = (row: CapaRecord): Capa[] => {
-  if (!row.rpnc_id || !Array.isArray(row.plano_5w2h)) return []
+  const rpncId = row.rpnc_id
+  if (!rpncId || !Array.isArray(row.plano_5w2h)) return []
   return row.plano_5w2h.flatMap((value, index) => {
     const item = jsonRecord(value)
     if (!item) return []
     const prazo = stringField(item.prazo)
     const oQue = stringField(item.oQue, row.descricao)
-    return [{ id: stringField(item.id, row.id + '-' + index), rpnc_id: row.rpnc_id, tipo: stringField(item.tipo, 'Corretiva'), descricao: oQue, causa_raiz: stringField(item.causa) || null, responsavel_id: stringField(item.responsavel), prazo, status: row.status, acao_o_que: oQue, acao_por_que: stringField(item.porQue) || null, acao_onde: stringField(item.onde) || null, acao_quem: stringField(item.quem), acao_quando: stringField(item.quando, prazo), acao_como: stringField(item.como) || null, acao_quanto: typeof item.quanto === 'number' ? item.quanto : Number(item.quanto ?? 0) }]
+    return [{ id: stringField(item.id, row.id + '-' + index), rpnc_id: rpncId, tipo: stringField(item.tipo, 'Corretiva'), descricao: oQue, causa_raiz: stringField(item.causa) || null, responsavel_id: stringField(item.responsavel), prazo, status: row.status, acao_o_que: oQue, acao_por_que: stringField(item.porQue) || null, acao_onde: stringField(item.onde) || null, acao_quem: stringField(item.quem), acao_quando: stringField(item.quando, prazo), acao_como: stringField(item.como) || null, acao_quanto: typeof item.quanto === 'number' ? item.quanto : Number(item.quanto ?? 0) }]
   })
 }
 
