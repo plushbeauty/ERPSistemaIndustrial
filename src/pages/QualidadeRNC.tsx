@@ -34,9 +34,11 @@ const field = (bad = false) => `h-[30px] w-full rounded-[2px] border px-2 text-[
 const label = 'grid gap-[2px] text-[9px] font-medium uppercase text-slate-600'
 const btn = 'inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-medium text-white'
 
-export default function QualidadeRNC() {
+type QualidadeRNCProps = { initialTab?: 'rnc' | 'capa' | 'ged' }
+
+export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) {
   const location = useLocation()
-  const [tab, setTab] = useState<'rnc' | 'capa' | 'ged'>('rnc')
+  const [tab, setTab] = useState<'rnc' | 'capa' | 'ged'>(initialTab)
   const [companyId, setCompanyId] = useState('')
   const [rncs, setRncs] = useState<Rpn[]>([])
   const [ishikawa, setIshikawa] = useState<Ishikawa | null>(null)
@@ -44,6 +46,7 @@ export default function QualidadeRNC() {
   const [users, setUsers] = useState<User[]>([])
   const [sectors, setSectors] = useState<Sector[]>([])
   const [docs, setDocs] = useState<Doc[]>([])
+  const [docAttachments, setDocAttachments] = useState<Attachment[]>([])
   const [selectedRnc, setSelectedRnc] = useState('')
   const [description, setDescription] = useState('')
   const [origin, setOrigin] = useState('Processo')
@@ -77,6 +80,7 @@ export default function QualidadeRNC() {
       for (const attachment of attachments) {
         if (attachment.status.toLowerCase() === 'vigente' && !activeAttachments.has(attachment.documento_id)) activeAttachments.set(attachment.documento_id, { storage_path: attachment.storage_path, nome_arquivo: attachment.nome_arquivo })
       }
+      setDocAttachments(attachments)
       setDocs(d.map(doc => {
         const attachment = activeAttachments.get(doc.id)
         return { id: doc.id, codigo: doc.codigo, titulo: doc.titulo, tipo: doc.area, revisao: doc.revisao, data_revisao: doc.data_revisao, preparado_por: doc.responsavel_id ? userNames.get(doc.responsavel_id) ?? null : null, pdf_storage_path: attachment?.storage_path ?? null, nome_arquivo: attachment?.nome_arquivo ?? null, status: doc.status }
@@ -87,6 +91,7 @@ export default function QualidadeRNC() {
     } finally { setBusy(false) }
   }, [selectedRnc])
 
+  useEffect(() => { setTab(initialTab) }, [initialTab])
   useEffect(() => { void load() }, [load])
 
   useEffect(() => {
@@ -209,6 +214,12 @@ export default function QualidadeRNC() {
     if (signed.data?.signedUrl) window.open(signed.data.signedUrl, '_blank', 'noopener,noreferrer')
   }
 
+  const openAttachment = async (attachment: Attachment) => {
+    const signed = await supabase.storage.from('erp-qualidade-anexos').createSignedUrl(attachment.storage_path, 3600)
+    if (signed.error) { setError(signed.error.message); return }
+    if (signed.data?.signedUrl) window.open(signed.data.signedUrl, '_blank', 'noopener,noreferrer')
+  }
+
   return (
     <main className="min-h-screen bg-[#F4FBFD] text-[#123B50]"><div className="mx-auto max-w-[1800px] space-y-3 p-3"><QualitySidebar active={location.pathname} /><div className="sgq-compact">
       <div className="sgq-compact">
@@ -258,6 +269,8 @@ export default function QualidadeRNC() {
 
         {tab === 'ged' && <section className="sgq-panel">
           <div className="sgq-table"><table><thead><tr><th>Código</th><th>Nome do documento</th><th>Tipo</th><th>Rev.</th><th>Última revisão</th><th>Elaborado por</th><th>PDF Storage</th><th>Ação</th></tr></thead><tbody>{docs.map((doc) => <tr key={doc.id}><td>{doc.codigo}</td><td>{doc.titulo}</td><td>{doc.tipo || '—'}</td><td className="num">{doc.revisao}</td><td>{doc.data_revisao ? new Date(doc.data_revisao).toLocaleDateString('pt-BR') : '—'}</td><td>{doc.preparado_por || '—'}</td><td>{doc.pdf_storage_path ? <button className="link-btn" type="button" onClick={() => void openPdf(doc)}>ABRIR PDF REAL</button> : 'SEM PDF'}</td><td><label className={btn + ' cursor-pointer'}><Upload size={13}/> ANEXAR PDF<input className="hidden" type="file" accept="application/pdf" disabled={busy} onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadPdf(doc, file); e.currentTarget.value = '' }} /></label></td></tr>)}</tbody></table></div>
+          <h3 className="mt-3 text-[11px] font-bold uppercase tracking-wide">Histórico de revisões de PDF</h3>
+          <div className="sgq-table"><table><thead><tr><th>Documento</th><th>Revisão</th><th>Arquivo</th><th>Status</th><th>Data</th><th>Ação</th></tr></thead><tbody>{docAttachments.map((attachment) => { const doc = docs.find(item => item.id === attachment.documento_id); return <tr key={attachment.id}><td>{doc?.codigo || '—'}</td><td className="num">{attachment.revisao}</td><td>{attachment.nome_arquivo}</td><td>{attachment.status}</td><td>{attachment.criado_em ? new Date(attachment.criado_em).toLocaleString('pt-BR') : '—'}</td><td><button className="link-btn" type="button" onClick={() => void openAttachment(attachment)}>ABRIR VERSÃO</button></td></tr>})}</tbody></table></div>
         </section>}
       </div>
       <style>{`
