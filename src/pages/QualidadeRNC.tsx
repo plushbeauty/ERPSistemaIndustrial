@@ -92,7 +92,7 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
       setDocAttachments(attachments)
       setDocs(d.map(doc => {
         const attachment = activeAttachments.get(doc.id)
-        return { id: doc.id, codigo: doc.codigo, titulo: doc.titulo, tipo: doc.area, revisao: doc.revisao, data_revisao: doc.data_revisao, preparado_por: doc.responsavel_id ? userNames.get(doc.responsavel_id) ?? null : null, pdf_storage_path: attachment?.storage_path ?? null, nome_arquivo: attachment?.nome_arquivo ?? null, status: doc.status }
+        return { id: doc.id, codigo: doc.codigo, titulo: doc.titulo, tipo: doc.area, revisao: Math.max(Number(doc.revisao) || 0, attachment?.revisao ?? 0), data_revisao: doc.data_revisao, preparado_por: doc.responsavel_id ? userNames.get(doc.responsavel_id) ?? null : null, pdf_storage_path: attachment?.storage_path ?? null, nome_arquivo: attachment?.nome_arquivo ?? null, status: doc.status }
       }))
       if (!selectedRnc && r[0]) setSelectedRnc(r[0].id)
     } catch (cause) {
