@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Boxes, Calculator, ClipboardCheck, FileCheck2, Factory, RefreshCw, ArrowRight } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
 type Product={id:string;codigo:string;nome:string;estoque_atual:number;custo_fabricacao:number;preco_venda:number}
 type Movement={produto_id:string;tipo:string;quantidade:number;created_at:string}
@@ -34,18 +35,17 @@ export default function InteligenciaIndustrial(){
    if(tenant.error||typeof tenant.data!=='string'||!tenant.data) throw tenant.error??new Error('Empresa da sessão não identificada; inteligência industrial bloqueada.')
    const empresaId=tenant.data
    const [p,m,o,f,i,d,costs]=await Promise.all([
-    supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,preco_venda').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(3000),
-    supabase.from('erp_estoque_movimentos').select('produto_id,tipo,quantidade,created_at').eq('empresa_id',empresaId).order('created_at',{ascending:false}).limit(10000),
-    supabase.from('erp_ordens_producao').select('id,produto_id,quantidade,status,data_prevista').eq('empresa_id',empresaId).order('criado_em',{ascending:false}).limit(3000),
-    supabase.from('erp_financeiro_lancamentos').select('id,descricao,valor,vencimento,status,tipo').eq('empresa_id',empresaId).order('vencimento').limit(5000),
-    supabase.from('erp_inspecoes').select('resultado,quantidade_inspecionada,quantidade_aprovada,quantidade_reprovada').eq('empresa_id',empresaId).limit(3000),
-    supabase.from('erp_documentos_qualidade').select('id,codigo,titulo,status,revisao').eq('empresa_id',empresaId).order('updated_at',{ascending:false}).limit(1000),
-    supabase.from('erp_custos_produtos').select('produto_id,custo_fabricacao,custo_total,created_at').eq('empresa_id',empresaId).order('created_at',{ascending:false}).limit(5000)
+    fetchAllPages<{id:string;codigo:string;nome:string;estoque_atual:number;preco_venda:number}>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,preco_venda',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to)),
+    fetchAllPages<Movement>((from,to)=>supabase.from('erp_estoque_movimentos').select('produto_id,tipo,quantidade,created_at',{count:'exact'}).eq('empresa_id',empresaId).order('created_at',{ascending:false}).range(from,to)),
+    fetchAllPages<OP>((from,to)=>supabase.from('erp_ordens_producao').select('id,produto_id,quantidade,status,data_prevista',{count:'exact'}).eq('empresa_id',empresaId).order('criado_em',{ascending:false}).range(from,to)),
+    fetchAllPages<Finance>((from,to)=>supabase.from('erp_financeiro_lancamentos').select('id,descricao,valor,vencimento,status,tipo',{count:'exact'}).eq('empresa_id',empresaId).order('vencimento').range(from,to)),
+    fetchAllPages<Inspection>((from,to)=>supabase.from('erp_inspecoes').select('resultado,quantidade_inspecionada,quantidade_aprovada,quantidade_reprovada',{count:'exact'}).eq('empresa_id',empresaId).range(from,to)),
+    fetchAllPages<Doc>((from,to)=>supabase.from('erp_documentos_qualidade').select('id,codigo,titulo,status,revisao',{count:'exact'}).eq('empresa_id',empresaId).order('updated_at',{ascending:false}).range(from,to)),
+    fetchAllPages<{produto_id:string;custo_fabricacao:number|null;custo_total:number|null;created_at:string}>((from,to)=>supabase.from('erp_custos_produtos').select('produto_id,custo_fabricacao,custo_total,created_at',{count:'exact'}).eq('empresa_id',empresaId).order('created_at',{ascending:false}).range(from,to))
    ])
-   for(const r of [p,m,o,f,i,d,costs]) if(r.error) throw r.error
    const latestCostByProduct=new Map<string,number>()
-   for(const row of costs.data??[]) if(!latestCostByProduct.has(row.produto_id)) latestCostByProduct.set(row.produto_id,Number(row.custo_fabricacao||row.custo_total||0))
-   setProducts((p.data??[]).map(row=>({...row,custo_fabricacao:latestCostByProduct.get(row.id)??0})) as Product[]);setMovements((m.data??[]) as Movement[]);setOps((o.data??[]) as OP[]);setFinance((f.data??[]) as Finance[]);setInspections((i.data??[]) as Inspection[]);setDocs((d.data??[]) as Doc[])
+   for(const row of costs) if(!latestCostByProduct.has(row.produto_id)) latestCostByProduct.set(row.produto_id,Number(row.custo_fabricacao||row.custo_total||0))
+   setProducts(p.map(row=>({...row,custo_fabricacao:latestCostByProduct.get(row.id)??0})));setMovements(m);setOps(o);setFinance(f);setInspections(i);setDocs(d)
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar Torre de Inteligência Industrial.')}
   finally{setBusy(false)}
  }
