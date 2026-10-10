@@ -3,6 +3,7 @@ import { History, Plus, RefreshCw, Save, TriangleAlert } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '../components/ui/dialog'
+import QualitySidebar from '../components/quality/QualitySidebar'
 
 type Equipment = {
   id: string
@@ -229,7 +230,7 @@ export default function CalibracaoIndustrial() {
 
   const field = (label: string, key: keyof typeof emptyEquipment, type = 'text') => <label className="grid gap-1 text-sm font-extrabold text-slate-800">{label}<input type={type} value={equipmentForm[key]} onChange={event => setEquipmentForm({ ...equipmentForm, [key]: event.target.value })} className="min-h-11 rounded-md border border-slate-300 bg-white px-3 text-slate-900"/></label>
 
-  return <main className="min-h-screen bg-[#f8fafc] p-4 text-slate-900 md:p-6">
+  return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-4"><QualitySidebar active="/qualidade/calibracao" />
     <header className="mb-6 flex flex-col gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-center lg:justify-between">
       <div><span className="text-sm font-black uppercase tracking-wider text-sky-700">SGQ • METROLOGIA</span><h1 className="mt-1 text-2xl font-black md:text-3xl">Calibração e Equipamentos de Medição</h1><p className="mt-1 text-base text-slate-600">Cadastro real, rastreabilidade de certificados e barreira operacional por validade metrológica.</p></div>
       <div className="flex flex-wrap items-center gap-2">
