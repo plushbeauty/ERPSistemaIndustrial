@@ -8,8 +8,7 @@ create table if not exists public.outlook_integracoes (
   mailbox text not null default '',
   microsoft_email text,
   tenant_microsoft_id text,
-  status text not null default 'NAO_CONECTADO'
-    check (status in ('NAO_CONECTADO','CONECTANDO','CONECTADO','ERRO','DESATIVADO')),
+  status text not null default 'NAO_CONECTADO',
   ativo boolean not null default false,
   ultima_sincronizacao timestamptz,
   ultimo_erro text,
