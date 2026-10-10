@@ -97,14 +97,16 @@ for (const page of pagePaths) {
   const t = read(page)
   const buttons = (t.match(/<button\b/gi) || []).length
   const controls = (t.match(/<(?:input|select|textarea)\b/gi) || []).length
+  const editButtonsMarkup = t.match(/<(?:button|Link|a)\b(?:(?!<\/(?:button|Link|a)>)[\s\S])*?<\/(?:button|Link|a)>/gi) || []
+  const editActions = editButtonsMarkup.filter(markup => /\b(?:editar|edit)\b/i.test(markup)).length
   const editWords = (t.match(/(?:Editar|edit\()/gi) || []).length
   const editButtons = (t.match(/erp-edit-button|erp-row-action/g) || []).length
   const largeControls = (t.match(/\b(?:h-10|h-11|h-12|min-h-10|min-h-11|min-h-12)\b/g) || []).length
   const fakeMarkers = (t.match(/\b(?:mock|fake|fict[ií]cio|tempor[aá]rio|TODO|FIXME)\b/gi) || []).length
   const alias = /^import [A-Za-z0-9_]+ from ['"][.][/]\S+['"]\s*\nexport default [A-Za-z0-9_]+/m.test(t)
-  pageAudit.push({page, buttons, controls, editWords, editButtons, largeControls, fakeMarkers, compact: t.includes('erp-compact'), alias})
+  pageAudit.push({page, buttons, controls, editWords, editActions, editButtons, largeControls, fakeMarkers, compact: t.includes('erp-compact'), alias})
   if (alias) warn('PAGE ALIAS: '+page+' — revisar para não contar como módulo independente.')
-  if (editWords > 0 && editButtons === 0 && !/function\s+edit\b/.test(t)) warn('EDIT SEM PADRÃO: '+page+' — há ação/texto de editar, mas nenhum erp-edit-button/erp-row-action.')
+  if (editActions > 0 && editButtons === 0) warn('EDIT SEM PADRÃO: '+page+' — há botão/link real de edição sem erp-edit-button/erp-row-action.')
   if (largeControls > 0 && t.includes('erp-compact')) warn('CONTROLE GRANDE EM TELA COMPACTA: '+page+' — '+largeControls+' ocorrência(s) h-10/h-11/h-12.')
   if (fakeMarkers > 0) warn('MARCADOR DE AUDITORIA: '+page+' — '+fakeMarkers+' ocorrência(s) mock/fake/TODO/FIXME/temporário; revisar se é código real ou comentário histórico.')
 }
