@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Activity, BookOpenCheck, ClipboardCheck, ClipboardList, FileBarChart2, FileText, FolderGit2, Gauge, ListChecks, LineChart, SearchCheck, ShieldCheck, Target, Wrench } from 'lucide-react'
+import { Activity, BookOpenCheck, ClipboardCheck, ClipboardList, FileText, FolderGit2, Gauge, ListChecks, LineChart, SearchCheck, ShieldCheck, Target, Wrench } from 'lucide-react'
 import { useSynqraLayout } from '../../layout/SynqraLayoutContext'
 
 const items = [
@@ -20,7 +20,7 @@ const items = [
   ['Calibração / Metrologia', '/qualidade/metrologia'],
 ]
 
-const itemIcons = [Activity, Gauge, SearchCheck, ClipboardCheck, Target, ListChecks, ClipboardList, ShieldCheck, BookOpenCheck, ClipboardList, Target, FileText, FileBarChart2, FileBarChart2, Wrench]
+const itemIcons = [Activity, Gauge, SearchCheck, ClipboardCheck, Target, ListChecks, ClipboardList, ShieldCheck, BookOpenCheck, ClipboardList, Target, FileText, FileText, FileText, Wrench]
 
 export default function QualitySidebar({ active }: { active: string }) {
   const hostedBySynqra = useSynqraLayout()
