@@ -112,7 +112,7 @@ for (const page of pagePaths) {
   if (alias) warn('PAGE ALIAS: '+page+' — revisar para não contar como módulo independente.')
   if (editActions > 0 && editButtons === 0) warn('EDIT SEM PADRÃO: '+page+' — há botão/link real de edição sem erp-edit-button/erp-row-action.')
   if (largeControls > 0 && t.includes('erp-compact')) warn('CONTROLE GRANDE EM TELA COMPACTA: '+page+' — '+largeControls+' ocorrência(s) h-10/h-11/h-12.')
-  if (fakeMarkers > 0) warn('MARCADOR DE AUDITORIA: '+page+' — '+fakeMarkers+' ocorrência(s) mock/fake/TODO/FIXME/temporário; revisar se é código real ou comentário histórico.')
+  if (fakeMarkers > 0 && !(page.endsWith('/TesteERP.tsx') && /!import\.meta\.env\.DEV/.test(t))) warn('MARCADOR DE AUDITORIA: '+page+' — '+fakeMarkers+' ocorrência(s) mock/fake/TODO/FIXME/temporário; revisar se é código real ou comentário histórico.')
 }
 console.log('PAGES AUDITED:', pageAudit.length)
 for (const x of pageAudit) console.log('[PAGE]', JSON.stringify(x))
