@@ -161,6 +161,7 @@ const QualidadeAuditoria5S = lazyPage(() => import('./pages/QualidadeAuditoria5S
 const QualidadeMetodologia8D = lazyPage(() => import('./pages/QualidadeMetodologia8D'), 'QualidadeMetodologia8D')
 const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspecaoProcesso'), 'QualidadeInspecaoProcesso')
 const QualidadeInspecoesIndustrial = lazyPage(() => import('./pages/QualidadeInspecoesIndustrial'), 'default')
+const QualidadeEspecificacoesTecnicas = lazyPage(() => import('./pages/QualidadeEspecificacoesTecnicas'), 'default')
 const MoldesFerramentaria = lazyPage(() => import('./pages/MoldesFerramentaria'), 'MoldesFerramentaria')
 const OperacaoIndustrial = lazyPage(() => import('./pages/OperacaoIndustrial'), 'OperacaoIndustrial')
 const InjecaoIndustrial = lazyPage(() => import('./pages/InjecaoIndustrial'), 'InjecaoIndustrial')
@@ -464,7 +465,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/engenharia/roteiros" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/estoque/enderecos" element={<IndustrialDataWorkspace />} />
       <Route path="/estoque/movimentacoes" element={<IndustrialDataWorkspace />} />
-      <Route path="/qualidade/especificacoes" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
+      <Route path="/qualidade/especificacoes" element={<QualityPlanGate><QualidadeEspecificacoesTecnicas /></QualityPlanGate>} />
       <Route path="/qualidade/fmea" element={<QualityPlanGate><QualidadeFMEA /></QualityPlanGate>} />
       <Route path="/qualidade/rnc-capa" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
       <Route path="/qualidade/cep" element={<QualityPlanGate><QualidadeCEP /></QualityPlanGate>} />
