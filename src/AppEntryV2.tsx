@@ -483,7 +483,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/planejamento" element={<PCPPlanejamentoIndustrial />} />
       <Route path="/pcp/capacidade" element={<PCPCapacidadeIndustrial />} />
       <Route path="/pcp/agenda-maquinas" element={<PCPAgendaMaquinas />} />
-      <Route path="/pcp/mrp-ii" element={<PCPCapacidadeIndustrial />} />
+      <Route path="/pcp/mrp-ii" element={<MRPIndustrial />} />
       <Route path="/pcp/execucao-industrial" element={<PCPExecucaoIndustrial />} />
       <Route path="/pcp/dashboard-oee" element={<PCPDashboardOEE />} />
       <Route path="/pcp/tablet-operador" element={<PCPTabletOperador />} />
