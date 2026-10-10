@@ -625,7 +625,7 @@ function AppIndustrialAuthenticated() {
         <div className="erp-global-surface">
           {protectedRoutes}
           <PCPPageHelp />
-          <ERPStatusLegend />
+          {location.pathname.startsWith('/pcp') && <ERPStatusLegend />}
         </div>
       </Suspense>
     </Boundary>
