@@ -48,10 +48,11 @@ export default function PCPAgendaMaquinas(){
     supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status').eq('empresa_id',id).not('status','in','(concluida,cancelada,cancelado)').order('numero_op',{ascending:false}).limit(2000),
     supabase.from('erp_moldes').select('id,codigo,nome,status,ativo').eq('empresa_id',id).eq('ativo',true).order('codigo'),
     supabase.from('pcp_agenda_maquinas').select('id,maquina_id,ordem_producao_id,molde_id,quantidade_programada,lote_producao,data_hora_inicio,data_hora_fim,status').eq('empresa_id',id).neq('status','cancelada').gte('data_hora_inicio',start.toISOString()).lt('data_hora_inicio',end.toISOString()).order('data_hora_inicio').limit(5000),
-    supabase.from('erp_pcp_calendario_trabalho').select('dias_trabalho,horario_inicio_jornada,horario_fim_jornada').eq('empresa_id',id).maybeSingle()
+    supabase.from('erp_pcp_calendario_trabalho').select('dias_trabalho,horario_inicio_jornada,horario_fim_jornada').eq('empresa_id',id).maybeSingle(),
+    supabase.from('erp_fichas_processo').select('produto_id,ciclo_seg,cavidades_ativas,parametros_tecnicos').eq('empresa_id',id).eq('ativo',true).limit(3000)
    ])
-   for(const r of [m,o,mo,a,c])if(r.error)throw r.error
-   setMachines((m.data??[]) as Machine[]);setOrders((o.data??[]) as Order[]);setMolds((mo.data??[]) as Mold[]);setSlots((a.data??[]) as Slot[])
+   for(const r of [m,o,mo,a,c,fc])if(r.error)throw r.error
+   setMachines((m.data??[]) as Machine[]);setOrders((o.data??[]) as Order[]);setMolds((mo.data??[]) as Mold[]);setSlots((a.data??[]) as Slot[]);setProcessCycles((fc.data??[]) as ProcessCycle[])
    if(c.data){setCalendar(c.data as Calendar);setCalendarDraft(c.data as Calendar)}
   }catch(e){setError(messageOf(e))}
   finally{setBusy(false)}
