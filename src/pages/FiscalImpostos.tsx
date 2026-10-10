@@ -235,7 +235,7 @@ export default function FiscalImpostos() {
               <td className="px-3 py-2 font-mono">{rule.ncm || 'geral'} / {rule.cfop || 'geral'}</td><td className="px-3 py-2">{rule.regime_empresa || 'todos'} / {rule.uf_destino || 'todas'}</td>
               <td className="px-3 py-2">{rule.icms_aliquota}% · {rule.cst_csosn_icms || 'sem CST'}</td><td className="px-3 py-2">{rule.ipi_aliquota}% · {rule.cst_ipi || 'sem CST'}</td>
               <td className="px-3 py-2">{rule.pis_aliquota}% · {rule.pis_cst || 'sem CST'}</td><td className="px-3 py-2">{rule.cofins_aliquota}% · {rule.cofins_cst || 'sem CST'}</td>
-              <td className="px-3 py-2"><div className="flex gap-2"><button type="button" onClick={() => { setEditingId(rule.id); setForm(asForm(rule)); setError(''); setMessage('') }} className="text-blue-800 underline">Editar</button><button type="button" disabled={busy} onClick={() => void remove(rule)} className="text-red-700 underline disabled:opacity-50">Excluir</button></div></td>
+              <td className="px-3 py-2"><div className="flex gap-2"><button type="button" onClick={() => { setEditingId(rule.id); setForm(asForm(rule)); setError(''); setMessage('') }} className="erp-row-action no-underline">Editar</button><button type="button" disabled={busy} onClick={() => void remove(rule)} className="text-red-700 underline disabled:opacity-50">Excluir</button></div></td>
             </tr>)}
             {!loading && !rules.length && <tr><td colSpan={7} className="px-3 py-8 text-center text-slate-600">Nenhuma regra fiscal cadastrada. Nenhuma alíquota será presumida.</td></tr>}
           </tbody>
