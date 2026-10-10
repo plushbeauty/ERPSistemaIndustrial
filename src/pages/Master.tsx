@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { AlertTriangle, Building2, CheckCircle2, CircleDollarSign, Clock3, RefreshCw, Save, Search, ShieldCheck, Users } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import { erpModuleCatalog } from '../lib/erpModuleCatalog'
 
 type Company = {
   id: string
@@ -65,9 +66,10 @@ export default function Master() {
   useEffect(() => { void load() }, [])
   const moduleCatalog = useMemo(() => {
     const byCode = new Map<string, PlanModule>()
-    data.modules.forEach(module => {
-      if (!byCode.has(module.modulo_codigo)) byCode.set(module.modulo_codigo, module)
+    Object.entries(erpModuleCatalog).forEach(([codigo, nome]) => {
+      byCode.set(codigo, { id: 'catalog:' + codigo, plano_codigo: '', modulo_codigo: codigo, modulo_nome: nome, acesso: false, limite_usuarios: null, limite_empresas: null, recursos: {} })
     })
+    data.modules.forEach(module => byCode.set(module.modulo_codigo, module))
     return Array.from(byCode.values()).sort((a, b) => a.modulo_nome.localeCompare(b.modulo_nome, 'pt-BR'))
   }, [data.modules])
   const activeCompanies = data.companies.filter(company => company.ativo)
@@ -117,6 +119,13 @@ export default function Master() {
     setDraft({ codigo: plan.codigo, nome: plan.nome, preco_mensal: String(plan.preco_mensal), descricao: plan.descricao || '', ativo: plan.ativo })
     setEnabledModules(new Set(modules.filter(module => module.acesso).map(module => module.modulo_codigo)))
   }
+  const createPlan = () => {
+    const codigo = 'plano-' + Date.now().toString(36)
+    setDraft({ codigo, nome: '', preco_mensal: '0', descricao: '', ativo: false })
+    setEnabledModules(new Set())
+    setError('')
+    setMessage('')
+  }
   const savePlan = async () => {
     if (!draft) return
     const price = Number(draft.preco_mensal)
@@ -149,7 +158,7 @@ export default function Master() {
       })
       if (resultError) throw resultError
       setDraft(null)
-      setMessage('Plano e módulos contratados atualizados e registrados na auditoria global.')
+      setMessage('Plano e módulos atualizados no catálogo.')
       await load()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível salvar o plano.')
@@ -218,7 +227,7 @@ export default function Master() {
         </section>
 
         <section className="master-panel">
-          <div className="master-panel-title"><div><CircleDollarSign /><div><strong>Planos e módulos contratados</strong><small>Catálogo e permissões de produto já persistidos no banco.</small></div></div></div>
+          <div className="master-panel-title"><div><CircleDollarSign /><div><strong>Planos e módulos contratados</strong><small>Catálogo comercial e módulos disponíveis para novos contratos.</small></div></div><button type="button" className="master-save" onClick={createPlan} disabled={busy}><Save size={14} /> Novo plano</button></div>
           <div className="master-plan-grid">
             {data.plans.map(plan => <article className="master-plan-card" key={plan.id}>
               <div><span>{plan.nome}</span><small>{data.companies.filter(company => (company.plano || company.plan_type) === plan.codigo).length} empresa(s) vinculada(s)</small></div>
