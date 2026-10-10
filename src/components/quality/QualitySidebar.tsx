@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import '../../styles/quality-workspace-standard.css'
 import { Activity, BookOpenCheck, CircleHelp, ClipboardCheck, ClipboardList, FileText, FolderGit2, Gauge, ListChecks, LineChart, SearchCheck, ShieldCheck, Target, Wrench, X } from 'lucide-react'
 
 const items = [
