@@ -25,11 +25,12 @@ const items = [
   ['Relatórios SGQ', '/qualidade/relatorios-documentos'],
   ['Genealogia de Lotes', '/qualidade/genealogia-lote'],
   ['Quarentena de Lotes', '/qualidade/quarentena'],
+  ['Refugos e Sucata', '/qualidade/refugos'],
   ['Editor de Instruções de Trabalho', '/qualidade/editor-it'],
   ['Assinatura de Instruções de Trabalho', '/qualidade/assinatura-it'],
 ]
 
-const itemIcons = [Gauge, FileText, Activity, SearchCheck, ClipboardCheck, ClipboardList, Target, Target, ListChecks, ShieldCheck, BookOpenCheck, ClipboardList, ClipboardCheck, ShieldCheck, Wrench, Gauge, FolderGit2, FileText, FileText, ClipboardList, ShieldCheck, FileText, ShieldCheck]
+const itemIcons = [Gauge, FileText, Activity, SearchCheck, ClipboardCheck, ClipboardList, Target, Target, ListChecks, ShieldCheck, BookOpenCheck, ClipboardList, ClipboardCheck, ShieldCheck, Wrench, Gauge, FolderGit2, FileText, FileText, ClipboardList, ShieldCheck, ClipboardList, FileText, ShieldCheck]
 
 export default function QualitySidebar({ active }: { active: string }) {
   const [helpOpen, setHelpOpen] = useState(false)
