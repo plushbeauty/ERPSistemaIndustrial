@@ -15,15 +15,15 @@ create table if not exists public.erp_qualidade_8d (
  d7_preventivas text not null default '',
  d8_encerramento text not null default '',
  status text not null default 'EM_ANALISE',
- criado_por uuid null references public.erp_usuarios(id) on delete set null,
- criado_em timestamptz not null default now(),
- atualizado_em timestamptz not null default now(),
+ created_by uuid null references public.erp_usuarios(id) on delete set null,
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now(),
  constraint erp_qualidade_8d_empresa_codigo_uq unique (empresa_id,codigo),
  constraint erp_qualidade_8d_etapa_ck check (etapa_atual in ('D1','D2','D3','D4','D5','D6','D7','D8')),
  constraint erp_qualidade_8d_status_ck check (status in ('EM_ANALISE','ACOES_EM_EXECUCAO','VALIDACAO','ENCERRADO')),
  constraint erp_qualidade_8d_empresa_rpnc_fk foreign key (empresa_id,rpnc_id) references public.erp_rpnc (empresa_id,id) on delete restrict
 );
-create index if not exists erp_qualidade_8d_empresa_status_idx on public.erp_qualidade_8d (empresa_id,status,atualizado_em desc);
+create index if not exists erp_qualidade_8d_empresa_status_idx on public.erp_qualidade_8d (empresa_id,status,updated_at desc);
 alter table public.erp_qualidade_8d enable row level security;
 alter table public.erp_qualidade_8d force row level security;
 revoke all on public.erp_qualidade_8d from public,anon;
