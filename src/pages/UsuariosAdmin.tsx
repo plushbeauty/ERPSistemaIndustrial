@@ -357,7 +357,7 @@ export default function UsuariosAdmin() {
                   <td><span className={`user-admin-status${user.ativo ? ' is-active' : ' is-inactive'}`}>{user.ativo ? <UserCheck size={14} /> : <UserX size={14} />}{user.ativo ? 'Ativo' : 'Inativo'}</span></td>
                   <td>
                     {canManageUser && <div className="user-admin-actions">
-                      <button type="button" className="user-icon-action" onClick={() => openEdit(user)} disabled={busy} title="Editar usuário" aria-label={`Editar ${user.nome}`}><Edit3 size={16} /></button>
+                      <button type="button" className="user-icon-action erp-row-action" onClick={() => openEdit(user)} disabled={busy} title="Editar usuário" aria-label={`Editar ${user.nome}`}><Edit3 size={16} /></button>
                       <button type="button" className="user-icon-action" onClick={() => void resetPassword(user)} disabled={busy || !user.ativo} title="Redefinir senha" aria-label={`Redefinir senha de ${user.nome}`}><KeyRound size={16} /></button>
                       <button type="button" className="user-icon-action" onClick={() => void toggle(user)} disabled={busy} title={user.ativo ? 'Desativar usuário' : 'Ativar usuário'} aria-label={user.ativo ? `Desativar ${user.nome}` : `Ativar ${user.nome}`}>{user.ativo ? <UserX size={16} /> : <UserCheck size={16} />}</button>
                       {canArchive && <button type="button" className="user-icon-action is-danger" onClick={() => void remove(user)} disabled={busy} title="Arquivar usuário" aria-label={`Arquivar ${user.nome}`}><Trash2 size={16} /></button>}
