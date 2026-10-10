@@ -26,7 +26,6 @@ export default function InteligenciaIndustrial(){
  const [tab,setTab]=useState<'cockpit'|'estoque'|'caixa'|'custos'|'qualidade'|'documentos'>('cockpit')
  const [busy,setBusy]=useState(false)
  const [error,setError]=useState('')
- const [empresaId,setEmpresaId]=useState('')
 
  async function load(){
   setBusy(true);setError('')
@@ -47,7 +46,6 @@ export default function InteligenciaIndustrial(){
    for(const r of [p,m,o,f,i,d,cost]) if(r.error) throw r.error
    const latestCosts=new Map<string,number>()
    for(const row of cost.data??[]) if(!latestCosts.has(row.produto_id)) latestCosts.set(row.produto_id,Number(row.custo_fabricacao||0))
-   setEmpresaId(company)
    setProducts((p.data??[]).map(row=>({...row,custo_fabricacao:latestCosts.get(row.id)??0})) as Product[])
    setMovements((m.data??[]) as Movement[])
    setOps((o.data??[]) as OP[])
