@@ -18,8 +18,8 @@ type Doc={
  proxima_revisao:string|null
 }
 
-const input='min-h-[54px] w-full rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
-const label='grid gap-2 text-sm font-extrabold uppercase tracking-wide text-slate-800'
+const input='h-[32px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[12px] font-medium text-slate-900 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-sky-100'
+const label='grid gap-[2px] text-[10px] font-bold uppercase tracking-wide text-slate-700'
 
 const activeStatuses=new Set(['vigente','liberada','aprovada'])
 const formTypes=new Set(['formulário','formulario','form','registro'])
@@ -80,26 +80,26 @@ export default function QualidadeRelatoriosDocumentos(){
   `}</style>
   <header className="quality-report-no-print border-b border-slate-700 bg-slate-900 px-4 py-3 text-white">
    <div className="mx-auto flex max-w-[1800px] flex-wrap items-center justify-between gap-3">
-    <div><p className="text-sm font-extrabold uppercase tracking-[0.18em] text-sky-300">QUALIDADE &gt; CONTROLE DE DOCUMENTOS &gt; RELATÓRIOS</p><h1 className="text-2xl font-extrabold">Relatórios e Índices do SGQ</h1></div>
+    <div><p className="text-sm font-extrabold uppercase tracking-[0.18em] text-sky-300">QUALIDADE &gt; CONTROLE DE DOCUMENTOS &gt; RELATÓRIOS</p><h1 className="text-[17px] font-bold">Relatórios e Índices do SGQ</h1></div>
     <div className="flex flex-wrap gap-2">
-     <button type="button" onClick={()=>void load()} disabled={busy} className="rounded-md border border-slate-500 px-4 py-3 text-base font-extrabold text-white"><RefreshCw size={18} className="mr-2 inline"/>{busy?'ATUALIZANDO…':'ATUALIZAR'}</button>
-     <button type="button" onClick={()=>window.print()} className="rounded-md bg-sky-600 px-5 py-3 text-base font-extrabold text-white"><Printer size={18} className="mr-2 inline"/>IMPRIMIR ÍNDICE</button>
+     <button type="button" onClick={()=>void load()} disabled={busy} className="inline-flex h-[32px] items-center rounded-[2px] border border-slate-500 px-3 text-[11px] font-bold text-white"><RefreshCw size={18} className="mr-2 inline"/>{busy?'ATUALIZANDO…':'ATUALIZAR'}</button>
+     <button type="button" onClick={()=>window.print()} className="inline-flex h-[32px] items-center rounded-[2px] bg-[#2D8DB8] px-3 text-[11px] font-bold text-white"><Printer size={18} className="mr-2 inline"/>IMPRIMIR ÍNDICE</button>
     </div>
    </div>
   </header>
-  <div data-quality-workspace className="quality-report-screen mx-auto grid max-w-[1800px] grid-cols-1 gap-5 p-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+  <div data-quality-workspace className="quality-report-screen mx-auto grid max-w-[1800px] grid-cols-1 gap-5 p-4 grid-cols-1">
    <div className="quality-report-no-print"><QualitySidebar active="/qualidade/relatorios-documentos"/></div>
    <section className="space-y-5">
     {error&&<div className="quality-report-no-print rounded-md border border-red-200 bg-red-50 p-4 text-base font-bold text-red-800">{error}</div>}
     <section className="quality-report-no-print rounded-md border border-slate-200 bg-white p-5 shadow-sm">
-     <div className="mb-5 flex items-center gap-3 border-b border-slate-200 pb-4"><Filter size={22}/><div><h2 className="text-xl font-extrabold">Filtros do controle documental</h2><p className="text-base text-slate-600">A qualidade pode emitir a lista por departamento sem misturar formulários com procedimentos, salvo quando solicitado.</p></div></div>
-     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+     <div className="mb-3 flex items-center gap-3 border-b border-slate-200 pb-3"><Filter size={22}/><div><h2 className="text-[14px] font-bold">Filtros do controle documental</h2><p className="text-[11px] text-slate-600">A qualidade pode emitir a lista por departamento sem misturar formulários com procedimentos, salvo quando solicitado.</p></div></div>
+     <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
       <label className={label}>DEPARTAMENTO<select className={input} value={department} onChange={e=>setDepartment(e.target.value)}><option>TODOS</option>{departments.map(x=><option key={x}>{x}</option>)}</select></label>
       <label className={label}>TIPO<select className={input} value={type} onChange={e=>setType(e.target.value)}><option>TODOS</option>{types.map(x=><option key={x}>{x}</option>)}</select></label>
       <label className={label}>SITUAÇÃO<select className={input} value={status} onChange={e=>setStatus(e.target.value)}><option value="VIGENTES">VIGENTES</option><option value="TODOS">TODOS</option><option value="OBSOLETOS">OBSOLETOS</option><option value="OUTROS">OUTROS</option></select></label>
       <label className={label}>PESQUISAR<input className={input} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código, título ou área"/><Search size={18} className="relative -mt-[37px] ml-auto mr-3 text-slate-500"/></label>
      </div>
-     <label className="mt-4 flex min-h-12 items-center gap-3 rounded-md border border-slate-300 bg-slate-50 px-4 text-base font-bold text-slate-800"><input type="checkbox" checked={includeForms} onChange={e=>setIncludeForms(e.target.checked)} className="h-5 w-5"/> Incluir formulários/registros no relatório</label>
+     <label className="mt-3 flex min-h-9 items-center gap-2 rounded-[2px] border border-slate-300 bg-slate-50 px-3 text-[11px] font-semibold text-slate-800"><input type="checkbox" checked={includeForms} onChange={e=>setIncludeForms(e.target.checked)} className="h-4 w-4"/> Incluir formulários/registros no relatório</label>
     </section>
 
     <section className="quality-report-paper rounded-md border border-slate-200 bg-white p-6 shadow-sm">
