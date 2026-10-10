@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, CalendarRange, FileSliders } from 'lucide-react'
+import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, FolderGit2, LineChart } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -59,7 +59,16 @@ const menus: MenuItem[] = [
       { label: 'Pintura / Química', route: '/pcp/fichas-processo?tipo=PINTURA_QUIMICA' },
     ] },
   ] },
-  { label: 'Qualidade', route: '/qualidade' },
+  { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
+    { label: 'Visão geral do SGQ', route: '/qualidade' },
+    { label: 'Inspeções operacionais', route: '/qualidade/inspecoes' },
+    { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
+    { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
+    { label: 'FMEA / PFMEA', route: '/qualidade/fmea' },
+    { label: 'Controle Documental GED', route: '/qualidade/ged-documentos', icon: FolderGit2 },
+    { label: 'Cartas de Controle CEP', route: '/qualidade/cep', icon: LineChart },
+    { label: 'Instrumentos / Metrologia', route: '/qualidade/instrumentos' },
+  ] },
   { label: 'Manutenção', route: '/manutencao' },
   { label: 'Relatórios', route: '/relatorios' },
   { label: 'Configuração', route: '/configuracoes-adm' },
@@ -184,7 +193,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
               onClick={() => hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)}
               aria-expanded={hasChildren ? expanded : undefined}
             >
-              {menu.label}
+              {menu.icon && <menu.icon size={16} />}{menu.label}
               {hasChildren && (expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />)}
             </button>
             {hasChildren && expanded && <div className="erp-horizontal-dropdown">
