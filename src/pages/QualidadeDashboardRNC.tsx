@@ -94,7 +94,7 @@ export default function QualidadeDashboardRNC() {
   return (
     <main data-quality-workspace className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,_rgba(45,141,184,0.16),_transparent_42%),linear-gradient(135deg,#edf7fb_0%,#f4f7fc_52%,#edf2fa_100%)] p-3 text-slate-900 md:p-4">
       <div className="mx-auto grid max-w-[1800px] gap-3 lg:grid-cols-[260px_minmax(0,1fr)]">
-        <QualitySidebar active="/qualidade/dashboard-rnc" />
+        <QualitySidebar active="/qualidade" />
         <div className="min-w-0">
           <header className="flex flex-wrap items-end gap-4 rounded-md border border-sky-200 bg-gradient-to-r from-[#123B50] via-[#185c78] to-[#2D8DB8] p-4 text-white shadow-sm">
             <div>
