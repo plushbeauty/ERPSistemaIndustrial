@@ -118,6 +118,27 @@ export default function PCPExecucaoIndustrial() {
     } catch (e) { setError(errText(e)) } finally { setBusy(false) }
   }
 
+  async function changeOrderStatus(order: Order, nextStatus: Order['status']) {
+    setError(''); setNotice(''); setBusy(true)
+    try {
+      const tenant = await supabase.rpc('erp_current_empresa_id')
+      if (tenant.error || typeof tenant.data !== 'string' || !tenant.data) throw tenant.error ?? new Error('Empresa da sessão não identificada.')
+      const allowed: Record<string, string[]> = {
+        planejada: ['liberada', 'cancelada'],
+        liberada: ['em_andamento', 'suspensa', 'cancelada'],
+        em_andamento: ['suspensa', 'encerrada'],
+        suspensa: ['liberada', 'em_andamento', 'cancelada'],
+      }
+      if (!(allowed[order.status] ?? []).includes(nextStatus)) throw new Error('Transição de status não permitida para esta OP.')
+      const result = await supabase.from('pcp_ordens_producao')
+        .update({ status: nextStatus }).eq('empresa_id', tenant.data).eq('id', order.id).eq('status', order.status).select('id').maybeSingle()
+      if (result.error) throw result.error
+      if (!result.data) throw new Error('A OP foi alterada por outra operação; atualize a carteira antes de tentar novamente.')
+      setNotice('OP ' + order.numero + ': ' + order.status.replaceAll('_', ' ') + ' → ' + nextStatus.replaceAll('_', ' ') + '.')
+      await load()
+    } catch (e) { setError(errText(e)) } finally { setBusy(false) }
+  }
+
   async function runMrp() {
     setError(''); setNotice('')
     const rootQty = Number(mrpQty)
@@ -160,7 +181,7 @@ export default function PCPExecucaoIndustrial() {
         </form>
         <section className="min-w-0 border border-slate-200 bg-white">
           <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 p-2"><h2 className="mr-auto text-[11px] font-bold uppercase">Carteira de OPs</h2><div className="relative w-full max-w-[300px]"><Search className="absolute left-2 top-2 text-slate-400" size={13}/><input aria-label="Pesquisar ordens de produção" className={field+' pl-7'} value={query} onChange={e=>setQuery(e.target.value)} placeholder="OP, código, produto, status"/></div></div>
-          <div className="overflow-x-auto"><table className="w-full border-collapse"><thead><tr><th className={th}>OP</th><th className={th}>Produto</th><th className={th+' text-right'}>Planejada</th><th className={th}>Abertura</th><th className={th}>Entrega</th><th className={th}>Status</th></tr></thead><tbody>{busy && orders.length===0?<tr><td colSpan={6} className={td+' text-center'}>Carregando ordens...</td></tr>:filteredOrders.length===0?<tr><td colSpan={6} className={td+' py-5 text-center text-slate-400'}>Nenhuma ordem encontrada para esta empresa.</td></tr>:filteredOrders.map(o=><tr key={o.id} className="hover:bg-neutral-50/80"><td className={td+' font-semibold'}>{o.numero}</td><td className={td}>{productMap.get(o.produto_id)?.codigo ?? '—'} · {productMap.get(o.produto_id)?.descricao_tecnica ?? 'Produto'}</td><td className={td+' text-right tabular-nums'}>{Number(o.quantidade_planejada).toLocaleString('pt-BR')}</td><td className={td}>{new Date(o.aberta_em).toLocaleDateString('pt-BR')}</td><td className={td}>{o.entrega_prevista?new Date(o.entrega_prevista+'T12:00:00').toLocaleDateString('pt-BR'):'—'}</td><td className={td}><span className="border border-slate-200 px-1.5 py-0.5">{o.status.replace('_',' ').toUpperCase()}</span></td></tr>)}</tbody></table></div>
+          <div className="overflow-x-auto"><table className="w-full border-collapse"><thead><tr><th className={th}>OP</th><th className={th}>Produto</th><th className={th+' text-right'}>Planejada</th><th className={th}>Abertura</th><th className={th}>Entrega</th><th className={th}>Status</th><th className={th}>Ação</th></tr></thead><tbody>{busy && orders.length===0?<tr><td colSpan={7} className={td+' text-center'}>Carregando ordens...</td></tr>:filteredOrders.length===0?<tr><td colSpan={6} className={td+' py-5 text-center text-slate-400'}>Nenhuma ordem encontrada para esta empresa.</td></tr>:filteredOrders.map(o=><tr key={o.id} className="hover:bg-neutral-50/80"><td className={td+' font-semibold'}>{o.numero}</td><td className={td}>{productMap.get(o.produto_id)?.codigo ?? '—'} · {productMap.get(o.produto_id)?.descricao_tecnica ?? 'Produto'}</td><td className={td+' text-right tabular-nums'}>{Number(o.quantidade_planejada).toLocaleString('pt-BR')}</td><td className={td}>{new Date(o.aberta_em).toLocaleDateString('pt-BR')}</td><td className={td}>{o.entrega_prevista?new Date(o.entrega_prevista+'T12:00:00').toLocaleDateString('pt-BR'):'—'}</td><td className={td}><span className="border border-slate-200 px-1.5 py-0.5">{o.status.replaceAll('_',' ').toUpperCase()}</span></td><td className={td}><div className="flex gap-1">{o.status==='planejada'&&<button type="button" className={button} disabled={busy} onClick={()=>void changeOrderStatus(o,'liberada')}>Liberar</button>}{o.status==='liberada'&&<button type="button" className={button} disabled={busy} onClick={()=>void changeOrderStatus(o,'suspensa')}>Suspender</button>}{o.status==='em_andamento'&&<button type="button" className={button} disabled={busy} onClick={()=>void changeOrderStatus(o,'suspensa')}>Suspender</button>}{o.status==='suspensa'&&<button type="button" className={button} disabled={busy} onClick={()=>void changeOrderStatus(o,'liberada')}>Retomar</button>}{o.status==='em_andamento'&&<button type="button" className={button} disabled={busy} onClick={()=>void changeOrderStatus(o,'encerrada')}>Encerrar</button>}{['planejada','liberada','suspensa'].includes(o.status)&&<button type="button" className={button} disabled={busy} onClick={()=>void changeOrderStatus(o,'cancelada')}>Cancelar</button>}</div></td></tr>)}</tbody></table></div>
         </section>
       </div>}
       {tab==='apontamentos' && <div className="grid gap-3 xl:grid-cols-[400px_minmax(0,1fr)]">
