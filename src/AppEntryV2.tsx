@@ -20,6 +20,7 @@ function lazyPage<P extends object>(
     return { default: component as ComponentType<P> }
   })
 }
+import ERPStatusLegend from './components/layout/ERPStatusLegend'
 import './styles/industrial-login.css'
 import './styles/forms-premium.css'
 import './styles/manual-usuario-2026.css'
