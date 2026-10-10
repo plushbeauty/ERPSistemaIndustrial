@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight } from 'lucide-react'
+import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, CalendarRange, FileSliders } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 
@@ -43,11 +44,11 @@ const menus: MenuItem[] = [
   { label: 'Manufatura / PCP', route: '/pcp', children: [
     { label: 'Visão geral do PCP', route: '/pcp' },
     { label: 'Ordens de produção', route: '/pcp/ordens-industriais' },
-    { label: 'Agenda de Máquinas', route: '/pcp/agenda-maquinas' },
+    { label: 'Agenda de Máquinas', route: '/pcp/agenda-maquinas', icon: CalendarRange },
     { label: 'Capacidade / Gantt', route: '/pcp/capacidade' },
     { label: 'Sequenciamento', route: '/pcp/sequenciamento' },
     { label: 'MRP II', route: '/pcp/mrp-ii' },
-    { label: 'Fichas de Processo', route: '/pcp/fichas-processo', children: [
+    { label: 'Fichas de Processo', route: '/pcp/fichas-processo', icon: FileSliders, children: [
       { label: 'Prensados', route: '/pcp/fichas-processo?tipo=PRENSADOS' },
       { label: 'Injetados', route: '/pcp/fichas-processo?tipo=INJETADOS' },
       { label: 'Estampos', route: '/pcp/fichas-processo?tipo=ESTAMPARIA' },
@@ -196,7 +197,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                     className={childActive ? 'is-active' : ''}
                     aria-expanded={childHasChildren ? childExpanded : undefined}
                     onClick={() => childHasChildren ? setOpenSubMenu(value => value === child.label ? null : child.label) : go(child.route)}
-                  >{child.label}{childHasChildren && <ChevronRight size={12} />}</button>
+                  >{child.icon && <child.icon size={12} />}{child.label}{childHasChildren && <ChevronRight size={12} />}</button>
                   {childHasChildren && childExpanded && <div className="erp-horizontal-subdropdown">
                     {child.children?.map(sub => <button type="button" key={sub.route} className={pathname === sub.route.split('?')[0] && window.location.search === (sub.route.includes('?') ? `?${sub.route.split('?')[1]}` : '') ? 'is-active' : ''} onClick={() => go(sub.route)}>{sub.label}</button>)}
                   </div>}
