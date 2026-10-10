@@ -4,6 +4,13 @@
  * Desktop denso; tablet mantém controles maiores.
  */
 :root{
+  --erp-brand:#2D8DB8;
+  --erp-brand-strong:#17445A;
+  --erp-brand-soft:#DDF2F8;
+  --erp-surface:#F4FBFD;
+  --erp-surface-alt:#EAF4F8;
+  --erp-ink:#123B50;
+  --erp-line:#C9DDE5;
   --erp-font-menu:13px;
   --erp-font-table:11px;
   --erp-font-field:11px;
@@ -124,3 +131,18 @@ body{background:#f4f8fa}.erp-dense{background:linear-gradient(180deg,#f7fbfc 0%,
 .v7-shell-body-with-sidebar{display:flex;min-height:calc(100vh - 104px);min-width:0}
 .v7-shell-body-with-sidebar .v7-main{flex:1;min-width:0}
 @media(max-width:900px){.erp-module-sidebar{flex-basis:58px;width:58px}.erp-module-sidebar-item{justify-content:center;padding:0}.erp-module-sidebar-item span,.erp-module-sidebar-submenu{display:none}}
+
+
+/* PALETA INDUSTRIAL PREMIUM — maior contraste sem alterar medidas ou fluxos. */
+:root{color-scheme:light}
+body{background:#EDF5F8;color:#123B50}
+.erp-dense,.erp-compact{color:#123B50}
+.erp-dense .erp-panel,.erp-compact .erp-panel,.erp-dense .erp-card,.erp-compact .erp-card{border-color:#C9DDE5;background:linear-gradient(145deg,#FFFFFF 0%,#F2F9FC 100%)}
+.erp-dense .erp-section-title,.erp-compact .erp-section-title{color:#17445A;border-bottom-color:#B9D8E4}
+.erp-dense .erp-toolbar,.erp-compact .erp-toolbar{background:linear-gradient(90deg,#E7F3F8 0%,#F5FAFC 100%);border-color:#C9DDE5}
+.erp-dense button.primary,.erp-compact button.primary,.erp-dense .erp-btn-primary,.erp-compact .erp-btn-primary{background:#2D8DB8;border-color:#236F93;color:#fff}
+.erp-dense button.primary:hover,.erp-compact button.primary:hover,.erp-dense .erp-btn-primary:hover,.erp-compact .erp-btn-primary:hover{background:#17445A}
+.erp-dense thead th,.erp-compact thead th{background:#DCECF2;color:#17445A;border-bottom-color:#B8D4DF}
+.erp-dense tbody tr:nth-child(even),.erp-compact tbody tr:nth-child(even){background:#F3F9FB}
+.erp-dense tbody tr:hover,.erp-compact tbody tr:hover{background:#E2F2F8}
+.erp-dense input:focus,.erp-dense select:focus,.erp-dense textarea:focus,.erp-compact input:focus,.erp-compact select:focus,.erp-compact textarea:focus{border-color:#2D8DB8!important;box-shadow:0 0 0 2px rgba(45,141,184,.14)!important}
