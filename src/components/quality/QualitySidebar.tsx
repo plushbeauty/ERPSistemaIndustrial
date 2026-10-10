@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Activity, BookOpenCheck, ClipboardCheck, ClipboardList, FileBarChart2, FileText, FolderGit2, Gauge, ListChecks, LineChart, SearchCheck, ShieldCheck, SlidersHorizontal, Target, Wrench } from 'lucide-react'
+import { Activity, BookOpenCheck, ClipboardCheck, ClipboardList, FileBarChart2, FileText, FolderGit2, Gauge, ListChecks, LineChart, SearchCheck, ShieldCheck, Target, Wrench } from 'lucide-react'
 import { useSynqraLayout } from '../../layout/SynqraLayoutContext'
 
 const items = [
@@ -52,7 +52,8 @@ export default function QualitySidebar({ active }: { active: string }) {
               active === path
                 ? hostedBySynqra
                   ? 'border-[#2D8DB8] bg-gradient-to-r from-[#123B50] to-[#2D8DB8] font-semibold text-white shadow-sm'
-                  : 'border-slate-200 bg-white/80 font-medium text-slate-700 hover:border-sky-300 hover:bg-sky-50 hover:text-[#123B50]'
+                  : 'border-[#2D8DB8] bg-sky-50 font-semibold text-[#123B50]'
+                : 'border-transparent font-medium text-slate-700 hover:border-sky-300 hover:bg-sky-50 hover:text-[#123B50]'
             }`}
           >
             <Icon size={13} className="shrink-0" />
