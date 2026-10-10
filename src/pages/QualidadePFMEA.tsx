@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { EntityCodeLookup } from "../components/industrial/EntityCodeLookup";
 import { supabase } from "../lib/supabaseClient";
+import QualitySidebar from "../components/quality/QualitySidebar";
 
 export default function QualidadePFMEA() {
   const [message,setMessage]=useState("");
@@ -24,7 +25,7 @@ export default function QualidadePFMEA() {
     setMessage(r.error?.message||"Revisão PFMEA gravada no banco.");
   };
   const novo=()=>{setCodigo("");setProcesso("");setFalha("");setEfeito("");setMessage("");};
-  return <main className="min-h-screen bg-slate-50 text-slate-900 p-4 md:p-6"><div className="mx-auto max-w-7xl">
+  return <main className="min-h-screen bg-slate-50 text-slate-900 p-4 md:p-6"><div className="mx-auto max-w-[1800px] space-y-3"><QualitySidebar active="/qualidade/pfmea" />
     <header className="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
       <div><p className="text-sm font-bold text-slate-600">QUALIDADE &gt; ENGENHARIA DE RISCOS</p><h1 className="text-2xl font-black">Matriz PFMEA</h1></div>
       <div className="flex flex-wrap gap-2">
