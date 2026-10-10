@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import QualitySidebar from '../components/quality/QualitySidebar'
 
-type Rpn = { id: string; status: string; setor_envolvido_id: string | null; setor?: { nome: string } | null }
+type Rpn = { id: string; status: string; setor_envolvido_id: string | null; setor?: { nome: string }[] | null }
 type Capa = { status: string; plano_5w2h: unknown }
 type Document = { status: string; area: string | null }
 type QualityInspection = { tipo: string; resultado: string; created_at: string; medicoes: unknown }
@@ -44,7 +44,7 @@ export default function QualidadeDashboardRNC() {
       setActions(a)
       setDocuments(d)
       setReceivingInspections(inspections.filter(row => row.tipo === 'recebimento').map(row => ({ status: row.resultado, created_at: row.created_at })))
-      setDimensionalInspections(inspections.filter(row => row.tipo !== 'recebimento' && Array.isArray(row.medicoes) && row.medicoes.length > 0).map(row => ({ status: row.resultado, created_at: row.created_at })))
+      setDimensionalInspections(inspections.filter(row => Array.isArray(row.medicoes) && row.medicoes.length > 0).map(row => ({ status: row.resultado, created_at: row.created_at })))
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Falha ao consultar os indicadores do SGQ.')
     } finally {
@@ -57,7 +57,7 @@ export default function QualidadeDashboardRNC() {
   const openByDepartment = useMemo<DepartmentCount[]>(() => {
     const counts = new Map<string, number>()
     rncs.filter((row) => (row.status || '').trim().toLocaleLowerCase('pt-BR') !== 'encerrada').forEach((row) => {
-      const department = row.setor?.nome || 'Sem setor definido'
+      const department = row.setor?.[0]?.nome || 'Sem setor definido'
       counts.set(department, (counts.get(department) ?? 0) + 1)
     })
     return [...counts].map(([department, total]) => ({ department, total })).sort((a, b) => b.total - a.total)
