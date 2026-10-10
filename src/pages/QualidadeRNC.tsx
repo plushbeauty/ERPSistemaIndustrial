@@ -85,9 +85,9 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
       const authUserId = auth.data.user.id
       setCurrentUserId(u.find(user => user.auth_user_id === authUserId)?.id ?? null)
       const userNames = new Map<string, string>(u.map(user => [user.id, user.nome || user.email || '—'] as const))
-      const activeAttachments = new Map<string, { storage_path: string; nome_arquivo: string }>()
+      const activeAttachments = new Map<string, { storage_path: string; nome_arquivo: string; revisao: number }>()
       for (const attachment of attachments) {
-        if (attachment.status.toLowerCase() === 'vigente' && !activeAttachments.has(attachment.documento_id)) activeAttachments.set(attachment.documento_id, { storage_path: attachment.storage_path, nome_arquivo: attachment.nome_arquivo })
+        if (attachment.status.toLowerCase() === 'vigente' && !activeAttachments.has(attachment.documento_id)) activeAttachments.set(attachment.documento_id, { storage_path: attachment.storage_path, nome_arquivo: attachment.nome_arquivo, revisao: attachment.revisao })
       }
       setDocAttachments(attachments)
       setDocs(d.map(doc => {
