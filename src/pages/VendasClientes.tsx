@@ -64,7 +64,7 @@ type Product = LookupRecord & { descricao?: string | null }
 type PriceTable = { id: string; codigo: string; nome: string }
 type Transportadora = { id: string; codigo: string; razao_social: string; cnpj: string | null; ie: string | null; telefone: string | null; cidade: string | null; uf: string | null; ativo: boolean }
 type ClientTransportLink = { id: string; cliente_id: string; transportadora_id: string }
-type DePara = { id: string; cliente_id: string; produto_id: string; codigo_cliente: string; dimensoes: string | null; canal: string | null; molde: string | null }
+type DePara = { id: string; cliente_id: string; produto_id: string | null; codigo_interno: string; codigo_cliente: string; dimensoes: string | null; canal: string | null; molde: string | null; ativo: boolean }
 
 const empty = (): Form => ({
   codigo: 'CLI-' + crypto.randomUUID().slice(0, 8).toUpperCase(),
@@ -171,7 +171,7 @@ export default function VendasClientes() {
       const [clients, productsResult, mappingsResult, priceTablesResult, transportadorasResult, clientTransportResult] = await Promise.all([
         supabase.from('erp_clientes').select('id,codigo,nome,nome_fantasia,documento,inscricao_estadual,inscricao_municipal,tipo_pessoa,regime_tributario,contato_nome,email,email_nfe,telefone,whatsapp,cep,endereco,numero,complemento,bairro,cidade,estado,tipo_cliente,tabela_preco_id,desconto_padrao_percentual,ativo').eq('empresa_id', empresaId).order('nome'),
         fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,descricao,estoque_atual',{count:'exact'}).eq('empresa_id', empresaId).eq('ativo', true).order('codigo').range(from,to)),
-        supabase.from('erp_cliente_produto_de_para').select('id,cliente_id,produto_id,codigo_cliente,dimensoes,canal,molde,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('codigo_cliente'),
+        supabase.from('erp_vendas_depara_produtos').select('id,cliente_id,produto_id,codigo_interno,codigo_cliente,dimensoes,canal,molde,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('codigo_cliente'),
         supabase.from('erp_tabelas_preco').select('id,codigo,nome').eq('empresa_id', empresaId).eq('ativo', true).order('nome'),
         supabase.from('erp_transportadoras').select('id,codigo,razao_social,cnpj,ie,telefone,cidade,uf,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('razao_social'),
         supabase.from('erp_cliente_transportadoras').select('id,cliente_id,transportadora_id').eq('empresa_id', empresaId),
@@ -378,10 +378,16 @@ export default function VendasClientes() {
       return
     }
     const existing = mappings.find(item => item.cliente_id === selected && item.produto_id === produto)
+    const selectedProduct = products.find(item => item.id === produto)
+    if (!selectedProduct?.codigo) {
+      setError('O produto selecionado não possui código interno válido.')
+      return
+    }
     const payload = {
       empresa_id: empresa,
       cliente_id: selected,
       produto_id: produto,
+      codigo_interno: selectedProduct.codigo,
       codigo_cliente: codigoCliente.trim(),
       dimensoes: dimensoes.trim() || null,
       canal: canal.trim() || null,
@@ -389,8 +395,8 @@ export default function VendasClientes() {
       ativo: true,
     }
     const result = existing
-      ? await supabase.from('erp_cliente_produto_de_para').update(payload).eq('id', existing.id).eq('empresa_id', empresa)
-      : await supabase.from('erp_cliente_produto_de_para').insert(payload)
+      ? await supabase.from('erp_vendas_depara_produtos').update(payload).eq('id', existing.id).eq('empresa_id', empresa)
+      : await supabase.from('erp_vendas_depara_produtos').insert(payload)
     if (result.error) setError(result.error.message)
     else {
       setCodigoCliente('')
@@ -444,7 +450,7 @@ export default function VendasClientes() {
   }
 
   const deleteMapping = async (id: string) => {
-    const result = await supabase.from('erp_cliente_produto_de_para').delete().eq('id', id).eq('empresa_id', empresa)
+    const result = await supabase.from('erp_vendas_depara_produtos').delete().eq('id', id).eq('empresa_id', empresa)
     if (result.error) setError(result.error.message)
     else await load()
   }
@@ -530,7 +536,7 @@ export default function VendasClientes() {
               </div>}
 
               {tab === 'depara' && selected && <div className="space-y-2">
-                <div className="border border-slate-200 bg-slate-50 px-2 py-1.5 text-[10px] text-slate-700"><UserRound size={12} className="mr-1 inline"/>De/Para liga o código que o cliente usa ao produto interno do ERP. <HelpTip text="Selecione o produto interno, informe o código que o cliente usa para esse mesmo item e, se necessário, dimensões, canal e molde. Salve em VINCULAR. A relação é por cliente + produto e usa a estrutura real erp_cliente_produto_de_para." /></div>
+                <div className="border border-slate-200 bg-slate-50 px-2 py-1.5 text-[10px] text-slate-700"><UserRound size={12} className="mr-1 inline"/>De/Para liga o código que o cliente usa ao produto interno do ERP. <HelpTip text="Selecione o produto interno, informe o código que o cliente usa para esse mesmo item e, se necessário, dimensões, canal e molde. Salve em VINCULAR. A relação é por cliente + produto e usa a estrutura real erp_vendas_depara_produtos." /></div>
                 <div className="grid gap-2 md:grid-cols-[1.5fr_1fr_1fr_1fr_auto]">
                   <EntityCodeLookup label="Produto interno" value={produto} records={productRecords} onChange={setProduto} onSelect={record => setProduto(record.id)}/>
                   <label className="grid gap-0.5 text-[9px] font-semibold uppercase text-slate-500">Código Cliente<input value={codigoCliente} onChange={event => setCodigoCliente(event.target.value)} className={baseInput}/></label>
