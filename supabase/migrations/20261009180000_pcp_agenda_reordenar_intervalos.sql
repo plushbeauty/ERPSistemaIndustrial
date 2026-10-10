@@ -11,6 +11,7 @@ declare
   v_b public.pcp_agenda_maquinas%rowtype;
   v_temp_start timestamptz;
   v_temp_end timestamptz;
+  v_latest_end timestamptz;
 begin
   if v_empresa is null then raise exception 'Empresa da sessão não identificada'; end if;
   if p_agenda_id = p_vizinha_id then raise exception 'Selecione duas programações distintas'; end if;
@@ -26,14 +27,14 @@ begin
   if v_a.status not in ('planejada','confirmada') or v_b.status not in ('planejada','confirmada') then
     raise exception 'Somente programações planejadas/confirmadas podem ser reordenadas';
   end if;
+  select coalesce(max(data_hora_fim),greatest(v_a.data_hora_fim,v_b.data_hora_fim)) into v_latest_end from public.pcp_agenda_maquinas where empresa_id=v_empresa and maquina_id=v_a.maquina_id and status <> 'cancelada';
+  v_temp_start := v_latest_end + interval '1 day';
   if v_a.data_hora_inicio < v_b.data_hora_inicio then
-    v_temp_start := greatest(v_a.data_hora_fim,v_b.data_hora_fim) + interval '1 day';
     v_temp_end := v_temp_start + (v_a.data_hora_fim-v_a.data_hora_inicio);
     update public.pcp_agenda_maquinas set data_hora_inicio=v_temp_start,data_hora_fim=v_temp_end where id=v_a.id;
     update public.pcp_agenda_maquinas set data_hora_inicio=v_a.data_hora_inicio,data_hora_fim=v_a.data_hora_fim where id=v_b.id;
     update public.pcp_agenda_maquinas set data_hora_inicio=v_b.data_hora_inicio,data_hora_fim=v_b.data_hora_fim where id=v_a.id;
   else
-    v_temp_start := greatest(v_a.data_hora_fim,v_b.data_hora_fim) + interval '1 day';
     v_temp_end := v_temp_start + (v_a.data_hora_fim-v_a.data_hora_inicio);
     update public.pcp_agenda_maquinas set data_hora_inicio=v_temp_start,data_hora_fim=v_temp_end where id=v_a.id;
     update public.pcp_agenda_maquinas set data_hora_inicio=v_a.data_hora_inicio,data_hora_fim=v_a.data_hora_fim where id=v_b.id;
