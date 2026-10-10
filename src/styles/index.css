@@ -203,3 +203,21 @@ table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!i
 .erp-horizontal-workspace input,.erp-horizontal-workspace select{min-height:30px}
 @media(prefers-reduced-motion:reduce){.erp-premium-button,.erp-premium-grid tbody tr,.erp-machine-load>span{transition:none!important}}
 @media print{.erp-premium-popover,.erp-horizontal-header,.erp-horizontal-menu,.erp-global-status-row{box-shadow:none!important;backdrop-filter:none!important}}
+
+/* Impressão operacional isolada: ficha de processo e ordem de produção. */
+@media print {
+  body * { visibility: hidden !important; }
+  .process-sheet-page, .process-sheet-page * { visibility: visible !important; }
+  .process-sheet-page { position: absolute !important; inset: 0 auto auto 0 !important; width: 100% !important; max-width: none !important; margin: 0 !important; padding: 8mm !important; background: #fff !important; color: #111 !important; font-size: 9pt !important; }
+  .process-sheet-page .process-sheet-toolbar,
+  .process-sheet-page .process-sheet-actions,
+  .process-sheet-page .process-add-row,
+  .process-sheet-page .icon-button,
+  .process-sheet-page button { display: none !important; }
+  .process-sheet-page .industrial-panel { break-inside: avoid; box-shadow: none !important; }
+  .process-sheet-page input, .process-sheet-page select, .process-sheet-page textarea { color: #111 !important; background: #fff !important; border-color: #aaa !important; print-color-adjust: exact; }
+  .process-sheet-page .industrial-table-scroll { overflow: visible !important; }
+  .process-sheet-page table { width: 100% !important; font-size: 7.5pt !important; }
+  .process-sheet-page th, .process-sheet-page td { padding: 3px !important; }
+  .erp-horizontal-header, .erp-horizontal-menu, .erp-global-status-row { display: none !important; }
+}
