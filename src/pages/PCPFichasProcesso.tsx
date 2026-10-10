@@ -144,7 +144,7 @@ export default function PCPFichasProcesso() {
   setCode(row.codigo_ficha); setProductId(row.produto_id); setCategory(row.categoria_processo)
   setVersion(String(row.versao_ficha ?? row.revisao ?? 1)); setStatus(row.status); setToolId(row.ferramenta_id ?? ''); setMachineId(row.maquina_id ?? '')
   setParams({ ...blankParameters(row.categoria_processo), ...Object.fromEntries(Object.entries(row.parametros_tecnicos ?? {}).map(([k,v]) => [k, String(v ?? '')])) })
-  setToolId(''); setMachineId(''); setApprovedAt(''); setSignature(''); setInstructions(String(row.parametros_tecnicos?.instrucoes_setup ?? ''))
+  setApprovedAt(row.data_homologacao ?? ''); setSignature(row.assinatura_tecnica ?? ''); setInstructions(String(row.parametros_tecnicos?.instrucoes_setup ?? ''))
   setSearchParams({ tipo: row.categoria_processo, produto: row.produto_id })
   setError(''); setNotice('')
  }
@@ -172,7 +172,7 @@ export default function PCPFichasProcesso() {
     status, parametros_tecnicos: { ...numericParams, instrucoes_setup: instructions.trim() || null },
     ativo: status !== 'OBSOLETA', atualizado_em: new Date().toISOString(),
    }
-   const result = await supabase.from('erp_fichas_processo').upsert(payload, { onConflict: 'empresa_id,codigo_ficha' }).select('id,codigo_ficha,produto_id,categoria_processo,versao_ficha,status,parametros_tecnicos,revisao').single()
+   const result = await supabase.from('erp_fichas_processo').upsert(payload, { onConflict: 'empresa_id,codigo_ficha' }).select('id,codigo_ficha,produto_id,ferramenta_id,maquina_id,categoria_processo,versao_ficha,status,data_homologacao,assinatura_tecnica,parametros_tecnicos,revisao').single()
    if (result.error) throw result.error
    const saved = result.data as Saved
    setRows(current => [saved, ...current.filter(r => r.id !== saved.id)])
