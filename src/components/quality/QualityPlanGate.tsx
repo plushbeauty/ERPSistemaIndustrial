@@ -65,7 +65,7 @@ export default function QualityPlanGate({ children }: { children: ReactNode }) {
       <p className="text-center text-[9px] font-bold uppercase tracking-[.18em] text-[#2D8DB8]">SGQ · CONTROLE DE ACESSO</p>
       <h1 className="mt-2 text-center text-lg font-semibold text-[#123B50]">Recurso disponível no plano {required}</h1>
       <p className="mx-auto mt-2 max-w-sm text-center text-[11px] leading-5 text-slate-600">O plano atual da empresa é <strong>{state.plan}</strong>. Faça o upgrade para liberar este módulo e manter os controles de acesso vinculados à assinatura da empresa.</p>
-      <div className="mt-5 flex justify-center"><button onClick={() => navigate('/configuracoes')} className="inline-flex h-[30px] items-center gap-2 bg-[#2D8DB8] px-4 text-[10px] font-bold uppercase text-white hover:bg-[#236f91]">Solicitar upgrade <ArrowUpRight size={14}/></button></div>
+      <div className="mt-5 flex justify-center"><button onClick={() => navigate('/planos')} className="inline-flex h-[30px] items-center gap-2 bg-[#2D8DB8] px-4 text-[10px] font-bold uppercase text-white hover:bg-[#236f91]">Solicitar upgrade <ArrowUpRight size={14}/></button></div>
     </section>
   </div>
 }
