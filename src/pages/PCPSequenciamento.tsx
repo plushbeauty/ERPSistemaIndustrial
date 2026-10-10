@@ -9,7 +9,6 @@ const btn='inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] 
 const th='h-[30px] border-b border-slate-200 bg-slate-100 px-2 text-left text-[9px] font-bold uppercase tracking-wide text-slate-600'
 const td='h-[32px] border-b border-slate-100 px-2 text-[10px] text-slate-700'
 const monday=(d:Date)=>{const x=new Date(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x}
-const localIso=(d:Date)=>{const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,16)}
 const fmt=(v:string)=>new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(v))
 const errMsg=(e:unknown)=>e instanceof Error?e.message:'Não foi possível carregar o sequenciamento.'
 export default function PCPSequenciamento(){
@@ -51,9 +50,9 @@ export default function PCPSequenciamento(){
   return !query||[String(order?.numero_op??''),s.lote_producao??'',machine?.codigo??'',machine?.nome??'',s.status].join(' ').toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR'))
  }),[slots,machineFilter,statusFilter,query,machineMap,orderMap])
  const move=async(slot:Slot,direction:-1|1)=>{
-  const sameMachine=visible.filter(s=>s.maquina_id===slot.maquina_id).sort((a,b)=>a.data_hora_inicio.localeCompare(b.data_hora_inicio))
+  const sameMachine=visible.filter(s=>s.maquina_id===slot.maquina_id&&new Date(s.data_hora_inicio).toDateString()===new Date(slot.data_hora_inicio).toDateString()).sort((a,b)=>a.data_hora_inicio.localeCompare(b.data_hora_inicio))
   const i=sameMachine.findIndex(s=>s.id===slot.id);const other=sameMachine[i+direction]
-  if(!other){setError('Não há programação adjacente para trocar nesta máquina.');return}
+  if(!other){setError('A troca só pode ocorrer entre programações da mesma máquina e do mesmo dia.');return}
   if(slot.status==='em_execucao'||slot.status==='concluida'||other.status==='em_execucao'||other.status==='concluida'){setError('Programações em execução ou concluídas não podem ser reordenadas.');return}
   setBusy(true);setError('');setNotice('')
   try{
