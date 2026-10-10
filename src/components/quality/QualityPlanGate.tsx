@@ -18,7 +18,7 @@ function normalizePlan(value: unknown): Plan | null {
 
 function requiredPlan(path: string): Plan {
   if (path === '/qualidade/inspecoes') return 'BASICO'
-  if (['/qualidade/especificacoes', '/qualidade/fmea', '/qualidade/rnc-capa'].includes(path)) return 'OURO'
+  if (['/qualidade/especificacoes', '/qualidade/fmea', '/qualidade/pfmea', '/qualidade/rnc-capa'].includes(path)) return 'OURO'
   return 'DIAMANTE'
 }
 
