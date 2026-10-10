@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom'
 import QualitySidebar from '../components/quality/QualitySidebar'
 
 type Rpn = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; sgq_origem: string; sgq_severidade: string; lote_afetado: string | null; quantidade_segregada: number; status: string; criado_em: string }
-type Ishikawa = { id: string; rpnc_id: string; metodo: string | null; mao_de_obra: string | null; material: string | null; maquina: string | null; meio_ambiente: string | null; medicao: string | null }
+type Ishikawa = { id: string; rpnc_id: string; efeito: string; metodo: string | null; mao_de_obra: string | null; material: string | null; maquina: string | null; meio_ambiente: string | null; medicao: string | null }
 type Capa = { id: string; rpnc_id: string; tipo: string; descricao: string; causa_raiz: string | null; responsavel_id: string; prazo: string; status: string; acao_o_que: string | null; acao_por_que: string | null; acao_onde: string | null; acao_quem: string | null; acao_quando: string | null; acao_como: string | null; acao_quanto: number | null }
 type User = { id: string; nome: string | null; email: string | null }
 type Sector = { id: string; nome: string }
@@ -64,7 +64,7 @@ export default function QualidadeRNC() {
   useEffect(() => {
     if (!selectedRnc || !companyId) { setIshikawa(null); return }
     void (async () => {
-      const result = await supabase.from('erp_sgq_rpnc_ishikawa').select('id,rpnc_id,metodo,mao_de_obra,material,maquina,meio_ambiente,medicao').eq('empresa_id', companyId).eq('rpnc_id', selectedRnc).maybeSingle()
+      const result = await supabase.from('erp_qualidade_ishikawa').select('id,rpnc_id,efeito,metodo,mao_de_obra,material,maquina,meio_ambiente,medicao').eq('empresa_id', companyId).eq('rpnc_id', selectedRnc).maybeSingle()
       if (!result.error) {
         setIshikawa(result.data as Ishikawa | null)
         if (result.data) setSixM({ metodo: result.data.metodo ?? '', mao_de_obra: result.data.mao_de_obra ?? '', material: result.data.material ?? '', maquina: result.data.maquina ?? '', meio_ambiente: result.data.meio_ambiente ?? '', medicao: result.data.medicao ?? '' })
@@ -104,7 +104,7 @@ export default function QualidadeRNC() {
     if (!selected) return
     setBusy(true); setError(''); setNotice('')
     try {
-      const result = await supabase.from('erp_sgq_rpnc_ishikawa').upsert({ empresa_id: companyId, rpnc_id: selected.id, ...sixM }, { onConflict: 'empresa_id,rpnc_id' }).select('id,rpnc_id,metodo,mao_de_obra,material,maquina,meio_ambiente,medicao').single()
+      const result = await supabase.from('erp_qualidade_ishikawa').upsert({ empresa_id: companyId, rpnc_id: selected.id, efeito: selected.descricao_nao_conformidade, ...sixM }, { onConflict: 'empresa_id,rpnc_id' }).select('id,rpnc_id,efeito,metodo,mao_de_obra,material,maquina,meio_ambiente,medicao').single()
       if (result.error) throw result.error
       setIshikawa(result.data as Ishikawa); setNotice('Análise de causa raiz 6M salva no banco real.')
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao salvar Ishikawa.') }
