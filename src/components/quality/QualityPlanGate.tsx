@@ -55,7 +55,33 @@ export default function QualityPlanGate({ children }: { children: ReactNode }) {
       try {
         const session = await supabase.auth.getSession()
         if (session.error) throw session.error
-        if (!session.data.session) throw new Error('Sessão autenticada não encontrada.')
+        const authSession = session.data.session
+        if (!authSession) throw new Error('Sessão autenticada não encontrada.')
+
+        // O Master Universal validado no cadastro ERP não possui empresa_id.
+        // A exceção é restrita à identidade autenticada e ao perfil Master completo.
+        const masterResult = await supabase
+          .from('erp_usuarios')
+          .select('auth_user_id,empresa_id,perfil,nivel_admin,is_master,ativo,deleted_at')
+          .eq('auth_user_id', authSession.user.id)
+          .eq('ativo', true)
+          .is('deleted_at', null)
+          .maybeSingle()
+        if (masterResult.error) throw masterResult.error
+        const master = masterResult.data
+        const isVerifiedMaster = Boolean(
+          master &&
+          master.auth_user_id === authSession.user.id &&
+          master.empresa_id === null &&
+          master.is_master === true &&
+          Number(master.nivel_admin) === 100 &&
+          String(master.perfil ?? '').trim().toUpperCase() === 'MASTER'
+        )
+        if (isVerifiedMaster) {
+          if (active) setState({ plan: 'DIAMANTE', loading: false, error: null })
+          return
+        }
+
         const company = await supabase.rpc('erp_current_empresa_id')
         if (company.error) throw company.error
         if (!company.data) throw new Error('A sessão não possui empresa vinculada.')
