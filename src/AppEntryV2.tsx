@@ -441,9 +441,9 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/produtos" element={<ProdutosVendasIndustrial />} />
       <Route path="/vendas/estoque" element={<EstoqueAlmoxarifado />} />
       <Route path="/vendas/expedicao" element={<ExpedicaoPortaria />} />
-      <Route path="/vendas/fiscal" element={<NFeEmissao />} />
-      <Route path="/vendas/rh" element={<RHIndustrial />} />
-      <Route path="/vendas/engenharia" element={<EngenhariaCentral />} />
+      <Route path="/vendas/fiscal" element={<QualityPlanGate>{<NFeEmissao />}</QualityPlanGate>} />
+      <Route path="/vendas/rh" element={<QualityPlanGate>{<RHIndustrial />}</QualityPlanGate>} />
+      <Route path="/vendas/engenharia" element={<QualityPlanGate>{<EngenhariaCentral />}</QualityPlanGate>} />
       <Route path="/vendas/materiais" element={<CentraisIndustriais module="materiais" />} />
       <Route path="/vendas/mrp" element={<MRPIndustrial />} />
       <Route path="/vendas/pcp" element={<PCPIndustrial />} />
@@ -458,9 +458,9 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/auditoria" element={<PainelLucratividade />} />
       <Route path="/vendas/classificacao-fiscal" element={<ClassificacaoFiscal />} />
       <Route path="/vendas/razao-geral" element={<PainelRazaoGeral />} />
-      <Route path="/pcp" element={<ERPHorizontalShell><SynqraLayoutProvider><PCPIndustrial /></SynqraLayoutProvider></ERPHorizontalShell>} />
+      <Route path="/pcp" element={<QualityPlanGate>{<ERPHorizontalShell><SynqraLayoutProvider><PCPIndustrial /></SynqraLayoutProvider></ERPHorizontalShell>}</QualityPlanGate>} />
       <Route path="/engenharia/produtos" element={<IndustrialDataWorkspace />} />
-      <Route path="/engenharia/bom" element={<IndustrialDataWorkspace />} />
+      <Route path="/engenharia/bom" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/engenharia/roteiros" element={<IndustrialDataWorkspace />} />
       <Route path="/estoque/enderecos" element={<IndustrialDataWorkspace />} />
       <Route path="/estoque/movimentacoes" element={<IndustrialDataWorkspace />} />
@@ -471,30 +471,30 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/ged-documentos" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
       <Route path="/qualidade/ged-documentos/nova" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
       <Route path="/qualidade/ged-documentos/:id" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
-      <Route path="/pcp/ordens-industriais" element={<PCPExecucaoIndustrial />} />
-      <Route path="/pcp/apontamentos" element={<PCPExecucaoIndustrial />} />
-      <Route path="/fiscal/parametros" element={<IndustrialDataWorkspace />} />
-      <Route path="/fiscal/nfe-entradas" element={<IndustrialDataWorkspace />} />
-      <Route path="/fiscal/custos-industriais" element={<CentralCustosIndustrial />} />
-      <Route path="/rh/funcionarios" element={<IndustrialDataWorkspace />} />
-      <Route path="/rh/turnos" element={<IndustrialDataWorkspace />} />
-      <Route path="/rh/epis" element={<IndustrialDataWorkspace />} />
-      <Route path="/rh/epis/entregas" element={<IndustrialDataWorkspace />} />
-      <Route path="/pcp/engenharia-bom" element={<EngenhariaBOM />} />
+      <Route path="/pcp/ordens-industriais" element={<QualityPlanGate>{<PCPExecucaoIndustrial />}</QualityPlanGate>} />
+      <Route path="/pcp/apontamentos" element={<QualityPlanGate>{<PCPExecucaoIndustrial />}</QualityPlanGate>} />
+      <Route path="/fiscal/parametros" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
+      <Route path="/fiscal/nfe-entradas" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
+      <Route path="/fiscal/custos-industriais" element={<QualityPlanGate>{<CentralCustosIndustrial />}</QualityPlanGate>} />
+      <Route path="/rh/funcionarios" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
+      <Route path="/rh/turnos" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
+      <Route path="/rh/epis" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
+      <Route path="/rh/epis/entregas" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
+      <Route path="/pcp/engenharia-bom" element={<QualityPlanGate>{<EngenhariaBOM />}</QualityPlanGate>} />
       <Route path="/pcp/roteiro-operacoes" element={<RoteiroOperacoes />} />
       <Route path="/pcp/ficha-processo" element={<FichaProcesso />} />
       <Route path="/pcp/postos-trabalho" element={<PostosTrabalho />} />
       <Route path="/pcp/painel-ordens" element={<PainelOrdensProducao />} />
       <Route path="/pcp/apuracao-turno" element={<ApuracaoTurno />} />
-      <Route path="/pcp/ordens" element={<PCPOrdens />} />
+      <Route path="/pcp/ordens" element={<QualityPlanGate>{<PCPOrdens />}</QualityPlanGate>} />
       <Route path="/pcp/demanda" element={<PCPIndustrial />} />
       <Route path="/pcp/materiais" element={<PCPIndustrial />} />
       <Route path="/pcp/paradas" element={<PCPParadas />} />
       <Route path="/pcp/sequenciamento" element={<PCPSequenciamento />} />
       <Route path="/pcp/planejamento" element={<PCPPlanejamentoIndustrial />} />
       <Route path="/pcp/capacidade" element={<PCPCapacidadeIndustrial />} />
-      <Route path="/pcp/agenda-maquinas" element={<PCPAgendaMaquinas />} />
-      <Route path="/pcp/fichas-processo" element={<PCPFichasProcesso />} />
+      <Route path="/pcp/agenda-maquinas" element={<QualityPlanGate>{<PCPAgendaMaquinas />}</QualityPlanGate>} />
+      <Route path="/pcp/fichas-processo" element={<QualityPlanGate>{<PCPFichasProcesso />}</QualityPlanGate>} />
       <Route path="/pcp/mrp-ii" element={<MRPIndustrial />} />
       <Route path="/pcp/execucao-industrial" element={<PCPExecucaoIndustrial />} />
       <Route path="/pcp/dashboard-oee" element={<PCPDashboardOEE />} />
@@ -539,7 +539,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/ficha-engenharia" element={<FichaEngenharia />} />
       <Route path="/mrp" element={<MRPIndustrial />} />
       <Route path="/qualidade/refugos" element={<QualityPlanGate><CentraisIndustriais module="refugos" /></QualityPlanGate>} />
-      <Route path="/central-custos-industrial" element={<CentralCustosIndustrial />} />
+      <Route path="/central-custos-industrial" element={<QualityPlanGate>{<CentralCustosIndustrial />}</QualityPlanGate>} />
       <Route path="/expedicao/roteirizacao" element={<ExpedicaoRoteirizacao />} />
       <Route path="/expedicao/portaria" element={<ExpedicaoPortaria />} />
       <Route path="/engenharia" element={<EngenhariaCentral />} />
@@ -605,7 +605,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/setup-adm-inicial" element={<SetupADMInicial />} />
       <Route path="/configuracao-lote" element={<ConfiguracaoLote />} />
       <Route path="/configuracao-lote-pcp" element={<ConfiguracaoLotePCP />} />
-      <Route path="/custos" element={<CentralCustosIndustrial />} />
+      <Route path="/custos" element={<QualityPlanGate>{<CentralCustosIndustrial />}</QualityPlanGate>} />
       <Route path="/ajuda/assistente" element={<AssistenteAjudaERP />} />
       <Route path="/ajuda" element={<AssistenteAjudaERP />} />
       <Route path="/compras/solicitacao" element={<ComprasRoute><ComprasSolicitacaoManual /></ComprasRoute>} />
