@@ -119,6 +119,13 @@ export default function Master() {
     setDraft({ codigo: plan.codigo, nome: plan.nome, preco_mensal: String(plan.preco_mensal), descricao: plan.descricao || '', ativo: plan.ativo })
     setEnabledModules(new Set(modules.filter(module => module.acesso).map(module => module.modulo_codigo)))
   }
+  const createPlan = () => {
+    const codigo = 'plano-' + Date.now().toString(36)
+    setDraft({ codigo, nome: '', preco_mensal: '0', descricao: '', ativo: false })
+    setEnabledModules(new Set())
+    setError('')
+    setMessage('')
+  }
   const savePlan = async () => {
     if (!draft) return
     const price = Number(draft.preco_mensal)
@@ -151,7 +158,7 @@ export default function Master() {
       })
       if (resultError) throw resultError
       setDraft(null)
-      setMessage('Plano e módulos contratados atualizados e registrados na auditoria global.')
+      setMessage('Plano e módulos atualizados no catálogo.')
       await load()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível salvar o plano.')
@@ -220,7 +227,7 @@ export default function Master() {
         </section>
 
         <section className="master-panel">
-          <div className="master-panel-title"><div><CircleDollarSign /><div><strong>Planos e módulos contratados</strong><small>Catálogo e permissões de produto já persistidos no banco.</small></div></div></div>
+          <div className="master-panel-title"><div><CircleDollarSign /><div><strong>Planos e módulos contratados</strong><small>Catálogo comercial e módulos disponíveis para novos contratos.</small></div></div><button type="button" className="master-save" onClick={createPlan} disabled={busy}><Save size={14} /> Novo plano</button></div>
           <div className="master-plan-grid">
             {data.plans.map(plan => <article className="master-plan-card" key={plan.id}>
               <div><span>{plan.nome}</span><small>{data.companies.filter(company => (company.plano || company.plan_type) === plan.codigo).length} empresa(s) vinculada(s)</small></div>
