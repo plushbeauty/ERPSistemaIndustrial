@@ -1,0 +1,1 @@
+alter table public.erp_configuracoes_lote add column if not exists revision integer not null default 1;
