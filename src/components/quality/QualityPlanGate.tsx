@@ -17,7 +17,7 @@ function normalizePlan(value: unknown): Plan | null {
 }
 
 function requiredPlan(path: string): Plan {
-  path = path.replace(/\\/+$/, '') || '/'
+  path = path.replace(/\/+$/, '') || '/'
   if (path === '/qualidade/inspecoes') return 'BASICO'
 
   const goldRoutes = [
