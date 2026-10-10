@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, Check, Factory, RefreshCw, ShieldCheck, Wrench }
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { erpModuleCatalog } from '../lib/erpModuleCatalog'
 
 type PlanResource = { features?: string[] }
 type PlanModule = {
@@ -23,41 +24,7 @@ type Plan = {
   recursos: string[]
 }
 
-const moduleLabels: Record<string, string> = {
-  pcp: 'PCP e Produção',
-  estoque: 'Estoque e Materiais',
-  recebimento: 'Recebimento de Materiais',
-  qualidade: 'Qualidade',
-  manutencao: 'Manutenção',
-  fiscal: 'Financeiro e Fiscal',
-  indicadores: 'Indicadores',
-  engenharia: 'Engenharia e BOM',
-  compras: 'Compras e Fornecedores',
-  clientes: 'Clientes',
-  rastreabilidade: 'Rastreabilidade',
-  custos: 'Custos Industriais',
-  expedicao: 'Expedição',
-  fmea: 'FMEA e Risco',
-  rh: 'RH e Competências',
-  injecao: 'Injeção Plástica',
-  prensados: 'Prensados',
-  estamparia: 'Estamparia',
-  ferramentaria: 'Ferramentaria',
-  extrusao: 'Extrusão',
-  usinagem: 'Usinagem',
-  soldagem: 'Soldagem',
-  montagem: 'Montagem',
-  corte: 'Corte e Preparação',
-  pintura: 'Pintura e Acabamento',
-  'sgq-tpm': 'SGQ Avançado e TPM',
-  'prensa-dupla': 'PCP de Prensa Dupla',
-  'chao-fabrica': 'Chão de Fábrica',
-  'metrologia-rbc': 'Metrologia RBC',
-  'documentos-obsoletos': 'Documentos Controlados e Obsoletos',
-  'matriz-desenhos': 'Matriz de Desenhos',
-  'manutencao-tpm': 'Manutenção TPM',
-  'roteirizacao-balanca': 'Roteirização de Carga',
-}
+const moduleLabels = erpModuleCatalog
 
 const money = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
