@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 import { fetchAllPages } from '../lib/supabasePagination'
 type Product={id:string;codigo:string;nome:string;estoque_atual:number}
-type Machine={id:string;codigo:string;nome:string;status:string;capacidade_horas_dia:number}
+type Machine={id:string;codigo:string;nome:string;status:string}
 type Pedido={id:string;codigo:string;nome:string;status:string}
 type OrderItem={id:string;pedido_id:string;produto_id:string;quantidade:number}
 type OP={id:string;numero_op:number;produto_id:string|null;pedido_venda_id:string|null;quantidade:number;quantidade_planejada:number;status:string;maquina_id:string|null;velocidade_nominal_hora:number;operacao_dupla:boolean;tempo_estimado_horas:number}
@@ -13,7 +13,7 @@ export default function PCPOrdens(){
  const[products,setProducts]=useState<Product[]>([]),[machines,setMachines]=useState<Machine[]>([]),[pedidos,setPedidos]=useState<Pedido[]>([]),[orderItems,setOrderItems]=useState<OrderItem[]>([]),[ops,setOps]=useState<OP[]>([]),[selectedOp,setSelectedOp]=useState(''),[produtoId,setProdutoId]=useState(''),[pedidoId,setPedidoId]=useState(''),[machineId,setMachineId]=useState(''),[qty,setQty]=useState(''),[rate,setRate]=useState(''),[doubleOp,setDoubleOp]=useState(false),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState(''),[materials,setMaterials]=useState<Material[]>([])
  async function load(){setLoading(true);setError('');try{const company=await supabase.rpc('erp_current_empresa_id');if(company.error||!company.data)throw company.error??new Error('Empresa da sessão não identificada.');const companyId=String(company.data);const[ps,ms,os,salesOrders,salesItems,clients]=await Promise.all([
   fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual',{count:'exact'}).eq('empresa_id',companyId).eq('ativo',true).order('codigo').range(from,to)),
-  fetchAllPages<Machine>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome,status,capacidade_horas_dia',{count:'exact'}).eq('empresa_id',companyId).eq('ativo',true).order('codigo').range(from,to)),
+  fetchAllPages<Machine>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome,status',{count:'exact'}).eq('empresa_id',companyId).eq('ativo',true).order('codigo').range(from,to)),
   fetchAllPages<OP>((from,to)=>supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,pedido_venda_id,quantidade,quantidade_planejada,status,maquina_id,velocidade_nominal_hora,operacao_dupla,tempo_estimado_horas',{count:'exact'}).eq('empresa_id',companyId).order('created_at',{ascending:false}).range(from,to)),
   fetchAllPages<{id:string;numero:number;cliente_id:string|null;status:string}>((from,to)=>supabase.from('erp_pedidos_venda').select('id,numero,cliente_id,status',{count:'exact'}).eq('empresa_id',companyId).order('numero',{ascending:false}).range(from,to)),
   fetchAllPages<OrderItem>((from,to)=>supabase.from('erp_pedidos_venda_itens').select('id,pedido_id,produto_id,quantidade',{count:'exact'}).eq('empresa_id',companyId).range(from,to)),
