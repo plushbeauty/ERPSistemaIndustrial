@@ -29,14 +29,17 @@ export default function PCPPlanejamentoIndustrial(){
  async function load(){
   setBusy(true);setError('')
   try{
+   const tenant=await supabase.rpc('erp_current_empresa_id')
+   if(tenant.error||typeof tenant.data!=='string'||!tenant.data) throw tenant.error??new Error('Empresa da sessão não identificada; planejamento bloqueado.')
+   const empresaId=tenant.data
    const [p,m,o,c,pr,ma,a]=await Promise.all([
-    supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual').eq('ativo',true).order('codigo').limit(3000),
-    supabase.from('erp_pcp_planos_mestres').select('id,produto_id,periodo_inicio,periodo_fim,quantidade_prevista,estoque_alvo,demanda_confirmada,status').order('periodo_inicio').limit(1000),
-    supabase.from('erp_pcp_ordens_planejadas').select('id,produto_id,quantidade,data_necessaria,origem,status').order('data_necessaria').limit(1000),
-    supabase.from('erp_pcp_centros_trabalho').select('id,codigo,nome,capacidade_horas_dia,eficiencia_percent,ativo').eq('ativo',true).order('codigo'),
-    supabase.from('erp_pcp_programacoes').select('id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,status').neq('status','cancelada').order('inicio_planejado').limit(3000),
-    supabase.from('erp_maquinas').select('id,codigo,nome,status').not('status','eq','INATIVA').order('codigo'),
-    supabase.from('erp_pcp_alertas').select('id,tipo,severidade,mensagem,status,created_at').neq('status','RESOLVIDO').order('created_at',{ascending:false}).limit(500)
+    supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(3000),
+    supabase.from('erp_pcp_planos_mestres').select('id,produto_id,periodo_inicio,periodo_fim,quantidade_prevista,estoque_alvo,demanda_confirmada,status').eq('empresa_id',empresaId).order('periodo_inicio').limit(1000),
+    supabase.from('erp_pcp_ordens_planejadas').select('id,produto_id,quantidade,data_necessaria,origem,status').eq('empresa_id',empresaId).order('data_necessaria').limit(1000),
+    supabase.from('erp_pcp_centros_trabalho').select('id,codigo,nome,capacidade_horas_dia,eficiencia_percent,ativo').eq('empresa_id',empresaId).eq('ativo',true).order('codigo'),
+    supabase.from('erp_pcp_programacoes').select('id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,status').eq('empresa_id',empresaId).neq('status','cancelada').order('inicio_planejado').limit(3000),
+    supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('empresa_id',empresaId).not('status','eq','INATIVA').order('codigo'),
+    supabase.from('erp_pcp_alertas').select('id,tipo,severidade,mensagem,status,created_at').eq('empresa_id',empresaId).neq('status','RESOLVIDO').order('created_at',{ascending:false}).limit(500)
    ])
    for(const r of [p,m,o,c,pr,ma,a]) if(r.error) throw r.error
    setProducts((p.data??[]) as Product[]);setMps((m.data??[]) as MPS[]);setPlanned((o.data??[]) as Planned[]);setCenters((c.data??[]) as Center[]);setPrograms((pr.data??[]) as Program[]);setMachines((ma.data??[]) as Machine[]);setAlerts((a.data??[]) as AlertRow[])
@@ -59,7 +62,9 @@ export default function PCPPlanejamentoIndustrial(){
   if(end<start){setError('O fim do período não pode ser anterior ao início.');return}
   setBusy(true);setError('');setMessage('')
   try{
-   const r=await supabase.from('erp_pcp_planos_mestres').insert({produto_id:productId,periodo_inicio:start,periodo_fim:end,quantidade_prevista:q,estoque_alvo:t,demanda_confirmada:0,status:'ABERTO'}).select('id').single()
+   const tenant=await supabase.rpc('erp_current_empresa_id')
+   if(tenant.error||typeof tenant.data!=='string'||!tenant.data) throw tenant.error??new Error('Empresa da sessão não identificada.')
+   const r=await supabase.from('erp_pcp_planos_mestres').insert({empresa_id:tenant.data,produto_id:productId,periodo_inicio:start,periodo_fim:end,quantidade_prevista:q,estoque_alvo:t,demanda_confirmada:0,status:'ABERTO'}).select('id').single()
    if(r.error)throw r.error
    setMessage('Plano mestre criado e disponível para revisão do PCP.');setQty('');setTarget('');await load()
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível criar o plano mestre.')}finally{setBusy(false)}
@@ -68,9 +73,11 @@ export default function PCPPlanejamentoIndustrial(){
  async function generatePlanned(){
   setBusy(true);setError('');setMessage('')
   try{
-   const {data,error}=await supabase.from('erp_mrp_necessidades').select('componente_id,necessidade_liquida').gt('necessidade_liquida',0).limit(3000)
+   const tenant=await supabase.rpc('erp_current_empresa_id')
+   if(tenant.error||typeof tenant.data!=='string'||!tenant.data) throw tenant.error??new Error('Empresa da sessão não identificada.')
+   const {data,error}=await supabase.from('erp_mrp_necessidades').select('componente_id,necessidade_liquida').eq('empresa_id',tenant.data).gt('necessidade_liquida',0).limit(3000)
    if(error)throw error
-   const rows=(data??[]).map((r:{componente_id:string;necessidade_liquida:number})=>({produto_id:r.componente_id,quantidade:Number(r.necessidade_liquida),data_necessaria:today(),origem:'MRP',status:'PLANEJADA'}))
+   const rows=(data??[]).map((r:{componente_id:string;necessidade_liquida:number})=>({empresa_id:tenant.data,produto_id:r.componente_id,quantidade:Number(r.necessidade_liquida),data_necessaria:today(),origem:'MRP',status:'PLANEJADA'}))
    if(!rows.length){setMessage('Não existem necessidades líquidas abertas para gerar ordens planejadas.');return}
    const ins=await supabase.from('erp_pcp_ordens_planejadas').insert(rows)
    if(ins.error)throw ins.error
@@ -84,7 +91,9 @@ export default function PCPPlanejamentoIndustrial(){
   if(cap<=0||eff<=0||eff>100){setError('Capacidade e eficiência devem ser maiores que zero; eficiência máxima 100%.');return}
   setBusy(true);setError('');setMessage('')
   try{
-   const r=await supabase.from('erp_pcp_centros_trabalho').insert({codigo:center.codigo.trim().toUpperCase(),nome:center.nome.trim(),capacidade_horas_dia:cap,eficiencia_percent:eff,ativo:true})
+   const tenant=await supabase.rpc('erp_current_empresa_id')
+   if(tenant.error||typeof tenant.data!=='string'||!tenant.data) throw tenant.error??new Error('Empresa da sessão não identificada.')
+   const r=await supabase.from('erp_pcp_centros_trabalho').insert({empresa_id:tenant.data,codigo:center.codigo.trim().toUpperCase(),nome:center.nome.trim(),capacidade_horas_dia:cap,eficiencia_percent:eff,ativo:true})
    if(r.error)throw r.error
    setCenter({codigo:'',nome:'',capacidade_horas_dia:'8',eficiencia_percent:'85'});setMessage('Centro de trabalho cadastrado.');await load()
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível cadastrar o centro de trabalho.')}finally{setBusy(false)}
@@ -92,7 +101,7 @@ export default function PCPPlanejamentoIndustrial(){
 
  async function resolveAlert(id:string){
   setBusy(true);setError('')
-  try{const r=await supabase.from('erp_pcp_alertas').update({status:'RESOLVIDO'}).eq('id',id);if(r.error)throw r.error;setMessage('Alerta resolvido.');await load()}
+  try{const tenant=await supabase.rpc('erp_current_empresa_id');if(tenant.error||typeof tenant.data!=='string'||!tenant.data)throw tenant.error??new Error('Empresa da sessão não identificada.');const r=await supabase.from('erp_pcp_alertas').update({status:'RESOLVIDO'}).eq('empresa_id',tenant.data).eq('id',id);if(r.error)throw r.error;setMessage('Alerta resolvido.');await load()}
   catch(e){setError(e instanceof Error?e.message:'Não foi possível resolver o alerta.')}finally{setBusy(false)}
  }
 
