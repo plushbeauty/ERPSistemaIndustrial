@@ -60,16 +60,14 @@ export default function FichaEngenharia(){
  const selected=useMemo(()=>products.find(p=>p.id===productId),[products,productId])
  useEffect(()=>{void loadBase()},[])
  useEffect(()=>{
-  const params=new URLSearchParams(location.search)
-  const requestedKind=params.get('tipo')
+  const requestedKind=new URLSearchParams(location.search).get('tipo')
   if(requestedKind&&kinds.some(k=>k.id===requestedKind)){
    const nextKind=requestedKind as Kind
-   resetForm(false)
-   setKind(nextKind)
-   setProcessName(kinds.find(k=>k.id===nextKind)?.title.replace('Ficha de Processo — ','')||'')
-   setProcessCode(`FP-${nextKind}-001`)
+   setFicha(null);setVersion('1');setRendimento('1');setUnit('UN');setProcessCode(`FP-${nextKind}-001`);setProcessName(kinds.find(k=>k.id===nextKind)?.title.replace('Ficha de Processo — ','')||'');setNotes('');setSpec({});setBom([emptyBom()]);setOps([emptyOp()]);setQuality([emptyQuality()]);setKind(nextKind)
   }
-  const requestedProduct=params.get('produto')
+ },[location.search])
+ useEffect(()=>{
+  const requestedProduct=new URLSearchParams(location.search).get('produto')
   if(requestedProduct){const target=products.find(p=>p.id===requestedProduct||p.codigo.toLowerCase()===requestedProduct.toLowerCase());if(target){setProductId(target.id);setProductCode(target.codigo)}}
  },[location.search,products])
  useEffect(()=>{if(selected)setProductCode(selected.codigo)},[selected])
