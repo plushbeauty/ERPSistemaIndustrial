@@ -53,7 +53,7 @@ export default function FiscalPrevisaoCaixa() {
 
       const profile = await supabase
         .from('erp_usuarios')
-        .select('id, empresa_id, nivel_admin, setor_id, ativo, deleted_at, erp_setores(codigo, nome)')
+        .select('id, empresa_id, perfil, nivel_admin, is_master, setor_id, ativo, deleted_at, erp_setores(codigo, nome)')
         .eq('auth_user_id', user.id)
         .eq('ativo', true)
         .is('deleted_at', null)
@@ -62,10 +62,12 @@ export default function FiscalPrevisaoCaixa() {
 
       const u = profile.data
       const s = Array.isArray(u?.erp_setores) ? u.erp_setores[0] : u?.erp_setores
+      const perfil = String(u?.perfil || '').trim().toUpperCase()
+      const setorCodigo = String(s?.codigo || '').trim().toUpperCase()
+      const setorNome = String(s?.nome || '').trim().toUpperCase()
       const ok = !!u?.ativo && !!u?.empresa_id && (
-        Number(u?.nivel_admin || 0) >= 100 ||
-        ['ADM', 'ADMIN', 'FISCAL'].includes(String(s?.codigo || '').toUpperCase()) ||
-        String(s?.nome || '').toUpperCase().includes('FISCAL')
+        !!u?.is_master || ['ADMIN', 'ADMINISTRADOR', 'FINANCEIRO', 'FISCAL', 'DIRETOR'].includes(perfil) ||
+        ['ADM', 'ADMIN', 'FINANCEIRO', 'FISCAL'].includes(setorCodigo) || setorNome.includes('FINANCEIRO') || setorNome.includes('FISCAL')
       )
 
       setAllowed(ok)
@@ -81,7 +83,7 @@ export default function FiscalPrevisaoCaixa() {
         .eq('empresa_id', u.empresa_id)
         .order('vencimento', { ascending: true })
       if (result.error) throw result.error
-      setRows((result.data ?? []).map(row => ({ ...row, vencimento: row.vencimento ?? '', documento: null })) as FinanceRow[])
+      setRows((result.data ?? []).map((row): FinanceRow => ({ id: row.id, descricao: row.descricao, valor: Number(row.valor), vencimento: row.vencimento ?? '', status: row.status, tipo: row.tipo, categoria: row.categoria, documento: null })))
     } catch (cause) {
       setRows([])
       setAllowed(false)
