@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom'
-import { FolderGit2, LineChart, ShieldCheck } from 'lucide-react'
+import { Activity, BookOpenCheck, ClipboardCheck, ClipboardList, FileBarChart2, FileText, FolderGit2, Gauge, ListChecks, LineChart, SearchCheck, ShieldCheck, SlidersHorizontal, Target, Wrench } from 'lucide-react'
 import { useSynqraLayout } from '../../layout/SynqraLayoutContext'
 
 const items = [
-  ['Dashboard SGQ', '/qualidade/dashboard-rnc'],
-  ['Qualidade Geral', '/qualidade'],
+  ['Indicadores RNC / CAPA', '/qualidade/dashboard-rnc'],
+  ['Visão Geral da Qualidade', '/qualidade'],
   ['Especificações Técnicas', '/qualidade/especificacoes'],
   ['Inspeções de Lotes', '/qualidade/inspecoes'],
   ['Matriz FMEA / PFMEA', '/qualidade/fmea'],
@@ -19,6 +19,8 @@ const items = [
   ['Relatórios SGQ', '/qualidade/relatorios-documentos'],
   ['Calibração / Metrologia', '/qualidade/metrologia'],
 ]
+
+const itemIcons = [Activity, Gauge, SearchCheck, ClipboardCheck, Target, ListChecks, ClipboardList, ShieldCheck, BookOpenCheck, ClipboardList, Target, FileText, FileBarChart2, FileBarChart2, Wrench]
 
 export default function QualitySidebar({ active }: { active: string }) {
   const hostedBySynqra = useSynqraLayout()
@@ -37,24 +39,27 @@ export default function QualitySidebar({ active }: { active: string }) {
           ? 'flex min-w-0 gap-1 overflow-x-auto p-2'
           : 'p-2'}
       >
-        {items.map(([label, path]) => (
+        {items.map(([label, path], index) => {
+          const Icon = itemIcons[index] ?? FileText
+          return (
           <Link
             key={path}
             to={path}
             aria-current={active === path ? 'page' : undefined}
             className={`${hostedBySynqra
-              ? 'min-h-10 flex-none whitespace-nowrap px-3 text-xs'
-              : 'mb-1 min-h-11 w-full px-3 py-2 text-left text-sm'} flex items-center rounded-lg ${
+              ? 'min-h-9 flex-none whitespace-nowrap gap-1.5 border px-2 text-[10px]'
+              : 'mb-1 min-h-9 w-full gap-2 border px-3 py-2 text-left text-[11px]'} flex items-center rounded-md transition-colors ${
               active === path
                 ? hostedBySynqra
-                  ? 'bg-blue-50 font-extrabold text-[#0052cc] ring-1 ring-blue-100'
-                  : 'bg-sky-100 font-extrabold text-sky-900'
-                : 'font-semibold text-slate-700 hover:bg-slate-100 hover:text-[#0052cc]'
+                  ? 'border-[#2D8DB8] bg-gradient-to-r from-[#123B50] to-[#2D8DB8] font-semibold text-white shadow-sm'
+                  : 'border-slate-200 bg-white/80 font-medium text-slate-700 hover:border-sky-300 hover:bg-sky-50 hover:text-[#123B50]'
             }`}
           >
+            <Icon size={13} className="shrink-0" />
             {label}
           </Link>
-        ))}
+          )
+        })}
       
         <div className={hostedBySynqra ? 'flex flex-none items-center gap-1 border-l border-slate-200 pl-2' : 'mt-2 border-t border-slate-200 pt-2'}>
           <div className={hostedBySynqra ? 'flex h-8 items-center gap-1 whitespace-nowrap px-2 text-[10px] font-bold uppercase text-[#123B50]' : 'mb-1 flex h-8 items-center gap-2 px-2 text-[10px] font-bold uppercase text-[#123B50]'}>
