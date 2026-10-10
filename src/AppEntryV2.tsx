@@ -622,6 +622,7 @@ function AppIndustrialAuthenticated() {
       <Suspense fallback={<LoadingSkeleton />}>
         <div className="erp-global-surface">
           {protectedRoutes}
+          <ERPStatusLegend />
         </div>
       </Suspense>
     </Boundary>
