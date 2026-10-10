@@ -13,7 +13,7 @@ type Receiving = { status: string; created_at: string }
 type Dimensional = { status: string; created_at: string }
 
 const COLORS = ['#15803d', '#dc2626', '#64748b']
-const pendingStates = new Set(['rascunho', 'em_revisao', 'aprovada', 'liberada'])
+const pendingStates = new Set(['rascunho', 'em_revisao', 'solicitada_alteracao'])
 
 export default function QualidadeDashboardRNC() {
   const [rncs, setRncs] = useState<Rpn[]>([])
@@ -54,7 +54,7 @@ export default function QualidadeDashboardRNC() {
 
   const openByDepartment = useMemo<DepartmentCount[]>(() => {
     const counts = new Map<string, number>()
-    rncs.filter((row) => !['encerrada', 'Encerrada'].includes(row.status)).forEach((row) => {
+    rncs.filter((row) => row.status.trim().toLocaleLowerCase('pt-BR') !== 'encerrada').forEach((row) => {
       const department = row.setor?.[0]?.nome || 'Sem setor definido'
       counts.set(department, (counts.get(department) ?? 0) + 1)
     })
@@ -80,7 +80,7 @@ export default function QualidadeDashboardRNC() {
     return [...counts].map(([department, total]) => ({ department, total })).sort((a, b) => b.total - a.total)
   }, [documents])
 
-  const openCount = rncs.filter((row) => !['encerrada', 'Encerrada'].includes(row.status)).length
+  const openCount = rncs.filter((row) => row.status.trim().toLocaleLowerCase('pt-BR') !== 'encerrada').length
   const verifiedCount = actions.filter((action) => action.resultado_eficacia !== null).length
   const pendingReviewCount = documents.filter((doc) => pendingStates.has((doc.status || '').toLowerCase())).length
   const approvedReceiving = receivingInspections.filter((row) => row.status.toUpperCase() === 'APROVADO').length
@@ -100,7 +100,7 @@ export default function QualidadeDashboardRNC() {
             <div>
               <p className="text-[9px] font-bold uppercase tracking-[.16em] text-cyan-100">QUALIDADE › SGQ › VISÃO GERAL</p>
               <h1 className="text-xl font-semibold md:text-2xl">Visão geral da qualidade</h1>
-              <p className="mt-1 text-xs text-sky-50">Indicadores reais de recebimento, inspeção dimensional, RNC, CAPA e controle documental.</p>
+              <p className="mt-1 text-xs text-sky-50">Indicadores de RNC, CAPA, controle documental, recebimento e inspeção dimensional.</p>
             </div>
             <button type="button" onClick={() => void load()} disabled={loading} className="ml-auto inline-flex h-[30px] min-h-[30px] items-center gap-2 rounded-[2px] border border-white/40 bg-white/10 px-3 text-[10px] font-semibold text-white hover:bg-white/20"><RefreshCw size={17}/>{loading ? 'Carregando…' : 'Atualizar'}</button>
           </header>
@@ -108,7 +108,7 @@ export default function QualidadeDashboardRNC() {
           {error && <div role="alert" className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 p-4 font-semibold text-rose-900"><span>{error}</span><button type="button" onClick={() => void load()} className="rounded-md border border-rose-300 bg-white px-3 py-2 font-bold">Tentar novamente</button></div>}
           {loading && !error ? <p role="status" className="mt-5 rounded-lg border border-slate-200 bg-white p-6 text-center font-semibold text-slate-600">Carregando indicadores reais do SGQ…</p> : !error && <>
             <section className="mt-3 grid gap-2 sm:grid-cols-3 xl:grid-cols-6">
-              <Metric icon={AlertTriangle} label="RPNCs em aberto" value={openCount}/>
+              <Metric icon={AlertTriangle} label="RNCs em aberto" value={openCount}/>
               <Metric icon={CheckCircle2} label="Ações com eficácia verificada" value={verifiedCount}/>
               <Metric icon={BarChart3} label="Revisões documentais pendentes" value={pendingReviewCount}/>
               <Metric icon={ClipboardCheck} label="Inspeções de recebimento" value={receivingInspections.length}/>
@@ -117,7 +117,7 @@ export default function QualidadeDashboardRNC() {
             </section>
             <section className="mt-3 grid gap-3 xl:grid-cols-2">
               <ChartCard title="RNCs abertas por departamento" description="Ocorrências não encerradas agrupadas pelo setor responsável." accent="blue">
-                {openByDepartment.length ? <><div className="h-[320px]" role="img" aria-label={openByDepartment.map((item) => `${item.department}: ${item.total}`).join('; ')}><ResponsiveContainer width="100%" height="100%"><BarChart data={openByDepartment} margin={{ left: 12, right: 20, top: 12, bottom: 24 }}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="department" angle={-20} textAnchor="end" height={70} interval={0} tick={{ fontSize: 12 }}/><YAxis allowDecimals={false}/><Tooltip/><Bar dataKey="total" name="RPNCs abertas" fill="#0369a1" radius={[6, 6, 0, 0]}/></BarChart></ResponsiveContainer></div><AccessibleSummary rows={openByDepartment}/></> : <Empty text="Não há RPNCs abertas por departamento."/>}
+                {openByDepartment.length ? <><div className="h-[320px]" role="img" aria-label={openByDepartment.map((item) => `${item.department}: ${item.total}`).join('; ')}><ResponsiveContainer width="100%" height="100%"><BarChart data={openByDepartment} margin={{ left: 12, right: 20, top: 12, bottom: 24 }}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="department" angle={-20} textAnchor="end" height={70} interval={0} tick={{ fontSize: 12 }}/><YAxis allowDecimals={false}/><Tooltip/><Bar dataKey="total" name="RNCs abertas" fill="#0369a1" radius={[6, 6, 0, 0]}/></BarChart></ResponsiveContainer></div><AccessibleSummary rows={openByDepartment}/></> : <Empty text="Não há RNCs abertas por departamento."/>}
               </ChartCard>
               <ChartCard title="Eficácia das ações CAPA" description="Resultado registrado após aprovação e verificação de eficácia." accent="violet">
                 {actions.length ? <><div className="h-[320px]" role="img" aria-label={efficacy.map((item) => `${item.name}: ${item.value}`).join('; ')}><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={efficacy} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={108} label={({ name, value }) => `${name}: ${value}`}><Cell fill={COLORS[0]}/><Cell fill={COLORS[1]}/><Cell fill={COLORS[2]}/></Pie><Tooltip/></PieChart></ResponsiveContainer></div><p className="sr-only">{efficacy.map((item) => `${item.name}: ${item.value}`).join('. ')}</p></> : <Empty text="Ainda não há ações CAPA para avaliar."/>}
