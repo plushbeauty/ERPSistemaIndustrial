@@ -30,7 +30,11 @@ const brl = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0)
 
 export default function VendasCatalogoDigital() {
-  const navigate = useNavigate()\n  const [produtos, setProdutos] = useState<Produto[]>([])\n  const [empresaId, setEmpresaId] = useState('')\n  const [bomItems, setBomItems] = useState<BomItem[]>([])\n  const [bomBusy, setBomBusy] = useState(false)
+  const navigate = useNavigate()
+  const [produtos, setProdutos] = useState<Produto[]>([])
+  const [empresaId, setEmpresaId] = useState('')
+  const [bomItems, setBomItems] = useState<BomItem[]>([])
+  const [bomBusy, setBomBusy] = useState(false)
   const [empresa, setEmpresa] = useState<EmpresaCatalogo | null>(null)
   const [filtro, setFiltro] = useState('')
   const [categoria, setCategoria] = useState('TODOS')
@@ -46,7 +50,8 @@ export default function VendasCatalogoDigital() {
     setError('')
     try {
       const empresa = await supabase.rpc('erp_current_empresa_id')
-      if (empresa.error || !empresa.data) throw empresa.error ?? new Error('Empresa não identificada.')\n      setEmpresaId(String(empresa.data))
+      if (empresa.error || !empresa.data) throw empresa.error ?? new Error('Empresa não identificada.')
+      setEmpresaId(String(empresa.data))
 
       const company = await supabase
         .from('erp_empresas')
