@@ -1,15 +1,34 @@
 import { useCallback, useEffect, useState } from 'react'
 import { FileText, RefreshCw, Save, ShieldCheck, Upload, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import { useLocation } from 'react-router-dom'
 import QualitySidebar from '../components/quality/QualitySidebar'
 
-type Rpn = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; sgq_origem: string; sgq_severidade: string; lote_afetado: string | null; quantidade_segregada: number; status: string; criado_em: string }
+type Rpn = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; origem: string | null; gravidade: string | null; lote_producao: string | null; quantidade_segregada: number; bloqueia_lote: boolean; setor_envolvido_id: string | null; status: string; criado_em: string }
 type Ishikawa = { id: string; rpnc_id: string; efeito: string; metodo: string | null; mao_de_obra: string | null; material: string | null; maquina: string | null; meio_ambiente: string | null; medicao: string | null }
 type Capa = { id: string; rpnc_id: string; tipo: string; descricao: string; causa_raiz: string | null; responsavel_id: string; prazo: string; status: string; acao_o_que: string | null; acao_por_que: string | null; acao_onde: string | null; acao_quem: string | null; acao_quando: string | null; acao_como: string | null; acao_quanto: number | null }
+type CapaRecord = { id: string; rpnc_id: string | null; codigo: string; origem: string; descricao: string; plano_5w2h: unknown; status: string; created_at: string }
+type DocBase = { id: string; codigo: string; titulo: string; area: string | null; revisao: number; data_revisao: string | null; responsavel_id: string | null; status: string }
+type Attachment = { id: string; documento_id: string; nome_arquivo: string; storage_path: string; revisao: number; status: string; criado_em: string }
 type User = { id: string; nome: string | null; email: string | null }
 type Sector = { id: string; nome: string }
 type Doc = { id: string; codigo: string; titulo: string; tipo: string | null; revisao: number; data_revisao: string | null; preparado_por: string | null; pdf_storage_path: string | null; nome_arquivo: string | null; status: string }
+
+
+const jsonRecord = (value: unknown): Record<string, unknown> | null => typeof value === 'object' && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : null
+const stringField = (value: unknown, fallback = ''): string => typeof value === 'string' ? value : fallback
+const actionsFromCapa = (row: CapaRecord): Capa[] => {
+  const rpncId = row.rpnc_id
+  if (!rpncId || !Array.isArray(row.plano_5w2h)) return []
+  return row.plano_5w2h.flatMap((value, index) => {
+    const item = jsonRecord(value)
+    if (!item) return []
+    const prazo = stringField(item.prazo)
+    const oQue = stringField(item.oQue, row.descricao)
+    return [{ id: stringField(item.id, row.id + '-' + index), rpnc_id: rpncId, tipo: stringField(item.tipo, 'Corretiva'), descricao: oQue, causa_raiz: stringField(item.causa) || null, responsavel_id: stringField(item.responsavel), prazo, status: row.status, acao_o_que: oQue, acao_por_que: stringField(item.porQue) || null, acao_onde: stringField(item.onde) || null, acao_quem: stringField(item.quem), acao_quando: stringField(item.quando, prazo), acao_como: stringField(item.como) || null, acao_quanto: typeof item.quanto === 'number' ? item.quanto : Number(item.quanto ?? 0) }]
+  })
+}
 
 const field = (bad = false) => `h-[30px] w-full rounded-[2px] border px-2 text-[12px] outline-none ${bad ? 'border-red-500 bg-red-50/50 placeholder:text-red-400' : 'border-slate-300 bg-white focus:border-[#2D8DB8]'}`
 const label = 'grid gap-[2px] text-[9px] font-medium uppercase text-slate-600'
@@ -45,27 +64,24 @@ export default function QualidadeRNC() {
       if (!current.data) throw new Error('Empresa da sessão não identificada.')
       const id = String(current.data); setCompanyId(id)
       const [r, a, u, s, d, attachments] = await Promise.all([
-        supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,sgq_origem,sgq_severidade,lote_afetado,quantidade_segregada,status,criado_em').eq('empresa_id', id).not('sgq_origem', 'is', null).order('criado_em', { ascending: false }).limit(500),
-        supabase.from('erp_sgq_capa_acoes').select('id,rpnc_id,tipo,descricao,causa_raiz,responsavel_id,prazo,status,acao_o_que,acao_por_que,acao_onde,acao_quem,acao_quando,acao_como,acao_quanto').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
-        supabase.from('erp_usuarios').select('id,nome,email').eq('empresa_id', id).eq('ativo', true).is('deleted_at', null).order('nome').limit(500),
-        supabase.from('erp_setores').select('id,nome').eq('empresa_id', id).eq('ativo', true).order('nome').limit(500),
-        supabase.from('erp_documentos_qualidade').select('id,codigo,titulo,area,revisao,data_revisao,responsavel_id,status').eq('empresa_id', id).order('codigo').limit(500),
-        supabase.from('erp_documentos_qualidade_anexos').select('id,documento_id,nome_arquivo,storage_path,revisao,status,criado_em').eq('empresa_id', id).order('revisao', { ascending: false }).order('criado_em', { ascending: false }).limit(1000),
+        fetchAllPages<Rpn>((from, to) => supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,origem,gravidade,lote_producao,quantidade_segregada,bloqueia_lote,setor_envolvido_id,status,criado_em',{count:'exact'}).eq('empresa_id', id).order('criado_em', { ascending: false }).range(from, to)),
+        fetchAllPages<CapaRecord>((from, to) => supabase.from('qualidade_rnc_capa').select('id,rpnc_id,codigo,origem,descricao,plano_5w2h,status,created_at',{count:'exact'}).eq('empresa_id', id).order('created_at', { ascending: false }).range(from, to)),
+        fetchAllPages<User>((from, to) => supabase.from('erp_usuarios').select('id,nome,email',{count:'exact'}).eq('empresa_id', id).eq('ativo', true).is('deleted_at', null).order('nome').range(from, to)),
+        fetchAllPages<Sector>((from, to) => supabase.from('erp_setores').select('id,nome',{count:'exact'}).eq('empresa_id', id).eq('ativo', true).order('nome').range(from, to)),
+        fetchAllPages<DocBase>((from, to) => supabase.from('erp_documentos_qualidade').select('id,codigo,titulo,area,revisao,data_revisao,responsavel_id,status',{count:'exact'}).eq('empresa_id', id).order('codigo').range(from, to)),
+        fetchAllPages<Attachment>((from, to) => supabase.from('erp_documentos_qualidade_anexos').select('id,documento_id,nome_arquivo,storage_path,revisao,status,criado_em',{count:'exact'}).eq('empresa_id', id).order('revisao', { ascending: false }).order('criado_em', { ascending: false }).range(from, to)),
       ])
-      if (r.error || a.error || u.error || s.error || d.error || attachments.error) throw r.error ?? a.error ?? u.error ?? s.error ?? d.error ?? attachments.error
-      setRncs((r.data ?? []) as Rpn[]); setActions((a.data ?? []) as Capa[]); setUsers((u.data ?? []) as User[]); setSectors((s.data ?? []) as Sector[])
-      const userNames = new Map<string, string>((u.data ?? []).map(user => [user.id, user.nome || user.email || '—'] as const))
+      setRncs(r); setActions(a.flatMap(actionsFromCapa)); setUsers(u); setSectors(s)
+      const userNames = new Map<string, string>(u.map(user => [user.id, user.nome || user.email || '—'] as const))
       const activeAttachments = new Map<string, { storage_path: string; nome_arquivo: string }>()
-      for (const attachment of attachments.data ?? []) {
-        if (attachment.status.toLowerCase() === 'vigente' && !activeAttachments.has(attachment.documento_id)) {
-          activeAttachments.set(attachment.documento_id, { storage_path: attachment.storage_path, nome_arquivo: attachment.nome_arquivo })
-        }
+      for (const attachment of attachments) {
+        if (attachment.status.toLowerCase() === 'vigente' && !activeAttachments.has(attachment.documento_id)) activeAttachments.set(attachment.documento_id, { storage_path: attachment.storage_path, nome_arquivo: attachment.nome_arquivo })
       }
-      setDocs((d.data ?? []).map(doc => {
+      setDocs(d.map(doc => {
         const attachment = activeAttachments.get(doc.id)
         return { id: doc.id, codigo: doc.codigo, titulo: doc.titulo, tipo: doc.area, revisao: doc.revisao, data_revisao: doc.data_revisao, preparado_por: doc.responsavel_id ? userNames.get(doc.responsavel_id) ?? null : null, pdf_storage_path: attachment?.storage_path ?? null, nome_arquivo: attachment?.nome_arquivo ?? null, status: doc.status }
       }))
-      if (!selectedRnc && r.data?.[0]) setSelectedRnc(r.data[0].id)
+      if (!selectedRnc && r[0]) setSelectedRnc(r[0].id)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar SGQ.')
     } finally { setBusy(false) }
@@ -94,18 +110,25 @@ export default function QualidadeRNC() {
     if (!sectorId) { setError('Setor responsável é obrigatório.'); return }
     setBusy(true)
     try {
-      const lotResult = await supabase.from('erp_estoque_lotes').select('id').eq('empresa_id', companyId).or(`lote_interno.eq.${lot.trim()},lote_fornecedor.eq.${lot.trim()}`).maybeSingle()
-      if (lotResult.error) throw lotResult.error
-      if (!lotResult.data) throw new Error('Lote afetado não encontrado na empresa atual.')
-      const result = await supabase.rpc('erp_sgq_abrir_rpnc', {
-        p_descricao: description.trim(), p_origem: origin, p_severidade: 'Menor', p_setor_id: sectorId,
-        p_linked_entity_type: 'lote', p_linked_entity_id: lotResult.data.id,
-      })
-      if (result.error) throw result.error
-      if (!result.data || typeof result.data !== 'object' || !('id' in result.data)) throw new Error('A abertura da RNC não retornou o registro.')
-      const createdId = String(result.data.id)
-      const update = await supabase.from('erp_rpnc').update({ lote_afetado: lot.trim(), quantidade_segregada: Number(segregated || 0) }).eq('id', createdId).eq('empresa_id', companyId)
-      if (update.error) throw update.error
+      const lotNumber = lot.trim()
+      const internalLot = await supabase.from('erp_estoque_lotes').select('id').eq('empresa_id', companyId).eq('lote_interno', lotNumber).maybeSingle()
+      if (internalLot.error) throw internalLot.error
+      let lotExists = Boolean(internalLot.data)
+      if (!lotExists) {
+        const supplierLot = await supabase.from('erp_estoque_lotes').select('id').eq('empresa_id', companyId).eq('lote_fornecedor', lotNumber).maybeSingle()
+        if (supplierLot.error) throw supplierLot.error
+        lotExists = Boolean(supplierLot.data)
+      }
+      if (!lotExists) throw new Error('Lote afetado não encontrado na empresa atual.')
+      const created = await supabase.from('erp_rpnc').insert({
+        empresa_id: companyId,
+        numero_rpnc: 'RPNC-' + new Date().getFullYear() + '-' + crypto.randomUUID().slice(0, 8).toUpperCase(),
+        descricao_nao_conformidade: description.trim(), origem: origin.toLowerCase(), gravidade: 'menor',
+        setor_envolvido_id: sectorId, lote_producao: lotNumber,
+        quantidade_segregada: Number(segregated || 0), bloqueia_lote: Number(segregated || 0) > 0, status: 'aberta',
+      }).select('id').single()
+      if (created.error) throw created.error
+      const createdId = created.data.id
       setSelectedRnc(createdId); setDescription(''); setLot(''); setSegregated('0'); setNotice('RNC aberta no banco real com lote e quantidade segregada.'); await load()
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao abrir RNC.') }
     finally { setBusy(false) }
@@ -127,12 +150,18 @@ export default function QualidadeRNC() {
     if (!action.oQue.trim() || !action.quem.trim() || !action.prazo || !action.responsavel) { setError('O quê, quem, prazo e responsável são obrigatórios.'); return }
     setBusy(true); setError(''); setNotice('')
     try {
-      const result = await supabase.from('erp_sgq_capa_acoes').insert({
-        empresa_id: companyId, rpnc_id: selected.id, tipo: action.tipo, descricao: action.oQue.trim(), causa_raiz: action.causa.trim() || null,
-        responsavel_id: action.responsavel, prazo: action.prazo, acao_o_que: action.oQue.trim(), acao_por_que: action.porQue.trim() || null,
-        acao_onde: action.onde.trim() || null, acao_quem: action.quem.trim(), acao_quando: action.quando || action.prazo, acao_como: action.como.trim() || null, acao_quanto: Number(action.quanto || 0),
-      })
-      if (result.error) throw result.error
+      const actionRow = { id: crypto.randomUUID(), tipo: action.tipo, oQue: action.oQue.trim(), porQue: action.porQue.trim() || null, onde: action.onde.trim() || null, quem: action.quem.trim(), quando: action.quando || action.prazo, como: action.como.trim() || null, quanto: Number(action.quanto || 0), causa: action.causa.trim() || null, responsavel: action.responsavel, prazo: action.prazo }
+      const existing = await supabase.from('qualidade_rnc_capa').select('id,plano_5w2h').eq('empresa_id', companyId).eq('rpnc_id', selected.id).maybeSingle()
+      if (existing.error) throw existing.error
+      if (existing.data) {
+        const currentPlan = Array.isArray(existing.data.plano_5w2h) ? existing.data.plano_5w2h : []
+        const updated = await supabase.from('qualidade_rnc_capa').update({ plano_5w2h: [...currentPlan, actionRow], ishikawa: sixM, status: 'em_execucao' }).eq('empresa_id', companyId).eq('id', existing.data.id)
+        if (updated.error) throw updated.error
+      } else {
+        const source = String(selected.origem || '').toLowerCase()
+        const capa = await supabase.from('qualidade_rnc_capa').insert({ empresa_id: companyId, rpnc_id: selected.id, codigo: 'CAPA-' + selected.numero_rpnc, origem: source === 'cliente' ? 'cliente' : source === 'fornecedor' ? 'fornecedor' : 'interna', descricao: selected.descricao_nao_conformidade, ishikawa: sixM, plano_5w2h: [actionRow], status: 'em_execucao' })
+        if (capa.error) throw capa.error
+      }
       setAction({ tipo: 'Corretiva', oQue: '', porQue: '', onde: '', quem: '', quando: '', como: '', quanto: '0', causa: '', responsavel: '', prazo: '' })
       setNotice('Plano CAPA / 5W2H registrado.'); await load()
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao registrar ação CAPA.') }
@@ -205,12 +234,12 @@ export default function QualidadeRNC() {
             {(['metodo','mao_de_obra','material','maquina','meio_ambiente','medicao'] as const).map((key) => <label className={label} key={key}>{key === 'mao_de_obra' ? 'Mão de obra' : key === 'meio_ambiente' ? 'Meio ambiente' : key.replace('_',' ')}<input className={field(false)} value={sixM[key]} onChange={(e) => setSixM({ ...sixM, [key]: e.target.value })} placeholder="Preencher..." /></label>)}
           </div>
           <div className="sgq-save-row"><button className={btn} type="button" disabled={!selected || busy} onClick={() => void saveSixM()}><Save size={13}/> SALVAR 6M</button></div>
-          <div className="sgq-table"><table><thead><tr><th>RNC</th><th>Origem</th><th>Lote</th><th>Segregada</th><th>Status</th></tr></thead><tbody>{rncs.map((row) => <tr key={row.id} className={row.id === selectedRnc ? 'selected' : ''} onClick={() => setSelectedRnc(row.id)}><td>{row.numero_rpnc}</td><td>{row.sgq_origem}</td><td>{row.lote_afetado || '—'}</td><td className="num">{row.quantidade_segregada}</td><td>{row.status}</td></tr>)}</tbody></table></div>
+          <div className="sgq-table"><table><thead><tr><th>RNC</th><th>Origem</th><th>Lote</th><th>Segregada</th><th>Status</th></tr></thead><tbody>{rncs.map((row) => <tr key={row.id} className={row.id === selectedRnc ? 'selected' : ''} onClick={() => setSelectedRnc(row.id)}><td>{row.numero_rpnc}</td><td>{row.origem}</td><td>{row.lote_producao || '—'}</td><td className="num">{row.quantidade_segregada}</td><td>{row.status}</td></tr>)}</tbody></table></div>
         </section>}
 
         {tab === 'capa' && <section className="sgq-panel">
           <div className="sgq-grid sgq-grid-5">
-            <label className={label}>RNC<select className={field(false)} value={selectedRnc} onChange={(e) => setSelectedRnc(e.target.value)}><option value="">Preencher...</option>{rncs.map((row) => <option key={row.id} value={row.id}>{row.numero_rpnc} · {row.lote_afetado || 'sem lote'}</option>)}</select></label>
+            <label className={label}>RNC<select className={field(false)} value={selectedRnc} onChange={(e) => setSelectedRnc(e.target.value)}><option value="">Preencher...</option>{rncs.map((row) => <option key={row.id} value={row.id}>{row.numero_rpnc} · {row.lote_producao || 'sem lote'}</option>)}</select></label>
             <label className={label}>O quê<input className={field(!action.oQue)} value={action.oQue} onChange={(e) => setAction({ ...action, oQue: e.target.value })} placeholder="Preencher..." /></label>
             <label className={label}>Por quê<input className={field(false)} value={action.porQue} onChange={(e) => setAction({ ...action, porQue: e.target.value })} placeholder="Preencher..." /></label>
             <label className={label}>Onde<input className={field(false)} value={action.onde} onChange={(e) => setAction({ ...action, onde: e.target.value })} placeholder="Preencher..." /></label>
