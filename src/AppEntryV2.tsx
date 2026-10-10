@@ -66,6 +66,7 @@ const PCPOrdens = lazyPage(() => import('./pages/PCPOrdens'), 'default')
 const PCPExecucaoIndustrial = lazyPage(() => import('./pages/PCPExecucaoIndustrial'), 'default')
 const PCPCapacidadeIndustrial = lazyPage(() => import('./pages/PCPCapacidadeIndustrial'), 'default')
 const PCPAgendaMaquinas = lazyPage(() => import('./pages/PCPAgendaMaquinas'), 'default')
+const PCPFichasProcesso = lazyPage(() => import('./pages/PCPFichasProcesso'), 'default')
 const PCPParadas = lazyPage(() => import('./pages/PCPParadas'), 'PCPParadas')
 const PCPSequenciamento = lazyPage(() => import('./pages/PCPSequenciamento'), 'PCPSequenciamento')
 const PCPPlanejamentoIndustrial = lazyPage(() => import('./pages/PCPPlanejamentoIndustrial'), 'PCPPlanejamentoIndustrial')
@@ -486,6 +487,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/planejamento" element={<PCPPlanejamentoIndustrial />} />
       <Route path="/pcp/capacidade" element={<PCPCapacidadeIndustrial />} />
       <Route path="/pcp/agenda-maquinas" element={<PCPAgendaMaquinas />} />
+      <Route path="/pcp/fichas-processo" element={<PCPFichasProcesso />} />
       <Route path="/pcp/mrp-ii" element={<MRPIndustrial />} />
       <Route path="/pcp/execucao-industrial" element={<PCPExecucaoIndustrial />} />
       <Route path="/pcp/dashboard-oee" element={<PCPDashboardOEE />} />
