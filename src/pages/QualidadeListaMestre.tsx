@@ -146,7 +146,7 @@ export default function QualidadeListaMestre() {
         </div>
       </header>
 
-      <div data-quality-workspace className="mx-auto grid max-w-[1800px] grid-cols-1 gap-5 p-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+      <div data-quality-workspace className="mx-auto grid max-w-[1800px] grid-cols-1 gap-5 p-4 grid-cols-1">
         <QualitySidebar active="/qualidade/lista-mestre" />
 
         <section className="rounded-md border border-slate-200 bg-white p-5 shadow-sm">
