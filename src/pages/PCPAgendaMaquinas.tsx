@@ -8,10 +8,10 @@ type Order = { id:string; numero_op:string|number; produto_id:string|null; maqui
 type Slot = { id:string; maquina_id:string; ordem_producao_id:string; molde_id:string|null; quantidade_programada:number; lote_producao:string|null; data_hora_inicio:string; data_hora_fim:string; status:string }
 type Calendar = { dias_trabalho:string[]; horario_inicio_jornada:string; horario_fim_jornada:string }
 type Cell = { machine:Machine; date:Date }
-const input='h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] outline-none focus:border-sky-600'
-const label='mb-[2px] block text-[9px] font-bold uppercase tracking-wide text-slate-600'
-const btn='inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[9px] font-bold uppercase hover:bg-slate-50 disabled:opacity-40'
-const primary='inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-sky-700 bg-[#2D8DB8] px-2 text-[9px] font-bold uppercase text-white hover:bg-sky-800 disabled:opacity-40'
+const input='erp-premium-input w-full'
+const label='erp-premium-label'
+const btn='erp-premium-button erp-premium-button-secondary'
+const primary='erp-premium-button'
 const weekdays=[{key:'seg',label:'SEG'},{key:'ter',label:'TER'},{key:'qua',label:'QUA'},{key:'qui',label:'QUI'},{key:'sex',label:'SEX'},{key:'sab',label:'SÁB'},{key:'dom',label:'DOM'}]
 const fmt=(value:string)=>new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(value))
 const localValue=(d:Date)=>{const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,16)}
