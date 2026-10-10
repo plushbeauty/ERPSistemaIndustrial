@@ -110,6 +110,7 @@ const TesteERP = lazyPage(() => import('./pages/TesteERP'), 'TesteERP')
 const UsuariosAdmin = lazyPage(() => import('./pages/UsuariosAdmin'), 'UsuariosAdmin')
 const ConfiguracoesADMPage = lazyPage(() => import('./pages/configuracoes/ConfiguracoesADM'), 'ConfiguracoesADMPage')
 const DocumentosQualidadeControle = lazyPage(() => import('./pages/DocumentosQualidadeControle'), 'DocumentosQualidadeControle')
+const QualidadeProcedimentos = lazyPage(() => import('./pages/qualidade/QualidadeProcedimentos'), 'default')
 const QualidadeCEP = lazyPage(() => import('./pages/qualidade/CEP'), 'default')
 const QualidadeFMEA = lazyPage(() => import('./pages/qualidade/FMEA'), 'default')
 const GEDDocumentos = lazyPage(() => import('./pages/qualidade/GEDDocumentos'), 'default')
@@ -516,7 +517,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/metrologia" element={<QualityPlanGate><CentraisIndustriais module="metrologia" /></QualityPlanGate>} />
       <Route path="/qualidade/calibracao" element={<QualityPlanGate><CalibracaoIndustrial /></QualityPlanGate>} />
       <Route path="/qualidade/editor-it" element={<QualityPlanGate><QualidadeEditorIT /></QualityPlanGate>} />
-      <Route path="/qualidade/procedimentos" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
+      <Route path="/qualidade/procedimentos" element={<QualityPlanGate><QualidadeProcedimentos /></QualityPlanGate>} />
       <Route path="/qualidade/assinatura-it" element={<QualityPlanGate><QualidadeAssinaturaIT /></QualityPlanGate>} />
       <Route path="/qualidade/genealogia-lote" element={<QualityPlanGate><QualidadeGenealogiaLote /></QualityPlanGate>} />
       <Route path="/qualidade/quarentena" element={<QualityPlanGate><QualidadeQuarentena /></QualityPlanGate>} />
