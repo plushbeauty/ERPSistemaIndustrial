@@ -119,7 +119,7 @@ export default function VendasPedidoStatus() {
         <div className="sales-detail-toolbar">
           <Link to="/vendas/pedidos" className="sales-button sales-button--secondary"><ArrowLeft size={15} /> Pedidos de venda</Link>
           {order && ['rascunho', 'aberto'].some((status) => order.status.toLowerCase().includes(status)) && id && (
-            <Link to={`/vendas/novo-pedido?pedido=${encodeURIComponent(id)}`} className="sales-button sales-button--primary"><Pencil size={15} /> Editar rascunho</Link>
+            <Link to={`/vendas/novo-pedido?pedido=${encodeURIComponent(id)}`} className="sales-button sales-button--primary erp-row-action"><Pencil size={15} /> Editar rascunho</Link>
           )}
         </div>
         {error && <div className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-red-800">{error}</div>}
