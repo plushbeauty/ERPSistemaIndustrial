@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { Copy, Filter, LayoutGrid, List, Minus, Plus, Search, Send, ShoppingBag, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import VendasLayout from './VendasLayout'
+import { useNavigate } from 'react-router-dom'
 
 type EmpresaCatalogo = { razao_social:string; nome_fantasia:string|null; cnpj:string; telefone:string|null; email:string|null; site:string|null }
 
-type Produto = {
+type BomItem = { id:string; produto_id:string; sku_insumo:string; qtd:number; unidade:string; custo_unitario:number; nome_componente?:string }\n\ntype Produto = {
   id: string
   codigo: string
   nome: string
@@ -27,7 +28,7 @@ const brl = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0)
 
 export default function VendasCatalogoDigital() {
-  const [produtos, setProdutos] = useState<Produto[]>([])
+  const navigate = useNavigate()\n  const [produtos, setProdutos] = useState<Produto[]>([])\n  const [empresaId, setEmpresaId] = useState('')\n  const [bomItems, setBomItems] = useState<BomItem[]>([])\n  const [bomBusy, setBomBusy] = useState(false)
   const [empresa, setEmpresa] = useState<EmpresaCatalogo | null>(null)
   const [filtro, setFiltro] = useState('')
   const [categoria, setCategoria] = useState('TODOS')
@@ -43,7 +44,7 @@ export default function VendasCatalogoDigital() {
     setError('')
     try {
       const empresa = await supabase.rpc('erp_current_empresa_id')
-      if (empresa.error || !empresa.data) throw empresa.error ?? new Error('Empresa não identificada.')
+      if (empresa.error || !empresa.data) throw empresa.error ?? new Error('Empresa não identificada.')\n      setEmpresaId(String(empresa.data))
 
       const company = await supabase
         .from('erp_empresas')
@@ -77,6 +78,30 @@ export default function VendasCatalogoDigital() {
   useEffect(() => {
     void load()
   }, [])
+
+  useEffect(() => {
+    if (!detalhe || !empresaId) { setBomItems([]); return }
+    let active = true
+    const loadBom = async () => {
+      setBomBusy(true)
+      try {
+        const result = await supabase.from('erp_pcp_bom_itens').select('id,produto_id,sku_insumo,qtd,unidade,custo_unitario').eq('empresa_id', empresaId).eq('produto_pai_id', detalhe.id).order('created_at')
+        if (result.error) throw result.error
+        const items = (result.data ?? []) as BomItem[]
+        const ids = [...new Set(items.map(item => item.produto_id))]
+        const components = ids.length ? await supabase.from('erp_produtos').select('id,nome').eq('empresa_id', empresaId).in('id', ids) : { data: [], error: null }
+        if (components.error) throw components.error
+        const names = new Map((components.data ?? []).map((item: {id:string;nome:string}) => [item.id,item.nome]))
+        if (active) setBomItems(items.map(item => ({...item,nome_componente:names.get(item.produto_id) ?? 'Componente cadastrado'})))
+      } catch (cause) {
+        if (active) setError(cause instanceof Error ? cause.message : 'Falha ao carregar estrutura técnica.')
+      } finally {
+        if (active) setBomBusy(false)
+      }
+    }
+    void loadBom()
+    return () => { active = false }
+  }, [detalhe, empresaId])
 
   const categorias = useMemo(
     () => Array.from(new Set(produtos.map((produto) => produto.grupo || 'SEM GRUPO'))).sort(),
@@ -478,6 +503,14 @@ export default function VendasCatalogoDigital() {
                 </div>
                 <div className="mt-3 border p-3 text-[10px] leading-5 text-slate-600">
                   {detalhe.descricao || 'Sem descrição cadastrada.'}
+                </div>
+                <section className="mt-3 border border-slate-200 bg-white">
+                  <header className="flex items-center justify-between border-b bg-slate-50 px-2 py-1.5"><strong className="text-[9px] uppercase tracking-wide text-[#123B50]">Estrutura técnica · BOM</strong><span className="text-[8px] text-slate-500">{bomItems.length} componente(s)</span></header>
+                  {bomBusy ? <div className="p-3 text-[9px] text-slate-500">Carregando estrutura cadastrada...</div> : bomItems.length ? <div className="overflow-x-auto"><table className="w-full"><thead><tr><th className="p-2 text-left text-[8px] uppercase">Componente</th><th className="p-2 text-right text-[8px] uppercase">Qtd.</th><th className="p-2 text-left text-[8px] uppercase">Un.</th></tr></thead><tbody>{bomItems.map(item=><tr key={item.id} className="h-[30px] border-t border-slate-100 hover:bg-neutral-50/80"><td className="px-2 text-[9px]"><b>{item.sku_insumo}</b><span className="block text-[8px] text-slate-500">{item.nome_componente}</span></td><td className="px-2 text-right text-[9px] tabular-nums">{Number(item.qtd).toLocaleString('pt-BR')}</td><td className="px-2 text-[9px]">{item.unidade}</td></tr>)}</tbody></table></div> : <p className="p-2 text-[9px] text-slate-500">Nenhuma estrutura BOM cadastrada para este produto.</p>}
+                </section>
+                <div className="mt-3 grid grid-cols-2 gap-1">
+                  <button type="button" onClick={() => navigate('/pcp/ordens-industriais')} className="flex h-[30px] items-center justify-center gap-1 border border-slate-300 text-[9px] text-[#123B50]">Abrir OPs no PCP</button>
+                  <button type="button" onClick={() => navigate('/estoque/saldos-lote')} className="flex h-[30px] items-center justify-center gap-1 border border-slate-300 text-[9px] text-[#123B50]">Consultar estoque</button>
                 </div>
                 <button
                   type="button"
