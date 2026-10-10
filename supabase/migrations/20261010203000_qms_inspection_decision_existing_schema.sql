@@ -17,7 +17,7 @@ begin
     raise exception 'Empresa da sessão não identificada.';
   end if;
 
-  if p_decisao is null or p_decisao not in ('APROVAR', 'BLOQUEAR') then
+  if p_decisao not in ('APROVAR', 'BLOQUEAR') then
     raise exception 'Decisão de inspeção inválida.';
   end if;
 
