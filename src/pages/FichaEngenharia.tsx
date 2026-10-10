@@ -64,6 +64,7 @@ export default function FichaEngenharia(){
   if(requestedKind&&kinds.some(k=>k.id===requestedKind)){
    const nextKind=requestedKind as Kind
    setFicha(null);setVersion('1');setRendimento('1');setUnit('UN');setProcessCode(`FP-${nextKind}-001`);setProcessName(kinds.find(k=>k.id===nextKind)?.title.replace('Ficha de Processo — ','')||'');setNotes('');setSpec({});setBom([emptyBom()]);setOps([emptyOp()]);setQuality([emptyQuality()]);setKind(nextKind)
+   if(!new URLSearchParams(location.search).get('produto')){setProductId('');setProductCode('')}
   }
  },[location.search])
  useEffect(()=>{
