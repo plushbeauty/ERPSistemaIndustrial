@@ -86,4 +86,5 @@ export default function QualitySidebar({ active }: { active: string }) {
         <p className="mt-1 text-[11px] leading-relaxed text-slate-700">{helpText}</p>
       </section>}
     </aside>
+  )
 }
