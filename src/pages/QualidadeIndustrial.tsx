@@ -1,15 +1,35 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Check, ClipboardCheck, RefreshCw, Search, ShieldCheck, TriangleAlert, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import { useLocation } from 'react-router-dom'
 import QualitySidebar from '../components/quality/QualitySidebar'
 import QualitySPCChart from '../components/industrial/QualitySPCChart'
 
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; fornecedor_id: string | null; nf_numero: string | null; quantidade_recebida: number; status_inspecao: string | null }
 type Supplier = { id: string; razao_social: string }
-type Receiving = { id: string; lote_id: string; fornecedor_id: string | null; tamanho_lote: number; nivel_inspecao: 'G-II' | 'G-III'; aql: number; tamanho_amostra: number; defeitos_encontrados: number; criterio_ac: number; criterio_re: number; status: 'PENDENTE' | 'APROVADO' | 'BLOQUEADO'; created_at: string }
+type Receiving = { id: string; lote_id: string; produto_id: string; fornecedor_id: string | null; tamanho_lote: number; nivel_inspecao: 'G-II' | 'G-III'; aql: number; tamanho_amostra: number; defeitos_encontrados: number; criterio_ac: number; criterio_re: number; status: 'PENDENTE' | 'APROVADO' | 'BLOQUEADO'; created_at: string; medicoes: unknown[]; observacoes: string | null }
+type InspectionRecord = { id: string; tipo: string; produto_id: string; lote_id: string; ordem_compra_id: string | null; quantidade_total: number; tamanho_amostra: number; medicoes: unknown; resultado: string; inspetor_id: string | null; observacoes: string | null; created_at: string }
 type Dimensional = { id: string; inspecao_recebimento_id: string | null; numero_peca_amostrada: number; cavidade_molde: string | null; cota_nominal_mm: number; tolerancia_superior_mm: number; tolerancia_inferior_mm: number; valor_medido_mm: number | null; desvio_mm: number | null; status: 'PENDENTE' | 'OK' | 'NOK'; instrumento: string | null }
 type Genealogy = { id: string; lote_interno: string; lote_fornecedor: string | null; produto: string; fornecedor: string; operador: string; maquina: string; apontado_em: string | null; pedido: string | null }
+
+
+const jsonRecord = (value: unknown): Record<string, unknown> | null => typeof value === 'object' && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : null
+const stringField = (value: unknown, fallback = ''): string => typeof value === 'string' ? value : fallback
+const numberField = (value: unknown, fallback = 0): number => { const n = typeof value === 'number' ? value : Number(value ?? fallback); return Number.isFinite(n) ? n : fallback }
+const parseMeta = (value: string | null): Record<string, unknown> => { try { return jsonRecord(JSON.parse(value || '{}')) ?? {} } catch { return {} } }
+const receivingFromInspection = (row: InspectionRecord): Receiving => {
+  const meta = parseMeta(row.observacoes)
+  const storedStatus = stringField(meta.status).toUpperCase()
+  const status: Receiving['status'] = storedStatus === 'APROVADO' || row.resultado === 'aprovado' ? 'APROVADO' : storedStatus === 'BLOQUEADO' || row.resultado === 'reprovado' ? 'BLOQUEADO' : 'PENDENTE'
+  return { id: row.id, lote_id: row.lote_id, produto_id: row.produto_id, fornecedor_id: stringField(meta.fornecedor_id) || null, tamanho_lote: numberField(row.quantidade_total), nivel_inspecao: meta.nivel_inspecao === 'G-III' ? 'G-III' : 'G-II', aql: numberField(meta.aql, 1), tamanho_amostra: numberField(row.tamanho_amostra), defeitos_encontrados: numberField(meta.defeitos_encontrados), criterio_ac: numberField(meta.criterio_ac), criterio_re: numberField(meta.criterio_re, 1), status, created_at: row.created_at, medicoes: Array.isArray(row.medicoes) ? row.medicoes : [], observacoes: row.observacoes }
+}
+const dimensionalsFromInspection = (row: Receiving): Dimensional[] => row.medicoes.flatMap((value, index) => {
+  const item = jsonRecord(value)
+  if (!item) return []
+  const status = stringField(item.status).toUpperCase()
+  return [{ id: stringField(item.id, row.id + '-' + index), inspecao_recebimento_id: row.id, numero_peca_amostrada: numberField(item.numero_peca_amostrada, index + 1), cavidade_molde: stringField(item.cavidade_molde) || null, cota_nominal_mm: numberField(item.cota_nominal_mm), tolerancia_superior_mm: numberField(item.tolerancia_superior_mm), tolerancia_inferior_mm: numberField(item.tolerancia_inferior_mm), valor_medido_mm: item.valor_medido_mm == null ? null : numberField(item.valor_medido_mm), desvio_mm: item.desvio_mm == null ? null : numberField(item.desvio_mm), status: status === 'OK' ? 'OK' : status === 'NOK' ? 'NOK' : 'PENDENTE', instrumento: stringField(item.instrumento) || null }]
+})
 
 const levels = [
   { min: 2, max: 8, II: 2, III: 3 },
@@ -82,20 +102,16 @@ export default function QualidadeIndustrial() {
       if (!current.data) throw new Error('Empresa da sessão não identificada.')
       const id = String(current.data)
       setCompanyId(id)
-      const [lotResult, supplierResult, receivingResult, dimensionalResult] = await Promise.all([
-        supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,fornecedor_id,nf_numero,quantidade_recebida,status_inspecao').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
-        supabase.from('erp_fornecedores').select('id,razao_social').eq('empresa_id', id).order('razao_social').limit(500),
-        supabase.from('erp_qualidade_inspecoes_recebimento').select('id,lote_id,fornecedor_id,tamanho_lote,nivel_inspecao,aql,tamanho_amostra,defeitos_encontrados,criterio_ac,criterio_re,status,created_at').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
-        supabase.from('erp_qualidade_inspecoes_dimensionais').select('id,inspecao_recebimento_id,numero_peca_amostrada,cavidade_molde,cota_nominal_mm,tolerancia_superior_mm,tolerancia_inferior_mm,valor_medido_mm,desvio_mm,status,instrumento').eq('empresa_id', id).order('created_at', { ascending: false }).limit(500),
+      const [lots, suppliers, inspections] = await Promise.all([
+        fetchAllPages<Lot>((from, to) => supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,fornecedor_id,nf_numero,quantidade_recebida,status_inspecao',{count:'exact'}).eq('empresa_id', id).order('created_at', { ascending: false }).range(from, to)),
+        fetchAllPages<Supplier>((from, to) => supabase.from('erp_fornecedores').select('id,razao_social',{count:'exact'}).eq('empresa_id', id).order('razao_social').range(from, to)),
+        fetchAllPages<InspectionRecord>((from, to) => supabase.from('qualidade_inspecoes').select('id,tipo,produto_id,lote_id,ordem_compra_id,quantidade_total,tamanho_amostra,medicoes,resultado,inspetor_id,observacoes,created_at',{count:'exact'}).eq('empresa_id', id).order('created_at', { ascending: false }).range(from, to)),
       ])
-      if (lotResult.error) throw lotResult.error
-      if (supplierResult.error) throw supplierResult.error
-      if (receivingResult.error) throw receivingResult.error
-      if (dimensionalResult.error) throw dimensionalResult.error
-      setLots((lotResult.data ?? []) as Lot[])
-      setSuppliers((supplierResult.data ?? []) as Supplier[])
-      setReceivings((receivingResult.data ?? []) as Receiving[])
-      setDimensionals((dimensionalResult.data ?? []) as Dimensional[])
+      setLots(lots)
+      setSuppliers(suppliers)
+      const receivingRows = inspections.filter(row => row.tipo === 'recebimento').map(receivingFromInspection)
+      setReceivings(receivingRows)
+      setDimensionals(receivingRows.flatMap(dimensionalsFromInspection))
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar Qualidade.')
     } finally {
@@ -123,18 +139,16 @@ export default function QualidadeIndustrial() {
         ? await supabase.from('erp_estoque_lotes_rastreabilidade').select('id').eq('empresa_id', companyId).eq('lote_fornecedor', selectedLotData.lote_fornecedor).maybeSingle()
         : { data: null, error: null }
       if (rastreio.error) throw rastreio.error
-      const result = await supabase.from('erp_qualidade_inspecoes_recebimento').insert({
+      const result = await supabase.from('qualidade_inspecoes').insert({
         empresa_id: companyId,
+        tipo: 'recebimento',
+        produto_id: selectedLotData.produto_id,
         lote_id: selectedLot,
-        lote_rastreabilidade_id: rastreio.data?.id ?? null,
-        fornecedor_id: selectedLotData?.fornecedor_id ?? null,
-        tamanho_lote: Number(lotSize),
-        nivel_inspecao: level,
-        aql: Number(aql),
+        quantidade_total: Number(lotSize),
         tamanho_amostra: calculatedSample,
-        defeitos_encontrados: Number(defects || 0),
-        criterio_ac: Number(ac),
-        criterio_re: Number(re),
+        medicoes: [],
+        resultado: 'aprovado_com_restricao',
+        observacoes: JSON.stringify({ fornecedor_id: selectedLotData.fornecedor_id, lote_rastreabilidade_id: rastreio.data?.id ?? null, nivel_inspecao: level, aql: Number(aql), defeitos_encontrados: Number(defects || 0), criterio_ac: Number(ac), criterio_re: Number(re) }),
       }).select('id').single()
       if (result.error) throw result.error
       setNotice('Inspeção de recebimento registrada no banco real.')
@@ -168,17 +182,10 @@ export default function QualidadeIndustrial() {
     if (!piece || !nominal || !upper || !lower || !measured) return setInvalid('dimensional')
     setBusy(true)
     try {
-      const result = await supabase.from('erp_qualidade_inspecoes_dimensionais').insert({
-        empresa_id: companyId,
-        inspecao_recebimento_id: selectedReceiving,
-        numero_peca_amostrada: Number(piece),
-        cavidade_molde: cavity || null,
-        cota_nominal_mm: Number(nominal),
-        tolerancia_superior_mm: Number(upper),
-        tolerancia_inferior_mm: Number(lower),
-        valor_medido_mm: Number(measured),
-        instrumento: instrument,
-      }).select('id,inspecao_recebimento_id,numero_peca_amostrada,cavidade_molde,cota_nominal_mm,tolerancia_superior_mm,tolerancia_inferior_mm,valor_medido_mm,desvio_mm,status,instrumento').single()
+      if (!currentReceiving) throw new Error('Inspeção de recebimento não encontrada.')
+      const measurement = { id: crypto.randomUUID(), numero_peca_amostrada: Number(piece), cavidade_molde: cavity || null, cota_nominal_mm: Number(nominal), tolerancia_superior_mm: Number(upper), tolerancia_inferior_mm: Number(lower), valor_medido_mm: Number(measured), desvio_mm: Number(measured) - Number(nominal), status: dimensionalStatus, instrumento }
+      const existingMeasurements = Array.isArray(currentReceiving.medicoes) ? currentReceiving.medicoes : []
+      const result = await supabase.from('qualidade_inspecoes').update({ medicoes: [...existingMeasurements, measurement] }).eq('empresa_id', companyId).eq('id', currentReceiving.id)
       if (result.error) throw result.error
       setNotice(`Medição registrada: ${result.data.status} · desvio ${Number(result.data.desvio_mm ?? 0).toFixed(3)} mm.`)
       setMeasured('')
