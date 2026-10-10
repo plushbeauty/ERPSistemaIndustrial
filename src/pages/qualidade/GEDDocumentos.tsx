@@ -112,7 +112,7 @@ export default function GEDDocumentos() {
         p_motivo: motivo.trim() || null,
       })
       if (result.error) throw result.error
-      const saved = result.data as { codigo_documento?: string; revisao?: number; status?: string } | null
+      const saved = result.data as { id?: string; codigo_documento?: string; revisao?: number; status?: string } | null
       setNotice('Revisão ' + String(saved?.revisao ?? '') + ' criada com status ' + String(saved?.status ?? 'EM_REVISAO') + '.')
       if (typeof saved?.id === 'string') setSelectedId(saved.id)
       await load()
