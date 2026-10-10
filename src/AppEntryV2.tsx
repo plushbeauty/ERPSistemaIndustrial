@@ -111,6 +111,7 @@ const UsuariosAdmin = lazyPage(() => import('./pages/UsuariosAdmin'), 'UsuariosA
 const ConfiguracoesADMPage = lazyPage(() => import('./pages/configuracoes/ConfiguracoesADM'), 'ConfiguracoesADMPage')
 const DocumentosQualidadeControle = lazyPage(() => import('./pages/DocumentosQualidadeControle'), 'DocumentosQualidadeControle')
 const QualidadeCEP = lazyPage(() => import('./pages/qualidade/CEP'), 'default')
+const QualidadeFMEA = lazyPage(() => import('./pages/qualidade/FMEA'), 'default')
 const GEDDocumentos = lazyPage(() => import('./pages/qualidade/GEDDocumentos'), 'default')
 const RecebimentoMateriais = lazyPage(() => import('./pages/RecebimentoMateriais'), 'RecebimentoMateriais')
 const ManualUsuario = lazyPage(() => import('./pages/ManualUsuario'), 'ManualUsuario')
@@ -464,7 +465,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/estoque/enderecos" element={<IndustrialDataWorkspace />} />
       <Route path="/estoque/movimentacoes" element={<IndustrialDataWorkspace />} />
       <Route path="/qualidade/especificacoes" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
-      <Route path="/qualidade/fmea" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
+      <Route path="/qualidade/fmea" element={<QualityPlanGate><QualidadeFMEA /></QualityPlanGate>} />
       <Route path="/qualidade/rnc-capa" element={<QualityPlanGate><IndustrialDataWorkspace /></QualityPlanGate>} />
       <Route path="/qualidade/cep" element={<QualityPlanGate><QualidadeCEP /></QualityPlanGate>} />
       <Route path="/qualidade/ged-documentos" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
