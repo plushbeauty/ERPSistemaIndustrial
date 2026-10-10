@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type ReactElement } from 'react'
 import { AlertTriangle, Ban, LockKeyhole, RefreshCw, Search, ShieldCheck, UnlockKeyhole } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
+import QualitySidebar from '../../components/quality/QualitySidebar'
 
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; quantidade_disponivel: number; status_inspecao: string | null }
 type Product = { codigo: string; nome: string }
@@ -64,7 +65,7 @@ export default function QualidadeQuarentena(): ReactElement {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4 md:p-6 text-slate-900">
+    <main className="min-h-screen bg-[#F4FBFD] p-3 md:p-4 text-slate-900"><QualitySidebar active="/qualidade/quarentena" />
       <section className="mx-auto max-w-7xl rounded-xl border border-slate-200 bg-white shadow-sm">
         <header className="flex flex-col gap-3 border-b border-slate-200 p-5 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3"><ShieldCheck className="h-7 w-7 text-rose-700" /><div><p className="text-xs font-black uppercase tracking-widest text-slate-500">Qualidade</p><h1 className="text-xl font-black">Central de Bloqueio e Quarentena</h1></div></div>
