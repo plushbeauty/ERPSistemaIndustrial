@@ -139,13 +139,17 @@ export default function QualidadeInspecoesIndustrial() {
       setError('Para aprovar, selecione uma especificação técnica ativa e vigente e uma característica numérica aprovada. Sem esse vínculo, registre a decisão adequada sem liberar o lote.')
       return
     }
+    if (!selectedSpecification && !observacoes.trim()) {
+      setError('Sem especificação ativa, registre a justificativa técnica nas observações antes de salvar a decisão.')
+      return
+    }
     if (resultado === 'aprovado' && selectedSpecificationParameter && (Number(nominal) !== selectedSpecificationParameter.nominal || Number(tolMais) !== selectedSpecificationParameter.tolerancia_superior || Number(tolMenos) !== selectedSpecificationParameter.tolerancia_inferior)) {
       setError('Os limites informados diferem da especificação aprovada. Recarregue o critério oficial antes de aprovar.')
       return
     }
     const n = Number(nominal), plus = Number(tolMais), minus = Number(tolMenos), value = Number(medido)
     if (![n, plus, minus, value].every(Number.isFinite) || plus < 0 || minus < 0) { setError('Informe medição e tolerâncias válidas.'); return }
-    const measurement = { numero_peca: 1, parametro: parametro.trim(), valor_nominal: n, tolerancia_superior: plus, tolerancia_inferior: minus, valor_medido: value, limite_superior: n + plus, limite_inferior: n - minus, status: value >= n - minus && value <= n + plus ? 'pass' : 'fail' }
+    const measurement = { numero_peca: 1, parametro: parametro.trim(), valor_nominal: n, tolerancia_superior: plus, tolerancia_inferior: minus, valor_medido: value, limite_superior: n + plus, limite_inferior: n - minus, status: value >= n - minus && value <= n + plus ? 'pass' : 'fail', especificacao_id: selectedSpecification?.id ?? null, especificacao_revisao: selectedSpecification?.revisao ?? null, criterio_codigo: selectedSpecificationParameter?.codigo ?? null, criterio_caracteristica: selectedSpecificationParameter?.caracteristica ?? parametro.trim(), unidade: selectedSpecificationParameter?.unidade ?? null, metodo_verificacao: selectedSpecificationParameter?.metodo_verificacao ?? null }
     setSaving(true)
     const inspectionResult: InspectionRow['resultado'] = measurement.status === 'fail' ? 'reprovado' : resultado
     const resultInsert = await supabase.rpc('erp_salvar_inspecao_lote', {
