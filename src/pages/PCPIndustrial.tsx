@@ -261,7 +261,6 @@ const tabs:[Tab,string,string][]=[['visao','VisÃ£o geral','Gauge'],['novaop','
    <button className={`pcp-side-item ${tab==='materiais'?'active':''}`} aria-current={tab==='materiais'?'page':undefined} onClick={()=>selectTab('materiais')}><span>â—‡</span> MATERIAIS / MRP</button>
    <button className={`pcp-side-item ${tab==='programacao'?'active':''}`} aria-current={tab==='programacao'?'page':undefined} onClick={()=>selectTab('programacao')}><span>â—«</span> CALENDÃRIO / PROGRAMAÃ‡ÃƒO</button>
    <button className={`pcp-side-item ${tab==='capacidade'?'active':''}`} aria-current={tab==='capacidade'?'page':undefined} onClick={()=>selectTab('capacidade')}><span>â–¥</span> CENTROS DE TRABALHO / MÃQUINAS</button>
-   <button className="pcp-side-item" onClick={()=>window.location.href='/ficha-engenharia'}><span>âŒ˜</span> ESTRUTURA DE PRODUTO / BOM</button>
    <button className={`pcp-side-item ${tab==='producao'?'active':''}`} aria-current={tab==='producao'?'page':undefined} onClick={()=>selectTab('producao')}><span>â–¶</span> APONTAMENTO DE PRODUÃ‡ÃƒO</button>
    <button className="pcp-side-item" onClick={()=>window.location.href='/pcp/paradas'}><span>â…¡</span> PARADAS / SETUP</button>
    <button className={`pcp-side-item ${tab==='qualidade'?'active':''}`} aria-current={tab==='qualidade'?'page':undefined} onClick={()=>selectTab('qualidade')}><span>âœ“</span> QUALIDADE / DEFEITOS</button>
