@@ -6,9 +6,10 @@ import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import QualitySidebar from '../components/quality/QualitySidebar'
 
-type Rpn = { id: string; status: string; setor_id: string | null; setor?: { nome: string }[] | null }
-type Capa = { status: string; resultado_eficacia: string | null }
-type Document = { status: string; area: string | null; setor: string | null }
+type Rpn = { id: string; status: string; setor_envolvido_id: string | null; setor?: { nome: string }[] | null }
+type Capa = { status: string; plano_5w2h: unknown }
+type Document = { status: string; area: string | null }
+type QualityInspection = { tipo: string; resultado: string; created_at: string; medicoes: unknown }
 type DepartmentCount = { department: string; total: number }
 type Receiving = { status: string; created_at: string }
 type Dimensional = { status: string; created_at: string }
@@ -33,18 +34,17 @@ export default function QualidadeDashboardRNC() {
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error) throw company.error
       if (!company.data) throw new Error('Empresa ERP não identificada.')
-      const [r, a, d, receiving, dimensional] = await Promise.all([
-        fetchAllPages<Rpn>((from, to) => supabase.from('erp_rpnc').select('id,status,setor_id,sgq_origem,setor:erp_setores(nome)', { count: 'exact' }).eq('empresa_id', company.data).not('sgq_origem', 'is', null).order('criado_em', { ascending: false }).order('id', { ascending: false }).range(from, to)),
-        fetchAllPages<Capa>((from, to) => supabase.from('erp_sgq_capa_acoes').select('status,resultado_eficacia', { count: 'exact' }).eq('empresa_id', company.data).order('created_at', { ascending: false }).order('id', { ascending: false }).range(from, to)),
-        fetchAllPages<Document>((from, to) => supabase.from('erp_documentos_qualidade_revisoes').select('status,area,setor', { count: 'exact' }).eq('empresa_id', company.data).order('criado_em', { ascending: false }).order('id', { ascending: false }).range(from, to)),
-        fetchAllPages<Receiving>((from, to) => supabase.from('erp_qualidade_inspecoes_recebimento').select('status,created_at', { count: 'exact' }).eq('empresa_id', company.data).order('created_at', { ascending: false }).order('id', { ascending: false }).range(from, to)),
-        fetchAllPages<Dimensional>((from, to) => supabase.from('erp_qualidade_inspecoes_dimensionais').select('status,created_at', { count: 'exact' }).eq('empresa_id', company.data).order('created_at', { ascending: false }).order('id', { ascending: false }).range(from, to)),
+      const [r, a, d, inspections] = await Promise.all([
+        fetchAllPages<Rpn>((from, to) => supabase.from('erp_rpnc').select('id,status,setor_envolvido_id,setor:erp_setores!erp_rpnc_empresa_id_sector_fkey(nome)', { count: 'exact' }).eq('empresa_id', company.data).order('criado_em', { ascending: false }).order('id', { ascending: false }).range(from, to)),
+        fetchAllPages<Capa>((from, to) => supabase.from('qualidade_rnc_capa').select('status,plano_5w2h', { count: 'exact' }).eq('empresa_id', company.data).order('created_at', { ascending: false }).range(from, to)),
+        fetchAllPages<Document>((from, to) => supabase.from('erp_documentos_qualidade').select('status,area', { count: 'exact' }).eq('empresa_id', company.data).order('codigo').range(from, to)),
+        fetchAllPages<QualityInspection>((from, to) => supabase.from('qualidade_inspecoes').select('tipo,resultado,created_at,medicoes', { count: 'exact' }).eq('empresa_id', company.data).order('created_at', { ascending: false }).range(from, to)),
       ])
       setRncs(r)
       setActions(a)
       setDocuments(d)
-      setReceivingInspections(receiving)
-      setDimensionalInspections(dimensional)
+      setReceivingInspections(inspections.filter(row => row.tipo === 'recebimento').map(row => ({ status: row.resultado, created_at: row.created_at })))
+      setDimensionalInspections(inspections.filter(row => Array.isArray(row.medicoes) && row.medicoes.length > 0).map(row => ({ status: row.resultado, created_at: row.created_at })))
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Falha ao consultar os indicadores do SGQ.')
     } finally {
@@ -56,7 +56,7 @@ export default function QualidadeDashboardRNC() {
 
   const openByDepartment = useMemo<DepartmentCount[]>(() => {
     const counts = new Map<string, number>()
-    rncs.filter((row) => row.status.trim().toLocaleLowerCase('pt-BR') !== 'encerrada').forEach((row) => {
+    rncs.filter((row) => (row.status || '').trim().toLocaleLowerCase('pt-BR') !== 'encerrada').forEach((row) => {
       const department = row.setor?.[0]?.nome || 'Sem setor definido'
       counts.set(department, (counts.get(department) ?? 0) + 1)
     })
@@ -66,8 +66,7 @@ export default function QualidadeDashboardRNC() {
   const efficacy = useMemo(() => {
     const totals = { Eficaz: 0, Ineficaz: 0, Pendente: 0 }
     actions.forEach((action) => {
-      if (action.resultado_eficacia === 'Eficaz') totals.Eficaz += 1
-      else if (action.resultado_eficacia === 'Ineficaz') totals.Ineficaz += 1
+      if (action.status.toLowerCase() === 'eficacia_validada') totals.Eficaz += 1
       else totals.Pendente += 1
     })
     return Object.entries(totals).map(([name, value]) => ({ name, value }))
@@ -76,22 +75,22 @@ export default function QualidadeDashboardRNC() {
   const pendingByDepartment = useMemo<DepartmentCount[]>(() => {
     const counts = new Map<string, number>()
     documents.filter((doc) => pendingStates.has((doc.status || '').toLowerCase())).forEach((doc) => {
-      const department = doc.area?.trim() || doc.setor?.trim() || 'Sem setor definido'
+      const department = doc.area?.trim() || 'Sem setor definido'
       counts.set(department, (counts.get(department) ?? 0) + 1)
     })
     return [...counts].map(([department, total]) => ({ department, total })).sort((a, b) => b.total - a.total)
   }, [documents])
 
   const openCount = rncs.filter((row) => row.status.trim().toLocaleLowerCase('pt-BR') !== 'encerrada').length
-  const verifiedCount = actions.filter((action) => action.resultado_eficacia !== null).length
+  const verifiedCount = actions.filter((action) => action.status.toLowerCase() === 'eficacia_validada').length
   const pendingReviewCount = documents.filter((doc) => pendingStates.has((doc.status || '').toLowerCase())).length
   const approvedReceiving = receivingInspections.filter((row) => row.status.toUpperCase() === 'APROVADO').length
-  const blockedReceiving = receivingInspections.filter((row) => ['BLOQUEADO', 'REPROVADO', 'REJEITADO'].includes(row.status.toUpperCase())).length
-  const pendingReceiving = receivingInspections.filter((row) => row.status.toUpperCase() === 'PENDENTE').length
-  const dimensionalOk = dimensionalInspections.filter((row) => ['OK', 'APROVADO', 'PASS'].includes(row.status.toUpperCase())).length
-  const dimensionalNok = dimensionalInspections.filter((row) => ['NOK', 'REPROVADO', 'FAIL'].includes(row.status.toUpperCase())).length
-  const receivingStatus = [{ name: 'Aprovado', value: approvedReceiving }, { name: 'Bloqueado', value: blockedReceiving }, { name: 'Pendente', value: pendingReceiving }]
-  const dimensionalStatus = [{ name: 'Conforme', value: dimensionalOk }, { name: 'Não conforme', value: dimensionalNok }, { name: 'Pendente', value: Math.max(0, dimensionalInspections.length - dimensionalOk - dimensionalNok) }]
+  const blockedReceiving = receivingInspections.filter((row) => row.status.toUpperCase() === 'REPROVADO').length
+  const pendingReceiving = receivingInspections.filter((row) => row.status.toUpperCase() === 'APROVADO_COM_RESTRICAO').length
+  const dimensionalOk = dimensionalInspections.filter((row) => row.status.toUpperCase() === 'APROVADO').length
+  const dimensionalNok = dimensionalInspections.filter((row) => row.status.toUpperCase() === 'REPROVADO').length
+  const receivingStatus = [{ name: 'Aprovado', value: approvedReceiving }, { name: 'Reprovado', value: blockedReceiving }, { name: 'Com restrição', value: pendingReceiving }]
+  const dimensionalStatus = [{ name: 'Conforme', value: dimensionalOk }, { name: 'Não conforme', value: dimensionalNok }, { name: 'Com restrição', value: Math.max(0, dimensionalInspections.length - dimensionalOk - dimensionalNok) }]
 
   return (
     <main data-quality-workspace className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,_rgba(45,141,184,0.16),_transparent_42%),linear-gradient(135deg,#edf7fb_0%,#f4f7fc_52%,#edf2fa_100%)] p-3 text-slate-900 md:p-4">
