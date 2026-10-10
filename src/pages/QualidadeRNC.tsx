@@ -80,7 +80,7 @@ export default function QualidadeRNC() {
         const attachment = activeAttachments.get(doc.id)
         return { id: doc.id, codigo: doc.codigo, titulo: doc.titulo, tipo: doc.area, revisao: doc.revisao, data_revisao: doc.data_revisao, preparado_por: doc.responsavel_id ? userNames.get(doc.responsavel_id) ?? null : null, pdf_storage_path: attachment?.storage_path ?? null, nome_arquivo: attachment?.nome_arquivo ?? null, status: doc.status }
       }))
-      if (!selectedRnc && r.data?.[0]) setSelectedRnc(r.data[0].id)
+      if (!selectedRnc && r[0]) setSelectedRnc(r[0].id)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar SGQ.')
     } finally { setBusy(false) }
