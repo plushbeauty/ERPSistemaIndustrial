@@ -487,6 +487,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/execucao-industrial" element={<PCPExecucaoIndustrial />} />
       <Route path="/pcp/dashboard-oee" element={<PCPDashboardOEE />} />
       <Route path="/pcp/tablet-operador" element={<PCPTabletOperador />} />
+      <Route path="/qualidade/industrial" element={<QualidadeIndustrial />} />
       <Route path="/qualidade" element={<QualidadeIndustrial />} />
       <Route path="/qualidade/instrumentos" element={<QualidadeIndustrial />} />
       <Route path="/qualidade/liberacao-lote" element={<AcompanhamentoNaoConformidade />} />
