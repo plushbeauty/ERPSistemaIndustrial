@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { AlertTriangle, Building2, CheckCircle2, CircleDollarSign, Clock3, RefreshCw, Save, Search, ShieldCheck, Users } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import { erpModuleCatalog } from '../lib/erpModuleCatalog'
 
 type Company = {
   id: string
@@ -65,9 +66,10 @@ export default function Master() {
   useEffect(() => { void load() }, [])
   const moduleCatalog = useMemo(() => {
     const byCode = new Map<string, PlanModule>()
-    data.modules.forEach(module => {
-      if (!byCode.has(module.modulo_codigo)) byCode.set(module.modulo_codigo, module)
+    Object.entries(erpModuleCatalog).forEach(([codigo, nome]) => {
+      byCode.set(codigo, { id: 'catalog:' + codigo, plano_codigo: '', modulo_codigo: codigo, modulo_nome: nome, acesso: false, limite_usuarios: null, limite_empresas: null, recursos: {} })
     })
+    data.modules.forEach(module => byCode.set(module.modulo_codigo, module))
     return Array.from(byCode.values()).sort((a, b) => a.modulo_nome.localeCompare(b.modulo_nome, 'pt-BR'))
   }, [data.modules])
   const activeCompanies = data.companies.filter(company => company.ativo)
