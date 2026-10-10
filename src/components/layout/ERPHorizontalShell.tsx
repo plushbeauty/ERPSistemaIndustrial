@@ -148,7 +148,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             const active = current?.label === menu.label
             const hasChildren = Boolean(menu.children?.length)
             const expanded = openMenu === menu.label
-            const Icon = menu.label === 'Início' ? Home : menu.label === 'Cadastros' ? Database : menu.label === 'Vendas' ? ShoppingCart : menu.label === 'Compras' ? ShoppingBasket : menu.label === 'Estoque' ? Package : menu.label === 'Financeiro' ? Wallet : menu.label === 'Fiscal' ? ReceiptText : menu.label === 'Manufatura / PCP' ? Factory : menu.label === 'Qualidade' ? ShieldCheck : menu.label === 'Manutenção' ? Wrench : menu.label === 'Relatórios' ? ChartNoAxesCombined : Settings
+            const Icon = menu.label === 'Início' ? Home : menu.label === 'Cadastros' ? Database : menu.label === 'Vendas' ? ShoppingCart : menu.label === 'Compras' ? ShoppingBasket : menu.label === 'Estoque' ? Package : menu.label === 'Financeiro' ? Wallet : menu.label === 'Fiscal' ? ReceiptText : menu.label === 'Manufatura / PCP' ? Factory : menu.label === 'Qualidade' ? ShieldCheck : menu.label === 'Manutenção' ? Wrench : menu.label === 'Relatórios' ? BarChart3 : Settings
             return <section className="erp-premium-sidebar-section" key={menu.label}>
               <button type="button" className={`erp-premium-sidebar-parent ${active ? 'is-active' : ''}`} onClick={() => hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)} aria-expanded={hasChildren ? expanded : undefined}>
                 <Icon size={16} strokeWidth={1.8}/><span>{menu.label}</span>{hasChildren && (expanded ? <ChevronDown size={13}/> : <ChevronRight size={13}/>)}
