@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CheckCircle2, CircleHelp, FilePlus2, Plus, RefreshCw, Save, ShieldCheck, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import QualitySidebar from '../components/quality/QualitySidebar'
 
 type Product = { id: string; codigo: string; descricao_tecnica: string; tipo_item: string | null }
 type SpecRow = {
