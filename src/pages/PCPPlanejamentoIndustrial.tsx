@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabaseClient'
 type Product={id:string;codigo:string;nome:string;estoque_atual:number}
 type MPS={id:string;produto_id:string;periodo_inicio:string;periodo_fim:string;quantidade_prevista:number;estoque_alvo:number;demanda_confirmada:number;status:string}
 type Planned={id:string;produto_id:string;quantidade:number;data_necessaria:string;origem:string;status:string}
-type Center={id:string;codigo:string;nome:string;capacidade_horas_dia:number;eficiencia_percent:number;ativo:boolean}
+type Center={id:string;codigo_posto:string;nome_posto:string;taxa_hora:number;ativo:boolean}
 type Program={id:string;maquina_id:string|null;inicio_planejado:string;fim_planejado:string;quantidade_planejada:number;status:string}
 type Machine={id:string;codigo:string;nome:string;status:string}
 type AlertRow={id:string;tipo:string;severidade:string;mensagem:string;status:string;created_at:string}
@@ -23,7 +23,7 @@ export default function PCPPlanejamentoIndustrial(){
  const [machines,setMachines]=useState<Machine[]>([])
  const [alerts,setAlerts]=useState<AlertRow[]>([])
  const [productId,setProductId]=useState(''),[qty,setQty]=useState(''),[target,setTarget]=useState(''),[start,setStart]=useState(today()),[end,setEnd]=useState(today())
- const [center,setCenter]=useState({codigo:'',nome:'',capacidade_horas_dia:'8',eficiencia_percent:'85'})
+ const [center,setCenter]=useState({codigo_posto:'',nome_posto:'',taxa_hora:'0'})
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
 
  async function load(){
@@ -36,7 +36,7 @@ export default function PCPPlanejamentoIndustrial(){
     supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(3000),
     supabase.from('erp_pcp_planos_mestres').select('id,produto_id,periodo_inicio,periodo_fim,quantidade_prevista,estoque_alvo,demanda_confirmada,status').eq('empresa_id',empresaId).order('periodo_inicio').limit(1000),
     supabase.from('erp_pcp_ordens_planejadas').select('id,produto_id,quantidade,data_necessaria,origem,status').eq('empresa_id',empresaId).order('data_necessaria').limit(1000),
-    supabase.from('erp_pcp_centros_trabalho').select('id,codigo,nome,capacidade_horas_dia,eficiencia_percent,ativo').eq('empresa_id',empresaId).eq('ativo',true).order('codigo'),
+    supabase.from('erp_postos_trabalho').select('id,codigo_posto,nome_posto,taxa_hora,ativo').eq('empresa_id',empresaId).eq('ativo',true).order('codigo_posto'),
     supabase.from('erp_pcp_programacoes').select('id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,status').eq('empresa_id',empresaId).neq('status','cancelada').order('inicio_planejado').limit(3000),
     supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('empresa_id',empresaId).not('status','eq','INATIVA').order('codigo'),
     supabase.from('erp_pcp_alertas').select('id,tipo,severidade,mensagem,status,created_at').eq('empresa_id',empresaId).neq('status','RESOLVIDO').order('created_at',{ascending:false}).limit(500)
@@ -97,16 +97,16 @@ export default function PCPPlanejamentoIndustrial(){
  }
 
  async function createCenter(){
-  if(!center.codigo.trim()||!center.nome.trim()){setError('Código e nome do centro de trabalho são obrigatórios.');return}
-  const cap=Number(center.capacidade_horas_dia),eff=Number(center.eficiencia_percent)
-  if(cap<=0||eff<=0||eff>100){setError('Capacidade e eficiência devem ser maiores que zero; eficiência máxima 100%.');return}
+  if(!center.codigo_posto.trim()||!center.nome_posto.trim()){setError('Código e nome do posto de trabalho são obrigatórios.');return}
+  const rate=Number(center.taxa_hora)
+  if(!Number.isFinite(rate)||rate<0){setError('Informe uma taxa horária válida, maior ou igual a zero.');return}
   setBusy(true);setError('');setMessage('')
   try{
    const tenant=await supabase.rpc('erp_current_empresa_id')
    if(tenant.error||typeof tenant.data!=='string'||!tenant.data) throw tenant.error??new Error('Empresa da sessão não identificada.')
-   const r=await supabase.from('erp_pcp_centros_trabalho').insert({empresa_id:tenant.data,codigo:center.codigo.trim().toUpperCase(),nome:center.nome.trim(),capacidade_horas_dia:cap,eficiencia_percent:eff,ativo:true})
+   const r=await supabase.from('erp_postos_trabalho').insert({empresa_id:tenant.data,codigo_posto:center.codigo_posto.trim().toUpperCase(),nome_posto:center.nome_posto.trim(),taxa_hora:rate,ativo:true})
    if(r.error)throw r.error
-   setCenter({codigo:'',nome:'',capacidade_horas_dia:'8',eficiencia_percent:'85'});setMessage('Centro de trabalho cadastrado.');await load()
+   setCenter({codigo_posto:'',nome_posto:'',taxa_hora:'0'});setMessage('Centro de trabalho cadastrado.');await load()
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível cadastrar o centro de trabalho.')}finally{setBusy(false)}
  }
 
@@ -141,8 +141,8 @@ export default function PCPPlanejamentoIndustrial(){
 
   {tab==='capacidade'&&<section className="industrial-panel">
    <div className="process-section-heading"><span>FINITE CAPACITY</span><h2>Capacidade e carga</h2><p>Compare horas programadas com a capacidade nominal dos centros de trabalho e máquinas.</p></div>
-   <div className="process-form-grid"><label>Código<input value={center.codigo} onChange={e=>setCenter({...center,codigo:e.target.value})}/></label><label>Nome<input value={center.nome} onChange={e=>setCenter({...center,nome:e.target.value})}/></label><label>Horas/dia<input type="number" min="0.5" value={center.capacidade_horas_dia} onChange={e=>setCenter({...center,capacidade_horas_dia:e.target.value})}/></label><label>Eficiência %<input type="number" min="1" max="100" value={center.eficiencia_percent} onChange={e=>setCenter({...center,eficiencia_percent:e.target.value})}/></label><div style={{display:'flex',alignItems:'end'}}><button className="industrial-primary" type="button" onClick={()=>void createCenter()} disabled={busy}><Plus size={16}/> Cadastrar centro</button></div></div>
-   <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">{centers.map(c=><article key={c.id} style={{border:'1px solid #cfe1e7',borderRadius:12,padding:16}}><strong>{c.codigo}</strong><h3>{c.nome}</h3><p>{c.capacidade_horas_dia} h/dia • {c.eficiencia_percent}% eficiência</p></article>)}</div>
+   <div className="process-form-grid"><label>Código do posto<input value={center.codigo_posto} onChange={e=>setCenter({...center,codigo_posto:e.target.value})}/></label><label>Nome do posto<input value={center.nome_posto} onChange={e=>setCenter({...center,nome_posto:e.target.value})}/></label><label>Taxa horária (R$)<input type="number" min="0" step="0.01" value={center.taxa_hora} onChange={e=>setCenter({...center,taxa_hora:e.target.value})}/></label><div style={{display:'flex',alignItems:'end'}}><button className="industrial-primary" type="button" onClick={()=>void createCenter()} disabled={busy}><Plus size={16}/> Cadastrar centro</button></div></div>
+   <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">{centers.map(c=><article key={c.id} style={{border:'1px solid #cfe1e7',borderRadius:12,padding:16}}><strong>{c.codigo_posto}</strong><h3>{c.nome_posto}</h3><p>Taxa horária: {Number(c.taxa_hora).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</p></article>)}</div>
    <div className="industrial-table-scroll" style={{marginTop:16}}><table className="industrial-table"><thead><tr><th>Máquina</th><th>Programações</th><th>Horas carregadas</th><th>Utilização</th><th>Status</th></tr></thead><tbody>{machineLoad.map(x=><tr key={x.m.id}><td>{x.m.codigo} • {x.m.nome}</td><td>{x.rows.length}</td><td>{x.hours.toFixed(1)} h</td><td>{x.hours>0?'Carga registrada':'Livre'}</td><td>{x.m.status}</td></tr>)}</tbody></table></div>
   </section>}
 
