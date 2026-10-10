@@ -205,10 +205,16 @@ export default function QualidadeIndustrial() {
     setBusy(true); setError(''); setNotice(''); setGenealogy([])
     try {
       if (!companyId) throw new Error('Empresa da sessão não identificada.')
-      const lotResult = await supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,fornecedor_id').eq('empresa_id', companyId).or(`lote_interno.eq.${term},lote_fornecedor.eq.${term}`).maybeSingle()
-      if (lotResult.error) throw lotResult.error
-      if (!lotResult.data) throw new Error('Lote não encontrado na empresa atual.')
-      const lot = lotResult.data
+      const internalLot = await supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,fornecedor_id').eq('empresa_id', companyId).eq('lote_interno', term).maybeSingle()
+      if (internalLot.error) throw internalLot.error
+      let lotData = internalLot.data
+      if (!lotData) {
+        const supplierLot = await supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,fornecedor_id').eq('empresa_id', companyId).eq('lote_fornecedor', term).maybeSingle()
+        if (supplierLot.error) throw supplierLot.error
+        lotData = supplierLot.data
+      }
+      if (!lotData) throw new Error('Lote não encontrado na empresa atual.')
+      const lot = lotData
       const [productResult, genealogyResult, productionResult] = await Promise.all([
         supabase.from('erp_produtos').select('id,nome').eq('id', lot.produto_id).eq('empresa_id', companyId).maybeSingle(),
         supabase.from('erp_genealogia_lote_componentes').select('id,lote_insumo_id,quantidade_consumida').eq('empresa_id', companyId).eq('lote_acabado_id', lot.id),
@@ -237,12 +243,14 @@ export default function QualidadeIndustrial() {
       }
       const rows: Genealogy[] = []
       for (const item of genealogyResult.data ?? []) {
-        const inputLot = await supabase.from('erp_estoque_lotes_rastreabilidade').select('lote_fornecedor,produto_id').eq('id', item.lote_insumo_id).eq('empresa_id', companyId).maybeSingle()
+        const inputLot = await supabase.from('erp_estoque_lotes').select('lote_interno,lote_fornecedor,produto_id,fornecedor_id').eq('id', item.lote_insumo_id).eq('empresa_id', companyId).maybeSingle()
         if (inputLot.error) throw inputLot.error
         if (!inputLot.data) continue
         const inputProduct = await supabase.from('erp_produtos').select('nome').eq('id', inputLot.data.produto_id).eq('empresa_id', companyId).maybeSingle()
         if (inputProduct.error) throw inputProduct.error
-        rows.push({ id: item.id, lote_interno: lot.lote_interno, lote_fornecedor: inputLot.data.lote_fornecedor, produto: inputProduct.data?.nome ?? 'Produto não identificado', fornecedor: supplierName, operador: operatorResult.data?.nome ?? operatorResult.data?.email ?? 'Operador não vinculado', maquina: machineResult.data ? `${machineResult.data.codigo} · ${machineResult.data.nome}` : 'Máquina não vinculada', apontado_em: productionResult.data?.criado_em ?? null, pedido })
+        const inputSupplier = inputLot.data.fornecedor_id ? await supabase.from('erp_fornecedores').select('razao_social').eq('id', inputLot.data.fornecedor_id).eq('empresa_id', companyId).maybeSingle() : { data: null, error: null }
+        if (inputSupplier.error) throw inputSupplier.error
+        rows.push({ id: item.id, lote_interno: inputLot.data.lote_interno, lote_fornecedor: inputLot.data.lote_fornecedor, produto: inputProduct.data?.nome ?? 'Produto não identificado', fornecedor: inputSupplier.data?.razao_social ?? 'Fornecedor não vinculado', operador: operatorResult.data?.nome ?? operatorResult.data?.email ?? 'Operador não vinculado', maquina: machineResult.data ? `${machineResult.data.codigo} · ${machineResult.data.nome}` : 'Máquina não vinculada', apontado_em: productionResult.data?.criado_em ?? null, pedido })
       }
       if (!rows.length) rows.push({ id: lot.id, lote_interno: lot.lote_interno, lote_fornecedor: lot.lote_fornecedor, produto: productName, fornecedor: supplierName, operador: operatorResult.data?.nome ?? operatorResult.data?.email ?? 'Operador não vinculado', maquina: machineResult.data ? `${machineResult.data.codigo} · ${machineResult.data.nome}` : 'Máquina não vinculada', apontado_em: productionResult.data?.criado_em ?? null, pedido })
       setGenealogy(rows)
