@@ -597,14 +597,14 @@ function AppIndustrialAuthenticated() {
       <Route path="/usuarios-admin" element={<UsuariosAdmin />} />
       <Route path="/usuarios" element={<UsuariosAdmin />} />
       <Route path="/configuracoes-adm/*" element={<ConfiguracoesADMPage />} />
-      <Route path="/documentos-qualidade" element={<DocumentosQualidadeControle />} />
+      <Route path="/documentos-qualidade" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
       <Route path="/recebimento-materiais" element={<RecebimentoMateriais />} />
       <Route path="/manual-usuario" element={<ManualUsuario />} />
       <Route path="/rh" element={<QualityPlanGate>{<RHIndustrial />}</QualityPlanGate>} />
       <Route path="/module-overview" element={<ModuleOverviewIndustrial module="erp" />} />
       <Route path="/setup-adm-inicial" element={<SetupADMInicial />} />
       <Route path="/configuracao-lote" element={<ConfiguracaoLote />} />
-      <Route path="/configuracao-lote-pcp" element={<ConfiguracaoLotePCP />} />
+      <Route path="/configuracao-lote-pcp" element={<QualityPlanGate><ConfiguracaoLotePCP /></QualityPlanGate>} />
       <Route path="/custos" element={<QualityPlanGate>{<CentralCustosIndustrial />}</QualityPlanGate>} />
       <Route path="/ajuda/assistente" element={<AssistenteAjudaERP />} />
       <Route path="/ajuda" element={<AssistenteAjudaERP />} />
