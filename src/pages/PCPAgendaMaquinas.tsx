@@ -57,7 +57,6 @@ export default function PCPAgendaMaquinas(){
  const visibleDays=days.filter(d=>calendar.dias_trabalho.includes(dayKey(d)))
  const orderMap=useMemo(()=>new Map(orders.map(o=>[o.id,o])),[orders])
  const moldMap=useMemo(()=>new Map(molds.map(m=>[m.id,m])),[molds])
- const machineMap=useMemo(()=>new Map(machines.map(m=>[m.id,m])),[machines])
  const weekLabel=useMemo(()=>`Semana ${Math.ceil((weekStart.getDate()+6)/7)} · ${weekStart.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})} a ${days[6].toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}`,[weekStart,days])
  const cellSlots=(machineId:string,date:Date)=>slots.filter(s=>s.maquina_id===machineId&&new Date(s.data_hora_inicio).toDateString()===date.toDateString()).sort((a,b)=>a.data_hora_inicio.localeCompare(b.data_hora_inicio))
  const selectCell=(machine:Machine,date:Date)=>{setSelected({machine,date});setError('');setNotice('');const start=new Date(date);const [h='06',min='00']=calendar.horario_inicio_jornada.split(':');start.setHours(Number(h),Number(min),0,0);const end=new Date(start);end.setHours(end.getHours()+1);setForm({ordem_producao_id:'',molde_id:'',quantidade_programada:'1',lote_producao:'',data_hora_inicio:localValue(start),data_hora_fim:localValue(end),status:'planejada'})}
