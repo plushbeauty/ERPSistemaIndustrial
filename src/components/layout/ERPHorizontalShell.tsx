@@ -88,8 +88,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
 
   const current = menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
   useEffect(() => {
-    const activeMenu = menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
-    setOpenMenu(activeMenu?.children?.length ? activeMenu.label : null)
+    setOpenMenu(null)
   }, [pathname])
   const filtered = search.trim()
     ? menus.flatMap(menu => [
