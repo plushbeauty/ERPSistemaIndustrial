@@ -231,7 +231,7 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
       if (!currentUserId) throw new Error('Perfil ERP ativo não identificado para distribuir documentos.')
       const targets = users.filter(user => user.id !== currentUserId && user.ativo && !user.deleted_at && (distributionSectors.length === 0 || (user.setor_id !== null && distributionSectors.includes(user.setor_id))))
       if (!targets.length) throw new Error('Nenhum usuário ativo corresponde à distribuição selecionada.')
-      const rows = targets.map(user => ({ empresa_id: companyId, documento_id: doc.id, revisao: Math.max(1, Number(doc.revisao) || 1), usuario_id: user.id }))
+      const rows = targets.map(user => ({ empresa_id: companyId, documento_id: doc.id, revisao: Math.max(0, Number(doc.revisao) || 0), usuario_id: user.id }))
       const result = await supabase.from('erp_documentos_qualidade_leituras').upsert(rows, { onConflict: 'empresa_id,documento_id,revisao,usuario_id', ignoreDuplicates: true })
       if (result.error) throw result.error
       setNotice('Distribuição de leitura registrada para ' + targets.length + ' usuários ativos.')
