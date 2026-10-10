@@ -10,6 +10,7 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react'
+import QualitySidebar from '../components/quality/QualitySidebar'
 import {
   AlertTriangle, ArrowLeft, CheckCircle2, ClipboardCheck, Clock3, FileText,
   Filter, Plus, RefreshCw, Save, Search, ShieldCheck, Target, UserRound, X
@@ -52,8 +53,8 @@ type Ishikawa = {
 
 const CLOSED = ['encerrada','fechada','concluida','concluído','cancelada','cancelado']
 const STATUS = ['aberta','em análise','em tratamento','aguardando eficácia','encerrada']
-const inputStyle:React.CSSProperties={width:'100%',minHeight:44,boxSizing:'border-box',border:'1px solid #cbd5e1',borderRadius:10,padding:'9px 11px',fontSize:15,background:'#fff',color:'#17333f'}
-const card:React.CSSProperties={background:'#fff',border:'1px solid #d7e4e8',borderRadius:16,padding:18,boxShadow:'0 8px 28px rgba(23,51,63,.06)'}
+const inputStyle:React.CSSProperties={width:'100%',minHeight:30,boxSizing:'border-box',border:'1px solid #cbd5e1',borderRadius:2,padding:'5px 8px',fontSize:11,background:'#fff',color:'#17333f'}
+const card:React.CSSProperties={background:'#fff',border:'1px solid #d7e4e8',borderRadius:2,padding:12,boxShadow:'0 1px 3px rgba(23,51,63,.05)'}
 
 export default function AcompanhamentoNaoConformidade(){
   const [rpnc,setRpnc]=useState<Rpn[]>([])
@@ -185,8 +186,8 @@ export default function AcompanhamentoNaoConformidade(){
   const selectedActions=selected?actionFor(selected.id):[]
   const selectedCauses=selected?ishikawa.filter(x=>x.rpnc_id===selected.id):[]
 
-  return <main style={{minHeight:'calc(100vh - 82px)',background:'#f4f8f9',padding:'24px 24px 48px',color:'#17333f'}}>
-    <div style={{maxWidth:1800,margin:'0 auto'}}>
+  return <main style={{minHeight:'calc(100vh - 82px)',background:'#F4FBFD',padding:'12px 12px 24px',color:'#17333f'}}>
+    <div style={{maxWidth:1800,margin:'0 auto'}}><QualitySidebar active="/qualidade/liberacao-lote" />
       <header style={{display:'flex',justifyContent:'space-between',gap:16,alignItems:'flex-start',marginBottom:18,flexWrap:'wrap'}}>
         <div>
           <button type="button" onClick={()=>location.href='/qualidade'} style={{border:'1px solid #cbdde3',background:'#fff',borderRadius:10,padding:'9px 13px',display:'inline-flex',alignItems:'center',gap:7,cursor:'pointer',fontWeight:800,color:'#31525f'}}><ArrowLeft size={17}/> Qualidade</button>
