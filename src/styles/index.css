@@ -159,3 +159,47 @@ table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!i
 @media(max-width:480px){
   .industrial-toolbar,.industrial-info-grid,.industrial-capacity,.industrial-k-grid{grid-template-columns:1fr!important}
 }
+
+
+/* Premium industrial design tokens — shared by authenticated ERP workspaces */
+:root{--erp-premium-blue:#2563eb;--erp-premium-blue-hover:#1d4ed8;--erp-premium-ink:#172b3a;--erp-premium-muted:#64748b;--erp-premium-line:rgba(203,213,225,.78);--erp-premium-surface:rgba(255,255,255,.94);--erp-premium-radius:3px}
+.erp-premium-input{height:30px!important;min-height:30px!important;border:1px solid var(--erp-premium-line)!important;border-radius:3px!important;background:#fff!important;padding:0 8px!important;font-size:11px!important;font-weight:400!important;color:#1f2937!important;transition:border-color .15s,box-shadow .15s}
+.erp-premium-input:focus{outline:none!important;border-color:#60a5fa!important;box-shadow:0 0 0 2px rgba(59,130,246,.1)!important}
+.erp-premium-label{display:block;margin-bottom:4px!important;font-size:9px!important;font-weight:700!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:#64748b!important}
+.erp-premium-button{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:30px!important;min-height:30px!important;border:1px solid #1d4ed8!important;border-radius:3px!important;background:#2563eb!important;padding:0 10px!important;color:#fff!important;font-size:10px!important;font-weight:700!important;letter-spacing:.06em!important;text-transform:uppercase!important;box-shadow:0 1px 2px rgba(0,0,0,.05);transition:background-color .15s,border-color .15s,transform .15s}
+.erp-premium-button:hover{background:#1d4ed8!important}.erp-premium-button:active{background:#1e40af!important;transform:translateY(1px)}
+.erp-premium-button-secondary{background:#f8fafc!important;border-color:#e2e8f0!important;color:#334155!important}.erp-premium-button-secondary:hover{background:#f1f5f9!important}
+.erp-premium-grid{width:100%;border-collapse:separate;border-spacing:0;font-size:10px}
+.erp-premium-grid thead th{height:32px;padding:0 8px;background:linear-gradient(180deg,#f8fafc,#f1f5f9);border-bottom:1px solid #dbe3ec;color:#64748b;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;text-align:left}
+.erp-premium-grid tbody td{height:32px;padding:0 8px;border-bottom:1px solid rgba(226,232,240,.8);font-size:10px;color:#334155;vertical-align:middle}
+.erp-premium-grid tbody tr{transition:background-color .12s}.erp-premium-grid tbody tr:hover{background:rgba(248,250,252,.88)}
+.erp-status-dot{display:inline-block;width:7px;height:7px;flex:0 0 7px;border-radius:999px}
+.erp-status-dot[data-status="ok"],.erp-status-dot[data-status="liberado"]{background:#16a34a;box-shadow:0 0 0 2px rgba(22,163,74,.12)}
+.erp-status-dot[data-status="nok"],.erp-status-dot[data-status="bloqueado"]{background:#dc2626}
+.erp-status-dot[data-status="atencao"],.erp-status-dot[data-status="quarentena"]{background:#e6a34a}
+.erp-status-dot[data-status="andamento"]{background:#2d8db8}
+.erp-status-dot[data-status="aprovacao"]{background:#8b5cf6}
+.erp-machine-load{height:5px;width:100%;overflow:hidden;border-radius:999px;background:#f1f5f9}
+.erp-machine-load>span{display:block;height:100%;border-radius:inherit;transition:width .25s ease,background-color .2s}
+.erp-machine-load[data-load="normal"]>span{background:#3b82f6}
+.erp-machine-load[data-load="warning"]>span{background:#f59e0b}
+.erp-machine-load[data-load="critical"]>span{background:#f43f5e}
+.erp-lot-status{display:inline-flex;align-items:center;gap:6px;border:1px solid transparent;padding:2px 6px;border-radius:2px;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.erp-lot-status[data-status="liberado"]{color:#059669;background:rgba(16,185,129,.08)}
+.erp-lot-status[data-status="quarentena"],.erp-lot-status[data-status="bloqueado"]{color:#b45309;background:rgba(245,158,11,.1);border-color:#fde68a}
+.erp-lot-status[data-status="reprovado"]{color:#be123c;background:rgba(244,63,94,.08);border-color:#fecdd3}
+.erp-premium-popover{border:1px solid rgba(203,213,225,.7);border-radius:3px;background:rgba(255,255,255,.92);box-shadow:0 8px 24px rgba(15,23,42,.12);backdrop-filter:blur(8px);padding:8px;font-size:10px}
+.erp-horizontal-shell{background:radial-gradient(ellipse at top left,rgba(219,234,254,.32),transparent 42%),#f8fafc}
+.erp-horizontal-header{background:rgba(255,255,255,.88)!important;backdrop-filter:blur(14px);border-bottom:1px solid rgba(203,213,225,.6)!important}
+.erp-horizontal-search,.erp-horizontal-search-results,.erp-horizontal-dropdown{border-color:rgba(203,213,225,.75)!important;border-radius:3px!important;box-shadow:0 12px 30px rgba(15,23,42,.09)!important}
+.erp-horizontal-menu{background:rgba(248,250,252,.9)!important;border-bottom:1px solid rgba(203,213,225,.65)!important;backdrop-filter:blur(12px)}
+.erp-horizontal-menu-button{background:transparent!important;color:#475569!important;border-right:1px solid rgba(203,213,225,.55)!important;font-weight:600!important;transition:background-color .15s,color .15s}
+.erp-horizontal-menu-button:hover{background:rgba(59,130,246,.05)!important;color:#1d4ed8!important}
+.erp-horizontal-menu-button.is-active{background:rgba(59,130,246,.07)!important;color:#1d4ed8!important;box-shadow:inset 0 -2px #2563eb}
+.erp-horizontal-dropdown{padding:5px!important;background:rgba(255,255,255,.96)!important;backdrop-filter:blur(14px)}
+.erp-horizontal-dropdown button{border-radius:3px!important;transition:background-color .12s,color .12s}
+.erp-horizontal-dropdown button:hover{background:rgba(59,130,246,.06)!important;color:#1d4ed8!important}
+.erp-horizontal-workspace button{min-height:30px}
+.erp-horizontal-workspace input,.erp-horizontal-workspace select{min-height:30px}
+@media(prefers-reduced-motion:reduce){.erp-premium-button,.erp-premium-grid tbody tr,.erp-machine-load>span{transition:none!important}}
+@media print{.erp-premium-popover,.erp-horizontal-header,.erp-horizontal-menu,.erp-global-status-row{box-shadow:none!important;backdrop-filter:none!important}}
