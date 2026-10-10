@@ -186,7 +186,7 @@ export default function QualidadeListaMestre() {
             <label className="w-full text-sm font-extrabold text-slate-800 md:w-64">
               VISÃO
               <select
-                className="mt-2 min-h-12 w-full rounded-md border border-slate-300 bg-white px-3 text-base text-slate-900"
+                className="mt-[2px] h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] text-slate-900 outline-none focus:border-[#2D8DB8]"
                 value={status}
                 onChange={(event) => setStatus(event.target.value)}
               >
