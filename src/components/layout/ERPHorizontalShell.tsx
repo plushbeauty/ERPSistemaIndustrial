@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight } from 'lucide-react'
+import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, CalendarRange, FileSliders } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 
@@ -47,11 +47,14 @@ const menus: MenuItem[] = [
     { label: 'Capacidade / Gantt', route: '/pcp/capacidade' },
     { label: 'Sequenciamento', route: '/pcp/sequenciamento' },
     { label: 'MRP II', route: '/pcp/mrp-ii' },
-    { label: 'Fichas de Processo', route: '/ficha-engenharia', children: [
-      { label: 'Prensados', route: '/ficha-engenharia?tipo=PRENSADOS' },
-      { label: 'Injetados', route: '/ficha-engenharia?tipo=INJETADOS' },
-      { label: 'Estampos', route: '/ficha-engenharia?tipo=ESTAMPARIA' },
-      { label: 'Corte e Vinco', route: '/ficha-engenharia?tipo=CORTE_VINCO' },
+    { label: 'Fichas de Processo', route: '/pcp/fichas-processo', children: [
+      { label: 'Prensados', route: '/pcp/fichas-processo?tipo=PRENSADOS' },
+      { label: 'Injetados', route: '/pcp/fichas-processo?tipo=INJETADOS' },
+      { label: 'Estampos', route: '/pcp/fichas-processo?tipo=ESTAMPARIA' },
+      { label: 'Corte e Vinco', route: '/pcp/fichas-processo?tipo=CORTE_VINCO' },
+      { label: 'Mecânica', route: '/pcp/fichas-processo?tipo=MECANICA' },
+      { label: 'Tratamento superficial', route: '/pcp/fichas-processo?tipo=TRATAMENTO_SUPERFICIAL' },
+      { label: 'Pintura / Química', route: '/pcp/fichas-processo?tipo=PINTURA_QUIMICA' },
     ] },
   ] },
   { label: 'Qualidade', route: '/qualidade' },
