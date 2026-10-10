@@ -2,6 +2,8 @@
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
+import ERPHorizontalShell from './components/layout/ERPHorizontalShell'
+import { SynqraLayoutProvider } from './layout/SynqraLayoutContext'
 
 
 
@@ -451,7 +453,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/auditoria" element={<PainelLucratividade />} />
       <Route path="/vendas/classificacao-fiscal" element={<ClassificacaoFiscal />} />
       <Route path="/vendas/razao-geral" element={<PainelRazaoGeral />} />
-      <Route path="/pcp" element={<PCPIndustrial />} />
+      <Route path="/pcp" element={<ERPHorizontalShell><SynqraLayoutProvider><PCPIndustrial /></SynqraLayoutProvider></ERPHorizontalShell>} />
       <Route path="/engenharia/produtos" element={<IndustrialDataWorkspace />} />
       <Route path="/engenharia/bom" element={<IndustrialDataWorkspace />} />
       <Route path="/engenharia/roteiros" element={<IndustrialDataWorkspace />} />
