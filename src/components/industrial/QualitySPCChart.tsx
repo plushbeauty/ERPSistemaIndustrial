@@ -1,0 +1,17 @@
+import { useMemo } from 'react'
+import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+
+type Measurement={id:string;numero_peca_amostrada:number;cota_nominal_mm:number;tolerancia_superior_mm:number;tolerancia_inferior_mm:number;valor_medido_mm:number|null;desvio_mm:number|null;status:string}
+export default function QualitySPCChart({measurements}:{measurements:Measurement[]}){
+ const {data,mean,ucl,lcl}=useMemo(()=>{
+  const rows=measurements.filter(r=>r.valor_medido_mm!==null&&Number.isFinite(Number(r.valor_medido_mm))).slice().reverse().map((r,i)=>({sample:String(r.numero_peca_amostrada||i+1),measured:Number(r.valor_medido_mm),nominal:Number(r.cota_nominal_mm),upper:Number(r.cota_nominal_mm)+Number(r.tolerancia_superior_mm),lower:Number(r.cota_nominal_mm)-Number(r.tolerancia_inferior_mm)}))
+  const values=rows.map(r=>r.measured);const avg=values.length?values.reduce((a,b)=>a+b,0)/values.length:0
+  const sigma=values.length>1?Math.sqrt(values.reduce((sum,v)=>sum+(v-avg)**2,0)/(values.length-1)):0
+  return {data:rows,mean:avg,ucl:avg+3*sigma,lcl:avg-3*sigma}
+ },[measurements])
+ if(!data.length)return <div className="border border-slate-200 bg-white p-3 text-[10px] text-slate-500">CEP indisponível: registre medições dimensionais reais para calcular os limites de controle.</div>
+ return <section className="mb-3 border border-slate-200 bg-white p-3">
+  <div className="mb-2 flex flex-wrap items-start justify-between gap-2"><div><h3 className="text-[11px] font-bold uppercase text-slate-700">CEP · Controle estatístico do processo</h3><p className="text-[9px] text-slate-500">Medições reais · LST/LIT = tolerâncias da peça · LSC/LIC = média ± 3σ da amostra exibida</p></div><div className="flex flex-wrap gap-3 text-[9px]"><span className="text-sky-700">● Medido</span><span className="text-emerald-700">● Nominal</span><span className="text-amber-700">● LST/LIT</span><span className="text-violet-700">● LSC/LIC</span></div></div>
+  <div className="h-[230px] w-full"><ResponsiveContainer width="100%" height="100%"><LineChart data={data} margin={{top:8,right:16,left:4,bottom:4}}><CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0"/><XAxis dataKey="sample" tick={{fontSize:9}}/><YAxis tick={{fontSize:9}} domain={['auto','auto']} tickFormatter={(v:number)=>Number(v).toFixed(3)}/><Tooltip formatter={(v)=>Number(v).toFixed(5)+' mm'} labelFormatter={(v)=>'Peça / amostra '+v}/><Line type="monotone" dataKey="measured" name="Medido" stroke="#2D8DB8" strokeWidth={2} dot={{r:2}} activeDot={{r:4}}/><Line type="monotone" dataKey="nominal" name="Nominal" stroke="#16805d" strokeDasharray="4 3" dot={false}/><Line type="monotone" dataKey="upper" name="LST (tolerância superior)" stroke="#E6A34A" strokeDasharray="5 3" dot={false}/><Line type="monotone" dataKey="lower" name="LIT (tolerância inferior)" stroke="#E6A34A" strokeDasharray="5 3" dot={false}/><ReferenceLine y={ucl} stroke="#8B5CF6" strokeDasharray="3 3" label={{value:'LSC',fontSize:9,fill:'#8B5CF6'}}/><ReferenceLine y={lcl} stroke="#8B5CF6" strokeDasharray="3 3" label={{value:'LIC',fontSize:9,fill:'#8B5CF6'}}/><ReferenceLine y={mean} stroke="#64748b" strokeDasharray="2 3"/></LineChart></ResponsiveContainer></div>
+ </section>
+}
