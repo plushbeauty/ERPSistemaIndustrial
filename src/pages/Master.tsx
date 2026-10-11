@@ -8,7 +8,6 @@ type Company = {
   id: string
   razao_social: string | null
   nome_fantasia: string | null
-  codigo: string | null
   ativo: boolean
   plano: string | null
   plano_status: string | null
