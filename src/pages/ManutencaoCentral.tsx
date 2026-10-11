@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Activity, ArrowRight, CalendarDays, ClipboardList, Gauge, RefreshCw, Settings2, Wrench } from 'lucide-react'
+import { Activity, ArrowRight, CalendarDays, ClipboardList, FileSpreadsheet, Gauge, RefreshCw, Settings2, Wrench } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 
@@ -10,6 +10,7 @@ type WorkOrder = { id: string; ativo_id: string; tipo: string; status: string; p
 const modules = [
   { title: 'Ordens de serviço', description: 'Abrir, acompanhar e concluir O.S. com laudo, causa raiz e solução.', href: '/manutencao/ordens', Icon: ClipboardList },
   { title: 'Cronograma preventivo', description: 'Consultar as preventivas programadas por data, máquina e situação.', href: '/manutencao/cronograma', Icon: CalendarDays },
+  { title: 'Plano mestre 2026', description: 'Consultar as duas planilhas fonte da PLASTIBOR com tags, frequências e status mensais.', href: '/manutencao/plano-mestre', Icon: FileSpreadsheet },
   { title: 'Indicadores de confiabilidade', description: 'Acompanhar paradas, MTTR e MTBF a partir dos registros reais.', href: '/manutencao/indicadores', Icon: Gauge },
   { title: 'Máquinas e capacidade', description: 'Acessar a programação industrial e a disponibilidade de máquinas.', href: '/pcp', Icon: Settings2 },
   { title: 'Paradas de produção', description: 'Consultar ocorrências e paradas registradas no fluxo de produção.', href: '/pcp/paradas', Icon: Activity },
