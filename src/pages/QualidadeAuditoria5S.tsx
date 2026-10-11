@@ -111,8 +111,8 @@ export default function QualidadeAuditoria5S() {
         status: 'ENCERRADA',
       }).select('id').single()
       if (result.error) throw result.error
-      setNotice('Auditoria 5S gravada no banco da empresa.')
       resetForm()
+      setNotice('Auditoria 5S gravada no banco da empresa.')
       await load()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao gravar a auditoria 5S.')
