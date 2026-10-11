@@ -1,13 +1,13 @@
 .synqra-workspace{min-height:100vh;background:#F4F7FE;color:#17212b;font-family:Inter,Roboto,Arial,sans-serif;font-size:11px}
 .synqra-workspace-header{height:48px;display:grid;grid-template-columns:minmax(260px,1fr) auto minmax(260px,1fr);align-items:center;gap:10px;padding:0 10px;background:#0a0a0a;border-bottom:1px solid #252525;color:#e5e7eb}
 .synqra-workspace-brand{display:flex;align-items:center;gap:8px;min-width:0;background:transparent;border:0;color:inherit;text-align:left;cursor:pointer;padding:0}
-.synqra-workspace-brand img{width:112px;height:34px;object-fit:contain}
+.synqra-workspace-brand img{width:150px;height:42px;object-fit:contain;flex-shrink:0}
 .synqra-workspace-brand span{display:flex;flex-direction:column;min-width:0;border-left:1px solid #333;padding-left:8px}
 .synqra-workspace-brand strong{font-size:10px;line-height:12px;letter-spacing:.04em;font-weight:600;white-space:nowrap}
 .synqra-workspace-brand small{font-size:8px;line-height:10px;color:#9ca3af;letter-spacing:.1em}
 .synqra-master-menu{height:30px;min-width:190px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 16px;background:#f97316;border:1px solid #ea580c;border-radius:2px;color:#fff;font-size:15px;font-weight:900;letter-spacing:.03em;text-transform:uppercase;cursor:pointer}
 .synqra-master-menu:hover{background:#ea580c}
-.synqra-header-title{justify-self:center;color:#dbeafe;font-size:11px;font-weight:500;letter-spacing:.02em;white-space:nowrap}.synqra-session{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0}
+.synqra-header-title{justify-self:center;display:flex;flex-direction:column;align-items:center;gap:2px;color:#dbeafe;font-size:11px;font-weight:600;letter-spacing:.02em;white-space:nowrap}.synqra-header-title small{font-size:9px;font-weight:500;color:#bfe5f2;max-width:260px;overflow:hidden;text-overflow:ellipsis}.synqra-session{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0}
 .synqra-session>div{display:flex;flex-direction:column;align-items:flex-end;min-width:0}
 .synqra-session strong{font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
 .synqra-session span{font-size:9px;color:#9ca3af;white-space:nowrap}
