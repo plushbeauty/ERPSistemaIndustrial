@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Save, Plus, Printer, RefreshCw } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import QualitySidebar from '../components/quality/QualitySidebar'
@@ -31,6 +32,7 @@ const blankTexts = (): string[] => Array.from({ length: 8 }, () => '')
 const codeFromRnc = (rnc: Rnc) => { const year = new Date(rnc.data_ocorrencia ?? rnc.criado_em).getFullYear(); const suffix = rnc.numero_rpnc.replace(/^RPNC-\d{4}-?/i, 'RNC-').replace(/^RNC-/i, 'RNC-'); return '8D-' + year + '-' + suffix }
 
 export default function QualidadeMetodologia8D() {
+  const [searchParams] = useSearchParams()
   const [rncs, setRncs] = useState<Rnc[]>([])
   const [records, setRecords] = useState<OitoD[]>([])
   const [recordId, setRecordId] = useState('')
@@ -65,6 +67,21 @@ export default function QualidadeMetodologia8D() {
   }
 
   useEffect(() => { void load() }, [])
+
+  useEffect(() => {
+    const sourceId = searchParams.get('rpncId')
+    if (!sourceId || !rncs.length) return
+    const source = rncs.find(item => item.id === sourceId)
+    if (!source) {
+      setError('A RNC informada na URL não foi encontrada na empresa da sessão.')
+      return
+    }
+    setId(source.id)
+    setRecordId('')
+    setCodigo(codeFromRnc(source))
+    setRpncSnapshot(null)
+    setTexts(current => current.map((value, index) => index === 1 && !value.trim() ? source.numero_rpnc + ' — ' + source.descricao_nao_conformidade : value))
+  }, [rncs, searchParams])
 
   function startNew() {
     setRecordId('')
