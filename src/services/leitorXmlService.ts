@@ -77,7 +77,7 @@ export async function processarEConverterXmlPedido(
             .eq("empresa_id", empresaId)
             .eq("produto_id", produto.id)
             .range(from, to));
-          estoqueDisponivel = lotes.reduce((total, lote) => total + Number(lote.quantidade_disponivel ?? 0), 0);
+          estoqueDisponivel = lotes.length ? lotes.reduce((total, lote) => total + Number(lote.quantidade_disponivel ?? 0), 0) : null;
         }
       }
 
