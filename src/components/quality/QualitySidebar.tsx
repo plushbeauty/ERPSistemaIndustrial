@@ -39,7 +39,7 @@ export default function QualitySidebar({ active }: { active: string }) {
   const helpText = active.includes('inspec') ? 'Selecione o lote e a especificação aprovada aplicável. Registre evidências e só libere o material após concluir a avaliação conforme o procedimento da empresa.'
     : active.includes('especificacoes') ? 'Mantenha critérios, tolerâncias, métodos de verificação, revisão e aprovação conforme desenhos e requisitos validados. Não use limites presumidos.'
     : active.includes('ged-documentos') || active.includes('documentos') || active.includes('lista-mestre') ? 'Consulte a revisão vigente, confirme a área responsável e mantenha histórico, aprovação e distribuição controlada das cópias.'
-    : active.includes('rnc') || active.includes('capa') || active.includes('metodologia-8d') ? 'Registre contenção, causa raiz, responsáveis, prazos, evidências e verificação de eficácia antes de encerrar a ocorrência.'
+    : active.includes('rnc') || active.includes('capa') || active.includes('ishikawa') || active.includes('metodologia-8d') ? 'Registre contenção, causa raiz, responsáveis, prazos, evidências e verificação de eficácia antes de encerrar a ocorrência.'
     : active.includes('fmea') || active.includes('pfmea') ? 'Revise modos de falha, efeitos, causas, controles preventivos/detectivos e ações com base no processo real.'
     : active.includes('metrologia') || active.includes('cep') ? 'Utilize instrumentos válidos e critérios aprovados; registre os resultados e investigue desvios antes de liberar o processo.'
     : 'Use este painel para acompanhar indicadores do SGQ e acessar inspeções, documentos, riscos, auditorias e ações corretivas. Os números devem refletir registros reais da empresa.'
@@ -51,7 +51,7 @@ export default function QualitySidebar({ active }: { active: string }) {
         <p className="text-[11px] font-extrabold uppercase tracking-wider">Qualidade · Navegação do SGQ</p>
         <span className="ml-auto text-[10px] text-sky-100">Acesso rápido aos módulos</span>
       </div>
-      <nav aria-label="Navegação da qualidade" className="flex min-w-0 flex-wrap items-center gap-1.5 p-2">
+      <nav aria-label="Navegação da qualidade" className="flex min-w-0 flex-nowrap items-center gap-1.5 overflow-x-auto p-2 [scrollbar-width:thin]">
         {items.map(([label, path], index) => {
           const Icon = itemIcons[index] ?? FileText
           return (
@@ -70,7 +70,7 @@ export default function QualitySidebar({ active }: { active: string }) {
             </Link>
           )
         })}
-        <div className="flex flex-wrap items-center gap-1.5 border-l border-slate-200 pl-2">
+        <div className="flex flex-none flex-wrap items-center gap-1.5 border-l border-slate-200 pl-2">
           <span className="inline-flex min-h-9 items-center gap-2 whitespace-nowrap px-2 text-[10px] font-bold uppercase text-[#123B50]">
             <ShieldCheck size={14} /> Gestão da Qualidade
           </span>
