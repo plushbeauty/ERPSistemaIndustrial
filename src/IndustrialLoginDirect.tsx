@@ -288,32 +288,8 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
       animate={{ opacity: 1 }}
       transition={{ duration: 0.32 }}
     >
-      <section className="auth-visual" aria-label="SYSNQRA ERP & SGQ INDUSTRIAL">
-        <img src="/images/sgq/sgq-erp-login.png" alt="Ambiente industrial do SYSNQRA ERP & SGQ INDUSTRIAL" />
-        <div className="auth-visual-shade" />
-        <div className="auth-visual-grid" aria-hidden="true" />
-        <div className="auth-visual-content">
-          <a href="/" className="auth-visual-logo">
-            <img src="/logo-industrial.svg" alt="SYSNQRA ERP & SGQ INDUSTRIAL" />
-          </a>
-          <div className="auth-visual-message">
-            <span>SYSNQRA • ERP & SGQ INDUSTRIAL</span>
-            <h2>
-              Uma fábrica inteira.
-              <br />
-              <em>Um único controle.</em>
-            </h2>
-            <p>
-              PCP, produção, qualidade, estoque, manutenção, financeiro e fiscal
-              trabalhando sobre os mesmos dados.
-            </p>
-            <div className="auth-trust">
-              <b><ShieldCheck size={14} /> Sessão segura</b>
-              <b><Building2 size={14} /> Multiempresa</b>
-            </div>
-          </div>
-          <small>FernandoSch_System</small>
-        </div>
+      <section className="auth-visual" aria-label="Identidade visual do SYSNQRA ERP & SGQ INDUSTRIAL">
+        <img src="/images/sgq/sgq-erp-login.png" alt="Imagem institucional do SYSNQRA ERP & SGQ INDUSTRIAL" />
       </section>
 
       <section className="auth-panel">
