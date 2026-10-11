@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { AlertTriangle, CheckCircle2, ClipboardCheck, Clock3, Factory, Plus, RefreshCw, Save, ShieldCheck } from 'lucide-react'
-import ERPHorizontalShell from '../../../components/layout/ERPHorizontalShell'
-import { supabase } from '../../../lib/supabaseClient'
+import ERPHorizontalShell from '../../components/layout/ERPHorizontalShell'
+import { supabase } from '../../lib/supabaseClient'
 
 type Lookup = { id: string; codigo?: string | null; nome?: string | null; nome_fantasia?: string | null; numero_op?: string | null; lote_interno?: string | null; status_inspecao?: string | null }
 type Control = {
