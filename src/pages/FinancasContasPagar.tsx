@@ -33,9 +33,18 @@ export default function FinancasContasPagar({ kind = 'PAGAR' }: Props) {
       const empresa = await supabase.rpc('erp_current_empresa_id')
       if (empresa.error || !empresa.data) { if(active) setError(empresa.error?.message ?? 'Empresa da sessão não localizada.'); return }
       const id = String(empresa.data)
+      const year = new Date().getFullYear()
+      const yearStart = year + '-01-01'
+      const nextYearStart = (year + 1) + '-01-01'
       const [parcelas, pagamentos] = await Promise.all([
-        supabase.from('erp_financeiro_parcelas').select('valor,saldo,vencimento,status').eq('empresa_id',id).eq('status','ABERTO').gte('vencimento','2026-01-01').lt('vencimento','2027-01-01'),
-        supabase.from('erp_financeiro_baixas').select('valor,ocorrido_em').eq('empresa_id',id).gte('ocorrido_em','2026-01-01T00:00:00').lt('ocorrido_em','2027-01-01T00:00:00')
+        supabase.from('erp_financeiro_parcelas')
+          .select('valor,saldo,vencimento,status,erp_financeiro_titulos!inner(tipo)')
+          .eq('empresa_id',id).eq('status','ABERTO').eq('erp_financeiro_titulos.tipo',kind)
+          .gte('vencimento',yearStart).lt('vencimento',nextYearStart),
+        supabase.from('erp_financeiro_baixas')
+          .select('valor,ocorrido_em,erp_financeiro_titulos!inner(tipo)')
+          .eq('empresa_id',id).eq('erp_financeiro_titulos.tipo',kind)
+          .gte('ocorrido_em',yearStart + 'T00:00:00').lt('ocorrido_em',nextYearStart + 'T00:00:00')
       ])
       if (!active) return
       if (parcelas.error) { setError(parcelas.error.message); return }
@@ -52,16 +61,16 @@ export default function FinancasContasPagar({ kind = 'PAGAR' }: Props) {
     const currentYear = now.getFullYear()
     const due = rows.reduce((sum,row)=>sum+Number(row.saldo || 0),0)
     const overdue = rows.filter(row => new Date(row.vencimento + 'T00:00:00') < now).reduce((sum,row)=>sum+Number(row.saldo || 0),0)
-    const monthDue = rows.filter(row => { const d = new Date(row.vencimento + 'T00:00:00'); return d.getUTCFullYear()===currentYear && d.getUTCMonth()+1===currentMonth }).reduce((sum,row)=>sum+Number(row.saldo || 0),0)
+    const monthDue = rows.filter(row => { const d = new Date(row.vencimento + 'T00:00:00'); return d.getFullYear()===currentYear && d.getMonth()+1===currentMonth }).reduce((sum,row)=>sum+Number(row.saldo || 0),0)
     const annualPaid = baixas.reduce((sum,row)=>sum+Number(row.valor || 0),0)
-    const monthPaid = baixas.filter(row => { const d=new Date(row.ocorrido_em); return d.getUTCFullYear()===currentYear && d.getUTCMonth()+1===currentMonth }).reduce((sum,row)=>sum+Number(row.valor || 0),0)
+    const monthPaid = baixas.filter(row => { const d=new Date(row.ocorrido_em); return d.getFullYear()===currentYear && d.getMonth()+1===currentMonth }).reduce((sum,row)=>sum+Number(row.valor || 0),0)
     const count = rows.length
     return [
-      ['A PAGAR EM 2026',due],
+      [kind === 'PAGAR' ? 'A PAGAR EM ' + currentYear : 'A RECEBER EM ' + currentYear,due],
       ['VENCIDO',overdue],
       ['VENCIMENTO NO MÊS',monthDue],
-      ['PAGAMENTOS 2026',annualPaid],
-      ['PAGAMENTOS NO MÊS',monthPaid],
+      [kind === 'PAGAR' ? 'PAGAMENTOS ' + currentYear : 'RECEBIMENTOS ' + currentYear,annualPaid],
+      [kind === 'PAGAR' ? 'PAGAMENTOS NO MÊS' : 'RECEBIMENTOS NO MÊS',monthPaid],
       ['TÍTULOS ABERTOS',count],
     ] as const
   },[rows,baixas])
