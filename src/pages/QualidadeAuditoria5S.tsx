@@ -47,7 +47,7 @@ export default function QualidadeAuditoria5S() {
   const [notice, setNotice] = useState('')
 
   const average = useMemo(() => scores.every((score): score is number => typeof score === 'number')
-    ? scores.reduce((total, score) => total + score, 0) / scores.length
+    ? scores.reduce((total, score) => total + Number(score), 0) / scores.length
     : null, [scores])
 
   const load = useCallback(async () => {
