@@ -8,7 +8,7 @@ type Company = {
   id: string
   razao_social: string | null
   nome_fantasia: string | null
-  codigo: string | null
+  cnpj: string | null
   ativo: boolean
   plano: string | null
   plano_status: string | null
@@ -20,13 +20,13 @@ type Company = {
 type UserSummary = { id: string; empresa_id: string | null; ativo: boolean }
 type Plan = { id: string; codigo: string; nome: string; preco_mensal: number; descricao: string | null; ativo: boolean; ordem: number }
 type PlanModule = { id: string; plano_codigo: string; modulo_codigo: string; modulo_nome: string; acesso: boolean; limite_usuarios: number | null; limite_empresas: number | null; recursos: Record<string, unknown> }
-type Audit = { id: string; empresa_id: string | null; actor_user_id: string | null; action: string; entity_type: string; entity_id: string | null; created_at: string; old_data: unknown; new_data: unknown }
+type Audit = { id: string; company_id: string | null; user_id: string | null; action: string; module: string | null; entity: string | null; entity_id: string | null; created_at: string; old_data: unknown; new_data: unknown }
 type MasterData = { companies: Company[]; users: UserSummary[]; plans: Plan[]; modules: PlanModule[]; activity: Audit[] }
 type PlanDraft = { codigo: string; nome: string; preco_mensal: string; descricao: string; ativo: boolean }
 
 const emptyData: MasterData = { companies: [], users: [], plans: [], modules: [], activity: [] }
 const money = (value: number) => Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-const companyName = (company: Company) => company.nome_fantasia || company.razao_social || company.codigo || company.id
+const companyName = (company: Company) => company.nome_fantasia || company.razao_social || company.id
 
 export default function Master() {
   const [data, setData] = useState<MasterData>(emptyData)
@@ -45,11 +45,11 @@ export default function Master() {
     setError('')
     try {
       const [companies, users, plans, modules, activity] = await Promise.all([
-        fetchAllPages<Company>((from, to) => supabase.from('erp_empresas').select('id,razao_social,nome_fantasia,codigo,ativo,plano,plano_status,plan_type,subscription_status,subscription_ends_at,trial_ends_at', { count: 'exact' }).order('razao_social').range(from, to)),
+        fetchAllPages<Company>((from, to) => supabase.from('erp_empresas').select('id,razao_social,nome_fantasia,cnpj,ativo,plano,plano_status,plan_type,subscription_status,subscription_ends_at,trial_ends_at', { count: 'exact' }).order('razao_social').range(from, to)),
         fetchAllPages<UserSummary>((from, to) => supabase.from('erp_usuarios').select('id,empresa_id,ativo', { count: 'exact' }).not('empresa_id', 'is', null).is('deleted_at', null).range(from, to)),
         fetchAllPages<Plan>((from, to) => supabase.from('erp_planos_catalogo').select('id,codigo,nome,preco_mensal,descricao,ativo,ordem', { count: 'exact' }).order('ordem').range(from, to)),
         fetchAllPages<PlanModule>((from, to) => supabase.from('erp_plano_modulos').select('id,plano_codigo,modulo_codigo,modulo_nome,acesso,limite_usuarios,limite_empresas,recursos', { count: 'exact' }).order('modulo_nome').range(from, to)),
-        supabase.from('erp_audit_logs').select('id,empresa_id,actor_user_id,action,entity_type,entity_id,created_at,old_data,new_data').order('created_at', { ascending: false }).limit(50).then(result => {
+        supabase.from('erp_audit_logs').select('id,company_id,user_id,action,module,entity,entity_id,created_at,old_data,new_data').order('created_at', { ascending: false }).limit(50).then(result => {
           if (result.error) throw result.error
           return (result.data ?? []) as Audit[]
         }),
@@ -89,7 +89,7 @@ export default function Master() {
   }, 0)
   const filteredCompanies = data.companies.filter(company => {
     const term = search.trim().toLocaleLowerCase('pt-BR')
-    return !term || [companyName(company), company.codigo, company.plano, company.plan_type, company.subscription_status, company.plano_status]
+    return !term || [companyName(company), company.cnpj, company.plano, company.plan_type, company.subscription_status, company.plano_status]
       .some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(term))
   })
   const companyPageCount = Math.max(1, Math.ceil(filteredCompanies.length / pageSize))
@@ -205,7 +205,7 @@ export default function Master() {
               const plan = planByCode.get(company.plano || company.plan_type || '')
               const dueAt = company.subscription_ends_at || company.trial_ends_at
               return <div className="master-row" key={company.id}>
-                <span><strong>{companyName(company)}</strong><small>{company.codigo || company.id}</small></span>
+                <span><strong>{companyName(company)}</strong><small>{company.cnpj || company.id}</small></span>
                 <span>{plan?.nome || company.plano || company.plan_type || '—'}<small>{company.subscription_status || company.plano_status || 'Sem status informado'}</small></span>
                 <span>{usersByCompany.get(company.id) ?? 0}<small>usuário(s)</small></span>
                 <span>{dueAt ? new Date(dueAt).toLocaleDateString('pt-BR') : '—'}<small>{company.trial_ends_at ? 'Fim do período de teste' : 'Vigência da assinatura'}</small></span>
@@ -243,7 +243,7 @@ export default function Master() {
         <section className="master-panel">
           <div className="master-panel-title"><div><Clock3 /><div><strong>Atividade e auditoria global</strong><small>Eventos persistidos em erp_audit_logs.</small></div></div><b>{data.activity.length}</b></div>
           <div className="master-activity-list">
-            {data.activity.slice(0, 20).map(row => <article key={row.id}><time>{new Date(row.created_at).toLocaleString('pt-BR')}</time><strong>{row.action}</strong><span>{row.entity_type} · {row.entity_id || 'sem identificador'} · {row.empresa_id || 'plataforma'}</span><small>Ator {row.actor_user_id || 'sistema'}</small></article>)}
+            {data.activity.slice(0, 20).map(row => <article key={row.id}><time>{new Date(row.created_at).toLocaleString('pt-BR')}</time><strong>{row.action}</strong><span>{row.entity || row.module || 'evento'} · {row.entity_id || 'sem identificador'} · {row.company_id || 'plataforma'}</span><small>Ator {row.user_id || 'sistema'}</small></article>)}
             {!loading && !data.activity.length && <p className="master-empty">Nenhuma auditoria retornada pelo banco.</p>}
           </div>
         </section>
