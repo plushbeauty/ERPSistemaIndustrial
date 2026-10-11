@@ -8,6 +8,7 @@ type Company = {
   id: string
   razao_social: string | null
   nome_fantasia: string | null
+  cnpj: string | null
   ativo: boolean
   plano: string | null
   plano_status: string | null
@@ -44,7 +45,7 @@ export default function Master() {
     setError('')
     try {
       const [companies, users, plans, modules, activity] = await Promise.all([
-        fetchAllPages<Company>((from, to) => supabase.from('erp_empresas').select('id,razao_social,nome_fantasia,ativo,plano,plano_status,plan_type,subscription_status,subscription_ends_at,trial_ends_at', { count: 'exact' }).order('razao_social').range(from, to)),
+        fetchAllPages<Company>((from, to) => supabase.from('erp_empresas').select('id,razao_social,nome_fantasia,cnpj,ativo,plano,plano_status,plan_type,subscription_status,subscription_ends_at,trial_ends_at', { count: 'exact' }).order('razao_social').range(from, to)),
         fetchAllPages<UserSummary>((from, to) => supabase.from('erp_usuarios').select('id,empresa_id,ativo', { count: 'exact' }).not('empresa_id', 'is', null).is('deleted_at', null).range(from, to)),
         fetchAllPages<Plan>((from, to) => supabase.from('erp_planos_catalogo').select('id,codigo,nome,preco_mensal,descricao,ativo,ordem', { count: 'exact' }).order('ordem').range(from, to)),
         fetchAllPages<PlanModule>((from, to) => supabase.from('erp_plano_modulos').select('id,plano_codigo,modulo_codigo,modulo_nome,acesso,limite_usuarios,limite_empresas,recursos', { count: 'exact' }).order('modulo_nome').range(from, to)),
@@ -88,7 +89,7 @@ export default function Master() {
   }, 0)
   const filteredCompanies = data.companies.filter(company => {
     const term = search.trim().toLocaleLowerCase('pt-BR')
-    return !term || [companyName(company), company.codigo, company.plano, company.plan_type, company.subscription_status, company.plano_status]
+    return !term || [companyName(company), company.cnpj, company.plano, company.plan_type, company.subscription_status, company.plano_status]
       .some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(term))
   })
   const companyPageCount = Math.max(1, Math.ceil(filteredCompanies.length / pageSize))
@@ -204,7 +205,7 @@ export default function Master() {
               const plan = planByCode.get(company.plano || company.plan_type || '')
               const dueAt = company.subscription_ends_at || company.trial_ends_at
               return <div className="master-row" key={company.id}>
-                <span><strong>{companyName(company)}</strong><small>{company.codigo || company.id}</small></span>
+                <span><strong>{companyName(company)}</strong><small>{company.cnpj || company.id}</small></span>
                 <span>{plan?.nome || company.plano || company.plan_type || '—'}<small>{company.subscription_status || company.plano_status || 'Sem status informado'}</small></span>
                 <span>{usersByCompany.get(company.id) ?? 0}<small>usuário(s)</small></span>
                 <span>{dueAt ? new Date(dueAt).toLocaleDateString('pt-BR') : '—'}<small>{company.trial_ends_at ? 'Fim do período de teste' : 'Vigência da assinatura'}</small></span>
