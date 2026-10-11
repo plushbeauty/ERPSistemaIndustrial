@@ -48,6 +48,9 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
   const [docs, setDocs] = useState<Doc[]>([])
   const [docAttachments, setDocAttachments] = useState<Attachment[]>([])
   const [selectedRnc, setSelectedRnc] = useState('')
+  const [registrySearch, setRegistrySearch] = useState('')
+  const [registryStatus, setRegistryStatus] = useState('TODAS')
+  const [registryOrigin, setRegistryOrigin] = useState('TODAS')
   const [description, setDescription] = useState('')
   const [origin, setOrigin] = useState('Processo')
   const [sectorId, setSectorId] = useState('')
@@ -106,6 +109,18 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
   }, [selectedRnc, companyId])
 
   const selected = rncs.find((rnc) => rnc.id === selectedRnc) ?? null
+  const filteredRncs = rncs.filter((row) => {
+    const term = registrySearch.trim().toLocaleLowerCase('pt-BR')
+    const matchesSearch = !term || [row.numero_rpnc, row.descricao_nao_conformidade, row.lote_producao ?? '', row.origem ?? ''].some(value => value.toLocaleLowerCase('pt-BR').includes(term))
+    const status = (row.status || '').toLocaleLowerCase('pt-BR')
+    const isClosed = ['encerrada','encerrado','fechada','fechado','concluida','concluído','cancelada','cancelado'].includes(status)
+    const matchesStatus = registryStatus === 'TODAS' || (registryStatus === 'ABERTAS' && !isClosed) || (registryStatus === 'FECHADAS' && isClosed)
+    const origin = (row.origem || '').toLocaleLowerCase('pt-BR')
+    const matchesOrigin = registryOrigin === 'TODAS' || (registryOrigin === 'CLIENTE' && origin.includes('cliente')) || (registryOrigin === 'AUDITORIA' && origin.includes('auditoria')) || (registryOrigin === 'INTERNA' && (origin.includes('processo') || origin.includes('interna'))) || (registryOrigin === 'FORNECEDOR' && origin.includes('fornecedor'))
+    return matchesSearch && matchesStatus && matchesOrigin
+  })
+  const openCount = rncs.filter(row => !['encerrada','encerrado','fechada','fechado','concluida','concluído','cancelada','cancelado'].includes((row.status || '').toLocaleLowerCase('pt-BR'))).length
+  const closedCount = rncs.length - openCount
   const selectedActions = actions.filter((item) => item.rpnc_id === selectedRnc)
   const fishboneCategories = [
     { key: 'metodo', title: 'MÉTODO', side: 'top' },
@@ -255,7 +270,14 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
             {(['metodo','mao_de_obra','material','maquina','meio_ambiente','medicao'] as const).map((key) => <label className={label} key={key}>{key === 'mao_de_obra' ? 'Mão de obra' : key === 'meio_ambiente' ? 'Meio ambiente' : key.replace('_',' ')}<input className={field(false)} value={sixM[key]} onChange={(e) => setSixM({ ...sixM, [key]: e.target.value })} placeholder="Preencher..." /></label>)}
           </div>
           <div className="sgq-save-row"><button className={btn} type="button" disabled={!selected || busy} onClick={() => void saveSixM()}><Save size={13}/> SALVAR 6M</button></div>
-          <div className="sgq-table"><table><thead><tr><th>RNC</th><th>Origem</th><th>Lote</th><th>Segregada</th><th>Status</th></tr></thead><tbody>{rncs.map((row) => <tr key={row.id} className={row.id === selectedRnc ? 'selected' : ''} onClick={() => setSelectedRnc(row.id)}><td>{row.numero_rpnc}</td><td>{row.origem}</td><td>{row.lote_producao || '—'}</td><td className="num">{row.quantidade_segregada}</td><td>{row.status}</td></tr>)}</tbody></table></div>
+          <div className="sgq-grid sgq-grid-5 sgq-mt">
+            <label className={label}>Pesquisar RNC<input className={field(false)} value={registrySearch} onChange={e => setRegistrySearch(e.target.value)} placeholder="Número, defeito, lote ou origem"/></label>
+            <label className={label}>Situação<select className={field(false)} value={registryStatus} onChange={e => setRegistryStatus(e.target.value)}><option value="TODAS">Todas as situações</option><option value="ABERTAS">Em aberto / andamento</option><option value="FECHADAS">Fechadas</option></select></label>
+            <label className={label}>Origem / tipo<select className={field(false)} value={registryOrigin} onChange={e => setRegistryOrigin(e.target.value)}><option value="TODAS">Todas as origens</option><option value="CLIENTE">Reclamação de cliente</option><option value="AUDITORIA">Auditoria interna</option><option value="INTERNA">Processo interno</option><option value="FORNECEDOR">Fornecedor</option></select></label>
+            <div className="rounded-[2px] border border-slate-200 bg-[#F4FBFD] p-2"><span className="text-[9px] font-bold uppercase text-slate-500">Registros encontrados</span><div className="text-base font-bold text-[#123B50]">{filteredRncs.length} / {rncs.length}</div></div>
+            <div className="rounded-[2px] border border-slate-200 bg-[#F4FBFD] p-2"><span className="text-[9px] font-bold uppercase text-slate-500">Abertas / fechadas</span><div className="text-base font-bold text-[#123B50]">{openCount} / {closedCount}</div></div>
+          </div>
+          <div className="sgq-table"><table><thead><tr><th>RNC / RPNC</th><th>Origem</th><th>Lote</th><th>Qtd. segregada</th><th>Status / andamento</th></tr></thead><tbody>{filteredRncs.map((row) => <tr key={row.id} className={row.id === selectedRnc ? 'selected' : ''} onClick={() => setSelectedRnc(row.id)}><td>{row.numero_rpnc}</td><td>{row.origem || '—'}</td><td>{row.lote_producao || '—'}</td><td className="num">{row.quantidade_segregada}</td><td>{row.status}</td></tr>)}{filteredRncs.length === 0 && <tr><td colSpan={5}>Nenhuma não conformidade corresponde aos filtros.</td></tr>}</tbody></table></div>
         </section>}
 
         {tab === 'ishikawa' && <section className="sgq-panel ishikawa-print-area">
