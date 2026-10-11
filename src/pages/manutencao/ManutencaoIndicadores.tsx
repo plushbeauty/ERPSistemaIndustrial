@@ -107,7 +107,7 @@ export default function ManutencaoIndicadores() {
     : null
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-900">
+    <main className="maintenance-workspace min-h-screen bg-[#F4FBFD] p-4 text-[#123B50]">
       <div className="mx-auto max-w-[1500px]">
         <header className="flex items-center border-b pb-4">
           <div>
