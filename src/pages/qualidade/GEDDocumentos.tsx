@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useParams } from 'react-router-dom'
-import { CircleHelp, FilePlus2, FileText, History, RefreshCw, Save, Search, ShieldCheck, X } from 'lucide-react'
+import { CircleHelp, ExternalLink, FilePlus2, FileText, History, Paperclip, RefreshCw, Save, Search, ShieldCheck, Upload, X } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import QualitySidebar from '../../components/quality/QualitySidebar'
 
@@ -44,6 +44,7 @@ export default function GEDDocumentos() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -167,6 +168,55 @@ export default function GEDDocumentos() {
     }
   }
 
+
+  async function attachSelectedFile() {
+    if (!selected) { setError('Salve primeiro o documento para depois anexar o arquivo original.'); return }
+    if (selected.status !== 'EM_REVISAO') { setError('O anexo só pode ser vinculado enquanto a revisão estiver em análise. Crie uma nova revisão para substituir um arquivo vigente.'); return }
+    if (!attachmentFile) { setError('Selecione o arquivo original para anexar.'); return }
+    if (attachmentFile.size <= 0 || attachmentFile.size > 50 * 1024 * 1024) { setError('O arquivo precisa ter até 50 MB e não pode estar vazio.'); return }
+    const extension = attachmentFile.name.split('.').pop()?.toLowerCase() ?? ''
+    const mimeByExtension: Record<string, string> = {
+      pdf: 'application/pdf', doc: 'application/msword',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      xls: 'application/vnd.ms-excel',
+      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      xlsm: 'application/vnd.ms-excel.sheet.macroEnabled.12',
+    }
+    const mime = mimeByExtension[extension]
+    if (!mime) { setError('Formato não permitido. Use PDF, DOC, DOCX, XLS, XLSX ou XLSM.'); return }
+    if (!companyId) { setError('Empresa da sessão não identificada.'); return }
+    setBusy(true); setError(''); setNotice('')
+    let storagePath = ''
+    try {
+      const safeName = attachmentFile.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(-180)
+      storagePath = companyId + '/ged/' + selected.id + '/' + crypto.randomUUID() + '-' + safeName
+      const uploaded = await supabase.storage.from('erp-qualidade-anexos').upload(storagePath, attachmentFile, { contentType: mime, upsert: false })
+      if (uploaded.error) throw uploaded.error
+      const linked = await supabase.rpc('erp_qualidade_revisao_anexo_vincular', {
+        p_revisao_id: selected.id, p_nome_arquivo: attachmentFile.name, p_storage_path: storagePath,
+        p_tipo_mime: mime, p_tamanho_bytes: attachmentFile.size,
+      })
+      if (linked.error) throw linked.error
+      setAttachmentFile(null)
+      setNotice('Arquivo original anexado à revisão ' + selected.codigo_documento + ' Rev. ' + String(selected.revisao).padStart(2, '0') + '.')
+      await load()
+    } catch (cause) {
+      if (storagePath) { try { await supabase.storage.from('erp-qualidade-anexos').remove([storagePath]) } catch { /* preserve the original error */ } }
+      setError(cause instanceof Error ? cause.message : 'Não foi possível anexar o arquivo original.')
+    } finally { setBusy(false) }
+  }
+
+  async function openSelectedAttachment() {
+    if (!selected?.url_anexo) return
+    setError('')
+    try {
+      if (/^https?:\/\//i.test(selected.url_anexo)) { window.location.assign(selected.url_anexo); return }
+      const result = await supabase.storage.from('erp-qualidade-anexos').createSignedUrl(selected.url_anexo, 60)
+      if (result.error) throw result.error
+      window.location.assign(result.data.signedUrl)
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Não foi possível abrir o anexo.') }
+  }
+
   const activeDoc = selected ?? (codigo ? revisions.find(row => row.codigo_documento === codigo) ?? null : null)
   const history = revisions.filter(row => row.codigo_documento === (selected?.codigo_documento ?? codigo)).sort((a, b) => b.revisao - a.revisao)
 
@@ -248,6 +298,19 @@ export default function GEDDocumentos() {
                 {selected.status === 'EM_REVISAO' && !(selected.nome_arquivo && !selected.url_anexo) && <button type="button" disabled={busy} onClick={() => void activateSelected()} className="ml-auto inline-flex h-[30px] items-center gap-1 rounded-[4px] border border-emerald-200 bg-emerald-50 px-2 text-[9px] font-semibold text-emerald-700 disabled:opacity-50"><ShieldCheck size={12}/> APROVAR E ATIVAR</button>}
               </div>}
 
+              {selected && <section aria-label="Anexo original do documento" className="mb-4 rounded-[3px] border border-slate-200 bg-slate-50/70 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex min-w-0 items-start gap-2"><Paperclip size={14} className="mt-0.5 shrink-0 text-[#2D8DB8]"/><div className="min-w-0">
+                    <h2 className="text-[10px] font-semibold text-slate-800">Arquivo original controlado</h2>
+                    {selected.url_anexo ? <p className="mt-0.5 max-w-[480px] truncate text-[9px] text-emerald-700" title={selected.nome_arquivo ?? ''}>{selected.nome_arquivo ?? 'Anexo vinculado ao GED'}</p> : <p className="mt-0.5 text-[9px] text-amber-700">Anexo pendente — a revisão não pode ser aprovada sem o original.</p>}
+                  </div></div>
+                  {selected.url_anexo && <button type="button" onClick={() => void openSelectedAttachment()} className="inline-flex h-[28px] items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[9px] font-semibold text-slate-700"><ExternalLink size={11}/> ABRIR ANEXO</button>}
+                </div>
+                {selected.status === 'EM_REVISAO' && <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3">
+                  <input aria-label="Selecionar arquivo original do documento" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.xlsm" onChange={event => setAttachmentFile(event.target.files?.[0] ?? null)} className="min-w-0 flex-1 text-[9px] file:mr-2 file:h-[28px] file:rounded-[2px] file:border file:border-slate-300 file:bg-white file:px-2 file:text-[9px]"/>
+                  <button type="button" disabled={busy || !attachmentFile} onClick={() => void attachSelectedFile()} className="inline-flex h-[30px] items-center gap-1 rounded-[2px] bg-[#2D8DB8] px-3 text-[9px] font-semibold text-white disabled:opacity-50"><Upload size={12}/>{busy ? 'ENVIANDO…' : 'ANEXAR ORIGINAL'}</button>
+                </div>}
+              </section>}
               <div className="grid gap-x-3 gap-y-3 sm:grid-cols-[150px_minmax(0,1fr)]">
                 <label><span className={label}>CÓDIGO DO DOCUMENTO *</span><input className={field} value={codigo} onChange={e => setCodigo(e.target.value)} required maxLength={50} placeholder="POP-QUAL-001"/></label>
                 <label><span className={label}>TÍTULO DO PROCEDIMENTO *</span><input className={field} value={titulo} onChange={e => setTitulo(e.target.value)} required maxLength={255} placeholder="Inspeção de recebimento"/></label>
