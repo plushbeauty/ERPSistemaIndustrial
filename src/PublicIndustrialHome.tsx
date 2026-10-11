@@ -32,7 +32,7 @@ const modules: Module[] = [
   { key:'metrologia-rbc', title:'Metrologia RBC', description:'Instrumentos, certificados, validade e histórico de calibração.', route:'/qualidade/instrumentos', Icon:ShieldCheck },
   { key:'documentos-obsoletos', title:'Documentos Obsoletos', description:'Controle de documentos vigentes, revisões e registros obsoletos.', route:'/qualidade/documentos', Icon:FileText },
   { key:'matriz-desenhos', title:'Matriz de Desenhos', description:'Revisões, documentos técnicos e estruturas de engenharia controladas.', route:'/engenharia/revisoes-bom', Icon:FileText },
-  { key:'manutencao-tpm', title:'Manutenção TPM', description:'Ordens, bloqueio de máquinas, corretiva, preventiva e laudo técnico.', route:'/manutencao/ordens', Icon:Wrench },
+  { key:'manutencao-tpm', title:'Manutenção TPM', description:'Ordens, bloqueio de máquinas, corretiva, preventiva e laudo técnico.', route:'/manutencao', Icon:Wrench },
   { key:'roteirizacao-balanca', title:'Roteirização de Carga', description:'Expedição, roteirização e conferência operacional de cargas.', route:'/expedicao/roteirizacao', Icon:Truck },
 ]
 
