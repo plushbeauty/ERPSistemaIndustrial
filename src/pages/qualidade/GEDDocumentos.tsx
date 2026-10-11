@@ -45,6 +45,8 @@ export default function GEDDocumentos() {
   const [notice, setNotice] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null)
+  const [bulkFiles, setBulkFiles] = useState<File[]>([])
+  const [bulkProgress, setBulkProgress] = useState({ done: 0, total: 0 })
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -206,6 +208,67 @@ export default function GEDDocumentos() {
     } finally { setBusy(false) }
   }
 
+
+  async function attachBulkFiles() {
+    if (!companyId) { setError('Empresa da sessão não identificada.'); return }
+    if (!bulkFiles.length) { setError('Selecione os arquivos originais extraídos do arquivo compactado.'); return }
+    const mimeByExtension: Record<string, string> = {
+      pdf: 'application/pdf', doc: 'application/msword',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      xls: 'application/vnd.ms-excel',
+      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      xlsm: 'application/vnd.ms-excel.sheet.macroEnabled.12',
+    }
+    const normalizeName = (value: string) => value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '')
+    let linkedCount = 0
+    let unmatchedCount = 0
+    let failedCount = 0
+    setBusy(true); setError(''); setNotice('')
+    setBulkProgress({ done: 0, total: bulkFiles.length })
+    try {
+      for (let index = 0; index < bulkFiles.length; index += 1) {
+        const file = bulkFiles[index]
+        const extension = file.name.split('.').pop()?.toLowerCase() ?? ''
+        const mime = mimeByExtension[extension]
+        const normalizedFile = normalizeName(file.name)
+        const matches = revisions.filter(row =>
+          row.status === 'EM_REVISAO' && !row.url_anexo && row.nome_arquivo
+          && normalizeName(row.nome_arquivo) === normalizedFile
+        )
+        const matchingCodes = [...new Set(matches.map(row => row.codigo_documento))]
+        if (!mime || file.size <= 0 || file.size > 50 * 1024 * 1024 || matchingCodes.length !== 1) {
+          if (!mime || file.size <= 0 || file.size > 50 * 1024 * 1024) failedCount += 1
+          else unmatchedCount += 1
+          setBulkProgress({ done: index + 1, total: bulkFiles.length })
+          continue
+        }
+        const target = matches.filter(row => row.codigo_documento === matchingCodes[0]).sort((a, b) => b.revisao - a.revisao)[0]
+        if (!target) { unmatchedCount += 1; setBulkProgress({ done: index + 1, total: bulkFiles.length }); continue }
+        const safeName = file.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(-180)
+        const storagePath = companyId + '/ged/' + target.id + '/' + crypto.randomUUID() + '-' + safeName
+        try {
+          const uploaded = await supabase.storage.from('erp-qualidade-anexos').upload(storagePath, file, { contentType: mime, upsert: false })
+          if (uploaded.error) throw uploaded.error
+          const result = await supabase.rpc('erp_qualidade_revisao_anexo_vincular', {
+            p_revisao_id: target.id, p_nome_arquivo: file.name, p_storage_path: storagePath,
+            p_tipo_mime: mime, p_tamanho_bytes: file.size,
+          })
+          if (result.error) throw result.error
+          linkedCount += 1
+        } catch {
+          failedCount += 1
+          try { await supabase.storage.from('erp-qualidade-anexos').remove([storagePath]) } catch { /* continue with remaining files */ }
+        }
+        setBulkProgress({ done: index + 1, total: bulkFiles.length })
+      }
+      setNotice('Importação de originais concluída: ' + linkedCount + ' anexado(s), ' + unmatchedCount + ' sem correspondência única pelo nome e ' + failedCount + ' falha(s). Revise os itens não vinculados e repita apenas esses arquivos.')
+      setBulkFiles([])
+      await load()
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function openSelectedAttachment() {
     if (!selected?.url_anexo) return
     setError('')
@@ -232,6 +295,8 @@ export default function GEDDocumentos() {
           <button type="button" onClick={() => setHelpOpen(value => !value)} aria-expanded={helpOpen} className="inline-flex h-[30px] items-center gap-1 rounded-[4px] border border-sky-200 bg-sky-50 px-2 text-[10px] font-semibold text-[#246F98] hover:bg-sky-100"><CircleHelp size={12}/> AJUDA</button>
           <button type="button" onClick={() => void load()} title="Atualizar documentos" className="inline-flex h-[30px] items-center gap-1 rounded-[4px] border border-neutral-200 px-2 text-[10px] text-neutral-600 hover:bg-neutral-50"><RefreshCw size={12}/> ATUALIZAR</button>
           <button type="button" onClick={startNew} className="inline-flex h-[30px] items-center gap-1 rounded-[4px] border border-[#C6DFEF] bg-[#F2F8FC] px-2 text-[10px] font-semibold text-[#246F98] hover:bg-[#E6F3FB]"><FilePlus2 size={13}/> NOVO DOC</button>
+          <label className="inline-flex h-[30px] cursor-pointer items-center gap-1 rounded-[4px] border border-neutral-200 bg-white px-2 text-[9px] font-semibold text-neutral-700 hover:bg-neutral-50"><Paperclip size={12}/> SELECIONAR ORIGINAIS<input type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.xlsm" className="hidden" onChange={event => setBulkFiles(Array.from(event.target.files ?? []))}/></label>
+          {bulkFiles.length > 0 && <button type="button" disabled={busy} onClick={() => void attachBulkFiles()} className="inline-flex h-[30px] items-center gap-1 rounded-[4px] bg-[#2D8DB8] px-2 text-[9px] font-semibold text-white disabled:opacity-50"><Upload size={12}/>{busy ? 'IMPORTANDO ' + bulkProgress.done + '/' + bulkProgress.total : 'IMPORTAR ' + bulkFiles.length}</button>}
           <button type="button" onClick={() => window.print()} className="hidden h-[30px] items-center gap-1 rounded-[4px] border border-neutral-200 px-2 text-[10px] text-neutral-600 hover:bg-neutral-50 sm:inline-flex"><ShieldCheck size={12}/> IMPRIMIR</button>
         </div>
       </div>
