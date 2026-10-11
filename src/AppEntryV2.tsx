@@ -158,7 +158,7 @@ const PCPDashboardOEE = lazyPage(() => import('./pages/PCPDashboardOEE'), 'PCPDa
 const QualidadeDashboardRNC = lazyPage(() => import('./pages/QualidadeDashboardRNC'), 'QualidadeDashboardRNC')
 const QualidadeRNC = lazyPage(() => import('./pages/QualidadeRNC'), 'QualidadeRNC')
 const SalaRNC = lazyPage(() => import('./pages/qualidade/sala-rnc'), 'SalaRNC')
-const ControleProcessoInjetora = lazyPage(() => import('./pages/qualidade/ControleProcessoInjetora'), 'ControleProcessoInjetora')
+const ControleProcessoInjetora = lazyPage(() => import('./pages/pcp/ControleProcessoInjetora'), 'ControleProcessoInjetora')
 const EstoqueCurvaABC = lazyPage(() => import('./pages/EstoqueCurvaABC'), 'EstoqueCurvaABC')
 const FinanceiroGraficoDesvios = lazyPage(() => import('./pages/FinanceiroGraficoDesvios'), 'FinanceiroGraficoDesvios')
 const ExpedicaoRoteirizacao = lazyPage(() => import('./pages/ExpedicaoRoteirizacao'), 'ExpedicaoRoteirizacao')
@@ -644,7 +644,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/fiscal/carteira" element={<QualityPlanGate>{<FiscalCarteiraNFe />}</QualityPlanGate>} />
       <Route path="/qualidade/rnc" element={<QualityPlanGate><QualidadeRNC initialTab="rnc" /></QualityPlanGate>} />
       <Route path="/qualidade/sala-rnc" element={<QualityPlanGate><SalaRNC /></QualityPlanGate>} />
-      <Route path="/qualidade/controle-injetora" element={<QualityPlanGate><ControleProcessoInjetora /></QualityPlanGate>} />
+      <Route path="/pcp/controle-injetora" element={<ControleProcessoInjetora />} />
+      <Route path="/qualidade/controle-injetora" element={<Navigate to="/pcp/controle-injetora" replace />} />
       <Route path="/estoque/recebimento" element={<EstoqueRecebimentoLotes />} />
       <Route path="/fichas-processo" element={<QualityPlanGate>{<FichasProcesso />}</QualityPlanGate>} />
       <Route path="/processos/injecao" element={<QualityPlanGate>{<InjecaoIndustrial />}</QualityPlanGate>} />
