@@ -117,8 +117,8 @@ export default function QualidadePFMEA() {
         status_acao: 'aberta',
       }).select('id').single()
       if (result.error) throw result.error
-      setNotice('Registro PFMEA gravado no banco da empresa.')
       resetForm()
+      setNotice('Registro PFMEA gravado no banco da empresa.')
       await load()
     } catch (causeError) {
       setError(causeError instanceof Error ? causeError.message : 'Falha ao gravar o registro PFMEA.')
