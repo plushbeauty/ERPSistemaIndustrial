@@ -19,7 +19,6 @@ const pendingStates = new Set(['rascunho', 'em_revisao', 'solicitada_alteracao']
 
 export default function QualidadeDashboardRNC() {
   const [rncs, setRncs] = useState<Rpn[]>([])
-  const [sectors, setSectors] = useState<Sector[]>([])
   const [actions, setActions] = useState<Capa[]>([])
   const [documents, setDocuments] = useState<Document[]>([])
   const [receivingInspections, setReceivingInspections] = useState<Receiving[]>([])
@@ -41,7 +40,6 @@ export default function QualidadeDashboardRNC() {
         fetchAllPages<QualityInspection>((from, to) => supabase.from('qualidade_inspecoes').select('tipo,resultado,created_at,medicoes', { count: 'exact' }).eq('empresa_id', company.data).order('created_at', { ascending: false }).range(from, to)),
         fetchAllPages<Sector>((from, to) => supabase.from('erp_setores').select('id,nome', { count: 'exact' }).eq('empresa_id', company.data).eq('ativo', true).order('nome').range(from, to)),
       ])
-      setSectors(sectorRows)
       const sectorNames = new Map(sectorRows.map((sector) => [sector.id, sector.nome]))
       setRncs(r.map((row) => ({ ...row, setor: row.setor_envolvido_id && sectorNames.has(row.setor_envolvido_id) ? [{ nome: sectorNames.get(row.setor_envolvido_id)! }] : null })))
       setActions(a)
