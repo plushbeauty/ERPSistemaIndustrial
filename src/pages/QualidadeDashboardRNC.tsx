@@ -7,6 +7,7 @@ import { fetchAllPages } from '../lib/supabasePagination'
 import QualitySidebar from '../components/quality/QualitySidebar'
 
 type Rpn = { id: string; status: string; setor_envolvido_id: string | null; setor?: { nome: string }[] | null }
+type Sector = { id: string; nome: string }
 type Capa = { status: string; plano_5w2h: unknown }
 type Document = { status: string; area: string | null }
 type QualityInspection = { tipo: string; resultado: string; created_at: string; medicoes: unknown }
@@ -20,6 +21,7 @@ const pendingStates = new Set(['rascunho', 'em_revisao', 'solicitada_alteracao']
 export default function QualidadeDashboardRNC() {
   const location = useLocation()
   const [rncs, setRncs] = useState<Rpn[]>([])
+  const [sectors, setSectors] = useState<Sector[]>([])
   const [actions, setActions] = useState<Capa[]>([])
   const [documents, setDocuments] = useState<Document[]>([])
   const [receivingInspections, setReceivingInspections] = useState<Receiving[]>([])
@@ -34,13 +36,16 @@ export default function QualidadeDashboardRNC() {
       const company = await supabase.rpc('erp_current_empresa_id')
       if (company.error) throw company.error
       if (!company.data) throw new Error('Empresa ERP não identificada.')
-      const [r, a, d, inspections] = await Promise.all([
-        fetchAllPages<Rpn>((from, to) => supabase.from('erp_rpnc').select('id,status,setor_envolvido_id,setor:erp_setores!erp_rpnc_empresa_id_sector_fkey(nome)', { count: 'exact' }).eq('empresa_id', company.data).order('criado_em', { ascending: false }).order('id', { ascending: false }).range(from, to)),
+      const [r, a, d, inspections, sectorRows] = await Promise.all([
+        fetchAllPages<Rpn>((from, to) => supabase.from('erp_rpnc').select('id,status,setor_envolvido_id', { count: 'exact' }).eq('empresa_id', company.data).order('criado_em', { ascending: false }).order('id', { ascending: false }).range(from, to)),
         fetchAllPages<Capa>((from, to) => supabase.from('qualidade_rnc_capa').select('status,plano_5w2h', { count: 'exact' }).eq('empresa_id', company.data).order('created_at', { ascending: false }).range(from, to)),
         fetchAllPages<Document>((from, to) => supabase.from('erp_documentos_qualidade').select('status,area', { count: 'exact' }).eq('empresa_id', company.data).order('codigo').range(from, to)),
         fetchAllPages<QualityInspection>((from, to) => supabase.from('qualidade_inspecoes').select('tipo,resultado,created_at,medicoes', { count: 'exact' }).eq('empresa_id', company.data).order('created_at', { ascending: false }).range(from, to)),
+        fetchAllPages<Sector>((from, to) => supabase.from('erp_setores').select('id,nome', { count: 'exact' }).eq('empresa_id', company.data).eq('ativo', true).order('nome').range(from, to)),
       ])
-      setRncs(r)
+      setSectors(sectorRows)
+      const sectorNames = new Map(sectorRows.map((sector) => [sector.id, sector.nome]))
+      setRncs(r.map((row) => ({ ...row, setor: row.setor_envolvido_id && sectorNames.has(row.setor_envolvido_id) ? [{ nome: sectorNames.get(row.setor_envolvido_id)! }] : null })))
       setActions(a)
       setDocuments(d)
       setReceivingInspections(inspections.filter(row => row.tipo === 'recebimento').map(row => ({ status: row.resultado, created_at: row.created_at })))
