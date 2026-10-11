@@ -63,9 +63,9 @@ const menus: MenuItem[] = [
     { label: 'Visão geral do SGQ', route: '/qualidade' },
     { label: 'Inspeções operacionais', route: '/qualidade/inspecoes' },
     { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
-    { label: 'Sala de RNC / RPNC', route: '/qualidade/sala-rnc', icon: ClipboardCheck },
     { label: 'Controle de Processo — Injetora', route: '/qualidade/controle-injetora', icon: Factory },
     { label: 'Não conformidades (RPNC)', route: '/qualidade/rnc', icon: ClipboardCheck, children: [
+      { label: 'Sala de RNC / RPNC', route: '/qualidade/sala-rnc', icon: ClipboardCheck },
       { label: 'Cadastro de RPNC', route: '/qualidade/rnc' },
       { label: 'Espinha de Peixe — Ishikawa 6M', route: '/qualidade/ishikawa' },
       { label: 'Ações corretivas / CAPA 5W2H', route: '/qualidade/capa' },
