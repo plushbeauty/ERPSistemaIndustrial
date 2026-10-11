@@ -5,7 +5,6 @@ import { supabase } from '../../lib/supabaseClient'
 import CompactButton from '../ui/CompactButton'
 
 type Operator = { name: string; email: string }
-type Company = { nome: string | null }
 
 export default function ERPHeader() {
   const navigate = useNavigate()
@@ -15,19 +14,39 @@ export default function ERPHeader() {
 
   useEffect(() => {
     let alive = true
-    void supabase.auth.getUser().then(({ data }) => {
-      if (!alive || !data.user) return
+
+    async function loadSessionHeader() {
+      const { data, error } = await supabase.auth.getUser()
+      if (error || !alive || !data.user) return
+
       const metadata = data.user.user_metadata
-      const profile = await supabase.from('erp_usuarios').select('empresa_id').eq('auth_user_id', data.user.id).is('deleted_at', null).maybeSingle()
+      const profile = await supabase
+        .from('erp_usuarios')
+        .select('empresa_id')
+        .eq('auth_user_id', data.user.id)
+        .is('deleted_at', null)
+        .maybeSingle()
+
       if (profile.data?.empresa_id) {
-        const company = await supabase.from('erp_empresas').select('nome').eq('id', profile.data.empresa_id).maybeSingle()
-        if (alive && !company.error && company.data?.nome) setCompanyName((company.data as Company).nome ?? 'Empresa')
+        const company = await supabase
+          .from('erp_empresas')
+          .select('nome_fantasia,razao_social')
+          .eq('id', profile.data.empresa_id)
+          .maybeSingle()
+
+        if (alive && !company.error && company.data) {
+          const row = company.data as { nome_fantasia?: string | null; razao_social?: string | null }
+          setCompanyName(row.nome_fantasia || row.razao_social || 'Empresa')
+        }
       }
+
       const name = typeof metadata?.nome === 'string' && metadata.nome.trim()
         ? metadata.nome.trim()
         : 'Operador autenticado'
-      setOperator({ name, email: data.user.email ?? '' })
-    })
+      if (alive) setOperator({ name, email: data.user.email ?? '' })
+    }
+
+    void loadSessionHeader()
     const timer = window.setInterval(() => setNow(new Date()), 1000)
     return () => {
       alive = false
