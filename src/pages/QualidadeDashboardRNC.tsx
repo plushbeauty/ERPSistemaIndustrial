@@ -143,7 +143,7 @@ export default function QualidadeDashboardRNC() {
 }
 
 function Metric({ icon: Icon, label, value }: { icon: typeof AlertTriangle; label: string; value: number }) {
-  return <article className="flex min-h-[88px] items-center gap-3 rounded-md border border-sky-200 bg-gradient-to-br from-white to-sky-50 p-4 shadow-sm"><span className="grid size-10 shrink-0 place-items-center rounded-md bg-[#123B50] text-white"><Icon size={17}/></span><div><p className="text-[11px] font-bold uppercase tracking-wide text-slate-600">{label}</p><b className="text-2xl font-semibold text-[#123B50]">{value}</b></div></article>
+  return <article className="flex min-h-[78px] items-center gap-3 rounded-[2px] border border-slate-200 bg-white p-3 shadow-sm"><span className="grid size-9 shrink-0 place-items-center rounded-[2px] border border-sky-100 bg-[#EAF5F9] text-[#2D8DB8]"><Icon size={17}/></span><div><p className="text-[11px] font-bold uppercase tracking-wide text-slate-600">{label}</p><b className="text-xl font-semibold text-[#123B50]">{value}</b></div></article>
 }
 
 function ChartCard({ title, description, children, accent = 'blue' }: { title: string; description: string; children: ReactNode; accent?: 'blue' | 'violet' | 'amber' | 'cyan' | 'teal' }) {
