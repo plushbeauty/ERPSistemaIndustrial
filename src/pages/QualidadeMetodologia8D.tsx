@@ -29,7 +29,7 @@ type OitoD = {
 const steps = ['D1 - EQUIPE','D2 - PROBLEMA','D3 - CONTENÇÃO','D4 - CAUSA RAIZ','D5 - AÇÕES','D6 - VALIDAÇÃO','D7 - PREVENÇÃO','D8 - ENCERRAMENTO'] as const
 const fields = ['d1_equipe','d2_problema','d3_contencao','d4_causa_raiz','d5_acoes','d6_validacao','d7_preventivas','d8_encerramento'] as const
 const blankTexts = (): string[] => Array.from({ length: 8 }, () => '')
-const codeFromRnc = (rnc: Rnc) => { const year = new Date(rnc.data_ocorrencia ?? rnc.criado_em).getFullYear(); const suffix = rnc.numero_rpnc.replace(/^RPNC-\d{4}-?/i, 'RNC-').replace(/^RNC-/i, 'RNC-'); return '8D-' + year + '-' + suffix }
+const codeFromRnc = (rnc: Rnc) => '8D-' + new Date(rnc.data_ocorrencia ?? rnc.criado_em).getFullYear() + '-' + rnc.id
 
 export default function QualidadeMetodologia8D() {
   const [searchParams] = useSearchParams()
