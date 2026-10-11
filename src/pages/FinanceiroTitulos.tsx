@@ -199,20 +199,20 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
         setSources([])
         const resultRows = payable
           ? await fetchAllPages<unknown>((from, to) =>
-              supabase.from('erp_pedidos_compra').select('id,numero,total,fornecedor_id,data_pedido,status', { count: 'exact' }).eq('empresa_id', companyId).in('status', ['APROVADO','RECEBIMENTO_PARCIAL','RECEBIDO']).order('data_pedido', { ascending: false }).range(from, to),
+              supabase.from('erp_pedidos_compra').select('id,numero,total,fornecedor_id,created_at,status', { count: 'exact' }).eq('empresa_id', companyId).in('status', ['APROVADO','RECEBIMENTO_PARCIAL','RECEBIDO']).order('created_at', { ascending: false }).range(from, to),
             )
           : await fetchAllPages<unknown>((from, to) =>
               supabase.from('erp_pedidos_venda').select('id,numero,total,cliente_id,data_entrada,status', { count: 'exact' }).eq('empresa_id', companyId).eq('status','faturado').order('data_entrada', { ascending: false }).range(from, to),
             )
         if (!active) return
         setSources(resultRows.map((value) => {
-          const source = value as { id: string; numero?: string | number | null; total?: number | null; fornecedor_id?: string; cliente_id?: string; data_pedido?: string | null; data_entrada?: string | null }
+          const source = value as { id: string; numero?: string | number | null; total?: number | null; fornecedor_id?: string; cliente_id?: string; created_at?: string | null; data_entrada?: string | null }
           return {
             id: String(source.id),
             numero: String(source.numero ?? source.id),
             total: Number(source.total ?? 0),
             partner_id: String(payable ? source.fornecedor_id ?? '' : source.cliente_id ?? ''),
-            data: String(payable ? source.data_pedido ?? '' : source.data_entrada ?? '').slice(0,10) || null,
+            data: String(payable ? source.created_at ?? '' : source.data_entrada ?? '').slice(0,10) || null,
             descricao: `${payable ? 'Pedido de compra' : 'Pedido de venda'} #${String(source.numero ?? source.id)}`,
           }
         }).filter(source => source.total > 0))
