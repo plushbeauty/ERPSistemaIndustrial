@@ -115,7 +115,7 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
     { key: 'meio_ambiente', title: 'MEIO AMBIENTE', side: 'top' },
     { key: 'medicao', title: 'MEDIÇÃO', side: 'bottom' },
   ] as const
-  const fishboneCauseList = (value: string) => value.split(/\\n|;/).map((cause) => cause.trim()).filter(Boolean)
+  const fishboneCauseList = (value: string) => value.split(/\n|;/).map((cause) => cause.trim()).filter(Boolean)
 
   const openRnc = async () => {
     setError(''); setNotice('')
@@ -285,7 +285,7 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
             })}
             <rect x="1125" y="195" width="250" height="130" rx="2" fill="#EAF5F9" stroke="#2D8DB8" strokeWidth="2" />
             <text x="1250" y="220" textAnchor="middle" fontSize="13" fontWeight="700" fill="#123B50">EFEITO / PROBLEMA</text>
-            {(selected?.descricao_nao_conformidade ?? 'Selecione uma RNC').match(/.{1,30}(?:\\s|$)/g)?.slice(0, 4).map((line, index) => <text key={index} x="1250" y={250 + index * 20} textAnchor="middle" fontSize="13" fill="#123B50">{line.trim()}</text>)}
+            {(selected?.descricao_nao_conformidade ?? 'Selecione uma RNC').match(/.{1,30}(?:\s|$)/g)?.slice(0, 4).map((line, index) => <text key={index} x="1250" y={250 + index * 20} textAnchor="middle" fontSize="13" fill="#123B50">{line.trim()}</text>)}
             <text x="70" y="310" fontSize="11" fill="#64748b">CAUSAS</text>
           </svg></div>
           <p className="ishikawa-print-caption mt-2 text-[10px] text-slate-600">Documento de análise de causa raiz gerado pelo SGQ ERP Industrial. Confirmar causas e evidências antes da aprovação.</p>
