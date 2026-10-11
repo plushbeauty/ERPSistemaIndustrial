@@ -52,7 +52,7 @@ export default function QualidadeMetodologia8D() {
       if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
       const [r, d] = await Promise.all([
         supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,origem,gravidade,lote_producao,quantidade_segregada,bloqueia_lote,status,criado_em,data_ocorrencia,inspetor_id,disposicao_fisica,requisito_violado,evidencias_objetivas,investigacao').eq('empresa_id', company.data).order('criado_em', { ascending: false }).limit(500),
-        supabase.from('erp_qualidade_8d').select('id,codigo,rpnc_id,etapa_atual,d1_equipe,d2_problema,d3_contencao,d4_causa_raiz,d5_acoes,d6_validacao,d7_preventivas,d8_encerramento,status,updated_at').eq('empresa_id', company.data).order('updated_at', { ascending: false }).limit(500),
+        supabase.from('erp_qualidade_8d').select('id,codigo,rpnc_id,etapa_atual,d1_equipe,d2_problema,d3_contencao,d4_causa_raiz,d5_acoes,d6_validacao,d7_preventivas,d8_encerramento,status,updated_at,rpnc_snapshot,snapshot_capturado_em,numero_rpnc_origem,origem_rpnc,cliente_referencia').eq('empresa_id', company.data).order('updated_at', { ascending: false }).limit(500),
       ])
       if (r.error || d.error) throw r.error ?? d.error
       setRncs(r.data ?? [])
