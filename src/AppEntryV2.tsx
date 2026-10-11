@@ -184,6 +184,7 @@ const QualidadeAuditoria5S = lazyPage(() => import('./pages/QualidadeAuditoria5S
 const QualidadeMetodologia8D = lazyPage(() => import('./pages/QualidadeMetodologia8D'), 'QualidadeMetodologia8D')
 const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspecaoProcesso'), 'QualidadeInspecaoProcesso')
 const QualidadeInspecoesIndustrial = lazyPage(() => import('./pages/QualidadeInspecoesIndustrial'), 'default')
+const QualidadeTablet = lazyPage(() => import('./pages/QualidadeTablet'), 'default')
 const QualidadeEspecificacoesTecnicas = lazyPage(() => import('./pages/QualidadeEspecificacoesTecnicas'), 'default')
 const MoldesFerramentaria = lazyPage(() => import('./pages/MoldesFerramentaria'), 'MoldesFerramentaria')
 const OperacaoIndustrial = lazyPage(() => import('./pages/OperacaoIndustrial'), 'OperacaoIndustrial')
@@ -533,7 +534,9 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/pfmea" element={<QualityPlanGate><QualidadePFMEA /></QualityPlanGate>} />
       <Route path="/qualidade/documentos" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
       <Route path="/qualidade/inspecao-processo" element={<QualityPlanGate><QualidadeInspecaoProcesso /></QualityPlanGate>} />
-      <Route path="/qualidade/inspecoes" element={<QualityPlanGate><QualidadeInspecoesIndustrial /></QualityPlanGate>} />
+      <Route path="/qualidade/inspecoes" element={<QualityPlanGate><QualidadeTablet /></QualityPlanGate>} />
+      <Route path="/qualidade/tablet" element={<QualityPlanGate><QualidadeTablet /></QualityPlanGate>} />
+      <Route path="/qualidade/inspecoes/operacao" element={<QualityPlanGate><QualidadeInspecoesIndustrial /></QualityPlanGate} />
       <Route path="/qualidade/metodologia-8d" element={<QualityPlanGate><QualidadeMetodologia8D /></QualityPlanGate>} />
       <Route path="/qualidade/auditoria-5s" element={<QualityPlanGate><QualidadeAuditoria5S /></QualityPlanGate>} />
       <Route path="/qualidade/lista-mestre" element={<QualityPlanGate><QualidadeListaMestre /></QualityPlanGate>} />
