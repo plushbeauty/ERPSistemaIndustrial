@@ -35,6 +35,8 @@ export default function QualitySidebar({ active }: { active: string }) {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
 
+  if (active !== '/qualidade') return null
+
   return (
     <>
       <nav aria-label="Menu da qualidade" className="mb-2 flex h-[30px] min-h-[30px] w-full items-center justify-between gap-2 border border-[#2D8DB8] bg-[#2D8DB8] px-2 text-white">
