@@ -1,0 +1,23 @@
+/* Manutenção Industrial — densidade visual alinhada a Pedidos e à paleta da Qualidade. */
+.maintenance-workspace { background: #F4FBFD !important; color: #123B50 !important; }
+.maintenance-workspace > header { padding: 10px 16px !important; box-shadow: none !important; }
+.maintenance-workspace > header h1 { font-size: 15px !important; font-weight: 600 !important; line-height: 1.3 !important; }
+.maintenance-workspace > header p { font-size: 10px !important; font-weight: 500 !important; }
+.maintenance-workspace button,
+.maintenance-workspace a[role="button"] { border-radius: 2px !important; min-height: 30px !important; font-size: 10px !important; }
+.maintenance-workspace table { font-size: 10px !important; }
+.maintenance-workspace table thead { background: #EAF4F7 !important; color: #17445A !important; }
+.maintenance-workspace table thead th { height: 30px !important; padding: 5px 8px !important; font-size: 9px !important; font-weight: 700 !important; }
+.maintenance-workspace table tbody tr { height: 34px !important; }
+.maintenance-workspace table tbody td { height: 34px !important; padding: 5px 8px !important; font-size: 10px !important; }
+.maintenance-workspace .rounded-lg,
+.maintenance-workspace .rounded-md,
+.maintenance-workspace .rounded-xl { border-radius: 2px !important; }
+.maintenance-workspace .shadow-sm { box-shadow: none !important; }
+.maintenance-workspace .text-sky-700 { color: #2D8DB8 !important; }
+.maintenance-workspace .bg-sky-700 { background-color: #2D8DB8 !important; }
+.maintenance-workspace .hover\\:bg-sky-50:hover { background-color: #F4FBFD !important; }
+.maintenance-workspace input,
+.maintenance-workspace select,
+.maintenance-workspace textarea { border-radius: 2px !important; font-size: 10px !important; }
+.maintenance-workspace label { gap: 2px !important; font-size: 9px !important; }
