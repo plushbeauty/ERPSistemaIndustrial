@@ -1,96 +1,22 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import '../../styles/quality-workspace-standard.css'
-import { Activity, BookOpenCheck, CheckCircle as CheckCircleIcon, CircleHelp, ClipboardCheck, ClipboardList, FileText, FolderGit2, Gauge, ListChecks, LineChart, SearchCheck, ShieldCheck, Target, Wrench, X } from 'lucide-react'
-
-const items = [
-  ['Visão Geral da Qualidade', '/qualidade'],
-  ['Cadastro de Documentos', '/qualidade/documentos'],
-  ['Procedimentos e PDFs', '/qualidade/procedimentos'],
-  ['Indicadores RNC / CAPA', '/qualidade/dashboard-rnc'],
-  ['Especificações Técnicas', '/qualidade/especificacoes'],
-  ['Central Tablet da Qualidade', '/qualidade/inspecoes'],
-  ['Inspeções de Lotes', '/qualidade/inspecoes/operacao'],
-  ['Recebimento e Inspeção Dimensional', '/qualidade/industrial'],
-  ['Matriz FMEA', '/qualidade/fmea'],
-  ['PFMEA / Risco', '/qualidade/pfmea'],
-  ['Sala de RNC / RPNC', '/qualidade/sala-rnc'],
-  ['Não Conformidades (RNC)', '/qualidade/rnc'],
-  ['Espinha de Peixe — Ishikawa', '/qualidade/ishikawa'],
-  ['Ações CAPA / 5W2H', '/qualidade/capa'],
-  ['8D — Ações Corretivas', '/qualidade/metodologia-8d'],
-  ['Auditoria 5S', '/qualidade/auditoria-5s'],
-  ['Inspeção em Processo', '/qualidade/inspecao-processo'],
-  ['Liberação de Lotes', '/qualidade/liberacao-lote'],
-  ['Calibração / Metrologia', '/qualidade/calibracao'],
-  ['Instrumentos e Metrologia', '/qualidade/metrologia'],
-  ['Controle Documental GED', '/qualidade/ged-documentos'],
-  ['Lista Mestre', '/qualidade/lista-mestre'],
-  ['Relatórios SGQ', '/qualidade/relatorios-documentos'],
-  ['Genealogia de Lotes', '/qualidade/genealogia-lote'],
-  ['Quarentena de Lotes', '/qualidade/quarentena'],
-  ['Refugos e Sucata', '/qualidade/refugos'],
-  ['Editor de Instruções de Trabalho', '/qualidade/editor-it'],
-  ['Assinatura de Instruções de Trabalho', '/qualidade/assinatura-it'],
-]
-
-const itemIcons = [Gauge, FileText, FileText, Activity, SearchCheck, ClipboardCheck, ClipboardList, Target, Target, ClipboardCheck, ShieldCheck, Activity, CheckCircleIcon, BookOpenCheck, ClipboardList, ClipboardCheck, ShieldCheck, Wrench, Gauge, FolderGit2, FileText, FileText, ClipboardList, ShieldCheck, ClipboardList, FileText, ShieldCheck]
+import { Tablet } from 'lucide-react'
 
 export default function QualitySidebar({ active }: { active: string }) {
-  const [helpOpen, setHelpOpen] = useState(false)
-  const activeLabel = items.find(([, path]) => path === active)?.[0] ?? (active.includes('ged-documentos') ? 'Controle Documental GED' : active.includes('cep') ? 'Cartas de Controle CEP' : 'Gestão da Qualidade')
-  const helpText = active.includes('inspec') ? 'Selecione o lote e a especificação aprovada aplicável. Registre evidências e só libere o material após concluir a avaliação conforme o procedimento da empresa.'
-    : active.includes('especificacoes') ? 'Mantenha critérios, tolerâncias, métodos de verificação, revisão e aprovação conforme desenhos e requisitos validados. Não use limites presumidos.'
-    : active.includes('ged-documentos') || active.includes('documentos') || active.includes('lista-mestre') ? 'Consulte a revisão vigente, confirme a área responsável e mantenha histórico, aprovação e distribuição controlada das cópias.'
-    : active.includes('rnc') || active.includes('capa') || active.includes('ishikawa') || active.includes('metodologia-8d') ? 'Registre contenção, causa raiz, responsáveis, prazos, evidências e verificação de eficácia antes de encerrar a ocorrência.'
-    : active.includes('fmea') || active.includes('pfmea') ? 'Revise modos de falha, efeitos, causas, controles preventivos/detectivos e ações com base no processo real.'
-    : active.includes('metrologia') || active.includes('cep') ? 'Utilize instrumentos válidos e critérios aprovados; registre os resultados e investigue desvios antes de liberar o processo.'
-    : 'Use este painel para acompanhar indicadores do SGQ e acessar inspeções, documentos, riscos, auditorias e ações corretivas. Os números devem refletir registros reais da empresa.'
-
   return (
-    <aside className="col-span-full min-w-0 overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-[#123B50] to-[#185c78] px-3 py-2 text-white">
-        <ShieldCheck size={16} className="shrink-0" />
-        <p className="text-[11px] font-extrabold uppercase tracking-wider">Qualidade · Navegação do SGQ</p>
-        <span className="ml-auto text-[10px] text-sky-100">Acesso rápido aos módulos</span>
-      </div>
-      <nav aria-label="Navegação da qualidade" className="flex min-w-0 flex-wrap items-stretch gap-2 p-3 [scrollbar-width:thin]">
-        {items.map(([label, path], index) => {
-          const Icon = itemIcons[index] ?? FileText
-          return (
-            <Link
-              key={path}
-              to={path}
-              aria-current={active === path ? 'page' : undefined}
-              className={`inline-flex min-h-9 min-w-[190px] max-w-[280px] flex-[1_1_190px] items-center gap-2 whitespace-normal rounded-[2px] border px-3 py-2 text-left text-[11px] leading-tight transition-colors ${
-                active === path
-                  ? 'border-[#2D8DB8] bg-gradient-to-r from-[#123B50] to-[#2D8DB8] font-bold text-white shadow-sm'
-                  : 'border-slate-200 bg-[#F4FBFD] font-semibold text-[#123B50] hover:border-[#2D8DB8] hover:bg-[#E5F3F8]'
-              }`}
-            >
-              <Icon size={14} className="shrink-0" />
-              {label}
-            </Link>
-          )
-        })}
-        <div className="flex flex-wrap items-center gap-2 border-l border-slate-200 pl-2">
-          <span className="inline-flex min-h-9 items-center gap-2 whitespace-nowrap px-2 text-[10px] font-bold uppercase text-[#123B50]">
-            <ShieldCheck size={14} /> Gestão da Qualidade
-          </span>
-          <Link to="/qualidade/cep" aria-current={active === '/qualidade/cep' ? 'page' : undefined} className={`inline-flex min-h-9 items-center gap-2 whitespace-nowrap rounded-[2px] border px-3 py-1.5 text-[11px] font-semibold ${
-            active === '/qualidade/cep' ? 'border-[#2D8DB8] bg-[#123B50] text-white' : 'border-slate-200 bg-[#F4FBFD] text-[#123B50] hover:border-[#2D8DB8] hover:bg-[#E5F3F8]'
-          }`}>
-            <LineChart size={14} /> Cartas de Controle CEP
-          </Link>
-        </div>
-        <button type="button" onClick={() => setHelpOpen(value => !value)} aria-expanded={helpOpen} aria-controls="quality-context-help" className="ml-auto inline-flex min-h-9 flex-none items-center gap-2 rounded-[2px] border border-[#2D8DB8] bg-[#E5F3F8] px-3 py-1.5 text-[11px] font-bold text-[#123B50] hover:bg-[#D4EAF3]">
-          {helpOpen ? <X size={14} /> : <CircleHelp size={14} />} {helpOpen ? 'Fechar ajuda' : 'Ajuda desta tela'}
-        </button>
-      </nav>
-      {helpOpen && <section id="quality-context-help" className="border-t border-sky-200 bg-gradient-to-r from-[#EAF5F9] to-[#F5FAFC] p-3 text-[#123B50]" role="region" aria-label="Ajuda contextual da qualidade">
-        <div className="flex items-center gap-2 text-[11px] font-semibold"><CircleHelp size={15} /> {activeLabel}</div>
-        <p className="mt-1 text-[11px] leading-relaxed text-slate-700">{helpText}</p>
-      </section>}
-    </aside>
+    <nav aria-label="Menu da qualidade" className="flex min-w-0 items-center border border-slate-200 bg-white px-2 py-1">
+      <Link
+        to="/qualidade/tablet"
+        aria-current={active === '/qualidade/tablet' ? 'page' : undefined}
+        className={`inline-flex min-h-[30px] items-center gap-2 rounded-[2px] border px-3 text-[10px] font-extrabold uppercase tracking-wide transition-colors ${
+          active === '/qualidade/tablet'
+            ? 'border-[#2D8DB8] bg-[#123B50] text-white'
+            : 'border-slate-200 bg-[#F4FBFD] text-[#123B50] hover:border-[#2D8DB8] hover:bg-[#E5F3F8]'
+        }`}
+      >
+        <Tablet size={16} className="shrink-0" />
+        QUALIDADE TABLET
+      </Link>
+    </nav>
   )
 }
