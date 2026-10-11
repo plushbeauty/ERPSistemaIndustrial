@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, FolderGit2, LineChart } from 'lucide-react'
+import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, FolderGit2, LineChart, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, ClipboardCheck } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -12,13 +12,13 @@ type MenuItem = {
 }
 
 const menus: MenuItem[] = [
-  { label: 'Início', route: '/erp-industrial' },
-  { label: 'Cadastros', route: '/produtos-vendas', children: [
+  { label: 'Início', route: '/erp-industrial', icon: Home },
+  { label: 'Cadastros', route: '/produtos-vendas', icon: Database, children: [
     { label: 'Produtos', route: '/produtos-vendas' },
     { label: 'Clientes', route: '/vendas/clientes' },
     { label: 'Fornecedores', route: '/compras/fornecedores' },
   ] },
-  { label: 'Vendas', route: '/vendas', children: [
+  { label: 'Vendas', route: '/vendas', icon: ShoppingCart, children: [
     { label: 'Dashboard comercial', route: '/vendas' },
     { label: 'Status do pedido', route: '/vendas/status' },
     { label: 'Novo pedido', route: '/vendas/novo-pedido' },
@@ -31,7 +31,7 @@ const menus: MenuItem[] = [
     { label: 'Metas', route: '/vendas/metas' },
     { label: 'Relatórios', route: '/vendas/relatorios' },
   ] },
-  { label: 'Compras', route: '/compras/rfq', children: [
+  { label: 'Compras', route: '/compras/rfq', icon: Truck, children: [
     { label: 'Central de compras / RFQ', route: '/compras/rfq' },
     { label: 'Solicitações', route: '/compras/solicitacao-manual' },
     { label: 'Pedido de compra', route: '/compras/pedido' },
@@ -39,10 +39,10 @@ const menus: MenuItem[] = [
     { label: 'Fornecedores', route: '/compras/fornecedores' },
     { label: 'Relatórios', route: '/compras/relatorios' },
   ] },
-  { label: 'Estoque', route: '/estoque' },
-  { label: 'Financeiro', route: '/financeiro/custo-padrao' },
-  { label: 'Fiscal', route: '/fiscal' },
-  { label: 'Manufatura / PCP', route: '/pcp', children: [
+  { label: 'Estoque', route: '/estoque', icon: Package },
+  { label: 'Financeiro', route: '/financeiro/custo-padrao', icon: Wallet },
+  { label: 'Fiscal', route: '/fiscal', icon: FileText },
+  { label: 'Manufatura / PCP', route: '/pcp', icon: Factory, children: [
     { label: 'Visão geral do PCP', route: '/pcp' },
     { label: 'Ordens de produção', route: '/pcp/ordens-industriais' },
     { label: 'Agenda de Máquinas', route: '/pcp/agenda-maquinas', icon: CalendarRange },
@@ -63,15 +63,15 @@ const menus: MenuItem[] = [
     { label: 'Visão geral do SGQ', route: '/qualidade' },
     { label: 'Inspeções operacionais', route: '/qualidade/inspecoes' },
     { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
-    { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
+    { label: 'Não conformidades (RPNC)', route: '/qualidade/rnc', icon: ClipboardCheck, children: [\n      { label: 'Cadastro de RPNC', route: '/qualidade/rnc' },\n      { label: 'Espinha de Peixe — Ishikawa 6M', route: '/qualidade/ishikawa' },\n      { label: 'Ações corretivas / CAPA 5W2H', route: '/qualidade/capa' },\n      { label: 'Metodologia 8D', route: '/qualidade/metodologia-8d' },\n    ] },\n    { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
     { label: 'FMEA / PFMEA', route: '/qualidade/fmea' },
     { label: 'Controle Documental GED', route: '/qualidade/ged-documentos', icon: FolderGit2 },
     { label: 'Cartas de Controle CEP', route: '/qualidade/cep', icon: LineChart },
     { label: 'Instrumentos / Metrologia', route: '/qualidade/instrumentos' },
   ] },
-  { label: 'Manutenção', route: '/manutencao' },
-  { label: 'Relatórios', route: '/relatorios' },
-  { label: 'Configuração', route: '/configuracoes-adm' },
+  { label: 'Manutenção', route: '/manutencao', icon: Wrench },
+  { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
+  { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
 ]
 
 export default function ERPHorizontalShell({ children, operatorName = 'Usuário ERP' }: { children: ReactNode; operatorName?: string }) {
