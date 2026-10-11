@@ -76,12 +76,22 @@ export default function QualidadeMetodologia8D() {
       setError('A RNC informada na URL não foi encontrada na empresa da sessão.')
       return
     }
+    const existing = records.find(item => item.rpnc_id === sourceId)
     setId(source.id)
+    if (existing) {
+      setRecordId(existing.id)
+      setCodigo(existing.codigo)
+      setRpncSnapshot(existing.rpnc_snapshot ?? null)
+      setStep(Math.max(0, fields.indexOf(existing.etapa_atual.toLowerCase().startsWith('d') ? fields[Number(existing.etapa_atual.slice(1)) - 1] : fields[0])))
+      setTexts(fields.map(field => existing[field] ?? ''))
+      setStatus(existing.status)
+      return
+    }
     setRecordId('')
     setCodigo(codeFromRnc(source))
     setRpncSnapshot(null)
     setTexts(current => current.map((value, index) => index === 1 && !value.trim() ? source.numero_rpnc + ' — ' + source.descricao_nao_conformidade : value))
-  }, [rncs, searchParams])
+  }, [rncs, records, searchParams])
 
   function startNew() {
     setRecordId('')
