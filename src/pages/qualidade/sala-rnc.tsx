@@ -103,7 +103,14 @@ export default function SalaRNC() {
     if (whys.some(item => item.answer.trim().length > 0) && whys.some(item => !item.answer.trim())) { setError('Para usar os 5 Porquês, preencha todas as cinco etapas em sequência.'); return }
     setBusy(true)
     try {
-      const whyText = whys.map((item, index) => (index + 1) + '. ' + item.question + '\\n' + item.answer.trim()).filter(item => !item.endsWith('\\n')).join('\\n\\n')
+      const whyAnswers = whys.filter(item => item.answer.trim()).map(item => ({ question: item.question, answer: item.answer.trim() }))
+      const whyText = whyAnswers.map((item, index) => (index + 1) + '. ' + item.question + '\\n' + item.answer).join('\\n\\n')
+      const readyActions = actions.filter(row => row.oQue.trim() && row.quem && row.quando && row.como.trim())
+      const actionPayload = readyActions.map(row => ({
+        what: row.oQue.trim(), why: row.porQue.trim() || null, where_to: row.onde.trim() || null,
+        when_date: row.quando, who_id: row.quem, how: row.como.trim(),
+        how_much: row.quanto.trim() ? Number(row.quanto) : null
+      }))
       const result = await supabase.rpc('erp_criar_rpnc_com_quarentena', {
         p_lote_id: lotId,
         p_setor_id: sectorId,
@@ -111,34 +118,14 @@ export default function SalaRNC() {
         p_origem: origin.toLowerCase(),
         p_quantidade: quantity,
         p_disposition: disposition,
-        p_whys_text: whyText || null
+        p_whys_text: whyText || null,
+        p_whys_json: whyAnswers,
+        p_actions_json: actionPayload
       })
       if (result.error) throw result.error
-      const created = result.data as Rnc | null
+      const created = result.data as (Rnc & { codigo_8d?: string; acoes_gravadas?: number }) | null
       if (!created?.id || !created.numero_rpnc) throw new Error('O banco não retornou a RPNC criada.')
-      setNotice('RPNC ' + created.numero_rpnc + ', análise 8D e retenção/quarentena do lote foram gravadas em uma única transação.')
-      const actionRows = actions.filter(row => row.oQue.trim() && row.quem && row.quando && row.como.trim())
-      if (actionRows.length) {
-        const results = await Promise.all(actionRows.map(row => supabase.from('erp_sgq_capa_acoes').insert({
-          empresa_id: companyId,
-          rpnc_id: created.id,
-          tipo: 'Corretiva',
-          descricao: row.oQue.trim(),
-          causa_raiz: whys.map(item => item.answer.trim()).filter(Boolean).join('\n'),
-          responsavel_id: row.quem,
-          prazo: row.quando,
-          status: 'Planejada',
-          acao_o_que: row.oQue.trim(),
-          acao_por_que: row.porQue.trim() || null,
-          acao_onde: row.onde.trim() || null,
-          acao_quem: operators.find(operator => operator.id === row.quem)?.nome ?? row.quem,
-          acao_quando: row.quando,
-          acao_como: row.como.trim(),
-          acao_quanto: row.quanto.trim() ? Number(row.quanto) : null
-        })))
-        const failed = results.find(result => result.error)
-        if (failed?.error) setError((current) => (current ? current + ' ' : '') + 'A RPNC existe, mas houve falha ao salvar uma ação 5W2H: ' + failed.error.message)
-      }
+      setNotice('RPNC ' + created.numero_rpnc + ', análise 8D, CAPA/5W2H e retenção do lote gravadas em transação única. Ações iniciais: ' + String(created.acoes_gravadas ?? 0) + '.')
       setSelectedRnc(created.id)
       setDescription('')
       setLotId('')
@@ -147,7 +134,7 @@ export default function SalaRNC() {
       setActions([emptyAction()])
       await load()
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Falha ao registrar a RPNC.')
+      setError(cause instanceof Error ? cause.message : 'Falha ao registrar a RPNC e a retenção do lote.')
     } finally {
       setBusy(false)
     }
@@ -161,16 +148,18 @@ export default function SalaRNC() {
     try {
       const ready = actions.filter(row => row.oQue.trim() && row.quem && row.quando && row.como.trim())
       if (!ready.length) throw new Error('Preencha O QUÊ, QUEM, QUANDO e COMO em pelo menos uma ação.')
-      const results = await Promise.all(ready.map(row => supabase.from('erp_sgq_capa_acoes').insert({
-        empresa_id: companyId, rpnc_id: selectedRecord.id, tipo: 'Corretiva',
-        descricao: row.oQue.trim(), causa_raiz: null, responsavel_id: row.quem, prazo: row.quando,
-        status: 'Planejada', acao_o_que: row.oQue.trim(), acao_por_que: row.porQue.trim() || null,
-        acao_onde: row.onde.trim() || null, acao_quem: operators.find(operator => operator.id === row.quem)?.nome ?? row.quem,
-        acao_quando: row.quando, acao_como: row.como.trim(), acao_quanto: row.quanto.trim() ? Number(row.quanto) : null
-      })))
-      const failed = results.find(result => result.error)
-      if (failed?.error) throw failed.error
-      setNotice(ready.length + ' ação(ões) CAPA gravada(s) no banco.')
+      const actionPayload = ready.map(row => ({
+        what: row.oQue.trim(), why: row.porQue.trim() || null, where_to: row.onde.trim() || null,
+        when_date: row.quando, who_id: row.quem, how: row.como.trim(),
+        how_much: row.quanto.trim() ? Number(row.quanto) : null
+      }))
+      const result = await supabase.rpc('erp_salvar_acoes_rnc', {
+        p_rpnc_id: selectedRecord.id,
+        p_actions_json: actionPayload
+      })
+      if (result.error) throw result.error
+      const saved = result.data as { count?: number } | null
+      setNotice(String(saved?.count ?? ready.length) + ' ação(ões) CAPA gravada(s) com atualização do plano 5W2H.')
       setActions([emptyAction()])
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao salvar ações CAPA.')
