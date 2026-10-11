@@ -314,7 +314,7 @@ export default function ControleProcessoInjetora() {
                   <label className="flex items-center gap-2"><input type="checkbox" checked={finalPomResiduo} onChange={e => setFinalPomResiduo(e.target.checked)} /> Todo POM consumido; cilindro sem resíduo</label>
                 </div>}
                 <p className="mb-2 text-[9px] text-slate-500">Encerrar registra o término real e, para POM, exige confirmar o esvaziamento seguro do cilindro.</p>
-                <button type="button" className={buttonClass} disabled={busy || selected.status === 'ENCERRADO' || !['LIBERADO', 'LIBERACAO_PROVISORIA', 'EM_PRODUCAO'].includes(selected.status)} onClick={() => void closeProduction()><ShieldCheck size={13} /> Encerrar produção</button>
+                <button type="button" className={buttonClass} disabled={busy || selected.status === 'ENCERRADO' || !['LIBERADO', 'LIBERACAO_PROVISORIA', 'EM_PRODUCAO'].includes(selected.status)} onClick={() => void closeProduction()}><ShieldCheck size={13} /> Encerrar produção</button>
               </div>
             </section>}
           </aside>
