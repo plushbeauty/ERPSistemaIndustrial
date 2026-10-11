@@ -21,7 +21,7 @@ function requiredPlan(path: string): Plan {
   if (path === '/qualidade/inspecoes') return 'BASICO'
 
   const goldRoutes = [
-    '/qualidade/sala-rnc',
+    '/qualidade/sala-rnc', '/qualidade/controle-injetora',
     '/qualidade/especificacoes', '/qualidade/fmea', '/qualidade/pfmea', '/qualidade/rnc-capa',
     '/engenharia/bom', '/pcp/engenharia-bom', '/pcp/ordens', '/pcp/ordens-industriais',
     '/pcp/apontamentos', '/pcp/painel-ordens',
