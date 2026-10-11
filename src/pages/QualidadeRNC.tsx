@@ -232,13 +232,9 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
   return (
     <main className="min-h-screen bg-[#F4FBFD] text-[#123B50]"><div className="mx-auto max-w-[1800px] space-y-3 p-3"><QualitySidebar active={location.pathname} /><div className="sgq-compact">
       <div className="sgq-compact">
-        {location.pathname === '/vendas/sgq' && <div className="sgq-tabs">
-          <button className={tab === 'rnc' ? 'active' : ''} type="button" onClick={() => setTab('rnc')}><ShieldCheck size={13}/> 01 · RNC / ISHIKAWA 6M</button>
-          <button className={tab === 'capa' ? 'active' : ''} type="button" onClick={() => setTab('capa')}><CheckCircle2 size={13}/> 02 · CAPA / 5W2H</button>
-          <button className={tab === 'ishikawa' ? 'active' : ''} type="button" onClick={() => setTab('ishikawa')}><FileText size={13}/> 03 · ISHIKAWA</button>
-          <button className={tab === 'ged' ? 'active' : ''} type="button" onClick={() => setTab('ged')}><FileText size={13}/> 04 · GED</button>
-          <button className="refresh" type="button" onClick={() => void load()} disabled={busy}><RefreshCw size={13}/> ATUALIZAR</button>
-        </div>}
+        <div className="flex justify-end">
+          <button className="refresh inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-[#2D8DB8] px-3 text-[10px]" type="button" onClick={() => void load()} disabled={busy}><RefreshCw size={13}/> ATUALIZAR DADOS</button>
+        </div>
         {(error || notice) && <div className={error ? 'sgq-message error' : 'sgq-message'}>{error || notice}</div>}
 
         {tab === 'rnc' && <section className="sgq-panel">
