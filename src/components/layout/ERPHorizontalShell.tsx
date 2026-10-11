@@ -60,14 +60,33 @@ const menus: MenuItem[] = [
     ] },
   ] },
   { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
-    { label: 'Visão geral do SGQ', route: '/qualidade' },
-    { label: 'Inspeções operacionais', route: '/qualidade/inspecoes' },
-    { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
-    { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
-    { label: 'FMEA / PFMEA', route: '/qualidade/fmea' },
-    { label: 'Controle Documental GED', route: '/qualidade/ged-documentos', icon: FolderGit2 },
+    { label: 'Painel / tablet da Qualidade', route: '/qualidade' },
+    { label: 'Cadastro de Documentos', route: '/qualidade/documentos' },
+    { label: 'Procedimentos e PDFs', route: '/qualidade/procedimentos' },
+    { label: 'Indicadores RNC / CAPA', route: '/qualidade/dashboard-rnc' },
+    { label: 'Especificações Técnicas', route: '/qualidade/especificacoes' },
+    { label: 'Inspeções de Lotes', route: '/qualidade/inspecoes' },
+    { label: 'Recebimento / Inspeção Dimensional', route: '/qualidade/industrial' },
+    { label: 'Não Conformidades — RNC', route: '/qualidade/rnc' },
+    { label: 'Espinha de Peixe — Ishikawa 6M', route: '/qualidade/ishikawa' },
+    { label: 'Ações Corretivas — CAPA / 5W2H', route: '/qualidade/capa' },
+    { label: 'Metodologia 8D', route: '/qualidade/metodologia-8d' },
+    { label: 'FMEA', route: '/qualidade/fmea' },
+    { label: 'PFMEA / Risco', route: '/qualidade/pfmea' },
     { label: 'Cartas de Controle CEP', route: '/qualidade/cep', icon: LineChart },
+    { label: 'Controle Documental GED', route: '/qualidade/ged-documentos', icon: FolderGit2 },
+    { label: 'Lista Mestre', route: '/qualidade/lista-mestre' },
+    { label: 'Auditoria 5S', route: '/qualidade/auditoria-5s' },
+    { label: 'Inspeção em Processo', route: '/qualidade/inspecao-processo' },
+    { label: 'Liberação de Lotes', route: '/qualidade/liberacao-lote' },
+    { label: 'Calibração / Metrologia', route: '/qualidade/calibracao' },
     { label: 'Instrumentos / Metrologia', route: '/qualidade/instrumentos' },
+    { label: 'Relatórios SGQ', route: '/qualidade/relatorios-documentos' },
+    { label: 'Genealogia de Lotes', route: '/qualidade/genealogia-lote' },
+    { label: 'Quarentena de Lotes', route: '/qualidade/quarentena' },
+    { label: 'Refugos e Sucata', route: '/qualidade/refugos' },
+    { label: 'Editor de Instruções de Trabalho', route: '/qualidade/editor-it' },
+    { label: 'Assinatura de Instruções de Trabalho', route: '/qualidade/assinatura-it' },
   ] },
   { label: 'Manutenção', route: '/manutencao' },
   { label: 'Relatórios', route: '/relatorios' },
@@ -279,7 +298,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-subdropdown{position:absolute;left:100%;top:0;z-index:1400;min-width:190px;padding:4px;background:#fff;border:1px solid #cbd8de;box-shadow:0 8px 22px rgba(18,59,80,.16)}
         .erp-horizontal-subdropdown button{display:flex;width:100%;min-height:30px;align-items:center;text-align:left;padding:5px 9px;border:0;background:#fff;color:#173b4a;font-size:10px;white-space:nowrap;cursor:pointer}
         .erp-horizontal-subdropdown button:hover,.erp-horizontal-subdropdown button.is-active{background:#eaf5f8;color:#123b50}
-        .erp-horizontal-dropdown{position:absolute;top:31px;left:0;min-width:210px;padding:4px 0;background:#fff;border:1px solid #b9cbd3;box-shadow:0 5px 14px rgba(18,59,80,.14)}
+        .erp-horizontal-dropdown{position:absolute;top:31px;left:0;min-width:245px;max-height:min(72vh,680px);overflow-y:auto;overscroll-behavior:contain;padding:4px 0;background:#fff;border:1px solid #b9cbd3;box-shadow:0 5px 14px rgba(18,59,80,.14)}
         .erp-horizontal-dropdown button{display:block;width:100%;min-height:29px;padding:5px 12px;border:0;background:#fff;color:#234d61;text-align:left;font-size:11px;cursor:pointer}
         .erp-horizontal-dropdown button:hover{background:#edf7fb;color:#1f7195}
         .erp-horizontal-workspace{min-width:0;min-height:calc(100vh - 78px);padding:8px;box-sizing:border-box}
