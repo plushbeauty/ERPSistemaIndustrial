@@ -5,17 +5,24 @@ import { supabase } from '../../lib/supabaseClient'
 import CompactButton from '../ui/CompactButton'
 
 type Operator = { name: string; email: string }
+type Company = { nome: string | null }
 
 export default function ERPHeader() {
   const navigate = useNavigate()
   const [operator, setOperator] = useState<Operator>({ name: 'Operador autenticado', email: '' })
   const [now, setNow] = useState(() => new Date())
+  const [companyName, setCompanyName] = useState('Empresa não identificada')
 
   useEffect(() => {
     let alive = true
     void supabase.auth.getUser().then(({ data }) => {
       if (!alive || !data.user) return
       const metadata = data.user.user_metadata
+      const profile = await supabase.from('erp_usuarios').select('empresa_id').eq('auth_user_id', data.user.id).is('deleted_at', null).maybeSingle()
+      if (profile.data?.empresa_id) {
+        const company = await supabase.from('erp_empresas').select('nome').eq('id', profile.data.empresa_id).maybeSingle()
+        if (alive && !company.error && company.data?.nome) setCompanyName((company.data as Company).nome ?? 'Empresa')
+      }
       const name = typeof metadata?.nome === 'string' && metadata.nome.trim()
         ? metadata.nome.trim()
         : 'Operador autenticado'
@@ -51,7 +58,7 @@ export default function ERPHeader() {
         </span>
       </button>
 
-      <div className="synqra-header-title">Sistema ERP industrial</div>
+      <div className="synqra-header-title"><strong>Sistema ERP industrial</strong><small>{companyName}</small></div>
 
       <div className="synqra-session">
         <div>
