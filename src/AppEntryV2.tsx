@@ -14,11 +14,11 @@ function recoverStaleChunk(error: unknown) {
   const message = error instanceof Error ? error.message : String(error)
   if (!/failed to fetch dynamically imported module|importing a module script failed|loading chunk|chunkloaderror/i.test(message)) return
   try {
-    const key = 'erp-industrial-chunk-recovery-at'
+    const key = 'erp-industrial-chunk-recovery-at:' + window.location.pathname
     const lastAttempt = Number(window.sessionStorage.getItem(key) || '0')
-    if (Date.now() - lastAttempt > 30000) {
+    if (Date.now() - lastAttempt > 20000) {
       window.sessionStorage.setItem(key, String(Date.now()))
-      window.location.reload()
+      window.location.replace(window.location.pathname + window.location.search + (window.location.search ? '&' : '?') + '__chunk_recovery=' + Date.now())
     }
   } catch {
     // If browser storage is blocked, the route boundary below offers manual recovery.
