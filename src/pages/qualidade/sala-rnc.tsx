@@ -104,7 +104,7 @@ export default function SalaRNC() {
     setBusy(true)
     try {
       const whyAnswers = whys.filter(item => item.answer.trim()).map(item => ({ question: item.question, answer: item.answer.trim() }))
-      const whyText = whyAnswers.map((item, index) => (index + 1) + '. ' + item.question + '\\n' + item.answer).join('\\n\\n')
+      const whyText = whyAnswers.map((item, index) => (index + 1) + '. ' + item.question + '\n' + item.answer).join('\n\n')
       const readyActions = actions.filter(row => row.oQue.trim() && row.quem && row.quando && row.como.trim())
       const actionPayload = readyActions.map(row => ({
         what: row.oQue.trim(), why: row.porQue.trim() || null, where_to: row.onde.trim() || null,
