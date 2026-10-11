@@ -467,7 +467,9 @@ function AppIndustrialAuthenticated() {
       <Route path="/estoque/movimentacoes" element={<IndustrialDataWorkspace />} />
       <Route path="/qualidade/especificacoes" element={<QualityPlanGate><QualidadeEspecificacoesTecnicas /></QualityPlanGate>} />
       <Route path="/qualidade/fmea" element={<QualityPlanGate><QualidadeFMEA /></QualityPlanGate>} />
-      <Route path="/qualidade/rnc-capa" element={<QualityPlanGate><QualidadeRNC /></QualityPlanGate>} />
+      <Route path="/qualidade/rnc-capa" element={<Navigate to="/qualidade/rnc" replace />} />
+      <Route path="/qualidade/ishikawa" element={<QualityPlanGate><QualidadeRNC initialTab="ishikawa" /></QualityPlanGate>} />
+      <Route path="/qualidade/capa" element={<QualityPlanGate><QualidadeRNC initialTab="capa" /></QualityPlanGate>} />
       <Route path="/qualidade/cep" element={<QualityPlanGate><QualidadeCEP /></QualityPlanGate>} />
       <Route path="/qualidade/ged-documentos" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
       <Route path="/qualidade/ged-documentos/nova" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
@@ -614,7 +616,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras-solicitacao" element={<ComprasSolicitacaoManual />} />
       <Route path="/manutencao/ordens" element={<QualityPlanGate>{<ManutencaoOrdens />}</QualityPlanGate>} />
       <Route path="/fiscal/carteira" element={<QualityPlanGate>{<FiscalCarteiraNFe />}</QualityPlanGate>} />
-      <Route path="/qualidade/rnc" element={<QualityPlanGate><QualidadeRNC /></QualityPlanGate>} />
+      <Route path="/qualidade/rnc" element={<QualityPlanGate><QualidadeRNC initialTab="rnc" /></QualityPlanGate>} />
       <Route path="/estoque/recebimento" element={<EstoqueRecebimentoLotes />} />
       <Route path="/fichas-processo" element={<QualityPlanGate>{<FichasProcesso />}</QualityPlanGate>} />
       <Route path="/processos/injecao" element={<QualityPlanGate>{<InjecaoIndustrial />}</QualityPlanGate>} />
