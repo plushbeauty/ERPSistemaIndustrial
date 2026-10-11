@@ -75,7 +75,7 @@ export default function QualidadeTablet() {
               {section.items.map(item => {
                 const Icon = item.icon
                 return <button className="qt-tile" key={item.route} type="button" onClick={() => navigate(item.route)} aria-label={item.label}>
-                  <span className="qt-icon"><Icon size={17} strokeWidth={1.8} /></span>
+                  <span className="qt-icon"><Icon size={20} strokeWidth={1.8} /></span>
                   <span className="qt-copy"><strong>{item.label}</strong></span>
                 </button>
               })}
