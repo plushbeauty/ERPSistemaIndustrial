@@ -52,7 +52,7 @@ export default function QualitySidebar({ active }: { active: string }) {
         <p className="text-[11px] font-extrabold uppercase tracking-wider">Qualidade · Navegação do SGQ</p>
         <span className="ml-auto text-[10px] text-sky-100">Acesso rápido aos módulos</span>
       </div>
-      <nav aria-label="Navegação da qualidade" className="flex min-w-0 flex-nowrap items-center gap-1.5 overflow-x-auto p-2 [scrollbar-width:thin]">
+      <nav aria-label="Navegação da qualidade" className="flex min-w-0 flex-wrap items-stretch gap-2 p-3 [scrollbar-width:thin]">
         {items.map(([label, path], index) => {
           const Icon = itemIcons[index] ?? FileText
           return (
@@ -60,7 +60,7 @@ export default function QualitySidebar({ active }: { active: string }) {
               key={path}
               to={path}
               aria-current={active === path ? 'page' : undefined}
-              className={`inline-flex min-h-9 flex-none items-center gap-2 whitespace-nowrap rounded-[2px] border px-3 py-1.5 text-[11px] transition-colors ${
+              className={`inline-flex min-h-9 min-w-[190px] max-w-[280px] flex-[1_1_190px] items-center gap-2 whitespace-normal rounded-[2px] border px-3 py-2 text-left text-[11px] leading-tight transition-colors ${
                 active === path
                   ? 'border-[#2D8DB8] bg-gradient-to-r from-[#123B50] to-[#2D8DB8] font-bold text-white shadow-sm'
                   : 'border-slate-200 bg-[#F4FBFD] font-semibold text-[#123B50] hover:border-[#2D8DB8] hover:bg-[#E5F3F8]'
@@ -71,7 +71,7 @@ export default function QualitySidebar({ active }: { active: string }) {
             </Link>
           )
         })}
-        <div className="flex flex-none flex-wrap items-center gap-1.5 border-l border-slate-200 pl-2">
+        <div className="flex flex-wrap items-center gap-2 border-l border-slate-200 pl-2">
           <span className="inline-flex min-h-9 items-center gap-2 whitespace-nowrap px-2 text-[10px] font-bold uppercase text-[#123B50]">
             <ShieldCheck size={14} /> Gestão da Qualidade
           </span>
