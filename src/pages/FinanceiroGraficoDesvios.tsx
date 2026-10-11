@@ -6,8 +6,8 @@ import { fetchAllPages } from '../lib/supabasePagination'
 
 type CostRow = {
   id: string
-  ordem_producao_id: string
-  periodo: string
+  ordem_producao_id: string | null
+  periodo: string | null
   custo_mp: number | null
   custo_mod: number | null
   custo_ggf: number | null
@@ -47,8 +47,8 @@ export default function FinanceiroGraficoDesvios() {
 
   useEffect(() => { void load() }, [])
   const data = useMemo<ChartRow[]>(() => rows.slice(0, 40).map(row => ({
-    ordem: row.ordem_producao_id.slice(0, 8).toUpperCase(),
-    periodo: row.periodo,
+    ordem: (row.ordem_producao_id ?? row.id).slice(0, 8).toUpperCase(),
+    periodo: row.periodo ?? '—',
     materiaPrima: Number(row.custo_mp ?? 0),
     maoObra: Number(row.custo_mod ?? 0),
     gastosGerais: Number(row.custo_ggf ?? 0),
