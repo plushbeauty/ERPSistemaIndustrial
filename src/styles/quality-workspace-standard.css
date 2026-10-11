@@ -1,6 +1,6 @@
 /* Compact, consistent operational controls for every Quality workspace.
    The Orders screen is the reference: dense fields, readable text, square corners. */
-main:has(nav[aria-label="Menu da qualidade"]) button {
+main:has(nav[aria-label="Menu da qualidade"]) button:not(section[role="dialog"] button) {
   box-sizing: border-box;
   min-height: 30px;
   height: 30px;
@@ -27,11 +27,11 @@ main:has(nav[aria-label="Menu da qualidade"]) textarea {
 main:has(nav[aria-label="Menu da qualidade"]) label {
   line-height: 1.35;
 }
-main:has(nav[aria-label="Menu da qualidade"]) button:disabled {
+main:has(nav[aria-label="Menu da qualidade"]) button:not(section[role="dialog"] button):disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
-main:has(nav[aria-label="Menu da qualidade"]) button:focus-visible,
+main:has(nav[aria-label="Menu da qualidade"]) button:not(section[role="dialog"] button):focus-visible,
 main:has(nav[aria-label="Menu da qualidade"]) input:focus-visible,
 main:has(nav[aria-label="Menu da qualidade"]) select:focus-visible,
 main:has(nav[aria-label="Menu da qualidade"]) textarea:focus-visible {
