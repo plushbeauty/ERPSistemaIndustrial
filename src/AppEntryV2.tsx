@@ -534,9 +534,9 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/pfmea" element={<QualityPlanGate><QualidadePFMEA /></QualityPlanGate>} />
       <Route path="/qualidade/documentos" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
       <Route path="/qualidade/inspecao-processo" element={<QualityPlanGate><QualidadeInspecaoProcesso /></QualityPlanGate>} />
-      <Route path="/qualidade/inspecoes" element={<QualityPlanGate><QualidadeTablet /></QualityPlanGate>} />
+      <Route path="/qualidade/inspecoes" element={<QualityPlanGate><QualidadeInspecoesIndustrial /></QualityPlanGate>} />
       <Route path="/qualidade/tablet" element={<QualityPlanGate><QualidadeTablet /></QualityPlanGate>} />
-      <Route path="/qualidade/inspecoes/operacao" element={<QualityPlanGate><QualidadeInspecoesIndustrial /></QualityPlanGate} />
+      <Route path="/qualidade/inspecoes/operacao" element={<Navigate to="/qualidade/inspecoes" replace />} />
       <Route path="/qualidade/metodologia-8d" element={<QualityPlanGate><QualidadeMetodologia8D /></QualityPlanGate>} />
       <Route path="/qualidade/auditoria-5s" element={<QualityPlanGate><QualidadeAuditoria5S /></QualityPlanGate>} />
       <Route path="/qualidade/lista-mestre" element={<QualityPlanGate><QualidadeListaMestre /></QualityPlanGate>} />
