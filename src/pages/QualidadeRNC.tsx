@@ -34,11 +34,11 @@ const field = (bad = false) => `h-[30px] w-full rounded-[2px] border px-2 text-[
 const label = 'grid gap-[2px] text-[9px] font-medium uppercase text-slate-600'
 const btn = 'inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-medium text-white'
 
-type QualidadeRNCProps = { initialTab?: 'rnc' | 'capa' | 'ged' }
+type QualidadeRNCProps = { initialTab?: 'rnc' | 'capa' | 'ged' | 'ishikawa' }
 
 export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) {
   const location = useLocation()
-  const [tab, setTab] = useState<'rnc' | 'capa' | 'ged'>(initialTab)
+  const [tab, setTab] = useState<'rnc' | 'capa' | 'ged' | 'ishikawa'>(initialTab)
   const [companyId, setCompanyId] = useState('')
   const [rncs, setRncs] = useState<Rpn[]>([])
   const [ishikawa, setIshikawa] = useState<Ishikawa | null>(null)
@@ -107,6 +107,15 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
 
   const selected = rncs.find((rnc) => rnc.id === selectedRnc) ?? null
   const selectedActions = actions.filter((item) => item.rpnc_id === selectedRnc)
+  const fishboneCategories = [
+    { key: 'metodo', title: 'MÉTODO', side: 'top' },
+    { key: 'mao_de_obra', title: 'MÃO DE OBRA', side: 'bottom' },
+    { key: 'material', title: 'MATERIAL', side: 'top' },
+    { key: 'maquina', title: 'MÁQUINA', side: 'bottom' },
+    { key: 'meio_ambiente', title: 'MEIO AMBIENTE', side: 'top' },
+    { key: 'medicao', title: 'MEDIÇÃO', side: 'bottom' },
+  ] as const
+  const fishboneCauseList = (value: string) => value.split(/\\n|;/).map((cause) => cause.trim()).filter(Boolean)
 
   const openRnc = async () => {
     setError(''); setNotice('')
@@ -223,12 +232,13 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
   return (
     <main className="min-h-screen bg-[#F4FBFD] text-[#123B50]"><div className="mx-auto max-w-[1800px] space-y-3 p-3"><QualitySidebar active={location.pathname} /><div className="sgq-compact">
       <div className="sgq-compact">
-        <div className="sgq-tabs">
+        {location.pathname === '/vendas/sgq' && <div className="sgq-tabs">
           <button className={tab === 'rnc' ? 'active' : ''} type="button" onClick={() => setTab('rnc')}><ShieldCheck size={13}/> 01 · RNC / ISHIKAWA 6M</button>
           <button className={tab === 'capa' ? 'active' : ''} type="button" onClick={() => setTab('capa')}><CheckCircle2 size={13}/> 02 · CAPA / 5W2H</button>
-          <button className={tab === 'ged' ? 'active' : ''} type="button" onClick={() => setTab('ged')}><FileText size={13}/> 03 · GED</button>
+          <button className={tab === 'ishikawa' ? 'active' : ''} type="button" onClick={() => setTab('ishikawa')}><FileText size={13}/> 03 · ISHIKAWA</button>
+          <button className={tab === 'ged' ? 'active' : ''} type="button" onClick={() => setTab('ged')}><FileText size={13}/> 04 · GED</button>
           <button className="refresh" type="button" onClick={() => void load()} disabled={busy}><RefreshCw size={13}/> ATUALIZAR</button>
-        </div>
+        </div>}
         {(error || notice) && <div className={error ? 'sgq-message error' : 'sgq-message'}>{error || notice}</div>}
 
         {tab === 'rnc' && <section className="sgq-panel">
@@ -246,6 +256,41 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
           </div>
           <div className="sgq-save-row"><button className={btn} type="button" disabled={!selected || busy} onClick={() => void saveSixM()}><Save size={13}/> SALVAR 6M</button></div>
           <div className="sgq-table"><table><thead><tr><th>RNC</th><th>Origem</th><th>Lote</th><th>Segregada</th><th>Status</th></tr></thead><tbody>{rncs.map((row) => <tr key={row.id} className={row.id === selectedRnc ? 'selected' : ''} onClick={() => setSelectedRnc(row.id)}><td>{row.numero_rpnc}</td><td>{row.origem}</td><td>{row.lote_producao || '—'}</td><td className="num">{row.quantidade_segregada}</td><td>{row.status}</td></tr>)}</tbody></table></div>
+        </section>}
+
+        {tab === 'ishikawa' && <section className="sgq-panel ishikawa-print-area">
+          <style>{`@media print { @page { size: A4 landscape; margin: 10mm; } body * { visibility: hidden !important; } .ishikawa-print-area, .ishikawa-print-area * { visibility: visible !important; } .ishikawa-print-area { position: absolute !important; inset: 0 auto auto 0 !important; width: 100% !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; } .ishikawa-no-print { display: none !important; } .ishikawa-svg { width: 100% !important; max-height: 175mm !important; } .ishikawa-print-caption { display: block !important; } } .ishikawa-print-caption { display:none; }`}</style>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
+            <div><p className="text-[10px] font-bold uppercase tracking-wide text-[#2D8DB8]">SGQ · Análise de causa raiz</p><h2 className="text-base font-bold">Diagrama de Ishikawa — Espinha de Peixe (6M)</h2><p className="text-xs text-slate-600">RNC: {selected?.numero_rpnc ?? 'Selecione uma não conformidade'} · {selected?.lote_producao ?? 'Lote não informado'}</p></div>
+            <div className="ishikawa-no-print flex flex-wrap gap-2"><button type="button" className={btn} disabled={!selected || busy} onClick={() => void saveSixM()}><Save size={13}/> SALVAR DIAGRAMA</button><button type="button" className={btn} onClick={() => window.print()}><FileText size={13}/> IMPRIMIR / PDF</button></div>
+          </div>
+          <label className={label + ' mt-3'}>Efeito / problema principal<textarea className="sgq-textarea" readOnly value={selected?.descricao_nao_conformidade ?? ''} placeholder="Selecione uma RNC para carregar o efeito." /></label>
+          <div className="mt-3 overflow-x-auto rounded-[2px] border border-slate-200 bg-white p-2"><svg className="ishikawa-svg min-w-[900px]" viewBox="0 0 1400 520" role="img" aria-label="Diagrama de espinha de peixe Ishikawa com seis categorias de causas">
+            <defs><marker id="ishikawa-arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#2D8DB8" /></marker></defs>
+            <path d="M70 260 H1110" stroke="#2D8DB8" strokeWidth="5" strokeLinecap="round" markerEnd="url(#ishikawa-arrow)" />
+            <path d="M70 260 L35 235 L35 285 Z" fill="#123B50" />
+            {fishboneCategories.map((category, index) => {
+              const x = 180 + index * 145
+              const top = category.side === 'top'
+              const endX = x - 85
+              const endY = top ? 95 : 425
+              const causes = fishboneCauseList(sixM[category.key])
+              const labelX = top ? endX - 8 : endX - 8
+              const causeY = top ? Math.max(28, endY - Math.max(1, causes.length) * 17 - 28) : endY + 35
+              return <g key={category.key}>
+                <path d={`M ${x} 260 L ${endX} ${endY}`} stroke="#123B50" strokeWidth="3" strokeLinecap="round" />
+                <text x={labelX} y={top ? endY - 12 : endY + 20} textAnchor="middle" fontSize="15" fontWeight="700" fill="#123B50">{category.title}</text>
+                {causes.slice(0, 12).map((cause, causeIndex) => <text key={causeIndex} x={labelX} y={causeY + causeIndex * 16} textAnchor="middle" fontSize="12" fill="#334155">{cause.length > 25 ? cause.slice(0, 23) + '…' : cause}</text>)}
+              </g>
+            })}
+            <rect x="1125" y="195" width="250" height="130" rx="2" fill="#EAF5F9" stroke="#2D8DB8" strokeWidth="2" />
+            <text x="1250" y="220" textAnchor="middle" fontSize="13" fontWeight="700" fill="#123B50">EFEITO / PROBLEMA</text>
+            {(selected?.descricao_nao_conformidade ?? 'Selecione uma RNC').match(/.{1,30}(?:\\s|$)/g)?.slice(0, 4).map((line, index) => <text key={index} x="1250" y={250 + index * 20} textAnchor="middle" fontSize="13" fill="#123B50">{line.trim()}</text>)}
+            <text x="70" y="310" fontSize="11" fill="#64748b">CAUSAS</text>
+          </svg></div>
+          <p className="ishikawa-print-caption mt-2 text-[10px] text-slate-600">Documento de análise de causa raiz gerado pelo SGQ ERP Industrial. Confirmar causas e evidências antes da aprovação.</p>
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">{fishboneCategories.map((category) => <label key={category.key} className={label + ' rounded-[2px] border border-slate-200 bg-[#F8FBFC] p-2'}>{category.title}<textarea className="sgq-textarea min-h-[88px]" value={sixM[category.key]} onChange={(e) => setSixM({ ...sixM, [category.key]: e.target.value })} placeholder="Digite uma causa por linha. Pode incluir várias causas e subcausas." /><span className="text-[10px] font-normal normal-case text-slate-500">{fishboneCauseList(sixM[category.key]).length} causa(s) listada(s)</span></label>)}</div>
+          <div className="ishikawa-no-print sgq-save-row"><button className={btn} type="button" disabled={!selected || busy} onClick={() => void saveSixM()}><Save size={13}/> SALVAR CAUSAS NO SGQ</button><label className={label}>Selecionar RNC para análise<select className={field(false)} value={selectedRnc} onChange={(e) => setSelectedRnc(e.target.value)}><option value="">Selecionar...</option>{rncs.map((row) => <option key={row.id} value={row.id}>{row.numero_rpnc} · {row.lote_producao || 'sem lote'}</option>)}</select></label></div>
         </section>}
 
         {tab === 'capa' && <section className="sgq-panel">
