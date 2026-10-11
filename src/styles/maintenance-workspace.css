@@ -16,8 +16,12 @@
 .maintenance-workspace .shadow-sm { box-shadow: none !important; }
 .maintenance-workspace .text-sky-700 { color: #2D8DB8 !important; }
 .maintenance-workspace .bg-sky-700 { background-color: #2D8DB8 !important; }
-.maintenance-workspace .hover\\:bg-sky-50:hover { background-color: #F4FBFD !important; }
+.maintenance-workspace table tbody tr:hover { background-color: #F4FBFD !important; }
 .maintenance-workspace input,
 .maintenance-workspace select,
 .maintenance-workspace textarea { border-radius: 2px !important; font-size: 10px !important; }
 .maintenance-workspace label { gap: 2px !important; font-size: 9px !important; }
+
+main.maintenance-workspace h1 { font-size: 15px !important; font-weight: 600 !important; }
+main.maintenance-workspace h2 { font-size: 12px !important; font-weight: 600 !important; }
+main.maintenance-workspace .rounded-md, main.maintenance-workspace .rounded-lg { border-radius: 2px !important; }
