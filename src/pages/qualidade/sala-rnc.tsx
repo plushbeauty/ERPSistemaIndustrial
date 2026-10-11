@@ -103,49 +103,20 @@ export default function SalaRNC() {
     if (whys.some(item => item.answer.trim().length > 0) && whys.some(item => !item.answer.trim())) { setError('Para usar os 5 Porquês, preencha todas as cinco etapas em sequência.'); return }
     setBusy(true)
     try {
-      const { data: created, error: insertError } = await supabase.from('erp_rpnc').insert({
-        empresa_id: companyId,
-        numero_rpnc: 'RPNC-' + new Date().getFullYear() + '-' + crypto.randomUUID().slice(0, 8).toUpperCase(),
-        descricao_nao_conformidade: description.trim(),
-        origem: origin.toLowerCase(),
-        gravidade: 'menor',
-        setor_envolvido_id: sectorId,
-        lote_producao: selectedLot.lote_interno,
-        quantidade_segregada: quantity,
-        bloqueia_lote: true,
-        status: 'aberta',
-        sgq_origem: origin.toLowerCase(),
-        sgq_vinculo_tipo: 'LOTE',
-        sgq_vinculo_id: lotId
-      }).select('id,numero_rpnc,descricao_nao_conformidade,origem,status,lote_producao,criado_em').single()
-      if (insertError) throw insertError
-      if (!created) throw new Error('O banco não retornou a RPNC criada.')
-
-      const whyText = whys.map((item, index) => (index + 1) + '. ' + item.question + '\n' + item.answer.trim()).filter((item) => !item.endsWith('\n')).join('\n\n')
-      const code8d = '8D-' + new Date().getFullYear() + '-' + crypto.randomUUID().slice(0, 8).toUpperCase()
-      const { error: analysisError } = await supabase.from('erp_qualidade_8d').insert({
-        empresa_id: companyId,
-        codigo: code8d,
-        rpnc_id: created.id,
-        etapa_atual: 'D3',
-        d2_problema: description.trim(),
-        d3_contencao: 'Disposição física: ' + disposition + '. Quantidade segregada: ' + quantity + '. Lote: ' + selectedLot.lote_interno,
-        d4_causa_raiz: whyText,
-        status: 'EM_ANALISE'
+      const whyText = whys.map((item, index) => (index + 1) + '. ' + item.question + '\\n' + item.answer.trim()).filter(item => !item.endsWith('\\n')).join('\\n\\n')
+      const result = await supabase.rpc('erp_criar_rpnc_com_quarentena', {
+        p_lote_id: lotId,
+        p_setor_id: sectorId,
+        p_descricao: description.trim(),
+        p_origem: origin.toLowerCase(),
+        p_quantidade: quantity,
+        p_disposition: disposition,
+        p_whys_text: whyText || null
       })
-      if (analysisError) {
-        setNotice('RPNC ' + created.numero_rpnc + ' criada. A análise 8D não foi gravada: ' + analysisError.message)
-      } else {
-        setNotice('RPNC ' + created.numero_rpnc + ' e análise de causa 8D registradas.')
-      }
-
-      const retention = await supabase.rpc('erp_reter_lote', { p_lote_id: lotId, p_motivo: 'RPNC ' + created.numero_rpnc + ': ' + description.trim().slice(0, 450) })
-      if (retention.error) {
-        setError('A RPNC foi gravada, mas a retenção física do lote não foi confirmada pelo banco: ' + retention.error.message)
-      } else {
-        setNotice((current) => (current ? current + ' ' : '') + 'Lote enviado ao fluxo de retenção/quarentena do ERP.')
-      }
-
+      if (result.error) throw result.error
+      const created = result.data as Rnc | null
+      if (!created?.id || !created.numero_rpnc) throw new Error('O banco não retornou a RPNC criada.')
+      setNotice('RPNC ' + created.numero_rpnc + ', análise 8D e retenção/quarentena do lote foram gravadas em uma única transação.')
       const actionRows = actions.filter(row => row.oQue.trim() && row.quem && row.quando && row.como.trim())
       if (actionRows.length) {
         const results = await Promise.all(actionRows.map(row => supabase.from('erp_sgq_capa_acoes').insert({
