@@ -57,6 +57,7 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
   const [sectorId, setSectorId] = useState('')
   const [lot, setLot] = useState('')
   const [segregated, setSegregated] = useState('0')
+  const [disposition, setDisposition] = useState<'SUCATEAR' | 'REPROCESSAR' | 'DEVOLVER' | ''>('')
   const [sixM, setSixM] = useState({ metodo: '', mao_de_obra: '', material: '', maquina: '', meio_ambiente: '', medicao: '' })
   const [action, setAction] = useState({ tipo: 'Corretiva', oQue: '', porQue: '', onde: '', quem: '', quando: '', como: '', quanto: '0', causa: '', responsavel: '', prazo: '' })
   const [notice, setNotice] = useState('')
@@ -135,33 +136,53 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
 
   const openRnc = async () => {
     setError(''); setNotice('')
-    if (!description.trim()) { setError('Descrição detalhada da falha é obrigatória.'); return }
+    if (description.trim().length < 10) { setError('Descreva a não conformidade com pelo menos 10 caracteres.'); return }
     if (!lot.trim()) { setError('Lote afetado é obrigatório.'); return }
     if (!sectorId) { setError('Setor responsável é obrigatório.'); return }
+    if (!disposition) { setError('Selecione a disposição do material.'); return }
+    const quantity = Number(segregated)
+    if (!Number.isFinite(quantity) || quantity < 0) { setError('A quantidade segregada deve ser maior ou igual a zero.'); return }
     setBusy(true)
     try {
       const lotNumber = lot.trim()
-      const internalLot = await supabase.from('erp_estoque_lotes').select('id').eq('empresa_id', companyId).eq('lote_interno', lotNumber).maybeSingle()
+      const internalLot = await supabase.from('erp_estoque_lotes').select('id').eq('empresa_id', companyId).eq('lote_interno', lotNumber).limit(1).maybeSingle()
       if (internalLot.error) throw internalLot.error
-      let lotExists = Boolean(internalLot.data)
-      if (!lotExists) {
-        const supplierLot = await supabase.from('erp_estoque_lotes').select('id').eq('empresa_id', companyId).eq('lote_fornecedor', lotNumber).maybeSingle()
+      let lotId = internalLot.data?.id ?? ''
+      if (!lotId) {
+        const supplierLot = await supabase.from('erp_estoque_lotes').select('id').eq('empresa_id', companyId).eq('lote_fornecedor', lotNumber).limit(1).maybeSingle()
         if (supplierLot.error) throw supplierLot.error
-        lotExists = Boolean(supplierLot.data)
+        lotId = supplierLot.data?.id ?? ''
       }
-      if (!lotExists) throw new Error('Lote afetado não encontrado na empresa atual.')
-      const created = await supabase.from('erp_rpnc').insert({
-        empresa_id: companyId,
-        numero_rpnc: 'RPNC-' + new Date().getFullYear() + '-' + crypto.randomUUID().slice(0, 8).toUpperCase(),
-        descricao_nao_conformidade: description.trim(), origem: origin.toLowerCase(), gravidade: 'menor',
-        setor_envolvido_id: sectorId, lote_producao: lotNumber,
-        quantidade_segregada: Number(segregated || 0), bloqueia_lote: Number(segregated || 0) > 0, status: 'aberta',
-      }).select('id').single()
+      if (!lotId) throw new Error('Lote afetado não encontrado na empresa atual.')
+
+      const created = await supabase.rpc('erp_criar_rpnc_com_quarentena', {
+        p_lote_id: lotId,
+        p_setor_id: sectorId,
+        p_descricao: description.trim(),
+        p_origem: origin.toLowerCase(),
+        p_quantidade: quantity,
+        p_disposition: disposition,
+        p_whys_text: '',
+        p_whys_json: [],
+        p_actions_json: [],
+      })
       if (created.error) throw created.error
-      const createdId = created.data.id
-      setSelectedRnc(createdId); setDescription(''); setLot(''); setSegregated('0'); setNotice('RNC aberta no banco real com lote e quantidade segregada.'); await load(); if (origin.toLocaleLowerCase('pt-BR') === 'cliente') navigate('/qualidade/metodologia-8d?rpncId=' + encodeURIComponent(createdId) + '&origin=cliente')
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao abrir RNC.') }
-    finally { setBusy(false) }
+      const createdData = created.data as { id?: string; numero_rpnc?: string; codigo_8d?: string } | null
+      if (!createdData?.id) throw new Error('A operação não retornou a RPNC criada; verifique o registro antes de tentar novamente.')
+      const createdId = createdData.id
+      setDescription('')
+      setLot('')
+      setSegregated('0')
+      setDisposition('')
+      setNotice('RPNC ' + (createdData.numero_rpnc ?? '') + ' criada com CAPA, protocolo 8D e quarentena transacional.')
+      await load()
+      setSelectedRnc(createdId)
+      if (origin.toLocaleLowerCase('pt-BR') === 'cliente') navigate('/qualidade/metodologia-8d?rpncId=' + encodeURIComponent(createdId) + '&origin=cliente')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao abrir RPNC.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   const saveSixM = async () => {
@@ -258,12 +279,13 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
         {(error || notice) && <div className={error ? 'sgq-message error' : 'sgq-message'}>{error || notice}</div>}
 
         {tab === 'rnc' && <section className="sgq-panel">
-          <div className="sgq-grid sgq-grid-5">
+          <div className="sgq-grid sgq-grid-6">
             <label className={label}>Código RNC<input className={field(false)} readOnly value={selected?.numero_rpnc ?? 'Gerado pelo banco'} /></label>
             <label className={label}>Origem<select className={field(false)} value={origin} onChange={(e) => setOrigin(e.target.value)}><option>Cliente</option><option>Processo</option><option>Fornecedor</option></select></label>
             <label className={label}>Setor responsável<select className={field(!sectorId)} value={sectorId} onChange={(e) => setSectorId(e.target.value)}><option value="">Preencher...</option>{sectors.map((sector) => <option key={sector.id} value={sector.id}>{sector.nome}</option>)}</select></label>
             <label className={label}>Lote afetado<input className={field(!lot && !selected)} value={lot} onChange={(e) => setLot(e.target.value)} placeholder="Preencher..." /></label>
             <label className={label}>Qtd. segregada<input className={field(false)} type="number" min="0" value={segregated} onChange={(e) => setSegregated(e.target.value)} /></label>
+            <label className={label}>Disposição do material<select className={field(!disposition)} value={disposition} onChange={(e) => setDisposition(e.target.value as typeof disposition)}><option value="">Preencher...</option><option value="SUCATEAR">Sucatear / refugar</option><option value="REPROCESSAR">Reprocessar / retrabalhar</option><option value="DEVOLVER">Devolver ao fornecedor</option></select></label>
           </div>
           <div className="sgq-save-row"><button className={btn} type="button" disabled={busy} onClick={() => void openRnc()}><Save size={13}/> ABRIR RNC</button></div>
           <label className={label + ' sgq-mt'}>Descrição detalhada da falha<textarea className="sgq-textarea" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Preencher..." /></label>
