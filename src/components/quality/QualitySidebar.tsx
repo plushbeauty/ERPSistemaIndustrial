@@ -13,6 +13,7 @@ const items = [
   ['Recebimento e Inspeção Dimensional', '/qualidade/industrial'],
   ['Matriz FMEA', '/qualidade/fmea'],
   ['PFMEA / Risco', '/qualidade/pfmea'],
+  ['Sala de RNC / RPNC', '/qualidade/sala-rnc'],
   ['Não Conformidades (RNC)', '/qualidade/rnc'],
   ['Espinha de Peixe — Ishikawa', '/qualidade/ishikawa'],
   ['Ações CAPA / 5W2H', '/qualidade/capa'],
@@ -32,7 +33,7 @@ const items = [
   ['Assinatura de Instruções de Trabalho', '/qualidade/assinatura-it'],
 ]
 
-const itemIcons = [Gauge, FileText, FileText, Activity, SearchCheck, ClipboardCheck, ClipboardList, Target, Target, ShieldCheck, Activity, CheckCircleIcon, BookOpenCheck, ClipboardList, ClipboardCheck, ShieldCheck, Wrench, Gauge, FolderGit2, FileText, FileText, ClipboardList, ShieldCheck, ClipboardList, FileText, ShieldCheck]
+const itemIcons = [Gauge, FileText, FileText, Activity, SearchCheck, ClipboardCheck, ClipboardList, Target, Target, ClipboardCheck, ShieldCheck, Activity, CheckCircleIcon, BookOpenCheck, ClipboardList, ClipboardCheck, ShieldCheck, Wrench, Gauge, FolderGit2, FileText, FileText, ClipboardList, ShieldCheck, ClipboardList, FileText, ShieldCheck]
 
 export default function QualitySidebar({ active }: { active: string }) {
   const [helpOpen, setHelpOpen] = useState(false)
