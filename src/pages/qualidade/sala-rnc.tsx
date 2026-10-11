@@ -9,7 +9,7 @@ type Rnc = { id: string; numero_rpnc: string; descricao_nao_conformidade: string
 type Sector = { id: string; nome: string }
 type Operator = { id: string; nome: string | null; email: string | null }
 type ActionRow = { id: string; oQue: string; quem: string; quando: string; como: string; porQue: string; onde: string; quanto: string }
-type WhyAnswer = { question: string; answer: string }
+type WhyAnswer = { question: string; answer: string; evidence: string }
 
 const WHY_QUESTIONS = [
   'Por que o defeito ocorreu diretamente?',
@@ -47,10 +47,17 @@ export default function SalaRNC() {
   const [lotId, setLotId] = useState('')
   const [origin, setOrigin] = useState<(typeof origins)[number]['value']>('Processo Interno')
   const [description, setDescription] = useState('')
+  const [requirementViolated, setRequirementViolated] = useState('')
+  const [objectiveEvidence, setObjectiveEvidence] = useState('')
+  const [occurredAt, setOccurredAt] = useState(() => new Date().toISOString().slice(0, 16))
+  const [criticality, setCriticality] = useState<'Critica' | 'Maior' | 'Menor'>('Menor')
+  const [inspectorId, setInspectorId] = useState('')
+  const [rootCauseValidated, setRootCauseValidated] = useState(false)
+  const [rootCauseValidationNote, setRootCauseValidationNote] = useState('')
   const [sectorId, setSectorId] = useState('')
   const [disposition, setDisposition] = useState<(typeof dispositions)[number]['value']>('REPROCESSAR')
   const [segregatedQty, setSegregatedQty] = useState('0')
-  const [whys, setWhys] = useState<WhyAnswer[]>(WHY_QUESTIONS.map(question => ({ question, answer: '' })))
+  const [whys, setWhys] = useState<WhyAnswer[]>(WHY_QUESTIONS.map(question => ({ question, answer: '', evidence: '' })))
   const [actions, setActions] = useState<ActionRow[]>([emptyAction()])
   const [busy, setBusy] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -100,11 +107,16 @@ export default function SalaRNC() {
     if (description.trim().length < 10) { setError('Descreva tecnicamente o defeito com pelo menos 10 caracteres.'); return }
     const quantity = Number(segregatedQty)
     if (!Number.isFinite(quantity) || quantity < 0) { setError('A quantidade segregada deve ser um número igual ou maior que zero.'); return }
-    if (whys.some(item => item.answer.trim().length > 0) && whys.some(item => !item.answer.trim())) { setError('Para usar os 5 Porquês, preencha todas as cinco etapas em sequência.'); return }
+    if (!inspectorId) { setError('Identifique o inspetor/emissor responsável pelo registro.'); return }
+    if (!occurredAt || Number.isNaN(new Date(occurredAt).getTime())) { setError('Informe a data e hora válidas da ocorrência.'); return }
+    if (!requirementViolated.trim()) { setError('Informe o requisito ou especificação violada.'); return }
+    if (!objectiveEvidence.trim()) { setError('Registre ao menos uma evidência objetiva observada.'); return }
+    if (whys.some(item => item.answer.trim().length > 0) && whys.some(item => !item.answer.trim() || !item.evidence.trim())) { setError('Cada etapa dos 5 Porquês preenchida precisa conter resposta e evidência objetiva.'); return }
+    if (rootCauseValidated && !rootCauseValidationNote.trim()) { setError('Explique a validação da causa raiz antes de confirmar que ela bloqueia a reincidência.'); return }
     setBusy(true)
     try {
-      const whyAnswers = whys.filter(item => item.answer.trim()).map(item => ({ question: item.question, answer: item.answer.trim() }))
-      const whyText = whyAnswers.map((item, index) => (index + 1) + '. ' + item.question + '\n' + item.answer).join('\n\n')
+      const whyAnswers = whys.filter(item => item.answer.trim()).map(item => ({ question: item.question, answer: item.answer.trim(), evidence: item.evidence.trim() }))
+      const whyText = whyAnswers.map((item, index) => (index + 1) + '. ' + item.question + '\nCausa: ' + item.answer + '\nEvidência objetiva: ' + item.evidence).join('\n\n')
       const readyActions = actions.filter(row => row.oQue.trim() && row.quem && row.quando && row.como.trim())
       const actionPayload = readyActions.map(row => ({
         what: row.oQue.trim(), why: row.porQue.trim() || null, where_to: row.onde.trim() || null,
@@ -125,12 +137,21 @@ export default function SalaRNC() {
       if (result.error) throw result.error
       const created = result.data as (Rnc & { codigo_8d?: string; acoes_gravadas?: number }) | null
       if (!created?.id || !created.numero_rpnc) throw new Error('O banco não retornou a RPNC criada.')
+      const metadata = await supabase.from('erp_rpnc').update({ gravidade: criticality, data_ocorrencia: new Date(occurredAt).toISOString(), inspetor_id: inspectorId, disposicao_fisica: disposition, requisito_violado: requirementViolated.trim(), evidencias_objetivas: [{ descricao: objectiveEvidence.trim(), registrada_em: new Date().toISOString() }], porques_evidencias: whyAnswers, causa_raiz_validada: rootCauseValidated, causa_raiz_validacao_observacao: rootCauseValidationNote.trim() || null }).eq('id', created.id).eq('empresa_id', companyId)
+      if (metadata.error) throw new Error('RPNC criada e lote retido, mas os metadados complementares não foram gravados: ' + metadata.error.message + '. Abra o registro e complete os campos antes de encerrar.')
       setNotice('RPNC ' + created.numero_rpnc + ', análise 8D, CAPA/5W2H e retenção do lote gravadas em transação única. Ações iniciais: ' + String(created.acoes_gravadas ?? 0) + '.')
       setSelectedRnc(created.id)
       setDescription('')
+      setRequirementViolated('')
+      setObjectiveEvidence('')
+      setOccurredAt(new Date().toISOString().slice(0, 16))
+      setCriticality('Menor')
+      setInspectorId('')
+      setRootCauseValidated(false)
+      setRootCauseValidationNote('')
       setLotId('')
       setSegregatedQty('0')
-      setWhys(WHY_QUESTIONS.map(question => ({ question, answer: '' })))
+      setWhys(WHY_QUESTIONS.map(question => ({ question, answer: '', evidence: '' })))
       setActions([emptyAction()])
       await load()
     } catch (cause) {
@@ -196,19 +217,25 @@ export default function SalaRNC() {
             <section className="rnc-section border border-slate-200 bg-white print:break-inside-avoid">
               <div className="flex h-8 items-center gap-2 border-b border-slate-200 bg-[#eaf4f8] px-3"><span className="text-[10px] font-bold text-[#123B50]">01</span><h2 className="text-[10px] font-bold uppercase tracking-wider text-[#123B50]">Triagem e disposição física</h2><ShieldCheck size={13} className="ml-auto text-[#2D8DB8]"/></div>
               <div className="grid grid-cols-1 gap-3 p-3 md:grid-cols-2 xl:grid-cols-4">
+                <div><FieldLabel help="Data e hora em que o desvio foi observado; diferente da data automática de abertura do registro.">Data/hora da ocorrência *</FieldLabel><input className={fieldClass} type="datetime-local" value={occurredAt} onChange={event => setOccurredAt(event.target.value)} required/></div>
+                <div><FieldLabel help="Classificação inicial do risco. A reclassificação deve seguir a matriz de criticidade do SGQ.">Grau de criticidade *</FieldLabel><select className={fieldClass} value={criticality} onChange={event => setCriticality(event.target.value as typeof criticality)}><option value="Critica">Crítica</option><option value="Maior">Maior</option><option value="Menor">Menor</option></select></div>
+                <div><FieldLabel help="Pessoa responsável pela identificação e emissão da não conformidade.">Inspetor / emissor *</FieldLabel><select className={fieldClass} value={inspectorId} onChange={event => setInspectorId(event.target.value)} required><option value="">Selecione o inspetor…</option>{operators.map(operator => <option key={operator.id} value={operator.id}>{operator.nome || operator.email || operator.id}</option>)}</select></div>
+                <div><FieldLabel help="Referência objetiva à especificação, desenho, procedimento, pedido ou requisito que não foi atendido.">Requisito violado *</FieldLabel><input className={fieldClass} value={requirementViolated} onChange={event => setRequirementViolated(event.target.value)} placeholder="Código/revisão/limite de especificação" required/></div>
                 <div><FieldLabel help="Selecione o lote real cadastrado no estoque da empresa atual. Lotes retidos ou bloqueados não devem ser consumidos na produção.">Vínculo do lote</FieldLabel><select className={fieldClass} value={lotId} onChange={event => setLotId(event.target.value)}><option value="">Selecione lote…</option>{lots.map(lot => <option key={lot.id} value={lot.id}>{lot.lote_interno}{lot.lote_fornecedor ? ' · Forn. ' + lot.lote_fornecedor : ''} · Disp. {lot.quantidade_disponivel} · {lot.status_inspecao}</option>)}</select></div>
                 <div><FieldLabel help="Informe a origem rastreável do desvio. A origem será registrada no cadastro de RPNC para análise de recorrência.">Origem do desvio</FieldLabel><select className={fieldClass} value={origin} onChange={event => setOrigin(event.target.value as (typeof origins)[number]['value'])}>{origins.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></div>
                 <div><FieldLabel help="Escolha o setor que deve investigar e responder pela tratativa. A lista é limitada aos setores ativos da empresa.">Setor responsável</FieldLabel><select className={fieldClass} value={sectorId} onChange={event => setSectorId(event.target.value)}><option value="">Selecione setor…</option>{sectors.map(sector => <option key={sector.id} value={sector.id}>{sector.nome}</option>)}</select></div>
                 <div><FieldLabel help="Informe a quantidade física identificada para segregação. Não pode ser negativa; confirme unidade e contagem antes de registrar.">Quantidade segregada</FieldLabel><input className={fieldClass} inputMode="decimal" type="number" min="0" step="0.001" value={segregatedQty} onChange={event => setSegregatedQty(event.target.value)}/></div>
                 <div><FieldLabel help="Selecione a disposição proposta. A decisão final deve ser autorizada conforme o procedimento de controle de produto não conforme da empresa.">Disposição física</FieldLabel><select className={fieldClass} value={disposition} onChange={event => setDisposition(event.target.value as (typeof dispositions)[number]['value'])}>{dispositions.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></div>
-                <div className="md:col-span-2 xl:col-span-3"><FieldLabel help="Registre o defeito de forma objetiva: requisito violado, característica, medida observada, especificação, lote, impacto no produto e evidência disponível. Evite apenas 'peça ruim' ou conclusões sem evidência.">Descrição técnica do defeito</FieldLabel><textarea className={areaClass} value={description} onChange={event => setDescription(event.target.value)} placeholder="Requisito/specificação, condição observada, evidência, impacto e extensão conhecida…"/></div>
+                <div className="md:col-span-2 xl:col-span-3"><FieldLabel help="Registre o defeito de forma objetiva: condição observada, característica, medida, impacto e extensão conhecida.">Descrição técnica do defeito *</FieldLabel><textarea className={areaClass} value={description} onChange={event => setDescription(event.target.value)} placeholder="Condição observada, característica, medida, impacto e extensão conhecida…" required/></div>
+                <div className="md:col-span-2 xl:col-span-4"><FieldLabel help="Descreva a evidência objetiva inicial: medição, laudo, foto, inspeção ou documento identificável. Anexos documentais devem permanecer vinculados ao registro. ">Evidência objetiva inicial *</FieldLabel><textarea className={areaClass} value={objectiveEvidence} onChange={event => setObjectiveEvidence(event.target.value)} placeholder="Medição observada, instrumento, amostra, laudo ou referência da evidência…" required/></div>
               </div>
               {selectedLot && <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 bg-slate-50 px-3 py-2 text-[10px]"><strong>Lote selecionado: {selectedLot.lote_interno}</strong><span>Disponível: {selectedLot.quantidade_disponivel}</span><span>Status inspeção: {selectedLot.status_inspecao}</span><span className="text-amber-700">O registro solicita retenção do lote no fluxo de quarentena.</span></div>}
             </section>
 
             <section className="rnc-section border border-slate-200 bg-white print:break-inside-avoid">
               <div className="flex h-8 items-center gap-2 border-b border-slate-200 bg-[#eaf4f8] px-3"><span className="text-[10px] font-bold text-[#123B50]">02</span><h2 className="text-[10px] font-bold uppercase tracking-wider text-[#123B50]">Análise da causa raiz · 5 Porquês</h2></div>
-              <div className="grid gap-3 p-3 md:grid-cols-2 xl:grid-cols-5">{whys.map((item, index) => <div key={item.question}><FieldLabel help="Responda com base em evidências. Cada etapa deve aprofundar a causa anterior; a quinta deve apontar uma falha sistêmica de processo, padrão, treinamento, controle ou gestão, não culpar apenas uma pessoa.">{'Por quê ' + (index + 1)}</FieldLabel><p className="mb-1 min-h-[28px] text-[10px] font-medium text-slate-600">{item.question}</p><textarea className={areaClass} value={item.answer} onChange={event => setWhys(current => current.map((why, i) => i === index ? { ...why, answer: event.target.value } : why))} placeholder={'Evidência e causa ' + (index + 1) + '…'}/></div>)}</div>
+              <div className="grid gap-3 p-3 md:grid-cols-2 xl:grid-cols-5">{whys.map((item, index) => <div key={item.question}><FieldLabel help="Registre a causa com base em evidência verificável; a quinta etapa deve identificar uma falha sistêmica e não apenas atribuir culpa individual.">{'Por quê ' + (index + 1)}</FieldLabel><p className="mb-1 min-h-[28px] text-[10px] font-medium text-slate-600">{item.question}</p><textarea className={areaClass} value={item.answer} onChange={event => setWhys(current => current.map((why, i) => i === index ? { ...why, answer: event.target.value } : why))} placeholder={'Resposta / causa ' + (index + 1) + '…'}/><label className="mt-2 grid gap-1 text-[9px] font-bold uppercase text-slate-600">Evidência objetiva<textarea className={areaClass} value={item.evidence} onChange={event => setWhys(current => current.map((why, i) => i === index ? { ...why, evidence: event.target.value } : why))} placeholder="Medição, documento, observação ou registro que comprova esta causa…"/></label></div>)}</div>
+              <div className="grid gap-3 border-t border-slate-200 bg-slate-50 p-3 md:grid-cols-2"><label className="flex items-start gap-2 text-[10px] font-bold text-slate-700"><input type="checkbox" checked={rootCauseValidated} onChange={event => setRootCauseValidated(event.target.checked)} className="mt-0.5"/>Causa raiz validada: a ação proposta bloqueia a reincidência?</label><label className="grid gap-1 text-[9px] font-bold uppercase text-slate-600">Justificativa da validação<textarea className={areaClass} value={rootCauseValidationNote} onChange={event => setRootCauseValidationNote(event.target.value)} placeholder="Evidência da validação ou motivo de ainda não estar confirmada…"/></label></div>
             </section>
 
             <section className="rnc-section border border-slate-200 bg-white print:break-inside-avoid">
