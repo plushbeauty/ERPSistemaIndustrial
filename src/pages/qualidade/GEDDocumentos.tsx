@@ -147,6 +147,11 @@ export default function GEDDocumentos() {
 
   async function activateSelected() {
     if (!selected) return
+    if (!selected.url_anexo) {
+      setError('Aprovação bloqueada: o arquivo original ainda não está anexado ao GED. Anexe e valide o documento antes de torná-lo vigente.')
+      setNotice('')
+      return
+    }
     setBusy(true)
     setError('')
     setNotice('')
@@ -184,7 +189,7 @@ export default function GEDDocumentos() {
       {helpOpen && <section aria-label="Ajuda do controle documental" className="mx-3 mt-3 border border-sky-200 bg-sky-50 px-3 py-3 text-[10px] leading-5 text-slate-700">
         <div className="flex items-start justify-between gap-3"><div><h2 className="font-bold text-[#123B50]">Como usar o GED</h2><p>1. Pesquise e selecione um documento na árvore. 2. Confira código, título e departamento. 3. Para alterar um documento controlado, informe o motivo e salve uma nova revisão. 4. A revisão precisa ser aprovada antes de entrar em vigor. Use imprimir para gerar uma cópia da tela; a distribuição controlada de cópias deve ser registrada no controle documental.</p><p className="mt-1 text-slate-600">Não substitua uma especificação aprovada apenas alterando o texto: registre a mudança e valide a revisão antes de liberar para uso.</p></div><button type="button" aria-label="Fechar ajuda" onClick={() => setHelpOpen(false)} className="shrink-0 p-1 text-slate-500 hover:bg-white"><X size={14}/></button></div>
       </section>}
-      <div className="grid min-h-[calc(100vh-138px)] grid-cols-1 xl:grid-cols-[260px_minmax(420px,1fr)_280px]">
+      <div className="grid min-h-[calc(100vh-138px)] grid-cols-1 xl:grid-cols-[300px_minmax(420px,1fr)_260px]">
         <aside className="flex min-h-0 flex-col border-b border-neutral-200 bg-neutral-50/80 xl:border-b-0 xl:border-r xl:border-neutral-200/70">
           <div className="flex h-[44px] items-center justify-between px-3">
             <span className="text-[9px] font-bold uppercase tracking-[.13em] text-neutral-500">ÁRVORE DE DOCUMENTOS</span>
@@ -203,15 +208,15 @@ export default function GEDDocumentos() {
             {loading ? <p className="px-7 py-3 text-[10px] text-neutral-500">Carregando documentos…</p> : documents.length ? documents.map(doc => {
               const isSelected = selectedId === doc.id
               const stateColor = doc.status === 'VIGENTE' || doc.status === 'ATIVA' ? 'bg-emerald-50 text-emerald-700' : doc.status === 'EM_REVISAO' ? 'bg-amber-50 text-amber-700' : 'bg-neutral-100 text-neutral-500'
-              return <button key={doc.id} type="button" onClick={() => editRevision(doc)} aria-current={isSelected ? 'true' : undefined} className={'mb-1 grid w-full grid-cols-[16px_minmax(0,1fr)] items-start gap-2 rounded-[3px] border px-2.5 py-2.5 text-left transition-colors ' + (isSelected ? 'border-[#8CC5E0] bg-[#E8F3FA] text-[#123B50]' : 'border-slate-200 bg-white text-neutral-700 hover:border-slate-300 hover:bg-slate-50')}>
+              return <button key={doc.id} type="button" onClick={() => editRevision(doc)} aria-current={isSelected ? 'true' : undefined} className={'mb-1 grid w-full grid-cols-[14px_minmax(0,1fr)] items-start gap-1.5 rounded-[2px] border px-2 py-1.5 text-left transition-colors ' + (isSelected ? 'border-[#8CC5E0] bg-[#E8F3FA] text-[#123B50]' : 'border-slate-200 bg-white text-neutral-700 hover:border-slate-300 hover:bg-slate-50')}>
                 <span className={'mt-0.5 block ' + (isSelected ? 'text-[#2D8DB8]' : 'text-neutral-400')}><FileText size={14}/></span>
                 <span className="block min-w-0 w-full">
                   <span className="flex w-full min-w-0 flex-wrap items-center justify-between gap-x-1 gap-y-1">
                     <span className="block min-w-0 break-words text-[10px] font-bold leading-4">{doc.codigo_documento}</span>
                     <span className={'inline-flex max-w-full shrink-0 items-center rounded-[2px] px-1.5 py-0.5 text-[8px] font-bold leading-3 ' + stateColor}>{doc.status.replaceAll('_',' ')}</span>
                   </span>
-                  <span className="mt-1 block w-full whitespace-normal break-words text-[10px] font-medium leading-[1.45] text-neutral-700">{doc.titulo_documento}</span>
-                  <span className="mt-1 block w-full whitespace-normal break-words border-t border-slate-100 pt-1 text-[9px] leading-4 text-neutral-500">REV. {String(doc.revisao).padStart(2,'0')} <span aria-hidden="true">·</span> {doc.departamento || 'QUALIDADE'}</span>{doc.nome_arquivo && <span className="mt-1 block break-words text-[8px] leading-3 text-amber-700">FONTE: {doc.nome_arquivo} · {doc.url_anexo ? 'anexado' : 'anexo pendente'}</span>}
+                  <span className="mt-0.5 block max-h-[28px] w-full overflow-hidden break-words text-[10px] font-medium leading-[1.35] text-neutral-700" title={doc.titulo_documento}>{doc.titulo_documento}</span>
+                  <span className="mt-0.5 block w-full truncate border-t border-slate-100 pt-0.5 text-[8px] leading-3 text-neutral-500" title={doc.departamento || 'QUALIDADE'}>REV. {String(doc.revisao).padStart(2,'0')} <span aria-hidden="true">·</span> {doc.departamento || 'QUALIDADE'}</span>{doc.nome_arquivo && <span className="mt-0.5 block w-full truncate text-[8px] leading-3 text-amber-700" title={doc.nome_arquivo}>FONTE: {doc.nome_arquivo} · {doc.url_anexo ? 'anexado' : 'anexo pendente'}</span>}
                 </span>
               </button>
             }) : <div className="px-7 py-4 text-[10px] leading-5 text-neutral-500">Nenhum documento encontrado. Use “Novo doc” para cadastrar o primeiro procedimento.</div>}
