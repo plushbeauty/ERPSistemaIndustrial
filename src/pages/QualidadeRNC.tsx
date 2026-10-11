@@ -232,13 +232,9 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
   return (
     <main className="min-h-screen bg-[#F4FBFD] text-[#123B50]"><div className="mx-auto max-w-[1800px] space-y-3 p-3"><QualitySidebar active={location.pathname} /><div className="sgq-compact">
       <div className="sgq-compact">
-        {location.pathname === '/vendas/sgq' && <div className="sgq-tabs">
-          <button className={tab === 'rnc' ? 'active' : ''} type="button" onClick={() => setTab('rnc')}><ShieldCheck size={13}/> 01 · RNC / ISHIKAWA 6M</button>
-          <button className={tab === 'capa' ? 'active' : ''} type="button" onClick={() => setTab('capa')}><CheckCircle2 size={13}/> 02 · CAPA / 5W2H</button>
-          <button className={tab === 'ishikawa' ? 'active' : ''} type="button" onClick={() => setTab('ishikawa')}><FileText size={13}/> 03 · ISHIKAWA</button>
-          <button className={tab === 'ged' ? 'active' : ''} type="button" onClick={() => setTab('ged')}><FileText size={13}/> 04 · GED</button>
-          <button className="refresh" type="button" onClick={() => void load()} disabled={busy}><RefreshCw size={13}/> ATUALIZAR</button>
-        </div>}
+        <div className="flex justify-end">
+          <button className="refresh inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-[#2D8DB8] px-3 text-[10px]" type="button" onClick={() => void load()} disabled={busy}><RefreshCw size={13}/> ATUALIZAR DADOS</button>
+        </div>
         {(error || notice) && <div className={error ? 'sgq-message error' : 'sgq-message'}>{error || notice}</div>}
 
         {tab === 'rnc' && <section className="sgq-panel">
@@ -264,7 +260,7 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
             <div><p className="text-[10px] font-bold uppercase tracking-wide text-[#2D8DB8]">SGQ · Análise de causa raiz</p><h2 className="text-base font-bold">Diagrama de Ishikawa — Espinha de Peixe (6M)</h2><p className="text-xs text-slate-600">RNC: {selected?.numero_rpnc ?? 'Selecione uma não conformidade'} · {selected?.lote_producao ?? 'Lote não informado'}</p></div>
             <div className="ishikawa-no-print flex flex-wrap gap-2"><button type="button" className={btn} disabled={!selected || busy} onClick={() => void saveSixM()}><Save size={13}/> SALVAR DIAGRAMA</button><button type="button" className={btn} onClick={() => window.print()}><FileText size={13}/> IMPRIMIR / PDF</button></div>
           </div>
-          <label className={label + ' mt-3'}>Efeito / problema principal<textarea className="sgq-textarea" readOnly value={selected?.descricao_nao_conformidade ?? ''} placeholder="Selecione uma RNC para carregar o efeito." /></label>
+          <label className={label + ' mt-3 ishikawa-no-print'}>Efeito / problema principal<textarea className="sgq-textarea" readOnly value={selected?.descricao_nao_conformidade ?? ''} placeholder="Selecione uma RNC para carregar o efeito." /></label>
           <div className="mt-3 overflow-x-auto rounded-[2px] border border-slate-200 bg-white p-2"><svg className="ishikawa-svg min-w-[900px]" viewBox="0 0 1400 520" role="img" aria-label="Diagrama de espinha de peixe Ishikawa com seis categorias de causas">
             <defs><marker id="ishikawa-arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#2D8DB8" /></marker></defs>
             <path d="M70 260 H1110" stroke="#2D8DB8" strokeWidth="5" strokeLinecap="round" markerEnd="url(#ishikawa-arrow)" />
@@ -291,7 +287,7 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
             <text x="70" y="310" fontSize="11" fill="#64748b">CAUSAS</text>
           </svg></div>
           <p className="ishikawa-print-caption mt-2 text-[10px] text-slate-600">Documento de análise de causa raiz gerado pelo SGQ ERP Industrial. Confirmar causas e evidências antes da aprovação.</p>
-          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">{fishboneCategories.map((category) => <label key={category.key} className={label + ' rounded-[2px] border border-slate-200 bg-[#F8FBFC] p-2'}>{category.title}<textarea className="sgq-textarea min-h-[88px]" value={sixM[category.key]} onChange={(e) => setSixM({ ...sixM, [category.key]: e.target.value })} placeholder="Digite uma causa por linha. Pode incluir várias causas e subcausas." /><span className="text-[10px] font-normal normal-case text-slate-500">{fishboneCauseList(sixM[category.key]).length} causa(s) listada(s)</span></label>)}</div>
+          <div className="ishikawa-no-print mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">{fishboneCategories.map((category) => <label key={category.key} className={label + ' rounded-[2px] border border-slate-200 bg-[#F8FBFC] p-2'}>{category.title}<textarea className="sgq-textarea min-h-[88px]" value={sixM[category.key]} onChange={(e) => setSixM({ ...sixM, [category.key]: e.target.value })} placeholder="Digite uma causa por linha. Pode incluir várias causas e subcausas." /><span className="text-[10px] font-normal normal-case text-slate-500">{fishboneCauseList(sixM[category.key]).length} causa(s) listada(s)</span></label>)}</div>
           <div className="ishikawa-no-print sgq-save-row"><button className={btn} type="button" disabled={!selected || busy} onClick={() => void saveSixM()}><Save size={13}/> SALVAR CAUSAS NO SGQ</button><label className={label}>Selecionar RNC para análise<select className={field(false)} value={selectedRnc} onChange={(e) => setSelectedRnc(e.target.value)}><option value="">Selecionar...</option>{rncs.map((row) => <option key={row.id} value={row.id}>{row.numero_rpnc} · {row.lote_producao || 'sem lote'}</option>)}</select></label></div>
         </section>}
 
