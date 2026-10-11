@@ -8,7 +8,7 @@ type Control = {
   id: string; data_producao: string; status: string; maquina_id: string; operador_id: string;
   ordem_producao_id: string | null; quantidade_total_pecas: number; numero_cavidades: number;
   hora_inicio: string | null; hora_fim: string | null; material_atual: string | null; cor_atual: string | null;
-  observacoes: string | null; criado_em: string
+  observacoes: string | null; criado_em: string; pom_guilhotina_fechada: boolean; pom_residuo_consumido: boolean
 }
 type Sample = { id: string; numero_injecao: number; quantidade_inspecionada: number; resultado: 'APROVADO' | 'REPROVADO'; defeitos_observados: string | null; material_segregado: boolean; criado_em: string }
 type Downtime = { id: string; hora_parada: string; hora_retorno: string | null; motivo: string; criado_em: string }
@@ -73,6 +73,9 @@ export default function ControleProcessoInjetora() {
   const [downtimes, setDowntimes] = useState<Downtime[]>([])
   const [sampleForm, setSampleForm] = useState({ numero_injecao: '', quantidade_inspecionada: '2', resultado: 'APROVADO' as 'APROVADO' | 'REPROVADO', defeitos_observados: '', material_segregado: false })
   const [stopForm, setStopForm] = useState({ hora_parada: '', hora_retorno: '', motivo: '' })
+  const [finalHour, setFinalHour] = useState('')
+  const [finalPomGuilhotina, setFinalPomGuilhotina] = useState(false)
+  const [finalPomResiduo, setFinalPomResiduo] = useState(false)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -93,7 +96,7 @@ export default function ControleProcessoInjetora() {
         supabase.from('erp_ordens_producao').select('id,numero_op').eq('empresa_id', company.data).order('criado_em', { ascending: false }).limit(200),
         supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', company.data).eq('ativo', true).order('codigo').limit(500),
         supabase.from('erp_estoque_lotes').select('id,lote_interno,status_inspecao').eq('empresa_id', company.data).neq('status_inspecao', 'RETIDO').order('created_at', { ascending: false }).limit(500),
-        supabase.from('erp_qualidade_controles_injetora').select('id,data_producao,status,maquina_id,operador_id,ordem_producao_id,quantidade_total_pecas,numero_cavidades,hora_inicio,hora_fim,material_atual,cor_atual,observacoes,criado_em').eq('empresa_id', company.data).order('criado_em', { ascending: false }).limit(100)
+        supabase.from('erp_qualidade_controles_injetora').select('id,data_producao,status,maquina_id,operador_id,ordem_producao_id,quantidade_total_pecas,numero_cavidades,hora_inicio,hora_fim,material_atual,cor_atual,observacoes,criado_em,pom_guilhotina_fechada,pom_residuo_consumido').eq('empresa_id', company.data).order('criado_em', { ascending: false }).limit(100)
       ])
       for (const result of [m, o, op, p, l, c]) if (result.error) throw result.error
       setMachines((m.data ?? []) as Lookup[]); setOperators((o.data ?? []) as Lookup[])
@@ -113,6 +116,9 @@ export default function ControleProcessoInjetora() {
 
   const openRecord = async (record: Control) => {
     setSelected(record); setError(''); setNotice('')
+    setFinalHour(record.hora_fim ?? '')
+    setFinalPomGuilhotina(record.pom_guilhotina_fechada)
+    setFinalPomResiduo(record.pom_residuo_consumido)
     const [s, d] = await Promise.all([
       supabase.from('erp_qualidade_injetora_amostras').select('id,numero_injecao,quantidade_inspecionada,resultado,defeitos_observados,material_segregado,criado_em').eq('empresa_id', empresaId).eq('controle_id', record.id).order('numero_injecao'),
       supabase.from('erp_qualidade_injetora_paradas').select('id,hora_parada,hora_retorno,motivo,criado_em').eq('empresa_id', empresaId).eq('controle_id', record.id).order('hora_parada')
@@ -129,6 +135,8 @@ export default function ControleProcessoInjetora() {
       if (form.hora_inicio && form.hora_fim && form.hora_fim < form.hora_inicio) throw new Error('O horário final não pode ser anterior ao inicial.')
       if (form.liberacao_qualidade && !form.responsavel_liberacao_id) throw new Error('Informe quem realizou a liberação da Qualidade.')
       if (form.liberacao_provisoria && !form.comparacao_amostra_padrao) throw new Error('Liberação provisória exige comparação visual com a Amostra Padrão.')
+      if (form.liberacao_provisoria && !canRelease) throw new Error('Complete os checklists de preparação antes da liberação provisória.')
+      if ((form.liberacao_qualidade || form.liberacao_provisoria) && !form.responsavel_liberacao_id) throw new Error('Informe o responsável pela liberação.')
       if (form.liberacao_qualidade && !canRelease) throw new Error('Complete os checklists de limpeza, purga, peças iniciais, ficha, máquina e molde antes de liberar.')
       if (isPom && form.liberacao_qualidade && !form.pom_procedimento_confirmado) throw new Error('Confirme o procedimento de segurança para POM antes da liberação.')
       const status = form.liberacao_qualidade ? 'LIBERADO' : form.liberacao_provisoria ? 'LIBERACAO_PROVISORIA' : coreChecksComplete ? 'AGUARDANDO_QUALIDADE' : 'RASCUNHO'
@@ -204,12 +212,12 @@ export default function ControleProcessoInjetora() {
     setBusy(true); setError(''); setNotice('')
     try {
       if (selected.status === 'ENCERRADO') throw new Error('Este registro já está encerrado.')
-      if (/POM|POLIACETAL/i.test(selected.material_atual ?? '') && (!form.pom_guilhotina_fechada || !form.pom_residuo_consumido)) {
+      if (/POM|POLIACETAL/i.test(selected.material_atual ?? '') && (!finalPomGuilhotina || !finalPomResiduo)) {
         throw new Error('Para encerrar lote com POM, confirme fechamento da guilhotina e consumo de todo o material do canhão.')
       }
       const result = await supabase.from('erp_qualidade_controles_injetora').update({
-        status: 'ENCERRADO', hora_fim: form.hora_fim || selected.hora_fim, pom_guilhotina_fechada: form.pom_guilhotina_fechada,
-        pom_residuo_consumido: form.pom_residuo_consumido, atualizado_em: new Date().toISOString()
+        status: 'ENCERRADO', hora_fim: finalHour || selected.hora_fim, pom_guilhotina_fechada: finalPomGuilhotina,
+        pom_residuo_consumido: finalPomResiduo, atualizado_em: new Date().toISOString()
       }).eq('empresa_id', empresaId).eq('id', selected.id).select('id').single()
       if (result.error) throw result.error
       setNotice('Produção encerrada e controles finais registrados.')
@@ -300,8 +308,13 @@ export default function ControleProcessoInjetora() {
                 <div className="space-y-1">{downtimes.map(stop => <div key={stop.id} className="border border-slate-200 p-2 text-[9px]"><strong>{stop.hora_parada} → {stop.hora_retorno ?? 'em aberto'}</strong><p>{stop.motivo}</p></div>)}</div>
               </form>
               <div className="border-t border-slate-200 pt-2">
+                <label className="mb-2 block"><span className={labelClass}>Horário real de término</span><input className={inputClass} type="time" value={finalHour} onChange={e => setFinalHour(e.target.value)} /></label>
+                {/POM|POLIACETAL/i.test(selected.material_atual ?? '') && <div className="mb-2 grid gap-2 border border-amber-300 bg-amber-50 p-2 text-[10px]">
+                  <label className="flex items-center gap-2"><input type="checkbox" checked={finalPomGuilhotina} onChange={e => setFinalPomGuilhotina(e.target.checked)} /> Guilhotina fechada antes do fim do lote</label>
+                  <label className="flex items-center gap-2"><input type="checkbox" checked={finalPomResiduo} onChange={e => setFinalPomResiduo(e.target.checked)} /> Todo POM consumido; cilindro sem resíduo</label>
+                </div>}
                 <p className="mb-2 text-[9px] text-slate-500">Encerrar registra o término real e, para POM, exige confirmar o esvaziamento seguro do cilindro.</p>
-                <button type="button" className={buttonClass} disabled={busy || selected.status === 'ENCERRADO'} onClick={() => void closeProduction()}><ShieldCheck size={13} /> Encerrar produção</button>
+                <button type="button" className={buttonClass} disabled={busy || selected.status === 'ENCERRADO' || !['LIBERADO', 'LIBERACAO_PROVISORIA', 'EM_PRODUCAO'].includes(selected.status)} onClick={() => void closeProduction()><ShieldCheck size={13} /> Encerrar produção</button>
               </div>
             </section>}
           </aside>
