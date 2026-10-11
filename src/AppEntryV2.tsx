@@ -10,12 +10,33 @@ import QualityPlanGate from './components/quality/QualityPlanGate'
 
 type LazyModule<P extends object> = { default?: ComponentType<P>; [key: string]: unknown }
 
+function recoverStaleChunk(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error)
+  if (!/failed to fetch dynamically imported module|importing a module script failed|loading chunk|chunkloaderror/i.test(message)) return
+  try {
+    const key = 'erp-industrial-chunk-recovery-at'
+    const lastAttempt = Number(window.sessionStorage.getItem(key) || '0')
+    if (Date.now() - lastAttempt > 30000) {
+      window.sessionStorage.setItem(key, String(Date.now()))
+      window.location.reload()
+    }
+  } catch {
+    // If browser storage is blocked, the route boundary below offers manual recovery.
+  }
+}
+
 function lazyPage<P extends object>(
   loader: () => Promise<LazyModule<P>>,
   exportName: string,
 ) {
   return lazy(async () => {
-    const module = await loader()
+    let module: LazyModule<P>
+    try {
+      module = await loader()
+    } catch (error) {
+      recoverStaleChunk(error)
+      throw error
+    }
     const component = module.default ?? module[exportName]
     if (typeof component !== 'function' && typeof component !== 'object') {
       throw new Error('LAZY_EXPORT_MISSING: ' + exportName)
