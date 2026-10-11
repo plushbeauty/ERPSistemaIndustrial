@@ -153,9 +153,8 @@ set codigo=c.next_code,
     snapshot_capturado_em=now(),
     numero_rpnc_origem=r.numero_rpnc,
     origem_rpnc=r.origem
-from canonical c
-join public.erp_rpnc r on r.id=d.rpnc_id and r.empresa_id=d.empresa_id
-where d.id=c.id and c.rn=1
+from canonical c, public.erp_rpnc r
+where d.id=c.id and r.id=d.rpnc_id and r.empresa_id=d.empresa_id and c.rn=1
   and not exists (select 1 from public.erp_qualidade_8d other where other.empresa_id=d.empresa_id and other.codigo=c.next_code and other.id<>d.id);
 
 commit;
