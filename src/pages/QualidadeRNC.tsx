@@ -159,7 +159,7 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
       }).select('id').single()
       if (created.error) throw created.error
       const createdId = created.data.id
-      setSelectedRnc(createdId); setDescription(''); setLot(''); setSegregated('0'); setNotice('RNC aberta no banco real com lote e quantidade segregada.'); await load(); if (origin.toLocaleLowerCase('pt-BR') === 'cliente') navigate('/qualidade/metodologia-8d?rpncId=' + encodeURIComponent(createdId) + '&rncNumber=' + encodeURIComponent('RPNC-' + new Date().getFullYear() + '-' + createdId) + '&origin=cliente')
+      setSelectedRnc(createdId); setDescription(''); setLot(''); setSegregated('0'); setNotice('RNC aberta no banco real com lote e quantidade segregada.'); await load(); if (origin.toLocaleLowerCase('pt-BR') === 'cliente') navigate('/qualidade/metodologia-8d?rpncId=' + encodeURIComponent(createdId) + '&origin=cliente')
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao abrir RNC.') }
     finally { setBusy(false) }
   }
