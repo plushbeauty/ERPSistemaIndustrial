@@ -162,7 +162,7 @@ export default function ControleProcessoInjetora() {
       if (result.error) throw result.error
       setNotice('Controle de processo salvo. Situação: ' + status.replaceAll('_', ' ') + '.')
       setForm(emptyForm()); await load()
-      const created = (await supabase.from('erp_qualidade_controles_injetora').select('id,data_producao,status,maquina_id,operador_id,ordem_producao_id,quantidade_total_pecas,numero_cavidades,hora_inicio,hora_fim,material_atual,cor_atual,observacoes,criado_em').eq('id', result.data.id).single())
+      const created = (await supabase.from('erp_qualidade_controles_injetora').select('id,data_producao,status,maquina_id,operador_id,ordem_producao_id,quantidade_total_pecas,numero_cavidades,hora_inicio,hora_fim,material_atual,cor_atual,observacoes,criado_em,pom_guilhotina_fechada,pom_residuo_consumido').eq('id', result.data.id).single())
       if (!created.error && created.data) await openRecord(created.data as Control)
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Não foi possível salvar o controle.') }
     finally { setBusy(false) }

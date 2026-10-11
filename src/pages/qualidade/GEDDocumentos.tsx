@@ -11,12 +11,14 @@ type Revision = {
   titulo_documento: string
   departamento: string
   revisao: number
-  responsavel: string
+  responsavel: string | null
   status: string
   conteudo_texto: string
   motivo_alteracao: string | null
   criado_em: string
   data_vigencia: string | null
+  nome_arquivo: string | null
+  url_anexo: string | null
 }
 
 const field = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] text-slate-800 outline-none focus:border-[#2D8DB8]'
@@ -52,7 +54,7 @@ export default function GEDDocumentos() {
       if (!company.data) throw new Error('Empresa da sessão não identificada.')
       setCompanyId(company.data)
       const result = await supabase.from('erp_qualidade_documentos_revisoes')
-        .select('id,empresa_id,codigo_documento,titulo_documento,departamento,revisao,responsavel,status,conteudo_texto,motivo_alteracao,criado_em,data_vigencia')
+        .select('id,empresa_id,codigo_documento,titulo_documento,departamento,revisao,responsavel,status,conteudo_texto,motivo_alteracao,criado_em,data_vigencia,nome_arquivo,url_anexo')
         .eq('empresa_id', company.data)
         .order('criado_em', { ascending: false })
       if (result.error) throw result.error
@@ -209,7 +211,7 @@ export default function GEDDocumentos() {
                     <span className={'inline-flex max-w-full shrink-0 items-center rounded-[2px] px-1.5 py-0.5 text-[8px] font-bold leading-3 ' + stateColor}>{doc.status.replaceAll('_',' ')}</span>
                   </span>
                   <span className="mt-1 block w-full whitespace-normal break-words text-[10px] font-medium leading-[1.45] text-neutral-700">{doc.titulo_documento}</span>
-                  <span className="mt-1 block w-full whitespace-normal break-words border-t border-slate-100 pt-1 text-[9px] leading-4 text-neutral-500">REV. {String(doc.revisao).padStart(2,'0')} <span aria-hidden="true">·</span> {doc.departamento || 'QUALIDADE'}</span>
+                  <span className="mt-1 block w-full whitespace-normal break-words border-t border-slate-100 pt-1 text-[9px] leading-4 text-neutral-500">REV. {String(doc.revisao).padStart(2,'0')} <span aria-hidden="true">·</span> {doc.departamento || 'QUALIDADE'}</span>{doc.nome_arquivo && <span className="mt-1 block break-words text-[8px] leading-3 text-amber-700">FONTE: {doc.nome_arquivo} · {doc.url_anexo ? 'anexado' : 'anexo pendente'}</span>}
                 </span>
               </button>
             }) : <div className="px-7 py-4 text-[10px] leading-5 text-neutral-500">Nenhum documento encontrado. Use “Novo doc” para cadastrar o primeiro procedimento.</div>}
@@ -232,12 +234,13 @@ export default function GEDDocumentos() {
               </div>
             </div>
 
-            <div className="mx-auto flex w-full max-w-[880px] flex-1 flex-col px-5 py-5 sm:px-8 lg:px-12">
+            {selected?.nome_arquivo && !selected.url_anexo && <div role="status" className="mx-4 mt-3 border border-amber-300 bg-amber-50 px-3 py-2 text-[10px] leading-4 text-amber-900">Registro de índice importado: o arquivo original ainda não está anexado ao GED. Confirme o conteúdo, a revisão de origem e a vigência antes de homologar. A aprovação fica bloqueada enquanto o anexo estiver pendente.</div>}
+              <div className="mx-auto flex w-full max-w-[880px] flex-1 flex-col px-5 py-5 sm:px-8 lg:px-12">
               {selected && <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-neutral-100 pb-3 text-[9px] text-neutral-500">
                 <span className={'rounded-[4px] px-2 py-1 font-semibold ' + (selected.status === 'VIGENTE' ? 'bg-emerald-50 text-emerald-700' : selected.status === 'EM_REVISAO' ? 'bg-amber-50 text-amber-700' : 'bg-neutral-100 text-neutral-600')}>{selected.status.replaceAll('_',' ')}</span>
                 <span>Responsável: <strong className="font-medium text-neutral-700">{selected.responsavel}</strong></span>
                 <span>·</span><span>{dateTime(selected.criado_em)}</span>
-                {selected.status === 'EM_REVISAO' && <button type="button" disabled={busy} onClick={() => void activateSelected()} className="ml-auto inline-flex h-[30px] items-center gap-1 rounded-[4px] border border-emerald-200 bg-emerald-50 px-2 text-[9px] font-semibold text-emerald-700 disabled:opacity-50"><ShieldCheck size={12}/> APROVAR E ATIVAR</button>}
+                {selected.status === 'EM_REVISAO' && !(selected.nome_arquivo && !selected.url_anexo) && <button type="button" disabled={busy} onClick={() => void activateSelected()} className="ml-auto inline-flex h-[30px] items-center gap-1 rounded-[4px] border border-emerald-200 bg-emerald-50 px-2 text-[9px] font-semibold text-emerald-700 disabled:opacity-50"><ShieldCheck size={12}/> APROVAR E ATIVAR</button>}
               </div>}
 
               <div className="grid gap-x-3 gap-y-3 sm:grid-cols-[150px_minmax(0,1fr)]">
