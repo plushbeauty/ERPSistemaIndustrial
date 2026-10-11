@@ -42,7 +42,7 @@ export async function processarEConverterXmlPedido(
     if (!xmlTexto.trim()) throw new Error("XML vazio.");
     if (!clienteId || !empresaId) throw new Error("Cliente e empresa são obrigatórios.");
 
-    const blocos = xmlTexto.match(/<(?:[A-Za-z0-9_]+:)?det(?:\\s[^>]*)?>[\\s\\S]*?<\\/(?:[A-Za-z0-9_]+:)?det>/gi) ?? [];
+    const blocos = xmlTexto.match(/<(?:[A-Za-z0-9_]+:)?det(?:\s[^>]*)?>[\s\S]*?<\/(?:[A-Za-z0-9_]+:)?det>/gi) ?? [];
     if (!blocos.length) throw new Error("Nenhum bloco <det> localizado no XML.");
 
     const dePara = await fetchAllPages<DeParaRow>((from, to) => supabase
