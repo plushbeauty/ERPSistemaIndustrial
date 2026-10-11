@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import '../../styles/quality-workspace-standard.css'
-import { Activity, BookOpenCheck, CircleHelp, ClipboardCheck, ClipboardList, FileText, FolderGit2, Gauge, ListChecks, LineChart, SearchCheck, ShieldCheck, Target, Wrench, X } from 'lucide-react'
+import { Activity, BookOpenCheck, CheckCircle as CheckCircleIcon, CircleHelp, ClipboardCheck, ClipboardList, FileText, FolderGit2, Gauge, ListChecks, LineChart, SearchCheck, ShieldCheck, Target, Wrench, X } from 'lucide-react'
 
 const items = [
   ['Visão Geral da Qualidade', '/qualidade'],
@@ -13,8 +13,9 @@ const items = [
   ['Recebimento e Inspeção Dimensional', '/qualidade/industrial'],
   ['Matriz FMEA', '/qualidade/fmea'],
   ['PFMEA / Risco', '/qualidade/pfmea'],
-  ['RNC & Planos CAPA', '/qualidade/rnc-capa'],
-  ['Registro RPNC / CAPA', '/qualidade/rnc'],
+  ['Não Conformidades (RNC)', '/qualidade/rnc'],
+  ['Espinha de Peixe — Ishikawa', '/qualidade/ishikawa'],
+  ['Ações CAPA / 5W2H', '/qualidade/capa'],
   ['8D — Ações Corretivas', '/qualidade/metodologia-8d'],
   ['Auditoria 5S', '/qualidade/auditoria-5s'],
   ['Inspeção em Processo', '/qualidade/inspecao-processo'],
@@ -31,7 +32,7 @@ const items = [
   ['Assinatura de Instruções de Trabalho', '/qualidade/assinatura-it'],
 ]
 
-const itemIcons = [Gauge, FileText, FileText, Activity, SearchCheck, ClipboardCheck, ClipboardList, Target, Target, ListChecks, ShieldCheck, BookOpenCheck, ClipboardList, ClipboardCheck, ShieldCheck, Wrench, Gauge, FolderGit2, FileText, FileText, ClipboardList, ShieldCheck, ClipboardList, FileText, ShieldCheck]
+const itemIcons = [Gauge, FileText, FileText, Activity, SearchCheck, ClipboardCheck, ClipboardList, Target, Target, ShieldCheck, Activity, CheckCircleIcon, BookOpenCheck, ClipboardList, ClipboardCheck, ShieldCheck, Wrench, Gauge, FolderGit2, FileText, FileText, ClipboardList, ShieldCheck, ClipboardList, FileText, ShieldCheck]
 
 export default function QualitySidebar({ active }: { active: string }) {
   const [helpOpen, setHelpOpen] = useState(false)
