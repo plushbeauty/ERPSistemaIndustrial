@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { FileText, RefreshCw, Save, ShieldCheck, Upload, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import QualitySidebar from '../components/quality/QualitySidebar'
 
 type Rpn = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; origem: string | null; gravidade: string | null; lote_producao: string | null; quantidade_segregada: number; bloqueia_lote: boolean; setor_envolvido_id: string | null; status: string; criado_em: string }
@@ -38,6 +38,7 @@ type QualidadeRNCProps = { initialTab?: 'rnc' | 'capa' | 'ged' | 'ishikawa' }
 
 export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) {
   const location = useLocation()
+  const navigate = useNavigate()
   const [tab, setTab] = useState<'rnc' | 'capa' | 'ged' | 'ishikawa'>(initialTab)
   const [companyId, setCompanyId] = useState('')
   const [rncs, setRncs] = useState<Rpn[]>([])
@@ -158,7 +159,7 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
       }).select('id').single()
       if (created.error) throw created.error
       const createdId = created.data.id
-      setSelectedRnc(createdId); setDescription(''); setLot(''); setSegregated('0'); setNotice('RNC aberta no banco real com lote e quantidade segregada.'); await load()
+      setSelectedRnc(createdId); setDescription(''); setLot(''); setSegregated('0'); setNotice('RNC aberta no banco real com lote e quantidade segregada.'); await load(); if (origin.toLocaleLowerCase('pt-BR') === 'cliente') navigate('/qualidade/metodologia-8d?rpncId=' + encodeURIComponent(createdId) + '&rncNumber=' + encodeURIComponent('RPNC-' + new Date().getFullYear() + '-' + createdId) + '&origin=cliente')
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao abrir RNC.') }
     finally { setBusy(false) }
   }
