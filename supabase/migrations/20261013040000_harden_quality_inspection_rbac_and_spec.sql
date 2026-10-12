@@ -46,7 +46,9 @@ begin
     raise exception 'Sem permissão para registrar inspeções da Qualidade.' using errcode = '42501';
   end if;
 
-  if p_tipo not in ('recebimento', 'processo', 'produto_final')
+  if p_tipo is null
+    or p_resultado is null
+    or p_tipo not in ('recebimento', 'processo', 'produto_final')
     or p_resultado not in ('aprovado', 'reprovado', 'aprovado_com_restricao')
     or p_produto_id is null
     or p_lote_id is null
@@ -312,7 +314,12 @@ create policy erp_quarentenas_lotes_rbac_select
     (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
     and (
       public.erp_has_permission('qualidade', 'ver')
+      or public.erp_has_permission('qualidade', 'criar')
+      or public.erp_has_permission('qualidade', 'editar')
       or public.erp_has_permission('estoque', 'ver')
+      or public.erp_has_permission('estoque', 'criar')
+      or public.erp_has_permission('estoque', 'editar')
+      or public.erp_has_permission('estoque', 'movimentar')
       or public.erp_is_master()
     )
   );
