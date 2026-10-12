@@ -186,7 +186,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           {filtered.length > 0 && (
             <div className="erp-horizontal-search-results">
               {filtered.slice(0, 8).map(item => (
-                <button key={item.route} type="button" onClick={() => openMenuItem(item)}>{item.label}</button>
+                <button key={`${item.route}:${item.label}`} type="button" onClick={() => openMenuItem(item)}>{item.label}</button>
               ))}
             </div>
           )}
