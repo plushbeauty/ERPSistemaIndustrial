@@ -146,7 +146,7 @@ export default function PCPDashboardOEE() {
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
             { label: 'OEE GLOBAL', value: pct(metrics.oee), icon: Gauge, note: 'Índice composto' },
-            { label: 'DISPONIBILIDADE', value: pct(metrics.availability), icon: Clock3, note: 'Tempo planejado sem parada' },
+            { label: 'DISPONIBILIDADE', value: pct(metrics.availability), icon: Clock3, note: 'Tempo observado sem parada' },
             { label: 'PERFORMANCE', value: pct(metrics.performance), icon: TrendingUp, note: 'Produção versus ciclo nominal' },
             { label: 'QUALIDADE', value: pct(metrics.quality), icon: ShieldCheck, note: 'Boa versus boa + refugo' },
           ].map((card) => {
@@ -185,7 +185,7 @@ export default function PCPDashboardOEE() {
 
         <section className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center gap-2"><BarChart3 className="text-sky-700"/><div><h2 className="font-black">Tempo e perdas</h2><p className="text-xs font-semibold text-slate-500">Baseado nos apontamentos do período.</p></div></div>
-          <div className="h-[280px]"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{nome:'Planejado',min:metrics.planned},{nome:'Paradas',min:metrics.downtime},{nome:'Operação',min:metrics.runtime}]}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="nome"/><YAxis/><Tooltip formatter={(v: number) => [`${v.toFixed(0)} min`, 'Tempo']}/><Bar dataKey="min" fill="#0f172a" radius={[8,8,0,0]}/></BarChart></ResponsiveContainer></div>
+          <div className="h-[280px]"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{nome:'Observado',min:metrics.planned},{nome:'Paradas',min:metrics.downtime},{nome:'Operação',min:metrics.runtime}]}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="nome"/><YAxis/><Tooltip formatter={(v: number) => [`${v.toFixed(0)} min`, 'Tempo']}/><Bar dataKey="min" fill="#0f172a" radius={[8,8,0,0]}/></BarChart></ResponsiveContainer></div>
         </section>
       </div>
     </main>
