@@ -19,6 +19,8 @@ const toolingChecklist = read('src/pages/FerramentariaPreventiva.tsx')
 const setupApproval = read('src/pages/PCPAprovacaoSetup.tsx')
 const masterSchedule = read('src/pages/ManutencaoPlanoMestre.tsx')
 const checklistMigration = read('supabase/migrations/20261012123000_erp_manutencao_checklists.sql')
+const engineeringProcess = read('src/pages/FichasProcesso.tsx')
+const pcpProcess = read('src/pages/PCPFichasProcesso.tsx')
 
 requireIn(toolPreventive, /erp_current_empresa_id/, 'Planos preventivos não resolvem a empresa ativa.')
 requireIn(toolPreventive, /\.eq\('empresa_id', empresaId\)/, 'A listagem de planos preventivos não está isolada por empresa.')
@@ -29,6 +31,11 @@ requireIn(toolingChecklist, /\.eq\('empresa_id',empresaId\)/, 'A listagem da fer
 requireIn(toolingChecklist, /\.eq\('empresa_id',companyId\)/, 'A gravação do checklist da ferramentaria não está isolada por empresa.')
 requireIn(toolingChecklist, /status==='LIBERADO'&&done\.some\(value=>!value\)/, 'A ferramentaria permite liberar molde com checklist incompleto.')
 requireIn(toolingChecklist, /\.\.\.\(selected\.parametros\?\.\?\{\}\),preventiva:/, 'A manutenção preventiva apaga outros parâmetros do ferramental.')
+requireIn(toolingChecklist, /update\(\{status:operationalStatus,parametros:next\}\)/, 'A retenção da ferramentaria não atualiza o status operacional do ferramental.');
+requireIn(setupApproval, /update\(\{ status: operationalStatus, parametros: updatedParameters/, 'A reprovação do setup não atualiza o status operacional do ferramental.');
+requireIn(engineeringProcess, /\.neq\('status','RETIDO'\)/, 'Fichas de engenharia permitem selecionar ferramental retido.');
+requireIn(pcpProcess, /\.neq\('status', 'RETIDO'\)/, 'Fichas de processo do PCP permitem selecionar ferramental retido.');
+
 requireIn(setupApproval, /erp_current_empresa_id/, 'A aprovação de setup não resolve a empresa ativa.')
 requireIn(setupApproval, /\.eq\('empresa_id', empresaId\)/, 'As consultas de setup não estão isoladas por empresa.')
 requireIn(setupApproval, /\.eq\('empresa_id', companyId\)/, 'A gravação do laudo de setup não está isolada por empresa.')
