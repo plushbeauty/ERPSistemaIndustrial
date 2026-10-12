@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import {
   Activity, BookOpenCheck, ClipboardCheck, ClipboardList, FileCheck2, FileText,
-  GitBranch, ListChecks, Microscope, SearchCheck, ShieldAlert, ShieldCheck,
+  Gauge, GitBranch, ListChecks, Microscope, SearchCheck, ShieldAlert, ShieldCheck,
   Target, Wrench, Workflow, Gauge,
 } from 'lucide-react'
 
@@ -24,6 +24,8 @@ export const qualityModules = [
   { label: 'Auditoria 5S', description: 'Registrar e acompanhar auditorias de organização.', route: '/qualidade/auditoria-5s', icon: SearchCheck },
   { label: 'CEP / cartas de controle', description: 'Acompanhar indicadores estatísticos de processo.', route: '/qualidade/cep', icon: Activity },
   { label: 'Metrologia e calibração', description: 'Consultar instrumentos e calibrações.', route: '/qualidade/calibracao', icon: Wrench },
+  { label: 'Instrumentos de medição', description: 'Consultar instrumentos e registros de medição.', route: '/qualidade/instrumentos', icon: Gauge },
+  { label: 'Refugos da qualidade', description: 'Acompanhar registros e causas de refugo.', route: '/qualidade/refugos', icon: ShieldAlert },
   { label: 'Editor gráfico de procedimentos', description: 'Criar e editar ITs, desenhar fluxogramas e exportar Word.', route: '/qualidade/editor-it', icon: ClipboardCheck },
   { label: 'Relatórios do SGQ', description: 'Acessar relatórios de qualidade.', route: '/qualidade/relatorios-documentos', icon: FileText },
 ] as const
