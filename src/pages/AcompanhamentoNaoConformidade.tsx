@@ -143,6 +143,14 @@ export default function AcompanhamentoNaoConformidade(){
 
   const changeStatus=async(status:string)=>{
     if(!selected)return
+    if(normalizeStatus(status)==='encerrada'){
+      const linkedActions=actionFor(selected.id)
+      if(!linkedActions.length){setError('Antes de encerrar, registre as ações corretivas e a evidência de eficácia aplicável.');return}
+      const pending=linkedActions.filter(a=>!ACTION_CLOSED.includes(normalizeStatus(a.status)))
+      if(pending.length){setError('Não é possível encerrar: ainda existem ações corretivas abertas ou em execução.');return}
+      const missingEvidence=linkedActions.filter(a=>!['cancelada','cancelado'].includes(normalizeStatus(a.status))&&!a.eficacia?.trim())
+      if(missingEvidence.length){setError('Não é possível encerrar: registre a evidência de eficácia de cada ação concluída.');return}
+    }
     setBusy(true);setError('')
     try{
       const {error}=await supabase.from('erp_rpnc').update({status}).eq('id',selected.id);if(error)throw error
