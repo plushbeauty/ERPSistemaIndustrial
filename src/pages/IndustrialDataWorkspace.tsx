@@ -44,7 +44,7 @@ const cls='h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 t
 const label='mb-[2px] block text-[9px] font-bold uppercase tracking-wider text-slate-600'
 const btn='inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-semibold hover:bg-slate-50 disabled:opacity-50'
 function validNfeAccessKey(value: string): boolean {
-  if (!/^\\d{44}$/.test(value)) return false
+  if (!/^\d{44}$/.test(value)) return false
   let weight = 2
   let sum = 0
   for (let index = 42; index >= 0; index -= 1) {
@@ -148,7 +148,7 @@ export default function IndustrialDataWorkspace() {
       if (config.table === 'fiscal_nfe_entradas') {
         const accessKey = String(form.chave_acesso ?? '').trim()
         if (!validNfeAccessKey(accessKey)) throw new Error('A chave de acesso da NF-e deve conter 44 dígitos e dígito verificador válido.')
-        const cnpj = String(form.cnpj_emitente ?? '').replace(/\\D/g, '')
+        const cnpj = String(form.cnpj_emitente ?? '').replace(/\D/g, '')
         if (cnpj.length !== 14) throw new Error('O CNPJ do emitente deve conter 14 dígitos.')
         let invoiceItems: unknown
         try { invoiceItems = JSON.parse(String(form.itens ?? '')) as unknown } catch { throw new Error('Informe os itens como um JSON válido em formato de lista.') }
