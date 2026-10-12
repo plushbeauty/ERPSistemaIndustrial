@@ -9,7 +9,19 @@ type Operator = { name: string; email: string }
 export default function ERPHeader() {
   const navigate = useNavigate()
   const location = useLocation()
-  const isQuality = location.pathname.startsWith('/qualidade') || location.pathname.startsWith('/sgq')
+  const pageTitle = location.pathname === '/fiscal/emissao' ? 'EMISSÃO DE NF-e'
+    : location.pathname === '/compras/pedido' ? 'PEDIDO DE COMPRA'
+    : location.pathname.startsWith('/compras') ? 'COMPRAS'
+    : location.pathname.startsWith('/qualidade') || location.pathname.startsWith('/sgq') ? (location.pathname === '/qualidade/tablet' ? 'QUALIDADE TABLET' : 'QUALIDADE')
+    : location.pathname.startsWith('/pcp') ? (location.pathname === '/pcp/tablet' ? 'PCP TABLET' : 'PCP')
+    : location.pathname.startsWith('/vendas/novo-pedido') ? 'NOVO PEDIDO DE VENDA'
+    : location.pathname.startsWith('/vendas') ? 'VENDAS'
+    : location.pathname.startsWith('/fiscal') ? 'FISCAL'
+    : location.pathname.startsWith('/estoque') ? 'ESTOQUE'
+    : location.pathname.startsWith('/financeiro') ? 'FINANCEIRO'
+    : location.pathname.startsWith('/engenharia') ? 'ENGENHARIA'
+    : location.pathname.startsWith('/manutencao') ? 'MANUTENÇÃO'
+    : location.pathname.split('/').filter(Boolean).slice(-1)[0]?.replaceAll('-', ' ').toLocaleUpperCase('pt-BR') || 'CENTRAL DO ERP'
   const [operator, setOperator] = useState<Operator>({ name: 'Carregando usuário...', email: '' })
   const [now, setNow] = useState(() => new Date())
   const [companyName, setCompanyName] = useState('Empresa não identificada')
@@ -78,7 +90,7 @@ export default function ERPHeader() {
         </span>
       </button>
 
-      <div className="synqra-header-title">{isQuality ? <button type="button" onClick={() => navigate('/qualidade')} className="inline-flex h-[30px] items-center gap-2 border border-[#B8860B] bg-[#D4A017] px-4 text-[10px] font-bold uppercase tracking-wide text-black hover:bg-[#E3B52D]">☰ Gestão da Qualidade <span aria-hidden="true">⌄</span></button> : <><strong>Sistema ERP industrial</strong><small>{companyName}</small></>}</div>
+      <div className="synqra-header-title"><strong>{pageTitle}</strong><small>{companyName}</small></div>
 
       <div className="synqra-session">
         <div>
