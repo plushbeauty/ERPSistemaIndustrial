@@ -51,7 +51,9 @@ type Ishikawa = {
   cinco_porques:string|null
 }
 
-const CLOSED = ['encerrada','fechada','concluida','concluído','cancelada','cancelado']
+const normalizeStatus = (value:string|null|undefined) => String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()
+const CLOSED = ['encerrada','fechada','concluida','cancelada','cancelado']
+const ACTION_CLOSED = ['concluida','concluido','cancelada','cancelado','encerrada','fechada']
 const STATUS = ['aberta','em análise','em tratamento','aguardando eficácia','encerrada']
 const inputStyle:React.CSSProperties={width:'100%',minHeight:30,boxSizing:'border-box',border:'1px solid #cbd5e1',borderRadius:2,padding:'5px 8px',fontSize:11,background:'#fff',color:'#17333f'}
 const card:React.CSSProperties={background:'#fff',border:'1px solid #d7e4e8',borderRadius:2,padding:12,boxShadow:'0 1px 3px rgba(23,51,63,.05)'}
@@ -70,6 +72,9 @@ export default function AcompanhamentoNaoConformidade(){
   const [showNew,setShowNew]=useState(false)
   const [showAction,setShowAction]=useState(false)
   const [showCause,setShowCause]=useState(false)
+  const [showEfficacy,setShowEfficacy]=useState(false)
+  const [efficacyActionId,setEfficacyActionId]=useState('')
+  const [efficacyText,setEfficacyText]=useState('')
   const [newForm,setNewForm]=useState({numero:'',descricao:'',acao:'',status:'aberta'})
   const [actionForm,setActionForm]=useState({what:'',why:'',where_to:'',when_date:'',who_id:'',how:'',how_much:'0'})
   const [causeForm,setCauseForm]=useState({efeito:'',maquina:'',metodo:'',mao_de_obra:'',material:'',medicao:'',meio_ambiente:'',cinco_porques:''})
@@ -91,17 +96,21 @@ export default function AcompanhamentoNaoConformidade(){
   useEffect(()=>{void load()},[])
 
   const actionFor=(id:string)=>actions.filter(a=>a.origem_id===id)
+  const activeActionsFor=(id:string)=>actionFor(id).filter(a=>!ACTION_CLOSED.includes(normalizeStatus(a.status)))
   const dueFor=(id:string)=>{
-    const dates=actionFor(id).map(a=>a.when_date).filter(Boolean) as string[]
+    const dates=activeActionsFor(id).map(a=>a.when_date).filter(Boolean) as string[]
     return dates.sort()[0]||null
   }
-  const overdue=(id:string)=>{
-    const due=dueFor(id);return !!due && new Date(due+'T23:59:59')<new Date() && !CLOSED.includes(String(selected?.status||'').toLowerCase())
+  const isOverdue=(id:string,status:string|null|undefined)=>{
+    if(CLOSED.includes(normalizeStatus(status))) return false
+    const today=new Date()
+    today.setHours(0,0,0,0)
+    return activeActionsFor(id).some(a=>!!a.when_date && new Date(a.when_date+'T00:00:00')<today)
   }
   const metrics=useMemo(()=>{
-    const open=rpnc.filter(r=>!CLOSED.includes(String(r.status||'').toLowerCase())).length
-    const late=rpnc.filter(r=>{const due=dueFor(r.id);return !!due&&new Date(due+'T23:59:59')<new Date()&&!CLOSED.includes(String(r.status||'').toLowerCase())}).length
-    const analysis=rpnc.filter(r=>['em análise','em tratamento','aguardando eficácia'].includes(String(r.status||'').toLowerCase())).length
+    const open=rpnc.filter(r=>!CLOSED.includes(normalizeStatus(r.status))).length
+    const late=rpnc.filter(r=>isOverdue(r.id,r.status)).length
+    const analysis=rpnc.filter(r=>['em analise','em tratamento','aguardando eficacia'].includes(normalizeStatus(r.status))).length
     const closed=rpnc.length-open
     return {total:rpnc.length,open,late,analysis,closed}
   },[rpnc,actions])
@@ -109,7 +118,7 @@ export default function AcompanhamentoNaoConformidade(){
   const visible=useMemo(()=>rpnc.filter(r=>{
     const text=JSON.stringify(r).toLowerCase()
     const q=query.trim().toLowerCase()
-    return (!q||text.includes(q))&&(statusFilter==='todos'||String(r.status||'').toLowerCase()===statusFilter)
+    return (!q||text.includes(q))&&(statusFilter==='todos'||normalizeStatus(r.status)===normalizeStatus(statusFilter))
   }),[rpnc,query,statusFilter])
 
   const select=(r:Rpn)=>{setSelected(r);setMessage('');setError('')}
@@ -183,6 +192,22 @@ export default function AcompanhamentoNaoConformidade(){
     catch(e){setError(e instanceof Error?e.message:'Não foi possível atualizar a ação.')}finally{setBusy(false)}
   }
 
+  const openEfficacy=(action:Action)=>{
+    setEfficacyActionId(action.id);setEfficacyText(action.eficacia||'');setError('');setMessage('');setShowEfficacy(true)
+  }
+
+  const saveEfficacy=async()=>{
+    if(!efficacyActionId||!efficacyText.trim()){setError('Descreva a evidência e o resultado da verificação de eficácia.');return}
+    setBusy(true);setError('')
+    try{
+      const {error}=await supabase.from('erp_qualidade_acoes').update({eficacia:efficacyText.trim()}).eq('id',efficacyActionId)
+      if(error)throw error
+      setActions(prev=>prev.map(a=>a.id===efficacyActionId?{...a,eficacia:efficacyText.trim()}:a))
+      setMessage('Verificação de eficácia registrada na ação selecionada.')
+      setShowEfficacy(false);setEfficacyActionId('');setEfficacyText('')
+    }catch(e){setError(e instanceof Error?e.message:'Não foi possível registrar a eficácia.')}finally{setBusy(false)}
+  }
+
   const selectedActions=selected?actionFor(selected.id):[]
   const selectedCauses=selected?ishikawa.filter(x=>x.rpnc_id===selected.id):[]
 
@@ -223,7 +248,7 @@ export default function AcompanhamentoNaoConformidade(){
             <table style={{width:'100%',borderCollapse:'collapse',fontSize:14}}>
               <thead><tr>{['RPNC','Não conformidade','Status','Prazo','Ações','Acompanhamento'].map(h=><th key={h} style={{textAlign:'left',padding:'12px 13px',background:'#f7fafb',borderBottom:'1px solid #dfe9ec',fontSize:11,letterSpacing:'.06em',textTransform:'uppercase',color:'#5c717b'}}>{h}</th>)}</tr></thead>
               <tbody>{visible.map(r=>{
-                const acts=actionFor(r.id),due=dueFor(r.id),late=!!due&&new Date(due+'T23:59:59')<new Date()&&!CLOSED.includes(String(r.status||'').toLowerCase())
+                const acts=actionFor(r.id),due=dueFor(r.id),late=isOverdue(r.id,r.status)
                 return <tr key={r.id} onClick={()=>select(r)} style={{cursor:'pointer',background:selected?.id===r.id?'#eef9f7':'#fff'}}>
                   <td style={{padding:'13px',borderBottom:'1px solid #edf2f4',fontWeight:900,whiteSpace:'nowrap'}}>{r.numero_rpnc||r.id.slice(0,8)}</td>
                   <td style={{padding:'13px',borderBottom:'1px solid #edf2f4',minWidth:280}}><div style={{fontWeight:800}}>{r.descricao_nao_conformidade||'Sem descrição'}</div><small style={{color:'#748892'}}>Clique para abrir o acompanhamento</small></td>
@@ -270,8 +295,8 @@ export default function AcompanhamentoNaoConformidade(){
 
             <section style={{marginTop:18,paddingTop:14,borderTop:'1px solid #e2eaed'}}>
               <div style={sectionTitle}>VERIFICAÇÃO DE EFICÁCIA</div>
-              <p style={{margin:'7px 0 0',fontSize:13,color:'#617783'}}>A ação só deve ser encerrada depois de registrar evidência e confirmar que a causa foi tratada. O campo de eficácia fica vinculado ao plano de ação.</p>
-              <button type="button" onClick={()=>setMessage('Para registrar a eficácia, abra a ação correspondente e utilize o fluxo de conclusão do plano.')} style={{...detailButton,width:'100%',marginTop:9}}><ClipboardCheck size={16}/> Verificar eficácia</button>
+              <p style={{margin:'7px 0 0',fontSize:13,color:'#617783'}}>Selecione uma ação do plano para registrar a evidência observada e o resultado da verificação. Registre apenas resultados confirmados.</p>
+              {!selectedActions.length?<div style={{...emptyBox,marginTop:9}}>Cadastre uma ação corretiva antes de verificar a eficácia.</div>:<div style={{display:'grid',gap:8,marginTop:9}}>{selectedActions.map(a=><button key={a.id} type="button" onClick={()=>openEfficacy(a)} style={{...detailButton,justifyContent:'space-between',width:'100%',textAlign:'left'}}><span style={{display:'flex',alignItems:'center',gap:8}}><ClipboardCheck size={16}/><span>{a.what}</span></span><span style={{fontSize:10,color:a.eficacia?'#17675f':'#617783'}}>{a.eficacia?'Eficácia registrada':'Registrar eficácia'}</span></button>)}</div>}
             </section>
           </>}
         </aside>
@@ -297,6 +322,12 @@ export default function AcompanhamentoNaoConformidade(){
       </div>
       <Field label="Como?"><textarea value={actionForm.how} onChange={e=>setActionForm({...actionForm,how:e.target.value})} style={{...inputStyle,minHeight:90,resize:'vertical'}}/></Field>
       <ModalActions cancel={()=>setShowAction(false)} save={()=>void saveAction()} busy={busy}/>
+    </Modal>}
+
+    {showEfficacy&&<Modal title="Verificação de eficácia" close={()=>setShowEfficacy(false)}>
+      <p style={{margin:'0 0 10px',fontSize:12,color:'#536a75'}}>Descreva a evidência verificada, o resultado e como foi confirmado que a causa foi tratada.</p>
+      <Field label="Evidência e resultado da eficácia *"><textarea value={efficacyText} onChange={e=>setEfficacyText(e.target.value)} placeholder="Evidência observada, data/referência e conclusão..." style={{...inputStyle,minHeight:120,resize:'vertical'}}/></Field>
+      <ModalActions cancel={()=>setShowEfficacy(false)} save={()=>void saveEfficacy()} busy={busy}/>
     </Modal>}
 
     {showCause&&<Modal title={'Análise de causa • '+(selected?.numero_rpnc||'RPNC')} close={()=>setShowCause(false)}>
