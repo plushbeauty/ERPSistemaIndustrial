@@ -1,5 +1,45 @@
 # ESTADO DE EXECUÇÃO — ERP Industrial
 
+## Atualização da auditoria global — 12/10/2026
+
+### Estado confirmado no GitHub
+- Repositório: `plushbeauty/ERPSistemaIndustrial`.
+- Branch de trabalho: `fix/qualidade-padrao-formularios-dashboard`.
+- Commit consultado: `a8a3c8c8cd8eedde3492fd37771ca83083fe3e38`.
+- PR #79: aberto, não mesclado, base `main`, 48 arquivos alterados e 120 commits informados pela API.
+- CI: a execução consultada do workflow `ERP Industrial CI` para o commit terminou com `success`; status combinado retornou CodeRabbit `success`. Isso não substitui teste funcional autenticado nem verificação do deploy de produção.
+- Scripts de validação declarados em `package.json`: `type-check`, `lint:check`, `audit:global`, `audit:brutal`, `audit:interactions`, `verify:lazy-imports`, `build`, `verify:build`, `verify-routes` e `verify:release`. Nesta auditoria via GitHub, não executei esses scripts localmente.
+- Workflow principal: `.github/workflows/ci.yml`; executa instalação Node 24, verificações de ambiente/lockfile/política, TypeScript, ESLint, auditorias, build e rotas.
+
+### Escopo de arquivos já identificados no PR #79
+A lista de arquivos alterados inclui componentes de shell e cabeçalho, rotas, Compras/RFQ, Fiscal, Manutenção, PCP, Qualidade/SGQ, gerador de documentos, estilos globais e migrations. Ver lista completa em https://github.com/plushbeauty/ERPSistemaIndustrial/pull/79/files.
+
+### Primeiras verificações técnicas (não equivalem à auditoria completa)
+1. `src/lib/supabaseClient.ts`: sessão Supabase está configurada com `persistSession: true` e armazenamento `window.localStorage`; isso deve ser comparado com o requisito operacional de encerrar sessão ao fechar o navegador. Não alterar sem decidir explicitamente o comportamento de sessão desejado e testar renovação/abas.
+2. `getValidSession()`: quando tenta renovar token, não lança erro se `refreshSession()` falhar; conserva a sessão anterior e verifica apenas a presença do access token e do usuário. Investigar o tratamento de token expirado e definir teste reproduzível antes de corrigir.
+3. `src/auth/AuthProvider.tsx`: carrega perfil por `erp_usuarios.auth_user_id = auth user id`, filtra `ativo = true` e `deleted_at IS NULL`, e consulta a empresa. Conferir compatibilidade com as migrations e com os helpers SQL.
+4. Migration `20261012233000_erp_compras_rfq_atomic_rpc.sql`: a validação de perfil contém `erp_usuarios.id = auth.uid()`, enquanto o provider usa `auth_user_id`. É uma possível inconsistência de vínculo; confirmar o contrato do schema e os helpers antes de alterar. Não marcar como bug confirmado até essa conferência.
+5. Migration `20261012230000_erp_rfq_rbac_policies.sql`: define policies de leitura/criação/edição/exclusão de RFQ e tabelas filhas com tenant e permissões; revisar a semântica de `erp_is_master()`, `erp_current_empresa_id()` e `erp_has_permission()` com as implementações reais e testes entre empresas.
+6. `docs/REFERENCIAS_TECNICAS_ERP.md` já contém uma análise inicial de Carbon, incluindo alerta de AGPL-3.0 e exclusões comerciais. Não duplicar esse registro; ampliar a matriz no próprio documento.
+7. Referências externas efetivamente consultadas nesta rodada: README e `license.txt` do ERPNext na branch `version-15`; arquivo `LICENSE` do Odoo na branch `18.0`; `COPYING` do Dolibarr na branch `develop`. O ERPNext README identifica áreas de contabilidade, estoque, CRM, vendas, compras, RH, ativos, qualidade e manufatura; a licença consultada do ERPNext é GPL-3.0 e a do Odoo é LGPLv3. O texto completo das licenças e dependências deve ser revisto antes de qualquer reutilização de código. Isso foi uma inspeção inicial de metadados/documentação, não auditoria linha a linha desses ERPs.
+8. A busca de `docs/PLANO_CONTINUIDADE_ERP.md` retornou 404 nesta branch; este arquivo existente `docs/ESTADO_EXECUCAO.md` será mantido como registro de continuidade para evitar documento duplicado.
+
+### Matriz inicial de status
+| Área | Status | Próxima verificação |
+|---|---|---|
+| Estado do PR/branch/CI | APROVADO para leitura do estado remoto | Reconsultar após novos commits |
+| Inventário de rotas e páginas | INCOMPLETO | Extrair rotas e mapear cada rota a arquivo/componente |
+| TypeScript/build local | BLOQUEADO nesta execução remota | Rodar scripts em workspace local/CI após alterações |
+| Autenticação/sessão | INCOMPLETO | Conferir login, refresh, vínculo Auth/ERP e logout |
+| RLS/RBAC multiempresa | INCOMPLETO | Revisar helpers/migrations e executar testes com duas empresas |
+| Compras/RFQ atômica | INCOMPLETO | Validar contrato SQL, FK de perfil e cenário de rollback |
+| Qualidade e modelos PDF | INCOMPLETO | Localizar documentos de referência e criar matriz campo a campo |
+| Comparação ERPNext/Odoo/Dolibarr | INCOMPLETO | Mapear funcionalidades e caminhos de arquivos específicos |
+| Manutenção/PCP/Fiscal | INCOMPLETO | Auditar fluxo e schema, sem presumir que deploy está correto |
+| Produção/Vercel | NÃO VERIFICADO nesta rodada | Consultar deployment atual e testar rotas essenciais |
+
+## Histórico anterior — bloco de autenticação (preservado)
+
 PROJETO: ERP Industrial
 BLOCO: 02 — Login, sessão, permissões e segurança funcional
 
@@ -7,66 +47,32 @@ BLOCO: 02 — Login, sessão, permissões e segurança funcional
 PRÓXIMO ITEM: 02.02 — Validar cadastro público → empresa → setores → usuário administrador → Supabase Auth → vínculo `erp_usuarios.auth_user_id`
 STATUS DO BLOCO: EM ANDAMENTO
 
-## Evidências atuais
-- Repositório: `plushbeauty/ERPSistemaIndustrial`, branch `main`.
-- Supabase: projeto `zsklkydlawgvwgnvxwwx`, status ACTIVE_HEALTHY.
-- Banco: PostgreSQL 17.
-- `public.erp_empresas`: 1 empresa.
-- `public.erp_usuarios`: 12 usuários cadastrados; na auditoria atual, 0 possuem `auth_user_id`.
-- `public.erp_setores`: 12 registros.
-- Edge Function `erp-login`: ACTIVE, versão 2.
-- Edge Function `erp-company-signup`: criada e ACTIVE, versão 1.
-- A tela de cadastro tinha uma falha estrutural: `erp_empresas.cnpj` é NOT NULL, mas o formulário não enviava CNPJ. Corrigido no commit `bbbadf70617e73f0233da7dc26aa86a67f42f3eb`.
-- O cadastro agora envia CNPJ e usa o endpoint do projeto correto `zsklkydlawgvwgnvxwwx`.
-- O novo fluxo de cadastro cria empresa, setores básicos, identidade Supabase Auth e usuário administrador vinculado, com limpeza compensatória em falhas.
-- Último deploy Vercel observado: `dpl_DNf4SRFoDW1fi6nEEseq3kBvsBz5`, commit `bbbadf70617e73f0233da7dc26aa86a67f42f3eb`, ainda BUILDING no momento da verificação.
+### Evidências históricas (revalidar antes de tomar decisões)
+- Repositório: `plushbeauty/ERPSistemaIndustrial`, branch `main` na ocasião daquela verificação.
+- Supabase: projeto `zsklkydlawgvwgnvxwwx`, status ACTIVE_HEALTHY na ocasião.
+- Banco: PostgreSQL 17 na ocasião.
+- `public.erp_empresas`: 1 empresa e `public.erp_usuarios`: 12 usuários, dos quais 0 possuíam `auth_user_id` na auditoria anterior. Esses números não foram revalidados nesta rodada.
+- Edge Function `erp-login`: ACTIVE, versão 2 na auditoria anterior.
+- Edge Function `erp-company-signup`: ACTIVE, versão 1 na auditoria anterior.
+- A tela de cadastro tinha falha estrutural: `erp_empresas.cnpj` NOT NULL, mas o formulário não enviava CNPJ. A correção foi atribuída ao commit `bbbadf70617e73f0233da7dc26aa86a67f42f3eb`.
+- O cadastro foi descrito como enviando CNPJ e usando endpoint do projeto correto; precisa de novo teste ponta a ponta.
+- O deploy Vercel `dpl_DNf4SRFoDW1fi6nEEseq3kBvsBz5` estava BUILDING na verificação anterior; estado atual não foi consultado nesta rodada.
 
-## ERROS ABERTOS
-1. Fluxo de cadastro/login ainda não foi validado ponta a ponta com um cadastro de homologação real.
-2. Os 12 usuários existentes continuam sem `auth_user_id`; portanto não considerar login existente como validado.
-3. A Edge Function `erp-login` ainda possui provisionamento automático no primeiro login para usuário ERP sem vínculo Auth. Isso precisa ser submetido à validação de segurança antes de ser considerado aprovado.
-4. O endpoint público de cadastro não foi submetido a teste real de duplicidade, campos inválidos e rollback.
+### Erros e testes pendentes herdados
+1. Cadastro/login ainda precisava de homologação real ponta a ponta.
+2. Usuários antigos sem `auth_user_id` precisavam ser conciliados com segurança; revalidar contagem.
+3. Provisionamento automático de perfil no primeiro login precisava de avaliação de segurança.
+4. Cadastro público precisava de teste de duplicidade, entradas inválidas e rollback.
+5. Testar login válido/inválido, usuário/empresa inativos, logout/restauração de sessão, rotas protegidas, recuperação de senha, duplicidade de CNPJ/e-mail e falhas de comunicação.
 
-## CORREÇÕES VÁLIDAS
-- Criada `erp-company-signup` no Supabase.
-- Corrigido formulário `src/pages/CadastroEmpresa.tsx` para exigir e enviar CNPJ.
-- Corrigida URL do endpoint para o projeto Supabase Industrial correto.
+## Próxima sequência obrigatória
+1. Auditar a tabela de rotas de `src/AppEntryV2.tsx` e mapear rotas duplicadas, aliases, páginas e menus.
+2. Inspecionar as migrations relacionadas a `erp_usuarios`, `erp_current_empresa_id()`, `erp_is_master()` e `erp_has_permission()` para confirmar ou descartar a divergência de vínculo observada na RPC RFQ.
+3. Revisar todos os arquivos alterados no PR #79 por grupos (segurança/banco, lógica funcional, UI), começando por migrations e contratos de dados.
+4. Comparar os fluxos equivalentes com fontes oficiais do ERPNext, Odoo e Dolibarr, registrando caminhos efetivamente inspecionados e licenças.
+5. Executar a suíte de validação definida no `package.json` em ambiente com checkout do commit e registrar resultados reais.
+6. Auditar os modelos de Qualidade disponíveis; nenhum PDF foi aberto nesta rodada.
+7. Confirmar deploy Vercel atual e validar rotas essenciais em preview antes de produção.
+8. Atualizar este arquivo a cada etapa com evidências e estados reais.
 
-## TESTES REALIZADOS
-- Consulta direta ao catálogo do Supabase para confirmar schema de `erp_empresas`, `erp_usuarios` e `erp_setores`.
-- Consulta de contagem/estado da empresa e usuários.
-- Verificação da existência e status das Edge Functions.
-- Inspeção do frontend de login e cadastro.
-- Inspeção do script de auditoria estática de interações.
-- Verificação do novo deploy Vercel: BUILDING; ainda não aprovado.
-
-## TESTES PENDENTES
-- Cadastro de nova empresa válido.
-- Persistência de empresa/setores/usuário.
-- Criação de `auth.users` e vínculo com `erp_usuarios.auth_user_id`.
-- Login válido usando os dados recém-cadastrados.
-- Senha inválida.
-- Empresa inexistente.
-- Setor inexistente.
-- Usuário inativo.
-- Logout e restauração de sessão.
-- Rota protegida e `/master`.
-- Recuperação de senha.
-- Duplicidade de CNPJ/e-mail.
-- Falhas de comunicação e rollback.
-- Regressão após todos os testes.
-
-## BLOQUEIO EXTERNO
-Nenhum bloqueio externo definitivo neste momento. O deploy Vercel está em BUILDING e deve ser reconsultado antes de homologação.
-
-## ARQUIVOS/COMPONENTES ALTERADOS
-- `src/pages/CadastroEmpresa.tsx`
-- Supabase Edge Function `erp-company-signup`
-- `docs/ESTADO_EXECUCAO.md`
-
-## PRÓXIMA AÇÃO OBRIGATÓRIA
-1. Reconsultar o deploy `dpl_DNf4SRFoDW1fi6nEEseq3kBvsBz5` até obter READY ou ERROR.
-2. Se ERROR, investigar logs e corrigir antes de qualquer avanço.
-3. Validar a Edge Function `erp-company-signup` em cenários seguros de homologação sem expor credenciais.
-4. Confirmar persistência e vínculo Auth/ERP.
-5. Só então iniciar a bateria de testes do login e permissões.
+**Regra de honestidade:** este documento registra o estado observado em 12/10/2026. Nenhum item funcional, de banco ou produção é declarado concluído sem evidência específica.
