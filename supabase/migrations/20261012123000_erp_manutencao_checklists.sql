@@ -36,7 +36,7 @@ create policy erp_manutencao_checklists_insert
     and (public.erp_is_master() or public.erp_has_permission('manutencao', 'editar'))
     and (maquina_id is null or exists (
       select 1 from public.erp_maquinas m
-      where m.id = maquina_id and m.empresa_id = empresa_id
+      where m.id = maquina_id and m.empresa_id = erp_manutencao_checklists.empresa_id
     )));
 
 drop policy if exists erp_manutencao_checklists_update on public.erp_manutencao_checklists;
@@ -48,7 +48,7 @@ create policy erp_manutencao_checklists_update
     and (public.erp_is_master() or public.erp_has_permission('manutencao', 'editar'))
     and (maquina_id is null or exists (
       select 1 from public.erp_maquinas m
-      where m.id = maquina_id and m.empresa_id = empresa_id
+      where m.id = maquina_id and m.empresa_id = erp_manutencao_checklists.empresa_id
     )));
 
 revoke all on public.erp_manutencao_checklists from anon, public;
