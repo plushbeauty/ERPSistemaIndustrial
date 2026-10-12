@@ -100,3 +100,34 @@
 .sales-detail table tbody tr:hover{background:#edf7fa}
 .sales-detail input:focus,.sales-detail select:focus,.sales-detail textarea:focus{border-color:#2D8DB8;outline:0;box-shadow:0 0 0 2px rgba(45,141,184,.14)}
 @media(max-width:800px){.synqra-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.synqra-status-cell{height:48px;min-height:48px}}
+
+.sales-workspace{min-width:0;color:#123B50;font-size:11px}
+.sales-orders-card{border:1px solid #B9D4DF!important;border-radius:2px!important;box-shadow:0 1px 4px rgba(18,59,80,.08)!important;background:#fff}
+.sales-filter-row{gap:3px;border-bottom:1px solid #B9D4DF;background:#EAF4F8;padding:5px 6px 0}
+.sales-filter-tab{min-height:32px;padding:0 10px;border:1px solid transparent;border-bottom:3px solid transparent;border-radius:2px 2px 0 0!important;color:#315466;font-size:10px;font-weight:600;white-space:nowrap}
+.sales-filter-tab.is-active{background:#123B50!important;color:#fff!important;border-color:#123B50!important;border-bottom-color:#E6A34A!important}
+.sales-filter-tab>span{min-width:22px;height:19px;background:#fff!important;color:#123B50!important;border-radius:2px!important;font-weight:700}
+.sales-filter-tab.is-active>span{background:#E6A34A!important;color:#123B50!important}
+.sales-list-toolbar{gap:8px;padding:8px 10px;border-bottom:1px solid #D5E4E9;background:#F4FBFD}
+.sales-search{min-height:30px;height:30px;border:1px solid #B9CBD3;border-radius:2px!important;background:#fff}
+.sales-search input{height:28px!important;min-height:28px!important;border:0!important;box-shadow:none!important;font-size:11px!important}
+.sales-result-count{font-size:10px;font-weight:700;color:#315466}
+.sales-orders-table{min-width:850px;border-collapse:collapse}
+.sales-orders-table thead th{height:32px;background:#123B50!important;color:#fff!important;border-bottom:2px solid #E6A34A;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:0 7px}
+.sales-orders-table tbody tr{height:32px;background:#fff}
+.sales-orders-table tbody tr:nth-child(even){background:#F4FBFD}
+.sales-orders-table tbody tr:hover{background:#DFF1F7!important}
+.sales-orders-table tbody tr.is-overdue{background:#FFF0F1!important;box-shadow:inset 3px 0 #D65B61}
+.sales-orders-table td{height:32px;padding:3px 7px;border-bottom:1px solid #D5E4E9;font-size:10px;color:#244A5A}
+.sales-status{min-height:22px;padding:3px 7px;border:1px solid transparent;border-radius:2px!important;font-size:9px;font-weight:800;letter-spacing:.02em}
+.sales-status.is-danger{background:#D65B61!important;border-color:#B7474D!important;color:#fff!important}
+.sales-status.is-success{background:#3A9D78!important;border-color:#2B7C5E!important;color:#fff!important}
+.sales-status.is-warning{background:#F2C45C!important;border-color:#C79B31!important;color:#123B50!important}
+.sales-status.is-blue{background:#2D8DB8!important;border-color:#1D6F94!important;color:#fff!important}
+.sales-status.is-neutral{background:#EAF4F8!important;border-color:#B9D4DF!important;color:#315466!important}
+.sales-delivery--late{color:#B4232C;font-weight:800}
+.sales-delivery--late small{display:inline-flex;margin-left:5px;padding:2px 5px;background:#D65B61;color:#fff;border-radius:2px;font-size:8px;font-weight:800}
+.sales-alert{border:1px solid #D65B61!important;background:#FFF0F1!important;color:#A52A32!important;border-radius:2px!important;padding:8px 10px;font-size:10px}
+.sales-empty-state{min-height:110px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;color:#647B85}
+.sales-empty-state strong{font-size:11px;color:#123B50}
+.sales-empty-state svg{color:#2D8DB8}
