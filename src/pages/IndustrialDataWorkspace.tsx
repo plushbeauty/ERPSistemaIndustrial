@@ -46,7 +46,7 @@ const btn='inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] 
 function parseValue(field: Field, raw: string): unknown {
   if (field.key === 'ativo' && (raw === 'true' || raw === 'false')) return raw === 'true'
   if (field.type === 'number') return raw === '' ? null : Number(raw)
-  if (field.type === 'textarea' && ['parametros','etapas','acoes_recomendadas','evidencia_urls','cinco_porques','ishikawa','plano_5w2h'].includes(field.key)) {
+  if (field.type === 'textarea' && ['parametros','etapas','acoes_recomendadas','evidencia_urls','cinco_porques','ishikawa','plano_5w2h','itens'].includes(field.key)) {
     if (!raw.trim()) return field.key === 'parametros' || field.key === 'etapas' || field.key === 'acoes_recomendadas' || field.key === 'evidencia_urls' || field.key === 'cinco_porques' || field.key === 'plano_5w2h' ? [] : {}
     return JSON.parse(raw) as unknown
   }
