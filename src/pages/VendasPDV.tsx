@@ -100,8 +100,8 @@ export default function VendasPDV() {
   const add = (product: Product) => {
     setError('')
     setMessage('')
-    if (product.estoque_atual <= 0) {
-      setError(`O produto ${product.codigo} está sem saldo físico disponível.`)
+    if (product.estoque_atual <= 0 && !product.permite_estoque_negativo) {
+      setError(`O produto ${product.codigo} está sem saldo físico disponível e não permite estoque negativo.`)
       return
     }
     const existing = cart.find(item => item.id === product.id)
@@ -121,8 +121,8 @@ export default function VendasPDV() {
       setCart(current => current.filter(currentItem => currentItem.id !== productId))
       return
     }
-    if (quantity > item.estoque_atual) {
-      setError(`A quantidade excede o saldo físico de ${item.codigo} (${item.estoque_atual}). O estoque reservado será validado novamente ao finalizar.`)
+    if (quantity > item.estoque_atual && !item.permite_estoque_negativo) {
+      setError(`A quantidade excede o saldo físico de ${item.codigo} (${item.estoque_atual}) e o produto não permite estoque negativo. O saldo será validado novamente ao finalizar.`)
       return
     }
     setError('')
