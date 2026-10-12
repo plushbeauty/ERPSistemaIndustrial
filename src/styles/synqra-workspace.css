@@ -70,3 +70,16 @@
 .synqra-workspace input,.synqra-workspace select,.synqra-workspace textarea{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .synqra-workspace input:focus,.synqra-workspace select:focus,.synqra-workspace textarea:focus{border-color:#2D8DB8;outline:0;box-shadow:none}
 .synqra-workspace button{border-radius:2px}
+
+
+/* Cabeçalho industrial comum: fundo branco, texto preto e logotipo sem cartão. */
+.synqra-workspace{background:#fff!important;color:#111827!important}
+.synqra-workspace-header{background:#fff!important;border-bottom:1px solid #e5e7eb!important;color:#111827!important}
+.synqra-workspace-brand{background:transparent!important;border:0!important;box-shadow:none!important;color:#111827!important;padding:0!important}
+.synqra-workspace-brand img{background:transparent!important;border:0!important;border-radius:0!important;padding:0!important}
+.synqra-workspace-brand span{border-left:0!important;padding-left:0!important}
+.synqra-workspace-brand strong,.synqra-workspace-brand small,.synqra-header-title,.synqra-header-title strong,.synqra-header-title small{color:#111827!important}
+.synqra-session{background:#fff!important;color:#111827!important;border:1px solid #e5e7eb!important;border-radius:2px!important}
+.synqra-session strong,.synqra-session span{color:#111827!important}
+.synqra-workspace-title h1,.synqra-workspace-title p{color:#111827!important}
+.synqra-workspace table th{background:#f8fafc!important;color:#111827!important;border-bottom:1px solid #e5e7eb!important}
