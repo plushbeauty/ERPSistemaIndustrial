@@ -195,9 +195,9 @@ export default function QualidadeProcedimentos() {
     }
   }
 
-  const open = async (path: string | null) => {
+  const open = async (path: string | null, isTemplate = false) => {
     if (!path) return
-    const result = await supabase.storage.from(bucket).createSignedUrl(path, 900)
+    const result = await supabase.storage.from(isTemplate ? templateBucket : bucket).createSignedUrl(path, 900)
     if (result.error) {
       setErr(result.error.message)
       return
@@ -273,7 +273,7 @@ export default function QualidadeProcedimentos() {
                     <td className="p-2">{doc.titulo_documento}</td>
                     <td className="p-2">{doc.revisao}</td>
                     <td className="p-2">{doc.status}</td>
-                    <td className="p-2">{doc.url_anexo ? <button type="button" onClick={() => void open(doc.url_anexo)} className="erp-row-action"><ExternalLink size={12} /> {doc.nome_arquivo || 'Abrir PDF'}</button> : <span className="text-slate-400">Sem anexo</span>}</td>
+                    <td className="p-2">{doc.url_anexo ? <button type="button" onClick={() => void open(doc.url_anexo, doc.codigo_documento === 'MODELO-DOSSIE-8D')} className="erp-row-action"><ExternalLink size={12} /> {doc.nome_arquivo || 'Abrir PDF'}</button> : <span className="text-slate-400">Sem anexo</span>}</td>
                   </tr>)}
                   {!docs.length && <tr><td colSpan={5} className="p-4 text-center text-slate-500">Nenhum procedimento registrado para esta empresa.</td></tr>}
                 </tbody>
