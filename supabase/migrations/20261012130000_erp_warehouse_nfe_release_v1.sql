@@ -72,7 +72,7 @@ using (
   empresa_id = public.erp_current_empresa_id()
   and exists (
     select 1 from public.erp_liberacoes_nf h
-    where h.id = liberacao_id and h.empresa_id = empresa_id
+    where h.id = erp_liberacoes_nf_itens.liberacao_id and h.empresa_id = erp_liberacoes_nf_itens.empresa_id
   )
   and (
     public.erp_is_master()
@@ -97,6 +97,7 @@ declare
   v_user uuid;
   v_id uuid;
   v_item jsonb;
+  v_status text;
   v_pedido_item uuid;
   v_produto uuid;
   v_lote uuid;
@@ -136,10 +137,10 @@ begin
     values(v_empresa,p_pedido_venda_id,'RASCUNHO',nullif(btrim(p_observacao),''),v_user)
     returning id into v_id;
   else
-    select id,status into v_id,v_item from public.erp_liberacoes_nf
+    select id,status into v_id,v_status from public.erp_liberacoes_nf
       where id=p_liberacao_id and empresa_id=v_empresa and pedido_venda_id=p_pedido_venda_id for update;
     if v_id is null then raise exception 'Liberação não encontrada para a empresa ativa.' using errcode='42501'; end if;
-    if v_item->>'status' not in ('RASCUNHO','DEVOLVIDA') then
+    if v_status not in ('RASCUNHO','DEVOLVIDA') then
       raise exception 'Somente liberações em rascunho ou devolvidas podem ser editadas.' using errcode='55000';
     end if;
     update public.erp_liberacoes_nf set observacao=nullif(btrim(p_observacao),''),status='RASCUNHO',updated_at=now()
