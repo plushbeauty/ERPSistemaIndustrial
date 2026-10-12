@@ -19,3 +19,7 @@
 - O CI do PR #80 no commit `70229223` falhou em `src/pages/NFeEmissao.tsx` por CSS de impressão inserido fora do template JSX: erros em cascata iniciando na linha 748.
 - O template foi corrigido no commit `94aef1455e0f52acbf0d198ee6d0ab7cad29ee06`; a execução GitHub Actions #4250 terminou com conclusão `success`.
 - Criado `src/lib/fiscal/nfe-xml-builder.ts` como serializador XML interno tipado de rascunho, com escape XML e remoção de caracteres inválidos XML 1.0. O resultado declara explicitamente `suitableForSefaz: false`; não é XML fiscal XSD, não é assinado e não pode ser transmitido diretamente.
+
+## 2026-10-12 — NF-e / correção do lint do serializador
+- A execução #4261 (PR #80, merge commit `77c2a352fea9afa3d0faf200877e43663ebadc14`) passou no TypeScript, mas falhou no ESLint: `src/lib/fiscal/nfe-xml-builder.ts:28`, regra `no-control-regex` sobre a regex de caracteres XML inválidos.
+- Substituída a regex por filtragem de pontos de código, preservando somente os caracteres permitidos pelo XML 1.0; validação completa fica pendente da nova execução de CI.
