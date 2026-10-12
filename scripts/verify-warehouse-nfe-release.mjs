@@ -11,7 +11,7 @@ const read = file => {
   }
   return fs.readFileSync(full, 'utf8')
 }
-const migration = read('supabase/migrations/20261012130000_erp_warehouse_nfe_release_v1.sql')
+const migration = read('supabase/migrations/20261012170000_erp_warehouse_nfe_release_v1.sql')
 const page = read('src/pages/estoque/EstoqueLiberacaoNFe.tsx')
 const emitter = read('src/pages/NFeEmissaoCompact.tsx')
 const router = read('src/AppEntryV2.tsx')
