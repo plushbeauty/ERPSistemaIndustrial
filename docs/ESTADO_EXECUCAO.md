@@ -151,3 +151,10 @@ Este bloco prevalece sobre notas anteriores desta página que diziam que nenhuma
 
 - A branch continha uma nova colisão de versão: `20261012130000_sgq_inspecao_documentos_contract.sql` compartilhava o prefixo com `20261012130000_erp_medicao_schema_alignment_v1.sql`. A migration SGQ foi renomeada para `20261012130100_sgq_inspecao_documentos_contract.sql`; nenhuma migration foi aplicada ao banco.
 - A auditoria global agora compara os prefixos de versão e bloqueia novas colisões. Treze pares históricos já presentes na `main` foram allowlisted por nome exato, pois renomeá-los sem consultar `supabase_migrations.schema_migrations` pode quebrar o alinhamento entre repositório e banco. Essa dívida histórica continua aberta para reconciliação controlada.
+
+## RBAC do ledger WMS e escrituração de NF-e de entrada — 2026-10-12
+
+- A revisão das políticas genéricas `tenant_isolation` identificou que o isolamento por empresa, sozinho, não limitava permissões fiscais nem tornava imutáveis as movimentações de estoque e o histórico de custos.
+- A migration aditiva `20261013060000_harden_inventory_movement_and_fiscal_entry_rbac.sql` acrescenta políticas RLS restritivas: movimentações exigem permissão de movimentar e não aceitam update/delete direto; NF-e de entrada só pode ser editada/excluída em rascunho; parâmetros tributários exigem `fiscal.editar`; histórico de custo é somente leitura para usuários de navegador.
+- A tela genérica não oferece mais edição de movimentos WMS e não apresenta ação de edição para NF-e já escriturada.
+- **Não aplicada ao Supabase:** as políticas e o contrato foram adicionados ao repositório, mas dependem de validar o histórico real de migrations, owner das funções e cenários de RLS no ambiente não produtivo antes de qualquer aplicação.

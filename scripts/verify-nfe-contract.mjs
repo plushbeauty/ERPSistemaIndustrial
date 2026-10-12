@@ -21,6 +21,7 @@ const emissionMigration = read('supabase/migrations/20261005120000_erp_fiscal_nf
 const emissionPage = read('src/pages/NFeEmissao.tsx')
 const emissionFunction = read('supabase/functions/emitir-nfe/index.ts')
 const incomingCostingMigration = read('supabase/migrations/20261013030000_harden_incoming_nfe_costing_rbac.sql')
+const inventoryFiscalRbacMigration = read('supabase/migrations/20261013060000_harden_inventory_movement_and_fiscal_entry_rbac.sql')
 
 const requireIn = (text, pattern, description) => {
   if (!pattern.test(text)) failures.push(description)
@@ -104,6 +105,18 @@ requireIn(incomingCostingMigration, /revoke all on function public\.erp_escritur
 requireIn(incomingCostingMigration, /grant execute on function public\.erp_escriturar_nfe_entrada[\s\S]*to authenticated/i, 'RPC de escrituração não está concedida explicitamente a authenticated.')
 const costingFunction = incomingCostingMigration.match(/create or replace function public\.erp_registrar_custo_medio_nfe[\s\S]*?\$function\$;/i)?.[0] ?? ''
 if (/sum\([\s\S]*?\)[\s\S]*?for update/i.test(costingFunction)) failures.push('Cálculo agregado de custo médio não pode usar FOR UPDATE.')
+requireIn(inventoryFiscalRbacMigration, /begin\s*;[\s\S]*commit\s*;/i, 'Hardening RBAC de movimentos e NF-e deve ser transacional.')
+requireIn(inventoryFiscalRbacMigration, /estoque_movimentacoes_select_guard[\s\S]*as\s+restrictive[\s\S]*for\s+select[\s\S]*erp_has_permission\('estoque',\s*'ver'\)/i, 'Leitura do ledger WMS não exige permissão de estoque.')
+requireIn(inventoryFiscalRbacMigration, /estoque_movimentacoes_insert_guard[\s\S]*as\s+restrictive[\s\S]*for\s+insert[\s\S]*erp_has_permission\('estoque',\s*'movimentar'\)/i, 'Inserção de movimentos WMS não exige permissão de movimentação.')
+requireIn(inventoryFiscalRbacMigration, /estoque_movimentacoes_update_guard[\s\S]*as\s+restrictive[\s\S]*for\s+update[\s\S]*using\s*\(false\)[\s\S]*with\s+check\s*\(false\)/i, 'Ledger WMS permite alteração direta de movimentos.')
+requireIn(inventoryFiscalRbacMigration, /estoque_movimentacoes_delete_guard[\s\S]*as\s+restrictive[\s\S]*for\s+delete[\s\S]*using\s*\(false\)/i, 'Ledger WMS permite exclusão direta de movimentos.')
+requireIn(inventoryFiscalRbacMigration, /fiscal_nfe_entradas_insert_guard[\s\S]*status\s*=\s*'rascunho'[\s\S]*escriturada_em\s+is\s+null/i, 'Inclusão direta de NF-e permite status fora de rascunho.')
+requireIn(inventoryFiscalRbacMigration, /fiscal_nfe_entradas_update_guard[\s\S]*status\s*=\s*'rascunho'[\s\S]*escriturada_em\s+is\s+null[\s\S]*with\s+check/i, 'Atualização direta pode alterar NF-e já escriturada.')
+requireIn(inventoryFiscalRbacMigration, /fiscal_nfe_entradas_delete_guard[\s\S]*status\s*=\s*'rascunho'[\s\S]*escriturada_em\s+is\s+null/i, 'Exclusão direta pode apagar NF-e já escriturada.')
+requireIn(inventoryFiscalRbacMigration, /fiscal_parametros_update_guard[\s\S]*erp_has_permission\('fiscal',\s*'editar'\)/i, 'Parâmetros fiscais podem ser alterados sem permissão fiscal.')
+requireIn(inventoryFiscalRbacMigration, /fiscal_historico_custos_insert_guard[\s\S]*as\s+restrictive[\s\S]*with\s+check\s*\(false\)/i, 'Histórico de custos permite inserção direta pelo navegador.')
+requireIn(inventoryFiscalRbacMigration, /fiscal_historico_custos_update_guard[\s\S]*as\s+restrictive[\s\S]*using\s*\(false\)/i, 'Histórico de custos permite alteração direta pelo navegador.')
+requireIn(inventoryFiscalRbacMigration, /fiscal_historico_custos_delete_guard[\s\S]*as\s+restrictive[\s\S]*using\s*\(false\)/i, 'Histórico de custos permite exclusão direta pelo navegador.')
 requireIn(emissionMigration, /erp_has_permission\(\s*'fiscal'\s*,\s*'emitir'\s*\)/, 'Reserva/claim de NF-e não verifica permissão fiscal.')
 requireIn(emissionPage, /supabase\.rpc\('erp_salvar_rascunho_nfe'/, 'Tela NF-e não grava usando a RPC transacional.')
 requireIn(emissionPage, /functions\.invoke\('emitir-nfe'/, 'Tela NF-e não chama a Edge Function de emissão.')
