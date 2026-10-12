@@ -495,3 +495,13 @@ As referências foram consultadas para padrões de grade de catálogo, uso de im
 - Contratos Supabase/RPC, consultas por empresa, fluxo de conclusão e baixa de componente foram preservados.
 - Validação: o commit anterior `90bec64500ed22a91d074e82e444d0cce434af29` passou em todos os passos do workflow `38249182975` (incluindo TypeScript, ESLint, auditorias, build de produção, build output, rotas e política de segurança); Vercel também estava `success` para aquele SHA. O novo commit de manutenção ainda precisa concluir seu próprio CI e Vercel.
 - Estado visual: **não validado em sessão autenticada**; não declarar a tela concluída até inspeção do preview autenticado.
+
+
+## Lote 5 — Vendas / cadastro de clientes: paginação completa (12/10/2026)
+
+- Arquivo: `src/pages/VendasClientes.tsx`.
+- Commit: `e0b118b22671b0d225cd67e671b9cab54c3d6b61`.
+- Defeito corrigido: a consulta principal de clientes usava um único `select`, sujeito ao limite padrão do PostgREST (normalmente 1.000 linhas), podendo omitir clientes de empresas com cadastros maiores.
+- Correção: consulta de clientes agora usa `fetchAllPages<Client>`, com `count: 'exact'`, ordenação e intervalos paginados, mantendo o filtro por `empresa_id` e sem mudar o contrato do banco.
+- Validação anterior: workflow `38250147383` para o commit `1ee8988155b2c9681717ee06475f073488a40989` passou integralmente (TypeScript, ESLint, auditorias, build, saída do build, rotas e segurança). O deploy de preview Vercel desse SHA falhou com `git_info_fail` antes da confirmação de build; isso é um bloqueio de integração/publicação e não foi tratado como sucesso.
+- Estado do commit atual: testes e Vercel aguardando nova execução. Auditoria visual autenticada continua pendente.
