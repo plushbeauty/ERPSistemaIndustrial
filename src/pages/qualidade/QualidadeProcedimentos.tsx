@@ -38,17 +38,23 @@ export default function QualidadeProcedimentos() {
       setErr(auth.error?.message ?? 'Sessão não autenticada.')
       return
     }
+    const company = await supabase.rpc('erp_current_empresa_id')
+    if (company.error || !company.data) {
+      setErr(company.error?.message ?? 'Empresa não identificada para a sessão.')
+      return
+    }
+    const empresaId = String(company.data)
     const profile = await supabase.from('erp_usuarios')
-      .select('empresa_id')
+      .select('id')
       .eq('auth_user_id', auth.data.user.id)
+      .eq('empresa_id', empresaId)
       .eq('ativo', true)
       .is('deleted_at', null)
       .maybeSingle()
-    if (profile.error || !profile.data?.empresa_id) {
-      setErr(profile.error?.message ?? 'Empresa não identificada para a sessão.')
+    if (profile.error || !profile.data) {
+      setErr(profile.error?.message ?? 'Perfil ERP ativo não localizado na empresa da sessão.')
       return
     }
-    const empresaId = profile.data.empresa_id
     setEmpresa(empresaId)
     try {
       const rows = await fetchAllPages<Doc>((from, to) => supabase
