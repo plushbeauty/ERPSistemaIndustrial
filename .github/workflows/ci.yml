@@ -87,5 +87,8 @@ jobs:
       - name: Quality tablet contract
         run: npm run verify:quality-tablet-contract
 
+      - name: Quality inspection contract
+        run: npm run verify:quality-inspection-contract
+
       - name: Security no-bypass policy
         run: npm run audit:security
