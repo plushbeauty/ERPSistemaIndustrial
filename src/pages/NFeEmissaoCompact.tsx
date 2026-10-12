@@ -315,7 +315,13 @@ export default function NFeEmissaoCompact() {
       const result = await supabase.rpc('erp_salvar_rascunho_nfe', { p_documento_id: documentId, p_documento: payload, p_itens: rows })
       if (result.error || !result.data) throw new Error(result.error?.message || 'Não foi possível salvar o rascunho.')
       setDocumentId(String(result.data))
-      setMessage('NF-e gravada como rascunho. A transmissão à SEFAZ não foi executada.')
+      if (releaseId) {
+        const linkResult = await supabase.rpc('erp_vincular_liberacao_nfe', {
+          p_liberacao_id: releaseId, p_documento_fiscal_id: String(result.data),
+        })
+        if (linkResult.error) throw new Error('Rascunho salvo, mas a liberação não foi vinculada: ' + linkResult.error.message)
+      }
+      setMessage('NF-e gravada como rascunho' + (releaseId ? ' e vinculada à liberação do Almoxarifado' : '') + '. A transmissão à SEFAZ não foi executada.')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao salvar NF-e.')
     } finally {
