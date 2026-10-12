@@ -127,7 +127,7 @@ begin
   end if;
 
   select u.id into v_user from public.erp_usuarios u
-   where u.auth_user_id=auth.uid() and u.empresa_id=v_empresa and u.ativo=true and u.deleted_at is null limit 1;
+   where u.auth_user_id=auth.uid() and (u.empresa_id=v_empresa or public.erp_is_master()) and u.ativo=true and u.deleted_at is null limit 1;
   if v_user is null and not public.erp_is_master() then
     raise exception 'Perfil ERP ativo não localizado para auditoria.' using errcode='42501';
   end if;
@@ -270,7 +270,7 @@ begin
   end loop;
 
   select u.id into v_user from public.erp_usuarios u
-   where u.auth_user_id=auth.uid() and u.empresa_id=v_empresa and u.ativo=true and u.deleted_at is null limit 1;
+   where u.auth_user_id=auth.uid() and (u.empresa_id=v_empresa or public.erp_is_master()) and u.ativo=true and u.deleted_at is null limit 1;
   update public.erp_liberacoes_nf set status='ENCAMINHADA',encaminhado_por=v_user,encaminhado_em=now(),updated_at=now()
    where id=v_header.id and empresa_id=v_empresa;
   return true;
@@ -354,7 +354,7 @@ begin
       'Baixa após NF-e autorizada; liberação '||v_header.id::text||'; lote '||v_item.lote_id::text
     );
   end loop;
-  select u.id into v_user from public.erp_usuarios u where u.auth_user_id=auth.uid() and u.empresa_id=v_empresa and u.ativo=true and u.deleted_at is null limit 1;
+  select u.id into v_user from public.erp_usuarios u where u.auth_user_id=auth.uid() and (u.empresa_id=v_empresa or public.erp_is_master()) and u.ativo=true and u.deleted_at is null limit 1;
   update public.erp_liberacoes_nf set status='CONCLUIDA',concluido_por=v_user,concluido_em=now(),updated_at=now()
    where id=v_header.id and empresa_id=v_empresa;
   insert into public.erp_logs_sistema(empresa_id,usuario_id,modulo,acao,entidade,entidade_id,dados)
