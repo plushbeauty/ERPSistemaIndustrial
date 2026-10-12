@@ -23,9 +23,19 @@ export interface NFeDraftXmlResult {
 }
 
 function cleanXmlText(value: string): string {
-  // XML 1.0 permite TAB, LF, CR e caracteres a partir de U+0020,
-  // exceto os intervalos de surrogate inválidos.
-  return value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uD800-\uDFFF\uFFFE\uFFFF]/g, '');
+  // Filtra por ponto de código para respeitar XML 1.0 sem uma regex de
+  // caracteres de controle (bloqueada pela regra ESLint no CI).
+  let cleaned = '';
+  for (const character of value) {
+    const codePoint = character.codePointAt(0);
+    if (codePoint === undefined) continue;
+    const valid = codePoint === 0x9 || codePoint === 0xA || codePoint === 0xD ||
+      (codePoint >= 0x20 && codePoint <= 0xD7FF) ||
+      (codePoint >= 0xE000 && codePoint <= 0xFFFD) ||
+      (codePoint >= 0x10000 && codePoint <= 0x10FFFF);
+    if (valid) cleaned += character;
+  }
+  return cleaned;
 }
 
 function escapeXml(value: string): string {
