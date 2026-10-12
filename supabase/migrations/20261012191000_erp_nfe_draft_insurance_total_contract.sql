@@ -39,6 +39,8 @@ declare
   v_frete numeric;
   v_seguro numeric;
   v_outras_despesas numeric;
+  v_pagamento_tipo text;
+  v_valor_pagamento numeric;
   v_desconto_documento numeric;
   v_ipi numeric;
   v_icms_st numeric;
@@ -118,7 +120,8 @@ begin
      or coalesce(btrim(p_documento->>'destinatario_bairro'), '') = ''
      or length(regexp_replace(coalesce(p_documento->>'destinatario_cep', ''), '[^0-9]', '', 'g')) <> 8
      or coalesce(btrim(p_documento->>'destinatario_cidade'), '') = ''
-     or coalesce(upper(btrim(p_documento->>'destinatario_uf')), '') !~ '^[A-Z]{2}$' then
+     or coalesce(upper(btrim(p_documento->>'destinatario_uf')), '') !~ '^[A-Z]{2}$'
+     or length(regexp_replace(coalesce(p_documento->>'destinatario_codigo_municipio', ''), '[^0-9]', '', 'g')) <> 7 then
     raise exception 'Rascunho fiscal incompleto: operação, ambiente, emissão e endereço/documento do destinatário são obrigatórios' using errcode = '22023';
   end if;
 
@@ -232,7 +235,9 @@ begin
      or jsonb_typeof(p_documento->'valor_ipi') is distinct from 'number'
      or jsonb_typeof(p_documento->'valor_icms_st') is distinct from 'number'
      or jsonb_typeof(p_documento->'valor_total') is distinct from 'number'
-     or jsonb_typeof(p_documento->'valor_liquido') is distinct from 'number' then
+     or jsonb_typeof(p_documento->'valor_liquido') is distinct from 'number'
+     or jsonb_typeof(p_documento->'valor_pagamento') is distinct from 'number'
+     or coalesce(p_documento->>'pagamento_tipo', '') not in ('01','03','04','15','16','17','18','90','99') then
     raise exception 'Totais da NF-e devem ser informados numericamente' using errcode = '22023';
   end if;
 
@@ -240,6 +245,8 @@ begin
   v_frete := (p_documento->>'valor_frete')::numeric;
   v_seguro := coalesce(nullif(p_documento->>'valor_seguro', '')::numeric, 0);
   v_outras_despesas := (p_documento->>'valor_outras_despesas')::numeric;
+  v_pagamento_tipo := p_documento->>'pagamento_tipo';
+  v_valor_pagamento := (p_documento->>'valor_pagamento')::numeric;
   v_desconto_documento := (p_documento->>'valor_desconto')::numeric;
   v_ipi := (p_documento->>'valor_ipi')::numeric;
   v_icms_st := (p_documento->>'valor_icms_st')::numeric;
@@ -254,6 +261,9 @@ begin
      or v_desconto_documento > v_total_itens
      or v_ipi < 0
      or v_icms_st < 0
+     or v_valor_pagamento < 0
+     or (v_pagamento_tipo = '90' and v_valor_pagamento <> 0)
+     or (v_pagamento_tipo <> '90' and abs(v_valor_pagamento - v_total_documento) > 0.01)
      or round(v_total_produtos, 2) <> round(v_total_itens, 2)
      or round(v_total_documento, 2) <>
        round(v_total_itens + v_frete + v_seguro + v_outras_despesas + v_ipi + v_icms_st - v_desconto_documento, 2)
@@ -266,8 +276,9 @@ begin
       empresa_id, tipo, modelo, serie, numero, status, natureza_operacao, cfop, ambiente,
       data_emissao, data_saida, destinatario_nome, destinatario_documento, destinatario_ie,
       destinatario_email, destinatario_endereco, destinatario_bairro, destinatario_cep,
-      destinatario_cidade, destinatario_uf, modalidade_frete, transportadora, placa,
-      uf_transportadora, peso_liquido, peso_bruto, volumes, valor_produtos, valor_frete,
+      destinatario_cidade, destinatario_uf, destinatario_codigo_municipio, pagamento_tipo, valor_pagamento,
+      modalidade_frete, transportadora, placa, uf_transportadora, peso_liquido, peso_bruto, volumes,
+      valor_produtos, valor_frete,
       valor_seguro, valor_outras_despesas, valor_desconto, base_calculo_icms, valor_icms, base_icms_st,
       valor_icms_st, valor_ipi, valor_pis, valor_cofins, valor_total, valor_liquido
     )
@@ -283,7 +294,8 @@ begin
       p_documento->>'destinatario_ie', p_documento->>'destinatario_email',
       p_documento->>'destinatario_endereco', p_documento->>'destinatario_bairro',
       p_documento->>'destinatario_cep', p_documento->>'destinatario_cidade',
-      p_documento->>'destinatario_uf', p_documento->>'modalidade_frete',
+      p_documento->>'destinatario_uf', p_documento->>'destinatario_codigo_municipio',
+      v_pagamento_tipo, v_valor_pagamento, p_documento->>'modalidade_frete',
       p_documento->>'transportadora', p_documento->>'placa', p_documento->>'uf_transportadora',
       coalesce(nullif(p_documento->>'peso_liquido', '')::numeric, 0),
       coalesce(nullif(p_documento->>'peso_bruto', '')::numeric, 0),
@@ -339,6 +351,9 @@ begin
         destinatario_cep = p_documento->>'destinatario_cep',
         destinatario_cidade = p_documento->>'destinatario_cidade',
         destinatario_uf = p_documento->>'destinatario_uf',
+        destinatario_codigo_municipio = p_documento->>'destinatario_codigo_municipio',
+        pagamento_tipo = v_pagamento_tipo,
+        valor_pagamento = v_valor_pagamento,
         modalidade_frete = p_documento->>'modalidade_frete',
         transportadora = p_documento->>'transportadora',
         placa = p_documento->>'placa',
