@@ -20,7 +20,7 @@ import { useSynqraLayout } from '../layout/SynqraLayoutContext'
 
 type Tab='visao'|'novaop'|'pedidos'|'ops'|'materiais'|'producao'|'programacao'|'capacidade'|'qualidade'
 type NovaOPForm={pedido_venda_id:string;pedido_item_id:string;produto_id:string;cliente_id:string;quantidade:string;data_emissao:string;data_prevista:string;status:string;prioridade:string;observacoes:string}
-type Modal='ajuda'|'op'|'programacao'|null
+type Modal='ajuda'|'op'|'programacao'|'tablet'|null
 type Order={id:string;numero:number;cliente_id:string;status:string;total:number}
 type OrderItem={id:string;pedido_id:string;produto_id:string;quantidade:number;descricao:string|null}
 type Client={id:string;nome:string;codigo:string|null}
@@ -48,6 +48,23 @@ const help:Record<Tab,{title:string;what:string;how:string;action:string}> = {
  capacidade:{title:'Capacidade / Máquinas',what:'Mostra as máquinas disponíveis e quantas programações cada uma possui.',how:'Use essa visão para identificar concentração de carga e apoiar o sequenciamento.',action:'Programar OP'},
  qualidade:{title:'Qualidade / Defeitos',what:'Consulta os defeitos apontados durante a produção.',how:'Os defeitos entram pelo apontamento. Depois podem ser tratados nas rotinas de Qualidade/RPNC.',action:'Apontar produção'}
 }
+
+
+const pcpTabletModules = [
+ {label:'Visão geral PCP',description:'Indicadores e alertas da fábrica',route:'/pcp',icon:'Gauge'},
+ {label:'Ordens de produção',description:'Consultar e acompanhar OPs',route:'/pcp/ordens',icon:'Factory'},
+ {label:'Demanda de vendas',description:'Pedidos que alimentam a produção',route:'/pcp/demanda',icon:'ClipboardList'},
+ {label:'Materiais / MRP',description:'Necessidade e saldo de materiais',route:'/pcp/materiais',icon:'Boxes'},
+ {label:'Apontamento de produção',description:'Registrar produção boa e defeitos',route:'/pcp/apontamentos',icon:'ClipboardCheck'},
+ {label:'Programação de máquinas',description:'Sequenciar operações e capacidade',route:'/pcp/agenda-maquinas',icon:'CalendarDays'},
+ {label:'Paradas e setup',description:'Motivos e duração de paradas',route:'/pcp/paradas',icon:'Wrench'},
+ {label:'Planejamento MPS',description:'Plano mestre e capacidade',route:'/pcp/planejamento',icon:'Layers3'},
+ {label:'Engenharia / BOM',description:'Estrutura de produto e componentes',route:'/pcp/engenharia-bom',icon:'Boxes'},
+ {label:'Roteiro de operações',description:'Sequência operacional por produto',route:'/pcp/roteiro-operacoes',icon:'ListChecks'},
+ {label:'Apuração de turno',description:'Consolidar dados do turno',route:'/pcp/apuracao-turno',icon:'Activity'},
+ {label:'OEE industrial',description:'Eficiência, disponibilidade e qualidade',route:'/pcp/dashboard-oee',icon:'Gauge'},
+ {label:'Controle de injetora',description:'Acompanhar apontamentos de injeção',route:'/pcp/controle-injetora',icon:'Settings2'},
+] as const
 
 const ganttLeftBucket=(pct:number)=>{if(pct<5)return 'left-0';if(pct<15)return 'left-[10%]';if(pct<25)return 'left-1/5';if(pct<35)return 'left-1/3';if(pct<50)return 'left-2/5';if(pct<65)return 'left-1/2';if(pct<80)return 'left-3/5';if(pct<95)return 'left-4/5';return 'left-full'}
 const ganttWidthBucket=(pct:number)=>{if(pct<10)return 'w-1/12';if(pct<20)return 'w-1/5';if(pct<30)return 'w-1/4';if(pct<45)return 'w-1/3';if(pct<60)return 'w-1/2';if(pct<75)return 'w-3/5';return 'w-4/5'}
@@ -281,10 +298,10 @@ const tabs:[Tab,string,string][]=[['visao','Visão geral','Gauge'],['novaop','Cr
   )}
   <section className="pcp-main">
    {!hostedBySynqra&&<header className="pcp-topbar">
-    <div className="pcp-top-title"><button className="pcp-top-tablet" onClick={()=>navigate('/pcp/tablet')}>▦ TABLET</button><div><strong>PCP Industrial</strong><small>PCP • PLANEJAMENTO E CONTROLE DA PRODUÇÃO</small></div></div>
+    <div className="pcp-top-title"><button className="pcp-top-tablet" onClick={()=>setModal('tablet')}>▦ TABLET</button><div><strong>PCP Industrial</strong><small>PCP • PLANEJAMENTO E CONTROLE DA PRODUÇÃO</small></div></div>
     <div className="pcp-top-actions"><span className="pcp-supabase-dot"><i/> DADOS SUPABASE</span><span className="pcp-top-user"><i/>{profileName}</span><span className="pcp-top-clock">{clock.toLocaleDateString('pt-BR')} • {clock.toLocaleTimeString('pt-BR')}</span><button type="button" className="pcp-top-light" onClick={()=>document.documentElement.classList.toggle("dark")}>☼ Light</button><button className="pcp-top-exit" onClick={()=>void supabase.auth.signOut().then(()=>window.location.replace('/login'))}>Sair</button></div>
    </header>}
-   <div className="pcp-page-head"><div className="pcp-page-heading-row"><div><span>PCP • PLANEJAMENTO E CONTROLE DA PRODUÇÃO</span><h1>{tab==='visao'?'DASHBOARD':tab==='novaop'?'NOVA ORDEM DE PRODUÇÃO':help[tab].title.toUpperCase()}</h1><p>{tab==='visao'?'Visão geral da programação, produção, capacidade e qualidade da fábrica.':tab==='novaop'?'Cadastro operacional da OP, explosão de materiais e roteiro de produção.':help[tab].what}</p></div></div></div>
+   <div className="pcp-page-head"><div className="pcp-page-heading-row"><div><span>PCP • PLANEJAMENTO E CONTROLE DA PRODUÇÃO</span><h1>{tab==='visao'?'DASHBOARD':tab==='novaop'?'NOVA ORDEM DE PRODUÇÃO':help[tab].title.toUpperCase()}</h1><p>{tab==='visao'?'Visão geral da programação, produção, capacidade e qualidade da fábrica.':tab==='novaop'?'Cadastro operacional da OP, explosão de materiais e roteiro de produção.':help[tab].what}</p></div><button type="button" className="pcp-top-tablet" onClick={()=>setModal('tablet')}>▦ TABLET PCP</button></div></div>
    {(message||error)&&<div className={error?'error':'notice mb-3'}>{error||message}</div>}
    <div className="pcp-content">
   {tab==='novaop'&&<NovaOPScreen orders={orders} orderItems={orderItems} products={products} clients={clients} machines={machines} fichas={fichas} fitems={fitems} fichaOps={fichaOps} onCancel={()=>selectTab('visao')} onSave={createOP} busy={busy} form={opForm} setForm={setOpForm}/>}\n\n  {tab==='visao'&&<section>
