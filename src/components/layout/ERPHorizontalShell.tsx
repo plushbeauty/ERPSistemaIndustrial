@@ -2,12 +2,14 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, ClipboardCheck } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { qualityModules } from '../../pages/QualidadeCentralTablet'
 import { supabase } from '../../lib/supabaseClient'
 
 type MenuItem = {
   label: string
   route: string
   icon?: LucideIcon
+  action?: 'qualityTablet'
   children?: MenuItem[]
 }
 
@@ -45,7 +47,7 @@ const menus: MenuItem[] = [
   { label: 'Manufatura / PCP', route: '/pcp', icon: Factory },
   { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
     { label: 'Painel da Qualidade', route: '/qualidade' },
-    { label: 'Qualidade Tablet', route: '/qualidade/tablet' },
+    { label: 'Qualidade Tablet', route: '/qualidade/tablet', action: 'qualityTablet' },
   ] },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench },
   { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
@@ -58,6 +60,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null)
   const [helpOpen, setHelpOpen] = useState(false)
+  const [tabletOpen, setTabletOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState(operatorName)
@@ -106,8 +109,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   useEffect(() => {
     setOpenMenu(null)
   }, [pathname])
-  const flattenMenu = (items: MenuItem[], prefix = ''): Array<{ label: string; route: string }> => items.flatMap(item => [
-    { label: prefix ? `${prefix} / ${item.label}` : item.label, route: item.route },
+  const flattenMenu = (items: MenuItem[], prefix = ''): Array<{ label: string; route: string; action?: MenuItem['action'] }> => items.flatMap(item => [
+    { label: prefix ? `${prefix} / ${item.label}` : item.label, route: item.route, action: item.action },
     ...(item.children ? flattenMenu(item.children, prefix ? `${prefix} / ${item.label}` : item.label) : []),
   ])
   const filtered = search.trim()
@@ -142,6 +145,17 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     navigate(route)
   }
 
+  const openMenuItem = (item: Pick<MenuItem, 'route' | 'action'>) => {
+    if (item.action === 'qualityTablet') {
+      setTabletOpen(true)
+      setOpenMenu(null)
+      setOpenSubMenu(null)
+      setSearch('')
+      return
+    }
+    go(item.route)
+  }
+
   return (
     <div className="erp-horizontal-shell" ref={ref}>
       <header className="erp-horizontal-header">
@@ -166,7 +180,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           {filtered.length > 0 && (
             <div className="erp-horizontal-search-results">
               {filtered.slice(0, 8).map(item => (
-                <button key={item.route} type="button" onClick={() => go(item.route)}>{item.label}</button>
+                <button key={item.route} type="button" onClick={() => openMenuItem(item)}>{item.label}</button>
               ))}
             </div>
           )}
@@ -212,7 +226,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                     type="button"
                     className={childActive ? 'is-active' : ''}
                     aria-expanded={childHasChildren ? childExpanded : undefined}
-                    onClick={() => childHasChildren ? setOpenSubMenu(value => value === child.label ? null : child.label) : go(child.route)}
+                    onClick={() => childHasChildren ? setOpenSubMenu(value => value === child.label ? null : child.label) : openMenuItem(child)}
                   >{child.icon && <child.icon size={12} />}{child.label}{childHasChildren && <ChevronRight size={12} />}</button>
                   {childHasChildren && childExpanded && <div className="erp-horizontal-subdropdown">
                     {child.children?.map(sub => <button type="button" key={sub.route} className={pathname === sub.route.split('?')[0] && window.location.search === (sub.route.includes('?') ? `?${sub.route.split('?')[1]}` : '') ? 'is-active' : ''} onClick={() => go(sub.route)}>{sub.label}</button>)}
@@ -223,11 +237,54 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           </div>
         })}
       </nav>
+      {tabletOpen && (
+        <div className="erp-quality-tablet-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setTabletOpen(false) }}>
+          <section className="erp-quality-tablet" role="dialog" aria-modal="true" aria-labelledby="erp-quality-tablet-title">
+            <header className="erp-quality-tablet-heading">
+              <div>
+                <span>SGQERP INDUSTRIAL</span>
+                <h2 id="erp-quality-tablet-title">Tablet da Qualidade</h2>
+                <p>Selecione um processo para abrir sua tela operacional.</p>
+              </div>
+              <button type="button" onClick={() => setTabletOpen(false)} aria-label="Fechar tablet da qualidade">×</button>
+            </header>
+            <div className="erp-quality-tablet-grid">
+              <button type="button" className="erp-quality-tablet-card" onClick={() => { setTabletOpen(false); go('/qualidade') }}>
+                <span className="erp-quality-tablet-icon"><ShieldCheck size={18} /></span>
+                <span><strong>Painel do SGQ</strong><small>Indicadores e visão geral da qualidade.</small></span>
+              </button>
+              {qualityModules.map(({label, description, route, icon: Icon}) => (
+                <button type="button" key={route} className="erp-quality-tablet-card" onClick={() => { setTabletOpen(false); go(route) }}>
+                  <span className="erp-quality-tablet-icon"><Icon size={18} /></span>
+                  <span><strong>{label}</strong><small>{description}</small></span>
+                </button>
+              ))}
+            </div>
+            <footer>O acesso às telas e aos registros continua sujeito à sessão e às permissões do ERP.</footer>
+          </section>
+        </div>
+      )}
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
       </main>
 
       <style>{`
+        .erp-quality-tablet-backdrop{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:18px;background:rgba(9,29,42,.48);backdrop-filter:blur(2px)}
+        .erp-quality-tablet{width:min(980px,calc(100vw - 36px));max-height:min(78vh,760px);display:flex;flex-direction:column;overflow:hidden;background:#f8fcfe;border:1px solid #2D8DB8;box-shadow:0 18px 54px rgba(8,35,51,.35);color:#123b50}
+        .erp-quality-tablet-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 16px;background:linear-gradient(105deg,#123b50,#236f93);color:#fff;border-bottom:3px solid #2D8DB8}
+        .erp-quality-tablet-heading span{font-size:9px;font-weight:800;letter-spacing:.14em;color:#c6eaf7}
+        .erp-quality-tablet-heading h2{margin:3px 0;font-size:18px;line-height:1.2;font-weight:700;color:#fff}
+        .erp-quality-tablet-heading p{margin:0;font-size:10px;color:#e0f2f8}
+        .erp-quality-tablet-heading>button{width:30px;height:30px;flex:0 0 30px;border:1px solid rgba(255,255,255,.55);background:#2D8DB8;color:#fff;font-size:22px;line-height:1;cursor:pointer}
+        .erp-quality-tablet-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:12px;overflow:auto}
+        .erp-quality-tablet-card{display:flex;align-items:center;gap:10px;min-width:0;min-height:64px;padding:10px;border:1px solid #c9dde5;border-radius:2px;background:#fff;text-align:left;color:#17445a;cursor:pointer}
+        .erp-quality-tablet-card:hover,.erp-quality-tablet-card:focus-visible{border-color:#2D8DB8;background:#eaf6fa;outline-color:#2D8DB8}
+        .erp-quality-tablet-icon{display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;background:#e2f1f7;border:1px solid #c0e0ec;color:#2D8DB8}
+        .erp-quality-tablet-card>span:last-child{display:flex;flex-direction:column;gap:4px;min-width:0}
+        .erp-quality-tablet-card strong{font-size:10px;line-height:1.25;color:#123b50}
+        .erp-quality-tablet-card small{font-size:9px;line-height:1.4;color:#536b76;white-space:normal;overflow-wrap:anywhere}
+        .erp-quality-tablet>footer{padding:8px 12px;border-top:1px solid #d3e3e9;background:#eef6f9;color:#536b76;font-size:9px}
+        @media(max-width:760px){.erp-quality-tablet-backdrop{padding:8px}.erp-quality-tablet{width:calc(100vw - 16px);max-height:86vh}.erp-quality-tablet-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:8px}.erp-quality-tablet-card{min-height:60px;padding:8px;gap:8px}.erp-quality-tablet-icon{width:30px;height:30px;flex-basis:30px}.erp-quality-tablet-heading{padding:9px 10px}.erp-quality-tablet-heading h2{font-size:15px}}@media(max-width:520px){.erp-quality-tablet-grid{grid-template-columns:minmax(0,1fr);gap:6px;padding:8px}}
         .erp-horizontal-shell{min-height:100vh;background:#fff;color:#111827}
         .erp-horizontal-brand{min-width:280px!important;gap:8px!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;color:#111827!important}
         .erp-horizontal-brand img{width:148px!important;height:42px!important;min-width:148px!important;max-width:148px!important;object-fit:contain;object-position:left center;flex:0 0 148px!important;background:transparent;padding:0;border:0;border-radius:0;box-sizing:border-box}
