@@ -17,7 +17,7 @@ begin
     raise exception 'Sessão autenticada e empresa ativa são obrigatórias.' using errcode = '42501';
   end if;
   if new.empresa_id is distinct from v_empresa then raise exception 'TENANT_MOVEMENT_MISMATCH'; end if;
-  if new.quantidade is null or new.quantidade <= 0 or new.quantidade::text in ('NaN', 'Infinity', '-Infinity') then
+  if new.quantidade is null or new.quantidade <= 0 or not (new.quantidade::text not in ('NaN', 'Infinity', '-Infinity')) then
     raise exception 'QUANTIDADE_MOVIMENTO_INVALIDA';
   end if;
   if not (
@@ -61,7 +61,7 @@ begin
     if new.endereco_destino_id is null then raise exception 'ENDERECO_DESTINO_OBRIGATORIO'; end if;
     select tipo into v_destination_type from public.estoque_enderecos where id=new.endereco_destino_id and empresa_id=v_empresa and ativo;
     if not found then raise exception 'ENDERECO_DESTINO_INVALIDO'; end if;
-    if v_status <> 'liberado' and v_destination_type <> 'quarentena' then
+    if v_status <> 'liberado' and new.endereco_destino_id is not null and v_destination_type <> 'quarentena' then
       raise exception 'LOTE_BLOQUEADO_SO_PODE_SER_MOVIMENTADO_PARA_QUARENTENA';
     end if;
     insert into public.estoque_saldos(empresa_id,produto_id,lote_id,endereco_id,quantidade,custo_medio,updated_at)
