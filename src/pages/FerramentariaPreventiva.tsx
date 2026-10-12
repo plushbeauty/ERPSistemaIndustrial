@@ -6,7 +6,7 @@ import type { IFerramentalParametrosJSONB } from '../types/ferramental'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
 import IndustrialPageShell, { SectionCard, Field, ToolbarButton } from '../components/industrial/IndustrialPageShell'
 
-type T={id:string;codigo:string;nome:string;numero_cavidades:number;vida_ciclos:number;ciclos_realizados:number;parametros:IFerramentalParametrosJSONB|null}
+type T={id:string;codigo:string;nome:string;numero_cavidades:number;vida_ciclos:number;ciclos_realizados:number;status:string|null;parametros:IFerramentalParametrosJSONB|null}
 const items=['Limpeza e Polimento das Cavidades do Molde','Verificação do Desgaste dos Pinos de Guia e Buchas','Inspeção e Troca dos Retentores do Sistema de Refrigeração','Lubrificação com Graxa de Alta Temperatura nas Gavetas']
 
 export default function FerramentariaPreventiva(){
@@ -25,7 +25,7 @@ export default function FerramentariaPreventiva(){
      if(tenant.error||!tenant.data)throw tenant.error??new Error('Empresa da sessão não identificada.')
      const empresaId=String(tenant.data)
      const rows=await fetchAllPages<T>((from,to)=>supabase.from('erp_ferramentas_industriais')
-       .select('id,codigo,nome,numero_cavidades,vida_ciclos,ciclos_realizados,parametros',{count:'exact'})
+       .select('id,codigo,nome,numero_cavidades,vida_ciclos,ciclos_realizados,status,parametros',{count:'exact'})
        .eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to))
      setCompanyId(empresaId)
      setTools(rows)
@@ -52,8 +52,26 @@ export default function FerramentariaPreventiva(){
    if(status==='LIBERADO'&&done.some(value=>!value)){setMsg('Para liberar o molde, conclua todos os itens do checklist.');return}
    setSaving(true)
    try{
-     const next={...(selected.parametros??{}),preventiva:{ultima_execucao_em:new Date().toISOString(),status,checklist:Object.fromEntries(items.map((x,i)=>[x,done[i]])),observacoes:obs}}
-     const result=await supabase.from('erp_ferramentas_industriais').update({parametros:next})
+     const parameters=selected.parametros??{}
+     const setupRetido=parameters.setup_aprovacao?.status==='RETIDO'
+     const priorStatus=typeof parameters.status_operacional_anterior==='string'
+       ? parameters.status_operacional_anterior
+       : selected.status&&selected.status!=='RETIDO'?selected.status:'ATIVA'
+     const anyRetained=status==='RETIDO'||setupRetido
+     const operationalStatus=anyRetained?'RETIDO':selected.status==='RETIDO'?priorStatus:selected.status??'ATIVA'
+     const next={
+       ...parameters,
+       status_operacional_anterior:anyRetained?priorStatus:null,
+       preventiva:{
+         ...(parameters.preventiva??{}),
+         ultima_execucao_em:new Date().toISOString(),
+         status,
+         status_anterior:status==='RETIDO'?priorStatus:null,
+         checklist:Object.fromEntries(items.map((x,i)=>[x,done[i]])),
+         observacoes:obs
+       }
+     }
+     const result=await supabase.from('erp_ferramentas_industriais').update({status:operationalStatus,parametros:next})
        .eq('id',selected.id).eq('empresa_id',companyId).select('id').maybeSingle()
      if(result.error)throw result.error
      if(!result.data)throw new Error('Nenhum registro foi alterado. Confira a empresa e as permissões.')
