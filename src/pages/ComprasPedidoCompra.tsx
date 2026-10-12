@@ -129,44 +129,44 @@ export default function ComprasPedidoCompra() {
     }
   }
 
-  return <div className="min-h-screen bg-neutral-900 text-white">
+  return <div className="min-h-screen bg-[#F4FBFD] text-[#123B50]">
     <ERPHeader />
     <main className="p-2 space-y-2">
-      {(error || message) && <div role={error ? 'alert' : 'status'} className={`h-[30px] flex items-center px-2 rounded-[2px] border text-[11px] ${error ? 'border-red-500 bg-red-50/50 text-red-700' : 'border-emerald-700 bg-emerald-950 text-emerald-300'}`}>{error || message}</div>}
-      <section className="bg-neutral-950 border border-neutral-800 rounded-[2px] p-2">
-        <div className="grid grid-cols-12 gap-1.5 items-end">
-          <label className="col-span-3 text-[9px] uppercase tracking-wider text-neutral-400">Fornecedor*
-            <select required value={supplier} onChange={(event) => setSupplier(event.target.value)} className={`mt-[2px] h-[30px] w-full rounded-[2px] border px-2 text-[11px] bg-neutral-900 ${!supplier ? 'border-red-500 bg-red-50/50 text-neutral-900' : 'border-neutral-700 text-white'}`}>
+      {(error || message) && <div role={error ? 'alert' : 'status'} className={`h-[30px] flex items-center px-2 rounded-[2px] border text-[11px] ${error ? 'border-[#D65B61] bg-[#FDEEEF] text-[#9F343A]' : 'border-[#3A9D78] bg-[#EAF7F0] text-[#236B4A]'}`}>{error || message}</div>}
+      <section className="bg-white border border-[#C9DDE5] rounded-[2px] p-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-1.5 items-end">
+          <label className="col-span-1 sm:col-span-1 lg:col-span-3 text-[9px] uppercase tracking-wider text-[#536B76]">Fornecedor*
+            <select required value={supplier} onChange={(event) => setSupplier(event.target.value)} className={`mt-[2px] h-[30px] w-full rounded-[2px] border px-2 text-[11px] bg-neutral-900 ${!supplier ? 'border-red-500 bg-red-50/50 text-neutral-900' : 'border-[#B9D0DC] text-[#123B50]'}`}>
               <option value="">Preencher...</option>{suppliers.map((entry) => <option key={entry.id} value={entry.id}>{entry.razao_social}</option>)}
             </select>
           </label>
-          <label className="col-span-2 text-[9px] uppercase tracking-wider text-neutral-400">Prazo entrega<input type="date" value={delivery} onChange={(event) => setDelivery(event.target.value)} className="mt-[2px] h-[30px] w-full rounded-[2px] border border-neutral-700 bg-neutral-900 px-2 text-[11px] text-white"/></label>
-          <label className="col-span-3 text-[9px] uppercase tracking-wider text-neutral-400">Condição pagamento<input value={condition} onChange={(event) => setCondition(event.target.value)} className="mt-[2px] h-[30px] w-full rounded-[2px] border border-neutral-700 bg-neutral-900 px-2 text-[11px] text-white"/></label>
-          <label className="col-span-4 text-[9px] uppercase tracking-wider text-neutral-400">Observações<input value={notes} onChange={(event) => setNotes(event.target.value)} className="mt-[2px] h-[30px] w-full rounded-[2px] border border-neutral-700 bg-neutral-900 px-2 text-[11px] text-white"/></label>
+          <label className="col-span-1 sm:col-span-1 lg:col-span-2 text-[9px] uppercase tracking-wider text-[#536B76]">Prazo entrega<input type="date" value={delivery} onChange={(event) => setDelivery(event.target.value)} className="mt-[2px] h-[30px] w-full rounded-[2px] border border-[#B9D0DC] bg-white px-2 text-[11px] text-[#123B50]"/></label>
+          <label className="col-span-1 sm:col-span-1 lg:col-span-3 text-[9px] uppercase tracking-wider text-[#536B76]">Condição pagamento<input value={condition} onChange={(event) => setCondition(event.target.value)} className="mt-[2px] h-[30px] w-full rounded-[2px] border border-[#B9D0DC] bg-white px-2 text-[11px] text-[#123B50]"/></label>
+          <label className="col-span-1 sm:col-span-2 lg:col-span-4 text-[9px] uppercase tracking-wider text-[#536B76]">Observações<input value={notes} onChange={(event) => setNotes(event.target.value)} className="mt-[2px] h-[30px] w-full rounded-[2px] border border-[#B9D0DC] bg-white px-2 text-[11px] text-[#123B50]"/></label>
         </div>
       </section>
-      <section className="bg-neutral-950 border border-neutral-800 rounded-[2px] p-2">
-        <div className="grid grid-cols-12 gap-1.5 items-end">
-          <label className="col-span-4 text-[9px] uppercase tracking-wider text-neutral-400">Produto / matéria-prima*
-            <select value={product} onChange={(event) => { setProduct(event.target.value); setPrice('0') }} className={`mt-[2px] h-[30px] w-full rounded-[2px] border px-2 text-[11px] bg-neutral-900 ${!product ? 'border-red-500 bg-red-50/50 text-neutral-900' : 'border-neutral-700 text-white'}`}>
+      <section className="bg-white border border-[#C9DDE5] rounded-[2px] p-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-1.5 items-end">
+          <label className="col-span-1 sm:col-span-2 lg:col-span-4 text-[9px] uppercase tracking-wider text-[#536B76]">Produto / matéria-prima*
+            <select value={product} onChange={(event) => { setProduct(event.target.value); setPrice('0') }} className={`mt-[2px] h-[30px] w-full rounded-[2px] border px-2 text-[11px] bg-neutral-900 ${!product ? 'border-red-500 bg-red-50/50 text-neutral-900' : 'border-[#B9D0DC] text-[#123B50]'}`}>
               <option value="">Preencher...</option>{products.map((entry) => <option key={entry.id} value={entry.id}>{entry.codigo} — {entry.nome}</option>)}
             </select>
           </label>
-          <label className="col-span-2 text-[9px] uppercase tracking-wider text-neutral-400">Quantidade*<input type="number" min="0.0001" step="0.001" value={qty} onChange={(event) => setQty(event.target.value)} className="mt-[2px] h-[30px] w-full rounded-[2px] border border-neutral-700 bg-neutral-900 px-2 text-[11px] text-white"/></label>
-          <label className="col-span-2 text-[9px] uppercase tracking-wider text-neutral-400">Preço unitário*<input type="number" min="0" step="0.01" value={price} onChange={(event) => setPrice(event.target.value)} className="mt-[2px] h-[30px] w-full rounded-[2px] border border-neutral-700 bg-neutral-900 px-2 text-[11px] text-white"/></label>
-          <button type="button" onClick={addItem} className="col-span-2 h-[30px] rounded-[2px] bg-blue-600 text-[11px] uppercase flex items-center justify-center gap-1"><Plus size={13}/>Adicionar</button>
-          <div className="col-span-2 h-[30px] flex items-center justify-end text-[11px]">TOTAL {total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</div>
+          <label className="col-span-1 sm:col-span-1 lg:col-span-2 text-[9px] uppercase tracking-wider text-[#536B76]">Quantidade*<input type="number" min="0.0001" step="0.001" value={qty} onChange={(event) => setQty(event.target.value)} className="mt-[2px] h-[30px] w-full rounded-[2px] border border-[#B9D0DC] bg-white px-2 text-[11px] text-[#123B50]"/></label>
+          <label className="col-span-1 sm:col-span-1 lg:col-span-2 text-[9px] uppercase tracking-wider text-[#536B76]">Preço unitário*<input type="number" min="0" step="0.01" value={price} onChange={(event) => setPrice(event.target.value)} className="mt-[2px] h-[30px] w-full rounded-[2px] border border-[#B9D0DC] bg-white px-2 text-[11px] text-[#123B50]"/></label>
+          <button type="button" onClick={addItem} className="col-span-1 sm:col-span-1 lg:col-span-2 h-[30px] rounded-[2px] bg-[#2D8DB8] text-[11px] uppercase flex items-center justify-center gap-1"><Plus size={13}/>Adicionar</button>
+          <div className="col-span-1 sm:col-span-2 lg:col-span-2 h-[30px] flex items-center justify-end text-[11px]">TOTAL {total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</div>
         </div>
       </section>
-      <section className="bg-neutral-950 border border-neutral-800 rounded-[2px] overflow-auto">
+      <section className="bg-white border border-[#C9DDE5] rounded-[2px] overflow-auto">
         <table className="w-full text-[11px]">
-          <thead><tr className="h-[26px] bg-neutral-900 text-[9px] uppercase tracking-wider text-neutral-400"><th className="px-2 text-left">Código</th><th className="px-2 text-left">Part Number / Descrição</th><th className="px-2 text-right">Qtd</th><th className="px-2 text-right">Preço Un.</th><th className="px-2 text-right">IPI</th><th className="px-2 text-right">ICMS</th><th className="px-2 text-left">Centro de Custo</th><th className="px-2 text-right">Total</th><th /></tr></thead>
-          <tbody>{items.map((item,index)=><tr key={`${item.produto_id}-${index}`} className="h-[28px] border-b border-neutral-900">
-            <td className="px-2">{item.codigo}</td><td className="px-2">{item.descricao}</td><td className="px-2 text-right">{item.quantidade} {item.unidade}</td><td className="px-2 text-right">{Number(item.valor_unitario).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td><td className="px-2 text-right">—</td><td className="px-2 text-right">—</td><td className="px-2">A DEFINIR</td><td className="px-2 text-right">{(Number(item.quantidade)*Number(item.valor_unitario)).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td><td className="px-2"><button type="button" onClick={()=>setItems(current=>current.filter((_,i)=>i!==index))}><Trash2 size={13}/></button></td>
-          </tr>)}{!items.length&&<tr><td colSpan={9} className="h-[60px] text-center text-neutral-500">Nenhum item adicionado.</td></tr>}</tbody>
+          <thead><tr className="h-[26px] bg-[#DCECF2] text-[9px] uppercase tracking-wider text-[#17445A]"><th className="px-2 text-left">Código</th><th className="px-2 text-left">Part number / descrição</th><th className="px-2 text-right">Quantidade</th><th className="px-2 text-right">Preço unitário</th><th className="px-2 text-right">Total</th><th className="px-2 text-center">Ação</th></tr></thead>
+          <tbody>{items.map((item,index)=><tr key={`${item.produto_id}-${index}`} className="h-[28px] border-b border-[#E2EDF1]">
+            <td className="px-2">{item.codigo}</td><td className="px-2">{item.descricao}</td><td className="px-2 text-right">{item.quantidade} {item.unidade}</td><td className="px-2 text-right">{Number(item.valor_unitario).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td><td className="px-2 text-right">{(Number(item.quantidade)*Number(item.valor_unitario)).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td><td className="px-2 text-center"><button type="button" aria-label={`Remover ${item.codigo}`} onClick={()=>setItems(current=>current.filter((_,i)=>i!==index))} className="inline-flex h-[26px] w-[26px] items-center justify-center border border-[#C9DDE5] text-[#123B50] hover:bg-[#EAF6FA]"><Trash2 size={13}/></button></td>
+          </tr>)}{!items.length&&<tr><td colSpan={6} className="h-[60px] text-center text-[#647B85]">Nenhum item adicionado.</td></tr>}</tbody>
         </table>
       </section>
-      <div className="flex justify-end"><button type="button" disabled={busy} onClick={()=>void save()} className="h-[30px] rounded-[2px] bg-blue-600 px-4 text-[11px] uppercase flex items-center gap-1"><Save size={13}/>{busy?'SALVANDO…':'ENVIAR PARA APROVAÇÃO'}</button></div>
+      <div className="flex justify-end"><button type="button" disabled={busy} onClick={()=>void save()} className="h-[30px] rounded-[2px] bg-[#2D8DB8] px-4 text-[11px] uppercase flex items-center gap-1"><Save size={13}/>{busy?'SALVANDO…':'ENVIAR PARA APROVAÇÃO'}</button></div>
     </main>
   </div>
 }
