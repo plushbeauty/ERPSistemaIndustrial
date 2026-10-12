@@ -11,6 +11,6 @@ assert.match(profile, /user\.is_master === true\s*&&\s*perfil === 'MASTER'\s*&&\
 assert.match(profile, /user\.is_master === true \|\| perfil === 'MASTER' \|\| nivel >= 100/, 'AuthProfile must reject inconsistent elevated identities')
 assert.match(login, /nivel >= 100\s*&&\s*perfil === 'MASTER'/, 'Login must use the same >= 100 Master threshold')
 assert.match(login, /profile\.is_master === true \|\| perfil === 'MASTER' \|\| nivel >= 100/, 'Login must reject inconsistent elevated identities')
-assert.match(migration, /u\.is_master = true\s+and coalesce\(u\.nivel_admin, 0\) >= 100\s+and upper\(btrim\(coalesce\(u\.perfil, ''\)\)\) = 'MASTER'\s+and u\.empresa_id is null\\s+and u\.setor_id is null/, 'Database Master helper must match the strict frontend contract')
+assert.match(migration, /u\.is_master = true\s+and coalesce\(u\.nivel_admin, 0\) >= 100\s+and upper\(btrim\(coalesce\(u\.perfil, ''\)\)\) = 'MASTER'\s+and u\.empresa_id is null\s+and u\.setor_id is null/, 'Database Master helper must match the strict frontend contract')
 
 console.log('PASS: AuthProfile, login, and database Master identity contract are aligned.')
