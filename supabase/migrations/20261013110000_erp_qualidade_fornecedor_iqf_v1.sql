@@ -6,6 +6,35 @@ begin;
 create unique index if not exists erp_fornecedores_id_empresa_iqf_uidx
   on public.erp_fornecedores (id, empresa_id);
 
+
+-- Keep existing SGQ relationships inside the same company as the parent record.
+create unique index if not exists erp_qualidade_processos_id_empresa_iqf_uidx
+  on public.erp_qualidade_processos (id, empresa_id);
+
+alter table public.erp_qualidade_riscos
+  drop constraint if exists erp_qualidade_riscos_fornecedor_id_fkey;
+alter table public.erp_qualidade_riscos
+  add constraint erp_qualidade_riscos_fornecedor_tenant_fkey
+  foreign key (fornecedor_id, empresa_id)
+  references public.erp_fornecedores (id, empresa_id);
+alter table public.erp_qualidade_riscos
+  drop constraint if exists erp_qualidade_riscos_responsavel_id_fkey;
+alter table public.erp_qualidade_riscos
+  add constraint erp_qualidade_riscos_responsavel_tenant_fkey
+  foreign key (responsavel_id, empresa_id)
+  references public.erp_usuarios (id, empresa_id);
+alter table public.erp_qualidade_riscos
+  add constraint erp_qualidade_riscos_processo_tenant_fkey
+  foreign key (processo_id, empresa_id)
+  references public.erp_qualidade_processos (id, empresa_id);
+
+alter table public.erp_qualidade_acoes
+  drop constraint if exists erp_qualidade_acoes_who_id_fkey;
+alter table public.erp_qualidade_acoes
+  add constraint erp_qualidade_acoes_who_tenant_fkey
+  foreign key (who_id, empresa_id)
+  references public.erp_usuarios (id, empresa_id);
+
 create table if not exists public.erp_qualidade_fornecedor_criterios (
   id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references public.erp_empresas(id),
