@@ -69,6 +69,9 @@ jobs:
       - name: Lazy imports
         run: npm run verify:lazy-imports
 
+      - name: NF-e contract
+        run: npm run verify:nfe-contract
+
       - name: Production build
         run: npm run build
 
