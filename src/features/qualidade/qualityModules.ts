@@ -8,7 +8,7 @@ export const qualityModules = [
   { label: 'Inspeções de lotes', description: 'Registrar amostras e resultados de inspeção.', route: '/qualidade/inspecoes', icon: ClipboardCheck },
   { label: 'Inspeção em processo', description: 'Controlar verificações durante a produção.', route: '/qualidade/inspecao-processo', icon: Microscope },
   { label: 'Especificações técnicas', description: 'Consultar critérios e tolerâncias vigentes.', route: '/qualidade/especificacoes', icon: FileCheck2 },
-  { label: 'Liberação de lotes', description: 'Acompanhar decisões de liberação.', route: '/qualidade/liberacao-lote', icon: ShieldCheck },
+  { label: 'Liberação de lotes', description: 'Registrar inspeção e decisão de aprovação ou bloqueio do lote.', route: '/qualidade/liberacao-lote', icon: ShieldCheck },
   { label: 'Quarentena de lotes', description: 'Visualizar materiais bloqueados.', route: '/qualidade/quarentena', icon: ShieldAlert },
   { label: 'Genealogia de lotes', description: 'Rastrear lotes e vínculos de produção.', route: '/qualidade/genealogia-lote', icon: GitBranch },
   { label: 'Sala RNC / RPNC', description: 'Centralizar não conformidades e pendências.', route: '/qualidade/sala-rnc', icon: ClipboardList },

@@ -537,7 +537,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/industrial" element={<QualityPlanGate><QualidadeIndustrial /></QualityPlanGate>} />
       <Route path="/qualidade" element={<QualityPlanGate><QualidadeDashboardSGQ /></QualityPlanGate>} />
       <Route path="/qualidade/instrumentos" element={<QualityPlanGate><QualidadeIndustrial /></QualityPlanGate>} />
-      <Route path="/qualidade/liberacao-lote" element={<QualityPlanGate><AcompanhamentoNaoConformidade /></QualityPlanGate>} />
+      <Route path="/qualidade/liberacao-lote" element={<QualityPlanGate><QualidadeInspecoesIndustrial /></QualityPlanGate>} />
       <Route path="/qualidade/dashboard-rnc" element={<QualityPlanGate><QualidadeDashboardRNC /></QualityPlanGate>} />
       <Route path="/qualidade/pfmea" element={<QualityPlanGate><QualidadePFMEA /></QualityPlanGate>} />
       <Route path="/qualidade/documentos" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />

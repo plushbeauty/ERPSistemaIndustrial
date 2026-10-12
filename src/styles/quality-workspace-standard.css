@@ -44,3 +44,78 @@ main:has(nav[aria-label="Menu da qualidade"]) textarea:focus-visible {
     padding-right: 8px;
   }
 }
+
+
+/* SGQ visual hierarchy: stronger color and contrast without enlarging controls. */
+main:has(nav[aria-label="Menu da qualidade"]) table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #c7dce6;
+}
+main:has(nav[aria-label="Menu da qualidade"]) thead th {
+  background: #123B50;
+  color: #f4fbfd;
+  border-bottom: 2px solid #48B7C7;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+main:has(nav[aria-label="Menu da qualidade"]) tbody tr:nth-child(even) {
+  background: #f0f8fb;
+}
+main:has(nav[aria-label="Menu da qualidade"]) tbody tr:hover {
+  background: #dff1f7;
+}
+main:has(nav[aria-label="Menu da qualidade"]) input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+main:has(nav[aria-label="Menu da qualidade"]) select,
+main:has(nav[aria-label="Menu da qualidade"]) textarea {
+  border-color: #bfd4df;
+  background-color: #fff;
+  color: #123B50;
+}
+main:has(nav[aria-label="Menu da qualidade"]) input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+main:has(nav[aria-label="Menu da qualidade"]) select:focus,
+main:has(nav[aria-label="Menu da qualidade"]) textarea:focus {
+  border-color: #2D8DB8;
+  box-shadow: 0 0 0 2px rgb(45 141 184 / 15%);
+}
+main:has(nav[aria-label="Menu da qualidade"]) label {
+  color: #345b6e;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+}
+main:has(nav[aria-label="Menu da qualidade"]) [role="alert"] {
+  border-left: 3px solid #D65B61;
+  background: #FCEDEE;
+  color: #8f2931;
+}
+main:has(nav[aria-label="Menu da qualidade"]) [role="status"] {
+  border-left: 3px solid #3A9D78;
+  background: #E9F7EF;
+  color: #205e46;
+}
+.quality-central-tablet a {
+  border-radius: 2px;
+}
+.quality-central-tablet a:focus-visible {
+  outline-offset: 2px;
+}
+
+/* Shared page surfaces: a tinted work area keeps white forms distinct from the background. */
+main:has(nav[aria-label="Menu da qualidade"]) {
+  background-color: #EAF3F7;
+}
+main:has(nav[aria-label="Menu da qualidade"]) section:has(table) {
+  border-color: #B8D5E1;
+  box-shadow: 0 1px 3px rgb(18 59 80 / 6%);
+}
+main:has(nav[aria-label="Menu da qualidade"]) section > h2 {
+  border-left: 3px solid #2D8DB8;
+  padding-left: 7px;
+}
+main:has(nav[aria-label="Menu da qualidade"]) section > header {
+  border-bottom-color: #48B7C7;
+}
