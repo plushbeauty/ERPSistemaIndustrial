@@ -79,7 +79,7 @@ export default function ERPHeader() {
         </span>
       </button>
 
-      <div className="synqra-header-title">{isQuality ? <button type="button" onClick={() => navigate('/qualidade/tablet')} className="inline-flex h-[30px] items-center gap-2 border border-[#24789D] bg-gradient-to-r from-[#17445A] to-[#2D8DB8] px-4 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm hover:brightness-110">☰ Gestão da Qualidade <span aria-hidden="true">⌄</span></button> : <><strong>Sistema ERP industrial</strong><small>{companyName}</small></>}</div>
+      <div className="synqra-header-title">{isQuality ? <button type="button" onClick={() => navigate('/qualidade')} className="inline-flex h-[30px] items-center gap-2 border border-[#24789D] bg-gradient-to-r from-[#17445A] to-[#2D8DB8] px-4 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm hover:brightness-110">☰ Gestão da Qualidade <span aria-hidden="true">⌄</span></button> : <><strong>Sistema ERP industrial</strong><small>{companyName}</small></>}</div>
 
       <div className="synqra-session">
         <div>
