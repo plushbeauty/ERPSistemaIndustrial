@@ -75,6 +75,9 @@ jobs:
       - name: NF-e XML builder tests
         run: npm run test:nfe-xml-builder
 
+      - name: Warehouse to NF-e release contract
+        run: npm run verify:warehouse-nfe-release
+
       - name: Production build
         run: npm run build
 
