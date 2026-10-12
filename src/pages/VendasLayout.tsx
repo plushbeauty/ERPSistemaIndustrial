@@ -3,6 +3,7 @@ import { BarChart3, BookOpen, ClipboardList, FilePlus2, LayoutDashboard, Package
 import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import '../styles/premium-workspaces.css'
 import '../styles/synqra-workspace.css'
 import ERPHorizontalShell from '../components/layout/ERPHorizontalShell'
 import { SynqraLayoutProvider } from '../layout/SynqraLayoutContext'
