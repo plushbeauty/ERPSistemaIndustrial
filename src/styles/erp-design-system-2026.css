@@ -146,3 +146,95 @@ body{background:#EDF5F8;color:#123B50}
 .erp-dense tbody tr:nth-child(even),.erp-compact tbody tr:nth-child(even){background:#F3F9FB}
 .erp-dense tbody tr:hover,.erp-compact tbody tr:hover{background:#E2F2F8}
 .erp-dense input:focus,.erp-dense select:focus,.erp-dense textarea:focus,.erp-compact input:focus,.erp-compact select:focus,.erp-compact textarea:focus{border-color:#2D8DB8!important;box-shadow:0 0 0 2px rgba(45,141,184,.14)!important}
+
+/* ERP STANDARD PASS — single compact scale based on /vendas/status.
+   Applied only to authenticated route content; keeps business logic and data unchanged. */
+.erp-global-surface {
+  color: #123B50;
+  font-family: Inter, Roboto, Arial, sans-serif;
+  font-size: 11px;
+}
+.erp-global-surface h1 {
+  color: #123B50;
+  font-size: 18px !important;
+  line-height: 1.2 !important;
+  font-weight: 500 !important;
+}
+.erp-global-surface h2 {
+  color: #123B50;
+  font-size: 15px !important;
+  line-height: 1.25 !important;
+  font-weight: 500 !important;
+}
+.erp-global-surface h3 {
+  color: #123B50;
+  font-size: 13px !important;
+  line-height: 1.3 !important;
+  font-weight: 500 !important;
+}
+.erp-global-surface p {
+  font-size: 10px;
+  line-height: 1.4;
+}
+.erp-global-surface label {
+  color: #536B76;
+  font-size: 9px !important;
+  line-height: 12px !important;
+  font-weight: 500 !important;
+  margin-bottom: 2px;
+}
+.erp-global-surface input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.erp-global-surface select,
+.erp-global-surface button,
+.erp-global-surface a[role="button"] {
+  box-sizing: border-box;
+  min-height: 30px;
+  border-radius: 2px !important;
+  font-family: inherit;
+  font-size: 11px;
+}
+.erp-global-surface input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.erp-global-surface select {
+  height: 30px;
+  padding: 0 8px;
+  color: #17333F;
+}
+.erp-global-surface textarea {
+  min-height: 72px;
+  border-radius: 2px !important;
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 11px;
+}
+.erp-global-surface table {
+  border-collapse: collapse;
+  font-size: 10px !important;
+}
+.erp-global-surface thead tr,
+.erp-global-surface tbody tr {
+  min-height: 30px;
+}
+.erp-global-surface thead th {
+  min-height: 30px;
+  background: #DCECF2;
+  color: #17445A;
+  font-size: 9px !important;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.erp-global-surface tbody td {
+  font-size: 10px;
+  line-height: 1.25;
+}
+.erp-global-surface button:focus-visible,
+.erp-global-surface a:focus-visible,
+.erp-global-surface input:focus-visible,
+.erp-global-surface select:focus-visible,
+.erp-global-surface textarea:focus-visible {
+  outline: 2px solid #2D8DB8;
+  outline-offset: 1px;
+}
+@media (max-width: 700px) {
+  .erp-global-surface h1 { font-size: 16px !important; }
+  .erp-global-surface h2 { font-size: 14px !important; }
+}
