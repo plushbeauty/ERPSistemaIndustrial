@@ -1,7 +1,14 @@
 {
-  "generated_at": "2026-10-12T14:00:00-03:00",
+  "generated_at": "2026-10-12T13:18:00-03:00",
   "status": "active",
   "errors": [
+    {
+      "timestamp": "2026-10-12T13:17:00-03:00",
+      "command": "Aplicação da migration fiscal legada 20261005130000_erp_nfe_draft_tenant_permission_hardening.sql",
+      "file": "supabase/migrations/20261005130000_erp_nfe_draft_tenant_permission_hardening.sql",
+      "line": 6,
+      "error": "Aplicação abortada sem sucesso porque o schema remoto usa erp_permissions.code/name e não codigo/nome/modulo/ativo. A migration legada não foi aplicada; para evitar alterações de permissões incompatíveis, foi aplicada uma migration aditiva direcionada que endurece a RPC de rascunho e o vínculo da liberação com o schema real verificado."
+    },
     {
       "timestamp": "2026-10-12T13:58:00-03:00",
       "command": "Vercel preview deployment (GitHub branch head)",
