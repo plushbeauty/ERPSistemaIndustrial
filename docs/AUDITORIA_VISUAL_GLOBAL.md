@@ -40,6 +40,9 @@ O preview Vercel observado nesta execução redirecionou para a tela de autentic
 - Commit: `b9216c96583e99b5e984e67494303b9b0e32fa91`.
 - Correção 4: `src/pages/PedidoCompra.tsx` — linhas parcialmente preenchidas eram filtradas silenciosamente durante o salvamento. Agora a página rejeita itens com produto ausente ou quantidade/preço inválidos, em vez de descartar dados digitados sem aviso.
 - Commit: `a33293f9b06b31707fc5ff4a4903ae463d012bd6`.
+- Correção 6: `src/pages/SolicitacaoCompra.tsx` — o formulário também descartava silenciosamente linhas preenchidas sem produto selecionado. Agora bloqueia o envio e aponta a linha incompleta.
+- Commit: `40b51e06aa33583d111e3ec51560ba871fd6d423`.
+- Risco de segurança em investigação: as policies locais de `erp_rfq`, `erp_rfq_fornecedores` e `erp_rfq_itens` aparecem como política única por tenant/master, sem verificar ação de permissão; a criação RFQ é feita por três chamadas separadas no frontend. Antes de considerar esse fluxo aprovado, precisa de proteção RBAC no banco e atomicidade real, com validação do contrato/migration e sem quebrar a compensação de falhas.
 - Correção 5: `src/pages/ComprasRelatorios.tsx` — removido estado de mensagem sem produtor; erros são apresentados explicitamente com `role="alert"`.
 - Commit: `be95cd968dd73946c90a715a32a349b90020cfd9`.
 - Lacuna funcional identificada para próxima rodada: nas rotas encontradas, `ComprasRFQ.tsx` cria a solicitação e as linhas de fornecedores, mas não foi localizada uma tela que registre os valores/prazos/condições da proposta recebida; `ComprasAnalisePrecos.tsx` apenas lê os valores existentes. Confirmar referências e contratos antes de implementar a captura de propostas.
