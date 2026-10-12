@@ -209,8 +209,10 @@ export default function ProdutosVendasIndustrial(){
       const rows=XLSX.utils.sheet_to_json<Record<string,unknown>>(ws,{defval:''})
       if(!rows.length)throw new Error('A planilha está vazia.')
       const norm=(v:unknown)=>String(v??'').trim()
+      const normalizeHeader=(value:string)=>value.trim().toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[\\s_-]+/g,' ')
       const key=(row:Record<string,unknown>,names:string[])=>{
-        const k=Object.keys(row).find(x=>names.includes(x.trim().toLowerCase()))
+        const accepted=new Set(names.map(normalizeHeader))
+        const k=Object.keys(row).find(x=>accepted.has(normalizeHeader(x)))
         return k?norm(row[k]):''
       }
       let created=0,updated=0,failed=0
@@ -221,11 +223,12 @@ export default function ProdutosVendasIndustrial(){
         const nome=key(row,['descrição','descricao','nome','descrição do produto'])
         if(!codigo||!nome){failed++;failures.push('Linha '+(i+2)+': código interno e descrição são obrigatórios.');continue}
         const grupo=key(row,['grupo'])||null
-        const cliente=key(row,['cliente'])||null
-        const desenho=key(row,['desenho'])||null
-        const dimensional=key(row,['dimensional'])||null
         const refCliente=key(row,['codigocliente','codigo cliente','referencia cliente'])||null
-        const payload={empresa_id:companyId,codigo,nome,descricao:nome,grupo,referencia_interna:codigo,referencia_cliente:refCliente,cliente,desenho,dimensional,unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',categoria:'Produto acabado',ativo:true,fabricado:true}
+        const cliente=key(row,['cliente'])
+        const desenho=key(row,['desenho'])
+        const dimensional=key(row,['dimensional'])
+        const detalhesImportados=[cliente?('Cliente: '+cliente):'',desenho?('Desenho: '+desenho):'',dimensional?('Dimensional: '+dimensional):''].filter(Boolean).join(' | ')
+        const payload={empresa_id:companyId,codigo,nome,descricao:nome,grupo,referencia_interna:codigo,referencia_cliente:refCliente,observacoes:detalhesImportados||null,unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',categoria:'Produto acabado',ativo:true,fabricado:true}
         const existing=products.find(p=>p.codigo.trim().toLowerCase()===codigo.toLowerCase())
         const result=existing
           ?await supabase.from('erp_produtos').update(payload).eq('id',existing.id).eq('empresa_id',companyId)

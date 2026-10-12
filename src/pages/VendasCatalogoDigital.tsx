@@ -173,7 +173,7 @@ export default function VendasCatalogoDigital() {
   const add = (produto: Produto) => {
     setQuantidades((current) => ({
       ...current,
-      [produto.id]: Math.max(1, current[produto.id] ?? 0),
+      [produto.id]: (current[produto.id] ?? 0) + 1,
     }))
   }
 
@@ -265,7 +265,7 @@ export default function VendasCatalogoDigital() {
               <input
                 value={filtro}
                 onChange={(event) => setFiltro(event.target.value)}
-                className="h-9 w-full border border-slate-300 bg-white pl-8 pr-2 text-[10px] outline-none focus:border-[#2D8DB8]"
+                className="h-[30px] w-full border border-slate-300 bg-white pl-8 pr-2 text-[10px] outline-none focus:border-[#2D8DB8]"
                 placeholder="Buscar por código, produto, referência ou código de barras..."
               />
             </div>
@@ -320,7 +320,7 @@ export default function VendasCatalogoDigital() {
               Carregando catálogo...
             </div>
           ) : (
-            <div className={visualizacao === 'grade' ? 'grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' : 'grid grid-cols-1 gap-1'}>
+            <div className={visualizacao === 'grade' ? 'grid grid-cols-[repeat(auto-fill,minmax(min(100%,240px),1fr))] gap-3' : 'grid grid-cols-1 gap-1'}>
               {rows.map((produto, index) => {
                 const quantity = quantidades[produto.id] ?? 0
                 const grupo = produto.grupo || 'SEM GRUPO'
@@ -343,7 +343,7 @@ export default function VendasCatalogoDigital() {
                       onClick={() => setDetalhe(produto)}
                       className="block w-full text-left"
                     >
-                      <div className={visualizacao === 'grade' ? 'relative flex h-40 items-center justify-center overflow-hidden bg-slate-50' : 'relative flex h-24 shrink-0 items-center justify-center overflow-hidden bg-slate-50 md:w-32'}>
+                      <div className={visualizacao === 'grade' ? 'relative flex h-44 items-center justify-center overflow-hidden bg-slate-50' : 'relative flex h-24 shrink-0 items-center justify-center overflow-hidden bg-slate-50 md:w-32'}>
                         {produto.foto_url ? (
                           <img
                             src={produto.foto_url}
@@ -368,19 +368,19 @@ export default function VendasCatalogoDigital() {
                          )}
                       </div>
                       <div className={visualizacao === 'grade' ? 'p-2.5' : 'min-w-0 flex-1 p-2'}>
-                        <div className="flex items-center justify-between gap-2"><span className="font-mono text-[8px] text-slate-400">{produto.codigo}</span>{produto.subgrupo&&<span className="truncate text-[8px] text-slate-400">{produto.subgrupo}</span>}</div>
-                        <h2 className="mt-1 min-h-8 text-[11px] font-medium leading-4 text-[#123B50]">
+                        <div className="flex items-center justify-between gap-2"><span className="font-mono text-[10px] text-slate-500">{produto.codigo}</span>{produto.subgrupo&&<span className="truncate text-[10px] text-slate-500">{produto.subgrupo}</span>}</div>
+                        <h2 className="mt-1 min-h-9 break-words text-[12px] font-semibold leading-[17px] text-[#123B50]">
                           {produto.nome}
                         </h2>
-                        <p className="mt-1 line-clamp-2 min-h-7 text-[8px] leading-3 text-slate-500">{produto.descricao || "Sem descrição cadastrada."}</p>
+                        <p className="mt-1 line-clamp-2 min-h-9 break-words text-[10px] leading-[15px] text-slate-600" title={produto.descricao || "Sem descrição cadastrada."}>{produto.descricao || "Sem descrição cadastrada."}</p>
                         <div className="mt-2 flex items-end justify-between gap-1">
                           <div>
-                            <span className="block text-[8px] text-slate-400">Preço de venda</span>
-                            <strong className="text-[13px] font-medium text-[#123B50]">
+                            <span className="block text-[10px] text-slate-500">Preço de venda</span>
+                            <strong className="text-[14px] font-semibold text-[#123B50]">
                               {brl(Number(produto.preco_venda ?? 0))}
                             </strong>
                           </div>
-                          <span className="text-[8px] text-slate-500">{produto.unidade}</span>
+                          <span className="text-[10px] text-slate-600">{produto.unidade}</span>
                         </div>
                       </div>
                     </button>

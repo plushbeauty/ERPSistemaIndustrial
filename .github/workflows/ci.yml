@@ -78,5 +78,23 @@ jobs:
       - name: Routes
         run: npm run verify-routes
 
+      - name: NF-e contract
+        run: npm run verify:nfe-contract
+
+      - name: RFQ contract
+        run: npm run verify:rfq-contract
+
+      - name: Quality tablet contract
+        run: npm run verify:quality-tablet-contract
+
+      - name: Quality inspection contract
+        run: npm run verify:quality-inspection-contract
+
+      - name: PCP OEE contract
+        run: npm run verify:pcp-oee
+
+      - name: Maintenance contract
+        run: npm run verify:maintenance
+
       - name: Security no-bypass policy
         run: npm run audit:security

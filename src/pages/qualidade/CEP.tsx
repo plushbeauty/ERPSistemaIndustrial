@@ -3,6 +3,7 @@ import { Activity, Gauge, RefreshCw, Save, Sigma } from 'lucide-react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { supabase } from '../../lib/supabaseClient'
 import QualitySidebar from '../../components/quality/QualitySidebar'
+import ERPHeader from '../../components/layout/ERPHeader'
 
 type Product = { id: string; codigo: string; descricao_tecnica: string }
 type Measurement = {
@@ -146,7 +147,7 @@ export default function QualidadeCEP() {
     }
   }
 
-  return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900"><QualitySidebar active="/qualidade/cep" /><div className="grid gap-3 bg-[#F4FBFD] p-3">
+  return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900"><ERPHeader /><QualitySidebar active="/qualidade/cep" /><div className="grid gap-3 bg-[#F4FBFD] p-3">
       <section className="border border-slate-200 bg-white">
         <header className="flex h-10 items-center gap-2 border-b border-slate-200 px-3"><Activity size={16} className="text-[#2D8DB8]"/><h2 className="text-[10px] font-bold uppercase tracking-wider text-[#123B50]">Característica monitorada</h2><button type="button" onClick={() => void load()} className={button + ' ml-auto'}><RefreshCw size={13}/> ATUALIZAR</button></header>
         <div className="grid gap-2 p-3 md:grid-cols-[minmax(220px,1.2fr)_minmax(160px,.8fr)]">

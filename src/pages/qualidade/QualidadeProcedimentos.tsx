@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState, type ChangeEvent } from 'react'
-import { ExternalLink, RefreshCw, Upload } from 'lucide-react'
+import { Download, ExternalLink, FileEdit, FileText, RefreshCw, Upload } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import QualitySidebar from '../../components/quality/QualitySidebar'
 import { fetchAllPages } from '../../lib/supabasePagination'
+import { emitirDossieTecnico8D } from '../../services/geradorDocumento'
 
 type Doc = {
   id: string
@@ -15,6 +16,7 @@ type Doc = {
 }
 
 const bucket = 'erp-qualidade-anexos'
+const templateBucket = 'erp-documentos-qualidade'
 const fieldClass = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] text-slate-800 focus:border-[#2D8DB8] focus:outline-none'
 
 export default function QualidadeProcedimentos() {
@@ -25,6 +27,9 @@ export default function QualidadeProcedimentos() {
   const [err, setErr] = useState('')
   const [codigo, setCodigo] = useState('')
   const [titulo, setTitulo] = useState('')
+  const [dossies, setDossies] = useState<Array<{ id: string; codigo: string }>>([])
+  const [selected8D, setSelected8D] = useState('')
+  const [generating, setGenerating] = useState(false)
 
   const load = useCallback(async () => {
     setErr('')
@@ -33,17 +38,23 @@ export default function QualidadeProcedimentos() {
       setErr(auth.error?.message ?? 'Sessão não autenticada.')
       return
     }
+    const company = await supabase.rpc('erp_current_empresa_id')
+    if (company.error || !company.data) {
+      setErr(company.error?.message ?? 'Empresa não identificada para a sessão.')
+      return
+    }
+    const empresaId = String(company.data)
     const profile = await supabase.from('erp_usuarios')
-      .select('empresa_id')
+      .select('id')
       .eq('auth_user_id', auth.data.user.id)
+      .eq('empresa_id', empresaId)
       .eq('ativo', true)
       .is('deleted_at', null)
       .maybeSingle()
-    if (profile.error || !profile.data?.empresa_id) {
-      setErr(profile.error?.message ?? 'Empresa não identificada para a sessão.')
+    if (profile.error || !profile.data) {
+      setErr(profile.error?.message ?? 'Perfil ERP ativo não localizado na empresa da sessão.')
       return
     }
-    const empresaId = profile.data.empresa_id
     setEmpresa(empresaId)
     try {
       const rows = await fetchAllPages<Doc>((from, to) => supabase
@@ -54,6 +65,14 @@ export default function QualidadeProcedimentos() {
         .order('revisao', { ascending: false })
         .range(from, to))
       setDocs(rows)
+      const d8Rows = await fetchAllPages<{ id: string; codigo: string }>((from, to) => supabase
+        .from('erp_qualidade_8d')
+        .select('id,codigo', { count: 'exact' })
+        .eq('empresa_id', empresaId)
+        .order('updated_at', { ascending: false })
+        .range(from, to))
+      setDossies(d8Rows)
+      setSelected8D(current => current && d8Rows.some(row => row.id === current) ? current : d8Rows[0]?.id ?? '')
     } catch (cause) {
       setErr(cause instanceof Error ? cause.message : 'Não foi possível carregar os procedimentos.')
     }
@@ -115,9 +134,76 @@ export default function QualidadeProcedimentos() {
     }
   }
 
-  const open = async (path: string | null) => {
+  const uploadTemplate = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.currentTarget.value = ''
+    if (!file) return
+    setErr('')
+    setMsg('')
+    if (!file.name.toLowerCase().endsWith('.docx')) {
+      setErr('Selecione um modelo Word .docx válido.')
+      return
+    }
+    if (!empresa) {
+      setErr('A empresa da sessão ainda não foi identificada. Atualize a tela e tente novamente.')
+      return
+    }
+    setBusy(true)
+    let uploadedPath: string | null = null
+    try {
+      const path = empresa + '/modelos/' + crypto.randomUUID() + '.docx'
+      const uploaded = await supabase.storage.from(templateBucket).upload(path, file, {
+        upsert: false,
+        contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      })
+      if (uploaded.error) throw uploaded.error
+      uploadedPath = path
+      const saved = await supabase.rpc('erp_salvar_revisao_documento', {
+        p_codigo: 'MODELO-DOSSIE-8D',
+        p_titulo: 'Modelo Word — Dossiê Técnico 8D',
+        p_departamento: 'QUALIDADE',
+        p_conteudo: 'Modelo Word DOCX para emissão do dossiê técnico 8D a partir dos registros reais do ERP.',
+        p_motivo: 'Inclusão de modelo Word para dossiê técnico 8D',
+        p_logo_path: null,
+        p_url_anexo: path,
+        p_nome_arquivo: file.name,
+      })
+      if (saved.error) throw saved.error
+      uploadedPath = null
+      setMsg('Modelo Word registrado como nova revisão em análise. Após aprovação, ele poderá ser usado para gerar os dossiês 8D.')
+      await load()
+    } catch (cause) {
+      if (uploadedPath) {
+        const removed = await supabase.storage.from(templateBucket).remove([uploadedPath])
+        if (removed.error) console.error('[SGQ] Falha ao remover arquivo de modelo não registrado', removed.error)
+      }
+      setErr(cause instanceof Error ? cause.message : 'Falha ao armazenar o modelo Word.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const generate8D = async () => {
+    if (!selected8D) {
+      setErr('Selecione um registro 8D para emitir o dossiê.')
+      return
+    }
+    setErr('')
+    setMsg('')
+    setGenerating(true)
+    try {
+      await emitirDossieTecnico8D(selected8D)
+      setMsg('Dossiê técnico 8D gerado e enviado para download.')
+    } catch (cause) {
+      setErr(cause instanceof Error ? cause.message : 'Não foi possível gerar o dossiê técnico 8D.')
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  const open = async (path: string | null, isTemplate = false) => {
     if (!path) return
-    const result = await supabase.storage.from(bucket).createSignedUrl(path, 900)
+    const result = await supabase.storage.from(isTemplate ? templateBucket : bucket).createSignedUrl(path, 900)
     if (result.error) {
       setErr(result.error.message)
       return
@@ -135,12 +221,38 @@ export default function QualidadeProcedimentos() {
             <h1 className="text-[18px] font-semibold">Procedimentos e PDFs</h1>
             <p className="text-[11px] text-slate-600">Cada envio cria uma revisão em análise; a vigente só é substituída após aprovação.</p>
           </div>
+          <a href="/qualidade/editor-it" className="inline-flex h-[30px] items-center gap-2 border border-[#2D8DB8] bg-[#F4FBFD] px-3 text-[10px] font-semibold text-[#246F98] hover:bg-[#E5F3F8]">
+            <FileEdit size={13} /> Editor gráfico de IT
+          </a>
           <button type="button" onClick={() => void load()} disabled={busy} className="erp-row-action">
             <RefreshCw size={13} /> Atualizar
           </button>
         </header>
 
         {(err || msg) && <p role={err ? 'alert' : 'status'} className={err ? 'border border-red-300 bg-red-50 px-3 py-2 text-[11px] text-red-800' : 'border border-emerald-300 bg-emerald-50 px-3 py-2 text-[11px] text-emerald-800'}>{err || msg}</p>}
+
+        <section className="grid gap-3 border border-slate-200 bg-white p-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <div className="space-y-2">
+            <h2 className="flex items-center gap-2 text-[12px] font-bold"><FileText size={14}/> Modelo Word do dossiê técnico 8D</h2>
+            <p className="text-[10px] leading-relaxed text-slate-600">Envie um arquivo .docx preparado no Word. Use campos como {'{id_8d}'}, {'{maquina_tag}'} e linhas dinâmicas com {'{#plano_5w2h}'} ... {'{/plano_5w2h}'}. A nova revisão fica em análise e só será usada após aprovação.</p>
+            <label className="inline-flex h-[30px] cursor-pointer items-center gap-2 border border-[#2D8DB8] bg-[#F4FBFD] px-3 text-[11px] font-semibold hover:bg-[#E5F3F8]">
+              <Upload size={13}/> {busy ? 'Enviando…' : 'Enviar modelo Word (.docx)'}
+              <input type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" disabled={busy} className="sr-only" onChange={event => void uploadTemplate(event)} />
+            </label>
+          </div>
+          <div className="space-y-2">
+            <h2 className="flex items-center gap-2 text-[12px] font-bold"><Download size={14}/> Emitir dossiê técnico 8D</h2>
+            <label className="block text-[9px] font-semibold uppercase text-slate-600">Registro 8D da empresa
+              <select className={fieldClass} value={selected8D} onChange={event => setSelected8D(event.target.value)} disabled={!dossies.length || generating}>
+                {!dossies.length && <option value="">Nenhum registro 8D disponível</option>}
+                {dossies.map(item => <option key={item.id} value={item.id}>{item.codigo}</option>)}
+              </select>
+            </label>
+            <button type="button" onClick={() => void generate8D()} disabled={!selected8D || generating} className="inline-flex h-[30px] items-center gap-2 border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">
+              <Download size={13}/> {generating ? 'Gerando…' : 'Gerar e baixar DOCX'}
+            </button>
+          </div>
+        </section>
 
         <section className="grid gap-3 border border-slate-200 bg-white p-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
           <div className="space-y-2">
@@ -170,7 +282,7 @@ export default function QualidadeProcedimentos() {
                     <td className="p-2">{doc.titulo_documento}</td>
                     <td className="p-2">{doc.revisao}</td>
                     <td className="p-2">{doc.status}</td>
-                    <td className="p-2">{doc.url_anexo ? <button type="button" onClick={() => void open(doc.url_anexo)} className="erp-row-action"><ExternalLink size={12} /> {doc.nome_arquivo || 'Abrir PDF'}</button> : <span className="text-slate-400">Sem anexo</span>}</td>
+                    <td className="p-2">{doc.url_anexo ? <button type="button" onClick={() => void open(doc.url_anexo, doc.codigo_documento === 'MODELO-DOSSIE-8D')} className="erp-row-action"><ExternalLink size={12} /> {doc.nome_arquivo || 'Abrir PDF'}</button> : <span className="text-slate-400">Sem anexo</span>}</td>
                   </tr>)}
                   {!docs.length && <tr><td colSpan={5} className="p-4 text-center text-slate-500">Nenhum procedimento registrado para esta empresa.</td></tr>}
                 </tbody>

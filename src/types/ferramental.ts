@@ -6,7 +6,9 @@ export interface IFerramentalParametrosJSONB {
   peso_liquido_peca_gramas: number;
   peso_canal_sucata_gramas: number;
   observacoes_tecnicas?: string;
-  preventiva?: { ultima_execucao_em?: string; status?: "LIBERADO"|"RETIDO"; checklist?: Record<string, boolean>; observacoes?: string };
+  status_operacional_anterior?: string | null;
+  preventiva?: { ultima_execucao_em?: string; status?: "LIBERADO"|"RETIDO"; status_anterior?: string | null; checklist?: Record<string, boolean>; observacoes?: string };
+  setup_aprovacao?: { status?: "APROVADO"|"RETIDO"; maquina_id?: string; maquina_codigo?: string; inspecionado_em?: string; checklist?: Record<string, boolean> };
 }
 export function validarParametrosFerramental(json: unknown): json is IFerramentalParametrosJSONB {
   if (!json || typeof json !== "object") return false;

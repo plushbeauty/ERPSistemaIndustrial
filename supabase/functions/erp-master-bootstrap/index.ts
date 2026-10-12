@@ -65,27 +65,40 @@ Deno.serve(async (req) => {
     const action = clean(body?.action || "status")
 
     stage = "master_lookup"
-    const { data: masters, error: masterError } = await admin
-      .from("erp_usuarios")
-      .select("id")
-      .eq("is_master", true)
-      .eq("perfil", "MASTER")
-      .eq("nivel_admin", 100)
-      .eq("ativo", true)
-      .is("empresa_id", null)
-      .is("setor_id", null)
-      .is("deleted_at", null)
-      .limit(1)
+    const [
+      { data: masters, error: masterError },
+      { data: legacyMasters, error: legacyMasterError },
+    ] = await Promise.all([
+      admin
+        .from("erp_usuarios")
+        .select("id")
+        .eq("is_master", true)
+        .eq("perfil", "MASTER")
+        .eq("nivel_admin", 100)
+        .eq("ativo", true)
+        .is("empresa_id", null)
+        .is("setor_id", null)
+        .is("deleted_at", null)
+        .limit(1),
+      admin
+        .from("usuarios")
+        .select("id")
+        .or("nivel_admin.gte.100,perfil.in.(MASTER,MASTER_ADMIN,SUPER_ADMIN)")
+        .eq("ativo", true)
+        .limit(1),
+    ])
 
     if (masterError) throw masterError
+    if (legacyMasterError) throw legacyMasterError
+    const masterExists = Boolean(masters?.length || legacyMasters?.length)
 
     if (action === "status") {
       stage = "status_ok"
-      return json({ ok: true, available: !masters?.length })
+      return json({ ok: true, available: !masterExists })
     }
 
     if (action !== "bootstrap_master") return json({ error: "ACTION_INVALID" }, 400)
-    if (masters?.length) return json({ error: "MASTER_ALREADY_EXISTS", locked: true }, 409)
+    if (masterExists) return json({ error: "MASTER_ALREADY_EXISTS", locked: true }, 409)
 
     const nome = clean(body?.nome)
     const email = normalizeEmail(body?.email)

@@ -44,7 +44,6 @@ function lazyPage<P extends object>(
     return { default: component as ComponentType<P> }
   })
 }
-import ERPStatusLegend from './components/layout/ERPStatusLegend'
 import PCPPageHelp from './components/industrial/PCPPageHelp'
 import './styles/industrial-login.css'
 import './styles/forms-premium.css'
@@ -84,6 +83,7 @@ const AnoFiscal = lazyPage(() => import('./features/fiscal/AnoFiscal'), 'default
 const AssistenteRetificacao = lazyPage(() => import('./features/controladoria/AssistenteRetificacao'), 'default')
 const Master = lazyPage(() => import('./pages/Master'), 'Master')
 const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
+const PCPTablet = lazyPage(() => import('./pages/PCPTablet'), 'default')
 const IndustrialDataWorkspace = lazyPage(() => import('./pages/IndustrialDataWorkspace'), 'default')
 const PCPOrdens = lazyPage(() => import('./pages/PCPOrdens'), 'default')
 const PCPExecucaoIndustrial = lazyPage(() => import('./pages/PCPExecucaoIndustrial'), 'default')
@@ -158,6 +158,7 @@ const EngenhariaCentral = lazyPage(() => import('./pages/EngenhariaCentral'), 'E
 const PCPDashboardOEE = lazyPage(() => import('./pages/PCPDashboardOEE'), 'PCPDashboardOEE')
 const QualidadeDashboardRNC = lazyPage(() => import('./pages/QualidadeDashboardRNC'), 'QualidadeDashboardRNC')
 const QualidadeCentralTablet = lazyPage(() => import('./pages/QualidadeCentralTablet'), 'QualidadeCentralTablet')
+const QualidadeDashboardSGQ = lazyPage(() => import('./pages/QualidadeDashboardSGQ'), 'default')
 const QualidadeRNC = lazyPage(() => import('./pages/QualidadeRNC'), 'QualidadeRNC')
 const SalaRNC = lazyPage(() => import('./pages/qualidade/sala-rnc'), 'SalaRNC')
 const ControleProcessoInjetora = lazyPage(() => import('./pages/pcp/ControleProcessoInjetora'), 'ControleProcessoInjetora')
@@ -489,7 +490,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/auditoria" element={<QualityPlanGate>{<PainelLucratividade />}</QualityPlanGate>} />
       <Route path="/vendas/classificacao-fiscal" element={<QualityPlanGate>{<ClassificacaoFiscal />}</QualityPlanGate>} />
       <Route path="/vendas/razao-geral" element={<QualityPlanGate>{<PainelRazaoGeral />}</QualityPlanGate>} />
-      <Route path="/pcp" element={<QualityPlanGate>{<ERPHorizontalShell><SynqraLayoutProvider><PCPIndustrial /></SynqraLayoutProvider></ERPHorizontalShell>}</QualityPlanGate>} />
+      <Route path="/pcp" element={<QualityPlanGate><ERPHorizontalShell><SynqraLayoutProvider><PCPIndustrial /></SynqraLayoutProvider></ERPHorizontalShell></QualityPlanGate>} />
+      <Route path="/pcp/tablet" element={<QualityPlanGate><PCPTablet /></QualityPlanGate>} />
       <Route path="/engenharia/produtos" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/engenharia/bom" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/engenharia/roteiros" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
@@ -533,7 +535,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/dashboard-oee" element={<QualityPlanGate>{<PCPDashboardOEE />}</QualityPlanGate>} />
       <Route path="/pcp/tablet-operador" element={<QualityPlanGate>{<PCPTabletOperador />}</QualityPlanGate>} />
       <Route path="/qualidade/industrial" element={<QualityPlanGate><QualidadeIndustrial /></QualityPlanGate>} />
-      <Route path="/qualidade" element={<QualityPlanGate><QualidadeCentralTablet /></QualityPlanGate>} />
+      <Route path="/qualidade" element={<QualityPlanGate><QualidadeDashboardSGQ /></QualityPlanGate>} />
       <Route path="/qualidade/instrumentos" element={<QualityPlanGate><QualidadeIndustrial /></QualityPlanGate>} />
       <Route path="/qualidade/liberacao-lote" element={<QualityPlanGate><AcompanhamentoNaoConformidade /></QualityPlanGate>} />
       <Route path="/qualidade/dashboard-rnc" element={<QualityPlanGate><QualidadeDashboardRNC /></QualityPlanGate>} />
@@ -541,7 +543,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/documentos" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
       <Route path="/qualidade/inspecao-processo" element={<QualityPlanGate><QualidadeInspecaoProcesso /></QualityPlanGate>} />
       <Route path="/qualidade/inspecoes" element={<QualityPlanGate><QualidadeInspecoesIndustrial /></QualityPlanGate>} />
-      <Route path="/qualidade/tablet" element={<QualityPlanGate><QualidadeTablet /></QualityPlanGate>} />
+      <Route path="/qualidade/tablet" element={<QualityPlanGate><QualidadeCentralTablet /></QualityPlanGate>} />
       <Route path="/qualidade/inspecoes/operacao" element={<Navigate to="/qualidade/inspecoes" replace />} />
       <Route path="/qualidade/metodologia-8d" element={<QualityPlanGate><QualidadeMetodologia8D /></QualityPlanGate>} />
       <Route path="/qualidade/auditoria-5s" element={<QualityPlanGate><QualidadeAuditoria5S /></QualityPlanGate>} />
@@ -678,7 +680,6 @@ function AppIndustrialAuthenticated() {
         <div className="erp-global-surface">
           {protectedRoutes}
           <PCPPageHelp />
-          {location.pathname.startsWith('/pcp') && <ERPStatusLegend />}
         </div>
       </Suspense>
     </Boundary>

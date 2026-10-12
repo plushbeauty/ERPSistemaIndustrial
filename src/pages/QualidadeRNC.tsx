@@ -18,15 +18,38 @@ type Doc = { id: string; codigo: string; titulo: string; tipo: string | null; re
 
 const jsonRecord = (value: unknown): Record<string, unknown> | null => typeof value === 'object' && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : null
 const stringField = (value: unknown, fallback = ''): string => typeof value === 'string' ? value : fallback
+const normalizeStatus = (value: string | null | undefined) => String(value || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim()
 const actionsFromCapa = (row: CapaRecord): Capa[] => {
   const rpncId = row.rpnc_id
   if (!rpncId || !Array.isArray(row.plano_5w2h)) return []
   return row.plano_5w2h.flatMap((value, index) => {
     const item = jsonRecord(value)
     if (!item) return []
-    const prazo = stringField(item.prazo)
-    const oQue = stringField(item.oQue, row.descricao)
-    return [{ id: stringField(item.id, row.id + '-' + index), rpnc_id: rpncId, tipo: stringField(item.tipo, 'Corretiva'), descricao: oQue, causa_raiz: stringField(item.causa) || null, responsavel_id: stringField(item.responsavel), prazo, status: row.status, acao_o_que: oQue, acao_por_que: stringField(item.porQue) || null, acao_onde: stringField(item.onde) || null, acao_quem: stringField(item.quem), acao_quando: stringField(item.quando, prazo), acao_como: stringField(item.como) || null, acao_quanto: typeof item.quanto === 'number' ? item.quanto : Number(item.quanto ?? 0) }]
+    const prazo = stringField(item.when_date, stringField(item.quando, stringField(item.prazo)))
+    const oQue = stringField(item.what, stringField(item.oQue, row.descricao))
+    const porQue = stringField(item.why, stringField(item.porQue))
+    const onde = stringField(item.where_to, stringField(item.onde))
+    const quem = stringField(item.quem)
+    const quando = stringField(item.when_date, stringField(item.quando, prazo))
+    const como = stringField(item.how, stringField(item.como))
+    const quanto = item.how_much ?? item.quanto ?? 0
+    return [{
+      id: stringField(item.id, row.id + '-' + index),
+      rpnc_id: rpncId,
+      tipo: stringField(item.tipo, 'Corretiva'),
+      descricao: oQue,
+      causa_raiz: stringField(item.causa) || null,
+      responsavel_id: stringField(item.who_id, stringField(item.responsavel)),
+      prazo,
+      status: row.status,
+      acao_o_que: oQue,
+      acao_por_que: porQue || null,
+      acao_onde: onde || null,
+      acao_quem: quem,
+      acao_quando: quando,
+      acao_como: como || null,
+      acao_quanto: typeof quanto === 'number' ? quanto : Number(quanto)
+    }]
   })
 }
 
@@ -114,14 +137,14 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
   const filteredRncs = rncs.filter((row) => {
     const term = registrySearch.trim().toLocaleLowerCase('pt-BR')
     const matchesSearch = !term || [row.numero_rpnc, row.descricao_nao_conformidade, row.lote_producao ?? '', row.origem ?? ''].some(value => value.toLocaleLowerCase('pt-BR').includes(term))
-    const status = (row.status || '').toLocaleLowerCase('pt-BR')
-    const isClosed = ['encerrada','encerrado','fechada','fechado','concluida','concluído','cancelada','cancelado'].includes(status)
+    const status = normalizeStatus(row.status)
+    const isClosed = ['encerrada','encerrado','fechada','fechado','concluida','cancelada','cancelado'].includes(status)
     const matchesStatus = registryStatus === 'TODAS' || (registryStatus === 'ABERTAS' && !isClosed) || (registryStatus === 'FECHADAS' && isClosed)
     const origin = (row.origem || '').toLocaleLowerCase('pt-BR')
     const matchesOrigin = registryOrigin === 'TODAS' || (registryOrigin === 'CLIENTE' && origin.includes('cliente')) || (registryOrigin === 'AUDITORIA' && origin.includes('auditoria')) || (registryOrigin === 'INTERNA' && (origin.includes('processo') || origin.includes('interna'))) || (registryOrigin === 'FORNECEDOR' && origin.includes('fornecedor'))
     return matchesSearch && matchesStatus && matchesOrigin
   })
-  const openCount = rncs.filter(row => !['encerrada','encerrado','fechada','fechado','concluida','concluído','cancelada','cancelado'].includes((row.status || '').toLocaleLowerCase('pt-BR'))).length
+  const openCount = rncs.filter(row => !['encerrada','encerrado','fechada','fechado','concluida','cancelada','cancelado'].includes(normalizeStatus(row.status))).length
   const closedCount = rncs.length - openCount
   const selectedActions = actions.filter((item) => item.rpnc_id === selectedRnc)
   const fishboneCategories = [
@@ -198,23 +221,46 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
 
   const createAction = async () => {
     if (!selected) return
-    if (!action.oQue.trim() || !action.quem.trim() || !action.prazo || !action.responsavel) { setError('O quê, quem, prazo e responsável são obrigatórios.'); return }
+    if (!action.oQue.trim() || !action.quem.trim() || !action.prazo || !action.responsavel || !action.como.trim()) {
+      setError('O quê, quem, prazo, responsável e como executar são obrigatórios.')
+      return
+    }
+    const amount = Number(action.quanto || 0)
+    if (!Number.isFinite(amount) || amount < 0) {
+      setError('O custo estimado deve ser um número maior ou igual a zero.')
+      return
+    }
     setBusy(true); setError(''); setNotice('')
     try {
-      const actionRow = { id: crypto.randomUUID(), tipo: action.tipo, oQue: action.oQue.trim(), porQue: action.porQue.trim() || null, onde: action.onde.trim() || null, quem: action.quem.trim(), quando: action.quando || action.prazo, como: action.como.trim() || null, quanto: Number(action.quanto || 0), causa: action.causa.trim() || null, responsavel: action.responsavel, prazo: action.prazo }
-      const existing = await supabase.from('qualidade_rnc_capa').select('id,plano_5w2h').eq('empresa_id', companyId).eq('rpnc_id', selected.id).maybeSingle()
-      if (existing.error) throw existing.error
-      if (existing.data) {
-        const currentPlan = Array.isArray(existing.data.plano_5w2h) ? existing.data.plano_5w2h : []
-        const updated = await supabase.from('qualidade_rnc_capa').update({ plano_5w2h: [...currentPlan, actionRow], ishikawa: sixM, status: 'em_execucao' }).eq('empresa_id', companyId).eq('id', existing.data.id)
-        if (updated.error) throw updated.error
-      } else {
-        const source = String(selected.origem || '').toLowerCase()
-        const capa = await supabase.from('qualidade_rnc_capa').insert({ empresa_id: companyId, rpnc_id: selected.id, codigo: 'CAPA-' + selected.numero_rpnc, origem: source === 'cliente' ? 'cliente' : source === 'fornecedor' ? 'fornecedor' : 'interna', descricao: selected.descricao_nao_conformidade, ishikawa: sixM, plano_5w2h: [actionRow], status: 'em_execucao' })
-        if (capa.error) throw capa.error
+      const actionRow = {
+        id: crypto.randomUUID(),
+        tipo: action.tipo,
+        what: action.oQue.trim(),
+        why: action.porQue.trim() || null,
+        where_to: action.onde.trim() || null,
+        who_id: action.responsavel,
+        when_date: action.prazo,
+        how: action.como.trim(),
+        how_much: amount,
+        causa: action.causa.trim() || null,
+        responsavel: action.responsavel,
+        quem: action.quem.trim(),
+        prazo: action.prazo,
+        oQue: action.oQue.trim(),
+        porQue: action.porQue.trim() || null,
+        onde: action.onde.trim() || null,
+        quando: action.quando || action.prazo,
+        como: action.como.trim(),
+        quanto: amount
       }
+      const result = await supabase.rpc('erp_salvar_acoes_rnc', {
+        p_rpnc_id: selected.id,
+        p_actions_json: [actionRow]
+      })
+      if (result.error) throw result.error
       setAction({ tipo: 'Corretiva', oQue: '', porQue: '', onde: '', quem: '', quando: '', como: '', quanto: '0', causa: '', responsavel: '', prazo: '' })
-      setNotice('Plano CAPA / 5W2H registrado.'); await load()
+      setNotice('Plano CAPA / 5W2H registrado e vinculado ao acompanhamento de ações da Qualidade.')
+      await load()
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao registrar ação CAPA.') }
     finally { setBusy(false) }
   }
@@ -277,6 +323,16 @@ export default function QualidadeRNC({ initialTab = 'rnc' }: QualidadeRNCProps) 
           <button className="refresh" type="button" onClick={() => void load()} disabled={busy}><RefreshCw size={13}/> ATUALIZAR</button>
         </div>}
         {(error || notice) && <div className={error ? 'sgq-message error' : 'sgq-message'}>{error || notice}</div>}
+
+        <details className="sgq-panel" style={{padding:'8px 12px'}}>
+          <summary style={{cursor:'pointer',fontSize:11,fontWeight:800,color:'#17445A'}}>Ajuda contextual — {tab === 'rnc' ? 'registro de não conformidade' : tab === 'capa' ? 'plano CAPA / 5W2H' : tab === 'ishikawa' ? 'análise de causa 6M' : 'GED de documentos controlados'}</summary>
+          <div style={{marginTop:8,fontSize:11,color:'#536a75'}}>
+            {tab === 'rnc' && <p>Informe origem, setor, lote real, quantidade segregada e disposição aprovada. A abertura usa a RPC transacional que registra a RPNC e coloca o lote em quarentena. Se o lote ou setor não pertencer à empresa ativa, o banco deve rejeitar a operação.</p>}
+            {tab === 'capa' && <p>Selecione uma RPNC e registre ação corretiva com O quê, Quem, Prazo, responsável cadastrado e Como executar. A ação é enviada à RPC de CAPA para gravar o plano e o registro de acompanhamento de ações; confira a mensagem antes de repetir.</p>}
+            {tab === 'ishikawa' && <p>Selecione a RPNC e registre causas verificáveis em Método, Mão de obra, Material, Máquina, Meio ambiente e Medição. Revise a causa antes de salvar; o diagrama fica vinculado à ocorrência selecionada.</p>}
+            {tab === 'ged' && <p>Consulte documentos e revisões vigentes. Anexe somente PDF aprovado; o arquivo é armazenado no Storage privado e vinculado pelo procedimento do GED. Abra anexos pelo link temporário e não compartilhe URLs assinadas.</p>}
+          </div>
+        </details>
 
         {tab === 'rnc' && <section className="sgq-panel">
           <div className="sgq-grid sgq-grid-6">

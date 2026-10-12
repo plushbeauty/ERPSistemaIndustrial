@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { FileDown, Plus, RefreshCw, Save, Send, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import ERPHeader from '../components/layout/ERPHeader'
 import CompactButton from '../components/ui/CompactButton'
 import CompactInput from '../components/ui/CompactInput'
@@ -93,20 +94,28 @@ export default function NFeEmissaoCompact() {
       const empresa = await supabase.rpc('erp_current_empresa_id')
       if (empresa.error || !empresa.data) throw empresa.error ?? new Error('Empresa da sessão não localizada.')
       const id = String(empresa.data)
-      const [companyResult, productResult, transporterResult, fiscalResult] = await Promise.all([
+      const [companyResult, productRows, transporterRows, fiscalResult] = await Promise.all([
         supabase.from('erp_empresas').select('razao_social,nome_fantasia,cnpj,endereco,cidade,uf,cep,telefone,email,inscricao_estadual').eq('id', id).single(),
-        supabase.from('erp_produtos').select('id,codigo,nome,unidade,ncm,cfop_saida,cst_icms,csosn,origem_fiscal,preco_venda,aliquota_icms,aliquota_ipi,aliquota_pis,aliquota_cofins').eq('empresa_id', id).eq('ativo', true).order('nome').limit(1000),
-        supabase.from('erp_transportadoras').select('id,codigo,razao_social,cnpj,ie,telefone,cidade,uf').eq('empresa_id', id).eq('ativo', true).order('razao_social').limit(500),
+        fetchAllPages<Product>((from, to) =>
+          supabase.from('erp_produtos')
+            .select('id,codigo,nome,unidade,ncm,cfop_saida,cst_icms,csosn,origem_fiscal,preco_venda,aliquota_icms,aliquota_ipi,aliquota_pis,aliquota_cofins', { count: 'exact' })
+            .eq('empresa_id', id).eq('ativo', true)
+            .order('nome', { ascending: true }).order('id', { ascending: true }).range(from, to),
+        ),
+        fetchAllPages<Transporter>((from, to) =>
+          supabase.from('erp_transportadoras')
+            .select('id,codigo,razao_social,cnpj,ie,telefone,cidade,uf', { count: 'exact' })
+            .eq('empresa_id', id).eq('ativo', true)
+            .order('razao_social', { ascending: true }).order('id', { ascending: true }).range(from, to),
+        ),
         supabase.from('erp_config_fiscal').select('serie_nfe,proximo_numero_nfe,ambiente').eq('empresa_id', id).maybeSingle(),
       ])
       if (companyResult.error) throw companyResult.error
-      if (productResult.error) throw productResult.error
-      if (transporterResult.error) throw transporterResult.error
       if (fiscalResult.error) throw fiscalResult.error
       setCompanyId(id)
       setCompany((companyResult.data ?? {}) as TextMap)
-      setProducts((productResult.data ?? []) as Product[])
-      setTransporters((transporterResult.data ?? []) as Transporter[])
+      setProducts(productRows)
+      setTransporters(transporterRows)
       if (fiscalResult.data) {
         const cfg = fiscalResult.data as TextMap
         setForm(current => ({

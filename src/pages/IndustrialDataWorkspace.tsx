@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, ClipboardList, RefreshCw, Save, Search, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import { useLocation } from 'react-router-dom'
 
 type Field = { key: string; label: string; type?: 'text'|'number'|'date'|'select'|'textarea'; options?: string[]; required?: boolean }
@@ -62,6 +63,7 @@ export default function IndustrialDataWorkspace() {
   }
   const config = configs[routeConfigs[location.pathname] ?? '']
   const [rows,setRows] = useState<Record<string, unknown>[]>([])
+  const [empresaId,setEmpresaId] = useState<string|null>(null)
   const [form,setForm] = useState<Record<string,string>>({})
   const [search,setSearch] = useState('')
   const [error,setError] = useState<string|null>(null)
@@ -71,17 +73,50 @@ export default function IndustrialDataWorkspace() {
   const load = useCallback(async () => {
     if (!config) return
     setLoading(true); setError(null)
-    const result = await supabase.from(config.table).select('*').limit(500)
-    if (result.error) setError(result.error.message)
-    else setRows((result.data ?? []) as Record<string,unknown>[])
-    setLoading(false)
+    try {
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error) throw company.error
+      if (typeof company.data !== 'string' || !company.data.trim()) {
+        throw new Error('Empresa ativa não identificada. A consulta foi bloqueada por segurança.')
+      }
+      const activeEmpresaId = company.data
+      setEmpresaId(activeEmpresaId)
+      const result = await fetchAllPages<Record<string, unknown>>((from, to) =>
+        supabase.from(config.table).select('*', { count: 'exact' })
+          .eq('empresa_id', activeEmpresaId)
+          .order('id', { ascending: true })
+          .range(from, to),
+      )
+      setRows(result)
+    } catch (e) {
+      setRows([])
+      setError(e instanceof Error ? e.message : 'Não foi possível carregar os registros da empresa.')
+    } finally {
+      setLoading(false)
+    }
   },[config])
   useEffect(()=>{ void load() },[load])
   const visible = useMemo(()=> rows.filter(row => !search || (config?.search ?? []).some(key=>String(row[key] ?? '').toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR')))),[rows,search,config])
   const npr = Number(form.severidade||0)*Number(form.ocorrencia||0)*Number(form.deteccao||0)
+  function requiredForField(field: Field): boolean {
+    if (field.required) return true
+    if (config?.table !== 'estoque_movimentacoes') return false
+    const tipo = form.tipo ?? ''
+    if (field.key === 'endereco_origem_id') return ['requisicao_producao','transferencia','ajuste_inventario'].includes(tipo)
+    if (field.key === 'endereco_destino_id') return ['entrada_nf','retorno_producao','transferencia','ajuste_inventario'].includes(tipo)
+    return false
+  }
   function reset() { setForm({}); setEditing(null); setError(null) }
   function edit(row: Record<string,unknown>) {
     if (!config) return
+    if (config.table === 'estoque_movimentacoes') {
+      setError('Movimentações de estoque são imutáveis. Registre uma nova movimentação para corrigir o saldo.')
+      return
+    }
+    if (config.table === 'fiscal_nfe_entradas' && row.status !== 'rascunho') {
+      setError('Somente NF-e em rascunho podem ser alteradas.')
+      return
+    }
     const next: Record<string,string>={}
     config.fields.forEach(field => { const value=row[field.key]; next[field.key]=value == null ? '' : typeof value === 'object' ? JSON.stringify(value,null,2) : String(value) })
     setForm(next); setEditing(String(row.id)); setError(null)
@@ -96,19 +131,25 @@ export default function IndustrialDataWorkspace() {
   }
   async function save() {
     if (!config) { setError('Módulo não encontrado para esta rota.'); return }
+    if (!empresaId) { setError('Empresa ativa não identificada. Nenhuma gravação foi realizada.'); return }
+    if (config.table === 'estoque_movimentacoes' && editing) {
+      setError('Movimentações de estoque são imutáveis. Registre uma nova movimentação.')
+      return
+    }
     setError(null)
     try {
       const payload: Record<string,unknown>={}
       for (const field of config.fields) {
         const raw=form[field.key] ?? ''
-        if(field.required && !raw.trim()) throw new Error('Campo obrigatório: '+field.label)
+        if(requiredForField(field) && !raw.trim()) throw new Error('Campo obrigatório: '+field.label)
+        if(config.table === 'estoque_movimentacoes' && field.key === 'quantidade' && raw.trim() && (!Number.isFinite(Number(raw)) || Number(raw) <= 0)) throw new Error('A quantidade da movimentação deve ser maior que zero.')
         if(raw.trim()!=='') payload[field.key]=parseValue(field,raw)
         else if(field.type==='number') payload[field.key]=0
       }
       setBusy(true)
       const result=editing
-        ? await supabase.from(config.table).update(payload).eq('id',editing).select('id').single()
-        : await supabase.from(config.table).insert(payload).select('id').single()
+        ? await supabase.from(config.table).update(payload).eq('id',editing).eq('empresa_id',empresaId).select('id').single()
+        : await supabase.from(config.table).insert({...payload,empresa_id:empresaId}).select('id').single()
       setBusy(false)
       if(result.error) { setError(result.error.message); return }
       reset(); await load()
@@ -126,10 +167,10 @@ export default function IndustrialDataWorkspace() {
     <section className="mb-3 border border-slate-200 bg-white p-3">
       <h2 className="mb-2 flex items-center gap-1 text-xs font-semibold"><ClipboardList size={14}/>{editing?'Editar registro':'Novo registro'}</h2>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
-        {config.fields.map(field=><label key={field.key} className={field.type==='textarea'?'sm:col-span-2 lg:col-span-4':''}><span className={label}>{field.label}{field.required?' *':''}</span>
-          {field.type==='textarea'?<textarea className="min-h-[62px] w-full rounded-[2px] border border-slate-300 p-2 text-[10px] outline-none focus:border-sky-600" value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={field.required}/>
-          :field.type==='select'?<select className={cls} value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={field.required}><option value="">Selecionar…</option>{(field.options??[]).map(option=><option key={option} value={option}>{option}</option>)}</select>
-          :<input className={cls} type={field.type==='number'?'number':field.type==='date'?'date':'text'} step={field.type==='number'?'any':undefined} value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={field.required}/>}
+        {config.fields.map(field=><label key={field.key} className={field.type==='textarea'?'sm:col-span-2 lg:col-span-4':''}><span className={label}>{field.label}{requiredForField(field)?' *':''}</span>
+          {field.type==='textarea'?<textarea className="min-h-[62px] w-full rounded-[2px] border border-slate-300 p-2 text-[10px] outline-none focus:border-sky-600" value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={requiredForField(field)}/>
+          :field.type==='select'?<select className={cls} value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={requiredForField(field)}><option value="">Selecionar…</option>{(field.options??[]).map(option=><option key={option} value={option}>{option}</option>)}</select>
+          :<input className={cls} type={field.type==='number'?'number':field.type==='date'?'date':'text'} step={field.type==='number'?'any':undefined} value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={requiredForField(field)}/>}
         </label>)}
       </div>
       {config.table==='qualidade_fmea'&&<p className="mt-2 border border-amber-200 bg-amber-50 p-2 text-[10px]">NPR em tempo real: <strong>{npr}</strong> = Severidade × Ocorrência × Detecção</p>}
@@ -138,7 +179,7 @@ export default function IndustrialDataWorkspace() {
     </section>
     <section className="border border-slate-200 bg-white">
       <div className="flex items-center justify-between gap-2 border-b border-slate-200 p-2"><h2 className="text-xs font-semibold">Registros persistidos</h2><label className="relative flex items-center"><Search size={12} className="absolute left-2 text-slate-400"/><input className="h-[30px] w-56 max-w-full border border-slate-300 pl-6 pr-2 text-[10px]" placeholder="Filtrar registros…" value={search} onChange={e=>setSearch(e.target.value)}/></label></div>
-      <div className="overflow-auto"><table className="w-full border-collapse text-left text-[10px]"><thead className="bg-slate-100"><tr>{config.columns.map(col=><th key={col} className="h-[32px] whitespace-nowrap border-b border-slate-200 px-2 font-semibold uppercase">{col.replaceAll('_',' ')}</th>)}<th className="h-[32px] border-b border-slate-200 px-2">AÇÃO</th></tr></thead><tbody>{loading?<tr><td colSpan={config.columns.length+1} className="h-10 text-center">Carregando registros…</td></tr>:visible.length===0?<tr><td colSpan={config.columns.length+1} className="h-10 text-center text-slate-500">Nenhum registro encontrado.</td></tr>:visible.map(row=><tr key={String(row.id)} className="hover:bg-neutral-50/80">{config.columns.map(col=><td key={col} className="h-[32px] max-w-64 truncate border-b border-slate-100 px-2">{row[col]==null?'—':typeof row[col]==='object'?JSON.stringify(row[col]):String(row[col])}</td>)}<td className="h-[32px] border-b border-slate-100 px-2"><div className="flex gap-1"><button className={`${btn} erp-row-action`} onClick={()=>edit(row)}>Editar</button>{config.table === "fiscal_nfe_entradas" && row.status === "rascunho" && <button className={btn + " bg-sky-700 text-white"} disabled={busy} onClick={() => void postInvoice(String(row.id))}>Escriturar</button>}</div></td></tr>)}</tbody></table></div>
+      <div className="overflow-auto"><table className="w-full border-collapse text-left text-[10px]"><thead className="bg-slate-100"><tr>{config.columns.map(col=><th key={col} className="h-[32px] whitespace-nowrap border-b border-slate-200 px-2 font-semibold uppercase">{col.replaceAll('_',' ')}</th>)}<th className="h-[32px] border-b border-slate-200 px-2">AÇÃO</th></tr></thead><tbody>{loading?<tr><td colSpan={config.columns.length+1} className="h-10 text-center">Carregando registros…</td></tr>:visible.length===0?<tr><td colSpan={config.columns.length+1} className="h-10 text-center text-slate-500">Nenhum registro encontrado.</td></tr>:visible.map(row=><tr key={String(row.id)} className="hover:bg-neutral-50/80">{config.columns.map(col=><td key={col} className="h-[32px] max-w-64 truncate border-b border-slate-100 px-2">{row[col]==null?'—':typeof row[col]==='object'?JSON.stringify(row[col]):String(row[col])}</td>)}<td className="h-[32px] border-b border-slate-100 px-2"><div className="flex gap-1">{config.table !== 'estoque_movimentacoes' && !(config.table === 'fiscal_nfe_entradas' && row.status !== 'rascunho') && <button className={`${btn} erp-row-action`} onClick={()=>edit(row)}>Editar</button>}{config.table === "fiscal_nfe_entradas" && row.status === "rascunho" && <button className={btn + " bg-sky-700 text-white"} disabled={busy} onClick={() => void postInvoice(String(row.id))}>Escriturar</button>}</div></td></tr>)}</tbody></table></div>
     </section>
     <p className="mt-2 text-[9px] text-slate-500">Dados consultados e gravados diretamente no Supabase com as políticas de acesso existentes; não são utilizados registros de demonstração.</p>
   </main>

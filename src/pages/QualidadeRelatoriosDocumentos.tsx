@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { FileText, Filter, Printer, RefreshCw, Search } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import QualitySidebar from '../components/quality/QualitySidebar'
+import ERPHeader from '../components/layout/ERPHeader'
 
 type Doc={
  id:string
@@ -18,7 +19,7 @@ type Doc={
  proxima_revisao:string|null
 }
 
-const input='h-[32px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[12px] font-medium text-slate-900 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-sky-100'
+const input='h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[12px] font-medium text-slate-900 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-sky-100'
 const label='grid gap-[2px] text-[10px] font-bold uppercase tracking-wide text-slate-700'
 
 const activeStatuses=new Set(['vigente','liberada','aprovada'])
@@ -28,8 +29,8 @@ export default function QualidadeRelatoriosDocumentos(){
  const[docs,setDocs]=useState<Doc[]>([])
  const[department,setDepartment]=useState('TODOS')
  const[type,setType]=useState('TODOS')
- const[status,setStatus]=useState('VIGENTES')
- const[includeForms,setIncludeForms]=useState(false)
+ const[status,setStatus]=useState('TODOS')
+ const[includeForms,setIncludeForms]=useState(true)
  const[query,setQuery]=useState('')
  const[busy,setBusy]=useState(false)
  const[error,setError]=useState('')
@@ -65,7 +66,8 @@ export default function QualidadeRelatoriosDocumentos(){
 
  const printTitle=status==='VIGENTES'?'LISTA MESTRE — DOCUMENTOS VIGENTES':status==='OBSOLETOS'?'RELAÇÃO DE DOCUMENTOS OBSOLETOS':'ÍNDICE DE DOCUMENTOS CONTROLADOS'
 
- return <main data-quality-workspace className="min-h-screen bg-slate-100 text-slate-900">
+ return <main data-quality-workspace className="min-h-screen bg-[#F4FBFD] text-slate-900">
+  <ERPHeader />
   <style>{`
    @media print{
     body{background:#fff!important;color:#000!important}
@@ -78,7 +80,7 @@ export default function QualidadeRelatoriosDocumentos(){
     .quality-report-paper{background:#fff!important}
    }
   `}</style>
-  <header className="quality-report-no-print border-b border-slate-700 bg-slate-900 px-4 py-3 text-white">
+  <header className="quality-report-no-print border-b border-[#CFE1E8] bg-gradient-to-r from-[#123B50] via-[#185C78] to-[#2D8DB8] px-3 py-2 text-white">
    <div className="mx-auto flex max-w-[1800px] flex-wrap items-center justify-between gap-3">
     <div><p className="text-sm font-extrabold uppercase tracking-[0.18em] text-sky-300">QUALIDADE &gt; CONTROLE DE DOCUMENTOS &gt; RELATÓRIOS</p><h1 className="text-[17px] font-bold">Relatórios e Índices do SGQ</h1></div>
     <div className="flex flex-wrap gap-2">
@@ -105,15 +107,15 @@ export default function QualidadeRelatoriosDocumentos(){
     <section className="quality-report-paper rounded-md border border-slate-200 bg-white p-6 shadow-sm">
      <div className="mb-5 border-b-2 border-slate-900 pb-4">
       <div className="flex items-start justify-between gap-5">
-       <div><p className="text-sm font-extrabold tracking-widest">SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL • SISTEMA DE GESTÃO DA QUALIDADE</p><h2 className="mt-2 text-2xl font-black">{printTitle}</h2><p className="mt-1 text-base font-semibold">Departamento: {department} • Emissão: {new Date().toLocaleDateString('pt-BR')}</p></div>
+       <div><p className="text-[10px] font-extrabold tracking-widest">SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL • SISTEMA DE GESTÃO DA QUALIDADE</p><h2 className="mt-1 text-[16px] font-bold">{printTitle}</h2><p className="mt-1 text-[10px] font-semibold">Departamento: {department} • Emissão: {new Date().toLocaleDateString('pt-BR')}</p></div>
        <div className="text-right"><p className="text-sm font-bold">TOTAL</p><p className="text-3xl font-black">{rows.length}</p></div>
       </div>
      </div>
      <div className="overflow-x-auto">
-      <table className="w-full min-w-[1050px] border-collapse text-base">
-       <thead className="bg-slate-900 text-white"><tr><th className="h-[54px] border border-slate-700 p-3 text-left">Nº DOCUMENTO</th><th className="border border-slate-700 p-3 text-left">TÍTULO</th><th className="border border-slate-700 p-3 text-left">DEPARTAMENTO / SETOR</th><th className="border border-slate-700 p-3 text-left">TIPO</th><th className="border border-slate-700 p-3 text-left">REVISÃO</th><th className="border border-slate-700 p-3 text-left">DATA</th><th className="border border-slate-700 p-3 text-left">VALIDADE</th><th className="border border-slate-700 p-3 text-left">STATUS</th></tr></thead>
+      <table className="w-full min-w-[1050px] border-collapse text-[10px]">
+       <thead className="bg-slate-900 text-white"><tr><th className="h-[30px] border border-slate-700 px-2 text-left">Nº DOCUMENTO</th><th className="border border-slate-700 p-3 text-left">TÍTULO</th><th className="border border-slate-700 p-3 text-left">DEPARTAMENTO / SETOR</th><th className="border border-slate-700 p-3 text-left">TIPO</th><th className="border border-slate-700 p-3 text-left">REVISÃO</th><th className="border border-slate-700 p-3 text-left">DATA</th><th className="border border-slate-700 p-3 text-left">VALIDADE</th><th className="border border-slate-700 p-3 text-left">STATUS</th></tr></thead>
        <tbody>
-        {rows.map(d=><tr key={d.id} className="border-b border-slate-200"><td className="h-[54px] border border-slate-200 p-3 font-black">{d.codigo}</td><td className="border border-slate-200 p-3 font-semibold">{d.titulo}</td><td className="border border-slate-200 p-3">{d.area||d.setor||'—'}{d.area&&d.setor&&d.area!==d.setor?' / '+d.setor:''}</td><td className="border border-slate-200 p-3">{d.tipo}</td><td className="border border-slate-200 p-3 font-black">Rev. {d.revisao}</td><td className="border border-slate-200 p-3">{d.data_revisao||d.data_emissao||'—'}</td><td className="border border-slate-200 p-3">{d.validade_ate||d.proxima_revisao||'—'}</td><td className="border border-slate-200 p-3 font-bold">{d.status}</td></tr>)}
+        {rows.map(d=><tr key={d.id} className="border-b border-slate-200"><td className="h-[30px] border border-slate-200 px-2 font-bold">{d.codigo}</td><td className="border border-slate-200 p-3 font-semibold">{d.titulo}</td><td className="border border-slate-200 p-3">{d.area||d.setor||'—'}{d.area&&d.setor&&d.area!==d.setor?' / '+d.setor:''}</td><td className="border border-slate-200 p-3">{d.tipo}</td><td className="border border-slate-200 p-3 font-black">Rev. {d.revisao}</td><td className="border border-slate-200 p-3">{d.data_revisao||d.data_emissao||'—'}</td><td className="border border-slate-200 p-3">{d.validade_ate||d.proxima_revisao||'—'}</td><td className="border border-slate-200 p-3 font-bold">{d.status}</td></tr>)}
         {!rows.length&&<tr><td colSpan={8} className="border border-slate-200 p-10 text-center font-bold text-slate-600"><FileText size={32} className="mx-auto mb-2"/>Nenhum documento corresponde aos filtros.</td></tr>}
        </tbody>
       </table>

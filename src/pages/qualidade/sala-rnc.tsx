@@ -34,6 +34,9 @@ const labelClass = 'mb-1 flex min-h-[12px] items-center gap-1 text-[9px] font-bo
 const buttonClass = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-bold text-white hover:bg-[#236f91] disabled:cursor-not-allowed disabled:opacity-50'
 const secondaryButton = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50'
 const emptyAction = (): ActionRow => ({ id: crypto.randomUUID(), oQue: '', quem: '', quando: '', como: '', porQue: '', onde: '', quanto: '' })
+const actionHasContent = (row: ActionRow) => Boolean(row.oQue.trim() || row.quem || row.quando || row.como.trim() || row.porQue.trim() || row.onde.trim() || row.quanto.trim())
+const actionIsComplete = (row: ActionRow) => Boolean(row.oQue.trim() && row.quem && row.quando && row.como.trim())
+const actionHasInvalidCost = (row: ActionRow) => row.quanto.trim() !== '' && (!Number.isFinite(Number(row.quanto)) || Number(row.quanto) < 0)
 const Help = ({ text }: { text: string }) => <span className="group relative inline-flex shrink-0 items-center" title={text} aria-label={text}><CircleHelp size={10} className="cursor-help text-[#2D8DB8]" /><span role="tooltip" className="pointer-events-none absolute bottom-full left-0 z-50 mb-1 hidden w-64 rounded-[2px] border border-sky-200 bg-[#123B50] p-2 text-[10px] font-normal normal-case leading-4 text-white shadow-lg group-hover:block group-focus-within:block">{text}</span></span>
 function FieldLabel({ children, help }: { children: string; help: string }) { return <label className={labelClass}>{children}<Help text={help}/></label> }
 
@@ -113,11 +116,14 @@ export default function SalaRNC() {
     if (!objectiveEvidence.trim()) { setError('Registre ao menos uma evidência objetiva observada.'); return }
     if (whys.some(item => item.answer.trim().length > 0) && whys.some(item => !item.answer.trim() || !item.evidence.trim())) { setError('Cada etapa dos 5 Porquês preenchida precisa conter resposta e evidência objetiva.'); return }
     if (rootCauseValidated && !rootCauseValidationNote.trim()) { setError('Explique a validação da causa raiz antes de confirmar que ela bloqueia a reincidência.'); return }
+    const enteredActions = actions.filter(actionHasContent)
+    if (enteredActions.some(row => !actionIsComplete(row))) { setError('Cada ação iniciada precisa conter O QUÊ, responsável, prazo e COMO executar. Remova as linhas vazias ou complete os campos.'); return }
+    if (enteredActions.some(actionHasInvalidCost)) { setError('O custo estimado de cada ação deve ser um número maior ou igual a zero.'); return }
     setBusy(true)
     try {
       const whyAnswers = whys.filter(item => item.answer.trim()).map(item => ({ question: item.question, answer: item.answer.trim(), evidence: item.evidence.trim() }))
       const whyText = whyAnswers.map((item, index) => (index + 1) + '. ' + item.question + '\nCausa: ' + item.answer + '\nEvidência objetiva: ' + item.evidence).join('\n\n')
-      const readyActions = actions.filter(row => row.oQue.trim() && row.quem && row.quando && row.como.trim())
+      const readyActions = actions.filter(actionHasContent)
       const actionPayload = readyActions.map(row => ({
         what: row.oQue.trim(), why: row.porQue.trim() || null, where_to: row.onde.trim() || null,
         when_date: row.quando, who_id: row.quem, how: row.como.trim(),
@@ -171,8 +177,10 @@ export default function SalaRNC() {
     setError('')
     setNotice('')
     try {
-      const ready = actions.filter(row => row.oQue.trim() && row.quem && row.quando && row.como.trim())
+      const ready = actions.filter(actionHasContent)
       if (!ready.length) throw new Error('Preencha O QUÊ, QUEM, QUANDO e COMO em pelo menos uma ação.')
+      if (ready.some(row => !actionIsComplete(row))) throw new Error('Cada ação iniciada precisa conter O QUÊ, responsável, prazo e COMO executar.')
+      if (ready.some(actionHasInvalidCost)) throw new Error('O custo estimado de cada ação deve ser um número maior ou igual a zero.')
       const actionPayload = ready.map(row => ({
         what: row.oQue.trim(), why: row.porQue.trim() || null, where_to: row.onde.trim() || null,
         when_date: row.quando, who_id: row.quem, how: row.como.trim(),
@@ -259,7 +267,7 @@ export default function SalaRNC() {
                   </tr>)}</tbody>
                 </table>
               </div>
-              <p className="border-t border-slate-100 px-3 py-2 text-[9px] text-slate-500">Uma ação só será persistida quando O QUÊ, QUEM, QUANDO e COMO estiverem preenchidos. As ações são gravadas na tabela CAPA existente, sob as políticas RLS da empresa.</p>
+              <p className="border-t border-slate-100 px-3 py-2 text-[9px] text-slate-500">Cada ação iniciada deve conter O QUÊ, responsável, prazo e COMO. O plano CAPA e o acompanhamento de ações da Qualidade são gravados pela RPC do ERP, respeitando a empresa da sessão e as políticas do banco.</p>
             </section>
 
             <section className="rnc-history-section border border-slate-200 bg-white print:hidden">

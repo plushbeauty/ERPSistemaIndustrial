@@ -177,10 +177,15 @@ export default function SolicitacaoCompra() {
       if (!empresaId) throw new Error('Empresa da sessão não identificada.')
       if (!descricao.trim()) throw new Error('Informe o motivo da solicitação.')
 
-      const validItems = items.filter((item) => item.produto_id)
-      if (!validItems.length) throw new Error('Adicione pelo menos um produto à solicitação.')
+      const filledItems = items.filter((item) =>
+        item.produto_id || item.descricao.trim() || item.quantidade !== '1' || item.valor_estimado !== '0',
+      )
+      if (!filledItems.length) throw new Error('Adicione pelo menos um produto à solicitação.')
+      if (filledItems.some((item) => !item.produto_id)) {
+        throw new Error('Há uma linha preenchida sem produto selecionado. Selecione o produto ou remova a linha antes de salvar.')
+      }
       if (
-        validItems.some(
+        filledItems.some(
           (item) =>
             !Number.isFinite(Number(item.quantidade)) ||
             Number(item.quantidade) <= 0 ||
@@ -190,6 +195,7 @@ export default function SolicitacaoCompra() {
       ) {
         throw new Error('Verifique as quantidades e os valores estimados dos itens.')
       }
+      const validItems = filledItems
 
       const result = await supabase.rpc('erp_compras_criar_solicitacao', {
         p_descricao: descricao.trim(),

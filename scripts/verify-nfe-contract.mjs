@@ -20,6 +20,11 @@ const itemMigration = read('supabase/migrations/20260921141000_erp_nfe_itens_for
 const emissionMigration = read('supabase/migrations/20261005120000_erp_fiscal_nfe_numbering_and_claim_v1.sql')
 const emissionPage = read('src/pages/NFeEmissao.tsx')
 const emissionFunction = read('supabase/functions/emitir-nfe/index.ts')
+const incomingCostingMigration = read('supabase/migrations/20261013030000_harden_incoming_nfe_costing_rbac.sql')
+const inventoryFiscalRbacMigration = read('supabase/migrations/20261013060000_harden_inventory_movement_and_fiscal_entry_rbac.sql')
+const stockLedgerRbacMigration = read('supabase/migrations/20261013070000_harden_stock_balances_and_lot_writes.sql')
+const directFiscalMovementGuard = read('supabase/migrations/20261013090000_block_direct_fiscal_stock_movements.sql')
+const stockMovementGuard = stockLedgerRbacMigration
 
 const requireIn = (text, pattern, description) => {
   if (!pattern.test(text)) failures.push(description)
@@ -89,6 +94,43 @@ if (/^\s*grant\b[^;]*\bto\s+anon\b/im.test(draftMigration)) {
 if (/using\s*\(\s*true\s*\)|with\s+check\s*\(\s*true\s*\)/i.test(draftMigration)) {
   failures.push('A migration inclui política RLS global permissiva.')
 }
+
+requireIn(incomingCostingMigration, /begin\s*;[\s\S]*commit\s*;/i, 'Hardening de escrituração de entrada deve ser transacional.')
+requireIn(incomingCostingMigration, /create or replace function public\.erp_escriturar_nfe_entrada[\s\S]*security definer[\s\S]*set search_path = pg_catalog, public/i, 'Escrituração de entrada precisa de função controlada com search_path fixo.')
+requireIn(incomingCostingMigration, /auth\.uid\(\) is null[\s\S]*v_empresa_id is null/i, 'Escrituração de entrada não exige sessão e tenant.')
+requireIn(incomingCostingMigration, /u\.auth_user_id = auth\.uid\(\)[\s\S]*u\.empresa_id = v_empresa_id[\s\S]*u\.ativo = true[\s\S]*u\.deleted_at is null/i, 'Escrituração não valida perfil ERP ativo do tenant.')
+requireIn(incomingCostingMigration, /erp_has_permission\('estoque', 'criar'\)[\s\S]*erp_has_permission\('fiscal', 'editar'\)/i, 'Escrituração não verifica permissão de estoque/fiscal.')
+requireIn(incomingCostingMigration, /from public\.fiscal_nfe_entradas[\s\S]*where id = p_nfe_id[\s\S]*empresa_id = v_empresa_id[\s\S]*for update/i, 'Escrituração não bloqueia a NF-e do tenant.')
+requireIn(incomingCostingMigration, /pg_advisory_xact_lock/i, 'Cálculo de custo médio não serializa concorrência por produto.')
+requireIn(incomingCostingMigration, /from public\.engenharia_produtos p[\s\S]*p\.empresa_id = v_empresa_id[\s\S]*p\.ativo = true/i, 'Custo médio permite produto inativo ou de outro tenant.')
+requireIn(incomingCostingMigration, /revoke all on function public\.erp_registrar_custo_medio_nfe[\s\S]*from public, anon, authenticated/i, 'Helper de custo médio continua exposto aos papéis de navegador.')
+requireIn(incomingCostingMigration, /revoke all on function public\.erp_escriturar_nfe_entrada[\s\S]*from public, anon/i, 'Escrituração de entrada não revoga acesso público/anônimo.')
+requireIn(incomingCostingMigration, /grant execute on function public\.erp_escriturar_nfe_entrada[\s\S]*to authenticated/i, 'RPC de escrituração não está concedida explicitamente a authenticated.')
+const costingFunction = incomingCostingMigration.match(/create or replace function public\.erp_registrar_custo_medio_nfe[\s\S]*?\$function\$;/i)?.[0] ?? ''
+if (/sum\([\s\S]*?\)[\s\S]*?for update/i.test(costingFunction)) failures.push('Cálculo agregado de custo médio não pode usar FOR UPDATE.')
+requireIn(inventoryFiscalRbacMigration, /begin\s*;[\s\S]*commit\s*;/i, 'Hardening RBAC de movimentos e NF-e deve ser transacional.')
+requireIn(inventoryFiscalRbacMigration, /estoque_movimentacoes_select_guard[\s\S]*as\s+restrictive[\s\S]*for\s+select[\s\S]*erp_has_permission\('estoque',\s*'ver'\)/i, 'Leitura do ledger WMS não exige permissão de estoque.')
+requireIn(inventoryFiscalRbacMigration, /estoque_movimentacoes_insert_guard[\s\S]*as\s+restrictive[\s\S]*for\s+insert[\s\S]*erp_has_permission\('estoque',\s*'movimentar'\)/i, 'Inserção de movimentos WMS não exige permissão de movimentação.')
+requireIn(inventoryFiscalRbacMigration, /estoque_movimentacoes_update_guard[\s\S]*as\s+restrictive[\s\S]*for\s+update[\s\S]*using\s*\(false\)[\s\S]*with\s+check\s*\(false\)/i, 'Ledger WMS permite alteração direta de movimentos.')
+requireIn(inventoryFiscalRbacMigration, /estoque_movimentacoes_delete_guard[\s\S]*as\s+restrictive[\s\S]*for\s+delete[\s\S]*using\s*\(false\)/i, 'Ledger WMS permite exclusão direta de movimentos.')
+requireIn(inventoryFiscalRbacMigration, /fiscal_nfe_entradas_insert_guard[\s\S]*status\s*=\s*'rascunho'[\s\S]*escriturada_em\s+is\s+null/i, 'Inclusão direta de NF-e permite status fora de rascunho.')
+requireIn(inventoryFiscalRbacMigration, /fiscal_nfe_entradas_update_guard[\s\S]*status\s*=\s*'rascunho'[\s\S]*escriturada_em\s+is\s+null[\s\S]*with\s+check/i, 'Atualização direta pode alterar NF-e já escriturada.')
+requireIn(inventoryFiscalRbacMigration, /fiscal_nfe_entradas_delete_guard[\s\S]*status\s*=\s*'rascunho'[\s\S]*escriturada_em\s+is\s+null/i, 'Exclusão direta pode apagar NF-e já escriturada.')
+requireIn(inventoryFiscalRbacMigration, /fiscal_parametros_update_guard[\s\S]*erp_has_permission\('fiscal',\s*'editar'\)/i, 'Parâmetros fiscais podem ser alterados sem permissão fiscal.')
+requireIn(inventoryFiscalRbacMigration, /fiscal_historico_custos_insert_guard[\s\S]*as\s+restrictive[\s\S]*with\s+check\s*\(false\)/i, 'Histórico de custos permite inserção direta pelo navegador.')
+requireIn(inventoryFiscalRbacMigration, /fiscal_historico_custos_update_guard[\s\S]*as\s+restrictive[\s\S]*using\s*\(false\)/i, 'Histórico de custos permite alteração direta pelo navegador.')
+requireIn(inventoryFiscalRbacMigration, /fiscal_historico_custos_delete_guard[\s\S]*as\s+restrictive[\s\S]*using\s*\(false\)/i, 'Histórico de custos permite exclusão direta pelo navegador.')
+requireIn(stockLedgerRbacMigration, /begin\s*;[\s\S]*commit\s*;/i, 'Hardening do saldo e lotes deve ser transacional.')
+requireIn(stockLedgerRbacMigration, /estoque_saldos_update_guard[\s\S]*as\s+restrictive[\s\S]*for\s+update[\s\S]*using\s*\(false\)/i, 'Saldo de estoque pode ser alterado diretamente pelo navegador.')
+requireIn(stockLedgerRbacMigration, /estoque_lotes_update_guard[\s\S]*as\s+restrictive[\s\S]*for\s+update[\s\S]*using\s*\(false\)/i, 'Lotes podem ser alterados diretamente pelo navegador.')
+requireIn(stockLedgerRbacMigration, /create or replace function public\.erp_apply_stock_movement[\s\S]*security definer[\s\S]*set search_path = pg_catalog, public[\s\S]*erp_has_permission\('estoque', 'movimentar'\)/i, 'Trigger de movimento não é protegido por tenant, RBAC e search_path fixo.')
+requireIn(stockLedgerRbacMigration, /create or replace function public\.erp_quality_quarantine_lot[\s\S]*security definer[\s\S]*set search_path = pg_catalog, public[\s\S]*erp_has_permission\('qualidade', 'criar'\)/i, 'Quarentena não usa trigger privilegiado com validação de permissão.')
+requireIn(stockLedgerRbacMigration, /create or replace function public\.erp_salvar_inspecao_lote[\s\S]*security definer[\s\S]*u\.auth_user_id = v_user_id[\s\S]*erp_has_permission\('qualidade', 'criar'\)/i, 'RPC de inspeção não preserva validação ao operar como SECURITY DEFINER.')
+requireIn(directFiscalMovementGuard, /begin\s*;[\s\S]*commit\s*;/i, 'Bloqueio de movimento fiscal direto deve ser transacional.');
+requireIn(directFiscalMovementGuard, /estoque_movimentacoes_block_direct_nfe_insert[\s\S]*as restrictive[\s\S]*for insert[\s\S]*with check \(tipo <> 'entrada_nf'\)/i, 'Usuário de navegador pode criar movimento de entrada NF-e sem escrituração fiscal.');
+requireIn(stockMovementGuard, /new\.quantidade::text in \('NaN', 'Infinity', '-Infinity'\)/i, 'Movimentação de estoque aceita valores numéricos especiais.');
+requireIn(stockMovementGuard, /v_status <> 'liberado'[\s\S]*new\.endereco_destino_id is not null[\s\S]*v_destination_type <> 'quarentena'/i, 'Lote bloqueado pode ser movimentado para endereço fora da quarentena.');
+requireIn(stockMovementGuard, /new\.tipo = 'requisicao_producao'[\s\S]*LOTE_BLOQUEADO_OU_EM_QUARENTENA_NAO_PODE_SER_CONSUMIDO/i, 'Lote bloqueado pode ser consumido pela produção.');
 
 requireIn(emissionMigration, /erp_has_permission\(\s*'fiscal'\s*,\s*'emitir'\s*\)/, 'Reserva/claim de NF-e não verifica permissão fiscal.')
 requireIn(emissionPage, /supabase\.rpc\('erp_salvar_rascunho_nfe'/, 'Tela NF-e não grava usando a RPC transacional.')

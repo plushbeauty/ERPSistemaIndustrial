@@ -68,7 +68,7 @@ export default function FichasProcesso(){
    const [p,c,t,m,f]=await Promise.all([
     supabase.from('erp_produtos').select('id,codigo,nome,descricao').eq('empresa_id',company.data).eq('ativo',true).order('codigo').limit(3000),
     supabase.from('erp_clientes').select('id,codigo,nome,documento').eq('empresa_id',company.data).eq('ativo',true).order('codigo').limit(3000),
-    supabase.from('erp_ferramentas_industriais').select('id,codigo,nome,tipo,numero_cavidades,parametros').eq('empresa_id',company.data).eq('ativo',true).order('codigo').limit(2000),
+    supabase.from('erp_ferramentas_industriais').select('id,codigo,nome,tipo,numero_cavidades,parametros').eq('empresa_id',company.data).eq('ativo',true).neq('status','RETIDO').order('codigo').limit(2000),
     supabase.from('erp_maquinas').select('id,codigo,nome,tipo,status').eq('empresa_id',company.data).not('status','eq','INATIVA').order('codigo').limit(2000),
     supabase.from('erp_fichas_processo').select('*').eq('empresa_id',company.data).order('codigo_ficha').limit(500)
    ])
