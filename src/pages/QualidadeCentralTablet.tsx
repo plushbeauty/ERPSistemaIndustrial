@@ -24,7 +24,7 @@ export const qualityModules = [
   { label: 'Auditoria 5S', description: 'Registrar e acompanhar auditorias de organização.', route: '/qualidade/auditoria-5s', icon: SearchCheck },
   { label: 'CEP / cartas de controle', description: 'Acompanhar indicadores estatísticos de processo.', route: '/qualidade/cep', icon: Activity },
   { label: 'Metrologia e calibração', description: 'Consultar instrumentos e calibrações.', route: '/qualidade/calibracao', icon: Wrench },
-  { label: 'Instruções de trabalho', description: 'Consultar e manter instruções operacionais.', route: '/qualidade/editor-it', icon: ClipboardCheck },
+  { label: 'Editor gráfico de procedimentos', description: 'Criar e editar ITs, desenhar fluxogramas e exportar Word.', route: '/qualidade/editor-it', icon: ClipboardCheck },
   { label: 'Relatórios do SGQ', description: 'Acessar relatórios de qualidade.', route: '/qualidade/relatorios-documentos', icon: FileText },
 ] as const
 
