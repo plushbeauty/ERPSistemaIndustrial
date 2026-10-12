@@ -24,6 +24,7 @@ requireIn(migration, /begin\s*;[\s\S]*commit\s*;/i, 'Hardening da inspeção dev
 requireIn(migration, /create or replace function public\.erp_salvar_inspecao_lote[\s\S]*security invoker[\s\S]*set search_path = pg_catalog, public/i, 'RPC de inspeção deve manter execução invoker e search_path fixo.');
 requireIn(migration, /auth\.uid\(\)[\s\S]*erp_current_empresa_id\(\)[\s\S]*u\.auth_user_id = v_user_id[\s\S]*u\.empresa_id = v_empresa_id[\s\S]*u\.ativo = true[\s\S]*u\.deleted_at is null/i, 'RPC de inspeção deve exigir perfil ERP ativo no tenant.');
 requireIn(migration, /erp_has_permission\('qualidade', 'criar'\)/i, 'RPC de inspeção não verifica permissão qualidade.criar.');
+requireIn(migration, /erp_has_permission\('qualidade', 'ver'\)[\s\S]*erp_has_permission\('qualidade', 'criar'\)/i, 'RPC de inspeção não exige leitura e criação para o fluxo completo.')
 requireIn(migration, /qualidade_especificacoes[\s\S]*s\.status = 'ativa'[\s\S]*s\.vigente_desde <= current_date[\s\S]*especificacao_id/i, 'A decisão não verifica especificação ativa/vigente ligada às medições.');
 requireIn(migration, /if not v_spec_ok then[\s\S]*v_resultado := 'reprovado'/i, 'Ausência de especificação ativa não bloqueia o lote.');
 requireIn(migration, /for v_medicao in[\s\S]*jsonb_array_elements\(v_medicoes\)[\s\S]*v_medicao_invalida/i, 'O servidor não valida individualmente as medições.')
