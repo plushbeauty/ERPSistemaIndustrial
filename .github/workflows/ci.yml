@@ -78,6 +78,9 @@ jobs:
       - name: NF-e number parser tests
         run: npm run test:nfe-number
 
+      - name: NF-e release discount allocation tests
+        run: npm run test:nfe-release-pricing
+
       - name: Warehouse to NF-e release contract
         run: npm run verify:warehouse-nfe-release
 
