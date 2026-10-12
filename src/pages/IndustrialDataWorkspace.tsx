@@ -43,6 +43,17 @@ const configs: Record<string, ModuleConfig> = {
 const cls='h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] text-slate-800 outline-none focus:border-sky-600'
 const label='mb-[2px] block text-[9px] font-bold uppercase tracking-wider text-slate-600'
 const btn='inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-semibold hover:bg-slate-50 disabled:opacity-50'
+function validNfeAccessKey(value: string): boolean {
+  if (!/^\\d{44}$/.test(value)) return false
+  let weight = 2
+  let sum = 0
+  for (let index = 42; index >= 0; index -= 1) {
+    sum += Number(value[index]) * weight
+    weight = weight === 9 ? 2 : weight + 1
+  }
+  const remainder = sum % 11
+  return Number(value[43]) === (remainder < 2 ? 0 : 11 - remainder)
+}
 function parseValue(field: Field, raw: string): unknown {
   if (field.key === 'ativo' && (raw === 'true' || raw === 'false')) return raw === 'true'
   if (field.type === 'number') return raw === '' ? null : Number(raw)
@@ -136,7 +147,7 @@ export default function IndustrialDataWorkspace() {
       const payload: Record<string,unknown> = tenantScoped ? { empresa_id: companyId } : {}
       if (config.table === 'fiscal_nfe_entradas') {
         const accessKey = String(form.chave_acesso ?? '').trim()
-        if (!/^\\d{44}$/.test(accessKey)) throw new Error('A chave de acesso da NF-e deve conter exatamente 44 dígitos.')
+        if (!validNfeAccessKey(accessKey)) throw new Error('A chave de acesso da NF-e deve conter 44 dígitos e dígito verificador válido.')
         const cnpj = String(form.cnpj_emitente ?? '').replace(/\\D/g, '')
         if (cnpj.length !== 14) throw new Error('O CNPJ do emitente deve conter 14 dígitos.')
         let invoiceItems: unknown
