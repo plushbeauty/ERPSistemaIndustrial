@@ -54,6 +54,17 @@ function validNfeAccessKey(value: string): boolean {
   const remainder = sum % 11
   return Number(value[43]) === (remainder < 2 ? 0 : 11 - remainder)
 }
+function validCnpj(value: string): boolean {
+  if (!/^\\d{14}$/.test(value) || /^([0-9])\\1{13}$/.test(value)) return false
+  const digits = value.split('').map(Number)
+  const digitFor = (values: number[], weights: number[]) => {
+    const remainder = values.reduce((sum, digit, index) => sum + digit * weights[index], 0) % 11
+    return remainder < 2 ? 0 : 11 - remainder
+  }
+  const first = digitFor(digits.slice(0, 12), [5,4,3,2,9,8,7,6,5,4,3,2])
+  const second = digitFor([...digits.slice(0, 12), first], [6,5,4,3,2,9,8,7,6,5,4,3,2])
+  return digits[12] === first && digits[13] === second
+}
 function parseValue(field: Field, raw: string): unknown {
   if (field.key === 'ativo' && (raw === 'true' || raw === 'false')) return raw === 'true'
   if (field.type === 'number') return raw === '' ? null : Number(raw)
@@ -149,7 +160,7 @@ export default function IndustrialDataWorkspace() {
         const accessKey = String(form.chave_acesso ?? '').trim()
         if (!validNfeAccessKey(accessKey)) throw new Error('A chave de acesso da NF-e deve conter 44 dígitos e dígito verificador válido.')
         const cnpj = String(form.cnpj_emitente ?? '').replace(/\D/g, '')
-        if (cnpj.length !== 14) throw new Error('O CNPJ do emitente deve conter 14 dígitos.')
+        if (!validCnpj(cnpj)) throw new Error('Informe um CNPJ de emitente válido, com 14 dígitos verificadores corretos.')
         let invoiceItems: unknown
         try { invoiceItems = JSON.parse(String(form.itens ?? '')) as unknown } catch { throw new Error('Informe os itens como um JSON válido em formato de lista.') }
         if (!Array.isArray(invoiceItems) || invoiceItems.length === 0) throw new Error('A NF-e precisa conter ao menos um item em formato de lista JSON.')
