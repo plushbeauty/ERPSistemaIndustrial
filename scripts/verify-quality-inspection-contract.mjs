@@ -26,6 +26,10 @@ requireIn(migration, /auth\.uid\(\)[\s\S]*erp_current_empresa_id\(\)[\s\S]*u\.au
 requireIn(migration, /erp_has_permission\('qualidade', 'criar'\)/i, 'RPC de inspeção não verifica permissão qualidade.criar.');
 requireIn(migration, /qualidade_especificacoes[\s\S]*s\.status = 'ativa'[\s\S]*s\.vigente_desde <= current_date[\s\S]*especificacao_id/i, 'A decisão não verifica especificação ativa/vigente ligada às medições.');
 requireIn(migration, /if not v_spec_ok then[\s\S]*v_resultado := 'reprovado'/i, 'Ausência de especificação ativa não bloqueia o lote.');
+requireIn(migration, /for v_medicao in[\s\S]*jsonb_array_elements\(v_medicoes\)[\s\S]*v_medicao_invalida/i, 'O servidor não valida individualmente as medições.')
+requireIn(migration, /v_parametro->>'nominal'[\s\S]*v_parametro->>'tolerancia_superior'[\s\S]*v_parametro->>'tolerancia_inferior'[\s\S]*v_valor < v_nominal - v_tol_inf[\s\S]*v_valor > v_nominal \+ v_tol_sup/i, 'Medições dimensionais não são recalculadas contra limites canônicos.')
+requireIn(migration, /v_tipo_criterio = 'certificado'[\s\S]*numero_certificado[\s\S]*conclusao_certificado/i, 'Conferência de certificado não exige número e conclusão conforme.')
+requireIn(migration, /evidencia_observada/i, 'Critérios não numéricos não exigem evidência observada.')
 requireIn(migration, /update public\.estoque_lotes[\s\S]*set status = 'bloqueado'/i, 'Inspeção reprovada não bloqueia o lote industrial.');
 requireIn(migration, /set localizacao = 'Quarentena'[\s\S]*status_inspecao = 'REPROVADO'/i, 'Inspeção reprovada não espelha o bloqueio na trilha de estoque.');
 requireIn(migration, /insert into public\.erp_quarentenas_lotes/i, 'Inspeção reprovada não registra quarentena.');
