@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react'
-import { ArrowDown, FileEdit, ImageUp, Plus, Printer, Save, ShieldCheck, Trash2 } from 'lucide-react'
+import { FileEdit, ImageUp, Plus, Printer, Save, ShieldCheck, Trash2 } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import QualitySidebar from '../../components/quality/QualitySidebar'
 
