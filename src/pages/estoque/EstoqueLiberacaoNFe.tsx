@@ -222,23 +222,23 @@ export default function EstoqueLiberacaoNFe() {
   const lineTotal = lines.reduce((sum, line) => sum + Math.max(0, Number(line.quantidade) || 0), 0)
 
   return (
-    <main className="min-h-screen bg-[#f4fbfd] p-3 text-[#123b50] md:p-4">
+    <main className="release-screen min-h-screen bg-[#f4fbfd] p-3 text-[#123b50] md:p-4">
       <div className="mx-auto max-w-[1700px] space-y-3">
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#c9e1e8] pb-3">
           <div className="flex items-center gap-2">
             <PackageCheck className="h-6 w-6 text-[#2d8db8]" />
             <div><p className="text-[9px] font-bold uppercase tracking-wider text-[#2d8db8]">Almoxarifado · Expedição fiscal</p><h1 className="text-[16px] font-semibold">Liberação para Nota Fiscal</h1><p className="text-[11px] text-slate-600">Separação, lote, caixas, pesos e rastreabilidade antes do faturamento.</p></div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => window.print()} className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[11px]"><Printer size={14}/> Imprimir separação</button>
+          <div className="release-toolbar flex flex-wrap gap-2">
+            <button type="button" disabled={!selectedOrderId || loading} onClick={() => window.print()} className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[11px]"><Printer size={14}/> Imprimir separação</button>
             <button type="button" onClick={() => void load()} disabled={loading || busy} className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] disabled:opacity-50"><RefreshCw size={14}/> Atualizar</button>
           </div>
         </header>
 
         {(error || message) && <div role="status" className={'border px-3 py-2 text-[11px] ' + (error ? 'border-red-300 bg-red-50 text-red-700' : 'border-emerald-300 bg-emerald-50 text-emerald-800')}>{error || message}</div>}
 
-        <div className="grid grid-cols-1 gap-3 xl:grid-cols-[340px_minmax(0,1fr)]">
-          <section className="border border-[#c9e1e8] bg-white">
+        <div className="release-layout grid grid-cols-1 gap-3 xl:grid-cols-[340px_minmax(0,1fr)]">
+          <section className="release-sidebar border border-[#c9e1e8] bg-white">
             <div className="border-b border-slate-200 p-2"><h2 className="text-[12px] font-semibold">Pedidos para separar</h2><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Pedido, cliente ou status" className="mt-2 h-[30px] w-full border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2d8db8]"/></div>
             <div className="max-h-[380px] overflow-auto">
               {loading ? <p className="p-3 text-[11px]">Carregando pedidos…</p> : filteredOrders.map(order => {
@@ -260,7 +260,7 @@ export default function EstoqueLiberacaoNFe() {
             </div></div>
           </section>
 
-          <section className="min-w-0 border border-[#c9e1e8] bg-white">
+          <section className="release-form min-w-0 border border-[#c9e1e8] bg-white">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 p-2"><div><h2 className="text-[12px] font-semibold">Conferência física do pedido</h2><p className="text-[10px] text-slate-500">{selectedOrder ? 'Pedido #' + selectedOrder.numero + ' · ' + (customerById.get(selectedOrder.cliente_id ?? '')?.nome ?? 'Cliente não localizado') : 'Selecione um pedido à esquerda'}</p></div><div className="text-[10px] text-slate-500">Linhas: {lines.length} · Quantidade total: {qty(lineTotal)}</div></div>
             <div className="grid grid-cols-1 gap-2 border-b border-slate-200 bg-slate-50 p-2 md:grid-cols-2"><label className="text-[9px] font-bold uppercase tracking-wider">Observações da separação<textarea value={observation} onChange={event => setObservation(event.target.value)} disabled={!canEdit} rows={2} className="mt-1 w-full border border-slate-300 bg-white p-2 text-[11px] disabled:bg-slate-100"/></label><div className="flex items-end gap-2 text-[10px] text-slate-600"><Truck size={15}/> A separação reserva os lotes ao encaminhar. A baixa física fica condicionada à NF-e autorizada.</div></div>
             <div className="overflow-x-auto">
@@ -282,13 +282,14 @@ export default function EstoqueLiberacaoNFe() {
                 })}</tbody>
               </table>
             </div>
-            {selectedOrder && <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 p-2"><p className="text-[10px] text-slate-600">Pedido original: {orderItems.length} item(ns). Conferir saldo do pedido, lote e caixas antes de encaminhar.</p><div className="flex flex-wrap gap-2">
+            {selectedOrder && <div className="release-no-print flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 p-2"><p className="text-[10px] text-slate-600">Pedido original: {orderItems.length} item(ns). Conferir saldo do pedido, lote e caixas antes de encaminhar.</p><div className="flex flex-wrap gap-2">
               <button type="button" disabled={busy || !canEdit} onClick={() => void saveDraft()} className="inline-flex h-[30px] items-center gap-1 border border-slate-300 bg-white px-3 text-[11px] disabled:opacity-50"><Save size={14}/> Salvar rascunho</button>
               <button type="button" disabled={busy || !selectedReleaseId || !canEdit} onClick={() => void forwardRelease()} className="inline-flex h-[30px] items-center gap-1 bg-[#2d8db8] px-3 text-[11px] text-white disabled:opacity-50"><Send size={14}/> Encaminhar para NF-e</button>
             </div></div>}
           </section>
         </div>
-        <footer className="text-[10px] text-slate-500">Empresa ativa: {empresaId || '—'} · A reserva e a baixa são controladas no banco; não há baixa ao salvar o rascunho.</footer>
+        <footer className="release-no-print text-[10px] text-slate-500">Empresa ativa: {empresaId || '—'} · A reserva e a baixa são controladas no banco; não há baixa ao salvar o rascunho.</footer>
+      <style>{'@media print { .release-screen { padding: 0 !important; background: #fff !important; } .release-toolbar, .release-sidebar, .release-no-print { display: none !important; } .release-layout { display: block !important; } .release-form { width: 100% !important; border: 0 !important; } }'}</style>
       </div>
     </main>
   )
