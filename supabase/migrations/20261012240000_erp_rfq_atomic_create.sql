@@ -43,8 +43,10 @@ begin
     raise exception 'Selecione entre 1 e 500 fornecedores sem duplicidade.' using errcode = '22023';
   end if;
 
-  if p_itens is null or jsonb_typeof(p_itens) <> 'array'
-    or jsonb_array_length(p_itens) = 0 or jsonb_array_length(p_itens) > 1000 then
+  if p_itens is null or jsonb_typeof(p_itens) <> 'array' then
+    raise exception 'Os itens da cotação devem ser enviados como uma lista.' using errcode = '22023';
+  end if;
+  if jsonb_array_length(p_itens) = 0 or jsonb_array_length(p_itens) > 1000 then
     raise exception 'Informe entre 1 e 1000 itens para a cotação.' using errcode = '22023';
   end if;
 
