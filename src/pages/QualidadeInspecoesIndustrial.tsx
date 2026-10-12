@@ -226,28 +226,28 @@ export default function QualidadeInspecoesIndustrial() {
   }), [rows])
 
   return (
-    <main className="min-h-full bg-slate-50 p-3 text-slate-900"><QualitySidebar active="/qualidade/inspecoes" />
-      <header className="mb-3 flex items-center justify-between border-b border-slate-200 pb-2">
+    <main className="min-h-full bg-[#EAF3F7] p-3 text-[#123B50]"><QualitySidebar active="/qualidade/inspecoes" />
+      <header className="mb-3 flex items-center justify-between border-b-4 border-[#48B7C7] bg-gradient-to-r from-[#123B50] to-[#2D8DB8] px-3 py-2 text-white">
         <div className="flex items-center gap-2">
-          <ShieldCheck size={18} className="text-sky-700" />
+          <ShieldCheck size={18} className="text-[#9CE8EE]" />
           <div>
-            <h1 className="text-sm font-semibold">Qualidade industrial · Inspeções</h1>
-            <p className="text-[10px] text-slate-500">Rastreabilidade, critério aprovado e registro dimensional</p>
+            <h1 className="text-sm font-extrabold">Qualidade industrial · Inspeções</h1>
+            <p className="text-[10px] text-[#E3F4F8]">Rastreabilidade, critério aprovado e registro dimensional</p>
           </div>
         </div>
         <button className={buttonClass} onClick={() => void load()} disabled={loading}><RefreshCw size={13} /> Atualizar</button>
       </header>
 
       <section className="mb-3 grid grid-cols-3 gap-2">
-        {[['INSPEÇÕES', counts.total], ['APROVADAS', counts.approved], ['REPROVADAS', counts.rejected]].map(([label, value]) => (
-          <div key={String(label)} className="border border-slate-200 bg-white p-2">
-            <div className={labelClass}>{label}</div><div className="text-base font-semibold tabular-nums">{value}</div>
+        {[['INSPEÇÕES', counts.total], ['APROVADAS', counts.approved], ['REPROVADAS', counts.rejected]].map(([label, value], index) => (
+          <div key={String(label)} className={'border border-[#D2E0E7] border-l-4 p-2 shadow-sm ' + (index===1 ? 'border-l-[#3A9D78] bg-[#E9F7EF]' : index===2 ? 'border-l-[#D65B61] bg-[#FCEDEE]' : 'border-l-[#2D8DB8] bg-[#EAF5FA]')}>
+            <div className={labelClass}>{label}</div><div className="text-base font-extrabold tabular-nums text-[#123B50]">{value}</div>
           </div>
         ))}
       </section>
 
-      <section className="mb-3 border border-slate-200 bg-white p-3">
-        <h2 className="mb-2 flex items-center gap-1 text-xs font-semibold"><ClipboardCheck size={14} /> Registrar inspeção</h2>
+      <section className="mb-3 border border-[#B8D5E1] bg-white p-3 shadow-sm">
+        <h2 className="mb-2 flex items-center gap-1 border-l-4 border-[#2D8DB8] bg-[#EAF5FA] px-2 py-2 text-xs font-extrabold"><ClipboardCheck size={14} className="text-[#2D8DB8]" /> Registrar inspeção</h2>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           <label title="Selecione a etapa de inspeção: recebimento, processo produtivo ou produto final."><span className={labelClass}>TIPO</span><select className={fieldClass} value={tipo} onChange={event => setTipo(event.target.value as InspectionRow['tipo'])}><option value="recebimento">Recebimento</option><option value="processo">Processo</option><option value="produto_final">Produto final</option></select></label>
           <label title="Critério obtido da especificação técnica aprovada e vigente do produto."><span className={labelClass}>CRITÉRIO APROVADO</span><select className={fieldClass} value={specParameterCode} onChange={event => { const code = event.target.value; setSpecParameterCode(code); const selected = specificationParameters.find(parameter => parameter.codigo === code); if (selected) { setParametro(selected.caracteristica); setNominal(selected.nominal === null ? '' : String(selected.nominal)); setTolMais(selected.tolerancia_superior === null ? '' : String(selected.tolerancia_superior)); setTolMenos(selected.tolerancia_inferior === null ? '' : String(selected.tolerancia_inferior)); setMedido('') } }} disabled={!selectedSpecification}><option value="">{selectedSpecification ? 'Selecione a característica…' : 'Sem especificação ativa'}</option>{specificationParameters.map(parameter => <option key={parameter.codigo} value={parameter.codigo}>{parameter.codigo} — {parameter.caracteristica}{parameter.tipo !== 'numerico' ? ' · ' + parameter.tipo : ''}</option>)}</select></label>
