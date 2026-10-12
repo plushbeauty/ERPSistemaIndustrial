@@ -57,6 +57,8 @@ requireIn(page, /erp_quarentenas_lotes/i, 'Tela não consulta lotes retidos pela
 requireIn(page, /liberacao_id=/i, 'Tela não oferece abertura da emissão fiscal.')
 requireIn(emitter, /useSearchParams/i, 'Emissor não lê a referência da liberação.')
 requireIn(emitter, /erp_liberacoes_nf_itens/i, 'Emissor não importa os itens persistidos da liberação.')
+requireIn(emitter, /lote: item\.lote \|\| null/i, 'Emissor não persiste lote/rastreabilidade nos itens fiscais.')
+requireIn(emitter, /LOTE \/ RASTREABILIDADE/i, 'Emissor não apresenta a rastreabilidade do lote na grade fiscal.')
 requireIn(emitter, /erp_vincular_liberacao_nfe/i, 'Emissor não vincula o rascunho à liberação.')
 requireIn(router, /path="\/estoque\/liberacao-nfe"/i, 'Rota da liberação não foi registrada.')
 requireIn(shell, /Liberação para Nota Fiscal/i, 'Atalho do Almoxarifado não foi adicionado ao menu.')
