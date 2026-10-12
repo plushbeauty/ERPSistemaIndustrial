@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Activity, BarChart3, Clock3, Factory, Gauge, RefreshCw, ShieldCheck, TrendingUp } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
 type Apontamento = {
   ordem_producao_id: string
@@ -14,9 +15,7 @@ type Apontamento = {
 }
 type Ordem = {
   id: string
-  quantidade_planejada: number
   velocidade_nominal_hora: number
-  tempo_estimado_horas: number
 }
 type Dia = { dia: string; disponibilidade: number; performance: number; qualidade: number; oee: number }
 
@@ -40,19 +39,22 @@ export default function PCPDashboardOEE() {
       }
       const empresaId = String(company.data)
       const since = new Date(Date.now() - Number(period) * 86400000).toISOString()
-      const [a, o] = await Promise.all([
-        supabase.from('erp_producao_apontamentos')
-          .select('ordem_producao_id,quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim')
-          .eq('empresa_id', empresaId).gte('inicio', since).limit(10000),
-        supabase.from('erp_ordens_producao')
-          .select('id,quantidade_planejada,velocidade_nominal_hora,tempo_estimado_horas')
-          .eq('empresa_id', empresaId).limit(10000),
+      const [apontamentos, ordensResult] = await Promise.all([
+        fetchAllPages<Apontamento>((from, to) => supabase
+          .from('erp_producao_apontamentos')
+          .select('ordem_producao_id,quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim', { count: 'exact' })
+          .eq('empresa_id', empresaId)
+          .gte('inicio', since)
+          .order('inicio', { ascending: true })
+          .range(from, to)),
+        fetchAllPages<Ordem>((from, to) => supabase
+          .from('erp_ordens_producao')
+          .select('id,velocidade_nominal_hora', { count: 'exact' })
+          .eq('empresa_id', empresaId)
+          .range(from, to)),
       ])
-      if (a.error || o.error) {
-        throw a.error ?? o.error ?? new Error('Falha ao carregar o OEE.')
-      }
-      setRows((a.data ?? []) as Apontamento[])
-      setOrdens((o.data ?? []) as Ordem[])
+      setRows(apontamentos)
+      setOrdens(ordensResult)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar o OEE.')
       setRows([])
