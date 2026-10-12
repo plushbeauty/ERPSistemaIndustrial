@@ -146,3 +146,8 @@ Este bloco prevalece sobre notas anteriores desta página que diziam que nenhuma
 - O hardening de custo médio fiscal também foi ampliado para recusar produtos inativos ou fora da empresa e está coberto pelo contrato NF-e.
 - **Não aplicado no Supabase:** o conector desta sessão continua sem projetos listados; ainda faltam teste SQL real, confirmação de owner das funções, validação de RLS no banco implantado e cenários de teste de permissão/rollback.
 - **Preview:** o preview Vercel READY disponível é anterior à migration de inspeção. A API Vercel atingiu o limite diário de criação de deployments; não foi possível gerar outro preview para o commit mais recente. Nenhum deploy de produção foi promovido.
+
+## Integridade de versões das migrations — 2026-10-12
+
+- A branch continha uma nova colisão de versão: `20261012130000_sgq_inspecao_documentos_contract.sql` compartilhava o prefixo com `20261012130000_erp_medicao_schema_alignment_v1.sql`. A migration SGQ foi renomeada para `20261012130100_sgq_inspecao_documentos_contract.sql`; nenhuma migration foi aplicada ao banco.
+- A auditoria global agora compara os prefixos de versão e bloqueia novas colisões. Treze pares históricos já presentes na `main` foram allowlisted por nome exato, pois renomeá-los sem consultar `supabase_migrations.schema_migrations` pode quebrar o alinhamento entre repositório e banco. Essa dívida histórica continua aberta para reconciliação controlada.
