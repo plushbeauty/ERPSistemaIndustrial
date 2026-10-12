@@ -13,6 +13,7 @@ type Equipment = {
   descricao: string
   fabricante: string | null
   equipamento: string | null
+  modelo: string | null
   numero_serie: string | null
   faixa_medicao: string | null
   resolucao: string | null
@@ -70,6 +71,7 @@ type EquipmentForm = {
   descricao: string
   fabricante: string
   equipamento: string
+  modelo: string
   numero_serie: string
   faixa_medicao: string
   resolucao: string
@@ -122,7 +124,7 @@ const PAGE_SIZE = 25
 const equipmentSelect = 'id,empresa_id,codigo,descricao,fabricante,equipamento,numero_serie,faixa_medicao,resolucao,setor,responsavel,status,proxima_calibracao,ultima_calibracao,numero_certificado_atual,certificado_rbc,certificado_validade,tolerancia_nominal,erro_maximo,unidade_medida,observacoes,classe_exatidao,erro_indicacao,incerteza_expandida,fator_abrangencia,temperatura_lab_c,umidade_relativa_pct,rastreabilidade_padrao,identificacao_rbc,desvio_historico,criterio_aceitacao,laboratorio_calibracao,intervalo_calibracao_dias,criticidade'
 const historySelect = 'id,revisao,numero_certificado,data_calibracao,proxima_calibracao,laboratorio,resultado,observacao,certificado_rbc,identificacao_rbc,classe_exatidao,erro_indicacao,incerteza_expandida,fator_abrangencia,temperatura_lab_c,umidade_relativa_pct,rastreabilidade_padrao,desvio_historico,criterio_aceitacao,created_at'
 const emptyEquipment: EquipmentForm = {
-  id: '', codigo: '', descricao: '', fabricante: '', equipamento: '', numero_serie: '',
+  id: '', codigo: '', descricao: '', fabricante: '', equipamento: '', modelo: '', numero_serie: '',
   faixa_medicao: '', resolucao: '', setor: '', responsavel: '', status: 'BLOQUEADO',
   proxima_calibracao: '', ultima_calibracao: '', numero_certificado_atual: '', certificado_rbc: false,
   certificado_validade: '', tolerancia_nominal: '', erro_maximo: '', unidade_medida: '',
@@ -196,7 +198,7 @@ export default function CalibracaoIndustrial() {
 
   const filtered = useMemo(() => {
     const term = query.trim().toLocaleLowerCase('pt-BR')
-    return equipments.filter(item => [item.codigo, item.descricao, item.fabricante, item.equipamento, item.numero_serie, item.setor, item.status, item.numero_certificado_atual].some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(term)))
+    return equipments.filter(item => [item.codigo, item.descricao, item.fabricante, item.equipamento, item.modelo, item.numero_serie, item.setor, item.status, item.numero_certificado_atual].some(value => String(value ?? '').toLocaleLowerCase('pt-BR').includes(term)))
   }, [equipments, query])
   const blockedCount = useMemo(() => equipments.filter(item => !isUsable(item)).length, [equipments])
   const approvedCount = useMemo(() => equipments.filter(isUsable).length, [equipments])
@@ -218,7 +220,7 @@ export default function CalibracaoIndustrial() {
   function editEquipment(item: Equipment) {
     setEquipmentForm({
       id: item.id, codigo: item.codigo, descricao: item.descricao, fabricante: item.fabricante ?? '',
-      equipamento: item.equipamento ?? '', numero_serie: item.numero_serie ?? '', faixa_medicao: item.faixa_medicao ?? '',
+      equipamento: item.equipamento ?? '', modelo: item.modelo ?? '', numero_serie: item.numero_serie ?? '', faixa_medicao: item.faixa_medicao ?? '',
       resolucao: item.resolucao ?? '', setor: item.setor ?? '', responsavel: item.responsavel ?? '', status: item.status,
       proxima_calibracao: item.proxima_calibracao ?? '', ultima_calibracao: item.ultima_calibracao ?? '',
       numero_certificado_atual: item.numero_certificado_atual ?? '', certificado_rbc: item.certificado_rbc,
@@ -253,7 +255,7 @@ export default function CalibracaoIndustrial() {
       if (equipmentForm.umidade_relativa_pct && (Number(equipmentForm.umidade_relativa_pct) < 0 || Number(equipmentForm.umidade_relativa_pct) > 100)) throw new Error('A umidade relativa deve estar entre 0 e 100%.')
       const payload = {
         empresa_id: company.data, codigo: equipmentForm.codigo.trim(), descricao: equipmentForm.descricao.trim(),
-        fabricante: equipmentForm.fabricante.trim() || null, equipamento: equipmentForm.equipamento.trim() || null,
+        fabricante: equipmentForm.fabricante.trim() || null, equipamento: equipmentForm.equipamento.trim() || null, modelo: equipmentForm.modelo.trim() || null,
         numero_serie: equipmentForm.numero_serie.trim() || null, faixa_medicao: equipmentForm.faixa_medicao.trim() || null,
         resolucao: equipmentForm.resolucao.trim() || null, setor: equipmentForm.setor.trim() || null,
         responsavel: equipmentForm.responsavel.trim() || null, status: equipmentForm.status,
@@ -378,7 +380,7 @@ export default function CalibracaoIndustrial() {
           <thead className="bg-[#123B50] text-white"><tr>{['CÓDIGO / TAG','INSTRUMENTO','FAIXA / RESOLUÇÃO','SETOR','CERTIFICADO','PRÓXIMA CALIBRAÇÃO','STATUS','AÇÕES'].map(title => <th key={title} className="px-2 py-2 text-[9px] font-semibold">{title}</th>)}</tr></thead>
           <tbody>{visibleEquipments.map(item => <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50">
             <td className="px-2 py-2 text-[10px]"><strong>{item.codigo}</strong><p className="text-[9px] text-slate-500">{item.numero_serie || 'sem nº de série'}</p></td>
-            <td className="px-2 py-2 text-[10px]">{item.descricao}<p className="text-[9px] text-slate-500">{[item.fabricante, item.equipamento].filter(Boolean).join(' · ') || '—'}</p></td>
+            <td className="px-2 py-2 text-[10px]">{item.descricao}<p className="text-[9px] text-slate-500">{[item.fabricante, item.modelo || item.equipamento].filter(Boolean).join(' · ') || '—'}</p></td>
             <td className="px-2 py-2 text-[10px]">{item.faixa_medicao || '—'}<p className="text-[9px] text-slate-500">{item.resolucao || '—'} {item.unidade_medida || ''}</p></td>
             <td className="px-2 py-2 text-[10px]">{item.setor || '—'}</td>
             <td className="px-2 py-2 text-[10px]">{item.numero_certificado_atual || '—'}<p className="text-[9px] text-slate-500">{item.certificado_rbc ? 'RBC acreditado' : 'RBC não informado'}</p></td>
@@ -402,7 +404,7 @@ export default function CalibracaoIndustrial() {
       <DialogTitle className="text-[14px] font-semibold">{equipmentForm.id ? 'Editar instrumento de medição' : 'Cadastrar instrumento de medição'}</DialogTitle>
       <DialogDescription className="text-[10px] text-slate-500">Campos compactos de 30px · identificação, desempenho e rastreabilidade metrológica.</DialogDescription>
       <div className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-4">
-        {equipmentText('Código / TAG','codigo')}{equipmentText('Descrição','descricao')}{equipmentText('Tipo de instrumento','equipamento')}{equipmentText('Fabricante','fabricante')}{equipmentText('Modelo','equipamento')}{equipmentText('Número de série','numero_serie')}{equipmentText('Faixa de medição','faixa_medicao')}{equipmentText('Resolução','resolucao')}{equipmentText('Unidade de medida','unidade_medida')}{equipmentText('Setor','setor')}{equipmentText('Responsável','responsavel')}{equipmentText('Classe de exatidão','classe_exatidao')}{equipmentText('Tolerância nominal','tolerancia_nominal','number')}{equipmentText('Erro máximo permitido','erro_maximo','number')}{equipmentText('Erro de indicação','erro_indicacao','number')}{equipmentText('Incerteza expandida (U)','incerteza_expandida','number')}{equipmentText('Fator de abrangência (k)','fator_abrangencia','number')}{equipmentText('Temperatura laboratório (°C)','temperatura_lab_c','number')}{equipmentText('Umidade relativa (%)','umidade_relativa_pct','number')}{equipmentText('Identificação RBC','identificacao_rbc')}{equipmentText('Laboratório calibrador','laboratorio_calibracao')}{equipmentText('Nº certificado atual','numero_certificado_atual')}{equipmentText('Última calibração','ultima_calibracao','date')}{equipmentText('Próxima calibração','proxima_calibracao','date')}{equipmentText('Validade do certificado','certificado_validade','date')}{equipmentText('Intervalo (dias)','intervalo_calibracao_dias','number')}{equipmentText('Criticidade','criticidade')}
+        {equipmentText('Código / TAG','codigo')}{equipmentText('Descrição','descricao')}{equipmentText('Tipo de instrumento','equipamento')}{equipmentText('Fabricante','fabricante')}{equipmentText('Tipo de instrumento','equipamento')}{equipmentText('Modelo','modelo')}{equipmentText('Número de série','numero_serie')}{equipmentText('Faixa de medição','faixa_medicao')}{equipmentText('Resolução','resolucao')}{equipmentText('Unidade de medida','unidade_medida')}{equipmentText('Setor','setor')}{equipmentText('Responsável','responsavel')}{equipmentText('Classe de exatidão','classe_exatidao')}{equipmentText('Tolerância nominal','tolerancia_nominal','number')}{equipmentText('Erro máximo permitido','erro_maximo','number')}{equipmentText('Erro de indicação','erro_indicacao','number')}{equipmentText('Incerteza expandida (U)','incerteza_expandida','number')}{equipmentText('Fator de abrangência (k)','fator_abrangencia','number')}{equipmentText('Temperatura laboratório (°C)','temperatura_lab_c','number')}{equipmentText('Umidade relativa (%)','umidade_relativa_pct','number')}{equipmentText('Identificação RBC','identificacao_rbc')}{equipmentText('Laboratório calibrador','laboratorio_calibracao')}{equipmentText('Nº certificado atual','numero_certificado_atual')}{equipmentText('Última calibração','ultima_calibracao','date')}{equipmentText('Próxima calibração','proxima_calibracao','date')}{equipmentText('Validade do certificado','certificado_validade','date')}{equipmentText('Intervalo (dias)','intervalo_calibracao_dias','number')}{equipmentText('Criticidade','criticidade')}
         <label className={labelClass}>Certificado de laboratório RBC<input type="checkbox" checked={equipmentForm.certificado_rbc} onChange={event => setEquipmentField('certificado_rbc', event.target.checked)} className="h-[30px] accent-[#2D8DB8]"/></label>
         {equipmentText('Rastreabilidade do padrão','rastreabilidade_padrao')}
         {equipmentText('Critério de aceitação','criterio_aceitacao')}
