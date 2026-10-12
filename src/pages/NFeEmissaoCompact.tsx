@@ -134,6 +134,10 @@ export default function NFeEmissaoCompact() {
       }
     })
     if (!importedItems.length) { setError('O pedido liberado não possui itens para anexar.'); return }
+    importedReleaseRef.current = ''
+    const params = new URLSearchParams(searchParams)
+    params.delete('liberacao_id')
+    setSearchParams(params)
     setItems(importedItems)
     setActiveItemId(importedItems[0].id)
     setCustomer(current => ({ ...current, nome: order.cliente_nome, documento: order.cliente_cnpj }))
