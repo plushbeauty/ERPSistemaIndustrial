@@ -5,7 +5,6 @@ import {
   Target, Wrench, Workflow,
 } from 'lucide-react'
 import QualitySidebar from '../components/quality/QualitySidebar'
-import ERPHeader from '../components/layout/ERPHeader'
 
 const qualityModules = [
   { label: 'Inspeções de lotes', description: 'Registrar amostras e resultados de inspeção.', route: '/qualidade/inspecoes', icon: ClipboardCheck },
@@ -33,7 +32,6 @@ const qualityModules = [
 export default function QualidadeCentralTablet() {
   return (
     <main className="min-h-screen bg-[#F4FBFD] px-3 py-3 text-[#123B50] sm:px-4">
-      <ERPHeader />
       <div className="mx-auto max-w-[1500px] space-y-3">
         <QualitySidebar active="/qualidade" />
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#C8E3EE] pb-3">
