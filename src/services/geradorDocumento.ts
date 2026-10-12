@@ -20,10 +20,34 @@ const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingm
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>(`script[data-docx-lib="${src}"]`)
-    if (existing?.dataset.loaded === 'true') { resolve(); return }
+    if (existing?.dataset.loaded === 'true') {
+      resolve()
+      return
+    }
+
     const script = existing ?? document.createElement('script')
-    const done = () => { script.dataset.loaded = 'true'; resolve() }
-    const failed = () => reject(new Error('Não foi possível carregar a biblioteca de documentos Word.'))
+    let settled = false
+    const cleanup = () => {
+      window.clearTimeout(timeout)
+      script.removeEventListener('load', done)
+      script.removeEventListener('error', failed)
+    }
+    const done = () => {
+      if (settled) return
+      settled = true
+      cleanup()
+      script.dataset.loaded = 'true'
+      resolve()
+    }
+    const failed = () => {
+      if (settled) return
+      settled = true
+      cleanup()
+      script.remove()
+      reject(new Error('Não foi possível carregar a biblioteca de documentos Word. Verifique a conexão e tente novamente.'))
+    }
+    const timeout = window.setTimeout(failed, 15000)
+
     script.addEventListener('load', done, { once: true })
     script.addEventListener('error', failed, { once: true })
     if (!existing) {
