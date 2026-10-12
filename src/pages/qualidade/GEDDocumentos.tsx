@@ -62,6 +62,7 @@ export default function GEDDocumentos() {
           .select('id,empresa_id,codigo_documento,titulo_documento,departamento,revisao,responsavel,status,conteudo_texto,motivo_alteracao,criado_em,data_vigencia,nome_arquivo,url_anexo', { count: 'exact' })
           .eq('empresa_id', company.data)
           .order('criado_em', { ascending: false })
+          .order('id', { ascending: true })
           .range(from, to),
       )
       setRevisions(rows)
