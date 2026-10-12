@@ -81,3 +81,13 @@ STATUS DO BLOCO: EM ANDAMENTO
 8. Atualizar este arquivo a cada etapa com evidências e estados reais.
 
 **Regra de honestidade:** este documento registra o estado observado em 12/10/2026. Nenhum item funcional, de banco ou produção é declarado concluído sem evidência específica.
+
+## Continuação de execução — 2026-10-12 (checagem do último HEAD)
+
+- HEAD verificado: `8c8781ea175defc5e8a023cca21a06bf56d8dbd8`; PR #79 permanece aberto, não mesclado.
+- O workflow `ERP Industrial CI` para esse HEAD foi observado como `pending` na última consulta. Não registrar aprovação até obter conclusão final.
+- Correção aplicada em `src/lib/supabaseClient.ts`: a sessão Supabase passa a usar `sessionStorage`, evitando persistência normal da autenticação em `localStorage`. Isso limita a sessão à aba/sessão do navegador, mas ainda exige teste real de login, refresh, múltiplas abas e restauração de sessão pelo navegador.
+- Correção aplicada em `src/pages/ComprasRFQ.tsx`: removido um segundo bloco CSS inline idêntico; o arquivo agora tem uma ocorrência do bloco compacto.
+- Auditoria estática do RFQ identificou um ponto para próxima correção após confirmar contrato e permissões de esquema: a RPC valida que os produtos estão ativos na empresa, mas os campos `codigo` e `descricao` inseridos em `erp_rfq_itens` vêm do payload do cliente. Avaliar gravar os valores canônicos a partir de `erp_produtos` dentro da mesma transação, sem confiar no código/descrição enviados pelo navegador.
+- O inventário da árvore contém 780 entradas e muitos arquivos de páginas; isso não significa que cada tela foi funcionalmente validada. A auditoria precisa prosseguir módulo a módulo, distinguindo telas reais, aliases/duplicatas e rotas sem contrato validado.
+- Limitações da etapa: não há checkout do repositório disponível neste ambiente para executar `npm ci`, `npm run type-check`, lint ou build localmente. Nenhuma migração foi aplicada ao Supabase nesta etapa e nenhuma aprovação de produção foi declarada.
