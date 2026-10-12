@@ -40,9 +40,11 @@ export default function ERPHeader() {
         }
       }
 
-      const name = typeof metadata?.nome === 'string' && metadata.nome.trim()
-        ? metadata.nome.trim()
-        : 'Operador autenticado'
+      const metadataName = [metadata?.nome, metadata?.full_name, metadata?.name]
+        .find(value => typeof value === 'string' && value.trim())
+      const name = typeof metadataName === 'string' && metadataName.trim()
+        ? metadataName.trim()
+        : (data.user.email?.split('@')[0] || 'Operador autenticado')
       if (alive) setOperator({ name, email: data.user.email ?? '' })
     }
 
