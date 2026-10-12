@@ -78,5 +78,8 @@ jobs:
       - name: Routes
         run: npm run verify-routes
 
+      - name: RFQ contract
+        run: npm run verify:rfq-contract
+
       - name: Security no-bypass policy
         run: npm run audit:security
