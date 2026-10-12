@@ -374,6 +374,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-current-module>strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:1.2;font-weight:700;color:#111827}
         .erp-horizontal-search{width:145px!important;min-width:125px!important;max-width:160px;flex:0 1 145px;margin-left:auto}
         .erp-horizontal-search input{font-size:10px!important}
+        .erp-horizontal-session-identity strong,.erp-horizontal-session-identity span{color:#111827!important}
+        .erp-horizontal-session time,.erp-horizontal-session time span,.erp-horizontal-session time strong{color:#111827!important}
+        .erp-horizontal-session time{border-left-color:#e5e7eb!important}
         .erp-horizontal-workspace{min-height:calc(100vh - 64px)!important}
         @media(max-width:1100px){.erp-horizontal-current-module{max-width:140px;flex-basis:125px}.erp-horizontal-search{width:135px!important;min-width:115px!important;flex-basis:135px}}
         @media(max-width:950px){.erp-horizontal-current-module{max-width:120px;flex-basis:110px}.erp-horizontal-current-module>strong{font-size:10px}.erp-horizontal-search{width:125px!important;min-width:105px!important;flex-basis:125px}}
