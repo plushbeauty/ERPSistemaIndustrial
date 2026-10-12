@@ -11,7 +11,7 @@ const read = file => {
   }
   return fs.readFileSync(full, 'utf8')
 }
-const migration = read('supabase/migrations/20261012170000_erp_warehouse_nfe_release_v1.sql')
+const migration = read('supabase/migrations/20261012175122_erp_warehouse_nfe_release_v1.sql')
 const page = read('src/pages/estoque/EstoqueLiberacaoNFe.tsx')
 const emitter = read('src/pages/NFeEmissaoCompact.tsx')
 const router = read('src/AppEntryV2.tsx')
@@ -31,8 +31,8 @@ requireIn(migration, /create or replace function public\.erp_vincular_liberacao_
 requireIn(migration, /create or replace function public\.erp_concluir_liberacao_nf/i, 'RPC de conclusão da liberação ausente.')
 requireIn(migration, /lower\(coalesce\(d\.status,''\)\) in \('autorizada','autorizado'\)/i, 'Baixa física não exige NF-e autorizada.')
 requireIn(migration, /insert into public\.erp_estoque_movimentos/i, 'Baixa física não registra movimento de estoque.')
-const hardening = read('supabase/migrations/20261012180000_erp_warehouse_nfe_rpc_private_hardening.sql')
-const indexes = read('supabase/migrations/20261012180500_erp_warehouse_nfe_fk_indexes.sql')
+const hardening = read('supabase/migrations/20261012175250_erp_warehouse_nfe_rpc_private_hardening.sql')
+const indexes = read('supabase/migrations/20261012175321_erp_warehouse_nfe_fk_indexes.sql')
 requireIn(migration, /revoke all on function public\.erp_concluir_liberacao_nf\(uuid\) from public, anon/i, 'RPC de conclusão não revoga execução pública.')
 requireIn(hardening, /alter function public\.erp_salvar_liberacao_nf\(uuid,uuid,text,jsonb\) set schema private/i, 'Implementação privilegiada não foi movida ao schema privado.')
 requireIn(hardening, /security invoker/i, 'Entrypoints públicos não são SECURITY INVOKER.')
