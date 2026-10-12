@@ -311,14 +311,14 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-quality-tablet>footer{padding:8px 12px;border-top:1px solid #d3e3e9;background:#eef6f9;color:#536b76;font-size:9px}
         @media(max-width:760px){.erp-quality-tablet-backdrop{padding:8px}.erp-quality-tablet{width:calc(100vw - 16px);max-height:86vh}.erp-quality-tablet-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:8px}.erp-quality-tablet-card{min-height:52px;padding:6px;gap:6px}.erp-quality-tablet-icon{width:28px;height:28px;flex-basis:28px}.erp-quality-tablet-heading{padding:9px 10px}.erp-quality-tablet-heading h2{font-size:15px}}
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f3f8fb 42%,#e8f1f6 100%);color:#123b50}
-        .erp-horizontal-brand{min-width:245px!important;gap:12px!important;padding:0 10px!important}
-        .erp-horizontal-brand img{width:64px!important;height:56px!important;max-width:100%;object-fit:contain;flex:0 0 auto}
+        .erp-horizontal-brand{min-width:280px!important;gap:8px!important;padding:0 8px!important}
+        .erp-horizontal-brand img{width:148px!important;height:42px!important;min-width:148px!important;max-width:148px!important;object-fit:contain;object-position:left center;flex:0 0 148px!important;background:#123b50;border:1px solid #2D8DB8;border-radius:2px;padding:2px;box-sizing:border-box}
         .erp-horizontal-brand strong{font-size:13px!important;letter-spacing:.035em;white-space:nowrap}
         .erp-global-page-description{display:flex;align-items:center;gap:10px;min-height:34px;padding:5px 12px;border-bottom:1px solid #c3d9e3;background:linear-gradient(90deg,#dcecf3 0%,#edf6fa 55%,#e2f0f5 100%);color:#315466;box-sizing:border-box}
         .erp-global-page-description>span{flex:0 0 auto;color:#17445a;font-size:9px;font-weight:700;letter-spacing:.08em}
         .erp-global-page-description>p{margin:0;font-size:10px;line-height:1.35;color:#315466}
-        @media(max-width:950px){.erp-horizontal-brand{min-width:0!important;gap:6px!important;padding:0 4px!important}.erp-horizontal-brand img{width:54px!important;height:48px!important}.erp-horizontal-brand strong{font-size:11px!important}}
-        @media(max-width:700px){.erp-global-page-description{align-items:flex-start;flex-direction:column;gap:2px;padding:5px 8px}.erp-global-page-description>p{font-size:9px}.erp-horizontal-brand img{width:48px!important;height:44px!important}}
+        @media(max-width:950px){.erp-horizontal-brand{min-width:0!important;gap:5px!important;padding:0 4px!important}.erp-horizontal-brand img{width:100px!important;min-width:100px!important;max-width:100px!important;height:36px!important;flex-basis:100px!important}.erp-horizontal-brand strong{font-size:10px!important}}
+        @media(max-width:700px){.erp-global-page-description{align-items:flex-start;flex-direction:column;gap:2px;padding:5px 8px}.erp-global-page-description>p{font-size:9px}.erp-horizontal-brand img{width:76px!important;min-width:76px!important;max-width:76px!important;height:30px!important;flex-basis:76px!important}.erp-horizontal-brand-copy small{display:none}.erp-horizontal-brand strong{font-size:9px!important}}
 
         .erp-global-status-row{min-height:27px;display:flex;align-items:center;gap:10px;padding:2px 12px;background:linear-gradient(90deg,#dcecf3 0%,#edf6fa 55%,#e2f0f5 100%);border-bottom:1px solid #c3d9e3;color:#315466;font-size:9px;box-sizing:border-box}
         .erp-global-status-row>span{font-weight:700;letter-spacing:.08em}
