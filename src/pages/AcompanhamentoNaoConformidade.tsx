@@ -68,13 +68,11 @@ export default function AcompanhamentoNaoConformidade(){
   const [busy,setBusy]=useState(false)
   const [message,setMessage]=useState('')
   const [error,setError]=useState('')
-  const [showNew,setShowNew]=useState(false)
   const [showAction,setShowAction]=useState(false)
   const [showCause,setShowCause]=useState(false)
   const [showEfficacy,setShowEfficacy]=useState(false)
   const [efficacyActionId,setEfficacyActionId]=useState('')
   const [efficacyText,setEfficacyText]=useState('')
-  const [newForm,setNewForm]=useState({numero:'',descricao:'',acao:'',status:'aberta'})
   const [actionForm,setActionForm]=useState({what:'',why:'',where_to:'',when_date:'',who_id:'',how:'',how_much:'0'})
   const [causeForm,setCauseForm]=useState({efeito:'',maquina:'',metodo:'',mao_de_obra:'',material:'',medicao:'',meio_ambiente:'',cinco_porques:''})
 
@@ -121,25 +119,6 @@ export default function AcompanhamentoNaoConformidade(){
   }),[rpnc,query,statusFilter])
 
   const select=(r:Rpn)=>{setSelected(r);setMessage('');setError('')}
-
-  const saveNew=async()=>{
-    if(!newForm.descricao.trim()){setError('Informe a descrição objetiva da não conformidade.');return}
-    setBusy(true);setError('')
-    try{
-      const {data:empresa,error:ee}=await supabase.rpc('erp_current_empresa_id');if(ee||!empresa)throw ee||new Error('Empresa da sessão não identificada.')
-      const {data,error}=await supabase.from('erp_rpnc').insert({
-        empresa_id:String(empresa),
-        numero_rpnc:newForm.numero.trim()||'RPNC-'+new Date().getFullYear()+'-'+String(Date.now()).slice(-6),
-        descricao_nao_conformidade:newForm.descricao.trim(),
-        acao_corretiva:newForm.acao.trim()||null,
-        status:newForm.status
-      }).select('id,numero_rpnc,descricao_nao_conformidade,acao_corretiva,status').single()
-      if(error)throw error
-      setMessage('Não conformidade registrada no banco real.')
-      setShowNew(false);setNewForm({numero:'',descricao:'',acao:'',status:'aberta'});await load();if(data)setSelected(data as Rpn)
-    }catch(e){setError(e instanceof Error?e.message:'Não foi possível registrar a não conformidade.')}
-    finally{setBusy(false)}
-  }
 
   const changeStatus=async(status:string)=>{
     if(!selected)return
@@ -229,7 +208,7 @@ export default function AcompanhamentoNaoConformidade(){
         </div>
         <div style={{display:'flex',gap:9,alignItems:'center',flexWrap:'wrap'}}>
           <button type="button" onClick={()=>void load()} disabled={busy} style={{...inputStyle,width:'auto',display:'inline-flex',alignItems:'center',gap:8,cursor:'pointer',fontWeight:800}}><RefreshCw size={16}/>{busy?'Atualizando…':'Atualizar'}</button>
-          <button type="button" onClick={()=>setShowNew(true)} style={{minHeight:44,border:0,borderRadius:10,padding:'0 15px',display:'inline-flex',alignItems:'center',gap:8,cursor:'pointer',fontWeight:900,background:'#0f766e',color:'#fff'}}><Plus size={17}/> Nova não conformidade</button>
+          <button type="button" onClick={()=>{location.href='/qualidade/rnc'}} style={{minHeight:44,border:0,borderRadius:10,padding:'0 15px',display:'inline-flex',alignItems:'center',gap:8,cursor:'pointer',fontWeight:900,background:'#0f766e',color:'#fff'}}><Plus size={17}/> Registrar RNC completa</button>
         </div>
       </header>
 
@@ -319,14 +298,6 @@ export default function AcompanhamentoNaoConformidade(){
         </aside>
       </section>
     </div>
-
-    {showNew&&<Modal title="Nova não conformidade" close={()=>setShowNew(false)}>
-      <Field label="Número RPNC (opcional — o sistema gera se vazio)"><input value={newForm.numero} onChange={e=>setNewForm({...newForm,numero:e.target.value})} style={inputStyle}/></Field>
-      <Field label="Descrição objetiva da não conformidade *"><textarea value={newForm.descricao} onChange={e=>setNewForm({...newForm,descricao:e.target.value})} style={{...inputStyle,minHeight:100,resize:'vertical'}}/></Field>
-      <Field label="Ação corretiva inicial"><textarea value={newForm.acao} onChange={e=>setNewForm({...newForm,acao:e.target.value})} style={{...inputStyle,minHeight:85,resize:'vertical'}}/></Field>
-      <Field label="Status"><select value={newForm.status} onChange={e=>setNewForm({...newForm,status:e.target.value})} style={inputStyle}>{STATUS.map(s=><option key={s}>{s}</option>)}</select></Field>
-      <ModalActions cancel={()=>setShowNew(false)} save={()=>void saveNew()} busy={busy}/>
-    </Modal>}
 
     {showAction&&<Modal title={'Plano de ação • '+(selected?.numero_rpnc||'RPNC')} close={()=>setShowAction(false)}>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
