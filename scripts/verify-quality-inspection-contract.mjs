@@ -20,6 +20,9 @@ const quarantineBalanceMigration = read('supabase/migrations/20261013080000_fix_
 const requireIn = (text, pattern, description) => {
   if (!pattern.test(text)) failures.push(description);
 };
+const requireNotIn = (text, pattern, description) => {
+  if (pattern.test(text)) failures.push(description);
+};
 
 requireIn(migration, /begin\s*;[\s\S]*commit\s*;/i, 'Hardening da inspeção deve ser transacional.');
 requireIn(migration, /create or replace function public\.erp_salvar_inspecao_lote[\s\S]*security invoker[\s\S]*set search_path = pg_catalog, public/i, 'RPC de inspeção deve manter execução invoker e search_path fixo.');
@@ -49,7 +52,7 @@ requireIn(baseSchema, /trg_qualidade_inspecao_quarentena[\s\S]*execute function 
 requireIn(quarantineBalanceMigration, /create or replace function public\\.erp_quality_quarantine_lot[\\s\\S]*security definer[\\s\\S]*set search_path = pg_catalog, public/i, 'A quarentena deve consolidar saldos com função privilegiada e search_path fixo.');
 requireIn(quarantineBalanceMigration, /insert into public\\.estoque_saldos[\\s\\S]*group by s\\.empresa_id, s\\.produto_id, s\\.lote_id[\\s\\S]*on conflict \\(empresa_id, produto_id, lote_id, endereco_id\\)/i, 'A quarentena não consolida saldos fracionados no endereço de quarentena.');
 requireIn(quarantineBalanceMigration, /delete from public\\.estoque_saldos[\\s\\S]*endereco_id <> v_quarantine_id/i, 'A quarentena não limpa os saldos dos endereços anteriores após consolidar.');
-requireIn(quarantineBalanceMigration, !/update public\\.estoque_saldos[\\s\\S]*set endereco_id = v_quarantine_id/i, 'A quarentena ainda move endereços por UPDATE direto e pode violar a chave única do saldo.');
+requireNotIn(quarantineBalanceMigration, /update public\\.estoque_saldos[\\s\\S]*set endereco_id = v_quarantine_id/i, 'A quarentena ainda move endereços por UPDATE direto e pode violar a chave única do saldo.');
 requireIn(quarantineBalanceMigration, /revoke all on function public\\.erp_quality_quarantine_lot\\(\\) from public, anon, authenticated/i, 'A função de trigger de quarentena não deve ser chamada diretamente por papéis de navegador.');
 
 console.log('=== ERP INDUSTRIAL — QUALITY INSPECTION CONTRACT ===');
