@@ -91,3 +91,15 @@ STATUS DO BLOCO: EM ANDAMENTO
 - Auditoria estática do RFQ identificou um ponto para próxima correção após confirmar contrato e permissões de esquema: a RPC valida que os produtos estão ativos na empresa, mas os campos `codigo` e `descricao` inseridos em `erp_rfq_itens` vêm do payload do cliente. Avaliar gravar os valores canônicos a partir de `erp_produtos` dentro da mesma transação, sem confiar no código/descrição enviados pelo navegador.
 - O inventário da árvore contém 780 entradas e muitos arquivos de páginas; isso não significa que cada tela foi funcionalmente validada. A auditoria precisa prosseguir módulo a módulo, distinguindo telas reais, aliases/duplicatas e rotas sem contrato validado.
 - Limitações da etapa: não há checkout do repositório disponível neste ambiente para executar `npm ci`, `npm run type-check`, lint ou build localmente. Nenhuma migração foi aplicada ao Supabase nesta etapa e nenhuma aprovação de produção foi declarada.
+
+
+## Estado atualizado após execução real — 12/10/2026
+
+Este bloco prevalece sobre notas anteriores desta página que diziam que nenhuma migration tinha sido aplicada nesta rodada.
+
+- **Supabase real** (zsklkydlawgvwgnvxwwx, ACTIVE_HEALTHY): aplicadas e verificadas migrations de hardening de Storage para SGQ, RFQ RBAC e criação atômica de RFQ; também aplicada a revisão da RPC RFQ para resolver código, descrição e unidade canônicos diretamente de erp_produtos, sem confiar nesses campos enviados pelo cliente.
+- **Storage**: erp-qualidade-anexos e erp-documentos-qualidade existem e estão privados. As políticas de ambos restringem os objetos à pasta da empresa da sessão; operações de escrita/exclusão exigem usuário ativo da empresa e perfil administrativo/Qualidade conforme as regras SQL.
+- **RFQ**: as políticas RLS antigas permissivas erp_rfq_tenant, erp_rfq_fornecedores_tenant e erp_rfq_itens_tenant foram substituídas pelas policies de leitura/criação/edição/exclusão com RBAC. A função erp_compras_criar_rfq_atomica(uuid[], jsonb, date, text, text, date) está presente como SECURITY INVOKER, com EXECUTE revogado de public, anon e concedido a authenticated. A consulta SQL confirmou os contratos instalados; não foi executado teste de transação com usuário real autenticado nesta etapa.
+- **CI**: run 38274971362 concluiu success para o commit 1ed72cc946d29318ef3d218a3e6432f577c77cf3, incluindo TypeScript, ESLint, auditorias, build, output, rotas e security no-bypass. Depois desse commit, novas alterações/documentação chegaram à branch; o HEAD mudou e o workflow mais recente precisa ser consultado antes de declarar o HEAD atual validado.
+- **Vercel/produção**: nenhuma deployment foi encontrada para os SHAs atuais consultados. Não afirmar que o código novo está publicado; PR #79 continua aberto e não mesclado.
+- **Pendências de continuidade**: remover a dependência de runtime em CDN unpkg no gerador DOCX com dependências locais e lockfile reproduzível; testar upload/download real de DOCX com sessão autenticada; testar RFQ com rollback e permissões reais; revisar avisos de segurança Supabase e continuar a auditoria funcional módulo a módulo.
