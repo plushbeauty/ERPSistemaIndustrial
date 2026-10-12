@@ -8,6 +8,9 @@ create unique index if not exists erp_fornecedores_id_empresa_iqf_uidx
 
 
 -- Keep existing SGQ relationships inside the same company as the parent record.
+create unique index if not exists erp_usuarios_id_empresa_iqf_uidx
+  on public.erp_usuarios (id, empresa_id);
+
 create unique index if not exists erp_qualidade_processos_id_empresa_iqf_uidx
   on public.erp_qualidade_processos (id, empresa_id);
 
@@ -49,9 +52,6 @@ create table if not exists public.erp_qualidade_fornecedor_criterios (
   unique (empresa_id, codigo),
   unique (id, empresa_id)
 );
-
-create unique index if not exists erp_usuarios_id_empresa_iqf_uidx
-  on public.erp_usuarios (id, empresa_id);
 
 create table if not exists public.erp_qualidade_fornecedor_avaliacoes (
   id uuid primary key default gen_random_uuid(),
