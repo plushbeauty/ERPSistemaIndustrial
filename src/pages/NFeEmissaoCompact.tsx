@@ -129,6 +129,97 @@ export default function NFeEmissaoCompact() {
 
   useEffect(() => { void load() }, [])
 
+  useEffect(() => {
+    if (!companyId || !releaseId || products.length === 0 || importedReleaseRef.current === releaseId) return
+    void (async () => {
+      setBusy(true)
+      setError('')
+      try {
+        const { data: release, error: releaseError } = await supabase
+          .from('erp_liberacoes_nf')
+          .select('id,pedido_venda_id,status,observacao,documento_fiscal_id')
+          .eq('empresa_id', companyId).eq('id', releaseId).maybeSingle()
+        if (releaseError) throw releaseError
+        if (!release) throw new Error('Liberação não encontrada para a empresa ativa.')
+        if (!['ENCAMINHADA', 'VINCULADA_NFE'].includes(String(release.status))) {
+          throw new Error('A liberação ainda não foi encaminhada pelo Almoxarifado.')
+        }
+        const { data: order, error: orderError } = await supabase
+          .from('erp_pedidos_venda').select('id,numero,cliente_id')
+          .eq('empresa_id', companyId).eq('id', release.pedido_venda_id).maybeSingle()
+        if (orderError) throw orderError
+        if (!order) throw new Error('Pedido de venda vinculado à liberação não foi encontrado.')
+        if (!order.cliente_id) throw new Error('O pedido não possui cliente vinculado.')
+        const [{ data: customerRow, error: customerError }, { data: releaseItems, error: releaseItemsError }] = await Promise.all([
+          supabase.from('erp_clientes').select('id,documento,nome,inscricao_estadual,endereco,numero,bairro,cep,cidade,estado,email').eq('empresa_id', companyId).eq('id', order.cliente_id).maybeSingle(),
+          supabase.from('erp_liberacoes_nf_itens').select('pedido_item_id,produto_id,lote_id,quantidade,caixas,peso_liquido,peso_bruto').eq('empresa_id', companyId).eq('liberacao_id', releaseId).order('created_at'),
+        ])
+        if (customerError) throw customerError
+        if (releaseItemsError) throw releaseItemsError
+        if (!customerRow) throw new Error('Cliente do pedido não encontrado na empresa ativa.')
+        if (!releaseItems?.length) throw new Error('A liberação não contém itens persistidos.')
+        const orderItemIds = [...new Set(releaseItems.map(row => String(row.pedido_item_id)))]
+        const { data: orderItemRows, error: orderItemsError } = await supabase
+          .from('erp_pedidos_venda_itens')
+          .select('id,pedido_id,produto_id,descricao,quantidade,valor_unitario,desconto,total')
+          .eq('empresa_id', companyId).eq('pedido_id', order.id).in('id', orderItemIds)
+        if (orderItemsError) throw orderItemsError
+        const orderItemById = new Map((orderItemRows ?? []).map(row => [String(row.id), row]))
+        const productById = new Map(products.map(product => [String(product.id), product]))
+        const importedItems: Item[] = releaseItems.map(line => {
+          const orderItem = orderItemById.get(String(line.pedido_item_id))
+          const product = productById.get(String(line.produto_id))
+          if (!orderItem || !product || String(orderItem.produto_id) !== String(line.produto_id)) {
+            throw new Error('Um item da liberação não corresponde ao pedido/produto ativo.')
+          }
+          return {
+            id: crypto.randomUUID(), produto_id: String(line.produto_id),
+            codigo: String(product.codigo ?? ''), descricao: String(orderItem.descricao ?? product.nome ?? ''),
+            ncm: onlyDigits(String(product.ncm ?? ''), 8),
+            cst: String(product.cst_icms ?? product.csosn ?? ''),
+            cfop: onlyDigits(String(product.cfop_saida ?? ''), 4),
+            unidade: String(product.unidade ?? ''),
+            quantidade: String(line.quantidade ?? ''),
+            valorUnitario: String(orderItem.valor_unitario ?? product.preco_venda ?? 0),
+            desconto: '0', icms: String(product.aliquota_icms ?? 0), ipi: String(product.aliquota_ipi ?? 0),
+            pis: String(product.aliquota_pis ?? 0), cofins: String(product.aliquota_cofins ?? 0),
+            origem: onlyDigits(String(product.origem_fiscal ?? '0'), 1),
+          }
+        })
+        const boxTotal = releaseItems.reduce((sum, row) => sum + Number(row.caixas ?? 0), 0)
+        const netWeight = releaseItems.reduce((sum, row) => sum + Number(row.peso_liquido ?? 0), 0)
+        const grossWeight = releaseItems.reduce((sum, row) => sum + Number(row.peso_bruto ?? 0), 0)
+        const { data: lotRows, error: lotError } = await supabase
+          .from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor')
+          .eq('empresa_id', companyId).in('id', [...new Set(releaseItems.map(row => String(row.lote_id)))])
+        if (lotError) throw lotError
+        const lotById = new Map((lotRows ?? []).map(row => [String(row.id), row]))
+        const trace = releaseItems.map(row => {
+          const lot = lotById.get(String(row.lote_id))
+          return 'Lote ' + String(lot?.lote_interno ?? '') + (lot?.lote_fornecedor ? ' (fornecedor ' + String(lot.lote_fornecedor) + ')' : '') + ': ' + String(row.quantidade)
+        }).join('; ')
+        setCustomer({
+          documento: String(customerRow.documento ?? ''), nome: String(customerRow.nome ?? ''),
+          ie: String(customerRow.inscricao_estadual ?? ''), endereco: [customerRow.endereco, customerRow.numero].filter(Boolean).join(', '),
+          bairro: String(customerRow.bairro ?? ''), cep: String(customerRow.cep ?? ''),
+          cidade: String(customerRow.cidade ?? ''), uf: String(customerRow.estado ?? ''), email: String(customerRow.email ?? ''),
+        })
+        setItems(importedItems)
+        setForm(current => ({
+          ...current, volumes: String(boxTotal), pesoLiquido: String(netWeight), pesoBruto: String(grossWeight),
+          informacoes: ['Origem: liberação de Almoxarifado ' + releaseId, 'Pedido de venda #' + String(order.numero), trace, release.observacao].filter(Boolean).join(' | '),
+        }))
+        if (release.documento_fiscal_id) setDocumentId(String(release.documento_fiscal_id))
+        importedReleaseRef.current = releaseId
+        setMessage('Itens, quantidades, cliente, caixas, pesos e rastreabilidade carregados da liberação. Revise natureza, CFOP e tributação antes de salvar a NF-e.')
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : 'Falha ao importar a liberação para a NF-e.')
+      } finally {
+        setBusy(false)
+      }
+    })()
+  }, [companyId, releaseId, products])
+
   const totals = useMemo(() => {
     const result = items.reduce((acc, item) => {
       const gross = numberValue(item.quantidade) * numberValue(item.valorUnitario)
