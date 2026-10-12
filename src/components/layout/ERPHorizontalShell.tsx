@@ -249,7 +249,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
               <div>
                 <span>SGQERP INDUSTRIAL</span>
                 <h2 id="erp-quality-tablet-title">Tablet da Qualidade</h2>
-                <p>Escolha um processo. O módulo será aberto atrás desta janela.</p>
+                <p>Selecione um processo para abrir sua tela operacional.</p>
               </div>
               <button type="button" onClick={() => setTabletOpen(false)} aria-label="Fechar tablet da qualidade">×</button>
             </header>
