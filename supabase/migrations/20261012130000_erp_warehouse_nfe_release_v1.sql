@@ -346,6 +346,13 @@ begin
     if not found then raise exception 'Produto não localizado para efetivar a baixa física.'; end if;
     update public.erp_produto_estoque set saldo_fisico=greatest(coalesce(saldo_fisico,0)-v_item.quantidade,0),updated_at=now()
      where produto_id=v_item.produto_id and empresa_id=v_empresa;
+    insert into public.erp_estoque_movimentos(
+      empresa_id,produto_id,tipo,quantidade,origem,documento,observacao
+    ) values (
+      v_empresa,v_item.produto_id,'saida',v_item.quantidade,'LIBERACAO_NF',
+      v_header.documento_fiscal_id::text,
+      'Baixa após NF-e autorizada; liberação '||v_header.id::text||'; lote '||v_item.lote_id::text
+    );
   end loop;
   select u.id into v_user from public.erp_usuarios u where u.auth_user_id=auth.uid() and u.empresa_id=v_empresa and u.ativo=true and u.deleted_at is null limit 1;
   update public.erp_liberacoes_nf set status='CONCLUIDA',concluido_por=v_user,concluido_em=now(),updated_at=now()
