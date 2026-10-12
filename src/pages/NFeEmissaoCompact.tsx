@@ -43,7 +43,7 @@ const newItem = (): Item => ({
 const initialForm: TextMap = {
   natureza: '', modelo: '55', serie: '', numero: '', tipoEmissao: '1', finalidade: '1',
   operacao: '1', emissao: new Date().toISOString().slice(0, 16), saida: '', cfop: '',
-  ambiente: 'homologacao', frete: '0', seguro: '0', outras: '0', baseIcms: '0',
+  ambiente: 'homologacao', pagamentoTipo: '', valorPagamento: '', frete: '0', seguro: '0', outras: '0', baseIcms: '0',
   valorIcms: '0', baseIcmsSt: '0', valorIcmsSt: '0', modalidadeFrete: '9',
   transportadora: '', transportadoraCnpj: '', placa: '', ufPlaca: '', rntrc: '',
   volumes: '0', especie: '', marca: '', pesoLiquido: '0', pesoBruto: '0',
@@ -150,7 +150,7 @@ export default function NFeEmissaoCompact() {
         if (!order) throw new Error('Pedido de venda vinculado à liberação não foi encontrado.')
         if (!order.cliente_id) throw new Error('O pedido não possui cliente vinculado.')
         const [{ data: customerRow, error: customerError }, { data: releaseItems, error: releaseItemsError }] = await Promise.all([
-          supabase.from('erp_clientes').select('id,documento,nome,inscricao_estadual,endereco,numero,bairro,cep,cidade,estado,email').eq('empresa_id', companyId).eq('id', order.cliente_id).maybeSingle(),
+          supabase.from('erp_clientes').select('id,documento,nome,inscricao_estadual,endereco,numero,bairro,cep,cidade,estado,email,codigo_municipio_ibge').eq('empresa_id', companyId).eq('id', order.cliente_id).maybeSingle(),
           supabase.from('erp_liberacoes_nf_itens').select('pedido_item_id,produto_id,lote_id,quantidade,caixas,peso_liquido,peso_bruto').eq('empresa_id', companyId).eq('liberacao_id', releaseId).order('created_at'),
         ])
         if (customerError) throw customerError
@@ -221,7 +221,7 @@ export default function NFeEmissaoCompact() {
           documento: String(customerRow.documento ?? ''), nome: String(customerRow.nome ?? ''),
           ie: String(customerRow.inscricao_estadual ?? ''), endereco: [customerRow.endereco, customerRow.numero].filter(Boolean).join(', '),
           bairro: String(customerRow.bairro ?? ''), cep: String(customerRow.cep ?? ''),
-          cidade: String(customerRow.cidade ?? ''), uf: String(customerRow.estado ?? ''), email: String(customerRow.email ?? ''),
+          cidade: String(customerRow.cidade ?? ''), uf: String(customerRow.estado ?? ''), codigoMunicipio: String(customerRow.codigo_municipio_ibge ?? ''), email: String(customerRow.email ?? ''),
         })
         setItems(importedItems)
         setForm(current => ({
@@ -288,6 +288,11 @@ export default function NFeEmissaoCompact() {
     if (!onlyDigits(field(form, 'serie'), 3)) return 'Série é obrigatória.'
     if (!field(customer, 'documento').trim()) return 'CNPJ/CPF do destinatário é obrigatório.'
     if (!field(customer, 'nome').trim()) return 'Nome/Razão Social do destinatário é obrigatório.'
+    if (onlyDigits(field(customer, 'codigoMunicipio'), 7).length !== 7) return 'Código IBGE do município do destinatário deve possuir 7 dígitos.'
+    if (!field(form, 'pagamentoTipo')) return 'Informe o meio de pagamento da NF-e.'
+    if (!Number.isFinite(numberValue(field(form, 'valorPagamento'))) || numberValue(field(form, 'valorPagamento')) < 0) return 'Informe um valor de pagamento válido.'
+    if (field(form, 'pagamentoTipo') !== '90' && Math.abs(numberValue(field(form, 'valorPagamento')) - totalNota) > 0.01) return 'O valor de pagamento deve corresponder ao total da NF-e. Para sem pagamento, selecione a opção 90 e informe 0.'
+    if (field(form, 'pagamentoTipo') === '90' && numberValue(field(form, 'valorPagamento')) !== 0) return 'Para a opção 90 • Sem pagamento, o valor deve ser 0.'
     if (onlyDigits(field(form, 'cfop'), 4).length !== 4) return 'CFOP principal deve possuir 4 dígitos.'
     if (items.some(item => !item.codigo.trim() || onlyDigits(item.ncm, 8).length !== 8 || onlyDigits(item.cfop, 4).length !== 4 || !item.unidade.trim() || numberValue(item.quantidade) <= 0)) {
       return 'Complete código, NCM, CFOP, unidade e quantidade dos itens.'
@@ -312,7 +317,9 @@ export default function NFeEmissaoCompact() {
         destinatario_ie: field(customer, 'ie') || null, destinatario_email: field(customer, 'email') || null,
         destinatario_endereco: field(customer, 'endereco') || null, destinatario_bairro: field(customer, 'bairro') || null,
         destinatario_cep: field(customer, 'cep') || null, destinatario_cidade: field(customer, 'cidade') || null,
-        destinatario_uf: field(customer, 'uf') || null, modalidade_frete: field(form, 'modalidadeFrete'),
+        destinatario_uf: field(customer, 'uf') || null, destinatario_codigo_municipio: onlyDigits(field(customer, 'codigoMunicipio'), 7) || null,
+        pagamento_tipo: field(form, 'pagamentoTipo') || null, valor_pagamento: numberValue(field(form, 'valorPagamento')),
+        modalidade_frete: field(form, 'modalidadeFrete'),
         transportadora: field(form, 'transportadora') || null, placa: field(form, 'placa') || null,
         uf_transportadora: field(form, 'ufPlaca') || null, peso_liquido: numberValue(field(form, 'pesoLiquido')),
         peso_bruto: numberValue(field(form, 'pesoBruto')), volumes: numberValue(field(form, 'volumes')),
@@ -487,6 +494,7 @@ export default function NFeEmissaoCompact() {
           <CompactInput label="Endereço" value={field(customer, 'endereco')} onChange={v => updateCustomer('endereco', v)} wide />
           <CompactInput label="Bairro" value={field(customer, 'bairro')} onChange={v => updateCustomer('bairro', v)} />
           <CompactInput label="Município" value={field(customer, 'cidade')} onChange={v => updateCustomer('cidade', v)} />
+          <CompactInput label="Código IBGE Município" value={field(customer, 'codigoMunicipio')} onChange={v => updateCustomer('codigoMunicipio', onlyDigits(v, 7))} required />
           <CompactInput label="UF" value={field(customer, 'uf')} onChange={v => updateCustomer('uf', v.toUpperCase().slice(0, 2))} />
           <CompactInput label="CEP" value={field(customer, 'cep')} onChange={v => updateCustomer('cep', v)} />
           <CompactInput label="Telefone" value={field(customer, 'telefone')} onChange={v => updateCustomer('telefone', v)} />
@@ -531,6 +539,8 @@ export default function NFeEmissaoCompact() {
           <CompactInput label="Valor ICMS" value={field(form, 'valorIcms')} onChange={v => updateForm('valorIcms', v)} />
           <CompactInput label="BC ICMS ST" value={field(form, 'baseIcmsSt')} onChange={v => updateForm('baseIcmsSt', v)} />
           <CompactInput label="Valor ICMS ST" value={field(form, 'valorIcmsSt')} onChange={v => updateForm('valorIcmsSt', v)} />
+          <CompactSelect label="Meio de Pagamento" value={field(form, 'pagamentoTipo')} onChange={v => updateForm('pagamentoTipo', v)} options={[{value:'01',label:'01 • Dinheiro'},{value:'03',label:'03 • Cartão de crédito'},{value:'04',label:'04 • Cartão de débito'},{value:'15',label:'15 • Boleto bancário'},{value:'16',label:'16 • Depósito bancário'},{value:'17',label:'17 • PIX'},{value:'18',label:'18 • Transferência bancária'},{value:'90',label:'90 • Sem pagamento'},{value:'99',label:'99 • Outros'}]} />
+          <CompactInput label="Valor do Pagamento" value={field(form, 'valorPagamento')} onChange={v => updateForm('valorPagamento', v)} required />
           <CompactInput label="Produtos" value={money(totals.produtos)} onChange={() => undefined} readOnly />
           <CompactInput label="Frete" value={field(form, 'frete')} onChange={v => updateForm('frete', v)} />
           <CompactInput label="Seguro" value={field(form, 'seguro')} onChange={v => updateForm('seguro', v)} />
