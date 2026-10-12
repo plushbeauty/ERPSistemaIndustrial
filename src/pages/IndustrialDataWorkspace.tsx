@@ -134,6 +134,27 @@ export default function IndustrialDataWorkspace() {
       const tenantScoped = config.table === 'fiscal_nfe_entradas'
       if (tenantScoped && !companyId) throw new Error('Empresa ativa não identificada. Atualize a tela e tente novamente.')
       const payload: Record<string,unknown> = tenantScoped ? { empresa_id: companyId } : {}
+      if (config.table === 'fiscal_nfe_entradas') {
+        const accessKey = String(form.chave_acesso ?? '').trim()
+        if (!/^\\d{44}$/.test(accessKey)) throw new Error('A chave de acesso da NF-e deve conter exatamente 44 dígitos.')
+        const cnpj = String(form.cnpj_emitente ?? '').replace(/\\D/g, '')
+        if (cnpj.length !== 14) throw new Error('O CNPJ do emitente deve conter 14 dígitos.')
+        let invoiceItems: unknown
+        try { invoiceItems = JSON.parse(String(form.itens ?? '')) as unknown } catch { throw new Error('Informe os itens como um JSON válido em formato de lista.') }
+        if (!Array.isArray(invoiceItems) || invoiceItems.length === 0) throw new Error('A NF-e precisa conter ao menos um item em formato de lista JSON.')
+        const validItems = invoiceItems.every((item: unknown) => {
+          if (!item || typeof item !== 'object' || Array.isArray(item)) return false
+          const value = item as Record<string, unknown>
+          const quantity = Number(value.quantidade)
+          const unitCost = Number(value.valor_liquido_unitario)
+          return typeof value.produto_id === 'string' && value.produto_id.trim() !== ''
+            && typeof value.lote_id === 'string' && value.lote_id.trim() !== ''
+            && typeof value.endereco_id === 'string' && value.endereco_id.trim() !== ''
+            && Number.isFinite(quantity) && quantity > 0
+            && Number.isFinite(unitCost) && unitCost >= 0
+        })
+        if (!validItems) throw new Error('Cada item precisa de produto_id, lote_id, endereco_id, quantidade maior que zero e valor_liquido_unitario não negativo.')
+      }
       for (const field of config.fields) {
         const raw=form[field.key] ?? ''
         if(field.required && !raw.trim()) throw new Error('Campo obrigatório: '+field.label)
