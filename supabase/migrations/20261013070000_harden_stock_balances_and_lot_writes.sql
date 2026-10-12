@@ -39,6 +39,7 @@ as $$
 declare
   v_empresa uuid := public.erp_current_empresa_id();
   v_status text;
+  v_destination_type text;
   v_unit_cost numeric(18,6);
   v_available numeric(18,6);
 begin
@@ -46,6 +47,9 @@ begin
     raise exception 'Sessão autenticada e empresa ativa são obrigatórias.' using errcode = '42501';
   end if;
   if new.empresa_id is distinct from v_empresa then raise exception 'TENANT_MOVEMENT_MISMATCH'; end if;
+  if new.quantidade is null or new.quantidade <= 0 or new.quantidade::text in ('NaN', 'Infinity', '-Infinity') then
+    raise exception 'MOVEMENT_QUANTITY_INVALID' using errcode = '22023';
+  end if;
   if not (
     public.erp_is_master()
     or exists (
@@ -85,7 +89,11 @@ begin
 
   if new.tipo in ('entrada_nf','retorno_producao','transferencia') or (new.tipo='ajuste_inventario' and new.endereco_destino_id is not null) then
     if new.endereco_destino_id is null then raise exception 'ENDERECO_DESTINO_OBRIGATORIO'; end if;
-    if not exists (select 1 from public.estoque_enderecos where id=new.endereco_destino_id and empresa_id=v_empresa and ativo) then raise exception 'ENDERECO_DESTINO_INVALIDO'; end if;
+    select tipo into v_destination_type from public.estoque_enderecos where id=new.endereco_destino_id and empresa_id=v_empresa and ativo;
+    if not found then raise exception 'ENDERECO_DESTINO_INVALIDO'; end if;
+    if v_status <> 'liberado' and new.endereco_destino_id is not null and v_destination_type <> 'quarentena' then
+      raise exception 'BLOCKED_LOT_DESTINATION_MUST_BE_QUARANTINE' using errcode = '42501';
+    end if;
     insert into public.estoque_saldos(empresa_id,produto_id,lote_id,endereco_id,quantidade,custo_medio,updated_at)
     values(v_empresa,new.produto_id,new.lote_id,new.endereco_destino_id,new.quantidade,coalesce(v_unit_cost,0),now())
     on conflict (empresa_id,produto_id,lote_id,endereco_id)
