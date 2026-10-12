@@ -109,6 +109,12 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   useEffect(() => {
     setOpenMenu(null)
   }, [pathname])
+
+  useEffect(() => {
+    const openQualityTablet = () => setTabletOpen(true)
+    window.addEventListener('erp:open-quality-tablet', openQualityTablet)
+    return () => window.removeEventListener('erp:open-quality-tablet', openQualityTablet)
+  }, [])
   const flattenMenu = (items: MenuItem[], prefix = ''): Array<{ label: string; route: string; action?: MenuItem['action'] }> => items.flatMap(item => [
     { label: prefix ? `${prefix} / ${item.label}` : item.label, route: item.route, action: item.action },
     ...(item.children ? flattenMenu(item.children, prefix ? `${prefix} / ${item.label}` : item.label) : []),
