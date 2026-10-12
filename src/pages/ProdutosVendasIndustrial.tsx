@@ -320,6 +320,20 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-form-grid>*{min-width:0}
       .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%}
       .product-master-screen .product-form-grid label>span{max-width:100%;line-height:11px}
+      .product-master-screen>header{background:#123B50!important;border-bottom-color:#E6A34A!important;border-left-color:#E6A34A!important;min-height:48px}
+      .product-master-screen>header>div:first-child>div{color:#D9F1F7!important;letter-spacing:.08em}
+      .product-master-screen>header h1{color:#fff!important;font-weight:600;letter-spacing:.01em}
+      .product-master-screen section[style*="margin: 10px"]{border-color:#B9D4DF!important;box-shadow:0 1px 2px rgba(18,59,80,.06)}
+      .product-master-screen section[style*="margin: 10px"]>div:first-child{color:#123B50}
+      .product-master-screen section[style*="margin: 10px"] table thead th{background:#123B50!important;color:#fff!important;font-size:9px!important;font-weight:700!important;letter-spacing:.04em}
+      .product-master-screen section[style*="margin: 10px"] table tbody tr{height:32px}
+      .product-master-screen section[style*="margin: 10px"] table tbody tr:hover{background:#E6F3F8}
+      .product-master-screen section[style*="margin:10px"]>div:first-child{background:#EAF4F8}
+      .product-master-screen section[style*="margin: 10px"] button{border-radius:2px!important}
+      .product-master-screen section[style*="margin: 10px"]>div[style*="border-bottom"]{background:#EAF4F8!important}
+      .product-master-screen section[style*="margin: 10px"]>div[style*="border-bottom"] button{color:#315466!important}
+      .product-master-screen section[style*="margin: 10px"]>div[style*="border-bottom"] button[style*="border-bottom: 3px solid"]{background:#123B50!important;color:#fff!important;border-bottom-color:#E6A34A!important}
+      .product-master-screen section[style*="margin:10px"]>div[style*="border-bottom"] button{height:32px!important}
       @media(max-width:1150px){.product-master-screen .product-general-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}.product-master-screen .product-measure-row{grid-template-columns:repeat(5,minmax(0,1fr))!important}.product-master-screen .product-commercial-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
       @media(max-width:700px){.product-master-screen .product-general-row,.product-master-screen .product-measure-row,.product-master-screen .product-commercial-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3){grid-column:span 2!important}.product-master-screen .product-commercial-row>*{grid-column:span 1!important}}
     `}</style>
