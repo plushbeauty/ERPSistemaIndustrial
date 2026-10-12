@@ -1,6 +1,6 @@
 import { LogOut } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import CompactButton from '../ui/CompactButton'
 
@@ -8,6 +8,8 @@ type Operator = { name: string; email: string }
 
 export default function ERPHeader() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const isQuality = location.pathname.startsWith('/qualidade') || location.pathname.startsWith('/sgq')
   const [operator, setOperator] = useState<Operator>({ name: 'Operador autenticado', email: '' })
   const [now, setNow] = useState(() => new Date())
   const [companyName, setCompanyName] = useState('Empresa não identificada')
@@ -77,7 +79,7 @@ export default function ERPHeader() {
         </span>
       </button>
 
-      <div className="synqra-header-title"><strong>Sistema ERP industrial</strong><small>{companyName}</small></div>
+      <div className="synqra-header-title">{isQuality ? <button type="button" onClick={() => navigate('/qualidade/tablet')} className="inline-flex h-[30px] items-center gap-2 border border-[#24789D] bg-gradient-to-r from-[#17445A] to-[#2D8DB8] px-4 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm hover:brightness-110">☰ Gestão da Qualidade <span aria-hidden="true">⌄</span></button> : <><strong>Sistema ERP industrial</strong><small>{companyName}</small></>}</div>
 
       <div className="synqra-session">
         <div>
