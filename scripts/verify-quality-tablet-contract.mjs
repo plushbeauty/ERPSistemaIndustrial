@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const qualityPath = path.join(root, 'src/pages/QualidadeCentralTablet.tsx');
+const qualityPath = path.join(root, 'src/features/qualidade/qualityModules.ts');
 const pcpPath = path.join(root, 'src/pages/PCPIndustrial.tsx');
 const qualityDashboardPath = path.join(root, 'src/pages/QualidadeDashboardSGQ.tsx');
 const shellPath = path.join(root, 'src/components/layout/ERPHorizontalShell.tsx');
