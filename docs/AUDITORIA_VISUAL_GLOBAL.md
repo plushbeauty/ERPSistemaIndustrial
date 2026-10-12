@@ -548,3 +548,16 @@ As referências foram consultadas para padrões de grade de catálogo, uso de im
 - **Referência técnica:** Docxtemplater suporta placeholders, loops e tabelas dinâmicas em DOCX; a documentação de instalação recomenda Docxtemplater com PizZip. Fontes: https://github.com/open-xml-templating/docxtemplater e https://docxtemplater.com/docs/installation/.
 - **Cuidados de dados:** o serviço não cria tabelas nem altera RLS/RPCs. A consulta de ativo usa apenas um identificador de ativo/máquina que já exista no snapshot 8D e só lê a máquina dentro da empresa atual; se o registro legado não tiver esse vínculo, os campos do ativo ficam vazios em vez de inventar valores.
 - **Validação pendente para este lote:** executar TypeScript, ESLint, auditorias, build, verificação de rotas e revisar o deploy do commit resultante. Não houve inspeção visual autenticada nem teste de emissão com um DOCX real nesta execução. A emissão depende de haver um modelo `MODELO-DOSSIE-8D` vigente e aprovado. As bibliotecas do Word são carregadas sob demanda pelo navegador a partir de versões fixadas no unpkg; se a política de rede/CSP da empresa bloquear esse domínio, o carregamento será reportado como erro em vez de derrubar o shell.
+
+## Lote 4 — Correção da área do logotipo e recuperação do tablet SGQ
+
+- Arquivo: `src/styles/synqra-workspace.css`
+- Alteração: a área clicável do logotipo compartilhado passou a ter fundo branco explícito, borda neutra discreta e espaçamento interno; a marca deixa de herdar visualmente o gradiente azul-claro do cabeçalho.
+- Commit: `8882dd829885a11ed210640da2aeaec8b0818309`.
+- Arquivo: `src/pages/QualidadeCentralTablet.tsx`
+- Alteração: removido o redirecionamento que impedia a central tablet de renderizar os módulos; restaurada a grade navegável de Qualidade. Os cards têm altura mínima maior, colunas mais largas em desktop e textos com quebra de linha para não transbordarem.
+- Commit: `9d1b1a5475a7a09e41bfb51dffb14cd742c195e4`.
+- Segurança: sem mudanças de autenticação, RLS, permissões, RPCs ou esquema de banco nesta rodada.
+- Verificação de CI: workflow `ERP Industrial CI` do commit `9d1b1a5475a7a09e41bfb51dffb14cd742c195e4` foi observado em `pending`; ainda não há resultado final.
+- Vercel: status de verificação `failure`, apontando para o limite de builds do plano (`build-rate-limit`). Nenhum deploy de produção foi confirmado.
+- Pendências: aguardar o CI, corrigir eventual falha real de compilação e validar o tablet com sessão autenticada no preview; a auditoria visual autenticada das 243 rotas distintas permanece aberta.
