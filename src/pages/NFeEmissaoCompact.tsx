@@ -293,7 +293,7 @@ export default function NFeEmissaoCompact() {
 
   const selectProduct = (itemId: string, productId: string) => {
     const product = products.find(candidate => String(candidate.id) === productId)
-    if (!product) return
+    if (!product) { setItems(current => current.map(item => item.id === itemId ? { ...item, produto_id: '' } : item)); return }
     setItems(current => current.map(item => item.id !== itemId ? item : ({
       ...item,
       produto_id: productId,
@@ -458,6 +458,11 @@ export default function NFeEmissaoCompact() {
 
   const newDocument = () => {
     setDocumentId(null)
+    setActiveItemId('')
+    const next = new URLSearchParams(searchParams)
+    next.delete('liberacao_id')
+    setSearchParams(next)
+    importedReleaseRef.current = ''
     setItems([newItem()])
     setCustomer({})
     setMessage('')
