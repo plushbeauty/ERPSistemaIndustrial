@@ -106,17 +106,23 @@ export default function QualidadeEditorIT() {
         if (!cancelled) setErr(session.error?.message ?? 'Sessão não autenticada.')
         return
       }
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error || !company.data) {
+        if (!cancelled) setErr(company.error?.message ?? 'Empresa não identificada para a sessão.')
+        return
+      }
+      const empresaId = String(company.data)
       const user = await supabase.from('erp_usuarios')
-        .select('empresa_id')
+        .select('id')
         .eq('auth_user_id', session.data.session.user.id)
+        .eq('empresa_id', empresaId)
         .eq('ativo', true)
         .is('deleted_at', null)
         .maybeSingle()
-      if (user.error || !user.data?.empresa_id) {
-        if (!cancelled) setErr(user.error?.message ?? 'Empresa não identificada para a sessão.')
+      if (user.error || !user.data) {
+        if (!cancelled) setErr(user.error?.message ?? 'Perfil ERP ativo não localizado na empresa da sessão.')
         return
       }
-      const empresaId = user.data.empresa_id
       const result = await supabase.from('erp_qualidade_documentos_editor')
         .select('codigo_documento,titulo_documento,revisao,data_homologacao,conteudo_texto,logo_path,setor_responsavel,status')
         .eq('empresa_id', empresaId)
