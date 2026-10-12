@@ -55,7 +55,7 @@ function validNfeAccessKey(value: string): boolean {
   return Number(value[43]) === (remainder < 2 ? 0 : 11 - remainder)
 }
 function validCnpj(value: string): boolean {
-  if (!/^\\d{14}$/.test(value) || /^([0-9])\\1{13}$/.test(value)) return false
+  if (!/^\d{14}$/.test(value) || /^([0-9])\1{13}$/.test(value)) return false
   const digits = value.split('').map(Number)
   const digitFor = (values: number[], weights: number[]) => {
     const remainder = values.reduce((sum, digit, index) => sum + digit * weights[index], 0) % 11
