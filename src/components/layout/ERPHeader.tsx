@@ -10,7 +10,7 @@ export default function ERPHeader() {
   const navigate = useNavigate()
   const location = useLocation()
   const isQuality = location.pathname.startsWith('/qualidade') || location.pathname.startsWith('/sgq')
-  const [operator, setOperator] = useState<Operator>({ name: 'Operador autenticado', email: '' })
+  const [operator, setOperator] = useState<Operator>({ name: 'Carregando usuário...', email: '' })
   const [now, setNow] = useState(() => new Date())
   const [companyName, setCompanyName] = useState('Empresa não identificada')
 
@@ -42,9 +42,8 @@ export default function ERPHeader() {
         }
       }
 
-      const name = typeof metadata?.nome === 'string' && metadata.nome.trim()
-        ? metadata.nome.trim()
-        : 'Operador autenticado'
+      const metadataName = [metadata?.nome, metadata?.name, metadata?.full_name].find(value => typeof value === 'string' && value.trim())
+      const name = typeof metadataName === 'string' ? metadataName.trim() : data.user.email || 'Usuário autenticado'
       if (alive) setOperator({ name, email: data.user.email ?? '' })
     }
 
@@ -65,14 +64,14 @@ export default function ERPHeader() {
   const time = new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(now)
 
   return (
-    <header className="synqra-workspace-header h-[48px] min-h-[48px]">
+    <header className="synqra-workspace-header h-[76px] min-h-[76px]">
       <button
         type="button"
         className="synqra-workspace-brand"
         onClick={() => navigate('/erp-industrial')}
         title="Central do ERP"
       >
-        <img src="/logo/sgq-erp.png" alt="SGQERP Industrial" />
+        <img src="/logo/sgq-erp.png" alt="Logotipo SGQERP Industrial" />
         <span>
           <strong>SGQERP INDUSTRIAL</strong>
           <small>Central de controle</small>
