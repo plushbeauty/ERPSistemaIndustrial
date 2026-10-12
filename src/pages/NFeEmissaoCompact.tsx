@@ -329,6 +329,78 @@ export default function NFeEmissaoCompact() {
     }
   }
 
+
+  const emitDocument = async () => {
+    if (!documentId) {
+      setError('Salve e valide a NF-e antes de solicitar a transmissão.')
+      return
+    }
+    setBusy(true)
+    setError('')
+    setMessage('')
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('emitir-nfe', {
+        body: { documento_id: documentId },
+      })
+      if (invokeError) throw new Error(invokeError.message || 'Falha ao comunicar com o integrador fiscal.')
+      const result = data as { ok?: boolean; status?: string; error?: string; chave_acesso?: string; protocolo_autorizacao?: string } | null
+      if (!result) throw new Error('O integrador não retornou um resultado verificável.')
+      if (result.status === 'Autorizada' && result.chave_acesso && result.protocolo_autorizacao) {
+        setMessage('NF-e autorizada com protocolo confirmado. Chave: ' + result.chave_acesso + '. Atualize a tela para consultar os dados persistidos e baixar o DANFE.')
+      } else if (result.status === 'Processando') {
+        setMessage(result.error || 'Solicitação recebida e ainda em processamento. Não reenvie a mesma nota; atualize a situação antes de qualquer nova tentativa.')
+      } else {
+        throw new Error(result.error || 'A emissão não foi confirmada pelo integrador fiscal.')
+      }
+      const { data: saved, error: savedError } = await supabase
+        .from('erp_documentos_fiscais')
+        .select('status,chave_acesso,mensagem_retorno')
+        .eq('id', documentId)
+        .eq('empresa_id', companyId)
+        .maybeSingle()
+      if (savedError) throw savedError
+      if (saved?.status === 'Autorizada' && saved.chave_acesso) {
+        setMessage('NF-e autorizada. Chave: ' + String(saved.chave_acesso) + '. ' + String(saved.mensagem_retorno ?? 'Protocolo validado pelo integrador fiscal.'))
+      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao solicitar emissão da NF-e.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const downloadDanfe = async () => {
+    if (!documentId) return
+    setBusy(true)
+    setError('')
+    setMessage('')
+    try {
+      const { data: document, error: documentError } = await supabase
+        .from('erp_documentos_fiscais')
+        .select('status,pdf_storage_path,chave_acesso')
+        .eq('id', documentId)
+        .eq('empresa_id', companyId)
+        .maybeSingle()
+      if (documentError) throw documentError
+      if (!document || document.status !== 'Autorizada' || !document.chave_acesso) {
+        throw new Error('O DANFE só pode ser disponibilizado após a autorização fiscal confirmada.')
+      }
+      if (!document.pdf_storage_path) {
+        throw new Error('A NF-e está autorizada, mas o provedor não disponibilizou o PDF do DANFE. Consulte o documento fiscal e reconcilie o arquivo com o integrador.')
+      }
+      const { data: signed, error: signedError } = await supabase.storage
+        .from('documentos-erp')
+        .createSignedUrl(String(document.pdf_storage_path), 60)
+      if (signedError) throw signedError
+      if (!signed?.signedUrl) throw new Error('Não foi possível gerar um link temporário autorizado para o DANFE.')
+      window.location.assign(signed.signedUrl)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao abrir o DANFE autorizado.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const newDocument = () => {
     setDocumentId(null)
     setItems([newItem()])
@@ -353,9 +425,9 @@ export default function NFeEmissaoCompact() {
       <div className="synqra-nfe-actions">
         <CompactButton type="button" onClick={newDocument}><Plus size={13} /> NOVA</CompactButton>
         <CompactButton type="button" tone="primary" onClick={() => void saveDraft()} disabled={busy}><Save size={13} /> SALVAR / VALIDAR</CompactButton>
-        <CompactButton type="button" tone="orange" disabled={!documentId || busy}><Send size={13} /> EMITIR</CompactButton>
-        <CompactButton type="button" disabled={!documentId}><FileDown size={13} /> DANFE PDF</CompactButton>
-        <CompactButton type="button" tone="danger" disabled={!documentId}><X size={13} /> CANCELAR</CompactButton>
+        <CompactButton type="button" tone="orange" onClick={() => void emitDocument()} disabled={!documentId || busy}><Send size={13} /> EMITIR</CompactButton>
+        <CompactButton type="button" onClick={() => void downloadDanfe()} disabled={!documentId || busy}><FileDown size={13} /> DANFE PDF</CompactButton>
+        <CompactButton type="button" tone="danger" disabled title="Cancelamento fiscal ainda não está implementado nesta interface."><X size={13} /> CANCELAMENTO INDISPONÍVEL</CompactButton>
       </div>
 
       <Section title="01 • IDE — IDENTIFICAÇÃO DO DOCUMENTO FISCAL">
