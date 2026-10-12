@@ -39,7 +39,13 @@ const menus: MenuItem[] = [
     { label: 'Fornecedores', route: '/compras/fornecedores' },
     { label: 'Relatórios', route: '/compras/relatorios' },
   ] },
-  { label: 'Estoque', route: '/estoque', icon: Package },
+  { label: 'Estoque', route: '/estoque', icon: Package, children: [
+    { label: 'Saldos de estoque', route: '/estoque' },
+    { label: 'Separação de materiais', route: '/estoque/separacao' },
+    { label: 'Recebimento de lotes', route: '/estoque/recebimento-lotes' },
+    { label: 'Liberação para Nota Fiscal', route: '/estoque/liberacao-nfe', icon: FileText },
+    { label: 'Movimentações', route: '/estoque/movimentacoes' },
+  ] },
   { label: 'Financeiro', route: '/financeiro/custo-padrao', icon: Wallet },
   { label: 'Fiscal', route: '/fiscal', icon: FileText },
   { label: 'Manufatura / PCP', route: '/pcp', icon: Factory, children: [

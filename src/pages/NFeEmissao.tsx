@@ -333,11 +333,33 @@ export default function NFeEmissao() {
   }
 
   const validate = (): string | null => {
+    const numericFields: Array<[string, string]> = [
+      ['frete', form.valorFrete],
+      ['desconto total', form.valorDesconto],
+      ['outras despesas', form.outrasDespesas],
+      ['base de cálculo do ICMS', form.baseIcms],
+      ['valor do ICMS', form.valorIcms],
+      ['base do ICMS ST', form.baseIcmsSt],
+      ['valor do ICMS ST', form.valorSt],
+      ['valor do IPI', form.valorIpi],
+      ['valor do PIS', form.valorPis],
+      ['valor do COFINS', form.valorCofins],
+      ['peso líquido', form.pesoLiquido],
+      ['peso bruto', form.pesoBruto],
+      ['volumes', form.volumes],
+    ]
+    for (const [label, value] of numericFields) {
+      if (!validNumber(value) || numberValue(value) < 0) return `Informe um valor numérico não negativo para ${label}.`
+    }
+    if (numberValue(form.valorDesconto) > totalProdutos + numberValue(form.valorFrete) + numberValue(form.outrasDespesas) + numberValue(form.valorIpi) + numberValue(form.valorSt)) {
+      return 'O desconto total não pode exceder o valor bruto calculado da NF-e.'
+    }
     if (!form.tipo) return 'Selecione se a operação da NF-e é de entrada ou saída.'
     if (!form.ambiente) return 'Selecione o ambiente fiscal. Nenhum ambiente é presumido.'
     if (!form.natureza.trim()) return 'Informe a natureza da operação.'
     if (digits(form.cfop, 4).length !== 4) return 'O CFOP deve possuir 4 dígitos.'
     if (!form.emissao || !Number.isFinite(new Date(form.emissao).getTime())) return 'Informe uma data e hora de emissão válidas.'
+    if (form.saida && !Number.isFinite(new Date(form.saida).getTime())) return 'Informe uma data e hora de saída válidas.'
     if (!validFiscalDocument(form.parceiro.cnpjCpf)) return 'Informe um CPF/CNPJ válido, incluindo os dígitos verificadores.'
     if (!form.parceiro.razaoSocial.trim()) return 'Informe a razão social do destinatário.'
     if (!form.parceiro.endereco.trim() || !form.parceiro.bairro.trim() || digits(form.parceiro.cep, 8).length !== 8 || !form.parceiro.cidade.trim() || !/^[A-Za-z]{2}$/.test(form.parceiro.uf)) return 'Complete logradouro, bairro, CEP, município e UF do destinatário.'
@@ -351,6 +373,17 @@ export default function NFeEmissao() {
       if (!validNumber(item.desconto) || numberValue(item.desconto) < 0 || numberValue(item.desconto) > numberValue(item.quantidade) * numberValue(item.valorUnitario)) return 'O desconto do item deve estar entre zero e o subtotal do item.'
       if (!item.unidade.trim()) return 'Informe a unidade de medida de cada item.'
       if (!/^[0-8]$/.test(digits(item.origem, 1))) return 'Informe a origem fiscal do item conforme o cadastro e a regra aplicável.'
+      const taxRates: Array<[string, string]> = [
+        ['ICMS', item.icmsAliquota],
+        ['IPI', item.ipiAliquota],
+        ['PIS', item.pisAliquota],
+        ['COFINS', item.cofinsAliquota],
+      ]
+      for (const [taxName, rate] of taxRates) {
+        if (rate.trim() && (!validNumber(rate) || numberValue(rate) < 0 || numberValue(rate) > 100)) {
+          return `A alíquota de ${taxName} deve estar entre 0 e 100%.`
+        }
+      }
     }
     return null
   }
@@ -552,7 +585,61 @@ export default function NFeEmissao() {
   const tabs: Array<[Tab, string]> = [['gerais', '1. Dados Gerais'], ['parceiros', '2. Emitente / Destinatário'], ['itens', '3. Itens da Nota'], ['impostos', '4. Tributação Detalhada'], ['transporte', '5. Transporte / Totais']]
 
   return <div className="min-h-screen bg-slate-50"><FiscalSidebar/><main className="nfe-page erp-dense fiscal-workspace">
-    <header className="nfe-header"><div><span className="nfe-eyebrow">FISCAL • NF-e MODELO 55</span><h1>Emissão de Nota Fiscal Eletrônica</h1><p>Documento fiscal persistido no ERP com trilha de rascunho. A transmissão depende de confirmação verificável do integrador.</p></div><div className="nfe-header-actions"><span className="nfe-status">{documentStatus === 'Rascunho' ? (documentId ? 'RASCUNHO SALVO' : 'NOVO RASCUNHO') : documentStatus === 'Não confirmado' ? 'ESTADO NÃO CONFIRMADO' : documentStatus.toUpperCase()}</span><button className="nfe-primary" type="button" onClick={() => void saveDraft()} disabled={busy || loadingData || documentStatus !== 'Rascunho'}>{busy ? 'Salvando…' : 'Salvar rascunho'}</button><button className="nfe-action transmit" type="button" onClick={() => void transmit()} disabled={busy || loadingData || documentStatus !== 'Rascunho'}>{busy ? 'Processando…' : 'Solicitar transmissão'}</button></div></header>
+    <section className="nfe-print-document" aria-label="Espelho de conferência para impressão">
+      <div className="print-topline"><strong>ERP INDUSTRIAL • FISCAL</strong><span>ESPELHO DE CONFERÊNCIA</span></div>
+      <div className="print-warning">SEM VALIDADE FISCAL — NÃO É DANFE AUTORIZADO PELA SEFAZ</div>
+      <div className="print-heading"><div><h1>NOTA FISCAL ELETRÔNICA</h1><p>Documento de trabalho para conferência dos dados informados</p></div><div className="print-box"><small>STATUS NO ERP</small><strong>{documentStatus.toUpperCase()}</strong></div></div>
+      <div className="print-section-title">IDENTIFICAÇÃO DA OPERAÇÃO</div>
+      <div className="print-grid">
+        <div><small>Número / Série</small><strong>{form.numero || 'Não reservado'} / {form.serie || '—'}</strong></div>
+        <div><small>Modelo</small><strong>55 • NF-e</strong></div>
+        <div><small>Ambiente</small><strong>{form.ambiente || 'Não definido'}</strong></div>
+        <div><small>Natureza da operação</small><strong>{form.natureza || '—'}</strong></div>
+        <div><small>CFOP principal</small><strong>{form.cfop || '—'}</strong></div>
+        <div><small>Data de emissão</small><strong>{form.emissao ? new Date(form.emissao).toLocaleString('pt-BR') : '—'}</strong></div>
+      </div>
+      <div className="print-section-title">EMITENTE</div>
+      <div className="print-grid">
+        <div className="print-span-2"><small>Razão social</small><strong>{company?.razao_social || 'Não cadastrado'}</strong></div>
+        <div><small>CNPJ</small><strong>{company?.cnpj || 'Não cadastrado'}</strong></div>
+        <div className="print-span-2"><small>Endereço</small><strong>{company?.endereco || 'Não cadastrado'}</strong></div>
+        <div><small>Município / UF</small><strong>{[company?.cidade, company?.uf].filter(Boolean).join(' / ') || '—'}</strong></div>
+      </div>
+      <div className="print-section-title">DESTINATÁRIO</div>
+      <div className="print-grid">
+        <div className="print-span-2"><small>Nome / Razão social</small><strong>{form.parceiro.razaoSocial || '—'}</strong></div>
+        <div><small>CPF / CNPJ</small><strong>{form.parceiro.cnpjCpf || '—'}</strong></div>
+        <div className="print-span-2"><small>Endereço</small><strong>{form.parceiro.endereco || '—'}</strong></div>
+        <div><small>Bairro</small><strong>{form.parceiro.bairro || '—'}</strong></div>
+        <div><small>Município / UF</small><strong>{[form.parceiro.cidade, form.parceiro.uf].filter(Boolean).join(' / ') || '—'}</strong></div>
+        <div><small>CEP</small><strong>{form.parceiro.cep || '—'}</strong></div>
+      </div>
+      <div className="print-section-title">PRODUTOS E SERVIÇOS</div>
+      <table className="print-items"><thead><tr><th>#</th><th>Código</th><th>Descrição</th><th>NCM</th><th>CFOP</th><th>UN</th><th>Qtd.</th><th>Vlr. unit.</th><th>Desconto</th><th>Total</th></tr></thead>
+        <tbody>{items.filter((item) => item.codigo.trim() || item.descricao.trim()).map((item, index) => <tr key={item.id}><td>{index + 1}</td><td>{item.codigo || '—'}</td><td>{item.descricao || '—'}</td><td>{item.ncm || '—'}</td><td>{item.cfop || '—'}</td><td>{item.unidade || '—'}</td><td>{item.quantidade || '—'}</td><td>{money(numberValue(item.valorUnitario))}</td><td>{money(numberValue(item.desconto))}</td><td>{money(item.total)}</td></tr>)}</tbody>
+      </table>
+      <div className="print-totals">
+        <div><small>Produtos</small><strong>{money(totalProdutos)}</strong></div>
+        <div><small>Frete</small><strong>{money(numberValue(form.valorFrete))}</strong></div>
+        <div><small>Desconto total</small><strong>{money(numberValue(form.valorDesconto))}</strong></div>
+        <div><small>Outras despesas</small><strong>{money(numberValue(form.outrasDespesas))}</strong></div>
+        <div className="print-total-final"><small>TOTAL PROVISÓRIO</small><strong>{money(totalNota)}</strong></div>
+      </div>
+      <div className="print-section-title">RESUMO TRIBUTÁRIO INFORMADO</div>
+      <div className="print-grid print-tax-grid">
+        <div><small>Base ICMS</small><strong>{money(numberValue(form.baseIcms))}</strong></div><div><small>ICMS</small><strong>{money(numberValue(form.valorIcms))}</strong></div>
+        <div><small>Base ICMS ST</small><strong>{money(numberValue(form.baseIcmsSt))}</strong></div><div><small>ICMS ST</small><strong>{money(numberValue(form.valorSt))}</strong></div>
+        <div><small>IPI</small><strong>{money(numberValue(form.valorIpi))}</strong></div><div><small>PIS</small><strong>{money(numberValue(form.valorPis))}</strong></div><div><small>COFINS</small><strong>{money(numberValue(form.valorCofins))}</strong></div>
+      </div>
+      <div className="print-section-title">TRANSPORTE</div>
+      <div className="print-grid">
+        <div><small>Modalidade de frete</small><strong>{form.modalidadeFrete === '0' ? 'CIF' : form.modalidadeFrete === '1' ? 'FOB' : form.modalidadeFrete === '9' ? 'Sem frete' : '—'}</strong></div>
+        <div className="print-span-2"><small>Transportadora</small><strong>{form.transportadora || '—'}</strong></div><div><small>Placa / UF</small><strong>{[form.placa, form.ufTransportadora].filter(Boolean).join(' / ') || '—'}</strong></div>
+        <div><small>Peso líquido</small><strong>{form.pesoLiquido || '0'}</strong></div><div><small>Peso bruto</small><strong>{form.pesoBruto || '0'}</strong></div><div><small>Volumes</small><strong>{form.volumes || '0'}</strong></div>
+      </div>
+      <footer className="print-footer"><span>Gerado pelo ERP Industrial para conferência interna.</span><span>Este espelho não comprova transmissão nem autorização fiscal.</span></footer>
+    </section>
+    <header className="nfe-header"><div><span className="nfe-eyebrow">FISCAL • NF-e MODELO 55</span><h1>Emissão de Nota Fiscal Eletrônica</h1><p>Documento fiscal persistido no ERP com trilha de rascunho. A transmissão depende de confirmação verificável do integrador.</p></div><div className="nfe-header-actions"><span className="nfe-status">{documentStatus === 'Rascunho' ? (documentId ? 'RASCUNHO SALVO' : 'NOVO RASCUNHO') : documentStatus === 'Não confirmado' ? 'ESTADO NÃO CONFIRMADO' : documentStatus.toUpperCase()}</span><button className="nfe-action secondary" type="button" onClick={() => window.print()} disabled={loadingData || items.every((item) => !item.descricao.trim())}>Imprimir espelho</button><button className="nfe-primary" type="button" onClick={() => void saveDraft()} disabled={busy || loadingData || documentStatus !== 'Rascunho'}>{busy ? 'Salvando…' : 'Salvar rascunho'}</button><button className="nfe-action transmit" type="button" onClick={() => void transmit()} disabled={busy || loadingData || documentStatus !== 'Rascunho'}>{busy ? 'Processando…' : 'Solicitar transmissão'}</button></div></header>
     {error && <div className="nfe-alert nfe-error" role="alert">{error}</div>}
     {message && <div className="nfe-alert nfe-success" role="status">{message}</div>}
     {!loadingData && <div className="nfe-alert" role="status">{fiscalConfig?.habilitado_nfe && fiscalConfig?.provedor?.toLowerCase() === 'notaas' && fiscalConfig?.regime_tributario ? `Configuração fiscal cadastrada · ambiente ${fiscalConfig.ambiente ?? 'pendente'} · regime ${fiscalConfig.regime_tributario}. O segredo e a resposta do integrador são validados no servidor; autorização depende de protocolo e XML compatíveis.` : 'INTEGRAÇÃO EXTERNA PENDENTE: confira provedor, ambiente, regime tributário, habilitação e segredo server-side antes de transmitir.'}</div>}
@@ -657,6 +744,65 @@ export default function NFeEmissao() {
       <p role="note" className="mt-2 text-xs text-amber-800">Total provisório calculado localmente para o rascunho. Não substitui a totalização tributária do provedor nem representa autorização fiscal.</p>
     </section>}
     </fieldset>
-    <style>{`.nfe-page{min-height:calc(100vh - 70px);background:#F4FBFD;color:#123B50;padding:18px 24px 42px;font-family:Inter,Roboto,Arial,sans-serif;box-sizing:border-box}.nfe-header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;background:#123B50;color:#fff;border-radius:10px;padding:17px 18px;margin-bottom:12px}.nfe-eyebrow{font-size:10px;letter-spacing:.13em;font-weight:950;color:#48B7C7}.nfe-header h1{margin:4px 0;font-size:24px}.nfe-header p{margin:4px 0 0;color:#D4E9EE;font-size:12px}.nfe-header-actions{display:flex;align-items:center;gap:10px}.nfe-status{font-size:10px;font-weight:950;color:#BFE6EC;white-space:nowrap}.nfe-primary,.nfe-secondary,.nfe-remove{border:0;cursor:pointer;font-weight:900}.nfe-primary{background:#2D8DB8;color:#fff;border-radius:7px;padding:10px 14px}.nfe-secondary{background:#2D8DB8;color:#fff;border-radius:7px;padding:9px 12px}.nfe-primary:disabled{opacity:.55;cursor:not-allowed}.nfe-alert{padding:9px 11px;border-radius:7px;margin-bottom:10px;font-size:12px;font-weight:800}.nfe-error{background:#FCEBEC;border:1px solid #E6B1B5;color:#8B3038}.nfe-success{background:#E8F7F1;border:1px solid #A9D9C3;color:#176C4E}.nfe-tabs{display:flex;gap:3px;background:#fff;border:1px solid #CFE1E7;border-radius:9px;padding:4px;margin-bottom:10px;overflow:auto}.nfe-tabs button{border:0;background:transparent;color:#526C77;padding:9px 12px;border-radius:6px;white-space:nowrap;font-size:11px;font-weight:900;cursor:pointer}.nfe-tabs button.active{background:#2D8DB8;color:#fff}.nfe-card{background:#fff;border:1px solid #D4E4EA;border-radius:9px;padding:14px}.nfe-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px}.nfe-grid>label{grid-column:span 3;min-width:0}.nfe-grid .wide-field{grid-column:span 6}.nfe-label{display:block;font-size:9px;text-transform:lowercase;font-weight:950;color:#536C77;margin:0 0 3px 1px}.nfe-input{width:100%;box-sizing:border-box;min-height:34px;border:1px solid #B9D2DA;border-radius:5px;background:#F9FCFD;color:#123B50;padding:6px 8px;outline:none;font-size:12px}.nfe-input:focus{border-color:#48B7C7;box-shadow:0 0 0 2px rgba(72,183,199,.14)}.compact-70{grid-column:span 1!important;max-width:70px}.compact-80{grid-column:span 1!important;max-width:80px}.compact-90{grid-column:span 1!important;max-width:90px}.compact-100{grid-column:span 1!important;max-width:100px}.compact-130{grid-column:span 2!important;max-width:130px}.compact-150{grid-column:span 2!important;max-width:150px}.compact-180{grid-column:span 2!important;max-width:180px}.partner-choice{display:grid;grid-template-columns:minmax(300px,520px);margin-bottom:10px}.issuer-box{background:#F4FBFD;border:1px solid #D4E4EA;border-left:4px solid #48B7C7;border-radius:7px;padding:9px 11px;margin-bottom:11px}.issuer-box span{display:block;font-size:9px;font-weight:950;text-transform:uppercase;color:#58717C}.issuer-box strong{display:block;font-size:13px;margin-top:2px}.issuer-box small{display:block;color:#687F89;margin-top:2px;font-size:10px}.nfe-card-title{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:10px}.nfe-card-title h2{margin:0;font-size:17px}.nfe-card-title p{margin:3px 0 0;color:#607985;font-size:11px}.nfe-table-wrap{overflow:auto}.nfe-table{width:100%;border-collapse:collapse;min-width:1350px}.nfe-table th{background:#123B50;color:#fff;text-align:left;font-size:9px;text-transform:uppercase;padding:7px 6px;white-space:nowrap}.nfe-table td{border-bottom:1px solid #E1ECEF;padding:4px}.nfe-table td input,.nfe-table td select{width:100%;box-sizing:border-box;min-height:29px;border:1px solid #C7D9DF;border-radius:4px;padding:4px 5px;font-size:11px}.w-code{width:85px}.w-description{width:250px}.w-ncm{width:72px}.w-cfop{width:55px}.w-unit{width:45px}.w-qty{width:65px}.w-price{width:82px}.w-total{width:100px}.nfe-number{text-align:right;font-weight:900;white-space:nowrap}.nfe-remove{background:#FCEBEC;color:#9D3039;border-radius:4px;width:27px;height:27px;font-size:17px}.nfe-total-strip{display:flex;justify-content:flex-end;gap:14px;padding-top:10px;font-size:13px}.nfe-total-strip strong{font-size:16px}.nfe-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}.nfe-summary-grid article,.nfe-footer-total>div{background:#F4FBFD;border:1px solid #D4E4EA;border-radius:7px;padding:10px}.nfe-summary-grid span,.nfe-footer-total span{display:block;color:#607985;font-size:9px;text-transform:uppercase;font-weight:900}.nfe-summary-grid strong,.nfe-footer-total strong{display:block;font-size:16px;margin-top:4px}.nfe-footer-total{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.nfe-footer-total>div{min-width:170px}.nfe-footer-total>div:last-child{border-color:#48B7C7;background:#EAF7FA}@media(max-width:900px){.nfe-header{flex-direction:column}.nfe-header-actions{width:100%;justify-content:space-between}.nfe-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.nfe-grid>label{grid-column:span 3}.nfe-grid .wide-field{grid-column:span 6}.nfe-summary-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.nfe-page{padding:10px}.nfe-grid{grid-template-columns:1fr 1fr}.nfe-grid>label,.nfe-grid .wide-field{grid-column:span 2!important;max-width:none}.nfe-summary-grid{grid-template-columns:1fr}.nfe-footer-total{flex-direction:column}.nfe-footer-total>div{min-width:0}}.nfe-page input.nfe-input,.nfe-page select.nfe-input,.nfe-page input.nfe-table-input,.nfe-page select.nfe-table-input{height:34px!important;min-height:34px!important;font-size:11px!important;line-height:18px!important;box-sizing:border-box}.nfe-page button.nfe-primary,.nfe-page button.nfe-secondary,.nfe-page button.nfe-remove{min-height:32px!important;height:32px!important;font-size:10px!important}.nfe-grid{display:flex!important;flex-wrap:wrap!important;align-items:flex-end!important;gap:7px!important}.nfe-grid>label{grid-column:auto!important;min-width:0}.nfe-grid .wide-field{grid-column:auto!important;flex:0 0 430px!important}.nfe-grid .compact-70{flex:0 0 70px!important;max-width:none!important}.nfe-grid .compact-80{flex:0 0 80px!important;max-width:none!important}.nfe-grid .compact-90{flex:0 0 90px!important;max-width:none!important}.nfe-grid .compact-100{flex:0 0 100px!important;max-width:none!important}.nfe-grid .compact-130{flex:0 0 130px!important;max-width:none!important}.nfe-grid .compact-150{flex:0 0 150px!important;max-width:none!important}.nfe-grid .compact-180{flex:0 0 180px!important;max-width:none!important}.nfe-table{table-layout:fixed;min-width:1730px!important}.nfe-table th{height:34px!important;padding:5px 6px!important}.nfe-table td{height:42px!important;padding:5px!important}.nfe-table td input,.nfe-table td select{height:32px!important;min-height:32px!important;font-size:10px!important}.nfe-right{text-align:right}.nfe-actions{position:sticky;bottom:0;z-index:20;display:flex;align-items:center;gap:5px;background:#fff;border:1px solid #CFE1E7;border-radius:4px;padding:5px;margin-top:7px;box-shadow:0 -4px 12px rgba(18,59,80,.06)}.nfe-action{height:32px!important;min-height:32px!important;border:1px solid #B9D2DA;border-radius:3px;padding:0 9px;font-size:10px!important;font-weight:800;cursor:pointer}.nfe-action.secondary{background:#fff;color:#17333F}.nfe-action.primary{background:#2D8DB8;border-color:#2D8DB8;color:#fff}.nfe-action.transmit{background:#3A9D78;border-color:#3A9D78;color:#fff}.nfe-action:disabled{opacity:.45;cursor:not-allowed}.nfe-action-spacer{flex:1}.nfe-card-title h2{font-size:13px!important}.nfe-card-title p{font-size:10px!important}.nfe-page input,.nfe-page select,.nfe-page button{border-radius:3px}`}</style>
+    <style>{`.nfe-page{min-height:calc(100vh - 70px);background:#F4FBFD;color:#123B50;padding:18px 24px 42px;font-family:Inter,Roboto,Arial,sans-serif;box-sizing:border-box}.nfe-header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;background:#123B50;color:#fff;border-radius:10px;padding:17px 18px;margin-bottom:12px}.nfe-eyebrow{font-size:10px;letter-spacing:.13em;font-weight:950;color:#48B7C7}.nfe-header h1{margin:4px 0;font-size:24px}.nfe-header p{margin:4px 0 0;color:#D4E9EE;font-size:12px}.nfe-header-actions{display:flex;align-items:center;gap:10px}.nfe-status{font-size:10px;font-weight:950;color:#BFE6EC;white-space:nowrap}.nfe-primary,.nfe-secondary,.nfe-remove{border:0;cursor:pointer;font-weight:900}.nfe-primary{background:#2D8DB8;color:#fff;border-radius:7px;padding:10px 14px}.nfe-secondary{background:#2D8DB8;color:#fff;border-radius:7px;padding:9px 12px}.nfe-primary:disabled{opacity:.55;cursor:not-allowed}.nfe-alert{padding:9px 11px;border-radius:7px;margin-bottom:10px;font-size:12px;font-weight:800}.nfe-error{background:#FCEBEC;border:1px solid #E6B1B5;color:#8B3038}.nfe-success{background:#E8F7F1;border:1px solid #A9D9C3;color:#176C4E}.nfe-tabs{display:flex;gap:3px;background:#fff;border:1px solid #CFE1E7;border-radius:9px;padding:4px;margin-bottom:10px;overflow:auto}.nfe-tabs button{border:0;background:transparent;color:#526C77;padding:9px 12px;border-radius:6px;white-space:nowrap;font-size:11px;font-weight:900;cursor:pointer}.nfe-tabs button.active{background:#2D8DB8;color:#fff}.nfe-card{background:#fff;border:1px solid #D4E4EA;border-radius:9px;padding:14px}.nfe-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px}.nfe-grid>label{grid-column:span 3;min-width:0}.nfe-grid .wide-field{grid-column:span 6}.nfe-label{display:block;font-size:9px;text-transform:lowercase;font-weight:950;color:#536C77;margin:0 0 3px 1px}.nfe-input{width:100%;box-sizing:border-box;min-height:34px;border:1px solid #B9D2DA;border-radius:5px;background:#F9FCFD;color:#123B50;padding:6px 8px;outline:none;font-size:12px}.nfe-input:focus{border-color:#48B7C7;box-shadow:0 0 0 2px rgba(72,183,199,.14)}.compact-70{grid-column:span 1!important;max-width:70px}.compact-80{grid-column:span 1!important;max-width:80px}.compact-90{grid-column:span 1!important;max-width:90px}.compact-100{grid-column:span 1!important;max-width:100px}.compact-130{grid-column:span 2!important;max-width:130px}.compact-150{grid-column:span 2!important;max-width:150px}.compact-180{grid-column:span 2!important;max-width:180px}.partner-choice{display:grid;grid-template-columns:minmax(300px,520px);margin-bottom:10px}.issuer-box{background:#F4FBFD;border:1px solid #D4E4EA;border-left:4px solid #48B7C7;border-radius:7px;padding:9px 11px;margin-bottom:11px}.issuer-box span{display:block;font-size:9px;font-weight:950;text-transform:uppercase;color:#58717C}.issuer-box strong{display:block;font-size:13px;margin-top:2px}.issuer-box small{display:block;color:#687F89;margin-top:2px;font-size:10px}.nfe-card-title{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:10px}.nfe-card-title h2{margin:0;font-size:17px}.nfe-card-title p{margin:3px 0 0;color:#607985;font-size:11px}.nfe-table-wrap{overflow:auto}.nfe-table{width:100%;border-collapse:collapse;min-width:1350px}.nfe-table th{background:#123B50;color:#fff;text-align:left;font-size:9px;text-transform:uppercase;padding:7px 6px;white-space:nowrap}.nfe-table td{border-bottom:1px solid #E1ECEF;padding:4px}.nfe-table td input,.nfe-table td select{width:100%;box-sizing:border-box;min-height:29px;border:1px solid #C7D9DF;border-radius:4px;padding:4px 5px;font-size:11px}.w-code{width:85px}.w-description{width:250px}.w-ncm{width:72px}.w-cfop{width:55px}.w-unit{width:45px}.w-qty{width:65px}.w-price{width:82px}.w-total{width:100px}.nfe-number{text-align:right;font-weight:900;white-space:nowrap}.nfe-remove{background:#FCEBEC;color:#9D3039;border-radius:4px;width:27px;height:27px;font-size:17px}.nfe-total-strip{display:flex;justify-content:flex-end;gap:14px;padding-top:10px;font-size:13px}.nfe-total-strip strong{font-size:16px}.nfe-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}.nfe-summary-grid article,.nfe-footer-total>div{background:#F4FBFD;border:1px solid #D4E4EA;border-radius:7px;padding:10px}.nfe-summary-grid span,.nfe-footer-total span{display:block;color:#607985;font-size:9px;text-transform:uppercase;font-weight:900}.nfe-summary-grid strong,.nfe-footer-total strong{display:block;font-size:16px;margin-top:4px}.nfe-footer-total{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.nfe-footer-total>div{min-width:170px}.nfe-footer-total>div:last-child{border-color:#48B7C7;background:#EAF7FA}@media(max-width:900px){.nfe-header{flex-direction:column}.nfe-header-actions{width:100%;justify-content:space-between}.nfe-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.nfe-grid>label{grid-column:span 3}.nfe-grid .wide-field{grid-column:span 6}.nfe-summary-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.nfe-page{padding:10px}.nfe-grid{grid-template-columns:1fr 1fr}.nfe-grid>label,.nfe-grid .wide-field{grid-column:span 2!important;max-width:none}.nfe-summary-grid{grid-template-columns:1fr}.nfe-footer-total{flex-direction:column}.nfe-footer-total>div{min-width:0}}.nfe-page input.nfe-input,.nfe-page select.nfe-input,.nfe-page input.nfe-table-input,.nfe-page select.nfe-table-input{height:34px!important;min-height:34px!important;font-size:11px!important;line-height:18px!important;box-sizing:border-box}.nfe-page button.nfe-primary,.nfe-page button.nfe-secondary,.nfe-page button.nfe-remove{min-height:32px!important;height:32px!important;font-size:10px!important}.nfe-grid{display:flex!important;flex-wrap:wrap!important;align-items:flex-end!important;gap:7px!important}.nfe-grid>label{grid-column:auto!important;min-width:0}.nfe-grid .wide-field{grid-column:auto!important;flex:0 0 430px!important}.nfe-grid .compact-70{flex:0 0 70px!important;max-width:none!important}.nfe-grid .compact-80{flex:0 0 80px!important;max-width:none!important}.nfe-grid .compact-90{flex:0 0 90px!important;max-width:none!important}.nfe-grid .compact-100{flex:0 0 100px!important;max-width:none!important}.nfe-grid .compact-130{flex:0 0 130px!important;max-width:none!important}.nfe-grid .compact-150{flex:0 0 150px!important;max-width:none!important}.nfe-grid .compact-180{flex:0 0 180px!important;max-width:none!important}.nfe-table{table-layout:fixed;min-width:1730px!important}.nfe-table th{height:34px!important;padding:5px 6px!important}.nfe-table td{height:42px!important;padding:5px!important}.nfe-table td input,.nfe-table td select{height:32px!important;min-height:32px!important;font-size:10px!important}.nfe-right{text-align:right}.nfe-actions{position:sticky;bottom:0;z-index:20;display:flex;align-items:center;gap:5px;background:#fff;border:1px solid #CFE1E7;border-radius:4px;padding:5px;margin-top:7px;box-shadow:0 -4px 12px rgba(18,59,80,.06)}.nfe-action{height:32px!important;min-height:32px!important;border:1px solid #B9D2DA;border-radius:3px;padding:0 9px;font-size:10px!important;font-weight:800;cursor:pointer}.nfe-action.secondary{background:#fff;color:#17333F}.nfe-action.primary{background:#2D8DB8;border-color:#2D8DB8;color:#fff}.nfe-action.transmit{background:#3A9D78;border-color:#3A9D78;color:#fff}.nfe-action:disabled{opacity:.45;cursor:not-allowed}.nfe-action-spacer{flex:1}.nfe-card-title h2{font-size:13px!important}.nfe-card-title p{font-size:10px!important}.nfe-page input,.nfe-page select,.nfe-page button{border-radius:3px}
+    
+/* Padrão visual fiscal cinza: formulário compacto inspirado em emissores NF-e tradicionais (referência visual Sebrae), sem imitar marca/logotipo. */
+    .nfe-page{background:#e5e7e9!important;color:#292f33!important;padding:12px 16px 36px!important}
+    .nfe-header{background:#d2d6d9!important;color:#263238!important;border:1px solid #aeb5ba!important;border-radius:2px!important;padding:10px 12px!important;align-items:center!important}
+    .nfe-header h1{font-size:18px!important;font-weight:700!important;color:#263238!important}
+    .nfe-header p{color:#4f5b61!important;font-size:11px!important}
+    .nfe-eyebrow{color:#4e6875!important;font-size:9px!important}
+    .nfe-status{color:#39484f!important}
+    .nfe-card{background:#f1f2f3!important;border:1px solid #b8bec2!important;border-radius:2px!important;padding:10px!important;box-shadow:none!important}
+    .nfe-tabs{background:#d5d9dc!important;border:1px solid #adb5ba!important;border-radius:2px!important;padding:3px!important}
+    .nfe-tabs button{border-radius:2px!important;padding:7px 10px!important;color:#333d42!important;font-weight:700!important}
+    .nfe-tabs button.active{background:#536b78!important;color:#fff!important}
+    .nfe-label{color:#39454b!important;font-weight:700!important;text-transform:uppercase!important;letter-spacing:.02em!important}
+    .nfe-input{background:#fff!important;color:#222!important;border:1px solid #aeb6bb!important;border-radius:2px!important;padding:4px 6px!important;box-shadow:none!important}
+    .nfe-input:focus{border-color:#647f8d!important;box-shadow:0 0 0 1px rgba(83,107,120,.18)!important}
+    .nfe-page input.nfe-input,.nfe-page select.nfe-input,.nfe-page input.nfe-table-input,.nfe-page select.nfe-table-input{height:30px!important;min-height:30px!important;max-height:30px!important;line-height:20px!important;font-size:11px!important;box-sizing:border-box!important}
+    .nfe-table td input,.nfe-table td select{height:30px!important;min-height:30px!important;max-height:30px!important;font-size:10px!important;padding:3px 5px!important}
+    .nfe-page button.nfe-primary,.nfe-page button.nfe-secondary,.nfe-page button.nfe-action,.nfe-page button.nfe-remove{height:30px!important;min-height:30px!important;max-height:30px!important;box-sizing:border-box!important}
+    .issuer-box,.nfe-summary-grid article,.nfe-footer-total>div{background:#e2e5e7!important;border:1px solid #b9c0c4!important;border-radius:2px!important}
+    .issuer-box{border-left:3px solid #7d929c!important}
+    .nfe-table th{background:#d0d5d8!important;color:#28343a!important;border:1px solid #b5bdc2!important}
+    .nfe-table td{border-bottom:1px solid #cbd0d3!important}
+    .nfe-table td input,.nfe-table td select{background:#fff!important;border:1px solid #adb6bb!important;border-radius:2px!important}
+    .nfe-item-total{background:#e8eaec!important}
+    .nfe-primary,.nfe-secondary,.nfe-action{height:30px!important;min-height:30px!important;max-height:30px!important;padding:0 10px!important;border-radius:2px!important;font-size:10px!important;line-height:28px!important;font-weight:700!important;box-sizing:border-box!important;white-space:nowrap!important}
+    .nfe-primary{background:#536b78!important;border:1px solid #465b66!important;color:#fff!important}
+    .nfe-secondary{background:#f8f9fa!important;border:1px solid #9ea8ae!important;color:#303b40!important}
+    .nfe-action.secondary{background:#f8f9fa!important;border-color:#9ea8ae!important;color:#303b40!important}
+    .nfe-action.primary{background:#536b78!important;border-color:#465b66!important;color:#fff!important}
+    .nfe-action.transmit{background:#4b8069!important;border-color:#3d6d58!important;color:#fff!important}
+    .nfe-remove{width:30px!important;height:30px!important;min-height:30px!important;border-radius:2px!important}
+    .nfe-alert{border-radius:2px!important;font-weight:600!important}
+    .nfe-summary-grid strong,.nfe-footer-total strong{font-size:14px!important}
+    .nfe-footer-total>div:last-child{background:#dce5e8!important;border-color:#8d9ea6!important}
+    .nfe-actions{border-radius:2px!important;background:#e1e4e6!important;border-color:#b5bdc2!important;box-shadow:none!important}
+    @media(max-width:900px){.nfe-header-actions{flex-wrap:wrap;gap:5px!important}}
+    @media screen{.nfe-print-document{display:none}}
+    .nfe-print-document{color:#172b35;background:#fff;font-family:Arial,sans-serif;font-size:9px}
+    .print-topline{display:flex;justify-content:space-between;border-bottom:2px solid #123B50;padding:0 0 7px;margin-bottom:8px;font-size:10px;letter-spacing:.04em}
+    .print-warning{text-align:center;background:#fff3cd;border:1px solid #e6a34a;color:#7a4b00;font-weight:900;padding:7px;margin-bottom:9px;font-size:10px}
+    .print-heading{display:flex;justify-content:space-between;align-items:center;border:1px solid #9daeb5;padding:8px;margin-bottom:8px}
+    .print-heading h1{font-size:16px;margin:0 0 3px}.print-heading p{font-size:9px;margin:0;color:#536873}
+    .print-box{border:1px solid #9daeb5;padding:5px 9px;min-width:110px}.print-box small,.print-grid small,.print-totals small{display:block;color:#526873;font-size:7px;text-transform:uppercase;margin-bottom:3px}.print-box strong,.print-grid strong,.print-totals strong{font-size:9px;overflow-wrap:anywhere}
+    .print-section-title{background:#e8f1f4;border:1px solid #a9bec7;font-weight:900;padding:5px 6px;margin:8px 0 0;text-transform:uppercase;font-size:8px}
+    .print-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-left:1px solid #b7c6cc;border-top:1px solid #b7c6cc}
+    .print-grid>div{padding:5px 6px;border-right:1px solid #b7c6cc;border-bottom:1px solid #b7c6cc;min-height:28px;overflow-wrap:anywhere}
+    .print-grid .print-span-2{grid-column:span 2}
+    .print-items{width:100%;border-collapse:collapse;margin-top:0;font-size:8px}.print-items th{background:#edf3f5;color:#152c35;text-align:left}.print-items th,.print-items td{border:1px solid #b7c6cc;padding:4px 3px}.print-items td:nth-child(7),.print-items td:nth-child(8),.print-items td:nth-child(9),.print-items td:nth-child(10){text-align:right}
+    .print-totals{display:flex;justify-content:flex-end;gap:5px;margin-top:8px}.print-totals>div{border:1px solid #b7c6cc;padding:5px;min-width:75px}.print-totals .print-total-final{background:#e8f5f8;border:2px solid #2D8DB8;min-width:110px}
+    .print-tax-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .print-footer{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #9daeb5;margin-top:12px;padding-top:6px;font-size:7px;color:#536873}
+    @media print{
+      @page{size:A4 landscape;margin:8mm}
+      body *{visibility:hidden!important}
+      .nfe-print-document,.nfe-print-document *{visibility:visible!important}
+      .nfe-print-document{display:block!important;position:absolute!important;left:0!important;top:0!important;width:100%!important;box-sizing:border-box!important}
+      .nfe-page{padding:0!important;margin:0!important;background:#fff!important;min-height:0!important}
+    }
+`}</style>
   </main></div>
 }

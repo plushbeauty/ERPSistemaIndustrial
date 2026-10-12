@@ -204,9 +204,19 @@ Deno.serve(async (req: Request) => {
     const destinatarioCidade = text(doc.destinatario_cidade);
     const destinatarioBairro = text(doc.destinatario_bairro);
     const destinatarioCep = digits(doc.destinatario_cep);
+    const codigoMunicipio = digits(doc.destinatario_codigo_municipio);
+    const pagamentoTipo = text(doc.pagamento_tipo);
+    const valorPagamento = Number(doc.valor_pagamento);
     if (!destinatarioNome || !validFiscalDocument(documento) || !destinatarioEndereco || !destinatarioBairro ||
-        destinatarioCep.length !== 8 || !destinatarioCidade || !/^[A-Z]{2}$/.test(uf)) {
-      return response({ error: "Destinatário sem CPF/CNPJ com dígitos verificadores válidos ou endereço fiscal completo. Confira documento, logradouro, bairro, CEP, município e UF." }, 422);
+        destinatarioCep.length !== 8 || !destinatarioCidade || !/^[A-Z]{2}$/.test(uf) || !/^\d{7}$/.test(codigoMunicipio)) {
+      return response({ error: "Destinatário sem CPF/CNPJ válido ou endereço fiscal completo. Confira documento, logradouro, bairro, CEP, município, código IBGE de 7 dígitos e UF." }, 422);
+    }
+    const allowedPaymentTypes = new Set(["01", "02", "03", "04", "05", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "90", "99"]);
+    if (!allowedPaymentTypes.has(pagamentoTipo) || !Number.isFinite(valorPagamento) || valorPagamento < 0) {
+      return response({ error: "INTEGRAÇÃO FISCAL PENDENTE: informe um meio de pagamento NF-e válido e um valor numérico não negativo." }, 422);
+    }
+    if (pagamentoTipo === "90" ? valorPagamento !== 0 : Math.abs(valorPagamento - numberValue(doc.valor_total)) > 0.01) {
+      return response({ error: "O valor declarado no pagamento deve corresponder ao total da NF-e; para tPag 90 (sem pagamento), o valor deve ser zero." }, 422);
     }
     if (isCnpj && /[A-Z]/.test(documento)) {
       return response({ error: "INTEGRAÇÃO EXTERNA PENDENTE: o suporte do provedor Notaas a CNPJ alfanumérico ainda não foi confirmado." }, 422);
@@ -298,10 +308,12 @@ Deno.serve(async (req: Request) => {
           bairro: destinatarioBairro,
           cep: destinatarioCep,
           cidade: destinatarioCidade,
+          codigoMunicipio,
           uf,
         },
       },
       items: apiItems,
+      pagamentos: [{ tipoPagamento: pagamentoTipo, valor: valorPagamento }],
       valorFrete: numberValue(doc.valor_frete),
     };
 

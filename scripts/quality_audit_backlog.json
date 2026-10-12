@@ -1,97 +1,27 @@
 {
-  "generated_at": "2026-10-07T09:00:00-03:00",
+  "generated_at": "2026-10-12T13:18:00-03:00",
   "status": "active",
   "errors": [
     {
-      "timestamp": "2026-10-07T12:10:29-03:00",
-      "command": "npm run type-check",
-      "file": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
-      "line": 64,
-      "error": "error TS2304: Cannot find name 'ArrowLeft'."
+      "timestamp": "2026-10-12T13:17:00-03:00",
+      "command": "Aplicação da migration fiscal legada 20261005130000_erp_nfe_draft_tenant_permission_hardening.sql",
+      "file": "supabase/migrations/20261005130000_erp_nfe_draft_tenant_permission_hardening.sql",
+      "line": 6,
+      "error": "Aplicação abortada sem sucesso porque o schema remoto usa erp_permissions.code/name e não codigo/nome/modulo/ativo. A migration legada não foi aplicada; para evitar alterações de permissões incompatíveis, foi aplicada uma migration aditiva direcionada que endurece a RPC de rascunho e o vínculo da liberação com o schema real verificado."
     },
     {
-      "timestamp": "2026-10-07T12:10:29-03:00",
-      "command": "npm run type-check",
-      "file": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
-      "line": 67,
-      "error": "error TS2304: Cannot find name 'productSearch'."
-    },
-    {
-      "timestamp": "2026-10-07T12:10:29-03:00",
-      "command": "npm run type-check",
-      "file": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
-      "line": 67,
-      "error": "error TS2552: Cannot find name 'setProductSearch'. Did you mean 'setProducts'?"
-    },
-    {
-      "timestamp": "2026-10-07T12:10:29-03:00",
-      "command": "npm run type-check",
-      "file": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
-      "line": 68,
-      "error": "error TS2304: Cannot find name 'productSearch'."
-    },
-    {
-      "timestamp": "2026-10-07T12:10:29-03:00",
-      "command": "npm run type-check",
-      "file": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
-      "line": 68,
-      "error": "error TS2552: Cannot find name 'setProductSearch'. Did you mean 'setProducts'?"
-    },
-    {
-      "timestamp": "2026-10-07T12:10:29-03:00",
-      "command": "npm run type-check",
-      "file": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
-      "line": 74,
-      "error": "error TS2304: Cannot find name 'X'."
-    },
-    {
-      "timestamp": "2026-10-07T12:10:29-03:00",
-      "command": "npm run type-check",
-      "file": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
-      "line": 74,
-      "error": "error TS2304: Cannot find name 'AlertTriangle'."
-    },
-    {
-      "timestamp": "2026-10-07T12:10:29-03:00",
-      "command": "npm run type-check",
-      "file": "src/pages/EstoqueAlmoxarifadoCompact.tsx",
-      "line": 74,
-      "error": "error TS2304: Cannot find name 'CheckCircle2'."
-    },
-    {
-      "timestamp": "2026-10-07T12:10:29-03:00",
-      "command": "npm run type-check",
-      "file": "src/pages/FinancasContasPagar.tsx",
-      "line": 85,
-      "error": "error TS2304: Cannot find name 'empresaId'."
-    },
-    {
-      "timestamp": "2026-10-07T11:53:53-03:00",
-      "command": "npm run type-check",
-      "file": "src/pages/NFeEmissaoCompact.tsx",
-      "line": 20,
-      "error": "error TS1005: '}' expected."
-    },
-    {
-      "timestamp": "2026-10-07T11:53:53-03:00",
-      "command": "npm run type-check",
-      "file": "src/pages/NFeEmissaoCompact.tsx",
-      "line": 45,
-      "error": "error TS1005: ',' expected."
-    },
-    {
-      "timestamp": "2026-10-07T11:16:18-03:00",
-      "command": "npm run type-check",
-      "file": "src/AppEntryV2.tsx",
-      "line": 38,
-      "error": "error TS2307: Cannot find module './layout/ErpModuleShell' or its corresponding type declarations."
-    },
-    {
-      "timestamp": "2026-10-07T12:00:00-03:00",
-      "command": "local repository verification",
-      "file": "/tmp/erpcheck",
+      "timestamp": "2026-10-12T13:58:00-03:00",
+      "command": "Vercel preview deployment (GitHub branch head)",
+      "file": "Vercel project erp-sistema-industrial",
       "line": null,
-      "error": "git clone failed: fatal: unable to access 'https://github.com/plushbeauty/ERPSistemaIndustrial.git/': Could not resolve host: github.com"
+      "error": "A criação de preview para o head da branch foi bloqueada pela API Vercel com 402 payment_required (api-deployments-free-per-day; retryAfter 86400). Não foi criado deploy novo. Requer aguardar a cota ou ação do administrador do plano; não é falha de compilação do código."
+    },
+    {
+      "timestamp": "2026-10-12T13:00:00-03:00",
+      "command": "Homologação Supabase — Liberação Almoxarifado → NF-e",
+      "file": "supabase/migrations/20261012175122_erp_warehouse_nfe_release_v1.sql",
+      "line": null,
+      "error": "Migrations aplicadas ao projeto Supabase nas versões 20261012175122, 20261012175250, 20261012175321, 20261012175519, 20261012175708, 20261012180636 e 20261012180856 (versões do ledger remoto; arquivos locais 20261012180000 e 20261012182000); rascunho fiscal agora exige RBAC/tenant e status Rascunho, e o vínculo verifica destinatário e quantidades; o emissor persiste lote/rastreabilidade por item fiscal; parser decimal corrigido para preservar ponto decimal e normalizar formatos BR/internacional, com testes automatizados integrados aos gates de release. Gatilho duplicado de inventário cíclico removido (ledger remoto 20261012181356) e origem LIBERACAO_NF integrada ao snapshot concorrente. índice único impede associar a mesma NF-e a duas liberações. guard de Qualidade também bloqueia lote em quarentena, sucata e retrabalho. Verificação confirmou RLS, policies tenant-aware, wrappers públicos SECURITY INVOKER, implementações privilegiadas no schema privado e rejeição de chamadas sem sessão. Permanece pendente teste funcional com sessão autenticada de operador, indisponível nesta conexão; não considerar o fluxo homologado até testar salvar, encaminhar, importar no emissor e concluir somente após NF-e autorizada."
     }
   ]
 }

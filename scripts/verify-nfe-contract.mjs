@@ -20,6 +20,8 @@ const itemMigration = read('supabase/migrations/20260921141000_erp_nfe_itens_for
 const emissionMigration = read('supabase/migrations/20261005120000_erp_fiscal_nfe_numbering_and_claim_v1.sql')
 const emissionPage = read('src/pages/NFeEmissao.tsx')
 const emissionFunction = read('supabase/functions/emitir-nfe/index.ts')
+const xmlBuilder = read('src/lib/fiscal/nfe-xml-builder.ts')
+const nfeRepository = read('src/lib/fiscal/nfe-repository.ts')
 
 const requireIn = (text, pattern, description) => {
   if (!pattern.test(text)) failures.push(description)
@@ -91,8 +93,23 @@ if (/using\s*\(\s*true\s*\)|with\s+check\s*\(\s*true\s*\)/i.test(draftMigration)
 }
 
 requireIn(emissionMigration, /erp_has_permission\(\s*'fiscal'\s*,\s*'emitir'\s*\)/, 'Reserva/claim de NF-e não verifica permissão fiscal.')
+requireIn(xmlBuilder, /export function buildNFeDraftXml\(draft: NFeDraft\)/, 'Serializador tipado de rascunho NF-e não está disponível.');
+requireIn(xmlBuilder, /documentKind: 'internal-draft'[\s\S]*suitableForSefaz: false/, 'XML interno não declara explicitamente que não é adequado para SEFAZ.');
+requireIn(xmlBuilder, /urn:erp-industrial:nfe:draft:v1/, 'XML interno não usa namespace próprio de rascunho.');
+requireIn(xmlBuilder, /replace\(\/&\/g, '&amp;'\)[\s\S]*replace\(\/</, 'Serializador não escapa conteúdo textual XML.');
+requireIn(xmlBuilder, /codePointAt\(0\)/, 'Serializador não filtra caracteres inválidos XML 1.0 por ponto de código.');
+requireIn(nfeRepository, /default:\s*throw new Error\(`Status fiscal não reconhecido:/, 'Repositório não pode converter status fiscal desconhecido em rascunho silenciosamente.');
+requireIn(nfeRepository, /function mapEnvironment\([\s\S]*default:\s*throw new Error\(`Ambiente fiscal não reconhecido:[\s\S]*function mapDirection\([\s\S]*default:\s*throw new Error\(`Direção fiscal não reconhecida:[\s\S]*environment:\s*mapEnvironment\(row\.ambiente\)[\s\S]*direction:\s*mapDirection\(row\.tipo\)/, 'Repositório não pode converter ambiente/direção fiscal desconhecidos em valores padrão silenciosamente.');
 requireIn(emissionPage, /supabase\.rpc\('erp_salvar_rascunho_nfe'/, 'Tela NF-e não grava usando a RPC transacional.')
 requireIn(emissionPage, /functions\.invoke\('emitir-nfe'/, 'Tela NF-e não chama a Edge Function de emissão.')
+requireIn(emissionPage, /Imprimir espelho/, 'Tela NF-e não oferece impressão do espelho de conferência.')
+requireIn(emissionPage, /SEM VALIDADE FISCAL[\s\S]*NÃO É DANFE AUTORIZADO PELA SEFAZ/, 'Espelho de impressão não deixa explícito que não é DANFE autorizado.')
+requireIn(emissionPage, /@media print[\s\S]*\.nfe-print-document[\s\S]*display:block!important/, 'Espelho NF-e não possui regra isolada para impressão.')
+requireIn(emissionPage, /print-items[\s\S]*NCM[\s\S]*CFOP[\s\S]*Total/, 'Espelho de impressão não apresenta os principais campos dos itens.')
+requireIn(emissionPage, /print-total-final[\s\S]*TOTAL PROVISÓRIO/, 'Total do espelho não está identificado como provisório.')
+requireIn(emissionPage, /numericFields[\s\S]*valor do COFINS[\s\S]*peso bruto/, 'Formulário NF-e não valida os campos numéricos e monetários.')
+requireIn(emissionPage, /taxRates[\s\S]*numberValue\(rate\) > 100/, 'Alíquotas fiscais do item não são limitadas ao intervalo de 0 a 100%.')
+requireIn(emissionPage, /form\.saida && !Number\.isFinite\(new Date\(form\.saida\)\.getTime\(\)\)/, 'Data de saída informada não é validada.')
 requireIn(emissionPage, /data\.status\s*!==\s*'Autorizada'/, 'Tela NF-e pode indicar autorização sem estado confirmado.')
 requireIn(emissionFunction, /authData\.user/, 'Edge Function não valida a sessão do usuário.')
 requireIn(emissionFunction, /erp_has_permission/, 'Edge Function não verifica permissão antes de transmitir.')
