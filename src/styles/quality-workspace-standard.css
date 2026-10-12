@@ -103,3 +103,19 @@ main:has(nav[aria-label="Menu da qualidade"]) [role="status"] {
 .quality-central-tablet a:focus-visible {
   outline-offset: 2px;
 }
+
+/* Shared page surfaces: a tinted work area keeps white forms distinct from the background. */
+main:has(nav[aria-label="Menu da qualidade"]) {
+  background-color: #EAF3F7;
+}
+main:has(nav[aria-label="Menu da qualidade"]) section:has(table) {
+  border-color: #B8D5E1;
+  box-shadow: 0 1px 3px rgb(18 59 80 / 6%);
+}
+main:has(nav[aria-label="Menu da qualidade"]) section > h2 {
+  border-left: 3px solid #2D8DB8;
+  padding-left: 7px;
+}
+main:has(nav[aria-label="Menu da qualidade"]) section > header {
+  border-bottom-color: #48B7C7;
+}
