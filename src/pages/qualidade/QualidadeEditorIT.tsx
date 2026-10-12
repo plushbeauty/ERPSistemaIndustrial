@@ -316,7 +316,7 @@ export default function QualidadeEditorIT() {
     <main className="min-h-screen bg-[#F4FBFD] p-3 text-[#123B50] print:bg-white print:p-0">
       <QualitySidebar active="/qualidade/editor-it" />
       <div className="mx-auto max-w-[1500px] space-y-3">
-        <header className="flex flex-wrap items-end gap-2 border-b border-slate-200 pb-2 print:hidden">
+        <header className="no-print flex flex-wrap items-end gap-2 border-b border-slate-200 pb-2 print:hidden">
           <div className="mr-auto">
             <p className="text-[9px] font-semibold uppercase tracking-[.14em] text-[#2D8DB8]">SGQ · Editor gráfico de procedimentos</p>
             <h1 className="text-[18px] font-semibold">Instruções de Trabalho · ISO 9001</h1>
@@ -341,8 +341,8 @@ export default function QualidadeEditorIT() {
           <button type="submit" form="procedure-form" disabled={busy || !loaded} className="inline-flex h-[30px] items-center gap-2 border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-semibold text-white disabled:opacity-50"><Save size={13}/>{busy ? 'SALVANDO…' : 'SALVAR NOVA REVISÃO'}</button>
         </header>
 
-        {(err || msg) && <p role={err ? 'alert' : 'status'} className={err ? 'border border-red-300 bg-red-50 px-3 py-2 text-[10px] text-red-800' : 'border border-emerald-300 bg-emerald-50 px-3 py-2 text-[10px] text-emerald-800 print:hidden'}>{err || msg}</p>}
-        <details className="border border-slate-200 bg-white px-3 py-2 text-[10px] print:hidden">
+        {(err || msg) && <p role={err ? 'alert' : 'status'} className={err ? 'no-print border border-red-300 bg-red-50 px-3 py-2 text-[10px] text-red-800' : 'no-print border border-emerald-300 bg-emerald-50 px-3 py-2 text-[10px] text-emerald-800 print:hidden'}>{err || msg}</p>}
+        <details className="no-print border border-slate-200 bg-white px-3 py-2 text-[10px] print:hidden">
           <summary className="cursor-pointer font-semibold text-[#246F98]">Como preparar o modelo Word para exportação</summary>
           <p className="mt-2 leading-5 text-slate-600">No Word, crie o cabeçalho e o layout visual do procedimento e insira os campos exatamente como abaixo. Salve em .docx, envie em “MODELO WORD” e aprove a revisão no GED antes de exportar.</p>
           <div className="mt-2 grid gap-1 sm:grid-cols-2">
@@ -428,13 +428,13 @@ export default function QualidadeEditorIT() {
             </article>
           </section>
 
-          <footer className="flex flex-wrap items-center justify-between gap-2 border border-slate-200 bg-white px-3 py-2 text-[9px] text-slate-500 print:hidden">
+          <footer className="no-print flex flex-wrap items-center justify-between gap-2 border border-slate-200 bg-white px-3 py-2 text-[9px] text-slate-500 print:hidden">
             <span>Empresa identificada pela sessão · revisão registrada no Supabase · aprovação controlada no GED</span>
             <button type="submit" disabled={busy || !loaded} className="inline-flex h-[30px] items-center gap-2 border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-semibold text-white disabled:opacity-50"><Save size={13}/>{busy ? 'SALVANDO…' : 'SALVAR NOVA REVISÃO'}</button>
           </footer>
         </form>
       </div>
-      <style>{'@page{size:A4;margin:12mm}@media print{body{background:#fff!important}.print\\:hidden,nav,aside,button,input,select,textarea{display:none!important}main{padding:0!important}.max-w-\\[1500px\\]{max-width:100%!important}.grid{break-inside:avoid}article{box-shadow:none!important;max-width:100%!important}}'}</style>
+      <style>{'@page{size:A4;margin:12mm}@media print{body{background:#fff!important}.no-print,nav,aside,button,input,select,textarea{display:none!important}main{padding:0!important}.grid{break-inside:avoid}article{box-shadow:none!important;max-width:100%!important}}'}</style>
     </main>
   )
 }
