@@ -20,7 +20,7 @@ import { useSynqraLayout } from '../layout/SynqraLayoutContext'
 
 type Tab='visao'|'novaop'|'pedidos'|'ops'|'materiais'|'producao'|'programacao'|'capacidade'|'qualidade'
 type NovaOPForm={pedido_venda_id:string;pedido_item_id:string;produto_id:string;cliente_id:string;quantidade:string;data_emissao:string;data_prevista:string;status:string;prioridade:string;observacoes:string}
-type Modal='ajuda'|'op'|'programacao'|'tablet'|null
+type Modal='ajuda'|'op'|'programacao'|null
 type Order={id:string;numero:number;cliente_id:string;status:string;total:number}
 type OrderItem={id:string;pedido_id:string;produto_id:string;quantidade:number;descricao:string|null}
 type Client={id:string;nome:string;codigo:string|null}
@@ -250,21 +250,7 @@ const heightBucket=(ratio:number)=>{
  return 'h-32'
 }
 const tabs:[Tab,string,string][]=[['visao','Visão geral','Gauge'],['novaop','Criar Nova OP','Plus'],['pedidos','Pedidos / Demanda','ClipboardList'],['ops','Ordens de Produção','Factory'],['materiais','Materiais / MRP','Package'],['producao','Apontar produção','Play'],['programacao','Programação / Gantt','CalendarDays'],['capacidade','Capacidade / Máquinas','Wrench'],['qualidade','Qualidade / Defeitos','ShieldCheck']]
-const pcpTabletModules = [
- {label:'Ordens de produção',description:'Consultar e acompanhar ordens industriais.',route:'/pcp/ordens-industriais',icon:ClipboardList},
- {label:'Painel de ordens',description:'Visualizar a fila operacional das ordens.',route:'/pcp/painel-ordens',icon:Factory},
- {label:'Programação de máquinas',description:'Organizar recursos, horários e prioridades.',route:'/pcp/agenda-maquinas',icon:CalendarDays},
- {label:'Capacidade e Gantt',description:'Analisar carga e janelas de produção.',route:'/pcp/capacidade',icon:Activity},
- {label:'Sequenciamento',description:'Ordenar operações de fabricação.',route:'/pcp/sequenciamento',icon:Layers3},
- {label:'Planejamento industrial',description:'Acompanhar demanda e planejamento.',route:'/pcp/planejamento',icon:Settings2},
- {label:'MRP II',description:'Calcular necessidades de materiais.',route:'/pcp/mrp-ii',icon:Boxes},
- {label:'Fichas de processo',description:'Consultar parâmetros de fabricação.',route:'/pcp/fichas-processo',icon:FileSliders},
- {label:'Apontamentos',description:'Registrar produção, quantidades e perdas.',route:'/pcp/apontamentos',icon:ClipboardCheck},
- {label:'Paradas de produção',description:'Registrar ocorrências e paradas.',route:'/pcp/paradas',icon:Wrench},
- {label:'Indicadores OEE',description:'Acompanhar indicadores produtivos.',route:'/pcp/dashboard-oee',icon:Gauge},
- {label:'Tablet do operador',description:'Abrir o fluxo operacional do operador.',route:'/pcp/tablet-operador',icon:Factory},
- {label:'Materiais do PCP',description:'Consultar os fluxos de materiais.',route:'/pcp/materiais',icon:ListChecks},
-]
+
 
  return <main className={`pcp-modern-page pcp-industrial-shell${hostedBySynqra?' pcp-hosted-by-synqra':''}`}>
   {!hostedBySynqra && (
@@ -295,10 +281,10 @@ const pcpTabletModules = [
   )}
   <section className="pcp-main">
    {!hostedBySynqra&&<header className="pcp-topbar">
-    <div className="pcp-top-title"><button className="pcp-top-tablet" onClick={()=>setModal('tablet')}>▦ TABLET</button><div><strong>PCP Industrial</strong><small>PCP â€¢ PLANEJAMENTO E CONTROLE DA PRODUÃ‡ÃƒO</small></div></div>
+    <div className="pcp-top-title"><button className="pcp-top-tablet" onClick={()=>navigate('/pcp/tablet')}>▦ TABLET</button><div><strong>PCP Industrial</strong><small>PCP â€¢ PLANEJAMENTO E CONTROLE DA PRODUÃ‡ÃƒO</small></div></div>
     <div className="pcp-top-actions"><span className="pcp-supabase-dot"><i/> DADOS SUPABASE</span><span className="pcp-top-user"><i/>{profileName}</span><span className="pcp-top-clock">{clock.toLocaleDateString('pt-BR')} â€¢ {clock.toLocaleTimeString('pt-BR')}</span><button type="button" className="pcp-top-light" onClick={()=>document.documentElement.classList.toggle("dark")}>â˜¼ Light</button><button className="pcp-top-exit" onClick={()=>void supabase.auth.signOut().then(()=>window.location.replace('/login'))}>Sair</button></div>
    </header>}
-   <div className="pcp-page-head"><div className="pcp-page-heading-row"><div><span>PCP â€¢ PLANEJAMENTO E CONTROLE DA PRODUÃ‡ÃƒO</span><h1>{tab==='visao'?'DASHBOARD':tab==='novaop'?'NOVA ORDEM DE PRODUÃ‡ÃƒO':help[tab].title.toUpperCase()}</h1><p>{tab==='visao'?'VisÃ£o geral da programaÃ§Ã£o, produÃ§Ã£o, capacidade e qualidade da fÃ¡brica.':tab==='novaop'?'Cadastro operacional da OP, explosÃ£o de materiais e roteiro de produÃ§Ã£o.':help[tab].what}</p></div>{hostedBySynqra&&<button className="pcp-top-tablet" onClick={()=>setModal('tablet')}>▦ TABLET</button>}</div></div>
+   <div className="pcp-page-head"><div className="pcp-page-heading-row"><div><span>PCP â€¢ PLANEJAMENTO E CONTROLE DA PRODUÃ‡ÃƒO</span><h1>{tab==='visao'?'DASHBOARD':tab==='novaop'?'NOVA ORDEM DE PRODUÃ‡ÃƒO':help[tab].title.toUpperCase()}</h1><p>{tab==='visao'?'VisÃ£o geral da programaÃ§Ã£o, produÃ§Ã£o, capacidade e qualidade da fÃ¡brica.':tab==='novaop'?'Cadastro operacional da OP, explosÃ£o de materiais e roteiro de produÃ§Ã£o.':help[tab].what}</p></div>{hostedBySynqra&&<button className="pcp-top-tablet" onClick={()=>navigate('/pcp/tablet')}>▦ TABLET</button>}</div></div>
    {(message||error)&&<div className={error?'error':'notice mb-3'}>{error||message}</div>}
    <div className="pcp-content">
   {tab==='novaop'&&<NovaOPScreen orders={orders} orderItems={orderItems} products={products} clients={clients} machines={machines} fichas={fichas} fitems={fitems} fichaOps={fichaOps} onCancel={()=>selectTab('visao')} onSave={createOP} busy={busy} form={opForm} setForm={setOpForm}/>}\n\n  {tab==='visao'&&<section>
@@ -376,7 +362,7 @@ const pcpTabletModules = [
 
   {tab==='qualidade'&&<Table title="Defeitos enviados pela produÃ§Ã£o" cols={['Defeito','Quantidade','OP']} rows={defects.filter(d=>!query||d.defeito.toLowerCase().includes(query.toLowerCase())||d.ordem_producao_id.includes(query)).map(d=>[d.defeito,d.quantidade,d.ordem_producao_id])} search={query} setSearch={setQuery}/>}
 
-  {modal==='tablet'&&<Modal title="Tablet do PCP — Central de módulos" onClose={()=>setModal(null)}><p className="pcp-tablet-modal-intro">Selecione uma área do PCP. Este menu fica sobre o dashboard e não substitui a tela atual até você escolher um módulo.</p><div className="pcp-tablet-modal-grid">{pcpTabletModules.map(({label,description,route,icon:Icon})=><button key={route} type="button" className="pcp-tablet-modal-card" onClick={()=>{setModal(null);navigate(route)}}><span className="pcp-tablet-modal-icon"><Icon size={17} aria-hidden="true"/></span><span><strong>{label}</strong><small>{description}</small></span></button>)}</div></Modal>}
+  
    {modal==='ajuda'&&<Modal title="Como usar o PCP Industrial" onClose={()=>setModal(null)}><div className="pcp-help-modal">{tabs.map(([id,label,I])=><button key={id} onClick={()=>{selectTab(id);setModal(null)}}><InlineIcon name={I} size={20}/><div><strong>{label}</strong><p>{help[id].what}</p><small>Como usar: {help[id].how}</small></div><span>â†’</span></button>)}</div><div className="pcp-info"><InlineIcon name="CheckCircle2" size={20}/><div><strong>Fluxo recomendado</strong><p>Pedido â†’ OP â†’ MRP â†’ ProgramaÃ§Ã£o â†’ Apontamento â†’ Estoque/Qualidade. Cada etapa tem uma finalidade; nÃ£o Ã© necessÃ¡rio preencher tudo de uma vez.</p></div></div></Modal>}
 
   {modal==='op'&&<Modal title="Nova Ordem de ProduÃ§Ã£o" onClose={()=>setModal(null)}><form className="pcp-modal-form" onSubmit={createOP}><label className="wide">Pedido de venda de origem *<select value={opForm.pedido_venda_id} required onChange={e=>{const selectedOrder=orders.find(order=>order.id===e.target.value);setOpForm(v=>({...v,pedido_venda_id:e.target.value,pedido_item_id:'',cliente_id:selectedOrder?.cliente_id||'',produto_id:'',quantidade:''}))}}><option value="">Selecione um pedido real de Vendas</option>{orders.filter(order=>!['cancelado','cancelada','cancelado','rejeitado'].includes(String(order.status).toLowerCase())).map(order=><option key={order.id} value={order.id}>PV-{order.numero} · {order.status} · {Number(order.total||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</option>)}</select><small>O número interno da OP será gerado pelo banco e ficará vinculado a este pedido.</small></label><EntityCodeLookup label="Produto do pedido *" value={opForm.produto_id} records={orderProducts} required onChange={value=>setOpForm(v=>({...v,produto_id:value}))} onSelect={p=>{const orderedQty=orderItems.filter(item=>item.pedido_id===opForm.pedido_venda_id&&item.produto_id===p.id).reduce((sum,item)=>sum+Number(item.quantidade||0),0);setOpForm(v=>({...v,produto_id:p.id,quantidade:orderedQty>0?String(orderedQty):v.quantidade}))}} helper={opForm.pedido_venda_id?'Selecione somente um produto presente no pedido selecionado.':'Selecione primeiro um pedido de venda.'}/><label className="wide">Item de origem *<select required value={opForm.pedido_item_id} onChange={e=>{const item=orderItems.find(x=>x.id===e.target.value);setOpForm(v=>({...v,pedido_item_id:e.target.value,produto_id:item?.produto_id||v.produto_id,quantidade:item?String(item.quantidade):v.quantidade}))}}><option value="">Selecione a linha exata do pedido</option>{orderItems.filter(item=>item.pedido_id===opForm.pedido_venda_id).map(item=>{const p=products.find(product=>product.id===item.produto_id);return <option key={item.id} value={item.id}>{p?.codigo||'SEM CÓDIGO'} · {item.descricao||p?.nome||'Produto'} · Qtd {item.quantidade}</option>})}</select><small>A OP fica vinculada ao pedido e a esta linha, sem misturar itens iguais.</small></label><label>Quantidade<input type="number" min="0.0001" step="any" value={opForm.quantidade} onChange={e=>setOpForm(v=>({...v,quantidade:e.target.value}))}/></label><label>Data prevista<input type="date" value={opForm.data_prevista} onChange={e=>setOpForm(v=>({...v,data_prevista:e.target.value}))}/></label><label>Status<select value={opForm.status} onChange={e=>setOpForm(v=>({...v,status:e.target.value}))}><option value="planejada">Planejada</option><option value="aguardando_pcp">Aguardando PCP</option><option value="em_producao">Em produção</option><option value="concluida">Concluída</option></select></label><label className="wide">ObservaÃ§Ãµes<textarea value={opForm.observacoes} onChange={e=>setOpForm(v=>({...v,observacoes:e.target.value}))}/></label><div className="pcp-modal-footer"><button type="button" className="secondary-v2" onClick={()=>setModal(null)}>Cancelar</button><button className="primary-v2" disabled={busy}>{busy?'Criandoâ€¦':'Criar OP'}</button></div></form></Modal>}
