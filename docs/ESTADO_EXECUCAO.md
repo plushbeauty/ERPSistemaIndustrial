@@ -158,3 +158,9 @@ Este bloco prevalece sobre notas anteriores desta página que diziam que nenhuma
 - A migration aditiva `20261013060000_harden_inventory_movement_and_fiscal_entry_rbac.sql` acrescenta políticas RLS restritivas: movimentações exigem permissão de movimentar e não aceitam update/delete direto; NF-e de entrada só pode ser editada/excluída em rascunho; parâmetros tributários exigem `fiscal.editar`; histórico de custo é somente leitura para usuários de navegador.
 - A tela genérica não oferece mais edição de movimentos WMS e não apresenta ação de edição para NF-e já escriturada.
 - **Não aplicada ao Supabase:** as políticas e o contrato foram adicionados ao repositório, mas dependem de validar o histórico real de migrations, owner das funções e cenários de RLS no ambiente não produtivo antes de qualquer aplicação.
+
+## Proteção do saldo físico e dos lotes — 2026-10-12
+
+- A auditoria dos escritores de `estoque_saldos` e `estoque_lotes` encontrou mutações feitas por triggers/RPCs, sem necessidade de edição direta pelo navegador.
+- A migration `20261013070000_harden_stock_balances_and_lot_writes.sql` restringe escrita direta nas tabelas de saldo/lotes e move os escritores necessários para funções `SECURITY DEFINER` com `search_path` fixo e validações de sessão, tenant e permissão.
+- **Pendente de validação SQL no ambiente não produtivo:** a migration foi preparada e adicionada ao contrato estático, mas não foi aplicada. É obrigatório validar disparo dos triggers, recebimento de NF-e, inspeção reprovada/quarentena e movimentação/transferência antes de aprovar a aplicação.
