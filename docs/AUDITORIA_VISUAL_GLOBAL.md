@@ -485,3 +485,13 @@ As referências foram consultadas para padrões de grade de catálogo, uso de im
 - `src/pages/VendasPDV.tsx`: a validação de saldo e quantidade no carrinho respeita `permite_estoque_negativo`; a autorização definitiva da venda continua no RPC real `erp_pdv_finalizar_venda`.
 - Evidência de commits: importação Excel `964e5ec59a730c2084ce503710340fff8a2904b5`; regra de estoque no PDV `3edc55f9d2230aaa50790e4367415727ba38aabf` e `fdf85118d1a7855f174f8782578771b35f6ca723`.
 - Estado: **correções de código registradas; type-check, build, verify:production e validação visual ainda pendentes**. O status Vercel consultado durante este lote estava pendente; não há evidência de publicação bem-sucedida.
+
+
+## Lote 4 — Manutenção / Ordens de Serviço (12/10/2026)
+
+- Arquivo alterado: `src/pages/ManutencaoOrdens.tsx`.
+- Commit: `376c30d4a6d9ccee0fc9185568e4b0b65e4a84d1`.
+- Ajustes: campos de 30 px, labels de 9 px, cores de foco alinhadas ao design system, tabela compacta com cabeçalho de 30 px, redução de pesos tipográficos e espaçamentos, modal rolável em telas menores com semântica de diálogo.
+- Contratos Supabase/RPC, consultas por empresa, fluxo de conclusão e baixa de componente foram preservados.
+- Validação: o commit anterior `90bec64500ed22a91d074e82e444d0cce434af29` passou em todos os passos do workflow `38249182975` (incluindo TypeScript, ESLint, auditorias, build de produção, build output, rotas e política de segurança); Vercel também estava `success` para aquele SHA. O novo commit de manutenção ainda precisa concluir seu próprio CI e Vercel.
+- Estado visual: **não validado em sessão autenticada**; não declarar a tela concluída até inspeção do preview autenticado.
