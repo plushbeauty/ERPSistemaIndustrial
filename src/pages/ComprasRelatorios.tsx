@@ -15,7 +15,7 @@ const monthKey=(v:string)=>{const d=new Date(v);return Number.isNaN(d.getTime())
 
 export default function ComprasRelatorios(){
  const [purchases,setPurchases]=useState<Purchase[]>([]),[requests,setRequests]=useState<Request[]>([]),[rfqs,setRfqs]=useState<Rfq[]>([]),[suppliers,setSuppliers]=useState<Supplier[]>([])
- const [busy,setBusy]=useState(false),[q,setQ]=useState(''),[message,setMessage]=useState(''),[error,setError]=useState('')
+ const [busy,setBusy]=useState(false),[q,setQ]=useState(''),[page,setPage]=useState(0),[message,setMessage]=useState(''),[error,setError]=useState('')
  const load=async()=>{
   setBusy(true);setError('')
   try{
@@ -33,6 +33,10 @@ export default function ComprasRelatorios(){
  useEffect(()=>{void load()},[])
  const supplierMap=useMemo(()=>new Map(suppliers.map(s=>[s.id,s.nome_fantasia||s.razao_social])),[suppliers])
  const visible=purchases.filter(p=>`${p.numero} ${supplierMap.get(p.fornecedor_id||'')||''} ${p.status} ${p.fiscal_status||''}`.toLowerCase().includes(q.toLowerCase()))
+ const pageSize=25
+ const pageCount=Math.max(1,Math.ceil(visible.length/pageSize))
+ const pageRows=visible.slice(page*pageSize,(page+1)*pageSize)
+ useEffect(()=>{setPage(current=>Math.min(current,Math.max(0,pageCount-1)))},[pageCount])
  const total=visible.reduce((s,p)=>s+Number(p.total||0),0)
  const approved=visible.filter(p=>p.status==='APROVADO'||p.status==='RECEBIMENTO_PARCIAL'||p.status==='RECEBIDO')
  const pending=visible.filter(p=>p.status==='PENDENTE_APROVACAO').length
@@ -68,8 +72,9 @@ export default function ComprasRelatorios(){
       <section className="buy-report-card"><h2>Status dos pedidos</h2><div style={{height:300}}><ResponsiveContainer width="100%" height="100%"><BarChart data={byStatus} layout="vertical"><CartesianGrid strokeDasharray="3 3"/><XAxis type="number"/><YAxis type="category" dataKey="status" width={130}/><Tooltip/><Bar dataKey="quantidade" name="Pedidos"/></BarChart></ResponsiveContainer></div></section>
     </div>
     <section className="buy-report-card" style={{marginTop:10}}><h2>Maiores fornecedores por valor</h2><div style={{height:280}}><ResponsiveContainer width="100%" height="100%"><BarChart data={topSuppliers} layout="vertical"><CartesianGrid strokeDasharray="3 3"/><XAxis type="number"/><YAxis type="category" dataKey="fornecedor" width={170}/><Tooltip formatter={(v)=>money(Number(v))}/><Bar dataKey="total" name="Valor comprado"/></BarChart></ResponsiveContainer></div></section>
-    <section className="buy-report-card" style={{marginTop:10}}><div className="buy-report-toolbar"><div className="buy-report-search"><Search size={14}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Pedido, fornecedor, status ou fiscal..."/></div><span style={{fontSize:11,color:'#64748b'}}>{requests.length} solicitações • {rfqs.length} RFQs • {suppliers.length} fornecedores</span></div>
-      <div style={{overflowX:'auto'}}><table className="buy-report-table"><thead><tr><th>Pedido</th><th>Fornecedor</th><th>Status</th><th>Fiscal</th><th>Data</th><th>Total</th></tr></thead><tbody>{visible.slice(0,100).map(p=><tr key={p.id}><td>PC-{String(p.numero).padStart(4,'0')}</td><td>{supplierMap.get(p.fornecedor_id||'')||'—'}</td><td>{p.status}</td><td>{p.fiscal_status||'NAO_ANALISADO'}</td><td>{new Date(p.data_pedido).toLocaleDateString('pt-BR')}</td><td>{money(p.total)}</td></tr>)}{!visible.length&&<tr><td colSpan={6} className="buy-report-empty">Nenhum pedido encontrado.</td></tr>}</tbody></table></div>
+    <section className="buy-report-card" style={{marginTop:10}}><div className="buy-report-toolbar"><div className="buy-report-search"><Search size={14}/><input value={q} onChange={e=>{setQ(e.target.value);setPage(0)}} placeholder="Pedido, fornecedor, status ou fiscal..."/></div><span style={{fontSize:11,color:'#64748b'}}>{requests.length} solicitações • {rfqs.length} RFQs • {suppliers.length} fornecedores</span></div>
+      <div style={{overflowX:'auto'}}><table className="buy-report-table"><thead><tr><th>Pedido</th><th>Fornecedor</th><th>Status</th><th>Fiscal</th><th>Data</th><th>Total</th></tr></thead><tbody>{pageRows.map(p=><tr key={p.id}><td>PC-{String(p.numero).padStart(4,'0')}</td><td>{supplierMap.get(p.fornecedor_id||'')||'—'}</td><td>{p.status}</td><td>{p.fiscal_status||'NAO_ANALISADO'}</td><td>{new Date(p.data_pedido).toLocaleDateString('pt-BR')}</td><td>{money(p.total)}</td></tr>)}{!visible.length&&<tr><td colSpan={6} className="buy-report-empty">Nenhum pedido encontrado.</td></tr>}</tbody></table></div>
+      <nav aria-label="Paginação dos pedidos de compra" style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,padding:'8px 0',fontSize:10,color:'#64748b'}}><span>{visible.length?`Exibindo ${page*pageSize+1}–${Math.min((page+1)*pageSize,visible.length)} de ${visible.length} pedidos`:'Nenhum pedido para exibir'}</span><div style={{display:'flex',gap:4}}><button type="button" className="buy-report-btn" disabled={page===0} onClick={()=>setPage(current=>Math.max(0,current-1))}>Anterior</button><span style={{alignSelf:'center'}}>Página {page+1} de {pageCount}</span><button type="button" className="buy-report-btn" disabled={page+1>=pageCount} onClick={()=>setPage(current=>Math.min(pageCount-1,current+1))}>Próxima</button></div></nav>
     </section>
    </div>
   </main>
