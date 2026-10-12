@@ -23,7 +23,7 @@ const checklistMigration = read('supabase/migrations/20261012123000_erp_manutenc
 requireIn(toolPreventive, /erp_current_empresa_id/, 'Planos preventivos não resolvem a empresa ativa.')
 requireIn(toolPreventive, /\.eq\('empresa_id', empresaId\)/, 'A listagem de planos preventivos não está isolada por empresa.')
 requireIn(toolPreventive, /\.eq\('empresa_id', companyId\)/, 'A gravação de planos preventivos não está isolada por empresa.')
-requireIn(toolPreventive, /\.\.\.parameters, regra_disparo: rule, meta_ciclos: numericTarget/, 'O plano preventivo substitui parâmetros técnicos existentes em vez de preservá-los.')
+requireIn(toolPreventive, /\.\.\.parameters,[\s\S]*regra_disparo: rule,[\s\S]*meta_ciclos: numericTarget[\s\S]*meta_dias: numericTarget/, 'O plano preventivo deve preservar parâmetros existentes e salvar a meta na unidade selecionada.')
 requireIn(toolingChecklist, /erp_current_empresa_id/, 'Checklist da ferramentaria não resolve a empresa ativa.')
 requireIn(toolingChecklist, /\.eq\('empresa_id',empresaId\)/, 'A listagem da ferramentaria não está isolada por empresa.')
 requireIn(toolingChecklist, /\.eq\('empresa_id',companyId\)/, 'A gravação do checklist da ferramentaria não está isolada por empresa.')
