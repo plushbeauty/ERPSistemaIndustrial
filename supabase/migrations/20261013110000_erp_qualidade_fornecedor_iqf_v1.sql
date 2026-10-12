@@ -21,6 +21,9 @@ create table if not exists public.erp_qualidade_fornecedor_criterios (
   unique (id, empresa_id)
 );
 
+create unique index if not exists erp_usuarios_id_empresa_iqf_uidx
+  on public.erp_usuarios (id, empresa_id) where empresa_id is not null;
+
 create table if not exists public.erp_qualidade_fornecedor_avaliacoes (
   id uuid primary key default gen_random_uuid(),
   empresa_id uuid not null references public.erp_empresas(id),
@@ -28,7 +31,7 @@ create table if not exists public.erp_qualidade_fornecedor_avaliacoes (
   codigo text not null,
   periodo_inicio date not null,
   periodo_fim date not null,
-  avaliador_id uuid references public.erp_usuarios(id),
+  avaliador_id uuid,
   status text not null default 'rascunho' check (status in ('rascunho','em_avaliacao','concluida','cancelada')),
   observacoes text,
   plano_acao text,
@@ -37,6 +40,8 @@ create table if not exists public.erp_qualidade_fornecedor_avaliacoes (
   updated_at timestamptz not null default now(),
   foreign key (fornecedor_id, empresa_id)
     references public.erp_fornecedores(id, empresa_id),
+  foreign key (avaliador_id, empresa_id)
+    references public.erp_usuarios(id, empresa_id),
   unique (empresa_id, codigo),
   unique (id, empresa_id),
   check (periodo_fim >= periodo_inicio)
@@ -87,6 +92,27 @@ create index if not exists idx_erp_q_fornecedor_avaliacoes_fornecedor
   on public.erp_qualidade_fornecedor_avaliacoes (empresa_id, fornecedor_id, periodo_fim desc);
 create index if not exists idx_erp_q_fornecedor_itens_avaliacao
   on public.erp_qualidade_fornecedor_avaliacao_itens (empresa_id, avaliacao_id);
+create or replace view public.erp_qualidade_fornecedor_iqf
+with (security_invoker = true) as
+select
+  a.id as avaliacao_id,
+  a.empresa_id,
+  a.fornecedor_id,
+  a.codigo,
+  a.periodo_inicio,
+  a.periodo_fim,
+  a.status,
+  count(i.id)::integer as criterios_avaliados,
+  case when coalesce(sum(c.peso) filter (where i.id is not null), 0) = 0 then null
+       else round((sum(i.nota * c.peso) / sum(c.peso) filter (where i.id is not null)) / 5 * 100, 2)
+  end as iqf_percentual
+from public.erp_qualidade_fornecedor_avaliacoes a
+left join public.erp_qualidade_fornecedor_avaliacao_itens i
+  on i.avaliacao_id = a.id and i.empresa_id = a.empresa_id
+left join public.erp_qualidade_fornecedor_criterios c
+  on c.id = i.criterio_id and c.empresa_id = i.empresa_id
+group by a.id, a.empresa_id, a.fornecedor_id, a.codigo, a.periodo_inicio, a.periodo_fim, a.status;
+
 create index if not exists idx_erp_q_fornecedor_criterios_ativos
   on public.erp_qualidade_fornecedor_criterios (empresa_id, ativo, codigo);
 
