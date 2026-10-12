@@ -333,11 +333,33 @@ export default function NFeEmissao() {
   }
 
   const validate = (): string | null => {
+    const numericFields: Array<[string, string]> = [
+      ['frete', form.valorFrete],
+      ['desconto total', form.valorDesconto],
+      ['outras despesas', form.outrasDespesas],
+      ['base de cálculo do ICMS', form.baseIcms],
+      ['valor do ICMS', form.valorIcms],
+      ['base do ICMS ST', form.baseIcmsSt],
+      ['valor do ICMS ST', form.valorSt],
+      ['valor do IPI', form.valorIpi],
+      ['valor do PIS', form.valorPis],
+      ['valor do COFINS', form.valorCofins],
+      ['peso líquido', form.pesoLiquido],
+      ['peso bruto', form.pesoBruto],
+      ['volumes', form.volumes],
+    ]
+    for (const [label, value] of numericFields) {
+      if (!validNumber(value) || numberValue(value) < 0) return `Informe um valor numérico não negativo para ${label}.`
+    }
+    if (numberValue(form.valorDesconto) > totalProdutos + numberValue(form.valorFrete) + numberValue(form.outrasDespesas) + numberValue(form.valorIpi) + numberValue(form.valorSt)) {
+      return 'O desconto total não pode exceder o valor bruto calculado da NF-e.'
+    }
     if (!form.tipo) return 'Selecione se a operação da NF-e é de entrada ou saída.'
     if (!form.ambiente) return 'Selecione o ambiente fiscal. Nenhum ambiente é presumido.'
     if (!form.natureza.trim()) return 'Informe a natureza da operação.'
     if (digits(form.cfop, 4).length !== 4) return 'O CFOP deve possuir 4 dígitos.'
     if (!form.emissao || !Number.isFinite(new Date(form.emissao).getTime())) return 'Informe uma data e hora de emissão válidas.'
+    if (form.saida && !Number.isFinite(new Date(form.saida).getTime())) return 'Informe uma data e hora de saída válidas.'
     if (!validFiscalDocument(form.parceiro.cnpjCpf)) return 'Informe um CPF/CNPJ válido, incluindo os dígitos verificadores.'
     if (!form.parceiro.razaoSocial.trim()) return 'Informe a razão social do destinatário.'
     if (!form.parceiro.endereco.trim() || !form.parceiro.bairro.trim() || digits(form.parceiro.cep, 8).length !== 8 || !form.parceiro.cidade.trim() || !/^[A-Za-z]{2}$/.test(form.parceiro.uf)) return 'Complete logradouro, bairro, CEP, município e UF do destinatário.'
@@ -351,6 +373,17 @@ export default function NFeEmissao() {
       if (!validNumber(item.desconto) || numberValue(item.desconto) < 0 || numberValue(item.desconto) > numberValue(item.quantidade) * numberValue(item.valorUnitario)) return 'O desconto do item deve estar entre zero e o subtotal do item.'
       if (!item.unidade.trim()) return 'Informe a unidade de medida de cada item.'
       if (!/^[0-8]$/.test(digits(item.origem, 1))) return 'Informe a origem fiscal do item conforme o cadastro e a regra aplicável.'
+      const taxRates: Array<[string, string]> = [
+        ['ICMS', item.icmsAliquota],
+        ['IPI', item.ipiAliquota],
+        ['PIS', item.pisAliquota],
+        ['COFINS', item.cofinsAliquota],
+      ]
+      for (const [taxName, rate] of taxRates) {
+        if (rate.trim() && (!validNumber(rate) || numberValue(rate) < 0 || numberValue(rate) > 100)) {
+          return `A alíquota de ${taxName} deve estar entre 0 e 100%.`
+        }
+      }
     }
     return null
   }
