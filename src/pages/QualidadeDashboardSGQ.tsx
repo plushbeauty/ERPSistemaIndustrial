@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { Link } from 'react-router-dom'
 import VendasLayout from './VendasLayout'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
 type Inspection = { id:string; resultado:string; tipo:string; created_at:string; quantidade_inspecionada:number|null; quantidade_aprovada:number|null; quantidade_reprovada:number|null }
 type Document = { id:string; codigo:string; titulo:string; status:string; revisao:number }
@@ -17,12 +18,15 @@ export default function QualidadeDashboardSGQ(){
   try{
    const company=await supabase.rpc('erp_current_empresa_id')
    if(company.error||!company.data)throw company.error??new Error('Empresa da sessão não identificada.')
-   const [i,d]=await Promise.all([
-    supabase.from('erp_inspecoes').select('id,resultado,tipo,created_at,quantidade_inspecionada,quantidade_aprovada,quantidade_reprovada').eq('empresa_id',company.data).order('created_at',{ascending:false}).limit(500),
-    supabase.from('erp_documentos_qualidade').select('id,codigo,titulo,status,revisao').eq('empresa_id',company.data).order('codigo').limit(1000)
+   const [inspectionRows,documentRows]=await Promise.all([
+    fetchAllPages<Inspection>((from,to)=>supabase.from('erp_inspecoes')
+     .select('id,resultado,tipo,created_at,quantidade_inspecionada,quantidade_aprovada,quantidade_reprovada',{count:'exact'})
+     .eq('empresa_id',company.data).order('created_at',{ascending:false}).range(from,to)),
+    fetchAllPages<Document>((from,to)=>supabase.from('erp_documentos_qualidade')
+     .select('id,codigo,titulo,status,revisao',{count:'exact'})
+     .eq('empresa_id',company.data).order('codigo').range(from,to))
    ])
-   if(i.error)throw i.error;if(d.error)throw d.error
-   setInspections((i.data??[]) as Inspection[]);setDocuments((d.data??[]) as Document[])
+   setInspections(inspectionRows);setDocuments(documentRows)
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível carregar os indicadores reais do SGQ.')}
   finally{setBusy(false)}
  },[])
