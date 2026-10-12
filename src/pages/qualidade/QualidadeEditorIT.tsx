@@ -342,6 +342,18 @@ export default function QualidadeEditorIT() {
         </header>
 
         {(err || msg) && <p role={err ? 'alert' : 'status'} className={err ? 'border border-red-300 bg-red-50 px-3 py-2 text-[10px] text-red-800' : 'border border-emerald-300 bg-emerald-50 px-3 py-2 text-[10px] text-emerald-800 print:hidden'}>{err || msg}</p>}
+        <details className="border border-slate-200 bg-white px-3 py-2 text-[10px] print:hidden">
+          <summary className="cursor-pointer font-semibold text-[#246F98]">Como preparar o modelo Word para exportação</summary>
+          <p className="mt-2 leading-5 text-slate-600">No Word, crie o cabeçalho e o layout visual do procedimento e insira os campos exatamente como abaixo. Salve em .docx, envie em “MODELO WORD” e aprove a revisão no GED antes de exportar.</p>
+          <div className="mt-2 grid gap-1 sm:grid-cols-2">
+            <code>{'{codigo_documento}'}</code><code>{'{titulo_documento}'}</code>
+            <code>{'{departamento}'}</code><code>{'{revisao}'}</code>
+            <code>{'{objetivo}'}</code><code>{'{escopo}'}</code>
+            <code>{'{responsabilidades}'}</code><code>{'{metodo_criterios_registros}'}</code>
+            <code>{'{status_documento}'}</code><code>{'{fluxo_processo}'}</code>
+          </div>
+          <p className="mt-2 leading-5 text-slate-600">Para uma tabela dinâmica de etapas, coloque <code>{'{#etapas}'}</code> no início da primeira célula da linha repetida; use <code>{'{numero}'}</code>, <code>{'{tipo}'}</code>, <code>{'{descricao}'}</code> e <code>{'{responsavel}'}</code> nas células; termine a linha com <code>{'{/etapas}'}</code>. A exportação é identificada como rascunho até a aprovação da revisão.</p>
+        </details>
         {!loaded && !err && <p className="border border-slate-200 bg-white p-3 text-[10px] text-slate-500">Carregando empresa e procedimento…</p>}
 
         <form id="procedure-form" onSubmit={save} className="space-y-3">
