@@ -498,7 +498,7 @@ export default function NFeEmissaoCompact() {
       </div>
 
       <Section title="01 • IDE — IDENTIFICAÇÃO DO DOCUMENTO FISCAL">
-        <div className="synqra-nfe-grid">
+        <div className="synqra-nfe-grid synqra-nfe-id-grid">
           <CompactInput label="Natureza da Operação" value={field(form, 'natureza')} onChange={v => updateForm('natureza', v)} required />
           <CompactInput label="Modelo" value="55" onChange={() => undefined} readOnly />
           <CompactInput label="Série" value={field(form, 'serie')} onChange={v => updateForm('serie', onlyDigits(v, 3))} required />
@@ -514,7 +514,7 @@ export default function NFeEmissaoCompact() {
       </Section>
 
       <Section title="02 • EMITENTE — DADOS OFICIAIS DO ESTABELECIMENTO">
-        <div className="synqra-nfe-grid">
+        <div className="synqra-nfe-grid synqra-nfe-company-grid">
           <CompactInput label="CNPJ Emitente" value={String(company.cnpj ?? '')} onChange={() => undefined} readOnly />
           <CompactInput label="Razão Social" value={String(company.razao_social ?? company.nome_fantasia ?? '')} onChange={() => undefined} readOnly wide />
           <CompactInput label="Inscrição Estadual" value={String(company.inscricao_estadual ?? '')} onChange={() => undefined} readOnly />
@@ -527,7 +527,7 @@ export default function NFeEmissaoCompact() {
       </Section>
 
       <Section title="03 • DESTINATÁRIO / REMETENTE — IDENTIFICAÇÃO E ENDEREÇO">
-        <div className="synqra-nfe-grid">
+        <div className="synqra-nfe-grid synqra-nfe-customer-grid">
           <CompactInput label="CNPJ / CPF" value={field(customer, 'documento')} onChange={v => updateCustomer('documento', v)} required />
           <CompactInput label="IE" value={field(customer, 'ie')} onChange={v => updateCustomer('ie', v)} />
           <CompactInput label="Razão Social / Nome" value={field(customer, 'nome')} onChange={v => updateCustomer('nome', v)} required wide />
