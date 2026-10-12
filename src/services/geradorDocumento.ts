@@ -194,3 +194,93 @@ export async function emitirDossieTecnico8D(id8D: string): Promise<void> {
     throw new Error(message)
   }
 }
+
+export type ProcedimentoITExport = {
+  codigo: string
+  titulo: string
+  departamento: string
+  revisao: number
+  objetivo: string
+  escopo: string
+  responsabilidades: string
+  metodo: string
+  etapas: Array<{ tipo: string; descricao: string; responsavel: string }>
+}
+
+export async function emitirProcedimentoIT(input: ProcedimentoITExport): Promise<void> {
+  try {
+    const codigo = input.codigo.trim()
+    const titulo = input.titulo.trim()
+    if (!codigo || !titulo) throw new Error('Informe o código e o título do procedimento.')
+    const companyResult = await supabase.rpc('erp_current_empresa_id')
+    if (companyResult.error) throw companyResult.error
+    const empresaId = text(companyResult.data)
+    if (!empresaId) throw new Error('Empresa da sessão não identificada.')
+
+    const templateResult = await supabase
+      .from('erp_qualidade_documentos_revisoes')
+      .select('id,codigo_documento,titulo_documento,revisao,status,url_anexo,nome_arquivo')
+      .eq('empresa_id', empresaId)
+      .eq('codigo_documento', 'MODELO-PROCEDIMENTO-IT')
+      .in('status', ['VIGENTE', 'ATIVA'])
+      .not('url_anexo', 'is', null)
+      .order('revisao', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (templateResult.error) throw templateResult.error
+    if (!templateResult.data?.url_anexo) {
+      throw new Error('Não existe modelo Word de procedimento vigente. Envie MODELO-PROCEDIMENTO-IT.docx e aprove a revisão no GED.')
+    }
+
+    await loadScript('https://unpkg.com/pizzip@3.2.0/dist/pizzip.js')
+    await loadScript('https://unpkg.com/docxtemplater@3.71.0/build/docxtemplater.js')
+    if (!window.PizZip || !window.docxtemplater) throw new Error('As bibliotecas de geração Word não foram inicializadas.')
+
+    const downloaded = await supabase.storage.from(TEMPLATE_BUCKET).download(text(templateResult.data.url_anexo))
+    if (downloaded.error) throw downloaded.error
+    const buffer = await downloaded.data.arrayBuffer()
+    if (buffer.byteLength < 4) throw new Error('O arquivo modelo está vazio ou inválido.')
+
+    const zip = new window.PizZip(buffer)
+    const document = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true })
+    const steps = input.etapas.map((step, index) => ({
+      numero: index + 1,
+      tipo: step.tipo,
+      descricao: step.descricao,
+      responsavel: step.responsavel,
+    }))
+    document.render({
+      codigo_documento: codigo,
+      titulo_documento: titulo,
+      departamento: input.departamento,
+      revisao: input.revisao,
+      status_documento: 'RASCUNHO — NÃO CONTROLADO ATÉ APROVAÇÃO NO GED',
+      objetivo: input.objetivo,
+      escopo: input.escopo,
+      responsabilidades: input.responsabilidades,
+      metodo_criterios_registros: input.metodo,
+      quantidade_etapas: steps.length,
+      etapas: steps,
+      fluxo_processo: steps.map(step => step.numero + '. [' + step.tipo + '] ' + step.descricao + (step.responsavel ? ' — Responsável: ' + step.responsavel : '')).join('\n'),
+    })
+    const blob = document.getZip().generate({
+      type: 'blob',
+      mimeType: DOCX_MIME,
+      compression: 'DEFLATE',
+      compressionOptions: { level: 6 },
+    })
+    const url = URL.createObjectURL(blob)
+    const link = window.document.createElement('a')
+    link.href = url
+    link.download = safeFilePart(codigo + '-' + titulo) + '-rascunho.docx'
+    link.style.display = 'none'
+    window.document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : 'Falha ao gerar o procedimento Word.'
+    console.error('[SGQ] emissão de procedimento Word falhou', cause)
+    throw new Error(message)
+  }
+}
