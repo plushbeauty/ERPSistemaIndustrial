@@ -173,7 +173,7 @@ export default function VendasCatalogoDigital() {
   const add = (produto: Produto) => {
     setQuantidades((current) => ({
       ...current,
-      [produto.id]: Math.max(1, current[produto.id] ?? 0),
+      [produto.id]: (current[produto.id] ?? 0) + 1,
     }))
   }
 
@@ -265,7 +265,7 @@ export default function VendasCatalogoDigital() {
               <input
                 value={filtro}
                 onChange={(event) => setFiltro(event.target.value)}
-                className="h-9 w-full border border-slate-300 bg-white pl-8 pr-2 text-[10px] outline-none focus:border-[#2D8DB8]"
+                className="h-[30px] w-full border border-slate-300 bg-white pl-8 pr-2 text-[10px] outline-none focus:border-[#2D8DB8]"
                 placeholder="Buscar por código, produto, referência ou código de barras..."
               />
             </div>
