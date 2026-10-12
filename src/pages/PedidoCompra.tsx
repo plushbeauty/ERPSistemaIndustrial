@@ -58,7 +58,7 @@ export default function PedidoCompra(){
 
  const reset=()=>{setSelected(null);setCanEditOrder(true);setSupplierId('');setPayment('');setDeadline('');setNotes('');setFreight('0');setDiscount('0');setCarrier('');setFreightMode('');setContractNumber('');setReceivingNotes('');setCostCenter('');setDeliveryLocation('');setSpecification('');setQuoteRef('');setFiscalStatus('NAO_ANALISADO');setFiscalOpinion('');setItems([emptyItem()]);setMessage('');setError('')}
  const save=async(status:'RASCUNHO'|'PENDENTE_APROVACAO')=>{
-  setBusy(true);setError('');setMessage('')
+  setBusy(true);setError('');setMessage('');let savedOrder:{id:string;label:string}|null=null
   try{
    if(!canEditOrder)throw new Error('Pedidos finalizados não podem ser alterados.')
    if(!empresaId)throw new Error('Empresa não identificada.')
@@ -82,12 +82,13 @@ export default function PedidoCompra(){
    const saved=Array.isArray(result.data)?result.data[0]:result.data
    if(!saved||typeof saved!=='object'||!('id' in saved))throw new Error('O banco não retornou o pedido salvo.')
    const id=String(saved.id)
+   savedOrder={id,label:'numero' in saved?String(saved.numero):id.slice(0,8)}
    const meta=await supabase.from('erp_pedidos_compra').update({centro_custo:costCenter.trim()||null,local_entrega:deliveryLocation.trim()||null,especificacao_tecnica:specification.trim()||null,referencia_cotacao:quoteRef.trim()||null,valor_frete:Math.max(0,Number(freight)||0),valor_desconto:Math.max(0,Number(discount)||0),transportadora:carrier.trim()||null,modalidade_frete:freightMode.trim()||null,numero_contrato:contractNumber.trim()||null,observacoes_recebimento:receivingNotes.trim()||null,total:Math.max(0,total + Math.max(0,Number(freight)||0) - Math.max(0,Number(discount)||0))}).eq('id',id).eq('empresa_id',empresaId).select('id').single()
    if(meta.error) throw meta.error
    setMessage(status==='PENDENTE_APROVACAO'?'Pedido enviado para aprovação.':'Pedido salvo como rascunho.')
    await load()
    setSelected(id)
-  }catch(e){setError(e instanceof Error?e.message:'Não foi possível salvar o pedido.')}finally{setBusy(false)}
+  }catch(e){const detail=e instanceof Error?e.message:'Não foi possível salvar o pedido.';if(savedOrder){await load();await openOrder(savedOrder.id);setError(`O pedido ${savedOrder.label} já foi salvo, mas os campos complementares não foram confirmados (${detail}). O pedido existente foi reaberto; revise-o antes de tentar salvar novamente.`)}else setError(detail)}finally{setBusy(false)}
  }
  const openOrder=async(id:string)=>{
   setBusy(true);setError('');setMessage('')
