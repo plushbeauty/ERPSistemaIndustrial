@@ -477,3 +477,11 @@ Todas as rotas abaixo permanecem **PENDENTES** de auditoria visual completa, exc
 - Documentação do Odoo POS: https://www.odoo.com/documentation/18.0/applications/sales/point_of_sale.html
 
 As referências foram consultadas para padrões de grade de catálogo, uso de imagem, fluxo de caixa, pesquisa e responsividade. Nenhum código foi copiado desses projetos nesta alteração.
+
+## Lote 3 — Produtos e Vendas: correções de contrato e regra de estoque (12/10/2026)
+
+- `src/pages/ProdutosVendasIndustrial.tsx`: a importação Excel agora normaliza acentos, espaços, hífens e underscores nos cabeçalhos, aceitando variações como `Código Interno` sem depender da grafia exata.
+- `src/pages/ProdutosVendasIndustrial.tsx`: removidos do payload os campos `cliente`, `desenho` e `dimensional`, cuja existência no contrato consultado não estava comprovada. Os valores importados são preservados no campo existente `observacoes`; nenhuma coluna ou migração nova foi inventada.
+- `src/pages/VendasPDV.tsx`: a validação de saldo e quantidade no carrinho respeita `permite_estoque_negativo`; a autorização definitiva da venda continua no RPC real `erp_pdv_finalizar_venda`.
+- Evidência de commits: importação Excel `964e5ec59a730c2084ce503710340fff8a2904b5`; regra de estoque no PDV `3edc55f9d2230aaa50790e4367415727ba38aabf` e `fdf85118d1a7855f174f8782578771b35f6ca723`.
+- Estado: **correções de código registradas; type-check, build, verify:production e validação visual ainda pendentes**. O status Vercel consultado durante este lote estava pendente; não há evidência de publicação bem-sucedida.
