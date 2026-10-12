@@ -81,5 +81,8 @@ jobs:
       - name: RFQ contract
         run: npm run verify:rfq-contract
 
+      - name: Quality tablet contract
+        run: npm run verify:quality-tablet-contract
+
       - name: Security no-bypass policy
         run: npm run audit:security
