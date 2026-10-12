@@ -254,3 +254,18 @@ body{background:#EDF5F8;color:#123B50}
 .pcp-modern-page .pcp-page-head h1{line-height:1.25!important;overflow-wrap:anywhere}
 .pcp-modern-page .pcp-page-head p{line-height:1.5!important}
 @media(max-width:800px){.pcp-modern-page .pcp-dash-card{min-height:0}.pcp-modern-page .pcp-flow button{min-height:100px}}
+
+/* Force readable dashboard card geometry after module-local styles. */
+.pcp-modern-page .quality-kpis article{min-height:88px!important;padding:14px 16px!important;box-sizing:border-box!important}
+.pcp-modern-page .quality-kpis span{line-height:1.4!important;white-space:normal!important;overflow-wrap:anywhere!important}
+.pcp-modern-page .quality-kpis strong{line-height:1.2!important;margin-top:6px!important}
+.pcp-modern-page .pcp-dash-card{min-height:230px!important;padding:16px!important;box-sizing:border-box!important}
+.pcp-modern-page .pcp-dash-card h2{line-height:1.4!important;margin-bottom:12px!important;overflow-wrap:anywhere!important}
+.pcp-modern-page .pcp-flow button{min-height:116px!important;padding:16px!important;box-sizing:border-box!important}
+.pcp-modern-page .pcp-flow strong{line-height:1.4!important;overflow-wrap:anywhere!important}
+.pcp-modern-page .pcp-flow small{line-height:1.55!important;overflow-wrap:anywhere!important}
+.pcp-modern-page .pcp-alert{min-height:52px!important;box-sizing:border-box!important;line-height:1.4!important}
+.pcp-modern-page .pcp-alert strong,.pcp-modern-page .pcp-alert small{line-height:1.45!important;white-space:normal!important;overflow-wrap:anywhere!important}
+.pcp-modern-page .pcp-page-head h1{line-height:1.25!important;overflow-wrap:anywhere!important}
+.pcp-modern-page .pcp-page-head p{line-height:1.5!important}
+@media(max-width:800px){.pcp-modern-page .pcp-dash-card{min-height:0!important}.pcp-modern-page .pcp-flow button{min-height:100px!important}}
