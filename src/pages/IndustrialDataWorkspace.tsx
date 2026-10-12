@@ -78,15 +78,21 @@ export default function IndustrialDataWorkspace() {
     setLoading(true)
     setError(null)
     try {
-      const auth = await supabase.auth.getUser()
-      if (auth.error || !auth.data.user) throw new Error('Sessão não localizada. Entre novamente no ERP.')
-      const company = await supabase.rpc('erp_current_empresa_id')
-      if (company.error || !company.data) throw company.error ?? new Error('Empresa ativa não identificada.')
-      const tenantId = String(company.data)
-      const result = await supabase.from(config.table).select('*').eq('empresa_id', tenantId).limit(500)
-      if (result.error) throw result.error
-      setCompanyId(tenantId)
-      setRows((result.data ?? []) as Record<string,unknown>[])
+      if (config.table === 'fiscal_nfe_entradas') {
+        const auth = await supabase.auth.getUser()
+        if (auth.error || !auth.data.user) throw new Error('Sessão não localizada. Entre novamente no ERP.')
+        const company = await supabase.rpc('erp_current_empresa_id')
+        if (company.error || !company.data) throw company.error ?? new Error('Empresa ativa não identificada.')
+        const tenantId = String(company.data)
+        const result = await supabase.from(config.table).select('*').eq('empresa_id', tenantId).limit(500)
+        if (result.error) throw result.error
+        setCompanyId(tenantId)
+        setRows((result.data ?? []) as Record<string,unknown>[])
+      } else {
+        const result = await supabase.from(config.table).select('*').limit(500)
+        if (result.error) throw result.error
+        setRows((result.data ?? []) as Record<string,unknown>[])
+      }
     } catch (cause) {
       setRows([])
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar os registros do módulo.')
@@ -125,8 +131,9 @@ export default function IndustrialDataWorkspace() {
     if (!config) { setError('Módulo não encontrado para esta rota.'); return }
     setError(null)
     try {
-      if (!companyId) throw new Error('Empresa ativa não identificada. Atualize a tela e tente novamente.')
-      const payload: Record<string,unknown>={ empresa_id: companyId }
+      const tenantScoped = config.table === 'fiscal_nfe_entradas'
+      if (tenantScoped && !companyId) throw new Error('Empresa ativa não identificada. Atualize a tela e tente novamente.')
+      const payload: Record<string,unknown> = tenantScoped ? { empresa_id: companyId } : {}
       for (const field of config.fields) {
         const raw=form[field.key] ?? ''
         if(field.required && !raw.trim()) throw new Error('Campo obrigatório: '+field.label)
@@ -135,7 +142,9 @@ export default function IndustrialDataWorkspace() {
       }
       setBusy(true)
       const result=editing
-        ? await supabase.from(config.table).update(payload).eq('empresa_id',companyId).eq('id',editing).select('id').single()
+        ? tenantScoped
+          ? await supabase.from(config.table).update(payload).eq('empresa_id',companyId).eq('id',editing).select('id').single()
+          : await supabase.from(config.table).update(payload).eq('id',editing).select('id').single()
         : await supabase.from(config.table).insert(payload).select('id').single()
       setBusy(false)
       if(result.error) { setError(result.error.message); return }
