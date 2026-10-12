@@ -10,7 +10,6 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react'
-import QualitySidebar from '../components/quality/QualitySidebar'
 import {
   AlertTriangle, ArrowLeft, CheckCircle2, ClipboardCheck, Clock3, FileText,
   Filter, Plus, RefreshCw, Save, Search, ShieldCheck, Target, UserRound, X
@@ -212,7 +211,7 @@ export default function AcompanhamentoNaoConformidade(){
   const selectedCauses=selected?ishikawa.filter(x=>x.rpnc_id===selected.id):[]
 
   return <main style={{minHeight:'calc(100vh - 82px)',background:'#F4FBFD',padding:'12px 12px 24px',color:'#17333f'}}>
-    <div style={{maxWidth:1800,margin:'0 auto'}}><QualitySidebar active="/qualidade/liberacao-lote" />
+    <div style={{maxWidth:1800,margin:'0 auto'}}>
       <header style={{display:'flex',justifyContent:'space-between',gap:16,alignItems:'flex-start',marginBottom:18,flexWrap:'wrap'}}>
         <div>
           <button type="button" onClick={()=>location.href='/qualidade'} style={{border:'1px solid #cbdde3',background:'#fff',borderRadius:10,padding:'9px 13px',display:'inline-flex',alignItems:'center',gap:7,cursor:'pointer',fontWeight:800,color:'#31525f'}}><ArrowLeft size={17}/> Qualidade</button>
@@ -227,6 +226,16 @@ export default function AcompanhamentoNaoConformidade(){
       </header>
 
       {(message||error)&&<div role="alert" style={{...card,marginBottom:16,borderColor:error?'#e6b7b7':'#b7ddd5',background:error?'#fff7f7':'#f3fbf9',color:error?'#9f2d2d':'#17675f'}}>{error||message}</div>}
+
+      <details style={{...card,marginBottom:16,padding:'10px 12px'}}>
+        <summary style={{cursor:'pointer',fontSize:12,fontWeight:800,color:'#17445A'}}>Ajuda desta tela — como registrar e acompanhar uma RPNC</summary>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:12,marginTop:10,fontSize:12,color:'#536a75'}}>
+          <div><strong>Finalidade e pré-requisitos</strong><p style={{margin:'4px 0 0'}}>Registre uma não conformidade identificada e acompanhe ações, prazos, causa raiz e eficácia. Confirme a empresa ativa e descreva o problema com fatos verificáveis.</p></div>
+          <div><strong>Passo a passo</strong><p style={{margin:'4px 0 0'}}>Crie a RPNC, selecione-a na lista, registre a causa (6M/5 Porquês), cadastre ações com responsável e prazo e atualize o andamento. Registre a eficácia somente após conferir evidências.</p></div>
+          <div><strong>Integrações e regras</strong><p style={{margin:'4px 0 0'}}>Os registros usam as tabelas de RPNC, ações da qualidade, usuários ativos e Ishikawa. As gravações dependem da sessão, das permissões e das políticas do banco; não encerre uma ocorrência sem verificar as ações pendentes.</p></div>
+          <div><strong>Erros frequentes e confirmação</strong><p style={{margin:'4px 0 0'}}>Se uma lista estiver vazia ou a gravação falhar, confira a empresa, os dados obrigatórios e a mensagem apresentada. Após salvar, confirme o registro na tela e atualize antes de repetir uma operação incerta.</p></div>
+        </div>
+      </details>
 
       <section style={{display:'grid',gridTemplateColumns:'repeat(5,minmax(150px,1fr))',gap:12,marginBottom:16}}>
         <Metric icon={FileText} label="Total" value={metrics.total}/>
