@@ -5,7 +5,7 @@
 - Fonte: `src/AppEntryV2.tsx`
 - Gerado em: 12/10/2026
 - Declarações encontradas pelo parser: 245; caminhos distintos: 244; declarações repetidas por caminho: 1.
-- Evidência estática: `verify-routes` passou no CI do commit `e752fee2fb8925be6c9bc25634208131cea88e4c` (245 rotas declaradas e 157 imports lazy).
+- Evidência estática: `verify-routes` passou no CI do commit `963491f64bac0664c77062fdf86bae9b47d745af` (245 rotas declaradas, 157 imports lazy e destinos do menu horizontal verificados).
 - **Importante:** CI de rotas comprova declarações/imports, não comprova abertura visual autenticada, operações reais, permissões nem integração com o banco. Nenhuma rota é marcada como funcionalmente concluída só por compilação.
 
 | Rota | Elemento / destino declarado | Auditoria funcional |
@@ -262,6 +262,16 @@
 - Manter aliases/redirects no inventário, mesmo quando apontam para a mesma página.
 
 ## Lotes de execução
+
+### Lote de navegação e layout — 12/10/2026
+
+- Commit de correção: `b47722a0b9638bb4e23f772bfeec2a0fb5872978` — cabeçalho horizontal reduzido de 64 px para 48 px em desktop; marca e bloco de sessão ajustados para caber na altura. O breakpoint móvel preserva o cabeçalho adaptável.
+- Commit de correção: `6d5c99f2a4e76724ae75a27e264d057e43101089` — o item “Relatórios” do menu apontava para `/relatorios`, caminho não declarado. O destino foi corrigido para a rota existente `/vendas/relatorios`.
+- Commit de teste: `963491f64bac0664c77062fdf86bae9b47d745af` — `scripts/verify-routes.mjs` passou a conferir também os destinos declarados no menu horizontal, incluindo aliases cobertos por rotas wildcard.
+- Validação estática local da resposta do repositório: 245 declarações de rota, 27 destinos distintos no menu, nenhum destino de menu sem correspondência no roteador.
+- CI GitHub Actions: PASS nas execuções [38297704840](https://github.com/plushbeauty/ERPSistemaIndustrial/actions/runs/38297704840) e [38297712689](https://github.com/plushbeauty/ERPSistemaIndustrial/actions/runs/38297712689), commit `963491f64bac0664c77062fdf86bae9b47d745af`.
+- Limite da evidência: a validação é estática; não substitui testes visuais com usuário autenticado, testes funcionais dos formulários nem validação contra o banco Supabase remoto.
+
 
 ### Base CI — `e752fee2fb8925be6c9bc25634208131cea88e4c`
 
