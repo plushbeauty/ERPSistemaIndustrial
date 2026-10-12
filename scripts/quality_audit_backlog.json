@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-12T13:58:00-03:00",
+  "generated_at": "2026-10-12T13:00:00-03:00",
   "status": "active",
   "errors": [
     {
@@ -8,6 +8,13 @@
       "file": "Vercel project erp-sistema-industrial",
       "line": null,
       "error": "A criação de preview para o head da branch foi bloqueada pela API Vercel com 402 payment_required (api-deployments-free-per-day; retryAfter 86400). Não foi criado deploy novo. Requer aguardar a cota ou ação do administrador do plano; não é falha de compilação do código."
+    },
+    {
+      "timestamp": "2026-10-12T13:00:00-03:00",
+      "command": "Homologação Supabase — Liberação Almoxarifado → NF-e",
+      "file": "supabase/migrations/20261012130000_erp_warehouse_nfe_release_v1.sql",
+      "line": null,
+      "error": "Migration, tabelas, políticas RLS e RPCs foram adicionadas à branch, mas não foram aplicadas nem validadas no Supabase remoto. O fluxo operacional não deve ser considerado pronto para produção até aplicar a migration, confirmar permissões/tabelas de destino e testar a reserva, o vínculo fiscal e a baixa após autorização."
     }
   ]
 }
