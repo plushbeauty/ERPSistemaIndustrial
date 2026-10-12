@@ -126,91 +126,34 @@ export default function ComprasRFQ() {
     setBusy(true)
     setError('')
     setMessage('')
-    let empresaId: string | null = null
-    let rfqId: string | null = null
 
     try {
-      const company = await supabase.rpc('erp_current_empresa_id')
-      if (company.error || !company.data) {
-        throw company.error ?? new Error('Empresa não identificada.')
-      }
-      empresaId = String(company.data)
-
-      const auth = await supabase.auth.getUser()
-      if (auth.error || !auth.data.user) {
-        throw auth.error ?? new Error('Sessão não localizada para registrar a cotação.')
-      }
-      // O contrato de identidade vigente alinha erp_usuarios.id a auth.users.id.
-      // auth_user_id e deleted_at não são parte do contrato confirmado desta tabela.
-      const profile = await supabase
-        .from('erp_usuarios')
-        .select('id')
-        .eq('id', auth.data.user.id)
-        .eq('empresa_id', empresaId)
-        .eq('ativo', true)
-        .maybeSingle()
-      if (profile.error || !profile.data) {
-        throw profile.error ?? new Error('Perfil ERP ativo não localizado para registrar a cotação.')
-      }
-
-      const header = await supabase
-        .from('erp_rfq')
-        .insert({
-          empresa_id: empresaId,
-          status: 'ABERTA',
-          data_necessidade: items.map(item => item.data_necessidade).filter(Boolean).sort()[0] || null,
-          prazo_resposta: responseDate || null,
-          condicao_pagamento: paymentCondition.trim() || null,
-          observacoes: notes.trim() || null,
-          created_by: profile.data.id,
-        })
-        .select('id,numero')
-        .single()
-      if (header.error || !header.data) {
-        throw header.error ?? new Error('A cotação não foi retornada pelo banco.')
-      }
-      rfqId = header.data.id
-
-      const supplierInsert = await supabase
-        .from('erp_rfq_fornecedores')
-        .insert(selectedSuppliers.map(fornecedorId => ({
-          empresa_id: empresaId,
-          rfq_id: rfqId,
-          fornecedor_id: fornecedorId,
-        })))
-      if (supplierInsert.error) throw supplierInsert.error
-
-      const itemInsert = await supabase
-        .from('erp_rfq_itens')
-        .insert(items.map(item => ({
-          empresa_id: empresaId,
-          rfq_id: rfqId,
+      const created = await supabase.rpc('erp_compras_criar_rfq_atomica', {
+        p_fornecedor_ids: selectedSuppliers,
+        p_itens: items.map(item => ({
           produto_id: item.produto_id,
-          descricao: item.descricao,
           codigo: item.codigo,
+          descricao: item.descricao,
           quantidade: Number(item.quantidade),
           unidade: item.unidade || 'UN',
           data_necessidade: item.data_necessidade || null,
           observacoes: item.observacoes || null,
-        })))
-      if (itemInsert.error) throw itemInsert.error
+        })),
+        p_prazo_resposta: responseDate || null,
+        p_condicao_pagamento: paymentCondition.trim() || null,
+        p_observacoes: notes.trim() || null,
+        p_data_necessidade: items.map(item => item.data_necessidade).filter(Boolean).sort()[0] || null,
+      })
+      if (created.error) throw created.error
+      const rfq = Array.isArray(created.data) ? created.data[0] : created.data
+      if (!rfq || !rfq.numero) {
+        throw new Error('O banco não retornou a cotação criada.')
+      }
 
-      setMessage(`RFQ #${header.data.numero} criada com ${selectedSuppliers.length} fornecedor(es) e ${totalQuantity} unidades.`)
+      setMessage(`RFQ #${rfq.numero} criada com ${selectedSuppliers.length} fornecedor(es) e ${totalQuantity} unidades.`)
       setItems([])
       setSelectedSuppliers([])
     } catch (cause) {
-      if (rfqId && empresaId) {
-        const rollback = await supabase
-          .from('erp_rfq')
-          .delete()
-          .eq('id', rfqId)
-          .eq('empresa_id', empresaId)
-        if (rollback.error) {
-          const original = cause instanceof Error ? cause.message : String(cause)
-          setError(`${original} A exclusão da cotação incompleta também falhou: ${rollback.error.message}`)
-          return
-        }
-      }
       setError(cause instanceof Error ? cause.message : 'Falha ao criar a cotação.')
     } finally {
       setBusy(false)
