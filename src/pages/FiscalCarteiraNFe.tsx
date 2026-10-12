@@ -56,10 +56,11 @@ export default function FiscalCarteiraNFe() {
     try {
       const auth = await supabase.auth.getUser()
       if (auth.error || !auth.data.user) throw new Error('Sessão não localizada.')
-      const profile = await supabase.from('erp_usuarios').select('empresa_id,ativo,deleted_at').eq('auth_user_id', auth.data.user.id).maybeSingle()
+      // O contrato de identidade vigente usa erp_usuarios.id = auth.users.id.
+      const profile = await supabase.from('erp_usuarios').select('id,empresa_id,ativo').eq('id', auth.data.user.id).maybeSingle()
       if (profile.error) throw profile.error
       const profileData = profile.data
-      if (!profileData?.ativo || profileData.deleted_at || !profileData.empresa_id) throw new Error('Empresa ativa não localizada para a sessão.')
+      if (!profileData?.ativo || !profileData.empresa_id) throw new Error('Empresa ativa não localizada para a sessão.')
       const companyId = profileData.empresa_id
 
       const [documents, invoices] = await Promise.all([
