@@ -72,6 +72,9 @@ jobs:
       - name: NF-e contract
         run: npm run verify:nfe-contract
 
+      - name: NF-e XML builder tests
+        run: npm run test:nfe-xml-builder
+
       - name: Production build
         run: npm run build
 
