@@ -110,6 +110,33 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     ? flattenMenu(menus).filter(item => item.label.toLowerCase().includes(search.trim().toLowerCase()))
     : []
 
+  const routeItems = flattenMenu(menus).sort((a, b) => b.route.split('?')[0].length - a.route.split('?')[0].length)
+  const activePage = routeItems.find(item => pathname === item.route.split('?')[0] || pathname.startsWith(item.route.split('?')[0] + '/'))
+  const pageLabel = activePage?.label.split(' / ').slice(-1)[0] || current?.label || 'Área de trabalho'
+  const pageDescription = pathname.startsWith('/qualidade')
+    ? 'Acompanhe indicadores, inspeções, não conformidades e documentos do Sistema de Gestão da Qualidade da empresa autenticada.'
+    : pathname.startsWith('/vendas')
+      ? 'Consulte pedidos, acompanhe prazos e status comerciais e registre operações de venda com os dados reais da empresa.'
+      : pathname.startsWith('/compras')
+        ? 'Consulte solicitações, fornecedores, pedidos de compra e recebimentos para acompanhar o abastecimento da operação.'
+        : pathname.startsWith('/estoque')
+          ? 'Consulte saldos e movimentações e registre operações de estoque respeitando os dados e permissões da empresa.'
+          : pathname.startsWith('/financeiro')
+            ? 'Consulte e acompanhe os registros financeiros da empresa, com filtros e ações disponíveis para seu perfil.'
+            : pathname.startsWith('/fiscal') || pathname.includes('/nfe')
+              ? 'Consulte documentos e operações fiscais da empresa e acompanhe seus estados de processamento.'
+              : pathname.startsWith('/pcp')
+                ? 'Planeje e acompanhe ordens, capacidade, sequenciamento e apontamentos da produção industrial.'
+                : pathname.startsWith('/manutencao')
+                  ? 'Consulte ativos, programação e registros de manutenção para acompanhar a disponibilidade operacional.'
+                  : pathname.startsWith('/engenharia')
+                    ? 'Consulte cadastros técnicos, estruturas e roteiros usados nos processos industriais.'
+                    : pathname.startsWith('/rh')
+                      ? 'Consulte os cadastros e rotinas de pessoal autorizados para a empresa autenticada.'
+                      : pathname.startsWith('/config')
+                        ? 'Consulte e mantenha as configurações disponíveis para seu perfil e para a empresa autenticada.'
+                        : 'Consulte e acompanhe as informações operacionais deste módulo usando os registros reais da empresa autenticada.'
+
   const contextualHelp = pathname.startsWith('/pcp/mrp-ii')
     ? { title: 'MRP II — Planejamento de materiais', purpose: 'Calcular necessidades de materiais a partir da demanda, estrutura dos produtos, estoque e ordens existentes. Esta tela não é a agenda de máquinas.', steps: ['Confirme que produtos, fichas técnicas/estruturas e saldos de estoque estão atualizados.', 'Execute o cálculo MRP e confira as necessidades líquidas por componente.', 'Revise as sugestões de comprar ou produzir antes de gerar ordens planejadas.'], fields: ['Produto/demanda: item acabado e quantidade a planejar.', 'Horizonte/data: período considerado no planejamento.', 'Necessidade líquida: quantidade que falta após estoque e reservas.', 'Sugestão: comprar ou produzir; confira antes de confirmar.'] }
     : pathname.startsWith('/pcp/agenda-maquinas')
@@ -208,12 +235,25 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           </div>
         })}
       </nav>
+      <section className="erp-global-page-description" aria-label="Descrição da tela">
+        <span>{pageLabel.toLocaleUpperCase('pt-BR')}</span>
+        <p>{pageDescription}</p>
+      </section>
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
       </main>
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f3f8fb 42%,#e8f1f6 100%);color:#123b50}
+        .erp-horizontal-brand{min-width:245px!important;gap:12px!important;padding:0 10px!important}
+        .erp-horizontal-brand img{width:64px!important;height:56px!important;max-width:100%;object-fit:contain;flex:0 0 auto}
+        .erp-horizontal-brand strong{font-size:13px!important;letter-spacing:.035em;white-space:nowrap}
+        .erp-global-page-description{display:flex;align-items:center;gap:10px;min-height:34px;padding:5px 12px;border-bottom:1px solid #c3d9e3;background:linear-gradient(90deg,#dcecf3 0%,#edf6fa 55%,#e2f0f5 100%);color:#315466;box-sizing:border-box}
+        .erp-global-page-description>span{flex:0 0 auto;color:#17445a;font-size:9px;font-weight:700;letter-spacing:.08em}
+        .erp-global-page-description>p{margin:0;font-size:10px;line-height:1.35;color:#315466}
+        @media(max-width:950px){.erp-horizontal-brand{min-width:0!important;gap:6px!important;padding:0 4px!important}.erp-horizontal-brand img{width:54px!important;height:48px!important}.erp-horizontal-brand strong{font-size:11px!important}}
+        @media(max-width:700px){.erp-global-page-description{align-items:flex-start;flex-direction:column;gap:2px;padding:5px 8px}.erp-global-page-description>p{font-size:9px}.erp-horizontal-brand img{width:48px!important;height:44px!important}}
+
         .erp-global-status-row{min-height:27px;display:flex;align-items:center;gap:10px;padding:2px 12px;background:linear-gradient(90deg,#dcecf3 0%,#edf6fa 55%,#e2f0f5 100%);border-bottom:1px solid #c3d9e3;color:#315466;font-size:9px;box-sizing:border-box}
         .erp-global-status-row>span{font-weight:700;letter-spacing:.08em}
         .erp-global-status-row>small{margin-left:auto;font-size:9px}
