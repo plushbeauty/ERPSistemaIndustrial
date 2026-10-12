@@ -39,6 +39,9 @@ jobs:
       - name: CI policy
         run: npm run verify:ci-policy
 
+      - name: Auth Master contract
+        run: npm run verify:auth-master-contract
+
       - name: Public naming
         run: npm run verify:public-naming
 
