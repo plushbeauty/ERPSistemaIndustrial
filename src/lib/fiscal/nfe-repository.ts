@@ -63,12 +63,37 @@ function normalizeError(error: unknown): { code: string; message: string } {
   };
 }
 
+function mapEnvironment(value: string | null): NFeEnvironment {
+  switch (value?.toLowerCase()) {
+    case 'producao':
+    case 'produção':
+      return 'producao';
+    case 'homologacao':
+    case 'homologação':
+      return 'homologacao';
+    default:
+      throw new Error(`Ambiente fiscal não reconhecido: ${value ?? '(nulo)'}.`);
+  }
+}
+
+function mapDirection(value: string | null): 'entrada' | 'saida' {
+  switch (value?.toLowerCase()) {
+    case 'entrada':
+      return 'entrada';
+    case 'saida':
+    case 'saída':
+      return 'saida';
+    default:
+      throw new Error(`Direção fiscal não reconhecida: ${value ?? '(nulo)'}.`);
+  }
+}
+
 function mapDocument(row: NFeDocumentRow): NFeStoredDocument {
   return {
     id: row.id,
     companyId: row.empresa_id,
-    environment: row.ambiente === 'producao' ? 'producao' : 'homologacao',
-    direction: row.tipo?.toLowerCase().includes('entrada') ? 'entrada' : 'saida',
+    environment: mapEnvironment(row.ambiente),
+    direction: mapDirection(row.tipo),
     status: mapStatus(row.status),
     accessKey: row.chave_acesso,
     series: String(row.serie ?? ''),
