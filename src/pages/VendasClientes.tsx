@@ -189,19 +189,17 @@ export default function VendasClientes() {
       const [clients, productsResult, mappingsResult, priceTablesResult, transportadorasResult, clientTransportResult] = await Promise.all([
         fetchAllPages<Client>((from,to)=>supabase.from('erp_clientes').select('id,codigo,nome,nome_fantasia,documento,inscricao_estadual,inscricao_municipal,tipo_pessoa,regime_tributario,contato_nome,email,email_nfe,telefone,whatsapp,cep,endereco,numero,complemento,bairro,cidade,estado,tipo_cliente,tabela_preco_id,desconto_padrao_percentual,ativo',{count:'exact'}).eq('empresa_id', empresaId).order('nome').range(from,to)),
         fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,descricao,estoque_atual',{count:'exact'}).eq('empresa_id', empresaId).eq('ativo', true).order('codigo').range(from,to)),
-        supabase.from('erp_vendas_depara_produtos').select('id,cliente_id,produto_id,codigo_interno,codigo_cliente,dimensoes,canal,molde,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('codigo_cliente'),
-        supabase.from('erp_tabelas_preco').select('id,codigo,nome').eq('empresa_id', empresaId).eq('ativo', true).order('nome'),
-        supabase.from('erp_transportadoras').select('id,codigo,razao_social,cnpj,ie,telefone,cidade,uf,ativo').eq('empresa_id', empresaId).eq('ativo', true).order('razao_social'),
-        supabase.from('erp_cliente_transportadoras').select('id,cliente_id,transportadora_id').eq('empresa_id', empresaId),
+        fetchAllPages<DePara>((from,to)=>supabase.from('erp_vendas_depara_produtos').select('id,cliente_id,produto_id,codigo_interno,codigo_cliente,dimensoes,canal,molde,ativo',{count:'exact'}).eq('empresa_id', empresaId).eq('ativo', true).order('codigo_cliente').range(from,to)),
+        fetchAllPages<PriceTable>((from,to)=>supabase.from('erp_tabelas_preco').select('id,codigo,nome',{count:'exact'}).eq('empresa_id', empresaId).eq('ativo', true).order('nome').range(from,to)),
+        fetchAllPages<Transportadora>((from,to)=>supabase.from('erp_transportadoras').select('id,codigo,razao_social,cnpj,ie,telefone,cidade,uf,ativo',{count:'exact'}).eq('empresa_id', empresaId).eq('ativo', true).order('razao_social').range(from,to)),
+        fetchAllPages<ClientTransportLink>((from,to)=>supabase.from('erp_cliente_transportadoras').select('id,cliente_id,transportadora_id',{count:'exact'}).eq('empresa_id', empresaId).range(from,to)),
       ])
       setRows(clients)
       setProducts(productsResult)
-      setMappings((mappingsResult.data ?? []) as DePara[])
-      setPriceTables((priceTablesResult.data ?? []) as PriceTable[])
-      if (transportadorasResult.error) throw transportadorasResult.error
-      if (clientTransportResult.error) throw clientTransportResult.error
-      setTransportadoras((transportadorasResult.data ?? []) as Transportadora[])
-      setClientTransportLinks((clientTransportResult.data ?? []) as ClientTransportLink[])
+      setMappings(mappingsResult)
+      setPriceTables(priceTablesResult)
+      setTransportadoras(transportadorasResult)
+      setClientTransportLinks(clientTransportResult)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar clientes.')
     } finally {
