@@ -34,6 +34,7 @@ requireIn(setupApproval, /\.eq\('empresa_id', empresaId\)/, 'As consultas de set
 requireIn(setupApproval, /\.eq\('empresa_id', companyId\)/, 'A gravação do laudo de setup não está isolada por empresa.')
 requireIn(setupApproval, /\.\.\.parameters,[\s\S]*setup_aprovacao:/, 'O laudo de setup apaga parâmetros técnicos existentes.')
 requireIn(setupApproval, /requestedStatus === 'RETIDO'|requestedStatus === 'APROVADO'/, 'O botão de reprovação não persiste um resultado explícito.')
+requireIn(setupApproval, /requestedStatus === 'APROVADO' && checks\.some\(checked => !checked\)/, 'Aprovação de setup não exige checklist completo, ou reprovação não pode ser registrada com itens pendentes.')
 requireIn(masterSchedule, /const frpRows: SourceRow\[\]/, 'O cronograma FRP-MP-001 não está representado.')
 requireIn(masterSchedule, /const masterRows: SourceRow\[\]/, 'O cronograma Master 2026 não está representado.')
 requireIn(masterSchedule, /erp_manutencao_checklists/, 'O plano mestre não carrega/salva checklists persistidos.')
