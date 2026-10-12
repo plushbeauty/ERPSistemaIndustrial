@@ -68,6 +68,8 @@ export default function ManutencaoPlanoMestre() {
   const [selectedRow, setSelectedRow] = useState<SourceRow | null>(null)
   const [checkedItems, setCheckedItems] = useState<string[]>([])
   const [notes, setNotes] = useState('')
+  const [checklistSaving, setChecklistSaving] = useState(false)
+  const [checklistMessage, setChecklistMessage] = useState('')
   const source = sourceOptions.find(item => item.id === sourceId) ?? sourceOptions[0]
 
   const load = async () => {
@@ -100,7 +102,54 @@ export default function ManutencaoPlanoMestre() {
     return { machines: source.rows.length, planned: all.filter(code => code === 'P' || code === 'A').length, completed: all.filter(code => code === 'PE' || code === 'R').length, overdue: all.filter(code => code === 'AT').length, maintenance: all.filter(code => code === 'M').length }
   }, [source])
   const machineFor = (row: SourceRow) => machines.find(machine => normalize(machine.codigo) === normalize(row.tag)) ?? null
-  const openDetails = (row: SourceRow) => { setSelectedRow(row); setCheckedItems([]); setNotes('') }
+  const openDetails = async (row: SourceRow) => {
+    setSelectedRow(row)
+    setCheckedItems([])
+    setNotes('')
+    setChecklistMessage('')
+    setChecklistSaving(true)
+    try {
+      const result = await supabase.from('erp_manutencao_checklists')
+        .select('itens_concluidos,observacoes')
+        .eq('origem_cronograma', sourceId)
+        .eq('tag_fonte', row.tag)
+        .maybeSingle()
+      if (result.error) throw result.error
+      const savedItems = result.data?.itens_concluidos
+      setCheckedItems(Array.isArray(savedItems) ? savedItems.filter((item): item is string => typeof item === 'string') : [])
+      setNotes(typeof result.data?.observacoes === 'string' ? result.data.observacoes : '')
+    } catch (cause) {
+      setChecklistMessage(cause instanceof Error ? cause.message : 'Não foi possível carregar o checklist salvo.')
+    } finally {
+      setChecklistSaving(false)
+    }
+  }
+  const saveChecklist = async () => {
+    if (!selectedRow) return
+    setChecklistSaving(true)
+    setChecklistMessage('')
+    try {
+      const empresa = await supabase.rpc('erp_current_empresa_id')
+      if (empresa.error || !empresa.data) throw empresa.error ?? new Error('Empresa da sessão não identificada.')
+      const result = await supabase.from('erp_manutencao_checklists').upsert({
+        empresa_id: String(empresa.data),
+        origem_cronograma: sourceId,
+        tag_fonte: selectedRow.tag,
+        equipamento_fonte: selectedRow.equipamento,
+        frequencia_fonte: selectedRow.frequencia,
+        maquina_id: machineFor(selectedRow)?.id ?? null,
+        itens_concluidos: checkedItems,
+        observacoes: notes.trim(),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'empresa_id,origem_cronograma,tag_fonte' })
+      if (result.error) throw result.error
+      setChecklistMessage('Checklist e observações gravados no banco da empresa. Você pode fechar e reabrir para conferir.')
+    } catch (cause) {
+      setChecklistMessage(cause instanceof Error ? cause.message : 'Não foi possível salvar o checklist.')
+    } finally {
+      setChecklistSaving(false)
+    }
+  }
 
   return (
     <main className="min-h-screen bg-[#F4FBFD] text-[#123B50]">
@@ -139,8 +188,8 @@ export default function ManutencaoPlanoMestre() {
           {!machineFor(selectedRow) && <div role="alert" className="flex gap-2 border border-rose-300 bg-rose-50 p-3 text-[10px] text-rose-900"><AlertTriangle size={15} className="shrink-0"/><div><strong>Máquina ainda não vinculada.</strong><p>A tag {selectedRow.tag} não foi encontrada no cadastro de máquinas da empresa atual. Confira o cadastro antes de transformar esta linha documental em manutenção operacional.</p></div></div>}
           <section className="grid gap-2 sm:grid-cols-3"><Kpi label="Tag da planilha" value={selectedRow.tag}/><Kpi label="Frequência fonte" value={selectedRow.frequencia}/><Kpi label="Status no documento" value={selectedRow.meses.includes('AT') ? 'AT · Atrasado' : selectedRow.meses.includes('A') ? 'A · Agendado' : selectedRow.meses.includes('R') || selectedRow.meses.includes('PE') ? 'R/PE · Realizado' : 'Ver grade mensal'}/></section>
           <section className="border border-[#D8E8EE]"><div className="flex items-center gap-2 border-b border-[#D8E8EE] bg-[#F8FCFD] p-3"><ClipboardCheck size={15}/><h3 className="text-[11px] font-semibold">Roteiro orientativo de inspeção preventiva</h3></div><div className="space-y-3 p-3">{CHECKLIST.map(group => <div key={group.group}><h4 className="mb-1 text-[10px] font-semibold text-[#17445A]">{group.group}</h4><div className="space-y-1.5">{group.items.map(item => <label key={item} className="flex items-start gap-2 text-[10px] leading-4 text-slate-700"><input type="checkbox" checked={checkedItems.includes(item)} onChange={event => setCheckedItems(current => event.target.checked ? [...current, item] : current.filter(value => value !== item))} className="mt-0.5 accent-emerald-700"/><span>{item}</span></label>)}</div></div>)}</div></section>
-          <label className="block text-[9px] font-semibold uppercase text-slate-600">Observações desta consulta (não gravadas no banco)<textarea value={notes} onChange={event => setNotes(event.target.value)} rows={3} className="mt-1 w-full border border-slate-300 p-2 text-[10px] font-normal normal-case outline-none focus:border-[#2D8DB8]" placeholder="Anote pontos para conferência técnica; este rascunho é temporário."/></label>
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#D8E8EE] pt-3"><p className="max-w-xl text-[9px] leading-4 text-slate-500">Checklist apenas local: marcar itens ou escrever observações não cria registros. Para gravar uma intervenção, use o fluxo oficial de Ordem de Serviço.</p><div className="flex gap-2"><button type="button" onClick={() => { setCheckedItems([]); setNotes('') }} className="h-[30px] border border-slate-300 px-3 text-[10px]">LIMPAR RASCUNHO</button>{machineFor(selectedRow) ? <Link to="/manutencao/ordens" className="flex h-[30px] items-center gap-1 bg-[#2D8DB8] px-3 text-[10px] font-semibold text-white"><Wrench size={12}/> ORDENS DE SERVIÇO</Link> : <span aria-disabled="true" className="flex h-[30px] items-center gap-1 bg-slate-200 px-3 text-[10px] font-semibold text-slate-500"><Wrench size={12}/> CADASTRE/VINCULE A MÁQUINA</span>}</div></div>
+          <label className="block text-[9px] font-semibold uppercase text-slate-600">Observações da execução<textarea value={notes} onChange={event => setNotes(event.target.value)} rows={3} className="mt-1 w-full border border-slate-300 p-2 text-[10px] font-normal normal-case outline-none focus:border-[#2D8DB8]" placeholder="Registre achados, medições, anomalias e recomendações."/></label>
+          <div className="space-y-2 border-t border-[#D8E8EE] pt-3">{checklistMessage && <p role="status" className={'border px-3 py-2 text-[10px] ' + (checklistMessage.includes('gravados no banco') ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-amber-300 bg-amber-50 text-amber-900')}>{checklistMessage}</p>}<div className="flex flex-wrap items-center justify-between gap-2"><p className="max-w-xl text-[9px] leading-4 text-slate-500">O checklist e as observações são salvos por empresa e tag do equipamento. O registro não substitui a Ordem de Serviço quando houver intervenção.</p><div className="flex flex-wrap gap-2"><button type="button" disabled={checklistSaving} onClick={() => void saveChecklist()} className="flex h-[30px] items-center gap-1 bg-[#2D8DB8] px-3 text-[10px] font-semibold text-white disabled:opacity-50"><ClipboardCheck size={12}/>{checklistSaving ? 'SALVANDO…' : 'SALVAR CHECKLIST'}</button><button type="button" onClick={() => { setCheckedItems([]); setNotes(''); setChecklistMessage('Rascunho limpo. Salve para atualizar o registro persistido.') }} className="h-[30px] border border-slate-300 px-3 text-[10px]">LIMPAR</button>{machineFor(selectedRow) ? <Link to="/manutencao/ordens" className="flex h-[30px] items-center gap-1 border border-[#B8D5E0] px-3 text-[10px] font-semibold text-[#17445A]"><Wrench size={12}/> ORDENS DE SERVIÇO</Link> : <span aria-disabled="true" className="flex h-[30px] items-center gap-1 bg-slate-200 px-3 text-[10px] font-semibold text-slate-500"><Wrench size={12}/> CADASTRE/VINCULE A MÁQUINA</span>}</div></div></div>
         </div>
       </section></div>}
     </main>
