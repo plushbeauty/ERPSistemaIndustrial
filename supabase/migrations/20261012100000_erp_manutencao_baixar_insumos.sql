@@ -23,7 +23,7 @@ begin
     v_produto := nullif(v_item->>'produto_id','')::uuid;
     v_qtd := nullif(v_item->>'quantidade','')::numeric;
     if v_produto is null or v_qtd is null or v_qtd<=0 then raise exception 'Produto e quantidade positiva são obrigatórios.' using errcode='22023'; end if;
-    if (select count(*) from jsonb_array_elements(p_itens) x where x->>'produto_id'=v_produto::text)>1 then
+    if (select count(*) from jsonb_array_elements(p_itens) x where x.value->>'produto_id'=v_produto::text)>1 then
       raise exception 'Produto duplicado na requisição; consolide a quantidade.' using errcode='22023';
     end if;
     select nome,estoque_atual into v_nome,v_saldo from public.erp_produtos where id=v_produto and empresa_id=v_empresa and ativo=true for update;
