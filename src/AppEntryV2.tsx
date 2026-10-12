@@ -84,6 +84,7 @@ const AnoFiscal = lazyPage(() => import('./features/fiscal/AnoFiscal'), 'default
 const AssistenteRetificacao = lazyPage(() => import('./features/controladoria/AssistenteRetificacao'), 'default')
 const Master = lazyPage(() => import('./pages/Master'), 'Master')
 const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
+const PCPTablet = lazyPage(() => import('./pages/PCPTablet'), 'default')
 const IndustrialDataWorkspace = lazyPage(() => import('./pages/IndustrialDataWorkspace'), 'default')
 const PCPOrdens = lazyPage(() => import('./pages/PCPOrdens'), 'default')
 const PCPExecucaoIndustrial = lazyPage(() => import('./pages/PCPExecucaoIndustrial'), 'default')
@@ -490,7 +491,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/auditoria" element={<QualityPlanGate>{<PainelLucratividade />}</QualityPlanGate>} />
       <Route path="/vendas/classificacao-fiscal" element={<QualityPlanGate>{<ClassificacaoFiscal />}</QualityPlanGate>} />
       <Route path="/vendas/razao-geral" element={<QualityPlanGate>{<PainelRazaoGeral />}</QualityPlanGate>} />
-      <Route path="/pcp" element={<QualityPlanGate>{<ERPHorizontalShell><SynqraLayoutProvider><PCPIndustrial /></SynqraLayoutProvider></ERPHorizontalShell>}</QualityPlanGate>} />
+      <Route path="/pcp" element={<QualityPlanGate>{new URLSearchParams(location.search).get('tablet') === '1' ? <PCPTablet /> : <ERPHorizontalShell><SynqraLayoutProvider><PCPIndustrial /></SynqraLayoutProvider></ERPHorizontalShell>}</QualityPlanGate>} />
       <Route path="/engenharia/produtos" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/engenharia/bom" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/engenharia/roteiros" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
