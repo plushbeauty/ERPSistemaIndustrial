@@ -77,7 +77,7 @@ with check (
   or (
     empresa_id = public.erp_current_empresa_id()
     and public.erp_has_permission('compras','criar')
-    and exists (select 1 from public.erp_rfq r where r.id = erp_rfq_fornecedores.rfq_id and r.empresa_id = erp_rfq_fornecedores.empresa_id)
+    and exists (select 1 from public.erp_rfq r where r.id = erp_rfq_itens.rfq_id and r.empresa_id = erp_rfq_itens.empresa_id)
   )
 );
 
@@ -89,7 +89,7 @@ with check (
   or (
     empresa_id = public.erp_current_empresa_id()
     and public.erp_has_permission('compras','editar')
-    and exists (select 1 from public.erp_rfq r where r.id = erp_rfq_fornecedores.rfq_id and r.empresa_id = erp_rfq_fornecedores.empresa_id)
+    and exists (select 1 from public.erp_rfq r where r.id = erp_rfq_itens.rfq_id and r.empresa_id = erp_rfq_itens.empresa_id)
   )
 );
 
