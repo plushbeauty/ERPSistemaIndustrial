@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-07T09:00:00-03:00",
+  "generated_at": "2026-10-12T13:31:00-03:00",
   "status": "active",
   "errors": [
     {
@@ -92,6 +92,13 @@
       "file": "/tmp/erpcheck",
       "line": null,
       "error": "git clone failed: fatal: unable to access 'https://github.com/plushbeauty/ERPSistemaIndustrial.git/': Could not resolve host: github.com"
+    },
+    {
+      "timestamp": "2026-10-12T13:31:00-03:00",
+      "command": "npm run lint:check (GitHub Actions #4261)",
+      "file": "src/lib/fiscal/nfe-xml-builder.ts",
+      "line": 28,
+      "error": "ESLint no-control-regex: regex de caracteres de controle XML causa falha do gate; correção por filtragem de code points enviada para revalidação."
     }
   ]
 }
