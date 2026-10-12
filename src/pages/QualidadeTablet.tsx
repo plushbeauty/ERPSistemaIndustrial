@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import {
   Activity, BookOpenCheck, ClipboardCheck, ClipboardList, FileCheck2, FileText,
   Gauge, GitBranch, ListChecks, Microscope, SearchCheck, ShieldAlert, ShieldCheck,
@@ -42,10 +43,12 @@ export default function QualidadeTablet() {
     <main className="qt-shell">
       <style>{`
         .qt-shell{width:100%;max-width:1360px;margin:0 auto;min-height:calc(100vh - 76px);padding:10px;background:#f4f8fb;color:#123b50;box-sizing:border-box;font-family:Inter,system-ui,sans-serif}
-        .qt-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 12px;background:linear-gradient(100deg,#123b50,#1d6684);color:#fff;border:1px solid #0f3445}
+        .qt-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 12px;background:#fff;color:#111827;border:1px solid #e5e7eb;border-bottom:3px solid #d4a017}
         .qt-head h1{margin:0;font-size:14px;font-weight:750;letter-spacing:.02em}
         .qt-head p{display:none}
-        .qt-stamp{font-size:9px;font-weight:800;letter-spacing:.1em;color:#bce8f6;white-space:nowrap}
+        .qt-stamp{font-size:9px;font-weight:800;letter-spacing:.1em;color:#111827;white-space:nowrap}
+        .qt-back{display:inline-flex;align-items:center;gap:5px;min-height:30px;padding:0 9px;border:1px solid #b8860b;background:#d4a017;color:#111827;font-size:10px;font-weight:700;cursor:pointer}
+        .qt-back:focus-visible{outline:2px solid #2d8db8;outline-offset:2px}
         .qt-groups{display:grid;gap:8px;margin-top:8px}
         .qt-group{border:1px solid #cbd9e1;background:#fff;min-width:0}
         .qt-group-title{padding:6px 9px;background:#e7f1f6;border-bottom:1px solid #cbd9e1;font-size:9px;font-weight:850;letter-spacing:.09em;color:#315466}
@@ -65,7 +68,7 @@ export default function QualidadeTablet() {
           <h1>SGQ INDUSTRIAL · CENTRAL DA QUALIDADE</h1>
           
         </div>
-        <span className="qt-stamp">TABLET · SGQ</span>
+        <div style={{display:'flex',alignItems:'center',gap:10}}><span className="qt-stamp">TABLET · SGQ</span><button className="qt-back" type="button" onClick={() => navigate('/qualidade')}><ArrowLeft size={13}/> Voltar ao painel</button></div>
       </header>
       <div className="qt-groups">
         {sections.map(section => (
