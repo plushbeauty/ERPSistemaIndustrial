@@ -15,6 +15,7 @@ type Item = {
   produto_id: string
   codigo: string
   descricao: string
+  lote: string
   ncm: string
   cst: string
   cfop: string
@@ -32,7 +33,7 @@ type Product = TextMap
 type Transporter = TextMap
 
 const newItem = (): Item => ({
-  id: crypto.randomUUID(), produto_id: '', codigo: '', descricao: '', ncm: '', cst: '',
+  id: crypto.randomUUID(), produto_id: '', codigo: '', descricao: '', lote: '', ncm: '', cst: '',
   cfop: '', unidade: '', quantidade: '1', valorUnitario: '0', desconto: '0',
   icms: '0', ipi: '0', pis: '0', cofins: '0', origem: '0',
 })
@@ -166,15 +167,22 @@ export default function NFeEmissaoCompact() {
         if (orderItemsError) throw orderItemsError
         const orderItemById = new Map((orderItemRows ?? []).map(row => [String(row.id), row]))
         const productById = new Map(products.map(product => [String(product.id), product]))
+        const { data: lotRows, error: lotError } = await supabase
+          .from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor')
+          .eq('empresa_id', companyId).in('id', [...new Set(releaseItems.map(row => String(row.lote_id)))])
+        if (lotError) throw lotError
+        const lotById = new Map((lotRows ?? []).map(row => [String(row.id), row]))
         const importedItems: Item[] = releaseItems.map(line => {
           const orderItem = orderItemById.get(String(line.pedido_item_id))
           const product = productById.get(String(line.produto_id))
           if (!orderItem || !product || String(orderItem.produto_id) !== String(line.produto_id)) {
             throw new Error('Um item da liberação não corresponde ao pedido/produto ativo.')
           }
+          const lot = lotById.get(String(line.lote_id))
           return {
             id: crypto.randomUUID(), produto_id: String(line.produto_id),
             codigo: String(product.codigo ?? ''), descricao: String(orderItem.descricao ?? product.nome ?? ''),
+            lote: String(lot?.lote_interno ?? '') + (lot?.lote_fornecedor ? ' / Fornecedor: ' + String(lot.lote_fornecedor) : ''),
             ncm: onlyDigits(String(product.ncm ?? ''), 8),
             cst: String(product.cst_icms ?? product.csosn ?? ''),
             cfop: onlyDigits(String(product.cfop_saida ?? ''), 4),
@@ -189,11 +197,6 @@ export default function NFeEmissaoCompact() {
         const boxTotal = releaseItems.reduce((sum, row) => sum + Number(row.caixas ?? 0), 0)
         const netWeight = releaseItems.reduce((sum, row) => sum + Number(row.peso_liquido ?? 0), 0)
         const grossWeight = releaseItems.reduce((sum, row) => sum + Number(row.peso_bruto ?? 0), 0)
-        const { data: lotRows, error: lotError } = await supabase
-          .from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor')
-          .eq('empresa_id', companyId).in('id', [...new Set(releaseItems.map(row => String(row.lote_id)))])
-        if (lotError) throw lotError
-        const lotById = new Map((lotRows ?? []).map(row => [String(row.id), row]))
         const trace = releaseItems.map(row => {
           const lot = lotById.get(String(row.lote_id))
           return 'Lote ' + String(lot?.lote_interno ?? '') + (lot?.lote_fornecedor ? ' (fornecedor ' + String(lot.lote_fornecedor) + ')' : '') + ': ' + String(row.quantidade)
@@ -305,7 +308,7 @@ export default function NFeEmissaoCompact() {
       }
       const rows = items.map((item, index) => ({
         produto_id: item.produto_id || null, item_numero: index + 1, codigo_produto: item.codigo,
-        descricao_produto: item.descricao, ncm: onlyDigits(item.ncm, 8), cfop: onlyDigits(item.cfop, 4),
+        descricao_produto: item.descricao, lote: item.lote || null, ncm: onlyDigits(item.ncm, 8), cfop: onlyDigits(item.cfop, 4),
         unidade: item.unidade, quantidade: numberValue(item.quantidade), valor_unitario: numberValue(item.valorUnitario),
         valor_total: Math.max(0, numberValue(item.quantidade) * numberValue(item.valorUnitario) - numberValue(item.desconto)),
         valor_desconto: numberValue(item.desconto), origem: onlyDigits(item.origem, 1), cst_csosn: item.cst || null,
@@ -406,7 +409,7 @@ export default function NFeEmissaoCompact() {
       <Section title="04 • ITENS — PRODUTOS, SERVIÇOS E TRIBUTAÇÃO">
         <div className="synqra-nfe-block-head"><span><RequiredField>Itens fiscais</RequiredField></span><CompactButton type="button" onClick={() => setItems(current => [...current, newItem()])}><Plus size={13} /> ADICIONAR ITEM</CompactButton></div>
         <div className="synqra-nfe-table-wrap">
-          <table><thead><tr><th>ITEM</th><th>PRODUTO</th><th>CÓDIGO</th><th>DESCRIÇÃO</th><th>NCM</th><th>CST/CSOSN</th><th>CFOP</th><th>UN</th><th>QTD</th><th>VLR UNIT.</th><th>DESC.</th><th>ICMS %</th><th>IPI %</th><th>PIS %</th><th>COFINS %</th><th>TOTAL</th><th></th></tr></thead>
+          <table><thead><tr><th>ITEM</th><th>PRODUTO</th><th>CÓDIGO</th><th>DESCRIÇÃO</th><th>LOTE / RASTREABILIDADE</th><th>NCM</th><th>CST/CSOSN</th><th>CFOP</th><th>UN</th><th>QTD</th><th>VLR UNIT.</th><th>DESC.</th><th>ICMS %</th><th>IPI %</th><th>PIS %</th><th>COFINS %</th><th>TOTAL</th><th></th></tr></thead>
           <tbody>{items.map((item, index) => {
             const gross = numberValue(item.quantidade) * numberValue(item.valorUnitario)
             const total = Math.max(0, gross - numberValue(item.desconto))
@@ -415,6 +418,7 @@ export default function NFeEmissaoCompact() {
               <td><select value={item.produto_id} onChange={e => selectProduct(item.id, e.currentTarget.value)}><option value="">MANUAL</option>{products.map(product => <option key={String(product.id)} value={String(product.id)}>{String(product.codigo ?? '')} • {String(product.nome ?? '')}</option>)}</select></td>
               <td><input value={item.codigo} onChange={e => updateItem(item.id, 'codigo', e.currentTarget.value)} /></td>
               <td><input value={item.descricao} onChange={e => updateItem(item.id, 'descricao', e.currentTarget.value)} /></td>
+              <td><input value={item.lote} onChange={e => updateItem(item.id, 'lote', e.currentTarget.value)} readOnly={Boolean(releaseId)} /></td>
               <td><input value={item.ncm} maxLength={8} onChange={e => updateItem(item.id, 'ncm', onlyDigits(e.currentTarget.value, 8))} /></td>
               <td><input value={item.cst} maxLength={4} onChange={e => updateItem(item.id, 'cst', e.currentTarget.value.toUpperCase())} /></td>
               <td><input value={item.cfop} maxLength={4} onChange={e => updateItem(item.id, 'cfop', onlyDigits(e.currentTarget.value, 4))} /></td>
