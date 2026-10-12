@@ -48,7 +48,7 @@ export default function PCPTablet() {
           <h1>Tablet do PCP</h1>
           <p>Central de planejamento e controle da produção. Selecione uma área para abrir a tela operacional.</p>
         </div>
-        <button className="pcp-tablet-back" type="button" onClick={() => navigate('/erp-industrial')}><ArrowLeft size={13}/> Início</button>
+        <button className="pcp-tablet-back" type="button" onClick={() => navigate('/pcp')}><ArrowLeft size={13}/> Voltar ao PCP</button>
       </header>
       <section className="pcp-tablet-grid" aria-label="Módulos do PCP">
         {modules.map(({label,description,route,icon:Icon}) => <button key={route} type="button" className="pcp-tablet-card" onClick={() => navigate(route)}>
