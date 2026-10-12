@@ -162,11 +162,15 @@ export default function QualidadeIndustrial() {
     }
   }
 
-  const decide = async (decision: 'APROVAR' | 'BLOQUEAR') => {
-    if (!currentReceiving) return
+  const decide = async (decision: 'APROVAR' | 'BLOQUEAR', receivingId = selectedReceiving) => {
+    const targetReceiving = receivings.find((row) => row.id === receivingId)
+    if (!targetReceiving) {
+      setError('Selecione uma inspeção de recebimento válida antes de decidir.')
+      return
+    }
     setBusy(true); setError(''); setNotice('')
     try {
-      const result = await supabase.rpc('erp_qms_decidir_inspecao_recebimento', { p_inspecao_id: currentReceiving.id, p_decisao: decision })
+      const result = await supabase.rpc('erp_qms_decidir_inspecao_recebimento', { p_inspecao_id: targetReceiving.id, p_decisao: decision })
       if (result.error) throw result.error
       setNotice(decision === 'APROVAR' ? 'Lote aprovado e liberado no status de inspeção.' : 'Lote bloqueado e enviado para quarentena.')
       await load()
@@ -293,7 +297,7 @@ export default function QualidadeIndustrial() {
             <label className={labelClass()}>Critério Re<input className={fieldClass(invalid === 'criteria')} type="number" min="1" value={re} onChange={(e) => { setRe(e.target.value); setInvalid(null) }} /></label>
             <div className="qms-actions"><button className="qms-btn" type="button" disabled={busy} onClick={() => void saveReceiving()}><ClipboardCheck size={13}/> REGISTRAR INSPEÇÃO</button></div>
           </div>
-          <div className="qms-table-wrap qms-mt"><table><thead><tr><th>Lote</th><th>NF</th><th>Fornecedor</th><th>Grau</th><th>AQL</th><th>Amostra</th><th>Def.</th><th>Ac</th><th>Re</th><th>Status</th><th>Ação</th></tr></thead><tbody>{receivings.map((row) => { const lot = lots.find((item) => item.id === row.lote_id); return <tr key={row.id}><td>{lot?.lote_interno || row.lote_id}</td><td>{lot?.nf_numero || '—'}</td><td>{supplierMap.get(row.fornecedor_id || '') || '—'}</td><td>{row.nivel_inspecao}</td><td className="num">{row.aql}</td><td className="num">{row.tamanho_amostra}</td><td className="num">{row.defeitos_encontrados}</td><td className="num">{row.criterio_ac}</td><td className="num">{row.criterio_re}</td><td><span className={row.status === 'APROVADO' ? 'status-ok' : row.status === 'BLOQUEADO' ? 'status-nok' : 'status-pending'}>{row.status}</span></td><td><button className="qms-mini" type="button" onClick={() => setSelectedReceiving(row.id)}>USAR</button>{row.status === 'PENDENTE' && <><button className="qms-mini approve" type="button" disabled={busy} onClick={() => void (setSelectedReceiving(row.id), decide('APROVAR'))}><Check size={12}/> APROVAR</button><button className="qms-mini block" type="button" disabled={busy} onClick={() => void (setSelectedReceiving(row.id), decide('BLOQUEAR'))}><X size={12}/> BLOQUEAR</button></>}</td></tr>})}</tbody></table></div>
+          <div className="qms-table-wrap qms-mt"><table><thead><tr><th>Lote</th><th>NF</th><th>Fornecedor</th><th>Grau</th><th>AQL</th><th>Amostra</th><th>Def.</th><th>Ac</th><th>Re</th><th>Status</th><th>Ação</th></tr></thead><tbody>{receivings.map((row) => { const lot = lots.find((item) => item.id === row.lote_id); return <tr key={row.id}><td>{lot?.lote_interno || row.lote_id}</td><td>{lot?.nf_numero || '—'}</td><td>{supplierMap.get(row.fornecedor_id || '') || '—'}</td><td>{row.nivel_inspecao}</td><td className="num">{row.aql}</td><td className="num">{row.tamanho_amostra}</td><td className="num">{row.defeitos_encontrados}</td><td className="num">{row.criterio_ac}</td><td className="num">{row.criterio_re}</td><td><span className={row.status === 'APROVADO' ? 'status-ok' : row.status === 'BLOQUEADO' ? 'status-nok' : 'status-pending'}>{row.status}</span></td><td><button className="qms-mini" type="button" onClick={() => setSelectedReceiving(row.id)}>USAR</button>{row.status === 'PENDENTE' && <><button className="qms-mini approve" type="button" disabled={busy} onClick={() => { setSelectedReceiving(row.id); void decide('APROVAR', row.id) }}><Check size={12}/> APROVAR</button><button className="qms-mini block" type="button" disabled={busy} onClick={() => { setSelectedReceiving(row.id); void decide('BLOQUEAR', row.id) }}><X size={12}/> BLOQUEAR</button></>}</td></tr>})}</tbody></table></div>
         </section>}
 
         {tab === 'dimensional' && <section className="qms-panel">
