@@ -70,7 +70,7 @@ requireIn(emitter, /valor_seguro: totals\.seguro/i, 'Emissor compacto não persi
 requireIn(emitter, /valor_desconto: 0/i, 'Emissor compacto recontabiliza desconto de item como desconto global.')
 requireIn(releasePricing, /allocateReleaseDiscounts/i, 'Alocação proporcional do desconto por lote está ausente.')
 requireIn(emitter, /allocateReleaseDiscounts/i, 'Importação da liberação não preserva o desconto proporcional do pedido.')
-requireIn(emitter, /discountByReleaseLine.get(line)/i, 'Desconto proporcional calculado não é aplicado aos itens importados.')
+requireIn(emitter, /discountByReleaseLine\.get\(line\)/i, 'Desconto proporcional calculado não é aplicado aos itens importados.')
 requireIn((await read('supabase/migrations/20261012182224_erp_nfe_emission_claim_rpc_20261012.sql')), /for update[\s\S]*?status is distinct from 'Rascunho'[\s\S]*?set status = 'Processando'/i, 'Transmissão NF-e não possui reserva atômica do rascunho antes do envio.')
 requireIn(qualityGuard, /erp_quarentenas_lotes/i, 'Guard de quarentena ausente na liberação.')
 requireIn(qualityGuard, /erp_liberacao_nf_header_quality_status_guard/i, 'Mudanças de status não revalidam a Qualidade do lote.')
