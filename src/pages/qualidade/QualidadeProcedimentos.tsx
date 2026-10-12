@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ChangeEvent } from 'react'
-import { Download, ExternalLink, FileText, RefreshCw, Upload } from 'lucide-react'
+import { Download, ExternalLink, FileEdit, FileText, RefreshCw, Upload } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import QualitySidebar from '../../components/quality/QualitySidebar'
 import { fetchAllPages } from '../../lib/supabasePagination'
@@ -215,6 +215,9 @@ export default function QualidadeProcedimentos() {
             <h1 className="text-[18px] font-semibold">Procedimentos e PDFs</h1>
             <p className="text-[11px] text-slate-600">Cada envio cria uma revisão em análise; a vigente só é substituída após aprovação.</p>
           </div>
+          <a href="/qualidade/editor-it" className="inline-flex h-[30px] items-center gap-2 border border-[#2D8DB8] bg-[#F4FBFD] px-3 text-[10px] font-semibold text-[#246F98] hover:bg-[#E5F3F8]">
+            <FileEdit size={13} /> Editor gráfico de IT
+          </a>
           <button type="button" onClick={() => void load()} disabled={busy} className="erp-row-action">
             <RefreshCw size={13} /> Atualizar
           </button>
