@@ -94,6 +94,22 @@ for(const [pattern,message] of [
   [/\.update\(payload\)[\s\S]*\.eq\('id',\s*editing\)[\s\S]*\.eq\('empresa_id',\s*empresaId\)/,'Workspace industrial permite edição sem restringir o registro à empresa ativa.'],
   [/\.insert\(\{\.\.\.payload,\s*empresa_id:\s*empresaId\}\)/,'Workspace industrial não associa novas linhas à empresa ativa.'],
 ]) if(!pattern.test(workspace)) add('BLOCKER',workspacePath,1,message)
+if(!workspace.includes("fetchAllPages<Record<string, unknown>>") || !workspace.includes(".range(from, to)") || workspace.includes(".limit(500)")) {
+  add('BLOCKER',workspacePath,1,'Workspace industrial deve paginar todos os registros com range determinístico, sem truncar em 500.')
+}
+if(!/function requiredForField\(field: Field\): boolean[\s\S]*endereco_origem_id[\s\S]*endereco_destino_id/.test(workspace)
+  || !/Number\(raw\) <= 0/.test(workspace)) {
+  add('BLOCKER',workspacePath,1,'Movimentação WMS não valida endereços obrigatórios por tipo e quantidade positiva.')
+}
+const masterBootstrapPath=path.join(ROOT,'supabase','functions','erp-master-bootstrap','index.ts')
+const masterBootstrap=read(masterBootstrapPath)
+if(!masterBootstrap) add('BLOCKER',masterBootstrapPath,1,'Edge Function de bootstrap Master ausente.')
+if(!/from\(["']usuarios["']\)[\s\S]*nivel_admin\.gte\.100[\s\S]*perfil\.in\.\(MASTER,MASTER_ADMIN,SUPER_ADMIN\)/.test(masterBootstrap)
+  || !/const masterExists = Boolean\([\s\S]*legacyMasters/.test(masterBootstrap)
+  || !/available: !masterExists/.test(masterBootstrap)
+  || !/if \(masterExists\)[\s\S]*MASTER_ALREADY_EXISTS/.test(masterBootstrap)) {
+  add('BLOCKER',masterBootstrapPath,1,'Bootstrap Master deve impedir duplicação também contra o cadastro legado de usuários.')
+}
 const migrationNames=migrationFiles.map(f=>path.basename(f).toLowerCase())
 const duplicateNames=migrationNames.filter((v,i,a)=>a.indexOf(v)!==i)
 for(const name of [...new Set(duplicateNames)]) add('HIGH',ROOT,1,`Migration duplicada: ${name}`)

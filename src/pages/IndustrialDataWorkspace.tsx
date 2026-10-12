@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, ClipboardList, RefreshCw, Save, Search, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import { useLocation } from 'react-router-dom'
 
 type Field = { key: string; label: string; type?: 'text'|'number'|'date'|'select'|'textarea'; options?: string[]; required?: boolean }
@@ -80,9 +81,13 @@ export default function IndustrialDataWorkspace() {
       }
       const activeEmpresaId = company.data
       setEmpresaId(activeEmpresaId)
-      const result = await supabase.from(config.table).select('*').eq('empresa_id', activeEmpresaId).limit(500)
-      if (result.error) throw result.error
-      setRows((result.data ?? []) as Record<string,unknown>[])
+      const result = await fetchAllPages<Record<string, unknown>>((from, to) =>
+        supabase.from(config.table).select('*', { count: 'exact' })
+          .eq('empresa_id', activeEmpresaId)
+          .order('id', { ascending: true })
+          .range(from, to),
+      )
+      setRows(result)
     } catch (e) {
       setRows([])
       setError(e instanceof Error ? e.message : 'Não foi possível carregar os registros da empresa.')
