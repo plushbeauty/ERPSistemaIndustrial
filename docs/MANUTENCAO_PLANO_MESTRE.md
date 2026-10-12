@@ -25,9 +25,16 @@
 
 ## Detalhe da máquina
 
-O clique na linha abre painel com identificação, frequência e status da planilha, além de checklist orientativo para segurança, inspeção mecânica, lubrificação, inspeção elétrica e teste funcional. O checklist e as observações são apenas rascunho local; não são gravados no Supabase nem apresentados como evidência de manutenção executada. Para intervenção registrada, deve ser usado o fluxo existente de Ordens de Serviço.
+O clique na linha abre painel com identificação, frequência e status da planilha, além de checklist orientativo para segurança, inspeção mecânica, lubrificação, inspeção elétrica e teste funcional. Os itens marcados e as observações são persistidos em `erp_manutencao_checklists`, isolados por empresa e pela chave `origem_cronograma + tag_fonte`. A página reabre o registro salvo para a mesma origem/tag. Esse registro documenta o checklist preenchido, mas não substitui uma Ordem de Serviço nem é prova independente de execução técnica.
 
 O roteiro é genérico e não substitui manual do fabricante, procedimento aprovado, bloqueio/etiquetagem, capacitação nem requisitos de segurança da máquina. A equipe técnica deve validar e adaptar cada tarefa ao ativo real antes de executar.
+
+## Conferência da planilha enviada em 11/10/2026
+
+Arquivo localizado na biblioteca: `FRP-FER-001-PLASTIBOR - CRONOGRAMA DE MANUTENÇÃO PREVENTIVA MÁQUINAS.xlsx`. Foram lidas as abas `Dashboard de Manutenção` e `Cronograma 2026`. A tabela FRP-MP-001 contém 13 equipamentos/tag e os status mensais P, PE, AT, M e D; as linhas incorporadas em `frpRows` correspondem aos dados dessa aba. A legenda é: P = programado; PE = programado e executado; AT = em atraso; M = em manutenção; D = desativado.
+
+**Limite operacional:** os status mensais P/PE/AT/M/D são a referência documental de origem. Não são transformados automaticamente em ordens de serviço, nem devem ser tratados como confirmação de ativo cadastrado. A correspondência operacional é feita pelo código/tag de `erp_maquinas` dentro da empresa atual. A aba de dashboard da planilha conta esses códigos com fórmulas; os KPIs da aplicação devem continuar sendo calculados a partir dos registros persistidos, sem inventar execução de manutenção.
+
 
 ## Referência técnica consultada
 
