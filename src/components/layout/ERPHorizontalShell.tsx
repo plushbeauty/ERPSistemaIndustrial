@@ -73,16 +73,24 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [helpOpen, setHelpOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [now, setNow] = useState(() => new Date())
-  const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
+  const [sessionOperator, setSessionOperator] = useState(operatorName)
+  const [sessionEmail, setSessionEmail] = useState('')
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (operatorName !== 'Usuário ERP') return
-    void supabase.auth.getUser().then(({ data }) => {
-      const metadata = data.user?.user_metadata
-      if (typeof metadata?.nome === 'string' && metadata.nome.trim()) setSessionOperator(metadata.nome.trim())
-      else if (data.user?.email) setSessionOperator(data.user.email)
+    if (operatorName !== 'Usuário ERP') {
+      setSessionOperator(operatorName)
+      return
+    }
+    let active = true
+    void supabase.auth.getUser().then(({ data, error }) => {
+      if (!active || error || !data.user) return
+      const metadata = data.user.user_metadata
+      const metadataName = [metadata?.nome, metadata?.name, metadata?.full_name].find(value => typeof value === 'string' && value.trim())
+      setSessionOperator(typeof metadataName === 'string' ? metadataName.trim() : data.user.email || 'Usuário autenticado')
+      setSessionEmail(data.user.email || '')
     })
+    return () => { active = false }
   }, [operatorName])
 
   useEffect(() => {
@@ -166,8 +174,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     <div className="erp-horizontal-shell" ref={ref}>
       <header className="erp-horizontal-header">
         <button className="erp-horizontal-brand" type="button" onClick={() => go('/erp-industrial')} title="Início">
-          <img src="/logo/sgq-erp.png" alt="SGQERP Industrial" />
-          <strong>SGQERP INDUSTRIAL</strong>
+          <img src="/logo/sgq-erp.png" alt="Logotipo SGQERP Industrial" />
+          <span className="erp-horizontal-brand-copy"><strong>SGQERP INDUSTRIAL</strong><small>SISTEMA DE GESTÃO INDUSTRIAL</small></span>
         </button>
 
         <div className="erp-horizontal-search">
@@ -189,12 +197,15 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
 
         <div style={{position:"relative"}}><button type="button" className="erp-horizontal-help" title="Ajuda" onClick={()=>setHelpOpen(v=>!v)} aria-expanded={helpOpen}><CircleHelp size={15} /> Ajuda</button>{helpOpen&&<div role="dialog" aria-label="Ajuda contextual da tela" style={{position:"absolute",right:0,top:34,zIndex:1200,width:"min(370px,90vw)",maxHeight:"75vh",overflowY:"auto",padding:"10px 12px",border:"1px solid #b9cbd3",borderRadius:2,background:"#fff",boxShadow:"0 6px 16px rgba(18,59,80,.16)",fontSize:10,lineHeight:1.45,color:"#173b4a"}}><strong>{contextualHelp.title}</strong><p style={{margin:"5px 0"}}>{contextualHelp.purpose}</p><strong>Como usar</strong><ol style={{margin:"4px 0 7px",paddingLeft:17}}>{contextualHelp.steps.map((step,index)=><li key={index} style={{marginBottom:3}}>{step}</li>)}</ol><strong>Campos e preenchimento</strong><ul style={{margin:"4px 0 8px",paddingLeft:15}}>{contextualHelp.fields.map((field,index)=><li key={index} style={{marginBottom:3}}>{field}</li>)}</ul><div style={{borderTop:"1px solid #e2e8f0",paddingTop:7,color:"#647b85"}}>Tela atual: {pathname}</div><button type="button" onClick={()=>{setHelpOpen(false);navigate("/ajuda")}} style={{marginTop:7,height:28,padding:"0 9px",border:"1px solid #2D8DB8",background:"#2D8DB8",color:"#fff",borderRadius:2,cursor:"pointer"}}>Abrir Central de Ajuda</button></div>}</div>
 
-        <div className="erp-horizontal-session">
-          <UserRound size={15} />
-          <span>{operatorName === 'Usuário ERP' ? sessionOperator : operatorName}</span>
+        <div className="erp-horizontal-session" aria-label="Sessão autenticada">
+          <UserRound size={18} aria-hidden="true" />
+          <div className="erp-horizontal-session-identity">
+            <strong title={sessionOperator}>{sessionOperator || 'Usuário autenticado'}</strong>
+            <span title={sessionEmail}>{sessionEmail || 'Sessão autenticada'}</span>
+          </div>
           <time dateTime={now.toISOString()}>
-            {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)} {' '}
-            {new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(new Date())}
+            <span>{new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)}</span>
+            <strong>{new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(now)}</strong>
           </time>
         </div>
       </header>
@@ -267,19 +278,25 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-status-legend-item small{display:block;font-size:9px;line-height:1.3;color:#647b85}
         .erp-status-legend-panel>p{grid-column:1/-1;margin:0;padding-top:5px;border-top:1px solid #e2e8f0;font-size:9px;color:#647b85}
         @media print{ @page{size:A4;margin:12mm} .erp-horizontal-header,.erp-horizontal-menu,.erp-global-status-row,.print-hidden,.erp-horizontal-help{display:none!important} .erp-horizontal-shell,.erp-horizontal-workspace{min-height:0!important;background:#fff!important;padding:0!important} .erp-horizontal-workspace *{box-shadow:none!important;backdrop-filter:none!important} thead{display:table-header-group} tr{break-inside:avoid} }
-        .erp-horizontal-header{height:46px;display:flex;align-items:center;gap:12px;padding:0 10px;background:linear-gradient(90deg,#123b50 0%,#17445a 45%,#236f93 100%);border-bottom:1px solid #0e3445;box-sizing:border-box}
-        .erp-horizontal-brand{height:34px;display:flex;align-items:center;gap:8px;border:0;background:transparent;color:#fff;cursor:pointer;padding:0 6px;white-space:nowrap}
-        .erp-horizontal-brand img{height:30px;width:auto;object-fit:contain}
-        .erp-horizontal-brand strong{font-size:13px;font-weight:700;letter-spacing:.01em}
+        .erp-horizontal-header{height:72px;min-height:72px;display:flex;align-items:center;gap:14px;padding:5px 14px;background:linear-gradient(90deg,#123b50 0%,#17445a 45%,#236f93 100%);border-bottom:2px solid #2D8DB8;box-sizing:border-box}
+        .erp-horizontal-brand{height:60px;min-width:300px;display:flex;align-items:center;gap:12px;border:0;background:transparent;color:#fff;cursor:pointer;padding:0 6px;white-space:nowrap;flex:0 0 auto}
+        .erp-horizontal-brand img{display:block!important;height:58px!important;width:168px!important;min-width:168px;max-width:168px!important;object-fit:contain;object-position:left center;flex:0 0 168px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.16))}
+        .erp-horizontal-brand-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+        .erp-horizontal-brand strong{display:block;font-size:14px;font-weight:800;letter-spacing:.035em;color:#fff;line-height:1.15}
+        .erp-horizontal-brand small{display:block;color:#d7edf6;font-size:8px;font-weight:700;letter-spacing:.09em;line-height:1.2}
         .erp-horizontal-search{position:relative;display:flex;align-items:center;gap:6px;width:min(390px,34vw);height:30px;margin-left:auto;min-width:220px;border:1px solid #b9cbd3;background:#fff;border-radius:2px;padding:0 8px;box-sizing:border-box}
         .erp-horizontal-search input{border:0;outline:0;min-width:0;max-width:100%;width:100%;height:28px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#173b4a;background:transparent}
         .erp-horizontal-search-results{position:absolute;top:31px;left:0;right:0;z-index:1000;background:#fff;border:1px solid #cbd5e1;box-shadow:0 4px 12px rgba(18,59,80,.12)}
         .erp-horizontal-search-results button{display:block;width:100%;min-height:28px;padding:5px 8px;border:0;background:#fff;text-align:left;font-size:11px;color:#173b4a;cursor:pointer}
         .erp-horizontal-search-results button:hover{background:#edf7fb}
         .erp-horizontal-help{height:30px;display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:#315466;font-size:11px;cursor:pointer;padding:0 5px}
-        .erp-horizontal-session{height:30px;display:flex;align-items:center;gap:5px;padding-left:8px;border-left:1px solid #dbe5e9;white-space:nowrap;font-size:11px;color:#173b4a}
-        .erp-horizontal-session span{font-weight:600}
-        .erp-horizontal-session time{color:#647b85;font-size:10px}
+        .erp-horizontal-session{height:52px;display:flex;align-items:center;gap:9px;padding:0 10px;border:1px solid rgba(255,255,255,.35);border-radius:3px;background:rgba(7,35,49,.52);white-space:nowrap;font-size:11px;color:#fff;flex:0 1 auto;min-width:190px;max-width:330px;box-sizing:border-box}
+        .erp-horizontal-session-identity{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+        .erp-horizontal-session-identity strong{display:block;max-width:180px;overflow:hidden;text-overflow:ellipsis;color:#fff;font-size:12px;line-height:1.2;font-weight:800}
+        .erp-horizontal-session-identity span{display:block;max-width:180px;overflow:hidden;text-overflow:ellipsis;color:#d8edf5;font-size:9px;line-height:1.2}
+        .erp-horizontal-session time{display:flex;flex-direction:column;gap:3px;padding-left:9px;border-left:1px solid rgba(255,255,255,.24);color:#d8edf5;font-size:10px;text-align:right}
+        .erp-horizontal-session time span{font-size:9px;color:#d8edf5}
+        .erp-horizontal-session time strong{font-size:11px;color:#fff;font-weight:800}
         .erp-horizontal-menu{height:32px;display:flex;align-items:stretch;padding:0 6px;background:#2D8DB8;border-bottom:1px solid #17445A;box-sizing:border-box;position:relative;z-index:900}
 
         /* Identidade visual transversal: superfícies frias, contornos nítidos e controles compactos. */
@@ -324,8 +341,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-workspace-compact button{font-size:10px}
         .erp-horizontal-workspace-compact label{font-size:9px}
         .erp-horizontal-workspace-compact input,.erp-horizontal-workspace-compact select,.erp-horizontal-workspace-compact textarea{font-size:10px}
-        @media(max-width:950px){.erp-horizontal-brand strong{display:none}.erp-horizontal-search{width:36vw}.erp-horizontal-menu-button{padding:0 7px}.erp-horizontal-session time{display:none}}
-        @media(max-width:700px){.erp-global-status-row>small{display:none}.erp-horizontal-header{gap:5px}.erp-horizontal-help{font-size:0}.erp-horizontal-search{width:42vw;min-width:160px}.erp-horizontal-session span{display:none}.erp-horizontal-menu{overflow-x:auto}}
+        @media(max-width:1100px){.erp-horizontal-header{gap:8px;padding:5px 8px}.erp-horizontal-brand{min-width:250px;gap:7px}.erp-horizontal-brand img{width:132px!important;min-width:132px;max-width:132px!important;flex-basis:132px}.erp-horizontal-brand strong{font-size:12px}.erp-horizontal-brand small{font-size:7px}.erp-horizontal-search{min-width:150px;width:25vw}.erp-horizontal-session{min-width:165px;max-width:230px;padding:0 6px;gap:6px}.erp-horizontal-session-identity strong,.erp-horizontal-session-identity span{max-width:125px}}
+        @media(max-width:950px){.erp-horizontal-brand{min-width:0}.erp-horizontal-brand img{width:118px!important;min-width:118px;max-width:118px!important;flex-basis:118px;height:54px!important}.erp-horizontal-brand-copy small{display:none}.erp-horizontal-search{width:30vw}.erp-horizontal-menu-button{padding:0 7px}.erp-horizontal-session time{display:none}}
+        @media(max-width:700px){.erp-global-status-row>small{display:none}.erp-horizontal-header{height:auto;min-height:64px;flex-wrap:wrap;gap:5px;padding:5px 7px}.erp-horizontal-brand{height:48px;flex:1 1 45%;gap:6px}.erp-horizontal-brand img{width:96px!important;min-width:96px;max-width:96px!important;flex-basis:96px;height:44px!important}.erp-horizontal-brand strong{font-size:10px}.erp-horizontal-brand-copy small{display:none}.erp-horizontal-help{font-size:0}.erp-horizontal-search{order:3;flex:1 1 48%;width:auto;min-width:120px}.erp-horizontal-session{height:42px;min-width:0;max-width:52%;flex:0 1 52%;margin-left:auto}.erp-horizontal-session-identity strong{max-width:120px;font-size:10px}.erp-horizontal-session-identity span{display:block;max-width:120px;font-size:8px}.erp-horizontal-session time{display:none}.erp-horizontal-menu{overflow-x:auto}}
 
         .erp-horizontal-menu{display:flex!important;position:relative;z-index:900}
         .erp-horizontal-menu-button.is-active{background:#17445A;color:#fff;box-shadow:inset 0 -2px #8bd6f0}
