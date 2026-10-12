@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { FileDown, Plus, RefreshCw, Save, Send, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { parseFiscalNumber } from '../lib/fiscal/nfe-number'
+import { allocateReleaseDiscounts } from '../lib/fiscal/nfe-release-pricing'
 import ERPHeader from '../components/layout/ERPHeader'
 import CompactButton from '../components/ui/CompactButton'
 import CompactInput from '../components/ui/CompactInput'
@@ -169,6 +170,24 @@ export default function NFeEmissaoCompact() {
           .eq('empresa_id', companyId).in('id', [...new Set(releaseItems.map(row => String(row.lote_id)))])
         if (lotError) throw lotError
         const lotById = new Map((lotRows ?? []).map(row => [String(row.id), row]))
+        const releaseLinesByOrderItem = new Map<string, typeof releaseItems>()
+        for (const line of releaseItems) {
+          const key = String(line.pedido_item_id)
+          releaseLinesByOrderItem.set(key, [...(releaseLinesByOrderItem.get(key) ?? []), line])
+        }
+        const discountByReleaseLine = new Map<(typeof releaseItems)[number], number>()
+        for (const [orderItemId, lines] of releaseLinesByOrderItem) {
+          const orderItem = orderItemById.get(orderItemId)
+          if (!orderItem) throw new Error('Item do pedido não localizado para calcular o desconto fiscal.')
+          const orderedQuantity = parseFiscalNumber(orderItem.quantidade)
+          const lineDiscount = parseFiscalNumber(orderItem.desconto)
+          const allocations = allocateReleaseDiscounts(
+            lineDiscount,
+            orderedQuantity,
+            lines.map(line => parseFiscalNumber(line.quantidade)),
+          )
+          lines.forEach((line, index) => discountByReleaseLine.set(line, allocations[index] ?? 0))
+        }
         const importedItems: Item[] = releaseItems.map(line => {
           const orderItem = orderItemById.get(String(line.pedido_item_id))
           const product = productById.get(String(line.produto_id))
@@ -186,7 +205,7 @@ export default function NFeEmissaoCompact() {
             unidade: String(product.unidade ?? ''),
             quantidade: String(line.quantidade ?? ''),
             valorUnitario: String(orderItem.valor_unitario ?? product.preco_venda ?? 0),
-            desconto: '0', icms: String(product.aliquota_icms ?? 0), ipi: String(product.aliquota_ipi ?? 0),
+            desconto: String(discountByReleaseLine.get(line) ?? 0), icms: String(product.aliquota_icms ?? 0), ipi: String(product.aliquota_ipi ?? 0),
             pis: String(product.aliquota_pis ?? 0), cofins: String(product.aliquota_cofins ?? 0),
             origem: onlyDigits(String(product.origem_fiscal ?? '0'), 1),
           }
