@@ -1,6 +1,7 @@
-import { useEffect,useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Plus, Save, Printer } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import type { IFerramentalParametrosJSONB } from '../types/ferramental'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
 import IndustrialPageShell, { SectionCard, Field, ToolbarButton } from '../components/industrial/IndustrialPageShell'
@@ -10,17 +11,32 @@ const items=['Limpeza e Polimento das Cavidades do Molde','Verificação do Desg
 
 export default function FerramentariaPreventiva(){
  const [tools,setTools]=useState<T[]>([])
+ const [companyId,setCompanyId]=useState('')
+ const [saving,setSaving]=useState(false)
  const [selected,setSelected]=useState<T|null>(null)
  const [status,setStatus]=useState<'LIBERADO'|'RETIDO'>('LIBERADO')
  const [done,setDone]=useState<boolean[]>(items.map(()=>false))
  const [obs,setObs]=useState('')
  const [msg,setMsg]=useState('')
 
- async function load(){
-   const {data}=await supabase.from('erp_ferramentas_industriais').select('id,codigo,nome,numero_cavidades,vida_ciclos,ciclos_realizados,parametros').eq('ativo',true).order('codigo')
-   setTools((data??[]) as T[])
- }
- useEffect(()=>{void load()},[])
+ const load=useCallback(async()=>{
+   try{
+     const tenant=await supabase.rpc('erp_current_empresa_id')
+     if(tenant.error||!tenant.data)throw tenant.error??new Error('Empresa da sessão não identificada.')
+     const empresaId=String(tenant.data)
+     const rows=await fetchAllPages<T>((from,to)=>supabase.from('erp_ferramentas_industriais')
+       .select('id,codigo,nome,numero_cavidades,vida_ciclos,ciclos_realizados,parametros',{count:'exact'})
+       .eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to))
+     setCompanyId(empresaId)
+     setTools(rows)
+     setSelected(current=>current?rows.find(row=>row.id===current.id)??null:null)
+   }catch(cause){
+     setTools([])
+     setSelected(null)
+     setMsg(cause instanceof Error?cause.message:'Falha ao carregar ferramentais da empresa.')
+   }
+ },[])
+ useEffect(()=>{void load()},[load])
 
  useEffect(()=>{
    if(!selected)return
@@ -32,12 +48,20 @@ export default function FerramentariaPreventiva(){
 
  const records:LookupRecord[]=tools.map(t=>({id:t.id,codigo:t.codigo,nome:t.nome}))
  async function save(){
-   if(!selected){setMsg('Selecione um molde pelo código ou pela lupa.');return}
-   const {data:e}=await supabase.rpc('erp_current_empresa_id')
-   const next={...(selected.parametros??{}),preventiva:{ultima_execucao_em:new Date().toISOString(),status,checklist:Object.fromEntries(items.map((x,i)=>[x,done[i]])),observacoes:obs}}
-   const {error}=await supabase.from('erp_ferramentas_industriais').update({parametros:next}).eq('id',selected.id).eq('empresa_id',String(e??''))
-   setMsg(error?error.message:'Manutenção preventiva gravada no ferramental real.')
-   if(!error)void load()
+   if(!selected||!companyId){setMsg('Selecione um molde da empresa atual.');return}
+   if(status==='LIBERADO'&&done.some(value=>!value)){setMsg('Para liberar o molde, conclua todos os itens do checklist.');return}
+   setSaving(true)
+   try{
+     const next={...(selected.parametros??{}),preventiva:{ultima_execucao_em:new Date().toISOString(),status,checklist:Object.fromEntries(items.map((x,i)=>[x,done[i]])),observacoes:obs}}
+     const result=await supabase.from('erp_ferramentas_industriais').update({parametros:next})
+       .eq('id',selected.id).eq('empresa_id',companyId).select('id').maybeSingle()
+     if(result.error)throw result.error
+     if(!result.data)throw new Error('Nenhum registro foi alterado. Confira a empresa e as permissões.')
+     setMsg(status==='LIBERADO'?'Checklist completo e manutenção preventiva gravados.':'Manutenção registrada como retida; valide o bloqueio operacional conforme o procedimento da fábrica.')
+     await load()
+   }catch(cause){
+     setMsg(cause instanceof Error?cause.message:'Não foi possível salvar a manutenção preventiva.')
+   }finally{setSaving(false)}
  }
 
  return <IndustrialPageShell
@@ -46,7 +70,7 @@ export default function FerramentariaPreventiva(){
    subtitle="Identificação por código e lupa centralizada; checklist persistido no JSONB do ferramental."
    actions={[
      {label:'NOVA ORDEM DE SERVIÇO',type:'primary',icon:<Plus size={18}/>,onClick:()=>{setSelected(null);setMsg('Selecione o molde para iniciar uma nova execução.')} },
-     {label:'GRAVAR MANUTENÇÃO',type:'success',icon:<Save size={18}/>,onClick:()=>void save()},
+     {label:'GRAVAR MANUTENÇÃO',type:'success',icon:<Save size={18}/>,onClick:()=>void save(),disabled:saving},
      {label:'IMPRIMIR LAUDO',type:'neutral',icon:<Printer size={18}/>,onClick:()=>window.print()},
    ]}
  >
