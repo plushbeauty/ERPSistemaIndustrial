@@ -427,6 +427,80 @@ create policy erp_quarentenas_lotes_rbac_insert
     )
   );
 
+-- The RNC/CAPA tables are directly readable by the Quality workspace, so
+-- enforce the same tenant + RBAC contract on direct table access.
+drop policy if exists qualidade_rnc_capa_rbac_select on public.qualidade_rnc_capa;
+create policy qualidade_rnc_capa_rbac_select
+  on public.qualidade_rnc_capa as restrictive for select to authenticated
+  using (
+    (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+    and public.erp_has_permission('qualidade', 'ver')
+  );
+
+drop policy if exists qualidade_rnc_capa_rbac_insert on public.qualidade_rnc_capa;
+create policy qualidade_rnc_capa_rbac_insert
+  on public.qualidade_rnc_capa as restrictive for insert to authenticated
+  with check (
+    (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+    and (public.erp_has_permission('qualidade', 'criar') or public.erp_is_master())
+  );
+
+drop policy if exists qualidade_rnc_capa_rbac_update on public.qualidade_rnc_capa;
+create policy qualidade_rnc_capa_rbac_update
+  on public.qualidade_rnc_capa as restrictive for update to authenticated
+  using (
+    (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+    and (public.erp_has_permission('qualidade', 'editar') or public.erp_is_master())
+  )
+  with check (
+    (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+    and (public.erp_has_permission('qualidade', 'editar') or public.erp_is_master())
+  );
+
+drop policy if exists qualidade_rnc_capa_rbac_delete on public.qualidade_rnc_capa;
+create policy qualidade_rnc_capa_rbac_delete
+  on public.qualidade_rnc_capa as restrictive for delete to authenticated
+  using (
+    (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+    and (public.erp_has_permission('qualidade', 'excluir') or public.erp_is_master())
+  );
+
+drop policy if exists erp_rpnc_rbac_select on public.erp_rpnc;
+create policy erp_rpnc_rbac_select
+  on public.erp_rpnc as restrictive for select to authenticated
+  using (
+    (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+    and public.erp_has_permission('qualidade', 'ver')
+  );
+
+drop policy if exists erp_rpnc_rbac_insert on public.erp_rpnc;
+create policy erp_rpnc_rbac_insert
+  on public.erp_rpnc as restrictive for insert to authenticated
+  with check (
+    (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+    and (public.erp_has_permission('qualidade', 'criar') or public.erp_is_master())
+  );
+
+drop policy if exists erp_rpnc_rbac_update on public.erp_rpnc;
+create policy erp_rpnc_rbac_update
+  on public.erp_rpnc as restrictive for update to authenticated
+  using (
+    (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+    and (public.erp_has_permission('qualidade', 'editar') or public.erp_is_master())
+  )
+  with check (
+    (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+    and (public.erp_has_permission('qualidade', 'editar') or public.erp_is_master())
+  );
+
+drop policy if exists erp_rpnc_rbac_delete on public.erp_rpnc;
+create policy erp_rpnc_rbac_delete
+  on public.erp_rpnc as restrictive for delete to authenticated
+  using (
+    (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+    and (public.erp_has_permission('qualidade', 'excluir') or public.erp_is_master())
+  );
+
 revoke all on function public.erp_salvar_inspecao_lote(text, uuid, uuid, numeric, integer, jsonb, text, text) from public, anon;
 grant execute on function public.erp_salvar_inspecao_lote(text, uuid, uuid, numeric, integer, jsonb, text, text) to authenticated;
 
