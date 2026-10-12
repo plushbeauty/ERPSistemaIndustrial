@@ -48,11 +48,16 @@ function parseContent(raw: string): ProcedureContent {
     if (index === 2) values.responsibilities = section
     if (index === 3) values.method = section
     if (index === 4) {
-      const parsed = section.split('\n').map(line => {
+      const parsed: FlowStep[] = []
+      for (const line of section.split('\n')) {
         const match = line.match(/^\s*\d+\.\s*\[(INICIO|ETAPA|DECISAO|FIM)\]\s*(.*?)(?:\s*\|\s*Responsável:\s*(.*))?$/i)
-        if (!match) return null
-        return { id: crypto.randomUUID(), kind: match[1].toUpperCase() as FlowKind, title: match[2].trim(), responsible: (match[3] ?? '').trim() }
-      }).filter((step): step is FlowStep => step !== null)
+        if (match) parsed.push({
+          id: String(crypto.randomUUID()),
+          kind: match[1].toUpperCase() as FlowKind,
+          title: match[2].trim(),
+          responsible: (match[3] ?? '').trim(),
+        })
+      }
       if (parsed.length) values.steps = parsed
     }
   }
