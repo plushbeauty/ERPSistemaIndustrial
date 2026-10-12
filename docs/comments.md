@@ -23,3 +23,8 @@
 ## 2026-10-12 — NF-e / correção do lint do serializador
 - A execução #4261 (PR #80, merge commit `77c2a352fea9afa3d0faf200877e43663ebadc14`) passou no TypeScript, mas falhou no ESLint: `src/lib/fiscal/nfe-xml-builder.ts:28`, regra `no-control-regex` sobre a regex de caracteres XML inválidos.
 - Substituída a regex por filtragem de pontos de código, preservando somente os caracteres permitidos pelo XML 1.0; validação completa fica pendente da nova execução de CI.
+
+## 2026-10-12 — NF-e / estado fiscal desconhecido
+- CI #4284 terminou com sucesso em todas as etapas, incluindo TypeScript, ESLint, gate de contrato NF-e e build de produção.
+- O repositório fiscal não deve mapear status nulo/desconhecido para `rascunho`: isso mascarava valores de banco não reconhecidos. Agora a leitura retorna erro controlado pela camada de consulta; o gate NF-e verifica essa proteção.
+- Removido do backlog o apontamento de ESLint do serializador, pois a execução mais recente confirmou sucesso. As demais entradas históricas permanecem até auditoria individual de sua resolução.
