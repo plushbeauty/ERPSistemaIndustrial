@@ -77,7 +77,7 @@ export default function ManutencaoPreventivas() {
     setMessage('')
     try {
       const parameters = selected.parametros ?? {}
-      const nextParameters = { ...parameters, regra_disparo: rule, meta_ciclos: numericTarget }
+      const nextParameters = { ...parameters, regra_disparo: rule, ...(rule === 'CICLOS' ? { meta_ciclos: numericTarget } : { meta_dias: numericTarget }) }
       const result = await supabase.from('erp_ferramentas_industriais')
         .update({ parametros: nextParameters })
         .eq('id', selected.id)
