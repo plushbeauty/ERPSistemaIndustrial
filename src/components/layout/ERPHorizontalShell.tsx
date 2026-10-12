@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, FolderGit2, LineChart, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, ClipboardCheck } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { qualityModules } from '../../pages/QualidadeCentralTablet'
 import { supabase } from '../../lib/supabaseClient'
 
 type MenuItem = {
@@ -71,6 +72,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null)
   const [helpOpen, setHelpOpen] = useState(false)
+  const [tabletOpen, setTabletOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState(operatorName)
@@ -118,6 +120,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const current = menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
   useEffect(() => {
     setOpenMenu(null)
+    if (pathname.startsWith('/qualidade') && new URLSearchParams(window.location.search).get('tablet') === '1') setTabletOpen(true)
   }, [pathname])
   const flattenMenu = (items: MenuItem[], prefix = ''): Array<{ label: string; route: string }> => items.flatMap(item => [
     { label: prefix ? `${prefix} / ${item.label}` : item.label, route: item.route },
@@ -228,7 +231,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             <button
               type="button"
               className={`erp-horizontal-menu-button ${active ? 'is-active' : ''}`}
-              onClick={() => hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)}
+              onClick={() => menu.label === 'Gestão da Qualidade' ? setTabletOpen(true) : hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)}
               aria-expanded={hasChildren ? expanded : undefined}
             >
               {menu.icon && <menu.icon size={16} />}{menu.label}
@@ -255,6 +258,33 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           </div>
         })}
       </nav>
+      {tabletOpen && (
+        <div className="erp-quality-tablet-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setTabletOpen(false) }}>
+          <section className="erp-quality-tablet" role="dialog" aria-modal="true" aria-labelledby="erp-quality-tablet-title">
+            <header className="erp-quality-tablet-heading">
+              <div>
+                <span>SGQERP INDUSTRIAL</span>
+                <h2 id="erp-quality-tablet-title">Tablet da Qualidade</h2>
+                <p>Escolha um processo. O módulo será aberto atrás desta janela.</p>
+              </div>
+              <button type="button" onClick={() => setTabletOpen(false)} aria-label="Fechar tablet da qualidade">×</button>
+            </header>
+            <div className="erp-quality-tablet-grid">
+              <button type="button" className="erp-quality-tablet-card" onClick={() => { setTabletOpen(false); go('/qualidade') }}>
+                <span className="erp-quality-tablet-icon"><ShieldCheck size={18} /></span>
+                <span><strong>Painel do SGQ</strong><small>Indicadores e visão geral da qualidade.</small></span>
+              </button>
+              {qualityModules.map(({label, description, route, icon: Icon}) => (
+                <button type="button" key={route} className="erp-quality-tablet-card" onClick={() => { setTabletOpen(false); go(route) }}>
+                  <span className="erp-quality-tablet-icon"><Icon size={18} /></span>
+                  <span><strong>{label}</strong><small>{description}</small></span>
+                </button>
+              ))}
+            </div>
+            <footer>O acesso às telas e aos registros continua sujeito à sessão e às permissões do ERP.</footer>
+          </section>
+        </div>
+      )}
       <section className="erp-global-page-description" aria-label="Descrição da tela">
         <span>{pageLabel.toLocaleUpperCase('pt-BR')}</span>
         <p>{pageDescription}</p>
@@ -264,6 +294,22 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </main>
 
       <style>{`
+        .erp-quality-tablet-backdrop{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:18px;background:rgba(9,29,42,.48);backdrop-filter:blur(2px)}
+        .erp-quality-tablet{width:min(980px,calc(100vw - 36px));max-height:min(78vh,760px);display:flex;flex-direction:column;overflow:hidden;background:#f8fcfe;border:1px solid #2D8DB8;box-shadow:0 18px 54px rgba(8,35,51,.35);color:#123b50}
+        .erp-quality-tablet-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 16px;background:linear-gradient(105deg,#123b50,#236f93);color:#fff;border-bottom:3px solid #2D8DB8}
+        .erp-quality-tablet-heading span{font-size:9px;font-weight:800;letter-spacing:.14em;color:#c6eaf7}
+        .erp-quality-tablet-heading h2{margin:3px 0;font-size:18px;line-height:1.2;font-weight:700;color:#fff}
+        .erp-quality-tablet-heading p{margin:0;font-size:10px;color:#e0f2f8}
+        .erp-quality-tablet-heading>button{width:30px;height:30px;flex:0 0 30px;border:1px solid rgba(255,255,255,.55);background:#2D8DB8;color:#fff;font-size:22px;line-height:1;cursor:pointer}
+        .erp-quality-tablet-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:12px;overflow:auto}
+        .erp-quality-tablet-card{display:flex;align-items:center;gap:9px;min-width:0;min-height:56px;padding:8px;border:1px solid #c9dde5;border-radius:2px;background:#fff;text-align:left;color:#17445a;cursor:pointer}
+        .erp-quality-tablet-card:hover,.erp-quality-tablet-card:focus-visible{border-color:#2D8DB8;background:#eaf6fa;outline-color:#2D8DB8}
+        .erp-quality-tablet-icon{display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;background:#e2f1f7;border:1px solid #c0e0ec;color:#2D8DB8}
+        .erp-quality-tablet-card>span:last-child{display:flex;flex-direction:column;gap:4px;min-width:0}
+        .erp-quality-tablet-card strong{font-size:10px;line-height:1.25;color:#123b50}
+        .erp-quality-tablet-card small{font-size:9px;line-height:1.3;color:#536b76}
+        .erp-quality-tablet>footer{padding:8px 12px;border-top:1px solid #d3e3e9;background:#eef6f9;color:#536b76;font-size:9px}
+        @media(max-width:760px){.erp-quality-tablet-backdrop{padding:8px}.erp-quality-tablet{width:calc(100vw - 16px);max-height:86vh}.erp-quality-tablet-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:8px}.erp-quality-tablet-card{min-height:52px;padding:6px;gap:6px}.erp-quality-tablet-icon{width:28px;height:28px;flex-basis:28px}.erp-quality-tablet-heading{padding:9px 10px}.erp-quality-tablet-heading h2{font-size:15px}}
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f3f8fb 42%,#e8f1f6 100%);color:#123b50}
         .erp-horizontal-brand{min-width:245px!important;gap:12px!important;padding:0 10px!important}
         .erp-horizontal-brand img{width:64px!important;height:56px!important;max-width:100%;object-fit:contain;flex:0 0 auto}
