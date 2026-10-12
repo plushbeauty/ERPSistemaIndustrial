@@ -86,8 +86,10 @@
 .sales-detail{color:#123B50}
 .sales-detail>div>header{border-bottom-color:#b8d4df}
 .sales-detail section{border-color:#b9d3de}
-.sales-detail section>header{background:#e0eff5;color:#123B50}
-.sales-detail section>header span{color:#123B50}
+ .sales-detail section>header{background:#123B50;color:#fff}
+.sales-detail section>header span{color:#fff}
+.sales-detail section>header .text-sky-800{color:#fff!important}
+.sales-detail section>header svg{color:#E6A34A}
 .sales-detail nav button{min-height:30px;line-height:13px;white-space:nowrap}
 .sales-detail nav button.border-sky-700{background:#123B50;color:#fff;border-color:#E6A34A}
 .sales-detail nav button:not(.border-sky-700):hover{background:#e6f3f8;color:#123B50}
