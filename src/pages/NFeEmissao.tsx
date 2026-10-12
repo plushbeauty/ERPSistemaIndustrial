@@ -760,6 +760,9 @@ export default function NFeEmissao() {
     .nfe-label{color:#39454b!important;font-weight:700!important;text-transform:uppercase!important;letter-spacing:.02em!important}
     .nfe-input{background:#fff!important;color:#222!important;border:1px solid #aeb6bb!important;border-radius:2px!important;padding:4px 6px!important;box-shadow:none!important}
     .nfe-input:focus{border-color:#647f8d!important;box-shadow:0 0 0 1px rgba(83,107,120,.18)!important}
+    .nfe-page input.nfe-input,.nfe-page select.nfe-input,.nfe-page input.nfe-table-input,.nfe-page select.nfe-table-input{height:30px!important;min-height:30px!important;max-height:30px!important;line-height:20px!important;font-size:11px!important;box-sizing:border-box!important}
+    .nfe-table td input,.nfe-table td select{height:30px!important;min-height:30px!important;max-height:30px!important;font-size:10px!important;padding:3px 5px!important}
+    .nfe-page button.nfe-primary,.nfe-page button.nfe-secondary,.nfe-page button.nfe-action,.nfe-page button.nfe-remove{height:30px!important;min-height:30px!important;max-height:30px!important;box-sizing:border-box!important}
     .issuer-box,.nfe-summary-grid article,.nfe-footer-total>div{background:#e2e5e7!important;border:1px solid #b9c0c4!important;border-radius:2px!important}
     .issuer-box{border-left:3px solid #7d929c!important}
     .nfe-table th{background:#d0d5d8!important;color:#28343a!important;border:1px solid #b5bdc2!important}
