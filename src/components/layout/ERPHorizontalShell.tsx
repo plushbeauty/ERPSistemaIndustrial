@@ -314,9 +314,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-status-legend-item small{display:block;font-size:9px;line-height:1.3;color:#647b85}
         .erp-status-legend-panel>p{grid-column:1/-1;margin:0;padding-top:5px;border-top:1px solid #e2e8f0;font-size:9px;color:#647b85}
         @media(max-width:850px){.erp-quality-tablet-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.erp-quality-tablet-grid{grid-template-columns:minmax(0,1fr);gap:6px;padding:8px}.erp-quality-tablet{width:calc(100vw - 16px);max-height:calc(100vh - 16px)}.erp-quality-tablet-heading{padding:9px 10px}.erp-quality-tablet-heading h2{font-size:15px}}@media print{ @page{size:A4;margin:12mm} .erp-horizontal-header,.erp-horizontal-menu,.erp-global-status-row,.print-hidden,.erp-horizontal-help{display:none!important} .erp-horizontal-shell,.erp-horizontal-workspace{min-height:0!important;background:#fff!important;padding:0!important} .erp-horizontal-workspace *{box-shadow:none!important;backdrop-filter:none!important} thead{display:table-header-group} tr{break-inside:avoid} }
-        .erp-horizontal-header{height:64px;min-height:64px;display:flex;align-items:center;gap:10px;padding:4px 10px;background:#fff;border-bottom:1px solid #e5e7eb;box-sizing:border-box;color:#111827}
-        .erp-horizontal-brand{height:50px;min-width:260px;display:flex;align-items:center;gap:8px;border:0;background:transparent;color:#fff;cursor:pointer;padding:0 6px;white-space:nowrap;flex:0 0 auto}
-        .erp-horizontal-brand img{display:block!important;height:42px!important;width:140px!important;min-width:140px;max-width:140px!important;object-fit:contain;object-position:left center;flex:0 0 140px;filter:none;background:transparent;padding:0;border:0;border-radius:0;box-sizing:border-box}
+        .erp-horizontal-header{height:48px;min-height:48px;display:flex;align-items:center;gap:8px;padding:3px 10px;background:#fff;border-bottom:1px solid #e5e7eb;box-sizing:border-box;color:#111827}
+        .erp-horizontal-brand{height:40px;min-width:260px;display:flex;align-items:center;gap:8px;border:0;background:transparent;color:#fff;cursor:pointer;padding:0 6px;white-space:nowrap;flex:0 0 auto}
+        .erp-horizontal-brand img{display:block!important;height:34px!important;width:140px!important;min-width:140px;max-width:140px!important;object-fit:contain;object-position:left center;flex:0 0 140px;filter:none;background:transparent;padding:0;border:0;border-radius:0;box-sizing:border-box}
         .erp-horizontal-brand-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
         .erp-horizontal-brand strong{display:block;font-size:14px;font-weight:800;letter-spacing:.035em;color:#fff;line-height:1.15}
         .erp-horizontal-brand small{display:block;color:#d7edf6;font-size:8px;font-weight:700;letter-spacing:.09em;line-height:1.2}
@@ -326,7 +326,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-search-results button{display:block;width:100%;min-height:28px;padding:5px 8px;border:0;background:#fff;text-align:left;font-size:11px;color:#173b4a;cursor:pointer}
         .erp-horizontal-search-results button:hover{background:#edf7fb}
         .erp-horizontal-help{height:30px;display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:#315466;font-size:11px;cursor:pointer;padding:0 5px}
-        .erp-horizontal-session{height:48px;display:flex;align-items:center;gap:9px;padding:0 10px;border:1px solid #e5e7eb;border-radius:2px;background:#fff;white-space:nowrap;font-size:11px;color:#111827;flex:0 1 auto;min-width:190px;max-width:330px;box-sizing:border-box}
+        .erp-horizontal-session{height:38px;display:flex;align-items:center;gap:9px;padding:0 10px;border:1px solid #e5e7eb;border-radius:2px;background:#fff;white-space:nowrap;font-size:11px;color:#111827;flex:0 1 auto;min-width:190px;max-width:330px;box-sizing:border-box}
         .erp-horizontal-session-identity{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
         .erp-horizontal-session-identity strong{display:block;max-width:180px;overflow:hidden;text-overflow:ellipsis;color:#fff;font-size:12px;line-height:1.2;font-weight:800}
         .erp-horizontal-session-identity span{display:block;max-width:180px;overflow:hidden;text-overflow:ellipsis;color:#fff;font-size:9px;line-height:1.2}
@@ -397,7 +397,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-session-identity strong,.erp-horizontal-session-identity span{color:#111827!important}
         .erp-horizontal-session time,.erp-horizontal-session time span,.erp-horizontal-session time strong{color:#111827!important}
         .erp-horizontal-session time{border-left-color:#e5e7eb!important}
-        .erp-horizontal-workspace{min-height:calc(100vh - 64px)!important}
+        .erp-horizontal-workspace{min-height:calc(100vh - 80px)!important}
         @media(max-width:1100px){.erp-horizontal-current-module{max-width:140px;flex-basis:125px}.erp-horizontal-search{width:135px!important;min-width:115px!important;flex-basis:135px}}
         @media(max-width:950px){.erp-horizontal-current-module{max-width:120px;flex-basis:110px}.erp-horizontal-current-module>strong{font-size:10px}.erp-horizontal-search{width:125px!important;min-width:105px!important;flex-basis:125px}}
         @media(max-width:700px){.erp-horizontal-current-module{order:2;flex:1 1 40%;max-width:none;min-width:90px}.erp-horizontal-search{order:3;flex:1 1 45%;width:auto!important;min-width:105px!important;max-width:none;margin-left:0}.erp-horizontal-workspace{min-height:0!important}}
