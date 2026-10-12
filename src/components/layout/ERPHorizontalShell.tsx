@@ -50,7 +50,7 @@ const menus: MenuItem[] = [
     { label: 'Qualidade Tablet', route: '/qualidade/tablet', action: 'qualityTablet' },
   ] },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench },
-  { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
+  { label: 'Relatórios', route: '/vendas/relatorios', icon: BarChart3 },
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
 ]
 
