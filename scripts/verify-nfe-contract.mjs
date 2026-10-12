@@ -20,6 +20,7 @@ const itemMigration = read('supabase/migrations/20260921141000_erp_nfe_itens_for
 const emissionMigration = read('supabase/migrations/20261005120000_erp_fiscal_nfe_numbering_and_claim_v1.sql')
 const emissionPage = read('src/pages/NFeEmissao.tsx')
 const emissionFunction = read('supabase/functions/emitir-nfe/index.ts')
+const incomingCostingMigration = read('supabase/migrations/20261013030000_harden_incoming_nfe_costing_rbac.sql')
 
 const requireIn = (text, pattern, description) => {
   if (!pattern.test(text)) failures.push(description)
@@ -90,6 +91,18 @@ if (/using\s*\(\s*true\s*\)|with\s+check\s*\(\s*true\s*\)/i.test(draftMigration)
   failures.push('A migration inclui política RLS global permissiva.')
 }
 
+requireIn(incomingCostingMigration, /begin\s*;[\s\S]*commit\s*;/i, 'Hardening de escrituração de entrada deve ser transacional.')
+requireIn(incomingCostingMigration, /create or replace function public\.erp_escriturar_nfe_entrada[\s\S]*security definer[\s\S]*set search_path = pg_catalog, public/i, 'Escrituração de entrada precisa de função controlada com search_path fixo.')
+requireIn(incomingCostingMigration, /auth\.uid\(\) is null[\s\S]*v_empresa_id is null/i, 'Escrituração de entrada não exige sessão e tenant.')
+requireIn(incomingCostingMigration, /u\.auth_user_id = auth\.uid\(\)[\s\S]*u\.empresa_id = v_empresa_id[\s\S]*u\.ativo = true[\s\S]*u\.deleted_at is null/i, 'Escrituração não valida perfil ERP ativo do tenant.')
+requireIn(incomingCostingMigration, /erp_has_permission\('estoque', 'criar'\)[\s\S]*erp_has_permission\('fiscal', 'editar'\)/i, 'Escrituração não verifica permissão de estoque/fiscal.')
+requireIn(incomingCostingMigration, /from public\.fiscal_nfe_entradas[\s\S]*where id = p_nfe_id[\s\S]*empresa_id = v_empresa_id[\s\S]*for update/i, 'Escrituração não bloqueia a NF-e do tenant.')
+requireIn(incomingCostingMigration, /pg_advisory_xact_lock/i, 'Cálculo de custo médio não serializa concorrência por produto.')
+requireIn(incomingCostingMigration, /revoke all on function public\.erp_registrar_custo_medio_nfe[\s\S]*from public, anon, authenticated/i, 'Helper de custo médio continua exposto aos papéis de navegador.')
+requireIn(incomingCostingMigration, /revoke all on function public\.erp_escriturar_nfe_entrada[\s\S]*from public, anon/i, 'Escrituração de entrada não revoga acesso público/anônimo.')
+requireIn(incomingCostingMigration, /grant execute on function public\.erp_escriturar_nfe_entrada[\s\S]*to authenticated/i, 'RPC de escrituração não está concedida explicitamente a authenticated.')
+const costingFunction = incomingCostingMigration.match(/create or replace function public\.erp_registrar_custo_medio_nfe[\s\S]*?\$function\$;/i)?.[0] ?? ''
+if (/sum\([\s\S]*?\)[\s\S]*?for update/i.test(costingFunction)) failures.push('Cálculo agregado de custo médio não pode usar FOR UPDATE.')
 requireIn(emissionMigration, /erp_has_permission\(\s*'fiscal'\s*,\s*'emitir'\s*\)/, 'Reserva/claim de NF-e não verifica permissão fiscal.')
 requireIn(emissionPage, /supabase\.rpc\('erp_salvar_rascunho_nfe'/, 'Tela NF-e não grava usando a RPC transacional.')
 requireIn(emissionPage, /functions\.invoke\('emitir-nfe'/, 'Tela NF-e não chama a Edge Function de emissão.')
