@@ -225,7 +225,7 @@ export default function QualidadeProcedimentos() {
         <section className="grid gap-3 border border-slate-200 bg-white p-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div className="space-y-2">
             <h2 className="flex items-center gap-2 text-[12px] font-bold"><FileText size={14}/> Modelo Word do dossiê técnico 8D</h2>
-            <p className="text-[10px] leading-relaxed text-slate-600">Envie um arquivo .docx preparado no Word. Use campos como {escapeTemplate('{id_8d}')}, {escapeTemplate('{maquina_tag}')} e linhas dinâmicas com {escapeTemplate('{#plano_5w2h}')} ... {escapeTemplate('{/plano_5w2h}')}. A nova revisão fica em análise e só será usada após aprovação.</p>
+            <p className="text-[10px] leading-relaxed text-slate-600">Envie um arquivo .docx preparado no Word. Use campos como {'{id_8d}'}, {'{maquina_tag}'} e linhas dinâmicas com {'{#plano_5w2h}'} ... {'{/plano_5w2h}'}. A nova revisão fica em análise e só será usada após aprovação.</p>
             <label className="inline-flex h-[30px] cursor-pointer items-center gap-2 border border-[#2D8DB8] bg-[#F4FBFD] px-3 text-[11px] font-semibold hover:bg-[#E5F3F8]">
               <Upload size={13}/> {busy ? 'Enviando…' : 'Enviar modelo Word (.docx)'}
               <input type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" disabled={busy} className="sr-only" onChange={event => void uploadTemplate(event)} />
