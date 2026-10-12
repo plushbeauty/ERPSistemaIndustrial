@@ -505,3 +505,11 @@ As referências foram consultadas para padrões de grade de catálogo, uso de im
 - Correção: consulta de clientes agora usa `fetchAllPages<Client>`, com `count: 'exact'`, ordenação e intervalos paginados, mantendo o filtro por `empresa_id` e sem mudar o contrato do banco.
 - Validação anterior: workflow `38250147383` para o commit `1ee8988155b2c9681717ee06475f073488a40989` passou integralmente (TypeScript, ESLint, auditorias, build, saída do build, rotas e segurança). O deploy de preview Vercel desse SHA falhou com `git_info_fail` antes da confirmação de build; isso é um bloqueio de integração/publicação e não foi tratado como sucesso.
 - Estado do commit atual: testes e Vercel aguardando nova execução. Auditoria visual autenticada continua pendente.
+
+
+### Complemento do Lote 5 — paginação dos relacionamentos do cliente
+
+- Commit adicional: `b158564ab11c42e4b8916419f2505b5dd6654cbf`.
+- Aplicado `fetchAllPages` também às consultas de de-para de produtos, tabelas de preço, transportadoras e vínculos cliente-transportadora. As consultas mantêm o filtro por empresa; referências inativas continuam excluídas onde já havia esse filtro.
+- Isso evita listas e vínculos incompletos quando as tabelas ultrapassarem o limite de linhas por resposta do PostgREST.
+- CI/Vercel do commit final de auditoria ainda aguardando resultado.
