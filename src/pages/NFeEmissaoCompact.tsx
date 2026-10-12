@@ -61,7 +61,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 export default function NFeEmissaoCompact() {
   const [companyId, setCompanyId] = useState('')
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const releaseId = searchParams.get('liberacao_id')
   const importedReleaseRef = useRef('')
   const [company, setCompany] = useState<TextMap>({})
@@ -74,6 +74,11 @@ export default function NFeEmissaoCompact() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [activeItemId, setActiveItemId] = useState('')
+  const [releasePickerOpen, setReleasePickerOpen] = useState(false)
+  const [loadingReleases, setLoadingReleases] = useState(false)
+  const [availableReleases, setAvailableReleases] = useState<Array<{ id: string; pedido: string; cliente: string; status: string; data: string; observacao: string }>>([])
+  const [releaseSearch, setReleaseSearch] = useState('')
 
   const updateForm = (key: string, value: string) => {
     setForm(current => ({ ...current, [key]: value }))
@@ -86,6 +91,30 @@ export default function NFeEmissaoCompact() {
   const updateItem = (id: string, key: keyof Item, value: string) => {
     setItems(current => current.map(item => item.id === id ? { ...item, [key]: value } : item))
   }
+  const activeItem = items.find(item => item.id === activeItemId) ?? items[0]
+  const addItem = () => { const item = newItem(); setItems(current => [...current, item]); setActiveItemId(item.id) }
+  const removeItem = (id: string) => { setItems(current => { const next = current.length === 1 ? [newItem()] : current.filter(item => item.id !== id); setActiveItemId(next[0]?.id ?? ''); return next }) }
+  const loadAvailableReleases = async () => {
+    setLoadingReleases(true); setError('')
+    try {
+      if (!companyId) throw new Error('A empresa ativa ainda não foi carregada.')
+      const { data: releases, error: releasesError } = await supabase.from('erp_liberacoes_nf').select('id,pedido_venda_id,status,observacao,created_at').eq('empresa_id', companyId).eq('status', 'ENCAMINHADA').order('created_at', { ascending: false }).limit(100)
+      if (releasesError) throw releasesError
+      const rows = releases ?? []
+      if (!rows.length) { setAvailableReleases([]); setReleasePickerOpen(true); return }
+      const orderIds = [...new Set(rows.map(row => String(row.pedido_venda_id)).filter(Boolean))]
+      const { data: orders, error: ordersError } = await supabase.from('erp_pedidos_venda').select('id,numero,cliente_id').eq('empresa_id', companyId).in('id', orderIds)
+      if (ordersError) throw ordersError
+      const orderById = new Map((orders ?? []).map(order => [String(order.id), order]))
+      const customerIds = [...new Set((orders ?? []).map(order => String(order.cliente_id ?? '')).filter(Boolean))]
+      const customerResult = customerIds.length ? await supabase.from('erp_clientes').select('id,nome').eq('empresa_id', companyId).in('id', customerIds) : { data: [], error: null }
+      if (customerResult.error) throw customerResult.error
+      const customerById = new Map((customerResult.data ?? []).map(row => [String(row.id), String(row.nome ?? 'Cliente não identificado')]))
+      setAvailableReleases(rows.filter(row => orderById.has(String(row.pedido_venda_id))).map(row => { const order = orderById.get(String(row.pedido_venda_id)); return { id: String(row.id), pedido: String(order?.numero ?? 'Pedido sem número'), cliente: customerById.get(String(order?.cliente_id ?? '')) ?? 'Cliente não identificado', status: String(row.status ?? ''), data: String(row.created_at ?? ''), observacao: String(row.observacao ?? '') } }))
+      setReleasePickerOpen(true)
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Não foi possível buscar as liberações do Almoxarifado.') } finally { setLoadingReleases(false) }
+  }
+  const chooseRelease = (id: string) => { importedReleaseRef.current = ''; setDocumentId(null); setItems([newItem()]); setActiveItemId(''); setCustomer({}); setMessage(''); setReleasePickerOpen(false); const next = new URLSearchParams(searchParams); next.set('liberacao_id', id); setSearchParams(next) }
 
   const load = async () => {
     setBusy(true)
@@ -448,7 +477,14 @@ export default function NFeEmissaoCompact() {
         <CompactButton type="button" onClick={() => void load()} disabled={busy}><RefreshCw size={13} /> ATUALIZAR</CompactButton>
       </div>
       {(error || message) ? <div className={`synqra-nfe-alert ${error ? 'error' : 'ok'}`}>{error || message}</div> : null}
+      {releasePickerOpen ? <section className="synqra-release-picker" aria-label="Liberações do Almoxarifado">
+        <div className="synqra-release-picker-head"><div><strong>Pedidos liberados pelo Almoxarifado</strong><small>Somente liberações encaminhadas à emissão fiscal para a empresa ativa.</small></div><CompactButton type="button" onClick={() => setReleasePickerOpen(false)}><X size={13}/> FECHAR</CompactButton></div>
+        <input className="synqra-release-search" value={releaseSearch} onChange={e => setReleaseSearch(e.currentTarget.value)} placeholder="Buscar por pedido, cliente ou observação"/>
+        <div className="synqra-release-list">{availableReleases.filter(row => (row.pedido + " " + row.cliente + " " + row.observacao).toLowerCase().includes(releaseSearch.toLowerCase())).map(row => <div className="synqra-release-row" key={row.id}><div><strong>{row.pedido} · {row.cliente}</strong><span>{row.data ? new Date(row.data).toLocaleString("pt-BR") : "Data não informada"} · {row.status}</span><small>{row.observacao || "Sem observação adicional"}</small></div><CompactButton type="button" tone="primary" onClick={() => chooseRelease(row.id)}>ANEXAR ITENS</CompactButton></div>)}{!availableReleases.length ? <p>Nenhuma liberação pendente encontrada. Confira se o Almoxarifado encaminhou o pedido para emissão fiscal.</p> : null}</div>
+      </section> : null}
+
       <div className="synqra-nfe-actions">
+        <CompactButton type="button" onClick={() => void loadAvailableReleases()} disabled={busy || !companyId}><RefreshCw size={13} /> {loadingReleases ? "BUSCANDO…" : "BUSCAR LIBERAÇÕES DO ALMOXARIFADO"}</CompactButton>
         <CompactButton type="button" onClick={newDocument}><Plus size={13} /> NOVA</CompactButton>
         <CompactButton type="button" tone="primary" onClick={() => void saveDraft()} disabled={busy}><Save size={13} /> SALVAR / VALIDAR</CompactButton>
         <CompactButton type="button" tone="orange" onClick={() => void emitDocument()} disabled={!documentId || busy}><Send size={13} /> EMITIR</CompactButton>
@@ -503,36 +539,30 @@ export default function NFeEmissaoCompact() {
       </Section>
 
       <Section title="04 • ITENS — PRODUTOS, SERVIÇOS E TRIBUTAÇÃO">
-        <div className="synqra-nfe-block-head"><span><RequiredField>Itens fiscais</RequiredField></span><CompactButton type="button" onClick={() => setItems(current => [...current, newItem()])}><Plus size={13} /> ADICIONAR ITEM</CompactButton></div>
-        <div className="synqra-nfe-table-wrap">
-          <table><thead><tr><th>ITEM</th><th>PRODUTO</th><th>CÓDIGO</th><th>DESCRIÇÃO</th><th>LOTE / RASTREABILIDADE</th><th>NCM</th><th>CST/CSOSN</th><th>CFOP</th><th>UN</th><th>QTD</th><th>VLR UNIT.</th><th>DESC.</th><th>ICMS %</th><th>IPI %</th><th>PIS %</th><th>COFINS %</th><th>TOTAL</th><th></th></tr></thead>
-          <tbody>{items.map((item, index) => {
-            const gross = numberValue(item.quantidade) * numberValue(item.valorUnitario)
-            const total = Math.max(0, gross - numberValue(item.desconto))
-            return <tr key={item.id}>
-              <td>{index + 1}</td>
-              <td><select value={item.produto_id} onChange={e => selectProduct(item.id, e.currentTarget.value)}><option value="">MANUAL</option>{products.map(product => <option key={String(product.id)} value={String(product.id)}>{String(product.codigo ?? '')} • {String(product.nome ?? '')}</option>)}</select></td>
-              <td><input value={item.codigo} onChange={e => updateItem(item.id, 'codigo', e.currentTarget.value)} /></td>
-              <td><input value={item.descricao} onChange={e => updateItem(item.id, 'descricao', e.currentTarget.value)} /></td>
-              <td><input value={item.lote} onChange={e => updateItem(item.id, 'lote', e.currentTarget.value)} readOnly={Boolean(releaseId)} /></td>
-              <td><input value={item.ncm} maxLength={8} onChange={e => updateItem(item.id, 'ncm', onlyDigits(e.currentTarget.value, 8))} /></td>
-              <td><input value={item.cst} maxLength={4} onChange={e => updateItem(item.id, 'cst', e.currentTarget.value.toUpperCase())} /></td>
-              <td><input value={item.cfop} maxLength={4} onChange={e => updateItem(item.id, 'cfop', onlyDigits(e.currentTarget.value, 4))} /></td>
-              <td><input value={item.unidade} onChange={e => updateItem(item.id, 'unidade', e.currentTarget.value.toUpperCase())} /></td>
-              <td><input className="right" value={item.quantidade} onChange={e => updateItem(item.id, 'quantidade', e.currentTarget.value)} /></td>
-              <td><input className="right" value={item.valorUnitario} onChange={e => updateItem(item.id, 'valorUnitario', e.currentTarget.value)} /></td>
-              <td><input className="right" value={item.desconto} onChange={e => updateItem(item.id, 'desconto', e.currentTarget.value)} /></td>
-              <td><input className="right" value={item.icms} onChange={e => updateItem(item.id, 'icms', e.currentTarget.value)} /></td>
-              <td><input className="right" value={item.ipi} onChange={e => updateItem(item.id, 'ipi', e.currentTarget.value)} /></td>
-              <td><input className="right" value={item.pis} onChange={e => updateItem(item.id, 'pis', e.currentTarget.value)} /></td>
-              <td><input className="right" value={item.cofins} onChange={e => updateItem(item.id, 'cofins', e.currentTarget.value)} /></td>
-              <td className="right">{money(total)}</td>
-              <td><button className="danger-icon" type="button" onClick={() => setItems(current => current.length === 1 ? current : current.filter(candidate => candidate.id !== item.id))} aria-label="Remover item">×</button></td>
-            </tr>
-          })}</tbody></table>
-        </div>
+        <div className="synqra-nfe-block-head"><span><RequiredField>Cadastro do item fiscal</RequiredField><small className="synqra-nfe-helper">Edite o produto nesta área; os itens adicionados aparecem na lista abaixo.</small></span><CompactButton type="button" onClick={addItem}><Plus size={13} /> NOVO ITEM</CompactButton></div>
+        {activeItem ? <div className="synqra-item-editor">
+          <label className="synqra-item-product"><span>Produto cadastrado</span><select value={activeItem.produto_id} onChange={e => selectProduct(activeItem.id, e.currentTarget.value)}><option value="">MANUAL / INFORMAR DESCRIÇÃO</option>{products.map(product => <option key={String(product.id)} value={String(product.id)}>{String(product.codigo ?? '')} • {String(product.nome ?? '')}</option>)}</select></label>
+          <label><span>Código</span><input value={activeItem.codigo} onChange={e => updateItem(activeItem.id, 'codigo', e.currentTarget.value)} placeholder="Código do produto"/></label>
+          <label className="synqra-item-description"><span>Descrição completa</span><input value={activeItem.descricao} onChange={e => updateItem(activeItem.id, 'descricao', e.currentTarget.value)} placeholder="Descrição do produto ou serviço"/></label>
+          <label className="synqra-item-lot"><span>Lote / rastreabilidade</span><input value={activeItem.lote} onChange={e => updateItem(activeItem.id, 'lote', e.currentTarget.value)} readOnly={Boolean(releaseId)} placeholder="Lote liberado pelo Almoxarifado"/></label>
+          <label><span>NCM</span><input value={activeItem.ncm} maxLength={8} onChange={e => updateItem(activeItem.id, 'ncm', onlyDigits(e.currentTarget.value, 8))}/></label>
+          <label><span>CST/CSOSN</span><input value={activeItem.cst} maxLength={4} onChange={e => updateItem(activeItem.id, 'cst', e.currentTarget.value.toUpperCase())}/></label>
+          <label><span>CFOP</span><input value={activeItem.cfop} maxLength={4} onChange={e => updateItem(activeItem.id, 'cfop', onlyDigits(e.currentTarget.value, 4))}/></label>
+          <label><span>Unidade</span><input value={activeItem.unidade} onChange={e => updateItem(activeItem.id, 'unidade', e.currentTarget.value.toUpperCase())}/></label>
+          <label><span>Quantidade</span><input className="right" inputMode="decimal" value={activeItem.quantidade} onChange={e => updateItem(activeItem.id, 'quantidade', e.currentTarget.value)}/></label>
+          <label><span>Valor unitário</span><input className="right" inputMode="decimal" value={activeItem.valorUnitario} onChange={e => updateItem(activeItem.id, 'valorUnitario', e.currentTarget.value)}/></label>
+          <label><span>Desconto</span><input className="right" inputMode="decimal" value={activeItem.desconto} onChange={e => updateItem(activeItem.id, 'desconto', e.currentTarget.value)}/></label>
+          <label><span>ICMS %</span><input className="right" inputMode="decimal" value={activeItem.icms} onChange={e => updateItem(activeItem.id, 'icms', e.currentTarget.value)}/></label>
+          <label><span>IPI %</span><input className="right" inputMode="decimal" value={activeItem.ipi} onChange={e => updateItem(activeItem.id, 'ipi', e.currentTarget.value)}/></label>
+          <label><span>PIS %</span><input className="right" inputMode="decimal" value={activeItem.pis} onChange={e => updateItem(activeItem.id, 'pis', e.currentTarget.value)}/></label>
+          <label><span>COFINS %</span><input className="right" inputMode="decimal" value={activeItem.cofins} onChange={e => updateItem(activeItem.id, 'cofins', e.currentTarget.value)}/></label>
+        </div> : null}
+        <div className="synqra-nfe-list-head"><strong>Itens adicionados à NF-e</strong><span>{items.length} item(ns)</span></div>
+        <div className="synqra-nfe-table-wrap"><table className="synqra-nfe-items-list"><colgroup><col style={{width:48}}/><col style={{width:150}}/><col style={{width:110}}/><col style={{width:360}}/><col style={{width:210}}/><col style={{width:85}}/><col style={{width:115}}/><col style={{width:100}}/><col style={{width:115}}/><col style={{width:42}}/></colgroup>
+          <thead><tr><th>ITEM</th><th>PRODUTO</th><th>CÓDIGO</th><th>DESCRIÇÃO</th><th>LOTE / RASTREABILIDADE</th><th>QTD</th><th>VLR UNIT.</th><th>DESC.</th><th>TOTAL</th><th></th></tr></thead>
+          <tbody>{items.map((item, index) => { const total = Math.max(0, numberValue(item.quantidade) * numberValue(item.valorUnitario) - numberValue(item.desconto)); return <tr key={item.id} className={item.id === activeItem?.id ? 'is-selected' : ''} onClick={() => setActiveItemId(item.id)}><td>{index + 1}</td><td>{products.find(product => String(product.id) === item.produto_id)?.nome ?? (item.produto_id ? item.descricao : 'MANUAL')}</td><td>{item.codigo || '—'}</td><td className="synqra-item-list-description" title={item.descricao}>{item.descricao || 'Descrição pendente'}</td><td title={item.lote}>{item.lote || '—'}</td><td className="right">{item.quantidade}</td><td className="right">{money(numberValue(item.valorUnitario))}</td><td className="right">{money(numberValue(item.desconto))}</td><td className="right">{money(total)}</td><td><button className="danger-icon" type="button" onClick={e => {e.stopPropagation(); removeItem(item.id)}} aria-label="Remover item">×</button></td></tr> })}</tbody>
+        </table></div><p className="synqra-nfe-helper">Selecione uma linha para editar os campos acima. A tributação é salva individualmente em cada item.</p>
       </Section>
-
       <Section title="05 • TOTAIS DE IMPOSTOS E VALORES DA NF-e">
         <div className="synqra-nfe-grid">
           <CompactInput label="BC ICMS" value={field(form, 'baseIcms')} onChange={v => updateForm('baseIcms', v)} />
