@@ -46,6 +46,7 @@ requireIn(qualityGuard, /RETIDO','SUCATA','RETRABALHO/i, 'Guard não bloqueia es
 requireIn(page, /erp_salvar_liberacao_nf/i, 'Tela não persiste rascunho por RPC.')
 requireIn(page, /erp_encaminhar_liberacao_nf/i, 'Tela não encaminha a liberação por RPC.')
 requireIn(page, /status_inspecao/i, 'Tela não exibe o estado de Qualidade do lote.')
+requireIn(page, /erp_quarentenas_lotes/i, 'Tela não consulta lotes retidos pela Qualidade.')
 requireIn(page, /liberacao_id=/i, 'Tela não oferece abertura da emissão fiscal.')
 requireIn(emitter, /useSearchParams/i, 'Emissor não lê a referência da liberação.')
 requireIn(emitter, /erp_liberacoes_nf_itens/i, 'Emissor não importa os itens persistidos da liberação.')
