@@ -63,9 +63,11 @@ export default function PedidoCompra(){
    if(!canEditOrder)throw new Error('Pedidos finalizados não podem ser alterados.')
    if(!empresaId)throw new Error('Empresa não identificada.')
    if(!supplierId)throw new Error('Selecione o fornecedor.')
-   const valid=items.filter(i=>i.produto_id&&Number(i.quantidade)>0)
-   if(!valid.length)throw new Error('Inclua ao menos um produto real no pedido.')
-   if(valid.some(i=>Number(i.preco)<0))throw new Error('Preço unitário inválido.')
+   const filled=items.filter(i=>i.produto_id||i.quantidade!=='1'||i.preco!=='0')
+   if(!filled.length)throw new Error('Inclua ao menos um produto real no pedido.')
+   if(filled.some(i=>!i.produto_id))throw new Error('Há item preenchido sem produto selecionado. Selecione um produto ou remova a linha antes de salvar.')
+   if(filled.some(i=>!Number.isFinite(Number(i.quantidade))||Number(i.quantidade)<=0||!Number.isFinite(Number(i.preco))||Number(i.preco)<0))throw new Error('Cada item precisa ter quantidade maior que zero e preço unitário válido, não negativo.')
+   const valid=filled
    const result=await supabase.rpc('erp_compras_salvar_pedido',{
     p_pedido_id:selected,
     p_fornecedor_id:supplierId,
