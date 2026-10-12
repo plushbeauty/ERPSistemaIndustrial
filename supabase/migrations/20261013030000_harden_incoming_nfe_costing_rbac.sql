@@ -68,6 +68,16 @@ begin
 
   if not exists (
     select 1
+      from public.engenharia_produtos p
+     where p.id = p_produto_id
+       and p.empresa_id = v_empresa_id
+       and p.ativo = true
+  ) then
+    raise exception 'PRODUTO_NAO_ENCONTRADO_OU_INATIVO_NO_TENANT' using errcode = '23503';
+  end if;
+
+  if not exists (
+    select 1
       from public.estoque_lotes l
      where l.id = p_lote_id
        and l.produto_id = p_produto_id
