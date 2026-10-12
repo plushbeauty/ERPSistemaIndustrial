@@ -159,25 +159,25 @@ export default function ComprasRFQ() {
 
   return (
     <VendasLayout title="Cotação de compras" subtitle="Fornecedores • materiais • prazo • condição de pagamento" onRefresh={() => window.location.reload()}>
-    <div className="compras-rfq-compact min-h-screen bg-[#F4F7FE] text-slate-900">
+    <div className="compras-rfq-compact min-h-screen bg-[#F4FBFD] text-slate-900">
       <header className="border-b bg-white">
-        <div className="flex min-h-[70px] items-center justify-between gap-3 px-5 lg:px-8">
+        <div className="flex min-h-[44px] items-center justify-between gap-2 px-3">
           <div>
             <p className="text-[10px] uppercase tracking-[.16em] text-[#2D8DB8]">Compras • Suprimentos</p>
-            <h1 className="text-xl font-medium text-[#123B50]">Pedido de Cotação — RFQ</h1>
+            <h1 className="text-[15px] font-semibold text-[#123B50]">Pedido de Cotação — RFQ</h1>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => navigate('/compras/solicitacao-manual')}
-              className="flex min-h-10 items-center gap-2 rounded-md border px-3 py-2 text-xs"
+              className="erp-row-action flex h-[30px] items-center gap-2 rounded-[2px] border px-3 text-[11px]"
             >
               <ArrowLeft size={15} /> Solicitações
             </button>
             <button
               type="button"
               onClick={() => navigate('/compras/pedido')}
-              className="flex min-h-10 items-center gap-2 rounded-md border px-3 py-2 text-xs"
+              className="erp-row-action flex h-[30px] items-center gap-2 rounded-[2px] border px-3 text-[11px]"
             >
               Pedido de compra
             </button>
@@ -186,10 +186,10 @@ export default function ComprasRFQ() {
       </header>
 
       <main className="mx-auto max-w-[1500px] p-4 lg:p-8">
-        {error && <div className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">{error}</div>}
-        {message && <div className="mb-4 rounded border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800" role="status">{message}</div>}
+        {error && <div className="mb-2 rounded-[2px] border border-red-200 bg-red-50 p-2 text-[10px] text-red-800" role="alert">{error}</div>}
+        {message && <div className="mb-2 rounded-[2px] border border-emerald-200 bg-emerald-50 p-2 text-[10px] text-emerald-800" role="status">{message}</div>}
         <div className="grid gap-5 lg:grid-cols-3">
-          <section className="rounded-lg border bg-white p-5 lg:col-span-1">
+          <section className="rounded-[2px] border bg-white p-2 lg:col-span-1">
             <h2 className="font-medium text-[#123B50]">Fornecedores selecionados</h2>
             <label className="mt-3 flex items-center gap-2 rounded border px-3">
               <Search size={16} aria-hidden="true" />
@@ -203,7 +203,7 @@ export default function ComprasRFQ() {
             </label>
             <div className="mt-4 max-h-[55vh] space-y-2 overflow-y-auto">
               {loading ? <p role="status">Carregando fornecedores...</p> : visibleSuppliers.map(supplier => (
-                <label key={supplier.id} className="flex gap-3 rounded border p-3 text-sm">
+                <label key={supplier.id} className="flex gap-2 rounded-[2px] border p-2 text-[11px]">
                   <input
                     type="checkbox"
                     checked={selectedSuppliers.includes(supplier.id)}
@@ -222,35 +222,35 @@ export default function ComprasRFQ() {
             </div>
           </section>
 
-          <section className="rounded-lg border bg-white p-5 lg:col-span-2">
+          <section className="rounded-[2px] border bg-white p-2 lg:col-span-2">
             <div className="grid gap-3 md:grid-cols-4">
               <label className="text-xs">
                 Prazo para resposta
-                <input type="date" value={responseDate} onChange={event => setResponseDate(event.target.value)} className="mt-1 h-10 w-full rounded border p-2" />
+                <input type="date" value={responseDate} onChange={event => setResponseDate(event.target.value)} className="mt-1 h-[30px] w-full rounded-[2px] border px-2 text-[11px]" />
               </label>
               <label className="text-xs md:col-span-2">
                 Condição de pagamento
-                <input value={paymentCondition} onChange={event => setPaymentCondition(event.target.value)} className="mt-1 h-10 w-full rounded border p-2" />
+                <input value={paymentCondition} onChange={event => setPaymentCondition(event.target.value)} className="mt-1 h-[30px] w-full rounded-[2px] border px-2 text-[11px]" />
               </label>
               <label className="text-xs">
                 Necessidade
-                <input type="date" value={needDate} onChange={event => setNeedDate(event.target.value)} className="mt-1 h-10 w-full rounded border p-2" />
+                <input type="date" value={needDate} onChange={event => setNeedDate(event.target.value)} className="mt-1 h-[30px] w-full rounded-[2px] border px-2 text-[11px]" />
               </label>
             </div>
 
             <div className="mt-5 grid gap-2 md:grid-cols-[minmax(0,1fr)_120px_100px]">
               <div className="relative min-w-0">
-                <input value={productQuery} onChange={event => { setProductQuery(event.target.value); setProductId('') }} onKeyDown={event => { if (event.key === 'Enter' && visibleProducts[0]) { event.preventDefault(); setProductId(visibleProducts[0].id); setProductQuery(visibleProducts[0].codigo + ' — ' + visibleProducts[0].nome) } }} placeholder="Digite código ou descrição do produto..." className="h-10 w-full rounded border px-3" aria-label="Pesquisar produto por código ou descrição" />
+                <input value={productQuery} onChange={event => { setProductQuery(event.target.value); setProductId('') }} onKeyDown={event => { if (event.key === 'Enter' && visibleProducts[0]) { event.preventDefault(); setProductId(visibleProducts[0].id); setProductQuery(visibleProducts[0].codigo + ' — ' + visibleProducts[0].nome) } }} placeholder="Digite código ou descrição do produto..." className="h-[30px] w-full rounded-[2px] border px-2 text-[11px]" aria-label="Pesquisar produto por código ou descrição" />
                 {productQuery && !productId && <div className="absolute left-0 right-0 top-11 z-20 max-h-56 overflow-auto rounded border bg-white shadow-lg">{visibleProducts.map(product => <button key={product.id} type="button" className="block w-full border-b px-3 py-2 text-left text-xs hover:bg-slate-50" onClick={() => { setProductId(product.id); setProductQuery(product.codigo + ' — ' + product.nome) }}><strong>{product.codigo}</strong> — {product.nome} <span className="text-slate-500">({product.unidade})</span></button>)}{!visibleProducts.length && <p className="px-3 py-3 text-xs text-slate-500">Nenhum produto ativo encontrado.</p>}</div>}
               </div>
-              <input aria-label="Quantidade" type="number" min="0.0001" step="0.0001" value={quantity} onChange={event => setQuantity(event.target.value)} className="h-10 rounded border px-3" />
-              <button type="button" onClick={addItem} className="flex min-h-10 items-center justify-center gap-1 rounded bg-[#123B50] text-xs text-white">
+              <input aria-label="Quantidade" type="number" min="0.0001" step="0.0001" value={quantity} onChange={event => setQuantity(event.target.value)} className="h-[30px] rounded-[2px] border px-2 text-[11px]" />
+              <button type="button" onClick={addItem} className="erp-row-action flex h-[30px] items-center justify-center gap-1 rounded-[2px] bg-[#123B50] px-3 text-[11px] text-white">
                 <Plus size={15} /> Adicionar
               </button>
             </div>
 
             <div className="mt-5 overflow-x-auto">
-              <table className="w-full min-w-[640px] text-sm">
+              <table className="w-full min-w-[640px] text-[11px]">
                 <thead><tr className="border-b bg-slate-100 text-left"><th className="p-3">Código</th><th className="p-3">Descrição</th><th className="p-3">Qtd.</th><th className="p-3">Necessidade</th><th className="p-3">Ações</th></tr></thead>
                 <tbody>
                   {items.map((item, index) => (
@@ -273,11 +273,11 @@ export default function ComprasRFQ() {
 
             <label className="mt-4 block text-xs">
               Observações da cotação
-              <textarea value={notes} onChange={event => setNotes(event.target.value)} className="mt-1 min-h-24 w-full rounded border p-3 text-sm" />
+              <textarea value={notes} onChange={event => setNotes(event.target.value)} className="mt-1 min-h-[60px] w-full rounded-[2px] border p-2 text-[11px]" />
             </label>
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-4">
               <span className="text-sm text-slate-600">{selectedSuppliers.length} fornecedor(es) · {totalQuantity} unidade(s)</span>
-              <button type="button" disabled={busy || loading} onClick={() => void save()} className="flex min-h-11 items-center justify-center gap-2 rounded bg-[#2D8DB8] px-5 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50">
+              <button type="button" disabled={busy || loading} onClick={() => void save()} className="erp-row-action flex h-[30px] items-center justify-center gap-2 rounded-[2px] bg-[#2D8DB8] px-3 text-[11px] text-white disabled:cursor-not-allowed disabled:opacity-50">
                 <Save size={16} /> {busy ? 'Salvando...' : 'Guardar RFQ'}
               </button>
             </div>
