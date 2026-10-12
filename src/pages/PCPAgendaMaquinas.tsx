@@ -50,7 +50,7 @@ export default function PCPAgendaMaquinas(){
     fetchAllPages<Mold>((from,to)=>supabase.from('erp_moldes').select('id,codigo,nome,status,ativo',{count:'exact'}).eq('empresa_id',id).eq('ativo',true).order('codigo',{ascending:true}).order('id',{ascending:true}).range(from,to)),
     fetchAllPages<Slot>((from,to)=>supabase.from('pcp_agenda_maquinas').select('id,maquina_id,ordem_producao_id,molde_id,quantidade_programada,lote_producao,data_hora_inicio,data_hora_fim,status',{count:'exact'}).eq('empresa_id',id).neq('status','cancelada').gte('data_hora_inicio',start.toISOString()).lt('data_hora_inicio',end.toISOString()).order('data_hora_inicio',{ascending:true}).order('id',{ascending:true}).range(from,to)),
     supabase.from('erp_pcp_calendario_trabalho').select('dias_trabalho,horario_inicio_jornada,horario_fim_jornada').eq('empresa_id',id).maybeSingle(),
-    fetchAllPages<ProcessCycle>((from,to)=>supabase.from('erp_fichas_processo').select('produto_id,ciclo_seg,cavidades_ativas,parametros_tecnicos',{count:'exact'}).eq('empresa_id',id).eq('ativo',true).order('produto_id',{ascending:true}).order('id',{ascending:true}).range(from,to))
+    fetchAllPages<ProcessCycle>((from,to)=>supabase.from('erp_fichas_processo').select('produto_id,ciclo_seg,cavidades_ativas,parametros_tecnicos',{count:'exact'}).eq('empresa_id',id).eq('ativo',true).eq('status','LIBERADA').order('produto_id',{ascending:true}).order('id',{ascending:true}).range(from,to))
    ])
    if(calendarResult.error)throw calendarResult.error
    setMachines(machineRows);setOrders(orderRows);setMolds(moldRows);setSlots(slotRows);setProcessCycles(processCycleRows)
