@@ -93,6 +93,14 @@ export default function IndustrialDataWorkspace() {
   useEffect(()=>{ void load() },[load])
   const visible = useMemo(()=> rows.filter(row => !search || (config?.search ?? []).some(key=>String(row[key] ?? '').toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR')))),[rows,search,config])
   const npr = Number(form.severidade||0)*Number(form.ocorrencia||0)*Number(form.deteccao||0)
+  function requiredForField(field: Field): boolean {
+    if (field.required) return true
+    if (config?.table !== 'estoque_movimentacoes') return false
+    const tipo = form.tipo ?? ''
+    if (field.key === 'endereco_origem_id') return ['requisicao_producao','transferencia','ajuste_inventario'].includes(tipo)
+    if (field.key === 'endereco_destino_id') return ['entrada_nf','retorno_producao','transferencia','ajuste_inventario'].includes(tipo)
+    return false
+  }
   function reset() { setForm({}); setEditing(null); setError(null) }
   function edit(row: Record<string,unknown>) {
     if (!config) return
@@ -116,7 +124,8 @@ export default function IndustrialDataWorkspace() {
       const payload: Record<string,unknown>={}
       for (const field of config.fields) {
         const raw=form[field.key] ?? ''
-        if(field.required && !raw.trim()) throw new Error('Campo obrigatório: '+field.label)
+        if(requiredForField(field) && !raw.trim()) throw new Error('Campo obrigatório: '+field.label)
+        if(config.table === 'estoque_movimentacoes' && field.key === 'quantidade' && raw.trim() && (!Number.isFinite(Number(raw)) || Number(raw) <= 0)) throw new Error('A quantidade da movimentação deve ser maior que zero.')
         if(raw.trim()!=='') payload[field.key]=parseValue(field,raw)
         else if(field.type==='number') payload[field.key]=0
       }
@@ -141,8 +150,8 @@ export default function IndustrialDataWorkspace() {
     <section className="mb-3 border border-slate-200 bg-white p-3">
       <h2 className="mb-2 flex items-center gap-1 text-xs font-semibold"><ClipboardList size={14}/>{editing?'Editar registro':'Novo registro'}</h2>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
-        {config.fields.map(field=><label key={field.key} className={field.type==='textarea'?'sm:col-span-2 lg:col-span-4':''}><span className={label}>{field.label}{field.required?' *':''}</span>
-          {field.type==='textarea'?<textarea className="min-h-[62px] w-full rounded-[2px] border border-slate-300 p-2 text-[10px] outline-none focus:border-sky-600" value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={field.required}/>
+        {config.fields.map(field=><label key={field.key} className={field.type==='textarea'?'sm:col-span-2 lg:col-span-4':''}><span className={label}>{field.label}{requiredForField(field)?' *':''}</span>
+          {field.type==='textarea'?<textarea className="min-h-[62px] w-full rounded-[2px] border border-slate-300 p-2 text-[10px] outline-none focus:border-sky-600" value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={requiredForField(field)}/>
           :field.type==='select'?<select className={cls} value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={field.required}><option value="">Selecionar…</option>{(field.options??[]).map(option=><option key={option} value={option}>{option}</option>)}</select>
           :<input className={cls} type={field.type==='number'?'number':field.type==='date'?'date':'text'} step={field.type==='number'?'any':undefined} value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={field.required}/>}
         </label>)}
