@@ -36,7 +36,8 @@
     "verify:public-naming": "node scripts/verify-public-naming.mjs",
     "verify-routes": "node scripts/verify-routes.mjs",
     "verify:rfq-contract": "node scripts/verify-rfq-contract.mjs",
-    "verify:quality-tablet-contract": "node scripts/verify-quality-tablet-contract.mjs"
+    "verify:quality-tablet-contract": "node scripts/verify-quality-tablet-contract.mjs",
+    "verify:quality-inspection-contract": "node scripts/verify-quality-inspection-contract.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",
