@@ -8,7 +8,10 @@ type Machine = { id: string; codigo: string; nome: string; status: string }
 type WorkOrder = { id: string; ativo_id: string; tipo: string; status: string; prioridade: string; data_prevista: string | null }
 
 const modules = [
-  { title: 'Ordens de serviço', description: 'Abrir, acompanhar e concluir O.S. com laudo, causa raiz e solução.', href: '/manutencao/ordens', Icon: ClipboardList },
+  { title: 'Cadastro de ativos', description: 'TAG, engenharia, criticidade, localização e estado das máquinas.', href: '/manutencao/ativos', Icon: Settings2 },
+  { title: 'Planos preventivos', description: 'Programar inspeções por calendário, horas de uso e ciclos.', href: '/manutencao/preventivas', Icon: CalendarDays },
+  { title: 'Ordens de serviço', description: 'Abrir, acompanhar e concluir O.S. vinculadas a ativos e RNC.', href: '/manutencao/ordens-servico', Icon: ClipboardList },
+  { title: 'Insumos e peças', description: 'Registrar peças por O.S. e baixar estoque com transação protegida.', href: '/manutencao/insumos', Icon: Wrench },
   { title: 'Cronograma preventivo', description: 'Consultar as preventivas programadas por data, máquina e situação.', href: '/manutencao/cronograma', Icon: CalendarDays },
   { title: 'Plano mestre 2026', description: 'Consultar as duas planilhas fonte da PLASTIBOR com tags, frequências e status mensais.', href: '/manutencao/plano-mestre', Icon: FileSpreadsheet },
   { title: 'Indicadores de confiabilidade', description: 'Acompanhar paradas, MTTR e MTBF a partir dos registros reais.', href: '/manutencao/indicadores', Icon: Gauge },
@@ -66,7 +69,7 @@ export default function ManutencaoCentral() {
           <div className="flex h-10 w-10 items-center justify-center rounded-[2px] bg-[#E7F4F8] text-[#2D8DB8]"><Wrench size={22} /></div>
           <div>
             <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#2D8DB8]">ERP INDUSTRIAL / TPM</p>
-            <h1 className="text-[18px] font-semibold leading-6">Central de Manutenção</h1>
+            <h1 className="text-[18px] font-semibold leading-6">Central Tablet Manutenção</h1>
             <p className="text-[11px] text-slate-500">Planejamento preventivo, ordens de serviço e confiabilidade dos equipamentos.</p>
           </div>
           <button type="button" onClick={() => void load()} disabled={busy} className="ml-auto inline-flex h-[30px] items-center gap-2 rounded-[2px] border border-[#B8D5E0] bg-white px-3 text-[10px] font-bold text-[#17445A] disabled:opacity-50"><RefreshCw size={13} className={busy ? 'animate-spin' : ''}/> ATUALIZAR</button>
