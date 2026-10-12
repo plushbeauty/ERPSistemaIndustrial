@@ -52,7 +52,7 @@ export default function FerramentariaPreventiva(){
    if(status==='LIBERADO'&&done.some(value=>!value)){setMsg('Para liberar o molde, conclua todos os itens do checklist.');return}
    setSaving(true)
    try{
-     const parameters=selected.parametros??{}
+     const parameters:Partial<IFerramentalParametrosJSONB>=selected.parametros??{}
      const setupRetido=parameters.setup_aprovacao?.status==='RETIDO'
      const priorStatus=typeof parameters.status_operacional_anterior==='string'
        ? parameters.status_operacional_anterior
