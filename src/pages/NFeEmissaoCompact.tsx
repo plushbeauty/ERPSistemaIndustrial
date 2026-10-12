@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { FileDown, Plus, RefreshCw, Save, Send, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import ERPHeader from '../components/layout/ERPHeader'
@@ -61,6 +62,9 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 export default function NFeEmissaoCompact() {
   const [companyId, setCompanyId] = useState('')
+  const [searchParams] = useSearchParams()
+  const releaseId = searchParams.get('liberacao_id')
+  const importedReleaseRef = useRef('')
   const [company, setCompany] = useState<TextMap>({})
   const [customer, setCustomer] = useState<TextMap>({})
   const [products, setProducts] = useState<Product[]>([])
