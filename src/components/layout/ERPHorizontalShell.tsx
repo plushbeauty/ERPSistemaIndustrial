@@ -78,17 +78,26 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (operatorName !== 'Usuário ERP') {
-      setSessionOperator(operatorName)
-      return
-    }
     let active = true
-    void supabase.auth.getUser().then(({ data, error }) => {
+    void supabase.auth.getUser().then(async ({ data, error }) => {
       if (!active || error || !data.user) return
       const metadata = data.user.user_metadata
       const metadataName = [metadata?.nome, metadata?.name, metadata?.full_name].find(value => typeof value === 'string' && value.trim())
-      setSessionOperator(typeof metadataName === 'string' ? metadataName.trim() : data.user.email || 'Usuário autenticado')
-      setSessionEmail(data.user.email || '')
+      let resolvedName = typeof metadataName === 'string' ? metadataName.trim() : data.user.email || 'Usuário autenticado'
+      if (operatorName !== 'Usuário ERP' && operatorName.trim()) resolvedName = operatorName.trim()
+      else {
+        const { data: profile } = await supabase
+          .from('erp_usuarios')
+          .select('nome')
+          .eq('auth_user_id', data.user.id)
+          .is('deleted_at', null)
+          .maybeSingle()
+        if (active && typeof profile?.nome === 'string' && profile.nome.trim()) resolvedName = profile.nome.trim()
+      }
+      if (active) {
+        setSessionOperator(resolvedName)
+        setSessionEmail(data.user.email || '')
+      }
     })
     return () => { active = false }
   }, [operatorName])
