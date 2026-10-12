@@ -33,10 +33,10 @@ export default function ComprasPedidoCompra() {
         const [supplierRows, productRows] = await Promise.all([
           fetchAllPages<Supplier>((from, to) => supabase.from('erp_fornecedores')
             .select('id,razao_social', { count: 'exact' })
-            .eq('empresa_id', companyId).eq('ativo', true).order('razao_social').range(from, to)),
+            .eq('empresa_id', companyId).eq('ativo', true).order('razao_social').order('id', { ascending: true }).range(from, to)),
           fetchAllPages<Product>((from, to) => supabase.from('erp_produtos')
             .select('id,codigo,nome,unidade_compra', { count: 'exact' })
-            .eq('empresa_id', companyId).eq('ativo', true).order('codigo').range(from, to)),
+            .eq('empresa_id', companyId).eq('ativo', true).order('codigo').order('id', { ascending: true }).range(from, to)),
         ])
         if (active) {
           setSuppliers(supplierRows)
