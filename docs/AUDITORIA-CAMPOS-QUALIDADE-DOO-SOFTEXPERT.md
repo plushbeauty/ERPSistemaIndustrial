@@ -45,13 +45,20 @@
 4. As consultas do SGQ avançado agora incluem filtro explícito por `empresa_id`, além das políticas RLS.
 5. O painel de risco de fornecedor exibia “Cadastro”, validade vazia e “Ativo” como se fossem dados de avaliação/certificação. Isso foi removido; a tela informa explicitamente “Ainda não avaliado”.
 
-## Lacuna funcional identificada pela comparação com DOO e SoftExpert
+## Avaliação de fornecedores / IQF — implementada na branch, ainda não publicada
 
-**Avaliação de fornecedores / IQF independente ainda não foi encontrada como módulo completo no ERP.** O código atual possui riscos de fornecedor e cadastro de fornecedores, mas não foi localizado um histórico dedicado de avaliação com critérios configuráveis, pesos, notas, cálculo ponderado do IQF, ranking e reavaliação periódica.
+A inspeção do schema real confirmou que `public.erp_fornecedores` contém cadastro e dados de certificação ISO, mas não existia módulo/tabela dedicada de avaliação ponderada com histórico. A branch adiciona:
 
-A DOO documenta esses recursos explicitamente, incluindo critérios/pesos, IQF, histórico e ligação a não conformidades. O SoftExpert descreve questionários/qualificação, scorecards de desempenho, riscos e monitoramento. Esses requisitos são referência para a próxima implementação, não dados existentes no ERP.
+- Critérios configuráveis por empresa: código, nome, peso e indicação de critério obrigatório.
+- Avaliações por fornecedor e período, com código, avaliador, status, observações e plano de ação.
+- Itens de avaliação com nota de 1 a 5, comentário e URL de evidência.
+- View de cálculo ponderado do IQF (percentual normalizado 0–100), sem inserir avaliações fictícias.
+- RLS por empresa, FKs compostas tenant-aware para fornecedor/avaliador/critério/avaliação e vínculo por empresa em relacionamentos existentes do SGQ.
+- Interface no SGQ avançado com cadastro de critérios, abertura de avaliação, gravação das notas/evidências e conclusão.
 
-**Não criar ou aplicar uma nova tabela sem validar a conexão e o schema efetivo do Supabase.** Nesta sessão, a conexão do projeto Supabase não retornou projetos disponíveis; portanto, a migration de avaliação de fornecedores não foi aplicada nem validada no banco. A lacuna deve permanecer visível até que o schema, RLS, grants, RPC e execução de teste sejam confirmados.
+A DOO documenta critérios/pesos, IQF, histórico e ligação a não conformidades. O SoftExpert descreve questionários/qualificação, scorecards, riscos e monitoramento. Os requisitos orientam a funcionalidade, mas não são tratados como dados já existentes.
+
+**Status de publicação:** a migration está na branch, porém ainda não foi aplicada no banco de produção. A conexão Supabase foi localizada e o schema existente foi consultado; as tabelas IQF ainda não existem no banco. A persistência real, as permissões por perfil e o isolamento autenticado entre duas empresas precisam ser testados após CI verde e aplicação controlada da migration.
 
 ## Gates ainda necessários antes de produção
 
