@@ -43,8 +43,7 @@ const menus: MenuItem[] = [
   { label: 'Estoque', route: '/estoque', icon: Package },
   { label: 'Financeiro', route: '/financeiro/custo-padrao', icon: Wallet },
   { label: 'Fiscal', route: '/fiscal', icon: FileText },
-  { label: 'Manufatura / PCP', route: '/pcp?tablet=1', icon: Factory }
-  ] },
+  { label: 'Manufatura / PCP', route: '/pcp?tablet=1', icon: Factory },
   { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench },
   { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
@@ -294,7 +293,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-quality-tablet-card strong{font-size:10px;line-height:1.25;color:#123b50}
         .erp-quality-tablet-card small{font-size:9px;line-height:1.4;color:#536b76;white-space:normal;overflow-wrap:anywhere}
         .erp-quality-tablet>footer{padding:8px 12px;border-top:1px solid #d3e3e9;background:#eef6f9;color:#536b76;font-size:9px}
-        @media(max-width:760px){.erp-quality-tablet-backdrop{padding:8px}.erp-quality-tablet{width:calc(100vw - 16px);max-height:86vh}.erp-quality-tablet-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:8px}.erp-quality-tablet-card{min-height:52px;padding:6px;gap:6px}.erp-quality-tablet-icon{width:28px;height:28px;flex-basis:28px}.erp-quality-tablet-heading{padding:9px 10px}.erp-quality-tablet-heading h2{font-size:15px}}
+        @media(max-width:760px){.erp-quality-tablet-backdrop{padding:8px}.erp-quality-tablet{width:calc(100vw - 16px);max-height:86vh}.erp-quality-tablet-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:8px}.erp-quality-tablet-card{min-height:60px;padding:8px;gap:8px}.erp-quality-tablet-icon{width:30px;height:30px;flex-basis:30px}.erp-quality-tablet-heading{padding:9px 10px}.erp-quality-tablet-heading h2{font-size:15px}}@media(max-width:520px){.erp-quality-tablet-grid{grid-template-columns:minmax(0,1fr);gap:6px;padding:8px}.erp-quality-tablet-card{min-height:56px}}
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f3f8fb 42%,#e8f1f6 100%);color:#123b50}
         .erp-horizontal-brand{min-width:280px!important;gap:8px!important;padding:0 8px!important}
         .erp-horizontal-brand img{width:148px!important;height:42px!important;min-width:148px!important;max-width:148px!important;object-fit:contain;object-position:left center;flex:0 0 148px!important;background:#123b50;border:1px solid #2D8DB8;border-radius:2px;padding:2px;box-sizing:border-box;background:#fff;padding:2px;border:0;border-radius:0;box-sizing:border-box}
