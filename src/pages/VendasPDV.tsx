@@ -213,7 +213,7 @@ export default function VendasPDV() {
             ) : (
               <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,245px),1fr))] items-stretch gap-3">
                 {visible.map(product => {
-                  const unavailable = product.estoque_atual <= 0
+                  const unavailable = product.estoque_atual <= 0 && !product.permite_estoque_negativo
                   const inCart = cart.find(item => item.id === product.id)?.quantidade ?? 0
                   return (
                     <button
