@@ -77,7 +77,7 @@ export default function NFeEmissaoCompact() {
   const [activeItemId, setActiveItemId] = useState('')
   const [releasePickerOpen, setReleasePickerOpen] = useState(false)
   const [loadingReleases, setLoadingReleases] = useState(false)
-  const [availableReleases, setAvailableReleases] = useState<Array<{ id: string; pedido: string; cliente: string; status: string; data: string; observacao: string }>>([])
+  const [availableReleases, setAvailableReleases] = useState<Array<{ numero_pedido: string; cliente_nome: string; cliente_cnpj: string; status: string; data: string; itens: Array<{ id: string; codigo_peca: string; descricao_peca: string; quantidade: number | string; lote: string; valor_unitario: number | string; ncm: string; cfop: string }> }>>([])
   const [releaseSearch, setReleaseSearch] = useState('')
 
   const updateForm = (key: string, value: string) => {
@@ -98,21 +98,48 @@ export default function NFeEmissaoCompact() {
     setLoadingReleases(true); setError('')
     try {
       if (!companyId) throw new Error('A empresa ativa ainda não foi carregada.')
-      const { data: releases, error: releasesError } = await supabase.from('erp_liberacoes_nf').select('id,pedido_venda_id,status,observacao,created_at').eq('empresa_id', companyId).eq('status', 'ENCAMINHADA').order('created_at', { ascending: false }).limit(100)
-      if (releasesError) throw releasesError
-      const rows = releases ?? []
-      if (!rows.length) { setAvailableReleases([]); setReleasePickerOpen(true); return }
-      const orderIds = [...new Set(rows.map(row => String(row.pedido_venda_id)).filter(Boolean))]
-      const { data: orders, error: ordersError } = await supabase.from('erp_pedidos_venda').select('id,numero,cliente_id').eq('empresa_id', companyId).in('id', orderIds)
-      if (ordersError) throw ordersError
-      const orderById = new Map((orders ?? []).map(order => [String(order.id), order]))
-      const customerIds = [...new Set((orders ?? []).map(order => String(order.cliente_id ?? '')).filter(Boolean))]
-      const customerResult = customerIds.length ? await supabase.from('erp_clientes').select('id,nome').eq('empresa_id', companyId).in('id', customerIds) : { data: [], error: null }
-      if (customerResult.error) throw customerResult.error
-      const customerById = new Map((customerResult.data ?? []).map(row => [String(row.id), String(row.nome ?? 'Cliente não identificado')]))
-      setAvailableReleases(rows.filter(row => orderById.has(String(row.pedido_venda_id))).map(row => { const order = orderById.get(String(row.pedido_venda_id)); return { id: String(row.id), pedido: String(order?.numero ?? 'Pedido sem número'), cliente: customerById.get(String(order?.cliente_id ?? '')) ?? 'Cliente não identificado', status: String(row.status ?? ''), data: String(row.created_at ?? ''), observacao: String(row.observacao ?? '') } }))
+      const { data: rows, error: queryError } = await supabase.from('erp_almoxarifado_pedidos')
+        .select('id,empresa_id,numero_pedido,cliente_nome,cliente_cnpj,codigo_peca,descricao_peca,quantidade,lote,valor_unitario,ncm,cfop,status,created_at')
+        .eq('empresa_id', companyId).eq('status', 'Liberado')
+        .order('created_at', { ascending: false }).limit(500)
+      if (queryError) throw queryError
+      const groups = new Map<string, { numero_pedido: string; cliente_nome: string; cliente_cnpj: string; status: string; data: string; itens: Array<{ id: string; codigo_peca: string; descricao_peca: string; quantidade: number | string; lote: string; valor_unitario: number | string; ncm: string; cfop: string }> }>()
+      for (const row of rows ?? []) {
+        const key = String(row.numero_pedido ?? '')
+        if (!key) continue
+        const current = groups.get(key) ?? { numero_pedido: key, cliente_nome: String(row.cliente_nome ?? 'Cliente não identificado'), cliente_cnpj: String(row.cliente_cnpj ?? ''), status: String(row.status ?? ''), data: String(row.created_at ?? ''), itens: [] }
+        current.itens.push({ id: String(row.id), codigo_peca: String(row.codigo_peca ?? ''), descricao_peca: String(row.descricao_peca ?? ''), quantidade: row.quantidade ?? 0, lote: String(row.lote ?? ''), valor_unitario: row.valor_unitario ?? 0, ncm: String(row.ncm ?? ''), cfop: String(row.cfop ?? '') })
+        groups.set(key, current)
+      }
+      setAvailableReleases([...groups.values()])
       setReleasePickerOpen(true)
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Não foi possível buscar as liberações do Almoxarifado.') } finally { setLoadingReleases(false) }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível buscar os pedidos liberados do Almoxarifado.')
+    } finally { setLoadingReleases(false) }
+  }
+  const chooseWarehouseOrder = (orderNumber: string) => {
+    const order = availableReleases.find(row => row.numero_pedido === orderNumber)
+    if (!order) { setError('Pedido liberado não encontrado na lista atual.'); return }
+    const importedItems: Item[] = order.itens.map(row => {
+      const product = products.find(candidate => String(candidate.codigo ?? '') === row.codigo_peca)
+      return {
+        id: crypto.randomUUID(), produto_id: String(product?.id ?? ''), codigo: row.codigo_peca,
+        descricao: row.descricao_peca, lote: row.lote, ncm: onlyDigits(row.ncm || String(product?.ncm ?? ''), 8),
+        cst: String(product?.cst_icms ?? product?.csosn ?? ''), cfop: onlyDigits(row.cfop || String(product?.cfop_saida ?? ''), 4),
+        unidade: String(product?.unidade ?? 'UN'), quantidade: String(row.quantidade ?? 0),
+        valorUnitario: String(row.valor_unitario ?? product?.preco_venda ?? 0), desconto: '0',
+        icms: String(product?.aliquota_icms ?? 0), ipi: String(product?.aliquota_ipi ?? 0),
+        pis: String(product?.aliquota_pis ?? 0), cofins: String(product?.aliquota_cofins ?? 0),
+        origem: onlyDigits(String(product?.origem_fiscal ?? '0'), 1),
+      }
+    })
+    if (!importedItems.length) { setError('O pedido liberado não possui itens para anexar.'); return }
+    setItems(importedItems)
+    setActiveItemId(importedItems[0].id)
+    setCustomer(current => ({ ...current, nome: order.cliente_nome, documento: order.cliente_cnpj }))
+    setForm(current => ({ ...current, informacoes: ['Origem: Almoxarifado • Pedido ' + order.numero_pedido, 'Itens liberados: ' + importedItems.length].join(' | ') }))
+    setDocumentId(null); setMessage('Pedido ' + order.numero_pedido + ' anexado: ' + importedItems.length + ' item(ns) carregado(s). Confira endereço do destinatário, CFOP e tributação antes de salvar.')
+    setError(''); setReleasePickerOpen(false)
   }
   const chooseRelease = (id: string) => { importedReleaseRef.current = ''; setDocumentId(null); setItems([newItem()]); setActiveItemId(''); setCustomer({}); setMessage(''); setReleasePickerOpen(false); const next = new URLSearchParams(searchParams); next.set('liberacao_id', id); setSearchParams(next) }
 
@@ -482,12 +509,11 @@ export default function NFeEmissaoCompact() {
         <CompactButton type="button" onClick={() => void load()} disabled={busy}><RefreshCw size={13} /> ATUALIZAR</CompactButton>
       </div>
       {(error || message) ? <div className={`synqra-nfe-alert ${error ? 'error' : 'ok'}`}>{error || message}</div> : null}
-      {releasePickerOpen ? <section className="synqra-release-picker" aria-label="Liberações do Almoxarifado">
-        <div className="synqra-release-picker-head"><div><strong>Pedidos liberados pelo Almoxarifado</strong><small>Somente liberações encaminhadas à emissão fiscal para a empresa ativa.</small></div><CompactButton type="button" onClick={() => setReleasePickerOpen(false)}><X size={13}/> FECHAR</CompactButton></div>
-        <input className="synqra-release-search" value={releaseSearch} onChange={e => setReleaseSearch(e.currentTarget.value)} placeholder="Buscar por pedido, cliente ou observação"/>
-        <div className="synqra-release-list">{availableReleases.filter(row => (row.pedido + " " + row.cliente + " " + row.observacao).toLowerCase().includes(releaseSearch.toLowerCase())).map(row => <div className="synqra-release-row" key={row.id}><div><strong>{row.pedido} · {row.cliente}</strong><span>{row.data ? new Date(row.data).toLocaleString("pt-BR") : "Data não informada"} · {row.status}</span><small>{row.observacao || "Sem observação adicional"}</small></div><CompactButton type="button" tone="primary" onClick={() => chooseRelease(row.id)}>ANEXAR ITENS</CompactButton></div>)}{!availableReleases.length ? <p>Nenhuma liberação pendente encontrada. Confira se o Almoxarifado encaminhou o pedido para emissão fiscal.</p> : null}</div>
+      {releasePickerOpen ? <section className="synqra-release-picker" aria-label="Pedidos liberados pelo Almoxarifado">
+        <div className="synqra-release-picker-head"><div><strong>Pedidos liberados pelo Almoxarifado</strong><small>Pedidos com status Liberado, restritos à empresa ativa.</small></div><CompactButton type="button" onClick={() => setReleasePickerOpen(false)}><X size={13}/> FECHAR</CompactButton></div>
+        <input className="synqra-release-search" value={releaseSearch} onChange={e => setReleaseSearch(e.currentTarget.value)} placeholder="Buscar por pedido, cliente ou código de peça"/>
+        <div className="synqra-release-list">{availableReleases.filter(row => (row.numero_pedido + " " + row.cliente_nome + " " + row.itens.map(item => item.codigo_peca + " " + item.descricao_peca).join(" ")).toLowerCase().includes(releaseSearch.toLowerCase())).map(row => <div className="synqra-release-row" key={row.numero_pedido}><div><strong>Pedido {row.numero_pedido} · {row.cliente_nome}</strong><span>{row.data ? new Date(row.data).toLocaleString("pt-BR") : "Data não informada"} · {row.status} · {row.itens.length} item(ns)</span><small>{row.itens.map(item => item.codigo_peca + " — " + item.descricao_peca + " (Qtd. " + item.quantidade + ")").join(" · ")}</small></div><CompactButton type="button" tone="primary" onClick={() => chooseWarehouseOrder(row.numero_pedido)}>ANEXAR ITENS</CompactButton></div>)}{!availableReleases.length ? <p>Nenhum pedido com status Liberado foi encontrado no Almoxarifado para a empresa ativa.</p> : null}</div>
       </section> : null}
-
       <div className="synqra-nfe-actions">
         <CompactButton type="button" onClick={() => void loadAvailableReleases()} disabled={busy || !companyId}><RefreshCw size={13} /> {loadingReleases ? "BUSCANDO…" : "BUSCAR LIBERAÇÕES DO ALMOXARIFADO"}</CompactButton>
         <CompactButton type="button" onClick={newDocument}><Plus size={13} /> NOVA</CompactButton>
