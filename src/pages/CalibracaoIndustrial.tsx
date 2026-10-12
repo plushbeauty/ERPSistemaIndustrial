@@ -121,7 +121,7 @@ type CalibrationForm = {
   criterio_aceitacao: string
 }
 const PAGE_SIZE = 25
-const equipmentSelect = 'id,empresa_id,codigo,descricao,fabricante,equipamento,numero_serie,faixa_medicao,resolucao,setor,responsavel,status,proxima_calibracao,ultima_calibracao,numero_certificado_atual,certificado_rbc,certificado_validade,tolerancia_nominal,erro_maximo,unidade_medida,observacoes,classe_exatidao,erro_indicacao,incerteza_expandida,fator_abrangencia,temperatura_lab_c,umidade_relativa_pct,rastreabilidade_padrao,identificacao_rbc,desvio_historico,criterio_aceitacao,laboratorio_calibracao,intervalo_calibracao_dias,criticidade'
+const equipmentSelect = 'id,empresa_id,codigo,descricao,fabricante,equipamento,modelo,numero_serie,faixa_medicao,resolucao,setor,responsavel,status,proxima_calibracao,ultima_calibracao,numero_certificado_atual,certificado_rbc,certificado_validade,tolerancia_nominal,erro_maximo,unidade_medida,observacoes,classe_exatidao,erro_indicacao,incerteza_expandida,fator_abrangencia,temperatura_lab_c,umidade_relativa_pct,rastreabilidade_padrao,identificacao_rbc,desvio_historico,criterio_aceitacao,laboratorio_calibracao,intervalo_calibracao_dias,criticidade'
 const historySelect = 'id,revisao,numero_certificado,data_calibracao,proxima_calibracao,laboratorio,resultado,observacao,certificado_rbc,identificacao_rbc,classe_exatidao,erro_indicacao,incerteza_expandida,fator_abrangencia,temperatura_lab_c,umidade_relativa_pct,rastreabilidade_padrao,desvio_historico,criterio_aceitacao,created_at'
 const emptyEquipment: EquipmentForm = {
   id: '', codigo: '', descricao: '', fabricante: '', equipamento: '', modelo: '', numero_serie: '',
