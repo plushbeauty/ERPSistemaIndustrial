@@ -132,10 +132,7 @@ export default function ComprasRFQ() {
         p_fornecedor_ids: selectedSuppliers,
         p_itens: items.map(item => ({
           produto_id: item.produto_id,
-          codigo: item.codigo,
-          descricao: item.descricao,
           quantidade: Number(item.quantidade),
-          unidade: item.unidade || 'UN',
           data_necessidade: item.data_necessidade || null,
           observacoes: item.observacoes || null,
         })),
