@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { FileDown, Plus, RefreshCw, Save, Send, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { parseFiscalNumber } from '../lib/fiscal/nfe-number'
 import ERPHeader from '../components/layout/ERPHeader'
 import CompactButton from '../components/ui/CompactButton'
 import CompactInput from '../components/ui/CompactInput'
@@ -48,11 +49,7 @@ const initialForm: TextMap = {
   informacoes: '',
 }
 
-const numberValue = (value: string): number => {
-  const normalized = value.trim().replace(/\\./g, '').replace(',', '.')
-  const parsed = Number(normalized)
-  return Number.isFinite(parsed) ? parsed : 0
-}
+const numberValue = (value: string): number => parseFiscalNumber(value)
 const onlyDigits = (value: string, max: number): string => value.replace(/\\D/g, '').slice(0, max)
 const money = (value: number): string => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 const field = (map: TextMap, key: string): string => map[key] ?? ''
