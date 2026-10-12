@@ -11,6 +11,7 @@ type Tool = {
   vida_ciclos: number | null
   ciclos_realizados: number
   parametros: Record<string, unknown> | null
+  status: string | null
 }
 type Machine = { id: string; codigo: string; nome: string }
 type SetupStatus = 'APROVADO' | 'RETIDO'
@@ -40,7 +41,7 @@ export default function PCPAprovacaoSetup() {
       const empresaId = String(tenant.data)
       const [toolRows, machineRows] = await Promise.all([
         fetchAllPages<Tool>((from, to) => supabase.from('erp_ferramentas_industriais')
-          .select('id,codigo,nome,numero_cavidades,vida_ciclos,ciclos_realizados,parametros', { count: 'exact' })
+          .select('id,codigo,nome,numero_cavidades,vida_ciclos,ciclos_realizados,parametros,status', { count: 'exact' })
           .eq('empresa_id', empresaId).eq('ativo', true).order('codigo').range(from, to)),
         fetchAllPages<Machine>((from, to) => supabase.from('erp_maquinas')
           .select('id,codigo,nome', { count: 'exact' })
@@ -63,6 +64,22 @@ export default function PCPAprovacaoSetup() {
   const selectedTool = tools.find(item => item.codigo === toolCode)
   const selectedMachine = machines.find(item => item.codigo === machineCode)
 
+  useEffect(() => {
+    if (!selectedTool) {
+      setStatus('APROVADO')
+      setChecks([false, false, false])
+      return
+    }
+    const raw = selectedTool.parametros?.setup_aprovacao
+    const saved = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw as Record<string, unknown> : {}
+    const rawChecklist = saved.checklist
+    const checklist = rawChecklist && typeof rawChecklist === 'object' && !Array.isArray(rawChecklist)
+      ? rawChecklist as Record<string, unknown>
+      : {}
+    setStatus(saved.status === 'RETIDO' ? 'RETIDO' : 'APROVADO')
+    setChecks([Boolean(checklist.alinhamento), Boolean(checklist.pressao_hidraulica), Boolean(checklist.temperatura)])
+  }, [selectedTool?.id, selectedTool?.parametros])
+
   const save = async (requestedStatus: SetupStatus = status) => {
     if (!companyId || !selectedTool || !selectedMachine) {
       setError('Selecione um ferramental e uma máquina válidos da empresa atual.')
@@ -79,10 +96,27 @@ export default function PCPAprovacaoSetup() {
       const auth = await supabase.auth.getUser()
       if (auth.error || !auth.data.user) throw auth.error ?? new Error('Sessão autenticada não encontrada.')
       const parameters = selectedTool.parametros ?? {}
+      const setup = parameters.setup_aprovacao && typeof parameters.setup_aprovacao === 'object'
+        ? parameters.setup_aprovacao as Record<string, unknown>
+        : {}
+      const preventive = parameters.preventiva && typeof parameters.preventiva === 'object'
+        ? parameters.preventiva as Record<string, unknown>
+        : {}
+      const preventiveRetained = preventive.status === 'RETIDO'
+      const previousOperationalStatus = typeof parameters.status_operacional_anterior === 'string'
+        ? parameters.status_operacional_anterior
+        : selectedTool.status && selectedTool.status !== 'RETIDO' ? selectedTool.status : 'ATIVA'
+      const anyRetained = requestedStatus === 'RETIDO' || preventiveRetained
+      const operationalStatus = anyRetained
+        ? 'RETIDO'
+        : selectedTool.status === 'RETIDO' ? previousOperationalStatus : selectedTool.status ?? 'ATIVA'
       const updatedParameters = {
         ...parameters,
+        status_operacional_anterior: anyRetained ? previousOperationalStatus : null,
         setup_aprovacao: {
+          ...setup,
           status: requestedStatus,
+          status_anterior: requestedStatus === 'RETIDO' ? previousOperationalStatus : null,
           maquina_id: selectedMachine.id,
           maquina_codigo: selectedMachine.codigo,
           inspecionado_em: new Date().toISOString(),
@@ -94,7 +128,7 @@ export default function PCPAprovacaoSetup() {
         },
       }
       const result = await supabase.from('erp_ferramentas_industriais')
-        .update({ parametros: updatedParameters, atualizado_por: auth.data.user.id })
+        .update({ status: operationalStatus, parametros: updatedParameters, atualizado_por: auth.data.user.id })
         .eq('id', selectedTool.id)
         .eq('empresa_id', companyId)
         .select('id')
