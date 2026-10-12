@@ -117,3 +117,5 @@
 .synqra-nfe-customer-grid>label:nth-child(10){grid-column:span 2}
 @media(max-width:1100px){.synqra-nfe-company-grid>label,.synqra-nfe-customer-grid>label{grid-column:span 2!important}.synqra-nfe-company-grid>label.wide,.synqra-nfe-customer-grid>label.wide{grid-column:span 4!important}}
 @media(max-width:700px){.synqra-nfe-id-grid input[type="datetime-local"]{font-size:9px!important}.synqra-nfe-company-grid>label,.synqra-nfe-customer-grid>label{grid-column:span 2!important}}
+
+@media(max-width:800px){.synqra-session{display:flex!important;gap:4px}.synqra-session span{display:none}.synqra-session strong{max-width:120px}.synqra-workspace-brand img{width:80px}.synqra-workspace-brand small{display:none}.synqra-header-title{display:none}}
