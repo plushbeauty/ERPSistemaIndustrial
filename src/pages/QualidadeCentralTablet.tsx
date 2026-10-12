@@ -1,34 +1,8 @@
 import { Link } from 'react-router-dom'
-import {
-  Activity, BookOpenCheck, ClipboardCheck, ClipboardList, FileCheck2, FileText,
-  Gauge, GitBranch, ListChecks, Microscope, SearchCheck, ShieldAlert, ShieldCheck,
-  Target, Wrench, Workflow,
-} from 'lucide-react'
+import { Gauge } from 'lucide-react'
+import { qualityModules } from '../features/qualidade/qualityModules'
 
-export const qualityModules = [
-  { label: 'Inspeções de lotes', description: 'Registrar amostras e resultados de inspeção.', route: '/qualidade/inspecoes', icon: ClipboardCheck },
-  { label: 'Inspeção em processo', description: 'Controlar verificações durante a produção.', route: '/qualidade/inspecao-processo', icon: Microscope },
-  { label: 'Especificações técnicas', description: 'Consultar critérios e tolerâncias vigentes.', route: '/qualidade/especificacoes', icon: FileCheck2 },
-  { label: 'Liberação de lotes', description: 'Acompanhar decisões de liberação.', route: '/qualidade/liberacao-lote', icon: ShieldCheck },
-  { label: 'Quarentena de lotes', description: 'Visualizar materiais bloqueados.', route: '/qualidade/quarentena', icon: ShieldAlert },
-  { label: 'Genealogia de lotes', description: 'Rastrear lotes e vínculos de produção.', route: '/qualidade/genealogia-lote', icon: GitBranch },
-  { label: 'Sala RNC / RPNC', description: 'Centralizar não conformidades e pendências.', route: '/qualidade/sala-rnc', icon: ClipboardList },
-  { label: 'Cadastro de RNC', description: 'Registrar e acompanhar ocorrências.', route: '/qualidade/rnc', icon: ShieldAlert },
-  { label: 'Ishikawa — causa raiz', description: 'Investigar causas pelo método 6M.', route: '/qualidade/ishikawa', icon: Workflow },
-  { label: 'Plano CAPA / 5W2H', description: 'Definir ações corretivas e preventivas.', route: '/qualidade/capa', icon: ListChecks },
-  { label: 'Metodologia 8D', description: 'Conduzir solução estruturada de problemas.', route: '/qualidade/metodologia-8d', icon: Target },
-  { label: 'FMEA / PFMEA', description: 'Analisar riscos de processo e produto.', route: '/qualidade/pfmea', icon: Activity },
-  { label: 'Documentos controlados', description: 'Acessar documentos e revisões do SGQ.', route: '/qualidade/ged-documentos', icon: FileText },
-  { label: 'Procedimentos e PDFs', description: 'Consultar procedimentos da qualidade.', route: '/qualidade/procedimentos', icon: BookOpenCheck },
-  { label: 'Lista mestre', description: 'Consultar o índice de documentos controlados.', route: '/qualidade/lista-mestre', icon: FileText },
-  { label: 'Auditoria 5S', description: 'Registrar e acompanhar auditorias de organização.', route: '/qualidade/auditoria-5s', icon: SearchCheck },
-  { label: 'CEP / cartas de controle', description: 'Acompanhar indicadores estatísticos de processo.', route: '/qualidade/cep', icon: Activity },
-  { label: 'Metrologia e calibração', description: 'Consultar instrumentos e calibrações.', route: '/qualidade/calibracao', icon: Wrench },
-  { label: 'Instrumentos de medição', description: 'Consultar instrumentos e registros de medição.', route: '/qualidade/instrumentos', icon: Gauge },
-  { label: 'Refugos da qualidade', description: 'Acompanhar registros e causas de refugo.', route: '/qualidade/refugos', icon: ShieldAlert },
-  { label: 'Editor gráfico de procedimentos', description: 'Criar e editar ITs, desenhar fluxogramas e exportar Word.', route: '/qualidade/editor-it', icon: ClipboardCheck },
-  { label: 'Relatórios do SGQ', description: 'Acessar relatórios de qualidade.', route: '/qualidade/relatorios-documentos', icon: FileText },
-] as const
+export { qualityModules } from '../features/qualidade/qualityModules'
 
 export default function QualidadeCentralTablet() {
   return (
