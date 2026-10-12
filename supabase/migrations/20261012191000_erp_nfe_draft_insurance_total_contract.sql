@@ -226,7 +226,7 @@ begin
 
   if jsonb_typeof(p_documento->'valor_produtos') is distinct from 'number'
      or jsonb_typeof(p_documento->'valor_frete') is distinct from 'number'
-     or jsonb_typeof(p_documento->'valor_seguro') is distinct from 'number'
+     or (p_documento ? 'valor_seguro' and jsonb_typeof(p_documento->'valor_seguro') is distinct from 'number')
      or jsonb_typeof(p_documento->'valor_outras_despesas') is distinct from 'number'
      or jsonb_typeof(p_documento->'valor_desconto') is distinct from 'number'
      or jsonb_typeof(p_documento->'valor_ipi') is distinct from 'number'
@@ -238,7 +238,7 @@ begin
 
   v_total_produtos := (p_documento->>'valor_produtos')::numeric;
   v_frete := (p_documento->>'valor_frete')::numeric;
-  v_seguro := (p_documento->>'valor_seguro')::numeric;
+  v_seguro := coalesce(nullif(p_documento->>'valor_seguro', '')::numeric, 0);
   v_outras_despesas := (p_documento->>'valor_outras_despesas')::numeric;
   v_desconto_documento := (p_documento->>'valor_desconto')::numeric;
   v_ipi := (p_documento->>'valor_ipi')::numeric;
