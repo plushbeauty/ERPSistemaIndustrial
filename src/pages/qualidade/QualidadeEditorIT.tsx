@@ -94,6 +94,8 @@ export default function QualidadeEditorIT() {
   const [msg, setMsg] = useState('')
   const [err, setErr] = useState('')
   const [loaded, setLoaded] = useState(false)
+  const [procedures, setProcedures] = useState<Array<{ codigo_documento: string; titulo_documento: string; revisao: number; data_homologacao: string | null; conteudo_texto: string; logo_path: string | null; setor_responsavel: string | null; status: string | null }>>([])
+  const [selectedCode, setSelectedCode] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -115,27 +117,29 @@ export default function QualidadeEditorIT() {
       }
       const empresaId = user.data.empresa_id
       const result = await supabase.from('erp_qualidade_documentos_editor')
-        .select('codigo_documento,titulo_documento,revisao,data_homologacao,conteudo_texto,logo_path,setor_responsavel')
+        .select('codigo_documento,titulo_documento,revisao,data_homologacao,conteudo_texto,logo_path,setor_responsavel,status')
         .eq('empresa_id', empresaId)
         .order('atualizado_em', { ascending: false })
-        .limit(1)
-        .maybeSingle()
       if (cancelled) return
       setEmpresa(empresaId)
       if (result.error) {
         setErr(result.error.message)
         return
       }
-      if (result.data) {
-        setCodigo(result.data.codigo_documento ?? '')
-        setTitulo(result.data.titulo_documento ?? '')
-        setRevisao(result.data.revisao ?? 0)
-        setData(result.data.data_homologacao ?? '')
-        setDepartamento(result.data.setor_responsavel ?? 'QUALIDADE')
-        setLogo(result.data.logo_path ?? '')
-        setContent(parseContent(result.data.conteudo_texto ?? ''))
-        if (result.data.logo_path) {
-          const signed = await supabase.storage.from('erp-qualidade-anexos').createSignedUrl(result.data.logo_path, 3600)
+      const rows = (result.data ?? []) as Array<{ codigo_documento: string; titulo_documento: string; revisao: number; data_homologacao: string | null; conteudo_texto: string; logo_path: string | null; setor_responsavel: string | null; status: string | null }>
+      setProcedures(rows)
+      const first = rows[0]
+      if (first) {
+        setSelectedCode(first.codigo_documento)
+        setCodigo(first.codigo_documento ?? '')
+        setTitulo(first.titulo_documento ?? '')
+        setRevisao(first.revisao ?? 0)
+        setData(first.data_homologacao ?? '')
+        setDepartamento(first.setor_responsavel ?? 'QUALIDADE')
+        setLogo(first.logo_path ?? '')
+        setContent(parseContent(first.conteudo_texto ?? ''))
+        if (first.logo_path) {
+          const signed = await supabase.storage.from('erp-qualidade-anexos').createSignedUrl(first.logo_path, 3600)
           if (!cancelled && !signed.error) setLogoUrl(signed.data.signedUrl)
         }
       }
@@ -145,6 +149,36 @@ export default function QualidadeEditorIT() {
   }, [])
 
   const documentBody = useMemo(() => serialize(content), [content])
+  const chooseProcedure = async (code: string) => {
+    setSelectedCode(code)
+    setErr('')
+    setMsg('')
+    setLogoUrl('')
+    if (!code) {
+      setCodigo('')
+      setTitulo('')
+      setRevisao(0)
+      setData('')
+      setDepartamento('QUALIDADE')
+      setLogo('')
+      setContent(emptyContent)
+      return
+    }
+    const selected = procedures.find(row => row.codigo_documento === code)
+    if (!selected) return
+    setCodigo(selected.codigo_documento)
+    setTitulo(selected.titulo_documento)
+    setRevisao(selected.revisao)
+    setData(selected.data_homologacao ?? '')
+    setDepartamento(selected.setor_responsavel ?? 'QUALIDADE')
+    setLogo(selected.logo_path ?? '')
+    setContent(parseContent(selected.conteudo_texto ?? ''))
+    if (selected.logo_path) {
+      const signed = await supabase.storage.from('erp-qualidade-anexos').createSignedUrl(selected.logo_path, 3600)
+      if (signed.error) setErr(signed.error.message)
+      else setLogoUrl(signed.data.signedUrl)
+    }
+  }
   const updateContent = (field: 'objective' | 'scope' | 'responsibilities' | 'method', value: string) => {
     setContent(current => ({ ...current, [field]: value }))
   }
@@ -208,9 +242,16 @@ export default function QualidadeEditorIT() {
       })
       if (result.error) throw result.error
       const saved = result.data as { revisao?: number; status?: string } | null
-      setRevisao(saved?.revisao ?? revisao + 1)
+      const newRevision = saved?.revisao ?? revisao + 1
+      setRevisao(newRevision)
       setData('')
-      setMsg('Revisão ' + String(saved?.revisao ?? revisao + 1) + ' salva em análise. A versão vigente permanece ativa até a aprovação no GED.')
+      setMsg('Revisão ' + String(newRevision) + ' salva em análise. A versão vigente permanece ativa até a aprovação no GED.')
+      setProcedures(current => {
+        const existing = current.find(item => item.codigo_documento === codigo.trim())
+        const next = { codigo_documento: codigo.trim(), titulo_documento: titulo.trim(), revisao: newRevision, data_homologacao: null, conteudo_texto: documentBody, logo_path: logo || existing?.logo_path || null, setor_responsavel: departamento.trim() || 'QUALIDADE', status: 'EM_REVISAO' }
+        return [next, ...current.filter(item => item.codigo_documento !== codigo.trim())]
+      })
+      setSelectedCode(codigo.trim())
     } catch (cause) {
       setErr(cause instanceof Error ? cause.message : 'Falha ao salvar a revisão do procedimento.')
     } finally { setBusy(false) }
@@ -226,8 +267,14 @@ export default function QualidadeEditorIT() {
           <div className="mr-auto">
             <p className="text-[9px] font-semibold uppercase tracking-[.14em] text-[#2D8DB8]">SGQ · Editor gráfico de procedimentos</p>
             <h1 className="text-[18px] font-semibold">Instruções de Trabalho · ISO 9001</h1>
-            <p className="text-[10px] text-slate-600">Edite o procedimento e desenhe o fluxo operacional; salve como nova revisão controlada.</p>
+            <p className="text-[10px] text-slate-600">Edite procedimentos existentes ou crie novos com fluxo operacional gráfico.</p>
           </div>
+          <label className={labelClass + ' min-w-[220px]'}>Procedimento existente
+            <select className={inputClass} value={selectedCode} onChange={event => void chooseProcedure(event.target.value)} disabled={!loaded || busy}>
+              <option value="">+ Criar novo procedimento</option>
+              {procedures.map(item => <option key={item.codigo_documento} value={item.codigo_documento}>{item.codigo_documento} — {item.titulo_documento}</option>)}
+            </select>
+          </label>
           <label className="inline-flex h-[30px] cursor-pointer items-center gap-2 border border-slate-300 bg-white px-3 text-[10px] font-semibold hover:bg-slate-50">
             <ImageUp size={13}/> LOGOTIPO
             <input hidden type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" disabled={busy} onChange={event => void uploadLogo(event)} />
