@@ -128,7 +128,7 @@ requireIn(stockLedgerRbacMigration, /create or replace function public\.erp_qual
 requireIn(stockLedgerRbacMigration, /create or replace function public\.erp_salvar_inspecao_lote[\s\S]*security definer[\s\S]*u\.auth_user_id = v_user_id[\s\S]*erp_has_permission\('qualidade', 'criar'\)/i, 'RPC de inspeção não preserva validação ao operar como SECURITY DEFINER.')
 requireIn(directFiscalMovementGuard, /begin\s*;[\s\S]*commit\s*;/i, 'Bloqueio de movimento fiscal direto deve ser transacional.');
 requireIn(directFiscalMovementGuard, /estoque_movimentacoes_block_direct_nfe_insert[\s\S]*as restrictive[\s\S]*for insert[\s\S]*with check \(tipo <> 'entrada_nf'\)/i, 'Usuário de navegador pode criar movimento de entrada NF-e sem escrituração fiscal.');
-requireIn(stockMovementGuard, /quantidade::text not in \('NaN', 'Infinity', '-Infinity'\)/i, 'Movimentação de estoque aceita valores numéricos especiais.');
+requireIn(stockMovementGuard, /new\.quantidade::text in \('NaN', 'Infinity', '-Infinity'\)/i, 'Movimentação de estoque aceita valores numéricos especiais.');
 requireIn(stockMovementGuard, /v_status <> 'liberado'[\s\S]*new\.endereco_destino_id is not null[\s\S]*v_destination_type <> 'quarentena'/i, 'Lote bloqueado pode ser movimentado para endereço fora da quarentena.');
 requireIn(stockMovementGuard, /new\.tipo = 'requisicao_producao'[\s\S]*LOTE_BLOQUEADO_OU_EM_QUARENTENA_NAO_PODE_SER_CONSUMIDO/i, 'Lote bloqueado pode ser consumido pela produção.');
 
