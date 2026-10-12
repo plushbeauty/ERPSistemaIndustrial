@@ -21,6 +21,7 @@
     "verify:build": "node scripts/verify-build.mjs",
     "verify:lazy-imports": "node scripts/verify-lazy-imports.mjs",
     "verify:nfe-contract": "node scripts/verify-nfe-contract.mjs",
+    "verify:warehouse-nfe-release": "node scripts/verify-warehouse-nfe-release.mjs",
     "audit:interactions": "node scripts/audit-interactions.mjs",
     "audit:global": "node scripts/auditoria-global.mjs",
     "audit": "npm run type-check",
