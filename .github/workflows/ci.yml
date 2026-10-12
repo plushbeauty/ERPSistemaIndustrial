@@ -93,5 +93,8 @@ jobs:
       - name: PCP OEE contract
         run: npm run verify:pcp-oee
 
+      - name: Maintenance contract
+        run: npm run verify:maintenance
+
       - name: Security no-bypass policy
         run: npm run audit:security
