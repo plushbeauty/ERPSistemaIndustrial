@@ -26,6 +26,16 @@ declare
   v_resultado text := p_resultado;
   v_observacoes text := nullif(btrim(p_observacoes), '');
   v_spec_ok boolean := false;
+  v_medicao jsonb;
+  v_parametro jsonb;
+  v_tipo_criterio text;
+  v_especificacao_id uuid;
+  v_codigo_criterio text;
+  v_nominal numeric;
+  v_tol_sup numeric;
+  v_tol_inf numeric;
+  v_valor numeric;
+  v_medicao_invalida boolean := false;
 begin
   if v_user_id is null or v_empresa_id is null then
     raise exception 'Sessão autenticada e empresa ativa são obrigatórias.' using errcode = '42501';
@@ -98,6 +108,81 @@ begin
           where nullif(m->>'especificacao_id', '')::uuid = s.id
        )
   ) into v_spec_ok;
+
+  -- Recompute acceptance on the server from the current approved specification.
+  -- Client-supplied "status: pass" and tolerance values are never authoritative.
+  for v_medicao in
+    select value from jsonb_array_elements(v_medicoes)
+  loop
+    v_especificacao_id := nullif(v_medicao->>'especificacao_id', '')::uuid;
+    v_codigo_criterio := nullif(v_medicao->>'criterio_codigo', '');
+    v_parametro := null;
+
+    if v_especificacao_id is not null and v_codigo_criterio is not null then
+      select p.parametro
+        into v_parametro
+        from public.qualidade_especificacoes s
+        cross join lateral jsonb_array_elements(s.parametros) as p(parametro)
+       where s.id = v_especificacao_id
+         and s.empresa_id = v_empresa_id
+         and s.produto_id = p_produto_id
+         and s.status = 'ativa'
+         and s.vigente_desde <= current_date
+         and (s.vigente_ate is null or s.vigente_ate >= current_date)
+         and p.parametro->>'codigo' = v_codigo_criterio
+       limit 1;
+    end if;
+
+    if v_parametro is null then
+      v_medicao_invalida := true;
+      continue;
+    end if;
+
+    v_tipo_criterio := coalesce(v_parametro->>'tipo', 'numerico');
+
+    if v_tipo_criterio = 'numerico' then
+      if nullif(v_parametro->>'nominal', '') is null
+        or nullif(v_parametro->>'tolerancia_superior', '') is null
+        or nullif(v_parametro->>'tolerancia_inferior', '') is null
+        or nullif(v_medicao->>'valor_medido', '') is null
+        or nullif(v_medicao->>'valor_nominal', '') is null
+        or nullif(v_medicao->>'tolerancia_superior', '') is null
+        or nullif(v_medicao->>'tolerancia_inferior', '') is null then
+        v_medicao_invalida := true;
+        continue;
+      end if;
+
+      v_nominal := (v_parametro->>'nominal')::numeric;
+      v_tol_sup := (v_parametro->>'tolerancia_superior')::numeric;
+      v_tol_inf := (v_parametro->>'tolerancia_inferior')::numeric;
+      v_valor := (v_medicao->>'valor_medido')::numeric;
+
+      if v_tol_sup < 0 or v_tol_inf < 0
+        or (v_medicao->>'valor_nominal')::numeric <> v_nominal
+        or (v_medicao->>'tolerancia_superior')::numeric <> v_tol_sup
+        or (v_medicao->>'tolerancia_inferior')::numeric <> v_tol_inf
+        or v_valor < v_nominal - v_tol_inf
+        or v_valor > v_nominal + v_tol_sup then
+        v_medicao_invalida := true;
+      end if;
+    elsif v_tipo_criterio = 'certificado' then
+      if nullif(btrim(v_medicao->>'numero_certificado'), '') is null
+        or coalesce(v_medicao->>'conclusao_certificado', '') <> 'conforme' then
+        v_medicao_invalida := true;
+      end if;
+    elsif nullif(btrim(v_medicao->>'evidencia_observada'), '') is null then
+      v_medicao_invalida := true;
+    end if;
+  end loop;
+
+  if v_medicao_invalida then
+    v_resultado := 'reprovado';
+    v_observacoes := left(concat_ws(
+      ' ',
+      'Bloqueio automático: medição/evidência não atende ao critério técnico vigente.',
+      v_observacoes
+    ), 4000);
+  end if;
 
   if exists (
     select 1 from jsonb_array_elements(v_medicoes) m
