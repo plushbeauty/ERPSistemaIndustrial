@@ -30,3 +30,7 @@
 - Removido do backlog o apontamento de ESLint do serializador, pois a execução mais recente confirmou sucesso. As demais entradas históricas permanecem até auditoria individual de sua resolução.
 
 - A mesma regra de integridade foi aplicada ao ambiente e à direção: valores nulos/desconhecidos não são convertidos silenciosamente para homologação/saída; o gate NF-e verifica os mapeamentos explícitos.
+
+## 2026-10-12 — Backlog de auditoria / estado verificado
+- As falhas históricas de TypeScript registradas em 07/10 foram removidas do backlog ativo após o gate TypeScript do CI #4315 concluir com sucesso. A falha histórica de ESLint já havia sido removida após CI #4284.
+- O único bloqueio ativo registrado agora é externo ao código: a API da Vercel recusou a criação do preview com HTTP 402 por limite diário de deployments; nenhum deployment novo foi criado.
