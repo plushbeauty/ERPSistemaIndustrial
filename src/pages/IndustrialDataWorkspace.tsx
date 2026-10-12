@@ -169,7 +169,7 @@ export default function IndustrialDataWorkspace() {
       for (const field of config.fields) {
         const raw=form[field.key] ?? ''
         if(field.required && !raw.trim()) throw new Error('Campo obrigatório: '+field.label)
-        if(raw.trim()!=='') payload[field.key]=parseValue(field,raw)
+        if(raw.trim()!=='') payload[field.key]=tenantScoped && field.key === 'cnpj_emitente' ? raw.replace(/\D/g, '') : parseValue(field,raw)
         else if(field.type==='number') payload[field.key]=0
       }
       setBusy(true)
