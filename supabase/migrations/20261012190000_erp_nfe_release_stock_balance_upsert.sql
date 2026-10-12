@@ -69,12 +69,12 @@ begin
 
     -- If the secondary balance row is missing, initialize it from the already
     -- decremented canonical product balance. If it exists, decrement once.
-    insert into public.erp_produto_estoque(empresa_id,produto_id,saldo_fisico)
+    insert into public.erp_produto_estoque as current_stock(empresa_id,produto_id,saldo_fisico)
     select v_empresa,p.id,greatest(coalesce(p.estoque_atual,0),0)
     from public.erp_produtos p
     where p.id=v_item.produto_id and p.empresa_id=v_empresa and p.ativo=true
     on conflict (empresa_id,produto_id) do update
-      set saldo_fisico=greatest(coalesce(public.erp_produto_estoque.saldo_fisico,0)-v_item.quantidade,0),
+      set saldo_fisico=greatest(coalesce(current_stock.saldo_fisico,0)-v_item.quantidade,0),
           updated_at=now();
 
     insert into public.erp_estoque_movimentos(
