@@ -19,9 +19,9 @@ type Supplier={id:string;codigo:string|null;razao_social:string;nome_fantasia:st
 type Purchase={fornecedor_id:string;status:string|null;data_prevista:string|null}
 type Form={codigo:string;razao_social:string;nome_fantasia:string;documento:string;email:string;telefone:string;endereco:string;cidade:string;estado:string;contato:string;iso_9001_certificado:boolean;iso_certificado_validade:string;iso_certificado_numero:string;observacoes:string}
 const empty:Form={codigo:'',razao_social:'',nome_fantasia:'',documento:'',email:'',telefone:'',endereco:'',cidade:'',estado:'',contato:'',iso_9001_certificado:false,iso_certificado_validade:'',iso_certificado_numero:'',observacoes:''}
-const input:React.CSSProperties={width:'100%',height:28,border:'1px solid #b9c9d4',borderRadius:2,padding:'0 6px',boxSizing:'border-box',background:'#fff',color:'#111827',fontSize:9}
-const label:React.CSSProperties={display:'grid',gap:1,fontSize:8,fontWeight:500,textTransform:'uppercase',color:'#344054'}
-const panel:React.CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2}
+const input:React.CSSProperties={width:'100%',height:30,border:'1px solid #b9c9d4',borderRadius:2,padding:'0 7px',boxSizing:'border-box',background:'#fff',color:'#123B50',fontSize:11}
+const label:React.CSSProperties={display:'grid',gap:2,minWidth:0,fontSize:9,lineHeight:'11px',fontWeight:600,textTransform:'uppercase',color:'#315466'}
+const panel:React.CSSProperties={background:'#fff',border:'1px solid #b9d4df',borderRadius:2}
 const button=(kind:'primary'|'normal'|'danger'|'disabled'):React.CSSProperties=>({height:30,display:'inline-flex',alignItems:'center',justifyContent:'center',gap:5,border:'1px solid '+(kind==='primary'?'#2D8DB8':kind==='danger'?'#d65b61':'#b9c9d4'),borderRadius:2,padding:'0 8px',fontSize:9,fontWeight:600,cursor:kind==='disabled'?'not-allowed':'pointer',background:kind==='primary'?'#2D8DB8':kind==='danger'?'#fff5f5':'#fff',color:kind==='primary'?'#fff':kind==='danger'?'#b42318':'#123B50',opacity:kind==='disabled'?0.5:1})
 const today=()=>new Date().toISOString().slice(0,10)
 const digits=(value:string)=>value.replace(/\D/g,'')
@@ -45,9 +45,9 @@ export default function FornecedoresIndustrial(){
  const print=()=>window.print()
  return <VendasLayout title="Fornecedores" subtitle="Cadastro, qualificação e acompanhamento de entrega" onRefresh={()=>void load()}>
   <main style={{minHeight:'100vh',background:'#F4FBFD',color:'#111827',padding:10,boxSizing:'border-box'}}>
-   <section style={{...panel,padding:9,marginBottom:7}}>
+   <section style={{...panel,padding:9,marginBottom:7,background:'#123B50',border:'1px solid #0e3445'}}>
     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,flexWrap:'wrap'}}>
-      <div><div style={{fontSize:9,color:'#2D8DB8',fontWeight:700}}>COMPRAS • CADASTRO MESTRE</div><h1 style={{margin:'2px 0',fontSize:16,color:'#123B50',fontWeight:600}}>Fornecedores</h1><div style={{fontSize:9,color:'#667085'}}>Cadastro, qualificação, documentos e desempenho de entrega.</div></div>
+      <div><div style={{fontSize:9,color:'#E6A34A',fontWeight:800,letterSpacing:'.08em'}}>COMPRAS • CADASTRO MESTRE</div><h1 style={{margin:'2px 0',fontSize:16,color:'#fff',fontWeight:600}}>Fornecedores</h1><div style={{fontSize:9,color:'#D9EAF0'}}>Cadastro, qualificação, documentos e desempenho de entrega.</div></div>
       <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
        <button type="button" style={button('primary')} onClick={openNew}><Plus size={12}/>NOVO</button>
        <button type="button" className="erp-edit-button" style={button(selected?'normal':'disabled')} disabled={!selected} onClick={openEdit}><Pencil size={12}/>EDITAR</button>
@@ -64,7 +64,7 @@ export default function FornecedoresIndustrial(){
     <button type="button" style={button('normal')} onClick={()=>{setQuery('');setStatusFilter('')}}>LIMPAR FILTRO</button>
    </section>}
    <form onSubmit={save} style={{...panel,padding:9,marginBottom:7}}>
-    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:7}}><div><div style={{fontSize:9,color:'#2D8DB8',fontWeight:700}}>CADASTRO DE FORNECEDOR</div><div style={{fontSize:13,color:'#123B50',fontWeight:600}}>{editing?'Editar fornecedor':'Novo fornecedor'}</div></div><div style={{fontSize:9,color:'#667085'}}>O formulário permanece fixo para manter o DBGrid visível.</div></div>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:7,borderBottom:'1px solid #d5e4e9',paddingBottom:6}}><div><div style={{fontSize:9,color:'#087F8C',fontWeight:800,letterSpacing:'.08em'}}>CADASTRO DE FORNECEDOR</div><div style={{fontSize:13,color:'#123B50',fontWeight:700}}>{editing?'Editar fornecedor':'Novo fornecedor'}</div></div><div style={{fontSize:9,color:'#667085'}}>O formulário permanece fixo para manter o DBGrid visível.</div></div>
     <div style={{display:'grid',gridTemplateColumns:'90px minmax(180px,1.5fr) minmax(150px,1fr) 150px 190px 125px',gap:7}}>
       <label style={label}>CÓDIGO<input style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}} value={form.codigo} onChange={e=>setForm({...form,codigo:e.target.value})}/></label>
       <label style={label}>RAZÃO SOCIAL *<input required style={input} value={form.razao_social} onChange={e=>setForm({...form,razao_social:e.target.value})}/></label>
