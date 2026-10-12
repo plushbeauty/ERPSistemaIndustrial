@@ -115,7 +115,7 @@ function mapStatus(value: string | null): NFeStoredDocument['status'] {
     case 'erro':
       return 'erro';
     default:
-      return 'rascunho';
+      throw new Error(`Status fiscal não reconhecido: ${value ?? '(nulo)'}.`);
   }
 }
 
