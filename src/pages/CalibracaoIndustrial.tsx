@@ -347,7 +347,6 @@ export default function CalibracaoIndustrial() {
   const textField = (title: string, value: string, onChange: (value: string) => void, type = 'text', placeholder = '') => (
     <label className={labelClass}>{title}<input type={type} value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder} className={inputClass} /></label>
   )
-  const numberField = (title: string, value: string, onChange: (value: string) => void, step = 'any') => textField(title, value, onChange, 'number', step === 'any' ? '' : '—')
   const equipmentText = (title: string, key: Exclude<keyof EquipmentForm, 'certificado_rbc'>, type = 'text') => textField(title, equipmentForm[key], value => setEquipmentField(key, value), type)
   const calibrationText = (title: string, key: Exclude<keyof CalibrationForm, 'certificado_rbc'>, type = 'text') => textField(title, calibrationForm[key], value => setCalibrationField(key, value), type)
 
