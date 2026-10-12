@@ -260,7 +260,7 @@ export default function NFeEmissaoCompact() {
     }
   }, [items, form])
 
-  const totalNota = totals.produtos + totals.frete + totals.seguro + totals.outras + totals.ipi + totals.pis + totals.cofins
+  const totalNota = totals.produtos + totals.frete + totals.seguro + totals.outras + totals.ipi + numberValue(field(form, 'valorIcmsSt'))
 
   const selectProduct = (itemId: string, productId: string) => {
     const product = products.find(candidate => String(candidate.id) === productId)
@@ -323,8 +323,8 @@ export default function NFeEmissaoCompact() {
         transportadora: field(form, 'transportadora') || null, placa: field(form, 'placa') || null,
         uf_transportadora: field(form, 'ufPlaca') || null, peso_liquido: numberValue(field(form, 'pesoLiquido')),
         peso_bruto: numberValue(field(form, 'pesoBruto')), volumes: numberValue(field(form, 'volumes')),
-        valor_produtos: totals.produtos, valor_frete: totals.frete, valor_outras_despesas: totals.outras,
-        valor_desconto: totals.desconto, base_calculo_icms: numberValue(field(form, 'baseIcms')),
+        valor_produtos: totals.produtos, valor_frete: totals.frete, valor_seguro: totals.seguro, valor_outras_despesas: totals.outras,
+        valor_desconto: 0, base_calculo_icms: numberValue(field(form, 'baseIcms')),
         valor_icms: numberValue(field(form, 'valorIcms')), base_icms_st: numberValue(field(form, 'baseIcmsSt')),
         valor_icms_st: numberValue(field(form, 'valorIcmsSt')), valor_ipi: totals.ipi, valor_pis: totals.pis,
         valor_cofins: totals.cofins, valor_total: totalNota, valor_liquido: totalNota,
