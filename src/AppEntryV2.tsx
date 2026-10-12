@@ -338,7 +338,9 @@ export default function AppEntryV2() {
 }
 
 function ComprasRoute({ children }: { children: ReactNode }) {
-  return <div className="compras-compact">{children}</div>
+  // REVISAO GLOBAL: todas as rotas de Compras devem herdar o cabeçalho e menu fixos compartilhados.
+  // ALERTA DE REGRESSAO: nao remover este shell nem envolver Compras com um segundo shell.
+  return <ERPHorizontalShell><div className="compras-compact">{children}</div></ERPHorizontalShell>
 }
 
 function PublicPage({ children }: { children: ReactNode }) {
