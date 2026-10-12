@@ -47,10 +47,14 @@ export async function getValidSession(minValiditySeconds = 60): Promise<Session>
 
   if (session?.refresh_token && (!expiresAt || expiresAt * 1000 - Date.now() < minValiditySeconds * 1000)) {
     const refreshed = await supabase.auth.refreshSession()
-    if (!refreshed.error && refreshed.data.session) session = refreshed.data.session
+    if (refreshed.error) throw new Error('AUTH_SESSION_REFRESH_FAILED')
+    if (!refreshed.data.session) throw new Error('AUTH_SESSION_REFRESH_FAILED')
+    session = refreshed.data.session
   }
 
   if (!session?.access_token || !session.user) throw new Error('AUTH_SESSION_REQUIRED')
+  const finalExpiresAt = Number(session.expires_at ?? 0)
+  if (finalExpiresAt > 0 && finalExpiresAt * 1000 <= Date.now()) throw new Error('AUTH_SESSION_EXPIRED')
   return session
 }
 
