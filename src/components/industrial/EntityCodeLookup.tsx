@@ -59,7 +59,11 @@ export default function EntityCodeLookup({
 
   const resolve = (raw = typedCode) => {
     const code = raw.trim().toLowerCase()
-    if (!code) return
+    if (!code) {
+      onChange('')
+      onSelect({ id: '', codigo: '', nome: null })
+      return
+    }
     const hit = records.find(record => String(record.codigo ?? '').trim().toLowerCase() === code)
     if (!hit) {
       onChange(raw.trim())
