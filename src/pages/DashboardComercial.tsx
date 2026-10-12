@@ -227,9 +227,9 @@ export default function DashboardComercial() {
 
       <div className="space-y-2 text-[11px]">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-          <Kpi label="Faturamento no ano" value={brl(totals.faturamento)} />
-          <Kpi label="Meta anual" value={brl(totals.meta)} />
-          <Kpi label="Pedidos" value={totals.pedidos} />
+          <Kpi label="Faturamento no ano" value={brl(totals.faturamento)} tone="blue" />
+          <Kpi label="Meta anual" value={brl(totals.meta)} tone="amber" />
+          <Kpi label="Pedidos" value={totals.pedidos} tone="teal" />
                   </div>
 
         <div className="grid min-w-0 gap-2">
@@ -341,10 +341,15 @@ export default function DashboardComercial() {
   )
 }
 
-function Kpi({ label, value }: { label: string; value: string | number }) {
-  return <div className="border border-slate-300 bg-white p-2"><div className="text-[9px] uppercase text-slate-500">{label}</div><div className="mt-1 text-[15px] font-semibold text-[#123B50]">{value}</div></div>
+function Kpi({ label, value, tone }: { label: string; value: string | number; tone: 'blue' | 'amber' | 'teal' }) {
+  const palette = {
+    blue: { background: '#123B50', border: '#2D8DB8', label: '#D9F1F7', value: '#FFFFFF' },
+    amber: { background: '#E6A34A', border: '#B87925', label: '#123B50', value: '#123B50' },
+    teal: { background: '#087F8C', border: '#075F68', label: '#D8F6F6', value: '#FFFFFF' },
+  }[tone]
+  return <div style={{ minHeight: 58, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4, border: '1px solid ' + palette.border, borderLeft: '4px solid ' + palette.border, borderRadius: 2, background: palette.background, padding: '7px 10px', boxSizing: 'border-box' }}><div style={{ color: palette.label, fontSize: 9, lineHeight: '11px', fontWeight: 700, letterSpacing: '.07em', textTransform: 'uppercase' }}>{label}</div><div style={{ color: palette.value, fontSize: 18, lineHeight: '20px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere' }}>{value}</div></div>
 }
 
 function ChartCard({ title, onPrint, className = '', children }: { title: string; onPrint: () => void; className?: string; children: ReactNode }) {
-  return <section className={`border border-slate-300 bg-white ${className}`}><div className="flex items-center justify-between border-b bg-[#F4F7FE] px-2 py-1.5"><b className="text-[10px] uppercase">{title}</b><button type="button" title="Imprimir relatório deste gráfico" onClick={onPrint} className="no-print flex items-center gap-1 border px-1.5 py-1 text-[9px]"><Printer size={12}/>IMPRIMIR</button></div>{children}</section>
+  return <section className={`border border-[#B9D4DF] bg-white ${className}`} style={{ borderRadius: 2, overflow: 'hidden', boxShadow: '0 1px 4px rgba(18,59,80,.07)' }}><div className="flex items-center justify-between border-b border-[#E6A34A] bg-[#123B50] px-2 py-1.5" style={{ minHeight: 32, color: '#fff' }}><b className="text-[10px] uppercase tracking-wide" style={{ color: '#fff', fontWeight: 700 }}>{title}</b><button type="button" title="Imprimir relatório deste gráfico" onClick={onPrint} className="no-print flex h-[26px] items-center gap-1 border border-[#E6A34A] bg-[#E6A34A] px-1.5 py-1 text-[9px] font-semibold" style={{ color: '#123B50', borderRadius: 2 }}><Printer size={12}/>IMPRIMIR</button></div>{children}</section>
 }
