@@ -14,3 +14,8 @@
 - `EstoqueAlmoxarifadoCompact.tsx` preserva o fluxo transacional real de estoque e foi ajustado para geometria compacta; o cabeçalho unificado continua sendo fornecido por `VendasLayout` → `ERPHeader`.
 - `scripts/auditoria-brutal.mjs` passou a reconhecer corretamente o `AccessGate` real de `AppBootstrap` e delimitou marcadores falsos por palavra, evitando classificar valores como `todos` como `TODO`.
 - `BalancoEstoque.tsx` e `PainelOrdensProducao.tsx` passaram a resolver `erp_current_empresa_id()` antes das consultas e aplicar `empresa_id` explicitamente.
+
+## 2026-10-12 — NF-e / recuperação do gate de TypeScript
+- O CI do PR #80 no commit `70229223` falhou em `src/pages/NFeEmissao.tsx` por CSS de impressão inserido fora do template JSX: erros em cascata iniciando na linha 748.
+- O template foi corrigido no commit `94aef1455e0f52acbf0d198ee6d0ab7cad29ee06`; a execução GitHub Actions #4250 terminou com conclusão `success`.
+- Criado `src/lib/fiscal/nfe-xml-builder.ts` como serializador XML interno tipado de rascunho, com escape XML e remoção de caracteres inválidos XML 1.0. O resultado declara explicitamente `suitableForSefaz: false`; não é XML fiscal XSD, não é assinado e não pode ser transmitido diretamente.
