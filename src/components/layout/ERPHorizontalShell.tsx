@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, ClipboardCheck } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { qualityModules } from '../../pages/QualidadeCentralTablet'
+import { qualityModules } from '../../features/qualidade/qualityModules'
 import { supabase } from '../../lib/supabaseClient'
 
 type MenuItem = {
