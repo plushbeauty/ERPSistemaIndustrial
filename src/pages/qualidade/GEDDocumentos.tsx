@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { useParams } from 'react-router-dom'
 import { CircleHelp, ExternalLink, FilePlus2, FileText, History, Paperclip, RefreshCw, Save, Search, ShieldCheck, Upload, X } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
-import QualitySidebar from '../../components/quality/QualitySidebar'
+import ERPHorizontalShell from '../../components/layout/ERPHorizontalShell'
 
 type Revision = {
   id: string
@@ -283,7 +283,7 @@ export default function GEDDocumentos() {
   const activeDoc = selected ?? (codigo ? revisions.find(row => row.codigo_documento === codigo) ?? null : null)
   const history = revisions.filter(row => row.codigo_documento === (selected?.codigo_documento ?? codigo)).sort((a, b) => b.revisao - a.revisao)
 
-  return <main className="min-h-screen bg-[#F4FBFD] text-neutral-800"><div className="mx-auto max-w-[1800px] space-y-3 p-3"><QualitySidebar active="/qualidade/ged-documentos" />
+  return <ERPHorizontalShell><main className="min-h-screen bg-[#F4FBFD] text-neutral-800"><div className="mx-auto max-w-[1800px] space-y-3 p-3">
     <div className="min-h-[calc(100vh-96px)] bg-[#F7F9FC] text-neutral-800">
       <div className="flex h-[42px] items-center justify-between border-b border-neutral-200 bg-white px-3">
         <div className="flex min-w-0 items-center gap-2">
@@ -304,7 +304,7 @@ export default function GEDDocumentos() {
       {helpOpen && <section aria-label="Ajuda do controle documental" className="mx-3 mt-3 border border-sky-200 bg-sky-50 px-3 py-3 text-[10px] leading-5 text-slate-700">
         <div className="flex items-start justify-between gap-3"><div><h2 className="font-bold text-[#123B50]">Como usar o GED</h2><p>1. Pesquise e selecione um documento na árvore. 2. Confira código, título e departamento. 3. Para alterar um documento controlado, informe o motivo e salve uma nova revisão. 4. A revisão precisa ser aprovada antes de entrar em vigor. Use imprimir para gerar uma cópia da tela; a distribuição controlada de cópias deve ser registrada no controle documental.</p><p className="mt-1 text-slate-600">Não substitua uma especificação aprovada apenas alterando o texto: registre a mudança e valide a revisão antes de liberar para uso.</p></div><button type="button" aria-label="Fechar ajuda" onClick={() => setHelpOpen(false)} className="shrink-0 p-1 text-slate-500 hover:bg-white"><X size={14}/></button></div>
       </section>}
-      <div className="grid min-h-[calc(100vh-138px)] grid-cols-1 xl:grid-cols-[300px_minmax(420px,1fr)_260px]">
+      <div className="grid min-h-[calc(100vh-138px)] grid-cols-1 xl:grid-cols-[minmax(280px,320px)_minmax(0,1fr)_minmax(220px,260px)]">
         <aside className="flex min-h-0 flex-col border-b border-neutral-200 bg-neutral-50/80 xl:border-b-0 xl:border-r xl:border-neutral-200/70">
           <div className="flex h-[44px] items-center justify-between px-3">
             <span className="text-[9px] font-bold uppercase tracking-[.13em] text-neutral-500">ÁRVORE DE DOCUMENTOS</span>
@@ -432,5 +432,5 @@ export default function GEDDocumentos() {
         </aside>
       </div>
     </div>
-  </div></main>
+  </div></main></ERPHorizontalShell>
 }

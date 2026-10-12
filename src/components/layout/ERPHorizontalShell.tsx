@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, FolderGit2, LineChart, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, ClipboardCheck } from 'lucide-react'
+import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -59,24 +59,7 @@ const menus: MenuItem[] = [
       { label: 'Pintura / Química', route: '/pcp/fichas-processo?tipo=PINTURA_QUIMICA' },
     ] },
   ] },
-  { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
-    { label: 'Visão geral do SGQ', route: '/qualidade' },
-    { label: 'Inspeções operacionais', route: '/qualidade/inspecoes' },
-    { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
-    { label: 'Controle de Processo — Injetora', route: '/qualidade/controle-injetora', icon: Factory },
-    { label: 'Não conformidades (RPNC)', route: '/qualidade/rnc', icon: ClipboardCheck, children: [
-      { label: 'Sala de RNC / RPNC', route: '/qualidade/sala-rnc', icon: ClipboardCheck },
-      { label: 'Cadastro de RPNC', route: '/qualidade/rnc' },
-      { label: 'Espinha de Peixe — Ishikawa 6M', route: '/qualidade/ishikawa' },
-      { label: 'Ações corretivas / CAPA 5W2H', route: '/qualidade/capa' },
-      { label: 'Metodologia 8D', route: '/qualidade/metodologia-8d' },
-    ] },
-    { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
-    { label: 'FMEA / PFMEA', route: '/qualidade/fmea' },
-    { label: 'Controle Documental GED', route: '/qualidade/ged-documentos', icon: FolderGit2 },
-    { label: 'Cartas de Controle CEP', route: '/qualidade/cep', icon: LineChart },
-    { label: 'Instrumentos / Metrologia', route: '/qualidade/instrumentos' },
-  ] },
+  { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench },
   { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
@@ -156,7 +139,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     <div className="erp-horizontal-shell" ref={ref}>
       <header className="erp-horizontal-header">
         <button className="erp-horizontal-brand" type="button" onClick={() => go('/erp-industrial')} title="Início">
-          <img src="/logo/sgq-erp.png" alt="SGQERP Industrial" />
+          <img src="/logo/sgq-erp.png" alt="SGQERP Industrial" className="h-[34px] w-[156px] min-w-[156px] object-contain object-left" />
           <strong>SGQERP INDUSTRIAL</strong>
         </button>
 
@@ -198,7 +181,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             <button
               type="button"
               className={`erp-horizontal-menu-button ${active ? 'is-active' : ''}`}
-              onClick={() => hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)}
+              onClick={() => menu.label === 'Gestão da Qualidade' ? go('/qualidade') : hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)}
               aria-expanded={hasChildren ? expanded : undefined}
             >
               {menu.icon && <menu.icon size={16} />}{menu.label}
@@ -246,7 +229,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         @media print{ @page{size:A4;margin:12mm} .erp-horizontal-header,.erp-horizontal-menu,.erp-global-status-row,.print-hidden,.erp-horizontal-help{display:none!important} .erp-horizontal-shell,.erp-horizontal-workspace{min-height:0!important;background:#fff!important;padding:0!important} .erp-horizontal-workspace *{box-shadow:none!important;backdrop-filter:none!important} thead{display:table-header-group} tr{break-inside:avoid} }
         .erp-horizontal-header{height:46px;display:flex;align-items:center;gap:12px;padding:0 10px;background:linear-gradient(90deg,#123b50 0%,#17445a 45%,#236f93 100%);border-bottom:1px solid #0e3445;box-sizing:border-box}
         .erp-horizontal-brand{height:34px;display:flex;align-items:center;gap:8px;border:0;background:transparent;color:#fff;cursor:pointer;padding:0 6px;white-space:nowrap}
-        .erp-horizontal-brand img{height:30px;width:auto;object-fit:contain}
+        .erp-horizontal-brand img{height:34px;width:156px;min-width:156px;object-fit:contain;object-position:left}
         .erp-horizontal-brand strong{font-size:13px;font-weight:700;letter-spacing:.01em}
         .erp-horizontal-search{position:relative;display:flex;align-items:center;gap:6px;width:min(390px,34vw);height:30px;margin-left:auto;min-width:220px;border:1px solid #b9cbd3;background:#fff;border-radius:2px;padding:0 8px;box-sizing:border-box}
         .erp-horizontal-search input{border:0;outline:0;min-width:0;max-width:100%;width:100%;height:28px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#173b4a;background:transparent}

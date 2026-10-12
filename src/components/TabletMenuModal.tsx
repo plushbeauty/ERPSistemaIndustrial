@@ -1,9 +1,4 @@
-import {
-  Activity, AlertTriangle, BarChart3, Bell, Building2, CalendarCheck, CheckSquare,
-  ClipboardX, FileSpreadsheet, FileText, Gauge, GitFork, GraduationCap, History,
-  LayoutDashboard, Lock, Paperclip, SearchCode, ShieldAlert, ShieldCheck,
-  SlidersHorizontal, Tablet, Truck, X,
-} from 'lucide-react'
+import { Activity, BookOpenCheck, ClipboardCheck, ClipboardList, FileCheck2, FileText, Gauge, GitBranch, ListChecks, Microscope, SearchCheck, ShieldAlert, ShieldCheck, Tablet, Target, Workflow, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
@@ -26,28 +21,28 @@ export type TabletMenuModalProps = {
 }
 
 const modules: readonly TabletMenuModule[] = [
-  { key: 'acesso', number: 'M01', label: 'ACESSO', description: 'Autenticação e controle de entrada no SGQ.', icon: Lock },
-  { key: 'organizacoes', number: 'M02', label: 'ORGANIZAÇÕES', description: 'Empresas e organizações do ambiente SGQ.', route: '/configuracoes-adm/empresa', permission: 'users.read', icon: Building2 },
-  { key: 'permissoes', number: 'M03', label: 'PERMISSÕES', description: 'Perfis, funções e permissões administrativas.', route: '/configuracoes-adm/permissoes', permission: 'users.read', icon: ShieldCheck },
-  { key: 'dashboard', number: 'M04', label: 'DASHBOARD', description: 'Visão consolidada dos indicadores e pendências.', route: '/erp-industrial', icon: LayoutDashboard },
-  { key: 'ocorrencias', number: 'M05', label: 'OCORRÊNCIAS', description: 'Registro e acompanhamento de ocorrências da qualidade.', route: '/qualidade/rnc', permission: 'audit.read', icon: AlertTriangle },
-  { key: 'nao-conformidades', number: 'M06', label: 'NÃO CONF.', description: 'Não conformidades, tratamento e rastreabilidade.', route: '/qualidade/rnc', permission: 'audit.read', icon: ClipboardX },
-  { key: 'acoes-5w2h', number: 'M07', label: 'AÇÕES 5W2H', description: 'Planos de ação e acompanhamento estruturado.', route: '/qualidade/metodologia-8d', permission: 'audit.read', icon: CalendarCheck },
-  { key: 'causa-raiz', number: 'M08', label: 'CAUSA RAIZ', description: 'Análise de causas e investigação estruturada.', route: '/qualidade/metodologia-8d', permission: 'audit.read', icon: GitFork },
-  { key: 'evidencias', number: 'M09', label: 'EVIDÊNCIAS', description: 'Arquivos, registros e evidências vinculadas aos processos.', route: '/documentos-qualidade', permission: 'audit.read', icon: Paperclip },
-  { key: 'aprovacoes', number: 'M10', label: 'APROVAÇÕES', description: 'Fluxos de aprovação e validação de registros.', route: '/configuracoes-adm', icon: CheckSquare },
-  { key: 'eficacia', number: 'M11', label: 'EFICÁCIA', description: 'Verificação da eficácia das ações implementadas.', route: '/qualidade/rnc', permission: 'audit.read', icon: Activity },
-  { key: 'notificacoes', number: 'M12', label: 'NOTIFICAÇÕES', description: 'Central de notificações específica não possui rota operacional comprovada.', icon: Bell },
-  { key: 'auditorias', number: 'M13', label: 'AUDITORIAS', description: 'Auditorias, verificações e registros de evidência.', route: '/qualidade/auditoria-5s', permission: 'audit.read', icon: SearchCode },
-  { key: 'documentos', number: 'M14', label: 'DOCUMENTOS', description: 'Documentos controlados e registros do SGQ.', route: '/qualidade/documentos', permission: 'audit.read', icon: FileText },
-  { key: 'indicadores', number: 'M15', label: 'INDICADORES', description: 'Indicadores operacionais e desempenho da qualidade.', route: '/pcp/dashboard-oee', permission: 'reports.read', icon: BarChart3 },
-  { key: 'riscos', number: 'M16', label: 'RISCOS', description: 'Identificação, análise e acompanhamento de riscos.', route: '/qualidade/pfmea', permission: 'audit.read', icon: ShieldAlert },
-  { key: 'fornecedores', number: 'M17', label: 'FORNECEDORES', description: 'Cadastro e acompanhamento de fornecedores.', route: '/fornecedores', permission: 'purchases.read', icon: Truck },
-  { key: 'treinamentos', number: 'M18', label: 'TREINAMENTOS', description: 'Treinamentos, capacitação e registros de competência.', route: '/rh', permission: 'users.read', icon: GraduationCap },
-  { key: 'calibracao', number: 'M19', label: 'CALIBRAÇÃO', description: 'Instrumentos, calibrações e vencimentos metrológicos.', route: '/qualidade/calibracao', permission: 'audit.read', icon: Gauge },
-  { key: 'relatorios', number: 'M20', label: 'RELATÓRIOS', description: 'Relatórios e consolidações documentais da qualidade.', route: '/qualidade/relatorios-documentos', permission: 'reports.read', icon: FileSpreadsheet },
-  { key: 'configuracoes', number: 'M21', label: 'CONFIGURAÇÕES', description: 'Parâmetros e configuração administrativa do SGQ.', route: '/configuracoes-adm', permission: 'users.read', icon: SlidersHorizontal },
-  { key: 'auditoria-sistema', number: 'M22', label: 'AUDITORIA SIST.', description: 'Histórico e trilha de auditoria do sistema.', route: '/admin/logs', permission: 'audit.read', icon: History },
+  { key: 'inspecoes', number: 'M01', label: 'INSPEÇÕES DE LOTES', description: 'Registrar amostras e resultados de inspeção.', route: '/qualidade/inspecoes', icon: ClipboardCheck, permission: 'audit.read' },
+  { key: 'inspecao-processo', number: 'M02', label: 'INSPEÇÃO EM PROCESSO', description: 'Controlar verificações durante a produção.', route: '/qualidade/inspecao-processo', icon: Microscope, permission: 'audit.read' },
+  { key: 'especificacoes', number: 'M03', label: 'ESPECIFICAÇÕES TÉCNICAS', description: 'Consultar critérios e tolerâncias vigentes.', route: '/qualidade/especificacoes', icon: FileCheck2, permission: 'audit.read' },
+  { key: 'liberacao-lotes', number: 'M04', label: 'LIBERAÇÃO DE LOTES', description: 'Acompanhar decisões de liberação.', route: '/qualidade/liberacao-lote', icon: ShieldCheck, permission: 'audit.read' },
+  { key: 'quarentena', number: 'M05', label: 'QUARENTENA DE LOTES', description: 'Visualizar materiais em quarentena.', route: '/qualidade/quarentena', icon: ShieldAlert, permission: 'audit.read' },
+  { key: 'genealogia', number: 'M06', label: 'GENEALOGIA DE LOTES', description: 'Rastrear lotes e vínculos de produção.', route: '/qualidade/genealogia-lote', icon: GitBranch, permission: 'audit.read' },
+  { key: 'sala-rnc', number: 'M07', label: 'SALA RNC / RPNC', description: 'Centralizar não conformidades e pendências.', route: '/qualidade/sala-rnc', icon: ClipboardList, permission: 'audit.read' },
+  { key: 'cadastro-rnc', number: 'M08', label: 'CADASTRO DE RNC', description: 'Registrar e acompanhar ocorrências.', route: '/qualidade/rnc', icon: ShieldAlert, permission: 'audit.read' },
+  { key: 'ishikawa', number: 'M09', label: 'ISHIKAWA — CAUSA RAIZ', description: 'Investigar causas pelo método 6M.', route: '/qualidade/ishikawa', icon: Workflow, permission: 'audit.read' },
+  { key: 'capa', number: 'M10', label: 'PLANO CAPA / 5W2H', description: 'Definir e acompanhar ações corretivas e preventivas.', route: '/qualidade/capa', icon: ListChecks, permission: 'audit.read' },
+  { key: 'metodologia-8d', number: 'M11', label: 'METODOLOGIA 8D', description: 'Conduzir solução estruturada de problemas.', route: '/qualidade/metodologia-8d', icon: Target, permission: 'audit.read' },
+  { key: 'pfmea', number: 'M12', label: 'FMEA / PFMEA', description: 'Analisar riscos de processo e produto.', route: '/qualidade/pfmea', icon: Activity, permission: 'audit.read' },
+  { key: 'ged', number: 'M13', label: 'DOCUMENTOS CONTROLADOS', description: 'Acessar documentos controlados, anexos e revisões do SGQ.', route: '/qualidade/ged-documentos', icon: FileText, permission: 'audit.read' },
+  { key: 'procedimentos', number: 'M14', label: 'PROCEDIMENTOS E PDFS', description: 'Consultar procedimentos da qualidade.', route: '/qualidade/procedimentos', icon: BookOpenCheck, permission: 'audit.read' },
+  { key: 'lista-mestre', number: 'M15', label: 'LISTA MESTRE', description: 'Consultar o índice de documentos controlados.', route: '/qualidade/lista-mestre', icon: FileText, permission: 'audit.read' },
+  { key: 'auditoria-5s', number: 'M16', label: 'AUDITORIA 5S', description: 'Registrar e acompanhar auditorias de organização.', route: '/qualidade/auditoria-5s', icon: SearchCheck, permission: 'audit.read' },
+  { key: 'cep', number: 'M17', label: 'CEP / CARTAS DE CONTROLE', description: 'Acompanhar indicadores estatísticos de processo.', route: '/qualidade/cep', icon: Activity, permission: 'audit.read' },
+  { key: 'calibracao', number: 'M18', label: 'METROLOGIA E CALIBRAÇÃO', description: 'Consultar instrumentos e calibrações.', route: '/qualidade/calibracao', icon: Gauge, permission: 'audit.read' },
+  { key: 'instrumentos', number: 'M19', label: 'INSTRUMENTOS DE MEDIÇÃO', description: 'Consultar instrumentos e registros de medição.', route: '/qualidade/instrumentos', icon: Gauge, permission: 'audit.read' },
+  { key: 'refugos', number: 'M20', label: 'REFUGOS DA QUALIDADE', description: 'Acompanhar registros e causas de refugo.', route: '/qualidade/refugos', icon: ShieldAlert, permission: 'audit.read' },
+  { key: 'editor-it', number: 'M21', label: 'INSTRUÇÕES DE TRABALHO', description: 'Criar e consultar instruções de trabalho.', route: '/qualidade/editor-it', icon: ClipboardCheck, permission: 'audit.read' },
+  { key: 'relatorios', number: 'M22', label: 'RELATÓRIOS DO SGQ', description: 'Acessar relatórios da qualidade.', route: '/qualidade/relatorios-documentos', icon: FileText, permission: 'reports.read' },
 ]
 
 export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletMenuModalProps) {
@@ -58,6 +53,9 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
   useEffect(() => {
     if (!isOpen) return
     let alive = true
+    setPermissions(new Set())
+    setAccessReady(false)
+    setAccessError('')
     void (async () => {
       try {
         const auth = await supabase.auth.getUser()
@@ -120,7 +118,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
       onMouseDown={onClose}
     >
       <section
-        className="max-h-[calc(100vh-24px)] w-full max-w-[1180px] overflow-auto rounded-[2px] border border-slate-600 bg-[#1e222b] p-3 text-white shadow-[0_30px_90px_rgba(2,6,23,0.48)] sm:max-h-[calc(100vh-36px)] sm:p-4"
+        className="max-h-[calc(100vh-24px)] w-full max-w-[900px] overflow-auto rounded-[2px] border border-slate-600 bg-[#1e222b] p-3 text-white shadow-[0_30px_90px_rgba(2,6,23,0.48)] sm:max-h-[calc(100vh-36px)] sm:p-4"
         onMouseDown={event => event.stopPropagation()}
       >
         <header className="flex items-start justify-between gap-4 border-b border-slate-200 pb-3">
@@ -148,7 +146,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
 
         {accessError && <div className="mb-2 border border-red-400 bg-red-950 px-2 py-1.5 text-[10px] text-red-100" role="alert">{accessError}</div>}
 
-        <div className="mt-3 grid grid-cols-11 gap-1.5 max-[1050px]:grid-cols-6 max-[700px]:grid-cols-4 max-[460px]:grid-cols-3" aria-label="Módulos do ERP">
+        <div className="mt-3 grid grid-cols-4 gap-2 max-[700px]:grid-cols-3 max-[460px]:grid-cols-2" aria-label="Módulos da Qualidade">
           {modules.map(({ key, number, label, description, route, permission, icon: Icon }) => {
             const disabled = !route || !accessReady || Boolean(accessError) || Boolean(permission && !permissions.has('*') && !permissions.has(permission))
 
@@ -159,7 +157,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
                 disabled={disabled}
                 aria-disabled={disabled}
                 title={disabled ? (accessError || (!accessReady ? 'Validando acesso e permissões.' : description)) : label}
-                className="group flex min-h-[86px] min-w-0 touch-manipulation flex-col items-center justify-center gap-[7px] rounded-[2px] border border-slate-600 bg-[#252a34] px-1 py-1.5 text-center transition-[background,border-color,transform] duration-100 hover:-translate-y-px hover:border-slate-300 hover:bg-[#303642] active:translate-y-0 active:bg-[#38404d] disabled:cursor-not-allowed disabled:opacity-40"
+                className="group flex min-h-[76px] min-w-0 touch-manipulation flex-row items-center justify-start gap-2 rounded-[2px] border border-[#2D8DB8] bg-[#123B50] px-2 py-2 text-left text-white transition-[background,border-color] duration-100 hover:border-[#48B7C7] hover:bg-[#174d66] active:bg-[#0e3142] disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
                   if (route) {
                     onClose()
@@ -168,13 +166,13 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
                 }}
               >
                 <span
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-[2px] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]"
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-[2px] text-white"
                   style={{ backgroundColor: '#2D8DB8' }}
                   aria-hidden="true"
                 >
-                  <Icon size={28} strokeWidth={2.15} />
+                  <Icon size={21} strokeWidth={2} />
                 </span>
-                <span className="flex min-w-0 flex-col items-center gap-0.5">
+                <span className="flex min-w-0 flex-col items-start gap-1">
                   <small className="text-[8px] font-semibold leading-none tracking-[0.08em]" style={{ color: '#67c7dc' }}>{number}</small>
                   <strong className="max-w-full text-[9px] font-semibold leading-[1.15] tracking-[0.01em] text-slate-100">{label}</strong>
                 </span>
@@ -186,7 +184,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
         <footer className="mt-3 flex flex-wrap justify-between gap-2 border-t border-[#DBE7EA] pt-2.5 text-[9px] font-medium tracking-[0.03em] text-slate-400">
           <span>ERPSistema INDUSTRIAL</span>
           <span>Central operacional integrada</span>
-          <span>22 módulos</span>
+          <span>22 módulos de qualidade</span>
         </footer>
       </section>
     </div>
