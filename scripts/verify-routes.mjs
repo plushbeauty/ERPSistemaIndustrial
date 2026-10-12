@@ -11,6 +11,10 @@ const entryPath = path.join(root, 'src', 'main.tsx')
 const entry = fs.readFileSync(entryPath, 'utf8')
 
 const routeMatches = [...app.matchAll(/<Route\s+path=["']([^"']+)["'][^>]*element=\{<([A-Za-z0-9_]+)/g)]
+const shellPath = path.join(root, 'src', 'components', 'layout', 'ERPHorizontalShell.tsx')
+const shell = fs.existsSync(shellPath) ? fs.readFileSync(shellPath, 'utf8') : ''
+const shellMenuRoutes = [...shell.matchAll(/route:\s*['"]([^'"]+)['"]/g)].map(([, route]) => route.split('?')[0])
+
 const lazyImports = new Map(
   [...app.matchAll(/(?:const|let|var)\s+([A-Za-z0-9_]+)\s*=\s*lazyPage\(\(\)\s*=>\s*import\(["']([^"']+)["']\)/g)]
     .map(([, name, importPath]) => [name, importPath]),
@@ -31,6 +35,16 @@ if (/if\s*\([^)]*pathname[^)]*['"]\/configuracoes-adm/.test(entry)) {
 
 if (/if\s*\([^)]*pathname[^)]*['"]\/configuracoes-adm/.test(app)) {
   failures.push('Roteador contém um desvio direto para Configurações ADM fora do gate de acesso.')
+}
+
+const declaredRoutes = routeMatches.map(([, route]) => route)
+for (const menuRoute of new Set(shellMenuRoutes)) {
+  const matched = declaredRoutes.some(route =>
+    route === menuRoute ||
+    (route.endsWith('/*') && menuRoute.startsWith(route.slice(0, -1))) ||
+    (route.includes(':') && menuRoute.startsWith(route.slice(0, route.indexOf(':'))))
+  )
+  if (!matched) failures.push(`Menu horizontal aponta para rota não declarada: ${menuRoute}`)
 }
 
 for (const [, route, component] of routeMatches) {
