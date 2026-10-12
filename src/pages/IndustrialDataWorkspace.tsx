@@ -62,6 +62,7 @@ export default function IndustrialDataWorkspace() {
   }
   const config = configs[routeConfigs[location.pathname] ?? '']
   const [rows,setRows] = useState<Record<string, unknown>[]>([])
+  const [companyId,setCompanyId] = useState('')
   const [form,setForm] = useState<Record<string,string>>({})
   const [search,setSearch] = useState('')
   const [error,setError] = useState<string|null>(null)
@@ -69,12 +70,29 @@ export default function IndustrialDataWorkspace() {
   const [loading,setLoading] = useState(true)
   const [editing,setEditing] = useState<string|null>(null)
   const load = useCallback(async () => {
-    if (!config) return
-    setLoading(true); setError(null)
-    const result = await supabase.from(config.table).select('*').limit(500)
-    if (result.error) setError(result.error.message)
-    else setRows((result.data ?? []) as Record<string,unknown>[])
-    setLoading(false)
+    if (!config) {
+      setLoading(false)
+      setError('Configuração da tela não encontrada para esta rota.')
+      return
+    }
+    setLoading(true)
+    setError(null)
+    try {
+      const auth = await supabase.auth.getUser()
+      if (auth.error || !auth.data.user) throw new Error('Sessão não localizada. Entre novamente no ERP.')
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error || !company.data) throw company.error ?? new Error('Empresa ativa não identificada.')
+      const tenantId = String(company.data)
+      const result = await supabase.from(config.table).select('*').eq('empresa_id', tenantId).limit(500)
+      if (result.error) throw result.error
+      setCompanyId(tenantId)
+      setRows((result.data ?? []) as Record<string,unknown>[])
+    } catch (cause) {
+      setRows([])
+      setError(cause instanceof Error ? cause.message : 'Falha ao carregar os registros do módulo.')
+    } finally {
+      setLoading(false)
+    }
   },[config])
   useEffect(()=>{ void load() },[load])
   const visible = useMemo(()=> rows.filter(row => !search || (config?.search ?? []).some(key=>String(row[key] ?? '').toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR')))),[rows,search,config])
@@ -87,18 +105,28 @@ export default function IndustrialDataWorkspace() {
     setForm(next); setEditing(String(row.id)); setError(null)
   }
   async function postInvoice(id: string) {
+    if (!companyId || !rows.some(row => row.id === id && row.empresa_id === companyId && row.status === 'rascunho')) {
+      setError('A NF-e não pertence à empresa ativa ou já não está em rascunho.')
+      return
+    }
     setError(null)
     setBusy(true)
-    const result = await supabase.rpc('erp_escriturar_nfe_entrada', { p_nfe_id: id })
-    setBusy(false)
-    if (result.error) { setError(result.error.message); return }
-    await load()
+    try {
+      const result = await supabase.rpc('erp_escriturar_nfe_entrada', { p_nfe_id: id })
+      if (result.error) throw result.error
+      await load()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao escriturar a NF-e de entrada.')
+    } finally {
+      setBusy(false)
+    }
   }
   async function save() {
     if (!config) { setError('Módulo não encontrado para esta rota.'); return }
     setError(null)
     try {
-      const payload: Record<string,unknown>={}
+      if (!companyId) throw new Error('Empresa ativa não identificada. Atualize a tela e tente novamente.')
+      const payload: Record<string,unknown>={ empresa_id: companyId }
       for (const field of config.fields) {
         const raw=form[field.key] ?? ''
         if(field.required && !raw.trim()) throw new Error('Campo obrigatório: '+field.label)
@@ -107,7 +135,7 @@ export default function IndustrialDataWorkspace() {
       }
       setBusy(true)
       const result=editing
-        ? await supabase.from(config.table).update(payload).eq('id',editing).select('id').single()
+        ? await supabase.from(config.table).update(payload).eq('empresa_id',companyId).eq('id',editing).select('id').single()
         : await supabase.from(config.table).insert(payload).select('id').single()
       setBusy(false)
       if(result.error) { setError(result.error.message); return }
