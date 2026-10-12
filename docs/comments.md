@@ -34,3 +34,11 @@
 ## 2026-10-12 — Backlog de auditoria / estado verificado
 - As falhas históricas de TypeScript registradas em 07/10 foram removidas do backlog ativo após o gate TypeScript do CI #4315 concluir com sucesso. A falha histórica de ESLint já havia sido removida após CI #4284.
 - O único bloqueio ativo registrado agora é externo ao código: a API da Vercel recusou a criação do preview com HTTP 402 por limite diário de deployments; nenhum deployment novo foi criado.
+
+
+## 2026-10-12 — Almoxarifado → Liberação para NF-e
+- Criada a rota `/estoque/liberacao-nfe` e incluída no submenu Estoque: carteira de pedidos, conferência por item, divisão por lotes, caixas/unidades por caixa, pesos, localização e observações.
+- Nova migration `20261012130000_erp_warehouse_nfe_release_v1.sql`: cabeçalho/itens tenant-aware com RLS, RPCs para salvar, encaminhar, vincular ao rascunho fiscal e concluir a baixa física somente quando a NF-e persistida estiver autorizada. Lotes sem status aprovado são recusados; encaminhamento reserva saldo e conclusão registra movimento de saída.
+- O emissor ativo `NFeEmissaoCompact.tsx` lê `liberacao_id`, importa cliente, quantidades, produto, lotes, caixas e pesos, e vincula o rascunho pela RPC fiscal. Natureza, CFOP e tributação permanecem sujeitos à conferência do Fiscal; a importação não declara autorização SEFAZ.
+- Adicionado gate estático `verify:warehouse-nfe-release` ao CI.
+- **Bloqueio de homologação:** migration ainda precisa ser aplicada e validada no Supabase alvo; até isso ocorrer, a tela pode apresentar erro de relação/RPC ausente. O preview da Vercel também segue condicionado à cota diária HTTP 402 registrada no backlog. Nenhuma alteração foi feita diretamente na `main`.
