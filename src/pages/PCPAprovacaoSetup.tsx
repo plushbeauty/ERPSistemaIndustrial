@@ -68,7 +68,7 @@ export default function PCPAprovacaoSetup() {
       setError('Selecione um ferramental e uma máquina válidos da empresa atual.')
       return
     }
-    if (checks.some(checked => !checked)) {
+    if (requestedStatus === 'APROVADO' && checks.some(checked => !checked)) {
       setError('Confirme todos os itens do checklist antes de registrar o laudo.')
       return
     }
