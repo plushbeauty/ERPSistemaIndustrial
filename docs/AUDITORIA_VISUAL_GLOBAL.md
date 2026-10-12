@@ -28,6 +28,20 @@ O preview Vercel observado nesta execução redirecionou para a tela de autentic
 - Alterações: grade com largura mínima de 240 px, área de imagem ampliada, nome/descrição/código e preço com legibilidade maior.
 - Estado: **Código alterado no lote atual; testes pendentes.**
 
+## Lote 3 — Compras (auditoria de código em andamento)
+
+- Escopo inspecionado nesta rodada: `/compras`, `/compras/pedido`, `/compras/ordem-compra`, `/compras/rfq`, `/compras/analise-precos`, `/compras/relatorios`, `/compras/requisicoes`, `/compras/recebimentos`, `/compras/fornecedores`, `/compras/solicitacao-manual`, `/compras/solicitacao`, `/compras/ajuda` e aliases/redirects relacionados.
+- Arquivos lidos no código: `ComprasIndustrial.tsx`, `PedidoCompra.tsx`, `ComprasPedidoCompra.tsx`, `ComprasRFQ.tsx`, `ComprasRequisicoes.tsx`, `ComprasAnalisePrecos.tsx`, `ComprasRelatorios.tsx`, `FornecedoresIndustrial.tsx`, `SolicitacaoCompra.tsx`, `RecebimentoMateriais.tsx`, `FiscalCompras.tsx`, CSS compartilhado e migrations de pedidos, RFQ, aprovação/fiscal e RBAC.
+- Correção 1: `src/pages/ComprasIndustrial.tsx` — mensagens de erro antes exibidas com o mesmo estilo visual de sucesso; agora erros usam estado separado, região `role="alert"` e estilo de erro. Se o RPC criar o pedido mas a gravação complementar falhar, a tela informa explicitamente o número já criado, atualiza a listagem e avisa para não repetir a criação, reduzindo risco de pedido duplicado.
+- Commit: `4daffed622427cce8473b27f9ec33f98987e275d`.
+- Correção 2: `src/pages/ComprasRelatorios.tsx` — a tabela limitava silenciosamente a exibição aos primeiros 100 pedidos, embora os indicadores usassem toda a consulta. Implementada paginação de 25 registros, contador de faixa e navegação anterior/próxima; pesquisa reinicia a página.
+- Commit: `be5d635a37dad07e292eef2d2221dda4383feb7b`.
+- Referência de mercado consultada: documentação oficial Odoo 18 sobre RFQs e pedidos de compra: https://www.odoo.com/documentation/18.0/applications/inventory_and_mrp/purchase/manage_deals/rfq.html — confirma comparação de fornecedor, preço e prazo, e conversão de RFQ confirmada em pedido. Referência usada para orientar a auditoria, não para copiar código proprietário.
+- Segurança/schema: consultadas migrations locais existentes; não foi criada tabela nem alterado schema nesta rodada. O fluxo de RFQ atual grava cabeçalho, fornecedores e itens em chamadas separadas com tentativa de compensação; precisa de validação adicional de atomicidade/RLS antes de ser considerado aprovado.
+- Testes: CI para os commits acima está em andamento no momento do registro; resultados ainda não confirmados. Teste visual autenticado continua bloqueado pelo redirecionamento do preview para autenticação Vercel. Nenhuma rota de Compras está marcada como aprovada.
+- Pendências imediatas: terminar rastreamento dos contratos RPC/RLS de Compras; validar estados de cotação aceitos na comparação de preços; verificar paginação/filtros e integração dos relatórios; testar fluxos autenticados em ambiente autorizado; depois continuar para o próximo módulo do inventário.
+- Estado do lote: **CORREÇÕES DE CÓDIGO APLICADAS; CI E TESTES FUNCIONAIS PENDENTES; AUDITORIA DE COMPRAS INCOMPLETA.**
+
 ## Inventário de rotas
 
 Todas as rotas abaixo permanecem **PENDENTES** de auditoria visual completa, exceto as observações específicas acima. Redirecionamentos e aliases também são registrados para não serem ignorados.
