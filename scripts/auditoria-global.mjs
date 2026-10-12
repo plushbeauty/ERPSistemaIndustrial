@@ -85,6 +85,15 @@ for(const file of files.filter(f=>f.includes(path.join('supabase','migrations'))
   if(/security\s+definer/i.test(text)&&!/search_path\s*(?:=|to)\s*(?:''|pg_catalog\s*,\s*public|public\s*,\s*pg_catalog|public|pg_catalog)/i.test(text)) add('HIGH',file,1,'SECURITY DEFINER sem search_path fixo explícito; revisar risco de search_path injection.')
 }
 const migrationFiles=files.filter(f=>f.includes(path.join('supabase','migrations'))).map(rel)
+const workspacePath=path.join(ROOT,'src','pages','IndustrialDataWorkspace.tsx')
+const workspace=read(workspacePath)
+if(!workspace) add('BLOCKER',workspacePath,1,'Workspace industrial ausente; verificar rotas genéricas antes do release.')
+for(const [pattern,message] of [
+  [/supabase\.rpc\('erp_current_empresa_id'\)/,'Workspace industrial não resolve a empresa pelo helper canônico.'],
+  [/\.eq\('empresa_id',\s*activeEmpresaId\)/,'Workspace industrial consulta dados sem filtro explícito de tenant.'],
+  [/\.update\(payload\)[\s\S]*\.eq\('id',\s*editing\)[\s\S]*\.eq\('empresa_id',\s*empresaId\)/,'Workspace industrial permite edição sem restringir o registro à empresa ativa.'],
+  [/\.insert\(\{\.\.\.payload,\s*empresa_id:\s*empresaId\}\)/,'Workspace industrial não associa novas linhas à empresa ativa.'],
+]) if(!pattern.test(workspace)) add('BLOCKER',workspacePath,1,message)
 const migrationNames=migrationFiles.map(f=>path.basename(f).toLowerCase())
 const duplicateNames=migrationNames.filter((v,i,a)=>a.indexOf(v)!==i)
 for(const name of [...new Set(duplicateNames)]) add('HIGH',ROOT,1,`Migration duplicada: ${name}`)
