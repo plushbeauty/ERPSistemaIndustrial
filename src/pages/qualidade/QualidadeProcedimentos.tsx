@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState, type ChangeEvent } from 'react'
-import { ExternalLink, RefreshCw, Upload } from 'lucide-react'
+import { Download, ExternalLink, FileText, RefreshCw, Upload } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import QualitySidebar from '../../components/quality/QualitySidebar'
 import { fetchAllPages } from '../../lib/supabasePagination'
+import { emitirDossieTecnico8D } from '../../services/geradorDocumento'
 
 type Doc = {
   id: string
@@ -15,6 +16,7 @@ type Doc = {
 }
 
 const bucket = 'erp-qualidade-anexos'
+const templateBucket = 'erp-documentos-qualidade'
 const fieldClass = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] text-slate-800 focus:border-[#2D8DB8] focus:outline-none'
 
 export default function QualidadeProcedimentos() {
@@ -25,6 +27,9 @@ export default function QualidadeProcedimentos() {
   const [err, setErr] = useState('')
   const [codigo, setCodigo] = useState('')
   const [titulo, setTitulo] = useState('')
+  const [dossies, setDossies] = useState<Array<{ id: string; codigo: string }>>([])
+  const [selected8D, setSelected8D] = useState('')
+  const [generating, setGenerating] = useState(false)
 
   const load = useCallback(async () => {
     setErr('')
@@ -54,6 +59,14 @@ export default function QualidadeProcedimentos() {
         .order('revisao', { ascending: false })
         .range(from, to))
       setDocs(rows)
+      const d8Rows = await fetchAllPages<{ id: string; codigo: string }>((from, to) => supabase
+        .from('erp_qualidade_8d')
+        .select('id,codigo', { count: 'exact' })
+        .eq('empresa_id', empresaId)
+        .order('updated_at', { ascending: false })
+        .range(from, to))
+      setDossies(d8Rows)
+      setSelected8D(current => current && d8Rows.some(row => row.id === current) ? current : d8Rows[0]?.id ?? '')
     } catch (cause) {
       setErr(cause instanceof Error ? cause.message : 'Não foi possível carregar os procedimentos.')
     }
@@ -115,6 +128,73 @@ export default function QualidadeProcedimentos() {
     }
   }
 
+  const uploadTemplate = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.currentTarget.value = ''
+    if (!file) return
+    setErr('')
+    setMsg('')
+    if (!file.name.toLowerCase().endsWith('.docx')) {
+      setErr('Selecione um modelo Word .docx válido.')
+      return
+    }
+    if (!empresa) {
+      setErr('A empresa da sessão ainda não foi identificada. Atualize a tela e tente novamente.')
+      return
+    }
+    setBusy(true)
+    let uploadedPath: string | null = null
+    try {
+      const path = empresa + '/modelos/' + crypto.randomUUID() + '.docx'
+      const uploaded = await supabase.storage.from(templateBucket).upload(path, file, {
+        upsert: false,
+        contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      })
+      if (uploaded.error) throw uploaded.error
+      uploadedPath = path
+      const saved = await supabase.rpc('erp_salvar_revisao_documento', {
+        p_codigo: 'MODELO-DOSSIE-8D',
+        p_titulo: 'Modelo Word — Dossiê Técnico 8D',
+        p_departamento: 'QUALIDADE',
+        p_conteudo: 'Modelo Word DOCX para emissão do dossiê técnico 8D a partir dos registros reais do ERP.',
+        p_motivo: 'Inclusão de modelo Word para dossiê técnico 8D',
+        p_logo_path: null,
+        p_url_anexo: path,
+        p_nome_arquivo: file.name,
+      })
+      if (saved.error) throw saved.error
+      uploadedPath = null
+      setMsg('Modelo Word registrado como nova revisão em análise. Após aprovação, ele poderá ser usado para gerar os dossiês 8D.')
+      await load()
+    } catch (cause) {
+      if (uploadedPath) {
+        const removed = await supabase.storage.from(templateBucket).remove([uploadedPath])
+        if (removed.error) console.error('[SGQ] Falha ao remover arquivo de modelo não registrado', removed.error)
+      }
+      setErr(cause instanceof Error ? cause.message : 'Falha ao armazenar o modelo Word.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const generate8D = async () => {
+    if (!selected8D) {
+      setErr('Selecione um registro 8D para emitir o dossiê.')
+      return
+    }
+    setErr('')
+    setMsg('')
+    setGenerating(true)
+    try {
+      await emitirDossieTecnico8D(selected8D)
+      setMsg('Dossiê técnico 8D gerado e enviado para download.')
+    } catch (cause) {
+      setErr(cause instanceof Error ? cause.message : 'Não foi possível gerar o dossiê técnico 8D.')
+    } finally {
+      setGenerating(false)
+    }
+  }
+
   const open = async (path: string | null) => {
     if (!path) return
     const result = await supabase.storage.from(bucket).createSignedUrl(path, 900)
@@ -141,6 +221,29 @@ export default function QualidadeProcedimentos() {
         </header>
 
         {(err || msg) && <p role={err ? 'alert' : 'status'} className={err ? 'border border-red-300 bg-red-50 px-3 py-2 text-[11px] text-red-800' : 'border border-emerald-300 bg-emerald-50 px-3 py-2 text-[11px] text-emerald-800'}>{err || msg}</p>}
+
+        <section className="grid gap-3 border border-slate-200 bg-white p-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <div className="space-y-2">
+            <h2 className="flex items-center gap-2 text-[12px] font-bold"><FileText size={14}/> Modelo Word do dossiê técnico 8D</h2>
+            <p className="text-[10px] leading-relaxed text-slate-600">Envie um arquivo .docx preparado no Word. Use campos como {escapeTemplate('{id_8d}')}, {escapeTemplate('{maquina_tag}')} e linhas dinâmicas com {escapeTemplate('{#plano_5w2h}')} ... {escapeTemplate('{/plano_5w2h}')}. A nova revisão fica em análise e só será usada após aprovação.</p>
+            <label className="inline-flex h-[30px] cursor-pointer items-center gap-2 border border-[#2D8DB8] bg-[#F4FBFD] px-3 text-[11px] font-semibold hover:bg-[#E5F3F8]">
+              <Upload size={13}/> {busy ? 'Enviando…' : 'Enviar modelo Word (.docx)'}
+              <input type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" disabled={busy} className="sr-only" onChange={event => void uploadTemplate(event)} />
+            </label>
+          </div>
+          <div className="space-y-2">
+            <h2 className="flex items-center gap-2 text-[12px] font-bold"><Download size={14}/> Emitir dossiê técnico 8D</h2>
+            <label className="block text-[9px] font-semibold uppercase text-slate-600">Registro 8D da empresa
+              <select className={fieldClass} value={selected8D} onChange={event => setSelected8D(event.target.value)} disabled={!dossies.length || generating}>
+                {!dossies.length && <option value="">Nenhum registro 8D disponível</option>}
+                {dossies.map(item => <option key={item.id} value={item.id}>{item.codigo}</option>)}
+              </select>
+            </label>
+            <button type="button" onClick={() => void generate8D()} disabled={!selected8D || generating} className="inline-flex h-[30px] items-center gap-2 border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">
+              <Download size={13}/> {generating ? 'Gerando…' : 'Gerar e baixar DOCX'}
+            </button>
+          </div>
+        </section>
 
         <section className="grid gap-3 border border-slate-200 bg-white p-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
           <div className="space-y-2">
