@@ -1,12 +1,318 @@
-import { useEffect,useState,type ChangeEvent,type FormEvent } from 'react'
-import { FileEdit,ImageUp,Printer,RefreshCw,Save } from 'lucide-react'
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react'
+import { ArrowDown, FileEdit, ImageUp, Plus, Printer, Save, ShieldCheck, Trash2 } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import QualitySidebar from '../../components/quality/QualitySidebar'
 
-export default function QualidadeEditorIT(){
-const[empresa,setEmpresa]=useState('');const[codigo,setCodigo]=useState('');const[titulo,setTitulo]=useState('');const[departamento,setDepartamento]=useState('QUALIDADE');const[revisao,setRevisao]=useState(0);const[data,setData]=useState('');const[texto,setTexto]=useState('');const[logo,setLogo]=useState('');const[logoUrl,setLogoUrl]=useState('');const[busy,setBusy]=useState(false);const[msg,setMsg]=useState('');const[err,setErr]=useState('')
- useEffect(()=>{void (async()=>{const s=await supabase.auth.getSession();if(!s.data.session){setErr('Sessão não autenticada.');return}const u=await supabase.from('erp_usuarios').select('empresa_id').eq('auth_user_id',s.data.session.user.id).maybeSingle();if(u.error||!u.data?.empresa_id){setErr('Empresa não identificada.');return}setEmpresa(u.data.empresa_id);const d=await supabase.from('erp_qualidade_documentos_editor').select('*').eq('empresa_id',u.data.empresa_id).order('atualizado_em',{ascending:false}).limit(1).maybeSingle();if(d.data){setCodigo(d.data.codigo_documento);setTitulo(d.data.titulo_documento);setDepartamento('QUALIDADE');setRevisao(d.data.revisao);setData(d.data.data_homologacao);setTexto(d.data.conteudo_texto);setLogo(d.data.logo_path??'');if(d.data.logo_path){const s=await supabase.storage.from('erp-qualidade-anexos').createSignedUrl(d.data.logo_path,3600);if(!s.error)setLogoUrl(s.data.signedUrl)}}})()},[])
- const uploadLogo=async(e:ChangeEvent<HTMLInputElement>)=>{const f=e.target.files?.[0];if(!f||!empresa)return;setBusy(true);setErr('');try{const ext=f.name.split('.').pop()?.toLowerCase()??'png';const path=empresa+'/logos/'+crypto.randomUUID()+'.'+ext;const r=await supabase.storage.from('erp-qualidade-anexos').upload(path,f,{upsert:false,contentType:f.type});if(r.error)throw r.error;setLogo(path);const signed=await supabase.storage.from('erp-qualidade-anexos').createSignedUrl(path,3600);if(!signed.error)setLogoUrl(signed.data.signedUrl);setMsg('Logotipo armazenado no Storage.')}catch(x){setErr(x instanceof Error?x.message:'Falha no upload.')}finally{setBusy(false)}}
- const save=async(e:FormEvent)=>{e.preventDefault();if(!codigo.trim()||!titulo.trim()){setErr('Código e título são obrigatórios.');return}setBusy(true);setErr('');setMsg('');try{const r=await supabase.rpc('erp_salvar_revisao_documento',{p_codigo:codigo,p_titulo:titulo,p_departamento:departamento,p_conteudo:texto,p_motivo:null,p_logo_path:logo||null});if(r.error)throw r.error;const x=r.data as {revisao:number;status:string};setRevisao(x.revisao);setData('');setMsg('Nova revisão '+x.revisao+' salva em análise. A revisão vigente será preservada até a aprovação.')}catch(x){setErr(x instanceof Error?x.message:'Falha ao salvar revisão.')}finally{setBusy(false)}}
- return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 print:bg-white print:p-0"><QualitySidebar active="/qualidade/editor-it" /><form onSubmit={save}><div className="sticky top-0 z-40 mx-auto mb-5 flex max-w-[1200px] items-center justify-end gap-4 border-b border-slate-200 bg-slate-100/95 py-3 backdrop-blur print:hidden"><div><div className="flex items-center gap-2 text-sky-700"><FileEdit size={22}/><span className="text-xs font-black uppercase tracking-widest">Qualidade › Editor Mestre IT</span></div><h1 className="text-2xl font-black">Instruções de Trabalho · ISO 9001</h1></div><div className="flex gap-2"><label className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-black"><ImageUp size={16}/> LOGOTIPO<input hidden type="file" accept="image/png,image/jpeg,image/svg+xml" onChange={e=>void uploadLogo(e)}/></label><button type="button" onClick={()=>window.print()} className="inline-flex h-11 items-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-black text-white"><Printer size={16}/> PREVIEW</button><button disabled={busy} className="inline-flex h-11 items-center gap-2 rounded-lg bg-sky-700 px-4 text-sm font-black text-white"><Save size={16}/>{busy?'SALVANDO':'SALVAR NOVA REVISÃO'}</button></div></div>{(err||msg)&&<div className={'mx-auto mb-4 max-w-[1200px] rounded-xl border p-3 font-bold print:hidden '+(err?'border-rose-200 bg-rose-50 text-rose-800':'border-emerald-200 bg-emerald-50 text-emerald-800')}>{err||msg}</div>}<section className="mx-auto min-h-[297mm] max-w-[210mm] border border-slate-200 bg-white p-8 shadow-md print:border-0 print:p-0 print:shadow-none"><div className="grid grid-cols-4 border-2 border-slate-900 text-slate-900"><div className="flex h-[54px] items-center justify-center border-r border-slate-900 bg-slate-50 text-xs font-black uppercase">{logoUrl?<img src={logoUrl} alt="Logotipo da empresa" className="max-h-10 max-w-full object-contain"/>:'LOGOTIPO'}</div><label className="col-span-2 flex h-[54px] flex-col justify-center border-r border-slate-900 px-3 text-[10px] font-black uppercase">TÍTULO<input value={titulo} onChange={e=>setTitulo(e.target.value)} className="h-7 bg-transparent text-sm font-black outline-none print:hidden"/><span className="hidden text-sm font-bold normal-case print:block">{titulo}</span></label><div className="flex h-[54px] flex-col justify-center px-3 text-[10px] font-black uppercase">CÓDIGO <input value={codigo} onChange={e=>setCodigo(e.target.value)} className="h-7 bg-transparent text-sm font-black outline-none print:hidden"/><span className="hidden text-sm font-bold normal-case print:block">{codigo}</span><span>REV. {revisao||'NOVA'} · {data||'NÃO HOMOLOGADA'}</span></div></div><div className="hidden print:block mt-4 border-2 border-dashed border-slate-600 bg-slate-100 p-3 text-center text-xs font-black uppercase tracking-wider">⚠️ CÓPIA NÃO CONTROLADA · APENAS PARA CONSULTA LOCAL</div><div className="mt-5 print:mt-4"><textarea value={texto} onChange={e=>setTexto(e.target.value)} className="min-h-[240mm] w-full resize-none border-0 bg-white font-mono text-base font-medium leading-relaxed text-slate-900 outline-none print:hidden"/><div className="hidden min-h-[240mm] w-full whitespace-pre-wrap break-words bg-white font-sans text-[11pt] leading-relaxed text-slate-900 print:block">{texto || "Conteúdo do procedimento ainda não preenchido."}</div></div></section></form><style>{'@media print{body{background:#fff!important}nav,aside,.sgq-app-header,.print\\:hidden,button,input{display:none!important}.print\\:block{display:block!important}textarea{height:auto!important;min-height:260mm!important;overflow:visible!important;white-space:pre-wrap!important}.max-w-\\[210mm\\]{max-width:100%!important;width:100%!important;margin:0!important}}'}</style></main>
+type FlowKind = 'INICIO' | 'ETAPA' | 'DECISAO' | 'FIM'
+type FlowStep = { id: string; kind: FlowKind; title: string; responsible: string }
+type ProcedureContent = { objective: string; scope: string; responsibilities: string; method: string; steps: FlowStep[] }
+
+const emptyContent: ProcedureContent = { objective: '', scope: '', responsibilities: '', method: '', steps: [
+  { id: 'step-start', kind: 'INICIO', title: 'Iniciar procedimento', responsible: '' },
+  { id: 'step-work', kind: 'ETAPA', title: 'Executar atividade conforme instrução', responsible: '' },
+  { id: 'step-check', kind: 'DECISAO', title: 'Resultado atende aos critérios?', responsible: '' },
+  { id: 'step-end', kind: 'FIM', title: 'Registrar e encerrar', responsible: '' },
+] }
+const sectionNames = ['OBJETIVO', 'ESCOPO', 'RESPONSABILIDADES', 'MÉTODO E CRITÉRIOS', 'FLUXO DO PROCESSO'] as const
+const inputClass = 'mt-1 h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-sky-100'
+const labelClass = 'block text-[9px] font-semibold uppercase tracking-wide text-slate-600'
+
+function serialize(value: ProcedureContent): string {
+  const flow = value.steps.map((step, index) => {
+    const owner = step.responsible.trim() ? ' | Responsável: ' + step.responsible.trim() : ''
+    return String(index + 1).padStart(2, '0') + '. [' + step.kind + '] ' + step.title.trim() + owner
+  }).join('\n')
+  return [
+    '[OBJETIVO]', value.objective.trim(),
+    '', '[ESCOPO]', value.scope.trim(),
+    '', '[RESPONSABILIDADES]', value.responsibilities.trim(),
+    '', '[MÉTODO E CRITÉRIOS]', value.method.trim(),
+    '', '[FLUXO DO PROCESSO]', flow,
+  ].join('\n').trim()
+}
+
+function parseContent(raw: string): ProcedureContent {
+  if (!raw.trim()) return emptyContent
+  const values: ProcedureContent = { ...emptyContent, steps: [] }
+  const markers = sectionNames.map(name => '[' + name + ']')
+  for (let index = 0; index < markers.length; index += 1) {
+    const marker = markers[index]
+    const start = raw.indexOf(marker)
+    if (start < 0) continue
+    const from = start + marker.length
+    const nextPositions = markers.map(next => raw.indexOf(next, from)).filter(position => position >= 0)
+    const end = nextPositions.length ? Math.min(...nextPositions) : raw.length
+    const section = raw.slice(from, end).trim()
+    if (index === 0) values.objective = section
+    if (index === 1) values.scope = section
+    if (index === 2) values.responsibilities = section
+    if (index === 3) values.method = section
+    if (index === 4) {
+      const parsed = section.split('\n').map(line => {
+        const match = line.match(/^\s*\d+\.\s*\[(INICIO|ETAPA|DECISAO|FIM)\]\s*(.*?)(?:\s*\|\s*Responsável:\s*(.*))?$/i)
+        if (!match) return null
+        return { id: crypto.randomUUID(), kind: match[1].toUpperCase() as FlowKind, title: match[2].trim(), responsible: (match[3] ?? '').trim() }
+      }).filter((step): step is FlowStep => step !== null)
+      if (parsed.length) values.steps = parsed
+    }
+  }
+  if (!markers.some(marker => raw.includes(marker))) values.method = raw
+  if (!values.steps.length) values.steps = emptyContent.steps
+  return values
+}
+
+function wrapText(text: string, max = 24): string[] {
+  const words = text.trim().split(/\s+/).filter(Boolean)
+  const lines: string[] = []
+  let line = ''
+  for (const word of words) {
+    if ((line + ' ' + word).trim().length > max && line) {
+      lines.push(line)
+      line = word
+    } else line = (line + ' ' + word).trim()
+  }
+  if (line) lines.push(line)
+  return lines.slice(0, 3)
+}
+
+export default function QualidadeEditorIT() {
+  const [empresa, setEmpresa] = useState('')
+  const [codigo, setCodigo] = useState('')
+  const [titulo, setTitulo] = useState('')
+  const [departamento, setDepartamento] = useState('QUALIDADE')
+  const [revisao, setRevisao] = useState(0)
+  const [data, setData] = useState('')
+  const [logo, setLogo] = useState('')
+  const [logoUrl, setLogoUrl] = useState('')
+  const [content, setContent] = useState<ProcedureContent>(emptyContent)
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [err, setErr] = useState('')
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      const session = await supabase.auth.getSession()
+      if (session.error || !session.data.session) {
+        if (!cancelled) setErr(session.error?.message ?? 'Sessão não autenticada.')
+        return
+      }
+      const user = await supabase.from('erp_usuarios')
+        .select('empresa_id')
+        .eq('auth_user_id', session.data.session.user.id)
+        .eq('ativo', true)
+        .is('deleted_at', null)
+        .maybeSingle()
+      if (user.error || !user.data?.empresa_id) {
+        if (!cancelled) setErr(user.error?.message ?? 'Empresa não identificada para a sessão.')
+        return
+      }
+      const empresaId = user.data.empresa_id
+      const result = await supabase.from('erp_qualidade_documentos_editor')
+        .select('codigo_documento,titulo_documento,revisao,data_homologacao,conteudo_texto,logo_path,setor_responsavel')
+        .eq('empresa_id', empresaId)
+        .order('atualizado_em', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (cancelled) return
+      setEmpresa(empresaId)
+      if (result.error) {
+        setErr(result.error.message)
+        return
+      }
+      if (result.data) {
+        setCodigo(result.data.codigo_documento ?? '')
+        setTitulo(result.data.titulo_documento ?? '')
+        setRevisao(result.data.revisao ?? 0)
+        setData(result.data.data_homologacao ?? '')
+        setDepartamento(result.data.setor_responsavel ?? 'QUALIDADE')
+        setLogo(result.data.logo_path ?? '')
+        setContent(parseContent(result.data.conteudo_texto ?? ''))
+        if (result.data.logo_path) {
+          const signed = await supabase.storage.from('erp-qualidade-anexos').createSignedUrl(result.data.logo_path, 3600)
+          if (!cancelled && !signed.error) setLogoUrl(signed.data.signedUrl)
+        }
+      }
+      setLoaded(true)
+    })()
+    return () => { cancelled = true }
+  }, [])
+
+  const documentBody = useMemo(() => serialize(content), [content])
+  const updateContent = (field: 'objective' | 'scope' | 'responsibilities' | 'method', value: string) => {
+    setContent(current => ({ ...current, [field]: value }))
+  }
+  const updateStep = (id: string, field: 'kind' | 'title' | 'responsible', value: string) => {
+    setContent(current => ({ ...current, steps: current.steps.map(step => step.id === id ? { ...step, [field]: value } as FlowStep : step) }))
+  }
+  const addStep = () => setContent(current => {
+    const endIndex = current.steps.findIndex(step => step.kind === 'FIM')
+    const next = { id: crypto.randomUUID(), kind: 'ETAPA' as FlowKind, title: '', responsible: '' }
+    const steps = [...current.steps]
+    steps.splice(endIndex >= 0 ? endIndex : steps.length, 0, next)
+    return { ...current, steps }
+  })
+  const removeStep = (id: string) => setContent(current => {
+    const steps = current.steps.filter(step => step.id !== id)
+    return { ...current, steps: steps.length ? steps : emptyContent.steps }
+  })
+
+  const uploadLogo = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.currentTarget.value = ''
+    if (!file || !empresa) return
+    if (!['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'].includes(file.type)) {
+      setErr('Use um logotipo PNG, JPG, SVG ou WebP.')
+      return
+    }
+    setBusy(true); setErr(''); setMsg('')
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() ?? 'png'
+      const path = empresa + '/logos/' + crypto.randomUUID() + '.' + ext
+      const uploaded = await supabase.storage.from('erp-qualidade-anexos').upload(path, file, { upsert: false, contentType: file.type })
+      if (uploaded.error) throw uploaded.error
+      setLogo(path)
+      const signed = await supabase.storage.from('erp-qualidade-anexos').createSignedUrl(path, 3600)
+      if (signed.error) throw signed.error
+      setLogoUrl(signed.data.signedUrl)
+      setMsg('Logotipo armazenado para a empresa autenticada.')
+    } catch (cause) {
+      setErr(cause instanceof Error ? cause.message : 'Falha ao armazenar o logotipo.')
+    } finally { setBusy(false) }
+  }
+
+  const save = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!empresa) { setErr('Empresa não identificada. Atualize a tela e tente novamente.'); return }
+    if (!codigo.trim() || !titulo.trim()) { setErr('Código e título são obrigatórios.'); return }
+    if (![content.objective, content.scope, content.responsibilities, content.method].some(value => value.trim()) && !content.steps.some(step => step.title.trim())) {
+      setErr('Preencha o conteúdo do procedimento antes de salvar.')
+      return
+    }
+    if (content.steps.some(step => !step.title.trim())) { setErr('Preencha ou remova todas as etapas sem título do fluxograma.'); return }
+    setBusy(true); setErr(''); setMsg('')
+    try {
+      const result = await supabase.rpc('erp_salvar_revisao_documento', {
+        p_codigo: codigo.trim(),
+        p_titulo: titulo.trim(),
+        p_departamento: departamento.trim() || 'QUALIDADE',
+        p_conteudo: documentBody,
+        p_motivo: 'Criação/edição de procedimento gráfico no Editor Mestre IT',
+        p_logo_path: logo || null,
+      })
+      if (result.error) throw result.error
+      const saved = result.data as { revisao?: number; status?: string } | null
+      setRevisao(saved?.revisao ?? revisao + 1)
+      setData('')
+      setMsg('Revisão ' + String(saved?.revisao ?? revisao + 1) + ' salva em análise. A versão vigente permanece ativa até a aprovação no GED.')
+    } catch (cause) {
+      setErr(cause instanceof Error ? cause.message : 'Falha ao salvar a revisão do procedimento.')
+    } finally { setBusy(false) }
+  }
+
+  const kindLabel = (kind: FlowKind) => kind === 'INICIO' ? 'INÍCIO' : kind === 'FIM' ? 'FIM' : kind === 'DECISAO' ? 'DECISÃO' : 'ETAPA'
+
+  return (
+    <main className="min-h-screen bg-[#F4FBFD] p-3 text-[#123B50] print:bg-white print:p-0">
+      <QualitySidebar active="/qualidade/editor-it" />
+      <div className="mx-auto max-w-[1500px] space-y-3">
+        <header className="flex flex-wrap items-end gap-2 border-b border-slate-200 pb-2 print:hidden">
+          <div className="mr-auto">
+            <p className="text-[9px] font-semibold uppercase tracking-[.14em] text-[#2D8DB8]">SGQ · Editor gráfico de procedimentos</p>
+            <h1 className="text-[18px] font-semibold">Instruções de Trabalho · ISO 9001</h1>
+            <p className="text-[10px] text-slate-600">Edite o procedimento e desenhe o fluxo operacional; salve como nova revisão controlada.</p>
+          </div>
+          <label className="inline-flex h-[30px] cursor-pointer items-center gap-2 border border-slate-300 bg-white px-3 text-[10px] font-semibold hover:bg-slate-50">
+            <ImageUp size={13}/> LOGOTIPO
+            <input hidden type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" disabled={busy} onChange={event => void uploadLogo(event)} />
+          </label>
+          <button type="button" onClick={() => window.print()} className="inline-flex h-[30px] items-center gap-2 border border-slate-300 bg-white px-3 text-[10px] font-semibold hover:bg-slate-50"><Printer size={13}/> VISUALIZAR / IMPRIMIR</button>
+          <button type="submit" form="procedure-form" disabled={busy || !loaded} className="inline-flex h-[30px] items-center gap-2 border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-semibold text-white disabled:opacity-50"><Save size={13}/>{busy ? 'SALVANDO…' : 'SALVAR NOVA REVISÃO'}</button>
+        </header>
+
+        {(err || msg) && <p role={err ? 'alert' : 'status'} className={err ? 'border border-red-300 bg-red-50 px-3 py-2 text-[10px] text-red-800' : 'border border-emerald-300 bg-emerald-50 px-3 py-2 text-[10px] text-emerald-800 print:hidden'}>{err || msg}</p>}
+        {!loaded && !err && <p className="border border-slate-200 bg-white p-3 text-[10px] text-slate-500">Carregando empresa e procedimento…</p>}
+
+        <form id="procedure-form" onSubmit={save} className="space-y-3">
+          <section className="border border-slate-200 bg-white p-3">
+            <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-2"><FileEdit size={14} className="text-[#2D8DB8]"/><h2 className="text-[11px] font-semibold">Identificação e controle</h2><span className="ml-auto text-[9px] text-slate-500">REV. {String(revisao || 'NOVA')} · {data || 'EM PREPARAÇÃO'}</span></div>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <label className={labelClass}>Código do documento<input className={inputClass} value={codigo} onChange={event => setCodigo(event.target.value.toUpperCase())} maxLength={50} required placeholder="IT-QUAL-001"/></label>
+              <label className={labelClass}>Título do procedimento<input className={inputClass} value={titulo} onChange={event => setTitulo(event.target.value)} maxLength={255} required placeholder="Inspeção de recebimento"/></label>
+              <label className={labelClass}>Departamento<input className={inputClass} value={departamento} onChange={event => setDepartamento(event.target.value)} maxLength={100} required/></label>
+              <div className="flex items-end gap-2 border border-slate-200 bg-slate-50 p-2 text-[9px] text-slate-600"><ShieldCheck size={14} className="shrink-0 text-[#2D8DB8]"/> Nova revisão entra em análise; aprovação no GED controla a vigência.</div>
+            </div>
+          </section>
+
+          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(420px,1fr)]">
+            <section className="space-y-3 border border-slate-200 bg-white p-3">
+              <div className="border-b border-slate-100 pb-2"><h2 className="text-[11px] font-semibold">Conteúdo do procedimento</h2><p className="mt-1 text-[9px] text-slate-500">O conteúdo é salvo junto da revisão no registro documental do SGQ.</p></div>
+              <label className={labelClass}>1. Objetivo<textarea className="mt-1 min-h-[64px] w-full rounded-[2px] border border-slate-300 p-2 text-[11px] font-normal normal-case outline-none focus:border-[#2D8DB8]" value={content.objective} onChange={event => updateContent('objective', event.target.value)} placeholder="Descreva o resultado esperado e a finalidade do procedimento."/></label>
+              <label className={labelClass}>2. Escopo e aplicação<textarea className="mt-1 min-h-[64px] w-full rounded-[2px] border border-slate-300 p-2 text-[11px] font-normal normal-case outline-none focus:border-[#2D8DB8]" value={content.scope} onChange={event => updateContent('scope', event.target.value)} placeholder="Informe onde, quando e a quais processos se aplica."/></label>
+              <label className={labelClass}>3. Responsabilidades<textarea className="mt-1 min-h-[64px] w-full rounded-[2px] border border-slate-300 p-2 text-[11px] font-normal normal-case outline-none focus:border-[#2D8DB8]" value={content.responsibilities} onChange={event => updateContent('responsibilities', event.target.value)} placeholder="Defina quem executa, verifica, aprova e registra."/></label>
+              <label className={labelClass}>4. Método, critérios e registros<textarea className="mt-1 min-h-[140px] w-full rounded-[2px] border border-slate-300 p-2 text-[11px] font-normal normal-case outline-none focus:border-[#2D8DB8]" value={content.method} onChange={event => updateContent('method', event.target.value)} placeholder="Descreva equipamentos, sequência detalhada, critérios de aceitação, segurança, evidências e registros obrigatórios."/></label>
+            </section>
+
+            <section className="min-w-0 border border-slate-200 bg-white p-3">
+              <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-2"><div className="mr-auto"><h2 className="text-[11px] font-semibold">5. Fluxograma do processo</h2><p className="mt-1 text-[9px] text-slate-500">Adicione etapas e decisões. O desenho acompanha os campos editados.</p></div><button type="button" onClick={addStep} className="inline-flex h-[28px] items-center gap-1 border border-[#2D8DB8] bg-[#F4FBFD] px-2 text-[9px] font-semibold text-[#246F98]"><Plus size={12}/> ADICIONAR ETAPA</button></div>
+              <div className="mt-3 space-y-2">
+                {content.steps.map((step, index) => <div key={step.id} className="grid gap-2 border border-slate-200 bg-slate-50/70 p-2 sm:grid-cols-[105px_minmax(0,1fr)_minmax(110px,.7fr)_28px] sm:items-end">
+                  <label className={labelClass}>Tipo<select className={inputClass} value={step.kind} onChange={event => updateStep(step.id, 'kind', event.target.value)}><option value="INICIO">Início</option><option value="ETAPA">Etapa</option><option value="DECISAO">Decisão</option><option value="FIM">Fim</option></select></label>
+                  <label className={labelClass}>Descrição da etapa<input className={inputClass} value={step.title} onChange={event => updateStep(step.id, 'title', event.target.value)} maxLength={180} placeholder={'Etapa ' + (index + 1)} required/></label>
+                  <label className={labelClass}>Responsável<input className={inputClass} value={step.responsible} onChange={event => updateStep(step.id, 'responsible', event.target.value)} maxLength={100} placeholder="Área / função"/></label>
+                  <button type="button" aria-label={'Remover etapa ' + (index + 1)} onClick={() => removeStep(step.id)} className="mb-0.5 flex h-[30px] items-center justify-center border border-slate-300 bg-white text-slate-500 hover:border-red-300 hover:text-red-600"><Trash2 size={13}/></button>
+                </div>)}
+              </div>
+
+              <div className="mt-4 border border-slate-200 bg-[#F8FBFD] p-2">
+                <div className="mb-2 flex items-center justify-between"><span className="text-[9px] font-semibold uppercase tracking-wide text-slate-600">Prévia gráfica do fluxo</span><span className="text-[9px] text-slate-400">{content.steps.length} elementos</span></div>
+                <svg viewBox={'0 0 560 ' + Math.max(130, content.steps.length * 104 + 12)} role="img" aria-label="Fluxograma do procedimento" className="h-auto w-full">
+                  {content.steps.map((step, index) => {
+                    const y = 12 + index * 104
+                    const lines = wrapText(step.title || 'Etapa sem título')
+                    const isDecision = step.kind === 'DECISAO'
+                    const isTerminator = step.kind === 'INICIO' || step.kind === 'FIM'
+                    return <g key={step.id}>
+                      {index > 0 && <g><line x1="280" y1={y - 25} x2="280" y2={y - 5} stroke="#7B9AAA" strokeWidth="2"/><path d={'M274 ' + (y - 11) + ' L280 ' + (y - 4) + ' L286 ' + (y - 11)} fill="none" stroke="#7B9AAA" strokeWidth="2"/></g>}
+                      {isDecision ? <polygon points={'280,' + y + ' 430,' + (y + 35) + ' 280,' + (y + 70) + ' 130,' + (y + 35)} fill="#FFF7E8" stroke="#D99A36" strokeWidth="2"/> : isTerminator ? <rect x="145" y={y + 3} width="270" height="46" rx="23" fill={step.kind === 'INICIO' ? '#E6F5EE' : '#E7F2FA'} stroke={step.kind === 'INICIO' ? '#3A9D78' : '#2D8DB8'} strokeWidth="2"/> : <rect x="130" y={y} width="300" height="54" rx="2" fill="white" stroke="#2D8DB8" strokeWidth="2"/>}
+                      <text x="280" y={y + (isDecision ? 20 : 17)} textAnchor="middle" fontSize="10" fontWeight="700" fill="#123B50">{kindLabel(step.kind)}</text>
+                      {lines.map((line, lineIndex) => <text key={lineIndex} x="280" y={y + (isDecision ? 34 : 31) + lineIndex * 12} textAnchor="middle" fontSize="10" fill="#123B50">{line}</text>)}
+                      {step.responsible.trim() && <text x="280" y={y + (isDecision ? 82 : 68)} textAnchor="middle" fontSize="9" fill="#64748B">Responsável: {step.responsible.slice(0, 54)}</text>}
+                    </g>
+                  })}
+                </svg>
+                {content.steps.some(step => step.kind === 'DECISAO') && <p className="mt-1 text-[9px] text-amber-800">Decisões aparecem em losango. Registre no método do procedimento os critérios e os caminhos para “sim” e “não”.</p>}
+              </div>
+            </section>
+          </div>
+
+          <section className="border border-slate-200 bg-white p-3">
+            <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 pb-2"><h2 className="text-[11px] font-semibold">Prévia do documento controlado</h2><span className="ml-auto text-[9px] text-slate-500">{codigo || 'SEM CÓDIGO'} · REV. {revisao || 'NOVA'}</span></div>
+            <article className="mx-auto mt-3 max-w-[900px] border border-slate-300 bg-white p-5 text-slate-900 print:border-0 print:p-0">
+              <div className="grid grid-cols-[100px_minmax(0,1fr)_115px] border-2 border-slate-800">
+                <div className="flex min-h-[64px] items-center justify-center border-r border-slate-800 p-2">{logoUrl ? <img src={logoUrl} alt="Logotipo da empresa" className="max-h-12 max-w-full object-contain"/> : <span className="text-[9px] text-slate-400">LOGOTIPO</span>}</div>
+                <div className="flex flex-col justify-center border-r border-slate-800 px-3 py-2"><span className="text-[8px] font-semibold uppercase text-slate-500">Procedimento / Instrução de Trabalho</span><span className="mt-1 text-[13px] font-semibold">{titulo || 'Título do procedimento'}</span><span className="mt-1 text-[9px]">{departamento || 'QUALIDADE'}</span></div>
+                <div className="flex flex-col justify-center gap-1 px-2 text-[9px]"><span><strong>CÓDIGO</strong><br/>{codigo || '—'}</span><span><strong>REVISÃO</strong><br/>{revisao || 'NOVA'}</span><span><strong>VIGÊNCIA</strong><br/>{data || 'PENDENTE'}</span></div>
+              </div>
+              {[
+                ['1. OBJETIVO', content.objective],
+                ['2. ESCOPO E APLICAÇÃO', content.scope],
+                ['3. RESPONSABILIDADES', content.responsibilities],
+                ['4. MÉTODO, CRITÉRIOS E REGISTROS', content.method],
+              ].map(([heading, value]) => <section key={heading} className="mt-4"><h3 className="border-b border-slate-300 pb-1 text-[10px] font-semibold uppercase">{heading}</h3><p className="mt-2 whitespace-pre-wrap text-[10px] leading-5">{value || 'A preencher.'}</p></section>)}
+              <section className="mt-4"><h3 className="border-b border-slate-300 pb-1 text-[10px] font-semibold uppercase">5. FLUXOGRAMA DO PROCESSO</h3><p className="mt-1 text-[9px] text-slate-500">O fluxograma detalhado está na prévia gráfica acima e acompanha as etapas salvas na revisão.</p><ol className="mt-2 list-decimal space-y-1 pl-5 text-[10px]">{content.steps.map(step => <li key={step.id}><strong>{kindLabel(step.kind)}:</strong> {step.title}{step.responsible.trim() ? ' — Responsável: ' + step.responsible : ''}</li>)}</ol></section>
+              <footer className="mt-5 grid grid-cols-3 border border-slate-300 text-center text-[8px]"><div className="border-r border-slate-300 p-2">ELABORAÇÃO<br/><strong>{'Responsável do SGQ'}</strong></div><div className="border-r border-slate-300 p-2">APROVAÇÃO<br/><strong>Conforme fluxo do GED</strong></div><div className="p-2">STATUS<br/><strong>{data ? 'VIGENTE' : 'EM ANÁLISE / RASCUNHO'}</strong></div></footer>
+            </article>
+          </section>
+
+          <footer className="flex flex-wrap items-center justify-between gap-2 border border-slate-200 bg-white px-3 py-2 text-[9px] text-slate-500 print:hidden">
+            <span>Empresa identificada pela sessão · revisão registrada no Supabase · aprovação controlada no GED</span>
+            <button type="submit" disabled={busy || !loaded} className="inline-flex h-[30px] items-center gap-2 border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-semibold text-white disabled:opacity-50"><Save size={13}/>{busy ? 'SALVANDO…' : 'SALVAR NOVA REVISÃO'}</button>
+          </footer>
+        </form>
+      </div>
+      <style>{'@page{size:A4;margin:12mm}@media print{body{background:#fff!important}.print\\:hidden,nav,aside,button,input,select,textarea{display:none!important}main{padding:0!important}.max-w-\\[1500px\\]{max-width:100%!important}.grid{break-inside:avoid}article{box-shadow:none!important;max-width:100%!important}}'}</style>
+    </main>
+  )
 }
