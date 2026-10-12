@@ -90,5 +90,8 @@ jobs:
       - name: Quality inspection contract
         run: npm run verify:quality-inspection-contract
 
+      - name: PCP OEE contract
+        run: npm run verify:pcp-oee
+
       - name: Security no-bypass policy
         run: npm run audit:security
