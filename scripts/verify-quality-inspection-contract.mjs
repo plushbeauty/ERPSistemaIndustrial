@@ -42,6 +42,10 @@ requireIn(migration, /create policy qualidade_inspecoes_rbac_insert[\s\S]*as res
 requireIn(migration, /create policy estoque_lotes_rbac_update_guard[\s\S]*as restrictive[\s\S]*for update/i, 'RLS não protege atualizações de lotes por ação.');
 requireIn(migration, /create policy erp_estoque_lotes_rbac_update_guard[\s\S]*as restrictive[\s\S]*for update/i, 'RLS não protege o ledger ERP de lotes por ação.');
 requireIn(migration, /create policy erp_quarentenas_lotes_rbac_insert[\s\S]*as restrictive[\s\S]*for insert/i, 'RLS não protege inserts diretos de quarentena por ação.');
+requireIn(migration, /create policy qualidade_rnc_capa_rbac_insert[\\s\\S]*as restrictive[\\s\\S]*for insert[\\s\\S]*qualidade', 'criar'/i, 'RNC/CAPA aceita insert sem permissão qualidade.criar.');
+requireIn(migration, /create policy erp_rpnc_rbac_insert[\\s\\S]*as restrictive[\\s\\S]*for insert[\\s\\S]*qualidade', 'criar'/i, 'RPNC aceita insert sem permissão qualidade.criar.');
+requireIn(migration, /create policy qualidade_rnc_capa_rbac_update[\\s\\S]*as restrictive[\\s\\S]*for update[\\s\\S]*qualidade', 'editar'/i, 'RNC/CAPA aceita atualização sem permissão qualidade.editar.');
+requireIn(migration, /create policy erp_rpnc_rbac_update[\\s\\S]*as restrictive[\\s\\S]*for update[\\s\\S]*qualidade', 'editar'/i, 'RPNC aceita atualização sem permissão qualidade.editar.');
 requireIn(migration, /create or replace function public\.erp_reter_lote[\s\S]*security definer[\s\S]*set search_path = pg_catalog, public[\s\S]*erp_has_permission/i, 'RPC de retenção SECURITY DEFINER não valida RBAC com search_path fixo.');
 requireIn(migration, /revoke all on function public\.erp_salvar_inspecao_lote[\s\S]*from public, anon/i, 'RPC de inspeção continua exposta a public/anon.');
 requireIn(migration, /revoke all on function public\.erp_reter_lote[\s\S]*from public, anon/i, 'RPC de retenção continua exposta a public/anon.');
