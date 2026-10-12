@@ -98,6 +98,7 @@ requireIn(incomingCostingMigration, /u\.auth_user_id = auth\.uid\(\)[\s\S]*u\.em
 requireIn(incomingCostingMigration, /erp_has_permission\('estoque', 'criar'\)[\s\S]*erp_has_permission\('fiscal', 'editar'\)/i, 'Escrituração não verifica permissão de estoque/fiscal.')
 requireIn(incomingCostingMigration, /from public\.fiscal_nfe_entradas[\s\S]*where id = p_nfe_id[\s\S]*empresa_id = v_empresa_id[\s\S]*for update/i, 'Escrituração não bloqueia a NF-e do tenant.')
 requireIn(incomingCostingMigration, /pg_advisory_xact_lock/i, 'Cálculo de custo médio não serializa concorrência por produto.')
+requireIn(incomingCostingMigration, /from public\.engenharia_produtos p[\s\S]*p\.empresa_id = v_empresa_id[\s\S]*p\.ativo = true/i, 'Custo médio permite produto inativo ou de outro tenant.')
 requireIn(incomingCostingMigration, /revoke all on function public\.erp_registrar_custo_medio_nfe[\s\S]*from public, anon, authenticated/i, 'Helper de custo médio continua exposto aos papéis de navegador.')
 requireIn(incomingCostingMigration, /revoke all on function public\.erp_escriturar_nfe_entrada[\s\S]*from public, anon/i, 'Escrituração de entrada não revoga acesso público/anônimo.')
 requireIn(incomingCostingMigration, /grant execute on function public\.erp_escriturar_nfe_entrada[\s\S]*to authenticated/i, 'RPC de escrituração não está concedida explicitamente a authenticated.')
