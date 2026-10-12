@@ -52,8 +52,11 @@ begin
     raise exception 'Perfil ERP ativo não localizado na empresa atual.' using errcode = '42501';
   end if;
 
-  if not public.erp_has_permission('qualidade', 'criar') then
-    raise exception 'Sem permissão para registrar inspeções da Qualidade.' using errcode = '42501';
+  if not (
+    public.erp_has_permission('qualidade', 'ver')
+    and public.erp_has_permission('qualidade', 'criar')
+  ) then
+    raise exception 'Sem permissão para consultar e registrar inspeções da Qualidade.' using errcode = '42501';
   end if;
 
   if p_tipo is null
