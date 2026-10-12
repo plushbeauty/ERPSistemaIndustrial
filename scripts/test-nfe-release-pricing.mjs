@@ -13,7 +13,8 @@ const { allocateReleaseDiscounts } = await import(moduleUrl);
 
 assert.deepEqual(allocateReleaseDiscounts(10, 10, [5, 5]), [5, 5]);
 assert.deepEqual(allocateReleaseDiscounts(1, 3, [1, 1, 1]), [0.33, 0.33, 0.34]);
-assert.deepEqual(allocateReleaseDiscounts(10, 10, [2, 3]), [4, 6]);
+assert.deepEqual(allocateReleaseDiscounts(10, 10, [4, 6]), [4, 6]);
+assert.deepEqual(allocateReleaseDiscounts(10, 10, [2, 3]), [2, 3]);
 assert.deepEqual(allocateReleaseDiscounts(10, 10, [2]), [2]);
 assert.deepEqual(allocateReleaseDiscounts(10, 10, [12]), [10]);
 assert.deepEqual(allocateReleaseDiscounts(10, 0, [2]), [0]);
