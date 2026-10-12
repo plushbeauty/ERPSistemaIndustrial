@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react'
-import { FileEdit, ImageUp, Plus, Printer, Save, ShieldCheck, Trash2 } from 'lucide-react'
+import { Download, FileEdit, ImageUp, Plus, Printer, Save, ShieldCheck, Trash2, Upload } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
+import { emitirProcedimentoIT } from '../../services/geradorDocumento'
 import QualitySidebar from '../../components/quality/QualitySidebar'
 
 type FlowKind = 'INICIO' | 'ETAPA' | 'DECISAO' | 'FIM'
@@ -126,7 +127,7 @@ export default function QualidadeEditorIT() {
         setErr(result.error.message)
         return
       }
-      const rows = (result.data ?? []) as Array<{ codigo_documento: string; titulo_documento: string; revisao: number; data_homologacao: string | null; conteudo_texto: string; logo_path: string | null; setor_responsavel: string | null; status: string | null }>
+      const rows = ((result.data ?? []) as Array<{ codigo_documento: string; titulo_documento: string; revisao: number; data_homologacao: string | null; conteudo_texto: string; logo_path: string | null; setor_responsavel: string | null; status: string | null }>).filter(row => !row.codigo_documento.startsWith('MODELO-'))
       setProcedures(rows)
       const first = rows[0]
       if (first) {
@@ -196,6 +197,58 @@ export default function QualidadeEditorIT() {
     const steps = current.steps.filter(step => step.id !== id)
     return { ...current, steps: steps.length ? steps : emptyContent.steps }
   })
+
+  const uploadWordTemplate = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.currentTarget.value = ''
+    if (!file) return
+    setErr(''); setMsg('')
+    if (!file.name.toLowerCase().endsWith('.docx')) { setErr('Selecione um modelo Word .docx.'); return }
+    if (!empresa) { setErr('Empresa não identificada para a sessão.'); return }
+    setBusy(true)
+    let uploadedPath: string | null = null
+    try {
+      const path = empresa + '/modelos/' + crypto.randomUUID() + '.docx'
+      const uploaded = await supabase.storage.from('erp-documentos-qualidade').upload(path, file, { upsert: false, contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' })
+      if (uploaded.error) throw uploaded.error
+      uploadedPath = path
+      const saved = await supabase.rpc('erp_salvar_revisao_documento', {
+        p_codigo: 'MODELO-PROCEDIMENTO-IT',
+        p_titulo: 'Modelo Word — Procedimento / Instrução de Trabalho',
+        p_departamento: 'QUALIDADE',
+        p_conteudo: 'Modelo Word para exportação de procedimentos e instruções de trabalho com campos Docxtemplater.',
+        p_motivo: 'Cadastro de modelo Word para procedimento gráfico',
+        p_logo_path: null,
+        p_url_anexo: path,
+        p_nome_arquivo: file.name,
+      })
+      if (saved.error) throw saved.error
+      uploadedPath = null
+      setMsg('Modelo Word registrado como revisão em análise. Aprove-o no GED antes de gerar procedimentos DOCX.')
+    } catch (cause) {
+      if (uploadedPath) {
+        const removed = await supabase.storage.from('erp-documentos-qualidade').remove([uploadedPath])
+        if (removed.error) console.error('[SGQ] Falha ao remover modelo não registrado', removed.error)
+      }
+      setErr(cause instanceof Error ? cause.message : 'Falha ao enviar o modelo Word.')
+    } finally { setBusy(false) }
+  }
+
+  const exportWord = async () => {
+    if (!codigo.trim() || !titulo.trim()) { setErr('Informe o código e o título antes de exportar.'); return }
+    if (content.steps.some(step => !step.title.trim())) { setErr('Preencha ou remova todas as etapas sem título.'); return }
+    setBusy(true); setErr(''); setMsg('')
+    try {
+      await emitirProcedimentoIT({
+        codigo: codigo.trim(), titulo: titulo.trim(), departamento: departamento.trim() || 'QUALIDADE', revisao,
+        objetivo: content.objective, escopo: content.scope, responsabilidades: content.responsibilities, metodo: content.method,
+        etapas: content.steps.map(step => ({ tipo: kindLabel(step.kind), descricao: step.title, responsavel: step.responsible })),
+      })
+      setMsg('Arquivo Word de rascunho gerado. Ele está marcado como não controlado até a aprovação da revisão no GED.')
+    } catch (cause) {
+      setErr(cause instanceof Error ? cause.message : 'Falha ao gerar o procedimento Word.')
+    } finally { setBusy(false) }
+  }
 
   const uploadLogo = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -279,6 +332,11 @@ export default function QualidadeEditorIT() {
             <ImageUp size={13}/> LOGOTIPO
             <input hidden type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" disabled={busy} onChange={event => void uploadLogo(event)} />
           </label>
+          <label className="inline-flex h-[30px] cursor-pointer items-center gap-2 border border-slate-300 bg-white px-3 text-[10px] font-semibold hover:bg-slate-50">
+            <Upload size={13}/> MODELO WORD
+            <input hidden type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" disabled={busy} onChange={event => void uploadWordTemplate(event)} />
+          </label>
+          <button type="button" onClick={() => void exportWord()} disabled={busy || !loaded} className="inline-flex h-[30px] items-center gap-2 border border-slate-300 bg-white px-3 text-[10px] font-semibold hover:bg-slate-50 disabled:opacity-50"><Download size={13}/> EXPORTAR DOCX</button>
           <button type="button" onClick={() => window.print()} className="inline-flex h-[30px] items-center gap-2 border border-slate-300 bg-white px-3 text-[10px] font-semibold hover:bg-slate-50"><Printer size={13}/> VISUALIZAR / IMPRIMIR</button>
           <button type="submit" form="procedure-form" disabled={busy || !loaded} className="inline-flex h-[30px] items-center gap-2 border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-semibold text-white disabled:opacity-50"><Save size={13}/>{busy ? 'SALVANDO…' : 'SALVAR NOVA REVISÃO'}</button>
         </header>
