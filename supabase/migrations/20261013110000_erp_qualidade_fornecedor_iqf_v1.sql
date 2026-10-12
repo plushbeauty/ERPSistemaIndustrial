@@ -142,6 +142,17 @@ left join public.erp_qualidade_fornecedor_criterios c
   on c.id = i.criterio_id and c.empresa_id = i.empresa_id
 group by a.id, a.empresa_id, a.fornecedor_id, a.codigo, a.periodo_inicio, a.periodo_fim, a.status;
 
+
+-- Explicit browser grants; RLS remains the tenant boundary.
+revoke all on table public.erp_qualidade_fornecedor_criterios from public, anon;
+revoke all on table public.erp_qualidade_fornecedor_avaliacoes from public, anon;
+revoke all on table public.erp_qualidade_fornecedor_avaliacao_itens from public, anon;
+grant select, insert, update, delete on table public.erp_qualidade_fornecedor_criterios to authenticated;
+grant select, insert, update, delete on table public.erp_qualidade_fornecedor_avaliacoes to authenticated;
+grant select, insert, update, delete on table public.erp_qualidade_fornecedor_avaliacao_itens to authenticated;
+revoke all on public.erp_qualidade_fornecedor_iqf from public, anon;
+grant select on public.erp_qualidade_fornecedor_iqf to authenticated;
+
 create index if not exists idx_erp_q_fornecedor_criterios_ativos
   on public.erp_qualidade_fornecedor_criterios (empresa_id, ativo, codigo);
 
