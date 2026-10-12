@@ -14,6 +14,8 @@ const read = file => {
 const migration = read('supabase/migrations/20261012175122_erp_warehouse_nfe_release_v1.sql')
 const page = read('src/pages/estoque/EstoqueLiberacaoNFe.tsx')
 const emitter = read('src/pages/NFeEmissaoCompact.tsx')
+const edgeEmitter = read('supabase/functions/emitir-nfe/index.ts')
+const ibgePaymentMigration = read('supabase/migrations/20261012184500_erp_nfe_draft_recipient_ibge_payment_rpc.sql')
 const router = read('src/AppEntryV2.tsx')
 const shell = read('src/components/layout/ERPHorizontalShell.tsx')
 const requireIn = (source, pattern, message) => { if (!pattern.test(source)) failures.push(message) }
@@ -78,6 +80,12 @@ requireIn(emitter, /erp_liberacoes_nf_itens/i, 'Emissor não importa os itens pe
 requireIn(emitter, /lote: item\.lote \|\| null/i, 'Emissor não persiste lote/rastreabilidade nos itens fiscais.')
 requireIn(emitter, /LOTE \/ RASTREABILIDADE/i, 'Emissor não apresenta a rastreabilidade do lote na grade fiscal.')
 requireIn(emitter, /erp_vincular_liberacao_nfe/i, 'Emissor não vincula o rascunho à liberação.')
+requireIn(ibgePaymentMigration, /destinatario_codigo_municipio[\s\S]*?pagamento_tipo[\s\S]*?valor_pagamento/i, 'RPC de rascunho não persiste código IBGE e dados de pagamento.')
+requireIn(emitter, /codigo_municipio_ibge/i, 'Emissor não carrega código IBGE do cadastro do cliente.')
+requireIn(emitter, /Código IBGE Município/i, 'Formulário fiscal não permite informar o código IBGE do destinatário.')
+requireIn(emitter, /pagamento_tipo:[\s\S]*?valor_pagamento:/i, 'Formulário não persiste meio e valor do pagamento.')
+requireIn(edgeEmitter, /codigoMunicipio,[\s\S]*?pagamentos:\s*\[\{\s*tipoPagamento:\s*pagamentoTipo,\s*valor:\s*valorPagamento\s*\}\]/i, 'Payload do integrador não inclui código IBGE e grupo de pagamento.')
+requireIn(edgeEmitter, /allowedPaymentTypes/i, 'Emissão não valida códigos oficiais de meio de pagamento.')
 requireIn(router, /path="\/estoque\/liberacao-nfe"/i, 'Rota da liberação não foi registrada.')
 requireIn(shell, /Liberação para Nota Fiscal/i, 'Atalho do Almoxarifado não foi adicionado ao menu.')
 
