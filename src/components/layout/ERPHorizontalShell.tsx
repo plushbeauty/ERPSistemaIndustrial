@@ -210,7 +210,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             <button
               type="button"
               className={`erp-horizontal-menu-button ${active ? 'is-active' : ''}`}
-              onClick={() => hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)}
+              onClick={() => hasChildren ? (pathname === menu.route ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)) : go(menu.route)}
               aria-expanded={hasChildren ? expanded : undefined}
             >
               {menu.icon && <menu.icon size={16} />}{menu.label}
