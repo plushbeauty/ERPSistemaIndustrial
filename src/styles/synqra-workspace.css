@@ -1,7 +1,7 @@
 .synqra-workspace{min-height:100vh;background:#F4F7FE;color:#17212b;font-family:Inter,Roboto,Arial,sans-serif;font-size:11px}
 .synqra-workspace-header{height:76px!important;min-height:76px!important;display:grid;grid-template-columns:minmax(300px,1fr) auto minmax(280px,1fr);align-items:center;gap:12px;padding:5px 12px;background:linear-gradient(100deg,#fff 0%,#f4fbfd 60%,#eaf6fa 100%);border-bottom:2px solid #2D8DB8;color:#123b50;box-sizing:border-box}
 .synqra-workspace-brand{display:flex;align-items:center;gap:12px;min-width:0;background:transparent;border:0;color:inherit;text-align:left;cursor:pointer;padding:0}
-.synqra-workspace-brand img{display:block;width:148px;height:42px;max-width:100%;object-fit:contain;object-position:left center;flex-shrink:0;background:#123b50;border:1px solid #2D8DB8;border-radius:2px;padding:2px;box-sizing:border-box}
+.synqra-workspace-brand img{display:block;width:148px;height:42px;max-width:100%;object-fit:contain;object-position:left center;flex-shrink:0;background:#fff;border:0;border-radius:0;padding:0;box-sizing:border-box}
 .synqra-workspace-brand span{display:flex;flex-direction:column;min-width:0;border-left:2px solid #2D8DB8;padding-left:10px}
 .synqra-workspace-brand strong{font-size:12px;line-height:15px;letter-spacing:.04em;font-weight:800;white-space:nowrap;color:#123b50}
 .synqra-workspace-brand small{font-size:9px;line-height:12px;color:#315466;letter-spacing:.08em;font-weight:700}
