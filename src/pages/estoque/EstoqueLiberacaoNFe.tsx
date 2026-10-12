@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowRight, ClipboardCheck, FileText, PackageCheck, Plus, Printer, RefreshCw, Save, Send, Split, Truck } from 'lucide-react'
+import { ArrowRight, ClipboardCheck, FileText, PackageCheck, Printer, RefreshCw, Save, Send, Split, Truck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { fetchAllPages } from '../../lib/supabasePagination'
@@ -140,8 +140,6 @@ export default function EstoqueLiberacaoNFe() {
   }
 
   function splitLine(line: ReleaseLine) {
-    const source = orderItems.find(item => item.id === line.pedido_item_id)
-    if (!source) return
     setLines(current => [...current, { ...line, key: crypto.randomUUID(), quantidade: '', caixas: '', unidades_por_caixa: '', peso_liquido: '', peso_bruto: '', lote_id: '' }])
   }
 
