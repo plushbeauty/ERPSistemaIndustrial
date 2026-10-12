@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { useParams } from 'react-router-dom'
 import { CircleHelp, ExternalLink, FilePlus2, FileText, History, Paperclip, RefreshCw, Save, Search, ShieldCheck, Upload, X } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
+import { fetchAllPages } from '../../lib/supabasePagination'
 import QualitySidebar from '../../components/quality/QualitySidebar'
 
 type Revision = {
@@ -56,12 +57,13 @@ export default function GEDDocumentos() {
       if (company.error) throw company.error
       if (!company.data) throw new Error('Empresa da sessão não identificada.')
       setCompanyId(company.data)
-      const result = await supabase.from('erp_qualidade_documentos_revisoes')
-        .select('id,empresa_id,codigo_documento,titulo_documento,departamento,revisao,responsavel,status,conteudo_texto,motivo_alteracao,criado_em,data_vigencia,nome_arquivo,url_anexo')
-        .eq('empresa_id', company.data)
-        .order('criado_em', { ascending: false })
-      if (result.error) throw result.error
-      const rows = (result.data ?? []) as Revision[]
+      const rows = await fetchAllPages<Revision>((from, to) =>
+        supabase.from('erp_qualidade_documentos_revisoes')
+          .select('id,empresa_id,codigo_documento,titulo_documento,departamento,revisao,responsavel,status,conteudo_texto,motivo_alteracao,criado_em,data_vigencia,nome_arquivo,url_anexo', { count: 'exact' })
+          .eq('empresa_id', company.data)
+          .order('criado_em', { ascending: false })
+          .range(from, to),
+      )
       setRevisions(rows)
       if (selectedId && !rows.some(row => row.id === selectedId)) setSelectedId('')
     } catch (cause) {
