@@ -37,6 +37,7 @@ declare
   v_total_itens numeric := 0;
   v_total_produtos numeric;
   v_frete numeric;
+  v_seguro numeric;
   v_outras_despesas numeric;
   v_desconto_documento numeric;
   v_ipi numeric;
@@ -225,6 +226,7 @@ begin
 
   if jsonb_typeof(p_documento->'valor_produtos') is distinct from 'number'
      or jsonb_typeof(p_documento->'valor_frete') is distinct from 'number'
+     or jsonb_typeof(p_documento->'valor_seguro') is distinct from 'number'
      or jsonb_typeof(p_documento->'valor_outras_despesas') is distinct from 'number'
      or jsonb_typeof(p_documento->'valor_desconto') is distinct from 'number'
      or jsonb_typeof(p_documento->'valor_ipi') is distinct from 'number'
@@ -236,6 +238,7 @@ begin
 
   v_total_produtos := (p_documento->>'valor_produtos')::numeric;
   v_frete := (p_documento->>'valor_frete')::numeric;
+  v_seguro := (p_documento->>'valor_seguro')::numeric;
   v_outras_despesas := (p_documento->>'valor_outras_despesas')::numeric;
   v_desconto_documento := (p_documento->>'valor_desconto')::numeric;
   v_ipi := (p_documento->>'valor_ipi')::numeric;
@@ -245,6 +248,7 @@ begin
 
   if v_total_produtos < 0
      or v_frete < 0
+     or v_seguro < 0
      or v_outras_despesas < 0
      or v_desconto_documento < 0
      or v_desconto_documento > v_total_itens
@@ -286,6 +290,7 @@ begin
       coalesce(nullif(p_documento->>'volumes', '')::numeric, 0),
       coalesce(nullif(p_documento->>'valor_produtos', '')::numeric, 0),
       coalesce(nullif(p_documento->>'valor_frete', '')::numeric, 0),
+      coalesce(nullif(p_documento->>'valor_seguro', '')::numeric, 0),
       coalesce(nullif(p_documento->>'valor_outras_despesas', '')::numeric, 0),
       coalesce(nullif(p_documento->>'valor_desconto', '')::numeric, 0),
       coalesce(nullif(p_documento->>'base_calculo_icms', '')::numeric, 0),
@@ -343,6 +348,7 @@ begin
         volumes = coalesce(nullif(p_documento->>'volumes', '')::numeric, 0),
         valor_produtos = coalesce(nullif(p_documento->>'valor_produtos', '')::numeric, 0),
         valor_frete = coalesce(nullif(p_documento->>'valor_frete', '')::numeric, 0),
+        valor_seguro = coalesce(nullif(p_documento->>'valor_seguro', '')::numeric, 0),
         valor_outras_despesas = coalesce(nullif(p_documento->>'valor_outras_despesas', '')::numeric, 0),
         valor_desconto = coalesce(nullif(p_documento->>'valor_desconto', '')::numeric, 0),
         base_calculo_icms = coalesce(nullif(p_documento->>'base_calculo_icms', '')::numeric, 0),
