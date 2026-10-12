@@ -21,6 +21,7 @@ const emissionMigration = read('supabase/migrations/20261005120000_erp_fiscal_nf
 const emissionPage = read('src/pages/NFeEmissao.tsx')
 const emissionFunction = read('supabase/functions/emitir-nfe/index.ts')
 const xmlBuilder = read('src/lib/fiscal/nfe-xml-builder.ts')
+const nfeRepository = read('src/lib/fiscal/nfe-repository.ts')
 
 const requireIn = (text, pattern, description) => {
   if (!pattern.test(text)) failures.push(description)
@@ -97,6 +98,7 @@ requireIn(xmlBuilder, /documentKind: 'internal-draft'[\s\S]*suitableForSefaz: fa
 requireIn(xmlBuilder, /urn:erp-industrial:nfe:draft:v1/, 'XML interno não usa namespace próprio de rascunho.');
 requireIn(xmlBuilder, /replace\(\/&\/g, '&amp;'\)[\s\S]*replace\(\/</, 'Serializador não escapa conteúdo textual XML.');
 requireIn(xmlBuilder, /codePointAt\(0\)/, 'Serializador não filtra caracteres inválidos XML 1.0 por ponto de código.');
+requireIn(nfeRepository, /default:\s*throw new Error\(`Status fiscal não reconhecido:/, 'Repositório não pode converter status fiscal desconhecido em rascunho silenciosamente.');
 requireIn(emissionPage, /supabase\.rpc\('erp_salvar_rascunho_nfe'/, 'Tela NF-e não grava usando a RPC transacional.')
 requireIn(emissionPage, /functions\.invoke\('emitir-nfe'/, 'Tela NF-e não chama a Edge Function de emissão.')
 requireIn(emissionPage, /Imprimir espelho/, 'Tela NF-e não oferece impressão do espelho de conferência.')
