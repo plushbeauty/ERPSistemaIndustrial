@@ -167,7 +167,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       <header className="erp-horizontal-header">
         <button className="erp-horizontal-brand" type="button" onClick={() => go('/erp-industrial')} title="Início">
           <img src="/logo/sgq-erp.png" alt="Logotipo SGQERP Industrial" />
-          <span className="erp-horizontal-brand-copy"><strong>SGQERP INDUSTRIAL</strong><small>SISTEMA DE GESTÃO INDUSTRIAL</small></span>
+          <span className="erp-horizontal-brand-copy"><strong>SGQERP INDUSTRIAL</strong></span>
         </button>
 
         <div className="erp-horizontal-current-module" aria-label="Módulo atual" title={pageLabel}>
