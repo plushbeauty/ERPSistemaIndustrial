@@ -140,13 +140,14 @@ export default function ComprasRFQ() {
       if (auth.error || !auth.data.user) {
         throw auth.error ?? new Error('Sessão não localizada para registrar a cotação.')
       }
+      // O contrato de identidade vigente alinha erp_usuarios.id a auth.users.id.
+      // auth_user_id e deleted_at não são parte do contrato confirmado desta tabela.
       const profile = await supabase
         .from('erp_usuarios')
         .select('id')
-        .eq('auth_user_id', auth.data.user.id)
+        .eq('id', auth.data.user.id)
         .eq('empresa_id', empresaId)
         .eq('ativo', true)
-        .is('deleted_at', null)
         .maybeSingle()
       if (profile.error || !profile.data) {
         throw profile.error ?? new Error('Perfil ERP ativo não localizado para registrar a cotação.')
