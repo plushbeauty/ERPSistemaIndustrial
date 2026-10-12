@@ -110,7 +110,7 @@ begin
     raise exception 'O fator de abrangência k deve ser maior que zero.';
   end if;
   if p_umidade_relativa_pct is not null and p_umidade_relativa_pct not between 0 and 100 then
-    raise exception 'A umidade relativa deve estar entre 0 e 100%.';
+    raise exception 'A umidade relativa deve estar entre 0 e 100%%.';
   end if;
 
   perform 1
