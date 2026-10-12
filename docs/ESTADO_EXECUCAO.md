@@ -164,3 +164,13 @@ Este bloco prevalece sobre notas anteriores desta página que diziam que nenhuma
 - A auditoria dos escritores de `estoque_saldos` e `estoque_lotes` encontrou mutações feitas por triggers/RPCs, sem necessidade de edição direta pelo navegador.
 - A migration `20261013070000_harden_stock_balances_and_lot_writes.sql` restringe escrita direta nas tabelas de saldo/lotes e move os escritores necessários para funções `SECURITY DEFINER` com `search_path` fixo e validações de sessão, tenant e permissão.
 - **Pendente de validação SQL no ambiente não produtivo:** a migration foi preparada e adicionada ao contrato estático, mas não foi aplicada. É obrigatório validar disparo dos triggers, recebimento de NF-e, inspeção reprovada/quarentena e movimentação/transferência antes de aprovar a aplicação.
+
+## Continuação da auditoria estrutural — 12/10/2026
+
+- O gate P0 do commit `fa99663c74b1cc9f83a639574bd5902ebc536674` concluiu com sucesso: TypeScript, ESLint (sem erros, com avisos), build, saída de build, 245 definições de rota, 157 imports lazy, contratos NF-e/RFQ/Tablet Qualidade/Inspeção e política estática de segurança.
+- A auditoria estrutural inspecionou 154 páginas e reportou zero falhas bloqueantes, mas apontou dois botões de edição fora do padrão e três avisos de marcador/alias. Foram corrigidos nesta branch os botões de ação de `src/pages/ComprasAnalisePrecos.tsx` e `src/pages/CalibracaoIndustrial.tsx`.
+- Ajustado `scripts/auditoria-brutal.mjs` para não interpretar a palavra portuguesa “todo” como o marcador de tarefa `TODO`, nem a expressão de interface “link temporário” como placeholder de implementação. O gate do novo HEAD precisa confirmar a redução dos falsos positivos.
+- O inventário atual tem 196 arquivos de página, 218 migrations e 11 Edge Functions. O gate verifica 154 páginas na regra estrutural, portanto ainda há páginas/componentes fora dessa contagem a revisar; não confundir inventário com validação funcional.
+- O commit `91dbda30f2ef913031645f50eda663dab6b0cc1c` iniciou novo CI, ainda em execução na última consulta. Os commits posteriores para padronização de botões e precisão da auditoria também precisam concluir CI verde.
+- A lint do CI anterior passou com **0 erros e 132 avisos**. Isso não bloqueou o gate, mas permanece dívida técnica real; priorizar avisos de variáveis não utilizadas e possíveis caminhos de código morto depois dos bloqueios P0/P1.
+- Nenhuma migration foi aplicada ao Supabase. A validação das migrations de RFQ, estoque/lotes, quarentena, custo médio e NF-e ainda requer execução em ambiente não produtivo e verificação do histórico real.
