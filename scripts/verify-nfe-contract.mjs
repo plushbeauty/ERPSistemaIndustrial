@@ -99,7 +99,7 @@ requireIn(xmlBuilder, /urn:erp-industrial:nfe:draft:v1/, 'XML interno não usa n
 requireIn(xmlBuilder, /replace\(\/&\/g, '&amp;'\)[\s\S]*replace\(\/</, 'Serializador não escapa conteúdo textual XML.');
 requireIn(xmlBuilder, /codePointAt\(0\)/, 'Serializador não filtra caracteres inválidos XML 1.0 por ponto de código.');
 requireIn(nfeRepository, /default:\s*throw new Error\(`Status fiscal não reconhecido:/, 'Repositório não pode converter status fiscal desconhecido em rascunho silenciosamente.');
-requireIn(nfeRepository, /environment:\s*mapEnvironment\(row\.ambiente\)[\s\S]*direction:\s*mapDirection\(row\.tipo\)/, 'Repositório não pode converter ambiente/direção fiscal desconhecidos em valores padrão silenciosamente.');
+requireIn(nfeRepository, /function mapEnvironment\([\s\S]*default:\s*throw new Error\(`Ambiente fiscal não reconhecido:[\s\S]*function mapDirection\([\s\S]*default:\s*throw new Error\(`Direção fiscal não reconhecida:[\s\S]*environment:\s*mapEnvironment\(row\.ambiente\)[\s\S]*direction:\s*mapDirection\(row\.tipo\)/, 'Repositório não pode converter ambiente/direção fiscal desconhecidos em valores padrão silenciosamente.');
 requireIn(emissionPage, /supabase\.rpc\('erp_salvar_rascunho_nfe'/, 'Tela NF-e não grava usando a RPC transacional.')
 requireIn(emissionPage, /functions\.invoke\('emitir-nfe'/, 'Tela NF-e não chama a Edge Function de emissão.')
 requireIn(emissionPage, /Imprimir espelho/, 'Tela NF-e não oferece impressão do espelho de conferência.')
