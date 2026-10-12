@@ -20,6 +20,7 @@ const itemMigration = read('supabase/migrations/20260921141000_erp_nfe_itens_for
 const emissionMigration = read('supabase/migrations/20261005120000_erp_fiscal_nfe_numbering_and_claim_v1.sql')
 const emissionPage = read('src/pages/NFeEmissao.tsx')
 const emissionFunction = read('supabase/functions/emitir-nfe/index.ts')
+const xmlBuilder = read('src/lib/fiscal/nfe-xml-builder.ts')
 
 const requireIn = (text, pattern, description) => {
   if (!pattern.test(text)) failures.push(description)
@@ -91,6 +92,11 @@ if (/using\s*\(\s*true\s*\)|with\s+check\s*\(\s*true\s*\)/i.test(draftMigration)
 }
 
 requireIn(emissionMigration, /erp_has_permission\(\s*'fiscal'\s*,\s*'emitir'\s*\)/, 'Reserva/claim de NF-e não verifica permissão fiscal.')
+requireIn(xmlBuilder, /export function buildNFeDraftXml\(draft: NFeDraft\)/, 'Serializador tipado de rascunho NF-e não está disponível.');
+requireIn(xmlBuilder, /documentKind: 'internal-draft'[\s\S]*suitableForSefaz: false/, 'XML interno não declara explicitamente que não é adequado para SEFAZ.');
+requireIn(xmlBuilder, /urn:erp-industrial:nfe:draft:v1/, 'XML interno não usa namespace próprio de rascunho.');
+requireIn(xmlBuilder, /replace\(\/&\/g, '&amp;'\)[\s\S]*replace\(\/</, 'Serializador não escapa conteúdo textual XML.');
+requireIn(xmlBuilder, /codePointAt\(0\)/, 'Serializador não filtra caracteres inválidos XML 1.0 por ponto de código.');
 requireIn(emissionPage, /supabase\.rpc\('erp_salvar_rascunho_nfe'/, 'Tela NF-e não grava usando a RPC transacional.')
 requireIn(emissionPage, /functions\.invoke\('emitir-nfe'/, 'Tela NF-e não chama a Edge Function de emissão.')
 requireIn(emissionPage, /Imprimir espelho/, 'Tela NF-e não oferece impressão do espelho de conferência.')
