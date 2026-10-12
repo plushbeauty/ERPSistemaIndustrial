@@ -1,10 +1,9 @@
 import { Navigate } from 'react-router-dom'
 import {
   Activity, BookOpenCheck, ClipboardCheck, ClipboardList, FileCheck2, FileText,
-  Gauge, GitBranch, ListChecks, Microscope, SearchCheck, ShieldAlert, ShieldCheck,
+  GitBranch, ListChecks, Microscope, SearchCheck, ShieldAlert, ShieldCheck,
   Target, Wrench, Workflow,
 } from 'lucide-react'
-import QualitySidebar from '../components/quality/QualitySidebar'
 
 export const qualityModules = [
   { label: 'Inspeções de lotes', description: 'Registrar amostras e resultados de inspeção.', route: '/qualidade/inspecoes', icon: ClipboardCheck },
