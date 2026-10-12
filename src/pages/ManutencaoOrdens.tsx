@@ -12,12 +12,13 @@ const input='h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2
 const area='min-h-[72px] w-full rounded-[2px] border border-slate-300 bg-white p-2 text-[10px] text-[#123B50] outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#B9E1ED]'
 const label='grid gap-[2px] text-[9px] font-medium uppercase tracking-wide text-slate-600'
 const PAGE_SIZE=25
+function localDateInputValue(date = new Date()) { const year = date.getFullYear(); const month = String(date.getMonth() + 1).padStart(2, '0'); const day = String(date.getDate()).padStart(2, '0'); return `${year}-${month}-${day}` }
 
 export default function ManutencaoOrdens(){
  const[orders,setOrders]=useState<Order[]>([]),[machines,setMachines]=useState<LookupRecord[]>([]),[products,setProducts]=useState<LookupRecord[]>([]),[technicians,setTechnicians]=useState<LookupRecord[]>([]),[page,setPage]=useState(0)
  const[busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState(''),[open,setOpen]=useState(false),[selected,setSelected]=useState<Order|null>(null)
  const[laudo,setLaudo]=useState(''),[causa,setCausa]=useState(''),[solucao,setSolucao]=useState(''),[componentId,setComponentId]=useState(''),[componentQty,setComponentQty]=useState('0')
- const[form,setForm]=useState<Form>({machineId:'',tipo:'CORRETIVA',descricao:'',prioridade:'MEDIA',dataPrevista:new Date().toISOString().slice(0,10)})
+ const[form,setForm]=useState<Form>({machineId:'',tipo:'CORRETIVA',descricao:'',prioridade:'MEDIA',dataPrevista:localDateInputValue()})
 
  const load=async()=>{
   setBusy(true);setError('')
