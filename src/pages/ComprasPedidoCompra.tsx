@@ -136,7 +136,7 @@ export default function ComprasPedidoCompra() {
       <section className="bg-white border border-[#C9DDE5] rounded-[2px] p-2">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-1.5 items-end">
           <label className="col-span-1 sm:col-span-1 lg:col-span-3 text-[9px] uppercase tracking-wider text-[#536B76]">Fornecedor*
-            <select required value={supplier} onChange={(event) => setSupplier(event.target.value)} className={`mt-[2px] h-[30px] w-full rounded-[2px] border px-2 text-[11px] bg-neutral-900 ${!supplier ? 'border-red-500 bg-red-50/50 text-neutral-900' : 'border-[#B9D0DC] text-[#123B50]'}`}>
+            <select required value={supplier} onChange={(event) => setSupplier(event.target.value)} className={`mt-[2px] h-[30px] w-full rounded-[2px] border px-2 text-[11px] bg-white ${!supplier ? 'border-red-500 bg-red-50/50 text-neutral-900' : 'border-[#B9D0DC] text-[#123B50]'}`}>
               <option value="">Preencher...</option>{suppliers.map((entry) => <option key={entry.id} value={entry.id}>{entry.razao_social}</option>)}
             </select>
           </label>
@@ -148,7 +148,7 @@ export default function ComprasPedidoCompra() {
       <section className="bg-white border border-[#C9DDE5] rounded-[2px] p-2">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-1.5 items-end">
           <label className="col-span-1 sm:col-span-2 lg:col-span-4 text-[9px] uppercase tracking-wider text-[#536B76]">Produto / matéria-prima*
-            <select value={product} onChange={(event) => { setProduct(event.target.value); setPrice('0') }} className={`mt-[2px] h-[30px] w-full rounded-[2px] border px-2 text-[11px] bg-neutral-900 ${!product ? 'border-red-500 bg-red-50/50 text-neutral-900' : 'border-[#B9D0DC] text-[#123B50]'}`}>
+            <select value={product} onChange={(event) => { setProduct(event.target.value); setPrice('0') }} className={`mt-[2px] h-[30px] w-full rounded-[2px] border px-2 text-[11px] bg-white ${!product ? 'border-red-500 bg-red-50/50 text-neutral-900' : 'border-[#B9D0DC] text-[#123B50]'}`}>
               <option value="">Preencher...</option>{products.map((entry) => <option key={entry.id} value={entry.id}>{entry.codigo} — {entry.nome}</option>)}
             </select>
           </label>
