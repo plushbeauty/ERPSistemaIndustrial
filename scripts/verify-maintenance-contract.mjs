@@ -30,7 +30,7 @@ requireIn(toolingChecklist, /erp_current_empresa_id/, 'Checklist da ferramentari
 requireIn(toolingChecklist, /\.eq\('empresa_id',empresaId\)/, 'A listagem da ferramentaria não está isolada por empresa.')
 requireIn(toolingChecklist, /\.eq\('empresa_id',companyId\)/, 'A gravação do checklist da ferramentaria não está isolada por empresa.')
 requireIn(toolingChecklist, /status==='LIBERADO'&&done\.some\(value=>!value\)/, 'A ferramentaria permite liberar molde com checklist incompleto.')
-requireIn(toolingChecklist, /\.\.\.\(selected\.parametros\?\.\?\{\}\),preventiva:/, 'A manutenção preventiva apaga outros parâmetros do ferramental.')
+requireIn(toolingChecklist, /\.\.\.parameters,[\s\S]*preventiva:/, 'A manutenção preventiva apaga outros parâmetros do ferramental.')
 requireIn(toolingChecklist, /update\(\{status:operationalStatus,parametros:next\}\)/, 'A retenção da ferramentaria não atualiza o status operacional do ferramental.');
 requireIn(setupApproval, /update\(\{ status: operationalStatus, parametros: updatedParameters/, 'A reprovação do setup não atualiza o status operacional do ferramental.');
 requireIn(engineeringProcess, /\.neq\('status','RETIDO'\)/, 'Fichas de engenharia permitem selecionar ferramental retido.');
