@@ -105,8 +105,8 @@ export default function VendasPDV() {
       return
     }
     const existing = cart.find(item => item.id === product.id)
-    if (existing && existing.quantidade + 1 > product.estoque_atual) {
-      setError(`Saldo insuficiente para adicionar mais unidades de ${product.codigo}.`)
+    if (existing && existing.quantidade + 1 > product.estoque_atual && !product.permite_estoque_negativo) {
+      setError(`Saldo insuficiente para adicionar mais unidades de ${product.codigo}; o produto não permite estoque negativo.`)
       return
     }
     setCart(current => existing
