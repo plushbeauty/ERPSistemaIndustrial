@@ -15,6 +15,7 @@ const read = relative => {
 
 const migration = read('supabase/migrations/20261013040000_harden_quality_inspection_rbac_and_spec.sql');
 const baseSchema = read('supabase/migrations/20261009180000_erp_industrial_engineering_wms_quality_pcp_fiscal_hr.sql');
+const quarantineBalanceMigration = read('supabase/migrations/20261013080000_fix_quarantine_stock_balance_consolidation.sql');
 
 const requireIn = (text, pattern, description) => {
   if (!pattern.test(text)) failures.push(description);
@@ -44,6 +45,12 @@ requireIn(migration, /revoke all on function public\.erp_reter_lote[\s\S]*from p
 requireIn(migration, /grant execute on function public\.erp_salvar_inspecao_lote[\s\S]*to authenticated/i, 'RPC de inspeção não está concedida explicitamente a authenticated.');
 requireIn(migration, /grant execute on function public\.erp_reter_lote[\s\S]*to authenticated/i, 'RPC de retenção não está concedida explicitamente a authenticated.');
 requireIn(baseSchema, /trg_qualidade_inspecao_quarentena[\s\S]*execute function public\.erp_quality_quarantine_lot/i, 'O trigger que abre RNC e movimenta saldo para quarentena não foi localizado.');
+
+requireIn(quarantineBalanceMigration, /create or replace function public\\.erp_quality_quarantine_lot[\\s\\S]*security definer[\\s\\S]*set search_path = pg_catalog, public/i, 'A quarentena deve consolidar saldos com função privilegiada e search_path fixo.');
+requireIn(quarantineBalanceMigration, /insert into public\\.estoque_saldos[\\s\\S]*group by s\\.empresa_id, s\\.produto_id, s\\.lote_id[\\s\\S]*on conflict \\(empresa_id, produto_id, lote_id, endereco_id\\)/i, 'A quarentena não consolida saldos fracionados no endereço de quarentena.');
+requireIn(quarantineBalanceMigration, /delete from public\\.estoque_saldos[\\s\\S]*endereco_id <> v_quarantine_id/i, 'A quarentena não limpa os saldos dos endereços anteriores após consolidar.');
+requireIn(quarantineBalanceMigration, !/update public\\.estoque_saldos[\\s\\S]*set endereco_id = v_quarantine_id/i, 'A quarentena ainda move endereços por UPDATE direto e pode violar a chave única do saldo.');
+requireIn(quarantineBalanceMigration, /revoke all on function public\\.erp_quality_quarantine_lot\\(\\) from public, anon, authenticated/i, 'A função de trigger de quarentena não deve ser chamada diretamente por papéis de navegador.');
 
 console.log('=== ERP INDUSTRIAL — QUALITY INSPECTION CONTRACT ===');
 console.log(`Falhas: ${failures.length}`);
