@@ -10,6 +10,7 @@ type OrderItem = { id: string; pedido_id: string; produto_id: string | null; des
 type Product = { id: string; codigo: string | null; nome: string; unidade: string | null }
 type Lot = { id: string; produto_id: string; lote_interno: string; lote_fornecedor: string | null; quantidade_disponivel: number | null; quantidade_reservada: number | null; status_inspecao: string; localizacao: string | null }
 type Release = { id: string; pedido_venda_id: string; documento_fiscal_id: string | null; status: string; observacao: string | null; created_at: string; updated_at: string }
+type Quarantine = { lote_id: string; status: string }
 type ReleaseLine = { key: string; pedido_item_id: string; produto_id: string; descricao: string; unidade: string; quantidade: string; lote_id: string; caixas: string; unidades_por_caixa: string; peso_liquido: string; peso_bruto: string; localizacao: string; observacao: string }
 
 const money = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
@@ -32,6 +33,7 @@ export default function EstoqueLiberacaoNFe() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [lots, setLots] = useState<Lot[]>([])
+  const [blockedLotIds, setBlockedLotIds] = useState<string[]>([])
   const [releases, setReleases] = useState<Release[]>([])
   const [selectedOrderId, setSelectedOrderId] = useState('')
   const [selectedReleaseId, setSelectedReleaseId] = useState('')
@@ -62,12 +64,13 @@ export default function EstoqueLiberacaoNFe() {
       const tenant = await supabase.rpc('erp_current_empresa_id')
       if (tenant.error || !tenant.data) throw tenant.error ?? new Error('Empresa da sessão não identificada.')
       const id = String(tenant.data)
-      const [orderResult, customerResult, productResult, lotResult, releaseResult] = await Promise.all([
+      const [orderResult, customerResult, productResult, lotResult, releaseResult, quarantineResult] = await Promise.all([
         fetchAllPages<Order>((from, to) => supabase.from('erp_pedidos_venda').select('id,numero,cliente_id,status,total', { count: 'exact' }).eq('empresa_id', id).order('numero', { ascending: false }).range(from, to)),
         fetchAllPages<Customer>((from, to) => supabase.from('erp_clientes').select('id,nome,documento', { count: 'exact' }).eq('empresa_id', id).eq('ativo', true).order('nome').range(from, to)),
         fetchAllPages<Product>((from, to) => supabase.from('erp_produtos').select('id,codigo,nome,unidade', { count: 'exact' }).eq('empresa_id', id).eq('ativo', true).order('codigo').range(from, to)),
         fetchAllPages<Lot>((from, to) => supabase.from('erp_estoque_lotes').select('id,produto_id,lote_interno,lote_fornecedor,quantidade_disponivel,quantidade_reservada,status_inspecao,localizacao', { count: 'exact' }).eq('empresa_id', id).order('created_at', { ascending: false }).range(from, to)),
         fetchAllPages<Release>((from, to) => supabase.from('erp_liberacoes_nf').select('id,pedido_venda_id,documento_fiscal_id,status,observacao,created_at,updated_at', { count: 'exact' }).eq('empresa_id', id).order('updated_at', { ascending: false }).range(from, to)),
+        fetchAllPages<Quarantine>((from, to) => supabase.from('erp_quarentenas_lotes').select('lote_id,status', { count: 'exact' }).eq('empresa_id', id).in('status', ['RETIDO','SUCATA','RETRABALHO']).range(from, to)),
       ])
       setEmpresaId(id)
       setOrders(orderResult)
@@ -75,6 +78,7 @@ export default function EstoqueLiberacaoNFe() {
       setProducts(productResult)
       setLots(lotResult)
       setReleases(releaseResult)
+      setBlockedLotIds([...new Set(quarantineResult.map(row => row.lote_id))])
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível carregar os dados do Almoxarifado.')
     } finally {
@@ -267,7 +271,7 @@ export default function EstoqueLiberacaoNFe() {
                   return <tr key={line.key} className="border-b border-slate-100 align-top">
                     <td className="p-2"><strong>{line.descricao}</strong><span className="mt-1 block text-slate-500">{productById.get(line.produto_id)?.codigo ?? '—'} · {line.unidade}</span></td>
                     <td className="p-2"><input aria-label="Quantidade separada" type="number" min="0.001" step="0.001" value={line.quantidade} disabled={!canEdit} onChange={event => updateLine(line.key,'quantidade',event.target.value)} className="h-[30px] w-[86px] border border-slate-300 px-1 disabled:bg-slate-100"/></td>
-                    <td className="p-2"><select aria-label="Lote aprovado" value={line.lote_id} disabled={!canEdit} onChange={event => {const lot=productLots.find(candidate=>candidate.id===event.target.value);updateLine(line.key,'lote_id',event.target.value);if(lot?.localizacao)updateLine(line.key,'localizacao',lot.localizacao)}} className="h-[30px] w-[190px] border border-slate-300 px-1 disabled:bg-slate-100"><option value="">Selecione lote aprovado</option>{productLots.map(lot => <option key={lot.id} value={lot.id} disabled={!(['APROVADO','LIBERADO'].includes(String(lot.status_inspecao).toUpperCase())) || Number(lot.quantidade_disponivel ?? 0)-Number(lot.quantidade_reservada ?? 0)<=0}>{lot.lote_interno} · disp. {qty(Math.max(0,Number(lot.quantidade_disponivel ?? 0)-Number(lot.quantidade_reservada ?? 0)))} · {lot.status_inspecao}</option>)}</select></td>
+                    <td className="p-2"><select aria-label="Lote aprovado" value={line.lote_id} disabled={!canEdit} onChange={event => {const lot=productLots.find(candidate=>candidate.id===event.target.value);updateLine(line.key,'lote_id',event.target.value);if(lot?.localizacao)updateLine(line.key,'localizacao',lot.localizacao)}} className="h-[30px] w-[190px] border border-slate-300 px-1 disabled:bg-slate-100"><option value="">Selecione lote aprovado</option>{productLots.map(lot => <option key={lot.id} value={lot.id} disabled={!(['APROVADO','LIBERADO'].includes(String(lot.status_inspecao).toUpperCase())) || blockedLotIds.includes(lot.id) || Number(lot.quantidade_disponivel ?? 0)-Number(lot.quantidade_reservada ?? 0)<=0}>{lot.lote_interno}{blockedLotIds.includes(lot.id) ? ' · QUARENTENA/BLOQUEADO' : ' · disp. ' + qty(Math.max(0,Number(lot.quantidade_disponivel ?? 0)-Number(lot.quantidade_reservada ?? 0)))} · {lot.status_inspecao}</option>)}</select></td>
                     <td className="p-2"><input aria-label="Número de caixas" type="number" min="0" step="1" value={line.caixas} disabled={!canEdit} onChange={event => updateLine(line.key,'caixas',event.target.value)} className="h-[30px] w-[64px] border border-slate-300 px-1 disabled:bg-slate-100"/></td>
                     <td className="p-2"><input aria-label="Unidades por caixa" type="number" min="0" step="0.001" value={line.unidades_por_caixa} disabled={!canEdit} onChange={event => updateLine(line.key,'unidades_por_caixa',event.target.value)} className="h-[30px] w-[74px] border border-slate-300 px-1 disabled:bg-slate-100"/></td>
                     <td className="p-2"><input aria-label="Peso líquido" type="number" min="0" step="0.001" value={line.peso_liquido} disabled={!canEdit} onChange={event => updateLine(line.key,'peso_liquido',event.target.value)} className="h-[30px] w-[78px] border border-slate-300 px-1 disabled:bg-slate-100"/></td>
