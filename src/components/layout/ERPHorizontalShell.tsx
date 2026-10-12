@@ -336,14 +336,14 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-session time{display:flex;flex-direction:column;gap:3px;padding-left:9px;border-left:1px solid rgba(255,255,255,.45);color:#fff;font-size:10px;text-align:right}
         .erp-horizontal-session time span{font-size:9px;color:#fff}
         .erp-horizontal-session time strong{font-size:11px;color:#fff;font-weight:800}
-        .erp-horizontal-menu{height:32px;display:flex;align-items:stretch;padding:0 6px;background:#2D8DB8;border-bottom:1px solid #17445A;box-sizing:border-box;position:relative;z-index:900}
+        .erp-horizontal-menu{height:32px;display:flex;align-items:stretch;padding:0 6px;background:#fff;border-bottom:1px solid #e5e7eb;box-sizing:border-box;position:relative;z-index:900}
 
         /* Identidade visual transversal: superfícies frias, contornos nítidos e controles compactos. */
         .erp-horizontal-session{color:#fff;border-left-color:rgba(255,255,255,.45)}
         .erp-horizontal-session time{color:#fff}
         .erp-horizontal-help{color:#f2f8fb}
         .erp-horizontal-help:hover{background:rgba(255,255,255,.12)}
-        .erp-horizontal-workspace{background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%)}
+        .erp-horizontal-workspace{background:#fff;color:#111827}
         .erp-horizontal-workspace .bg-white{background-color:#f8fcfe!important}
         .erp-horizontal-workspace .bg-slate-50{background-color:#edf6fa!important}
         .erp-horizontal-workspace .bg-slate-100{background-color:#e7f1f6!important}
