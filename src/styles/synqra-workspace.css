@@ -104,3 +104,16 @@
 .synqra-release-row button{flex-shrink:0}
 @media(max-width:1100px){.synqra-item-editor{grid-template-columns:repeat(4,minmax(0,1fr))}.synqra-item-editor .synqra-item-product,.synqra-item-editor .synqra-item-description,.synqra-item-editor .synqra-item-lot{grid-column:span 2}}
 @media(max-width:700px){.synqra-item-editor{grid-template-columns:repeat(2,minmax(0,1fr))}.synqra-item-editor .synqra-item-product,.synqra-item-editor .synqra-item-description,.synqra-item-editor .synqra-item-lot{grid-column:span 2}.synqra-release-row{align-items:flex-start;flex-direction:column}}
+
+/* Fiscal field sizing: native date controls fit their grid; UF stays narrow. */
+.synqra-nfe-id-grid input[type="datetime-local"]{width:100%;min-width:0!important;padding:0 3px!important;font-size:10px!important;letter-spacing:-.02em}
+.synqra-nfe-company-grid>label:nth-child(5){grid-column:span 2}
+.synqra-nfe-company-grid>label:nth-child(6){grid-column:span 1}
+.synqra-nfe-company-grid>label:nth-child(7){grid-column:span 1}
+.synqra-nfe-company-grid>label:nth-child(8){grid-column:span 2}
+.synqra-nfe-customer-grid>label:nth-child(7){grid-column:span 3}
+.synqra-nfe-customer-grid>label:nth-child(8){grid-column:span 2}
+.synqra-nfe-customer-grid>label:nth-child(9){grid-column:span 1}
+.synqra-nfe-customer-grid>label:nth-child(10){grid-column:span 2}
+@media(max-width:1100px){.synqra-nfe-company-grid>label,.synqra-nfe-customer-grid>label{grid-column:span 2!important}.synqra-nfe-company-grid>label.wide,.synqra-nfe-customer-grid>label.wide{grid-column:span 4!important}}
+@media(max-width:700px){.synqra-nfe-id-grid input[type="datetime-local"]{font-size:9px!important}.synqra-nfe-company-grid>label,.synqra-nfe-customer-grid>label{grid-column:span 2!important}}
