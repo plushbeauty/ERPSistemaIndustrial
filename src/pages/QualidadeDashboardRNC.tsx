@@ -104,14 +104,14 @@ export default function QualidadeDashboardRNC() {
     <main data-quality-workspace className="min-h-screen bg-white p-2 text-black md:p-3">
       <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-2">
         <div className="min-w-0">
-          <header className="flex min-h-[42px] flex-wrap items-center gap-2 border border-slate-200 bg-white px-3 py-2 text-black">
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-[.16em] text-black">SGQ INDUSTRIAL · INDICADORES</p>
-              <h1 className="text-[15px] font-semibold leading-tight">Visão geral da qualidade</h1>
-              <p className="mt-0.5 text-[10px] text-slate-600">Indicadores de inspeções, não conformidades, ações CAPA e documentos controlados.</p>
+          <header className="relative flex min-h-[54px] flex-wrap items-center justify-center gap-2 border border-[#b8d6e2] bg-[#f1f8fb] px-3 py-2 text-[#123b50]">
+            <div className="min-w-0 flex-1 text-center">
+              <p className="text-[9px] font-extrabold uppercase tracking-[.16em] text-[#1680a8]">SGQ INDUSTRIAL · INDICADORES</p>
+              <h1 className="text-[16px] font-bold leading-tight text-[#123b50]">Visão geral da qualidade</h1>
+              <p className="mt-0.5 text-[10px] font-medium text-[#426577]">Indicadores de inspeções, não conformidades, ações CAPA e documentos controlados.</p>
             </div>
-            <button type="button" onClick={() => setTabletOpen(true)} className="ml-auto inline-flex h-[30px] min-h-[30px] items-center gap-2 border border-[#B8860B] bg-[#D4A017] px-3 text-[10px] font-bold text-black hover:bg-[#E3B52D]" aria-haspopup="dialog"><Tablet size={15}/> TABLET MENU</button>
-            <button type="button" onClick={() => void load()} disabled={loading} className="inline-flex h-[30px] min-h-[30px] items-center gap-2 border border-slate-300 bg-white px-3 text-[10px] font-semibold text-black hover:bg-slate-50"><RefreshCw size={13}/>{loading ? 'Carregando…' : 'Atualizar'}</button>
+            <button type="button" onClick={() => setTabletOpen(true)} className="absolute right-[104px] top-1/2 inline-flex h-[30px] min-h-[30px] -translate-y-1/2 items-center gap-2 border border-[#B8860B] bg-[#D4A017] px-3 text-[10px] font-bold text-black hover:bg-[#E3B52D] max-[760px]:static max-[760px]:translate-y-0" aria-haspopup="dialog"><Tablet size={15}/> TABLET MENU</button>
+            <button type="button" onClick={() => void load()} disabled={loading} className="inline-flex h-[30px] min-h-[30px] items-center gap-2 border border-[#8eb5c8] bg-white px-3 text-[10px] font-semibold text-[#17445a] hover:bg-[#e6f3f8]"><RefreshCw size={13}/>{loading ? 'Carregando…' : 'Atualizar'}</button>
           </header>
 
           {error && <div role="alert" className="mt-2 flex flex-wrap items-center justify-between gap-2 border border-rose-200 bg-rose-50 p-2 text-[10px] font-semibold text-rose-900"><span>{error}</span><button type="button" onClick={() => void load()} className="h-[28px] border border-rose-300 bg-white px-3 text-[10px] font-bold">Tentar novamente</button></div>}
@@ -126,7 +126,7 @@ export default function QualidadeDashboardRNC() {
             </section>
             <section className="mt-2 grid gap-2 xl:grid-cols-2">
               <ChartCard title="RNCs abertas por departamento" description="Ocorrências não encerradas agrupadas pelo setor responsável." accent="blue">
-                {openByDepartment.length ? <><div className="h-[220px]" role="img" aria-label={openByDepartment.map((item) => `${item.department}: ${item.total}`).join('; ')}><ResponsiveContainer width="100%" height="100%"><BarChart data={openByDepartment} margin={{ left: 12, right: 20, top: 12, bottom: 24 }}><CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb"/><XAxis dataKey="department" angle={-20} textAnchor="end" height={70} interval={0} tick={{ fontSize: 9 }}/><YAxis allowDecimals={false} tick={{ fontSize: 9 }}/><Tooltip/><Bar dataKey="total" name="RNCs abertas" fill="#64748b" radius={[2, 2, 0, 0]}/></BarChart></ResponsiveContainer></div><AccessibleSummary rows={openByDepartment}/></> : <Empty text="Não há RNCs abertas por departamento."/>}
+                {openByDepartment.length ? <><div className="h-[220px]" role="img" aria-label={openByDepartment.map((item) => `${item.department}: ${item.total}`).join('; ')}><ResponsiveContainer width="100%" height="100%"><BarChart data={openByDepartment} margin={{ left: 12, right: 20, top: 12, bottom: 24 }}><CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb"/><XAxis dataKey="department" angle={-20} textAnchor="end" height={70} interval={0} tick={{ fontSize: 9 }}/><YAxis allowDecimals={false} tick={{ fontSize: 9 }}/><Tooltip/><Bar dataKey="total" name="RNCs abertas" fill="#1680a8" radius={[2, 2, 0, 0]}/></BarChart></ResponsiveContainer></div><AccessibleSummary rows={openByDepartment}/></> : <Empty text="Não há RNCs abertas por departamento."/>}
               </ChartCard>
               <ChartCard title="Eficácia das ações CAPA" description="Resultado registrado após aprovação e verificação de eficácia." accent="violet">
                 {actions.length ? <><div className="h-[220px]" role="img" aria-label={efficacy.map((item) => `${item.name}: ${item.value}`).join('; ')}><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={efficacy} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={108} label={({ name, value }) => `${name}: ${value}`}><Cell fill={COLORS[0]}/><Cell fill={COLORS[1]}/><Cell fill={COLORS[2]}/></Pie><Tooltip/></PieChart></ResponsiveContainer></div><p className="sr-only">{efficacy.map((item) => `${item.name}: ${item.value}`).join('. ')}</p></> : <Empty text="Ainda não há ações CAPA para avaliar."/>}
@@ -143,7 +143,7 @@ export default function QualidadeDashboardRNC() {
             </section>
             <section className="mt-2 flex flex-wrap items-center justify-between gap-2 border border-slate-200 bg-white p-2">
               <div className="flex min-w-0 items-center gap-2">
-                <span className="grid size-7 shrink-0 place-items-center border border-slate-200 bg-slate-50 text-slate-700"><FileText size={14}/></span>
+                <span className="grid size-7 shrink-0 place-items-center border border-[#b8d6e2] bg-[#e1f1f7] text-[#1680a8]"><FileText size={14}/></span>
                 <div className="min-w-0"><h2 className="text-[11px] font-semibold text-black">Cadastro de Documentos da Qualidade</h2><p className="text-[9px] text-slate-600">Documentos controlados, revisões, anexos e vigência do GED.</p></div>
               </div>
               <button type="button" onClick={() => navigate('/qualidade/ged-documentos')} className="inline-flex h-[28px] shrink-0 items-center gap-2 border border-slate-400 bg-white px-3 text-[10px] font-semibold text-black hover:bg-slate-50">Abrir cadastro <ArrowRight size={13}/></button>
@@ -158,12 +158,12 @@ export default function QualidadeDashboardRNC() {
 }
 
 function Metric({ icon: Icon, label, value }: { icon: typeof AlertTriangle; label: string; value: number }) {
-  return <article className="flex min-h-[62px] items-center gap-2 border border-slate-200 bg-white px-2 py-2"><span className="grid size-7 shrink-0 place-items-center border border-slate-200 bg-slate-50 text-slate-700"><Icon size={14}/></span><div className="min-w-0"><p className="text-[9px] font-bold uppercase tracking-wide text-slate-600">{label}</p><b className="text-lg font-semibold tabular-nums text-black">{value}</b></div></article>
+  return <article className="flex min-h-[62px] items-center gap-2 border border-[#c4dce6] bg-[#f1f8fb] px-2 py-2"><span className="grid size-7 shrink-0 place-items-center border border-slate-200 bg-slate-50 text-slate-700"><Icon size={14}/></span><div className="min-w-0"><p className="text-[9px] font-extrabold uppercase tracking-wide text-[#315b70]">{label}</p><b className="text-lg font-bold tabular-nums text-[#123b50]">{value}</b></div></article>
 }
 
 function ChartCard({ title, description, children, accent = 'blue' }: { title: string; description: string; children: ReactNode; accent?: 'blue' | 'violet' | 'amber' | 'cyan' | 'teal' }) {
-  const accents = { blue: 'border-l-slate-500', violet: 'border-l-slate-500', amber: 'border-l-slate-500', cyan: 'border-l-slate-500', teal: 'border-l-slate-500' }
-  return <section className={`min-w-0 border border-slate-200 border-l-2 ${accents[accent]} bg-white p-2`}><h2 className="text-[11px] font-semibold text-black">{title}</h2><p className="mt-0.5 text-[9px] leading-4 text-slate-600">{description}</p><div className="mt-1">{children}</div></section>
+  const accents = { blue: 'border-l-[#1680a8]', violet: 'border-l-[#7b61a8]', amber: 'border-l-[#d49a18]', cyan: 'border-l-[#25a6b8]', teal: 'border-l-[#219477]' }
+  return <section className={`min-w-0 border border-[#c4dce6] border-l-[3px] ${accents[accent]} bg-[#f8fcfe] p-2`}><h2 className="text-[11px] font-bold text-[#123b50]">{title}</h2><p className="mt-0.5 text-[9px] font-medium leading-4 text-[#426577]">{description}</p><div className="mt-1">{children}</div></section>
 }
 
 function AccessibleSummary({ rows }: { rows: DepartmentCount[] }) {
