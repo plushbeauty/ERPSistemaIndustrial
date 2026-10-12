@@ -282,6 +282,27 @@ export default function QualidadeIndustrial() {
 
         {(error || notice) && <div className={error ? 'qms-message error' : 'qms-message'}>{error || notice}</div>}
 
+        <details className="qms-panel" style={{padding:'8px 12px'}}>
+          <summary style={{cursor:'pointer',fontSize:11,fontWeight:800,color:'#17445A'}}>Ajuda contextual — {tab === 'recebimento' ? 'inspeção de recebimento' : tab === 'dimensional' ? 'inspeção dimensional' : 'rastreabilidade reversa'}</summary>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(210px,1fr))',gap:12,marginTop:10,fontSize:11,color:'#536a75'}}>
+            {tab === 'recebimento' && <>
+              <div><strong>Antes de começar</strong><p>Selecione um lote real da empresa atual, informe o tamanho inspecionado e confirme nível de inspeção, AQL e critérios Ac/Re aprovados para o plano de amostragem.</p></div>
+              <div><strong>Fluxo</strong><p>Registre a inspeção; confira a linha criada; só então aprove ou bloqueie o lote conforme o resultado e o procedimento de qualidade. A decisão é processada pela RPC do SGQ.</p></div>
+              <div><strong>Cuidados</strong><p>Defeitos, Ac e Re precisam refletir a inspeção real. Não aprove lote apenas para remover pendência; em caso de dúvida, mantenha-o pendente e consulte o responsável da Qualidade.</p></div>
+            </>}
+            {tab === 'dimensional' && <>
+              <div><strong>Como medir</strong><p>Selecione a inspeção, informe peça/cavidade, cota nominal, tolerâncias superior e inferior, valor medido e instrumento utilizado. As tolerâncias são desvios permitidos em milímetros.</p></div>
+              <div><strong>Interpretação</strong><p>O sistema calcula desvio = valor medido − cota nominal e compara o resultado com as tolerâncias informadas. Confira unidade, sinal e instrumento calibrado antes de gravar.</p></div>
+              <div><strong>Rastreabilidade</strong><p>Cada medição é anexada ao registro de inspeção selecionado. Revise o número da peça e os valores antes de registrar; não use dados estimados como medição real.</p></div>
+            </>}
+            {tab === 'rastreabilidade' && <>
+              <div><strong>Pesquisa</strong><p>Informe o lote interno ou o lote do fornecedor exatamente como cadastrado na empresa atual.</p></div>
+              <div><strong>O que consultar</strong><p>O sistema relaciona produto, fornecedor, componentes consumidos e, quando disponíveis, apontamento, operador, máquina, OP e pedido de venda.</p></div>
+              <div><strong>Se faltar informação</strong><p>“Não vinculado” indica que não foi encontrado um relacionamento nos registros consultados; confira os lançamentos de origem em vez de preencher manualmente uma relação não comprovada.</p></div>
+            </>}
+          </div>
+        </details>
+
         {tab === 'recebimento' && <section className="qms-panel">
           <div className="qms-grid qms-grid-6">
             <label className={labelClass()}>Lote / NF XML<select className={fieldClass(invalid === 'lote')} value={selectedLot} onChange={(e) => { setSelectedLot(e.target.value); setInvalid(null) }}><option value="">Preencher...</option>{lots.map((lot) => <option key={lot.id} value={lot.id}>{lot.lote_interno} · NF {lot.nf_numero || '—'} · {supplierMap.get(lot.fornecedor_id || '') || 'Fornecedor não vinculado'}</option>)}</select></label>
