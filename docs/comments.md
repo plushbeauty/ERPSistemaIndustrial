@@ -28,3 +28,5 @@
 - CI #4284 terminou com sucesso em todas as etapas, incluindo TypeScript, ESLint, gate de contrato NF-e e build de produção.
 - O repositório fiscal não deve mapear status nulo/desconhecido para `rascunho`: isso mascarava valores de banco não reconhecidos. Agora a leitura retorna erro controlado pela camada de consulta; o gate NF-e verifica essa proteção.
 - Removido do backlog o apontamento de ESLint do serializador, pois a execução mais recente confirmou sucesso. As demais entradas históricas permanecem até auditoria individual de sua resolução.
+
+- A mesma regra de integridade foi aplicada ao ambiente e à direção: valores nulos/desconhecidos não são convertidos silenciosamente para homologação/saída; o gate NF-e verifica os mapeamentos explícitos.
