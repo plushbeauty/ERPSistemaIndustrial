@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-12T13:00:00-03:00",
+  "generated_at": "2026-10-12T14:00:00-03:00",
   "status": "active",
   "errors": [
     {
@@ -14,7 +14,7 @@
       "command": "Homologação Supabase — Liberação Almoxarifado → NF-e",
       "file": "supabase/migrations/20261012170000_erp_warehouse_nfe_release_v1.sql",
       "line": null,
-      "error": "Migration, tabelas, políticas RLS e RPCs foram adicionadas à branch, mas não foram aplicadas nem validadas no Supabase remoto. O fluxo operacional não deve ser considerado pronto para produção até aplicar a migration, confirmar permissões/tabelas de destino e testar a reserva, o vínculo fiscal e a baixa após autorização."
+      "error": "Migration aplicada ao projeto Supabase como versão 20261012175122. Verificação pós-aplicação confirmou tabelas, RLS, policies e privilégios das quatro RPCs. Permanece pendente teste funcional com sessão autenticada de operador, que não está disponível nesta conexão; não considerar o fluxo homologado até testar salvar, encaminhar, importar no emissor e concluir somente após NF-e autorizada."
     }
   ]
 }
