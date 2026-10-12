@@ -70,3 +70,31 @@
 .synqra-workspace input,.synqra-workspace select,.synqra-workspace textarea{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .synqra-workspace input:focus,.synqra-workspace select:focus,.synqra-workspace textarea:focus{border-color:#2D8DB8;outline:0;box-shadow:none}
 .synqra-workspace button{border-radius:2px}
+
+
+/* Contrast and status hierarchy for the shared sales workspace. */
+.synqra-status-grid{gap:6px;margin-bottom:8px}
+.synqra-status-cell{height:50px;min-height:50px;padding:5px 8px;border-width:1px;border-radius:2px;gap:3px;box-shadow:inset 3px 0 rgba(255,255,255,.28)}
+.synqra-status-cell span{font-size:9px;line-height:11px;font-weight:700;letter-spacing:.07em;color:inherit}
+.synqra-status-cell strong{font-size:19px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums;color:inherit}
+.synqra-status-red{background:#D65B61;border-color:#b7474d;color:#fff}
+.synqra-status-orange{background:#E6A34A;border-color:#bd7b25;color:#123B50}
+.synqra-status-yellow{background:#F2C45C;border-color:#c79b31;color:#123B50}
+.synqra-status-blue{background:#2D8DB8;border-color:#1d6f94;color:#fff}
+.synqra-status-cyan{background:#087F8C;border-color:#07636d;color:#fff}
+.synqra-status-slate{background:#123B50;border-color:#0b2b3a;color:#fff}
+.sales-detail{color:#123B50}
+.sales-detail>div>header{border-bottom-color:#b8d4df}
+.sales-detail section{border-color:#b9d3de}
+.sales-detail section>header{background:#e0eff5;color:#123B50}
+.sales-detail section>header span{color:#123B50}
+.sales-detail nav button{min-height:30px;line-height:13px;white-space:nowrap}
+.sales-detail nav button.border-sky-700{background:#123B50;color:#fff;border-color:#E6A34A}
+.sales-detail nav button:not(.border-sky-700):hover{background:#e6f3f8;color:#123B50}
+.sales-detail table thead th{height:32px;background:#123B50;color:#fff;font-size:9px;font-weight:700;letter-spacing:.03em}
+.sales-detail table tbody tr{height:32px}
+.sales-detail table tbody tr:has(td){transition:background-color .12s ease}
+.sales-detail table tbody tr.bg-sky-50{background:#d7eef7!important;box-shadow:inset 3px 0 #2D8DB8}
+.sales-detail table tbody tr:hover{background:#edf7fa}
+.sales-detail input:focus,.sales-detail select:focus,.sales-detail textarea:focus{border-color:#2D8DB8;outline:0;box-shadow:0 0 0 2px rgba(45,141,184,.14)}
+@media(max-width:800px){.synqra-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.synqra-status-cell{height:48px;min-height:48px}}
