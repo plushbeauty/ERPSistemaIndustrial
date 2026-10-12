@@ -22,21 +22,21 @@ export default function PCPTablet() {
   return (
     <main className="pcp-tablet-shell">
       <style>{`
-        .pcp-tablet-shell{min-height:100vh;padding:12px;background:#f4fbfd;color:#123b50;font-family:Inter,system-ui,sans-serif;box-sizing:border-box}
-        .pcp-tablet-head{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 14px;background:#fff;border:1px solid #c9dde5;border-bottom:3px solid #2d8db8}
+        .pcp-tablet-shell{min-height:100vh;padding:12px;background:#fff;color:#111827;font-family:Inter,system-ui,sans-serif;box-sizing:border-box}
+        .pcp-tablet-head{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 14px;background:#fff;border:1px solid #c9dde5;border-bottom:3px solid #d4a017}
         .pcp-tablet-logo{width:154px;height:42px;flex:none;object-fit:contain;background:#fff}
         .pcp-tablet-heading{min-width:0;flex:1}
-        .pcp-tablet-eyebrow{margin:0;color:#2d8db8;font-size:9px;font-weight:800;letter-spacing:.14em}
+        .pcp-tablet-eyebrow{margin:0;color:#111827;font-size:9px;font-weight:800;letter-spacing:.14em}
         .pcp-tablet-heading h1{margin:3px 0;font-size:16px;line-height:1.2;font-weight:800}
         .pcp-tablet-heading p{margin:0;color:#526b78;font-size:10px;line-height:1.4}
-        .pcp-tablet-back{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 10px;border:1px solid #2d8db8;background:#fff;color:#17445a;font-size:10px;font-weight:700}
+        .pcp-tablet-back{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 10px;border:1px solid #d4a017;background:#d4a017;color:#111827;font-size:10px;font-weight:700}
         .pcp-tablet-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
-        .pcp-tablet-card{display:flex;align-items:center;gap:12px;min-width:0;min-height:92px;padding:12px;border:1px solid #c9dde5;background:#fff;text-align:left;color:#123b50;cursor:pointer;transition:background .12s,border-color .12s}
-        .pcp-tablet-card:hover,.pcp-tablet-card:focus-visible{border-color:#2d8db8;background:#f0f9fc;outline:2px solid #b9e2ef;outline-offset:0}
+        .pcp-tablet-card{display:flex;align-items:center;gap:12px;min-width:0;min-height:104px;padding:14px;border:1px solid #d1d5db;background:#fff;text-align:left;color:#111827;cursor:pointer;transition:background .12s,border-color .12s}
+        .pcp-tablet-card:hover,.pcp-tablet-card:focus-visible{border-color:#d4a017;background:#fffdf5;outline:2px solid #b9e2ef;outline-offset:0}
         .pcp-tablet-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border:1px solid #c4e3ee;background:#eaf6fa;color:#2d8db8}
         .pcp-tablet-copy{display:flex;flex-direction:column;gap:5px;min-width:0}
-        .pcp-tablet-copy strong{font-size:11px;line-height:1.3;font-weight:800}
-        .pcp-tablet-copy small{font-size:10px;line-height:1.4;color:#536b76;overflow-wrap:anywhere}
+        .pcp-tablet-copy strong{font-size:11px;line-height:1.45;font-weight:800}
+        .pcp-tablet-copy small{font-size:10px;line-height:1.5;color:#374151;overflow-wrap:anywhere}
         .pcp-tablet-foot{margin-top:10px;padding:8px 10px;border-top:1px solid #c9dde5;color:#607985;font-size:9px}
         @media(max-width:1000px){.pcp-tablet-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
         @media(max-width:600px){.pcp-tablet-shell{padding:6px}.pcp-tablet-head{align-items:flex-start;flex-wrap:wrap;padding:8px}.pcp-tablet-logo{width:120px;height:34px}.pcp-tablet-heading{flex-basis:calc(100% - 140px)}.pcp-tablet-heading h1{font-size:13px}.pcp-tablet-back{margin-left:auto}.pcp-tablet-grid{grid-template-columns:minmax(0,1fr);gap:6px}.pcp-tablet-card{min-height:76px;padding:9px}}
