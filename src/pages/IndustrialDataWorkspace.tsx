@@ -62,6 +62,7 @@ export default function IndustrialDataWorkspace() {
   }
   const config = configs[routeConfigs[location.pathname] ?? '']
   const [rows,setRows] = useState<Record<string, unknown>[]>([])
+  const [empresaId,setEmpresaId] = useState<string|null>(null)
   const [form,setForm] = useState<Record<string,string>>({})
   const [search,setSearch] = useState('')
   const [error,setError] = useState<string|null>(null)
@@ -71,10 +72,23 @@ export default function IndustrialDataWorkspace() {
   const load = useCallback(async () => {
     if (!config) return
     setLoading(true); setError(null)
-    const result = await supabase.from(config.table).select('*').limit(500)
-    if (result.error) setError(result.error.message)
-    else setRows((result.data ?? []) as Record<string,unknown>[])
-    setLoading(false)
+    try {
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error) throw company.error
+      if (typeof company.data !== 'string' || !company.data.trim()) {
+        throw new Error('Empresa ativa não identificada. A consulta foi bloqueada por segurança.')
+      }
+      const activeEmpresaId = company.data
+      setEmpresaId(activeEmpresaId)
+      const result = await supabase.from(config.table).select('*').eq('empresa_id', activeEmpresaId).limit(500)
+      if (result.error) throw result.error
+      setRows((result.data ?? []) as Record<string,unknown>[])
+    } catch (e) {
+      setRows([])
+      setError(e instanceof Error ? e.message : 'Não foi possível carregar os registros da empresa.')
+    } finally {
+      setLoading(false)
+    }
   },[config])
   useEffect(()=>{ void load() },[load])
   const visible = useMemo(()=> rows.filter(row => !search || (config?.search ?? []).some(key=>String(row[key] ?? '').toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR')))),[rows,search,config])
@@ -96,6 +110,7 @@ export default function IndustrialDataWorkspace() {
   }
   async function save() {
     if (!config) { setError('Módulo não encontrado para esta rota.'); return }
+    if (!empresaId) { setError('Empresa ativa não identificada. Nenhuma gravação foi realizada.'); return }
     setError(null)
     try {
       const payload: Record<string,unknown>={}
@@ -107,8 +122,8 @@ export default function IndustrialDataWorkspace() {
       }
       setBusy(true)
       const result=editing
-        ? await supabase.from(config.table).update(payload).eq('id',editing).select('id').single()
-        : await supabase.from(config.table).insert(payload).select('id').single()
+        ? await supabase.from(config.table).update(payload).eq('id',editing).eq('empresa_id',empresaId).select('id').single()
+        : await supabase.from(config.table).insert({...payload,empresa_id:empresaId}).select('id').single()
       setBusy(false)
       if(result.error) { setError(result.error.message); return }
       reset(); await load()
