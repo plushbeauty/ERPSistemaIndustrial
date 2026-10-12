@@ -86,7 +86,6 @@ export default function ERPHeader() {
         <img src="/logo/sgq-erp.png" alt="Logotipo SGQERP Industrial" />
         <span>
           <strong>SGQERP INDUSTRIAL</strong>
-          <small>SISTEMA DE GESTÃO INDUSTRIAL</small>
         </span>
       </button>
 
