@@ -71,7 +71,7 @@ export function narrowERPProfile(user: DbERPUsuario, empresa: EmpresaERPAuth | n
     };
   }
 
-  if (user.is_master === true || perfil === 'MASTER') {
+  if (user.is_master === true || perfil === 'MASTER' || nivel >= 100) {
     throw new Error('ERP_IDENTIDADE_MASTER_INCONSISTENTE');
   }
 
