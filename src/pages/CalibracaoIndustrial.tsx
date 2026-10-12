@@ -386,7 +386,7 @@ export default function CalibracaoIndustrial() {
             <td className="px-2 py-2 text-[10px]">{item.numero_certificado_atual || '—'}<p className="text-[9px] text-slate-500">{item.certificado_rbc ? 'RBC acreditado' : 'RBC não informado'}</p></td>
             <td className="px-2 py-2 text-[10px]">{item.proxima_calibracao || '—'}</td>
             <td className="px-2 py-2"><span className={'inline-flex border px-1.5 py-0.5 text-[9px] font-semibold ' + (isUsable(item) ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-rose-200 bg-rose-50 text-rose-800')}>{isUsable(item) ? 'APTO' : isExpired(item) ? 'VENCIDO / BLOQUEADO' : item.status.toUpperCase()}</span></td>
-            <td className="px-2 py-2"><div className="flex gap-1"><button type="button" onClick={() => void openEquipment(item)} className={lightActionClass}><History size={11}/> FICHA</button><button type="button" onClick={() => editEquipment(item)} className={lightActionClass}>EDITAR</button></div></td>
+            <td className="px-2 py-2"><div className="flex gap-1"><button type="button" onClick={() => void openEquipment(item)} className={lightActionClass}><History size={11}/> FICHA</button><button type="button" onClick={() => editEquipment(item)} className={lightActionClass + " erp-edit-button"}>EDITAR</button></div></td>
           </tr>)}
           {!visibleEquipments.length && <tr><td colSpan={8} className="px-3 py-6 text-center text-[10px] text-slate-500">{loading ? 'Carregando registros…' : 'Nenhum instrumento cadastrado para esta empresa.'}</td></tr>}</tbody>
         </table>
