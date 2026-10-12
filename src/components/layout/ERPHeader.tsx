@@ -74,11 +74,11 @@ export default function ERPHeader() {
         <img src="/logo/sgq-erp.png" alt="Logotipo SGQERP Industrial" />
         <span>
           <strong>SGQERP INDUSTRIAL</strong>
-          <small>Central de controle</small>
+          <small>SISTEMA DE GESTÃO INDUSTRIAL</small>
         </span>
       </button>
 
-      <div className="synqra-header-title">{isQuality ? <button type="button" onClick={() => navigate('/qualidade')} className="inline-flex h-[30px] items-center gap-2 border border-[#24789D] bg-gradient-to-r from-[#17445A] to-[#2D8DB8] px-4 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm hover:brightness-110">☰ Gestão da Qualidade <span aria-hidden="true">⌄</span></button> : <><strong>Sistema ERP industrial</strong><small>{companyName}</small></>}</div>
+      <div className="synqra-header-title">{isQuality ? <button type="button" onClick={() => navigate('/qualidade')} className="inline-flex h-[30px] items-center gap-2 border border-[#B8860B] bg-[#D4A017] px-4 text-[10px] font-bold uppercase tracking-wide text-black hover:bg-[#E3B52D]">☰ Gestão da Qualidade <span aria-hidden="true">⌄</span></button> : <><strong>Sistema ERP industrial</strong><small>{companyName}</small></>}</div>
 
       <div className="synqra-session">
         <div>
