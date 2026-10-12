@@ -76,7 +76,7 @@ export default function ERPHeader() {
   const time = new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(now)
 
   return (
-    <header className="synqra-workspace-header h-[76px] min-h-[76px]">
+    <header className="synqra-workspace-header">
       <button
         type="button"
         className="synqra-workspace-brand"
@@ -90,12 +90,12 @@ export default function ERPHeader() {
         </span>
       </button>
 
-      <div className="synqra-header-title"><strong>{pageTitle}</strong><small>{companyName}</small></div>
+      <div className="synqra-header-title" aria-label="Módulo atual"><strong>{pageTitle}</strong></div>
 
       <div className="synqra-session">
         <div>
           <strong>{operator.name}</strong>
-          <span>{operator.email || 'Sessão autenticada'} • {date} • {time}</span>
+          <span>{operator.email || 'Sessão autenticada'} • {companyName} • {date} • {time}</span>
         </div>
         <CompactButton type="button" tone="danger" onClick={() => void logout()} title="Sair">
           <LogOut size={13} />
