@@ -238,3 +238,19 @@ body{background:#EDF5F8;color:#123B50}
   .erp-global-surface h1 { font-size: 16px !important; }
   .erp-global-surface h2 { font-size: 14px !important; }
 }
+
+
+/* PCP dashboard: preserve card height and text rhythm; prevent compressed/overlapping labels. */
+.pcp-modern-page .quality-kpis article{min-height:88px;padding:14px 16px;box-sizing:border-box;align-items:center}
+.pcp-modern-page .quality-kpis span{line-height:1.4;white-space:normal;overflow-wrap:anywhere}
+.pcp-modern-page .quality-kpis strong{line-height:1.2;margin-top:6px}
+.pcp-modern-page .pcp-dash-card{min-height:230px;padding:16px;box-sizing:border-box}
+.pcp-modern-page .pcp-dash-card h2{line-height:1.4;margin-bottom:12px;overflow-wrap:anywhere}
+.pcp-modern-page .pcp-flow button{min-height:116px;padding:16px;box-sizing:border-box}
+.pcp-modern-page .pcp-flow strong{line-height:1.4;overflow-wrap:anywhere}
+.pcp-modern-page .pcp-flow small{line-height:1.55;overflow-wrap:anywhere}
+.pcp-modern-page .pcp-alert{min-height:52px;box-sizing:border-box;line-height:1.4}
+.pcp-modern-page .pcp-alert strong,.pcp-modern-page .pcp-alert small{line-height:1.45;white-space:normal;overflow-wrap:anywhere}
+.pcp-modern-page .pcp-page-head h1{line-height:1.25!important;overflow-wrap:anywhere}
+.pcp-modern-page .pcp-page-head p{line-height:1.5!important}
+@media(max-width:800px){.pcp-modern-page .pcp-dash-card{min-height:0}.pcp-modern-page .pcp-flow button{min-height:100px}}
