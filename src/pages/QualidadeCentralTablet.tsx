@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import {
   Activity, BookOpenCheck, ClipboardCheck, ClipboardList, FileCheck2, FileText,
   Gauge, GitBranch, ListChecks, Microscope, SearchCheck, ShieldAlert, ShieldCheck,
-  Target, Wrench, Workflow, Gauge,
+  Target, Wrench, Workflow,
 } from 'lucide-react'
 
 export const qualityModules = [
