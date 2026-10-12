@@ -3,12 +3,14 @@ import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, CalendarRange
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
+import TabletMenuModal from '../TabletMenuModal'
 
 type MenuItem = {
   label: string
   route: string
   icon?: LucideIcon
   children?: MenuItem[]
+  action?: 'quality-tablet'
 }
 
 const menus: MenuItem[] = [
@@ -59,7 +61,12 @@ const menus: MenuItem[] = [
       { label: 'Pintura / Química', route: '/pcp/fichas-processo?tipo=PINTURA_QUIMICA' },
     ] },
   ] },
-  { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck },
+  { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
+    { label: 'Qualidade Tablet', route: '/qualidade', action: 'quality-tablet' },
+    { label: 'Visual Geral Qualidade', route: '/qualidade' },
+    { label: 'Inspeções de Lotes', route: '/qualidade/inspecoes' },
+    { label: 'Documentos Controlados (GED)', route: '/qualidade/ged-documentos' },
+  ] },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench },
   { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
@@ -71,6 +78,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null)
   const [helpOpen, setHelpOpen] = useState(false)
+  const [qualityTabletOpen, setQualityTabletOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
@@ -181,7 +189,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             <button
               type="button"
               className={`erp-horizontal-menu-button ${active ? 'is-active' : ''}`}
-              onClick={() => menu.label === 'Gestão da Qualidade' ? go('/qualidade') : hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)}
+              onClick={() => hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)}
               aria-expanded={hasChildren ? expanded : undefined}
             >
               {menu.icon && <menu.icon size={16} />}{menu.label}
@@ -197,7 +205,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                     type="button"
                     className={childActive ? 'is-active' : ''}
                     aria-expanded={childHasChildren ? childExpanded : undefined}
-                    onClick={() => childHasChildren ? setOpenSubMenu(value => value === child.label ? null : child.label) : go(child.route)}
+                    onClick={() => child.action === 'quality-tablet' ? (setQualityTabletOpen(true), setOpenMenu(null)) : childHasChildren ? setOpenSubMenu(value => value === child.label ? null : child.label) : go(child.route)}
                   >{child.icon && <child.icon size={12} />}{child.label}{childHasChildren && <ChevronRight size={12} />}</button>
                   {childHasChildren && childExpanded && <div className="erp-horizontal-subdropdown">
                     {child.children?.map(sub => <button type="button" key={sub.route} className={pathname === sub.route.split('?')[0] && window.location.search === (sub.route.includes('?') ? `?${sub.route.split('?')[1]}` : '') ? 'is-active' : ''} onClick={() => go(sub.route)}>{sub.label}</button>)}
@@ -211,6 +219,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
       </main>
+      <TabletMenuModal isOpen={qualityTabletOpen} onClose={() => setQualityTabletOpen(false)} onNavigate={go} />
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f3f8fb 42%,#e8f1f6 100%);color:#123b50}
