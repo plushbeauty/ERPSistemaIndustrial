@@ -41,7 +41,7 @@ const declaredRoutes = routeMatches.map(([, route]) => route)
 for (const menuRoute of new Set(shellMenuRoutes)) {
   const matched = declaredRoutes.some(route =>
     route === menuRoute ||
-    (route.endsWith('/*') && menuRoute.startsWith(route.slice(0, -1))) ||
+    (route.endsWith('/*') && (menuRoute === route.slice(0, -2) || menuRoute.startsWith(route.slice(0, -1)))) ||
     (route.includes(':') && menuRoute.startsWith(route.slice(0, route.indexOf(':'))))
   )
   if (!matched) failures.push(`Menu horizontal aponta para rota não declarada: ${menuRoute}`)
