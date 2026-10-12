@@ -51,7 +51,7 @@ type Ishikawa = {
   cinco_porques:string|null
 }
 
-const normalizeStatus = (value:string|null|undefined) => String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()
+const normalizeStatus = (value:string|null|undefined) => String(value||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().trim()
 const CLOSED = ['encerrada','fechada','concluida','cancelada','cancelado']
 const ACTION_CLOSED = ['concluida','concluido','cancelada','cancelado','encerrada','fechada']
 const STATUS = ['aberta','em análise','em tratamento','aguardando eficácia','encerrada']
