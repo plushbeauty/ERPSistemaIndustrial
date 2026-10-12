@@ -1,6 +1,6 @@
 /* SGQ ERP Industrial — padrão compacto transversal baseado em Pedido de Venda + Qualidade.
-   Escopo exclusivo do aplicativo autenticado; não altera a tela de login/bootstrap. */
-#root .erp-global-surface {
+   Escopo limitado à área de trabalho autenticada do ERP; preserva o cabeçalho global e a tela de login/bootstrap. */
+#root .erp-horizontal-workspace {
   --erp-compact-bg: #F4FBFD;
   --erp-compact-ink: #123B50;
   --erp-compact-blue: #2D8DB8;
@@ -8,11 +8,11 @@
   --erp-compact-muted: #536B76;
   color: var(--erp-compact-ink);
 }
-#root .erp-global-surface :is(button, input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="hidden"]), select, textarea) {
+#root .erp-horizontal-workspace :is(button, input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="hidden"]), select, textarea) {
   border-radius: 2px !important;
   box-shadow: none;
 }
-#root .erp-global-surface button {
+#root .erp-horizontal-workspace button {
   box-sizing: border-box;
   min-height: 30px !important;
   height: 30px !important;
@@ -23,13 +23,13 @@
   line-height: 1.15 !important;
   white-space: nowrap;
 }
-#root .erp-global-surface button:has(> svg:only-child) {
+#root .erp-horizontal-workspace button:has(> svg:only-child) {
   width: 30px;
   min-width: 30px;
   padding: 0 !important;
 }
-#root .erp-global-surface input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="hidden"]),
-#root .erp-global-surface select {
+#root .erp-horizontal-workspace input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="hidden"]),
+#root .erp-horizontal-workspace select {
   box-sizing: border-box;
   min-height: 30px !important;
   height: 30px !important;
@@ -40,25 +40,25 @@
   line-height: 1.2;
   border-color: #B8CBD3;
 }
-#root .erp-global-surface textarea {
+#root .erp-horizontal-workspace textarea {
   border-radius: 2px !important;
   padding: 7px 8px;
   font-size: 11px;
   line-height: 1.4;
   border-color: #B8CBD3;
 }
-#root .erp-global-surface form label {
+#root .erp-horizontal-workspace form label {
   font-size: 9px;
   line-height: 1.25;
   color: #456274;
 }
-#root .erp-global-surface table {
+#root .erp-horizontal-workspace table {
   width: 100%;
   max-width: 100%;
   border-collapse: collapse;
   font-size: 11px;
 }
-#root .erp-global-surface table thead th {
+#root .erp-horizontal-workspace table thead th {
   background: #2D8DB8 !important;
   color: #FFFFFF !important;
   border-color: #2D8DB8 !important;
@@ -70,34 +70,34 @@
   letter-spacing: .025em;
   white-space: nowrap;
 }
-#root .erp-global-surface table tbody td {
+#root .erp-horizontal-workspace table tbody td {
   padding: 6px 8px;
   border-color: #D8E8EE;
   font-size: 11px;
 }
-#root .erp-global-surface button[type="submit"],
-#root .erp-global-surface [role="tab"][aria-selected="true"],
-#root .erp-global-surface button[aria-pressed="true"],
-#root .erp-global-surface a[aria-current="page"] {
+#root .erp-horizontal-workspace button[type="submit"],
+#root .erp-horizontal-workspace [role="tab"][aria-selected="true"],
+#root .erp-horizontal-workspace button[aria-pressed="true"],
+#root .erp-horizontal-workspace a[aria-current="page"] {
   background-color: #2D8DB8 !important;
   border-color: #2D8DB8 !important;
   color: #FFFFFF !important;
 }
-#root .erp-global-surface :is(button, input, select, textarea, a):focus-visible {
+#root .erp-horizontal-workspace :is(button, input, select, textarea, a):focus-visible {
   outline: 2px solid rgba(45, 141, 184, .55);
   outline-offset: 2px;
 }
-#root .erp-global-surface :is(button, input, select, textarea):disabled {
+#root .erp-horizontal-workspace :is(button, input, select, textarea):disabled {
   cursor: not-allowed;
   opacity: .58;
 }
 @media (max-width: 720px) {
-  #root .erp-global-surface button {
+  #root .erp-horizontal-workspace button {
     padding-inline: 7px !important;
     font-size: 9px !important;
   }
-  #root .erp-global-surface table thead th,
-  #root .erp-global-surface table tbody td {
+  #root .erp-horizontal-workspace table thead th,
+  #root .erp-horizontal-workspace table tbody td {
     padding: 5px 6px !important;
   }
 }
