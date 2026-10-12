@@ -22,7 +22,7 @@ create table if not exists public.erp_qualidade_fornecedor_criterios (
 );
 
 create unique index if not exists erp_usuarios_id_empresa_iqf_uidx
-  on public.erp_usuarios (id, empresa_id) where empresa_id is not null;
+  on public.erp_usuarios (id, empresa_id);
 
 create table if not exists public.erp_qualidade_fornecedor_avaliacoes (
   id uuid primary key default gen_random_uuid(),
@@ -104,7 +104,7 @@ select
   a.status,
   count(i.id)::integer as criterios_avaliados,
   case when coalesce(sum(c.peso) filter (where i.id is not null), 0) = 0 then null
-       else round((sum(i.nota * c.peso) / sum(c.peso) filter (where i.id is not null)) / 5 * 100, 2)
+       else round((sum(i.nota * c.peso) filter (where i.id is not null) / nullif(sum(c.peso) filter (where i.id is not null), 0)) / 5 * 100, 2)
   end as iqf_percentual
 from public.erp_qualidade_fornecedor_avaliacoes a
 left join public.erp_qualidade_fornecedor_avaliacao_itens i
