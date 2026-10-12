@@ -52,18 +52,18 @@ export default function FerramentariaPreventiva(){
    if(status==='LIBERADO'&&done.some(value=>!value)){setMsg('Para liberar o molde, conclua todos os itens do checklist.');return}
    setSaving(true)
    try{
-     const parameters=selected.parametros??{}
-     const setupRetido=parameters.setup_aprovacao?.status==='RETIDO'
-     const priorStatus=typeof parameters.status_operacional_anterior==='string'
+     const parameters=selected.parametros
+     const setupRetido=parameters?.setup_aprovacao?.status==='RETIDO'
+     const priorStatus=typeof parameters?.status_operacional_anterior==='string'
        ? parameters.status_operacional_anterior
        : selected.status&&selected.status!=='RETIDO'?selected.status:'ATIVA'
      const anyRetained=status==='RETIDO'||setupRetido
      const operationalStatus=anyRetained?'RETIDO':selected.status==='RETIDO'?priorStatus:selected.status??'ATIVA'
      const next={
-       ...parameters,
+       ...(parameters??{}),
        status_operacional_anterior:anyRetained?priorStatus:null,
        preventiva:{
-         ...(parameters.preventiva??{}),
+         ...(parameters?.preventiva??{}),
          ultima_execucao_em:new Date().toISOString(),
          status,
          status_anterior:status==='RETIDO'?priorStatus:null,
