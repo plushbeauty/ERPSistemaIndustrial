@@ -24,7 +24,7 @@ const incomingCostingMigration = read('supabase/migrations/20261013030000_harden
 const inventoryFiscalRbacMigration = read('supabase/migrations/20261013060000_harden_inventory_movement_and_fiscal_entry_rbac.sql')
 const stockLedgerRbacMigration = read('supabase/migrations/20261013070000_harden_stock_balances_and_lot_writes.sql')
 const directFiscalMovementGuard = read('supabase/migrations/20261013090000_block_direct_fiscal_stock_movements.sql')
-const stockMovementGuard = read('supabase/migrations/20261013100000_guard_stock_quantity_and_quarantine_destination.sql')
+const stockMovementGuard = read('supabase/migrations/20261013100000_guard_stock_quantity_and_quarantine_movements.sql')
 
 const requireIn = (text, pattern, description) => {
   if (!pattern.test(text)) failures.push(description)
