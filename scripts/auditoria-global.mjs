@@ -110,6 +110,15 @@ if(!/from\(["']usuarios["']\)[\s\S]*nivel_admin\.gte\.100[\s\S]*perfil\.in\.\(MA
   || !/if \(masterExists\)[\s\S]*MASTER_ALREADY_EXISTS/.test(masterBootstrap)) {
   add('BLOCKER',masterBootstrapPath,1,'Bootstrap Master deve impedir duplicação também contra o cadastro legado de usuários.')
 }
+const qualityDashboardPath=path.join(ROOT,'src','pages','QualidadeDashboardSGQ.tsx')
+const qualityDashboard=read(qualityDashboardPath)
+const qualityChartIndex=qualityDashboard.indexOf('Resultados de inspeção · últimos 6 meses')
+const qualityDocsIndex=qualityDashboard.indexOf('Cadastro de Documentos')
+const qualityGedLinkIndex=qualityDashboard.indexOf('to="/qualidade/ged-documentos"')
+const qualityRecentIndex=qualityDashboard.indexOf('Inspeções recentes')
+if(!qualityDashboard || qualityChartIndex<0 || qualityDocsIndex<qualityChartIndex || qualityGedLinkIndex<qualityDocsIndex || qualityRecentIndex<qualityGedLinkIndex) {
+  add('BLOCKER',qualityDashboardPath,1,'Cadastro de Documentos deve aparecer logo após os gráficos do dashboard SGQ e abrir o GED real.')
+}
 const migrationNames=migrationFiles.map(f=>path.basename(f).toLowerCase())
 const duplicateNames=migrationNames.filter((v,i,a)=>a.indexOf(v)!==i)
 for(const name of [...new Set(duplicateNames)]) add('HIGH',ROOT,1,`Migration duplicada: ${name}`)
