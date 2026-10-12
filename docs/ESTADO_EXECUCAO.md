@@ -2,10 +2,15 @@
 
 ## Atualização da auditoria global — 12/10/2026
 
-### Estado confirmado no GitHub
+### Atualização após correção da RPC RFQ — 12/10/2026
+- Criada migration aditiva `supabase/migrations/20261012260000_fix_erp_rfq_auth_profile_identity.sql` no commit `39336cca1b18964790dc300d49d478ccd1e41e46`.
+- A migration redefine `erp_compras_criar_rfq_atomica` para validar o perfil via `erp_usuarios.auth_user_id = auth.uid()`, `empresa_id` correspondente, `ativo = true` e `deleted_at IS NULL`, alinhando a checagem ao contrato da migration `20260917143000_harden_erp_auth_identity_strict_uid.sql`. A migration histórica original não foi editada.
+- **Validação pendente:** a migration foi adicionada ao GitHub, mas não foi aplicada ao Supabase nem executada contra PostgreSQL nesta rodada. Type-check/build não se aplicam diretamente ao SQL; é necessário validar sintaxe e fluxo com banco de homologação, depois conferir ordem e histórico de migrations antes de aplicar remotamente.
+
+## Estado confirmado no GitHub
 - Repositório: `plushbeauty/ERPSistemaIndustrial`.
 - Branch de trabalho: `fix/qualidade-padrao-formularios-dashboard`.
-- Commit consultado: `a8a3c8c8cd8eedde3492fd37771ca83083fe3e38`.
+- Commit de base inspecionado: `a8a3c8c8cd8eedde3492fd37771ca83083fe3e38`. Commits desta rodada: `4a682771a30b1568c1cee585d43ad21f96c83ff2` (registro de continuidade) e `39336cca1b18964790dc300d49d478ccd1e41e46` (migration corretiva RFQ). Reconsultar o HEAD do PR após esses commits.
 - PR #79: aberto, não mesclado, base `main`, 48 arquivos alterados e 120 commits informados pela API.
 - CI: a execução consultada do workflow `ERP Industrial CI` para o commit terminou com `success`; status combinado retornou CodeRabbit `success`. Isso não substitui teste funcional autenticado nem verificação do deploy de produção.
 - Scripts de validação declarados em `package.json`: `type-check`, `lint:check`, `audit:global`, `audit:brutal`, `audit:interactions`, `verify:lazy-imports`, `build`, `verify:build`, `verify-routes` e `verify:release`. Nesta auditoria via GitHub, não executei esses scripts localmente.
@@ -67,7 +72,7 @@ STATUS DO BLOCO: EM ANDAMENTO
 
 ## Próxima sequência obrigatória
 1. Auditar a tabela de rotas de `src/AppEntryV2.tsx` e mapear rotas duplicadas, aliases, páginas e menus.
-2. Inspecionar as migrations relacionadas a `erp_usuarios`, `erp_current_empresa_id()`, `erp_is_master()` e `erp_has_permission()` para confirmar ou descartar a divergência de vínculo observada na RPC RFQ.
+2. Validar em PostgreSQL de homologação a migration `20261012260000_fix_erp_rfq_auth_profile_identity.sql`; conferir as migrations relacionadas a `erp_usuarios`, `erp_current_empresa_id()`, `erp_is_master()` e `erp_has_permission()` antes de qualquer aplicação remota.
 3. Revisar todos os arquivos alterados no PR #79 por grupos (segurança/banco, lógica funcional, UI), começando por migrations e contratos de dados.
 4. Comparar os fluxos equivalentes com fontes oficiais do ERPNext, Odoo e Dolibarr, registrando caminhos efetivamente inspecionados e licenças.
 5. Executar a suíte de validação definida no `package.json` em ambiente com checkout do commit e registrar resultados reais.
