@@ -5,6 +5,7 @@ import path from 'node:path';
 const root = process.cwd();
 const qualityPath = path.join(root, 'src/pages/QualidadeCentralTablet.tsx');
 const pcpPath = path.join(root, 'src/pages/PCPIndustrial.tsx');
+const qualityDashboardPath = path.join(root, 'src/pages/QualidadeDashboardSGQ.tsx');
 const shellPath = path.join(root, 'src/components/layout/ERPHorizontalShell.tsx');
 const routerPath = path.join(root, 'src/AppEntryV2.tsx');
 const failures = [];
@@ -19,6 +20,7 @@ function read(file) {
 
 const quality = read(qualityPath);
 const pcp = read(pcpPath);
+const qualityDashboard = read(qualityDashboardPath);
 const shell = read(shellPath);
 const router = read(routerPath);
 const moduleRoutes = [...quality.matchAll(/route:\s*'([^']+)'/g)].map(match => match[1]);
@@ -36,6 +38,12 @@ if (!shell.includes('role="dialog"') || !shell.includes('aria-modal="true"')) {
   failures.push('O modal do tablet deve expor semântica acessível de diálogo modal.');
 }
 if (!shell.includes('qualityModules.map')) failures.push('O modal não renderiza a lista central de módulos da Qualidade.');
+if (!shell.includes("action: 'qualityTablet'") || !shell.includes("item.action === 'qualityTablet'")) {
+  failures.push('O submenu Qualidade Tablet deve abrir o modal, não navegar para uma página separada.');
+}
+if (!shell.includes("erp:open-quality-tablet") || !qualityDashboard.includes("new Event('erp:open-quality-tablet')")) {
+  failures.push('O botão Tablet Menu do dashboard da Qualidade deve abrir o mesmo modal central.');
+}
 
 const pcpModuleRoutes = [...pcp.matchAll(/route:'([^']+)'/g)].map(match => match[1]);
 const pcpDuplicates = pcpModuleRoutes.filter((route, index) => pcpModuleRoutes.indexOf(route) !== index);
