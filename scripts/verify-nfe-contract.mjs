@@ -124,6 +124,8 @@ requireIn(stockLedgerRbacMigration, /estoque_lotes_update_guard[\s\S]*as\s+restr
 requireIn(stockLedgerRbacMigration, /create or replace function public\.erp_apply_stock_movement[\s\S]*security definer[\s\S]*set search_path = pg_catalog, public[\s\S]*erp_has_permission\('estoque', 'movimentar'\)/i, 'Trigger de movimento não é protegido por tenant, RBAC e search_path fixo.')
 requireIn(stockLedgerRbacMigration, /create or replace function public\.erp_quality_quarantine_lot[\s\S]*security definer[\s\S]*set search_path = pg_catalog, public[\s\S]*erp_has_permission\('qualidade', 'criar'\)/i, 'Quarentena não usa trigger privilegiado com validação de permissão.')
 requireIn(stockLedgerRbacMigration, /create or replace function public\.erp_salvar_inspecao_lote[\s\S]*security definer[\s\S]*u\.auth_user_id = v_user_id[\s\S]*erp_has_permission\('qualidade', 'criar'\)/i, 'RPC de inspeção não preserva validação ao operar como SECURITY DEFINER.')
+requireIn(directFiscalMovementGuard, /begin\\s*;[\\s\\S]*commit\\s*;/i, 'Bloqueio de movimento fiscal direto deve ser transacional.');
+requireIn(directFiscalMovementGuard, /estoque_movimentacoes_block_direct_nfe_insert[\\s\\S]*as restrictive[\\s\\S]*for insert[\\s\\S]*with check \\(tipo <> 'entrada_nf'\\)/i, 'Usuário de navegador pode criar movimento de entrada NF-e sem escrituração fiscal.');
 requireIn(emissionMigration, /erp_has_permission\(\s*'fiscal'\s*,\s*'emitir'\s*\)/, 'Reserva/claim de NF-e não verifica permissão fiscal.')
 requireIn(emissionPage, /supabase\.rpc\('erp_salvar_rascunho_nfe'/, 'Tela NF-e não grava usando a RPC transacional.')
 requireIn(emissionPage, /functions\.invoke\('emitir-nfe'/, 'Tela NF-e não chama a Edge Function de emissão.')
