@@ -1,16 +1,14 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, Tablet } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
-import TabletQualidade from '../TabletQualidade'
 
 type MenuItem = {
   label: string
   route: string
   icon?: LucideIcon
   children?: MenuItem[]
-  action?: 'quality-tablet'
 }
 
 const menus: MenuItem[] = [
@@ -62,7 +60,6 @@ const menus: MenuItem[] = [
     ] },
   ] },
   { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck },
-  { label: 'TabletQualidade', route: '/qualidade', icon: Tablet, action: 'quality-tablet' },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench },
   { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
@@ -74,7 +71,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null)
   const [helpOpen, setHelpOpen] = useState(false)
-  const [qualityTabletOpen, setQualityTabletOpen] = useState(false)
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
   const ref = useRef<HTMLDivElement>(null)
@@ -105,13 +101,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   useEffect(() => {
     setOpenMenu(null)
   }, [pathname])
-
-  useEffect(() => {
-    const openTablet = () => setQualityTabletOpen(true)
-    window.addEventListener('erp:open-quality-tablet', openTablet)
-    return () => window.removeEventListener('erp:open-quality-tablet', openTablet)
-  }, [])
-
 
   const contextualHelp = pathname.startsWith('/pcp/mrp-ii')
     ? { title: 'MRP II — Planejamento de materiais', purpose: 'Calcular necessidades de materiais a partir da demanda, estrutura dos produtos, estoque e ordens existentes. Esta tela não é a agenda de máquinas.', steps: ['Confirme que produtos, fichas técnicas/estruturas e saldos de estoque estão atualizados.', 'Execute o cálculo MRP e confira as necessidades líquidas por componente.', 'Revise as sugestões de comprar ou produzir antes de gerar ordens planejadas.'], fields: ['Produto/demanda: item acabado e quantidade a planejar.', 'Horizonte/data: período considerado no planejamento.', 'Necessidade líquida: quantidade que falta após estoque e reservas.', 'Sugestão: comprar ou produzir; confira antes de confirmar.'] }
@@ -168,7 +157,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             <button
               type="button"
               className={`erp-horizontal-menu-button ${active ? 'is-active' : ''}`}
-              onClick={() => menu.action === 'quality-tablet' ? (setQualityTabletOpen(true), setOpenMenu(null)) : hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)}
+              onClick={() => hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)}
               aria-expanded={hasChildren ? expanded : undefined}
             >
               {menu.icon && <menu.icon size={16} />}{menu.label}
@@ -198,7 +187,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
       </main>
-      <TabletQualidade isOpen={qualityTabletOpen} onClose={() => setQualityTabletOpen(false)} onNavigate={go} />
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f3f8fb 42%,#e8f1f6 100%);color:#123b50}
