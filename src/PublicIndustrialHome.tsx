@@ -38,10 +38,10 @@ const modules: Module[] = [
 
 const plans = [['Essencial','R$ 199','Base operacional industrial, sem período de demonstração.'],['Profissional','R$ 349','PCP, qualidade, manutenção e indicadores para operação contínua.'],['Diamante','R$ 549','Visão ampliada, Master, fiscal, integrações e gestão.'],['Enterprise Gold','Sob consulta','Ecossistema completo, governança avançada e operação enterprise sem limitação por período.']] as const
 const visuals = [
-  { src:'/images/sgq/sgq-erp-dashboard.png', label:'Dashboard executivo', eyebrow:'GESTÃO INDUSTRIAL', alt:'Dashboard do SYSNQRA ERP & SGQ INDUSTRIAL' },
-  { src:'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=1400&q=82', label:'Profissional no chão de fábrica', eyebrow:'OPERAÇÃO REAL', alt:'Profissional trabalhando em ambiente industrial' },
-  { src:'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1400&q=82', label:'Processos e tecnologia', eyebrow:'INDÚSTRIA CONECTADA', alt:'Operação industrial com tecnologia' },
-  { src:'/images/sgq/sgq-erp-login.png', label:'Acesso seguro', eyebrow:'SEGURANÇA', alt:'Tela de acesso do SYSNQRA ERP & SGQ INDUSTRIAL' },
+  { src:'/images/tela_1.png', label:'Visão principal do ERP', eyebrow:'GESTÃO INDUSTRIAL', alt:'Tela principal do SYSNQRA ERP Industrial' },
+  { src:'/images/funcionario.png', label:'Equipe industrial', eyebrow:'OPERAÇÃO REAL', alt:'Profissional em ambiente industrial' },
+  { src:'/images/sgq-erp-pcp.png', label:'Planejamento e produção', eyebrow:'PCP E PRODUÇÃO', alt:'Tela do módulo PCP do ERP Industrial' },
+  { src:'/images/sgq-erp-qualidade.png', label:'Gestão da qualidade', eyebrow:'QUALIDADE E SGQ', alt:'Tela do módulo de qualidade do ERP Industrial' },
 ]
 
 export default function PublicIndustrialHome(){
