@@ -30,7 +30,7 @@ const checks = [
   [shell.includes("{ label: 'Cadastro de Produtos', route: '/produtos-vendas' }"), 'Cadastros menu must open the canonical product registration screen'],
   [entry.includes('<Route path="/cadastro-produtos" element={<Navigate to="/produtos-vendas" replace />} />'), 'Legacy product registration URL must reuse the canonical product screen'],
   [entry.includes('<Route path="/clientes" element={<Navigate to="/vendas/clientes" replace />} />') && entry.includes('<Route path="/fornecedores" element={<Navigate to="/compras/fornecedores" replace />} />'), 'Customer and supplier aliases must reuse the canonical compact screens'],
-  [read('src/pages/ProdutosVendasIndustrial.tsx').includes("height:30") && read('src/pages/ProdutosVendasIndustrial.tsx').includes("color:'#2D8DB8'") && read('src/pages/ProdutosVendasIndustrial.tsx').includes('Cadastro de Produtos'), 'Product screen must retain compact controls, industrial accent color and canonical title'],
+  [read('src/pages/ProdutosVendasIndustrial.tsx').includes("height:30") && read('src/pages/ProdutosVendasIndustrial.tsx').includes("background:'#2D8DB8'") && read('src/pages/ProdutosVendasIndustrial.tsx').includes('Cadastro de Produtos'), 'Product screen must retain compact controls, industrial accent color and canonical title'],
 ]
 for (const [passed, message] of checks) if (!passed) failures.push(message)
 
