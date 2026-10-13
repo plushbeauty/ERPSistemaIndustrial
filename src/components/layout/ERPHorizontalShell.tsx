@@ -45,10 +45,7 @@ const menus: MenuItem[] = [
   { label: 'Financeiro', route: '/financeiro/custo-padrao', icon: Wallet },
   { label: 'Fiscal', route: '/fiscal', icon: FileText },
   { label: 'Manufatura / PCP', route: '/pcp', icon: Factory },
-  { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
-    { label: 'Painel da Qualidade', route: '/qualidade' },
-    { label: 'Qualidade Tablet', route: '/qualidade/tablet', action: 'qualityTablet' },
-  ] },
+  { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench },
   { label: 'Relatórios', route: '/vendas/relatorios', icon: BarChart3 },
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
@@ -243,6 +240,16 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           </div>
         })}
       </nav>
+      <section className="erp-page-description" aria-label="Descrição da tela">
+        <div className="erp-page-description-copy">
+          <span>ERP INDUSTRIAL · {pageLabel.toUpperCase()}</span>
+          <strong>{pageLabel}</strong>
+          <p>{contextualHelp.purpose}</p>
+        </div>
+        {pathname.startsWith('/qualidade') && pathname !== '/qualidade' && (
+          <button type="button" onClick={() => go('/qualidade')} className="erp-page-description-return">GESTÃO DA QUALIDADE</button>
+        )}
+      </section>
       {tabletOpen && (
         <div className="erp-quality-tablet-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setTabletOpen(false) }}>
           <section className="erp-quality-tablet" role="dialog" aria-modal="true" aria-labelledby="erp-quality-tablet-title">
@@ -275,6 +282,14 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </main>
 
       <style>{`
+        .erp-page-description{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;margin:0;padding:7px 14px;border-bottom:1px solid #c9dde5;background:#f4fbfd;color:#123b50}
+        .erp-page-description-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
+        .erp-page-description-copy>span{font-size:8px;line-height:10px;font-weight:800;letter-spacing:.12em;color:#2d8db8}
+        .erp-page-description-copy>strong{font-size:12px;line-height:15px;font-weight:700;color:#123b50}
+        .erp-page-description-copy>p{margin:0;font-size:10px;line-height:13px;font-weight:400;color:#526d79;white-space:normal}
+        .erp-page-description-return{height:30px;flex:0 0 auto;padding:0 10px;border:1px solid #2d8db8;border-radius:2px;background:#2d8db8;color:#fff;font-size:9px;font-weight:700;cursor:pointer}
+        .erp-page-description-return:hover{background:#246f91}
+        @media(max-width:760px){.erp-page-description{align-items:flex-start;padding:7px 9px}.erp-page-description-copy>p{font-size:9px;line-height:12px}.erp-page-description-return{max-width:130px;white-space:normal;height:auto;min-height:30px}}
         .erp-quality-tablet-backdrop{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:18px;background:rgba(9,29,42,.48);backdrop-filter:blur(2px)}
         .erp-quality-tablet{width:min(980px,calc(100vw - 36px));max-height:min(78vh,760px);display:flex;flex-direction:column;overflow:hidden;background:#f8fcfe;border:1px solid #2D8DB8;box-shadow:0 18px 54px rgba(8,35,51,.35);color:#123b50}
         .erp-quality-tablet-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 16px;background:linear-gradient(105deg,#123b50,#236f93);color:#fff;border-bottom:3px solid #2D8DB8}
