@@ -140,7 +140,9 @@ export default function ProdutosVendasIndustrial(){
       const route=fiscalSearch.kind
       const searchCatalog=(rows:Array<{codigo:string;descricao:string}>)=>{
         const normalized=term.toLocaleLowerCase('pt-BR')
-        setFiscalOptions(rows.filter(x=>(x.codigo+' '+x.descricao).toLocaleLowerCase('pt-BR').includes(normalized)).slice(0,30))
+        const matches=rows.filter(x=>(x.codigo+' '+x.descricao).toLocaleLowerCase('pt-BR').includes(normalized))
+        const directional=route==='cfop'?matches.filter(x=>{const code=x.codigo.replace(/\D/g,'');return fiscalSearch.key==='cfop_entrada'?code.startsWith('1')||code.startsWith('2')||code.startsWith('3'):code.startsWith('5')||code.startsWith('6')||code.startsWith('7')}):matches
+        setFiscalOptions(directional.slice(0,30))
       }
       if(route!=='ncm'&&fiscalCatalogs[route]){
         searchCatalog(fiscalCatalogs[route]!)
