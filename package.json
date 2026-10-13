@@ -23,6 +23,7 @@
     "verify:nfe-contract": "node scripts/verify-nfe-contract.mjs",
     "verify:quality-tablet-contract": "node scripts/verify-quality-tablet-contract.mjs",
     "verify:global-horizontal-shell": "node scripts/verify-global-horizontal-shell.mjs",
+    "verify:logo-assets": "node scripts/verify-logo-assets.mjs",
     "audit:interactions": "node scripts/audit-interactions.mjs",
     "audit:global": "node scripts/auditoria-global.mjs",
     "audit": "npm run type-check",
