@@ -54,8 +54,8 @@ function moduleMenu(pathname:string):ModuleMenu{
  return{label:'MENU PRINCIPAL',route:'/erp-industrial',icon:LayoutDashboard}
 }
 
-export default function VendasLayout({children,title,subtitle,onRefresh,topContent,titleActions,showStatusCards}:{
- children:ReactNode;title:string;subtitle?:string;onRefresh?:()=>void;navSections?:SalesNavSection[];topContent?:ReactNode;titleActions?:ReactNode;showStatusCards?:boolean
+export default function VendasLayout({children,title,subtitle,onRefresh,topContent,titleActions,showStatusCards,showPageTitle=true}:{
+ children:ReactNode;title:string;subtitle?:string;onRefresh?:()=>void;navSections?:SalesNavSection[];topContent?:ReactNode;titleActions?:ReactNode;showStatusCards?:boolean;showPageTitle?:boolean
 }){
  const {pathname}=useLocation()
  const isVendas=pathname.startsWith('/vendas')
@@ -68,7 +68,7 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
   <SynqraLayoutProvider>
   <main className="synqra-workspace-main">
     {isVendas&&showCards&&<VendasStatusCards status={vendas.status} loading={vendas.loading}/>} 
-    <div className="synqra-workspace-title">{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<div className="synqra-title-main"><h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div>{onRefresh&&<button className="synqra-tool-button" type="button" onClick={onRefresh} title="Atualizar"><RefreshCw size={13}/></button>}</div>
+    {showPageTitle&&<div className="synqra-workspace-title">{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<div className="synqra-title-main"><h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div>{onRefresh&&<button className="synqra-tool-button" type="button" onClick={onRefresh} title="Atualizar"><RefreshCw size={13}/></button>}</div>}
     {topContent}{children}
   </main>
   </SynqraLayoutProvider>
