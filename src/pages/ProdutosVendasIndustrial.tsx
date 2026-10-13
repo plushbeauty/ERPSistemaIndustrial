@@ -315,6 +315,8 @@ export default function ProdutosVendasIndustrial(){
   return <><main className="product-master-screen" style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif',background:'#fff'}}>
     <style>{`
       .product-master-screen label{min-width:0}
+      .product-master-screen button:disabled{opacity:.48;cursor:not-allowed}
+      .product-master-screen button:focus-visible{outline:2px solid #2D8DB8;outline-offset:1px}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}
       .product-master-screen .product-form-grid>*{min-width:0}
       .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%}
