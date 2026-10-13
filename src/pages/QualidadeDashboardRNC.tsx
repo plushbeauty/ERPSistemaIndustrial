@@ -110,7 +110,7 @@ export default function QualidadeDashboardRNC() {
               <p className="mt-1 text-[10px] font-semibold text-[#315466]">Indicadores calculados a partir dos registros da empresa autenticada.</p>
             </div>
             <button type="button" onClick={() => setTabletOpen(true)} className="absolute right-[104px] top-1/2 inline-flex h-[30px] min-h-[30px] -translate-y-1/2 items-center gap-2 border border-[#B8860B] bg-[#D4A017] px-3 text-[10px] font-bold text-black hover:bg-[#E3B52D] max-[760px]:static max-[760px]:translate-y-0" aria-haspopup="dialog"><Tablet size={15}/> TABLET MENU</button>
-            <button type="button" onClick={() => void load()} disabled={loading} className="inline-flex h-[30px] min-h-[30px] items-center gap-2 border border-[#8eb5c8] bg-white px-3 text-[10px] font-semibold text-[#17445a] hover:bg-[#e6f3f8]"><RefreshCw size={13}/>{loading ? 'Carregando…' : 'Atualizar'}</button>
+            <button type="button" onClick={() => void load()} disabled={loading} className="absolute right-2 top-1/2 inline-flex h-[30px] min-h-[30px] -translate-y-1/2 items-center gap-2 border border-[#8eb5c8] bg-white px-3 text-[10px] font-semibold text-[#17445a] hover:bg-[#e6f3f8] max-[760px]:static max-[760px]:translate-y-0"><RefreshCw size={13}/>{loading ? 'Carregando…' : 'Atualizar'}</button>
           </header>
 
           {error && <div role="alert" className="mt-2 flex flex-wrap items-center justify-between gap-2 border border-rose-200 bg-rose-50 p-2 text-[10px] font-semibold text-rose-900"><span>{error}</span><button type="button" onClick={() => void load()} className="h-[28px] border border-rose-300 bg-white px-3 text-[10px] font-bold">Tentar novamente</button></div>}
