@@ -43,11 +43,11 @@ export default function FornecedoresIndustrial(){
  const remove=async()=>{if(!selected)return;if(!window.confirm(`Excluir o fornecedor ${selected.razao_social}?`))return;setBusy(true);try{const {error:e}=await supabase.from('erp_fornecedores').delete().eq('id',selected.id).eq('empresa_id',empresaId);if(e)throw e;setSelected(null);setMessage('Fornecedor excluído.');await load()}catch(e){setError(e instanceof Error?e.message:'Não foi possível excluir o fornecedor.')}finally{setBusy(false)}}
  const download=async(path:string|null)=>{if(!path)return;const {data,error:e}=await supabase.storage.from('erp-fornecedor-certificados').createSignedUrl(path,300);if(e)throw e;window.open(data.signedUrl,'_blank','noopener,noreferrer')}
  const print=()=>window.print()
- return <VendasLayout title="Fornecedores" subtitle="Cadastro, qualificação e acompanhamento de entrega" onRefresh={()=>void load()}>
+ return <VendasLayout title="Fornecedores" subtitle="Cadastro, qualificação e acompanhamento de entrega" onRefresh={()=>void load()} showStatusCards={false}>
   <main style={{minHeight:'100vh',background:'#F4FBFD',color:'#111827',padding:10,boxSizing:'border-box'}}>
    <section style={{...panel,padding:9,marginBottom:7}}>
     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,flexWrap:'wrap'}}>
-      <div><div style={{fontSize:9,color:'#2D8DB8',fontWeight:700}}>COMPRAS • CADASTRO MESTRE</div><h1 style={{margin:'2px 0',fontSize:16,color:'#123B50',fontWeight:600}}>Fornecedores</h1><div style={{fontSize:9,color:'#667085'}}>Cadastro, qualificação, documentos e desempenho de entrega.</div></div>
+      <div style={{fontSize:9,color:'#667085'}}>CADASTRO MESTRE • QUALIFICAÇÃO E ENTREGA</div>
       <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
        <button type="button" style={button('primary')} onClick={openNew}><Plus size={12}/>NOVO</button>
        <button type="button" className="erp-edit-button" style={button(selected?'normal':'disabled')} disabled={!selected} onClick={openEdit}><Pencil size={12}/>EDITAR</button>
@@ -83,7 +83,7 @@ export default function FornecedoresIndustrial(){
     </div>
     <div style={{display:'grid',gridTemplateColumns:'110px 180px 110px 1fr',gap:6,marginTop:6,alignItems:'end'}}>
       <label style={label}>CERTIFICAÇÃO?<select style={input} value={form.iso_9001_certificado?'SIM':'NÃO'} onChange={e=>setForm({...form,iso_9001_certificado:e.target.value==='SIM'})}><option>SIM</option><option>NÃO</option></select></label>
-      {form.iso_9001_certificado ? <label style={label}>ANEXAR CERTIFICADO<input type="file" accept=".pdf,image/*" onChange={(e:ChangeEvent<HTMLInputElement>)=>setFile(e.target.files?.[0]??null)} style={{width:'100%',height:28,fontSize:8,boxSizing:'border-box'}}/></label> : <div style={{fontSize:8,color:'#667085',paddingBottom:7}}>Sem certificação: anexo não é necessário.</div>}
+      {form.iso_9001_certificado ? <label style={label}>ANEXAR CERTIFICADO<input type="file" accept=".pdf,image/*" onChange={(e:ChangeEvent<HTMLInputElement>)=>setFile(e.target.files?.[0]??null)} style={{width:'100%',height:30,fontSize:8,boxSizing:'border-box'}}/></label> : <div style={{fontSize:8,color:'#667085',paddingBottom:7}}>Sem certificação: anexo não é necessário.</div>}
       <label style={label}>HOMOLOGADO<select style={input} value={isoValido({...({id:'',codigo:null,razao_social:'',nome_fantasia:null,documento:null,email:null,telefone:null,endereco:null,cidade:null,estado:null,contato:null,ativo:true,iso_9001_certificado:form.iso_9001_certificado,iso_certificado_nome:null,iso_certificado_path:null,iso_certificado_validade:form.iso_certificado_validade,iso_certificado_numero:form.iso_certificado_numero,observacoes:null} as Supplier)})?'SIM':'NÃO'} disabled><option>SIM</option><option>NÃO</option></select></label>
       <label style={label}>OBSERVAÇÕES<input style={input} value={form.observacoes} onChange={e=>setForm({...form,observacoes:e.target.value})}/></label>
     </div>
