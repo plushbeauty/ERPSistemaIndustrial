@@ -59,7 +59,7 @@ const fmt=(v:unknown)=>n(v).toLocaleString('pt-BR',{maximumFractionDigits:3})
 const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2}
 const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box'}
 const label:CSSProperties={display:'grid',gap:3,minWidth:0,fontSize:9,lineHeight:'11px',fontWeight:500,color:'#344054',textTransform:'uppercase',overflowWrap:'anywhere'}
-const btn=(_kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid #2D8DB8',background:'#2D8DB8',color:'#fff',fontSize:11,fontWeight:500,textTransform:'uppercase',cursor:'pointer'})
+const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid '+(kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#B8CDD5'),background:kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#F4FBFD',color:kind==='primary'||kind==='danger'?'#fff':'#123B50',fontSize:11,fontWeight:600,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap'})
 const emptyRow=(text:string,col=7)=><tr><td colSpan={col} style={{padding:22,textAlign:'center',color:'#667085'}}>{text}</td></tr>
 
 export default function ProdutosVendasIndustrial(){
@@ -137,8 +137,9 @@ export default function ProdutosVendasIndustrial(){
         codigo=String(generated.data||'').trim()
         if(!codigo)throw new Error('O gerador de código não retornou um código válido.')
       }
+      // Saldos e custos são derivados dos movimentos/engenharia; não podem ser sobrescritos pelo formulário mestre.
       const editableForm={...form}
-      const {estoque_atual: _estoqueAtual, ...payloadForm}=editableForm
+      const {estoque_atual: _estoqueAtual,custo_medio: _custoMedio,custo_ultimo: _custoUltimo,custo_fabricacao: _custoFabricacao,...payloadForm}=editableForm
       const payload={...payloadForm,empresa_id:companyId,codigo,nome:String(form.nome).trim(),unidade:String(form.unidade||'UN').toUpperCase(),unidade_compra:String(form.unidade_compra||'UN').toUpperCase(),unidade_venda:String(form.unidade_venda||'UN').toUpperCase()}
       const result=selectedId
         ? await supabase.from('erp_produtos').update(payload).eq('id',selectedId).eq('empresa_id',companyId).select('*').single()
@@ -315,6 +316,8 @@ export default function ProdutosVendasIndustrial(){
   return <><main className="product-master-screen" style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif',background:'#fff'}}>
     <style>{`
       .product-master-screen label{min-width:0}
+      .product-master-screen button:disabled{opacity:.48;cursor:not-allowed}
+      .product-master-screen button:focus-visible{outline:2px solid #2D8DB8;outline-offset:1px}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}
       .product-master-screen .product-form-grid>*{min-width:0}
       .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%}
@@ -323,14 +326,14 @@ export default function ProdutosVendasIndustrial(){
       @media(max-width:700px){.product-master-screen .product-general-row,.product-master-screen .product-measure-row,.product-master-screen .product-commercial-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3){grid-column:span 2!important}.product-master-screen .product-commercial-row>*{grid-column:span 1!important}}
     `}</style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
-      <div><div style={{fontSize:11,fontWeight:900,color:'#1c4bb5'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
+      <div><div style={{fontSize:11,fontWeight:800,color:'#2D8DB8'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
         <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>
         <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />
         <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={13}/>Importar Excel</button>
 
         <button type="button" className="erp-edit-button" onClick={()=>setEditing(true)} disabled={!selectedId} style={btn('normal')}><Edit3 size={16}/>Editar</button>
-        <button type="button" onClick={()=>void save()} disabled={!editing||busy} style={btn('normal')}><Save size={16}/>Salvar</button>
+        <button type="button" onClick={()=>void save()} disabled={!editing||busy} style={btn('primary')}><Save size={16}/>Salvar</button>
         <button type="button" onClick={cancelEdit} style={btn('normal')}><RotateCcw size={16}/>Cancelar</button>
         {!editing&&selectedId&&<button type="button" onClick={openTechnicalPrint} disabled={busy} style={btn('normal')}><Printer size={16}/>Imprimir</button>}
         <button type="button" onClick={()=>void deactivate()} disabled={!selectedId||busy} style={btn('danger')}><Trash2 size={16}/>Inativar</button>
@@ -362,7 +365,7 @@ export default function ProdutosVendasIndustrial(){
 
     <section style={{...panel,margin:10,overflow:'hidden'}}>
       <div style={{display:'flex',borderBottom:'1px solid #d6dde6',background:'#f7f9fc',overflowX:'auto'}}>
-        {tabItems.map(([id,title,Icon])=><button key={id} type="button" onClick={()=>{setTab(id);if(selectedId)void loadDetails()}} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 10px',border:0,borderBottom:tab===id?'3px solid #184bb4':'3px solid transparent',background:tab===id?'#fff':'transparent',color:tab===id?'#184bb4':'#344054',fontWeight:900,fontSize:10,cursor:'pointer',whiteSpace:'nowrap'}}><Icon size={14}/>{title}</button>)}
+        {tabItems.map(([id,title,Icon])=><button key={id} type="button" onClick={()=>{setTab(id);if(selectedId)void loadDetails()}} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 10px',border:0,borderBottom:tab===id?'3px solid #2D8DB8':'3px solid transparent',background:tab===id?'#fff':'transparent',color:tab===id?'#123B50':'#475467',fontWeight:700,fontSize:10,cursor:'pointer',whiteSpace:'nowrap'}}><Icon size={14}/>{title}</button>)}
       </div>
 
       {tab==='gerais'&&<form onSubmit={save} style={{padding:8}}>
@@ -390,9 +393,9 @@ export default function ProdutosVendasIndustrial(){
         </div>
 
         <div className="product-form-grid product-commercial-row" style={{display:'grid',gridTemplateColumns:'78px 78px 78px 78px 120px 120px minmax(150px,1fr) max-content minmax(180px,1.2fr)',gap:8,marginTop:8,alignItems:'end'}}>
-          {field('Custo médio','custo_medio','number')}
-          {field('Último custo','custo_ultimo','number')}
-          {field('Custo fabricação','custo_fabricacao','number')}
+          {field('Custo médio (calculado)','custo_medio','number',1,true)}
+          {field('Último custo (calculado)','custo_ultimo','number',1,true)}
+          {field('Custo fabricação (engenharia)','custo_fabricacao','number',1,true)}
           {field('Preço venda','preco_venda','number')}
           {field('Ref. interna','referencia_interna')}
           {field('Ref. cliente','referencia_cliente')}
@@ -405,7 +408,7 @@ export default function ProdutosVendasIndustrial(){
 
             {tab==='fiscal'&&<section style={{padding:8}}>
         <div style={{display:'grid',gridTemplateColumns:'80px 220px 180px 95px 95px',gap:7,alignItems:'end'}}>
-          {select('Situação','ativo',[['true','Ativo'],['false','Inativo']])}
+          <label style={label}>SITUAÇÃO<select value={form.ativo?'true':'false'} disabled={!editing} onChange={e=>update('ativo',e.target.value==='true')} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="true">Ativo</option><option value="false">Inativo</option></select></label>
           {select('Origem [?]','origem',[['0 - Nacional','0 - Nacional'],['1 - Estrangeira - Importação direta','1 - Estrangeira - Importação direta'],['2 - Estrangeira - mercado interno','2 - Estrangeira - mercado interno'],['3 - Nacional, conteúdo importação >40% e <70%','3 - Nacional, conteúdo importação >40% e <70%'],['4 - Nacional, processo produtivo básico','4 - Nacional, processo produtivo básico'],['5 - Nacional, conteúdo importação <40%','5 - Nacional, conteúdo importação <40%'],['6 - Estrangeira - importação direta, sem similar nacional','6 - Estrangeira - importação direta, sem similar nacional'],['7 - Estrangeira - mercado interno, sem similar nacional','7 - Estrangeira - mercado interno, sem similar nacional'],['8 - Nacional, conteúdo importação >70%','8 - Nacional, conteúdo importação >70%']])}
           {field('NCM [?]','ncm')}{field('CEST [?]','cest')}{field('CST ICMS [?]','cst_icms')}
         </div>
