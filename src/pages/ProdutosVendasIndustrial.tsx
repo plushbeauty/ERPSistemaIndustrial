@@ -37,6 +37,8 @@ type Product={
   custo_medio:number;custo_ultimo:number;custo_fabricacao:number;preco_venda:number;ativo:boolean
 }
 type Supplier={id:string;razao_social:string;nome_fantasia:string|null}
+type Customer={id:string;codigo:string|null;nome:string;nome_fantasia?:string|null}
+type CostCenter={id:string;codigo:string;nome:string;tipo:string}
 type Group={id:string;codigo:string;nome:string}
 type Location={id:string;codigo:string;nome:string;tipo:string}
 type Movement={id:string;tipo:string;quantidade:number;origem:string|null;documento:string|null;observacao:string|null;created_at:string}
@@ -77,6 +79,8 @@ export default function ProdutosVendasIndustrial(){
   const [operatorName,setOperatorName]=useState('Usuário ERP')
   const [products,setProducts]=useState<Product[]>([])
   const [suppliers,setSuppliers]=useState<Supplier[]>([])
+  const [customers,setCustomers]=useState<Customer[]>([])
+  const [costCenters,setCostCenters]=useState<CostCenter[]>([])
   const [groups,setGroups]=useState<Group[]>([])
   const [locations,setLocations]=useState<Location[]>([])
   const [selectedId,setSelectedId]=useState<string|null>(null)
@@ -109,14 +113,16 @@ export default function ProdutosVendasIndustrial(){
       const {data:cid,error:ce}=await supabase.rpc('erp_current_empresa_id')
       if(ce||!cid)throw ce??new Error('Empresa da sessão não identificada.')
       const id=String(cid);setCompanyId(id)
-      const [p,s,g,l]=await Promise.all([
+      const [p,s,g,l,cu,cc]=await Promise.all([
         supabase.from('erp_produtos').select('*').eq('empresa_id',id).order('codigo').limit(2000),
         supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia').eq('empresa_id',id).eq('ativo',true).order('razao_social').limit(1000),
         supabase.from('erp_grupos').select('id,codigo,nome').eq('empresa_id',id).eq('ativo',true).order('nome').limit(1000),
-        supabase.from('erp_estoque_localizacoes').select('id,codigo,nome,tipo').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(1000)
+        supabase.from('erp_estoque_localizacoes').select('id,codigo,nome,tipo').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(1000),
+        supabase.from('erp_clientes').select('id,codigo,nome,nome_fantasia').eq('empresa_id',id).eq('ativo',true).order('nome').limit(2000),
+        supabase.from('erp_centros_custos').select('id,codigo,nome,tipo').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(1000)
       ])
-      for(const r of [p,s,g,l])if(r.error)throw r.error
-      setProducts((p.data??[]) as Product[]);setSuppliers((s.data??[]) as Supplier[]);setGroups((g.data??[]) as Group[]);setLocations((l.data??[]) as Location[])
+      for(const r of [p,s,g,l,cu,cc])if(r.error)throw r.error
+      setProducts((p.data??[]) as Product[]);setSuppliers((s.data??[]) as Supplier[]);setGroups((g.data??[]) as Group[]);setLocations((l.data??[]) as Location[]);setCustomers((cu.data??[]) as Customer[]);setCostCenters((cc.data??[]) as CostCenter[])
       if(printMode&&printId){const printProduct=(p.data??[]).find((x:Product)=>x.id===printId);if(printProduct){setSelectedId(printProduct.id);setForm({...empty(),...printProduct})}}
       if(selectedId){const fresh=(p.data??[]).find((x:Product)=>x.id===selectedId);if(fresh)setForm({...empty(),...fresh})}
     }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar cadastro de produtos.')}
@@ -548,9 +554,9 @@ export default function ProdutosVendasIndustrial(){
             {field('Custo médio','custo_medio','number')}{field('Último custo','custo_ultimo','number')}{field('Custo fabricação','custo_fabricacao','number')}{field('Preço venda','preco_venda','number')}
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(160px,1fr))',gap:8,marginTop:9,alignItems:'start'}}>
-            {field('Centro de custo do produto','centro_custo_produto')}
-            {field('Principal cliente','cliente_principal')}
-            {field('Código do cliente','codigo_cliente')}
+            <label style={label}>Centro de custo do produto<select value={form.centro_custo_produto||''} disabled={!editing} onChange={e=>update('centro_custo_produto',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione o centro de custo</option>{costCenters.map(cc=><option key={cc.id} value={cc.codigo}>{cc.codigo} — {cc.nome}{cc.tipo?' • '+cc.tipo:''}</option>)}</select></label>
+            <label style={label}>Principal cliente<select value={customers.find(x=>x.nome===form.cliente_principal)?.id||''} disabled={!editing} onChange={e=>{const customer=customers.find(x=>x.id===e.target.value);update('cliente_principal',customer?.nome||null);update('codigo_cliente',customer?.codigo||null)}} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione o cliente principal</option>{customers.map(customer=><option key={customer.id} value={customer.id}>{customer.codigo?customer.codigo+' — ':''}{customer.nome_fantasia||customer.nome}</option>)}</select></label>
+            {field('Código do cliente','codigo_cliente','text',1,true)}
           </div>
           <p style={{fontSize:9,color:'#526b78',margin:'8px 0 0'}}>Os três campos de referência são gravados no cadastro do produto por empresa. Informe o centro de custo conforme o plano de contas interno e mantenha o código do cliente usado no pedido de venda.</p>
         </section>
