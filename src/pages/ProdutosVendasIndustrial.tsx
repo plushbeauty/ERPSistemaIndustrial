@@ -98,6 +98,7 @@ export default function ProdutosVendasIndustrial(){
   const [detailsLoaded,setDetailsLoaded]=useState(false)
   const [fiscalSearch,setFiscalSearch]=useState<{key:string;kind:'ncm'|'cest'|'cfop';term:string}>({key:'',kind:'ncm',term:''})
   const [fiscalOptions,setFiscalOptions]=useState<Array<{codigo:string;descricao:string}>>([])
+  const [fiscalCatalogs,setFiscalCatalogs]=useState<{cest?:Array<{codigo:string;descricao:string}>;cfop?:Array<{codigo:string;descricao:string}>}>({})
   const [fiscalLoading,setFiscalLoading]=useState(false)
   const [attachmentUrls,setAttachmentUrls]=useState<Record<string,string>>({})
   const [machineOptions,setMachineOptions]=useState<Array<{id:string;codigo:string;nome:string}>>([])
@@ -130,7 +131,42 @@ export default function ProdutosVendasIndustrial(){
     finally{setBusy(false)}
   }
   useEffect(()=>{void load()},[])
-  useEffect(()=>{const term=fiscalSearch.term.trim();if(term.length<2||!fiscalSearch.key){setFiscalOptions([]);setFiscalLoading(false);return}const controller=new AbortController();const timer=window.setTimeout(()=>{setFiscalLoading(true);const route=fiscalSearch.kind;const url=route==='ncm'?'https://brasilapi.com.br/api/ncm/v1?search='+encodeURIComponent(term):'https://tabelasfiscais.com.br/api/v1/'+route+'/buscar?q='+encodeURIComponent(term);void fetch(url,{signal:controller.signal}).then(r=>{if(!r.ok)throw new Error('Consulta fiscal indisponível');return r.json() as Promise<unknown>}).then(raw=>{const rows=Array.isArray(raw)?raw:(raw&&typeof raw==='object'&&Array.isArray((raw as {data?:unknown[]}).data)?(raw as {data:unknown[]}).data:raw&&typeof raw==='object'&&Array.isArray((raw as {resultados?:unknown[]}).resultados)?(raw as {resultados:unknown[]}).resultados:raw&&typeof raw==='object'&&Array.isArray((raw as {items?:unknown[]}).items)?(raw as {items:unknown[]}).items:[]);const currentRows=route==='ncm'?rows.filter(item=>{const x=item as Record<string,unknown>;return x.data_fim===undefined||String(x.data_fim)>='9999-01-01'}):rows;const options=currentRows.map(item=>{const x=item as Record<string,unknown>;return {codigo:String(x.codigo??x.codigo_num??x.cest??x.cfop??''),descricao:String(x.descricao??x.segmento??x.operacao??'')}}).filter(x=>x.codigo&&x.descricao);setFiscalOptions(options.slice(0,30))}).catch(e=>{if(!(e instanceof DOMException&&e.name==='AbortError'))setFiscalOptions([])}).finally(()=>setFiscalLoading(false))},250);return()=>{window.clearTimeout(timer);controller.abort()}},[fiscalSearch])
+  useEffect(()=>{
+    const term=fiscalSearch.term.trim()
+    if(term.length<2||!fiscalSearch.key){setFiscalOptions([]);setFiscalLoading(false);return}
+    const controller=new AbortController()
+    const timer=window.setTimeout(()=>{
+      setFiscalLoading(true)
+      const route=fiscalSearch.kind
+      const searchCatalog=(rows:Array<{codigo:string;descricao:string}>)=>{
+        const normalized=term.toLocaleLowerCase('pt-BR')
+        setFiscalOptions(rows.filter(x=>(x.codigo+' '+x.descricao).toLocaleLowerCase('pt-BR').includes(normalized)).slice(0,30))
+      }
+      if(route!=='ncm'&&fiscalCatalogs[route]){
+        searchCatalog(fiscalCatalogs[route]!)
+        setFiscalLoading(false)
+        return
+      }
+      const url=route==='ncm'
+        ?'https://brasilapi.com.br/api/ncm/v1?search='+encodeURIComponent(term)
+        :'https://tabelasfiscais.com.br/public/downloads/'+route+'.json'
+      void fetch(url,{signal:controller.signal}).then(r=>{
+        if(!r.ok)throw new Error('Consulta fiscal indisponível')
+        return r.json() as Promise<unknown>
+      }).then(raw=>{
+        const root=raw&&typeof raw==='object'?raw as Record<string,unknown>:{}
+        const rows=Array.isArray(raw)?raw:Array.isArray(root.dados)?root.dados:Array.isArray(root.data)?root.data:Array.isArray(root.resultados)?root.resultados:Array.isArray(root.items)?root.items:[]
+        const options=rows.map(item=>{
+          const x=item as Record<string,unknown>
+          return {codigo:String(x.codigo??x.codigo_num??x.cest??x.cfop??''),descricao:String(x.descricao??x.segmento??x.operacao??'')}
+        }).filter(x=>x.codigo&&x.descricao)
+        if(route!=='ncm')setFiscalCatalogs(prev=>({...prev,[route]:options}))
+        const currentRows=route==='ncm'?rows.filter(item=>{const x=item as Record<string,unknown>;return x.data_fim===undefined||String(x.data_fim)>='9999-01-01'}).map(item=>{const x=item as Record<string,unknown>;return {codigo:String(x.codigo??''),descricao:String(x.descricao??'')}}):options
+        searchCatalog(currentRows)
+      }).catch(e=>{if(!(e instanceof DOMException&&e.name==='AbortError'))setFiscalOptions([])}).finally(()=>setFiscalLoading(false))
+    },250)
+    return()=>{window.clearTimeout(timer);controller.abort()}
+  },[fiscalSearch,fiscalCatalogs])
   useEffect(()=>{void supabase.auth.getUser().then(async ({data})=>{if(!data.user)return;const {data:profile}=await supabase.from('erp_usuarios').select('nome').eq('auth_user_id',data.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();setOperatorName(String(profile?.nome||data.user.email||'Usuário ERP'))})},[])
   useEffect(()=>{if(!companyId)return;void supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id',companyId).not('status','eq','INATIVA').order('codigo').limit(500).then(({data})=>setMachineOptions((data??[]) as Array<{id:string;codigo:string;nome:string}>))},[companyId])
 
