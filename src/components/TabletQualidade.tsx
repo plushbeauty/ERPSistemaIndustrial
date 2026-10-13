@@ -128,8 +128,8 @@ export default function TabletQualidade({ isOpen, onClose, onNavigate }: TabletQ
               <Tablet size={24} />
             </span>
             <div className="min-w-0">
-              <strong className="block text-xs font-bold leading-tight tracking-[0.02em] text-[#123B50]">CENTRAL DE MÓDULOS — MODO TABLET</strong>
-              <p className="mt-1 text-[11px] leading-tight text-[#526D79]">Ambiente operacional integrado do ERP Industrial</p>
+              <strong className="block text-xs font-bold leading-tight tracking-[0.02em] text-[#123B50]">TABLETQUALIDADE · MÓDULOS DO SGQ</strong>
+              <p className="mt-1 text-[11px] leading-tight text-[#526D79]">Acesso direto aos 22 módulos da Qualidade Industrial</p>
             </div>
           </div>
 
