@@ -18,6 +18,9 @@ const checks = [
   [qualityDashboard.includes('Painel de Gestão da Qualidade') && qualityDashboard.includes('Indicadores calculados a partir dos registros da empresa autenticada.'), 'O título e a descrição aprovados devem permanecer no painel.'],
   [/path="\/qualidade\/tablet" element={<QualityPlanGate><QualidadeTablet \/><\/QualityPlanGate>}/.test(routes), 'A rota direta /qualidade/tablet deve continuar declarada e protegida pelo QualityPlanGate.'],
   [tablet.includes("number: 'M22'") && tablet.includes('onNavigate'), 'O tablet deve preservar os módulos previstos e a navegação existente.'],
+  [tablet.includes('bg-white p-3 text-[#123B50]') && !tablet.includes('bg-[#1e222b]') && !tablet.includes('bg-[#252a34]'), 'O tablet SGQ deve preservar o fundo branco e os textos escuros aprovados.'],
+  [(tablet.match(/number: 'M\\d\\d'/g) || []).length === 22, 'O tablet deve manter os 22 módulos SGQ.'],
+  [!['/erp-industrial','/pcp/dashboard-oee','/rh','/admin/logs','/configuracoes-adm','/documentos-qualidade'].some(route => tablet.includes("route: '" + route)), 'O tablet SGQ não pode redirecionar para atalhos de outros módulos.'],
   [tablet.includes('!route || !accessReady') && tablet.includes('permissions.has(permission)'), 'O modal deve preservar a validação de acesso/permissão dos módulos.'],
 ]
 
