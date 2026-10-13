@@ -41,7 +41,7 @@ export default function QualidadeDashboardSGQ() {
 
   useEffect(() => { void load() }, [load])
   useEffect(() => {
-    const refresh = () => { void load() }
+    const refresh = (event: Event) => { event.preventDefault(); void load() }
     window.addEventListener('erp:refresh-current-module', refresh)
     return () => window.removeEventListener('erp:refresh-current-module', refresh)
   }, [load])
@@ -54,7 +54,7 @@ export default function QualidadeDashboardSGQ() {
     const date = new Date()
     date.setDate(1)
     date.setMonth(date.getMonth() - (5 - index))
-    const key = date.toISOString().slice(0, 7)
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
     const data = inspections.filter(x => String(x.created_at).slice(0, 7) === key)
     return {
       mes: date.toLocaleDateString('pt-BR', { month: 'short' }),
