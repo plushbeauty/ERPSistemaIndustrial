@@ -219,10 +219,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-brand img{height:46px;width:190px;min-width:190px;object-fit:contain;object-position:left}
         .erp-horizontal-brand strong{font-size:14px;font-weight:800;letter-spacing:.02em;color:#fff}
         
-        .erp-horizontal-search input{border:0;outline:0;min-width:0;max-width:100%;width:100%;height:28px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#173b4a;background:transparent}
-        .erp-horizontal-search-results{position:absolute;top:31px;left:0;right:0;z-index:1000;background:#fff;border:1px solid #cbd5e1;box-shadow:0 4px 12px rgba(18,59,80,.12)}
-        .erp-horizontal-search-results button{display:block;width:100%;min-height:28px;padding:5px 8px;border:0;background:#fff;text-align:left;font-size:11px;color:#173b4a;cursor:pointer}
-        .erp-horizontal-search-results button:hover{background:#edf7fb}
         .erp-horizontal-help{height:30px;display:inline-flex;align-items:center;gap:4px;border:1px solid #b9d3dd;background:#fff;color:#123b50;font-size:11px;cursor:pointer;padding:0 8px;border-radius:2px}
         .erp-horizontal-session{height:38px;display:flex;align-items:center;gap:7px;padding-left:10px;border-left:1px solid #c9dde5;white-space:nowrap;font-size:11px;color:#123b50}
         .erp-horizontal-session span{font-weight:600}
