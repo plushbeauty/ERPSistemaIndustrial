@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, FolderGit2, LineChart, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, ClipboardCheck } from 'lucide-react'
+import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, FolderGit2, LineChart, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, ClipboardCheck, RefreshCw } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -119,7 +119,37 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     return () => document.removeEventListener('mousedown', close)
   }, [])
 
-  const current = menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
+  const moduleLabel = pathname.startsWith('/vendas') ? 'Vendas'
+    : pathname.startsWith('/compras') ? 'Compras'
+    : pathname.startsWith('/qualidade') || pathname.startsWith('/sgq') ? 'Qualidade'
+    : pathname.startsWith('/estoque') || pathname.startsWith('/inventario') ? 'Estoque'
+    : pathname.startsWith('/financeiro') ? 'Financeiro'
+    : pathname.startsWith('/fiscal') || pathname.includes('nota-fiscal') ? 'Fiscal'
+    : pathname.startsWith('/pcp') ? 'Manufatura / PCP'
+    : pathname.startsWith('/manutencao') ? 'Manutenção'
+    : pathname.startsWith('/engenharia') ? 'Engenharia'
+    : pathname.startsWith('/rh') ? 'RH'
+    : pathname.startsWith('/produtos-vendas') || pathname.startsWith('/cadastros') ? 'Cadastros'
+    : pathname.startsWith('/configuracoes') ? 'Configuração'
+    : null
+  const moduleHeader = pathname === '/vendas'
+    ? { title: 'Dashboard Comercial', subtitle: 'Indicadores reais do módulo de vendas' }
+    : moduleLabel === 'Compras' ? { title: 'Gestão de Compras', subtitle: 'Solicitações, cotações, pedidos e recebimentos' }
+    : moduleLabel === 'Qualidade' ? { title: 'Painel de Gestão da Qualidade', subtitle: 'Indicadores calculados a partir dos registros da empresa autenticada.' }
+    : moduleLabel === 'Vendas' ? { title: 'Módulo Vendas', subtitle: 'Pedidos, clientes e acompanhamento comercial' }
+    : moduleLabel === 'Estoque' ? { title: 'Gestão de Estoque', subtitle: 'Saldos, movimentações e rastreabilidade de materiais' }
+    : moduleLabel === 'Fiscal' ? { title: 'Gestão Fiscal', subtitle: 'Documentos fiscais e controles do módulo fiscal' }
+    : moduleLabel === 'Manufatura / PCP' ? { title: 'Planejamento e Controle da Produção', subtitle: 'Ordens, capacidade e acompanhamento da produção' }
+    : moduleLabel === 'Financeiro' ? { title: 'Gestão Financeira', subtitle: 'Títulos, custos e indicadores financeiros' }
+    : moduleLabel === 'Engenharia' ? { title: 'Engenharia Industrial', subtitle: 'Produtos, estruturas e dados de engenharia' }
+    : moduleLabel === 'Manutenção' ? { title: 'Gestão da Manutenção', subtitle: 'Equipamentos, ordens e planos de manutenção' }
+    : moduleLabel === 'RH' ? { title: 'Recursos Humanos', subtitle: 'Cadastros e rotinas de recursos humanos' }
+    : moduleLabel === 'Cadastros' ? { title: 'Cadastros Mestres', subtitle: 'Dados mestres utilizados pelos módulos do ERP' }
+    : moduleLabel === 'Configuração' ? { title: 'Configurações do ERP', subtitle: 'Parâmetros e administração do ambiente' }
+    : { title: 'SGQERP INDUSTRIAL', subtitle: 'Gestão integrada da operação industrial' }
+  const currentModuleMenu = moduleLabel ? menus.find(menu => menu.label === (moduleLabel === 'Qualidade' ? 'Gestão da Qualidade' : moduleLabel)) : undefined
+  const current = currentModuleMenu ?? menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
+  const visibleMenus = currentModuleMenu ? [{ ...currentModuleMenu, label: 'Menu ' + moduleLabel }, ...menus.filter(menu => menu.label !== 'Início' && menu.label !== currentModuleMenu.label)] : menus
   useEffect(() => {
     setOpenMenu(null)
   }, [pathname])
@@ -175,6 +205,11 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           <strong>SGQERP INDUSTRIAL</strong>
         </button>
 
+        <div className="erp-horizontal-global-title" aria-live="polite">
+          <strong>{moduleHeader.title}</strong>
+          <span>{moduleHeader.subtitle}</span>
+        </div>
+
         <div className="erp-horizontal-search">
           <Search size={15} aria-hidden="true" />
           <input
@@ -205,14 +240,14 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </header>
 
       <nav className="erp-horizontal-menu" aria-label="Menu principal do ERP">
-        {menus.map(menu => {
+        {visibleMenus.map(menu => {
           const hasChildren = Boolean(menu.children?.length)
           const active = current?.label === menu.label
           const expanded = openMenu === menu.label
           return <div className="erp-horizontal-menu-item" key={menu.label}>
             <button
               type="button"
-              className={`erp-horizontal-menu-button ${active ? 'is-active' : ''}`}
+              className={`erp-horizontal-menu-button ${menu.label.startsWith('Menu ') ? 'erp-module-menu-button' : ''} ${active ? 'is-active' : ''}`}
               onClick={() => hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)}
               aria-expanded={hasChildren ? expanded : undefined}
             >
@@ -239,6 +274,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             </div>}
           </div>
         })}
+        <button type="button" className="erp-horizontal-refresh-module" onClick={() => { const event = new CustomEvent('erp:refresh-current-module', { cancelable: true }); window.dispatchEvent(event); if (!event.defaultPrevented) window.location.reload() }} title="Atualizar os dados da tela atual" aria-label="Atualizar dados do módulo"><RefreshCw size={13} /> Atualizar</button>
       </nav>
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
@@ -298,6 +334,14 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-menu-item{position:relative;display:flex;align-items:stretch}
         .erp-horizontal-menu-button{height:31px;display:inline-flex;align-items:center;gap:3px;padding:0 10px;border:0;border-right:1px solid rgba(255,255,255,.18);background:#2D8DB8;color:#fff;font-size:10px;font-weight:500;cursor:pointer}
         .erp-horizontal-menu-button:hover,.erp-horizontal-menu-button.is-active{background:#17445A;color:#fff}
+.erp-horizontal-menu-button.erp-module-menu-button{background:#f97316;border-right-color:#ea580c;color:#fff;font-weight:800;letter-spacing:.03em;text-transform:uppercase}
+.erp-horizontal-menu-button.erp-module-menu-button:hover,.erp-horizontal-menu-button.erp-module-menu-button.is-active{background:#ea580c;color:#fff;box-shadow:inset 0 -2px #fed7aa}
+.erp-horizontal-refresh-module{height:27px;display:inline-flex;align-items:center;justify-content:center;gap:5px;align-self:center;margin-left:auto;margin-right:4px;padding:0 10px;border:1px solid #ea580c;border-radius:2px;background:#f97316;color:#fff;font-size:10px;font-weight:800;white-space:nowrap;cursor:pointer}
+.erp-horizontal-refresh-module:hover{background:#ea580c}
+.erp-horizontal-global-title{display:flex;flex:1;min-width:120px;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:2px;color:#123B50;line-height:1.15}
+.erp-horizontal-global-title strong{font-size:14px;font-weight:800}
+.erp-horizontal-global-title span{font-size:9px;font-weight:600;color:#315466}
+@media(max-width:850px){.erp-horizontal-global-title{display:none}}
         .erp-horizontal-dropdown-item{position:relative;min-width:0}
         .erp-horizontal-dropdown-item>button{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;text-align:left}
         .erp-horizontal-subdropdown{position:absolute;left:100%;top:0;z-index:1400;min-width:190px;padding:4px;background:#fff;border:1px solid #cbd8de;box-shadow:0 8px 22px rgba(18,59,80,.16)}
