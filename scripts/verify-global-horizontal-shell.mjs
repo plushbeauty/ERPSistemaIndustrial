@@ -37,6 +37,7 @@ function walk(path) {
     else if (/\.tsx$/.test(entry.name) && full !== join(root, 'src/AppEntryV2.tsx') && full !== join(root, 'src/components/layout/ERPHorizontalShell.tsx')) {
       const source = readFileSync(full, 'utf8')
       if (/import\s+ERPHorizontalShell\s+from/.test(source) || /<\/?ERPHorizontalShell(?:\s|>)/.test(source)) failures.push('Nested horizontal shell detected in ' + full.replace(root + '/', ''))
+      if (/Pesquisar módulos?/i.test(source) || /erp-horizontal-search/.test(source)) failures.push('Module-location filter must not return in ' + full.replace(root + '/', ''))
     }
   }
 }
