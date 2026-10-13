@@ -117,7 +117,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : pathname.startsWith('/produtos-vendas') || pathname.startsWith('/cadastros') ? 'Cadastros'
     : pathname.startsWith('/configuracoes') ? 'Configuração'
     : null
-  const currentModuleMenu = moduleLabel ? menus.find(menu => menu.label === (moduleLabel === 'Qualidade' ? 'Gestão da Qualidade' : moduleLabel)) : undefined
+  const currentModuleMenu = moduleLabel
+    ? menus.find(menu => menu.label === (moduleLabel === 'Qualidade' ? 'Gestão da Qualidade' : moduleLabel)) ?? { label: moduleLabel, route: '/' + pathname.split('/')[1], icon: Home }
+    : undefined
   const current = currentModuleMenu ?? menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
   const visibleMenus = currentModuleMenu ? [{ ...currentModuleMenu, label: 'Menu ' + moduleLabel }, ...menus.filter(menu => menu.label !== 'Início' && menu.label !== currentModuleMenu.label)] : menus
   useEffect(() => {
@@ -133,6 +135,21 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
     go(item.route)
   }
+
+  const moduleHeader = pathname.startsWith('/vendas')
+    ? (pathname === '/vendas' ? { title: 'Dashboard Comercial', subtitle: 'Indicadores reais do módulo de vendas' } : { title: 'Módulo Vendas', subtitle: 'Pedidos, clientes e acompanhamento comercial' })
+    : pathname.startsWith('/compras') ? { title: 'Gestão de Compras', subtitle: 'Solicitações, cotações, pedidos e recebimentos' }
+    : pathname.startsWith('/qualidade') || pathname.startsWith('/sgq') ? { title: 'Painel de Gestão da Qualidade', subtitle: 'Indicadores calculados a partir dos registros da empresa autenticada.' }
+    : pathname.startsWith('/estoque') || pathname.startsWith('/inventario') ? { title: 'Gestão de Estoque', subtitle: 'Saldos, movimentações e rastreabilidade de materiais' }
+    : pathname.startsWith('/fiscal') || pathname.includes('nota-fiscal') ? { title: 'Gestão Fiscal', subtitle: 'Documentos fiscais e controles do módulo fiscal' }
+    : pathname.startsWith('/pcp') ? { title: 'Planejamento e Controle da Produção', subtitle: 'Ordens, capacidade e acompanhamento da produção' }
+    : pathname.startsWith('/financeiro') ? { title: 'Gestão Financeira', subtitle: 'Títulos, custos e indicadores financeiros' }
+    : pathname.startsWith('/engenharia') ? { title: 'Engenharia Industrial', subtitle: 'Produtos, estruturas e dados de engenharia' }
+    : pathname.startsWith('/manutencao') ? { title: 'Gestão da Manutenção', subtitle: 'Equipamentos, ordens e planos de manutenção' }
+    : pathname.startsWith('/rh') ? { title: 'Recursos Humanos', subtitle: 'Cadastros e rotinas de recursos humanos' }
+    : pathname.startsWith('/produtos-vendas') || pathname.startsWith('/cadastros') ? { title: 'Cadastros Mestres', subtitle: 'Dados mestres utilizados pelos módulos do ERP' }
+    : pathname.startsWith('/configuracoes') ? { title: 'Configurações do ERP', subtitle: 'Parâmetros e administração do ambiente' }
+    : { title: 'SGQERP INDUSTRIAL', subtitle: 'Gestão integrada da operação industrial' }
 
   const contextualHelp = pathname.startsWith('/pcp/mrp-ii')
     ? { title: 'MRP II — Planejamento de materiais', purpose: 'Calcular necessidades de materiais a partir da demanda, estrutura dos produtos, estoque e ordens existentes. Esta tela não é a agenda de máquinas.', steps: ['Confirme que produtos, fichas técnicas/estruturas e saldos de estoque estão atualizados.', 'Execute o cálculo MRP e confira as necessidades líquidas por componente.', 'Revise as sugestões de comprar ou produzir antes de gerar ordens planejadas.'], fields: ['Produto/demanda: item acabado e quantidade a planejar.', 'Horizonte/data: período considerado no planejamento.', 'Necessidade líquida: quantidade que falta após estoque e reservas.', 'Sugestão: comprar ou produzir; confira antes de confirmar.'] }
@@ -166,9 +183,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           <img src="/logo/logo.png" alt="SGQERP Industrial" />
         </button>
 
-        <div className="erp-horizontal-global-title" aria-label="Título padrão do ERP">
-          <strong>Painel de Gestão da Qualidade</strong>
-          <span>Indicadores calculados a partir dos registros da empresa autenticada.</span>
+        <div className="erp-horizontal-global-title" aria-live="polite">
+          <strong>{moduleHeader.title}</strong>
+          <span>{moduleHeader.subtitle}</span>
         </div>
 
         <div className="erp-horizontal-header-right">
