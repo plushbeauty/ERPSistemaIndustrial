@@ -93,13 +93,13 @@ const empty = (): Form => ({
   ativo: true,
 })
 
-const baseInput = 'h-[28px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal text-slate-900 outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100'
+const baseInput = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal text-slate-900 outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100'
 const shortInput = baseInput + ' max-w-[110px]'
 function HelpTip({ text }: { text: string }) {
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(false)
   return <span className="relative ml-1 inline-flex align-baseline">
-    <span role="button" tabIndex={0} aria-label="Ajuda" onClick={() => setOpen(value => !value)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setOpen(value => !value) } }} className="cursor-pointer select-none text-[10px] font-extrabold leading-none text-sky-700">?</span>
-    {open && <span className="absolute left-3 top-3 z-40 w-[260px] rounded-[2px] border border-sky-200 bg-white p-2 text-[9px] font-normal leading-4 text-slate-700 shadow-lg">{text}</span>}
+    <span role="button" tabIndex={0} aria-label="Ajuda" onClick={event => { event.preventDefault(); event.stopPropagation(); setOpen(value => !value) }} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); setOpen(value => !value) } }} className="cursor-pointer select-none text-[10px] font-extrabold leading-none text-sky-700">?</span>
+    {open && <span role="tooltip" className="pointer-events-none absolute left-3 top-3 z-40 w-[260px] rounded-[2px] border border-sky-200 bg-white p-2 text-[9px] font-normal leading-4 text-slate-700 shadow-lg">{text}</span>}
   </span>
 }
 
@@ -465,13 +465,13 @@ export default function VendasClientes() {
   ] as const
 
   return (
-    <VendasLayout title="Clientes" subtitle="" onRefresh={() => void load()} showStatusCards={false}>
+    <VendasLayout title="Clientes" subtitle="" onRefresh={() => void load()} showStatusCards={false} showPageTitle={false}>
       <main className="sales-workspace sales-detail">
         <div className="mx-auto max-w-[1700px] space-y-3">
           <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-sky-700">VENDAS › CLIENTES</p>
+                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-sky-700">VENDAS › CADASTRO MESTRE</p><h1 className="text-[14px] font-semibold leading-5 text-[#123B50]">Clientes</h1>
                 <HelpTip text="Tela de cadastro e consulta de clientes. Use NOVO CLIENTE para abrir o cadastro na própria tela; EDITAR usa a linha selecionada." />
               </div>
               
