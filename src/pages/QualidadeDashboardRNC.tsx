@@ -104,11 +104,10 @@ export default function QualidadeDashboardRNC() {
     <main data-quality-workspace className="min-h-screen bg-white p-2 text-black md:p-3">
       <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-2">
         <div className="min-w-0">
-          <header className="relative flex min-h-[54px] flex-wrap items-center justify-center gap-2 border border-[#b8d6e2] bg-[#f1f8fb] px-3 py-2 text-[#123b50]">
+          <header className="relative flex min-h-[60px] flex-wrap items-center justify-center gap-2 border border-[#2D8DB8] border-t-[3px] border-t-[#E6A34A] bg-gradient-to-r from-[#DCEFF6] via-[#F4FBFD] to-[#DCEFF6] px-3 py-2 text-center text-[#123b50]">
             <div className="min-w-0 flex-1 text-center">
-              <p className="text-[9px] font-extrabold uppercase tracking-[.16em] text-[#1680a8]">SGQ INDUSTRIAL · INDICADORES</p>
-              <h1 className="text-[16px] font-bold leading-tight text-[#123b50]">Visão geral da qualidade</h1>
-              <p className="mt-0.5 text-[10px] font-medium text-[#426577]">Indicadores de inspeções, não conformidades, ações CAPA e documentos controlados.</p>
+              <h1 className="text-[16px] font-extrabold leading-tight text-[#123b50]">Painel de Gestão da Qualidade</h1>
+              <p className="mt-1 text-[10px] font-semibold text-[#315466]">Indicadores calculados a partir dos registros da empresa autenticada.</p>
             </div>
             <button type="button" onClick={() => setTabletOpen(true)} className="absolute right-[104px] top-1/2 inline-flex h-[30px] min-h-[30px] -translate-y-1/2 items-center gap-2 border border-[#B8860B] bg-[#D4A017] px-3 text-[10px] font-bold text-black hover:bg-[#E3B52D] max-[760px]:static max-[760px]:translate-y-0" aria-haspopup="dialog"><Tablet size={15}/> TABLET MENU</button>
             <button type="button" onClick={() => void load()} disabled={loading} className="inline-flex h-[30px] min-h-[30px] items-center gap-2 border border-[#8eb5c8] bg-white px-3 text-[10px] font-semibold text-[#17445a] hover:bg-[#e6f3f8]"><RefreshCw size={13}/>{loading ? 'Carregando…' : 'Atualizar'}</button>
@@ -158,12 +157,13 @@ export default function QualidadeDashboardRNC() {
 }
 
 function Metric({ icon: Icon, label, value }: { icon: typeof AlertTriangle; label: string; value: number }) {
-  return <article className="flex min-h-[62px] items-center gap-2 border border-[#c4dce6] bg-[#f1f8fb] px-2 py-2"><span className="grid size-7 shrink-0 place-items-center border border-slate-200 bg-slate-50 text-slate-700"><Icon size={14}/></span><div className="min-w-0"><p className="text-[9px] font-extrabold uppercase tracking-wide text-[#315b70]">{label}</p><b className="text-lg font-bold tabular-nums text-[#123b50]">{value}</b></div></article>
+  const tone = label.includes('reprovadas') || label.includes('aberto') ? 'border-[#c94f57] bg-[#D65B61] text-white' : label.includes('eficácia') ? 'border-[#247a5b] bg-[#3A9D78] text-white' : label.includes('pendentes') ? 'border-[#bd7b25] bg-[#E6A34A] text-[#123b50]' : 'border-[#1d6f94] bg-[#2D8DB8] text-white'
+  return <article className={`flex min-h-[66px] items-center gap-2 border px-2 py-2 shadow-sm ${tone}`}><span className="grid size-8 shrink-0 place-items-center border border-white/40 bg-white/15 text-current"><Icon size={15}/></span><div className="min-w-0"><p className="text-[9px] font-extrabold uppercase tracking-wide text-current">{label}</p><b className="text-lg font-extrabold tabular-nums text-current">{value}</b></div></article>
 }
 
 function ChartCard({ title, description, children, accent = 'blue' }: { title: string; description: string; children: ReactNode; accent?: 'blue' | 'violet' | 'amber' | 'cyan' | 'teal' }) {
   const accents = { blue: 'border-l-[#1680a8]', violet: 'border-l-[#7b61a8]', amber: 'border-l-[#d49a18]', cyan: 'border-l-[#25a6b8]', teal: 'border-l-[#219477]' }
-  return <section className={`min-w-0 border border-[#c4dce6] border-l-[3px] ${accents[accent]} bg-[#f8fcfe] p-2`}><h2 className="text-[11px] font-bold text-[#123b50]">{title}</h2><p className="mt-0.5 text-[9px] font-medium leading-4 text-[#426577]">{description}</p><div className="mt-1">{children}</div></section>
+  return <section className={`min-w-0 overflow-hidden border border-[#b5d2de] border-l-[4px] ${accents[accent]} bg-gradient-to-br from-[#edf7fb] to-[#ffffff] p-0 shadow-sm`}><header className="border-b border-[#c4dce6] bg-[#123b50] px-2 py-1.5"><h2 className="text-[11px] font-bold text-white">{title}</h2><p className="mt-0.5 text-[9px] font-medium leading-4 text-[#d2eaf3]">{description}</p></header><div className="p-2">{children}</div></section>
 }
 
 function AccessibleSummary({ rows }: { rows: DepartmentCount[] }) {
