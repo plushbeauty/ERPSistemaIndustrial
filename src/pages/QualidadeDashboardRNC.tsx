@@ -104,13 +104,9 @@ export default function QualidadeDashboardRNC() {
     <main data-quality-workspace className="min-h-screen bg-white p-2 text-black md:p-3">
       <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-2">
         <div className="min-w-0">
-          <header className="relative flex min-h-[60px] flex-wrap items-center justify-center gap-2 border border-[#2D8DB8] border-t-[3px] border-t-[#E6A34A] bg-gradient-to-r from-[#DCEFF6] via-[#F4FBFD] to-[#DCEFF6] px-3 py-2 text-center text-[#123b50]">
-            <div className="min-w-0 flex-1 text-center">
-              <h1 className="text-[16px] font-extrabold leading-tight text-[#123b50]">Painel de Gestão da Qualidade</h1>
-              <p className="mt-1 text-[10px] font-semibold text-[#315466]">Indicadores calculados a partir dos registros da empresa autenticada.</p>
-            </div>
-            <button type="button" onClick={() => setTabletOpen(true)} className="absolute right-[104px] top-1/2 inline-flex h-[30px] min-h-[30px] -translate-y-1/2 items-center gap-2 border border-[#B8860B] bg-[#D4A017] px-3 text-[10px] font-bold text-black hover:bg-[#E3B52D] max-[760px]:static max-[760px]:translate-y-0" aria-haspopup="dialog"><Tablet size={15}/> TABLET MENU</button>
-            <button type="button" onClick={() => void load()} disabled={loading} className="absolute right-2 top-1/2 inline-flex h-[30px] min-h-[30px] -translate-y-1/2 items-center gap-2 border border-[#8eb5c8] bg-white px-3 text-[10px] font-semibold text-[#17445a] hover:bg-[#e6f3f8] max-[760px]:static max-[760px]:translate-y-0"><RefreshCw size={13}/>{loading ? 'Carregando…' : 'Atualizar'}</button>
+          <header className="flex min-h-[42px] flex-wrap items-center justify-end gap-2 border border-[#C9DDE5] bg-[#F4FBFD] px-3 py-2">
+            <button type="button" onClick={() => setTabletOpen(true)} className="inline-flex h-[30px] min-h-[30px] items-center gap-2 border border-[#24789D] bg-[#2D8DB8] px-3 text-[10px] font-bold text-white hover:bg-[#24789D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#2D8DB8]" aria-haspopup="dialog"><Tablet size={15}/> TABLET MENU</button>
+            <button type="button" onClick={() => void load()} disabled={loading} className="inline-flex h-[30px] min-h-[30px] items-center gap-2 border border-[#B9DDEB] bg-white px-3 text-[10px] font-bold text-[#123B50] hover:bg-[#EAF6FA] disabled:opacity-60"><RefreshCw size={13}/>{loading ? 'Carregando…' : 'Atualizar'}</button>
           </header>
 
           {error && <div role="alert" className="mt-2 flex flex-wrap items-center justify-between gap-2 border border-rose-200 bg-rose-50 p-2 text-[10px] font-semibold text-rose-900"><span>{error}</span><button type="button" onClick={() => void load()} className="h-[28px] border border-rose-300 bg-white px-3 text-[10px] font-bold">Tentar novamente</button></div>}
