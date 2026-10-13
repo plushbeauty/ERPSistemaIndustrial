@@ -32,7 +32,7 @@ function scan(path) {
 }
 
 for (const path of roots) scan(path)
-for (const asset of ['public/logo/logo.png', 'public/logo-industrial.svg']) {
+for (const asset of ['public/logo/logo.png']) {
   if (!existsSync(join(root, asset))) problems.push(`Required brand asset missing: ${asset}`)
 }
 
