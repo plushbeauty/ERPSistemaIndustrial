@@ -98,7 +98,7 @@ export default function AppHeader() {
           <Menu size={20} />
         </button>
         <div className="synqra-header-logo">
-          <img src="/logo/sgq-erp.png" alt="SGQERP Industrial" />
+          <img src="/logo/logo.png" alt="SGQERP Industrial" />
         </div>
         <div className="synqra-header-title">
           <strong>SGQERP INDUSTRIAL</strong>
