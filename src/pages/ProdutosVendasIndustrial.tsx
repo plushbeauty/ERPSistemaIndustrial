@@ -516,13 +516,13 @@ export default function ProdutosVendasIndustrial(){
         </section>
         <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8,marginTop:8}}>
           <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>CLASSIFICAÇÃO DO MATERIAL</div>
-          <div style={{display:'flex',alignItems:'center',gap:14,flexWrap:'wrap',minHeight:30}}>
-            {check('Fabricação','fabricado')}
-            <label style={{display:'flex',alignItems:'center',gap:6,fontSize:10,fontWeight:700,color:'#344054'}}><input type="checkbox" checked={String(form.categoria||'').toLowerCase()==='produto acabado'} disabled={!editing} onChange={e=>update('categoria',e.target.checked?'Produto acabado':null)}/>Acabado</label>
+          <div style={{display:'grid',gridTemplateColumns:'minmax(180px,1fr) auto auto minmax(180px,1.2fr)',alignItems:'end',gap:12,minHeight:30}}>
+            <label style={label}>Sistema de abastecimento<select value={form.fabricado&&form.comprado?'COMPRAR_FABRICAR':form.fabricado?'FABRICAR':form.comprado?'COMPRAR':'NENHUM'} disabled={!editing} onChange={e=>{const mode=e.target.value;update('fabricado',mode==='FABRICAR'||mode==='COMPRAR_FABRICAR');update('comprado',mode==='COMPRAR'||mode==='COMPRAR_FABRICAR')}} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="NENHUM">Não definido</option><option value="COMPRAR">Comprar</option><option value="FABRICAR">Fabricar</option><option value="COMPRAR_FABRICAR">Comprar e fabricar</option></select></label>
+            <label style={{display:'flex',alignItems:'center',gap:6,fontSize:10,fontWeight:700,color:'#344054',minHeight:30}}><input type="checkbox" checked={String(form.categoria||'').toLowerCase()==='produto acabado'} disabled={!editing} onChange={e=>update('categoria',e.target.checked?'Produto acabado':null)}/>Acabado</label>
             {check('Revenda','revenda')}
-            {check('Comprado','comprado')}
             {select('Tipo de produto','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','MATÉRIA-PRIMA'],['PRENSADOS','PRENSADOS'],['INJETADOS','INJETADOS'],['ALMOXARIFADO','ALMOXARIFADO'],['MATERIAL DE ESCRITÓRIO','MATERIAL DE ESCRITÓRIO'],['PRODUTOS DE LIMPEZA','PRODUTOS DE LIMPEZA'],['Componente','Componente'],['Insumo','Insumo']])}
           </div>
+          <div style={{fontSize:9,color:'#526b78',marginTop:6}}>A escolha atualiza os campos existentes de fabricação e compra. O indicador de revenda permanece independente; nenhuma coluna nova é criada.</div>
         </section>
         <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8,marginTop:8}}>
           <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>OBSERVAÇÕES</div>
