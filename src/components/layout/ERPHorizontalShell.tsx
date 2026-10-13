@@ -106,7 +106,20 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     return () => window.removeEventListener('erp:open-quality-tablet', openQualityTablet)
   }, [])
 
-  const current = menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
+  const moduleLabel = pathname.startsWith('/vendas') ? 'Vendas'
+    : pathname.startsWith('/compras') ? 'Compras'
+    : pathname.startsWith('/qualidade') || pathname.startsWith('/sgq') ? 'Qualidade'
+    : pathname.startsWith('/estoque') || pathname.startsWith('/inventario') ? 'Estoque'
+    : pathname.startsWith('/financeiro') ? 'Financeiro'
+    : pathname.startsWith('/fiscal') ? 'Fiscal'
+    : pathname.startsWith('/pcp') ? 'Manufatura / PCP'
+    : pathname.startsWith('/manutencao') ? 'Manutenção'
+    : pathname.startsWith('/produtos-vendas') || pathname.startsWith('/cadastros') ? 'Cadastros'
+    : pathname.startsWith('/configuracoes') ? 'Configuração'
+    : null
+  const currentModuleMenu = moduleLabel ? menus.find(menu => menu.label === (moduleLabel === 'Qualidade' ? 'Gestão da Qualidade' : moduleLabel)) : undefined
+  const current = currentModuleMenu ?? menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
+  const visibleMenus = currentModuleMenu ? [{ ...currentModuleMenu, label: 'Menu ' + moduleLabel }, ...menus.filter(menu => menu.label !== 'Início' && menu.label !== currentModuleMenu.label)] : menus
   useEffect(() => {
     setOpenMenu(null)
   }, [pathname])
@@ -172,14 +185,14 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </header>
 
       <nav className="erp-horizontal-menu" aria-label="Menu principal do ERP">
-        {menus.map(menu => {
+        {visibleMenus.map(menu => {
           const hasChildren = Boolean(menu.children?.length)
-          const active = current?.label === menu.label
+          const active = current?.route === menu.route || current?.label === menu.label
           const expanded = openMenu === menu.label
           return <div className="erp-horizontal-menu-item" key={menu.label}>
             <button
               type="button"
-              className={`erp-horizontal-menu-button ${active ? 'is-active' : ''}`}
+              className={`erp-horizontal-menu-button ${menu.label.startsWith('Menu ') ? 'erp-module-menu-button' : ''} ${active ? 'is-active' : ''}`}
               onClick={() => hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)}
               aria-expanded={hasChildren ? expanded : undefined}
             >
@@ -206,6 +219,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             </div>}
           </div>
         })}
+        <button type="button" className="erp-horizontal-refresh-module" onClick={() => window.dispatchEvent(new CustomEvent('erp:refresh-current-module'))} title="Atualizar os dados da tela atual" aria-label="Atualizar dados do módulo"><RefreshCw size={13} /> Atualizar</button>
       </nav>
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
@@ -286,6 +300,11 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
 
         .erp-horizontal-menu{display:flex!important;position:sticky;top:64px;z-index:1550}
         .erp-horizontal-menu-button.is-active{background:#17445A;color:#fff;box-shadow:inset 0 -2px #8bd6f0}
+.erp-horizontal-menu-button.erp-module-menu-button{background:#f97316;border-right-color:#ea580c;color:#fff;font-weight:800;letter-spacing:.03em;text-transform:uppercase}
+.erp-horizontal-menu-button.erp-module-menu-button:hover,.erp-horizontal-menu-button.erp-module-menu-button.is-active{background:#ea580c;color:#fff;box-shadow:inset 0 -2px #fed7aa}
+.erp-horizontal-refresh-module{height:27px;display:inline-flex;align-items:center;justify-content:center;gap:5px;align-self:center;margin-left:auto;margin-right:4px;padding:0 10px;border:1px solid #ea580c;border-radius:2px;background:#f97316;color:#fff;font-size:10px;font-weight:800;white-space:nowrap;cursor:pointer}
+.erp-horizontal-refresh-module:hover{background:#ea580c}
+@media(max-width:700px){.erp-horizontal-refresh-module{margin-left:4px;flex:0 0 auto}}
         .erp-horizontal-dropdown button.is-active{background:#edf7fb;color:#176487;font-weight:700;border-left:2px solid #2D8DB8}
         .erp-horizontal-workspace{width:100%;max-width:100%;min-width:0}
         @media(max-width:700px){.erp-horizontal-menu{overflow-x:auto;overscroll-behavior-x:contain}.erp-horizontal-menu-item{flex:0 0 auto}.erp-horizontal-dropdown{position:fixed;top:auto;left:6px;right:6px;max-height:65vh;overflow:auto;z-index:1500}.erp-horizontal-menu-button{min-width:max-content}}
