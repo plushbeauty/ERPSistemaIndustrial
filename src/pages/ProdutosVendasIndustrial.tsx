@@ -39,12 +39,12 @@ type Movement={id:string;tipo:string;quantidade:number;origem:string|null;docume
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number;observacao:string|null;created_at:string}
 type Audit={id:string;action:string;module:string;old_data:Record<string,unknown>|null;new_data:Record<string,unknown>|null;created_at:string}
 type Attachment={id:string;nome_arquivo:string;storage_path:string;mime_type:string|null;tamanho_bytes:number|null;created_at:string}
-type Tab='gerais'|'fiscal'|'estoque'|'producao'|'qualidade'
+type Tab='gerais'|'fiscal'|'estoque'|'producao'|'qualidade'|'custos'
 type FormData=Omit<Product,'id'|'empresa_id'>
 
 const tabItems:Array<[Tab,string,typeof Boxes]>=[
   ['gerais','DADOS GERAIS',Boxes],['fiscal','FISCAL',FileText],['estoque','ESTOQUE',Boxes],
-  ['producao','PRODUÇÃO',Factory],['qualidade','QUALIDADE + DOCUMENTOS',ShieldCheck]
+  ['producao','PRODUÇÃO',Factory],['qualidade','QUALIDADE + DOCUMENTOS',ShieldCheck],['custos','CENTRO DE CUSTOS DO PRODUTO',FileSpreadsheet]
 ]
 const empty=():FormData=>({
   codigo:'',nome:'',descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
@@ -86,6 +86,8 @@ export default function ProdutosVendasIndustrial(){
   const [audits,setAudits]=useState<Audit[]>([])
   const [attachments,setAttachments]=useState<Attachment[]>([])
   const [detailsLoaded,setDetailsLoaded]=useState(false)
+  const [ncmQuery,setNcmQuery]=useState('')
+  const [ncmOptions,setNcmOptions]=useState<Array<{codigo:string;descricao:string;data_fim?:string}>>([])
   const [productionFicha,setProductionFicha]=useState<{id:string;versao:number;rendimento:number;unidade_rendimento:string;status:string|null;revisao:string|null} | null>(null)
   const [productionOps,setProductionOps]=useState<Array<{id:string;sequencia:number;operacao:string;maquina_id:string|null;maquina_codigo:string|null;maquina_nome:string|null;setup_min:number;ciclo_seg:number;capacidade_hora:number|null;capacidade_dia:number|null}>>([])
   const fileRef=useRef<HTMLInputElement>(null)
@@ -111,6 +113,7 @@ export default function ProdutosVendasIndustrial(){
     finally{setBusy(false)}
   }
   useEffect(()=>{void load()},[])
+  useEffect(()=>{const term=ncmQuery.trim();if(term.length<2){setNcmOptions([]);return}const controller=new AbortController();const timer=window.setTimeout(()=>{void fetch('https://brasilapi.com.br/api/ncm/v1?search='+encodeURIComponent(term),{signal:controller.signal}).then(r=>{if(!r.ok)throw new Error('Consulta NCM indisponível');return r.json() as Promise<Array<{codigo:string;descricao:string;data_fim?:string}>>}).then(rows=>setNcmOptions(rows.filter(x=>x.codigo&&x.descricao&&(x.data_fim===undefined||x.data_fim>='9999-01-01')).slice(0,30))).catch(e=>{if(!(e instanceof DOMException&&e.name==='AbortError'))setNcmOptions([])})},250);return()=>{window.clearTimeout(timer);controller.abort()}},[ncmQuery])
   useEffect(()=>{void supabase.auth.getUser().then(async ({data})=>{if(!data.user)return;const {data:profile}=await supabase.from('erp_usuarios').select('nome').eq('auth_user_id',data.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();setOperatorName(String(profile?.nome||data.user.email||'Usuário ERP'))})},[])
 
   const filtered=useMemo(()=>{
@@ -276,6 +279,7 @@ export default function ProdutosVendasIndustrial(){
   const fieldTitle=(title:string)=><span style={{display:'inline-flex',alignItems:'center',whiteSpace:'nowrap',minWidth:0}}>{title.replace(' [?]','')}{title.includes('[?]')&&<HelpTip text={helpFor(title)}/>}</span>;
   const field=(title:string,key:keyof FormData,type='text',span=1,locked=false)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input type={type} value={String(form[key]??'')} readOnly={locked} disabled={!editing} onChange={e=>update(key,type==='number'?n(e.target.value):e.target.value)} style={{...input,background:locked?'#eaf3f8':editing?'#fff':'#f5f7fa',color:locked?'#17445A':'#172033',fontWeight:locked?700:400,cursor:locked?'not-allowed':'text'}}/></label>
   const select=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<select value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>{options.map(o=><option value={o[0]} key={o[0]}>{o[1]}</option>)}</select></label>
+  const combo=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input list={'product-combo-'+String(key)} value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id={'product-combo-'+String(key)}>{options.map(([value,description])=><option key={value} value={value} label={description}/>)}</datalist></label>
   const check=(title:string,key:keyof FormData)=><label style={{display:'flex',alignItems:'center',gap:7,fontSize:10,fontWeight:700,color:'#344054'}}><input type="checkbox" checked={Boolean(form[key])} disabled={!editing} onChange={e=>update(key,e.target.checked)}/>{title}</label>
 
   if(printMode&&selectedId){
@@ -319,7 +323,7 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}
       .product-master-screen .product-form-grid>*{min-width:0}
       .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%}
-      .product-master-screen .product-form-grid label>span{max-width:100%;line-height:11px}
+      .product-master-screen .product-form-grid label>span{max-width:100%;line-height:11px;min-height:11px;align-items:center}
       .product-master-screen>header{background:#123B50!important;border-bottom-color:#E6A34A!important;border-left-color:#E6A34A!important;min-height:48px}
       .product-master-screen>header>div:first-child>div{color:#D9F1F7!important;letter-spacing:.08em}
       .product-master-screen>header h1{color:#fff!important;font-weight:600;letter-spacing:.01em}
@@ -328,7 +332,7 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen section[style*="margin: 10px"] table thead th{background:#123B50!important;color:#fff!important;font-size:9px!important;font-weight:700!important;letter-spacing:.04em}
       .product-master-screen section[style*="margin: 10px"] table tbody tr{height:32px}
       .product-master-screen section[style*="margin: 10px"] table tbody tr:hover{background:#E6F3F8}
-      .product-master-screen section[style*="margin:10px"]>div:first-child{background:#EAF4F8}
+      .product-master-screen section[style*="margin:10px"]>div:first-child{background:linear-gradient(180deg,#eaf4f8 0%,#d9ebf2 100%);box-shadow:inset 0 1px 0 #fff,inset 0 -1px 0 #c4dce7}
       .product-master-screen section[style*="margin: 10px"] button{border-radius:2px!important}
       .product-master-screen section[style*="margin: 10px"]>div[style*="border-bottom"]{background:#EAF4F8!important}
       .product-master-screen section[style*="margin: 10px"]>div[style*="border-bottom"] button{color:#315466!important}
@@ -381,7 +385,7 @@ export default function ProdutosVendasIndustrial(){
       </div>
 
       {tab==='gerais'&&<form onSubmit={save} style={{padding:8}}>
-        <div className="product-form-grid product-general-row" style={{display:'grid',gridTemplateColumns:'75px 105px minmax(190px,2fr) minmax(145px,1.5fr) minmax(115px,1fr) minmax(100px,.85fr) minmax(100px,.85fr)',gap:8,alignItems:'end'}}>
+        <div className="product-form-grid product-general-row" style={{display:'grid',gridTemplateColumns:'75px 105px minmax(190px,2fr) minmax(145px,1.5fr) minmax(115px,1fr) minmax(100px,.85fr) minmax(100px,.85fr)',gap:8,alignItems:'start'}}>
           {field('Código *','codigo','text',1,true)}
           {field('Código de barras','codigo_barras','text',1,true)}
           {field('Descrição *','nome')}
@@ -391,43 +395,74 @@ export default function ProdutosVendasIndustrial(){
           {field('Marca [?]','marca')}
         </div>
 
-        <div className="product-form-grid product-measure-row" style={{display:'grid',gridTemplateColumns:'55px 55px 55px repeat(5,minmax(72px,.8fr)) minmax(125px,1.3fr) minmax(150px,1.5fr)',gap:8,marginTop:8,alignItems:'end'}}>
-          {select('Un. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-          {select('Un. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-          {select('Un. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-          {field('Peso líquido (kg)','peso_liquido','number')}
-          {field('Peso bruto (kg)','peso_bruto','number')}
-          {field('Comprimento (mm)','comprimento_mm','number')}
-          {field('Largura (mm)','largura_mm','number')}
-          {field('Altura (mm)','altura_mm','number')}
-          {select('Tipo de produto','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','MATÉRIA-PRIMA'],['PRENSADOS','PRENSADOS'],['INJETADOS','INJETADOS'],['ALMOXARIFADO','ALMOXARIFADO'],['MATERIAL DE ESCRITÓRIO','MATERIAL DE ESCRITÓRIO'],['PRODUTOS DE LIMPEZA','PRODUTOS DE LIMPEZA'],['Componente','Componente'],['Insumo','Insumo']])}
-          <label style={label}>Fornecedor padrão<select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{suppliers.map(s=><option value={s.id} key={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>
+        <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8,marginTop:8}}>
+          <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>UNIDADES DE MEDIDA</div>
+          <div className="product-form-grid product-measure-row" style={{display:'grid',gridTemplateColumns:'minmax(120px,.65fr) minmax(120px,.65fr) minmax(120px,.65fr) minmax(220px,2fr)',gap:8,alignItems:'end'}}>
+            {select('Un. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L'],['M2','M²'],['M3','M³']])}
+            {select('Un. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L'],['M2','M²'],['M3','M³']])}
+            {select('Un. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L'],['M2','M²'],['M3','M³']])}
+            <label style={label}>Fornecedor padrão<select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{suppliers.map(s=><option value={s.id} key={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>
+          </div>
+        </section>
+        <div className="product-form-grid" style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:8,marginTop:8,alignItems:'stretch'}}>
+          <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8}}>
+            <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>CONTROLE DE PESO</div>
+            <div style={{display:'grid',gridTemplateColumns:'minmax(110px,.6fr) minmax(110px,.6fr) 1fr',gap:8,alignItems:'end'}}>
+              {field('Peso líquido (kg)','peso_liquido','number')}
+              {field('Peso bruto (kg)','peso_bruto','number')}
+              <div style={{fontSize:9,color:'#667085',alignSelf:'center'}}>Campos compactos e proporcionais ao conteúdo.</div>
+            </div>
+          </section>
+          <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8}}>
+            <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>CONTROLE DE MEDIDA</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:8,alignItems:'end'}}>
+              {field('Comprimento (mm)','comprimento_mm','number')}
+              {field('Largura (mm)','largura_mm','number')}
+              {field('Altura (mm)','altura_mm','number')}
+            </div>
+          </section>
         </div>
-
-        <div className="product-form-grid product-commercial-row" style={{display:'grid',gridTemplateColumns:'78px 78px 78px 78px 120px 120px minmax(150px,1fr) max-content minmax(180px,1.2fr)',gap:8,marginTop:8,alignItems:'end'}}>
-          {field('Custo médio','custo_medio','number')}
-          {field('Último custo','custo_ultimo','number')}
-          {field('Custo fabricação','custo_fabricacao','number')}
-          {field('Preço venda','preco_venda','number')}
-          {field('Ref. interna','referencia_interna')}
-          {field('Ref. cliente','referencia_cliente')}
-          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:30,padding:'5px 7px',resize:'none',fontSize:11}}/></label>
-          <div style={{display:'flex',alignItems:'center',gap:5,height:30,border:'1px solid #d5dde7',padding:'0 6px',background:'#fff',whiteSpace:'nowrap'}}><span style={{fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}}>Sit.</span>{check('Fab.','fabricado')}{check('Comp.','comprado')}{check('Rev.','revenda')}</div>
-          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} title="Selecione uma localização existente do Estoque. A hierarquia depósito/rua/prateleira/caixa é mantida no cadastro de localizações." style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
-        </div>
+        <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8,marginTop:8}}>
+          <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>DADOS DE CLIENTES</div>
+          <div style={{display:'grid',gridTemplateColumns:'minmax(130px,.8fr) minmax(130px,.8fr) minmax(180px,2fr)',gap:8,alignItems:'end'}}>
+            {field('Código cliente','referencia_cliente')}
+            {field('Referência interna','referencia_interna')}
+            <div style={{fontSize:9,color:'#667085',alignSelf:'center'}}>O cadastro atual salva o código de referência do cliente; o vínculo de cliente principal exige coluna própria no banco.</div>
+          </div>
+        </section>
+        <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8,marginTop:8}}>
+          <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>CLASSIFICAÇÃO DO MATERIAL</div>
+          <div style={{display:'flex',alignItems:'center',gap:14,flexWrap:'wrap',minHeight:30}}>
+            {check('Fabricação','fabricado')}
+            <label style={{display:'flex',alignItems:'center',gap:6,fontSize:10,fontWeight:700,color:'#344054'}}><input type="checkbox" checked={String(form.categoria||'').toLowerCase()==='produto acabado'} disabled={!editing} onChange={e=>update('categoria',e.target.checked?'Produto acabado':null)}/>Acabado</label>
+            {check('Revenda','revenda')}
+            {check('Comprado','comprado')}
+            {select('Tipo de produto','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','MATÉRIA-PRIMA'],['PRENSADOS','PRENSADOS'],['INJETADOS','INJETADOS'],['ALMOXARIFADO','ALMOXARIFADO'],['MATERIAL DE ESCRITÓRIO','MATERIAL DE ESCRITÓRIO'],['PRODUTOS DE LIMPEZA','PRODUTOS DE LIMPEZA'],['Componente','Componente'],['Insumo','Insumo']])}
+          </div>
+        </section>
+        <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8,marginTop:8}}>
+          <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>OBSERVAÇÕES</div>
+          <textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,width:'100%',height:44,padding:'5px 7px',resize:'vertical',fontSize:11}}/>
+        </section>
 
       </form>}
 
             {tab==='fiscal'&&<section style={{padding:8}}>
-        <div style={{display:'grid',gridTemplateColumns:'80px 220px 180px 95px 95px',gap:7,alignItems:'end'}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:8,alignItems:'start'}}>
           {select('Situação','ativo',[['true','Ativo'],['false','Inativo']])}
           {select('Origem [?]','origem',[['0 - Nacional','0 - Nacional'],['1 - Estrangeira - Importação direta','1 - Estrangeira - Importação direta'],['2 - Estrangeira - mercado interno','2 - Estrangeira - mercado interno'],['3 - Nacional, conteúdo importação >40% e <70%','3 - Nacional, conteúdo importação >40% e <70%'],['4 - Nacional, processo produtivo básico','4 - Nacional, processo produtivo básico'],['5 - Nacional, conteúdo importação <40%','5 - Nacional, conteúdo importação <40%'],['6 - Estrangeira - importação direta, sem similar nacional','6 - Estrangeira - importação direta, sem similar nacional'],['7 - Estrangeira - mercado interno, sem similar nacional','7 - Estrangeira - mercado interno, sem similar nacional'],['8 - Nacional, conteúdo importação >70%','8 - Nacional, conteúdo importação >70%']])}
-          {field('NCM [?]','ncm')}{field('CEST [?]','cest')}{field('CST ICMS [?]','cst_icms')}
+          <label style={{...label,position:'relative'}}>NCM (código e descrição)<input value={ncmQuery||String(form.ncm??'')} disabled={!editing} placeholder="Pesquisar por código ou descrição…" onChange={e=>{setNcmQuery(e.target.value);update('ncm',e.target.value)}} style={{...input,background:editing?'#fff':'#f5f7fa'}}/>{ncmQuery.trim().length>=2&&ncmOptions.length>0&&<div style={{position:'absolute',zIndex:30,top:'100%',left:0,right:0,maxHeight:230,overflowY:'auto',border:'1px solid #9bbdce',background:'#fff',boxShadow:'0 6px 16px rgba(18,59,80,.18)'}}>{ncmOptions.map(x=><button key={x.codigo} type="button" onClick={()=>{update('ncm',x.codigo);setNcmQuery(x.codigo);setNcmOptions([])}} style={{display:'block',width:'100%',textAlign:'left',border:0,borderBottom:'1px solid #e5edf1',background:'#fff',padding:'6px 8px',fontSize:10,color:'#123B50',cursor:'pointer'}}><strong>{x.codigo}</strong><span> — {x.descricao}</span></button>)}</div>}</label>
+          {combo('CEST [?]','cest',Array.from(new Set(products.map(p=>p.cest).filter((x):x is string=>Boolean(x)))).map(x=>[x,'CEST já cadastrado na empresa']))}
+          {combo('CST ICMS [?]','cst_icms',[['00','00 — Tributada integralmente'],['10','10 — Tributada com cobrança de ICMS-ST'],['20','20 — Com redução de base de cálculo'],['30','30 — Isenta/não tributada com ICMS-ST'],['40','40 — Isenta'],['41','41 — Não tributada'],['50','50 — Suspensão'],['51','51 — Diferimento'],['60','60 — ICMS cobrado anteriormente por ST'],['70','70 — Redução de base e ICMS-ST'],['90','90 — Outras']])}
+          {combo('CSOSN [?]','csosn',[['101','101 — Tributada com permissão de crédito'],['102','102 — Tributada sem permissão de crédito'],['103','103 — Isenção do ICMS no Simples Nacional'],['201','201 — Tributada com crédito e ICMS-ST'],['202','202 — Tributada sem crédito e com ICMS-ST'],['203','203 — Isenção com ICMS-ST'],['300','300 — Imune'],['400','400 — Não tributada'],['500','500 — ICMS cobrado anteriormente por ST'],['900','900 — Outros']])}
+          {combo('CFOP entrada [?]','cfop_entrada',[['1101','1101 — Compra para industrialização'],['1102','1102 — Compra para comercialização'],['1116','1116 — Compra para industrialização recebida de terceiros'],['1201','1201 — Devolução de venda de produção própria'],['1403','1403 — Compra para comercialização com ICMS-ST'],['1551','1551 — Compra de bem para o ativo imobilizado'],['2101','2101 — Compra para industrialização (outra UF)'],['2102','2102 — Compra para comercialização (outra UF)'],['3101','3101 — Compra para industrialização (exterior)'],['3102','3102 — Compra para comercialização (exterior)']])}
+          {combo('CFOP saída [?]','cfop_saida',[['5101','5101 — Venda de produção do estabelecimento'],['5102','5102 — Venda de mercadoria adquirida de terceiros'],['5105','5105 — Venda de produção fora do estabelecimento'],['5405','5405 — Venda de mercadoria com ICMS-ST'],['5551','5551 — Venda de bem do ativo imobilizado'],['6101','6101 — Venda de produção (outra UF)'],['6102','6102 — Venda de mercadoria adquirida de terceiros (outra UF)'],['6404','6404 — Venda com ICMS-ST (outra UF)'],['7101','7101 — Venda de produção para o exterior'],['7102','7102 — Venda de mercadoria para o exterior']])}
+          {combo('Origem fiscal [?]','origem_fiscal',[['0','0 — Nacional, exceto códigos 3, 4, 5 e 8'],['1','1 — Estrangeira: importação direta'],['2','2 — Estrangeira: adquirida no mercado interno'],['3','3 — Nacional, conteúdo de importação superior a 40%'],['4','4 — Nacional, processo produtivo básico'],['5','5 — Nacional, conteúdo de importação inferior ou igual a 40%'],['6','6 — Estrangeira: importação direta, sem similar nacional'],['7','7 — Estrangeira: mercado interno, sem similar nacional'],['8','8 — Nacional, conteúdo de importação superior a 70%']])}
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'95px 95px 95px 95px 65px 65px 65px 65px',gap:7,marginTop:7,alignItems:'end'}}>
-          {field('CSOSN [?]','csosn')}{field('CFOP entrada [?]','cfop_entrada')}{field('CFOP saída [?]','cfop_saida')}{field('Origem fiscal [?]','origem_fiscal')}{field('ICMS %','aliquota_icms','number')}{field('IPI %','aliquota_ipi','number')}{field('PIS %','aliquota_pis','number')}{field('COFINS %','aliquota_cofins','number')}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:8,marginTop:8,alignItems:'start'}}>
+          {field('ICMS %','aliquota_icms','number')}{field('IPI %','aliquota_ipi','number')}{field('PIS %','aliquota_pis','number')}{field('COFINS %','aliquota_cofins','number')}
         </div>
-        <div style={{marginTop:7,fontSize:9,color:'#667085'}}>Use o ? para consultar o significado da sigla/código antes de preencher. NCM e CEST permanecem exclusivamente nesta aba Fiscal.</div>
+        <div style={{marginTop:8,fontSize:9,color:'#526b78',background:'#eaf4f8',border:'1px solid #c7dbe4',padding:'6px 8px'}}>Pesquise o NCM por código ou descrição. A consulta utiliza a API BrasilAPI, que retorna códigos e descrições da tabela NCM; confirme a classificação fiscal com o responsável tributário antes de emitir NF-e. O CEST sugere valores já cadastrados nesta empresa, sem inventar códigos.</div>
       </section>}
 
             {tab==='estoque'&&<section style={{padding:10}}>
@@ -453,6 +488,16 @@ export default function ProdutosVendasIndustrial(){
         </div>
         <div style={{marginTop:8,border:'1px solid #d5dde7',overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr style={{background:'#123B50',color:'#fff'}}>{['Seq.','Operação','Máquina','Setup min','Ciclo s','Qtde/h','Qtde/dia'].map(h=><th key={h} style={{padding:'5px 6px',textAlign:'left',fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{productionOps.map(o=><tr key={o.id} style={{borderBottom:'1px solid #e5e7eb'}}><td style={{padding:'5px 6px'}}>{o.sequencia}</td><td style={{padding:'5px 6px'}}>{o.operacao}</td><td style={{padding:'5px 6px'}}>{o.maquina_codigo?o.maquina_codigo+' • '+(o.maquina_nome||''):'Não definida'}</td><td style={{padding:'5px 6px'}}>{fmt(o.setup_min)}</td><td style={{padding:'5px 6px'}}>{fmt(o.ciclo_seg)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_hora==null?'—':fmt(o.capacidade_hora)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_dia==null?'—':fmt(o.capacidade_dia)}</td></tr>)}{!productionOps.length&&<tr><td colSpan={7} style={{padding:12,textAlign:'center',color:'#667085'}}>Nenhuma operação cadastrada. Abra a ficha de processo para cadastrar máquina/posto, setup, ciclo e instruções.</td></tr>}</tbody></table></div>
         <div style={{marginTop:7,fontSize:9,color:'#667085'}}>Máquina, setup, ciclo e capacidade vêm da ficha técnica/roteiro real; a ficha completa alimenta o PCP e a Ordem de Produção.</div>
+      </section>}
+
+      {tab==='custos'&&<section style={{padding:8}}>
+        <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8}}>
+          <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>CENTRO DE CUSTOS DO PRODUTO</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:8,alignItems:'start'}}>
+            {field('Custo médio','custo_medio','number')}{field('Último custo','custo_ultimo','number')}{field('Custo fabricação','custo_fabricacao','number')}{field('Preço venda','preco_venda','number')}
+          </div>
+          <p style={{fontSize:9,color:'#526b78',margin:'8px 0 0'}}>Esta aba reúne os valores de custo e preço já persistidos no cadastro. O vínculo a um centro de custo contábil específico precisa de coluna própria no banco; não é gravado em um campo improvisado.</p>
+        </section>
       </section>}
 
       {tab==='qualidade'&&<section style={{padding:10}}>
