@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, ClipboardCheck, RefreshCw, Search, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import QualitySidebar from '../components/quality/QualitySidebar'
 
 type InspectionRow = {
@@ -70,28 +71,59 @@ export default function QualidadeInspecoesIndustrial() {
   async function load() {
     setLoading(true)
     setError(null)
-    const tenant = await supabase.rpc('erp_current_empresa_id')
-    if (tenant.error || typeof tenant.data !== 'string' || !tenant.data) {
-      setError(tenant.error?.message ?? 'Empresa ativa não identificada.')
+    try {
+      const tenant = await supabase.rpc('erp_current_empresa_id')
+      if (tenant.error) throw tenant.error
+      if (typeof tenant.data !== 'string' || !tenant.data) {
+        throw new Error('Empresa ativa não identificada.')
+      }
+      const tenantId = tenant.data
+      setCompanyId(tenantId)
+      const [inspectionRows, productRows, lotRows, specificationRows] = await Promise.all([
+        fetchAllPages<InspectionRow>((from, to) =>
+          supabase.from('qualidade_inspecoes')
+            .select('id,tipo,produto_id,lote_id,quantidade_total,tamanho_amostra,resultado,observacoes,created_at', { count: 'exact' })
+            .eq('empresa_id', tenantId)
+            .order('created_at', { ascending: false })
+            .order('id', { ascending: true })
+            .range(from, to),
+        ),
+        fetchAllPages<ProductRow>((from, to) =>
+          supabase.from('engenharia_produtos')
+            .select('id,codigo,descricao_tecnica', { count: 'exact' })
+            .eq('empresa_id', tenantId)
+            .eq('ativo', true)
+            .order('codigo', { ascending: true })
+            .order('id', { ascending: true })
+            .range(from, to),
+        ),
+        fetchAllPages<LotRow>((from, to) =>
+          supabase.from('estoque_lotes')
+            .select('id,produto_id,numero_lote,status,certificado_qualidade', { count: 'exact' })
+            .eq('empresa_id', tenantId)
+            .order('numero_lote', { ascending: true })
+            .order('id', { ascending: true })
+            .range(from, to),
+        ),
+        fetchAllPages<SpecRow>((from, to) =>
+          supabase.from('qualidade_especificacoes')
+            .select('id,produto_id,revisao,status,vigente_desde,vigente_ate,parametros', { count: 'exact' })
+            .eq('empresa_id', tenantId)
+            .eq('status', 'ativa')
+            .order('vigente_desde', { ascending: false })
+            .order('id', { ascending: true })
+            .range(from, to),
+        ),
+      ])
+      setRows(inspectionRows)
+      setProducts(productRows)
+      setLots(lotRows)
+      setSpecifications(specificationRows)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao carregar os dados da inspeção.')
+    } finally {
       setLoading(false)
-      return
     }
-    setCompanyId(tenant.data)
-    const [inspectionResult, productResult, lotResult, specificationResult] = await Promise.all([
-      supabase.from('qualidade_inspecoes').select('id,tipo,produto_id,lote_id,quantidade_total,tamanho_amostra,resultado,observacoes,created_at').eq('empresa_id', tenant.data).order('created_at', { ascending: false }).limit(500),
-      supabase.from('engenharia_produtos').select('id,codigo,descricao_tecnica').eq('empresa_id', tenant.data).eq('ativo', true).order('codigo').limit(1000),
-      supabase.from('estoque_lotes').select('id,produto_id,numero_lote,status,certificado_qualidade').eq('empresa_id', tenant.data).order('numero_lote').limit(1000),
-      supabase.from('qualidade_especificacoes').select('id,produto_id,revisao,status,vigente_desde,vigente_ate,parametros').eq('empresa_id', tenant.data).eq('status', 'ativa').order('vigente_desde', { ascending: false }).limit(500),
-    ])
-    const failure = inspectionResult.error ?? productResult.error ?? lotResult.error ?? specificationResult.error
-    if (failure) setError(failure.message)
-    else {
-      setRows((inspectionResult.data ?? []) as InspectionRow[])
-      setProducts((productResult.data ?? []) as ProductRow[])
-      setLots((lotResult.data ?? []) as LotRow[])
-      setSpecifications((specificationResult.data ?? []) as SpecRow[])
-    }
-    setLoading(false)
   }
 
   useEffect(() => { void load() }, [])
