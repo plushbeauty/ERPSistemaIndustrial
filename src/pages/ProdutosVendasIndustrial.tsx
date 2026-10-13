@@ -138,8 +138,8 @@ export default function ProdutosVendasIndustrial(){
     return products.filter(p=>(!q||(p.codigo+' '+p.nome+' '+(p.codigo_barras||'')+' '+(p.grupo||'')+' '+(p.subgrupo||'')+' '+(p.marca||'')+' '+(p.categoria||'')).toLowerCase().includes(q))&&(groupFilter==='TODAS'||String(p.grupo||'')===groupFilter))
   },[products,query,groupFilter])
 
-  const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
-  const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
+  const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false);setAttachmentUrls({})}
+  const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false);setAttachmentUrls({})}
   const update=(key:keyof FormData,value:unknown)=>setForm(prev=>({...prev,[key]:value}))
   const openTechnicalPrint=()=>{if(!selectedId){setError('Selecione um produto antes de imprimir a ficha técnica.');return}window.open('/produtos-vendas/imprimir?id='+encodeURIComponent(selectedId),'_blank','noopener,noreferrer')}
   const save=async()=>{
@@ -179,8 +179,8 @@ export default function ProdutosVendasIndustrial(){
     catch(e){setError(e instanceof Error?e.message:'Não foi possível inativar o produto.')}
     finally{setBusy(false)}
   }
-  const loadDetails=async()=>{
-    if(!selectedId||detailsLoaded)return
+  const loadDetails=async(force=false)=>{
+    if(!selectedId||(!force&&detailsLoaded))return
     setBusy(true)
     try{
       const [m,d,a,an,ft]=await Promise.all([
@@ -291,7 +291,7 @@ export default function ProdutosVendasIndustrial(){
       const {error:rowError}=await supabase.from('erp_documentos_anexos').insert({empresa_id:companyId,entidade_tipo:'produto',entidade_id:selectedId,nome_arquivo:storedName,storage_path:storagePath,mime_type:file.type||null,tamanho_bytes:file.size})
       if(rowError){await supabase.storage.from('engenharia-projetos').remove([storagePath]);throw rowError}
       setDetailsLoaded(false);setMessage((kind==='DESENHO'?'Desenho/especificação':'Projeto do molde')+' anexado e vinculado ao produto.')
-      await loadDetails()
+      await loadDetails(true)
     }catch(err){setError(err instanceof Error?err.message:'Não foi possível anexar e salvar o documento.')}
     finally{setBusy(false)}
   }
