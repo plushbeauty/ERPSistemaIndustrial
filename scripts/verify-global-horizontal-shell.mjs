@@ -9,6 +9,7 @@ const shell = read('src/components/layout/ERPHorizontalShell.tsx')
 const qualityStyles = read('src/styles/quality-workspace-standard.css')
 const loginStyles = read('src/styles/industrial-login.css')
 const publicHome = read('src/PublicIndustrialHome.tsx')
+const tabletDashboard = read('src/pages/TabletDashboard.tsx')
 const failures = []
 const checks = [
   [entry.includes("import ERPHorizontalShell from './components/layout/ERPHorizontalShell'"), 'AppEntryV2 must import the single shared horizontal shell'],
@@ -19,7 +20,7 @@ const checks = [
   [shell.includes('position:sticky;top:0;z-index:1600'), 'The global header must remain sticky'],
   [shell.includes('height:58px;width:260px;min-width:260px'), 'Desktop logo must remain large and legible'],
   [shell.includes('width:190px;min-width:190px;height:46px'), 'Mobile logo must remain large and legible'],
-  [!shell.includes('Pesquisar módulos') && !shell.includes('erp-horizontal-search') && !shell.includes('const [search, setSearch]'), 'Global module-location filter must be absent from every authenticated screen'],
+  [!shell.includes('Pesquisar módulos') && !shell.includes('erp-horizontal-search') && !shell.includes('const [search, setSearch]') && !tabletDashboard.includes('Pesquisar módulo') && !tabletDashboard.includes('synqra-search'), 'Module-location filters must be absent from the global shell and tablet launcher'],
   [shell.includes('background:#f4fbfd') && shell.includes('color:#000') && shell.includes('.erp-horizontal-session time{color:#000}') && shell.includes('.erp-horizontal-help{color:#000}'), 'Top-bar text must remain black on a light background'],
   [loginStyles.includes('width:min(280px,32vw)') && loginStyles.includes('inset:0;width:100%;height:100%'), 'Login logo and hero image sizing must remain protected'],
   [publicHome.includes('.sgq-brand img{width:280px;height:82px') && publicHome.includes('width:96%;height:98%'), 'Public home logo and main visual must remain enlarged'],
