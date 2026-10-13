@@ -15,7 +15,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { Printer } from 'lucide-react'
+import { Printer, TrendingUp, Target, ShoppingCart } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
@@ -201,7 +201,7 @@ export default function DashboardComercial() {
     : monthlyData
 
   return (
-    <VendasLayout title="Dashboard Comercial" subtitle="Indicadores reais do módulo de vendas" onRefresh={() => void load()}>
+    <VendasLayout title="" onRefresh={() => void load()}>
       <style>{`
         @media print {
           @page { size: A4 landscape; margin: 12mm; }
@@ -227,9 +227,9 @@ export default function DashboardComercial() {
 
       <div className="space-y-2 text-[11px]">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-          <Kpi label="Faturamento no ano" value={brl(totals.faturamento)} />
-          <Kpi label="Meta anual" value={brl(totals.meta)} />
-          <Kpi label="Pedidos" value={totals.pedidos} />
+          <Kpi label="Faturamento no ano" value={brl(totals.faturamento)} icon={TrendingUp} tone="blue" />
+          <Kpi label="Meta anual" value={brl(totals.meta)} icon={Target} tone="orange" />
+          <Kpi label="Pedidos" value={totals.pedidos} icon={ShoppingCart} tone="green" />
                   </div>
 
         <div className="grid min-w-0 gap-2">
@@ -341,8 +341,16 @@ export default function DashboardComercial() {
   )
 }
 
-function Kpi({ label, value }: { label: string; value: string | number }) {
-  return <div className="border border-slate-300 bg-white p-2"><div className="text-[9px] uppercase text-slate-500">{label}</div><div className="mt-1 text-[15px] font-semibold text-[#123B50]">{value}</div></div>
+function Kpi({ label, value, icon: Icon, tone }: { label: string; value: string | number; icon: typeof TrendingUp; tone: 'blue' | 'orange' | 'green' }) {
+  const palette = {
+    blue: { start: '#F0FAFF', end: '#D6F0FA', icon: 'from-[#2D8DB8] to-[#123B50]', text: '#123B50', edge: '#2D8DB8' },
+    orange: { start: '#FFF8E8', end: '#FFE5B4', icon: 'from-[#F59E0B] to-[#C2410C]', text: '#7C2D12', edge: '#E6A34A' },
+    green: { start: '#E9FBF2', end: '#C5F0DA', icon: 'from-[#3A9D78] to-[#17634B]', text: '#14532D', edge: '#3A9D78' },
+  }[tone]
+  return <div className="relative flex min-h-[76px] items-center justify-between gap-3 overflow-hidden rounded-[3px] border p-3 shadow-[0_3px_0_rgba(18,59,80,0.16),0_6px_12px_rgba(18,59,80,0.08)]" style={{ borderColor: palette.edge, backgroundImage: `linear-gradient(135deg,${palette.start},${palette.end})` }}>
+    <div className="min-w-0"><div className="text-[9px] font-bold uppercase tracking-[.08em]" style={{ color: palette.text }}>{label}</div><div className="mt-1 text-[15px] font-extrabold leading-tight" style={{ color: palette.text }}>{value}</div></div>
+    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${palette.icon} text-white shadow-[inset_0_2px_2px_rgba(255,255,255,0.42),0_4px_0_rgba(18,59,80,0.28),0_6px_10px_rgba(18,59,80,0.22)] ring-2 ring-white/70`}><Icon size={22} strokeWidth={2.5} /></div>
+  </div>
 }
 
 function ChartCard({ title, onPrint, className = '', children }: { title: string; onPrint: () => void; className?: string; children: ReactNode }) {
