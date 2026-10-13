@@ -14,7 +14,8 @@ import { useLocation as useRouterLocation } from 'react-router-dom'
 import type { CSSProperties, ChangeEvent } from 'react'
 import {
   Boxes, Check, CheckCircle2, Edit3, Factory, FileText, Image as ImageIcon,
-  Plus, Printer, RefreshCw, RotateCcw, Save, Search, ShieldCheck, Trash2, Upload, X, FileSpreadsheet
+  Plus, Printer, RefreshCw, RotateCcw, Save, Search, ShieldCheck, Trash2, Upload, X, FileSpreadsheet,
+  Tablet, ShoppingCart, Calculator, ClipboardCheck, PackageSearch, BookOpen
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import ERPHorizontalShell from '../components/layout/ERPHorizontalShell'
@@ -87,6 +88,7 @@ export default function ProdutosVendasIndustrial(){
   const [form,setForm]=useState<FormData>(empty())
   const [editing,setEditing]=useState(false)
   const [tab,setTab]=useState<Tab>('gerais')
+  const [showProductTablet,setShowProductTablet]=useState(false)
   const [query,setQuery]=useState(''),[groupFilter,setGroupFilter]=useState('TODAS')
   const [busy,setBusy]=useState(false)
   const [message,setMessage]=useState('')
@@ -428,6 +430,7 @@ export default function ProdutosVendasIndustrial(){
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #C8E3EE',borderLeft:'3px solid #2D8DB8',background:'#F4FBFD',flexWrap:'wrap'}}>
       <div><div style={{fontSize:10,fontWeight:800,color:'#123B50'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
+        <button type="button" onClick={()=>setShowProductTablet(true)} style={btn('normal')}><Tablet size={15}/>Tablet de módulos</button>
         <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>
         <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />
         <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={13}/>Importar Excel</button>
@@ -441,6 +444,37 @@ export default function ProdutosVendasIndustrial(){
       </div>
     </header>
 
+
+    {showProductTablet&&<div role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setShowProductTablet(false)}} style={{position:'fixed',inset:0,zIndex:1400,background:'rgba(10,25,35,.62)',display:'grid',placeItems:'center',padding:16}}>
+      <section role="dialog" aria-modal="true" aria-label="Tablet de módulos do cadastro de produtos" style={{width:'min(980px,96vw)',maxHeight:'88vh',overflowY:'auto',background:'#1E222B',color:'#F4FBFD',border:'1px solid #3C5663',borderRadius:2,boxShadow:'0 18px 55px rgba(0,0,0,.35)'}}>
+        <header style={{position:'sticky',top:0,zIndex:2,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,padding:'12px 14px',background:'#123B50',borderBottom:'2px solid #E6A34A'}}>
+          <div style={{display:'flex',alignItems:'center',gap:10}}><Tablet size={23} color="#F4FBFD"/><div><div style={{fontSize:9,fontWeight:700,letterSpacing:'.12em',color:'#B9DFEA'}}>ERP INDUSTRIAL · CADASTRO MESTRE</div><h2 style={{fontSize:16,margin:'3px 0 0',color:'#fff'}}>TABLET DE MÓDULOS</h2></div></div>
+          <button type="button" aria-label="Fechar tablet" onClick={()=>setShowProductTablet(false)} style={{...btn('normal'),height:32,background:'#F4FBFD'}}><X size={15}/>Fechar</button>
+        </header>
+        <div style={{padding:14}}>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:'.08em',color:'#9CC7D5',marginBottom:8}}>ACESSO DIRETO ÀS TELAS DO PRODUTO</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(170px,1fr))',gap:8}}>
+            {tabItems.map(([id,title,Icon])=><button key={id} type="button" onClick={()=>{setTab(id);if(selectedId)void loadDetails();setShowProductTablet(false)}} style={{display:'flex',alignItems:'center',gap:10,minHeight:76,padding:'12px 10px',textAlign:'left',background:tab===id?'#234F63':'#292F39',border:'1px solid '+(tab===id?'#E6A34A':'#455560'),borderRadius:2,color:'#F4FBFD',cursor:'pointer'}}>
+              <span style={{display:'grid',placeItems:'center',width:38,height:38,flex:'0 0 38px',background:'#123B50',border:'1px solid #3D7186',color:'#6DD0DC'}}><Icon size={20}/></span>
+              <span style={{display:'grid',gap:4}}><strong style={{fontSize:10,letterSpacing:'.04em'}}>{title}</strong><small style={{fontSize:9,lineHeight:1.35,color:'#B8C8D0'}}>{id==='gerais'?'Identificação e classificação':id==='fiscal'?'NCM, CEST, CFOP e impostos':id==='estoque'?'Saldos, lotes e localização':id==='producao'?'Processo, máquinas e capacidade':id==='qualidade'?'Especificações e inspeção':id==='engenharia'?'Desenhos e projeto do molde':'Custos e centro responsável'}</small></span>
+            </button>)}
+          </div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:'.08em',color:'#9CC7D5',margin:'18px 0 8px'}}>ATALHOS · SISTEMA DE ABASTECIMENTO</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(170px,1fr))',gap:8}}>
+            {[
+              {value:'NENHUM',label:'Não definido',description:'Classificação pendente',Icon:PackageSearch},
+              {value:'COMPRAR',label:'Comprar',description:'Material adquirido',Icon:ShoppingCart},
+              {value:'FABRICAR',label:'Fabricar',description:'Produção interna',Icon:Factory},
+              {value:'COMPRAR_FABRICAR',label:'Comprar e fabricar',description:'Permite os dois fluxos',Icon:GitBranch}
+            ].map(item=><button key={item.value} type="button" onClick={()=>{update('fabricado',item.value==='FABRICAR'||item.value==='COMPRAR_FABRICAR');update('comprado',item.value==='COMPRAR'||item.value==='COMPRAR_FABRICAR');setEditing(true);setTab('gerais');setShowProductTablet(false);setMessage('Sistema de abastecimento selecionado. Revise e salve o cadastro para confirmar.');setError('')}} style={{display:'flex',alignItems:'center',gap:10,minHeight:70,padding:'10px',textAlign:'left',background:'#292F39',border:'1px solid #455560',borderRadius:2,color:'#F4FBFD',cursor:'pointer'}}>
+              <span style={{display:'grid',placeItems:'center',width:36,height:36,flex:'0 0 36px',background:'#173F50',border:'1px solid #3D7186',color:'#6DD0DC'}}><item.Icon size={19}/></span>
+              <span style={{display:'grid',gap:4}}><strong style={{fontSize:10}}>{item.label}</strong><small style={{fontSize:9,color:'#B8C8D0'}}>{item.description}</small></span>
+            </button>)}
+          </div>
+          <p style={{fontSize:9,lineHeight:1.5,color:'#9EADB7',margin:'12px 0 0'}}>Os atalhos de abastecimento alteram somente os campos existentes de compra e fabricação. A alteração fica pendente até você salvar o produto.</p>
+        </div>
+      </section>
+    </div>}
     {(message||error)&&<div role="alert" style={{margin:10,padding:'9px 12px',borderRadius:2,border:'1px solid '+(error?'#D65B61':'#3A9D78'),background:error?'#fff1f2':'#f0fdf4',color:error?'#b91c1c':'#166534',fontWeight:600,fontSize:10}}>{error||message}</div>}
 
     {selectedId&&<section style={{...panel,margin:'10px 10px 0',padding:7}}>
