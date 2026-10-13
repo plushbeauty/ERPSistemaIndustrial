@@ -174,7 +174,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
                 </span>
                 <span className="flex min-w-0 flex-col items-start gap-1">
                   <small className="text-[8px] font-semibold leading-none tracking-[0.08em]" style={{ color: '#67c7dc' }}>{number}</small>
-                  <strong className="max-w-full text-[9px] font-semibold leading-[1.15] tracking-[0.01em] text-slate-100">{label}</strong>
+                  <strong className="max-w-full text-[9px] font-bold leading-[1.15] tracking-[0.01em] text-[#123B50]">{label}</strong>
                 </span>
               </button>
             )
