@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
-import { BarChart3, BookOpen, ClipboardList, FilePlus2, LayoutDashboard, PackagePlus, PackageSearch, RefreshCw, Settings2, ShoppingCart, Target, Users } from 'lucide-react'
+import { BarChart3, BookOpen, ClipboardList, FilePlus2, LayoutDashboard, PackagePlus, PackageSearch, Settings2, ShoppingCart, Target, Users } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -73,7 +73,7 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
  return <SynqraLayoutProvider>
   <main className="synqra-workspace-main">
     {isVendas&&showCards&&<VendasStatusCards status={vendas.status} loading={vendas.loading}/>} 
-    <div className="synqra-workspace-title">{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<div className="synqra-title-main"><h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div></div>
+    {(title || subtitle || titleActions) && <div className="synqra-workspace-title">{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<div className="synqra-title-main">{title&&<h1>{title}</h1>}{subtitle&&<p>{subtitle}</p>}</div></div>}
     {topContent}{children}
   </main>
  </SynqraLayoutProvider>
