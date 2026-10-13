@@ -173,7 +173,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                     type="button"
                     className={childActive ? 'is-active' : ''}
                     aria-expanded={childHasChildren ? childExpanded : undefined}
-                    onClick={() => child.action === 'quality-tablet' ? (setQualityTabletOpen(true), setOpenMenu(null)) : childHasChildren ? setOpenSubMenu(value => value === child.label ? null : child.label) : go(child.route)}
+                    onClick={() => childHasChildren ? setOpenSubMenu(value => value === child.label ? null : child.label) : go(child.route)}
                   >{child.icon && <child.icon size={12} />}{child.label}{childHasChildren && <ChevronRight size={12} />}</button>
                   {childHasChildren && childExpanded && <div className="erp-horizontal-subdropdown">
                     {child.children?.map(sub => <button type="button" key={sub.route} className={pathname === sub.route.split('?')[0] && window.location.search === (sub.route.includes('?') ? `?${sub.route.split('?')[1]}` : '') ? 'is-active' : ''} onClick={() => go(sub.route)}>{sub.label}</button>)}
