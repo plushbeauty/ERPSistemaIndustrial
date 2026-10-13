@@ -25,7 +25,7 @@ type Product={
   id:string;empresa_id:string|null;codigo:string;nome:string;descricao:string|null;descricao_resumida:string|null;codigo_barras:string|null
   grupo:string|null;subgrupo:string|null;marca:string|null;categoria:string|null;unidade:string;unidade_compra:string;unidade_venda:string;fornecedor_padrao_id:string|null
   referencia_interna:string|null;referencia_cliente:string|null;origem:string|null;ncm:string|null;cest:string|null
-  cliente_principal:string|null;codigo_cliente:string|null;centro_custo_produto:string|null
+  cliente_principal:string|null;cliente_principal_id:string|null;codigo_cliente:string|null;centro_custo_produto:string|null;centro_custo_produto_id:string|null
   tipo_processo:string|null;tipo_maquina:string|null;tipo_injetora:string|null;maquina_preferencial_id:string|null;tonelagem_minima:number;tonelagem_maxima:number;numero_cavidades:number;molde_codigo:string|null
   numero_desenho:string|null;especificacao_interna:string|null;material_especificado:string|null;dureza_especificada:string|null;fluidez_especificada:string|null;numero_ficha_processo:string|null;numero_riai:string|null
   peso_liquido:number;peso_bruto:number
@@ -54,7 +54,7 @@ const tabItems:Array<[Tab,string,typeof Boxes]>=[
 ]
 const empty=():FormData=>({
   codigo:'',nome:'',descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
-  fornecedor_padrao_id:null,referencia_interna:null,referencia_cliente:null,origem:'0 - Nacional',ncm:null,cest:null,cliente_principal:null,codigo_cliente:null,centro_custo_produto:null,
+  fornecedor_padrao_id:null,referencia_interna:null,referencia_cliente:null,origem:'0 - Nacional',ncm:null,cest:null,cliente_principal:null,cliente_principal_id:null,codigo_cliente:null,centro_custo_produto:null,centro_custo_produto_id:null,
   tipo_processo:'NAO_APLICA',tipo_maquina:null,tipo_injetora:null,maquina_preferencial_id:null,tonelagem_minima:0,tonelagem_maxima:0,numero_cavidades:1,molde_codigo:null,
   numero_desenho:null,especificacao_interna:null,material_especificado:null,dureza_especificada:null,fluidez_especificada:null,numero_ficha_processo:null,numero_riai:null,peso_liquido:0,peso_bruto:0,comprimento_mm:0,largura_mm:0,altura_mm:0,
   observacoes:null,foto_url:null,fabricado:false,comprado:false,revenda:false,estoque_atual:0,ponto_reposicao:0,estoque_maximo:0,localizacao_padrao_id:null,
@@ -555,8 +555,8 @@ export default function ProdutosVendasIndustrial(){
             {field('Custo médio','custo_medio','number')}{field('Último custo','custo_ultimo','number')}{field('Custo fabricação','custo_fabricacao','number')}{field('Preço venda','preco_venda','number')}
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(160px,1fr))',gap:8,marginTop:9,alignItems:'start'}}>
-            <label style={label}>Centro de custo do produto<select value={form.centro_custo_produto||''} disabled={!editing} onChange={e=>update('centro_custo_produto',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione o centro de custo</option>{costCenters.map(cc=><option key={cc.id} value={cc.codigo}>{cc.codigo} — {cc.nome}{cc.tipo?' • '+cc.tipo:''}</option>)}</select></label>
-            <label style={label}>Principal cliente<select value={customers.find(x=>x.nome===form.cliente_principal)?.id||''} disabled={!editing} onChange={e=>{const customer=customers.find(x=>x.id===e.target.value);update('cliente_principal',customer?.nome||null);update('codigo_cliente',customer?.codigo||null)}} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione o cliente principal</option>{customers.map(customer=><option key={customer.id} value={customer.id}>{customer.codigo?customer.codigo+' — ':''}{customer.nome_fantasia||customer.nome}</option>)}</select></label>
+            <label style={label}>Centro de custo do produto<select value={form.centro_custo_produto_id||''} disabled={!editing} onChange={e=>{const center=costCenters.find(x=>x.id===e.target.value);update('centro_custo_produto_id',center?.id||null);update('centro_custo_produto',center?.codigo||null)}} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione o centro de custo</option>{costCenters.map(cc=><option key={cc.id} value={cc.id}>{cc.codigo} — {cc.nome}{cc.tipo?' • '+cc.tipo:''}</option>)}</select></label>
+            <label style={label}>Principal cliente<select value={form.cliente_principal_id||''} disabled={!editing} onChange={e=>{const customer=customers.find(x=>x.id===e.target.value);update('cliente_principal_id',customer?.id||null);update('cliente_principal',customer?.nome||null);update('codigo_cliente',customer?.codigo||null)}} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione o cliente principal</option>{customers.map(customer=><option key={customer.id} value={customer.id}>{customer.codigo?customer.codigo+' — ':''}{customer.nome_fantasia||customer.nome}</option>)}</select></label>
             {field('Código do cliente','codigo_cliente','text',1,true)}
           </div>
           <p style={{fontSize:9,color:'#526b78',margin:'8px 0 0'}}>Os três campos de referência são gravados no cadastro do produto por empresa. Informe o centro de custo conforme o plano de contas interno e mantenha o código do cliente usado no pedido de venda.</p>
