@@ -162,11 +162,15 @@ export default function QualidadeIndustrial() {
     }
   }
 
-  const decide = async (decision: 'APROVAR' | 'BLOQUEAR') => {
-    if (!currentReceiving) return
+  const decide = async (decision: 'APROVAR' | 'BLOQUEAR', receivingId = selectedReceiving) => {
+    const targetReceiving = receivings.find((row) => row.id === receivingId)
+    if (!targetReceiving) {
+      setError('Selecione uma inspeção de recebimento válida antes de decidir.')
+      return
+    }
     setBusy(true); setError(''); setNotice('')
     try {
-      const result = await supabase.rpc('erp_qms_decidir_inspecao_recebimento', { p_inspecao_id: currentReceiving.id, p_decisao: decision })
+      const result = await supabase.rpc('erp_qms_decidir_inspecao_recebimento', { p_inspecao_id: targetReceiving.id, p_decisao: decision })
       if (result.error) throw result.error
       setNotice(decision === 'APROVAR' ? 'Lote aprovado e liberado no status de inspeção.' : 'Lote bloqueado e enviado para quarentena.')
       await load()
@@ -278,6 +282,27 @@ export default function QualidadeIndustrial() {
 
         {(error || notice) && <div className={error ? 'qms-message error' : 'qms-message'}>{error || notice}</div>}
 
+        <details className="qms-panel" style={{padding:'8px 12px'}}>
+          <summary style={{cursor:'pointer',fontSize:11,fontWeight:800,color:'#17445A'}}>Ajuda contextual — {tab === 'recebimento' ? 'inspeção de recebimento' : tab === 'dimensional' ? 'inspeção dimensional' : 'rastreabilidade reversa'}</summary>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(210px,1fr))',gap:12,marginTop:10,fontSize:11,color:'#536a75'}}>
+            {tab === 'recebimento' && <>
+              <div><strong>Antes de começar</strong><p>Selecione um lote real da empresa atual, informe o tamanho inspecionado e confirme nível de inspeção, AQL e critérios Ac/Re aprovados para o plano de amostragem.</p></div>
+              <div><strong>Fluxo</strong><p>Registre a inspeção; confira a linha criada; só então aprove ou bloqueie o lote conforme o resultado e o procedimento de qualidade. A decisão é processada pela RPC do SGQ.</p></div>
+              <div><strong>Cuidados</strong><p>Defeitos, Ac e Re precisam refletir a inspeção real. Não aprove lote apenas para remover pendência; em caso de dúvida, mantenha-o pendente e consulte o responsável da Qualidade.</p></div>
+            </>}
+            {tab === 'dimensional' && <>
+              <div><strong>Como medir</strong><p>Selecione a inspeção, informe peça/cavidade, cota nominal, tolerâncias superior e inferior, valor medido e instrumento utilizado. As tolerâncias são desvios permitidos em milímetros.</p></div>
+              <div><strong>Interpretação</strong><p>O sistema calcula desvio = valor medido − cota nominal e compara o resultado com as tolerâncias informadas. Confira unidade, sinal e instrumento calibrado antes de gravar.</p></div>
+              <div><strong>Rastreabilidade</strong><p>Cada medição é anexada ao registro de inspeção selecionado. Revise o número da peça e os valores antes de registrar; não use dados estimados como medição real.</p></div>
+            </>}
+            {tab === 'rastreabilidade' && <>
+              <div><strong>Pesquisa</strong><p>Informe o lote interno ou o lote do fornecedor exatamente como cadastrado na empresa atual.</p></div>
+              <div><strong>O que consultar</strong><p>O sistema relaciona produto, fornecedor, componentes consumidos e, quando disponíveis, apontamento, operador, máquina, OP e pedido de venda.</p></div>
+              <div><strong>Se faltar informação</strong><p>“Não vinculado” indica que não foi encontrado um relacionamento nos registros consultados; confira os lançamentos de origem em vez de preencher manualmente uma relação não comprovada.</p></div>
+            </>}
+          </div>
+        </details>
+
         {tab === 'recebimento' && <section className="qms-panel">
           <div className="qms-grid qms-grid-6">
             <label className={labelClass()}>Lote / NF XML<select className={fieldClass(invalid === 'lote')} value={selectedLot} onChange={(e) => { setSelectedLot(e.target.value); setInvalid(null) }}><option value="">Preencher...</option>{lots.map((lot) => <option key={lot.id} value={lot.id}>{lot.lote_interno} · NF {lot.nf_numero || '—'} · {supplierMap.get(lot.fornecedor_id || '') || 'Fornecedor não vinculado'}</option>)}</select></label>
@@ -293,7 +318,7 @@ export default function QualidadeIndustrial() {
             <label className={labelClass()}>Critério Re<input className={fieldClass(invalid === 'criteria')} type="number" min="1" value={re} onChange={(e) => { setRe(e.target.value); setInvalid(null) }} /></label>
             <div className="qms-actions"><button className="qms-btn" type="button" disabled={busy} onClick={() => void saveReceiving()}><ClipboardCheck size={13}/> REGISTRAR INSPEÇÃO</button></div>
           </div>
-          <div className="qms-table-wrap qms-mt"><table><thead><tr><th>Lote</th><th>NF</th><th>Fornecedor</th><th>Grau</th><th>AQL</th><th>Amostra</th><th>Def.</th><th>Ac</th><th>Re</th><th>Status</th><th>Ação</th></tr></thead><tbody>{receivings.map((row) => { const lot = lots.find((item) => item.id === row.lote_id); return <tr key={row.id}><td>{lot?.lote_interno || row.lote_id}</td><td>{lot?.nf_numero || '—'}</td><td>{supplierMap.get(row.fornecedor_id || '') || '—'}</td><td>{row.nivel_inspecao}</td><td className="num">{row.aql}</td><td className="num">{row.tamanho_amostra}</td><td className="num">{row.defeitos_encontrados}</td><td className="num">{row.criterio_ac}</td><td className="num">{row.criterio_re}</td><td><span className={row.status === 'APROVADO' ? 'status-ok' : row.status === 'BLOQUEADO' ? 'status-nok' : 'status-pending'}>{row.status}</span></td><td><button className="qms-mini" type="button" onClick={() => setSelectedReceiving(row.id)}>USAR</button>{row.status === 'PENDENTE' && <><button className="qms-mini approve" type="button" disabled={busy} onClick={() => void (setSelectedReceiving(row.id), decide('APROVAR'))}><Check size={12}/> APROVAR</button><button className="qms-mini block" type="button" disabled={busy} onClick={() => void (setSelectedReceiving(row.id), decide('BLOQUEAR'))}><X size={12}/> BLOQUEAR</button></>}</td></tr>})}</tbody></table></div>
+          <div className="qms-table-wrap qms-mt"><table><thead><tr><th>Lote</th><th>NF</th><th>Fornecedor</th><th>Grau</th><th>AQL</th><th>Amostra</th><th>Def.</th><th>Ac</th><th>Re</th><th>Status</th><th>Ação</th></tr></thead><tbody>{receivings.map((row) => { const lot = lots.find((item) => item.id === row.lote_id); return <tr key={row.id}><td>{lot?.lote_interno || row.lote_id}</td><td>{lot?.nf_numero || '—'}</td><td>{supplierMap.get(row.fornecedor_id || '') || '—'}</td><td>{row.nivel_inspecao}</td><td className="num">{row.aql}</td><td className="num">{row.tamanho_amostra}</td><td className="num">{row.defeitos_encontrados}</td><td className="num">{row.criterio_ac}</td><td className="num">{row.criterio_re}</td><td><span className={row.status === 'APROVADO' ? 'status-ok' : row.status === 'BLOQUEADO' ? 'status-nok' : 'status-pending'}>{row.status}</span></td><td><button className="qms-mini" type="button" onClick={() => setSelectedReceiving(row.id)}>USAR</button>{row.status === 'PENDENTE' && <><button className="qms-mini approve" type="button" disabled={busy} onClick={() => { setSelectedReceiving(row.id); void decide('APROVAR', row.id) }}><Check size={12}/> APROVAR</button><button className="qms-mini block" type="button" disabled={busy} onClick={() => { setSelectedReceiving(row.id); void decide('BLOQUEAR', row.id) }}><X size={12}/> BLOQUEAR</button></>}</td></tr>})}</tbody></table></div>
         </section>}
 
         {tab === 'dimensional' && <section className="qms-panel">
