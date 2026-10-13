@@ -1,20 +1,10 @@
-import { useMemo, useState } from 'react'
-import { RefreshCw, Search } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { sections as SALES_SECTIONS } from './VendasLayout'
 
-const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
-
 export default function VendasTablet() {
   const navigate = useNavigate()
-  const [search, setSearch] = useState('')
-  const term = normalize(search.trim())
-  const sections = useMemo(
-    () => SALES_SECTIONS
-      .map(section => ({ ...section, items: term ? section.items.filter(item => normalize(item.label).includes(term)) : section.items }))
-      .filter(section => section.items.length > 0),
-    [term],
-  )
+  const sections = SALES_SECTIONS
 
   return (
     <section className="erp-vendas-menu">
@@ -24,11 +14,7 @@ export default function VendasTablet() {
           <h1>MENU VENDAS</h1>
         </div>
         <div className="erp-vendas-menu-actions">
-          <label>
-            <Search size={14} aria-hidden="true" />
-            <input value={search} onChange={event => setSearch(event.target.value)} placeholder="Pesquisar módulo de vendas" aria-label="Pesquisar módulo de vendas" />
-          </label>
-          <button type="button" onClick={() => window.location.reload()} title="Atualizar menu"><RefreshCw size={14} /></button>
+          <button type="button" onClick={() => window.location.reload()} title="Atualizar menu" aria-label="Atualizar menu"><RefreshCw size={14} /></button>
         </div>
       </div>
       <div className="erp-vendas-menu-sections">
@@ -52,8 +38,6 @@ export default function VendasTablet() {
         .erp-vendas-menu-eyebrow{display:block;color:#2d8db8;font-size:9px;font-weight:900;letter-spacing:.12em}
         .erp-vendas-menu h1{margin:2px 0 0;color:#123b50;font-size:16px;font-weight:800;letter-spacing:.04em}
         .erp-vendas-menu-actions{display:flex;gap:6px}
-        .erp-vendas-menu-actions label{height:30px;width:260px;display:flex;align-items:center;gap:5px;border:1px solid #cbd5e1;border-radius:2px;padding:0 7px;color:#64748b}
-        .erp-vendas-menu-actions input{width:100%;border:0;outline:0;font-size:10px;color:#123b50}
         .erp-vendas-menu-actions button{width:30px;height:30px;display:grid;place-items:center;border:1px solid #2d8db8;border-radius:2px;background:#2d8db8;color:#fff;cursor:pointer}
         .erp-vendas-menu-sections{padding:8px;display:grid;gap:10px}
         .erp-vendas-menu-section-title{height:24px;display:flex;align-items:center;color:#164b91;font-size:9px;font-weight:900;letter-spacing:.12em;border-bottom:1px solid #dbe5eb}
@@ -62,7 +46,7 @@ export default function VendasTablet() {
         .erp-vendas-menu-grid button:hover{border-color:#2d8db8;background:#f4fbfd}
         .erp-vendas-menu-grid span{font-size:9px;line-height:1.1;text-transform:uppercase;text-align:center}
         @media(max-width:1100px){.erp-vendas-menu-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
-        @media(max-width:700px){.erp-vendas-menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.erp-vendas-menu-actions label{width:180px}}
+        @media(max-width:700px){.erp-vendas-menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
       `}</style>
     </section>
   )
