@@ -19,6 +19,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
   const [produtoDescricao, setProdutoDescricao] = useState('')
   const [notaFiscal, setNotaFiscal] = useState('')
   const [loteFornecedor, setLoteFornecedor] = useState('')
+  const [dataValidade, setDataValidade] = useState('')
   const [quantidade, setQuantidade] = useState<number>(0)
   const [laudoStatus, setLaudoStatus] = useState<QualityStatus>('APROVADO')
   const [certificado, setCertificado] = useState<File | null>(null)
@@ -145,6 +146,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
         p_quantidade: quantidade,
         p_status_qualidade: laudoStatus,
         p_certificado_path: certificatePath,
+        p_data_validade: dataValidade || null,
       })
 
       if (result.error) throw result.error
@@ -153,6 +155,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
       setSuccess(`Lote ${loteFornecedor.trim()} recebido com sucesso. ${numberFormat.format(quantidade)} ${selected?.unidade ?? 'kg'} integrados ao saldo físico.`)
       setNotaFiscal('')
       setLoteFornecedor('')
+      setDataValidade('')
       setQuantidade(0)
       setCertificado(null)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -261,6 +264,17 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
                   className="mt-2 h-[54px] w-full rounded-md border border-slate-300 bg-white px-3 text-base font-bold outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100"
                   placeholder="Ex.: LT-PP-2026-09A"
                   required
+                />
+              </label>
+
+              <label className="text-sm font-extrabold uppercase tracking-wide text-slate-800">
+                Validade do lote (quando aplicável)
+                <input
+                  type="date"
+                  value={dataValidade}
+                  min={new Date().toISOString().slice(0, 10)}
+                  onChange={event => setDataValidade(event.target.value)}
+                  className="mt-2 h-[54px] w-full rounded-md border border-slate-300 bg-white px-3 text-base font-semibold outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100"
                 />
               </label>
 
