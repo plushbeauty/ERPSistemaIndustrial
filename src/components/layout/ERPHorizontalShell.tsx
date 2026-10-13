@@ -294,7 +294,16 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </main>
 
       <style>{`
-        .erp-page-description{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;margin:0;padding:7px 14px;border-bottom:1px solid #c9dde5;background:#f4fbfd;color:#123b50}
+        .erp-horizontal-workspace-compact{color:#123b50;font-size:11px}
+        .erp-horizontal-workspace-compact input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),.erp-horizontal-workspace-compact select{height:30px;min-height:30px;max-width:100%;padding:0 7px;border:1px solid #b9cbd3;border-radius:2px;background:#fff;color:#17333f;font-size:10px;line-height:16px;box-sizing:border-box}
+        .erp-horizontal-workspace-compact textarea{min-height:64px;max-width:100%;padding:6px 7px;border:1px solid #b9cbd3;border-radius:2px;background:#fff;color:#17333f;font-size:10px;line-height:1.4;box-sizing:border-box}
+        .erp-horizontal-workspace-compact input:not([type="checkbox"]):not([type="radio"]):focus,.erp-horizontal-workspace-compact select:focus,.erp-horizontal-workspace-compact textarea:focus{border-color:#2d8db8;outline:1px solid #bde2ef;outline-offset:0}
+        .erp-horizontal-workspace-compact label{font-size:9px;line-height:1.3;font-weight:600;color:#536b76}
+        .erp-horizontal-workspace-compact table{border-collapse:collapse;font-size:10px}
+        .erp-horizontal-workspace-compact table th{height:30px;padding:0 6px;background:#eaf4f7;color:#123b50;border-bottom:1px solid #c9dde5;font-size:9px;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+        .erp-horizontal-workspace-compact table td{padding:4px 6px;font-size:10px;line-height:1.3;border-bottom:1px solid #e2ebef}
+        .erp-horizontal-workspace-compact button:not(.erp-horizontal-menu-button):not(.erp-horizontal-brand){border-radius:2px}
+                .erp-page-description{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;margin:0;padding:7px 14px;border-bottom:1px solid #c9dde5;background:#f4fbfd;color:#123b50}
         .erp-page-description-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
         .erp-page-description-copy>span{font-size:8px;line-height:10px;font-weight:800;letter-spacing:.12em;color:#2d8db8}
         .erp-page-description-copy>strong{font-size:12px;line-height:15px;font-weight:700;color:#123b50}
