@@ -3,11 +3,13 @@ import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, CalendarRange
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
+import TabletMenuModal from '../TabletMenuModal'
 
 type MenuItem = {
   label: string
   route: string
   icon?: LucideIcon
+  action?: 'qualityTablet'
   children?: MenuItem[]
 }
 
@@ -61,6 +63,7 @@ const menus: MenuItem[] = [
   ] },
   { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
     { label: 'Visão geral do SGQ', route: '/qualidade' },
+    { label: 'Qualidade Tablet', route: '/qualidade/tablet', action: 'qualityTablet' }, 
     { label: 'Inspeções operacionais', route: '/qualidade/inspecoes' },
     { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
     { label: 'Controle de Processo — Injetora', route: '/qualidade/controle-injetora', icon: Factory },
@@ -88,6 +91,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null)
   const [helpOpen, setHelpOpen] = useState(false)
+  const [tabletOpen, setTabletOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
@@ -119,13 +123,24 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   useEffect(() => {
     setOpenMenu(null)
   }, [pathname])
-  const flattenMenu = (items: MenuItem[], prefix = ''): Array<{ label: string; route: string }> => items.flatMap(item => [
-    { label: prefix ? `${prefix} / ${item.label}` : item.label, route: item.route },
+  const flattenMenu = (items: MenuItem[], prefix = ''): Array<{ label: string; route: string; action?: MenuItem['action'] }> => items.flatMap(item => [
+    { label: prefix ? `${prefix} / ${item.label}` : item.label, route: item.route, action: item.action }, 
     ...(item.children ? flattenMenu(item.children, prefix ? `${prefix} / ${item.label}` : item.label) : []),
   ])
   const filtered = search.trim()
     ? flattenMenu(menus).filter(item => item.label.toLowerCase().includes(search.trim().toLowerCase()))
     : []
+
+  const openMenuItem = (item: Pick<MenuItem, 'route' | 'action'>) => {
+    if (item.action === 'qualityTablet') {
+      setTabletOpen(true)
+      setOpenMenu(null)
+      setOpenSubMenu(null)
+      setSearch('')
+      return
+    }
+    go(item.route)
+  }
 
   const contextualHelp = pathname.startsWith('/pcp/mrp-ii')
     ? { title: 'MRP II — Planejamento de materiais', purpose: 'Calcular necessidades de materiais a partir da demanda, estrutura dos produtos, estoque e ordens existentes. Esta tela não é a agenda de máquinas.', steps: ['Confirme que produtos, fichas técnicas/estruturas e saldos de estoque estão atualizados.', 'Execute o cálculo MRP e confira as necessidades líquidas por componente.', 'Revise as sugestões de comprar ou produzir antes de gerar ordens planejadas.'], fields: ['Produto/demanda: item acabado e quantidade a planejar.', 'Horizonte/data: período considerado no planejamento.', 'Necessidade líquida: quantidade que falta após estoque e reservas.', 'Sugestão: comprar ou produzir; confira antes de confirmar.'] }
@@ -171,7 +186,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           {filtered.length > 0 && (
             <div className="erp-horizontal-search-results">
               {filtered.slice(0, 8).map(item => (
-                <button key={item.route} type="button" onClick={() => go(item.route)}>{item.label}</button>
+                <button key={`${item.route}:${item.action || 'route'}`} type="button" onClick={() => openMenuItem(item)}>{item.label}</button>
               ))}
             </div>
           )}
@@ -214,7 +229,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                     type="button"
                     className={childActive ? 'is-active' : ''}
                     aria-expanded={childHasChildren ? childExpanded : undefined}
-                    onClick={() => childHasChildren ? setOpenSubMenu(value => value === child.label ? null : child.label) : go(child.route)}
+                    onClick={() => childHasChildren ? setOpenSubMenu(value => value === child.label ? null : child.label) : openMenuItem(child)}
                   >{child.icon && <child.icon size={12} />}{child.label}{childHasChildren && <ChevronRight size={12} />}</button>
                   {childHasChildren && childExpanded && <div className="erp-horizontal-subdropdown">
                     {child.children?.map(sub => <button type="button" key={sub.route} className={pathname === sub.route.split('?')[0] && window.location.search === (sub.route.includes('?') ? `?${sub.route.split('?')[1]}` : '') ? 'is-active' : ''} onClick={() => go(sub.route)}>{sub.label}</button>)}
@@ -228,6 +243,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
       </main>
+      <TabletMenuModal isOpen={tabletOpen} onClose={() => setTabletOpen(false)} onNavigate={(route) => { setTabletOpen(false); go(route) }} />
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f3f8fb 42%,#e8f1f6 100%);color:#123b50}

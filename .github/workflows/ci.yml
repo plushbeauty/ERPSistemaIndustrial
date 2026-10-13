@@ -81,5 +81,8 @@ jobs:
       - name: Routes
         run: npm run verify-routes
 
+      - name: Quality tablet regression contract
+        run: npm run verify:quality-tablet-contract
+
       - name: Security no-bypass policy
         run: npm run audit:security
