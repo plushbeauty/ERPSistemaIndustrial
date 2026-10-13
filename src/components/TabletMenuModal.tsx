@@ -120,7 +120,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
       onMouseDown={onClose}
     >
       <section
-        className="flex max-h-[calc(100dvh-24px)] w-full max-w-[1120px] flex-col overflow-hidden rounded-[2px] border border-[#B9D4DF] bg-white p-3 text-[#123B50] shadow-[0_18px_50px_rgba(18,59,80,0.22)] sm:max-h-[calc(100dvh-36px)] sm:p-4"
+        className="flex max-h-[calc(100dvh-24px)] w-full max-w-[1180px] flex-col overflow-hidden rounded-[2px] border border-[#B9D4DF] bg-white p-3 text-[#123B50] shadow-[0_18px_50px_rgba(18,59,80,0.22)] sm:max-h-[calc(100dvh-36px)] sm:p-4"
         onMouseDown={event => event.stopPropagation()}
       >
         <header className="flex shrink-0 items-center justify-between gap-3 border-b border-[#D8E8EE] pb-3">
@@ -148,7 +148,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
 
         {accessError && <div className="mb-2 border border-[#D65B61] bg-[#FCEDEF] px-2 py-1.5 text-[10px] text-[#9F3038]" role="alert">{accessError}</div>}
 
-        <div className="mt-3 grid min-h-0 flex-1 grid-cols-6 gap-2 overflow-y-auto overscroll-contain pr-1 max-[820px]:grid-cols-4 max-[520px]:grid-cols-3 max-[360px]:grid-cols-2" aria-label="Módulos do ERP">
+        <div className="mt-3 grid min-h-0 flex-1 grid-cols-5 gap-2.5 overflow-y-auto overscroll-contain pr-1 max-[900px]:grid-cols-4 max-[620px]:grid-cols-3 max-[400px]:grid-cols-2" aria-label="Módulos do ERP">
           {modules.map(({ key, number, label, description, route, permission, icon: Icon }) => {
             const disabled = !route || !accessReady || Boolean(accessError) || Boolean(permission && !permissions.has('*') && !permissions.has(permission))
 
@@ -159,7 +159,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
                 disabled={disabled}
                 aria-disabled={disabled}
                 title={disabled ? (accessError || (!accessReady ? 'Validando acesso e permissões.' : description)) : label}
-                className="group flex min-h-[104px] min-w-0 touch-manipulation flex-col items-center justify-center gap-2 rounded-[2px] border border-[#C9DDE5] bg-white px-2 py-2 text-center text-[#123B50] transition-[background,border-color,transform] duration-100 hover:-translate-y-px hover:border-[#2D8DB8] hover:bg-[#F4FBFD] active:translate-y-0 active:bg-[#EAF6FA] disabled:cursor-not-allowed disabled:opacity-40"
+                className="group flex min-h-[118px] min-w-0 touch-manipulation flex-col items-center justify-center gap-2.5 rounded-[2px] border border-[#B9D4DF] bg-white px-2.5 py-2.5 text-center text-[#123B50] transition-[background,border-color,transform] duration-100 hover:-translate-y-px hover:border-[#2D8DB8] hover:bg-[#F4FBFD] active:translate-y-0 active:bg-[#EAF6FA] disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
                   if (route) {
                     onClose()
@@ -168,15 +168,15 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
                 }}
               >
                 <span
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-[2px] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]"
+                  className="grid h-11 w-11 shrink-0 place-items-center rounded-[2px] text-white shadow-[0_2px_0_rgba(18,59,80,.16),inset_0_1px_0_rgba(255,255,255,0.3)]"
                   style={{ backgroundColor: '#2D8DB8' }}
                   aria-hidden="true"
                 >
-                  <Icon size={28} strokeWidth={2.15} />
+                  <Icon size={25} strokeWidth={2.2} />
                 </span>
                 <span className="flex min-w-0 flex-col items-center gap-0.5">
-                  <small className="text-[8px] font-semibold leading-none tracking-[0.08em]" style={{ color: '#2D8DB8' }}>{number}</small>
-                  <strong className="max-w-full text-[9px] font-semibold leading-[1.15] tracking-[0.01em] text-[#123B50]">{label}</strong>
+                  <small className="text-[9px] font-bold leading-none tracking-[0.08em]" style={{ color: '#2D8DB8' }}>{number}</small>
+                  <strong className="max-w-full text-[10px] font-bold leading-[1.2] tracking-[0.01em] text-[#123B50]">{label}</strong>
                 </span>
               </button>
             )
