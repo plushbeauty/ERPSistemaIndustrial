@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Activity, AlertTriangle, CheckCircle2, FileText, ShieldCheck } from 'lucide-react'
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import VendasLayout from './VendasLayout'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -121,7 +121,7 @@ export default function QualidadeDashboardSGQ() {
       <article className="min-w-0 border border-[#B9D4DF] bg-[#F8FCFE] p-3 xl:col-span-2">
         <div className="mb-2 flex items-center gap-2"><FileText size={15} className="text-[#B96A05]" /><div><h2 className="text-[12px] font-bold text-[#123B50]">Inspeções por tipo</h2><p className="text-[9px] text-[#647B85]">Até oito tipos com maior quantidade de registros</p></div></div>
         <div className="h-[220px]">
-          {busy ? <p className="p-8 text-center text-[10px] text-slate-500">Carregando indicadores…</p> : byType.length ? <ResponsiveContainer width="100%" height="100%"><BarChart data={byType} margin={{ top: 8, right: 12, left: -18, bottom: 4 }}><CartesianGrid strokeDasharray="3 3" stroke="#D8E8EE" /><XAxis dataKey="tipo" tick={{ fontSize: 9, fill: '#315466' }} interval={0} /><YAxis allowDecimals={false} tick={{ fontSize: 9, fill: '#315466' }} /><Tooltip /><Bar dataKey="quantidade" name="Inspeções" fill="#E6A34A" radius={[2, 2, 0, 0]}>{byType.map((item, index) => <cell key={item.tipo} fill={chartColors[index % chartColors.length]} />)}</Bar></BarChart></ResponsiveContainer> : <div className="flex h-full items-center justify-center border border-dashed border-[#B9D4DF] text-center text-[10px] text-[#647B85]">Nenhuma inspeção cadastrada para esta empresa.</div>}
+          {busy ? <p className="p-8 text-center text-[10px] text-slate-500">Carregando indicadores…</p> : byType.length ? <ResponsiveContainer width="100%" height="100%"><BarChart data={byType} margin={{ top: 8, right: 12, left: -18, bottom: 4 }}><CartesianGrid strokeDasharray="3 3" stroke="#D8E8EE" /><XAxis dataKey="tipo" tick={{ fontSize: 9, fill: '#315466' }} interval={0} /><YAxis allowDecimals={false} tick={{ fontSize: 9, fill: '#315466' }} /><Tooltip /><Bar dataKey="quantidade" name="Inspeções" fill="#E6A34A" radius={[2, 2, 0, 0]}>{byType.map((item, index) => <Cell key={item.tipo} fill={chartColors[index % chartColors.length]} />)}</Bar></BarChart></ResponsiveContainer> : <div className="flex h-full items-center justify-center border border-dashed border-[#B9D4DF] text-center text-[10px] text-[#647B85]">Nenhuma inspeção cadastrada para esta empresa.</div>}
         </div>
       </article>
     </section>
