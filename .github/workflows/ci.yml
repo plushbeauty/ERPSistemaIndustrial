@@ -85,6 +85,8 @@ jobs:
         run: npm run verify:quality-tablet-contract
       - name: Global horizontal shell regression contract
         run: npm run verify:global-horizontal-shell
+      - name: Logo asset regression contract
+        run: npm run verify:logo-assets
 
       - name: Security no-bypass policy
         run: npm run audit:security
