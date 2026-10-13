@@ -30,7 +30,7 @@ function walk(path) {
     if (entry.isDirectory()) walk(full)
     else if (/\.tsx$/.test(entry.name) && full !== join(root, 'src/AppEntryV2.tsx') && full !== join(root, 'src/components/layout/ERPHorizontalShell.tsx')) {
       const source = readFileSync(full, 'utf8')
-      if (/import\s+ERPHorizontalShell\s+from/.test(source) || /<\\/?ERPHorizontalShell(?:\\s|>)/.test(source)) failures.push('Nested horizontal shell detected in ' + full.replace(root + '/', ''))
+      if (/import\s+ERPHorizontalShell\s+from/.test(source) || /<\/?ERPHorizontalShell(?:\s|>)/.test(source)) failures.push('Nested horizontal shell detected in ' + full.replace(root + '/', ''))
     }
   }
 }
