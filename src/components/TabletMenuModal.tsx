@@ -118,7 +118,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
       onMouseDown={onClose}
     >
       <section
-        className="max-h-[calc(100vh-24px)] w-full max-w-[900px] overflow-auto rounded-[2px] border border-slate-600 bg-[#1e222b] p-3 text-white shadow-[0_30px_90px_rgba(2,6,23,0.48)] sm:max-h-[calc(100vh-36px)] sm:p-4"
+        className="max-h-[calc(100vh-24px)] w-full max-w-[1080px] overflow-auto rounded-[2px] border border-slate-600 bg-[#1e222b] p-3 text-white shadow-[0_30px_90px_rgba(2,6,23,0.48)] sm:max-h-[calc(100vh-36px)] sm:p-4"
         onMouseDown={event => event.stopPropagation()}
       >
         <header className="flex items-start justify-between gap-4 border-b border-slate-200 pb-3">
