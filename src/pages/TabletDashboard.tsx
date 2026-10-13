@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import ERPHeader from '../components/layout/ERPHeader'
 import { SYNQRA_MODULES } from '../assets/synqra/icons'
@@ -23,9 +22,6 @@ type Permission = {
   id: string
   code: string
 }
-
-const normalize = (value: string) =>
-  value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
 
 async function loadAccess(): Promise<{ profile: Profile; permissions: Set<string> }> {
   const auth = await supabase.auth.getUser()
@@ -96,7 +92,6 @@ export default function TabletDashboard() {
   const navigate = useNavigate()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [permissions, setPermissions] = useState<Set<string>>(new Set())
-  const [search, setSearch] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -121,13 +116,9 @@ export default function TabletDashboard() {
     }
   }, [])
 
-  const modules = useMemo(() => {
-    const term = normalize(search.trim())
-    return SYNQRA_MODULES
-      .filter(module => Boolean(module.route))
-      .filter(module => !module.permission || permissions.has('*') || permissions.has(module.permission))
-      .filter(module => !term || normalize(module.label).includes(term))
-  }, [permissions, search])
+  const modules = useMemo(() => SYNQRA_MODULES
+    .filter(module => Boolean(module.route))
+    .filter(module => !module.permission || permissions.has('*') || permissions.has(module.permission)), [permissions])
 
   const master = profile?.is_master === true && profile.nivel_admin >= 100 && profile.empresa_id === null
 
@@ -142,20 +133,6 @@ export default function TabletDashboard() {
         </div>
         <div className="synqra-tablet-tools">
           <span className="synqra-tablet-scope">{master ? 'MASTER' : profile?.perfil || 'USUÁRIO ERP'}</span>
-          <label className="synqra-search">
-            <Search size={14} aria-hidden="true" />
-            <input
-              value={search}
-              onChange={event => setSearch(event.target.value)}
-              placeholder="Pesquisar módulo"
-              aria-label="Pesquisar módulo"
-            />
-            {search && (
-              <button type="button" aria-label="Limpar pesquisa" onClick={() => setSearch('')}>
-                <X size={13} />
-              </button>
-            )}
-          </label>
         </div>
       </section>
 

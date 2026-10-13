@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, FolderGit2, LineChart, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, ClipboardCheck } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -16,9 +16,9 @@ type MenuItem = {
 const menus: MenuItem[] = [
   { label: 'Início', route: '/erp-industrial', icon: Home },
   { label: 'Cadastros', route: '/produtos-vendas', icon: Database, children: [
-    { label: 'Produtos', route: '/produtos-vendas' },
-    { label: 'Clientes', route: '/vendas/clientes' },
-    { label: 'Fornecedores', route: '/compras/fornecedores' },
+    { label: 'Cadastro de Produtos', route: '/produtos-vendas' },
+    { label: 'Cadastro de Clientes', route: '/vendas/clientes' },
+    { label: 'Cadastro de Fornecedores', route: '/compras/fornecedores' },
   ] },
   { label: 'Vendas', route: '/vendas', icon: ShoppingCart, children: [
     { label: 'Dashboard comercial', route: '/vendas' },
@@ -61,25 +61,7 @@ const menus: MenuItem[] = [
       { label: 'Pintura / Química', route: '/pcp/fichas-processo?tipo=PINTURA_QUIMICA' },
     ] },
   ] },
-  { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
-    { label: 'Visão geral do SGQ', route: '/qualidade' },
-    { label: 'Qualidade Tablet', route: '/qualidade/tablet', action: 'qualityTablet' }, 
-    { label: 'Inspeções operacionais', route: '/qualidade/inspecoes' },
-    { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
-    { label: 'Controle de Processo — Injetora', route: '/qualidade/controle-injetora', icon: Factory },
-    { label: 'Não conformidades (RPNC)', route: '/qualidade/rnc', icon: ClipboardCheck, children: [
-      { label: 'Sala de RNC / RPNC', route: '/qualidade/sala-rnc', icon: ClipboardCheck },
-      { label: 'Cadastro de RPNC', route: '/qualidade/rnc' },
-      { label: 'Espinha de Peixe — Ishikawa 6M', route: '/qualidade/ishikawa' },
-      { label: 'Ações corretivas / CAPA 5W2H', route: '/qualidade/capa' },
-      { label: 'Metodologia 8D', route: '/qualidade/metodologia-8d' },
-    ] },
-    { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
-    { label: 'FMEA / PFMEA', route: '/qualidade/fmea' },
-    { label: 'Controle Documental GED', route: '/qualidade/ged-documentos', icon: FolderGit2 },
-    { label: 'Cartas de Controle CEP', route: '/qualidade/cep', icon: LineChart },
-    { label: 'Instrumentos / Metrologia', route: '/qualidade/instrumentos' },
-  ] },
+  { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench },
   { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
@@ -92,7 +74,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null)
   const [helpOpen, setHelpOpen] = useState(false)
   const [tabletOpen, setTabletOpen] = useState(false)
-  const [search, setSearch] = useState('')
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
   const ref = useRef<HTMLDivElement>(null)
@@ -119,24 +100,22 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     return () => document.removeEventListener('mousedown', close)
   }, [])
 
+  useEffect(() => {
+    const openQualityTablet = () => setTabletOpen(true)
+    window.addEventListener('erp:open-quality-tablet', openQualityTablet)
+    return () => window.removeEventListener('erp:open-quality-tablet', openQualityTablet)
+  }, [])
+
   const current = menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
   useEffect(() => {
     setOpenMenu(null)
   }, [pathname])
-  const flattenMenu = (items: MenuItem[], prefix = ''): Array<{ label: string; route: string; action?: MenuItem['action'] }> => items.flatMap(item => [
-    { label: prefix ? `${prefix} / ${item.label}` : item.label, route: item.route, action: item.action }, 
-    ...(item.children ? flattenMenu(item.children, prefix ? `${prefix} / ${item.label}` : item.label) : []),
-  ])
-  const filtered = search.trim()
-    ? flattenMenu(menus).filter(item => item.label.toLowerCase().includes(search.trim().toLowerCase()))
-    : []
-
   const openMenuItem = (item: Pick<MenuItem, 'route' | 'action'>) => {
     if (item.action === 'qualityTablet') {
       setTabletOpen(true)
       setOpenMenu(null)
       setOpenSubMenu(null)
-      setSearch('')
+      
       return
     }
     go(item.route)
@@ -163,7 +142,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const go = (route: string) => {
     setOpenMenu(null)
     setOpenSubMenu(null)
-    setSearch('')
+    
     navigate(route)
   }
 
@@ -172,35 +151,23 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       <header className="erp-horizontal-header">
         <button className="erp-horizontal-brand" type="button" onClick={() => go('/erp-industrial')} title="Início">
           <img src="/logo/logo.png" alt="SGQERP Industrial" />
-          <strong>SGQERP INDUSTRIAL</strong>
         </button>
 
-        <div className="erp-horizontal-search">
-          <Search size={15} aria-hidden="true" />
-          <input
-            value={search}
-            onChange={event => setSearch(event.target.value)}
-            placeholder="Pesquisar módulos..."
-            aria-label="Pesquisar módulos"
-          />
-          {filtered.length > 0 && (
-            <div className="erp-horizontal-search-results">
-              {filtered.slice(0, 8).map(item => (
-                <button key={`${item.route}:${item.action || 'route'}`} type="button" onClick={() => openMenuItem(item)}>{item.label}</button>
-              ))}
-            </div>
-          )}
+        <div className="erp-horizontal-global-title" aria-label="Título padrão do ERP">
+          <strong>Painel de Gestão da Qualidade</strong>
+          <span>Indicadores calculados a partir dos registros da empresa autenticada.</span>
         </div>
 
-        <div style={{position:"relative"}}><button type="button" className="erp-horizontal-help" title="Ajuda" onClick={()=>setHelpOpen(v=>!v)} aria-expanded={helpOpen}><CircleHelp size={15} /> Ajuda</button>{helpOpen&&<div role="dialog" aria-label="Ajuda contextual da tela" style={{position:"absolute",right:0,top:34,zIndex:1200,width:"min(370px,90vw)",maxHeight:"75vh",overflowY:"auto",padding:"10px 12px",border:"1px solid #b9cbd3",borderRadius:2,background:"#fff",boxShadow:"0 6px 16px rgba(18,59,80,.16)",fontSize:10,lineHeight:1.45,color:"#173b4a"}}><strong>{contextualHelp.title}</strong><p style={{margin:"5px 0"}}>{contextualHelp.purpose}</p><strong>Como usar</strong><ol style={{margin:"4px 0 7px",paddingLeft:17}}>{contextualHelp.steps.map((step,index)=><li key={index} style={{marginBottom:3}}>{step}</li>)}</ol><strong>Campos e preenchimento</strong><ul style={{margin:"4px 0 8px",paddingLeft:15}}>{contextualHelp.fields.map((field,index)=><li key={index} style={{marginBottom:3}}>{field}</li>)}</ul><div style={{borderTop:"1px solid #e2e8f0",paddingTop:7,color:"#647b85"}}>Tela atual: {pathname}</div><button type="button" onClick={()=>{setHelpOpen(false);navigate("/ajuda")}} style={{marginTop:7,height:28,padding:"0 9px",border:"1px solid #2D8DB8",background:"#2D8DB8",color:"#fff",borderRadius:2,cursor:"pointer"}}>Abrir Central de Ajuda</button></div>}</div>
-
-        <div className="erp-horizontal-session">
-          <UserRound size={15} />
-          <span>{operatorName === 'Usuário ERP' ? sessionOperator : operatorName}</span>
-          <time dateTime={now.toISOString()}>
-            {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)} {' '}
-            {new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(new Date())}
-          </time>
+        <div className="erp-horizontal-header-right">
+          <div style={{position:"relative"}}><button type="button" className="erp-horizontal-help" title="Ajuda" onClick={()=>setHelpOpen(v=>!v)} aria-expanded={helpOpen}><CircleHelp size={15} /> Ajuda</button>{helpOpen&&<div role="dialog" aria-label="Ajuda contextual da tela" style={{position:"absolute",right:0,top:34,zIndex:1200,width:"min(370px,90vw)",maxHeight:"75vh",overflowY:"auto",padding:"10px 12px",border:"1px solid #b9cbd3",borderRadius:2,background:"#fff",boxShadow:"0 6px 16px rgba(18,59,80,.16)",fontSize:10,lineHeight:1.45,color:"#173b4a"}}><strong>{contextualHelp.title}</strong><p style={{margin:"5px 0"}}>{contextualHelp.purpose}</p><strong>Como usar</strong><ol style={{margin:"4px 0 7px",paddingLeft:17}}>{contextualHelp.steps.map((step,index)=><li key={index} style={{marginBottom:3}}>{step}</li>)}</ol><strong>Campos e preenchimento</strong><ul style={{margin:"4px 0 8px",paddingLeft:15}}>{contextualHelp.fields.map((field,index)=><li key={index} style={{marginBottom:3}}>{field}</li>)}</ul><div style={{borderTop:"1px solid #e2e8f0",paddingTop:7,color:"#647b85"}}>Tela atual: {pathname}</div><button type="button" onClick={()=>{setHelpOpen(false);navigate("/ajuda")}} style={{marginTop:7,height:28,padding:"0 9px",border:"1px solid #2D8DB8",background:"#2D8DB8",color:"#fff",borderRadius:2,cursor:"pointer"}}>Abrir Central de Ajuda</button></div>}</div>
+          <div className="erp-horizontal-session">
+            <UserRound size={15} />
+            <span>{operatorName === 'Usuário ERP' ? sessionOperator : operatorName}</span>
+            <time dateTime={now.toISOString()}>
+              {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)} {' '}
+              {new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(new Date())}
+            </time>
+          </div>
         </div>
       </header>
 
@@ -260,26 +227,25 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-status-legend-item small{display:block;font-size:9px;line-height:1.3;color:#647b85}
         .erp-status-legend-panel>p{grid-column:1/-1;margin:0;padding-top:5px;border-top:1px solid #e2e8f0;font-size:9px;color:#647b85}
         @media print{ @page{size:A4;margin:12mm} .erp-horizontal-header,.erp-horizontal-menu,.erp-global-status-row,.print-hidden,.erp-horizontal-help{display:none!important} .erp-horizontal-shell,.erp-horizontal-workspace{min-height:0!important;background:#fff!important;padding:0!important} .erp-horizontal-workspace *{box-shadow:none!important;backdrop-filter:none!important} thead{display:table-header-group} tr{break-inside:avoid} }
-        .erp-horizontal-header{height:46px;display:flex;align-items:center;gap:12px;padding:0 10px;background:linear-gradient(90deg,#123b50 0%,#17445a 45%,#236f93 100%);border-bottom:1px solid #0e3445;box-sizing:border-box}
-        .erp-horizontal-brand{height:34px;display:flex;align-items:center;gap:8px;border:0;background:transparent;color:#fff;cursor:pointer;padding:0 6px;white-space:nowrap}
-        .erp-horizontal-brand img{height:30px;width:auto;object-fit:contain}
+        .erp-horizontal-header{height:64px;min-height:64px;display:flex;align-items:center;gap:12px;padding:0 12px;background:#f4fbfd;border-bottom:1px solid #b9d4df;box-sizing:border-box;position:sticky;top:0;z-index:1600}
+        .erp-horizontal-brand{height:60px;display:flex;align-items:center;gap:10px;border:0;background:transparent;color:#000;cursor:pointer;padding:0 6px;white-space:nowrap}
+        .erp-horizontal-brand img{height:58px;width:200px;min-width:200px;object-fit:contain;object-position:left}
+        .erp-horizontal-global-title{display:flex;flex:1;min-width:0;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:2px;color:#123B50;line-height:1.15}
+        .erp-horizontal-global-title strong{font-size:15px;font-weight:800;letter-spacing:.01em}
+        .erp-horizontal-global-title span{font-size:10px;font-weight:600;color:#315466}
+        .erp-horizontal-header-right{display:flex;flex:0 0 auto;align-items:center;justify-content:flex-end;gap:8px}
         .erp-horizontal-brand strong{font-size:13px;font-weight:700;letter-spacing:.01em}
-        .erp-horizontal-search{position:relative;display:flex;align-items:center;gap:6px;width:min(390px,34vw);height:30px;margin-left:auto;min-width:220px;border:1px solid #b9cbd3;background:#fff;border-radius:2px;padding:0 8px;box-sizing:border-box}
-        .erp-horizontal-search input{border:0;outline:0;min-width:0;max-width:100%;width:100%;height:28px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#173b4a;background:transparent}
-        .erp-horizontal-search-results{position:absolute;top:31px;left:0;right:0;z-index:1000;background:#fff;border:1px solid #cbd5e1;box-shadow:0 4px 12px rgba(18,59,80,.12)}
-        .erp-horizontal-search-results button{display:block;width:100%;min-height:28px;padding:5px 8px;border:0;background:#fff;text-align:left;font-size:11px;color:#173b4a;cursor:pointer}
-        .erp-horizontal-search-results button:hover{background:#edf7fb}
         .erp-horizontal-help{height:30px;display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:#315466;font-size:11px;cursor:pointer;padding:0 5px}
         .erp-horizontal-session{height:30px;display:flex;align-items:center;gap:5px;padding-left:8px;border-left:1px solid #dbe5e9;white-space:nowrap;font-size:11px;color:#173b4a}
         .erp-horizontal-session span{font-weight:600}
         .erp-horizontal-session time{color:#647b85;font-size:10px}
-        .erp-horizontal-menu{height:32px;display:flex;align-items:stretch;padding:0 6px;background:#2D8DB8;border-bottom:1px solid #17445A;box-sizing:border-box;position:relative;z-index:900}
+        .erp-horizontal-menu{height:36px;min-height:36px;display:flex;align-items:stretch;padding:0 6px;background:#2D8DB8;border-bottom:1px solid #17445A;box-sizing:border-box;position:sticky;top:64px;z-index:1550}
 
         /* Identidade visual transversal: superfícies frias, contornos nítidos e controles compactos. */
-        .erp-horizontal-session{color:#f2f8fb;border-left-color:rgba(255,255,255,.24)}
-        .erp-horizontal-session time{color:#d2e7ef}
-        .erp-horizontal-help{color:#f2f8fb}
-        .erp-horizontal-help:hover{background:rgba(255,255,255,.12)}
+        .erp-horizontal-session{color:#000;border-left-color:#b9d4df}
+        .erp-horizontal-session time{color:#000}
+        .erp-horizontal-help{color:#000}
+        .erp-horizontal-help:hover{background:#e2f0f5}
         .erp-horizontal-workspace{background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%)}
         .erp-horizontal-workspace .bg-white{background-color:#f8fcfe!important}
         .erp-horizontal-workspace .bg-slate-50{background-color:#edf6fa!important}
@@ -317,14 +283,15 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-workspace-compact button{font-size:10px}
         .erp-horizontal-workspace-compact label{font-size:9px}
         .erp-horizontal-workspace-compact input,.erp-horizontal-workspace-compact select,.erp-horizontal-workspace-compact textarea{font-size:10px}
-        @media(max-width:950px){.erp-horizontal-brand strong{display:none}.erp-horizontal-search{width:36vw}.erp-horizontal-menu-button{padding:0 7px}.erp-horizontal-session time{display:none}}
-        @media(max-width:700px){.erp-global-status-row>small{display:none}.erp-horizontal-header{gap:5px}.erp-horizontal-help{font-size:0}.erp-horizontal-search{width:42vw;min-width:160px}.erp-horizontal-session span{display:none}.erp-horizontal-menu{overflow-x:auto}}
 
-        .erp-horizontal-menu{display:flex!important;position:relative;z-index:900}
+        .erp-horizontal-menu{display:flex!important;position:sticky;top:64px;z-index:1550}
         .erp-horizontal-menu-button.is-active{background:#17445A;color:#fff;box-shadow:inset 0 -2px #8bd6f0}
         .erp-horizontal-dropdown button.is-active{background:#edf7fb;color:#176487;font-weight:700;border-left:2px solid #2D8DB8}
         .erp-horizontal-workspace{width:100%;max-width:100%;min-width:0}
         @media(max-width:700px){.erp-horizontal-menu{overflow-x:auto;overscroll-behavior-x:contain}.erp-horizontal-menu-item{flex:0 0 auto}.erp-horizontal-dropdown{position:fixed;top:auto;left:6px;right:6px;max-height:65vh;overflow:auto;z-index:1500}.erp-horizontal-menu-button{min-width:max-content}}
+        @media(max-width:950px){.erp-horizontal-menu-button{padding:0 7px}.erp-horizontal-session time{display:none}.erp-horizontal-global-title strong{font-size:12px}.erp-horizontal-global-title span{font-size:9px}}
+        @media(max-width:700px){.erp-global-status-row>small{display:none}.erp-horizontal-header{height:58px;min-height:58px;gap:5px;padding:0 6px}.erp-horizontal-brand img{width:200px;min-width:200px;height:46px}
+        .erp-horizontal-global-title strong{font-size:12px}.erp-horizontal-global-title span{font-size:9px}.erp-horizontal-help{font-size:0}.erp-horizontal-session span{display:none}.erp-horizontal-menu{overflow-x:auto;top:58px}}
         @media(prefers-reduced-motion:reduce){.erp-horizontal-menu-button,.erp-horizontal-dropdown{transition:none!important}}
       `}</style>
     </div>
