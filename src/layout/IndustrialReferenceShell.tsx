@@ -85,7 +85,7 @@ export default function IndustrialReferenceShell({
           aria-label="Voltar à Mesa de Ícones"
         >
           <img
-            src="/logo-industrial.svg"
+            src="/logo/logo.png"
             alt="ERP Industrial"
             className="h-10 w-[150px] shrink-0 object-contain"
           />
