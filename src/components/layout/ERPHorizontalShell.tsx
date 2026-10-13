@@ -292,6 +292,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-dropdown button.is-active{background:#edf7fb;color:#176487;font-weight:700;border-left:2px solid #2D8DB8}
         .erp-horizontal-workspace{width:100%;max-width:100%;min-width:0}
         @media(max-width:700px){.erp-horizontal-menu{overflow-x:auto;overscroll-behavior-x:contain}.erp-horizontal-menu-item{flex:0 0 auto}.erp-horizontal-dropdown{position:fixed;top:auto;left:6px;right:6px;max-height:65vh;overflow:auto;z-index:1500}.erp-horizontal-menu-button{min-width:max-content}}
+        @media(max-width:950px){.erp-horizontal-brand strong{display:none}.erp-horizontal-menu-button{padding:0 7px}.erp-horizontal-session time{display:none}}
+        @media(max-width:700px){.erp-global-status-row>small{display:none}.erp-horizontal-header{height:58px;min-height:58px;gap:5px;padding:0 6px}.erp-horizontal-brand img{width:190px;min-width:190px;height:46px}.erp-horizontal-help{font-size:0}.erp-horizontal-session span{display:none}.erp-horizontal-menu{overflow-x:auto;top:58px}}
         @media(prefers-reduced-motion:reduce){.erp-horizontal-menu-button,.erp-horizontal-dropdown{transition:none!important}}
       `}</style>
     </div>
