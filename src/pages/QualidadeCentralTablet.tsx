@@ -4,7 +4,6 @@ import {
   Gauge, GitBranch, ListChecks, Microscope, SearchCheck, ShieldAlert, ShieldCheck,
   Target, Wrench, Workflow,
 } from 'lucide-react'
-import QualitySidebar from '../components/quality/QualitySidebar'
 
 const qualityModules = [
   { label: 'Inspeções de lotes', description: 'Registrar amostras e resultados de inspeção.', route: '/qualidade/inspecoes', icon: ClipboardCheck },
@@ -33,7 +32,6 @@ export default function QualidadeCentralTablet() {
   return (
     <main className="min-h-screen bg-[#F4FBFD] px-3 py-3 text-[#123B50] sm:px-4">
       <div className="mx-auto max-w-[1500px] space-y-3">
-        <QualitySidebar active="/qualidade" />
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#C8E3EE] pb-3">
           <div>
             <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#2D8DB8]">ERP INDUSTRIAL · SGQ</p>
