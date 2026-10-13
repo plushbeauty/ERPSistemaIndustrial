@@ -45,12 +45,12 @@ type Movement={id:string;tipo:string;quantidade:number;origem:string|null;docume
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number;observacao:string|null;created_at:string}
 type Audit={id:string;action:string;module:string;old_data:Record<string,unknown>|null;new_data:Record<string,unknown>|null;created_at:string}
 type Attachment={id:string;nome_arquivo:string;storage_path:string;mime_type:string|null;tamanho_bytes:number|null;created_at:string;entidade_tipo?:string}
-type Tab='gerais'|'fiscal'|'estoque'|'producao'|'qualidade'|'custos'
+type Tab='gerais'|'fiscal'|'estoque'|'producao'|'qualidade'|'engenharia'|'custos'
 type FormData=Omit<Product,'id'|'empresa_id'>
 
 const tabItems:Array<[Tab,string,typeof Boxes]>=[
   ['gerais','DADOS GERAIS',Boxes],['fiscal','FISCAL',FileText],['estoque','ESTOQUE',Boxes],
-  ['producao','PRODUÇÃO',Factory],['qualidade','QUALIDADE + DOCUMENTOS',ShieldCheck],['custos','CENTRO DE CUSTOS DO PRODUTO',FileSpreadsheet]
+  ['producao','PRODUÇÃO',Factory],['qualidade','QUALIDADE + DOCUMENTOS',ShieldCheck],['engenharia','ENGENHARIA',Factory],['custos','CENTRO DE CUSTOS DO PRODUTO',FileSpreadsheet]
 ]
 const empty=():FormData=>({
   codigo:'',nome:'',descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
@@ -588,6 +588,11 @@ export default function ProdutosVendasIndustrial(){
           </div>
           <div style={{display:'grid',gap:5}}>{attachments.filter(a=>a.nome_arquivo.startsWith('DESENHO_')).map(a=><div key={a.id} style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 110px 135px max-content',gap:7,alignItems:'center',padding:'6px 7px',border:'1px solid #e4e7ec',fontSize:9}}><b>{a.nome_arquivo.replace(/^DESENHO_/,'')}</b><span>{a.mime_type||'arquivo'}</span><span>{a.tamanho_bytes?Math.round(a.tamanho_bytes/1024)+' KB':'—'} · {new Date(a.created_at).toLocaleDateString('pt-BR')}</span>{attachmentUrls[a.id]?<a href={attachmentUrls[a.id]} target="_blank" rel="noreferrer" style={{...btn('normal'),textDecoration:'none',height:25}}>ABRIR</a>:<span style={{color:'#667085'}}>Carregando link…</span>}</div>)}{!attachments.some(a=>a.nome_arquivo.startsWith('DESENHO_'))&&<div style={{padding:10,textAlign:'center',color:'#667085',border:'1px dashed #cbd5e1',fontSize:9}}>Nenhum desenho ou especificação anexado.</div>}</div>
         </section>
+
+        <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DEFEITOS REGISTRADOS</h2>
+        <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr>{['Data','OP','Defeito','Quantidade','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:5,borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{defects.map(d=><tr key={d.id}><td style={{padding:5}}>{new Date(d.created_at).toLocaleString('pt-BR')}</td><td style={{padding:5}}>{d.ordem_producao_id}</td><td style={{padding:5}}>{d.defeito}</td><td style={{padding:5}}>{fmt(d.quantidade)}</td><td style={{padding:5}}>{d.observacao||'—'}</td></tr>)}{!defects.length&&emptyRow('Nenhum defeito registrado para este produto.',5)}</tbody></table></div>
+      </section>}
+      {tab==='engenharia'&&<section style={{padding:10}}>
         <section style={{border:'1px solid #c7dbe4',background:'#fff',padding:9,marginTop:9}}>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,flexWrap:'wrap',borderBottom:'1px solid #dce8ed',paddingBottom:7,marginBottom:8}}>
             <div style={{fontSize:10,fontWeight:800,color:'#123B50'}}>ENGENHARIA — PROJETO DO MOLDE (QUANDO APLICÁVEL)</div>
@@ -598,8 +603,6 @@ export default function ProdutosVendasIndustrial(){
           </div>
           <div style={{display:'grid',gap:5}}>{attachments.filter(a=>a.nome_arquivo.startsWith('PROJETO_MOLDE_')).map(a=><div key={a.id} style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 110px 135px max-content',gap:7,alignItems:'center',padding:'6px 7px',border:'1px solid #e4e7ec',fontSize:9}}><b>{a.nome_arquivo.replace(/^PROJETO_MOLDE_/,'')}</b><span>{a.mime_type||'arquivo'}</span><span>{a.tamanho_bytes?Math.round(a.tamanho_bytes/1024)+' KB':'—'} · {new Date(a.created_at).toLocaleDateString('pt-BR')}</span>{attachmentUrls[a.id]?<a href={attachmentUrls[a.id]} target="_blank" rel="noreferrer" style={{...btn('normal'),textDecoration:'none',height:25}}>ABRIR</a>:<span style={{color:'#667085'}}>Carregando link…</span>}</div>)}{!attachments.some(a=>a.nome_arquivo.startsWith('PROJETO_MOLDE_'))&&<div style={{padding:10,textAlign:'center',color:'#667085',border:'1px dashed #cbd5e1',fontSize:9}}>Nenhum projeto de molde anexado.</div>}</div>
         </section>
-        <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DEFEITOS REGISTRADOS</h2>
-        <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr>{['Data','OP','Defeito','Quantidade','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:5,borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{defects.map(d=><tr key={d.id}><td style={{padding:5}}>{new Date(d.created_at).toLocaleString('pt-BR')}</td><td style={{padding:5}}>{d.ordem_producao_id}</td><td style={{padding:5}}>{d.defeito}</td><td style={{padding:5}}>{fmt(d.quantidade)}</td><td style={{padding:5}}>{d.observacao||'—'}</td></tr>)}{!defects.length&&emptyRow('Nenhum defeito registrado para este produto.',5)}</tbody></table></div>
       </section>}
     </section>
 
