@@ -61,12 +61,19 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
  const vendas=useVendasStatus()
  useEffect(()=>{if(isVendas)void vendas.load().catch(()=>undefined)},[isVendas,vendas.load])
 
+ useEffect(() => {
+  if (!onRefresh) return
+  const refreshCurrentModule = () => onRefresh()
+  window.addEventListener('erp:refresh-current-module', refreshCurrentModule)
+  return () => window.removeEventListener('erp:refresh-current-module', refreshCurrentModule)
+ }, [onRefresh])
+
  const showCards=showStatusCards ?? true
 
  return <SynqraLayoutProvider>
   <main className="synqra-workspace-main">
     {isVendas&&showCards&&<VendasStatusCards status={vendas.status} loading={vendas.loading}/>} 
-    <div className="synqra-workspace-title">{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<div className="synqra-title-main"><h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div>{onRefresh&&<button className="synqra-tool-button" type="button" onClick={onRefresh} title="Atualizar"><RefreshCw size={13}/></button>}</div>
+    <div className="synqra-workspace-title">{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<div className="synqra-title-main"><h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div></div>
     {topContent}{children}
   </main>
  </SynqraLayoutProvider>
