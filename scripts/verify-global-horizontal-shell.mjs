@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -28,9 +28,9 @@ function walk(path) {
   for (const entry of readdirSync(path, { withFileTypes: true })) {
     const full = join(path, entry.name)
     if (entry.isDirectory()) walk(full)
-    else if (/\\.tsx$/.test(entry.name) && full !== join(root, 'src/AppEntryV2.tsx') && full !== join(root, 'src/components/layout/ERPHorizontalShell.tsx')) {
+    else if (/\.tsx$/.test(entry.name) && full !== join(root, 'src/AppEntryV2.tsx') && full !== join(root, 'src/components/layout/ERPHorizontalShell.tsx')) {
       const source = readFileSync(full, 'utf8')
-      if (/import\\s+ERPHorizontalShell\\s+from/.test(source) || /<\\/?ERPHorizontalShell(?:\\s|>)/.test(source)) failures.push('Nested horizontal shell detected in ' + full.replace(root + '/', ''))
+      if (/import\s+ERPHorizontalShell\s+from/.test(source) || /<\\/?ERPHorizontalShell(?:\\s|>)/.test(source)) failures.push('Nested horizontal shell detected in ' + full.replace(root + '/', ''))
     }
   }
 }
