@@ -137,8 +137,9 @@ export default function ProdutosVendasIndustrial(){
         codigo=String(generated.data||'').trim()
         if(!codigo)throw new Error('O gerador de código não retornou um código válido.')
       }
+      // Saldos e custos são derivados dos movimentos/engenharia; não podem ser sobrescritos pelo formulário mestre.
       const editableForm={...form}
-      const {estoque_atual: _estoqueAtual, ...payloadForm}=editableForm
+      const {estoque_atual: _estoqueAtual,custo_medio: _custoMedio,custo_ultimo: _custoUltimo,custo_fabricacao: _custoFabricacao,...payloadForm}=editableForm
       const payload={...payloadForm,empresa_id:companyId,codigo,nome:String(form.nome).trim(),unidade:String(form.unidade||'UN').toUpperCase(),unidade_compra:String(form.unidade_compra||'UN').toUpperCase(),unidade_venda:String(form.unidade_venda||'UN').toUpperCase()}
       const result=selectedId
         ? await supabase.from('erp_produtos').update(payload).eq('id',selectedId).eq('empresa_id',companyId).select('*').single()
@@ -392,9 +393,9 @@ export default function ProdutosVendasIndustrial(){
         </div>
 
         <div className="product-form-grid product-commercial-row" style={{display:'grid',gridTemplateColumns:'78px 78px 78px 78px 120px 120px minmax(150px,1fr) max-content minmax(180px,1.2fr)',gap:8,marginTop:8,alignItems:'end'}}>
-          {field('Custo médio','custo_medio','number')}
-          {field('Último custo','custo_ultimo','number')}
-          {field('Custo fabricação','custo_fabricacao','number')}
+          {field('Custo médio (calculado)','custo_medio','number',1,true)}
+          {field('Último custo (calculado)','custo_ultimo','number',1,true)}
+          {field('Custo fabricação (engenharia)','custo_fabricacao','number',1,true)}
           {field('Preço venda','preco_venda','number')}
           {field('Ref. interna','referencia_interna')}
           {field('Ref. cliente','referencia_cliente')}
@@ -407,7 +408,7 @@ export default function ProdutosVendasIndustrial(){
 
             {tab==='fiscal'&&<section style={{padding:8}}>
         <div style={{display:'grid',gridTemplateColumns:'80px 220px 180px 95px 95px',gap:7,alignItems:'end'}}>
-          {select('Situação','ativo',[['true','Ativo'],['false','Inativo']])}
+          <label style={label}>SITUAÇÃO<select value={form.ativo?'true':'false'} disabled={!editing} onChange={e=>update('ativo',e.target.value==='true')} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="true">Ativo</option><option value="false">Inativo</option></select></label>
           {select('Origem [?]','origem',[['0 - Nacional','0 - Nacional'],['1 - Estrangeira - Importação direta','1 - Estrangeira - Importação direta'],['2 - Estrangeira - mercado interno','2 - Estrangeira - mercado interno'],['3 - Nacional, conteúdo importação >40% e <70%','3 - Nacional, conteúdo importação >40% e <70%'],['4 - Nacional, processo produtivo básico','4 - Nacional, processo produtivo básico'],['5 - Nacional, conteúdo importação <40%','5 - Nacional, conteúdo importação <40%'],['6 - Estrangeira - importação direta, sem similar nacional','6 - Estrangeira - importação direta, sem similar nacional'],['7 - Estrangeira - mercado interno, sem similar nacional','7 - Estrangeira - mercado interno, sem similar nacional'],['8 - Nacional, conteúdo importação >70%','8 - Nacional, conteúdo importação >70%']])}
           {field('NCM [?]','ncm')}{field('CEST [?]','cest')}{field('CST ICMS [?]','cst_icms')}
         </div>
