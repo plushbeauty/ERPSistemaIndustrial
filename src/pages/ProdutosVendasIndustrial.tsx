@@ -510,7 +510,7 @@ export default function ProdutosVendasIndustrial(){
     </section>
 
     <section style={{...panel,margin:'0 10px 10px',overflow:'hidden'}}>
-      <div style={{display:'flex',alignItems:'end',gap:6,padding:7,background:'#f7f9fc',borderBottom:'1px solid #d6dde6',flexWrap:'wrap'}}>
+      <div style={{display:'flex',alignItems:'end',gap:6,padding:7,background:'linear-gradient(180deg,#eaf4f8 0%,#d9ebf2 100%)',boxShadow:'inset 0 1px 0 #fff',borderBottom:'1px solid #b9d4df',flexWrap:'wrap'}}>
         <Search size={14}/><label style={{...label,width:250}}>Pesquisar<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código, descrição, grupo..." style={{...input,height:28}}/></label>
         <label style={{...label,width:130}}>Grupo<select value={groupFilter} onChange={e=>setGroupFilter(e.target.value)} style={{...input,height:28}}><option value="TODAS">Todos</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
         <span style={{fontSize:10,color:'#667085',paddingBottom:7}}>{filtered.length} produto(s)</span><button type="button" onClick={()=>void load()} disabled={busy} style={{...btn('normal'),height:28,marginLeft:'auto'}}><RefreshCw size={13}/>Atualizar</button>
