@@ -61,25 +61,7 @@ const menus: MenuItem[] = [
       { label: 'Pintura / Química', route: '/pcp/fichas-processo?tipo=PINTURA_QUIMICA' },
     ] },
   ] },
-  { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
-    { label: 'Visão geral do SGQ', route: '/qualidade' },
-    { label: 'Qualidade Tablet', route: '/qualidade/tablet', action: 'qualityTablet' }, 
-    { label: 'Inspeções operacionais', route: '/qualidade/inspecoes' },
-    { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
-    { label: 'Controle de Processo — Injetora', route: '/qualidade/controle-injetora', icon: Factory },
-    { label: 'Não conformidades (RPNC)', route: '/qualidade/rnc', icon: ClipboardCheck, children: [
-      { label: 'Sala de RNC / RPNC', route: '/qualidade/sala-rnc', icon: ClipboardCheck },
-      { label: 'Cadastro de RPNC', route: '/qualidade/rnc' },
-      { label: 'Espinha de Peixe — Ishikawa 6M', route: '/qualidade/ishikawa' },
-      { label: 'Ações corretivas / CAPA 5W2H', route: '/qualidade/capa' },
-      { label: 'Metodologia 8D', route: '/qualidade/metodologia-8d' },
-    ] },
-    { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
-    { label: 'FMEA / PFMEA', route: '/qualidade/fmea' },
-    { label: 'Controle Documental GED', route: '/qualidade/ged-documentos', icon: FolderGit2 },
-    { label: 'Cartas de Controle CEP', route: '/qualidade/cep', icon: LineChart },
-    { label: 'Instrumentos / Metrologia', route: '/qualidade/instrumentos' },
-  ] },
+  { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench },
   { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
@@ -116,6 +98,12 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
     document.addEventListener('mousedown', close)
     return () => document.removeEventListener('mousedown', close)
+  }, [])
+
+  useEffect(() => {
+    const openQualityTablet = () => setTabletOpen(true)
+    window.addEventListener('erp:open-quality-tablet', openQualityTablet)
+    return () => window.removeEventListener('erp:open-quality-tablet', openQualityTablet)
   }, [])
 
   const current = menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
