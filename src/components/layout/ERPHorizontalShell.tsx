@@ -16,7 +16,7 @@ type MenuItem = {
 const menus: MenuItem[] = [
   { label: 'Início', route: '/erp-industrial', icon: Home },
   { label: 'Cadastros', route: '/produtos-vendas', icon: Database, children: [
-    { label: 'Produtos', route: '/produtos-vendas' },
+    { label: 'Cadastro de Produtos', route: '/produtos-vendas' },
     { label: 'Clientes', route: '/vendas/clientes' },
     { label: 'Fornecedores', route: '/compras/fornecedores' },
   ] },
