@@ -466,22 +466,20 @@ export default function ProdutosVendasIndustrial(){
 
       </form>}
 
-            {tab==='fiscal'&&<section style={{padding:8}}>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:8,alignItems:'start'}}>
+            {tab==='fiscal'&&<section style={{padding:10}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(160px,1fr))',gap:9,alignItems:'start'}}>
           {select('Situação','ativo',[['true','Ativo'],['false','Inativo']])}
-          {select('Origem [?]','origem',[['0 - Nacional','0 - Nacional'],['1 - Estrangeira - Importação direta','1 - Estrangeira - Importação direta'],['2 - Estrangeira - mercado interno','2 - Estrangeira - mercado interno'],['3 - Nacional, conteúdo importação >40% e <70%','3 - Nacional, conteúdo importação >40% e <70%'],['4 - Nacional, processo produtivo básico','4 - Nacional, processo produtivo básico'],['5 - Nacional, conteúdo importação <40%','5 - Nacional, conteúdo importação <40%'],['6 - Estrangeira - importação direta, sem similar nacional','6 - Estrangeira - importação direta, sem similar nacional'],['7 - Estrangeira - mercado interno, sem similar nacional','7 - Estrangeira - mercado interno, sem similar nacional'],['8 - Nacional, conteúdo importação >70%','8 - Nacional, conteúdo importação >70%']])}
-          <label style={{...label,position:'relative'}}>NCM (código e descrição)<input value={ncmQuery||String(form.ncm??'')} disabled={!editing} placeholder="Pesquisar por código ou descrição…" onChange={e=>{setNcmQuery(e.target.value);update('ncm','')}} style={{...input,background:editing?'#fff':'#f5f7fa'}}/>{ncmQuery.trim().length>=2&&ncmOptions.length>0&&<div style={{position:'absolute',zIndex:30,top:'100%',left:0,right:0,maxHeight:230,overflowY:'auto',border:'1px solid #9bbdce',background:'#fff',boxShadow:'0 6px 16px rgba(18,59,80,.18)'}}>{ncmOptions.map(x=><button key={x.codigo} type="button" onClick={()=>{update('ncm',x.codigo);setNcmQuery('');setNcmOptions([])}} style={{display:'block',width:'100%',textAlign:'left',border:0,borderBottom:'1px solid #e5edf1',background:'#fff',padding:'6px 8px',fontSize:10,color:'#123B50',cursor:'pointer'}}><strong>{x.codigo}</strong><span> — {x.descricao}</span></button>)}</div>}</label>
-          {combo('CEST [?]','cest',Array.from(new Set(products.map(p=>p.cest).filter((x):x is string=>Boolean(x)))).map(x=>[x,'CEST já cadastrado na empresa'] as [string,string]))}
-          {combo('CST ICMS [?]','cst_icms',[['00','00 — Tributada integralmente'],['10','10 — Tributada com cobrança de ICMS-ST'],['20','20 — Com redução de base de cálculo'],['30','30 — Isenta/não tributada com ICMS-ST'],['40','40 — Isenta'],['41','41 — Não tributada'],['50','50 — Suspensão'],['51','51 — Diferimento'],['60','60 — ICMS cobrado anteriormente por ST'],['70','70 — Redução de base e ICMS-ST'],['90','90 — Outras']])}
-          {combo('CSOSN [?]','csosn',[['101','101 — Tributada com permissão de crédito'],['102','102 — Tributada sem permissão de crédito'],['103','103 — Isenção do ICMS no Simples Nacional'],['201','201 — Tributada com crédito e ICMS-ST'],['202','202 — Tributada sem crédito e com ICMS-ST'],['203','203 — Isenção com ICMS-ST'],['300','300 — Imune'],['400','400 — Não tributada'],['500','500 — ICMS cobrado anteriormente por ST'],['900','900 — Outros']])}
-          {combo('CFOP entrada [?]','cfop_entrada',[['1101','1101 — Compra para industrialização'],['1102','1102 — Compra para comercialização'],['1116','1116 — Compra para industrialização recebida de terceiros'],['1201','1201 — Devolução de venda de produção própria'],['1403','1403 — Compra para comercialização com ICMS-ST'],['1551','1551 — Compra de bem para o ativo imobilizado'],['2101','2101 — Compra para industrialização (outra UF)'],['2102','2102 — Compra para comercialização (outra UF)'],['3101','3101 — Compra para industrialização (exterior)'],['3102','3102 — Compra para comercialização (exterior)']])}
-          {combo('CFOP saída [?]','cfop_saida',[['5101','5101 — Venda de produção do estabelecimento'],['5102','5102 — Venda de mercadoria adquirida de terceiros'],['5105','5105 — Venda de produção fora do estabelecimento'],['5405','5405 — Venda de mercadoria com ICMS-ST'],['5551','5551 — Venda de bem do ativo imobilizado'],['6101','6101 — Venda de produção (outra UF)'],['6102','6102 — Venda de mercadoria adquirida de terceiros (outra UF)'],['6404','6404 — Venda com ICMS-ST (outra UF)'],['7101','7101 — Venda de produção para o exterior'],['7102','7102 — Venda de mercadoria para o exterior']])}
-          {combo('Origem fiscal [?]','origem_fiscal',[['0','0 — Nacional, exceto códigos 3, 4, 5 e 8'],['1','1 — Estrangeira: importação direta'],['2','2 — Estrangeira: adquirida no mercado interno'],['3','3 — Nacional, conteúdo de importação superior a 40%'],['4','4 — Nacional, processo produtivo básico'],['5','5 — Nacional, conteúdo de importação inferior ou igual a 40%'],['6','6 — Estrangeira: importação direta, sem similar nacional'],['7','7 — Estrangeira: mercado interno, sem similar nacional'],['8','8 — Nacional, conteúdo de importação superior a 70%']])}
+          {select('Origem da mercadoria','origem',[['0 - Nacional','0 - Nacional'],['1 - Estrangeira - importação direta','1 - Estrangeira - importação direta'],['2 - Estrangeira - mercado interno','2 - Estrangeira - mercado interno'],['3 - Nacional, conteúdo importação >40% e <=70%','3 - Nacional, conteúdo importação >40% e <=70%'],['4 - Nacional, processo produtivo básico','4 - Nacional, processo produtivo básico'],['5 - Nacional, conteúdo importação <=40%','5 - Nacional, conteúdo importação <=40%'],['6 - Estrangeira - importação direta, sem similar nacional','6 - Estrangeira - importação direta, sem similar nacional'],['7 - Estrangeira - mercado interno, sem similar nacional','7 - Estrangeira - mercado interno, sem similar nacional'],['8 - Nacional, conteúdo importação >70%','8 - Nacional, conteúdo importação >70%']])}
+          {fiscalCombo('NCM — pesquisar código ou descrição','ncm','ncm')}
+          {fiscalCombo('CEST — pesquisar código ou descrição','cest','cest')}
+          {combo('CST ICMS','cst_icms',[['00','00 — Tributada integralmente'],['10','10 — Tributada com cobrança de ICMS-ST'],['20','20 — Com redução de base de cálculo'],['30','30 — Isenta/não tributada com ICMS-ST'],['40','40 — Isenta'],['41','41 — Não tributada'],['50','50 — Suspensão'],['51','51 — Diferimento'],['60','60 — ICMS cobrado anteriormente por ST'],['70','70 — Redução de base e ICMS-ST'],['90','90 — Outras']])}
+          {combo('CSOSN','csosn',[['101','101 — Tributada com permissão de crédito'],['102','102 — Tributada sem permissão de crédito'],['103','103 — Isenção do ICMS no Simples Nacional'],['201','201 — Tributada com crédito e ICMS-ST'],['202','202 — Tributada sem crédito e com ICMS-ST'],['203','203 — Isenção com ICMS-ST'],['300','300 — Imune'],['400','400 — Não tributada'],['500','500 — ICMS cobrado anteriormente por ST'],['900','900 — Outros']])}
+          {fiscalCombo('CFOP entrada — pesquisar','cfop_entrada','cfop')}
+          {fiscalCombo('CFOP saída — pesquisar','cfop_saida','cfop')}
+          {select('Origem fiscal','origem_fiscal',[['0','0 — Nacional, exceto códigos 3, 4, 5 e 8'],['1','1 — Estrangeira: importação direta'],['2','2 — Estrangeira: adquirida no mercado interno'],['3','3 — Nacional, conteúdo de importação superior a 40%'],['4','4 — Nacional, processo produtivo básico'],['5','5 — Nacional, conteúdo de importação inferior ou igual a 40%'],['6','6 — Estrangeira: importação direta, sem similar nacional'],['7','7 — Estrangeira: mercado interno, sem similar nacional'],['8','8 — Nacional, conteúdo de importação superior a 70%']])}
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:8,marginTop:8,alignItems:'start'}}>
-          {field('ICMS %','aliquota_icms','number')}{field('IPI %','aliquota_ipi','number')}{field('PIS %','aliquota_pis','number')}{field('COFINS %','aliquota_cofins','number')}
-        </div>
-        <div style={{marginTop:8,fontSize:9,color:'#526b78',background:'#eaf4f8',border:'1px solid #c7dbe4',padding:'6px 8px'}}>Pesquise o NCM por código ou descrição. A consulta utiliza a API BrasilAPI, que retorna códigos e descrições da tabela NCM; confirme a classificação fiscal com o responsável tributário antes de emitir NF-e. O CEST sugere valores já cadastrados nesta empresa, sem inventar códigos.</div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(120px,1fr))',gap:9,marginTop:9,alignItems:'start'}}>{field('ICMS %','aliquota_icms','number')}{field('IPI %','aliquota_ipi','number')}{field('PIS %','aliquota_pis','number')}{field('COFINS %','aliquota_cofins','number')}</div>
+        <div style={{marginTop:9,fontSize:9,color:'#526b78',background:'#eaf4f8',border:'1px solid #c7dbe4',padding:'7px 9px'}}>NCM, CEST e CFOP pesquisam códigos e descrições fiscais; CST ICMS e CSOSN oferecem os códigos e suas situações usuais. Os dados sugerem o código, mas a classificação e o enquadramento final devem ser validados pelo responsável fiscal da empresa antes da emissão de NF-e.</div>
       </section>}
 
             {tab==='estoque'&&<section style={{padding:10}}>
@@ -499,32 +497,83 @@ export default function ProdutosVendasIndustrial(){
       </section>}
 
       {tab==='producao'&&<section style={{padding:10}}>
-        <div style={{display:'grid',gridTemplateColumns:'82px 82px 82px 82px 120px 120px max-content',gap:7,alignItems:'end'}}>
-          {field('PRAZO COMPRA (dias)','prazo_compra_dias','number')}{field('PRAZO PRODUÇÃO (dias)','prazo_producao_dias','number')}{field('CUSTO FABRICAÇÃO','custo_fabricacao','number')}{field('TOLERÂNCIA (%)','tolerancia_percentual','number')}
-          <label style={label}>FICHA ATIVA<input value={productionFicha?('REV. '+(productionFicha.revisao||productionFicha.versao)):'Não cadastrada'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
-          <label style={label}>RENDIMENTO<input value={productionFicha?fmt(productionFicha.rendimento)+' '+productionFicha.unidade_rendimento:'—'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A'}}/></label>
-          <button type="button" onClick={()=>{window.location.href='/ficha-engenharia?produto='+encodeURIComponent(selectedId||'')}} style={{...btn('normal'),width:'max-content',maxWidth:'100%',whiteSpace:'nowrap',padding:'0 8px',fontSize:10}}>ABRIR FICHA DE PROCESSO</button>
-        </div>
-        <div style={{marginTop:8,border:'1px solid #d5dde7',overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr style={{background:'#123B50',color:'#fff'}}>{['Seq.','Operação','Máquina','Setup min','Ciclo s','Qtde/h','Qtde/dia'].map(h=><th key={h} style={{padding:'5px 6px',textAlign:'left',fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{productionOps.map(o=><tr key={o.id} style={{borderBottom:'1px solid #e5e7eb'}}><td style={{padding:'5px 6px'}}>{o.sequencia}</td><td style={{padding:'5px 6px'}}>{o.operacao}</td><td style={{padding:'5px 6px'}}>{o.maquina_codigo?o.maquina_codigo+' • '+(o.maquina_nome||''):'Não definida'}</td><td style={{padding:'5px 6px'}}>{fmt(o.setup_min)}</td><td style={{padding:'5px 6px'}}>{fmt(o.ciclo_seg)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_hora==null?'—':fmt(o.capacidade_hora)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_dia==null?'—':fmt(o.capacidade_dia)}</td></tr>)}{!productionOps.length&&<tr><td colSpan={7} style={{padding:12,textAlign:'center',color:'#667085'}}>Nenhuma operação cadastrada. Abra a ficha de processo para cadastrar máquina/posto, setup, ciclo e instruções.</td></tr>}</tbody></table></div>
-        <div style={{marginTop:7,fontSize:9,color:'#667085'}}>Máquina, setup, ciclo e capacidade vêm da ficha técnica/roteiro real; a ficha completa alimenta o PCP e a Ordem de Produção.</div>
+        <section style={{border:'1px solid #c7dbe4',background:'#fff',padding:9}}>
+          <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:6,marginBottom:8}}>PROCESSO E EQUIPAMENTO</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(150px,1fr))',gap:9,alignItems:'start'}}>
+            {select('Tipo de processo','tipo_processo',[['NAO_APLICA','Não se aplica'],['PRENSADOS','Prensados / prensa'],['INJETADOS','Injetados / injetora'],['ESTAMPARIA','Estamparia / prensa'],['CORTE_VINCO','Corte e vinco'],['USINAGEM','Usinagem'],['ACABAMENTO','Acabamento'],['MONTAGEM','Montagem'],['OUTRO','Outro']])}
+            {select('Tipo de máquina','tipo_maquina',[['PRENSA_HIDRAULICA','Prensa hidráulica'],['PRENSA_MECANICA','Prensa mecânica'],['PRENSA_PNEUMATICA','Prensa pneumática'],['INJETORA','Injetora de plástico'],['INJETORA_BORRACHA','Injetora de borracha'],['EXTRUSORA','Extrusora'],['CORTE_VINCO','Corte e vinco'],['OUTRA','Outra']])}
+            {select('Tipo de injetora','tipo_injetora',[['HORIZONTAL_HIDRAULICA','Horizontal hidráulica'],['HORIZONTAL_ELETRICA','Horizontal elétrica'],['HORIZONTAL_HIBRIDA','Horizontal híbrida'],['VERTICAL','Vertical'],['DUAS_COMPONENTES','Duas componentes / bi-injeção'],['BORRACHA','Injetora de borracha'],['NAO_APLICA','Não se aplica']])}
+            <label style={label}>Máquina preferencial<select value={form.maquina_preferencial_id||''} disabled={!editing} onChange={e=>update('maquina_preferencial_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione a máquina cadastrada</option>{machineOptions.map(m=><option key={m.id} value={m.id}>{m.codigo} — {m.nome}</option>)}</select></label>
+            {field('Tonelagem mínima (t)','tonelagem_minima','number')}{field('Tonelagem máxima (t)','tonelagem_maxima','number')}{field('Nº de cavidades','numero_cavidades','number')}{field('Código do molde / estampo','molde_codigo')}
+          </div>
+        </section>
+        <section style={{border:'1px solid #c7dbe4',background:'#fff',padding:9,marginTop:9}}>
+          <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:6,marginBottom:8}}>PRAZOS, CUSTOS E FICHA DE PROCESSO</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(130px,1fr))',gap:9,alignItems:'start'}}>
+            {field('Prazo de compra (dias)','prazo_compra_dias','number')}{field('Prazo de produção (dias)','prazo_producao_dias','number')}{field('Custo fabricação','custo_fabricacao','number')}{field('Tolerância (%)','tolerancia_percentual','number')}
+            <label style={label}>Ficha ativa<input value={productionFicha?('REV. '+(productionFicha.revisao||productionFicha.versao)):'Não cadastrada'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
+            <label style={label}>Rendimento<input value={productionFicha?fmt(productionFicha.rendimento)+' '+productionFicha.unidade_rendimento:'—'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A'}}/></label>
+            {field('Número da ficha de processo','numero_ficha_processo')}
+            <button type="button" onClick={()=>{window.location.href='/ficha-engenharia?produto='+encodeURIComponent(selectedId||'')}} style={{...btn('primary'),width:'100%',maxWidth:'100%',whiteSpace:'nowrap',padding:'0 8px',fontSize:10,alignSelf:'end'}}>ABRIR FICHA DE PROCESSO</button>
+          </div>
+        </section>
+        <div style={{marginTop:9,border:'1px solid #d5dde7',overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr style={{background:'#123B50',color:'#fff'}}>{['Seq.','Operação','Máquina','Setup min','Ciclo s','Qtde/h','Qtde/dia'].map(h=><th key={h} style={{padding:'6px 7px',textAlign:'left',fontWeight:600}}>{h}</th>)}</tr></thead><tbody>{productionOps.map(o=><tr key={o.id} style={{borderBottom:'1px solid #e5e7eb'}}><td style={{padding:'6px 7px'}}>{o.sequencia}</td><td style={{padding:'6px 7px'}}>{o.operacao}</td><td style={{padding:'6px 7px'}}>{o.maquina_codigo?o.maquina_codigo+' • '+(o.maquina_nome||''):'Não definida'}</td><td style={{padding:'6px 7px'}}>{fmt(o.setup_min)}</td><td style={{padding:'6px 7px'}}>{fmt(o.ciclo_seg)}</td><td style={{padding:'6px 7px'}}>{o.capacidade_hora==null?'—':fmt(o.capacidade_hora)}</td><td style={{padding:'6px 7px'}}>{o.capacidade_dia==null?'—':fmt(o.capacidade_dia)}</td></tr>)}{!productionOps.length&&<tr><td colSpan={7} style={{padding:12,textAlign:'center',color:'#667085'}}>Nenhuma operação cadastrada. Abra a ficha de processo para cadastrar máquina/posto, setup, ciclo e instruções.</td></tr>}</tbody></table></div>
+        <div style={{marginTop:7,fontSize:9,color:'#667085'}}>A seleção acima define o processo previsto do produto; a ficha de engenharia mantém o roteiro operacional real, máquina/posto, setup, ciclo e instruções que alimentam o PCP e a Ordem de Produção.</div>
       </section>}
 
       {tab==='custos'&&<section style={{padding:8}}>
         <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8}}>
           <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>CENTRO DE CUSTOS DO PRODUTO</div>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:8,alignItems:'start'}}>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(130px,1fr))',gap:8,alignItems:'start'}}>
             {field('Custo médio','custo_medio','number')}{field('Último custo','custo_ultimo','number')}{field('Custo fabricação','custo_fabricacao','number')}{field('Preço venda','preco_venda','number')}
           </div>
-          <p style={{fontSize:9,color:'#526b78',margin:'8px 0 0'}}>Esta aba reúne os valores de custo e preço já persistidos no cadastro. O vínculo a um centro de custo contábil específico precisa de coluna própria no banco; não é gravado em um campo improvisado.</p>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(160px,1fr))',gap:8,marginTop:9,alignItems:'start'}}>
+            {field('Centro de custo do produto','centro_custo_produto')}
+            {field('Principal cliente','cliente_principal')}
+            {field('Código do cliente','codigo_cliente')}
+          </div>
+          <p style={{fontSize:9,color:'#526b78',margin:'8px 0 0'}}>Os três campos de referência são gravados no cadastro do produto por empresa. Informe o centro de custo conforme o plano de contas interno e mantenha o código do cliente usado no pedido de venda.</p>
         </section>
       </section>}
 
       {tab==='qualidade'&&<section style={{padding:10}}>
-        <div style={{display:'grid',gridTemplateColumns:'120px 120px 1fr',gap:7,alignItems:'end'}}>{select('INSPEÇÃO OBRIGATÓRIA','inspecao_qualidade_obrigatoria',[['true','Sim'],['false','Não']])}{field('NÍVEL DE QUALIDADE','nivel_qualidade')}<div style={{fontSize:9,color:'#667085',paddingBottom:6}}>Desenhos aprovados, critérios de inspeção e documentos controlados ficam vinculados ao produto.</div></div>
+        <section style={{border:'1px solid #c7dbe4',background:'#fff',padding:9}}>
+          <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:6,marginBottom:8}}>IDENTIFICAÇÃO E ESPECIFICAÇÃO TÉCNICA DO MATERIAL</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(150px,1fr))',gap:9,alignItems:'start'}}>
+            {field('Número do desenho','numero_desenho')}
+            {field('Especificação interna','especificacao_interna')}
+            {field('Número da ficha de processo','numero_ficha_processo')}
+            {field('Número RIAI / aprovação inicial','numero_riai')}
+            {field('Material especificado','material_especificado')}
+            {field('Dureza especificada','dureza_especificada')}
+            {field('Fluidez / índice de fluidez','fluidez_especificada')}
+            {select('Inspeção obrigatória','inspecao_qualidade_obrigatoria',[['true','Sim'],['false','Não']])}
+            {field('Nível de qualidade','nivel_qualidade')}
+          </div>
+          <div style={{fontSize:9,color:'#526b78',marginTop:8}}>Use esta especificação para registrar o requisito de compra e o critério de recebimento: por exemplo, grau do material, dureza, fluidez/índice de fluidez e desenho/revisão. RIAI significa Relatório de Inspeção de Amostra Inicial e registra a aprovação da amostra antes da produção em série.</div>
+        </section>
+        <section style={{border:'1px solid #c7dbe4',background:'#fff',padding:9,marginTop:9}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,flexWrap:'wrap',borderBottom:'1px solid #dce8ed',paddingBottom:7,marginBottom:8}}>
+            <div style={{fontSize:10,fontWeight:800,color:'#123B50'}}>DOCUMENTOS / DESENHOS VINCULADOS</div>
+            <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+              <input ref={engineeringFileRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.dwg,.dxf,.step,.stp,.igs,.iges,.stl,.zip" onChange={e=>void uploadEngineeringFile(e,'DESENHO')} style={{display:'none'}}/>
+              <button type="button" disabled={!selectedId||!editing||busy} onClick={()=>engineeringFileRef.current?.click()} style={btn('primary')}><Upload size={13}/>ANEXAR DESENHO / ESPECIFICAÇÃO</button>
+            </div>
+          </div>
+          <div style={{display:'grid',gap:5}}>{attachments.filter(a=>a.nome_arquivo.startsWith('DESENHO_')).map(a=><div key={a.id} style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 110px 135px max-content',gap:7,alignItems:'center',padding:'6px 7px',border:'1px solid #e4e7ec',fontSize:9}}><b>{a.nome_arquivo.replace(/^DESENHO_/,'')}</b><span>{a.mime_type||'arquivo'}</span><span>{a.tamanho_bytes?Math.round(a.tamanho_bytes/1024)+' KB':'—'} · {new Date(a.created_at).toLocaleDateString('pt-BR')}</span>{attachmentUrls[a.id]?<a href={attachmentUrls[a.id]} target="_blank" rel="noreferrer" style={{...btn('normal'),textDecoration:'none',height:25}}>ABRIR</a>:<span style={{color:'#667085'}}>Carregando link…</span>}</div>)}{!attachments.some(a=>a.nome_arquivo.startsWith('DESENHO_'))&&<div style={{padding:10,textAlign:'center',color:'#667085',border:'1px dashed #cbd5e1',fontSize:9}}>Nenhum desenho ou especificação anexado.</div>}</div>
+        </section>
+        <section style={{border:'1px solid #c7dbe4',background:'#fff',padding:9,marginTop:9}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,flexWrap:'wrap',borderBottom:'1px solid #dce8ed',paddingBottom:7,marginBottom:8}}>
+            <div style={{fontSize:10,fontWeight:800,color:'#123B50'}}>ENGENHARIA — PROJETO DO MOLDE (QUANDO APLICÁVEL)</div>
+            <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+              <input ref={moldFileRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.dwg,.dxf,.step,.stp,.igs,.iges,.sldprt,.sldasm,.stl,.zip" onChange={e=>void uploadEngineeringFile(e,'PROJETO_MOLDE')} style={{display:'none'}}/>
+              <button type="button" disabled={!selectedId||!editing||busy} onClick={()=>moldFileRef.current?.click()} style={btn('primary')}><Upload size={13}/>ANEXAR PROJETO DO MOLDE</button>
+            </div>
+          </div>
+          <div style={{display:'grid',gap:5}}>{attachments.filter(a=>a.nome_arquivo.startsWith('PROJETO_MOLDE_')).map(a=><div key={a.id} style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 110px 135px max-content',gap:7,alignItems:'center',padding:'6px 7px',border:'1px solid #e4e7ec',fontSize:9}}><b>{a.nome_arquivo.replace(/^PROJETO_MOLDE_/,'')}</b><span>{a.mime_type||'arquivo'}</span><span>{a.tamanho_bytes?Math.round(a.tamanho_bytes/1024)+' KB':'—'} · {new Date(a.created_at).toLocaleDateString('pt-BR')}</span>{attachmentUrls[a.id]?<a href={attachmentUrls[a.id]} target="_blank" rel="noreferrer" style={{...btn('normal'),textDecoration:'none',height:25}}>ABRIR</a>:<span style={{color:'#667085'}}>Carregando link…</span>}</div>)}{!attachments.some(a=>a.nome_arquivo.startsWith('PROJETO_MOLDE_'))&&<div style={{padding:10,textAlign:'center',color:'#667085',border:'1px dashed #cbd5e1',fontSize:9}}>Nenhum projeto de molde anexado.</div>}</div>
+        </section>
         <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DEFEITOS REGISTRADOS</h2>
         <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr>{['Data','OP','Defeito','Quantidade','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:5,borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{defects.map(d=><tr key={d.id}><td style={{padding:5}}>{new Date(d.created_at).toLocaleString('pt-BR')}</td><td style={{padding:5}}>{d.ordem_producao_id}</td><td style={{padding:5}}>{d.defeito}</td><td style={{padding:5}}>{fmt(d.quantidade)}</td><td style={{padding:5}}>{d.observacao||'—'}</td></tr>)}{!defects.length&&emptyRow('Nenhum defeito registrado para este produto.',5)}</tbody></table></div>
-        <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DOCUMENTOS / DESENHOS VINCULADOS</h2>
-        <div style={{display:'grid',gap:4}}>{attachments.map(a=><div key={a.id} style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 120px 150px',gap:7,padding:'5px 6px',border:'1px solid #e4e7ec',fontSize:9}}><b>{a.nome_arquivo}</b><span>{a.mime_type||'arquivo'}</span><span>{a.tamanho_bytes?Math.round(a.tamanho_bytes/1024)+' KB':'—'} · {new Date(a.created_at).toLocaleDateString('pt-BR')}</span></div>)}{!attachments.length&&<div style={{padding:10,textAlign:'center',color:'#667085',border:'1px dashed #cbd5e1',fontSize:9}}>Nenhum desenho/documento vinculado.</div>}</div>
       </section>}
     </section>
 
