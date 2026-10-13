@@ -20,7 +20,7 @@
 .auth-panel-inner{width:min(100%,430px);padding:46px 34px;margin:auto}
 .auth-mobile-brand{display:none}
 .auth-mobile-brand a{display:inline-flex;align-items:center;padding:10px 14px;border:1px solid var(--auth-line);border-radius:14px;background:#fff;box-shadow:0 8px 24px rgba(18,59,80,.07)}
-.auth-mobile-brand img{width:min(290px,78vw);height:auto;display:block}
+.auth-mobile-brand img{width:min(290px,78vw);height:160px;object-fit:contain;display:block}
 .auth-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .auth-overline{display:block;color:var(--auth-accent);font-size:10px;font-weight:900;letter-spacing:.18em;margin-bottom:9px}
 .auth-status{display:inline-flex;align-items:center;gap:6px;color:#607889;font-size:10px;font-weight:800;white-space:nowrap}
