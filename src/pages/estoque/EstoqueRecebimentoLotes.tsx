@@ -272,7 +272,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
                 <input
                   type="date"
                   value={dataValidade}
-                  min={new Date().toISOString().slice(0, 10)}
+                  min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10)}
                   onChange={event => setDataValidade(event.target.value)}
                   className="mt-2 h-[54px] w-full rounded-md border border-slate-300 bg-white px-3 text-base font-semibold outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100"
                 />
