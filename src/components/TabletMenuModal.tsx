@@ -111,25 +111,25 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
 
   return (
     <div
-      className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/70 p-3 backdrop-blur-[5px] sm:p-[18px]"
+      className="fixed inset-0 z-[10000] flex items-center justify-center bg-[#123B50]/35 p-3 backdrop-blur-[2px] sm:p-[18px]"
       role="dialog"
       aria-modal="true"
       aria-label="Central de módulos do Tablet"
       onMouseDown={onClose}
     >
       <section
-        className="max-h-[calc(100vh-24px)] w-full max-w-[900px] overflow-auto rounded-[2px] border border-slate-600 bg-[#1e222b] p-3 text-white shadow-[0_30px_90px_rgba(2,6,23,0.48)] sm:max-h-[calc(100vh-36px)] sm:p-4"
+        className="max-h-[calc(100vh-24px)] w-full max-w-[900px] overflow-auto rounded-[2px] border border-[#B9DDEB] bg-white p-3 text-[#123B50] shadow-[0_18px_48px_rgba(18,59,80,0.22)] sm:max-h-[calc(100vh-36px)] sm:p-4"
         onMouseDown={event => event.stopPropagation()}
       >
-        <header className="flex items-start justify-between gap-4 border-b border-slate-200 pb-3">
+        <header className="flex items-start justify-between gap-4 border-b border-[#D7E7ED] pb-3">
           <div className="flex min-w-0 items-center gap-3">
             <img src="/logo/sgq-erp.png" alt="SGQERP Industrial" className="h-[38px] w-[148px] shrink-0 object-contain max-[620px]:h-8 max-[620px]:w-28" />
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] text-white max-[620px]:h-[38px] max-[620px]:w-[38px]" aria-hidden="true">
               <Tablet size={24} />
             </span>
             <div className="min-w-0">
-              <strong className="block text-xs font-semibold leading-tight tracking-[0.02em]">CENTRAL DE MÓDULOS — MODO TABLET</strong>
-              <p className="mt-1 text-[11px] leading-tight text-slate-400">Ambiente operacional integrado do ERP Industrial</p>
+              <strong className="block text-xs font-bold leading-tight tracking-[0.02em] text-[#123B50]">CENTRAL DE MÓDULOS — MODO TABLET</strong>
+              <p className="mt-1 text-[11px] leading-tight text-[#526D79]">Ambiente operacional integrado do ERP Industrial</p>
             </div>
           </div>
 
@@ -144,7 +144,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
           </button>
         </header>
 
-        {accessError && <div className="mb-2 border border-red-400 bg-red-950 px-2 py-1.5 text-[10px] text-red-100" role="alert">{accessError}</div>}
+        {accessError && <div className="mb-2 border border-[#D65B61] bg-[#FFF1F1] px-2 py-1.5 text-[10px] text-[#8F252B]" role="alert">{accessError}</div>}
 
         <div className="mt-3 grid grid-cols-4 gap-2 max-[700px]:grid-cols-3 max-[460px]:grid-cols-2" aria-label="Módulos da Qualidade">
           {modules.map(({ key, number, label, description, route, permission, icon: Icon }) => {
@@ -157,7 +157,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
                 disabled={disabled}
                 aria-disabled={disabled}
                 title={disabled ? (accessError || (!accessReady ? 'Validando acesso e permissões.' : description)) : label}
-                className="group flex min-h-[76px] min-w-0 touch-manipulation flex-row items-center justify-start gap-2 rounded-[2px] border border-[#2D8DB8] bg-[#123B50] px-3 py-2 text-left text-white transition-[background,border-color] duration-100 hover:border-[#48B7C7] hover:bg-[#174d66] active:bg-[#0e3142] disabled:cursor-not-allowed disabled:opacity-40"
+                className="group flex min-h-[76px] min-w-0 touch-manipulation flex-row items-center justify-start gap-2 rounded-[2px] border border-[#C9DDE5] bg-white px-3 py-2 text-left text-[#123B50] transition-[background,border-color] duration-100 hover:border-[#2D8DB8] hover:bg-[#F4FBFD] active:bg-[#E5F3F8] disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
                   if (route) {
                     onClose()
@@ -181,7 +181,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
           })}
         </div>
 
-        <footer className="mt-3 flex flex-wrap justify-between gap-2 border-t border-[#DBE7EA] pt-2.5 text-[9px] font-medium tracking-[0.03em] text-slate-400">
+        <footer className="mt-3 flex flex-wrap justify-between gap-2 border-t border-[#D7E7ED] pt-2.5 text-[9px] font-medium tracking-[0.03em] text-[#526D79]">
           <span>ERPSistema INDUSTRIAL</span>
           <span>Central operacional integrada</span>
           <span>22 módulos de qualidade</span>
