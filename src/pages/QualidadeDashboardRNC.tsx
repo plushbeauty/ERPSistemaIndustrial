@@ -5,7 +5,7 @@ import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer,
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import ERPHorizontalShell from '../components/layout/ERPHorizontalShell'
-import TabletMenuModal from '../components/TabletMenuModal'
+import TabletQualidade from '../components/TabletQualidade'
 
 type Rpn = { id: string; status: string; setor_envolvido_id: string | null; setor?: { nome: string }[] | null }
 type Sector = { id: string; nome: string }
@@ -105,7 +105,7 @@ export default function QualidadeDashboardRNC() {
       <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-2">
         <div className="min-w-0">
           <header className="flex min-h-[42px] flex-wrap items-center justify-end gap-2 border border-[#C9DDE5] bg-[#F4FBFD] px-3 py-2">
-            <button type="button" onClick={() => setTabletOpen(true)} className="inline-flex h-[30px] min-h-[30px] items-center gap-2 border border-[#24789D] bg-[#2D8DB8] px-3 text-[10px] font-bold text-white hover:bg-[#24789D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#2D8DB8]" aria-haspopup="dialog"><Tablet size={15}/> TABLET MENU</button>
+            <button type="button" onClick={() => setTabletOpen(true)} className="inline-flex h-[30px] min-h-[30px] items-center gap-2 border border-[#24789D] bg-[#2D8DB8] px-3 text-[10px] font-bold text-white hover:bg-[#24789D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#2D8DB8]" aria-haspopup="dialog"><Tablet size={15}/> TABLET QUALIDADE</button>
             <button type="button" onClick={() => void load()} disabled={loading} className="inline-flex h-[30px] min-h-[30px] items-center gap-2 border border-[#B9DDEB] bg-white px-3 text-[10px] font-bold text-[#123B50] hover:bg-[#EAF6FA] disabled:opacity-60"><RefreshCw size={13}/>{loading ? 'Carregando…' : 'Atualizar'}</button>
           </header>
 
@@ -147,7 +147,7 @@ export default function QualidadeDashboardRNC() {
         </div>
       </div>
     </main>
-    <TabletMenuModal isOpen={tabletOpen} onClose={() => setTabletOpen(false)} onNavigate={(route) => navigate(route)} />
+    <TabletQualidade isOpen={tabletOpen} onClose={() => setTabletOpen(false)} onNavigate={(route) => navigate(route)} />
     </ERPHorizontalShell>
   )
 }
