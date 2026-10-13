@@ -3,7 +3,6 @@ import { AlertTriangle, BarChart3, CheckCircle2, ClipboardCheck, Gauge, RefreshC
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
-import ERPHorizontalShell from '../components/layout/ERPHorizontalShell'
 
 type Rpn = { id: string; status: string; setor_envolvido_id: string | null; setor?: { nome: string }[] | null }
 type Sector = { id: string; nome: string }
@@ -94,7 +93,6 @@ export default function QualidadeDashboardRNC() {
   const dimensionalStatus = [{ name: 'Conforme', value: dimensionalOk }, { name: 'Não conforme', value: dimensionalNok }, { name: 'Com restrição', value: Math.max(0, dimensionalInspections.length - dimensionalOk - dimensionalNok) }]
 
   return (
-    <ERPHorizontalShell>
     <main data-quality-workspace className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,_rgba(45,141,184,0.16),_transparent_42%),linear-gradient(135deg,#edf7fb_0%,#f4f7fc_52%,#edf2fa_100%)] p-3 text-slate-900 md:p-4">
       <div className="mx-auto grid max-w-[1800px] gap-3 grid-cols-1">
         <div className="min-w-0">
@@ -138,7 +136,6 @@ export default function QualidadeDashboardRNC() {
         </div>
       </div>
     </main>
-    </ERPHorizontalShell>
   )
 }
 
