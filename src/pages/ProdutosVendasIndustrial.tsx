@@ -399,7 +399,7 @@ export default function ProdutosVendasIndustrial(){
           {field('Ref. cliente','referencia_cliente')}
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:30,padding:'5px 7px',resize:'none',fontSize:11}}/></label>
           <div style={{display:'flex',alignItems:'center',gap:5,height:30,border:'1px solid #d5dde7',padding:'0 6px',background:'#fff',whiteSpace:'nowrap'}}><span style={{fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}}>Sit.</span>{check('Fab.','fabricado')}{check('Comp.','comprado')}{check('Rev.','revenda')}</div>
-          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} title="Selecione uma localização existente do Estoque. A hierarquia depósito/rua/prateleira/caixa é mantida no cadastro de localizações." style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
+          
         </div>
 
       </form>}
