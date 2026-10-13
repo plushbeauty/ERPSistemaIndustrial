@@ -114,7 +114,7 @@ export default function TabletQualidade({ isOpen, onClose, onNavigate }: TabletQ
       className="fixed inset-0 z-[10000] flex items-center justify-center bg-[#123B50]/35 p-3 backdrop-blur-[2px] sm:p-[18px]"
       role="dialog"
       aria-modal="true"
-      aria-label="Central de módulos do Tablet"
+      aria-label="TabletQualidade — Central da Qualidade"
       onMouseDown={onClose}
     >
       <section
@@ -137,7 +137,7 @@ export default function TabletQualidade({ isOpen, onClose, onNavigate }: TabletQ
             type="button"
             className="grid h-10 w-10 shrink-0 place-items-center rounded-[2px] border border-slate-400 bg-slate-50 text-slate-600 touch-manipulation hover:border-[#2D8DB8] hover:bg-slate-100"
             onClick={onClose}
-            aria-label="Fechar central de módulos"
+            aria-label="Fechar TabletQualidade"
             title="Fechar"
           >
             <X size={22} />
@@ -183,7 +183,7 @@ export default function TabletQualidade({ isOpen, onClose, onNavigate }: TabletQ
 
         <footer className="mt-3 flex flex-wrap justify-between gap-2 border-t border-[#D7E7ED] pt-2.5 text-[9px] font-medium tracking-[0.03em] text-[#526D79]">
           <span>ERPSistema INDUSTRIAL</span>
-          <span>Central operacional integrada</span>
+          <span>TabletQualidade · Central operacional do SGQ</span>
           <span>22 módulos de qualidade</span>
         </footer>
       </section>
