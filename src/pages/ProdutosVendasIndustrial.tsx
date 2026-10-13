@@ -15,7 +15,7 @@ import type { CSSProperties, ChangeEvent } from 'react'
 import {
   Boxes, Check, CheckCircle2, Edit3, Factory, FileText, Image as ImageIcon,
   Plus, Printer, RefreshCw, RotateCcw, Save, Search, ShieldCheck, Trash2, Upload, X, FileSpreadsheet,
-  Tablet, ShoppingCart, Calculator, ClipboardCheck, PackageSearch, BookOpen
+  Tablet, ShoppingCart, PackageSearch, GitBranch
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import ERPHorizontalShell from '../components/layout/ERPHorizontalShell'
