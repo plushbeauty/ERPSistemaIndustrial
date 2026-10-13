@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { AlertTriangle, CheckCircle2, ClipboardCheck, Clock3, Factory, Plus, RefreshCw, Save, ShieldCheck } from 'lucide-react'
-import ERPHorizontalShell from '../../components/layout/ERPHorizontalShell'
 import { supabase } from '../../lib/supabaseClient'
 
 type Lookup = { id: string; codigo?: string | null; nome?: string | null; nome_fantasia?: string | null; numero_op?: string | null; lote_interno?: string | null; status_inspecao?: string | null }
@@ -235,7 +234,7 @@ export default function ControleProcessoInjetora() {
     </label>
   )
 
-  return <ERPHorizontalShell>
+  return <>
     <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900">
       <div className="mx-auto max-w-[1600px] space-y-3">
         <header className="flex flex-wrap items-center gap-3 border-b border-slate-200 bg-white p-3">
@@ -322,5 +321,5 @@ export default function ControleProcessoInjetora() {
         <footer className="flex flex-wrap justify-between gap-2 border-t border-slate-200 px-1 py-2 text-[9px] text-slate-500"><span>SYSNQRA ERP & SGQ INDUSTRIAL • IT-IJ-001 Rev. 00 • Departamento de Injetados</span><span>Registro operacional auditável • documentos originais permanecem sob controle do GED</span></footer>
       </div>
     </main>
-  </ERPHorizontalShell>
+  </>
 }
