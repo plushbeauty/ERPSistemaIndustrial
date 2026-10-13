@@ -24,7 +24,11 @@ declare global { interface Window { XLSX?: XlsxModule } }
 type Product={
   id:string;empresa_id:string|null;codigo:string;nome:string;descricao:string|null;descricao_resumida:string|null;codigo_barras:string|null
   grupo:string|null;subgrupo:string|null;marca:string|null;categoria:string|null;unidade:string;unidade_compra:string;unidade_venda:string;fornecedor_padrao_id:string|null
-  referencia_interna:string|null;referencia_cliente:string|null;origem:string|null;ncm:string|null;cest:string|null;peso_liquido:number;peso_bruto:number
+  referencia_interna:string|null;referencia_cliente:string|null;origem:string|null;ncm:string|null;cest:string|null
+  cliente_principal:string|null;codigo_cliente:string|null;centro_custo_produto:string|null
+  tipo_processo:string|null;tipo_maquina:string|null;tipo_injetora:string|null;tonelagem_minima:number;tonelagem_maxima:number;numero_cavidades:number;molde_codigo:string|null
+  numero_desenho:string|null;especificacao_interna:string|null;material_especificado:string|null;dureza_especificada:string|null;fluidez_especificada:string|null;numero_ficha_processo:string|null;numero_riai:string|null
+  peso_liquido:number;peso_bruto:number
   comprimento_mm:number;largura_mm:number;altura_mm:number;observacoes:string|null;foto_url:string|null;fabricado:boolean;comprado:boolean;revenda:boolean
   estoque_atual:number;ponto_reposicao:number;estoque_maximo:number;localizacao_padrao_id:string|null;controla_lote:boolean
   controla_serie:boolean;permite_estoque_negativo:boolean;lote_validade_dias:number;inspecao_qualidade_obrigatoria:boolean;nivel_qualidade:string|null
@@ -48,7 +52,9 @@ const tabItems:Array<[Tab,string,typeof Boxes]>=[
 ]
 const empty=():FormData=>({
   codigo:'',nome:'',descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
-  fornecedor_padrao_id:null,referencia_interna:null,referencia_cliente:null,origem:'0 - Nacional',ncm:null,cest:null,peso_liquido:0,peso_bruto:0,comprimento_mm:0,largura_mm:0,altura_mm:0,
+  fornecedor_padrao_id:null,referencia_interna:null,referencia_cliente:null,origem:'0 - Nacional',ncm:null,cest:null,cliente_principal:null,codigo_cliente:null,centro_custo_produto:null,
+  tipo_processo:'NAO_APLICA',tipo_maquina:null,tipo_injetora:null,tonelagem_minima:0,tonelagem_maxima:0,numero_cavidades:1,molde_codigo:null,
+  numero_desenho:null,especificacao_interna:null,material_especificado:null,dureza_especificada:null,fluidez_especificada:null,numero_ficha_processo:null,numero_riai:null,peso_liquido:0,peso_bruto:0,comprimento_mm:0,largura_mm:0,altura_mm:0,
   observacoes:null,foto_url:null,fabricado:false,comprado:false,revenda:false,estoque_atual:0,ponto_reposicao:0,estoque_maximo:0,localizacao_padrao_id:null,
   controla_lote:false,controla_serie:false,permite_estoque_negativo:false,lote_validade_dias:0,inspecao_qualidade_obrigatoria:false,nivel_qualidade:null,origem_fiscal:null,
   cst_icms:null,csosn:null,cfop_entrada:null,cfop_saida:null,aliquota_icms:0,aliquota_ipi:0,aliquota_pis:0,aliquota_cofins:0,prazo_compra_dias:0,prazo_producao_dias:0,
@@ -88,9 +94,15 @@ export default function ProdutosVendasIndustrial(){
   const [detailsLoaded,setDetailsLoaded]=useState(false)
   const [ncmQuery,setNcmQuery]=useState('')
   const [ncmOptions,setNcmOptions]=useState<Array<{codigo:string;descricao:string;data_fim?:string}>>([])
+  const [fiscalSearch,setFiscalSearch]=useState<{key:string;term:string}>({key:'',term:''})
+  const [fiscalOptions,setFiscalOptions]=useState<Array<{codigo:string;descricao:string}>>([])
+  const [attachmentUrls,setAttachmentUrls]=useState<Record<string,string>>({})
+  const [machineOptions,setMachineOptions]=useState<Array<{id:string;codigo:string;nome:string}>>([])
   const [productionFicha,setProductionFicha]=useState<{id:string;versao:number;rendimento:number;unidade_rendimento:string;status:string|null;revisao:string|null} | null>(null)
   const [productionOps,setProductionOps]=useState<Array<{id:string;sequencia:number;operacao:string;maquina_id:string|null;maquina_codigo:string|null;maquina_nome:string|null;setup_min:number;ciclo_seg:number;capacidade_hora:number|null;capacidade_dia:number|null}>>([])
   const fileRef=useRef<HTMLInputElement>(null)
+  const engineeringFileRef=useRef<HTMLInputElement>(null)
+  const moldFileRef=useRef<HTMLInputElement>(null)
   const importRef=useRef<HTMLInputElement>(null)
 
   const load=async()=>{
@@ -113,8 +125,9 @@ export default function ProdutosVendasIndustrial(){
     finally{setBusy(false)}
   }
   useEffect(()=>{void load()},[])
-  useEffect(()=>{const term=ncmQuery.trim();if(term.length<2){setNcmOptions([]);return}const controller=new AbortController();const timer=window.setTimeout(()=>{void fetch('https://brasilapi.com.br/api/ncm/v1?search='+encodeURIComponent(term),{signal:controller.signal}).then(r=>{if(!r.ok)throw new Error('Consulta NCM indisponível');return r.json() as Promise<Array<{codigo:string;descricao:string;data_fim?:string}>>}).then(rows=>setNcmOptions(rows.filter(x=>x.codigo&&x.descricao&&(x.data_fim===undefined||x.data_fim>='9999-01-01')).slice(0,30))).catch(e=>{if(!(e instanceof DOMException&&e.name==='AbortError'))setNcmOptions([])})},250);return()=>{window.clearTimeout(timer);controller.abort()}},[ncmQuery])
+  useEffect(()=>{const term=fiscalSearch.term.trim();if(term.length<2||!fiscalSearch.key){setFiscalOptions([]);return}const controller=new AbortController();const timer=window.setTimeout(()=>{const route=fiscalSearch.key==='ncm'?'ncm':fiscalSearch.key==='cest'?'cest':'cfop';const url=route==='ncm'?'https://brasilapi.com.br/api/ncm/v1?search='+encodeURIComponent(term):'https://tabelasfiscais.com.br/api/v1/'+route+'/buscar?q='+encodeURIComponent(term);void fetch(url,{signal:controller.signal}).then(r=>{if(!r.ok)throw new Error('Consulta fiscal indisponível');return r.json() as Promise<unknown>}).then(raw=>{const rows=Array.isArray(raw)?raw:(raw&&typeof raw==='object'&&Array.isArray((raw as {data?:unknown[]}).data)?(raw as {data:unknown[]}).data:raw&&typeof raw==='object'&&Array.isArray((raw as {resultados?:unknown[]}).resultados)?(raw as {resultados:unknown[]}).resultados:[]);const options=rows.map(item=>{const x=item as Record<string,unknown>;return {codigo:String(x.codigo??x.codigo_num??x.cest??x.cfop??''),descricao:String(x.descricao??x.segmento??x.operacao??'')}}).filter(x=>x.codigo&&x.descricao);setFiscalOptions(fiscalSearch.key==='cfop'?options.filter(x=>fiscalSearch.key==='cfop'?true:true).slice(0,30):options.slice(0,30))}).catch(e=>{if(!(e instanceof DOMException&&e.name==='AbortError'))setFiscalOptions([])})},250);return()=>{window.clearTimeout(timer);controller.abort()}},[fiscalSearch])
   useEffect(()=>{void supabase.auth.getUser().then(async ({data})=>{if(!data.user)return;const {data:profile}=await supabase.from('erp_usuarios').select('nome').eq('auth_user_id',data.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();setOperatorName(String(profile?.nome||data.user.email||'Usuário ERP'))})},[])
+  useEffect(()=>{if(!companyId)return;void supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id',companyId).not('status','eq','INATIVA').order('codigo').limit(500).then(({data})=>setMachineOptions((data??[]) as Array<{id:string;codigo:string;nome:string}>))},[companyId])
 
   const filtered=useMemo(()=>{
     const q=query.trim().toLowerCase()
@@ -170,7 +183,7 @@ export default function ProdutosVendasIndustrial(){
         supabase.from('erp_estoque_movimentos').select('id,tipo,quantidade,origem,documento,observacao,created_at').eq('empresa_id',companyId).eq('produto_id',selectedId).order('created_at',{ascending:false}).limit(200),
         supabase.from('erp_producao_defeitos').select('id,ordem_producao_id,defeito,quantidade,observacao,created_at').eq('empresa_id',companyId).eq('produto_id',selectedId).order('created_at',{ascending:false}).limit(200),
         supabase.from('erp_audit_logs').select('id,action,module,old_data,new_data,created_at').eq('company_id',companyId).eq('entity','erp_produtos').eq('entity_id',selectedId).order('created_at',{ascending:false}).limit(200),
-        supabase.from('erp_documentos_anexos').select('id,nome_arquivo,storage_path,mime_type,tamanho_bytes,created_at').eq('empresa_id',companyId).eq('entidade_tipo','produto').eq('entidade_id',selectedId).order('created_at',{ascending:false}).limit(200),
+        supabase.from('erp_documentos_anexos').select('id,nome_arquivo,storage_path,mime_type,tamanho_bytes,created_at,entidade_tipo').eq('empresa_id',companyId).in('entidade_tipo',['produto','produto_desenho','produto_projeto_molde']).eq('entidade_id',selectedId).order('created_at',{ascending:false}).limit(200),
         supabase.from('erp_fichas_tecnicas').select('id,versao,rendimento,unidade_rendimento,status,revisao').eq('empresa_id',companyId).eq('produto_id',selectedId).eq('ativa',true).order('versao',{ascending:false}).limit(1).maybeSingle()
       ])
       setMovements((m.data??[]) as Movement[]);setDefects((d.data??[]) as Defect[]);setAudits((a.data??[]) as Audit[]);setAttachments((an.data??[]) as Attachment[])
@@ -281,6 +294,12 @@ export default function ProdutosVendasIndustrial(){
   const select=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<select value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,(key==='ativo'||key==='inspecao_qualidade_obrigatoria')?e.target.value==='true':e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>{options.map(o=><option value={o[0]} key={o[0]}>{o[1]}</option>)}</select></label>
   const combo=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input list={'product-combo-'+String(key)} value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id={'product-combo-'+String(key)}>{options.map(([value,description])=><option key={value} value={value} label={description}/>)}</datalist></label>
   const check=(title:string,key:keyof FormData)=><label style={{display:'flex',alignItems:'center',gap:7,fontSize:10,fontWeight:700,color:'#344054'}}><input type="checkbox" checked={Boolean(form[key])} disabled={!editing} onChange={e=>update(key,e.target.checked)}/>{title}</label>
+  const fiscalCombo=(title:string,key:'ncm'|'cest'|'cfop_entrada'|'cfop_saida',kind:'ncm'|'cest'|'cfop')=>{
+    const term=fiscalSearch.key===kind?fiscalSearch.term:'';
+    const options=fiscalSearch.key===kind?fiscalOptions:[];
+    const direction=key==='cfop_entrada'?'ENTRADA':'SAÍDA';
+    return <label style={{...label,position:'relative'}}>{fieldTitle(title)}<input value={term||String(form[key]??'')} disabled={!editing} placeholder="Digite código ou descrição para pesquisar…" onChange={e=>{update(key,'');setFiscalSearch({key:kind,term:e.target.value})}} style={{...input,background:editing?'#fff':'#f5f7fa'}}/>{term.trim().length>=2&&options.length>0&&<div style={{position:'absolute',zIndex:40,top:'100%',left:0,right:0,maxHeight:220,overflowY:'auto',border:'1px solid #9bbdce',background:'#fff',boxShadow:'0 6px 16px rgba(18,59,80,.18)'}}>{options.filter(x=>kind!=='cfop'||(key==='cfop_entrada'?x.codigo.startsWith('1')||x.codigo.startsWith('2')||x.codigo.startsWith('3'):x.codigo.startsWith('5')||x.codigo.startsWith('6')||x.codigo.startsWith('7'))).map(x=><button key={x.codigo} type="button" onClick={()=>{update(key,x.codigo);setFiscalSearch({key:'',term:''});setFiscalOptions([])}} style={{display:'block',width:'100%',textAlign:'left',border:0,borderBottom:'1px solid #e5edf1',background:'#fff',padding:'6px 8px',fontSize:10,color:'#123B50',cursor:'pointer'}}><strong>{x.codigo}</strong><span> — {x.descricao}</span></button>)}</div>}{term.trim().length>=2&&options.length===0&&<span style={{fontSize:9,color:'#667085',textTransform:'none'}}>Pesquisando códigos fiscais…</span>}</label>
+  }
 
   if(printMode&&selectedId){
     return (
