@@ -6,7 +6,7 @@ const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const supported = new Set(['.ts', '.tsx', '.js', '.jsx', '.css', '.html', '.json', '.webmanifest'])
 const roots = [join(root, 'src'), join(root, 'index.html'), join(root, 'public', 'manifest.webmanifest')]
 const problems = []
-const brokenReference = '/logo/sgq-erp.png'
+const forbiddenReferences = ['/logo/sgq-erp.png', '/logo-industrial.svg']
 
 function scan(path) {
   if (!existsSync(path)) {
@@ -19,12 +19,18 @@ function scan(path) {
       const child = join(path, entry.name)
       if (entry.isDirectory()) scan(child)
       else if (supported.has(extname(entry.name).toLowerCase())) {
-        if (readFileSync(child, 'utf8').includes(brokenReference)) problems.push(`Broken logo reference in ${child}`)
+        const source = readFileSync(child, 'utf8')
+        for (const reference of forbiddenReferences) {
+          if (source.includes(reference)) problems.push(`Unused or broken logo reference ${reference} in ${child}`)
+        }
       }
     }
   } catch {
     if (supported.has(extname(path).toLowerCase())) {
-      if (readFileSync(path, 'utf8').includes(brokenReference)) problems.push(`Broken logo reference in ${path}`)
+      const source = readFileSync(path, 'utf8')
+      for (const reference of forbiddenReferences) {
+        if (source.includes(reference)) problems.push(`Unused or broken logo reference ${reference} in ${path}`)
+      }
     } else {
       problems.push(`Could not scan required path: ${path}`)
     }
