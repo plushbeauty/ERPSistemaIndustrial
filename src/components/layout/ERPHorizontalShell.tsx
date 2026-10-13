@@ -151,18 +151,23 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       <header className="erp-horizontal-header">
         <button className="erp-horizontal-brand" type="button" onClick={() => go('/erp-industrial')} title="Início">
           <img src="/logo/logo.png" alt="SGQERP Industrial" />
-          <strong>SGQERP INDUSTRIAL</strong>
         </button>
 
-        <div style={{position:"relative"}}><button type="button" className="erp-horizontal-help" title="Ajuda" onClick={()=>setHelpOpen(v=>!v)} aria-expanded={helpOpen}><CircleHelp size={15} /> Ajuda</button>{helpOpen&&<div role="dialog" aria-label="Ajuda contextual da tela" style={{position:"absolute",right:0,top:34,zIndex:1200,width:"min(370px,90vw)",maxHeight:"75vh",overflowY:"auto",padding:"10px 12px",border:"1px solid #b9cbd3",borderRadius:2,background:"#fff",boxShadow:"0 6px 16px rgba(18,59,80,.16)",fontSize:10,lineHeight:1.45,color:"#173b4a"}}><strong>{contextualHelp.title}</strong><p style={{margin:"5px 0"}}>{contextualHelp.purpose}</p><strong>Como usar</strong><ol style={{margin:"4px 0 7px",paddingLeft:17}}>{contextualHelp.steps.map((step,index)=><li key={index} style={{marginBottom:3}}>{step}</li>)}</ol><strong>Campos e preenchimento</strong><ul style={{margin:"4px 0 8px",paddingLeft:15}}>{contextualHelp.fields.map((field,index)=><li key={index} style={{marginBottom:3}}>{field}</li>)}</ul><div style={{borderTop:"1px solid #e2e8f0",paddingTop:7,color:"#647b85"}}>Tela atual: {pathname}</div><button type="button" onClick={()=>{setHelpOpen(false);navigate("/ajuda")}} style={{marginTop:7,height:28,padding:"0 9px",border:"1px solid #2D8DB8",background:"#2D8DB8",color:"#fff",borderRadius:2,cursor:"pointer"}}>Abrir Central de Ajuda</button></div>}</div>
+        <div className="erp-horizontal-global-title" aria-label="Título padrão do ERP">
+          <strong>Painel de Gestão da Qualidade</strong>
+          <span>Indicadores calculados a partir dos registros da empresa autenticada.</span>
+        </div>
 
-        <div className="erp-horizontal-session">
-          <UserRound size={15} />
-          <span>{operatorName === 'Usuário ERP' ? sessionOperator : operatorName}</span>
-          <time dateTime={now.toISOString()}>
-            {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)} {' '}
-            {new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(new Date())}
-          </time>
+        <div className="erp-horizontal-header-right">
+          <div style={{position:"relative"}}><button type="button" className="erp-horizontal-help" title="Ajuda" onClick={()=>setHelpOpen(v=>!v)} aria-expanded={helpOpen}><CircleHelp size={15} /> Ajuda</button>{helpOpen&&<div role="dialog" aria-label="Ajuda contextual da tela" style={{position:"absolute",right:0,top:34,zIndex:1200,width:"min(370px,90vw)",maxHeight:"75vh",overflowY:"auto",padding:"10px 12px",border:"1px solid #b9cbd3",borderRadius:2,background:"#fff",boxShadow:"0 6px 16px rgba(18,59,80,.16)",fontSize:10,lineHeight:1.45,color:"#173b4a"}}><strong>{contextualHelp.title}</strong><p style={{margin:"5px 0"}}>{contextualHelp.purpose}</p><strong>Como usar</strong><ol style={{margin:"4px 0 7px",paddingLeft:17}}>{contextualHelp.steps.map((step,index)=><li key={index} style={{marginBottom:3}}>{step}</li>)}</ol><strong>Campos e preenchimento</strong><ul style={{margin:"4px 0 8px",paddingLeft:15}}>{contextualHelp.fields.map((field,index)=><li key={index} style={{marginBottom:3}}>{field}</li>)}</ul><div style={{borderTop:"1px solid #e2e8f0",paddingTop:7,color:"#647b85"}}>Tela atual: {pathname}</div><button type="button" onClick={()=>{setHelpOpen(false);navigate("/ajuda")}} style={{marginTop:7,height:28,padding:"0 9px",border:"1px solid #2D8DB8",background:"#2D8DB8",color:"#fff",borderRadius:2,cursor:"pointer"}}>Abrir Central de Ajuda</button></div>}</div>
+          <div className="erp-horizontal-session">
+            <UserRound size={15} />
+            <span>{operatorName === 'Usuário ERP' ? sessionOperator : operatorName}</span>
+            <time dateTime={now.toISOString()}>
+              {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)} {' '}
+              {new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(new Date())}
+            </time>
+          </div>
         </div>
       </header>
 
@@ -224,7 +229,11 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         @media print{ @page{size:A4;margin:12mm} .erp-horizontal-header,.erp-horizontal-menu,.erp-global-status-row,.print-hidden,.erp-horizontal-help{display:none!important} .erp-horizontal-shell,.erp-horizontal-workspace{min-height:0!important;background:#fff!important;padding:0!important} .erp-horizontal-workspace *{box-shadow:none!important;backdrop-filter:none!important} thead{display:table-header-group} tr{break-inside:avoid} }
         .erp-horizontal-header{height:64px;min-height:64px;display:flex;align-items:center;gap:12px;padding:0 12px;background:#f4fbfd;border-bottom:1px solid #b9d4df;box-sizing:border-box;position:sticky;top:0;z-index:1600}
         .erp-horizontal-brand{height:60px;display:flex;align-items:center;gap:10px;border:0;background:transparent;color:#000;cursor:pointer;padding:0 6px;white-space:nowrap}
-        .erp-horizontal-brand img{height:58px;width:260px;min-width:260px;object-fit:contain;object-position:left}
+        .erp-horizontal-brand img{height:58px;width:200px;min-width:200px;object-fit:contain;object-position:left}
+        .erp-horizontal-global-title{display:flex;flex:1;min-width:0;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:2px;color:#123B50;line-height:1.15}
+        .erp-horizontal-global-title strong{font-size:15px;font-weight:800;letter-spacing:.01em}
+        .erp-horizontal-global-title span{font-size:10px;font-weight:600;color:#315466}
+        .erp-horizontal-header-right{display:flex;flex:0 0 auto;align-items:center;justify-content:flex-end;gap:8px}
         .erp-horizontal-brand strong{font-size:13px;font-weight:700;letter-spacing:.01em}
         .erp-horizontal-help{height:30px;display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:#315466;font-size:11px;cursor:pointer;padding:0 5px}
         .erp-horizontal-session{height:30px;display:flex;align-items:center;gap:5px;padding-left:8px;border-left:1px solid #dbe5e9;white-space:nowrap;font-size:11px;color:#173b4a}
@@ -280,8 +289,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-dropdown button.is-active{background:#edf7fb;color:#176487;font-weight:700;border-left:2px solid #2D8DB8}
         .erp-horizontal-workspace{width:100%;max-width:100%;min-width:0}
         @media(max-width:700px){.erp-horizontal-menu{overflow-x:auto;overscroll-behavior-x:contain}.erp-horizontal-menu-item{flex:0 0 auto}.erp-horizontal-dropdown{position:fixed;top:auto;left:6px;right:6px;max-height:65vh;overflow:auto;z-index:1500}.erp-horizontal-menu-button{min-width:max-content}}
-        @media(max-width:950px){.erp-horizontal-brand strong{display:none}.erp-horizontal-menu-button{padding:0 7px}.erp-horizontal-session time{display:none}}
-        @media(max-width:700px){.erp-global-status-row>small{display:none}.erp-horizontal-header{height:58px;min-height:58px;gap:5px;padding:0 6px}.erp-horizontal-brand img{width:190px;min-width:190px;height:46px}.erp-horizontal-help{font-size:0}.erp-horizontal-session span{display:none}.erp-horizontal-menu{overflow-x:auto;top:58px}}
+        @media(max-width:950px){.erp-horizontal-menu-button{padding:0 7px}.erp-horizontal-session time{display:none}.erp-horizontal-global-title strong{font-size:12px}.erp-horizontal-global-title span{font-size:9px}}
+        @media(max-width:700px){.erp-global-status-row>small{display:none}.erp-horizontal-header{height:58px;min-height:58px;gap:5px;padding:0 6px}.erp-horizontal-brand img{width:200px;min-width:200px;height:46px}
+        .erp-horizontal-global-title strong{font-size:12px}.erp-horizontal-global-title span{font-size:9px}.erp-horizontal-help{font-size:0}.erp-horizontal-session span{display:none}.erp-horizontal-menu{overflow-x:auto;top:58px}}
         @media(prefers-reduced-motion:reduce){.erp-horizontal-menu-button,.erp-horizontal-dropdown{transition:none!important}}
       `}</style>
     </div>
