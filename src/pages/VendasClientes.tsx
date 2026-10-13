@@ -465,13 +465,13 @@ export default function VendasClientes() {
   ] as const
 
   return (
-    <VendasLayout title="Clientes" subtitle="" onRefresh={() => void load()} showStatusCards={false}>
+    <VendasLayout title="Clientes" subtitle="" onRefresh={() => void load()} showStatusCards={false} showPageTitle={false}>
       <main className="sales-workspace sales-detail">
         <div className="mx-auto max-w-[1700px] space-y-3">
           <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-sky-700">VENDAS › CLIENTES</p>
+                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-sky-700">VENDAS › CADASTRO MESTRE</p><h1 className="text-[14px] font-semibold leading-5 text-[#123B50]">Clientes</h1>
                 <HelpTip text="Tela de cadastro e consulta de clientes. Use NOVO CLIENTE para abrir o cadastro na própria tela; EDITAR usa a linha selecionada." />
               </div>
               
