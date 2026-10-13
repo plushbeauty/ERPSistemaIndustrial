@@ -17,7 +17,6 @@ import {
   Plus, Printer, RefreshCw, RotateCcw, Save, Search, ShieldCheck, Trash2, Upload, X, FileSpreadsheet
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import ERPHorizontalShell from '../components/layout/ERPHorizontalShell'
 interface XlsxModule { read(buffer:ArrayBuffer,options:{type:'array'}):{SheetNames:string[];Sheets:Record<string,unknown>}; utils:{sheet_to_json<T>(sheet:unknown,options:{defval:string}):T[]} }
 declare global { interface Window { XLSX?: XlsxModule } }
 
@@ -313,7 +312,7 @@ export default function ProdutosVendasIndustrial(){
       </main>
     )
   }
-  return <ERPHorizontalShell operatorName={operatorName}><main className="product-master-screen" style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif',background:'#fff'}}>
+  return <><main className="product-master-screen" style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif',background:'#fff'}}>
     <style>{`
       .product-master-screen label{min-width:0}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}
@@ -480,5 +479,5 @@ export default function ProdutosVendasIndustrial(){
       </section>
     ) : null}
     <footer style={{padding:'7px 12px 16px',fontSize:10,color:'#667085',display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8}}><span>SYSNQRA ERP & SGQ INDUSTRIAL • Cadastro Mestre de Produtos</span><span>© FernandoSch_System — Todos os direitos reservados</span></footer>
-  </main></ERPHorizontalShell>
+  </main></>
 }
