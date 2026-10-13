@@ -490,7 +490,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/auditoria" element={<QualityPlanGate>{<PainelLucratividade />}</QualityPlanGate>} />
       <Route path="/vendas/classificacao-fiscal" element={<QualityPlanGate>{<ClassificacaoFiscal />}</QualityPlanGate>} />
       <Route path="/vendas/razao-geral" element={<QualityPlanGate>{<PainelRazaoGeral />}</QualityPlanGate>} />
-      <Route path="/pcp" element={<QualityPlanGate>{<ERPHorizontalShell><SynqraLayoutProvider><PCPIndustrial /></SynqraLayoutProvider></ERPHorizontalShell>}</QualityPlanGate>} />
+      <Route path="/pcp" element={<QualityPlanGate><SynqraLayoutProvider><PCPIndustrial /></SynqraLayoutProvider></QualityPlanGate>} />
       <Route path="/engenharia/produtos" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/engenharia/bom" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/engenharia/roteiros" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
@@ -677,9 +677,11 @@ function AppIndustrialAuthenticated() {
     <Boundary>
       <Suspense fallback={<LoadingSkeleton />}>
         <div className="erp-global-surface">
-          {protectedRoutes}
-          <PCPPageHelp />
-          {location.pathname.startsWith('/pcp') && <ERPStatusLegend />}
+          <ERPHorizontalShell>
+            {protectedRoutes}
+            <PCPPageHelp />
+            {location.pathname.startsWith('/pcp') && <ERPStatusLegend />}
+          </ERPHorizontalShell>
         </div>
       </Suspense>
     </Boundary>
