@@ -100,7 +100,6 @@ const QualidadeIndustrial = lazyPage(() => import('./pages/QualidadeIndustrial')
 const AcompanhamentoNaoConformidade = lazyPage(() => import('./pages/AcompanhamentoNaoConformidade'), 'AcompanhamentoNaoConformidade')
 const EstoqueAlmoxarifado = lazyPage(() => import('./pages/EstoqueAlmoxarifadoCompact'), 'default')
 const ProdutosVendasIndustrial = lazyPage(() => import('./pages/ProdutosVendasIndustrial'), 'ProdutosVendasIndustrial')
-const ModuloCadastroProdutos = lazyPage(() => import('./pages/cadastro-produtos/ModuloCadastroProdutos'), 'ModuloCadastroProdutos')
 const TabletDashboard = lazyPage(() => import('./pages/TabletDashboard'), 'TabletDashboard')
 const PedidoVendaCompleto = lazyPage(() => import('./pages/NovoPedido'), 'NovoPedido')
 const DashboardComercial = lazyPage(() => import('./pages/DashboardComercial'), 'DashboardComercial')
@@ -569,7 +568,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/inventario/auditoria" element={<QualityPlanGate>{<AuditoriaSaldos />}</QualityPlanGate>} />
       <Route path="/produtos" element={<ProdutosVendasIndustrial />} />
       <Route path="/produtos-vendas" element={<ProdutosVendasIndustrial />} />
-      <Route path="/cadastro-produtos" element={<ModuloCadastroProdutos />} />
+      <Route path="/cadastro-produtos" element={<Navigate to="/produtos-vendas" replace />} />
       <Route path="/operacao-industrial" element={<QualityPlanGate>{<OperacaoIndustrial />}</QualityPlanGate>} />
       <Route path="/moldes-injecao" element={<QualityPlanGate>{<MoldesFerramentaria />}</QualityPlanGate>} />
       <Route path="/ficha-engenharia" element={<QualityPlanGate>{<FichaEngenharia />}</QualityPlanGate>} />
