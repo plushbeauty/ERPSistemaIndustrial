@@ -89,7 +89,7 @@ export default function TabletLaunchpad({ onNavigate, isOpen, onClose }: TabletL
       <section className="tablet-modal">
         <header className="tablet-modal-header">
           <div className="tablet-modal-heading">
-            <img src="/logo/sgq-erp.png" alt="SGQERP Industrial" className="tablet-brand-logo" />
+            <img src="/logo/logo.png" alt="SGQERP Industrial" className="tablet-brand-logo" />
             <div className="tablet-heading-icon"><Tablet size={25} /></div>
             <div>
               <strong>CENTRAL DE MÓDULOS — MODO TABLET</strong>
