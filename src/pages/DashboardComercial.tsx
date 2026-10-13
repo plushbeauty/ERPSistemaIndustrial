@@ -201,7 +201,7 @@ export default function DashboardComercial() {
     : monthlyData
 
   return (
-    <VendasLayout title="Dashboard Comercial" subtitle="Indicadores reais do módulo de vendas" onRefresh={() => void load()}>
+    <VendasLayout title="" onRefresh={() => void load()}>
       <style>{`
         @media print {
           @page { size: A4 landscape; margin: 12mm; }
