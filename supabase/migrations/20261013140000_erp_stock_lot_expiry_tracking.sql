@@ -38,7 +38,7 @@ begin
   if nullif(trim(coalesce(p_lote_fornecedor,'')), '') is null then
     raise exception 'O lote do fornecedor é obrigatório.';
   end if;
-  if p_data_validade is not null and p_data_validade < current_date then
+  if p_data_validade is not null and p_data_validade < (now() at time zone 'America/Sao_Paulo')::date then
     raise exception 'A validade informada já venceu; revise a nota e o lote recebido.';
   end if;
 
