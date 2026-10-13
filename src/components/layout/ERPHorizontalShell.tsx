@@ -121,7 +121,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     ? menus.find(menu => menu.label === (moduleLabel === 'Qualidade' ? 'Gestão da Qualidade' : moduleLabel)) ?? { label: moduleLabel, route: '/' + pathname.split('/')[1], icon: Home }
     : undefined
   const current = currentModuleMenu ?? menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
-  const visibleMenus = currentModuleMenu ? [{ ...currentModuleMenu, label: 'Menu ' + moduleLabel }, ...menus.filter(menu => menu.label !== 'Início' && menu.label !== currentModuleMenu.label)] : menus
+  const visibleMenus: MenuItem[] = [{ label: 'Menu SGQ', route: '/qualidade/tablet', icon: ShieldCheck, action: 'qualityTablet' }, ...menus]
   useEffect(() => {
     setOpenMenu(null)
   }, [pathname])
@@ -210,7 +210,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             <button
               type="button"
               className={`erp-horizontal-menu-button ${menu.label.startsWith('Menu ') ? 'erp-module-menu-button' : ''} ${active ? 'is-active' : ''}`}
-              onClick={() => hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)}
+              onClick={() => hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : openMenuItem(menu)}
               aria-expanded={hasChildren ? expanded : undefined}
             >
               {menu.icon && <menu.icon size={16} />}{menu.label}
