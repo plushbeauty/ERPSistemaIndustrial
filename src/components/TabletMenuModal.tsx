@@ -25,6 +25,8 @@ export type TabletMenuModalProps = {
   onNavigate: (route: string) => void
 }
 
+const moduleColors = ['#2D8DB8', '#3A9D78', '#D97706', '#7B61A8', '#D65B61', '#176B87'] as const
+
 const modules: readonly TabletMenuModule[] = [
   { key: 'acesso', number: 'M01', label: 'ACESSO', description: 'Autenticação e controle de entrada no SGQ.', icon: Lock },
   { key: 'organizacoes', number: 'M02', label: 'ESPECIFICAÇÕES', description: 'Especificações técnicas e critérios de aceitação.', route: '/qualidade/especificacoes', permission: 'audit.read', icon: FileText },
@@ -149,7 +151,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
         {accessError && <div className="mb-2 border border-[#D65B61] bg-[#FCEDEF] px-2 py-1.5 text-[10px] text-[#9F3038]" role="alert">{accessError}</div>}
 
         <div className="mt-3 grid min-h-0 flex-1 grid-cols-5 gap-2.5 overflow-y-auto overscroll-contain pr-1 max-[900px]:grid-cols-4 max-[620px]:grid-cols-3 max-[400px]:grid-cols-2" aria-label="Módulos do ERP">
-          {modules.map(({ key, number, label, description, route, permission, icon: Icon }) => {
+          {modules.map(({ key, number, label, description, route, permission, icon: Icon }, index) => {
             const disabled = !route || !accessReady || Boolean(accessError) || Boolean(permission && !permissions.has('*') && !permissions.has(permission))
 
             return (
@@ -169,13 +171,13 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
               >
                 <span
                   className="grid h-11 w-11 shrink-0 place-items-center rounded-[2px] text-white shadow-[0_2px_0_rgba(18,59,80,.16),inset_0_1px_0_rgba(255,255,255,0.3)]"
-                  style={{ backgroundColor: '#2D8DB8' }}
+                  style={{ backgroundColor: moduleColors[index % moduleColors.length] }}
                   aria-hidden="true"
                 >
                   <Icon size={25} strokeWidth={2.2} />
                 </span>
                 <span className="flex min-w-0 flex-col items-center gap-0.5">
-                  <small className="text-[9px] font-bold leading-none tracking-[0.08em]" style={{ color: '#2D8DB8' }}>{number}</small>
+                  <small className="text-[9px] font-bold leading-none tracking-[0.08em]" style={{ color: moduleColors[index % moduleColors.length] }}>{number}</small>
                   <strong className="max-w-full text-[10px] font-bold leading-[1.2] tracking-[0.01em] text-[#123B50]">{label}</strong>
                 </span>
               </button>
