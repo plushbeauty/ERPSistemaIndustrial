@@ -252,7 +252,7 @@ const tabs:[Tab,string,string][]=[['visao','VisÃ£o geral','Gauge'],['novaop','
  return <main className={`pcp-modern-page pcp-industrial-shell${hostedBySynqra?' pcp-hosted-by-synqra':''}`}>
   {!hostedBySynqra && (
   <nav className={`pcp-sidebar${hostedBySynqra?' pcp-sidebar-context':''}`} aria-label="Navegação do PCP">
-   <div className="pcp-sidebar-brand"><img src="/logo/sgq-erp.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL"/><div><strong>SYSNQRA ERP & SGQ INDUSTRIAL</strong><small>PCP INDUSTRIAL</small></div></div>
+   <div className="pcp-sidebar-brand"><img src="/logo/logo.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL"/><div><strong>SYSNQRA ERP & SGQ INDUSTRIAL</strong><small>PCP INDUSTRIAL</small></div></div>
    <button className="pcp-side-item" onClick={()=>window.location.href='/erp-industrial'}><span>âŒ‚</span> DASHBOARD</button>
    <div className="pcp-side-section">PLANEJAMENTO E CONTROLE</div>
    <button className={`pcp-side-item ${tab==='visao'?'active':''}`} aria-current={tab==='visao'?'page':undefined} onClick={()=>selectTab('visao')}><span>â–¦</span> VISÃƒO GERAL</button>
