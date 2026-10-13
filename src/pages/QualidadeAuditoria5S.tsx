@@ -127,16 +127,16 @@ export default function QualidadeAuditoria5S() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F4FBFD] p-3 text-[#123B50]">
+    <main className="min-h-screen bg-[#EAF3F7] p-3 text-[#123B50]">
       <div className="mx-auto max-w-[1500px] space-y-3">
         <QualitySidebar active="/qualidade/auditoria-5s" />
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#C8E3EE] pb-3">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b-4 border-[#48B7C7] bg-gradient-to-r from-[#123B50] to-[#2D8DB8] p-3 text-white">
           <div className="flex items-center gap-2">
-            <span className="grid size-8 place-items-center border border-[#C8E3EE] bg-white text-[#2D8DB8]"><ClipboardCheck size={17} /></span>
+            <span className="grid size-8 place-items-center border border-[#74C8D8] bg-[#0D3448]/60 text-[#9CE8EE]"><ClipboardCheck size={17} /></span>
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#2D8DB8]">ERP INDUSTRIAL · SGQ</p>
-              <h1 className="text-[15px] font-semibold leading-tight">Auditoria 5S</h1>
-              <p className="text-[10px] text-slate-500">Registros reais por empresa · sem notas pré-preenchidas</p>
+              <p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#9CE8EE]">ERP INDUSTRIAL · SGQ</p>
+              <h1 className="text-[16px] font-extrabold leading-tight">Auditoria 5S</h1>
+              <p className="text-[10px] text-[#E3F4F8]">Registros reais por empresa · sem notas pré-preenchidas</p>
             </div>
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -147,12 +147,12 @@ export default function QualidadeAuditoria5S() {
           </div>
         </header>
         {(error || notice) && <div role={error ? 'alert' : 'status'} className={error ? 'border border-red-300 bg-red-50 p-2 text-[10px] text-red-800' : 'border border-emerald-300 bg-emerald-50 p-2 text-[10px] text-emerald-800'}>{error || notice}</div>}
-        <section className="grid gap-2 border border-[#C8E3EE] bg-white p-3 md:grid-cols-3">
+        <section className="grid gap-2 border border-[#B8D5E1] border-l-4 border-l-[#2D8DB8] bg-white p-3 shadow-sm md:grid-cols-3">
           <label className={label}>Setor auditado<input className={field} value={sector} onChange={event => setSector(event.target.value)} placeholder="Informe o setor" /></label>
           <label className={label}>Auditor responsável<input className={field} value={auditor} onChange={event => setAuditor(event.target.value)} placeholder="Nome do auditor" /></label>
           <label className={label}>Acompanhante<input className={field} value={companion} onChange={event => setCompanion(event.target.value)} placeholder="Opcional" /></label>
         </section>
-        <section className="overflow-x-auto border border-[#C8E3EE] bg-white">
+        <section className="overflow-x-auto border border-[#B8D5E1] border-t-4 border-t-[#087F8C] bg-white shadow-sm">
           <table className="w-full min-w-[760px] text-left">
             <thead className="bg-[#123B50] text-white"><tr><th className="px-3 py-2 text-[9px] font-semibold">SENSO</th><th className="w-32 px-3 py-2 text-[9px] font-semibold">NOTA (1–5)</th><th className="px-3 py-2 text-[9px] font-semibold">OBSERVAÇÃO / EVIDÊNCIA</th></tr></thead>
             <tbody>{senses.map((sense, index) => (
@@ -164,13 +164,13 @@ export default function QualidadeAuditoria5S() {
             ))}</tbody>
           </table>
         </section>
-        <section className="grid gap-2 border border-[#C8E3EE] bg-white p-3 sm:grid-cols-2">
-          <div><p className="text-[9px] font-semibold uppercase text-slate-500">Média dos cinco sensos</p><p className="mt-1 text-[18px] font-semibold">{average === null ? '—' : average.toFixed(1) + ' / 5,0'}</p></div>
-          <div><p className="text-[9px] font-semibold uppercase text-slate-500">Resultado</p><p className="mt-1 text-[11px] font-semibold">{average === null ? 'Preencha as cinco notas para calcular' : average >= 4 ? 'Meta atingida (≥ 4,0)' : 'Necessário plano de ação (< 4,0)'}</p></div>
+        <section className="grid gap-2 border border-[#B8D5E1] bg-white p-3 shadow-sm sm:grid-cols-2">
+          <div className={"border-l-4 px-3 py-2 " + (average === null ? "border-l-[#2D8DB8] bg-[#EAF5FA]" : average >= 4 ? "border-l-[#3A9D78] bg-[#E9F7EF]" : "border-l-[#E6A34A] bg-[#FFF4E3]")}><p className="text-[9px] font-extrabold uppercase text-slate-600">Média dos cinco sensos</p><p className="mt-1 text-[22px] font-extrabold">{average === null ? '—' : average.toFixed(1) + ' / 5,0'}</p></div>
+          <div className={"border-l-4 px-3 py-2 " + (average === null ? "border-l-[#2D8DB8] bg-[#EAF5FA]" : average >= 4 ? "border-l-[#3A9D78] bg-[#E9F7EF]" : "border-l-[#D65B61] bg-[#FCEDEE]")}><p className="text-[9px] font-extrabold uppercase text-slate-600">Resultado</p><p className="mt-1 text-[11px] font-bold">{average === null ? 'Preencha as cinco notas para calcular' : average >= 4 ? 'Meta atingida (≥ 4,0)' : 'Necessário plano de ação (< 4,0)'}</p></div>
         </section>
-        <section className="border border-[#C8E3EE] bg-white">
-          <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2"><h2 className="text-[11px] font-semibold">Histórico recente</h2><span className="text-[9px] text-slate-500">{rows.length} registros</span></div>
-          {loading ? <p className="p-3 text-[10px] text-slate-500">Carregando auditorias…</p> : rows.length === 0 ? <p className="p-3 text-[10px] text-slate-500">Nenhuma auditoria registrada para esta empresa.</p> : <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left"><thead className="bg-slate-50"><tr><th className="px-3 py-2 text-[9px]">DATA</th><th className="px-3 py-2 text-[9px]">SETOR</th><th className="px-3 py-2 text-[9px]">AUDITOR</th><th className="px-3 py-2 text-[9px]">MÉDIA</th><th className="px-3 py-2 text-[9px]">OBSERVAÇÕES</th><th className="px-3 py-2 text-[9px]">STATUS</th></tr></thead><tbody>{rows.map(row => { const rowAverage = (row.seiri + row.seiton + row.seiso + row.seiketsu + row.shitsuke) / 5; return <tr key={row.id} className="border-t border-slate-100"><td className="px-3 py-2 text-[10px]">{new Date(row.created_at).toLocaleString('pt-BR')}</td><td className="px-3 py-2 text-[10px]">{row.setor}</td><td className="px-3 py-2 text-[10px]">{row.auditor}</td><td className="px-3 py-2 text-[10px]">{rowAverage.toFixed(1)}</td><td className="px-3 py-2 text-[10px]">{notesOf(row) || '—'}</td><td className="px-3 py-2 text-[10px]">{row.status}</td></tr> })}</tbody></table></div>}
+        <section className="border border-[#B8D5E1] bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b-2 border-[#48B7C7] bg-[#123B50] px-3 py-2"><h2 className="text-[11px] font-extrabold text-white">Histórico recente</h2><span className="text-[9px] text-slate-500">{rows.length} registros</span></div>
+          {loading ? <p className="p-3 text-[10px] text-slate-500">Carregando auditorias…</p> : rows.length === 0 ? <p className="p-3 text-[10px] text-slate-500">Nenhuma auditoria registrada para esta empresa.</p> : <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left"><thead className="bg-[#123B50] text-white"><tr><th className="px-3 py-2 text-[9px]">DATA</th><th className="px-3 py-2 text-[9px]">SETOR</th><th className="px-3 py-2 text-[9px]">AUDITOR</th><th className="px-3 py-2 text-[9px]">MÉDIA</th><th className="px-3 py-2 text-[9px]">OBSERVAÇÕES</th><th className="px-3 py-2 text-[9px]">STATUS</th></tr></thead><tbody>{rows.map(row => { const rowAverage = (row.seiri + row.seiton + row.seiso + row.seiketsu + row.shitsuke) / 5; return <tr key={row.id} className="border-t border-slate-100"><td className="px-3 py-2 text-[10px]">{new Date(row.created_at).toLocaleString('pt-BR')}</td><td className="px-3 py-2 text-[10px]">{row.setor}</td><td className="px-3 py-2 text-[10px]">{row.auditor}</td><td className="px-3 py-2 text-[10px]">{rowAverage.toFixed(1)}</td><td className="px-3 py-2 text-[10px]">{notesOf(row) || '—'}</td><td className="px-3 py-2 text-[10px]">{row.status}</td></tr> })}</tbody></table></div>}
         </section>
       </div>
     </main>
