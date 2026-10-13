@@ -63,7 +63,7 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
 
  useEffect(() => {
   if (!onRefresh) return
-  const refreshCurrentModule = () => onRefresh()
+  const refreshCurrentModule = (event: Event) => { event.preventDefault(); onRefresh() }
   window.addEventListener('erp:refresh-current-module', refreshCurrentModule)
   return () => window.removeEventListener('erp:refresh-current-module', refreshCurrentModule)
  }, [onRefresh])
