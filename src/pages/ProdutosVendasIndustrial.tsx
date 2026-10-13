@@ -323,7 +323,7 @@ export default function ProdutosVendasIndustrial(){
       @media(max-width:700px){.product-master-screen .product-general-row,.product-master-screen .product-measure-row,.product-master-screen .product-commercial-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3){grid-column:span 2!important}.product-master-screen .product-commercial-row>*{grid-column:span 1!important}}
     `}</style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
-      <div><div style={{fontSize:11,fontWeight:900,color:'#1c4bb5'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
+      <div><div style={{fontSize:11,fontWeight:900,color:'#2D8DB8'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
         <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>
         <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />
@@ -362,7 +362,7 @@ export default function ProdutosVendasIndustrial(){
 
     <section style={{...panel,margin:10,overflow:'hidden'}}>
       <div style={{display:'flex',borderBottom:'1px solid #d6dde6',background:'#f7f9fc',overflowX:'auto'}}>
-        {tabItems.map(([id,title,Icon])=><button key={id} type="button" onClick={()=>{setTab(id);if(selectedId)void loadDetails()}} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 10px',border:0,borderBottom:tab===id?'3px solid #184bb4':'3px solid transparent',background:tab===id?'#fff':'transparent',color:tab===id?'#184bb4':'#344054',fontWeight:900,fontSize:10,cursor:'pointer',whiteSpace:'nowrap'}}><Icon size={14}/>{title}</button>)}
+        {tabItems.map(([id,title,Icon])=><button key={id} type="button" onClick={()=>{setTab(id);if(selectedId)void loadDetails()}} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 10px',border:0,borderBottom:tab===id?'3px solid #2D8DB8':'3px solid transparent',background:tab===id?'#F4FBFD':'transparent',color:tab===id?'#123B50':'#344054',fontWeight:900,fontSize:10,cursor:'pointer',whiteSpace:'nowrap'}}><Icon size={14}/>{title}</button>)}
       </div>
 
       {tab==='gerais'&&<form onSubmit={save} style={{padding:8}}>
