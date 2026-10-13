@@ -125,7 +125,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
       >
         <header className="flex items-start justify-between gap-4 border-b border-slate-200 pb-3">
           <div className="flex min-w-0 items-center gap-3">
-            <img src="/logo/sgq-erp.png" alt="SGQERP Industrial" className="h-[38px] w-[148px] shrink-0 object-contain max-[620px]:h-8 max-[620px]:w-28" />
+            <img src="/logo/logo.png" alt="SGQERP Industrial" className="h-[38px] w-[148px] shrink-0 object-contain max-[620px]:h-8 max-[620px]:w-28" />
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] text-white max-[620px]:h-[38px] max-[620px]:w-[38px]" aria-hidden="true">
               <Tablet size={24} />
             </span>

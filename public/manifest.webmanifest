@@ -9,6 +9,6 @@
   "theme_color":"#0f766e",
   "lang":"pt-BR",
   "icons":[
-    {"src":"/logo/sgq-erp.png","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+    {"src":"/logo/logo.png","sizes":"any","type":"image/png","purpose":"any maskable"}
   ]
 }
