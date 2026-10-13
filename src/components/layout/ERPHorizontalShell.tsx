@@ -214,7 +214,14 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-status-legend-item small{display:block;font-size:9px;line-height:1.3;color:#647b85}
         .erp-status-legend-panel>p{grid-column:1/-1;margin:0;padding-top:5px;border-top:1px solid #e2e8f0;font-size:9px;color:#647b85}
         @media print{ @page{size:A4;margin:12mm} .erp-horizontal-header,.erp-horizontal-menu,.erp-global-status-row,.print-hidden,.erp-horizontal-help{display:none!important} .erp-horizontal-shell,.erp-horizontal-workspace{min-height:0!important;background:#fff!important;padding:0!important} .erp-horizontal-workspace *{box-shadow:none!important;backdrop-filter:none!important} thead{display:table-header-group} tr{break-inside:avoid} }
-        /* REVISAO PROTEGIDA DO CABECALHO GLOBAL: manter logo legivel e cabecalho fixo em todas as telas que usam este shell. Nao reduzir logo/contraste nem remover sticky sem revisao de regressao. */\n        .erp-horizontal-header{height:58px;min-height:58px;display:flex;align-items:center;gap:12px;padding:0 12px;background:#f4fbfd;border-bottom:1px solid #c9dde5;box-sizing:border-box;position:sticky;top:0;z-index:1600}\n        .erp-horizontal-shell .erp-horizontal-header *{color:#123b50}\n        .erp-horizontal-shell .erp-horizontal-brand{color:#123b50}\n        .erp-horizontal-shell .erp-horizontal-brand strong{color:#123b50}\n        .erp-horizontal-shell .erp-horizontal-help{color:#123b50}\n        .erp-horizontal-shell .erp-horizontal-session{color:#123b50}\n        .erp-horizontal-module-title{min-width:0;flex:1;display:flex;flex-direction:column;justify-content:center;gap:3px;line-height:1.15;overflow:hidden;border-left:1px solid #c9dde5;padding-left:14px;color:#123b50}.erp-horizontal-module-title strong{font-size:12px;font-weight:800;letter-spacing:.02em;color:#123b50;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.erp-horizontal-module-title small{font-size:9px;font-weight:500;color:#526d79;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        /* REVISAO PROTEGIDA DO CABECALHO GLOBAL: manter logo legivel e cabecalho fixo em todas as telas que usam este shell. Nao reduzir logo/contraste nem remover sticky sem revisao de regressao. */
+        .erp-horizontal-header{height:58px;min-height:58px;display:flex;align-items:center;gap:12px;padding:0 12px;background:#f4fbfd;border-bottom:1px solid #c9dde5;box-sizing:border-box;position:sticky;top:0;z-index:1600}
+        .erp-horizontal-shell .erp-horizontal-header *{color:#123b50}
+        .erp-horizontal-shell .erp-horizontal-brand{color:#123b50}
+        .erp-horizontal-shell .erp-horizontal-brand strong{color:#123b50}
+        .erp-horizontal-shell .erp-horizontal-help{color:#123b50}
+        .erp-horizontal-shell .erp-horizontal-session{color:#123b50}
+        .erp-horizontal-module-title{min-width:0;flex:1;display:flex;flex-direction:column;justify-content:center;gap:3px;line-height:1.15;overflow:hidden;border-left:1px solid #c9dde5;padding-left:14px;color:#123b50}.erp-horizontal-module-title strong{font-size:12px;font-weight:800;letter-spacing:.02em;color:#123b50;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.erp-horizontal-module-title small{font-size:9px;font-weight:500;color:#526d79;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .erp-horizontal-brand{height:50px;display:flex;align-items:center;gap:10px;border:0;background:transparent;color:#fff;cursor:pointer;padding:0 6px;white-space:nowrap;flex:0 0 auto}
         .erp-horizontal-brand img{height:46px;width:190px;min-width:190px;object-fit:contain;object-position:left}
         .erp-horizontal-brand strong{font-size:14px;font-weight:800;letter-spacing:.02em;color:#fff}
@@ -223,7 +230,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-session{height:38px;display:flex;align-items:center;gap:7px;padding-left:10px;border-left:1px solid #c9dde5;white-space:nowrap;font-size:11px;color:#123b50}
         .erp-horizontal-session span{font-weight:600}
         .erp-horizontal-session time{color:#647b85;font-size:10px}
-        /* ALERTA DE REGRESSAO: a barra principal deve permanecer fixa abaixo do cabecalho em TODAS as rotas envolvidas pelo ERPHorizontalShell. */\n        .erp-horizontal-menu{height:36px;min-height:36px;display:flex;align-items:stretch;padding:0 6px;background:#eaf4f8;border-bottom:1px solid #9bb9c7;box-sizing:border-box;position:sticky;top:58px;z-index:1550}
+        /* ALERTA DE REGRESSAO: a barra principal deve permanecer fixa abaixo do cabecalho em TODAS as rotas envolvidas pelo ERPHorizontalShell. */
+        .erp-horizontal-menu{height:36px;min-height:36px;display:flex;align-items:stretch;padding:0 6px;background:#eaf4f8;border-bottom:1px solid #9bb9c7;box-sizing:border-box;position:sticky;top:58px;z-index:1550}
 
         /* Identidade visual transversal: superfícies frias, contornos nítidos e controles compactos. */
         .erp-horizontal-session{color:#f2f8fb;border-left-color:rgba(255,255,255,.24)}
