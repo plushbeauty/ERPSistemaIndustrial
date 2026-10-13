@@ -70,7 +70,7 @@ export default function ERPHeader() {
         onClick={() => navigate('/erp-industrial')}
         title="Central do ERP"
       >
-        <img src="/logo/sgq-erp.png" alt="SGQERP Industrial" />
+        <img src="/logo/logo.png" alt="SGQERP Industrial" />
         <span>
           <strong>SGQERP INDUSTRIAL</strong>
           <small>Central de controle</small>
