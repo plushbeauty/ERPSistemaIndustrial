@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Building2, Check, MapPin, Pencil, Plus, RefreshCw, Search, Trash2, Truck, UserRound } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -96,10 +96,28 @@ const empty = (): Form => ({
 const baseInput = 'h-[28px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal text-slate-900 outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100'
 const shortInput = baseInput + ' max-w-[110px]'
 function HelpTip({ text }: { text: string }) {
-  const [open, setOpen] = useState(true)
-  return <span className="relative ml-1 inline-flex align-baseline">
-    <span role="button" tabIndex={0} aria-label="Ajuda" onClick={() => setOpen(value => !value)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setOpen(value => !value) } }} className="cursor-pointer select-none text-[10px] font-extrabold leading-none text-sky-700">?</span>
-    {open && <span className="absolute left-3 top-3 z-40 w-[260px] rounded-[2px] border border-sky-200 bg-white p-2 text-[9px] font-normal leading-4 text-slate-700 shadow-lg">{text}</span>}
+  const [open, setOpen] = useState(false)
+  const tipRef = useRef<HTMLSpanElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const closeOutside = (event: MouseEvent) => {
+      if (tipRef.current && !tipRef.current.contains(event.target as Node)) setOpen(false)
+    }
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', closeOutside)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('mousedown', closeOutside)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [open])
+
+  return <span ref={tipRef} className="relative ml-1 inline-flex align-baseline">
+    <button type="button" aria-label="Ajuda do campo" aria-expanded={open} onClick={() => setOpen(value => !value)} onKeyDown={event => { if (event.key === 'Escape') setOpen(false) }} className="inline-flex h-[14px] min-h-[14px] w-[14px] items-center justify-center rounded-[2px] border-0 bg-transparent p-0 text-[10px] font-extrabold leading-none text-sky-700 hover:bg-sky-50 focus-visible:outline focus-visible:outline-1 focus-visible:outline-sky-600">?</button>
+    {open && <span role="tooltip" className="absolute left-3 top-3 z-[1200] w-[260px] max-w-[min(260px,75vw)] rounded-[2px] border border-sky-200 bg-white p-2 text-[9px] font-normal normal-case leading-4 text-slate-700 shadow-lg">{text}</span>}
   </span>
 }
 
