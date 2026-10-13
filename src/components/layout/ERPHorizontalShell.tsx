@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, Tablet } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
-import TabletMenuModal from '../TabletMenuModal'
+import TabletQualidade from '../TabletQualidade'
 
 type MenuItem = {
   label: string
@@ -62,6 +62,7 @@ const menus: MenuItem[] = [
     ] },
   ] },
   { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck },
+  { label: 'TabletQualidade', route: '/qualidade', icon: Tablet, action: 'quality-tablet' },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench },
   { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
@@ -167,7 +168,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             <button
               type="button"
               className={`erp-horizontal-menu-button ${active ? 'is-active' : ''}`}
-              onClick={() => hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)}
+              onClick={() => menu.action === 'quality-tablet' ? (setQualityTabletOpen(true), setOpenMenu(null)) : hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : go(menu.route)}
               aria-expanded={hasChildren ? expanded : undefined}
             >
               {menu.icon && <menu.icon size={16} />}{menu.label}
@@ -197,7 +198,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
       </main>
-      <TabletMenuModal isOpen={qualityTabletOpen} onClose={() => setQualityTabletOpen(false)} onNavigate={go} />
+      <TabletQualidade isOpen={qualityTabletOpen} onClose={() => setQualityTabletOpen(false)} onNavigate={go} />
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f3f8fb 42%,#e8f1f6 100%);color:#123b50}
