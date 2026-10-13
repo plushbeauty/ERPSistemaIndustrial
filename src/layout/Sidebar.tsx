@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
 import { SYNQRA_MODULES } from '../assets/synqra/icons'
-import synqraLogo from '../assets/synqra/logo-synqra.png'
+const synqraLogo = '/logo/logo.png'
 
 export default function Sidebar() {
   const { isExpanded, isMobileOpen, closeMobileSidebar } = useSidebar()
