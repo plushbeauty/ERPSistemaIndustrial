@@ -600,8 +600,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras/fornecedores" element={<ComprasRoute><FornecedoresIndustrial /></ComprasRoute>} />
       <Route path="/compras/solicitacao-manual" element={<ComprasRoute><ComprasSolicitacaoManual /></ComprasRoute>} />
       <Route path="/solicitacao-compra" element={<ComprasRoute><SolicitacaoCompra /></ComprasRoute>} />
-      <Route path="/fornecedores" element={<FornecedoresIndustrial />} />
-      <Route path="/clientes" element={<ClientesIndustrial />} />
+      <Route path="/fornecedores" element={<Navigate to="/compras/fornecedores" replace />} />
+      <Route path="/clientes" element={<Navigate to="/vendas/clientes" replace />} />
       <Route path="/tabela-precos" element={<AjusteGlobal />} />
       <Route path="/tabelas-preco" element={<AjusteGlobal />} />
       <Route path="/catalogo" element={<CatalogoDigital />} />
