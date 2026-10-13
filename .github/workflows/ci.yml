@@ -83,6 +83,8 @@ jobs:
 
       - name: Quality tablet regression contract
         run: npm run verify:quality-tablet-contract
+      - name: Global horizontal shell regression contract
+        run: npm run verify:global-horizontal-shell
 
       - name: Security no-bypass policy
         run: npm run audit:security
