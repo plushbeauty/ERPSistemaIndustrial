@@ -157,7 +157,6 @@ const EngenhariaRevisoesBOM = lazyPage(() => import('./pages/EngenhariaRevisoesB
 const EngenhariaCentral = lazyPage(() => import('./pages/EngenhariaCentral'), 'EngenhariaCentral')
 const PCPDashboardOEE = lazyPage(() => import('./pages/PCPDashboardOEE'), 'PCPDashboardOEE')
 const QualidadeDashboardRNC = lazyPage(() => import('./pages/QualidadeDashboardRNC'), 'QualidadeDashboardRNC')
-const QualidadeCentralTablet = lazyPage(() => import('./pages/QualidadeCentralTablet'), 'QualidadeCentralTablet')
 const QualidadeRNC = lazyPage(() => import('./pages/QualidadeRNC'), 'QualidadeRNC')
 const SalaRNC = lazyPage(() => import('./pages/qualidade/sala-rnc'), 'SalaRNC')
 const ControleProcessoInjetora = lazyPage(() => import('./pages/pcp/ControleProcessoInjetora'), 'ControleProcessoInjetora')
@@ -339,7 +338,9 @@ export default function AppEntryV2() {
 }
 
 function ComprasRoute({ children }: { children: ReactNode }) {
-  return <div className="compras-compact">{children}</div>
+  // REVISAO GLOBAL: todas as rotas de Compras devem herdar o cabeçalho e menu fixos compartilhados.
+  // ALERTA DE REGRESSAO: nao remover este shell nem envolver Compras com um segundo shell.
+  return <ERPHorizontalShell><div className="compras-compact">{children}</div></ERPHorizontalShell>
 }
 
 function PublicPage({ children }: { children: ReactNode }) {
@@ -533,7 +534,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/dashboard-oee" element={<QualityPlanGate>{<PCPDashboardOEE />}</QualityPlanGate>} />
       <Route path="/pcp/tablet-operador" element={<QualityPlanGate>{<PCPTabletOperador />}</QualityPlanGate>} />
       <Route path="/qualidade/industrial" element={<QualityPlanGate><QualidadeIndustrial /></QualityPlanGate>} />
-      <Route path="/qualidade" element={<QualityPlanGate><QualidadeCentralTablet /></QualityPlanGate>} />
+      <Route path="/qualidade" element={<QualityPlanGate><QualidadeDashboardRNC /></QualityPlanGate>} />
       <Route path="/qualidade/instrumentos" element={<QualityPlanGate><QualidadeIndustrial /></QualityPlanGate>} />
       <Route path="/qualidade/liberacao-lote" element={<QualityPlanGate><AcompanhamentoNaoConformidade /></QualityPlanGate>} />
       <Route path="/qualidade/dashboard-rnc" element={<QualityPlanGate><QualidadeDashboardRNC /></QualityPlanGate>} />

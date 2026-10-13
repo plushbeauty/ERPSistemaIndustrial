@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, ClipboardCheck, RefreshCw, Search, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import QualitySidebar from '../components/quality/QualitySidebar'
+import ERPHorizontalShell from '../components/layout/ERPHorizontalShell'
 
 type InspectionRow = {
   id: string
@@ -226,7 +226,8 @@ export default function QualidadeInspecoesIndustrial() {
   }), [rows])
 
   return (
-    <main className="min-h-full bg-slate-50 p-3 text-slate-900"><QualitySidebar active="/qualidade/inspecoes" />
+    <ERPHorizontalShell>
+    <main className="min-h-full bg-slate-50 p-3 text-slate-900">
       <header className="mb-3 flex items-center justify-between border-b border-slate-200 pb-2">
         <div className="flex items-center gap-2">
           <ShieldCheck size={18} className="text-sky-700" />
@@ -295,5 +296,6 @@ export default function QualidadeInspecoesIndustrial() {
       </section>
       <p className="mt-2 text-[9px] text-slate-500">A reprovação aciona a transação SQL de quarentena e a abertura automática de RNC configuradas na migração do SGQ.</p>
     </main>
+    </ERPHorizontalShell>
   )
 }

@@ -10,9 +10,9 @@ type Transportadora={id:string;codigo:string;razao_social:string}
 type Vendedor={id:string;nome:string}
 type Item={produto_id:string;codigo:string;descricao:string;quantidade:number;unidade:string;valor_unitario:number;desconto:number;estoque:number;preco_custo_industrial:number}
 
-const inputStyle='h-[30px] w-full rounded-[2px] border border-gray-300 bg-white px-1.5 py-0.5 text-[11px] leading-4 text-gray-800 outline-none focus:border-blue-600 focus:ring-0'
-const labelStyle='mb-0.5 block text-[9px] font-medium uppercase tracking-wide text-gray-500'
-const buttonStyle='flex h-[30px] items-center justify-center gap-1 rounded-[2px] px-2.5 py-0.5 text-[11px] font-medium'
+const inputStyle='h-[30px] w-full rounded-[2px] border border-[#B9CBD3] bg-white px-1.5 py-0.5 text-[11px] leading-4 text-[#123B50] outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
+const labelStyle='mb-0.5 block text-[9px] font-semibold uppercase tracking-wide text-[#315466]'
+const buttonStyle='flex h-[30px] items-center justify-center gap-1 rounded-[2px] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide'
 const brl=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number.isFinite(v)?v:0)
 const n=(v:string|number)=>Number(v)||0
 const digits=(v:string)=>v.replace(/\D/g,'')

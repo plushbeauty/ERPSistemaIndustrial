@@ -193,7 +193,7 @@ export default function VendasPDV() {
                 onClick={() => setCategory(item)}
                 aria-pressed={category === item}
                 className={category === item
-                  ? 'h-7 shrink-0 border border-[#17445A] bg-[#17445A] px-3 text-[10px] font-semibold text-white'
+                  ? 'h-7 shrink-0 border border-[#E6A34A] border-b-[3px] bg-[#123B50] px-3 text-[10px] font-semibold text-white'
                   : 'h-7 shrink-0 border border-slate-200 bg-white px-3 text-[10px] text-slate-700 hover:border-[#2D8DB8]'}
               >{item === 'TODOS' ? 'Todos os produtos' : item}</button>
             ))}
@@ -220,7 +220,7 @@ export default function VendasPDV() {
                       onClick={() => add(product)}
                       disabled={unavailable || loading || saving}
                       aria-label={`Adicionar ${product.nome}, ${money(Number(product.preco_venda))}, estoque ${product.estoque_atual}`}
-                      className="group flex min-h-[112px] min-w-0 flex-col justify-between border border-slate-200 bg-white p-2.5 text-left transition-colors hover:border-[#2D8DB8] hover:bg-sky-50/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2D8DB8] disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                      className={`group flex min-h-[112px] min-w-0 flex-col justify-between border border-slate-200 border-l-[3px] p-2.5 text-left transition-colors hover:border-[#2D8DB8] hover:bg-sky-50/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2D8DB8] disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 ${unavailable ? 'border-l-[#D65B61] bg-[#FFF0F1]' : inCart > 0 ? 'border-l-[#3A9D78] bg-[#E8F6EF]' : 'border-l-[#2D8DB8] bg-white'}`}
                     >
                       <div className="flex min-w-0 items-start justify-between gap-2">
                         <span className="min-w-0 truncate text-[9px] font-medium tracking-wide text-slate-500" title={product.codigo}>{product.codigo}</span>
@@ -240,8 +240,8 @@ export default function VendasPDV() {
         </section>
 
         <aside className="flex min-w-0 flex-col border border-slate-200 bg-white 2xl:sticky 2xl:top-2">
-          <div className="flex h-10 items-center justify-between border-b border-slate-200 bg-slate-50 px-3">
-            <div className="flex items-center gap-2 text-[#123B50]"><ShoppingCart size={16} /><h2 className="text-[12px] font-semibold">Venda atual</h2></div>
+          <div className="flex h-10 items-center justify-between border-b border-[#E6A34A] bg-[#123B50] px-3 text-white">
+            <div className="flex items-center gap-2 text-white"><ShoppingCart size={16} className="text-[#E6A34A]" /><h2 className="text-[12px] font-semibold text-white">Venda atual</h2></div>
             <span className="text-[10px] text-slate-500">{itemCount} {itemCount === 1 ? 'item' : 'itens'}</span>
           </div>
 

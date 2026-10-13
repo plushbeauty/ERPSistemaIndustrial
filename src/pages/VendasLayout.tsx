@@ -3,6 +3,7 @@ import { BarChart3, BookOpen, ClipboardList, FilePlus2, LayoutDashboard, Package
 import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import '../styles/premium-workspaces.css'
 import '../styles/synqra-workspace.css'
 import ERPHorizontalShell from '../components/layout/ERPHorizontalShell'
 import { SynqraLayoutProvider } from '../layout/SynqraLayoutContext'
@@ -66,7 +67,7 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
 
  return <ERPHorizontalShell>
   <SynqraLayoutProvider>
-  <main className="synqra-workspace-main">
+  <main className="synqra-workspace synqra-workspace-main">
     {isVendas&&showCards&&<VendasStatusCards status={vendas.status} loading={vendas.loading}/>} 
     <div className="synqra-workspace-title">{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<div className="synqra-title-main"><h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div>{onRefresh&&<button className="synqra-tool-button" type="button" onClick={onRefresh} title="Atualizar"><RefreshCw size={13}/></button>}</div>
     {topContent}{children}

@@ -14,7 +14,8 @@ import { useLocation as useRouterLocation } from 'react-router-dom'
 import type { CSSProperties, ChangeEvent } from 'react'
 import {
   Boxes, Check, CheckCircle2, Edit3, Factory, FileText, Image as ImageIcon,
-  Plus, Printer, RefreshCw, RotateCcw, Save, Search, ShieldCheck, Trash2, Upload, X, FileSpreadsheet
+  Plus, Printer, RefreshCw, RotateCcw, Save, Search, ShieldCheck, Trash2, Upload, X, FileSpreadsheet,
+  Tablet, ShoppingCart, PackageSearch, GitBranch
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import ERPHorizontalShell from '../components/layout/ERPHorizontalShell'
@@ -24,7 +25,11 @@ declare global { interface Window { XLSX?: XlsxModule } }
 type Product={
   id:string;empresa_id:string|null;codigo:string;nome:string;descricao:string|null;descricao_resumida:string|null;codigo_barras:string|null
   grupo:string|null;subgrupo:string|null;marca:string|null;categoria:string|null;unidade:string;unidade_compra:string;unidade_venda:string;fornecedor_padrao_id:string|null
-  referencia_interna:string|null;referencia_cliente:string|null;origem:string|null;ncm:string|null;cest:string|null;peso_liquido:number;peso_bruto:number
+  referencia_interna:string|null;referencia_cliente:string|null;origem:string|null;ncm:string|null;cest:string|null
+  cliente_principal:string|null;cliente_principal_id:string|null;codigo_cliente:string|null;centro_custo_produto:string|null;centro_custo_produto_id:string|null
+  tipo_processo:string|null;tipo_maquina:string|null;tipo_injetora:string|null;maquina_preferencial_id:string|null;tonelagem_minima:number;tonelagem_maxima:number;numero_cavidades:number;molde_codigo:string|null
+  numero_desenho:string|null;especificacao_interna:string|null;material_especificado:string|null;dureza_especificada:string|null;fluidez_especificada:string|null;numero_ficha_processo:string|null;numero_riai:string|null
+  peso_liquido:number;peso_bruto:number
   comprimento_mm:number;largura_mm:number;altura_mm:number;observacoes:string|null;foto_url:string|null;fabricado:boolean;comprado:boolean;revenda:boolean
   estoque_atual:number;ponto_reposicao:number;estoque_maximo:number;localizacao_padrao_id:string|null;controla_lote:boolean
   controla_serie:boolean;permite_estoque_negativo:boolean;lote_validade_dias:number;inspecao_qualidade_obrigatoria:boolean;nivel_qualidade:string|null
@@ -33,22 +38,26 @@ type Product={
   custo_medio:number;custo_ultimo:number;custo_fabricacao:number;preco_venda:number;ativo:boolean
 }
 type Supplier={id:string;razao_social:string;nome_fantasia:string|null}
+type Customer={id:string;codigo:string|null;nome:string;nome_fantasia?:string|null}
+type CostCenter={id:string;codigo:string;nome:string;tipo:string}
 type Group={id:string;codigo:string;nome:string}
 type Location={id:string;codigo:string;nome:string;tipo:string}
 type Movement={id:string;tipo:string;quantidade:number;origem:string|null;documento:string|null;observacao:string|null;created_at:string}
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number;observacao:string|null;created_at:string}
 type Audit={id:string;action:string;module:string;old_data:Record<string,unknown>|null;new_data:Record<string,unknown>|null;created_at:string}
-type Attachment={id:string;nome_arquivo:string;storage_path:string;mime_type:string|null;tamanho_bytes:number|null;created_at:string}
-type Tab='gerais'|'fiscal'|'estoque'|'producao'|'qualidade'
+type Attachment={id:string;nome_arquivo:string;storage_path:string;mime_type:string|null;tamanho_bytes:number|null;created_at:string;entidade_tipo?:string}
+type Tab='gerais'|'fiscal'|'estoque'|'producao'|'qualidade'|'engenharia'|'custos'
 type FormData=Omit<Product,'id'|'empresa_id'>
 
 const tabItems:Array<[Tab,string,typeof Boxes]>=[
   ['gerais','DADOS GERAIS',Boxes],['fiscal','FISCAL',FileText],['estoque','ESTOQUE',Boxes],
-  ['producao','PRODUÇÃO',Factory],['qualidade','QUALIDADE + DOCUMENTOS',ShieldCheck]
+  ['producao','PRODUÇÃO',Factory],['qualidade','QUALIDADE + DOCUMENTOS',ShieldCheck],['engenharia','ENGENHARIA',Factory],['custos','CENTRO DE CUSTOS DO PRODUTO',FileSpreadsheet]
 ]
 const empty=():FormData=>({
   codigo:'',nome:'',descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
-  fornecedor_padrao_id:null,referencia_interna:null,referencia_cliente:null,origem:'0 - Nacional',ncm:null,cest:null,peso_liquido:0,peso_bruto:0,comprimento_mm:0,largura_mm:0,altura_mm:0,
+  fornecedor_padrao_id:null,referencia_interna:null,referencia_cliente:null,origem:'0 - Nacional',ncm:null,cest:null,cliente_principal:null,cliente_principal_id:null,codigo_cliente:null,centro_custo_produto:null,centro_custo_produto_id:null,
+  tipo_processo:'NAO_APLICA',tipo_maquina:null,tipo_injetora:null,maquina_preferencial_id:null,tonelagem_minima:0,tonelagem_maxima:0,numero_cavidades:1,molde_codigo:null,
+  numero_desenho:null,especificacao_interna:null,material_especificado:null,dureza_especificada:null,fluidez_especificada:null,numero_ficha_processo:null,numero_riai:null,peso_liquido:0,peso_bruto:0,comprimento_mm:0,largura_mm:0,altura_mm:0,
   observacoes:null,foto_url:null,fabricado:false,comprado:false,revenda:false,estoque_atual:0,ponto_reposicao:0,estoque_maximo:0,localizacao_padrao_id:null,
   controla_lote:false,controla_serie:false,permite_estoque_negativo:false,lote_validade_dias:0,inspecao_qualidade_obrigatoria:false,nivel_qualidade:null,origem_fiscal:null,
   cst_icms:null,csosn:null,cfop_entrada:null,cfop_saida:null,aliquota_icms:0,aliquota_ipi:0,aliquota_pis:0,aliquota_cofins:0,prazo_compra_dias:0,prazo_producao_dias:0,
@@ -60,7 +69,7 @@ const fmt=(v:unknown)=>n(v).toLocaleString('pt-BR',{maximumFractionDigits:3})
 const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2}
 const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box'}
 const label:CSSProperties={display:'grid',gap:3,minWidth:0,fontSize:9,lineHeight:'11px',fontWeight:500,color:'#344054',textTransform:'uppercase',overflowWrap:'anywhere'}
-const btn=(_kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid #2D8DB8',background:'#2D8DB8',color:'#fff',fontSize:11,fontWeight:500,textTransform:'uppercase',cursor:'pointer'})
+const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:kind==='primary'?'1px solid #2D8DB8':kind==='danger'?'1px solid #D65B61':'1px solid #C8D5DE',background:kind==='primary'?'#2D8DB8':kind==='danger'?'#D65B61':'#F4FBFD',color:kind==='normal'?'#123B50':'#fff',fontSize:10,fontWeight:600,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap'})
 const emptyRow=(text:string,col=7)=><tr><td colSpan={col} style={{padding:22,textAlign:'center',color:'#667085'}}>{text}</td></tr>
 
 export default function ProdutosVendasIndustrial(){
@@ -71,12 +80,15 @@ export default function ProdutosVendasIndustrial(){
   const [operatorName,setOperatorName]=useState('Usuário ERP')
   const [products,setProducts]=useState<Product[]>([])
   const [suppliers,setSuppliers]=useState<Supplier[]>([])
+  const [customers,setCustomers]=useState<Customer[]>([])
+  const [costCenters,setCostCenters]=useState<CostCenter[]>([])
   const [groups,setGroups]=useState<Group[]>([])
   const [locations,setLocations]=useState<Location[]>([])
   const [selectedId,setSelectedId]=useState<string|null>(null)
   const [form,setForm]=useState<FormData>(empty())
   const [editing,setEditing]=useState(false)
   const [tab,setTab]=useState<Tab>('gerais')
+  const [showProductTablet,setShowProductTablet]=useState(false)
   const [query,setQuery]=useState(''),[groupFilter,setGroupFilter]=useState('TODAS')
   const [busy,setBusy]=useState(false)
   const [message,setMessage]=useState('')
@@ -86,9 +98,17 @@ export default function ProdutosVendasIndustrial(){
   const [audits,setAudits]=useState<Audit[]>([])
   const [attachments,setAttachments]=useState<Attachment[]>([])
   const [detailsLoaded,setDetailsLoaded]=useState(false)
+  const [fiscalSearch,setFiscalSearch]=useState<{key:string;kind:'ncm'|'cest'|'cfop';term:string}>({key:'',kind:'ncm',term:''})
+  const [fiscalOptions,setFiscalOptions]=useState<Array<{codigo:string;descricao:string}>>([])
+  const [fiscalCatalogs,setFiscalCatalogs]=useState<{cest?:Array<{codigo:string;descricao:string}>;cfop?:Array<{codigo:string;descricao:string}>}>({})
+  const [fiscalLoading,setFiscalLoading]=useState(false)
+  const [attachmentUrls,setAttachmentUrls]=useState<Record<string,string>>({})
+  const [machineOptions,setMachineOptions]=useState<Array<{id:string;codigo:string;nome:string}>>([])
   const [productionFicha,setProductionFicha]=useState<{id:string;versao:number;rendimento:number;unidade_rendimento:string;status:string|null;revisao:string|null} | null>(null)
   const [productionOps,setProductionOps]=useState<Array<{id:string;sequencia:number;operacao:string;maquina_id:string|null;maquina_codigo:string|null;maquina_nome:string|null;setup_min:number;ciclo_seg:number;capacidade_hora:number|null;capacidade_dia:number|null}>>([])
   const fileRef=useRef<HTMLInputElement>(null)
+  const engineeringFileRef=useRef<HTMLInputElement>(null)
+  const moldFileRef=useRef<HTMLInputElement>(null)
   const importRef=useRef<HTMLInputElement>(null)
 
   const load=async()=>{
@@ -97,29 +117,70 @@ export default function ProdutosVendasIndustrial(){
       const {data:cid,error:ce}=await supabase.rpc('erp_current_empresa_id')
       if(ce||!cid)throw ce??new Error('Empresa da sessão não identificada.')
       const id=String(cid);setCompanyId(id)
-      const [p,s,g,l]=await Promise.all([
+      const [p,s,g,l,cu,cc]=await Promise.all([
         supabase.from('erp_produtos').select('*').eq('empresa_id',id).order('codigo').limit(2000),
         supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia').eq('empresa_id',id).eq('ativo',true).order('razao_social').limit(1000),
         supabase.from('erp_grupos').select('id,codigo,nome').eq('empresa_id',id).eq('ativo',true).order('nome').limit(1000),
-        supabase.from('erp_estoque_localizacoes').select('id,codigo,nome,tipo').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(1000)
+        supabase.from('erp_estoque_localizacoes').select('id,codigo,nome,tipo').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(1000),
+        supabase.from('erp_clientes').select('id,codigo,nome,nome_fantasia').eq('empresa_id',id).eq('ativo',true).order('nome').limit(2000),
+        supabase.from('erp_centros_custos').select('id,codigo,nome,tipo').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(1000)
       ])
-      for(const r of [p,s,g,l])if(r.error)throw r.error
-      setProducts((p.data??[]) as Product[]);setSuppliers((s.data??[]) as Supplier[]);setGroups((g.data??[]) as Group[]);setLocations((l.data??[]) as Location[])
+      for(const r of [p,s,g,l,cu,cc])if(r.error)throw r.error
+      setProducts((p.data??[]) as Product[]);setSuppliers((s.data??[]) as Supplier[]);setGroups((g.data??[]) as Group[]);setLocations((l.data??[]) as Location[]);setCustomers((cu.data??[]) as Customer[]);setCostCenters((cc.data??[]) as CostCenter[])
       if(printMode&&printId){const printProduct=(p.data??[]).find((x:Product)=>x.id===printId);if(printProduct){setSelectedId(printProduct.id);setForm({...empty(),...printProduct})}}
       if(selectedId){const fresh=(p.data??[]).find((x:Product)=>x.id===selectedId);if(fresh)setForm({...empty(),...fresh})}
     }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar cadastro de produtos.')}
     finally{setBusy(false)}
   }
   useEffect(()=>{void load()},[])
+  useEffect(()=>{
+    const term=fiscalSearch.term.trim()
+    if(term.length<2||!fiscalSearch.key){setFiscalOptions([]);setFiscalLoading(false);return}
+    const controller=new AbortController()
+    const timer=window.setTimeout(()=>{
+      setFiscalLoading(true)
+      const route=fiscalSearch.kind
+      const searchCatalog=(rows:Array<{codigo:string;descricao:string}>)=>{
+        const normalized=term.toLocaleLowerCase('pt-BR')
+        const matches=rows.filter(x=>(x.codigo+' '+x.descricao).toLocaleLowerCase('pt-BR').includes(normalized))
+        const directional=route==='cfop'?matches.filter(x=>{const code=x.codigo.replace(/\D/g,'');return fiscalSearch.key==='cfop_entrada'?code.startsWith('1')||code.startsWith('2')||code.startsWith('3'):code.startsWith('5')||code.startsWith('6')||code.startsWith('7')}):matches
+        setFiscalOptions(directional.slice(0,30))
+      }
+      if(route!=='ncm'&&fiscalCatalogs[route]){
+        searchCatalog(fiscalCatalogs[route]!)
+        setFiscalLoading(false)
+        return
+      }
+      const url=route==='ncm'
+        ?'https://brasilapi.com.br/api/ncm/v1?search='+encodeURIComponent(term)
+        :'https://tabelasfiscais.com.br/public/downloads/'+route+'.json'
+      void fetch(url,{signal:controller.signal}).then(r=>{
+        if(!r.ok)throw new Error('Consulta fiscal indisponível')
+        return r.json() as Promise<unknown>
+      }).then(raw=>{
+        const root=raw&&typeof raw==='object'?raw as Record<string,unknown>:{}
+        const rows=Array.isArray(raw)?raw:Array.isArray(root.dados)?root.dados:Array.isArray(root.data)?root.data:Array.isArray(root.resultados)?root.resultados:Array.isArray(root.items)?root.items:[]
+        const options=rows.map(item=>{
+          const x=item as Record<string,unknown>
+          return {codigo:String(x.codigo??x.codigo_num??x.cest??x.cfop??''),descricao:String(x.descricao??x.segmento??x.operacao??'')}
+        }).filter(x=>x.codigo&&x.descricao)
+        if(route!=='ncm')setFiscalCatalogs(prev=>({...prev,[route]:options}))
+        const currentRows=route==='ncm'?rows.filter(item=>{const x=item as Record<string,unknown>;return x.data_fim===undefined||String(x.data_fim)>='9999-01-01'}).map(item=>{const x=item as Record<string,unknown>;return {codigo:String(x.codigo??''),descricao:String(x.descricao??'')}}):options
+        searchCatalog(currentRows)
+      }).catch(e=>{if(!(e instanceof DOMException&&e.name==='AbortError'))setFiscalOptions([])}).finally(()=>setFiscalLoading(false))
+    },250)
+    return()=>{window.clearTimeout(timer);controller.abort()}
+  },[fiscalSearch,fiscalCatalogs])
   useEffect(()=>{void supabase.auth.getUser().then(async ({data})=>{if(!data.user)return;const {data:profile}=await supabase.from('erp_usuarios').select('nome').eq('auth_user_id',data.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();setOperatorName(String(profile?.nome||data.user.email||'Usuário ERP'))})},[])
+  useEffect(()=>{if(!companyId)return;void supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id',companyId).not('status','eq','INATIVA').order('codigo').limit(500).then(({data})=>setMachineOptions((data??[]) as Array<{id:string;codigo:string;nome:string}>))},[companyId])
 
   const filtered=useMemo(()=>{
     const q=query.trim().toLowerCase()
     return products.filter(p=>(!q||(p.codigo+' '+p.nome+' '+(p.codigo_barras||'')+' '+(p.grupo||'')+' '+(p.subgrupo||'')+' '+(p.marca||'')+' '+(p.categoria||'')).toLowerCase().includes(q))&&(groupFilter==='TODAS'||String(p.grupo||'')===groupFilter))
   },[products,query,groupFilter])
 
-  const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
-  const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
+  const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false);setAttachmentUrls({})}
+  const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false);setAttachmentUrls({})}
   const update=(key:keyof FormData,value:unknown)=>setForm(prev=>({...prev,[key]:value}))
   const openTechnicalPrint=()=>{if(!selectedId){setError('Selecione um produto antes de imprimir a ficha técnica.');return}window.open('/produtos-vendas/imprimir?id='+encodeURIComponent(selectedId),'_blank','noopener,noreferrer')}
   const save=async()=>{
@@ -159,18 +220,18 @@ export default function ProdutosVendasIndustrial(){
     catch(e){setError(e instanceof Error?e.message:'Não foi possível inativar o produto.')}
     finally{setBusy(false)}
   }
-  const loadDetails=async()=>{
-    if(!selectedId||detailsLoaded)return
+  const loadDetails=async(force=false)=>{
+    if(!selectedId||(!force&&detailsLoaded))return
     setBusy(true)
     try{
       const [m,d,a,an,ft]=await Promise.all([
         supabase.from('erp_estoque_movimentos').select('id,tipo,quantidade,origem,documento,observacao,created_at').eq('empresa_id',companyId).eq('produto_id',selectedId).order('created_at',{ascending:false}).limit(200),
         supabase.from('erp_producao_defeitos').select('id,ordem_producao_id,defeito,quantidade,observacao,created_at').eq('empresa_id',companyId).eq('produto_id',selectedId).order('created_at',{ascending:false}).limit(200),
         supabase.from('erp_audit_logs').select('id,action,module,old_data,new_data,created_at').eq('company_id',companyId).eq('entity','erp_produtos').eq('entity_id',selectedId).order('created_at',{ascending:false}).limit(200),
-        supabase.from('erp_documentos_anexos').select('id,nome_arquivo,storage_path,mime_type,tamanho_bytes,created_at').eq('empresa_id',companyId).eq('entidade_tipo','produto').eq('entidade_id',selectedId).order('created_at',{ascending:false}).limit(200),
+        supabase.from('erp_documentos_anexos').select('id,nome_arquivo,storage_path,mime_type,tamanho_bytes,created_at,entidade_tipo').eq('empresa_id',companyId).in('entidade_tipo',['produto','produto_desenho','produto_projeto_molde']).eq('entidade_id',selectedId).order('created_at',{ascending:false}).limit(200),
         supabase.from('erp_fichas_tecnicas').select('id,versao,rendimento,unidade_rendimento,status,revisao').eq('empresa_id',companyId).eq('produto_id',selectedId).eq('ativa',true).order('versao',{ascending:false}).limit(1).maybeSingle()
       ])
-      setMovements((m.data??[]) as Movement[]);setDefects((d.data??[]) as Defect[]);setAudits((a.data??[]) as Audit[]);setAttachments((an.data??[]) as Attachment[])
+      setMovements((m.data??[]) as Movement[]);setDefects((d.data??[]) as Defect[]);setAudits((a.data??[]) as Audit[]);const attachmentRows=(an.data??[]) as Attachment[];setAttachments(attachmentRows);const signedEntries=await Promise.all(attachmentRows.filter(a=>a.nome_arquivo.startsWith('DESENHO_')||a.nome_arquivo.startsWith('PROJETO_MOLDE_')).map(async a=>{const {data,error}=await supabase.storage.from('engenharia-projetos').createSignedUrl(a.storage_path,3600);return [a.id,error||!data?'':data.signedUrl] as const}));setAttachmentUrls(Object.fromEntries(signedEntries.filter(([,url])=>Boolean(url))))
       setProductionFicha((ft.data??null) as {id:string;versao:number;rendimento:number;unidade_rendimento:string;status:string|null;revisao:string|null} | null)
       if(ft.data?.id){
         const fo=await supabase.from('erp_ficha_operacoes').select('id,sequencia,operacao,maquina_id,setup_min,ciclo_seg,capacidade_hora,capacidade_dia').eq('empresa_id',companyId).eq('ficha_id',ft.data.id).order('sequencia')
@@ -254,6 +315,28 @@ export default function ProdutosVendasIndustrial(){
       .catch(e=>setError(e instanceof Error?e.message:'Não foi possível enviar a foto.')).finally(()=>setBusy(false))
   }
 
+  const uploadEngineeringFile=async(e:ChangeEvent<HTMLInputElement>,kind:'DESENHO'|'PROJETO_MOLDE')=>{
+    const file=e.currentTarget.files?.[0];e.currentTarget.value=''
+    if(!file)return
+    if(!selectedId||!companyId){setError('Salve e selecione o produto antes de anexar documentos.');return}
+    const allowed=/\.(pdf|png|jpe?g|webp|dwg|dxf|step|stp|igs|iges|sldprt|sldasm|stl|zip)$/i
+    if(!allowed.test(file.name)){setError('Formato não permitido. Use PDF, imagem ou arquivo CAD listado no campo de anexos.');return}
+    if(file.size>100*1024*1024){setError('O arquivo deve ter no máximo 100 MB.');return}
+    setBusy(true);setError('');setMessage('')
+    const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_')
+    const storagePath=companyId+'/'+selectedId+'/'+Date.now()+'-'+kind.toLowerCase()+'-'+safeName
+    const storedName=kind+'_'+file.name
+    try{
+      const {error:uploadError}=await supabase.storage.from('engenharia-projetos').upload(storagePath,file,{upsert:false,contentType:file.type||'application/octet-stream'})
+      if(uploadError)throw uploadError
+      const {error:rowError}=await supabase.from('erp_documentos_anexos').insert({empresa_id:companyId,entidade_tipo:'produto',entidade_id:selectedId,nome_arquivo:storedName,storage_path:storagePath,mime_type:file.type||null,tamanho_bytes:file.size})
+      if(rowError){await supabase.storage.from('engenharia-projetos').remove([storagePath]);throw rowError}
+      setDetailsLoaded(false);setMessage((kind==='DESENHO'?'Desenho/especificação':'Projeto do molde')+' anexado e vinculado ao produto.')
+      await loadDetails(true)
+    }catch(err){setError(err instanceof Error?err.message:'Não foi possível anexar e salvar o documento.')}
+    finally{setBusy(false)}
+  }
+
   const helpFor=(title:string)=>({
     'Descrição resumida':'Texto curto para identificação rápida do produto.',
     'Grupo':'Grupo mestre existente; determina a classificação principal do produto.',
@@ -275,8 +358,15 @@ export default function ProdutosVendasIndustrial(){
   const HelpTip=({text}:{text:string})=>{const [open,setOpen]=useState(false);return <span style={{position:'relative',display:'inline-flex',verticalAlign:'baseline',marginLeft:3}}><span role="button" tabIndex={0} aria-label="Ajuda" onClick={e=>{e.preventDefault();e.stopPropagation();setOpen(v=>!v)}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setOpen(v=>!v)}}} style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:10,height:12,color:'#2D8DB8',fontSize:11,fontWeight:800,lineHeight:1,cursor:'pointer',userSelect:'none'}}>?</span>{open&&<span role="tooltip" style={{position:'absolute',zIndex:1200,left:12,top:14,width:250,padding:'7px 8px',border:'1px solid #b9cbd3',borderRadius:2,background:'#fff',boxShadow:'0 4px 12px rgba(18,59,80,.16)',fontSize:9,fontWeight:400,lineHeight:1.35,color:'#173b4a',textTransform:'none'}}>{text}</span>}</span>}
   const fieldTitle=(title:string)=><span style={{display:'inline-flex',alignItems:'center',whiteSpace:'nowrap',minWidth:0}}>{title.replace(' [?]','')}{title.includes('[?]')&&<HelpTip text={helpFor(title)}/>}</span>;
   const field=(title:string,key:keyof FormData,type='text',span=1,locked=false)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input type={type} value={String(form[key]??'')} readOnly={locked} disabled={!editing} onChange={e=>update(key,type==='number'?n(e.target.value):e.target.value)} style={{...input,background:locked?'#eaf3f8':editing?'#fff':'#f5f7fa',color:locked?'#17445A':'#172033',fontWeight:locked?700:400,cursor:locked?'not-allowed':'text'}}/></label>
-  const select=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<select value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>{options.map(o=><option value={o[0]} key={o[0]}>{o[1]}</option>)}</select></label>
+  const select=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<select value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,(key==='ativo'||key==='inspecao_qualidade_obrigatoria')?e.target.value==='true':e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>{options.map(o=><option value={o[0]} key={o[0]}>{o[1]}</option>)}</select></label>
+  const combo=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input list={'product-combo-'+String(key)} value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id={'product-combo-'+String(key)}>{options.map(([value,description])=><option key={value} value={value} label={description}/>)}</datalist></label>
   const check=(title:string,key:keyof FormData)=><label style={{display:'flex',alignItems:'center',gap:7,fontSize:10,fontWeight:700,color:'#344054'}}><input type="checkbox" checked={Boolean(form[key])} disabled={!editing} onChange={e=>update(key,e.target.checked)}/>{title}</label>
+  const fiscalCombo=(title:string,key:'ncm'|'cest'|'cfop_entrada'|'cfop_saida',kind:'ncm'|'cest'|'cfop')=>{
+    const term=fiscalSearch.key===key?fiscalSearch.term:'';
+    const options=fiscalSearch.key===key?fiscalOptions:[];
+    const direction=key==='cfop_entrada'?'ENTRADA':'SAÍDA';
+    return <label style={{...label,position:'relative'}}>{fieldTitle(title)}<input value={term||String(form[key]??'')} disabled={!editing} placeholder="Digite código ou descrição para pesquisar…" onChange={e=>{update(key,'');setFiscalSearch({key,kind,term:e.target.value})}} style={{...input,background:editing?'#fff':'#f5f7fa'}}/>{term.trim().length>=2&&options.length>0&&<div style={{position:'absolute',zIndex:40,top:'100%',left:0,right:0,maxHeight:220,overflowY:'auto',border:'1px solid #9bbdce',background:'#fff',boxShadow:'0 6px 16px rgba(18,59,80,.18)'}}>{options.filter(x=>{const code=x.codigo.replace(/\D/g,'');return kind!=='cfop'||(key==='cfop_entrada'?code.startsWith('1')||code.startsWith('2')||code.startsWith('3'):code.startsWith('5')||code.startsWith('6')||code.startsWith('7'))}).map(x=><button key={x.codigo} type="button" onClick={()=>{update(key,x.codigo);setFiscalSearch({key:'',kind:'ncm',term:''});setFiscalOptions([])}} style={{display:'block',width:'100%',textAlign:'left',border:0,borderBottom:'1px solid #e5edf1',background:'#fff',padding:'6px 8px',fontSize:10,color:'#123B50',cursor:'pointer'}}><strong>{x.codigo}</strong><span> — {x.descricao}</span></button>)}</div>}{term.trim().length>=2&&options.length===0&&<span style={{fontSize:9,color:'#667085',textTransform:'none'}}>{fiscalLoading?'Pesquisando códigos fiscais…':'Nenhum código retornado. Tente outro código ou descrição.'}</span>}</label>
+  }
 
   if(printMode&&selectedId){
     return (
@@ -313,19 +403,34 @@ export default function ProdutosVendasIndustrial(){
       </main>
     )
   }
-  return <ERPHorizontalShell operatorName={operatorName}><main className="product-master-screen" style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif',background:'#fff'}}>
+  return <ERPHorizontalShell operatorName={operatorName}><main className="product-master-screen" style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif',background:'#F4FBFD'}}>
     <style>{`
       .product-master-screen label{min-width:0}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}
       .product-master-screen .product-form-grid>*{min-width:0}
       .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%}
-      .product-master-screen .product-form-grid label>span{max-width:100%;line-height:11px}
+      .product-master-screen .product-form-grid label>span{max-width:100%;line-height:11px;min-height:11px;align-items:center}
+      .product-master-screen>header{background:#123B50!important;border-bottom-color:#E6A34A!important;border-left-color:#E6A34A!important;min-height:48px}
+      .product-master-screen>header>div:first-child>div{color:#D9F1F7!important;letter-spacing:.08em}
+      .product-master-screen>header h1{color:#fff!important;font-weight:600;letter-spacing:.01em}
+      .product-master-screen section[style*="margin: 10px"]{border-color:#B9D4DF!important;box-shadow:0 1px 2px rgba(18,59,80,.06)}
+      .product-master-screen section[style*="margin: 10px"]>div:first-child{color:#123B50}
+      .product-master-screen section[style*="margin: 10px"] table thead th{background:#123B50!important;color:#fff!important;font-size:9px!important;font-weight:700!important;letter-spacing:.04em}
+      .product-master-screen section[style*="margin: 10px"] table tbody tr{height:32px}
+      .product-master-screen section[style*="margin: 10px"] table tbody tr:hover{background:#E6F3F8}
+      .product-master-screen section[style*="margin:10px"]>div:first-child{background:linear-gradient(180deg,#eaf4f8 0%,#d9ebf2 100%);box-shadow:inset 0 1px 0 #fff,inset 0 -1px 0 #c4dce7}
+      .product-master-screen section[style*="margin: 10px"] button{border-radius:2px!important}
+      .product-master-screen section[style*="margin: 10px"]>div[style*="border-bottom"]{background:#EAF4F8!important}
+      .product-master-screen section[style*="margin: 10px"]>div[style*="border-bottom"] button{color:#315466!important}
+      .product-master-screen section[style*="margin: 10px"]>div[style*="border-bottom"] button[style*="border-bottom: 3px solid"]{background:#123B50!important;color:#fff!important;border-bottom-color:#E6A34A!important}
+      .product-master-screen section[style*="margin:10px"]>div[style*="border-bottom"] button{height:32px!important}
       @media(max-width:1150px){.product-master-screen .product-general-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}.product-master-screen .product-measure-row{grid-template-columns:repeat(5,minmax(0,1fr))!important}.product-master-screen .product-commercial-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
       @media(max-width:700px){.product-master-screen .product-general-row,.product-master-screen .product-measure-row,.product-master-screen .product-commercial-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3){grid-column:span 2!important}.product-master-screen .product-commercial-row>*{grid-column:span 1!important}}
     `}</style>
-    <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
-      <div><div style={{fontSize:11,fontWeight:900,color:'#1c4bb5'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
+    <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #C8E3EE',borderLeft:'3px solid #2D8DB8',background:'#F4FBFD',flexWrap:'wrap'}}>
+      <div><div style={{fontSize:10,fontWeight:800,color:'#123B50'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
+        <button type="button" onClick={()=>setShowProductTablet(true)} style={btn('normal')}><Tablet size={15}/>Tablet de módulos</button>
         <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>
         <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />
         <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={13}/>Importar Excel</button>
@@ -339,7 +444,38 @@ export default function ProdutosVendasIndustrial(){
       </div>
     </header>
 
-    {(message||error)&&<div role="alert" style={{margin:10,padding:'9px 12px',borderRadius:6,border:'1px solid '+(error?'#fecaca':'#bbf7d0'),background:error?'#fff1f2':'#f0fdf4',color:error?'#b91c1c':'#166534',fontWeight:800,fontSize:12}}>{error||message}</div>}
+
+    {showProductTablet&&<div role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setShowProductTablet(false)}} style={{position:'fixed',inset:0,zIndex:1400,background:'rgba(10,25,35,.62)',display:'grid',placeItems:'center',padding:16}}>
+      <section role="dialog" aria-modal="true" aria-label="Tablet de módulos do cadastro de produtos" style={{width:'min(980px,96vw)',maxHeight:'88vh',overflowY:'auto',background:'#1E222B',color:'#F4FBFD',border:'1px solid #3C5663',borderRadius:2,boxShadow:'0 18px 55px rgba(0,0,0,.35)'}}>
+        <header style={{position:'sticky',top:0,zIndex:2,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,padding:'12px 14px',background:'#123B50',borderBottom:'2px solid #E6A34A'}}>
+          <div style={{display:'flex',alignItems:'center',gap:10}}><Tablet size={23} color="#F4FBFD"/><div><div style={{fontSize:9,fontWeight:700,letterSpacing:'.12em',color:'#B9DFEA'}}>ERP INDUSTRIAL · CADASTRO MESTRE</div><h2 style={{fontSize:16,margin:'3px 0 0',color:'#fff'}}>TABLET DE MÓDULOS</h2></div></div>
+          <button type="button" aria-label="Fechar tablet" onClick={()=>setShowProductTablet(false)} style={{...btn('normal'),height:32,background:'#F4FBFD'}}><X size={15}/>Fechar</button>
+        </header>
+        <div style={{padding:14}}>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:'.08em',color:'#9CC7D5',marginBottom:8}}>ACESSO DIRETO ÀS TELAS DO PRODUTO</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(170px,1fr))',gap:8}}>
+            {tabItems.map(([id,title,Icon])=><button key={id} type="button" onClick={()=>{setTab(id);if(selectedId)void loadDetails();setShowProductTablet(false)}} style={{display:'flex',alignItems:'center',gap:10,minHeight:76,padding:'12px 10px',textAlign:'left',background:tab===id?'#234F63':'#292F39',border:'1px solid '+(tab===id?'#E6A34A':'#455560'),borderRadius:2,color:'#F4FBFD',cursor:'pointer'}}>
+              <span style={{display:'grid',placeItems:'center',width:38,height:38,flex:'0 0 38px',background:'#123B50',border:'1px solid #3D7186',color:'#6DD0DC'}}><Icon size={20}/></span>
+              <span style={{display:'grid',gap:4}}><strong style={{fontSize:10,letterSpacing:'.04em'}}>{title}</strong><small style={{fontSize:9,lineHeight:1.35,color:'#B8C8D0'}}>{id==='gerais'?'Identificação e classificação':id==='fiscal'?'NCM, CEST, CFOP e impostos':id==='estoque'?'Saldos, lotes e localização':id==='producao'?'Processo, máquinas e capacidade':id==='qualidade'?'Especificações e inspeção':id==='engenharia'?'Desenhos e projeto do molde':'Custos e centro responsável'}</small></span>
+            </button>)}
+          </div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:'.08em',color:'#9CC7D5',margin:'18px 0 8px'}}>ATALHOS · SISTEMA DE ABASTECIMENTO</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(170px,1fr))',gap:8}}>
+            {[
+              {value:'NENHUM',label:'Não definido',description:'Classificação pendente',Icon:PackageSearch},
+              {value:'COMPRAR',label:'Comprar',description:'Material adquirido',Icon:ShoppingCart},
+              {value:'FABRICAR',label:'Fabricar',description:'Produção interna',Icon:Factory},
+              {value:'COMPRAR_FABRICAR',label:'Comprar e fabricar',description:'Permite os dois fluxos',Icon:GitBranch}
+            ].map(item=><button key={item.value} type="button" onClick={()=>{update('fabricado',item.value==='FABRICAR'||item.value==='COMPRAR_FABRICAR');update('comprado',item.value==='COMPRAR'||item.value==='COMPRAR_FABRICAR');setEditing(true);setTab('gerais');setShowProductTablet(false);setMessage('Sistema de abastecimento selecionado. Revise e salve o cadastro para confirmar.');setError('')}} style={{display:'flex',alignItems:'center',gap:10,minHeight:70,padding:'10px',textAlign:'left',background:'#292F39',border:'1px solid #455560',borderRadius:2,color:'#F4FBFD',cursor:'pointer'}}>
+              <span style={{display:'grid',placeItems:'center',width:36,height:36,flex:'0 0 36px',background:'#173F50',border:'1px solid #3D7186',color:'#6DD0DC'}}><item.Icon size={19}/></span>
+              <span style={{display:'grid',gap:4}}><strong style={{fontSize:10}}>{item.label}</strong><small style={{fontSize:9,color:'#B8C8D0'}}>{item.description}</small></span>
+            </button>)}
+          </div>
+          <p style={{fontSize:9,lineHeight:1.5,color:'#9EADB7',margin:'12px 0 0'}}>Os atalhos de abastecimento alteram somente os campos existentes de compra e fabricação. A alteração fica pendente até você salvar o produto.</p>
+        </div>
+      </section>
+    </div>}
+    {(message||error)&&<div role="alert" style={{margin:10,padding:'9px 12px',borderRadius:2,border:'1px solid '+(error?'#D65B61':'#3A9D78'),background:error?'#fff1f2':'#f0fdf4',color:error?'#b91c1c':'#166534',fontWeight:600,fontSize:10}}>{error||message}</div>}
 
     {selectedId&&<section style={{...panel,margin:'10px 10px 0',padding:7}}>
       <div style={{fontSize:9,fontWeight:700,color:'#123B50',marginBottom:5,textTransform:'uppercase'}}>Fotos do produto • catálogo digital</div>
@@ -358,16 +494,16 @@ export default function ProdutosVendasIndustrial(){
     {selectedId&&<><section style={{...panel,margin:'10px 10px 0',padding:7,display:'grid',gridTemplateColumns:'72px minmax(0,1fr) auto',gap:9,alignItems:'center',background:'#fff'}}>
       <div style={{width:72,height:60,border:'1px solid #cbd5e1',background:'#f8fafc',display:'grid',placeItems:'center',overflow:'hidden'}}>{form.foto_url?<img src={form.foto_url} alt="Foto do produto" style={{width:'100%',height:'100%',objectFit:'contain'}}/>:<ImageIcon size={22} color="#98a2b3"/>}</div>
       <div style={{minWidth:0}}><div style={{fontSize:9,fontWeight:700,color:'#667085',textTransform:'uppercase'}}>Produto selecionado</div><div style={{fontSize:13,fontWeight:700,color:'#123B50',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{form.codigo||'AUTOMÁTICO'} • {form.nome||'Sem descrição'}</div><div style={{fontSize:9,color:'#667085',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{form.descricao_resumida||'Sem descrição resumida'} · {form.grupo||'Sem grupo'} · {form.marca||'Sem marca'}</div></div>
-      <div style={{display:'flex',gap:12,alignItems:'center',fontSize:9}}><span><b>ESTOQUE</b> {fmt(form.estoque_atual)} {form.unidade}</span><span><b>STATUS</b> {form.ativo?'ATIVO':'INATIVO'}</span></div>
+      <div style={{display:'flex',gap:6,alignItems:'center',justifyContent:'flex-end',flexWrap:'wrap',fontSize:9}}><span style={{display:'inline-flex',alignItems:'center',gap:4,padding:'4px 7px',border:'1px solid #2D8DB8',background:'#EAF4F8',color:'#123B50',fontWeight:700,whiteSpace:'nowrap'}}><Boxes size={11}/> ESTOQUE {fmt(form.estoque_atual)} {form.unidade}</span><span style={{display:'inline-flex',alignItems:'center',gap:4,padding:'4px 7px',border:'1px solid '+(form.ativo?'#3A9D78':'#D65B61'),background:form.ativo?'#E8F6EF':'#FFF0F1',color:form.ativo?'#216D51':'#B4232C',fontWeight:700,whiteSpace:'nowrap'}}><CheckCircle2 size={11}/> {form.ativo?'ATIVO':'INATIVO'}</span></div>
     </section></>}
 
     <section style={{...panel,margin:10,overflow:'hidden'}}>
       <div style={{display:'flex',borderBottom:'1px solid #d6dde6',background:'#f7f9fc',overflowX:'auto'}}>
-        {tabItems.map(([id,title,Icon])=><button key={id} type="button" onClick={()=>{setTab(id);if(selectedId)void loadDetails()}} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 10px',border:0,borderBottom:tab===id?'3px solid #184bb4':'3px solid transparent',background:tab===id?'#fff':'transparent',color:tab===id?'#184bb4':'#344054',fontWeight:900,fontSize:10,cursor:'pointer',whiteSpace:'nowrap'}}><Icon size={14}/>{title}</button>)}
+        {tabItems.map(([id,title,Icon])=><button key={id} type="button" onClick={()=>{setTab(id);if(selectedId)void loadDetails()}} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 10px',border:0,borderBottom:tab===id?'3px solid #E6A34A':'3px solid transparent',background:tab===id?'#123B50':'transparent',color:tab===id?'#fff':'#315466',fontWeight:900,fontSize:10,cursor:'pointer',whiteSpace:'nowrap'}}><Icon size={14}/>{title}</button>)}
       </div>
 
       {tab==='gerais'&&<form onSubmit={save} style={{padding:8}}>
-        <div className="product-form-grid product-general-row" style={{display:'grid',gridTemplateColumns:'75px 105px minmax(190px,2fr) minmax(145px,1.5fr) minmax(115px,1fr) minmax(100px,.85fr) minmax(100px,.85fr)',gap:8,alignItems:'end'}}>
+        <div className="product-form-grid product-general-row" style={{display:'grid',gridTemplateColumns:'75px 105px minmax(190px,2fr) minmax(145px,1.5fr) minmax(115px,1fr) minmax(100px,.85fr) minmax(100px,.85fr)',gap:8,alignItems:'start'}}>
           {field('Código *','codigo','text',1,true)}
           {field('Código de barras','codigo_barras','text',1,true)}
           {field('Descrição *','nome')}
@@ -377,43 +513,72 @@ export default function ProdutosVendasIndustrial(){
           {field('Marca [?]','marca')}
         </div>
 
-        <div className="product-form-grid product-measure-row" style={{display:'grid',gridTemplateColumns:'55px 55px 55px repeat(5,minmax(72px,.8fr)) minmax(125px,1.3fr) minmax(150px,1.5fr)',gap:8,marginTop:8,alignItems:'end'}}>
-          {select('Un. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-          {select('Un. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-          {select('Un. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-          {field('Peso líquido (kg)','peso_liquido','number')}
-          {field('Peso bruto (kg)','peso_bruto','number')}
-          {field('Comprimento (mm)','comprimento_mm','number')}
-          {field('Largura (mm)','largura_mm','number')}
-          {field('Altura (mm)','altura_mm','number')}
-          {select('Tipo de produto','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','MATÉRIA-PRIMA'],['PRENSADOS','PRENSADOS'],['INJETADOS','INJETADOS'],['ALMOXARIFADO','ALMOXARIFADO'],['MATERIAL DE ESCRITÓRIO','MATERIAL DE ESCRITÓRIO'],['PRODUTOS DE LIMPEZA','PRODUTOS DE LIMPEZA'],['Componente','Componente'],['Insumo','Insumo']])}
-          <label style={label}>Fornecedor padrão<select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{suppliers.map(s=><option value={s.id} key={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>
+        <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8,marginTop:8}}>
+          <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>UNIDADES DE MEDIDA</div>
+          <div className="product-form-grid product-measure-row" style={{display:'grid',gridTemplateColumns:'minmax(120px,.65fr) minmax(120px,.65fr) minmax(120px,.65fr) minmax(220px,2fr)',gap:8,alignItems:'end'}}>
+            {select('Un. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L'],['M2','M²'],['M3','M³']])}
+            {select('Un. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L'],['M2','M²'],['M3','M³']])}
+            {select('Un. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L'],['M2','M²'],['M3','M³']])}
+            <label style={label}>Fornecedor padrão<select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{suppliers.map(s=><option value={s.id} key={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>
+          </div>
+        </section>
+        <div className="product-form-grid" style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:8,marginTop:8,alignItems:'stretch'}}>
+          <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8}}>
+            <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>CONTROLE DE PESO</div>
+            <div style={{display:'grid',gridTemplateColumns:'95px 95px minmax(0,1fr)',gap:8,alignItems:'end'}}>
+              {field('Peso líquido (kg)','peso_liquido','number')}
+              {field('Peso bruto (kg)','peso_bruto','number')}
+              <div style={{fontSize:9,color:'#667085',alignSelf:'center'}}>Campos compactos e proporcionais ao conteúdo.</div>
+            </div>
+          </section>
+          <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8}}>
+            <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>CONTROLE DE MEDIDA</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:8,alignItems:'end'}}>
+              {field('Comprimento (mm)','comprimento_mm','number')}
+              {field('Largura (mm)','largura_mm','number')}
+              {field('Altura (mm)','altura_mm','number')}
+            </div>
+          </section>
         </div>
-
-        <div className="product-form-grid product-commercial-row" style={{display:'grid',gridTemplateColumns:'78px 78px 78px 78px 120px 120px minmax(150px,1fr) max-content minmax(180px,1.2fr)',gap:8,marginTop:8,alignItems:'end'}}>
-          {field('Custo médio','custo_medio','number')}
-          {field('Último custo','custo_ultimo','number')}
-          {field('Custo fabricação','custo_fabricacao','number')}
-          {field('Preço venda','preco_venda','number')}
-          {field('Ref. interna','referencia_interna')}
-          {field('Ref. cliente','referencia_cliente')}
-          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:30,padding:'5px 7px',resize:'none',fontSize:11}}/></label>
-          <div style={{display:'flex',alignItems:'center',gap:5,height:30,border:'1px solid #d5dde7',padding:'0 6px',background:'#fff',whiteSpace:'nowrap'}}><span style={{fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}}>Sit.</span>{check('Fab.','fabricado')}{check('Comp.','comprado')}{check('Rev.','revenda')}</div>
-          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} title="Selecione uma localização existente do Estoque. A hierarquia depósito/rua/prateleira/caixa é mantida no cadastro de localizações." style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
-        </div>
+        <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8,marginTop:8}}>
+          <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>DADOS DE CLIENTES</div>
+          <div style={{display:'grid',gridTemplateColumns:'minmax(130px,.8fr) minmax(130px,.8fr) minmax(180px,2fr)',gap:8,alignItems:'end'}}>
+            {field('Código cliente','referencia_cliente')}
+            {field('Referência interna','referencia_interna')}
+            <div style={{fontSize:9,color:'#667085',alignSelf:'center'}}>O cadastro atual salva o código de referência do cliente; o vínculo de cliente principal exige coluna própria no banco.</div>
+          </div>
+        </section>
+        <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8,marginTop:8}}>
+          <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>CLASSIFICAÇÃO DO MATERIAL</div>
+          <div style={{display:'grid',gridTemplateColumns:'minmax(180px,1fr) auto auto minmax(180px,1.2fr)',alignItems:'end',gap:12,minHeight:30}}>
+            <label style={label}>Sistema de abastecimento<select value={form.fabricado&&form.comprado?'COMPRAR_FABRICAR':form.fabricado?'FABRICAR':form.comprado?'COMPRAR':'NENHUM'} disabled={!editing} onChange={e=>{const mode=e.target.value;update('fabricado',mode==='FABRICAR'||mode==='COMPRAR_FABRICAR');update('comprado',mode==='COMPRAR'||mode==='COMPRAR_FABRICAR')}} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="NENHUM">Não definido</option><option value="COMPRAR">Comprar</option><option value="FABRICAR">Fabricar</option><option value="COMPRAR_FABRICAR">Comprar e fabricar</option></select></label>
+            <label style={{display:'flex',alignItems:'center',gap:6,fontSize:10,fontWeight:700,color:'#344054',minHeight:30}}><input type="checkbox" checked={String(form.categoria||'').toLowerCase()==='produto acabado'} disabled={!editing} onChange={e=>update('categoria',e.target.checked?'Produto acabado':null)}/>Acabado</label>
+            {check('Revenda','revenda')}
+            {select('Tipo de produto','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','MATÉRIA-PRIMA'],['PRENSADOS','PRENSADOS'],['INJETADOS','INJETADOS'],['ALMOXARIFADO','ALMOXARIFADO'],['MATERIAL DE ESCRITÓRIO','MATERIAL DE ESCRITÓRIO'],['PRODUTOS DE LIMPEZA','PRODUTOS DE LIMPEZA'],['Componente','Componente'],['Insumo','Insumo']])}
+          </div>
+          <div style={{fontSize:9,color:'#526b78',marginTop:6}}>A escolha atualiza os campos existentes de fabricação e compra. O indicador de revenda permanece independente; nenhuma coluna nova é criada.</div>
+        </section>
+        <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8,marginTop:8}}>
+          <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>OBSERVAÇÕES</div>
+          <textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,width:'100%',height:44,padding:'5px 7px',resize:'vertical',fontSize:11}}/>
+        </section>
 
       </form>}
 
-            {tab==='fiscal'&&<section style={{padding:8}}>
-        <div style={{display:'grid',gridTemplateColumns:'80px 220px 180px 95px 95px',gap:7,alignItems:'end'}}>
+            {tab==='fiscal'&&<section style={{padding:10}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(160px,1fr))',gap:9,alignItems:'start'}}>
           {select('Situação','ativo',[['true','Ativo'],['false','Inativo']])}
-          {select('Origem [?]','origem',[['0 - Nacional','0 - Nacional'],['1 - Estrangeira - Importação direta','1 - Estrangeira - Importação direta'],['2 - Estrangeira - mercado interno','2 - Estrangeira - mercado interno'],['3 - Nacional, conteúdo importação >40% e <70%','3 - Nacional, conteúdo importação >40% e <70%'],['4 - Nacional, processo produtivo básico','4 - Nacional, processo produtivo básico'],['5 - Nacional, conteúdo importação <40%','5 - Nacional, conteúdo importação <40%'],['6 - Estrangeira - importação direta, sem similar nacional','6 - Estrangeira - importação direta, sem similar nacional'],['7 - Estrangeira - mercado interno, sem similar nacional','7 - Estrangeira - mercado interno, sem similar nacional'],['8 - Nacional, conteúdo importação >70%','8 - Nacional, conteúdo importação >70%']])}
-          {field('NCM [?]','ncm')}{field('CEST [?]','cest')}{field('CST ICMS [?]','cst_icms')}
+          {select('Origem da mercadoria','origem',[['0 - Nacional','0 - Nacional'],['1 - Estrangeira - importação direta','1 - Estrangeira - importação direta'],['2 - Estrangeira - mercado interno','2 - Estrangeira - mercado interno'],['3 - Nacional, conteúdo importação >40% e <=70%','3 - Nacional, conteúdo importação >40% e <=70%'],['4 - Nacional, processo produtivo básico','4 - Nacional, processo produtivo básico'],['5 - Nacional, conteúdo importação <=40%','5 - Nacional, conteúdo importação <=40%'],['6 - Estrangeira - importação direta, sem similar nacional','6 - Estrangeira - importação direta, sem similar nacional'],['7 - Estrangeira - mercado interno, sem similar nacional','7 - Estrangeira - mercado interno, sem similar nacional'],['8 - Nacional, conteúdo importação >70%','8 - Nacional, conteúdo importação >70%']])}
+          {fiscalCombo('NCM — pesquisar código ou descrição','ncm','ncm')}
+          {fiscalCombo('CEST — pesquisar código ou descrição','cest','cest')}
+          {select('CST ICMS','cst_icms',[['00','00 — Tributada integralmente'],['10','10 — Tributada com cobrança de ICMS-ST'],['20','20 — Com redução de base de cálculo'],['30','30 — Isenta/não tributada com ICMS-ST'],['40','40 — Isenta'],['41','41 — Não tributada'],['50','50 — Suspensão'],['51','51 — Diferimento'],['60','60 — ICMS cobrado anteriormente por ST'],['70','70 — Redução de base e ICMS-ST'],['90','90 — Outras']])}
+          {select('CSOSN','csosn',[['101','101 — Tributada com permissão de crédito'],['102','102 — Tributada sem permissão de crédito'],['103','103 — Isenção do ICMS no Simples Nacional'],['201','201 — Tributada com crédito e ICMS-ST'],['202','202 — Tributada sem crédito e com ICMS-ST'],['203','203 — Isenção com ICMS-ST'],['300','300 — Imune'],['400','400 — Não tributada'],['500','500 — ICMS cobrado anteriormente por ST'],['900','900 — Outros']])}
+          {fiscalCombo('CFOP entrada — pesquisar','cfop_entrada','cfop')}
+          {fiscalCombo('CFOP saída — pesquisar','cfop_saida','cfop')}
+          {select('Origem fiscal','origem_fiscal',[['0','0 — Nacional, exceto códigos 3, 4, 5 e 8'],['1','1 — Estrangeira: importação direta'],['2','2 — Estrangeira: adquirida no mercado interno'],['3','3 — Nacional, conteúdo de importação superior a 40%'],['4','4 — Nacional, processo produtivo básico'],['5','5 — Nacional, conteúdo de importação inferior ou igual a 40%'],['6','6 — Estrangeira: importação direta, sem similar nacional'],['7','7 — Estrangeira: mercado interno, sem similar nacional'],['8','8 — Nacional, conteúdo de importação superior a 70%']])}
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'95px 95px 95px 95px 65px 65px 65px 65px',gap:7,marginTop:7,alignItems:'end'}}>
-          {field('CSOSN [?]','csosn')}{field('CFOP entrada [?]','cfop_entrada')}{field('CFOP saída [?]','cfop_saida')}{field('Origem fiscal [?]','origem_fiscal')}{field('ICMS %','aliquota_icms','number')}{field('IPI %','aliquota_ipi','number')}{field('PIS %','aliquota_pis','number')}{field('COFINS %','aliquota_cofins','number')}
-        </div>
-        <div style={{marginTop:7,fontSize:9,color:'#667085'}}>Use o ? para consultar o significado da sigla/código antes de preencher. NCM e CEST permanecem exclusivamente nesta aba Fiscal.</div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(120px,1fr))',gap:9,marginTop:9,alignItems:'start'}}>{field('ICMS %','aliquota_icms','number')}{field('IPI %','aliquota_ipi','number')}{field('PIS %','aliquota_pis','number')}{field('COFINS %','aliquota_cofins','number')}</div>
+        <div style={{marginTop:9,fontSize:9,color:'#526b78',background:'#eaf4f8',border:'1px solid #c7dbe4',padding:'7px 9px'}}>NCM, CEST e CFOP pesquisam códigos e descrições fiscais; CST ICMS e CSOSN oferecem os códigos e suas situações usuais. Os dados sugerem o código, mas a classificação e o enquadramento final devem ser validados pelo responsável fiscal da empresa antes da emissão de NF-e.</div>
       </section>}
 
             {tab==='estoque'&&<section style={{padding:10}}>
@@ -431,27 +596,91 @@ export default function ProdutosVendasIndustrial(){
       </section>}
 
       {tab==='producao'&&<section style={{padding:10}}>
-        <div style={{display:'grid',gridTemplateColumns:'82px 82px 82px 82px 120px 120px max-content',gap:7,alignItems:'end'}}>
-          {field('PRAZO COMPRA (dias)','prazo_compra_dias','number')}{field('PRAZO PRODUÇÃO (dias)','prazo_producao_dias','number')}{field('CUSTO FABRICAÇÃO','custo_fabricacao','number')}{field('TOLERÂNCIA (%)','tolerancia_percentual','number')}
-          <label style={label}>FICHA ATIVA<input value={productionFicha?('REV. '+(productionFicha.revisao||productionFicha.versao)):'Não cadastrada'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
-          <label style={label}>RENDIMENTO<input value={productionFicha?fmt(productionFicha.rendimento)+' '+productionFicha.unidade_rendimento:'—'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A'}}/></label>
-          <button type="button" onClick={()=>{window.location.href='/ficha-engenharia?produto='+encodeURIComponent(selectedId||'')}} style={{...btn('normal'),width:'max-content',maxWidth:'100%',whiteSpace:'nowrap',padding:'0 8px',fontSize:10}}>ABRIR FICHA DE PROCESSO</button>
-        </div>
-        <div style={{marginTop:8,border:'1px solid #d5dde7',overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr style={{background:'#123B50',color:'#fff'}}>{['Seq.','Operação','Máquina','Setup min','Ciclo s','Qtde/h','Qtde/dia'].map(h=><th key={h} style={{padding:'5px 6px',textAlign:'left',fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{productionOps.map(o=><tr key={o.id} style={{borderBottom:'1px solid #e5e7eb'}}><td style={{padding:'5px 6px'}}>{o.sequencia}</td><td style={{padding:'5px 6px'}}>{o.operacao}</td><td style={{padding:'5px 6px'}}>{o.maquina_codigo?o.maquina_codigo+' • '+(o.maquina_nome||''):'Não definida'}</td><td style={{padding:'5px 6px'}}>{fmt(o.setup_min)}</td><td style={{padding:'5px 6px'}}>{fmt(o.ciclo_seg)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_hora==null?'—':fmt(o.capacidade_hora)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_dia==null?'—':fmt(o.capacidade_dia)}</td></tr>)}{!productionOps.length&&<tr><td colSpan={7} style={{padding:12,textAlign:'center',color:'#667085'}}>Nenhuma operação cadastrada. Abra a ficha de processo para cadastrar máquina/posto, setup, ciclo e instruções.</td></tr>}</tbody></table></div>
-        <div style={{marginTop:7,fontSize:9,color:'#667085'}}>Máquina, setup, ciclo e capacidade vêm da ficha técnica/roteiro real; a ficha completa alimenta o PCP e a Ordem de Produção.</div>
+        <section style={{border:'1px solid #c7dbe4',background:'#fff',padding:9}}>
+          <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:6,marginBottom:8}}>PROCESSO E EQUIPAMENTO</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(150px,1fr))',gap:9,alignItems:'start'}}>
+            {select('Tipo de processo','tipo_processo',[['NAO_APLICA','Não se aplica'],['PRENSADOS','Prensados / prensa'],['INJETADOS','Injetados / injetora'],['ESTAMPARIA','Estamparia / prensa'],['CORTE_VINCO','Corte e vinco'],['USINAGEM','Usinagem'],['ACABAMENTO','Acabamento'],['MONTAGEM','Montagem'],['OUTRO','Outro']])}
+            {select('Tipo de máquina','tipo_maquina',[['PRENSA_HIDRAULICA','Prensa hidráulica'],['PRENSA_MECANICA','Prensa mecânica'],['PRENSA_PNEUMATICA','Prensa pneumática'],['INJETORA','Injetora de plástico'],['INJETORA_BORRACHA','Injetora de borracha'],['EXTRUSORA','Extrusora'],['CORTE_VINCO','Corte e vinco'],['OUTRA','Outra']])}
+            {select('Tipo de injetora','tipo_injetora',[['HORIZONTAL_HIDRAULICA','Horizontal hidráulica'],['HORIZONTAL_ELETRICA','Horizontal elétrica'],['HORIZONTAL_HIBRIDA','Horizontal híbrida'],['VERTICAL','Vertical'],['DUAS_COMPONENTES','Duas componentes / bi-injeção'],['BORRACHA','Injetora de borracha'],['NAO_APLICA','Não se aplica']])}
+            <label style={label}>Máquina preferencial<select value={form.maquina_preferencial_id||''} disabled={!editing} onChange={e=>update('maquina_preferencial_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione a máquina cadastrada</option>{machineOptions.map(m=><option key={m.id} value={m.id}>{m.codigo} — {m.nome}</option>)}</select></label>
+            {field('Tonelagem mínima (t)','tonelagem_minima','number')}{field('Tonelagem máxima (t)','tonelagem_maxima','number')}{field('Nº de cavidades','numero_cavidades','number')}{field('Código do molde / estampo','molde_codigo')}
+          </div>
+        </section>
+        <section style={{border:'1px solid #c7dbe4',background:'#fff',padding:9,marginTop:9}}>
+          <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:6,marginBottom:8}}>PRAZOS, CUSTOS E FICHA DE PROCESSO</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(130px,1fr))',gap:9,alignItems:'start'}}>
+            {field('Prazo de compra (dias)','prazo_compra_dias','number')}{field('Prazo de produção (dias)','prazo_producao_dias','number')}{field('Custo fabricação','custo_fabricacao','number')}{field('Tolerância (%)','tolerancia_percentual','number')}
+            <label style={label}>Ficha ativa<input value={productionFicha?('REV. '+(productionFicha.revisao||productionFicha.versao)):'Não cadastrada'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
+            <label style={label}>Rendimento<input value={productionFicha?fmt(productionFicha.rendimento)+' '+productionFicha.unidade_rendimento:'—'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A'}}/></label>
+            {field('Número da ficha de processo','numero_ficha_processo')}
+            <button type="button" onClick={()=>{window.location.href='/ficha-engenharia?produto='+encodeURIComponent(selectedId||'')}} style={{...btn('primary'),width:'100%',maxWidth:'100%',whiteSpace:'nowrap',padding:'0 8px',fontSize:10,alignSelf:'end'}}>ABRIR FICHA DE PROCESSO</button>
+          </div>
+        </section>
+        <div style={{marginTop:9,border:'1px solid #d5dde7',overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr style={{background:'#123B50',color:'#fff'}}>{['Seq.','Operação','Máquina','Setup min','Ciclo s','Qtde/h','Qtde/dia'].map(h=><th key={h} style={{padding:'6px 7px',textAlign:'left',fontWeight:600}}>{h}</th>)}</tr></thead><tbody>{productionOps.map(o=><tr key={o.id} style={{borderBottom:'1px solid #e5e7eb'}}><td style={{padding:'6px 7px'}}>{o.sequencia}</td><td style={{padding:'6px 7px'}}>{o.operacao}</td><td style={{padding:'6px 7px'}}>{o.maquina_codigo?o.maquina_codigo+' • '+(o.maquina_nome||''):'Não definida'}</td><td style={{padding:'6px 7px'}}>{fmt(o.setup_min)}</td><td style={{padding:'6px 7px'}}>{fmt(o.ciclo_seg)}</td><td style={{padding:'6px 7px'}}>{o.capacidade_hora==null?'—':fmt(o.capacidade_hora)}</td><td style={{padding:'6px 7px'}}>{o.capacidade_dia==null?'—':fmt(o.capacidade_dia)}</td></tr>)}{!productionOps.length&&<tr><td colSpan={7} style={{padding:12,textAlign:'center',color:'#667085'}}>Nenhuma operação cadastrada. Abra a ficha de processo para cadastrar máquina/posto, setup, ciclo e instruções.</td></tr>}</tbody></table></div>
+        <div style={{marginTop:7,fontSize:9,color:'#667085'}}>A seleção acima define o processo previsto do produto; a ficha de engenharia mantém o roteiro operacional real, máquina/posto, setup, ciclo e instruções que alimentam o PCP e a Ordem de Produção.</div>
+      </section>}
+
+      {tab==='custos'&&<section style={{padding:8}}>
+        <section className="product-detail-card" style={{border:'1px solid #c7dbe4',background:'#fff',padding:8}}>
+          <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:5,marginBottom:7}}>CENTRO DE CUSTOS DO PRODUTO</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(130px,1fr))',gap:8,alignItems:'start'}}>
+            {field('Custo médio','custo_medio','number')}{field('Último custo','custo_ultimo','number')}{field('Custo fabricação','custo_fabricacao','number')}{field('Preço venda','preco_venda','number')}
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(160px,1fr))',gap:8,marginTop:9,alignItems:'start'}}>
+            <label style={label}>Centro de custo do produto<select value={form.centro_custo_produto_id||''} disabled={!editing} onChange={e=>{const center=costCenters.find(x=>x.id===e.target.value);update('centro_custo_produto_id',center?.id||null);update('centro_custo_produto',center?.codigo||null)}} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione o centro de custo</option>{costCenters.map(cc=><option key={cc.id} value={cc.id}>{cc.codigo} — {cc.nome}{cc.tipo?' • '+cc.tipo:''}</option>)}</select></label>
+            <label style={label}>Principal cliente<select value={form.cliente_principal_id||''} disabled={!editing} onChange={e=>{const customer=customers.find(x=>x.id===e.target.value);update('cliente_principal_id',customer?.id||null);update('cliente_principal',customer?.nome||null);update('codigo_cliente',customer?.codigo||null)}} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione o cliente principal</option>{customers.map(customer=><option key={customer.id} value={customer.id}>{customer.codigo?customer.codigo+' — ':''}{customer.nome_fantasia||customer.nome}</option>)}</select></label>
+            {field('Código do cliente','codigo_cliente','text',1,true)}
+          </div>
+          <p style={{fontSize:9,color:'#526b78',margin:'8px 0 0'}}>Os três campos de referência são gravados no cadastro do produto por empresa. Informe o centro de custo conforme o plano de contas interno e mantenha o código do cliente usado no pedido de venda.</p>
+        </section>
       </section>}
 
       {tab==='qualidade'&&<section style={{padding:10}}>
-        <div style={{display:'grid',gridTemplateColumns:'120px 120px 1fr',gap:7,alignItems:'end'}}>{select('INSPEÇÃO OBRIGATÓRIA','inspecao_qualidade_obrigatoria',[['true','Sim'],['false','Não']])}{field('NÍVEL DE QUALIDADE','nivel_qualidade')}<div style={{fontSize:9,color:'#667085',paddingBottom:6}}>Desenhos aprovados, critérios de inspeção e documentos controlados ficam vinculados ao produto.</div></div>
+        <section style={{border:'1px solid #c7dbe4',background:'#fff',padding:9}}>
+          <div style={{fontSize:10,fontWeight:800,color:'#123B50',borderBottom:'1px solid #dce8ed',paddingBottom:6,marginBottom:8}}>IDENTIFICAÇÃO E ESPECIFICAÇÃO TÉCNICA DO MATERIAL</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(150px,1fr))',gap:9,alignItems:'start'}}>
+            {field('Número do desenho','numero_desenho')}
+            {field('Especificação interna','especificacao_interna')}
+            {field('Número da ficha de processo','numero_ficha_processo')}
+            {field('Número RIAI / aprovação inicial','numero_riai')}
+            {field('Material especificado','material_especificado')}
+            {field('Dureza especificada','dureza_especificada')}
+            {field('Fluidez / índice de fluidez','fluidez_especificada')}
+            {select('Inspeção obrigatória','inspecao_qualidade_obrigatoria',[['true','Sim'],['false','Não']])}
+            {field('Nível de qualidade','nivel_qualidade')}
+          </div>
+          <div style={{fontSize:9,color:'#526b78',marginTop:8}}>Use esta especificação para registrar o requisito de compra e o critério de recebimento: por exemplo, grau do material, dureza, fluidez/índice de fluidez e desenho/revisão. RIAI significa Relatório de Inspeção de Amostra Inicial e registra a aprovação da amostra antes da produção em série.</div>
+        </section>
+        <section style={{border:'1px solid #c7dbe4',background:'#fff',padding:9,marginTop:9}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,flexWrap:'wrap',borderBottom:'1px solid #dce8ed',paddingBottom:7,marginBottom:8}}>
+            <div style={{fontSize:10,fontWeight:800,color:'#123B50'}}>DOCUMENTOS / DESENHOS VINCULADOS</div>
+            <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+              <input ref={engineeringFileRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.dwg,.dxf,.step,.stp,.igs,.iges,.stl,.zip" onChange={e=>void uploadEngineeringFile(e,'DESENHO')} style={{display:'none'}}/>
+              <button type="button" disabled={!selectedId||!editing||busy} onClick={()=>engineeringFileRef.current?.click()} style={btn('primary')}><Upload size={13}/>ANEXAR DESENHO / ESPECIFICAÇÃO</button>
+            </div>
+          </div>
+          <div style={{display:'grid',gap:5}}>{attachments.filter(a=>a.nome_arquivo.startsWith('DESENHO_')).map(a=><div key={a.id} style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 110px 135px max-content',gap:7,alignItems:'center',padding:'6px 7px',border:'1px solid #e4e7ec',fontSize:9}}><b>{a.nome_arquivo.replace(/^DESENHO_/,'')}</b><span>{a.mime_type||'arquivo'}</span><span>{a.tamanho_bytes?Math.round(a.tamanho_bytes/1024)+' KB':'—'} · {new Date(a.created_at).toLocaleDateString('pt-BR')}</span>{attachmentUrls[a.id]?<a href={attachmentUrls[a.id]} target="_blank" rel="noreferrer" style={{...btn('normal'),textDecoration:'none',height:25}}>ABRIR</a>:<span style={{color:'#667085'}}>Carregando link…</span>}</div>)}{!attachments.some(a=>a.nome_arquivo.startsWith('DESENHO_'))&&<div style={{padding:10,textAlign:'center',color:'#667085',border:'1px dashed #cbd5e1',fontSize:9}}>Nenhum desenho ou especificação anexado.</div>}</div>
+        </section>
+
         <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DEFEITOS REGISTRADOS</h2>
         <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr>{['Data','OP','Defeito','Quantidade','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:5,borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{defects.map(d=><tr key={d.id}><td style={{padding:5}}>{new Date(d.created_at).toLocaleString('pt-BR')}</td><td style={{padding:5}}>{d.ordem_producao_id}</td><td style={{padding:5}}>{d.defeito}</td><td style={{padding:5}}>{fmt(d.quantidade)}</td><td style={{padding:5}}>{d.observacao||'—'}</td></tr>)}{!defects.length&&emptyRow('Nenhum defeito registrado para este produto.',5)}</tbody></table></div>
-        <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DOCUMENTOS / DESENHOS VINCULADOS</h2>
-        <div style={{display:'grid',gap:4}}>{attachments.map(a=><div key={a.id} style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 120px 150px',gap:7,padding:'5px 6px',border:'1px solid #e4e7ec',fontSize:9}}><b>{a.nome_arquivo}</b><span>{a.mime_type||'arquivo'}</span><span>{a.tamanho_bytes?Math.round(a.tamanho_bytes/1024)+' KB':'—'} · {new Date(a.created_at).toLocaleDateString('pt-BR')}</span></div>)}{!attachments.length&&<div style={{padding:10,textAlign:'center',color:'#667085',border:'1px dashed #cbd5e1',fontSize:9}}>Nenhum desenho/documento vinculado.</div>}</div>
+      </section>}
+      {tab==='engenharia'&&<section style={{padding:10}}>
+        <section style={{border:'1px solid #c7dbe4',background:'#fff',padding:9,marginTop:9}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,flexWrap:'wrap',borderBottom:'1px solid #dce8ed',paddingBottom:7,marginBottom:8}}>
+            <div style={{fontSize:10,fontWeight:800,color:'#123B50'}}>ENGENHARIA — PROJETO DO MOLDE (QUANDO APLICÁVEL)</div>
+            <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+              <input ref={moldFileRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.dwg,.dxf,.step,.stp,.igs,.iges,.sldprt,.sldasm,.stl,.zip" onChange={e=>void uploadEngineeringFile(e,'PROJETO_MOLDE')} style={{display:'none'}}/>
+              <button type="button" disabled={!selectedId||!editing||busy} onClick={()=>moldFileRef.current?.click()} style={btn('primary')}><Upload size={13}/>ANEXAR PROJETO DO MOLDE</button>
+            </div>
+          </div>
+          <div style={{display:'grid',gap:5}}>{attachments.filter(a=>a.nome_arquivo.startsWith('PROJETO_MOLDE_')).map(a=><div key={a.id} style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 110px 135px max-content',gap:7,alignItems:'center',padding:'6px 7px',border:'1px solid #e4e7ec',fontSize:9}}><b>{a.nome_arquivo.replace(/^PROJETO_MOLDE_/,'')}</b><span>{a.mime_type||'arquivo'}</span><span>{a.tamanho_bytes?Math.round(a.tamanho_bytes/1024)+' KB':'—'} · {new Date(a.created_at).toLocaleDateString('pt-BR')}</span>{attachmentUrls[a.id]?<a href={attachmentUrls[a.id]} target="_blank" rel="noreferrer" style={{...btn('normal'),textDecoration:'none',height:25}}>ABRIR</a>:<span style={{color:'#667085'}}>Carregando link…</span>}</div>)}{!attachments.some(a=>a.nome_arquivo.startsWith('PROJETO_MOLDE_'))&&<div style={{padding:10,textAlign:'center',color:'#667085',border:'1px dashed #cbd5e1',fontSize:9}}>Nenhum projeto de molde anexado.</div>}</div>
+        </section>
       </section>}
     </section>
 
     <section style={{...panel,margin:'0 10px 10px',overflow:'hidden'}}>
-      <div style={{display:'flex',alignItems:'end',gap:6,padding:7,background:'#f7f9fc',borderBottom:'1px solid #d6dde6',flexWrap:'wrap'}}>
+      <div style={{display:'flex',alignItems:'end',gap:6,padding:7,background:'linear-gradient(180deg,#eaf4f8 0%,#d9ebf2 100%)',boxShadow:'inset 0 1px 0 #fff',borderBottom:'1px solid #b9d4df',flexWrap:'wrap'}}>
         <Search size={14}/><label style={{...label,width:250}}>Pesquisar<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código, descrição, grupo..." style={{...input,height:28}}/></label>
         <label style={{...label,width:130}}>Grupo<select value={groupFilter} onChange={e=>setGroupFilter(e.target.value)} style={{...input,height:28}}><option value="TODAS">Todos</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
         <span style={{fontSize:10,color:'#667085',paddingBottom:7}}>{filtered.length} produto(s)</span><button type="button" onClick={()=>void load()} disabled={busy} style={{...btn('normal'),height:28,marginLeft:'auto'}}><RefreshCw size={13}/>Atualizar</button>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, Search, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, FolderGit2, LineChart, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, ClipboardCheck } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -59,24 +59,7 @@ const menus: MenuItem[] = [
       { label: 'Pintura / Química', route: '/pcp/fichas-processo?tipo=PINTURA_QUIMICA' },
     ] },
   ] },
-  { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
-    { label: 'Visão geral do SGQ', route: '/qualidade' },
-    { label: 'Inspeções operacionais', route: '/qualidade/inspecoes' },
-    { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
-    { label: 'Controle de Processo — Injetora', route: '/qualidade/controle-injetora', icon: Factory },
-    { label: 'Não conformidades (RPNC)', route: '/qualidade/rnc', icon: ClipboardCheck, children: [
-      { label: 'Sala de RNC / RPNC', route: '/qualidade/sala-rnc', icon: ClipboardCheck },
-      { label: 'Cadastro de RPNC', route: '/qualidade/rnc' },
-      { label: 'Espinha de Peixe — Ishikawa 6M', route: '/qualidade/ishikawa' },
-      { label: 'Ações corretivas / CAPA 5W2H', route: '/qualidade/capa' },
-      { label: 'Metodologia 8D', route: '/qualidade/metodologia-8d' },
-    ] },
-    { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
-    { label: 'FMEA / PFMEA', route: '/qualidade/fmea' },
-    { label: 'Controle Documental GED', route: '/qualidade/ged-documentos', icon: FolderGit2 },
-    { label: 'Cartas de Controle CEP', route: '/qualidade/cep', icon: LineChart },
-    { label: 'Instrumentos / Metrologia', route: '/qualidade/instrumentos' },
-  ] },
+  { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench },
   { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
@@ -88,7 +71,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null)
   const [helpOpen, setHelpOpen] = useState(false)
-  const [search, setSearch] = useState('')
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
   const ref = useRef<HTMLDivElement>(null)
@@ -119,13 +101,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   useEffect(() => {
     setOpenMenu(null)
   }, [pathname])
-  const flattenMenu = (items: MenuItem[], prefix = ''): Array<{ label: string; route: string }> => items.flatMap(item => [
-    { label: prefix ? `${prefix} / ${item.label}` : item.label, route: item.route },
-    ...(item.children ? flattenMenu(item.children, prefix ? `${prefix} / ${item.label}` : item.label) : []),
-  ])
-  const filtered = search.trim()
-    ? flattenMenu(menus).filter(item => item.label.toLowerCase().includes(search.trim().toLowerCase()))
-    : []
 
   const contextualHelp = pathname.startsWith('/pcp/mrp-ii')
     ? { title: 'MRP II — Planejamento de materiais', purpose: 'Calcular necessidades de materiais a partir da demanda, estrutura dos produtos, estoque e ordens existentes. Esta tela não é a agenda de máquinas.', steps: ['Confirme que produtos, fichas técnicas/estruturas e saldos de estoque estão atualizados.', 'Execute o cálculo MRP e confira as necessidades líquidas por componente.', 'Revise as sugestões de comprar ou produzir antes de gerar ordens planejadas.'], fields: ['Produto/demanda: item acabado e quantidade a planejar.', 'Horizonte/data: período considerado no planejamento.', 'Necessidade líquida: quantidade que falta após estoque e reservas.', 'Sugestão: comprar ou produzir; confira antes de confirmar.'] }
@@ -148,7 +123,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const go = (route: string) => {
     setOpenMenu(null)
     setOpenSubMenu(null)
-    setSearch('')
     navigate(route)
   }
 
@@ -156,26 +130,11 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     <div className="erp-horizontal-shell" ref={ref}>
       <header className="erp-horizontal-header">
         <button className="erp-horizontal-brand" type="button" onClick={() => go('/erp-industrial')} title="Início">
-          <img src="/logo/sgq-erp.png" alt="SGQERP Industrial" />
+          <img src="/logo/sgq-erp.png" alt="SGQERP Industrial" className="h-[46px] w-[190px] min-w-[190px] object-contain object-left" />
           <strong>SGQERP INDUSTRIAL</strong>
         </button>
 
-        <div className="erp-horizontal-search">
-          <Search size={15} aria-hidden="true" />
-          <input
-            value={search}
-            onChange={event => setSearch(event.target.value)}
-            placeholder="Pesquisar módulos..."
-            aria-label="Pesquisar módulos"
-          />
-          {filtered.length > 0 && (
-            <div className="erp-horizontal-search-results">
-              {filtered.slice(0, 8).map(item => (
-                <button key={item.route} type="button" onClick={() => go(item.route)}>{item.label}</button>
-              ))}
-            </div>
-          )}
-        </div>
+        <div className="erp-horizontal-module-title" aria-label="Módulo atual">{pathname.startsWith('/qualidade') ? <><strong>Painel de Gestão da Qualidade</strong><small>Indicadores calculados a partir dos registros da empresa autenticada.</small></> : <strong>{pathname.startsWith('/vendas') ? 'VENDAS' : pathname.startsWith('/compras') ? 'COMPRAS' : pathname.startsWith('/estoque') || pathname.startsWith('/almoxarifado') ? 'ESTOQUE E ALMOXARIFADO' : pathname.startsWith('/pcp') ? 'MANUFATURA / PCP' : pathname.startsWith('/fiscal') ? 'FISCAL' : pathname.startsWith('/financeiro') ? 'FINANCEIRO' : pathname.startsWith('/manutencao') ? 'MANUTENÇÃO' : pathname.startsWith('/engenharia') ? 'ENGENHARIA' : pathname.startsWith('/rh') ? 'RECURSOS HUMANOS' : 'ERP INDUSTRIAL'}</strong>}</div>
 
         <div style={{position:"relative"}}><button type="button" className="erp-horizontal-help" title="Ajuda" onClick={()=>setHelpOpen(v=>!v)} aria-expanded={helpOpen}><CircleHelp size={15} /> Ajuda</button>{helpOpen&&<div role="dialog" aria-label="Ajuda contextual da tela" style={{position:"absolute",right:0,top:34,zIndex:1200,width:"min(370px,90vw)",maxHeight:"75vh",overflowY:"auto",padding:"10px 12px",border:"1px solid #b9cbd3",borderRadius:2,background:"#fff",boxShadow:"0 6px 16px rgba(18,59,80,.16)",fontSize:10,lineHeight:1.45,color:"#173b4a"}}><strong>{contextualHelp.title}</strong><p style={{margin:"5px 0"}}>{contextualHelp.purpose}</p><strong>Como usar</strong><ol style={{margin:"4px 0 7px",paddingLeft:17}}>{contextualHelp.steps.map((step,index)=><li key={index} style={{marginBottom:3}}>{step}</li>)}</ol><strong>Campos e preenchimento</strong><ul style={{margin:"4px 0 8px",paddingLeft:15}}>{contextualHelp.fields.map((field,index)=><li key={index} style={{marginBottom:3}}>{field}</li>)}</ul><div style={{borderTop:"1px solid #e2e8f0",paddingTop:7,color:"#647b85"}}>Tela atual: {pathname}</div><button type="button" onClick={()=>{setHelpOpen(false);navigate("/ajuda")}} style={{marginTop:7,height:28,padding:"0 9px",border:"1px solid #2D8DB8",background:"#2D8DB8",color:"#fff",borderRadius:2,cursor:"pointer"}}>Abrir Central de Ajuda</button></div>}</div>
 
@@ -244,20 +203,24 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-status-legend-item small{display:block;font-size:9px;line-height:1.3;color:#647b85}
         .erp-status-legend-panel>p{grid-column:1/-1;margin:0;padding-top:5px;border-top:1px solid #e2e8f0;font-size:9px;color:#647b85}
         @media print{ @page{size:A4;margin:12mm} .erp-horizontal-header,.erp-horizontal-menu,.erp-global-status-row,.print-hidden,.erp-horizontal-help{display:none!important} .erp-horizontal-shell,.erp-horizontal-workspace{min-height:0!important;background:#fff!important;padding:0!important} .erp-horizontal-workspace *{box-shadow:none!important;backdrop-filter:none!important} thead{display:table-header-group} tr{break-inside:avoid} }
-        .erp-horizontal-header{height:46px;display:flex;align-items:center;gap:12px;padding:0 10px;background:linear-gradient(90deg,#123b50 0%,#17445a 45%,#236f93 100%);border-bottom:1px solid #0e3445;box-sizing:border-box}
-        .erp-horizontal-brand{height:34px;display:flex;align-items:center;gap:8px;border:0;background:transparent;color:#fff;cursor:pointer;padding:0 6px;white-space:nowrap}
-        .erp-horizontal-brand img{height:30px;width:auto;object-fit:contain}
-        .erp-horizontal-brand strong{font-size:13px;font-weight:700;letter-spacing:.01em}
-        .erp-horizontal-search{position:relative;display:flex;align-items:center;gap:6px;width:min(390px,34vw);height:30px;margin-left:auto;min-width:220px;border:1px solid #b9cbd3;background:#fff;border-radius:2px;padding:0 8px;box-sizing:border-box}
-        .erp-horizontal-search input{border:0;outline:0;min-width:0;max-width:100%;width:100%;height:28px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#173b4a;background:transparent}
-        .erp-horizontal-search-results{position:absolute;top:31px;left:0;right:0;z-index:1000;background:#fff;border:1px solid #cbd5e1;box-shadow:0 4px 12px rgba(18,59,80,.12)}
-        .erp-horizontal-search-results button{display:block;width:100%;min-height:28px;padding:5px 8px;border:0;background:#fff;text-align:left;font-size:11px;color:#173b4a;cursor:pointer}
-        .erp-horizontal-search-results button:hover{background:#edf7fb}
-        .erp-horizontal-help{height:30px;display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:#315466;font-size:11px;cursor:pointer;padding:0 5px}
-        .erp-horizontal-session{height:30px;display:flex;align-items:center;gap:5px;padding-left:8px;border-left:1px solid #dbe5e9;white-space:nowrap;font-size:11px;color:#173b4a}
+        /* REVISAO PROTEGIDA DO CABECALHO GLOBAL: manter logo legivel e cabecalho fixo em todas as telas que usam este shell. Nao reduzir logo/contraste nem remover sticky sem revisao de regressao. */
+        .erp-horizontal-header{height:58px;min-height:58px;display:flex;align-items:center;gap:12px;padding:0 12px;background:#f4fbfd;border-bottom:1px solid #c9dde5;box-sizing:border-box;position:sticky;top:0;z-index:1600}
+        .erp-horizontal-shell .erp-horizontal-header *{color:#123b50}
+        .erp-horizontal-shell .erp-horizontal-brand{color:#123b50}
+        .erp-horizontal-shell .erp-horizontal-brand strong{color:#123b50}
+        .erp-horizontal-shell .erp-horizontal-help{color:#123b50}
+        .erp-horizontal-shell .erp-horizontal-session{color:#123b50}
+        .erp-horizontal-module-title{min-width:0;flex:1;display:flex;flex-direction:column;justify-content:center;gap:3px;line-height:1.15;overflow:hidden;border-left:1px solid #c9dde5;padding-left:14px;color:#123b50}.erp-horizontal-module-title strong{font-size:12px;font-weight:800;letter-spacing:.02em;color:#123b50;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.erp-horizontal-module-title small{font-size:9px;font-weight:500;color:#526d79;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .erp-horizontal-brand{height:50px;display:flex;align-items:center;gap:10px;border:0;background:transparent;color:#fff;cursor:pointer;padding:0 6px;white-space:nowrap;flex:0 0 auto}
+        .erp-horizontal-brand img{height:46px;width:190px;min-width:190px;object-fit:contain;object-position:left}
+        .erp-horizontal-brand strong{font-size:14px;font-weight:800;letter-spacing:.02em;color:#fff}
+        
+        .erp-horizontal-help{height:30px;display:inline-flex;align-items:center;gap:4px;border:1px solid #b9d3dd;background:#fff;color:#123b50;font-size:11px;cursor:pointer;padding:0 8px;border-radius:2px}
+        .erp-horizontal-session{height:38px;display:flex;align-items:center;gap:7px;padding-left:10px;border-left:1px solid #c9dde5;white-space:nowrap;font-size:11px;color:#123b50}
         .erp-horizontal-session span{font-weight:600}
         .erp-horizontal-session time{color:#647b85;font-size:10px}
-        .erp-horizontal-menu{height:32px;display:flex;align-items:stretch;padding:0 6px;background:#2D8DB8;border-bottom:1px solid #17445A;box-sizing:border-box;position:relative;z-index:900}
+        /* ALERTA DE REGRESSAO: a barra principal deve permanecer fixa abaixo do cabecalho em TODAS as rotas envolvidas pelo ERPHorizontalShell. */
+        .erp-horizontal-menu{height:36px;min-height:36px;display:flex;align-items:stretch;padding:0 6px;background:#eaf4f8;border-bottom:1px solid #9bb9c7;box-sizing:border-box;position:sticky;top:58px;z-index:1550}
 
         /* Identidade visual transversal: superfícies frias, contornos nítidos e controles compactos. */
         .erp-horizontal-session{color:#f2f8fb;border-left-color:rgba(255,255,255,.24)}
@@ -280,8 +243,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-workspace input:focus,.erp-horizontal-workspace select:focus,.erp-horizontal-workspace textarea:focus{border-color:#2d8db8;outline-color:#2d8db8;box-shadow:0 0 0 2px rgba(45,141,184,.12)}
 
         .erp-horizontal-menu-item{position:relative;display:flex;align-items:stretch}
-        .erp-horizontal-menu-button{height:31px;display:inline-flex;align-items:center;gap:3px;padding:0 10px;border:0;border-right:1px solid rgba(255,255,255,.18);background:#2D8DB8;color:#fff;font-size:10px;font-weight:500;cursor:pointer}
-        .erp-horizontal-menu-button:hover,.erp-horizontal-menu-button.is-active{background:#17445A;color:#fff}
+        .erp-horizontal-menu-button{height:35px;display:inline-flex;align-items:center;gap:5px;padding:0 10px;border:0;border-right:1px solid #c5d7df;background:#eaf4f8;color:#173b4a;font-size:11px;font-weight:600;white-space:nowrap;cursor:pointer}
+        .erp-horizontal-menu-button:hover,.erp-horizontal-menu-button.is-active{background:#123b50;color:#fff}
         .erp-horizontal-dropdown-item{position:relative;min-width:0}
         .erp-horizontal-dropdown-item>button{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;text-align:left}
         .erp-horizontal-subdropdown{position:absolute;left:100%;top:0;z-index:1400;min-width:190px;padding:4px;background:#fff;border:1px solid #cbd8de;box-shadow:0 8px 22px rgba(18,59,80,.16)}
@@ -301,11 +264,11 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-workspace-compact button{font-size:10px}
         .erp-horizontal-workspace-compact label{font-size:9px}
         .erp-horizontal-workspace-compact input,.erp-horizontal-workspace-compact select,.erp-horizontal-workspace-compact textarea{font-size:10px}
-        @media(max-width:950px){.erp-horizontal-brand strong{display:none}.erp-horizontal-search{width:36vw}.erp-horizontal-menu-button{padding:0 7px}.erp-horizontal-session time{display:none}}
-        @media(max-width:700px){.erp-global-status-row>small{display:none}.erp-horizontal-header{gap:5px}.erp-horizontal-help{font-size:0}.erp-horizontal-search{width:42vw;min-width:160px}.erp-horizontal-session span{display:none}.erp-horizontal-menu{overflow-x:auto}}
+        @media(max-width:1100px){.erp-horizontal-brand strong{display:none}.erp-horizontal-module-title{font-size:10px;padding-left:8px}.erp-horizontal-menu-button{padding:0 8px}.erp-horizontal-session time{display:none}}
+        @media(max-width:700px){.erp-global-status-row>small{display:none}.erp-horizontal-header{gap:5px;padding:0 6px}.erp-horizontal-brand img{width:132px;min-width:132px;height:40px}.erp-horizontal-help{font-size:0}.erp-horizontal-module-title{font-size:9px;letter-spacing:0;padding-left:6px}.erp-horizontal-module-title small{display:none}.erp-horizontal-session span{display:none}.erp-horizontal-menu{overflow-x:auto;top:58px}}
 
-        .erp-horizontal-menu{display:flex!important;position:relative;z-index:900}
-        .erp-horizontal-menu-button.is-active{background:#17445A;color:#fff;box-shadow:inset 0 -2px #8bd6f0}
+        .erp-horizontal-menu{display:flex!important;position:sticky;top:58px;z-index:1550}
+        .erp-horizontal-menu-button.is-active{background:#123b50;color:#fff;box-shadow:inset 0 -3px #D4A017}
         .erp-horizontal-dropdown button.is-active{background:#edf7fb;color:#176487;font-weight:700;border-left:2px solid #2D8DB8}
         .erp-horizontal-workspace{width:100%;max-width:100%;min-width:0}
         @media(max-width:700px){.erp-horizontal-menu{overflow-x:auto;overscroll-behavior-x:contain}.erp-horizontal-menu-item{flex:0 0 auto}.erp-horizontal-dropdown{position:fixed;top:auto;left:6px;right:6px;max-height:65vh;overflow:auto;z-index:1500}.erp-horizontal-menu-button{min-width:max-content}}
