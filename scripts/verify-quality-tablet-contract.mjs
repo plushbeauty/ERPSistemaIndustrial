@@ -38,11 +38,23 @@ if (!shell.includes('role="dialog"') || !shell.includes('aria-modal="true"')) {
   failures.push('O modal do tablet deve expor semântica acessível de diálogo modal.');
 }
 if (!shell.includes('qualityModules.map')) failures.push('O modal não renderiza a lista central de módulos da Qualidade.');
-if (!shell.includes("action: 'qualityTablet'") || !shell.includes("item.action === 'qualityTablet'")) {
-  failures.push('O submenu Qualidade Tablet deve abrir o modal, não navegar para uma página separada.');
+if (!shell.includes("label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck }")) {
+  failures.push('Gestão da Qualidade deve apontar diretamente para /qualidade sem submenu.');
+}
+if (shell.includes("label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck, children:")) {
+  failures.push('O menu horizontal ainda contém submenu de Qualidade; a Central Tablet deve ficar dentro do painel.');
 }
 if (!shell.includes("erp:open-quality-tablet") || !qualityDashboard.includes("new Event('erp:open-quality-tablet')")) {
-  failures.push('O botão Tablet Menu do dashboard da Qualidade deve abrir o mesmo modal central.');
+  failures.push('O botão Central Tablet do dashboard da Qualidade deve abrir o mesmo modal central.');
+}
+if (!qualityDashboard.includes('CENTRAL TABLET')) {
+  failures.push('O painel da Qualidade deve exibir o botão Central Tablet.');
+}
+if (!shell.includes('erp-page-description') || !shell.includes('{contextualHelp.purpose}')) {
+  failures.push('O shell autenticado deve exibir a descrição contextual logo abaixo do menu.');
+}
+if (!shell.includes('.erp-horizontal-workspace-compact input') || !shell.includes('focus{border-color:#2d8db8')) {
+  failures.push('O padrão compacto global e o foco azul devem ser aplicados ao conteúdo autenticado.');
 }
 
 const pcpModuleRoutes = [...pcp.matchAll(/route:'([^']+)'/g)].map(match => match[1]);
