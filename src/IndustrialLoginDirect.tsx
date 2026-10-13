@@ -300,19 +300,6 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
             </a>
           </div>
 
-          <div className="auth-heading">
-            <span className="auth-overline">SYSNQRA • ACESSO SEGURO</span>
-            <span className="auth-status"><i /> Ambiente protegido</span>
-          </div>
-
-          <h1>{masterMode ? 'Telas Master — Administrador do Projeto' : 'Entrar no SYSNQRA ERP & SGQ INDUSTRIAL'}</h1>
-
-          <p className="auth-description">
-            {masterMode
-              ? 'Área reservada ao proprietário do projeto. O perfil MASTER é validado antes da abertura do painel administrativo.'
-              : 'Use as credenciais cadastradas. A empresa, o perfil e o status são verificados antes da entrada.'}
-          </p>
-
           <form className="auth-form" onSubmit={submit}>
             <label htmlFor="erp-direct-email">E-mail</label>
             <div className="auth-input-wrap">
