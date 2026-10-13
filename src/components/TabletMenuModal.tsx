@@ -1,5 +1,5 @@
 import {
-  Activity, AlertTriangle, BarChart3, Bell, Building2, CalendarCheck, CheckSquare,
+  Activity, AlertTriangle, BarChart3, Bell, CalendarCheck, CheckSquare,
   ClipboardX, FileSpreadsheet, FileText, Gauge, GitFork, GraduationCap, History,
   LayoutDashboard, Lock, Paperclip, SearchCode, ShieldAlert, ShieldCheck,
   SlidersHorizontal, Tablet, Truck, X,
@@ -34,7 +34,7 @@ const modules: readonly TabletMenuModule[] = [
   { key: 'nao-conformidades', number: 'M06', label: 'NÃO CONF.', description: 'Não conformidades, tratamento e rastreabilidade.', route: '/qualidade/rnc', permission: 'audit.read', icon: ClipboardX },
   { key: 'acoes-5w2h', number: 'M07', label: 'AÇÕES 5W2H', description: 'Planos de ação e acompanhamento estruturado.', route: '/qualidade/metodologia-8d', permission: 'audit.read', icon: CalendarCheck },
   { key: 'causa-raiz', number: 'M08', label: 'CAUSA RAIZ', description: 'Análise de causas e investigação estruturada.', route: '/qualidade/metodologia-8d', permission: 'audit.read', icon: GitFork },
-  { key: 'evidencias', number: 'M09', label: 'EVIDÊNCIAS', description: 'Arquivos, registros e evidências vinculadas aos processos.', route: '/documentos-qualidade', permission: 'audit.read', icon: Paperclip },
+  { key: 'evidencias', number: 'M09', label: 'EVIDÊNCIAS', description: 'Arquivos, registros e evidências vinculadas aos processos.', route: '/qualidade/ged-documentos', permission: 'audit.read', icon: Paperclip },
   { key: 'aprovacoes', number: 'M10', label: 'LIBERAÇÃO', description: 'Liberação e acompanhamento de lotes.', route: '/qualidade/liberacao-lote', permission: 'audit.read', icon: CheckSquare },
   { key: 'eficacia', number: 'M11', label: 'EFICÁCIA', description: 'Verificação da eficácia das ações implementadas.', route: '/qualidade/rnc', permission: 'audit.read', icon: Activity },
   { key: 'notificacoes', number: 'M12', label: 'NOTIFICAÇÕES', description: 'Central de notificações específica não possui rota operacional comprovada.', icon: Bell },
@@ -130,7 +130,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
               <Tablet size={24} />
             </span>
             <div className="min-w-0">
-              <strong className="block text-xs font-semibold leading-tight tracking-[0.02em]">CENTRAL DE MÓDULOS — MODO TABLET</strong>
+              <strong className="block text-xs font-semibold leading-tight tracking-[0.02em]">MENU SGQ — MODO TABLET</strong>
               <p className="mt-1 text-[11px] leading-tight text-[#315466]">Painel de módulos da Gestão da Qualidade</p>
             </div>
           </div>
