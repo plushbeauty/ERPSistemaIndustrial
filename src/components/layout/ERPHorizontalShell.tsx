@@ -236,7 +236,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             </div>}
           </div>
         })}
-        <button type="button" className="erp-horizontal-refresh-module" onClick={() => window.dispatchEvent(new CustomEvent('erp:refresh-current-module'))} title="Atualizar os dados da tela atual" aria-label="Atualizar dados do módulo"><RefreshCw size={13} /> Atualizar</button>
+        <button type="button" className="erp-horizontal-refresh-module" onClick={() => { const event = new CustomEvent('erp:refresh-current-module', { cancelable: true }); window.dispatchEvent(event); if (!event.defaultPrevented) window.location.reload() }} title="Atualizar os dados da tela atual" aria-label="Atualizar dados do módulo"><RefreshCw size={13} /> Atualizar</button>
       </nav>
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
