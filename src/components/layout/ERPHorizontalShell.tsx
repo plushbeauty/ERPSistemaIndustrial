@@ -171,7 +171,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     <div className="erp-horizontal-shell" ref={ref}>
       <header className="erp-horizontal-header">
         <button className="erp-horizontal-brand" type="button" onClick={() => go('/erp-industrial')} title="Início">
-          <img src="/logo/sgq-erp.png" alt="SGQERP Industrial" />
+          <img src="/logo/logo.png" alt="SGQERP Industrial" />
           <strong>SGQERP INDUSTRIAL</strong>
         </button>
 
