@@ -26,7 +26,7 @@ type Product={
   grupo:string|null;subgrupo:string|null;marca:string|null;categoria:string|null;unidade:string;unidade_compra:string;unidade_venda:string;fornecedor_padrao_id:string|null
   referencia_interna:string|null;referencia_cliente:string|null;origem:string|null;ncm:string|null;cest:string|null
   cliente_principal:string|null;codigo_cliente:string|null;centro_custo_produto:string|null
-  tipo_processo:string|null;tipo_maquina:string|null;tipo_injetora:string|null;tonelagem_minima:number;tonelagem_maxima:number;numero_cavidades:number;molde_codigo:string|null
+  tipo_processo:string|null;tipo_maquina:string|null;tipo_injetora:string|null;maquina_preferencial_id:string|null;tonelagem_minima:number;tonelagem_maxima:number;numero_cavidades:number;molde_codigo:string|null
   numero_desenho:string|null;especificacao_interna:string|null;material_especificado:string|null;dureza_especificada:string|null;fluidez_especificada:string|null;numero_ficha_processo:string|null;numero_riai:string|null
   peso_liquido:number;peso_bruto:number
   comprimento_mm:number;largura_mm:number;altura_mm:number;observacoes:string|null;foto_url:string|null;fabricado:boolean;comprado:boolean;revenda:boolean
@@ -42,7 +42,7 @@ type Location={id:string;codigo:string;nome:string;tipo:string}
 type Movement={id:string;tipo:string;quantidade:number;origem:string|null;documento:string|null;observacao:string|null;created_at:string}
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number;observacao:string|null;created_at:string}
 type Audit={id:string;action:string;module:string;old_data:Record<string,unknown>|null;new_data:Record<string,unknown>|null;created_at:string}
-type Attachment={id:string;nome_arquivo:string;storage_path:string;mime_type:string|null;tamanho_bytes:number|null;created_at:string}
+type Attachment={id:string;nome_arquivo:string;storage_path:string;mime_type:string|null;tamanho_bytes:number|null;created_at:string;entidade_tipo?:string}
 type Tab='gerais'|'fiscal'|'estoque'|'producao'|'qualidade'|'custos'
 type FormData=Omit<Product,'id'|'empresa_id'>
 
@@ -53,7 +53,7 @@ const tabItems:Array<[Tab,string,typeof Boxes]>=[
 const empty=():FormData=>({
   codigo:'',nome:'',descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
   fornecedor_padrao_id:null,referencia_interna:null,referencia_cliente:null,origem:'0 - Nacional',ncm:null,cest:null,cliente_principal:null,codigo_cliente:null,centro_custo_produto:null,
-  tipo_processo:'NAO_APLICA',tipo_maquina:null,tipo_injetora:null,tonelagem_minima:0,tonelagem_maxima:0,numero_cavidades:1,molde_codigo:null,
+  tipo_processo:'NAO_APLICA',tipo_maquina:null,tipo_injetora:null,maquina_preferencial_id:null,tonelagem_minima:0,tonelagem_maxima:0,numero_cavidades:1,molde_codigo:null,
   numero_desenho:null,especificacao_interna:null,material_especificado:null,dureza_especificada:null,fluidez_especificada:null,numero_ficha_processo:null,numero_riai:null,peso_liquido:0,peso_bruto:0,comprimento_mm:0,largura_mm:0,altura_mm:0,
   observacoes:null,foto_url:null,fabricado:false,comprado:false,revenda:false,estoque_atual:0,ponto_reposicao:0,estoque_maximo:0,localizacao_padrao_id:null,
   controla_lote:false,controla_serie:false,permite_estoque_negativo:false,lote_validade_dias:0,inspecao_qualidade_obrigatoria:false,nivel_qualidade:null,origem_fiscal:null,
@@ -92,9 +92,7 @@ export default function ProdutosVendasIndustrial(){
   const [audits,setAudits]=useState<Audit[]>([])
   const [attachments,setAttachments]=useState<Attachment[]>([])
   const [detailsLoaded,setDetailsLoaded]=useState(false)
-  const [ncmQuery,setNcmQuery]=useState('')
-  const [ncmOptions,setNcmOptions]=useState<Array<{codigo:string;descricao:string;data_fim?:string}>>([])
-  const [fiscalSearch,setFiscalSearch]=useState<{key:string;term:string}>({key:'',term:''})
+  const [fiscalSearch,setFiscalSearch]=useState<{key:string;kind:'ncm'|'cest'|'cfop';term:string}>({key:'',kind:'ncm',term:''})
   const [fiscalOptions,setFiscalOptions]=useState<Array<{codigo:string;descricao:string}>>([])
   const [attachmentUrls,setAttachmentUrls]=useState<Record<string,string>>({})
   const [machineOptions,setMachineOptions]=useState<Array<{id:string;codigo:string;nome:string}>>([])
@@ -125,7 +123,7 @@ export default function ProdutosVendasIndustrial(){
     finally{setBusy(false)}
   }
   useEffect(()=>{void load()},[])
-  useEffect(()=>{const term=fiscalSearch.term.trim();if(term.length<2||!fiscalSearch.key){setFiscalOptions([]);return}const controller=new AbortController();const timer=window.setTimeout(()=>{const route=fiscalSearch.key==='ncm'?'ncm':fiscalSearch.key==='cest'?'cest':'cfop';const url=route==='ncm'?'https://brasilapi.com.br/api/ncm/v1?search='+encodeURIComponent(term):'https://tabelasfiscais.com.br/api/v1/'+route+'/buscar?q='+encodeURIComponent(term);void fetch(url,{signal:controller.signal}).then(r=>{if(!r.ok)throw new Error('Consulta fiscal indisponível');return r.json() as Promise<unknown>}).then(raw=>{const rows=Array.isArray(raw)?raw:(raw&&typeof raw==='object'&&Array.isArray((raw as {data?:unknown[]}).data)?(raw as {data:unknown[]}).data:raw&&typeof raw==='object'&&Array.isArray((raw as {resultados?:unknown[]}).resultados)?(raw as {resultados:unknown[]}).resultados:[]);const options=rows.map(item=>{const x=item as Record<string,unknown>;return {codigo:String(x.codigo??x.codigo_num??x.cest??x.cfop??''),descricao:String(x.descricao??x.segmento??x.operacao??'')}}).filter(x=>x.codigo&&x.descricao);setFiscalOptions(fiscalSearch.key==='cfop'?options.filter(x=>fiscalSearch.key==='cfop'?true:true).slice(0,30):options.slice(0,30))}).catch(e=>{if(!(e instanceof DOMException&&e.name==='AbortError'))setFiscalOptions([])})},250);return()=>{window.clearTimeout(timer);controller.abort()}},[fiscalSearch])
+  useEffect(()=>{const term=fiscalSearch.term.trim();if(term.length<2||!fiscalSearch.key){setFiscalOptions([]);return}const controller=new AbortController();const timer=window.setTimeout(()=>{const route=fiscalSearch.kind;const url=route==='ncm'?'https://brasilapi.com.br/api/ncm/v1?search='+encodeURIComponent(term):'https://tabelasfiscais.com.br/api/v1/'+route+'/buscar?q='+encodeURIComponent(term);void fetch(url,{signal:controller.signal}).then(r=>{if(!r.ok)throw new Error('Consulta fiscal indisponível');return r.json() as Promise<unknown>}).then(raw=>{const rows=Array.isArray(raw)?raw:(raw&&typeof raw==='object'&&Array.isArray((raw as {data?:unknown[]}).data)?(raw as {data:unknown[]}).data:raw&&typeof raw==='object'&&Array.isArray((raw as {resultados?:unknown[]}).resultados)?(raw as {resultados:unknown[]}).resultados:[]);const options=rows.map(item=>{const x=item as Record<string,unknown>;return {codigo:String(x.codigo??x.codigo_num??x.cest??x.cfop??''),descricao:String(x.descricao??x.segmento??x.operacao??'')}}).filter(x=>x.codigo&&x.descricao);setFiscalOptions(fiscalSearch.key==='cfop'?options.filter(x=>fiscalSearch.key==='cfop'?true:true).slice(0,30):options.slice(0,30))}).catch(e=>{if(!(e instanceof DOMException&&e.name==='AbortError'))setFiscalOptions([])})},250);return()=>{window.clearTimeout(timer);controller.abort()}},[fiscalSearch])
   useEffect(()=>{void supabase.auth.getUser().then(async ({data})=>{if(!data.user)return;const {data:profile}=await supabase.from('erp_usuarios').select('nome').eq('auth_user_id',data.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();setOperatorName(String(profile?.nome||data.user.email||'Usuário ERP'))})},[])
   useEffect(()=>{if(!companyId)return;void supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id',companyId).not('status','eq','INATIVA').order('codigo').limit(500).then(({data})=>setMachineOptions((data??[]) as Array<{id:string;codigo:string;nome:string}>))},[companyId])
 
@@ -134,8 +132,8 @@ export default function ProdutosVendasIndustrial(){
     return products.filter(p=>(!q||(p.codigo+' '+p.nome+' '+(p.codigo_barras||'')+' '+(p.grupo||'')+' '+(p.subgrupo||'')+' '+(p.marca||'')+' '+(p.categoria||'')).toLowerCase().includes(q))&&(groupFilter==='TODAS'||String(p.grupo||'')===groupFilter))
   },[products,query,groupFilter])
 
-  const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setNcmQuery('');setNcmOptions([]);setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
-  const newProduct=()=>{setSelectedId(null);setForm(empty());setNcmQuery('');setNcmOptions([]);setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
+  const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
+  const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
   const update=(key:keyof FormData,value:unknown)=>setForm(prev=>({...prev,[key]:value}))
   const openTechnicalPrint=()=>{if(!selectedId){setError('Selecione um produto antes de imprimir a ficha técnica.');return}window.open('/produtos-vendas/imprimir?id='+encodeURIComponent(selectedId),'_blank','noopener,noreferrer')}
   const save=async()=>{
@@ -161,7 +159,7 @@ export default function ProdutosVendasIndustrial(){
         ? await supabase.from('erp_produtos').update(payload).eq('id',selectedId).eq('empresa_id',companyId).select('*').single()
         : await supabase.from('erp_produtos').insert(payload).select('*').single()
       if(result.error)throw result.error
-      const saved=result.data as Product;setSelectedId(saved.id);setForm({...empty(),...saved});setNcmQuery('');setNcmOptions([]);setEditing(false);setMessage('Produto salvo no banco com sucesso.');await load()
+      const saved=result.data as Product;setSelectedId(saved.id);setForm({...empty(),...saved});setEditing(false);setMessage('Produto salvo no banco com sucesso.');await load()
     }catch(e){setError(e instanceof Error?e.message:'Não foi possível salvar o produto.')}
     finally{setBusy(false)}
   }
@@ -186,7 +184,7 @@ export default function ProdutosVendasIndustrial(){
         supabase.from('erp_documentos_anexos').select('id,nome_arquivo,storage_path,mime_type,tamanho_bytes,created_at,entidade_tipo').eq('empresa_id',companyId).in('entidade_tipo',['produto','produto_desenho','produto_projeto_molde']).eq('entidade_id',selectedId).order('created_at',{ascending:false}).limit(200),
         supabase.from('erp_fichas_tecnicas').select('id,versao,rendimento,unidade_rendimento,status,revisao').eq('empresa_id',companyId).eq('produto_id',selectedId).eq('ativa',true).order('versao',{ascending:false}).limit(1).maybeSingle()
       ])
-      setMovements((m.data??[]) as Movement[]);setDefects((d.data??[]) as Defect[]);setAudits((a.data??[]) as Audit[]);setAttachments((an.data??[]) as Attachment[])
+      setMovements((m.data??[]) as Movement[]);setDefects((d.data??[]) as Defect[]);setAudits((a.data??[]) as Audit[]);const attachmentRows=(an.data??[]) as Attachment[];setAttachments(attachmentRows);const signedEntries=await Promise.all(attachmentRows.filter(a=>a.nome_arquivo.startsWith('DESENHO_')||a.nome_arquivo.startsWith('PROJETO_MOLDE_')).map(async a=>{const {data,error}=await supabase.storage.from('engenharia-projetos').createSignedUrl(a.storage_path,3600);return [a.id,error?'':data.signedUrl] as const}));setAttachmentUrls(Object.fromEntries(signedEntries.filter(([,url])=>Boolean(url))))
       setProductionFicha((ft.data??null) as {id:string;versao:number;rendimento:number;unidade_rendimento:string;status:string|null;revisao:string|null} | null)
       if(ft.data?.id){
         const fo=await supabase.from('erp_ficha_operacoes').select('id,sequencia,operacao,maquina_id,setup_min,ciclo_seg,capacidade_hora,capacidade_dia').eq('empresa_id',companyId).eq('ficha_id',ft.data.id).order('sequencia')
@@ -270,6 +268,28 @@ export default function ProdutosVendasIndustrial(){
       .catch(e=>setError(e instanceof Error?e.message:'Não foi possível enviar a foto.')).finally(()=>setBusy(false))
   }
 
+  const uploadEngineeringFile=async(e:ChangeEvent<HTMLInputElement>,kind:'DESENHO'|'PROJETO_MOLDE')=>{
+    const file=e.currentTarget.files?.[0];e.currentTarget.value=''
+    if(!file)return
+    if(!selectedId||!companyId){setError('Salve e selecione o produto antes de anexar documentos.');return}
+    const allowed=/\.(pdf|png|jpe?g|webp|dwg|dxf|step|stp|igs|iges|sldprt|sldasm|stl|zip)$/i
+    if(!allowed.test(file.name)){setError('Formato não permitido. Use PDF, imagem ou arquivo CAD listado no campo de anexos.');return}
+    if(file.size>100*1024*1024){setError('O arquivo deve ter no máximo 100 MB.');return}
+    setBusy(true);setError('');setMessage('')
+    const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_')
+    const storagePath=companyId+'/'+selectedId+'/'+Date.now()+'-'+kind.toLowerCase()+'-'+safeName
+    const storedName=kind+'_'+file.name
+    try{
+      const {error:uploadError}=await supabase.storage.from('engenharia-projetos').upload(storagePath,file,{upsert:false,contentType:file.type||'application/octet-stream'})
+      if(uploadError)throw uploadError
+      const {error:rowError}=await supabase.from('erp_documentos_anexos').insert({empresa_id:companyId,entidade_tipo:'produto',entidade_id:selectedId,nome_arquivo:storedName,storage_path:storagePath,mime_type:file.type||null,tamanho_bytes:file.size})
+      if(rowError){await supabase.storage.from('engenharia-projetos').remove([storagePath]);throw rowError}
+      setDetailsLoaded(false);setMessage((kind==='DESENHO'?'Desenho/especificação':'Projeto do molde')+' anexado e vinculado ao produto.')
+      await loadDetails()
+    }catch(err){setError(err instanceof Error?err.message:'Não foi possível anexar e salvar o documento.')}
+    finally{setBusy(false)}
+  }
+
   const helpFor=(title:string)=>({
     'Descrição resumida':'Texto curto para identificação rápida do produto.',
     'Grupo':'Grupo mestre existente; determina a classificação principal do produto.',
@@ -295,10 +315,10 @@ export default function ProdutosVendasIndustrial(){
   const combo=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input list={'product-combo-'+String(key)} value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id={'product-combo-'+String(key)}>{options.map(([value,description])=><option key={value} value={value} label={description}/>)}</datalist></label>
   const check=(title:string,key:keyof FormData)=><label style={{display:'flex',alignItems:'center',gap:7,fontSize:10,fontWeight:700,color:'#344054'}}><input type="checkbox" checked={Boolean(form[key])} disabled={!editing} onChange={e=>update(key,e.target.checked)}/>{title}</label>
   const fiscalCombo=(title:string,key:'ncm'|'cest'|'cfop_entrada'|'cfop_saida',kind:'ncm'|'cest'|'cfop')=>{
-    const term=fiscalSearch.key===kind?fiscalSearch.term:'';
-    const options=fiscalSearch.key===kind?fiscalOptions:[];
+    const term=fiscalSearch.key===key?fiscalSearch.term:'';
+    const options=fiscalSearch.key===key?fiscalOptions:[];
     const direction=key==='cfop_entrada'?'ENTRADA':'SAÍDA';
-    return <label style={{...label,position:'relative'}}>{fieldTitle(title)}<input value={term||String(form[key]??'')} disabled={!editing} placeholder="Digite código ou descrição para pesquisar…" onChange={e=>{update(key,'');setFiscalSearch({key:kind,term:e.target.value})}} style={{...input,background:editing?'#fff':'#f5f7fa'}}/>{term.trim().length>=2&&options.length>0&&<div style={{position:'absolute',zIndex:40,top:'100%',left:0,right:0,maxHeight:220,overflowY:'auto',border:'1px solid #9bbdce',background:'#fff',boxShadow:'0 6px 16px rgba(18,59,80,.18)'}}>{options.filter(x=>kind!=='cfop'||(key==='cfop_entrada'?x.codigo.startsWith('1')||x.codigo.startsWith('2')||x.codigo.startsWith('3'):x.codigo.startsWith('5')||x.codigo.startsWith('6')||x.codigo.startsWith('7'))).map(x=><button key={x.codigo} type="button" onClick={()=>{update(key,x.codigo);setFiscalSearch({key:'',term:''});setFiscalOptions([])}} style={{display:'block',width:'100%',textAlign:'left',border:0,borderBottom:'1px solid #e5edf1',background:'#fff',padding:'6px 8px',fontSize:10,color:'#123B50',cursor:'pointer'}}><strong>{x.codigo}</strong><span> — {x.descricao}</span></button>)}</div>}{term.trim().length>=2&&options.length===0&&<span style={{fontSize:9,color:'#667085',textTransform:'none'}}>Pesquisando códigos fiscais…</span>}</label>
+    return <label style={{...label,position:'relative'}}>{fieldTitle(title)}<input value={term||String(form[key]??'')} disabled={!editing} placeholder="Digite código ou descrição para pesquisar…" onChange={e=>{update(key,'');setFiscalSearch({key,kind,term:e.target.value})}} style={{...input,background:editing?'#fff':'#f5f7fa'}}/>{term.trim().length>=2&&options.length>0&&<div style={{position:'absolute',zIndex:40,top:'100%',left:0,right:0,maxHeight:220,overflowY:'auto',border:'1px solid #9bbdce',background:'#fff',boxShadow:'0 6px 16px rgba(18,59,80,.18)'}}>{options.filter(x=>kind!=='cfop'||(key==='cfop_entrada'?x.codigo.startsWith('1')||x.codigo.startsWith('2')||x.codigo.startsWith('3'):x.codigo.startsWith('5')||x.codigo.startsWith('6')||x.codigo.startsWith('7'))).map(x=><button key={x.codigo} type="button" onClick={()=>{update(key,x.codigo);setFiscalSearch({key:'',kind:'ncm',term:''});setFiscalOptions([])}} style={{display:'block',width:'100%',textAlign:'left',border:0,borderBottom:'1px solid #e5edf1',background:'#fff',padding:'6px 8px',fontSize:10,color:'#123B50',cursor:'pointer'}}><strong>{x.codigo}</strong><span> — {x.descricao}</span></button>)}</div>}{term.trim().length>=2&&options.length===0&&<span style={{fontSize:9,color:'#667085',textTransform:'none'}}>Pesquisando códigos fiscais…</span>}</label>
   }
 
   if(printMode&&selectedId){
