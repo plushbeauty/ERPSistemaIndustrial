@@ -29,6 +29,10 @@ type Product={
   controla_serie:boolean;permite_estoque_negativo:boolean;lote_validade_dias:number;inspecao_qualidade_obrigatoria:boolean;nivel_qualidade:string|null
   origem_fiscal:string|null;cst_icms:string|null;csosn:string|null;cfop_entrada:string|null;cfop_saida:string|null;aliquota_icms:number;aliquota_ipi:number
   aliquota_pis:number;aliquota_cofins:number;prazo_compra_dias:number;prazo_producao_dias:number;tolerancia_percentual:number
+  cliente:string|null;desenho:string|null;dimensional:string|null;catalogo_disponivel:boolean;material:string|null;cliente_principal:string|null;codigo_cliente:string|null;centro_custo_produto:string|null
+  tipo_processo:string;tipo_maquina:string|null;tipo_injetora:string|null;tonelagem_minima:number;tonelagem_maxima:number;numero_cavidades:number;molde_codigo:string|null;numero_desenho:string|null
+  especificacao_interna:string|null;material_especificado:string|null;dureza_especificada:string|null;fluidez_especificada:string|null;numero_ficha_processo:string|null;numero_riai:string|null
+  cliente_principal_id:string|null;centro_custo_produto_id:string|null;maquina_preferencial_id:string|null
   custo_medio:number;custo_ultimo:number;custo_fabricacao:number;preco_venda:number;ativo:boolean
 }
 type Supplier={id:string;razao_social:string;nome_fantasia:string|null}
@@ -51,7 +55,11 @@ const empty=():FormData=>({
   observacoes:null,foto_url:null,fabricado:false,comprado:false,revenda:false,estoque_atual:0,ponto_reposicao:0,estoque_maximo:0,localizacao_padrao_id:null,
   controla_lote:false,controla_serie:false,permite_estoque_negativo:false,lote_validade_dias:0,inspecao_qualidade_obrigatoria:false,nivel_qualidade:null,origem_fiscal:null,
   cst_icms:null,csosn:null,cfop_entrada:null,cfop_saida:null,aliquota_icms:0,aliquota_ipi:0,aliquota_pis:0,aliquota_cofins:0,prazo_compra_dias:0,prazo_producao_dias:0,
-  tolerancia_percentual:0,custo_medio:0,custo_ultimo:0,custo_fabricacao:0,preco_venda:0,ativo:true
+  tolerancia_percentual:0,cliente:null,desenho:null,dimensional:null,catalogo_disponivel:false,material:null,cliente_principal:null,codigo_cliente:null,centro_custo_produto:null,
+  tipo_processo:'NAO_APLICA',tipo_maquina:null,tipo_injetora:null,tonelagem_minima:0,tonelagem_maxima:0,numero_cavidades:1,molde_codigo:null,numero_desenho:null,
+  especificacao_interna:null,material_especificado:null,dureza_especificada:null,fluidez_especificada:null,numero_ficha_processo:null,numero_riai:null,
+  cliente_principal_id:null,centro_custo_produto_id:null,maquina_preferencial_id:null,
+  custo_medio:0,custo_ultimo:0,custo_fabricacao:0,preco_venda:0,ativo:true
 })
 const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0)
 const n=(v:unknown)=>Number(v??0)||0
@@ -461,6 +469,28 @@ export default function ProdutosVendasIndustrial(){
           </div>
         </section>
 
+        <section className="product-form-section" aria-label="Identificação técnica industrial">
+          <h3 className="product-form-section-title">IDENTIFICAÇÃO TÉCNICA INDUSTRIAL</h3>
+          <div className="product-form-grid">
+            {field('Material / composição','material')}
+            {field('Cliente / aplicação','cliente')}
+            {field('Cliente principal (descrição)','cliente_principal')}
+            {field('Código do cliente','codigo_cliente')}
+            {field('Desenho / arquivo técnico','desenho')}
+            {field('Nº do desenho','numero_desenho')}
+            {field('Dimensional / tolerâncias','dimensional')}
+            {field('Especificação interna','especificacao_interna')}
+            {field('Material especificado','material_especificado')}
+            {field('Dureza especificada','dureza_especificada')}
+            {field('Fluidez especificada','fluidez_especificada')}
+            {field('Nº ficha de processo','numero_ficha_processo')}
+            {field('Nº RIAI','numero_riai')}
+            {field('Código do molde','molde_codigo')}
+            {field('Centro de custo (descrição)','centro_custo_produto')}
+            {check('Disponível no catálogo técnico','catalogo_disponivel')}
+          </div>
+        </section>
+
         <section className="product-form-section" aria-label="Custos e comercialização">
           <h3 className="product-form-section-title">CUSTOS E COMERCIALIZAÇÃO</h3>
           <div className="product-form-grid product-commercial-row">
@@ -538,6 +568,14 @@ export default function ProdutosVendasIndustrial(){
           <label style={label}>FICHA ATIVA<input value={productionFicha?('REV. '+(productionFicha.revisao||productionFicha.versao)):'Não cadastrada'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}>RENDIMENTO<input value={productionFicha?fmt(productionFicha.rendimento)+' '+productionFicha.unidade_rendimento:'—'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A'}}/></label>
           <button type="button" onClick={()=>{window.location.href='/ficha-engenharia?produto='+encodeURIComponent(selectedId||'')}} style={{...btn('normal'),width:'max-content',maxWidth:'100%',whiteSpace:'nowrap',padding:'0 8px',fontSize:10}}>ABRIR FICHA DE PROCESSO</button>
+        </div>
+        <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(4,minmax(0,1fr))',marginTop:8}}>
+          {select('TIPO DE PROCESSO','tipo_processo',[['NAO_APLICA','Não aplicável'],['PRENSADOS','Prensados'],['INJETADOS','Injetados'],['CORTE_VINCO','Corte e vinco'],['ESTAMPOS','Estampos'],['USINAGEM','Usinagem'],['MONTAGEM','Montagem'],['OUTRO','Outro']])}
+          {field('Tipo de máquina','tipo_maquina')}
+          {field('Tipo de injetora','tipo_injetora')}
+          {field('Cavidades do molde','numero_cavidades','number')}
+          {field('Tonelagem mínima','tonelagem_minima','number')}
+          {field('Tonelagem máxima','tonelagem_maxima','number')}
         </div>
         <div style={{marginTop:8,border:'1px solid #d5dde7',overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr style={{background:'#123B50',color:'#fff'}}>{['Seq.','Operação','Máquina','Setup min','Ciclo s','Qtde/h','Qtde/dia'].map(h=><th key={h} style={{padding:'5px 6px',textAlign:'left',fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{productionOps.map(o=><tr key={o.id} style={{borderBottom:'1px solid #e5e7eb'}}><td style={{padding:'5px 6px'}}>{o.sequencia}</td><td style={{padding:'5px 6px'}}>{o.operacao}</td><td style={{padding:'5px 6px'}}>{o.maquina_codigo?o.maquina_codigo+' • '+(o.maquina_nome||''):'Não definida'}</td><td style={{padding:'5px 6px'}}>{fmt(o.setup_min)}</td><td style={{padding:'5px 6px'}}>{fmt(o.ciclo_seg)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_hora==null?'—':fmt(o.capacidade_hora)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_dia==null?'—':fmt(o.capacidade_dia)}</td></tr>)}{!productionOps.length&&<tr><td colSpan={7} style={{padding:12,textAlign:'center',color:'#667085'}}>Nenhuma operação cadastrada. Abra a ficha de processo para cadastrar máquina/posto, setup, ciclo e instruções.</td></tr>}</tbody></table></div>
         <div style={{marginTop:7,fontSize:9,color:'#667085'}}>Máquina, setup, ciclo e capacidade vêm da ficha técnica/roteiro real; a ficha completa alimenta o PCP e a Ordem de Produção.</div>
