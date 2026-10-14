@@ -23,7 +23,6 @@ import FinanceiroCustoPadrao from './pages/FinanceiroCustoPadrao'
 import AdminLogs from './pages/AdminLogs'
 import OutlookConfiguracao from './pages/OutlookConfiguracao'
 import FornecedoresIndustrial from './pages/FornecedoresIndustrial'
-import ERPHorizontalShell from './components/layout/ERPHorizontalShell'
 import { useNavigate } from 'react-router-dom'
 
 type Field = { key: string; label: string; type?: 'text' | 'number' | 'date' | 'email'; required?: boolean }
@@ -157,7 +156,6 @@ export default function AppIndustrialV7() {
 
   return (
     <motion.div className={`v7-shell theme-${theme}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
-      <ERPHorizontalShell operatorName={profile.nome || 'Usuário'}>
         <main className="v7-main v7-main-full">
           <section className="v7-content">
             <AnimatePresence mode="wait" initial={false}>
@@ -198,7 +196,6 @@ export default function AppIndustrialV7() {
           </section>
           <footer>FernandoSch_System • SYSNQRA ERP & SGQ INDUSTRIAL • {segment} • Ambiente isolado por empresa</footer>
         </main>
-      </ERPHorizontalShell>
     </motion.div>
   )
 }
