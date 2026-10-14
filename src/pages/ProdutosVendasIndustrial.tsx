@@ -322,15 +322,20 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-form-grid>*{min-width:0}
       .product-master-screen .product-form-grid label{align-content:start;grid-template-rows:minmax(22px,auto) 30px}
       .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%}
-      .product-master-screen .product-form-grid label>span{max-width:100%;min-height:22px;line-height:11px;white-space:normal;overflow-wrap:anywhere}
+      .product-master-screen .product-form-grid label>span{display:flex;align-items:center;max-width:100%;min-height:22px;line-height:12px;white-space:normal;overflow-wrap:anywhere;word-break:normal}
+      .product-master-screen .product-commercial-row label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(24px,auto) 30px;gap:3px;align-content:start;min-width:0}
+      .product-master-screen .product-commercial-row label>input,.product-master-screen .product-commercial-row label>select,.product-master-screen .product-commercial-row label>textarea{width:100%;min-width:0;height:30px;box-sizing:border-box}
+      .product-master-screen .product-cost-stack{grid-column:span 1;grid-row:span 2}
+      .product-master-screen .product-status-field{align-self:end}
+      .product-master-screen .product-status-field label{display:flex;align-items:center;gap:4px;white-space:normal;font-size:9px;min-width:0}
       .product-master-screen .product-tabs{display:flex;align-items:stretch;gap:2px;overflow-x:auto;overscroll-behavior-x:contain}
       .product-master-screen .product-tabs button{flex:0 0 auto;min-height:34px}
       .product-master-screen .product-responsive-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;align-items:end}
       .product-master-screen .product-responsive-grid>*{min-width:0}
       .product-master-screen .product-responsive-grid label{align-content:start;grid-template-rows:minmax(22px,auto) 30px}
       .product-master-screen .product-responsive-grid label>input,.product-master-screen .product-responsive-grid label>select{width:100%;min-width:0}
-      @media(max-width:1150px){.product-master-screen .product-general-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}.product-master-screen .product-measure-row{grid-template-columns:repeat(5,minmax(0,1fr))!important}.product-master-screen .product-commercial-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
-      @media(max-width:700px){.product-master-screen .product-general-row,.product-master-screen .product-measure-row,.product-master-screen .product-commercial-row,.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3){grid-column:span 2!important}.product-master-screen .product-commercial-row>*{grid-column:span 1!important}.product-master-screen .product-responsive-grid{row-gap:9px}.product-master-screen .product-tabs button{padding:7px 8px!important;font-size:9px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}}
+      @media(max-width:1150px){.product-master-screen .product-general-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}.product-master-screen .product-measure-row{grid-template-columns:repeat(5,minmax(0,1fr))!important}.product-master-screen .product-commercial-row{grid-template-columns:repeat(3,minmax(0,1fr))!important}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+      @media(max-width:700px){.product-master-screen .product-general-row,.product-master-screen .product-measure-row,.product-master-screen .product-commercial-row,.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3){grid-column:span 2!important}.product-master-screen .product-commercial-row>.product-cost-stack{grid-column:span 1!important;grid-row:span 2!important}.product-master-screen .product-commercial-row>*{min-width:0}.product-master-screen .product-responsive-grid{row-gap:9px}.product-master-screen .product-tabs button{padding:7px 8px!important;font-size:9px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}}
     `}</style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:800,color:'#2D8DB8'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
@@ -399,15 +404,17 @@ export default function ProdutosVendasIndustrial(){
           <label style={label}>Fornecedor padrão<select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{suppliers.map(s=><option value={s.id} key={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>
         </div>
 
-        <div className="product-form-grid product-commercial-row" style={{display:'grid',gridTemplateColumns:'78px 78px 78px 78px 120px 120px minmax(150px,1fr) max-content minmax(180px,1.2fr)',gap:8,marginTop:8,alignItems:'end'}}>
-          {field('Custo médio (calculado)','custo_medio','number',1,true)}
-          {field('Último custo (calculado)','custo_ultimo','number',1,true)}
+        <div className="product-form-grid product-commercial-row" style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:8,marginTop:8,alignItems:'start'}}>
+          <div className="product-cost-stack" style={{display:'grid',gridTemplateColumns:'minmax(0,1fr)',gap:7,gridRow:'span 2',minWidth:0}}>
+            {field('Custo médio (calculado)','custo_medio','number',1,true)}
+            {field('Último custo (calculado)','custo_ultimo','number',1,true)}
+          </div>
           {field('Custo fabricação (engenharia)','custo_fabricacao','number',1,true)}
           {field('Preço venda','preco_venda','number')}
           {field('Ref. interna','referencia_interna')}
           {field('Ref. cliente','referencia_cliente')}
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:30,padding:'5px 7px',resize:'none',fontSize:11}}/></label>
-          <div style={{display:'flex',alignItems:'center',gap:5,height:30,border:'1px solid #d5dde7',padding:'0 6px',background:'#fff',whiteSpace:'nowrap'}}><span style={{fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}}>Sit.</span>{check('Fab.','fabricado')}{check('Comp.','comprado')}{check('Rev.','revenda')}</div>
+          <div className="product-status-field" style={{display:'flex',alignItems:'center',gap:5,minHeight:30,border:'1px solid #d5dde7',padding:'5px 6px',background:'#fff',whiteSpace:'normal',flexWrap:'wrap',minWidth:0,boxSizing:'border-box'}}><span style={{fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}}>Situação</span>{check('Fab.','fabricado')}{check('Comp.','comprado')}{check('Rev.','revenda')}</div>
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} title="Selecione uma localização existente do Estoque. A hierarquia depósito/rua/prateleira/caixa é mantida no cadastro de localizações." style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
         </div>
 
