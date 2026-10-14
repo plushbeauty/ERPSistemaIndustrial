@@ -59,14 +59,14 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
     onSaved()
   }
 
-  const field = 'min-h-[46px] rounded-xl border border-slate-300 bg-white px-3 font-semibold text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+  const field = 'h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] font-medium text-slate-900 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-50'
 
   return (
-    <section className="space-y-5">
-      <div><p className="text-xs font-black tracking-[.2em] text-blue-700">DADOS MESTRES</p><h2 className="text-2xl font-black text-slate-900">Ficha Técnica</h2><p className="text-sm font-semibold text-slate-500">Cadastro persistido no tenant autenticado.</p></div>
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl">
-        <div className="grid gap-5 md:grid-cols-2">
-          <label className="grid gap-2 text-xs font-black text-slate-700 md:col-span-2">SKU — SOMENTE LEITURA<input className={field+' font-black text-blue-800'} readOnly value={p?.codigo || preview} /></label>
+    <section className="space-y-3">
+      <div><p className="text-[9px] font-bold uppercase tracking-wider text-[#2D8DB8]">Dados mestres</p><h2 className="text-base font-bold text-slate-900">Ficha Técnica</h2><p className="text-[10px] text-slate-500">Cadastro persistido no tenant autenticado.</p></div>
+      <div className="rounded-[2px] border border-slate-300 bg-white p-3 shadow-sm">
+        <div className="grid grid-cols-1 items-end gap-x-3 gap-y-3 md:grid-cols-2 xl:grid-cols-4">
+          <label className="grid gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-700 md:col-span-2">SKU — SOMENTE LEITURA<input className={field+' font-bold text-[#123B50]'} readOnly value={p?.codigo || preview} /></label>
           <label className="grid gap-2 text-xs font-black text-slate-700">Tipo<select className={field} disabled={!!p} value={tipo} onChange={e => setTipo(e.target.value)}><option>MP</option><option>PA</option><option>SA</option><option>IN</option></select></label>
           <label className="grid gap-2 text-xs font-black text-slate-700">Regra<select className={field} disabled={!!p} value={configId} onChange={e => setConfigId(e.target.value)}>{cfg.map(x => <option key={x.id} value={x.id}>{x.prefixo} · {x.digitos_produto} dígitos</option>)}</select></label>
           <label className="grid gap-2 text-xs font-black text-slate-700 md:col-span-2">Nome do produto<input className={field} value={nome} onChange={e => setNome(e.target.value)} /></label>
@@ -74,10 +74,10 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
           <label className="grid gap-2 text-xs font-black text-slate-700">Unidade<input className={field} value={unidade} onChange={e => setUnidade(e.target.value.toUpperCase())} /></label>
           <label className="grid gap-2 text-xs font-black text-slate-700 md:col-span-2">Cliente / Mercado de destino<input className={field} value={cliente} onChange={e => setCliente(e.target.value)} placeholder="Cliente, linha ou mercado" /></label>
         </div>
-        <div className="mt-6 flex flex-wrap gap-3 border-t border-slate-200 pt-5">
-          <button type="button" onClick={() => void save()} className="inline-flex min-h-[50px] items-center gap-2 rounded-xl bg-blue-700 px-5 font-black text-white shadow-md hover:bg-blue-800"><Save size={18} /> {p ? 'SALVAR ALTERAÇÕES' : 'GERAR SKU E SALVAR'}</button>
-          {error && <p className="flex items-center rounded-xl border border-rose-200 bg-rose-50 px-4 font-bold text-rose-800">{error}</p>}
-          {ok && <p className="flex items-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 font-bold text-emerald-800">{ok}</p>}
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3">
+          <button type="button" onClick={() => void save()} className="inline-flex h-[30px] items-center gap-2 rounded-[2px] bg-[#2D8DB8] px-3 text-[10px] font-bold text-white hover:bg-[#23769b]"><Save size={18} /> {p ? 'SALVAR ALTERAÇÕES' : 'GERAR SKU E SALVAR'}</button>
+          {error && <p className="flex items-center rounded-[2px] border border-rose-200 bg-rose-50 px-3 py-1 text-[10px] font-semibold text-rose-800">{error}</p>}
+          {ok && <p className="flex items-center rounded-[2px] border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-semibold text-emerald-800">{ok}</p>}
         </div>
       </div>
     </section>
