@@ -132,21 +132,11 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : pathname.startsWith('/produtos-vendas') || pathname.startsWith('/cadastros') ? 'Cadastros'
     : pathname.startsWith('/configuracoes') ? 'Configuração'
     : null
-  const moduleHeader = pathname === '/vendas'
-    ? { title: 'Dashboard Comercial', subtitle: 'Indicadores reais do módulo de vendas' }
-    : moduleLabel === 'Compras' ? { title: 'Gestão de Compras', subtitle: 'Solicitações, cotações, pedidos e recebimentos' }
-    : moduleLabel === 'Qualidade' ? { title: 'Painel de Gestão da Qualidade', subtitle: 'Indicadores calculados a partir dos registros da empresa autenticada.' }
-    : moduleLabel === 'Vendas' ? { title: 'Módulo Vendas', subtitle: 'Pedidos, clientes e acompanhamento comercial' }
-    : moduleLabel === 'Estoque' ? { title: 'Gestão de Estoque', subtitle: 'Saldos, movimentações e rastreabilidade de materiais' }
-    : moduleLabel === 'Fiscal' ? { title: 'Gestão Fiscal', subtitle: 'Documentos fiscais e controles do módulo fiscal' }
-    : moduleLabel === 'Manufatura / PCP' ? { title: 'Planejamento e Controle da Produção', subtitle: 'Ordens, capacidade e acompanhamento da produção' }
-    : moduleLabel === 'Financeiro' ? { title: 'Gestão Financeira', subtitle: 'Títulos, custos e indicadores financeiros' }
-    : moduleLabel === 'Engenharia' ? { title: 'Engenharia Industrial', subtitle: 'Produtos, estruturas e dados de engenharia' }
-    : moduleLabel === 'Manutenção' ? { title: 'Gestão da Manutenção', subtitle: 'Equipamentos, ordens e planos de manutenção' }
-    : moduleLabel === 'RH' ? { title: 'Recursos Humanos', subtitle: 'Cadastros e rotinas de recursos humanos' }
-    : moduleLabel === 'Cadastros' ? { title: 'Cadastros Mestres', subtitle: 'Dados mestres utilizados pelos módulos do ERP' }
-    : moduleLabel === 'Configuração' ? { title: 'Configurações do ERP', subtitle: 'Parâmetros e administração do ambiente' }
-    : { title: 'SGQERP INDUSTRIAL', subtitle: 'Gestão integrada da operação industrial' }
+  const moduleHeader = {
+    title: moduleLabel
+      ? 'Painel ' + (moduleLabel === 'Manufatura / PCP' ? 'PCP' : moduleLabel)
+      : pathname.startsWith('/erp-industrial') ? 'Painel Industrial' : 'Painel ERP',
+  }
   const currentModuleMenu = moduleLabel ? menus.find(menu => menu.label === (moduleLabel === 'Qualidade' ? 'Gestão da Qualidade' : moduleLabel)) : undefined
   const current = currentModuleMenu ?? menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
   const visibleMenus = currentModuleMenu ? [{ ...currentModuleMenu, label: 'Menu ' + moduleLabel }, ...menus.filter(menu => menu.label !== 'Início' && menu.label !== currentModuleMenu.label)] : menus
@@ -207,7 +197,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
 
         <div className="erp-horizontal-global-title" aria-live="polite">
           <strong>{moduleHeader.title}</strong>
-          <span>{moduleHeader.subtitle}</span>
         </div>
 
         <div className="erp-horizontal-search">
