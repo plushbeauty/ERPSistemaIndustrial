@@ -469,7 +469,6 @@ export default function ProdutosVendasIndustrial(){
               <div style={{fontSize:8,lineHeight:1.35,color:'#526a75',padding:'3px 1px'}}>Automático: entradas de estoque/recebimento de NF-e com custo unitário. Não digitar.</div>
             </div>
             <label className="product-observations-field" style={{...label,gridColumn:'span 2'}}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:58,padding:'5px 7px',resize:'vertical',fontSize:11}}/></label>
-            {field('Custo fabricação (engenharia)','custo_fabricacao','number',1,true)}
             {field('Preço venda','preco_venda','number')}
             {field('Ref. interna','referencia_interna')}
             {field('Ref. cliente','referencia_cliente')}
