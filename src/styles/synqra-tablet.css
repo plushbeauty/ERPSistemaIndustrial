@@ -126,27 +126,31 @@
   overflow: auto;
   display: grid;
   align-content: start;
-  grid-template-columns: repeat(8, minmax(105px, 1fr));
-  gap: 6px;
-  padding: 8px;
-  background: #f4f7fe;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 148px), 1fr));
+  gap: 8px;
+  padding: 10px;
+  background: linear-gradient(180deg, #eaf3f8 0%, #f4f7fe 100%);
 }
 
 .synqra-module-card {
+  position: relative;
   min-width: 0;
-  height: 82px;
+  min-height: 104px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  border: 1px solid #cbd5e1;
+  gap: 8px;
+  overflow: hidden;
+  border: 1px solid #bfd3de;
+  border-top: 3px solid #2d8db8;
   border-radius: 2px;
-  padding: 6px 4px;
-  background: #fff;
+  padding: 10px 6px;
+  background: linear-gradient(180deg, #fff 0%, #f8fcfe 100%);
   color: #176487;
   cursor: pointer;
-  transition: border-color .12s ease, background .12s ease, box-shadow .12s ease;
+  box-shadow: 0 2px 3px rgb(18 59 80 / 5%);
+  transition: border-color .12s ease, background .12s ease, box-shadow .12s ease, transform .12s ease;
 }
 
 .synqra-module-card:hover,
@@ -160,8 +164,11 @@
 .synqra-module-icon {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #c5e0eb;
+  border-radius: 2px;
+  background: #eaf6fb;
   color: #2d8db8;
 }
 
@@ -169,13 +176,14 @@
   max-width: 100%;
   overflow: hidden;
   color: #123b50;
-  font-size: 9px;
-  font-weight: 600;
-  line-height: 1.1;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
   text-align: center;
   text-overflow: ellipsis;
   text-transform: uppercase;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .synqra-tablet-footer {
@@ -199,24 +207,25 @@
 }
 
 @media (max-width: 1250px) {
-  .synqra-module-grid { grid-template-columns: repeat(6, minmax(105px, 1fr)); }
+  .synqra-module-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 140px), 1fr)); }
 }
 
 @media (max-width: 900px) {
-  .synqra-module-grid { grid-template-columns: repeat(4, minmax(105px, 1fr)); }
+  .synqra-module-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 132px), 1fr)); }
   .synqra-tablet-toolbar { padding: 0 8px; }
   .synqra-tablet .synqra-search { width: 190px; }
 }
 
 @media (max-width: 700px) {
-  .synqra-module-grid { grid-template-columns: repeat(3, minmax(95px, 1fr)); }
+  .synqra-module-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 118px), 1fr)); }
   .synqra-toolbar-title span { display: none; }
   .synqra-tablet-scope { display: none; }
   .synqra-tablet .synqra-search { width: 180px; }
 }
 
 @media (max-width: 520px) {
-  .synqra-module-grid { grid-template-columns: repeat(2, minmax(105px, 1fr)); }
+  .synqra-module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .synqra-module-card { min-height: 92px; }
   .synqra-tablet-toolbar { height: 40px; min-height: 40px; }
   .synqra-toolbar-title strong { font-size: 11px; }
   .synqra-tablet .synqra-search { width: 150px; }
