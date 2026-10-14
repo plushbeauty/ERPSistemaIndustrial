@@ -15,7 +15,7 @@ const checks = [
   [style.includes('.sgq-hero{') && /\.sgq-hero\{[^}]*background:#fff/.test(style), 'O fundo principal da área inicial deve continuar branco.'],
   [/\.sgq-hero\{[^}]*justify-content:flex-start/.test(style), 'O conteúdo principal deve ficar alinhado à esquerda.'],
   [/\.sgq-hero-inner\{[^}]*text-align:left/.test(style), 'O texto da área inicial deve continuar alinhado à esquerda.'],
-  [/\.sgq-hero-background\{[^}]*inset:0/.test(style) && /\.sgq-hero-background img\{[^}]*width:100%;height:100%/.test(style) && /\.sgq-hero-background img\.active\{opacity:\.07\}/.test(style), 'A imagem de fundo deve ocupar toda a área como marca-d’água discreta.'],
+  [/\.sgq-hero-background\{[^}]*inset:0/.test(style) && /\.sgq-hero-background img\{[^}]*width:100%;height:100%/.test(style) && /\.sgq-hero-background img\.active\{opacity:\.24\}/.test(style), 'A imagem de fundo deve ocupar toda a área como marca-d’água discreta.'],
   [!hero.includes('className="sgq-actions"'), 'Os botões centrais removidos não podem voltar à área inicial.'],
 ]
 for (const [passed, message] of checks) if (!passed) failures.push(message)
