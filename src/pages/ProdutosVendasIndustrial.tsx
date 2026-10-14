@@ -72,6 +72,10 @@ export default function ProdutosVendasIndustrial(){
   const [suppliers,setSuppliers]=useState<Supplier[]>([])
   const [groups,setGroups]=useState<Group[]>([])
   const [locations,setLocations]=useState<Location[]>([])
+  const [groupCreatorOpen,setGroupCreatorOpen]=useState(false)
+  const [newGroupCode,setNewGroupCode]=useState('')
+  const [newGroupName,setNewGroupName]=useState('')
+  const [subgroupCatalog,setSubgroupCatalog]=useState<string[]>([])
   const [selectedId,setSelectedId]=useState<string|null>(null)
   const [form,setForm]=useState<FormData>(empty())
   const [editing,setEditing]=useState(false)
@@ -103,7 +107,9 @@ export default function ProdutosVendasIndustrial(){
         supabase.from('erp_estoque_localizacoes').select('id,codigo,nome,tipo').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(1000)
       ])
       for(const r of [p,s,g,l])if(r.error)throw r.error
-      setProducts((p.data??[]) as Product[]);setSuppliers((s.data??[]) as Supplier[]);setGroups((g.data??[]) as Group[]);setLocations((l.data??[]) as Location[])
+      const loadedProducts=(p.data??[]) as Product[]
+      setProducts(loadedProducts);setSuppliers((s.data??[]) as Supplier[]);setGroups((g.data??[]) as Group[]);setLocations((l.data??[]) as Location[])
+      setSubgroupCatalog([...new Set(loadedProducts.map(x=>String(x.subgrupo||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR')))
       if(printMode&&printId){const printProduct=(p.data??[]).find((x:Product)=>x.id===printId);if(printProduct){setSelectedId(printProduct.id);setForm({...empty(),...printProduct})}}
       if(selectedId){const fresh=(p.data??[]).find((x:Product)=>x.id===selectedId);if(fresh)setForm({...empty(),...fresh})}
     }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar cadastro de produtos.')}
@@ -120,6 +126,28 @@ export default function ProdutosVendasIndustrial(){
   const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
   const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
   const update=(key:keyof FormData,value:unknown)=>setForm(prev=>({...prev,[key]:value}))
+  const addGroup=async()=>{
+    const code=newGroupCode.trim().toUpperCase(),name=newGroupName.trim()
+    if(!companyId)throw new Error('Empresa da sessão não identificada.')
+    if(!code||!name)throw new Error('Informe o código e o nome do novo grupo.')
+    if(groups.some(g=>g.codigo.toUpperCase()===code||g.nome.trim().toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR')))throw new Error('Já existe um grupo com esse código ou nome.')
+    setBusy(true);setError('');setMessage('')
+    try{
+      const {data,error:e}=await supabase.from('erp_grupos').insert({empresa_id:companyId,codigo:code,nome,ativo:true}).select('id,codigo,nome').single()
+      if(e)throw e
+      const created=data as Group
+      setGroups(prev=>[...prev,created].sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')))
+      update('grupo',created.nome);setNewGroupCode('');setNewGroupName('');setGroupCreatorOpen(false)
+      setMessage('Grupo cadastrado no banco da empresa e selecionado no produto.')
+    }catch(e){setError(e instanceof Error?e.message:'Não foi possível cadastrar o grupo.')}
+    finally{setBusy(false)}
+  }
+  const addSubgroupOption=()=>{
+    const value=String(form.subgrupo||'').trim()
+    if(!value){setError('Digite o nome do novo subgrupo antes de clicar em +.');return}
+    setSubgroupCatalog(prev=>[...new Set([...prev,value])].sort((a,b)=>a.localeCompare(b,'pt-BR')))
+    update('subgrupo',value);setMessage('Subgrupo adicionado às opções desta sessão. Para gravá-lo no catálogo da empresa, salve o produto com esse subgrupo.')
+  }
   const openTechnicalPrint=()=>{if(!selectedId){setError('Selecione um produto antes de imprimir a ficha técnica.');return}window.open('/produtos-vendas/imprimir?id='+encodeURIComponent(selectedId),'_blank','noopener,noreferrer')}
   const save=async()=>{
     setBusy(true);setError('');setMessage('')
@@ -268,12 +296,17 @@ export default function ProdutosVendasIndustrial(){
     'Origem fiscal':'Informação fiscal complementar usada pela regra tributária.',
     'Ponto de reposição':'Quantidade de referência que dispara a necessidade de reposição.',
     'Validade lote [dias]':'Quantidade de dias de validade atribuída ao lote, quando o produto controla lote.',
-    'Localização padrão':'Localização existente no Estoque onde o item é armazenado normalmente.',
+    'Localização padrão':'Localização existente na aba Estoque. O saldo e o endereço físico são controlados pelos movimentos e pelo cadastro de localizações.',
+    'Custo médio (calculado)':'Calculado automaticamente pelas entradas com custo unitário: (saldo anterior × custo médio anterior + quantidade recebida × custo de entrada) ÷ saldo após a entrada. Não é digitado manualmente.',
+    'Último custo (calculado)':'Último custo unitário positivo recebido em movimento de entrada/recebimento fiscal. É atualizado pelo processo de estoque, não por este formulário.',
+    'NCM':'Nomenclatura Comum do Mercosul: código fiscal de 8 dígitos. Escolha um código já usado no catálogo ou confirme a classificação fiscal do produto com a área fiscal/contábil; não deve ser adivinhado apenas pelo nome.',
+    'CEST':'Código de 7 dígitos quando houver enquadramento em substituição tributária. Só preencher quando aplicável à mercadoria e à regra estadual.',
     'Observações':'Informações complementares do cadastro; não substituem a ficha de processo.'
   } as Record<string,string>)[title.replace(' [?]','')]||('Ajuda do campo '+title.replace(' [?]','')+'.');
   const HelpTip=({text}:{text:string})=>{const [open,setOpen]=useState(false);return <span style={{position:'relative',display:'inline-flex',verticalAlign:'baseline',marginLeft:3}}><span role="button" tabIndex={0} aria-label="Ajuda" onClick={e=>{e.preventDefault();e.stopPropagation();setOpen(v=>!v)}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setOpen(v=>!v)}}} style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:10,height:12,color:'#2D8DB8',fontSize:11,fontWeight:800,lineHeight:1,cursor:'pointer',userSelect:'none'}}>?</span>{open&&<span role="tooltip" style={{position:'absolute',zIndex:1200,left:12,top:14,width:250,padding:'7px 8px',border:'1px solid #b9cbd3',borderRadius:2,background:'#fff',boxShadow:'0 4px 12px rgba(18,59,80,.16)',fontSize:9,fontWeight:400,lineHeight:1.35,color:'#173b4a',textTransform:'none'}}>{text}</span>}</span>}
   const fieldTitle=(title:string)=><span style={{display:'inline-flex',alignItems:'center',whiteSpace:'nowrap',minWidth:0}}>{title.replace(' [?]','')}{title.includes('[?]')&&<HelpTip text={helpFor(title)}/>}</span>;
   const field=(title:string,key:keyof FormData,type='text',span=1,locked=false)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input type={type} value={String(form[key]??'')} readOnly={locked} disabled={!editing} onChange={e=>update(key,type==='number'?n(e.target.value):e.target.value)} style={{...input,background:locked?'#eaf3f8':editing?'#fff':'#f5f7fa',color:locked?'#17445A':'#172033',fontWeight:locked?700:400,cursor:locked?'not-allowed':'text'}}/></label>
+  const combo=(title:string,key:keyof FormData,options:Array<{value:string;label:string}>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input list={'combo-'+String(key)} value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} placeholder="Digite para pesquisar ou selecione..." autoComplete="off" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id={'combo-'+String(key)}>{options.map(o=><option key={o.value} value={o.value} label={o.label}/>)}</datalist></label>
   const select=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<select value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>{options.map(o=><option value={o[0]} key={o[0]}>{o[1]}</option>)}</select></label>
   const check=(title:string,key:keyof FormData)=><label style={{display:'flex',alignItems:'center',gap:7,fontSize:10,fontWeight:700,color:'#344054'}}><input type="checkbox" checked={Boolean(form[key])} disabled={!editing} onChange={e=>update(key,e.target.checked)}/>{title}</label>
 
@@ -346,7 +379,10 @@ export default function ProdutosVendasIndustrial(){
       @media(max-width:1050px){.product-master-screen .product-workspace{grid-template-columns:minmax(0,1fr);grid-template-areas:"list" "editor"}.product-master-screen .product-list-panel{position:static}}
       @media(min-width:1051px){.product-master-screen .product-list-panel>div:last-child{max-height:calc(100vh - 245px);overflow:auto}}
       @media(max-width:1150px){.product-master-screen .product-form-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
-      @media(max-width:700px){.product-master-screen .product-form-grid,.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 2!important}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 2!important}.product-master-screen .product-responsive-grid{row-gap:9px}.product-master-screen .product-tabs button{padding:7px 8px!important;font-size:9px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}}
+      .product-master-screen .product-combo-wrap{display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:4px;align-items:end;min-width:0}
+      .product-master-screen .product-plus-button{height:30px;width:30px;border:1px solid #2D8DB8;background:#eaf4f8;color:#123B50;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;cursor:pointer}
+      .product-master-screen .product-inline-create{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto;gap:5px;padding:7px;margin-top:5px;background:#f4fbfd;border:1px solid #c8dfe8;align-items:end}
+      @media(max-width:700px){.product-master-screen .product-form-grid,.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 2!important}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 2!important}.product-master-screen .product-responsive-grid{row-gap:9px}.product-master-screen .product-tabs button{padding:7px 8px!important;font-size:9px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}.product-master-screen .product-inline-create{grid-template-columns:1fr}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 1!important}}
     `}</style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:800,color:'#2D8DB8'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
@@ -400,8 +436,8 @@ export default function ProdutosVendasIndustrial(){
             {field('Código de barras','codigo_barras','text',1,true)}
             {field('Descrição *','nome','text',2)}
             {field('Descrição resumida [?]','descricao_resumida','text',2)}
-            <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>Grupo <HelpTip text={helpFor('Grupo')}/></span><select value={form.grupo||''} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
-            {field('Subgrupo [?]','subgrupo')}
+            <div><div style={label}><span style={{display:'inline-flex',alignItems:'center'}}>GRUPO <HelpTip text={helpFor('Grupo')}/></span><div className="product-combo-wrap"><select value={form.grupo||''} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione um grupo</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.codigo} • {g.nome}</option>)}</select><button type="button" className="product-plus-button" title="Cadastrar novo grupo" aria-label="Cadastrar novo grupo" disabled={!editing} onClick={()=>{setGroupCreatorOpen(v=>!v);setError('')}}><Plus size={15}/></button></div></div>{groupCreatorOpen&&<div className="product-inline-create"><label style={label}>CÓDIGO<input value={newGroupCode} disabled={!editing||busy} onChange={e=>setNewGroupCode(e.target.value.toUpperCase())} placeholder="Ex.: MAT-PRIMA" style={input}/></label><label style={label}>NOME DO GRUPO<input value={newGroupName} disabled={!editing||busy} onChange={e=>setNewGroupName(e.target.value)} placeholder="Nome do grupo" style={input}/></label><button type="button" disabled={!editing||busy} onClick={()=>void addGroup()} style={{...btn('primary'),height:30}}><Plus size={13}/>Adicionar</button></div>}</div>
+            <div><label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>SUBGRUPO <HelpTip text={helpFor('Subgrupo')}/></span><div className="product-combo-wrap"><input list="product-subgroup-options" value={String(form.subgrupo||'')} disabled={!editing} onChange={e=>update('subgrupo',e.target.value||null)} placeholder="Selecione ou digite..." autoComplete="off" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id="product-subgroup-options">{subgroupCatalog.map(s=><option key={s} value={s}/>)}</datalist><button type="button" className="product-plus-button" title="Adicionar subgrupo às opções" aria-label="Adicionar subgrupo às opções" disabled={!editing} onClick={addSubgroupOption}><Plus size={15}/></button></div></label><div style={{fontSize:8,color:'#667085',marginTop:3}}>Digite um novo nome e clique +; ele entra no catálogo ao salvar o produto.</div></div>
             {field('Marca [?]','marca')}
           </div>
         </section>
@@ -429,28 +465,40 @@ export default function ProdutosVendasIndustrial(){
               {field('Custo médio (calculado)','custo_medio','number',1,true)}
               {field('Último custo (calculado)','custo_ultimo','number',1,true)}
             </div>
+            <label className="product-observations-field" style={{...label,gridColumn:'span 2'}}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:58,padding:'5px 7px',resize:'vertical',fontSize:11}}/></label>
             {field('Custo fabricação (engenharia)','custo_fabricacao','number',1,true)}
             {field('Preço venda','preco_venda','number')}
             {field('Ref. interna','referencia_interna')}
             {field('Ref. cliente','referencia_cliente')}
-            <label className="product-observations-field" style={{...label,gridColumn:'span 2'}}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:30,padding:'5px 7px',resize:'vertical',fontSize:11}}/></label>
             <div className="product-status-field"><span>SITUAÇÃO</span>{check('Fabricado','fabricado')}{check('Comprado','comprado')}{check('Revenda','revenda')}</div>
-            <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} title="Selecione uma localização existente do Estoque. A hierarquia depósito/rua/prateleira/caixa é mantida no cadastro de localizações." style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
           </div>
         </section>
 
       </form>}
 
-            {tab==='fiscal'&&<section style={{padding:8}}>
-        <div className="product-responsive-grid" style={{gridTemplateColumns:'80px 220px 180px 95px 95px'}}>
-          <label style={label}>SITUAÇÃO<select value={form.ativo?'true':'false'} disabled={!editing} onChange={e=>update('ativo',e.target.value==='true')} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="true">Ativo</option><option value="false">Inativo</option></select></label>
-          {select('Origem [?]','origem',[['0 - Nacional','0 - Nacional'],['1 - Estrangeira - Importação direta','1 - Estrangeira - Importação direta'],['2 - Estrangeira - mercado interno','2 - Estrangeira - mercado interno'],['3 - Nacional, conteúdo importação >40% e <70%','3 - Nacional, conteúdo importação >40% e <70%'],['4 - Nacional, processo produtivo básico','4 - Nacional, processo produtivo básico'],['5 - Nacional, conteúdo importação <40%','5 - Nacional, conteúdo importação <40%'],['6 - Estrangeira - importação direta, sem similar nacional','6 - Estrangeira - importação direta, sem similar nacional'],['7 - Estrangeira - mercado interno, sem similar nacional','7 - Estrangeira - mercado interno, sem similar nacional'],['8 - Nacional, conteúdo importação >70%','8 - Nacional, conteúdo importação >70%']])}
-          {field('NCM [?]','ncm')}{field('CEST [?]','cest')}{field('CST ICMS [?]','cst_icms')}
+            {tab==='fiscal'&&<section style={{padding:10}}>
+        <div className="product-form-section" aria-label="Classificação fiscal"><h3 className="product-form-section-title">CLASSIFICAÇÃO DA MERCADORIA</h3>
+          <div className="product-responsive-grid" style={{gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)'}}>
+            {select('ORIGEM DA MERCADORIA [?]','origem',[['0','0 • Nacional, exceto códigos 3–5'],['1','1 • Estrangeira — importação direta'],['2','2 • Estrangeira — adquirida no mercado interno'],['3','3 • Nacional, conteúdo de importação acima de 40%'],['4','4 • Nacional, processo produtivo básico'],['5','5 • Nacional, conteúdo de importação até 40%'],['6','6 • Estrangeira — importação direta, sem similar nacional'],['7','7 • Estrangeira — mercado interno, sem similar nacional'],['8','8 • Nacional, conteúdo de importação acima de 70%']])}
+            {combo('NCM • 8 dígitos [?]','ncm',[...new Map(products.filter(p=>p.ncm).map(p=>[String(p.ncm),{value:String(p.ncm),label:String(p.ncm)+' — '+p.nome}])).values()])}
+            {combo('CEST • quando aplicável [?]','cest',[...new Map(products.filter(p=>p.cest).map(p=>[String(p.cest),{value:String(p.cest),label:String(p.cest)+' — '+p.nome}])).values()])}
+          </div>
         </div>
-        <div className="product-responsive-grid" style={{gridTemplateColumns:'95px 95px 95px 95px 65px 65px 65px 65px',marginTop:7}}>
-          {field('CSOSN [?]','csosn')}{field('CFOP entrada [?]','cfop_entrada')}{field('CFOP saída [?]','cfop_saida')}{field('Origem fiscal [?]','origem_fiscal')}{field('ICMS %','aliquota_icms','number')}{field('IPI %','aliquota_ipi','number')}{field('PIS %','aliquota_pis','number')}{field('COFINS %','aliquota_cofins','number')}
+        <div className="product-form-section" aria-label="Regras tributárias"><h3 className="product-form-section-title">CÓDIGOS TRIBUTÁRIOS E OPERAÇÃO</h3>
+          <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(3,minmax(0,1fr))'}}>
+            {combo('CST ICMS [?]','cst_icms',[{value:'00',label:'00 — Tributada integralmente'},{value:'10',label:'10 — Tributada com cobrança de ICMS-ST'},{value:'20',label:'20 — Com redução de base de cálculo'},{value:'30',label:'30 — Isenta/não tributada com ICMS-ST'},{value:'40',label:'40 — Isenta'},{value:'41',label:'41 — Não tributada'},{value:'50',label:'50 — Suspensão'},{value:'51',label:'51 — Diferimento'},{value:'60',label:'60 — ICMS cobrado anteriormente por ST'},{value:'70',label:'70 — Redução da base e ICMS-ST'},{value:'90',label:'90 — Outras'}])}
+            {combo('CSOSN • Simples Nacional [?]','csosn',[{value:'101',label:'101 — Tributada com permissão de crédito'},{value:'102',label:'102 — Tributada sem permissão de crédito'},{value:'103',label:'103 — Isenção para faixa de receita bruta'},{value:'201',label:'201 — Com crédito e ICMS-ST'},{value:'202',label:'202 — Sem crédito e com ICMS-ST'},{value:'203',label:'203 — Isenção e ICMS-ST'},{value:'300',label:'300 — Imune'},{value:'400',label:'400 — Não tributada'},{value:'500',label:'500 — ICMS cobrado anteriormente por ST'},{value:'900',label:'900 — Outros'}])}
+            {combo('CFOP ENTRADA • 4 dígitos [?]','cfop_entrada',[{value:'1101',label:'1101 — Compra para industrialização (mesmo estado)'},{value:'1102',label:'1102 — Compra para comercialização (mesmo estado)'},{value:'1124',label:'1124 — Industrialização efetuada por outra empresa'},{value:'1152',label:'1152 — Transferência para comercialização'},{value:'1551',label:'1551 — Compra de bem para ativo imobilizado'},{value:'1556',label:'1556 — Compra de material para uso/consumo'},{value:'2101',label:'2101 — Compra para industrialização (outro estado)'},{value:'2102',label:'2102 — Compra para comercialização (outro estado)'},{value:'2556',label:'2556 — Material para uso/consumo (outro estado)'}])}
+            {combo('CFOP SAÍDA • 4 dígitos [?]','cfop_saida',[{value:'5101',label:'5101 — Venda de produção do estabelecimento (mesmo estado)'},{value:'5102',label:'5102 — Venda de mercadoria adquirida de terceiros (mesmo estado)'},{value:'5405',label:'5405 — Venda de mercadoria sujeita à ST'},{value:'5551',label:'5551 — Venda de bem do ativo imobilizado'},{value:'6101',label:'6101 — Venda de produção (outro estado)'},{value:'6102',label:'6102 — Venda de mercadoria adquirida de terceiros (outro estado)'},{value:'6404',label:'6404 — Venda sujeita à ST (outro estado)'}])}
+            {combo('ORIGEM FISCAL / COMPLEMENTO [?]','origem_fiscal',[...new Map(products.filter(p=>p.origem_fiscal).map(p=>[String(p.origem_fiscal),{value:String(p.origem_fiscal),label:String(p.origem_fiscal)}])).values()])}
+          </div>
         </div>
-        <div style={{marginTop:7,fontSize:9,color:'#667085'}}>Use o ? para consultar o significado da sigla/código antes de preencher. NCM e CEST permanecem exclusivamente nesta aba Fiscal.</div>
+        <div className="product-form-section" aria-label="Alíquotas tributárias"><h3 className="product-form-section-title">ALÍQUOTAS CADASTRADAS (%)</h3>
+          <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(4,minmax(0,1fr))'}}>
+            {field('ICMS %','aliquota_icms','number')}{field('IPI %','aliquota_ipi','number')}{field('PIS %','aliquota_pis','number')}{field('COFINS %','aliquota_cofins','number')}
+          </div>
+        </div>
+        <div style={{marginTop:7,fontSize:9,color:'#667085',lineHeight:1.45}}>Os combos sugerem códigos já usados no catálogo e opções tributárias comuns. A aplicação de CST/CSOSN, CFOP, NCM e CEST depende da operação, regime tributário, origem/destino e enquadramento do produto; confirme a regra com a contabilidade. O NCM é sugerido a partir dos produtos já cadastrados, sem inventar classificação fiscal.</div>
       </section>}
 
             {tab==='estoque'&&<section style={{padding:10}}>
@@ -458,7 +506,7 @@ export default function ProdutosVendasIndustrial(){
           <label style={label}>ESTOQUE ATUAL <span style={{fontSize:8,color:'#667085'}}>calculado</span><input value={fmt(form.estoque_atual)+' '+form.unidade} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>PONTO DE REPOSIÇÃO <HelpTip text={helpFor('Ponto de reposição')}/></span><input type="number" value={String(form.ponto_reposicao??0)} disabled={!editing} onChange={e=>update('ponto_reposicao',n(e.target.value))} title="Quantidade que dispara a necessidade de reposição; não é estoque atual." style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
           <label style={label}>ESTOQUE MÁXIMO<input type="number" value={String(form.estoque_maximo??0)} disabled={!editing} onChange={e=>update('estoque_maximo',n(e.target.value))} style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
-          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
+          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione a localização</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
         </div>
         <div className="product-responsive-grid" style={{gridTemplateColumns:'82px 105px 105px 170px',marginTop:7}}>
           {field('VALIDADE LOTE [dias] [?]','lote_validade_dias','number')}{check('Controla lote','controla_lote')}{check('Controla série','controla_serie')}{check('Permite estoque negativo','permite_estoque_negativo')}
