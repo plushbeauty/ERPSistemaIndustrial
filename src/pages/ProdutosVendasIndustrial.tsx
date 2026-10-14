@@ -72,9 +72,6 @@ export default function ProdutosVendasIndustrial(){
   const [suppliers,setSuppliers]=useState<Supplier[]>([])
   const [groups,setGroups]=useState<Group[]>([])
   const [locations,setLocations]=useState<Location[]>([])
-  const [groupCreatorOpen,setGroupCreatorOpen]=useState(false)
-  const [newGroupCode,setNewGroupCode]=useState('')
-  const [newGroupName,setNewGroupName]=useState('')
   const [subgroupCatalog,setSubgroupCatalog]=useState<string[]>([])
   const [selectedId,setSelectedId]=useState<string|null>(null)
   const [form,setForm]=useState<FormData>(empty())
@@ -127,18 +124,23 @@ export default function ProdutosVendasIndustrial(){
   const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
   const update=(key:keyof FormData,value:unknown)=>setForm(prev=>({...prev,[key]:value}))
   const addGroup=async()=>{
-    const code=newGroupCode.trim().toUpperCase(),name=newGroupName.trim()
+    const name=String(form.grupo||'').trim()
     if(!companyId){setError('Empresa da sessão não identificada.');return}
-    if(!code||!name){setError('Informe o código e o nome do novo grupo.');return}
-    if(groups.some(g=>g.codigo.toUpperCase()===code||g.nome.trim().toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR'))){setError('Já existe um grupo com esse código ou nome.');return}
+    if(!name){setError('Digite o nome do novo grupo no campo Grupo e clique em +.');return}
+    const existing=groups.find(g=>g.nome.trim().toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR'))
+    if(existing){update('grupo',existing.nome);setMessage('O grupo já existe e foi selecionado.');return}
+    const base='GRP-'+name.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,16)
+    const prefix=base==='GRP-'?'GRP-NOVO':base
+    let code=prefix,sequence=2
+    while(groups.some(g=>g.codigo.toUpperCase()===code)){code=prefix+'-'+sequence;sequence+=1}
     setBusy(true);setError('');setMessage('')
     try{
       const {data,error:e}=await supabase.from('erp_grupos').insert({empresa_id:companyId,codigo:code,nome,ativo:true}).select('id,codigo,nome').single()
       if(e)throw e
       const created=data as Group
       setGroups(prev=>[...prev,created].sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')))
-      update('grupo',created.nome);setNewGroupCode('');setNewGroupName('');setGroupCreatorOpen(false)
-      setMessage('Grupo cadastrado no banco da empresa e selecionado no produto.')
+      update('grupo',created.nome)
+      setMessage('Grupo cadastrado no banco da empresa e selecionado no produto. Código gerado: '+created.codigo)
     }catch(e){setError(e instanceof Error?e.message:'Não foi possível cadastrar o grupo.')}
     finally{setBusy(false)}
   }
@@ -436,7 +438,7 @@ export default function ProdutosVendasIndustrial(){
             {field('Código de barras','codigo_barras','text',1,true)}
             {field('Descrição *','nome','text',2)}
             {field('Descrição resumida [?]','descricao_resumida','text',2)}
-            <div><div style={label}><span style={{display:'inline-flex',alignItems:'center'}}>GRUPO <HelpTip text={helpFor('Grupo')}/></span><div className="product-combo-wrap"><select value={form.grupo||''} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione um grupo</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.codigo} • {g.nome}</option>)}</select><button type="button" className="product-plus-button" title="Cadastrar novo grupo" aria-label="Cadastrar novo grupo" disabled={!editing} onClick={()=>{setGroupCreatorOpen(v=>!v);setError('')}}><Plus size={15}/></button></div></div>{groupCreatorOpen&&<div className="product-inline-create"><label style={label}>CÓDIGO<input value={newGroupCode} disabled={!editing||busy} onChange={e=>setNewGroupCode(e.target.value.toUpperCase())} placeholder="Ex.: MAT-PRIMA" style={input}/></label><label style={label}>NOME DO GRUPO<input value={newGroupName} disabled={!editing||busy} onChange={e=>setNewGroupName(e.target.value)} placeholder="Nome do grupo" style={input}/></label><button type="button" disabled={!editing||busy} onClick={()=>void addGroup()} style={{...btn('primary'),height:30}}><Plus size={13}/>Adicionar</button></div>}</div>
+            <div><label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>GRUPO <HelpTip text={helpFor('Grupo')}/></span><div className="product-combo-wrap"><input role="combobox" aria-autocomplete="list" list="product-group-options" value={String(form.grupo||'')} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} placeholder="Selecione ou digite um grupo..." autoComplete="off" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id="product-group-options">{groups.map(g=><option key={g.id} value={g.nome} label={g.codigo+' • '+g.nome}/>)}</datalist><button type="button" className="product-plus-button" title="Adicionar o nome digitado como novo grupo" aria-label="Adicionar o nome digitado como novo grupo" disabled={!editing||busy} onClick={()=>void addGroup()}><Plus size={15}/></button></div></label></div>
             <div><label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>SUBGRUPO <HelpTip text={helpFor('Subgrupo')}/></span><div className="product-combo-wrap"><input list="product-subgroup-options" value={String(form.subgrupo||'')} disabled={!editing} onChange={e=>update('subgrupo',e.target.value||null)} placeholder="Selecione ou digite..." autoComplete="off" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id="product-subgroup-options">{subgroupCatalog.map(s=><option key={s} value={s}/>)}</datalist><button type="button" className="product-plus-button" title="Adicionar subgrupo às opções" aria-label="Adicionar subgrupo às opções" disabled={!editing} onClick={addSubgroupOption}><Plus size={15}/></button></div></label><div style={{fontSize:8,color:'#667085',marginTop:3}}>Digite um novo nome e clique +; ele entra no catálogo ao salvar o produto.</div></div>
             {field('Marca [?]','marca')}
           </div>
