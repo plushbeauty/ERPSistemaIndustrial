@@ -392,7 +392,7 @@ export default function ProdutosVendasIndustrial(){
             {field('Código de barras','codigo_barras','text',1,true)}
             {field('Descrição *','nome','text',2)}
             {field('Descrição resumida [?]','descricao_resumida','text',2)}
-            <label style={label}>Grupo <HelpTip text={helpFor('Grupo')}/><select value={form.grupo||''} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
+            <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>Grupo <HelpTip text={helpFor('Grupo')}/></span><select value={form.grupo||''} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
             {field('Subgrupo [?]','subgrupo')}
             {field('Marca [?]','marca')}
           </div>
@@ -425,9 +425,9 @@ export default function ProdutosVendasIndustrial(){
             {field('Preço venda','preco_venda','number')}
             {field('Ref. interna','referencia_interna')}
             {field('Ref. cliente','referencia_cliente')}
-            <label className="product-observations-field" style={{...label,gridColumn:'span 2'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:30,padding:'5px 7px',resize:'vertical',fontSize:11}}/></label>
+            <label className="product-observations-field" style={{...label,gridColumn:'span 2'}}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:30,padding:'5px 7px',resize:'vertical',fontSize:11}}/></label>
             <div className="product-status-field"><span>SITUAÇÃO</span>{check('Fabricado','fabricado')}{check('Comprado','comprado')}{check('Revenda','revenda')}</div>
-            <label style={label}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} title="Selecione uma localização existente do Estoque. A hierarquia depósito/rua/prateleira/caixa é mantida no cadastro de localizações." style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
+            <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} title="Selecione uma localização existente do Estoque. A hierarquia depósito/rua/prateleira/caixa é mantida no cadastro de localizações." style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
           </div>
         </section>
 
