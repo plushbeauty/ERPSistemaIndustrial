@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Camera, CreditCard, FileSpreadsheet, ScanLine, Wallet, CalendarRange } from 'lucide-react'
-import ERPHeader from '../components/layout/ERPHeader'
 import CompactButton from '../components/ui/CompactButton'
 import FinanceiroTitulos from './FinanceiroTitulos'
 import { supabase } from '../lib/supabaseClient'
@@ -76,7 +75,7 @@ export default function FinancasContasPagar({ kind = 'PAGAR' }: Props) {
   },[rows,baixas])
 
   return <main className="min-h-screen bg-[#F4FBFD] text-[#123B50]">
-    <ERPHeader />
+    
     <div className="border-b border-slate-200 bg-white px-2 py-1">
       <nav className="flex min-h-[30px] items-center gap-1 overflow-x-auto" aria-label="Submódulos financeiros">
         {links.map(([href,label,Icon]) => <CompactButton key={href} type="button" tone={location.pathname === href ? 'primary' : 'default'} onClick={() => navigate(href)} title={label}><Icon size={12}/>{label}</CompactButton>)}
