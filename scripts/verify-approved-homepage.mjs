@@ -14,7 +14,7 @@ const checks = [
   [hero.includes('Uma visão completa da sua operação industrial.'), 'O título aprovado da página inicial precisa permanecer.'],
   [style.includes('.sgq-hero{') && /\.sgq-hero\{[^}]*background:#fff/.test(style), 'O fundo principal da área inicial deve continuar branco.'],
   [/\.sgq-hero\{[^}]*background:#fff/.test(style), 'O fundo da área inicial deve continuar branco.'],
-  [/\.sgq-hero-inner\{[^}]*grid-template-columns:minmax\(0,1\.16fr\) minmax\(0,\.84fr\)/.test(style), 'A área inicial deve manter imagem à esquerda e texto à direita, com a proporção visual aprovada.'],
+  [/\.sgq-hero-inner\{[^}]*grid-template-columns:minmax\(0,1\.25fr\) minmax\(0,\.75fr\)/.test(style), 'A área inicial deve manter imagem à esquerda e texto à direita, com a proporção visual aprovada.'],
   [hero.includes('className="sgq-stage"') && hero.includes('className="sgq-stage-media"') && hero.includes('src={v.src}'), 'As imagens originais precisam continuar visíveis no painel esquerdo, sem serem transformadas em marca-d’água.'],
   [!hero.includes('sgq-hero-background') && !style.includes('.sgq-hero-background'), 'A imagem não pode voltar a ser usada como marca-d’água de fundo.'],
   [/\.sgq-hero h1\{font-size:clamp\(24px,2\.5vw,34px\)/.test(style) && /\.sgq-hero h1\{font-size:27px\}/.test(style), 'O título deve permanecer reduzido em desktop e mobile.'],
