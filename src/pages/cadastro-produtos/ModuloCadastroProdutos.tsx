@@ -37,9 +37,9 @@ export default function ModuloCadastroProdutos() {
       {view === 'ficha' && <FormFichaTecnica productId={id} onSaved={() => setView('lista')} />}
       {view === 'barcode' && <ImpressaoEtiquetas />}
       {view === 'regras' && <ParametrosCodigo />}
-      <div className="mt-6 flex items-center justify-between rounded-3xl border border-slate-200 bg-white px-5 py-4 shadow-xl">
+      <div className="mt-3 flex items-center justify-between gap-3 rounded-[2px] border border-slate-300 bg-white px-3 py-2 shadow-sm">
         <div className="flex items-center gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-blue-500 via-blue-700 to-indigo-950 text-white shadow-lg">
+          <span className="grid h-10 w-10 place-items-center rounded-[2px] bg-[#123B50] text-white shadow-lg">
             <PackagePlus size={19} />
           </span>
           <div>
@@ -50,7 +50,7 @@ export default function ModuloCadastroProdutos() {
         <button
           type="button"
           onClick={() => { window.location.href = '/tablet/dashboard' }}
-          className="inline-flex min-h-[46px] items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 text-sm font-black text-slate-800 shadow-sm hover:bg-slate-50"
+          className="inline-flex h-[30px] items-center gap-2 rounded-[2px] border border-slate-300 bg-white px-3 text-[10px] font-semibold uppercase text-slate-800 hover:bg-slate-50"
         >
           <Home size={17} />
           Voltar à Mesa
