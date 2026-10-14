@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Plus, Save, Search, Trash2 } from 'lucide-react'
+import { ArrowLeft, Plus, Printer, Save, Search, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -240,6 +240,14 @@ export default function ComprasRFQ() {
             >
               Pedido de compra
             </button>
+            <button
+              type="button"
+              disabled={loading || selectedSuppliers.length === 0 || items.length === 0}
+              onClick={() => window.print()}
+              className="flex min-h-10 items-center gap-2 rounded-md border border-[#2D8DB8] bg-[#F4FBFD] px-3 py-2 text-xs text-[#123B50] disabled:opacity-50 print:hidden"
+            >
+              <Printer size={15} /> Imprimir prévia RFQ
+            </button>
           </div>
         </div>
       </header>
@@ -343,6 +351,19 @@ export default function ComprasRFQ() {
           </section>
         </div>
       </main>
+      <section className="compras-print-area compras-rfq-document" aria-label="Documento de prévia de solicitação de cotação">
+        <header className="compras-print-document-header">
+          <img src="/logo/logo.png" alt="Logo oficial" />
+          <div><p>ERP INDUSTRIAL • COMPRAS</p><h1>SOLICITAÇÃO DE COTAÇÃO — RFQ</h1><span>PRÉVIA PARA CONFERÊNCIA • Não enviada ao fornecedor</span></div>
+        </header>
+        <div className="compras-print-meta"><div><strong>Data de emissão</strong><span>{new Date().toLocaleDateString('pt-BR')}</span></div><div><strong>Prazo para resposta</strong><span>{responseDate || 'A definir'}</span></div><div><strong>Necessidade</strong><span>{needDate || 'A definir'}</span></div><div><strong>Condição de pagamento</strong><span>{paymentCondition || 'A negociar'}</span></div></div>
+        <h2>Fornecedores convidados</h2>
+        <table><thead><tr><th>Fornecedor</th><th>E-mail cadastrado</th></tr></thead><tbody>{selectedSuppliers.map(id => suppliers.find(supplier => supplier.id === id)).filter((supplier): supplier is Supplier => Boolean(supplier)).map(supplier => <tr key={supplier.id}><td>{supplier.razao_social}</td><td>{supplier.email || 'Não informado'}</td></tr>)}</tbody></table>
+        <h2>Itens solicitados</h2>
+        <table><thead><tr><th>Código</th><th>Descrição</th><th>Quantidade</th><th>Unidade</th><th>Data necessária</th></tr></thead><tbody>{items.map((item, index) => <tr key={item.produto_id + '-' + index}><td>{item.codigo}</td><td>{item.descricao}</td><td>{Number(item.quantidade).toLocaleString('pt-BR')}</td><td>{item.unidade}</td><td>{item.data_necessidade || '—'}</td></tr>)}</tbody></table>
+        <div className="compras-print-notes"><strong>Observações</strong><p>{notes.trim() || 'Sem observações informadas.'}</p></div>
+        <footer>Documento gerado a partir dos dados preenchidos nesta tela. A cotação somente passa a existir no sistema após salvar no ERP.</footer>
+      </section>
       <style>{`.compras-rfq-compact header>div{min-height:44px!important;padding:6px 12px!important}.compras-rfq-compact main{max-width:none!important;padding:8px!important}.compras-rfq-compact .min-h-10,.compras-rfq-compact .min-h-11{min-height:30px!important;height:30px!important}.compras-rfq-compact .rounded,.compras-rfq-compact .rounded-md,.compras-rfq-compact .rounded-lg{border-radius:2px!important}.compras-rfq-compact section{padding:8px!important}.compras-rfq-compact .gap-5{gap:6px!important}.compras-rfq-compact input,.compras-rfq-compact select{height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:12px!important}.compras-rfq-compact textarea{min-height:60px!important;border-radius:2px!important;font-size:12px!important}.compras-rfq-compact table{font-size:11px!important}.compras-rfq-compact th,.compras-rfq-compact td{padding:4px 6px!important}.compras-rfq-compact button{border-radius:2px!important;font-size:11px!important}`}</style>
       <style>{`.compras-rfq-compact header>div{min-height:44px!important;padding:6px 12px!important}.compras-rfq-compact main{max-width:none!important;padding:8px!important}.compras-rfq-compact .min-h-10,.compras-rfq-compact .min-h-11{min-height:30px!important;height:30px!important}.compras-rfq-compact .rounded,.compras-rfq-compact .rounded-md,.compras-rfq-compact .rounded-lg{border-radius:2px!important}.compras-rfq-compact section{padding:8px!important}.compras-rfq-compact .gap-5{gap:6px!important}.compras-rfq-compact input,.compras-rfq-compact select{height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:12px!important}.compras-rfq-compact textarea{min-height:60px!important;border-radius:2px!important;font-size:12px!important}.compras-rfq-compact table{font-size:11px!important}.compras-rfq-compact th,.compras-rfq-compact td{padding:4px 6px!important}.compras-rfq-compact button{border-radius:2px!important;font-size:11px!important}`}</style>
     </div>
