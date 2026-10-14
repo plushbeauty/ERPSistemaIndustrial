@@ -13,9 +13,11 @@ const checks = [
   [hero.includes('PCP → PRODUÇÃO → QUALIDADE → ESTOQUE'), 'A sequência oficial PCP → PRODUÇÃO → QUALIDADE → ESTOQUE precisa permanecer.'],
   [hero.includes('Uma visão completa da sua operação industrial.'), 'O título aprovado da página inicial precisa permanecer.'],
   [style.includes('.sgq-hero{') && /\.sgq-hero\{[^}]*background:#fff/.test(style), 'O fundo principal da área inicial deve continuar branco.'],
-  [/\.sgq-hero\{[^}]*justify-content:flex-start/.test(style), 'O conteúdo principal deve ficar alinhado à esquerda.'],
-  [/\.sgq-hero-inner\{[^}]*text-align:left/.test(style), 'O texto da área inicial deve continuar alinhado à esquerda.'],
-  [/\.sgq-hero-background\{[^}]*inset:0/.test(style) && /\.sgq-hero-background img\{[^}]*width:100%;height:100%/.test(style) && /\.sgq-hero-background img\.active\{opacity:\.24\}/.test(style), 'A imagem de fundo deve ocupar toda a área como marca-d’água discreta.'],
+  [/\.sgq-hero\{[^}]*background:#fff/.test(style), 'O fundo da área inicial deve continuar branco.'],
+  [/\.sgq-hero-inner\{[^}]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/.test(style), 'A área inicial deve manter imagem à esquerda e texto à direita.'],
+  [hero.includes('className="sgq-stage"') && hero.includes('className="sgq-stage-media"') && hero.includes('src={v.src}'), 'As imagens originais precisam continuar visíveis no painel esquerdo, sem serem transformadas em marca-d’água.'],
+  [!hero.includes('sgq-hero-background') && !style.includes('.sgq-hero-background'), 'A imagem não pode voltar a ser usada como marca-d’água de fundo.'],
+  [/\.sgq-hero h1\{font-size:clamp\(24px,2\.5vw,34px\)/.test(style) && /\.sgq-hero h1\{font-size:27px\}/.test(style), 'O título deve permanecer reduzido em desktop e mobile.'],
   [!hero.includes('className="sgq-actions"'), 'Os botões centrais removidos não podem voltar à área inicial.'],
 ]
 for (const [passed, message] of checks) if (!passed) failures.push(message)
