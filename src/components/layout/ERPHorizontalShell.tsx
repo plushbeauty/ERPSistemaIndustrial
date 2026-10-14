@@ -143,7 +143,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     ? menus.find(menu => menu.label === (moduleLabel === 'Qualidade' ? 'Gestão da Qualidade' : moduleLabel)) ?? { label: moduleLabel, route: '/' + pathname.split('/')[1], icon: Home }
     : undefined
   const current = currentModuleMenu ?? menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
-  const visibleMenus: MenuItem[] = [menus[0], { label: 'Menu SGQ', route: '/qualidade/tablet', icon: ShieldCheck, action: 'qualityTablet' }, ...menus.slice(1)]
+  const visibleMenus: MenuItem[] = menus
   useEffect(() => {
     setOpenMenu(null)
   }, [pathname])
