@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, RefreshCw } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, RefreshCw, LogOut } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -169,6 +169,11 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     ? { title: 'Qualidade', purpose: 'Registrar não conformidades, evidências, causa raiz, ações corretivas e validação.', steps: ['Identifique produto, lote, processo e ocorrência.', 'Descreva o problema e a contenção imediata.', 'Registre causa raiz e plano de ação.', 'Anexe evidências e conclua após validar eficácia.'], fields: ['RPNC: registro da não conformidade.', 'Lote/produto: rastreabilidade afetada.', 'Causa raiz: causa comprovada, não apenas o sintoma.', 'Ação/responsável/prazo: plano verificável.', 'Evidência: documento ou registro que comprova a eficácia.'] }
     : { title: 'Ajuda da tela atual', purpose: 'Use esta ajuda para entender a finalidade da tela e o preenchimento dos campos mais comuns.', steps: ['Leia a finalidade antes de alterar dados.', 'Preencha campos obrigatórios com registros existentes.', 'Revise os dados e salve; confirme a mensagem de resultado.', 'Use a Central de Ajuda para consultar procedimentos do módulo.'], fields: ['Pesquisa: localiza registros existentes.', 'Filtros: limitam os resultados exibidos.', 'Status: indica a etapa do processo.', 'Salvar: grava dados reais; se houver erro, corrija a mensagem apresentada.'] }
 
+  const logout = async () => {
+    await supabase.auth.signOut()
+    navigate('/login', { replace: true })
+  }
+
   const go = (route: string) => {
     setOpenMenu(null)
     setOpenSubMenu(null)
@@ -190,6 +195,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
 
         <div className="erp-horizontal-header-right">
           <div style={{position:"relative"}}><button type="button" className="erp-horizontal-help" title="Ajuda" onClick={()=>setHelpOpen(v=>!v)} aria-expanded={helpOpen}><CircleHelp size={15} /> Ajuda</button>{helpOpen&&<div role="dialog" aria-label="Ajuda contextual da tela" style={{position:"absolute",right:0,top:34,zIndex:1200,width:"min(370px,90vw)",maxHeight:"75vh",overflowY:"auto",padding:"10px 12px",border:"1px solid #b9cbd3",borderRadius:2,background:"#fff",boxShadow:"0 6px 16px rgba(18,59,80,.16)",fontSize:10,lineHeight:1.45,color:"#173b4a"}}><strong>{contextualHelp.title}</strong><p style={{margin:"5px 0"}}>{contextualHelp.purpose}</p><strong>Como usar</strong><ol style={{margin:"4px 0 7px",paddingLeft:17}}>{contextualHelp.steps.map((step,index)=><li key={index} style={{marginBottom:3}}>{step}</li>)}</ol><strong>Campos e preenchimento</strong><ul style={{margin:"4px 0 8px",paddingLeft:15}}>{contextualHelp.fields.map((field,index)=><li key={index} style={{marginBottom:3}}>{field}</li>)}</ul><div style={{borderTop:"1px solid #e2e8f0",paddingTop:7,color:"#647b85"}}>Tela atual: {pathname}</div><button type="button" onClick={()=>{setHelpOpen(false);navigate("/ajuda")}} style={{marginTop:7,height:28,padding:"0 9px",border:"1px solid #2D8DB8",background:"#2D8DB8",color:"#fff",borderRadius:2,cursor:"pointer"}}>Abrir Central de Ajuda</button></div>}</div>
+          <button type="button" className="erp-horizontal-logout" onClick={() => void logout()} title="Sair da sessão"><LogOut size={13} /> SAIR</button>
           <div className="erp-horizontal-session">
             <UserRound size={15} />
             <span>{operatorName === 'Usuário ERP' ? sessionOperator : operatorName}</span>
@@ -319,6 +325,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-menu-button.is-active{background:#17445A;color:#fff;box-shadow:inset 0 -2px #8bd6f0}
 .erp-horizontal-menu-button.erp-module-menu-button{background:#f97316;border-right-color:#ea580c;color:#fff;font-weight:800;letter-spacing:.03em;text-transform:uppercase}
 .erp-horizontal-menu-button.erp-module-menu-button:hover,.erp-horizontal-menu-button.erp-module-menu-button.is-active{background:#ea580c;color:#fff;box-shadow:inset 0 -2px #fed7aa}
+.erp-horizontal-logout{height:27px;display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:0 8px;border:1px solid #c5d7df;border-radius:2px;background:#f4fbfd;color:#123b50;font-size:10px;font-weight:800;white-space:nowrap;cursor:pointer}.erp-horizontal-logout:hover{background:#dcecf3}
 .erp-horizontal-refresh-module{height:27px;display:inline-flex;align-items:center;justify-content:center;gap:5px;align-self:center;margin-left:auto;margin-right:4px;padding:0 10px;border:1px solid #ea580c;border-radius:2px;background:#f97316;color:#fff;font-size:10px;font-weight:800;white-space:nowrap;cursor:pointer}
 .erp-horizontal-refresh-module:hover{background:#ea580c}
 @media(max-width:700px){.erp-horizontal-refresh-module{margin-left:4px;flex:0 0 auto}}
