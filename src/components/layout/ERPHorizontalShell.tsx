@@ -114,7 +114,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       .channel('erp-global-data-refresh')
       .on('postgres_changes', { event: '*', schema: 'public' }, () => {
         if (document.visibilityState !== 'visible') return
-        const routeIsEditing = /\/(novo|editar|cadastro|pedido|rfq|emissao|configuracoes|configuracao|form|apontamento|recebimento|transferencia|inventario|assinatura|login)(\/|$)/i.test(window.location.pathname)
+        const routeIsEditing = /\/(novo|editar|cadastro|pedido|rfq|emissao|configuracoes|configuracao|form|apontamento|recebimento|transferencia|inventario|assinatura|login)([-/]|$)/i.test(window.location.pathname)
         const active = document.activeElement
         const userIsTyping = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement || active instanceof HTMLSelectElement || (active instanceof HTMLElement && active.isContentEditable)
         if (routeIsEditing || userIsTyping) return
