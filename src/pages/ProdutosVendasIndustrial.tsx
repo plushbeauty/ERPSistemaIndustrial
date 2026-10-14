@@ -515,7 +515,7 @@ export default function ProdutosVendasIndustrial(){
             {field('ICMS %','aliquota_icms','number')}{field('IPI %','aliquota_ipi','number')}{field('PIS %','aliquota_pis','number')}{field('COFINS %','aliquota_cofins','number')}
           </div>
         </div>
-        <div style={{marginTop:7,fontSize:9,color:'#667085',lineHeight:1.45}}>Os combos sugerem códigos já usados no catálogo e opções tributárias comuns. A aplicação de CST/CSOSN, CFOP, NCM e CEST depende da operação, regime tributário, origem/destino e enquadramento do produto; confirme a regra com a contabilidade. O NCM é sugerido a partir dos produtos já cadastrados, sem inventar classificação fiscal.</div>
+        <div role="note" style={{marginTop:7,padding:'7px 8px',border:'1px solid #d5dde7',borderLeft:'3px solid #E6A34A',background:'#fffaf0',fontSize:9,color:'#52606d',lineHeight:1.45}}>ATENÇÃO FISCAL: esta tela não consulta nem sugere códigos automaticamente. NCM, CEST, CST/CSOSN e CFOP precisam ser confirmados nas fontes oficiais e conforme o produto, regime tributário e operação. A validação atual verifica somente o formato dos códigos preenchidos; não confirma vigência, enquadramento nem imposto devido. As alíquotas são informativas e não substituem o motor fiscal.</div>
       </section>}
 
             {tab==='estoque'&&<section style={{padding:10}}>
