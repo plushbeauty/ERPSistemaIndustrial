@@ -10,9 +10,9 @@ const fiscalStart = source.indexOf("{tab==='fiscal'&&<section")
 const productionStart = source.indexOf("{tab==='producao'&&<section")
 const general = generalStart >= 0 ? source.slice(generalStart, source.indexOf('</form>}', generalStart)) : ''
 
-check(generalStart >= 0 && stockStart > generalStart, 'A aba Geral deve existir antes de Estoque.')
+check(generalStart >= 0 && fiscalStart > generalStart && stockStart > fiscalStart, 'A ordem das abas deve manter Geral, Fiscal e Estoque.')
 check(!general.includes('LOCALIZAÇÃO PADRÃO'), 'Localização padrão não pode aparecer na aba Geral.')
-check(stockStart >= 0 && fiscalStart > stockStart && source.slice(stockStart, fiscalStart).includes('LOCALIZAÇÃO PADRÃO'), 'Localização padrão deve existir na aba Estoque.')
+check(stockStart >= 0 && productionStart > stockStart && source.slice(stockStart, productionStart).includes('LOCALIZAÇÃO PADRÃO'), 'Localização padrão deve existir na aba Estoque.')
 check(source.includes("combo('NCM • 8 dígitos [?]','ncm',[],1,8)"), 'NCM não pode sugerir valores de produtos existentes; deve limitar a 8 dígitos.')
 check(source.includes("combo('CEST • 7 dígitos [?]','cest',[],1,7)"), 'CEST não pode sugerir valores de produtos existentes; deve limitar a 7 dígitos.')
 check(!/products\.filter\(p=>p\.ncm\)/.test(source), 'Não usar catálogo de produtos como fonte de NCM.')
