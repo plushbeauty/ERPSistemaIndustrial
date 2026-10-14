@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, RefreshCw, LogOut } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -104,6 +104,28 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     const openQualityTablet = () => setTabletOpen(true)
     window.addEventListener('erp:open-quality-tablet', openQualityTablet)
     return () => window.removeEventListener('erp:open-quality-tablet', openQualityTablet)
+  }, [])
+
+  // Atualização automática por mudanças reais no banco, sem botão manual.
+  // Não recarrega telas de lançamento/edição para não apagar dados ainda não gravados.
+  useEffect(() => {
+    let refreshTimer: number | undefined
+    const channel = supabase
+      .channel('erp-global-data-refresh')
+      .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+        if (document.visibilityState !== 'visible') return
+        const routeIsEditing = /\\/(novo|editar|cadastro|pedido|rfq|emissao|configuracoes|configuracao|form|apontamento|recebimento|transferencia|inventario|assinatura|login)(\\/|$)/i.test(window.location.pathname)
+        const active = document.activeElement
+        const userIsTyping = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement || active instanceof HTMLSelectElement || (active instanceof HTMLElement && active.isContentEditable)
+        if (routeIsEditing || userIsTyping) return
+        if (refreshTimer !== undefined) window.clearTimeout(refreshTimer)
+        refreshTimer = window.setTimeout(() => window.location.reload(), 900)
+      })
+      .subscribe()
+    return () => {
+      if (refreshTimer !== undefined) window.clearTimeout(refreshTimer)
+      void supabase.removeChannel(channel)
+    }
   }, [])
 
   const moduleLabel = pathname.startsWith('/vendas') ? 'Vendas'
@@ -242,7 +264,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
             </div>}
           </div>
         })}
-        <button type="button" className="erp-horizontal-refresh-module" onClick={() => { const event = new CustomEvent('erp:refresh-current-module', { cancelable: true }); window.dispatchEvent(event); if (!event.defaultPrevented) window.location.reload() }} title="Atualizar os dados da tela atual" aria-label="Atualizar dados do módulo"><RefreshCw size={13} /> Atualizar</button>
       </nav>
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
@@ -326,9 +347,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
 .erp-horizontal-menu-button.erp-module-menu-button{background:#f97316;border-right-color:#ea580c;color:#fff;font-weight:800;letter-spacing:.03em;text-transform:uppercase}
 .erp-horizontal-menu-button.erp-module-menu-button:hover,.erp-horizontal-menu-button.erp-module-menu-button.is-active{background:#ea580c;color:#fff;box-shadow:inset 0 -2px #fed7aa}
 .erp-horizontal-logout{height:27px;display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:0 8px;border:1px solid #c5d7df;border-radius:2px;background:#f4fbfd;color:#123b50;font-size:10px;font-weight:800;white-space:nowrap;cursor:pointer}.erp-horizontal-logout:hover{background:#dcecf3}
-.erp-horizontal-refresh-module{height:27px;display:inline-flex;align-items:center;justify-content:center;gap:5px;align-self:center;margin-left:auto;margin-right:4px;padding:0 10px;border:1px solid #ea580c;border-radius:2px;background:#f97316;color:#fff;font-size:10px;font-weight:800;white-space:nowrap;cursor:pointer}
-.erp-horizontal-refresh-module:hover{background:#ea580c}
-@media(max-width:700px){.erp-horizontal-refresh-module{margin-left:4px;flex:0 0 auto}}
         .erp-horizontal-dropdown button.is-active{background:#edf7fb;color:#176487;font-weight:700;border-left:2px solid #2D8DB8}
         .erp-horizontal-workspace{width:100%;max-width:100%;min-width:0}
         @media(max-width:700px){.erp-horizontal-menu{overflow-x:auto;overscroll-behavior-x:contain}.erp-horizontal-menu-item{flex:0 0 auto}.erp-horizontal-dropdown{position:fixed;top:auto;left:6px;right:6px;max-height:65vh;overflow:auto;z-index:1500}.erp-horizontal-menu-button{min-width:max-content}}
