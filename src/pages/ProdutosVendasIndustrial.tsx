@@ -128,9 +128,9 @@ export default function ProdutosVendasIndustrial(){
   const update=(key:keyof FormData,value:unknown)=>setForm(prev=>({...prev,[key]:value}))
   const addGroup=async()=>{
     const code=newGroupCode.trim().toUpperCase(),name=newGroupName.trim()
-    if(!companyId)throw new Error('Empresa da sessão não identificada.')
-    if(!code||!name)throw new Error('Informe o código e o nome do novo grupo.')
-    if(groups.some(g=>g.codigo.toUpperCase()===code||g.nome.trim().toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR')))throw new Error('Já existe um grupo com esse código ou nome.')
+    if(!companyId){setError('Empresa da sessão não identificada.');return}
+    if(!code||!name){setError('Informe o código e o nome do novo grupo.');return}
+    if(groups.some(g=>g.codigo.toUpperCase()===code||g.nome.trim().toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR'))){setError('Já existe um grupo com esse código ou nome.');return}
     setBusy(true);setError('');setMessage('')
     try{
       const {data,error:e}=await supabase.from('erp_grupos').insert({empresa_id:companyId,codigo:code,nome,ativo:true}).select('id,codigo,nome').single()
