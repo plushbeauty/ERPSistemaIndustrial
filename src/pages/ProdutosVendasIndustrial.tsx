@@ -156,7 +156,7 @@ export default function ProdutosVendasIndustrial(){
     try{
       if(!companyId)throw new Error('Empresa da sessão não identificada.')
       if(!String(form.nome||'').trim())throw new Error('Descrição é obrigatória.')
-      const fiscalCodeChecks:Array<[string,string,RegExp]>=[['NCM',String(form.ncm||''),/^\\d{8}$/],['CEST',String(form.cest||''),/^\\d{7}$/],['CFOP de entrada',String(form.cfop_entrada||''),/^\\d{4}$/],['CFOP de saída',String(form.cfop_saida||''),/^\\d{4}$/],['CST ICMS',String(form.cst_icms||''),/^\\d{2}$/],['CSOSN',String(form.csosn||''),/^\\d{3}$/]]
+      const fiscalCodeChecks:Array<[string,string,RegExp]>=[['NCM',String(form.ncm||''),/^\d{8}$/],['CEST',String(form.cest||''),/^\d{7}$/],['CFOP de entrada',String(form.cfop_entrada||''),/^\d{4}$/],['CFOP de saída',String(form.cfop_saida||''),/^\d{4}$/],['CST ICMS',String(form.cst_icms||''),/^\d{2}$/],['CSOSN',String(form.csosn||''),/^\d{3}$/]]
       for(const [fieldName,code,pattern] of fiscalCodeChecks)if(code&&!pattern.test(code))throw new Error(fieldName+' inválido: informe somente dígitos e o tamanho exigido pelo campo.');
       let codigo=String(form.codigo||'').trim()
       if(!selectedId){
