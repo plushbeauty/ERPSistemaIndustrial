@@ -44,6 +44,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
   const [stops, setStops] = useState<Stop[]>([])
   const [equipment, setEquipment] = useState<Equipment[]>([])
   const [rpnc, setRpnc] = useState(0)
+  const [rpncClosed, setRpncClosed] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [clock, setClock] = useState(new Date())
@@ -110,7 +111,11 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         setPointings((pt.data ?? []) as Pointing[])
         setPrograms((pg.data ?? []) as Program[])
         setStops((st.data ?? []) as Stop[])
-        setRpnc((rn.data ?? []).filter((x: { status?: unknown }) => !['encerrada', 'fechada', 'concluida', 'concluído'].includes(String(x.status ?? '').toLowerCase())).length)
+        const closedRncStates = new Set(['encerrada', 'fechada', 'concluida', 'concluido', 'fechado', 'cancelada', 'cancelado'])
+        const rncRows = (rn.data ?? []) as Array<{ status?: unknown }>
+        const closedRncCount = rncRows.filter(row => closedRncStates.has(String(row.status ?? '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase())).length
+        setRpnc(Math.max(0, rncRows.length - closedRncCount))
+        setRpncClosed(closedRncCount)
         setEquipment((eq.data ?? []) as Equipment[])
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : 'Não foi possível carregar o dashboard.')
@@ -177,10 +182,22 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     return due >= clock.getTime() && produced < planned ? sum + Math.max(0, planned - produced) : sum
   }, 0), [programs, clock])
 
-  const expiredEquipment = useMemo(() => equipment.filter(e => {
-    const calibration = e.proxima_calibracao || e.certificado_validade
-    return calibration ? calibration < today : false
-  }).length, [equipment, today])
+  const equipmentValidity = useMemo(() => {
+    const invalidStates = new Set(['vencido', 'bloqueado', 'inativo', 'reprovado', 'fora de uso'])
+    let valid = 0
+    let expired = 0
+    let withoutValidity = 0
+    for (const item of equipment) {
+      const dates = [item.proxima_calibracao, item.certificado_validade].filter((date): date is string => Boolean(date))
+      const status = String(item.status ?? '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase()
+      if (invalidStates.has(status) || dates.some(date => date.slice(0, 10) < today)) expired++
+      else if (dates.length > 0 && dates.every(date => date.slice(0, 10) >= today)) valid++
+      else withoutValidity++
+    }
+    return { valid, expired, withoutValidity }
+  }, [equipment, today])
+  const expiredEquipment = equipmentValidity.expired
+  const validEquipment = equipmentValidity.valid
 
   const stopSummary = useMemo(() => {
     const grouped = new Map<string, number>()
@@ -220,15 +237,15 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
   const cards = [
     { label: 'OPs EM ANDAMENTO', value: fmt(activeOps.length), icon: Activity },
     { label: 'PRODUÇÃO DO DIA', value: fmt(producedToday), suffix: 'un', icon: CheckCircle },
-    { label: 'ALERTAS DO SGQ', value: fmt(rpnc), icon: AlertTriangle },
+    { label: 'RNC ABERTAS / FECHADAS', value: `${fmt(rpnc)} / ${fmt(rpncClosed)}`, icon: AlertTriangle },
     { label: 'EFICIÊNCIA (OEE)', value: oee === null ? '—' : `${oee.toFixed(1).replace('.', ',')}%`, icon: BarChart3 }
   ]
 
   const attentionCards = [
     { label: 'PEÇAS EM ATRASO', value: fmt(overduePieces), suffix: 'un', tone: 'danger', icon: AlertTriangle },
     { label: 'PEÇAS NO PRAZO', value: fmt(onTimePieces), suffix: 'un', tone: 'success', icon: CheckCircle },
-    { label: 'MATERIAIS VENCIDOS', value: '—', suffix: 'sem validade cadastrada', tone: 'warning', icon: Activity },
-    { label: 'EQUIPAMENTOS VENCIDOS', value: fmt(expiredEquipment), suffix: 'un', tone: 'danger', icon: AlertTriangle }
+    { label: 'EQUIPAMENTOS VÁLIDOS', value: fmt(validEquipment), suffix: 'un', tone: 'success', icon: CheckCircle },
+    { label: 'EQUIPAMENTOS VENCIDOS / BLOQUEADOS', value: fmt(expiredEquipment), suffix: 'un', tone: 'danger', icon: AlertTriangle }
   ]
 
   return (
@@ -289,6 +306,18 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
           <article className="dp-panel">
             <div className="dp-head"><span>PARADAS · CHÃO DE FÁBRICA</span><h2>Horas de parada por dia</h2></div>
             {stopSummary.length ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={stopSummary} barCategoryGap="30%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="day" axisLine={false} tickLine={false}/><YAxis unit="h" axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="horas" name="Parada" fill="#D65B61" radius={[7,7,2,2]} maxBarSize={34}/></BarChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem paradas registradas.</div>}
+          </article>
+        </section>
+
+        <section className="dp-grid dp-chart-grid" aria-label="Indicadores de qualidade e metrologia">
+          <article className="dp-panel">
+            <div className="dp-head"><span>SGQ · NÃO CONFORMIDADES</span><h2>Abertas × fechadas</h2></div>
+            <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{categoria:'Abertas',quantidade:rpnc},{categoria:'Fechadas',quantidade:rpncClosed}]} barCategoryGap="38%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="categoria" axisLine={false} tickLine={false}/><YAxis allowDecimals={false} axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="quantidade" name="Não conformidades" fill="#D65B61" radius={[7,7,2,2]} maxBarSize={48}/></BarChart></ResponsiveContainer></div>
+          </article>
+          <article className="dp-panel">
+            <div className="dp-head"><span>SGQ · METROLOGIA</span><h2>Equipamentos válidos × vencidos</h2></div>
+            <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{categoria:'Válidos',quantidade:validEquipment},{categoria:'Vencidos / bloqueados',quantidade:expiredEquipment}]} barCategoryGap="38%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="categoria" axisLine={false} tickLine={false}/><YAxis allowDecimals={false} axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="quantidade" name="Equipamentos" fill="#3A9D78" radius={[7,7,2,2]} maxBarSize={48}/></BarChart></ResponsiveContainer></div>
+            {equipmentValidity.withoutValidity > 0 && <p className="dp-chart-note">{fmt(equipmentValidity.withoutValidity)} equipamento(s) sem data de validade cadastrada; não contabilizados como válidos.</p>}
           </article>
         </section>
 
