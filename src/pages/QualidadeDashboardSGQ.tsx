@@ -88,8 +88,8 @@ export default function QualidadeDashboardSGQ() {
     { label: 'Documentos controlados', value: documents.length, Icon: FileText, color: '#B96A05', pale: '#FBE8C9' },
   ]
 
-  return <div className="quality-approved-dashboard">
-    <VendasLayout title="" onRefresh={() => void load()} />
+  return <VendasLayout title="Painel de Gestão da Qualidade" subtitle="Indicadores calculados a partir dos registros da empresa autenticada." onRefresh={() => void load()} showStatusCards={false}>
+    <div className="quality-approved-dashboard">
     <div className="mb-3 flex min-h-[34px] items-center justify-between border border-[#B9D4DF] bg-[#DCECF3] px-3">
       <div className="flex items-center gap-2 text-[#123B50]"><ShieldCheck size={16} /><span className="text-[10px] font-extrabold uppercase tracking-[.14em]">Painel de indicadores · Sistema de Gestão da Qualidade</span></div>
       <span className="text-[9px] text-[#315466]">{busy ? 'Atualizando dados…' : 'Dados da empresa autenticada'}</span>
@@ -125,5 +125,6 @@ export default function QualidadeDashboardSGQ() {
         </div>
       </article>
     </section>
-  </div>
+    </div>
+  </VendasLayout>
 }
