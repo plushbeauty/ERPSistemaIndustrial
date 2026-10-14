@@ -11,6 +11,7 @@ const checks = [
   [shell.includes("action?: 'qualityTablet'"), 'O contrato do menu precisa suportar a ação qualityTablet.'],
   [shell.includes("{ label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck },") && !/label: 'Gestão da Qualidade'[^\]]*children:/.test(shell), 'Gestão da Qualidade deve abrir /qualidade diretamente, sem submenu.'],
   [shell.includes("window.addEventListener('erp:open-quality-tablet', openQualityTablet)") && shell.includes('setTabletOpen(true)'), 'O botão Menu SGQ (tablet) deve abrir o modal pelo painel sem navegar.'],
+  [qualityDashboard.includes('aria-label="Abrir Menu SGQ"') && qualityDashboard.includes("new Event('erp:open-quality-tablet')"), 'O painel de Qualidade deve manter um acesso direto ao Menu SGQ que abre o modal global.'],
   [shell.includes("if (item.action === 'qualityTablet')") && shell.includes('setTabletOpen(true)'), 'O handler compatível com o modal precisa continuar funcional.'],
   [shell.includes('<TabletMenuModal isOpen={tabletOpen}') && shell.includes('onClose={() => setTabletOpen(false)}'), 'O modal precisa estar montado no shell e possuir fechamento funcional.'],
   [shell.includes("label: 'Menu SGQ'") && shell.includes("action: 'qualityTablet'") && shell.includes('openMenuItem(menu)'), 'Menu SGQ deve ficar na barra horizontal global e abrir o tablet em modal sem navegar.'],
