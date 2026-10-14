@@ -20,6 +20,7 @@ check(!/products\.filter\(p=>p\.cest\)/.test(source), 'Não usar catálogo de pr
 check(source.includes('DOWNLOAD OFICIAL NCM (JSON)') && source.includes('CONSULTAR TABELA CFOP / NF-e') && source.includes('CONSULTAR CONVÊNIO CEST / CONFAZ'), 'Links de consulta fiscal oficial devem permanecer.')
 check(source.includes("String(form.ncm||''),/^\\d{8}$/") && source.includes("String(form.cest||''),/^\\d{7}$/"), 'Validadores de NCM/CEST devem conferir o tamanho numérico.')
 check(source.includes("field('Custo médio (calculado)','custo_medio','number',1,true)") && source.includes("field('Último custo (calculado)','custo_ultimo','number',1,true)"), 'Custos calculados devem continuar bloqueados para digitação.')
+check(source.includes("field('Custo fabricação (valor gravado) [?]','custo_fabricacao','number',1,true)") && !source.includes("field('CUSTO FABRICAÇÃO (CALCULADO)'"), 'Custo de fabricação não pode ser rotulado como calculado sem sincronização comprovada.')
 check(source.includes('Subgrupo adicionado às opções desta sessão'), 'A interface deve deixar claro que subgrupo ainda não é mestre persistente independente.')
 
 if (failures.length) {
