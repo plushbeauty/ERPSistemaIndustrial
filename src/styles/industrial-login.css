@@ -98,3 +98,5 @@
   .auth-panel{position:relative;z-index:2;min-height:100dvh;background:rgba(255,255,255,.90);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:0;box-shadow:none}
   .auth-panel-inner{background:rgba(255,255,255,.94);border:1px solid rgba(215,231,236,.9);border-radius:14px;box-shadow:0 18px 50px rgba(18,59,80,.14);margin:20px auto;padding:26px 22px}
 }
+
+/* Commit de reforço 2026-10-14: manter a arte do login em viewport integral atrás do painel. */
