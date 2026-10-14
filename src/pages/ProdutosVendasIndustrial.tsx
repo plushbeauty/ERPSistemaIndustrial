@@ -129,7 +129,7 @@ export default function ProdutosVendasIndustrial(){
     if(!name){setError('Digite o nome do novo grupo no campo Grupo e clique em +.');return}
     const existing=groups.find(g=>g.nome.trim().toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR'))
     if(existing){update('grupo',existing.nome);setMessage('O grupo já existe e foi selecionado.');return}
-    const base='GRP-'+name.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,16)
+    const base='GRP-'+name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,16)
     const prefix=base==='GRP-'?'GRP-NOVO':base
     let code=prefix,sequence=2
     while(groups.some(g=>g.codigo.toUpperCase()===code)){code=prefix+'-'+sequence;sequence+=1}
