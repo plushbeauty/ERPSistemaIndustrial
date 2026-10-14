@@ -38,4 +38,12 @@ As referências foram lidas a partir dos arquivos de código-fonte e licenças, 
 - `src/pages/ComprasRequisicoes.tsx`: área do relatório identificada para impressão isolada.
 - `src/styles/compras-compact.css`: CSS de impressão A4 com cabeçalho documental, tabelas e ocultação dos controles de tela.
 
-A validação de TypeScript/build, fluxos e saída visual impressa ainda precisa ser confirmada no ambiente de build/browser. Não considerar este piloto aprovado antes dessa confirmação.
+## Validação técnica registrada
+
+- Commit de aplicação validado no Vercel: `adb8cc767eaf26e445a68f4fbba4fcb198b681b5`.
+- Deploy de preview: `READY` — https://erp-sistema-industrial-1hr94cdqy-plushbeauty.vercel.app
+- O comando de produção terminou com sucesso: `type-check`, `lint:check`, `audit:all`, `verify:lazy-imports`, `build`, `verify:build` e `verify-routes`; o gate registrou 244 rotas e 153 imports lazy.
+- O build Vite terminou e o gate confirmou `dist/index.html` e 235 assets.
+- A inspeção visual e o diálogo real de impressão não foram confirmados: o preview redireciona para login/SSO do Vercel quando acessado pelo navegador de validação. Os fluxos de dados e as impressões ainda precisam de teste autenticado.
+
+**Estado de aceite:** parcialmente validado, não aprovado como clonagem literal de código open source nem como teste funcional/visual de ponta a ponta. A adaptação visual foi registrada com transparência; nenhuma API, tabela ou autenticação de terceiros foi importada.
