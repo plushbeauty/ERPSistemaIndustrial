@@ -167,8 +167,7 @@ export default function ProdutosVendasIndustrial(){
         supabase.from('erp_estoque_movimentos').select('id,tipo,quantidade,origem,documento,observacao,created_at').eq('empresa_id',companyId).eq('produto_id',selectedId).order('created_at',{ascending:false}).limit(200),
         supabase.from('erp_producao_defeitos').select('id,ordem_producao_id,defeito,quantidade,observacao,created_at').eq('empresa_id',companyId).eq('produto_id',selectedId).order('created_at',{ascending:false}).limit(200),
         supabase.from('erp_audit_logs').select('id,action,module,old_data,new_data,created_at').eq('company_id',companyId).eq('entity','erp_produtos').eq('entity_id',selectedId).order('created_at',{ascending:false}).limit(200),
-        supabase.from('erp_documentos_anexos').select('id,nome_arquivo,storage_path,mime_type,tamanho_bytes,created_at').eq('empresa_id',companyId).eq('entidade_tipo','produto').eq('entidade_id',selectedId).order('created_at',{ascending:false}).limit(200),
-        supabase.from('erp_fichas_tecnicas').select('id,versao,rendimento,unidade_rendimento,status,revisao').eq('empresa_id',companyId).eq('produto_id',selectedId).eq('ativa',true).order('versao',{ascending:false}).limit(1).maybeSingle()
+        supabase.from('erp_documentos_anexos').select('id,nome_arquivo,storage_path,mime_type,tamanho_bytes,created_at').eq('empresa_id',companyId).eq('entidade_tipo','produto').eq('entidade_id',selectedId).order('created_at',{ascending:false}).limit(200),        supabase.from('erp_fichas_tecnicas').select('id,versao,rendimento,unidade_rendimento,status,revisao').eq('empresa_id',companyId).eq('produto_id',selectedId).eq('ativa',true).order('versao',{ascending:false}).limit(1).maybeSingle()
       ])
       setMovements((m.data??[]) as Movement[]);setDefects((d.data??[]) as Defect[]);setAudits((a.data??[]) as Audit[]);setAttachments((an.data??[]) as Attachment[])
       setProductionFicha((ft.data??null) as {id:string;versao:number;rendimento:number;unidade_rendimento:string;status:string|null;revisao:string|null} | null)
@@ -332,12 +331,20 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-status-field{display:flex;align-items:center;align-self:end;gap:8px;min-height:30px;flex-wrap:wrap;border:1px solid #d5dde7;padding:5px 6px;background:#f8fbfd;box-sizing:border-box;min-width:0}
       .product-master-screen .product-status-field>span{font-size:9px;font-weight:600;color:#344054;text-transform:uppercase}
       .product-master-screen .product-status-field label{display:flex;align-items:center;gap:4px;white-space:normal;font-size:9px;min-width:0}
+      .product-master-screen .product-workspace{display:grid;grid-template-columns:minmax(320px,.78fr) minmax(0,1.72fr);grid-template-areas:"list editor";gap:10px;margin:10px;align-items:start}
+      .product-master-screen .product-editor-panel{grid-area:editor;margin:0!important;min-width:0}
+      .product-master-screen .product-list-panel{grid-area:list;margin:0!important;min-width:0;position:sticky;top:8px}
+      .product-master-screen .product-list-panel table{min-width:0!important;table-layout:fixed}
+      .product-master-screen .product-list-panel th,.product-master-screen .product-list-panel td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .product-master-screen .product-list-panel tbody tr:hover{background:#edf7fb!important}
       .product-master-screen .product-tabs{display:flex;align-items:stretch;gap:2px;overflow-x:auto;overscroll-behavior-x:contain}
       .product-master-screen .product-tabs button{flex:0 0 auto;min-height:34px}
       .product-master-screen .product-responsive-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;align-items:start}
       .product-master-screen .product-responsive-grid>*{min-width:0}
       .product-master-screen .product-responsive-grid label{align-content:start;grid-template-rows:minmax(22px,auto) 30px}
-      .product-master-screen .product-responsive-grid label>input,.product-master-screen .product-responsive-grid label>select{width:100%;min-width:0}
+      .product-master-screen .product-responsive-grid label>input,.product-master-screen .product-responsive-grid label>select{width:100%;min-width:0}      @media(max-width:1250px){.product-master-screen .product-workspace{grid-template-columns:minmax(280px,.72fr) minmax(0,1.5fr);gap:8px;margin:8px}}
+      @media(max-width:1050px){.product-master-screen .product-workspace{grid-template-columns:minmax(0,1fr);grid-template-areas:"list" "editor"}.product-master-screen .product-list-panel{position:static}}
+      @media(min-width:1051px){.product-master-screen .product-list-panel>div:last-child{max-height:calc(100vh - 245px);overflow:auto}}
       @media(max-width:1150px){.product-master-screen .product-form-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
       @media(max-width:700px){.product-master-screen .product-form-grid,.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 2!important}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 2!important}.product-master-screen .product-responsive-grid{row-gap:9px}.product-master-screen .product-tabs button{padding:7px 8px!important;font-size:9px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}}
     `}</style>
@@ -379,7 +386,8 @@ export default function ProdutosVendasIndustrial(){
       <div style={{display:'flex',gap:12,alignItems:'center',fontSize:9}}><span><b>ESTOQUE</b> {fmt(form.estoque_atual)} {form.unidade}</span><span><b>STATUS</b> {form.ativo?'ATIVO':'INATIVO'}</span></div>
     </section></>}
 
-    <section style={{...panel,margin:10,overflow:'hidden'}}>
+    <div className="product-workspace" aria-label="Área de trabalho do cadastro mestre de produtos">
+    <section className="product-editor-panel" style={{...panel,overflow:'hidden'}}>
       <div className="product-tabs" role="tablist" aria-label="Abas do cadastro do produto" style={{borderBottom:'1px solid #d6dde6',background:'#f7f9fc'}}>
         {tabItems.map(([id,title,Icon])=><button key={id} type="button" role="tab" aria-selected={tab===id} onClick={()=>{setTab(id);if(selectedId)void loadDetails()}} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 10px',border:0,borderBottom:tab===id?'3px solid #2D8DB8':'3px solid transparent',background:tab===id?'#fff':'transparent',color:tab===id?'#123B50':'#475467',fontWeight:700,fontSize:10,cursor:'pointer',whiteSpace:'nowrap'}}><Icon size={14}/>{title}</button>)}
       </div>
@@ -479,14 +487,15 @@ export default function ProdutosVendasIndustrial(){
       </section>}
     </section>
 
-    <section style={{...panel,margin:'0 10px 10px',overflow:'hidden'}}>
+    <section className="product-list-panel" style={{...panel,overflow:'hidden'}}>
       <div style={{display:'flex',alignItems:'end',gap:6,padding:7,background:'#f7f9fc',borderBottom:'1px solid #d6dde6',flexWrap:'wrap'}}>
-        <Search size={14}/><label style={{...label,width:250}}>Pesquisar<input aria-label="Pesquisar produto por código, descrição ou grupo" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código, descrição, grupo..." style={{...input,height:28}}/></label>
-        <label style={{...label,width:130}}>Grupo<select value={groupFilter} onChange={e=>setGroupFilter(e.target.value)} style={{...input,height:28}}><option value="TODAS">Todos</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
-        <span style={{fontSize:10,color:'#667085',paddingBottom:7}}>{filtered.length} produto(s)</span><button type="button" onClick={()=>void load()} disabled={busy} style={{...btn('normal'),height:28,marginLeft:'auto'}}><RefreshCw size={13}/>Atualizar</button>
+        <Search size={14} color="#2D8DB8"/><label style={{...label,width:'calc(100% - 24px)'}}>PESQUISAR PRODUTO<input aria-label="Pesquisar produto por código, descrição ou grupo" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código, descrição, grupo ou marca..." style={{...input,height:30}}/></label>
+        <label style={{...label,width:'100%'}}>FILTRAR POR GRUPO<select value={groupFilter} onChange={e=>setGroupFilter(e.target.value)} style={{...input,height:30}}><option value="TODAS">Todos os grupos</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:6,width:'100%'}}><span style={{fontSize:10,color:'#667085'}}><b style={{color:'#123B50'}}>{filtered.length}</b> produto(s) encontrado(s)</span><button type="button" onClick={()=>void load()} disabled={busy} style={{...btn('normal'),height:28}}><RefreshCw size={13}/>Atualizar</button></div>
       </div>
-      <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:1040}}><thead><tr>{['Foto','Código','Descrição','Grupo','Subgrupo','Marca','Unidade','Estoque Atual','Situação'].map(h=><th key={h} style={{textAlign:'left',padding:'5px 6px',borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{filtered.map(p=><tr key={p.id} onClick={()=>selectProduct(p)} onDoubleClick={()=>selectProduct(p)} style={{background:selectedId===p.id?'#e7eefb':'#fff',cursor:'pointer'}}><td style={{padding:4,width:42}}>{p.foto_url?<img src={p.foto_url} alt="" style={{width:32,height:28,objectFit:'contain',border:'1px solid #e2e8f0'}}/>:<ImageIcon size={18} color="#98a2b3"/>}</td><td style={{padding:6,fontSize:10,fontWeight:900}}>{p.codigo}</td><td style={{padding:6,fontSize:10}}>{p.nome}</td><td style={{padding:6,fontSize:10}}>{p.grupo||'—'}</td><td style={{padding:6,fontSize:10}}>{p.subgrupo||'—'}</td><td style={{padding:6,fontSize:10}}>{p.marca||'—'}</td><td style={{padding:6,fontSize:10}}>{p.unidade}</td><td style={{padding:6,fontSize:10,fontWeight:900}}>{fmt(p.estoque_atual)}</td><td style={{padding:5,fontSize:9}}><span style={{display:'inline-flex',alignItems:'center',gap:4}}><CheckCircle2 size={11} color={p.ativo?'#16a34a':'#b42318'}/>{p.ativo?'Ativo':'Inativo'}</span></td></tr>)}{!filtered.length&&emptyRow('Nenhum produto encontrado.',9)}</tbody></table></div>
+      <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:0,tableLayout:'fixed'}}><colgroup><col style={{width:'24%'}}/><col style={{width:'42%'}}/><col style={{width:'18%'}}/><col style={{width:'16%'}}/></colgroup><thead><tr>{['Código','Descrição do produto','Grupo','Status'].map(h=><th key={h} style={{textAlign:'left',padding:'7px 6px',borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:700,background:'#f7f9fc',color:'#344054'}}>{h}</th>)}</tr></thead><tbody>{filtered.map(p=><tr key={p.id} onClick={()=>selectProduct(p)} onDoubleClick={()=>selectProduct(p)} aria-selected={selectedId===p.id} style={{background:selectedId===p.id?'#dff1f8':'#fff',cursor:'pointer',borderLeft:selectedId===p.id?'3px solid #2D8DB8':'3px solid transparent'}}><td title={p.codigo} style={{padding:'7px 6px',fontSize:10,fontWeight:700,color:'#123B50'}}>{p.codigo}</td><td title={p.nome} style={{padding:'7px 6px',fontSize:10}}>{p.nome}</td><td title={p.grupo||'—'} style={{padding:'7px 6px',fontSize:9}}>{p.grupo||'—'}</td><td style={{padding:'7px 6px',fontSize:9,color:p.ativo?'#25815f':'#b42318',fontWeight:700}}>{p.ativo?'ATIVO':'INATIVO'}</td></tr>)}{!filtered.length&&emptyRow('Nenhum produto encontrado.',4)}</tbody></table></div>
     </section>
+    </div>
     {selectedId ? (
       <section style={{...panel,margin:'0 10px 10px',padding:8}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:5}}>
@@ -507,7 +516,6 @@ export default function ProdutosVendasIndustrial(){
           {!audits.length&&<span style={{fontSize:9,color:'#667085'}}>Nenhum evento registrado.</span>}
         </div>
       </section>
-    ) : null}
-    <footer style={{padding:'7px 12px 16px',fontSize:10,color:'#667085',display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8}}><span>SYSNQRA ERP & SGQ INDUSTRIAL • Cadastro Mestre de Produtos</span><span>© FernandoSch_System — Todos os direitos reservados</span></footer>
+    ) : null}    <footer style={{padding:'7px 12px 16px',fontSize:10,color:'#667085',display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8}}><span>SYSNQRA ERP & SGQ INDUSTRIAL • Cadastro Mestre de Produtos</span><span>© FernandoSch_System — Todos os direitos reservados</span></footer>
   </main></>
 }
