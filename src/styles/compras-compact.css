@@ -54,3 +54,36 @@
 .compras-compact .supplier-page form{padding:8px!important;border-radius:2px!important}
 @media(max-width:900px){.compras-compact .pc-grid{grid-template-columns:1fr 1fr}.compras-compact .pc-page{padding:6px!important}}
 @media(max-width:620px){.compras-compact .pc-grid{grid-template-columns:1fr}}
+
+
+/* Print layouts for purchasing documents and operational reports. */
+.compras-print-area{min-width:0}
+.compras-rfq-document{display:none}
+.compras-print-document-header{display:flex;align-items:center;gap:18px;border-bottom:2px solid #123B50;padding-bottom:14px;margin-bottom:18px}
+.compras-print-document-header img{width:92px;height:64px;object-fit:contain}
+.compras-print-document-header p{margin:0 0 4px;color:#2D8DB8;font-size:9px;font-weight:700;letter-spacing:.12em}
+.compras-print-document-header h1{margin:0 0 5px;color:#123B50;font-size:18px;font-weight:700}
+.compras-print-document-header span{font-size:10px;color:#475569}
+.compras-print-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:16px 0}
+.compras-print-meta>div{display:flex;flex-direction:column;gap:3px;border:1px solid #cbd5e1;padding:8px}
+.compras-print-meta strong,.compras-print-notes strong{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#123B50}
+.compras-print-meta span,.compras-print-notes p{font-size:11px;color:#111827}
+.compras-print-area .compras-print-document-header,.compras-print-area .compras-print-meta{color:#111}
+@page{size:A4;margin:12mm}
+@media print{
+  body *{visibility:hidden!important}
+  .compras-print-area,.compras-print-area *{visibility:visible!important}
+  .compras-print-area{position:absolute!important;inset:0 auto auto 0!important;width:100%!important;max-width:none!important;min-height:0!important;margin:0!important;padding:0!important;overflow:visible!important;background:#fff!important;color:#111!important;box-shadow:none!important}
+  .compras-rfq-document{display:block!important}
+  .compras-print-area button,.compras-print-area input,.compras-print-area select,.compras-print-area textarea,.compras-print-area nav,.compras-print-area [role="toolbar"],.compras-print-area .print\:hidden{display:none!important}
+  .compras-print-area table{width:100%!important;min-width:0!important;border-collapse:collapse!important;font-size:9pt!important}
+  .compras-print-area th,.compras-print-area td{height:auto!important;border:1px solid #9ca3af!important;padding:5px!important;background:#fff!important;color:#111!important;text-align:left!important;white-space:normal!important}
+  .compras-print-area th{font-weight:700!important;background:#eaf3f7!important}
+  .compras-print-area h2{margin:14px 0 6px!important;color:#123B50!important;font-size:12pt!important;break-after:avoid}
+  .compras-print-area .compras-print-notes{margin-top:14px;border:1px solid #cbd5e1;padding:10px;break-inside:avoid}
+  .compras-print-area footer{display:block!important;margin-top:20px;padding-top:8px;border-top:1px solid #cbd5e1;font-size:8pt;color:#475569}
+  .compras-print-area .rounded-lg,.compras-print-area .rounded-md,.compras-print-area .rounded{border-radius:0!important}
+  .compras-print-area section{box-shadow:none!important}
+  .compras-print-area .overflow-x-auto{overflow:visible!important}
+  .compras-print-area .buy-commandbar,.compras-print-area .buy-list-actions,.compras-print-area .buy-modal-bg{display:none!important}
+}
