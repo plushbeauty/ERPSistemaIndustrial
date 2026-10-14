@@ -280,8 +280,8 @@ export default function ProdutosVendasIndustrial(){
     }
   }
 
-  const choosePhoto=(e:ChangeEvent<HTMLInputElement>,slot=1)=>{slot=Number(e.currentTarget.dataset.slot||slot)
-    const file=e.target.files?.[0]
+  const choosePhoto=(e:ChangeEvent<HTMLInputElement>,slot=1)=>{const target=e.currentTarget;slot=Number(target.dataset.slot||slot)
+    const file=target.files?.[0];target.value=''
     if(!file||!selectedId||!companyId)return
     if(!['image/jpeg','image/png','image/webp'].includes(file.type)){setError('Use JPG, PNG ou WEBP.');return}
     if(file.size>5*1024*1024){setError('A foto deve ter no máximo 5 MB.');return}
@@ -289,7 +289,7 @@ export default function ProdutosVendasIndustrial(){
     const path=companyId+'/'+selectedId+'/'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_')
     void supabase.storage.from('erp-produtos').upload(path,file,{upsert:true,contentType:file.type})
       .then(({error:e2})=>{if(e2)throw e2;return {error:null}})
-      .then(async({error:e3})=>{if(e3)throw e3;const url=supabase.storage.from('erp-produtos').getPublicUrl(path).data.publicUrl;if(slot===1){const {error:e4}=await supabase.from('erp_produtos').update({foto_url:url}).eq('id',selectedId).eq('empresa_id',companyId);if(e4)throw e4}const {error:e5}=await supabase.from('erp_documentos_anexos').insert({empresa_id:companyId,entidade_tipo:'produto',entidade_id:selectedId,nome_arquivo:'FOTO_'+slot+'_'+file.name,storage_path:path,mime_type:file.type,tamanho_bytes:file.size});if(e5)throw e5;setForm(prev=>({...prev,foto_url:slot===1?url:prev.foto_url}));setMessage('Foto '+slot+' do produto atualizada.');await loadDetails();void load()})
+      .then(async({error:e3})=>{if(e3)throw e3;const url=supabase.storage.from('erp-produtos').getPublicUrl(path).data.publicUrl;if(slot===1){const {error:e4}=await supabase.from('erp_produtos').update({foto_url:url}).eq('id',selectedId).eq('empresa_id',companyId);if(e4)throw e4}const {error:e5}=await supabase.from('erp_documentos_anexos').insert({empresa_id:companyId,entidade_tipo:'produto',entidade_id:selectedId,nome_arquivo:'FOTO_'+slot+'_'+file.name,storage_path:path,mime_type:file.type,tamanho_bytes:file.size});if(e5)throw e5;setForm(prev=>({...prev,foto_url:slot===1?url:prev.foto_url}));setMessage('Foto '+slot+' do produto atualizada.');setDetailsLoaded(false);await loadDetails();void load()})
       .catch(e=>setError(e instanceof Error?e.message:'Não foi possível enviar a foto.')).finally(()=>setBusy(false))
   }
 
@@ -367,11 +367,11 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-form-section-title{margin:0 0 8px;padding:6px 8px;background:#eaf4f8;border-left:3px solid #2D8DB8;color:#123B50;font-size:10px;line-height:14px;font-weight:700;letter-spacing:.04em}
       .product-master-screen .product-form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:start}
       .product-master-screen .product-form-grid>*{min-width:0}
-      .product-master-screen .product-form-grid label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(22px,auto) 30px;align-content:start;gap:3px;min-width:0}
+      .product-master-screen .product-form-grid label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;align-content:start;gap:2px;min-width:0}
       .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%;height:30px;box-sizing:border-box}
-      .product-master-screen .product-form-grid label>span{display:flex;align-items:center;max-width:100%;min-height:22px;line-height:12px;white-space:normal;overflow-wrap:anywhere;word-break:normal}
+      .product-master-screen .product-form-grid label>span{display:flex;align-items:center;max-width:100%;min-height:12px;line-height:11px;white-space:normal;overflow-wrap:anywhere;word-break:normal}
       .product-master-screen .product-cost-stack{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;min-width:0}
-      .product-master-screen .product-cost-stack label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(22px,auto) 30px;gap:3px;align-content:start;min-width:0}
+      .product-master-screen .product-cost-stack label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;gap:2px;align-content:start;min-width:0}
       .product-master-screen .product-status-field{display:flex;align-items:center;align-self:end;gap:8px;min-height:30px;flex-wrap:wrap;border:1px solid #d5dde7;padding:5px 6px;background:#f8fbfd;box-sizing:border-box;min-width:0}
       .product-master-screen .product-status-field>span{font-size:9px;font-weight:600;color:#344054;text-transform:uppercase}
       .product-master-screen .product-status-field label{display:flex;align-items:center;gap:4px;white-space:normal;font-size:9px;min-width:0}
@@ -385,21 +385,22 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-tabs button{flex:0 0 auto;min-height:34px}
       .product-master-screen .product-responsive-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;align-items:start}
       .product-master-screen .product-responsive-grid>*{min-width:0}
-      .product-master-screen .product-responsive-grid label{align-content:start;grid-template-rows:minmax(22px,auto) 30px}
+      .product-master-screen .product-responsive-grid label{align-content:start;grid-template-rows:minmax(12px,auto) 30px;gap:2px}
       .product-master-screen .product-responsive-grid label>input,.product-master-screen .product-responsive-grid label>select{width:100%;min-width:0}      @media(max-width:1250px){.product-master-screen .product-workspace{grid-template-columns:minmax(280px,.72fr) minmax(0,1.5fr);gap:8px;margin:8px}}
       @media(max-width:1050px){.product-master-screen .product-workspace{grid-template-columns:minmax(0,1fr);grid-template-areas:"list" "editor"}.product-master-screen .product-list-panel{position:static}}
       @media(min-width:1051px){.product-master-screen .product-list-panel>div:last-child{max-height:calc(100vh - 245px);overflow:auto}}
       @media(max-width:1150px){.product-master-screen .product-form-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
-      .product-master-screen .product-combo-wrap{display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:4px;align-items:end;min-width:0}
+      .product-master-screen .product-unit-row{grid-column:span 3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;align-items:center;min-width:0}.product-master-screen .product-unit-row label{display:grid;grid-template-columns:82px minmax(0,1fr);grid-template-rows:30px;align-items:center;gap:5px}.product-master-screen .product-unit-row label>span{min-height:0;line-height:11px}.product-master-screen .product-unit-row label>select{width:100%;min-width:0}.product-master-screen .product-photo-card{cursor:pointer;transition:border-color .12s,background .12s}.product-master-screen .product-photo-card:hover{border-color:#2D8DB8!important;background:#edf7fb!important}.product-master-screen .product-combo-wrap{display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:4px;align-items:end;min-width:0}
       .product-master-screen .product-plus-button{height:30px;width:30px;border:1px solid #2D8DB8;background:#eaf4f8;color:#123B50;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;cursor:pointer}
       .product-master-screen .product-inline-create{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto;gap:5px;padding:7px;margin-top:5px;background:#f4fbfd;border:1px solid #c8dfe8;align-items:end}
-      @media(max-width:700px){.product-master-screen .product-form-grid,.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 2!important}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 2!important}.product-master-screen .product-responsive-grid{row-gap:9px}.product-master-screen .product-tabs button{padding:7px 8px!important;font-size:9px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}.product-master-screen .product-inline-create{grid-template-columns:1fr}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 1!important}}
+      @media(max-width:700px){.product-master-screen .product-form-grid,.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-unit-row{grid-column:span 2;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.product-master-screen .product-unit-row label{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;gap:2px}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 2!important}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 2!important}.product-master-screen .product-responsive-grid{row-gap:9px}.product-master-screen .product-tabs button{padding:7px 8px!important;font-size:9px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}.product-master-screen .product-inline-create{grid-template-columns:1fr}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 1!important}}
     `}</style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:800,color:'#2D8DB8'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
         <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>
         <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />
+        <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>choosePhoto(e)} style={{display:'none'}} />
         <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={13}/>Importar Excel</button>
 
         <button type="button" className="erp-edit-button" onClick={()=>setEditing(true)} disabled={!selectedId} style={btn('normal')}><Edit3 size={16}/>Editar</button>
@@ -415,13 +416,13 @@ export default function ProdutosVendasIndustrial(){
 
     {selectedId&&<section style={{...panel,margin:'10px 10px 0',padding:7}}>
       <div style={{fontSize:9,fontWeight:700,color:'#123B50',marginBottom:5,textTransform:'uppercase'}}>Fotos do produto • catálogo digital</div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(120px,1fr))',gap:6}}>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:6}}>
         {[1,2,3,4].map(slot=>{
           const photo=attachments.find(a=>a.mime_type?.startsWith('image/')&&a.nome_arquivo.startsWith('FOTO_'+slot+'_'));
           const url=photo?supabase.storage.from('erp-produtos').getPublicUrl(photo.storage_path).data.publicUrl:(slot===1?form.foto_url:null);
-          return <div key={slot} style={{height:105,border:'1px solid #cbd5e1',background:'#f8fafc',position:'relative',display:'grid',placeItems:'center',overflow:'hidden'}}>
-            {url?<img src={url} alt={'Foto '+slot+' do produto'} style={{width:'100%',height:'100%',objectFit:'contain'}}/>:<div style={{fontSize:9,color:'#98a2b3'}}>IMAGEM {slot}{slot===1?' • PRINCIPAL':''}</div>}
-            {editing&&<button type="button" onClick={()=>{const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}} style={{...btn('normal'),position:'absolute',right:4,bottom:4,height:24,padding:'0 7px',fontSize:9}}><Upload size={11}/> {url?'TROCAR':'ANEXAR'}</button>}
+          return <div key={slot} className="product-photo-card" role={editing?'button':undefined} tabIndex={editing?0:undefined} aria-label={editing?'Selecionar imagem '+slot:'Imagem '+slot} onClick={()=>{if(editing){const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}}} onKeyDown={e=>{if(editing&&(e.key==='Enter'||e.key===' ')){e.preventDefault();const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}}} style={{height:120,minWidth:0,border:'1px solid #cbd5e1',background:'#f8fafc',position:'relative',display:'grid',placeItems:'center',overflow:'hidden',outline:'none'}}>
+            {url?<img src={url} alt={'Foto '+slot+' do produto'} style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'contain',padding:4,boxSizing:'border-box'}}/>:<div style={{fontSize:9,color:'#667085',textAlign:'center',padding:8}}><ImageIcon size={20}/><div>CLIQUE PARA ANEXAR</div><div>IMAGEM {slot}{slot===1?' • PRINCIPAL':''}</div></div>}
+            {editing&&<button type="button" onClick={e=>{e.stopPropagation();const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}} style={{...btn('normal'),position:'absolute',right:4,bottom:4,height:24,padding:'0 7px',fontSize:9}}><Upload size={11}/> {url?'TROCAR':'ANEXAR'}</button>}
           </div>
         })}
       </div>
@@ -456,9 +457,11 @@ export default function ProdutosVendasIndustrial(){
         <section className="product-form-section" aria-label="Unidades e características físicas">
           <h3 className="product-form-section-title">UNIDADES E CARACTERÍSTICAS FÍSICAS</h3>
           <div className="product-form-grid product-measure-row">
-            {select('Un. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-            {select('Un. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-            {select('Un. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
+            <div className="product-unit-row">
+            {select('Und. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
+            {select('Und. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
+            {select('Und. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
+            </div>
             {select('Tipo de produto','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','MATÉRIA-PRIMA'],['PRENSADOS','PRENSADOS'],['INJETADOS','INJETADOS'],['ALMOXARIFADO','ALMOXARIFADO'],['MATERIAL DE ESCRITÓRIO','MATERIAL DE ESCRITÓRIO'],['PRODUTOS DE LIMPEZA','PRODUTOS DE LIMPEZA'],['Componente','Componente'],['Insumo','Insumo']])}
             <label style={label}>Fornecedor padrão<select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{suppliers.map(s=><option value={s.id} key={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>
             {field('Peso líquido (kg)','peso_liquido','number')}
