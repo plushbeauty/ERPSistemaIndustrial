@@ -301,6 +301,7 @@ export default function ProdutosVendasIndustrial(){
     'Localização padrão':'Localização existente na aba Estoque. O saldo e o endereço físico são controlados pelos movimentos e pelo cadastro de localizações.',
     'Custo médio (calculado)':'Calculado automaticamente pelas entradas com custo unitário: (saldo anterior × custo médio anterior + quantidade recebida × custo de entrada) ÷ saldo após a entrada. Não é digitado manualmente.',
     'Último custo (calculado)':'Último custo unitário positivo recebido em movimento de entrada/recebimento fiscal. É atualizado pelo processo de estoque, não por este formulário.',
+    'Custo fabricação (valor gravado)':'Valor armazenado em erp_produtos.custo_fabricacao. A rotina de formação de preço consulta BOM/MRP e máquina, mas atualmente grava preço e margem; não foi comprovado que atualize este campo automaticamente.',
     'NCM':'Nomenclatura Comum do Mercosul: código fiscal de 8 dígitos. Escolha um código já usado no catálogo ou confirme a classificação fiscal do produto com a área fiscal/contábil; não deve ser adivinhado apenas pelo nome.',
     'CEST':'Código de 7 dígitos quando houver enquadramento em substituição tributária. Só preencher quando aplicável à mercadoria e à regra estadual.',
     'Observações':'Informações complementares do cadastro; não substituem a ficha de processo.'
@@ -533,7 +534,7 @@ export default function ProdutosVendasIndustrial(){
 
       {tab==='producao'&&<section style={{padding:10}}>
         <div className="product-responsive-grid" style={{gridTemplateColumns:'82px 82px 82px 82px 120px 120px max-content'}}>
-          {field('PRAZO COMPRA (dias)','prazo_compra_dias','number')}{field('PRAZO PRODUÇÃO (dias)','prazo_producao_dias','number')}{field('CUSTO FABRICAÇÃO (CALCULADO)','custo_fabricacao','number',1,true)}{field('TOLERÂNCIA (%)','tolerancia_percentual','number')}
+          {field('PRAZO COMPRA (dias)','prazo_compra_dias','number')}{field('PRAZO PRODUÇÃO (dias)','prazo_producao_dias','number')}{field('Custo fabricação (valor gravado) [?]','custo_fabricacao','number',1,true)}{field('TOLERÂNCIA (%)','tolerancia_percentual','number')}
           <label style={label}>FICHA ATIVA<input value={productionFicha?('REV. '+(productionFicha.revisao||productionFicha.versao)):'Não cadastrada'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}>RENDIMENTO<input value={productionFicha?fmt(productionFicha.rendimento)+' '+productionFicha.unidade_rendimento:'—'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A'}}/></label>
           <button type="button" onClick={()=>{window.location.href='/ficha-engenharia?produto='+encodeURIComponent(selectedId||'')}} style={{...btn('normal'),width:'max-content',maxWidth:'100%',whiteSpace:'nowrap',padding:'0 8px',fontSize:10}}>ABRIR FICHA DE PROCESSO</button>
