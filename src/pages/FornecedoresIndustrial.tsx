@@ -44,7 +44,7 @@ export default function FornecedoresIndustrial(){
  const download=async(path:string|null)=>{if(!path)return;const {data,error:e}=await supabase.storage.from('erp-fornecedor-certificados').createSignedUrl(path,300);if(e)throw e;window.open(data.signedUrl,'_blank','noopener,noreferrer')}
  const print=()=>window.print()
  return <VendasLayout title="Fornecedores" subtitle="Cadastro, qualificação e acompanhamento de entrega" onRefresh={()=>void load()}>
-  <main style={{minHeight:'100vh',background:'#F4FBFD',color:'#111827',padding:10,boxSizing:'border-box'}}>
+  <main className="supplier-page" style={{minHeight:'100vh',background:'#F4FBFD',color:'#111827',padding:10,boxSizing:'border-box'}}>
    <section style={{...panel,padding:9,marginBottom:7}}>
     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,flexWrap:'wrap'}}>
       <div><div style={{fontSize:9,color:'#2D8DB8',fontWeight:700}}>COMPRAS • CADASTRO MESTRE</div><h1 style={{margin:'2px 0',fontSize:16,color:'#123B50',fontWeight:600}}>Fornecedores</h1><div style={{fontSize:9,color:'#667085'}}>Cadastro, qualificação, documentos e desempenho de entrega.</div></div>
