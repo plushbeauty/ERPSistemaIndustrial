@@ -241,8 +241,8 @@ export default function ProdutosVendasIndustrial(){
     }
   }
 
-  const choosePhoto=(e:ChangeEvent<HTMLInputElement>,slot=1)=>{slot=Number(e.currentTarget.dataset.slot||slot)
-    const file=e.target.files?.[0]
+  const choosePhoto=(e:ChangeEvent<HTMLInputElement>,slot=1)=>{const target=e.currentTarget;slot=Number(target.dataset.slot||slot)
+    const file=target.files?.[0];target.value=''
     if(!file||!selectedId||!companyId)return
     if(!['image/jpeg','image/png','image/webp'].includes(file.type)){setError('Use JPG, PNG ou WEBP.');return}
     if(file.size>5*1024*1024){setError('A foto deve ter no máximo 5 MB.');return}
@@ -250,7 +250,7 @@ export default function ProdutosVendasIndustrial(){
     const path=companyId+'/'+selectedId+'/'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_')
     void supabase.storage.from('erp-produtos').upload(path,file,{upsert:true,contentType:file.type})
       .then(({error:e2})=>{if(e2)throw e2;return {error:null}})
-      .then(async({error:e3})=>{if(e3)throw e3;const url=supabase.storage.from('erp-produtos').getPublicUrl(path).data.publicUrl;if(slot===1){const {error:e4}=await supabase.from('erp_produtos').update({foto_url:url}).eq('id',selectedId).eq('empresa_id',companyId);if(e4)throw e4}const {error:e5}=await supabase.from('erp_documentos_anexos').insert({empresa_id:companyId,entidade_tipo:'produto',entidade_id:selectedId,nome_arquivo:'FOTO_'+slot+'_'+file.name,storage_path:path,mime_type:file.type,tamanho_bytes:file.size});if(e5)throw e5;setForm(prev=>({...prev,foto_url:slot===1?url:prev.foto_url}));setMessage('Foto '+slot+' do produto atualizada.');await loadDetails();void load()})
+      .then(async({error:e3})=>{if(e3)throw e3;const url=supabase.storage.from('erp-produtos').getPublicUrl(path).data.publicUrl;if(slot===1){const {error:e4}=await supabase.from('erp_produtos').update({foto_url:url}).eq('id',selectedId).eq('empresa_id',companyId);if(e4)throw e4}const {error:e5}=await supabase.from('erp_documentos_anexos').insert({empresa_id:companyId,entidade_tipo:'produto',entidade_id:selectedId,nome_arquivo:'FOTO_'+slot+'_'+file.name,storage_path:path,mime_type:file.type,tamanho_bytes:file.size});if(e5)throw e5;setForm(prev=>({...prev,foto_url:slot===1?url:prev.foto_url}));const {data:updatedAttachments,error:attachmentsError}=await supabase.from('erp_documentos_anexos').select('id,nome_arquivo,storage_path,mime_type,tamanho_bytes,created_at').eq('empresa_id',companyId).eq('entidade_tipo','produto').eq('entidade_id',selectedId).order('created_at',{ascending:false}).limit(200);if(attachmentsError)throw attachmentsError;setAttachments((updatedAttachments??[]) as Attachment[]);setDetailsLoaded(true);setMessage('Foto '+slot+' do produto atualizada.');void load()})
       .catch(e=>setError(e instanceof Error?e.message:'Não foi possível enviar a foto.')).finally(()=>setBusy(false))
   }
 
@@ -315,19 +315,23 @@ export default function ProdutosVendasIndustrial(){
   }
   return <ERPHorizontalShell operatorName={operatorName}><main className="product-master-screen" style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif',background:'#fff'}}>
     <style>{`
-      .product-master-screen label{min-width:0}
+      .product-master-screen label{min-width:0;gap:2px;align-content:end}.product-master-screen .product-form-grid label{grid-template-rows:minmax(12px,auto) 30px;gap:2px}.product-master-screen .product-form-grid label>span{min-height:12px;line-height:11px;white-space:normal;overflow-wrap:anywhere}.product-master-screen .product-unit-row{grid-column:span 3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;min-width:0}.product-master-screen .product-unit-row label{display:grid;grid-template-columns:78px minmax(0,1fr);grid-template-rows:30px;align-items:center;gap:4px}.product-master-screen .product-unit-row label>span{min-height:0;line-height:11px}.product-master-screen .product-unit-row label>select{width:100%;min-width:0}.product-master-screen .product-photo-card{cursor:pointer;transition:border-color .12s,background .12s}.product-master-screen .product-photo-card:hover{border-color:#2D8DB8!important;background:#edf7fb!important}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}
       .product-master-screen .product-form-grid>*{min-width:0}
       .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%}
       .product-master-screen .product-form-grid label>span{max-width:100%;line-height:11px}
-      @media(max-width:1150px){.product-master-screen .product-general-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}.product-master-screen .product-measure-row{grid-template-columns:repeat(5,minmax(0,1fr))!important}.product-master-screen .product-commercial-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
-      @media(max-width:700px){.product-master-screen .product-general-row,.product-master-screen .product-measure-row,.product-master-screen .product-commercial-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3){grid-column:span 2!important}.product-master-screen .product-commercial-row>*{grid-column:span 1!important}}
+      .product-master-screen .product-stock-primary-grid{grid-template-columns:minmax(135px,.8fr) minmax(160px,1fr) minmax(150px,.9fr) minmax(230px,1.6fr)!important}
+      .product-master-screen .product-stock-secondary-grid{grid-template-columns:minmax(160px,1fr) repeat(3,minmax(150px,1fr))!important}
+      .product-master-screen .product-production-grid{grid-template-columns:repeat(4,minmax(125px,1fr)) minmax(150px,1.15fr) minmax(150px,1.15fr) max-content!important}
+      @media(max-width:1150px){.product-master-screen .product-general-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}.product-master-screen .product-measure-row{grid-template-columns:repeat(5,minmax(0,1fr))!important}.product-master-screen .product-unit-row{grid-column:span 3}.product-master-screen .product-commercial-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}.product-master-screen .product-stock-primary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-stock-primary-grid>*:last-child{grid-column:span 2}.product-master-screen .product-stock-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-production-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}.product-master-screen .product-production-grid>button{grid-column:span 2;justify-self:start}}
+      @media(max-width:700px){.product-master-screen .product-general-row,.product-master-screen .product-measure-row,.product-master-screen .product-commercial-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-unit-row{grid-column:span 2;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.product-master-screen .product-unit-row label{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;gap:2px}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3){grid-column:span 2!important}.product-master-screen .product-commercial-row>*{grid-column:span 1!important}.product-master-screen .product-stock-primary-grid,.product-master-screen .product-stock-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-stock-primary-grid>*:last-child{grid-column:span 2}.product-master-screen .product-production-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-production-grid>button{grid-column:span 2}}
     `}</style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:900,color:'#1c4bb5'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
         <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>
         <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />
+        <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>choosePhoto(e)} style={{display:'none'}} />
         <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={13}/>Importar Excel</button>
 
         <button type="button" className="erp-edit-button" onClick={()=>setEditing(true)} disabled={!selectedId} style={btn('normal')}><Edit3 size={16}/>Editar</button>
@@ -343,13 +347,13 @@ export default function ProdutosVendasIndustrial(){
 
     {selectedId&&<section style={{...panel,margin:'10px 10px 0',padding:7}}>
       <div style={{fontSize:9,fontWeight:700,color:'#123B50',marginBottom:5,textTransform:'uppercase'}}>Fotos do produto • catálogo digital</div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(120px,1fr))',gap:6}}>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:6}}>
         {[1,2,3,4].map(slot=>{
           const photo=attachments.find(a=>a.mime_type?.startsWith('image/')&&a.nome_arquivo.startsWith('FOTO_'+slot+'_'));
           const url=photo?supabase.storage.from('erp-produtos').getPublicUrl(photo.storage_path).data.publicUrl:(slot===1?form.foto_url:null);
-          return <div key={slot} style={{height:105,border:'1px solid #cbd5e1',background:'#f8fafc',position:'relative',display:'grid',placeItems:'center',overflow:'hidden'}}>
-            {url?<img src={url} alt={'Foto '+slot+' do produto'} style={{width:'100%',height:'100%',objectFit:'contain'}}/>:<div style={{fontSize:9,color:'#98a2b3'}}>IMAGEM {slot}{slot===1?' • PRINCIPAL':''}</div>}
-            {editing&&<button type="button" onClick={()=>{const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}} style={{...btn('normal'),position:'absolute',right:4,bottom:4,height:24,padding:'0 7px',fontSize:9}}><Upload size={11}/> {url?'TROCAR':'ANEXAR'}</button>}
+          return <div key={slot} className="product-photo-card" role="button" tabIndex={0} aria-label={'Selecionar imagem '+slot} onClick={()=>{const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}}} style={{height:120,minWidth:0,border:'1px solid #cbd5e1',background:'#f8fafc',position:'relative',display:'grid',placeItems:'center',overflow:'hidden',outline:'none'}}>
+            {url?<img src={url} alt={'Foto '+slot+' do produto'} style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'contain',padding:4,boxSizing:'border-box'}}/>:<div style={{fontSize:9,color:'#667085',textAlign:'center',padding:8}}><ImageIcon size={20}/><div>CLIQUE PARA ANEXAR</div><div>IMAGEM {slot}{slot===1?' • PRINCIPAL':''}</div></div>}
+            <button type="button" onClick={e=>{e.stopPropagation();const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}} style={{...btn('normal'),position:'absolute',right:4,bottom:4,height:24,padding:'0 7px',fontSize:9}}><Upload size={11}/> {url?'TROCAR':'ANEXAR'}</button>
           </div>
         })}
       </div>
@@ -377,10 +381,12 @@ export default function ProdutosVendasIndustrial(){
           {field('Marca [?]','marca')}
         </div>
 
-        <div className="product-form-grid product-measure-row" style={{display:'grid',gridTemplateColumns:'55px 55px 55px repeat(5,minmax(72px,.8fr)) minmax(125px,1.3fr) minmax(150px,1.5fr)',gap:8,marginTop:8,alignItems:'end'}}>
-          {select('Un. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-          {select('Un. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-          {select('Un. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
+        <div className="product-form-grid product-measure-row" style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr)) repeat(5,minmax(72px,.8fr)) minmax(125px,1.3fr) minmax(150px,1.5fr)',gap:8,marginTop:8,alignItems:'end'}}>
+          <div className="product-unit-row">
+          {select('Und. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
+          {select('Und. compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
+          {select('Und. venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
+          </div>
           {field('Peso líquido (kg)','peso_liquido','number')}
           {field('Peso bruto (kg)','peso_bruto','number')}
           {field('Comprimento (mm)','comprimento_mm','number')}
@@ -417,13 +423,13 @@ export default function ProdutosVendasIndustrial(){
       </section>}
 
             {tab==='estoque'&&<section style={{padding:10}}>
-        <div style={{display:'grid',gridTemplateColumns:'82px 82px 120px 1fr',gap:7,alignItems:'end'}}>
+        <div className="product-stock-primary-grid" style={{display:'grid',gridTemplateColumns:'82px 82px 120px 1fr',gap:7,alignItems:'end'}}>
           <label style={label}>ESTOQUE ATUAL <span style={{fontSize:8,color:'#667085'}}>calculado</span><input value={fmt(form.estoque_atual)+' '+form.unidade} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>PONTO DE REPOSIÇÃO <HelpTip text={helpFor('Ponto de reposição')}/></span><input type="number" value={String(form.ponto_reposicao??0)} disabled={!editing} onChange={e=>update('ponto_reposicao',n(e.target.value))} title="Quantidade que dispara a necessidade de reposição; não é estoque atual." style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
           <label style={label}>ESTOQUE MÁXIMO<input type="number" value={String(form.estoque_maximo??0)} disabled={!editing} onChange={e=>update('estoque_maximo',n(e.target.value))} style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
         </div>
-        <div style={{display:'grid',gridTemplateColumns:'82px 105px 105px 170px',gap:7,marginTop:7,alignItems:'end'}}>
+        <div className="product-stock-secondary-grid" style={{display:'grid',gridTemplateColumns:'82px 105px 105px 170px',gap:7,marginTop:7,alignItems:'end'}}>
           {field('VALIDADE LOTE [dias] [?]','lote_validade_dias','number')}{check('Controla lote','controla_lote')}{check('Controla série','controla_serie')}{check('Permite estoque negativo','permite_estoque_negativo')}
         </div>
         <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>MOVIMENTAÇÕES RECENTES</h2>
@@ -431,8 +437,8 @@ export default function ProdutosVendasIndustrial(){
       </section>}
 
       {tab==='producao'&&<section style={{padding:10}}>
-        <div style={{display:'grid',gridTemplateColumns:'82px 82px 82px 82px 120px 120px max-content',gap:7,alignItems:'end'}}>
-          {field('PRAZO COMPRA (dias)','prazo_compra_dias','number')}{field('PRAZO PRODUÇÃO (dias)','prazo_producao_dias','number')}{field('CUSTO FABRICAÇÃO','custo_fabricacao','number')}{field('TOLERÂNCIA (%)','tolerancia_percentual','number')}
+        <div className="product-production-grid" style={{display:'grid',gridTemplateColumns:'82px 82px 82px 82px 120px 120px max-content',gap:7,alignItems:'end'}}>
+          {field('PRAZO COMPRA (dias)','prazo_compra_dias','number')}{field('PRAZO PRODUÇÃO (dias)','prazo_producao_dias','number')}{field('CUSTO FABRICAÇÃO','custo_fabricacao','number',1,true)}{field('TOLERÂNCIA (%)','tolerancia_percentual','number')}
           <label style={label}>FICHA ATIVA<input value={productionFicha?('REV. '+(productionFicha.revisao||productionFicha.versao)):'Não cadastrada'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}>RENDIMENTO<input value={productionFicha?fmt(productionFicha.rendimento)+' '+productionFicha.unidade_rendimento:'—'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A'}}/></label>
           <button type="button" onClick={()=>{window.location.href='/ficha-engenharia?produto='+encodeURIComponent(selectedId||'')}} style={{...btn('normal'),width:'max-content',maxWidth:'100%',whiteSpace:'nowrap',padding:'0 8px',fontSize:10}}>ABRIR FICHA DE PROCESSO</button>
