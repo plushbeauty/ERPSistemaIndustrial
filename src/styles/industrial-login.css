@@ -79,3 +79,22 @@
     scroll-behavior: auto !important;
   }
 }
+
+
+/* Login visual correction: full-viewport artwork behind the credential panel. */
+@media (min-width:821px){
+  .auth-screen{position:relative;display:block;min-height:100dvh;height:100dvh;overflow:hidden;background:#F4FBFD}
+  .auth-visual{position:absolute;inset:0;width:100%;height:100%;min-height:100dvh;z-index:0;background:#f4f5f2}
+  .auth-visual>img{position:absolute;inset:0;left:0;right:0;top:0;bottom:0;width:100%;height:100%;object-fit:cover;object-position:center;transform:none}
+  .auth-visual-content{box-sizing:border-box;width:calc(100% - min(560px,44vw));height:100dvh;min-height:100dvh;padding:clamp(24px,3.5vw,52px);gap:20px}
+  .auth-panel{position:relative;z-index:2;width:min(560px,44vw);min-height:100dvh;height:100dvh;margin-left:auto;box-sizing:border-box;background:rgba(255,255,255,.91);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);border-left:1px solid rgba(215,231,236,.85);box-shadow:-16px 0 48px rgba(18,59,80,.12)}
+  .auth-panel-inner{width:min(100%,430px);box-sizing:border-box}
+}
+@media (max-width:820px){
+  .auth-screen{position:relative;min-height:100dvh;background:#F4FBFD}
+  .auth-visual{display:block;position:fixed;inset:0;width:100%;height:100dvh;min-height:100dvh;z-index:0;background:#f4f5f2}
+  .auth-visual>img{position:absolute;inset:0;left:0;right:0;top:0;bottom:0;width:100%;height:100%;object-fit:cover;object-position:center}
+  .auth-visual-content{display:none}
+  .auth-panel{position:relative;z-index:2;min-height:100dvh;background:rgba(255,255,255,.90);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:0;box-shadow:none}
+  .auth-panel-inner{background:rgba(255,255,255,.94);border:1px solid rgba(215,231,236,.9);border-radius:14px;box-shadow:0 18px 50px rgba(18,59,80,.14);margin:20px auto;padding:26px 22px}
+}
