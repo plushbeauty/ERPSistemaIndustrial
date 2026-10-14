@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import ERPHeader from '../components/layout/ERPHeader'
 import { SYNQRA_MODULES } from '../assets/synqra/icons'
 import { supabase } from '../lib/supabaseClient'
 import '../styles/synqra-workspace.css'
@@ -124,7 +123,7 @@ export default function TabletDashboard() {
 
   return (
     <main className="synqra-tablet synqra-tablet-operational">
-      <ERPHeader />
+      
 
       <section className="synqra-tablet-toolbar" aria-label="Controle da central operacional">
         <div className="synqra-toolbar-title">
