@@ -329,6 +329,10 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-subdropdown{position:absolute;left:100%;top:0;z-index:1400;min-width:190px;padding:4px;background:#fff;border:1px solid #cbd8de;box-shadow:0 8px 22px rgba(18,59,80,.16)}
         .erp-horizontal-subdropdown button{display:flex;width:100%;min-height:30px;align-items:center;text-align:left;padding:5px 9px;border:0;background:#fff;color:#173b4a;font-size:10px;white-space:nowrap;cursor:pointer}
         .erp-horizontal-subdropdown button:hover,.erp-horizontal-subdropdown button.is-active{background:#eaf5f8;color:#123b50}
+        /* Evita que estilos herdados do módulo tornem os itens do submenu brancos/invisíveis. */
+        .erp-horizontal-dropdown button,.erp-horizontal-subdropdown button{color:#173b4a!important;background:#fff!important;text-shadow:none!important}
+        .erp-horizontal-dropdown button:hover,.erp-horizontal-dropdown button.is-active,.erp-horizontal-subdropdown button:hover,.erp-horizontal-subdropdown button.is-active{color:#123b50!important;background:#eaf5f8!important}
+
         .erp-horizontal-dropdown{position:absolute;top:31px;left:0;min-width:210px;padding:4px 0;background:#fff;border:1px solid #b9cbd3;box-shadow:0 5px 14px rgba(18,59,80,.14)}
         .erp-horizontal-dropdown button{display:block;width:100%;min-height:29px;padding:5px 12px;border:0;background:#fff;color:#234d61;text-align:left;font-size:11px;cursor:pointer}
         .erp-horizontal-dropdown button:hover{background:#edf7fb;color:#1f7195}
