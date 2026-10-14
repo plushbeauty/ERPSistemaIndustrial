@@ -1,20 +1,9 @@
-import { useMemo, useState } from 'react'
-import { RefreshCw, Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { sections as SALES_SECTIONS } from './VendasLayout'
 
-const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
-
 export default function VendasTablet() {
   const navigate = useNavigate()
-  const [search, setSearch] = useState('')
-  const term = normalize(search.trim())
-  const sections = useMemo(
-    () => SALES_SECTIONS
-      .map(section => ({ ...section, items: term ? section.items.filter(item => normalize(item.label).includes(term)) : section.items }))
-      .filter(section => section.items.length > 0),
-    [term],
-  )
+  const sections = SALES_SECTIONS
 
   return (
     <section className="erp-vendas-menu">
@@ -22,13 +11,6 @@ export default function VendasTablet() {
         <div>
           <span className="erp-vendas-menu-eyebrow">CENTRO DE COMANDO / VENDAS</span>
           <h1>MENU VENDAS</h1>
-        </div>
-        <div className="erp-vendas-menu-actions">
-          <label>
-            <Search size={14} aria-hidden="true" />
-            <input value={search} onChange={event => setSearch(event.target.value)} placeholder="Pesquisar módulo de vendas" aria-label="Pesquisar módulo de vendas" />
-          </label>
-          <button type="button" onClick={() => window.location.reload()} title="Atualizar menu"><RefreshCw size={14} /></button>
         </div>
       </div>
       <div className="erp-vendas-menu-sections">
