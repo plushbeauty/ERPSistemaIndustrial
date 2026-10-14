@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Plus, Save, Trash2 } from 'lucide-react'
-import ERPHeader from '../components/layout/ERPHeader'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 
@@ -130,7 +129,7 @@ export default function ComprasPedidoCompra() {
   }
 
   return <div className="min-h-screen bg-neutral-900 text-white">
-    <ERPHeader />
+    
     <main className="p-2 space-y-2">
       {(error || message) && <div role={error ? 'alert' : 'status'} className={`h-[30px] flex items-center px-2 rounded-[2px] border text-[11px] ${error ? 'border-red-500 bg-red-50/50 text-red-700' : 'border-emerald-700 bg-emerald-950 text-emerald-300'}`}>{error || message}</div>}
       <section className="bg-neutral-950 border border-neutral-800 rounded-[2px] p-2">
