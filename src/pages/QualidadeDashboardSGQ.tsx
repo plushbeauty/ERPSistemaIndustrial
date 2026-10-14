@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Activity, AlertTriangle, CheckCircle2, FileText, ShieldCheck } from 'lucide-react'
+import { Activity, AlertTriangle, CheckCircle2, FileText, ShieldCheck, Tablet } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import VendasLayout from './VendasLayout'
 import { supabase } from '../lib/supabaseClient'
@@ -90,9 +90,14 @@ export default function QualidadeDashboardSGQ() {
 
   return <VendasLayout title="" onRefresh={() => void load()} showStatusCards={false}>
     <div className="quality-approved-dashboard">
-    <div className="mb-3 flex min-h-[34px] items-center justify-between border border-[#B9D4DF] bg-[#DCECF3] px-3">
+    <div className="mb-3 flex min-h-[34px] flex-wrap items-center justify-between gap-2 border border-[#B9D4DF] bg-[#DCECF3] px-3 py-1">
       <div className="flex items-center gap-2 text-[#123B50]"><ShieldCheck size={16} /><span className="text-[10px] font-extrabold uppercase tracking-[.14em]">Painel de indicadores · Sistema de Gestão da Qualidade</span></div>
-      <span className="text-[9px] text-[#315466]">{busy ? 'Atualizando dados…' : 'Dados da empresa autenticada'}</span>
+      <div className="flex items-center gap-2">
+        <span className="text-[9px] text-[#315466]">{busy ? 'Atualizando dados…' : 'Dados da empresa autenticada'}</span>
+        <button type="button" onClick={() => window.dispatchEvent(new Event('erp:open-quality-tablet'))} className="inline-flex h-[26px] items-center gap-1 border border-[#EA580C] bg-[#F97316] px-2 text-[10px] font-bold uppercase text-white hover:bg-[#EA580C]" aria-label="Abrir Menu SGQ">
+          <Tablet size={13} /> Menu SGQ
+        </button>
+      </div>
     </div>
     {error && <p role="alert" className="mb-2 border border-rose-300 bg-rose-50 p-2 text-[10px] text-rose-800">{error}</p>}
 
