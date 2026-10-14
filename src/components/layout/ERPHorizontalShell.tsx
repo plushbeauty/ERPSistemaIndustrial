@@ -110,8 +110,10 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   // Não recarrega telas de lançamento/edição para não apagar dados ainda não gravados.
   useEffect(() => {
     let refreshTimer: number | undefined
+    // Cada montagem recebe um tópico exclusivo: evita reutilizar um canal Realtime
+    // ainda inscrito durante remontagens rápidas (StrictMode/navegação).
     const channel = supabase
-      .channel('erp-global-data-refresh')
+      .channel(`erp-global-data-refresh-${Date.now()}-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public' }, () => {
         if (document.visibilityState !== 'visible') return
         const routeIsEditing = /\/(novo|editar|cadastro|pedido|rfq|emissao|configuracoes|configuracao|form|apontamento|recebimento|transferencia|inventario|assinatura|login)([-/]|$)/i.test(window.location.pathname)
