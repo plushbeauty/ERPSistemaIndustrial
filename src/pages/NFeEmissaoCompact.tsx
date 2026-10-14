@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { FileDown, Plus, RefreshCw, Save, Send, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import ERPHeader from '../components/layout/ERPHeader'
 import CompactButton from '../components/ui/CompactButton'
 import CompactInput from '../components/ui/CompactInput'
 import CompactSelect from '../components/ui/CompactSelect'
@@ -243,7 +242,7 @@ export default function NFeEmissaoCompact() {
     updateForm('ufPlaca', transporter ? String(transporter.uf ?? '') : field(form, 'ufPlaca'))
   }
 
-  return <main className="synqra-workspace synqra-nfe"><ERPHeader />    <section className="synqra-workspace-body">
+  return <main className="synqra-workspace synqra-nfe">    <section className="synqra-workspace-body">
       <div className="synqra-workspace-title">
         <div><h1>Emissor NF-e • Workspace Fiscal</h1><p>Modelo 55 • emissão compacta • dados reais do tenant</p></div>
         <CompactButton type="button" onClick={() => void load()} disabled={busy}><RefreshCw size={13} /> ATUALIZAR</CompactButton>
