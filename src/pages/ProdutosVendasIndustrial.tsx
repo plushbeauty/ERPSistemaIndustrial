@@ -156,6 +156,8 @@ export default function ProdutosVendasIndustrial(){
     try{
       if(!companyId)throw new Error('Empresa da sessão não identificada.')
       if(!String(form.nome||'').trim())throw new Error('Descrição é obrigatória.')
+      const fiscalCodeChecks:Array<[string,string,RegExp]>=[['NCM',String(form.ncm||''),/^\\d{8}$/],['CEST',String(form.cest||''),/^\\d{7}$/],['CFOP de entrada',String(form.cfop_entrada||''),/^\\d{4}$/],['CFOP de saída',String(form.cfop_saida||''),/^\\d{4}$/],['CST ICMS',String(form.cst_icms||''),/^\\d{2}$/],['CSOSN',String(form.csosn||''),/^\\d{3}$/]]
+      for(const [fieldName,code,pattern] of fiscalCodeChecks)if(code&&!pattern.test(code))throw new Error(fieldName+' inválido: informe somente dígitos e o tamanho exigido pelo campo.');
       let codigo=String(form.codigo||'').trim()
       if(!selectedId){
         const config=await supabase.from('erp_codigos').select('id,modo_numeracao').eq('empresa_id',companyId).order('prefixo').limit(1).maybeSingle()
@@ -306,7 +308,7 @@ export default function ProdutosVendasIndustrial(){
   const HelpTip=({text}:{text:string})=>{const [open,setOpen]=useState(false);return <span style={{position:'relative',display:'inline-flex',verticalAlign:'baseline',marginLeft:3}}><span role="button" tabIndex={0} aria-label="Ajuda" onClick={e=>{e.preventDefault();e.stopPropagation();setOpen(v=>!v)}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setOpen(v=>!v)}}} style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:10,height:12,color:'#2D8DB8',fontSize:11,fontWeight:800,lineHeight:1,cursor:'pointer',userSelect:'none'}}>?</span>{open&&<span role="tooltip" style={{position:'absolute',zIndex:1200,left:12,top:14,width:250,padding:'7px 8px',border:'1px solid #b9cbd3',borderRadius:2,background:'#fff',boxShadow:'0 4px 12px rgba(18,59,80,.16)',fontSize:9,fontWeight:400,lineHeight:1.35,color:'#173b4a',textTransform:'none'}}>{text}</span>}</span>}
   const fieldTitle=(title:string)=><span style={{display:'inline-flex',alignItems:'center',whiteSpace:'nowrap',minWidth:0}}>{title.replace(' [?]','')}{title.includes('[?]')&&<HelpTip text={helpFor(title)}/>}</span>;
   const field=(title:string,key:keyof FormData,type='text',span=1,locked=false)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input type={type} value={String(form[key]??'')} readOnly={locked} disabled={!editing} onChange={e=>update(key,type==='number'?n(e.target.value):e.target.value)} style={{...input,background:locked?'#eaf3f8':editing?'#fff':'#f5f7fa',color:locked?'#17445A':'#172033',fontWeight:locked?700:400,cursor:locked?'not-allowed':'text'}}/></label>
-  const combo=(title:string,key:keyof FormData,options:Array<{value:string;label:string}>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input role="combobox" aria-autocomplete="list" list={'combo-'+String(key)} value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} placeholder="Digite para pesquisar ou selecione..." autoComplete="off" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id={'combo-'+String(key)}>{options.map(o=><option key={o.value} value={o.value} label={o.label}/>)}</datalist></label>
+  const combo=(title:string,key:keyof FormData,options:Array<{value:string;label:string}>,span=1,maxLength?:number)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input role="combobox" aria-autocomplete="list" inputMode={maxLength?'numeric':undefined} maxLength={maxLength} list={'combo-'+String(key)} value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} placeholder="Digite para pesquisar ou selecione..." autoComplete="off" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id={'combo-'+String(key)}>{options.map(o=><option key={o.value} value={o.value} label={o.label}/>)}</datalist></label>
   const select=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<select value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>{options.map(o=><option value={o[0]} key={o[0]}>{o[1]}</option>)}</select></label>
   const check=(title:string,key:keyof FormData)=><label style={{display:'flex',alignItems:'center',gap:7,fontSize:10,fontWeight:700,color:'#344054'}}><input type="checkbox" checked={Boolean(form[key])} disabled={!editing} onChange={e=>update(key,e.target.checked)}/>{title}</label>
 
@@ -477,23 +479,37 @@ export default function ProdutosVendasIndustrial(){
       </form>}
 
             {tab==='fiscal'&&<section style={{padding:10}}>
-        <div className="product-form-section" aria-label="Classificação fiscal"><h3 className="product-form-section-title">CLASSIFICAÇÃO DA MERCADORIA</h3>
+        <div className="product-form-section" aria-label="Classificação fiscal">
+          <h3 className="product-form-section-title">CLASSIFICAÇÃO DA MERCADORIA</h3>
           <div className="product-responsive-grid" style={{gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)'}}>
             {select('ORIGEM DA MERCADORIA [?]','origem',[['0 - Nacional','0 • Nacional, exceto códigos 3–5'],['1 - Estrangeira - Importação direta','1 • Estrangeira — importação direta'],['2 - Estrangeira - mercado interno','2 • Estrangeira — adquirida no mercado interno'],['3 - Nacional, conteúdo importação >40% e <70%','3 • Nacional, conteúdo de importação acima de 40%'],['4 - Nacional, processo produtivo básico','4 • Nacional, processo produtivo básico'],['5 - Nacional, conteúdo importação <40%','5 • Nacional, conteúdo de importação até 40%'],['6 - Estrangeira - importação direta, sem similar nacional','6 • Estrangeira — importação direta, sem similar nacional'],['7 - Estrangeira - mercado interno, sem similar nacional','7 • Estrangeira — mercado interno, sem similar nacional'],['8 - Nacional, conteúdo importação >70%','8 • Nacional, conteúdo de importação acima de 70%']])}
-            {combo('NCM • 8 dígitos [?]','ncm',[...new Map(products.filter(p=>p.ncm).map(p=>[String(p.ncm),{value:String(p.ncm),label:String(p.ncm)+' — '+p.nome}])).values()])}
-            {combo('CEST • quando aplicável [?]','cest',[...new Map(products.filter(p=>p.cest).map(p=>[String(p.cest),{value:String(p.cest),label:String(p.cest)+' — '+p.nome}])).values()])}
+            {combo('NCM • 8 dígitos [?]','ncm',[],1,8)}
+            {combo('CEST • 7 dígitos [?]','cest',[],1,7)}
           </div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:8,marginTop:8}}>
+            <a href="https://portalunico.siscomex.gov.br/classif/#/nomenclatura/avancada?perfil=publico" target="_blank" rel="noreferrer" style={{...btn('normal'),textDecoration:'none'}}>CONSULTAR NCM NO CLASSIF</a>
+            <a href="https://portalunico.siscomex.gov.br/classif/api/publico/nomenclatura/download/json" target="_blank" rel="noreferrer" style={{...btn('normal'),textDecoration:'none'}}>DOWNLOAD OFICIAL NCM (JSON)</a>
+            <a href="https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=%2FNJarYc9nus%3D" target="_blank" rel="noreferrer" style={{...btn('normal'),textDecoration:'none'}}>TABELAS OFICIAIS NF-e</a>
+          </div>
+          <p style={{margin:'7px 0 0',fontSize:9,color:'#667085',lineHeight:1.45}}>Integridade fiscal: não sugerimos NCM/CEST com base em outros produtos. O catálogo oficial ainda precisa ser importado e versionado; até lá, informe somente códigos confirmados na fonte oficial. NCM vigente, histórico e futuras vigências devem ser conferidos no Sistema Classif.</p>
         </div>
-        <div className="product-form-section" aria-label="Regras tributárias"><h3 className="product-form-section-title">CÓDIGOS TRIBUTÁRIOS E OPERAÇÃO</h3>
+        <div className="product-form-section" aria-label="Regras tributárias">
+          <h3 className="product-form-section-title">CÓDIGOS TRIBUTÁRIOS E OPERAÇÃO</h3>
           <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(3,minmax(0,1fr))'}}>
-            {combo('CST ICMS [?]','cst_icms',[{value:'00',label:'00 — Tributada integralmente'},{value:'10',label:'10 — Tributada com cobrança de ICMS-ST'},{value:'20',label:'20 — Com redução de base de cálculo'},{value:'30',label:'30 — Isenta/não tributada com ICMS-ST'},{value:'40',label:'40 — Isenta'},{value:'41',label:'41 — Não tributada'},{value:'50',label:'50 — Suspensão'},{value:'51',label:'51 — Diferimento'},{value:'60',label:'60 — ICMS cobrado anteriormente por ST'},{value:'70',label:'70 — Redução da base e ICMS-ST'},{value:'90',label:'90 — Outras'}])}
-            {combo('CSOSN • Simples Nacional [?]','csosn',[{value:'101',label:'101 — Tributada com permissão de crédito'},{value:'102',label:'102 — Tributada sem permissão de crédito'},{value:'103',label:'103 — Isenção para faixa de receita bruta'},{value:'201',label:'201 — Com crédito e ICMS-ST'},{value:'202',label:'202 — Sem crédito e com ICMS-ST'},{value:'203',label:'203 — Isenção e ICMS-ST'},{value:'300',label:'300 — Imune'},{value:'400',label:'400 — Não tributada'},{value:'500',label:'500 — ICMS cobrado anteriormente por ST'},{value:'900',label:'900 — Outros'}])}
-            {combo('CFOP ENTRADA • 4 dígitos [?]','cfop_entrada',[{value:'1101',label:'1101 — Compra para industrialização (mesmo estado)'},{value:'1102',label:'1102 — Compra para comercialização (mesmo estado)'},{value:'1124',label:'1124 — Industrialização efetuada por outra empresa'},{value:'1152',label:'1152 — Transferência para comercialização'},{value:'1551',label:'1551 — Compra de bem para ativo imobilizado'},{value:'1556',label:'1556 — Compra de material para uso/consumo'},{value:'2101',label:'2101 — Compra para industrialização (outro estado)'},{value:'2102',label:'2102 — Compra para comercialização (outro estado)'},{value:'2556',label:'2556 — Material para uso/consumo (outro estado)'}])}
-            {combo('CFOP SAÍDA • 4 dígitos [?]','cfop_saida',[{value:'5101',label:'5101 — Venda de produção do estabelecimento (mesmo estado)'},{value:'5102',label:'5102 — Venda de mercadoria adquirida de terceiros (mesmo estado)'},{value:'5405',label:'5405 — Venda de mercadoria sujeita à ST'},{value:'5551',label:'5551 — Venda de bem do ativo imobilizado'},{value:'6101',label:'6101 — Venda de produção (outro estado)'},{value:'6102',label:'6102 — Venda de mercadoria adquirida de terceiros (outro estado)'},{value:'6404',label:'6404 — Venda sujeita à ST (outro estado)'}])}
-            {combo('ORIGEM FISCAL / COMPLEMENTO [?]','origem_fiscal',[...new Map(products.filter(p=>p.origem_fiscal).map(p=>[String(p.origem_fiscal),{value:String(p.origem_fiscal),label:String(p.origem_fiscal)}])).values()])}
+            {combo('CST ICMS • 2 dígitos [?]','cst_icms',[],1,2)}
+            {combo('CSOSN • 3 dígitos, Simples Nacional [?]','csosn',[],1,3)}
+            {combo('CFOP ENTRADA • 4 dígitos [?]','cfop_entrada',[],1,4)}
+            {combo('CFOP SAÍDA • 4 dígitos [?]','cfop_saida',[],1,4)}
+            {combo('ORIGEM FISCAL / COMPLEMENTO [?]','origem_fiscal',[],1)}
           </div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:8,marginTop:8}}>
+            <a href="https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=%2FNJarYc9nus%3D" target="_blank" rel="noreferrer" style={{...btn('normal'),textDecoration:'none'}}>CONSULTAR TABELA CFOP / NF-e</a>
+            <a href="https://www.confaz.fazenda.gov.br/legislacao/convenios/2018/CV142_18" target="_blank" rel="noreferrer" style={{...btn('normal'),textDecoration:'none'}}>CONSULTAR CONVÊNIO CEST / CONFAZ</a>
+          </div>
+          <p style={{margin:'7px 0 0',fontSize:9,color:'#667085',lineHeight:1.45}}>Os códigos acima ficam sem sugestões demonstrativas até a integração de tabelas oficiais versionadas. CST e CSOSN não são intercambiáveis; a seleção depende do regime tributário. CFOP depende da operação, origem/destino e finalidade. Este cadastro não calcula sozinho o imposto devido.</p>
         </div>
         <div className="product-form-section" aria-label="Alíquotas tributárias"><h3 className="product-form-section-title">ALÍQUOTAS CADASTRADAS (%)</h3>
+          <p style={{margin:'0 0 7px',fontSize:9,color:'#667085'}}>Valores informativos do cadastro atual; não representam um motor de cálculo tributário. IBS/CBS, FCP, DIFAL e demais regras condicionais não devem ser presumidos sem integração fiscal validada.</p>
           <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(4,minmax(0,1fr))'}}>
             {field('ICMS %','aliquota_icms','number')}{field('IPI %','aliquota_ipi','number')}{field('PIS %','aliquota_pis','number')}{field('COFINS %','aliquota_cofins','number')}
           </div>
