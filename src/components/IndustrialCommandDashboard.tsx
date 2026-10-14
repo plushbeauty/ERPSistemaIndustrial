@@ -113,7 +113,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         setStops((st.data ?? []) as Stop[])
         const closedRncStates = new Set(['encerrada', 'fechada', 'concluida', 'concluido', 'fechado', 'cancelada', 'cancelado'])
         const rncRows = (rn.data ?? []) as Array<{ status?: unknown }>
-        const closedRncCount = rncRows.filter(row => closedRncStates.has(String(row.status ?? '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase())).length
+        const closedRncCount = rncRows.filter(row => closedRncStates.has(String(row.status ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())).length
         setRpnc(Math.max(0, rncRows.length - closedRncCount))
         setRpncClosed(closedRncCount)
         setEquipment((eq.data ?? []) as Equipment[])
@@ -189,7 +189,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     let withoutValidity = 0
     for (const item of equipment) {
       const dates = [item.proxima_calibracao, item.certificado_validade].filter((date): date is string => Boolean(date))
-      const status = String(item.status ?? '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase()
+      const status = String(item.status ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
       if (invalidStates.has(status) || dates.some(date => date.slice(0, 10) < today)) expired++
       else if (dates.length > 0 && dates.every(date => date.slice(0, 10) >= today)) valid++
       else withoutValidity++
