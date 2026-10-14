@@ -135,7 +135,7 @@ export default function ProdutosVendasIndustrial(){
     while(groups.some(g=>g.codigo.toUpperCase()===code)){code=prefix+'-'+sequence;sequence+=1}
     setBusy(true);setError('');setMessage('')
     try{
-      const {data,error:e}=await supabase.from('erp_grupos').insert({empresa_id:companyId,codigo:code,nome,ativo:true}).select('id,codigo,nome').single()
+      const {data,error:e}=await supabase.from('erp_grupos').insert({empresa_id:companyId,codigo:code,nome:name,ativo:true}).select('id,codigo,nome').single()
       if(e)throw e
       const created=data as Group
       setGroups(prev=>[...prev,created].sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')))
@@ -289,8 +289,6 @@ export default function ProdutosVendasIndustrial(){
     'Subgrupo':'Subdivisão do grupo usada para pesquisa e organização.',
     'Marca':'Marca comercial do produto, quando aplicável.',
     'Origem':'Código de origem da mercadoria conforme regra fiscal.',
-    'NCM':'Código NCM utilizado na classificação fiscal do item.',
-    'CEST':'Código CEST quando o produto estiver sujeito à substituição tributária.',
     'CST ICMS':'Código da situação tributária do ICMS.',
     'CSOSN':'Código de situação da operação no Simples Nacional, quando aplicável.',
     'CFOP entrada':'CFOP padrão das entradas deste produto.',
