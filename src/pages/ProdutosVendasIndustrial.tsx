@@ -436,7 +436,7 @@ export default function ProdutosVendasIndustrial(){
           <h3 className="product-form-section-title">IDENTIFICAÇÃO DO PRODUTO</h3>
           <div className="product-form-grid product-general-row">
             {field('Código *','codigo','text',1,true)}
-            {field('Código de barras','codigo_barras','text',1,true)}
+            {field('Código de barras','codigo_barras','text')}
             {field('Descrição *','nome','text',2)}
             {field('Descrição resumida [?]','descricao_resumida','text',2)}
             <div><label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>GRUPO <HelpTip text={helpFor('Grupo')}/></span><div className="product-combo-wrap"><input role="combobox" aria-autocomplete="list" list="product-group-options" value={String(form.grupo||'')} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} placeholder="Selecione ou digite um grupo..." autoComplete="off" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id="product-group-options">{groups.map(g=><option key={g.id} value={g.nome} label={g.codigo+' • '+g.nome}/>)}</datalist><button type="button" className="product-plus-button" title="Adicionar o nome digitado como novo grupo" aria-label="Adicionar o nome digitado como novo grupo" disabled={!editing||busy} onClick={()=>void addGroup()}><Plus size={15}/></button></div></label></div>
