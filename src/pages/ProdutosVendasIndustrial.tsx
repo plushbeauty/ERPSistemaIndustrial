@@ -116,8 +116,8 @@ export default function ProdutosVendasIndustrial(){
     return products.filter(p=>(!q||(p.codigo+' '+p.nome+' '+(p.codigo_barras||'')+' '+(p.grupo||'')+' '+(p.subgrupo||'')+' '+(p.marca||'')+' '+(p.categoria||'')).toLowerCase().includes(q))&&(groupFilter==='TODAS'||String(p.grupo||'')===groupFilter))
   },[products,query,groupFilter])
 
-  const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
-  const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false)}
+  const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false);setNcmDescription('');setNcmOptions([]);setNcmSearchMessage('')}
+  const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false);setNcmDescription('');setNcmOptions([]);setNcmSearchMessage('')}
   const update=(key:keyof FormData,value:unknown)=>setForm(prev=>({...prev,[key]:value}))
   const openTechnicalPrint=()=>{if(!selectedId){setError('Selecione um produto antes de imprimir a ficha técnica.');return}window.open('/produtos-vendas/imprimir?id='+encodeURIComponent(selectedId),'_blank','noopener,noreferrer')}
   const save=async()=>{
