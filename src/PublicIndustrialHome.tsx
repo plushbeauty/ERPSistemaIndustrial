@@ -59,7 +59,7 @@ export default function PublicIndustrialHome(){
   .sgq-hero-copy{display:none!important}
   .sgq-stage{width:100%;height:100%;min-width:0;border:0;border-radius:0;padding:0;background:#000;box-shadow:none}
   .sgq-stage-media{inset:0;border-radius:0;background:#000}
-  .sgq-stage-media img{object-fit:cover!important;padding:0!important;transform:scale(1.04)!important;transform-origin:center center;width:100vw!important;max-width:none!important;left:50%!important;translate:-50% 0}
+  .sgq-stage-media img{object-fit:cover!important;padding:0!important;transform:none!important;transform-origin:center center;width:100%!important;max-width:100%!important;left:0!important;translate:0 0}
   .sgq-stage-caption,.sgq-dots,.sgq-hero-shade{display:none!important}
   @media(max-width:700px){.sgq-hero{height:calc(100dvh - 62px);min-height:320px}.sgq-hero-inner{width:100%!important}}
   `}
