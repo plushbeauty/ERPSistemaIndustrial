@@ -267,7 +267,7 @@ export default function ProdutosVendasIndustrial(){
     finally{setNcmBusy(false)}
   }
   const lookupNcmCode=async()=>{
-    const code=String(form.ncm||'').replace(/\\D/g,'')
+    const code=String(form.ncm||'').replace(/\D/g,'')
     if(code.length!==8)return
     try{
       const response=await fetch('https://brasilapi.com.br/api/ncm/v1/'+encodeURIComponent(code))
