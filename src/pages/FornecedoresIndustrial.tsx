@@ -43,11 +43,11 @@ export default function FornecedoresIndustrial(){
  const remove=async()=>{if(!selected)return;if(!window.confirm(`Excluir o fornecedor ${selected.razao_social}?`))return;setBusy(true);try{const {error:e}=await supabase.from('erp_fornecedores').delete().eq('id',selected.id).eq('empresa_id',empresaId);if(e)throw e;setSelected(null);setMessage('Fornecedor excluído.');await load()}catch(e){setError(e instanceof Error?e.message:'Não foi possível excluir o fornecedor.')}finally{setBusy(false)}}
  const download=async(path:string|null)=>{if(!path)return;const {data,error:e}=await supabase.storage.from('erp-fornecedor-certificados').createSignedUrl(path,300);if(e)throw e;window.open(data.signedUrl,'_blank','noopener,noreferrer')}
  const print=()=>window.print()
- return <VendasLayout title="Fornecedores" subtitle="Cadastro, qualificação e acompanhamento de entrega" onRefresh={()=>void load()}>
+ return <VendasLayout title="" onRefresh={()=>void load()}>
   <main style={{minHeight:'100vh',background:'#F4FBFD',color:'#111827',padding:10,boxSizing:'border-box'}}>
-   <section style={{...panel,padding:9,marginBottom:7}}>
-    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,flexWrap:'wrap'}}>
-      <div><div style={{fontSize:9,color:'#2D8DB8',fontWeight:700}}>COMPRAS • CADASTRO MESTRE</div><h1 style={{margin:'2px 0',fontSize:16,color:'#123B50',fontWeight:600}}>Fornecedores</h1><div style={{fontSize:9,color:'#667085'}}>Cadastro, qualificação, documentos e desempenho de entrega.</div></div>
+   <section style={{...panel,padding:0,marginBottom:7,overflow:'hidden'}}>
+    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,flexWrap:'wrap',padding:9,background:'linear-gradient(115deg,#123B50 0%,#1C6387 45%,#2D8DB8 78%,#48B7C7 100%)',color:'#fff',boxShadow:'inset 0 1px 0 rgba(255,255,255,.22)'}}>
+      <div><div style={{fontSize:9,color:'#c9f2ff',fontWeight:800,letterSpacing:'.08em'}}>COMPRAS • CADASTRO MESTRE</div><h1 style={{margin:'2px 0',fontSize:16,color:'#fff',fontWeight:700}}>Fornecedores</h1><div style={{fontSize:9,color:'#e4f7ff'}}>Cadastro, qualificação, documentos e desempenho de entrega.</div></div>
       <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
        <button type="button" style={button('primary')} onClick={openNew}><Plus size={12}/>NOVO</button>
        <button type="button" className="erp-edit-button" style={button(selected?'normal':'disabled')} disabled={!selected} onClick={openEdit}><Pencil size={12}/>EDITAR</button>
