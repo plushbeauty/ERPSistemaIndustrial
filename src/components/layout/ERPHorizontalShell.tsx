@@ -61,7 +61,7 @@ const menus: MenuItem[] = [
       { label: 'Pintura / Química', route: '/pcp/fichas-processo?tipo=PINTURA_QUIMICA' },
     ] },
   ] },
-  { label: 'Gestão da Qualidade', route: '/qualidade', icon: ShieldCheck },
+  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet' },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench },
   { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
@@ -142,10 +142,10 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : pathname.startsWith('/configuracoes') ? 'Configuração'
     : null
   const currentModuleMenu = moduleLabel
-    ? menus.find(menu => menu.label === (moduleLabel === 'Qualidade' ? 'Gestão da Qualidade' : moduleLabel)) ?? { label: moduleLabel, route: '/' + pathname.split('/')[1], icon: Home }
+    ? menus.find(menu => menu.label === moduleLabel) ?? { label: moduleLabel, route: '/' + pathname.split('/')[1], icon: Home }
     : undefined
   const current = currentModuleMenu ?? menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
-  const visibleMenus: MenuItem[] = [menus[0], { label: 'Menu SGQ', route: '/qualidade/tablet', icon: ShieldCheck, action: 'qualityTablet' }, ...menus.slice(1)]
+  const visibleMenus: MenuItem[] = menus
   useEffect(() => {
     setOpenMenu(null)
   }, [pathname])
