@@ -31,7 +31,6 @@ type Product={
   aliquota_pis:number;aliquota_cofins:number;prazo_compra_dias:number;prazo_producao_dias:number;tolerancia_percentual:number
   custo_medio:number;custo_ultimo:number;custo_fabricacao:number;preco_venda:number;ativo:boolean
 }
-type Supplier={id:string;razao_social:string;nome_fantasia:string|null}
 type Group={id:string;codigo:string;nome:string}
 type Location={id:string;codigo:string;nome:string;tipo:string}
 type Movement={id:string;tipo:string;quantidade:number;origem:string|null;documento:string|null;observacao:string|null;created_at:string}
@@ -68,7 +67,6 @@ export default function ProdutosVendasIndustrial(){
   const printId=new URLSearchParams(routerLocation.search).get('id')
   const [companyId,setCompanyId]=useState('')
   const [products,setProducts]=useState<Product[]>([])
-  const [suppliers,setSuppliers]=useState<Supplier[]>([])
   const [groups,setGroups]=useState<Group[]>([])
   const [locations,setLocations]=useState<Location[]>([])
   const [selectedId,setSelectedId]=useState<string|null>(null)
@@ -95,14 +93,13 @@ export default function ProdutosVendasIndustrial(){
       const {data:cid,error:ce}=await supabase.rpc('erp_current_empresa_id')
       if(ce||!cid)throw ce??new Error('Empresa da sessão não identificada.')
       const id=String(cid);setCompanyId(id)
-      const [p,s,g,l]=await Promise.all([
+      const [p,g,l]=await Promise.all([
         supabase.from('erp_produtos').select('*').eq('empresa_id',id).order('codigo').limit(2000),
-        supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia').eq('empresa_id',id).eq('ativo',true).order('razao_social').limit(1000),
         supabase.from('erp_grupos').select('id,codigo,nome').eq('empresa_id',id).eq('ativo',true).order('nome').limit(1000),
         supabase.from('erp_estoque_localizacoes').select('id,codigo,nome,tipo').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(1000)
       ])
-      for(const r of [p,s,g,l])if(r.error)throw r.error
-      setProducts((p.data??[]) as Product[]);setSuppliers((s.data??[]) as Supplier[]);setGroups((g.data??[]) as Group[]);setLocations((l.data??[]) as Location[])
+      for(const r of [p,g,l])if(r.error)throw r.error
+      setProducts((p.data??[]) as Product[]);setGroups((g.data??[]) as Group[]);setLocations((l.data??[]) as Location[])
       if(printMode&&printId){const printProduct=(p.data??[]).find((x:Product)=>x.id===printId);if(printProduct){setSelectedId(printProduct.id);setForm({...empty(),...printProduct})}}
       if(selectedId){const fresh=(p.data??[]).find((x:Product)=>x.id===selectedId);if(fresh)setForm({...empty(),...fresh})}
     }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar cadastro de produtos.')}
