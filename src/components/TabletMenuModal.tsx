@@ -120,18 +120,18 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
       onMouseDown={onClose}
     >
       <section
-        className="max-h-[calc(100vh-24px)] w-full max-w-[1180px] overflow-auto rounded-[2px] border border-slate-600 bg-[#1e222b] p-3 text-white shadow-[0_30px_90px_rgba(2,6,23,0.48)] sm:max-h-[calc(100vh-36px)] sm:p-4"
+        className="flex max-h-[calc(100vh-32px)] w-full max-w-[1440px] flex-col overflow-hidden rounded-[3px] border border-[#405363] bg-[#1e222b] p-4 text-white shadow-[0_32px_100px_rgba(2,6,23,0.62)] sm:max-h-[calc(100vh-48px)] sm:p-5"
         onMouseDown={event => event.stopPropagation()}
       >
-        <header className="flex items-start justify-between gap-4 border-b border-slate-200 pb-3">
+        <header className="flex shrink-0 items-center justify-between gap-4 border-b border-[#405363] pb-4">
           <div className="flex min-w-0 items-center gap-3">
             <img src="/logo/logo.png" alt="SGQERP Industrial" className="h-[38px] w-[148px] shrink-0 object-contain max-[620px]:h-8 max-[620px]:w-28" />
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] text-white max-[620px]:h-[38px] max-[620px]:w-[38px]" aria-hidden="true">
               <Tablet size={24} />
             </span>
             <div className="min-w-0">
-              <strong className="block text-xs font-semibold leading-tight tracking-[0.02em]">CENTRAL DE MÓDULOS — MODO TABLET</strong>
-              <p className="mt-1 text-[11px] leading-tight text-slate-400">Ambiente operacional integrado do ERP Industrial</p>
+              <strong className="block text-[15px] font-bold leading-tight tracking-[0.08em] text-white max-[620px]:text-[12px]">CENTRAL DE MÓDULOS — MODO TABLET</strong>
+              <p className="mt-1 text-[12px] leading-tight text-slate-300 max-[620px]:text-[10px]">Ambiente operacional integrado do ERP Industrial</p>
             </div>
           </div>
 
@@ -148,7 +148,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
 
         {accessError && <div className="mb-2 border border-red-400 bg-red-950 px-2 py-1.5 text-[10px] text-red-100" role="alert">{accessError}</div>}
 
-        <div className="mt-3 grid grid-cols-11 gap-1.5 max-[1050px]:grid-cols-6 max-[700px]:grid-cols-4 max-[460px]:grid-cols-3" aria-label="Módulos do ERP">
+        <div className="mt-4 grid min-h-0 flex-1 grid-cols-5 content-start gap-3 overflow-y-auto pr-1 max-[1200px]:grid-cols-4 max-[900px]:grid-cols-3 max-[620px]:grid-cols-2 max-[400px]:grid-cols-1" aria-label="Módulos do ERP">
           {modules.map(({ key, number, label, description, route, permission, icon: Icon }) => {
             const disabled = !route || !accessReady || Boolean(accessError) || Boolean(permission && !permissions.has('*') && !permissions.has(permission))
 
@@ -159,7 +159,7 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
                 disabled={disabled}
                 aria-disabled={disabled}
                 title={disabled ? (accessError || (!accessReady ? 'Validando acesso e permissões.' : description)) : label}
-                className="group flex min-h-[86px] min-w-0 touch-manipulation flex-col items-center justify-center gap-[7px] rounded-[2px] border border-slate-600 bg-[#252a34] px-1 py-1.5 text-center transition-[background,border-color,transform] duration-100 hover:-translate-y-px hover:border-slate-300 hover:bg-[#303642] active:translate-y-0 active:bg-[#38404d] disabled:cursor-not-allowed disabled:opacity-40"
+                className="group relative flex min-h-[148px] min-w-0 touch-manipulation flex-row items-start gap-3 rounded-[3px] border border-[#3e5262] bg-gradient-to-br from-[#293441] to-[#222832] p-4 text-left transition-[background,border-color,transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:border-[#67c7dc] hover:from-[#304252] hover:to-[#252f3a] hover:shadow-[0_10px_26px_rgba(0,0,0,0.22)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 max-[620px]:min-h-[126px] max-[620px]:gap-2 max-[620px]:p-3"
                 onClick={() => {
                   if (route) {
                     onClose()
@@ -168,22 +168,23 @@ export default function TabletMenuModal({ isOpen, onClose, onNavigate }: TabletM
                 }}
               >
                 <span
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-[2px] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]"
+                  className="grid h-12 w-12 shrink-0 place-items-center rounded-[3px] border border-white/15 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] max-[620px]:h-10 max-[620px]:w-10"
                   style={{ backgroundColor: '#2D8DB8' }}
                   aria-hidden="true"
                 >
-                  <Icon size={28} strokeWidth={2.15} />
+                  <Icon size={30} strokeWidth={1.9} />
                 </span>
-                <span className="flex min-w-0 flex-col items-center gap-0.5">
-                  <small className="text-[8px] font-semibold leading-none tracking-[0.08em]" style={{ color: '#67c7dc' }}>{number}</small>
-                  <strong className="max-w-full text-[9px] font-semibold leading-[1.15] tracking-[0.01em] text-slate-100">{label}</strong>
+                <span className="flex min-w-0 flex-1 flex-col items-start gap-2">
+                  <span className="flex w-full items-center justify-between gap-2"><small className="text-[10px] font-bold leading-none tracking-[0.14em]" style={{ color: '#67c7dc' }}>{number}</small><span className="h-[3px] w-8 rounded-full bg-[#2D8DB8] transition-all group-hover:w-12" aria-hidden="true" /></span>
+                  <strong className="text-[13px] font-bold leading-tight tracking-[0.025em] text-slate-50 max-[620px]:text-[11px]">{label}</strong>
+                  <span className="text-[11px] leading-[1.4] text-slate-300 max-[620px]:text-[10px]">{description}</span>
                 </span>
               </button>
             )
           })}
         </div>
 
-        <footer className="mt-3 flex flex-wrap justify-between gap-2 border-t border-[#DBE7EA] pt-2.5 text-[9px] font-medium tracking-[0.03em] text-slate-400">
+        <footer className="mt-4 flex shrink-0 flex-wrap justify-between gap-2 border-t border-[#405363] pt-3 text-[10px] font-medium tracking-[0.03em] text-slate-400">
           <span>ERPSistema INDUSTRIAL</span>
           <span>Central operacional integrada</span>
           <span>22 módulos</span>
