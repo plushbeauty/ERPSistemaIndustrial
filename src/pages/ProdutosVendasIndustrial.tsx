@@ -32,6 +32,7 @@ type Product={
   custo_medio:number;custo_ultimo:number;custo_fabricacao:number;preco_venda:number;ativo:boolean
 }
 type Group={id:string;codigo:string;nome:string}
+type Supplier={id:string;razao_social:string;nome_fantasia:string|null}
 type Location={id:string;codigo:string;nome:string;tipo:string}
 type Movement={id:string;tipo:string;quantidade:number;origem:string|null;documento:string|null;observacao:string|null;created_at:string}
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number;observacao:string|null;created_at:string}
@@ -69,6 +70,7 @@ export default function ProdutosVendasIndustrial(){
   const [companyId,setCompanyId]=useState('')
   const [products,setProducts]=useState<Product[]>([])
   const [groups,setGroups]=useState<Group[]>([])
+  const [suppliers,setSuppliers]=useState<Supplier[]>([])
   const [locations,setLocations]=useState<Location[]>([])
   const [selectedId,setSelectedId]=useState<string|null>(null)
   const [form,setForm]=useState<FormData>(empty())
@@ -98,13 +100,14 @@ export default function ProdutosVendasIndustrial(){
       const {data:cid,error:ce}=await supabase.rpc('erp_current_empresa_id')
       if(ce||!cid)throw ce??new Error('Empresa da sessão não identificada.')
       const id=String(cid);setCompanyId(id)
-      const [p,g,l]=await Promise.all([
+      const [p,g,l,s]=await Promise.all([
         supabase.from('erp_produtos').select('*').eq('empresa_id',id).order('codigo').limit(2000),
         supabase.from('erp_grupos').select('id,codigo,nome').eq('empresa_id',id).eq('ativo',true).order('nome').limit(1000),
-        supabase.from('erp_estoque_localizacoes').select('id,codigo,nome,tipo').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(1000)
+        supabase.from('erp_estoque_localizacoes').select('id,codigo,nome,tipo').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(1000),
+        supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia').eq('empresa_id',id).eq('ativo',true).order('razao_social').limit(1000)
       ])
-      for(const r of [p,g,l])if(r.error)throw r.error
-      setProducts((p.data??[]) as Product[]);setGroups((g.data??[]) as Group[]);setLocations((l.data??[]) as Location[])
+      for(const r of [p,g,l,s])if(r.error)throw r.error
+      setProducts((p.data??[]) as Product[]);setGroups((g.data??[]) as Group[]);setLocations((l.data??[]) as Location[]);setSuppliers((s.data??[]) as Supplier[])
       if(printMode&&printId){const printProduct=(p.data??[]).find((x:Product)=>x.id===printId);if(printProduct){setSelectedId(printProduct.id);setForm({...empty(),...printProduct})}}
       if(selectedId){const fresh=(p.data??[]).find((x:Product)=>x.id===selectedId);if(fresh)setForm({...empty(),...fresh})}
     }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar cadastro de produtos.')}
@@ -399,6 +402,33 @@ export default function ProdutosVendasIndustrial(){
   }
   return <main className="product-master-screen" style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif',background:'#fff'}}>
     <style>{`
+ 
+      .product-master-screen{max-width:1600px!important;background:#f4f8fb!important;color:#123B50!important}
+      .product-master-screen>header{background:#123B50!important;border-bottom:3px solid #48B7C7!important;color:#fff!important;padding:10px 14px!important}
+      .product-master-screen>header h1,.product-master-screen>header div{color:#fff!important}
+      .product-master-screen>header>div:first-child>div{color:#83e0e8!important;letter-spacing:.12em}
+      .product-master-screen>section{border-radius:2px!important;border-color:#cbdbe4!important;box-shadow:0 2px 7px rgba(18,59,80,.04)}
+      .product-master-screen .product-general-form{padding:14px;background:#fff}
+      .product-master-screen .product-section-heading{display:flex;align-items:end;justify-content:space-between;gap:14px;padding:8px 0 10px;margin:0 0 12px;border-bottom:1px solid #d8e6ec}
+      .product-master-screen .product-section-heading:not(:first-child){margin-top:22px}
+      .product-master-screen .product-section-heading span{font-size:9px;font-weight:900;letter-spacing:.13em;color:#2D8DB8}
+      .product-master-screen .product-section-heading h2{margin:3px 0 0;font-size:14px;font-weight:800;color:#123B50}
+      .product-master-screen .product-section-heading p{margin:0;max-width:460px;font-size:10px;line-height:1.45;color:#617987;text-align:right}
+      .product-master-screen .product-field-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 10px;align-items:end}
+      .product-master-screen .product-field-grid label{display:grid;grid-template-rows:minmax(13px,auto) minmax(30px,auto);gap:4px;min-width:0;color:#294a5b;font-size:9px;font-weight:800}
+      .product-master-screen .product-field-grid label>input,.product-master-screen .product-field-grid label>select{height:32px!important;min-width:0;width:100%;border:1px solid #b9ced9!important;border-radius:2px!important;padding:0 8px!important;font-size:11px!important;color:#123B50}
+      .product-master-screen .product-field-grid textarea{font:11px/1.45 Arial,sans-serif!important;border:1px solid #b9ced9!important;border-radius:2px!important}
+      .product-master-screen .product-field-grid label>span{line-height:12px}
+      .product-master-screen .product-flag-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+      .product-master-screen .product-flag-grid>label{padding:10px;border:1px solid #d5e4ea;background:#f4fafc;min-height:36px}
+      .product-master-screen .product-flag-grid input[type=checkbox]{accent-color:#2D8DB8}
+      .product-master-screen>section:nth-of-type(2){background:#fff}
+      .product-master-screen>section:nth-of-type(2) table thead th{background:#123B50!important;color:#fff!important;border-bottom:1px solid #48B7C7!important}
+      .product-master-screen button{transition:background .12s,border-color .12s}
+      .product-master-screen button:focus-visible,.product-master-screen input:focus-visible,.product-master-screen select:focus-visible,.product-master-screen textarea:focus-visible{outline:2px solid #48B7C7;outline-offset:1px}
+      @media(max-width:1000px){.product-master-screen .product-field-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.product-master-screen .product-section-heading{align-items:start;flex-direction:column}.product-master-screen .product-section-heading p{text-align:left}.product-master-screen .product-flag-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media(max-width:640px){.product-master-screen .product-field-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 7px}.product-master-screen .product-field-grid label[style*="span 2"]{grid-column:1/-1!important}.product-master-screen .product-flag-grid{grid-template-columns:1fr}.product-master-screen .product-general-form{padding:10px}.product-master-screen>header{align-items:flex-start!important}.product-master-screen>header>div:last-child{width:100%;gap:5px!important}.product-master-screen>header>div:last-child button{flex:1;min-width:90px}}
+
       .product-master-screen label{min-width:0;gap:2px;align-content:end}.product-master-screen .product-form-grid label{grid-template-rows:minmax(12px,auto) 30px;gap:2px}.product-master-screen .product-form-grid label>span{min-height:12px;line-height:11px;white-space:normal;overflow-wrap:anywhere}.product-master-screen .product-unit-row{grid-column:span 3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;min-width:0;padding:7px;background:linear-gradient(125deg,#123B50,#1c6387 55%,#2D8DB8);border:1px solid #2D8DB8;border-radius:2px;box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}.product-master-screen .product-unit-row label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto 30px;align-items:end;gap:3px;color:#e4f7ff;font-size:8px}.product-master-screen .product-unit-row label>span{min-height:10px;line-height:10px;color:#e4f7ff}.product-master-screen .product-unit-row label>select,.product-master-screen .product-unit-row label>input{width:100%;min-width:0}.product-master-screen .product-unit-row .weight-row{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:6px;border-top:1px solid rgba(255,255,255,.3);padding-top:6px}.product-master-screen .product-unit-row .weight-row label{grid-template-columns:minmax(0,1fr) 100px;grid-template-rows:30px;align-items:center}.product-master-screen .product-unit-row .weight-row label>span{font-size:9px;font-weight:700}.product-master-screen .product-unit-row .weight-row label>input{height:30px;background:#fff;color:#123B50;border:1px solid #a9d8e8;border-radius:2px;padding:0 6px;box-sizing:border-box}.product-master-screen .product-photo-card{cursor:pointer;transition:border-color .12s,background .12s}.product-master-screen .product-photo-card:hover{border-color:#2D8DB8!important;background:#edf7fb!important}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}
       .product-master-screen .product-form-grid>*{min-width:0}
@@ -440,44 +470,56 @@ export default function ProdutosVendasIndustrial(){
         {tabItems.map(([id,title,Icon])=><button key={id} type="button" onClick={()=>{setTab(id);if(selectedId)void loadDetails()}} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 10px',border:0,borderBottom:tab===id?'3px solid #184bb4':'3px solid transparent',background:tab===id?'#fff':'transparent',color:tab===id?'#184bb4':'#344054',fontWeight:900,fontSize:10,cursor:'pointer',whiteSpace:'nowrap'}}><Icon size={14}/>{title}</button>)}
       </div>
 
-      {tab==='gerais'&&<form onSubmit={save} style={{padding:8}}>
-        <div className="product-form-grid product-general-row" style={{display:'grid',gridTemplateColumns:'75px 105px minmax(190px,2fr) minmax(145px,1.5fr) minmax(115px,1fr) minmax(100px,.85fr) minmax(100px,.85fr)',gap:8,alignItems:'end'}}>
-          {field('Código *','codigo','text',1,true)}
-          {field('Código de barras','codigo_barras','text',1,true)}
-          {field('Descrição *','nome')}
-          {field('Descrição resumida [?]','descricao_resumida')}
-          <div style={{display:'flex',gap:4,alignItems:'end',minWidth:0}}><label style={{...label,flex:1,minWidth:0}}><span style={{display:'inline-flex',alignItems:'center'}}>Grupo <HelpTip text={helpFor('Grupo')}/></span><input list="erp-product-groups" value={form.grupo||''} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} placeholder="Pesquisar grupo..." style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id="erp-product-groups">{groups.map(g=><option key={g.id} value={g.nome}>{g.codigo}</option>)}</datalist></label><button type="button" disabled={!editing||busy} title="Adicionar grupo mestre" onClick={()=>{const code=window.prompt('Código do novo grupo:')?.trim().toUpperCase();if(!code)return;const name=window.prompt('Nome do novo grupo:')?.trim();if(!name)return;if(!companyId){setError('Empresa da sessão não identificada.');return}setBusy(true);setError('');void (async()=>{try{const {data,error:e}=await supabase.from('erp_grupos').insert({empresa_id:companyId,codigo:code,nome:name,ativo:true}).select('id,codigo,nome').single();if(e)throw e;if(!data)throw new Error('O banco não retornou o grupo criado.');setGroups(prev=>[...prev,data].sort((a,b)=>a.nome.localeCompare(b.nome)));update('grupo',data.nome);setMessage('Grupo cadastrado com sucesso.')}catch(e){setError(e instanceof Error?e.message:'Não foi possível cadastrar o grupo.')}finally{setBusy(false)}})()}} style={{...btn('normal'),width:30,minWidth:30,padding:0,fontSize:16}}>+</button></div>
-          <div style={{display:'flex',gap:4,alignItems:'end',minWidth:0}}><label style={{...label,flex:1,minWidth:0}}>Subgrupo<input list="erp-product-subgroups" value={form.subgrupo||''} disabled={!editing} onChange={e=>update('subgrupo',e.target.value||null)} placeholder="Pesquisar ou digitar..." style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id="erp-product-subgroups">{Array.from(new Set(products.map(p=>p.subgrupo).filter((v):v is string=>Boolean(v?.trim())))).sort((a,b)=>a.localeCompare(b)).map(v=><option key={v} value={v}/>)}</datalist></label><button type="button" disabled={!editing||busy} title="Adicionar subgrupo ao produto" onClick={()=>{const value=window.prompt('Nome do novo subgrupo:',form.subgrupo||'');if(value?.trim())update('subgrupo',value.trim())}} style={{...btn('normal'),width:30,minWidth:30,padding:0,fontSize:16}}>+</button></div>
-          {field('Marca [?]','marca')}
+      {tab==='gerais'&&<form onSubmit={save} className="product-general-form">
+        <div className="product-section-heading"><div><span>01 / IDENTIFICAÇÃO</span><h2>Identificação do produto</h2></div><p>Campos essenciais para localizar, classificar e integrar o item nos processos industriais.</p></div>
+        <div className="product-field-grid product-general-fields">
+          {field('Código interno *','codigo','text',1,true)}
+          {field('Código de barras / GTIN','codigo_barras')}
+          {field('Descrição do produto *','nome')}
+          {field('Descrição resumida','descricao_resumida')}
+          <label style={label}>Grupo
+            <select value={form.grupo||''} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>
+              <option value="">Selecione o grupo</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.codigo} · {g.nome}</option>)}
+            </select>
+          </label>
+          <label style={label}>Subgrupo
+            <input list="erp-product-subgroups" value={form.subgrupo||''} disabled={!editing} onChange={e=>update('subgrupo',e.target.value||null)} placeholder="Pesquisar ou informar subgrupo" style={{...input,background:editing?'#fff':'#f5f7fa'}}/>
+            <datalist id="erp-product-subgroups">{Array.from(new Set(products.map(p=>p.subgrupo).filter((v):v is string=>Boolean(v?.trim())))).sort((a,b)=>a.localeCompare(b)).map(v=><option key={v} value={v}/>)}</datalist>
+          </label>
+          {field('Marca','marca')}
+          {select('Categoria / tipo','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','Matéria-prima'],['PRENSADOS','Prensados'],['INJETADOS','Injetados'],['ALMOXARIFADO','Almoxarifado'],['MATERIAL DE ESCRITÓRIO','Material de escritório'],['PRODUTOS DE LIMPEZA','Produtos de limpeza'],['Componente','Componente'],['Insumo','Insumo']])}
+          <label style={label}>Fornecedor padrão
+            <select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>
+              <option value="">Sem fornecedor padrão</option>{suppliers.map(s=><option key={s.id} value={s.id}>{s.nome_fantasia||s.razao_social}</option>)}
+            </select>
+          </label>
+          {field('Referência interna','referencia_interna')}
+          {field('Referência do cliente','referencia_cliente')}
+          <label style={{...label,gridColumn:'span 2'}}>Descrição técnica completa
+            <textarea value={form.descricao||''} disabled={!editing} onChange={e=>update('descricao',e.target.value||null)} placeholder="Aplicação, composição, especificação ou observações técnicas" rows={3} style={{...input,height:'auto',minHeight:68,padding:'7px 8px',resize:'vertical',background:editing?'#fff':'#f5f7fa'}}/>
+          </label>
+          <label style={{...label,gridColumn:'span 2'}}>Observações internas
+            <textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value||null)} placeholder="Informações complementares do cadastro" rows={3} style={{...input,height:'auto',minHeight:68,padding:'7px 8px',resize:'vertical',background:editing?'#fff':'#f5f7fa'}}/>
+          </label>
         </div>
-
-        <div className="product-form-grid product-measure-row" style={{display:'grid',gridTemplateColumns:'minmax(280px,1.8fr) repeat(3,minmax(75px,.55fr)) minmax(150px,1fr)',gap:7,marginTop:8,alignItems:'end'}}>
-          <div className="product-unit-row">
-            {select('UNIDADE DE ESTOQUE','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-            {select('UNIDADE DE COMPRA','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-            {select('UNIDADE DE VENDA','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['M','M'],['L','L']])}
-            <div className="weight-row">
-              <label><span>PESO LÍQUIDO (KG)</span><input type="number" min="0" step="0.001" value={String(form.peso_liquido??0)} disabled={!editing} onChange={e=>update('peso_liquido',n(e.target.value))}/></label>
-              <label><span>PESO BRUTO (KG)</span><input type="number" min="0" step="0.001" value={String(form.peso_bruto??0)} disabled={!editing} onChange={e=>update('peso_bruto',n(e.target.value))}/></label>
-            </div>
-          </div>
+        <div className="product-section-heading"><div><span>02 / UNIDADES E DIMENSÕES</span><h2>Unidades, medidas e logística</h2></div><p>Dimensões e pesos são mantidos em unidades explícitas para apoiar estoque, transporte e produção.</p></div>
+        <div className="product-field-grid product-measure-fields">
+          {select('Unidade de estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['MM','MM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}
+          {select('Unidade de compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}
+          {select('Unidade de venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}
+          {field('Peso líquido (kg)','peso_liquido','number')}
+          {field('Peso bruto (kg)','peso_bruto','number')}
           {field('Comprimento (mm)','comprimento_mm','number')}
           {field('Largura (mm)','largura_mm','number')}
           {field('Altura (mm)','altura_mm','number')}
-          {select('Tipo de produto','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','MATÉRIA-PRIMA'],['PRENSADOS','PRENSADOS'],['INJETADOS','INJETADOS'],['ALMOXARIFADO','ALMOXARIFADO'],['MATERIAL DE ESCRITÓRIO','MATERIAL DE ESCRITÓRIO'],['PRODUTOS DE LIMPEZA','PRODUTOS DE LIMPEZA'],['Componente','Componente'],['Insumo','Insumo']])}
         </div>
-
-        <div className="product-form-grid product-commercial-row" style={{display:'grid',gridTemplateColumns:'minmax(110px,.8fr) minmax(110px,.8fr) minmax(190px,1.6fr) minmax(110px,.8fr) minmax(130px,1fr) minmax(130px,1fr) max-content',gap:8,marginTop:8,alignItems:'end'}}>
-          {field('Custo médio [?]','custo_medio','number',1,true)}
-          {field('Último custo [?]','custo_ultimo','number',1,true)}
-          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>OBSERVAÇÕES <HelpTip text={helpFor('Observações')}/></span><textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value)} title="Informações complementares do produto; não substitui a ficha de processo." style={{...input,height:30,padding:'5px 7px',resize:'none',fontSize:11}}/></label>
-          {field('Custo fabricação [?]','custo_fabricacao','number',1,true)}
-          {field('Preço venda','preco_venda','number')}
-          {field('Ref. interna','referencia_interna')}
-          {field('Ref. cliente','referencia_cliente')}
-          <div style={{display:'flex',alignItems:'center',gap:5,height:30,border:'1px solid #d5dde7',padding:'0 6px',background:'#fff',whiteSpace:'nowrap'}}><span style={{fontSize:9,fontWeight:500,color:'#344054',textTransform:'uppercase'}}>Sit.</span>{check('Fab.','fabricado')}{check('Comp.','comprado')}{check('Rev.','revenda')}</div>
+        <div className="product-section-heading"><div><span>03 / CLASSIFICAÇÃO OPERACIONAL</span><h2>Uso do item no ERP</h2></div><p>Defina como o item pode ser utilizado nas rotinas de compra, fabricação e venda.</p></div>
+        <div className="product-flag-grid">
+          {check('Fabricado internamente','fabricado')}{check('Comprado de fornecedor','comprado')}{check('Item para revenda','revenda')}
+          <label style={label}>Situação do cadastro
+            <select value={String(form.ativo)} disabled={!editing} onChange={e=>update('ativo',e.target.value==='true')} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="true">Ativo</option><option value="false">Inativo</option></select>
+          </label>
         </div>
-
       </form>}
 
             {tab==='fiscal'&&<section style={{padding:8}}>
