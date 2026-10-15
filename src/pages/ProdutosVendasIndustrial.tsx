@@ -37,12 +37,12 @@ type Movement={id:string;tipo:string;quantidade:number;origem:string|null;docume
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number;observacao:string|null;created_at:string}
 type Audit={id:string;action:string;module:string;old_data:Record<string,unknown>|null;new_data:Record<string,unknown>|null;created_at:string}
 type Attachment={id:string;nome_arquivo:string;storage_path:string;mime_type:string|null;tamanho_bytes:number|null;created_at:string}
-type Tab='gerais'|'fiscal'|'estoque'|'producao'|'qualidade'
+type Tab='gerais'|'fiscal'|'estoque'|'producao'|'qualidade'|'fotos'
 type FormData=Omit<Product,'id'|'empresa_id'>
 
 const tabItems:Array<[Tab,string,typeof Boxes]>=[
   ['gerais','DADOS GERAIS',Boxes],['fiscal','FISCAL',FileText],['estoque','ESTOQUE',Boxes],
-  ['producao','PRODUÇÃO',Factory],['qualidade','QUALIDADE + DOCUMENTOS',ShieldCheck]
+  ['producao','PRODUÇÃO',Factory],['qualidade','QUALIDADE + DOCUMENTOS',ShieldCheck],['fotos','ANEXAR FOTO',ImageIcon]
 ]
 const empty=():FormData=>({
   codigo:'',nome:'',descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
@@ -242,7 +242,7 @@ export default function ProdutosVendasIndustrial(){
   const choosePhoto=(e:ChangeEvent<HTMLInputElement>,slot=1)=>{const target=e.currentTarget;slot=Number(target.dataset.slot||slot)
     const file=target.files?.[0];target.value=''
     if(!file||!selectedId||!companyId)return
-    if(!['image/jpeg','image/png','image/webp'].includes(file.type)){setError('Use JPG, PNG ou WEBP.');return}
+    if(!['image/jpeg','image/png','image/webp','image/bmp','image/x-ms-bmp','image/gif','image/avif','image/tiff'].includes(file.type)){setError('Formato não suportado. Use JPG, PNG, BMP, WEBP, GIF, AVIF ou TIFF.');return}
     if(file.size>5*1024*1024){setError('A foto deve ter no máximo 5 MB.');return}
     setBusy(true);setError('')
     const path=companyId+'/'+selectedId+'/'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_')
@@ -359,7 +359,7 @@ export default function ProdutosVendasIndustrial(){
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
         <button type="button" onClick={newProduct} style={btn('primary')}><Plus size={16}/>Novo</button>
         <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />
-        <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>choosePhoto(e)} style={{display:'none'}} />
+        <input ref={fileRef} type="file" accept="image/*" onChange={e=>choosePhoto(e)} style={{display:'none'}} />
         <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={13}/>Importar Excel</button>
 
         <button type="button" className="erp-edit-button" onClick={()=>setEditing(true)} disabled={!selectedId} style={btn('normal')}><Edit3 size={16}/>Editar</button>
@@ -373,20 +373,6 @@ export default function ProdutosVendasIndustrial(){
 
     {(message||error)&&<div role="alert" style={{margin:10,padding:'9px 12px',borderRadius:6,border:'1px solid '+(error?'#fecaca':'#bbf7d0'),background:error?'#fff1f2':'#f0fdf4',color:error?'#b91c1c':'#166534',fontWeight:800,fontSize:12}}>{error||message}</div>}
 
-    {selectedId&&<section style={{...panel,margin:'10px 10px 0',padding:7}}>
-      <div style={{fontSize:9,fontWeight:700,color:'#123B50',marginBottom:5,textTransform:'uppercase'}}>Fotos do produto • catálogo digital</div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:6}}>
-        {[1,2,3,4].map(slot=>{
-          const photo=attachments.find(a=>a.mime_type?.startsWith('image/')&&a.nome_arquivo.startsWith('FOTO_'+slot+'_'));
-          const url=photo?supabase.storage.from('erp-produtos').getPublicUrl(photo.storage_path).data.publicUrl:(slot===1?form.foto_url:null);
-          return <div key={slot} className="product-photo-card" role="button" tabIndex={0} aria-label={'Selecionar imagem '+slot} onClick={()=>{const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}}} style={{height:120,minWidth:0,border:'1px solid #cbd5e1',background:'#f8fafc',position:'relative',display:'grid',placeItems:'center',overflow:'hidden',outline:'none'}}>
-            {url?<img src={url} alt={'Foto '+slot+' do produto'} style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'contain',padding:4,boxSizing:'border-box'}}/>:<div style={{fontSize:9,color:'#667085',textAlign:'center',padding:8}}><ImageIcon size={20}/><div>CLIQUE PARA ANEXAR</div><div>IMAGEM {slot}{slot===1?' • PRINCIPAL':''}</div></div>}
-            <button type="button" onClick={e=>{e.stopPropagation();const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}} style={{...btn('normal'),position:'absolute',right:4,bottom:4,height:24,padding:'0 7px',fontSize:9}}><Upload size={11}/> {url?'TROCAR':'ANEXAR'}</button>
-          </div>
-        })}
-      </div>
-      <div style={{fontSize:8,color:'#667085',marginTop:4}}>A imagem 1 é a principal do cadastro; as quatro imagens podem ser usadas na apresentação do produto no catálogo digital.</div>
-    </section>}
     {selectedId&&<><section style={{...panel,margin:'10px 10px 0',padding:7,display:'grid',gridTemplateColumns:'72px minmax(0,1fr) auto',gap:9,alignItems:'center',background:'#fff'}}>
       <div style={{width:72,height:60,border:'1px solid #cbd5e1',background:'#f8fafc',display:'grid',placeItems:'center',overflow:'hidden'}}>{form.foto_url?<img src={form.foto_url} alt="Foto do produto" style={{width:'100%',height:'100%',objectFit:'contain'}}/>:<ImageIcon size={22} color="#98a2b3"/>}</div>
       <div style={{minWidth:0}}><div style={{fontSize:9,fontWeight:700,color:'#667085',textTransform:'uppercase'}}>Produto selecionado</div><div style={{fontSize:13,fontWeight:700,color:'#123B50',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{form.codigo||'AUTOMÁTICO'} • {form.nome||'Sem descrição'}</div><div style={{fontSize:9,color:'#667085',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{form.descricao_resumida||'Sem descrição resumida'} · {form.grupo||'Sem grupo'} · {form.marca||'Sem marca'}</div></div>
@@ -479,6 +465,24 @@ export default function ProdutosVendasIndustrial(){
         <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr>{['Data','OP','Defeito','Quantidade','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:5,borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{defects.map(d=><tr key={d.id}><td style={{padding:5}}>{new Date(d.created_at).toLocaleString('pt-BR')}</td><td style={{padding:5}}>{d.ordem_producao_id}</td><td style={{padding:5}}>{d.defeito}</td><td style={{padding:5}}>{fmt(d.quantidade)}</td><td style={{padding:5}}>{d.observacao||'—'}</td></tr>)}{!defects.length&&emptyRow('Nenhum defeito registrado para este produto.',5)}</tbody></table></div>
         <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DOCUMENTOS / DESENHOS VINCULADOS</h2>
         <div style={{display:'grid',gap:4}}>{attachments.map(a=><div key={a.id} style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 120px 150px',gap:7,padding:'5px 6px',border:'1px solid #e4e7ec',fontSize:9}}><b>{a.nome_arquivo}</b><span>{a.mime_type||'arquivo'}</span><span>{a.tamanho_bytes?Math.round(a.tamanho_bytes/1024)+' KB':'—'} · {new Date(a.created_at).toLocaleDateString('pt-BR')}</span></div>)}{!attachments.length&&<div style={{padding:10,textAlign:'center',color:'#667085',border:'1px dashed #cbd5e1',fontSize:9}}>Nenhum desenho/documento vinculado.</div>}</div>
+      </section>}
+      {tab==='fotos'&&<section style={{padding:10}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,flexWrap:'wrap',marginBottom:8}}>
+          <div><h2 style={{fontSize:12,margin:0,color:'#123B50'}}>FOTOS DO PRODUTO</h2><p style={{fontSize:9,margin:'3px 0 0',color:'#667085'}}>Selecione uma imagem para anexar ou trocar. A primeira imagem será usada como foto principal do cadastro.</p></div>
+          <button type="button" onClick={()=>{if(!selectedId){setError('Salve o produto antes de anexar fotos.');return}const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot='1';inputEl.click()}}} disabled={busy} style={btn('primary')}><Upload size={13}/>Anexar foto</button>
+        </div>
+        {!selectedId&&<div style={{padding:14,border:'1px dashed #cbd5e1',background:'#f8fafc',fontSize:10,color:'#667085',textAlign:'center'}}>Salve o produto primeiro para habilitar o envio de fotos.</div>}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr))',gap:8}}>
+          {[1,2,3,4].map(slot=>{
+            const photo=attachments.find(a=>a.mime_type?.startsWith('image/')&&a.nome_arquivo.startsWith('FOTO_'+slot+'_'));
+            const url=photo?supabase.storage.from('erp-produtos').getPublicUrl(photo.storage_path).data.publicUrl:(slot===1?form.foto_url:null);
+            return <div key={slot} className="product-photo-card" role="button" tabIndex={0} aria-label={'Selecionar imagem '+slot} onClick={()=>{if(!selectedId){setError('Salve o produto antes de anexar fotos.');return}const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();if(!selectedId){setError('Salve o produto antes de anexar fotos.');return}const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}}} style={{minHeight:160,minWidth:0,border:'1px solid #cbd5e1',background:'#f8fafc',position:'relative',display:'grid',placeItems:'center',overflow:'hidden',outline:'none'}}>
+              {url?<img src={url} alt={'Foto '+slot+' do produto'} style={{position:'absolute',inset:0,width:'100%',height:'100%',maxHeight:160,objectFit:'contain',padding:8,boxSizing:'border-box'}}/>:<div style={{fontSize:9,color:'#667085',textAlign:'center',padding:8}}><ImageIcon size={24}/><div>IMAGEM {slot}{slot===1?' • PRINCIPAL':''}</div><div>JPG · PNG · BMP · WEBP</div></div>}
+              <button type="button" disabled={!selectedId||busy} onClick={e=>{e.stopPropagation();if(!selectedId){setError('Salve o produto antes de anexar fotos.');return}const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}} style={{...btn('normal'),position:'absolute',right:5,bottom:5,height:25,padding:'0 8px',fontSize:9}}><Upload size={11}/> {url?'TROCAR':'ANEXAR'}</button>
+            </div>
+          })}
+        </div>
+        <div style={{fontSize:9,color:'#667085',marginTop:7}}>Até 5 MB por imagem. Formatos aceitos: JPG, PNG, BMP, WEBP, GIF, AVIF e TIFF.</div>
       </section>}
     </section>
 
