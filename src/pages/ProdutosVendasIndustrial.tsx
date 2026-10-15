@@ -245,7 +245,9 @@ export default function ProdutosVendasIndustrial(){
     slot=Number(target.dataset.slot||slot)
     const selectedFile=target.files?.[0]
     target.value=''
-    if(!selectedFile||!selectedId||!companyId)return
+    if(!selectedFile)return
+    if(!selectedId){setError('Selecione e salve um produto antes de anexar fotos.');return}
+    if(!companyId){setError('A empresa da sessão ainda não foi identificada. Atualize o cadastro e tente novamente.');return}
     if(selectedFile.size>5*1024*1024){setError('A imagem original deve ter no máximo 5 MB.');return}
     let file=selectedFile
     const fileExtension=file.name.split('.').pop()?.toLowerCase()
