@@ -8,8 +8,7 @@ import { ArrowRight, BarChart3, Boxes, Check, ChevronDown, ClipboardCheck, Facto
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
-type Module = { key: string; title: string; description: string; rou
-               te: string; Icon: LucideIcon }
+type Module = { key: string; title: string; description: string; route: string; Icon: LucideIcon }
 
 const modules: Module[] = [
   { key:'pcp', title:'PCP e Produção', description:'Planejamento, ordens, sequenciamento e acompanhamento do chão de fábrica.', route:'/pcp', Icon:Factory },
