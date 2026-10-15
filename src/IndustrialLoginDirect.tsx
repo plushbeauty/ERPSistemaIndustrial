@@ -292,9 +292,6 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
         <img src="/images/sgq/sgq-erp-login.png" alt="Imagem institucional do SYSNQRA ERP & SGQ INDUSTRIAL" />
         <div className="auth-visual-shade" aria-hidden="true" />
         <div className="auth-visual-content">
-          <a className="auth-visual-logo" href="/" aria-label="Voltar à página inicial">
-            <img src="/logo/logo.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" />
-          </a>
           <div className="auth-visual-message">
             <span>GESTÃO INDUSTRIAL INTEGRADA</span>
             <h2>Bem-vindo à sua<br />operação <em>mais inteligente.</em></h2>
@@ -310,12 +307,6 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
 
       <section className="auth-panel">
         <div className="auth-panel-inner">
-          <div className="auth-mobile-brand">
-            <a href="/">
-              <img src="/logo/logo.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" />
-            </a>
-          </div>
-
           <div className="auth-heading">
             <span className="auth-overline">SYSNQRA • ACESSO SEGURO</span>
             <span className="auth-status"><i /> Ambiente protegido</span>
