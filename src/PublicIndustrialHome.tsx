@@ -60,7 +60,7 @@ export default function PublicIndustrialHome(){
   .sgq-hero-copy{display:none!important}
   .sgq-stage{position:absolute!important;inset:0!important;width:100%!important;max-width:none!important;height:100%!important;min-width:0!important;margin:0!important;border:0!important;border-radius:0!important;padding:0!important;background:#000!important;box-shadow:none!important;overflow:hidden!important}
   .sgq-stage-media{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border:0!important;border-radius:0!important;margin:0!important;padding:0!important;background:#000!important;overflow:hidden!important}
-  .sgq-stage-media img{position:absolute!important;inset:0!important;width:100%!important;max-width:none!important;height:100%!important;object-fit:fill!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;transform:none!important;translate:none!important;left:0!important}
+  .sgq-stage-media img{position:absolute!important;inset:0!important;width:100%!important;max-width:none!important;height:100%!important;object-fit:fill!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;transform:scale(.95)!important;transform-origin:center center!important;translate:none!important;left:0!important}
   .sgq-stage-caption,.sgq-dots,.sgq-hero-shade{display:none!important}
   @media(max-width:700px){.sgq-hero{height:calc(100dvh - 62px)!important;min-height:320px!important}.sgq-hero-inner{width:100%!important}}
   `}
