@@ -35,3 +35,8 @@
 .blog-modal-content p{margin:0 0 14px;color:#415960;font-size:14px;line-height:1.75}
 @media(max-width:900px){.blog-nav{height:64px}.blog-nav-links{gap:12px}.blog-nav-links a:nth-child(-n+3){display:none}.blog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.blog-nav{width:calc(100% - 24px)}.blog-brand img{width:140px}.blog-nav-links a{font-size:11px}.blog-hero{min-height:300px}.blog-hero-inner,.blog-container{width:calc(100% - 24px)}.blog-grid{grid-template-columns:1fr}.blog-card{min-height:250px}.blog-modal-card{padding:24px}.blog-modal-card h2{font-size:24px}}
+
+/* Mantém a marca do blog compacta e proporcional ao cabeçalho público. */
+.blog-page .blog-nav .blog-brand{display:flex!important;align-items:center!important;flex:0 0 auto!important;max-height:56px!important;overflow:hidden!important}
+.blog-page .blog-nav .blog-brand img{display:block!important;width:150px!important;max-width:150px!important;height:48px!important;max-height:48px!important;object-fit:contain!important;object-position:left center!important}
+@media(max-width:620px){.blog-page .blog-nav .blog-brand img{width:140px!important;max-width:140px!important;height:44px!important;max-height:44px!important}}
