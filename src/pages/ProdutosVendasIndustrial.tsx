@@ -17,7 +17,6 @@ import {
   Plus, Printer, RefreshCw, RotateCcw, Save, Search, ShieldCheck, Trash2, Upload, X, FileSpreadsheet
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import ERPHorizontalShell from '../components/layout/ERPHorizontalShell'
 interface XlsxModule { read(buffer:ArrayBuffer,options:{type:'array'}):{SheetNames:string[];Sheets:Record<string,unknown>}; utils:{sheet_to_json<T>(sheet:unknown,options:{defval:string}):T[]} }
 declare global { interface Window { XLSX?: XlsxModule } }
 
@@ -68,7 +67,6 @@ export default function ProdutosVendasIndustrial(){
   const printMode=routerLocation.pathname==='/produtos-vendas/imprimir'
   const printId=new URLSearchParams(routerLocation.search).get('id')
   const [companyId,setCompanyId]=useState('')
-  const [operatorName,setOperatorName]=useState('Usuário ERP')
   const [products,setProducts]=useState<Product[]>([])
   const [suppliers,setSuppliers]=useState<Supplier[]>([])
   const [groups,setGroups]=useState<Group[]>([])
@@ -111,7 +109,6 @@ export default function ProdutosVendasIndustrial(){
     finally{setBusy(false)}
   }
   useEffect(()=>{void load()},[])
-  useEffect(()=>{void supabase.auth.getUser().then(async ({data})=>{if(!data.user)return;const {data:profile}=await supabase.from('erp_usuarios').select('nome').eq('auth_user_id',data.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();setOperatorName(String(profile?.nome||data.user.email||'Usuário ERP'))})},[])
 
   const filtered=useMemo(()=>{
     const q=query.trim().toLowerCase()
@@ -313,7 +310,7 @@ export default function ProdutosVendasIndustrial(){
       </main>
     )
   }
-  return <ERPHorizontalShell operatorName={operatorName}><main className="product-master-screen" style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif',background:'#fff'}}>
+  return <main className="product-master-screen" style={{maxWidth:1600,margin:'0 auto',color:'#172033',fontFamily:'Arial,sans-serif',background:'#fff'}}>
     <style>{`
       .product-master-screen label{min-width:0;gap:2px;align-content:end}.product-master-screen .product-form-grid label{grid-template-rows:minmax(12px,auto) 30px;gap:2px}.product-master-screen .product-form-grid label>span{min-height:12px;line-height:11px;white-space:normal;overflow-wrap:anywhere}.product-master-screen .product-unit-row{grid-column:span 3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;min-width:0}.product-master-screen .product-unit-row label{display:grid;grid-template-columns:78px minmax(0,1fr);grid-template-rows:30px;align-items:center;gap:4px}.product-master-screen .product-unit-row label>span{min-height:0;line-height:11px}.product-master-screen .product-unit-row label>select{width:100%;min-width:0}.product-master-screen .product-photo-card{cursor:pointer;transition:border-color .12s,background .12s}.product-master-screen .product-photo-card:hover{border-color:#2D8DB8!important;background:#edf7fb!important}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}
@@ -486,5 +483,5 @@ export default function ProdutosVendasIndustrial(){
       </section>
     ) : null}
     <footer style={{padding:'7px 12px 16px',fontSize:10,color:'#667085',display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8}}><span>SYSNQRA ERP & SGQ INDUSTRIAL • Cadastro Mestre de Produtos</span><span>© FernandoSch_System — Todos os direitos reservados</span></footer>
-  </main></ERPHorizontalShell>
+  </main>
 }
