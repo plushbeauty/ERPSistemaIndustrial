@@ -19,7 +19,7 @@ export default function Contato() {
     <main className="public-contact-page">
       <div className="public-contact-shell">
         <header className="public-contact-header">
-          <a href="/" className="public-brand" aria-label="SYSNQRA ERP & SGQ INDUSTRIAL"><img src="/logo/logo.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" /></a>
+          <span className="contact-header-label">SYSNQRA · ATENDIMENTO</span>
           <a className="contact-back" href="/"><ArrowLeft size={17} /> Voltar ao site</a>
         </header>
 
