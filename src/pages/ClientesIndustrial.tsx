@@ -22,7 +22,7 @@ export default function ClientesIndustrial(){
  const remove=async()=>{if(!selected)return;if(!window.confirm(`Excluir o cliente ${selected.nome}?`))return;setBusy(true);setError('');setMessage('');try{const r=await supabase.from('erp_clientes').delete().eq('id',selected.id).eq('empresa_id',empresaId);if(r.error)throw r.error;setSelected(null);setMessage('Cliente excluído.');await load()}catch(e){setError(e instanceof Error?e.message:'Não foi possível excluir o cliente.')}finally{setBusy(false)}}
  const print=()=>window.print()
  return <VendasLayout title="" onRefresh={()=>void load()}>
-  <main style={{minHeight:'100vh',background:'#F4FBFD',color:'#111827',padding:10,boxSizing:'border-box'}}>
+  <main className="clientes-industrial-screen" style={{minHeight:'100vh',background:'#F4FBFD',color:'#111827',padding:10,boxSizing:'border-box'}}>
    <section style={{...panel,padding:0,marginBottom:7,overflow:'hidden'}}>
     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,flexWrap:'wrap',padding:9,background:'linear-gradient(115deg,#123B50 0%,#1C6387 45%,#2D8DB8 78%,#48B7C7 100%)',color:'#fff',boxShadow:'inset 0 1px 0 rgba(255,255,255,.22)'}}>
      <div><div style={{fontSize:9,color:'#c9f2ff',fontWeight:800,letterSpacing:'.08em'}}>COMERCIAL • CADASTRO MESTRE</div><h1 style={{margin:'2px 0',fontSize:16,color:'#fff',fontWeight:700}}>Clientes</h1><div style={{fontSize:9,color:'#e4f7ff'}}>Cadastro de clientes, contatos e política comercial.</div></div>
@@ -44,7 +44,7 @@ export default function ClientesIndustrial(){
    </section>}
    <form onSubmit={save} style={{...panel,padding:9,marginBottom:7}}>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,marginBottom:7,flexWrap:'wrap'}}><div><div style={{fontSize:9,color:'#2D8DB8',fontWeight:700}}>CADASTRO DE CLIENTE</div><div style={{fontSize:13,color:'#123B50',fontWeight:600}}>{editing?'Editar cliente':'Novo cliente'}</div></div><div style={{fontSize:9,color:'#667085'}}>Estrutura alinhada ao cadastro de Fornecedores.</div></div>
-    <div style={{display:'grid',gridTemplateColumns:'90px minmax(180px,1.5fr) minmax(150px,1fr) minmax(130px,1fr) minmax(150px,1fr) 120px',gap:7}}>
+    <div className="clientes-form-primary-grid" style={{display:'grid',gridTemplateColumns:'90px minmax(180px,1.5fr) minmax(150px,1fr) minmax(130px,1fr) minmax(150px,1fr) 120px',gap:7}}>
      <label style={label}>CÓDIGO<input style={input} value={form.codigo} onChange={e=>setForm({...form,codigo:e.target.value})}/></label>
      <label style={label}>NOME / RAZÃO SOCIAL *<input required style={input} value={form.nome} onChange={e=>setForm({...form,nome:e.target.value})}/></label>
      <label style={label}>CPF / CNPJ<input style={input} value={form.documento} onChange={e=>setForm({...form,documento:e.target.value})}/></label>
@@ -52,7 +52,7 @@ export default function ClientesIndustrial(){
      <label style={label}>TELEFONE<input style={input} value={form.telefone} onChange={e=>setForm({...form,telefone:e.target.value})}/></label>
      <label style={label}>TIPO CLIENTE<input style={input} value={form.tipo_cliente} onChange={e=>setForm({...form,tipo_cliente:e.target.value})}/></label>
     </div>
-    <div style={{display:'grid',gridTemplateColumns:'minmax(180px,1fr) minmax(220px,1.5fr) 140px 130px',gap:7,marginTop:7}}>
+    <div className="clientes-form-secondary-grid" style={{display:'grid',gridTemplateColumns:'minmax(180px,1fr) minmax(220px,1.5fr) 140px 130px',gap:7,marginTop:7}}>
      <label style={label}>TABELA DE PREÇO<select style={input} value={form.tabela_preco_id} onChange={e=>setForm({...form,tabela_preco_id:e.target.value})}><option value="">Preço base</option>{tables.map(t=><option key={t.id} value={t.id}>{t.codigo} • {t.nome}</option>)}</select></label>
      <div style={{display:'grid',gridTemplateColumns:'minmax(100px,1fr) minmax(100px,1fr)',gap:7}}>
       <label style={label}>DESCONTO PADRÃO %<input type="number" min="0" max="100" step="0.01" style={input} value={form.desconto_padrao_percentual} onChange={e=>setForm({...form,desconto_padrao_percentual:e.target.value})}/></label>
@@ -70,6 +70,6 @@ export default function ClientesIndustrial(){
     <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9,minWidth:900}}><thead><tr style={{background:'#123B50',color:'#fff'}}>{['Código','Cliente','Documento','Tipo','Tabela de preço','Desconto','Situação'].map(h=><th key={h} style={{padding:'5px 6px',textAlign:'left',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{filtered.map(r=><tr key={r.id} onClick={()=>setSelected(r)} onDoubleClick={()=>{setSelected(r);setEditing(r.id);setForm({codigo:r.codigo??'',nome:r.nome,documento:r.documento??'',email:r.email??'',telefone:r.telefone??'',tipo_cliente:r.tipo_cliente??'PADRAO',tabela_preco_id:r.tabela_preco_id??'',desconto_padrao_percentual:String(r.desconto_padrao_percentual??0),ativo:r.ativo})}} style={{cursor:'pointer',background:selected?.id===r.id?'#e7eefb':'#fff',borderBottom:'1px solid #edf1f5'}}><td style={{padding:'5px 6px'}}>{r.codigo||'—'}</td><td style={{padding:'5px 6px',fontWeight:600}}>{r.nome}<div style={{fontSize:8,color:'#667085'}}>{r.email||r.telefone||'—'}</div></td><td style={{padding:'5px 6px'}}>{r.documento||'—'}</td><td style={{padding:'5px 6px'}}>{r.tipo_cliente||'PADRAO'}</td><td style={{padding:'5px 6px'}}>{tables.find(t=>t.id===r.tabela_preco_id)?.nome||'Preço base'}</td><td style={{padding:'5px 6px'}}>{Number(r.desconto_padrao_percentual||0).toFixed(2)}%</td><td style={{padding:'5px 6px',fontWeight:600,color:r.ativo?'#16794a':'#b42318'}}>{r.ativo?'ATIVO':'INATIVO'}</td></tr>)}{!filtered.length&&<tr><td colSpan={7} style={{padding:20,textAlign:'center',color:'#667085'}}>Nenhum cliente encontrado.</td></tr>}</tbody></table></div>
    </section>
   </main>
-  <style>{'@media print{button{display:none!important}main{background:#fff!important;padding:0!important}}'}</style>
+  <style>{'.clientes-industrial-screen .clientes-form-primary-grid,.clientes-industrial-screen .clientes-form-secondary-grid{min-width:0}.clientes-industrial-screen input,.clientes-industrial-screen select{min-width:0;max-width:100%}@media(max-width:1100px){.clientes-industrial-screen .clientes-form-primary-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}.clientes-industrial-screen .clientes-form-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}@media(max-width:650px){.clientes-industrial-screen .clientes-form-primary-grid,.clientes-industrial-screen .clientes-form-secondary-grid{grid-template-columns:minmax(0,1fr)!important}.clientes-industrial-screen form{padding:7px!important}.clientes-industrial-screen main{padding:6px!important}}@media print{button{display:none!important}main{background:#fff!important;padding:0!important}}'}</style>
  </VendasLayout>
 }
