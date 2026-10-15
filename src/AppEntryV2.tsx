@@ -464,6 +464,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/pedido/:id" element={<VendasPedidoStatus />} />
       <Route path="/vendas/catalogo-digital/gestao" element={<VendasCatalogoDigitalGestao />} />
       <Route path="/vendas/clientes" element={<VendasClientesPage />} />
+      <Route path="/cadastros/clientes" element={<VendasClientesPage />} />
+      <Route path="/cadastros/fornecedores" element={<FornecedoresIndustrial />} />
       <Route path="/vendas/catalogo-digital" element={<VendasCatalogoDigital />} />
       <Route path="/vendas/analise-custos" element={<QualityPlanGate>{<VendasAnaliseCustos />}</QualityPlanGate>} />
       <Route path="/vendas/dashboard-graficos" element={<VendasDashboardGraficos />} />
