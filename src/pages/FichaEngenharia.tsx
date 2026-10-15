@@ -20,7 +20,7 @@
  * =========================================================================
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Factory, Plus, Save, Trash2, X, Search, Printer, CircleDot, Paintbrush, Stamp, Boxes, CheckCircle2, Image as ImageIcon } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -58,6 +58,7 @@ export default function FichaEngenharia(){
  const [processCode,setProcessCode]=useState(''),[processName,setProcessName]=useState(''),[notes,setNotes]=useState('')
  const [bom,setBom]=useState<BomRow[]>([emptyBom()]),[ops,setOps]=useState<OpRow[]>([emptyOp()]),[quality,setQuality]=useState<QualityRow[]>([emptyQuality()])
  const [spec,setSpec]=useState<Record<string,string>>({}),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[search,setSearch]=useState(''),[catalogKind,setCatalogKind]=useState<Kind|''>(''),[catalogMold,setCatalogMold]=useState('')
+ const skipFichaLoadOnce=useRef(false)
 
  const selected=useMemo(()=>products.find(p=>p.id===productId),[products,productId])
  useEffect(()=>{void loadBase()},[])
@@ -74,7 +75,7 @@ export default function FichaEngenharia(){
   if(requestedProduct){const target=products.find(p=>p.id===requestedProduct||p.codigo.toLowerCase()===requestedProduct.toLowerCase());if(target){setProductId(target.id);setProductCode(target.codigo)}}
  },[location.search,products])
  useEffect(()=>{if(selected)setProductCode(selected.codigo)},[selected])
- useEffect(()=>{if(!productId||!kind)return;void loadFicha(productId,kind)},[productId,kind])
+ useEffect(()=>{if(!productId||!kind)return;if(skipFichaLoadOnce.current){skipFichaLoadOnce.current=false;return}void loadFicha(productId,kind)},[productId,kind])
 
  async function company(){const r=await supabase.rpc('erp_current_empresa_id');if(r.error||!r.data)throw new Error('Empresa da sessão não identificada.');return String(r.data)}
  async function loadBase(){
@@ -155,7 +156,7 @@ export default function FichaEngenharia(){
 
  if(loading)return <main className="industrial-form-page"><div className="industrial-panel">Carregando Fichas de Processo…</div></main>
  if(!kind)return <main className="industrial-form-page process-sheet-page">
-  <header className="process-sheet-header"><div><span className="industrial-eyebrow">INDUSTRIA ERP • ENGENHARIA / PROCESSOS</span><h1>Fichas de Processo</h1><p>Catálogo controlado por tecnologia, produto, molde/estampo e revisão.</p>{productId&&selected&&<p style={{marginTop:4,color:"#2D8DB8",fontWeight:700}}>PRODUTO SELECIONADO: {selected.codigo} • {selected.nome}</p>}</div><div className="process-sheet-actions"><button className="industrial-secondary" type="button" onClick={()=>{if(productId){setProductId("");setProductCode("");setSearch("")}else resetForm(false)}}><X size={16}/>{productId?"Limpar produto":"Limpar"}</button><button className="industrial-primary" type="button" disabled={!productId||!catalogKind} onClick={()=>{const next=catalogKind as Kind;setKind(next);setVersion("1");setRendimento("1");setUnit(selected?.unidade||"UN");setProcessCode("FP-"+next+"-"+String(Date.now()).slice(-4));setProcessName(kinds.find(k=>k.id===next)?.title.replace("Ficha de Processo — ","")||"");setNotes("");setSpec({});setBom([emptyBom()]);setOps([emptyOp()]);setQuality([emptyQuality()])}}><Plus size={16}/>Nova ficha do produto</button></div></header>
+  <header className="process-sheet-header"><div><span className="industrial-eyebrow">INDUSTRIA ERP • ENGENHARIA / PROCESSOS</span><h1>Fichas de Processo</h1><p>Catálogo controlado por tecnologia, produto, molde/estampo e revisão.</p>{productId&&selected&&<p style={{marginTop:4,color:"#2D8DB8",fontWeight:700}}>PRODUTO SELECIONADO: {selected.codigo} • {selected.nome}</p>}</div><div className="process-sheet-actions"><button className="industrial-secondary" type="button" onClick={()=>{if(productId){setProductId("");setProductCode("");setSearch("")}else resetForm(false)}}><X size={16}/>{productId?"Limpar produto":"Limpar"}</button><button className="industrial-primary" type="button" disabled={!productId||!catalogKind} onClick={()=>{const next=catalogKind as Kind;skipFichaLoadOnce.current=true;setFicha(null);setKind(next);setVersion(String(Math.max(0,...catalog.filter(row=>row.produto_id===productId).map(row=>Number(row.versao)||0))+1));setRendimento("1");setUnit(selected?.unidade||"UN");setProcessCode("FP-"+next+"-"+String(Date.now()).slice(-4));setProcessName(kinds.find(k=>k.id===next)?.title.replace("Ficha de Processo — ","")||"");setNotes("");setSpec({});setBom([emptyBom()]);setOps([emptyOp()]);setQuality([emptyQuality()])}}><Plus size={16}/>Nova ficha do produto</button></div></header>
   <section className="industrial-panel" style={{marginBottom:16}}>
    <div className="process-section-heading"><span>LOCALIZAR FICHA</span><h2>Filtros de engenharia</h2><p>Pesquise por código da ficha, produto, número do molde/estampo ou tecnologia. Para criar uma ficha, selecione o produto e o tipo de processo.</p></div>
    <div className="process-form-grid">
