@@ -77,6 +77,10 @@ export default function ProdutosVendasIndustrial(){
   const [busy,setBusy]=useState(false)
   const [message,setMessage]=useState('')
   const [error,setError]=useState('')
+  const [ncmOptions,setNcmOptions]=useState<Array<{codigo:string;descricao:string;data_inicio?:string;data_fim?:string}>>([])
+  const [ncmDescription,setNcmDescription]=useState('')
+  const [ncmBusy,setNcmBusy]=useState(false)
+  const [ncmSearchMessage,setNcmSearchMessage]=useState('')
   const [movements,setMovements]=useState<Movement[]>([])
   const [defects,setDefects]=useState<Defect[]>([])
   const [audits,setAudits]=useState<Audit[]>([])
@@ -248,6 +252,31 @@ export default function ProdutosVendasIndustrial(){
       .catch(e=>setError(e instanceof Error?e.message:'Não foi possível enviar a foto.')).finally(()=>setBusy(false))
   }
 
+  const searchNcm=async()=>{
+    const term=String(form.ncm||'').trim()||String(form.nome||'').trim()
+    if(!term){setNcmSearchMessage('Informe o NCM ou a descrição do produto para pesquisar.');return}
+    setNcmBusy(true);setNcmSearchMessage('Consultando tabela pública de NCM...');setNcmOptions([])
+    try{
+      const response=await fetch('https://brasilapi.com.br/api/ncm/v1?search='+encodeURIComponent(term))
+      if(!response.ok)throw new Error(response.status===404?'NCM não encontrado.':'Serviço público de NCM indisponível no momento.')
+      const rows=await response.json() as Array<{codigo?:unknown;descricao?:unknown;data_inicio?:unknown;data_fim?:unknown}>
+      const options=Array.isArray(rows)?rows.filter(x=>typeof x.codigo==='string'&&typeof x.descricao==='string').map(x=>({codigo:String(x.codigo),descricao:String(x.descricao),data_inicio:typeof x.data_inicio==='string'?x.data_inicio:undefined,data_fim:typeof x.data_fim==='string'?x.data_fim:undefined})):[]
+      setNcmOptions(options)
+      setNcmSearchMessage(options.length?options.length+' classificação(ões) encontrada(s). Selecione a correspondente ao produto.':'Nenhum NCM encontrado. Revise a descrição ou o código.')
+    }catch(e){setNcmSearchMessage(e instanceof Error?e.message:'Não foi possível consultar a tabela pública de NCM.')}
+    finally{setNcmBusy(false)}
+  }
+  const lookupNcmCode=async()=>{
+    const code=String(form.ncm||'').replace(/\\D/g,'')
+    if(code.length!==8)return
+    try{
+      const response=await fetch('https://brasilapi.com.br/api/ncm/v1/'+encodeURIComponent(code))
+      if(!response.ok)return
+      const item=await response.json() as {codigo?:unknown;descricao?:unknown}
+      if(typeof item.codigo==='string'&&typeof item.descricao==='string'){setNcmDescription(item.descricao);update('ncm',item.codigo)}
+    }catch{/* A consulta é auxiliar; não impede o cadastro manual do código fiscal. */}
+  }
+
   const helpFor=(title:string)=>({
     'Descrição resumida':'Texto curto para identificação rápida do produto.',
     'Grupo':'Grupo mestre existente; determina a classificação principal do produto.',
@@ -409,7 +438,7 @@ export default function ProdutosVendasIndustrial(){
         <div style={{display:'grid',gridTemplateColumns:'80px 220px 180px 95px 95px',gap:7,alignItems:'end'}}>
           {select('Situação','ativo',[['true','Ativo'],['false','Inativo']])}
           {select('Origem [?]','origem',[['0 - Nacional','0 - Nacional'],['1 - Estrangeira - Importação direta','1 - Estrangeira - Importação direta'],['2 - Estrangeira - mercado interno','2 - Estrangeira - mercado interno'],['3 - Nacional, conteúdo importação >40% e <70%','3 - Nacional, conteúdo importação >40% e <70%'],['4 - Nacional, processo produtivo básico','4 - Nacional, processo produtivo básico'],['5 - Nacional, conteúdo importação <40%','5 - Nacional, conteúdo importação <40%'],['6 - Estrangeira - importação direta, sem similar nacional','6 - Estrangeira - importação direta, sem similar nacional'],['7 - Estrangeira - mercado interno, sem similar nacional','7 - Estrangeira - mercado interno, sem similar nacional'],['8 - Nacional, conteúdo importação >70%','8 - Nacional, conteúdo importação >70%']])}
-          {field('NCM [?]','ncm')}{field('CEST [?]','cest')}{field('CST ICMS [?]','cst_icms')}
+          <div style={{display:'grid',gridTemplateColumns:'minmax(100px,1fr) auto',gap:4,alignItems:'end'}}><label style={{...label,gridColumn:'1 / -1'}}>NCM <HelpTip text={helpFor('NCM')}/><input value={String(form.ncm||'')} disabled={!editing} onChange={e=>{update('ncm',e.target.value);setNcmDescription('');setNcmSearchMessage('');setNcmOptions([])}} onBlur={()=>void lookupNcmCode()} placeholder="8 dígitos ou pesquisar descrição" style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label><button type="button" disabled={!editing||ncmBusy} onClick={()=>void searchNcm()} style={{...btn('normal'),gridColumn:'1 / -1',height:28}}>{ncmBusy?'CONSULTANDO...':'PESQUISAR NCM'}</button>{ncmDescription&&<div style={{gridColumn:'1 / -1',fontSize:9,color:'#276749',lineHeight:1.35}}>{ncmDescription}</div>}{ncmSearchMessage&&<div style={{gridColumn:'1 / -1',fontSize:9,color:ncmOptions.length?'#276749':'#667085',lineHeight:1.35}}>{ncmSearchMessage}</div>}{ncmOptions.length>0&&<div style={{gridColumn:'1 / -1',maxHeight:150,overflowY:'auto',border:'1px solid #c4ced9',background:'#fff'}}>{ncmOptions.slice(0,20).map(item=><button key={item.codigo} type="button" onClick={()=>{update('ncm',item.codigo);setNcmDescription(item.descricao);setNcmOptions([]);setNcmSearchMessage('NCM selecionado. Confirme a classificação antes de salvar.')}} style={{display:'block',width:'100%',textAlign:'left',padding:'6px 8px',border:0,borderBottom:'1px solid #e5e7eb',background:'#fff',color:'#123B50',fontSize:10,cursor:'pointer'}}><strong>{item.codigo}</strong> — {item.descricao}</button>)}</div>}</div>{field('CEST [?]','cest')}{field('CST ICMS [?]','cst_icms')}
         </div>
         <div style={{display:'grid',gridTemplateColumns:'95px 95px 95px 95px 65px 65px 65px 65px',gap:7,marginTop:7,alignItems:'end'}}>
           {field('CSOSN [?]','csosn')}{field('CFOP entrada [?]','cfop_entrada')}{field('CFOP saída [?]','cfop_saida')}{field('Origem fiscal [?]','origem_fiscal')}{field('ICMS %','aliquota_icms','number')}{field('IPI %','aliquota_ipi','number')}{field('PIS %','aliquota_pis','number')}{field('COFINS %','aliquota_cofins','number')}
