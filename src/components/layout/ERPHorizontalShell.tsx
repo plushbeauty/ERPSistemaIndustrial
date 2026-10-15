@@ -17,8 +17,8 @@ const menus: MenuItem[] = [
   { label: 'Início', route: '/erp-industrial', icon: Home },
   { label: 'Cadastros', route: '/produtos-vendas', icon: Database, children: [
     { label: 'Cadastro de Produtos', route: '/produtos-vendas' },
-    { label: 'Cadastro de Clientes', route: '/vendas/clientes' },
-    { label: 'Cadastro de Fornecedores', route: '/compras/fornecedores' },
+    { label: 'Cadastro de Clientes', route: '/cadastros/clientes' },
+    { label: 'Cadastro de Fornecedores', route: '/cadastros/fornecedores' },
   ] },
   { label: 'Vendas', route: '/vendas', icon: ShoppingCart, children: [
     { label: 'Dashboard comercial', route: '/vendas' },
@@ -27,7 +27,6 @@ const menus: MenuItem[] = [
     { label: 'PDV / venda rápida', route: '/vendas/pdv' },
     { label: 'Catálogo digital', route: '/vendas/catalogo-digital' },
     { label: 'Gestão do catálogo', route: '/vendas/catalogo-digital/gestao' },
-    { label: 'Clientes', route: '/vendas/clientes' },
     { label: 'Orçamentos e custos', route: '/vendas/orcamentos' },
     { label: 'Análise de custos', route: '/vendas/analise-custos' },
     { label: 'Metas', route: '/vendas/metas' },
@@ -38,7 +37,6 @@ const menus: MenuItem[] = [
     { label: 'Solicitações', route: '/compras/solicitacao-manual' },
     { label: 'Pedido de compra', route: '/compras/pedido' },
     { label: 'Recebimentos', route: '/compras/recebimentos' },
-    { label: 'Fornecedores', route: '/compras/fornecedores' },
     { label: 'Relatórios', route: '/compras/relatorios' },
   ] },
   { label: 'Estoque', route: '/estoque', icon: Package },
@@ -130,7 +128,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
   }, [])
 
-  const moduleLabel = pathname.startsWith('/vendas') ? 'Vendas'
+  const moduleLabel = pathname.startsWith('/cadastros') || pathname.startsWith('/cadastro-produtos') || pathname.startsWith('/produtos-vendas') ? 'Cadastros'
+    : pathname.startsWith('/vendas') ? 'Vendas'
     : pathname.startsWith('/compras') ? 'Compras'
     : pathname.startsWith('/qualidade') || pathname.startsWith('/sgq') ? 'Qualidade'
     : pathname.startsWith('/estoque') || pathname.startsWith('/inventario') ? 'Estoque'
