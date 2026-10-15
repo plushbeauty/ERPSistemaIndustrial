@@ -248,7 +248,8 @@ export default function ProdutosVendasIndustrial(){
     if(!selectedFile||!selectedId||!companyId)return
     if(selectedFile.size>5*1024*1024){setError('A imagem original deve ter no máximo 5 MB.');return}
     let file=selectedFile
-    if(file.type==='image/bmp'||file.type==='image/x-ms-bmp'){
+    const fileExtension=file.name.split('.').pop()?.toLowerCase()
+    if(file.type==='image/bmp'||file.type==='image/x-ms-bmp'||fileExtension==='bmp'){
       try{
         const bitmap=await createImageBitmap(file)
         const canvas=document.createElement('canvas')
