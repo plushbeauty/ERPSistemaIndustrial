@@ -41,7 +41,7 @@ export default function ClientesIndustrial(){
               <button type="button" onClick={openEdit} disabled={!selected} style={{...action(),opacity:selected?1:.5,cursor:selected?'pointer':'not-allowed'}}><Pencil size={12}/> EDITAR</button>
               <button type="button" onClick={()=>void remove()} disabled={!selected||busy} style={{...action(false,true),opacity:selected?1:.5,cursor:selected?'pointer':'not-allowed'}}><Trash2 size={12}/> EXCLUIR</button>
               <button type="button" onClick={()=>setFilterOpen(v=>!v)} style={action()}><Filter size={12}/> FILTRO</button>
-              <button type="button" onClick={()=>void load()} disabled={busy} style={{...action(),opacity:busy?.5:1}}><RefreshCw size={12}/> ATUALIZAR</button>
+              <button type="button" onClick={()=>void load()} disabled={busy} style={{...action(),opacity:busy ? .5 : 1}}><RefreshCw size={12}/> ATUALIZAR</button>
               <button type="button" onClick={print} style={action()}><Printer size={12}/> IMPRIMIR</button>
             </div>
           </div>
@@ -76,7 +76,7 @@ export default function ClientesIndustrial(){
           <label style={label}>DESCONTO %<input type="number" min="0" max="100" step="0.01" style={input} value={form.desconto_padrao_percentual} onChange={e=>setForm({...form,desconto_padrao_percentual:e.target.value})}/></label>
           <label style={label}>SITUAÇÃO<select style={input} value={form.ativo?'SIM':'NÃO'} onChange={e=>setForm({...form,ativo:e.target.value==='SIM'})}><option value="SIM">ATIVO</option><option value="NÃO">INATIVO</option></select></label>
         </div>
-        <footer style={{display:'flex',justifyContent:'flex-end',gap:5,marginTop:10,paddingTop:8,borderTop:'1px solid #dce8ef'}}><button type="button" onClick={()=>setShow(false)} style={action()}><X size={12}/> CANCELAR</button><button disabled={busy} style={{...action(true),opacity:busy?.5:1}}><Check size={12}/> SALVAR CLIENTE</button></footer>
+        <footer style={{display:'flex',justifyContent:'flex-end',gap:5,marginTop:10,paddingTop:8,borderTop:'1px solid #dce8ef'}}><button type="button" onClick={()=>setShow(false)} style={action()}><X size={12}/> CANCELAR</button><button disabled={busy} style={{...action(true),opacity:busy ? .5 : 1}}><Check size={12}/> SALVAR CLIENTE</button></footer>
       </form>
     </div>}
     <style>{`@media print{button{display:none!important}main{background:#fff!important;padding:0!important}}`}</style>
