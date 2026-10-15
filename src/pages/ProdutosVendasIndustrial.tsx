@@ -240,17 +240,69 @@ export default function ProdutosVendasIndustrial(){
     }
   }
 
-  const choosePhoto=(e:ChangeEvent<HTMLInputElement>,slot=1)=>{const target=e.currentTarget;slot=Number(target.dataset.slot||slot)
-    const file=target.files?.[0];target.value=''
-    if(!file||!selectedId||!companyId)return
-    if(!['image/jpeg','image/png','image/webp','image/bmp','image/x-ms-bmp','image/gif','image/avif','image/tiff'].includes(file.type)){setError('Formato não suportado. Use JPG, PNG, BMP, WEBP, GIF, AVIF ou TIFF.');return}
-    if(file.size>5*1024*1024){setError('A foto deve ter no máximo 5 MB.');return}
-    setBusy(true);setError('')
+  const choosePhoto=async(e:ChangeEvent<HTMLInputElement>,slot=1)=>{
+    const target=e.currentTarget
+    slot=Number(target.dataset.slot||slot)
+    const selectedFile=target.files?.[0]
+    target.value=''
+    if(!selectedFile||!selectedId||!companyId)return
+    if(selectedFile.size>5*1024*1024){setError('A imagem original deve ter no máximo 5 MB.');return}
+    let file=selectedFile
+    if(file.type==='image/bmp'||file.type==='image/x-ms-bmp'){
+      try{
+        const bitmap=await createImageBitmap(file)
+        const canvas=document.createElement('canvas')
+        canvas.width=bitmap.width
+        canvas.height=bitmap.height
+        const context=canvas.getContext('2d')
+        if(!context){bitmap.close();throw new Error('Não foi possível preparar a imagem BMP.')}
+        context.drawImage(bitmap,0,0)
+        bitmap.close()
+        const png=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Falha ao converter BMP para PNG.')),'image/png'))
+        file=new File([png],file.name.replace(/\.[^.]+$/,'')+'.png',{type:'image/png',lastModified:Date.now()})
+      }catch(err){setError(err instanceof Error?err.message:'Não foi possível converter a imagem BMP.');return}
+    }
+    if(!['image/jpeg','image/png','image/webp'].includes(file.type)){
+      setError('Formato não suportado. Use JPG, PNG, WEBP ou BMP (convertido automaticamente para PNG).')
+      return
+    }
+    setBusy(true)
+    setError('')
+    setMessage('')
     const path=companyId+'/'+selectedId+'/'+Date.now()+'-'+file.name.replace(/[^a-zA-Z0-9._-]/g,'_')
-    void supabase.storage.from('erp-produtos').upload(path,file,{upsert:true,contentType:file.type})
-      .then(({error:e2})=>{if(e2)throw e2;return {error:null}})
-      .then(async({error:e3})=>{if(e3)throw e3;const url=supabase.storage.from('erp-produtos').getPublicUrl(path).data.publicUrl;if(slot===1){const {error:e4}=await supabase.from('erp_produtos').update({foto_url:url}).eq('id',selectedId).eq('empresa_id',companyId);if(e4)throw e4}const {error:e5}=await supabase.from('erp_documentos_anexos').insert({empresa_id:companyId,entidade_tipo:'produto',entidade_id:selectedId,nome_arquivo:'FOTO_'+slot+'_'+file.name,storage_path:path,mime_type:file.type,tamanho_bytes:file.size});if(e5)throw e5;setForm(prev=>({...prev,foto_url:slot===1?url:prev.foto_url}));const {data:updatedAttachments,error:attachmentsError}=await supabase.from('erp_documentos_anexos').select('id,nome_arquivo,storage_path,mime_type,tamanho_bytes,created_at').eq('empresa_id',companyId).eq('entidade_tipo','produto').eq('entidade_id',selectedId).order('created_at',{ascending:false}).limit(200);if(attachmentsError)throw attachmentsError;setAttachments((updatedAttachments??[]) as Attachment[]);setDetailsLoaded(true);setMessage('Foto '+slot+' do produto atualizada.');void load()})
-      .catch(e=>setError(e instanceof Error?e.message:'Não foi possível enviar a foto.')).finally(()=>setBusy(false))
+    try{
+      const {error:uploadError}=await supabase.storage.from('erp-produtos').upload(path,file,{upsert:true,contentType:file.type})
+      if(uploadError)throw uploadError
+      const url=supabase.storage.from('erp-produtos').getPublicUrl(path).data.publicUrl
+      if(slot===1){
+        const {error:productError}=await supabase.from('erp_produtos').update({foto_url:url}).eq('id',selectedId).eq('empresa_id',companyId)
+        if(productError)throw productError
+      }
+      const {error:attachmentError}=await supabase.from('erp_documentos_anexos').insert({
+        empresa_id:companyId,
+        entidade_tipo:'produto',
+        entidade_id:selectedId,
+        nome_arquivo:'FOTO_'+slot+'_'+file.name,
+        storage_path:path,
+        mime_type:file.type,
+        tamanho_bytes:file.size
+      })
+      if(attachmentError)throw attachmentError
+      setForm(prev=>({...prev,foto_url:slot===1?url:prev.foto_url}))
+      const {data:updatedAttachments,error:attachmentsError}=await supabase.from('erp_documentos_anexos')
+        .select('id,nome_arquivo,storage_path,mime_type,tamanho_bytes,created_at')
+        .eq('empresa_id',companyId).eq('entidade_tipo','produto').eq('entidade_id',selectedId)
+        .order('created_at',{ascending:false}).limit(200)
+      if(attachmentsError)throw attachmentsError
+      setAttachments((updatedAttachments??[]) as Attachment[])
+      setDetailsLoaded(true)
+      setMessage('Foto '+slot+' do produto atualizada.')
+      void load()
+    }catch(err){
+      setError(err instanceof Error?err.message:'Não foi possível enviar a foto.')
+    }finally{
+      setBusy(false)
+    }
   }
 
   const searchNcm=async()=>{
@@ -478,12 +530,12 @@ export default function ProdutosVendasIndustrial(){
             const photo=attachments.find(a=>a.mime_type?.startsWith('image/')&&a.nome_arquivo.startsWith('FOTO_'+slot+'_'));
             const url=photo?supabase.storage.from('erp-produtos').getPublicUrl(photo.storage_path).data.publicUrl:(slot===1?normalizePhotoUrl(form.foto_url):null);
             return <div key={slot} className="product-photo-card" role="button" tabIndex={0} aria-label={'Selecionar imagem '+slot} onClick={()=>{if(!selectedId){setError('Salve o produto antes de anexar fotos.');return}const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();if(!selectedId){setError('Salve o produto antes de anexar fotos.');return}const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}}} style={{minHeight:160,minWidth:0,border:'1px solid #cbd5e1',background:'#f8fafc',position:'relative',display:'grid',placeItems:'center',overflow:'hidden',outline:'none'}}>
-              {url?<img src={url} alt={'Foto '+slot+' do produto'} style={{position:'absolute',inset:0,width:'100%',height:'100%',maxHeight:160,objectFit:'contain',padding:8,boxSizing:'border-box'}}/>:<div style={{fontSize:9,color:'#667085',textAlign:'center',padding:8}}><ImageIcon size={24}/><div>IMAGEM {slot}{slot===1?' • PRINCIPAL':''}</div><div>JPG · PNG · BMP · WEBP</div></div>}
+              {url?<img src={url} alt={'Foto '+slot+' do produto'} style={{position:'absolute',inset:0,width:'100%',height:'100%',maxHeight:160,objectFit:'contain',padding:8,boxSizing:'border-box'}}/>:<div style={{fontSize:9,color:'#667085',textAlign:'center',padding:8}}><ImageIcon size={24}/><div>IMAGEM {slot}{slot===1?' • PRINCIPAL':''}</div><div>JPG · PNG · WEBP · BMP</div></div>}
               <button type="button" disabled={!selectedId||busy} onClick={e=>{e.stopPropagation();if(!selectedId){setError('Salve o produto antes de anexar fotos.');return}const inputEl=fileRef.current;if(inputEl){inputEl.dataset.slot=String(slot);inputEl.click()}}} style={{...btn('normal'),position:'absolute',right:5,bottom:5,height:25,padding:'0 8px',fontSize:9}}><Upload size={11}/> {url?'TROCAR':'ANEXAR'}</button>
             </div>
           })}
         </div>
-        <div style={{fontSize:9,color:'#667085',marginTop:7}}>Até 5 MB por imagem. Formatos aceitos: JPG, PNG, BMP, WEBP, GIF, AVIF e TIFF.</div>
+        <div style={{fontSize:9,color:'#667085',marginTop:7}}>Até 5 MB por imagem. Formatos aceitos: JPG, PNG e WEBP. Imagens BMP são convertidas automaticamente para PNG.</div>
       </section>}
     </section>
 
