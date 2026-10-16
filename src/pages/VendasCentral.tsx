@@ -1,7 +1,13 @@
+/**
+ * @DATA_REVISAO_APROVACAO: 2026-10-16
+ * @REVISAO_APROVACAO: APROV-003
+ * @STATUS_APROVACAO: APROVADO-IMUTAVEL
+ * @REGRA: não alterar Vendas > Status do pedido sem ordem expressa do usuário.
+ * @ESCOPO: cards compactos de status aprovados pelo usuário; mudanças futuras exigem autorização explícita.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  ArrowRight,
   CalendarClock,
   CheckCircle2,
   CircleAlert,
@@ -114,12 +120,6 @@ export default function VendasCentral() {
   const pageCount = Math.max(1, Math.ceil(visibleOrders.length / PAGE_SIZE))
   const currentPage = Math.min(page, pageCount - 1)
   const pageOrders = visibleOrders.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)
-  const counts = useMemo(() => ({
-    all: orders.length,
-    open: orders.filter((order) => !isCancelled(order.status) && !isInvoiced(order.status)).length,
-    drafts: orders.filter((order) => isDraft(order.status)).length,
-    overdue: orders.filter(isOverdue).length,
-  }), [orders])
 
   return (
     <VendasLayout title="Status do pedido" showStatusCards={false}>
@@ -127,24 +127,37 @@ export default function VendasCentral() {
         {error && <div className="sales-alert" role="alert"><CircleAlert size={17} />{error}</div>}
 
         <section className="sales-orders-card">
-          <div className="sales-filter-row" role="tablist" aria-label="Filtrar pedidos por status">
-            {filters.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                aria-selected={filter === id}
-                className={`sales-filter-tab${filter === id ? ' is-active' : ''}`}
-                onClick={() => {
-                  setFilter(id)
-                  setPage(0)
-                }}
-              >
-                <Icon size={15} />
-                {label}
-                <span>{id === 'todos' ? counts.all : id === 'rascunho' ? counts.drafts : id === 'atrasados' ? counts.overdue : orders.filter((order) => { if (id === 'andamento') return !isDraft(order.status) && !isCancelled(order.status) && !isInvoiced(order.status); if (id === 'faturados') return isInvoiced(order.status); return isCancelled(order.status) }).length}</span>
-              </button>
-            ))}
+          <div className="synqra-status-grid sales-orders-status-grid" role="tablist" aria-label="Filtrar pedidos por status">
+            {filters.map(({ id, label, icon: Icon }) => {
+              const value = id === 'todos' ? orders.length
+                : id === 'rascunho' ? orders.filter((order) => isDraft(order.status)).length
+                : id === 'andamento' ? orders.filter((order) => !isDraft(order.status) && !isCancelled(order.status) && !isInvoiced(order.status)).length
+                : id === 'atrasados' ? orders.filter(isOverdue).length
+                : id === 'faturados' ? orders.filter((order) => isInvoiced(order.status)).length
+                : orders.filter((order) => isCancelled(order.status)).length
+              const tone = id === 'atrasados' ? 'synqra-status-red'
+                : id === 'rascunho' ? 'synqra-status-orange'
+                : id === 'andamento' ? 'synqra-status-blue'
+                : id === 'faturados' ? 'synqra-status-cyan'
+                : id === 'cancelados' ? 'synqra-status-slate'
+                : 'synqra-status-green'
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={filter === id}
+                  className={`synqra-status-cell ${tone} sales-orders-status-card${filter === id ? ' is-active' : ''}`}
+                  onClick={() => {
+                    setFilter(id)
+                    setPage(0)
+                  }}
+                >
+                  <span><Icon size={15} aria-hidden="true" /> {label}</span>
+                  <strong>{loading ? '—' : value}</strong>
+                </button>
+              )
+            })}
           </div>
 
           <div className="sales-list-toolbar">

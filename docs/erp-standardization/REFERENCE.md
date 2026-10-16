@@ -7,7 +7,7 @@
 
 ## Regras de geometria
 
-1. Controles de formulário padrão: altura 32 px (h-8), salvo exceção funcional documentada.
+1. Controles de formulário padrão: altura 30 px, labels 9 px, texto de controle 11 px e raio de 2 px. Datas, selects e inputs devem compartilhar a mesma altura e respeitar `min-width: 0` dentro de CSS Grid.
 2. Rótulos consistentes: 9–11 px, preferencialmente uppercase, alinhados e com espaçamento uniforme.
 3. Largura definida pela função: código/quantidade estreitos; descrição/nome flexíveis; datas, unidades, valores e identificadores com larguras coerentes entre campos equivalentes. Não forçar a mesma largura para campos diferentes.
 4. Grid responsivo explícito, filhos flexíveis com min-w-0, sem largura fixa que provoque corte ou sobreposição; manter alinhamento das colunas.
@@ -80,3 +80,12 @@ A partir desta revisão, as grades de dados devem ser avaliadas também pelo pad
 - Altura de linha 32 px, tipografia compacta e sem transformar a grade em cartões.
 
 **Adaptação inicial registrada:** src/pages/IndustrialDataWorkspace.tsx, commit 1cb2f3a14be3763ecf93f7beb73ca21643274fb4. É uma alteração em um componente compartilhado por várias rotas, não prova de que todos os DBGrids do ERP foram padronizados. O comportamento precisa de build e conferência visual antes de aprovar.
+
+## Revisão APROV-003 — Vendas / Novo Pedido e Status (2026-10-16)
+
+- Referência externa de composição de formulários: documentação oficial do shadcn/ui Field/Input e seus exemplos de grid responsivo: https://ui.shadcn.com/docs/components/base/field e https://ui.shadcn.com/docs/components/base/input. Usada somente como referência de estrutura responsiva, agrupamento de campos e contenção em grid; não foram copiados componentes ou código de terceiros.
+- Geometria Synqra aplicada nesta tela: inputs/selects/data com 30 px, labels 9 px, texto 11 px, raio 2 px, `min-width: 0`, espaçamento compacto e busca/lupa na mesma altura do campo.
+- `Vendas / Pedidos / Novo`: cabeçalho azul institucional preservado, com ações de altura compacta.
+- `Dados do Cliente`, `Dados do Pedido` e `Entrega e Logística`: três cards alinhados na mesma linha em desktop (3 colunas iguais), recolhendo para 2 colunas em telas intermediárias e uma coluna em dispositivos estreitos. Os cards e controles usam `box-sizing`/largura responsiva para impedir que campos de data invadam colunas adjacentes.
+- Não alterar consultas Supabase, funções RPC, payload de pedido, cálculo de total/custo, validações, anexos, importação ou impressão nesta revisão visual.
+- `Vendas / Status do pedido`: cards de status aprovados e congelados; qualquer mudança futura exige ordem expressa do usuário e falha no `verify:approved-ui-lock` se o hash mudar.

@@ -70,3 +70,13 @@
 .synqra-workspace input,.synqra-workspace select,.synqra-workspace textarea{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .synqra-workspace input:focus,.synqra-workspace select:focus,.synqra-workspace textarea:focus{border-color:#2D8DB8;outline:0;box-shadow:none}
 .synqra-workspace button{border-radius:2px}
+
+/* Vendas: cards de status reaproveitam a geometria compacta do dashboard. */
+.sales-orders-status-grid{margin-top:0}
+.sales-orders-status-card{width:100%;min-width:0;text-align:left;cursor:pointer;color:#123b50;font:inherit;appearance:none;transition:outline-color .12s ease,filter .12s ease}
+.sales-orders-status-card span{display:flex;align-items:center;gap:4px;min-width:0;white-space:nowrap;letter-spacing:0;text-transform:none;font-size:9px}
+.sales-orders-status-card strong{margin-top:2px}
+.sales-orders-status-card:hover{filter:brightness(.98)}
+.sales-orders-status-card.is-active{outline:2px solid #2d8db8;outline-offset:-2px}
+@media(max-width:1100px){.sales-orders-status-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:800px){.sales-orders-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
