@@ -64,3 +64,22 @@ Rota real, arquivo renderizado, módulo/aba, campos em ordem de leitura, altura,
 - A entrada numérica ignora valores digitados com mais de 14 caracteres.
 - Commits do ajuste: `6905e28c764bf8fa9145a39c4b0a8d8f03d1dc6b` e `5e6939b74f5623fd1658c85d92ab496b47707e65`.
 - O ajuste ainda precisa de type-check/build e inspeção visual real. Portanto, UI-020 continua pendente e esta tela **não** deve ser movida para COMPLETED até haver essas evidências.
+
+
+## Revisão geométrica do Cadastro de Produtos — 2026-10-16
+
+**Revisão:** REV-PROD-GEOMETRIA-001. **Escopo:** somente composição visual e responsividade dos campos; não alterar consultas, payloads, schema, RLS, cálculos, regras fiscais, salvamento, impressão ou autenticação.
+
+- Dados Gerais: grid de seis colunas em desktop para formar duas linhas regulares: código, barras, descrição e descrição resumida; depois grupo, subgrupo e marca. Em telas estreitas, a grade reduz para duas colunas.
+- Fiscal: grades identificadas para classificação, códigos tributários e alíquotas, com breakpoints próprios.
+- Estoque: removidas larguras fixas de 82/105/170 px que comprimiam controles; colunas proporcionais e responsivas.
+- Produção: removida a grade inline de sete colunas com larguras fixas para prazos, custo, tolerância, ficha e rendimento; grade nomeada com quebra responsiva.
+- Qualidade: controles de inspeção e nível de qualidade agrupados em colunas proporcionais, com quebra para telas estreitas.
+- Contrato automatizado: `verify:approved-ui-contract` agora verifica a grade de Dados Gerais, as grades responsivas das quatro abas restantes e altura de 30 px.
+
+**Referências abertas consultadas:**
+- [Carbon ERP — JobProperties](https://github.com/crbnos/carbon/blob/main/apps/erp/app/modules/production/ui/Jobs/JobProperties.tsx): controles compactos e agrupamento por função. Usado apenas como referência de composição; não copiar código sujeito à AGPL-3.0.
+- [Carbon ERP — QuantityModal](https://github.com/crbnos/carbon/blob/main/apps/mes/app/components/JobOperation/components/QuantityModal.tsx): campo numérico e ação alinhados no mesmo grupo.
+- [shadcn/ui — Field](https://ui.shadcn.com/docs/components/aria/field): associação consistente entre rótulo, controle e mensagem; aplicada como princípio, sem adicionar dependências.
+
+**Status da validação:** alteração registrada no branch `fix/produtos-form-grid-audit-2026-10-16`. Não marcar UI-020 como concluído até type-check, lint, contrato, auditorias/build e inspeção visual de todas as cinco abas estarem confirmados no commit final.
