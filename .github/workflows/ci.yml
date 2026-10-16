@@ -87,6 +87,8 @@ jobs:
         run: npm run verify:global-horizontal-shell
       - name: Logo asset regression contract
         run: npm run verify:logo-assets
+      - name: Approved UI immutable hash lock
+        run: npm run verify:approved-ui-lock
       - name: Approved UI regression contract (login and products)
         run: npm run verify:approved-ui-contract
 
