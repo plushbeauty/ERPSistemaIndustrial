@@ -94,6 +94,7 @@ export default function CadastroEmpresa() {
   if (ok) {
     return (
       <main className="company-signup-page">
+        <style>{`.company-signup-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;background:#0b1422;font-family:Inter,"Segoe UI",Arial,sans-serif}.company-signup-card.success{box-sizing:border-box;width:min(560px,100%);margin:auto;padding:38px;background:#fff;color:#25364a;border-radius:8px;box-shadow:0 24px 70px rgba(0,0,0,.3)}.success-icon{color:#159447}.signup-kicker{display:block;margin-top:12px;color:#1683aa;font-size:10px;font-weight:900;letter-spacing:.13em}.company-signup-card.success h1{font-size:27px;color:#172b3b}.company-signup-card.success p{font-size:13px;color:#657889;line-height:1.6}.access-box{display:flex;flex-direction:column;gap:6px;margin:18px 0;padding:15px;background:#f3fafc;border:1px solid #cce2eb}.access-box small{font-size:9px;color:#1683aa;font-weight:900}.access-box strong{font-size:18px;color:#18394b}.access-box span{font-size:11px;color:#536a7a}@media(max-width:520px){.company-signup-page{padding:12px}.company-signup-card.success{padding:24px}}`}</style>
         <section className="company-signup-card success">
           <div className="success-icon"><CheckCircle2 size={46} /></div>
           <span className="signup-kicker">CADASTRO CONCLUÍDO</span>
