@@ -1,3 +1,8 @@
+/*
+ * REVISÃO TÉCNICA: 16/10/2026
+ * Revisado: MFA TOTP da sessão atual, alteração da própria senha, tratamento de sessão e limites explícitos das ações disponíveis.
+ * Não validado nesta revisão: MFA real no projeto Supabase, type-check/build, política de senha e testes em navegador.
+ */
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { KeyRound, LockKeyhole, LogOut, RefreshCw, ShieldCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
