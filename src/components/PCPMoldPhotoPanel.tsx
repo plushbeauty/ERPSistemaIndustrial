@@ -25,6 +25,7 @@ export default function PCPMoldPhotoPanel({ productId }: { productId?: string })
   const [company, setCompany] = useState('')
   const [molds, setMolds] = useState<Mold[]>([])
   const [selectedId, setSelectedId] = useState('')
+  const [moldQuery, setMoldQuery] = useState('')
   const [photos, setPhotos] = useState<Photo[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -124,7 +125,7 @@ export default function PCPMoldPhotoPanel({ productId }: { productId?: string })
   }
 
   const selected = molds.find(m => m.id === selectedId)
-  const productMolds = productId ? molds.filter(m => m.produto_id === productId || m.id === selectedId) : molds
+  const productMolds = [...molds].sort((a, b) => Number(b.produto_id === productId) - Number(a.produto_id === productId)).filter(m => !moldQuery || (m.codigo + ' ' + m.nome).toLocaleLowerCase().includes(moldQuery.toLocaleLowerCase()))
 
   return (
     <section className="mt-3 border border-slate-200 bg-white p-3">
@@ -141,9 +142,10 @@ export default function PCPMoldPhotoPanel({ productId }: { productId?: string })
       <div className="grid gap-3 md:grid-cols-[minmax(240px,360px)_minmax(0,1fr)]">
         <div>
           <label className="block">
-            <span className="mb-1 block text-[9px] font-bold uppercase tracking-wider">Número / código do molde</span>
+            <span className="mb-1 block text-[9px] font-bold uppercase tracking-wider">Buscar número / código do molde</span>
+            <input className="mb-1 h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px]" value={moldQuery} onChange={e => setMoldQuery(e.target.value)} placeholder="Digite o código ou descrição do molde"/>
             <select className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px]" value={selectedId} onChange={e => setSelectedId(e.target.value)}>
-              <option value="">Selecione um molde cadastrado</option>
+              <option value="">Selecione um molde cadastrado ({productMolds.length} encontrados)</option>
               {productMolds.map(m => <option key={m.id} value={m.id}>{m.codigo} · {m.nome}</option>)}
             </select>
           </label>
