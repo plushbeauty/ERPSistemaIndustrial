@@ -1,3 +1,11 @@
+/**
+ * @DATA_REVISAO: 2026-10-16
+ * @REVISAO: VENDAS-013
+ * @ESCOPO_REVISADO: seleção de vendedor/perfil, status do vínculo e persistência em erp_comissao_vinculos.
+ * @ALTERACOES: campos/botão padronizados em 30px e bordas de 2px; consultas e gravação existentes preservadas.
+ * @PENDENCIA_AUDITORIA: verificar escopo multiempresa das consultas com schema/RLS antes de alterar filtros.
+ * @VALIDACAO: revisão estática; CI pendente para tipagem, lint, auditorias e build.
+ */
 import { useEffect, useState } from 'react'
 import { Save } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
@@ -7,8 +15,8 @@ import VendasLayout from '../../pages/VendasLayout'
 type User={id:string;nome:string;email:string;perfil:string}
 type Profile={id:string;nome:string}
 type Link={id:string;usuario_id:string;perfil_id:string;status:string;usuario?:User;perfil?:Profile}
-const input='h-7 rounded-md border border-gray-200 bg-white px-2 py-0.5 text-[11px] text-gray-800 outline-none focus:border-blue-500'
-const label='mb-0.5 block text-[10px] font-bold uppercase text-gray-500'
+const input='h-[30px] min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] text-slate-800 outline-none focus:border-[#2D8DB8]'
+const label='mb-0.5 block text-[9px] font-bold uppercase text-slate-500'
 export default function PerfilVendedor(){
  const [users,setUsers]=useState<User[]>([]),[profiles,setProfiles]=useState<Profile[]>([]),[links,setLinks]=useState<Link[]>([])
  const [userId,setUserId]=useState(''),[profileId,setProfileId]=useState(''),[status,setStatus]=useState('Ativo'),[error,setError]=useState('')
@@ -18,7 +26,7 @@ export default function PerfilVendedor(){
  const userOptions:LinkOption[]=users.map(u=>({value:u.id,label:u.nome,description:u.email}))
  const profileOptions:LinkOption[]=profiles.map(p=>({value:p.id,label:p.nome}))
  return <VendasLayout title="Perfil de vendedor" subtitle="Vendedor • perfil de comissão • status" onRefresh={() => void load()}><main className="min-h-screen bg-slate-50 p-3"><section className="border border-gray-200 bg-white p-2 shadow-sm"><div className="mb-2 flex items-center justify-between"><div><div className="text-[10px] font-bold uppercase text-blue-700">Controladoria Comercial</div><nav className="mt-1 flex gap-2 text-[11px]"><a href="/comissoes/regras">Regras</a><a href="/comissoes/calculo">Cálculo</a><a className="font-bold text-blue-700" href="/comissoes/perfil">Perfil Vendedor</a></nav></div></div>
- <div className="flex items-end gap-2"><div className="w-[180px]"><label className={label}>Vendedor/Agente</label><LinkFieldCombobox value={userId} options={userOptions} onChange={setUserId}/></div><div className="w-40"><label className={label}>Perfil de Regras</label><LinkFieldCombobox value={profileId} options={profileOptions} onChange={setProfileId}/></div><div className="w-[90px]"><label className={label}>Status</label><select className={input+' w-[90px]'} value={status} onChange={e=>setStatus(e.target.value)}><option>Ativo</option><option>Inativo</option></select></div><button type="button" className="flex h-7 w-[95px] items-center justify-center gap-1 rounded-md bg-blue-600 px-2 text-[11px] font-bold text-white" onClick={()=>void save()}><Save size={12}/>Gravar Vínculo</button></div>
+ <div className="flex min-w-0 flex-wrap items-end gap-2"><div className="w-full min-w-0 sm:w-[180px]"><label className={label}>Vendedor/Agente</label><LinkFieldCombobox value={userId} options={userOptions} onChange={setUserId}/></div><div className="w-full min-w-0 sm:w-40"><label className={label}>Perfil de Regras</label><LinkFieldCombobox value={profileId} options={profileOptions} onChange={setProfileId}/></div><div className="w-[90px]"><label className={label}>Status</label><select className={input+' w-[90px]'} value={status} onChange={e=>setStatus(e.target.value)}><option>Ativo</option><option>Inativo</option></select></div><button type="button" className="flex h-[30px] w-[110px] items-center justify-center gap-1 rounded-[2px] bg-[#2D8DB8] px-2 text-[10px] font-semibold text-white" onClick={()=>void save()}><Save size={12}/>Gravar Vínculo</button></div>
  {error&&<div className="mt-2 text-[11px] text-red-600">{error}</div>}
  <div className="scroll-fade-x mt-2 max-h-[200px] overflow-auto border border-gray-200"><table className="w-full border-collapse text-[10px]"><thead className="bg-slate-700 text-white"><tr className="h-7"><th className="px-2 text-left font-normal">Vendedor</th><th className="px-2 text-left font-normal">Perfil</th><th className="px-2 text-left font-normal">Status</th></tr></thead><tbody>{links.map((x,i)=><tr key={x.id} className={i%2?'bg-slate-50':'bg-white'} style={{height:24}}><td className="px-2">{x.usuario?.nome??'—'}</td><td className="px-2">{x.perfil?.nome??'—'}</td><td className="px-2">{x.status}</td></tr>)}</tbody></table></div>
  </section></main></VendasLayout>
