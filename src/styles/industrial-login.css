@@ -1,9 +1,8 @@
 /*
  * DATA_REVISAO_APROVACAO: 2026-10-16
- * REVISAO_APROVACAO: APROV-002
+ * REVISAO_APROVACAO: APROV-001
  * STATUS_APROVACAO: APROVADO-IMUTAVEL
- * APROV-002: logo removido; mensagem institucional centralizada; texto branco e legenda dourado claro.
- * REGRA: preservar esta revisão; novas mudanças exigem autorização explícita do usuário.
+ * REGRA: preservar o layout aprovado do login; mudanças exigem autorização explícita do usuário.
  */
 :root{--auth-ink:#123B50;--auth-muted:#607889;--auth-line:#d7e7ec;--auth-accent:#2D8DB8;--auth-accent-2:#48B7C7;--auth-bg:#F4FBFD;--auth-success:#3A9D78}
 .auth-screen{min-height:100dvh;width:100%;display:grid;grid-template-columns:minmax(0,1.08fr) minmax(440px,560px);background:var(--auth-bg);overflow:hidden;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -130,108 +129,5 @@
     max-width: 600px;
     margin: 0;
     transform: translateY(-50%);
-  }
-}
-
-
-/* APROV-002 — login aprovado pelo usuário: sem logo, mensagem centralizada e alto contraste. */
-.auth-visual-shade{
-  background:linear-gradient(180deg,rgba(8,24,34,.52) 0%,rgba(8,24,34,.28) 48%,rgba(8,24,34,.44) 100%)!important;
-}
-.auth-visual-content{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  text-align:center!important;
-  color:#fff!important;
-}
-.auth-visual-message{
-  position:absolute!important;
-  top:50%!important;
-  left:50%!important;
-  width:min(680px,calc(100% - 64px))!important;
-  max-width:680px!important;
-  margin:0!important;
-  transform:translate(-50%,-50%)!important;
-  text-align:center!important;
-}
-.auth-visual-message>span{
-  display:block!important;
-  margin:0 0 16px!important;
-  color:#F4D58D!important;
-  font-size:12px!important;
-  font-weight:900!important;
-  letter-spacing:.19em!important;
-  text-shadow:0 2px 12px rgba(0,0,0,.55)!important;
-}
-.auth-visual-message h2,
-.auth-visual-message h2 em{
-  color:#fff!important;
-  text-shadow:0 2px 18px rgba(0,0,0,.5)!important;
-}
-.auth-visual-message p{
-  margin:18px auto 0!important;
-  color:#fff!important;
-  max-width:590px!important;
-  text-shadow:0 2px 12px rgba(0,0,0,.55)!important;
-}
-.auth-trust{justify-content:center!important}
-.auth-trust b{
-  color:#fff!important;
-  border-color:rgba(255,255,255,.3)!important;
-  background:rgba(8,24,34,.38)!important;
-}
-.auth-visual-content>small{
-  position:absolute!important;
-  left:20px!important;
-  right:20px!important;
-  bottom:18px!important;
-  margin:0!important;
-  padding:0!important;
-  text-align:center!important;
-  color:rgba(255,255,255,.9)!important;
-  text-shadow:0 2px 10px rgba(0,0,0,.55)!important;
-}
-.auth-mobile-brand{display:none!important}
-@media(max-width:820px){
-  .auth-visual-content{
-    position:absolute!important;
-    inset:0 0 auto!important;
-    width:100%!important;
-    height:34dvh!important;
-    min-height:190px!important;
-    box-sizing:border-box!important;
-    padding:16px 18px!important;
-    display:flex!important;
-    justify-content:center!important;
-    align-items:center!important;
-    pointer-events:none!important;
-  }
-  .auth-visual-message{
-    position:relative!important;
-    top:auto!important;
-    left:auto!important;
-    width:100%!important;
-    max-width:620px!important;
-    margin:0!important;
-    transform:none!important;
-    text-align:center!important;
-  }
-  .auth-visual-message>span{font-size:10px!important;margin-bottom:9px!important;letter-spacing:.13em!important}
-  .auth-visual-message h2{font-size:clamp(23px,6.5vw,31px)!important;line-height:1.08!important;margin:7px 0 0!important}
-  .auth-visual-message p{font-size:11px!important;line-height:1.4!important;margin-top:9px!important}
-  .auth-trust,.auth-visual-content>small{display:none!important}
-  .auth-panel{
-    align-items:flex-start!important;
-    min-height:100dvh!important;
-    padding-top:34dvh!important;
-    box-sizing:border-box!important;
-    background:transparent!important;
-    -webkit-backdrop-filter:none!important;
-    backdrop-filter:none!important;
-  }
-  .auth-panel-inner{
-    margin:0 auto 20px!important;
-    background:rgba(255,255,255,.96)!important;
   }
 }
