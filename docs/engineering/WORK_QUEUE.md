@@ -59,4 +59,4 @@ ACHADOS: overview só expunha seis atalhos para dez seções; três seções nã
 CORREÇÃO PARCIAL: menu e cards compactados; overview agora apresenta todas as dez seções; atalhos reais adicionados para usuários/permissões e e-mail; estilo escopado aplicado às telas internas sem alterar RPC/RLS.
 TESTES: npm run type-check; npm run lint:check; npm run build; verify:production; teste visual desktop/mobile; testar CRUD com usuário autenticado e escopo tenant.
 RESULTADO: correção de código gravada, testes e publicação ainda não confirmados.
-COMMIT: ecd89466d8fd1024eb47aa61a7f2f1d3ff48d1d4
+COMMIT: f575b6aebecfcca50023178504f7bbbea99b0256
