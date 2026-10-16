@@ -209,7 +209,7 @@ export default function VendasPDV() {
                 <span className="text-[10px]">{products.length ? 'Altere a pesquisa ou escolha outra categoria.' : 'Não há produtos ativos disponíveis para esta empresa.'}</span>
               </div>
             ) : (
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,260px),1fr))] items-stretch gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 items-stretch gap-3">
                 {visible.map(product => {
                   const unavailable = product.estoque_atual <= 0
                   const inCart = cart.find(item => item.id === product.id)?.quantidade ?? 0
