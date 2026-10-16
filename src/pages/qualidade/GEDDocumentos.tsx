@@ -1,3 +1,8 @@
+/**
+ * ERPSis — QUALIDADE / GED DOCUMENTAL
+ * Data: 2026-10-16 | Revisão: REV-063
+ * Escopo: responsividade da árvore, formulário e trilha de auditoria; persistência e controle de revisão preservados.
+ */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useParams } from 'react-router-dom'
 import { CircleHelp, ExternalLink, FilePlus2, FileText, History, Paperclip, RefreshCw, Save, Search, ShieldCheck, Upload, X } from 'lucide-react'
@@ -288,13 +293,13 @@ export default function GEDDocumentos() {
 
   return <main className="min-h-screen bg-[#F4FBFD] text-neutral-800"><div className="mx-auto max-w-[1800px] space-y-3 p-3"><QualitySidebar active="/qualidade/ged-documentos" />
     <div className="min-h-[calc(100vh-96px)] bg-[#F7F9FC] text-neutral-800">
-      <div className="flex h-[42px] items-center justify-between border-b border-neutral-200 bg-white px-3">
+      <div className="flex min-h-[42px] flex-wrap items-center justify-between gap-2 border-b border-neutral-200 bg-white px-3 py-1">
         <div className="flex min-w-0 items-center gap-2">
           <div className="grid size-6 place-items-center rounded-[5px] bg-[#E9F4FC] text-[#2D8DB8]"><FileText size={14}/></div>
           <span className="truncate text-[11px] font-semibold text-[#123B50]">ESPAÇO DE TRABALHO / GED</span>
           {selected && <><span className="text-neutral-300">/</span><span className="max-w-[260px] truncate text-[10px] text-neutral-500">{selected.titulo_documento}</span></>}
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex min-w-0 flex-wrap items-center justify-end gap-1.5">
           <button type="button" onClick={() => setHelpOpen(value => !value)} aria-expanded={helpOpen} className="inline-flex h-[30px] items-center gap-1 rounded-[4px] border border-sky-200 bg-sky-50 px-2 text-[10px] font-semibold text-[#246F98] hover:bg-sky-100"><CircleHelp size={12}/> AJUDA</button>
           <button type="button" onClick={() => void load()} title="Atualizar documentos" className="inline-flex h-[30px] items-center gap-1 rounded-[4px] border border-neutral-200 px-2 text-[10px] text-neutral-600 hover:bg-neutral-50"><RefreshCw size={12}/> ATUALIZAR</button>
           <button type="button" onClick={startNew} className="inline-flex h-[30px] items-center gap-1 rounded-[4px] border border-[#C6DFEF] bg-[#F2F8FC] px-2 text-[10px] font-semibold text-[#246F98] hover:bg-[#E6F3FB]"><FilePlus2 size={13}/> NOVO DOC</button>
@@ -307,7 +312,7 @@ export default function GEDDocumentos() {
       {helpOpen && <section aria-label="Ajuda do controle documental" className="mx-3 mt-3 border border-sky-200 bg-sky-50 px-3 py-3 text-[10px] leading-5 text-slate-700">
         <div className="flex items-start justify-between gap-3"><div><h2 className="font-bold text-[#123B50]">Como usar o GED</h2><p>1. Pesquise e selecione um documento na árvore. 2. Confira código, título e departamento. 3. Para alterar um documento controlado, informe o motivo e salve uma nova revisão. 4. A revisão precisa ser aprovada antes de entrar em vigor. Use imprimir para gerar uma cópia da tela; a distribuição controlada de cópias deve ser registrada no controle documental.</p><p className="mt-1 text-slate-600">Não substitua uma especificação aprovada apenas alterando o texto: registre a mudança e valide a revisão antes de liberar para uso.</p></div><button type="button" aria-label="Fechar ajuda" onClick={() => setHelpOpen(false)} className="shrink-0 p-1 text-slate-500 hover:bg-white"><X size={14}/></button></div>
       </section>}
-      <div className="grid min-h-[calc(100vh-138px)] grid-cols-1 xl:grid-cols-[300px_minmax(420px,1fr)_260px]">
+      <div className="grid min-h-[calc(100vh-138px)] grid-cols-1 xl:grid-cols-[minmax(250px,280px)_minmax(0,1fr)_minmax(220px,240px)] 2xl:grid-cols-[300px_minmax(0,1fr)_260px]">
         <aside className="flex min-h-0 flex-col border-b border-neutral-200 bg-neutral-50/80 xl:border-b-0 xl:border-r xl:border-neutral-200/70">
           <div className="flex h-[44px] items-center justify-between px-3">
             <span className="text-[9px] font-bold uppercase tracking-[.13em] text-neutral-500">ÁRVORE DE DOCUMENTOS</span>
@@ -358,7 +363,7 @@ export default function GEDDocumentos() {
             </div>
 
             {selected?.nome_arquivo && !selected.url_anexo && <div role="status" className="mx-4 mt-3 border border-amber-300 bg-amber-50 px-3 py-2 text-[10px] leading-4 text-amber-900">Registro de índice importado: o arquivo original ainda não está anexado ao GED. Confirme o conteúdo, a revisão de origem e a vigência antes de homologar. A aprovação fica bloqueada enquanto o anexo estiver pendente.</div>}
-              <div className="mx-auto flex w-full max-w-[880px] flex-1 flex-col px-5 py-5 sm:px-8 lg:px-12">
+              <div className="mx-auto flex w-full max-w-[960px] min-w-0 flex-1 flex-col px-3 py-4 sm:px-6 lg:px-8">
               {selected && <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-neutral-100 pb-3 text-[9px] text-neutral-500">
                 <span className={'rounded-[4px] px-2 py-1 font-semibold ' + (selected.status === 'VIGENTE' ? 'bg-emerald-50 text-emerald-700' : selected.status === 'EM_REVISAO' ? 'bg-amber-50 text-amber-700' : 'bg-neutral-100 text-neutral-600')}>{selected.status.replaceAll('_',' ')}</span>
                 <span>Responsável: <strong className="font-medium text-neutral-700">{selected.responsavel}</strong></span>
