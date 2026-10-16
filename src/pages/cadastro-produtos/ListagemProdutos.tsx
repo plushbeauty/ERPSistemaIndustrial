@@ -155,8 +155,8 @@ export default function ListagemProdutos({ onOpenFicha }: { onOpenFicha: (id?: s
               </tr>
             </thead>
             <tbody>
-              {data.map(p => (
-                <tr key={p.id} className="hover:bg-[#F4FBFD]">
+              {data.map((p, index) => (
+                <tr key={p.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-[#EAF5F9]'} border-l-2 border-l-transparent transition-colors hover:border-l-[#2D8DB8] hover:bg-[#D9F1F6]`}>
                   <td className={`${tableCellClass} whitespace-nowrap font-bold tabular-nums text-[#2D8DB8]`}>{p.codigo}</td>
                   <td className={`${tableCellClass} min-w-[180px] font-semibold text-slate-900`}>{p.nome}</td>
                   <td className={tableCellClass}>{p.categoria || '—'}</td>
