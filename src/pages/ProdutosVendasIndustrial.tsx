@@ -535,7 +535,10 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-layout-card-header h2{font-size:12px;line-height:1.25;margin:2px 0 0;color:#123B50}
       .product-master-screen .product-layout-card-header small{font-size:9px;color:#617987;text-align:right}
       .product-master-screen .product-inline-fields{display:grid;gap:5px}
-      .product-master-screen .product-identification-fields>.product-inline-field,.product-master-screen .product-identification-reference-row,.product-master-screen .product-operational-fields>.product-inline-field,.product-master-screen .product-attribute-grid>.product-inline-field,.product-master-screen .product-fiscal-code-lookup{flex:0 0 auto!important;min-width:0;box-sizing:border-box!important}
+.product-master-screen .product-identification-flags{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:8px;padding-top:7px;border-top:1px solid #D8E6EC}
+      .product-master-screen .product-identification-flags>label{display:flex;align-items:center;gap:5px;font-size:9px!important;color:#1A365D!important}
+      .product-master-screen .product-identification-flags input{width:14px!important;height:14px!important;accent-color:#2B6CB0}
+            .product-master-screen .product-identification-fields>.product-inline-field,.product-master-screen .product-identification-reference-row,.product-master-screen .product-operational-fields>.product-inline-field,.product-master-screen .product-attribute-grid>.product-inline-field,.product-master-screen .product-fiscal-code-lookup{flex:0 0 auto!important;min-width:0;box-sizing:border-box!important}
       .product-master-screen .product-identification-fields input,.product-master-screen .product-identification-fields select,.product-master-screen .product-operational-fields input,.product-master-screen .product-operational-fields select,.product-master-screen .product-fiscal-code-lookup input,.product-master-screen .product-fiscal-rates-grid input,.product-master-screen .product-stock-primary-grid input,.product-master-screen .product-stock-secondary-grid input,.product-master-screen .product-stock-primary-grid select,.product-master-screen .product-stock-secondary-grid select{height:30px!important;padding:4px 8px!important;display:inline-block!important;box-sizing:border-box!important;font-family:ui-monospace,SFMono-Regular,Menlo,monospace!important}
       .product-master-screen .product-identification-fields .product-code-field input{width:23ch!important;max-width:23ch!important}.product-master-screen .product-identification-fields .product-barcode-field input{width:16ch!important;max-width:16ch!important}.product-master-screen .product-identification-fields .product-description-field input{width:100%!important;max-width:450px!important}
       .product-master-screen .product-identification-reference-row{display:grid;grid-template-columns:minmax(0,23ch) minmax(0,280px);gap:8px;align-items:start;min-width:0}.product-master-screen .product-identification-fields .product-customer-code-field input{width:23ch!important;max-width:23ch!important}.product-master-screen .product-identification-fields .product-customer-name-field input{width:100%!important;max-width:280px!important}.product-master-screen .product-identification-fields .product-inline-field{flex:0 0 auto!important;min-width:0}
@@ -679,6 +682,9 @@ export default function ProdutosVendasIndustrial(){
                 <div className="product-inline-field product-customer-name-field">{field('Referência Cliente','referencia_interna')}</div>
               </div>
             </div>
+            <div className="product-operational-flags product-identification-flags">
+              {check('Fabricado','fabricado')}{check('Comprado','comprado')}{check('Revenda','revenda')}
+            </div>
           </section>
 
           <section className="product-layout-card product-operational-card">
@@ -700,9 +706,7 @@ export default function ProdutosVendasIndustrial(){
               <div className="product-inline-field">{field('Estoque mínimo / reposição','ponto_reposicao','number')}</div>
               <div className="product-inline-field">{field('Estoque máximo','estoque_maximo','number')}</div>
             </div>
-            <div className="product-operational-flags">
-              {check('Fabricado','fabricado')}{check('Comprado','comprado')}{check('Revenda','revenda')}
-            </div>
+
           </section>
 
           <section className="product-layout-card product-fiscal-card">
