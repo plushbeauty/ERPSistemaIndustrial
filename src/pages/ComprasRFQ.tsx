@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Plus, Save, Search, Trash2 } from 'lucide-react'
+import { ArrowLeft, Plus, Printer, Save, Search, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 import VendasLayout from './VendasLayout'
 
 type Supplier = { id: string; razao_social: string; email: string | null }
@@ -299,8 +300,17 @@ export default function ComprasRFQ() {
 
             <div className="mt-5 grid gap-2 md:grid-cols-[minmax(0,1fr)_120px_100px]">
               <div className="relative min-w-0">
-                <input value={productQuery} onChange={event => { setProductQuery(event.target.value); setProductId('') }} onKeyDown={event => { if (event.key === 'Enter' && visibleProducts[0]) { event.preventDefault(); setProductId(visibleProducts[0].id); setProductQuery(visibleProducts[0].codigo + ' — ' + visibleProducts[0].nome) } }} placeholder="Digite código ou descrição do produto..." className="h-10 w-full rounded border px-3" aria-label="Pesquisar produto por código ou descrição" />
-                {productQuery && !productId && <div className="absolute left-0 right-0 top-11 z-20 max-h-56 overflow-auto rounded border bg-white shadow-lg">{visibleProducts.map(product => <button key={product.id} type="button" className="block w-full border-b px-3 py-2 text-left text-xs hover:bg-slate-50" onClick={() => { setProductId(product.id); setProductQuery(product.codigo + ' — ' + product.nome) }}><strong>{product.codigo}</strong> — {product.nome} <span className="text-slate-500">({product.unidade})</span></button>)}{!visibleProducts.length && <p className="px-3 py-3 text-xs text-slate-500">Nenhum produto ativo encontrado.</p>}</div>}
+                <EntityCodeLookup
+                  label="Produto / matéria-prima"
+                  value={productId}
+                  records={products.map(entry => ({ id: entry.id, codigo: entry.codigo, nome: entry.nome, unidade: entry.unidade }))}
+                  onChange={setProductId}
+                  onSelect={record => { setProductId(record.id); }}
+                  placeholder="Código do produto"
+                  required
+                  compact
+                  helper={products.find(entry => entry.id === productId)?.nome ?? 'Use a lupa para consultar o catálogo ativo da empresa'}
+                />
               </div>
               <input aria-label="Quantidade" type="number" min="0.0001" step="0.0001" value={quantity} onChange={event => setQuantity(event.target.value)} className="h-10 rounded border px-3" />
               <button type="button" onClick={addItem} className="flex min-h-10 items-center justify-center gap-1 rounded bg-[#123B50] text-xs text-white">
@@ -343,8 +353,7 @@ export default function ComprasRFQ() {
           </section>
         </div>
       </main>
-      <style>{`.compras-rfq-compact header>div{min-height:44px!important;padding:6px 12px!important}.compras-rfq-compact main{max-width:none!important;padding:8px!important}.compras-rfq-compact .min-h-10,.compras-rfq-compact .min-h-11{min-height:30px!important;height:30px!important}.compras-rfq-compact .rounded,.compras-rfq-compact .rounded-md,.compras-rfq-compact .rounded-lg{border-radius:2px!important}.compras-rfq-compact section{padding:8px!important}.compras-rfq-compact .gap-5{gap:6px!important}.compras-rfq-compact input,.compras-rfq-compact select{height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:12px!important}.compras-rfq-compact textarea{min-height:60px!important;border-radius:2px!important;font-size:12px!important}.compras-rfq-compact table{font-size:11px!important}.compras-rfq-compact th,.compras-rfq-compact td{padding:4px 6px!important}.compras-rfq-compact button{border-radius:2px!important;font-size:11px!important}`}</style>
-      <style>{`.compras-rfq-compact header>div{min-height:44px!important;padding:6px 12px!important}.compras-rfq-compact main{max-width:none!important;padding:8px!important}.compras-rfq-compact .min-h-10,.compras-rfq-compact .min-h-11{min-height:30px!important;height:30px!important}.compras-rfq-compact .rounded,.compras-rfq-compact .rounded-md,.compras-rfq-compact .rounded-lg{border-radius:2px!important}.compras-rfq-compact section{padding:8px!important}.compras-rfq-compact .gap-5{gap:6px!important}.compras-rfq-compact input,.compras-rfq-compact select{height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:12px!important}.compras-rfq-compact textarea{min-height:60px!important;border-radius:2px!important;font-size:12px!important}.compras-rfq-compact table{font-size:11px!important}.compras-rfq-compact th,.compras-rfq-compact td{padding:4px 6px!important}.compras-rfq-compact button{border-radius:2px!important;font-size:11px!important}`}</style>
+      <style>{`.compras-rfq-compact header>div{min-height:44px!important;padding:6px 12px!important}.compras-rfq-compact main{max-width:none!important;padding:8px!important}.compras-rfq-compact .min-h-10,.compras-rfq-compact .min-h-11{min-height:30px!important;height:30px!important}.compras-rfq-compact .rounded,.compras-rfq-compact .rounded-md,.compras-rfq-compact .rounded-lg{border-radius:2px!important}.compras-rfq-compact section{padding:8px!important}.compras-rfq-compact .gap-5{gap:6px!important}.compras-rfq-compact input:not([type=checkbox]),.compras-rfq-compact select{display:inline-block!important;box-sizing:border-box!important;height:30px!important;min-height:30px!important;max-width:100%;border-radius:2px!important;font-family:ui-monospace,SFMono-Regular,Menlo,monospace!important;font-size:11px!important}.compras-rfq-compact input[type=number]{text-align:right!important;width:11ch!important;max-width:11ch!important}.compras-rfq-compact textarea{min-height:60px!important;border-radius:2px!important;font-size:11px!important}.compras-rfq-compact table{font-size:11px!important}.compras-rfq-compact th,.compras-rfq-compact td{padding:4px 6px!important}.compras-rfq-compact button{border-radius:2px!important;font-size:11px!important}@media print{.compras-rfq-compact header button,.compras-rfq-compact button,.compras-rfq-compact input,.compras-rfq-compact textarea{display:none!important}.compras-rfq-compact{background:#fff!important}.compras-rfq-compact main{padding:0!important}.compras-rfq-compact section{break-inside:avoid;border:1px solid #999!important}}`}</style>
     </div>
     </VendasLayout>
   )
