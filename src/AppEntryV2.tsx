@@ -7,7 +7,7 @@
  * VALIDAÇÃO: rotas conferidas estaticamente; compilação e navegação autenticada ainda pendentes.
  */
 
-﻿import { Component, type ComponentType, type ReactNode, lazy, Suspense, useEffect, useState } from 'react'
+import { Component, type ComponentType, type ReactNode, lazy, Suspense, useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
