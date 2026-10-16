@@ -1,3 +1,17 @@
+/**
+ * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
+ * Data da alteração: 2026-10-16
+ * ID da revisão: REV-060
+ * Área/módulo: Cadastro de Produtos / Produção (MRP)
+ * O que foi revisto: substituir cards documentais simulados por consultas a fichas, operações e anexos vinculados ao produto.
+ * O que foi alterado: painel de ficha técnica ativa, operações e máquinas, roteiro PCP, anexos técnicos com URL temporária assinada.
+ * Motivo: operador precisa acessar documentação real do processo sem confundir anexos comuns com parâmetros de manufatura.
+ * Schema/RPC/storage: erp_fichas_tecnicas, erp_ficha_operacoes, erp_pcp_roteiro_operacoes, erp_postos_trabalho, erp_maquinas, erp_documentos_anexos, bucket documentos-erp.
+ * Validação executada: inspeção estática do componente e confirmação da integração na tela de produtos.
+ * Validação pendente: type-check, lint, build, schema remoto, Storage/RLS e teste com sessão autenticada.
+ * Estado: implementado no código; não homologado.
+ */
+
 import { ClipboardList, FileText, Settings2, ExternalLink, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
