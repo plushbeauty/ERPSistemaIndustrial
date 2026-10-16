@@ -1,13 +1,12 @@
 /**
- * SYNQRA ERP — FICHA TÉCNICA E IDENTIFICAÇÃO INDUSTRIAL
- * REVISÃO: 1.1 | DATA: 16/10/2026
- * ID: #AUDIT-ERP-FICHA-20261016-02
- * ESCOPO: Correção completa de assimetria visual, padding e alinhamento de inputs (Edits).
- * ALTERAÇÃO: Adicionados campos industriais em grid responsivo (Pesos, Custos, Moldes, Dureza), 
- *            padronização das fontes de rótulos (Labels) e isolamento estrito de estados do Supabase.
+ * SYNQRA ERP — FICHA TÉCNICA E IDENTIFICAÇÃO INDUSTRIAL INTEGRADA
+ * REVISÃO: 1.5 | DATA: 16/10/2026
+ * ID: #AUDIT-ERP-FICHA-COMPLETA-20261016-10
+ * ESCOPO: Unificação total do formulário de produtos com as abas de Estoque, PCP e Qualidade.
+ * ALTERAÇÃO: Ajustado o Grid de Edits para simetria milimétrica, inclusão de sub-abas industriais e Cardex.
  */
 
-import { Save, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Save, AlertCircle, CheckCircle2, Package, Settings, ShieldAlert, BarChart2, FileText } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 
@@ -18,6 +17,8 @@ type P = {
   material_composicao?: string; dureza_especificada?: string; codigo_molde?: string; centro_custo?: string;
   custo_medio?: number; preco_venda?: number;
 }
+
+type SubView = 'estoque' | 'producao' | 'qualidade'
 
 export default function FormFichaTecnica({ productId, onSaved }: { productId?: string; onSaved: () => void }) {
   const [cfg, setCfg] = useState<C[]>([])
@@ -32,7 +33,7 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
   const [error, setError] = useState('')
   const [ok, setOk] = useState('')
 
-  // Novos estados industriais sincronizados com os prints da tela
+  // Estados Industriais Compartilhados
   const [pesoLiquido, setPesoLiquido] = useState(0)
   const [pesoBruto, setPesoBruto] = useState(0)
   const [comprimento, setComprimento] = useState(0)
@@ -44,6 +45,9 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
   const [centroCusto, setCentroCusto] = useState('')
   const [custoMedio, setCustoMedio] = useState(0)
   const [precoVenda, setPrecoVenda] = useState(0)
+
+  // Controle de Abas Secundárias Internas
+  const [subTab, setSubTab] = useState<SubView>('estoque')
 
   useEffect(() => {
     void (async () => {
@@ -130,17 +134,21 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
     onSaved()
   }
 
-  // Classes utilitárias padronizadas e imutáveis para inputs simétricos
+  // Tokens de estilo do Design System Premium
   const labelClass = "flex flex-col gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-500"
   const field = 'h-8 w-full rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 outline-none transition-all focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100 disabled:text-slate-400'
+  const checkboxLabelClass = "flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer select-none"
+  const checkboxClass = "h-4 w-4 rounded-[2px] border-slate-300 text-[#2D8DB8] focus:ring-[#2D8DB8]/20"
   const sectionTitle = "text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4 block"
+  const tableHeaderClass = "bg-slate-100 px-4 py-2 text-left text-[10px] font-black uppercase tracking-wider text-slate-600 border-b border-slate-200"
+  const tableCellClass = "px-4 py-2 text-xs font-semibold text-slate-800 border-b border-slate-100"
 
   return (
     <section className="space-y-4 p-4 bg-[#f8fafc]">
       <div className="rounded-[2px] border border-slate-300 bg-white p-5 shadow-sm">
         
         {/* BLOCO 1: IDENTIFICAÇÃO DO PRODUTO */}
-        <span className={sectionTitle}>Identificação do Produto</span>
+        <span className={sectionTitle}>Identificação Geral do Produto</span>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4 mb-6">
           <label className={`${labelClass} md:col-span-2`}>
             SKU / Código do Produto (Somente Leitura)
@@ -175,43 +183,71 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
           </label>
         </div>
 
-        {/* BLOCO 2: UNIDADES E CARACTERÍSTICAS FÍSICAS */}
-        <span className={sectionTitle}>Unidades e Características Físicas</span>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-5 mb-6">
-          <label className={labelClass}>
-            Peso Líquido (KG)
-            <input className={field} type="number" step="0.001" value={pesoLiquido} onChange={e => setPesoLiquido(Number(e.target.value))} />
-          </label>
-          <label className={labelClass}>
-            Peso Bruto (KG)
-            <input className={field} type="number" step="0.001" value={pesoBruto} onChange={e => setPesoBruto(Number(e.target.value))} />
-          </label>
-          <label className={labelClass}>
-            Comprimento (MM)
-            <input className={field} type="number" value={comprimento} onChange={e => setComprimento(Number(e.target.value))} />
-          </label>
-          <label className={labelClass}>
-            Largura (MM)
-            <input className={field} type="number" value={largura} onChange={e => setLargura(Number(e.target.value))} />
-          </label>
-          <label className={labelClass}>
-            Altura (MM)
-            <input className={field} type="number" value={altura} onChange={e => setAltura(Number(e.target.value))} />
-          </label>
-        </div>
+        {/* MECANISMO DE ABAS COMPLEMENTARES - Alinhamento Horizontal do LaraERP */}
+        <div className="w-full border border-slate-200 rounded-[2px] shadow-sm mb-4">
+          <div className="flex border-b border-slate-200 bg-slate-50 px-1">
+            <button
+              type="button"
+              onClick={() => setSubTab('estoque')}
+              className={`flex items-center gap-2 px-4 h-10 text-xs font-bold border-b-2 transition-all ${subTab === 'estoque' ? 'border-[#2D8DB8] text-[#2D8DB8] bg-white' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+            >
+              <Package size={14} /> ESTOQUE
+            </button>
+            <button
+              type="button"
+              onClick={() => setSubTab('producao')}
+className={flex items-center gap-2 px-4 h-10 text-xs font-bold border-b-2 transition-all ${subTab === 'producao' ? 'border-[#2D8DB8] text-[#2D8DB8] bg-white' : 'border-transparent text-slate-500 hover:text-slate-800'}}
+>
+ PRODUÇÃO / PCP
 
-        {/* BLOCO 3: IDENTIFICAÇÃO TÉCNICA INDUSTRIAL */}
-        <span className={sectionTitle}>Identificação Técnica Industrial</span>
-Material / Composição Básica
-Dureza Especificada
-Código do Molde Estrito
-Cliente / Mercado de Destino
-Centro de Custo Industrial
-{/* BLOCO 4: PRECIFICAÇÃO E CUSTOS */}
+<button
+type="button"
+onClick={() => setSubTab('qualidade')}
+className={flex items-center gap-2 px-4 h-10 text-xs font-bold border-b-2 transition-all ${subTab === 'qualidade' ? 'border-[#2D8DB8] text-[#2D8DB8] bg-white' : 'border-transparent text-slate-500 hover:text-slate-800'}}
+>
+ QUALIDADE + DOCS
+
+{/* SUB-TAB: ESTOQUE */}
+{subTab === 'estoque' && (
+
+Ponto de Reposição 
+Estoque Máximo Segurado 
+Localização Padrão Almoxarifado
+Validade do Lote (Dias) 
+ Controla Lote
+ Controla Série
+ Permite Estoque Negativo
+)}
+{/* SUB-TAB: PRODUÇÃO / PCP */}
+{subTab === 'producao' && (
+
+Peso Líquido (KG) <input className={field} type="number" step="0.001" value={pesoLiquido} onChange={e => setPesoLiquido(Number(e.target.value))} />
+Peso Bruto (KG) <input className={field} type="number" step="0.001" value={pesoBruto} onChange={e => setPesoBruto(Number(e.target.value))} />
+Comprimento (MM) <input className={field} type="number" value={comprimento} onChange={e => setComprimento(Number(e.target.value))} />
+Largura (MM) <input className={field} type="number" value={largura} onChange={e => setLargura(Number(e.target.value))} />
+Altura (MM) <input className={field} type="number" value={altura} onChange={e => setAltura(Number(e.target.value))} />
+Material / Composição Básica <input className={field} type="text" value={material} onChange={e => setMaterial(e.target.value)} />
+Dureza Especificada <input className={field} type="text" value={dureza} onChange={e => setDureza(e.target.value)} />
+Código do Molde <input className={field} type="text" value={molde} onChange={e => setMolde(e.target.value)} />
+)}
+{/* SUB-TAB: QUALIDADE + DOCUMENTOS */}
+{subTab === 'qualidade' && (
+
+Inspeção Obrigatória
+Nível de Qualidade Aceitável (AQL) 
+
+Data
+	OP Relacionada
+	Defeito Registrado
+	Quantidade
+
+)}
+
+{/* BLOCO 4: CUSTOS E COMERCIALIZAÇÃO */}
 Custos e Comercialização
 Custo Médio Calculado (R$)
 Preço de Venda Praticado (R$)
-{/* ÁREA DE NOTIFICAÇÃO E AÇÃO */}
+{/* NOTIFICAÇÕES E BOTÃO DE SALVAMENTO */}
 
 
 {error && (
@@ -234,3 +270,5 @@ className="inline-flex h-9 items-center gap-2 rounded-[2px] bg-[#2D8DB8] px-5 te
 
 )
 }
+
+<FollowUp>
