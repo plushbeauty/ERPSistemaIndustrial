@@ -375,8 +375,8 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen input.edit-14,.product-master-screen select.edit-14{display:inline-block!important;width:12ch!important;max-width:12ch!important;box-sizing:border-box;text-align:right}
       .product-master-screen input.edit-qty,.product-master-screen select.edit-qty{display:inline-block!important;width:9ch!important;max-width:9ch!important;box-sizing:border-box;text-align:right}
       .product-master-screen input.edit-money,.product-master-screen select.edit-money{display:inline-block!important;width:12ch!important;max-width:12ch!important;box-sizing:border-box;text-align:right}
-      .product-master-screen input.edit-20,.product-master-screen select.edit-20{display:inline-block!important;width:22ch!important;max-width:22ch!important;box-sizing:border-box}
-      .product-master-screen input.edit-50,.product-master-screen textarea.edit-50{display:inline-block!important;width:100%!important;max-width:320px!important;box-sizing:border-box}
+      .product-master-screen input.edit-20,.product-master-screen select.edit-20{display:inline-block!important;width:100%!important;max-width:100%!important;box-sizing:border-box}
+      .product-master-screen input.edit-50,.product-master-screen textarea.edit-50{display:inline-block!important;width:100%!important;max-width:100%!important;box-sizing:border-box}
       .product-master-screen input[type="number"]{text-align:right}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{box-sizing:border-box}
       .product-master-screen button:disabled{opacity:.48;cursor:not-allowed}
