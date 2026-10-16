@@ -160,7 +160,7 @@ export default function QualidadeListaMestre() {
             <label className="flex-1 text-[10px] font-bold uppercase tracking-wide text-slate-700">
               PESQUISAR
               <input
-                className="mt-[2px] h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] text-slate-900 outline-none focus:border-[#2D8DB8]"
+                className="mt-[2px] h-8 max-w-[450px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] text-slate-900 outline-none focus:border-[#2D8DB8]"
                 value={q}
                 onChange={(event) => setQ(event.target.value)}
                 placeholder="Código, título, setor ou departamento"
@@ -172,7 +172,7 @@ export default function QualidadeListaMestre() {
               <select
                 value={departamento}
                 onChange={(event) => setDepartamento(event.target.value)}
-                className="mt-[2px] h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] text-slate-900 outline-none focus:border-[#2D8DB8]"
+                className="mt-[2px] h-8 max-w-[450px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] text-slate-900 outline-none focus:border-[#2D8DB8]"
               >
                 <option value="TODOS">Todos os departamentos</option>
                 {departamentos.map((item) => (
@@ -186,7 +186,7 @@ export default function QualidadeListaMestre() {
             <label className="w-full text-sm font-extrabold text-slate-800 md:w-64">
               VISÃO
               <select
-                className="mt-[2px] h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] text-slate-900 outline-none focus:border-[#2D8DB8]"
+                className="mt-[2px] h-8 max-w-[450px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] text-slate-900 outline-none focus:border-[#2D8DB8]"
                 value={status}
                 onChange={(event) => setStatus(event.target.value)}
               >
