@@ -166,3 +166,10 @@ Só marcar como concluído quando todos forem comprovados: rota real; leitura e 
 2. Corrigir a rota/tela de liberação apenas após identificar a operação de banco autorizada e auditável.
 3. Confirmar no Supabase a migration de validação, depois testar inspeção aprovada/reprovada e retenção em ambiente autenticado.
 4. Continuar pela calibração, garantindo que instrumento vencido/reprovado não seja tratado como utilizável, e executar a bateria completa de verificações.
+
+## Quinta passagem — central mestre Compras / PCP / Qualidade (16/10/2026)
+
+- Criado `src/pages/layout/ModuloMestreIndustrial.tsx` (commit `b214571e828e53ecb297d1d48fe46aa5e5725b75`) e registrado na rota protegida `/industrial/modulo-mestre` em `src/AppEntryV2.tsx` (commit `e408f4564c779a92af4fe6a7b0119ff73766f34a`).
+- A central oferece acesso às telas reais de Compras (`/compras`), PCP (`/pcp/ordens`) e Qualidade (`/qualidade`), mantendo controles de 32 px e cantos de 2 px.
+- **Decisão de segurança:** o código fornecido na solicitação estava truncado/corrompido no trecho JSX, e o handler de “Salvar” apenas exibiria uma mensagem de sucesso sem persistir dados. Também pressupunha campos/tabelas não confirmados para PCP e RNC. Não foi colado nem adaptado como CRUD falso. A central criada não declara gravações: encaminha o usuário aos fluxos existentes, que conservam suas operações e validações reais.
+- Validação do novo HEAD: o check combinado consultado para `e408f4564c779a92af4fe6a7b0119ff73766f34a` ainda não retornou checks. Não afirmar que TypeScript/build passaram até o workflow ser executado e confirmado. O bloqueio de Vercel por limite de builds registrado na passagem anterior permanece sem resolução comprovada.
