@@ -7,7 +7,7 @@ CURRENT_ROUTE: /configuracoes-adm
 CURRENT_ERROR: ERR-0004; ERR-0005; ERR-0006
 LAST_SUCCESSFUL_TEST: nenhum teste local executado neste ambiente
 LAST_COMMIT: f575b6aebecfcca50023178504f7bbbea99b0256
-LAST_VERIFIED_DEPLOY: dpl_GQ8r2nVa2PxBBm6LsuAYFHEdcusT ERROR em 950c056; Vercel reportou build-rate-limit
+LAST_VERIFIED_DEPLOY: dpl_FVRbvxpMooEasnwNxQUkr5PT3wwA READY em 1cb2f3a; deployment contém o DBGrid inicial, mas NÃO contém as correções recentes de ConfiguracoesADM; commits posteriores reportam build-rate-limit
 NEXT_ACTION: validar visual e funcionalmente /configuracoes-adm desktop/mobile; executar type-check/lint/build/verify:production; depois retomar verificação remota de erp_has_permission, grants e RLS.
 BLOCKERS: ERR-0004; ERR-0005; ERR-0001
 PENDING_ERRORS: ERR-0001; ERR-0002; ERR-0004; ERR-0005; ERR-0006
