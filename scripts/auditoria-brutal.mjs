@@ -102,8 +102,11 @@ for (const page of pagePaths) {
   const editWords = (t.match(/(?:Editar|edit\()/gi) || []).length
   const editButtons = (t.match(/erp-edit-button|erp-row-action/g) || []).length
   const largeControls = (t.match(/\b(?:h-10|h-11|h-12|min-h-10|min-h-11|min-h-12)\b/g) || []).length
-  const markerPattern = /(?<![A-Za-zÀ-ÿ0-9_])(?:mock|fake|fict[ií]cio|tempor[aá]rio|TODO|FIXME)(?![A-Za-zÀ-ÿ0-9_])/gi
-  const fakeMarkers = [...t.matchAll(markerPattern)].filter(match => {
+  const markerPattern = /(?<![A-Za-zÀ-ÿ0-9_])(?:mock|fake|fict[ií]cio|tempor[aá]rio|FIXME)(?![A-Za-zÀ-ÿ0-9_])/gi
+  // TODO é intencionalmente case-sensitive: em português, "todo" é palavra comum
+  // (por exemplo, "Todo POM consumido") e não deve ser classificado como marcador.
+  const todoPattern = /(?<![A-Za-zÀ-ÿ0-9_])TODO(?![A-Za-zÀ-ÿ0-9_])/g
+  const fakeMarkers = [...t.matchAll(markerPattern), ...t.matchAll(todoPattern)].filter(match => {
     const context = t.slice(Math.max(0, (match.index ?? 0) - 35), Math.min(t.length, (match.index ?? 0) + match[0].length + 35))
     return !/nenhum dado fict[ií]cio (?:foi )?(?:inclu[ií]do|criado)|n[aã]o cria dados fict[ií]cios/i.test(context)
   }).length
