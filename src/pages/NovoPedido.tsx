@@ -4,6 +4,7 @@
  * @ESCOPO: Padronização visual da tela Vendas > Novo Pedido; controles com altura h-8, cantos retos, labels industriais, formulário em grade responsiva de quatro colunas, molduras de seção e cabeçalho/células da grade de itens. Regras de negócio, consultas Supabase, RPCs, validações e fluxo de gravação preservados.
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import * as Dialog from '@radix-ui/react-dialog'
 import { Check, Edit3, FilePlus2, MailCheck, Paperclip, Plus, Save, Search, Trash2, XCircle, Printer } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -161,7 +162,21 @@ export default function NovoPedido(){
    </div>
 
 
-   {consulta&&<div className="fixed inset-0 z-50 flex items-start justify-center bg-black/10 pt-24" onMouseDown={()=>setConsulta(null)}><div className="w-[min(760px,92vw)] rounded-[2px] border border-slate-300 bg-white p-5 shadow-xl space-y-4" onMouseDown={e=>e.stopPropagation()}><div className="flex h-8 items-center justify-between border-b border-slate-200 text-xs font-semibold"><span>{consulta==='cliente'?'CONSULTA DE CLIENTES':consulta==='transportadora'?'CONSULTA DE TRANSPORTADORAS':'CONSULTA DE PRODUTOS'}</span><button type="button" onClick={()=>setConsulta(null)} className="h-8 w-8 border-0 bg-transparent p-0 text-xs font-semibold text-slate-500 hover:text-slate-800" title="Fechar">×</button></div><div className="space-y-4"><input autoFocus value={busca} onChange={e=>setBusca(e.target.value)} className={inputStyle}/><div className="mt-2 max-h-72 overflow-auto border">{consulta==='cliente'?clientesFiltro.map(c=><button type="button" key={c.id} onClick={()=>{setCliente(c);setEdCodigoCliente(c.codigo??c.documento??'');setEdNomeCliente(c.nome);setConsulta(null)}} className="grid h-8 w-full grid-cols-[110px_1fr_160px] border-b border-slate-200 px-3 text-left text-xs font-semibold text-slate-800 hover:bg-slate-50"><span>{c.codigo??''}</span><span>{c.nome}</span><span>{c.documento??''}</span></button>):consulta==='transportadora'?transportadorasFiltro.map(t=><button type="button" key={t.id} onClick={()=>{setTransportadora(t.codigo);setConsulta(null)}} className="grid h-8 w-full grid-cols-[120px_1fr] border-b border-slate-200 px-3 text-left text-xs font-semibold text-slate-800 hover:bg-slate-50"><span>{t.codigo}</span><span>{t.razao_social}</span></button>):produtosFiltro.map(p=><button type="button" key={p.id} onClick={()=>{void produtoBusca(p.codigo);setConsulta(null)}} className="grid h-8 w-full grid-cols-[110px_1fr_70px_90px] border-b border-slate-200 px-3 text-left text-xs font-semibold text-slate-800 hover:bg-slate-50"><span>{p.codigo}</span><span>{p.nome}</span><span>{unit(p.unidade_venda||p.unidade)}</span><span>{brl(p.preco_venda??0)}</span></button>)}</div></div></div></div>}
+   {consulta && <Dialog.Root open={consulta !== null} onOpenChange={(open) => { if (!open) setConsulta(null) }}>
+     <Dialog.Portal>
+      <Dialog.Overlay className="fixed inset-0 z-50 bg-black/20" />
+      <Dialog.Content className="fixed left-1/2 top-24 z-50 w-[min(760px,92vw)] -translate-x-1/2 rounded-[2px] border border-slate-300 bg-white p-5 shadow-xl space-y-4">
+       <div className="flex h-8 items-center justify-between border-b border-slate-200">
+        <Dialog.Title className="text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8]">{consulta === 'cliente' ? 'Consulta de clientes' : consulta === 'transportadora' ? 'Consulta de transportadoras' : 'Consulta de produtos'}</Dialog.Title>
+        <Dialog.Close asChild><button type="button" aria-label="Fechar consulta" className="h-8 w-8 rounded-[2px] border border-slate-300 bg-white text-xs font-semibold text-slate-600 hover:bg-slate-50">×</button></Dialog.Close>
+       </div>
+       <input autoFocus aria-label="Buscar registros" value={busca} onChange={e=>setBusca(e.target.value)} className={inputStyle}/>
+       <div className="max-h-72 overflow-auto border border-slate-200">
+        {consulta === 'cliente' ? clientesFiltro.map(c=><button type="button" key={c.id} onClick={()=>{setCliente(c);setEdCodigoCliente(c.codigo??c.documento??'');setEdNomeCliente(c.nome);setConsulta(null)}} className="grid h-8 w-full grid-cols-[110px_1fr_160px] border-b border-slate-200 px-3 text-left text-xs font-semibold text-slate-800 hover:bg-slate-50"><span>{c.codigo??''}</span><span>{c.nome}</span><span>{c.documento??''}</span></button>) : consulta === 'transportadora' ? transportadorasFiltro.map(t=><button type="button" key={t.id} onClick={()=>{setTransportadora(t.codigo);setConsulta(null)}} className="grid h-8 w-full grid-cols-[120px_1fr] border-b border-slate-200 px-3 text-left text-xs font-semibold text-slate-800 hover:bg-slate-50"><span>{t.codigo}</span><span>{t.razao_social}</span></button>) : produtosFiltro.map(p=><button type="button" key={p.id} onClick={()=>{void produtoBusca(p.codigo);setConsulta(null)}} className="grid h-8 w-full grid-cols-[110px_1fr_70px_90px] border-b border-slate-200 px-3 text-left text-xs font-semibold text-slate-800 hover:bg-slate-50"><span>{p.codigo}</span><span>{p.nome}</span><span>{unit(p.unidade_venda||p.unidade)}</span><span>{brl(p.preco_venda??0)}</span></button>)}
+       </div>
+      </Dialog.Content>
+     </Dialog.Portal>
+    </Dialog.Root>}
   </div>
  </VendasLayout>
 }
