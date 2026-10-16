@@ -58,6 +58,18 @@ function parseValue(field: Field, raw: string): unknown {
   }
   return raw.trim() === '' ? null : raw
 }
+function statusCellClass(column: string, value: unknown): string {
+  const key = column.toLocaleLowerCase('pt-BR')
+  if (!/(status|situacao|vigencia|disposicao|^ativo$)/.test(key)) return ''
+  const normalized = String(value ?? '').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
+  if (['ativo','true','aprovado','aprovada','concluido','encerrada','eficacia_validada','escriturada','liberada'].includes(normalized)) return 'bg-emerald-100 text-emerald-900 font-semibold'
+  if (['rascunho','aberto','em_revisao','em_execucao','em_andamento','planejada','pendente','suspensa'].includes(normalized)) return 'bg-amber-100 text-amber-900 font-semibold'
+  if (['obsoleto','obsoleta','cancelada','reprovado','reprovada','bloqueado','bloqueada','desligado','false','refugar'].includes(normalized)) return 'bg-rose-100 text-rose-900 font-semibold'
+  return ''
+}
+function isNumericColumn(column: string, value: unknown): boolean {
+  return typeof value === 'number' || /(^|_)(quantidade|valor|peso|capacidade|aliquota|taxa|limite|nominal|npr|severidade|ocorrencia|deteccao|pecas|nivel|carga_horaria|amostra_numero)(_|$)/i.test(column)
+}
 export default function IndustrialDataWorkspace() {
   const location = useLocation()
   const routeConfigs: Record<string, string> = {
@@ -144,7 +156,7 @@ export default function IndustrialDataWorkspace() {
     </section>
     <section className="border border-slate-200 bg-white">
       <div className="flex items-center justify-between gap-2 border-b border-slate-200 p-2"><h2 className="text-xs font-semibold">Registros persistidos</h2><label className="relative flex items-center"><Search size={12} className="absolute left-2 text-slate-400"/><input className="h-[30px] w-56 max-w-full border border-slate-300 pl-6 pr-2 text-[10px]" placeholder="Filtrar registros…" maxLength={50} value={search} onChange={e=>setSearch(e.target.value)}/></label></div>
-      <div className="overflow-auto"><table className="w-full border-collapse text-left text-[10px]"><thead className="bg-slate-100"><tr>{config.columns.map(col=><th key={col} className="h-[32px] whitespace-nowrap border-b border-slate-200 px-2 font-semibold uppercase">{col.replaceAll('_',' ')}</th>)}<th className="h-[32px] border-b border-slate-200 px-2">AÇÃO</th></tr></thead><tbody>{loading?<tr><td colSpan={config.columns.length+1} className="h-10 text-center">Carregando registros…</td></tr>:visible.length===0?<tr><td colSpan={config.columns.length+1} className="h-10 text-center text-slate-500">Nenhum registro encontrado.</td></tr>:visible.map(row=><tr key={String(row.id)} className="hover:bg-neutral-50/80">{config.columns.map(col=><td key={col} className="h-[32px] max-w-64 truncate border-b border-slate-100 px-2">{row[col]==null?'—':typeof row[col]==='object'?JSON.stringify(row[col]):String(row[col])}</td>)}<td className="h-[32px] border-b border-slate-100 px-2"><div className="flex gap-1"><button className={`${btn} erp-row-action`} onClick={()=>edit(row)}>Editar</button>{config.table === "fiscal_nfe_entradas" && row.status === "rascunho" && <button className={btn + " bg-sky-700 text-white"} disabled={busy} onClick={() => void postInvoice(String(row.id))}>Escriturar</button>}</div></td></tr>)}</tbody></table></div>
+      <div className="overflow-auto"><table className="w-full border-collapse text-left text-[10px]"><thead className="bg-[#123B50] text-white"><tr>{config.columns.map(col=><th key={col} className="h-[32px] whitespace-nowrap border-b border-[#2D8DB8] px-2 font-bold uppercase tracking-wide">{col.replaceAll('_',' ')}</th>)}<th className="h-[32px] whitespace-nowrap border-b border-[#2D8DB8] px-2 font-bold uppercase tracking-wide">AÇÃO</th></tr></thead><tbody>{loading?<tr><td colSpan={config.columns.length+1} className="h-10 bg-sky-50 text-center text-slate-600">Carregando registros…</td></tr>:visible.length===0?<tr><td colSpan={config.columns.length+1} className="h-10 bg-sky-50 text-center text-slate-500">Nenhum registro encontrado.</td></tr>:visible.map((row,rowIndex)=><tr key={String(row.id)} className={`border-l-2 border-l-transparent hover:border-l-[#2D8DB8] hover:bg-[#DDF4F8] ${rowIndex%2===0?'bg-white':'bg-[#F0F8FB]'}`}>{config.columns.map(col=>{const value=row[col];const semanticClass=statusCellClass(col,value);return <td key={col} title={value==null?'—':typeof value==='object'?JSON.stringify(value):String(value)} className={`h-[32px] max-w-64 truncate border-b border-[#D6E7EE] px-2 ${isNumericColumn(col,value)?'text-right tabular-nums':''} ${semanticClass}`}>{value==null?'—':typeof value==='object'?JSON.stringify(value):String(value)}</td>})}<td className="h-[32px] whitespace-nowrap border-b border-[#D6E7EE] px-2"><div className="flex gap-1"><button className={`${btn} erp-row-action bg-white hover:bg-sky-50`} onClick={()=>edit(row)}>Editar</button>{config.table === "fiscal_nfe_entradas" && row.status === "rascunho" && <button className={btn + " border-sky-800 bg-sky-800 text-white hover:bg-sky-900"} disabled={busy} onClick={() => void postInvoice(String(row.id))}>Escriturar</button>}</div></td></tr>)}</tbody></table></div>
     </section>
     <p className="mt-2 text-[9px] text-slate-500">Dados consultados e gravados diretamente no Supabase com as políticas de acesso existentes; não são utilizados registros de demonstração.</p>
   </main>
