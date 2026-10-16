@@ -34,6 +34,7 @@
 
 ## Validação — ainda não homologada
 - As alterações foram feitas via commits GitHub na branch do PR.
-- O gate GitHub Actions precisa concluir para o HEAD final; não declarar aprovado antes de verificar o resultado correspondente ao SHA final.
-- O check Vercel está falhando por limite externo de implantação (`build-rate-limit` / limite de deploys), o que impede confirmar preview/produção.
+- GitHub Actions `ERP Industrial CI`, run #6156, concluiu **success** no commit de código `f982be2883805781e2b8e770d2760a2dd5cb2e2f`: TypeScript, ESLint, auditoria global, auditoria brutal, interações, lazy imports, build, rotas, contratos de regressão e lock aprovados.
+- A auditoria global inicialmente marcou `currentPassword` como possível segredo por falso positivo de regex. Foi corrigida em `scripts/auditoria-global.mjs` (revisão `SEC-AUDIT-001`) com limite de palavra; a auditoria global passou no run #6156.
+- O check Vercel continua falhando por limite externo de implantação (`build-rate-limit` / limite de deploys), o que impede confirmar preview/produção.
 - Ainda falta inspeção visual autenticada em cada rota. Esta é uma primeira passada geométrica, não uma declaração de homologação funcional total.
