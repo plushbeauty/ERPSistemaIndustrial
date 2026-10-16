@@ -101,14 +101,14 @@ export default function TabelaPrecos() {
       subtitle="Área administrativa"
       onRefresh={() => void carregar()}
     >
-      <div className="space-y-3 text-xs">
-        <section className="border border-slate-300 bg-white p-3">
+      <div className="min-w-0 space-y-2 text-[10px]">
+        <section className="rounded-[2px] border border-slate-300 bg-white p-3">
           <div className="flex items-center gap-2 text-slate-800">
             <ShieldCheck size={16} aria-hidden="true" />
             <h2 className="text-sm font-bold">Ajuste global controlado por permissão</h2>
           </div>
-          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-12">
-            <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-3">
+          <div className="mt-2 grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-12">
+            <label className="grid min-w-0 gap-0.5 text-[9px] font-bold uppercase sm:col-span-1 xl:col-span-3">
               Tipo
               <select
                 className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2D8DB8]"
@@ -148,13 +148,13 @@ export default function TabelaPrecos() {
             <button
               type="button"
               onClick={() => void aplicarReajuste()}
-              className="h-[30px] w-full self-end rounded-[2px] border border-gray-200 bg-[#3A9D78] px-3 text-[10px] font-semibold text-white sm:col-span-2 xl:col-span-2"
+              className="h-[30px] w-full self-end rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-semibold text-white sm:col-span-2 xl:col-span-2"
             >
               Aplicar
             </button>
           </div>
-          {erro && <div role="alert" className="mt-3 border border-red-200 bg-red-50 p-2 text-red-800">{erro}</div>}
-          {mensagem && <div role="status" className="mt-3 border border-emerald-200 bg-emerald-50 p-2 text-emerald-800">{mensagem}</div>}
+          {erro && <div role="alert" className="mt-3 border border-red-200 bg-red-50 p-2 text-[10px] text-red-800">{erro}</div>}
+          {mensagem && <div role="status" className="mt-3 border border-emerald-200 bg-emerald-50 p-2 text-[10px] text-emerald-800">{mensagem}</div>}
         </section>
 
         <section className="overflow-hidden border border-slate-300 bg-white">
@@ -162,7 +162,7 @@ export default function TabelaPrecos() {
             <table className="w-full min-w-[640px] border-collapse text-left text-xs">
               <thead>
                 <tr>
-                  <th className="p-3">SKU</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">SKU</th>
                   <th className="p-3">Produto</th>
                   <th className="p-3">Grupo</th>
                   <th className="p-3">Preço atual</th>
