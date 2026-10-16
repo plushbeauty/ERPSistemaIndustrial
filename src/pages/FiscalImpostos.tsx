@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Printer } from 'lucide-react'
 import FiscalSidebar from '../components/fiscal/FiscalSidebar'
 import { supabase } from '../lib/supabaseClient'
 
@@ -190,18 +191,18 @@ export default function FiscalImpostos() {
   }
 
   const field = (label: string, key: keyof RuleForm, options: { inputMode?: 'numeric' | 'decimal'; maxLength?: number; type?: string } = {}) =>
-    <label key={key} className="grid gap-1 text-xs font-medium text-slate-700">{label}
-      <input value={form[key]} onChange={(event) => setValue(key, event.target.value)} inputMode={options.inputMode} maxLength={options.maxLength} type={options.type ?? 'text'} className="h-9 rounded-sm border border-slate-300 px-2 text-sm" />
+    <label key={key} className="grid gap-1 text-xs font-semibold uppercase text-slate-700">{label}
+      <input value={form[key]} onChange={(event) => setValue(key, event.target.value)} inputMode={options.inputMode} maxLength={options.maxLength} type={options.type ?? 'text'} className="h-8 min-h-8 rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]" />
     </label>
 
   return <main className="erp-dense fiscal-workspace min-h-screen bg-slate-50 text-slate-900">
-    <header className="border-b border-slate-200 bg-white px-5 py-4"><p className="text-xs font-bold uppercase tracking-wide text-blue-800">Fiscal / parametrização</p><h1 className="text-xl font-semibold">Regras tributárias da empresa</h1><p className="mt-1 text-sm text-slate-600">As regras persistidas são a origem dos códigos e alíquotas enviados ao integrador; não são consultoria nem substituem revisão fiscal.</p></header>
+    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-4"><div><p className="text-xs font-bold uppercase tracking-wide text-blue-800">Fiscal / parametrização</p><h1 className="text-xl font-semibold">Regras tributárias da empresa</h1><p className="mt-1 text-sm text-slate-600">As regras persistidas são a origem dos códigos e alíquotas enviados ao integrador; não são consultoria nem substituem revisão fiscal.</p></div><button type="button" onClick={() => window.print()} className="erp-industrial-no-print inline-flex h-8 items-center gap-2 rounded border border-blue-700 px-3 text-xs font-semibold text-blue-900"><Printer size={14}/> IMPRIMIR TELA</button></header>
     <div className="block"><FiscalSidebar/><section className="min-w-0 flex-1 space-y-4 p-4">
       {error && <div role="alert" className="border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900">{error}</div>}
       {message && <div role="status" className="border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">{message}</div>}
       <section className="flex flex-wrap items-end gap-3 border border-slate-200 bg-white p-4">
         <label className="grid min-w-64 flex-1 gap-1 text-xs font-medium text-slate-700">Regime tributário do emitente
-          <select value={regime} onChange={(event) => setRegime(event.target.value)} className="h-9 rounded-sm border border-slate-300 bg-white px-2 text-sm">
+          <select value={regime} onChange={(event) => setRegime(event.target.value)} className="h-8 min-h-8 rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]">
             <option value="">Selecione conforme cadastro fiscal da empresa</option><option value="SIMPLES_NACIONAL">Simples Nacional</option><option value="LUCRO_PRESUMIDO">Lucro Presumido</option><option value="LUCRO_REAL">Lucro Real</option>
           </select>
         </label>
