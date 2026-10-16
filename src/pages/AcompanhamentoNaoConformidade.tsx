@@ -9,6 +9,11 @@
  * =========================================================================
  */
 
+/**
+ * ERPSis — QUALIDADE / ACOMPANHAMENTO RNC
+ * Data: 2026-10-16 | Revisão: REV-065
+ * Escopo: corrigir cálculo de atraso para usar o status da RNC avaliada, sem alterar persistência.
+ */
 import React, { useEffect, useMemo, useState } from 'react'
 import QualitySidebar from '../components/quality/QualitySidebar'
 import {
@@ -96,7 +101,9 @@ export default function AcompanhamentoNaoConformidade(){
     return dates.sort()[0]||null
   }
   const overdue=(id:string)=>{
-    const due=dueFor(id);return !!due && new Date(due+'T23:59:59')<new Date() && !CLOSED.includes(String(selected?.status||'').toLowerCase())
+    const due=dueFor(id)
+    const recordStatus=records.find(record=>record.id===id)?.status
+    return !!due && new Date(due+'T23:59:59')<new Date() && !CLOSED.includes(String(recordStatus||'').toLowerCase())
   }
   const metrics=useMemo(()=>{
     const open=rpnc.filter(r=>!CLOSED.includes(String(r.status||'').toLowerCase())).length
