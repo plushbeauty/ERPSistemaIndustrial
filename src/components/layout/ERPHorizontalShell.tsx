@@ -1,3 +1,8 @@
+/**
+ * @DATA_ALTERACAO: 2026-10-16
+ * @REVISAO_INCREMENTAL: REV-069
+ * @ESCOPO: Compactação do cabeçalho e da barra horizontal global para liberar área útil sem alterar rotas, sessão, menus, modal Tablet, ajuda contextual ou atualização Supabase Realtime.
+ */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleHelp, ChevronDown, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -286,9 +291,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-status-legend-item small{display:block;font-size:9px;line-height:1.3;color:#647b85}
         .erp-status-legend-panel>p{grid-column:1/-1;margin:0;padding-top:5px;border-top:1px solid #e2e8f0;font-size:9px;color:#647b85}
         @media print{ @page{size:A4;margin:12mm} .erp-horizontal-header,.erp-horizontal-menu,.erp-global-status-row,.print-hidden,.erp-horizontal-help{display:none!important} .erp-horizontal-shell,.erp-horizontal-workspace{min-height:0!important;background:#fff!important;padding:0!important} .erp-horizontal-workspace *{box-shadow:none!important;backdrop-filter:none!important} thead{display:table-header-group} tr{break-inside:avoid} }
-        .erp-horizontal-header{height:64px;min-height:64px;display:flex;align-items:center;gap:12px;padding:0 12px;background:#f4fbfd;border-bottom:1px solid #b9d4df;box-sizing:border-box;position:sticky;top:0;z-index:1600}
-        .erp-horizontal-brand{height:60px;display:flex;align-items:center;gap:10px;border:0;background:transparent;color:#000;cursor:pointer;padding:0 6px;white-space:nowrap}
-        .erp-horizontal-brand img{height:58px;width:200px;min-width:200px;object-fit:contain;object-position:left}
+        .erp-horizontal-header{height:48px;min-height:48px;display:flex;align-items:center;gap:12px;padding:0 12px;background:#f4fbfd;border-bottom:1px solid #b9d4df;box-sizing:border-box;position:sticky;top:0;z-index:1600}
+        .erp-horizontal-brand{height:46px;display:flex;align-items:center;gap:10px;border:0;background:transparent;color:#000;cursor:pointer;padding:0 6px;white-space:nowrap}
+        .erp-horizontal-brand img{height:44px;width:180px;min-width:180px;object-fit:contain;object-position:left}
         .erp-horizontal-global-title{display:flex;flex:1;min-width:0;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:2px;color:#123B50;line-height:1.15}
         .erp-horizontal-global-title strong{font-size:15px;font-weight:800;letter-spacing:.01em}
         .erp-horizontal-global-title span{font-size:10px;font-weight:600;color:#315466}
@@ -298,7 +303,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-session{height:30px;display:flex;align-items:center;gap:5px;padding-left:8px;border-left:1px solid #dbe5e9;white-space:nowrap;font-size:11px;color:#173b4a}
         .erp-horizontal-session span{font-weight:600}
         .erp-horizontal-session time{color:#647b85;font-size:10px}
-        .erp-horizontal-menu{height:36px;min-height:36px;display:flex;align-items:stretch;padding:0 6px;background:#2D8DB8;border-bottom:1px solid #17445A;box-sizing:border-box;position:sticky;top:64px;z-index:1550}
+        .erp-horizontal-menu{height:34px;min-height:34px;display:flex;align-items:stretch;padding:0 6px;background:#2D8DB8;border-bottom:1px solid #17445A;box-sizing:border-box;position:sticky;top:48px;z-index:1550}
 
         /* Identidade visual transversal: superfícies frias, contornos nítidos e controles compactos. */
         .erp-horizontal-session{color:#000;border-left-color:#b9d4df}
@@ -321,7 +326,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-workspace input:focus,.erp-horizontal-workspace select:focus,.erp-horizontal-workspace textarea:focus{border-color:#2d8db8;outline-color:#2d8db8;box-shadow:0 0 0 2px rgba(45,141,184,.12)}
 
         .erp-horizontal-menu-item{position:relative;display:flex;align-items:stretch}
-        .erp-horizontal-menu-button{height:31px;display:inline-flex;align-items:center;gap:3px;padding:0 10px;border:0;border-right:1px solid rgba(255,255,255,.18);background:#2D8DB8;color:#fff;font-size:10px;font-weight:500;cursor:pointer}
+        .erp-horizontal-menu-button{height:29px;display:inline-flex;align-items:center;gap:3px;padding:0 10px;border:0;border-right:1px solid rgba(255,255,255,.18);background:#2D8DB8;color:#fff;font-size:10px;font-weight:500;cursor:pointer}
         .erp-horizontal-menu-button:hover,.erp-horizontal-menu-button.is-active{background:#17445A;color:#fff}
         .erp-horizontal-dropdown-item{position:relative;min-width:0}
         .erp-horizontal-dropdown-item>button{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;text-align:left}
@@ -332,10 +337,10 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-dropdown button,.erp-horizontal-subdropdown button{color:#173b4a!important;background:#fff!important;text-shadow:none!important}
         .erp-horizontal-dropdown button:hover,.erp-horizontal-dropdown button.is-active,.erp-horizontal-subdropdown button:hover,.erp-horizontal-subdropdown button.is-active{color:#123b50!important;background:#eaf5f8!important}
 
-        .erp-horizontal-dropdown{position:absolute;top:31px;left:0;min-width:210px;padding:4px 0;background:#fff;border:1px solid #b9cbd3;box-shadow:0 5px 14px rgba(18,59,80,.14)}
+        .erp-horizontal-dropdown{position:absolute;top:29px;left:0;min-width:210px;padding:4px 0;background:#fff;border:1px solid #b9cbd3;box-shadow:0 5px 14px rgba(18,59,80,.14)}
         .erp-horizontal-dropdown button{display:block;width:100%;min-height:29px;padding:5px 12px;border:0;background:#fff;color:#234d61;text-align:left;font-size:11px;cursor:pointer}
         .erp-horizontal-dropdown button:hover{background:#edf7fb;color:#1f7195}
-        .erp-horizontal-workspace{min-width:0;min-height:calc(100vh - 78px);padding:8px;box-sizing:border-box}
+        .erp-horizontal-workspace{min-width:0;min-height:calc(100vh - 82px);padding:8px;box-sizing:border-box}
         .erp-horizontal-workspace-compact h1{font-size:18px!important;line-height:1.2!important;font-weight:500!important}
         .erp-horizontal-workspace-compact h2{font-size:15px!important;line-height:1.25!important;font-weight:500!important}
         .erp-horizontal-workspace-compact h3{font-size:13px!important;line-height:1.3!important;font-weight:500!important}
@@ -347,7 +352,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-workspace-compact label{font-size:9px}
         .erp-horizontal-workspace-compact input,.erp-horizontal-workspace-compact select,.erp-horizontal-workspace-compact textarea{font-size:10px}
 
-        .erp-horizontal-menu{display:flex!important;position:sticky;top:64px;z-index:1550}
+        .erp-horizontal-menu{display:flex!important;position:sticky;top:48px;z-index:1550}
         .erp-horizontal-menu-button.is-active{background:#17445A;color:#fff;box-shadow:inset 0 -2px #8bd6f0}
 .erp-horizontal-menu-button.erp-module-menu-button{background:#f97316;border-right-color:#ea580c;color:#fff;font-weight:800;letter-spacing:.03em;text-transform:uppercase}
 .erp-horizontal-menu-button.erp-module-menu-button:hover,.erp-horizontal-menu-button.erp-module-menu-button.is-active{background:#ea580c;color:#fff;box-shadow:inset 0 -2px #fed7aa}
@@ -356,8 +361,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-workspace{width:100%;max-width:100%;min-width:0}
         @media(max-width:700px){.erp-horizontal-menu{overflow-x:auto;overscroll-behavior-x:contain}.erp-horizontal-menu-item{flex:0 0 auto}.erp-horizontal-dropdown{position:fixed;top:auto;left:6px;right:6px;max-height:65vh;overflow:auto;z-index:1500}.erp-horizontal-menu-button{min-width:max-content}}
         @media(max-width:950px){.erp-horizontal-menu-button{padding:0 7px}.erp-horizontal-session time{display:none}.erp-horizontal-global-title strong{font-size:12px}.erp-horizontal-global-title span{font-size:9px}}
-        @media(max-width:700px){.erp-global-status-row>small{display:none}.erp-horizontal-header{height:58px;min-height:58px;gap:5px;padding:0 6px}.erp-horizontal-brand img{width:200px;min-width:200px;height:46px}
-        .erp-horizontal-global-title strong{font-size:12px}.erp-horizontal-global-title span{font-size:9px}.erp-horizontal-help{font-size:0}.erp-horizontal-session span{display:none}.erp-horizontal-menu{overflow-x:auto;top:58px}}
+        @media(max-width:700px){.erp-global-status-row>small{display:none}.erp-horizontal-header{height:48px;min-height:48px;gap:5px;padding:0 6px}.erp-horizontal-brand{height:46px}.erp-horizontal-brand img{width:160px;min-width:160px;height:42px}
+        .erp-horizontal-global-title strong{font-size:12px}.erp-horizontal-global-title span{font-size:9px}.erp-horizontal-help{font-size:0}.erp-horizontal-session span{display:none}.erp-horizontal-menu{overflow-x:auto;top:48px}}
         @media(prefers-reduced-motion:reduce){.erp-horizontal-menu-button,.erp-horizontal-dropdown{transition:none!important}}
       `}</style>
     </div>

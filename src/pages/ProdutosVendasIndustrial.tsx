@@ -1,11 +1,11 @@
 /**
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 13:00 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
- * ID da Revisão: REV-059
- * Alterações: Remoção de cast Event→FormEvent artificial no salvamento de produtos; ação agora chama save() diretamente.
- * Status do Build Local: Não executado — validação será feita pelo gate remoto.
+ * Data/Hora: 16/10/2026
+ * Desenvolvedor: IA Co-Pilot
+ * ID da Revisão: REV-068
+ * Alterações: Reequilíbrio do workspace do cadastro mestre, hierarquia visual compacta, labels industriais legíveis, grid/tabela com cabeçalho escuro e linhas padronizadas. Preservadas operações, consultas, validações, cálculos e gravações Supabase.
+ * Status da validação: alteração estática; build e testes remotos ainda precisam ser executados.
  * =========================================================================
  */
 
@@ -378,13 +378,13 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen button:disabled{opacity:.48;cursor:not-allowed}
       @media print{body *{visibility:hidden!important}.product-master-screen,.product-master-screen *{visibility:visible!important}.product-master-screen{position:absolute!important;inset:0!important;width:100%!important;max-width:none!important;background:#fff!important}.product-master-screen .product-workspace{display:block!important;margin:0!important}.product-master-screen .product-list-panel,.product-master-screen header button,.product-master-screen input[type=file],.product-master-screen .product-screen-footer button{display:none!important}.product-master-screen .product-editor-panel{border:0!important}.product-master-screen .product-form-section{break-inside:avoid}.product-master-screen .product-tabs{display:none!important}}
       .product-master-screen button:focus-visible{outline:2px solid #2D8DB8;outline-offset:1px}
-      .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}
-      .product-master-screen .product-form-section{margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid #dbe4ea}
+      .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}.product-master-screen input:focus,.product-master-screen select:focus,.product-master-screen textarea:focus{outline:1px solid #2D8DB8;outline-offset:0;background:#fffdf0!important;border-color:#2D8DB8!important}.product-master-screen .product-form-grid label>span,.product-master-screen .product-responsive-grid label>span{font-weight:700;color:#344054}
+      .product-master-screen .product-form-section{margin:0 0 10px;padding:0 0 8px;border-bottom:1px solid #dbe4ea}
       .product-master-screen .product-form-section:last-child{border-bottom:0;margin-bottom:0}
-      .product-master-screen .product-form-section-title{margin:0 0 8px;padding:6px 8px;background:#eaf4f8;border-left:3px solid #2D8DB8;color:#123B50;font-size:10px;line-height:14px;font-weight:700;letter-spacing:.04em}
+      .product-master-screen .product-form-section-title{margin:0 0 7px;padding:6px 8px;background:#eaf4f8;border-left:3px solid #2D8DB8;color:#123B50;font-size:10px;line-height:14px;font-weight:700;letter-spacing:.04em}
       .product-master-screen .product-form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:start}
       .product-master-screen .product-form-grid>*{min-width:0}
-      .product-master-screen .product-form-grid label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;align-content:start;gap:2px;min-width:0}
+      .product-master-screen .product-form-grid label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;align-content:start;gap:2px;min-width:0;font-size:9px;font-weight:700;letter-spacing:.025em}
       .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%;height:30px;box-sizing:border-box}
       .product-master-screen .product-form-grid label>span{display:flex;align-items:center;max-width:100%;min-height:12px;line-height:11px;white-space:normal;overflow-wrap:anywhere;word-break:normal}
       .product-master-screen .product-cost-stack{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;min-width:0}
@@ -392,19 +392,19 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-status-field{display:flex;align-items:center;align-self:end;gap:8px;min-height:30px;flex-wrap:wrap;border:1px solid #d5dde7;padding:5px 6px;background:#f8fbfd;box-sizing:border-box;min-width:0}
       .product-master-screen .product-status-field>span{font-size:9px;font-weight:600;color:#344054;text-transform:uppercase}
       .product-master-screen .product-status-field label{display:flex;align-items:center;gap:4px;white-space:normal;font-size:9px;min-width:0}
-      .product-master-screen .product-workspace{display:grid;grid-template-columns:minmax(320px,.78fr) minmax(0,1.72fr);grid-template-areas:"list editor";gap:10px;margin:10px;align-items:start}
+      .product-master-screen .product-workspace{display:grid;grid-template-columns:minmax(0,1.72fr) minmax(280px,.78fr);grid-template-areas:"editor list";gap:10px;margin:10px;align-items:start}
       .product-master-screen .product-editor-panel{grid-area:editor;margin:0!important;min-width:0}
       .product-master-screen .product-list-panel{grid-area:list;margin:0!important;min-width:0;position:sticky;top:8px}
-      .product-master-screen .product-list-panel table{min-width:0!important;table-layout:fixed}
+      .product-master-screen .product-list-panel table{min-width:0!important;table-layout:fixed}.product-master-screen .product-list-panel thead th{height:36px;padding:0 7px!important;background:#123B50!important;color:#fff!important;border-bottom:0!important;font-size:9px!important;font-weight:700!important;text-transform:uppercase;letter-spacing:.035em}.product-master-screen .product-list-panel tbody td{height:40px;padding:0 7px!important;border-bottom:1px solid #e2e8f0;box-sizing:border-box}.product-master-screen .product-list-panel tbody tr[aria-selected="true"] td{background:#dff1f8}
       .product-master-screen .product-list-panel th,.product-master-screen .product-list-panel td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .product-master-screen .product-list-panel tbody tr:hover{background:#edf7fb!important}
       .product-master-screen .product-tabs{display:flex;align-items:stretch;gap:2px;overflow-x:auto;overscroll-behavior-x:contain}
       .product-master-screen .product-tabs button{flex:0 0 auto;min-height:34px}
       .product-master-screen .product-responsive-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;align-items:start}
       .product-master-screen .product-responsive-grid>*{min-width:0}
-      .product-master-screen .product-responsive-grid label{align-content:start;grid-template-rows:minmax(12px,auto) 30px;gap:2px}
-      .product-master-screen .product-responsive-grid label>input,.product-master-screen .product-responsive-grid label>select{width:100%;min-width:0}      @media(max-width:1250px){.product-master-screen .product-workspace{grid-template-columns:minmax(280px,.72fr) minmax(0,1.5fr);gap:8px;margin:8px}}
-      @media(max-width:1050px){.product-master-screen .product-workspace{grid-template-columns:minmax(0,1fr);grid-template-areas:"list" "editor"}.product-master-screen .product-list-panel{position:static}}
+      .product-master-screen .product-responsive-grid label{align-content:start;grid-template-rows:minmax(12px,auto) 30px;gap:2px;font-size:9px;font-weight:700;letter-spacing:.025em}
+      .product-master-screen .product-responsive-grid label>input,.product-master-screen .product-responsive-grid label>select{width:100%;min-width:0}      @media(max-width:1250px){.product-master-screen .product-workspace{grid-template-columns:minmax(0,1.5fr) minmax(260px,.8fr);gap:8px;margin:8px}}
+      @media(max-width:1050px){.product-master-screen .product-workspace{grid-template-columns:minmax(0,1fr);grid-template-areas:"editor" "list"}.product-master-screen .product-list-panel{position:static}}
       @media(min-width:1051px){.product-master-screen .product-list-panel>div:last-child{max-height:calc(100vh - 245px);overflow:auto}}
       @media(max-width:1150px){.product-master-screen .product-form-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.product-master-screen .product-responsive-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
       .product-master-screen .product-unit-row{grid-column:span 3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;align-items:center;min-width:0}.product-master-screen .product-unit-row label{display:grid;grid-template-columns:82px minmax(0,1fr);grid-template-rows:30px;align-items:center;gap:5px}.product-master-screen .product-unit-row label>span{min-height:0;line-height:11px}.product-master-screen .product-unit-row label>select{width:100%;min-width:0}.product-master-screen .product-photo-card{cursor:pointer;transition:border-color .12s,background .12s}.product-master-screen .product-photo-card:hover{border-color:#2D8DB8!important;background:#edf7fb!important}.product-master-screen .product-combo-wrap{display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:4px;align-items:end;min-width:0}
