@@ -32,3 +32,16 @@ LAST_COMMIT: ffc095e06272d5f7924daf0d14bcb28cdf1a7ee6; shell: 00f9f12264f9e71b0f
 NEXT_ACTION: auditar Usuários (operações de criação/convite/edição), migrations de RBAC em ordem, RPCs e policies RLS; depois corrigir uma página por vez e executar type-check/lint/build.
 BLOCKERS: confirmar contrato remoto Supabase; checkout local/testes ainda não executados.
 AUDIT: docs/erp-standardization/CONFIGURACOES-ADM-PAGE-AUDIT-2026-10-16.md
+
+
+## 2026-10-16 — Segunda passada: Usuários e Edge Function
+CURRENT_PHASE: P0_CONFIGURACOES_ADM_AUDIT
+CURRENT_TASK: ADM-002 — validar CRUD de usuários, RBAC, auditoria e tenant
+CURRENT_FILE: src/pages/UsuariosAdmin.tsx; supabase/functions/erp-user-admin/index.ts
+CURRENT_ROUTE: /configuracoes-adm/usuarios
+CURRENT_ERROR: fluxo de auditoria pode retornar aviso após mutação; ativação pode ficar parcialmente sincronizada entre ERP e Auth
+LAST_SUCCESSFUL_TEST: revisão estática de código; nenhum teste local/remoto executado nesta sessão
+LAST_COMMIT: 3c6f0831c514c750d565e251f9642c3c5f0d1bd1
+NEXT_ACTION: inspecionar migrations/policies de usuários, empresas, perfis e convites; então corrigir fluxo e refatorar a página com testes por papel.
+BLOCKERS: acesso remoto de validação Supabase e execução local do pipeline.
+AUDIT: docs/erp-standardization/CONFIGURACOES-ADM-PAGE-AUDIT-2026-10-16.md
