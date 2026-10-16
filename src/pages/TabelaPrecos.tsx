@@ -1,3 +1,10 @@
+/**
+ * @DATA_REVISAO: 2026-10-16
+ * @REVISAO: VENDAS-002
+ * @ESCOPO_REVISADO: filtros, simulação de reajuste, paginação e comandos da tabela de preços.
+ * @ALTERACOES: controles e paginação compactados para o padrão de 30px/2px; cálculo, seleção e persistência preservados.
+ * @VALIDACAO: revisão estática do arquivo; CI deve validar tipagem, lint, auditorias e build.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -104,7 +111,7 @@ export default function TabelaPrecos() {
             <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-3">
               Tipo
               <select
-                className="h-10 w-full min-w-0 border border-slate-300 px-2"
+                className="h-[30px] w-full min-w-0 border border-slate-300 px-2"
                 value={tipoReajuste}
                 onChange={event => setTipoReajuste(event.target.value as 'vendas' | 'postos')}
               >
@@ -115,7 +122,7 @@ export default function TabelaPrecos() {
             <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-2">
               Percentual %
               <input
-                className="h-10 w-full border border-slate-300 px-2"
+                className="h-[30px] w-full border border-slate-300 px-2"
                 type="number"
                 step="0.01"
                 value={percentual}
@@ -125,7 +132,7 @@ export default function TabelaPrecos() {
             <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-3">
               Grupo produto
               <input
-                className="h-10 w-full border border-slate-300 px-2"
+                className="h-[30px] w-full border border-slate-300 px-2"
                 value={grupo}
                 onChange={event => setGrupo(event.target.value)}
               />
@@ -133,7 +140,7 @@ export default function TabelaPrecos() {
             <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-2">
               Perfil cliente
               <input
-                className="h-10 w-full border border-slate-300 px-2"
+                className="h-[30px] w-full border border-slate-300 px-2"
                 value={tipoCliente}
                 onChange={event => setTipoCliente(event.target.value)}
               />
@@ -141,7 +148,7 @@ export default function TabelaPrecos() {
             <button
               type="button"
               onClick={() => void aplicarReajuste()}
-              className="h-10 w-full self-end rounded border border-gray-200 bg-[#3A9D78] px-3 font-semibold text-white sm:col-span-2 xl:col-span-2"
+              className="h-[30px] w-full self-end rounded-[2px] border border-gray-200 bg-[#3A9D78] px-3 text-[10px] font-semibold text-white sm:col-span-2 xl:col-span-2"
             >
               Aplicar
             </button>
@@ -190,7 +197,7 @@ export default function TabelaPrecos() {
                 aria-label="Página anterior"
                 disabled={pagina <= 1}
                 onClick={() => setPagina(atual => Math.max(1, atual - 1))}
-                className="inline-flex h-9 items-center gap-1 border border-slate-300 px-3 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-[30px] items-center gap-1 border border-slate-300 px-3 text-[10px] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <ChevronLeft size={15} /> Anterior
               </button>
@@ -199,7 +206,7 @@ export default function TabelaPrecos() {
                 aria-label="Próxima página"
                 disabled={pagina >= paginas}
                 onClick={() => setPagina(atual => Math.min(paginas, atual + 1))}
-                className="inline-flex h-9 items-center gap-1 border border-slate-300 px-3 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-[30px] items-center gap-1 border border-slate-300 px-3 text-[10px] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Próxima <ChevronRight size={15} />
               </button>
