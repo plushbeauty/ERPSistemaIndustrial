@@ -609,7 +609,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras/rfq" element={<ComprasRoute><ComprasRFQ /></ComprasRoute>} />
       <Route path="/compras/cotacoes" element={<Navigate to="/compras/rfq" replace />} />
       <Route path="/compras/pedido" element={<ComprasRoute><PedidoCompra /></ComprasRoute>} />
-      <Route path="/compras/pedido-formulario" element={<ComprasRoute><PedidoCompraForm /></ComprasRoute>} />
+      <Route path="/compras/pedido-formulario" element={<PedidoCompraForm />} />
       <Route path="/compras/pedidos" element={<Navigate to="/compras/pedido" replace />} />
       <Route path="/compras/ordem-compra" element={<ComprasRoute><PedidoCompra /></ComprasRoute>} />
       <Route path="/compras/fornecedores" element={<ComprasRoute><FornecedoresIndustrial /></ComprasRoute>} />
