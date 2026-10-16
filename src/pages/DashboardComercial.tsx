@@ -1,3 +1,10 @@
+/**
+ * @DATA_REVISAO: 2026-10-16
+ * @REVISAO: VENDAS-008
+ * @ESCOPO_REVISADO: consultas reais de pedidos/clientes/documentos fiscais/metas, KPIs, gráficos e impressão por seção.
+ * @ALTERACOES: cartões de KPI e ícones reduzidos, borda de 2px e tipografia mais compacta; fontes reais e cálculos preservados.
+ * @VALIDACAO: revisão estática; CI pendente para tipagem, lint, auditorias e build.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
@@ -281,7 +288,7 @@ export default function DashboardComercial() {
         <div className="border-b-2 border-slate-800 pb-3">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="text-[15px] font-bold">{empresa?.razao_social ?? 'Empresa'}</div>
+              <div className="text-[13px] font-bold">{empresa?.razao_social ?? 'Empresa'}</div>
               <div className="text-[10px]">{empresa?.nome_fantasia ?? ''} • CNPJ {empresa?.cnpj ?? '—'}</div>
               <div className="text-[10px]">{empresa?.endereco ?? ''} {empresa?.cidade ?? ''}/{empresa?.uf ?? ''} {empresa?.cep ?? ''}</div>
               <div className="text-[10px]">{empresa?.telefone ?? ''} • {empresa?.email ?? ''}</div>
@@ -290,7 +297,7 @@ export default function DashboardComercial() {
             {logoSrc && <img src={logoSrc} alt="Logomarca da empresa" className="max-h-20 max-w-52 object-contain" />}
           </div>
         </div>
-        <h1 className="mt-4 text-center text-[16px] font-bold">{chartTitle(printTarget)} — {currentYear}</h1>
+        <h1 className="mt-4 text-center text-[14px] font-bold">{chartTitle(printTarget)} — {currentYear}</h1>
         <div className="print-chart mt-2">
           {printTarget === 'perfil' && (
             <ResponsiveContainer width="100%" height="100%">
@@ -347,9 +354,9 @@ function Kpi({ label, value, icon: Icon, tone }: { label: string; value: string 
     orange: { start: '#FFF8E8', end: '#FFE5B4', icon: 'from-[#F59E0B] to-[#C2410C]', text: '#7C2D12', edge: '#E6A34A' },
     green: { start: '#E9FBF2', end: '#C5F0DA', icon: 'from-[#3A9D78] to-[#17634B]', text: '#14532D', edge: '#3A9D78' },
   }[tone]
-  return <div className="relative flex min-h-[76px] items-center justify-between gap-3 overflow-hidden rounded-[3px] border p-3 shadow-[0_3px_0_rgba(18,59,80,0.16),0_6px_12px_rgba(18,59,80,0.08)]" style={{ borderColor: palette.edge, backgroundImage: `linear-gradient(135deg,${palette.start},${palette.end})` }}>
+  return <div className="relative flex min-h-[64px] items-center justify-between gap-3 overflow-hidden rounded-[2px] border p-3 shadow-[0_3px_0_rgba(18,59,80,0.16),0_6px_12px_rgba(18,59,80,0.08)]" style={{ borderColor: palette.edge, backgroundImage: `linear-gradient(135deg,${palette.start},${palette.end})` }}>
     <div className="min-w-0"><div className="text-[9px] font-bold uppercase tracking-[.08em]" style={{ color: palette.text }}>{label}</div><div className="mt-1 text-[15px] font-extrabold leading-tight" style={{ color: palette.text }}>{value}</div></div>
-    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${palette.icon} text-white shadow-[inset_0_2px_2px_rgba(255,255,255,0.42),0_4px_0_rgba(18,59,80,0.28),0_6px_10px_rgba(18,59,80,0.22)] ring-2 ring-white/70`}><Icon size={22} strokeWidth={2.5} /></div>
+    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${palette.icon} text-white shadow-[inset_0_2px_2px_rgba(255,255,255,0.42),0_4px_0_rgba(18,59,80,0.28),0_6px_10px_rgba(18,59,80,0.22)] ring-2 ring-white/70`}><Icon size={18} strokeWidth={2} /></div>
   </div>
 }
 
