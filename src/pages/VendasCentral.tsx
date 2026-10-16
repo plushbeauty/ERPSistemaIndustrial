@@ -1,9 +1,9 @@
 /**
  * @DATA_REVISAO_APROVACAO: 2026-10-16
- * @REVISAO_APROVACAO: APROV-003
+ * @REVISAO_APROVACAO: APROV-004
  * @STATUS_APROVACAO: APROVADO-IMUTAVEL
- * @REGRA: não alterar Vendas > Status do pedido sem ordem expressa do usuário.
- * @ESCOPO: cards compactos de status aprovados pelo usuário; mudanças futuras exigem autorização explícita.
+ * @REGRA: revisão APROV-004 autorizada expressamente em 2026-10-16; novas alterações exigem nova ordem expressa.
+ * @ESCOPO: ampliar cards e incluir etapas reais de pedido, produção, expedição e NF/saída com status por empresa.
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -35,6 +35,9 @@ type Order = {
 }
 
 type StatusFilter = 'todos' | 'rascunho' | 'andamento' | 'atrasados' | 'faturados' | 'cancelados'
+type ProductionStage = { numero_op: string; status: string; quantidade: number; quantidade_planejada: number; quantidade_produzida: number }
+type ExpeditionStage = { numero: number; status: string; transportadora: string | null }
+type FiscalStage = { tipo: string; status: string; quantidade_pendente: number }
 
 const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 const PAGE_SIZE = 25
@@ -70,6 +73,9 @@ const filters: Array<{ id: StatusFilter; label: string; icon: typeof ClipboardLi
 
 export default function VendasCentral() {
   const [orders, setOrders] = useState<Order[]>([])
+  const [productionByOrder, setProductionByOrder] = useState<Record<string, ProductionStage[]>>({})
+  const [expeditionByOrder, setExpeditionByOrder] = useState<Record<string, ExpeditionStage[]>>({})
+  const [fiscalByOrder, setFiscalByOrder] = useState<Record<string, FiscalStage[]>>({})
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<StatusFilter>('todos')
   const [page, setPage] = useState(0)
@@ -88,7 +94,27 @@ export default function VendasCentral() {
         .eq('empresa_id', String(tenant.data))
         .order('numero', { ascending: false })
         .range(from, to))
-      setOrders(result as unknown as Order[])
+      const orderRows = result as unknown as Order[]
+      setOrders(orderRows)
+      const orderIds = orderRows.map((order) => order.id)
+      if (!orderIds.length) {
+        setProductionByOrder({})
+        setExpeditionByOrder({})
+        setFiscalByOrder({})
+      } else {
+        const companyId = String(tenant.data)
+        const [productionResult, expeditionResult, fiscalResult] = await Promise.all([
+          supabase.from('erp_ordens_producao').select('pedido_venda_id,numero_op,status,quantidade,quantidade_planejada,quantidade_produzida').eq('empresa_id', companyId).in('pedido_venda_id', orderIds),
+          supabase.from('erp_expedicoes').select('pedido_venda_id,numero,status,transportadora').eq('empresa_id', companyId).in('pedido_venda_id', orderIds),
+          supabase.from('erp_liberacoes_fiscais').select('pedido_venda_id,tipo,status,quantidade_pendente').eq('empresa_id', companyId).in('pedido_venda_id', orderIds),
+        ])
+        const stageErrors = [productionResult.error, expeditionResult.error, fiscalResult.error].filter(Boolean)
+        if (stageErrors.length) setError(`Pedidos carregados; não foi possível completar todas as etapas industriais: ${stageErrors.map((item) => item?.message).join(' • ')}`)
+        const byOrder = <T extends { pedido_venda_id: string }>(rows: T[] | null) => (rows ?? []).reduce<Record<string, T[]>>((map, row) => { map[row.pedido_venda_id] = [...(map[row.pedido_venda_id] ?? []), row]; return map }, {})
+        setProductionByOrder(byOrder((productionResult.data ?? []) as Array<ProductionStage & { pedido_venda_id: string }>))
+        setExpeditionByOrder(byOrder((expeditionResult.data ?? []) as Array<ExpeditionStage & { pedido_venda_id: string }>))
+        setFiscalByOrder(byOrder((fiscalResult.data ?? []) as Array<FiscalStage & { pedido_venda_id: string }>))
+      }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível carregar os pedidos.')
     } finally {
@@ -188,6 +214,7 @@ export default function VendasCentral() {
                   <th>Data</th>
                   <th>Entrega prevista</th>
                   <th>Status</th>
+                  <th>Processo da peça</th>
                   <th className="sales-number">Total</th>
                 </tr>
               </thead>
@@ -213,11 +240,12 @@ export default function VendasCentral() {
                       </span>
                     </td>
                     <td><span className={`sales-status ${statusTone(order.status)}`}>{order.status}</span></td>
+                    <td><ProcessStages order={order} production={productionByOrder[order.id] ?? []} expeditions={expeditionByOrder[order.id] ?? []} fiscal={fiscalByOrder[order.id] ?? []} /></td>
                     <td className="sales-number sales-total">{currency.format(Number(order.total ?? 0))}</td>
                   </tr>
                 ))}
                 {!loading && visibleOrders.length === 0 && (
-                  <tr><td colSpan={7}>
+                  <tr><td colSpan={8}>
                     <div className="sales-empty-state">
                       <ClipboardList size={26} />
                       <strong>{query || filter !== 'todos' ? 'Nenhum pedido corresponde aos filtros.' : 'Nenhum pedido encontrado.'}</strong>
@@ -225,7 +253,7 @@ export default function VendasCentral() {
                     </div>
                   </td></tr>
                 )}
-                {loading && <tr><td colSpan={7} className="sales-loading-row" role="status">Carregando pedidos do ERP…</td></tr>}
+                {loading && <tr><td colSpan={8} className="sales-loading-row" role="status">Carregando pedidos do ERP…</td></tr>}
               </tbody>
             </table>
           </div>
@@ -243,4 +271,25 @@ export default function VendasCentral() {
       </main>
     </VendasLayout>
   )
+}
+
+function ProcessStages({ order, production, expeditions, fiscal }: { order: Order; production: ProductionStage[]; expeditions: ExpeditionStage[]; fiscal: FiscalStage[] }) {
+  const cancelled = isCancelled(order.status)
+  const draft = isDraft(order.status)
+  const productionDone = production.length > 0 && production.every((row) => {
+    const status = normalize(row.status)
+    return status.includes('conclu') || status.includes('finaliz') || status.includes('encerr') || (Number(row.quantidade_planejada || row.quantidade || 0) > 0 && Number(row.quantidade_produzida || 0) >= Number(row.quantidade_planejada || row.quantidade || 0))
+  })
+  const productionActive = production.length > 0 && !productionDone
+  const expeditionDone = expeditions.length > 0 && expeditions.every((row) => ['expedido', 'entregue', 'concluido', 'concluida', 'finalizado', 'finalizada'].some((word) => normalize(row.status).includes(word)))
+  const fiscalDone = fiscal.length > 0 && fiscal.every((row) => ['emitido', 'autorizado', 'faturado', 'concluido', 'concluida', 'finalizado'].some((word) => normalize(row.status).includes(word)))
+  const stages = [
+    { label: 'Pedido', detail: order.status || 'Recebido', tone: cancelled ? 'is-stage-red' : draft ? 'is-stage-amber' : 'is-stage-green' },
+    { label: 'Produção', detail: production.length ? production.map((row) => `OP ${row.numero_op}: ${row.status} (${Number(row.quantidade_produzida || 0)}/${Number(row.quantidade_planejada || row.quantidade || 0)})`).join(' • ') : 'Aguardando OP', tone: cancelled ? 'is-stage-muted' : productionDone ? 'is-stage-green' : productionActive ? 'is-stage-blue' : 'is-stage-muted' },
+    { label: 'Expedição', detail: expeditions.length ? expeditions.map((row) => `EXP ${row.numero}: ${row.status}`).join(' • ') : 'Aguardando expedição', tone: cancelled ? 'is-stage-muted' : expeditionDone ? 'is-stage-green' : expeditions.length ? 'is-stage-violet' : 'is-stage-muted' },
+    { label: 'NF / Saída', detail: fiscal.length ? fiscal.map((row) => `${row.tipo}: ${row.status} (pendente ${Number(row.quantidade_pendente || 0)})`).join(' • ') : 'Aguardando liberação fiscal', tone: cancelled ? 'is-stage-muted' : fiscalDone ? 'is-stage-green' : fiscal.length ? 'is-stage-cyan' : 'is-stage-muted' },
+  ]
+  return <div className="sales-process-stages" aria-label={`Etapas do pedido PV-${String(order.numero).padStart(6, '0')}`}>
+    {stages.map((stage) => <div key={stage.label} className={`sales-process-stage ${stage.tone}`} title={`${stage.label}: ${stage.detail}`}><span>{stage.label}</span><strong>{stage.detail}</strong></div>)}
+  </div>
 }
