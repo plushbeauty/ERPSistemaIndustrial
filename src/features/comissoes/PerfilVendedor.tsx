@@ -2,8 +2,7 @@
  * @DATA_REVISAO: 2026-10-16
  * @REVISAO: VENDAS-013
  * @ESCOPO_REVISADO: seleção de vendedor/perfil, status do vínculo e persistência em erp_comissao_vinculos.
- * @ALTERACOES: campos/botão padronizados em 30px e bordas de 2px; consultas e gravação existentes preservadas.
- * @PENDENCIA_AUDITORIA: verificar escopo multiempresa das consultas com schema/RLS antes de alterar filtros.
+ * @ALTERACOES: campos/botão padronizados em 30px e bordas de 2px; consultas agora filtram a empresa atual, em alinhamento ao schema e às políticas RLS existentes.
  * @VALIDACAO: revisão estática; CI pendente para tipagem, lint, auditorias e build.
  */
 import { useEffect, useState } from 'react'
@@ -20,7 +19,22 @@ const label='mb-0.5 block text-[9px] font-bold uppercase text-slate-500'
 export default function PerfilVendedor(){
  const [users,setUsers]=useState<User[]>([]),[profiles,setProfiles]=useState<Profile[]>([]),[links,setLinks]=useState<Link[]>([])
  const [userId,setUserId]=useState(''),[profileId,setProfileId]=useState(''),[status,setStatus]=useState('Ativo'),[error,setError]=useState('')
- const load=async()=>{const [u,p,l]=await Promise.all([supabase.from('erp_usuarios').select('id,nome,email,perfil').eq('ativo',true).is('deleted_at',null).order('nome'),supabase.from('erp_comissao_perfis').select('id,nome').eq('ativo',true).order('nome'),supabase.from('erp_comissao_vinculos').select('id,usuario_id,perfil_id,status,usuario:erp_usuarios(id,nome,email,perfil),perfil:erp_comissao_perfis(id,nome)').order('created_at',{ascending:false})]);if(u.error)throw u.error;if(p.error)throw p.error;if(l.error)throw l.error;setUsers((u.data??[]) as User[]);setProfiles((p.data??[]) as Profile[]);setLinks((l.data??[]) as unknown as Link[])}
+ const load=async()=>{
+  const company=await supabase.rpc('erp_current_empresa_id')
+  if(company.error||!company.data)throw company.error??new Error('Empresa não identificada.')
+  const empresaId=String(company.data)
+  const [u,p,l]=await Promise.all([
+   supabase.from('erp_usuarios').select('id,nome,email,perfil').eq('empresa_id',empresaId).eq('ativo',true).is('deleted_at',null).order('nome'),
+   supabase.from('erp_comissao_perfis').select('id,nome').eq('empresa_id',empresaId).eq('ativo',true).order('nome'),
+   supabase.from('erp_comissao_vinculos').select('id,usuario_id,perfil_id,status,usuario:erp_usuarios(id,nome,email,perfil),perfil:erp_comissao_perfis(id,nome)').eq('empresa_id',empresaId).order('created_at',{ascending:false})
+  ])
+  if(u.error)throw u.error
+  if(p.error)throw p.error
+  if(l.error)throw l.error
+  setUsers((u.data??[]) as User[])
+  setProfiles((p.data??[]) as Profile[])
+  setLinks((l.data??[]) as unknown as Link[])
+ }
  useEffect(()=>{void load().catch(e=>setError(e instanceof Error?e.message:'Falha ao carregar vínculos.'))},[])
  const save=async()=>{if(!userId||!profileId)return;const r=await supabase.rpc('erp_comissao_vincular',{p_usuario_id:userId,p_perfil_id:profileId,p_status:status});if(r.error)setError(r.error.message);else await load()}
  const userOptions:LinkOption[]=users.map(u=>({value:u.id,label:u.nome,description:u.email}))
