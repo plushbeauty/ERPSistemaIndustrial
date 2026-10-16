@@ -38,7 +38,7 @@ export default function ClientesIndustrial(){
             <div><div style={{fontSize:9,fontWeight:800,letterSpacing:'.08em',color:'#c9f2ff'}}>COMERCIAL • CADASTRO MESTRE</div><h1 style={{margin:'2px 0',fontSize:17,fontWeight:700}}>Clientes</h1><p style={{margin:0,fontSize:10,color:'#e4f7ff'}}>Cadastro de clientes, contatos e política comercial.</p></div>
             <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
               <button type="button" onClick={open} style={action(true)}><Plus size={12}/> NOVO CLIENTE</button>
-              <button type="button" onClick={openEdit} disabled={!selected} style={{...action(),opacity:selected?1:.5,cursor:selected?'pointer':'not-allowed'}}><Pencil size={12}/> EDITAR</button>
+              <button type="button" className="erp-edit-button" onClick={openEdit} disabled={!selected} style={{...action(),opacity:selected?1:.5,cursor:selected?'pointer':'not-allowed'}}><Pencil size={12}/> EDITAR</button>
               <button type="button" onClick={()=>void remove()} disabled={!selected||busy} style={{...action(false,true),opacity:selected?1:.5,cursor:selected?'pointer':'not-allowed'}}><Trash2 size={12}/> EXCLUIR</button>
               <button type="button" onClick={()=>setFilterOpen(v=>!v)} style={action()}><Filter size={12}/> FILTRO</button>
               <button type="button" onClick={()=>void load()} disabled={busy} style={{...action(),opacity:busy ? .5 : 1}}><RefreshCw size={12}/> ATUALIZAR</button>
