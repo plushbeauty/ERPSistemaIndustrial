@@ -1,3 +1,10 @@
+/**
+ * @DATA_REVISAO: 2026-10-16
+ * @REVISAO: VENDAS-001
+ * @ESCOPO_REVISADO: controles da análise de custos, seleção de produto/posto, tabela de operações e ações compactas.
+ * @ALTERACOES: altura de campos e ações alinhada ao padrão industrial de 30px; bordas reduzidas a 2px; regras de cálculo e consultas preservadas.
+ * @VALIDACAO: revisão estática do arquivo; CI deve validar tipagem, lint, auditorias e build.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { Paperclip, Plus, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -62,8 +69,8 @@ export default function VendasAnaliseCustos(){
    <section className="min-w-0 border border-gray-200 bg-white p-2"><div className="grid min-w-0 grid-cols-1 items-end gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(0,140px)_80px_minmax(0,140px)_minmax(0,170px)_minmax(0,1fr)]">
     <label className="min-w-0 text-[9px] font-bold uppercase text-slate-500">Cód. Projeto / Item<input value={itemBusca} onChange={e=>setItemBusca(e.target.value)} onBlur={()=>void resolve()} onKeyDown={e=>{if(e.key==='Enter')void resolve()}} className="mt-0.5 h-9 w-full rounded border border-gray-200 px-2 text-xs"/></label>
     <label className="min-w-0 text-[9px] font-bold uppercase text-slate-500">Margem Alvo %<input type="number" value={margem} onChange={e=>setMargem(e.target.value)} className="mt-0.5 h-9 w-full rounded border border-gray-200 px-2 text-xs"/></label>
-    <div className="flex min-h-9 min-w-0 flex-wrap items-center gap-x-2 border bg-slate-50 px-2 py-1 text-[10px]">Custo Técnico<strong className="text-xs">{brl(custo.custo_tecnico)}</strong></div>
-    <div className="flex min-h-9 min-w-0 flex-wrap items-center gap-x-2 border bg-slate-50 px-2 py-1 text-[10px]">Preço Sugerido<strong className="text-sm text-[#17445A]">{brl(preco)}</strong></div>
+    <div className="flex min-h-[30px] min-w-0 flex-wrap items-center gap-x-2 rounded-[2px] border border-slate-200 bg-slate-50 px-2 py-1 text-[10px]">Custo Técnico<strong className="text-xs">{brl(custo.custo_tecnico)}</strong></div>
+    <div className="flex min-h-[30px] min-w-0 flex-wrap items-center gap-x-2 rounded-[2px] border border-slate-200 bg-slate-50 px-2 py-1 text-[10px]">Preço Sugerido<strong className="text-sm text-[#17445A]">{brl(preco)}</strong></div>
     <div className="min-w-0 text-left text-[10px] text-slate-500 xl:text-right">{produto?produto.codigo+' • '+produto.nome:'Digite o código do item e pressione Enter.'}</div>
    </div></section>
    <div className="grid min-w-0 grid-cols-1 gap-2 xl:grid-cols-2">
@@ -72,10 +79,10 @@ export default function VendasAnaliseCustos(){
      <label className="min-w-0 text-[9px] uppercase text-slate-500">Comissão Representante (%)<input type="number" step="0.01" value={comissao} onChange={e=>setComissao(e.target.value)} className="mt-0.5 h-9 w-full rounded border border-gray-200 px-2 text-xs"/></label>
      <label className="min-w-0 text-[9px] uppercase text-slate-500">Margem de Lucro Desejada (%)<input type="number" step="0.01" value={margem} onChange={e=>setMargem(e.target.value)} className="mt-0.5 h-9 w-full rounded border border-gray-200 px-2 text-xs"/></label>
     </div><div className="mt-2 grid grid-cols-3 gap-1 text-[10px]"><div>Custo {brl(custo.custo_tecnico)}</div><div>Operações {custo.operacoes}</div><div>Preço <b>{brl(preco)}</b></div></div></section>
-    <section className="min-w-0 overflow-x-auto border border-gray-200 bg-white p-2"><div className="mb-2 flex flex-wrap items-center justify-between gap-2"><b className="text-xs">Ficha de processo / engenharia</b><label className="flex min-h-9 cursor-pointer items-center gap-1 border px-2 text-xs whitespace-nowrap"><Paperclip size={14}/>Anexar desenho<input type="file" className="hidden" accept=".pdf,.dwg,.dxf,.png,.jpg,.jpeg" onChange={e=>upload(e.currentTarget)}/></label></div>
+    <section className="min-w-0 overflow-x-auto rounded-[2px] border border-slate-200 bg-white p-2"><div className="mb-2 flex flex-wrap items-center justify-between gap-2"><b className="text-xs">Ficha de processo / engenharia</b><label className="flex h-[30px] cursor-pointer items-center gap-1 rounded-[2px] border border-slate-300 px-2 text-[10px] whitespace-nowrap"><Paperclip size={14}/>Anexar desenho<input type="file" className="hidden" accept=".pdf,.dwg,.dxf,.png,.jpg,.jpeg" onChange={e=>upload(e.currentTarget)}/></label></div>
      <table className="w-full min-w-[520px] border-collapse text-xs"><thead><tr className="bg-[#DEE2E6] text-left"><th className="p-2">Seq.</th><th className="p-2">Posto / Máquina</th><th className="p-2">Tempo min</th><th className="p-2">Custo</th><th className="p-2"></th></tr></thead><tbody>
       {operacoes.map((o,i)=><tr key={o.id} className="border-t"><td className="p-1">{o.sequencial_operacao||((i+1)*10)}</td><td>{o.maquina?.codigo??''} • {o.maquina?.nome??o.descricao_operacao}</td><td>{Number(o.tempo_minutos).toFixed(2)}</td><td>{brl((Number(o.tempo_minutos)/60)*Number(o.maquina?.valor_hora_custo??0))}</td><td><button type="button" onClick={()=>void removeOperation(o.id)} className="text-red-700"><Trash2 size={11}/></button></td></tr>)}
-      <tr className="border-t bg-slate-50"><td className="p-1">+</td><td><select value={posto} onChange={e=>setPosto(e.target.value)} className="h-7 w-full rounded border border-gray-200 px-1"><option value="">Posto de trabalho</option>{maquinas.map(m=><option key={m.id} value={m.id}>{m.codigo} • {m.nome}</option>)}</select></td><td><input type="number" min="0.01" step="0.01" value={tempo} onChange={e=>setTempo(e.target.value)} className="h-7 w-full rounded border border-gray-200 px-1"/></td><td></td><td><button type="button" onClick={()=>void addOperation()} className="flex h-7 w-[24px] items-center justify-center border bg-[#2D8DB8] text-white"><Plus size={11}/></button></td></tr>
+      <tr className="border-t bg-slate-50"><td className="p-1">+</td><td><select value={posto} onChange={e=>setPosto(e.target.value)} className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 px-1 text-[10px] outline-none focus:border-[#2D8DB8]"><option value="">Posto de trabalho</option>{maquinas.map(m=><option key={m.id} value={m.id}>{m.codigo} • {m.nome}</option>)}</select></td><td><input type="number" min="0.01" step="0.01" value={tempo} onChange={e=>setTempo(e.target.value)} className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 px-1 text-[10px] outline-none focus:border-[#2D8DB8]"/></td><td></td><td><button type="button" onClick={()=>void addOperation()} className="flex h-[30px] w-[30px] items-center justify-center rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] text-white"><Plus size={11}/></button></td></tr>
      </tbody></table>
     </section>
    </div>
