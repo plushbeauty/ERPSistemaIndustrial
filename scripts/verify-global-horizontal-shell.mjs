@@ -10,7 +10,7 @@ const checks = [
   [source.includes('<ERPHorizontalShell>\n            {protectedRoutes}'), 'Authenticated routes must be wrapped in the shared horizontal shell'],
   [!source.includes('<ERPHorizontalShell><SynqraLayoutProvider><PCPIndustrial />'), 'The PCP route must not mount a duplicate nested shell'],
   [source.indexOf('if (!session)') >= 0 && source.indexOf('if (!session)') < source.indexOf('const appContent'), 'Public routes must return before the authenticated shell is rendered'],
-  [source.includes("location.pathname.startsWith('/pcp') && <ERPStatusLegend />"), 'The PCP status legend must be preserved'],
+  [source.includes("location.pathname.startsWith('/pcp/agenda-maquinas') && <ERPStatusLegend />"), 'The PCP status legend must be preserved'],
   [!vendasLayout.includes("import ERPHorizontalShell") && !vendasLayout.includes('<ERPHorizontalShell>'), 'VendasLayout must not create a nested horizontal shell'],
   [(source.match(/<ERPHorizontalShell>/g) ?? []).length === 1, 'Exactly one shared shell must wrap authenticated routes'],
 ]
