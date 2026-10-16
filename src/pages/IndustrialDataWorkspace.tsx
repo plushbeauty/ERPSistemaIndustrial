@@ -4,6 +4,12 @@ import { supabase } from '../lib/supabaseClient'
 import { useLocation } from 'react-router-dom'
 
 type Field = { key: string; label: string; type?: 'text'|'number'|'date'|'select'|'textarea'; options?: string[]; required?: boolean }
+const structuredTextFields = ['parametros','etapas','acoes_recomendadas','evidencia_urls','cinco_porques','ishikawa','plano_5w2h','itens']
+function maxLengthForField(field: Field): number {
+  if (field.key === 'desenho_url') return 2048
+  if (field.type === 'textarea' && structuredTextFields.includes(field.key)) return 4000
+  return 50
+}
 type ModuleConfig = { title: string; subtitle: string; table: string; fields: Field[]; search: string[]; columns: string[] }
 const commonStatus = ['ativo','em_revisao','obsoleto']
 const configs: Record<string, ModuleConfig> = {
@@ -127,9 +133,9 @@ export default function IndustrialDataWorkspace() {
       <h2 className="mb-2 flex items-center gap-1 text-xs font-semibold"><ClipboardList size={14}/>{editing?'Editar registro':'Novo registro'}</h2>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {config.fields.map(field=><label key={field.key} className={field.type==='textarea'?'sm:col-span-2 lg:col-span-4':''}><span className={label}>{field.label}{field.required?' *':''}</span>
-          {field.type==='textarea'?<textarea className="min-h-[62px] w-full rounded-[2px] border border-slate-300 p-2 text-[10px] outline-none focus:border-sky-600" value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={field.required}/>
+          {field.type==='textarea'?<textarea maxLength={maxLengthForField(field)} className="min-h-[62px] w-full rounded-[2px] border border-slate-300 p-2 text-[10px] outline-none focus:border-sky-600" value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={field.required}/>
           :field.type==='select'?<select className={cls} value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={field.required}><option value="">Selecionar…</option>{(field.options??[]).map(option=><option key={option} value={option}>{option}</option>)}</select>
-          :<input className={cls} type={field.type==='number'?'number':field.type==='date'?'date':'text'} step={field.type==='number'?'any':undefined} value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={field.required}/>}
+          :<input className={cls} maxLength={field.type==='number'||field.type==='date'?undefined:maxLengthForField(field)} type={field.type==='number'?'number':field.type==='date'?'date':'text'} step={field.type==='number'?'any':undefined} value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={field.required}/>}
         </label>)}
       </div>
       {config.table==='qualidade_fmea'&&<p className="mt-2 border border-amber-200 bg-amber-50 p-2 text-[10px]">NPR em tempo real: <strong>{npr}</strong> = Severidade × Ocorrência × Detecção</p>}
@@ -137,7 +143,7 @@ export default function IndustrialDataWorkspace() {
       <div className="mt-3 flex gap-2"><button className={btn+' bg-sky-700 text-white hover:bg-sky-800'} onClick={()=>void save()} disabled={busy}><Save size={13}/>{busy?'Salvando…':'Salvar no Supabase'}</button><button className={btn} onClick={reset}>Limpar</button></div>
     </section>
     <section className="border border-slate-200 bg-white">
-      <div className="flex items-center justify-between gap-2 border-b border-slate-200 p-2"><h2 className="text-xs font-semibold">Registros persistidos</h2><label className="relative flex items-center"><Search size={12} className="absolute left-2 text-slate-400"/><input className="h-[30px] w-56 max-w-full border border-slate-300 pl-6 pr-2 text-[10px]" placeholder="Filtrar registros…" value={search} onChange={e=>setSearch(e.target.value)}/></label></div>
+      <div className="flex items-center justify-between gap-2 border-b border-slate-200 p-2"><h2 className="text-xs font-semibold">Registros persistidos</h2><label className="relative flex items-center"><Search size={12} className="absolute left-2 text-slate-400"/><input className="h-[30px] w-56 max-w-full border border-slate-300 pl-6 pr-2 text-[10px]" placeholder="Filtrar registros…" maxLength={50} value={search} onChange={e=>setSearch(e.target.value)}/></label></div>
       <div className="overflow-auto"><table className="w-full border-collapse text-left text-[10px]"><thead className="bg-slate-100"><tr>{config.columns.map(col=><th key={col} className="h-[32px] whitespace-nowrap border-b border-slate-200 px-2 font-semibold uppercase">{col.replaceAll('_',' ')}</th>)}<th className="h-[32px] border-b border-slate-200 px-2">AÇÃO</th></tr></thead><tbody>{loading?<tr><td colSpan={config.columns.length+1} className="h-10 text-center">Carregando registros…</td></tr>:visible.length===0?<tr><td colSpan={config.columns.length+1} className="h-10 text-center text-slate-500">Nenhum registro encontrado.</td></tr>:visible.map(row=><tr key={String(row.id)} className="hover:bg-neutral-50/80">{config.columns.map(col=><td key={col} className="h-[32px] max-w-64 truncate border-b border-slate-100 px-2">{row[col]==null?'—':typeof row[col]==='object'?JSON.stringify(row[col]):String(row[col])}</td>)}<td className="h-[32px] border-b border-slate-100 px-2"><div className="flex gap-1"><button className={`${btn} erp-row-action`} onClick={()=>edit(row)}>Editar</button>{config.table === "fiscal_nfe_entradas" && row.status === "rascunho" && <button className={btn + " bg-sky-700 text-white"} disabled={busy} onClick={() => void postInvoice(String(row.id))}>Escriturar</button>}</div></td></tr>)}</tbody></table></div>
     </section>
     <p className="mt-2 text-[9px] text-slate-500">Dados consultados e gravados diretamente no Supabase com as políticas de acesso existentes; não são utilizados registros de demonstração.</p>
