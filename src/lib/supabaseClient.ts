@@ -1,52 +1,61 @@
 /**
- * SYNQRA ERP — CORREÇÃO DE SESSÃO E ROTAS MESTRE
- * REVISÃO: 0.3 | DATA: 16/10/2026
- * ID: #AUDIT-ERP-20261016-15
- * ESCOPO: Autenticação Supabase, armazenamento em sessionStorage e blindagem de segurança.
- * ALTERAÇÃO: Remoção de chaves hardcoded, refatoração de RPC manual para o SDK nativo.
+ * SYNQRA ERP — AUDITORIA DE AUTENTICAÇÃO E RPC
+ * REVISÃO: 0.3.1 | DATA: 16/10/2026
+ * ID: #AUDIT-ERP-20261016-17
+ * ESCOPO: configuração Supabase por ambiente, sessão do navegador, Edge Functions e RPC.
+ * ALTERAÇÃO: removidos fallbacks estáticos; RPC via supabase.rpc(); erros de sessão tratados pelo SDK.
+ * PRESERVADO: storageKey erp-industrial-auth, sessionStorage, renovação de token e x-client-info.
+ * VALIDAÇÃO: commit no GitHub; type-check, lint, build, testes reais de Auth/RLS e deploy pendentes.
  */
 
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 
-// Definição estrita das chaves de ambiente (Seguindo o padrão de isolamento do LaraERP)
-const supabaseUrl = String(import.meta.env.VITE_SUPABASE_URL ?? '').trim()
-const supabaseKey = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY ?? '').trim()
+const AUTH_STORAGE_KEY = 'erp-industrial-auth'
 
-// Falha deliberada no bootstrap se as variáveis essenciais não existirem (Impede comportamento imprevisível)
+const supabaseUrl = String(import.meta.env.VITE_SUPABASE_URL ?? '').trim()
+const supabaseKey = String(
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
+    import.meta.env.VITE_SUPABASE_ANON_KEY ??
+    '',
+).trim()
+
+// Não conectar silenciosamente a um projeto fixo quando a configuração estiver ausente.
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error('CRITICAL_ENV_ERROR: VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY são obrigatórias.')
+  throw new Error(
+    'CRITICAL_ENV_ERROR: configure VITE_SUPABASE_URL e uma chave pública Supabase no ambiente.',
+  )
 }
 
 export const supabaseConfigurado = true
 export const supabaseModoConexao = 'nuvem'
 export const supabaseUrlExportada = supabaseUrl
-export const supabaseKeyExportada = supabaseKey
 
-// Limpeza segura do armazenamento persistente legado
+// Remove somente a sessão antiga persistida pela versão anterior.
+// A sessão atual continua restrita ao sessionStorage da aba/janela.
 if (typeof window !== 'undefined') {
   try {
-    window.localStorage.removeItem('erp-industrial-auth')
+    window.localStorage.removeItem(AUTH_STORAGE_KEY)
   } catch {
-    // Silencia se o navegador bloquear o acesso ao localStorage
+    // O navegador pode bloquear localStorage; não persistimos a sessão nele.
   }
 }
 
 const authStorage = typeof window !== 'undefined' ? window.sessionStorage : undefined
 
-// Instanciação limpa e configurada do cliente Supabase
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    storageKey: 'erp-industrial-auth',
+    storageKey: AUTH_STORAGE_KEY,
     storage: authStorage,
   },
   global: { headers: { 'x-client-info': 'sgq-erp-industrial' } },
 })
 
 /**
- * Recupera a sessão ativa e força a renovação do token caso esteja próximo de expirar.
+ * Recupera a sessão e renova o token quando estiver próximo de expirar.
+ * Não devolve silenciosamente uma sessão vencida se a renovação falhar.
  */
 export async function getValidSession(minValiditySeconds = 60): Promise<Session> {
   const { data, error } = await supabase.auth.getSession()
@@ -54,69 +63,73 @@ export async function getValidSession(minValiditySeconds = 60): Promise<Session>
 
   let session = data.session
   const expiresAt = Number(session?.expires_at ?? 0)
+  const needsRefresh =
+    Boolean(session?.refresh_token) &&
+    (!expiresAt || expiresAt * 1000 - Date.now() < minValiditySeconds * 1000)
 
-  if (session?.refresh_token && (!expiresAt || expiresAt * 1000 - Date.now() < minValiditySeconds * 1000)) {
+  if (needsRefresh) {
     const refreshed = await supabase.auth.refreshSession()
-    if (!refreshed.error && refreshed.data.session) {
-      session = refreshed.data.session
-    }
+    if (refreshed.error) throw refreshed.error
+    if (refreshed.data.session) session = refreshed.data.session
   }
 
   if (!session?.access_token || !session.user) {
     throw new Error('AUTH_SESSION_REQUIRED')
   }
+
+  const finalExpiresAt = Number(session.expires_at ?? 0)
+  if (finalExpiresAt > 0 && finalExpiresAt * 1000 <= Date.now()) {
+    throw new Error('AUTH_SESSION_EXPIRED')
+  }
+
   return session
 }
 
-/**
- * Atalho seguro para obter o token JWT de acesso.
- */
+/** Obtém o token JWT da sessão autenticada e validada. */
 export async function getAccessTokenOrThrow(): Promise<string> {
   return (await getValidSession()).access_token
 }
 
 /**
- * Invoca uma Edge Function garantindo o cabeçalho de autorização correto.
+ * Invoca uma Edge Function pelo SDK oficial do Supabase.
+ * O SDK administra apikey e cabeçalhos; o token é fornecido explicitamente
+ * para garantir que a chamada use a sessão validada acima.
  */
 export async function invokeSecureEdgeFunction<T = unknown>(
   functionName: string,
   payload: unknown,
 ): Promise<{ data: T | null; error: Error | null }> {
   try {
-    // O próprio SDK injeta a credencial nativa se estiver autenticado, mas garantimos o contexto aqui
-    await getValidSession()
-    
+    const session = await getValidSession()
     const { data, error } = await supabase.functions.invoke(functionName, {
-      body: payload as Record<string, unknown>,
+      body: payload,
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
     })
 
     if (error) throw error
     return { data: data as T, error: null }
   } catch (error) {
-    const normalized = error instanceof Error ? error : new Error(String(error))
+    const normalized = error instanceof Error ? error : new Error('EDGE_FUNCTION_REQUEST_FAILED')
     console.error(`[Edge Function ${functionName}]`, normalized.message)
     return { data: null, error: normalized }
   }
 }
 
 /**
- * Executa uma Procedure (RPC) no banco de dados de forma autenticada.
- * Refatorado: Removeu o fetch manual com exposição de headers e adotou o cliente nativo (Padrão Repository).
+ * Executa uma função PostgreSQL via SDK oficial.
+ * O SDK aplica a sessão atual e normaliza os erros PostgREST.
+ * RLS, GRANTs e as permissões da própria função continuam obrigatórios no banco.
  */
 export async function rpcAutenticado<T = unknown>(
   functionName: string,
   args: Record<string, unknown> = {},
 ): Promise<T> {
-  // Garante que a sessão está de fato válida e ativa antes de bater no banco
   await getValidSession()
 
-  // Executa via camada do SDK Supabase (Garante a criptografia e tratamento nativo de dados)
   const { data, error } = await supabase.rpc(functionName, args)
-
-  if (error) {
-    console.error(`[RPC Database Error ${functionName}]`, error.message)
-    throw new Error(error.message || `Falha ao executar a função interna: ${functionName}`)
-  }
+  if (error) throw error
 
   return data as T
 }
