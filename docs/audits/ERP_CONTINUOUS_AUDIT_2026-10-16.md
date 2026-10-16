@@ -87,3 +87,32 @@ Carbon usa uma arquitetura e versões próprias (React Router em modo framework,
 ### Portão para declarar um módulo concluído
 
 Só marcar como concluído quando todos forem comprovados: rota real; leitura e gravação com schema existente; isolamento multiempresa e autorização; estados loading/empty/error/success; validação e mensagens; UX compacta consistente; impressão/exportação quando aplicável; testes estáticos/funcionais relevantes; build e deployment do commit validado. Ausência de evidência fica marcada como **pendente**, nunca como concluída.
+
+
+## Continuação — telas de Qualidade (16/10/2026)
+
+### Alterações versionadas nesta rodada
+
+- `src/pages/QualidadeInspecaoProcesso.tsx` — cabeçalho de revisão adicionado; inputs/selects passaram do padrão local de 54 px para o token compartilhado `fieldClass` (32 px); labels usam `labelClass`; ações Nova inspeção, Salvar laudo e Imprimir foram compactadas para 32 px; espaçamento externo reduzido. Consultas, validações, lógica de salvamento e impressão foram mantidas sem alteração intencional.
+- `src/pages/QualidadeInspecoesIndustrial.tsx` — `fieldClass` e `labelClass` agora vêm de `src/components/industrial/forms/industrialFormStyles.ts`, removendo duplicação local. `buttonClass` local e operações funcionais foram preservados.
+- Commits: `33e6415dd9925b693f60cfb807fb552440fb364c` (Inspeção em processo) e `fe529865b33a1892dc37c9acd0f8362e47807739` (Inspeção de lotes).
+
+### Telas verificadas sem alterações
+
+- `src/pages/QualidadeEspecificacoesTecnicas.tsx` já utiliza controles compactos (28–30 px) e ações pequenas; foi preservada para evitar alteração desnecessária.
+- `src/pages/QualidadeTablet.tsx` lista as áreas de SGQ e mantém links para inspeções, especificações, lotes, RNC/CAPA, GED, CEP e calibração.
+- `src/AppEntryV2.tsx` contém rotas de Qualidade protegidas por `QualityPlanGate`, incluindo `/qualidade/ged-documentos` e variantes por ID.
+
+### Validação pendente
+
+- A alteração mais recente disparou o workflow `ERP Industrial CI`, mas a consulta inicial ainda retornou status `pending` sem jobs disponibilizados. Não declarar os dois commits aprovados até que o workflow e o check Vercel terminem para o SHA atual.
+- A conexão Supabase não permite consultar o schema remoto nesta sessão; nenhum schema, RPC ou dado foi inventado ou alterado.
+- A página GED não foi modificada nesta rodada porque o componente real requer inspeção adicional do arquivo efetivamente mapeado na rota, para evitar atualizar o arquivo errado.
+
+### Próximo ciclo da Qualidade
+
+1. Resolver/confirmar o workflow do SHA atual.
+2. Auditar o componente GED efetivamente usado na rota e seus uploads/storage/revisões.
+3. Revisar liberação e quarentena de lotes para garantir o bloqueio transacional de lotes reprovados.
+4. Revisar RNC/CAPA e instrumentos de calibração, com atenção a RLS, schema e status.
+5. Rodar novamente os contratos de regressão e confirmar Vercel READY antes de marcar cada item concluído.
