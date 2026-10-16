@@ -85,7 +85,7 @@ export default function ProdutosVendasIndustrial(){
   const [ncmDescription,setNcmDescription]=useState('')
   const [ncmBusy,setNcmBusy]=useState(false)
   const [ncmSearchMessage,setNcmSearchMessage]=useState('')
-  type ProductionLookupKind='roteiro'|'bom'|'wip'|'centro'
+  type ProductionLookupKind='roteiro'|'bom'|'wip'|'centro'|'template_inspec'|'tipo_medicao'
   type ProductionLookupRow={id:string;codigo:string;descricao:string;versao?:string;status?:string}
   const [productionLookup,setProductionLookup]=useState<{kind:ProductionLookupKind;title:string;rows:ProductionLookupRow[];loading:boolean;error:string}|null>(null)
   const [productionLookupQuery,setProductionLookupQuery]=useState('')
@@ -126,7 +126,7 @@ export default function ProdutosVendasIndustrial(){
   },[products,query,groupFilter])
 
   const openProductionLookup=async(kind:ProductionLookupKind)=>{
-    const titles:Record<ProductionLookupKind,string>={roteiro:'Consulta de roteiros de fabricação',bom:'Consulta de estruturas BOM',wip:'Consulta de almoxarifados WIP',centro:'Consulta de centros de trabalho'}
+    const titles:Record<ProductionLookupKind,string>={roteiro:'Consulta de roteiros de fabricação',bom:'Consulta de estruturas BOM',wip:'Consulta de almoxarifados WIP',centro:'Consulta de centros de trabalho',template_inspec:'Consulta de modelos/planos de inspeção',tipo_medicao:'Consulta de tipos de medição da qualidade'}
     setProductionLookup({kind,title:titles[kind],rows:[],loading:true,error:''});setProductionLookupQuery('')
     try{
       if(!companyId)throw new Error('Empresa da sessão não identificada.')
@@ -143,17 +143,31 @@ export default function ProdutosVendasIndustrial(){
         const r=await supabase.from('erp_estoque_localizacoes').select('id,codigo,nome,tipo').eq('empresa_id',companyId).eq('ativo',true).order('codigo').limit(1000)
         if(r.error)throw r.error
         rows=(r.data??[]).filter((x:{codigo:string;nome:string;tipo:string})=>/wip|processo|produção|producao/i.test([x.codigo,x.nome,x.tipo].join(' '))).map((x:{id:string;codigo:string;nome:string;tipo:string})=>({id:x.id,codigo:x.codigo,descricao:x.nome+' · '+x.tipo}))
-      }else{
+      }else if(kind==='centro'){
         const r=await supabase.from('erp_postos_trabalho').select('id,codigo_posto,nome_posto').eq('empresa_id',companyId).eq('ativo',true).order('codigo_posto').limit(500)
         if(r.error)throw r.error
         rows=(r.data??[]).map((x:{id:string;codigo_posto:string;nome_posto:string})=>({id:x.id,codigo:x.codigo_posto,descricao:x.nome_posto}))
+      }else if(kind==='template_inspec'){
+        const r=await supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,frequencia,status').eq('empresa_id',companyId).order('codigo').limit(1000)
+        if(r.error)throw r.error
+        rows=(r.data??[]).map((x:{id:string;codigo:string;caracteristica:string;unidade:string|null;frequencia:string|null;status:string})=>({id:x.id,codigo:x.codigo,descricao:[x.caracteristica,x.unidade?'Unidade: '+x.unidade:null,x.frequencia?'Frequência: '+x.frequencia:null].filter(Boolean).join(' · '),status:x.status}))
+      }else{
+        const r=await supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,status').eq('empresa_id',companyId).order('caracteristica').limit(1000)
+        if(r.error)throw r.error
+        const unique=new Map<string,ProductionLookupRow>()
+        for(const x of (r.data??[]) as Array<{id:string;codigo:string;caracteristica:string;unidade:string|null;status:string}>){
+          const key=(x.caracteristica||'').trim().toLocaleLowerCase('pt-BR')+'|'+(x.unidade||'').trim().toLocaleLowerCase('pt-BR')
+          if(!x.caracteristica?.trim()||unique.has(key))continue
+          unique.set(key,{id:x.id,codigo:x.codigo,descricao:[x.caracteristica,x.unidade?'Unidade: '+x.unidade:null].filter(Boolean).join(' · '),status:x.status})
+        }
+        rows=Array.from(unique.values()).sort((a,b)=>a.descricao.localeCompare(b.descricao,'pt-BR'))
       }
       setProductionLookup({kind,title:titles[kind],rows,loading:false,error:rows.length?'':'Nenhum cadastro ativo encontrado para esta consulta.'})
     }catch(e){setProductionLookup({kind,title:titles[kind],rows:[],loading:false,error:e instanceof Error?e.message:'Falha ao consultar os cadastros.'})}
   }
   const chooseProductionLookup=(row:ProductionLookupRow)=>{
     if(!productionLookup)return
-    const key:Record<ProductionLookupKind,keyof FormData>={roteiro:'roteiro_padrao_codigo',bom:'estrutura_bom_codigo',wip:'almoxarifado_wip_codigo',centro:'centro_trabalho_codigo'}
+    const key:Record<ProductionLookupKind,keyof FormData>={roteiro:'roteiro_padrao_codigo',bom:'estrutura_bom_codigo',wip:'almoxarifado_wip_codigo',centro:'centro_trabalho_codigo',template_inspec:'modelo_inspecao_codigo',tipo_medicao:'tipo_medicao_qualidade'}
     update(key[productionLookup.kind],row.codigo);setProductionLookup(null)
   }
   const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false);setNcmDescription('');setNcmOptions([]);setNcmSearchMessage('')}
@@ -702,14 +716,14 @@ export default function ProdutosVendasIndustrial(){
               {check('Requer quarentena','requer_quarentena')}
             </div>
             <label style={label}>CÓD. MODELO DE INSPEÇÃO
-              <div className="product-quality-lookup"><input value={String(form.modelo_inspecao_codigo??'')} maxLength={10} disabled={!editing} onChange={e=>update('modelo_inspecao_codigo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}/><button type="button" className="product-quality-lookup-btn" disabled={!editing} title="Pesquisar modelo de inspeção" onClick={()=>{const value=window.prompt('Informe o código do modelo de inspeção cadastrado:',String(form.modelo_inspecao_codigo??''));if(value!==null)update('modelo_inspecao_codigo',value.trim().slice(0,10)||null)}}><Search size={13}/></button></div>
+              <div className="product-quality-lookup"><input value={String(form.modelo_inspecao_codigo??'')} maxLength={10} disabled={!editing} onChange={e=>update('modelo_inspecao_codigo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}/><button type="button" className="product-quality-lookup-btn" disabled={!editing} title="Pesquisar modelo de inspeção" onClick={()=>void openProductionLookup('template_inspec')}><Search size={13}/></button></div>
             </label>
           </section>
           <section className="product-quality-card">
             <header className="product-quality-card-header"><div><span>🔬 04.B / PARÂMETROS E CRITÉRIOS DE TESTE</span><small>Limites técnicos de aceitação</small></div></header>
             <div className="product-quality-parameter-grid">
               <label style={label}>AMOSTRAGEM AQL<input value={String(form.amostragem_aql??'')} maxLength={6} disabled={!editing} onChange={e=>update('amostragem_aql',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
-              <label style={label}>TIPO DE MEDIÇÃO<div className="product-quality-lookup"><input value={String(form.tipo_medicao_qualidade??'')} maxLength={15} disabled={!editing} onChange={e=>update('tipo_medicao_qualidade',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}/><button type="button" className="product-quality-lookup-btn" disabled={!editing} title="Pesquisar tipo de medição" onClick={()=>{const value=window.prompt('Informe o tipo de medição definido no procedimento de qualidade:',String(form.tipo_medicao_qualidade??''));if(value!==null)update('tipo_medicao_qualidade',value.trim().slice(0,15)||null)}}><Search size={13}/></button></div></label>
+              <label style={label}>TIPO DE MEDIÇÃO<div className="product-quality-lookup"><input value={String(form.tipo_medicao_qualidade??'')} maxLength={15} disabled={!editing} onChange={e=>update('tipo_medicao_qualidade',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}/><button type="button" className="product-quality-lookup-btn" disabled={!editing} title="Pesquisar tipo de medição" onClick={()=>void openProductionLookup('tipo_medicao')><Search size={13}/></button></div></label>
               {field('Valor mínimo','valor_minimo_qualidade','number')}
               {field('Valor máximo','valor_maximo_qualidade','number')}
               <label style={label}>UNIDADE DE MEDIDA QC<input value={String(form.unidade_medida_qualidade??'')} maxLength={3} disabled={!editing} onChange={e=>update('unidade_medida_qualidade',e.target.value.toUpperCase().slice(0,3)||null)} style={{...input,background:editing?'#fff':'#f5f7fa',textTransform:'uppercase'}}/></label>
