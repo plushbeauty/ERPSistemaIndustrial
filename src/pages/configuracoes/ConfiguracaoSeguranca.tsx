@@ -83,7 +83,7 @@ export default function ConfiguracaoSeguranca() {
 
   async function changePassword(event: FormEvent) {
     event.preventDefault(); setError(''); setMessage('')
-    if (password.length < 12 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\\d/.test(password) || !/[^A-Za-z0-9]/.test(password)) { setError('Use 12+ caracteres com maiúscula, minúscula, número e símbolo.'); return }
+    if (password.length < 12 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password) || !/[^A-Za-z0-9]/.test(password)) { setError('Use 12+ caracteres com maiúscula, minúscula, número e símbolo.'); return }
     if (password !== confirmPassword) { setError('A confirmação da senha não confere.'); return }
     setBusy(true)
     try {
