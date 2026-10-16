@@ -1,3 +1,8 @@
+/*
+ * REVISÃO TÉCNICA: 16/10/2026
+ * Revisado: fluxo de administração de usuários, escopo empresa/Master, uso de RPCs e pontos de atenção para auditoria e sincronização Auth/ERP.
+ * Não validado nesta revisão: Edge Function em produção, políticas RLS efetivas, type-check/build e testes autenticados ponta a ponta.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import {
   Building2,
