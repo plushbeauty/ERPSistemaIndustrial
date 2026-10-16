@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Camera, ImagePlus, RefreshCw, Upload, X } from 'lucide-react'
+import { Camera, ImagePlus, RefreshCw } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Mold = {
