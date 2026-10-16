@@ -1,3 +1,15 @@
+/*
+  @AUDIT_DATE: 2026-10-16
+  @AUDIT_TIME_BRT: 12:44
+  @AUDIT_REVISION: #AUDIT-ERP-20261016-03
+  @STATUS: IMPLEMENTED_PENDING_VALIDATION
+  @SCOPE: src/pages/CadastroEmpresa.tsx
+  @REVIEWED: Rota de cadastro, fluxo Supabase e referências do logo; confirmada ausência da importação InfrastructureTrust nesta tela.
+  @CHANGES: Registro desta revisão; preserva o fluxo de cadastro existente e os caminhos de logo /logo/logo.png. Validação visual e fluxo real ainda pendentes.
+  @VALIDATION: Arquivo inspecionado no GitHub; type-check/lint/build e validação remota não executados nesta operação.
+  @CHECKLIST: Scope-Limited | Preserve-Business-Rules | No-Fake-Data | Validation-Required
+*/
+
 import { FormEvent, useMemo, useState } from 'react'
 import { ArrowLeft, CheckCircle2, Building2, UserPlus, Package, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
