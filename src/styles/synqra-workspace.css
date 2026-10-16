@@ -80,6 +80,10 @@
 .sales-orders-status-card.is-active{outline:2px solid #2d8db8;outline-offset:-2px}
 .sales-button--primary,.sales-order-primary,.erp-row-action{background:#2D8DB8!important;border-color:#2D8DB8!important;color:#fff!important}
 .sales-button--primary:hover,.sales-order-primary:hover,.erp-row-action:hover{background:#17445A!important;border-color:#17445A!important;color:#fff!important}
+.sales-orders-card .sales-button{height:30px;min-width:76px;border:1px solid #2D8DB8!important;border-radius:2px;background:#2D8DB8!important;color:#fff!important;font-size:10px;font-weight:500}
+.sales-orders-card .sales-button:hover:not(:disabled){background:#17445A!important;border-color:#17445A!important}
+.sales-orders-card .sales-search button{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;background:#2D8DB8;color:#fff;border:1px solid #2D8DB8;border-radius:2px}
+.sales-orders-card .sales-button:disabled{opacity:.45}
 .sales-process-stages{display:grid;grid-template-columns:repeat(2,minmax(100px,1fr));gap:4px;min-width:250px;max-width:390px;padding:3px 0}
 .sales-process-stage{min-width:0;border:1px solid;border-radius:2px;padding:4px 6px;display:flex;flex-direction:column;gap:2px;line-height:1.2}
 .sales-process-stage span{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
