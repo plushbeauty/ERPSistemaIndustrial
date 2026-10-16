@@ -589,18 +589,22 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen label{font-family:monospace!important}
       .product-master-screen input:not([type=checkbox]):not([type=file]),.product-master-screen select,.product-master-screen textarea{font-family:monospace!important;font-size:11px!important;border-radius:2px!important;border-color:#c6d0dc!important}
       .product-master-screen input:focus,.product-master-screen select:focus,.product-master-screen textarea:focus{background:#fffdf0!important;border:1px solid #2b6cb0!important;outline:1px solid #2b6cb0!important;outline-offset:0!important;box-shadow:0 0 0 1px rgba(43,108,176,.12)!important}
-      .product-master-screen .edit-2{width:4ch!important;max-width:4ch!important;text-align:center!important}
-      .product-master-screen .edit-3{width:5ch!important;max-width:5ch!important;text-transform:uppercase}
-      .product-master-screen .edit-4{width:6ch!important;max-width:6ch!important;text-align:right!important}
-      .product-master-screen .edit-6{width:8ch!important;max-width:8ch!important;text-transform:uppercase}
-      .product-master-screen .edit-7{width:9ch!important;max-width:9ch!important;text-transform:uppercase}
-      .product-master-screen .edit-8{width:10ch!important;max-width:10ch!important;text-transform:uppercase}
-      .product-master-screen .edit-10{width:12ch!important;max-width:12ch!important;text-transform:uppercase}
-      .product-master-screen .edit-14{width:16ch!important;max-width:16ch!important;text-align:right!important}
-      .product-master-screen .edit-15{width:17ch!important;max-width:17ch!important;text-transform:uppercase}
-      .product-master-screen .edit-20{width:22ch!important;max-width:22ch!important}
-      .product-master-screen .edit-60{width:100%!important;max-width:320px!important}
-      .product-master-screen .edit-120{width:100%!important;max-width:450px!important}
+      /* Contrato industrial: largura física dos edits, com especificidade acima dos grids legados. */
+      .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{display:inline-block!important;box-sizing:border-box!important}
+      .product-master-screen input.edit-2,.product-master-screen select.edit-2{width:5ch!important;max-width:5ch!important;text-align:center!important}
+      .product-master-screen input.edit-3,.product-master-screen select.edit-3{width:6ch!important;max-width:6ch!important;text-transform:uppercase}
+      .product-master-screen input.edit-4,.product-master-screen select.edit-4{width:7ch!important;max-width:7ch!important;text-align:right!important}
+      .product-master-screen input.edit-6,.product-master-screen select.edit-6{width:9ch!important;max-width:9ch!important;text-transform:uppercase}
+      .product-master-screen input.edit-7,.product-master-screen select.edit-7{width:10ch!important;max-width:10ch!important}
+      .product-master-screen input.edit-8,.product-master-screen select.edit-8{width:11ch!important;max-width:11ch!important}
+      .product-master-screen input.edit-10,.product-master-screen select.edit-10{width:13ch!important;max-width:13ch!important}
+      .product-master-screen input.edit-12,.product-master-screen select.edit-12{width:15ch!important;max-width:15ch!important;text-align:right!important}
+      .product-master-screen input.edit-14,.product-master-screen select.edit-14{width:16ch!important;max-width:16ch!important;text-align:right!important}
+      .product-master-screen input.edit-15,.product-master-screen select.edit-15{width:17ch!important;max-width:17ch!important}
+      .product-master-screen input.edit-20,.product-master-screen select.edit-20{width:23ch!important;max-width:23ch!important}
+      .product-master-screen input.edit-60,.product-master-screen select.edit-60,.product-master-screen textarea.edit-60{width:100%!important;max-width:280px!important}
+      .product-master-screen input.edit-120,.product-master-screen select.edit-120,.product-master-screen textarea.edit-120{width:100%!important;max-width:450px!important}
+      .product-master-screen input[type="number"]{text-align:right!important}
       .product-master-screen .product-quality-lookup-btn,.product-master-screen .product-mini-action{border-color:#2b6cb0!important;color:#1a365d!important;background:#edf4fc!important;border-radius:2px!important}
       .product-master-screen .product-quality-lookup-btn:hover,.product-master-screen .product-mini-action:hover{background:#dceafe!important}
       .product-master-screen .product-screen-tabs button[style*="border-bottom: 3px solid"]{border-bottom-color:#2b6cb0!important}
