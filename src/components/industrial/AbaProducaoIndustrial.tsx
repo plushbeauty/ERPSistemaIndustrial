@@ -1,15 +1,16 @@
 /**
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data da alteração: 2026-10-16
- * ID da revisão: REV-060
+ * ID da revisão: REV-061
+ * Revisão anterior: REV-060 (16/10/2026).
  * Área/módulo: Cadastro de Produtos / Produção (MRP)
- * O que foi revisto: substituir cards documentais simulados por consultas a fichas, operações e anexos vinculados ao produto; evitar depender de tabela PCP não confirmada.
- * O que foi alterado: painel de ficha técnica ativa, operações e máquinas, anexos técnicos com URL temporária assinada.
- * Motivo: operador precisa acessar documentação real do processo sem confundir anexos comuns com parâmetros de manufatura.
- * Schema/RPC/storage confirmado no código consultado: erp_fichas_tecnicas, erp_ficha_operacoes, erp_maquinas, erp_documentos_anexos, bucket documentos-erp. A tabela de roteiro PCP específica não foi confirmada e não é consultada.
- * Validação executada: inspeção estática do componente e confirmação da integração na tela de produtos.
+ * O que foi revisto: consulta a erp_pcp_roteiro_operacoes não tinha confirmação no schema/migrations consultados.
+ * O que foi alterado: removida a consulta e a renderização dependente dessa tabela; painel permanece ligado a erp_fichas_tecnicas, erp_ficha_operacoes, máquinas e anexos confirmados no código existente.
+ * Motivo: impedir que uma tabela não confirmada provoque erro PostgREST e bloqueie o painel inteiro.
+ * Schema/RPC/storage confirmado no código consultado: erp_fichas_tecnicas, erp_ficha_operacoes, erp_maquinas, erp_documentos_anexos, bucket documentos-erp. A tabela de roteiro PCP específica continua pendente de confirmação.
+ * Validação executada: inspeção estática do diff; busca confirmada pela remoção das referências à tabela não confirmada.
  * Validação pendente: type-check, lint, build, schema remoto, Storage/RLS e teste com sessão autenticada.
- * Estado: implementado no código; não homologado.
+ * Estado: correção implementada no código; não homologado.
  */
 
 import { ClipboardList, FileText, Settings2, ExternalLink, RefreshCw } from 'lucide-react'
