@@ -292,11 +292,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
         <img src="/images/sgq/sgq-erp-login.png" alt="Imagem institucional do SYSNQRA ERP & SGQ INDUSTRIAL" />
         <div className="auth-visual-shade" aria-hidden="true" />
         <div className="auth-visual-content">
-          <a className="auth-visual-logo" href="/" aria-label="Voltar à página inicial">
-            <img src="/logo/logo.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" />
-          </a>
           <div className="auth-visual-message">
-            <span>GESTÃO INDUSTRIAL INTEGRADA</span>
             <h2>Bem-vindo à sua<br />operação <em>mais inteligente.</em></h2>
             <p>É um prazer ter você aqui. Acesse seu ambiente para acompanhar processos, produção e qualidade em um só lugar, com segurança e informação para tomar as melhores decisões.</p>
             <div className="auth-trust">
