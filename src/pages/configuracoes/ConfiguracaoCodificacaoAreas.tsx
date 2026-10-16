@@ -3,7 +3,7 @@
  * Revisado: fluxo de configuração de codificação, estados do formulário, contexto de empresa, chamadas Supabase e compactação dos campos/ações no padrão industrial.
  * Não validado nesta revisão: contrato remoto das tabelas, RLS, gravação concorrente, type-check/build e testes de interface.
  */
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Archive, Boxes, CheckCircle2, Code2, Layers3, Plus, RefreshCw, Save, Trash2 } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import type { Area, CodigoConfig, Grupo, HistoricoCodigo } from '../../types/configuracoes'
