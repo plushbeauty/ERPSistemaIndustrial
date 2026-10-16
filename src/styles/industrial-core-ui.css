@@ -109,3 +109,33 @@
 .edit-12 { width: 18ch !important; max-width: 18ch !important; text-align: right !important; }
 .edit-20 { width: 26ch !important; max-width: 26ch !important; }
 .edit-longo { width: min(100%, 450px) !important; max-width: 450px !important; }
+
+/* Integração dos componentes reutilizáveis de formulário e dos campos compactos já existentes. */
+input.erp-form-control:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+select.erp-form-control,
+input.erp-premium-input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+select.erp-premium-input {
+  box-sizing: border-box !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  border: 1px solid #94a3b8 !important;
+  border-radius: 4px !important;
+  padding: 4px 10px !important;
+  font-family: Consolas, "Courier New", monospace !important;
+  font-size: 13px !important;
+  line-height: 22px !important;
+  background-color: #f8fafc !important;
+}
+input.erp-form-control:focus, select.erp-form-control:focus,
+input.erp-premium-input:focus, select.erp-premium-input:focus {
+  border-color: #2b6cb0 !important;
+  background-color: #fffdf0 !important;
+  outline: 2px solid #2b6cb0 !important;
+  outline-offset: 0 !important;
+}
+.erp-form-field > label, .erp-form-field > label > span {
+  font-family: "Segoe UI", Inter, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #475569 !important;
+}
