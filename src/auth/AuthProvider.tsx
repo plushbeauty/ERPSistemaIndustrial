@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase, supabaseConfigurado } from '../lib/supabaseClient';
 import { narrowERPProfile, type AuthProfile } from './AuthProfile';
@@ -17,17 +17,40 @@ async function loadProfile(authUserId:string):Promise<AuthProfile>{
 export async function carregarPerfilAutenticado(user:User):Promise<AuthProfile>{return loadProfile(user.id)}
 export function AuthProvider({children}:{children:ReactNode}){
  const[session,setSession]=useState<Session|null>(null),[profile,setProfile]=useState<AuthProfile|null>(null),[loading,setLoading]=useState(true);
+ const hydrationVersion=useRef(0);
  const hydrate=useCallback(async(next:Session|null)=>{
+  const version=++hydrationVersion.current;
   if(!next?.user){setSession(null);setProfile(null);setLoading(false);return}
   setLoading(true);
-  try{if(!supabaseConfigurado)throw new Error('SUPABASE_ENV_NOT_CONFIGURED');const nextProfile=await loadProfile(next.user.id);setSession(next);setProfile(nextProfile)}
-  catch(error){console.error('[ERP AuthProvider] acesso bloqueado:',error);setSession(null);setProfile(null);await supabase.auth.signOut().catch(()=>undefined)}
-  finally{setLoading(false)}
+  try{
+   if(!supabaseConfigurado)throw new Error('SUPABASE_ENV_NOT_CONFIGURED');
+   const nextProfile=await loadProfile(next.user.id);
+   if(version!==hydrationVersion.current)return;
+   setSession(next);setProfile(nextProfile);
+  } catch(error) {
+   if(version!==hydrationVersion.current)return;
+   console.error('[ERP AuthProvider] acesso bloqueado:',error);
+   setSession(null);setProfile(null);
+   await supabase.auth.signOut().catch(()=>undefined);
+  } finally {
+   if(version===hydrationVersion.current)setLoading(false);
+  }
  },[]);
- useEffect(()=>{let mounted=true;if(!supabaseConfigurado){setLoading(false);return()=>{mounted=false}};
-  void supabase.auth.getSession().then(({data,error})=>{if(!mounted)return;if(error){console.error('[ERP AuthProvider] sessão inválida:',error);void hydrate(null);return}void hydrate(data.session)});
-  const{data:listener}=supabase.auth.onAuthStateChange((_event,next)=>{if(mounted)void hydrate(next)});
-  return()=>{mounted=false;listener.subscription.unsubscribe()}
+ useEffect(()=>{let mounted=true;let authEventTimer:ReturnType<typeof setTimeout>|undefined;
+  if(!supabaseConfigurado){setLoading(false);return()=>{mounted=false}};
+  void supabase.auth.getSession().then(({data,error})=>{
+   if(!mounted)return;
+   if(error){console.error('[ERP AuthProvider] sessão inválida:',error);void hydrate(null);return}
+   void hydrate(data.session);
+  });
+  // Do not call Supabase APIs from inside onAuthStateChange: the callback runs
+  // while the auth client may hold its internal lock. Defer profile hydration.
+  const{data:listener}=supabase.auth.onAuthStateChange((_event,next)=>{
+   if(!mounted)return;
+   if(authEventTimer!==undefined)clearTimeout(authEventTimer);
+   authEventTimer=setTimeout(()=>{if(mounted)void hydrate(next)},0);
+  });
+  return()=>{mounted=false;if(authEventTimer!==undefined)clearTimeout(authEventTimer);listener.subscription.unsubscribe()}
  },[hydrate]);
  async function signOut(){try{await supabase.auth.signOut()}finally{setSession(null);setProfile(null);setLoading(false)}}
  return <AuthContext.Provider value={{session,user:session?.user??null,profile,loading,signOut}}>{children}</AuthContext.Provider>
