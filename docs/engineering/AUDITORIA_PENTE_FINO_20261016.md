@@ -1,4 +1,4 @@
-# Auditoria pente-fino — ERP Sistema Industrial
+# Auditoria técnica abrangente — ERP Sistema Industrial
 Data: 2026-10-16
 Branch auditada: fix/clientes-clone-fornecedores-producao
 Repositório: plushbeauty/ERPSistemaIndustrial
