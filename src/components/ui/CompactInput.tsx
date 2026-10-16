@@ -11,6 +11,7 @@ export interface CompactInputProps extends Omit<InputHTMLAttributes<HTMLInputEle
 export default function CompactInput({ label, value, onChange, required = false, wide = false, className = '', onBlur, placeholder, ...props }: CompactInputProps) {
   const [touched, setTouched] = useState(false)
   const invalid = required && touched && value.trim() === ''
+  const widthClass = props.maxLength === 2 ? 'edit-2' : props.maxLength === 3 ? 'edit-3' : props.maxLength === 4 ? 'edit-4' : props.maxLength === 6 ? 'edit-6' : props.maxLength === 8 || props.maxLength === 10 ? 'edit-8' : props.maxLength === 12 || props.maxLength === 14 ? 'edit-12' : props.maxLength === 20 ? 'edit-20' : wide ? 'edit-longo' : ''
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => onChange(event.currentTarget.value)
   const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
     setTouched(true)
@@ -18,6 +19,6 @@ export default function CompactInput({ label, value, onChange, required = false,
   }
   return <label className={`grid min-w-0 gap-[2px] ${wide ? 'col-span-2' : ''} ${className}`}>
     {label ? <span className="mb-[2px] text-[12px] font-semibold uppercase leading-[14px] tracking-wider text-slate-600">{label}{required ? ' *' : ''}</span> : null}
-    <input {...props} value={value} onChange={handleChange} onBlur={handleBlur} placeholder={invalid ? 'Preencher...' : placeholder} aria-invalid={invalid || undefined} className={`h-8 min-h-8 w-full rounded border px-2.5 font-mono text-[13px] text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-0 disabled:bg-slate-100 disabled:text-slate-500 ${invalid ? 'border-red-500 bg-red-50/50 placeholder:text-red-400' : 'border-slate-300 bg-white'}`} />
+    <input {...props} value={value} onChange={handleChange} onBlur={handleBlur} placeholder={invalid ? 'Preencher...' : placeholder} aria-invalid={invalid || undefined} className={`h-8 min-h-8 ${widthClass} rounded border px-2.5 font-mono text-[13px] text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-0 disabled:bg-slate-100 disabled:text-slate-500 ${invalid ? 'border-red-500 bg-red-50/50 placeholder:text-red-400' : 'border-slate-300 bg-white'}`} />
   </label>
 }
