@@ -742,3 +742,54 @@
   padding-top:10px;
 }
 .sales-delete-actions .sales-button{min-height:30px;height:30px;font-size:9px!important}
+
+
+/* SYNQRA RH — geometria compacta, matriz RBAC efetiva e ficha A4. */
+.user-admin{max-width:1500px;padding:18px 22px!important;color:#123b50}
+.user-admin-heading{align-items:center;margin-bottom:14px!important}
+.user-admin-heading h1{font-size:clamp(22px,2vw,29px)!important}
+.user-admin-summary{gap:8px!important;margin-bottom:12px!important}
+.user-admin-summary article{min-height:76px!important;padding:10px 13px!important;border-radius:3px!important;border-color:#cbd9df!important}
+.user-admin-summary article>strong{font-size:23px!important;color:#1a365d!important}
+.user-admin-card{border-radius:3px!important;border-color:#cbd9df!important;box-shadow:none!important}
+.user-admin-table thead th{height:32px!important;background:#eaf2f6!important;color:#1a365d!important;font-size:9px!important}
+.user-admin-table tbody td{height:48px!important;padding:6px 10px!important;font-size:11px!important}
+.user-admin-avatar{width:30px!important;height:30px!important;border-radius:3px!important}
+.user-admin .user-icon-action{min-width:30px!important;min-height:30px!important;border-radius:3px!important}
+.user-admin .user-button{min-height:32px!important;border-radius:3px!important;padding:0 11px!important;font-size:11px!important}
+.user-admin-dialog{width:min(920px,calc(100vw - 24px))!important;max-height:92vh!important;border-radius:3px!important;padding:18px!important}
+.user-admin-dialog-header{padding-bottom:10px!important}
+.user-admin-dialog-header h2{font-size:19px!important}
+.user-admin-dialog-icon{width:32px!important;height:32px!important;border-radius:3px!important}
+.user-admin-form-grid{gap:10px 12px!important;padding-top:12px!important}
+.user-admin-field{gap:3px!important;font-size:9px!important;text-transform:uppercase;letter-spacing:.04em}
+.user-admin-field input,.user-admin-field select{min-width:0;width:100%;min-height:32px!important;height:32px!important;border-radius:2px!important;padding:5px 8px!important;font-family:ui-monospace,SFMono-Regular,Consolas,monospace!important;font-size:11px!important;text-transform:none;letter-spacing:normal}
+.user-admin-field small{font-size:9px!important;text-transform:none;letter-spacing:normal}
+.user-admin-permission-preview{grid-column:1/-1;border:1px solid #cbd9df;background:#f8fbfc;padding:11px;margin-top:2px}
+.user-admin-permission-heading{display:grid;gap:3px;margin-bottom:9px}
+.user-admin-permission-heading strong{color:#1a365d;font-size:10px;letter-spacing:.05em}
+.user-admin-permission-heading span,.user-admin-permission-preview>p{color:#647985;font-size:10px}
+.user-admin-permission-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px;margin:8px 0 10px}
+.user-admin-permission-item{display:flex;align-items:flex-start;gap:7px;min-width:0;font-size:10px!important;font-weight:500!important;text-transform:none!important;letter-spacing:normal!important}
+.user-admin-permission-item input{width:14px!important;height:14px!important;min-height:14px!important;flex:0 0 14px;margin:1px 0 0;accent-color:#2b6cb0}
+.user-admin-permission-item span{display:grid;gap:2px;min-width:0}
+.user-admin-permission-item strong{color:#334e5c;font-size:10px;font-weight:650;overflow-wrap:anywhere}
+.user-admin-permission-item small{color:#7b8e97;font-size:9px;overflow-wrap:anywhere}
+.user-admin-permission-preview>small{display:block;border-top:1px solid #dce7eb;padding-top:8px;color:#647985;font-size:9px}
+.user-admin-dialog-actions{justify-content:space-between!important;flex-wrap:wrap;margin-top:12px!important;padding-top:10px!important}
+@media(max-width:760px){.user-admin-permission-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.user-admin-dialog{max-height:94vh!important;padding:13px!important}.user-admin-form-grid{grid-template-columns:minmax(0,1fr)!important}.user-admin-field--wide{grid-column:1!important}}
+@media print{
+  @page{size:A4 portrait;margin:12mm}
+  body *{visibility:hidden!important}
+  .user-admin-dialog,.user-admin-dialog *{visibility:visible!important}
+  .user-admin-dialog{position:absolute!important;left:0!important;top:0!important;transform:none!important;width:100%!important;max-width:none!important;max-height:none!important;overflow:visible!important;border:0!important;box-shadow:none!important;padding:0!important;background:#fff!important;color:#000!important}
+  .user-admin-dialog-header>.user-icon-action,.user-admin-dialog-actions,.user-admin-invite-note{display:none!important}
+  .user-admin-dialog-header{border-bottom:1px solid #444!important}
+  .user-admin-dialog-header h2,.user-admin-eyebrow,.user-admin-permission-heading strong{color:#000!important}
+  .user-admin-form-grid{grid-template-columns:1fr 1fr!important;gap:8mm 6mm!important}
+  .user-admin-field input,.user-admin-field select{height:auto!important;min-height:0!important;border:0!important;border-bottom:1px dotted #777!important;border-radius:0!important;background:#fff!important;color:#000!important;padding:2mm 0!important;font-family:Arial,sans-serif!important;font-size:10pt!important}
+  .user-admin-permission-preview{background:#fff!important;border:1px solid #777!important;break-inside:avoid}
+  .user-admin-permission-grid{grid-template-columns:1fr 1fr!important}
+  .user-admin-permission-item input{appearance:auto!important}
+  .user-admin-permission-item strong,.user-admin-permission-item small,.user-admin-permission-preview>small,.user-admin-permission-heading span{color:#000!important}
+}
