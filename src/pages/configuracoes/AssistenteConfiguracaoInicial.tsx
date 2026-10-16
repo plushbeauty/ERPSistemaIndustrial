@@ -67,12 +67,14 @@ export default function AssistenteConfiguracaoInicial() {
         setCompanyId(id)
         setCompany(companyResult.data as Company)
         setAddress({ ...emptyAddress, ...(addressResult.data ?? {}) } as Address)
-        if (pcpResult.data) setPcp(current => ({ ...current, ...Object.fromEntries(Object.entries(pcpResult.data).map(([key, value]) => [key, value == null ? '' : String(value)])) }) as PCP)
-        if (fiscalResult.data) setFiscal(current => ({
+        const pcpData = pcpResult.data
+        if (pcpData) setPcp(current => ({ ...current, ...Object.fromEntries(Object.entries(pcpData).map(([key, value]) => [key, value == null ? '' : String(value)])) }) as PCP)
+        const fiscalData = fiscalResult.data
+        if (fiscalData) setFiscal(current => ({
           ...current,
-          ...Object.fromEntries(Object.entries(fiscalResult.data).map(([key, value]) => [key, value == null ? '' : String(value)])),
-          regime_tributario: fiscalResult.data.regime_tributario ?? emptyFiscal.regime_tributario,
-          ambiente: fiscalResult.data.ambiente ?? emptyFiscal.ambiente,
+          ...Object.fromEntries(Object.entries(fiscalData).map(([key, value]) => [key, value == null ? '' : String(value)])),
+          regime_tributario: fiscalData.regime_tributario ?? emptyFiscal.regime_tributario,
+          ambiente: fiscalData.ambiente ?? emptyFiscal.ambiente,
         }) as Fiscal)
       } catch (cause) {
         if (alive) setError(cause instanceof Error ? cause.message : 'Não foi possível carregar a configuração.')
