@@ -1,3 +1,15 @@
+/*
+  @AUDIT_DATE: 2026-10-16
+  @AUDIT_TIME_BRT: 12:44
+  @AUDIT_REVISION: #AUDIT-ERP-20261016-04
+  @STATUS: IMPLEMENTED_PENDING_VALIDATION
+  @SCOPE: src/pages/configuracoes/AssistenteConfiguracaoInicial.tsx
+  @REVIEWED: Passos Empresa/Endereço, Fiscal e PCP; leituras de erp_empresas, erp_enderecos, erp_config_fiscal e erp_config_pcp; tratamento de respostas nulas.
+  @CHANGES: Registro da revisão do wizard de três etapas e persistência configuracional. Schema remoto, salvamento autenticado e build ainda não comprovados.
+  @VALIDATION: Arquivo inspecionado no GitHub; type-check/lint/build e validação remota não executados nesta operação.
+  @CHECKLIST: Scope-Limited | Preserve-Business-Rules | No-Fake-Data | Validation-Required
+*/
+
 import { useEffect, useState, type FormEvent } from 'react'
 import { ArrowLeft, ArrowRight, Building2, CheckCircle2, MapPin, Search, X, Scale, ReceiptText } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
