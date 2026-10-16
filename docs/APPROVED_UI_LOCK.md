@@ -36,7 +36,7 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 
 ## Registro da revisão APROV-004 — 2026-10-16
 
-- Vendas → Status do pedido: cards de filtro ampliados; botões primários padronizados em azul institucional `#2D8DB8` com texto branco. A tabela agora mostra etapas reais vinculadas ao pedido: Pedido, Produção (OP e quantidade produzida/planejada), Expedição e NF/Saída, com cores por estado e isolamento por `empresa_id`.
+- Vendas → Status do pedido: cards de filtro ampliados; botões primários padronizados em azul institucional `#2D8DB8` com texto branco. A tabela agora mostra etapas reais vinculadas ao pedido: Pedido, Produção (OP e quantidade produzida/planejada), Qualidade (inspeções reais por OP), Expedição e NF/Saída, com cores por estado e isolamento por `empresa_id`.
 - Vendas → PDV: cards de produtos aumentados de largura mínima de 185 px para 260 px (aproximadamente +40%), com mais altura e legibilidade.
 - Vendas → Catálogo Digital: menos colunas por linha, cards e área de foto maiores, texto e preço mais legíveis; botões azuis mantêm texto branco.
 - Origem das fotos do catálogo: campo existente `erp_produtos.foto_url` consultado do Supabase. Quando está vazio, o card mostra “Sem imagem”; esta revisão visual não inventa URL, foto ou storage path.
