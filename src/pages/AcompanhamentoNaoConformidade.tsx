@@ -102,7 +102,7 @@ export default function AcompanhamentoNaoConformidade(){
   }
   const overdue=(id:string)=>{
     const due=dueFor(id)
-    const recordStatus=records.find(record=>record.id===id)?.status
+    const recordStatus=rpnc.find(record=>record.id===id)?.status
     return !!due && new Date(due+'T23:59:59')<new Date() && !CLOSED.includes(String(recordStatus||'').toLowerCase())
   }
   const metrics=useMemo(()=>{
