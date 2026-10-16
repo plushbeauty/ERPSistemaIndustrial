@@ -54,3 +54,36 @@ Carbon usa uma arquitetura e versões próprias (React Router em modo framework,
 - Toda alteração de código novo deve registrar data, revisão e escopo no cabeçalho.
 - Atualizar uma tela por vez, executar os gates disponíveis, corrigir falhas e só então avançar.
 - O componente de formulário compartilhado é um primeiro passo, não um bloqueio global já aplicado a todas as telas.
+
+
+## Segunda passagem — inventário real de rotas e limites de validação
+
+**Data:** 2026-10-16  
+**Revisão:** AUDIT-2026-10-16-R2
+
+### Evidências adicionais
+
+- A árvore versionada consultada contém **784 caminhos**; foram encontrados **195 arquivos TSX em `src/pages`** contando subpastas, e **247 declarações `<Route>`** no `src/AppEntryV2.tsx`. Esses números medem inventário estático, não funcionalidades concluídas.
+- Compras tem rotas explícitas para `/compras`, `/compras/requisicoes`, `/compras/recebimentos`, `/compras/rfq`, `/compras/pedido`, `/compras/ordem-compra`, fornecedores, solicitação manual, análise de preços, relatórios e ajuda. `/compras/pedido` e `/compras/ordem-compra` apontam para `src/pages/PedidoCompra.tsx`.
+- `src/pages/ComprasPedidoCompra.tsx` não aparece como import nem componente nas ocorrências de `src/AppEntryV2.tsx) consultadas. É **candidato a tela órfã**, não deve ser removido antes de uma busca global completa e revisão do histórico.
+- A tela operacional `PedidoCompra.tsx` contém campos complementares gravados por um `update` após a RPC de salvamento. A migration de compras consultada declara parte do esquema-base, mas não prova o esquema atualmente aplicado nem confirma todas essas colunas. **Não executar alteração de banco nem declarar compatibilidade sem conferir migrations completas e schema remoto.**
+- O check combinado do HEAD `123388c5690dbda353aca43f2653b9e57797e429` continua em **failure**, com destino Vercel de limite de builds (`upgradeToPro=build-rate-limit`). Não há evidência de build/deploy verde para esse HEAD.
+- As ferramentas conectadas do Supabase responderam **sem permissão** ao listar tabelas e migrations do projeto. Portanto, esta rodada não verificou o schema remoto, RLS, migrations aplicadas, advisors ou logs de produção.
+- Context7 foi consultado para React lazy/Suspense, Supabase RLS/migrations/types e Tailwind responsivo. Exa e Firecrawl localizaram e leram a documentação do Carbon. O padrão aproveitável é separar rota/UI, validação/serviço e persistência; o código Carbon não é plug-and-play no Vite/React Router atual do ERPSis.
+- Figma está conectado, mas não foi fornecido um arquivo/frame de referência do ERP para auditar ou alterar. Product Design está disponível como skill de fluxo, sem uma ferramenta de execução de redesign visível nesta sessão. AI Fashion Designer é voltado a design de vestuário e não é apropriado para construir módulos ERP; não será acionado artificialmente para isso.
+
+### Estado por camada — evidência, não suposição
+
+| Camada | Estado observado | Próxima ação verificável |
+|---|---|---|
+| Rotas/lazy loading | Há roteador e lazy loader; 247 declarações de rota | Executar `verify-routes` e `verify:lazy-imports` no CI |
+| UI Compras | Duas implementações de tela de pedido existem; rotas conhecidas apontam para `PedidoCompra` | Comparar fluxos, schema e screenshots antes de consolidar; não trocar por formulário simplificado |
+| TypeScript/lint/build | Scripts estão definidos; execução atual não foi realizada por esta sessão | Rodar o pipeline completo em runner autorizado |
+| Supabase/RLS | Migration de compras está no Git; leitura remota negada | Reconectar com permissões de leitura do projeto e comparar migrations, tipos, colunas, RPCs e policies |
+| Vercel | Check do HEAD falhou por limite de builds | Resolver cota e verificar deployment do HEAD exato |
+| Proteção de `main` | API reportou `protected: false` | Configurar regras de PR/checks com permissão administrativa disponível |
+| Demais módulos | Há arquivos e rotas; isso não comprova completude funcional | Auditar módulo por módulo com matriz de CRUD, permissões, RLS, impressão, estados de erro e testes |
+
+### Portão para declarar um módulo concluído
+
+Só marcar como concluído quando todos forem comprovados: rota real; leitura e gravação com schema existente; isolamento multiempresa e autorização; estados loading/empty/error/success; validação e mensagens; UX compacta consistente; impressão/exportação quando aplicável; testes estáticos/funcionais relevantes; build e deployment do commit validado. Ausência de evidência fica marcada como **pendente**, nunca como concluída.
