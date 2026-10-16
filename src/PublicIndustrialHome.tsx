@@ -1,8 +1,13 @@
 /*
-  @AUDIT_REVISION: #AUDIT-ERP-20260920-01
-  @STATUS: PENDING_VALIDATION
+  @AUDIT_DATE: 2026-10-16
+  @AUDIT_TIME_BRT: 12:31
+  @AUDIT_REVISION: #AUDIT-ERP-20261016-02
+  @STATUS: IMPLEMENTED_PENDING_VALIDATION
   @SCOPE: src/PublicIndustrialHome.tsx
-  @CHECKLIST: No-Duplicate-Actions | Valid-Canonical-Links | Active-Noop-Callbacks
+  @REVIEWED: Home pública SYNQRA; legenda e indicadores sobrepostos no carrossel.
+  @CHANGES: Oculta .sgq-stage-caption e .sgq-dots via CSS; mantém imagens e troca automática a cada 5 segundos.
+  @VALIDATION: Commit d417ed8 conferido pelo diff; type-check, build e deploy ainda não confirmados.
+  @CHECKLIST: Scope-Limited | Preserve-Auto-Rotation | No-Duplicate-Actions | Valid-Canonical-Links | No-Noop-Callbacks
 */
 import { ArrowRight, BarChart3, Boxes, ChevronDown, ClipboardCheck, Factory, FileText, PackageCheck, Receipt, ShieldCheck, Truck, Users, Wrench, X, Settings, Bot } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
