@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, CalendarRange, FileSliders, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import TabletMenuModal from '../TabletMenuModal'
+import PCPTabletMenuModal from '../PCPTabletMenuModal'
 
 type MenuItem = {
   label: string
   route: string
   icon?: LucideIcon
-  action?: 'qualityTablet'
+  action?: 'qualityTablet' | 'pcpTablet'
   children?: MenuItem[]
 }
 
@@ -42,23 +43,7 @@ const menus: MenuItem[] = [
   { label: 'Estoque', route: '/estoque', icon: Package },
   { label: 'Financeiro', route: '/financeiro/custo-padrao', icon: Wallet },
   { label: 'Fiscal', route: '/fiscal', icon: FileText },
-  { label: 'Manufatura / PCP', route: '/pcp', icon: Factory, children: [
-    { label: 'Visão geral do PCP', route: '/pcp' },
-    { label: 'Ordens de produção', route: '/pcp/ordens-industriais' },
-    { label: 'Agenda de Máquinas', route: '/pcp/agenda-maquinas', icon: CalendarRange },
-    { label: 'Capacidade / Gantt', route: '/pcp/capacidade' },
-    { label: 'Sequenciamento', route: '/pcp/sequenciamento' },
-    { label: 'MRP II', route: '/pcp/mrp-ii' },
-    { label: 'Fichas de Processo', route: '/pcp/fichas-processo', icon: FileSliders, children: [
-      { label: 'Prensados', route: '/pcp/fichas-processo?tipo=PRENSADOS' },
-      { label: 'Injetados', route: '/pcp/fichas-processo?tipo=INJETADOS' },
-      { label: 'Estampos', route: '/pcp/fichas-processo?tipo=ESTAMPARIA' },
-      { label: 'Corte e Vinco', route: '/pcp/fichas-processo?tipo=CORTE_VINCO' },
-      { label: 'Mecânica', route: '/pcp/fichas-processo?tipo=MECANICA' },
-      { label: 'Tratamento superficial', route: '/pcp/fichas-processo?tipo=TRATAMENTO_SUPERFICIAL' },
-      { label: 'Pintura / Química', route: '/pcp/fichas-processo?tipo=PINTURA_QUIMICA' },
-    ] },
-  ] },
+  { label: 'Manufatura / PCP', route: '/pcp', icon: Factory, action: 'pcpTablet' },
   { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet' },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench },
   { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
@@ -72,6 +57,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null)
   const [helpOpen, setHelpOpen] = useState(false)
   const [tabletOpen, setTabletOpen] = useState(false)
+  const [pcpTabletOpen, setPcpTabletOpen] = useState(false)
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
   const ref = useRef<HTMLDivElement>(null)
@@ -149,6 +135,12 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     setOpenMenu(null)
   }, [pathname])
   const openMenuItem = (item: Pick<MenuItem, 'route' | 'action'>) => {
+    if (item.action === 'pcpTablet') {
+      setPcpTabletOpen(true)
+      setOpenMenu(null)
+      setOpenSubMenu(null)
+      return
+    }
     if (item.action === 'qualityTablet') {
       setTabletOpen(true)
       setOpenMenu(null)
@@ -270,6 +262,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         {children}
       </main>
       <TabletMenuModal isOpen={tabletOpen} onClose={() => setTabletOpen(false)} onNavigate={(route) => { setTabletOpen(false); go(route) }} />
+      <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f3f8fb 42%,#e8f1f6 100%);color:#123b50}

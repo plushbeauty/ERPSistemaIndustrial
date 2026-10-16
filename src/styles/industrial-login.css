@@ -131,3 +131,13 @@
     transform: translateY(-50%);
   }
 }
+
+/* Ajustes solicitados em 16/10/2026: foco no acesso e texto institucional centralizado. */
+.auth-visual-message{text-align:center;margin-inline:auto}
+.auth-visual-message h2,.auth-visual-message p{margin-inline:auto}
+.auth-visual-message>span{display:block;text-align:center}
+.auth-trust{justify-content:center}
+.auth-key-icon{display:none!important}
+.auth-divider,.auth-register,.auth-trial{display:none!important}
+.auth-submit{width:100%;min-height:40px;border-radius:3px}
+@media(min-width:821px){.auth-visual-message{left:50%!important;transform:translate(-50%,-50%)!important;width:min(600px,calc(100% - 72px))!important}}

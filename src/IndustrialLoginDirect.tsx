@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { motion } from 'motion/react'
-import { ArrowRight, Building2, Eye, EyeOff, KeyRound, LogIn, ShieldCheck, UserPlus } from 'lucide-react'
+import { Building2, Eye, EyeOff, ShieldCheck } from 'lucide-react'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 import './styles/industrial-login.css'
 
@@ -326,7 +326,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
           <p className="auth-description">
             {masterMode
               ? 'Área reservada ao proprietário do projeto. O perfil MASTER é validado antes da abertura do painel administrativo.'
-              : 'Use as credenciais cadastradas. A empresa, o perfil e o status são verificados antes da entrada.'}
+              : 'Entre com seu e-mail e senha cadastrados. A empresa, o perfil e o status são validados antes de liberar o acesso.'}
           </p>
 
           <form className="auth-form" onSubmit={submit}>
@@ -369,7 +369,6 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
-              <KeyRound className="auth-key-icon" size={16} aria-hidden="true" />
             </div>
 
             {error && <div className="auth-message auth-error" role="alert">{error}</div>}
@@ -389,24 +388,11 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
                 </>
               ) : (
                 <>
-                  Entrar no sistema <LogIn size={18} />
+                  Entrar no sistema
                 </>
               )}
             </motion.button>
 
-            <div className="auth-divider"><span>ou</span></div>
-
-            <a className="auth-register" href="/cadastro-master">
-              <ShieldCheck size={18} /> Primeiro acesso · cadastrar proprietário Master
-            </a>
-
-            <a className="auth-register" href="/cadastro-empresa">
-              <UserPlus size={18} /> Criar uma nova empresa
-            </a>
-
-            <a className="auth-trial" href="/cadastro-empresa">
-              Começar teste grátis de 15 dias <ArrowRight size={16} />
-            </a>
           </form>
 
           <div className="auth-security-note">
