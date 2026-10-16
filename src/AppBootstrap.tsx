@@ -85,7 +85,7 @@ function AccessGate({ children }: { children: ReactNode }) {
         if (!user) { if (alive) setState('denied'); return }
         const { data: profile, error: profileError } = await supabase
           .from('erp_usuarios')
-          .select('id,auth_user_id,empresa_id,ativo,is_master,nivel_admin,perfil,deleted_at')
+          .select('id,auth_user_id,empresa_id,ativo,is_master,nivel_admin,perfil,deleted_at,setor_id')
           .eq('auth_user_id', user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
         if (profileError) throw profileError
         if (!profile || profile.auth_user_id !== user.id) {
