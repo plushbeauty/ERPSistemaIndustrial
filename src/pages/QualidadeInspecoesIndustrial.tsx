@@ -312,7 +312,7 @@ export default function QualidadeInspecoesIndustrial() {
         </div>
         <div className="overflow-auto">
           <table className="w-full border-collapse text-left text-xs text-slate-800 [&_td]:h-8 [&_td]:border-b [&_td]:border-slate-200 [&_td]:px-2 [&_td]:py-1 [&_td]:align-middle [&_td]:font-semibold">
-            <thead className="sticky top-0 bg-slate-900 text-white [&_th]:border-b [&_th]:border-slate-800 [&_th]:px-4 [&_th]:text-[10px] [&_th]:font-black [&_th]:uppercase [&_th]:tracking-wider [&_th]:align-middle"><tr className="h-8">{['Data/hora','Tipo','Item','Lote','Qtd.','Amostra','Resultado','Observações'].map(title => <th key={title} className="h-8 whitespace-nowrap border-b border-slate-800 px-2 text-[10px] font-black uppercase tracking-wider">{title}</th>)}</tr></thead>
+            <thead className="sticky top-0 bg-slate-900 text-white [&_th]:border-b [&_th]:border-slate-800 [&_th]:px-2 [&_th]:text-[10px] [&_th]:font-black [&_th]:uppercase [&_th]:tracking-wider [&_th]:align-middle"><tr className="h-8">{['Data/hora','Tipo','Item','Lote','Qtd.','Amostra','Resultado','Observações'].map(title => <th key={title} className="h-8 whitespace-nowrap border-b border-slate-800 px-2 text-[10px] font-black uppercase tracking-wider">{title}</th>)}</tr></thead>
             <tbody>
               {loading ? <tr><td colSpan={8} className="h-16 px-3 text-center text-slate-500">Carregando inspeções do Supabase…</td></tr>
                 : visibleRows.length === 0 ? <tr><td colSpan={8} className="h-16 px-3 text-center text-slate-500">Nenhuma inspeção encontrada.</td></tr>
