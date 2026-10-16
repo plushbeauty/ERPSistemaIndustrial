@@ -692,7 +692,7 @@ function AppIndustrialAuthenticated() {
           <ERPHorizontalShell>
             {protectedRoutes}
             <PCPPageHelp />
-            {location.pathname.startsWith('/pcp') && <ERPStatusLegend />}
+            {location.pathname.startsWith('/pcp/agenda-maquinas') && <ERPStatusLegend />}
           </ERPHorizontalShell>
         </div>
       </Suspense>
