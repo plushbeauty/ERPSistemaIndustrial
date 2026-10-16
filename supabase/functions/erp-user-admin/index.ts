@@ -197,6 +197,13 @@ Deno.serve(async (req) => {
       const { data: company, error: companyError } = await admin.from('erp_empresas').select('id').eq('id', empresaId).maybeSingle()
       if (companyError) throw companyError
       if (!company) return json({ error: 'Empresa não encontrada.' }, 404)
+      const requestedSectorId = body.setor_id === null || body.setor_id === '' || body.setor_id === undefined ? null : clean(body.setor_id)
+      if (body.setor_id && !requestedSectorId) return json({ error: 'Setor informado inválido.' }, 400)
+      if (requestedSectorId) {
+        const { data: sector, error: sectorError } = await admin.from('erp_setores').select('id').eq('id', requestedSectorId).eq('empresa_id', empresaId).maybeSingle()
+        if (sectorError) throw sectorError
+        if (!sector) return json({ error: 'O setor selecionado não pertence à empresa do usuário.' }, 403)
+      }
       const role = await roleFor(selectedRoleId, requestedLevel, empresaId)
       if (!role) return json({ error: 'Perfil de acesso inválido para a empresa selecionada.' }, 400)
       const { data: assignable, error: assignmentError } = await userClient.rpc('erp_can_assign_role', {
@@ -247,7 +254,7 @@ Deno.serve(async (req) => {
 
         const { error: profileError } = await admin.from('erp_usuarios').insert({
           id: authUserId, auth_user_id: authUserId, empresa_id: empresaId, nome, email, role: roleCode,
-          nivel_admin: nivelAdmin, ativo: false, role_id: role?.id ?? null, setor_id: body.setor_id || null,
+          nivel_admin: nivelAdmin, ativo: false, role_id: role?.id ?? null, setor_id: requestedSectorId,
           cargo_id: body.cargo_id || null, matricula: body.matricula ? String(body.matricula).trim() : null,
           login_nome: loginNome,
         })
@@ -345,7 +352,16 @@ Deno.serve(async (req) => {
       if (body.nome !== undefined) patch.nome = String(body.nome).trim()
       if (body.login_nome !== undefined) patch.login_nome = String(body.login_nome).trim().toLowerCase() || null
       if (body.matricula !== undefined) patch.matricula = String(body.matricula).trim() || null
-      if (body.setor_id !== undefined) patch.setor_id = body.setor_id || null
+      if (body.setor_id !== undefined) {
+        const setorId = body.setor_id === null || body.setor_id === '' ? null : clean(body.setor_id)
+        if (body.setor_id && !setorId) return json({ error: 'Setor informado inválido.' }, 400)
+        if (setorId) {
+          const { data: sector, error: sectorError } = await admin.from('erp_setores').select('id').eq('id', setorId).eq('empresa_id', target.empresa_id).maybeSingle()
+          if (sectorError) throw sectorError
+          if (!sector) return json({ error: 'O setor selecionado não pertence à empresa do usuário.' }, 403)
+        }
+        patch.setor_id = setorId
+      }
       if (body.cargo_id !== undefined) patch.cargo_id = body.cargo_id || null
       if (body.role_id !== undefined) {
         const role = await roleFor(clean(body.role_id), 1, target.empresa_id)
