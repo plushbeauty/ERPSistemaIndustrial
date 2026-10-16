@@ -1,10 +1,69 @@
-import { useEffect, useState } from 'react'
-import { UsersRound, RefreshCw } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { RefreshCw, ShieldCheck, UsersRound } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
-type Role={id:string;codigo:string|null;nome:string|null;nivel:number|null;ativo:boolean|null}
-export default function ConfiguracaoPerfis(){
- const [rows,setRows]=useState<Role[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState('')
- const load=async()=>{setLoading(true);setError('');try{const {data,error:e}=await supabase.from('erp_roles').select('id,codigo,nome,nivel,ativo').order('nivel',{ascending:false});if(e)throw e;setRows((data??[]) as Role[])}catch(e){setError(e instanceof Error?e.message:'Não foi possível carregar os perfis.')}finally{setLoading(false)}}
- useEffect(()=>{void load()},[])
- return <section className="space-y-4"><div className="flex items-center justify-between gap-4 border-b border-slate-200 pb-4"><div><span className="text-[9px] font-black uppercase tracking-[.16em] text-[#176487]">ADMINISTRAÇÃO • PERFIS</span><h2 className="mt-1 text-xl font-black text-[#123B50]">Perfis de Usuários</h2><p className="mt-1 text-[11px] font-semibold text-slate-500">Perfis reais cadastrados no RBAC do ERP.</p></div><button type="button" onClick={()=>void load()} className="inline-flex min-h-[38px] items-center gap-2 rounded-lg border border-[#B8D5DE] bg-white px-3 text-[10px] font-black text-[#123B50]"><RefreshCw size={14}/>ATUALIZAR</button></div>{error&&<div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[11px] font-bold text-red-700">{error}</div>}<div className="overflow-auto rounded-xl border border-[#C5DEE6]"><table className="w-full min-w-[620px] text-[11px]"><thead className="bg-[#123B50] text-white"><tr><th className="p-3 text-left">Código</th><th className="p-3 text-left">Perfil</th><th className="p-3 text-center">Nível</th><th className="p-3 text-center">Status</th></tr></thead><tbody>{loading?<tr><td colSpan={4} className="p-8 text-center font-bold text-slate-400">Consultando perfis no Supabase…</td></tr>:rows.map(r=><tr key={r.id} className="border-t border-slate-100"><td className="p-3 font-mono font-black text-[#123B50]">{r.codigo||'—'}</td><td className="p-3 font-bold text-slate-700">{r.nome||'—'}</td><td className="p-3 text-center font-black text-[#123B50]">{r.nivel??'—'}</td><td className="p-3 text-center"><span className={`inline-flex rounded-md border px-2 py-1 text-[9px] font-black ${r.ativo===false?'border-red-200 bg-red-50 text-red-700':'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>{r.ativo===false?'INATIVO':'ATIVO'}</span></td></tr>)}</tbody></table>{!loading&&!rows.length&&<div className="p-8 text-center text-[11px] font-semibold text-slate-500"><UsersRound className="mx-auto mb-2 text-[#2D8DB8]" size={24}/>Nenhum perfil real foi retornado pelo banco.</div>}</div></section>
+
+type Role = { id: string; codigo: string | null; nome: string | null; nivel: number | null; ativo: boolean | null; empresa_id: string | null }
+const buttonClass = 'inline-flex h-[30px] items-center gap-2 rounded-[2px] border border-[#CFE1E7] bg-white px-2 text-[9px] font-bold text-[#123B50] disabled:cursor-not-allowed disabled:opacity-50'
+
+export default function ConfiguracaoPerfis() {
+  const [rows, setRows] = useState<Role[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [authorized, setAuthorized] = useState(false)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    setError('')
+    setAuthorized(false)
+    try {
+      const { data: authData, error: authError } = await supabase.auth.getUser()
+      if (authError) throw authError
+      if (!authData.user) throw new Error('Entre no sistema para consultar os perfis.')
+      const [actorResult, companyResult, permissionResult] = await Promise.all([
+        supabase.from('erp_usuarios').select('empresa_id,ativo,deleted_at').eq('auth_user_id', authData.user.id).maybeSingle(),
+        supabase.rpc('erp_current_empresa_id'),
+        supabase.rpc('erp_has_permission', { p_code: 'users.update' }),
+      ])
+      if (actorResult.error) throw actorResult.error
+      if (companyResult.error) throw companyResult.error
+      if (permissionResult.error) throw permissionResult.error
+      const actor = actorResult.data
+      const companyId = typeof companyResult.data === 'string' ? companyResult.data : null
+      if (!actor?.ativo || actor.deleted_at || !companyId || actor.empresa_id !== companyId || permissionResult.data !== true) {
+        throw new Error('Seu usuário não tem permissão para consultar a administração de perfis.')
+      }
+      const { data, error: queryError } = await supabase.from('erp_roles')
+        .select('id,codigo,nome,nivel,ativo,empresa_id')
+        .or(`empresa_id.eq.${companyId},empresa_id.is.null`)
+        .order('nivel', { ascending: false })
+      if (queryError) throw queryError
+      setRows((data ?? []) as Role[])
+      setAuthorized(true)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível carregar os perfis.')
+      setRows([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { void load() }, [load])
+
+  return <section className="space-y-2 text-[10px] text-slate-700">
+    <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[#CFE1E7] pb-2">
+      <div><div className="text-[9px] font-bold uppercase tracking-wider text-[#176487]">ADMINISTRAÇÃO / RBAC</div><h2 className="mt-1 text-[15px] font-bold text-[#123B50]">Perfis de usuários</h2><p className="mt-1 text-[10px] text-slate-500">Perfis disponíveis para a empresa atual e perfis globais.</p></div>
+      <button type="button" onClick={() => void load()} disabled={loading} className={buttonClass}><RefreshCw size={12}/>ATUALIZAR</button>
+    </header>
+    {error && <div role="alert" className="border border-red-200 bg-red-50 p-2 text-[10px] text-red-800">{error}</div>}
+    <div className="overflow-auto border border-[#CFE1E7] bg-white">
+      <table className="w-full min-w-[560px] border-collapse text-left">
+        <thead className="bg-[#123B50] text-white"><tr>{['Código','Perfil','Nível','Escopo','Status'].map(label=><th key={label} scope="col" className="h-[28px] px-2 text-[9px] font-bold uppercase tracking-wide">{label}</th>)}</tr></thead>
+        <tbody>{loading ? <tr><td colSpan={5} className="p-5 text-center text-slate-500">Consultando perfis autorizados…</td></tr> : rows.map(role=><tr key={role.id} className="h-[32px] border-t border-[#E2EDF0] even:bg-[#F8FCFD]">
+          <td className="px-2 font-mono">{role.codigo || '—'}</td><td className="px-2 font-semibold">{role.nome || '—'}</td><td className="px-2 text-center">{role.nivel ?? '—'}</td><td className="px-2">{role.empresa_id ? 'Empresa' : 'Global'}</td><td className="px-2"><span className={role.ativo === false ? 'text-red-700' : 'text-emerald-700'}>{role.ativo === false ? 'INATIVO' : 'ATIVO'}</span></td>
+        </tr>)}</tbody>
+      </table>
+      {!loading && authorized && !rows.length && <div className="p-5 text-center text-slate-500"><UsersRound size={20} className="mx-auto mb-2 text-[#2D8DB8]"/>Nenhum perfil autorizado encontrado.</div>}
+    </div>
+    <p className="flex items-start gap-2 text-[9px] text-slate-500"><ShieldCheck size={12} className="mt-0.5 shrink-0"/>A tela consulta perfis; alterações de permissões são feitas na matriz RBAC e precisam ser autorizadas pelo backend/RLS.</p>
+  </section>
 }
