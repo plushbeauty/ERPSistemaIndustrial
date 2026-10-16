@@ -61,7 +61,7 @@ export default function ProdutosVendasTelaTeste() {
     return () => { active = false }
   }, [])
 
-  const update = <K extends keyof TestForm>(key: K, value: TestForm[K]) => {
+  const update = <K extends keyof TestForm,>(key: K, value: TestForm[K]) => {
     setForm(current => ({ ...current, [key]: value }))
     setNotice('')
   }
