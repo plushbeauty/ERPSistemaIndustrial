@@ -1,13 +1,13 @@
 /*
   @AUDIT_DATE: 2026-10-16
-  @AUDIT_TIME_BRT: 12:44
-  @AUDIT_REVISION: #AUDIT-ERP-20261016-09
+  @AUDIT_TIME_BRT: 12:46
+  @AUDIT_REVISION: #AUDIT-ERP-20261016-12
   @STATUS: IMPLEMENTED_PENDING_VALIDATION
   @SCOPE: src/pages/ProdutosVendasIndustrial.tsx
-  @REVIEWED: Layout compacto, campos de cadastro, lupas, consultas de produção e painel adicional de ficha técnica; detectado conteúdo de Produção em dois blocos na tela.
-  @CHANGES: Registro da revisão do cadastro industrial, incluindo integrações já presentes no arquivo. Não afirmar homologação; revisar duplicidade visual e executar type-check/build.
-  @VALIDATION: Arquivo inspecionado no GitHub; type-check/lint/build e validação remota não executados nesta operação.
-  @CHECKLIST: Scope-Limited | Preserve-Business-Rules | No-Fake-Data | Validation-Required
+  @REVIEWED: Abas Gerais/Fiscal/Estoque/Produção/Qualidade; integração do painel de documentos de processo.
+  @CHANGES: Consolida AbaProducaoIndustrial dentro do único wrapper condicional da aba Produção; remove o segundo condicional separado sem remover os campos operacionais existentes.
+  @VALIDATION: Alteração por diff textual exato, uma ocorrência; type-check/lint/build e teste visual ainda não executados.
+  @CHECKLIST: Scope-Limited | Preserve-Product-Fields | Preserve-Tenant-Scope | Validation-Required
 */
 
 /**
@@ -850,9 +850,8 @@ export default function ProdutosVendasIndustrial(){
         </div>
         <div style={{marginTop:8,border:'1px solid #d5dde7',overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr style={{background:'#123B50',color:'#fff'}}>{['Seq.','Operação','Máquina','Setup min','Ciclo s','Qtde/h','Qtde/dia'].map(h=><th key={h} style={{padding:'5px 6px',textAlign:'left',fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{productionOps.map(o=><tr key={o.id} style={{borderBottom:'1px solid #e5e7eb'}}><td style={{padding:'5px 6px'}}>{o.sequencia}</td><td style={{padding:'5px 6px'}}>{o.operacao}</td><td style={{padding:'5px 6px'}}>{o.maquina_codigo?o.maquina_codigo+' • '+(o.maquina_nome||''):'Não definida'}</td><td style={{padding:'5px 6px'}}>{fmt(o.setup_min)}</td><td style={{padding:'5px 6px'}}>{fmt(o.ciclo_seg)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_hora==null?'—':fmt(o.capacidade_hora)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_dia==null?'—':fmt(o.capacidade_dia)}</td></tr>)}{!productionOps.length&&<tr><td colSpan={7} style={{padding:12,textAlign:'center',color:'#667085'}}>Nenhuma operação cadastrada. Abra a ficha de processo para cadastrar máquina/posto, setup, ciclo e instruções.</td></tr>}</tbody></table></div>
         <div style={{marginTop:7,fontSize:9,color:'#667085'}}>Roteiros, BOM, almoxarifados e centros de trabalho consultam os cadastros do tenant ativo; os parâmetros deste formulário são gravados no produto.</div>
+        <AbaProducaoIndustrial productId={selectedId} empresaId={companyId} />
       </section>}
-
-      {tab==='producao'&&<AbaProducaoIndustrial productId={selectedId} empresaId={companyId} />}
 
       {tab==='qualidade'&&<section style={{padding:10}}>
         <div className="product-quality-card-grid">
