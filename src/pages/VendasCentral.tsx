@@ -35,7 +35,8 @@ type Order = {
 }
 
 type StatusFilter = 'todos' | 'rascunho' | 'andamento' | 'atrasados' | 'faturados' | 'cancelados'
-type ProductionStage = { numero_op: string; status: string; quantidade: number; quantidade_planejada: number; quantidade_produzida: number }
+type ProductionStage = { id: string; numero_op: string; status: string; quantidade: number; quantidade_planejada: number; quantidade_produzida: number }
+type QualityStage = { ordem_producao_id: string; tipo: string; resultado: string; quantidade_reprovada: number }
 type ExpeditionStage = { numero: number; status: string; transportadora: string | null }
 type FiscalStage = { tipo: string; status: string; quantidade_pendente: number }
 
@@ -74,6 +75,7 @@ const filters: Array<{ id: StatusFilter; label: string; icon: typeof ClipboardLi
 export default function VendasCentral() {
   const [orders, setOrders] = useState<Order[]>([])
   const [productionByOrder, setProductionByOrder] = useState<Record<string, ProductionStage[]>>({})
+  const [qualityByOrder, setQualityByOrder] = useState<Record<string, QualityStage[]>>({})
   const [expeditionByOrder, setExpeditionByOrder] = useState<Record<string, ExpeditionStage[]>>({})
   const [fiscalByOrder, setFiscalByOrder] = useState<Record<string, FiscalStage[]>>({})
   const [query, setQuery] = useState('')
@@ -99,19 +101,26 @@ export default function VendasCentral() {
       const orderIds = orderRows.map((order) => order.id)
       if (!orderIds.length) {
         setProductionByOrder({})
+        setQualityByOrder({})
         setExpeditionByOrder({})
         setFiscalByOrder({})
       } else {
         const companyId = String(tenant.data)
         const [productionResult, expeditionResult, fiscalResult] = await Promise.all([
-          supabase.from('erp_ordens_producao').select('pedido_venda_id,numero_op,status,quantidade,quantidade_planejada,quantidade_produzida').eq('empresa_id', companyId).in('pedido_venda_id', orderIds),
+          supabase.from('erp_ordens_producao').select('id,pedido_venda_id,numero_op,status,quantidade,quantidade_planejada,quantidade_produzida').eq('empresa_id', companyId).in('pedido_venda_id', orderIds),
           supabase.from('erp_expedicoes').select('pedido_venda_id,numero,status,transportadora').eq('empresa_id', companyId).in('pedido_venda_id', orderIds),
           supabase.from('erp_liberacoes_fiscais').select('pedido_venda_id,tipo,status,quantidade_pendente').eq('empresa_id', companyId).in('pedido_venda_id', orderIds),
         ])
-        const stageErrors = [productionResult.error, expeditionResult.error, fiscalResult.error].filter(Boolean)
+        const productionRows = (productionResult.data ?? []) as Array<ProductionStage & { pedido_venda_id: string }>
+        const productionIds = productionRows.map((row) => row.id)
+        const qualityResult = productionIds.length ? await supabase.from('erp_inspecoes').select('ordem_producao_id,tipo,resultado,quantidade_reprovada').eq('empresa_id', companyId).in('ordem_producao_id', productionIds) : null
+        const stageErrors = [productionResult.error, qualityResult?.error, expeditionResult.error, fiscalResult.error].filter(Boolean)
         if (stageErrors.length) setError(`Pedidos carregados; não foi possível completar todas as etapas industriais: ${stageErrors.map((item) => item?.message).join(' • ')}`)
         const byOrder = <T extends { pedido_venda_id: string }>(rows: T[] | null) => (rows ?? []).reduce<Record<string, T[]>>((map, row) => { map[row.pedido_venda_id] = [...(map[row.pedido_venda_id] ?? []), row]; return map }, {})
-        setProductionByOrder(byOrder((productionResult.data ?? []) as Array<ProductionStage & { pedido_venda_id: string }>))
+        setProductionByOrder(byOrder(productionRows))
+        const opToOrder = new Map(productionRows.map((row) => [row.id, row.pedido_venda_id]))
+        const qualityMap = ((qualityResult?.data ?? []) as QualityStage[]).reduce<Record<string, QualityStage[]>>((map, row) => { const orderId = opToOrder.get(row.ordem_producao_id); if (orderId) map[orderId] = [...(map[orderId] ?? []), row]; return map }, {})
+        setQualityByOrder(qualityMap)
         setExpeditionByOrder(byOrder((expeditionResult.data ?? []) as Array<ExpeditionStage & { pedido_venda_id: string }>))
         setFiscalByOrder(byOrder((fiscalResult.data ?? []) as Array<FiscalStage & { pedido_venda_id: string }>))
       }
@@ -240,7 +249,7 @@ export default function VendasCentral() {
                       </span>
                     </td>
                     <td><span className={`sales-status ${statusTone(order.status)}`}>{order.status}</span></td>
-                    <td><ProcessStages order={order} production={productionByOrder[order.id] ?? []} expeditions={expeditionByOrder[order.id] ?? []} fiscal={fiscalByOrder[order.id] ?? []} /></td>
+                    <td><ProcessStages order={order} production={productionByOrder[order.id] ?? []} inspections={qualityByOrder[order.id] ?? []} expeditions={expeditionByOrder[order.id] ?? []} fiscal={fiscalByOrder[order.id] ?? []} /></td>
                     <td className="sales-number sales-total">{currency.format(Number(order.total ?? 0))}</td>
                   </tr>
                 ))}
@@ -273,7 +282,7 @@ export default function VendasCentral() {
   )
 }
 
-function ProcessStages({ order, production, expeditions, fiscal }: { order: Order; production: ProductionStage[]; expeditions: ExpeditionStage[]; fiscal: FiscalStage[] }) {
+function ProcessStages({ order, production, inspections, expeditions, fiscal }: { order: Order; production: ProductionStage[]; inspections: QualityStage[]; expeditions: ExpeditionStage[]; fiscal: FiscalStage[] }) {
   const cancelled = isCancelled(order.status)
   const draft = isDraft(order.status)
   const productionDone = production.length > 0 && production.every((row) => {
@@ -281,11 +290,15 @@ function ProcessStages({ order, production, expeditions, fiscal }: { order: Orde
     return status.includes('conclu') || status.includes('finaliz') || status.includes('encerr') || (Number(row.quantidade_planejada || row.quantidade || 0) > 0 && Number(row.quantidade_produzida || 0) >= Number(row.quantidade_planejada || row.quantidade || 0))
   })
   const productionActive = production.length > 0 && !productionDone
+  const qualityRejected = inspections.some((row) => normalize(row.resultado).includes('reprov'))
+  const qualityDone = inspections.length > 0 && inspections.every((row) => normalize(row.resultado).includes('aprov') && Number(row.quantidade_reprovada || 0) === 0)
+  const qualityTone = qualityRejected ? 'is-stage-red' : qualityDone ? 'is-stage-green' : inspections.length ? 'is-stage-amber' : 'is-stage-muted'
   const expeditionDone = expeditions.length > 0 && expeditions.every((row) => ['expedido', 'entregue', 'concluido', 'concluida', 'finalizado', 'finalizada'].some((word) => normalize(row.status).includes(word)))
   const fiscalDone = fiscal.length > 0 && fiscal.every((row) => ['emitido', 'autorizado', 'faturado', 'concluido', 'concluida', 'finalizado'].some((word) => normalize(row.status).includes(word)))
   const stages = [
     { label: 'Pedido', detail: order.status || 'Recebido', tone: cancelled ? 'is-stage-red' : draft ? 'is-stage-amber' : 'is-stage-green' },
     { label: 'Produção', detail: production.length ? production.map((row) => `OP ${row.numero_op}: ${row.status} (${Number(row.quantidade_produzida || 0)}/${Number(row.quantidade_planejada || row.quantidade || 0)})`).join(' • ') : 'Aguardando OP', tone: cancelled ? 'is-stage-muted' : productionDone ? 'is-stage-green' : productionActive ? 'is-stage-blue' : 'is-stage-muted' },
+    { label: 'Qualidade', detail: inspections.length ? inspections.map((row) => `${row.tipo}: ${row.resultado}${Number(row.quantidade_reprovada || 0) > 0 ? ` (${Number(row.quantidade_reprovada)} reprovada(s))` : ''}`).join(' • ') : 'Aguardando inspeção', tone: cancelled ? 'is-stage-muted' : qualityTone },
     { label: 'Expedição', detail: expeditions.length ? expeditions.map((row) => `EXP ${row.numero}: ${row.status}`).join(' • ') : 'Aguardando expedição', tone: cancelled ? 'is-stage-muted' : expeditionDone ? 'is-stage-green' : expeditions.length ? 'is-stage-violet' : 'is-stage-muted' },
     { label: 'NF / Saída', detail: fiscal.length ? fiscal.map((row) => `${row.tipo}: ${row.status} (pendente ${Number(row.quantidade_pendente || 0)})`).join(' • ') : 'Aguardando liberação fiscal', tone: cancelled ? 'is-stage-muted' : fiscalDone ? 'is-stage-green' : fiscal.length ? 'is-stage-cyan' : 'is-stage-muted' },
   ]
