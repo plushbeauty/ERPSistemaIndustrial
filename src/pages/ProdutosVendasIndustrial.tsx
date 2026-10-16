@@ -359,7 +359,7 @@ export default function ProdutosVendasIndustrial(){
   } as Record<string,string>)[title.replace(' [?]','')]||('Ajuda do campo '+title.replace(' [?]','')+'.');
   const HelpTip=({text}:{text:string})=>{const [open,setOpen]=useState(false);return <span style={{position:'relative',display:'inline-flex',verticalAlign:'baseline',marginLeft:3}}><span role="button" tabIndex={0} aria-label="Ajuda" onClick={e=>{e.preventDefault();e.stopPropagation();setOpen(v=>!v)}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setOpen(v=>!v)}}} style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:10,height:12,color:'#2D8DB8',fontSize:11,fontWeight:800,lineHeight:1,cursor:'pointer',userSelect:'none'}}>?</span>{open&&<span role="tooltip" style={{position:'absolute',zIndex:1200,left:12,top:14,width:250,padding:'7px 8px',border:'1px solid #b9cbd3',borderRadius:2,background:'#fff',boxShadow:'0 4px 12px rgba(18,59,80,.16)',fontSize:9,fontWeight:400,lineHeight:1.35,color:'#173b4a',textTransform:'none'}}>{text}</span>}</span>}
   const fieldTitle=(title:string)=><span style={{display:'inline-flex',alignItems:'center',flexWrap:'wrap',whiteSpace:'normal',overflowWrap:'anywhere',lineHeight:'11px',minHeight:12,minWidth:0}}>{title.replace(' [?]','')}{(title.includes('[?]')||title.startsWith('Custo médio')||title.startsWith('Último custo')||title.startsWith('Custo fabricação'))&&<HelpTip text={helpFor(title)}/>}</span>;
-  const field=(title:string,key:keyof FormData,type='text',span=1,locked=false)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input type={type} value={String(form[key]??'')} readOnly={locked} disabled={!editing} onChange={e=>update(key,type==='number'?n(e.target.value):e.target.value)} style={{...input,background:locked?'#eaf3f8':editing?'#fff':'#f5f7fa',color:locked?'#17445A':'#172033',fontWeight:locked?700:400,cursor:locked?'not-allowed':'text'}}/></label>
+  const field=(title:string,key:keyof FormData,type='text',span=1,locked=false)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input type={type} maxLength={key==='codigo'?20:key==='codigo_barras'?14:key==='nome'?120:key==='cliente'?60:key==='referencia_cliente'?15:key==='ncm'?8:key==='cest'?7:undefined} value={String(form[key]??'')} readOnly={locked} disabled={!editing} onChange={e=>update(key,type==='number'?n(e.target.value):e.target.value)} style={{...input,background:locked?'#eaf3f8':editing?'#fff':'#f5f7fa',color:locked?'#17445A':'#172033',fontWeight:locked?700:400,cursor:locked?'not-allowed':'text'}}/></label>
   const select=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<select value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>{options.map(o=><option value={o[0]} key={o[0]}>{o[1]}</option>)}</select></label>
   const knownFiscalValues=(key:'cest'|'cst_icms'|'csosn'|'cfop_entrada'|'cfop_saida'|'origem_fiscal')=>Array.from(new Set(products.map(p=>p[key]).filter((value):value is string=>typeof value==='string'&&Boolean(value.trim())))).sort((a,b)=>a.localeCompare(b))
   const fiscalCombo=(title:string,key:'cest'|'cst_icms'|'csosn'|'cfop_entrada'|'cfop_saida'|'origem_fiscal')=><label style={label}>{fieldTitle(title)}<input list={'erp-fiscal-'+key} value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id={'erp-fiscal-'+key}>{knownFiscalValues(key).map(value=><option key={value} value={value}/>)}</datalist></label>
@@ -460,6 +460,42 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-production-grid{grid-template-columns:repeat(4,minmax(125px,1fr)) minmax(150px,1.15fr) minmax(150px,1.15fr) max-content!important}
       @media(max-width:1150px){.product-master-screen .product-fiscal-primary-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}.product-master-screen .product-fiscal-secondary-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}.product-master-screen .product-general-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}.product-master-screen .product-measure-row{grid-template-columns:repeat(5,minmax(0,1fr))!important}.product-master-screen .product-unit-row{grid-column:span 3}.product-master-screen .product-commercial-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}.product-master-screen .product-stock-primary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-stock-primary-grid>*:last-child{grid-column:span 2}.product-master-screen .product-stock-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-production-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}.product-master-screen .product-production-grid>button{grid-column:span 2;justify-self:start}}
       @media(max-width:700px){.product-master-screen .product-fiscal-primary-grid,.product-master-screen .product-fiscal-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-general-row,.product-master-screen .product-measure-row,.product-master-screen .product-commercial-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-unit-row{grid-column:span 2;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.product-master-screen .product-unit-row label{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;gap:2px}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3){grid-column:span 2!important}.product-master-screen .product-commercial-row>*{grid-column:span 1!important}.product-master-screen .product-stock-primary-grid,.product-master-screen .product-stock-secondary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-stock-primary-grid>*:last-child{grid-column:span 2}.product-master-screen .product-production-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-production-grid>button{grid-column:span 2}}
+
+      .product-master-screen .product-general-form{padding:8px;background:#f4f8fb}
+      .product-master-screen .product-general-card-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);gap:8px;align-items:start}
+      .product-master-screen .product-layout-card{min-width:0;border:1px solid #cbdbe4;background:#fff;border-radius:2px;padding:8px;box-shadow:0 1px 3px rgba(18,59,80,.04)}
+      .product-master-screen .product-layout-card-header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 0 6px;margin-bottom:7px;border-bottom:1px solid #d8e6ec}
+      .product-master-screen .product-layout-card-header span{font-size:9px;font-weight:800;letter-spacing:.04em;color:#2D8DB8}
+      .product-master-screen .product-layout-card-header h2{font-size:12px;line-height:1.25;margin:2px 0 0;color:#123B50}
+      .product-master-screen .product-layout-card-header small{font-size:9px;color:#617987;text-align:right}
+      .product-master-screen .product-inline-fields{display:grid;gap:5px}
+      .product-master-screen .product-inline-field{min-width:0}
+      .product-master-screen .product-inline-field>label{display:grid!important;grid-template-columns:90px minmax(0,1fr)!important;grid-template-rows:30px!important;gap:5px!important;align-items:center!important;font-size:9px!important;font-weight:700!important}
+      .product-master-screen .product-inline-field>label>span{min-width:0;line-height:11px!important;overflow-wrap:anywhere}
+      .product-master-screen .product-inline-field input,.product-master-screen .product-inline-field select{height:30px!important;min-width:0;width:100%;padding:0 6px!important;font-size:11px!important;border-radius:2px!important}
+      .product-master-screen .product-identification-card .product-code-field{max-width:255px}
+      .product-master-screen .product-identification-card .product-code-field input{max-width:150px}
+      .product-master-screen .product-identification-card .product-barcode-field{max-width:270px}
+      .product-master-screen .product-identification-card .product-barcode-field input{max-width:155px}
+      .product-master-screen .product-identification-card .product-description-field input{max-width:100%}
+      .product-master-screen .product-identification-card .product-customer-name-field{max-width:390px}
+      .product-master-screen .product-identification-card .product-customer-name-field input{max-width:245px}
+      .product-master-screen .product-identification-card .product-customer-code-field{max-width:330px}
+      .product-master-screen .product-identification-card .product-customer-code-field input{max-width:175px}
+      .product-master-screen .product-operational-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 8px}
+      .product-master-screen .product-operational-fields .product-inline-field>label{grid-template-columns:105px minmax(0,1fr)!important}
+      .product-master-screen .product-inline-action-field{display:grid;grid-template-columns:minmax(0,1fr) 28px;gap:3px;min-width:0}
+      .product-master-screen .product-mini-action{height:30px;width:28px;padding:0;border:1px solid #2D8DB8;background:#eaf6fa;color:#123B50;border-radius:2px;font-size:17px;line-height:1;cursor:pointer}
+      .product-master-screen .product-mini-action:disabled{opacity:.5;cursor:not-allowed}
+      .product-master-screen .product-operational-flags{display:flex;gap:10px;flex-wrap:wrap;border-top:1px solid #e2edf1;margin-top:7px;padding-top:7px}
+      .product-master-screen .product-operational-flags>label{display:flex;align-items:center;gap:5px;font-size:9px!important;color:#294a5b}
+      .product-master-screen .product-operational-flags input{accent-color:#2D8DB8}
+      .product-master-screen .product-attribute-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 8px}
+      .product-master-screen .product-technical-note{display:grid;grid-template-columns:1fr!important;grid-template-rows:auto 48px!important;gap:4px!important}
+      .product-master-screen .product-technical-note textarea{width:100%;min-width:0;box-sizing:border-box;font:11px Arial,sans-serif}
+      .product-master-screen .product-quality-note{margin:6px 0 0;font-size:9px;color:#617987}
+      @media(max-width:1000px){.product-master-screen .product-general-card-grid{grid-template-columns:1fr}.product-master-screen .product-operational-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media(max-width:600px){.product-master-screen .product-inline-field>label,.product-master-screen .product-operational-fields .product-inline-field>label{grid-template-columns:86px minmax(0,1fr)!important}.product-master-screen .product-operational-fields,.product-master-screen .product-attribute-grid{grid-template-columns:1fr}.product-master-screen .product-layout-card-header{align-items:flex-start;flex-direction:column}.product-master-screen .product-layout-card-header small{text-align:left}}
     `}</style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:900,color:'#1c4bb5'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
@@ -492,55 +528,58 @@ export default function ProdutosVendasIndustrial(){
       </div>
 
       {tab==='gerais'&&<form onSubmit={save} className="product-general-form">
-        <div className="product-section-heading"><div><span>01 / IDENTIFICAÇÃO</span><h2>Identificação do produto</h2></div><p>Campos essenciais para localizar, classificar e integrar o item nos processos industriais.</p></div>
-        <div className="product-field-grid product-general-fields">
-          <div className="product-code-field">{field('Código interno *','codigo','text',1,true)}</div>
-          <div className="product-barcode-field">{field('Código de barras','codigo_barras','text',1,true)}</div>
-          <div className="product-description-field">{field('Descrição do produto *','nome')}</div>
-          <div className="product-summary-field">{field('Descrição resumida','descricao_resumida')}</div>
-          <div className="product-group-field"><label style={label}>Grupo
-            <select value={form.grupo||''} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>
-              <option value="">Selecione</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}
-            </select>
-          </label></div>
-          <div className="product-subgroup-field"><label style={label}>Subgrupo
-            <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 30px',gap:3}}>
-              <input list="erp-product-subgroups" value={form.subgrupo||''} disabled={!editing} onChange={e=>update('subgrupo',e.target.value||null)} placeholder="Selecionar" style={{...input,background:editing?'#fff':'#f5f7fa'}}/>
-              <button type="button" title="Adicionar subgrupo" aria-label="Adicionar subgrupo" disabled={!editing} onClick={()=>{const value=window.prompt('Nome do novo subgrupo:')?.trim();if(value)update('subgrupo',value)}} style={{...btn('normal'),height:30,width:30,padding:0,fontSize:15}}><Plus size={14}/></button>
+        <div className="product-general-card-grid">
+          <section className="product-layout-card product-identification-card">
+            <header className="product-layout-card-header"><div><span>🏢 01 / IDENTIFICAÇÃO</span><h2>Identificação do produto</h2></div><small>Dados básicos e comerciais</small></header>
+            <div className="product-inline-fields">
+              <div className="product-inline-field product-code-field">{field('Código','codigo','text',1,true)}</div>
+              <div className="product-inline-field product-barcode-field">{field('Cód. barras','codigo_barras')}</div>
+              <div className="product-inline-field product-description-field">{field('Descrição','nome')}</div>
+              <div className="product-inline-field product-customer-name-field">{field('Nome cliente','cliente')}</div>
+              <div className="product-inline-field product-customer-code-field">{field('Código cliente','referencia_cliente')}</div>
             </div>
-            <datalist id="erp-product-subgroups">{Array.from(new Set(products.map(p=>p.subgrupo).filter((v):v is string=>Boolean(v?.trim())))).sort((a,b)=>a.localeCompare(b)).map(v=><option key={v} value={v}/>)}</datalist>
-          </label></div>
-          <div className="product-brand-field">{field('Marca','marca')}</div>
-          <div className="product-category-field">{select('Categoria / tipo','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','Matéria-prima'],['PRENSADOS','Prensados'],['INJETADOS','Injetados'],['ALMOXARIFADO','Almoxarifado'],['MATERIAL DE ESCRITÓRIO','Material de escritório'],['PRODUTOS DE LIMPEZA','Produtos de limpeza'],['Componente','Componente'],['Insumo','Insumo']])}</div>
-          <div className="product-supplier-field"><label style={label}>Fornecedor padrão
-            <select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>
-              <option value="">Sem fornecedor padrão</option>{suppliers.map(s=><option key={s.id} value={s.id}>{s.nome_fantasia||s.razao_social}</option>)}
-            </select>
-          </label></div>
-          <div className="product-customer-name-field">{field('Nome cliente','cliente')}</div>
-          <div className="product-customer-code-field">{field('Código cliente','referencia_cliente')}</div>
-        </div>
-        <div className="product-section-heading"><div><span>02 / UNIDADES E DIMENSÕES</span><h2>Unidades, medidas e logística</h2></div><p>Campos compactos, com a largura definida conforme o dado que será digitado.</p></div>
-        <div className="product-unit-row">
-          {select('Unid. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['MM','MM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}
-          {select('Unid. vendas','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}
-          {select('Unid. compras','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}
-          <div className="weight-row">
-            {field('Peso líquido (kg)','peso_liquido','number')}
-            {field('Peso bruto (kg)','peso_bruto','number')}
-          </div>
-          <div className="product-dimension-row">
-            {field('Comprimento (mm)','comprimento_mm','number')}
-            {field('Largura (mm)','largura_mm','number')}
-            {field('Altura (mm)','altura_mm','number')}
-          </div>
-        </div>
-        <div className="product-section-heading"><div><span>03 / CLASSIFICAÇÃO OPERACIONAL</span><h2>Uso do item no ERP</h2></div><p>Defina como o item pode ser utilizado nas rotinas de compra, fabricação e venda.</p></div>
-        <div className="product-flag-grid">
-          {check('Fabricado internamente','fabricado')}{check('Comprado de fornecedor','comprado')}{check('Item para revenda','revenda')}
-          <label style={label}>Situação do cadastro
-            <select value={String(form.ativo)} disabled={!editing} onChange={e=>update('ativo',e.target.value==='true')} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="true">Ativo</option><option value="false">Inativo</option></select>
-          </label>
+          </section>
+
+          <section className="product-layout-card product-operational-card">
+            <header className="product-layout-card-header"><div><span>📦 03 / CLASSIFICAÇÃO OPERACIONAL</span><h2>Uso do item no ERP</h2></div><small>Classificação, unidades e planejamento</small></header>
+            <div className="product-operational-fields">
+              <div className="product-inline-field product-item-type-field">{select('Tipo item','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','Matéria-prima'],['PRENSADOS','Prensados'],['INJETADOS','Injetados'],['Componente','Componente'],['Insumo','Insumo'],['ALMOXARIFADO','Almoxarifado'],['MATERIAL DE ESCRITÓRIO','Material de escritório'],['PRODUTOS DE LIMPEZA','Produtos de limpeza']])}</div>
+              <div className="product-inline-field product-group-field"><label style={label}>Família / Grupo
+                <div className="product-inline-action-field"><select value={form.grupo||''} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select><button type="button" title="Pesquisar grupo" aria-label="Pesquisar grupo" disabled={!editing} onClick={()=>{const found=window.prompt('Informe o nome do grupo para localizar:',form.grupo||'');if(found!==null)update('grupo',found.trim()||null)}} className="product-mini-action">⌕</button></div>
+              </label></div>
+              <div className="product-inline-field product-subgroup-field"><label style={label}>Subgrupo
+                <div className="product-inline-action-field"><input list="erp-product-subgroups" value={form.subgrupo||''} maxLength={6} disabled={!editing} onChange={e=>update('subgrupo',e.target.value||null)} placeholder="Selecionar" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><button type="button" title="Adicionar subgrupo" aria-label="Adicionar subgrupo" disabled={!editing} onClick={()=>{const value=window.prompt('Nome do subgrupo (até 6 caracteres):')?.trim();if(value)update('subgrupo',value.slice(0,6))}} className="product-mini-action">＋</button></div>
+                <datalist id="erp-product-subgroups">{Array.from(new Set(products.map(p=>p.subgrupo).filter((v):v is string=>Boolean(v?.trim())))).sort((a,b)=>a.localeCompare(b)).map(v=><option key={v} value={v}/>)}</datalist>
+              </label></div>
+              <div className="product-inline-field">{select('Unid. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['MM','MM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}</div>
+              <div className="product-inline-field">{select('Unid. comercial','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}</div>
+              <div className="product-inline-field">{select('Unid. compras','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}</div>
+              <div className="product-inline-field">{field('Lead time (dias)','prazo_producao_dias','number')}</div>
+              <div className="product-inline-field">{field('Estoque mínimo / reposição','ponto_reposicao','number')}</div>
+              <div className="product-inline-field">{field('Estoque máximo','estoque_maximo','number')}</div>
+            </div>
+            <div className="product-operational-flags">
+              {check('Fabricado','fabricado')}{check('Comprado','comprado')}{check('Revenda','revenda')}
+            </div>
+          </section>
+
+          <section className="product-layout-card product-fiscal-card">
+            <header className="product-layout-card-header"><div><span>🔬 04 / ATRIBUTOS & FISCAL</span><h2>Pesos e classificação fiscal</h2></div></header>
+            <div className="product-attribute-grid">
+              <div className="product-inline-field">{field('Peso líquido (kg)','peso_liquido','number')}</div>
+              <div className="product-inline-field">{field('NCM','ncm')}</div>
+              <div className="product-inline-field">{field('Peso bruto (kg)','peso_bruto','number')}</div>
+              <div className="product-inline-field">{field('CEST','cest')}</div>
+            </div>
+          </section>
+
+          <section className="product-layout-card product-technical-card">
+            <header className="product-layout-card-header"><div><span>📝 05 / OBSERVAÇÃO TÉCNICA</span><h2>Notas do produto</h2></div></header>
+            <label className="product-technical-note" style={label}>Observação técnica resumida
+              <textarea value={String(form.observacoes??'')} maxLength={250} disabled={!editing} onChange={e=>update('observacoes',e.target.value||null)} rows={2} style={{width:'100%',height:48,resize:'vertical',padding:'5px 7px',border:'1px solid #b9ced9',borderRadius:2,font:'11px Arial,sans-serif',background:editing?'#fff':'#f5f7fa',color:'#123B50',boxSizing:'border-box'}}/>
+            </label>
+            <p className="product-quality-note">💡 Especificação técnica completa: aba QUALIDADE.</p>
+          </section>
         </div>
       </form>}
 
