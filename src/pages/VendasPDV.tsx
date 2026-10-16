@@ -259,7 +259,7 @@ export default function VendasPDV() {
               {boxes.map(item => <option key={item.id} value={item.id}>{item.codigo} — {item.descricao}</option>)}
             </select>
             <label htmlFor="pdv-cliente">Cliente (opcional)</label>
-            <select id="pdv-cliente" value={customerId} onChange={event => setCustomerId(event.target.value)} disabled={loading || saving} className="w-full">
+            <select id="pdv-cliente" value={customerId} onChange={event => setCustomerId(event.target.value)} disabled={loading || saving} className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2D8DB8]">
               <option value="">Consumidor não identificado</option>
               {customers.map(customer => <option key={customer.id} value={customer.id}>{customer.codigo ? `${customer.codigo} — ` : ''}{customer.nome}{customer.documento ? ` • ${customer.documento}` : ''}</option>)}
             </select>
