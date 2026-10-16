@@ -1,0 +1,35 @@
+# Backlog vivo — padronização de telas do ERP Industrial
+
+- Data: 2026-10-16
+- Revisão: UI-BACKLOG-R1
+- Este arquivo contém somente trabalho pendente. Retirar item apenas quando houver evidência e registrar em COMPLETED.md.
+
+## P0 — Fundação e medição
+
+- [ ] UI-001 — Executar npm run audit:ui-standardization e revisar o relatório gerado.
+- [ ] UI-002 — Cruzar src/AppEntryV2.tsx com arquivos reais, wrappers/re-exports e rotas duplicadas/orfãs.
+- [ ] UI-003 — Medir Vendas > Novo Pedido por seção: largura/altura dos campos, labels, botões, grids, lupas, abas, cores e impressão, sem alterar a tela aprovada.
+- [ ] UI-004 — Inventariar componentes de texto, código, descrição, numérico, data, select, lupa, botão, checkbox, grid, card, modal, mensagens e impressão.
+- [ ] UI-005 — Registrar exceções legítimas à altura padrão de 32 px e às larguras por função.
+
+## P1 — Corrigir telas em ordem de impacto
+
+- [ ] UI-010 — Vendas: auditar rotas e abas, preservar telas aprovadas e corrigir divergências nas demais.
+- [ ] UI-020 — Cadastro de Produtos: Dados Gerais, Fiscal, Estoque, Produção e Qualidade.
+- [ ] UI-030 — Compras/Suprimentos: pedido, requisição, RFQ, recebimento, fornecedor e análise de preços.
+- [ ] UI-040 — PCP/Manufatura: ordens, execução, capacidade, agenda, apontamentos e fichas.
+- [ ] UI-050 — Estoque/Almoxarifado: cadastro, saldo, movimentos, lotes e localização.
+- [ ] UI-060 — Qualidade/SGQ: inspeções, RNC/CAPA, quarentena, documentos e tablet.
+- [ ] UI-070 — Fiscal/NF-e: campos e grids sem alterar cálculo, emissão ou contratos fiscais.
+- [ ] UI-080 — Financeiro/Controladoria.
+- [ ] UI-090 — Engenharia/BOM e Manutenção.
+- [ ] UI-100 — RH e demais módulos.
+
+## P1 — Blindagem de qualidade
+
+- [ ] QA-010 — Integrar auditoria estática ao CI após revisar ruído.
+- [ ] QA-020 — Criar teste de contrato para alturas, labels, botões e radius.
+- [ ] QA-030 — Testar lupas, validação, abas e submit das telas corrigidas.
+- [ ] QA-040 — Confirmar type-check, lint, auditorias, rotas, build e deployment no HEAD final.
+
+Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar e revisar o relatório.
