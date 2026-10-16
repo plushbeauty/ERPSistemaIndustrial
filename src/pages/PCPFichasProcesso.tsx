@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CalendarRange, CheckCircle2, FileSliders, RefreshCw, Save, Search } from 'lucide-react'
+import PCPMoldPhotoPanel from '../components/PCPMoldPhotoPanel'
 import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 
@@ -217,6 +218,7 @@ export default function PCPFichasProcesso() {
     <label className="mt-3 block"><span className={labelClass}>Instruções de setup / processo / segurança</span><textarea className="min-h-[72px] w-full rounded-[3px] border border-slate-300 p-2 text-[10px] outline-none focus:border-[#2D8DB8]" value={instructions} onChange={e=>setInstructions(e.target.value)} placeholder="Sequência operacional, parâmetros de controle, inspeção inicial, reação a desvio, EPI e cuidados ambientais…"/></label>
     <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-2"><span className="text-[9px] text-slate-500">Dados separados por empresa · revisão técnica · sem valores fictícios</span><button className="erp-premium-button" onClick={()=>void save()} disabled={busy}><Save size={12}/> Gravar ficha</button></div>
    </section>
+   <PCPMoldPhotoPanel productId={productId} />
    <footer className="mt-2 flex items-center gap-2 text-[9px] text-slate-500"><CalendarRange size={12}/> Calendário de recursos e parâmetros de processo devem usar capacidade, ciclo e setup homologados.</footer>
   </div>
  </main>
