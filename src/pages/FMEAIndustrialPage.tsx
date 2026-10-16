@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { Search, Printer, Plus, Save, Trash2 } from 'lucide-react'
+import { Search, Printer, Plus } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
 type Row={id:string;codigo:string;processo:string;etapa:string;falha:string;efeito:string;causa:string;controle:string;severidade:number;ocorrencia:number;deteccao:number;rpn:number;acao:string|null;responsavel:string|null;data_limite:string|null;status:string}
