@@ -90,7 +90,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         const machineQ = supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('ativo', true).order('codigo')
         const opQ = supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at,criado_em').order('created_at', { ascending: false }).limit(500)
         const prodQ = supabase.from('erp_produtos').select('id,codigo,nome').limit(3000)
-        const pointingQ = supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,created_at').order('created_at', { ascending: false }).limit(5000)
+        const pointingQ = supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,criado_em').order('criado_em', { ascending: false }).limit(5000)
         const programQ = supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status').neq('status', 'cancelada').limit(3000)
         const stopQ = supabase.from('erp_producao_paradas').select('maquina_id,inicio,fim,status').limit(5000)
         const rpncQ = supabase.from('erp_rpnc').select('id,status').limit(5000)
@@ -226,7 +226,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     const productMap = new Map(products.map(p => [p.id, p]))
     const machineMap = new Map(machines.map(m => [m.id, m]))
     return activeOps.slice(0, 12).map(op => {
-      const rows = pointings.filter(p => p.ordem_producao_id === op.id).sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')))
+      const rows = pointings.filter(p => p.ordem_producao_id === op.id).sort((a, b) => String(b.criado_em ?? b.created_at ?? '').localeCompare(String(a.criado_em ?? a.created_at ?? '')))
       const last = rows[0]
       const machine = machineMap.get(op.maquina_id ?? '')
       const product = productMap.get(op.produto_id ?? '')
@@ -234,7 +234,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         op: `OP-${op.numero_op}`,
         workstation: machine ? `${machine.codigo} · ${machine.nome}` : 'Posto não definido',
         product: product ? `${product.codigo ?? ''} · ${product.nome ?? ''}`.replace(/^ · | · $/g, '') : 'Produto não informado',
-        lastPointing: last?.created_at ? new Date(last.created_at).toLocaleString('pt-BR') : 'Sem apontamento',
+        lastPointing: (last?.criado_em ?? last?.created_at) ? new Date((last.criado_em ?? last.created_at) as string).toLocaleString('pt-BR') : 'Sem apontamento',
         status: statusText(op.status)
       }
     })
