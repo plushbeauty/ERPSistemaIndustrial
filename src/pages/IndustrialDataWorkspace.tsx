@@ -61,7 +61,7 @@ function parseValue(field: Field, raw: string): unknown {
 function statusCellClass(column: string, value: unknown): string {
   const key = column.toLocaleLowerCase('pt-BR')
   if (!/(status|situacao|vigencia|disposicao|^ativo$)/.test(key)) return ''
-  const normalized = String(value ?? '').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
+  const normalized = String(value ?? '').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   if (['ativo','true','aprovado','aprovada','concluido','encerrada','eficacia_validada','escriturada','liberada'].includes(normalized)) return 'bg-emerald-100 text-emerald-900 font-semibold'
   if (['rascunho','aberto','em_revisao','em_execucao','em_andamento','planejada','pendente','suspensa'].includes(normalized)) return 'bg-amber-100 text-amber-900 font-semibold'
   if (['obsoleto','obsoleta','cancelada','reprovado','reprovada','bloqueado','bloqueada','desligado','false','refugar'].includes(normalized)) return 'bg-rose-100 text-rose-900 font-semibold'
