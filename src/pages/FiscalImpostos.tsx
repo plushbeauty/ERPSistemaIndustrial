@@ -192,7 +192,7 @@ export default function FiscalImpostos() {
 
   const field = (label: string, key: keyof RuleForm, options: { inputMode?: 'numeric' | 'decimal'; maxLength?: number; type?: string } = {}) =>
     <label key={key} className="grid gap-1 text-xs font-semibold uppercase text-slate-700">{label}
-      <input value={form[key]} onChange={(event) => setValue(key, event.target.value)} inputMode={options.inputMode} maxLength={options.maxLength} type={options.type ?? 'text'} className="h-8 min-h-8 rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]" />
+      <input value={form[key]} onChange={(event) => setValue(key, event.target.value)} inputMode={options.inputMode} maxLength={options.maxLength} type={options.type ?? 'text'} className={'h-8 min-h-8 rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0] ' + (key === 'ncm' ? 'edit-8' : key === 'cfop' ? 'edit-4' : key === 'uf_destino' ? 'edit-2' : key.endsWith('_aliquota') ? 'edit-12' : key.startsWith('cst_') || key.endsWith('_cst') ? 'edit-6' : 'edit-longo')} />
     </label>
 
   return <main className="erp-dense fiscal-workspace min-h-screen bg-slate-50 text-slate-900">
@@ -217,12 +217,12 @@ export default function FiscalImpostos() {
           {field('Regime tributário', 'regime_empresa')}
           {field('UF destino (vazio = geral)', 'uf_destino', { maxLength: 2 })}
           {field('ICMS (%)', 'icms_aliquota', { inputMode: 'decimal' })}
-          {field('CST/CSOSN ICMS', 'cst_csosn_icms', { maxLength: 4 })}
           {field('IPI (%)', 'ipi_aliquota', { inputMode: 'decimal' })}
-          {field('CST IPI', 'cst_ipi', { maxLength: 3 })}
           {field('PIS (%)', 'pis_aliquota', { inputMode: 'decimal' })}
-          {field('CST PIS', 'pis_cst', { maxLength: 3 })}
           {field('COFINS (%)', 'cofins_aliquota', { inputMode: 'decimal' })}
+          {field('CST/CSOSN ICMS', 'cst_csosn_icms', { maxLength: 4 })}
+          {field('CST IPI', 'cst_ipi', { maxLength: 3 })}
+          {field('CST PIS', 'pis_cst', { maxLength: 3 })}
           {field('CST COFINS', 'cofins_cst', { maxLength: 3 })}
         </div>
         <div className="mt-3 flex justify-end"><button type="button" onClick={() => void save()} disabled={busy || loading} className="h-9 rounded-sm bg-blue-800 px-4 text-sm font-semibold text-white disabled:opacity-50">{busy ? 'Salvando…' : editingId ? 'Salvar alterações' : 'Criar regra'}</button></div>
