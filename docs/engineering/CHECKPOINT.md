@@ -6,7 +6,7 @@ CURRENT_FILE: src/pages/configuracoes/ConfiguracoesADM.tsx
 CURRENT_ROUTE: /configuracoes-adm
 CURRENT_ERROR: ERR-0004; ERR-0005; ERR-0006
 LAST_SUCCESSFUL_TEST: nenhum teste local executado neste ambiente
-LAST_COMMIT: ecd89466d8fd1024eb47aa61a7f2f1d3ff48d1d4
+LAST_COMMIT: f575b6aebecfcca50023178504f7bbbea99b0256
 LAST_VERIFIED_DEPLOY: dpl_GQ8r2nVa2PxBBm6LsuAYFHEdcusT ERROR em 950c056; Vercel reportou build-rate-limit
 NEXT_ACTION: validar visual e funcionalmente /configuracoes-adm desktop/mobile; executar type-check/lint/build/verify:production; depois retomar verificação remota de erp_has_permission, grants e RLS.
 BLOCKERS: ERR-0004; ERR-0005; ERR-0001
