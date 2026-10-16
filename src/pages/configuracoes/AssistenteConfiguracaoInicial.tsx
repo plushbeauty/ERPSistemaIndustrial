@@ -62,7 +62,6 @@ export default function AssistenteConfiguracaoInicial() {
         if (companyResult.error) throw companyResult.error
         if (addressResult.error) throw addressResult.error
         if (fiscalResult.error) throw fiscalResult.error
-        if (pcpResult.error) throw pcpResult.error
         if (!companyResult.data) throw new Error('Empresa não encontrada no escopo da sua sessão.')
         if (!alive) return
         setCompanyId(id)
