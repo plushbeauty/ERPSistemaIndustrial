@@ -67,18 +67,18 @@ export default function FornecedoresIndustrial(){
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:7}}><div><div style={{fontSize:9,color:'#2D8DB8',fontWeight:700}}>CADASTRO DE FORNECEDOR</div><div style={{fontSize:13,color:'#123B50',fontWeight:600}}>{editing?'Editar fornecedor':'Novo fornecedor'}</div></div><div style={{fontSize:9,color:'#667085'}}>O formulário permanece fixo para manter o DBGrid visível.</div></div>
     <div style={{display:'grid',gridTemplateColumns:'minmax(80px,.55fr) minmax(220px,1.5fr) minmax(160px,1fr) minmax(180px,1fr) minmax(180px,1fr) minmax(140px,.8fr)',gap:7}}>
       <label style={label}>CÓDIGO<input style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}} value={form.codigo} maxLength={20} className="edit-20" onChange={e=>setForm({...form,codigo:e.target.value})}/></label>
-      <label style={label}>RAZÃO SOCIAL *<input required style={input} value={form.razao_social} onChange={e=>setForm({...form,razao_social:e.target.value})}/></label>
-      <label style={label}>NOME FANTASIA<input style={input} value={form.nome_fantasia} onChange={e=>setForm({...form,nome_fantasia:e.target.value})}/></label>
-      <label style={label}>CNPJ *<input style={input} inputMode="numeric" maxLength={18} className="edit-cnpj" value={formatCnpj(form.documento)} onChange={e=>setForm({...form,documento:digits(e.target.value).slice(0,14)})}/></label>
+      <label style={label}>RAZÃO SOCIAL *<input required style={input} value={form.razao_social} className="edit-longo" onChange={e=>setForm({...form,razao_social:e.target.value})}/></label>
+      <label style={label}>NOME FANTASIA<input style={input} value={form.nome_fantasia} className="edit-longo" onChange={e=>setForm({...form,nome_fantasia:e.target.value})}/></label>
+      <label style={label}>CNPJ *<input style={input} inputMode="numeric" maxLength={18} className="edit-20 edit-cnpj" value={formatCnpj(form.documento)} onChange={e=>setForm({...form,documento:digits(e.target.value).slice(0,14)})}/></label>
       <label style={label}>E-MAIL<input type="email" style={input} value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/></label>
-      <label style={label}>TELEFONE<input style={input} value={form.telefone} onChange={e=>setForm({...form,telefone:e.target.value})}/></label>
+      <label style={label}>TELEFONE<input style={input} value={form.telefone} maxLength={15} className="edit-12" onChange={e=>setForm({...form,telefone:e.target.value})}/></label>
     </div>
     <div style={{display:'grid',gridTemplateColumns:'minmax(260px,2fr) 170px 55px 130px 120px 1fr',gap:7,marginTop:7}}>
       <label style={label}>ENDEREÇO<input style={input} value={form.endereco} onChange={e=>setForm({...form,endereco:e.target.value})}/></label>
       <label style={label}>CONTATO RESPONSÁVEL<input style={input} value={form.contato} onChange={e=>setForm({...form,contato:e.target.value})}/></label>
       <label style={label}>UF<input style={input} maxLength={2} className="edit-2" value={form.estado} onChange={e=>setForm({...form,estado:e.target.value.toUpperCase().slice(0,2)})}/></label>
       <label style={label}>CIDADE<input style={input} value={form.cidade} onChange={e=>setForm({...form,cidade:e.target.value})}/></label>
-      <label style={label}>Nº CERTIFICADO<input style={input} value={form.iso_certificado_numero} onChange={e=>setForm({...form,iso_certificado_numero:e.target.value})}/></label>
+      <label style={label}>Nº CERTIFICADO<input style={input} value={form.iso_certificado_numero} maxLength={20} className="edit-20" onChange={e=>setForm({...form,iso_certificado_numero:e.target.value})}/></label>
       <label style={label}>VALIDADE ISO<input type="date" style={input} value={form.iso_certificado_validade} onChange={e=>setForm({...form,iso_certificado_validade:e.target.value})}/></label>
     </div>
     <div style={{display:'grid',gridTemplateColumns:'110px 180px 110px 1fr',gap:6,marginTop:6,alignItems:'end'}}>
