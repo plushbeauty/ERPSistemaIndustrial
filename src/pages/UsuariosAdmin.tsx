@@ -1,6 +1,6 @@
 /*
  * REVISÃO TÉCNICA: 16/10/2026
- * Revisado: fluxo de administração de usuários, escopo empresa/Master, uso de RPCs e pontos de atenção para auditoria e sincronização Auth/ERP.
+ * Revisado: fluxo de administração de usuários, escopo empresa/Master, contrato erp_has_permission(p_code), auditoria e sincronização Auth/ERP.
  * Não validado nesta revisão: Edge Function em produção, políticas RLS efetivas, type-check/build e testes autenticados ponta a ponta.
  */
 import { useEffect, useMemo, useState } from 'react'
@@ -114,9 +114,9 @@ export default function UsuariosAdmin() {
         fetchAllPages<User>((from, to) => usersQuery.range(from, to)),
         fetchAllPages<Company>((from, to) => supabase.from('erp_empresas').select('id,razao_social,nome_fantasia,codigo,ativo,plano,plano_status', { count: 'exact' }).order('nome_fantasia').range(from, to)),
         fetchAllPages<Role>((from, to) => supabase.from('erp_roles').select('id,codigo,nome,nivel,empresa_id', { count: 'exact' }).eq('ativo', true).order('nivel', { ascending: false }).range(from, to)),
-        supabase.rpc('erp_has_permission', { p_modulo: 'usuarios', p_acao: 'editar' }),
-        supabase.rpc('erp_has_permission', { p_modulo: 'usuarios', p_acao: 'criar' }),
-        supabase.rpc('erp_has_permission', { p_modulo: 'usuarios', p_acao: 'excluir' }),
+        supabase.rpc('erp_has_permission', { p_code: 'users.update' }),
+        supabase.rpc('erp_has_permission', { p_code: 'users.create' }),
+        supabase.rpc('erp_has_permission', { p_code: 'users.delete' }),
       ])
       setUsers(usersResult)
       setCompanies(companiesResult)
