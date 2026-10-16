@@ -7,6 +7,10 @@
 
 Na raiz do repositório, executar npm run audit:ui-standardization. O script percorre páginas/componentes, identifica rotas, classes de altura/largura, maxLength, CSS local e uso dos tokens compartilhados. O relatório em docs/erp-standardization/generated/ui-audit.json é estático e não substitui inspeção visual nem testes funcionais.
 
+## Execução automatizada no GitHub Actions
+
+O workflow `.github/workflows/industrial-code-quality.yml` executa `npm run audit:ui-standardization` depois da instalação determinística e publica `docs/erp-standardization/generated/ui-audit.json` como artefato `erp-ui-standardization-audit` mesmo quando uma etapa posterior falha. A mudança foi gravada no commit `ef29ae745d757ba7cfad543545b4bcd2444f45b7`. A integração só conta como validada quando houver execução do workflow e artefato/resultado real; a existência da configuração não comprova execução.
+
 ## Ciclo obrigatório por tela
 
 1. Ler BACKLOG.md e escolher o item pendente de maior prioridade.
