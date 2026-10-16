@@ -1,3 +1,15 @@
+/*
+  @AUDIT_DATE: 2026-10-16
+  @AUDIT_TIME_BRT: 12:44
+  @AUDIT_REVISION: #AUDIT-ERP-20261016-05
+  @STATUS: IMPLEMENTED_PENDING_VALIDATION
+  @SCOPE: src/pages/cadastro-produtos/FormFichaTecnica.tsx
+  @REVIEWED: Campos de cadastro, metadados, unidade, referências, NCM/CEST e consultas fiscais.
+  @CHANGES: Registro da revisão da ficha industrial ampliada e consulta de códigos; integração e schema precisam de validação automatizada e remota.
+  @VALIDATION: Arquivo inspecionado no GitHub; type-check/lint/build e validação remota não executados nesta operação.
+  @CHECKLIST: Scope-Limited | Preserve-Business-Rules | No-Fake-Data | Validation-Required
+*/
+
 import { Search, Save, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
