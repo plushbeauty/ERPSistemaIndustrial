@@ -83,3 +83,18 @@ TESTE NECESSÁRIO: listar funções/assinaturas, grants e executar RPC autentica
 EVIDÊNCIA: migration 20261005231000 define erp_has_permission(p_code text), com EXECUTE apenas para authenticated; migrations anteriores também definem overload p_modulo/p_acao.
 COMMIT: pendente
 DATA: 2026-10-08
+
+
+## ERR-0006
+STATUS: IN_PROGRESS
+PRIORIDADE: P1
+CATEGORIA: UI/CONFIGURAÇÕES ADMINISTRATIVAS
+ARQUIVO: src/pages/configuracoes/ConfiguracoesADM.tsx
+ROTA: /configuracoes-adm/*
+SINTOMA: tela administrativa com cards altos e arredondados, menu/textos truncados, overview sem atalhos para todas as seções e controles internos fora do padrão compacto; segurança, integrações e sistema não tinham operações centrais persistidas comprovadas.
+CAUSA: layout local divergente do padrão industrial e lacunas reais no contrato de dados para algumas seções.
+IMPACTO: navegação confusa e expectativa de funções inexistentes.
+CORREÇÃO PARCIAL: compactação da navegação e cards, pesquisa limitada a 50 caracteres, links de ação para operações existentes e CSS escopado aos formulários/grids internos.
+LIMITAÇÃO: não inventar tabelas, RPCs, revogação de sessão ou backup físico; dependências não confirmadas precisam de integração real antes de declarar funcional.
+TESTE NECESSÁRIO: type-check, lint, build, verificação de rotas, visual desktop/mobile e CRUD autenticado.
+EVIDÊNCIA: commit ecd89466d8fd1024eb47aa61a7f2f1d3ff48d1d4; Vercel reportou build-rate-limit no status consultado.
