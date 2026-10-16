@@ -204,6 +204,21 @@ export default function ConfiguracoesADM() {
         </div>
         <SectionContent item={current} navigate={navigate} />
         <footer style={{ marginTop: 12, borderTop: '1px solid #CFE1E7', padding: '8px 0', textAlign: 'center', fontSize: 9, fontWeight: 600, color: '#94A3B8' }}>© FernandoSch_System — Todos os direitos reservados</footer>
+        <style>{`
+          .admin-config-main input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+          .admin-config-main select { height:30px!important; min-height:30px!important; padding:4px 7px!important; border-radius:2px!important; font-size:10px!important; }
+          .admin-config-main textarea { min-height:72px; padding:6px 7px!important; border-radius:2px!important; font-size:10px!important; }
+          .admin-config-main button { min-height:30px!important; border-radius:2px!important; font-size:10px; }
+          .admin-config-main table { width:100%; border-collapse:collapse; font-size:10px; }
+          .admin-config-main thead th { height:32px; padding:5px 8px; background:#123B50!important; color:#fff!important; font-size:9px!important; font-weight:800; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid #2D8DB8; }
+          .admin-config-main tbody td { min-height:32px; padding:5px 8px; border-bottom:1px solid #D6E7EE; font-size:10px; }
+          .admin-config-main tbody tr:nth-child(even) { background:#EAF5F9; }
+          .admin-config-main tbody tr:hover { background:#D9F1F6!important; }
+          .admin-config-main .rounded-xl,.admin-config-main .rounded-lg,.admin-config-main .rounded-2xl,.admin-config-main .rounded-3xl { border-radius:2px!important; }
+          .admin-config-main .shadow,.admin-config-main .shadow-sm,.admin-config-main .shadow-md,.admin-config-main .shadow-lg { box-shadow:none!important; }
+          .admin-config-main label { gap:2px!important; font-size:9px!important; font-weight:700; text-transform:uppercase; letter-spacing:.025em; }
+          @media(max-width:767px){ .admin-config-main { margin-left:0!important; padding:8px!important; } }
+        `}</style>
       </main>
     </div>
   </div>
