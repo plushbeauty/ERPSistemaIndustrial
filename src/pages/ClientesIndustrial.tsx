@@ -45,17 +45,17 @@ export default function ClientesIndustrial(){
    <form onSubmit={save} style={{...panel,padding:9,marginBottom:7}}>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,marginBottom:7,flexWrap:'wrap'}}><div><div style={{fontSize:9,color:'#2D8DB8',fontWeight:700}}>CADASTRO DE CLIENTE</div><div style={{fontSize:13,color:'#123B50',fontWeight:600}}>{editing?'Editar cliente':'Novo cliente'}</div></div><div style={{fontSize:9,color:'#667085'}}>Estrutura alinhada ao cadastro de Fornecedores.</div></div>
     <div className="clientes-form-primary-grid" style={{display:'grid',gridTemplateColumns:'90px minmax(180px,1.5fr) minmax(150px,1fr) minmax(130px,1fr) minmax(150px,1fr) 120px',gap:7}}>
-     <label style={label}>CÓDIGO<input style={input} value={form.codigo} onChange={e=>setForm({...form,codigo:e.target.value})}/></label>
+     <label style={label}>CÓDIGO<input style={input} value={form.codigo} maxLength={20} className="edit-20" onChange={e=>setForm({...form,codigo:e.target.value})}/></label>
      <label style={label}>NOME / RAZÃO SOCIAL *<input required style={input} value={form.nome} onChange={e=>setForm({...form,nome:e.target.value})}/></label>
-     <label style={label}>CPF / CNPJ<input style={input} value={form.documento} onChange={e=>setForm({...form,documento:e.target.value})}/></label>
+     <label style={label}>CPF / CNPJ<input style={input} value={form.documento} maxLength={18} className="edit-20" onChange={e=>setForm({...form,documento:e.target.value})}/></label>
      <label style={label}>E-MAIL<input type="email" style={input} value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/></label>
-     <label style={label}>TELEFONE<input style={input} value={form.telefone} onChange={e=>setForm({...form,telefone:e.target.value})}/></label>
-     <label style={label}>TIPO CLIENTE<input style={input} value={form.tipo_cliente} onChange={e=>setForm({...form,tipo_cliente:e.target.value})}/></label>
+     <label style={label}>TELEFONE<input style={input} value={form.telefone} maxLength={15} className="edit-12" onChange={e=>setForm({...form,telefone:e.target.value})}/></label>
+     <label style={label}>TIPO CLIENTE<input style={input} value={form.tipo_cliente} maxLength={3} className="edit-3" onChange={e=>setForm({...form,tipo_cliente:e.target.value})}/></label>
     </div>
     <div className="clientes-form-secondary-grid" style={{display:'grid',gridTemplateColumns:'minmax(180px,1fr) minmax(220px,1.5fr) 140px 130px',gap:7,marginTop:7}}>
      <label style={label}>TABELA DE PREÇO<select style={input} value={form.tabela_preco_id} onChange={e=>setForm({...form,tabela_preco_id:e.target.value})}><option value="">Preço base</option>{tables.map(t=><option key={t.id} value={t.id}>{t.codigo} • {t.nome}</option>)}</select></label>
      <div style={{display:'grid',gridTemplateColumns:'minmax(100px,1fr) minmax(100px,1fr)',gap:7}}>
-      <label style={label}>DESCONTO PADRÃO %<input type="number" min="0" max="100" step="0.01" style={input} value={form.desconto_padrao_percentual} onChange={e=>setForm({...form,desconto_padrao_percentual:e.target.value})}/></label>
+      <label style={label}>DESCONTO PADRÃO %<input type="number" min="0" max="100" step="0.01" style={input} value={form.desconto_padrao_percentual} maxLength={14} className="edit-12" onChange={e=>setForm({...form,desconto_padrao_percentual:e.target.value})}/></label>
       <label style={label}>SITUAÇÃO<select style={input} value={form.ativo?'SIM':'NÃO'} onChange={e=>setForm({...form,ativo:e.target.value==='SIM'})}><option value="SIM">ATIVO</option><option value="NÃO">INATIVO</option></select></label>
      </div>
      <div style={{fontSize:9,color:'#667085',alignSelf:'end',paddingBottom:7}}>O desconto deve ficar entre 0 e 100%.</div>
