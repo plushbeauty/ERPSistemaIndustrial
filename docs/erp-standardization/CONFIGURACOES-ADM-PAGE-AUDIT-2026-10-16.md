@@ -54,3 +54,35 @@ Commit `00f9f12264f9e71b0f5525eaafaac48a4a8304dd` substitui o shell de `Configur
 - [ ] Definir execução real e restore de backups; sem indicadores fictícios.
 - [ ] Executar `npm run type-check`, lint, auditorias e build em checkout local.
 - [ ] Testar cada rota autenticada e verificar o deployment após CI; não declarar GREEN sem evidência.
+
+
+## Segunda passada — Usuários e Edge Function (16/10/2026)
+
+Arquivos examinados: `src/pages/UsuariosAdmin.tsx`, `supabase/functions/erp-user-admin/index.ts`, `supabase/config.toml`.
+
+### Evidências positivas no código
+
+- Operações administrativas passam pela Edge Function `erp-user-admin`, configurada com `verify_jwt = true`; a função também valida o JWT com `auth.getUser()`.
+- O backend deriva o ator a partir de `erp_usuarios`, valida o contrato estrito de Master e consulta `erp_has_permission(p_modulo, p_acao)` antes das ações administrativas.
+- Criação/convite valida empresa, perfil atribuível via `erp_can_assign_role`, nível do alvo e impede atribuir perfil Master a usuário de tenant.
+- Edição/desativação/exclusão verificam a empresa do alvo e bloqueiam operações sobre o próprio usuário; a exclusão arquiva o perfil e há registro em `erp_audit_logs`.
+- Senha temporária é gerada no servidor e a redefinição marca `must_change_password`; o fluxo de convite usa código de e-mail e rota `/ativar-acesso`.
+
+### Pontos que precisam de correção ou comprovação
+
+1. **Carga do frontend não trata falha das três RPCs de permissão como falha de toda a consulta:** o código define flags como falsas, mas ainda pode exibir dados e deixa a mensagem misturada com o estado geral. Separar erro de carregamento de erro RBAC e impedir ações/feedback ambíguos.
+2. **Consultas diretas de empresas e perfis no frontend dependem das policies RLS:** confirmar que um administrador de tenant não consegue ler empresas de outros tenants e que os perfis retornados se limitam a globais + empresa atual. A filtragem visual não substitui RLS.
+3. **Auditoria pode falhar depois da mutação:** a função retorna `audit_warning` quando o log falha, ou seja, a operação pode ter ocorrido sem trilha persistida. Para ações críticas, avaliar atomicidade/registro transacional no banco ou estado de falha explícito e procedimento de reconciliação.
+4. **Ativação sincroniza primeiro o registro ERP e depois o ban do Auth:** se a segunda etapa falhar, a função responde conflito com estado parcialmente alterado. Exige compensação ou uma rotina segura de reconciliação.
+5. **Senha temporária aparece na tela do operador:** manter revelação de uso único, limitar duração/visibilidade, nunca registrar em logs nem copiar para auditoria, e limpar ao fechar o fluxo; confirmar que não é exposta em analytics ou capturas.
+6. **Master lista todas as empresas no frontend:** a consulta `erp_empresas` não filtra explicitamente por tenant, então o isolamento deve ser garantido pela RLS e pelo papel Master. Testar com sessão real de tenant.
+7. **Ação de redefinição de senha e convite são privilegiadas:** comprovar em homologação o fluxo completo de e-mail, expiração do convite, troca obrigatória e revogação de sessão/token após bloqueio ou redefinição.
+8. **O frontend ainda contém tratamento visual legado e vários controles na mesma tela:** será padronizado após fechar os contratos de dados; não misturar redesign com mudança de autorização sem testes.
+
+### Ordem de correção para a página Usuários
+
+- [ ] Teste cross-tenant de lista, busca, filtro de empresa e carregamento de perfis.
+- [ ] Confirmar policies efetivas de `erp_usuarios`, `erp_empresas`, `erp_roles` e `erp_convites_acesso` no Supabase remoto.
+- [ ] Reconciliar falha de auditoria e estados parciais de ativação com backend seguro.
+- [ ] Testar criar, convidar, editar, ativar, desativar, remover e redefinir senha com perfis de tenant e Master.
+- [ ] Só então refatorar a UI da página para o padrão compacto do ERP.
