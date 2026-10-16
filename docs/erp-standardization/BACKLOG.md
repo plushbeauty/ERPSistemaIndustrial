@@ -41,3 +41,7 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - Relatório estático: [ROUTE-AUDIT-2026-10-16.md](./ROUTE-AUDIT-2026-10-16.md).
 - Cadastro de Produtos recebeu ajustes de geometria e limites nos commits `6905e28`, `5e6939b` e `f441ef3`; permanece pendente de type-check, build e inspeção visual.
 - Não foi possível executar o checkout local nesta sessão; por isso UI-001, UI-002 e UI-020 continuam abertos e nenhuma tela foi declarada concluída.
+
+- Ciclo adicional de correção aplicado em `IndustrialDataWorkspace.tsx`, `cadastro-produtos/ListagemProdutos.tsx`, `cadastro-produtos/FormFichaTecnica.tsx` e `ProdutosVendasIndustrial.tsx`: ver commits no [relatório de rotas](./ROUTE-AUDIT-2026-10-16.md). Foram limitados textos comuns a 50 caracteres, compactados controles e corrigidos dimensões específicas. Campos JSON técnicos e URLs têm exceções explícitas para preservar os dados.
+- UI-020 continua pendente: há correções parciais, mas ainda faltam testes de compilação, execução visual e interação. Não mover para COMPLETED.
+- A verificação local ainda está bloqueada porque não há checkout local acessível nesta sessão; nenhum build ou type-check foi declarado aprovado.
