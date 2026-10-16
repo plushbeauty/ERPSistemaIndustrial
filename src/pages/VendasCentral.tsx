@@ -121,12 +121,6 @@ export default function VendasCentral() {
   const pageCount = Math.max(1, Math.ceil(visibleOrders.length / PAGE_SIZE))
   const currentPage = Math.min(page, pageCount - 1)
   const pageOrders = visibleOrders.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)
-  const counts = useMemo(() => ({
-    all: orders.length,
-    open: orders.filter((order) => !isCancelled(order.status) && !isInvoiced(order.status)).length,
-    drafts: orders.filter((order) => isDraft(order.status)).length,
-    overdue: orders.filter(isOverdue).length,
-  }), [orders])
 
   return (
     <VendasLayout title="Status do pedido" showStatusCards={false}>
