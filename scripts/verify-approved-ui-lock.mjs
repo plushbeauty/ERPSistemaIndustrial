@@ -22,7 +22,7 @@ for (const item of approved) {
   const header = Buffer.from(`blob ${content.byteLength}\0`, 'utf8')
   const actual = createHash('sha1').update(header).update(content).digest('hex')
   const ok = actual === item.sha
-  process.stdout.write(`${ok ? 'PASS' : 'FAIL'} — ${item.label} [${item.path}] — ${ok ? 'aprovado e congelado' : 'arquivo alterado; exige nova aprovação explícita'}\n`)
+  process.stdout.write(`${ok ? 'PASS' : 'FAIL'} — ${item.label} [${item.path}] — ${ok ? 'aprovado e congelado' : `hash divergente; esperado=${item.sha}; encontrado=${actual}`}\n`)
   if (!ok) failed = true
 }
 if (failed) {
