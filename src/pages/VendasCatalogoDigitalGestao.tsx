@@ -110,9 +110,9 @@ export default function VendasCatalogoDigitalGestao() {
             </div>
           </div>
           {busy && <p className="mt-2 text-[10px] text-slate-500" role="status">Carregando produtos reais…</p>}
-          {error && <div className="mt-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
-          {message && <div className="mt-4 flex gap-2 rounded border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800"><Check size={16} />{message}</div>}
-          <div className="mt-5 overflow-x-auto">
+          {error && <div className="mt-2 rounded-[2px] border border-red-200 bg-red-50 p-2 text-[10px] text-red-800">{error}</div>}
+          {message && <div className="mt-2 flex gap-2 rounded-[2px] border border-emerald-200 bg-emerald-50 p-2 text-[10px] text-emerald-800"><Check size={16} />{message}</div>}
+          <div className="mt-3 overflow-x-auto">
             <table className="w-full min-w-[900px]">
               <thead><tr className="h-8 bg-slate-100 text-left text-[9px] uppercase"><th className="w-16">Catálogo</th><th>Código</th><th>Produto</th><th>Descrição</th><th>Preço</th><th>Foto</th><th>Status</th></tr></thead>
               <tbody>
@@ -127,7 +127,7 @@ export default function VendasCatalogoDigitalGestao() {
                     <td>{selected[product.id] ? 'Publicado' : 'Não publicado'}</td>
                   </tr>
                 ))}
-                {!visible.length && <tr><td colSpan={7} className="py-12 text-center text-slate-500">Nenhum produto encontrado.</td></tr>}
+                {!visible.length && <tr><td colSpan={7} className="py-6 text-center text-[10px] text-slate-500">Nenhum produto encontrado.</td></tr>}
               </tbody>
             </table>
           </div>
