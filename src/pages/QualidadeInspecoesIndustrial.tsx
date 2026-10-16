@@ -1,7 +1,7 @@
 /**
  * ERPSis — CONTROLE DE REVISÃO VISUAL
  * Data Atual: 2026-10-16
- * Revisão Incremental: REV-062
+ * Revisão Incremental: REV-063
  * Escopo: padronização industrial de inputs, seletores, botões e densidade tipográfica;
  * cantos retos, foco azul, cabeçalhos escuros e alinhamento de dados conforme aplicável.
  * Escopo funcional preservado: consultas Supabase, validações, tenant, RPCs e gravações.
@@ -11,6 +11,7 @@ import { AlertTriangle, ClipboardCheck, RefreshCw, Search, ShieldCheck } from 'l
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import QualitySidebar from '../components/quality/QualitySidebar'
+import { fieldClass, labelClass } from '../components/industrial/forms/industrialFormStyles'
 
 type InspectionRow = {
   id: string
@@ -45,8 +46,6 @@ function parseSpecParameters(value: unknown): SpecParameter[] {
   }))
 }
 
-const fieldClass = 'h-8 w-full rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 outline-none transition-all focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
-const labelClass = 'flex flex-col gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-500'
 const buttonClass = 'inline-flex h-8 items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50'
 
 export default function QualidadeInspecoesIndustrial() {
