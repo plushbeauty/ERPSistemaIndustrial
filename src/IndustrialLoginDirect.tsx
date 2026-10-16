@@ -306,12 +306,6 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
 
       <section className="auth-panel">
         <div className="auth-panel-inner">
-          <div className="auth-mobile-brand">
-            <a href="/">
-              <img src="/logo/logo.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL" />
-            </a>
-          </div>
-
           <div className="auth-heading">
             <span className="auth-overline">SYSNQRA • ACESSO SEGURO</span>
             <span className="auth-status"><i /> Ambiente protegido</span>
