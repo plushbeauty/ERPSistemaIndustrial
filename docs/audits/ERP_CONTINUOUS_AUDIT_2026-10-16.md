@@ -17,6 +17,8 @@
 6. Existe também `src/pages/ComprasPedidoCompra.tsx`, com outro fluxo de pedido. É necessário confirmar o mapeamento de rotas e decidir se os dois fluxos são intencionais antes de unificá-los.
 7. `src/components/compras/PedidoCompraForm.tsx` foi criado e agora importa as classes de `src/components/industrial/forms/industrialFormStyles.ts`. **O componente ainda não foi conectado à tela operacional nem teve type-check/build executado nesta rodada.**
 8. `scripts/quality_audit_backlog.json` contém 13 erros históricos datados de 07/10/2026, inclusive erros de TypeScript antigos. Não devem ser tratados como erros atuais sem reexecutar os comandos.
+9. A branch `main` está sem proteção de branch no GitHub (`protected: false`). O contrato `verify-approved-ui-lock` protege quatro arquivos somente quando seus gates executam; não substitui regras de branch nem revisão obrigatória.
+10. O check Vercel dos commits desta rodada retornou `failure` com URL de limite de builds (`upgradeToPro=build-rate-limit`). A lista de deployments mostrava um deployment de produção em `BUILDING` para commit anterior (`3ee7d628...`) e um último `READY` visível para `7a055c9...`; nenhum desses estados comprova que o commit atual foi publicado com sucesso.
 
 ## Comparação de arquitetura com Carbon
 
@@ -42,6 +44,8 @@ Carbon usa uma arquitetura e versões próprias (React Router em modo framework,
 - [ ] Confrontar cada módulo (Compras, Estoque, Manutenção, PCP, Qualidade, Engenharia, Fiscal, Financeiro, RH e demais rotas) com schema/migrations/RLS e testes existentes.
 - [ ] Confirmar no ambiente Supabase quais migrations foram aplicadas; presença de um arquivo SQL no GitHub não comprova execução em produção.
 - [ ] Confirmar CI e deployment do commit final; não declarar “verde” sem checks concluídos.
+- [ ] Resolver o limite de builds do Vercel ou aguardar cota; reexecutar e confirmar o deployment do HEAD atual.
+- [ ] Ativar proteção da branch `main` com PR obrigatório e checks mínimos depois de verificar as permissões disponíveis e quais checks realmente são confiáveis.
 
 ## Regras de execução
 
