@@ -3,9 +3,12 @@
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data/Hora: 24/09/2026 - 13:00 BRT
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
- * ID da Revisão: REV-059
- * Alterações: Remoção de cast Event→FormEvent artificial no salvamento de produtos; ação agora chama save() diretamente.
- * Status do Build Local: Não executado — validação será feita pelo gate remoto.
+ * ID da Revisão original: REV-059
+ * Última revisão: REV-060 — 16/10/2026
+ * O que foi revisto: Aba Produção integrada ao painel de processo; Aba Qualidade precisava exibir histórico real de inspeções, sem laudos fictícios.
+ * O que foi alterado: integração do componente AbaProducaoIndustrial; inclusão de consulta tenant-scoped a erp_inspecoes e painel de histórico real na aba Qualidade.
+ * Validação desta revisão: inspeção estática do código e dos contratos usados em QualidadeInspecaoProcesso.tsx; type-check/build ainda não executados após esta alteração.
+ * Estado: implementado no código; validação estática parcial; banco, RLS, testes integrados e deploy pendentes.
  * =========================================================================
  */
 
@@ -38,6 +41,7 @@ type Supplier={id:string;razao_social:string;nome_fantasia:string|null}
 type Location={id:string;codigo:string;nome:string;tipo:string}
 type Movement={id:string;tipo:string;quantidade:number;origem:string|null;documento:string|null;observacao:string|null;created_at:string}
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number;observacao:string|null;created_at:string}
+type QualityInspection={id:string;tipo:string;resultado:string;quantidade_inspecionada:number;quantidade_aprovada:number;quantidade_reprovada:number;ordem_producao_id:string|null;inspetor_nome:string|null;acao_bloqueio:string|null;created_at:string}
 type Audit={id:string;action:string;module:string;old_data:Record<string,unknown>|null;new_data:Record<string,unknown>|null;created_at:string}
 type Attachment={id:string;nome_arquivo:string;storage_path:string;mime_type:string|null;tamanho_bytes:number|null;created_at:string}
 type Tab='gerais'|'fiscal'|'estoque'|'producao'|'qualidade'|'fotos'
@@ -95,6 +99,7 @@ export default function ProdutosVendasIndustrial(){
   const [productionLookupQuery,setProductionLookupQuery]=useState('')
   const [movements,setMovements]=useState<Movement[]>([])
   const [defects,setDefects]=useState<Defect[]>([])
+  const [qualityInspections,setQualityInspections]=useState<QualityInspection[]>([])
   const [audits,setAudits]=useState<Audit[]>([])
   const [attachments,setAttachments]=useState<Attachment[]>([])
   const [detailsLoaded,setDetailsLoaded]=useState(false)
@@ -234,14 +239,15 @@ export default function ProdutosVendasIndustrial(){
     if(!selectedId||detailsLoaded)return
     setBusy(true)
     try{
-      const [m,d,a,an,ft]=await Promise.all([
+      const [m,d,q,a,an,ft]=await Promise.all([
         supabase.from('erp_estoque_movimentos').select('id,tipo,quantidade,origem,documento,observacao,created_at').eq('empresa_id',companyId).eq('produto_id',selectedId).order('created_at',{ascending:false}).limit(200),
         supabase.from('erp_producao_defeitos').select('id,ordem_producao_id,defeito,quantidade,observacao,created_at').eq('empresa_id',companyId).eq('produto_id',selectedId).order('created_at',{ascending:false}).limit(200),
+        supabase.from('erp_inspecoes').select('id,tipo,resultado,quantidade_inspecionada,quantidade_aprovada,quantidade_reprovada,ordem_producao_id,inspetor_nome,acao_bloqueio,created_at').eq('empresa_id',companyId).eq('produto_id',selectedId).order('created_at',{ascending:false}).limit(100),
         supabase.from('erp_audit_logs').select('id,action,module,old_data,new_data,created_at').eq('company_id',companyId).eq('entity','erp_produtos').eq('entity_id',selectedId).order('created_at',{ascending:false}).limit(200),
         supabase.from('erp_documentos_anexos').select('id,nome_arquivo,storage_path,mime_type,tamanho_bytes,created_at').eq('empresa_id',companyId).eq('entidade_tipo','produto').eq('entidade_id',selectedId).order('created_at',{ascending:false}).limit(200),
         supabase.from('erp_fichas_tecnicas').select('id,versao,rendimento,unidade_rendimento,status,revisao').eq('empresa_id',companyId).eq('produto_id',selectedId).eq('ativa',true).order('versao',{ascending:false}).limit(1).maybeSingle()
       ])
-      setMovements((m.data??[]) as Movement[]);setDefects((d.data??[]) as Defect[]);setAudits((a.data??[]) as Audit[]);setAttachments((an.data??[]) as Attachment[])
+      setMovements((m.data??[]) as Movement[]);setDefects((d.data??[]) as Defect[]);setQualityInspections((q.data??[]) as QualityInspection[]);setAudits((a.data??[]) as Audit[]);setAttachments((an.data??[]) as Attachment[])
       setProductionFicha((ft.data??null) as {id:string;versao:number;rendimento:number;unidade_rendimento:string;status:string|null;revisao:string|null} | null)
       if(ft.data?.id){
         const fo=await supabase.from('erp_ficha_operacoes').select('id,sequencia,operacao,maquina_id,setup_min,ciclo_seg,capacidade_hora,capacidade_dia').eq('empresa_id',companyId).eq('ficha_id',ft.data.id).order('sequencia')
@@ -252,7 +258,7 @@ export default function ProdutosVendasIndustrial(){
         setProductionOps((fo.data??[]).map((x:{id:string;sequencia:number;operacao:string;maquina_id:string|null;setup_min:number;ciclo_seg:number;capacidade_hora:number|null;capacidade_dia:number|null})=>({...x,maquina_codigo:x.maquina_id?machineMap.get(x.maquina_id)?.codigo??null:null,maquina_nome:x.maquina_id?machineMap.get(x.maquina_id)?.nome??null:null})))
       }else setProductionOps([])
       setDetailsLoaded(true)
-      const firstError=[m,d,a,an,ft].find(x=>x.error);if(firstError?.error)setError(firstError.error.message)
+      const firstError=[m,d,q,a,an,ft].find(x=>x.error);if(firstError?.error)setError(firstError.error.message)
     }finally{setBusy(false)}
   }
   useEffect(()=>{if(selectedId)void loadDetails()},[selectedId])
@@ -863,6 +869,17 @@ export default function ProdutosVendasIndustrial(){
         <div className="product-quality-existing-settings">
           {select('INSPEÇÃO OBRIGATÓRIA (REGRA ATUAL)','inspecao_qualidade_obrigatoria',[['true','Sim'],['false','Não']])}
           {field('NÍVEL DE QUALIDADE','nivel_qualidade')}
+        </div>
+        <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>04.C / HISTÓRICO REAL DE INSPEÇÕES E LAUDOS</h2>
+        <div style={{overflowX:'auto',border:'1px solid #d5dde7'}}>
+          <table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}>
+            <thead><tr style={{background:'#123B50',color:'#fff'}}>{['Data do ensaio','Tipo','Ordem de produção','Inspecionada','Aprovada','Reprovada','Resultado','Responsável técnico','Ação de bloqueio'].map(h=><th key={h} style={{padding:'6px',textAlign:'left',fontWeight:600,whiteSpace:'nowrap'}}>{h}</th>)}</tr></thead>
+            <tbody>{qualityInspections.map(item=><tr key={item.id} style={{borderBottom:'1px solid #e5e7eb'}}>
+              <td style={{padding:'6px',whiteSpace:'nowrap'}}>{new Date(item.created_at).toLocaleString('pt-BR')}</td><td style={{padding:'6px'}}>{item.tipo}</td><td style={{padding:'6px'}}>{item.ordem_producao_id||'—'}</td>
+              <td style={{padding:'6px',textAlign:'right'}}>{fmt(item.quantidade_inspecionada)}</td><td style={{padding:'6px',textAlign:'right'}}>{fmt(item.quantidade_aprovada)}</td><td style={{padding:'6px',textAlign:'right'}}>{fmt(item.quantidade_reprovada)}</td>
+              <td style={{padding:'6px',fontWeight:700,color:item.resultado==='APROVADO'?'#16794b':item.resultado==='REPROVADO'?'#b42318':'#9a6700'}}>{item.resultado}</td><td style={{padding:'6px'}}>{item.inspetor_nome||'—'}</td><td style={{padding:'6px'}}>{item.acao_bloqueio||'—'}</td>
+            </tr>)}{!qualityInspections.length&&<tr><td colSpan={9} style={{padding:12,textAlign:'center',color:'#667085'}}>Nenhuma inspeção ou laudo registrado para este produto no banco.</td></tr>}</tbody>
+          </table>
         </div>
         <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DEFEITOS REGISTRADOS</h2>
         <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr>{['Data','OP','Defeito','Quantidade','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:5,borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{defects.map(d=><tr key={d.id}><td style={{padding:5}}>{new Date(d.created_at).toLocaleString('pt-BR')}</td><td style={{padding:5}}>{d.ordem_producao_id}</td><td style={{padding:5}}>{d.defeito}</td><td style={{padding:5}}>{fmt(d.quantidade)}</td><td style={{padding:5}}>{d.observacao||'—'}</td></tr>)}{!defects.length&&emptyRow('Nenhum defeito registrado para este produto.',5)}</tbody></table></div>
