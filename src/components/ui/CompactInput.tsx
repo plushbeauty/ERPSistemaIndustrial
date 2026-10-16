@@ -17,7 +17,7 @@ export default function CompactInput({ label, value, onChange, required = false,
     onBlur?.(event)
   }
   return <label className={`grid min-w-0 gap-[2px] ${wide ? 'col-span-2' : ''} ${className}`}>
-    {label ? <span className="mb-[2px] text-[9px] font-medium uppercase leading-[10px] tracking-wider text-slate-600">{label}{required ? ' *' : ''}</span> : null}
-    <input {...props} value={value} onChange={handleChange} onBlur={handleBlur} placeholder={invalid ? 'Preencher...' : placeholder} aria-invalid={invalid || undefined} className={`h-[30px] min-h-[30px] w-full rounded-[2px] border px-2 text-[11px] text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-0 disabled:bg-slate-100 disabled:text-slate-500 ${invalid ? 'border-red-500 bg-red-50/50 placeholder:text-red-400' : 'border-slate-300 bg-white'}`} />
+    {label ? <span className="mb-[2px] text-[12px] font-semibold uppercase leading-[14px] tracking-wider text-slate-600">{label}{required ? ' *' : ''}</span> : null}
+    <input {...props} value={value} onChange={handleChange} onBlur={handleBlur} placeholder={invalid ? 'Preencher...' : placeholder} aria-invalid={invalid || undefined} className={`h-8 min-h-8 w-full rounded border px-2.5 font-mono text-[13px] text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-0 disabled:bg-slate-100 disabled:text-slate-500 ${invalid ? 'border-red-500 bg-red-50/50 placeholder:text-red-400' : 'border-slate-300 bg-white'}`} />
   </label>
 }
