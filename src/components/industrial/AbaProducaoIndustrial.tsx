@@ -1,3 +1,15 @@
+/*
+  @AUDIT_DATE: 2026-10-16
+  @AUDIT_TIME_BRT: 12:44
+  @AUDIT_REVISION: #AUDIT-ERP-20261016-10
+  @STATUS: IMPLEMENTED_PENDING_VALIDATION
+  @SCOPE: src/components/industrial/AbaProducaoIndustrial.tsx
+  @REVIEWED: Consultas tenant-scoped de fichas, operações, postos/máquinas, roteiros e anexos.
+  @CHANGES: Registro da revisão do painel de documentos reais de processo; esquema, Storage/RLS e integração em sessão real ainda pendentes.
+  @VALIDATION: Arquivo inspecionado no GitHub; type-check/lint/build e validação remota não executados nesta operação.
+  @CHECKLIST: Scope-Limited | Preserve-Business-Rules | No-Fake-Data | Validation-Required
+*/
+
 /**
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
  * Data da alteração: 2026-10-16
