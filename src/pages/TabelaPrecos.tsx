@@ -119,7 +119,7 @@ export default function TabelaPrecos() {
                 <option value="postos">Custo hora-máquina</option>
               </select>
             </label>
-            <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-2">
+            <label className="grid min-w-0 gap-0.5 text-[9px] font-bold uppercase sm:col-span-1 xl:col-span-2">
               Percentual %
               <input
                 className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2D8DB8]"
@@ -129,7 +129,7 @@ export default function TabelaPrecos() {
                 onChange={event => setPercentual(event.target.value)}
               />
             </label>
-            <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-3">
+            <label className="grid min-w-0 gap-0.5 text-[9px] font-bold uppercase sm:col-span-1 xl:col-span-3">
               Grupo produto
               <input
                 className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2D8DB8]"
@@ -137,7 +137,7 @@ export default function TabelaPrecos() {
                 onChange={event => setGrupo(event.target.value)}
               />
             </label>
-            <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-2">
+            <label className="grid min-w-0 gap-0.5 text-[9px] font-bold uppercase sm:col-span-1 xl:col-span-2">
               Perfil cliente
               <input
                 className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2D8DB8]"
