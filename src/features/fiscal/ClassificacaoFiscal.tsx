@@ -78,7 +78,7 @@ export default function ClassificacaoFiscal() {
     }
   }
 
-  const input = 'h-10 rounded-sm border border-gray-300 bg-white px-2 text-[13px]'
+  const input = 'h-8 min-h-8 rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]'
 
   return (
     <main className="erp-dense fiscal-workspace min-h-full bg-slate-50 p-3 text-slate-900">
@@ -96,11 +96,11 @@ export default function ClassificacaoFiscal() {
           </label>
           <label className="grid gap-1 text-xs font-medium text-gray-700">
             NCM
-            <input className={`${input} erp-field-ncm`} inputMode="numeric" maxLength={8} value={ncm} onChange={(event) => setNcm(event.target.value.replace(/\D/g, '').slice(0, 8))} />
+            <input className={`${input} erp-field-ncm edit-8`} inputMode="numeric" maxLength={8} value={ncm} onChange={(event) => setNcm(event.target.value.replace(/\D/g, '').slice(0, 8))} />
           </label>
           <label className="grid gap-1 text-xs font-medium text-gray-700">
             Alíquota base (%)
-            <input className={`${input} erp-field-percent`} type="number" min="0" max="100" step="0.0001" inputMode="decimal" value={aliquota} onChange={(event) => setAliquota(event.target.value)} />
+            <input className={`${input} erp-field-percent edit-12`} type="number" min="0" max="100" step="0.0001" inputMode="decimal" value={aliquota} onChange={(event) => setAliquota(event.target.value)} />
           </label>
           <label className="grid gap-1 text-xs font-medium text-gray-700">
             Vigência início
