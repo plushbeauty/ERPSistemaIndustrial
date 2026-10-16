@@ -52,10 +52,13 @@ type Company = {
   plano_status: string | null
 }
 type Role = { id: string; codigo: string; nome: string; nivel: number; empresa_id: string | null }
-type FormState = { nome: string; email: string; login_nome: string; matricula: string; role_id: string; password: string; empresa_id: string }
+type Sector = { id: string; codigo: string | null; nome: string; empresa_id: string }
+type Permission = { id: string; code: string; name: string; description: string | null }
+type RolePermission = { role_id: string; permission_id: string }
+type FormState = { nome: string; email: string; login_nome: string; matricula: string; role_id: string; password: string; empresa_id: string; setor_id: string }
 type StatusFilter = 'all' | 'active' | 'inactive'
 
-const emptyForm: FormState = { nome: '', email: '', login_nome: '', matricula: '', role_id: '', password: '', empresa_id: '' }
+const emptyForm: FormState = { nome: '', email: '', login_nome: '', matricula: '', role_id: '', password: '', empresa_id: '', setor_id: '' }
 const masterAccount = (user: User | null) => user?.is_master === true
   && Number(user.nivel_admin) >= 100
   && user.empresa_id === null
@@ -67,6 +70,10 @@ export default function UsuariosAdmin() {
   const [users, setUsers] = useState<User[]>([])
   const [companies, setCompanies] = useState<Company[]>([])
   const [roles, setRoles] = useState<Role[]>([])
+  const [sectors, setSectors] = useState<Sector[]>([])
+  const [rolePermissions, setRolePermissions] = useState<Permission[]>([])
+  const [permissionPreviewMessage, setPermissionPreviewMessage] = useState('')
+  const [permissionPreviewLoading, setPermissionPreviewLoading] = useState(false)
   const [actor, setActor] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
@@ -105,10 +112,11 @@ export default function UsuariosAdmin() {
       if (masterAccount(currentActor)) usersQuery = usersQuery.not('empresa_id', 'is', null)
       else usersQuery = usersQuery.eq('empresa_id', currentActor.empresa_id)
 
-      const [usersResult, companiesResult, rolesResult, editPermission, createPermission, archivePermission] = await Promise.all([
+      const [usersResult, companiesResult, rolesResult, sectorsResult, editPermission, createPermission, archivePermission] = await Promise.all([
         fetchAllPages<User>((from, to) => usersQuery.range(from, to)),
         fetchAllPages<Company>((from, to) => supabase.from('erp_empresas').select('id,razao_social,nome_fantasia,codigo,ativo,plano,plano_status', { count: 'exact' }).order('nome_fantasia').range(from, to)),
         fetchAllPages<Role>((from, to) => supabase.from('erp_roles').select('id,codigo,nome,nivel,empresa_id', { count: 'exact' }).eq('ativo', true).order('nivel', { ascending: false }).range(from, to)),
+        fetchAllPages<Sector>((from, to) => supabase.from('erp_setores').select('id,codigo,nome,empresa_id', { count: 'exact' }).order('nome').range(from, to)),
         supabase.rpc('erp_has_permission', { p_modulo: 'usuarios', p_acao: 'editar' }),
         supabase.rpc('erp_has_permission', { p_modulo: 'usuarios', p_acao: 'criar' }),
         supabase.rpc('erp_has_permission', { p_modulo: 'usuarios', p_acao: 'excluir' }),
@@ -116,6 +124,7 @@ export default function UsuariosAdmin() {
       setUsers(usersResult)
       setCompanies(companiesResult)
       setRoles(rolesResult)
+      setSectors(sectorsResult)
       setPermissionFlags({ edit: editPermission.data === true, create: createPermission.data === true, archive: archivePermission.data === true })
       const permissionError = editPermission.error || createPermission.error || archivePermission.error
       setMessage(permissionError ? 'As ações de usuário foram bloqueadas porque não foi possível validar o RBAC. Aplique as migrations administrativas pendentes.' : '')
@@ -127,6 +136,35 @@ export default function UsuariosAdmin() {
   }
 
   useEffect(() => { void load() }, [])
+
+  useEffect(() => {
+    let active = true
+    const loadRolePermissions = async () => {
+      if (!form.role_id) {
+        setRolePermissions([])
+        setPermissionPreviewMessage('Selecione um perfil para consultar as permissões reais atribuídas a ele.')
+        return
+      }
+      setPermissionPreviewLoading(true)
+      setPermissionPreviewMessage('')
+      try {
+        const [permissions, assignments] = await Promise.all([
+          fetchAllPages<Permission>((from, to) => supabase.from('erp_permissions').select('id,code,name,description', { count: 'exact' }).order('code').range(from, to)),
+          fetchAllPages<RolePermission>((from, to) => supabase.from('erp_role_permissions').select('role_id,permission_id', { count: 'exact' }).eq('role_id', form.role_id).range(from, to)),
+        ])
+        if (active) setRolePermissions(permissions.filter(permission => assignments.some(assignment => assignment.permission_id === permission.id)))
+      } catch (cause) {
+        if (active) {
+          setRolePermissions([])
+          setPermissionPreviewMessage(cause instanceof Error ? 'Não foi possível consultar a matriz RBAC real: ' + cause.message : 'Não foi possível consultar a matriz RBAC real.')
+        }
+      } finally {
+        if (active) setPermissionPreviewLoading(false)
+      }
+    }
+    void loadRolePermissions()
+    return () => { active = false }
+  }, [form.role_id])
 
   const actorLevel = Number(actor?.nivel_admin || 0)
   const isMaster = masterAccount(actor)
@@ -171,6 +209,7 @@ export default function UsuariosAdmin() {
       role_id: user.role_id || roles.find((role) => role.codigo === user.role && (role.empresa_id === null || role.empresa_id === user.empresa_id))?.id || '',
       password: '',
       empresa_id: user.empresa_id || '',
+      setor_id: user.setor_id || '',
     })
     setModal('edit')
   }
@@ -187,8 +226,8 @@ export default function UsuariosAdmin() {
       const action = modal === 'edit' ? 'update_user' : modal === 'invite' ? 'invite_user' : 'create_user'
       if (isMaster && !form.empresa_id) throw new Error('Selecione a empresa do novo usuário.')
       const body = modal === 'edit'
-        ? { action, user_id: editing?.id, empresa_id: form.empresa_id, nome: form.nome, login_nome: form.login_nome, matricula: form.matricula, role_id: form.role_id }
-        : { action, empresa_id: form.empresa_id, nome: form.nome, email: form.email, login_nome: form.login_nome, matricula: form.matricula, role_id: form.role_id, password: form.password || undefined }
+        ? { action, user_id: editing?.id, empresa_id: form.empresa_id, nome: form.nome, login_nome: form.login_nome, matricula: form.matricula, role_id: form.role_id, setor_id: form.setor_id || null }
+        : { action, empresa_id: form.empresa_id, nome: form.nome, email: form.email, login_nome: form.login_nome, matricula: form.matricula, role_id: form.role_id, setor_id: form.setor_id || null, password: form.password || undefined }
       const { data, error } = await supabase.functions.invoke('erp-user-admin', { body })
       if (error) throw error
       if (!data?.ok) throw new Error(data?.error || 'Não foi possível concluir a operação.')
@@ -397,10 +436,17 @@ export default function UsuariosAdmin() {
             {isMaster && modal !== 'edit' && <label className="user-admin-field user-admin-field--wide"><span>Empresa <b>*</b></span><select value={form.empresa_id} onChange={(event) => setForm({ ...form, empresa_id: event.target.value })}><option value="">Selecione a empresa</option>{companies.map((company) => <option key={company.id} value={company.id}>{company.nome_fantasia || company.razao_social || company.codigo || company.id}</option>)}</select></label>}
             <label className="user-admin-field"><span>Login</span><input value={form.login_nome} onChange={(event) => setForm({ ...form, login_nome: event.target.value })} placeholder="Identificador de acesso" autoComplete="username" /></label>
             <label className="user-admin-field"><span>Matrícula</span><input value={form.matricula} onChange={(event) => setForm({ ...form, matricula: event.target.value })} placeholder="Código interno" /></label>
+            <label className="user-admin-field"><span>Departamento / setor</span><select value={form.setor_id} onChange={(event) => setForm({ ...form, setor_id: event.target.value })}><option value="">Sem setor vinculado</option>{sectors.filter((sector) => sector.empresa_id === (isMaster ? form.empresa_id : actor?.empresa_id)).map((sector) => <option key={sector.id} value={sector.id}>{sector.codigo ? sector.codigo + ' — ' : ''}{sector.nome}</option>)}</select><small>Setores carregados do cadastro real da empresa.</small></label>
             <label className="user-admin-field user-admin-field--wide"><span>Perfil de acesso</span><select value={form.role_id} onChange={(event) => setForm({ ...form, role_id: event.target.value })}><option value="">Selecione um perfil</option>{availableRoles.map((role) => <option key={role.id} value={role.id}>{role.nome} — nível {role.nivel}</option>)}</select><small>Somente perfis permitidos para o seu nível de acesso são listados.</small></label>
+            <section className="user-admin-permission-preview user-admin-field--wide" aria-label="Matriz de permissões do perfil selecionado">
+              <div className="user-admin-permission-heading"><strong>02 / GOVERNANÇA E POLÍTICA DE SEGURANÇA</strong><span>Permissões efetivas do perfil selecionado (somente leitura)</span></div>
+              {permissionPreviewLoading ? <p>Consultando permissões vinculadas ao perfil…</p> : permissionPreviewMessage ? <p role="status">{permissionPreviewMessage}</p> : rolePermissions.length ? <div className="user-admin-permission-grid">{rolePermissions.map(permission => <label key={permission.id} className="user-admin-permission-item"><input type="checkbox" checked readOnly disabled aria-label={permission.name + ' habilitada pelo perfil'} /><span><strong>{permission.name}</strong><small>{permission.code}{permission.description ? ' · ' + permission.description : ''}</small></span></label>)}</div> : <p>Este perfil não possui permissões atribuídas na matriz consultada.</p>}
+              <small>Para alterar permissões, use Administração → Controle de permissões. A tela não grava privilégios individuais fora do RBAC.</small>
+            </section>
             {modal === 'create' && <label className="user-admin-field user-admin-field--wide"><span>Senha inicial</span><input type="password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} placeholder="Deixe em branco para gerar uma senha temporária" autoComplete="new-password" /><small>A política de senha é validada pelo serviço administrativo.</small></label>}
           </div>
           <footer className="user-admin-dialog-actions">
+            <button type="button" className="user-button user-button--secondary" onClick={() => window.print()} disabled={busy}><span aria-hidden="true">🖨️</span> Imprimir ficha</button>
             <button type="button" className="user-button user-button--secondary" onClick={() => setModal(null)} disabled={busy}>Cancelar</button>
             <button type="button" className="user-button user-button--primary" onClick={() => void submit()} disabled={busy}>
               {busy ? <RefreshCw size={16} className="animate-spin" /> : modal === 'edit' ? <Check size={16} /> : <Plus size={16} />}
