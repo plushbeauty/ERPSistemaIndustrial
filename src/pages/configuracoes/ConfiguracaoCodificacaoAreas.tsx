@@ -1,3 +1,8 @@
+/*
+ * REVISÃO TÉCNICA: 16/10/2026
+ * Revisado: fluxo de configuração de codificação, estados do formulário, uso do contexto de empresa e chamadas Supabase presentes no arquivo.
+ * Não validado nesta revisão: contrato remoto das tabelas, RLS, gravação concorrente, type-check/build e testes de interface.
+ */
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { Archive, Boxes, CheckCircle2, Code2, Layers3, Plus, RefreshCw, Save, Trash2 } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
