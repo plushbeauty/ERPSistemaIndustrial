@@ -1,60 +1,53 @@
 /**
  * SYNQRA ERP — CORREÇÃO DE SESSÃO E ROTAS MESTRE
- * REVISÃO: 0.2 | DATA: 16/10/2026
+ * REVISÃO: 0.3 | DATA: 16/10/2026
  * ID: #AUDIT-ERP-20261016-15
- * ESCOPO: autenticação Supabase e armazenamento de sessão do navegador.
- * ALTERAÇÃO: sessionStorage para a sessão desaparecer ao encerrar a aba/janela; limpeza da chave legada localStorage.
- * VALIDAÇÃO: revisão estática do código; build/testes e validação real de fechamento do navegador pendentes.
+ * ESCOPO: Autenticação Supabase, armazenamento em sessionStorage e blindagem de segurança.
+ * ALTERAÇÃO: Remoção de chaves hardcoded, refatoração de RPC manual para o SDK nativo.
  */
 
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 
-const AUTH_STORAGE_KEY = 'erp-industrial-auth'
-const SUPABASE_URL_ENV = 'VITE_SUPABASE_URL'
-const SUPABASE_PUBLISHABLE_KEY_ENV = 'VITE_SUPABASE_PUBLISHABLE_KEY'
-const SUPABASE_ANON_KEY_ENV = 'VITE_SUPABASE_ANON_KEY'
+// Definição estrita das chaves de ambiente (Seguindo o padrão de isolamento do LaraERP)
+const supabaseUrl = String(import.meta.env.VITE_SUPABASE_URL ?? '').trim()
+const supabaseKey = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_ANON_KEY ?? '').trim()
 
-const CANONICAL_SUPABASE_URL = 'https://zsklkydlawgvwgnvxwwx.supabase.co'
-const CANONICAL_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_BcwsSbBx8dWof7d_hAKtQA_XzQGAYwR'
+// Falha deliberada no bootstrap se as variáveis essenciais não existirem (Impede comportamento imprevisível)
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('CRITICAL_ENV_ERROR: VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY são obrigatórias.')
+}
 
-const supabaseUrlFromEnv = String(import.meta.env.VITE_SUPABASE_URL ?? '').trim()
-const publishableKeyFromEnv = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').trim()
-const legacyAnonKeyFromEnv = String(import.meta.env.VITE_SUPABASE_ANON_KEY ?? '').trim()
-
-// A configuração por ambiente continua sendo a fonte preferencial.
-// Os fallbacks públicos canônicos impedem que a ausência momentânea de VITE_*
-// derrube o React inteiro durante o bootstrap.
-const supabaseUrl = supabaseUrlFromEnv || CANONICAL_SUPABASE_URL
-const supabaseKey = publishableKeyFromEnv || legacyAnonKeyFromEnv || CANONICAL_SUPABASE_PUBLISHABLE_KEY
-
-export const supabaseConfigurado = Boolean(supabaseUrl && supabaseKey)
+export const supabaseConfigurado = true
 export const supabaseModoConexao = 'nuvem'
-export const supabaseEnvironmentMismatch = supabaseUrl !== CANONICAL_SUPABASE_URL
 export const supabaseUrlExportada = supabaseUrl
 export const supabaseKeyExportada = supabaseKey
 
-// Remove a sessão persistida pela versão anterior. Tokens de autenticação ficam somente nesta sessão de navegador.
+// Limpeza segura do armazenamento persistente legado
 if (typeof window !== 'undefined') {
   try {
-    window.localStorage.removeItem(AUTH_STORAGE_KEY)
+    window.localStorage.removeItem('erp-industrial-auth')
   } catch {
-    // O navegador pode bloquear localStorage; a sessão nova continua usando sessionStorage.
+    // Silencia se o navegador bloquear o acesso ao localStorage
   }
 }
 
 const authStorage = typeof window !== 'undefined' ? window.sessionStorage : undefined
 
+// Instanciação limpa e configurada do cliente Supabase
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    storageKey: AUTH_STORAGE_KEY,
+    storageKey: 'erp-industrial-auth',
     storage: authStorage,
   },
   global: { headers: { 'x-client-info': 'sgq-erp-industrial' } },
 })
 
+/**
+ * Recupera a sessão ativa e força a renovação do token caso esteja próximo de expirar.
+ */
 export async function getValidSession(minValiditySeconds = 60): Promise<Session> {
   const { data, error } = await supabase.auth.getSession()
   if (error) throw error
@@ -64,29 +57,37 @@ export async function getValidSession(minValiditySeconds = 60): Promise<Session>
 
   if (session?.refresh_token && (!expiresAt || expiresAt * 1000 - Date.now() < minValiditySeconds * 1000)) {
     const refreshed = await supabase.auth.refreshSession()
-    if (!refreshed.error && refreshed.data.session) session = refreshed.data.session
+    if (!refreshed.error && refreshed.data.session) {
+      session = refreshed.data.session
+    }
   }
 
-  if (!session?.access_token || !session.user) throw new Error('AUTH_SESSION_REQUIRED')
+  if (!session?.access_token || !session.user) {
+    throw new Error('AUTH_SESSION_REQUIRED')
+  }
   return session
 }
 
+/**
+ * Atalho seguro para obter o token JWT de acesso.
+ */
 export async function getAccessTokenOrThrow(): Promise<string> {
   return (await getValidSession()).access_token
 }
 
+/**
+ * Invoca uma Edge Function garantindo o cabeçalho de autorização correto.
+ */
 export async function invokeSecureEdgeFunction<T = unknown>(
   functionName: string,
   payload: unknown,
 ): Promise<{ data: T | null; error: Error | null }> {
   try {
-    const session = await getValidSession()
+    // O próprio SDK injeta a credencial nativa se estiver autenticado, mas garantimos o contexto aqui
+    await getValidSession()
+    
     const { data, error } = await supabase.functions.invoke(functionName, {
       body: payload as Record<string, unknown>,
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json',
-      },
     })
 
     if (error) throw error
@@ -98,40 +99,23 @@ export async function invokeSecureEdgeFunction<T = unknown>(
   }
 }
 
+/**
+ * Executa uma Procedure (RPC) no banco de dados de forma autenticada.
+ * Refatorado: Removeu o fetch manual com exposição de headers e adotou o cliente nativo (Padrão Repository).
+ */
 export async function rpcAutenticado<T = unknown>(
   functionName: string,
   args: Record<string, unknown> = {},
 ): Promise<T> {
-  const session = await getValidSession()
-  const response = await fetch(
-    `${supabaseUrl}/rest/v1/rpc/${encodeURIComponent(functionName)}`,
-    {
-      method: 'POST',
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify(args),
-    },
-  )
+  // Garante que a sessão está de fato válida e ativa antes de bater no banco
+  await getValidSession()
 
-  const raw = await response.text()
-  let data: unknown = null
+  // Executa via camada do SDK Supabase (Garante a criptografia e tratamento nativo de dados)
+  const { data, error } = await supabase.rpc(functionName, args)
 
-  try {
-    data = raw ? JSON.parse(raw) : null
-  } catch {
-    data = raw
-  }
-
-  if (!response.ok) {
-    throw new Error(
-      typeof data === 'object' && data !== null && 'message' in data
-        ? String((data as { message: unknown }).message)
-        : raw || response.statusText,
-    )
+  if (error) {
+    console.error(`[RPC Database Error ${functionName}]`, error.message)
+    throw new Error(error.message || `Falha ao executar a função interna: ${functionName}`)
   }
 
   return data as T
