@@ -21,7 +21,7 @@ interface XlsxModule { read(buffer:ArrayBuffer,options:{type:'array'}):{SheetNam
 declare global { interface Window { XLSX?: XlsxModule } }
 
 type Product={
-  id:string;empresa_id:string|null;codigo:string;nome:string;cliente:string|null;descricao:string|null;descricao_resumida:string|null;codigo_barras:string|null
+  id:string;empresa_id:string|null;codigo:string;nome:string;descricao:string|null;descricao_resumida:string|null;codigo_barras:string|null
   grupo:string|null;subgrupo:string|null;marca:string|null;categoria:string|null;unidade:string;unidade_compra:string;unidade_venda:string;fornecedor_padrao_id:string|null
   referencia_interna:string|null;referencia_cliente:string|null;origem:string|null;ncm:string|null;cest:string|null;peso_liquido:number;peso_bruto:number
   comprimento_mm:number;largura_mm:number;altura_mm:number;observacoes:string|null;foto_url:string|null;fabricado:boolean;comprado:boolean;revenda:boolean
@@ -47,7 +47,7 @@ const tabItems:Array<[Tab,string,typeof Boxes]>=[
   ['producao','PRODUÇÃO',Factory],['qualidade','QUALIDADE + DOCUMENTOS',ShieldCheck],['fotos','ANEXAR FOTO',ImageIcon]
 ]
 const empty=():FormData=>({
-  codigo:'',nome:'',cliente:null,descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
+  codigo:'',nome:'',descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
   fornecedor_padrao_id:null,referencia_interna:null,referencia_cliente:null,origem:'0 - Nacional',ncm:null,cest:null,peso_liquido:0,peso_bruto:0,comprimento_mm:0,largura_mm:0,altura_mm:0,
   observacoes:null,foto_url:null,fabricado:false,comprado:false,revenda:false,estoque_atual:0,ponto_reposicao:0,estoque_maximo:0,localizacao_padrao_id:null,
   controla_lote:false,controla_serie:false,permite_estoque_negativo:false,lote_validade_dias:0,inspecao_qualidade_obrigatoria:false,nivel_qualidade:null,inspecao_entrada:false,inspecao_producao:false,inspecao_entrega:false,requer_quarentena:false,modelo_inspecao_codigo:null,amostragem_aql:null,tipo_medicao_qualidade:null,valor_minimo_qualidade:null,valor_maximo_qualidade:null,unidade_medida_qualidade:null,roteiro_padrao_codigo:null,estrutura_bom_codigo:null,permite_subcontrato:false,requer_rastreabilidade:false,tipo_abastecimento:'PULL',almoxarifado_wip_codigo:null,centro_trabalho_codigo:null,tempo_setup_min:0,capacidade_ciclo:1,alerta_maquina:false,origem_fiscal:null,
@@ -61,7 +61,7 @@ const normalizePhotoUrl=(url:string|null|undefined)=>url?url.replace('/storage/v
 const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2}
 const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box'}
 const label:CSSProperties={display:'grid',gap:3,minWidth:0,fontSize:9,lineHeight:'11px',fontWeight:500,color:'#344054',textTransform:'uppercase',overflowWrap:'anywhere'}
-const btn=(_kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid #2D8DB8',background:'#2D8DB8',color:'#fff',fontSize:11,fontWeight:500,textTransform:'uppercase',cursor:'pointer'})
+const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid '+(kind==='primary'?'#2b6cb0':kind==='danger'?'#b42318':'#c7d2df'),background:kind==='primary'?'#2b6cb0':kind==='danger'?'#b42318':'#fff',color:kind==='normal'?'#1a365d':'#fff',fontSize:11,fontWeight:600,textTransform:'uppercase',cursor:'pointer'})
 const emptyRow=(text:string,col=7)=><tr><td colSpan={col} style={{padding:22,textAlign:'center',color:'#667085'}}>{text}</td></tr>
 
 export default function ProdutosVendasIndustrial(){
@@ -85,7 +85,7 @@ export default function ProdutosVendasIndustrial(){
   const [ncmDescription,setNcmDescription]=useState('')
   const [ncmBusy,setNcmBusy]=useState(false)
   const [ncmSearchMessage,setNcmSearchMessage]=useState('')
-  type ProductionLookupKind='roteiro'|'bom'|'wip'|'centro'|'template_inspec'|'tipo_medicao'
+  type ProductionLookupKind='roteiro'|'bom'|'wip'|'centro'|'template_inspec'|'tipo_medicao'|'grupo'|'fornecedor'|'localizacao'
   type ProductionLookupRow={id:string;codigo:string;descricao:string;versao?:string;status?:string}
   const [productionLookup,setProductionLookup]=useState<{kind:ProductionLookupKind;title:string;rows:ProductionLookupRow[];loading:boolean;error:string}|null>(null)
   const [productionLookupQuery,setProductionLookupQuery]=useState('')
@@ -126,12 +126,18 @@ export default function ProdutosVendasIndustrial(){
   },[products,query,groupFilter])
 
   const openProductionLookup=async(kind:ProductionLookupKind)=>{
-    const titles:Record<ProductionLookupKind,string>={roteiro:'Consulta de roteiros de fabricação',bom:'Consulta de estruturas BOM',wip:'Consulta de almoxarifados WIP',centro:'Consulta de centros de trabalho',template_inspec:'Consulta de modelos/planos de inspeção',tipo_medicao:'Consulta de tipos de medição da qualidade'}
+    const titles:Record<ProductionLookupKind,string>={roteiro:'Consulta de roteiros de fabricação',bom:'Consulta de estruturas BOM',wip:'Consulta de almoxarifados WIP',centro:'Consulta de centros de trabalho',template_inspec:'Consulta de modelos/planos de inspeção',tipo_medicao:'Consulta de tipos de medição da qualidade',grupo:'Consulta de grupos de produtos',fornecedor:'Consulta de fornecedores ativos',localizacao:'Consulta de localizações de estoque'}
     setProductionLookup({kind,title:titles[kind],rows:[],loading:true,error:''});setProductionLookupQuery('')
     try{
       if(!companyId)throw new Error('Empresa da sessão não identificada.')
       let rows:ProductionLookupRow[]=[]
-      if(kind==='roteiro'){
+      if(kind==='grupo'){
+        rows=groups.map(x=>({id:x.id,codigo:x.codigo,descricao:x.nome}))
+      }else if(kind==='fornecedor'){
+        rows=suppliers.map(x=>({id:x.id,codigo:x.id.slice(0,8).toUpperCase(),descricao:[x.razao_social,x.nome_fantasia].filter(Boolean).join(' · ')}))
+      }else if(kind==='localizacao'){
+        rows=locations.map(x=>({id:x.id,codigo:x.codigo,descricao:[x.nome,x.tipo].filter(Boolean).join(' · ')}))
+      }else if(kind==='roteiro'){
         const r=await supabase.from('pcp_roteiros').select('id,codigo,versao').eq('empresa_id',companyId).eq('ativo',true).order('codigo').limit(500)
         if(r.error)throw r.error
         rows=(r.data??[]).map((x:{id:string;codigo:string;versao:string})=>({id:x.id,codigo:x.codigo,descricao:'Roteiro de fabricação',versao:x.versao}))
@@ -140,9 +146,9 @@ export default function ProdutosVendasIndustrial(){
         if(r.error)throw r.error
         rows=(r.data??[]).map((x:{id:string;codigo_bom:string;versao:string;status:string})=>({id:x.id,codigo:x.codigo_bom,descricao:'Estrutura de produto',versao:x.versao,status:x.status}))
       }else if(kind==='wip'){
-        const r=await supabase.from('erp_estoque_localizacoes').select('id,codigo,nome,tipo').eq('empresa_id',companyId).eq('ativo',true).order('codigo').limit(1000)
+        const r=await supabase.from('erp_almoxarifados').select('id,codigo,nome').eq('empresa_id',companyId).eq('ativo',true).order('codigo').limit(1000)
         if(r.error)throw r.error
-        rows=(r.data??[]).filter((x:{codigo:string;nome:string;tipo:string})=>/wip|processo|produção|producao/i.test([x.codigo,x.nome,x.tipo].join(' '))).map((x:{id:string;codigo:string;nome:string;tipo:string})=>({id:x.id,codigo:x.codigo,descricao:x.nome+' · '+x.tipo}))
+        rows=(r.data??[]).map((x:{id:string;codigo:string;nome:string})=>({id:x.id,codigo:x.codigo,descricao:x.nome}))
       }else if(kind==='centro'){
         const r=await supabase.from('erp_postos_trabalho').select('id,codigo_posto,nome_posto').eq('empresa_id',companyId).eq('ativo',true).order('codigo_posto').limit(500)
         if(r.error)throw r.error
@@ -167,8 +173,14 @@ export default function ProdutosVendasIndustrial(){
   }
   const chooseProductionLookup=(row:ProductionLookupRow)=>{
     if(!productionLookup)return
-    const key:Record<ProductionLookupKind,keyof FormData>={roteiro:'roteiro_padrao_codigo',bom:'estrutura_bom_codigo',wip:'almoxarifado_wip_codigo',centro:'centro_trabalho_codigo',template_inspec:'modelo_inspecao_codigo',tipo_medicao:'tipo_medicao_qualidade'}
-    update(key[productionLookup.kind],row.codigo);setProductionLookup(null)
+    if(productionLookup.kind==='grupo')update('grupo',row.descricao)
+    else if(productionLookup.kind==='fornecedor')update('fornecedor_padrao_id',row.id)
+    else if(productionLookup.kind==='localizacao')update('localizacao_padrao_id',row.id)
+    else {
+      const key:Record<Exclude<ProductionLookupKind,'grupo'|'fornecedor'|'localizacao'>,keyof FormData>={roteiro:'roteiro_padrao_codigo',bom:'estrutura_bom_codigo',wip:'almoxarifado_wip_codigo',centro:'centro_trabalho_codigo',template_inspec:'modelo_inspecao_codigo',tipo_medicao:'tipo_medicao_qualidade'}
+      update(key[productionLookup.kind],row.codigo)
+    }
+    setProductionLookup(null)
   }
   const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false);setNcmDescription('');setNcmOptions([]);setNcmSearchMessage('')}
   const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false);setNcmDescription('');setNcmOptions([]);setNcmSearchMessage('')}
@@ -273,11 +285,8 @@ export default function ProdutosVendasIndustrial(){
         const nome=key(row,['descrição','descricao','nome','descrição do produto'])
         if(!codigo||!nome){failed++;failures.push('Linha '+(i+2)+': código interno e descrição são obrigatórios.');continue}
         const grupo=key(row,['grupo'])||null
-        const cliente=key(row,['cliente'])||null
-        const desenho=key(row,['desenho'])||null
-        const dimensional=key(row,['dimensional'])||null
         const refCliente=key(row,['codigocliente','codigo cliente','referencia cliente'])||null
-        const payload={empresa_id:companyId,codigo,nome,descricao:nome,grupo,referencia_interna:codigo,referencia_cliente:refCliente,cliente,desenho,dimensional,unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',categoria:'Produto acabado',ativo:true,fabricado:true}
+        const payload={empresa_id:companyId,codigo,nome,descricao:nome,grupo,referencia_interna:codigo,referencia_cliente:refCliente,unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',categoria:'Produto acabado',ativo:true,fabricado:true}
         const existing=products.find(p=>p.codigo.trim().toLowerCase()===codigo.toLowerCase())
         const result=existing
           ?await supabase.from('erp_produtos').update(payload).eq('id',existing.id).eq('empresa_id',companyId)
@@ -409,8 +418,9 @@ export default function ProdutosVendasIndustrial(){
   } as Record<string,string>)[title.replace(' [?]','')]||('Ajuda do campo '+title.replace(' [?]','')+'.');
   const HelpTip=({text}:{text:string})=>{const [open,setOpen]=useState(false);return <span style={{position:'relative',display:'inline-flex',verticalAlign:'baseline',marginLeft:3}}><span role="button" tabIndex={0} aria-label="Ajuda" onClick={e=>{e.preventDefault();e.stopPropagation();setOpen(v=>!v)}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setOpen(v=>!v)}}} style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:10,height:12,color:'#2D8DB8',fontSize:11,fontWeight:800,lineHeight:1,cursor:'pointer',userSelect:'none'}}>?</span>{open&&<span role="tooltip" style={{position:'absolute',zIndex:1200,left:12,top:14,width:250,padding:'7px 8px',border:'1px solid #b9cbd3',borderRadius:2,background:'#fff',boxShadow:'0 4px 12px rgba(18,59,80,.16)',fontSize:9,fontWeight:400,lineHeight:1.35,color:'#173b4a',textTransform:'none'}}>{text}</span>}</span>}
   const fieldTitle=(title:string)=><span style={{display:'inline-flex',alignItems:'center',flexWrap:'wrap',whiteSpace:'normal',overflowWrap:'anywhere',lineHeight:'11px',minHeight:12,minWidth:0}}>{title.replace(' [?]','')}{(title.includes('[?]')||title.startsWith('Custo médio')||title.startsWith('Último custo')||title.startsWith('Custo fabricação'))&&<HelpTip text={helpFor(title)}/>}</span>;
-  const field=(title:string,key:keyof FormData,type='text',span=1,locked=false)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input type={type} maxLength={key==='codigo'?20:key==='codigo_barras'?14:key==='nome'?120:key==='cliente'?60:key==='referencia_cliente'?15:key==='ncm'?8:key==='cest'?7:key==='modelo_inspecao_codigo'?10:key==='amostragem_aql'?6:key==='tipo_medicao_qualidade'?15:key==='unidade_medida_qualidade'?3:undefined} value={String(form[key]??'')} readOnly={locked} disabled={!editing} onChange={e=>update(key,type==='number'?n(e.target.value):e.target.value)} style={{...input,background:locked?'#eaf3f8':editing?'#fff':'#f5f7fa',color:locked?'#17445A':'#172033',fontWeight:locked?700:400,cursor:locked?'not-allowed':'text'}}/></label>
-  const select=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<select value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>{options.map(o=><option value={o[0]} key={o[0]}>{o[1]}</option>)}</select></label>
+  const editSpec=(key:keyof FormData)=>{const specs:Partial<Record<keyof FormData,{length:number;className:string}>>={codigo:{length:20,className:'edit-20'},codigo_barras:{length:14,className:'edit-14'},nome:{length:120,className:'edit-120'},descricao_resumida:{length:60,className:'edit-60'},grupo:{length:6,className:'edit-6'},subgrupo:{length:6,className:'edit-6'},marca:{length:60,className:'edit-60'},referencia_interna:{length:20,className:'edit-20'},referencia_cliente:{length:20,className:'edit-20'},unidade:{length:3,className:'edit-3'},unidade_compra:{length:3,className:'edit-3'},unidade_venda:{length:3,className:'edit-3'},ncm:{length:8,className:'edit-8'},cest:{length:7,className:'edit-7'},cst_icms:{length:3,className:'edit-3'},csosn:{length:3,className:'edit-3'},cfop_entrada:{length:4,className:'edit-4'},cfop_saida:{length:4,className:'edit-4'},modelo_inspecao_codigo:{length:10,className:'edit-10'},amostragem_aql:{length:6,className:'edit-6'},tipo_medicao_qualidade:{length:15,className:'edit-15'},unidade_medida_qualidade:{length:3,className:'edit-3'},roteiro_padrao_codigo:{length:10,className:'edit-10'},estrutura_bom_codigo:{length:15,className:'edit-15'},almoxarifado_wip_codigo:{length:6,className:'edit-6'},centro_trabalho_codigo:{length:8,className:'edit-8'}};return specs[key]}
+  const field=(title:string,key:keyof FormData,type='text',span=1,locked=false)=>{const spec=editSpec(key);const numeric=type==='number';return <label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input type={type} className={spec?.className||(numeric?'edit-14':'edit-60')} maxLength={numeric?undefined:spec?.length??60} required={key==='nome'} step={numeric?'any':undefined} value={String(form[key]??'')} readOnly={locked} disabled={!editing} onChange={e=>update(key,numeric?n(e.target.value):e.target.value)} style={{...input,background:locked?'#e8eef5':editing?'#fff':'#f1f4f8',color:locked?'#1a365d':'#172033',fontWeight:locked?700:400,cursor:locked?'not-allowed':'text'}}/></label>}
+  const select=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<select value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,key==='ativo'||key==='inspecao_qualidade_obrigatoria'?e.target.value==='true':e.target.value)} style={{...input,background:editing?'#fff':'#f1f4f8'}}>{options.map(o=><option value={o[0]} key={o[0]}>{o[1]}</option>)}</select></label>
   const knownFiscalValues=(key:'cest'|'cst_icms'|'csosn'|'cfop_entrada'|'cfop_saida'|'origem_fiscal')=>Array.from(new Set(products.map(p=>p[key]).filter((value):value is string=>typeof value==='string'&&Boolean(value.trim())))).sort((a,b)=>a.localeCompare(b))
   const fiscalCombo=(title:string,key:'cest'|'cst_icms'|'csosn'|'cfop_entrada'|'cfop_saida'|'origem_fiscal')=><label style={label}>{fieldTitle(title)}<input list={'erp-fiscal-'+key} value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id={'erp-fiscal-'+key}>{knownFiscalValues(key).map(value=><option key={value} value={value}/>)}</datalist></label>
   const check=(title:string,key:keyof FormData)=><label style={{display:'flex',alignItems:'center',gap:7,fontSize:10,fontWeight:700,color:'#344054'}}><input type="checkbox" checked={Boolean(form[key])} disabled={!editing} onChange={e=>update(key,e.target.checked)}/>{title}</label>
@@ -563,6 +573,47 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-quality-note{margin:6px 0 0;font-size:9px;color:#617987}
       @media(max-width:1000px){.product-master-screen .product-general-card-grid{grid-template-columns:1fr}.product-master-screen .product-operational-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
       @media(max-width:600px){.product-master-screen .product-inline-field>label,.product-master-screen .product-operational-fields .product-inline-field>label{grid-template-columns:86px minmax(0,1fr)!important}.product-master-screen .product-operational-fields,.product-master-screen .product-attribute-grid{grid-template-columns:1fr}.product-master-screen .product-layout-card-header{align-items:flex-start;flex-direction:column}.product-master-screen .product-layout-card-header small{text-align:left}}
+
+      /* Padrão visual industrial contratado: azul marinho, azul operacional e foco marfim. */
+      .product-master-screen{background:#f4f6f9!important;color:#1a365d!important}
+      .product-master-screen>header{background:#1a365d!important;border-bottom:2px solid #2b6cb0!important}
+      .product-master-screen .product-layout-card,.product-master-screen .product-quality-card{border-color:#d2dbe6!important;border-radius:2px!important}
+      .product-master-screen .product-layout-card-header span,.product-master-screen .product-section-heading span{color:#2b6cb0!important}
+      .product-master-screen .product-layout-card-header h2,.product-master-screen h2{color:#1a365d!important}
+      .product-master-screen .product-general-form{background:#f4f6f9!important}
+      .product-master-screen .product-general-card-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:10px!important}
+      .product-master-screen .product-layout-card{padding:10px!important}
+      .product-master-screen label{font-family:monospace!important}
+      .product-master-screen input:not([type=checkbox]):not([type=file]),.product-master-screen select,.product-master-screen textarea{font-family:monospace!important;font-size:11px!important;border-radius:2px!important;border-color:#c6d0dc!important}
+      .product-master-screen input:focus,.product-master-screen select:focus,.product-master-screen textarea:focus{background:#fffdf0!important;border:1px solid #2b6cb0!important;outline:1px solid #2b6cb0!important;outline-offset:0!important;box-shadow:0 0 0 1px rgba(43,108,176,.12)!important}
+      .product-master-screen .edit-2{width:4ch!important;max-width:4ch!important;text-align:center!important}
+      .product-master-screen .edit-3{width:5ch!important;max-width:5ch!important;text-transform:uppercase}
+      .product-master-screen .edit-4{width:6ch!important;max-width:6ch!important;text-align:right!important}
+      .product-master-screen .edit-6{width:8ch!important;max-width:8ch!important;text-transform:uppercase}
+      .product-master-screen .edit-7{width:9ch!important;max-width:9ch!important;text-transform:uppercase}
+      .product-master-screen .edit-8{width:10ch!important;max-width:10ch!important;text-transform:uppercase}
+      .product-master-screen .edit-10{width:12ch!important;max-width:12ch!important;text-transform:uppercase}
+      .product-master-screen .edit-14{width:16ch!important;max-width:16ch!important;text-align:right!important}
+      .product-master-screen .edit-15{width:17ch!important;max-width:17ch!important;text-transform:uppercase}
+      .product-master-screen .edit-20{width:22ch!important;max-width:22ch!important}
+      .product-master-screen .edit-60{width:100%!important;max-width:320px!important}
+      .product-master-screen .edit-120{width:100%!important;max-width:450px!important}
+      .product-master-screen .product-quality-lookup-btn,.product-master-screen .product-mini-action{border-color:#2b6cb0!important;color:#1a365d!important;background:#edf4fc!important;border-radius:2px!important}
+      .product-master-screen .product-quality-lookup-btn:hover,.product-master-screen .product-mini-action:hover{background:#dceafe!important}
+      .product-master-screen .product-screen-tabs button[style*="border-bottom: 3px solid"]{border-bottom-color:#2b6cb0!important}
+      .product-master-screen .product-screen-tabs button{font-family:monospace!important}
+      .product-master-screen .product-list-panel thead th{background:#1a365d!important;color:#fff!important}
+      @media(max-width:1000px){.product-master-screen .product-general-card-grid{grid-template-columns:1fr!important}}
+      @media print{
+        body{background:#fff!important}
+        .product-master-screen{max-width:none!important;background:#fff!important;color:#111827!important}
+        .product-master-screen>header>div:last-child,.product-master-screen .product-selected-summary,.product-master-screen .product-screen-tabs,.product-master-screen .product-list-panel,.product-master-screen .product-audit-panel,.product-master-screen>footer,.product-master-screen [role=dialog]{display:none!important}
+        .product-master-screen>header{background:#fff!important;color:#111827!important;border-bottom:2px solid #1a365d!important;padding:0 0 8px!important}
+        .product-master-screen>header h1,.product-master-screen>header div{color:#111827!important}
+        .product-master-screen>section{margin:0!important;border:0!important;box-shadow:none!important}
+        .product-master-screen .product-general-form{padding:0!important;background:#fff!important}
+        .product-master-screen .product-layout-card,.product-master-screen .product-quality-card{break-inside:avoid;box-shadow:none!important}
+      }
     `}</style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:900,color:'#1c4bb5'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
@@ -571,6 +622,7 @@ export default function ProdutosVendasIndustrial(){
         <input ref={importRef} type="file" accept=".xlsx,.xls,.csv" onChange={importExcel} style={{display:'none'}} />
         <input ref={fileRef} type="file" accept="image/*" onChange={e=>choosePhoto(e)} style={{display:'none'}} />
         <button type="button" onClick={()=>importRef.current?.click()} disabled={busy} style={btn('normal')}><FileSpreadsheet size={13}/>Importar Excel</button>
+        <button type="button" onClick={()=>window.print()} style={btn('normal')}><Printer size={13}/>Imprimir tela</button>
 
         <button type="button" className="erp-edit-button" onClick={()=>setEditing(true)} disabled={!selectedId} style={btn('normal')}><Edit3 size={16}/>Editar</button>
         <button type="button" onClick={()=>void save()} disabled={!editing||busy} style={btn('normal')}><Save size={16}/>Salvar</button>
@@ -583,14 +635,14 @@ export default function ProdutosVendasIndustrial(){
 
     {(message||error)&&<div role="alert" style={{margin:10,padding:'9px 12px',borderRadius:6,border:'1px solid '+(error?'#fecaca':'#bbf7d0'),background:error?'#fff1f2':'#f0fdf4',color:error?'#b91c1c':'#166534',fontWeight:800,fontSize:12}}>{error||message}</div>}
 
-    {selectedId&&<><section style={{...panel,margin:'10px 10px 0',padding:7,display:'grid',gridTemplateColumns:'72px minmax(0,1fr) auto',gap:9,alignItems:'center',background:'#fff'}}>
+    {selectedId&&<><section className="product-selected-summary" style={{...panel,margin:'10px 10px 0',padding:7,display:'grid',gridTemplateColumns:'72px minmax(0,1fr) auto',gap:9,alignItems:'center',background:'#fff'}}>
       <div style={{width:72,height:60,border:'1px solid #cbd5e1',background:'#f8fafc',display:'grid',placeItems:'center',overflow:'hidden'}}>{form.foto_url?<img src={normalizePhotoUrl(form.foto_url)||undefined} alt="Foto do produto" style={{width:'100%',height:'100%',objectFit:'contain'}}/>:<ImageIcon size={22} color="#98a2b3"/>}</div>
       <div style={{minWidth:0}}><div style={{fontSize:9,fontWeight:700,color:'#667085',textTransform:'uppercase'}}>Produto selecionado</div><div style={{fontSize:13,fontWeight:700,color:'#123B50',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{form.codigo||'AUTOMÁTICO'} • {form.nome||'Sem descrição'}</div><div style={{fontSize:9,color:'#667085',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{form.descricao_resumida||'Sem descrição resumida'} · {form.grupo||'Sem grupo'} · {form.marca||'Sem marca'}</div></div>
       <div style={{display:'flex',gap:12,alignItems:'center',fontSize:9}}><span><b>ESTOQUE</b> {fmt(form.estoque_atual)} {form.unidade}</span><span><b>STATUS</b> {form.ativo?'ATIVO':'INATIVO'}</span></div>
     </section></>}
 
     <section style={{...panel,margin:10,overflow:'hidden'}}>
-      <div style={{display:'flex',borderBottom:'1px solid #d6dde6',background:'#f7f9fc',overflowX:'auto'}}>
+      <div className="product-screen-tabs" style={{display:'flex',borderBottom:'1px solid #d6dde6',background:'#f7f9fc',overflowX:'auto'}}>
         {tabItems.map(([id,title,Icon])=><button key={id} type="button" onClick={()=>{setTab(id);if(selectedId)void loadDetails()}} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'7px 10px',border:0,borderBottom:tab===id?'3px solid #184bb4':'3px solid transparent',background:tab===id?'#fff':'transparent',color:tab===id?'#184bb4':'#344054',fontWeight:900,fontSize:10,cursor:'pointer',whiteSpace:'nowrap'}}><Icon size={14}/>{title}</button>)}
       </div>
 
@@ -602,8 +654,8 @@ export default function ProdutosVendasIndustrial(){
               <div className="product-inline-field product-code-field">{field('Código','codigo','text',1,true)}</div>
               <div className="product-inline-field product-barcode-field">{field('Cód. barras','codigo_barras')}</div>
               <div className="product-inline-field product-description-field">{field('Descrição','nome')}</div>
-              <div className="product-inline-field product-customer-name-field">{field('Nome cliente','cliente')}</div>
-              <div className="product-inline-field product-customer-code-field">{field('Código cliente','referencia_cliente')}</div>
+              <div className="product-inline-field product-customer-name-field">{field('Referência interna','referencia_interna')}</div>
+              <div className="product-inline-field product-customer-code-field">{field('Referência cliente','referencia_cliente')}</div>
             </div>
           </section>
 
@@ -612,7 +664,7 @@ export default function ProdutosVendasIndustrial(){
             <div className="product-operational-fields">
               <div className="product-inline-field product-item-type-field">{select('Tipo item','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','Matéria-prima'],['PRENSADOS','Prensados'],['INJETADOS','Injetados'],['Componente','Componente'],['Insumo','Insumo'],['ALMOXARIFADO','Almoxarifado'],['MATERIAL DE ESCRITÓRIO','Material de escritório'],['PRODUTOS DE LIMPEZA','Produtos de limpeza']])}</div>
               <div className="product-inline-field product-group-field"><label style={label}>Família / Grupo
-                <div className="product-inline-action-field"><select value={form.grupo||''} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select><button type="button" title="Pesquisar grupo" aria-label="Pesquisar grupo" disabled={!editing} onClick={()=>{const found=window.prompt('Informe o nome do grupo para localizar:',form.grupo||'');if(found!==null)update('grupo',found.trim()||null)}} className="product-mini-action">⌕</button></div>
+                <div className="product-inline-action-field"><select value={form.grupo||''} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select><button type="button" title="Pesquisar grupo" aria-label="Pesquisar grupo" disabled={!editing} onClick={()=>void openProductionLookup('grupo')} className="product-mini-action" aria-label="🔍 LUPA grupo">🔍</button></div>
               </label></div>
               <div className="product-inline-field product-subgroup-field"><label style={label}>Subgrupo
                 <div className="product-inline-action-field"><input list="erp-product-subgroups" value={form.subgrupo||''} maxLength={6} disabled={!editing} onChange={e=>update('subgrupo',e.target.value||null)} placeholder="Selecionar" style={{...input,background:editing?'#fff':'#f5f7fa'}}/><button type="button" title="Adicionar subgrupo" aria-label="Adicionar subgrupo" disabled={!editing} onClick={()=>{const value=window.prompt('Nome do subgrupo (até 6 caracteres):')?.trim();if(value)update('subgrupo',value.slice(0,6))}} className="product-mini-action">＋</button></div>
@@ -621,6 +673,7 @@ export default function ProdutosVendasIndustrial(){
               <div className="product-inline-field">{select('Unid. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['MM','MM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}</div>
               <div className="product-inline-field">{select('Unid. comercial','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}</div>
               <div className="product-inline-field">{select('Unid. compras','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}</div>
+              <div className="product-inline-field product-supplier-field"><label style={label}>FORNECEDOR PADRÃO<div className="product-inline-action-field"><select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f1f4f8'}}><option value="">Selecione</option>{suppliers.map(s=><option key={s.id} value={s.id}>{s.razao_social}{s.nome_fantasia?' · '+s.nome_fantasia:''}</option>)}</select><button type="button" className="product-mini-action" disabled={!editing} title="🔍 LUPA fornecedor" onClick={()=>void openProductionLookup('fornecedor')}>🔍</button></div></label></div>
               <div className="product-inline-field">{field('Lead time (dias)','prazo_producao_dias','number')}</div>
               <div className="product-inline-field">{field('Estoque mínimo / reposição','ponto_reposicao','number')}</div>
               <div className="product-inline-field">{field('Estoque máximo','estoque_maximo','number')}</div>
@@ -667,7 +720,7 @@ export default function ProdutosVendasIndustrial(){
           <label style={label}>ESTOQUE ATUAL <span style={{fontSize:8,color:'#667085'}}>calculado</span><input value={fmt(form.estoque_atual)+' '+form.unidade} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>PONTO DE REPOSIÇÃO <HelpTip text={helpFor('Ponto de reposição')}/></span><input type="number" value={String(form.ponto_reposicao??0)} disabled={!editing} onChange={e=>update('ponto_reposicao',n(e.target.value))} title="Quantidade que dispara a necessidade de reposição; não é estoque atual." style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
           <label style={label}>ESTOQUE MÁXIMO<input type="number" value={String(form.estoque_maximo??0)} disabled={!editing} onChange={e=>update('estoque_maximo',n(e.target.value))} style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
-          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
+          <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><div className="product-inline-action-field"><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f1f4f8'}}><option value="">Selecione</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select><button type="button" className="product-mini-action" disabled={!editing} title="🔍 LUPA localização" onClick={()=>void openProductionLookup('localizacao')}>🔍</button></div></label>
         </div>
         <div className="product-stock-secondary-grid" style={{display:'grid',gridTemplateColumns:'82px 105px 105px 170px',gap:7,marginTop:7,alignItems:'end'}}>
           {field('VALIDADE LOTE [dias] [?]','lote_validade_dias','number')}{check('Controla lote','controla_lote')}{check('Controla série','controla_serie')}{check('Permite estoque negativo','permite_estoque_negativo')}
@@ -761,7 +814,7 @@ export default function ProdutosVendasIndustrial(){
 
     {productionLookup&&<div role="dialog" aria-modal="true" aria-label={productionLookup.title} style={{position:'fixed',inset:0,zIndex:1000,background:'rgba(15,23,42,.48)',display:'grid',placeItems:'center',padding:16}} onMouseDown={e=>{if(e.target===e.currentTarget)setProductionLookup(null)}}><section style={{width:'min(620px,96vw)',maxHeight:'80vh',overflow:'hidden',background:'#fff',border:'1px solid #123B50',borderRadius:2,boxShadow:'0 12px 36px #0003',display:'flex',flexDirection:'column'}}><header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'10px 12px',background:'#123B50',color:'#fff'}}><b style={{fontSize:12}}>{productionLookup.title.toUpperCase()}</b><button type="button" onClick={()=>setProductionLookup(null)} aria-label="Fechar consulta" style={{border:0,background:'transparent',color:'#fff',cursor:'pointer'}}><X size={16}/></button></header><div style={{padding:10,display:'grid',gap:8}}><input autoFocus value={productionLookupQuery} onChange={e=>setProductionLookupQuery(e.target.value)} placeholder="Filtrar por código ou descrição..." style={{...input,height:30}}/>{productionLookup.loading?<div style={{padding:20,textAlign:'center',fontSize:11}}>Consultando cadastros do ERP...</div>:productionLookup.error?<div style={{padding:12,color:'#b42318',fontSize:11}}>{productionLookup.error}</div>:<div style={{overflow:'auto',maxHeight:'55vh'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:10}}><thead><tr style={{background:'#eaf3f8',color:'#123B50'}}>{['Código','Descrição','Versão',''].map(h=><th key={h} style={{padding:7,textAlign:'left',borderBottom:'1px solid #d5dde7'}}>{h}</th>)}</tr></thead><tbody>{productionLookup.rows.filter(x=>(x.codigo+' '+x.descricao+' '+(x.versao||'')).toLowerCase().includes(productionLookupQuery.toLowerCase())).map(row=><tr key={row.id} style={{borderBottom:'1px solid #edf1f5'}}><td style={{padding:7,fontWeight:700}}>{row.codigo}</td><td style={{padding:7}}>{row.descricao}</td><td style={{padding:7}}>{row.versao||'—'}</td><td style={{padding:4}}><button type="button" onClick={()=>chooseProductionLookup(row)} style={{...btn('primary'),height:25,fontSize:9}}>Selecionar</button></td></tr>)}</tbody></table></div>}</div><footer style={{padding:'7px 10px',background:'#f7f9fc',borderTop:'1px solid #d5dde7',display:'flex',justifyContent:'flex-end'}}><button type="button" onClick={()=>setProductionLookup(null)} style={{...btn('normal'),height:27}}>Cancelar</button></footer></section></div>}
 
-    <section style={{...panel,margin:'0 10px 10px',overflow:'hidden'}}>
+    <section className="product-list-panel" style={{...panel,margin:'0 10px 10px',overflow:'hidden'}}>
       <div style={{display:'flex',alignItems:'end',gap:6,padding:7,background:'#f7f9fc',borderBottom:'1px solid #d6dde6',flexWrap:'wrap'}}>
         <Search size={14}/><label style={{...label,width:250}}>Pesquisar<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código, descrição, grupo..." style={{...input,height:28}}/></label>
         <label style={{...label,width:130}}>Grupo<select value={groupFilter} onChange={e=>setGroupFilter(e.target.value)} style={{...input,height:28}}><option value="TODAS">Todos</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}</select></label>
@@ -770,7 +823,7 @@ export default function ProdutosVendasIndustrial(){
       <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',minWidth:1040}}><thead><tr>{['Foto','Código','Descrição','Grupo','Subgrupo','Marca','Unidade','Estoque Atual','Situação'].map(h=><th key={h} style={{textAlign:'left',padding:'5px 6px',borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{filtered.map(p=><tr key={p.id} onClick={()=>selectProduct(p)} onDoubleClick={()=>selectProduct(p)} style={{background:selectedId===p.id?'#e7eefb':'#fff',cursor:'pointer'}}><td style={{padding:4,width:42}}>{p.foto_url?<img src={normalizePhotoUrl(p.foto_url)||undefined} alt="" style={{width:32,height:28,objectFit:'contain',border:'1px solid #e2e8f0'}}/>:<ImageIcon size={18} color="#98a2b3"/>}</td><td style={{padding:6,fontSize:10,fontWeight:900}}>{p.codigo}</td><td style={{padding:6,fontSize:10}}>{p.nome}</td><td style={{padding:6,fontSize:10}}>{p.grupo||'—'}</td><td style={{padding:6,fontSize:10}}>{p.subgrupo||'—'}</td><td style={{padding:6,fontSize:10}}>{p.marca||'—'}</td><td style={{padding:6,fontSize:10}}>{p.unidade}</td><td style={{padding:6,fontSize:10,fontWeight:900}}>{fmt(p.estoque_atual)}</td><td style={{padding:5,fontSize:9}}><span style={{display:'inline-flex',alignItems:'center',gap:4}}><CheckCircle2 size={11} color={p.ativo?'#16a34a':'#b42318'}/>{p.ativo?'Ativo':'Inativo'}</span></td></tr>)}{!filtered.length&&emptyRow('Nenhum produto encontrado.',8)}</tbody></table></div>
     </section>
     {selectedId ? (
-      <section style={{...panel,margin:'0 10px 10px',padding:8}}>
+      <section className="product-audit-panel" style={{...panel,margin:'0 10px 10px',padding:8}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:5}}>
           <h2 style={{margin:0,fontSize:11,color:'#123B50'}}>HISTÓRICO AUTOMÁTICO DO PRODUTO</h2>
           <span style={{fontSize:8,color:'#667085'}}>erp_audit_logs • somente consulta</span>
