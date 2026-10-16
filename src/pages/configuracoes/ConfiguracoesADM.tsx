@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   Activity, ArrowRight, BarChart3, Building2, DatabaseBackup,
   FileClock, KeyRound, LayoutDashboard, LockKeyhole, Network, Search,
