@@ -4,6 +4,8 @@
  * Data/Hora: 24/09/2026 - 13:00 BRT
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-059
+ * Data da revisão de aprovação: 2026-10-16
+ * Status da tela: APROVADO-IMUTAVEL (não alterar sem autorização explícita do usuário).
  * Alterações: Remoção de cast Event→FormEvent artificial no salvamento de produtos; ação agora chama save() diretamente.
  * Status do Build Local: Não executado — validação será feita pelo gate remoto.
  * =========================================================================
