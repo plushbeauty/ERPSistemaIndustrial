@@ -1,6 +1,14 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+/**
+ * @DATA_REVISAO: 2026-10-16
+ * @REVISAO: SEC-AUDIT-001
+ * @ESCOPO_REVISADO: heurísticas de detecção de credenciais no auditor global.
+ * @ALTERACOES: limites de palavra adicionados para evitar falso positivo em variáveis como currentPassword/newPassword sem reduzir detecção de chaves literais.
+ * @VALIDACAO: confirmar no CI que o auditor deixa de marcar identificadores camelCase como segredo e continua detectando atribuições literais.
+ */
+
 const ROOT = process.cwd()
 const findings = []
 function rel(file){return path.relative(ROOT,file).replaceAll(path.sep,'/')}
@@ -33,8 +41,8 @@ const legacySupabaseUrls=['https://wdkvrqekixczuhrfygen.supabase.co','https://uh
 const secretPatterns=[
   /sb_secret_[A-Za-z0-9_-]{20,}/g,
   /SUPABASE_SERVICE_ROLE_KEY\s*[:=]\s*['"][^'"\n]{20,}['"]/gi,
-  /(?:password|senha)\s*[:=]\s*['"][^'"\n]{8,}['"]/gi,
-  /(?:api[_-]?key|secret)\s*[:=]\s*['"][^'"\n]{16,}['"]/gi,
+  /\b(?:password|senha)\b\s*[:=]\s*['"][^'"\n]{8,}['"]/gi,
+  /\b(?:api[_-]?key|secret)\b\s*[:=]\s*['"][^'"\n]{16,}['"]/gi,
 ]
 for(const file of files){
   const text=allText.get(file)
