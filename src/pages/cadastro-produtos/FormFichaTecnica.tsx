@@ -67,15 +67,15 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
       <div className="rounded-[2px] border border-slate-300 bg-white p-3 shadow-sm">
         <div className="grid grid-cols-1 items-end gap-x-3 gap-y-3 md:grid-cols-2 xl:grid-cols-4">
           <label className="grid gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-700 md:col-span-2">SKU — SOMENTE LEITURA<input className={field+' font-bold text-[#123B50]'} readOnly value={p?.codigo || preview} /></label>
-          <label className="grid gap-2 text-xs font-black text-slate-700">Tipo<select className={field} disabled={!!p} value={tipo} onChange={e => setTipo(e.target.value)}><option>MP</option><option>PA</option><option>SA</option><option>IN</option></select></label>
-          <label className="grid gap-2 text-xs font-black text-slate-700">Regra<select className={field} disabled={!!p} value={configId} onChange={e => setConfigId(e.target.value)}>{cfg.map(x => <option key={x.id} value={x.id}>{x.prefixo} · {x.digitos_produto} dígitos</option>)}</select></label>
-          <label className="grid gap-2 text-xs font-black text-slate-700 md:col-span-2">Nome do produto<input className={field} value={nome} onChange={e => setNome(e.target.value)} /></label>
-          <label className="grid gap-2 text-xs font-black text-slate-700">Categoria<input className={field} value={categoria} onChange={e => setCategoria(e.target.value)} /></label>
-          <label className="grid gap-2 text-xs font-black text-slate-700">Unidade<input className={field} value={unidade} onChange={e => setUnidade(e.target.value.toUpperCase())} /></label>
-          <label className="grid gap-2 text-xs font-black text-slate-700 md:col-span-2">Cliente / Mercado de destino<input className={field} value={cliente} onChange={e => setCliente(e.target.value)} placeholder="Cliente, linha ou mercado" /></label>
+          <label className="grid gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-700">Tipo<select className={field} disabled={!!p} value={tipo} onChange={e => setTipo(e.target.value)}><option>MP</option><option>PA</option><option>SA</option><option>IN</option></select></label>
+          <label className="grid gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-700">Regra<select className={field} disabled={!!p} value={configId} onChange={e => setConfigId(e.target.value)}>{cfg.map(x => <option key={x.id} value={x.id}>{x.prefixo} · {x.digitos_produto} dígitos</option>)}</select></label>
+          <label className="grid gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-700 md:col-span-2">Nome do produto<input maxLength={50} className={field} value={nome} onChange={e => setNome(e.target.value)} /></label>
+          <label className="grid gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-700">Categoria<input maxLength={50} className={field} value={categoria} onChange={e => setCategoria(e.target.value)} /></label>
+          <label className="grid gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-700">Unidade<input maxLength={3} className={field} value={unidade} onChange={e => setUnidade(e.target.value.toUpperCase())} /></label>
+          <label className="grid gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-700 md:col-span-2">Cliente / Mercado de destino<input maxLength={50} className={field} value={cliente} onChange={e => setCliente(e.target.value)} placeholder="Cliente, linha ou mercado" /></label>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3">
-          <button type="button" onClick={() => void save()} className="inline-flex h-[30px] items-center gap-2 rounded-[2px] bg-[#2D8DB8] px-3 text-[10px] font-bold text-white hover:bg-[#23769b]"><Save size={18} /> {p ? 'SALVAR ALTERAÇÕES' : 'GERAR SKU E SALVAR'}</button>
+          <button type="button" onClick={() => void save()} className="inline-flex h-[30px] items-center gap-2 rounded-[2px] bg-[#2D8DB8] px-3 text-[10px] font-bold text-white hover:bg-[#23769b]"><Save size={13} /> {p ? 'SALVAR ALTERAÇÕES' : 'GERAR SKU E SALVAR'}</button>
           {error && <p className="flex items-center rounded-[2px] border border-rose-200 bg-rose-50 px-3 py-1 text-[10px] font-semibold text-rose-800">{error}</p>}
           {ok && <p className="flex items-center rounded-[2px] border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-semibold text-emerald-800">{ok}</p>}
         </div>
