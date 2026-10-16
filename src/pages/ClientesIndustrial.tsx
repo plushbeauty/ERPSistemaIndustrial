@@ -7,8 +7,8 @@ type Client={id:string;codigo:string|null;nome:string;documento:string|null;emai
 type PriceTable={id:string;codigo:string;nome:string;ativo:boolean}
 type Form={codigo:string;nome:string;documento:string;email:string;telefone:string;tipo_cliente:string;tabela_preco_id:string;desconto_padrao_percentual:string;ativo:boolean}
 const empty:Form={codigo:'',nome:'',documento:'',email:'',telefone:'',tipo_cliente:'PADRAO',tabela_preco_id:'',desconto_padrao_percentual:'0',ativo:true}
-const input:React.CSSProperties={width:'100%',height:28,border:'1px solid #b9c9d4',borderRadius:2,padding:'0 6px',boxSizing:'border-box',background:'#fff',color:'#111827',fontSize:9,minWidth:0}
-const label:React.CSSProperties={display:'grid',gap:1,fontSize:8,fontWeight:500,textTransform:'uppercase',color:'#344054',minWidth:0}
+const input:React.CSSProperties={width:'100%',height:32,minHeight:32,border:'1px solid #94a3b8',borderRadius:4,padding:'4px 10px',boxSizing:'border-box',background:'#f8fafc',color:'#111827',fontSize:13,fontFamily:'Consolas, Courier New, monospace',minWidth:0}
+const label:React.CSSProperties={display:'grid',gap:2,fontSize:12,fontWeight:600,textTransform:'uppercase',color:'#475569',minWidth:0}
 const panel:React.CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2}
 const button=(kind:'primary'|'normal'|'danger'|'disabled'):React.CSSProperties=>({height:30,display:'inline-flex',alignItems:'center',justifyContent:'center',gap:5,border:'1px solid '+(kind==='primary'?'#2D8DB8':kind==='danger'?'#d65b61':'#b9c9d4'),borderRadius:2,padding:'0 8px',fontSize:9,fontWeight:600,cursor:kind==='disabled'?'not-allowed':'pointer',background:kind==='primary'?'#2D8DB8':kind==='danger'?'#fff5f5':'#fff',color:kind==='primary'?'#fff':kind==='danger'?'#b42318':'#123B50',opacity:kind==='disabled'?0.5:1})
 export default function ClientesIndustrial(){
