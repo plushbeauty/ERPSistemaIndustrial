@@ -21,7 +21,7 @@ interface XlsxModule { read(buffer:ArrayBuffer,options:{type:'array'}):{SheetNam
 declare global { interface Window { XLSX?: XlsxModule } }
 
 type Product={
-  id:string;empresa_id:string|null;codigo:string;nome:string;descricao:string|null;descricao_resumida:string|null;codigo_barras:string|null
+  id:string;empresa_id:string|null;codigo:string;nome:string;cliente:string|null;descricao:string|null;descricao_resumida:string|null;codigo_barras:string|null
   grupo:string|null;subgrupo:string|null;marca:string|null;categoria:string|null;unidade:string;unidade_compra:string;unidade_venda:string;fornecedor_padrao_id:string|null
   referencia_interna:string|null;referencia_cliente:string|null;origem:string|null;ncm:string|null;cest:string|null;peso_liquido:number;peso_bruto:number
   comprimento_mm:number;largura_mm:number;altura_mm:number;observacoes:string|null;foto_url:string|null;fabricado:boolean;comprado:boolean;revenda:boolean
@@ -46,7 +46,7 @@ const tabItems:Array<[Tab,string,typeof Boxes]>=[
   ['producao','PRODUÇÃO',Factory],['qualidade','QUALIDADE + DOCUMENTOS',ShieldCheck],['fotos','ANEXAR FOTO',ImageIcon]
 ]
 const empty=():FormData=>({
-  codigo:'',nome:'',descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
+  codigo:'',nome:'',cliente:null,descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
   fornecedor_padrao_id:null,referencia_interna:null,referencia_cliente:null,origem:'0 - Nacional',ncm:null,cest:null,peso_liquido:0,peso_bruto:0,comprimento_mm:0,largura_mm:0,altura_mm:0,
   observacoes:null,foto_url:null,fabricado:false,comprado:false,revenda:false,estoque_atual:0,ponto_reposicao:0,estoque_maximo:0,localizacao_padrao_id:null,
   controla_lote:false,controla_serie:false,permite_estoque_negativo:false,lote_validade_dias:0,inspecao_qualidade_obrigatoria:false,nivel_qualidade:null,origem_fiscal:null,
@@ -414,7 +414,27 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-section-heading span{font-size:9px;font-weight:900;letter-spacing:.13em;color:#2D8DB8}
       .product-master-screen .product-section-heading h2{margin:3px 0 0;font-size:14px;font-weight:800;color:#123B50}
       .product-master-screen .product-section-heading p{margin:0;max-width:460px;font-size:10px;line-height:1.45;color:#617987;text-align:right}
-      .product-master-screen .product-field-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 10px;align-items:end}
+      .product-master-screen .product-field-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px 8px;align-items:end}
+      .product-master-screen .product-general-fields>div{min-width:0}
+      .product-master-screen .product-general-fields .product-code-field{grid-column:span 1}
+      .product-master-screen .product-general-fields .product-barcode-field{grid-column:span 1}
+      .product-master-screen .product-general-fields .product-description-field{grid-column:span 2}
+      .product-master-screen .product-general-fields .product-summary-field{grid-column:span 2}
+      .product-master-screen .product-general-fields .product-group-field{grid-column:span 1}
+      .product-master-screen .product-general-fields .product-subgroup-field{grid-column:span 1}
+      .product-master-screen .product-general-fields .product-brand-field{grid-column:span 1}
+      .product-master-screen .product-general-fields .product-category-field{grid-column:span 1}
+      .product-master-screen .product-general-fields .product-supplier-field{grid-column:span 2}
+      .product-master-screen .product-general-fields .product-customer-name-field{grid-column:span 3}
+      .product-master-screen .product-general-fields .product-customer-code-field{grid-column:span 3}
+      .product-master-screen .product-unit-row{grid-column:1/-1;display:grid;grid-template-columns:100px 100px 100px minmax(260px,1fr);gap:7px;align-items:end;padding:8px;background:#f1f8fb;border:1px solid #cbdbe4;border-radius:2px}
+      .product-master-screen .product-unit-row>label{min-width:0;display:grid;grid-template-rows:minmax(12px,auto) 30px;gap:2px}
+      .product-master-screen .product-unit-row>label>select{width:100%;min-width:0}
+      .product-master-screen .product-unit-row .weight-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0}
+      .product-master-screen .product-unit-row .weight-row label{display:grid;grid-template-columns:minmax(0,1fr) 88px;grid-template-rows:30px;align-items:center;gap:5px}
+      .product-master-screen .product-unit-row .weight-row label>input{width:88px;height:30px}
+      .product-master-screen .product-unit-row .product-dimension-row{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(100px,160px));gap:8px}
+      .product-master-screen .product-unit-row .product-dimension-row label{display:grid;grid-template-rows:minmax(12px,auto) 30px;gap:2px}
       .product-master-screen .product-field-grid label{display:grid;grid-template-rows:minmax(13px,auto) minmax(30px,auto);gap:4px;min-width:0;color:#294a5b;font-size:9px;font-weight:800}
       .product-master-screen .product-field-grid label>input,.product-master-screen .product-field-grid label>select{height:32px!important;min-width:0;width:100%;border:1px solid #b9ced9!important;border-radius:2px!important;padding:0 8px!important;font-size:11px!important;color:#123B50}
       .product-master-screen .product-field-grid textarea{font:11px/1.45 Arial,sans-serif!important;border:1px solid #b9ced9!important;border-radius:2px!important}
@@ -426,10 +446,11 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen>section:nth-of-type(2) table thead th{background:#123B50!important;color:#fff!important;border-bottom:1px solid #48B7C7!important}
       .product-master-screen button{transition:background .12s,border-color .12s}
       .product-master-screen button:focus-visible,.product-master-screen input:focus-visible,.product-master-screen select:focus-visible,.product-master-screen textarea:focus-visible{outline:2px solid #48B7C7;outline-offset:1px}
-      @media(max-width:1000px){.product-master-screen .product-field-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.product-master-screen .product-section-heading{align-items:start;flex-direction:column}.product-master-screen .product-section-heading p{text-align:left}.product-master-screen .product-flag-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-      @media(max-width:640px){.product-master-screen .product-field-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 7px}.product-master-screen .product-field-grid label[style*="span 2"]{grid-column:1/-1!important}.product-master-screen .product-flag-grid{grid-template-columns:1fr}.product-master-screen .product-general-form{padding:10px}.product-master-screen>header{align-items:flex-start!important}.product-master-screen>header>div:last-child{width:100%;gap:5px!important}.product-master-screen>header>div:last-child button{flex:1;min-width:90px}}
+      @media(max-width:1000px){.product-master-screen .product-field-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.product-master-screen .product-unit-row{grid-template-columns:repeat(3,minmax(80px,1fr))}.product-master-screen .product-unit-row .weight-row{grid-column:1/-1}.product-master-screen .product-unit-row .product-dimension-row{grid-column:1/-1}.product-master-screen .product-section-heading{align-items:start;flex-direction:column}.product-master-screen .product-section-heading p{text-align:left}.product-master-screen .product-flag-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media(max-width:640px){.product-master-screen .product-field-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.product-master-screen .product-general-fields>div{grid-column:span 1!important}.product-master-screen .product-general-fields .product-description-field,.product-master-screen .product-general-fields .product-summary-field,.product-master-screen .product-general-fields .product-supplier-field,.product-master-screen .product-general-fields .product-customer-name-field,.product-master-screen .product-general-fields .product-customer-code-field{grid-column:1/-1!important}.product-master-screen .product-unit-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.product-master-screen .product-unit-row .weight-row{grid-column:1/-1}.product-master-screen .product-unit-row .product-dimension-row{grid-template-columns:repeat(3,minmax(0,1fr))}.product-master-screen .product-field-grid label[style*="span 2"]{grid-column:1/-1!important}.product-master-screen .product-flag-grid{grid-template-columns:1fr}.product-master-screen .product-general-form{padding:10px}.product-master-screen>header{align-items:flex-start!important}.product-master-screen>header>div:last-child{width:100%;gap:5px!important}.product-master-screen>header>div:last-child button{flex:1;min-width:90px}}
 
-      .product-master-screen label{min-width:0;gap:2px;align-content:end}.product-master-screen .product-form-grid label{grid-template-rows:minmax(12px,auto) 30px;gap:2px}.product-master-screen .product-form-grid label>span{min-height:12px;line-height:11px;white-space:normal;overflow-wrap:anywhere}.product-master-screen .product-unit-row{grid-column:span 3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;min-width:0;padding:7px;background:linear-gradient(125deg,#123B50,#1c6387 55%,#2D8DB8);border:1px solid #2D8DB8;border-radius:2px;box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}.product-master-screen .product-unit-row label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto 30px;align-items:end;gap:3px;color:#e4f7ff;font-size:8px}.product-master-screen .product-unit-row label>span{min-height:10px;line-height:10px;color:#e4f7ff}.product-master-screen .product-unit-row label>select,.product-master-screen .product-unit-row label>input{width:100%;min-width:0}.product-master-screen .product-unit-row .weight-row{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:6px;border-top:1px solid rgba(255,255,255,.3);padding-top:6px}.product-master-screen .product-unit-row .weight-row label{grid-template-columns:minmax(0,1fr) 100px;grid-template-rows:30px;align-items:center}.product-master-screen .product-unit-row .weight-row label>span{font-size:9px;font-weight:700}.product-master-screen .product-unit-row .weight-row label>input{height:30px;background:#fff;color:#123B50;border:1px solid #a9d8e8;border-radius:2px;padding:0 6px;box-sizing:border-box}.product-master-screen .product-photo-card{cursor:pointer;transition:border-color .12s,background .12s}.product-master-screen .product-photo-card:hover{border-color:#2D8DB8!important;background:#edf7fb!important}
+      .product-master-screen label{min-width:0;gap:2px;align-content:end}.product-master-screen .product-form-grid label{grid-template-rows:minmax(12px,auto) 30px;gap:2px}.product-master-screen .product-form-grid label>span{min-height:12px;line-height:11px;white-space:normal;overflow-wrap:anywhere}.product-master-screen .product-unit-row{grid-column:1/-1;display:grid;grid-template-columns:100px 100px 100px minmax(260px,1fr);gap:7px;min-width:0;padding:8px;background:#f1f8fb;border:1px solid #cbdbe4;border-radius:2px}.product-master-screen .product-unit-row label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto 30px;align-items:end;gap:3px;color:#123B50;font-size:8px}.product-master-screen .product-unit-row label>span{min-height:10px;line-height:10px;color:#123B50}.product-master-screen .product-unit-row label>select,.product-master-screen .product-unit-row label>input{width:100%;min-width:0}.product-master-screen .product-unit-row .weight-row{grid-column:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0;border:0;padding:0}.product-master-screen .product-unit-row .weight-row label{grid-template-columns:minmax(0,1fr) 88px;grid-template-rows:30px;align-items:center}.product-master-screen .product-unit-row .weight-row label>span{font-size:9px;font-weight:700;color:#123B50}.product-master-screen .product-unit-row .weight-row label>input{width:88px;height:30px;background:#fff;color:#123B50;border:1px solid #a9d8e8;border-radius:2px;padding:0 6px;box-sizing:border-box}
+      .product-master-screen .product-unit-row .product-dimension-row{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(100px,160px));gap:8px}.product-master-screen .product-photo-card{cursor:pointer;transition:border-color .12s,background .12s}.product-master-screen .product-photo-card:hover{border-color:#2D8DB8!important;background:#edf7fb!important}
       .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{max-width:100%;box-sizing:border-box}
       .product-master-screen .product-form-grid>*{min-width:0}
       .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%}
@@ -473,45 +494,46 @@ export default function ProdutosVendasIndustrial(){
       {tab==='gerais'&&<form onSubmit={save} className="product-general-form">
         <div className="product-section-heading"><div><span>01 / IDENTIFICAÇÃO</span><h2>Identificação do produto</h2></div><p>Campos essenciais para localizar, classificar e integrar o item nos processos industriais.</p></div>
         <div className="product-field-grid product-general-fields">
-          {field('Código interno *','codigo','text',1,true)}
-          {field('Código de barras / GTIN','codigo_barras')}
-          {field('Descrição do produto *','nome')}
-          {field('Descrição resumida','descricao_resumida')}
-          <label style={label}>Grupo
+          <div className="product-code-field">{field('Código interno *','codigo','text',1,true)}</div>
+          <div className="product-barcode-field">{field('Código de barras','codigo_barras','text',1,true)}</div>
+          <div className="product-description-field">{field('Descrição do produto *','nome')}</div>
+          <div className="product-summary-field">{field('Descrição resumida','descricao_resumida')}</div>
+          <div className="product-group-field"><label style={label}>Grupo
             <select value={form.grupo||''} disabled={!editing} onChange={e=>update('grupo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>
-              <option value="">Selecione o grupo</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.codigo} · {g.nome}</option>)}
+              <option value="">Selecione</option>{groups.map(g=><option key={g.id} value={g.nome}>{g.nome}</option>)}
             </select>
-          </label>
-          <label style={label}>Subgrupo
-            <input list="erp-product-subgroups" value={form.subgrupo||''} disabled={!editing} onChange={e=>update('subgrupo',e.target.value||null)} placeholder="Pesquisar ou informar subgrupo" style={{...input,background:editing?'#fff':'#f5f7fa'}}/>
+          </label></div>
+          <div className="product-subgroup-field"><label style={label}>Subgrupo
+            <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 30px',gap:3}}>
+              <input list="erp-product-subgroups" value={form.subgrupo||''} disabled={!editing} onChange={e=>update('subgrupo',e.target.value||null)} placeholder="Selecionar" style={{...input,background:editing?'#fff':'#f5f7fa'}}/>
+              <button type="button" title="Adicionar subgrupo" aria-label="Adicionar subgrupo" disabled={!editing} onClick={()=>{const value=window.prompt('Nome do novo subgrupo:')?.trim();if(value)update('subgrupo',value)}} style={{...btn('normal'),height:30,width:30,padding:0,fontSize:15}}><Plus size={14}/></button>
+            </div>
             <datalist id="erp-product-subgroups">{Array.from(new Set(products.map(p=>p.subgrupo).filter((v):v is string=>Boolean(v?.trim())))).sort((a,b)=>a.localeCompare(b)).map(v=><option key={v} value={v}/>)}</datalist>
-          </label>
-          {field('Marca','marca')}
-          {select('Categoria / tipo','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','Matéria-prima'],['PRENSADOS','Prensados'],['INJETADOS','Injetados'],['ALMOXARIFADO','Almoxarifado'],['MATERIAL DE ESCRITÓRIO','Material de escritório'],['PRODUTOS DE LIMPEZA','Produtos de limpeza'],['Componente','Componente'],['Insumo','Insumo']])}
-          <label style={label}>Fornecedor padrão
+          </label></div>
+          <div className="product-brand-field">{field('Marca','marca')}</div>
+          <div className="product-category-field">{select('Categoria / tipo','categoria',[['Produto acabado','Produto acabado'],['MATÉRIA-PRIMA','Matéria-prima'],['PRENSADOS','Prensados'],['INJETADOS','Injetados'],['ALMOXARIFADO','Almoxarifado'],['MATERIAL DE ESCRITÓRIO','Material de escritório'],['PRODUTOS DE LIMPEZA','Produtos de limpeza'],['Componente','Componente'],['Insumo','Insumo']])}</div>
+          <div className="product-supplier-field"><label style={label}>Fornecedor padrão
             <select value={form.fornecedor_padrao_id||''} disabled={!editing} onChange={e=>update('fornecedor_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>
               <option value="">Sem fornecedor padrão</option>{suppliers.map(s=><option key={s.id} value={s.id}>{s.nome_fantasia||s.razao_social}</option>)}
             </select>
-          </label>
-          {field('Referência interna','referencia_interna')}
-          {field('Referência do cliente','referencia_cliente')}
-          <label style={{...label,gridColumn:'span 2'}}>Descrição técnica completa
-            <textarea value={form.descricao||''} disabled={!editing} onChange={e=>update('descricao',e.target.value||null)} placeholder="Aplicação, composição, especificação ou observações técnicas" rows={3} style={{...input,height:'auto',minHeight:68,padding:'7px 8px',resize:'vertical',background:editing?'#fff':'#f5f7fa'}}/>
-          </label>
-          <label style={{...label,gridColumn:'span 2'}}>Observações internas
-            <textarea value={form.observacoes||''} disabled={!editing} onChange={e=>update('observacoes',e.target.value||null)} placeholder="Informações complementares do cadastro" rows={3} style={{...input,height:'auto',minHeight:68,padding:'7px 8px',resize:'vertical',background:editing?'#fff':'#f5f7fa'}}/>
-          </label>
+          </label></div>
+          <div className="product-customer-name-field">{field('Nome cliente','cliente')}</div>
+          <div className="product-customer-code-field">{field('Código cliente','referencia_cliente')}</div>
         </div>
-        <div className="product-section-heading"><div><span>02 / UNIDADES E DIMENSÕES</span><h2>Unidades, medidas e logística</h2></div><p>Dimensões e pesos são mantidos em unidades explícitas para apoiar estoque, transporte e produção.</p></div>
-        <div className="product-field-grid product-measure-fields">
-          {select('Unidade de estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['MM','MM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}
-          {select('Unidade de compra','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}
-          {select('Unidade de venda','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}
-          {field('Peso líquido (kg)','peso_liquido','number')}
-          {field('Peso bruto (kg)','peso_bruto','number')}
-          {field('Comprimento (mm)','comprimento_mm','number')}
-          {field('Largura (mm)','largura_mm','number')}
-          {field('Altura (mm)','altura_mm','number')}
+        <div className="product-section-heading"><div><span>02 / UNIDADES E DIMENSÕES</span><h2>Unidades, medidas e logística</h2></div><p>Campos compactos, com a largura definida conforme o dado que será digitado.</p></div>
+        <div className="product-unit-row">
+          {select('Unid. estoque','unidade',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['MM','MM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}
+          {select('Unid. vendas','unidade_venda',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}
+          {select('Unid. compras','unidade_compra',[['UN','UN'],['PC','PC'],['KG','KG'],['G','G'],['M','M'],['CM','CM'],['L','L'],['ML','ML'],['CX','CX'],['PAR','PAR']])}
+          <div className="weight-row">
+            {field('Peso líquido (kg)','peso_liquido','number')}
+            {field('Peso bruto (kg)','peso_bruto','number')}
+          </div>
+          <div className="product-dimension-row">
+            {field('Comprimento (mm)','comprimento_mm','number')}
+            {field('Largura (mm)','largura_mm','number')}
+            {field('Altura (mm)','altura_mm','number')}
+          </div>
         </div>
         <div className="product-section-heading"><div><span>03 / CLASSIFICAÇÃO OPERACIONAL</span><h2>Uso do item no ERP</h2></div><p>Defina como o item pode ser utilizado nas rotinas de compra, fabricação e venda.</p></div>
         <div className="product-flag-grid">
