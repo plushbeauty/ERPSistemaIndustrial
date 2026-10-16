@@ -8,9 +8,9 @@ import VendasLayout, { type SalesNavSection } from './VendasLayout'
 const maintenanceNav: SalesNavSection[] = [{label:'Manutenção',items:[{label:'Ordens',href:'/manutencao/ordens',icon:Wrench},{label:'PCP',href:'/pcp',icon:Wrench},{label:'Produção',href:'/operacao-industrial',icon:Wrench}]},{label:'Integrações',items:[{label:'Estoque',href:'/estoque',icon:Wrench},{label:'Qualidade',href:'/qualidade',icon:Wrench}]}]
 type Order={id:string;numero_os:string|null;ativo_id:string;tipo:string;descricao:string;prioridade:string;status:string;data_prevista:string|null;inicio_atendimento:string|null;data_fechamento:string|null;laudo_tecnico:string|null;tecnico_id:string|null;mttr_min:number|null;relatorio_tecnico:Record<string,string>}
 type Form={machineId:string;tipo:'CORRETIVA'|'PREVENTIVA'|'PREDITIVA';descricao:string;prioridade:'BAIXA'|'MEDIA'|'ALTA'|'CRITICA';dataPrevista:string}
-const input='h-9 w-full border border-slate-300 bg-white px-2 text-xs text-slate-900 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-100'
+const input='h-8 min-h-8 w-full border border-slate-400 rounded bg-slate-50 px-2.5 font-mono text-[13px] text-slate-900 outline-none focus:border-blue-700 focus:bg-[#fffdf0] focus:ring-0'
 const area='min-h-24 w-full border border-slate-300 bg-white p-2 text-xs text-slate-900 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-100'
-const label='grid gap-1 text-[10px] font-semibold uppercase tracking-wide text-slate-700'
+const label='grid gap-1 text-[12px] font-semibold uppercase tracking-wide text-slate-700'
 const PAGE_SIZE=25
 
 export default function ManutencaoOrdens(){
