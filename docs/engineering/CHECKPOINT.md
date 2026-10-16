@@ -19,3 +19,16 @@ COMPARATIVE_AUDIT: inventário estático registrado em docs/erp-standardization/
 
 
 COMPARATIVE_CATALOG_UPDATE: ampliado em ff68b47581aebc7e0677d7908dd17ec868cd0831 com catálogo função-a-função do ERPNext (21 módulos), famílias de aplicações Odoo, famílias TOTVS Protheus e matriz de segurança (identidade, usuários, RBAC, tenant/RLS, Master, logs, sessões, MFA, senha, alçadas, backup/restore, segredos, alertas e LGPD). Matriz distingue presença de rota de existência de capacidade completa. Não inferir conclusão funcional.
+
+
+## 2026-10-16 — Configurações ADM: auditoria e reconstrução inicial
+CURRENT_PHASE: P0_CONFIGURACOES_ADM_AUDIT
+CURRENT_TASK: ADM-001 — reconstruir shell e auditar páginas individualmente
+CURRENT_FILE: src/pages/configuracoes/ConfiguracoesADM.tsx
+CURRENT_ROUTE: /configuracoes-adm/*
+CURRENT_ERROR: contratos RPC/schema/RLS ainda precisam de validação remota
+LAST_SUCCESSFUL_TEST: nenhum teste local executado neste ambiente
+LAST_COMMIT: ffc095e06272d5f7924daf0d14bcb28cdf1a7ee6; shell: 00f9f12264f9e71b0f5525eaafaac48a4a8304dd
+NEXT_ACTION: auditar Usuários (operações de criação/convite/edição), migrations de RBAC em ordem, RPCs e policies RLS; depois corrigir uma página por vez e executar type-check/lint/build.
+BLOCKERS: confirmar contrato remoto Supabase; checkout local/testes ainda não executados.
+AUDIT: docs/erp-standardization/CONFIGURACOES-ADM-PAGE-AUDIT-2026-10-16.md
