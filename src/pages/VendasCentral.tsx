@@ -1,3 +1,10 @@
+/**
+ * @DATA_REVISAO_APROVACAO: 2026-10-16
+ * @REVISAO_APROVACAO: APROV-004
+ * @STATUS_APROVACAO: APROVADO-IMUTAVEL
+ * @REGRA: revisão APROV-004 autorizada expressamente; novas alterações exigem nova ordem expressa.
+ * @ESCOPO: cards ampliados e acompanhamento real de pedido, produção, qualidade, expedição e NF/saída.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
