@@ -1,3 +1,8 @@
+/*
+ * REVISÃO TÉCNICA: 16/10/2026
+ * Revisado: autenticação, escopo de empresa, listagem de perfis e ação para abrir a matriz RBAC com o perfil selecionado.
+ * Não validado nesta revisão: schema/RLS remoto, RPC em produção, type-check/build e fluxo de clonagem ponta a ponta.
+ */
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { RefreshCw, ShieldCheck, UsersRound } from 'lucide-react'
