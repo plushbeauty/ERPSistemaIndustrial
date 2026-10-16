@@ -72,11 +72,24 @@
 .synqra-workspace button{border-radius:2px}
 
 /* Vendas: cards de status reaproveitam a geometria compacta do dashboard. */
-.sales-orders-status-grid{margin-top:0}
-.sales-orders-status-card{width:100%;min-width:0;text-align:left;cursor:pointer;color:#123b50;font:inherit;appearance:none;transition:outline-color .12s ease,filter .12s ease}
-.sales-orders-status-card span{display:flex;align-items:center;gap:4px;min-width:0;white-space:nowrap;letter-spacing:0;text-transform:none;font-size:9px}
-.sales-orders-status-card strong{margin-top:2px}
+.sales-orders-status-grid{margin-top:0;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.sales-orders-status-card{width:100%;min-width:0;min-height:58px;height:auto;text-align:left;cursor:pointer;color:#123b50;font:inherit;appearance:none;transition:outline-color .12s ease,filter .12s ease;padding:8px 12px}
+.sales-orders-status-card span{display:flex;align-items:center;gap:6px;min-width:0;white-space:normal;letter-spacing:0;text-transform:none;font-size:10px;line-height:13px}
+.sales-orders-status-card strong{margin-top:4px;font-size:19px;line-height:20px}
 .sales-orders-status-card:hover{filter:brightness(.98)}
 .sales-orders-status-card.is-active{outline:2px solid #2d8db8;outline-offset:-2px}
-@media(max-width:1100px){.sales-orders-status-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:800px){.sales-orders-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sales-button--primary,.sales-order-primary,.erp-row-action{background:#2D8DB8!important;border-color:#2D8DB8!important;color:#fff!important}
+.sales-button--primary:hover,.sales-order-primary:hover,.erp-row-action:hover{background:#17445A!important;border-color:#17445A!important;color:#fff!important}
+.sales-process-stages{display:grid;grid-template-columns:repeat(2,minmax(100px,1fr));gap:4px;min-width:250px;max-width:390px;padding:3px 0}
+.sales-process-stage{min-width:0;border:1px solid;border-radius:2px;padding:4px 6px;display:flex;flex-direction:column;gap:2px;line-height:1.2}
+.sales-process-stage span{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.sales-process-stage strong{font-size:9px;font-weight:500;overflow-wrap:anywhere;white-space:normal}
+.sales-process-stage.is-stage-green{background:#edf8f2;border-color:#9bd5b5;color:#17603c}
+.sales-process-stage.is-stage-blue{background:#edf6ff;border-color:#9bc7f3;color:#174a86}
+.sales-process-stage.is-stage-amber{background:#fff7e8;border-color:#f0c078;color:#8a4b08}
+.sales-process-stage.is-stage-red{background:#fff0f0;border-color:#efaaaa;color:#a11b1b}
+.sales-process-stage.is-stage-violet{background:#f5f0ff;border-color:#c7b5f5;color:#5b3a9e}
+.sales-process-stage.is-stage-cyan{background:#eafaff;border-color:#9bdbe9;color:#126579}
+.sales-process-stage.is-stage-muted{background:#f5f7f8;border-color:#d3dce0;color:#64748b}
+@media(max-width:1100px){.sales-orders-status-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.sales-process-stages{min-width:230px}}
+@media(max-width:800px){.sales-orders-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sales-process-stages{min-width:220px}}
