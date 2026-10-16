@@ -1,0 +1,101 @@
+/* ERP Industrial — núcleo geométrico compartilhado de formulários.
+   Classes explícitas evitam alterar login, modais, filtros e campos de terceiros sem migração validada. */
+:root {
+  --erp-industrial-control-height: 32px;
+  --erp-industrial-control-bg: #f8fafc;
+  --erp-industrial-control-focus: #fffdf0;
+  --erp-industrial-border: #94a3b8;
+  --erp-industrial-focus: #2b6cb0;
+  --erp-industrial-label: #475569;
+}
+.linha-erp-industrial {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 0 12px !important;
+}
+.rotulo-erp-industrial {
+  display: block !important;
+  flex: 0 0 160px !important;
+  width: 160px !important;
+  min-width: 160px !important;
+  margin: 0 !important;
+  color: var(--erp-industrial-label) !important;
+  font-family: "Segoe UI", Inter, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+}
+.conteiner-input-industrial,
+.wrapper-input-industrial {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  height: var(--erp-industrial-control-height) !important;
+}
+.linha-erp-industrial input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.linha-erp-industrial select,
+.caixa-input-industrial {
+  display: inline-block !important;
+  flex: 0 0 auto !important;
+  box-sizing: border-box !important;
+  height: var(--erp-industrial-control-height) !important;
+  min-height: var(--erp-industrial-control-height) !important;
+  padding: 4px 8px !important;
+  border: 1px solid var(--erp-industrial-border) !important;
+  border-radius: 4px !important;
+  font-family: Consolas, "Courier New", monospace !important;
+  font-size: 13px !important;
+  line-height: 22px !important;
+  background: var(--erp-industrial-control-bg) !important;
+}
+.linha-erp-industrial input:focus,
+.linha-erp-industrial select:focus,
+.caixa-input-industrial:focus {
+  border-color: var(--erp-industrial-focus) !important;
+  background: var(--erp-industrial-control-focus) !important;
+  outline: 2px solid var(--erp-industrial-focus) !important;
+  outline-offset: 0 !important;
+}
+.linha-erp-industrial .edit-2, .linha-erp-industrial select.edit-2 { width: 6ch !important; max-width: 6ch !important; text-align: center !important; }
+.linha-erp-industrial .edit-3, .linha-erp-industrial select.edit-3 { width: 7ch !important; max-width: 7ch !important; text-transform: uppercase !important; }
+.linha-erp-industrial .edit-4, .linha-erp-industrial select.edit-4 { width: 8ch !important; max-width: 8ch !important; text-align: right !important; }
+.linha-erp-industrial .edit-6, .linha-erp-industrial select.edit-6 { width: 10ch !important; max-width: 10ch !important; }
+.linha-erp-industrial .edit-8, .linha-erp-industrial select.edit-8 { width: 14ch !important; max-width: 14ch !important; }
+.linha-erp-industrial .edit-12, .linha-erp-industrial select.edit-12 { width: 18ch !important; max-width: 18ch !important; text-align: right !important; }
+.linha-erp-industrial .edit-20, .linha-erp-industrial select.edit-20 { width: 25ch !important; max-width: 25ch !important; }
+.linha-erp-industrial .edit-longo { width: min(100%, 450px) !important; max-width: 450px !important; }
+.linha-erp-industrial .edit-longo.referencia-cliente { max-width: 280px !important; }
+.linha-erp-industrial .edit-14 { width: 18ch !important; max-width: 18ch !important; }
+.linha-erp-industrial .botao-lupa-industrial {
+  display: inline-flex !important;
+  flex: 0 0 32px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+}
+.linha-erp-industrial .aliquotas-fiscais-industriais {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  align-items: center !important;
+}
+.linha-erp-industrial .aliquotas-fiscais-industriais > * { min-width: 0 !important; }
+@media (max-width: 760px) {
+  .linha-erp-industrial { flex-wrap: wrap !important; height: auto !important; align-items: flex-start !important; }
+  .rotulo-erp-industrial { flex: 0 0 100% !important; width: 100% !important; min-width: 0 !important; }
+  .linha-erp-industrial .edit-longo { max-width: min(100%, 450px) !important; }
+  .linha-erp-industrial .aliquotas-fiscais-industriais { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+@media print {
+  .erp-industrial-no-print { display: none !important; }
+}
