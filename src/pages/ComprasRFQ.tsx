@@ -25,7 +25,6 @@ export default function ComprasRFQ() {
   const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>([])
   const [items, setItems] = useState<Item[]>([])
   const [productId, setProductId] = useState('')
-  const [productQuery, setProductQuery] = useState('')
   const [quantity, setQuantity] = useState('1')
   const [needDate, setNeedDate] = useState('')
   const [responseDate, setResponseDate] = useState('')
@@ -87,11 +86,6 @@ export default function ComprasRFQ() {
     () => items.reduce((sum, item) => sum + Number(item.quantidade), 0),
     [items],
   )
-  const visibleProducts = useMemo(() => {
-    const query = productQuery.trim().toLocaleLowerCase('pt-BR')
-    if (!query) return products.slice(0, 30)
-    return products.filter(product => (product.codigo + ' ' + product.nome).toLocaleLowerCase('pt-BR').includes(query)).slice(0, 30)
-  }, [productQuery, products])
 
   const addItem = () => {
     const product = products.find(candidate => candidate.id === productId)
