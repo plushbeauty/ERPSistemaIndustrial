@@ -67,3 +67,16 @@ Rota real, arquivo renderizado, módulo/aba, campos em ordem de leitura, altura,
 - A entrada numérica ignora valores digitados com mais de 14 caracteres.
 - Commits do ajuste: `6905e28c764bf8fa9145a39c4b0a8d8f03d1dc6b` e `5e6939b74f5623fd1658c85d92ab496b47707e65`.
 - O ajuste ainda precisa de type-check/build e inspeção visual real. Portanto, UI-020 continua pendente e esta tela **não** deve ser movida para COMPLETED até haver essas evidências.
+
+## Referência visual complementar — DBGrid industrial colorido (2026-10-16)
+
+A partir desta revisão, as grades de dados devem ser avaliadas também pelo padrão SAP S/4HANA/Fiori, sem presumir que toda tela do SAP use uma única aparência:
+
+- Cabeçalho com contraste forte e hierarquia clara.
+- Linhas alternadas em tons claros para rastrear visualmente colunas.
+- Realce de hover/linha ativa sem ocultar os valores.
+- Cores semânticas em campos de estado: verde para estados concluídos/ativos, âmbar para pendências/em andamento e vermelho para bloqueio, obsolescência ou cancelamento, apenas quando o valor e a coluna justificarem a classificação.
+- Valores numéricos alinhados à direita e com números tabulares; textos longos truncados visualmente, com conteúdo completo disponível via tooltip.
+- Altura de linha 32 px, tipografia compacta e sem transformar a grade em cartões.
+
+**Adaptação inicial registrada:** src/pages/IndustrialDataWorkspace.tsx, commit 1cb2f3a14be3763ecf93f7beb73ca21643274fb4. É uma alteração em um componente compartilhado por várias rotas, não prova de que todos os DBGrids do ERP foram padronizados. O comportamento precisa de build e conferência visual antes de aprovar.
