@@ -136,3 +136,10 @@ Só marcar como concluído quando todos forem comprovados: rota real; leitura e 
 - O GED já recebeu ajuste de responsividade e agora a padronização de cantos; o histórico anterior que dizia que o GED não havia sido modificado fica supersedido por este adendo.
 - Próximo portão: confirmar execução da migration no Supabase, rodar o CI para o HEAD atual, testar aprovação/reprovação/quarentena com sessão autenticada e validar o deployment de produção antes de fechar a pendência.
 
+### Achado adicional — rota de liberação de lotes não corresponde à tela servida
+
+- A rota `/qualidade/liberacao-lote` em `src/AppEntryV2.tsx` aponta para `AcompanhamentoNaoConformidade`, cujo código consulta RPNC, ações e Ishikawa; não é uma tela de decisão/liberação de lote.
+- O módulo de quarentena `src/pages/qualidade/QualidadeQuarentena.tsx` chama a RPC existente `erp_reter_lote` para retenção. A busca no código versionado não localizou uma RPC explícita de liberação de lote equivalente.
+- **Não foi feita troca de rota nem atualização direta de status**: isso poderia simular uma liberação sem validar autorização, auditoria, regra de inspeção e transação no banco. A tela/ação de liberação fica registrada como pendência funcional P1 até localizar a operação de banco aprovada ou definir uma migration segura a partir do schema real.
+- Esse achado explica por que o atalho “Liberação de lotes” não pode ser marcado como concluído só porque existe uma rota no tablet/sidebar.
+
