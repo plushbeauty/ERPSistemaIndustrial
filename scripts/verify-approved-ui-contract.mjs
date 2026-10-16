@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 
 const product = readFileSync('src/pages/ProdutosVendasIndustrial.tsx', 'utf8')
 const login = readFileSync('src/styles/industrial-login.css', 'utf8')
+const loginPage = readFileSync('src/IndustrialLoginDirect.tsx', 'utf8')
 
 const checks = [
   ['Cadastro de Produtos com abas', product.includes("['gerais','DADOS GERAIS'") && product.includes("['fiscal','FISCAL'") && product.includes("['estoque','ESTOQUE'")],
@@ -12,7 +13,10 @@ const checks = [
   ['Custos em consulta e observações no formulário', product.includes('Último custo (calculado)') && product.includes('product-observations-field')],
   ['Consulta fiscal oficial Classif preservada', product.includes('portalunico.siscomex.gov.br/classif')],
   ['Login em imagem institucional de tela inteira preservado', login.includes('width:100vw!important') && login.includes('height:100dvh!important')],
-  ['Texto institucional do login centralizado', login.includes('top: 50%') && login.includes('transform: translateY(-50%)')],
+  ['Texto institucional do login centralizado', login.includes('top: 50%') && login.includes('text-align:center') && login.includes('translate(-50%,-50%)')],
+  ['Ícone decorativo de chave removido do login', !loginPage.includes('KeyRound') && !loginPage.includes('auth-key-icon')],
+  ['CTAs secundários de cadastro e teste removidos', !loginPage.includes('cadastro-empresa') && !loginPage.includes('cadastro-master') && !loginPage.includes('Começar teste grátis')],
+  ['Recuperação de senha preservada', loginPage.includes('Esqueci minha senha')],
 ]
 
 const failed = checks.filter(([, ok]) => !ok)
