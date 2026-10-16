@@ -111,7 +111,7 @@ export default function TabelaPrecos() {
             <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-3">
               Tipo
               <select
-                className="h-[30px] w-full min-w-0 border border-slate-300 px-2"
+                className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2D8DB8]"
                 value={tipoReajuste}
                 onChange={event => setTipoReajuste(event.target.value as 'vendas' | 'postos')}
               >
@@ -122,7 +122,7 @@ export default function TabelaPrecos() {
             <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-2">
               Percentual %
               <input
-                className="h-[30px] w-full border border-slate-300 px-2"
+                className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2D8DB8]"
                 type="number"
                 step="0.01"
                 value={percentual}
@@ -132,7 +132,7 @@ export default function TabelaPrecos() {
             <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-3">
               Grupo produto
               <input
-                className="h-[30px] w-full border border-slate-300 px-2"
+                className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2D8DB8]"
                 value={grupo}
                 onChange={event => setGrupo(event.target.value)}
               />
@@ -140,7 +140,7 @@ export default function TabelaPrecos() {
             <label className="grid min-w-0 gap-1 sm:col-span-1 xl:col-span-2">
               Perfil cliente
               <input
-                className="h-[30px] w-full border border-slate-300 px-2"
+                className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2D8DB8]"
                 value={tipoCliente}
                 onChange={event => setTipoCliente(event.target.value)}
               />
@@ -197,7 +197,7 @@ export default function TabelaPrecos() {
                 aria-label="Página anterior"
                 disabled={pagina <= 1}
                 onClick={() => setPagina(atual => Math.max(1, atual - 1))}
-                className="inline-flex h-[30px] items-center gap-1 border border-slate-300 px-3 text-[10px] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-300 px-3 text-[10px] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <ChevronLeft size={15} /> Anterior
               </button>
@@ -206,7 +206,7 @@ export default function TabelaPrecos() {
                 aria-label="Próxima página"
                 disabled={pagina >= paginas}
                 onClick={() => setPagina(atual => Math.min(paginas, atual + 1))}
-                className="inline-flex h-[30px] items-center gap-1 border border-slate-300 px-3 text-[10px] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-300 px-3 text-[10px] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Próxima <ChevronRight size={15} />
               </button>
