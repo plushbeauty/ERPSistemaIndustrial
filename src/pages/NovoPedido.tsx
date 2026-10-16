@@ -1,10 +1,10 @@
 /**
  * @DATA_REVISAO_APROVACAO: 2026-10-16
- * @REVISAO_APROVACAO: APROV-001
+ * @REVISAO_APROVACAO: APROV-003
  * @STATUS_APROVACAO: APROVADO-IMUTAVEL
- * @FONTE_APROVADA: Vercel preview READY / commit 94da86b985c12801525661328577f7bd96188b85
+ * @FONTE_APROVADA: revisão geométrica autorizada explicitamente pelo usuário em 2026-10-16
  * @REGRA: não alterar layout, conteúdo ou comportamento sem nova autorização explícita do usuário.
- * @ESCOPO_ORIGINAL: Vendas > Novo Pedido; preserva fluxo funcional e geometria visual da versão aprovada.
+ * @ESCOPO_ORIGINAL: Vendas > Novo Pedido; revisão APROV-003 corrige geometria de campos e cards sem alterar fluxo de negócio.
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Check, Edit3, FilePlus2, MailCheck, Paperclip, Plus, Save, Search, Trash2, XCircle, Printer } from 'lucide-react'
@@ -18,9 +18,9 @@ type Transportadora={id:string;codigo:string;razao_social:string}
 type Vendedor={id:string;nome:string}
 type Item={produto_id:string;codigo:string;descricao:string;quantidade:number;unidade:string;valor_unitario:number;desconto:number;estoque:number;preco_custo_industrial:number}
 
-const inputStyle='h-8 w-full rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 outline-none transition-all focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
-const labelStyle='flex flex-col gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-500'
-const buttonStyle='flex h-8 items-center justify-center gap-1 rounded-[2px] px-3 text-xs font-semibold'
+const inputStyle='h-[30px] min-w-0 w-full max-w-full rounded-[2px] border border-slate-300 bg-white px-2.5 text-[11px] font-medium text-slate-800 outline-none transition-colors focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
+const labelStyle='flex min-w-0 flex-col gap-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-500'
+const buttonStyle='flex h-[30px] items-center justify-center gap-1 rounded-[2px] px-2.5 text-[11px] font-semibold'
 const brl=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number.isFinite(v)?v:0)
 const n=(v:string|number)=>Number(v)||0
 const digits=(v:string)=>v.replace(/\D/g,'')
@@ -75,68 +75,68 @@ export default function NovoPedido(){
  const produtosFiltro=produtos.filter(p=>{const q=busca.toLowerCase();return !q||p.codigo.toLowerCase().includes(q)||p.nome.toLowerCase().includes(q)||(p.referencia_interna??'').toLowerCase().includes(q)||(p.codigo_barras??'').toLowerCase().includes(q)}).slice(0,40)
 
  return <VendasLayout title="Novo Pedido de Venda" subtitle="Entrada comercial • estoque • PCP" showStatusCards={false}>
-  <div id="frmNovoPedido" className="erp-compact w-full space-y-4 bg-white text-xs text-slate-700">
+  <div id="frmNovoPedido" className="erp-compact w-full min-w-0 space-y-2.5 bg-white text-xs text-slate-700">
    {message&&<div role="status" className="border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-[10px] text-emerald-800">{message}</div>}
    {error&&<div role="alert" className="border border-red-200 bg-red-50 px-2 py-1.5 text-[10px] text-red-700">{error}</div>}
 
-   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
-    <div><div className="text-[9px] uppercase tracking-wide text-slate-500">Vendas / Pedidos / Novo</div><h2 className="mt-0.5 text-[18px] font-semibold text-slate-800">Entrada de Pedido</h2></div>
+   <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 border border-[#1A6F96] bg-[#2D8DB8] px-3 py-2 text-white">
+    <div className="min-w-0"><div className="text-[9px] font-semibold uppercase tracking-wide text-white/80">Vendas / Pedidos / Novo</div><h2 className="mt-0.5 text-[16px] font-semibold text-white">Entrada de Pedido</h2></div>
     <div className="flex flex-wrap items-center gap-1">
      <span className="mr-1 text-[10px] text-slate-500">{edPedido ? `Pedido nº ${edPedido}` : 'Novo pedido'}</span>
-     <button type="button" disabled={loading} onClick={()=>void save(false)} className="flex h-8 items-center gap-1 rounded-[2px] border border-blue-700 bg-blue-600 px-3 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"><Save size={12}/>Salvar rascunho</button>
-     <button type="button" onClick={novoPedido} className="flex h-8 items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"><FilePlus2 size={12}/>Novo pedido</button>
+     <button type="button" disabled={loading} onClick={()=>void save(false)} className="flex h-[30px] items-center gap-1 rounded-[2px] border border-white bg-white px-2.5 text-[11px] font-semibold text-[#1A6F96] hover:bg-sky-50 disabled:opacity-50"><Save size={12}/>Salvar rascunho</button>
+     <button type="button" onClick={novoPedido} className="flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-200 bg-white px-2.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"><FilePlus2 size={12}/>Novo pedido</button>
      <input ref={fileRef} type="file" className="hidden" accept=".eml,.msg,.pdf,.png,.jpg,.jpeg,.webp" onChange={e=>{const f=e.target.files?.[0];if(f)void anexar(f);e.currentTarget.value=''}}/>
      <button id="btnAnexar" type="button" onClick={()=>fileRef.current?.click()} className={buttonStyle+' border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}><Paperclip size={12}/>Anexar origem</button>
      <button id="btnImportarEmail" type="button" disabled={loading} onClick={()=>void importar()} className={buttonStyle+' border border-emerald-700 bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50'}><MailCheck size={12}/>Importar e-mail</button>
-     <button id="btnFinalizar" type="button" disabled={loading} onClick={()=>void save(true)} className={buttonStyle+' border border-blue-700 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'}><Check size={12}/>Confirmar e finalizar</button>
+     <button id="btnFinalizar" type="button" disabled={loading} onClick={()=>void save(true)} className={buttonStyle+' border border-white bg-white text-[#1A6F96] hover:bg-sky-50 disabled:opacity-50'}><Check size={12}/>Confirmar e finalizar</button>
      <button type="button" onClick={()=>window.print()} className="flex h-8 items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"><Printer size={12}/>Imprimir</button>
      <button type="button" onClick={novoPedido} className="flex h-8 items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"><XCircle size={12}/>Cancelar</button>
     </div>
    </div>
 
-   <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-    <section className="min-w-0 md:col-span-2 bg-white border border-slate-300 rounded-[2px] p-5 shadow-sm space-y-6">
-     <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Dados do Cliente</h3>
-     <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-      <Field label="Localizar por" width="100%"><select value={clienteModo} onChange={e=>{const m=e.target.value as 'Código'|'CNPJ';setClienteModo(m);setEdCodigoCliente('');setValidationField(null)}} className={inputStyle}><option>Código</option><option>CNPJ</option></select></Field>
+   <div className="grid min-w-0 grid-cols-1 items-stretch gap-2.5 lg:grid-cols-12">
+    <section className="min-w-0 lg:col-span-4 rounded-[2px] border border-slate-300 bg-white p-3 shadow-sm">
+     <h3 className="mb-2 border-b border-slate-200 pb-1 text-[10px] font-bold uppercase tracking-wider text-[#2D8DB8]">Dados do Cliente</h3>
+     <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
+      <Field label="Localizar por"><select value={clienteModo} onChange={e=>{const m=e.target.value as 'Código'|'CNPJ';setClienteModo(m);setEdCodigoCliente('');setValidationField(null)}} className={inputStyle}><option>Código</option><option>CNPJ</option></select></Field>
       <Field label="Código / CNPJ" required><div className="flex gap-1"><input id="edCodigoCliente" ref={clienteRef} value={clienteModo==='CNPJ'?maskCnpj(edCodigoCliente):edCodigoCliente} onChange={e=>{setEdCodigoCliente(clienteModo==='CNPJ'?digits(e.target.value):e.target.value);setValidationField(null);setError('')}} onBlur={e=>{if(!e.target.value.trim()){setValidationField('cliente');return}void clienteBusca(e.target.value)}} placeholder={validationField==='cliente'?'Preencher...':undefined} className={validationField==='cliente'?inputStyle+' border-red-500 bg-red-50 placeholder:text-red-400':inputStyle}/><button type="button" aria-label="Consultar clientes" onClick={()=>{setBusca('');setConsulta('cliente')}} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[2px] border border-slate-300 bg-slate-50 text-xs font-semibold text-slate-600 hover:bg-slate-100"><Search size={12}/></button></div></Field>
-      <div className="md:col-span-2"><Field label="Cliente / Razão Social" required><input id="edNomeCliente" title={edNomeCliente} value={edNomeCliente} readOnly onBlur={e=>{if(!e.target.value.trim())setValidationField('cliente')}} placeholder={validationField==='cliente'?'Selecione um cliente cadastrado': 'Selecione um cliente cadastrado'} className={validationField==='cliente'?inputStyle+' border-red-500 bg-red-50 placeholder:text-red-400':inputStyle}/></Field></div>
-      <div className="md:col-span-2"><Field label="CNPJ / CPF"><input value={cliente?.documento??''} readOnly className={inputStyle}/></Field></div>
+      <div className="min-w-0 sm:col-span-2"><Field label="Cliente / Razão Social" required><input id="edNomeCliente" title={edNomeCliente} value={edNomeCliente} readOnly onBlur={e=>{if(!e.target.value.trim())setValidationField('cliente')}} placeholder={validationField==='cliente'?'Selecione um cliente cadastrado': 'Selecione um cliente cadastrado'} className={validationField==='cliente'?inputStyle+' border-red-500 bg-red-50 placeholder:text-red-400':inputStyle}/></Field></div>
+      <div className="min-w-0 sm:col-span-2"><Field label="CNPJ / CPF"><input value={cliente?.documento??''} readOnly className={inputStyle}/></Field></div>
      </div>
     </section>
 
-    <section className="min-w-0 md:col-span-2 bg-white border border-slate-300 rounded-[2px] p-5 shadow-sm space-y-6">
-     <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Dados do Pedido</h3>
-     <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+    <section className="min-w-0 lg:col-span-4 rounded-[2px] border border-slate-300 bg-white p-3 shadow-sm">
+     <h3 className="mb-2 border-b border-slate-200 pb-1 text-[10px] font-bold uppercase tracking-wider text-[#2D8DB8]">Dados do Pedido</h3>
+     <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
       <Field label="Nº do Pedido"><input id="edPedido" value={edPedido} readOnly className={inputStyle+' bg-slate-100 font-semibold text-slate-600'}/></Field>
       <Field label="Data do Pedido" required><input id="edDataEntrada" type="date" value={edDataEntrada} onChange={e=>setEdDataEntrada(e.target.value)} className={inputStyle}/></Field>
       <Field label="Condição de Pagamento" required><input id="edCondicaoPagamento" value={edCondicaoPagamento} onChange={e=>{setEdCondicaoPagamento(e.target.value);setValidationField(null)}} onBlur={e=>{if(!e.target.value.trim())setValidationField('condicao')}} className={validationField==='condicao'?inputStyle+' border-red-500 bg-red-50':inputStyle}/></Field>
       <Field label="Forma de Pagamento" required><input id="edFormaPagto" value={edFormaPagto} onChange={e=>{setEdFormaPagto(e.target.value);setValidationField(null)}} onBlur={e=>{if(!e.target.value.trim())setValidationField('formaPagto')}} className={validationField==='formaPagto'?inputStyle+' border-red-500 bg-red-50':inputStyle}/></Field>
       <Field label="CFOP" required><input id="edCfop" maxLength={4} value={edCfop} onChange={e=>{setEdCfop(e.target.value.replace(/\D/g,'').slice(0,4));setValidationField(null)}} onBlur={e=>{if(!e.target.value.trim())setValidationField('cfop')}} className={validationField==='cfop'?inputStyle+' border-red-500 bg-red-50':inputStyle}/></Field>
       <Field label="Origem do Pedido" required><select id="edOrigem" value={edOrigem} onChange={e=>{setEdOrigem(e.target.value);setValidationField(null)}} onBlur={e=>{if(!e.target.value)setValidationField('origem')}} className={validationField==='origem'?inputStyle+' border-red-500 bg-red-50':inputStyle}><option value="">Selecione...</option><option>E-mail</option><option>WhatsApp</option><option>Telefone</option><option>Representante</option></select></Field>
-      <div className="md:col-span-2"><Field label="Vendedor responsável" required><select id="edVendedor" value={vendedorNome} disabled={vendedorAutenticado} onChange={e=>{setVendedorNome(e.target.value);setValidationField(null)}} onBlur={e=>{if(!e.target.value.trim())setValidationField('vendedor')}} className={validationField==='vendedor'?inputStyle+' border-red-500 bg-red-50':inputStyle}><option value="">Selecione o vendedor responsável</option>{vendedores.map(v=><option key={v.id} value={v.nome}>{v.nome}</option>)}</select></Field></div>
+      <div className="min-w-0 sm:col-span-2"><Field label="Vendedor responsável" required><select id="edVendedor" value={vendedorNome} disabled={vendedorAutenticado} onChange={e=>{setVendedorNome(e.target.value);setValidationField(null)}} onBlur={e=>{if(!e.target.value.trim())setValidationField('vendedor')}} className={validationField==='vendedor'?inputStyle+' border-red-500 bg-red-50':inputStyle}><option value="">Selecione o vendedor responsável</option>{vendedores.map(v=><option key={v.id} value={v.nome}>{v.nome}</option>)}</select></Field></div>
      </div>
     </section>
 
-    <section className="min-w-0 md:col-span-4 bg-white border border-slate-300 rounded-[2px] p-5 shadow-sm space-y-6">
-     <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Entrega e Logística</h3>
-     <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+    <section className="min-w-0 lg:col-span-4 rounded-[2px] border border-slate-300 bg-white p-3 shadow-sm">
+     <h3 className="mb-2 border-b border-slate-200 pb-1 text-[10px] font-bold uppercase tracking-wider text-[#2D8DB8]">Entrega e Logística</h3>
+     <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
       <Field label="Previsão de Entrega" required><input id="edDataEntrega" type="date" value={edDataEntrega} onChange={e=>{setEdDataEntrega(e.target.value);setValidationField(null)}} onBlur={e=>{if(!e.target.value)setValidationField('dataEntrega')}} className={validationField==='dataEntrega'?inputStyle+' border-red-500 bg-red-50':inputStyle}/></Field>
       <Field label="Tipo de Frete" required><select id="edFreteTipo" value={edFreteTipo} onChange={e=>{setEdFreteTipo(e.target.value);setValidationField(null)}} onBlur={e=>{if(!e.target.value)setValidationField('frete')}} className={validationField==='frete'?inputStyle+' border-red-500 bg-red-50':inputStyle}><option value="">Selecione...</option><option value="CIF">CIF</option><option value="FOB">FOB</option></select></Field>
-      <div className="md:col-span-2"><Field label="Transportadora"><div className="flex gap-1"><select id="edTransportadora" value={transportadora} onChange={e=>setTransportadora(e.target.value)} className={inputStyle}><option value="">Selecione uma transportadora</option>{transportadoras.map(t=><option key={t.id} value={t.codigo}>{t.codigo} — {t.razao_social}</option>)}</select><button type="button" aria-label="Consultar transportadoras" onClick={()=>{setBusca(transportadora);setConsulta('transportadora')}} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[2px] border border-slate-300 bg-slate-50 text-xs font-semibold text-slate-600 hover:bg-slate-100"><Search size={12}/></button></div></Field></div>
+      <div className="min-w-0 sm:col-span-2"><Field label="Transportadora"><div className="flex gap-1"><select id="edTransportadora" value={transportadora} onChange={e=>setTransportadora(e.target.value)} className={inputStyle}><option value="">Selecione uma transportadora</option>{transportadoras.map(t=><option key={t.id} value={t.codigo}>{t.codigo} — {t.razao_social}</option>)}</select><button type="button" aria-label="Consultar transportadoras" onClick={()=>{setBusca(transportadora);setConsulta('transportadora')}} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[2px] border border-slate-300 bg-slate-50 text-xs font-semibold text-slate-600 hover:bg-slate-100"><Search size={12}/></button></div></Field></div>
      </div>
     </section>
    </div>
 
-   <section className="md:col-span-4 bg-white border border-slate-300 rounded-[2px] p-5 shadow-sm space-y-6">
-    <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Itens do Pedido</h3>
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-4 md:items-end">
-     <Field label="Código do Produto" width="100%" required><div className="flex gap-1"><input id="edCodigoInterno" ref={produtoRef} value={edCodigoInterno} onChange={e=>{setEdCodigoInterno(e.target.value);setValidationField(null);setError('')}} onBlur={e=>{if(!e.target.value.trim()){setValidationField('produto');return}void produtoBusca(e.target.value)}} placeholder={validationField==='produto'?'Preencher...':'Código / SKU'} className={validationField==='produto'?inputStyle+' border-red-500 bg-red-50 placeholder:text-red-400':inputStyle}/><button type="button" aria-label="Consultar produtos" onClick={()=>{setBusca('');setConsulta('produto')}} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[2px] border border-slate-300 bg-slate-50 text-xs font-semibold text-slate-600 hover:bg-slate-100"><Search size={12}/></button></div></Field>
-     <div className="md:col-span-2"><Field label="Descrição do Produto" width="100%"><input id="edDescricaoProduto" value={edDescricaoProduto} readOnly className={inputStyle+' bg-slate-50'}/></Field></div>
-     <Field label="Quantidade" width="100%" required><input id="edQuantidade" type="number" min="0.0001" step="any" value={edQuantidade} onChange={e=>{setEdQuantidade(e.target.value);setValidationField(null);setError('')}} onBlur={e=>{if(n(e.target.value)<=0)setValidationField('quantidade')}} className={validationField==='quantidade'?inputStyle+' border-red-500 bg-red-50':inputStyle}/></Field>
-     <Field label="Un." width="100%"><select id="edUnidade" value={edUnidade} onChange={e=>setEdUnidade(e.target.value)} className={inputStyle}><option>MT</option><option>PÇ</option><option>LT</option><option>MM</option><option>UN</option></select></Field>
-     <Field label="Preço Unitário" width="100%"><input id="edValorUnitario" type="number" min="0" step="0.0001" value={edValorUnitario} onChange={e=>setEdValorUnitario(e.target.value)} className={inputStyle}/></Field>
-     <Field label="Desconto %" width="100%"><input id="edDescontoPercentual" type="number" min="0" max="100" step="0.01" value={edDescontoPercentual} onChange={e=>setEdDescontoPercentual(e.target.value)} className={inputStyle}/></Field>
+   <section className="md:col-span-4 bg-white border border-slate-300 rounded-[2px] p-3 shadow-sm space-y-3">
+    <h3 className="mb-2 border-b border-slate-200 pb-1 text-[10px] font-bold uppercase tracking-wider text-[#2D8DB8]">Itens do Pedido</h3>
+    <div className="grid min-w-0 grid-cols-1 items-end gap-2 sm:grid-cols-2 xl:grid-cols-4">
+     <Field label="Código do Produto" required><div className="flex gap-1"><input id="edCodigoInterno" ref={produtoRef} value={edCodigoInterno} onChange={e=>{setEdCodigoInterno(e.target.value);setValidationField(null);setError('')}} onBlur={e=>{if(!e.target.value.trim()){setValidationField('produto');return}void produtoBusca(e.target.value)}} placeholder={validationField==='produto'?'Preencher...':'Código / SKU'} className={validationField==='produto'?inputStyle+' border-red-500 bg-red-50 placeholder:text-red-400':inputStyle}/><button type="button" aria-label="Consultar produtos" onClick={()=>{setBusca('');setConsulta('produto')}} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[2px] border border-slate-300 bg-slate-50 text-xs font-semibold text-slate-600 hover:bg-slate-100"><Search size={12}/></button></div></Field>
+     <div className="min-w-0 sm:col-span-2"><Field label="Descrição do Produto"><input id="edDescricaoProduto" value={edDescricaoProduto} readOnly className={inputStyle+' bg-slate-50'}/></Field></div>
+     <Field label="Quantidade" required><input id="edQuantidade" type="number" min="0.0001" step="any" value={edQuantidade} onChange={e=>{setEdQuantidade(e.target.value);setValidationField(null);setError('')}} onBlur={e=>{if(n(e.target.value)<=0)setValidationField('quantidade')}} className={validationField==='quantidade'?inputStyle+' border-red-500 bg-red-50':inputStyle}/></Field>
+     <Field label="Un."><select id="edUnidade" value={edUnidade} onChange={e=>setEdUnidade(e.target.value)} className={inputStyle}><option>MT</option><option>PÇ</option><option>LT</option><option>MM</option><option>UN</option></select></Field>
+     <Field label="Preço Unitário"><input id="edValorUnitario" type="number" min="0" step="0.0001" value={edValorUnitario} onChange={e=>setEdValorUnitario(e.target.value)} className={inputStyle}/></Field>
+     <Field label="Desconto %"><input id="edDescontoPercentual" type="number" min="0" max="100" step="0.01" value={edDescontoPercentual} onChange={e=>setEdDescontoPercentual(e.target.value)} className={inputStyle}/></Field>
      <button id="btnAdicionarItem" title={editingItem===null?"Adicionar item":"Atualizar item selecionado"} type="button" onClick={()=>void add()} className="flex h-8 items-center justify-center gap-1 rounded-[2px] border border-blue-700 bg-blue-600 px-3 text-xs font-semibold text-white hover:bg-blue-700"><Plus size={12}/>{editingItem===null?"Adicionar item":"Atualizar item"}</button>
     </div>
     <div id="gridItens" className="max-h-[420px] min-h-[180px] overflow-auto border-t border-slate-200">
@@ -148,16 +148,16 @@ export default function NovoPedido(){
     <div className="flex items-center justify-end border-t border-slate-200 bg-slate-50 px-2 py-1.5"><span className="text-[10px] text-slate-500">{gridItens.length} {gridItens.length===1?'item':'itens'} no pedido</span></div>
    </section>
 
-   <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-    <section className="md:col-span-2 bg-white border border-slate-300 rounded-[2px] p-5 shadow-sm space-y-6">
-     <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Informações Adicionais</h3>
+   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+    <section className="min-w-0 lg:col-span-6 rounded-[2px] border border-slate-300 bg-white p-3 shadow-sm">
+     <h3 className="mb-2 border-b border-slate-200 pb-1 text-[10px] font-bold uppercase tracking-wider text-[#2D8DB8]">Informações Adicionais</h3>
      <div className="space-y-2"><Field label="Preço de custo industrial do item selecionado"><input value={selectedItem===null?'':brl(gridItens[selectedItem]?.preco_custo_industrial??0)} readOnly className={inputStyle+' bg-slate-50'}/></Field><p className="mt-1 text-[9px] text-slate-500">Margem apresentada na grade é calculada com base no custo industrial retornado pelo ERP.</p></div>
     </section>
-    <section className="md:col-span-2 bg-white border border-slate-300 rounded-[2px] p-5 shadow-sm space-y-6">
-     <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Resumo do Pedido</h3>
+    <section className="min-w-0 lg:col-span-6 rounded-[2px] border border-slate-300 bg-white p-3 shadow-sm">
+     <h3 className="mb-2 border-b border-slate-200 pb-1 text-[10px] font-bold uppercase tracking-wider text-[#2D8DB8]">Resumo do Pedido</h3>
      <div className="space-y-4">
       <div className="flex items-center justify-between text-[10px] text-slate-600"><span>Subtotal dos itens</span><span className="tabular-nums">{brl(subtotal)}</span></div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4"><div className="md:col-span-2"><Field label="Frete (R$)"><input value={frete} onChange={e=>setFrete(e.target.value)} className={inputStyle}/></Field></div><div className="md:col-span-2"><Field label="Outras despesas (R$)"><input value={outras} onChange={e=>setOutras(e.target.value)} className={inputStyle}/></Field></div></div>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2"><div className="min-w-0 sm:col-span-2"><Field label="Frete (R$)"><input value={frete} onChange={e=>setFrete(e.target.value)} className={inputStyle}/></Field></div><div className="min-w-0 sm:col-span-2"><Field label="Outras despesas (R$)"><input value={outras} onChange={e=>setOutras(e.target.value)} className={inputStyle}/></Field></div></div>
       <div className="flex items-center justify-between border-t border-slate-200 pt-2 text-[13px] font-semibold text-blue-800"><span>Total Líquido</span><span className="tabular-nums">{brl(total)}</span></div>
      </div>
     </section>
