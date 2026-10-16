@@ -8,7 +8,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  ArrowRight,
   CalendarClock,
   CheckCircle2,
   CircleAlert,
