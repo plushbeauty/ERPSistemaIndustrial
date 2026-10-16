@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
-  Activity, ArrowRight, BarChart3, Building2, ChevronDown, DatabaseBackup,
-  FileClock, KeyRound, LayoutDashboard, LockKeyhole, Menu, Network, Search,
-  Settings, ShieldCheck, SlidersHorizontal, UsersRound, X,
+  Activity, ArrowRight, BarChart3, Building2, DatabaseBackup,
+  FileClock, KeyRound, LayoutDashboard, LockKeyhole, Network, Search,
+  Settings, ShieldCheck, UsersRound,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
@@ -134,41 +134,33 @@ export default function ConfiguracoesADM() {
   const location = useLocation()
   const navigate = useNavigate()
   const current = useMemo(() => allItems.find(item => item.path === location.pathname) ?? allItems[0], [location.pathname])
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => Object.fromEntries(groups.map(group => [group.label, true])))
   const [query, setQuery] = useState('')
-  const filteredGroups = groups.map(group => ({
+  const filteredGroups = useMemo(() => groups.map(group => ({
     ...group,
     items: group.items.filter(item => !query || `${item.label} ${item.description} ${group.label}`.toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR'))),
-  })).filter(group => group.items.length)
-
-  const go = (path: string) => { navigate(path); setMobileOpen(false) }
+  })).filter(group => group.items.length), [query])
+  const go = (path: string) => navigate(path)
 
   return <div className="adm-root">
     <header className="adm-topbar">
-      <button type="button" className="adm-menu-button" onClick={() => setMobileOpen(value => !value)} aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'}>{mobileOpen ? <X size={17} /> : <Menu size={17} />}</button>
       <div className="adm-brand"><span>SYNQRA ERP · ADMINISTRAÇÃO</span><strong>Configurações do sistema</strong></div>
-      <label className="adm-search"><Search size={14} /><input value={query} onChange={event => setQuery(event.target.value)} maxLength={60} placeholder="Pesquisar item de configuração" /></label>
+      <label className="adm-search"><Search size={14} /><input aria-label="Pesquisar configurações" value={query} onChange={event => setQuery(event.target.value)} maxLength={60} placeholder="Pesquisar configuração..." /></label>
       <span className="adm-scope"><Activity size={13} /> CONTROLE ADMINISTRATIVO</span>
     </header>
 
-    {mobileOpen && <button className="adm-overlay" type="button" onClick={() => setMobileOpen(false)} aria-label="Fechar navegação" />}
-    <aside className={`adm-sidebar ${mobileOpen ? 'is-open' : ''}`}>
-      <div className="adm-sidebar-heading"><span><SlidersHorizontal size={15} /></span><div><strong>ADMINISTRAÇÃO</strong><small>Configuração e governança</small></div></div>
-      <nav aria-label="Navegação das configurações">
-        {filteredGroups.map(group => <section className="adm-nav-group" key={group.label}>
-          <button type="button" className="adm-group-toggle" onClick={() => setOpenGroups(state => ({ ...state, [group.label]: !state[group.label] }))}>{group.label}<ChevronDown size={13} className={openGroups[group.label] ? '' : 'is-collapsed'} /></button>
-          {openGroups[group.label] && <div className="adm-nav-items">{group.items.map(item => {
-            const Icon = item.icon
-            const active = current.path === item.path
-            return <Link key={item.path} to={item.path} onClick={() => setMobileOpen(false)} aria-current={active ? 'page' : undefined} className={`adm-nav-link ${active ? 'is-active' : ''}`}>
-              <Icon size={14} /><span><strong>{item.label}</strong><small>{item.description}</small></span><ArrowRight size={12} className="adm-nav-arrow" />
-            </Link>
-          })}</div>}
-        </section>)}
-      </nav>
-      <div className="adm-sidebar-foot"><ShieldCheck size={14} /><span>O banco e as policies RLS são a autoridade final de acesso.</span></div>
-    </aside>
+    <nav className="adm-navigation" aria-label="Navegação horizontal das configurações">
+      {filteredGroups.map(group => <section className="adm-nav-group" key={group.label}>
+        <div className="adm-group-title">{group.label}</div>
+        <div className="adm-nav-items">{group.items.map(item => {
+          const Icon = item.icon
+          const active = current.path === item.path
+          return <button key={item.path} type="button" onClick={() => go(item.path)} aria-current={active ? 'page' : undefined} className={`adm-nav-link ${active ? 'is-active' : ''}`}>
+            <Icon size={13} /><span>{item.label}</span>
+          </button>
+        })}</div>
+      </section>)}
+      {!filteredGroups.length && <p className="adm-no-results">Nenhuma configuração corresponde à pesquisa.</p>}
+    </nav>
 
     <main className="adm-main">
       <div className="adm-page-heading"><div><div className="adm-breadcrumb">ERP INDUSTRIAL / CONFIGURAÇÕES / <strong>{current.label.toLocaleUpperCase('pt-BR')}</strong></div><h1>{current.label}</h1><p>{current.description}</p></div><button type="button" className="adm-back-button" onClick={() => go('/erp-industrial')}>VOLTAR AO ERP</button></div>
@@ -179,30 +171,37 @@ export default function ConfiguracoesADM() {
     <style>{`
       .adm-root{min-height:calc(100vh - 48px);background:#F4FBFD;color:#334155;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:11px}
       .adm-root *{box-sizing:border-box}
-      .adm-topbar{height:48px;position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:0 12px;background:#fff;border-bottom:1px solid #CFE1E7}
+      .adm-topbar{min-height:48px;position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:12px;padding:7px 12px;background:#fff;border-bottom:1px solid #CFE1E7}
       .adm-brand{display:flex;flex-direction:column;gap:2px;min-width:180px;flex:1}
       .adm-brand span{font-size:9px;line-height:1.2;letter-spacing:.1em;font-weight:800;color:#2D8DB8}
       .adm-brand strong{font-size:13px;line-height:1.2;color:#123B50;font-weight:800}
       .adm-search{height:30px;width:min(310px,30vw);display:flex;align-items:center;gap:6px;padding:0 8px;border:1px solid #CFE1E7;border-radius:2px;background:#F8FCFD;color:#64748B}
       .adm-search input{width:100%;min-width:0;height:28px;border:0;outline:0;background:transparent;font-size:10px;color:#123B50}
       .adm-scope{display:flex;align-items:center;gap:5px;color:#17445A;font-size:9px;font-weight:800;white-space:nowrap}
-      .adm-menu-button{display:none;width:30px;height:30px;align-items:center;justify-content:center;border:1px solid #CFE1E7;border-radius:2px;background:#fff;color:#123B50}
-      .adm-sidebar{position:fixed;z-index:50;top:48px;bottom:0;left:0;width:236px;display:flex;flex-direction:column;overflow-y:auto;background:#fff;border-right:1px solid #CFE1E7}
-      .adm-sidebar-heading{display:flex;align-items:center;gap:8px;padding:12px;border-bottom:1px solid #CFE1E7}
-      .adm-sidebar-heading>span{width:28px;height:28px;display:grid;place-items:center;background:#123B50;color:#fff;border-radius:2px}
-      .adm-sidebar-heading div{display:flex;flex-direction:column;gap:3px}.adm-sidebar-heading strong{font-size:10px;letter-spacing:.04em;color:#123B50}.adm-sidebar-heading small{font-size:9px;color:#64748B}
-      .adm-sidebar nav{padding:8px;flex:1}.adm-nav-group{margin-bottom:9px}.adm-group-toggle{width:100%;height:25px;display:flex;align-items:center;justify-content:space-between;padding:0 5px;border:0;background:transparent;color:#64748B;font-size:9px;font-weight:800;letter-spacing:.08em;text-align:left}.adm-group-toggle svg{transition:transform .12s}.adm-group-toggle svg.is-collapsed{transform:rotate(-90deg)}
-      .adm-nav-items{display:flex;flex-direction:column;gap:2px}.adm-nav-link{min-height:35px;display:flex;align-items:center;gap:7px;padding:5px 6px;border:1px solid transparent;border-radius:2px;text-decoration:none;color:#475569}.adm-nav-link>svg:first-child{flex-shrink:0;color:#64748B}.adm-nav-link span{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}.adm-nav-link strong{font-size:10px;font-weight:700;line-height:1.2}.adm-nav-link small{font-size:9px;line-height:1.25;color:#64748B}.adm-nav-link.is-active{background:#EAF7FA;border-color:#C8E1E8;color:#123B50}.adm-nav-link.is-active>svg:first-child{color:#2D8DB8}.adm-nav-arrow{opacity:.35}.adm-nav-link.is-active .adm-nav-arrow{opacity:1;color:#2D8DB8}
-      .adm-sidebar-foot{display:flex;align-items:flex-start;gap:6px;margin:8px;padding:8px;border:1px solid #CFE1E7;background:#F4FBFD;color:#526A75;font-size:9px;line-height:1.4}.adm-sidebar-foot svg{flex-shrink:0;color:#2D8DB8}
-      .adm-main{min-width:0;margin-left:236px;padding:12px;max-width:1800px}.adm-page-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #CFE1E7}.adm-breadcrumb{font-size:9px;color:#64748B;letter-spacing:.03em}.adm-breadcrumb strong{color:#176487}.adm-page-heading h1{margin:5px 0 0;font-size:17px;line-height:1.2;font-weight:800;color:#123B50}.adm-page-heading p{margin:4px 0 0;color:#64748B;font-size:10px}.adm-back-button{height:30px;padding:0 9px;border:1px solid #CFE1E7;border-radius:2px;background:#fff;color:#123B50;font-size:9px;font-weight:800;white-space:nowrap}
-      .adm-overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,225px),1fr));gap:7px}.adm-overview-item{min-height:62px;display:flex;align-items:center;gap:8px;padding:8px;border:1px solid #CFE1E7;border-radius:2px;background:#fff;text-align:left;cursor:pointer;color:#123B50}.adm-overview-item:hover{border-color:#2D8DB8;background:#F4FBFD}.adm-overview-icon{width:27px;height:27px;flex-shrink:0;display:grid;place-items:center;background:#E2F3F7;color:#176487;border-radius:2px}.adm-overview-copy{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}.adm-overview-copy strong{font-size:10px;font-weight:800}.adm-overview-copy small{font-size:9px;line-height:1.35;color:#64748B}.adm-overview-arrow{flex-shrink:0;color:#94A3B8}
-      .adm-notice{padding:10px;border:1px solid #E8D6AD;border-left:3px solid #E6A34A;background:#FFFDF5;color:#526273;line-height:1.5;font-size:10px}.adm-notice p{margin:4px 0 0}.adm-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.adm-actions a{display:inline-flex;align-items:center;min-height:30px;padding:0 8px;border:1px solid #CFE1E7;border-radius:2px;background:#fff;color:#123B50;text-decoration:none;font-size:9px;font-weight:800}.adm-error{padding:8px;border:1px solid #F1B8B8;background:#FFF1F1;color:#A52727;font-size:10px}
+      .adm-navigation{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:8px 12px;background:#EAF5F8;border-bottom:1px solid #CFE1E7}
+      .adm-nav-group{min-width:0;padding:7px;border:1px solid #CFE1E7;background:#fff}
+      .adm-group-title{margin:0 0 6px;color:#607987;font-size:9px;font-weight:800;letter-spacing:.07em}
+      .adm-nav-items{display:flex;flex-wrap:wrap;gap:4px}
+      .adm-nav-link{min-height:28px;display:inline-flex;align-items:center;gap:5px;padding:0 7px;border:1px solid #D8E7EC;border-radius:2px;background:#fff;color:#334155;font-size:9px;font-weight:700;text-align:left;cursor:pointer}
+      .adm-nav-link svg{flex-shrink:0;color:#2D8DB8}.adm-nav-link:hover{border-color:#2D8DB8;background:#F4FBFD}.adm-nav-link.is-active{border-color:#2D8DB8;background:#123B50;color:#fff}.adm-nav-link.is-active svg{color:#fff}
+      .adm-no-results{grid-column:1/-1;margin:0;padding:8px;color:#64748B}
+      .adm-main{min-width:0;margin:0 auto;padding:12px;max-width:1800px}
+      .adm-page-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #CFE1E7}
+      .adm-breadcrumb{font-size:9px;color:#64748B;letter-spacing:.03em}.adm-breadcrumb strong{color:#176487}
+      .adm-page-heading h1{margin:5px 0 0;font-size:17px;line-height:1.2;font-weight:800;color:#123B50}.adm-page-heading p{margin:4px 0 0;color:#64748B;font-size:10px}
+      .adm-back-button{height:30px;padding:0 9px;border:1px solid #CFE1E7;border-radius:2px;background:#fff;color:#123B50;font-size:9px;font-weight:800;white-space:nowrap;cursor:pointer}
+      .adm-overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,225px),1fr));gap:7px}
+      .adm-overview-item{min-height:62px;display:flex;align-items:center;gap:8px;padding:8px;border:1px solid #CFE1E7;border-radius:2px;background:#fff;text-align:left;cursor:pointer;color:#123B50}
+      .adm-overview-item:hover{border-color:#2D8DB8;background:#F4FBFD}.adm-overview-icon{width:27px;height:27px;flex-shrink:0;display:grid;place-items:center;background:#E2F3F7;color:#176487;border-radius:2px}
+      .adm-overview-copy{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}.adm-overview-copy strong{font-size:10px;font-weight:800}.adm-overview-copy small{font-size:9px;line-height:1.35;color:#64748B}.adm-overview-arrow{flex-shrink:0;color:#94A3B8}
+      .adm-notice{padding:10px;border:1px solid #E8D6AD;border-left:3px solid #E6A34A;background:#FFFDF5;color:#526273;line-height:1.5;font-size:10px}.adm-notice p{margin:4px 0 0}
+      .adm-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.adm-actions a{display:inline-flex;align-items:center;min-height:30px;padding:0 8px;border:1px solid #CFE1E7;border-radius:2px;background:#fff;color:#123B50;text-decoration:none;font-size:9px;font-weight:800}
+      .adm-error{padding:8px;border:1px solid #F1B8B8;background:#FFF1F1;color:#A52727;font-size:10px}
       .adm-footer{padding:10px 0 4px;text-align:center;color:#94A3B8;font-size:9px;border-top:1px solid #CFE1E7;margin-top:12px}
       .adm-root input:not([type=checkbox]):not([type=radio]):not([type=file]),.adm-root select{max-width:100%;border-radius:2px}.adm-root table{font-size:10px}.adm-root thead th{font-size:9px}
-      .adm-overlay{display:none}
-      @media(max-width:900px){.adm-scope{display:none}.adm-search{width:min(300px,38vw)}}
-      @media(max-width:767px){.adm-menu-button{display:inline-flex}.adm-brand{min-width:0}.adm-brand strong{font-size:12px}.adm-search{width:min(220px,42vw)}.adm-sidebar{transform:translateX(-102%);transition:transform .18s ease}.adm-sidebar.is-open{transform:translateX(0)}.adm-overlay{display:block;position:fixed;inset:48px 0 0;z-index:45;border:0;background:rgba(18,59,80,.35)}.adm-main{margin-left:0;padding:8px}.adm-page-heading{align-items:flex-start}.adm-back-button{font-size:8px}.adm-overview-grid{grid-template-columns:1fr}}
-      @media(max-width:430px){.adm-brand span{font-size:8px}.adm-brand strong{font-size:11px}.adm-search{width:36vw;padding:0 5px}.adm-search input{font-size:9px}.adm-search input::placeholder{color:transparent}.adm-page-heading h1{font-size:15px}}
+      @media(max-width:1100px){.adm-navigation{grid-template-columns:repeat(2,minmax(0,1fr))}.adm-scope{display:none}}
+      @media(max-width:700px){.adm-topbar{flex-wrap:wrap}.adm-brand{min-width:0}.adm-brand strong{font-size:12px}.adm-search{width:min(300px,48vw)}.adm-navigation{grid-template-columns:1fr;padding:7px}.adm-main{padding:8px}.adm-page-heading{align-items:flex-start}.adm-back-button{font-size:8px}.adm-overview-grid{grid-template-columns:1fr}}
+      @media(max-width:430px){.adm-brand span{font-size:8px}.adm-brand strong{font-size:11px}.adm-search{width:100%}.adm-page-heading h1{font-size:15px}}
     `}</style>
   </div>
 }
