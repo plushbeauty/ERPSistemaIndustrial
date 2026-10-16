@@ -1,3 +1,9 @@
+/*
+ * DATA_REVISAO_APROVACAO: 2026-10-16
+ * REVISAO_APROVACAO: APROV-001
+ * STATUS_APROVACAO: APROVADO-IMUTAVEL
+ * REGRA: preservar o layout aprovado do login; mudanças exigem autorização explícita do usuário.
+ */
 :root{--auth-ink:#123B50;--auth-muted:#607889;--auth-line:#d7e7ec;--auth-accent:#2D8DB8;--auth-accent-2:#48B7C7;--auth-bg:#F4FBFD;--auth-success:#3A9D78}
 .auth-screen{min-height:100dvh;width:100%;display:grid;grid-template-columns:minmax(0,1.08fr) minmax(440px,560px);background:var(--auth-bg);overflow:hidden;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .auth-visual{position:relative;min-width:0;overflow:hidden;background:#f4f5f2}
