@@ -9,6 +9,7 @@ type FiscalRule = {
   cfop: string | null
   regime_empresa: string | null
   uf_destino: string | null
+  tipo_operacao: string | null
   icms_aliquota: number
   cst_csosn_icms: string | null
   ipi_aliquota: number
@@ -25,6 +26,7 @@ type RuleForm = {
   cfop: string
   regime_empresa: string
   uf_destino: string
+  tipo_operacao: string
   icms_aliquota: string
   cst_csosn_icms: string
   ipi_aliquota: string
@@ -36,7 +38,7 @@ type RuleForm = {
 }
 
 const emptyForm: RuleForm = {
-  ncm: '', cfop: '', regime_empresa: '', uf_destino: '',
+  ncm: '', cfop: '', regime_empresa: '', uf_destino: '', tipo_operacao: 'AMBAS',
   icms_aliquota: '', cst_csosn_icms: '', ipi_aliquota: '', cst_ipi: '',
   pis_aliquota: '', pis_cst: '', cofins_aliquota: '', cofins_cst: '',
 }
@@ -46,6 +48,7 @@ const asForm = (rule: FiscalRule): RuleForm => ({
   cfop: rule.cfop ?? '',
   regime_empresa: rule.regime_empresa ?? '',
   uf_destino: rule.uf_destino ?? '',
+  tipo_operacao: rule.tipo_operacao ?? 'AMBAS',
   icms_aliquota: String(rule.icms_aliquota),
   cst_csosn_icms: rule.cst_csosn_icms ?? '',
   ipi_aliquota: String(rule.ipi_aliquota),
@@ -56,7 +59,7 @@ const asForm = (rule: FiscalRule): RuleForm => ({
   cofins_cst: rule.cofins_cst ?? '',
 })
 
-const rulesColumns = 'id,ncm,cfop,regime_empresa,uf_destino,icms_aliquota,cst_csosn_icms,ipi_aliquota,cst_ipi,pis_aliquota,pis_cst,cofins_aliquota,cofins_cst,ativo'
+const rulesColumns = 'id,ncm,cfop,regime_empresa,uf_destino,tipo_operacao,icms_aliquota,cst_csosn_icms,ipi_aliquota,cst_ipi,pis_aliquota,pis_cst,cofins_aliquota,cofins_cst,ativo'
 
 export default function FiscalImpostos() {
   const [rules, setRules] = useState<FiscalRule[]>([])
@@ -125,6 +128,7 @@ export default function FiscalImpostos() {
         cfop: form.cfop || null,
         regime_empresa: form.regime_empresa || null,
         uf_destino: form.uf_destino.toUpperCase() || null,
+        tipo_operacao: form.tipo_operacao,
         icms_aliquota: Number(form.icms_aliquota),
         cst_csosn_icms: form.cst_csosn_icms.trim(),
         ipi_aliquota: Number(form.ipi_aliquota),
@@ -216,6 +220,9 @@ export default function FiscalImpostos() {
           {field('CFOP (vazio = geral)', 'cfop', { inputMode: 'numeric', maxLength: 4 })}
           {field('Regime tributário', 'regime_empresa')}
           {field('UF destino (vazio = geral)', 'uf_destino', { maxLength: 2 })}
+          <label className="grid gap-1 text-xs font-semibold uppercase text-slate-700">Tipo de operação
+            <select value={form.tipo_operacao} onChange={(event) => setValue('tipo_operacao', event.target.value)} className="h-8 min-h-8 rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]"><option value="AMBAS">Entrada e saída</option><option value="ENTRADA">Entrada</option><option value="SAIDA">Saída</option></select>
+          </label>
           {field('ICMS (%)', 'icms_aliquota', { inputMode: 'decimal' })}
           {field('IPI (%)', 'ipi_aliquota', { inputMode: 'decimal' })}
           {field('PIS (%)', 'pis_aliquota', { inputMode: 'decimal' })}
@@ -229,11 +236,11 @@ export default function FiscalImpostos() {
       </section>
       <section className="overflow-x-auto border border-slate-200 bg-white">
         <table className="w-full min-w-[980px] border-collapse text-left text-sm">
-          <thead className="bg-slate-100 text-xs uppercase text-slate-600"><tr><th className="px-3 py-2">NCM / CFOP</th><th className="px-3 py-2">Regime / UF</th><th className="px-3 py-2">ICMS</th><th className="px-3 py-2">IPI</th><th className="px-3 py-2">PIS</th><th className="px-3 py-2">COFINS</th><th className="px-3 py-2">Ações</th></tr></thead>
+          <thead className="bg-slate-100 text-xs uppercase text-slate-600"><tr><th className="px-3 py-2">NCM / CFOP</th><th className="px-3 py-2">Regime / UF / Operação</th><th className="px-3 py-2">ICMS</th><th className="px-3 py-2">IPI</th><th className="px-3 py-2">PIS</th><th className="px-3 py-2">COFINS</th><th className="px-3 py-2">Ações</th></tr></thead>
           <tbody>
             {loading && <tr><td colSpan={7} className="px-3 py-8 text-center">Carregando regras fiscais…</td></tr>}
             {!loading && rules.map((rule) => <tr key={rule.id} className="border-t border-slate-100">
-              <td className="px-3 py-2 font-mono">{rule.ncm || 'geral'} / {rule.cfop || 'geral'}</td><td className="px-3 py-2">{rule.regime_empresa || 'todos'} / {rule.uf_destino || 'todas'}</td>
+              <td className="px-3 py-2 font-mono">{rule.ncm || 'geral'} / {rule.cfop || 'geral'}</td><td className="px-3 py-2">{rule.regime_empresa || 'todos'} / {rule.uf_destino || 'todas'} / {rule.tipo_operacao || 'AMBAS'}</td>
               <td className="px-3 py-2">{rule.icms_aliquota}% · {rule.cst_csosn_icms || 'sem CST'}</td><td className="px-3 py-2">{rule.ipi_aliquota}% · {rule.cst_ipi || 'sem CST'}</td>
               <td className="px-3 py-2">{rule.pis_aliquota}% · {rule.pis_cst || 'sem CST'}</td><td className="px-3 py-2">{rule.cofins_aliquota}% · {rule.cofins_cst || 'sem CST'}</td>
               <td className="px-3 py-2"><div className="flex gap-2"><button type="button" onClick={() => { setEditingId(rule.id); setForm(asForm(rule)); setError(''); setMessage('') }} className="erp-row-action no-underline">Editar</button><button type="button" disabled={busy} onClick={() => void remove(rule)} className="text-red-700 underline disabled:opacity-50">Excluir</button></div></td>
