@@ -1,3 +1,10 @@
+/**
+ * @DATA_REVISAO: 2026-10-16
+ * @REVISAO: VENDAS-003
+ * @ESCOPO_REVISADO: consulta por empresa, filtros de pedido/status, relacionamento com cliente, tabela e impressão.
+ * @ALTERACOES: área de trabalho e células compactadas; cabeçalho/linhas aproximados de 32px; consulta Supabase e filtros preservados.
+ * @VALIDACAO: revisão estática do arquivo; CI deve validar tipagem, lint, auditorias e build.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { Printer, RefreshCw, Search } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -76,7 +83,7 @@ export default function VendasRelatorios() {
   return (
     <VendasLayout title="Relatórios de Vendas" subtitle="Pedidos, filtros e impressão" onRefresh={()=>void load()}>
       <style>{`@media print { .print-hidden { display:none!important } body { background:white!important } }`}</style>
-      <section className="mx-auto max-w-[1600px] space-y-4 px-4 py-5 lg:px-6">
+      <section className="mx-auto max-w-[1600px] min-w-0 space-y-2 px-3 py-3 lg:px-4">
         <div className="border border-slate-200 bg-white p-4 shadow-sm print-hidden">
           <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
             <label className="grid gap-1 text-[11px] font-medium">
@@ -109,29 +116,29 @@ export default function VendasRelatorios() {
             <table className="w-full min-w-[900px] text-[11px]">
               <thead className="bg-slate-100 text-left text-xs font-medium uppercase text-slate-700">
                 <tr>
-                  <th className="px-4 py-3">Pedido</th>
-                  <th className="px-4 py-3">Pedido cliente / PO</th>
-                  <th className="px-4 py-3">Cliente</th>
-                  <th className="px-4 py-3">Entrada</th>
-                  <th className="px-4 py-3">Entrega</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 text-right">Total</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">Pedido</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">Pedido cliente / PO</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">Cliente</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">Entrada</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">Entrega</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">Status</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase text-right">Total</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map(order => (
                   <tr key={order.id} className="border-t border-slate-200">
-                    <td className="px-4 py-3 font-medium">{String(order.numero).padStart(6, '0')}</td>
-                    <td className="px-4 py-3">{order.pedido_cliente || '—'}</td>
-                    <td className="px-4 py-3 font-semibold">{order.cliente_nome || '—'}</td>
-                    <td className="px-4 py-3">{order.data_entrada ? new Date(order.data_entrada).toLocaleDateString('pt-BR') : '—'}</td>
-                    <td className="px-4 py-3">{order.data_entrega_prometida ? new Date(order.data_entrega_prometida).toLocaleDateString('pt-BR') : '—'}</td>
-                    <td className="px-4 py-3 font-medium">{order.status}</td>
-                    <td className="px-4 py-3 text-right font-medium">{money(order.total)}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px] font-medium">{String(order.numero).padStart(6, '0')}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px]">{order.pedido_cliente || '—'}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px] font-semibold">{order.cliente_nome || '—'}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px]">{order.data_entrada ? new Date(order.data_entrada).toLocaleDateString('pt-BR') : '—'}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px]">{order.data_entrega_prometida ? new Date(order.data_entrega_prometida).toLocaleDateString('pt-BR') : '—'}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px] font-medium">{order.status}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px] text-right font-medium">{money(order.total)}</td>
                   </tr>
                 ))}
                 {!loading && !filtered.length && (
-                  <tr><td colSpan={7} className="px-4 py-12 text-center font-semibold text-slate-500">Nenhum pedido encontrado com os filtros atuais.</td></tr>
+                  <tr><td colSpan={7} className="px-2 py-6 text-center text-[10px] font-semibold text-slate-500">Nenhum pedido encontrado com os filtros atuais.</td></tr>
                 )}
               </tbody>
             </table>
