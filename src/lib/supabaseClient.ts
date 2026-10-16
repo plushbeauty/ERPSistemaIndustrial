@@ -102,7 +102,7 @@ export async function invokeSecureEdgeFunction<T = unknown>(
   try {
     const session = await getValidSession()
     const { data, error } = await supabase.functions.invoke(functionName, {
-      body: payload,
+      body: payload as Record<string, unknown>,
       headers: {
         Authorization: `Bearer ${session.access_token}`,
       },
