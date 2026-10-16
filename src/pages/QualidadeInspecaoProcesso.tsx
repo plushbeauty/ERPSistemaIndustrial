@@ -1,8 +1,14 @@
+/**
+ * ERPSis — QUALIDADE / INSPEÇÃO EM PROCESSO
+ * Data: 2026-10-16 | Revisão: REV-063
+ * Escopo: padronização compacta de campos e ações sem alterar consultas, validações, RPCs ou persistência.
+ */
 import { useEffect, useState } from 'react'
 import { Plus, Printer, Save, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
 import QualitySidebar from '../components/quality/QualitySidebar'
+import { fieldClass as input, labelClass as label } from '../components/industrial/forms/industrialFormStyles'
 
 type Lookup = LookupRecord
 type Machine = { id: string; codigo: string; nome: string; tipo: string | null }
@@ -11,9 +17,6 @@ type Plan = { id: string; codigo: string; caracteristica: string | null; unidade
 type InspectionRow = { id: string; produto_id: string | null; ordem_producao_id: string | null; maquina_id: string | null; tipo: string; resultado: string; quantidade_inspecionada: number; quantidade_aprovada: number; quantidade_reprovada: number; observacao: string | null; inspetor_nome: string | null; medicoes: unknown; acao_bloqueio: string | null }
 
 type Measurement = { caracteristica: string; nominal: string; encontrado: string; unidade: string }
-
-const input = 'h-[54px] w-full rounded-[2px] border border-slate-300 bg-white px-3 text-[11px] font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
-const label = 'grid gap-2 text-sm font-extrabold uppercase tracking-wide text-slate-800'
 
 function validInstrument(item: Instrument): boolean {
   const today = new Date().toISOString().slice(0, 10)
@@ -143,8 +146,8 @@ export default function QualidadeInspecaoProcesso() {
   }
 
   return <main data-quality-workspace className="min-h-screen bg-slate-100 text-slate-900">
-    <header className="border-b border-slate-700 bg-slate-900 px-4 py-3 text-white"><div className="mx-auto flex max-w-[1800px] items-center justify-between gap-3"><div><p className="text-sm font-extrabold uppercase tracking-widest text-sky-300">MÓDULO: QUALIDADE • INSPEÇÃO EM PROCESSO</p><h1 className="text-[15px] font-extrabold">Laudo de Inspeção de Produto</h1><p className="mt-1 text-sm text-slate-300">Inspeção ligada a produto, OP, máquina, instrumento calibrado e registros reais.</p></div><div className="flex flex-wrap gap-2"><button type="button" onClick={resetForm} className="rounded-[2px] border border-slate-500 px-4 py-3 text-[11px] font-extrabold text-white"><Plus className="mr-2 inline" size={18}/> NOVA INSPEÇÃO</button><button type="button" onClick={() => void save()} disabled={busy} className="rounded-[2px] bg-sky-600 px-5 py-3 text-[11px] font-extrabold text-white"><Save className="mr-2 inline" size={18}/> SALVAR LAUDO</button><button type="button" onClick={() => window.print()} className="rounded-[2px] border border-slate-500 px-4 py-3 text-[11px] font-extrabold text-white"><Printer className="mr-2 inline" size={18}/> IMPRIMIR</button></div></div></header>
-    <div className="mx-auto grid max-w-[1800px] grid-cols-1 gap-5 p-4 grid-cols-1"><QualitySidebar active="/qualidade/inspecao-processo"/><section className="min-w-0 space-y-5">
+    <header className="border-b border-slate-700 bg-slate-900 px-4 py-3 text-white"><div className="mx-auto flex max-w-[1800px] items-center justify-between gap-3"><div><p className="text-sm font-extrabold uppercase tracking-widest text-sky-300">MÓDULO: QUALIDADE • INSPEÇÃO EM PROCESSO</p><h1 className="text-[15px] font-extrabold">Laudo de Inspeção de Produto</h1><p className="mt-1 text-sm text-slate-300">Inspeção ligada a produto, OP, máquina, instrumento calibrado e registros reais.</p></div><div className="flex flex-wrap gap-2"><button type="button" onClick={resetForm} className="inline-flex h-8 items-center rounded-[2px] border border-slate-500 px-3 text-[10px] font-bold text-white"><Plus className="mr-1 inline" size={14}/> NOVA INSPEÇÃO</button><button type="button" onClick={() => void save()} disabled={busy} className="inline-flex h-8 items-center rounded-[2px] bg-[#2D8DB8] px-3 text-[10px] font-bold text-white disabled:opacity-50"><Save className="mr-1 inline" size={14}/> SALVAR LAUDO</button><button type="button" onClick={() => window.print()} className="inline-flex h-8 items-center rounded-[2px] border border-slate-500 px-3 text-[10px] font-bold text-white"><Printer className="mr-1 inline" size={14}/> IMPRIMIR</button></div></div></header>
+    <div className="mx-auto grid max-w-[1800px] grid-cols-1 gap-3 p-3"><QualitySidebar active="/qualidade/inspecao-processo"/><section className="min-w-0 space-y-5">
       {(error || notice) && <div className={error ? 'rounded-[2px] border border-red-200 bg-red-50 p-4 text-[11px] font-bold text-red-800' : 'rounded-[2px] border border-emerald-200 bg-emerald-50 p-4 text-[11px] font-bold text-emerald-800'}>{error || notice}</div>}
       <section className="rounded-[2px] border border-slate-200 bg-white p-5 shadow-sm"><h2 className="text-[13px] font-extrabold">1. AMARRAÇÃO DE ENTIDADES DA PRODUÇÃO</h2><div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <EntityCodeLookup label="ITEM / PEÇA" value={produto} records={products} onChange={setProduto} onSelect={record => setProduto(record.id)} required/>
