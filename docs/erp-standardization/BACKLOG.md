@@ -33,3 +33,11 @@
 - [ ] QA-040 — Confirmar type-check, lint, auditorias, rotas, build e deployment no HEAD final.
 
 Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar e revisar o relatório.
+## Evidências parciais registradas em 2026-10-16
+
+- Roteador lido diretamente: 248 declarações `<Route>` e 156 imports dinâmicos encontrados por análise estática; isso não confirma que todos os arquivos existam ou carreguem.
+- 11 rotas apontam para `IndustrialDataWorkspace`; verificar cada fluxo e se a tela genérica cobre os requisitos do módulo.
+- Seis entradas internas do mapa `routeConfigs` de `IndustrialDataWorkspace` parecem não ser alcançadas pelo roteador atual: `/qualidade/cep`, `/qualidade/especificacoes`, `/qualidade/fmea`, `/qualidade/rnc-capa`, `/pcp/ordens-industriais`, `/pcp/apontamentos`. Confirmar legado/fallback antes de remover.
+- Relatório estático: [ROUTE-AUDIT-2026-10-16.md](./ROUTE-AUDIT-2026-10-16.md).
+- Cadastro de Produtos recebeu ajustes de geometria e limites nos commits `6905e28`, `5e6939b` e `f441ef3`; permanece pendente de type-check, build e inspeção visual.
+- Não foi possível executar o checkout local nesta sessão; por isso UI-001, UI-002 e UI-020 continuam abertos e nenhuma tela foi declarada concluída.
