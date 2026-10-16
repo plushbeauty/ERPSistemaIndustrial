@@ -1,3 +1,8 @@
+/*
+ * REVISÃO TÉCNICA: 16/10/2026
+ * Revisado: leitura do perfil pela querystring, carregamento de permissões, seleção do perfil e fluxo de gravação via RPC existente.
+ * Não validado nesta revisão: contrato RPC remoto, RLS, type-check/build e persistência ponta a ponta.
+ */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CopyPlus, RefreshCw, Save, ShieldCheck } from 'lucide-react'
