@@ -1,3 +1,10 @@
+/**
+ * @DATA_REVISAO: 2026-10-16
+ * @REVISAO: VENDAS-011
+ * @ESCOPO_REVISADO: período mensal/anual, limites de competência, consultas fiscais e gráfico de faturamento por cliente.
+ * @ALTERACOES: filtros alinhados a 30px, bordas de 2px e tipografia compacta; cálculo temporal e consultas preservados.
+ * @VALIDACAO: revisão estática; CI pendente para tipagem, lint, auditorias e build.
+ */
 import { useEffect, useState } from 'react'
 import { BarChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { supabase } from '../lib/supabaseClient'
@@ -92,14 +99,14 @@ export default function VendasDashboardGraficos() {
           <div className="sales-heading-actions">
             <label className="sales-button sales-button--secondary">
               Visão
-              <select value={period} onChange={(event) => setPeriod(event.target.value as 'mes'|'ano')} aria-label="Visão do faturamento">
+              <select value={period} onChange={(event) => setPeriod(event.target.value as 'mes'|'ano')} aria-label="Visão do faturamento" className="h-[30px] rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] outline-none focus:border-[#2D8DB8]">
                 <option value="mes">Mês</option>
                 <option value="ano">Ano</option>
               </select>
             </label>
             <label className="sales-button sales-button--secondary">
               Período
-              <input type="month" value={month} onChange={(event) => setMonth(event.target.value)} aria-label="Período do faturamento" />
+              <input type="month" value={month} onChange={(event) => setMonth(event.target.value)} aria-label="Período do faturamento" className="h-[30px] rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] outline-none focus:border-[#2D8DB8]" />
             </label>
             <button type="button" onClick={() => window.print()} className="sales-button sales-button--primary no-print">
               Imprimir gráficos
