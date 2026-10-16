@@ -203,58 +203,58 @@ export default function ConfiguracaoPermissoes() {
     }
   }
 
-  return <div className="space-y-6">
-    <header className="border-b border-slate-200 pb-4">
-      <span className="block text-xs font-bold uppercase tracking-wider text-blue-600">Configurações / Segurança</span>
-      <h2 className="text-3xl font-black tracking-tight text-slate-900">Controle de Permissões</h2>
-      <p className="mt-1 text-sm text-slate-500">Matriz vinculada ao catálogo ERP e ao perfil selecionado.</p>
+  return <div className="space-y-3">
+    <header className="border-b border-slate-200 pb-2">
+      <span className="block text-[9px] font-bold uppercase tracking-wider text-[#2D8DB8]">Configurações / Segurança</span>
+      <h2 className="text-[16px] font-black tracking-tight text-slate-900">Controle de Permissões</h2>
+      <p className="mt-1 text-[10px] text-slate-500">Matriz vinculada ao catálogo ERP e ao perfil selecionado.</p>
     </header>
-    {(message || error) && <div role={error ? 'alert' : 'status'} className={`rounded-2xl border px-4 py-3 text-sm font-bold ${error ? 'border-red-200 bg-red-50 text-red-700' : 'border-emerald-200 bg-emerald-50 text-emerald-800'}`}>{error || message}</div>}
-    <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-xl shadow-slate-200/40">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    {(message || error) && <div role={error ? 'alert' : 'status'} className={`rounded-[2px] border px-4 py-3 text-[10px] font-bold ${error ? 'border-red-200 bg-red-50 text-red-700' : 'border-emerald-200 bg-emerald-50 text-emerald-800'}`}>{error || message}</div>}
+    <section className="rounded-[2px] border border-slate-100 bg-white p-3 ">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-500"><ShieldCheck size={17} className="text-blue-600" />Matriz por perfil</div>
-          <p className="mt-1 text-sm text-slate-500">Perfis globais são somente leitura; o administrador pode cloná-los para sua empresa.</p>
+          <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-wider text-slate-500"><ShieldCheck size={17} className="text-[#2D8DB8]" />Matriz por perfil</div>
+          <p className="mt-1 text-[10px] text-slate-500">Perfis globais são somente leitura; o administrador pode cloná-los para sua empresa.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <select aria-label="Selecionar perfil" value={selectedRoleId} onChange={event => void selectRole(event.target.value)} disabled={loading || !roles.length} className="max-w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-800">
+          <select aria-label="Selecionar perfil" value={selectedRoleId} onChange={event => void selectRole(event.target.value)} disabled={loading || !roles.length} className="max-w-full rounded-[2px] border border-slate-200 bg-white px-2 text-[10px] font-bold text-slate-800">
             {roles.map(role => <option key={role.id} value={role.id}>{role.nome} · {role.empresa_id ? 'empresa' : 'global'}</option>)}
           </select>
-          <button type="button" onClick={() => void load()} disabled={loading || busy} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 disabled:opacity-50"><RefreshCw size={15} />Atualizar</button>
-          {selectedRole?.empresa_id === null && mayEdit && <button type="button" onClick={cloneSelected} disabled={loading || busy} className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-800 disabled:opacity-50"><CopyPlus size={15} />Clonar para empresa</button>}
+          <button type="button" onClick={() => void load()} disabled={loading || busy} className="inline-flex items-center gap-2 rounded-[2px] border border-slate-200 px-2 text-[10px] font-bold text-slate-700 disabled:opacity-50"><RefreshCw size={15} />Atualizar</button>
+          {selectedRole?.empresa_id === null && mayEdit && <button type="button" onClick={cloneSelected} disabled={loading || busy} className="inline-flex items-center gap-2 rounded-[2px] border border-[#2D8DB8] bg-[#F4FBFD] px-2 text-[10px] font-bold text-[#176487] disabled:opacity-50"><CopyPlus size={15} />Clonar para empresa</button>}
         </div>
       </div>
       {selectedRole && <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        <label className="grid gap-1 text-xs font-bold text-slate-600">Código
-          <input value={draft.codigo} onChange={event => setDraft(current => ({ ...current, codigo: event.target.value.toUpperCase() }))} disabled={!mayEdit || !isEditing || busy} maxLength={40} className="h-10 rounded-xl border border-slate-200 px-3 text-sm text-slate-900 disabled:bg-slate-50" />
+        <label className="grid gap-1 text-[9px] font-bold text-slate-600">Código
+          <input value={draft.codigo} onChange={event => setDraft(current => ({ ...current, codigo: event.target.value.toUpperCase() }))} disabled={!mayEdit || !isEditing || busy} maxLength={40} className="h-[30px] rounded-[2px] border border-slate-200 px-3 text-[10px] text-slate-900 disabled:bg-slate-50" />
         </label>
-        <label className="grid gap-1 text-xs font-bold text-slate-600">Nome do perfil
-          <input value={draft.nome} onChange={event => setDraft(current => ({ ...current, nome: event.target.value }))} disabled={!mayEdit || !isEditing || busy} maxLength={100} className="h-10 rounded-xl border border-slate-200 px-3 text-sm text-slate-900 disabled:bg-slate-50" />
+        <label className="grid gap-1 text-[9px] font-bold text-slate-600">Nome do perfil
+          <input value={draft.nome} onChange={event => setDraft(current => ({ ...current, nome: event.target.value }))} disabled={!mayEdit || !isEditing || busy} maxLength={100} className="h-[30px] rounded-[2px] border border-slate-200 px-3 text-[10px] text-slate-900 disabled:bg-slate-50" />
         </label>
       </div>}
-      <div className="mt-5 overflow-x-auto rounded-2xl border border-slate-100">
-        <table className="w-full min-w-[600px] text-sm">
-          <thead className="bg-slate-800 text-white"><tr><th scope="col" className="p-4 text-left">Módulo e permissões</th><th scope="col" className="p-4 text-right">Acesso</th></tr></thead>
+      <div className="mt-5 overflow-x-auto rounded-[2px] border border-slate-100">
+        <table className="w-full min-w-[600px] text-[10px]">
+          <thead className="bg-[#123B50] text-white"><tr><th scope="col" className="p-2 text-left">Módulo e permissões</th><th scope="col" className="p-2 text-right">Acesso</th></tr></thead>
           <tbody>
-            {loading ? <tr><td colSpan={2} className="p-8 text-center text-slate-500">Consultando permissões persistidas...</td></tr>
+            {loading ? <tr><td colSpan={2} className="p-3 text-center text-slate-500">Consultando permissões persistidas...</td></tr>
               : permissionGroups.map(([module, items]) => <tr key={module} className="border-t border-slate-100 even:bg-slate-50">
-                <th scope="row" className="p-4 text-left align-top"><span className="font-black capitalize text-slate-800">{module.replaceAll('_', ' ')}</span><span className="mt-1 block text-xs font-medium text-slate-500">{items.map(item => item.name).join(' · ')}</span></th>
-                <td className="p-4 text-right">
+                <th scope="row" className="p-2 text-left align-top"><span className="font-black capitalize text-slate-800">{module.replaceAll('_', ' ')}</span><span className="mt-1 block text-[9px] font-medium text-slate-500">{items.map(item => item.name).join(' · ')}</span></th>
+                <td className="p-2 text-right">
                   <div className="flex flex-wrap justify-end gap-2">
-                    {items.map(item => <label key={item.id} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-semibold text-slate-700">
+                    {items.map(item => <label key={item.id} className="inline-flex items-center gap-2 rounded-[2px] border border-slate-200 bg-white px-2 py-1.5 text-[9px] font-semibold text-slate-700">
                       <input type="checkbox" checked={draft.permissions.has(item.code)} onChange={event => togglePermission(item.code, event.target.checked)} disabled={!mayEdit || !isEditing || loading || busy} className="h-4 w-4 accent-blue-700" />
                       {item.code.split('.').at(-1)}
                     </label>)}
                   </div>
                 </td>
               </tr>)}
-            {!loading && !permissionGroups.length && <tr><td colSpan={2} className="p-8 text-center text-slate-500">O catálogo de permissões ativo está vazio.</td></tr>}
+            {!loading && !permissionGroups.length && <tr><td colSpan={2} className="p-3 text-center text-slate-500">O catálogo de permissões ativo está vazio.</td></tr>}
           </tbody>
         </table>
       </div>
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-xs text-slate-500">{mayEdit ? 'As alterações são validadas por tenant e nível no banco.' : 'A sessão atual não possui permissão de edição para perfis desta empresa.'}</p>
-        {mayEdit && isEditing && <button type="button" disabled={busy || loading} onClick={() => void save()} className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-5 py-3 text-sm font-black text-white hover:bg-blue-800 disabled:opacity-50"><Save size={16} />{busy ? 'Salvando…' : draft.roleId ? 'Salvar perfil' : 'Criar perfil da empresa'}</button>}
+        <p className="text-[9px] text-slate-500">{mayEdit ? 'As alterações são validadas por tenant e nível no banco.' : 'A sessão atual não possui permissão de edição para perfis desta empresa.'}</p>
+        {mayEdit && isEditing && <button type="button" disabled={busy || loading} onClick={() => void save()} className="inline-flex items-center gap-2 rounded-[2px] bg-[#2D8DB8] px-3 py-1 text-[10px] font-black text-white hover:bg-[#176487] disabled:opacity-50"><Save size={16} />{busy ? 'Salvando…' : draft.roleId ? 'Salvar perfil' : 'Criar perfil da empresa'}</button>}
       </div>
     </section>
   </div>
