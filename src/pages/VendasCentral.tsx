@@ -1,3 +1,10 @@
+/**
+ * @DATA_REVISAO_APROVACAO: 2026-10-16
+ * @REVISAO_APROVACAO: APROV-003
+ * @STATUS_APROVACAO: APROVADO-IMUTAVEL
+ * @REGRA: não alterar Vendas > Status do pedido sem ordem expressa do usuário.
+ * @ESCOPO: cards compactos de status aprovados pelo usuário; mudanças futuras exigem autorização explícita.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
