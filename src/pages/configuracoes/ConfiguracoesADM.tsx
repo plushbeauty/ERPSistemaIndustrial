@@ -1,3 +1,8 @@
+/*
+ * REVISÃO TÉCNICA: 16/10/2026
+ * Revisado: navegação horizontal sem barra lateral, pesquisa de seções, estado ativo, layout responsivo e conteúdo da página selecionada.
+ * Não validado nesta revisão: type-check/build, execução no navegador, permissões reais e publicação Vercel.
+ */
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
