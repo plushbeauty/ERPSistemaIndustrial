@@ -24,18 +24,18 @@ alter table public.erp_enderecos enable row level security;
 drop policy if exists erp_enderecos_select_tenant on public.erp_enderecos;
 create policy erp_enderecos_select_tenant
   on public.erp_enderecos for select to authenticated
-  using (empresa_id = public.erp_current_empresa_id() or public.usuario_e_master());
+  using (empresa_id = public.erp_current_empresa_id() or public.erp_is_master());
 
 drop policy if exists erp_enderecos_insert_tenant on public.erp_enderecos;
 create policy erp_enderecos_insert_tenant
   on public.erp_enderecos for insert to authenticated
-  with check (empresa_id = public.erp_current_empresa_id() or public.usuario_e_master());
+  with check (empresa_id = public.erp_current_empresa_id() or public.erp_is_master());
 
 drop policy if exists erp_enderecos_update_tenant on public.erp_enderecos;
 create policy erp_enderecos_update_tenant
   on public.erp_enderecos for update to authenticated
-  using (empresa_id = public.erp_current_empresa_id() or public.usuario_e_master())
-  with check (empresa_id = public.erp_current_empresa_id() or public.usuario_e_master());
+  using (empresa_id = public.erp_current_empresa_id() or public.erp_is_master())
+  with check (empresa_id = public.erp_current_empresa_id() or public.erp_is_master());
 
 grant select, insert, update on public.erp_enderecos to authenticated;
 
