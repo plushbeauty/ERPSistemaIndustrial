@@ -75,9 +75,9 @@ export default function ListagemProdutos({ onOpenFicha }: { onOpenFicha: (id?: s
   })
 
   const labelClass = 'flex min-w-0 flex-col gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-600'
-  const field = 'h-8 w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-semibold text-slate-800 outline-none transition-colors focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
+  const field = 'h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-semibold text-slate-800 outline-none transition-colors focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
   const sectionTitle = 'mb-3 block border-b border-slate-200 pb-1 text-[10px] font-extrabold uppercase tracking-widest text-[#2D8DB8]'
-  const tableHeaderClass = 'h-9 border-b border-slate-700 bg-[#123B50] px-3 text-left align-middle text-[9px] font-bold uppercase tracking-wider text-white'
+  const tableHeaderClass = 'h-8 border-b border-slate-700 bg-[#123B50] px-3 text-left align-middle text-[9px] font-bold uppercase tracking-wider text-white'
   const tableCellClass = 'h-8 border-b border-slate-200 px-3 py-1 align-middle text-[11px] font-medium text-slate-800'
 
   return (
@@ -101,7 +101,7 @@ export default function ListagemProdutos({ onOpenFicha }: { onOpenFicha: (id?: s
             SKU / Descrição do produto
             <span className="relative block w-full">
               <Search className="pointer-events-none absolute left-2.5 top-2 text-slate-400" size={14} />
-              <input className={`${field} pl-8`} value={q} onChange={e => setQ(e.target.value)} placeholder="Pesquisar código ou nome" />
+              <input className={`${field} pl-8`} maxLength={50} value={q} onChange={e => setQ(e.target.value)} placeholder="Pesquisar código ou nome" />
             </span>
           </label>
           <label className={labelClass}>
