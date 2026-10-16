@@ -1,5 +1,5 @@
-import { Printer, useEffect, useState } from 'react'
-import { CheckCircle2, RefreshCw, Save, Wrench, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { CheckCircle2, Printer, RefreshCw, Save, Wrench, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import { EntityCodeLookup, type LookupRecord } from '../components/industrial/EntityCodeLookup'
