@@ -1,7 +1,7 @@
 /*
  * REVISÃO TÉCNICA: 16/10/2026
  * Revisado: navegação horizontal sem barra lateral, pesquisa de seções, estado ativo, layout responsivo e conteúdo da página selecionada.
- * Alteração desta revisão: páginas dedicadas de Integrações e Parâmetros do Sistema conectadas à navegação administrativa. Não validado: type-check/build, execução no navegador, permissões reais e publicação Vercel.
+ * Alteração desta revisão: páginas dedicadas de Integrações e Parâmetros do Sistema conectadas à navegação administrativa; mensagens antigas de indisponibilidade removidas dessas rotas. Não validado: type-check/build, execução no navegador, permissões reais e publicação Vercel.
  */
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -112,14 +112,10 @@ function Empresa() {
 function UnavailableSection({ item }: { item: Item }) {
   const details: Record<string, string> = {
     '/configuracoes-adm/seguranca': 'A autenticação e o ciclo de sessão são gerenciados pelo Supabase Auth. Revogação administrativa de sessões, MFA e políticas de senha só serão exibidos como disponíveis quando houver contrato e operação autorizados comprovados.',
-    '/configuracoes-adm/integracoes': 'Ainda não foi confirmado um catálogo persistido de integrações no schema ERP. Os conectores devem ser ligados a configurações reais, sem simular status ou salvamento.',
-    '/configuracoes-adm/sistema': 'Esta área ainda não possui um contrato único confirmado para preferências globais. Parâmetros operacionais permanecem nos respectivos módulos até a auditoria do schema.',
   }
   return <Panel title={item.label}>
     <div className="adm-notice"><strong>Auditoria necessária</strong><p>{details[item.path] || 'Não foi identificada uma operação administrativa persistida para esta área.'}</p>
       {item.path === '/configuracoes-adm/seguranca' && <div className="adm-actions"><Link to="/configuracoes-adm/usuarios">USUÁRIOS</Link><Link to="/configuracoes-adm/permissoes">PERMISSÕES RBAC</Link><Link to="/configuracoes-adm/logs">LOGS E AUDITORIA</Link></div>}
-      {item.path === '/configuracoes-adm/integracoes' && <div className="adm-actions"><Link to="/outlook/configuracao">CONFIGURAÇÃO DE E-MAIL</Link></div>}
-      {item.path === '/configuracoes-adm/sistema' && <div className="adm-actions"><Link to="/configuracoes-adm/codificacao">CODIFICAÇÃO E ÁREAS</Link><Link to="/configuracoes-adm/empresa">DADOS DA EMPRESA</Link></div>}
     </div>
   </Panel>
 }
