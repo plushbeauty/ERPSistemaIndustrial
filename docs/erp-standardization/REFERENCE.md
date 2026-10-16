@@ -80,3 +80,12 @@ A partir desta revisão, as grades de dados devem ser avaliadas também pelo pad
 - Altura de linha 32 px, tipografia compacta e sem transformar a grade em cartões.
 
 **Adaptação inicial registrada:** src/pages/IndustrialDataWorkspace.tsx, commit 1cb2f3a14be3763ecf93f7beb73ca21643274fb4. É uma alteração em um componente compartilhado por várias rotas, não prova de que todos os DBGrids do ERP foram padronizados. O comportamento precisa de build e conferência visual antes de aprovar.
+
+## Vendas — cards compactos ampliados e etapas industriais
+
+- Cards de status de pedidos: três colunas em desktop e duas em telas estreitas; altura mínima de 58 px, rótulos de 10 px e contagem de 19 px.
+- Cards de produtos no PDV: largura mínima de 260 px para ampliar a área de leitura e interação.
+- Catálogo Digital: grade responsiva com até quatro colunas em telas grandes, imagem de 192 px de altura e texto/preço legíveis.
+- Ações principais seguem azul institucional `#2D8DB8` e texto branco; altura padrão de 30 px e cantos de 2 px.
+- Acompanhamento de pedido exibe etapas de pedido, OP/produção, inspeção de qualidade, expedição e liberação fiscal, com cores por estado. Só são mostrados status existentes no banco; quando não há registro, a tela indica que está aguardando a etapa.
+- Isolamento multiempresa: as consultas de etapas usam o `empresa_id` retornado por `erp_current_empresa_id()`.
