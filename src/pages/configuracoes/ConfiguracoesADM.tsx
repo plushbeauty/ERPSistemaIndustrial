@@ -13,6 +13,7 @@ import ConfiguracaoBackups from './ConfiguracaoBackups'
 import ConfiguracaoCodificacaoAreas from './ConfiguracaoCodificacaoAreas'
 import ConfiguracaoLogs from './ConfiguracaoLogs'
 import ConfiguracaoPermissoes from './ConfiguracaoPermissoes'
+import ConfiguracaoSeguranca from './ConfiguracaoSeguranca'
 import ConfiguracaoPerfis from './ConfiguracaoPerfis'
 
 type Item = { path: string; label: string; description: string; icon: LucideIcon }
@@ -122,6 +123,7 @@ function SectionContent({ item, navigate }: { item: Item; navigate: ReturnType<t
   if (item.path === '/configuracoes-adm/codificacao') return <ConfiguracaoCodificacaoAreas profile={null} />
   if (item.path === '/configuracoes-adm/perfis') return <ConfiguracaoPerfis />
   if (item.path === '/configuracoes-adm/permissoes') return <ConfiguracaoPermissoes />
+  if (item.path === '/configuracoes-adm/seguranca') return <ConfiguracaoSeguranca />
   if (item.path === '/configuracoes-adm/logs') return <ConfiguracaoLogs />
   if (item.path === '/configuracoes-adm/backups') return <ConfiguracaoBackups />
   if (item.path === '/configuracoes-adm/usuarios') return <UsuariosAdmin />
