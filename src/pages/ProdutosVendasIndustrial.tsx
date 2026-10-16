@@ -637,7 +637,6 @@ export default function ProdutosVendasIndustrial(){
         .product-master-screen .product-general-form{padding:0!important;background:#fff!important}
         .product-master-screen .product-layout-card,.product-master-screen .product-quality-card{break-inside:avoid;box-shadow:none!important}
       }
-    `}
       .product-master-screen{background:#f4f6f9!important;font-family:"Segoe UI",Inter,Arial,sans-serif!important}
       .product-master-screen .product-general-form{background:#f4f6f9!important;padding:12px!important}
       .product-master-screen .product-general-card-grid{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:10px!important;align-items:start!important}
@@ -676,6 +675,7 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-form-grid label>span{white-space:nowrap!important;overflow-wrap:normal!important}
       @media(max-width:900px){.product-master-screen .product-general-card-grid{grid-template-columns:minmax(0,1fr)!important}.product-master-screen .product-identification-fields>.product-inline-field,.product-master-screen .product-identification-reference-row>.product-inline-field{grid-template-columns:130px minmax(0,1fr)!important}.product-master-screen .product-operational-flags{padding-left:140px!important}}
       @media(max-width:560px){.product-master-screen .product-identification-fields>.product-inline-field,.product-master-screen .product-identification-reference-row>.product-inline-field{grid-template-columns:minmax(0,1fr)!important;gap:3px!important}.product-master-screen .product-identification-reference-row{grid-template-columns:minmax(0,1fr)!important}.product-master-screen .product-operational-flags{padding-left:0!important;gap:12px!important}}
+    `}
 </style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:900,color:'#1c4bb5'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
