@@ -139,3 +139,32 @@ input.erp-premium-input:focus, select.erp-premium-input:focus {
   font-weight: 600 !important;
   color: #475569 !important;
 }
+
+/* Base transversal para os controles nativos do ERP. Campos com comprimento definido recebem largura proporcional abaixo. */
+input[type="text"], input[type="number"], select, .form-control {
+  display: inline-block !important;
+  box-sizing: border-box !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 4px 10px !important;
+  border: 1px solid #94a3b8 !important;
+  border-radius: 4px !important;
+  font-family: Consolas, "Courier New", monospace !important;
+  font-size: 13px !important;
+  line-height: 22px !important;
+  background-color: #f8fafc !important;
+}
+input[type="text"]:focus, input[type="number"]:focus, select:focus, .form-control:focus {
+  border-color: #2b6cb0 !important;
+  background-color: #fffdf0 !important;
+  outline: 2px solid #2b6cb0 !important;
+  outline-offset: 0 !important;
+}
+/* Larguras automáticas por maxlength para os campos com limite de dados conhecido. */
+input[maxlength="2"], select.edit-2 { width: 6ch !important; max-width: 6ch !important; text-align: center !important; }
+input[maxlength="3"], select.edit-3 { width: 7ch !important; max-width: 7ch !important; text-transform: uppercase !important; }
+input[maxlength="4"], select.edit-4 { width: 8ch !important; max-width: 8ch !important; text-align: right !important; }
+input[maxlength="6"], select.edit-6 { width: 11ch !important; max-width: 11ch !important; }
+input[maxlength="8"], input[maxlength="10"], select.edit-8 { width: 14ch !important; max-width: 14ch !important; }
+input[maxlength="14"], select.edit-12 { width: 18ch !important; max-width: 18ch !important; text-align: right !important; }
+input[maxlength="20"], select.edit-20 { width: 26ch !important; max-width: 26ch !important; }
