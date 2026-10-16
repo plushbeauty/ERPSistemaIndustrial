@@ -19,6 +19,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci --legacy-peer-deps --no-audit --no-fund
+      - name: Approved UI immutable hash lock
+        run: npm run verify:approved-ui-lock
       - run: npm run type-check
       - run: npm run lint:check
       - run: npm run audit:global
