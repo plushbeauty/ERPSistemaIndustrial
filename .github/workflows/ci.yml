@@ -87,6 +87,8 @@ jobs:
         run: npm run verify:global-horizontal-shell
       - name: Logo asset regression contract
         run: npm run verify:logo-assets
+      - name: Approved UI regression contract (login and products)
+        run: npm run verify:approved-ui-contract
 
       - name: Security no-bypass policy
         run: npm run audit:security
