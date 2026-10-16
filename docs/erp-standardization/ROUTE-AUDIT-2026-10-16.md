@@ -72,3 +72,13 @@ Commits anteriores na mesma tela: `6905e28c764bf8fa9145a39c4b0a8d8f03d1dc6b` e `
 ## Referência de design
 
 O Carbon usa componentes de formulário tipados/validados e tamanhos semânticos, como `InputControlled`, `NumberControlled` e `size="sm"`. Aplicamos apenas os princípios de composição e dimensionamento; não copiamos sua implementação. O repositório Carbon declara licença AGPL-3.0-only.
+
+## Ciclo seguinte — telas do Cadastro Mestre de Produtos
+
+Arquivos abertos e ajustados:
+- [ListagemProdutos.tsx](https://github.com/plushbeauty/ERPSistemaIndustrial/blob/main/src/pages/cadastro-produtos/ListagemProdutos.tsx): controles dos filtros agora têm 30 px; cabeçalho da tabela foi reduzido de 36 para 32 px; pesquisa limitada a 50 caracteres. Commit `240ac72724a10099376cc7e5f63492ffc301a8f5`.
+- [FormFichaTecnica.tsx](https://github.com/plushbeauty/ERPSistemaIndustrial/blob/main/src/pages/cadastro-produtos/FormFichaTecnica.tsx): rótulos reduzidos para 9 px em caixa alta, espaçamento vertical entre campos reduzido, nome/categoria/cliente limitados a 50 caracteres, unidade a 3 caracteres e ícone do botão alinhado ao tamanho do controle. Commits `54be4c22916af344f5bed61586b0a214d3a09d1c` e `f85728be813bfbeeeae2fcda780d509ef9693c3b`.
+- [IndustrialDataWorkspace.tsx](https://github.com/plushbeauty/ERPSistemaIndustrial/blob/main/src/pages/IndustrialDataWorkspace.tsx): texto comum limitado a 50; URL de desenho mantém até 2048; áreas de texto JSON estruturado até 4000 para não truncar payload técnico; pesquisa limitada a 50. Commit `ffd5a39167989d7aa679a67fdb41ab0ecccca929`.
+- [ProdutosVendasIndustrial.tsx](https://github.com/plushbeauty/ERPSistemaIndustrial/blob/main/src/pages/ProdutosVendasIndustrial.tsx): quantidade/preço/custo e referências ajustados nos commits listados acima; observações limitadas a 50 no commit `bc88b13572777fdfcafdd1135609b7fc7d60876a`.
+
+**Importante:** os commits foram gravados no GitHub, mas não há ainda prova de type-check, build nem inspeção visual renderizada. Nenhum desses módulos pode ser retirado do backlog até concluir essas verificações.
