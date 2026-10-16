@@ -5,7 +5,7 @@
  * Revisão anterior duplicada removida para manter um único cabeçalho rastreável.
  */
 
-import { FormEvent, useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Building2, Image, Save, RefreshCw } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
