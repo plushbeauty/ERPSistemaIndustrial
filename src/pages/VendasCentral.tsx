@@ -1,3 +1,10 @@
+/**
+ * @DATA_REVISAO_APROVACAO: 2026-10-16
+ * @REVISAO_APROVACAO: APROV-004
+ * @STATUS_APROVACAO: APROVADO-IMUTAVEL
+ * @REGRA: revisão APROV-004 autorizada expressamente; novas alterações exigem nova ordem expressa.
+ * @ESCOPO: cards ampliados e acompanhamento real de pedido, produção, qualidade, expedição e NF/saída.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -29,6 +36,10 @@ type Order = {
 }
 
 type StatusFilter = 'todos' | 'rascunho' | 'andamento' | 'atrasados' | 'faturados' | 'cancelados'
+type ProductionStage = { id: string; pedido_venda_id: string; numero_op: string; status: string; quantidade: number; quantidade_planejada: number; quantidade_produzida: number }
+type QualityStage = { ordem_producao_id: string; tipo: string; resultado: string; quantidade_reprovada: number }
+type ExpeditionStage = { pedido_venda_id: string; numero: number; status: string; transportadora: string | null }
+type FiscalStage = { pedido_venda_id: string; tipo: string; status: string; quantidade_pendente: number }
 
 const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 const PAGE_SIZE = 25
@@ -64,6 +75,10 @@ const filters: Array<{ id: StatusFilter; label: string; icon: typeof ClipboardLi
 
 export default function VendasCentral() {
   const [orders, setOrders] = useState<Order[]>([])
+  const [productionByOrder, setProductionByOrder] = useState<Record<string, ProductionStage[]>>({})
+  const [qualityByOrder, setQualityByOrder] = useState<Record<string, QualityStage[]>>({})
+  const [expeditionByOrder, setExpeditionByOrder] = useState<Record<string, ExpeditionStage[]>>({})
+  const [fiscalByOrder, setFiscalByOrder] = useState<Record<string, FiscalStage[]>>({})
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<StatusFilter>('todos')
   const [page, setPage] = useState(0)
@@ -82,7 +97,34 @@ export default function VendasCentral() {
         .eq('empresa_id', String(tenant.data))
         .order('numero', { ascending: false })
         .range(from, to))
-      setOrders(result as unknown as Order[])
+      const orderRows = result as unknown as Order[]
+      setOrders(orderRows)
+      const orderIds = orderRows.map((order) => order.id)
+      if (!orderIds.length) {
+        setProductionByOrder({})
+        setQualityByOrder({})
+        setExpeditionByOrder({})
+        setFiscalByOrder({})
+      } else {
+        const companyId = String(tenant.data)
+        const [productionResult, expeditionResult, fiscalResult] = await Promise.all([
+          supabase.from('erp_ordens_producao').select('id,pedido_venda_id,numero_op,status,quantidade,quantidade_planejada,quantidade_produzida').eq('empresa_id', companyId).in('pedido_venda_id', orderIds),
+          supabase.from('erp_expedicoes').select('pedido_venda_id,numero,status,transportadora').eq('empresa_id', companyId).in('pedido_venda_id', orderIds),
+          supabase.from('erp_liberacoes_fiscais').select('pedido_venda_id,tipo,status,quantidade_pendente').eq('empresa_id', companyId).in('pedido_venda_id', orderIds),
+        ])
+        const productionRows = (productionResult.data ?? []) as ProductionStage[]
+        const productionIds = productionRows.map((row) => row.id)
+        const qualityResult = productionIds.length ? await supabase.from('erp_inspecoes').select('ordem_producao_id,tipo,resultado,quantidade_reprovada').eq('empresa_id', companyId).in('ordem_producao_id', productionIds) : null
+        const stageErrors = [productionResult.error, qualityResult?.error, expeditionResult.error, fiscalResult.error].filter(Boolean)
+        if (stageErrors.length) setError(`Pedidos carregados; não foi possível completar todas as etapas industriais: ${stageErrors.map((item) => item?.message).join(' • ')}`)
+        const byOrder = <T extends { pedido_venda_id: string }>(rows: T[] | null) => (rows ?? []).reduce<Record<string, T[]>>((map, row) => { map[row.pedido_venda_id] = [...(map[row.pedido_venda_id] ?? []), row]; return map }, {})
+        setProductionByOrder(byOrder(productionRows))
+        const opToOrder = new Map(productionRows.map((row) => [row.id, row.pedido_venda_id]))
+        const qualityMap = ((qualityResult?.data ?? []) as QualityStage[]).reduce<Record<string, QualityStage[]>>((map, row) => { const orderId = opToOrder.get(row.ordem_producao_id); if (orderId) map[orderId] = [...(map[orderId] ?? []), row]; return map }, {})
+        setQualityByOrder(qualityMap)
+        setExpeditionByOrder(byOrder((expeditionResult.data ?? []) as ExpeditionStage[]))
+        setFiscalByOrder(byOrder((fiscalResult.data ?? []) as FiscalStage[]))
+      }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível carregar os pedidos.')
     } finally {
@@ -127,24 +169,25 @@ export default function VendasCentral() {
         {error && <div className="sales-alert" role="alert"><CircleAlert size={17} />{error}</div>}
 
         <section className="sales-orders-card">
-          <div className="sales-filter-row" role="tablist" aria-label="Filtrar pedidos por status">
-            {filters.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                aria-selected={filter === id}
-                className={`sales-filter-tab${filter === id ? ' is-active' : ''}`}
-                onClick={() => {
-                  setFilter(id)
-                  setPage(0)
-                }}
-              >
-                <Icon size={15} />
-                {label}
-                <span>{id === 'todos' ? counts.all : id === 'rascunho' ? counts.drafts : id === 'atrasados' ? counts.overdue : orders.filter((order) => { if (id === 'andamento') return !isDraft(order.status) && !isCancelled(order.status) && !isInvoiced(order.status); if (id === 'faturados') return isInvoiced(order.status); return isCancelled(order.status) }).length}</span>
+          <div className="synqra-status-grid sales-orders-status-grid" role="tablist" aria-label="Filtrar pedidos por status">
+            {filters.map(({ id, label, icon: Icon }) => {
+              const value = id === 'todos' ? counts.all
+                : id === 'rascunho' ? counts.drafts
+                : id === 'andamento' ? orders.filter((order) => !isDraft(order.status) && !isCancelled(order.status) && !isInvoiced(order.status)).length
+                : id === 'atrasados' ? counts.overdue
+                : id === 'faturados' ? orders.filter((order) => isInvoiced(order.status)).length
+                : orders.filter((order) => isCancelled(order.status)).length
+              const tone = id === 'atrasados' ? 'synqra-status-red'
+                : id === 'rascunho' ? 'synqra-status-orange'
+                : id === 'andamento' ? 'synqra-status-blue'
+                : id === 'faturados' ? 'synqra-status-cyan'
+                : id === 'cancelados' ? 'synqra-status-slate'
+                : 'synqra-status-green'
+              return <button key={id} type="button" role="tab" aria-selected={filter === id} className={`synqra-status-cell ${tone} sales-orders-status-card${filter === id ? ' is-active' : ''}`} onClick={() => { setFilter(id); setPage(0) }}>
+                <span><Icon size={15} aria-hidden="true" /> {label}</span>
+                <strong>{loading ? '—' : value}</strong>
               </button>
-            ))}
+            })}
           </div>
 
           <div className="sales-list-toolbar">
@@ -175,6 +218,7 @@ export default function VendasCentral() {
                   <th>Data</th>
                   <th>Entrega prevista</th>
                   <th>Status</th>
+                  <th>Processo da peça</th>
                   <th className="sales-number">Total</th>
                 </tr>
               </thead>
@@ -200,11 +244,12 @@ export default function VendasCentral() {
                       </span>
                     </td>
                     <td><span className={`sales-status ${statusTone(order.status)}`}>{order.status}</span></td>
+                    <td><ProcessStages order={order} production={productionByOrder[order.id] ?? []} inspections={qualityByOrder[order.id] ?? []} expeditions={expeditionByOrder[order.id] ?? []} fiscal={fiscalByOrder[order.id] ?? []} /></td>
                     <td className="sales-number sales-total">{currency.format(Number(order.total ?? 0))}</td>
                   </tr>
                 ))}
                 {!loading && visibleOrders.length === 0 && (
-                  <tr><td colSpan={7}>
+                  <tr><td colSpan={8}>
                     <div className="sales-empty-state">
                       <ClipboardList size={26} />
                       <strong>{query || filter !== 'todos' ? 'Nenhum pedido corresponde aos filtros.' : 'Nenhum pedido encontrado.'}</strong>
@@ -212,7 +257,7 @@ export default function VendasCentral() {
                     </div>
                   </td></tr>
                 )}
-                {loading && <tr><td colSpan={7} className="sales-loading-row" role="status">Carregando pedidos do ERP…</td></tr>}
+                {loading && <tr><td colSpan={8} className="sales-loading-row" role="status">Carregando pedidos do ERP…</td></tr>}
               </tbody>
             </table>
           </div>
@@ -230,4 +275,28 @@ export default function VendasCentral() {
       </main>
     </VendasLayout>
   )
+}
+
+function ProcessStages({ order, production, inspections, expeditions, fiscal }: { order: Order; production: ProductionStage[]; inspections: QualityStage[]; expeditions: ExpeditionStage[]; fiscal: FiscalStage[] }) {
+  const cancelled = isCancelled(order.status)
+  const draft = isDraft(order.status)
+  const productionDone = production.length > 0 && production.every((row) => {
+    const status = normalize(row.status)
+    return status.includes('conclu') || status.includes('finaliz') || status.includes('encerr') || (Number(row.quantidade_planejada || row.quantidade || 0) > 0 && Number(row.quantidade_produzida || 0) >= Number(row.quantidade_planejada || row.quantidade || 0))
+  })
+  const productionActive = production.length > 0 && !productionDone
+  const qualityRejected = inspections.some((row) => normalize(row.resultado).includes('reprov'))
+  const qualityDone = inspections.length > 0 && inspections.every((row) => normalize(row.resultado).includes('aprov') && Number(row.quantidade_reprovada || 0) === 0)
+  const expeditionDone = expeditions.length > 0 && expeditions.every((row) => ['expedido', 'entregue', 'conclu', 'finaliz'].some((word) => normalize(row.status).includes(word)))
+  const fiscalDone = fiscal.length > 0 && fiscal.every((row) => ['emit', 'autoriz', 'fatur', 'conclu', 'finaliz'].some((word) => normalize(row.status).includes(word)))
+  const stages = [
+    { label: 'Pedido', detail: order.status || 'Recebido', tone: cancelled ? 'is-stage-red' : draft ? 'is-stage-amber' : 'is-stage-green' },
+    { label: 'Produção', detail: production.length ? production.map((row) => `OP ${row.numero_op}: ${row.status} (${Number(row.quantidade_produzida || 0)}/${Number(row.quantidade_planejada || row.quantidade || 0)})`).join(' • ') : 'Aguardando OP', tone: cancelled ? 'is-stage-muted' : productionDone ? 'is-stage-green' : productionActive ? 'is-stage-blue' : 'is-stage-muted' },
+    { label: 'Qualidade', detail: inspections.length ? inspections.map((row) => `${row.tipo}: ${row.resultado}${Number(row.quantidade_reprovada || 0) > 0 ? ` (${Number(row.quantidade_reprovada)} reprovada(s))` : ''}`).join(' • ') : 'Aguardando inspeção', tone: cancelled ? 'is-stage-muted' : qualityRejected ? 'is-stage-red' : qualityDone ? 'is-stage-green' : inspections.length ? 'is-stage-amber' : 'is-stage-muted' },
+    { label: 'Expedição', detail: expeditions.length ? expeditions.map((row) => `EXP ${row.numero}: ${row.status}${row.transportadora ? ` • ${row.transportadora}` : ''}`).join(' • ') : 'Aguardando expedição', tone: cancelled ? 'is-stage-muted' : expeditionDone ? 'is-stage-green' : expeditions.length ? 'is-stage-violet' : 'is-stage-muted' },
+    { label: 'NF / Saída', detail: fiscal.length ? fiscal.map((row) => `${row.tipo}: ${row.status} (pendente ${Number(row.quantidade_pendente || 0)})`).join(' • ') : 'Aguardando liberação fiscal', tone: cancelled ? 'is-stage-muted' : fiscalDone ? 'is-stage-green' : fiscal.length ? 'is-stage-cyan' : 'is-stage-muted' },
+  ]
+  return <div className="sales-process-stages" aria-label={`Etapas do pedido PV-${String(order.numero).padStart(6, '0')}`}>
+    {stages.map((stage) => <div key={stage.label} className={`sales-process-stage ${stage.tone}`} title={`${stage.label}: ${stage.detail}`}><span>{stage.label}</span><strong>{stage.detail}</strong></div>)}
+  </div>
 }
