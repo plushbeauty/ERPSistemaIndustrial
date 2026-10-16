@@ -101,3 +101,128 @@ Legenda:
 ## 5. Status desta revisão
 
 **Inventário estático e matriz de comparação documentados; auditoria funcional geral NÃO concluída.** O próximo trabalho é provar rotas e fluxos reais, não aumentar a contagem de telas. Nenhum módulo foi declarado completo por esta comparação.
+
+
+## 6. Catálogo funcional dos ERPs de referência e correspondência no ERP Industrial
+
+Esta seção é o levantamento pedido: cada família abaixo explica para que serve e indica se há rota equivalente no ERP Industrial segundo `src/AppEntryV2.tsx` e os itens de navegação de `src/pages/configuracoes/ConfiguracoesADM.tsx`. “Encontrado” significa apenas que há entrada/rota identificável; não significa equivalência completa.
+
+### 6.1 ERPNext — módulos declarados no código-fonte oficial
+
+Fonte primária: https://github.com/frappe/erpnext/blob/develop/erpnext/modules.txt
+
+| Módulo ERPNext | O que faz | Correspondência no ERP Industrial |
+|---|---|---|
+| Accounts | Contabilidade, lançamentos, contas, demonstrações e relatórios financeiros | Parcial: Financeiro, Controladoria, razão geral/grupos contábeis; validar diário, plano de contas e fechamento |
+| CRM | Leads, oportunidades, atividades e relacionamento comercial | Parcial: clientes/vendas existem; não identificada área CRM dedicada a leads e pipeline |
+| Buying | Fornecedores, requisições, cotações, pedidos e aquisição | Encontrado: Compras, RFQ, cotações, requisições e pedidos |
+| Projects | Projetos, tarefas, prazos, equipe, horas e custo | Não identificada área dedicada de projetos; confirmar escopo |
+| Selling | Clientes, preços, propostas, pedidos e faturamento | Encontrado: Vendas, orçamentos, pedidos, tabela de preços e expedição |
+| Setup | Configuração geral, empresa e parâmetros do ERP | Encontrado: Configurações, Configurações ADM, empresa e codificação |
+| Manufacturing | BOM, ordens, operações, planejamento e produção | Encontrado: PCP, produção, engenharia/BOM, roteiros, fichas e chão de fábrica |
+| Stock | Depósitos, entradas/saídas, transferências, inventário, lotes e avaliação | Encontrado: Estoque, almoxarifado, inventário, endereços, lotes e movimentos |
+| Support | Chamados, fila, atribuição, SLA e resolução | Não identificada central de helpdesk/SLA dedicada; confirmar necessidade |
+| Utilities | Utilitários compartilhados, importação/exportação e ferramentas operacionais | Parcial: importadores/relatórios existem em áreas distintas; não há evidência de central unificada |
+| Assets | Ativos, depreciação, movimentação e baixa patrimonial | Parcial: rota de depreciação existe; validar cadastro e ciclo contábil completo de ativo |
+| Portal | Área externa para clientes/fornecedores acessarem serviços e documentos | Não identificada rota de portal externo dedicado no inventário |
+| Maintenance | Equipamentos, manutenção preventiva/corretiva e ordens | Encontrado: manutenção, cronograma, plano mestre, ordens e indicadores |
+| Regional | Localizações legais/fiscais por país e regras regionais | Parcial: Fiscal/NF-e brasileiro existe; validar cobertura fiscal e obrigações específicas |
+| ERPNext Integrations | Configuração de conexões com serviços externos | Parcial: Outlook e integrações citadas em Configurações ADM; sem catálogo central comprovado |
+| Quality Management | Inspeções, planos, não conformidade e controle da qualidade | Encontrado: Qualidade/SGQ, inspeções, FMEA, RNC/CAPA, CEP, GED e quarentena |
+| Communication | Mensagens, notificações, comunicações e histórico | Parcial: Outlook/caixa de entrada e logs; comunicação interna central não identificada |
+| Telephony | Telefonia integrada e registros de chamadas | Não identificada integração de telefonia dedicada |
+| Bulk Transaction | Processamento/importação em lote de transações | Parcial: importador aparece; não identificada central geral de transações em lote |
+| Subcontracting | Envio de materiais a terceiros e retorno de produtos/serviços subcontratados | Não identificada rota dedicada; confirmar se processo industrial exige |
+| EDI | Troca eletrônica estruturada de documentos com parceiros | Não identificada rota dedicada de EDI; confirmar necessidade comercial/fiscal |
+
+### 6.2 Odoo — famílias de aplicações e responsabilidades
+
+Fontes: https://www.odoo.com/documentation/18.0/applications.html e https://www.odoo.com/documentation/18.0/applications/inventory_and_mrp.html
+
+| Família Odoo | O que faz | Correspondência no ERP Industrial |
+|---|---|---|
+| Finance / Accounting / Invoicing | Contabilidade de partidas dobradas, faturamento, contas, pagamentos, reconciliação bancária, orçamento e ativos | Parcial: financeiro/fiscal/razão/custos existem; validar partidas dobradas, reconciliação, orçamento e ativo integrado |
+| Expenses | Despesas e reembolsos de funcionários | Não identificada rota dedicada |
+| Sales | Orçamentos, pedidos, condições, contratos, devoluções e faturamento | Encontrado em Vendas; validar devoluções/contratos e transição completa |
+| CRM | Funil de leads/oportunidades e atividades | Não identificada área CRM completa |
+| Point of Sale | Venda rápida no balcão, caixa e pagamentos | Rota `/vendas/pdv` existe |
+| Subscriptions / Rental | Recorrência, assinatura, aluguel, cobrança periódica | Não identificada rota dedicada |
+| Website / eCommerce | Catálogo público, carrinho, pedidos e conta do cliente | Há catálogo digital/gestão; não comprova e-commerce completo nem portal |
+| Purchase | Solicitação, fornecedores, cotação, aprovação e pedido | Encontrado em Compras |
+| Inventory / WMS / Barcode | Armazéns, endereços, operações, lotes/séries, reabastecimento, avaliação e leitura de códigos | Encontrado em Estoque/Almoxarifado; validar barcode e regras avançadas |
+| Manufacturing / MRP | BOM, ordens, centros de trabalho, programação, custo e apontamento | Encontrado em PCP/Engenharia; validar capacidade finita e custo real |
+| Quality | Pontos de controle, verificações e alertas de qualidade | Encontrado em Qualidade/SGQ |
+| Maintenance | Equipamentos, calendário, solicitações e manutenção preventiva/corretiva | Encontrado em Manutenção |
+| PLM | Ciclo de vida de produto, revisões e mudanças de engenharia | Parcial: Engenharia/BOM/revisões existem; validar processo formal de alteração e aprovação |
+| Human Resources | Funcionários, presença, folgas, recrutamento, avaliação e folha conforme edição/localização | Parcial: RH, funcionários, turnos e EPIs; não identificada cobertura completa de folha/recrutamento/ausências |
+| Project / Timesheets / Planning | Projetos, tarefas, horas e alocação de recursos | Não identificada área dedicada completa |
+| Field Service | Agendamento, execução e custos de serviços externos | Não identificada rota dedicada |
+| Helpdesk | Chamados, SLA, filas e suporte | Não identificada rota dedicada |
+| Documents / Sign | Arquivos, versões, assinatura e aprovação documental | Parcial: GED/qualidade existe; assinatura e gestão documental transversal devem ser confirmadas |
+| Marketing / Events / Surveys | Campanhas, automação, eventos e pesquisas | Não identificada cobertura dedicada |
+| Users / Companies / Access Rights | Usuários, grupos, permissões por app, multiempresa e administração | Encontrado em Usuários/Configurações ADM/Master; auditar RBAC, tenant, RLS, sessão e segurança de ponta a ponta |
+| Authentication / Integrations | Login, autenticação adicional e conexões externas | Parcial: Supabase Auth e Outlook existem; MFA, revogação de sessões e catálogo central não comprovados |
+| IoT | Integração com dispositivos, códigos de barras e chão de fábrica | Tablet/PCP existem; integração IoT específica não identificada |
+
+### 6.3 TOTVS Protheus — famílias usuais e responsabilidades
+
+Fontes: https://www.totvs.com/blog/erp/protheus-da-totvs/ e https://www.totvs.com/blog/erp/modulos-do-erp/
+
+| Família Protheus / função | O que faz | Correspondência no ERP Industrial |
+|---|---|---|
+| Compras | Requisições, cotação, aprovação por alçada, pedido e entrada | Encontrado em Compras; validar alçadas e vínculo com recebimento/fiscal |
+| Estoque e Custos | Saldos, inventário, movimentação, rastreabilidade e custo | Encontrado em Estoque/Inventário/Custos |
+| Faturamento | Documentos de venda, notas fiscais, devoluções e política comercial | Parcial: Vendas/Fiscal/NF-e; validar integração transacional |
+| Financeiro | Contas a pagar/receber, caixa, bancos, cobrança e tesouraria | Encontrado como rotas Financeiro; validar baixa, conciliação e integrações |
+| Fiscal | Apuração, livros, obrigações e documentos fiscais | Encontrado em Fiscal; alto risco, validar com testes reais |
+| Contabilidade Gerencial | Plano de contas, lançamentos, razão e demonstrativos | Parcial: razão/grupos contábeis; validar contabilidade integral |
+| PCP | Planejamento, ordens, programação, consumo e apontamento | Encontrado em PCP; validar fluxo ponta a ponta |
+| RH / Gestão de pessoal | Pessoas, jornada, folha, benefícios e obrigações conforme escopo | Parcial: funcionários/turnos/EPIs; folha e jornada completas não identificadas |
+| Ativo fixo | Cadastro patrimonial, depreciação, transferência e baixa | Parcial: rota de depreciação; validar ciclo patrimonial |
+| Controle de alçadas | Aprovação de compras/vendas por valor, desconto ou perfil | Não identificada como módulo independente; conferir regras existentes de aprovação em cada processo |
+| CRM / Gestão comercial | Leads, atividades, oportunidades e relacionamento | Parcial: vendas/clientes, sem CRM dedicado identificado |
+| Contratos | Contratos comerciais, vigência, reajuste e obrigações | Não identificada área contratual dedicada |
+| Projetos | Orçamento, etapas, custo e execução por projeto | Não identificada área dedicada |
+| Comércio exterior | Importação/exportação, documentos e custos aduaneiros | Não identificada rota dedicada |
+| BI / Analytics | Indicadores gerenciais com dados transacionais | Dashboards em Vendas/PCP/Qualidade; cobertura transversal não identificada |
+| Portal de vendas | Autosserviço de vendedores, carteira e pedidos | Há páginas de Vendas/Tablet; portal separado não identificado |
+| Gestão documental / auditoria | Documentos, rastreio, registros e trilha de ações | GED e logs existem; verificar auditoria transversal e imutabilidade |
+
+## 7. Levantamento específico: Segurança, Administração e Governança
+
+A comparação com Odoo (usuários, direitos de acesso, grupos, multiempresa, dispositivos de sessão, redefinição de senha e MFA) mostra que “Segurança” não deve ser apenas um atalho. É uma família de controles com estes componentes:
+
+| Componente de segurança | Para que serve | Evidência de rota/entrada no ERP Industrial | Gap a registrar |
+|---|---|---|---|
+| Identidade e autenticação | Login/logout, recuperação de senha, política de credenciais e sessão | `/login`, `/recuperar-senha` e uso de Supabase Auth no código | Confirmar expiração, renovação, encerramento e comportamento ao fechar navegador conforme requisito |
+| Usuários e estado de conta | Criar/desativar usuários, associar perfil e empresa | `/usuarios`, `/usuarios-admin`, `/configuracoes-adm/usuarios` | Confirmar fluxo sem duplicidade, desativação e tenant |
+| RBAC / perfis / matriz de permissões | Conceder permissões por módulo e ação (leitura/criação/edição/exclusão/aprovação) | `/configuracoes-adm/perfis`, `/configuracoes-adm/permissoes`; componente ConfiguracaoPermissoes | Verificar matriz real no banco, função de autorização, permissões efetivas e enforcement em servidor/RLS |
+| Isolamento multiempresa / tenant | Impedir que usuário leia/edite dados de outra empresa | Campo `empresa_id` e perfil consultado no código de Configurações ADM | Confirmar RLS em cada tabela, políticas e testes cruzados entre empresas |
+| Administração Master | Gestão global separada da administração de uma empresa | `/master`, `/cadastro-master` e `/configuracoes-adm` | Confirmar segregação de privilégio, trilha e prevenção de acesso cruzado |
+| Logs e auditoria | Registrar ator, ação, data, entidade e resultado; permitir investigação | `/admin/logs`, `/configuracoes-adm/logs` | Verificar eventos cobertos, escopo RLS, retenção e proteção contra alteração |
+| Sessões e dispositivos | Ver sessões ativas, revogar sessão/dispositivo e investigar acesso | Atalho `/configuracoes-adm/seguranca` | Não há evidência de ferramenta administrativa real de revogação; o código da página informa que depende de API autorizada |
+| MFA / autenticação forte | Segundo fator, política por perfil e recuperação segura | Não identificada rota específica de MFA | Não identificado no inventário; definir requisito e integração antes de construir |
+| Senhas e recuperação | Reset seguro, expiração/política, proteção contra abuso | `/recuperar-senha` | Verificar fluxo remoto e políticas; não assumir por existir a rota |
+| Aprovação e segregação de funções | Impedir autoaprovação ou concentração indevida de ações críticas | Rotas de Compras/Vendas existem | Confirmar alçadas e regras de conflito de funções |
+| Backups e recuperação de desastre | Cópias, retenção, restauração testada, RPO/RTO e alertas | `/configuracoes-adm/backups` | A tela existente não prova execução automática/restauração; validar infraestrutura e evidências de restore |
+| Segredos e integrações | Guardar tokens no servidor, OAuth seguro, rotação e auditoria | `/outlook/configuracao`, atalho `/configuracoes-adm/integracoes` | Confirmar segredo fora do cliente, escopos OAuth, rotação e falhas |
+| Configuração e mudança | Parametrização por empresa, rastreio de alterações e rollback | `/configuracoes-adm/empresa`, `/codificacao`, `/sistema` | Confirmar persistência, autorização e histórico das mudanças |
+| Auditoria de acesso e alertas | Tentativas de login, bloqueios, anomalias e alertas | Logs/admin presentes | Não identificada cobertura completa de alertas; verificar se é requisito |
+| Exportação, privacidade e retenção | Exportar dados autorizados, retenção e eliminação conforme política | Não identificada central de governança dedicada | Definir requisito LGPD e trilha antes de afirmar cobertura |
+
+**Conclusão objetiva de segurança:** o ERP possui rotas e componentes para usuários, perfis, permissões, logs, backups e Master. O inventário não encontrou evidência de rotas dedicadas para MFA, painel de sessões/dispositivos, portal externo, central de alertas de segurança ou EDI/telefonia. Algumas dessas funções podem existir em serviços externos ou dentro de telas atuais; devem ser verificadas no código e configuração antes de classificá-las como ausentes. O código da própria Configurações ADM declara que revogação administrativa de sessões e catálogo central de integrações não estão confirmados.
+
+## 8. Resumo das lacunas por família
+
+1. **Famílias com presença explícita no roteador:** Vendas, Compras, Estoque, PCP/Produção, Engenharia/BOM, Qualidade, Fiscal, Financeiro, RH, Manutenção, Expedição, Inventário, Usuários/Configurações ADM/Master e relatórios/dashboards.
+2. **Famílias com presença parcial ou não dedicada:** Contabilidade integral, CRM, Ativos, PLM/mudanças de engenharia, orçamento, portal externo, gestão documental transversal, IoT, comunicação interna, analytics transversal, alçadas independentes e gestão de contratos.
+3. **Famílias sem rota dedicada identificada no inventário:** Projetos/Timesheets, Helpdesk/SLA, Field Service, MFA/painel de sessões, EDI, telefonia, marketing, e-commerce completo, comércio exterior e subcontratação.
+4. Essa classificação responde à pergunta “tem módulo equivalente no código?”; não afirma funcionamento e não exige implementar tudo indiscriminadamente. O escopo industrial deve priorizar processos usados pela empresa e requisitos legais/operacionais.
+
+## 9. Fontes adicionais consultadas
+- Odoo — catálogo de aplicações: https://www.odoo.com/documentation/18.0/applications.html
+- Odoo — Inventário, MRP e manutenção: https://www.odoo.com/documentation/18.0/applications/inventory_and_mrp.html
+- Odoo — usuários, sessões/dispositivos e multiempresa: https://www.odoo.com/documentation/18.0/pt_BR/applications/general/users.html
+- Odoo — direitos de acesso e grupos: https://www.odoo.com/documentation/18.0/pt_BR/applications/general/users/access_rights.html
+- TOTVS — módulos de ERP e responsabilidades: https://www.totvs.com/blog/erp/modulos-do-erp/
+- SAP — áreas de S/4HANA Cloud: https://help.sap.com/docs/SAP_S4HANA_CLOUD/9d794cbd48c648bc8a176e422772de7e/e237c247cc454f1b8307e52d0624d0f4.html
