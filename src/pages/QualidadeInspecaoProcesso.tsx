@@ -148,10 +148,10 @@ export default function QualidadeInspecaoProcesso() {
     <div className="mx-auto grid max-w-[1800px] grid-cols-1 gap-3 p-3"><QualitySidebar active="/qualidade/inspecao-processo"/><section className="min-w-0 space-y-3">
       {(error || notice) && <div className={error ? 'rounded-[2px] border border-red-200 bg-red-50 p-4 text-[11px] font-bold text-red-800' : 'rounded-[2px] border border-emerald-200 bg-emerald-50 p-4 text-[11px] font-bold text-emerald-800'}>{error || notice}</div>}
       <section className="min-w-0 rounded-[2px] border border-slate-200 bg-white p-3 shadow-sm"><h2 className="text-[13px] font-extrabold">1. AMARRAÇÃO DE ENTIDADES DA PRODUÇÃO</h2><div className="mt-2 grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <EntityCodeLookup label="ITEM / PEÇA" value={produto} records={products} onChange={setProduto} onSelect={record => setProduto(record.id)} required/>
-        <EntityCodeLookup label="Nº DA OP" value={op} records={ops} onChange={setOp} onSelect={record => setOp(record.id)} helper="OP real do PCP."/>
-        <EntityCodeLookup label="MÁQUINA / POSTO" value={machine} records={machines} onChange={setMachine} onSelect={record => setMachine(record.id)}/>
-        <EntityCodeLookup label="INSTRUMENTO DE MEDIÇÃO" value={instrument} records={instruments.map(item => ({ ...item, nome: validInstrument(item) ? item.descricao : item.descricao + ' • BLOQUEADO' }))} onChange={setInstrument} onSelect={record => setInstrument(record.id)} required helper="Somente instrumentos aprovados e vigentes."/>
+        <EntityCodeLookup label="ITEM / PEÇA" value={produto} records={products} onChange={setProduto} onSelect={record => setProduto(record.id)} required compact/>
+        <EntityCodeLookup label="Nº DA OP" value={op} records={ops} onChange={setOp} onSelect={record => setOp(record.id)} helper="OP real do PCP." compact/>
+        <EntityCodeLookup label="MÁQUINA / POSTO" value={machine} records={machines} onChange={setMachine} onSelect={record => setMachine(record.id)} compact/>
+        <EntityCodeLookup label="INSTRUMENTO DE MEDIÇÃO" value={instrument} records={instruments.map(item => ({ ...item, nome: validInstrument(item) ? item.descricao : item.descricao + ' • BLOQUEADO' }))} onChange={setInstrument} onSelect={record => setInstrument(record.id)} required helper="Somente instrumentos aprovados e vigentes." compact/>
         <label className={label}>INSPETOR RESPONSÁVEL<input className={input} value={inspetor} onChange={event => setInspetor(event.target.value)} placeholder="Nome do inspetor"/></label>
       </div></section>
 
