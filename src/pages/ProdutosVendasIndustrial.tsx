@@ -26,7 +26,7 @@ type Product={
   referencia_interna:string|null;referencia_cliente:string|null;origem:string|null;ncm:string|null;cest:string|null;peso_liquido:number;peso_bruto:number
   comprimento_mm:number;largura_mm:number;altura_mm:number;observacoes:string|null;foto_url:string|null;fabricado:boolean;comprado:boolean;revenda:boolean
   estoque_atual:number;ponto_reposicao:number;estoque_maximo:number;localizacao_padrao_id:string|null;controla_lote:boolean
-  controla_serie:boolean;permite_estoque_negativo:boolean;lote_validade_dias:number;inspecao_qualidade_obrigatoria:boolean;nivel_qualidade:string|null
+  controla_serie:boolean;permite_estoque_negativo:boolean;lote_validade_dias:number;inspecao_qualidade_obrigatoria:boolean;nivel_qualidade:string|null;inspecao_entrada:boolean;inspecao_producao:boolean;inspecao_entrega:boolean;requer_quarentena:boolean;modelo_inspecao_codigo:string|null;amostragem_aql:string|null;tipo_medicao_qualidade:string|null;valor_minimo_qualidade:number|null;valor_maximo_qualidade:number|null;unidade_medida_qualidade:string|null
   origem_fiscal:string|null;cst_icms:string|null;csosn:string|null;cfop_entrada:string|null;cfop_saida:string|null;aliquota_icms:number;aliquota_ipi:number
   aliquota_pis:number;aliquota_cofins:number;prazo_compra_dias:number;prazo_producao_dias:number;tolerancia_percentual:number
   custo_medio:number;custo_ultimo:number;custo_fabricacao:number;preco_venda:number;ativo:boolean
@@ -49,7 +49,7 @@ const empty=():FormData=>({
   codigo:'',nome:'',cliente:null,descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
   fornecedor_padrao_id:null,referencia_interna:null,referencia_cliente:null,origem:'0 - Nacional',ncm:null,cest:null,peso_liquido:0,peso_bruto:0,comprimento_mm:0,largura_mm:0,altura_mm:0,
   observacoes:null,foto_url:null,fabricado:false,comprado:false,revenda:false,estoque_atual:0,ponto_reposicao:0,estoque_maximo:0,localizacao_padrao_id:null,
-  controla_lote:false,controla_serie:false,permite_estoque_negativo:false,lote_validade_dias:0,inspecao_qualidade_obrigatoria:false,nivel_qualidade:null,origem_fiscal:null,
+  controla_lote:false,controla_serie:false,permite_estoque_negativo:false,lote_validade_dias:0,inspecao_qualidade_obrigatoria:false,nivel_qualidade:null,inspecao_entrada:false,inspecao_producao:false,inspecao_entrega:false,requer_quarentena:false,modelo_inspecao_codigo:null,amostragem_aql:null,tipo_medicao_qualidade:null,valor_minimo_qualidade:null,valor_maximo_qualidade:null,unidade_medida_qualidade:null,origem_fiscal:null,
   cst_icms:null,csosn:null,cfop_entrada:null,cfop_saida:null,aliquota_icms:0,aliquota_ipi:0,aliquota_pis:0,aliquota_cofins:0,prazo_compra_dias:0,prazo_producao_dias:0,
   tolerancia_percentual:0,custo_medio:0,custo_ultimo:0,custo_fabricacao:0,preco_venda:0,ativo:true
 })
@@ -359,7 +359,7 @@ export default function ProdutosVendasIndustrial(){
   } as Record<string,string>)[title.replace(' [?]','')]||('Ajuda do campo '+title.replace(' [?]','')+'.');
   const HelpTip=({text}:{text:string})=>{const [open,setOpen]=useState(false);return <span style={{position:'relative',display:'inline-flex',verticalAlign:'baseline',marginLeft:3}}><span role="button" tabIndex={0} aria-label="Ajuda" onClick={e=>{e.preventDefault();e.stopPropagation();setOpen(v=>!v)}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setOpen(v=>!v)}}} style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:10,height:12,color:'#2D8DB8',fontSize:11,fontWeight:800,lineHeight:1,cursor:'pointer',userSelect:'none'}}>?</span>{open&&<span role="tooltip" style={{position:'absolute',zIndex:1200,left:12,top:14,width:250,padding:'7px 8px',border:'1px solid #b9cbd3',borderRadius:2,background:'#fff',boxShadow:'0 4px 12px rgba(18,59,80,.16)',fontSize:9,fontWeight:400,lineHeight:1.35,color:'#173b4a',textTransform:'none'}}>{text}</span>}</span>}
   const fieldTitle=(title:string)=><span style={{display:'inline-flex',alignItems:'center',flexWrap:'wrap',whiteSpace:'normal',overflowWrap:'anywhere',lineHeight:'11px',minHeight:12,minWidth:0}}>{title.replace(' [?]','')}{(title.includes('[?]')||title.startsWith('Custo médio')||title.startsWith('Último custo')||title.startsWith('Custo fabricação'))&&<HelpTip text={helpFor(title)}/>}</span>;
-  const field=(title:string,key:keyof FormData,type='text',span=1,locked=false)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input type={type} maxLength={key==='codigo'?20:key==='codigo_barras'?14:key==='nome'?120:key==='cliente'?60:key==='referencia_cliente'?15:key==='ncm'?8:key==='cest'?7:undefined} value={String(form[key]??'')} readOnly={locked} disabled={!editing} onChange={e=>update(key,type==='number'?n(e.target.value):e.target.value)} style={{...input,background:locked?'#eaf3f8':editing?'#fff':'#f5f7fa',color:locked?'#17445A':'#172033',fontWeight:locked?700:400,cursor:locked?'not-allowed':'text'}}/></label>
+  const field=(title:string,key:keyof FormData,type='text',span=1,locked=false)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<input type={type} maxLength={key==='codigo'?20:key==='codigo_barras'?14:key==='nome'?120:key==='cliente'?60:key==='referencia_cliente'?15:key==='ncm'?8:key==='cest'?7:key==='modelo_inspecao_codigo'?10:key==='amostragem_aql'?6:key==='tipo_medicao_qualidade'?15:key==='unidade_medida_qualidade'?3:undefined} value={String(form[key]??'')} readOnly={locked} disabled={!editing} onChange={e=>update(key,type==='number'?n(e.target.value):e.target.value)} style={{...input,background:locked?'#eaf3f8':editing?'#fff':'#f5f7fa',color:locked?'#17445A':'#172033',fontWeight:locked?700:400,cursor:locked?'not-allowed':'text'}}/></label>
   const select=(title:string,key:keyof FormData,options:Array<[string,string]>,span=1)=><label style={{...label,gridColumn:'span '+span}}>{fieldTitle(title)}<select value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}>{options.map(o=><option value={o[0]} key={o[0]}>{o[1]}</option>)}</select></label>
   const knownFiscalValues=(key:'cest'|'cst_icms'|'csosn'|'cfop_entrada'|'cfop_saida'|'origem_fiscal')=>Array.from(new Set(products.map(p=>p[key]).filter((value):value is string=>typeof value==='string'&&Boolean(value.trim())))).sort((a,b)=>a.localeCompare(b))
   const fiscalCombo=(title:string,key:'cest'|'cst_icms'|'csosn'|'cfop_entrada'|'cfop_saida'|'origem_fiscal')=><label style={label}>{fieldTitle(title)}<input list={'erp-fiscal-'+key} value={String(form[key]??'')} disabled={!editing} onChange={e=>update(key,e.target.value)} style={{...input,background:editing?'#fff':'#f5f7fa'}}/><datalist id={'erp-fiscal-'+key}>{knownFiscalValues(key).map(value=><option key={value} value={value}/>)}</datalist></label>
@@ -493,6 +493,23 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-attribute-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 8px}
       .product-master-screen .product-technical-note{display:grid;grid-template-columns:1fr!important;grid-template-rows:auto 48px!important;gap:4px!important}
       .product-master-screen .product-technical-note textarea{width:100%;min-width:0;box-sizing:border-box;font:11px Arial,sans-serif}
+
+      .product-master-screen .product-quality-card-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:start}
+      .product-master-screen .product-quality-card{min-width:0;border:1px solid #cbdbe4;border-radius:2px;background:#fff;padding:8px}
+      .product-master-screen .product-quality-card-header{padding-bottom:6px;margin-bottom:7px;border-bottom:1px solid #d8e6ec}
+      .product-master-screen .product-quality-card-header span{display:block;font-size:9px;font-weight:800;letter-spacing:.03em;color:#2D8DB8}
+      .product-master-screen .product-quality-card-header small{display:block;margin-top:3px;font-size:9px;color:#617987}
+      .product-master-screen .product-quality-trigger-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 8px;margin:4px 0 10px}
+      .product-master-screen .product-quality-trigger-grid>label{display:flex;align-items:center;gap:5px;min-width:0;font-size:9px!important;color:#344054}
+      .product-master-screen .product-quality-trigger-grid input{accent-color:#2D8DB8}
+      .product-master-screen .product-quality-lookup{display:grid;grid-template-columns:minmax(0,1fr) 28px;gap:4px;margin-top:3px}
+      .product-master-screen .product-quality-lookup-btn{height:30px;width:28px;display:grid;place-items:center;border:1px solid #2D8DB8;background:#eaf6fa;color:#123B50;border-radius:2px;padding:0}
+      .product-master-screen .product-quality-parameter-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 9px;align-items:end}
+      .product-master-screen .product-quality-parameter-grid input{min-width:0}
+      .product-master-screen .product-quality-existing-settings{display:grid;grid-template-columns:150px 180px;gap:8px;margin-top:8px;padding:7px;border:1px solid #d8e6ec;background:#f8fbfd}
+      .product-master-screen .product-quality-existing-settings input,.product-master-screen .product-quality-existing-settings select{height:30px!important}
+      @media(max-width:850px){.product-master-screen .product-quality-card-grid{grid-template-columns:1fr}}
+      @media(max-width:520px){.product-master-screen .product-quality-trigger-grid,.product-master-screen .product-quality-parameter-grid{grid-template-columns:1fr}.product-master-screen .product-quality-existing-settings{grid-template-columns:1fr}}
       .product-master-screen .product-quality-note{margin:6px 0 0;font-size:9px;color:#617987}
       @media(max-width:1000px){.product-master-screen .product-general-card-grid{grid-template-columns:1fr}.product-master-screen .product-operational-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
       @media(max-width:600px){.product-master-screen .product-inline-field>label,.product-master-screen .product-operational-fields .product-inline-field>label{grid-template-columns:86px minmax(0,1fr)!important}.product-master-screen .product-operational-fields,.product-master-screen .product-attribute-grid{grid-template-columns:1fr}.product-master-screen .product-layout-card-header{align-items:flex-start;flex-direction:column}.product-master-screen .product-layout-card-header small{text-align:left}}
@@ -621,7 +638,34 @@ export default function ProdutosVendasIndustrial(){
       </section>}
 
       {tab==='qualidade'&&<section style={{padding:10}}>
-        <div style={{display:'grid',gridTemplateColumns:'120px 120px 1fr',gap:7,alignItems:'end'}}>{select('INSPEÇÃO OBRIGATÓRIA','inspecao_qualidade_obrigatoria',[['true','Sim'],['false','Não']])}{field('NÍVEL DE QUALIDADE','nivel_qualidade')}<div style={{fontSize:9,color:'#667085',paddingBottom:6}}>Desenhos aprovados, critérios de inspeção e documentos controlados ficam vinculados ao produto.</div></div>
+        <div className="product-quality-card-grid">
+          <section className="product-quality-card">
+            <header className="product-quality-card-header"><div><span>🛡️ 04.A / GATILHOS DE INSPEÇÃO</span><small>Critérios de retenção e verificação do produto</small></div></header>
+            <div className="product-quality-trigger-grid">
+              {check('Inspeção na entrada','inspecao_entrada')}
+              {check('Inspeção na produção','inspecao_producao')}
+              {check('Inspeção na entrega','inspecao_entrega')}
+              {check('Requer quarentena','requer_quarentena')}
+            </div>
+            <label style={label}>CÓD. MODELO DE INSPEÇÃO
+              <div className="product-quality-lookup"><input value={String(form.modelo_inspecao_codigo??'')} maxLength={10} disabled={!editing} onChange={e=>update('modelo_inspecao_codigo',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}/><button type="button" className="product-quality-lookup-btn" disabled={!editing} title="Pesquisar modelo de inspeção" onClick={()=>{const value=window.prompt('Informe o código do modelo de inspeção cadastrado:',String(form.modelo_inspecao_codigo??''));if(value!==null)update('modelo_inspecao_codigo',value.trim().slice(0,10)||null)}}><Search size={13}/></button></div>
+            </label>
+          </section>
+          <section className="product-quality-card">
+            <header className="product-quality-card-header"><div><span>🔬 04.B / PARÂMETROS E CRITÉRIOS DE TESTE</span><small>Limites técnicos de aceitação</small></div></header>
+            <div className="product-quality-parameter-grid">
+              <label style={label}>AMOSTRAGEM AQL<input value={String(form.amostragem_aql??'')} maxLength={6} disabled={!editing} onChange={e=>update('amostragem_aql',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
+              <label style={label}>TIPO DE MEDIÇÃO<div className="product-quality-lookup"><input value={String(form.tipo_medicao_qualidade??'')} maxLength={15} disabled={!editing} onChange={e=>update('tipo_medicao_qualidade',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}/><button type="button" className="product-quality-lookup-btn" disabled={!editing} title="Pesquisar tipo de medição" onClick={()=>{const value=window.prompt('Informe o tipo de medição definido no procedimento de qualidade:',String(form.tipo_medicao_qualidade??''));if(value!==null)update('tipo_medicao_qualidade',value.trim().slice(0,15)||null)}}><Search size={13}/></button></div></label>
+              {field('Valor mínimo','valor_minimo_qualidade','number')}
+              {field('Valor máximo','valor_maximo_qualidade','number')}
+              <label style={label}>UNIDADE DE MEDIDA QC<input value={String(form.unidade_medida_qualidade??'')} maxLength={3} disabled={!editing} onChange={e=>update('unidade_medida_qualidade',e.target.value.toUpperCase().slice(0,3)||null)} style={{...input,background:editing?'#fff':'#f5f7fa',textTransform:'uppercase'}}/></label>
+            </div>
+          </section>
+        </div>
+        <div className="product-quality-existing-settings">
+          {select('INSPEÇÃO OBRIGATÓRIA (REGRA ATUAL)','inspecao_qualidade_obrigatoria',[['true','Sim'],['false','Não']])}
+          {field('NÍVEL DE QUALIDADE','nivel_qualidade')}
+        </div>
         <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DEFEITOS REGISTRADOS</h2>
         <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr>{['Data','OP','Defeito','Quantidade','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:5,borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{defects.map(d=><tr key={d.id}><td style={{padding:5}}>{new Date(d.created_at).toLocaleString('pt-BR')}</td><td style={{padding:5}}>{d.ordem_producao_id}</td><td style={{padding:5}}>{d.defeito}</td><td style={{padding:5}}>{fmt(d.quantidade)}</td><td style={{padding:5}}>{d.observacao||'—'}</td></tr>)}{!defects.length&&emptyRow('Nenhum defeito registrado para este produto.',5)}</tbody></table></div>
         <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DOCUMENTOS / DESENHOS VINCULADOS</h2>
