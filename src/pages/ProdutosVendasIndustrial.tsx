@@ -1,14 +1,15 @@
 /**
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 13:00 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
- * ID da Revisão original: REV-059
- * Última revisão: REV-060 — 16/10/2026
- * O que foi revisto: Aba Produção integrada ao painel de processo; Aba Qualidade precisava exibir histórico real de inspeções, sem laudos fictícios.
- * O que foi alterado: integração do componente AbaProducaoIndustrial; inclusão de consulta tenant-scoped a erp_inspecoes e painel de histórico real na aba Qualidade.
- * Validação desta revisão: inspeção estática do código e dos contratos usados em QualidadeInspecaoProcesso.tsx; type-check/build ainda não executados após esta alteração.
- * Estado: implementado no código; validação estática parcial; banco, RLS, testes integrados e deploy pendentes.
+ * Data da revisão original: 24/09/2026 - 13:00 BRT
+ * Revisão original: REV-059
+ * Última revisão: REV-061 — 16/10/2026
+ * O que foi revisto: painel de Produção e aba Qualidade do cadastro mestre; histórico precisa usar inspeções reais, e dependências de schema devem ser confirmadas.
+ * O que foi alterado: integração do painel de documentos de processo; consulta tenant-scoped a erp_inspecoes; remoção de dependência de tabela PCP não confirmada no componente de Produção.
+ * Evidência: contratos de erp_inspecoes comparados com QualidadeInspecaoProcesso.tsx; tabela de roteiro não confirmada removida do componente.
+ * Validação executada: inspeção estática do código e comparação das referências de schema.
+ * Validação pendente: type-check, lint, build, schema remoto, RLS, testes integrados e deploy.
+ * Estado: implementado no código; não homologado.
  * =========================================================================
  */
 
