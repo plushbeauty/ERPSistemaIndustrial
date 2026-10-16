@@ -5,8 +5,9 @@
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-059
  * Data da revisão de aprovação: 2026-10-16
- * Status da tela: APROVADO-IMUTAVEL (não alterar sem autorização explícita do usuário).
- * Alterações: Remoção de cast Event→FormEvent artificial no salvamento de produtos; ação agora chama save() diretamente.
+ * Status da tela: APROVADO-COM-AJUSTE-GEOMÉTRICO-AUTORIZADO.
+ * Alterações anteriores: remoção de cast Event→FormEvent artificial no salvamento de produtos.
+ * Revisão 2026-10-16 · REV-PROD-GEOMETRIA-001: reorganização do grid de Dados Gerais em duas linhas alinhadas; campos de descrição e classificação com colunas proporcionais; preservadas as cinco abas e toda a lógica de dados.
  * Status do Build Local: Não executado — validação será feita pelo gate remoto.
  * =========================================================================
  */
@@ -387,6 +388,18 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-form-section-title{margin:0 0 8px;padding:6px 8px;background:#eaf4f8;border-left:3px solid #2D8DB8;color:#123B50;font-size:10px;line-height:14px;font-weight:700;letter-spacing:.04em}
       .product-master-screen .product-form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:start}
       .product-master-screen .product-form-grid>*{min-width:0}
+      /* Dados Gerais: 2 linhas regulares; cada grupo de campos ocupa a largura da sua função. */
+      .product-master-screen .product-general-row{grid-template-columns:repeat(6,minmax(0,1fr))}
+      .product-master-screen .product-general-row>*:nth-child(n+5){grid-column:span 2}
+      .product-master-screen .product-fiscal-classification-grid,.product-master-screen .product-fiscal-tax-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .product-master-screen .product-fiscal-rates-grid,.product-master-screen .product-production-detail-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+      .product-master-screen .product-stock-main-grid{grid-template-columns:minmax(100px,.7fr) minmax(120px,.8fr) minmax(120px,.8fr) minmax(220px,2fr)}
+      .product-master-screen .product-stock-options-grid{grid-template-columns:minmax(110px,.7fr) minmax(120px,.8fr) minmax(120px,.8fr) minmax(170px,1.2fr)}
+      .product-master-screen .product-production-main-grid{grid-template-columns:repeat(4,minmax(90px,1fr)) minmax(120px,1.2fr) minmax(120px,1.2fr) max-content}
+      .product-master-screen .product-quality-main-grid{grid-template-columns:minmax(140px,.8fr) minmax(140px,.8fr) minmax(180px,1.4fr)}
+      /* Dados Gerais: duas linhas intencionais, sem lacunas artificiais entre os edits. */
+      .product-master-screen .product-general-row{grid-template-columns:repeat(6,minmax(0,1fr))}
+      .product-master-screen .product-general-row>*:nth-child(n+5){grid-column:span 2}
       .product-master-screen .product-form-grid label{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;align-content:start;gap:2px;min-width:0}
       .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea{min-width:0;width:100%;height:30px;box-sizing:border-box}
       .product-master-screen .product-form-grid label>span{display:flex;align-items:center;max-width:100%;min-height:12px;line-height:11px;white-space:normal;overflow-wrap:anywhere;word-break:normal}
@@ -413,7 +426,19 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-unit-row{grid-column:span 3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;align-items:center;min-width:0}.product-master-screen .product-unit-row label{display:grid;grid-template-columns:82px minmax(0,1fr);grid-template-rows:30px;align-items:center;gap:5px}.product-master-screen .product-unit-row label>span{min-height:0;line-height:11px}.product-master-screen .product-unit-row label>select{width:100%;min-width:0}.product-master-screen .product-photo-card{cursor:pointer;transition:border-color .12s,background .12s}.product-master-screen .product-photo-card:hover{border-color:#2D8DB8!important;background:#edf7fb!important}.product-master-screen .product-combo-wrap{display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:4px;align-items:end;min-width:0}
       .product-master-screen .product-plus-button{height:30px;width:30px;border:1px solid #2D8DB8;background:#eaf4f8;color:#123B50;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;cursor:pointer}
       .product-master-screen .product-inline-create{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto;gap:5px;padding:7px;margin-top:5px;background:#f4fbfd;border:1px solid #c8dfe8;align-items:end}
-      @media(max-width:700px){.product-master-screen .product-form-grid,.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-unit-row{grid-column:span 2;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.product-master-screen .product-unit-row label{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;gap:2px}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 2!important}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 2!important}.product-master-screen .product-responsive-grid{row-gap:9px}.product-master-screen .product-tabs button{padding:7px 8px!important;font-size:9px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}.product-master-screen .product-inline-create{grid-template-columns:1fr}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 1!important}}
+      @media(max-width:700px){.product-master-screen .product-form-grid,.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-general-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-unit-row{grid-column:span 2;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.product-master-screen .product-unit-row label{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;gap:2px}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 2!important}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 2!important}.product-master-screen .product-responsive-grid{row-gap:9px}.product-master-screen .product-tabs button{padding:7px 8px!important;font-size:9px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}.product-master-screen .product-inline-create{grid-template-columns:1fr}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 1!important}}
+      /* Breakpoints explícitos para não depender de estilos inline que anulam a responsividade. */
+      @media(max-width:1150px){
+        .product-master-screen .product-general-row{grid-template-columns:repeat(6,minmax(0,1fr))}
+        .product-master-screen .product-stock-main-grid,.product-master-screen .product-stock-options-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+        .product-master-screen .product-production-main-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+        .product-master-screen .product-quality-main-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+      }
+      @media(max-width:700px){
+        .product-master-screen .product-general-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+        .product-master-screen .product-fiscal-classification-grid{grid-template-columns:minmax(0,1fr)}
+        .product-master-screen .product-fiscal-tax-grid,.product-master-screen .product-fiscal-rates-grid,.product-master-screen .product-stock-main-grid,.product-master-screen .product-stock-options-grid,.product-master-screen .product-production-main-grid,.product-master-screen .product-production-detail-grid,.product-master-screen .product-quality-main-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      }
     `}</style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:800,color:'#2D8DB8'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
@@ -535,7 +560,7 @@ export default function ProdutosVendasIndustrial(){
             {tab==='fiscal'&&<section style={{padding:10}}>
         <div className="product-form-section" aria-label="Classificação fiscal">
           <h3 className="product-form-section-title">CLASSIFICAÇÃO DA MERCADORIA</h3>
-          <div className="product-responsive-grid" style={{gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)'}}>
+          <div className="product-responsive-grid product-fiscal-classification-grid">
             {select('ORIGEM DA MERCADORIA [?]','origem',[['0 - Nacional','0 • Nacional, exceto códigos 3–5'],['1 - Estrangeira - Importação direta','1 • Estrangeira — importação direta'],['2 - Estrangeira - mercado interno','2 • Estrangeira — adquirida no mercado interno'],['3 - Nacional, conteúdo importação >40% e <70%','3 • Nacional, conteúdo de importação acima de 40%'],['4 - Nacional, processo produtivo básico','4 • Nacional, processo produtivo básico'],['5 - Nacional, conteúdo importação <40%','5 • Nacional, conteúdo de importação até 40%'],['6 - Estrangeira - importação direta, sem similar nacional','6 • Estrangeira — importação direta, sem similar nacional'],['7 - Estrangeira - mercado interno, sem similar nacional','7 • Estrangeira — mercado interno, sem similar nacional'],['8 - Nacional, conteúdo importação >70%','8 • Nacional, conteúdo de importação acima de 70%']])}
             {combo('NCM • 8 dígitos [?]','ncm',[],1,8)}
             {combo('CEST • 7 dígitos [?]','cest',[],1,7)}
@@ -549,7 +574,7 @@ export default function ProdutosVendasIndustrial(){
         </div>
         <div className="product-form-section" aria-label="Regras tributárias">
           <h3 className="product-form-section-title">CÓDIGOS TRIBUTÁRIOS E OPERAÇÃO</h3>
-          <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(3,minmax(0,1fr))'}}>
+          <div className="product-responsive-grid product-fiscal-tax-grid">
             {combo('CST ICMS • 2 dígitos [?]','cst_icms',[],1,2)}
             {combo('CSOSN • 3 dígitos, Simples Nacional [?]','csosn',[],1,3)}
             {combo('CFOP ENTRADA • 4 dígitos [?]','cfop_entrada',[],1,4)}
@@ -564,7 +589,7 @@ export default function ProdutosVendasIndustrial(){
         </div>
         <div className="product-form-section" aria-label="Alíquotas tributárias"><h3 className="product-form-section-title">ALÍQUOTAS CADASTRADAS (%)</h3>
           <p style={{margin:'0 0 7px',fontSize:9,color:'#667085'}}>Valores informativos do cadastro atual; não representam um motor de cálculo tributário. IBS/CBS, FCP, DIFAL e demais regras condicionais não devem ser presumidos sem integração fiscal validada.</p>
-          <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(4,minmax(0,1fr))'}}>
+          <div className="product-responsive-grid product-fiscal-rates-grid">
             {field('ICMS %','aliquota_icms','number')}{field('IPI %','aliquota_ipi','number')}{field('PIS %','aliquota_pis','number')}{field('COFINS %','aliquota_cofins','number')}
           </div>
         </div>
@@ -572,13 +597,13 @@ export default function ProdutosVendasIndustrial(){
       </section>}
 
             {tab==='estoque'&&<section style={{padding:10}}>
-        <div className="product-responsive-grid" style={{gridTemplateColumns:'82px 82px 120px 1fr'}}>
+        <div className="product-responsive-grid product-stock-main-grid">
           <label style={label}>ESTOQUE ATUAL <span style={{fontSize:8,color:'#667085'}}>calculado</span><input value={fmt(form.estoque_atual)+' '+form.unidade} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>PONTO DE REPOSIÇÃO <HelpTip text={helpFor('Ponto de reposição')}/></span><input type="number" value={String(form.ponto_reposicao??0)} disabled={!editing} onChange={e=>update('ponto_reposicao',n(e.target.value))} title="Quantidade que dispara a necessidade de reposição; não é estoque atual." style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
           <label style={label}>ESTOQUE MÁXIMO<input type="number" value={String(form.estoque_maximo??0)} disabled={!editing} onChange={e=>update('estoque_maximo',n(e.target.value))} style={{...input,background:editing?'#fff':'#f5f7fa'}}/></label>
           <label style={label}><span style={{display:'inline-flex',alignItems:'center'}}>LOCALIZAÇÃO PADRÃO <HelpTip text={helpFor('Localização padrão')}/></span><select value={form.localizacao_padrao_id||''} disabled={!editing} onChange={e=>update('localizacao_padrao_id',e.target.value||null)} style={{...input,background:editing?'#fff':'#f5f7fa'}}><option value="">Selecione a localização</option>{locations.map(l=><option value={l.id} key={l.id}>{l.codigo} • {l.nome}{l.tipo?' • '+l.tipo:''}</option>)}</select></label>
         </div>
-        <div className="product-responsive-grid" style={{gridTemplateColumns:'82px 105px 105px 170px',marginTop:7}}>
+        <div className="product-responsive-grid product-stock-options-grid" style={{marginTop:7}}>
           {field('VALIDADE LOTE [dias] [?]','lote_validade_dias','number')}{check('Controla lote','controla_lote')}{check('Controla série','controla_serie')}{check('Permite estoque negativo','permite_estoque_negativo')}
         </div>
         <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>MOVIMENTAÇÕES RECENTES</h2>
@@ -586,13 +611,13 @@ export default function ProdutosVendasIndustrial(){
       </section>}
 
       {tab==='producao'&&<section style={{padding:10}}>
-        <div className="product-responsive-grid" style={{gridTemplateColumns:'82px 82px 82px 82px 120px 120px max-content'}}>
+        <div className="product-responsive-grid product-production-main-grid">
           {field('PRAZO COMPRA (dias)','prazo_compra_dias','number')}{field('PRAZO PRODUÇÃO (dias)','prazo_producao_dias','number')}{field('Custo fabricação (valor gravado) [?]','custo_fabricacao','number',1,true)}{field('TOLERÂNCIA (%)','tolerancia_percentual','number')}
           <label style={label}>FICHA ATIVA<input value={productionFicha?('REV. '+(productionFicha.revisao||productionFicha.versao)):'Não cadastrada'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}>RENDIMENTO<input value={productionFicha?fmt(productionFicha.rendimento)+' '+productionFicha.unidade_rendimento:'—'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A'}}/></label>
           <button type="button" onClick={()=>{window.location.href='/ficha-engenharia?produto='+encodeURIComponent(selectedId||'')}} style={{...btn('normal'),width:'max-content',maxWidth:'100%',whiteSpace:'nowrap',padding:'0 8px',fontSize:10}}>ABRIR FICHA DE PROCESSO</button>
         </div>
-        <div className="product-responsive-grid" style={{gridTemplateColumns:'repeat(4,minmax(0,1fr))',marginTop:8}}>
+        <div className="product-responsive-grid product-production-detail-grid" style={{marginTop:8}}>
           {select('TIPO DE PROCESSO','tipo_processo',[['NAO_APLICA','Não aplicável'],['PRENSADOS','Prensados'],['INJETADOS','Injetados'],['CORTE_VINCO','Corte e vinco'],['ESTAMPOS','Estampos'],['USINAGEM','Usinagem'],['MONTAGEM','Montagem'],['OUTRO','Outro']])}
           {field('Tipo de máquina','tipo_maquina')}
           {field('Tipo de injetora','tipo_injetora')}
@@ -605,7 +630,7 @@ export default function ProdutosVendasIndustrial(){
       </section>}
 
       {tab==='qualidade'&&<section style={{padding:10}}>
-        <div className="product-responsive-grid" style={{gridTemplateColumns:'120px 120px 1fr'}}>{select('INSPEÇÃO OBRIGATÓRIA','inspecao_qualidade_obrigatoria',[['true','Sim'],['false','Não']])}{field('NÍVEL DE QUALIDADE','nivel_qualidade')}<div style={{fontSize:9,color:'#667085',paddingBottom:6}}>Desenhos aprovados, critérios de inspeção e documentos controlados ficam vinculados ao produto.</div></div>
+        <div className="product-responsive-grid product-quality-main-grid">{select('INSPEÇÃO OBRIGATÓRIA','inspecao_qualidade_obrigatoria',[['true','Sim'],['false','Não']])}{field('NÍVEL DE QUALIDADE','nivel_qualidade')}<div style={{fontSize:9,color:'#667085',paddingBottom:6}}>Desenhos aprovados, critérios de inspeção e documentos controlados ficam vinculados ao produto.</div></div>
         <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DEFEITOS REGISTRADOS</h2>
         <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr>{['Data','OP','Defeito','Quantidade','Observação'].map(h=><th key={h} style={{textAlign:'left',padding:5,borderBottom:'1px solid #d9e1ea',fontSize:9,fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{defects.map(d=><tr key={d.id}><td style={{padding:5}}>{new Date(d.created_at).toLocaleString('pt-BR')}</td><td style={{padding:5}}>{d.ordem_producao_id}</td><td style={{padding:5}}>{d.defeito}</td><td style={{padding:5}}>{fmt(d.quantidade)}</td><td style={{padding:5}}>{d.observacao||'—'}</td></tr>)}{!defects.length&&emptyRow('Nenhum defeito registrado para este produto.',5)}</tbody></table></div>
         <h2 style={{fontSize:11,margin:'12px 0 6px',color:'#123B50'}}>DOCUMENTOS / DESENHOS VINCULADOS</h2>
