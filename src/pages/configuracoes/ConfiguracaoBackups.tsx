@@ -1,3 +1,8 @@
+/*
+ * REVISÃO TÉCNICA: 16/10/2026
+ * Revisado: interface compacta e comunicação explícita de que backup/restauração reais não são executados por esta tela.
+ * Não validado nesta revisão: existência de rotina operacional de backup, retenção, restauração testada, type-check/build.
+ */
 import { AlertTriangle, DatabaseBackup, ShieldCheck } from 'lucide-react'
 
 export default function ConfiguracaoBackups() {
