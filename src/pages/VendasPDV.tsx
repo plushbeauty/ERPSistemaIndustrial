@@ -209,7 +209,7 @@ export default function VendasPDV() {
                 <span className="text-[10px]">{products.length ? 'Altere a pesquisa ou escolha outra categoria.' : 'Não há produtos ativos disponíveis para esta empresa.'}</span>
               </div>
             ) : (
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,185px),1fr))] items-stretch gap-2">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,260px),1fr))] items-stretch gap-3">
                 {visible.map(product => {
                   const unavailable = product.estoque_atual <= 0
                   const inCart = cart.find(item => item.id === product.id)?.quantidade ?? 0
@@ -220,14 +220,14 @@ export default function VendasPDV() {
                       onClick={() => add(product)}
                       disabled={unavailable || loading || saving}
                       aria-label={`Adicionar ${product.nome}, ${money(Number(product.preco_venda))}, estoque ${product.estoque_atual}`}
-                      className="group flex min-h-[112px] min-w-0 flex-col justify-between border border-slate-200 bg-white p-2.5 text-left transition-colors hover:border-[#2D8DB8] hover:bg-sky-50/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2D8DB8] disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                      className="group flex min-h-[148px] min-w-0 flex-col justify-between border border-slate-200 bg-white p-3.5 text-left transition-colors hover:border-[#2D8DB8] hover:bg-sky-50/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2D8DB8] disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
                     >
                       <div className="flex min-w-0 items-start justify-between gap-2">
                         <span className="min-w-0 truncate text-[9px] font-medium tracking-wide text-slate-500" title={product.codigo}>{product.codigo}</span>
                         {inCart > 0 && <span className="flex h-5 min-w-5 shrink-0 items-center justify-center bg-[#e6f4f8] px-1 text-[10px] font-semibold text-[#17445A]">{inCart}</span>}
                       </div>
-                      <span className="mt-2 line-clamp-2 min-h-[30px] break-words text-[11px] font-medium leading-[15px] text-[#123B50]" title={product.nome}>{product.nome}</span>
-                      <div className="mt-3 flex min-w-0 items-end justify-between gap-2 border-t border-slate-100 pt-2">
+                      <span className="mt-3 line-clamp-3 min-h-[45px] break-words text-[12px] font-medium leading-[17px] text-[#123B50]" title={product.nome}>{product.nome}</span>
+                      <div className="mt-4 flex min-w-0 items-end justify-between gap-2 border-t border-slate-100 pt-3">
                         <span className={unavailable ? 'text-[9px] text-rose-600' : 'text-[9px] text-slate-500'}>{unavailable ? 'Sem estoque' : `Saldo ${product.estoque_atual} ${product.unidade || ''}`}</span>
                         <strong className="shrink-0 text-[11px] font-semibold text-[#17445A]">{money(Number(product.preco_venda))}</strong>
                       </div>
