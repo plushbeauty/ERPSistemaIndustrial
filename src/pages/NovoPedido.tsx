@@ -102,7 +102,7 @@ export default function NovoPedido(){
      </div>
     </section>
 
-    <section className="min-w-0 md:col-span-2 bg-white border border-slate-300 rounded-[2px] p-5 shadow-sm space-y-6">
+    <section className="min-w-0 md:col-span-4 bg-white border border-slate-300 rounded-[2px] p-5 shadow-sm space-y-6">
      <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Dados do Pedido</h3>
      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
       <Field label="Nº do Pedido"><input id="edPedido" value={edPedido} readOnly className={inputStyle+' bg-slate-100 font-semibold text-slate-600'}/></Field>
