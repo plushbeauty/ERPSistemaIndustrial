@@ -1,3 +1,11 @@
+/**
+ * ERPSis — CONTROLE DE REVISÃO VISUAL
+ * Data Atual: 2026-10-16
+ * Revisão Incremental: REV-062
+ * Escopo: padronização industrial de inputs, seletores, botões e densidade tipográfica;
+ * cantos retos, foco azul, cabeçalhos escuros e alinhamento de dados conforme aplicável.
+ * Escopo funcional preservado: consultas Supabase, validações, tenant, RPCs e gravações.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, ClipboardCheck, RefreshCw, Search, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -37,9 +45,9 @@ function parseSpecParameters(value: unknown): SpecParameter[] {
   }))
 }
 
-const fieldClass = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] text-slate-800 outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100'
-const labelClass = 'mb-[2px] block text-[9px] font-bold uppercase tracking-wider text-slate-600'
-const buttonClass = 'inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50'
+const fieldClass = 'h-8 w-full rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 outline-none transition-all focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
+const labelClass = 'flex flex-col gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-500'
+const buttonClass = 'inline-flex h-8 items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50'
 
 export default function QualidadeInspecoesIndustrial() {
   const [companyId, setCompanyId] = useState('')
@@ -289,7 +297,7 @@ export default function QualidadeInspecoesIndustrial() {
           <label title="Quantidade total de unidades do lote, em unidade de estoque."><span className={labelClass}>QUANTIDADE TOTAL</span><input className={fieldClass} type="number" min="0" step="0.001" value={quantidade} onChange={event => setQuantidade(event.target.value)} /></label>
           <label title="Número inteiro de unidades inspecionadas do lote."><span className={labelClass}>TAMANHO DA AMOSTRA</span><input className={fieldClass} type="number" min="0" step="1" value={amostra} onChange={event => setAmostra(event.target.value)} /></label>
           <label title="Registre evidências, condição observada e informação necessária para rastreabilidade."><span className={labelClass}>OBSERVAÇÕES TÉCNICAS</span><input className={fieldClass} value={observacoes} onChange={event => setObservacoes(event.target.value)} maxLength={2000} /></label><label title="Característica técnica selecionada na especificação ou informada para registrar a não conformidade."><span className={labelClass}>PARÂMETRO / COTA</span><input className={fieldClass} value={parametro} onChange={event => setParametro(event.target.value)} placeholder="Ex.: índice de fluidez, diâmetro" readOnly={Boolean(selectedSpecificationParameter)} /></label>{isNonNumericReview ? <>{isCertificateReview && <><label title="Identificação do certificado emitido pelo fornecedor."><span className={labelClass}>Nº CERTIFICADO</span><input className={fieldClass} value={certificadoNumero} onChange={event => setCertificadoNumero(event.target.value)} placeholder="Nº do certificado" /></label><label title="Conclusão da conferência do certificado contra a especificação aprovada."><span className={labelClass}>CONFERÊNCIA DO CERTIFICADO</span><select className={fieldClass} value={certificadoConclusao} onChange={event => setCertificadoConclusao(event.target.value === 'conforme' || event.target.value === 'nao_conforme' ? event.target.value : '')}><option value="">Selecionar conclusão…</option><option value="conforme">Conforme</option><option value="nao_conforme">Não conforme</option></select></label></>}<label title="Evidência observada na conferência documental ou visual."><span className={labelClass}>EVIDÊNCIA / OBSERVAÇÃO</span><input className={fieldClass} value={evidenciaTexto} onChange={event => setEvidenciaTexto(event.target.value)} placeholder={isCertificateReview ? 'Conferência contra critério aprovado' : 'Descreva o observado'} /></label></> : <><label title="Valor de referência da especificação, na unidade da característica medida."><span className={labelClass}>VALOR NOMINAL</span><input className={fieldClass} type="number" step="any" value={nominal} onChange={event => setNominal(event.target.value)} /></label><label title="Desvio positivo permitido acima do valor nominal, na mesma unidade da cota."><span className={labelClass}>TOLERÂNCIA +</span><input className={fieldClass} type="number" min="0" step="any" value={tolMais} onChange={event => setTolMais(event.target.value)} /></label><label title="Desvio absoluto permitido abaixo do valor nominal, na mesma unidade da cota."><span className={labelClass}>TOLERÂNCIA −</span><input className={fieldClass} type="number" min="0" step="any" value={tolMenos} onChange={event => setTolMenos(event.target.value)} /></label><label title="Valor lido no instrumento calibrado, na mesma unidade do nominal e das tolerâncias."><span className={labelClass}>VALOR MEDIDO</span><input className={fieldClass} type="number" step="any" value={medido} onChange={event => setMedido(event.target.value)} /></label></>}
-          <div className="flex items-end"><button className="h-[30px] w-full rounded-[2px] bg-sky-700 px-3 text-[10px] font-semibold text-white hover:bg-sky-800 disabled:opacity-50" onClick={() => void saveInspection()} disabled={saving || loading}>{saving ? 'Salvando…' : 'Salvar inspeção'}</button></div>
+          <div className="flex items-end"><button className="h-8 w-full rounded-[2px] bg-sky-700 px-3 text-[10px] font-semibold text-white hover:bg-sky-800 disabled:opacity-50" onClick={() => void saveInspection()} disabled={saving || loading}>{saving ? 'Salvando…' : 'Salvar inspeção'}</button></div>
         </div>
         {error && <p role="alert" className="mt-2 flex items-center gap-1 text-[10px] text-red-700"><AlertTriangle size={13} /> {error}</p>}
         {produtoId && <div className={`mt-3 border p-2 text-[10px] ${selectedSpecification ? 'border-sky-200 bg-sky-50 text-[#123B50]' : 'border-amber-300 bg-amber-50 text-amber-900'}`}>
@@ -304,8 +312,8 @@ export default function QualidadeInspecoesIndustrial() {
           <div className="relative w-64 max-w-full"><Search size={13} className="absolute left-2 top-2 text-slate-400" /><input className={fieldClass + ' pl-7'} value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar item, lote ou resultado…" /></div>
         </div>
         <div className="overflow-auto">
-          <table className="w-full border-collapse text-left text-[10px]">
-            <thead className="sticky top-0 bg-slate-100 text-[9px] uppercase text-slate-600"><tr>{['Data/hora','Tipo','Item','Lote','Qtd.','Amostra','Resultado','Observações'].map(title => <th key={title} className="h-[32px] whitespace-nowrap border-b border-slate-200 px-2 font-semibold">{title}</th>)}</tr></thead>
+          <table className="w-full border-collapse text-left text-xs text-slate-800 [&_td]:h-10 [&_td]:border-b [&_td]:border-slate-200 [&_td]:px-4 [&_td]:py-2 [&_td]:align-middle [&_td]:font-semibold">
+            <thead className="sticky top-0 bg-slate-900 text-white [&_th]:border-b [&_th]:border-slate-800 [&_th]:px-4 [&_th]:text-[10px] [&_th]:font-black [&_th]:uppercase [&_th]:tracking-wider [&_th]:align-middle"><tr className="h-9">{['Data/hora','Tipo','Item','Lote','Qtd.','Amostra','Resultado','Observações'].map(title => <th key={title} className="h-9 whitespace-nowrap border-b border-slate-800 px-4 text-[10px] font-black uppercase tracking-wider">{title}</th>)}</tr></thead>
             <tbody>
               {loading ? <tr><td colSpan={8} className="h-16 px-3 text-center text-slate-500">Carregando inspeções do Supabase…</td></tr>
                 : visibleRows.length === 0 ? <tr><td colSpan={8} className="h-16 px-3 text-center text-slate-500">Nenhuma inspeção encontrada.</td></tr>
