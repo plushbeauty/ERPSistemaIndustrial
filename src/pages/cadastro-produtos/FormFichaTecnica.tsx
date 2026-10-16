@@ -65,7 +65,7 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
     <section className="space-y-3">
       <div><p className="text-[9px] font-bold uppercase tracking-wider text-[#2D8DB8]">Dados mestres</p><h2 className="text-base font-bold text-slate-900">Ficha Técnica</h2><p className="text-[10px] text-slate-500">Cadastro persistido no tenant autenticado.</p></div>
       <div className="rounded-[2px] border border-slate-300 bg-white p-3 shadow-sm">
-        <div className="grid grid-cols-1 items-end gap-x-3 gap-y-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 items-end gap-x-3 gap-y-2 md:grid-cols-2 xl:grid-cols-4">
           <label className="grid gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-700 md:col-span-2">SKU — SOMENTE LEITURA<input className={field+' font-bold text-[#123B50]'} readOnly value={p?.codigo || preview} /></label>
           <label className="grid gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-700">Tipo<select className={field} disabled={!!p} value={tipo} onChange={e => setTipo(e.target.value)}><option>MP</option><option>PA</option><option>SA</option><option>IN</option></select></label>
           <label className="grid gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-700">Regra<select className={field} disabled={!!p} value={configId} onChange={e => setConfigId(e.target.value)}>{cfg.map(x => <option key={x.id} value={x.id}>{x.prefixo} · {x.digitos_produto} dígitos</option>)}</select></label>
