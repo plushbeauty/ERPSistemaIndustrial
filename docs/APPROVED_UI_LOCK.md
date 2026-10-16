@@ -1,7 +1,7 @@
 # Contrato de telas aprovadas — ERP Industrial
 
 **Data da revisão:** 2026-10-16  
-**Revisão:** APROV-001  
+**Revisão:** APROV-002  
 **Regra:** telas aprovadas são imutáveis por padrão. Não alterar layout, conteúdo, geometria, comportamento ou estrutura sem autorização explícita do usuário para uma nova revisão.
 
 | Tela/arquivo | Referência aprovada | Proteção |
@@ -10,6 +10,15 @@
 | Cadastro de Produtos — `src/pages/ProdutosVendasIndustrial.tsx` | Referência aprovada anterior | Hash Git do arquivo verificado no CI |
 | Login institucional — `src/styles/industrial-login.css` | Referência aprovada anterior | Hash Git do arquivo verificado no CI |
 | Qualidade Tablet — `src/pages/QualidadeCentralTablet.tsx` | Tablet aprovado pelo usuário | Hash Git do arquivo verificado no CI |
+| Qualidade Tablet padrão — `src/components/TabletMenuModal.tsx` | Modal central, 22 módulos; visual aprovado preservado | Hash Git do arquivo verificado no CI |
+| PCP Tablet do operador — `src/pages/PCPTabletOperador.tsx` | Padrão operacional aprovado; visual preservado | Hash Git do arquivo verificado no CI |
+
+## Registro da revisão APROV-002 — 2026-10-16
+
+- Agenda de máquinas PCP: legenda retirada da área superior e posicionada após a grade, no final da tela.
+- Qualidade Tablet: mantido o componente aprovado, sem alterações visuais ou funcionais.
+- PCP Tablet do operador: mantido o componente aprovado, sem alterações visuais ou funcionais.
+- Proteção: hashes dos dois componentes Tablet adicionados ao verificador para falhar o CI se houver alteração sem autorização explícita.
 
 ## Como funciona o bloqueio
 
