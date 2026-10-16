@@ -30,8 +30,8 @@ type Props = {
 
 export { EntityCodeLookup }
 
-const inputClass = 'h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-base font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
-const filterClass = 'h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
+const inputClass = 'h-[30px] w-full max-w-[450px] box-border rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-600 focus:bg-[#fffdf0] focus:ring-1 focus:ring-sky-100'
+const filterClass = 'h-[30px] w-full max-w-[450px] box-border rounded-[2px] border border-slate-300 bg-white px-2 text-[11px] font-medium text-slate-900 outline-none focus:border-sky-600 focus:bg-[#fffdf0] focus:ring-1 focus:ring-sky-100'
 
 export default function EntityCodeLookup({
   label,
@@ -108,13 +108,13 @@ export default function EntityCodeLookup({
 
   return (
     <div className="w-full">
-      <label className="block text-sm font-extrabold uppercase tracking-wide text-slate-800">
+      <label className="block text-[9px] font-bold uppercase tracking-wide text-slate-700">
         {label}{required ? ' *' : ''}
       </label>
 
       <div className="mt-1 flex w-fit gap-1">
         <input
-          className={`${compact ? "h-10 w-[140px] text-sm" : inputClass} rounded-md border border-slate-300 bg-white px-2 font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-600 focus:ring-2 focus:ring-sky-100`}
+          className={`${compact ? "h-[30px] w-[140px] max-w-[280px] text-[11px]" : inputClass} box-border rounded-[2px] border border-slate-300 bg-white px-2 font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-600 focus:bg-[#fffdf0] focus:ring-1 focus:ring-sky-100`}
           value={typedCode}
           required={required}
           placeholder={placeholder}
@@ -130,30 +130,30 @@ export default function EntityCodeLookup({
         />
         <button
           type="button"
-          className={`grid ${compact ? "h-10 w-10" : "h-10 w-[44px]"} shrink-0 place-items-center rounded-md border border-slate-300 bg-slate-100 text-slate-800 shadow-sm transition hover:border-sky-500 hover:bg-sky-50 hover:text-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-200`}
+          className={`grid ${compact ? "h-[30px] w-[28px]" : "h-[30px] w-[28px]"} shrink-0 place-items-center rounded-[2px] border border-slate-300 bg-slate-100 text-slate-800 shadow-sm transition hover:border-sky-500 hover:bg-sky-50 hover:text-sky-800 focus:outline-none focus:ring-1 focus:ring-sky-200`}
           onClick={() => setOpen(true)}
           aria-label={`Consultar ${label}`}
           title="Consultar por filtros"
         >
-          <Search size={23} />
+          <Search size={14} />
         </button>
       </div>
 
       {selected && (
-        <div className="mt-1 max-w-[360px] rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-sm">
+        <div className="mt-1 max-w-[360px] rounded-[2px] border border-slate-200 bg-slate-50 px-2 py-1 text-[10px]">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <strong className="text-slate-950">{selected.codigo ?? '—'}</strong>
             <span className="text-slate-700">{selected.nome ?? 'Registro selecionado'}</span>
           </div>
           {(selected.dimensoes || selected.canal || selected.molde) && (
-            <p className="mt-1 text-sm font-medium text-slate-600">
+            <p className="mt-1 text-[10px] font-medium text-slate-600">
               {[selected.dimensoes, selected.canal, selected.molde].filter(Boolean).join(' • ')}
             </p>
           )}
         </div>
       )}
 
-      {helper && <p className="mt-1 text-sm font-medium text-slate-600">{helper}</p>}
+      {helper && <p className="mt-1 text-[9px] font-medium text-slate-600">{helper}</p>}
 
       {open && (
         <div
