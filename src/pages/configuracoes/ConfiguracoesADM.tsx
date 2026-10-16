@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
-import CompanySettings from '../../components/CompanySettings'
+import AssistenteConfiguracaoInicial from './AssistenteConfiguracaoInicial'
 import UsuariosAdmin from '../UsuariosAdmin'
 import ConfiguracaoBackups from './ConfiguracaoBackups'
 import ConfiguracaoCodificacaoAreas from './ConfiguracaoCodificacaoAreas'
@@ -82,44 +82,6 @@ function Overview({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
   </div>
 }
 
-function Empresa() {
-  const [profile, setProfile] = useState<{ nome: string; empresa_id: string | null; is_master: boolean } | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  useEffect(() => {
-    let alive = true
-    const loadProfile = async () => {
-      try {
-        const { data: authData, error: authError } = await supabase.auth.getUser()
-        if (authError) throw authError
-        if (!authData.user) throw new Error('Sessão autenticada necessária para carregar a empresa.')
-        const { data, error: profileError } = await supabase.from('erp_usuarios')
-          .select('nome,empresa_id,is_master')
-          .eq('auth_user_id', authData.user.id)
-          .eq('ativo', true)
-          .is('deleted_at', null)
-          .maybeSingle()
-        if (profileError) throw profileError
-        if (!data) throw new Error('O usuário autenticado não possui perfil ERP.')
-        if (!data.empresa_id) throw new Error('O Master precisa selecionar uma empresa antes de editar a identidade.')
-        const { data: permitted, error: permissionError } = await supabase.rpc('erp_has_permission', { p_modulo: 'empresas', p_acao: 'editar' })
-        if (permissionError) throw permissionError
-        if (permitted !== true) throw new Error('Seu perfil não possui a permissão empresas.editar.')
-        if (alive) setProfile({ nome: data.nome, empresa_id: data.empresa_id, is_master: Boolean(data.is_master) })
-      } catch (cause) {
-        if (alive) setError(cause instanceof Error ? cause.message : 'Não foi possível carregar o perfil.')
-      } finally {
-        if (alive) setLoading(false)
-      }
-    }
-    void loadProfile()
-    return () => { alive = false }
-  }, [])
-  if (loading) return <Card title="Empresa e identidade">Carregando o perfil autenticado…</Card>
-  if (error || !profile) return <Card title="Empresa e identidade">{error || 'Perfil ERP indisponível.'}</Card>
-  return <CompanySettings profile={profile} />
-}
-
 function UnavailableSection({ item }: { item: Item }) {
   const details: Record<string, string> = {
     '/configuracoes-adm/seguranca': 'Autenticação e sessões são gerenciadas pelo Supabase Auth. O aplicativo não possui API autorizada de administração de sessões para este tenant.',
@@ -136,7 +98,7 @@ function UnavailableSection({ item }: { item: Item }) {
 
 function SectionContent({ item, navigate }: { item: Item; navigate: ReturnType<typeof useNavigate> }) {
   if (item.path === '/configuracoes-adm') return <Overview navigate={navigate} />
-  if (item.path === '/configuracoes-adm/empresa') return <Empresa />
+  if (item.path === '/configuracoes-adm/empresa') return <AssistenteConfiguracaoInicial />
   if (item.path === '/configuracoes-adm/codificacao') return <ConfiguracaoCodificacaoAreas profile={null} />
   if (item.path === '/configuracoes-adm/perfis') return <ConfiguracaoPerfis />
   if (item.path === '/configuracoes-adm/permissoes') return <ConfiguracaoPermissoes />
