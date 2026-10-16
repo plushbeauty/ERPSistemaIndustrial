@@ -49,3 +49,5 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - Bloqueio de entrega confirmado por status de commit: `Vercel: failure` por `build-rate-limit`; deployment dos commits de correção não foi encontrado na consulta. Build/type-check/inspeção visual continuam não verificados. Ver [relatório](./ROUTE-AUDIT-2026-10-16.md).
 
 - O workflow `.github/workflows/industrial-code-quality.yml` agora chama a auditoria estática de UI e tenta publicar o JSON como artefato (commit `ef29ae745d757ba7cfad543545b4bcd2444f45b7`). Ainda não há resultado confirmado de execução/artefato; UI-001 segue aberto.
+
+- Atualização 2026-10-16: aplicado primeiro padrão de DBGrid colorido em src/pages/IndustrialDataWorkspace.tsx (commit 1cb2f3a): cabeçalho azul-petróleo, zebra azul-clara, hover ciano, alinhamento numérico e cores semânticas de status. É apenas um primeiro componente compartilhado; não fecha UI-001/002/020 nem qualquer área global. Validar CI, type-check, build e aparência real antes de marcar conclusão.
