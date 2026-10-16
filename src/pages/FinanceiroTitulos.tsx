@@ -445,7 +445,7 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
         </div>
         <div className="flex flex-wrap gap-2">
           {profile?.is_master && <label className="grid gap-1 text-xs font-semibold">Empresa
-            <select value={selectedCompany} onChange={event => setSelectedCompany(event.target.value)} className="h-9 min-w-56 rounded-sm border border-slate-300 bg-white px-2">
+            <select value={selectedCompany} onChange={event => setSelectedCompany(event.target.value)} className="h-8 min-w-56 max-w-[280px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]">
               <option value="">Selecionar empresa</option>
               {companies.map(company => <option key={company.id} value={company.id}>{company.nome}</option>)}
             </select>
@@ -475,7 +475,7 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
           <button type="button" onClick={() => setSourceMode(true)} className={`border px-3 py-2 text-xs ${sourceMode?'border-sky-700 bg-sky-50 font-semibold':'border-slate-300'}`}>Vincular pedido de {payable?'compra':'venda'}</button>
         </div>}
         {sourceMode && !form.titleId && <label className="mb-3 grid gap-1 text-xs font-semibold">Pedido elegível
-          <select value={form.sourceId} onChange={event => chooseSource(event.target.value)} className="h-10 border border-slate-300 px-2">
+          <select value={form.sourceId} onChange={event => chooseSource(event.target.value)} className="h-8 max-w-[450px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]">
             <option value="">Selecionar pedido aprovado</option>
             {sources.map(source => <option key={source.id} value={source.id}>{source.descricao} · {currency(source.total)} · {source.data ?? 'sem data'}</option>)}
           </select>
@@ -483,7 +483,7 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
         {payable && !form.titleId && !sourceMode && <section className="mb-3 border border-sky-200 bg-sky-50 p-3">
           <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-sky-950"><Barcode size={17}/>Ler código de boleto (somente preenchimento)</div>
           <div className="flex flex-wrap gap-2">
-            <input value={barcode} onChange={event => setBarcode(event.target.value)} placeholder="Linha digitável (47 dígitos) ou código de barras (44)" className="h-9 min-w-72 flex-1 border border-slate-300 bg-white px-2 text-sm"/>
+            <input value={barcode} onChange={event => setBarcode(event.target.value)} placeholder="Linha digitável (47 dígitos) ou código de barras (44)" className="h-8 max-w-[450px] border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]"/>
             <button type="button" onClick={() => parseAndApplyBoleto(barcode)} className="h-9 border border-slate-300 bg-white px-3 text-xs font-semibold">Validar linha</button>
             <button type="button" onClick={() => void startScanner()} className="inline-flex h-9 items-center gap-1 bg-sky-800 px-3 text-xs font-semibold text-white"><Camera size={15}/>Abrir câmera</button>
           </div>
@@ -492,34 +492,34 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
         </section>}
         <form onSubmit={event => void saveTitle(event)} className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <label className="grid gap-1 text-xs font-semibold xl:col-span-2">Parceiro
-            <select required value={form.partnerId} disabled={Boolean(form.sourceId)} onChange={event => setForm(current => ({...current,partnerId:event.target.value}))} className="h-10 border border-slate-300 bg-white px-2 disabled:bg-slate-100">
+            <select required value={form.partnerId} disabled={Boolean(form.sourceId)} onChange={event => setForm(current => ({...current,partnerId:event.target.value}))} className="h-8 max-w-[280px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0] disabled:bg-slate-100">
               <option value="">Selecionar {payable?'fornecedor':'cliente'}</option>
               {partners.map(partner => <option key={partner.id} value={partner.id}>{partner.nome}</option>)}
             </select>
           </label>
           <label className="grid gap-1 text-xs font-semibold xl:col-span-2">Descrição
-            <input required value={form.description} onChange={event => setForm(current => ({...current,description:event.target.value}))} className="h-10 border border-slate-300 px-2"/>
+            <input required value={form.description} onChange={event => setForm(current => ({...current,description:event.target.value}))} className="h-8 max-w-[450px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]"/>
           </label>
           <label className="grid gap-1 text-xs font-semibold">Documento
-            <input value={form.document} onChange={event => setForm(current => ({...current,document:event.target.value}))} className="h-10 border border-slate-300 px-2"/>
+            <input value={form.document} onChange={event => setForm(current => ({...current,document:event.target.value}))} className="h-8 max-w-[450px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]"/>
           </label>
           <label className="grid gap-1 text-xs font-semibold">Categoria
-            <input value={form.category} onChange={event => setForm(current => ({...current,category:event.target.value}))} className="h-10 border border-slate-300 px-2"/>
+            <input value={form.category} onChange={event => setForm(current => ({...current,category:event.target.value}))} className="h-8 max-w-[450px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]"/>
           </label>
           <label className="grid gap-1 text-xs font-semibold">Centro de custo
-            <input value={form.costCenter} onChange={event => setForm(current => ({...current,costCenter:event.target.value}))} className="h-10 border border-slate-300 px-2"/>
+            <input value={form.costCenter} onChange={event => setForm(current => ({...current,costCenter:event.target.value}))} className="h-8 max-w-[450px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]"/>
           </label>
           <label className="grid gap-1 text-xs font-semibold">Data de emissão
-            <input required type="date" value={form.issueDate} onChange={event => setForm(current => ({...current,issueDate:event.target.value}))} className="h-10 border border-slate-300 px-2"/>
+            <input required type="date" value={form.issueDate} onChange={event => setForm(current => ({...current,issueDate:event.target.value}))} className="h-8 max-w-[450px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]"/>
           </label>
           <label className="grid gap-1 text-xs font-semibold">Valor total
             <input required type="number" min="0.01" step="0.01" value={form.total} disabled={Boolean(form.sourceId)} onChange={event => setForm(current => ({...current,total:event.target.value}))} className="h-10 border border-slate-300 px-2 disabled:bg-slate-100"/>
           </label>
           <label className="grid gap-1 text-xs font-semibold">Número de parcelas
-            <input required type="number" min="1" max="120" step="1" value={form.installments} onChange={event => setForm(current => ({...current,installments:event.target.value}))} className="h-10 border border-slate-300 px-2"/>
+            <input required type="number" min="1" max="120" step="1" value={form.installments} onChange={event => setForm(current => ({...current,installments:event.target.value}))} className="h-8 max-w-[450px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]"/>
           </label>
           <label className="grid gap-1 text-xs font-semibold">Primeiro vencimento
-            <input required type="date" value={form.firstDue} onChange={event => setForm(current => ({...current,firstDue:event.target.value}))} className="h-10 border border-slate-300 px-2"/>
+            <input required type="date" value={form.firstDue} onChange={event => setForm(current => ({...current,firstDue:event.target.value}))} className="h-8 max-w-[450px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]"/>
           </label>
           <div className="flex items-end gap-2 xl:col-span-4">
             <button type="button" onClick={() => setShowForm(false)} className="h-10 border border-slate-300 px-4 text-sm">Cancelar</button>
@@ -531,7 +531,7 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
       <section className="border border-slate-200 bg-white">
         <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 p-3">
           <label className="grid min-w-60 flex-1 gap-1 text-xs font-semibold">Buscar título
-            <input value={query} onChange={event => { setQuery(event.target.value); setPage(0) }} className="h-9 border border-slate-300 px-2" placeholder="Parceiro, documento, categoria ou status"/>
+            <input value={query} onChange={event => { setQuery(event.target.value); setPage(0) }} className="h-8 max-w-[450px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]" placeholder="Parceiro, documento, categoria ou status"/>
           </label>
           <span className="text-xs text-slate-600">{filtered.length} título(s)</span>
         </div>
@@ -567,16 +567,16 @@ export default function FinanceiroTitulos({ kind }: { kind: Kind }) {
         <form onSubmit={event=>void submitPayment(event)} className="w-full max-w-lg space-y-3 border border-slate-300 bg-white p-5 shadow-xl">
           <div className="flex items-start justify-between"><div><h2 id="payment-title" className="font-semibold">Registrar baixa</h2><p className="text-xs text-slate-600">Parcela #{payment.installment.numero} · saldo {currency(payment.installment.saldo)}</p></div><button type="button" onClick={()=>setPayment(null)} aria-label="Fechar baixa"><X size={17}/></button></div>
           <label className="grid gap-1 text-xs font-semibold">Valor recebido/pago
-            <input required type="number" min="0.01" max={payment.installment.saldo} step="0.01" value={paymentValue} onChange={event=>setPaymentValue(event.target.value)} className="h-10 border border-slate-300 px-2"/>
+            <input required type="number" min="0.01" max={payment.installment.saldo} step="0.01" value={paymentValue} onChange={event=>setPaymentValue(event.target.value)} className="h-8 max-w-[450px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]"/>
           </label>
           <label className="grid gap-1 text-xs font-semibold">Data e hora da baixa
-            <input required type="datetime-local" value={paymentDate} onChange={event=>setPaymentDate(event.target.value)} className="h-10 border border-slate-300 px-2"/>
+            <input required type="datetime-local" value={paymentDate} onChange={event=>setPaymentDate(event.target.value)} className="h-8 max-w-[450px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]"/>
           </label>
           <label className="grid gap-1 text-xs font-semibold">Forma de pagamento/recebimento
             <select required value={paymentMethod} onChange={event=>setPaymentMethod(event.target.value)} className="h-10 border border-slate-300 bg-white px-2"><option value="">Selecionar forma</option><option>PIX</option><option>TED/DOC</option><option>Boleto</option><option>Cartão</option><option>Dinheiro</option><option>Outro</option></select>
           </label>
           <label className="grid gap-1 text-xs font-semibold">Referência / comprovante
-            <input value={paymentReference} onChange={event=>setPaymentReference(event.target.value)} className="h-10 border border-slate-300 px-2"/>
+            <input value={paymentReference} onChange={event=>setPaymentReference(event.target.value)} className="h-8 max-w-[450px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]"/>
           </label>
           <div className="flex justify-end gap-2"><button type="button" onClick={()=>setPayment(null)} className="h-9 border border-slate-300 px-3 text-sm">Cancelar</button><button disabled={busy} className="h-9 bg-sky-800 px-4 text-sm font-semibold text-white disabled:opacity-50">{busy?'Registrando…':'Confirmar baixa'}</button></div>
         </form>
