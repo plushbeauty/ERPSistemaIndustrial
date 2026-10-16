@@ -51,3 +51,19 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - O workflow `.github/workflows/industrial-code-quality.yml` agora chama a auditoria estática de UI e tenta publicar o JSON como artefato (commit `ef29ae745d757ba7cfad543545b4bcd2444f45b7`). Ainda não há resultado confirmado de execução/artefato; UI-001 segue aberto.
 
 - Atualização 2026-10-16: aplicado primeiro padrão de DBGrid colorido em src/pages/IndustrialDataWorkspace.tsx (commit 1cb2f3a): cabeçalho azul-petróleo, zebra azul-clara, hover ciano, alinhamento numérico e cores semânticas de status. É apenas um primeiro componente compartilhado; não fecha UI-001/002/020 nem qualquer área global. Validar CI, type-check, build e aparência real antes de marcar conclusão.
+
+## P0 — Inventário comparativo e lacunas de cobertura (2026-10-16)
+
+- [ ] CMP-001 — Validar os 247 padrões de rota únicos contra arquivos/exportações reais e classificar aliases, órfãs e curingas.
+- [ ] CMP-002 — Auditar funcionalmente todas as áreas da matriz comparativa; a presença de rota não é evidência de CRUD funcional.
+- [ ] CMP-003 — Validar as 11 rotas que usam `IndustrialDataWorkspace` com requisitos e contratos de dados próprios.
+- [ ] CMP-004 — Fechar autenticação, RBAC, tenant e RLS reais antes de declarar módulos prontos.
+- [ ] CMP-005 — Confirmar migrations e tabelas no Supabase ativo para rotas com 404.
+- [ ] CMP-006 — Validar ponta a ponta PCP + Engenharia/BOM + Estoque + Qualidade + Compras + Fiscal/Vendas.
+- [ ] CMP-007 — Decidir escopo de CRM/Service, Projetos, EHS, Comércio Exterior/EDI, subcontratação e orçamento antes de chamar qualquer item de “módulo faltante”.
+- [ ] CMP-008 — Rodar `npm run verify:production`, corrigir bloqueios e registrar status CI/Vercel com evidência real.
+
+- Relatório: [COMPARATIVE-MODULE-INVENTORY-2026-10-16.md](./COMPARATIVE-MODULE-INVENTORY-2026-10-16.md).
+- Contagens estáticas: 248 declarações Route, 247 padrões únicos, 156 imports dinâmicos, 11 rotas para workspace genérico. Não são contagens de módulos funcionais.
+- Referências externas consultadas: SAP S/4HANA Cloud (10 áreas principais na página de áreas), ERPNext (21 nomes em modules.txt) e TOTVS Protheus Backoffice (18 tópicos/subitens explicitados na página pública). As taxonomias não são diretamente equivalentes.
+- Status: inventário/matriz documentados; execução funcional, build, type-check e publicação ainda pendentes. Nenhuma rota/módulo marcado concluído.
