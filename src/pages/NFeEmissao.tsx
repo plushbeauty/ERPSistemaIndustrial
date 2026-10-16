@@ -221,7 +221,7 @@ const dateTime = (value: string) => value ? new Date(value).toISOString() : null
 function Field({ label, value, onChange, className = '', type = 'text', maxLength, inputMode, required = false, readOnly = false }: {
   label: string; value: string; onChange: (value: string) => void; className?: string; type?: string; maxLength?: number; inputMode?: 'text' | 'numeric' | 'decimal' | 'email'; required?: boolean; readOnly?: boolean
 }) {
-  return <label className={className}><span className="nfe-label">{label}{required ? ' *' : ''}</span><input className="nfe-input" type={type} value={value} maxLength={maxLength} inputMode={inputMode} required={required} readOnly={readOnly} onChange={(event) => onChange(event.target.value)} /></label>
+  return <label className={className}><span className="nfe-label">{label}{required ? ' *' : ''}</span><input className={'nfe-input ' + (maxLength === 2 ? 'edit-2' : maxLength === 3 ? 'edit-3' : maxLength === 4 ? 'edit-4' : maxLength === 8 ? 'edit-8' : maxLength === 14 || maxLength === 20 ? 'edit-20' : className.includes('wide-field') ? 'edit-longo' : '')} type={type} value={value} maxLength={maxLength} inputMode={inputMode} required={required} readOnly={readOnly} onChange={(event) => onChange(event.target.value)} /></label>
 }
 
 function SelectField({ label, value, onChange, children, className = '' }: {
