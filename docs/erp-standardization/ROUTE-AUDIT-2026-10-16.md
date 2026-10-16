@@ -82,3 +82,11 @@ Arquivos abertos e ajustados:
 - [ProdutosVendasIndustrial.tsx](https://github.com/plushbeauty/ERPSistemaIndustrial/blob/main/src/pages/ProdutosVendasIndustrial.tsx): quantidade/preço/custo e referências ajustados nos commits listados acima; observações limitadas a 50 no commit `bc88b13572777fdfcafdd1135609b7fc7d60876a`.
 
 **Importante:** os commits foram gravados no GitHub, mas não há ainda prova de type-check, build nem inspeção visual renderizada. Nenhum desses módulos pode ser retirado do backlog até concluir essas verificações.
+
+## Gate de entrega — status consultado após os commits
+
+O status de commit retornado pelo GitHub para os commits de correção mais recentes mostra o check `Vercel: failure` com destino `https://vercel.com/plushbeauty?upgradeToPro=build-rate-limit`. A consulta de deployments não encontrou deployment associado aos commits de correção verificados. Portanto:
+- as alterações estão gravadas no GitHub;
+- não há confirmação de build Vercel aprovado para elas;
+- não há confirmação de que foram publicadas em produção;
+- type-check, lint, auditorias e inspeção visual seguem pendentes.
