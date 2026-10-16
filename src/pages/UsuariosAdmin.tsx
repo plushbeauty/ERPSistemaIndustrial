@@ -1,3 +1,15 @@
+/*
+  @AUDIT_DATE: 2026-10-16
+  @AUDIT_TIME_BRT: 12:44
+  @AUDIT_REVISION: #AUDIT-ERP-20261016-06
+  @STATUS: IMPLEMENTED_PENDING_VALIDATION
+  @SCOPE: src/pages/UsuariosAdmin.tsx
+  @REVIEWED: Vínculos de empresa, setor/cargo e matriz de perfis/permissões.
+  @CHANGES: Registro da revisão do cadastro administrativo; autenticação, RLS/RBAC remoto, criação de credenciais e impressão A4 não homologados nesta rodada.
+  @VALIDATION: Arquivo inspecionado no GitHub; type-check/lint/build e validação remota não executados nesta operação.
+  @CHECKLIST: Scope-Limited | Preserve-Business-Rules | No-Fake-Data | Validation-Required
+*/
+
 import { useEffect, useMemo, useState } from 'react'
 import {
   Building2,
