@@ -280,15 +280,15 @@ export default function ComprasRFQ() {
             <div className="grid gap-3 md:grid-cols-4">
               <label className="text-xs">
                 Prazo para resposta
-                <input type="date" value={responseDate} onChange={event => setResponseDate(event.target.value)} className="mt-1 h-10 w-full rounded border p-2" />
+                <input type="date" value={responseDate} onChange={event => setResponseDate(event.target.value)} className="mt-1 h-8 min-h-8 max-w-[280px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]" />
               </label>
               <label className="text-xs md:col-span-2">
                 Condição de pagamento
-                <input value={paymentCondition} onChange={event => setPaymentCondition(event.target.value)} className="mt-1 h-10 w-full rounded border p-2" />
+                <input value={paymentCondition} onChange={event => setPaymentCondition(event.target.value)} className="mt-1 h-8 min-h-8 max-w-[280px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]" />
               </label>
               <label className="text-xs">
                 Necessidade
-                <input type="date" value={needDate} onChange={event => setNeedDate(event.target.value)} className="mt-1 h-10 w-full rounded border p-2" />
+                <input type="date" value={needDate} onChange={event => setNeedDate(event.target.value)} className="mt-1 h-8 min-h-8 max-w-[280px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] focus:border-blue-700 focus:bg-[#fffdf0]" />
               </label>
             </div>
 
