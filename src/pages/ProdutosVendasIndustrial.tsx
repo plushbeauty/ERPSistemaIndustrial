@@ -1,3 +1,15 @@
+/*
+  @AUDIT_DATE: 2026-10-16
+  @AUDIT_TIME_BRT: 12:44
+  @AUDIT_REVISION: #AUDIT-ERP-20261016-09
+  @STATUS: IMPLEMENTED_PENDING_VALIDATION
+  @SCOPE: src/pages/ProdutosVendasIndustrial.tsx
+  @REVIEWED: Layout compacto, campos de cadastro, lupas, consultas de produção e painel adicional de ficha técnica; detectado conteúdo de Produção em dois blocos na tela.
+  @CHANGES: Registro da revisão do cadastro industrial, incluindo integrações já presentes no arquivo. Não afirmar homologação; revisar duplicidade visual e executar type-check/build.
+  @VALIDATION: Arquivo inspecionado no GitHub; type-check/lint/build e validação remota não executados nesta operação.
+  @CHECKLIST: Scope-Limited | Preserve-Business-Rules | No-Fake-Data | Validation-Required
+*/
+
 /**
  * =========================================================================
  * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
