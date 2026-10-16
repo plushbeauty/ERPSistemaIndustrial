@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Check, ExternalLink, RefreshCw, Save } from 'lucide-react'
+import { Check, Save } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
@@ -87,13 +87,19 @@ export default function VendasCatalogoDigitalGestao() {
     <VendasLayout title="Gestão do catálogo" subtitle="Publicação de produtos no catálogo digital" onRefresh={() => void load()}>
       <main className="sales-workspace sales-detail">
         <section className="rounded-lg border bg-white p-5 shadow-sm">
-          <div className="flex flex-wrap justify-between gap-3">
+          <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="font-medium text-[#123B50]">Produtos publicados no catálogo</h2>
               <p className="mt-1 text-xs text-slate-500">Marque os produtos que devem aparecer no catálogo digital. A fonte é o cadastro real de produtos.</p>
             </div>
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar código ou produto" className="h-10 w-72 rounded-md border px-3 text-sm" />
+            <div className="flex flex-wrap items-center gap-2">
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar código ou produto" className="h-[30px] w-72 rounded-[2px] border border-slate-300 px-2 text-[10px] outline-none focus:border-[#2D8DB8]" />
+              <button type="button" onClick={() => void save()} disabled={saving || busy} className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">
+                <Save size={12} /> {saving ? 'SALVANDO…' : 'SALVAR ALTERAÇÕES'}
+              </button>
+            </div>
           </div>
+          {busy && <p className="mt-2 text-[10px] text-slate-500" role="status">Carregando produtos reais…</p>}
           {error && <div className="mt-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
           {message && <div className="mt-4 flex gap-2 rounded border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800"><Check size={16} />{message}</div>}
           <div className="mt-5 overflow-x-auto">
