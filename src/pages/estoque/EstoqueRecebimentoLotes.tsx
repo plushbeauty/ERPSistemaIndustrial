@@ -273,7 +273,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
                     step="0.001"
                     value={quantidade || ''}
                     onChange={event => setQuantidade(Number(event.target.value))}
-                    className="h-[54px] w-full rounded-l-md border border-slate-300 bg-white px-3 text-base font-black outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100"
+                    className="h-8 w-full max-w-[450px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] font-medium outline-none focus:border-blue-700 focus:bg-[#fffdf0] focus:ring-0"
                     placeholder="0,000"
                     required
                   />
@@ -310,7 +310,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
               <select
                 value={laudoStatus}
                 onChange={event => setLaudoStatus(event.target.value as QualityStatus)}
-                className="h-[54px] rounded-md border border-slate-400 bg-white px-4 text-sm font-black text-slate-900 outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100"
+                className="h-8 max-w-[280px] rounded border border-slate-400 bg-slate-50 px-2.5 font-mono text-[13px] font-medium text-slate-900 outline-none focus:border-blue-700 focus:bg-[#fffdf0] focus:ring-0"
               >
                 <option value="APROVADO">APROVADO / DENTRO DOS REQUISITOS</option>
                 <option value="REPROVADO">REPROVADO / RETER LOTE</option>
