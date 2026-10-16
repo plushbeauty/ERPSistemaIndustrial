@@ -27,6 +27,7 @@ type Product={
   comprimento_mm:number;largura_mm:number;altura_mm:number;observacoes:string|null;foto_url:string|null;fabricado:boolean;comprado:boolean;revenda:boolean
   estoque_atual:number;ponto_reposicao:number;estoque_maximo:number;localizacao_padrao_id:string|null;controla_lote:boolean
   controla_serie:boolean;permite_estoque_negativo:boolean;lote_validade_dias:number;inspecao_qualidade_obrigatoria:boolean;nivel_qualidade:string|null;inspecao_entrada:boolean;inspecao_producao:boolean;inspecao_entrega:boolean;requer_quarentena:boolean;modelo_inspecao_codigo:string|null;amostragem_aql:string|null;tipo_medicao_qualidade:string|null;valor_minimo_qualidade:number|null;valor_maximo_qualidade:number|null;unidade_medida_qualidade:string|null
+  roteiro_padrao_codigo:string|null;estrutura_bom_codigo:string|null;permite_subcontrato:boolean;requer_rastreabilidade:boolean;tipo_abastecimento:string|null;almoxarifado_wip_codigo:string|null;centro_trabalho_codigo:string|null;tempo_setup_min:number;capacidade_ciclo:number;alerta_maquina:boolean
   origem_fiscal:string|null;cst_icms:string|null;csosn:string|null;cfop_entrada:string|null;cfop_saida:string|null;aliquota_icms:number;aliquota_ipi:number
   aliquota_pis:number;aliquota_cofins:number;prazo_compra_dias:number;prazo_producao_dias:number;tolerancia_percentual:number
   custo_medio:number;custo_ultimo:number;custo_fabricacao:number;preco_venda:number;ativo:boolean
@@ -49,7 +50,7 @@ const empty=():FormData=>({
   codigo:'',nome:'',cliente:null,descricao:null,descricao_resumida:null,codigo_barras:null,grupo:null,subgrupo:null,marca:null,categoria:'Produto acabado',unidade:'UN',unidade_compra:'UN',unidade_venda:'UN',
   fornecedor_padrao_id:null,referencia_interna:null,referencia_cliente:null,origem:'0 - Nacional',ncm:null,cest:null,peso_liquido:0,peso_bruto:0,comprimento_mm:0,largura_mm:0,altura_mm:0,
   observacoes:null,foto_url:null,fabricado:false,comprado:false,revenda:false,estoque_atual:0,ponto_reposicao:0,estoque_maximo:0,localizacao_padrao_id:null,
-  controla_lote:false,controla_serie:false,permite_estoque_negativo:false,lote_validade_dias:0,inspecao_qualidade_obrigatoria:false,nivel_qualidade:null,inspecao_entrada:false,inspecao_producao:false,inspecao_entrega:false,requer_quarentena:false,modelo_inspecao_codigo:null,amostragem_aql:null,tipo_medicao_qualidade:null,valor_minimo_qualidade:null,valor_maximo_qualidade:null,unidade_medida_qualidade:null,origem_fiscal:null,
+  controla_lote:false,controla_serie:false,permite_estoque_negativo:false,lote_validade_dias:0,inspecao_qualidade_obrigatoria:false,nivel_qualidade:null,inspecao_entrada:false,inspecao_producao:false,inspecao_entrega:false,requer_quarentena:false,modelo_inspecao_codigo:null,amostragem_aql:null,tipo_medicao_qualidade:null,valor_minimo_qualidade:null,valor_maximo_qualidade:null,unidade_medida_qualidade:null,roteiro_padrao_codigo:null,estrutura_bom_codigo:null,permite_subcontrato:false,requer_rastreabilidade:false,tipo_abastecimento:'PULL',almoxarifado_wip_codigo:null,centro_trabalho_codigo:null,tempo_setup_min:0,capacidade_ciclo:1,alerta_maquina:false,origem_fiscal:null,
   cst_icms:null,csosn:null,cfop_entrada:null,cfop_saida:null,aliquota_icms:0,aliquota_ipi:0,aliquota_pis:0,aliquota_cofins:0,prazo_compra_dias:0,prazo_producao_dias:0,
   tolerancia_percentual:0,custo_medio:0,custo_ultimo:0,custo_fabricacao:0,preco_venda:0,ativo:true
 })
@@ -84,6 +85,10 @@ export default function ProdutosVendasIndustrial(){
   const [ncmDescription,setNcmDescription]=useState('')
   const [ncmBusy,setNcmBusy]=useState(false)
   const [ncmSearchMessage,setNcmSearchMessage]=useState('')
+  type ProductionLookupKind='roteiro'|'bom'|'wip'|'centro'
+  type ProductionLookupRow={id:string;codigo:string;descricao:string;versao?:string;status?:string}
+  const [productionLookup,setProductionLookup]=useState<{kind:ProductionLookupKind;title:string;rows:ProductionLookupRow[];loading:boolean;error:string}|null>(null)
+  const [productionLookupQuery,setProductionLookupQuery]=useState('')
   const [movements,setMovements]=useState<Movement[]>([])
   const [defects,setDefects]=useState<Defect[]>([])
   const [audits,setAudits]=useState<Audit[]>([])
@@ -120,6 +125,37 @@ export default function ProdutosVendasIndustrial(){
     return products.filter(p=>(!q||(p.codigo+' '+p.nome+' '+(p.codigo_barras||'')+' '+(p.grupo||'')+' '+(p.subgrupo||'')+' '+(p.marca||'')+' '+(p.categoria||'')).toLowerCase().includes(q))&&(groupFilter==='TODAS'||String(p.grupo||'')===groupFilter))
   },[products,query,groupFilter])
 
+  const openProductionLookup=async(kind:ProductionLookupKind)=>{
+    const titles:Record<ProductionLookupKind,string>={roteiro:'Consulta de roteiros de fabricação',bom:'Consulta de estruturas BOM',wip:'Consulta de almoxarifados WIP',centro:'Consulta de centros de trabalho'}
+    setProductionLookup({kind,title:titles[kind],rows:[],loading:true,error:''});setProductionLookupQuery('')
+    try{
+      if(!companyId)throw new Error('Empresa da sessão não identificada.')
+      let rows:ProductionLookupRow[]=[]
+      if(kind==='roteiro'){
+        const r=await supabase.from('pcp_roteiros').select('id,codigo,versao,status').eq('empresa_id',companyId).eq('ativo',true).order('codigo').limit(500)
+        if(r.error)throw r.error
+        rows=(r.data??[]).map((x:{id:string;codigo:string;versao:string;status?:string})=>({id:x.id,codigo:x.codigo,descricao:'Roteiro de fabricação',versao:x.versao,status:x.status}))
+      }else if(kind==='bom'){
+        const r=await supabase.from('engenharia_bom').select('id,codigo_bom,versao,status').eq('empresa_id',companyId).eq('status','ativo').order('codigo_bom').limit(500)
+        if(r.error)throw r.error
+        rows=(r.data??[]).map((x:{id:string;codigo_bom:string;versao:string;status:string})=>({id:x.id,codigo:x.codigo_bom,descricao:'Estrutura de produto',versao:x.versao,status:x.status}))
+      }else if(kind==='wip'){
+        const r=await supabase.from('erp_estoque_localizacoes').select('id,codigo,nome,tipo').eq('empresa_id',companyId).eq('ativo',true).order('codigo').limit(1000)
+        if(r.error)throw r.error
+        rows=(r.data??[]).filter((x:{codigo:string;nome:string;tipo:string})=>/wip|processo|produção|producao/i.test([x.codigo,x.nome,x.tipo].join(' '))).map((x:{id:string;codigo:string;nome:string;tipo:string})=>({id:x.id,codigo:x.codigo,descricao:x.nome+' · '+x.tipo}))
+      }else{
+        const r=await supabase.from('erp_postos_trabalho').select('id,codigo_posto,nome_posto').eq('empresa_id',companyId).eq('ativo',true).order('codigo_posto').limit(500)
+        if(r.error)throw r.error
+        rows=(r.data??[]).map((x:{id:string;codigo_posto:string;nome_posto:string})=>({id:x.id,codigo:x.codigo_posto,descricao:x.nome_posto}))
+      }
+      setProductionLookup({kind,title:titles[kind],rows,loading:false,error:rows.length?'':'Nenhum cadastro ativo encontrado para esta consulta.'})
+    }catch(e){setProductionLookup({kind,title:titles[kind],rows:[],loading:false,error:e instanceof Error?e.message:'Falha ao consultar os cadastros.'})}
+  }
+  const chooseProductionLookup=(row:ProductionLookupRow)=>{
+    if(!productionLookup)return
+    const key:Record<ProductionLookupKind,keyof FormData>={roteiro:'roteiro_padrao_codigo',bom:'estrutura_bom_codigo',wip:'almoxarifado_wip_codigo',centro:'centro_trabalho_codigo'}
+    update(key[productionLookup.kind],row.codigo);setProductionLookup(null)
+  }
   const selectProduct=(p:Product)=>{setSelectedId(p.id);setForm({...empty(),...p});setEditing(false);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false);setNcmDescription('');setNcmOptions([]);setNcmSearchMessage('')}
   const newProduct=()=>{setSelectedId(null);setForm(empty());setEditing(true);setTab('gerais');setMessage('');setError('');setDetailsLoaded(false);setNcmDescription('');setNcmOptions([]);setNcmSearchMessage('')}
   const update=(key:keyof FormData,value:unknown)=>setForm(prev=>({...prev,[key]:value}))
@@ -627,14 +663,32 @@ export default function ProdutosVendasIndustrial(){
       </section>}
 
       {tab==='producao'&&<section style={{padding:10}}>
-        <div className="product-production-grid" style={{display:'grid',gridTemplateColumns:'82px 82px 82px 82px 120px 120px max-content',gap:7,alignItems:'end'}}>
+        <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:8,alignItems:'stretch'}}>
+          <section className="product-quality-card">
+            <header className="product-quality-card-header"><div><span>⚙️ 05.A / ROTEIRO E ENGENHARIA</span><small>Vínculos técnicos com a estrutura do item</small></div></header>
+            <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr)',gap:7}}>
+              {([['CÓD. ROTEIRO PADRÃO','roteiro_padrao_codigo','roteiro',10],['CÓD. ESTRUTURA (BOM)','estrutura_bom_codigo','bom',15]] as const).map(([title,key,kind,max])=><label key={key} style={label}>{title}<div className="product-quality-lookup"><input value={String(form[key]??'')} maxLength={max} disabled={!editing} onChange={e=>update(key,e.target.value||null)} style={{...input,maxWidth:(max+2)+'ch',background:editing?'#fff':'#f5f7fa'}}/><button type="button" className="product-quality-lookup-btn" disabled={!editing} title={'Consultar '+title.toLowerCase()} onClick={()=>void openProductionLookup(kind)}><Search size={13}/></button></div></label>)}
+              <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:8}}>{check('Permite subcontrato','permite_subcontrato')}{check('Requer rastreabilidade','requer_rastreabilidade')}</div>
+              {select('TIPO DE ABASTECIMENTO','tipo_abastecimento',[['PULL','PULL'],['PUSH','PUSH']])}
+            </div>
+          </section>
+          <section className="product-quality-card">
+            <header className="product-quality-card-header"><div><span>🏭 05.B / CHÃO DE FÁBRICA & WIP</span><small>Regras operacionais e capacidade do processo</small></div></header>
+            <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr)',gap:7}}>
+              {([['ALMOXARIFADO WIP','almoxarifado_wip_codigo','wip',6],['CENTRO DE TRABALHO','centro_trabalho_codigo','centro',8]] as const).map(([title,key,kind,max])=><label key={key} style={label}>{title}<div className="product-quality-lookup"><input value={String(form[key]??'')} maxLength={max} disabled={!editing} onChange={e=>update(key,e.target.value||null)} style={{...input,maxWidth:(max+2)+'ch',background:editing?'#fff':'#f5f7fa'}}/><button type="button" className="product-quality-lookup-btn" disabled={!editing} title={'Consultar '+title.toLowerCase()} onClick={()=>void openProductionLookup(kind)}><Search size={13}/></button></div></label>)}
+              <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:8}}>{field('TEMPO SETUP (MIN)','tempo_setup_min','number')}{field('CAPACIDADE POR CICLO','capacidade_ciclo','number')}</div>
+              {check('Enviar alerta de máquina','alerta_maquina')}
+            </div>
+          </section>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'82px 82px 82px 82px 120px 120px max-content',gap:7,alignItems:'end',marginTop:9,padding:'8px 0',borderTop:'1px solid #d5dde7'}}>
           {field('PRAZO COMPRA (dias)','prazo_compra_dias','number')}{field('PRAZO PRODUÇÃO (dias)','prazo_producao_dias','number')}{field('CUSTO FABRICAÇÃO','custo_fabricacao','number',1,true)}{field('TOLERÂNCIA (%)','tolerancia_percentual','number')}
           <label style={label}>FICHA ATIVA<input value={productionFicha?('REV. '+(productionFicha.revisao||productionFicha.versao)):'Não cadastrada'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A',fontWeight:700}}/></label>
           <label style={label}>RENDIMENTO<input value={productionFicha?fmt(productionFicha.rendimento)+' '+productionFicha.unidade_rendimento:'—'} readOnly style={{...input,background:'#eaf3f8',color:'#17445A'}}/></label>
           <button type="button" onClick={()=>{window.location.href='/ficha-engenharia?produto='+encodeURIComponent(selectedId||'')}} style={{...btn('normal'),width:'max-content',maxWidth:'100%',whiteSpace:'nowrap',padding:'0 8px',fontSize:10}}>ABRIR FICHA DE PROCESSO</button>
         </div>
         <div style={{marginTop:8,border:'1px solid #d5dde7',overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:9}}><thead><tr style={{background:'#123B50',color:'#fff'}}>{['Seq.','Operação','Máquina','Setup min','Ciclo s','Qtde/h','Qtde/dia'].map(h=><th key={h} style={{padding:'5px 6px',textAlign:'left',fontWeight:500}}>{h}</th>)}</tr></thead><tbody>{productionOps.map(o=><tr key={o.id} style={{borderBottom:'1px solid #e5e7eb'}}><td style={{padding:'5px 6px'}}>{o.sequencia}</td><td style={{padding:'5px 6px'}}>{o.operacao}</td><td style={{padding:'5px 6px'}}>{o.maquina_codigo?o.maquina_codigo+' • '+(o.maquina_nome||''):'Não definida'}</td><td style={{padding:'5px 6px'}}>{fmt(o.setup_min)}</td><td style={{padding:'5px 6px'}}>{fmt(o.ciclo_seg)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_hora==null?'—':fmt(o.capacidade_hora)}</td><td style={{padding:'5px 6px'}}>{o.capacidade_dia==null?'—':fmt(o.capacidade_dia)}</td></tr>)}{!productionOps.length&&<tr><td colSpan={7} style={{padding:12,textAlign:'center',color:'#667085'}}>Nenhuma operação cadastrada. Abra a ficha de processo para cadastrar máquina/posto, setup, ciclo e instruções.</td></tr>}</tbody></table></div>
-        <div style={{marginTop:7,fontSize:9,color:'#667085'}}>Máquina, setup, ciclo e capacidade vêm da ficha técnica/roteiro real; a ficha completa alimenta o PCP e a Ordem de Produção.</div>
+        <div style={{marginTop:7,fontSize:9,color:'#667085'}}>Roteiros, BOM, almoxarifados e centros de trabalho consultam os cadastros do tenant ativo; os parâmetros deste formulário são gravados no produto.</div>
       </section>}
 
       {tab==='qualidade'&&<section style={{padding:10}}>
@@ -690,6 +744,8 @@ export default function ProdutosVendasIndustrial(){
         <div style={{fontSize:9,color:'#667085',marginTop:7}}>Até 5 MB por imagem. Formatos aceitos: JPG, PNG e WEBP. Imagens BMP são convertidas automaticamente para PNG.</div>
       </section>}
     </section>
+
+    {productionLookup&&<div role="dialog" aria-modal="true" aria-label={productionLookup.title} style={{position:'fixed',inset:0,zIndex:1000,background:'rgba(15,23,42,.48)',display:'grid',placeItems:'center',padding:16}} onMouseDown={e=>{if(e.target===e.currentTarget)setProductionLookup(null)}}><section style={{width:'min(620px,96vw)',maxHeight:'80vh',overflow:'hidden',background:'#fff',border:'1px solid #123B50',borderRadius:2,boxShadow:'0 12px 36px #0003',display:'flex',flexDirection:'column'}}><header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'10px 12px',background:'#123B50',color:'#fff'}}><b style={{fontSize:12}}>{productionLookup.title.toUpperCase()}</b><button type="button" onClick={()=>setProductionLookup(null)} aria-label="Fechar consulta" style={{border:0,background:'transparent',color:'#fff',cursor:'pointer'}}><X size={16}/></button></header><div style={{padding:10,display:'grid',gap:8}}><input autoFocus value={productionLookupQuery} onChange={e=>setProductionLookupQuery(e.target.value)} placeholder="Filtrar por código ou descrição..." style={{...input,height:30}}/>{productionLookup.loading?<div style={{padding:20,textAlign:'center',fontSize:11}}>Consultando cadastros do ERP...</div>:productionLookup.error?<div style={{padding:12,color:'#b42318',fontSize:11}}>{productionLookup.error}</div>:<div style={{overflow:'auto',maxHeight:'55vh'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:10}}><thead><tr style={{background:'#eaf3f8',color:'#123B50'}}>{['Código','Descrição','Versão',''].map(h=><th key={h} style={{padding:7,textAlign:'left',borderBottom:'1px solid #d5dde7'}}>{h}</th>)}</tr></thead><tbody>{productionLookup.rows.filter(x=>(x.codigo+' '+x.descricao+' '+(x.versao||'')).toLowerCase().includes(productionLookupQuery.toLowerCase())).map(row=><tr key={row.id} style={{borderBottom:'1px solid #edf1f5'}}><td style={{padding:7,fontWeight:700}}>{row.codigo}</td><td style={{padding:7}}>{row.descricao}</td><td style={{padding:7}}>{row.versao||'—'}</td><td style={{padding:4}}><button type="button" onClick={()=>chooseProductionLookup(row)} style={{...btn('primary'),height:25,fontSize:9}}>Selecionar</button></td></tr>)}</tbody></table></div>}</div><footer style={{padding:'7px 10px',background:'#f7f9fc',borderTop:'1px solid #d5dde7',display:'flex',justifyContent:'flex-end'}}><button type="button" onClick={()=>setProductionLookup(null)} style={{...btn('normal'),height:27}}>Cancelar</button></footer></section></div>}
 
     <section style={{...panel,margin:'0 10px 10px',overflow:'hidden'}}>
       <div style={{display:'flex',alignItems:'end',gap:6,padding:7,background:'#f7f9fc',borderBottom:'1px solid #d6dde6',flexWrap:'wrap'}}>
