@@ -1,3 +1,10 @@
+/**
+ * @DATA_REVISAO: 2026-10-16
+ * @REVISAO: VENDAS-009
+ * @ESCOPO_REVISADO: leitura de produtos/estoque, caixa, cliente, carrinho, desconto, meios de pagamento e finalização idempotente.
+ * @ALTERACOES: selects/desconto com altura de 30px e ação final azul padrão; botões de toque mantidos maiores intencionalmente.
+ * @VALIDACAO: revisão estática; CI pendente para tipagem, lint, auditorias e build.
+ */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Barcode, CheckCircle2, CreditCard, Minus, Package, Plus, RefreshCw,
@@ -247,7 +254,7 @@ export default function VendasPDV() {
 
           <div className="grid grid-cols-1 gap-2 border-b border-slate-200 p-2">
             <label htmlFor="pdv-caixa">Caixa operacional</label>
-            <select id="pdv-caixa" value={box} onChange={event => setBox(event.target.value)} disabled={loading || saving} className="w-full">
+            <select id="pdv-caixa" value={box} onChange={event => setBox(event.target.value)} disabled={loading || saving} className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 px-2 text-[11px] outline-none focus:border-[#2D8DB8]">
               <option value="">Selecione um caixa ativo</option>
               {boxes.map(item => <option key={item.id} value={item.id}>{item.codigo} — {item.descricao}</option>)}
             </select>
@@ -286,7 +293,7 @@ export default function VendasPDV() {
             <div className="flex items-center justify-between text-[10px]"><span className="text-slate-600">Subtotal</span><strong className="font-medium tabular-nums">{money(subtotal)}</strong></div>
             <div className="flex items-center justify-between gap-3">
               <label htmlFor="pdv-desconto">Desconto (R$)</label>
-              <input id="pdv-desconto" type="number" min="0" max={subtotal} step="0.01" value={discount} onChange={event => setDiscount(event.target.value)} disabled={saving} className="w-28 text-right tabular-nums" />
+              <input id="pdv-desconto" type="number" min="0" max={subtotal} step="0.01" value={discount} onChange={event => setDiscount(event.target.value)} disabled={saving} className="h-[30px] w-28 rounded-[2px] border border-slate-300 px-2 text-right text-[11px] tabular-nums outline-none focus:border-[#2D8DB8]" />
             </div>
             <div className="flex items-center justify-between border-t border-slate-200 pt-2 text-[12px] text-[#123B50]"><span className="font-semibold">TOTAL</span><strong className="text-[18px] font-semibold tabular-nums">{money(total)}</strong></div>
           </div>
@@ -307,7 +314,7 @@ export default function VendasPDV() {
           {message && <div role="status" className="mx-2 mb-2 border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-[10px] leading-4 text-emerald-800">{message}</div>}
 
           <div className="border-t border-slate-200 p-2">
-            <button type="button" onClick={() => void finish()} disabled={saving || loading || !cart.length || !box} className="flex h-10 w-full items-center justify-center gap-2 bg-[#3A9D78] px-3 text-[11px] font-semibold text-white hover:bg-[#2e8061] disabled:cursor-not-allowed disabled:opacity-45">
+            <button type="button" onClick={() => void finish()} disabled={saving || loading || !cart.length || !box} className="flex h-10 w-full items-center justify-center gap-2 bg-[#2D8DB8] px-3 text-[11px] font-semibold text-white hover:bg-[#246f91] disabled:cursor-not-allowed disabled:opacity-45">
               {saving ? <><RefreshCw size={14} className="animate-spin" /> Finalizando venda…</> : <><CheckCircle2 size={14} /> Finalizar venda</>}
             </button>
             <p className="mt-1.5 text-center text-[9px] leading-3 text-slate-500">A baixa de estoque e o registro da venda são confirmados em uma única transação no banco.</p>
