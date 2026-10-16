@@ -19,6 +19,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci --legacy-peer-deps --no-audit --no-fund
+      - name: Auditoria estática de padronização das telas
+        run: npm run audit:ui-standardization
       - name: Approved UI immutable hash lock
         run: npm run verify:approved-ui-lock
       - run: npm run type-check
@@ -29,3 +31,10 @@ jobs:
       - run: npm run build
       - run: npm run verify:build
       - run: npm run verify-routes
+      - name: Publicar relatório de auditoria visual estática
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erp-ui-standardization-audit
+          path: docs/erp-standardization/generated/ui-audit.json
+          if-no-files-found: warn
