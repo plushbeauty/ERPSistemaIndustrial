@@ -60,6 +60,7 @@ Rota real, arquivo renderizado, módulo/aba, campos em ordem de leitura, altura,
 
 **Ajuste aplicado no commit `6905e28c764bf8fa9145a39c4b0a8d8f03d1dc6b`:**
 - Quantidades e prazos selecionados usam largura compacta de 9ch; preços e custos, 12ch; a classe numérica genérica `edit-14` foi reduzida de 16ch para 12ch.
-- O limite padrão de texto passou a 50 caracteres, mantendo os limites específicos menores para códigos fiscais/unidades.
+- O limite padrão de texto passou a 50 caracteres, mantendo os limites específicos menores para códigos fiscais/unidades; combos de classificação, grupo/subgrupo e pesquisa também têm limite de 50.
 - A entrada numérica ignora valores digitados com mais de 14 caracteres.
+- Commits do ajuste: `6905e28c764bf8fa9145a39c4b0a8d8f03d1dc6b` e `5e6939b74f5623fd1658c85d92ab496b47707e65`.
 - O ajuste ainda precisa de type-check/build e inspeção visual real. Portanto, UI-020 continua pendente e esta tela **não** deve ser movida para COMPLETED até haver essas evidências.
