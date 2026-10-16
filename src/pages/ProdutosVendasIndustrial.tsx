@@ -637,7 +637,46 @@ export default function ProdutosVendasIndustrial(){
         .product-master-screen .product-general-form{padding:0!important;background:#fff!important}
         .product-master-screen .product-layout-card,.product-master-screen .product-quality-card{break-inside:avoid;box-shadow:none!important}
       }
-    `}</style>
+    `}
+      .product-master-screen{background:#f4f6f9!important;font-family:"Segoe UI",Inter,Arial,sans-serif!important}
+      .product-master-screen .product-general-form{background:#f4f6f9!important;padding:12px!important}
+      .product-master-screen .product-general-card-grid{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:10px!important;align-items:start!important}
+      .product-master-screen .product-layout-card{background:#fff!important;border:1px solid #cbd5e1!important;border-radius:6px!important;padding:12px!important;min-width:0!important;box-shadow:0 1px 2px rgba(15,23,42,.04)!important}
+      .product-master-screen .product-layout-card-header{align-items:center!important;border-bottom:1px solid #e2e8f0!important}
+      .product-master-screen .product-layout-card-header span{color:#2b6cb0!important}
+      .product-master-screen .product-layout-card-header h2{color:#1a365d!important}
+      .product-master-screen .product-identification-fields{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+      .product-master-screen .product-identification-fields>.product-inline-field{display:grid!important;grid-template-columns:160px minmax(0,1fr)!important;align-items:center!important;gap:10px!important;min-width:0!important}
+      .product-master-screen .product-identification-fields>.product-inline-field>label{display:contents!important}
+      .product-master-screen .product-identification-reference-row{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:12px!important;min-width:0!important}
+      .product-master-screen .product-identification-reference-row>.product-inline-field{display:grid!important;grid-template-columns:160px minmax(0,1fr)!important;align-items:center!important;gap:10px!important;min-width:0!important}
+      .product-master-screen .product-identification-reference-row>.product-inline-field>label{display:contents!important}
+      .product-master-screen .product-identification-fields label,.product-master-screen .product-identification-reference-row label{font-family:"Segoe UI",Inter,Arial,sans-serif!important;font-size:11px!important;font-weight:600!important;color:#475569!important;white-space:nowrap!important}
+      .product-master-screen .product-identification-fields label>span,.product-master-screen .product-identification-reference-row label>span{white-space:nowrap!important;overflow-wrap:normal!important;line-height:1.2!important}
+      .product-master-screen .product-identification-fields input,.product-master-screen .product-identification-reference-row input,.product-master-screen .product-operational-fields input,.product-master-screen .product-operational-fields select,.product-master-screen .product-form-grid input,.product-master-screen .product-form-grid select,.product-master-screen .product-inline-action-field input,.product-master-screen .product-inline-action-field select,.product-master-screen .product-inline-action-field button{height:30px!important;box-sizing:border-box!important}
+      .product-master-screen input.edit-2,.product-master-screen select.edit-2{display:inline-block!important;flex:0 0 auto!important;width:5ch!important;max-width:6ch!important}
+      .product-master-screen input.edit-3,.product-master-screen select.edit-3{display:inline-block!important;flex:0 0 auto!important;width:6ch!important;max-width:6ch!important}
+      .product-master-screen input.edit-4,.product-master-screen select.edit-4{display:inline-block!important;flex:0 0 auto!important;width:7ch!important;max-width:7ch!important}
+      .product-master-screen input.edit-6,.product-master-screen select.edit-6{display:inline-block!important;flex:0 0 auto!important;width:9ch!important;max-width:9ch!important}
+      .product-master-screen input.edit-7,.product-master-screen select.edit-7{display:inline-block!important;flex:0 0 auto!important;width:10ch!important;max-width:10ch!important}
+      .product-master-screen input.edit-8,.product-master-screen select.edit-8{display:inline-block!important;flex:0 0 auto!important;width:11ch!important;max-width:11ch!important}
+      .product-master-screen input.edit-10,.product-master-screen select.edit-10{display:inline-block!important;flex:0 0 auto!important;width:13ch!important;max-width:13ch!important}
+      .product-master-screen input.edit-12,.product-master-screen select.edit-12{display:inline-block!important;flex:0 0 auto!important;width:15ch!important;max-width:15ch!important}
+      .product-master-screen input.edit-14,.product-master-screen select.edit-14{display:inline-block!important;flex:0 0 auto!important;width:17ch!important;max-width:17ch!important}
+      .product-master-screen input.edit-15,.product-master-screen select.edit-15{display:inline-block!important;flex:0 0 auto!important;width:18ch!important;max-width:18ch!important}
+      .product-master-screen input.edit-20,.product-master-screen select.edit-20{display:inline-block!important;flex:0 0 auto!important;width:23ch!important;max-width:23ch!important}
+      .product-master-screen input.edit-60,.product-master-screen select.edit-60{display:inline-block!important;flex:0 1 60ch!important;width:60ch!important;max-width:min(100%,60ch)!important}
+      .product-master-screen input.edit-120,.product-master-screen select.edit-120{display:inline-block!important;flex:1 1 auto!important;width:100%!important;max-width:100%!important}
+      .product-master-screen .product-operational-flags{display:flex!important;align-items:center!important;gap:20px!important;flex-wrap:wrap!important;margin-top:12px!important;padding:10px 0 0 170px!important;border-top:1px solid #e2e8f0!important}
+      .product-master-screen .product-operational-flags label{display:inline-flex!important;align-items:center!important;gap:6px!important;white-space:nowrap!important;font-family:"Segoe UI",Inter,Arial,sans-serif!important;font-size:11px!important;font-weight:600!important;color:#475569!important}
+      .product-master-screen .product-fiscal-code-lookup input.edit-8{width:11ch!important;max-width:11ch!important;flex:0 0 auto!important}
+      .product-master-screen .product-inline-action-field{display:flex!important;align-items:center!important;flex:0 0 auto!important;min-width:0!important;gap:0!important}
+      .product-master-screen .product-inline-action-field button{flex:0 0 32px!important;width:32px!important;min-width:32px!important;padding:0!important}
+      .product-master-screen .product-form-grid label{font-family:"Segoe UI",Inter,Arial,sans-serif!important;font-size:11px!important;font-weight:600!important;color:#475569!important}
+      .product-master-screen .product-form-grid label>span{white-space:nowrap!important;overflow-wrap:normal!important}
+      @media(max-width:900px){.product-master-screen .product-general-card-grid{grid-template-columns:minmax(0,1fr)!important}.product-master-screen .product-identification-fields>.product-inline-field,.product-master-screen .product-identification-reference-row>.product-inline-field{grid-template-columns:130px minmax(0,1fr)!important}.product-master-screen .product-operational-flags{padding-left:140px!important}}
+      @media(max-width:560px){.product-master-screen .product-identification-fields>.product-inline-field,.product-master-screen .product-identification-reference-row>.product-inline-field{grid-template-columns:minmax(0,1fr)!important;gap:3px!important}.product-master-screen .product-identification-reference-row{grid-template-columns:minmax(0,1fr)!important}.product-master-screen .product-operational-flags{padding-left:0!important;gap:12px!important}}
+</style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:900,color:'#1c4bb5'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
       <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
@@ -678,8 +717,8 @@ export default function ProdutosVendasIndustrial(){
               <div className="product-inline-field product-barcode-field">{field('Cód. barras','codigo_barras')}</div>
               <div className="product-inline-field product-description-field">{field('Descrição','nome')}</div>
               <div className="product-identification-reference-row">
-                <div className="product-inline-field product-customer-code-field">{field('Código Cliente','referencia_cliente')}</div>
-                <div className="product-inline-field product-customer-name-field">{field('Referência Cliente','referencia_interna')}</div>
+                <div className="product-inline-field product-customer-code-field">{field('Referência Cliente','referencia_cliente')}</div>
+                <div className="product-inline-field product-customer-name-field">{field('Referência Interna','referencia_interna')}</div>
               </div>
             </div>
             <div className="product-operational-flags product-identification-flags">
