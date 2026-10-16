@@ -116,3 +116,23 @@ Só marcar como concluído quando todos forem comprovados: rota real; leitura e 
 3. Revisar liberação e quarentena de lotes para garantir o bloqueio transacional de lotes reprovados.
 4. Revisar RNC/CAPA e instrumentos de calibração, com atenção a RLS, schema e status.
 5. Rodar novamente os contratos de regressão e confirmar Vercel READY antes de marcar cada item concluído.
+
+## Terceira passagem — qualidade, GED e validação transacional (16/10/2026)
+
+**Revisão:** AUDIT-2026-10-16-R3
+
+### Alterações adicionais versionadas
+
+- `src/pages/QualidadeInspecoesIndustrial.tsx` — commit `10b55e95e224eb0ea9836c6a68cb3d76dcd754c5`: limites visuais de quantidade total e tamanho de amostra agora refletem as validações já existentes no formulário; a mensagem de ajuda foi corrigida para não contradizer o suporte a critérios documentais/não numéricos; linhas e cabeçalho da grade foram compactados para 32 px.
+- `src/pages/QualidadeInspecoesIndustrial.tsx` — commit `24277652bb7d9f507115ae54b2334a1c01710947`: ajuste no seletor CSS do cabeçalho para que o padding compacto não seja sobrescrito por regra de maior especificidade.
+- `src/pages/qualidade/GEDDocumentos.tsx` — commit `2b38894675eca860470f4e0e98d3529bfab08ea2`: padronização dos cantos dos controles de 4 px para 2 px; upload, armazenamento, revisão e aprovação não foram intencionalmente alterados.
+- `supabase/migrations/20261016170000_harden_quality_inspection_validation.sql` — commit `ab18f01a2d4cae134f757085fef050c5e5e1ec89`: reforça a função RPC existente para rejeitar quantidade/amostra nulas ou não positivas e lista de medições ausente, inválida ou vazia. Reutiliza a assinatura e o corpo funcional da migration existente, sem adicionar tabela, coluna ou RPC com nome novo.
+
+### Verificação e limites
+
+- O workflow `ERP Industrial CI` do commit anterior `62eab8d366543eb129e892c21ae88d2109197933` concluiu com sucesso: TypeScript, ESLint, auditorias, contratos de rotas/imports e build de produção passaram naquele SHA.
+- Isso **não valida automaticamente** os commits posteriores. O status Vercel do HEAD consultado continua em falha por limite de builds (`upgradeToPro=build-rate-limit`); não há confirmação de publicação do HEAD atual.
+- A migration de endurecimento está versionada no Git, mas não foi aplicada nem testada contra o banco remoto nesta sessão. A conexão de leitura do Supabase continua indisponível; não declarar a função remota atualizada até confirmar execução da migration.
+- O GED já recebeu ajuste de responsividade e agora a padronização de cantos; o histórico anterior que dizia que o GED não havia sido modificado fica supersedido por este adendo.
+- Próximo portão: confirmar execução da migration no Supabase, rodar o CI para o HEAD atual, testar aprovação/reprovação/quarentena com sessão autenticada e validar o deployment de produção antes de fechar a pendência.
+
