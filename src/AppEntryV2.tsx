@@ -1,3 +1,12 @@
+/**
+ * SYNQRA ERP — CORREÇÃO DE SESSÃO E ROTAS MESTRE
+ * REVISÃO: 0.2 | DATA: 16/10/2026
+ * ID: #AUDIT-ERP-20261016-16
+ * ESCOPO: roteador React/Vite e apontamento de módulos para componentes reais.
+ * ALTERAÇÃO: rotas de clientes/fornecedores confirmadas em componentes próprios; /producao direcionada ao PCPIndustrial.
+ * VALIDAÇÃO: rotas conferidas estaticamente; compilação e navegação autenticada ainda pendentes.
+ */
+
 ﻿import { Component, type ComponentType, type ReactNode, lazy, Suspense, useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
@@ -493,6 +502,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/vendas/classificacao-fiscal" element={<QualityPlanGate>{<ClassificacaoFiscal />}</QualityPlanGate>} />
       <Route path="/vendas/razao-geral" element={<QualityPlanGate>{<PainelRazaoGeral />}</QualityPlanGate>} />
       <Route path="/pcp" element={<QualityPlanGate><SynqraLayoutProvider><PCPIndustrial /></SynqraLayoutProvider></QualityPlanGate>} />
+      <Route path="/producao" element={<QualityPlanGate><SynqraLayoutProvider><PCPIndustrial /></SynqraLayoutProvider></QualityPlanGate>} />
       <Route path="/engenharia/produtos" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/engenharia/bom" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/engenharia/roteiros" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
