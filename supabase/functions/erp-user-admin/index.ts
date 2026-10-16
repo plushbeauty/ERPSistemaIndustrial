@@ -1,7 +1,7 @@
 /**
  * REVISÃO TÉCNICA: 16/10/2026
  * Revisado: autorização por auth.uid(), isolamento por empresa, alçadas de perfil, operações Auth/ERP, trilha de auditoria e fluxo de senhas.
- * Alteração desta revisão: política de senha alinhada para 12+ caracteres com maiúscula, minúscula, número e símbolo; gerador garante todas as classes; mensagem de validação corrigida para refletir a política real.
+ * Alteração desta revisão: política de senha alinhada para 12+ caracteres com maiúscula, minúscula, número e símbolo; gerador e mensagem corrigidos; autorização alinhada à assinatura vigente erp_has_permission(p_code).
  * Não validado: deploy da Edge Function, integração Supabase remota, testes automatizados Deno e cenários de falha transacional.
  */
 
@@ -159,21 +159,20 @@ Deno.serve(async (req) => {
     const actorLevel = Number(actor.nivel_admin ?? 0)
     const isAdmin = actorIsMaster || actorLevel >= 8
     if (!isAdmin && action !== 'change_my_password') return json({ error: 'Sem permissão administrativa.' }, 403)
-    const requiredPermission: Record<string, [string, string]> = {
-      list_users: ['usuarios', 'ver'],
-      create_user: ['usuarios', 'criar'],
-      invite_user: ['usuarios', 'criar'],
-      update_user: ['usuarios', 'editar'],
-      set_active: ['usuarios', 'editar'],
-      reset_password: ['usuarios', 'editar'],
-      delete_user: ['usuarios', 'excluir'],
+    const requiredPermission: Record<string, string> = {
+      list_users: 'users.read',
+      create_user: 'users.create',
+      invite_user: 'users.create',
+      update_user: 'users.update',
+      set_active: 'users.update',
+      reset_password: 'users.update',
+      delete_user: 'users.delete',
     }
     if (action !== 'change_my_password') {
-      const required = requiredPermission[action]
-      if (!required) return json({ error: 'Ação não suportada.' }, 400)
+      const requiredCode = requiredPermission[action]
+      if (!requiredCode) return json({ error: 'Ação não suportada.' }, 400)
       const { data: permitted, error: permissionError } = await userClient.rpc('erp_has_permission', {
-        p_modulo: required[0],
-        p_acao: required[1],
+        p_code: requiredCode,
       })
       if (permissionError) {
         console.error('[erp-user-admin] falha ao validar permissão RBAC:', permissionError)
