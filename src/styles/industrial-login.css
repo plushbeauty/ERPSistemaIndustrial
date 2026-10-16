@@ -141,26 +141,3 @@
 .auth-divider,.auth-register,.auth-trial{display:none!important}
 .auth-submit{width:100%;min-height:40px;border-radius:3px}
 @media(min-width:821px){.auth-visual-message{left:50%!important;transform:translate(-50%,-50%)!important;width:min(600px,calc(100% - 72px))!important}}
-
-
-/* Correção solicitada: login sem logotipos e texto institucional branco. */
-.auth-visual-logo,
-.auth-mobile-brand { display: none !important; }
-.auth-visual-message h2,
-.auth-visual-message h2 em,
-.auth-visual-message p {
-  color: #fff !important;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, .48);
-}
-.auth-trust b {
-  color: #fff !important;
-  background: rgba(12, 28, 36, .42) !important;
-  border-color: rgba(255, 255, 255, .48) !important;
-}
-.auth-trust b svg { color: #fff !important; }
-.auth-visual-content > small {
-  color: #fff !important;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, .55);
-}
-
-/* Disparo de build via Git para publicar a correção de login já aprovada. */
