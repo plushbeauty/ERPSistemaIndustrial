@@ -132,9 +132,9 @@ export default function ProdutosVendasIndustrial(){
       if(!companyId)throw new Error('Empresa da sessão não identificada.')
       let rows:ProductionLookupRow[]=[]
       if(kind==='roteiro'){
-        const r=await supabase.from('pcp_roteiros').select('id,codigo,versao,status').eq('empresa_id',companyId).eq('ativo',true).order('codigo').limit(500)
+        const r=await supabase.from('pcp_roteiros').select('id,codigo,versao').eq('empresa_id',companyId).eq('ativo',true).order('codigo').limit(500)
         if(r.error)throw r.error
-        rows=(r.data??[]).map((x:{id:string;codigo:string;versao:string;status?:string})=>({id:x.id,codigo:x.codigo,descricao:'Roteiro de fabricação',versao:x.versao,status:x.status}))
+        rows=(r.data??[]).map((x:{id:string;codigo:string;versao:string})=>({id:x.id,codigo:x.codigo,descricao:'Roteiro de fabricação',versao:x.versao}))
       }else if(kind==='bom'){
         const r=await supabase.from('engenharia_bom').select('id,codigo_bom,versao,status').eq('empresa_id',companyId).eq('status','ativo').order('codigo_bom').limit(500)
         if(r.error)throw r.error
