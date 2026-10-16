@@ -1,7 +1,7 @@
 /*
  * REVISÃO TÉCNICA: 16/10/2026
  * Revisado: navegação horizontal sem barra lateral, pesquisa de seções, estado ativo, layout responsivo e conteúdo da página selecionada.
- * Não validado nesta revisão: type-check/build, execução no navegador, permissões reais e publicação Vercel.
+ * Alteração desta revisão: páginas dedicadas de Integrações e Parâmetros do Sistema conectadas à navegação administrativa. Não validado: type-check/build, execução no navegador, permissões reais e publicação Vercel.
  */
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -20,6 +20,8 @@ import ConfiguracaoLogs from './ConfiguracaoLogs'
 import ConfiguracaoPermissoes from './ConfiguracaoPermissoes'
 import ConfiguracaoSeguranca from './ConfiguracaoSeguranca'
 import ConfiguracaoPerfis from './ConfiguracaoPerfis'
+import ConfiguracaoIntegracoes from './ConfiguracaoIntegracoes'
+import ConfiguracaoSistema from './ConfiguracaoSistema'
 
 type Item = { path: string; label: string; description: string; icon: LucideIcon }
 type Group = { label: string; items: Item[] }
@@ -132,6 +134,8 @@ function SectionContent({ item, navigate }: { item: Item; navigate: ReturnType<t
   if (item.path === '/configuracoes-adm/logs') return <ConfiguracaoLogs />
   if (item.path === '/configuracoes-adm/backups') return <ConfiguracaoBackups />
   if (item.path === '/configuracoes-adm/usuarios') return <UsuariosAdmin />
+  if (item.path === '/configuracoes-adm/integracoes') return <ConfiguracaoIntegracoes />
+  if (item.path === '/configuracoes-adm/sistema') return <ConfiguracaoSistema />
   return <UnavailableSection item={item} />
 }
 
