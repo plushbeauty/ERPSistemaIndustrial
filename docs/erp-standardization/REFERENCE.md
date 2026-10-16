@@ -42,3 +42,24 @@ Rota real, arquivo renderizado, módulo/aba, campos em ordem de leitura, altura,
 - Fluxo real de consulta/gravação/validação preservado.
 - type-check, lint, auditorias aplicáveis e build executados; resultados registrados sem declarar sucesso não verificado.
 - Evidência da rota/tela conferida; somente então retirar do backlog e registrar em COMPLETED.md.
+
+
+## Comparação real de componente — Cadastro de Produtos (2026-10-16)
+
+**Tela auditada:** `src/pages/ProdutosVendasIndustrial.tsx` (rota `/produtos` e alias `/produtos-vendas`). A tela está aprovada no cabeçalho do próprio arquivo, mas a autorização explícita do usuário nesta conversa permitiu corrigir apenas a geometria e os limites dos campos abaixo. Não alterar CRUD, Supabase, cálculos de custo, regras fiscais, abas ou impressão neste ajuste.
+
+**Fonte aberta consultada:** Carbon ERP, arquivos reais:
+- [JobProperties.tsx](https://github.com/crbnos/carbon/blob/main/apps/erp/app/modules/production/ui/Jobs/JobProperties.tsx) — compõe campos com `InputControlled` e `NumberControlled`, usa tamanhos semânticos (`size="sm"`) e agrupa os controles num painel de largura definida; a edição envia a alteração pelo fluxo de ação, não por campos visualmente superdimensionados.
+- [QuantityModal.tsx](https://github.com/crbnos/carbon/blob/main/apps/mes/app/components/JobOperation/components/QuantityModal.tsx) — quantidade usa `NumberControlled`, mínimo 0 e formato com no máximo 2 casas decimais; campo e ação “Complete All” ficam alinhados numa linha flexível.
+- O Carbon é referência de composição e comportamento, não um arquivo para copiar integralmente: sua licença declarada é AGPL-3.0-only. Reutilizar os princípios de design; manter a arquitetura e os contratos existentes do ERP.
+
+**Problemas encontrados no código antes do ajuste:**
+- Classe `edit-14` fixava largura de 16ch mesmo em campos numéricos curtos.
+- O limite padrão de texto era 60 caracteres e campos longos chegavam a 120.
+- Campos `type="number"` não tinham limite de comprimento de entrada aplicado pelo manipulador.
+
+**Ajuste aplicado no commit `6905e28c764bf8fa9145a39c4b0a8d8f03d1dc6b`:**
+- Quantidades e prazos selecionados usam largura compacta de 9ch; preços e custos, 12ch; a classe numérica genérica `edit-14` foi reduzida de 16ch para 12ch.
+- O limite padrão de texto passou a 50 caracteres, mantendo os limites específicos menores para códigos fiscais/unidades.
+- A entrada numérica ignora valores digitados com mais de 14 caracteres.
+- O ajuste ainda precisa de type-check/build e inspeção visual real. Portanto, UI-020 continua pendente e esta tela **não** deve ser movida para COMPLETED até haver essas evidências.
