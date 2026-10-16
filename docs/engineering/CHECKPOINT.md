@@ -16,3 +16,6 @@ DO_NOT_REPEAT: não usar codigo/nome/modulo/ativo em erp_permissions; não recri
 
 
 COMPARATIVE_AUDIT: inventário estático registrado em docs/erp-standardization/COMPARATIVE-MODULE-INVENTORY-2026-10-16.md; 248 declarações Route, 247 padrões únicos, 156 imports dinâmicos, 11 rotas para renderer genérico. Comparação de referência: SAP 10 áreas principais da página consultada; ERPNext 21 nomes em modules.txt; TOTVS Backoffice 18 tópicos/subitens citados na página pública. Estes números não são diretamente equivalentes. Matriz de gaps criada, auditoria funcional ainda pendente. Não marcar módulos concluídos.
+
+
+COMPARATIVE_CATALOG_UPDATE: ampliado em ff68b47581aebc7e0677d7908dd17ec868cd0831 com catálogo função-a-função do ERPNext (21 módulos), famílias de aplicações Odoo, famílias TOTVS Protheus e matriz de segurança (identidade, usuários, RBAC, tenant/RLS, Master, logs, sessões, MFA, senha, alçadas, backup/restore, segredos, alertas e LGPD). Matriz distingue presença de rota de existência de capacidade completa. Não inferir conclusão funcional.
