@@ -1,3 +1,12 @@
+/**
+ * SYNQRA ERP — CORREÇÃO DE SESSÃO E ROTAS MESTRE
+ * REVISÃO: 0.2 | DATA: 16/10/2026
+ * ID: #AUDIT-ERP-20261016-15
+ * ESCOPO: autenticação Supabase e armazenamento de sessão do navegador.
+ * ALTERAÇÃO: sessionStorage para a sessão desaparecer ao encerrar a aba/janela; limpeza da chave legada localStorage.
+ * VALIDAÇÃO: revisão estática do código; build/testes e validação real de fechamento do navegador pendentes.
+ */
+
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js'
 
 const AUTH_STORAGE_KEY = 'erp-industrial-auth'
@@ -24,7 +33,16 @@ export const supabaseEnvironmentMismatch = supabaseUrl !== CANONICAL_SUPABASE_UR
 export const supabaseUrlExportada = supabaseUrl
 export const supabaseKeyExportada = supabaseKey
 
-const authStorage = typeof window !== 'undefined' ? window.localStorage : undefined
+// Remove a sessão persistida pela versão anterior. Tokens de autenticação ficam somente nesta sessão de navegador.
+if (typeof window !== 'undefined') {
+  try {
+    window.localStorage.removeItem(AUTH_STORAGE_KEY)
+  } catch {
+    // O navegador pode bloquear localStorage; a sessão nova continua usando sessionStorage.
+  }
+}
+
+const authStorage = typeof window !== 'undefined' ? window.sessionStorage : undefined
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey, {
   auth: {
