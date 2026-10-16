@@ -89,8 +89,8 @@ export default function NovoPedido(){
      <button id="btnAnexar" type="button" onClick={()=>fileRef.current?.click()} className={buttonStyle+' border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}><Paperclip size={12}/>Anexar origem</button>
      <button id="btnImportarEmail" type="button" disabled={loading} onClick={()=>void importar()} className={buttonStyle+' border border-emerald-700 bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50'}><MailCheck size={12}/>Importar e-mail</button>
      <button id="btnFinalizar" type="button" disabled={loading} onClick={()=>void save(true)} className={buttonStyle+' border border-blue-700 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'}><Check size={12}/>Confirmar e finalizar</button>
-     <button type="button" onClick={()=>window.print()} className="flex h-8 items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"><Printer size={12}/>Imprimir</button>
-     <button type="button" onClick={novoPedido} className="flex h-8 items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"><XCircle size={12}/>Cancelar</button>
+     <button type="button" onClick={()=>window.print()} className="flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-200 bg-white px-2.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"><Printer size={12}/>Imprimir</button>
+     <button type="button" onClick={novoPedido} className="flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-200 bg-white px-2.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"><XCircle size={12}/>Cancelar</button>
     </div>
    </div>
 
@@ -157,7 +157,7 @@ export default function NovoPedido(){
      <h3 className="mb-2 border-b border-slate-200 pb-1 text-[10px] font-bold uppercase tracking-wider text-[#2D8DB8]">Resumo do Pedido</h3>
      <div className="space-y-4">
       <div className="flex items-center justify-between text-[10px] text-slate-600"><span>Subtotal dos itens</span><span className="tabular-nums">{brl(subtotal)}</span></div>
-      <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2"><div className="md:col-span-2"><Field label="Frete (R$)"><input value={frete} onChange={e=>setFrete(e.target.value)} className={inputStyle}/></Field></div><div className="md:col-span-2"><Field label="Outras despesas (R$)"><input value={outras} onChange={e=>setOutras(e.target.value)} className={inputStyle}/></Field></div></div>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2"><div className="min-w-0"><Field label="Frete (R$)"><input value={frete} onChange={e=>setFrete(e.target.value)} className={inputStyle}/></Field></div><div className="min-w-0"><Field label="Outras despesas (R$)"><input value={outras} onChange={e=>setOutras(e.target.value)} className={inputStyle}/></Field></div></div>
       <div className="flex items-center justify-between border-t border-slate-200 pt-2 text-[13px] font-semibold text-blue-800"><span>Total Líquido</span><span className="tabular-nums">{brl(total)}</span></div>
      </div>
     </section>
