@@ -1,15 +1,18 @@
 # CHECKPOINT
 
-CURRENT_PHASE: P1_ADMIN_MODULE_RECOVERY
-CURRENT_TASK: TASK-0005
-CURRENT_FILE: src/pages/configuracoes/ConfiguracoesADM.tsx
-CURRENT_ROUTE: /configuracoes-adm
+CURRENT_PHASE: P0_COMPARATIVE_MODULE_AUDIT
+CURRENT_TASK: CMP-001..CMP-008
+CURRENT_FILE: docs/erp-standardization/COMPARATIVE-MODULE-INVENTORY-2026-10-16.md
+CURRENT_ROUTE: static inventory of 247 unique route patterns
 CURRENT_ERROR: ERR-0004; ERR-0005; ERR-0006
 LAST_SUCCESSFUL_TEST: nenhum teste local executado neste ambiente
-LAST_COMMIT: f575b6aebecfcca50023178504f7bbbea99b0256
+LAST_COMMIT: cfb79ce78dd423b51f54b5003c1ba7aa90dadaea
 LAST_VERIFIED_DEPLOY: dpl_FVRbvxpMooEasnwNxQUkr5PT3wwA READY em 1cb2f3a; deployment contém o DBGrid inicial, mas NÃO contém as correções recentes de ConfiguracoesADM; commits posteriores reportam build-rate-limit
-NEXT_ACTION: validar visual e funcionalmente /configuracoes-adm desktop/mobile; executar type-check/lint/build/verify:production; depois retomar verificação remota de erp_has_permission, grants e RLS.
+NEXT_ACTION: validar os 247 padrões de rota, auditar as 11 rotas de IndustrialDataWorkspace, fechar Auth/RBAC/RLS e executar npm run verify:production no checkout real. Relatório comparativo em docs/erp-standardization/COMPARATIVE-MODULE-INVENTORY-2026-10-16.md.
 BLOCKERS: ERR-0004; ERR-0005; ERR-0001
 PENDING_ERRORS: ERR-0001; ERR-0002; ERR-0004; ERR-0005; ERR-0006
 PENDING_TASKS: TASK-0001; TASK-0002; TASK-0003; TASK-0004; TASK-0005
 DO_NOT_REPEAT: não usar codigo/nome/modulo/ativo em erp_permissions; não recriar TabletDashboard; não inventar rotas; não substituir auth/RLS; não tratar overload como erro sem verificar migration e banco remoto.
+
+
+COMPARATIVE_AUDIT: inventário estático registrado em docs/erp-standardization/COMPARATIVE-MODULE-INVENTORY-2026-10-16.md; 248 declarações Route, 247 padrões únicos, 156 imports dinâmicos, 11 rotas para renderer genérico. Comparação de referência: SAP 10 áreas principais da página consultada; ERPNext 21 nomes em modules.txt; TOTVS Backoffice 18 tópicos/subitens citados na página pública. Estes números não são diretamente equivalentes. Matriz de gaps criada, auditoria funcional ainda pendente. Não marcar módulos concluídos.
