@@ -19,8 +19,8 @@ type Supplier={id:string;codigo:string|null;razao_social:string;nome_fantasia:st
 type Purchase={fornecedor_id:string;status:string|null;data_prevista:string|null}
 type Form={codigo:string;razao_social:string;nome_fantasia:string;documento:string;email:string;telefone:string;endereco:string;cidade:string;estado:string;contato:string;iso_9001_certificado:boolean;iso_certificado_validade:string;iso_certificado_numero:string;observacoes:string}
 const empty:Form={codigo:'',razao_social:'',nome_fantasia:'',documento:'',email:'',telefone:'',endereco:'',cidade:'',estado:'',contato:'',iso_9001_certificado:false,iso_certificado_validade:'',iso_certificado_numero:'',observacoes:''}
-const input:React.CSSProperties={width:'100%',height:28,border:'1px solid #b9c9d4',borderRadius:2,padding:'0 6px',boxSizing:'border-box',background:'#fff',color:'#111827',fontSize:9}
-const label:React.CSSProperties={display:'grid',gap:1,fontSize:8,fontWeight:500,textTransform:'uppercase',color:'#344054'}
+const input:React.CSSProperties={width:'100%',height:32,minHeight:32,border:'1px solid #94a3b8',borderRadius:4,padding:'4px 10px',boxSizing:'border-box',background:'#f8fafc',color:'#111827',fontSize:13,fontFamily:'Consolas, Courier New, monospace'}
+const label:React.CSSProperties={display:'grid',gap:2,fontSize:12,fontWeight:600,textTransform:'uppercase',color:'#475569'}
 const panel:React.CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2}
 const button=(kind:'primary'|'normal'|'danger'|'disabled'):React.CSSProperties=>({height:30,display:'inline-flex',alignItems:'center',justifyContent:'center',gap:5,border:'1px solid '+(kind==='primary'?'#2D8DB8':kind==='danger'?'#d65b61':'#b9c9d4'),borderRadius:2,padding:'0 8px',fontSize:9,fontWeight:600,cursor:kind==='disabled'?'not-allowed':'pointer',background:kind==='primary'?'#2D8DB8':kind==='danger'?'#fff5f5':'#fff',color:kind==='primary'?'#fff':kind==='danger'?'#b42318':'#123B50',opacity:kind==='disabled'?0.5:1})
 const today=()=>new Date().toISOString().slice(0,10)
