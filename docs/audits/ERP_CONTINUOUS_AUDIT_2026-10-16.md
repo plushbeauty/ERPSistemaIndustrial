@@ -143,3 +143,26 @@ Só marcar como concluído quando todos forem comprovados: rota real; leitura e 
 - **Não foi feita troca de rota nem atualização direta de status**: isso poderia simular uma liberação sem validar autorização, auditoria, regra de inspeção e transação no banco. A tela/ação de liberação fica registrada como pendência funcional P1 até localizar a operação de banco aprovada ou definir uma migration segura a partir do schema real.
 - Esse achado explica por que o atalho “Liberação de lotes” não pode ser marcado como concluído só porque existe uma rota no tablet/sidebar.
 
+## Quarta passagem — quarentena e RNC (16/10/2026)
+
+**Revisão:** AUDIT-2026-10-16-R4
+
+### Alterações desta continuação
+
+- `src/pages/qualidade/QualidadeQuarentena.tsx` — commits `0553d7cb40f682cd16b2b08de4040cfc3f9728cb` e `29b19d39e45d456247d5d081955d0297721eb412`: formulário, botões, cartões e tabela foram compactados para o padrão industrial de 30 px/2 px, incluindo campo de busca responsivo e linhas da grade. A chamada real `erp_reter_lote`, a seleção por empresa e o carregamento de ocorrências foram preservados.
+- `src/pages/AcompanhamentoNaoConformidade.tsx` — commit `c0bcfaff2ebb029b688faccdf9740b4ece3b5d39`: corrigido o cálculo de atraso. Antes, a função `overdue(id)` consultava o status da RNC selecionada na tela mesmo ao avaliar outra RNC; agora consulta o status do registro cujo ID está sendo calculado.
+- Não foram criadas RPCs de liberação nem foi alterado diretamente o status de lote.
+
+### Validação do HEAD
+
+- O commit `29b19d39e45d456247d5d081955d0297721eb412` tem status Vercel `failure` com motivo externo `upgradeToPro=build-rate-limit`. O wrapper de consulta de workflows não retornou runs associados ao SHA consultado; portanto não existe evidência suficiente para afirmar que o HEAD atual passou no CI.
+- As alterações de código acima foram feitas por commits no branch `main`; ainda precisam de execução real de TypeScript/lint/build no HEAD final.
+- A migration `20261016170000_harden_quality_inspection_validation.sql` permanece apenas versionada. Não houve confirmação de aplicação ao Supabase remoto.
+- A rota `/qualidade/liberacao-lote` permanece pendente porque aponta para acompanhamento RNC e não foi encontrada operação segura de liberação no conjunto de migrations/código consultado.
+
+### Próxima sequência de execução
+
+1. Validar o HEAD atual com CI e build de produção.
+2. Corrigir a rota/tela de liberação apenas após identificar a operação de banco autorizada e auditável.
+3. Confirmar no Supabase a migration de validação, depois testar inspeção aprovada/reprovada e retenção em ambiente autenticado.
+4. Continuar pela calibração, garantindo que instrumento vencido/reprovado não seja tratado como utilizável, e executar a bateria completa de verificações.
