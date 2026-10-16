@@ -29,24 +29,27 @@ export default function VendasCatalogoDigitalGestao() {
   const load = async () => {
     setBusy(true)
     setError('')
-    const company = await supabase.rpc('erp_current_empresa_id')
-    if (company.error || !company.data) {
-      setError(company.error?.message || 'Empresa não identificada.')
-      setBusy(false)
-      return
-    }
+    try {
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error || !company.data) {
+        throw company.error ?? new Error('Empresa não identificada.')
+      }
 
-    const products = await fetchAllPages<Product>((from,to)=>supabase
-      .from('erp_produtos')
-      .select('id,codigo,nome,descricao,preco_venda,foto_url,catalogo_disponivel',{count:'exact'})
-      .eq('empresa_id', String(company.data))
-      .eq('ativo', true)
-      .order('codigo')
-      .range(from,to))
-    setCompanyId(String(company.data))
-    setRows(products)
-    setSelected(Object.fromEntries(products.map((product) => [product.id, product.catalogo_disponivel])))
-    setBusy(false)
+      const products = await fetchAllPages<Product>((from, to) => supabase
+        .from('erp_produtos')
+        .select('id,codigo,nome,descricao,preco_venda,foto_url,catalogo_disponivel', { count: 'exact' })
+        .eq('empresa_id', String(company.data))
+        .eq('ativo', true)
+        .order('codigo')
+        .range(from, to))
+      setCompanyId(String(company.data))
+      setRows(products)
+      setSelected(Object.fromEntries(products.map((product) => [product.id, product.catalogo_disponivel])))
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível carregar o catálogo.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   useEffect(() => {
