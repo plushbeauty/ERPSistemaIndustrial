@@ -3,10 +3,10 @@
  * Data da alteração: 2026-10-16
  * ID da revisão: REV-060
  * Área/módulo: Cadastro de Produtos / Produção (MRP)
- * O que foi revisto: substituir cards documentais simulados por consultas a fichas, operações e anexos vinculados ao produto.
- * O que foi alterado: painel de ficha técnica ativa, operações e máquinas, roteiro PCP, anexos técnicos com URL temporária assinada.
+ * O que foi revisto: substituir cards documentais simulados por consultas a fichas, operações e anexos vinculados ao produto; evitar depender de tabela PCP não confirmada.
+ * O que foi alterado: painel de ficha técnica ativa, operações e máquinas, anexos técnicos com URL temporária assinada.
  * Motivo: operador precisa acessar documentação real do processo sem confundir anexos comuns com parâmetros de manufatura.
- * Schema/RPC/storage: erp_fichas_tecnicas, erp_ficha_operacoes, erp_pcp_roteiro_operacoes, erp_postos_trabalho, erp_maquinas, erp_documentos_anexos, bucket documentos-erp.
+ * Schema/RPC/storage confirmado no código consultado: erp_fichas_tecnicas, erp_ficha_operacoes, erp_maquinas, erp_documentos_anexos, bucket documentos-erp. A tabela de roteiro PCP específica não foi confirmada e não é consultada.
  * Validação executada: inspeção estática do componente e confirmação da integração na tela de produtos.
  * Validação pendente: type-check, lint, build, schema remoto, Storage/RLS e teste com sessão autenticada.
  * Estado: implementado no código; não homologado.
@@ -41,22 +41,12 @@ type Attachment = {
   mime_type: string | null
   tamanho_bytes: number | null
 }
-type RouteOperation = {
-  id: string
-  sequencia: number
-  operacao: string
-  posto_id: string
-  tempo_min: number
-}
-type Workstation = { id: string; codigo_posto: string; nome_posto: string }
 
 export default function AbaProducaoIndustrial({ productId, empresaId }: { productId: string | null; empresaId: string }) {
   const [sheet, setSheet] = useState<ProcessSheet | null>(null)
   const [operations, setOperations] = useState<Operation[]>([])
   const [machines, setMachines] = useState<Machine[]>([])
   const [attachments, setAttachments] = useState<Attachment[]>([])
-  const [routeOperations, setRouteOperations] = useState<RouteOperation[]>([])
-  const [workstations, setWorkstations] = useState<Workstation[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
@@ -66,15 +56,13 @@ export default function AbaProducaoIndustrial({ productId, empresaId }: { produc
       setOperations([])
       setMachines([])
       setAttachments([])
-      setRouteOperations([])
-      setWorkstations([])
       setError('')
       return
     }
     setBusy(true)
     setError('')
     try {
-      const [sheetResult, attachmentResult, routeResult] = await Promise.all([
+      const [sheetResult, attachmentResult] = await Promise.all([
         supabase.from('erp_fichas_tecnicas')
           .select('id,versao,rendimento,unidade_rendimento,status,revisao')
           .eq('empresa_id', empresaId).eq('produto_id', productId).eq('ativa', true)
@@ -83,19 +71,13 @@ export default function AbaProducaoIndustrial({ productId, empresaId }: { produc
           .select('id,nome_arquivo,storage_path,mime_type,tamanho_bytes')
           .eq('empresa_id', empresaId).eq('entidade_tipo', 'produto').eq('entidade_id', productId)
           .order('created_at', { ascending: false }).limit(100),
-        supabase.from('erp_pcp_roteiro_operacoes')
-          .select('id,sequencia,operacao,posto_id,tempo_min')
-          .eq('empresa_id', empresaId).eq('produto_id', productId).order('sequencia').limit(500),
       ])
       if (sheetResult.error) throw sheetResult.error
       if (attachmentResult.error) throw attachmentResult.error
-      if (routeResult.error) throw routeResult.error
 
       const currentSheet = (sheetResult.data ?? null) as ProcessSheet | null
-      const routeRows = (routeResult.data ?? []) as RouteOperation[]
       setSheet(currentSheet)
       setAttachments((attachmentResult.data ?? []) as Attachment[])
-      setRouteOperations(routeRows)
 
       if (currentSheet) {
         const opResult = await supabase.from('erp_ficha_operacoes')
@@ -116,13 +98,6 @@ export default function AbaProducaoIndustrial({ productId, empresaId }: { produc
         setMachines([])
       }
 
-      if (routeRows.length) {
-        const workstationIds = Array.from(new Set(routeRows.map(op => op.posto_id)))
-        const workstationResult = await supabase.from('erp_postos_trabalho')
-          .select('id,codigo_posto,nome_posto').eq('empresa_id', empresaId).in('id', workstationIds)
-        if (workstationResult.error) throw workstationResult.error
-        setWorkstations((workstationResult.data ?? []) as Workstation[])
-      } else setWorkstations([])
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível carregar os documentos e roteiros de produção.')
     } finally {
@@ -154,7 +129,6 @@ export default function AbaProducaoIndustrial({ productId, empresaId }: { produc
     return type === 'application/pdf' || type.startsWith('image/') || /\.(pdf|png|jpe?g|webp|tif?f)$/i.test(name)
   })
   const machineById = new Map(machines.map(machine => [machine.id, machine]))
-  const workstationById = new Map(workstations.map(workstation => [workstation.id, workstation]))
   const card = 'min-w-0 rounded-[2px] border border-[#cbd5e1] bg-white p-3'
   const action = 'inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-2 text-[10px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-40'
 
@@ -179,10 +153,9 @@ export default function AbaProducaoIndustrial({ productId, empresaId }: { produc
           {sheet ? <>
             <p className="text-[10px] font-bold text-slate-800">Ficha técnica · v{sheet.versao} · {sheet.revisao ? 'Rev. ' + sheet.revisao : 'Revisão não informada'}</p>
             <p className="mt-1 text-[10px] text-slate-600">Status: {sheet.status || 'não informado'} · Rendimento: {Number(sheet.rendimento).toLocaleString('pt-BR')} {sheet.unidade_rendimento}</p>
-            <p className="mt-1 text-[10px] text-slate-600">{operations.length} operação(ões) na ficha técnica · {routeOperations.length} etapa(s) no roteiro PCP</p>
+            <p className="mt-1 text-[10px] text-slate-600">{operations.length} operação(ões) na ficha técnica · etapas documentadas na ficha técnica</p>
           </> : <p className="text-[10px] text-slate-500">Nenhuma ficha técnica ativa vinculada a este produto.</p>}
           <button type="button" disabled={!productId} onClick={openProcessSheet} className={action + ' mt-3'}><ExternalLink size={12} /> Abrir ficha real</button>
-          {routeOperations.length > 0 && <ol className="mt-2 space-y-1 border-t border-slate-200 pt-2">{routeOperations.slice(0, 5).map(op => <li key={op.id} className="text-[10px] text-slate-700">{op.sequencia}. {op.operacao} — {workstationById.get(op.posto_id)?.codigo_posto ?? 'Posto'} · {Number(op.tempo_min).toLocaleString('pt-BR')} min</li>)}</ol>}
         </article>
 
         <article className={card}>
