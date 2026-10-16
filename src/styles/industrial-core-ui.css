@@ -99,3 +99,13 @@
 @media print {
   .erp-industrial-no-print { display: none !important; }
 }
+
+/* Dicionário de proporções também disponível aos formulários migrados por etapas. */
+.edit-2 { width: 6ch !important; max-width: 6ch !important; text-align: center !important; }
+.edit-3 { width: 7ch !important; max-width: 7ch !important; text-transform: uppercase !important; }
+.edit-4 { width: 8ch !important; max-width: 8ch !important; text-align: right !important; }
+.edit-6 { width: 11ch !important; max-width: 11ch !important; }
+.edit-8 { width: 14ch !important; max-width: 14ch !important; }
+.edit-12 { width: 18ch !important; max-width: 18ch !important; text-align: right !important; }
+.edit-20 { width: 26ch !important; max-width: 26ch !important; }
+.edit-longo { width: min(100%, 450px) !important; max-width: 450px !important; }
