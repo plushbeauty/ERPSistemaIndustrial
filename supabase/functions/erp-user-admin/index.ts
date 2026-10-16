@@ -1,7 +1,7 @@
 /**
  * REVISÃO TÉCNICA: 16/10/2026
  * Revisado: autorização por auth.uid(), isolamento por empresa, alçadas de perfil, operações Auth/ERP, trilha de auditoria e fluxo de senhas.
- * Alteração desta revisão: política de senha alinhada para 12+ caracteres com maiúscula, minúscula, número e símbolo; gerador garante todas as classes.
+ * Alteração desta revisão: política de senha alinhada para 12+ caracteres com maiúscula, minúscula, número e símbolo; gerador garante todas as classes; mensagem de validação corrigida para refletir a política real.
  * Não validado: deploy da Edge Function, integração Supabase remota, testes automatizados Deno e cenários de falha transacional.
  */
 
@@ -305,7 +305,7 @@ Deno.serve(async (req) => {
       }
 
       const password = String(body.password || randomPassword())
-      if (!passwordIsStrong(password)) return json({ error: 'A senha deve ter pelo menos 8 caracteres e conter letras e números.' }, 400)
+      if (!passwordIsStrong(password)) return json({ error: 'A senha deve ter pelo menos 12 caracteres e conter maiúsculas, minúsculas, números e símbolos.' }, 400)
       const created = await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { must_change_password: !body.password, empresa_id: empresaId } })
       if (created.error || !created.data.user) return json({ error: created.error?.message || 'Não foi possível criar o usuário Auth.' }, 400)
       authUserId = created.data.user.id
