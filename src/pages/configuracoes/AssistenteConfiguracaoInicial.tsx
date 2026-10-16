@@ -7,12 +7,14 @@ type Company = {
   inscricao_estadual: string | null; telefone: string | null; email_compras: string | null
 }
 type Address = { cep: string; logradouro: string; numero: string; bairro: string; cidade: string; uf: string }
+type PCP = { deposito_wip_padrao: string; tipo_custo_item: string; consumo_componentes: string; lead_time_geral_dias: string; rastreabilidade_operacional: string; lote_padrao_fabrica: string }
 type Fiscal = {
   regime_tributario: string; aliquota_icms_padrao: string; aliquota_simples: string
   indicador_ie_destinatario: string; serie_nfe: string; proximo_numero_nfe: string
   serie_nfe_filial: string; ambiente: string; cfop_padrao_venda: string; cfop_padrao_devolucao: string
 }
 const emptyAddress: Address = { cep: '', logradouro: '', numero: '', bairro: '', cidade: '', uf: '' }
+const emptyPCP: PCP = { deposito_wip_padrao: '', tipo_custo_item: 'CUSTO_MEDIO_PONDERADO', consumo_componentes: 'AUTOMATICA', lead_time_geral_dias: '1', rastreabilidade_operacional: 'LOTE', lote_padrao_fabrica: '1' }
 const emptyFiscal: Fiscal = {
   regime_tributario: 'SIMPLES_NACIONAL', aliquota_icms_padrao: '0.00', aliquota_simples: '0.00',
   indicador_ie_destinatario: '1', serie_nfe: '1', proximo_numero_nfe: '1',
@@ -25,7 +27,9 @@ export default function AssistenteConfiguracaoInicial() {
   const [company, setCompany] = useState<Company | null>(null)
   const [address, setAddress] = useState<Address>(emptyAddress)
   const [fiscal, setFiscal] = useState<Fiscal>(emptyFiscal)
-  const [step, setStep] = useState<1 | 2>(1)
+  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [pcp, setPcp] = useState<PCP>(emptyPCP)
+  const [wipModal, setWipModal] = useState(false)
   const [companyId, setCompanyId] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -49,19 +53,22 @@ export default function AssistenteConfiguracaoInicial() {
         if (profileError) throw profileError
         if (!profile?.empresa_id) throw new Error('O usuário não possui empresa vinculada à sessão.')
         const id = String(profile.empresa_id)
-        const [companyResult, addressResult, fiscalResult] = await Promise.all([
+        const [companyResult, addressResult, fiscalResult, pcpResult] = await Promise.all([
           supabase.from('erp_empresas').select('id,razao_social,nome_fantasia,cnpj,inscricao_estadual,telefone,email_compras').eq('id', id).maybeSingle(),
           supabase.from('erp_enderecos').select('cep,logradouro,numero,bairro,cidade,uf').eq('empresa_id', id).eq('tipo', 'MATRIZ').maybeSingle(),
           supabase.from('erp_config_fiscal').select('regime_tributario,aliquota_icms_padrao,aliquota_simples,indicador_ie_destinatario,serie_nfe,proximo_numero_nfe,serie_nfe_filial,ambiente,cfop_padrao_venda,cfop_padrao_devolucao').eq('empresa_id', id).maybeSingle(),
+          supabase.from('erp_config_pcp').select('deposito_wip_padrao,tipo_custo_item,consumo_componentes,lead_time_geral_dias,rastreabilidade_operacional,lote_padrao_fabrica').eq('empresa_id', id).maybeSingle(),
         ])
         if (companyResult.error) throw companyResult.error
         if (addressResult.error) throw addressResult.error
         if (fiscalResult.error) throw fiscalResult.error
+        if (pcpResult.error) throw pcpResult.error
         if (!companyResult.data) throw new Error('Empresa não encontrada no escopo da sua sessão.')
         if (!alive) return
         setCompanyId(id)
         setCompany(companyResult.data as Company)
         setAddress({ ...emptyAddress, ...(addressResult.data ?? {}) } as Address)
+        if (pcpResult.data) setPcp(current => ({ ...current, ...Object.fromEntries(Object.entries(pcpResult.data).map(([key, value]) => [key, value == null ? '' : String(value)])) }) as PCP)
         if (fiscalResult.data) setFiscal(current => ({
           ...current,
           ...Object.fromEntries(Object.entries(fiscalResult.data).map(([key, value]) => [key, value == null ? '' : String(value)])),
@@ -165,8 +172,45 @@ export default function AssistenteConfiguracaoInicial() {
         ? await supabase.from('erp_config_fiscal').update(payload).eq('empresa_id', companyId)
         : await supabase.from('erp_config_fiscal').insert(payload)
       if (result.error) throw result.error
-      setMessage('Configuração fiscal salva com sucesso. O ambiente selecionado é salvo, mas a transmissão de NF-e exige habilitação e credenciais fiscais válidas.')
+      setMessage('Configuração fiscal salva. Revise agora os parâmetros industriais do PCP.')
+      setStep(3)
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao salvar a configuração fiscal.') }
+    finally { setSaving(false) }
+  }
+
+
+  function changePCP<K extends keyof PCP>(key: K, value: PCP[K]) {
+    setPcp(current => ({ ...current, [key]: value }))
+  }
+
+  async function savePCP(event: FormEvent) {
+    event.preventDefault()
+    if (!companyId) { setError('Empresa da sessão não localizada.'); return }
+    const lead = Number(pcp.lead_time_geral_dias)
+    const lot = Number(pcp.lote_padrao_fabrica)
+    if (!pcp.deposito_wip_padrao.trim()) { setError('Informe o depósito WIP padrão.'); return }
+    if (!Number.isInteger(lead) || lead < 0 || lead > 9999) { setError('Lead time deve ser um número inteiro entre 0 e 9999 dias.'); return }
+    if (!Number.isFinite(lot) || lot <= 0) { setError('O lote padrão da fábrica deve ser maior que zero.'); return }
+    setSaving(true); setError(''); setMessage('')
+    try {
+      const payload = {
+        empresa_id: companyId,
+        deposito_wip_padrao: pcp.deposito_wip_padrao.trim(),
+        tipo_custo_item: pcp.tipo_custo_item,
+        consumo_componentes: pcp.consumo_componentes,
+        lead_time_geral_dias: lead,
+        rastreabilidade_operacional: pcp.rastreabilidade_operacional,
+        lote_padrao_fabrica: lot,
+        updated_at: new Date().toISOString(),
+      }
+      const { data: existing, error: existingError } = await supabase.from('erp_config_pcp').select('empresa_id').eq('empresa_id', companyId).maybeSingle()
+      if (existingError) throw existingError
+      const result = existing
+        ? await supabase.from('erp_config_pcp').update(payload).eq('empresa_id', companyId)
+        : await supabase.from('erp_config_pcp').insert(payload)
+      if (result.error) throw result.error
+      setMessage('Assistente concluído: dados mestres, configuração fiscal e parâmetros industriais foram salvos.')
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao salvar os parâmetros industriais do PCP.') }
     finally { setSaving(false) }
   }
 
@@ -204,7 +248,7 @@ export default function AssistenteConfiguracaoInicial() {
     <div className="synqra-setup-steps">
       <div className={'synqra-setup-step '+(step===1?'active':'done')}>PASSO 01: EMPRESA</div>
       <div className={'synqra-setup-step '+(step===2?'active':'')}>PASSO 02: FISCAL &amp; LOCALIZAÇÃO</div>
-      <div className="synqra-setup-step">PASSO 03: PARAMETRIZAÇÃO PCP</div>
+      <div className={"synqra-setup-step "+(step===3?"active":"")}>PASSO 03: PARAMETRIZAÇÃO PCP</div>
     </div>
     {error && <div className="synqra-setup-alert error" role="alert">{error}</div>}
     {message && <div className="synqra-setup-alert success" role="status"><CheckCircle2 size={15} style={{verticalAlign:'middle',marginRight:6}}/>{message}</div>}
@@ -223,7 +267,7 @@ export default function AssistenteConfiguracaoInicial() {
           <div className="synqra-setup-row"><label className="synqra-setup-label" htmlFor="setup-cidade">Município/Cidade:</label><input id="setup-cidade" className={inputClass+' w60'} maxLength={80} required value={address.cidade} onChange={e=>changeAddress('cidade',e.target.value)}/><label className="synqra-setup-label" htmlFor="setup-uf" style={{minWidth:'auto'}}>Unidade Federaç.:</label><input id="setup-uf" className={inputClass+' w2'} maxLength={2} required value={address.uf} onChange={e=>changeAddress('uf',e.target.value.toUpperCase())}/></div>
       </section>
       </div><footer className="synqra-setup-footer"><button type="button" className="synqra-setup-btn synqra-setup-cancel" onClick={()=>window.location.assign('/configuracoes-adm')}><X size={14}/> CANCELAR CONFIGURAÇÃO</button><button type="submit" className="synqra-setup-btn synqra-setup-next" disabled={saving}><ArrowRight size={14}/>{saving?'SALVANDO…':'SALVAR E AVANÇAR PARA O PASSO 2'}</button></footer>
-    </form> : <form onSubmit={saveFiscal}>
+    </form> : step===2 ? <form onSubmit={saveFiscal}>
       <div className="synqra-setup-body">
         <section className="synqra-setup-card"><div className="synqra-setup-title"><Scale size={16}/> 03 / ENQUADRAMENTO TRIBUTÁRIO (Legislação Nacional)</div><div className="synqra-setup-subtitle">Defina o regime fiscal utilizado nas regras tributárias e na emissão de documentos</div><hr className="synqra-setup-divider"/>
           <div className="synqra-setup-row"><label className="synqra-setup-label" htmlFor="fis-regime">Regime Tributário:</label><select id="fis-regime" className="synqra-setup-select long" value={fiscal.regime_tributario} onChange={e=>changeFiscal('regime_tributario',e.target.value)}><option value="SIMPLES_NACIONAL">Simples Nacional</option><option value="LUCRO_PRESUMIDO">Regime Normal — Lucro Presumido</option><option value="LUCRO_REAL">Regime Normal — Lucro Real</option></select></div>
@@ -235,8 +279,17 @@ export default function AssistenteConfiguracaoInicial() {
           <div className="synqra-setup-row"><label className="synqra-setup-label" htmlFor="fis-serie-filial">Série NF-e Filial:</label><input id="fis-serie-filial" className={inputClass+' w4'} inputMode="numeric" maxLength={3} value={fiscal.serie_nfe_filial} onChange={e=>changeFiscal('serie_nfe_filial',e.target.value)}/><label className="synqra-setup-label" htmlFor="fis-ambiente" style={{minWidth:'auto'}}>Ambiente de Emissão:</label><select id="fis-ambiente" className="synqra-setup-select medium" value={fiscal.ambiente} onChange={e=>changeFiscal('ambiente',e.target.value)}><option value="homologacao">Homologação (Testes)</option><option value="producao">Produção (Validade Fiscal)</option></select></div>
           <div className="synqra-setup-row" style={{borderTop:'1px dashed #cbd5e1',paddingTop:14,marginTop:8}}><label className="synqra-setup-label" htmlFor="fis-cfop-venda">CFOP Padrão Venda:</label><input id="fis-cfop-venda" className={inputClass+' w6'} maxLength={4} inputMode="numeric" value={fiscal.cfop_padrao_venda} onChange={e=>changeFiscal('cfop_padrao_venda',digits(e.target.value).slice(0,4))}/><button type="button" className="synqra-setup-lookup" onClick={()=>void openCfop('venda')}><Search size={13} style={{verticalAlign:'middle',marginRight:4}}/>LUPA</button><label className="synqra-setup-label" htmlFor="fis-cfop-dev" style={{minWidth:'auto'}}>CFOP Padrão Devolução:</label><input id="fis-cfop-dev" className={inputClass+' w6'} maxLength={4} inputMode="numeric" value={fiscal.cfop_padrao_devolucao} onChange={e=>changeFiscal('cfop_padrao_devolucao',digits(e.target.value).slice(0,4))}/><button type="button" className="synqra-setup-lookup" onClick={()=>void openCfop('devolucao')}><Search size={13} style={{verticalAlign:'middle',marginRight:4}}/>LUPA</button></div>
         </section>
-      </div><footer className="synqra-setup-footer"><button type="button" className="synqra-setup-btn synqra-setup-back" onClick={()=>{setStep(1);setError('');setMessage('')}}><ArrowLeft size={14}/> VOLTAR PARA O PASSO 1</button><button type="submit" className="synqra-setup-btn synqra-setup-next" disabled={saving}><ArrowRight size={14}/>{saving?'SALVANDO…':'SALVAR CONFIGURAÇÃO FISCAL'}</button></footer>
+      </div><footer className="synqra-setup-footer"><button type="button" className="synqra-setup-btn synqra-setup-back" onClick={()=>{setStep(1);setError('');setMessage('')}}><ArrowLeft size={14}/> VOLTAR PARA O PASSO 1</button><button type="submit" className="synqra-setup-btn synqra-setup-next" disabled={saving}><ArrowRight size={14}/>{saving?'SALVANDO…':'SALVAR E AVANÇAR PARA O PASSO 3'}</button></footer>
+    </form> : <form onSubmit={savePCP}>
+      <div className="synqra-setup-body">
+        <section className="synqra-setup-card"><div className="synqra-setup-title"><Building2 size={16}/> 05 / CONFIGURAÇÃO DE ENGENHARIA DE MANUFATURA &amp; ESTOQUE</div><div className="synqra-setup-subtitle">Parâmetros para geração de Ordens de Produção, consumo de componentes e controle de WIP.</div><hr className="synqra-setup-divider"/>
+          <div className="synqra-setup-row"><label className="synqra-setup-label" htmlFor="pcp-wip">Depósito WIP Padrão:</label><div className="synqra-setup-field"><input id="pcp-wip" className={inputClass+' w6'} maxLength={11} required value={pcp.deposito_wip_padrao} onChange={e=>changePCP('deposito_wip_padrao',e.target.value)} placeholder="WIP-01"/><button type="button" className="synqra-setup-lookup" onClick={()=>setWipModal(true)}><Search size={13} style={{verticalAlign:'middle',marginRight:4}}/>LUPA</button></div><label className="synqra-setup-label" htmlFor="pcp-custo" style={{minWidth:'auto'}}>Tipo de Custo do Item:</label><select id="pcp-custo" className="synqra-setup-select medium" value={pcp.tipo_custo_item} onChange={e=>changePCP('tipo_custo_item',e.target.value)}><option value="CUSTO_MEDIO_PONDERADO">Custo Médio Ponderado</option><option value="PEPS">PEPS</option><option value="ULTIMA_COMPRA">Última Compra</option></select></div>
+          <div className="synqra-setup-row"><label className="synqra-setup-label" htmlFor="pcp-consumo">Consumo Componentes:</label><select id="pcp-consumo" className="synqra-setup-select medium" value={pcp.consumo_componentes} onChange={e=>changePCP('consumo_componentes',e.target.value)}><option value="AUTOMATICA">Baixa Automática / Backflush</option><option value="MANUAL">Baixa Manual por Operador</option></select><label className="synqra-setup-label" htmlFor="pcp-lead" style={{minWidth:'auto'}}>Lead Time Geral (Dias):</label><input id="pcp-lead" className={inputClass+' w4'} inputMode="numeric" maxLength={4} value={pcp.lead_time_geral_dias} onChange={e=>changePCP('lead_time_geral_dias',digits(e.target.value).slice(0,4))} required /></div>
+          <div className="synqra-setup-row"><label className="synqra-setup-label" htmlFor="pcp-rastreio">Rastreabilidade Op.:</label><select id="pcp-rastreio" className="synqra-setup-select medium" value={pcp.rastreabilidade_operacional} onChange={e=>changePCP('rastreabilidade_operacional',e.target.value)}><option value="NENHUMA">Sem rastreabilidade</option><option value="LOTE">Por lote</option><option value="SERIAL">Por número de série</option><option value="LOTE_E_SERIAL">Lote e número de série</option></select><label className="synqra-setup-label" htmlFor="pcp-lote" style={{minWidth:'auto'}}>Lote Padrão Fábrica:</label><input id="pcp-lote" className={inputClass+' w12'} inputMode="decimal" maxLength={18} value={pcp.lote_padrao_fabrica} onChange={e=>changePCP('lote_padrao_fabrica',e.target.value.replace(/[^0-9.,]/g,'').replace(',','.'))} required /></div>
+        </section>
+      </div><footer className="synqra-setup-footer"><button type="button" className="synqra-setup-btn synqra-setup-back" onClick={()=>{setStep(2);setError('');setMessage('')}}><ArrowLeft size={14}/> VOLTAR PARA O PASSO 2</button><button type="submit" className="synqra-setup-btn synqra-setup-next" disabled={saving}><CheckCircle2 size={14}/>{saving?'SALVANDO…':'CONCLUIR CONFIGURAÇÃO MESTRE'}</button></footer>
     </form>}
+    {wipModal && <div className="synqra-setup-modal" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)setWipModal(false)}}><div className="synqra-setup-modal-box" role="dialog" aria-modal="true" aria-labelledby="setup-wip-title"><div className="synqra-setup-modal-head"><span id="setup-wip-title">DEPÓSITO WIP PADRÃO</span><button type="button" className="synqra-setup-lookup" onClick={()=>setWipModal(false)}>FECHAR</button></div><div className="synqra-setup-modal-body"><p>Informe o código do depósito WIP já cadastrado na sua operação. O assistente não cria depósitos automaticamente.</p><label className="synqra-setup-label" htmlFor="pcp-wip-modal">Código do depósito</label><input id="pcp-wip-modal" className={inputClass+' w6'} maxLength={11} value={pcp.deposito_wip_padrao} onChange={e=>changePCP('deposito_wip_padrao',e.target.value)} /><button type="button" className="synqra-setup-btn synqra-setup-next" style={{marginLeft:8}} onClick={()=>setWipModal(false)}>CONFIRMAR CÓDIGO</button></div></div></div>}
     {cfopModal && <div className="synqra-setup-modal" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget)setCfopModal(null)}}><div className="synqra-setup-modal-box" role="dialog" aria-modal="true" aria-labelledby="setup-cfop-title"><div className="synqra-setup-modal-head"><span id="setup-cfop-title">TABELA MESTRE FISCAL — CFOP {cfopModal==='venda'?'DE VENDA/SAÍDA':'DE DEVOLUÇÃO'}</span><button type="button" className="synqra-setup-lookup" onClick={()=>setCfopModal(null)} aria-label="Fechar consulta">FECHAR</button></div><div className="synqra-setup-modal-body"><p>Selecione um CFOP que já esteja cadastrado nas regras fiscais desta empresa. A lista não usa códigos fictícios.</p><input className={inputClass+' long'} value={cfopSearch} onChange={e=>setCfopSearch(e.target.value)} placeholder="Filtrar por código CFOP…"/>{cfopLoading?<p>Consultando regras fiscais…</p>:<table className="synqra-setup-table"><thead><tr><th>CFOP</th><th>Origem</th></tr></thead><tbody>{cfopRows.filter(code=>code.includes(cfopSearch.trim())).map(code=><tr key={code} role="button" tabIndex={0} onClick={()=>{changeFiscal(cfopModal==='venda'?'cfop_padrao_venda':'cfop_padrao_devolucao',code);setCfopModal(null)}} onKeyDown={e=>{if(e.key==='Enter'){changeFiscal(cfopModal==='venda'?'cfop_padrao_venda':'cfop_padrao_devolucao',code);setCfopModal(null)}}}><td><strong>{code}</strong></td><td>CFOP presente em regras fiscais da empresa</td></tr>)}{!cfopRows.filter(code=>code.includes(cfopSearch.trim())).length&&<tr><td colSpan={2}>{cfopRows.length?'Nenhum CFOP corresponde ao filtro.':'Nenhum CFOP encontrado nas regras fiscais da empresa. Digite o código no campo manualmente.'}</td></tr>}</tbody></table>}</div></div></div>}
   </section>
 }
