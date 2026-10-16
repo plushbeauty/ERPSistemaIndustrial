@@ -46,6 +46,9 @@ Rota real, arquivo renderizado, módulo/aba, campos em ordem de leitura, altura,
 
 ## Comparação real de componente — Cadastro de Produtos (2026-10-16)
 
+- Correção complementar no commit `f441ef37c76d3f3f024228b20d549c7e0632b63d`: largura de `edit-20` ajustada de 22ch para 20ch; CEST alinhado a 7 caracteres entre classe e limite de texto.
+- Relatório de rotas/componentes: [ROUTE-AUDIT-2026-10-16.md](./ROUTE-AUDIT-2026-10-16.md). Contagem estática: 248 declarações de rota, 156 imports dinâmicos e 11 rotas que usam `IndustrialDataWorkspace`. A contagem não substitui teste de navegação.
+
 **Tela auditada:** `src/pages/ProdutosVendasIndustrial.tsx` (rota `/produtos` e alias `/produtos-vendas`). A tela está aprovada no cabeçalho do próprio arquivo, mas a autorização explícita do usuário nesta conversa permitiu corrigir apenas a geometria e os limites dos campos abaixo. Não alterar CRUD, Supabase, cálculos de custo, regras fiscais, abas ou impressão neste ajuste.
 
 **Fonte aberta consultada:** Carbon ERP, arquivos reais:
