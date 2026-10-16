@@ -109,7 +109,6 @@ export default function ComprasRFQ() {
       observacoes: '',
     }])
     setProductId('')
-    setProductQuery('')
     setQuantity('1')
   }
 
