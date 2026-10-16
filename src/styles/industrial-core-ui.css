@@ -168,3 +168,5 @@ input[maxlength="6"], select.edit-6 { width: 11ch !important; max-width: 11ch !i
 input[maxlength="8"], input[maxlength="10"], select.edit-8 { width: 14ch !important; max-width: 14ch !important; }
 input[maxlength="14"], select.edit-12 { width: 18ch !important; max-width: 18ch !important; text-align: right !important; }
 input[maxlength="20"], select.edit-20 { width: 26ch !important; max-width: 26ch !important; }
+
+.erp-premium-label { font-family: 'Segoe UI', Inter, sans-serif !important; font-size: 12px !important; font-weight: 600 !important; line-height: 1.2 !important; color: #475569 !important; text-transform: uppercase !important; }
