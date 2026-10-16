@@ -1,3 +1,13 @@
+-- @AUDIT_DATE: 2026-10-16
+-- @AUDIT_TIME_BRT: 12:44
+-- @AUDIT_REVISION: #AUDIT-ERP-20261016-11
+-- @STATUS: IMPLEMENTED_PENDING_VALIDATION
+-- @SCOPE: supabase/migrations/20261016121000_gabarito_campos_cadastros_fiscal_pcp_rh.sql
+-- @REVIEWED: Alterações aditivas em Clientes, Fornecedores, Fiscal, PCP/MES e RH/ASO e vínculos de tenant.
+-- @CHANGES: Registro de auditoria da migration existente; não confirma aplicação no Supabase remoto. Validar constraints, tabelas-base e RLS antes de considerar disponível em produção.
+-- @VALIDATION: Arquivo inspecionado no GitHub; type-check/lint/build e validação remota não executados nesta operação.
+-- @CHECKLIST: Tenant-Scope | Preserve-Business-Rules | No-Fake-Data | Validation-Required
+
 -- Cadastro de campos do gabarito industrial (aditivo e idempotente).
 -- Preserva os cadastros e regras existentes; não cria tabelas duplicadas para clientes,
 -- fornecedores, regras fiscais, OPs ou apontamentos já usados pelo ERP.
