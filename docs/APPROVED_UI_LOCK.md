@@ -1,13 +1,13 @@
 # Contrato de telas aprovadas — ERP Industrial
 
 **Data da revisão:** 2026-10-16  
-**Revisão:** APROV-003  
+**Revisão:** APROV-004  
 **Regra:** telas aprovadas são imutáveis por padrão. Não alterar layout, conteúdo, geometria, comportamento ou estrutura sem autorização explícita do usuário para uma nova revisão.
 
 | Tela/arquivo | Referência aprovada | Proteção |
 |---|---|---|
 | Vendas → Novo Pedido — `src/pages/NovoPedido.tsx` | Revisão geométrica APROV-003 autorizada pelo usuário em 2026-10-16 | Hash Git do arquivo verificado no CI |
-| Vendas → Status do pedido — `src/pages/VendasCentral.tsx` | Cards de status APROV-003; nenhuma alteração sem ordem expressa do usuário | Hash Git do arquivo verificado no CI |
+| Vendas → Status do pedido — `src/pages/VendasCentral.tsx` | Cards ampliados e etapas industriais APROV-004; congelada novamente após esta autorização expressa | Hash Git do arquivo verificado no CI |
 | Cadastro de Produtos — `src/pages/ProdutosVendasIndustrial.tsx` | Referência aprovada anterior | Hash Git do arquivo verificado no CI |
 | Login institucional — `src/styles/industrial-login.css` | Referência aprovada anterior | Hash Git do arquivo verificado no CI |
 | Qualidade Tablet — `src/pages/QualidadeCentralTablet.tsx` | Tablet aprovado pelo usuário | Hash Git do arquivo verificado no CI |
@@ -32,3 +32,13 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 
 - Vendas → Status do pedido: cards de status aprovados e congelados. Qualquer mudança visual ou funcional exige ordem expressa do usuário; o verificador bloqueia alterações de hash.
 - Vendas → Novo Pedido: geometria dos campos, alturas de controles e alinhamento dos três cards principais revisados mediante autorização explícita. Fluxos de gravação, consultas, validações e regras de negócio permanecem protegidos; o arquivo volta a ficar congelado nesta revisão.
+
+
+## Registro da revisão APROV-004 — 2026-10-16
+
+- Vendas → Status do pedido: cards de filtro ampliados; botões primários padronizados em azul institucional `#2D8DB8` com texto branco. A tabela agora mostra etapas reais vinculadas ao pedido: Pedido, Produção (OP e quantidade produzida/planejada), Expedição e NF/Saída, com cores por estado e isolamento por `empresa_id`.
+- Vendas → PDV: cards de produtos aumentados de largura mínima de 185 px para 260 px (aproximadamente +40%), com mais altura e legibilidade.
+- Vendas → Catálogo Digital: menos colunas por linha, cards e área de foto maiores, texto e preço mais legíveis; botões azuis mantêm texto branco.
+- Origem das fotos do catálogo: campo existente `erp_produtos.foto_url` consultado do Supabase. Quando está vazio, o card mostra “Sem imagem”; esta revisão visual não inventa URL, foto ou storage path.
+- Fornecedores: mantém o padrão primário já existente de botão azul `#2D8DB8` e texto branco; nenhuma alteração no schema ou nas rotinas de cadastro.
+- Proteção: `VendasCentral.tsx` foi alterado sob ordem expressa e volta a ficar congelado nesta revisão, com hash verificado no CI. Consultas de etapas filtram a empresa atual e os vínculos usam tabelas já existentes.
