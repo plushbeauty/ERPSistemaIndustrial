@@ -241,6 +241,7 @@ export default function ComprasRFQ() {
             >
               Pedido de compra
             </button>
+            <button type="button" onClick={() => window.print()} className="flex min-h-10 items-center gap-2 rounded-md border px-3 py-2 text-xs"><Printer size={14}/> Imprimir</button>
           </div>
         </div>
       </header>
