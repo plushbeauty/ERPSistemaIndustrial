@@ -1,12 +1,8 @@
 /**
- * =========================================================================
- * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 12:07 BRT
- * Desenvolvedor: Homologado por Fernando
- * ID da Revisão: REV-016
- * Alterações: Eliminar any do auditor administrativo com tipo Actor estrito.
- * Status do Build Local: Não executado — gate remoto em homologação.
- * =========================================================================
+ * REVISÃO TÉCNICA: 16/10/2026
+ * Revisado: autorização por auth.uid(), isolamento por empresa, alçadas de perfil, operações Auth/ERP, trilha de auditoria e fluxo de senhas.
+ * Alteração desta revisão: política de senha alinhada para 12+ caracteres com maiúscula, minúscula, número e símbolo; gerador garante todas as classes.
+ * Não validado: deploy da Edge Function, integração Supabase remota, testes automatizados Deno e cenários de falha transacional.
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -25,9 +21,35 @@ const service = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const admin = createClient(supabaseUrl, service, { auth: { autoRefreshToken: false, persistSession: false } })
 
 function passwordIsStrong(value: string) {
-  return value.length >= 8 && /[A-Za-z]/.test(value) && /\d/.test(value)
+  return value.length >= 12
+    && /[A-Z]/.test(value)
+    && /[a-z]/.test(value)
+    && /\d/.test(value)
+    && /[^A-Za-z0-9]/.test(value)
 }
-function randomPassword() { const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%'; const values = new Uint32Array(14); crypto.getRandomValues(values); return Array.from(values, value => alphabet[value % alphabet.length]).join('') }
+function randomPassword() {
+  const groups = [
+    'ABCDEFGHJKLMNPQRSTUVWXYZ',
+    'abcdefghijkmnopqrstuvwxyz',
+    '23456789',
+    '!@#$%',
+  ]
+  const alphabet = groups.join('')
+  const pick = (source: string) => {
+    const values = new Uint32Array(1)
+    crypto.getRandomValues(values)
+    return source[values[0] % source.length]
+  }
+  const characters = groups.map(pick)
+  for (let index = 0; index < 12; index += 1) characters.push(pick(alphabet))
+  for (let index = characters.length - 1; index > 0; index -= 1) {
+    const target = new Uint32Array(1)
+    crypto.getRandomValues(target)
+    const swapIndex = target[0] % (index + 1)
+    ;[characters[index], characters[swapIndex]] = [characters[swapIndex], characters[index]]
+  }
+  return characters.join('')
+}
 function clean(value: unknown) {
   if (typeof value !== 'string') return null
   const normalized = value.trim()
@@ -92,7 +114,7 @@ Deno.serve(async (req) => {
       const password = String(body.password || '')
       const nome = String(body.nome || '').trim()
       if (!email || !password || nome.length < 3) return json({ error: 'Nome e senha são obrigatórios.' }, 400)
-      if (!passwordIsStrong(password)) return json({ error: 'A senha deve ter pelo menos 8 caracteres e conter letras e números.' }, 400)
+      if (!passwordIsStrong(password)) return json({ error: 'A senha deve ter pelo menos 12 caracteres, maiúsculas, minúsculas, números e símbolos.' }, 400)
 
       const { data: invite, error: inviteError } = await admin
         .from('erp_convites_acesso')
@@ -175,7 +197,7 @@ Deno.serve(async (req) => {
     if (action === 'change_my_password') {
       const currentPassword = String(body.currentPassword || '')
       const newPassword = String(body.newPassword || '')
-      if (!passwordIsStrong(newPassword)) return json({ error: 'A nova senha deve ter pelo menos 8 caracteres e conter letras e números.' }, 400)
+      if (!passwordIsStrong(newPassword)) return json({ error: 'A nova senha deve ter pelo menos 12 caracteres, maiúsculas, minúsculas, números e símbolos.' }, 400)
       if (!authData.user.email) return json({ error: 'O usuário autenticado não possui e-mail.' }, 400)
       const verify = createClient(supabaseUrl, anon)
       const check = await verify.auth.signInWithPassword({ email: authData.user.email, password: currentPassword })
