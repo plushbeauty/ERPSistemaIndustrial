@@ -235,41 +235,47 @@ export default function DashboardComercial() {
         <div className="grid min-w-0 gap-2">
           <div className="grid min-w-0 grid-cols-1 gap-2 xl:grid-cols-2">
             <ChartCard title="Faturamento por Perfil de Cliente" onPrint={() => requestPrint('perfil')} className="min-h-[235px]">
-              <ResponsiveContainer width="100%" height={205}>
-                <PieChart>
-                  <Pie data={profileData} dataKey="valor" nameKey="perfil" innerRadius={55} outerRadius={82} paddingAngle={2} onClick={() => requestPrint('perfil')} isAnimationActive={false}>
-                    {profileData.map((entry, index) => <Cell key={entry.perfil} fill={['#2D8DB8', '#3A9D78', '#E6A34A', '#D65B61', '#7C6F64'][index % 5]} />)}
-                  </Pie>
-                  <Tooltip formatter={(value: number) => brl(value)} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                </PieChart>
-              </ResponsiveContainer>
+              {profileData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={205}>
+                  <PieChart>
+                    <Pie data={profileData} dataKey="valor" nameKey="perfil" innerRadius={55} outerRadius={82} paddingAngle={2} onClick={() => requestPrint('perfil')} isAnimationActive={false}>
+                      {profileData.map((entry, index) => <Cell key={entry.perfil} fill={['#2D8DB8', '#3A9D78', '#E6A34A', '#D65B61', '#7C6F64'][index % 5]} />)}
+                    </Pie>
+                    <Tooltip formatter={(value: number) => brl(value)} />
+                    <Legend wrapperStyle={{ fontSize: 10 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : <ChartEmptyState message="Nenhum registro criado ainda" onRefresh={() => void load()} />}
             </ChartCard>
 
             <ChartCard title="Evolução Mensal do Faturamento" onPrint={() => requestPrint('evolucao')} className="min-h-[235px]">
-              <ResponsiveContainer width="100%" height={205}>
-                <LineChart data={monthlyData} onClick={() => requestPrint('evolucao')} margin={{ top: 4, right: 10, left: 8, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mes" fontSize={9} />
-                  <YAxis fontSize={9} tickFormatter={(value: number) => value >= 1000 ? `R$ ${Math.round(value / 1000)}k` : String(value)} />
-                  <Tooltip formatter={(value: number) => brl(value)} />
-                  <Line type="monotone" dataKey="acumulado" name="Faturamento acumulado" stroke="#2D8DB8" strokeWidth={2} dot={false} isAnimationActive={false} />
-                </LineChart>
-              </ResponsiveContainer>
+              {documentos.length > 0 ? (
+                <ResponsiveContainer width="100%" height={205}>
+                  <LineChart data={monthlyData} onClick={() => requestPrint('evolucao')} margin={{ top: 4, right: 10, left: 8, bottom: 0 }}>
+                    <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="mes" fontSize={9} tickLine={false} axisLine={{ stroke: '#cbd5e1' }} />
+                    <YAxis fontSize={9} tickLine={false} axisLine={false} tickFormatter={(value: number) => value >= 1000 ? `R$ ${Math.round(value / 1000)}k` : String(value)} />
+                    <Tooltip formatter={(value: number) => brl(value)} />
+                    <Line type="monotone" dataKey="acumulado" name="Faturamento acumulado" stroke="#2D8DB8" strokeWidth={2} dot={false} isAnimationActive={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : <ChartEmptyState message="Nenhum registro criado ainda" onRefresh={() => void load()} />}
             </ChartCard>
 
             <ChartCard title="Metas vs. Realizado" onPrint={() => requestPrint('metas')} className="min-h-[235px] xl:col-span-2">
-              <ResponsiveContainer width="100%" height={205}>
-                <BarChart data={monthlyData} onClick={() => requestPrint('metas')} margin={{ top: 4, right: 10, left: 8, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mes" fontSize={9} />
-                  <YAxis fontSize={9} tickFormatter={(value: number) => value >= 1000 ? `R$ ${Math.round(value / 1000)}k` : String(value)} />
-                  <Tooltip formatter={(value: number) => brl(value)} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="meta" name="Meta" fill="#E6A34A" barSize={12} isAnimationActive={false} />
-                  <Bar dataKey="faturamento" name="Realizado" fill="#3A9D78" barSize={12} isAnimationActive={false} />
-                </BarChart>
-              </ResponsiveContainer>
+              {monthlyData.some((row) => row.meta > 0 || row.faturamento > 0) ? (
+                <ResponsiveContainer width="100%" height={205}>
+                  <BarChart data={monthlyData} onClick={() => requestPrint('metas')} margin={{ top: 4, right: 10, left: 8, bottom: 0 }}>
+                    <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="mes" fontSize={9} tickLine={false} axisLine={{ stroke: '#cbd5e1' }} />
+                    <YAxis fontSize={9} tickLine={false} axisLine={false} tickFormatter={(value: number) => value >= 1000 ? `R$ ${Math.round(value / 1000)}k` : String(value)} />
+                    <Tooltip formatter={(value: number) => brl(value)} />
+                    <Legend wrapperStyle={{ fontSize: 10 }} />
+                    <Bar dataKey="meta" name="Meta" fill="#E6A34A" barSize={12} isAnimationActive={false} />
+                    <Bar dataKey="faturamento" name="Realizado" fill="#3A9D78" barSize={12} isAnimationActive={false} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : <ChartEmptyState message="Nenhum registro criado ainda" onRefresh={() => void load()} />}
             </ChartCard>
           </div>
 
@@ -339,6 +345,14 @@ export default function DashboardComercial() {
       </div>
     </VendasLayout>
   )
+}
+
+function ChartEmptyState({ message, onRefresh }: { message: string; onRefresh: () => void }) {
+  return <div className="flex h-[205px] flex-col items-center justify-center gap-2 rounded-[3px] border border-dashed border-slate-200 bg-slate-50 px-4 text-center" role="status" aria-live="polite">
+    <TrendingUp size={24} strokeWidth={1.5} className="text-slate-400" />
+    <p className="text-[11px] font-medium text-slate-500">{message}</p>
+    <button type="button" onClick={onRefresh} className="h-[30px] rounded-[2px] border border-[#2D8DB8] bg-white px-3 text-[10px] font-semibold text-[#2D8DB8] hover:bg-[#F4FBFD]">Atualizar dados</button>
+  </div>
 }
 
 function Kpi({ label, value, icon: Icon, tone }: { label: string; value: string | number; icon: typeof TrendingUp; tone: 'blue' | 'orange' | 'green' }) {
