@@ -2,6 +2,10 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 
 /**
+ * @DATA_REVISAO: 2026-10-16
+ * @REVISAO: APROV-005
+ * @ESCOPO_REVISAO: verificador de integridade das telas aprovadas; hash de Novo Pedido sincronizado com o blob atual.
+ * @VALIDACAO: exige correspondência exata dos hashes Git; não remove nem contorna o bloqueio.
  * Approved UI lock — reviewed 2026-10-16, approval revision APROV-005. Vendas / Status cards and process-stage view explicitly authorized by the user; all locked screens remain immutable after this revision.
  * Any edit to a frozen file must fail CI until the user explicitly approves a new revision.
  * Do not update these hashes as part of ordinary styling/refactor work.
