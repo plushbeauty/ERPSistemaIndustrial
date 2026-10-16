@@ -18,7 +18,7 @@ import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 import { useSynqraLayout } from '../layout/SynqraLayoutContext'
 
 type Tab='visao'|'novaop'|'pedidos'|'ops'|'materiais'|'producao'|'programacao'|'capacidade'|'qualidade'
-type NovaOPForm={pedido_venda_id:string;pedido_item_id:string;produto_id:string;cliente_id:string;quantidade:string;data_emissao:string;data_prevista:string;status:string;prioridade:string;observacoes:string}
+type NovaOPForm={tipo_ordem:'PEDIDO'|'ESTOQUE';pedido_venda_id:string;pedido_item_id:string;produto_id:string;cliente_id:string;quantidade:string;data_emissao:string;data_prevista:string;status:string;prioridade:string;observacoes:string}
 type Modal='ajuda'|'op'|'programacao'|null
 type Order={id:string;numero:number;cliente_id:string;status:string;total:number}
 type OrderItem={id:string;pedido_id:string;produto_id:string;quantidade:number;descricao:string|null}
@@ -64,7 +64,7 @@ export default function PCPIndustrial(){
   '/pcp/apontamento': 'producao',
   '/pcp/nova-op': 'novaop'
  }
- const [tab,setTab]=useState<Tab>(() => routeTabMap[location.pathname] ?? 'visao'),[modal,setModal]=useState<Modal>(null)
+ const [tab,setTab]=useState<Tab>(() => new URLSearchParams(location.search).get('tab') === 'novaop' ? 'novaop' : (routeTabMap[location.pathname] ?? 'visao')),[modal,setModal]=useState<Modal>(null)
  const [ops,setOps]=useState<OP[]>([])
  const [companyId,setCompanyId]=useState('')
  const [orders,setOrders]=useState<Order[]>([]),[orderItems,setOrderItems]=useState<OrderItem[]>([])
@@ -82,7 +82,7 @@ export default function PCPIndustrial(){
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
  const [doubleMold,setDoubleMold]=useState(false),[nominalRate,setNominalRate]=useState('30'),[machineForAnalysis,setMachineForAnalysis]=useState(''),[analysisStart,setAnalysisStart]=useState('')
  const [profileName,setProfileName]=useState('UsuÃ¡rio'),[clock,setClock]=useState(new Date())
- const [opForm,setOpForm]=useState<NovaOPForm>({pedido_venda_id:'',pedido_item_id:'',produto_id:'',cliente_id:'',quantidade:'',data_emissao:new Date().toISOString().slice(0,10),data_prevista:'',status:'pendente',prioridade:'ALTA',observacoes:''})
+ const [opForm,setOpForm]=useState<NovaOPForm>({tipo_ordem:'PEDIDO',pedido_venda_id:'',pedido_item_id:'',produto_id:'',cliente_id:'',quantidade:'',data_emissao:new Date().toISOString().slice(0,10),data_prevista:'',status:'pendente',prioridade:'ALTA',observacoes:''})
  const [progForm,setProgForm]=useState({ordem_producao_id:'',maquina_id:'',molde_id:'',operador_frente_id:'',operador_atras_id:'',inicio:'',fim:'',quantidade:'',status:'Programada',turnos:'1',horas_turno:'8',eficiencia:'85',ciclo_seg:'0',cavidades_ativas:'1',setup_min:'0'})
 
  async function load(){
@@ -112,9 +112,9 @@ export default function PCPIndustrial(){
  }
  useEffect(()=>{void load()},[])
  useEffect(()=>{
-  const next = routeTabMap[location.pathname] ?? 'visao'
+  const next = new URLSearchParams(location.search).get('tab') === 'novaop' ? 'novaop' : (routeTabMap[location.pathname] ?? 'visao')
   setTab((current) => (current === next ? current : next))
- },[location.pathname, routeTabMap])
+ },[location.pathname, location.search, routeTabMap])
  useEffect(()=>{if(hostedBySynqra)return;let alive=true;void supabase.auth.getUser().then(async({data})=>{if(!alive||!data.user)return;const r=await supabase.from('erp_usuarios').select('nome').eq('auth_user_id',data.user.id).eq('ativo',true).is('deleted_at',null).maybeSingle();if(alive)setProfileName(r.data?.nome||data.user.email?.split('@')[0]||'UsuÃ¡rio')});const id=window.setInterval(()=>setClock(new Date()),1000);return()=>{alive=false;window.clearInterval(id)}},[hostedBySynqra])
 
  const orderProducts=products.filter(p=>orderItems.some(item=>item.pedido_id===opForm.pedido_venda_id&&item.produto_id===p.id))
@@ -128,23 +128,23 @@ export default function PCPIndustrial(){
  const filteredOps=ops.filter(o=>!query||o.numero_op.toLowerCase().includes(query.toLowerCase())||String(o.status).toLowerCase().includes(query.toLowerCase()))
  const schedule=useMemo(()=>programs.map(p=>({...p,op:ops.find(o=>o.id===p.ordem_producao_id),machine:machines.find(m=>m.id===p.maquina_id),product:products.find(x=>x.id===p.produto_id)})),[programs,ops,machines,products])
 
- function openNewOP(){setError('');setMessage('');setOpForm({pedido_venda_id:'',pedido_item_id:'',produto_id:'',cliente_id:'',quantidade:'',data_emissao:new Date().toISOString().slice(0,10),data_prevista:'',status:'pendente',prioridade:'ALTA',observacoes:''});setModal('op')}
+ function openNewOP(){setError('');setMessage('');setOpForm({tipo_ordem:'PEDIDO',pedido_venda_id:'',pedido_item_id:'',produto_id:'',cliente_id:'',quantidade:'',data_emissao:new Date().toISOString().slice(0,10),data_prevista:'',status:'pendente',prioridade:'ALTA',observacoes:''});setModal('op')}
  function processForOp(opId:string){const op=ops.find(x=>x.id===opId);const ficha=op?fichas.find(f=>f.produto_id===op.produto_id):undefined;return ficha?fichaOps.filter(x=>x.ficha_id===ficha.id).sort((a,b)=>a.sequencia-b.sequencia):[]}
  function openProgram(opId=selectedOp){setError('');setMessage('');const op=ops.find(o=>o.id===opId);const process=processForOp(opId)[0];const mold=process?.molde_id||'';const machine=process?.maquina_id||'';const cav=mold?(molds.find(x=>x.id===mold)?.cavidades_ativas||molds.find(x=>x.id===mold)?.numero_cavidades||1):1;const cycle=process?.ciclo_seg||0;const setup=process?.setup_min||0;setProgForm({ordem_producao_id:opId,maquina_id:machine,molde_id:mold,operador_frente_id:'',operador_atras_id:'',inicio:'',fim:'',quantidade:opId?String(op?.quantidade||''):'',status:'Programada',turnos:'1',horas_turno:'8',eficiencia:'85',ciclo_seg:String(cycle),cavidades_ativas:String(cav),setup_min:String(setup)});setModal('programacao')}
 
   async function createOP(e:FormEvent){
   e.preventDefault();const quantidade=Number(opForm.quantidade)
    if(!companyId){setError('A empresa da sessão ainda não foi carregada.');return}
-  if(!opForm.pedido_venda_id||!opForm.pedido_item_id||!opForm.produto_id||quantidade<=0){setError('Selecione o pedido de venda de origem, o produto e uma quantidade maior que zero.');return}
+  if(!opForm.produto_id||quantidade<=0||(opForm.tipo_ordem==='PEDIDO'&&(!opForm.pedido_venda_id||!opForm.pedido_item_id))){setError(opForm.tipo_ordem==='PEDIDO'?'Selecione pedido, item de origem, produto e quantidade maior que zero.':'Selecione produto e quantidade maior que zero para reposição de estoque.');return}
   setBusy(true);setError('');setMessage('')
   try{
    const product=products.find(p=>p.id===opForm.produto_id)
-   const sourceItem=orderItems.find(item=>item.id===opForm.pedido_item_id&&item.pedido_id===opForm.pedido_venda_id&&item.produto_id===opForm.produto_id)
-   if(!sourceItem)throw new Error('Selecione o item exato do pedido que dará origem à OP.')
+   const sourceItem=opForm.tipo_ordem==='PEDIDO' ? orderItems.find(item=>item.id===opForm.pedido_item_id&&item.pedido_id===opForm.pedido_venda_id&&item.produto_id===opForm.produto_id) : undefined
+   if(opForm.tipo_ordem==='PEDIDO'&&!sourceItem)throw new Error('Selecione o item exato do pedido que dará origem à OP.')
    const created=await supabase.rpc('erp_criar_ordem_producao_v2',{
     p_produto_id:opForm.produto_id,
     p_quantidade:quantidade,
-    p_pedido_venda_id:opForm.pedido_venda_id,
+    p_pedido_venda_id:opForm.tipo_ordem==='PEDIDO'?opForm.pedido_venda_id:null,
     p_maquina_id:null,
     p_velocidade_nominal_hora:null,
     p_operacao_dupla:false
@@ -152,11 +152,11 @@ export default function PCPIndustrial(){
    if(created.error) throw created.error
    const row=Array.isArray(created.data) && created.data.length > 0 ? created.data[0] as {id:string;numero_op:number} : undefined
    if(!row||!row.id) throw new Error('A criação da OP não retornou o identificador.')
-   const updatePayload={pedido_item_id:sourceItem.id,cliente_id:opForm.cliente_id||null,status:opForm.status,prioridade:opForm.prioridade,data_prevista:opForm.data_prevista||null,observacoes:opForm.observacoes||null}
+   const updatePayload={pedido_item_id:sourceItem?.id??null,cliente_id:opForm.tipo_ordem==='PEDIDO'?(opForm.cliente_id||null):null,status:opForm.status,prioridade:opForm.prioridade,data_prevista:opForm.data_prevista||null,observacoes:opForm.observacoes||null}
    const patch=await supabase.from('erp_ordens_producao').update(updatePayload).eq('empresa_id',companyId).eq('id',row.id).select('id').maybeSingle()
    if(patch.error) throw patch.error
    if(!patch.data)throw new Error('A OP foi criada, mas os dados complementares não foram confirmados. Atualize a tela e verifique a OP antes de tentar novamente.')
-   const salesOrder=orders.find(order=>order.id===opForm.pedido_venda_id);const fichaAtiva=fichas.some(f=>f.produto_id===product?.id);setMessage('OP '+row.numero_op+' criada e vinculada ao pedido PV-'+(salesOrder?.numero??'—')+' para '+(product?.codigo||product?.nome||'produto')+'.'+(fichaAtiva?'':' Atenção: o produto não possui ficha técnica ativa; complete a ficha antes de liberar a produção.'))
+   const salesOrder=orders.find(order=>order.id===opForm.pedido_venda_id);const fichaAtiva=fichas.some(f=>f.produto_id===product?.id);setMessage(opForm.tipo_ordem==='PEDIDO'?'OP '+row.numero_op+' criada e vinculada ao pedido PV-'+(salesOrder?.numero??'—')+' para '+(product?.codigo||product?.nome||'produto')+'.':'OP '+row.numero_op+' criada para reposição de estoque do produto '+(product?.codigo||product?.nome||'produto')+'. Sem vínculo comercial, conforme selecionado.');if(!fichaAtiva)setMessage(current=>current+' Atenção: o produto não possui ficha técnica ativa; confira a ficha de processo antes de liberar a produção.')
    setModal(null);setSelectedOp(row.id);await load()
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível criar a OP.')}
   finally{setBusy(false)}
