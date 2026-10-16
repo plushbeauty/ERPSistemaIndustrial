@@ -10,7 +10,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { fetchAllPages } from '../../lib/supabasePagination'
 
 type Role = { id: string; codigo: string; nome: string; nivel: number; ativo: boolean; empresa_id: string | null }
-type Permission = { id: string; code: string; name: string; description: string | null }
+type Permission = { id: string; code: string; name: string; description: string | null; module: string }
 type RolePermission = { role_id: string; permission_id: string }
 type RoleDraft = { roleId: string | null; codigo: string; nome: string; permissions: Set<string> }
 
@@ -35,7 +35,7 @@ export default function ConfiguracaoPermissoes() {
   const permissionGroups = useMemo(() => {
     const groups = new Map<string, Permission[]>()
     permissions.forEach(permission => {
-      const moduleCode = permission.code.split('.')[0] ?? permission.code
+      const moduleCode = permission.module || permission.code.split('.')[0] || permission.code
       groups.set(moduleCode, [...(groups.get(moduleCode) ?? []), permission])
     })
     return Array.from(groups.entries()).sort(([left], [right]) => left.localeCompare(right, 'pt-BR'))
@@ -60,7 +60,7 @@ export default function ConfiguracaoPermissoes() {
       const [actorResult, companyResult, permissionResult, roleRows] = await Promise.all([
         supabase.from('erp_usuarios').select('nivel_admin,empresa_id,ativo,deleted_at').eq('auth_user_id', authData.user.id).maybeSingle(),
         supabase.rpc('erp_current_empresa_id'),
-        supabase.rpc('erp_has_permission', { p_code: 'users.update' }),
+        supabase.rpc('erp_has_permission', { p_modulo: 'usuarios', p_acao: 'editar' }),
         fetchAllPages<Role>((from, to) => supabase.from('erp_roles')
           .select('id,codigo,nome,nivel,ativo,empresa_id', { count: 'exact' })
           .eq('ativo', true)
@@ -82,17 +82,18 @@ export default function ConfiguracaoPermissoes() {
       )
       const permissionRows = await fetchAllPages<Permission>((from, to) => supabase
         .from('erp_permissions')
-        .select('id,code,name,description', { count: 'exact' })
-        .order('code')
+        .select('id,codigo,nome,modulo', { count: 'exact' })
+        .order('codigo')
         .range(from, to)
         .then(({ data, error, count }) => {
           if (error) throw error
           return {
             data: (data ?? []).map(item => ({
               id: item.id,
-              code: item.code,
-              name: item.name,
-              description: item.description,
+              code: item.codigo,
+              name: item.nome,
+              description: null,
+              module: item.modulo,
             })),
             error: null,
             count: count ?? (data ?? []).length,
