@@ -149,6 +149,7 @@ const RecebimentoMateriais = lazyPage(() => import('./pages/RecebimentoMateriais
 const ManualUsuario = lazyPage(() => import('./pages/ManualUsuario'), 'ManualUsuario')
 const RHIndustrial = lazyPage(() => import('./pages/RHIndustrial'), 'RHIndustrial')
 const ModuleOverviewIndustrial = lazyPage(() => import('./pages/ModuleOverviewIndustrial'), 'ModuleOverviewIndustrial')
+const ModuloMestreIndustrial = lazyPage(() => import('./pages/layout/ModuloMestreIndustrial'), 'default')
 const SetupADMInicial = lazyPage(() => import('./pages/SetupADMInicial'), 'SetupADMInicial')
 const RecuperarSenha = lazyPage(() => import('./pages/RecuperarSenha'), 'RecuperarSenha')
 const ConfiguracaoLote = lazyPage(() => import('./pages/ConfiguracaoLote'), 'ConfiguracaoLote')
@@ -649,6 +650,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/recebimento-materiais" element={<RecebimentoMateriais />} />
       <Route path="/manual-usuario" element={<ManualUsuario />} />
       <Route path="/rh" element={<QualityPlanGate>{<RHIndustrial />}</QualityPlanGate>} />
+      <Route path="/industrial/modulo-mestre" element={<QualityPlanGate><ModuloMestreIndustrial /></QualityPlanGate>} />
       <Route path="/module-overview" element={<ModuleOverviewIndustrial module="erp" />} />
       <Route path="/setup-adm-inicial" element={<SetupADMInicial />} />
       <Route path="/configuracao-lote" element={<ConfiguracaoLote />} />
