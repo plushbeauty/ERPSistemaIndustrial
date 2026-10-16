@@ -320,7 +320,7 @@ export default function VendasCatalogoDigital() {
               Carregando catálogo...
             </div>
           ) : (
-            <div className={visualizacao === 'grade' ? 'grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' : 'grid grid-cols-1 gap-1'}>
+            <div className={visualizacao === 'grade' ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4' : 'grid grid-cols-1 gap-1'}>
               {rows.map((produto, index) => {
                 const quantity = quantidades[produto.id] ?? 0
                 const grupo = produto.grupo || 'SEM GRUPO'
@@ -343,7 +343,7 @@ export default function VendasCatalogoDigital() {
                       onClick={() => setDetalhe(produto)}
                       className="block w-full text-left"
                     >
-                      <div className={visualizacao === 'grade' ? 'relative flex h-40 items-center justify-center overflow-hidden bg-slate-50' : 'relative flex h-24 shrink-0 items-center justify-center overflow-hidden bg-slate-50 md:w-32'}>
+                      <div className={visualizacao === 'grade' ? 'relative flex h-48 items-center justify-center overflow-hidden bg-slate-50' : 'relative flex h-24 shrink-0 items-center justify-center overflow-hidden bg-slate-50 md:w-32'}>
                         {produto.foto_url ? (
                           <img
                             src={produto.foto_url}
@@ -367,16 +367,16 @@ export default function VendasCatalogoDigital() {
                            </span>
                          )}
                       </div>
-                      <div className={visualizacao === 'grade' ? 'p-2.5' : 'min-w-0 flex-1 p-2'}>
+                      <div className={visualizacao === 'grade' ? 'p-3.5' : 'min-w-0 flex-1 p-2'}>
                         <div className="flex items-center justify-between gap-2"><span className="font-mono text-[8px] text-slate-400">{produto.codigo}</span>{produto.subgrupo&&<span className="truncate text-[8px] text-slate-400">{produto.subgrupo}</span>}</div>
-                        <h2 className="mt-1 min-h-8 text-[11px] font-medium leading-4 text-[#123B50]">
+                        <h2 className="mt-2 min-h-9 text-[12px] font-medium leading-4 text-[#123B50]">
                           {produto.nome}
                         </h2>
-                        <p className="mt-1 line-clamp-2 min-h-7 text-[8px] leading-3 text-slate-500">{produto.descricao || "Sem descrição cadastrada."}</p>
-                        <div className="mt-2 flex items-end justify-between gap-1">
+                        <p className="mt-2 line-clamp-3 min-h-9 text-[9px] leading-4 text-slate-500">{produto.descricao || "Sem descrição cadastrada."}</p>
+                        <div className="mt-3 flex items-end justify-between gap-2">
                           <div>
                             <span className="block text-[8px] text-slate-400">Preço de venda</span>
-                            <strong className="text-[13px] font-medium text-[#123B50]">
+                            <strong className="text-[14px] font-semibold text-[#123B50]">
                               {brl(Number(produto.preco_venda ?? 0))}
                             </strong>
                           </div>
@@ -408,7 +408,7 @@ export default function VendasCatalogoDigital() {
                         <button
                           type="button"
                           onClick={() => add(produto)}
-                          className="flex h-7 flex-1 items-center justify-center gap-1 bg-[#2D8DB8] text-[9px] text-white"
+                          className="flex h-[30px] flex-1 items-center justify-center gap-1 bg-[#2D8DB8] text-[10px] font-medium text-white"
                         >
                           <Plus size={12} />
                           Adicionar
@@ -417,7 +417,7 @@ export default function VendasCatalogoDigital() {
                       <button
                         type="button"
                         onClick={() => setDetalhe(produto)}
-                        className="ml-1 h-7 border border-slate-300 px-2 text-[8px] text-slate-600"
+                        className="ml-1 h-[30px] border border-slate-300 px-3 text-[9px] text-slate-700"
                       >
                         Detalhes
                       </button>
