@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs'
  */
 const approved = [
   { path: 'src/pages/VendasCentral.tsx', sha: '9177ae072e85e2cd5bd2b62780671f9aad20cf28', label: 'Vendas / Status do pedido', source: 'explicit user-authorized revision APROV-004 — wider cards and real order/production/quality/expedition/fiscal stages; frozen after this revision' },
-  { path: 'src/pages/NovoPedido.tsx', sha: 'b6e27b2d3a388404cfba867b3b7044fbd3c77fc2', label: 'Vendas / Novo Pedido', source: 'explicit user-authorized geometric audit APROV-005 — controls 30px, labels 9px, aligned cards and compact grid' },
+  { path: 'src/pages/NovoPedido.tsx', sha: '0bcef5a0b858c6bcddb847b3917804e330d9f444', label: 'Vendas / Novo Pedido', source: 'explicit user-authorized geometric audit APROV-005 — controls 30px, labels 9px, aligned cards and compact grid' },
   { path: 'src/pages/ProdutosVendasIndustrial.tsx', sha: 'b1cbdd042c95c547c7d315afb0ee94bba529865f', label: 'Cadastros / Produtos', source: 'approved UI contract' },
   { path: 'src/styles/industrial-login.css', sha: 'c77134e5eaf528438eb137f6a1f6e737aeb5d863', label: 'Login institucional', source: 'explicit user-approved revision APROV-002 — remove secondary CTAs and decorative key icon; center institutional copy' },
   { path: 'src/pages/QualidadeCentralTablet.tsx', sha: '3f8e359a770f0d433f1ed1d24d383254e04e7c1e', label: 'Qualidade / Tablet SGQ', source: 'user-approved tablet revision' },
