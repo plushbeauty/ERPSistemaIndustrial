@@ -97,4 +97,4 @@ IMPACTO: navegação confusa e expectativa de funções inexistentes.
 CORREÇÃO PARCIAL: compactação da navegação e cards, pesquisa limitada a 50 caracteres, links de ação para operações existentes e CSS escopado aos formulários/grids internos.
 LIMITAÇÃO: não inventar tabelas, RPCs, revogação de sessão ou backup físico; dependências não confirmadas precisam de integração real antes de declarar funcional.
 TESTE NECESSÁRIO: type-check, lint, build, verificação de rotas, visual desktop/mobile e CRUD autenticado.
-EVIDÊNCIA: commit ecd89466d8fd1024eb47aa61a7f2f1d3ff48d1d4; Vercel reportou build-rate-limit no status consultado.
+EVIDÊNCIA: commit f575b6aebecfcca50023178504f7bbbea99b0256; status Vercel consultado continua falhando por build-rate-limit.
