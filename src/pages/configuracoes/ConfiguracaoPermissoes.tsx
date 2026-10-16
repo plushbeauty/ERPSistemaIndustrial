@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { CopyPlus, RefreshCw, Save, ShieldCheck } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { fetchAllPages } from '../../lib/supabasePagination'
@@ -11,6 +12,8 @@ type RoleDraft = { roleId: string | null; codigo: string; nome: string; permissi
 const emptyDraft = (): RoleDraft => ({ roleId: null, codigo: '', nome: '', permissions: new Set() })
 
 export default function ConfiguracaoPermissoes() {
+  const [searchParams] = useSearchParams()
+  const requestedRoleId = searchParams.get('perfil') ?? ''
   const [roles, setRoles] = useState<Role[]>([])
   const [permissions, setPermissions] = useState<Permission[]>([])
   const [actorCompany, setActorCompany] = useState<string | null>(null)
@@ -95,7 +98,7 @@ export default function ConfiguracaoPermissoes() {
       setCanManage(eligible)
       setRoles(roleRows)
       setPermissions(permissionRows)
-      const currentRole = roleRows.find(role => role.id === selectedRoleIdRef.current) ?? roleRows[0]
+      const currentRole = roleRows.find(role => role.id === requestedRoleId) ?? roleRows.find(role => role.id === selectedRoleIdRef.current) ?? roleRows[0]
       setSelectedRoleId(currentRole?.id ?? '')
       selectedRoleIdRef.current = currentRole?.id ?? ''
       if (!currentRole) {
@@ -117,7 +120,7 @@ export default function ConfiguracaoPermissoes() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [requestedRoleId])
 
   useEffect(() => { void load() }, [load])
 
