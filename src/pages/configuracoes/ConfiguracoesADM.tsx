@@ -61,7 +61,8 @@ function Overview({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
   const cards: Array<[string, string, LucideIcon, string]> = [
     ['Empresa e identidade', 'Dados cadastrais, documentos e identidade usados nos relatórios.', Building2, '/configuracoes-adm/empresa'],
     ['Codificação e áreas', 'Sequências, grupos e áreas operacionais da empresa.', BarChart3, '/configuracoes-adm/codificacao'],
-    ['Perfis e permissões', 'Papéis e permissões vinculados ao RBAC persistido.', ShieldCheck, '/configuracoes-adm/perfis'],
+    ['Perfis de usuários', 'Papéis e níveis atribuídos às contas ERP.', UsersRound, '/configuracoes-adm/perfis'],
+    ['Controle de permissões', 'Matriz de acesso RBAC persistida no banco.', ShieldCheck, '/configuracoes-adm/permissoes'],
     ['Usuários', 'Contas operacionais, status e perfil de acesso.', UsersRound, '/configuracoes-adm/usuarios'],
     ['Logs do sistema', 'Auditoria persistida com escopo definido por RLS.', FileClock, '/configuracoes-adm/logs'],
     ['Backups', 'Estado e instruções da rotina de backup.', DatabaseBackup, '/configuracoes-adm/backups'],
@@ -72,7 +73,7 @@ function Overview({ navigate }: { navigate: ReturnType<typeof useNavigate> }) {
   return <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
     <Card title="Central administrativa">
       <div style={grid(270)}>{cards.map(([label, description, Icon, path]) =>
-        <button key={path} type="button" onClick={() => navigate(path)} style={{ minHeight: 92, border: '1px solid #CFE1E7', borderRadius: 2, padding: 10, textAlign: 'left', background: '#FFFFFF', cursor: 'pointer', transition: 'background .15s,border-color .15s' }}>
+        <button className="admin-config-nav-card" key={path} type="button" onClick={() => navigate(path)} style={{ minHeight: 92, border: '1px solid #CFE1E7', borderRadius: 2, padding: 10, textAlign: 'left', background: '#FFFFFF', cursor: 'pointer', transition: 'background .15s,border-color .15s' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ width: 26, height: 26, display: 'grid', placeItems: 'center', borderRadius: 2, background: '#DDF1F6', color: '#17445A' }}><Icon size={15} /></span>
             <ArrowRight size={16} color="#CBD5E1" />
@@ -173,7 +174,7 @@ export default function ConfiguracoesADM() {
   return <div style={{ minHeight: '100vh', background: '#F4FBFD', color: '#1E293B', fontFamily: 'system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif' }}>
     <header style={{ position: 'sticky', top: 0, zIndex: 40, borderBottom: '1px solid #E2E8F0', background: 'rgba(255,255,255,.96)', backdropFilter: 'blur(4px)' }}>
       <div style={{ height: 48, display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px' }}>
-        <button type="button" onClick={() => setMobileOpen(v => !v)} style={{ ...buttonStyle, width: 40, padding: 0, justifyContent: 'center', border: '1px solid #E2E8F0', background: '#FFFFFF', color: '#17445A' }} aria-label="Abrir menu"><Menu size={19} /></button>
+        <button className="admin-config-menu-toggle" type="button" onClick={() => setMobileOpen(v => !v)} style={{ ...buttonStyle, width: 40, padding: 0, justifyContent: 'center', border: '1px solid #E2E8F0', background: '#FFFFFF', color: '#17445A' }} aria-label="Abrir menu"><Menu size={19} /></button>
         <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.18em', color: '#2D8DB8' }}>SYNQRA ERP & SGQ INDUSTRIAL</div><div style={{ fontSize: 14, fontWeight: 900, color: '#123B50', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Administração do sistema</div></div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: 'min(320px,36vw)', border: '1px solid #CFE1E7', borderRadius: 2, background: '#F8FAFC', padding: '0 8px' }}><Search size={16} color="#94A3B8" /><input maxLength={50} value={query} onChange={e => setQuery(e.target.value)} placeholder="Pesquisar configuração..." style={{ height: 30, flex: 1, minWidth: 0, border: 0, outline: 0, background: 'transparent', fontSize: 11, fontWeight: 600 }} /></div>
       </div>
@@ -208,7 +209,9 @@ export default function ConfiguracoesADM() {
           .admin-config-main input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
           .admin-config-main select { height:30px!important; min-height:30px!important; padding:4px 7px!important; border-radius:2px!important; font-size:10px!important; }
           .admin-config-main textarea { min-height:72px; padding:6px 7px!important; border-radius:2px!important; font-size:10px!important; }
-          .admin-config-main button { min-height:30px!important; border-radius:2px!important; font-size:10px; }
+          .admin-config-main button:not(.admin-config-nav-card) { min-height:30px!important; border-radius:2px!important; font-size:10px; }
+          .admin-config-menu-toggle { display:inline-flex; }
+          @media(min-width:768px){ .admin-config-menu-toggle { display:none!important; } }
           .admin-config-main table { width:100%; border-collapse:collapse; font-size:10px; }
           .admin-config-main thead th { height:32px; padding:5px 8px; background:#123B50!important; color:#fff!important; font-size:9px!important; font-weight:800; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid #2D8DB8; }
           .admin-config-main tbody td { min-height:32px; padding:5px 8px; border-bottom:1px solid #D6E7EE; font-size:10px; }
