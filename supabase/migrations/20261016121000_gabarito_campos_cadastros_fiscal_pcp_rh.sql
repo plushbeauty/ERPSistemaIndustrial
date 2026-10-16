@@ -32,7 +32,7 @@ begin
   ) then
     alter table public.erp_regras_fiscais
       add constraint erp_regras_fiscais_tipo_operacao_chk
-      check (tipo_operacao in ('ENTRADA','SAIDA','AMBAS') ) not valid;
+      check (tipo_operacao in ('ENTRADA','SAIDA','AMBAS')) not valid;
   end if;
 end
 $$;
@@ -130,8 +130,7 @@ create table if not exists public.erp_exames_ocupacionais (
   created_by uuid references auth.users(id),
   constraint erp_exames_ocupacionais_funcionario_tenant_fk
     foreign key (empresa_id, funcionario_id)
-    references public.erp_funcionarios (empresa_id, id)
-    not valid,
+    references public.erp_funcionarios (empresa_id, id),
   constraint erp_exames_ocupacionais_validade_chk
     check (data_validade is null or data_validade >= data_exame)
 );
