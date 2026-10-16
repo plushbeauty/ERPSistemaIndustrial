@@ -56,7 +56,7 @@ function sampleSize(lot: number, level: 'G-II' | 'G-III'): number {
 }
 
 function fieldClass(invalid: boolean): string {
-  return `erp-premium-input w-full ${invalid ? 'border-red-500 bg-red-50/50 placeholder:text-red-400' : ''}`
+  return `erp-premium-input h-8 min-h-8 font-mono text-[13px] ${invalid ? 'border-red-500 bg-red-50/50 placeholder:text-red-400' : ''}`
 }
 
 function labelClass(): string {
