@@ -1,3 +1,9 @@
+/**
+ * @DATA_REVISAO_APROVACAO: 2026-10-16
+ * @REVISAO_APROVACAO: APROV-001
+ * @STATUS_APROVACAO: APROVADO-IMUTAVEL
+ * @REGRA: preservar o tablet SGQ aprovado; mudanças exigem autorização explícita do usuário.
+ */
 import { Link } from 'react-router-dom'
 import {
   Activity, BookOpenCheck, ClipboardCheck, ClipboardList, FileCheck2, FileText,
