@@ -300,12 +300,12 @@ export default function GEDDocumentos() {
           {selected && <><span className="text-neutral-300">/</span><span className="max-w-[260px] truncate text-[10px] text-neutral-500">{selected.titulo_documento}</span></>}
         </div>
         <div className="flex min-w-0 flex-wrap items-center justify-end gap-1.5">
-          <button type="button" onClick={() => setHelpOpen(value => !value)} aria-expanded={helpOpen} className="inline-flex h-[30px] items-center gap-1 rounded-[4px] border border-sky-200 bg-sky-50 px-2 text-[10px] font-semibold text-[#246F98] hover:bg-sky-100"><CircleHelp size={12}/> AJUDA</button>
-          <button type="button" onClick={() => void load()} title="Atualizar documentos" className="inline-flex h-[30px] items-center gap-1 rounded-[4px] border border-neutral-200 px-2 text-[10px] text-neutral-600 hover:bg-neutral-50"><RefreshCw size={12}/> ATUALIZAR</button>
-          <button type="button" onClick={startNew} className="inline-flex h-[30px] items-center gap-1 rounded-[4px] border border-[#C6DFEF] bg-[#F2F8FC] px-2 text-[10px] font-semibold text-[#246F98] hover:bg-[#E6F3FB]"><FilePlus2 size={13}/> NOVO DOC</button>
-          <label className="inline-flex h-[30px] cursor-pointer items-center gap-1 rounded-[4px] border border-neutral-200 bg-white px-2 text-[9px] font-semibold text-neutral-700 hover:bg-neutral-50"><Paperclip size={12}/> SELECIONAR ORIGINAIS<input type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.xlsm" className="hidden" onChange={event => setBulkFiles(Array.from(event.target.files ?? []))}/></label>
-          {bulkFiles.length > 0 && <button type="button" disabled={busy} onClick={() => void attachBulkFiles()} className="inline-flex h-[30px] items-center gap-1 rounded-[4px] bg-[#2D8DB8] px-2 text-[9px] font-semibold text-white disabled:opacity-50"><Upload size={12}/>{busy ? 'IMPORTANDO ' + bulkProgress.done + '/' + bulkProgress.total : 'IMPORTAR ' + bulkFiles.length}</button>}
-          <button type="button" onClick={() => window.print()} className="hidden h-[30px] items-center gap-1 rounded-[4px] border border-neutral-200 px-2 text-[10px] text-neutral-600 hover:bg-neutral-50 sm:inline-flex"><ShieldCheck size={12}/> IMPRIMIR</button>
+          <button type="button" onClick={() => setHelpOpen(value => !value)} aria-expanded={helpOpen} className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-sky-200 bg-sky-50 px-2 text-[10px] font-semibold text-[#246F98] hover:bg-sky-100"><CircleHelp size={12}/> AJUDA</button>
+          <button type="button" onClick={() => void load()} title="Atualizar documentos" className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-neutral-200 px-2 text-[10px] text-neutral-600 hover:bg-neutral-50"><RefreshCw size={12}/> ATUALIZAR</button>
+          <button type="button" onClick={startNew} className="inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-[#C6DFEF] bg-[#F2F8FC] px-2 text-[10px] font-semibold text-[#246F98] hover:bg-[#E6F3FB]"><FilePlus2 size={13}/> NOVO DOC</button>
+          <label className="inline-flex h-[30px] cursor-pointer items-center gap-1 rounded-[2px] border border-neutral-200 bg-white px-2 text-[9px] font-semibold text-neutral-700 hover:bg-neutral-50"><Paperclip size={12}/> SELECIONAR ORIGINAIS<input type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.xlsm" className="hidden" onChange={event => setBulkFiles(Array.from(event.target.files ?? []))}/></label>
+          {bulkFiles.length > 0 && <button type="button" disabled={busy} onClick={() => void attachBulkFiles()} className="inline-flex h-[30px] items-center gap-1 rounded-[2px] bg-[#2D8DB8] px-2 text-[9px] font-semibold text-white disabled:opacity-50"><Upload size={12}/>{busy ? 'IMPORTANDO ' + bulkProgress.done + '/' + bulkProgress.total : 'IMPORTAR ' + bulkFiles.length}</button>}
+          <button type="button" onClick={() => window.print()} className="hidden h-[30px] items-center gap-1 rounded-[2px] border border-neutral-200 px-2 text-[10px] text-neutral-600 hover:bg-neutral-50 sm:inline-flex"><ShieldCheck size={12}/> IMPRIMIR</button>
         </div>
       </div>
 
@@ -316,7 +316,7 @@ export default function GEDDocumentos() {
         <aside className="flex min-h-0 flex-col border-b border-neutral-200 bg-neutral-50/80 xl:border-b-0 xl:border-r xl:border-neutral-200/70">
           <div className="flex h-[44px] items-center justify-between px-3">
             <span className="text-[9px] font-bold uppercase tracking-[.13em] text-neutral-500">ÁRVORE DE DOCUMENTOS</span>
-            <span className="rounded-[4px] bg-neutral-200/70 px-1.5 py-0.5 text-[9px] tabular-nums text-neutral-600">{documents.length}</span>
+            <span className="rounded-[2px] bg-neutral-200/70 px-1.5 py-0.5 text-[9px] tabular-nums text-neutral-600">{documents.length}</span>
           </div>
           <div className="px-2 pb-2">
             <div className="relative">
@@ -325,7 +325,7 @@ export default function GEDDocumentos() {
             </div>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-1.5 pb-3">
-            <div className="flex h-[29px] items-center gap-2 rounded-[4px] px-2 text-[10px] font-semibold text-neutral-600">
+            <div className="flex h-[29px] items-center gap-2 rounded-[2px] px-2 text-[10px] font-semibold text-neutral-600">
               <span className="text-[#2D8DB8]"><History size={14}/></span><span>Documentos controlados</span>
             </div>
             {loading ? <p className="px-7 py-3 text-[10px] text-neutral-500">Carregando documentos…</p> : documents.length ? documents.map(doc => {
@@ -357,18 +357,18 @@ export default function GEDDocumentos() {
                 <h1 className="mt-0.5 truncate text-[16px] font-semibold tracking-[-.02em] text-[#182B3A]">{titulo || (selected ? selected.titulo_documento : 'Documento sem título')}</h1>
               </div>
               <div className="flex items-center gap-1.5">
-                {selected && <span className="rounded-[4px] border border-neutral-200 px-2 py-1 text-[9px] text-neutral-500">REV. {String(selected.revisao).padStart(2,'0')}</span>}
-                <button disabled={busy} className="inline-flex h-[30px] items-center gap-1.5 rounded-[4px] bg-[#2D8DB8] px-3 text-[10px] font-semibold text-white hover:bg-[#247BA3] disabled:opacity-50"><Save size={13}/>{busy ? 'SALVANDO…' : 'SALVAR NOVA REVISÃO'}</button>
+                {selected && <span className="rounded-[2px] border border-neutral-200 px-2 py-1 text-[9px] text-neutral-500">REV. {String(selected.revisao).padStart(2,'0')}</span>}
+                <button disabled={busy} className="inline-flex h-[30px] items-center gap-1.5 rounded-[2px] bg-[#2D8DB8] px-3 text-[10px] font-semibold text-white hover:bg-[#247BA3] disabled:opacity-50"><Save size={13}/>{busy ? 'SALVANDO…' : 'SALVAR NOVA REVISÃO'}</button>
               </div>
             </div>
 
             {selected?.nome_arquivo && !selected.url_anexo && <div role="status" className="mx-4 mt-3 border border-amber-300 bg-amber-50 px-3 py-2 text-[10px] leading-4 text-amber-900">Registro de índice importado: o arquivo original ainda não está anexado ao GED. Confirme o conteúdo, a revisão de origem e a vigência antes de homologar. A aprovação fica bloqueada enquanto o anexo estiver pendente.</div>}
               <div className="mx-auto flex w-full max-w-[960px] min-w-0 flex-1 flex-col px-3 py-4 sm:px-6 lg:px-8">
               {selected && <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-neutral-100 pb-3 text-[9px] text-neutral-500">
-                <span className={'rounded-[4px] px-2 py-1 font-semibold ' + (selected.status === 'VIGENTE' ? 'bg-emerald-50 text-emerald-700' : selected.status === 'EM_REVISAO' ? 'bg-amber-50 text-amber-700' : 'bg-neutral-100 text-neutral-600')}>{selected.status.replaceAll('_',' ')}</span>
+                <span className={'rounded-[2px] px-2 py-1 font-semibold ' + (selected.status === 'VIGENTE' ? 'bg-emerald-50 text-emerald-700' : selected.status === 'EM_REVISAO' ? 'bg-amber-50 text-amber-700' : 'bg-neutral-100 text-neutral-600')}>{selected.status.replaceAll('_',' ')}</span>
                 <span>Responsável: <strong className="font-medium text-neutral-700">{selected.responsavel}</strong></span>
                 <span>·</span><span>{dateTime(selected.criado_em)}</span>
-                {selected.status === 'EM_REVISAO' && !(selected.nome_arquivo && !selected.url_anexo) && <button type="button" disabled={busy} onClick={() => void activateSelected()} className="ml-auto inline-flex h-[30px] items-center gap-1 rounded-[4px] border border-emerald-200 bg-emerald-50 px-2 text-[9px] font-semibold text-emerald-700 disabled:opacity-50"><ShieldCheck size={12}/> APROVAR E ATIVAR</button>}
+                {selected.status === 'EM_REVISAO' && !(selected.nome_arquivo && !selected.url_anexo) && <button type="button" disabled={busy} onClick={() => void activateSelected()} className="ml-auto inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-emerald-200 bg-emerald-50 px-2 text-[9px] font-semibold text-emerald-700 disabled:opacity-50"><ShieldCheck size={12}/> APROVAR E ATIVAR</button>}
               </div>}
 
               {selected && <section aria-label="Anexo original do documento" className="mb-4 rounded-[3px] border border-slate-200 bg-slate-50/70 p-3">
@@ -395,14 +395,14 @@ export default function GEDDocumentos() {
                 <div><h2 className="text-[11px] font-semibold text-neutral-800">Conteúdo do procedimento</h2><p className="mt-0.5 text-[9px] text-neutral-400">Estruture objetivo, responsabilidades, método e critérios de aceitação.</p></div>
                 <span className="text-[9px] tabular-nums text-neutral-400">{conteudo.length.toLocaleString('pt-BR')} caracteres</span>
               </div>
-              <label className="mt-3 flex flex-1 flex-col"><span className={label}>CORPO DO DOCUMENTO *</span><textarea className="min-h-[320px] w-full flex-1 resize-y rounded-[4px] border border-neutral-200 bg-white p-4 text-[12px] leading-[1.85] text-neutral-700 outline-none transition-colors placeholder:text-neutral-300 focus:border-[#82BBD8] focus:ring-2 focus:ring-[#E8F4FA]" value={conteudo} onChange={e => setConteudo(e.target.value)} required placeholder={'1. OBJETIVO\nDescreva o objetivo do procedimento.\n\n2. RESPONSABILIDADES\nDefina os responsáveis.\n\n3. MÉTODO\nDescreva a sequência operacional e os critérios de aceitação.'}/></label>
+              <label className="mt-3 flex flex-1 flex-col"><span className={label}>CORPO DO DOCUMENTO *</span><textarea className="min-h-[320px] w-full flex-1 resize-y rounded-[2px] border border-neutral-200 bg-white p-4 text-[12px] leading-[1.85] text-neutral-700 outline-none transition-colors placeholder:text-neutral-300 focus:border-[#82BBD8] focus:ring-2 focus:ring-[#E8F4FA]" value={conteudo} onChange={e => setConteudo(e.target.value)} required placeholder={'1. OBJETIVO\nDescreva o objetivo do procedimento.\n\n2. RESPONSABILIDADES\nDefina os responsáveis.\n\n3. MÉTODO\nDescreva a sequência operacional e os critérios de aceitação.'}/></label>
               <label className="mt-4"><span className={label}>MOTIVO DA ALTERAÇÃO / REVISÃO *</span><input className={field} value={motivo} onChange={e => setMotivo(e.target.value)} required maxLength={1000} placeholder="Registre o motivo para rastreabilidade da alteração"/></label>
 
-              <div className="mt-5 rounded-[4px] border border-neutral-200/80 bg-neutral-50/70 p-3">
+              <div className="mt-5 rounded-[2px] border border-neutral-200/80 bg-neutral-50/70 p-3">
                 <div className="flex items-start gap-2"><ShieldCheck size={14} className="mt-0.5 shrink-0 text-[#2D8DB8]"/><div><p className="text-[10px] font-semibold text-neutral-700">Controle de revisão</p><p className="mt-1 text-[9px] leading-4 text-neutral-500">Ao salvar, o banco incrementa a revisão, arquiva a versão anterior como obsoleta e grava o motivo com o usuário autenticado. A nova revisão inicia em “Em revisão”.</p></div></div>
               </div>
 
-              <footer className="mt-6 grid h-[32px] grid-cols-2 items-center divide-x divide-neutral-200/60 rounded-[4px] border border-neutral-200/80 bg-neutral-50/50 text-center text-[9px] font-bold uppercase tracking-wider text-neutral-500 md:grid-cols-4">
+              <footer className="mt-6 grid h-[32px] grid-cols-2 items-center divide-x divide-neutral-200/60 rounded-[2px] border border-neutral-200/80 bg-neutral-50/50 text-center text-[9px] font-bold uppercase tracking-wider text-neutral-500 md:grid-cols-4">
                 <div className="truncate px-1">CÓD: <span className="font-semibold text-neutral-700">{activeDoc?.codigo_documento ?? (codigo || '—')}</span></div>
                 <div>REVISÃO: <span className="font-semibold text-neutral-700">{String(activeDoc?.revisao ?? (history[0]?.revisao ?? 0)).padStart(2,'0')}</span></div>
                 <div className="truncate">VIGÊNCIA: <span className="font-semibold text-neutral-700">{activeDoc?.data_vigencia ?? 'PENDENTE'}</span></div>
@@ -426,7 +426,7 @@ export default function GEDDocumentos() {
             <h3 className="mb-3 text-[9px] font-bold uppercase tracking-[.12em] text-neutral-500">Trilha de versões</h3>
             {history.length ? <ol className="space-y-0">{history.map((row, index) => <li key={row.id} className="relative border-l border-neutral-200 pb-4 pl-4 last:pb-1">
               <span className={'absolute -left-[4px] top-1 size-[7px] rounded-full ring-2 ring-white ' + (row.status === 'VIGENTE' ? 'bg-emerald-500' : row.status === 'EM_REVISAO' ? 'bg-amber-500' : 'bg-neutral-300')}/>
-              <button type="button" onClick={() => editRevision(row)} className="w-full rounded-[4px] text-left hover:bg-neutral-50">
+              <button type="button" onClick={() => editRevision(row)} className="w-full rounded-[2px] text-left hover:bg-neutral-50">
                 <span className="flex items-center justify-between gap-1"><span className="text-[10px] font-semibold text-neutral-800">Revisão {String(row.revisao).padStart(2,'0')}</span><span className={'rounded-[3px] px-1 py-0.5 text-[8px] ' + (row.status === 'VIGENTE' ? 'bg-emerald-50 text-emerald-700' : row.status === 'EM_REVISAO' ? 'bg-amber-50 text-amber-700' : 'bg-neutral-100 text-neutral-500')}>{row.status.replaceAll('_',' ')}</span></span>
                 <span className="mt-1 block text-[9px] text-neutral-500">{row.responsavel} · {dateTime(row.criado_em)}</span>
                 {row.motivo_alteracao && <span className="mt-1 block text-[9px] leading-4 text-neutral-600">{row.motivo_alteracao}</span>}
