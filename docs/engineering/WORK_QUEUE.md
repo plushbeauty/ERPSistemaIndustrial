@@ -47,3 +47,16 @@ ERROS RELACIONADOS: ERR-0005; ERR-0004
 TESTES: listar funções; grants; RPC autenticada; cross-tenant/RLS.
 RESULTADO: código/migrations confirmam que os overloads existem no repositório; aplicação remota ainda não comprovada.
 COMMIT: pendente
+
+
+## TASK-0005
+STATUS: IN_PROGRESS
+PRIORIDADE: P1
+MÓDULO: CONFIGURAÇÕES ADMINISTRATIVAS
+ARQUIVOS: src/pages/configuracoes/ConfiguracoesADM.tsx; src/pages/configuracoes/ConfiguracaoCodificacaoAreas.tsx; src/pages/configuracoes/ConfiguracaoPerfis.tsx; src/pages/configuracoes/ConfiguracaoPermissoes.tsx; src/pages/configuracoes/ConfiguracaoLogs.tsx; src/pages/configuracoes/ConfiguracaoBackups.tsx; src/pages/UsuariosAdmin.tsx; src/components/CompanySettings.tsx
+OBJETIVO: recuperar a tela /configuracoes-adm com navegação legível, padrão compacto industrial, rotas de seção consistentes e operações administrativas verificadas.
+ACHADOS: overview só expunha seis atalhos para dez seções; três seções não possuem fonte persistida/API central confirmada; menu e telas internas usavam raios, paddings e controles maiores que o padrão aprovado.
+CORREÇÃO PARCIAL: menu e cards compactados; overview agora apresenta todas as dez seções; atalhos reais adicionados para usuários/permissões e e-mail; estilo escopado aplicado às telas internas sem alterar RPC/RLS.
+TESTES: npm run type-check; npm run lint:check; npm run build; verify:production; teste visual desktop/mobile; testar CRUD com usuário autenticado e escopo tenant.
+RESULTADO: correção de código gravada, testes e publicação ainda não confirmados.
+COMMIT: ecd89466d8fd1024eb47aa61a7f2f1d3ff48d1d4
