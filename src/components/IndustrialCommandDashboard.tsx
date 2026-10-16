@@ -23,6 +23,12 @@ type Equipment = { id: string; codigo: string; descricao: string; status: string
 const n = (v: unknown) => Number.isFinite(Number(v)) ? Number(v) : 0
 const fmt = (v: number) => new Intl.NumberFormat('pt-BR').format(Math.round(v))
 const dateKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const valueDateKey = (value: string | null | undefined) => {
+  if (!value) return ''
+  if (value.length <= 10) return value.slice(0, 10)
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? value.slice(0, 10) : dateKey(parsed)
+}
 
 function statusText(value: string) {
   const s = value.toLowerCase()
@@ -129,7 +135,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
 
   const today = dateKey(clock)
   const activeOps = ops.filter(o => !['concluida', 'concluído', 'cancelada', 'cancelado'].includes(String(o.status).toLowerCase()))
-  const todayPointings = pointings.filter(p => String(p.criado_em ?? p.created_at ?? '').slice(0, 10) === today)
+  const todayPointings = pointings.filter(p => valueDateKey(p.criado_em ?? p.created_at) === today)
   const producedToday = todayPointings.reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
   const totalPlanned = pointings.reduce((s, p) => s + n(p.quantidade_planejada), 0)
   const totalGood = pointings.reduce((s, p) => s + n(p.quantidade_boa), 0)
@@ -161,8 +167,8 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
       d.setHours(0, 0, 0, 0)
       d.setDate(d.getDate() - i)
       const key = dateKey(d)
-      const previsto = programs.filter(p => String(p.inicio_planejado).slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_planejada), 0)
-      const realizado = pointings.filter(p => String(p.criado_em ?? p.created_at ?? '').slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
+      const previsto = programs.filter(p => valueDateKey(p.inicio_planejado) === key).reduce((s, p) => s + n(p.quantidade_planejada), 0)
+      const realizado = pointings.filter(p => valueDateKey(p.criado_em ?? p.created_at) === key).reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
       days.push({ day: d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''), previsto, realizado })
     }
     return days
@@ -203,7 +209,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     const grouped = new Map<string, number>()
     stops.forEach(s => {
       if (!s.inicio || !s.fim) return
-      const day = String(s.inicio).slice(0, 10)
+      const day = valueDateKey(s.inicio)
       const hours = Math.max(0, (new Date(s.fim).getTime() - new Date(s.inicio).getTime()) / 3600000)
       grouped.set(day, (grouped.get(day) ?? 0) + hours)
     })
