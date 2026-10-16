@@ -1,3 +1,8 @@
+/*
+ * REVISÃO TÉCNICA: 16/10/2026
+ * Revisado: autenticação, paginação, estado de erro, expansão de detalhes e mascaramento visual de chaves sensíveis.
+ * Não validado nesta revisão: políticas RLS de auditoria, minimização na origem, type-check/build e consultas remotas.
+ */
 import { useCallback, useEffect, useState } from 'react'
 import { ChevronDown, FileText, RefreshCw } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
