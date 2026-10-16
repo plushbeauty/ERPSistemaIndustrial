@@ -637,44 +637,46 @@ export default function ProdutosVendasIndustrial(){
         .product-master-screen .product-general-form{padding:0!important;background:#fff!important}
         .product-master-screen .product-layout-card,.product-master-screen .product-quality-card{break-inside:avoid;box-shadow:none!important}
       }
-      .product-master-screen{background:#f4f6f9!important;font-family:"Segoe UI",Inter,Arial,sans-serif!important}
+
+      .product-master-screen{background:#f4f6f9!important;color:#1a365d!important;font-family:"Segoe UI",Inter,Arial,sans-serif!important}
       .product-master-screen .product-general-form{background:#f4f6f9!important;padding:12px!important}
       .product-master-screen .product-general-card-grid{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:10px!important;align-items:start!important}
       .product-master-screen .product-layout-card{background:#fff!important;border:1px solid #cbd5e1!important;border-radius:6px!important;padding:12px!important;min-width:0!important;box-shadow:0 1px 2px rgba(15,23,42,.04)!important}
-      .product-master-screen .product-layout-card-header{align-items:center!important;border-bottom:1px solid #e2e8f0!important}
-      .product-master-screen .product-layout-card-header span{color:#2b6cb0!important}
-      .product-master-screen .product-layout-card-header h2{color:#1a365d!important}
-      .product-master-screen .product-identification-fields{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
-      .product-master-screen .product-identification-fields>.product-inline-field{display:grid!important;grid-template-columns:160px minmax(0,1fr)!important;align-items:center!important;gap:10px!important;min-width:0!important}
-      .product-master-screen .product-identification-fields>.product-inline-field>label{display:contents!important}
-      .product-master-screen .product-identification-reference-row{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:12px!important;min-width:0!important}
-      .product-master-screen .product-identification-reference-row>.product-inline-field{display:grid!important;grid-template-columns:160px minmax(0,1fr)!important;align-items:center!important;gap:10px!important;min-width:0!important}
-      .product-master-screen .product-identification-reference-row>.product-inline-field>label{display:contents!important}
-      .product-master-screen .product-identification-fields label,.product-master-screen .product-identification-reference-row label{font-family:"Segoe UI",Inter,Arial,sans-serif!important;font-size:11px!important;font-weight:600!important;color:#475569!important;white-space:nowrap!important}
-      .product-master-screen .product-identification-fields label>span,.product-master-screen .product-identification-reference-row label>span{white-space:nowrap!important;overflow-wrap:normal!important;line-height:1.2!important}
-      .product-master-screen .product-identification-fields input,.product-master-screen .product-identification-reference-row input,.product-master-screen .product-operational-fields input,.product-master-screen .product-operational-fields select,.product-master-screen .product-form-grid input,.product-master-screen .product-form-grid select,.product-master-screen .product-inline-action-field input,.product-master-screen .product-inline-action-field select,.product-master-screen .product-inline-action-field button{height:30px!important;box-sizing:border-box!important}
-      .product-master-screen input.edit-2,.product-master-screen select.edit-2{display:inline-block!important;flex:0 0 auto!important;width:5ch!important;max-width:6ch!important}
-      .product-master-screen input.edit-3,.product-master-screen select.edit-3{display:inline-block!important;flex:0 0 auto!important;width:6ch!important;max-width:6ch!important}
-      .product-master-screen input.edit-4,.product-master-screen select.edit-4{display:inline-block!important;flex:0 0 auto!important;width:7ch!important;max-width:7ch!important}
+      .product-master-screen .product-layout-card-header{border-bottom:1px solid #e2e8f0!important;padding-bottom:8px!important;margin-bottom:10px!important}
+      .product-master-screen .product-layout-card-header h2{font-family:"Segoe UI",Inter,Arial,sans-serif!important;color:#1a365d!important;font-size:14px!important;font-weight:700!important}
+      .product-master-screen .product-inline-fields{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:8px!important}
+      .product-master-screen .product-inline-field{display:flex!important;align-items:center!important;flex:0 0 auto!important;min-width:0!important;height:auto!important;width:100%!important}
+      .product-master-screen .product-inline-field>label{display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;width:100%!important;min-width:0!important;white-space:nowrap!important}
+      .product-master-screen .product-inline-field>label>span{flex:0 0 150px!important;min-width:150px!important;font-family:"Segoe UI",Inter,Arial,sans-serif!important;font-size:11px!important;font-weight:600!important;color:#475569!important;white-space:nowrap!important;line-height:1.2!important;overflow-wrap:normal!important}
+      .product-master-screen .product-inline-field input,.product-master-screen .product-inline-field select,.product-master-screen .product-inline-action-field input,.product-master-screen .product-inline-action-field select,.product-master-screen .product-inline-action-field button{height:30px!important;box-sizing:border-box!important;border-radius:4px!important}
+      .product-master-screen input.edit-2,.product-master-screen select.edit-2{display:inline-block!important;flex:0 0 auto!important;width:5ch!important;max-width:6ch!important;text-align:center!important}
+      .product-master-screen input.edit-3,.product-master-screen select.edit-3{display:inline-block!important;flex:0 0 auto!important;width:6ch!important;max-width:6ch!important;text-transform:uppercase!important}
+      .product-master-screen input.edit-4,.product-master-screen select.edit-4{display:inline-block!important;flex:0 0 auto!important;width:7ch!important;max-width:7ch!important;text-align:right!important}
       .product-master-screen input.edit-6,.product-master-screen select.edit-6{display:inline-block!important;flex:0 0 auto!important;width:9ch!important;max-width:9ch!important}
-      .product-master-screen input.edit-7,.product-master-screen select.edit-7{display:inline-block!important;flex:0 0 auto!important;width:10ch!important;max-width:10ch!important}
-      .product-master-screen input.edit-8,.product-master-screen select.edit-8{display:inline-block!important;flex:0 0 auto!important;width:11ch!important;max-width:11ch!important}
-      .product-master-screen input.edit-10,.product-master-screen select.edit-10{display:inline-block!important;flex:0 0 auto!important;width:13ch!important;max-width:13ch!important}
-      .product-master-screen input.edit-12,.product-master-screen select.edit-12{display:inline-block!important;flex:0 0 auto!important;width:15ch!important;max-width:15ch!important}
-      .product-master-screen input.edit-14,.product-master-screen select.edit-14{display:inline-block!important;flex:0 0 auto!important;width:17ch!important;max-width:17ch!important}
-      .product-master-screen input.edit-15,.product-master-screen select.edit-15{display:inline-block!important;flex:0 0 auto!important;width:18ch!important;max-width:18ch!important}
+      .product-master-screen input.edit-8,.product-master-screen select.edit-8{display:inline-block!important;flex:0 0 auto!important;width:13ch!important;max-width:13ch!important}
+      .product-master-screen input.edit-12,.product-master-screen select.edit-12{display:inline-block!important;flex:0 0 auto!important;width:16ch!important;max-width:16ch!important;text-align:right!important}
+      .product-master-screen input.edit-14,.product-master-screen select.edit-14{display:inline-block!important;flex:0 0 auto!important;width:18ch!important;max-width:18ch!important}
       .product-master-screen input.edit-20,.product-master-screen select.edit-20{display:inline-block!important;flex:0 0 auto!important;width:23ch!important;max-width:23ch!important}
-      .product-master-screen input.edit-60,.product-master-screen select.edit-60{display:inline-block!important;flex:0 1 60ch!important;width:60ch!important;max-width:min(100%,60ch)!important}
-      .product-master-screen input.edit-120,.product-master-screen select.edit-120{display:inline-block!important;flex:1 1 auto!important;width:100%!important;max-width:100%!important}
-      .product-master-screen .product-operational-flags{display:flex!important;align-items:center!important;gap:20px!important;flex-wrap:wrap!important;margin-top:12px!important;padding:10px 0 0 170px!important;border-top:1px solid #e2e8f0!important}
-      .product-master-screen .product-operational-flags label{display:inline-flex!important;align-items:center!important;gap:6px!important;white-space:nowrap!important;font-family:"Segoe UI",Inter,Arial,sans-serif!important;font-size:11px!important;font-weight:600!important;color:#475569!important}
-      .product-master-screen .product-fiscal-code-lookup input.edit-8{width:11ch!important;max-width:11ch!important;flex:0 0 auto!important}
-      .product-master-screen .product-inline-action-field{display:flex!important;align-items:center!important;flex:0 0 auto!important;min-width:0!important;gap:0!important}
+      .product-master-screen input.edit-60,.product-master-screen select.edit-60{display:inline-block!important;flex:0 0 auto!important;width:60ch!important;max-width:min(100%,280px)!important}
+      .product-master-screen input.edit-120,.product-master-screen select.edit-120{display:inline-block!important;flex:0 1 450px!important;width:100%!important;max-width:450px!important}
+      .product-master-screen .product-identification-reference-row{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:12px!important;align-items:center!important;width:100%!important}
+      .product-master-screen .product-identification-reference-row>.product-inline-field{width:100%!important;min-width:0!important}
+      .product-master-screen .product-identification-reference-row>.product-inline-field>label{gap:8px!important}
+      .product-master-screen .product-identification-reference-row>.product-inline-field>label>span{flex:0 0 120px!important;min-width:120px!important}
+      .product-master-screen .product-identification-reference-row input.edit-20{width:23ch!important;max-width:23ch!important}
+      .product-master-screen .product-identification-flags{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:20px!important;flex-wrap:wrap!important;margin-top:12px!important;padding:10px 0 0 160px!important;border-top:1px solid #e2e8f0!important}
+      .product-master-screen .product-identification-flags>label{display:inline-flex!important;align-items:center!important;gap:6px!important;white-space:nowrap!important;font-family:"Segoe UI",Inter,Arial,sans-serif!important;font-size:11px!important;font-weight:600!important;color:#475569!important}
+      .product-master-screen .product-identification-flags input[type="checkbox"]{width:14px!important;height:14px!important;flex:0 0 14px!important;accent-color:#2b6cb0!important}
+      .product-master-screen .product-fiscal-code-lookup{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;min-width:0!important}
+      .product-master-screen .product-fiscal-code-lookup .product-inline-action-field{display:flex!important;align-items:center!important;flex:0 0 auto!important;gap:0!important}
+      .product-master-screen .product-fiscal-code-lookup input.edit-8{width:13ch!important;max-width:13ch!important;flex:0 0 auto!important}
       .product-master-screen .product-inline-action-field button{flex:0 0 32px!important;width:32px!important;min-width:32px!important;padding:0!important}
       .product-master-screen .product-form-grid label{font-family:"Segoe UI",Inter,Arial,sans-serif!important;font-size:11px!important;font-weight:600!important;color:#475569!important}
       .product-master-screen .product-form-grid label>span{white-space:nowrap!important;overflow-wrap:normal!important}
-      @media(max-width:900px){.product-master-screen .product-general-card-grid{grid-template-columns:minmax(0,1fr)!important}.product-master-screen .product-identification-fields>.product-inline-field,.product-master-screen .product-identification-reference-row>.product-inline-field{grid-template-columns:130px minmax(0,1fr)!important}.product-master-screen .product-operational-flags{padding-left:140px!important}}
-      @media(max-width:560px){.product-master-screen .product-identification-fields>.product-inline-field,.product-master-screen .product-identification-reference-row>.product-inline-field{grid-template-columns:minmax(0,1fr)!important;gap:3px!important}.product-master-screen .product-identification-reference-row{grid-template-columns:minmax(0,1fr)!important}.product-master-screen .product-operational-flags{padding-left:0!important;gap:12px!important}}
+      @media(max-width:1100px){.product-master-screen .product-general-card-grid{grid-template-columns:minmax(0,1fr)!important}}
+      @media(max-width:900px){.product-master-screen .product-inline-field>label>span{flex-basis:130px!important;min-width:130px!important}.product-master-screen .product-identification-reference-row{grid-template-columns:minmax(0,1fr)!important}.product-master-screen .product-identification-flags{padding-left:0!important}}
+      @media(max-width:560px){.product-master-screen .product-inline-field>label{align-items:flex-start!important;flex-direction:column!important;gap:3px!important}.product-master-screen .product-inline-field>label>span{flex-basis:auto!important;min-width:0!important}.product-master-screen .product-identification-reference-row>.product-inline-field>label>span{flex-basis:auto!important;min-width:0!important}.product-master-screen input.edit-120{max-width:100%!important}}
+
     `}
 </style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
