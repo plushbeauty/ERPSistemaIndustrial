@@ -45,7 +45,7 @@ export default function VendasTablet() {
             <div className="erp-vendas-menu-grid">
               {section.items.map(({ label, href, icon: Icon }) => (
                 <button key={href} type="button" onClick={() => navigate(href)} title={label}>
-                  <Icon size={32} strokeWidth={1.8} aria-hidden="true" />
+                  <Icon size={24} strokeWidth={1.8} aria-hidden="true" />
                   <span>{label}</span>
                 </button>
               ))}
@@ -65,7 +65,7 @@ export default function VendasTablet() {
         .erp-vendas-menu-sections{padding:8px;display:grid;gap:10px}
         .erp-vendas-menu-section-title{height:24px;display:flex;align-items:center;color:#164b91;font-size:9px;font-weight:900;letter-spacing:.12em;border-bottom:1px solid #dbe5eb}
         .erp-vendas-menu-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;padding-top:6px}
-        .erp-vendas-menu-grid button{height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid #cbd5e1;border-radius:2px;background:#fff;color:#176487;cursor:pointer}
+        .erp-vendas-menu-grid button{height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid #cbd5e1;border-radius:2px;background:#fff;color:#176487;cursor:pointer}
         .erp-vendas-menu-grid button:hover{border-color:#2d8db8;background:#f4fbfd}
         .erp-vendas-menu-grid span{font-size:9px;line-height:1.1;text-transform:uppercase;text-align:center}
         @media(max-width:1100px){.erp-vendas-menu-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
