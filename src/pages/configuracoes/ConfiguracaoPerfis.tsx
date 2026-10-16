@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { RefreshCw, ShieldCheck, UsersRound } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 
@@ -6,6 +7,7 @@ type Role = { id: string; codigo: string | null; nome: string | null; nivel: num
 const buttonClass = 'inline-flex h-[30px] items-center gap-2 rounded-[2px] border border-[#CFE1E7] bg-white px-2 text-[9px] font-bold text-[#123B50] disabled:cursor-not-allowed disabled:opacity-50'
 
 export default function ConfiguracaoPerfis() {
+  const navigate = useNavigate()
   const [rows, setRows] = useState<Role[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -57,9 +59,9 @@ export default function ConfiguracaoPerfis() {
     {error && <div role="alert" className="border border-red-200 bg-red-50 p-2 text-[10px] text-red-800">{error}</div>}
     <div className="overflow-auto border border-[#CFE1E7] bg-white">
       <table className="w-full min-w-[560px] border-collapse text-left">
-        <thead className="bg-[#123B50] text-white"><tr>{['Código','Perfil','Nível','Escopo','Status'].map(label=><th key={label} scope="col" className="h-[28px] px-2 text-[9px] font-bold uppercase tracking-wide">{label}</th>)}</tr></thead>
-        <tbody>{loading ? <tr><td colSpan={5} className="p-5 text-center text-slate-500">Consultando perfis autorizados…</td></tr> : rows.map(role=><tr key={role.id} className="h-[32px] border-t border-[#E2EDF0] even:bg-[#F8FCFD]">
-          <td className="px-2 font-mono">{role.codigo || '—'}</td><td className="px-2 font-semibold">{role.nome || '—'}</td><td className="px-2 text-center">{role.nivel ?? '—'}</td><td className="px-2">{role.empresa_id ? 'Empresa' : 'Global'}</td><td className="px-2"><span className={role.ativo === false ? 'text-red-700' : 'text-emerald-700'}>{role.ativo === false ? 'INATIVO' : 'ATIVO'}</span></td>
+        <thead className="bg-[#123B50] text-white"><tr>{['Código','Perfil','Nível','Escopo','Status','Ação'].map(label=><th key={label} scope="col" className="h-[28px] px-2 text-[9px] font-bold uppercase tracking-wide">{label}</th>)}</tr></thead>
+        <tbody>{loading ? <tr><td colSpan={6} className="p-5 text-center text-slate-500">Consultando perfis autorizados…</td></tr> : rows.map(role=><tr key={role.id} className="h-[32px] border-t border-[#E2EDF0] even:bg-[#F8FCFD]">
+          <td className="px-2 font-mono">{role.codigo || '—'}</td><td className="px-2 font-semibold">{role.nome || '—'}</td><td className="px-2 text-center">{role.nivel ?? '—'}</td><td className="px-2">{role.empresa_id ? 'Empresa' : 'Global'}</td><td className="px-2"><span className={role.ativo === false ? 'text-red-700' : 'text-emerald-700'}>{role.ativo === false ? 'INATIVO' : 'ATIVO'}</span></td><td className="px-2"><button type="button" disabled={!authorized || role.ativo === false} onClick={() => navigate('/configuracoes-adm/permissoes?perfil=' + encodeURIComponent(role.id))} className="inline-flex h-[26px] items-center gap-1 border border-[#2D8DB8] bg-white px-2 text-[9px] font-bold text-[#176487] disabled:opacity-50"><ShieldCheck size={11}/>{role.empresa_id ? 'CONFIGURAR' : 'CLONAR / CONFIGURAR'}</button></td>
         </tr>)}</tbody>
       </table>
       {!loading && authorized && !rows.length && <div className="p-5 text-center text-slate-500"><UsersRound size={20} className="mx-auto mb-2 text-[#2D8DB8]"/>Nenhum perfil autorizado encontrado.</div>}
