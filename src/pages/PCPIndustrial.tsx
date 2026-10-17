@@ -96,7 +96,7 @@ export default function PCPIndustrial(){
     fetchAllPages<Order>((from,to)=>supabase.from('erp_pedidos_venda').select('id,numero,cliente_id,status,total',{count:'exact'}).eq('empresa_id',empresaId).order('numero',{ascending:false}).range(from,to)),
     fetchAllPages<OrderItem>((from,to)=>supabase.from('erp_pedidos_venda_itens').select('id,pedido_id,produto_id,quantidade,descricao',{count:'exact'}).eq('empresa_id',empresaId).range(from,to)),
     fetchAllPages<Client>((from,to)=>supabase.from('erp_clientes').select('id,nome,codigo',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('nome').range(from,to)),
-    fetchAllPages<OP>((from,to)=>supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade,status,pedido_venda_id,data_prevista',{count:'exact'}).eq('empresa_id',empresaId).order('criado_em',{ascending:false}).range(from,to)),
+    fetchAllPages<OP>((from,to)=>supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade,status,pedido_venda_id,data_prevista',{count:'exact'}).eq('empresa_id',empresaId).order('created_at',{ascending:false}).range(from,to)),
     fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,categoria',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to)),
     fetchAllPages<Program>((from,to)=>supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,produto_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status,molde_id,operador_frente_id,operador_atras_id,turnos,horas_turno,eficiencia_percent,ciclo_seg,cavidades_ativas,setup_min',{count:'exact'}).eq('empresa_id',empresaId).order('inicio_planejado').range(from,to)),
     fetchAllPages<Machine>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome,tipo,status',{count:'exact'}).eq('empresa_id',empresaId).not('status','eq','INATIVA').order('codigo').range(from,to)),
@@ -206,7 +206,7 @@ export default function PCPIndustrial(){
    const parts=line.split(':')
    const quantityText=(parts[1]||'').trim()
    const quantidade=Number(quantityText)
-   return {line:index+1,defeito:parts[0].trim(),quantidade,observacao:parts.slice(2).join(':').trim()||null,valid:parts[0].trim().length>0&&quantityText!==''&&Number.isFinite(quantidade)&&quantidade>0}
+   return {line:index+1,defeito:parts[0].trim(),quantidade:quantity,observacao:parts.slice(2).join(':').trim()||null,valid:parts[0].trim().length>0&&quantityText!==''&&Number.isFinite(quantidade)&&quantidade>0}
   })
   const invalidDefect=parsedDefects.find(item=>!item.valid)
   if(invalidDefect){
