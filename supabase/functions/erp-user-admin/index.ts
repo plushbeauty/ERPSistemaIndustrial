@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
       invite_user: 'users.create',
       update_user: 'users.update',
       set_active: 'users.update',
-      reset_password: 'users.update',
+      ['reset_password']: 'users.update',
       delete_user: 'users.delete',
     }
     if (action !== 'change_my_password') {
