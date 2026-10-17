@@ -51,7 +51,7 @@ export default function PCPExecucaoIndustrial(){
    const company=tenant.data
    const [p,o,m,pr,a]=await Promise.all([
     fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,unidade',{count:'exact'}).eq('empresa_id',company).eq('ativo',true).order('codigo').order('id').range(from,to)),
-    fetchAllPages<Order>((from,to)=>supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade_planejada,quantidade_produzida,status,data_prevista,maquina_id',{count:'exact'}).eq('empresa_id',company).order('created_at',{ascending:false}).order('id').range(from,to)),
+    fetchAllPages<Order>((from,to)=>supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade:quantidade_planejada,quantidade_planejada,quantidade_produzida,status,data_prevista,maquina_id',{count:'exact'}).eq('empresa_id',company).order('created_at',{ascending:false}).order('id').range(from,to)),
     fetchAllPages<Machine>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome',{count:'exact'}).eq('empresa_id',company).eq('ativo',true).order('codigo').order('id').range(from,to)),
     fetchAllPages<Process>((from,to)=>supabase.from('erp_processos_industriais').select('id,codigo,nome',{count:'exact'}).eq('empresa_id',company).eq('ativo',true).order('codigo').order('id').range(from,to)),
     fetchAllPages<Entry>((from,to)=>supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,processo_id,inicio_em,fim_em,quantidade_planejada,quantidade_boa,quantidade_refugada,motivo_parada,observacoes,created_at',{count:'exact'}).eq('empresa_id',company).order('created_at',{ascending:false}).order('id').range(from,to))
