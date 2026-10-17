@@ -5,7 +5,7 @@
 **Data da Auditoria Inicial:** 17/10/2026  
 **Última Atualização:** 17/10/2026  
 **Responsável:** Lovable Industrial Engineering Core  
-**Branch de Trabalho:** `main`
+**Branch de Trabalho:** `fix/auditoria-pcp-tenant-queries` (PR #146; base `main`)
 
 ---
 
@@ -24,10 +24,11 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 
 ## 2. PAINEL DE RESUMO E STATUS
 
-- **Total de Problemas Identificados:** 12
-- **Pendentes de Correção:** 0
-- **Corrigidos:** 12
-- **Bloqueados:** 0
+- **Total de Problemas Identificados:** 13
+- **Pendentes de correção de código nesta rodada:** 0 para os achados PCP-003 e PCP-006 após as alterações registradas abaixo; os demais achados precisam continuar sendo rechecados contra o HEAD.
+- **Corrigidos no código-fonte (registro histórico):** 13
+- **Bloqueados por ambiente externo:** validação Supabase remota e deploy Vercel quando o limite de builds impede publicar.
+- **Homologação do HEAD desta branch:** PENDENTE — ainda é necessário CI completo, build, testes autenticados/RLS e validação visual. O status `CORRIGIDO` neste catálogo indica correção de fonte, não comprova produção.
 
 ---
 
@@ -67,8 +68,8 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Descrição Objetiva:** Os componentes carregam `erp_produtos`, `erp_pcp_bom_itens` e `erp_postos_trabalho` confiando unicamente em RLS implícita sem aplicar o filtro explícito `.eq('empresa_id', empresaId)`.
 - **Impacto:** Possibilidade de vazamento de dados ou falhas silenciosas de listagem em sessões master e ambientes operacionais.
 - **Correção Prevista:** Resolver `erp_current_empresa_id` no ciclo de vida e adicionar `.eq('empresa_id', empresaId)` nas queries principais.
-- **Evidência de Validação:** Código-fonte dos arquivos em `src/features/pcp/`.
-- **Status:** `CORRIGIDO`
+- **Evidência de Validação:** A migration `20261003144000_pcp_chao_fabrica_core.sql` confirma `empresa_id` nas três tabelas. Nesta branch, `EngenhariaBOM.tsx`, `RoteiroOperacoes.tsx` e `PostosTrabalho.tsx` resolvem `erp_current_empresa_id` e aplicam filtro explícito de empresa nas leituras. CI e teste autenticado cross-tenant ainda pendentes.
+- **Status:** `CORRIGIDO NO CÓDIGO; HOMOLOGAÇÃO PENDENTE`
 
 ---
 
@@ -106,8 +107,8 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Descrição Objetiva:** As constantes de estilo `th` e `td` possuem classes duplicadas com propriedades concorrentes injetadas por substituições sucessivas (ex.: `h-9` misturado com `h-8`, múltiplos `border-b` e `bg-`).
 - **Impacto:** Efeito cascata descontrolado na renderização das células da tabela de apontamento, gerando alturas irregulares.
 - **Correção Prevista:** Unificar e higienizar as strings de classes de cabeçalho (`th`) e célula (`td`), assegurando altura padrão de 32px para linhas de tabela industrial.
-- **Evidência de Validação:** Código-fonte de `src/pages/PCPExecucaoIndustrial.tsx:19-20`.
-- **Status:** `CORRIGIDO`
+- **Evidência de Validação:** Nesta branch, as constantes `th` e `td` de `src/pages/PCPExecucaoIndustrial.tsx` foram substituídas por conjuntos únicos de classes, com cabeçalho `h-8` e linhas `h-[32px]`. CI e conferência visual ainda pendentes.
+- **Status:** `CORRIGIDO NO CÓDIGO; HOMOLOGAÇÃO PENDENTE`
 
 ---
 
@@ -119,8 +120,8 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Descrição Objetiva:** O botão "Imprimir" de `PCPExecucaoIndustrial.tsx` chama diretamente `window.print()` sem ocultar abas, cabeçalho e elementos da tela, imprimindo a página inteira deformada. Em `PCPFichasProcesso.tsx`, não há rotina de impressão operacional para o operador levar à máquina.
 - **Impacto:** O chão de fábrica não consegue gerar fichas físicas de processo e acompanhamento limpas em folha A4.
 - **Correção Prevista:** Implementado botão de impressão na ficha de processo, cabeçalho operacional e CSS `@media print` para ocultar navegação, edição e controles, preservando os campos técnicos para impressão.
-- **Evidência de Validação:** Inspeção de `window.print` em `PCPExecucaoIndustrial.tsx` e falta de folha A4.
-- **Status:** `CORRIGIDO`
+- **Evidência de Validação:** `PCPFichasProcesso.tsx` já contém CSS de impressão; nesta branch, `PCPExecucaoIndustrial.tsx` recebeu regras `@media print` e folha A4 para ocultar controles e preservar tabelas. CI e inspeção real de impressão ainda pendentes.
+- **Status:** `CORRIGIDO NO CÓDIGO; HOMOLOGAÇÃO PENDENTE`
 
 ---
 
@@ -195,3 +196,38 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 | :--- | :--- | :--- | :--- | :--- |
 | **PCP-004** | 17/10/2026 | `src/AppEntryV2.tsx` | Rotas `/pcp/demanda`, `/pcp/materiais` e `/vendas/pcp` encapsuladas com `SynqraLayoutProvider`, eliminando a sidebar vertical duplicada. | `node scripts/verify-global-horizontal-shell.mjs` aprovado. |
 | **PCP-012** | 17/10/2026 | `src/pages/PCPIndustrial.tsx` | Ajustada frase de reposição de estoque para a fórmula homologada pelo validador. | `npm run audit:brutal` aprovado com 0 falhas. |
+
+
+---
+
+## 5. RODADA DE CORREÇÃO — BRANCH `fix/auditoria-pcp-tenant-queries` (17/10/2026)
+
+### Correções executadas nesta rodada
+
+| Achado | Arquivo(s) | Correção registrada | Prova ainda necessária |
+|---|---|---|---|
+| PCP-003 — escopo multiempresa em Engenharia/BOM | `src/features/pcp/EngenhariaBOM.tsx` | Resolve empresa da sessão e aplica `.eq('empresa_id', empresaId)` nas leituras de produtos e BOM. | CI, teste autenticado em dois tenants e confirmação de RLS remota. |
+| PCP-003 — escopo multiempresa em roteiro/postos | `src/features/pcp/RoteiroOperacoes.tsx`, `src/features/pcp/PostosTrabalho.tsx` | Filtra produtos, postos e roteiros pela empresa ativa antes de exibir os registros. | CI, teste autenticado em dois tenants e confirmação de RLS remota. |
+| PCP-006 — classes duplicadas | `src/pages/PCPExecucaoIndustrial.tsx` | Classes `th` e `td` reescritas sem declarações conflitantes; cabeçalho compacto e linhas de 32px. | CI e inspeção visual em navegador. |
+| Metadados do catálogo de auditoria | `src/data/pcp-audit-findings.ts` | Corrigidos separadores ausentes em propriedades de achados que impediam a sintaxe TypeScript válida. | Type-check no CI. |
+
+### Limites e bloqueios conhecidos
+
+- Esta rodada não acessou o banco Supabase remoto; não foi presumida a aplicação de migrations.
+- O Vercel reportou anteriormente `build-rate-limit`; não afirmar publicação sem um deployment `Ready` para o SHA validado.
+- Nenhum achado pode ser considerado homologado em produção apenas por inspeção estática.
+- Próxima etapa obrigatória: executar os gates no commit desta branch, corrigir todas as falhas que surgirem e continuar pelos achados P0/P1 do catálogo e pela matriz geral de auditoria.
+
+
+---
+
+### [PCP-013] Coluna de data inválida em consultas adicionais de ordens de produção
+
+- **Prioridade:** `P0`
+- **Categoria:** Integridade de Dados / Runtime
+- **Telas / Componentes:** Controle de Processo da Injetora, Dashboard Industrial Premium e Dashboard de Comando Industrial.
+- **Arquivos:** `src/pages/pcp/ControleProcessoInjetora.tsx`, `src/pages/IndustrialDashboardPremium.tsx`, `src/components/IndustrialCommandDashboard.tsx`.
+- **Descrição Objetiva:** Foram encontradas consultas adicionais a `erp_ordens_producao` que ordenavam por `criado_em` ou selecionavam a coluna `criado_em`, embora o contrato canônico use `created_at`.
+- **Impacto:** Erro PostgREST de coluna inexistente e falha de carregamento das ordens nos painéis/controle da injetora.
+- **Correção Aplicada nesta branch:** As três consultas agora usam `created_at`; a seleção do Dashboard de Comando não solicita mais `criado_em`.
+- **Status:** `CORRIGIDO NO CÓDIGO; CI E RUNTIME PENDENTES`.

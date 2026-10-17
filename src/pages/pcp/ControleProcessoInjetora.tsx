@@ -93,7 +93,7 @@ export default function ControleProcessoInjetora() {
       const [m, o, op, p, l, c] = await Promise.all([
         supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id', company.data).eq('ativo', true).order('codigo'),
         supabase.from('erp_usuarios').select('id,nome,email').eq('empresa_id', company.data).eq('ativo', true).is('deleted_at', null).order('nome'),
-        supabase.from('erp_ordens_producao').select('id,numero_op').eq('empresa_id', company.data).order('criado_em', { ascending: false }).limit(200),
+        supabase.from('erp_ordens_producao').select('id,numero_op').eq('empresa_id', company.data).order('created_at', { ascending: false }).limit(200),
         supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', company.data).eq('ativo', true).order('codigo').limit(500),
         supabase.from('erp_estoque_lotes').select('id,lote_interno,status_inspecao').eq('empresa_id', company.data).neq('status_inspecao', 'RETIDO').order('created_at', { ascending: false }).limit(500),
         supabase.from('erp_qualidade_controles_injetora').select('id,data_producao,status,maquina_id,operador_id,ordem_producao_id,quantidade_total_pecas,numero_cavidades,hora_inicio,hora_fim,material_atual,cor_atual,observacoes,criado_em,pom_guilhotina_fechada,pom_residuo_consumido').eq('empresa_id', company.data).order('criado_em', { ascending: false }).limit(100)
