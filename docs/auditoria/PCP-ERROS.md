@@ -24,10 +24,10 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 
 ## 2. PAINEL DE RESUMO E STATUS
 
-- **Total de Problemas Identificados:** 13
+- **Total de Problemas Identificados:** 14
 - **Pendentes de Correção:** 9
 - **Corrigidos:** 4
-- **Bloqueados:** 0
+- **Bloqueados:** 1
 
 ---
 
@@ -209,3 +209,17 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Correção Aplicada:** Falha da RPC e exceção agora negam acesso; a tela só permite acesso quando a resposta de permissão é explicitamente `true`.
 - **Evidência de Validação:** Commit `31771ee15838f9c1fc347f75a1b2855737d58d7b`; deployment de produção desse commit confirmado como `READY`.
 - **Status:** `CORRIGIDO`
+
+
+---
+
+### [PCP-014] Validação Insuficiente no Apontamento de Produção
+- **Prioridade:** `P2`
+- **Categoria:** Funcional / Integridade de Dados
+- **Tela / Componente:** PCP Industrial — Apontamento de Produção (`src/pages/PCPIndustrial.tsx`)
+- **Rota Confirmada:** `/pcp`
+- **Descrição Objetiva:** Quantidades vazias podiam ser convertidas em zero e linhas de defeito com quantidade ausente ou inválida podiam ser descartadas silenciosamente antes da chamada à RPC.
+- **Impacto:** Risco de apontamento incompleto e perda de detalhes de qualidade.
+- **Correção Aplicada:** Validação client-side agora exige quantidade encontrada maior que zero, refugo numérico entre zero e o total encontrado e formato válido `defeito:quantidade:observação` para cada linha preenchida.
+- **Evidência de Validação:** Commit `0f9b6d0b20062bdac3e056f4c8956d9048e2e8cd`. O gate completo e o deployment deste commit ainda não foram confirmados; a Vercel reportou rate limit.
+- **Status:** `BLOQUEADO`
