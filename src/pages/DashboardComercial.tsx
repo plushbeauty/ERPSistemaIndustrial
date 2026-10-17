@@ -3,7 +3,7 @@
  * @REVISAO: VENDAS-008
  * @ESCOPO_REVISADO: consultas reais de pedidos/clientes/documentos fiscais/metas, KPIs, gráficos e impressão por seção.
  * @ALTERACOES: cartões de KPI e ícones reduzidos, borda de 2px e tipografia mais compacta; fontes reais e cálculos preservados.
- * @VALIDACAO: revisão estática; CI pendente para tipagem, lint, auditorias e build.
+ * @VALIDACAO: conferir CI do commit corrente no PR; inspeção visual autenticada e teste funcional por sessão ainda pendentes.
  */
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
