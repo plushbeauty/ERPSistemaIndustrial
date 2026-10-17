@@ -201,7 +201,7 @@ export const PCP_AUDIT_FINDINGS: AuditFinding[] = [
     linha: 168,
     descricao: "O regex antigo do scanner tratava incorretamente reset_password como se password fosse uma palavra isolada, gerando falso positivo de segredo hardcoded.",
     impacto: 'Falha bloqueante (BLOCKER) na execução de npm run audit:all, impedindo pipeline 100% verde.',
-    correcaoPrevista: "Regex do scanner ajustado para \u001b[0m\\b(?:password|senha)\\b, sem casar 'password' dentro de 'reset_password'.",
+    correcaoPrevista: "Regex do scanner ajustado para limite de palavra em password/senha, sem casar 'password' dentro de 'reset_password'.",
     evidenciaValidacao: 'Commit 55bbf256b7a38199c4a97ab09c066c1057502717; deployment de produção confirmado READY.',
     status: 'CORRIGIDO',
     dataIdentificacao: '2026-10-17',
