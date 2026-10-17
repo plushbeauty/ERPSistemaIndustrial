@@ -4,7 +4,7 @@
  * Escopo: compactação visual industrial; RPCs e persistência mantidas sem alteração.
  */
 import { useCallback, useEffect, useState, type ReactElement } from 'react'
-import { AlertTriangle, Ban, LockKeyhole, RefreshCw, Search, ShieldCheck, UnlockKeyhole } from 'lucide-react'
+import { AlertTriangle, Ban, LockKeyhole, RefreshCw, Search, ShieldCheck } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import QualitySidebar from '../../components/quality/QualitySidebar'
 

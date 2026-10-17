@@ -196,7 +196,6 @@ Deno.serve(async (req: Request) => {
     if (!itens?.length) return response({ error: "A NF-e precisa de pelo menos um item." }, 422);
 
     const documento = normalizedDocument(doc.destinatario_documento);
-    const isCpf = documento.length === 11;
     const isCnpj = documento.length === 14;
     const uf = text(doc.destinatario_uf).toUpperCase();
     const destinatarioNome = text(doc.destinatario_nome);
@@ -400,7 +399,7 @@ Deno.serve(async (req: Request) => {
       return response({ok:true,status:"Autorizada",invoiceId,chave_acesso:chave,protocolo_autorizacao:protocolo,xml_storage_path:xmlPath,pdf_storage_path:pdfPath,danfe_disponivel:Boolean(pdfPath)});
     }
     const processMessage = current === "error"
-      ? "O integrador retornou falha sem confirmação SEFAZ verificável; documento mantido em processamento para reconciliação."
+      ? `O integrador retornou falha sem confirmação SEFAZ verificável; documento mantido em processamento para reconciliação.${motivo ? ` Motivo informado pelo integrador: ${motivo}` : ""}`
       : "Aguardando confirmação final do integrador fiscal.";
     const [noteUpdate, documentUpdate] = await Promise.all([
       admin.from("erp_notas_fiscais").update({status:"Processando",mensagem_sefaz:processMessage,focus_response:last,updated_at:new Date().toISOString()}).eq("documento_id",documentoId),
