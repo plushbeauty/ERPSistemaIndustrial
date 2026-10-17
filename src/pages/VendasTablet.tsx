@@ -3,7 +3,7 @@
  * @REVISAO: VENDAS-010
  * @ESCOPO_REVISADO: menu de navegação, agrupamento de rotas reais e filtro de módulos por texto normalizado.
  * @ALTERACOES: revisão inicial do menu e registro da origem das seções; navegação/rotas preservadas.
- * @VALIDACAO: revisão estática; CI pendente para tipagem, lint, auditorias e build.
+ * @VALIDACAO: conferir CI do commit corrente no PR; inspeção visual autenticada e teste funcional por sessão ainda pendentes.
  */
 import { useMemo, useState } from 'react'
 import { RefreshCw, Search } from 'lucide-react'
