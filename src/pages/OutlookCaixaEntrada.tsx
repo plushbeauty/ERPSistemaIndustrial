@@ -1,35 +1,35 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, Check, FileText, Inbox, RefreshCw, Search, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import type { IOutlookMailbox, IOutlookMessage, IXmlPedidoResult } from '../types/outlook'
+import type { IOutlookMessage, IXmlPedidoResult } from '../types/outlook'
 import { processarXmlPedido } from '../types/outlook'
 import { processarEConverterXmlPedido } from '../services/leitorXmlService'
 
-const MAILBOXES: IOutlookMailbox[] = [
-  { address: 'vendas@empresa.com', label: 'Vendas', role: 'vendedor' },
-  { address: 'compras@empresa.com', label: 'Compras', role: 'comprador' },
-  { address: 'adm@empresa.com', label: 'Administrador', role: 'administrador' },
-]
-
-type Profile = { perfil: string; nome: string | null }
+type Profile = { perfil: string; nome: string | null; empresa_id: string }
+type Mailbox = { mailbox: string; microsoft_email: string | null; status: string; ativo: boolean }
+type UserRole = 'vendedor' | 'comprador' | 'administrador' | 'restrito'
 
 async function loadProfile(): Promise<Profile | null> {
-  const { data } = await supabase.auth.getUser()
+  const { data, error } = await supabase.auth.getUser()
+  if (error) throw error
   if (!data.user) return null
-  const { data: profile } = await supabase.from('erp_usuarios').select('perfil,nome').eq('auth_user_id', data.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
-  return profile ? { perfil: String(profile.perfil ?? ''), nome: profile.nome ?? null } : null
+  const { data: profile, error: profileError } = await supabase.from('erp_usuarios').select('perfil,nome,empresa_id').eq('auth_user_id', data.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
+  if (profileError) throw profileError
+  if (!profile?.empresa_id) return null
+  return { perfil: String(profile.perfil ?? ''), nome: profile.nome ?? null, empresa_id: String(profile.empresa_id) }
 }
 
-function normalizeRole(perfil: string): 'vendedor' | 'comprador' | 'administrador' {
+function normalizeRole(perfil: string): UserRole {
   const role = perfil.trim().toLowerCase()
   if (role.includes('vendedor') || role.includes('venda')) return 'vendedor'
   if (role.includes('comprador') || role.includes('compra')) return 'comprador'
-  return 'administrador'
+  if (role.includes('administrador') || role.includes('admin') || role.includes('master')) return 'administrador'
+  return 'restrito'
 }
 
 async function fetchMessages(mailbox: string): Promise<IOutlookMessage[]> {
   const endpoint = import.meta.env.VITE_OUTLOOK_API_URL as string | undefined
-  if (!endpoint) return []
+  if (!endpoint) throw new Error('Integração indisponível: VITE_OUTLOOK_API_URL não está configurada.')
   const response = await fetch(`${endpoint.replace(/\/$/, '')}/messages?mailbox=${encodeURIComponent(mailbox)}`, { credentials: 'include' })
   if (!response.ok) throw new Error(`Outlook API respondeu HTTP ${response.status}.`)
   const payload: unknown = await response.json()
@@ -45,22 +45,68 @@ async function fetchMessages(mailbox: string): Promise<IOutlookMessage[]> {
 
 export default function OutlookCaixaEntrada() {
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [mailbox, setMailbox] = useState('vendas@empresa.com')
+  const [mailboxes, setMailboxes] = useState<Mailbox[]>([])
+  const [mailbox, setMailbox] = useState('')
   const [messages, setMessages] = useState<IOutlookMessage[]>([])
   const [selected, setSelected] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('Aguardando atualização da caixa.')
   const [search, setSearch] = useState('')
   const role = normalizeRole(profile?.perfil ?? '')
-  const available = MAILBOXES.filter(m => role === 'administrador' || m.role === role)
+  const available = mailboxes.filter(item => {
+    if (!item.ativo) return false
+    if (role === 'administrador') return true
+    const identity = `${item.mailbox} ${item.microsoft_email ?? ''}`.toLowerCase()
+    if (role === 'vendedor') return /venda|comercial/.test(identity)
+    if (role === 'comprador') return /compra|suprimento/.test(identity)
+    return false
+  })
 
-  useEffect(() => { void loadProfile().then(p => {
-    setProfile(p)
-    const r = normalizeRole(p?.perfil ?? '')
-    setMailbox(MAILBOXES.find(m => m.role === r)?.address ?? 'vendas@empresa.com')
-  }) }, [])
+  useEffect(() => {
+    let active = true
+    void (async () => {
+      const p = await loadProfile()
+      if (!active) return
+      setProfile(p)
+      if (!p) {
+        setMessage('Sessão ou perfil ERP ativo não identificado.')
+        return
+      }
+      const { data, error } = await supabase.from('outlook_integracoes')
+        .select('mailbox,microsoft_email,status,ativo')
+        .eq('empresa_id', p.empresa_id)
+        .order('created_at')
+      if (!active) return
+      if (error) {
+        setMessage(`Não foi possível carregar as caixas configuradas: ${error.message}`)
+        return
+      }
+      const configured = (data ?? []) as Mailbox[]
+      setMailboxes(configured)
+      const roleForUser = normalizeRole(p.perfil)
+      const eligible = configured.filter(item => {
+        if (!item.ativo) return false
+        if (roleForUser === 'administrador') return true
+        const identity = `${item.mailbox} ${item.microsoft_email ?? ''}`.toLowerCase()
+        if (roleForUser === 'vendedor') return /venda|comercial/.test(identity)
+        if (roleForUser === 'comprador') return /compra|suprimento/.test(identity)
+        return false
+      })
+      setMailbox(eligible[0]?.mailbox ?? '')
+      if (!eligible.length) setMessage('Nenhuma caixa ativa e autorizada foi encontrada para esta empresa. Configure uma integração real no módulo Outlook.')
+    })().catch(cause => {
+      if (active) setMessage(cause instanceof Error ? cause.message : 'Falha ao carregar o perfil e as caixas Outlook.')
+    })
+    return () => { active = false }
+  }, [])
 
   const refresh = async () => {
+    if (!mailbox) {
+      setMessages([])
+      setSelected(null)
+      setMessage('Nenhuma caixa ativa configurada para o perfil e a empresa atuais.')
+      return
+    }
     setBusy(true); setMessage('Consultando Outlook...')
     try {
       const rows = await fetchMessages(mailbox)
@@ -71,7 +117,7 @@ export default function OutlookCaixaEntrada() {
     } finally { setBusy(false) }
   }
 
-  useEffect(() => { if (profile) void refresh() }, [mailbox, profile])
+  useEffect(() => { if (profile && mailbox) void refresh() }, [mailbox, profile])
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -145,7 +191,7 @@ export default function OutlookCaixaEntrada() {
         <Inbox className="text-sky-700" size={28}/><div><p className="text-xs font-black uppercase tracking-widest text-slate-500">Módulo: Integrado</p><h1 className="text-xl font-black">Central de Comunicação Outlook</h1></div>
         <div className="ml-auto flex items-center gap-2">
           <span className="hidden text-sm font-bold text-slate-600 md:inline">Visualizando e-mail de:</span>
-          <select value={mailbox} onChange={e => setMailbox(e.target.value)} disabled={role !== 'administrador'} className="h-[46px] rounded-md border border-slate-300 bg-white px-3 font-bold text-slate-900 disabled:bg-slate-100">{available.map(m => <option key={m.address} value={m.address}>{m.address}{role === 'administrador' ? ' (Acesso Total)' : ''}</option>)}</select>
+          <select value={mailbox} onChange={e => setMailbox(e.target.value)} disabled={available.length <= 1 || role === 'restrito'} className="h-[30px] rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-bold text-slate-900 disabled:bg-slate-100">{available.map(item => <option key={item.mailbox} value={item.mailbox}>{item.microsoft_email || item.mailbox} · {item.status}</option>)}</select>
         </div>
       </div>
     </header>
