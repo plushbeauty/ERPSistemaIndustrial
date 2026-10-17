@@ -5,7 +5,7 @@
 **Data da Auditoria Inicial:** 17/10/2026  
 **Última Atualização:** 17/10/2026  
 **Responsável:** Lovable Industrial Engineering Core  
-**Branch de Trabalho:** `main`
+**Branch de Trabalho:** `fix/auditoria-pcp-tenant-queries` (PR #146; base `main`)
 
 ---
 
