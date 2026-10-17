@@ -120,8 +120,8 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Descrição Objetiva:** O botão "Imprimir" de `PCPExecucaoIndustrial.tsx` chama diretamente `window.print()` sem ocultar abas, cabeçalho e elementos da tela, imprimindo a página inteira deformada. Em `PCPFichasProcesso.tsx`, não há rotina de impressão operacional para o operador levar à máquina.
 - **Impacto:** O chão de fábrica não consegue gerar fichas físicas de processo e acompanhamento limpas em folha A4.
 - **Correção Prevista:** Implementado botão de impressão na ficha de processo, cabeçalho operacional e CSS `@media print` para ocultar navegação, edição e controles, preservando os campos técnicos para impressão.
-- **Evidência de Validação:** Inspeção de `window.print` em `PCPExecucaoIndustrial.tsx` e falta de folha A4.
-- **Status:** `CORRIGIDO`
+- **Evidência de Validação:** `PCPFichasProcesso.tsx` já contém CSS de impressão; nesta branch, `PCPExecucaoIndustrial.tsx` recebeu regras `@media print` e folha A4 para ocultar controles e preservar tabelas. CI e inspeção real de impressão ainda pendentes.
+- **Status:** `CORRIGIDO NO CÓDIGO; HOMOLOGAÇÃO PENDENTE`
 
 ---
 
