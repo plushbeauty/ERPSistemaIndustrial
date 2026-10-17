@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CalendarRange, Factory, RefreshCw, Plus, Play, ArrowUpDown, X, Printer, CircleAlert } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
 type Machine = { id:string; codigo:string; nome:string; status:string|null; ativo:boolean }
 type Mold = { id:string; codigo:string; nome:string; status:string; ativo:boolean }
@@ -49,15 +50,15 @@ export default function PCPAgendaMaquinas(){
    const id=tenant.data;setCompany(id)
    const start=new Date(weekStart);const end=new Date(start);end.setDate(end.getDate()+7)
    const [m,o,mo,a,c,fc]=await Promise.all([
-    supabase.from('erp_maquinas').select('id,codigo,nome,status,ativo').eq('empresa_id',id).eq('ativo',true).order('codigo'),
-    supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status').eq('empresa_id',id).not('status','in','(concluida,cancelada,cancelado)').order('numero_op',{ascending:false}).limit(2000),
-    supabase.from('erp_moldes').select('id,codigo,nome,status,ativo').eq('empresa_id',id).eq('ativo',true).order('codigo'),
-    supabase.from('pcp_agenda_maquinas').select('id,maquina_id,ordem_producao_id,molde_id,quantidade_programada,lote_producao,data_hora_inicio,data_hora_fim,status').eq('empresa_id',id).neq('status','cancelada').gte('data_hora_inicio',start.toISOString()).lt('data_hora_inicio',end.toISOString()).order('data_hora_inicio').limit(5000),
+    fetchAllPages<Machine>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome,status,ativo',{count:'exact'}).eq('empresa_id',id).eq('ativo',true).order('codigo').range(from,to)),
+    fetchAllPages<Order>((from,to)=>supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status',{count:'exact'}).eq('empresa_id',id).not('status','in','(concluida,cancelada,cancelado)').order('numero_op',{ascending:false}).range(from,to)),
+    fetchAllPages<Mold>((from,to)=>supabase.from('erp_moldes').select('id,codigo,nome,status,ativo',{count:'exact'}).eq('empresa_id',id).eq('ativo',true).order('codigo').range(from,to)),
+    fetchAllPages<Slot>((from,to)=>supabase.from('pcp_agenda_maquinas').select('id,maquina_id,ordem_producao_id,molde_id,quantidade_programada,lote_producao,data_hora_inicio,data_hora_fim,status',{count:'exact'}).eq('empresa_id',id).neq('status','cancelada').gte('data_hora_inicio',start.toISOString()).lt('data_hora_inicio',end.toISOString()).order('data_hora_inicio').range(from,to)),
     supabase.from('erp_pcp_calendario_trabalho').select('dias_trabalho,horario_inicio_jornada,horario_fim_jornada').eq('empresa_id',id).maybeSingle(),
-    supabase.from('erp_fichas_processo').select('produto_id,ciclo_seg,cavidades_ativas,parametros_tecnicos').eq('empresa_id',id).eq('ativo',true).limit(3000)
+    fetchAllPages<ProcessCycle>((from,to)=>supabase.from('erp_fichas_processo').select('produto_id,ciclo_seg,cavidades_ativas,parametros_tecnicos',{count:'exact'}).eq('empresa_id',id).eq('ativo',true).range(from,to))
    ])
-   for(const r of [m,o,mo,a,c,fc])if(r.error)throw r.error
-   setMachines((m.data??[]) as Machine[]);setOrders((o.data??[]) as Order[]);setMolds((mo.data??[]) as Mold[]);setSlots((a.data??[]) as Slot[]);setProcessCycles((fc.data??[]) as ProcessCycle[])
+   if(c.error)throw c.error
+   setMachines(m);setOrders(o);setMolds(mo);setSlots(a);setProcessCycles(fc)
    if(c.data){setCalendar(c.data as Calendar);setCalendarDraft(c.data as Calendar)}
   }catch(e){setError(messageOf(e))}
   finally{setBusy(false)}
