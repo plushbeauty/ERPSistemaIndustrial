@@ -1,4 +1,5 @@
 import { supabase } from "../lib/supabaseClient";
+import { fetchAllPages } from "../lib/supabasePagination";
 
 export interface IItemConvertido {
   codigo_interno: string;
@@ -25,9 +26,12 @@ function decodeXml(value: string): string {
 }
 
 function tagValue(xml: string, tag: string): string {
-  const match = xml.match(new RegExp("<(?:[A-Za-z0-9_]+:)?"+tag+"(?:\\s[^>]*)?>([\\s\\S]*?)</(?:[A-Za-z0-9_]+:)?"+tag+">", "i"));
+  const match = xml.match(new RegExp("<(?:[A-Za-z0-9_]+:)?" + tag + "(?:\\s[^>]*)?>([\\s\\S]*?)</(?:[A-Za-z0-9_]+:)?" + tag + ">", "i"));
   return decodeXml(match?.[1]?.trim() ?? "");
 }
+
+type DeParaRow = { codigo_interno: string; codigo_cliente: string };
+type StockLot = { quantidade_disponivel: number | null };
 
 export async function processarEConverterXmlPedido(
   xmlTexto: string,
@@ -38,16 +42,15 @@ export async function processarEConverterXmlPedido(
     if (!xmlTexto.trim()) throw new Error("XML vazio.");
     if (!clienteId || !empresaId) throw new Error("Cliente e empresa são obrigatórios.");
 
-    const blocos = xmlTexto.match(/<(?:[A-Za-z0-9_]+:)?det(?:\\s[^>]*)?>[\\s\\S]*?<\/(?:[A-Za-z0-9_]+:)?det>/gi) ?? [];
+    const blocos = xmlTexto.match(/<(?:[A-Za-z0-9_]+:)?det(?:\s[^>]*)?>[\s\S]*?<\/(?:[A-Za-z0-9_]+:)?det>/gi) ?? [];
     if (!blocos.length) throw new Error("Nenhum bloco <det> localizado no XML.");
 
-    const { data: dePara, error: deParaError } = await supabase
+    const dePara = await fetchAllPages<DeParaRow>((from, to) => supabase
       .from("erp_vendas_depara_produtos")
-      .select("codigo_interno,codigo_cliente")
+      .select("codigo_interno,codigo_cliente", { count: "exact" })
       .eq("empresa_id", empresaId)
-      .eq("cliente_id", clienteId);
-
-    if (deParaError) throw deParaError;
+      .eq("cliente_id", clienteId)
+      .range(from, to));
 
     const itens: IItemConvertido[] = [];
     for (const bloco of blocos) {
@@ -55,29 +58,26 @@ export async function processarEConverterXmlPedido(
       const quantidade = Number.parseFloat(tagValue(bloco, "qCom").replace(",", "."));
       if (!codigoCliente || !Number.isFinite(quantidade) || quantidade <= 0) continue;
 
-      const correspondencia = (dePara ?? []).find(
-        (row) => row.codigo_cliente === codigoCliente,
-      );
+      const correspondencia = dePara.find(row => row.codigo_cliente === codigoCliente);
       let estoqueDisponivel: number | null = null;
 
       if (correspondencia?.codigo_interno) {
-        const { data: produto } = await supabase
+        const { data: produto, error: produtoError } = await supabase
           .from("erp_produtos")
           .select("id")
           .eq("empresa_id", empresaId)
           .eq("codigo", correspondencia.codigo_interno)
           .maybeSingle();
+        if (produtoError) throw produtoError;
 
         if (produto?.id) {
-          const { data: estoque } = await supabase
-            .from("erp_produto_estoque")
-            .select("quantidade_disponivel")
+          const lotes = await fetchAllPages<StockLot>((from, to) => supabase
+            .from("erp_estoque_lotes")
+            .select("quantidade_disponivel", { count: "exact" })
             .eq("empresa_id", empresaId)
             .eq("produto_id", produto.id)
-            .maybeSingle();
-          estoqueDisponivel = estoque?.quantidade_disponivel == null
-            ? null
-            : Number(estoque.quantidade_disponivel);
+            .range(from, to));
+          estoqueDisponivel = lotes.length ? lotes.reduce((total, lote) => total + Number(lote.quantidade_disponivel ?? 0), 0) : null;
         }
       }
 
@@ -97,7 +97,7 @@ export async function processarEConverterXmlPedido(
     return {
       sucesso: true,
       itens,
-      contem_erros: itens.some((item) => item.codigo_interno === "NÃO_ENCONTRADO"),
+      contem_erros: itens.some(item => item.codigo_interno === "NÃO_ENCONTRADO"),
     };
   } catch (error) {
     return {
