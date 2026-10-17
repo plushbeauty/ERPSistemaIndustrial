@@ -59,9 +59,10 @@ export default function FiscalPendencias() {
   const visibleNotes = filtered.slice((page - 1) * pageSize, page * pageSize)
   useEffect(() => { setPage(current => Math.min(current, pageCount)) }, [pageCount])
 
-  return <main className="erp-dense fiscal-workspace min-h-screen bg-slate-50 text-slate-900">
-    <header className="border-b border-slate-200 bg-white px-5 py-4"><p className="text-xs font-bold uppercase tracking-wide text-blue-800">Fiscal / fila de trabalho</p><h1 className="text-xl font-semibold">Pendências de NF-e</h1><p className="mt-1 text-sm text-slate-600">Documentos reais em rascunho, processamento, rejeição oficial ou contingência registrados no ERP.</p></header>
-    <div className="block"><FiscalSidebar/><section className="min-w-0 flex-1 space-y-4 p-4">
+  return <main className="erp-dense fiscal-workspace min-h-screen bg-slate-50 p-2 text-slate-900 md:p-3">
+    <FiscalSidebar/>
+    <header className="mb-2 border-b border-slate-200 bg-white px-3 py-2"><p className="text-xs font-bold uppercase tracking-wide text-blue-800">Fiscal / fila de trabalho</p><h1 className="text-xl font-semibold">Pendências de NF-e</h1><p className="mt-1 text-sm text-slate-600">Documentos reais em rascunho, processamento, rejeição oficial ou contingência registrados no ERP.</p></header>
+    <div className="block"><section className="min-w-0 flex-1 space-y-4 p-4">
       {error && <div role="alert" className="border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900">{error}</div>}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <label className="grid min-w-64 flex-1 gap-1 text-xs font-medium text-slate-700">Buscar por número, destinatário ou retorno

@@ -2,11 +2,14 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 
 /**
- * Approved UI lock — reviewed 2026-10-16, approval revision APROV-004. Vendas / Status cards and process-stage view explicitly authorized by the user; all locked screens remain immutable after this revision.
+ * Approved UI lock — reviewed 2026-10-17, approval revision APROV-005. Explicitly preserve the approved home dashboard, institutional login, admin settings, product form and Vendas screen.
  * Any edit to a frozen file must fail CI until the user explicitly approves a new revision.
  * Do not update these hashes as part of ordinary styling/refactor work.
  */
 const approved = [
+  { path: 'src/components/IndustrialCommandDashboard.tsx', sha: '16cb49413073d7f52e903aa73594d7b3bf4cb184', label: 'Início / Dashboard principal aprovado', source: 'approved recovery baseline: ad704aa4 dashboard update plus 0ef3f154 schema correction' },
+  { path: 'src/IndustrialLoginDirect.tsx', sha: 'a772153046440832d093fdb75c42cd893946af79', label: 'Login institucional aprovado', source: 'approved login revision from ad704aa4; keep unchanged unless user requests a new revision' },
+  { path: 'src/pages/configuracoes/ConfiguracoesADM.tsx', sha: '7299116e3bea43db83bdc1e3bbae6a386eb4d1e3', label: 'Configurações administrativas aprovadas', source: 'approved settings revision from ad704aa4; keep unchanged unless user requests a new revision' },
   { path: 'src/pages/VendasCentral.tsx', sha: '9177ae072e85e2cd5bd2b62780671f9aad20cf28', label: 'Vendas / Status do pedido', source: 'explicit user-authorized revision APROV-004 — wider cards and real order/production/quality/expedition/fiscal stages; frozen after this revision' },
   { path: 'src/pages/NovoPedido.tsx', sha: '8650bcf2af2f8a8813e80c082fbe4de33cbb47ab', label: 'Vendas / Novo Pedido', source: 'Vercel READY commit 94da86b985c12801525661328577f7bd96188b85' },
   { path: 'src/pages/ProdutosVendasIndustrial.tsx', sha: 'b1cbdd042c95c547c7d315afb0ee94bba529865f', label: 'Cadastros / Produtos', source: 'approved UI contract' },
@@ -18,7 +21,8 @@ const approved = [
 
 let failed = false
 for (const item of approved) {
-  const content = readFileSync(item.path)
+  // Hash the Git-normalized text so core.autocrlf on Windows does not make an unchanged approved file look modified.
+  const content = Buffer.from(readFileSync(item.path, 'utf8').replace(/\r\n/g, '\n'), 'utf8')
   const header = Buffer.from(`blob ${content.byteLength}\0`, 'utf8')
   const actual = createHash('sha1').update(header).update(content).digest('hex')
   const ok = actual === item.sha

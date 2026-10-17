@@ -3,14 +3,11 @@ import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Da
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
-import TabletMenuModal from '../TabletMenuModal'
-import PCPTabletMenuModal from '../PCPTabletMenuModal'
 
 type MenuItem = {
   label: string
   route: string
   icon?: LucideIcon
-  action?: 'qualityTablet' | 'pcpTablet'
   children?: MenuItem[]
 }
 
@@ -75,12 +72,15 @@ const menus: MenuItem[] = [
     { label: 'Agenda de máquinas', route: '/pcp/agenda-maquinas' },
     { label: 'Sequenciamento', route: '/pcp/sequenciamento' },
     { label: 'Planejamento', route: '/pcp/planejamento' },
-    { label: 'Fichas de processo', route: '/pcp/fichas-processo' },
+    { label: 'Ficha de Processo', route: '/pcp/fichas-processo', children: [
+      { label: 'Ficha de Processo Injetados', route: '/pcp/fichas-processo?tipo=INJETADOS' },
+      { label: 'Ficha de Processo Prensados', route: '/pcp/fichas-processo?tipo=PRENSADOS' },
+      { label: 'Ficha de Processo Acabamento', route: '/pcp/fichas-processo?tipo=ACABAMENTO' },
+      { label: 'Montagem de Embalagem', route: '/pcp/fichas-processo?tipo=MONTAGEM_EMBALAGEM' },
+    ] },
     { label: 'Paradas / setup', route: '/pcp/paradas' },
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
-    { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
-  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet' },
   { label: 'Rotinas da Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
     { label: 'Visual geral da Qualidade', route: '/qualidade' },
     { label: 'Inspeções de lotes', route: '/qualidade/inspecoes' },
@@ -115,8 +115,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
-  const [tabletOpen, setTabletOpen] = useState(false)
-  const [pcpTabletOpen, setPcpTabletOpen] = useState(false)
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
   const ref = useRef<HTMLDivElement>(null)
@@ -144,9 +142,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   }, [])
 
   useEffect(() => {
-    const openQualityTablet = () => setTabletOpen(true)
-    window.addEventListener('erp:open-quality-tablet', openQualityTablet)
-    return () => window.removeEventListener('erp:open-quality-tablet', openQualityTablet)
   }, [])
 
   // Atualização automática por mudanças reais no banco, sem botão manual.
@@ -195,17 +190,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     setOpenMenu(null)
     setStartMenuOpen(false)
   }, [pathname])
-  const openMenuItem = (item: Pick<MenuItem, 'route' | 'action'>) => {
-    if (item.action === 'pcpTablet') {
-      setPcpTabletOpen(true)
-      setOpenMenu(null)
-      return
-    }
-    if (item.action === 'qualityTablet') {
-      setTabletOpen(true)
-      setOpenMenu(null)
-      return
-    }
+  const openMenuItem = (item: Pick<MenuItem, 'route'>) => {
     go(item.route)
   }
 
@@ -270,7 +255,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                     {hasChildren && <button type="button" className="erp-windows-menu-expand" aria-label={`Expandir ${menu.label}`} aria-expanded={expanded} onClick={() => setOpenMenu(value => value === menu.label ? null : menu.label)}>{expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}</button>}
                   </div>
                   {hasChildren && expanded && <div className="erp-windows-menu-children">
-                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => <button type="button" key={child.label + child.route} className={pathname === child.route ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }}>{child.label}</button>)}
+                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => <button type="button" key={child.label + child.route} className={pathname + location.search === child.route ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); go(child.route) }}>{child.label}</button>)}
                   </div>}
                 </div>
               })}
@@ -303,8 +288,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
       </main>
-      <TabletMenuModal isOpen={tabletOpen} onClose={() => setTabletOpen(false)} onNavigate={(route) => { setTabletOpen(false); go(route) }} />
-      <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%);color:#123b50}

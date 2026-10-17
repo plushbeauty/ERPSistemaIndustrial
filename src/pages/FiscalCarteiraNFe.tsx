@@ -134,14 +134,14 @@ export default function FiscalCarteiraNFe() {
     }
   }
 
-  return <main className="erp-dense fiscal-workspace min-h-screen bg-slate-50 text-slate-900">
-    <header className="border-b border-slate-200 bg-white px-5 py-4">
+  return <main className="erp-dense fiscal-workspace min-h-screen bg-slate-50 p-2 text-slate-900 md:p-3">
+    <FiscalSidebar/>
+    <header className="mb-2 border-b border-slate-200 bg-white px-3 py-2">
       <p className="text-xs font-bold uppercase tracking-wide text-blue-800">Fiscal / NF-e</p>
       <h1 className="text-xl font-semibold">Carteira de documentos fiscais</h1>
       <p className="mt-1 text-sm text-slate-600">Status, protocolos e arquivos consultados do banco do ERP; nenhuma autorização é inferida pela interface.</p>
     </header>
     <div className="block">
-      <FiscalSidebar />
       <section className="min-w-0 flex-1 space-y-4 p-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <label className="grid min-w-64 flex-1 gap-1 text-xs font-semibold text-slate-700">
