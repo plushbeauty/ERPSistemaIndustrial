@@ -3,7 +3,7 @@
  * @REVISAO: VENDAS-002
  * @ESCOPO_REVISADO: filtros, simulação de reajuste, paginação e comandos da tabela de preços.
  * @ALTERACOES: controles e paginação compactados para o padrão de 30px/2px; cálculo, seleção e persistência preservados.
- * @VALIDACAO: revisão estática do arquivo; CI deve validar tipagem, lint, auditorias e build.
+ * @VALIDACAO: revisão geométrica adicional em 2026-10-16; repetir CI no commit resultante antes de homologar.
  */
 import { useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-react'
@@ -163,32 +163,32 @@ export default function TabelaPrecos() {
               <thead>
                 <tr>
                   <th className="h-8 px-2 py-1.5 text-[9px] uppercase">SKU</th>
-                  <th className="p-3">Produto</th>
-                  <th className="p-3">Grupo</th>
-                  <th className="p-3">Preço atual</th>
-                  <th className="p-3">Preço de venda · simulação</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">Produto</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">Grupo</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">Preço atual</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">Preço de venda · simulação</th>
                 </tr>
               </thead>
               <tbody>
                 {produtosVisiveis.map(produto => (
                   <tr key={produto.id} className="border-t border-slate-100">
-                    <td className="p-3">{produto.codigo}</td>
-                    <td className="p-3">{produto.nome}</td>
-                    <td className="p-3">{produto.grupo ?? '—'}</td>
-                    <td className="p-3">{brl(Number(produto.preco_venda ?? 0))}</td>
-                    <td className="p-3 font-semibold text-[#17445A]">
+                    <td className="h-8 px-2 py-1.5 text-[10px]">{produto.codigo}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px]">{produto.nome}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px]">{produto.grupo ?? '—'}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px]">{brl(Number(produto.preco_venda ?? 0))}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px] font-semibold text-[#17445A]">
                       {simulacoes.get(produto.id) != null ? brl(simulacoes.get(produto.id) as number) : '—'}
                     </td>
                   </tr>
                 ))}
                 {!produtosVisiveis.length && (
-                  <tr><td colSpan={5} className="p-8 text-center text-slate-500">Nenhum produto ativo encontrado.</td></tr>
+                  <tr><td colSpan={5} className="px-2 py-6 text-center text-[10px] text-slate-500">Nenhum produto ativo encontrado.</td></tr>
                 )}
               </tbody>
             </table>
           </div>
           <nav className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 px-3 py-2" aria-label="Paginação da tabela de preços">
-            <span className="text-xs text-slate-600">
+            <span className="text-[10px] text-slate-600">
               Página {pagina} de {paginas} · {produtos.length} produtos
             </span>
             <div className="flex items-center gap-2">
