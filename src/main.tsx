@@ -25,6 +25,7 @@ function lazyPage(loader: () => Promise<LazyModule>, exportName: string) {
     return { default: component as ComponentType<unknown> }
   })
 }
+import './styles/shadcn-industrial-tokens.css'
 import './styles/index.css'
 import './styles/erp-reference-ux-2026.css'
 import './styles/industrial-command-center-2026.css'
