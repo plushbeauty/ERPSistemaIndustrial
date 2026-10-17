@@ -3,7 +3,7 @@
  * @REVISAO: VENDAS-005
  * @ESCOPO_REVISADO: competência, metas de faturamento/pedidos, cálculo de atingimento e gravação por empresa.
  * @ALTERACOES: labels em caixa alta, campos com borda de 2px e medidas compactas; consulta/upsert existentes preservados.
- * @VALIDACAO: revisão estática do arquivo; CI deve validar tipagem, lint, auditorias e build.
+ * @VALIDACAO: conferir CI do commit corrente no PR; inspeção visual autenticada e teste funcional por sessão ainda pendentes.
  */
 import { useEffect, useState } from 'react'
 import { Plus, Save } from 'lucide-react'
