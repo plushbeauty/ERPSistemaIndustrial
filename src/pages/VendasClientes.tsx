@@ -3,7 +3,7 @@
  * @REVISAO: VENDAS-006
  * @ESCOPO_REVISADO: cadastro de clientes, validações/máscaras, busca CEP, tabela de preços, de-para e vínculos de transportadoras.
  * @ALTERACOES: campos e pesquisa alinhados a 30px; consultas e gravações multiempresa preservadas.
- * @VALIDACAO: revisão estática; CI pendente para tipagem, lint, auditorias e build.
+ * @VALIDACAO: conferir CI do commit corrente no PR; inspeção visual autenticada e teste funcional por sessão ainda pendentes.
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Building2, Check, MapPin, Pencil, Plus, RefreshCw, Search, Trash2, Truck, UserRound } from 'lucide-react'
