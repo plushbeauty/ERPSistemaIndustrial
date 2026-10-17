@@ -24,9 +24,9 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 
 ## 2. PAINEL DE RESUMO E STATUS
 
-- **Total de Problemas Identificados:** 12
+- **Total de Problemas Identificados:** 13
 - **Pendentes de correção de código nesta rodada:** 0 para os achados PCP-003 e PCP-006 após as alterações registradas abaixo; os demais achados precisam continuar sendo rechecados contra o HEAD.
-- **Corrigidos no código-fonte (registro histórico):** 12
+- **Corrigidos no código-fonte (registro histórico):** 13
 - **Bloqueados por ambiente externo:** validação Supabase remota e deploy Vercel quando o limite de builds impede publicar.
 - **Homologação do HEAD desta branch:** PENDENTE — ainda é necessário CI completo, build, testes autenticados/RLS e validação visual. O status `CORRIGIDO` neste catálogo indica correção de fonte, não comprova produção.
 
@@ -217,3 +217,17 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - O Vercel reportou anteriormente `build-rate-limit`; não afirmar publicação sem um deployment `Ready` para o SHA validado.
 - Nenhum achado pode ser considerado homologado em produção apenas por inspeção estática.
 - Próxima etapa obrigatória: executar os gates no commit desta branch, corrigir todas as falhas que surgirem e continuar pelos achados P0/P1 do catálogo e pela matriz geral de auditoria.
+
+
+---
+
+### [PCP-013] Coluna de data inválida em consultas adicionais de ordens de produção
+
+- **Prioridade:** `P0`
+- **Categoria:** Integridade de Dados / Runtime
+- **Telas / Componentes:** Controle de Processo da Injetora, Dashboard Industrial Premium e Dashboard de Comando Industrial.
+- **Arquivos:** `src/pages/pcp/ControleProcessoInjetora.tsx`, `src/pages/IndustrialDashboardPremium.tsx`, `src/components/IndustrialCommandDashboard.tsx`.
+- **Descrição Objetiva:** Foram encontradas consultas adicionais a `erp_ordens_producao` que ordenavam por `criado_em` ou selecionavam a coluna `criado_em`, embora o contrato canônico use `created_at`.
+- **Impacto:** Erro PostgREST de coluna inexistente e falha de carregamento das ordens nos painéis/controle da injetora.
+- **Correção Aplicada nesta branch:** As três consultas agora usam `created_at`; a seleção do Dashboard de Comando não solicita mais `criado_em`.
+- **Status:** `CORRIGIDO NO CÓDIGO; CI E RUNTIME PENDENTES`.
