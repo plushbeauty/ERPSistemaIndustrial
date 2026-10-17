@@ -40,7 +40,11 @@ export default function VendasTablet() {
           <button type="button" onClick={() => setSearch('')} title="Limpar pesquisa"><RefreshCw size={14} /></button>
         </div>
       </div>
-      <div className="erp-vendas-menu-sections">
+      {sections.length === 0 ? (
+        <div role="status" className="m-3 border border-[#cbd9e1] bg-[#f4fbfd] px-3 py-4 text-center text-[11px] font-bold text-[#526d7a]">
+          NENHUM MÓDULO ENCONTRADO PARA “{search.trim()}”. LIMPE A PESQUISA E TENTE NOVAMENTE.
+        </div>
+      ) : <div className="erp-vendas-menu-sections">
         {sections.map(section => (
           <section key={section.label}>
             <div className="erp-vendas-menu-section-title">{section.label}</div>
@@ -54,7 +58,7 @@ export default function VendasTablet() {
             </div>
           </section>
         ))}
-      </div>
+      </div>}
       <style>{`
         .erp-vendas-menu{min-width:0;background:#fff;border:1px solid #cbd5e1}
         .erp-vendas-menu-toolbar{height:52px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 10px;border-bottom:1px solid #cbd5e1}
@@ -71,7 +75,7 @@ export default function VendasTablet() {
         .erp-vendas-menu-grid button:hover{border-color:#2d8db8;background:#f4fbfd}
         .erp-vendas-menu-grid span{font-size:9px;line-height:1.1;text-transform:uppercase;text-align:center}
         @media(max-width:1100px){.erp-vendas-menu-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-        @media(max-width:700px){.erp-vendas-menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.erp-vendas-menu-actions label{width:180px}}
+        @media(max-width:700px){.erp-vendas-menu-toolbar{height:auto;min-height:52px;flex-wrap:wrap;padding:8px}.erp-vendas-menu-actions{width:100%}.erp-vendas-menu-actions label{width:auto;flex:1;min-width:0}.erp-vendas-menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
       `}</style>
     </section>
   )
