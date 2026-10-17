@@ -25,8 +25,8 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 ## 2. PAINEL DE RESUMO E STATUS
 
 - **Total de Problemas Identificados:** 12
-- **Pendentes de Correção:** 5
-- **Corrigidos:** 7
+- **Pendentes de Correção:** 4
+- **Corrigidos:** 8
 - **Bloqueados:** 0
 
 ---
@@ -94,7 +94,7 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Impacto:** Inconsistência visual extrema em relação ao restante do ERP industrial (que utiliza base clara `#F4FBFD`, molduras discretas `#123B50` / `#2D8DB8` e controles densos de 30px).
 - **Correção Prevista:** Refatorar o layout para a paleta oficial (`#F4FBFD`, `#123B50`, `#2D8DB8`), inputs de altura 30px (`h-8`), botões com `rounded-[2px]` e tabela densa de paradas ativas e encerradas.
 - **Evidência de Validação:** Padrão de referência aprovado em `src/pages/NovoPedido.tsx` e regras de `scripts/verify-approved-ui-lock.mjs`.
-- **Status:** `PENDENTE`
+- **Status:** `CORRIGIDO`
 
 ---
 
