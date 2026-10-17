@@ -137,7 +137,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
 
   useEffect(() => {
     const close = (event: MouseEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) { setOpenMenu(null); setStartMenuOpen(false); setOpenSubMenu(null) }
+      if (ref.current && !ref.current.contains(event.target as Node)) { setOpenMenu(null); setStartMenuOpen(false) }
     }
     document.addEventListener('mousedown', close)
     return () => document.removeEventListener('mousedown', close)
@@ -204,8 +204,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     if (item.action === 'qualityTablet') {
       setTabletOpen(true)
       setOpenMenu(null)
-      setOpenSubMenu(null)
-      
       return
     }
     go(item.route)
@@ -251,8 +249,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
 
   const go = (route: string) => {
     setOpenMenu(null)
-    setOpenSubMenu(null)
-    
     navigate(route)
   }
 
@@ -281,12 +277,12 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                 return <div className="erp-windows-menu-group" key={menu.label}>
                   <div className={`erp-windows-menu-row ${current?.label === menu.label ? 'is-active' : ''}`}>
                     <button type="button" className="erp-windows-menu-main" onClick={() => {
-                      if (hasChildren) { setOpenMenu(value => value === menu.label ? null : menu.label); setOpenSubMenu(null) }
+                      if (hasChildren) setOpenMenu(value => value === menu.label ? null : menu.label)
                       else { setStartMenuOpen(false); openMenuItem(menu) }
                     }}>
                       <Icon size={16} /><span>{menu.label}</span>
                     </button>
-                    {hasChildren && <button type="button" className="erp-windows-menu-expand" aria-label={`Expandir ${menu.label}`} aria-expanded={expanded} onClick={() => { setOpenMenu(value => value === menu.label ? null : menu.label); setOpenSubMenu(null) }}>{expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}</button>}
+                    {hasChildren && <button type="button" className="erp-windows-menu-expand" aria-label={`Expandir ${menu.label}`} aria-expanded={expanded} onClick={() => setOpenMenu(value => value === menu.label ? null : menu.label)}>{expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}</button>}
                   </div>
                   {hasChildren && expanded && <div className="erp-windows-menu-children">
                     {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => <button type="button" key={child.label + child.route} className={pathname === child.route ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }}>{child.label}</button>)}

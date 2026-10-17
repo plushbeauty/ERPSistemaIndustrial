@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  Activity, CheckCircle, AlertTriangle, BarChart3
+  Activity, AlertTriangle, ArrowUpRight, BarChart3, Boxes, CheckCircle,
+  ClipboardCheck, Factory, Gauge, ShoppingCart
 } from 'lucide-react'
 import {
   Bar, BarChart, CartesianGrid, Legend, Line, LineChart,
@@ -11,11 +12,9 @@ import { supabase } from '../lib/supabaseClient'
 type Props = { onNavigate: (route: string) => void }
 type Machine = { id: string; codigo: string; nome: string; status: string }
 type OP = { id: string; numero_op: string | number; produto_id: string | null; maquina_id: string | null; status: string; quantidade_planejada: number | null; quantidade: number | null; created_at: string | null; criado_em?: string | null }
-type Product = { id: string; codigo: string | null; nome: string | null }
 type Pointing = { id: string; ordem_producao_id: string | null; maquina_id: string | null; quantidade_planejada: number | null; quantidade_boa: number | null; quantidade_refugada: number | null; created_at: string | null; criado_em?: string | null }
 type Program = { id: string; ordem_producao_id: string | null; maquina_id: string | null; inicio_planejado: string; fim_planejado: string; quantidade_planejada: number | null; quantidade_produzida: number | null; quantidade_refugada: number | null; status: string }
 type Stop = { maquina_id: string | null; inicio: string | null; fim: string | null; status: string | null }
-type QueueRow = { op: string; workstation: string; product: string; lastPointing: string; status: string }
 type Daily = { day: string; previsto: number; realizado: number }
 type MachineShift = { maquina: string; eficiencia: number }
 type Equipment = { id: string; codigo: string; descricao: string; status: string; proxima_calibracao: string | null; certificado_validade: string | null }
@@ -38,7 +37,6 @@ function statusText(value: string) {
 export default function DashboardPrincipal({ onNavigate }: Props) {
   const [machines, setMachines] = useState<Machine[]>([])
   const [ops, setOps] = useState<OP[]>([])
-  const [products, setProducts] = useState<Product[]>([])
   const [pointings, setPointings] = useState<Pointing[]>([])
   const [programs, setPrograms] = useState<Program[]>([])
   const [stops, setStops] = useState<Stop[]>([])
@@ -83,7 +81,6 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         const empresaId = p.empresa_id as string | null
         const machineQ = supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('ativo', true).order('codigo')
         const opQ = supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at,criado_em').order('created_at', { ascending: false }).limit(500)
-        const prodQ = supabase.from('erp_produtos').select('id,codigo,nome').limit(3000)
         const pointingQ = supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,created_at').order('created_at', { ascending: false }).limit(5000)
         const programQ = supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status').neq('status', 'cancelada').limit(3000)
         const stopQ = supabase.from('erp_producao_paradas').select('maquina_id,inicio,fim,status').limit(5000)
@@ -93,7 +90,6 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         if (!master && empresaId) {
           machineQ.eq('empresa_id', empresaId)
           opQ.eq('empresa_id', empresaId)
-          prodQ.eq('empresa_id', empresaId)
           pointingQ.eq('empresa_id', empresaId)
           programQ.eq('empresa_id', empresaId)
           stopQ.eq('empresa_id', empresaId)
@@ -101,13 +97,12 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
           equipmentQ.eq('empresa_id', empresaId)
         }
 
-        const [m, o, pr, pt, pg, st, rn, eq] = await Promise.all([machineQ, opQ, prodQ, pointingQ, programQ, stopQ, rpncQ, equipmentQ])
-        for (const result of [m, o, pr, pt, pg, st, rn, eq]) if (result.error) throw result.error
+        const [m, o, pt, pg, st, rn, eq] = await Promise.all([machineQ, opQ, pointingQ, programQ, stopQ, rpncQ, equipmentQ])
+        for (const result of [m, o, pt, pg, st, rn, eq]) if (result.error) throw result.error
 
         if (!alive) return
         setMachines((m.data ?? []) as Machine[])
         setOps((o.data ?? []) as OP[])
-        setProducts((pr.data ?? []) as Product[])
         setPointings((pt.data ?? []) as Pointing[])
         setPrograms((pg.data ?? []) as Program[])
         setStops((st.data ?? []) as Stop[])
@@ -136,16 +131,6 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
   const totalBad = pointings.reduce((s, p) => s + n(p.quantidade_refugada), 0)
   const performance = totalPlanned > 0 ? Math.min(100, (totalGood / totalPlanned) * 100) : null
   const quality = totalGood + totalBad > 0 ? (totalGood / (totalGood + totalBad)) * 100 : null
-
-  const plannedHours = programs.reduce((s, p) => s + Math.max(0, (new Date(p.fim_planejado).getTime() - new Date(p.inicio_planejado).getTime()) / 3600000), 0)
-  const stopHours = stops.reduce((s, p) => {
-    if (!p.inicio || !p.fim) return s
-    return s + Math.max(0, (new Date(p.fim).getTime() - new Date(p.inicio).getTime()) / 3600000)
-  }, 0)
-  const availability = plannedHours > 0 ? Math.max(0, Math.min(100, ((plannedHours - Math.min(stopHours, plannedHours)) / plannedHours) * 100)) : null
-  const oee = performance !== null && quality !== null && availability !== null
-    ? (performance * quality * availability) / 10000
-    : null
 
   const machineShift = useMemo<MachineShift[]>(() => machines.map(machine => {
     const rows = pointings.filter(p => p.maquina_id === machine.id)
@@ -216,29 +201,12 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     return Array.from(map.entries()).map(([status, quantidade]) => ({ status, quantidade }))
   }, [ops])
 
-  const queue = useMemo<QueueRow[]>(() => {
-    const productMap = new Map(products.map(p => [p.id, p]))
-    const machineMap = new Map(machines.map(m => [m.id, m]))
-    return activeOps.slice(0, 12).map(op => {
-      const rows = pointings.filter(p => p.ordem_producao_id === op.id).sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')))
-      const last = rows[0]
-      const machine = machineMap.get(op.maquina_id ?? '')
-      const product = productMap.get(op.produto_id ?? '')
-      return {
-        op: `OP-${op.numero_op}`,
-        workstation: machine ? `${machine.codigo} · ${machine.nome}` : 'Posto não definido',
-        product: product ? `${product.codigo ?? ''} · ${product.nome ?? ''}`.replace(/^ · | · $/g, '') : 'Produto não informado',
-        lastPointing: last?.created_at ? new Date(last.created_at).toLocaleString('pt-BR') : 'Sem apontamento',
-        status: statusText(op.status)
-      }
-    })
-  }, [activeOps, pointings, products, machines])
-
   const cards = [
-    { label: 'OPs EM ANDAMENTO', value: fmt(activeOps.length), icon: Activity },
-    { label: 'PRODUÇÃO DO DIA', value: fmt(producedToday), suffix: 'un', icon: CheckCircle },
-    { label: 'RNC ABERTAS / FECHADAS', value: `${fmt(rpnc)} / ${fmt(rpncClosed)}`, icon: AlertTriangle },
-    { label: 'EFICIÊNCIA (OEE)', value: oee === null ? '—' : `${oee.toFixed(1).replace('.', ',')}%`, icon: BarChart3 }
+    { label: 'OPs EM ANDAMENTO', value: fmt(activeOps.length), caption: 'Ordens não concluídas ou canceladas', icon: Activity },
+    { label: 'PRODUÇÃO DE HOJE', value: fmt(producedToday), suffix: 'un', caption: 'Peças boas e refugadas apontadas', icon: CheckCircle },
+    { label: 'RNC ABERTAS / FECHADAS', value: `${fmt(rpnc)} / ${fmt(rpncClosed)}`, caption: 'Registros carregados no painel', icon: ClipboardCheck },
+    { label: 'EFICIÊNCIA REGISTRADA', value: performance === null ? '—' : `${performance.toFixed(1).replace('.', ',')}%`, caption: 'Peças boas ÷ quantidade planejada', icon: Gauge },
+    { label: 'QUALIDADE APONTADA', value: quality === null ? '—' : `${quality.toFixed(1).replace('.', ',')}%`, caption: 'Peças boas ÷ total apontado', icon: BarChart3 }
   ]
 
   const attentionCards = [
@@ -249,7 +217,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+    <div className="dp-shell min-h-screen bg-slate-50 text-slate-900 font-sans">
       <style>{`
         .dp-shell{min-height:100%;background:#f8fafc}
         .dp-main{width:100%;max-width:1700px;margin:0 auto;padding:18px 24px 34px}
@@ -271,26 +239,130 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         .dp-kpi-icon svg,.dp-attention-icon svg{color:#fff!important;stroke:#fff!important;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}.dp-table-wrap{overflow:auto}.dp-table{width:100%;border-collapse:collapse;font-size:12px}.dp-table th{background:#f8fafc;color:#475569;text-align:left;font-size:10px;font-weight:950;padding:10px 12px;border-bottom:1px solid #e2e8f0}.dp-table td{padding:11px 12px;border-bottom:1px solid #edf2f7;color:#334155;font-weight:650;white-space:nowrap}.dp-table tr:last-child td{border-bottom:0}.dp-status{display:inline-flex;padding:4px 8px;border-radius:999px;background:#ecfdf5;color:#065f46;font-size:10px;font-weight:900}.dp-error{margin:0 0 12px;padding:10px 12px;border:1px solid #fecaca;background:#fef2f2;color:#991b1b;border-radius:7px;font-size:12px;font-weight:700}
                 @media(max-width:1050px){.dp-kpis,.dp-attention-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-grid{grid-template-columns:1fr}.dp-main{padding:16px}}
         @media(max-width:650px){.dp-kpis,.dp-attention-grid{grid-template-columns:1fr}.dp-main{padding:12px}}
+                .dp-shell{--dp-navy:#071522;--dp-petrol:#0d2638;--dp-blue:#2d8db8;--dp-cyan:#48b7c7;--dp-ink:#123b50;--dp-muted:#627985;--dp-line:#d8e4ea;background:radial-gradient(ellipse at 90% 0,rgba(72,183,199,.08),transparent 30rem),#f3f7fa;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+                .dp-main{max-width:1600px;padding:clamp(16px,2.5vw,32px)}
+                .dp-kpi{min-height:102px;padding:17px;background:linear-gradient(145deg,#fff,#f7fbfd)!important;border:1px solid var(--dp-line)!important;border-radius:18px!important;box-shadow:0 10px 28px rgba(18,59,80,.07)!important;transition:transform .16s ease,box-shadow .16s ease}
+                .dp-kpi:hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(18,59,80,.11)!important}
+                .dp-kpi::after{width:120px;height:120px;right:-48px;bottom:-55px;background:rgba(72,183,199,.10)!important}
+                .dp-kpi-icon{width:46px;height:46px;border:1px solid #c6e7ed!important;border-radius:13px!important;background:#eaf7fa!important;color:var(--dp-blue)!important;box-shadow:none!important;transform:none!important;text-shadow:none!important}
+                .dp-kpi-icon svg{color:var(--dp-blue)!important;stroke:currentColor!important;filter:none!important}
+                .dp-kpi small,.dp-kpi strong,.dp-kpi em,.dp-kpi-label{color:var(--dp-ink)!important;-webkit-text-fill-color:var(--dp-ink)!important;text-shadow:none!important}
+                .dp-kpi small{font-size:11px!important;font-weight:800!important;letter-spacing:.07em!important}
+                .dp-kpi strong{font-size:clamp(22px,2vw,29px)!important;font-weight:850!important;line-height:1.15!important}
+                .dp-kpi em{font-size:12px!important}
+                .dp-kpi:nth-child(2),.dp-kpi:nth-child(3),.dp-kpi:nth-child(4){background:linear-gradient(145deg,#fff,#f7fbfd)!important;border-color:var(--dp-line)!important}
+                .dp-kpi:nth-child(2)::after,.dp-kpi:nth-child(3)::after,.dp-kpi:nth-child(4)::after{background:rgba(72,183,199,.10)!important}
+                .dp-kpi:nth-child(2) .dp-kpi-icon,.dp-kpi:nth-child(3) .dp-kpi-icon,.dp-kpi:nth-child(4) .dp-kpi-icon{background:#eaf7fa!important;color:var(--dp-blue)!important}
+                .dp-grid{gap:16px}
+                .dp-panel{border:1px solid var(--dp-line)!important;border-radius:18px!important;box-shadow:0 10px 30px rgba(18,59,80,.06)!important}
+                .dp-head{min-height:68px;padding:16px 19px;background:linear-gradient(180deg,#fff,#f9fcfd)!important}
+                .dp-head span{font-size:10px!important;letter-spacing:.12em!important;color:#39758c!important}
+                .dp-head h2{font-size:17px!important;line-height:1.3;color:var(--dp-ink)!important}
+                .dp-chart,.dp-chart-compact{height:250px;padding:16px 16px 12px}
+                .dp-chart-note{margin:0;padding:0 18px 14px;color:var(--dp-muted);font-size:12px;line-height:1.5}
+                .dp-attention{min-height:88px;padding:15px 16px;background:#fff!important;border:1px solid var(--dp-line)!important;border-left:4px solid var(--dp-cyan)!important;border-radius:16px!important;box-shadow:0 8px 22px rgba(18,59,80,.06)!important}
+                .dp-attention::after{display:none}
+                .dp-attention-icon{width:42px;height:42px;border:1px solid #c6e7ed!important;border-radius:13px!important;background:#eaf7fa!important;color:var(--dp-blue)!important;box-shadow:none!important;transform:none!important;text-shadow:none!important}
+                .dp-attention-icon svg{color:var(--dp-blue)!important;stroke:currentColor!important;filter:none!important}
+                .dp-attention small,.dp-attention strong,.dp-attention em{color:var(--dp-ink)!important;-webkit-text-fill-color:var(--dp-ink)!important}
+                .dp-attention small{font-size:10px!important;letter-spacing:.06em!important;line-height:1.4!important}
+                .dp-attention strong{font-size:24px!important;line-height:1.15!important}
+                .dp-attention-danger{border-left-color:#d65b61!important}.dp-attention-danger .dp-attention-icon{border-color:#f0d3d5!important;background:#fff4f4!important;color:#b6424a!important}.dp-attention-danger .dp-attention-icon svg{color:#b6424a!important}
+                .dp-attention-success{border-left-color:#3a9d78!important}.dp-attention-success .dp-attention-icon{border-color:#cce8dc!important;background:#f0faf5!important;color:#287954!important}.dp-attention-success .dp-attention-icon svg{color:#287954!important}
+                .dp-attention-warning{border-left-color:#e6a34a!important}.dp-attention-warning .dp-attention-icon{border-color:#f2dfc2!important;background:#fff9ee!important;color:#a86a16!important}.dp-attention-warning .dp-attention-icon svg{color:#a86a16!important}
+                .dp-status{border-radius:8px!important}
+                @media(max-width:650px){.dp-main{padding:14px}.dp-kpi{min-height:88px}.dp-head{padding:14px}.dp-chart,.dp-chart-compact{height:230px;padding:12px 8px 8px}}
+                .dp-dashboard-head{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:4px 0 20px;border-bottom:1px solid var(--dp-line)}
+                .dp-dashboard-title{display:flex;align-items:center;gap:13px}.dp-dashboard-mark{display:grid;place-items:center;width:46px;height:46px;border:1px solid #cfe3ec;border-radius:14px;background:#eaf5fa;color:#176b8d}
+                .dp-dashboard-title p,.dp-section-title span{margin:0;color:#39758c;font-size:10px;font-weight:850;letter-spacing:.13em}
+                .dp-dashboard-title h1{margin:3px 0;color:#123b50;font-size:clamp(22px,2.3vw,30px);font-weight:850;letter-spacing:-.035em;line-height:1.15}
+                .dp-dashboard-title>div>span{color:#627985;font-size:12px}
+                .dp-dashboard-meta{display:grid;justify-items:end;gap:8px;color:#627985;font-size:11px;text-align:right}
+                .dp-live{display:flex;align-items:center;gap:7px;color:#287954;font-weight:750}.dp-live i{width:7px;height:7px;border-radius:50%;background:#3a9d78}
+                .dp-shortcuts{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 0 2px}
+                .dp-shortcuts>span{margin-right:4px;color:#627985;font-size:11px;font-weight:750}
+                .dp-shortcuts button{display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:0 11px;border:1px solid var(--dp-line);border-radius:9px;background:#fff;color:#355462;font:inherit;font-size:11px;font-weight:750;cursor:pointer;transition:border-color .16s,background .16s,color .16s}
+                .dp-shortcuts button:hover{border-color:#8bc5d5;background:#f1f9fc;color:#176b8d}.dp-shortcuts button svg:last-child{margin-left:3px;color:#8aa3af}
+                .dp-kpis{grid-template-columns:repeat(5,minmax(0,1fr));gap:11px;margin:16px 0 4px}
+                .dp-kpi{min-height:122px;align-items:flex-start;padding:16px 14px;background:#fff!important;border:1px solid var(--dp-line)!important;border-radius:14px!important;box-shadow:0 4px 14px rgba(18,59,80,.035)!important;transition:border-color .16s,transform .16s}
+                .dp-kpi:hover{transform:translateY(-2px);border-color:#a9d1dc!important;box-shadow:0 8px 20px rgba(18,59,80,.07)!important}
+                .dp-kpi::after{display:none}.dp-kpi-icon{width:38px;height:38px;border:1px solid #d4e9ee!important;border-radius:11px!important;background:#eef8fa!important;color:#247e91!important}
+                .dp-kpi-icon svg{color:#247e91!important;stroke:currentColor!important}
+                .dp-kpi>div{min-width:0}.dp-kpi small{font-size:9px!important;line-height:1.35!important;letter-spacing:.08em!important;color:#627985!important}
+                .dp-kpi strong{margin-top:9px;font-size:clamp(21px,1.8vw,27px)!important;line-height:1.1!important;color:#123b50!important}
+                .dp-kpi em{font-size:11px!important;color:#627985!important}.dp-kpi-caption{display:block;margin-top:7px;color:#7b8e98;font-size:10px;line-height:1.4}
+                .dp-data-note{margin:2px 0 16px;color:#758994;font-size:10px;line-height:1.5}
+                .dp-section-title{display:flex;justify-content:space-between;align-items:end;gap:14px;margin:22px 0 10px}
+                .dp-section-title h2{margin:3px 0 0;color:#123b50;font-size:17px;font-weight:850;letter-spacing:-.02em}
+                .dp-section-title>p{margin:0;color:#758994;font-size:11px;text-align:right}
+                .dp-attention-section .dp-section-title{margin-top:14px}
+                .dp-attention-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 18px}
+                .dp-attention{min-height:78px;padding:12px;background:#fff!important;border:1px solid var(--dp-line)!important;border-left:3px solid #3a9d78!important;border-radius:12px!important;box-shadow:none!important}
+                .dp-attention-danger{border-left-color:#d65b61!important}.dp-attention-warning{border-left-color:#e6a34a!important}
+                .dp-attention-icon{width:34px;height:34px;border:1px solid #d4e9ee!important;border-radius:10px!important;background:#eef8fa!important;color:#247e91!important}
+                .dp-attention-icon svg{filter:none!important}.dp-attention small{font-size:9px!important;letter-spacing:.06em!important;line-height:1.35!important;color:#627985!important}
+                .dp-attention strong{margin-top:5px;font-size:22px!important;color:#123b50!important}.dp-attention em{font-size:10px!important;color:#627985!important}
+                .dp-attention-danger .dp-attention-icon{border-color:#f0d3d5!important;background:#fff4f4!important;color:#b6424a!important}
+                .dp-attention-success .dp-attention-icon{border-color:#cce8dc!important;background:#f0faf5!important;color:#287954!important}
+                .dp-chart-section-title{margin-top:23px}
+                .dp-grid{gap:12px}
+                .dp-panel{border:1px solid var(--dp-line)!important;border-radius:14px!important;box-shadow:0 4px 16px rgba(18,59,80,.035)!important}
+                .dp-head{min-height:62px;padding:13px 15px;background:#fff!important}
+                .dp-head span{font-size:9px!important;letter-spacing:.12em!important;color:#39758c!important}
+                .dp-head h2{font-size:14px!important;line-height:1.35;color:#123b50!important}
+                .dp-chart,.dp-chart-compact{height:252px;padding:13px 12px 10px}
+                .dp-status-panel{margin-top:14px}
+                .dp-error{border-radius:10px}
+                .dp-table td{padding:12px}
+                @media(max-width:1120px){.dp-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.dp-attention-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+                @media(max-width:760px){.dp-main{padding:14px}.dp-dashboard-head{align-items:flex-start;flex-direction:column}.dp-dashboard-meta{justify-items:start;text-align:left}.dp-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-section-title{align-items:flex-start;flex-direction:column}.dp-section-title>p{text-align:left}}
+                @media(max-width:480px){.dp-kpis,.dp-attention-grid{grid-template-columns:1fr}.dp-shortcuts{align-items:stretch}.dp-shortcuts>span{width:100%}.dp-shortcuts button{flex:1;justify-content:center}.dp-chart,.dp-chart-compact{height:230px;padding:10px 6px}.dp-dashboard-title{align-items:flex-start}.dp-dashboard-mark{width:40px;height:40px;flex:none}}
+                @media(prefers-reduced-motion:reduce){.dp-shell *{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}
       `}</style>
 
       <main className="dp-main">
+        <header className="dp-dashboard-head">
+          <div className="dp-dashboard-title">
+            <span className="dp-dashboard-mark"><Factory size={19} aria-hidden="true" /></span>
+            <div>
+              <p>VISÃO GERAL · OPERAÇÃO INDUSTRIAL</p>
+              <h1>Painel de comando</h1>
+              <span>Produção, qualidade e capacidade em um só lugar.</span>
+            </div>
+          </div>
+          <div className="dp-dashboard-meta">
+            <span className="dp-live"><i /> Indicadores operacionais</span>
+            <time dateTime={clock.toISOString()}>{clock.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })} · {clock.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</time>
+          </div>
+        </header>
+
+        <nav className="dp-shortcuts" aria-label="Acessos rápidos">
+          <span>Acessos rápidos</span>
+          <button type="button" onClick={() => onNavigate('/pcp')}><Activity size={15} /> PCP <ArrowUpRight size={13} /></button>
+          <button type="button" onClick={() => onNavigate('/estoque')}><Boxes size={15} /> Estoque <ArrowUpRight size={13} /></button>
+          <button type="button" onClick={() => onNavigate('/qualidade')}><ClipboardCheck size={15} /> Qualidade <ArrowUpRight size={13} /></button>
+          <button type="button" onClick={() => onNavigate('/compras')}><ShoppingCart size={15} /> Compras <ArrowUpRight size={13} /></button>
+        </nav>
+
         {error && <div className="dp-error">{error}</div>}
 
-        
-
         <section className="dp-kpis">
-          {cards.map(({ label, value, suffix, icon: Icon }) => (
+          {cards.map(({ label, value, suffix, caption, icon: Icon }) => (
             <article key={label} className="dp-kpi">
               <span className="dp-kpi-icon"><Icon size={19}/></span>
-              <div><small className="dp-kpi-label">{label}</small><strong>{loading ? '…' : value} {suffix && <em>{suffix}</em>}</strong></div>
+              <div><small className="dp-kpi-label">{label}</small><strong>{loading ? '…' : value} {suffix && <em>{suffix}</em>}</strong><span className="dp-kpi-caption">{caption}</span></div>
             </article>
           ))}
         </section>
+        <p className="dp-data-note">Indicadores percentuais calculados sobre os apontamentos carregados; não representam OEE industrial certificado.</p>
 
-        <section className="dp-attention-grid">{attentionCards.map(card => { const Icon = card.icon; return <article key={card.label} className={`dp-attention dp-attention-${card.tone}`}><span className="dp-attention-icon"><Icon size={18}/></span><div><small>{card.label}</small><strong>{loading ? '…' : card.value}</strong><em>{card.suffix}</em></div></article> })}
+        <section className="dp-attention-section">
+          <div className="dp-section-title"><div><span>ACOMPANHAMENTO</span><h2>Pontos de atenção</h2></div><p>Prazos e conformidade operacional</p></div>
+          <div className="dp-attention-grid">{attentionCards.map(card => { const Icon = card.icon; return <article key={card.label} className={`dp-attention dp-attention-${card.tone}`}><span className="dp-attention-icon"><Icon size={18}/></span><div><small>{card.label}</small><strong>{loading ? '…' : card.value}</strong><em>{card.suffix}</em></div></article> })}</div>
         </section>
 
-        <section className="dp-grid dp-chart-grid">
+        <section className="dp-section-title dp-chart-section-title"><div><span>PRODUÇÃO · PCP</span><h2>Ritmo e execução</h2></div><p>Volumes registrados e compromissos de produção</p></section>
+        <section className="dp-grid dp-chart-grid dp-production-grid">
           <article className="dp-panel">
             <div className="dp-head"><span>PCP · MÁQUINAS</span><h2>Eficiência por máquina</h2></div>
             {machineShift.length ? <div className="dp-chart dp-chart-compact"><ResponsiveContainer width="100%" height="100%"><BarChart data={machineShift} barCategoryGap="26%"><CartesianGrid stroke="#e7f0f3" strokeDasharray="4 4" vertical={false}/><XAxis dataKey="maquina" axisLine={false} tickLine={false}/><YAxis domain={[0,100]} unit="%" axisLine={false} tickLine={false}/><Tooltip contentStyle={{borderRadius:12,border:'1px solid #d7e5ea'}}/><Bar dataKey="eficiencia" name="Eficiência" fill="#2D8DB8" radius={[7,7,2,2]} maxBarSize={36}/></BarChart></ResponsiveContainer></div> : <div className="dp-empty dp-empty-compact">Sem dados reais de eficiência.</div>}
@@ -309,6 +381,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
           </article>
         </section>
 
+        <section className="dp-section-title dp-chart-section-title"><div><span>QUALIDADE · SGQ</span><h2>Conformidade e recursos</h2></div><p>Não conformidades e situação metrológica</p></section>
         <section className="dp-grid dp-chart-grid" aria-label="Indicadores de qualidade e metrologia">
           <article className="dp-panel">
             <div className="dp-head"><span>SGQ · NÃO CONFORMIDADES</span><h2>Abertas × fechadas</h2></div>
