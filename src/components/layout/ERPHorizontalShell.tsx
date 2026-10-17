@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, Menu as MenuIcon, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -43,8 +43,21 @@ const menus: MenuItem[] = [
   { label: 'Estoque', route: '/estoque', icon: Package },
   { label: 'Financeiro', route: '/financeiro/custo-padrao', icon: Wallet },
   { label: 'Fiscal', route: '/fiscal', icon: FileText },
-  { label: 'Manufatura / PCP', route: '/pcp', icon: Factory, action: 'pcpTablet' },
-  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet' },
+  { label: 'Manufatura / PCP', route: '/pcp', icon: Factory, children: [
+    { label: 'Central PCP', route: '/pcp' },
+    { label: 'Ordens de produção', route: '/pcp/ordens' },
+    { label: 'Capacidade / Gantt', route: '/pcp/capacidade' },
+    { label: 'MRP II', route: '/pcp/mrp-ii' },
+    { label: 'Agenda de máquinas', route: '/pcp/agenda-maquinas' },
+    { label: 'Auditoria PCP', route: '/pcp/auditoria' },
+    { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
+  ] },
+  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
+    { label: 'Visual geral da Qualidade', route: '/qualidade' },
+    { label: 'Inspeções', route: '/qualidade/inspecoes' },
+    { label: 'Cadastro de documentos (GED)', route: '/qualidade/ged-documentos' },
+    { label: 'Qualidade Tablet', route: '/qualidade', action: 'qualityTablet' },
+  ] },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench },
   { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
@@ -55,6 +68,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const { pathname } = useLocation()
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null)
+  const [startMenuOpen, setStartMenuOpen] = useState(false)
+  const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
   const [tabletOpen, setTabletOpen] = useState(false)
   const [pcpTabletOpen, setPcpTabletOpen] = useState(false)
@@ -78,7 +93,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
 
   useEffect(() => {
     const close = (event: MouseEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) setOpenMenu(null)
+      if (ref.current && !ref.current.contains(event.target as Node)) { setOpenMenu(null); setStartMenuOpen(false); setOpenSubMenu(null) }
     }
     document.addEventListener('mousedown', close)
     return () => document.removeEventListener('mousedown', close)
@@ -131,8 +146,12 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : undefined
   const current = currentModuleMenu ?? menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
   const visibleMenus: MenuItem[] = menus
+  const normalizedSearch = moduleSearch.trim().toLocaleLowerCase('pt-BR')
+  const searchedMenus = normalizedSearch ? menus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : menus
   useEffect(() => {
     setOpenMenu(null)
+    setOpenSubMenu(null)
+    setStartMenuOpen(false)
   }, [pathname])
   const openMenuItem = (item: Pick<MenuItem, 'route' | 'action'>) => {
     if (item.action === 'pcpTablet') {
@@ -198,66 +217,67 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
 
   return (
     <div className="erp-horizontal-shell" ref={ref}>
-      <header className="erp-horizontal-header">
-        <button className="erp-horizontal-brand" type="button" onClick={() => go('/erp-industrial')} title="Início">
-          <img src="/logo/logo.png" alt="SGQERP Industrial" />
-        </button>
-
-        <div className="erp-horizontal-global-title" aria-live="polite">
-          <strong>{moduleHeader.title}</strong>
-          <span>{moduleHeader.subtitle}</span>
-        </div>
-
-        <div className="erp-horizontal-header-right">
-          <div style={{position:"relative"}}><button type="button" className="erp-horizontal-help" title="Ajuda" onClick={()=>setHelpOpen(v=>!v)} aria-expanded={helpOpen}><CircleHelp size={15} /> Ajuda</button>{helpOpen&&<div role="dialog" aria-label="Ajuda contextual da tela" style={{position:"absolute",right:0,top:34,zIndex:1200,width:"min(370px,90vw)",maxHeight:"75vh",overflowY:"auto",padding:"10px 12px",border:"1px solid #b9cbd3",borderRadius:2,background:"#fff",boxShadow:"0 6px 16px rgba(18,59,80,.16)",fontSize:10,lineHeight:1.45,color:"#173b4a"}}><strong>{contextualHelp.title}</strong><p style={{margin:"5px 0"}}>{contextualHelp.purpose}</p><strong>Como usar</strong><ol style={{margin:"4px 0 7px",paddingLeft:17}}>{contextualHelp.steps.map((step,index)=><li key={index} style={{marginBottom:3}}>{step}</li>)}</ol><strong>Campos e preenchimento</strong><ul style={{margin:"4px 0 8px",paddingLeft:15}}>{contextualHelp.fields.map((field,index)=><li key={index} style={{marginBottom:3}}>{field}</li>)}</ul><div style={{borderTop:"1px solid #e2e8f0",paddingTop:7,color:"#647b85"}}>Tela atual: {pathname}</div><button type="button" onClick={()=>{setHelpOpen(false);navigate("/ajuda")}} style={{marginTop:7,height:28,padding:"0 9px",border:"1px solid #2D8DB8",background:"#2D8DB8",color:"#fff",borderRadius:2,cursor:"pointer"}}>Abrir Central de Ajuda</button></div>}</div>
-          <button type="button" className="erp-horizontal-logout" onClick={() => void logout()} title="Sair da sessão"><LogOut size={13} /> SAIR</button>
-          <div className="erp-horizontal-session">
-            <UserRound size={15} />
-            <span>{operatorName === 'Usuário ERP' ? sessionOperator : operatorName}</span>
-            <time dateTime={now.toISOString()}>
-              {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)} {' '}
-              {new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(new Date())}
-            </time>
-          </div>
-        </div>
-      </header>
-
-      <nav className="erp-horizontal-menu" aria-label="Menu principal do ERP">
-        {visibleMenus.map(menu => {
-          const hasChildren = Boolean(menu.children?.length)
-          const active = current?.route === menu.route || current?.label === menu.label
-          const expanded = openMenu === menu.label
-          return <div className="erp-horizontal-menu-item" key={menu.label}>
-            <button
-              type="button"
-              className={`erp-horizontal-menu-button ${menu.label.startsWith('Menu ') ? 'erp-module-menu-button' : ''} ${active ? 'is-active' : ''}`}
-              onClick={() => hasChildren ? setOpenMenu(value => value === menu.label ? null : menu.label) : openMenuItem(menu)}
-              aria-expanded={hasChildren ? expanded : undefined}
-            >
-              {menu.icon && <menu.icon size={16} />}{menu.label}
-              {hasChildren && (expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />)}
-            </button>
-            {hasChildren && expanded && <div className="erp-horizontal-dropdown">
-              {menu.children?.map(child => {
-                const childActive = pathname === child.route || pathname.startsWith(child.route + '/')
-                const childHasChildren = Boolean(child.children?.length)
-                const childExpanded = openSubMenu === child.label
-                return <div className="erp-horizontal-dropdown-item" key={child.label}>
-                  <button
-                    type="button"
-                    className={childActive ? 'is-active' : ''}
-                    aria-expanded={childHasChildren ? childExpanded : undefined}
-                    onClick={() => childHasChildren ? setOpenSubMenu(value => value === child.label ? null : child.label) : openMenuItem(child)}
-                  >{child.icon && <child.icon size={12} />}{child.label}{childHasChildren && <ChevronRight size={12} />}</button>
-                  {childHasChildren && childExpanded && <div className="erp-horizontal-subdropdown">
-                    {child.children?.map(sub => <button type="button" key={sub.route} className={pathname === sub.route.split('?')[0] && window.location.search === (sub.route.includes('?') ? `?${sub.route.split('?')[1]}` : '') ? 'is-active' : ''} onClick={() => go(sub.route)}>{sub.label}</button>)}
+      <header className="erp-windows-topbar">
+        <div className="erp-windows-start-anchor">
+          <button className={`erp-windows-start-button ${startMenuOpen ? 'is-open' : ''}`} type="button" aria-label="Abrir menu principal" aria-expanded={startMenuOpen} title="Menu principal" onClick={() => { setStartMenuOpen(value => !value); setOpenMenu(null); setOpenSubMenu(null) }}>
+            <span className="erp-windows-logo">S</span>
+          </button>
+          {startMenuOpen && <section className="erp-windows-start-menu" aria-label="Menu principal do ERP">
+            <div className="erp-windows-start-heading">
+              <div><strong>SGQERP INDUSTRIAL</strong><small>Menu de módulos</small></div>
+              <button type="button" aria-label="Fechar menu" onClick={() => setStartMenuOpen(false)}><X size={14} /></button>
+            </div>
+            <label className="erp-windows-menu-search">
+              <Search size={14} />
+              <input value={moduleSearch} onChange={event => setModuleSearch(event.target.value)} placeholder="Pesquisar módulo ou rotina..." aria-label="Pesquisar módulo ou rotina" />
+              {moduleSearch && <button type="button" aria-label="Limpar pesquisa" onClick={() => setModuleSearch('')}><X size={12} /></button>}
+            </label>
+            <div className="erp-windows-menu-list">
+              {searchedMenus.map(menu => {
+                const Icon = menu.icon ?? Home
+                const hasChildren = Boolean(menu.children?.length)
+                const expanded = openMenu === menu.label || Boolean(normalizedSearch && menu.children?.length)
+                return <div className="erp-windows-menu-group" key={menu.label}>
+                  <div className={`erp-windows-menu-row ${current?.label === menu.label ? 'is-active' : ''}`}>
+                    <button type="button" className="erp-windows-menu-main" onClick={() => {
+                      if (hasChildren) { setOpenMenu(value => value === menu.label ? null : menu.label); setOpenSubMenu(null) }
+                      else { setStartMenuOpen(false); openMenuItem(menu) }
+                    }}>
+                      <Icon size={16} /><span>{menu.label}</span>
+                    </button>
+                    {hasChildren && <button type="button" className="erp-windows-menu-expand" aria-label={`Expandir ${menu.label}`} aria-expanded={expanded} onClick={() => { setOpenMenu(value => value === menu.label ? null : menu.label); setOpenSubMenu(null) }}>{expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}</button>}
+                  </div>
+                  {hasChildren && expanded && <div className="erp-windows-menu-children">
+                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => <button type="button" key={child.label + child.route} className={pathname === child.route ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }}>{child.label}</button>)}
                   </div>}
                 </div>
               })}
-            </div>}
-          </div>
-        })}
-      </nav>
+              {searchedMenus.length === 0 && <p className="erp-windows-no-results">Nenhum módulo ou rotina encontrado.</p>}
+            </div>
+            <div className="erp-windows-start-footer"><UserRound size={13} /><span>{operatorName === 'Usuário ERP' ? sessionOperator : operatorName}</span><button type="button" title="Sair da sessão" onClick={() => void logout()}><LogOut size={13} /> Sair</button></div>
+          </section>}
+        </div>
+        <label className="erp-windows-quick-search">
+          <Search size={14} />
+          <input value={moduleSearch} onChange={event => { setModuleSearch(event.target.value); setStartMenuOpen(true) }} onFocus={() => { if (moduleSearch) setStartMenuOpen(true) }} placeholder="Pesquisar módulo..." aria-label="Pesquisar módulo" />
+          {moduleSearch && <button type="button" aria-label="Limpar pesquisa" onClick={() => setModuleSearch('')}><X size={12} /></button>}
+        </label>
+        <div className="erp-windows-system-title" aria-live="polite">
+          <strong>SGQERP INDUSTRIAL</strong><span>GESTÃO INTEGRADA · v0.1.7</span>
+        </div>
+        <div className="erp-windows-session">
+          <time dateTime={now.toISOString()}>{new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)} <span>·</span> {new Intl.DateTimeFormat('pt-BR', { timeStyle: 'medium' }).format(now)}</time>
+          <div className="erp-windows-user"><UserRound size={14} /><span>{operatorName === 'Usuário ERP' ? sessionOperator : operatorName}</span></div>
+          <button type="button" className="erp-windows-help" title="Ajuda da tela atual" aria-expanded={helpOpen} onClick={() => setHelpOpen(value => !value)}><CircleHelp size={15} /></button>
+          <button type="button" className="erp-windows-logout" onClick={() => void logout()} title="Sair da sessão"><LogOut size={13} /></button>
+        </div>
+        {helpOpen && <div className="erp-windows-help-panel" role="dialog" aria-label="Ajuda contextual da tela">
+          <strong>{contextualHelp.title}</strong><p>{contextualHelp.purpose}</p><strong>Como usar</strong>
+          <ol>{contextualHelp.steps.map((step, index) => <li key={index}>{step}</li>)}</ol><strong>Campos e preenchimento</strong>
+          <ul>{contextualHelp.fields.map((field, index) => <li key={index}>{field}</li>)}</ul>
+          <small>Tela atual: {pathname}</small><button type="button" onClick={() => { setHelpOpen(false); navigate('/ajuda') }}>Abrir Central de Ajuda</button>
+        </div>}
+      </header>
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
       </main>
@@ -279,13 +299,49 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-status-legend-item small{display:block;font-size:9px;line-height:1.3;color:#647b85}
         .erp-status-legend-panel>p{grid-column:1/-1;margin:0;padding-top:5px;border-top:1px solid #e2e8f0;font-size:9px;color:#647b85}
         @media print{ @page{size:A4;margin:12mm} .erp-horizontal-header,.erp-horizontal-menu,.erp-global-status-row,.print-hidden,.erp-horizontal-help{display:none!important} .erp-horizontal-shell,.erp-horizontal-workspace{min-height:0!important;background:#fff!important;padding:0!important} .erp-horizontal-workspace *{box-shadow:none!important;backdrop-filter:none!important} thead{display:table-header-group} tr{break-inside:avoid} }
-        .erp-horizontal-header{height:64px;min-height:64px;display:flex;align-items:center;gap:12px;padding:0 12px;background:#f4fbfd;border-bottom:1px solid #b9d4df;box-sizing:border-box;position:sticky;top:0;z-index:1600}
-        .erp-horizontal-brand{height:60px;display:flex;align-items:center;gap:10px;border:0;background:transparent;color:#000;cursor:pointer;padding:0 6px;white-space:nowrap}
-        .erp-horizontal-brand img{height:58px;width:200px;min-width:200px;object-fit:contain;object-position:left}
-        .erp-horizontal-global-title{display:flex;flex:1;min-width:0;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:2px;color:#123B50;line-height:1.15}
-        .erp-horizontal-global-title strong{font-size:15px;font-weight:800;letter-spacing:.01em}
-        .erp-horizontal-global-title span{font-size:10px;font-weight:600;color:#315466}
-        .erp-horizontal-header-right{display:flex;flex:0 0 auto;align-items:center;justify-content:flex-end;gap:8px}
+        .erp-windows-topbar{height:48px;min-height:48px;display:grid;grid-template-columns:auto minmax(145px,210px) minmax(220px,1fr) auto;align-items:center;gap:10px;padding:0 10px;background:#fff;border-bottom:1px solid #cbd5e1;box-sizing:border-box;position:sticky;top:0;z-index:1600;color:#111827}
+        .erp-windows-start-anchor{position:relative;height:100%;display:flex;align-items:center}
+        .erp-windows-start-button{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid #d1d5db;border-radius:2px;background:#fff;cursor:pointer}
+        .erp-windows-start-button:hover,.erp-windows-start-button.is-open{background:#eaf5f8;border-color:#2d8db8}
+        .erp-windows-logo{width:24px;height:24px;display:flex;align-items:center;justify-content:center;background:#123b50;color:#fff;font-size:17px;font-weight:800;line-height:1}
+        .erp-windows-quick-search,.erp-windows-menu-search{height:30px;display:flex;align-items:center;gap:6px;padding:0 8px;border:1px solid #cbd5e1;background:#fff;color:#475569;box-sizing:border-box}
+        .erp-windows-quick-search:focus-within,.erp-windows-menu-search:focus-within{border-color:#2d8db8;box-shadow:0 0 0 1px rgba(45,141,184,.15)}
+        .erp-windows-quick-search input,.erp-windows-menu-search input{width:100%;min-width:0;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;font-size:11px!important;color:#111827}
+        .erp-windows-quick-search button,.erp-windows-menu-search button{border:0;background:transparent;display:flex;align-items:center;justify-content:center;padding:2px;cursor:pointer}
+        .erp-windows-system-title{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;text-align:center}
+        .erp-windows-system-title strong{font-size:13px;font-weight:800;letter-spacing:.06em;color:#123b50;white-space:nowrap}
+        .erp-windows-system-title span{font-size:9px;font-weight:600;color:#64748b;letter-spacing:.06em;white-space:nowrap}
+        .erp-windows-session{display:flex;align-items:center;justify-content:flex-end;gap:9px;min-width:0;font-size:10px;color:#111827}
+        .erp-windows-session time{white-space:nowrap;font-variant-numeric:tabular-nums}
+        .erp-windows-session time span{color:#94a3b8;padding:0 2px}
+        .erp-windows-user{display:flex;align-items:center;gap:5px;max-width:190px;min-width:0;padding-left:9px;border-left:1px solid #e2e8f0}
+        .erp-windows-user span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+        .erp-windows-help,.erp-windows-logout{width:27px;height:27px;display:flex;align-items:center;justify-content:center;border:1px solid #e2e8f0;background:#fff;color:#334155;border-radius:2px;cursor:pointer}
+        .erp-windows-help:hover,.erp-windows-logout:hover{background:#eaf5f8;border-color:#b9d4df}
+        .erp-windows-start-menu{position:absolute;top:47px;left:0;width:min(340px,calc(100vw - 16px));max-height:min(72vh,620px);display:flex;flex-direction:column;background:#fff;border:1px solid #cbd5e1;box-shadow:0 12px 32px rgba(15,23,42,.2);z-index:1800}
+        .erp-windows-start-heading{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0}
+        .erp-windows-start-heading div{display:flex;flex-direction:column;gap:2px}.erp-windows-start-heading strong{font-size:11px;color:#123b50}.erp-windows-start-heading small{font-size:9px;color:#64748b}
+        .erp-windows-start-heading>button{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:0;background:transparent;cursor:pointer}
+        .erp-windows-menu-search{margin:9px 10px 7px;flex:0 0 30px}
+        .erp-windows-menu-list{padding:0 6px 8px;overflow:auto;min-height:0}
+        .erp-windows-menu-row{min-height:34px;display:flex;align-items:center;border:1px solid transparent}
+        .erp-windows-menu-row.is-active{background:#edf6fa;border-color:#d5e8ef}
+        .erp-windows-menu-main{flex:1;min-width:0;min-height:32px;display:flex;align-items:center;gap:9px;padding:0 8px;border:0;background:transparent;text-align:left;color:#1e293b;font-size:11px;cursor:pointer}
+        .erp-windows-menu-main span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .erp-windows-menu-main:hover,.erp-windows-menu-expand:hover{background:#f1f5f9}
+        .erp-windows-menu-expand{width:30px;align-self:stretch;display:flex;align-items:center;justify-content:center;border:0;background:transparent;cursor:pointer;color:#475569}
+        .erp-windows-menu-children{margin:0 0 4px 24px;padding:2px 0 2px 8px;border-left:1px solid #cbd5e1}
+        .erp-windows-menu-children button{display:block;width:100%;min-height:29px;padding:5px 8px;border:0;background:#fff;text-align:left;color:#334155;font-size:10px;cursor:pointer}
+        .erp-windows-menu-children button:hover,.erp-windows-menu-children button.is-active{background:#eaf5f8;color:#123b50}
+        .erp-windows-no-results{margin:12px 8px;font-size:10px;color:#64748b}
+        .erp-windows-start-footer{min-height:38px;display:flex;align-items:center;gap:6px;padding:0 10px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:10px;color:#334155}
+        .erp-windows-start-footer span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .erp-windows-start-footer button{height:25px;display:flex;align-items:center;gap:4px;padding:0 7px;border:1px solid #cbd5e1;background:#fff;border-radius:2px;font-size:10px;cursor:pointer}
+        .erp-windows-help-panel{position:absolute;right:40px;top:46px;z-index:1800;width:min(370px,90vw);max-height:75vh;overflow:auto;padding:10px 12px;border:1px solid #b9cbd3;background:#fff;box-shadow:0 6px 16px rgba(18,59,80,.16);font-size:10px;line-height:1.45;color:#173b4a}
+        .erp-windows-help-panel p{margin:5px 0}.erp-windows-help-panel ol,.erp-windows-help-panel ul{margin:4px 0 8px;padding-left:17px}.erp-windows-help-panel li{margin-bottom:3px}.erp-windows-help-panel small{display:block;border-top:1px solid #e2e8f0;padding-top:7px;color:#647b85}
+        .erp-windows-help-panel>button{margin-top:7px;height:28px;padding:0 9px;border:1px solid #2d8db8;background:#2d8db8;color:#fff;border-radius:2px;cursor:pointer}
+        @media(max-width:900px){.erp-windows-topbar{grid-template-columns:auto minmax(110px,170px) minmax(140px,1fr) auto;gap:6px;padding:0 6px}.erp-windows-session{gap:5px}.erp-windows-session time{font-size:9px}.erp-windows-user{max-width:120px;padding-left:5px}.erp-windows-system-title strong{font-size:11px}}
+        @media(max-width:650px){.erp-windows-topbar{height:48px;grid-template-columns:auto minmax(0,1fr) auto;gap:6px}.erp-windows-quick-search{display:none}.erp-windows-system-title{align-items:flex-start;text-align:left}.erp-windows-system-title strong{font-size:10px;letter-spacing:0}.erp-windows-system-title span{font-size:8px}.erp-windows-session time{display:none}.erp-windows-user{max-width:90px}.erp-windows-user span{display:none}}
         .erp-horizontal-brand strong{font-size:13px;font-weight:700;letter-spacing:.01em}
         .erp-horizontal-help{height:30px;display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:#315466;font-size:11px;cursor:pointer;padding:0 5px}
         .erp-horizontal-session{height:30px;display:flex;align-items:center;gap:5px;padding-left:8px;border-left:1px solid #dbe5e9;white-space:nowrap;font-size:11px;color:#173b4a}
