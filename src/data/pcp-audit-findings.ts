@@ -59,7 +59,7 @@ export const PCP_AUDIT_FINDINGS: AuditFinding[] = [
     descricao: 'A consulta de necessidades do MRP também precisa ser limitada à empresa da sessão, além das consultas de produtos e execuções.',
     impacto: 'Risco de contaminação cruzada de dados entre tenants ou comportamento inconsistente em sessões multi-empresa.',
     correcaoPrevista: "Obter empresa_id via erp_current_empresa_id e aplicar .eq('empresa_id', empresaId) nas consultas de produtos, execuções e necessidades.",
-    evidenciaValidacao: 'Código atualizado: produtos e execuções filtram empresa_id; loadNeeds resolve erp_current_empresa_id e filtra empresa_id junto com run_id. Build e validação em runtime ainda pendentes.'
+    evidenciaValidacao: 'Código atualizado: produtos e execuções filtram empresa_id; loadNeeds resolve erp_current_empresa_id e filtra empresa_id junto com run_id. Build e validação em runtime ainda pendentes.',
     status: 'CORRIGIDO',
     dataIdentificacao: '2026-10-17',
     dataUltimaVerificacao: '2026-10-17',
@@ -107,7 +107,7 @@ export const PCP_AUDIT_FINDINGS: AuditFinding[] = [
     descricao: 'Interface fora dos padrões visuais do ERP: fundo escuro (bg-slate-900), botões gigantes (min-h-16), cantos arredondados excessivos (rounded-xl).',
     impacto: 'Ruptura visual severa na fábrica, perda de densidade de dados e fadiga visual por despadronização de tema.',
     correcaoPrevista: 'Refatorar para o padrão compacto claro (#F4FBFD, bordas #123B50/#2D8DB8, botões h-8 com rounded-[2px] e tabelas de 32px).',
-    evidenciaValidacao: 'Classes compactadas no arquivo PCPParadas.tsx: fundo claro industrial, painéis com raio 2px, labels 9px, selects/botões 30px e ações de motivo compactas. Build e teste visual ainda pendentes.'
+    evidenciaValidacao: 'Classes compactadas no arquivo PCPParadas.tsx: fundo claro industrial, painéis com raio 2px, labels 9px, selects/botões 30px e ações de motivo compactas. Build e teste visual ainda pendentes.',
     status: 'CORRIGIDO',
     dataIdentificacao: '2026-10-17',
     dataUltimaVerificacao: '2026-10-17',
