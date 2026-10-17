@@ -146,29 +146,29 @@ export default function PCPParadas() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-900 p-5 text-white">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-700 pb-4">
+    <main className="min-h-screen bg-[#f4fbfd] p-3 text-[#123b50]">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#cbd9e1] pb-3">
         <div>
-          <p className="text-sm font-bold text-sky-300">PCP &gt; PARADAS / SETUP</p>
-          <h1 className="text-2xl font-black">Registro de Parada de Máquina</h1>
+          <p className="text-[9px] font-bold tracking-wider text-[#2d8db8]">PCP &gt; PARADAS / SETUP</p>
+          <h1 className="text-[16px] font-extrabold">Registro de Parada de Máquina</h1>
         </div>
         <div className="flex gap-2">
-          <button type="button" onClick={() => void load()} disabled={busy} className="h-[30px] rounded-[2px] border border-slate-600 px-3 text-[11px] font-bold disabled:opacity-50">
+          <button type="button" onClick={() => void load()} disabled={busy} className="h-[30px] rounded-[2px] border border-[#b8cbd5] bg-white px-3 text-[10px] font-bold text-[#123b50] disabled:opacity-50">
             <RefreshCw className="mr-2 inline" size={17} />Atualizar
           </button>
-          <button type="button" onClick={() => void close()} disabled={busy || !stopId} className="h-[30px] rounded-[2px] bg-emerald-600 px-3 text-[11px] font-black disabled:opacity-40">
+          <button type="button" onClick={() => void close()} disabled={busy || !stopId} className="h-[30px] rounded-[2px] bg-[#2d8db8] px-3 text-[10px] font-bold text-white disabled:opacity-40">
             <Square className="mr-2 inline" size={17} />FECHAR EVENTO
           </button>
         </div>
       </header>
 
-      {(error || message) && <div role={error ? 'alert' : 'status'} className={`mx-auto mt-5 max-w-[1600px] rounded-md p-4 font-bold ${error ? 'bg-rose-900 text-rose-100' : 'bg-emerald-900 text-emerald-100'}`}>{error || message}</div>}
+      {(error || message) && <div role={error ? 'alert' : 'status'} className={`mx-auto mt-3 max-w-[1600px] rounded-[2px] border p-2 text-[11px] font-bold ${error ? 'border-rose-300 bg-rose-50 text-rose-800' : 'border-emerald-300 bg-emerald-50 text-emerald-800'}`}>{error || message}</div>}
 
-      <div className="mx-auto mt-6 grid max-w-[1600px] grid-cols-1 gap-5 lg:grid-cols-2">
-        <section className="rounded-xl border border-slate-700 bg-slate-800 p-6">
-          <div className="grid grid-cols-2 gap-5">
-            <label className="grid gap-2 text-sm font-bold text-slate-300">MÁQUINA
-              <select value={machine} disabled={Boolean(stopId) || busy} onChange={event => setMachine(event.target.value)} className="h-[30px] rounded-[2px] border border-slate-600 bg-slate-950 px-2.5 text-[11px] text-white">
+      <div className="mx-auto mt-3 grid max-w-[1600px] grid-cols-1 gap-3 lg:grid-cols-2">
+        <section className="rounded-[2px] border border-[#cbd9e1] bg-white p-3">
+          <div className="grid grid-cols-2 gap-3">
+            <label className="grid gap-1 text-[9px] font-bold tracking-wider text-[#315466]">MÁQUINA
+              <select value={machine} disabled={Boolean(stopId) || busy} onChange={event => setMachine(event.target.value)} className="h-[30px] rounded-[2px] border border-[#b8cbd5] bg-white px-2 text-[10px] text-[#123b50]">
                 <option value="">Selecionar máquina</option>
                 {machines.map(entry => <option key={entry.id} value={entry.id}>{entry.codigo} — {entry.nome}</option>)}
               </select>
@@ -180,24 +180,24 @@ export default function PCPParadas() {
               </select>
             </label>
           </div>
-          <div className="mt-6 rounded-lg bg-slate-950 p-6 text-center">
-            <span className="text-sm font-bold text-slate-400">TEMPO DE PARADA</span>
-            <div className="mt-2 font-mono text-5xl font-black text-amber-300">{formatElapsed(elapsed)}</div>
+          <div className="mt-3 rounded-[2px] border border-[#d8e5eb] bg-[#f4fbfd] p-3 text-center">
+            <span className="text-[9px] font-bold tracking-wider text-[#526d7a]">TEMPO DE PARADA</span>
+            <div className="mt-1 font-mono text-3xl font-bold text-[#b7791f]">{formatElapsed(elapsed)}</div>
           </div>
-          {reason && <p className="mt-4 text-sm font-bold text-amber-200">Motivo registrado: {reason}</p>}
+          {reason && <p className="mt-2 text-[10px] font-bold text-[#8a5a13]">Motivo registrado: {reason}</p>}
         </section>
 
         <section className="rounded-xl border border-slate-700 bg-slate-800 p-6">
-          <h2 className="text-xl font-black">MOTIVO OBRIGATÓRIO</h2>
-          <div className="mt-4 grid gap-3">
+          <h2 className="text-[12px] font-extrabold">MOTIVO OBRIGATÓRIO</h2>
+          <div className="mt-3 grid gap-2">
             {reasons.map(([label, color]) => (
-              <button key={label} type="button" disabled={busy || Boolean(stopId) || !machine} onClick={() => void start(label)} className={`min-h-16 rounded-lg px-5 text-left text-base font-black disabled:cursor-not-allowed disabled:opacity-50 ${color}`}>
+              <button key={label} type="button" disabled={busy || Boolean(stopId) || !machine} onClick={() => void start(label)} className={`min-h-[30px] rounded-[2px] border border-white/20 px-3 py-2 text-left text-[10px] font-bold disabled:cursor-not-allowed disabled:opacity-50 ${color}`}>
                 {label}
               </button>
             ))}
           </div>
-          <label className="mt-4 grid gap-2 text-sm font-bold text-slate-300">OBSERVAÇÃO
-            <textarea disabled={Boolean(stopId) || busy} className="min-h-28 w-full rounded-lg border border-slate-600 bg-slate-950 p-4 text-base text-white disabled:opacity-70" value={observation} onChange={event => setObservation(event.target.value)} placeholder="Observação do operador"/>
+          <label className="mt-3 grid gap-1 text-[9px] font-bold tracking-wider text-[#315466]">OBSERVAÇÃO
+            <textarea disabled={Boolean(stopId) || busy} className="min-h-[64px] w-full rounded-[2px] border border-[#b8cbd5] bg-white p-2 text-[11px] text-[#123b50] disabled:opacity-70" value={observation} onChange={event => setObservation(event.target.value)} placeholder="Observação do operador"/>
           </label>
         </section>
       </div>
