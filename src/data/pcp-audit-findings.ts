@@ -43,7 +43,7 @@ export const PCP_AUDIT_FINDINGS: AuditFinding[] = [
     descricao: "Consulta ao Supabase referencia coluna inexistente 'criado_em' em erp_ordens_producao (.order('criado_em') e .select('..., criado_em, ...')).",
     impacto: 'Falha imediata na query com erro SQL do Postgres, impedindo a listagem e gestão das ordens pelo operador.',
     correcaoPrevista: "Referências a criado_em substituídas por created_at no tipo, select, ordenação e renderização.",
-    evidenciaValidacao: 'Confirmado por consulta ao schema em migrations e padrão das telas PCPOrdens.tsx e PCPExecucaoIndustrial.tsx.',
+    evidenciaValidacao: 'Commit a12454b2f7da30346f7e4b65d0114314388e1271; type-check/build e deployment desse commit ainda aguardam confirmação.',
     status: 'BLOQUEADO',
     dataIdentificacao: '2026-10-17',
     dataUltimaVerificacao: '2026-10-17',
