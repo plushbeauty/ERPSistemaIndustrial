@@ -191,7 +191,7 @@ export default function PCPParadas() {
           <h2 className="text-[10px] font-extrabold tracking-wider text-[#123b50]">MOTIVO OBRIGATÓRIO</h2>
           <div className="mt-3 grid gap-2">
             {reasons.map(([label, color]) => (
-              <button key={label} type="button" disabled={busy || Boolean(stopId) || !machine} onClick={() => void start(label)} className={`min-h-[38px] rounded-[2px] border border-slate-200 px-3 py-2 text-left text-[10px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 ${color}`}>
+              <button key={label} type="button" disabled={busy || Boolean(stopId) || !machine} onClick={() => void start(label)} className={`min-h-[30px] rounded-[2px] border border-slate-200 px-3 py-1 text-left text-[10px] leading-tight font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 ${color}`}>
                 {label}
               </button>
             ))}
