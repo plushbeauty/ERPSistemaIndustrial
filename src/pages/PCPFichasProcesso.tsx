@@ -268,6 +268,10 @@ export default function PCPFichasProcesso() {
    if (missing.length) throw new Error('Preencha os parâmetros obrigatórios: ' + missing.map(p => p.label).join(', ') + '.')
    const numericInvalid = paramsFor(category).filter(p => p.type === 'number' && params[p.key] !== '' && !Number.isFinite(Number(params[p.key])))
    if (numericInvalid.length) throw new Error('Parâmetros numéricos inválidos: ' + numericInvalid.map(p => p.label).join(', ') + '.')
+   const cavityCount = Number(params.cavidades_ativas)
+   if (paramsFor(category).some(p => p.key === 'cavidades_ativas') && (!Number.isInteger(cavityCount) || cavityCount <= 0)) {
+    throw new Error('Cavidades ativas deve ser um número inteiro maior que zero.')
+   }
    const requiresApprovalMetadata = ['APROVADA', 'LIBERADA'].includes(status)
    if (requiresApprovalMetadata && !approvedAt) throw new Error('Informe a data de homologação antes de aprovar ou liberar a ficha.')
    if (requiresApprovalMetadata && !signature.trim()) throw new Error('A aprovação ou liberação requer assinatura técnica identificada.')
@@ -279,7 +283,7 @@ export default function PCPFichasProcesso() {
    }))
    const payload = {
     empresa_id: company, codigo_ficha: code.trim(), produto_id: productId, ferramenta_id: toolId || null, maquina_id: machineId || null,
-    cavidades_ativas: Number(params.cavidades_ativas) || 1, revisao: versionNumber, versao_ficha: versionNumber,
+    cavidades_ativas: paramsFor(category).some(p => p.key === 'cavidades_ativas') ? cavityCount : 1, revisao: versionNumber, versao_ficha: versionNumber,
     categoria_processo: category, data_homologacao: approvedAt || null, assinatura_tecnica: signature.trim() || null,
     status, parametros_tecnicos: { ...numericParams, instrucoes_setup: instructions.trim() || null },
     ativo: status !== 'OBSOLETA', atualizado_em: new Date().toISOString(),
