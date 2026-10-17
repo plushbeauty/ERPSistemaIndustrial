@@ -3,6 +3,7 @@ import { CalendarRange, CheckCircle2, FileSliders, Printer, RefreshCw, Save, Sea
 import PCPMoldPhotoPanel from '../components/PCPMoldPhotoPanel'
 import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
 type Product = { id: string; codigo: string; nome: string }
 type Tool = { id: string; codigo: string; nome: string; tipo: string }
@@ -10,6 +11,7 @@ type Machine = { id: string; codigo: string; nome: string; tipo: string | null }
 type Category = 'INJETADOS' | 'PRENSADOS' | 'ESTAMPARIA' | 'MECANICA' | 'TRATAMENTO_SUPERFICIAL' | 'PINTURA_QUIMICA' | 'CORTE_VINCO' | 'ACABAMENTO' | 'MONTAGEM_EMBALAGEM'
 type Param = { key: string; label: string; unit: string; type?: 'number' | 'text' | 'select'; required?: boolean; step?: string; multiline?: boolean; options?: string[] }
 type Saved = { id: string; codigo_ficha: string; produto_id: string; ferramenta_id?: string | null; maquina_id?: string | null; categoria_processo: Category; versao_ficha: number; status: string; data_homologacao?: string | null; assinatura_tecnica?: string | null; parametros_tecnicos: Record<string, unknown>; revisao?: number }
+type FichaAudit = { id: string; acao: 'INSERT' | 'UPDATE' | 'DELETE'; dados_antigos: Record<string, unknown> | null; dados_novos: Record<string, unknown> | null; executado_por: string | null; executado_em: string }
 const categories: { value: Category; label: string }[] = [
  { value: 'INJETADOS', label: 'Injetados' }, { value: 'PRENSADOS', label: 'Prensados' },
  { value: 'ESTAMPARIA', label: 'Estampos / Estamparia' }, { value: 'MECANICA', label: 'Mecânica' },
@@ -125,16 +127,29 @@ const paramsFor = (category: Category) => category === 'ACABAMENTO' ? finishing 
 const inputClass = 'h-[30px] w-full rounded-[3px] border border-slate-300 bg-white px-2 text-[11px] font-medium text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-sky-100'
 const labelClass = 'mb-1 block text-[9px] font-bold uppercase tracking-wider text-neutral-500/90'
 const blankParameters = (category: Category) => Object.fromEntries(paramsFor(category).map(p => [p.key, ''])) as Record<string, string>
+const auditChanges = (event: FichaAudit) => {
+ const oldParams = (event.dados_antigos?.parametros_tecnicos ?? {}) as Record<string, unknown>
+ const newParams = (event.dados_novos?.parametros_tecnicos ?? {}) as Record<string, unknown>
+ const changed = [...new Set([...Object.keys(oldParams), ...Object.keys(newParams)])]
+  .filter(key => JSON.stringify(oldParams[key]) !== JSON.stringify(newParams[key]))
+  .slice(0, 4)
+ return changed.length ? changed.map(key => key.replaceAll('_', ' ')).join(' · ') : 'Dados cadastrais / estado da ficha'
+}
 
 export default function PCPFichasProcesso() {
  const [searchParams, setSearchParams] = useSearchParams()
  const initialCategory = (categories.find(c => c.value === searchParams.get('tipo')?.toUpperCase())?.value ?? 'INJETADOS') as Category
  const [category, setCategory] = useState<Category>(initialCategory)
  const [company, setCompany] = useState('')
+ const [canApprove, setCanApprove] = useState(false)
  const [products, setProducts] = useState<Product[]>([])
  const [tools, setTools] = useState<Tool[]>([])
  const [machines, setMachines] = useState<Machine[]>([])
  const [rows, setRows] = useState<Saved[]>([])
+ const [history, setHistory] = useState<FichaAudit[]>([])
+ const [historyFichaId, setHistoryFichaId] = useState('')
+ const [historyLoading, setHistoryLoading] = useState(false)
+ const [historyError, setHistoryError] = useState('')
  const [query, setQuery] = useState('')
  const [productId, setProductId] = useState(searchParams.get('produto') ?? '')
  const [toolId, setToolId] = useState('')
@@ -163,14 +178,15 @@ export default function PCPFichasProcesso() {
    const tenant = await supabase.rpc('erp_current_empresa_id')
    if (tenant.error || typeof tenant.data !== 'string' || !tenant.data) throw tenant.error ?? new Error('Empresa da sessão não identificada.')
    setCompany(tenant.data)
-   const [p, t, m, f] = await Promise.all([
-    supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', tenant.data).eq('ativo', true).order('codigo').limit(3000),
-    supabase.from('erp_ferramentas_industriais').select('id,codigo,nome,tipo').eq('empresa_id', tenant.data).eq('ativo', true).order('codigo').limit(2000),
-    supabase.from('erp_maquinas').select('id,codigo,nome,tipo').eq('empresa_id', tenant.data).not('status', 'eq', 'INATIVA').order('codigo').limit(2000),
-    supabase.from('erp_fichas_processo').select('id,codigo_ficha,produto_id,ferramenta_id,maquina_id,categoria_processo,versao_ficha,status,data_homologacao,assinatura_tecnica,parametros_tecnicos,revisao').eq('empresa_id', tenant.data).order('codigo_ficha').limit(1000),
+   const approvalPermission = await supabase.rpc('erp_has_permission', { p_code: 'producao.fichas.aprovar' })
+   setCanApprove(!approvalPermission.error && approvalPermission.data === true)
+   const [productRows, toolRows, machineRows, fichaRows] = await Promise.all([
+    fetchAllPages<Product>((from, to) => supabase.from('erp_produtos').select('id,codigo,nome', { count: 'exact' }).eq('empresa_id', tenant.data).eq('ativo', true).order('codigo').range(from, to)),
+    fetchAllPages<Tool>((from, to) => supabase.from('erp_ferramentas_industriais').select('id,codigo,nome,tipo', { count: 'exact' }).eq('empresa_id', tenant.data).eq('ativo', true).order('codigo').range(from, to)),
+    fetchAllPages<Machine>((from, to) => supabase.from('erp_maquinas').select('id,codigo,nome,tipo', { count: 'exact' }).eq('empresa_id', tenant.data).not('status', 'eq', 'INATIVA').order('codigo').range(from, to)),
+    fetchAllPages<Saved>((from, to) => supabase.from('erp_fichas_processo').select('id,codigo_ficha,produto_id,ferramenta_id,maquina_id,categoria_processo,versao_ficha,status,data_homologacao,assinatura_tecnica,parametros_tecnicos,revisao', { count: 'exact' }).eq('empresa_id', tenant.data).order('codigo_ficha').range(from, to)),
    ])
-   for (const result of [p, t, m, f]) if (result.error) throw result.error
-   setProducts((p.data ?? []) as Product[]); setTools((t.data ?? []) as Tool[]); setMachines((m.data ?? []) as Machine[]); setRows((f.data ?? []) as Saved[])
+   setProducts(productRows); setTools(toolRows); setMachines(machineRows); setRows(fichaRows)
   } catch (e) { setError(e instanceof Error ? e.message : 'Falha ao carregar os cadastros da ficha.') }
   finally { setBusy(false) }
  }
@@ -182,13 +198,33 @@ export default function PCPFichasProcesso() {
  }), [rows, products, query])
  const updateParam = (key: string, value: string) => setParams(current => ({ ...current, [key]: value }))
 
+ async function loadHistory(rowId: string) {
+  setHistoryLoading(true); setHistoryError('')
+  try {
+   if (!company) throw new Error('Empresa da sessão não identificada.')
+   const read = () => supabase.from('erp_auditoria_logs').select('id,acao,dados_antigos,dados_novos,executado_por,executado_em').eq('empresa_id', company).eq('tabela_afetada', 'public.erp_fichas_processo')
+   const [oldResult, newResult] = await Promise.all([
+    read().contains('dados_antigos', { id: rowId }).order('executado_em', { ascending: false }).limit(100),
+    read().contains('dados_novos', { id: rowId }).order('executado_em', { ascending: false }).limit(100),
+   ])
+   if (oldResult.error) throw oldResult.error
+   if (newResult.error) throw newResult.error
+   const byId = new Map<string, FichaAudit>()
+   for (const item of [...(oldResult.data ?? []), ...(newResult.data ?? [])] as FichaAudit[]) byId.set(item.id, item)
+   setHistory([...byId.values()].sort((a, b) => b.executado_em.localeCompare(a.executado_em)))
+  } catch (e) { setHistory([]); setHistoryError(e instanceof Error ? e.message : 'Falha ao consultar o histórico da ficha.') }
+  finally { setHistoryLoading(false) }
+ }
+
  function openRow(row: Saved) {
   setCode(row.codigo_ficha); setProductId(row.produto_id); setCategory(row.categoria_processo)
   setVersion(String(row.versao_ficha ?? row.revisao ?? 1)); setStatus(row.status); setToolId(row.ferramenta_id ?? ''); setMachineId(row.maquina_id ?? '')
   setParams({ ...blankParameters(row.categoria_processo), ...Object.fromEntries(Object.entries(row.parametros_tecnicos ?? {}).map(([k,v]) => [k, String(v ?? '')])) })
   setApprovedAt(row.data_homologacao ?? ''); setSignature(row.assinatura_tecnica ?? ''); setInstructions(String(row.parametros_tecnicos?.instrucoes_setup ?? ''))
   setSearchParams({ tipo: row.categoria_processo, produto: row.produto_id })
+  setHistoryFichaId(row.id)
   setError(''); setNotice('')
+  void loadHistory(row.id)
  }
 
  async function save() {
@@ -196,6 +232,9 @@ export default function PCPFichasProcesso() {
   try {
    if (!company) throw new Error('Empresa não identificada.')
    if (!code.trim() || !productId) throw new Error('Código da ficha e produto são obrigatórios.')
+   if (['APROVADA', 'LIBERADA', 'OBSOLETA'].includes(status) && !canApprove && status !== rows.find(row => row.codigo_ficha === code.trim())?.status) {
+    throw new Error('Seu perfil não pode homologar, liberar ou obsoletar fichas de processo. Solicite a permissão ao administrador da empresa.')
+   }
    const versionNumber = Number(version)
    if (!Number.isInteger(versionNumber) || versionNumber < 1) throw new Error('Versão deve ser um inteiro maior que zero.')
    const missing = paramsFor(category).filter(p => p.required && !String(params[p.key] ?? '').trim())
@@ -218,6 +257,8 @@ export default function PCPFichasProcesso() {
    if (result.error) throw result.error
    const saved = result.data as Saved
    setRows(current => [saved, ...current.filter(r => r.id !== saved.id)])
+   setHistoryFichaId(saved.id)
+   void loadHistory(saved.id)
    setNotice('Ficha técnica gravada no cadastro de engenharia da empresa.')
   } catch (e) { setError(e instanceof Error ? e.message : 'Falha ao gravar a ficha técnica.') }
   finally { setBusy(false) }
@@ -248,7 +289,7 @@ export default function PCPFichasProcesso() {
    <header className="mb-3 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
     <span className="flex h-8 w-8 items-center justify-center bg-[#123B50] text-white"><FileSliders size={16}/></span>
     <div><p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#2D8DB8]">MANUFATURA / PCP / ENGENHARIA</p><h1 className="text-[16px] font-semibold leading-5">Fichas de processo e parâmetros técnicos</h1><p className="text-[10px] text-slate-500">Roteiro, setup, parâmetros críticos, homologação e rastreabilidade de revisão.</p></div>
-    <div className="ml-auto flex gap-1"><button className="erp-premium-button erp-premium-button-secondary print:hidden" type="button" onClick={()=>window.print()}><Printer size={12}/> Imprimir ficha</button><button className="erp-premium-button erp-premium-button-secondary print:hidden" onClick={()=>void load()} disabled={busy}><RefreshCw size={12}/> Atualizar</button><button className="erp-premium-button" onClick={()=>{setCode('');setProductId('');setToolId('');setMachineId('');setVersion('1');setApprovedAt('');setSignature('');setStatus('RASCUNHO');setParams(blankParameters(category));setInstructions('')}}>Nova ficha</button></div>
+    <div className="ml-auto flex gap-1"><button className="erp-premium-button erp-premium-button-secondary print:hidden" type="button" onClick={()=>window.print()}><Printer size={12}/> Imprimir ficha</button><button className="erp-premium-button erp-premium-button-secondary print:hidden" onClick={()=>void load()} disabled={busy}><RefreshCw size={12}/> Atualizar</button><button className="erp-premium-button" onClick={()=>{setCode('');setProductId('');setToolId('');setMachineId('');setVersion('1');setApprovedAt('');setSignature('');setStatus('RASCUNHO');setParams(blankParameters(category));setInstructions('');setHistoryFichaId('');setHistory([])}}>Nova ficha</button></div>
    </header>
    {error && <div role="alert" className="mb-2 border border-rose-300 bg-rose-50 p-2 text-[10px] text-rose-800">{error}</div>}
    {notice && <div role="status" className="mb-2 flex items-center gap-2 border border-emerald-300 bg-emerald-50 p-2 text-[10px] text-emerald-800"><CheckCircle2 size={13}/>{notice}</div>}
@@ -266,10 +307,11 @@ export default function PCPFichasProcesso() {
      <label><span className={labelClass}>Versão da ficha</span><input className={inputClass} type="number" min="1" step="1" value={version} onChange={e=>setVersion(e.target.value)} required/></label>
      <label><span className={labelClass}>Data de homologação</span><input className={inputClass} type="date" value={approvedAt} onChange={e=>setApprovedAt(e.target.value)}/></label>
      <label className="xl:col-span-2"><span className={labelClass}>Assinatura técnica do engenheiro</span><input className={inputClass} value={signature} onChange={e=>setSignature(e.target.value)} placeholder="Nome completo / registro profissional"/></label>
-     <label><span className={labelClass}>Estado da ficha</span><select className={inputClass} value={status} onChange={e=>setStatus(e.target.value)}><option>RASCUNHO</option><option>EM_ANALISE</option><option>APROVADA</option><option>LIBERADA</option><option>OBSOLETA</option></select></label>
+     <label><span className={labelClass}>Estado da ficha</span><select className={inputClass} value={status} onChange={e=>setStatus(e.target.value)}><option>RASCUNHO</option><option>EM_ANALISE</option><option disabled={!canApprove}>APROVADA</option><option disabled={!canApprove}>LIBERADA</option><option disabled={!canApprove}>OBSOLETA</option></select></label>
     </div>
     <div className="mt-3 flex flex-wrap items-center gap-3 border-y border-slate-100 py-2 text-[9px]"><span className="font-bold uppercase text-slate-500">Capacidade nominal calculada</span><strong className="text-[12px] tabular-nums">{expectedPph > 0 ? expectedPph.toLocaleString('pt-BR',{maximumFractionDigits:1})+' peças/h' : 'Informe ciclo e cavidades'}</strong><span className="text-slate-500">Cálculo = 3.600 ÷ ciclo (s) × cavidades ativas</span></div>
     <div className="mt-3 space-y-3">{fieldGroups.map(group=><fieldset key={group.title} className="min-w-0 border border-slate-200 bg-white p-2"><legend className="px-1 text-[10px] font-bold uppercase tracking-wide text-slate-700">{group.title}</legend><div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">{group.fields.map(field=><label key={field.key} className={field.multiline?'md:col-span-2':''}><span className={labelClass}>{field.label} {field.required && <span className="text-rose-600">*</span>}</span><span className="flex">{field.type==='select'?<select className={inputClass+' rounded-r-none'} value={params[field.key]??''} onChange={e=>updateParam(field.key,e.target.value)}><option value="">Selecione</option>{(field.options??[]).map(option=><option key={option} value={option}>{option}</option>)}</select>:field.multiline?<textarea className={inputClass+' min-h-[72px] rounded-r-none py-2'} value={params[field.key]??''} onChange={e=>updateParam(field.key,e.target.value)} placeholder="Registrar instrução aprovada"/>:<input className={inputClass+' rounded-r-none'} type={field.type==='number'?'number':'text'} step={field.step} value={params[field.key]??''} onChange={e=>updateParam(field.key,e.target.value)} placeholder={field.unit==='—'?'Informar':field.unit}/>}<span className="flex h-[30px] min-w-[46px] items-center justify-center border border-l-0 border-slate-300 bg-slate-50 px-1 text-[9px] text-slate-500">{field.unit}</span></span></label>)}</div></fieldset>)}</div>
+    {historyFichaId && <section className="mt-3 border border-slate-200 bg-slate-50 p-2 print:hidden"><h3 className="mb-2 text-[10px] font-bold uppercase tracking-wide text-slate-700">Histórico de revisões e alterações</h3>{historyLoading ? <p className="text-[10px] text-slate-500">Carregando eventos registrados…</p> : historyError ? <p role="alert" className="text-[10px] text-rose-700">Histórico indisponível: {historyError}</p> : history.length ? <div className="overflow-x-auto"><table className="w-full border-collapse text-[10px]"><thead><tr className="border-b border-slate-300 text-left text-[9px] uppercase text-slate-500"><th className="p-1">Data/hora</th><th className="p-1">Evento</th><th className="p-1">Revisão</th><th className="p-1">Estado</th><th className="p-1">Alterações</th><th className="p-1">Usuário ID</th></tr></thead><tbody>{history.map(event=>{const before=event.dados_antigos??{};const after=event.dados_novos??before;const statusChange=before.status!==after.status;return <tr key={event.id} className="border-b border-slate-200"><td className="whitespace-nowrap p-1">{new Date(event.executado_em).toLocaleString('pt-BR')}</td><td className="p-1">{event.acao}</td><td className="p-1">v{String(after.versao_ficha??after.revisao??'—')}</td><td className="p-1">{String(before.status??'—')}{statusChange?' → '+String(after.status??'—'):''}</td><td className="p-1">{auditChanges(event)}</td><td className="p-1 font-mono">{event.executado_por??'—'}</td></tr>})}</tbody></table></div> : <p className="text-[10px] text-slate-500">Não há eventos de auditoria desta ficha disponíveis para a empresa.</p>}</section>}
     <label className="mt-3 block"><span className={labelClass}>Instruções de setup / processo / segurança</span><textarea className="min-h-[72px] w-full rounded-[3px] border border-slate-300 p-2 text-[10px] outline-none focus:border-[#2D8DB8]" value={instructions} onChange={e=>setInstructions(e.target.value)} placeholder="Sequência operacional, parâmetros de controle, inspeção inicial, reação a desvio, EPI e cuidados ambientais…"/></label>
     <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-2"><span className="text-[9px] text-slate-500">Dados separados por empresa · revisão técnica · sem valores fictícios</span><button className="erp-premium-button print:hidden" onClick={()=>void save()} disabled={busy}><Save size={12}/> Gravar ficha</button></div>
    </section>

@@ -76,12 +76,12 @@ create policy erp_expedicao_notas_insert on public.erp_expedicao_notas for inser
 drop policy if exists erp_expedicao_notas_delete on public.erp_expedicao_notas;
 create policy erp_expedicao_notas_delete on public.erp_expedicao_notas for delete to authenticated using (empresa_id=public.erp_current_empresa_id() or public.erp_is_master());
 
-insert into public.erp_permissions (code,name,description) values
-('expedicao.ver','Visualizar expedição','Visualizar logística e romaneios'),
-('expedicao.criar','Criar romaneios','Criar romaneios de expedição'),
-('expedicao.editar','Liberar romaneios','Liberar saídas de expedição'),
-('expedicao.excluir','Excluir registros de expedição','Excluir registros de expedição')
-on conflict (code) do update set name=excluded.name,description=excluded.description;
+insert into public.erp_permissions (codigo,nome,modulo,ativo) values
+('expedicao.ver','Visualizar expedição','expedicao',true),
+('expedicao.criar','Criar romaneios','expedicao',true),
+('expedicao.editar','Liberar romaneios','expedicao',true),
+('expedicao.excluir','Excluir registros de expedição','expedicao',true)
+on conflict (codigo) do update set nome=excluded.nome,modulo=excluded.modulo,ativo=excluded.ativo;
 
 create or replace function public.erp_expedicao_criar_romaneio(
  p_numero bigint,p_veiculo_id uuid,p_motorista_id uuid,p_transportadora text,p_capacidade_kg numeric,p_data_expedicao date,p_documento_fiscal_ids uuid[]

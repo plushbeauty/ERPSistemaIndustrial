@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
-import { Check, FileDown, ImagePlus, Printer, RotateCcw, Save, Search, Trash2, Upload, X } from 'lucide-react'
+import { FileDown, Printer, RotateCcw, Save, Search, Trash2, Upload, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import EntityCodeLookup from '../components/industrial/EntityCodeLookup'
 
@@ -52,6 +52,7 @@ export default function FichasProcesso(){
  const [tools,setTools]=useState<Tool[]>([])
  const [machines,setMachines]=useState<Machine[]>([])
  const [rows,setRows]=useState<FormState[]>([])
+ const [canApprove,setCanApprove]=useState(false)
  const [query,setQuery]=useState('')
  const [busy,setBusy]=useState(false)
  const [message,setMessage]=useState('')
@@ -65,6 +66,8 @@ export default function FichasProcesso(){
   try{
    const company=await supabase.rpc('erp_current_empresa_id')
    if(company.error||!company.data) throw company.error||new Error('Empresa ERP não identificada.')
+   const approvalPermission=await supabase.rpc('erp_has_permission',{p_code:'producao.fichas.aprovar'})
+   setCanApprove(!approvalPermission.error&&approvalPermission.data===true)
    const [p,c,t,m,f]=await Promise.all([
     supabase.from('erp_produtos').select('id,codigo,nome,descricao').eq('empresa_id',company.data).eq('ativo',true).order('codigo').limit(3000),
     supabase.from('erp_clientes').select('id,codigo,nome,documento').eq('empresa_id',company.data).eq('ativo',true).order('codigo').limit(3000),
@@ -133,6 +136,7 @@ export default function FichasProcesso(){
   try{
    if(!form.codigo_ficha.trim())throw new Error('Código da ficha é obrigatório.')
    if(!form.produto_id)throw new Error('Informe o código do produto.')
+   if(['APROVADA','LIBERADA','OBSOLETA'].includes(form.status)&&!canApprove&&form.status!==rows.find(row=>row.id===form.id)?.status)throw new Error('Seu perfil não pode homologar, liberar ou obsoletar fichas de processo. Solicite a permissão ao administrador da empresa.')
    const cavities=Number(form.cavidades_ativas)
    if(!Number.isFinite(cavities)||cavities<=0)throw new Error('Informe o número real de cavidades ativas.')
    const revision=Number(form.revisao)
@@ -210,7 +214,7 @@ export default function FichasProcesso(){
       <div><EntityCodeLookup label="CÓDIGO DO PRODUTO / PEÇA" value={form.produto_id} records={products} onChange={v=>update('produto_id',v)} onSelect={r=>{update('produto_id',r.id);setMessage('Produto '+(r.codigo||'')+' localizado automaticamente.')}} required helper="Digite o código exato ou use a lupa para consulta avançada."/></div>
       <div><EntityCodeLookup label="CÓDIGO DO MOLDE / FERRAMENTAL" value={form.ferramenta_id} records={tools.map(t=>({id:t.id,codigo:t.codigo,nome:t.nome,dimensoes:t.tipo,molde:t.nome}))} onChange={v=>update('ferramenta_id',v)} onSelect={r=>{update('ferramenta_id',r.id);update('cavidades_ativas',String(tools.find(t=>t.id===r.id)?.cavidades_ativas??tools.find(t=>t.id===r.id)?.numero_cavidades??''));}} required helper="Busca por código, descrição ou molde."/></div>
       <div><EntityCodeLookup label="RECURSO / MÁQUINA" value={form.maquina_id} records={machines.map(m=>({id:m.id,codigo:m.codigo,nome:m.nome,dimensoes:m.tipo}))} onChange={v=>update('maquina_id',v)} onSelect={r=>update('maquina_id',r.id)} helper="Código direto ou lupa de consulta."/></div>
-      <label className={label}>STATUS DA REVISÃO<select className={field} value={form.status} onChange={e=>update('status',e.target.value as Status)}><option>RASCUNHO</option><option>EM_ANALISE</option><option>APROVADA</option><option>LIBERADA</option><option>OBSOLETA</option></select></label>
+      <label className={label}>STATUS DA REVISÃO<select className={field} value={form.status} onChange={e=>update('status',e.target.value as Status)}><option>RASCUNHO</option><option>EM_ANALISE</option><option disabled={!canApprove}>APROVADA</option><option disabled={!canApprove}>LIBERADA</option><option disabled={!canApprove}>OBSOLETA</option></select></label>
      </div>
      <div className="mt-4 grid grid-cols-1 gap-3 rounded-md bg-slate-50 p-4 text-base md:grid-cols-3">
       <div><b className="text-slate-800">Produto:</b> <span>{product?.codigo||'—'} • {product?.nome||'Não selecionado'}</span></div>
