@@ -44,7 +44,7 @@ export const PCP_AUDIT_FINDINGS: AuditFinding[] = [
     impacto: 'Falha imediata na query com erro SQL do Postgres, impedindo a listagem e gestão das ordens pelo operador.',
     correcaoPrevista: "Substituir 'criado_em' pela coluna oficial 'created_at' do schema da tabela erp_ordens_producao.",
     evidenciaValidacao: 'Confirmado por consulta ao schema em migrations e padrão das telas PCPOrdens.tsx e PCPExecucaoIndustrial.tsx.',
-    status: 'PENDENTE',
+    status: 'CORRIGIDO',
     dataIdentificacao: '2026-10-17',
     dataUltimaVerificacao: '2026-10-17',
   },
