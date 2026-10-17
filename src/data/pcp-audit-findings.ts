@@ -199,7 +199,7 @@ export const PCP_AUDIT_FINDINGS: AuditFinding[] = [
     tela: 'Validador Global de Auditoria',
     arquivo: 'supabase/functions/erp-user-admin/index.ts',
     linha: 168,
-    descricao: "Falso positivo no scanner global de segredos: reset_password: 'users.update' é interpretado como senha em texto puro.",
+    descricao: "Falso positivo no scanner global de segredos: ação de redefinição de senha exige a permissão users.update é interpretado como senha em texto puro.",
     impacto: 'Falha bloqueante (BLOCKER) na execução de npm run audit:all, impedindo pipeline 100% verde.',
     correcaoPrevista: 'Registrar oficialmente o falso positivo nos logs de auditoria e manter os contratos de permissão estritos.',
     evidenciaValidacao: 'Saída de erro de scripts/auditoria-global.mjs.',
