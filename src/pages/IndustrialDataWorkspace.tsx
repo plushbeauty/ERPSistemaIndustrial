@@ -4,7 +4,8 @@ import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import { useLocation } from 'react-router-dom'
 
-type Field = { key: string; label: string; type?: 'text'|'number'|'date'|'select'|'textarea'; options?: string[]; required?: boolean }
+type Field = { key: string; label: string; type?: 'text'|'number'|'date'|'select'|'textarea'; options?: string[]; lookup?: 'epis'|'employees'; required?: boolean }
+type LookupOption = { value: string; label: string; disabled?: boolean }
 const structuredTextFields = ['parametros','etapas','acoes_recomendadas','evidencia_urls','cinco_porques','ishikawa','plano_5w2h','itens']
 function maxLengthForField(field: Field): number {
   if (field.key === 'desenho_url') return 2048
@@ -43,7 +44,7 @@ const configs: Record<string, ModuleConfig> = {
     {key:'matricula',label:'Matrícula',required:true},{key:'nome_completo',label:'Nome completo',required:true},{key:'cpf',label:'CPF'},{key:'rg',label:'RG'},{key:'data_admissao',label:'Admissão',type:'date',required:true},{key:'cargo',label:'Cargo/função',required:true},{key:'departamento',label:'Departamento',type:'select',options:['engenharia','pcp','producao','qualidade','almoxarifado','administrativo'],required:true},{key:'taxa_horaria',label:'Taxa horária MOD',type:'number'},{key:'status',label:'Status',type:'select',options:['ativo','afastado','desligado'],required:true}] },
   'rh-turnos': { title:'RH Industrial · Turnos e escalas', subtitle:'Jornada de trabalho para planejamento de capacidade', table:'rh_turnos', search:['codigo','nome','tipo_escala'], columns:['codigo','nome','inicio','termino','escala','carga_horaria_mensal'], fields:[
     {key:'codigo',label:'Código do turno',required:true},{key:'nome',label:'Nome do turno',required:true},{key:'inicio',label:'Início (HH:MM)',required:true},{key:'termino',label:'Término (HH:MM)',required:true},{key:'intervalo_inicio',label:'Início do intervalo'},{key:'intervalo_fim',label:'Fim do intervalo'},{key:'escala',label:'Escala',type:'select',options:['5x2','6x2','12x36'],required:true},{key:'carga_horaria_mensal',label:'Carga mensal (h)',type:'number',required:true}] },
-  'rh-entregas-epis': { title:'RH Industrial · Entregas de EPI', subtitle:'Rastreabilidade de entrega, confirmação e próxima substituição', table:'rh_entregas_epis', search:['epi_id','funcionario_id','entregue_em'], columns:['epi_id','funcionario_id','quantidade','entregue_em','confirmado_em','proxima_troca_em'], fields:[{key:'epi_id',label:'EPI (UUID)',required:true},{key:'funcionario_id',label:'Funcionário (UUID)',required:true},{key:'quantidade',label:'Quantidade entregue',type:'number',required:true},{key:'entregue_em',label:'Data da entrega',type:'date',required:true},{key:'confirmado_em',label:'Confirmação ISO (opcional)'},{key:'periodicidade_troca_dias',label:'Periodicidade da troca (dias)',type:'number',required:true}] },
+  'rh-entregas-epis': { title:'RH Industrial · Entregas de EPI', subtitle:'Rastreabilidade de entrega, confirmação e próxima substituição', table:'rh_entregas_epis', search:['epi_id','funcionario_id','entregue_em'], columns:['epi_id','funcionario_id','quantidade','entregue_em','confirmado_em','proxima_troca_em'], fields:[{key:'epi_id',label:'Equipamento de proteção',lookup:'epis',required:true},{key:'funcionario_id',label:'Funcionário',lookup:'employees',required:true},{key:'quantidade',label:'Quantidade entregue',type:'number',required:true},{key:'entregue_em',label:'Data da entrega',type:'date',required:true},{key:'confirmado_em',label:'Confirmação ISO (opcional)'},{key:'periodicidade_troca_dias',label:'Periodicidade da troca (dias)',type:'number',required:true}] },
   'rh-epis': { title:'RH Industrial · EPIs e CA', subtitle:'Controle de validade do CA e entregas por funcionário', table:'rh_epis', search:['codigo','nome','numero_ca'], columns:['codigo','nome','numero_ca','ca_valido_ate','periodicidade_troca_dias'], fields:[
     {key:'codigo',label:'Código do EPI',required:true},{key:'nome',label:'Equipamento',required:true},{key:'numero_ca',label:'Número CA',required:true},{key:'ca_valido_ate',label:'Validade do CA',type:'date',required:true},{key:'periodicidade_troca_dias',label:'Troca obrigatória (dias)',type:'number',required:true}] },
 }
@@ -87,14 +88,22 @@ export default function IndustrialDataWorkspace() {
   const [busy,setBusy] = useState(false)
   const [loading,setLoading] = useState(true)
   const [editing,setEditing] = useState<string|null>(null)
+  const [lookupOptions,setLookupOptions] = useState<{epis:LookupOption[];employees:LookupOption[]}>({epis:[],employees:[]})
   const load = useCallback(async () => {
     if (!config) return
     setLoading(true); setError(null)
     try {
       const tenant = await supabase.rpc('erp_current_empresa_id')
       if (tenant.error || typeof tenant.data !== 'string' || !tenant.data) throw tenant.error ?? new Error('Empresa da sessão não identificada.')
-      const records = await fetchAllPages<Record<string,unknown>>((from,to)=>supabase.from(config.table).select('*',{count:'exact'}).eq('empresa_id',tenant.data).order('id').range(from,to))
+      const [records, lookups] = await Promise.all([
+        fetchAllPages<Record<string,unknown>>((from,to)=>supabase.from(config.table).select('*',{count:'exact'}).eq('empresa_id',tenant.data).order('id').range(from,to)),
+        config.table === 'rh_entregas_epis' ? Promise.all([
+          fetchAllPages<{id:string;codigo:string;nome:string;numero_ca:string;ca_valido_ate:string;ativo:boolean}>((from,to)=>supabase.from('rh_epis').select('id,codigo,nome,numero_ca,ca_valido_ate,ativo',{count:'exact'}).eq('empresa_id',tenant.data).order('codigo').range(from,to)),
+          fetchAllPages<{id:string;matricula:string;nome_completo:string}>((from,to)=>supabase.from('rh_funcionarios').select('id,matricula,nome_completo',{count:'exact'}).eq('empresa_id',tenant.data).order('nome_completo').range(from,to)),
+        ]).then(([epis,employees])=>({epis:epis.map(item=>({value:item.id,label:`${item.codigo} · ${item.nome} · CA ${item.numero_ca} até ${item.ca_valido_ate}${item.ativo?'':' · INATIVO'}`,disabled:!item.ativo})),employees:employees.map(item=>({value:item.id,label:`${item.matricula} · ${item.nome_completo}`}))})) : Promise.resolve({epis:[],employees:[]}),
+      ])
       setRows(records)
+      setLookupOptions(lookups)
     } catch (e) { setError(e instanceof Error ? e.message : 'Falha ao carregar registros da empresa.') }
     finally { setLoading(false) }
   },[config])
@@ -152,6 +161,7 @@ export default function IndustrialDataWorkspace() {
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {config.fields.map(field=><label key={field.key} className={field.type==='textarea'?'sm:col-span-2 lg:col-span-4':''}><span className={label}>{field.label}{field.required?' *':''}</span>
           {field.type==='textarea'?<textarea maxLength={maxLengthForField(field)} className="min-h-[62px] w-full rounded-[2px] border border-slate-300 p-2 text-[10px] outline-none focus:border-sky-600" value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={field.required}/>
+          :field.lookup?<select className={cls} value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={field.required}><option value="">{lookupOptions[field.lookup].length?'Selecionar…':'Nenhum cadastro disponível'}</option>{lookupOptions[field.lookup].map(option=><option key={option.value} value={option.value} disabled={option.disabled}>{option.label}</option>)}</select>
           :field.type==='select'?<select className={cls} value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={field.required}><option value="">Selecionar…</option>{(field.options??[]).map(option=><option key={option} value={option}>{option}</option>)}</select>
           :<input className={cls} maxLength={field.type==='number'||field.type==='date'?undefined:maxLengthForField(field)} type={field.type==='number'?'number':field.type==='date'?'date':'text'} step={field.type==='number'?'any':undefined} value={form[field.key]??''} onChange={e=>setForm(old=>({...old,[field.key]:e.target.value}))} required={field.required}/>}
         </label>)}
