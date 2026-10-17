@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-17T20:06:35.116Z",
+  "generatedAt": "2026-10-17T20:51:45.314Z",
   "revision": "UI-AUDIT-R1",
   "mode": "static-analysis-only",
   "summary": {
@@ -3065,7 +3065,7 @@
     },
     {
       "file": "src/components/layout/ERPHorizontalShell.tsx",
-      "lines": 383,
+      "lines": 368,
       "controlsDetected": 13,
       "tags": {
         "input": 2,
@@ -3087,7 +3087,7 @@
       "controls": [
         {
           "tag": "button",
-          "line": 259,
+          "line": 244,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -3095,7 +3095,7 @@
         },
         {
           "tag": "button",
-          "line": 265,
+          "line": 250,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -3103,7 +3103,7 @@
         },
         {
           "tag": "input",
-          "line": 269,
+          "line": 254,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -3111,7 +3111,31 @@
         },
         {
           "tag": "button",
+          "line": 255,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": false
+        },
+        {
+          "tag": "button",
+          "line": 264,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": true
+        },
+        {
+          "tag": "button",
           "line": 270,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": true
+        },
+        {
+          "tag": "button",
+          "line": 273,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -3123,7 +3147,15 @@
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": true
+          "classNameStaticDetected": false
+        },
+        {
+          "tag": "input",
+          "line": 284,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": false
         },
         {
           "tag": "button",
@@ -3131,15 +3163,15 @@
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": true
+          "classNameStaticDetected": false
         },
         {
           "tag": "button",
-          "line": 288,
+          "line": 293,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": false
+          "classNameStaticDetected": true
         },
         {
           "tag": "button",
@@ -3147,43 +3179,11 @@
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
-          "classNameStaticDetected": false
-        },
-        {
-          "tag": "input",
-          "line": 299,
-          "heightClasses": [],
-          "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": false
+          "classNameStaticDetected": true
         },
         {
           "tag": "button",
           "line": 300,
-          "heightClasses": [],
-          "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": false
-        },
-        {
-          "tag": "button",
-          "line": 308,
-          "heightClasses": [],
-          "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": true
-        },
-        {
-          "tag": "button",
-          "line": 309,
-          "heightClasses": [],
-          "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": true
-        },
-        {
-          "tag": "button",
-          "line": 315,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -8633,7 +8633,7 @@
     },
     {
       "file": "src/pages/FichasProcesso.tsx",
-      "lines": 259,
+      "lines": 263,
       "controlsDetected": 19,
       "tags": {
         "input": 7,
@@ -8659,7 +8659,7 @@
       "controls": [
         {
           "tag": "button",
-          "line": 182,
+          "line": 186,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -8667,7 +8667,7 @@
         },
         {
           "tag": "button",
-          "line": 183,
+          "line": 187,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -8675,7 +8675,7 @@
         },
         {
           "tag": "button",
-          "line": 184,
+          "line": 188,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -8683,7 +8683,7 @@
         },
         {
           "tag": "button",
-          "line": 185,
+          "line": 189,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -8691,7 +8691,7 @@
         },
         {
           "tag": "button",
-          "line": 186,
+          "line": 190,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -8699,7 +8699,7 @@
         },
         {
           "tag": "input",
-          "line": 193,
+          "line": 197,
           "heightClasses": [
             "11"
           ],
@@ -8711,7 +8711,7 @@
         },
         {
           "tag": "button",
-          "line": 193,
+          "line": 197,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -8719,7 +8719,7 @@
         },
         {
           "tag": "button",
-          "line": 195,
+          "line": 199,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -8727,7 +8727,7 @@
         },
         {
           "tag": "input",
-          "line": 206,
+          "line": 210,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -8735,7 +8735,7 @@
         },
         {
           "tag": "input",
-          "line": 207,
+          "line": 211,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -8743,14 +8743,6 @@
         },
         {
           "tag": "input",
-          "line": 209,
-          "heightClasses": [],
-          "widthClasses": [],
-          "maxLength": null,
-          "classNameStaticDetected": false
-        },
-        {
-          "tag": "select",
           "line": 213,
           "heightClasses": [],
           "widthClasses": [],
@@ -8758,8 +8750,16 @@
           "classNameStaticDetected": false
         },
         {
+          "tag": "select",
+          "line": 217,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": false
+        },
+        {
           "tag": "input",
-          "line": 228,
+          "line": 232,
           "heightClasses": [
             "12"
           ],
@@ -8771,7 +8771,7 @@
         },
         {
           "tag": "input",
-          "line": 235,
+          "line": 239,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -8779,7 +8779,7 @@
         },
         {
           "tag": "input",
-          "line": 243,
+          "line": 247,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -8787,7 +8787,7 @@
         },
         {
           "tag": "textarea",
-          "line": 248,
+          "line": 252,
           "heightClasses": [
             "36"
           ],
@@ -8799,7 +8799,7 @@
         },
         {
           "tag": "textarea",
-          "line": 249,
+          "line": 253,
           "heightClasses": [
             "28"
           ],
@@ -8811,7 +8811,7 @@
         },
         {
           "tag": "button",
-          "line": 252,
+          "line": 256,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -8819,7 +8819,7 @@
         },
         {
           "tag": "button",
-          "line": 252,
+          "line": 256,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -13510,29 +13510,29 @@
     },
     {
       "file": "src/pages/PCPFichasProcesso.tsx",
-      "lines": 227,
-      "controlsDetected": 17,
+      "lines": 358,
+      "controlsDetected": 19,
       "tags": {
         "input": 6,
-        "select": 5,
-        "textarea": 1,
+        "select": 6,
+        "textarea": 2,
         "button": 5,
         "forms": 0,
-        "tables": 0,
+        "tables": 1,
         "grids": 9,
-        "roundedClasses": 3,
+        "roundedClasses": 5,
         "lookupHints": 7,
         "printHints": 1
       },
       "sharedFormTokensImported": false,
       "localStyleHints": true,
       "heightSummary": {
-        "not-detected-static": 17
+        "not-detected-static": 19
       },
       "controls": [
         {
           "tag": "button",
-          "line": 196,
+          "line": 326,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -13540,7 +13540,7 @@
         },
         {
           "tag": "button",
-          "line": 196,
+          "line": 326,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -13548,7 +13548,7 @@
         },
         {
           "tag": "button",
-          "line": 196,
+          "line": 326,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -13556,7 +13556,7 @@
         },
         {
           "tag": "input",
-          "line": 201,
+          "line": 331,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -13564,7 +13564,7 @@
         },
         {
           "tag": "select",
-          "line": 201,
+          "line": 331,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -13572,7 +13572,7 @@
         },
         {
           "tag": "button",
-          "line": 202,
+          "line": 332,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -13580,7 +13580,7 @@
         },
         {
           "tag": "input",
-          "line": 207,
+          "line": 337,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -13588,7 +13588,7 @@
         },
         {
           "tag": "select",
-          "line": 208,
+          "line": 338,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -13596,7 +13596,7 @@
         },
         {
           "tag": "select",
-          "line": 209,
+          "line": 339,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -13604,7 +13604,7 @@
         },
         {
           "tag": "select",
-          "line": 210,
+          "line": 340,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -13612,7 +13612,7 @@
         },
         {
           "tag": "input",
-          "line": 211,
+          "line": 341,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -13620,7 +13620,7 @@
         },
         {
           "tag": "input",
-          "line": 212,
+          "line": 342,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -13628,7 +13628,7 @@
         },
         {
           "tag": "input",
-          "line": 213,
+          "line": 343,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -13636,15 +13636,15 @@
         },
         {
           "tag": "select",
-          "line": 214,
+          "line": 344,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
           "classNameStaticDetected": false
         },
         {
-          "tag": "input",
-          "line": 217,
+          "tag": "select",
+          "line": 347,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
@@ -13652,7 +13652,23 @@
         },
         {
           "tag": "textarea",
-          "line": 218,
+          "line": 347,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": false
+        },
+        {
+          "tag": "input",
+          "line": 347,
+          "heightClasses": [],
+          "widthClasses": [],
+          "maxLength": null,
+          "classNameStaticDetected": false
+        },
+        {
+          "tag": "textarea",
+          "line": 349,
           "heightClasses": [],
           "widthClasses": [
             "full"
@@ -13662,7 +13678,7 @@
         },
         {
           "tag": "button",
-          "line": 219,
+          "line": 350,
           "heightClasses": [],
           "widthClasses": [],
           "maxLength": null,
