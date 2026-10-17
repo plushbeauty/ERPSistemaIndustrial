@@ -1,7 +1,7 @@
 /**
  * SYNQRA ERP — CORREÇÃO DE SESSÃO E ROTAS MESTRE
- * REVISÃO: 0.2 | DATA: 16/10/2026
- * ID: #AUDIT-ERP-20261016-16
+ * REVISÃO: 0.3 | DATA: 16/10/2026
+ * ID: #AUDIT-ERP-20261016-18
  * ESCOPO: roteador React/Vite e apontamento de módulos para componentes reais.
  * ALTERAÇÃO: rotas de clientes/fornecedores confirmadas em componentes próprios; /producao direcionada ao PCPIndustrial.
  * VALIDAÇÃO: rotas conferidas estaticamente; compilação e navegação autenticada ainda pendentes.
@@ -132,6 +132,7 @@ const ComprasRelatorios = lazyPage(() => import('./pages/ComprasRelatorios'), 'd
 const ComprasAjuda = lazyPage(() => import('./pages/ComprasAjuda'), 'default')
 const ComprasAnalisePrecos = lazyPage(() => import('./pages/ComprasAnalisePrecos'), 'default')
 const PedidoCompra = lazyPage(() => import('./pages/PedidoCompra'), 'default')
+const PedidoCompraForm = lazyPage(() => import('./pages/compras/PedidoCompraForm'), 'default')
 const VendasClientesPage = lazyPage(() => import('./pages/VendasClientes'), 'default')
 const CentralCustosIndustrial = lazyPage(() => import('./pages/CentralCustosIndustrial'), 'CentralCustosIndustrial')
 const CadastroEmpresa = lazyPage(() => import('./pages/CadastroEmpresa'), 'CadastroEmpresa')
@@ -613,6 +614,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/compras/rfq" element={<ComprasRoute><ComprasRFQ /></ComprasRoute>} />
       <Route path="/compras/cotacoes" element={<Navigate to="/compras/rfq" replace />} />
       <Route path="/compras/pedido" element={<ComprasRoute><PedidoCompra /></ComprasRoute>} />
+      <Route path="/compras/pedido-formulario" element={<PedidoCompraForm />} />
       <Route path="/compras/pedidos" element={<Navigate to="/compras/pedido" replace />} />
       <Route path="/compras/ordem-compra" element={<ComprasRoute><PedidoCompra /></ComprasRoute>} />
       <Route path="/compras/fornecedores" element={<ComprasRoute><FornecedoresIndustrial /></ComprasRoute>} />
