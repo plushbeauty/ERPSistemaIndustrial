@@ -331,14 +331,14 @@ export default function GEDDocumentos() {
             {loading ? <p className="px-7 py-3 text-[10px] text-neutral-500">Carregando documentos…</p> : documents.length ? documents.map(doc => {
               const isSelected = selectedId === doc.id
               const stateColor = doc.status === 'VIGENTE' || doc.status === 'ATIVA' ? 'bg-emerald-50 text-emerald-700' : doc.status === 'EM_REVISAO' ? 'bg-amber-50 text-amber-700' : 'bg-neutral-100 text-neutral-500'
-              return <button key={doc.id} type="button" onClick={() => editRevision(doc)} aria-current={isSelected ? 'true' : undefined} className={'mb-1 grid w-full grid-cols-[14px_minmax(0,1fr)] items-start gap-1.5 rounded-[2px] border px-2 py-1.5 text-left transition-colors ' + (isSelected ? 'border-[#8CC5E0] bg-[#E8F3FA] text-[#123B50]' : 'border-slate-200 bg-white text-neutral-700 hover:border-slate-300 hover:bg-slate-50')}>
+              return <button key={doc.id} type="button" onClick={() => editRevision(doc)} aria-current={isSelected ? 'true' : undefined} style={{display:'grid',gridTemplateColumns:'14px minmax(0,1fr)',alignItems:'start',gap:6,width:'100%',minHeight:58,boxSizing:'border-box',marginBottom:5,padding:'7px 8px',lineHeight:'normal',textAlign:'left',overflow:'hidden'}} className={'rounded-[2px] border transition-colors ' + (isSelected ? 'border-[#8CC5E0] bg-[#E8F3FA] text-[#123B50]' : 'border-slate-200 bg-white text-neutral-700 hover:border-slate-300 hover:bg-slate-50')}>
                 <span className={'mt-0.5 block ' + (isSelected ? 'text-[#2D8DB8]' : 'text-neutral-400')}><FileText size={14}/></span>
                 <span className="block min-w-0 w-full">
-                  <span className="flex w-full min-w-0 flex-wrap items-center justify-between gap-x-1 gap-y-1">
-                    <span className="block min-w-0 break-words text-[10px] font-bold leading-4">{doc.codigo_documento}</span>
+                  <span className="flex w-full min-w-0 items-center justify-between gap-1">
+                    <span className="block min-w-0 truncate text-[10px] font-bold leading-4">{doc.codigo_documento}</span>
                     <span className={'inline-flex max-w-full shrink-0 items-center rounded-[2px] px-1.5 py-0.5 text-[8px] font-bold leading-3 ' + stateColor}>{doc.status.replaceAll('_',' ')}</span>
                   </span>
-                  <span className="mt-0.5 block max-h-[28px] w-full overflow-hidden break-words text-[10px] font-medium leading-[1.35] text-neutral-700" title={doc.titulo_documento}>{doc.titulo_documento}</span>
+                  <span className="mt-0.5 block w-full truncate text-[10px] font-medium leading-4 text-neutral-700" title={doc.titulo_documento}>{doc.titulo_documento}</span>
                   <span className="mt-0.5 block w-full truncate border-t border-slate-100 pt-0.5 text-[8px] leading-3 text-neutral-500" title={doc.departamento || 'QUALIDADE'}>REV. {String(doc.revisao).padStart(2,'0')} <span aria-hidden="true">·</span> {doc.departamento || 'QUALIDADE'}</span>{doc.nome_arquivo && <span className="mt-0.5 block w-full truncate text-[8px] leading-3 text-amber-700" title={doc.nome_arquivo}>FONTE: {doc.nome_arquivo} · {doc.url_anexo ? 'anexado' : 'anexo pendente'}</span>}
                 </span>
               </button>

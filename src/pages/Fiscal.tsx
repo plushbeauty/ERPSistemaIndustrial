@@ -416,7 +416,6 @@ export default function Fiscal() {
           </div>
         </section>
       )}
-    <style>{`.fiscal-workspace{font-size:10px}.fiscal-workspace .rounded-[2px],.fiscal-workspace .rounded-[2px],.fiscal-workspace .rounded-[2px],.fiscal-workspace .rounded-full{border-radius:2px!important}.fiscal-workspace .font-bold,.fiscal-workspace .font-extrabold,.fiscal-workspace .font-semibold{font-weight:500!important}.fiscal-workspace button{min-height:28px;padding:0 9px;border-radius:2px!important;font-size:10px!important}.fiscal-workspace input,.fiscal-workspace select{min-height:28px;border-radius:2px!important;font-size:10px!important}.fiscal-workspace table{font-size:10px}.fiscal-workspace th,.fiscal-workspace td{padding:6px 8px}.fiscal-workspace h1{font-size:18px}.fiscal-workspace h2{font-size:13px}.fiscal-workspace .shadow-sm,.fiscal-workspace .shadow-2xl{box-shadow:none!important}`}</style>
     </main>
     </div>
   )

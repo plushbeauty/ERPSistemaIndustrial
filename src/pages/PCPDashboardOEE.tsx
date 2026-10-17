@@ -2,108 +2,149 @@ import { useEffect, useMemo, useState } from 'react'
 import { Activity, BarChart3, Clock3, Factory, Gauge, RefreshCw, ShieldCheck, TrendingUp } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
 type Apontamento = {
+  id: string
   ordem_producao_id: string
+  maquina_id: string | null
   quantidade_boa: number
-  quantidade_refugo: number
-  setup_min: number
-  paradas_min: number
-  inicio: string | null
-  fim: string | null
+  quantidade_refugada: number
+  inicio_em: string
+  fim_em: string | null
 }
 type Ordem = {
   id: string
-  quantidade_planejada: number
-  velocidade_nominal_hora: number
-  tempo_estimado_horas: number
+  velocidade_nominal_hora: number | null
 }
-type Dia = { dia: string; disponibilidade: number; performance: number; qualidade: number; oee: number }
+type Programacao = { maquina_id: string; ordem_producao_id: string; data_hora_inicio: string; data_hora_fim: string }
+type Parada = { maquina_id: string; ordem_producao_id: string | null; inicio: string; fim: string | null }
+type Dia = { dia: string; disponibilidade: number | null; performance: number | null; qualidade: number | null; oee: number | null }
+type Metrics = { availability: number | null; performance: number | null; quality: number | null; oee: number | null; planned: number; downtime: number; runtime: number; good: number; scrap: number }
 
-const pct = (value: number) => `${value.toFixed(1)}%`
+const pct = (value: number | null) => value === null ? '—' : `${value.toFixed(1)}%`
 const clamp = (value: number) => Math.max(0, Math.min(100, value))
+
+function overlapMinutes(start: number, end: number, intervals: { start: number; end: number }[]) {
+  const clipped = intervals.map(interval => ({ start: Math.max(start, interval.start), end: Math.min(end, interval.end) }))
+    .filter(interval => interval.end > interval.start)
+    .sort((a, b) => a.start - b.start)
+  let total = 0
+  let current: { start: number; end: number } | null = null
+  for (const interval of clipped) {
+    if (!current) current = interval
+    else if (interval.start <= current.end) current.end = Math.max(current.end, interval.end)
+    else { total += current.end - current.start; current = interval }
+  }
+  if (current) total += current.end - current.start
+  return total / 60000
+}
+
+function calculateMetrics(rows: Apontamento[], orders: Ordem[], programs: Programacao[], stops: Parada[], start: number, end: number): Metrics {
+  const orderMap = new Map(orders.map(order => [order.id, order]))
+  const stopIntervals = stops.map(stop => ({ machineId: stop.maquina_id, orderId: stop.ordem_producao_id, start: new Date(stop.inicio).getTime(), end: stop.fim ? new Date(stop.fim).getTime() : end }))
+  const relevantStops = (machineId: string, orderId: string) => stopIntervals.filter(stop => stop.machineId === machineId && (!stop.orderId || stop.orderId === orderId)).map(stop => ({ start: stop.start, end: stop.end }))
+  let planned = 0
+  let downtime = 0
+  let runtime = 0
+  let good = 0
+  let scrap = 0
+  let idealPieces = 0
+
+  for (const program of programs) {
+    const programStart = Math.max(start, new Date(program.data_hora_inicio).getTime())
+    const programEnd = Math.min(end, new Date(program.data_hora_fim).getTime())
+    if (programEnd <= programStart) continue
+    const duration = (programEnd - programStart) / 60000
+    planned += duration
+    downtime += overlapMinutes(programStart, programEnd, relevantStops(program.maquina_id, program.ordem_producao_id))
+  }
+
+  for (const row of rows) {
+    const rowStart = Math.max(start, new Date(row.inicio_em).getTime())
+    const rowEnd = Math.min(end, row.fim_em ? new Date(row.fim_em).getTime() : end)
+    if (rowEnd <= rowStart) continue
+    const duration = (rowEnd - rowStart) / 60000
+    const stopped = row.maquina_id ? overlapMinutes(rowStart, rowEnd, relevantStops(row.maquina_id, row.ordem_producao_id)) : 0
+    const operating = Math.max(0, duration - stopped)
+    runtime += operating
+    good += Math.max(0, Number(row.quantidade_boa) || 0)
+    scrap += Math.max(0, Number(row.quantidade_refugada) || 0)
+    const rate = Math.max(0, Number(orderMap.get(row.ordem_producao_id)?.velocidade_nominal_hora) || 0)
+    idealPieces += operating / 60 * rate
+  }
+
+  const availability = planned > 0 ? clamp(runtime / planned * 100) : null
+  const performance = idealPieces > 0 ? clamp(good / idealPieces * 100) : null
+  const quality = good + scrap > 0 ? clamp(good / (good + scrap) * 100) : null
+  const oee = availability !== null && performance !== null && quality !== null ? availability * performance * quality / 10000 : null
+  return { availability, performance, quality, oee, planned, downtime, runtime, good, scrap }
+}
 
 export default function PCPDashboardOEE() {
   const [period, setPeriod] = useState('30')
   const [rows, setRows] = useState<Apontamento[]>([])
   const [ordens, setOrdens] = useState<Ordem[]>([])
+  const [programs, setPrograms] = useState<Programacao[]>([])
+  const [stops, setStops] = useState<Parada[]>([])
+  const [periodBounds, setPeriodBounds] = useState({ start: Date.now() - 30 * 86400000, end: Date.now() })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   const load = async () => {
     setLoading(true)
     setError('')
-    const since = new Date(Date.now() - Number(period) * 86400000).toISOString()
-    const [a, o] = await Promise.all([
-      supabase.from('erp_producao_apontamentos').select('ordem_producao_id,quantidade_boa,quantidade_refugo,setup_min,paradas_min,inicio,fim').gte('inicio', since).limit(10000),
-      supabase.from('erp_ordens_producao').select('id,quantidade_planejada,velocidade_nominal_hora,tempo_estimado_horas').limit(10000),
-    ])
-    if (a.error || o.error) {
-      setError(a.error?.message ?? o.error?.message ?? 'Falha ao carregar o OEE.')
+    try {
+      const tenant = await supabase.rpc('erp_current_empresa_id')
+      if (tenant.error || typeof tenant.data !== 'string' || !tenant.data) throw tenant.error ?? new Error('Empresa da sessão não identificada.')
+      const end = new Date()
+      const start = new Date(end.getTime() - Number(period) * 86400000)
+      const since = start.toISOString()
+      const now = end.toISOString()
+      const company = tenant.data
+      const [started, crossing, active, orders, scheduled, closedStops, activeStops] = await Promise.all([
+        fetchAllPages<Apontamento>((from,to)=>supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_boa,quantidade_refugada,inicio_em,fim_em',{count:'exact'}).eq('empresa_id',company).gte('inicio_em',since).lte('inicio_em',now).order('inicio_em').range(from,to)),
+        fetchAllPages<Apontamento>((from,to)=>supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_boa,quantidade_refugada,inicio_em,fim_em',{count:'exact'}).eq('empresa_id',company).lt('inicio_em',since).gte('fim_em',since).order('inicio_em').range(from,to)),
+        fetchAllPages<Apontamento>((from,to)=>supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_boa,quantidade_refugada,inicio_em,fim_em',{count:'exact'}).eq('empresa_id',company).is('fim_em',null).lte('inicio_em',now).order('inicio_em').range(from,to)),
+        fetchAllPages<Ordem>((from,to)=>supabase.from('erp_ordens_producao').select('id,velocidade_nominal_hora',{count:'exact'}).eq('empresa_id',company).order('id').range(from,to)),
+        fetchAllPages<Programacao>((from,to)=>supabase.from('pcp_agenda_maquinas').select('maquina_id,ordem_producao_id,data_hora_inicio,data_hora_fim',{count:'exact'}).eq('empresa_id',company).neq('status','cancelada').gte('data_hora_fim',since).lte('data_hora_inicio',now).order('data_hora_inicio').range(from,to)),
+        fetchAllPages<Parada>((from,to)=>supabase.from('erp_producao_paradas').select('maquina_id,ordem_producao_id,inicio,fim',{count:'exact'}).eq('empresa_id',company).not('fim','is',null).gte('fim',since).lte('inicio',now).order('inicio').range(from,to)),
+        fetchAllPages<Parada>((from,to)=>supabase.from('erp_producao_paradas').select('maquina_id,ordem_producao_id,inicio,fim',{count:'exact'}).eq('empresa_id',company).is('fim',null).lte('inicio',now).order('inicio').range(from,to)),
+      ])
+      const uniqueRows = new Map([...started,...crossing,...active].map(row=>[row.id,row]))
+      setRows([...uniqueRows.values()])
+      setOrdens(orders)
+      setPrograms(scheduled)
+      setStops([...closedStops,...activeStops])
+      setPeriodBounds({start:start.getTime(),end:end.getTime()})
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao carregar o OEE.')
       setRows([])
       setOrdens([])
-    } else {
-      setRows((a.data ?? []) as Apontamento[])
-      setOrdens((o.data ?? []) as Ordem[])
+      setPrograms([])
+      setStops([])
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   useEffect(() => { void load() }, [period])
 
   const metrics = useMemo(() => {
-    const byOrder = new Map(ordens.map((x) => [x.id, x]))
-    let planned = 0
-    let downtime = 0
-    let runtime = 0
-    let good = 0
-    let scrap = 0
-    let idealPieces = 0
-
-    for (const row of rows) {
-      const op = byOrder.get(row.ordem_producao_id)
-      const duration = row.inicio && row.fim ? Math.max(0, (new Date(row.fim).getTime() - new Date(row.inicio).getTime()) / 60000) : 0
-      const stop = Math.max(0, Number(row.paradas_min) || 0) + Math.max(0, Number(row.setup_min) || 0)
-      planned += op ? Math.max(0, Number(op.tempo_estimado_horas) || 0) * 60 : duration
-      downtime += Math.min(duration, stop)
-      runtime += Math.max(0, duration - stop)
-      good += Math.max(0, Number(row.quantidade_boa) || 0)
-      scrap += Math.max(0, Number(row.quantidade_refugo) || 0)
-      const rate = op ? Math.max(0, Number(op.velocidade_nominal_hora) || 0) : 0
-      idealPieces += (Math.max(0, duration - stop) / 60) * rate
-    }
-
-    const availability = planned > 0 ? clamp(((planned - downtime) / planned) * 100) : 0
-    const performance = idealPieces > 0 ? clamp((good / idealPieces) * 100) : 0
-    const quality = good + scrap > 0 ? clamp((good / (good + scrap)) * 100) : 0
-    const oee = (availability * performance * quality) / 10000
-    return { availability, performance, quality, oee, planned, downtime, runtime, good, scrap }
-  }, [rows, ordens])
+    return calculateMetrics(rows, ordens, programs, stops, periodBounds.start, periodBounds.end)
+  }, [rows, ordens, programs, stops, periodBounds])
 
   const trend = useMemo<Dia[]>(() => {
-    const byOrder = new Map(ordens.map((x) => [x.id, x]))
-    const map = new Map<string, { planned: number; stop: number; good: number; scrap: number; ideal: number }>()
-    for (const row of rows) {
-      const key = row.inicio?.slice(0, 10)
-      if (!key) continue
-      const op = byOrder.get(row.ordem_producao_id)
-      const duration = row.inicio && row.fim ? Math.max(0, (new Date(row.fim).getTime() - new Date(row.inicio).getTime()) / 60000) : 0
-      const stop = Math.min(duration, Math.max(0, Number(row.paradas_min) || 0) + Math.max(0, Number(row.setup_min) || 0))
-      const item = map.get(key) ?? { planned: 0, stop: 0, good: 0, scrap: 0, ideal: 0 }
-      item.planned += op ? Math.max(0, Number(op.tempo_estimado_horas) || 0) * 60 : duration
-      item.stop += stop
-      item.good += Math.max(0, Number(row.quantidade_boa) || 0)
-      item.scrap += Math.max(0, Number(row.quantidade_refugo) || 0)
-      item.ideal += ((duration - stop) / 60) * Math.max(0, Number(op?.velocidade_nominal_hora) || 0)
-      map.set(key, item)
-    }
-    return [...map.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([dia, x]) => {
-      const availability = x.planned ? clamp(((x.planned - x.stop) / x.planned) * 100) : 0
-      const performance = x.ideal ? clamp((x.good / x.ideal) * 100) : 0
-      const quality = x.good + x.scrap ? clamp((x.good / (x.good + x.scrap)) * 100) : 0
-      return { dia: dia.slice(5).replace('-', '/'), disponibilidade: availability, performance, qualidade: quality, oee: availability * performance * quality / 10000 }
+    const keys = new Set([...rows.map(row=>row.inicio_em.slice(0,10)),...programs.map(program=>program.data_hora_inicio.slice(0,10))])
+    return [...keys].sort().map(key=>{
+      const dayStart=Math.max(periodBounds.start,new Date(`${key}T00:00:00`).getTime())
+      const dayEnd=Math.min(periodBounds.end,new Date(`${key}T00:00:00`).getTime()+86400000)
+      const dayRows=rows.filter(row=>row.inicio_em.slice(0,10)===key)
+      const dayPrograms=programs.filter(program=>program.data_hora_inicio.slice(0,10)===key)
+      const value=calculateMetrics(dayRows,ordens,dayPrograms,stops,dayStart,dayEnd)
+      return {dia:key.slice(5).replace('-','/'),disponibilidade:value.availability,performance:value.performance,qualidade:value.quality,oee:value.oee}
     })
-  }, [rows, ordens])
+  }, [rows, ordens, programs, stops, periodBounds])
 
   const donut = [
     { name: 'Boa', value: metrics.good },
@@ -117,7 +158,7 @@ export default function PCPDashboardOEE() {
           <div>
             <p className="text-xs font-black uppercase tracking-[0.16em] text-sky-700">PCP › CHÃO DE FÁBRICA › PERFORMANCE</p>
             <h1 className="mt-1 text-[15px] font-black tracking-tight">OEE Industrial</h1>
-            <p className="text-sm font-medium text-slate-600">Disponibilidade × Performance × Qualidade, calculado somente sobre apontamentos reais.</p>
+            <p className="text-sm font-medium text-slate-600">Calculado a partir da agenda de produção, apontamentos reais, velocidades nominais e paradas registradas.</p>
           </div>
           <div className="ml-auto flex items-center gap-2 print:hidden">
             <select value={period} onChange={(e) => setPeriod(e.target.value)} className="h-[30px] rounded-[2px] border border-slate-300 bg-white px-4 font-bold">
@@ -132,10 +173,10 @@ export default function PCPDashboardOEE() {
         {error && <div className="rounded-[2px] border border-rose-200 bg-rose-50 p-4 font-bold text-rose-900">{error}</div>}
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
-            { label: 'OEE GLOBAL', value: pct(metrics.oee), icon: Gauge, note: 'Índice composto' },
-            { label: 'DISPONIBILIDADE', value: pct(metrics.availability), icon: Clock3, note: 'Tempo planejado sem parada' },
-            { label: 'PERFORMANCE', value: pct(metrics.performance), icon: TrendingUp, note: 'Produção versus ciclo nominal' },
-            { label: 'QUALIDADE', value: pct(metrics.quality), icon: ShieldCheck, note: 'Boa versus boa + refugo' },
+            { label: 'OEE GLOBAL', value: pct(metrics.oee), icon: Gauge, note: metrics.oee === null ? 'Sem base completa para o período' : 'Disponibilidade × performance × qualidade' },
+            { label: 'DISPONIBILIDADE', value: pct(metrics.availability), icon: Clock3, note: metrics.availability === null ? 'Sem programação no período' : 'Tempo apontado em produção versus agenda' },
+            { label: 'PERFORMANCE', value: pct(metrics.performance), icon: TrendingUp, note: metrics.performance === null ? 'Sem ciclo nominal ou produção no período' : 'Produção versus capacidade nominal' },
+            { label: 'QUALIDADE', value: pct(metrics.quality), icon: ShieldCheck, note: metrics.quality === null ? 'Sem quantidades registradas no período' : 'Boa versus boa + refugo' },
           ].map((card) => {
             const MetricIcon = card.icon
             return (

@@ -78,22 +78,10 @@ createRoot(rootElement).render(
   </StrictMode>,
 )
 
-const LEGACY_PWA_CLEANUP_KEY = 'erp-industrial-legacy-pwa-cleanup-v2'
-
-async function limparAplicacaoPwaLegadaUmaVez() {
-  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
-  if (window.localStorage.getItem(LEGACY_PWA_CLEANUP_KEY) === '1') return
-  try {
-    const registrations = await navigator.serviceWorker.getRegistrations()
-    await Promise.allSettled(registrations.map(registration => registration.unregister()))
-    if ('caches' in window) {
-      const keys = await caches.keys()
-      await Promise.allSettled(keys.map(key => caches.delete(key)))
-    }
-    window.localStorage.setItem(LEGACY_PWA_CLEANUP_KEY, '1')
-  } catch (error) {
-    console.warn('[ERP] limpeza única de cache legado ignorada:', error)
-  }
+if (import.meta.env.PROD && typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    void navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(error => {
+      console.error('[ERP] não foi possível registrar o PWA:', error)
+    })
+  })
 }
-
-void limparAplicacaoPwaLegadaUmaVez()

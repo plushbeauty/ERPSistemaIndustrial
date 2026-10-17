@@ -50,13 +50,13 @@ const HELP: Record<string, HelpEntry> = {
     errors: ['Sem máquina sugerida: vincular posto/máquina à operação.', 'Tempo incorreto: confirmar ficha de processo e ciclo real.']
   },
   '/pcp/ficha-processo': {
-    title: 'Ficha de processo',
-    purpose: 'Centralizar parâmetros de fabricação, ciclo, setup, ferramental, inspeções e critérios de aceitação.',
-    prerequisites: ['Produto e processo identificados.', 'Parâmetros técnicos aprovados por Engenharia/Qualidade.'],
-    steps: ['Localize o produto pelo código.', 'Confira máquina, ferramental, ciclo, setup e condições de operação.', 'Registre limites e pontos de inspeção aprovados.', 'Use a ficha vigente na programação e na execução.'],
-    rules: ['Não invente parâmetros quando a ficha técnica não estiver disponível.', 'Alterações críticas precisam de revisão e rastreabilidade.'],
-    integrates: 'Engenharia → PCP → Produção → Qualidade → Manutenção.',
-    errors: ['Ficha ausente: interromper liberação e solicitar validação técnica.', 'Parâmetro divergente: comparar versão vigente com a OP.']
+    title: 'Roteiro de operações',
+    purpose: 'Definir a sequência de fabricação do produto, com posto de trabalho e tempo padrão por operação. Os parâmetros técnicos homologados ficam em Fichas de processo.',
+    prerequisites: ['Produto cadastrado.', 'Postos de trabalho ativos e validados para a empresa.'],
+    steps: ['Selecione o produto.', 'Informe a sequência inteira, a operação, o posto e o tempo em minutos.', 'Adicione as operações na ordem física real de fabricação.', 'Confira o tempo total do roteiro e mantenha os parâmetros técnicos na ficha vinculada.'],
+    rules: ['A sequência deve ser um inteiro maior que zero.', 'O tempo deve ser numérico e não negativo.', 'Não invente tempos ou parâmetros sem validação da Engenharia.'],
+    integrates: 'Engenharia → Capacidade → Sequenciamento → Execução → OEE.',
+    errors: ['Produto ou posto ausente: confirme os cadastros da empresa.', 'Sequência inválida: use um inteiro maior que zero.', 'Tempo inválido: informe minutos maiores ou iguais a zero.']
   },
   '/pcp/postos-trabalho': {
     title: 'Postos de trabalho',

@@ -2,9 +2,9 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 const appPath = fileURLToPath(new URL('../src/AppEntryV2.tsx', import.meta.url))
-const source = readFileSync(appPath, 'utf8')
+const source = readFileSync(appPath, 'utf8').replace(/\r\n/g, '\n')
 const layoutPath = fileURLToPath(new URL('../src/pages/VendasLayout.tsx', import.meta.url))
-const vendasLayout = readFileSync(layoutPath, 'utf8')
+const vendasLayout = readFileSync(layoutPath, 'utf8').replace(/\r\n/g, '\n')
 const checks = [
   [source.includes("import ERPHorizontalShell from './components/layout/ERPHorizontalShell'"), 'Shared horizontal shell import must remain'],
   [source.includes('<ERPHorizontalShell>\n            {protectedRoutes}'), 'Authenticated routes must be wrapped in the shared horizontal shell'],

@@ -257,7 +257,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
   if (checking) {
     return (
       <motion.main
-        className="auth-screen"
+        className="auth-screen auth-screen-checking"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.32 }}
@@ -266,7 +266,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
           <div className="auth-panel-inner">
             <div className="auth-heading">
               <span className="auth-overline">
-                {masterMode ? 'SYSNQRA ERP & SGQ INDUSTRIAL INDUSTRIAL • LOGIN MASTER' : 'SYSNQRA • ACESSO SEGURO'}
+                {masterMode ? 'SYSNQRA ERP & SGQ INDUSTRIAL • LOGIN MASTER' : 'SYSNQRA • ACESSO SEGURO'}
               </span>
             </div>
             <h1>Preparando seu acesso</h1>
@@ -307,7 +307,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
       <section className="auth-panel">
         <div className="auth-panel-inner">
           <div className="auth-heading">
-            <span className="auth-overline">SYSNQRA • ACESSO SEGURO</span>
+            <span className="auth-overline">{masterMode ? 'SYSNQRA • ACESSO MASTER' : 'SYSNQRA • ACESSO SEGURO'}</span>
             <span className="auth-status"><i /> Ambiente protegido</span>
           </div>
 

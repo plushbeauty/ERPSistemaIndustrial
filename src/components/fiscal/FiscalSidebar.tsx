@@ -1,10 +1,11 @@
-import { FileText, LayoutDashboard, Receipt, Settings, ShoppingCart, Truck } from 'lucide-react'
+import { FileInput, FileText, LayoutDashboard, Receipt, Settings, ShoppingCart, Truck } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 const items = [
   { href: '/fiscal', label: 'Dashboard Fiscal', icon: LayoutDashboard },
   { href: '/fiscal/pendencias', label: 'Pendências', icon: Truck },
   { href: '/fiscal/emissao', label: 'Emissão NF-e', icon: FileText },
+  { href: '/fiscal/nfe-entradas', label: 'NF-e Entrada', icon: FileInput },
   { href: '/fiscal/carteira-nfe', label: 'Carteira NF-e', icon: Receipt },
   { href: '/fiscal/impostos', label: 'Regras tributárias', icon: Settings },
   { href: '/fiscal/compras', label: 'Fiscal de Compras', icon: ShoppingCart },

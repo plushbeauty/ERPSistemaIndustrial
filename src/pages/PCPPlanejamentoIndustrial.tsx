@@ -10,8 +10,10 @@ type Center={id:string;codigo_posto:string;nome_posto:string;taxa_hora:number;at
 type Program={id:string;maquina_id:string|null;inicio_planejado:string;fim_planejado:string;quantidade_planejada:number;status:string}
 type Machine={id:string;codigo:string;nome:string;status:string}
 type AlertRow={id:string;tipo:string;severidade:string;mensagem:string;status:string;created_at:string}
+type MRPNeed={componente_id:string;necessidade_liquida:number;sugestao:string}
+type PlannedProduct={produto_id:string}
 
-const today=()=>new Date().toISOString().slice(0,10)
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 const productLabel=(p:Product)=>p.codigo+' • '+p.nome
 
 export default function PCPPlanejamentoIndustrial(){
@@ -54,7 +56,6 @@ export default function PCPPlanejamentoIndustrial(){
   const hours=rows.reduce((s,p)=>s+Math.max(0,(new Date(p.fim_planejado).getTime()-new Date(p.inicio_planejado).getTime())/3600000),0)
   return {m,rows,hours}
  }),[machines,programs])
- const shortages=useMemo(()=>products.filter(p=>Number(p.estoque_atual||0)<0),[products])
 
  async function createMPS(){
   const q=Number(qty),t=Number(target)
@@ -79,14 +80,13 @@ export default function PCPPlanejamentoIndustrial(){
    const latestRun=await supabase.from('erp_mrp_runs').select('id').eq('empresa_id',empresaId).order('created_at',{ascending:false}).limit(1).maybeSingle()
    if(latestRun.error) throw latestRun.error
    if(!latestRun.data){setMessage('Execute o MRP primeiro; não existe cálculo de necessidades para esta empresa.');return}
-   const needs=await supabase.from('erp_mrp_necessidades').select('componente_id,necessidade_liquida,sugestao').eq('empresa_id',empresaId).eq('run_id',latestRun.data.id).gt('necessidade_liquida',0).eq('sugestao','PRODUZIR').limit(3000)
-   if(needs.error) throw needs.error
+   const runId=latestRun.data.id
+   const needs=await fetchAllPages<MRPNeed>((from,to)=>supabase.from('erp_mrp_necessidades').select('componente_id,necessidade_liquida,sugestao',{count:'exact'}).eq('empresa_id',empresaId).eq('run_id',runId).gt('necessidade_liquida',0).eq('sugestao','PRODUZIR').order('componente_id').range(from,to))
    const aggregated=new Map<string,number>()
-   for(const row of needs.data??[]) aggregated.set(row.componente_id,(aggregated.get(row.componente_id)??0)+Number(row.necessidade_liquida))
+   for(const row of needs) aggregated.set(row.componente_id,(aggregated.get(row.componente_id)??0)+Number(row.necessidade_liquida))
    if(!aggregated.size){setMessage('O último MRP não contém necessidades líquidas classificadas como PRODUZIR.');return}
-   const existing=await supabase.from('erp_pcp_ordens_planejadas').select('produto_id').eq('empresa_id',empresaId).eq('origem','MRP').eq('status','PLANEJADA')
-   if(existing.error) throw existing.error
-   const alreadyPlanned=new Set((existing.data??[]).map(row=>row.produto_id))
+   const existing=await fetchAllPages<PlannedProduct>((from,to)=>supabase.from('erp_pcp_ordens_planejadas').select('produto_id',{count:'exact'}).eq('empresa_id',empresaId).eq('origem','MRP').eq('status','PLANEJADA').order('produto_id').range(from,to))
+   const alreadyPlanned=new Set(existing.map(row=>row.produto_id))
    const rows=[...aggregated.entries()].filter(([productId])=>!alreadyPlanned.has(productId)).map(([productId,quantity])=>({empresa_id:empresaId,produto_id:productId,quantidade:quantity,data_necessaria:today(),origem:'MRP',status:'PLANEJADA'}))
    if(!rows.length){setMessage('As necessidades do último MRP já possuem ordens planejadas abertas; nenhuma duplicata foi criada.');return}
    const ins=await supabase.from('erp_pcp_ordens_planejadas').insert(rows)
