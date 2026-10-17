@@ -1,3 +1,10 @@
+/**
+ * @DATA_REVISAO: 2026-10-16
+ * @REVISAO: VENDAS-007
+ * @ESCOPO_REVISADO: catálogo de produtos, filtro, disponibilidade, preço/foto de cadastro e fluxo de seleção/compra.
+ * @ALTERACOES: campo de pesquisa ajustado para 30px e borda de 2px; fonte de dados e fluxo do catálogo preservados.
+ * @VALIDACAO: conferir CI do commit corrente no PR; inspeção visual autenticada e teste funcional por sessão ainda pendentes.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { Copy, Filter, LayoutGrid, List, Minus, Plus, Search, Send, ShoppingBag, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -265,7 +272,7 @@ export default function VendasCatalogoDigital() {
               <input
                 value={filtro}
                 onChange={(event) => setFiltro(event.target.value)}
-                className="h-9 w-full border border-slate-300 bg-white pl-8 pr-2 text-[10px] outline-none focus:border-[#2D8DB8]"
+                className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white pl-8 pr-2 text-[10px] outline-none focus:border-[#2D8DB8]"
                 placeholder="Buscar por código, produto, referência ou código de barras..."
               />
             </div>

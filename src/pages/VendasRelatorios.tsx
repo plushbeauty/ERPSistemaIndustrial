@@ -1,3 +1,10 @@
+/**
+ * @DATA_REVISAO: 2026-10-16
+ * @REVISAO: VENDAS-003
+ * @ESCOPO_REVISADO: consulta por empresa, filtros de pedido/status, relacionamento com cliente, tabela e impressão.
+ * @ALTERACOES: área de trabalho e células compactadas; cabeçalho/linhas aproximados de 32px; consulta Supabase e filtros preservados.
+ * @VALIDACAO: conferir CI do commit corrente no PR; inspeção visual autenticada e teste funcional por sessão ainda pendentes.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { Printer, RefreshCw, Search } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -76,62 +83,62 @@ export default function VendasRelatorios() {
   return (
     <VendasLayout title="Relatórios de Vendas" subtitle="Pedidos, filtros e impressão" onRefresh={()=>void load()}>
       <style>{`@media print { .print-hidden { display:none!important } body { background:white!important } }`}</style>
-      <section className="mx-auto max-w-[1600px] space-y-4 px-4 py-5 lg:px-6">
-        <div className="border border-slate-200 bg-white p-4 shadow-sm print-hidden">
-          <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
-            <label className="grid gap-1 text-[11px] font-medium">
+      <section className="mx-auto max-w-[1600px] min-w-0 space-y-2 px-2 py-2 lg:px-3">
+        <div className="rounded-[2px] border border-slate-200 bg-white p-3 print-hidden">
+          <div className="grid min-w-0 gap-2 md:grid-cols-[minmax(0,1fr)_220px]">
+            <label className="grid min-w-0 gap-0.5 text-[9px] font-bold uppercase">
               Buscar pedido, PO ou cliente
               <span className="relative">
-                <Search size={17} className="absolute left-3 top-3 text-slate-400" />
-                <input value={query} onChange={event => setQuery(event.target.value)} className="h-7 w-full border border-slate-300 pl-9 pr-3 text-[11px] font-semibold outline-none focus:border-[#2D8DB8]" placeholder="Ex.: 000123 ou PO-456" />
+                <Search size={14} className="absolute left-2 top-2 text-slate-400" />
+                <input value={query} onChange={event => setQuery(event.target.value)} className="h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 pl-7 pr-2 text-[10px] font-normal outline-none focus:border-[#2D8DB8]" placeholder="Ex.: 000123 ou PO-456" />
               </span>
             </label>
             <label className="grid gap-1 text-[11px] font-medium">
               Status
-              <select value={status} onChange={event => setStatus(event.target.value)} className="h-7 border border-slate-300 bg-white px-3 text-[11px] font-semibold">
+              <select value={status} onChange={event => setStatus(event.target.value)} className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal outline-none focus:border-[#2D8DB8]">
                 {statuses.map(value => <option key={value}>{value}</option>)}
               </select>
             </label>
           </div>
         </div>
 
-        {error && <div className="border border-rose-200 bg-rose-50 p-4 font-medium text-rose-800">{error}</div>}
+        {error && <div className="rounded-[2px] border border-rose-200 bg-rose-50 p-2 text-[10px] font-medium text-rose-800">{error}</div>}
 
-        <section className="border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 p-4">
+        <section className="rounded-[2px] border border-slate-200 bg-white">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 p-2">
             <div>
-              <h2 className="text-[11px] font-medium text-[#123B50]">Relatório de Pedidos</h2>
-              <p className="text-[11px] font-semibold text-slate-500">{filtered.length} pedido(s) • total filtrado {money(total)}</p>
-            <button type="button" onClick={() => window.print()} className="print-hidden inline-flex h-7 items-center gap-1 border border-slate-300 bg-white px-2 text-[10px] font-medium"><Printer size={13}/> IMPRIMIR RELATÓRIO</button>
+              <h2 className="text-[11px] font-semibold text-[#123B50]">Relatório de Pedidos</h2>
+              <p className="text-[10px] text-slate-500">{filtered.length} pedido(s) • total filtrado {money(total)}</p>
             </div>
+            <button type="button" onClick={() => window.print()} className="print-hidden inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-semibold"><Printer size={13}/> IMPRIMIR RELATÓRIO</button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-[11px]">
               <thead className="bg-slate-100 text-left text-xs font-medium uppercase text-slate-700">
                 <tr>
-                  <th className="px-4 py-3">Pedido</th>
-                  <th className="px-4 py-3">Pedido cliente / PO</th>
-                  <th className="px-4 py-3">Cliente</th>
-                  <th className="px-4 py-3">Entrada</th>
-                  <th className="px-4 py-3">Entrega</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 text-right">Total</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">Pedido</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">Pedido cliente / PO</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">Cliente</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">Entrada</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">Entrega</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase">Status</th>
+                  <th className="h-8 px-2 py-1.5 text-[9px] uppercase text-right">Total</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map(order => (
                   <tr key={order.id} className="border-t border-slate-200">
-                    <td className="px-4 py-3 font-medium">{String(order.numero).padStart(6, '0')}</td>
-                    <td className="px-4 py-3">{order.pedido_cliente || '—'}</td>
-                    <td className="px-4 py-3 font-semibold">{order.cliente_nome || '—'}</td>
-                    <td className="px-4 py-3">{order.data_entrada ? new Date(order.data_entrada).toLocaleDateString('pt-BR') : '—'}</td>
-                    <td className="px-4 py-3">{order.data_entrega_prometida ? new Date(order.data_entrega_prometida).toLocaleDateString('pt-BR') : '—'}</td>
-                    <td className="px-4 py-3 font-medium">{order.status}</td>
-                    <td className="px-4 py-3 text-right font-medium">{money(order.total)}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px] font-medium">{String(order.numero).padStart(6, '0')}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px]">{order.pedido_cliente || '—'}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px] font-semibold">{order.cliente_nome || '—'}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px]">{order.data_entrada ? new Date(order.data_entrada).toLocaleDateString('pt-BR') : '—'}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px]">{order.data_entrega_prometida ? new Date(order.data_entrega_prometida).toLocaleDateString('pt-BR') : '—'}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px] font-medium">{order.status}</td>
+                    <td className="h-8 px-2 py-1.5 text-[10px] text-right font-medium">{money(order.total)}</td>
                   </tr>
                 ))}
                 {!loading && !filtered.length && (
-                  <tr><td colSpan={7} className="px-4 py-12 text-center font-semibold text-slate-500">Nenhum pedido encontrado com os filtros atuais.</td></tr>
+                  <tr><td colSpan={7} className="px-2 py-6 text-center text-[10px] font-semibold text-slate-500">Nenhum pedido encontrado com os filtros atuais.</td></tr>
                 )}
               </tbody>
             </table>

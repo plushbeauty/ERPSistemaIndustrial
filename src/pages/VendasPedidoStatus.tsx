@@ -1,3 +1,10 @@
+/**
+ * @DATA_REVISAO: 2026-10-16
+ * @REVISAO: VENDAS-012
+ * @ESCOPO_REVISADO: detalhe do pedido, itens, valores, entrega e encaminhamento para retificação autorizada.
+ * @ALTERACOES: cartões e grade compactados para 32px/2px; vínculos e regras de retificação preservados.
+ * @VALIDACAO: revisão estática; CI pendente para tipagem, lint, auditorias e build.
+ */
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Pencil } from 'lucide-react'
@@ -125,7 +132,7 @@ export default function VendasPedidoStatus() {
         {error && <div className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-red-800">{error}</div>}
         {order && (
           <>
-            <section className="rounded-lg border bg-white p-5 shadow-sm">
+            <section className="rounded-[2px] border border-slate-200 bg-white p-3">
               <div className="grid gap-4 md:grid-cols-4 xl:grid-cols-9">
                 <Info label="Pedido" value={`PV-${String(order.numero).padStart(6, '0')}`} />
                 <div><Info label="Cliente" value={order.cliente?.nome || '—'} /><p className="text-[11px] text-slate-500">{order.cliente?.documento || '—'}</p></div>
@@ -139,14 +146,14 @@ export default function VendasPedidoStatus() {
               </div>
             </section>
 
-            <section className="mt-5 rounded-lg border bg-white p-5">
+            <section className="mt-3 rounded-[2px] border border-slate-200 bg-white p-3">
               <h2 className="font-medium text-[#123B50]">Itens do pedido</h2>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full min-w-[900px]">
-                  <thead><tr className="h-[50px] bg-slate-100 text-left text-sm"><th>Descrição</th><th>Cód. cliente</th><th>Quantidade</th><th>Valor unitário</th><th>Desconto</th><th>Total</th></tr></thead>
+                  <thead><tr className="h-8 bg-slate-100 text-left text-[9px] uppercase"><th>Descrição</th><th>Cód. cliente</th><th>Quantidade</th><th>Valor unitário</th><th>Desconto</th><th>Total</th></tr></thead>
                   <tbody>
                     {items.map((item) => (
-                      <tr key={item.id} className="h-[50px] border-t">
+                      <tr key={item.id} className="h-8 border-t border-slate-200 text-[10px]">
                         <td>{item.descricao}</td><td>{item.produto_cliente || '—'}</td><td>{item.quantidade}</td>
                         <td>{money(Number(item.valor_unitario))}</td><td>{money(Number(item.desconto || 0))}</td><td>{money(Number(item.total))}</td>
                       </tr>
@@ -157,7 +164,7 @@ export default function VendasPedidoStatus() {
               </div>
             </section>
 
-            <section className="mt-5 rounded-lg border bg-white p-5">
+            <section className="mt-3 rounded-[2px] border border-slate-200 bg-white p-3">
               <h2 className="font-medium text-[#123B50]">Condições comerciais</h2>
               <div className="mt-4 grid gap-4 text-sm md:grid-cols-5">
                 <Info label="Subtotal" value={money(Number(order.subtotal || 0))} />
@@ -169,7 +176,7 @@ export default function VendasPedidoStatus() {
               {order.observacoes && <div className="mt-4 rounded border bg-slate-50 p-3 text-sm whitespace-pre-wrap"><strong>Observações:</strong> {order.observacoes}</div>}
             </section>
 
-            <section className="mt-5 grid gap-5 lg:grid-cols-3">
+            <section className="mt-3 grid min-w-0 gap-2 lg:grid-cols-3">
               <StatusBlock title="Produção" rows={production.map((row) => `OP ${row.numero_op} • ${row.status} • ${row.quantidade_produzida ?? 0}/${row.quantidade_planejada ?? row.quantidade}`)} empty="Nenhuma OP vinculada a este pedido." />
               <StatusBlock title="Expedição" rows={expedition.map((row) => `Expedição ${row.numero} • ${row.status}${row.transportadora ? ' • ' + row.transportadora : ''}`)} empty="Nenhuma expedição vinculada." />
               <StatusBlock title="NF / Saída" rows={fiscal.map((row) => `${row.tipo} • ${row.status} • pendente ${row.quantidade_pendente ?? 0}`)} empty="Nenhuma liberação fiscal vinculada." />
@@ -187,7 +194,7 @@ function Info({ label, value }: { label: string; value: string }) {
 
 function StatusBlock({ title, rows, empty }: { title: string; rows: string[]; empty: string }) {
   return (
-    <div className="rounded-lg border bg-white p-5 shadow-sm">
+    <div className="rounded-[2px] border border-slate-200 bg-white p-3">
       <h2 className="font-medium text-[#123B50]">{title}</h2>
       <div className="mt-4 space-y-2">
         {rows.length ? rows.map((row, index) => <div key={index} className="rounded border bg-slate-50 p-3 text-sm">{row}</div>) : <p className="text-sm text-slate-500">{empty}</p>}

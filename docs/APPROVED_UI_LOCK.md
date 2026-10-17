@@ -1,7 +1,7 @@
 # Contrato de telas aprovadas — ERP Industrial
 
 **Data da revisão:** 2026-10-16  
-**Revisão:** APROV-004  
+**Revisão:** APROV-005  
 **Regra:** telas aprovadas são imutáveis por padrão. Não alterar layout, conteúdo, geometria, comportamento ou estrutura sem autorização explícita do usuário para uma nova revisão.
 
 | Tela/arquivo | Referência aprovada | Proteção |
@@ -36,3 +36,12 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Cadastro de Fornecedores já utiliza botão primário azul `#2D8DB8` com texto branco; permanece como referência visual.
 - Status do pedido fica congelado novamente nesta revisão. Mudanças futuras exigem ordem expressa do usuário e nova revisão do hash.
 - O contrato de lock também foi sincronizado com os hashes Git reais atuais de Produtos e Login, sem alterar o conteúdo dessas duas telas.
+
+
+## Registro da revisão APROV-005 — 2026-10-16
+
+- Vendas → Novo Pedido: auditoria geométrica autorizada pelo usuário; campos editáveis/selects padronizados em 30 px, rótulos em 9 px, texto dos controles em 11 px e cantos de 2 px.
+- Os cards Dados do Cliente, Dados do Pedido e Entrega e Logística usam três colunas equivalentes no desktop e empilham em telas estreitas; conteúdo interno usa `min-width: 0` para evitar cortes e estouro.
+- A seção Itens do Pedido permanece imediatamente abaixo dos três cards; cabeçalho da grade 32 px e linhas/dados compactados para 32 px/10 px, com colunas numéricas alinhadas à direita.
+- Lupa e botões operacionais ajustados à altura compacta. Preservadas consultas Supabase, RPCs, validações, cálculos, anexos, importação, gravação, finalização e impressão.
+- O hash da tela Novo Pedido foi atualizado de forma explícita para esta revisão; o CI continua bloqueando alterações posteriores não autorizadas.

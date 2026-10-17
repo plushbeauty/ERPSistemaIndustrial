@@ -1,3 +1,10 @@
+/**
+ * @DATA_REVISAO: 2026-10-16
+ * @REVISAO: VENDAS-006
+ * @ESCOPO_REVISADO: cadastro de clientes, validações/máscaras, busca CEP, tabela de preços, de-para e vínculos de transportadoras.
+ * @ALTERACOES: campos e pesquisa alinhados a 30px; consultas e gravações multiempresa preservadas.
+ * @VALIDACAO: conferir CI do commit corrente no PR; inspeção visual autenticada e teste funcional por sessão ainda pendentes.
+ */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Building2, Check, MapPin, Pencil, Plus, RefreshCw, Search, Trash2, Truck, UserRound } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -93,7 +100,7 @@ const empty = (): Form => ({
   ativo: true,
 })
 
-const baseInput = 'h-[28px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal text-slate-900 outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100'
+const baseInput = 'h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-normal text-slate-900 outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100'
 const shortInput = baseInput + ' max-w-[110px]'
 function HelpTip({ text }: { text: string }) {
   const [open, setOpen] = useState(false)
@@ -591,7 +598,7 @@ export default function VendasClientes() {
           <section className="border border-slate-200 bg-white">
             <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-2 py-1">
               <Search size={13} className="text-sky-700"/>
-              <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Pesquisar por código, razão social, CNPJ ou e-mail" className="h-[28px] min-w-0 flex-1 border-0 bg-transparent px-1 text-[10px] outline-none"/>
+              <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Pesquisar por código, razão social, CNPJ ou e-mail" className="h-[30px] min-w-0 flex-1 border-0 bg-transparent px-1 text-[10px] outline-none"/>
               <HelpTip text="Digite parte do código, razão social, CNPJ ou e-mail. A grade abaixo filtra os clientes já cadastrados na empresa atual." />
             </div>
             <div className="overflow-x-auto">
