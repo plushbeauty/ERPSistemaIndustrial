@@ -3,7 +3,7 @@
  * @REVISAO: VENDAS-007
  * @ESCOPO_REVISADO: catálogo de produtos, filtro, disponibilidade, preço/foto de cadastro e fluxo de seleção/compra.
  * @ALTERACOES: campo de pesquisa ajustado para 30px e borda de 2px; fonte de dados e fluxo do catálogo preservados.
- * @VALIDACAO: revisão estática; CI pendente para tipagem, lint, auditorias e build.
+ * @VALIDACAO: conferir CI do commit corrente no PR; inspeção visual autenticada e teste funcional por sessão ainda pendentes.
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Copy, Filter, LayoutGrid, List, Minus, Plus, Search, Send, ShoppingBag, X } from 'lucide-react'
