@@ -22,6 +22,7 @@ const checks = [
   ['Recuperação de senha preservada', loginPage.includes('Esqueci minha senha')],
   ['Rota de entrada aponta para o painel principal aprovado', appEntry.includes('path="/erp-industrial" element={<AppIndustrial />}') && homeDashboard.includes('<IndustrialCommandDashboard')],
   ['Menu PCP mantém submenu das quatro fichas de processo', ['Ficha de Processo Injetados', 'Ficha de Processo Prensados', 'Ficha de Processo Acabamento', 'Montagem de Embalagem'].every(label => shell.includes(label))],
+  ['Submenu de Fichas de Processo renderiza e navega às categorias existentes', shell.includes('child.children.filter(grandchild') && shell.includes('setOpenSubMenu') && ['tipo=INJETADOS', 'tipo=PRENSADOS', 'tipo=ACABAMENTO', 'tipo=MONTAGEM_EMBALAGEM'].every(route => shell.includes(route))],
   ['Menu operacional não exibe lançadores de tablet', !shell.includes('PCP Tablet') && !shell.includes('TabletMenuModal') && !shell.includes('PCPTabletMenuModal')],
 ]
 

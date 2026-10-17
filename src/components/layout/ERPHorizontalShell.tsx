@@ -112,6 +112,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+  const [openSubMenu, setOpenSubMenu] = useState<string | null>(null)
   const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
@@ -185,7 +186,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : undefined
   const current = currentModuleMenu ?? menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
   const normalizedSearch = moduleSearch.trim().toLocaleLowerCase('pt-BR')
-  const searchedMenus = normalizedSearch ? menus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : menus
+  const searchedMenus = normalizedSearch ? menus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || child.children?.some(grandchild => grandchild.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch))) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : menus
   useEffect(() => {
     setOpenMenu(null)
     setStartMenuOpen(false)
@@ -255,7 +256,10 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                     {hasChildren && <button type="button" className="erp-windows-menu-expand" aria-label={`Expandir ${menu.label}`} aria-expanded={expanded} onClick={() => setOpenMenu(value => value === menu.label ? null : menu.label)}>{expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}</button>}
                   </div>
                   {hasChildren && expanded && <div className="erp-windows-menu-children">
-                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => <button type="button" key={child.label + child.route} className={pathname + location.search === child.route ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); go(child.route) }}>{child.label}</button>)}
+                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || child.children?.some(grandchild => grandchild.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch))).map(child => child.children?.length ? <div className="erp-windows-submenu-group" key={child.label}>
+                      <div className="erp-windows-submenu-row"><button type="button" className="erp-windows-submenu-main" onClick={() => { setOpenSubMenu(value => value === child.label ? null : child.label) }}>{child.label}</button><button type="button" className="erp-windows-submenu-expand" aria-label={`Expandir ${child.label}`} aria-expanded={openSubMenu === child.label || Boolean(normalizedSearch)} onClick={() => setOpenSubMenu(value => value === child.label ? null : child.label)}>{openSubMenu === child.label || normalizedSearch ? <ChevronDown size={12}/> : <ChevronRight size={12}/>}</button></div>
+                      {(openSubMenu === child.label || Boolean(normalizedSearch)) && <div className="erp-windows-submenu-items">{child.children.filter(grandchild => !normalizedSearch || grandchild.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(grandchild => <button type="button" key={grandchild.label + grandchild.route} className={pathname + location.search === grandchild.route ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); setOpenSubMenu(null); go(grandchild.route) }}>{grandchild.label}</button>)}</div>}
+                    </div> : <button type="button" key={child.label + child.route} className={pathname + location.search === child.route ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); go(child.route) }}>{child.label}</button>)}
                   </div>}
                 </div>
               })}
@@ -325,6 +329,14 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-menu-children{margin:0 0 4px 24px;padding:2px 0 2px 8px;border-left:1px solid #cbd5e1}
         .erp-windows-menu-children button{display:block;width:100%;min-height:29px;padding:5px 8px;border:0;background:#fff;text-align:left;color:#334155;font-size:10px;cursor:pointer}
         .erp-windows-menu-children button:hover,.erp-windows-menu-children button.is-active{background:#eaf5f8;color:#123b50}
+        .erp-windows-submenu-row{display:flex;align-items:center;width:100%;min-height:29px}
+        .erp-windows-submenu-main,.erp-windows-submenu-expand{min-height:29px;border:0;background:#fff;text-align:left;color:#334155;font-size:10px;cursor:pointer}
+        .erp-windows-submenu-main{flex:1;padding:5px 8px}
+        .erp-windows-submenu-expand{display:grid;place-items:center;width:28px;padding:0}
+        .erp-windows-submenu-row:hover .erp-windows-submenu-main,.erp-windows-submenu-row:hover .erp-windows-submenu-expand{background:#f1f5f9}
+        .erp-windows-submenu-items{margin:0 0 3px 12px;padding:1px 0 1px 7px;border-left:1px solid #dbe3ea}
+        .erp-windows-submenu-items button{display:block;width:100%;min-height:27px;padding:4px 7px;border:0;background:#fff;text-align:left;color:#475569;font-size:9px;cursor:pointer}
+        .erp-windows-submenu-items button:hover,.erp-windows-submenu-items button.is-active{background:#eaf5f8;color:#123b50}
         .erp-windows-no-results{margin:12px 8px;font-size:10px;color:#64748b}
         .erp-windows-start-footer{min-height:38px;display:flex;align-items:center;gap:6px;padding:0 10px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:10px;color:#334155}
         .erp-windows-start-footer span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
