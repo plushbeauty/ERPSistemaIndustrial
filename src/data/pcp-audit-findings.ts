@@ -56,11 +56,11 @@ export const PCP_AUDIT_FINDINGS: AuditFinding[] = [
     rota: '/pcp/mrp-ii',
     arquivo: 'src/pages/MRPIndustrial.tsx',
     linha: 19,
-    descricao: 'Consultas de produtos e runs do MRP são executadas sem filtro explícito de empresa_id na chamada inicial load().',
+    descricao: 'A consulta de necessidades do MRP também precisa ser limitada à empresa da sessão, além das consultas de produtos e execuções.'
     impacto: 'Risco de contaminação cruzada de dados entre tenants ou comportamento inconsistente em sessões multi-empresa.',
-    correcaoPrevista: "Obter empresa_id via erp_current_empresa_id e injetar filtro .eq('empresa_id', companyId) em todas as consultas.",
-    evidenciaValidacao: 'Análise de código do arquivo MRPIndustrial.tsx e comparação com padrão multi-tenant de PCPOrdens.tsx.',
-    status: 'PENDENTE',
+    correcaoPrevista: "Obter empresa_id via erp_current_empresa_id e aplicar .eq('empresa_id', empresaId) nas consultas de produtos, execuções e necessidades."
+    evidenciaValidacao: 'Código atualizado: produtos e execuções filtram empresa_id; loadNeeds resolve erp_current_empresa_id e filtra empresa_id junto com run_id. Build e validação em runtime ainda pendentes.'
+    status: 'CORRIGIDO',
     dataIdentificacao: '2026-10-17',
     dataUltimaVerificacao: '2026-10-17',
   },
