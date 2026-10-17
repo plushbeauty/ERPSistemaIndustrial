@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { AlertTriangle, CheckCircle2, ClipboardCheck, Clock3, Factory, Plus, RefreshCw, Save, ShieldCheck } from 'lucide-react'
+import { AlertTriangle, Clock3, Factory, Plus, RefreshCw, Save, ShieldCheck } from 'lucide-react'
 import ERPHorizontalShell from '../../components/layout/ERPHorizontalShell'
 import { supabase } from '../../lib/supabaseClient'
+import { fetchAllPages } from '../../lib/supabasePagination'
 
 type Lookup = { id: string; codigo?: string | null; nome?: string | null; nome_fantasia?: string | null; numero_op?: string | null; lote_interno?: string | null; status_inspecao?: string | null }
 type Control = {
@@ -91,17 +92,17 @@ export default function ControleProcessoInjetora() {
       if (company.error || !company.data) throw new Error('Empresa da sessão não identificada.')
       setEmpresaId(company.data)
       const [m, o, op, p, l, c] = await Promise.all([
-        supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id', company.data).eq('ativo', true).order('codigo'),
-        supabase.from('erp_usuarios').select('id,nome,email').eq('empresa_id', company.data).eq('ativo', true).is('deleted_at', null).order('nome'),
-        supabase.from('erp_ordens_producao').select('id,numero_op').eq('empresa_id', company.data).order('criado_em', { ascending: false }).limit(200),
-        supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', company.data).eq('ativo', true).order('codigo').limit(500),
-        supabase.from('erp_estoque_lotes').select('id,lote_interno,status_inspecao').eq('empresa_id', company.data).neq('status_inspecao', 'RETIDO').order('created_at', { ascending: false }).limit(500),
-        supabase.from('erp_qualidade_controles_injetora').select('id,data_producao,status,maquina_id,operador_id,ordem_producao_id,quantidade_total_pecas,numero_cavidades,hora_inicio,hora_fim,material_atual,cor_atual,observacoes,criado_em,pom_guilhotina_fechada,pom_residuo_consumido').eq('empresa_id', company.data).order('criado_em', { ascending: false }).limit(100)
+        fetchAllPages<Lookup>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome',{count:'exact'}).eq('empresa_id', company.data).eq('ativo', true).order('codigo').order('id').range(from,to)),
+        fetchAllPages<Lookup>((from,to)=>supabase.from('erp_usuarios').select('id,nome',{count:'exact'}).eq('empresa_id', company.data).eq('ativo', true).is('deleted_at', null).order('nome').order('id').range(from,to)),
+        fetchAllPages<Lookup>((from,to)=>supabase.from('erp_ordens_producao').select('id,numero_op',{count:'exact'}).eq('empresa_id', company.data).order('criado_em', { ascending: false }).order('id').range(from,to)),
+        fetchAllPages<Lookup>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome',{count:'exact'}).eq('empresa_id', company.data).eq('ativo', true).order('codigo').order('id').range(from,to)),
+        fetchAllPages<Lookup>((from,to)=>supabase.from('erp_estoque_lotes').select('id,lote_interno,status_inspecao',{count:'exact'}).eq('empresa_id', company.data).neq('status_inspecao', 'RETIDO').order('created_at', { ascending: false }).order('id').range(from,to)),
+        supabase.from('erp_qualidade_controles_injetora').select('id,data_producao,status,maquina_id,operador_id,ordem_producao_id,quantidade_total_pecas,numero_cavidades,hora_inicio,hora_fim,material_atual,cor_atual,observacoes,criado_em,pom_guilhotina_fechada,pom_residuo_consumido').eq('empresa_id', company.data).order('criado_em', { ascending: false }).order('id').limit(100)
       ])
-      for (const result of [m, o, op, p, l, c]) if (result.error) throw result.error
-      setMachines((m.data ?? []) as Lookup[]); setOperators((o.data ?? []) as Lookup[])
-      setOrders((op.data ?? []) as Lookup[]); setProducts((p.data ?? []) as Lookup[])
-      setLots((l.data ?? []) as Lookup[]); setRecords((c.data ?? []) as Control[])
+      if(c.error)throw c.error
+      setMachines(m); setOperators(o)
+      setOrders(op); setProducts(p)
+      setLots(l); setRecords((c.data ?? []) as Control[])
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar o controle de injetora.')
     } finally { setLoading(false) }
