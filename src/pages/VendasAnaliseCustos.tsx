@@ -3,7 +3,7 @@
  * @REVISAO: VENDAS-001
  * @ESCOPO_REVISADO: controles da análise de custos, seleção de produto/posto, tabela de operações e ações compactas.
  * @ALTERACOES: altura de campos e ações alinhada ao padrão industrial de 30px; bordas reduzidas a 2px; regras de cálculo e consultas preservadas.
- * @VALIDACAO: revisão geométrica adicional em 2026-10-16; repetir CI no commit resultante antes de homologar.
+ * @VALIDACAO: conferir CI do commit corrente no PR; inspeção visual autenticada e teste funcional por sessão ainda pendentes.
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Paperclip, Plus, Trash2 } from 'lucide-react'
