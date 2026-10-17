@@ -25,8 +25,8 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 ## 2. PAINEL DE RESUMO E STATUS
 
 - **Total de Problemas Identificados:** 12
-- **Pendentes de Correção:** 4
-- **Corrigidos:** 8
+- **Pendentes de Correção:** 3
+- **Corrigidos:** 9
 - **Bloqueados:** 0
 
 ---
@@ -38,11 +38,11 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Categoria:** Integridade de Dados / Runtime
 - **Tela / Componente:** Painel de Ordens de Produção (`src/features/pcp/PainelOrdensProducao.tsx:17`)
 - **Rota Confirmada:** `/pcp/painel-ordens`
-- **Descrição Objetiva:** A consulta do Supabase utiliza `.order('criado_em', { ascending: false })` e `.select('..., criado_em, ...')` na tabela `erp_ordens_producao`. O schema consolidado e as migrations do ERP comprovam que a coluna correta de data de criação é `created_at`.
+- **Descrição Objetiva:** O código utilizava `criado_em`, coluna que não existe no schema consolidado; a consulta agora usa `created_at` na seleção, ordenação e exibição. O schema consolidado e as migrations do ERP comprovam que a coluna correta de data de criação é `created_at`.
 - **Impacto:** A query falha com erro de coluna inexistente do Postgres (`column erp_ordens_producao.criado_em does not exist`), deixando o painel com mensagem de erro e impossibilitando a visualização das ordens abertas.
-- **Correção Prevista:** Substituir a referência de `criado_em` por `created_at` na consulta Supabase e no mapeamento de estado da interface.
-- **Evidência de Validação:** Análise do schema em `supabase/migrations/20260927161000_erp_pcp_atomic_create_op_v2.sql` e consultas comparativas em `PCPOrdens.tsx` e `PCPExecucaoIndustrial.tsx`.
-- **Status:** `PENDENTE`
+- **Correção Prevista:** Substituído `criado_em` por `created_at` na consulta e no mapeamento de estado da interface.
+- **Evidência de Validação:** `PainelOrdensProducao.tsx` confirmado com `created_at` na seleção, ordenação e exibição. Build e validação em runtime ainda pendentes.
+- **Status:** `CORRIGIDO`
 
 ---
 
