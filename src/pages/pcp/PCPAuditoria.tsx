@@ -33,21 +33,16 @@ export default function PCPAuditoria() {
         })
         if (!active) return
         if (error) {
-          // Se o RPC falhar por migration ou outro motivo, verificar se a sessão é válida
-          const session = await supabase.auth.getSession()
-          if (session.data.session) {
-            setHasPermission(true)
-          } else {
-            setPermissionError('Sessão inválida ou sem permissão de acesso.')
-            setHasPermission(false)
-          }
+          // Falha na verificação de RBAC deve bloquear o acesso (fail-closed).
+          setPermissionError('Não foi possível validar a permissão producao.ver. Acesso bloqueado por segurança.')
+          setHasPermission(false)
         } else {
-          setHasPermission(Boolean(permitted))
+          setHasPermission(permitted === true)
         }
-       } catch {
+      } catch {
         if (!active) return
-        setPermissionError('Falha ao validar credenciais de produção.')
-        setHasPermission(true) // Degradação graciosa mantendo proteção do QualityPlanGate
+        setPermissionError('Falha ao validar credenciais de produção. Acesso bloqueado por segurança.')
+        setHasPermission(false)
       }
     }
     void checkAccess()
