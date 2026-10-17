@@ -25,9 +25,9 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 ## 2. PAINEL DE RESUMO E STATUS
 
 - **Total de Problemas Identificados:** 14
-- **Pendentes de Correção:** 9
+- **Pendentes de Correção:** 8
 - **Corrigidos:** 4
-- **Bloqueados:** 1
+- **Bloqueados:** 2
 
 ---
 
@@ -40,9 +40,9 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Rota Confirmada:** `/pcp/painel-ordens`
 - **Descrição Objetiva:** A consulta do Supabase utiliza `.order('criado_em', { ascending: false })` e `.select('..., criado_em, ...')` na tabela `erp_ordens_producao`. O schema consolidado e as migrations do ERP comprovam que a coluna correta de data de criação é `created_at`.
 - **Impacto:** A query falha com erro de coluna inexistente do Postgres (`column erp_ordens_producao.criado_em does not exist`), deixando o painel com mensagem de erro e impossibilitando a visualização das ordens abertas.
-- **Correção Prevista:** Substituir a referência de `criado_em` por `created_at` na consulta Supabase e no mapeamento de estado da interface.
-- **Evidência de Validação:** Análise do schema em `supabase/migrations/20260927161000_erp_pcp_atomic_create_op_v2.sql` e consultas comparativas em `PCPOrdens.tsx` e `PCPExecucaoIndustrial.tsx`.
-- **Status:** `PENDENTE`
+- **Correção Aplicada:** Referências a `criado_em` substituídas por `created_at` no tipo, `select`, ordenação e renderização.
+- **Evidência de Validação:** Commit `a12454b2f7da30346f7e4b65d0114314388e1271`; type-check/build e deployment desse commit ainda aguardam confirmação.
+- **Status:** `BLOQUEADO`
 
 ---
 
