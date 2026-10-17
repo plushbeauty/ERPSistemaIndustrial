@@ -268,6 +268,10 @@ export default function PCPFichasProcesso() {
    if (missing.length) throw new Error('Preencha os parâmetros obrigatórios: ' + missing.map(p => p.label).join(', ') + '.')
    const numericInvalid = paramsFor(category).filter(p => p.type === 'number' && params[p.key] !== '' && !Number.isFinite(Number(params[p.key])))
    if (numericInvalid.length) throw new Error('Parâmetros numéricos inválidos: ' + numericInvalid.map(p => p.label).join(', ') + '.')
+   const requiresApprovalMetadata = ['APROVADA', 'LIBERADA'].includes(status)
+   if (requiresApprovalMetadata && !approvedAt) throw new Error('Informe a data de homologação antes de aprovar ou liberar a ficha.')
+   if (requiresApprovalMetadata && !signature.trim()) throw new Error('A aprovação ou liberação requer assinatura técnica identificada.')
+   if (approvedAt && !/^\d{4}-\d{2}-\d{2}$/.test(approvedAt)) throw new Error('A data de homologação está inválida.')
    if (approvedAt && !signature.trim()) throw new Error('A homologação requer assinatura técnica identificada.')
    const numericParams = Object.fromEntries(Object.entries(params).map(([key, value]) => {
     const definition = paramsFor(category).find(p => p.key === key)
