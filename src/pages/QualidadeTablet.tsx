@@ -49,15 +49,15 @@ export default function QualidadeTablet() {
         .qt-groups{display:grid;gap:8px;margin-top:8px}
         .qt-group{border:1px solid #cbd9e1;background:#fff;min-width:0}
         .qt-group-title{padding:6px 9px;background:#e7f1f6;border-bottom:1px solid #cbd9e1;font-size:9px;font-weight:850;letter-spacing:.09em;color:#315466}
-        .qt-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;padding:7px}
-        .qt-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;height:80px;min-width:0;padding:6px;border:1px solid #cbd9e1;border-radius:2px;background:#fff;text-align:center;color:#123b50;cursor:pointer;transition:background .12s,border-color .12s}
+        .qt-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;padding:8px}
+        .qt-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;height:86px;min-width:0;padding:7px;border:1px solid #cbd9e1;border-radius:2px;background:#fff;text-align:center;color:#123b50;cursor:pointer;transition:background .12s,border-color .12s}
         .qt-tile:hover,.qt-tile:focus-visible{background:#eef8fc;border-color:#2d8db8;outline:2px solid #b7e2f3;outline-offset:0}
         .qt-icon{display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;background:#e8f4f8;color:#23779b;border:1px solid #d2e7ef}
         .qt-copy{display:block;width:100%;min-width:0}.qt-copy strong{display:-webkit-box;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:9px;line-height:1.2;font-weight:850;text-transform:uppercase;overflow-wrap:anywhere}
         .qt-copy small{display:none}
         .qt-foot{display:none}
-        @media(max-width:1250px){.qt-grid{grid-template-columns:repeat(6,minmax(0,1fr))}}
-        @media(max-width:900px){.qt-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+        @media(max-width:1250px){.qt-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+        @media(max-width:900px){.qt-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
         @media(max-width:560px){.qt-shell{padding:6px}.qt-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:6px}.qt-tile{height:76px}.qt-head h1{font-size:12px}.qt-stamp{display:none}}
       `}</style>
       <header className="qt-head">
