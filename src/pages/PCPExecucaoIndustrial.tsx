@@ -21,8 +21,8 @@ const field='h-8 w-full rounded-[2px] border border-slate-300 bg-white px-3 text
 const label='flex flex-col gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-500'
 const btn='inline-flex h-8 items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold hover:bg-slate-50 disabled:opacity-50'
 const primary='inline-flex h-8 items-center justify-center gap-1 rounded-[2px] border border-sky-700 bg-sky-700 px-3 text-[10px] font-semibold text-white hover:bg-sky-800 disabled:opacity-50'
-const th='h-9 bg-slate-900 text-left text-[10px] font-black uppercase tracking-wider text-white border-b border-slate-800 align-middle h-8 border-b border-slate-200 bg-slate-100 px-2 text-left text-[9px] font-bold uppercase text-slate-600'
-const td='h-10 px-4 py-2 text-xs font-semibold text-slate-800 border-b border-slate-200 align-middle h-[32px] border-b border-slate-100 px-2 text-[10px] text-slate-700'
+const th='h-8 border-b border-slate-200 bg-slate-100 px-2 text-left align-middle text-[9px] font-bold uppercase text-slate-600'
+const td='h-[32px] border-b border-slate-100 px-2 align-middle text-[10px] text-slate-700'
 const localDateTime=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
 const messageOf=(e:unknown)=>e instanceof Error?e.message:'Falha na execução do PCP.'
 
