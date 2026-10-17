@@ -36,7 +36,7 @@ const sections = [
   ]},
 ] as const
 
-const normalize = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase('pt-BR')
+const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
 
 export default function QualidadeTablet() {
   const navigate = useNavigate()
