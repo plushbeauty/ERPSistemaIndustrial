@@ -173,8 +173,8 @@ export default function PCPParadas() {
                 {machines.map(entry => <option key={entry.id} value={entry.id}>{entry.codigo} — {entry.nome}</option>)}
               </select>
             </label>
-            <label className="grid gap-2 text-sm font-bold text-slate-300">ORDEM DE PRODUÇÃO
-              <select value={order} disabled={Boolean(stopId) || busy} onChange={event => setOrder(event.target.value)} className="h-[30px] rounded-[2px] border border-slate-600 bg-slate-950 px-2.5 text-[11px] text-white">
+            <label className="grid gap-1 text-[9px] font-bold tracking-wider text-[#315466]">ORDEM DE PRODUÇÃO
+              <select value={order} disabled={Boolean(stopId) || busy} onChange={event => setOrder(event.target.value)} className="h-[30px] rounded-[2px] border border-[#b8cbd5] bg-white px-2 text-[10px] text-[#123b50]">
                 <option value="">Sem vínculo a OP</option>
                 {orders.map(entry => <option key={entry.id} value={entry.id}>{entry.numero_op || entry.numero || entry.id.slice(0, 8)}</option>)}
               </select>
@@ -187,11 +187,11 @@ export default function PCPParadas() {
           {reason && <p className="mt-2 text-[10px] font-bold text-[#8a5a13]">Motivo registrado: {reason}</p>}
         </section>
 
-        <section className="rounded-xl border border-slate-700 bg-slate-800 p-6">
-          <h2 className="text-[12px] font-extrabold">MOTIVO OBRIGATÓRIO</h2>
+        <section className="rounded-[2px] border border-[#cbd9e1] bg-white p-3">
+          <h2 className="text-[10px] font-extrabold tracking-wider text-[#123b50]">MOTIVO OBRIGATÓRIO</h2>
           <div className="mt-3 grid gap-2">
             {reasons.map(([label, color]) => (
-              <button key={label} type="button" disabled={busy || Boolean(stopId) || !machine} onClick={() => void start(label)} className={`min-h-[30px] rounded-[2px] border border-white/20 px-3 py-2 text-left text-[10px] font-bold disabled:cursor-not-allowed disabled:opacity-50 ${color}`}>
+              <button key={label} type="button" disabled={busy || Boolean(stopId) || !machine} onClick={() => void start(label)} className={`min-h-[38px] rounded-[2px] border border-slate-200 px-3 py-2 text-left text-[10px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 ${color}`}>
                 {label}
               </button>
             ))}
