@@ -80,7 +80,8 @@ export default function PCPPlanejamentoIndustrial(){
    const latestRun=await supabase.from('erp_mrp_runs').select('id').eq('empresa_id',empresaId).order('created_at',{ascending:false}).limit(1).maybeSingle()
    if(latestRun.error) throw latestRun.error
    if(!latestRun.data){setMessage('Execute o MRP primeiro; não existe cálculo de necessidades para esta empresa.');return}
-   const needs=await fetchAllPages<MRPNeed>((from,to)=>supabase.from('erp_mrp_necessidades').select('componente_id,necessidade_liquida,sugestao',{count:'exact'}).eq('empresa_id',empresaId).eq('run_id',latestRun.data.id).gt('necessidade_liquida',0).eq('sugestao','PRODUZIR').order('componente_id').range(from,to))
+   const runId=latestRun.data.id
+   const needs=await fetchAllPages<MRPNeed>((from,to)=>supabase.from('erp_mrp_necessidades').select('componente_id,necessidade_liquida,sugestao',{count:'exact'}).eq('empresa_id',empresaId).eq('run_id',runId).gt('necessidade_liquida',0).eq('sugestao','PRODUZIR').order('componente_id').range(from,to))
    const aggregated=new Map<string,number>()
    for(const row of needs) aggregated.set(row.componente_id,(aggregated.get(row.componente_id)??0)+Number(row.necessidade_liquida))
    if(!aggregated.size){setMessage('O último MRP não contém necessidades líquidas classificadas como PRODUZIR.');return}
