@@ -33,8 +33,17 @@ export default function MRPIndustrial(){
  }
  async function loadNeeds(runId:string){
   setSelectedRun(runId)
-  const r=await supabase.from('erp_mrp_necessidades').select('id,componente_id,nivel,quantidade_bruta,estoque_atual,reservado,quantidade_disponivel,necessidade_liquida,sugestao').eq('run_id',runId).order('nivel').order('componente_id')
-  if(r.error)setError(r.error.message);else setNeeds((r.data??[]) as Need[])
+  try{
+   const company=await supabase.rpc('erp_current_empresa_id')
+   if(company.error||!company.data)throw company.error??new Error('Empresa da sessão não identificada.')
+   const empresaId=String(company.data)
+   const r=await supabase.from('erp_mrp_necessidades').select('id,componente_id,nivel,quantidade_bruta,estoque_atual,reservado,quantidade_disponivel,necessidade_liquida,sugestao').eq('empresa_id',empresaId).eq('run_id',runId).order('nivel').order('componente_id')
+   if(r.error)throw r.error
+   setNeeds((r.data??[]) as Need[])
+  }catch(e){
+   setNeeds([])
+   setError(e instanceof Error?e.message:'Falha ao carregar necessidades do MRP.')
+  }
  }
  useEffect(()=>{void load()},[])
  async function calculate(){
