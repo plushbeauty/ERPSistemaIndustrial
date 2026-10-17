@@ -107,8 +107,8 @@ export const PCP_AUDIT_FINDINGS: AuditFinding[] = [
     descricao: 'Interface fora dos padrões visuais do ERP: fundo escuro (bg-slate-900), botões gigantes (min-h-16), cantos arredondados excessivos (rounded-xl).',
     impacto: 'Ruptura visual severa na fábrica, perda de densidade de dados e fadiga visual por despadronização de tema.',
     correcaoPrevista: 'Refatorar para o padrão compacto claro (#F4FBFD, bordas #123B50/#2D8DB8, botões h-8 com rounded-[2px] e tabelas de 32px).',
-    evidenciaValidacao: 'Inspeção de código do arquivo PCPParadas.tsx contra a tela de referência NovoPedido.tsx.',
-    status: 'PENDENTE',
+    evidenciaValidacao: 'Classes compactadas no arquivo PCPParadas.tsx: fundo claro industrial, painéis com raio 2px, labels 9px, selects/botões 30px e ações de motivo compactas. Build e teste visual ainda pendentes.'
+    status: 'CORRIGIDO',
     dataIdentificacao: '2026-10-17',
     dataUltimaVerificacao: '2026-10-17',
   },
