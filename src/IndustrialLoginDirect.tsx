@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { motion } from 'motion/react'
-import { Building2, Eye, EyeOff, ShieldCheck } from 'lucide-react'
+import { Eye, EyeOff, ShieldCheck } from 'lucide-react'
 import { supabase, supabaseConfigurado } from './lib/supabaseClient'
 import './styles/industrial-login.css'
 
@@ -293,12 +293,9 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
         <div className="auth-visual-shade" aria-hidden="true" />
         <div className="auth-visual-content">
           <div className="auth-visual-message">
-            <h2>Bem-vindo à sua<br />operação <em>mais inteligente.</em></h2>
-            <p>É um prazer ter você aqui. Acesse seu ambiente para acompanhar processos, produção e qualidade em um só lugar, com segurança e informação para tomar as melhores decisões.</p>
-            <div className="auth-trust">
-              <b><ShieldCheck size={16} /> Acesso protegido</b>
-              <b><Building2 size={16} /> Seu ambiente industrial</b>
-            </div>
+            <span>GESTÃO INDUSTRIAL INTEGRADA</span>
+            <h2>Bem-vindo ao<br /><em>SYSNQRA ERP &amp; SGQ INDUSTRIAL.</em></h2>
+            <p>Gestão, produção e qualidade integradas em um único ambiente, com acesso seguro às informações da sua operação.</p>
           </div>
           <small>SYSNQRA ERP & SGQ INDUSTRIAL · TECNOLOGIA A SERVIÇO DA INDÚSTRIA</small>
         </div>
@@ -390,11 +387,7 @@ export default function IndustrialLoginDirect({ returnTo, masterMode = false }: 
             <span>Autenticação feita pelo Supabase Auth. Nenhuma senha é armazenada no navegador.</span>
           </div>
 
-          <div className="auth-footer">
-            <a href="/">Voltar para o site</a>
-            <span>•</span>
-            <a href="/contato">Fale conosco</a>
-          </div>
+
         </div>
       </section>
     </motion.main>
