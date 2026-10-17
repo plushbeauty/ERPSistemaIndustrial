@@ -9,7 +9,7 @@ type Product = { id: string; codigo: string; nome: string }
 type Tool = { id: string; codigo: string; nome: string; tipo: string }
 type Machine = { id: string; codigo: string; nome: string; tipo: string | null }
 type Category = 'INJETADOS' | 'PRENSADOS' | 'ESTAMPARIA' | 'MECANICA' | 'TRATAMENTO_SUPERFICIAL' | 'PINTURA_QUIMICA' | 'CORTE_VINCO' | 'ACABAMENTO' | 'MONTAGEM_EMBALAGEM'
-type Param = { key: string; label: string; unit: string; type?: 'number' | 'text' | 'select'; required?: boolean; step?: string; multiline?: boolean; options?: string[] }
+type Param = { key: string; label: string; unit: string; type?: 'number' | 'text' | 'select'; required?: boolean; step?: string; multiline?: boolean; options?: string[]; group?: string }
 type Saved = { id: string; codigo_ficha: string; produto_id: string; ferramenta_id?: string | null; maquina_id?: string | null; categoria_processo: Category; versao_ficha: number; status: string; data_homologacao?: string | null; assinatura_tecnica?: string | null; parametros_tecnicos: Record<string, unknown>; revisao?: number }
 type FichaAudit = { id: string; acao: 'INSERT' | 'UPDATE' | 'DELETE'; dados_antigos: Record<string, unknown> | null; dados_novos: Record<string, unknown> | null; executado_por: string | null; executado_em: string }
 const categories: { value: Category; label: string }[] = [
@@ -20,40 +20,67 @@ const categories: { value: Category; label: string }[] = [
  { value: 'ACABAMENTO', label: 'Acabamento unificado' }, { value: 'MONTAGEM_EMBALAGEM', label: 'Montagem, embalagem e paletização' },
 ]
 const common: Param[] = [
- {key:'tempo_ciclo_seg',label:'Tempo de ciclo padrão',unit:'s',type:'number',step:'0.01',required:true},
- {key:'velocidade_dosagem_curso',label:'Velocidade de dosagem / curso',unit:'mm/s',type:'number',step:'0.01'},
- {key:'altura_molde_mm',label:'Altura do molde',unit:'mm',type:'number',step:'0.01'},
- {key:'tipo_fixacao',label:'Tipo de fixação',unit:'—',type:'text'},
- {key:'torque_aperto_nm',label:'Torque de aperto',unit:'N·m',type:'number',step:'0.1'},
- {key:'tipo_refrigeracao',label:'Refrigeração conectada',unit:'—',type:'text'},
- {key:'vazao_refrigeracao_l_min',label:'Vazão de refrigeração',unit:'L/min',type:'number',step:'0.1'},
- {key:'tempo_setup_min',label:'Tempo padrão de setup',unit:'min',type:'number',step:'0.1'},
- {key:'tempo_limpeza_min',label:'Tempo de limpeza / troca',unit:'min',type:'number',step:'0.1'},
- {key:'seguranca_ppe',label:'EPI e segurança obrigatórios',unit:'—',type:'text'},
+ {key:'tempo_ciclo_seg',label:'Tempo de ciclo padrão',unit:'s',type:'number',step:'0.01',required:true,group:'Ciclo, setup e segurança'},
+ {key:'velocidade_dosagem_curso',label:'Velocidade de dosagem / curso',unit:'mm/s',type:'number',step:'0.01',group:'Ciclo, setup e segurança'},
+ {key:'altura_molde_mm',label:'Altura do molde',unit:'mm',type:'number',step:'0.01',group:'Ciclo, setup e segurança'},
+ {key:'tipo_fixacao',label:'Tipo de fixação',unit:'—',type:'text',group:'Ciclo, setup e segurança'},
+ {key:'torque_aperto_nm',label:'Torque de aperto',unit:'N·m',type:'number',step:'0.1',group:'Ciclo, setup e segurança'},
+ {key:'tipo_refrigeracao',label:'Refrigeração conectada',unit:'—',type:'text',group:'Ciclo, setup e segurança'},
+ {key:'vazao_refrigeracao_l_min',label:'Vazão de refrigeração',unit:'L/min',type:'number',step:'0.1',group:'Ciclo, setup e segurança'},
+ {key:'tempo_setup_min',label:'Tempo padrão de setup',unit:'min',type:'number',step:'0.1',group:'Ciclo, setup e segurança'},
+ {key:'tempo_limpeza_min',label:'Tempo de limpeza / troca',unit:'min',type:'number',step:'0.1',group:'Ciclo, setup e segurança'},
+ {key:'seguranca_ppe',label:'EPI e segurança obrigatórios',unit:'—',type:'text',group:'Ciclo, setup e segurança'},
 ]
 const injection: Param[] = [
- {key:'forca_fechamento_ton',label:'Força de fechamento',unit:'ton',type:'number',step:'0.1',required:true},
- {key:'pressao_injecao_bar',label:'Pressão de injeção',unit:'bar',type:'number',step:'0.1'},
- {key:'pressao_recalque_bar',label:'Pressão de recalque',unit:'bar',type:'number',step:'0.1'},
- {key:'zona1_c',label:'Temperatura zona 1',unit:'°C',type:'number',step:'0.1'},
- {key:'zona2_c',label:'Temperatura zona 2',unit:'°C',type:'number',step:'0.1'},
- {key:'zona3_c',label:'Temperatura zona 3',unit:'°C',type:'number',step:'0.1'},
- {key:'zona4_c',label:'Temperatura zona 4',unit:'°C',type:'number',step:'0.1'},
- {key:'tempo_resfriamento_seg',label:'Tempo de resfriamento',unit:'s',type:'number',step:'0.01'},
- {key:'material_polimero',label:'Material / polímero cadastrado',unit:'—',type:'text',required:true},
- {key:'temperatura_secagem_c',label:'Temperatura de secagem',unit:'°C',type:'number',step:'0.1'},
- {key:'tempo_secagem_h',label:'Tempo de secagem',unit:'h',type:'number',step:'0.1'},
- {key:'cavidades_ativas',label:'Cavidades ativas',unit:'un',type:'number',step:'1',required:true},
- {key:'peso_peca_g',label:'Peso líquido da peça',unit:'g',type:'number',step:'0.001'},
- {key:'peso_canal_g',label:'Peso de canal / refugo',unit:'g',type:'number',step:'0.001'},
+ {key:'material_polimero',label:'Material / polímero cadastrado',unit:'—',type:'text',required:true,group:'Material e preparação'},
+ {key:'temperatura_secagem_c',label:'Temperatura de secagem',unit:'°C',type:'number',step:'0.1',group:'Material e preparação'},
+ {key:'tempo_secagem_h',label:'Tempo de secagem',unit:'h',type:'number',step:'0.1',group:'Material e preparação'},
+ {key:'peso_peca_g',label:'Peso líquido da peça',unit:'g',type:'number',step:'0.001',group:'Material e preparação'},
+ {key:'peso_canal_g',label:'Peso de canal / refugo',unit:'g',type:'number',step:'0.001',group:'Material e preparação'},
+ {key:'temperatura_bico_c',label:'Temperatura do bico',unit:'°C',type:'number',step:'0.1',group:'Perfil de temperatura'},
+ {key:'zona1_c',label:'Temperatura zona 1',unit:'°C',type:'number',step:'0.1',group:'Perfil de temperatura'},
+ {key:'zona2_c',label:'Temperatura zona 2',unit:'°C',type:'number',step:'0.1',group:'Perfil de temperatura'},
+ {key:'zona3_c',label:'Temperatura zona 3',unit:'°C',type:'number',step:'0.1',group:'Perfil de temperatura'},
+ {key:'zona4_c',label:'Temperatura zona 4',unit:'°C',type:'number',step:'0.1',group:'Perfil de temperatura'},
+ {key:'temperatura_alimentacao_c',label:'Temperatura da alimentação',unit:'°C',type:'number',step:'0.1',group:'Perfil de temperatura'},
+ {key:'temperatura_molde_c',label:'Temperatura do molde',unit:'°C',type:'number',step:'0.1',group:'Perfil de temperatura'},
+ {key:'cavidades_ativas',label:'Cavidades ativas',unit:'un',type:'number',step:'1',required:true,group:'Ciclo de produção'},
+ {key:'tempo_injecao_seg',label:'Tempo de preenchimento / injeção',unit:'s',type:'number',step:'0.01',group:'Ciclo de produção'},
+ {key:'tempo_recalque_seg',label:'Tempo de recalque',unit:'s',type:'number',step:'0.01',group:'Ciclo de produção'},
+ {key:'tempo_resfriamento_seg',label:'Tempo de resfriamento',unit:'s',type:'number',step:'0.01',group:'Ciclo de produção'},
+ {key:'velocidade_injecao_mm_s',label:'Velocidade de injeção',unit:'mm/s',type:'number',step:'0.01',group:'Injeção e recalque'},
+ {key:'pressao_injecao_bar',label:'Pressão de injeção',unit:'bar',type:'number',step:'0.1',group:'Injeção e recalque'},
+ {key:'posicao_injecao_mm',label:'Posição final de injeção',unit:'mm',type:'number',step:'0.01',group:'Injeção e recalque'},
+ {key:'velocidade_recalque_mm_s',label:'Velocidade de recalque',unit:'mm/s',type:'number',step:'0.01',group:'Injeção e recalque'},
+ {key:'pressao_recalque_bar',label:'Pressão de recalque',unit:'bar',type:'number',step:'0.1',group:'Injeção e recalque'},
+ {key:'posicao_recalque_mm',label:'Posição de recalque',unit:'mm',type:'number',step:'0.01',group:'Injeção e recalque'},
+ {key:'rpm_rosca',label:'Rotação da rosca',unit:'rpm',type:'number',step:'1',group:'Plasticização e dosagem'},
+ {key:'contrapressao_bar',label:'Contrapressão',unit:'bar',type:'number',step:'0.1',group:'Plasticização e dosagem'},
+ {key:'curso_dosagem_mm',label:'Curso / posição de dosagem',unit:'mm',type:'number',step:'0.01',group:'Plasticização e dosagem'},
+ {key:'tempo_dosagem_seg',label:'Tempo de dosagem',unit:'s',type:'number',step:'0.01',group:'Plasticização e dosagem'},
+ {key:'descompressao_mm',label:'Descompressão da rosca',unit:'mm',type:'number',step:'0.01',group:'Plasticização e dosagem'},
+ {key:'forca_fechamento_ton',label:'Força de fechamento',unit:'ton',type:'number',step:'0.1',required:true,group:'Fechamento e proteção do molde'},
+ {key:'pressao_protecao_molde_bar',label:'Pressão de proteção do molde',unit:'bar',type:'number',step:'0.1',group:'Fechamento e proteção do molde'},
+ {key:'curso_abertura_mm',label:'Curso de abertura',unit:'mm',type:'number',step:'0.1',group:'Fechamento e proteção do molde'},
+ {key:'curso_fechamento_mm',label:'Curso de fechamento',unit:'mm',type:'number',step:'0.1',group:'Fechamento e proteção do molde'},
 ]
 const press: Param[] = [
- {key:'tonelagem_prensa',label:'Tonelagem requerida',unit:'ton',type:'number',step:'0.1',required:true},
- {key:'pressao_prensagem_bar',label:'Pressão de prensagem',unit:'bar',type:'number',step:'0.1'},
- {key:'temperatura_molde_c',label:'Temperatura do molde',unit:'°C',type:'number',step:'0.1'},
- {key:'tempo_cura_seg',label:'Tempo de cura',unit:'s',type:'number',step:'0.1'},
- {key:'tempo_pos_cura_min',label:'Tempo de pós-cura',unit:'min',type:'number',step:'0.1'},
- {key:'composto_material',label:'Composto / material',unit:'—',type:'text',required:true},
+ {key:'composto_material',label:'Composto / material',unit:'—',type:'text',required:true,group:'Matéria-prima e carga'},
+ {key:'dureza_solicitada_shore_a',label:'Dureza solicitada',unit:'Shore A',type:'number',step:'0.1',group:'Matéria-prima e carga'},
+ {key:'peso_carga_cavidade_g',label:'Peso de carga por cavidade',unit:'g',type:'number',step:'0.001',group:'Matéria-prima e carga'},
+ {key:'peso_carga_total_g',label:'Peso total de carga',unit:'g',type:'number',step:'0.001',group:'Matéria-prima e carga'},
+ {key:'tonelagem_prensa',label:'Tonelagem requerida',unit:'ton',type:'number',step:'0.1',required:true,group:'Prensagem e setup'},
+ {key:'pressao_prensagem_bar',label:'Pressão de prensagem',unit:'bar',type:'number',step:'0.1',group:'Prensagem e setup'},
+ {key:'tempo_pre_aquecimento_material_min',label:'Pré-aquecimento da matéria-prima',unit:'min',type:'number',step:'0.1',group:'Prensagem e setup'},
+ {key:'tempo_pre_aquecimento_molde_min',label:'Pré-aquecimento do molde / setup',unit:'min',type:'number',step:'0.1',group:'Prensagem e setup'},
+ {key:'temperatura_plato_superior_c',label:'Temperatura do platô superior',unit:'°C',type:'number',step:'0.1',group:'Temperatura dos platôs'},
+ {key:'temperatura_plato_inferior_c',label:'Temperatura do platô inferior',unit:'°C',type:'number',step:'0.1',group:'Temperatura dos platôs'},
+ {key:'temperatura_molde_c',label:'Temperatura do molde',unit:'°C',type:'number',step:'0.1',group:'Temperatura dos platôs'},
+ {key:'tempo_cura_seg',label:'Tempo de cura / vulcanização',unit:'s',type:'number',step:'0.1',group:'Cura e vulcanização'},
+ {key:'tempo_pos_cura_min',label:'Tempo de pós-cura',unit:'min',type:'number',step:'0.1',group:'Cura e vulcanização'},
+ {key:'numero_respiros',label:'Número de respiros',unit:'ciclos',type:'number',step:'1',group:'Ciclo de desgaseificação'},
+ {key:'tempo_ate_primeiro_respiro_seg',label:'Tempo até o primeiro respiro',unit:'s',type:'number',step:'0.1',group:'Ciclo de desgaseificação'},
+ {key:'tempo_alivio_prensa_aberta_seg',label:'Tempo de alívio com prensa aberta',unit:'s',type:'number',step:'0.1',group:'Ciclo de desgaseificação'},
 ]
 const stamping: Param[] = [
  {key:'material_chapa',label:'Material da chapa',unit:'—',type:'text',required:true},
@@ -278,7 +305,14 @@ export default function PCPFichasProcesso() {
        { title: '2. Embalagem em caixa de papelão', fields: fields.filter(field => field.key.startsWith('emb_sacos') || field.key.startsWith('emb_pecas_direto') || field.key.startsWith('emb_dimensional_caixa') || field.key.startsWith('emb_caixa')) },
        { title: '3. Roteiro, identificação e paletização', fields: fields.filter(field => field.key.startsWith('emb_disposicao') || field.key.startsWith('emb_instrucao') || field.key.startsWith('emb_criterio')) },
       ]
-    : [{ title: 'Parâmetros técnicos do processo', fields }]
+    : (() => {
+       const grouped = new Map<string, Param[]>()
+       for (const field of fields) {
+        const title = field.group ?? 'Parâmetros técnicos do processo'
+        grouped.set(title, [...(grouped.get(title) ?? []), field])
+       }
+       return [...grouped.entries()].map(([title, groupedFields]) => ({ title, fields: groupedFields }))
+      })()
  const selectedProduct = products.find(p => p.id === productId)
  const selectedTool = tools.find(t => t.id === toolId)
  const selectedMachine = machines.find(m => m.id === machineId)
