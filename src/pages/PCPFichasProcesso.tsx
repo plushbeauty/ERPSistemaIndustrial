@@ -7,14 +7,15 @@ import { supabase } from '../lib/supabaseClient'
 type Product = { id: string; codigo: string; nome: string }
 type Tool = { id: string; codigo: string; nome: string; tipo: string }
 type Machine = { id: string; codigo: string; nome: string; tipo: string | null }
-type Category = 'INJETADOS' | 'PRENSADOS' | 'ESTAMPARIA' | 'MECANICA' | 'TRATAMENTO_SUPERFICIAL' | 'PINTURA_QUIMICA' | 'CORTE_VINCO'
-type Param = { key: string; label: string; unit: string; type?: 'number' | 'text'; required?: boolean; step?: string }
+type Category = 'INJETADOS' | 'PRENSADOS' | 'ESTAMPARIA' | 'MECANICA' | 'TRATAMENTO_SUPERFICIAL' | 'PINTURA_QUIMICA' | 'CORTE_VINCO' | 'ACABAMENTO' | 'MONTAGEM_EMBALAGEM'
+type Param = { key: string; label: string; unit: string; type?: 'number' | 'text' | 'select'; required?: boolean; step?: string; multiline?: boolean; options?: string[] }
 type Saved = { id: string; codigo_ficha: string; produto_id: string; ferramenta_id?: string | null; maquina_id?: string | null; categoria_processo: Category; versao_ficha: number; status: string; data_homologacao?: string | null; assinatura_tecnica?: string | null; parametros_tecnicos: Record<string, unknown>; revisao?: number }
 const categories: { value: Category; label: string }[] = [
  { value: 'INJETADOS', label: 'Injetados' }, { value: 'PRENSADOS', label: 'Prensados' },
  { value: 'ESTAMPARIA', label: 'Estampos / Estamparia' }, { value: 'MECANICA', label: 'Mecânica' },
  { value: 'TRATAMENTO_SUPERFICIAL', label: 'Tratamento superficial' },
  { value: 'PINTURA_QUIMICA', label: 'Pintura / Química' }, { value: 'CORTE_VINCO', label: 'Corte e vinco' },
+ { value: 'ACABAMENTO', label: 'Acabamento unificado' }, { value: 'MONTAGEM_EMBALAGEM', label: 'Montagem, embalagem e paletização' },
 ]
 const common: Param[] = [
  {key:'tempo_ciclo_seg',label:'Tempo de ciclo padrão',unit:'s',type:'number',step:'0.01',required:true},
@@ -80,7 +81,47 @@ const cutting: Param[] = [
  {key:'sequencia_operacao',label:'Sequência de corte e vinco',unit:'—',type:'text',required:true},
  {key:'criterio_rebarba',label:'Critério de rebarba / descarte',unit:'—',type:'text'},
 ]
-const paramsFor = (category: Category) => [...common, ...(category === 'INJETADOS' ? injection : category === 'PRENSADOS' ? press : category === 'ESTAMPARIA' || category === 'MECANICA' ? stamping : category === 'TRATAMENTO_SUPERFICIAL' || category === 'PINTURA_QUIMICA' ? surface : cutting)]
+const finishing: Param[] = [
+ {key:'acabamento_inspecao_posto',label:'Posto de inspeção visual',unit:'—',type:'text'},
+ {key:'acabamento_inspecao_setor',label:'Setor de inspeção',unit:'—',type:'text'},
+ {key:'acabamento_inspecao_ambiente',label:'Condição / temperatura ambiente',unit:'—',type:'text'},
+ {key:'acabamento_inspecao_tempo',label:'Tempo de preparação — inspeção',unit:'s/pc',type:'number',step:'0.01'},
+ {key:'acabamento_inspecao_checklist',label:'Checklist de inspeção e separação',unit:'—',type:'text',multiline:true},
+ {key:'acabamento_inspecao_referencia',label:'Referência visual de defeitos',unit:'—',type:'text'},
+ {key:'acabamento_rebarba_posto',label:'Posto de rebarbação',unit:'—',type:'text'},
+ {key:'acabamento_rebarba_setor',label:'Setor de rebarbação',unit:'—',type:'text'},
+ {key:'acabamento_rebarba_tempo',label:'Tempo de preparação — rebarbação',unit:'s/pc',type:'number',step:'0.01'},
+ {key:'acabamento_rebarba_checklist',label:'Checklist de rebarbação',unit:'—',type:'text',multiline:true},
+ {key:'acabamento_rebarba_referencia',label:'Referência de rebarbação',unit:'—',type:'text'},
+ {key:'acabamento_limpeza_posto',label:'Posto de limpeza',unit:'—',type:'text'},
+ {key:'acabamento_limpeza_setor',label:'Setor de limpeza',unit:'—',type:'text'},
+ {key:'acabamento_limpeza_tempo',label:'Tempo de preparação — limpeza',unit:'s/lote',type:'number',step:'0.01'},
+ {key:'acabamento_limpeza_checklist',label:'Checklist de limpeza e lubrificação',unit:'—',type:'text',multiline:true},
+ {key:'acabamento_limpeza_referencia',label:'Procedimento de limpeza',unit:'—',type:'text'},
+ {key:'acabamento_embalagem_posto',label:'Posto de embalagem',unit:'—',type:'text'},
+ {key:'acabamento_embalagem_setor',label:'Setor de embalagem',unit:'—',type:'text'},
+ {key:'acabamento_embalagem_tempo',label:'Tempo de preparação — embalagem',unit:'s/pc',type:'number',step:'0.01'},
+ {key:'acabamento_embalagem_checklist',label:'Checklist de embalagem e etiqueta',unit:'—',type:'text',multiline:true},
+ {key:'acabamento_embalagem_referencia',label:'Modelo de etiqueta / embalagem',unit:'—',type:'text'},
+]
+const packaging: Param[] = [
+ {key:'aplica_embalagem_plastica',label:'Aplicar embalagem plástica?',unit:'—',type:'select',options:['Sim','Não']},
+ {key:'emb_amostragem_base',label:'Amostragem base para contagem',unit:'peças',type:'number',step:'1'},
+ {key:'emb_codigo_balanca',label:'Código da balança de contagem',unit:'—',type:'text'},
+ {key:'emb_dimensional_saco',label:'Dimensional do saco (L × C × espessura)',unit:'mm',type:'text'},
+ {key:'emb_quantidade_pecas_saco',label:'Quantidade de peças por saco',unit:'un',type:'number',step:'1'},
+ {key:'emb_peso_pacote_cheio_g',label:'Peso padrão do pacote cheio',unit:'g',type:'number',step:'0.1'},
+ {key:'emb_sacos_caixa',label:'Quantidade de sacos por caixa',unit:'sacos',type:'number',step:'1'},
+ {key:'emb_pecas_direto_caixa',label:'Quantidade de peças diretas por caixa',unit:'un',type:'number',step:'1'},
+ {key:'emb_dimensional_caixa',label:'Dimensional da caixa (C × L × A)',unit:'mm',type:'text'},
+ {key:'emb_caixa_modelo',label:'Modelo / referência de montagem da caixa',unit:'—',type:'text'},
+ {key:'emb_disposicao_pecas',label:'Referência da disposição das peças',unit:'—',type:'text'},
+ {key:'emb_instrucao_montagem',label:'Roteiro de montagem e acondicionamento',unit:'—',type:'text',multiline:true},
+ {key:'emb_instrucao_etiqueta',label:'Instrução de identificação e etiqueta',unit:'—',type:'text',multiline:true},
+ {key:'emb_instrucao_paletizacao',label:'Padrão de paletização e empilhamento',unit:'—',type:'text',multiline:true},
+ {key:'emb_criterio_liberacao',label:'Critérios de conferência e liberação',unit:'—',type:'text',multiline:true},
+]
+const paramsFor = (category: Category) => category === 'ACABAMENTO' ? finishing : category === 'MONTAGEM_EMBALAGEM' ? packaging : [...common, ...(category === 'INJETADOS' ? injection : category === 'PRENSADOS' ? press : category === 'ESTAMPARIA' || category === 'MECANICA' ? stamping : category === 'TRATAMENTO_SUPERFICIAL' || category === 'PINTURA_QUIMICA' ? surface : cutting)]
 const inputClass = 'h-[30px] w-full rounded-[3px] border border-slate-300 bg-white px-2 text-[11px] font-medium text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-sky-100'
 const labelClass = 'mb-1 block text-[9px] font-bold uppercase tracking-wider text-neutral-500/90'
 const blankParameters = (category: Category) => Object.fromEntries(paramsFor(category).map(p => [p.key, ''])) as Record<string, string>
@@ -183,6 +224,20 @@ export default function PCPFichasProcesso() {
  }
 
  const fields = paramsFor(category)
+  const fieldGroups: { title: string; fields: Param[] }[] = category === 'ACABAMENTO'
+   ? [
+      { title: '1. Inspeção visual e separação', fields: fields.filter(field => field.key.startsWith('acabamento_inspecao_')) },
+      { title: '2. Rebarbação manual', fields: fields.filter(field => field.key.startsWith('acabamento_rebarba_')) },
+      { title: '3. Limpeza e lubrificação', fields: fields.filter(field => field.key.startsWith('acabamento_limpeza_')) },
+      { title: '4. Embalagem e etiquetagem', fields: fields.filter(field => field.key.startsWith('acabamento_embalagem_')) },
+     ]
+   : category === 'MONTAGEM_EMBALAGEM'
+    ? [
+       { title: '1. Embalagem em saco plástico e contagem', fields: fields.filter(field => field.key.startsWith('aplica_') || field.key.startsWith('emb_amostragem') || field.key.startsWith('emb_codigo') || field.key.startsWith('emb_dimensional_saco') || field.key.startsWith('emb_quantidade') || field.key.startsWith('emb_peso')) },
+       { title: '2. Embalagem em caixa de papelão', fields: fields.filter(field => field.key.startsWith('emb_sacos') || field.key.startsWith('emb_pecas_direto') || field.key.startsWith('emb_dimensional_caixa') || field.key.startsWith('emb_caixa')) },
+       { title: '3. Roteiro, identificação e paletização', fields: fields.filter(field => field.key.startsWith('emb_disposicao') || field.key.startsWith('emb_instrucao') || field.key.startsWith('emb_criterio')) },
+      ]
+    : [{ title: 'Parâmetros técnicos do processo', fields }]
  const selectedProduct = products.find(p => p.id === productId)
  const selectedTool = tools.find(t => t.id === toolId)
  const selectedMachine = machines.find(m => m.id === machineId)
@@ -214,7 +269,7 @@ export default function PCPFichasProcesso() {
      <label><span className={labelClass}>Estado da ficha</span><select className={inputClass} value={status} onChange={e=>setStatus(e.target.value)}><option>RASCUNHO</option><option>EM_ANALISE</option><option>APROVADA</option><option>LIBERADA</option><option>OBSOLETA</option></select></label>
     </div>
     <div className="mt-3 flex flex-wrap items-center gap-3 border-y border-slate-100 py-2 text-[9px]"><span className="font-bold uppercase text-slate-500">Capacidade nominal calculada</span><strong className="text-[12px] tabular-nums">{expectedPph > 0 ? expectedPph.toLocaleString('pt-BR',{maximumFractionDigits:1})+' peças/h' : 'Informe ciclo e cavidades'}</strong><span className="text-slate-500">Cálculo = 3.600 ÷ ciclo (s) × cavidades ativas</span></div>
-    <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">{fields.map(field=><label key={field.key}><span className={labelClass}>{field.label} {field.required && <span className="text-rose-600">*</span>}</span><span className="flex"><input className={inputClass+' rounded-r-none'} type={field.type==='number'?'number':'text'} step={field.step} value={params[field.key]??''} onChange={e=>updateParam(field.key,e.target.value)} placeholder={field.unit==='—'?'Informar':field.unit}/><span className="flex h-[30px] min-w-[46px] items-center justify-center border border-l-0 border-slate-300 bg-slate-50 px-1 text-[9px] text-slate-500">{field.unit}</span></span></label>)}</div>
+    <div className="mt-3 space-y-3">{fieldGroups.map(group=><fieldset key={group.title} className="min-w-0 border border-slate-200 bg-white p-2"><legend className="px-1 text-[10px] font-bold uppercase tracking-wide text-slate-700">{group.title}</legend><div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">{group.fields.map(field=><label key={field.key} className={field.multiline?'md:col-span-2':''}><span className={labelClass}>{field.label} {field.required && <span className="text-rose-600">*</span>}</span><span className="flex">{field.type==='select'?<select className={inputClass+' rounded-r-none'} value={params[field.key]??''} onChange={e=>updateParam(field.key,e.target.value)}><option value="">Selecione</option>{(field.options??[]).map(option=><option key={option} value={option}>{option}</option>)}</select>:field.multiline?<textarea className={inputClass+' min-h-[72px] rounded-r-none py-2'} value={params[field.key]??''} onChange={e=>updateParam(field.key,e.target.value)} placeholder="Registrar instrução aprovada"/>:<input className={inputClass+' rounded-r-none'} type={field.type==='number'?'number':'text'} step={field.step} value={params[field.key]??''} onChange={e=>updateParam(field.key,e.target.value)} placeholder={field.unit==='—'?'Informar':field.unit}/>}<span className="flex h-[30px] min-w-[46px] items-center justify-center border border-l-0 border-slate-300 bg-slate-50 px-1 text-[9px] text-slate-500">{field.unit}</span></span></label>)}</div></fieldset>)}</div>
     <label className="mt-3 block"><span className={labelClass}>Instruções de setup / processo / segurança</span><textarea className="min-h-[72px] w-full rounded-[3px] border border-slate-300 p-2 text-[10px] outline-none focus:border-[#2D8DB8]" value={instructions} onChange={e=>setInstructions(e.target.value)} placeholder="Sequência operacional, parâmetros de controle, inspeção inicial, reação a desvio, EPI e cuidados ambientais…"/></label>
     <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-2"><span className="text-[9px] text-slate-500">Dados separados por empresa · revisão técnica · sem valores fictícios</span><button className="erp-premium-button print:hidden" onClick={()=>void save()} disabled={busy}><Save size={12}/> Gravar ficha</button></div>
    </section>
