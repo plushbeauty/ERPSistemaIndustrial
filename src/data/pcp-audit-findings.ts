@@ -56,9 +56,9 @@ export const PCP_AUDIT_FINDINGS: AuditFinding[] = [
     rota: '/pcp/mrp-ii',
     arquivo: 'src/pages/MRPIndustrial.tsx',
     linha: 19,
-    descricao: 'A consulta de necessidades do MRP também precisa ser limitada à empresa da sessão, além das consultas de produtos e execuções.'
+    descricao: 'A consulta de necessidades do MRP também precisa ser limitada à empresa da sessão, além das consultas de produtos e execuções.',
     impacto: 'Risco de contaminação cruzada de dados entre tenants ou comportamento inconsistente em sessões multi-empresa.',
-    correcaoPrevista: "Obter empresa_id via erp_current_empresa_id e aplicar .eq('empresa_id', empresaId) nas consultas de produtos, execuções e necessidades."
+    correcaoPrevista: "Obter empresa_id via erp_current_empresa_id e aplicar .eq('empresa_id', empresaId) nas consultas de produtos, execuções e necessidades.",
     evidenciaValidacao: 'Código atualizado: produtos e execuções filtram empresa_id; loadNeeds resolve erp_current_empresa_id e filtra empresa_id junto com run_id. Build e validação em runtime ainda pendentes.'
     status: 'CORRIGIDO',
     dataIdentificacao: '2026-10-17',
@@ -75,7 +75,7 @@ export const PCP_AUDIT_FINDINGS: AuditFinding[] = [
     descricao: 'Consultas a tabelas de engenharia (erp_pcp_bom_itens, erp_produtos) dependem exclusivamente de RLS implícita sem isolamento explícito de tenant.',
     impacto: 'Vulnerabilidade operacional em caso de falha de contexto de sessão ou impersonação administrativa.',
     correcaoPrevista: "Validar empresa_id da sessão ativa e incluir .eq('empresa_id', empresaId) nas cláusulas de seleção.",
-    evidenciaValidacao: 'Inspeção direta dos arquivos EngenhariaBOM.tsx, RoteiroOperacoes.tsx e PostosTrabalho.tsx.',
+    evidenciaValidacao: 'Revisão em andamento: os três componentes agora resolvem erp_current_empresa_id e filtram as leituras por empresa_id. CI, schema remoto e teste autenticado cross-tenant ainda pendentes.',
     status: 'CORRIGIDO',
     dataIdentificacao: '2026-10-17',
     dataUltimaVerificacao: '2026-10-17',
@@ -123,7 +123,7 @@ export const PCP_AUDIT_FINDINGS: AuditFinding[] = [
     descricao: 'Classes CSS duplicadas e conflitantes acumuladas nas variáveis th e td de formatação da tabela industrial.',
     impacto: 'Comportamento errático no espaçamento e alinhamento das linhas de apontamento no chão de fábrica.',
     correcaoPrevista: 'Sanitizar as constantes de classe CSS para um conjunto único, coeso e compacto com altura exata.',
-    evidenciaValidacao: 'Linhas 19 e 20 de PCPExecucaoIndustrial.tsx.',
+    evidenciaValidacao: 'Constantes th/td simplificadas para uma única regra de altura e borda. CI e validação visual ainda pendentes.',
     status: 'CORRIGIDO',
     dataIdentificacao: '2026-10-17',
     dataUltimaVerificacao: '2026-10-17',
