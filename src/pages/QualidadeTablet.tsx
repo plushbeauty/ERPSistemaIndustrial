@@ -104,7 +104,7 @@ export default function QualidadeTablet() {
         </header>
         <div className="ql-toolbar">
           <div className="ql-toolbar-label">CATÁLOGO DE PROCESSOS</div>
-          <label className="ql-search"><Search size={15} /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Pesquisar módulo, processo ou atividade..." aria-label="Pesquisar módulos da qualidade" />{search && <button type="button" className="ql-clear" onClick={() => setSearch('')} aria-label="Limpar pesquisa"><X size={14} /></button>}</label>
+          <div className="ql-search"><Search size={15} /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Pesquisar módulo, processo ou atividade..." aria-label="Pesquisar módulos da qualidade" />{search && <button type="button" className="ql-clear" onClick={() => setSearch('')} aria-label="Limpar pesquisa"><X size={14} /></button>}</label>
         </div>
         {filtered.length === 0 ? <div className="ql-empty" role="status">Nenhum módulo encontrado para “{search.trim()}”. Limpe a pesquisa e tente novamente.</div> : <div className="ql-sections">
           {filtered.map(section => <section className="ql-section" key={section.title}>
