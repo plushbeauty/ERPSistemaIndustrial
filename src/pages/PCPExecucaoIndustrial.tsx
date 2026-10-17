@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Activity, AlertTriangle, Boxes, ClipboardList, Factory, Printer, RefreshCw, Save } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
 type Product = { id:string; codigo:string; nome:string; unidade:string|null }
 type Order = { id:string; numero_op:number|string; produto_id:string|null; quantidade:number|null; quantidade_planejada:number|null; quantidade_produzida:number|null; status:string; data_prevista:string|null; maquina_id:string|null }
@@ -49,14 +50,13 @@ export default function PCPExecucaoIndustrial(){
    if(tenant.error||typeof tenant.data!=='string'||!tenant.data)throw tenant.error??new Error('Empresa da sessão não identificada; PCP bloqueado.')
    const company=tenant.data
    const [p,o,m,pr,a]=await Promise.all([
-    supabase.from('erp_produtos').select('id,codigo,nome,unidade').eq('empresa_id',company).eq('ativo',true).order('codigo').limit(3000),
-    supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade_planejada,quantidade_produzida,status,data_prevista,maquina_id').eq('empresa_id',company).order('created_at',{ascending:false}).limit(2000),
-    supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id',company).eq('ativo',true).order('codigo').limit(1000),
-    supabase.from('erp_processos_industriais').select('id,codigo,nome').eq('empresa_id',company).eq('ativo',true).order('codigo').limit(1000),
-    supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,processo_id,inicio_em,fim_em,quantidade_planejada,quantidade_boa,quantidade_refugada,motivo_parada,observacoes,created_at').eq('empresa_id',company).order('created_at',{ascending:false}).limit(1000)
+    fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,unidade',{count:'exact'}).eq('empresa_id',company).eq('ativo',true).order('codigo').order('id').range(from,to)),
+    fetchAllPages<Order>((from,to)=>supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade_planejada,quantidade_produzida,status,data_prevista,maquina_id',{count:'exact'}).eq('empresa_id',company).order('created_at',{ascending:false}).order('id').range(from,to)),
+    fetchAllPages<Machine>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome',{count:'exact'}).eq('empresa_id',company).eq('ativo',true).order('codigo').order('id').range(from,to)),
+    fetchAllPages<Process>((from,to)=>supabase.from('erp_processos_industriais').select('id,codigo,nome',{count:'exact'}).eq('empresa_id',company).eq('ativo',true).order('codigo').order('id').range(from,to)),
+    fetchAllPages<Entry>((from,to)=>supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,processo_id,inicio_em,fim_em,quantidade_planejada,quantidade_boa,quantidade_refugada,motivo_parada,observacoes,created_at',{count:'exact'}).eq('empresa_id',company).order('created_at',{ascending:false}).order('id').range(from,to))
    ])
-   for(const r of [p,o,m,pr,a])if(r.error)throw r.error
-   setProducts((p.data??[]) as Product[]);setOrders((o.data??[]) as Order[]);setMachines((m.data??[]) as Machine[]);setProcesses((pr.data??[]) as Process[]);setEntries((a.data??[]) as Entry[])
+   setProducts(p);setOrders(o);setMachines(m);setProcesses(pr);setEntries(a)
   }catch(e){setError(messageOf(e))}finally{setBusy(false)}
  },[])
  useEffect(()=>{void load()},[load])
