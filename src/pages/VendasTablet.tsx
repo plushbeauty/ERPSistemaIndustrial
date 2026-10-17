@@ -66,11 +66,11 @@ export default function VendasTablet() {
         .erp-vendas-menu-actions button{width:30px;height:30px;display:grid;place-items:center;border:1px solid #2d8db8;border-radius:2px;background:#2d8db8;color:#fff;cursor:pointer}
         .erp-vendas-menu-sections{padding:8px;display:grid;gap:10px}
         .erp-vendas-menu-section-title{height:24px;display:flex;align-items:center;color:#164b91;font-size:9px;font-weight:900;letter-spacing:.12em;border-bottom:1px solid #dbe5eb}
-        .erp-vendas-menu-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;padding-top:6px}
-        .erp-vendas-menu-grid button{height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid #cbd5e1;border-radius:2px;background:#fff;color:#176487;cursor:pointer}
+        .erp-vendas-menu-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding-top:8px}
+        .erp-vendas-menu-grid button{height:82px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1px solid #cbd5e1;border-radius:2px;background:#fff;color:#176487;cursor:pointer}
         .erp-vendas-menu-grid button:hover{border-color:#2d8db8;background:#f4fbfd}
         .erp-vendas-menu-grid span{font-size:9px;line-height:1.1;text-transform:uppercase;text-align:center}
-        @media(max-width:1100px){.erp-vendas-menu-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+        @media(max-width:1100px){.erp-vendas-menu-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
         @media(max-width:700px){.erp-vendas-menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.erp-vendas-menu-actions label{width:180px}}
       `}</style>
     </section>
