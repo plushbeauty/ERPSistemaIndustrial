@@ -25,8 +25,8 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 ## 2. PAINEL DE RESUMO E STATUS
 
 - **Total de Problemas Identificados:** 12
-- **Pendentes de Correção:** 2
-- **Corrigidos:** 10
+- **Pendentes de Correção:** 1
+- **Corrigidos:** 11
 - **Bloqueados:** 0
 
 ---
@@ -144,9 +144,9 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Rota Confirmada:** `/pcp/capacidade` vs `/pcp/agenda-maquinas`
 - **Descrição Objetiva:** `PCPCapacidadeIndustrial.tsx` é apenas um alias que reexporta `<PCPAgendaMaquinas />`, gerando duplicidade com a tela `/pcp/capacidade` (que renderiza `PCPCapacidade.tsx`).
 - **Impacto:** Ambiguidade de roteamento e aviso na ferramenta de auditoria estática do repositório.
-- **Correção Prevista:** Manter `PCPAgendaMaquinas.tsx` para sequenciamento por recurso e `PCPCapacidade.tsx` para carga agregada, documentando o papel específico de cada uma.
+- **Correção Prevista:** Removido o arquivo sem referências `PCPCapacidadeIndustrial.tsx`; a rota `/pcp/capacidade` continua usando `PCPCapacidade.tsx` e `/pcp/agenda-maquinas` continua usando `PCPAgendaMaquinas.tsx`.
 - **Evidência de Validação:** `scripts/auditoria-brutal.mjs:114` reportando `PAGE ALIAS`.
-- **Status:** `PENDENTE`
+- **Status:** `CORRIGIDO`
 
 ---
 
