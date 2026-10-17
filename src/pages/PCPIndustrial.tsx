@@ -205,8 +205,8 @@ export default function PCPIndustrial(){
   const parsedDefects=defectLines.map((line,index)=>{
    const parts=line.split(':')
    const quantityText=(parts[1]||'').trim()
-   const quantity=Number(quantityText)
-   return {line:index+1,defeito:parts[0].trim(),quantidade,observacao:parts.slice(2).join(':').trim()||null,valid:parts[0].trim().length>0&&quantityText!==''&&Number.isFinite(quantity)&&quantity>0}
+   const quantidade=Number(quantityText)
+   return {line:index+1,defeito:parts[0].trim(),quantidade,observacao:parts.slice(2).join(':').trim()||null,valid:parts[0].trim().length>0&&quantityText!==''&&Number.isFinite(quantidade)&&quantidade>0}
   })
   const invalidDefect=parsedDefects.find(item=>!item.valid)
   if(invalidDefect){
