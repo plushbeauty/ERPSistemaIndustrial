@@ -3,7 +3,7 @@
  * @REVISAO: VENDAS-009
  * @ESCOPO_REVISADO: leitura de produtos/estoque, caixa, cliente, carrinho, desconto, meios de pagamento e finalização idempotente.
  * @ALTERACOES: selects/desconto com altura de 30px e ação final azul padrão; botões de toque mantidos maiores intencionalmente.
- * @VALIDACAO: revisão estática; CI pendente para tipagem, lint, auditorias e build.
+ * @VALIDACAO: conferir CI do commit corrente no PR; inspeção visual autenticada e teste funcional por sessão ainda pendentes.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
