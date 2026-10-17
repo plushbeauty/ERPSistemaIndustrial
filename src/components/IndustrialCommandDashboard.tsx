@@ -22,7 +22,13 @@ type Equipment = { id: string; codigo: string; descricao: string; status: string
 
 const n = (v: unknown) => Number.isFinite(Number(v)) ? Number(v) : 0
 const fmt = (v: number) => new Intl.NumberFormat('pt-BR').format(Math.round(v))
-const dateKey = (d: Date) => d.toISOString().slice(0, 10)
+const dateKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const valueDateKey = (value: string | null | undefined) => {
+  if (!value) return ''
+  if (value.length <= 10) return value.slice(0, 10)
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? value.slice(0, 10) : dateKey(parsed)
+}
 
 function statusText(value: string) {
   const s = value.toLowerCase()
@@ -50,7 +56,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
   const [clock, setClock] = useState(new Date())
 
   useEffect(() => {
-    const timer = window.setInterval(() => setClock(new Date()), 1000)
+    const timer = window.setInterval(() => setClock(new Date()), 60_000)
     return () => window.clearInterval(timer)
   }, [])
 
@@ -84,7 +90,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         const machineQ = supabase.from('erp_maquinas').select('id,codigo,nome,status').eq('ativo', true).order('codigo')
         const opQ = supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,maquina_id,status,quantidade_planejada,quantidade,created_at,criado_em').order('created_at', { ascending: false }).limit(500)
         const prodQ = supabase.from('erp_produtos').select('id,codigo,nome').limit(3000)
-        const pointingQ = supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,created_at').order('created_at', { ascending: false }).limit(5000)
+        const pointingQ = supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,quantidade_planejada,quantidade_boa,quantidade_refugada,criado_em').order('criado_em', { ascending: false }).limit(5000)
         const programQ = supabase.from('erp_pcp_programacoes').select('id,ordem_producao_id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,quantidade_produzida,quantidade_refugada,status').neq('status', 'cancelada').limit(3000)
         const stopQ = supabase.from('erp_producao_paradas').select('maquina_id,inicio,fim,status').limit(5000)
         const rpncQ = supabase.from('erp_rpnc').select('id,status').limit(5000)
@@ -129,7 +135,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
 
   const today = dateKey(clock)
   const activeOps = ops.filter(o => !['concluida', 'concluído', 'cancelada', 'cancelado'].includes(String(o.status).toLowerCase()))
-  const todayPointings = pointings.filter(p => String(p.criado_em ?? p.created_at ?? '').slice(0, 10) === today)
+  const todayPointings = pointings.filter(p => valueDateKey(p.criado_em ?? p.created_at) === today)
   const producedToday = todayPointings.reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
   const totalPlanned = pointings.reduce((s, p) => s + n(p.quantidade_planejada), 0)
   const totalGood = pointings.reduce((s, p) => s + n(p.quantidade_boa), 0)
@@ -161,8 +167,8 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
       d.setHours(0, 0, 0, 0)
       d.setDate(d.getDate() - i)
       const key = dateKey(d)
-      const previsto = programs.filter(p => String(p.inicio_planejado).slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_planejada), 0)
-      const realizado = pointings.filter(p => String(p.criado_em ?? p.created_at ?? '').slice(0, 10) === key).reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
+      const previsto = programs.filter(p => valueDateKey(p.inicio_planejado) === key).reduce((s, p) => s + n(p.quantidade_planejada), 0)
+      const realizado = pointings.filter(p => valueDateKey(p.criado_em ?? p.created_at) === key).reduce((s, p) => s + n(p.quantidade_boa) + n(p.quantidade_refugada), 0)
       days.push({ day: d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''), previsto, realizado })
     }
     return days
@@ -203,7 +209,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     const grouped = new Map<string, number>()
     stops.forEach(s => {
       if (!s.inicio || !s.fim) return
-      const day = String(s.inicio).slice(0, 10)
+      const day = valueDateKey(s.inicio)
       const hours = Math.max(0, (new Date(s.fim).getTime() - new Date(s.inicio).getTime()) / 3600000)
       grouped.set(day, (grouped.get(day) ?? 0) + hours)
     })
@@ -220,7 +226,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     const productMap = new Map(products.map(p => [p.id, p]))
     const machineMap = new Map(machines.map(m => [m.id, m]))
     return activeOps.slice(0, 12).map(op => {
-      const rows = pointings.filter(p => p.ordem_producao_id === op.id).sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')))
+      const rows = pointings.filter(p => p.ordem_producao_id === op.id).sort((a, b) => String(b.criado_em ?? b.created_at ?? '').localeCompare(String(a.criado_em ?? a.created_at ?? '')))
       const last = rows[0]
       const machine = machineMap.get(op.maquina_id ?? '')
       const product = productMap.get(op.produto_id ?? '')
@@ -228,7 +234,7 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
         op: `OP-${op.numero_op}`,
         workstation: machine ? `${machine.codigo} · ${machine.nome}` : 'Posto não definido',
         product: product ? `${product.codigo ?? ''} · ${product.nome ?? ''}`.replace(/^ · | · $/g, '') : 'Produto não informado',
-        lastPointing: last?.created_at ? new Date(last.created_at).toLocaleString('pt-BR') : 'Sem apontamento',
+        lastPointing: (last?.criado_em ?? last?.created_at) ? new Date((last.criado_em ?? last.created_at) as string).toLocaleString('pt-BR') : 'Sem apontamento',
         status: statusText(op.status)
       }
     })
@@ -252,25 +258,25 @@ export default function DashboardPrincipal({ onNavigate }: Props) {
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
       <style>{`
         .dp-shell{min-height:100%;background:#f8fafc}
-        .dp-main{width:100%;max-width:1700px;margin:0 auto;padding:18px 24px 34px}
+        .dp-main{width:100%;max-width:1700px;margin:0 auto;padding:12px 16px 24px;min-width:0;box-sizing:border-box}
         .dp-context{padding:11px 0 13px;border-bottom:1px solid #dbe3ea}.dp-context>div{display:flex;align-items:center;justify-content:space-between;gap:12px}.dp-context strong{color:#123B50;font-size:10px;font-weight:950;letter-spacing:.08em}.dp-context p{margin:0;color:#475569;font-size:10px;font-weight:950;letter-spacing:.12em}
-        .dp-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
-        .dp-kpi{position:relative;display:flex;align-items:center;gap:13px;padding:12px 14px;min-height:76px;background:linear-gradient(135deg,#17445A,#0B3042);border:1px solid #082838;border-radius:14px;box-shadow:0 10px 24px rgba(8,40,56,.28);overflow:hidden}
-        .dp-kpi::after{content:"";position:absolute;right:-26px;bottom:-38px;width:104px;height:104px;border-radius:50%;background:rgba(72,183,199,.32);pointer-events:none}
-        .dp-kpi-icon{position:relative;z-index:1;display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:linear-gradient(145deg,#2D8DB8 0%,#17445A 58%,#0B3042 100%);color:#fff!important;flex:none;border:1px solid rgba(255,255,255,.42);box-shadow:0 11px 0 rgba(5,28,39,.55),0 17px 24px rgba(5,28,39,.34),inset 0 2px 2px rgba(255,255,255,.55),inset 0 -7px 10px rgba(0,0,0,.25);transform:perspective(180px) rotateX(4deg);text-shadow:0 2px 2px rgba(0,0,0,.38)}
-        .dp-kpi small,.dp-kpi strong,.dp-kpi em,.dp-kpi-label{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.55)}.dp-kpi small{display:block!important;font-size:13px;font-weight:950;letter-spacing:.04em;line-height:1.2}.dp-kpi strong{display:block!important;font-size:29px;font-weight:950;line-height:1.08;margin-top:5px}.dp-kpi em{font-style:normal!important;font-size:12px;font-weight:900}
-        .dp-kpi:nth-child(2){background:linear-gradient(135deg,#0F6748,#063C2A);border-color:#052E21}.dp-kpi:nth-child(2)::after{background:rgba(72,183,199,.18)}.dp-kpi:nth-child(2) .dp-kpi-icon{color:#fff!important;background:linear-gradient(145deg,#31B982 0%,#0F6748 58%,#063C2A 100%)}
-        .dp-kpi:nth-child(3){background:linear-gradient(135deg,#A94F00,#6E2F00);border-color:#542300}.dp-kpi:nth-child(3)::after{background:rgba(255,255,255,.14)}.dp-kpi:nth-child(3) .dp-kpi-icon{color:#fff!important;background:linear-gradient(145deg,#E58A36 0%,#A94F00 58%,#6E2F00 100%)}
-        .dp-kpi:nth-child(4){background:linear-gradient(135deg,#247E91,#145564);border-color:#0F4652}.dp-kpi:nth-child(4)::after{background:rgba(18,59,80,.20)}.dp-kpi:nth-child(4) .dp-kpi-icon{color:#fff!important;background:linear-gradient(145deg,#48B7C7 0%,#247E91 58%,#145564 100%)}
-        .dp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
-        .dp-panel{background:#fff;border:1px solid #d7e5ea;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(18,59,80,.07)}
-        .dp-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 17px;border-bottom:1px solid #edf4f6;background:linear-gradient(180deg,#fff,#fbfeff)}.dp-head span{color:#2D8DB8;font-size:10px;font-weight:950;letter-spacing:.1em}.dp-head h2{margin:3px 0 0;color:#123B50;font-size:16px;font-weight:950}
-        .dp-chart{height:250px;padding:12px 12px 10px}.dp-chart-compact{height:220px}.dp-empty{height:220px;display:grid;place-items:center;padding:20px;text-align:center;color:#64748b;font-size:12px;font-weight:700}.dp-empty-compact{height:220px}
-        .dp-attention-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0}.dp-attention{position:relative;min-width:0;min-height:72px;padding:12px 14px;display:flex;align-items:center;gap:12px;border-radius:14px;overflow:hidden;box-shadow:0 8px 20px rgba(18,59,80,.10);border:1px solid}.dp-attention::after{content:"";position:absolute;right:-22px;bottom:-28px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.16)}.dp-attention-icon{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,rgba(255,255,255,.30),rgba(255,255,255,.08));color:#fff!important;border:1px solid rgba(255,255,255,.48);box-shadow:0 8px 0 rgba(0,0,0,.20),0 12px 18px rgba(0,0,0,.18),inset 0 2px 2px rgba(255,255,255,.48),inset 0 -5px 8px rgba(0,0,0,.18);transform:perspective(160px) rotateX(5deg);text-shadow:0 2px 2px rgba(0,0,0,.38)}.dp-attention small,.dp-attention strong,.dp-attention em{color:#fff!important;-webkit-text-fill-color:#fff!important}.dp-attention small{display:block!important;font-size:11px;font-weight:950;letter-spacing:.04em;line-height:1.2}.dp-attention strong{display:inline-block!important;font-size:24px;font-weight:950;line-height:1.05;margin-top:7px}.dp-attention em{font-size:10px;font-weight:850;font-style:normal;margin-left:6px}.dp-attention-danger{background:linear-gradient(135deg,#B83A45,#74212A);border-color:#642029}.dp-attention-success{background:linear-gradient(135deg,#16805C,#0A4D38);border-color:#083F2E}.dp-attention-warning{background:linear-gradient(135deg,#B96A09,#7A4300);border-color:#613400}.dp-status-panel{margin-top:12px}
+        .dp-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0}
+        .dp-kpi{position:relative;display:flex;align-items:center;gap:10px;padding:9px 11px;min-height:66px;min-width:0;background:#123B50;border:1px solid #0B3042;border-radius:2px;box-shadow:0 1px 3px rgba(8,40,56,.12);overflow:hidden}
+        .dp-kpi::after{content:none}
+        .dp-kpi-icon{position:relative;z-index:1;display:grid;place-items:center;width:34px;height:34px;border-radius:2px;background:#2D8DB8;color:#fff!important;flex:none;border:1px solid rgba(255,255,255,.28);box-shadow:none;transform:none;text-shadow:none}
+        .dp-kpi small,.dp-kpi strong,.dp-kpi em,.dp-kpi-label{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.55)}.dp-kpi small{display:block!important;font-size:9px;font-weight:800;letter-spacing:.06em;line-height:1.25;overflow-wrap:anywhere}.dp-kpi strong{display:block!important;font-size:22px;font-weight:800;line-height:1.1;margin-top:4px;overflow-wrap:anywhere}.dp-kpi em{font-style:normal!important;font-size:12px;font-weight:900}
+        .dp-kpi:nth-child(2){background:#0F6748;border-color:#0A4D38}.dp-kpi:nth-child(2) .dp-kpi-icon{background:#16805C}
+        .dp-kpi:nth-child(3){background:#8A4308;border-color:#6E2F00}.dp-kpi:nth-child(3) .dp-kpi-icon{background:#B96A09}
+        .dp-kpi:nth-child(4){background:#247E91;border-color:#145564}.dp-kpi:nth-child(4) .dp-kpi-icon{background:#2D8DB8}
+        .dp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0}
+        .dp-panel{min-width:0;background:#fff;border:1px solid #d7e5ea;border-radius:2px;overflow:hidden;box-shadow:0 1px 4px rgba(18,59,80,.06)}
+        .dp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid #edf4f6;background:#f8fcfd}.dp-head span{color:#2D8DB8;font-size:9px;font-weight:800;letter-spacing:.08em}.dp-head h2{margin:3px 0 0;color:#123B50;font-size:13px;font-weight:800}
+        .dp-chart{height:230px;padding:8px 8px 6px;min-width:0}.dp-chart-compact{height:205px}.dp-empty{height:220px;display:grid;place-items:center;padding:20px;text-align:center;color:#64748b;font-size:12px;font-weight:700}.dp-empty-compact{height:220px}
+        .dp-attention-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0}.dp-attention{position:relative;min-width:0;min-height:62px;padding:9px 10px;display:flex;align-items:center;gap:9px;border-radius:2px;overflow:hidden;box-shadow:0 1px 3px rgba(18,59,80,.10);border:1px solid}.dp-attention::after{content:none}.dp-attention-icon{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:2px;background:rgba(255,255,255,.14);color:#fff!important;border:1px solid rgba(255,255,255,.28);box-shadow:none;transform:none;text-shadow:none}.dp-attention small,.dp-attention strong,.dp-attention em{color:#fff!important;-webkit-text-fill-color:#fff!important}.dp-attention small{display:block!important;font-size:9px;font-weight:800;letter-spacing:.04em;line-height:1.25;overflow-wrap:anywhere}.dp-attention strong{display:inline-block!important;font-size:20px;font-weight:800;line-height:1.05;margin-top:5px}.dp-attention em{font-size:10px;font-weight:850;font-style:normal;margin-left:6px}.dp-attention-danger{background:linear-gradient(135deg,#B83A45,#74212A);border-color:#642029}.dp-attention-success{background:linear-gradient(135deg,#16805C,#0A4D38);border-color:#083F2E}.dp-attention-warning{background:linear-gradient(135deg,#B96A09,#7A4300);border-color:#613400}.dp-status-panel{margin-top:12px}
 
-        .dp-kpi-icon svg,.dp-attention-icon svg{color:#fff!important;stroke:#fff!important;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}.dp-table-wrap{overflow:auto}.dp-table{width:100%;border-collapse:collapse;font-size:12px}.dp-table th{background:#f8fafc;color:#475569;text-align:left;font-size:10px;font-weight:950;padding:10px 12px;border-bottom:1px solid #e2e8f0}.dp-table td{padding:11px 12px;border-bottom:1px solid #edf2f7;color:#334155;font-weight:650;white-space:nowrap}.dp-table tr:last-child td{border-bottom:0}.dp-status{display:inline-flex;padding:4px 8px;border-radius:999px;background:#ecfdf5;color:#065f46;font-size:10px;font-weight:900}.dp-error{margin:0 0 12px;padding:10px 12px;border:1px solid #fecaca;background:#fef2f2;color:#991b1b;border-radius:7px;font-size:12px;font-weight:700}
-                @media(max-width:1050px){.dp-kpis,.dp-attention-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-grid{grid-template-columns:1fr}.dp-main{padding:16px}}
-        @media(max-width:650px){.dp-kpis,.dp-attention-grid{grid-template-columns:1fr}.dp-main{padding:12px}}
+        .dp-kpi-icon svg,.dp-attention-icon svg{color:#fff!important;stroke:#fff!important;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}.dp-table-wrap{overflow:auto}.dp-table{width:100%;border-collapse:collapse;font-size:10px}.dp-table th{background:#f4fbfd;color:#475569;text-align:left;font-size:9px;font-weight:800;padding:7px 10px;border-bottom:1px solid #d7e5ea}.dp-table td{padding:8px 10px;border-bottom:1px solid #edf2f7;color:#334155;font-weight:600;white-space:nowrap}.dp-table tr:last-child td{border-bottom:0}.dp-status{display:inline-flex;padding:3px 6px;border-radius:2px;background:#ecfdf5;color:#065f46;font-size:9px;font-weight:800}.dp-error{margin:0 0 10px;padding:8px 10px;border:1px solid #fecaca;background:#fef2f2;color:#991b1b;border-radius:2px;font-size:11px;font-weight:700}
+                @media(max-width:1050px){.dp-kpis,.dp-attention-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dp-main{padding:10px 12px 20px}}
+        @media(max-width:650px){.dp-kpis,.dp-attention-grid,.dp-grid{grid-template-columns:minmax(0,1fr)}.dp-main{padding:8px}.dp-head{padding:9px}.dp-chart-compact{height:195px}}
       `}</style>
 
       <main className="dp-main">
