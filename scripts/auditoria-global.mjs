@@ -33,7 +33,7 @@ const legacySupabaseUrls=['https://wdkvrqekixczuhrfygen.supabase.co','https://uh
 const secretPatterns=[
   /sb_secret_[A-Za-z0-9_-]{20,}/g,
   /SUPABASE_SERVICE_ROLE_KEY\s*[:=]\s*['"][^'"\n]{20,}['"]/gi,
-  /(?:password|senha)\s*[:=]\s*['"][^'"\n]{8,}['"]/gi,
+  /\b(?:password|senha)\b\s*[:=]\s*['"][^'"\n]{8,}['"]/gi,
   /(?:api[_-]?key|secret)\s*[:=]\s*['"][^'"\n]{16,}['"]/gi,
 ]
 for(const file of files){
