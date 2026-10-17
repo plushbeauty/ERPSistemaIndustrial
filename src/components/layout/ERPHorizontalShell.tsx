@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, Menu as MenuIcon, X } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -67,7 +67,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [openMenu, setOpenMenu] = useState<string | null>(null)
-  const [openSubMenu, setOpenSubMenu] = useState<string | null>(null)
   const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
@@ -145,19 +144,16 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     ? menus.find(menu => menu.label === moduleLabel) ?? { label: moduleLabel, route: '/' + pathname.split('/')[1], icon: Home }
     : undefined
   const current = currentModuleMenu ?? menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
-  const visibleMenus: MenuItem[] = menus
   const normalizedSearch = moduleSearch.trim().toLocaleLowerCase('pt-BR')
   const searchedMenus = normalizedSearch ? menus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : menus
   useEffect(() => {
     setOpenMenu(null)
-    setOpenSubMenu(null)
     setStartMenuOpen(false)
   }, [pathname])
   const openMenuItem = (item: Pick<MenuItem, 'route' | 'action'>) => {
     if (item.action === 'pcpTablet') {
       setPcpTabletOpen(true)
       setOpenMenu(null)
-      setOpenSubMenu(null)
       return
     }
     if (item.action === 'qualityTablet') {
@@ -219,7 +215,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     <div className="erp-horizontal-shell" ref={ref}>
       <header className="erp-windows-topbar">
         <div className="erp-windows-start-anchor">
-          <button className={`erp-windows-start-button ${startMenuOpen ? 'is-open' : ''}`} type="button" aria-label="Abrir menu principal" aria-expanded={startMenuOpen} title="Menu principal" onClick={() => { setStartMenuOpen(value => !value); setOpenMenu(null); setOpenSubMenu(null) }}>
+          <button className={`erp-windows-start-button ${startMenuOpen ? 'is-open' : ''}`} type="button" aria-label="Abrir menu principal" aria-expanded={startMenuOpen} title="Menu principal" onClick={() => { setStartMenuOpen(value => !value); setOpenMenu(null) }}>
             <span className="erp-windows-logo">S</span>
           </button>
           {startMenuOpen && <section className="erp-windows-start-menu" aria-label="Menu principal do ERP">
@@ -285,20 +281,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
 
       <style>{`
-        .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f3f8fb 42%,#e8f1f6 100%);color:#123b50}
-        .erp-global-status-row{min-height:27px;display:flex;align-items:center;gap:10px;padding:2px 12px;background:linear-gradient(90deg,#dcecf3 0%,#edf6fa 55%,#e2f0f5 100%);border-bottom:1px solid #c3d9e3;color:#315466;font-size:9px;box-sizing:border-box}
-        .erp-global-status-row>span{font-weight:700;letter-spacing:.08em}
-        .erp-global-status-row>small{margin-left:auto;font-size:9px}
-        .erp-status-legend{position:relative;font-size:10px;color:#173b4a}
-        .erp-status-legend summary{display:inline-flex;align-items:center;gap:4px;min-height:22px;cursor:pointer;list-style:none;border:1px solid #cbd8de;background:#fff;padding:0 7px;border-radius:2px;font-weight:600}
-        .erp-status-legend summary::-webkit-details-marker{display:none}
-        .erp-status-legend-panel{position:absolute;top:25px;left:0;z-index:1500;width:min(360px,90vw);padding:8px;background:#fff;border:1px solid #cbd8de;box-shadow:0 8px 22px rgba(18,59,80,.16);display:grid;grid-template-columns:1fr 1fr;gap:8px}
-        .erp-status-legend-item{display:flex;align-items:flex-start;gap:6px;min-width:0}
-        .erp-status-legend-dot{width:9px;height:9px;flex:0 0 9px;border-radius:50%;margin-top:2px}
-        .erp-status-legend-item strong{display:block;font-size:10px;font-weight:700}
-        .erp-status-legend-item small{display:block;font-size:9px;line-height:1.3;color:#647b85}
-        .erp-status-legend-panel>p{grid-column:1/-1;margin:0;padding-top:5px;border-top:1px solid #e2e8f0;font-size:9px;color:#647b85}
-        @media print{ @page{size:A4;margin:12mm} .erp-horizontal-header,.erp-horizontal-menu,.erp-global-status-row,.print-hidden,.erp-horizontal-help{display:none!important} .erp-horizontal-shell,.erp-horizontal-workspace{min-height:0!important;background:#fff!important;padding:0!important} .erp-horizontal-workspace *{box-shadow:none!important;backdrop-filter:none!important} thead{display:table-header-group} tr{break-inside:avoid} }
+        .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%);color:#123b50}
         .erp-windows-topbar{height:48px;min-height:48px;display:grid;grid-template-columns:auto minmax(145px,210px) minmax(220px,1fr) auto;align-items:center;gap:10px;padding:0 10px;background:#fff;border-bottom:1px solid #cbd5e1;box-sizing:border-box;position:sticky;top:0;z-index:1600;color:#111827}
         .erp-windows-start-anchor{position:relative;height:100%;display:flex;align-items:center}
         .erp-windows-start-button{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid #d1d5db;border-radius:2px;background:#fff;cursor:pointer}
@@ -340,74 +323,18 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-help-panel{position:absolute;right:40px;top:46px;z-index:1800;width:min(370px,90vw);max-height:75vh;overflow:auto;padding:10px 12px;border:1px solid #b9cbd3;background:#fff;box-shadow:0 6px 16px rgba(18,59,80,.16);font-size:10px;line-height:1.45;color:#173b4a}
         .erp-windows-help-panel p{margin:5px 0}.erp-windows-help-panel ol,.erp-windows-help-panel ul{margin:4px 0 8px;padding-left:17px}.erp-windows-help-panel li{margin-bottom:3px}.erp-windows-help-panel small{display:block;border-top:1px solid #e2e8f0;padding-top:7px;color:#647b85}
         .erp-windows-help-panel>button{margin-top:7px;height:28px;padding:0 9px;border:1px solid #2d8db8;background:#2d8db8;color:#fff;border-radius:2px;cursor:pointer}
+        .erp-horizontal-workspace{width:100%;max-width:100%;min-width:0;min-height:calc(100vh - 48px);padding:8px;box-sizing:border-box;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%)}
+        .erp-horizontal-workspace .bg-white{background-color:#f8fcfe!important}.erp-horizontal-workspace .bg-slate-50{background-color:#edf6fa!important}.erp-horizontal-workspace .bg-slate-100{background-color:#e7f1f6!important}
+        .erp-horizontal-workspace .border-slate-200{border-color:#c9dde5!important}.erp-horizontal-workspace .border-slate-300{border-color:#b9d0dc!important}.erp-horizontal-workspace .text-slate-900{color:#123b50!important}.erp-horizontal-workspace .text-slate-700{color:#315466!important}
+        .erp-horizontal-workspace .rounded-xl,.erp-horizontal-workspace .rounded-2xl{border-radius:4px!important}.erp-horizontal-workspace .rounded-lg{border-radius:3px!important}
+        .erp-horizontal-workspace table thead th{background:#dcecf2;color:#17445a;border-bottom-color:#b9d4df}.erp-horizontal-workspace table tbody tr:nth-child(even){background-color:#f0f7fa}.erp-horizontal-workspace table tbody tr:hover{background-color:#e0f1f7}
+        .erp-horizontal-workspace input:focus,.erp-horizontal-workspace select:focus,.erp-horizontal-workspace textarea:focus{border-color:#2d8db8;outline-color:#2d8db8;box-shadow:0 0 0 2px rgba(45,141,184,.12)}
+        .erp-horizontal-workspace-compact h1{font-size:18px!important;line-height:1.2!important;font-weight:500!important}.erp-horizontal-workspace-compact h2{font-size:15px!important;line-height:1.25!important;font-weight:500!important}.erp-horizontal-workspace-compact h3{font-size:13px!important;line-height:1.3!important;font-weight:500!important}
+        .erp-horizontal-workspace-compact p{font-size:10px!important;line-height:1.4!important}.erp-horizontal-workspace-compact table{font-size:10px!important}.erp-horizontal-workspace-compact tbody td{font-size:10px!important;line-height:1.25!important}.erp-horizontal-workspace-compact thead th{font-size:9px!important;line-height:1.2!important;font-weight:500!important}.erp-horizontal-workspace-compact button{font-size:10px}.erp-horizontal-workspace-compact label{font-size:9px}.erp-horizontal-workspace-compact input,.erp-horizontal-workspace-compact select,.erp-horizontal-workspace-compact textarea{font-size:10px}
+        @media print{@page{size:A4;margin:12mm}.erp-windows-topbar,.print-hidden{display:none!important}.erp-horizontal-shell,.erp-horizontal-workspace{min-height:0!important;background:#fff!important;padding:0!important}.erp-horizontal-workspace *{box-shadow:none!important;backdrop-filter:none!important}thead{display:table-header-group}tr{break-inside:avoid}}
         @media(max-width:900px){.erp-windows-topbar{grid-template-columns:auto minmax(110px,170px) minmax(140px,1fr) auto;gap:6px;padding:0 6px}.erp-windows-session{gap:5px}.erp-windows-session time{font-size:9px}.erp-windows-user{max-width:120px;padding-left:5px}.erp-windows-system-title strong{font-size:11px}}
         @media(max-width:650px){.erp-windows-topbar{height:48px;grid-template-columns:auto minmax(0,1fr) auto;gap:6px}.erp-windows-quick-search{display:none}.erp-windows-system-title{align-items:flex-start;text-align:left}.erp-windows-system-title strong{font-size:10px;letter-spacing:0}.erp-windows-system-title span{font-size:8px}.erp-windows-session time{display:none}.erp-windows-user{max-width:90px}.erp-windows-user span{display:none}}
-        .erp-horizontal-brand strong{font-size:13px;font-weight:700;letter-spacing:.01em}
-        .erp-horizontal-help{height:30px;display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:#315466;font-size:11px;cursor:pointer;padding:0 5px}
-        .erp-horizontal-session{height:30px;display:flex;align-items:center;gap:5px;padding-left:8px;border-left:1px solid #dbe5e9;white-space:nowrap;font-size:11px;color:#173b4a}
-        .erp-horizontal-session span{font-weight:600}
-        .erp-horizontal-session time{color:#647b85;font-size:10px}
-        .erp-horizontal-menu{height:36px;min-height:36px;display:flex;align-items:stretch;padding:0 6px;background:#2D8DB8;border-bottom:1px solid #17445A;box-sizing:border-box;position:sticky;top:64px;z-index:1550}
-
-        /* Identidade visual transversal: superfícies frias, contornos nítidos e controles compactos. */
-        .erp-horizontal-session{color:#000;border-left-color:#b9d4df}
-        .erp-horizontal-session time{color:#000}
-        .erp-horizontal-help{color:#000}
-        .erp-horizontal-help:hover{background:#e2f0f5}
-        .erp-horizontal-workspace{background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%)}
-        .erp-horizontal-workspace .bg-white{background-color:#f8fcfe!important}
-        .erp-horizontal-workspace .bg-slate-50{background-color:#edf6fa!important}
-        .erp-horizontal-workspace .bg-slate-100{background-color:#e7f1f6!important}
-        .erp-horizontal-workspace .border-slate-200{border-color:#c9dde5!important}
-        .erp-horizontal-workspace .border-slate-300{border-color:#b9d0dc!important}
-        .erp-horizontal-workspace .text-slate-900{color:#123b50!important}
-        .erp-horizontal-workspace .text-slate-700{color:#315466!important}
-        .erp-horizontal-workspace .rounded-xl,.erp-horizontal-workspace .rounded-2xl{border-radius:4px!important}
-        .erp-horizontal-workspace .rounded-lg{border-radius:3px!important}
-        .erp-horizontal-workspace table thead th{background:#dcecf2;color:#17445a;border-bottom-color:#b9d4df}
-        .erp-horizontal-workspace table tbody tr:nth-child(even){background-color:#f0f7fa}
-        .erp-horizontal-workspace table tbody tr:hover{background-color:#e0f1f7}
-        .erp-horizontal-workspace input:focus,.erp-horizontal-workspace select:focus,.erp-horizontal-workspace textarea:focus{border-color:#2d8db8;outline-color:#2d8db8;box-shadow:0 0 0 2px rgba(45,141,184,.12)}
-
-        .erp-horizontal-menu-item{position:relative;display:flex;align-items:stretch}
-        .erp-horizontal-menu-button{height:31px;display:inline-flex;align-items:center;gap:3px;padding:0 10px;border:0;border-right:1px solid rgba(255,255,255,.18);background:#2D8DB8;color:#fff;font-size:10px;font-weight:500;cursor:pointer}
-        .erp-horizontal-menu-button:hover,.erp-horizontal-menu-button.is-active{background:#17445A;color:#fff}
-        .erp-horizontal-dropdown-item{position:relative;min-width:0}
-        .erp-horizontal-dropdown-item>button{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;text-align:left}
-        .erp-horizontal-subdropdown{position:absolute;left:100%;top:0;z-index:1400;min-width:190px;padding:4px;background:#fff;border:1px solid #cbd8de;box-shadow:0 8px 22px rgba(18,59,80,.16)}
-        .erp-horizontal-subdropdown button{display:flex;width:100%;min-height:30px;align-items:center;text-align:left;padding:5px 9px;border:0;background:#fff;color:#173b4a;font-size:10px;white-space:nowrap;cursor:pointer}
-        .erp-horizontal-subdropdown button:hover,.erp-horizontal-subdropdown button.is-active{background:#eaf5f8;color:#123b50}
-        /* Evita que estilos herdados do módulo tornem os itens do submenu brancos/invisíveis. */
-        .erp-horizontal-dropdown button,.erp-horizontal-subdropdown button{color:#173b4a!important;background:#fff!important;text-shadow:none!important}
-        .erp-horizontal-dropdown button:hover,.erp-horizontal-dropdown button.is-active,.erp-horizontal-subdropdown button:hover,.erp-horizontal-subdropdown button.is-active{color:#123b50!important;background:#eaf5f8!important}
-
-        .erp-horizontal-dropdown{position:absolute;top:31px;left:0;min-width:210px;padding:4px 0;background:#fff;border:1px solid #b9cbd3;box-shadow:0 5px 14px rgba(18,59,80,.14)}
-        .erp-horizontal-dropdown button{display:block;width:100%;min-height:29px;padding:5px 12px;border:0;background:#fff;color:#234d61;text-align:left;font-size:11px;cursor:pointer}
-        .erp-horizontal-dropdown button:hover{background:#edf7fb;color:#1f7195}
-        .erp-horizontal-workspace{min-width:0;min-height:calc(100vh - 78px);padding:8px;box-sizing:border-box}
-        .erp-horizontal-workspace-compact h1{font-size:18px!important;line-height:1.2!important;font-weight:500!important}
-        .erp-horizontal-workspace-compact h2{font-size:15px!important;line-height:1.25!important;font-weight:500!important}
-        .erp-horizontal-workspace-compact h3{font-size:13px!important;line-height:1.3!important;font-weight:500!important}
-        .erp-horizontal-workspace-compact p{font-size:10px!important;line-height:1.4!important}
-        .erp-horizontal-workspace-compact table{font-size:10px!important}
-        .erp-horizontal-workspace-compact tbody td{font-size:10px!important;line-height:1.25!important}
-        .erp-horizontal-workspace-compact thead th{font-size:9px!important;line-height:1.2!important;font-weight:500!important}
-        .erp-horizontal-workspace-compact button{font-size:10px}
-        .erp-horizontal-workspace-compact label{font-size:9px}
-        .erp-horizontal-workspace-compact input,.erp-horizontal-workspace-compact select,.erp-horizontal-workspace-compact textarea{font-size:10px}
-
-        .erp-horizontal-menu{display:flex!important;position:sticky;top:64px;z-index:1550}
-        .erp-horizontal-menu-button.is-active{background:#17445A;color:#fff;box-shadow:inset 0 -2px #8bd6f0}
-.erp-horizontal-menu-button.erp-module-menu-button{background:#f97316;border-right-color:#ea580c;color:#fff;font-weight:800;letter-spacing:.03em;text-transform:uppercase}
-.erp-horizontal-menu-button.erp-module-menu-button:hover,.erp-horizontal-menu-button.erp-module-menu-button.is-active{background:#ea580c;color:#fff;box-shadow:inset 0 -2px #fed7aa}
-.erp-horizontal-logout{height:27px;display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:0 8px;border:1px solid #c5d7df;border-radius:2px;background:#f4fbfd;color:#123b50;font-size:10px;font-weight:800;white-space:nowrap;cursor:pointer}.erp-horizontal-logout:hover{background:#dcecf3}
-        .erp-horizontal-dropdown button.is-active{background:#edf7fb;color:#176487;font-weight:700;border-left:2px solid #2D8DB8}
-        .erp-horizontal-workspace{width:100%;max-width:100%;min-width:0}
-        @media(max-width:700px){.erp-horizontal-menu{overflow-x:auto;overscroll-behavior-x:contain}.erp-horizontal-menu-item{flex:0 0 auto}.erp-horizontal-dropdown{position:fixed;top:auto;left:6px;right:6px;max-height:65vh;overflow:auto;z-index:1500}.erp-horizontal-menu-button{min-width:max-content}}
-        @media(max-width:950px){.erp-horizontal-menu-button{padding:0 7px}.erp-horizontal-session time{display:none}.erp-horizontal-global-title strong{font-size:12px}.erp-horizontal-global-title span{font-size:9px}}
-        @media(max-width:700px){.erp-global-status-row>small{display:none}.erp-horizontal-header{height:58px;min-height:58px;gap:5px;padding:0 6px}.erp-horizontal-brand img{width:200px;min-width:200px;height:46px}
-        .erp-horizontal-global-title strong{font-size:12px}.erp-horizontal-global-title span{font-size:9px}.erp-horizontal-help{font-size:0}.erp-horizontal-session span{display:none}.erp-horizontal-menu{overflow-x:auto;top:58px}}
-        @media(prefers-reduced-motion:reduce){.erp-horizontal-menu-button,.erp-horizontal-dropdown{transition:none!important}}
+        @media(prefers-reduced-motion:reduce){.erp-windows-start-menu{transition:none!important}}
       `}</style>
     </div>
   )
