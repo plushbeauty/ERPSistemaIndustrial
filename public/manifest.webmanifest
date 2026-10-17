@@ -11,6 +11,12 @@
   "lang": "pt-BR",
   "icons": [
     {
+      "src": "/logo/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
       "src": "/logo/pwa-icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",

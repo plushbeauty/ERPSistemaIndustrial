@@ -16,7 +16,15 @@ self.addEventListener('install', event => {
 })
 
 self.addEventListener('activate', event => {
-  event.waitUntil(self.clients.claim())
+  event.waitUntil(
+    Promise.all([
+      self.clients.claim(),
+      caches.keys().then(keys => Promise.all(
+        keys.filter(key => key.startsWith('erp-static-shell-') && key !== SHELL_CACHE)
+          .map(key => caches.delete(key)),
+      )),
+    ]),
+  )
 })
 
 self.addEventListener('fetch', event => {
