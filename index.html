@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="theme-color" content="#FAFAFA" />
 <meta name="description" content="SYSNQRA ERP & SGQ INDUSTRIAL - Sistema de Gestão Industrial" />
+<link rel="manifest" href="/manifest.webmanifest" />
 <link rel="icon" href="/logo/logo.png" type="image/png" />
+<link rel="apple-touch-icon" href="/logo/logo.png" />
 <title>SYSNQRA ERP & SGQ INDUSTRIAL - Sistema de Gestão Industrial</title>
 <style>
 html,body{margin:0;min-height:100%;background:#FAFAFA;color:#111827;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -30,23 +32,6 @@ html,body{margin:0;min-height:100%;background:#FAFAFA;color:#111827;font-family:
         </div>
   </div>
 </div>
-<script>
-  /* O ERP deve ser um site normal no navegador, não um aplicativo instalado/PWA. */
-  (function(){
-    try {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations){
-          registrations.forEach(function(registration){ registration.unregister(); });
-        }).catch(function(){});
-      }
-      if ('caches' in window) {
-        caches.keys().then(function(keys){
-          keys.forEach(function(key){ caches.delete(key); });
-        }).catch(function(){});
-      }
-    } catch (_) {}
-  })();
-</script>
 <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>
