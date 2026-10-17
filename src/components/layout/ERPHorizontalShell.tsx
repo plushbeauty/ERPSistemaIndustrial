@@ -80,7 +80,8 @@ const menus: MenuItem[] = [
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
     { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
-  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
+  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet' },
+  { label: 'Rotinas da Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
     { label: 'Visual geral da Qualidade', route: '/qualidade' },
     { label: 'Inspeções de lotes', route: '/qualidade/inspecoes' },
     { label: 'Inspeção em processo', route: '/qualidade/inspecao-processo' },
@@ -89,7 +90,6 @@ const menus: MenuItem[] = [
     { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
     { label: 'CEP / medições', route: '/qualidade/cep' },
     { label: 'Cadastro de documentos (GED)', route: '/qualidade/ged-documentos' },
-    { label: 'Qualidade Tablet', route: '/qualidade', action: 'qualityTablet' },
   ] },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench, children: [
     { label: 'Central de manutenção', route: '/manutencao' },
@@ -208,21 +208,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
     go(item.route)
   }
-
-  const moduleHeader = pathname.startsWith('/vendas')
-    ? (pathname === '/vendas' ? { title: 'Dashboard Comercial', subtitle: 'Indicadores reais do módulo de vendas' } : { title: 'Módulo Vendas', subtitle: 'Pedidos, clientes e acompanhamento comercial' })
-    : pathname.startsWith('/compras') ? { title: 'Gestão de Compras', subtitle: 'Solicitações, cotações, pedidos e recebimentos' }
-    : pathname.startsWith('/qualidade') || pathname.startsWith('/sgq') ? { title: 'Painel de Gestão da Qualidade', subtitle: 'Indicadores calculados a partir dos registros da empresa autenticada.' }
-    : pathname.startsWith('/estoque') || pathname.startsWith('/inventario') ? { title: 'Gestão de Estoque', subtitle: 'Saldos, movimentações e rastreabilidade de materiais' }
-    : pathname.startsWith('/fiscal') || pathname.includes('nota-fiscal') ? { title: 'Gestão Fiscal', subtitle: 'Documentos fiscais e controles do módulo fiscal' }
-    : pathname.startsWith('/pcp') ? { title: 'Planejamento e Controle da Produção', subtitle: 'Ordens, capacidade e acompanhamento da produção' }
-    : pathname.startsWith('/financeiro') ? { title: 'Gestão Financeira', subtitle: 'Títulos, custos e indicadores financeiros' }
-    : pathname.startsWith('/engenharia') ? { title: 'Engenharia Industrial', subtitle: 'Produtos, estruturas e dados de engenharia' }
-    : pathname.startsWith('/manutencao') ? { title: 'Gestão da Manutenção', subtitle: 'Equipamentos, ordens e planos de manutenção' }
-    : pathname.startsWith('/rh') ? { title: 'Recursos Humanos', subtitle: 'Cadastros e rotinas de recursos humanos' }
-    : pathname.startsWith('/produtos-vendas') || pathname.startsWith('/cadastros') ? { title: 'Cadastros Mestres', subtitle: 'Dados mestres utilizados pelos módulos do ERP' }
-    : pathname.startsWith('/configuracoes') ? { title: 'Configurações do ERP', subtitle: 'Parâmetros e administração do ambiente' }
-    : { title: 'SGQERP INDUSTRIAL', subtitle: 'Gestão integrada da operação industrial' }
 
   const contextualHelp = pathname.startsWith('/pcp/mrp-ii')
     ? { title: 'MRP II — Planejamento de materiais', purpose: 'Calcular necessidades de materiais a partir da demanda, estrutura dos produtos, estoque e ordens existentes. Esta tela não é a agenda de máquinas.', steps: ['Confirme que produtos, fichas técnicas/estruturas e saldos de estoque estão atualizados.', 'Execute o cálculo MRP e confira as necessidades líquidas por componente.', 'Revise as sugestões de comprar ou produzir antes de gerar ordens planejadas.'], fields: ['Produto/demanda: item acabado e quantidade a planejar.', 'Horizonte/data: período considerado no planejamento.', 'Necessidade líquida: quantidade que falta após estoque e reservas.', 'Sugestão: comprar ou produzir; confira antes de confirmar.'] }
