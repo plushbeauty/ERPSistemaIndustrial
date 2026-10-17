@@ -96,6 +96,7 @@ const Master = lazyPage(() => import('./pages/Master'), 'Master')
 const PCPAuditoria = lazyPage(() => import('./pages/pcp/PCPAuditoria'), 'default')
 const PCPIndustrial = lazyPage(() => import('./pages/PCPIndustrial'), 'PCPIndustrial')
 const IndustrialDataWorkspace = lazyPage(() => import('./pages/IndustrialDataWorkspace'), 'default')
+const FiscalNFeEntradas = lazyPage(() => import('./pages/FiscalNFeEntradas'), 'default')
 const PCPOrdens = lazyPage(() => import('./pages/PCPOrdens'), 'default')
 const PCPExecucaoIndustrial = lazyPage(() => import('./pages/PCPExecucaoIndustrial'), 'default')
 const PCPCapacidade = lazyPage(() => import('./pages/PCPCapacidade'), 'default')
@@ -523,7 +524,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/ordens-industriais" element={<QualityPlanGate>{<PCPExecucaoIndustrial />}</QualityPlanGate>} />
       <Route path="/pcp/apontamentos" element={<QualityPlanGate>{<PCPExecucaoIndustrial />}</QualityPlanGate>} />
       <Route path="/fiscal/parametros" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
-      <Route path="/fiscal/nfe-entradas" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
+      <Route path="/fiscal/nfe-entradas" element={<QualityPlanGate><FiscalNFeEntradas /></QualityPlanGate>} />
       <Route path="/fiscal/custos-industriais" element={<QualityPlanGate>{<CentralCustosIndustrial />}</QualityPlanGate>} />
       <Route path="/rh/funcionarios" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/rh/turnos" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
