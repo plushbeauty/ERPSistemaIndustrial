@@ -225,7 +225,7 @@ export default function FiscalImpostos() {
           {field('COFINS (%)', 'cofins_aliquota', { inputMode: 'decimal' })}
           {field('CST COFINS', 'cofins_cst', { maxLength: 3 })}
         </div>
-        <div className="mt-3 flex justify-end"><button type="button" onClick={() => void save()} disabled={busy || loading} className="h-9 rounded-sm bg-blue-800 px-4 text-sm font-semibold text-white disabled:opacity-50">{busy ? 'Salvando…' : editingId ? 'Salvar alterações' : 'Criar regra'}</button></div>
+        <div className="mt-3 flex justify-end"><button type="button" onClick={() => void save()} disabled={busy || loading} className="h-9 rounded-sm bg-[#2D8DB8] px-4 text-sm font-semibold text-white disabled:opacity-50">{busy ? 'Salvando…' : editingId ? 'Salvar alterações' : 'Criar regra'}</button></div>
       </section>
       <section className="overflow-x-auto border border-slate-200 bg-white">
         <table className="w-full min-w-[980px] border-collapse text-left text-sm">

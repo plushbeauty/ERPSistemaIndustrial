@@ -26,7 +26,7 @@ const checks = [
   ['Menu PCP mantém submenu das quatro fichas de processo', ['Ficha de Processo Injetados', 'Ficha de Processo Prensados', 'Ficha de Processo Acabamento', 'Montagem de Embalagem'].every(label => shell.includes(label))],
   ['Submenu de Fichas de Processo renderiza e navega às categorias existentes', shell.includes('child.children.filter(grandchild') && shell.includes('setOpenSubMenu') && ['tipo=INJETADOS', 'tipo=PRENSADOS', 'tipo=ACABAMENTO', 'tipo=MONTAGEM_EMBALAGEM'].every(route => shell.includes(route))],
   ['Compras usa o azul institucional e não oferece o atalho de tablet desativado', purchases.includes('#2D8DB8') && !purchases.includes('Tablet Industrial') && !purchases.includes('buy-tablet')],
-  ['Telas principais do Fiscal usam a superfície compacta compartilhada', fiscalPages.every(page => page.includes('fiscal-workspace'))],
+  ['Telas principais do Fiscal usam a superfície compacta e o azul institucional', fiscalPages.every(page => page.includes('fiscal-workspace') && !page.includes('#2563eb') && !page.includes('bg-blue-800') && !page.includes('bg-sky-700'))],
   ['Menu operacional não exibe lançadores de tablet', !shell.includes('PCP Tablet') && !shell.includes('TabletMenuModal') && !shell.includes('PCPTabletMenuModal')],
 ]
 

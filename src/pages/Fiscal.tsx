@@ -200,12 +200,12 @@ export default function Fiscal() {
           >
             <ArrowLeft size={17} /> Voltar ao Painel
           </button>
-          <span className="text-[9px] font-medium uppercase tracking-wider text-[#2563eb]">ERP • MÓDULO FISCAL</span>
+          <span className="text-[9px] font-medium uppercase tracking-wider text-[#2D8DB8]">ERP • MÓDULO FISCAL</span>
           <h1 className="mt-0.5 text-[16px] font-medium leading-5 text-[#0f172a]">Central Fiscal Integrada</h1>
           <p className="mt-0.5 text-[11px] text-slate-600">Liberação para faturamento, monitoramento de notas fiscais, contas a pagar, receber e relatórios consolidados.</p>
         </div>
         <button
-          className="flex h-[30px] min-h-[30px] items-center justify-center gap-1 rounded-[2px] bg-[#2563eb] px-3 py-1 text-[11px] font-medium text-white shadow-sm transition-all hover:bg-blue-700 disabled:opacity-60"
+          className="flex h-[30px] min-h-[30px] items-center justify-center gap-1 rounded-[2px] bg-[#2D8DB8] px-3 py-1 text-[11px] font-medium text-white shadow-sm transition-all hover:bg-blue-700 disabled:opacity-60"
           onClick={() => void load()}
           disabled={busy}
         >
@@ -223,7 +223,7 @@ export default function Fiscal() {
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
-            className={'flex min-h-11 items-center justify-center gap-2 rounded-t-lg border-b-2 px-4 py-2 text-base font-semibold transition-all ' + (tab === id ? 'border-[#2563eb] text-[#2563eb]' : 'border-transparent text-slate-500 hover:bg-white hover:text-slate-800')}
+            className={'flex min-h-11 items-center justify-center gap-2 rounded-t-lg border-b-2 px-4 py-2 text-base font-semibold transition-all ' + (tab === id ? 'border-[#2D8DB8] text-[#2D8DB8]' : 'border-transparent text-slate-500 hover:bg-white hover:text-slate-800')}
             onClick={() => setTab(id)}
           >
             <Icon size={18} /> {label}
@@ -273,7 +273,7 @@ export default function Fiscal() {
                   <tbody>
                     {visibleOrders.map(order => (
                       <tr key={order.id} className="border-b border-slate-100 hover:bg-slate-50">
-                        <td className="p-3 font-bold text-[#2563eb]">#{order.numero}</td>
+                        <td className="p-3 font-bold text-[#2D8DB8]">#{order.numero}</td>
                         <td className="p-3">{order.status}</td>
                         <td className="p-3 text-right font-semibold">{money(order.total)}</td>
                         <td className="p-3 text-center">
@@ -314,7 +314,7 @@ export default function Fiscal() {
                           min="0"
                           max={item.quantidade}
                           step="any"
-                          className="mt-1 min-h-11 w-full rounded-[2px] border bg-white p-2 text-base outline-none focus:ring-2 focus:ring-[#2563eb]"
+                          className="mt-1 min-h-11 w-full rounded-[2px] border bg-white p-2 text-base outline-none focus:ring-2 focus:ring-[#2D8DB8]"
                           value={qty[item.id] ?? ''}
                           onChange={event => setQty(previous => ({ ...previous, [item.id]: event.target.value }))}
                           placeholder="0"
@@ -354,7 +354,7 @@ export default function Fiscal() {
                     <td className="p-3">{doc.status}</td>
                     <td className="p-3 text-right font-semibold">{money(doc.valor_total)}</td>
                     <td className="p-3 text-center">
-                      <button className="flex h-[30px] min-h-[30px] items-center justify-center gap-2 rounded-[2px] bg-[#2563eb] px-3 py-2 text-base font-semibold text-white hover:bg-blue-700 disabled:opacity-60" disabled={busy || doc.status !== 'Rascunho'} onClick={() => void emitNfe(doc)}>
+                      <button className="flex h-[30px] min-h-[30px] items-center justify-center gap-2 rounded-[2px] bg-[#2D8DB8] px-3 py-2 text-base font-semibold text-white hover:bg-blue-700 disabled:opacity-60" disabled={busy || doc.status !== 'Rascunho'} onClick={() => void emitNfe(doc)}>
                         <Send size={16} /> {doc.status === 'Rascunho' ? 'Transmitir NF-e' : 'Indisponível neste status'}
                       </button>
                     </td>
@@ -399,7 +399,7 @@ export default function Fiscal() {
               ['receber', 'Recebimentos'],
               ['pagar', 'Pagamentos']
             ] as Array<[ReportTab, string]>).map(([id, label]) => (
-              <button key={id} className={'min-h-11 rounded-[2px] border px-4 py-2 text-base font-semibold ' + (reportTab === id ? 'border-[#2563eb] bg-blue-50 text-[#1e3a8a]' : 'border-slate-200 bg-white text-slate-600')} onClick={() => setReportTab(id)}>
+              <button key={id} className={'min-h-11 rounded-[2px] border px-4 py-2 text-base font-semibold ' + (reportTab === id ? 'border-[#2D8DB8] bg-blue-50 text-[#1e3a8a]' : 'border-slate-200 bg-white text-slate-600')} onClick={() => setReportTab(id)}>
                 {label}
               </button>
             ))}

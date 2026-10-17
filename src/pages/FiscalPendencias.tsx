@@ -68,7 +68,7 @@ export default function FiscalPendencias() {
         <label className="grid min-w-64 flex-1 gap-1 text-xs font-medium text-slate-700">Buscar por número, destinatário ou retorno
           <input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1) }} className="h-9 rounded-sm border border-slate-300 bg-white px-2 text-sm" />
         </label>
-        <div className="flex gap-2"><button type="button" onClick={() => void load()} disabled={loading} className="h-9 rounded-sm border border-slate-300 bg-white px-3 text-sm font-medium">Atualizar</button><Link to="/fiscal/emissao" className="flex h-9 items-center rounded-sm bg-blue-800 px-3 text-sm font-semibold text-white">Criar rascunho</Link></div>
+        <div className="flex gap-2"><button type="button" onClick={() => void load()} disabled={loading} className="h-9 rounded-sm border border-slate-300 bg-white px-3 text-sm font-medium">Atualizar</button><Link to="/fiscal/emissao" className="flex h-9 items-center rounded-sm bg-[#2D8DB8] px-3 text-sm font-semibold text-white">Criar rascunho</Link></div>
       </div>
       <section className="overflow-x-auto border border-slate-200 bg-white">
         <table className="w-full min-w-[850px] border-collapse text-left text-sm">

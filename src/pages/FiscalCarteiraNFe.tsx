@@ -150,7 +150,7 @@ export default function FiscalCarteiraNFe() {
           </label>
           <div className="flex gap-2">
             <button type="button" onClick={() => void load()} disabled={loading} className="h-9 rounded-sm border border-slate-300 bg-white px-3 text-sm font-medium disabled:opacity-50">Atualizar</button>
-            <Link to="/fiscal/emissao" className="flex h-9 items-center rounded-sm bg-blue-800 px-3 text-sm font-semibold text-white">Nova NF-e</Link>
+            <Link to="/fiscal/emissao" className="flex h-9 items-center rounded-sm bg-[#2D8DB8] px-3 text-sm font-semibold text-white">Nova NF-e</Link>
           </div>
         </div>
         {error && <div role="alert" className="border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900">{error}</div>}
@@ -188,7 +188,7 @@ export default function FiscalCarteiraNFe() {
               <div><dt className="text-xs text-slate-500">Retorno fiscal</dt><dd className="whitespace-pre-wrap">{selected.retorno || 'Sem mensagem registrada.'}</dd></div>
               <div className="flex flex-wrap gap-2 pt-2">
                 <button type="button" disabled={busy || !selected.xmlPath} onClick={() => void openStoredFile(selected.xmlPath, 'XML')} className="h-9 rounded-sm border border-slate-300 px-3 text-sm font-medium disabled:opacity-50">Abrir XML</button>
-                <button type="button" disabled={busy || !selected.danfePath} onClick={() => void openStoredFile(selected.danfePath, 'DANFE')} className="h-9 rounded-sm bg-blue-800 px-3 text-sm font-semibold text-white disabled:opacity-50">Visualizar DANFE</button>
+                <button type="button" disabled={busy || !selected.danfePath} onClick={() => void openStoredFile(selected.danfePath, 'DANFE')} className="h-9 rounded-sm bg-[#2D8DB8] px-3 text-sm font-semibold text-white disabled:opacity-50">Visualizar DANFE</button>
               </div>
             </dl> : <p className="mt-4 text-sm text-slate-600">Selecione um documento para consultar os dados persistidos.</p>}
           </aside>

@@ -640,22 +640,22 @@
 
 /* Compras alinhadas ao padrão operacional de Vendas */
 .sales-content .buy-shell{display:block!important;min-height:0!important;background:#f3f7f8!important;color:#123b50!important}
-.sales-content .buy-shell .buy-sidebar{width:auto!important;min-width:0!important;height:auto!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:3px!important;margin:0 0 10px!important;padding:5px 7px!important;background:#fff!important;color:#334155!important;border:1px solid #dfe7ea!important;border-radius:8px!important;box-shadow:0 2px 8px #123b5008!important;overflow-x:auto!important}
+.sales-content .buy-shell .buy-sidebar{width:auto!important;min-width:0!important;height:auto!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:3px!important;margin:0 0 10px!important;padding:4px 6px!important;background:#fff!important;color:#334155!important;border:1px solid #dfe7ea!important;border-radius:2px!important;box-shadow:none!important;overflow-x:auto!important}
 .sales-content .buy-shell .buy-brand,.sales-content .buy-shell .buy-section,.sales-content .buy-shell .buy-spacer,.sales-content .buy-shell .buy-sidebar>.buy-nav:last-child{display:none!important}
-.sales-content .buy-shell .buy-nav{flex:0 0 auto!important;min-height:36px!important;padding:0 10px!important;border-radius:6px!important;color:#526475!important;background:transparent!important;gap:6px!important}
+.sales-content .buy-shell .buy-nav{flex:0 0 auto!important;height:30px!important;min-height:30px!important;padding:0 8px!important;border-radius:2px!important;color:#526475!important;background:transparent!important;gap:6px!important}
 .sales-content .buy-shell .buy-nav b{font-size:10px!important}.sales-content .buy-shell .buy-nav small{display:none!important}
-.sales-content .buy-shell .buy-nav.active{background:#1f6f96!important;color:#fff!important}.sales-content .buy-shell .buy-nav.active svg{color:#fff!important}
-.sales-content .buy-shell .buy-nav:hover{background:#eef6f9!important;color:#15566f!important}
+.sales-content .buy-shell .buy-nav.active{background:#2D8DB8!important;color:#fff!important}.sales-content .buy-shell .buy-nav.active svg{color:#fff!important}
+.sales-content .buy-shell .buy-nav:hover{background:#eaf6f8!important;color:#123b50!important}
 .sales-content .buy-shell .buy-main{width:100%!important}
 .sales-content .buy-shell .buy-top{display:none!important}
 .sales-content .buy-shell .buy-head{padding:2px 0 10px!important}
 .sales-content .buy-shell .buy-head h1{font-size:22px!important}.sales-content .buy-shell .buy-head p{font-size:11px!important}
 .sales-content .buy-shell .buy-content{padding:0!important}
-.sales-content .buy-shell .buy-actions button{min-height:34px!important;padding:0 10px!important;font-size:10px!important}
+.sales-content .buy-shell .buy-actions button{height:30px!important;min-height:30px!important;padding:0 8px!important;font-size:11px!important}
 .sales-content .buy-shell .buy-kpis{gap:8px!important}.sales-content .buy-shell .buy-kpis article{min-height:88px!important;padding:11px!important}
 .sales-content .buy-shell .buy-kpis article:nth-child(1){background:#edf6fa}.sales-content .buy-shell .buy-kpis article:nth-child(2){background:#fff7e6}.sales-content .buy-shell .buy-kpis article:nth-child(3){background:#fff0ee}.sales-content .buy-shell .buy-kpis article:nth-child(4){background:#eef9f2}.sales-content .buy-shell .buy-kpis article:nth-child(5){background:#f3f6f8}
-.sales-content .buy-shell .buy-card{border-radius:8px!important}.sales-content .buy-shell .buy-card header{padding:10px 12px!important}.sales-content .buy-shell .buy-table th{height:34px!important;padding:6px 9px!important}.sales-content .buy-shell .buy-table td{padding:7px 9px!important;font-size:10px!important}
-.sales-content .buy-shell .buy-form input,.sales-content .buy-shell .buy-form select,.sales-content .buy-shell .buy-form textarea{min-height:34px!important;padding:7px 9px!important;font-size:11px!important}
+.sales-content .buy-shell .buy-card{border-radius:2px!important}.sales-content .buy-shell .buy-card header{padding:8px 10px!important}.sales-content .buy-shell .buy-table th{height:30px!important;padding:4px 7px!important}.sales-content .buy-shell .buy-table td{height:30px!important;padding:4px 7px!important;font-size:10px!important}
+.sales-content .buy-shell .buy-form input,.sales-content .buy-shell .buy-form select{height:30px!important;min-height:30px!important;padding:0 7px!important;font-size:11px!important;border-radius:2px!important}.sales-content .buy-shell .buy-form textarea{min-height:58px!important;padding:6px 7px!important;font-size:11px!important;border-radius:2px!important}
 
 .sales-content .pc-page{min-height:0!important;background:transparent!important;padding:0!important}.sales-content .pc-header{display:none!important}.sales-content .pc-list,.sales-content .pc-card{border-radius:8px!important}.sales-content .pc-btn{min-height:34px!important;height:34px!important;padding:0 10px!important;font-size:10px!important}.sales-content .pc-table th{height:34px!important;font-size:9px!important}.sales-content .pc-table td{height:42px!important;font-size:10px!important}.sales-content .pc-detail{margin-top:10px!important;padding:12px!important}.sales-content .pc-field{font-size:10px!important}.sales-content .pc-field input,.sales-content .pc-field textarea{min-height:34px!important;padding:7px 9px!important;font-size:11px!important}.sales-content .pc-footer{margin-top:10px!important;padding-top:10px!important}
 
@@ -664,13 +664,13 @@
 .sales-content .buy-requisition,
 .sales-content .buy-rfq{min-height:0!important;padding:0!important;background:#f3f7f8!important}
 .sales-content .buy-requisition>header{padding:8px 0 10px!important;border-bottom:0!important;background:transparent!important}
-.sales-content .buy-requisition>header h1,.sales-content .buy-rfq h1{font-size:22px!important;font-weight:500!important;color:#1c3c49!important}
-.sales-content .buy-requisition button,.sales-content .buy-rfq button{min-height:34px!important;border-radius:6px!important;font-size:10px!important}
-.sales-content .buy-requisition section,.sales-content .buy-rfq section{border-radius:8px!important;border-color:#dbe7ea!important;box-shadow:0 2px 8px #123b5008!important}
+.sales-content .buy-requisition>header h1,.sales-content .buy-rfq h1{font-size:18px!important;font-weight:500!important;color:#123B50!important}
+.sales-content .buy-requisition button,.sales-content .buy-rfq button{height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:11px!important}
+.sales-content .buy-requisition section,.sales-content .buy-rfq section{border-radius:2px!important;border-color:#dbe7ea!important;box-shadow:none!important}
 .sales-content .buy-requisition table,.sales-content .buy-rfq table{font-size:10px!important}
-.sales-content .buy-requisition th,.sales-content .buy-rfq th{height:34px!important;padding:6px 9px!important;font-size:9px!important}
-.sales-content .buy-requisition td,.sales-content .buy-rfq td{padding:7px 9px!important;font-size:10px!important}
-.sales-content .buy-requisition input,.sales-content .buy-rfq input,.sales-content .buy-rfq textarea{min-height:34px!important;border-radius:5px!important;font-size:11px!important}
+.sales-content .buy-requisition th,.sales-content .buy-rfq th{height:30px!important;padding:4px 7px!important;font-size:9px!important}
+.sales-content .buy-requisition td,.sales-content .buy-rfq td{height:30px!important;padding:4px 7px!important;font-size:10px!important}
+.sales-content .buy-requisition input,.sales-content .buy-rfq input{height:30px!important;min-height:30px!important;border-radius:2px!important;font-size:11px!important}.sales-content .buy-rfq textarea{min-height:58px!important;border-radius:2px!important;font-size:11px!important}
 .sales-content .buy-rfq textarea{height:auto!important}
 .sales-content .buy-requisition .bg-slate-900{background:#1f6f96!important}
 
