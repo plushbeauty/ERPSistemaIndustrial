@@ -139,7 +139,7 @@ export const PCP_AUDIT_FINDINGS: AuditFinding[] = [
     descricao: 'Botão Imprimir executa window.print() sem folha de estilo A4 dedicada para ficha de produção, imprimindo botões e filtros cortados.',
     impacto: 'Incapacidade de emitir ordens de processo físicas com assinatura e rastreabilidade para os operadores de turno.',
     correcaoPrevista: 'Estruturar folha de impressão @media print limpa com dados da OP, centro de trabalho, molde e espaço de checklist.',
-    evidenciaValidacao: 'Inspeção da ação de clique do botão Imprimir em PCPExecucaoIndustrial.tsx.',
+    evidenciaValidacao: 'Folha de impressão A4 adicionada em PCPExecucaoIndustrial.tsx e impressão de ficha existente em PCPFichasProcesso.tsx. CI e conferência visual ainda pendentes.',
     status: 'CORRIGIDO',
     dataIdentificacao: '2026-10-17',
     dataUltimaVerificacao: '2026-10-17',
