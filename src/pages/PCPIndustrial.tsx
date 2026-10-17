@@ -33,6 +33,7 @@ type Employee={id:string;matricula:string;nome:string;cargo:string|null;status:s
 type Defect={id:string;ordem_producao_id:string;defeito:string;quantidade:number}
 type Ficha={id:string;produto_id:string;versao:number;rendimento:number;ativa:boolean}
 type FItem={id:string;ficha_id:string;componente_id:string;quantidade:number;perda_percentual:number;unidade_medida?:string}
+const localDateKey=(value:Date)=>`${value.getFullYear()}-${String(value.getMonth()+1).padStart(2,'0')}-${String(value.getDate()).padStart(2,'0')}`
 
 function InlineIcon({name,size=18}:{name:string;size?:number}){const path=name==='Plus'?'M12 5v14M5 12h14':name==='X'?'M6 6l12 12M18 6 6 18':name==='CheckCircle2'?'M9 12l2 2 4-5':name==='XCircle'?'M8 8l8 8M16 8l-8 8':name==='ArrowLeft'?'M19 12H5M12 19l-7-7 7-7':name==='Search'?'M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm6-2 4 4':name==='RefreshCw'?'M20 11a8 8 0 0 0-14.8-4L3 9M3 4v5h5M4 13a8 8 0 0 0 14.8 4L21 15M21 20v-5h-5':'M5 12h14M12 5v14';return <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={path}/></svg>}
 
@@ -82,7 +83,7 @@ export default function PCPIndustrial(){
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
  const [doubleMold,setDoubleMold]=useState(false),[nominalRate,setNominalRate]=useState('30'),[machineForAnalysis,setMachineForAnalysis]=useState(''),[analysisStart,setAnalysisStart]=useState('')
  const [profileName,setProfileName]=useState('Usuário'),[clock,setClock]=useState(new Date())
- const [opForm,setOpForm]=useState<NovaOPForm>({tipo_ordem:'PEDIDO',pedido_venda_id:'',pedido_item_id:'',produto_id:'',cliente_id:'',quantidade:'',data_emissao:new Date().toISOString().slice(0,10),data_prevista:'',status:'pendente',prioridade:'ALTA',observacoes:''})
+ const [opForm,setOpForm]=useState<NovaOPForm>({tipo_ordem:'PEDIDO',pedido_venda_id:'',pedido_item_id:'',produto_id:'',cliente_id:'',quantidade:'',data_emissao:localDateKey(new Date()),data_prevista:'',status:'pendente',prioridade:'ALTA',observacoes:''})
  const [progForm,setProgForm]=useState({ordem_producao_id:'',maquina_id:'',molde_id:'',operador_frente_id:'',operador_atras_id:'',inicio:'',fim:'',quantidade:'',status:'Programada',turnos:'1',horas_turno:'8',eficiencia:'85',ciclo_seg:'0',cavidades_ativas:'1',setup_min:'0'})
 
  async function load(){
@@ -128,7 +129,7 @@ export default function PCPIndustrial(){
  const filteredOps=ops.filter(o=>!query||o.numero_op.toLowerCase().includes(query.toLowerCase())||String(o.status).toLowerCase().includes(query.toLowerCase()))
  const schedule=useMemo(()=>programs.map(p=>({...p,op:ops.find(o=>o.id===p.ordem_producao_id),machine:machines.find(m=>m.id===p.maquina_id),product:products.find(x=>x.id===p.produto_id)})),[programs,ops,machines,products])
 
- function openNewOP(){setError('');setMessage('');setOpForm({tipo_ordem:'PEDIDO',pedido_venda_id:'',pedido_item_id:'',produto_id:'',cliente_id:'',quantidade:'',data_emissao:new Date().toISOString().slice(0,10),data_prevista:'',status:'pendente',prioridade:'ALTA',observacoes:''});setModal('op')}
+ function openNewOP(){setError('');setMessage('');setOpForm({tipo_ordem:'PEDIDO',pedido_venda_id:'',pedido_item_id:'',produto_id:'',cliente_id:'',quantidade:'',data_emissao:localDateKey(new Date()),data_prevista:'',status:'pendente',prioridade:'ALTA',observacoes:''});setModal('op')}
  function processForOp(opId:string){const op=ops.find(x=>x.id===opId);const ficha=op?fichas.find(f=>f.produto_id===op.produto_id):undefined;return ficha?fichaOps.filter(x=>x.ficha_id===ficha.id).sort((a,b)=>a.sequencia-b.sequencia):[]}
  function openProgram(opId=selectedOp){setError('');setMessage('');const op=ops.find(o=>o.id===opId);const process=processForOp(opId)[0];const mold=process?.molde_id||'';const machine=process?.maquina_id||'';const cav=mold?(molds.find(x=>x.id===mold)?.cavidades_ativas||molds.find(x=>x.id===mold)?.numero_cavidades||1):1;const cycle=process?.ciclo_seg||0;const setup=process?.setup_min||0;setProgForm({ordem_producao_id:opId,maquina_id:machine,molde_id:mold,operador_frente_id:'',operador_atras_id:'',inicio:'',fim:'',quantidade:opId?String(op?.quantidade||''):'',status:'Programada',turnos:'1',horas_turno:'8',eficiencia:'85',ciclo_seg:String(cycle),cavidades_ativas:String(cav),setup_min:String(setup)});setModal('programacao')}
 
@@ -178,8 +179,7 @@ export default function PCPIndustrial(){
   if(machineConflict){setError('Conflito de horário: a injetora já possui uma programação nesse intervalo.');return}
   const moldConflict=Boolean(progForm.molde_id)&&activePrograms.some(p=>p.molde_id===progForm.molde_id&&overlaps(p))
   if(moldConflict){setError('Conflito de horário: o mesmo molde já está programado nesse intervalo.');return}
-  const dayKey=(value:Date)=>value.toISOString().slice(0,10)
-  const sameMachineDay=activePrograms.filter(p=>p.maquina_id===progForm.maquina_id&&dayKey(new Date(p.inicio_planejado))===dayKey(start))
+  const sameMachineDay=activePrograms.filter(p=>p.maquina_id===progForm.maquina_id&&localDateKey(new Date(p.inicio_planejado))===localDateKey(start))
   const distinctMolds=new Set(sameMachineDay.map(p=>p.molde_id).filter((id):id is string=>Boolean(id)))
   if(progForm.molde_id)distinctMolds.add(progForm.molde_id)
   if(distinctMolds.size>2){setError('A mesma injetora suporta no máximo dois moldes distintos no mesmo dia.');return}
@@ -232,7 +232,7 @@ export default function PCPIndustrial(){
  const analysisEndDate=new Date(analysisStartDate.getTime()+analysisHours*3600000)
  const analysisEnd=analysisEndDate.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
  const statusSummary=useMemo(()=>{const m:Record<string,number>={};for(const o of ops){const k=String(o.status||'Sem status');m[k]=(m[k]||0)+1}return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,6)},[ops])
- const productionDays=useMemo(()=>{const map:Record<string,{date:string;good:number;scrap:number}>={};for(const p of programs){const d=String(p.inicio_planejado||'').slice(0,10);if(!d)continue;map[d]??={date:d,good:0,scrap:0};map[d].good+=Math.max(0,Number(p.quantidade_produzida||0)-Number(p.quantidade_refugada||0));map[d].scrap+=Number(p.quantidade_refugada||0)}return Object.values(map).sort((a,b)=>a.date.localeCompare(b.date)).slice(-7)},[programs])
+ const productionDays=useMemo(()=>{const map:Record<string,{date:string;good:number;scrap:number}>={};for(const p of programs){const timestamp=new Date(p.inicio_planejado);if(!Number.isFinite(timestamp.getTime()))continue;const d=localDateKey(timestamp);map[d]??={date:d,good:0,scrap:0};map[d].good+=Math.max(0,Number(p.quantidade_produzida||0)-Number(p.quantidade_refugada||0));map[d].scrap+=Number(p.quantidade_refugada||0)}return Object.values(map).sort((a,b)=>a.date.localeCompare(b.date)).slice(-7)},[programs])
  const maxProduction=Math.max(1,...productionDays.map(x=>x.good+x.scrap))
  const openOps=ops.filter(o=>!['concluída','concluida','finalizada','cancelada','concluído','concluido'].includes(String(o.status||'').toLowerCase())).length
  const totalGood=programs.reduce((s,p)=>s+Math.max(0,Number(p.quantidade_produzida||0)-Number(p.quantidade_refugada||0)),0)
