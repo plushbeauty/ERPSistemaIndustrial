@@ -25,8 +25,8 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 ## 2. PAINEL DE RESUMO E STATUS
 
 - **Total de Problemas Identificados:** 12
-- **Pendentes de Correção:** 6
-- **Corrigidos:** 6
+- **Pendentes de Correção:** 5
+- **Corrigidos:** 7
 - **Bloqueados:** 0
 
 ---
@@ -51,11 +51,11 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Categoria:** Multi-tenancy / Isolamento de Dados
 - **Tela / Componente:** MRP II Industrial (`src/pages/MRPIndustrial.tsx:19`)
 - **Rota Confirmada:** `/pcp/mrp-ii` (e `/vendas/mrp`)
-- **Descrição Objetiva:** A função `load()` consulta `erp_produtos` e `erp_mrp_runs` sem obter a empresa da sessão (`erp_current_empresa_id`) e sem aplicar `.eq('empresa_id', companyId)`.
+- **Descrição Objetiva:** As consultas de produtos e execuções já filtram `empresa_id`; a consulta de necessidades precisava também validar a empresa ativa antes de carregar linhas associadas ao `run_id`.
 - **Impacto:** Risco de carregamento de histórico de execuções de MRP e dados de produtos de outros tenants em sessões administrativas, quebrando o princípio de isolamento estrito de empresa do ERP.
-- **Correção Prevista:** Obter `empresa_id` através de `supabase.rpc('erp_current_empresa_id')` e injetar o filtro `.eq('empresa_id', companyId)` em todas as seleções de produtos e execuções de MRP.
+- **Correção Prevista:** Em `loadNeeds()`, obter `empresa_id` por `erp_current_empresa_id` e aplicar `.eq('empresa_id', empresaId)` junto com `.eq('run_id', runId)`, mantendo o filtro de empresa nas consultas de produtos e execuções.
 - **Evidência de Validação:** Linhas 19-24 de `src/pages/MRPIndustrial.tsx` e validação com o padrão multi-tenant de `PCPOrdens.tsx`.
-- **Status:** `PENDENTE`
+- **Status:** `CORRIGIDO`
 
 ---
 
