@@ -1,9 +1,9 @@
+import { ArrowLeft, LayoutGrid, Search, ShoppingCart, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { ArrowLeft, LayoutGrid, RefreshCw, Search, ShoppingCart, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { sections as SALES_SECTIONS } from './VendasLayout'
 
-const normalize = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase('pt-BR')
+const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
 
 export default function VendasTablet() {
   const navigate = useNavigate()
@@ -72,7 +72,6 @@ export default function VendasTablet() {
         </header>
         <div className="sl-toolbar">
           <div className="sl-toolbar-label">CATÁLOGO COMERCIAL</div>
-          <label className="sl-search"><Search size={15} /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Pesquisar módulo de vendas..." aria-label="Pesquisar módulos de vendas" />{search && <button type="button" className="sl-clear" onClick={() => setSearch('')} aria-label="Limpar pesquisa"><X size={14} /></button>}<button type="button" className="sl-clear" onClick={() => setSearch('')} aria-label="Limpar pesquisa" title="Limpar pesquisa"><RefreshCw size={13} /></button></label>
         </div>
         {sections.length === 0 ? <div className="sl-empty" role="status">Nenhum módulo encontrado para “{search.trim()}”. Limpe a pesquisa e tente novamente.</div> : <div className="sl-sections">
           {sections.map(section => <section className="sl-section" key={section.label}>
