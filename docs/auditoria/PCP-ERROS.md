@@ -25,8 +25,8 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 ## 2. PAINEL DE RESUMO E STATUS
 
 - **Total de Problemas Identificados:** 12
-- **Pendentes de Correção:** 1
-- **Corrigidos:** 11
+- **Pendentes de Correção:** 0
+- **Corrigidos:** 12
 - **Bloqueados:** 0
 
 ---
@@ -158,8 +158,8 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Descrição Objetiva:** Ícones e estados declarados e nunca utilizados (`AlertTriangle`, `CalendarDays`, `Save`, `company`, etc.), poluindo a saída do linter.
 - **Impacto:** Advertências de compilação (118 warnings totais no repositório) e lentidão na manutenção.
 - **Correção Prevista:** Limpar imports não utilizados e ajustar variáveis de escopo.
-- **Evidência de Validação:** Execução de `npm run lint:check`.
-- **Status:** `PENDENTE`
+- **Evidência de Validação:** Inspeção do import e referências em `PCPPlanejamentoIndustrial.tsx`; os dois imports órfãos foram removidos. A execução global do lint continua pendente.
+- **Status:** `CORRIGIDO`
 
 ---
 
