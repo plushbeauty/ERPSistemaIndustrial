@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { FileInput, Plus, RefreshCw, Save, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import FiscalSidebar from '../components/fiscal/FiscalSidebar'
 import { fetchAllPages } from '../lib/supabasePagination'
 
 type Product = { id:string; codigo:string; descricao_tecnica:string; unidade_medida:string }
@@ -85,7 +86,8 @@ export default function FiscalNFeEntradas(){
   finally{setBusy(false)}
  }
 
- return <main className="min-h-full bg-slate-50 p-3 text-slate-900">
+ return <main className="erp-dense fiscal-workspace min-h-screen bg-[#f8fafc] p-2 text-slate-900 md:p-3">
+  <FiscalSidebar/>
   <header className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2"><div className="flex items-center gap-2"><FileInput size={18} className="text-sky-700"/><div><p className="text-[9px] font-bold uppercase tracking-wider text-[#2D8DB8]">FISCAL · ESTOQUE · CUSTO MÉDIO</p><h1 className="text-sm font-semibold">NF-e de entrada</h1><p className="text-[10px] text-slate-500">Rascunho de documento, itens por produto/lote/endereço e escrituração transacional.</p></div></div><button type="button" className={button} onClick={()=>void load()} disabled={busy}><RefreshCw size={13}/> Atualizar</button></header>
   {(error||notice)&&<div role={error?'alert':'status'} className={`mb-3 border p-2 text-xs ${error?'border-rose-300 bg-rose-50 text-rose-800':'border-emerald-300 bg-emerald-50 text-emerald-800'}`}>{error||notice}</div>}
   <section className="mb-3 border border-slate-200 bg-white p-3"><div className="mb-2 flex items-center justify-between"><h2 className="text-xs font-semibold">{editing?'Editar rascunho':'Nova entrada'}</h2>{editing&&<button type="button" className={button} onClick={reset}>Cancelar edição</button>}</div>
