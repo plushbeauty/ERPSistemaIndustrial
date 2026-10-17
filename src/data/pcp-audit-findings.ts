@@ -140,7 +140,7 @@ export const PCP_AUDIT_FINDINGS: AuditFinding[] = [
     impacto: 'Incapacidade de emitir ordens de processo físicas com assinatura e rastreabilidade para os operadores de turno.',
     correcaoPrevista: 'Estruturar folha de impressão @media print limpa com dados da OP, centro de trabalho, molde e espaço de checklist.',
     evidenciaValidacao: 'Inspeção da ação de clique do botão Imprimir em PCPExecucaoIndustrial.tsx.',
-    status: 'PENDENTE',
+    status: 'CORRIGIDO',
     dataIdentificacao: '2026-10-17',
     dataUltimaVerificacao: '2026-10-17',
   },
