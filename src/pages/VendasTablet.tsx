@@ -19,9 +19,18 @@ export default function VendasTablet() {
   return (
     <section className="erp-vendas-menu">
       <div className="erp-vendas-menu-toolbar">
-        <div>
-          <span className="erp-vendas-menu-eyebrow">CENTRO DE COMANDO / VENDAS</span>
-          <h1>MENU VENDAS</h1>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => navigate('/tablet/dashboard')}
+            className="inline-flex h-[28px] items-center gap-1 rounded-[2px] border border-slate-300 bg-slate-100 px-2 text-[10px] font-bold text-slate-700 hover:bg-slate-200"
+          >
+            ← TABLET
+          </button>
+          <div>
+            <span className="erp-vendas-menu-eyebrow">CENTRO DE COMANDO / VENDAS</span>
+            <h1>MENU VENDAS</h1>
+          </div>
         </div>
         <div className="erp-vendas-menu-actions">
           <label>

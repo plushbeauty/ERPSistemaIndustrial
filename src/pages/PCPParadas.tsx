@@ -153,10 +153,10 @@ export default function PCPParadas() {
           <h1 className="text-2xl font-black">Registro de Parada de Máquina</h1>
         </div>
         <div className="flex gap-2">
-          <button type="button" onClick={() => void load()} disabled={busy} className="min-h-11 rounded-md border border-slate-600 px-4 font-bold disabled:opacity-50">
+          <button type="button" onClick={() => void load()} disabled={busy} className="h-[30px] rounded-[2px] border border-slate-600 px-3 text-[11px] font-bold disabled:opacity-50">
             <RefreshCw className="mr-2 inline" size={17} />Atualizar
           </button>
-          <button type="button" onClick={() => void close()} disabled={busy || !stopId} className="min-h-11 rounded-md bg-emerald-600 px-5 font-black disabled:opacity-40">
+          <button type="button" onClick={() => void close()} disabled={busy || !stopId} className="h-[30px] rounded-[2px] bg-emerald-600 px-3 text-[11px] font-black disabled:opacity-40">
             <Square className="mr-2 inline" size={17} />FECHAR EVENTO
           </button>
         </div>
@@ -168,13 +168,13 @@ export default function PCPParadas() {
         <section className="rounded-xl border border-slate-700 bg-slate-800 p-6">
           <div className="grid grid-cols-2 gap-5">
             <label className="grid gap-2 text-sm font-bold text-slate-300">MÁQUINA
-              <select value={machine} disabled={Boolean(stopId) || busy} onChange={event => setMachine(event.target.value)} className="min-h-11 rounded-md border border-slate-600 bg-slate-950 px-3 text-white">
+              <select value={machine} disabled={Boolean(stopId) || busy} onChange={event => setMachine(event.target.value)} className="h-[30px] rounded-[2px] border border-slate-600 bg-slate-950 px-2.5 text-[11px] text-white">
                 <option value="">Selecionar máquina</option>
                 {machines.map(entry => <option key={entry.id} value={entry.id}>{entry.codigo} — {entry.nome}</option>)}
               </select>
             </label>
             <label className="grid gap-2 text-sm font-bold text-slate-300">ORDEM DE PRODUÇÃO
-              <select value={order} disabled={Boolean(stopId) || busy} onChange={event => setOrder(event.target.value)} className="min-h-11 rounded-md border border-slate-600 bg-slate-950 px-3 text-white">
+              <select value={order} disabled={Boolean(stopId) || busy} onChange={event => setOrder(event.target.value)} className="h-[30px] rounded-[2px] border border-slate-600 bg-slate-950 px-2.5 text-[11px] text-white">
                 <option value="">Sem vínculo a OP</option>
                 {orders.map(entry => <option key={entry.id} value={entry.id}>{entry.numero_op || entry.numero || entry.id.slice(0, 8)}</option>)}
               </select>

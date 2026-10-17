@@ -19,9 +19,12 @@ export default function MRPIndustrial(){
  async function load(){
   setBusy(true);setError('')
   try{
+   const company = await supabase.rpc('erp_current_empresa_id')
+   if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
+   const empresaId = String(company.data)
    const[p,r]=await Promise.all([
-    supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,fabricado').eq('ativo',true).order('codigo').limit(3000),
-    supabase.from('erp_mrp_runs').select('id,produto_raiz_id,quantidade_raiz,demanda_ref,status,created_at').order('created_at',{ascending:false}).limit(100)
+    supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,fabricado').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(3000),
+    supabase.from('erp_mrp_runs').select('id,produto_raiz_id,quantidade_raiz,demanda_ref,status,created_at').eq('empresa_id',empresaId).order('created_at',{ascending:false}).limit(100)
    ])
    if(p.error)throw p.error;if(r.error)throw r.error
    setProducts((p.data??[]) as Product[]);setRuns((r.data??[]) as Run[])

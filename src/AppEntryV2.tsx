@@ -448,6 +448,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/comercial" element={<AppIndustrial />} />
       <Route path="/erp-industrial" element={<AppIndustrial />} />
       <Route path="/tablet/dashboard" element={<TabletDashboard />} />
+      <Route path="/tablet" element={<Navigate to="/tablet/dashboard" replace />} />
       <Route path="/tablet/home" element={<TabletDashboard />} />
       <Route path="/vendas" element={<DashboardComercial />} />
       <Route path="/vendas/dashboard" element={<DashboardComercial />} />
@@ -547,6 +548,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/execucao-industrial" element={<QualityPlanGate>{<PCPExecucaoIndustrial />}</QualityPlanGate>} />
       <Route path="/pcp/dashboard-oee" element={<QualityPlanGate>{<PCPDashboardOEE />}</QualityPlanGate>} />
       <Route path="/pcp/tablet-operador" element={<QualityPlanGate>{<PCPTabletOperador />}</QualityPlanGate>} />
+      <Route path="/pcp/tablet" element={<Navigate to="/pcp/tablet-operador" replace />} />
       <Route path="/pcp/auditoria" element={<QualityPlanGate>{<PCPAuditoria />}</QualityPlanGate>} />
       <Route path="/qualidade/industrial" element={<QualityPlanGate><QualidadeIndustrial /></QualityPlanGate>} />
       <Route path="/qualidade" element={<QualityPlanGate><QualidadeDashboardSGQ /></QualityPlanGate>} />

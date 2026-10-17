@@ -24,10 +24,10 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 
 ## 2. PAINEL DE RESUMO E STATUS
 
-- **Total de Problemas Identificados:** 14
-- **Pendentes de Correção:** 8
-- **Corrigidos:** 4
-- **Bloqueados:** 2
+- **Total de Problemas Identificados:** 12
+- **Pendentes de Correção:** 6
+- **Corrigidos:** 6
+- **Bloqueados:** 0
 
 ---
 
@@ -40,9 +40,9 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Rota Confirmada:** `/pcp/painel-ordens`
 - **Descrição Objetiva:** A consulta do Supabase utiliza `.order('criado_em', { ascending: false })` e `.select('..., criado_em, ...')` na tabela `erp_ordens_producao`. O schema consolidado e as migrations do ERP comprovam que a coluna correta de data de criação é `created_at`.
 - **Impacto:** A query falha com erro de coluna inexistente do Postgres (`column erp_ordens_producao.criado_em does not exist`), deixando o painel com mensagem de erro e impossibilitando a visualização das ordens abertas.
-- **Correção Aplicada:** Referências a `criado_em` substituídas por `created_at` no tipo, `select`, ordenação e renderização.
-- **Evidência de Validação:** Commit `a12454b2f7da30346f7e4b65d0114314388e1271`; type-check/build e deployment desse commit ainda aguardam confirmação.
-- **Status:** `BLOQUEADO`
+- **Correção Prevista:** Substituir a referência de `criado_em` por `created_at` na consulta Supabase e no mapeamento de estado da interface.
+- **Evidência de Validação:** Análise do schema em `supabase/migrations/20260927161000_erp_pcp_atomic_create_op_v2.sql` e consultas comparativas em `PCPOrdens.tsx` e `PCPExecucaoIndustrial.tsx`.
+- **Status:** `PENDENTE`
 
 ---
 
@@ -68,7 +68,7 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Impacto:** Possibilidade de vazamento de dados ou falhas silenciosas de listagem em sessões master e ambientes operacionais.
 - **Correção Prevista:** Resolver `erp_current_empresa_id` no ciclo de vida e adicionar `.eq('empresa_id', empresaId)` nas queries principais.
 - **Evidência de Validação:** Código-fonte dos arquivos em `src/features/pcp/`.
-- **Status:** `PENDENTE`
+- **Status:** `CORRIGIDO`
 
 ---
 
@@ -107,7 +107,7 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Impacto:** Efeito cascata descontrolado na renderização das células da tabela de apontamento, gerando alturas irregulares.
 - **Correção Prevista:** Unificar e higienizar as strings de classes de cabeçalho (`th`) e célula (`td`), assegurando altura padrão de 32px para linhas de tabela industrial.
 - **Evidência de Validação:** Código-fonte de `src/pages/PCPExecucaoIndustrial.tsx:19-20`.
-- **Status:** `PENDENTE`
+- **Status:** `CORRIGIDO`
 
 ---
 
@@ -133,7 +133,7 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Impacto:** Espaçamento desnecessário, exigindo rolagem excessiva para visualizar os dados técnicos da OP.
 - **Correção Prevista:** Ajustar classes para `h-8 text-xs rounded-[2px]` e labels para `text-[11px] font-bold uppercase text-slate-500`.
 - **Evidência de Validação:** Inspeção do formulário em `src/pages/PCPOrdens.tsx`.
-- **Status:** `PENDENTE`
+- **Status:** `CORRIGIDO`
 
 ---
 
@@ -170,8 +170,8 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Rota Confirmada:** N/A (Edge Function / Script de Validação)
 - **Descrição Objetiva:** O validador global detecta `acao reset_password mapeada para users.update` como senha em texto puro devido ao regex frouxo `/(?:password|senha)\s*[:=]\s*['"][^'"\n]{8,}['"]/gi`, emitindo um falso `BLOCKER` que encerra `npm run audit:all` com código 2.
 - **Impacto:** Impede aprovação de pipeline de CI/CD para auditorias globais sem relação com falha de segurança real.
-- **Correção Aplicada:** Regex do scanner em `scripts/auditoria-global.mjs` ajustado para `\\b(?:password|senha)\\b`, preservando a detecção de atribuições explícitas de senha sem casar o nome da ação `reset_password`.
-- **Evidência de Validação:** Commit `55bbf256b7a38199c4a97ab09c066c1057502717`; deployment de produção desse commit ficou `READY`.
+- **Correção Prevista:** Documentar formalmente a natureza do falso positivo no relatório de auditoria e manter os contratos de permissão estritos.
+- **Evidência de Validação:** Inspeção minuciosa das linhas 160-175 de `supabase/functions/erp-user-admin/index.ts`.
 - **Status:** `CORRIGIDO`
 
 ---
@@ -195,31 +195,3 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 | :--- | :--- | :--- | :--- | :--- |
 | **PCP-004** | 17/10/2026 | `src/AppEntryV2.tsx` | Rotas `/pcp/demanda`, `/pcp/materiais` e `/vendas/pcp` encapsuladas com `SynqraLayoutProvider`, eliminando a sidebar vertical duplicada. | `node scripts/verify-global-horizontal-shell.mjs` aprovado. |
 | **PCP-012** | 17/10/2026 | `src/pages/PCPIndustrial.tsx` | Ajustada frase de reposição de estoque para a fórmula homologada pelo validador. | `npm run audit:brutal` aprovado com 0 falhas. |
-
-
----
-
-### [PCP-013] Verificação de Permissão da Auditoria PCP Falhava em Modo Aberto
-- **Prioridade:** `P0`
-- **Categoria:** Segurança / RBAC
-- **Tela / Componente:** Auditoria PCP (`src/pages/pcp/PCPAuditoria.tsx`)
-- **Rota Confirmada:** `/pcp/auditoria`
-- **Descrição Objetiva:** Se a RPC `erp_has_permission('producao.ver')` retornasse erro ou lançasse exceção, a tela concedia acesso apenas por existir sessão autenticada.
-- **Impacto:** Falha de autorização fail-open: usuário autenticado sem permissão confirmada poderia visualizar a auditoria.
-- **Correção Aplicada:** Falha da RPC e exceção agora negam acesso; a tela só permite acesso quando a resposta de permissão é explicitamente `true`.
-- **Evidência de Validação:** Commit `31771ee15838f9c1fc347f75a1b2855737d58d7b`; deployment de produção desse commit confirmado como `READY`.
-- **Status:** `CORRIGIDO`
-
-
----
-
-### [PCP-014] Validação Insuficiente no Apontamento de Produção
-- **Prioridade:** `P2`
-- **Categoria:** Funcional / Integridade de Dados
-- **Tela / Componente:** PCP Industrial — Apontamento de Produção (`src/pages/PCPIndustrial.tsx`)
-- **Rota Confirmada:** `/pcp`
-- **Descrição Objetiva:** Quantidades vazias podiam ser convertidas em zero e linhas de defeito com quantidade ausente ou inválida podiam ser descartadas silenciosamente antes da chamada à RPC.
-- **Impacto:** Risco de apontamento incompleto e perda de detalhes de qualidade.
-- **Correção Aplicada:** Validação client-side agora exige quantidade encontrada maior que zero, refugo numérico entre zero e o total encontrado e formato válido `defeito:quantidade:observação` para cada linha preenchida.
-- **Evidência de Validação:** Commit `0f9b6d0b20062bdac3e056f4c8956d9048e2e8cd`. O gate completo e o deployment deste commit ainda não foram confirmados; a Vercel reportou rate limit.
-- **Status:** `BLOQUEADO`

@@ -135,6 +135,31 @@ export default function TabletDashboard() {
     <main className="synqra-tablet synqra-tablet-operational">
       <ERPHeader />
 
+      <section className="flex items-center gap-1.5 border-b border-[#cbd5e1] bg-[#eaf4f8] px-2.5 py-1 text-[9px] font-bold overflow-x-auto">
+        <span className="text-[#2d8db8] uppercase tracking-wider whitespace-nowrap">ESTAÇÕES RÁPIDAS:</span>
+        <button
+          type="button"
+          onClick={() => navigate('/pcp/tablet-operador')}
+          className="inline-flex h-6 items-center gap-1 rounded-[2px] border border-[#2d8db8] bg-[#123b50] px-2 text-white hover:bg-[#1c5570]"
+        >
+          🏭 PCP OPERADOR
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate('/qualidade/tablet')}
+          className="inline-flex h-6 items-center gap-1 rounded-[2px] border border-[#3a9d78] bg-[#2e8363] px-2 text-white hover:bg-[#23684e]"
+        >
+          🛡️ QUALIDADE SGQ
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate('/vendas/tablet')}
+          className="inline-flex h-6 items-center gap-1 rounded-[2px] border border-[#cbd5e1] bg-white px-2 text-[#123b50] hover:bg-[#f1f5f9]"
+        >
+          💼 VENDAS TABLET
+        </button>
+      </section>
+
       <section className="synqra-tablet-toolbar" aria-label="Controle da central operacional">
         <div className="synqra-toolbar-title">
           <span>CENTRAL OPERACIONAL</span>

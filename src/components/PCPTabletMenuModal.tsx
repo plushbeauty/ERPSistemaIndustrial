@@ -26,6 +26,7 @@ const modules: readonly ModuleItem[] = [
   { number: 'P11', label: 'PARADAS / SETUP', description: 'Ocorrências e tempos de parada.', route: '/pcp/paradas', icon: Wrench },
   { number: 'P12', label: 'OEE / INDICADORES', description: 'Indicadores de eficiência produtiva.', route: '/pcp/dashboard-oee', icon: RefreshCw },
   { number: 'P13', label: 'AUDITORIA PCP', description: 'Registro de conformidade, erros e melhorias do PCP.', route: '/pcp/auditoria', icon: ShieldCheck },
+  { number: 'P14', label: 'TABLET OPERADOR', description: 'Interface dedicada para apontamento no chão de fábrica.', route: '/pcp/tablet-operador', icon: Factory },
 ]
 
 export default function PCPTabletMenuModal({

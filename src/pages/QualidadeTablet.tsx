@@ -61,11 +61,26 @@ export default function QualidadeTablet() {
         @media(max-width:560px){.qt-shell{padding:6px}.qt-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:6px}.qt-tile{height:76px}.qt-head h1{font-size:12px}.qt-stamp{display:none}}
       `}</style>
       <header className="qt-head">
-        <div>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => navigate('/tablet/dashboard')}
+            className="inline-flex h-[26px] items-center gap-1 rounded-[2px] border border-white/30 bg-white/10 px-2 text-[10px] font-bold text-white hover:bg-white/20"
+          >
+            ← TABLET
+          </button>
           <h1>SGQ INDUSTRIAL · CENTRAL DA QUALIDADE</h1>
-          
         </div>
-        <span className="qt-stamp">TABLET · SGQ</span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => navigate('/pcp/tablet-operador')}
+            className="inline-flex h-[26px] items-center gap-1 rounded-[2px] border border-[#48B7C7] bg-[#123B50] px-2 text-[10px] font-bold text-white hover:bg-[#1f5773]"
+          >
+            🏭 PCP OPERADOR
+          </button>
+          <span className="qt-stamp">TABLET · SGQ</span>
+        </div>
       </header>
       <div className="qt-groups">
         {sections.map(section => (
