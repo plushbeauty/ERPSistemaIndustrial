@@ -3,7 +3,7 @@
  * @REVISAO: VENDAS-003
  * @ESCOPO_REVISADO: consulta por empresa, filtros de pedido/status, relacionamento com cliente, tabela e impressão.
  * @ALTERACOES: área de trabalho e células compactadas; cabeçalho/linhas aproximados de 32px; consulta Supabase e filtros preservados.
- * @VALIDACAO: revisão geométrica adicional em 2026-10-16; repetir CI no commit resultante antes de homologar.
+ * @VALIDACAO: conferir CI do commit corrente no PR; inspeção visual autenticada e teste funcional por sessão ainda pendentes.
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Printer, RefreshCw, Search } from 'lucide-react'
