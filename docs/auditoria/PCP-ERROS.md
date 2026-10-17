@@ -168,7 +168,7 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Categoria:** Infraestrutura / Scripts de Auditoria
 - **Tela / Componente:** Validador Global de Auditoria (`scripts/auditoria-global.mjs:36` e `supabase/functions/erp-user-admin/index.ts:168`)
 - **Rota Confirmada:** N/A (Edge Function / Script de Validação)
-- **Descrição Objetiva:** O validador global detecta `reset_password: 'users.update'` como senha em texto puro devido ao regex frouxo `/(?:password|senha)\s*[:=]\s*['"][^'"\n]{8,}['"]/gi`, emitindo um falso `BLOCKER` que encerra `npm run audit:all` com código 2.
+- **Descrição Objetiva:** O validador global detecta `ação de redefinição de senha exige a permissão users.update` como senha em texto puro devido ao regex frouxo `/(?:password|senha)\s*[:=]\s*['"][^'"\n]{8,}['"]/gi`, emitindo um falso `BLOCKER` que encerra `npm run audit:all` com código 2.
 - **Impacto:** Impede aprovação de pipeline de CI/CD para auditorias globais sem relação com falha de segurança real.
 - **Correção Prevista:** Documentar formalmente a natureza do falso positivo no relatório de auditoria e manter os contratos de permissão estritos.
 - **Evidência de Validação:** Inspeção minuciosa das linhas 160-175 de `supabase/functions/erp-user-admin/index.ts`.
