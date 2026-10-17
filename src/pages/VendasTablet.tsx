@@ -37,7 +37,7 @@ export default function VendasTablet() {
             <Search size={14} aria-hidden="true" />
             <input value={search} onChange={event => setSearch(event.target.value)} placeholder="Pesquisar módulo de vendas" aria-label="Pesquisar módulo de vendas" />
           </label>
-          <button type="button" onClick={() => window.location.reload()} title="Atualizar menu"><RefreshCw size={14} /></button>
+          <button type="button" onClick={() => setSearch('')} title="Limpar pesquisa"><RefreshCw size={14} /></button>
         </div>
       </div>
       <div className="erp-vendas-menu-sections">
