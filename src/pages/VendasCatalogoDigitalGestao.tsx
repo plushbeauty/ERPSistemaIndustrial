@@ -3,7 +3,7 @@
  * @REVISAO: VENDAS-004
  * @ESCOPO_REVISADO: carregamento multiempresa, filtro, seleção em lote, salvamento e grade de produtos do catálogo.
  * @ALTERACOES: painel sem raio/sombra exagerados, espaçamento compacto, cabeçalho/linhas da grade em 32px; schema e salvamento preservados.
- * @VALIDACAO: revisão estática do arquivo; CI deve validar tipagem, lint, auditorias e build.
+ * @VALIDACAO: conferir CI do commit corrente no PR; inspeção visual autenticada e teste funcional por sessão ainda pendentes.
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Check, Save } from 'lucide-react'
