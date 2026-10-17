@@ -49,9 +49,6 @@ const help:Record<Tab,{title:string;what:string;how:string;action:string}> = {
  qualidade:{title:'Qualidade / Defeitos',what:'Consulta os defeitos apontados durante a produção.',how:'Os defeitos entram pelo apontamento. Depois podem ser tratados nas rotinas de Qualidade/RPNC.',action:'Apontar produção'}
 }
 
-const ganttLeftBucket=(pct:number)=>{if(pct<5)return 'left-0';if(pct<15)return 'left-[10%]';if(pct<25)return 'left-1/5';if(pct<35)return 'left-1/3';if(pct<50)return 'left-2/5';if(pct<65)return 'left-1/2';if(pct<80)return 'left-3/5';if(pct<95)return 'left-4/5';return 'left-full'}
-const ganttWidthBucket=(pct:number)=>{if(pct<10)return 'w-1/12';if(pct<20)return 'w-1/5';if(pct<30)return 'w-1/4';if(pct<45)return 'w-1/3';if(pct<60)return 'w-1/2';if(pct<75)return 'w-3/5';return 'w-4/5'}
-const ganttTopBucket=(index:number)=>index%3===0?'top-2':index%3===1?'top-10':'top-[72px]'
 
 export default function PCPIndustrial(){
  const location = useLocation()
@@ -461,6 +458,19 @@ const tabs:[Tab,string,string][]=[['visao','Visão geral','Gauge'],['novaop','Cr
 
 
 type ProgramView=Program & {op?:OP;product?:Product}
+function allocateProgramLanes(programs: ProgramView[]) {
+ const laneEnds: number[] = []
+ const laneById = new Map<string, number>()
+ for (const program of [...programs].sort((a,b)=>new Date(a.inicio_planejado).getTime()-new Date(b.inicio_planejado).getTime())) {
+  const start = new Date(program.inicio_planejado).getTime()
+  let lane = laneEnds.findIndex(end => end <= start)
+  if (lane < 0) lane = laneEnds.length
+  laneEnds[lane] = new Date(program.fim_planejado).getTime()
+  laneById.set(program.id, lane)
+ }
+ return { laneById, height: Math.max(105, laneEnds.length * 38 + 16) }
+}
+
 function ProgramacaoTimeline({programs,machines,molds,employees,onProgram}:{programs:ProgramView[];machines:Machine[];molds:Molde[];employees:Employee[];onProgram:(opId?:string)=>void}){
  const active=programs.filter(p=>p.status?.toLowerCase()!=='cancelada'&&p.inicio_planejado&&p.fim_planejado)
  const base=active.length?new Date(Math.min(...active.map(p=>new Date(p.inicio_planejado).getTime()))):new Date()
@@ -469,11 +479,12 @@ function ProgramacaoTimeline({programs,machines,molds,employees,onProgram}:{prog
  const days=Array.from({length:horizon},(_,i)=>{const d=new Date(base);d.setDate(base.getDate()+i);return d})
  const endH=new Date(base);endH.setDate(base.getDate()+horizon)
  const totalMs=endH.getTime()-base.getTime()
- const machineStats=machines.map(m=>{const ps=active.filter(p=>p.maquina_id===m.id);const pieces=ps.reduce((s,p)=>s+Number(p.quantidade_planejada||0),0);const moldCount=new Set(ps.map(p=>p.molde_id).filter(Boolean)).size;const hours=ps.reduce((s,p)=>s+Math.max(0,(new Date(p.fim_planejado).getTime()-new Date(p.inicio_planejado).getTime())/3600000),0);const shiftHours=ps.reduce((s,p)=>s+Math.max(1,Number(p.horas_turno||8))*Math.max(1,Number(p.turnos||1)),0)/Math.max(1,ps.length);return{m,ps,pieces,moldCount,hours,days:hours/Math.max(1,shiftHours)} })
+ const machineStats=machines.map(m=>{const ps=active.filter(p=>p.maquina_id===m.id);const pieces=ps.reduce((s,p)=>s+Number(p.quantidade_planejada||0),0);const moldCount=new Set(ps.map(p=>p.molde_id).filter(Boolean)).size;const hours=ps.reduce((s,p)=>s+Math.max(0,(new Date(p.fim_planejado).getTime()-new Date(p.inicio_planejado).getTime())/3600000),0);const shiftHours=ps.reduce((s,p)=>s+Math.max(1,Number(p.horas_turno||8))*Math.max(1,Number(p.turnos||1)),0)/Math.max(1,ps.length);const visible=ps.filter(p=>new Date(p.fim_planejado).getTime()>base.getTime()&&new Date(p.inicio_planejado).getTime()<endH.getTime());const layout=allocateProgramLanes(visible);return{m,ps,pieces,moldCount,hours,days:hours/Math.max(1,shiftHours),visible,layout} })
  const fmtDay=(d:Date)=>d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'}).replace('.','')
  const durationDays=(p:ProgramView)=>Math.max(.01,(new Date(p.fim_planejado).getTime()-new Date(p.inicio_planejado).getTime())/86400000)
- const leftPct=(p:ProgramView)=>Math.max(0,Math.min(100,(new Date(p.inicio_planejado).getTime()-base.getTime())/totalMs*100))
- const widthPct=(p:ProgramView)=>Math.max(.8,Math.min(100-leftPct(p),(new Date(p.fim_planejado).getTime()-new Date(p.inicio_planejado).getTime())/totalMs*100))
+ const leftPct=(p:ProgramView)=>Math.max(0,Math.min(100,(Math.max(base.getTime(),new Date(p.inicio_planejado).getTime())-base.getTime())/totalMs*100))
+ const widthPct=(p:ProgramView)=>{const start=Math.max(base.getTime(),new Date(p.inicio_planejado).getTime());const end=Math.min(endH.getTime(),new Date(p.fim_planejado).getTime());return Math.max(.8,Math.min(100-leftPct(p),(end-start)/totalMs*100))}
+ const nowPct=(Date.now()-base.getTime())/totalMs*100
  const moldName=(id:string|null|undefined)=>molds.find(m=>m.id===id)?.codigo||'sem molde'
  const empName=(id:string|null|undefined)=>employees.find(e=>e.id===id)?.nome||'—'
  return <section className="pcp-timeline-wrap">
@@ -481,7 +492,7 @@ function ProgramacaoTimeline({programs,machines,molds,employees,onProgram}:{prog
   <div className="pcp-planning-strip"><div><strong>O PCP calcula carga, não só datas.</strong><span>Quantidade · ciclo · cavidades · setup · turnos · eficiência · molde · operadores.</span></div><b>{active.reduce((s,p)=>s+Number(p.quantidade_planejada||0),0).toLocaleString('pt-BR')} peças programadas</b><b>{new Set(active.map(p=>p.molde_id).filter(Boolean)).size} moldes</b><b>{active.length} blocos</b></div>
   <div className="pcp-timeline-card"><div className="pcp-timeline-scroll"><div className="pcp-timeline-grid grid min-w-[1560px] grid-cols-[190px_repeat(14,minmax(92px,1fr))]">
    <div className="pcp-timeline-corner">MÁQUINA</div>{days.map(d=><div className="pcp-day-head" key={d.toISOString()}><strong>{fmtDay(d)}</strong><small>{d.toLocaleDateString('pt-BR',{year:'numeric'})}</small></div>)}
-   {machines.map(m=>{const stat=machineStats.find(x=>x.m.id===m.id)!;return <div className="pcp-machine-row" key={m.id}><div className="pcp-machine-label"><strong>{m.codigo}</strong><span>{m.nome}</span><small>{stat.ps.length} blocos · {stat.pieces.toLocaleString('pt-BR')} peças · {stat.moldCount} moldes · {stat.hours.toFixed(1)} h</small></div><div className="pcp-machine-track col-span-14 col-start-2"><div className="pcp-day-lines">{days.map(d=><i key={d.toISOString()}/>)}</div>{stat.ps.map((p:ProgramView,i:number)=><button key={p.id} className={`pcp-gantt-bar absolute ${ganttLeftBucket(leftPct(p))} ${ganttWidthBucket(widthPct(p))} ${ganttTopBucket(i)}`} onClick={()=>onProgram(p.ordem_producao_id||undefined)} title={`${p.op?.numero_op||'OP'} · ${p.product?.codigo||'produto'} · ${moldName(p.molde_id)} · ${durationDays(p).toFixed(1)} dias · ${Number(p.quantidade_planejada||0).toLocaleString('pt-BR')} peças`}><strong>{p.op?.numero_op||'OP'}</strong><span>{p.product?.codigo||'produto'} · {moldName(p.molde_id)}</span><small>{durationDays(p).toFixed(1)} d · {Number(p.quantidade_planejada||0).toLocaleString('pt-BR')} pç · {empName(p.operador_frente_id)} / {empName(p.operador_atras_id)}</small></button>)}</div></div>})}
+   {machines.map(m=>{const stat=machineStats.find(x=>x.m.id===m.id)!;return <div className="pcp-machine-row" key={m.id}><div className="pcp-machine-label"><strong>{m.codigo}</strong><span>{m.nome}</span><small>{stat.ps.length} blocos · {stat.pieces.toLocaleString('pt-BR')} peças · {stat.moldCount} moldes · {stat.hours.toFixed(1)} h</small></div><div className="pcp-machine-track col-span-14 col-start-2" style={{height:stat.layout.height}}><div className="pcp-day-lines">{days.map(d=><i key={d.toISOString()}/>)}</div>{nowPct>=0&&nowPct<=100&&<i aria-hidden="true" className="pointer-events-none absolute bottom-0 top-0 z-10 border-l-2 border-rose-500" style={{left:nowPct+'%'}} title="Agora"/>}{stat.visible.map((p:ProgramView)=><button key={p.id} className="pcp-gantt-bar absolute" style={{left:leftPct(p)+'%',width:widthPct(p)+'%',top:8+(stat.layout.laneById.get(p.id)??0)*38}} onClick={()=>onProgram(p.ordem_producao_id||undefined)} title={`${p.op?.numero_op||'OP'} · ${p.product?.codigo||'produto'} · ${moldName(p.molde_id)} · ${durationDays(p).toFixed(1)} dias · ${Number(p.quantidade_planejada||0).toLocaleString('pt-BR')} peças`}><strong>{p.op?.numero_op||'OP'}</strong><span>{p.product?.codigo||'produto'} · {moldName(p.molde_id)}</span><small>{durationDays(p).toFixed(1)} d · {Number(p.quantidade_planejada||0).toLocaleString('pt-BR')} pç · {empName(p.operador_frente_id)} / {empName(p.operador_atras_id)}</small></button>)}</div></div>})}
   </div></div></div>
   <div className="pcp-capacity-summary"><div><strong>Resumo por máquina</strong><span>Mostra quantos dias a prensa fica ocupada, quantos moldes passam por ela e quantas peças estão programadas.</span></div>{machineStats.map(s=><article key={s.m.id}><strong>{s.m.codigo}</strong><b>{s.days.toFixed(1)} dias</b><span>{s.hours.toFixed(1)} h ocupadas</span><span>{s.moldCount} moldes · {s.pieces.toLocaleString('pt-BR')} peças</span></article>)}</div>
   <Table title="Detalhamento das programações" cols={['OP','Máquina','Molde','Operadores frente / atrás','Início','Fim','Dias','Peças','Ciclo','Cav.','Setup','Status']} rows={active.map((p:ProgramView)=>[p.op?.numero_op||'—',machines.find(m=>m.id===p.maquina_id)?.codigo||'—',moldName(p.molde_id),empName(p.operador_frente_id)+' / '+empName(p.operador_atras_id),new Date(p.inicio_planejado).toLocaleString('pt-BR'),new Date(p.fim_planejado).toLocaleString('pt-BR'),durationDays(p).toFixed(1),Number(p.quantidade_planejada||0),Number(p.ciclo_seg||0),Number(p.cavidades_ativas||1),Number(p.setup_min||0),p.status])} search="" setSearch={()=>{}}/>
