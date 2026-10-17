@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, ClipboardList, RefreshCw, Save, Search, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import { useLocation } from 'react-router-dom'
 
 type Field = { key: string; label: string; type?: 'text'|'number'|'date'|'select'|'textarea'; options?: string[]; required?: boolean }
@@ -89,10 +90,13 @@ export default function IndustrialDataWorkspace() {
   const load = useCallback(async () => {
     if (!config) return
     setLoading(true); setError(null)
-    const result = await supabase.from(config.table).select('*').limit(500)
-    if (result.error) setError(result.error.message)
-    else setRows((result.data ?? []) as Record<string,unknown>[])
-    setLoading(false)
+    try {
+      const tenant = await supabase.rpc('erp_current_empresa_id')
+      if (tenant.error || typeof tenant.data !== 'string' || !tenant.data) throw tenant.error ?? new Error('Empresa da sessão não identificada.')
+      const records = await fetchAllPages<Record<string,unknown>>((from,to)=>supabase.from(config.table).select('*',{count:'exact'}).eq('empresa_id',tenant.data).order('id').range(from,to))
+      setRows(records)
+    } catch (e) { setError(e instanceof Error ? e.message : 'Falha ao carregar registros da empresa.') }
+    finally { setLoading(false) }
   },[config])
   useEffect(()=>{ void load() },[load])
   const visible = useMemo(()=> rows.filter(row => !search || (config?.search ?? []).some(key=>String(row[key] ?? '').toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR')))),[rows,search,config])
@@ -116,7 +120,9 @@ export default function IndustrialDataWorkspace() {
     if (!config) { setError('Módulo não encontrado para esta rota.'); return }
     setError(null)
     try {
-      const payload: Record<string,unknown>={}
+      const tenant = await supabase.rpc('erp_current_empresa_id')
+      if (tenant.error || typeof tenant.data !== 'string' || !tenant.data) throw tenant.error ?? new Error('Empresa da sessão não identificada.')
+      const payload: Record<string,unknown>={ empresa_id: tenant.data }
       for (const field of config.fields) {
         const raw=form[field.key] ?? ''
         if(field.required && !raw.trim()) throw new Error('Campo obrigatório: '+field.label)
@@ -125,7 +131,7 @@ export default function IndustrialDataWorkspace() {
       }
       setBusy(true)
       const result=editing
-        ? await supabase.from(config.table).update(payload).eq('id',editing).select('id').single()
+        ? await supabase.from(config.table).update(payload).eq('empresa_id',tenant.data).eq('id',editing).select('id').single()
         : await supabase.from(config.table).insert(payload).select('id').single()
       setBusy(false)
       if(result.error) { setError(result.error.message); return }
