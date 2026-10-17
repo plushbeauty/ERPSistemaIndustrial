@@ -172,7 +172,7 @@ export const PCP_AUDIT_FINDINGS: AuditFinding[] = [
     impacto: 'Aviso em rotinas de auditoria automatizada (PAGE ALIAS) e duplicidade na manutenção de código.',
     correcaoPrevista: 'Documentar e manter PCPAgendaMaquinas para sequenciamento finiti e PCPCapacidade para análise agregada.',
     evidenciaValidacao: 'Relatório do auditor scripts/auditoria-brutal.mjs.',
-    status: 'PENDENTE',
+    status: 'CORRIGIDO',
     dataIdentificacao: '2026-10-17',
     dataUltimaVerificacao: '2026-10-17',
   },
