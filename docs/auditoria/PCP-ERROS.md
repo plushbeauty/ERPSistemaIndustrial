@@ -25,8 +25,8 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 ## 2. PAINEL DE RESUMO E STATUS
 
 - **Total de Problemas Identificados:** 12
-- **Pendentes de Correção:** 3
-- **Corrigidos:** 9
+- **Pendentes de Correção:** 2
+- **Corrigidos:** 10
 - **Bloqueados:** 0
 
 ---
@@ -118,9 +118,9 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Rota Confirmada:** `/pcp/execucao-industrial`, `/pcp/fichas-processo`
 - **Descrição Objetiva:** O botão "Imprimir" de `PCPExecucaoIndustrial.tsx` chama diretamente `window.print()` sem ocultar abas, cabeçalho e elementos da tela, imprimindo a página inteira deformada. Em `PCPFichasProcesso.tsx`, não há rotina de impressão operacional para o operador levar à máquina.
 - **Impacto:** O chão de fábrica não consegue gerar fichas físicas de processo e acompanhamento limpas em folha A4.
-- **Correção Prevista:** Implementar folha de impressão `@media print` dedicada com layout técnico industrial (cabeçalho da empresa, número da OP, produto, máquina, molde, parâmetros técnicos e espaço para assinatura de turno).
+- **Correção Prevista:** Implementado botão de impressão na ficha de processo, cabeçalho operacional e CSS `@media print` para ocultar navegação, edição e controles, preservando os campos técnicos para impressão.
 - **Evidência de Validação:** Inspeção de `window.print` em `PCPExecucaoIndustrial.tsx` e falta de folha A4.
-- **Status:** `PENDENTE`
+- **Status:** `CORRIGIDO`
 
 ---
 
