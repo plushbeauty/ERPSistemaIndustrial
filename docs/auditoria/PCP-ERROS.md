@@ -168,11 +168,11 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Categoria:** Infraestrutura / Scripts de Auditoria
 - **Tela / Componente:** Validador Global de Auditoria (`scripts/auditoria-global.mjs:36` e `supabase/functions/erp-user-admin/index.ts:168`)
 - **Rota Confirmada:** N/A (Edge Function / Script de Validação)
-- **Descrição Objetiva:** O validador global detecta `ação de redefinição de senha exige a permissão users.update` como senha em texto puro devido ao regex frouxo `/(?:password|senha)\s*[:=]\s*['"][^'"\n]{8,}['"]/gi`, emitindo um falso `BLOCKER` que encerra `npm run audit:all` com código 2.
-- **Impacto:** Impede aprovação de pipeline de CI/CD para auditorias globais sem relação com falha de segurança real.
-- **Correção Prevista:** Documentar formalmente a natureza do falso positivo no relatório de auditoria e manter os contratos de permissão estritos.
-- **Evidência de Validação:** Inspeção minuciosa das linhas 160-175 de `supabase/functions/erp-user-admin/index.ts`.
-- **Status:** `PENDENTE`
+- **Descrição Objetiva:** O scanner tratava o identificador `reset_password` como se `password` fosse um campo de segredo, produzindo um falso positivo.
+- **Impacto:** Impedia aprovação de `npm run audit:all` e do pipeline de produção.
+- **Correção aplicada:** O regex exige limite de palavra antes de `password|senha`, evitando casar o sufixo de `reset_password`.
+- **Evidência de Validação:** Alteração em `scripts/auditoria-global.mjs`, commit `55bbf256b7a38199c4a97ab09c066c1057502717`. O pipeline Vercel ainda precisa concluir para validar `audit:all` e `build:vercel`.
+- **Status:** `BLOQUEADO — aguardando validação de pipeline`
 
 ---
 
@@ -186,6 +186,19 @@ Os defeitos e inconformidades detectados no PCP são classificados segundo os cr
 - **Correção Prevista:** Ajustar a redação para a frase homologada `"não cria dados fictícios"`, preservando o sentido original e eliminando o alerta do auditor.
 - **Evidência de Validação:** `scripts/auditoria-brutal.mjs:105-117`.
 - **Status:** `PENDENTE`
+
+---
+
+### [PCP-013] Falha de autorização fail-open na página de auditoria
+- **Prioridade:** `P0`
+- **Categoria:** Segurança / RBAC
+- **Tela / Componente:** Auditoria PCP (`src/pages/pcp/PCPAuditoria.tsx`)
+- **Rota Confirmada:** `/pcp/auditoria`
+- **Descrição Objetiva:** Se o RPC `erp_has_permission('producao.ver')` retornasse erro, a página liberava acesso com base apenas na existência de sessão; o bloco `catch` também liberava o acesso.
+- **Impacto:** Um erro de infraestrutura/RBAC podia permitir visualização da auditoria sem confirmação da permissão.
+- **Correção aplicada:** A página agora nega acesso quando o RPC falha ou lança exceção e libera somente quando o retorno é exatamente `true`.
+- **Evidência de Validação:** Commit `31771ee15838f9c1fc347f75a1b2855737d58d7b`. Type-check e deployment ainda precisam ser confirmados.
+- **Status:** `BLOQUEADO — aguardando validação de pipeline`
 
 ---
 
