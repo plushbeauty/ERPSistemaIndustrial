@@ -199,7 +199,7 @@ export const PCP_AUDIT_FINDINGS: AuditFinding[] = [
     tela: 'Validador Global de Auditoria',
     arquivo: 'supabase/functions/erp-user-admin/index.ts',
     linha: 168,
-    descricao: "Falso positivo no scanner global de segredos: acao reset_password mapeada para permissao users.update é interpretado como senha em texto puro.",
+    descricao: "O regex antigo do scanner tratava incorretamente reset_password como se password fosse uma palavra isolada, gerando falso positivo de segredo hardcoded.",
     impacto: 'Falha bloqueante (BLOCKER) na execução de npm run audit:all, impedindo pipeline 100% verde.',
     correcaoPrevista: "Regex do scanner ajustado para \u001b[0m\\b(?:password|senha)\\b, sem casar 'password' dentro de 'reset_password'.",
     evidenciaValidacao: 'Commit 55bbf256b7a38199c4a97ab09c066c1057502717; deployment de produção confirmado READY.',
