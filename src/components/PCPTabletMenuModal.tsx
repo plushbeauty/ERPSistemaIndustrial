@@ -1,4 +1,4 @@
-import {
+import { ShieldCheck,
   Activity, BarChart3, Boxes, CalendarDays, ClipboardList, Factory,
   FileSliders, Gauge, ListOrdered, PackageSearch, RefreshCw, Wrench, X,
 } from 'lucide-react'
@@ -25,6 +25,7 @@ const modules: readonly ModuleItem[] = [
   { number: 'P10', label: 'PLANEJAMENTO', description: 'Planejamento agregado e capacidade.', route: '/pcp/planejamento', icon: Activity },
   { number: 'P11', label: 'PARADAS / SETUP', description: 'Ocorrências e tempos de parada.', route: '/pcp/paradas', icon: Wrench },
   { number: 'P12', label: 'OEE / INDICADORES', description: 'Indicadores de eficiência produtiva.', route: '/pcp/dashboard-oee', icon: RefreshCw },
+  { number: 'P13', label: 'AUDITORIA PCP', description: 'Registro de conformidade, erros e melhorias do PCP.', route: '/pcp/auditoria', icon: ShieldCheck },
 ]
 
 export default function PCPTabletMenuModal({
