@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs'
  * Do not update these hashes as part of ordinary styling/refactor work.
  */
 const approved = [
-  { path: 'src/pages/VendasCentral.tsx', sha: '42f0997ddf548ed598378094a37be27fe0b6ab7e', label: 'Vendas / Status do pedido', source: 'explicit user-authorized revision APROV-008 — five independent sector rows PCP, Almoxarifado, Qualidade, Expedição and Fiscal; uniform h-11 and strong legend' },
+  { path: 'src/pages/VendasCentral.tsx', sha: 'ad60d8c2186ab9412f2f2b933a3fe8c2d99bdd97', label: 'Vendas / Status do pedido', source: 'explicit user-authorized revision APROV-008 — five independent sector rows PCP, Almoxarifado, Qualidade, Expedição and Fiscal; uniform h-11 and strong legend' },
   { path: 'src/pages/NovoPedido.tsx', sha: '350786aa95de8a2c3cfe514b8394859bb44253b6', label: 'Vendas / Novo Pedido', source: 'explicit user-authorized revision APROV-007 — 30px controls, 9px labels, three aligned top cards' },
   { path: 'src/pages/ProdutosVendasIndustrial.tsx', sha: 'b1cbdd042c95c547c7d315afb0ee94bba529865f', label: 'Cadastros / Produtos', source: 'approved UI contract' },
   { path: 'src/styles/industrial-login.css', sha: 'c77134e5eaf528438eb137f6a1f6e737aeb5d863', label: 'Login institucional', source: 'restored exact approved stylesheet APROV-002; no unauthorized APROV-005 overrides' },
