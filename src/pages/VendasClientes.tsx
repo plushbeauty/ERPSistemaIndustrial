@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Building2, Check, MapPin, Pencil, Plus, RefreshCw, Search, Trash2, Truck, UserRound } from 'lucide-react'
+import { Building2, Check, MapPin, Pencil, Plus, Printer, RefreshCw, Search, Trash2, Truck, UserRound } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
@@ -484,7 +484,7 @@ export default function VendasClientes() {
 
   return (
     <VendasLayout title="" subtitle="" onRefresh={() => void load()} showStatusCards={false}>
-      <main className="sales-workspace sales-detail">
+      <main className="sales-workspace sales-detail sales-client-screen">
         <div className="mx-auto max-w-[1700px] space-y-3">
           <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
             <div className="min-w-0">
@@ -494,10 +494,11 @@ export default function VendasClientes() {
               
             </div>
             <div className="flex flex-wrap gap-1">
-              <button type="button" onClick={openNew} className="erp-standard-button"><Plus size={12}/> NOVO CLIENTE</button><button type="button" onClick={() => void save()} disabled={busy} className="erp-standard-button border-emerald-800 bg-emerald-700 disabled:opacity-40"><Check size={12}/> SALVAR CLIENTE</button>
-              <button type="button" disabled={!selectedClient} onClick={() => selectedClient && edit(selectedClient)} className="erp-standard-button erp-edit-button disabled:opacity-40"><Pencil size={12}/> EDITAR</button>
-              <button type="button" disabled={!selected} onClick={() => void remove()} className="erp-standard-button border-rose-700 bg-rose-700 disabled:opacity-40"><Trash2 size={12}/> EXCLUIR</button>
-              <button type="button" onClick={() => void load()} className="erp-standard-button"><RefreshCw size={12}/> ATUALIZAR</button>
+              <button type="button" onClick={openNew} className="erp-standard-button no-print"><Plus size={12}/> NOVO CLIENTE</button><button type="button" onClick={() => void save()} disabled={busy} className="erp-standard-button border-emerald-800 bg-emerald-700 disabled:opacity-40 no-print"><Check size={12}/> SALVAR CLIENTE</button>
+              <button type="button" disabled={!selectedClient} onClick={() => selectedClient && edit(selectedClient)} className="erp-standard-button erp-edit-button disabled:opacity-40 no-print"><Pencil size={12}/> EDITAR</button>
+              <button type="button" disabled={!selected} onClick={() => void remove()} className="erp-standard-button border-rose-700 bg-rose-700 disabled:opacity-40 no-print"><Trash2 size={12}/> EXCLUIR</button>
+              <button type="button" disabled={!selectedClient} onClick={() => window.print()} className="erp-standard-button no-print disabled:opacity-40"><Printer size={12}/> IMPRIMIR FICHA / PDF</button>
+              <button type="button" onClick={() => void load()} className="erp-standard-button no-print"><RefreshCw size={12}/> ATUALIZAR</button>
             </div>
           </header>
 
@@ -604,6 +605,71 @@ export default function VendasClientes() {
           </section>
         </div>
       </main>
+      <style>{`
+        @page { size: A4; margin: 12mm; }
+        @media print {
+          body * { visibility: hidden !important; }
+          .sales-client-print, .sales-client-print * { visibility: visible !important; }
+          .sales-client-print { display: block !important; position: absolute; inset: 0 auto auto 0; width: 100%; color: #111827; background: #fff; font: 10pt Arial, sans-serif; }
+          .sales-client-print h1 { font-size: 18pt; margin: 0 0 4mm; }
+          .sales-client-print h2 { font-size: 11pt; margin: 5mm 0 2mm; padding-bottom: 1mm; border-bottom: 1px solid #9ca3af; }
+          .sales-client-print .print-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3mm 5mm; }
+          .sales-client-print .print-field { min-width: 0; overflow-wrap: anywhere; }
+          .sales-client-print .print-label { display: block; color: #4b5563; font-size: 7pt; text-transform: uppercase; margin-bottom: 1mm; }
+          .sales-client-print .print-value { font-weight: 600; }
+          .sales-client-print table { width: 100%; border-collapse: collapse; font-size: 8pt; }
+          .sales-client-print th, .sales-client-print td { border: 1px solid #d1d5db; padding: 2mm; text-align: left; }
+          .sales-client-print thead { display: table-header-group; }
+          .sales-client-print tr { break-inside: avoid; }
+        }
+        @media screen { .sales-client-print { display: none; } }
+      `}</style>
+      <section className="sales-client-print" aria-label="Ficha de cliente para impressão">
+        <h1>Ficha Cadastral de Cliente</h1>
+        <div>Emitido pelo ERP Industrial • {new Date().toLocaleDateString('pt-BR')}</div>
+        <h2>Identificação fiscal</h2>
+        <div className="print-grid">
+          <div className="print-field"><span className="print-label">Código ERP</span><span className="print-value">{form.codigo || '—'}</span></div>
+          <div className="print-field"><span className="print-label">Tipo de pessoa</span><span className="print-value">{form.tipo_pessoa === 'PJ' ? 'Pessoa Jurídica' : 'Pessoa Física'}</span></div>
+          <div className="print-field"><span className="print-label">CNPJ / CPF</span><span className="print-value">{form.documento || '—'}</span></div>
+          <div className="print-field"><span className="print-label">Razão social / Nome</span><span className="print-value">{form.nome || '—'}</span></div>
+          <div className="print-field"><span className="print-label">Nome fantasia</span><span className="print-value">{form.nome_fantasia || '—'}</span></div>
+          <div className="print-field"><span className="print-label">Status</span><span className="print-value">{form.ativo ? 'ATIVO' : 'INATIVO'}</span></div>
+          <div className="print-field"><span className="print-label">Inscrição estadual</span><span className="print-value">{form.inscricao_estadual || '—'}</span></div>
+          <div className="print-field"><span className="print-label">Inscrição municipal</span><span className="print-value">{form.inscricao_municipal || '—'}</span></div>
+          <div className="print-field"><span className="print-label">Regime tributário</span><span className="print-value">{form.regime_tributario || 'Não informado'}</span></div>
+        </div>
+        <h2>Contatos</h2>
+        <div className="print-grid">
+          <div className="print-field"><span className="print-label">Contato principal</span><span className="print-value">{form.contato_nome || '—'}</span></div>
+          <div className="print-field"><span className="print-label">E-mail comercial</span><span className="print-value">{form.email || '—'}</span></div>
+          <div className="print-field"><span className="print-label">E-mail NF-e</span><span className="print-value">{form.email_nfe || '—'}</span></div>
+          <div className="print-field"><span className="print-label">Telefone</span><span className="print-value">{form.telefone || '—'}</span></div>
+          <div className="print-field"><span className="print-label">WhatsApp</span><span className="print-value">{form.whatsapp || '—'}</span></div>
+        </div>
+        <h2>Endereço</h2>
+        <div className="print-grid">
+          <div className="print-field"><span className="print-label">CEP</span><span className="print-value">{form.cep || '—'}</span></div>
+          <div className="print-field"><span className="print-label">Logradouro</span><span className="print-value">{form.endereco || '—'}, {form.numero || 's/n'}</span></div>
+          <div className="print-field"><span className="print-label">Complemento</span><span className="print-value">{form.complemento || '—'}</span></div>
+          <div className="print-field"><span className="print-label">Bairro</span><span className="print-value">{form.bairro || '—'}</span></div>
+          <div className="print-field"><span className="print-label">Cidade / UF</span><span className="print-value">{[form.cidade, form.estado].filter(Boolean).join(' / ') || '—'}</span></div>
+        </div>
+        <h2>Regras comerciais</h2>
+        <div className="print-grid">
+          <div className="print-field"><span className="print-label">Tipo de cliente</span><span className="print-value">{form.tipo_cliente || 'PADRAO'}</span></div>
+          <div className="print-field"><span className="print-label">Tabela de preços</span><span className="print-value">{priceTables.find(item => item.id === form.tabela_preco_id)?.nome ?? 'Preço padrão do produto'}</span></div>
+          <div className="print-field"><span className="print-label">Desconto padrão</span><span className="print-value">{Number(form.desconto || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%</span></div>
+        </div>
+        <h2>De/Para de produtos</h2>
+        <table><thead><tr><th>Código ERP</th><th>Código do cliente</th><th>Dimensões</th><th>Canal</th><th>Molde</th></tr></thead>
+          <tbody>{selected ? mappings.filter(item => item.cliente_id === selected).map(item => <tr key={item.id}><td>{products.find(product => product.id === item.produto_id)?.codigo ?? item.codigo_interno ?? '—'}</td><td>{item.codigo_cliente}</td><td>{item.dimensoes || '—'}</td><td>{item.canal || '—'}</td><td>{item.molde || '—'}</td></tr>) : <tr><td colSpan={5}>Nenhum vínculo carregado.</td></tr>}</tbody>
+        </table>
+        <h2>Transportadoras vinculadas</h2>
+        <table><thead><tr><th>Código</th><th>Transportadora</th><th>CNPJ</th><th>Cidade / UF</th></tr></thead>
+          <tbody>{selected ? clientTransportLinks.filter(link => link.cliente_id === selected).map(link => { const item = transportadoras.find(row => row.id === link.transportadora_id); return item ? <tr key={link.id}><td>{item.codigo}</td><td>{item.razao_social}</td><td>{item.cnpj || '—'}</td><td>{[item.cidade, item.uf].filter(Boolean).join(' / ') || '—'}</td></tr> : null }) : <tr><td colSpan={4}>Nenhum vínculo carregado.</td></tr>}</tbody>
+        </table>
+      </section>
     </VendasLayout>
   )
 
