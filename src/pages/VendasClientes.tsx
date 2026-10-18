@@ -218,7 +218,7 @@ export default function VendasClientes() {
   useEffect(() => { void load() }, [])
 
   const filtered = useMemo(() => {
-    const normalize = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase()
+    const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
     const q = normalize(query.trim())
     return rows.filter(row => !q || normalize([
       row.codigo, row.nome, row.nome_fantasia, row.documento, row.email,
