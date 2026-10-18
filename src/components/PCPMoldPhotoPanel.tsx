@@ -27,6 +27,8 @@ export default function PCPMoldPhotoPanel({ productId }: { productId?: string })
   const [selectedId, setSelectedId] = useState('')
   const [moldQuery, setMoldQuery] = useState('')
   const [photos, setPhotos] = useState<Photo[]>([])
+  const [activeView, setActiveView] = useState(0)
+  const inspectionViews = ['Cavidade', 'Extrator', 'Lado fixo', 'Lado móvel']
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -53,6 +55,7 @@ export default function PCPMoldPhotoPanel({ productId }: { productId?: string })
 
   async function loadPhotos(moldId: string) {
     setPhotos([])
+    setActiveView(0)
     if (!company || !moldId) return
     const result = await supabase
       .from('erp_documentos_anexos')
@@ -60,7 +63,7 @@ export default function PCPMoldPhotoPanel({ productId }: { productId?: string })
       .eq('empresa_id', company)
       .eq('entidade_tipo', 'molde')
       .eq('entidade_id', moldId)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: true })
       .limit(50)
     if (result.error) throw result.error
     const rows = result.data ?? []
@@ -75,7 +78,7 @@ export default function PCPMoldPhotoPanel({ productId }: { productId?: string })
         url: signed.error ? '' : (signed.data?.signedUrl ?? ''),
       } satisfies Photo
     }))
-    setPhotos(withUrls.filter(photo => photo.url && (photo.mime_type ?? '').startsWith('image/')))
+    setPhotos(withUrls.filter(photo => photo.url && (photo.mime_type ?? '').startsWith('image/')).slice(0, 4))
   }
 
   useEffect(() => {
@@ -92,6 +95,7 @@ export default function PCPMoldPhotoPanel({ productId }: { productId?: string })
 
   async function uploadPhoto(file?: File) {
     if (!file || !selectedId || !company) return
+    if (photos.length >= 4) { setError('Limite de 4 fotos por molde atingido. Revise o dossiê existente antes de anexar outra imagem.'); return }
     setError('')
     setNotice('')
     if (!file.type.startsWith('image/')) { setError('Selecione um arquivo de imagem.'); return }
@@ -162,15 +166,17 @@ export default function PCPMoldPhotoPanel({ productId }: { productId?: string })
           <p className="mt-1 text-[9px] text-slate-500">Imagens são salvas no Storage privado da empresa, com vínculo ao ID do molde. Limite: 15 MB por imagem.</p>
         </div>
         <div className="min-w-0">
-          {photos.length ? <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-            {photos.map(photo => <figure key={photo.id} className="overflow-hidden border border-slate-200 bg-white">
-              <a href={photo.url} target="_blank" rel="noreferrer" className="block h-[145px] bg-slate-100">
-                <img src={photo.url} alt={'Foto do molde ' + (selected?.codigo ?? '') + ': ' + photo.nome_arquivo} className="h-full w-full object-contain" loading="lazy" />
-              </a>
-              <figcaption className="truncate px-2 py-1 text-[9px] text-slate-600" title={photo.nome_arquivo}>{photo.nome_arquivo}</figcaption>
-            </figure>)}
+          {photos.length ? <div className="min-w-0">
+            <div className="mb-2 grid grid-cols-2 gap-1 sm:grid-cols-4">
+              {inspectionViews.map((view,index)=><button key={view} type="button" disabled={!photos[index]} onClick={()=>setActiveView(index)} className={'h-8 border px-2 text-[9px] font-black uppercase transition '+(activeView===index?'border-[#123B50] bg-[#123B50] text-white':'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40')}>{String(index+1).padStart(2,'0')} · {view}</button>)}
+            </div>
+            {photos[activeView] ? <figure className="overflow-hidden border border-slate-200 bg-white">
+              <a href={photos[activeView].url} target="_blank" rel="noreferrer" className="grid h-[230px] place-items-center bg-slate-100 sm:h-[300px]"><img src={photos[activeView].url} alt={'Molde '+(selected?.codigo??'')+' · '+inspectionViews[activeView]+': '+photos[activeView].nome_arquivo} className="h-full w-full object-contain" loading="lazy" /></a>
+              <figcaption className="flex flex-wrap items-center justify-between gap-1 border-t border-slate-200 px-2 py-1.5 text-[9px] text-slate-600"><span className="font-bold uppercase text-[#123B50]">{inspectionViews[activeView]}</span><span className="truncate" title={photos[activeView].nome_arquivo}>{photos[activeView].nome_arquivo}</span></figcaption>
+            </figure> : <div className="grid min-h-[230px] place-items-center border border-dashed border-slate-300 bg-slate-50 p-4 text-center"><div><ImagePlus size={22} className="mx-auto mb-2 text-slate-400"/><p className="text-[10px] font-semibold text-slate-600">Aba {inspectionViews[activeView]} sem imagem vinculada.</p><p className="mt-1 text-[9px] text-slate-500">Anexe as fotos na ordem das quatro vistas: cavidade, extrator, lado fixo e lado móvel.</p></div></div>}
+            <div className="mt-2 grid grid-cols-4 gap-1">{inspectionViews.map((view,index)=><div key={view} className="border border-slate-200 bg-white p-1"><span className="block text-[8px] font-black uppercase text-slate-500">{view}</span><span className="block truncate text-[9px] text-slate-700">{photos[index]?.nome_arquivo??'Sem foto'}</span></div>)}</div>
           </div> : <div className="grid min-h-[145px] place-items-center border border-dashed border-slate-300 bg-slate-50 p-4 text-center">
-            <div><ImagePlus size={22} className="mx-auto mb-2 text-slate-400" /><p className="text-[10px] font-semibold text-slate-600">{selected ? 'Nenhuma foto salva para este molde.' : 'Selecione um molde para consultar as fotos.'}</p><p className="mt-1 text-[9px] text-slate-500">Cadastre fotos gerais e detalhes para reconhecer cavidades, conexões e sinais de desgaste.</p></div>
+            <div><ImagePlus size={22} className="mx-auto mb-2 text-slate-400" /><p className="text-[10px] font-semibold text-slate-600">{selected ? 'Nenhuma foto salva para este molde.' : 'Selecione um molde para consultar as fotos.'}</p><p className="mt-1 text-[9px] text-slate-500">Anexe as quatro vistas na ordem: cavidade, extrator, lado fixo e lado móvel.</p></div>
           </div>}
         </div>
       </div>
