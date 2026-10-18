@@ -38,6 +38,9 @@ for (const [label, kind] of [
 }
 assert.ok(!globalShell.includes("label: 'Ficha — Injetados'"), 'Process-sheet categories must not return as separate main-menu shortcuts')
 assert.match(globalShell, /const \[openSubmenu, setOpenSubmenu\]/, 'Nested menu expansion state must exist')
+assert.match(globalShell, /@REVISAO_EDIT_GLOBAL: 2026-10-18/, 'Global edit-control revision marker must remain')
+assert.match(globalShell, /height:30px!important;min-height:30px!important;max-height:30px!important/, 'Global editable controls must remain 30px high')
+assert.match(globalShell, /\.erp-horizontal-workspace label\{font-size:9px!important\}/, 'Global field labels must remain 9px')
 assert.match(menu, /if \(!processSheetsOpen && module\.number === 'P09'\) setProcessSheetsOpen\(true\)/, 'P09 must open its submenu instead of navigating directly')
 for (const item of approvedItems) {
   assert.ok(menu.includes(`label: '${item.label}'`), `Missing approved submenu item: ${item.label}`)
