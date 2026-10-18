@@ -84,6 +84,8 @@ const menus: MenuItem[] = [
     { label: 'Ficha — Tratamento superficial', route: '/pcp/fichas-processo?tipo=TRATAMENTO_SUPERFICIAL' },
     { label: 'Ficha — Pintura / Química', route: '/pcp/fichas-processo?tipo=PINTURA_QUIMICA' },
     { label: 'Ficha — Corte e vinco', route: '/pcp/fichas-processo?tipo=CORTE_VINCO' },
+    { label: 'Ficha — Acabamento', route: '/pcp/fichas-processo?tipo=ACABAMENTO' },
+    { label: 'Ficha — Montagem e embalagem', route: '/pcp/fichas-processo?tipo=MONTAGEM_EMBALAGEM' },
     { label: 'Paradas / setup', route: '/pcp/paradas' },
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
     { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
