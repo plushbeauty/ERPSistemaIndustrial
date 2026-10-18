@@ -1,3 +1,4 @@
+/** @DATA_REVISAO_APROVACAO: 2026-10-18 @REVISAO: CATALOGO-DETAIL-CLOSE-001 */
 import { useEffect, useMemo, useState } from 'react'
 import { Copy, Filter, LayoutGrid, List, Minus, Plus, Search, Send, ShoppingBag, X } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -85,6 +86,15 @@ export default function VendasCatalogoDigital() {
   useEffect(() => {
     void load()
   }, [])
+
+  useEffect(() => {
+    if (!detalhe) return
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setDetalhe(null)
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [detalhe])
 
   useEffect(() => {
     if (!detalhe || !empresaId) { setBomItems([]); return }
@@ -473,10 +483,11 @@ export default function VendasCatalogoDigital() {
                 </div>
                 <button
                   type="button"
+                  aria-label="Fechar detalhes e voltar ao catálogo"
                   onClick={() => setDetalhe(null)}
-                  className="h-7 w-7 border border-slate-300"
+                  className="inline-flex h-8 items-center gap-1.5 border border-slate-300 bg-white px-2 text-[9px] font-bold text-[#123B50] hover:bg-slate-50"
                 >
-                  <X size={13} className="mx-auto" />
+                  <X size={13} /> FECHAR
                 </button>
               </header>
               <div className="p-4">
@@ -531,6 +542,11 @@ export default function VendasCatalogoDigital() {
                   Adicionar à seleção
                 </button>
               </div>
+              <footer className="sticky bottom-0 border-t border-slate-200 bg-white p-3">
+                <button type="button" onClick={() => setDetalhe(null)} className="flex h-[34px] w-full items-center justify-center gap-2 rounded-[2px] border border-slate-300 bg-slate-50 text-[10px] font-bold uppercase text-[#123B50] hover:bg-slate-100">
+                  <X size={13} /> Fechar ficha e voltar ao catálogo
+                </button>
+              </footer>
             </aside>
           </>
         )}
