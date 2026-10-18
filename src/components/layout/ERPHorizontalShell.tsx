@@ -75,6 +75,7 @@ const menus: MenuItem[] = [
     { label: 'Agenda de máquinas', route: '/pcp/agenda-maquinas' },
     { label: 'Sequenciamento', route: '/pcp/sequenciamento' },
     { label: 'Planejamento', route: '/pcp/planejamento' },
+    // @REVISAO_PCP_FICHAS: 2026-10-18 — atalhos diretos por categoria solicitados expressamente.
     { label: 'Fichas de processo — Todas', route: '/pcp/fichas-processo' },
     { label: 'Ficha — Injetados', route: '/pcp/fichas-processo?tipo=INJETADOS' },
     { label: 'Ficha — Prensados', route: '/pcp/fichas-processo?tipo=PRENSADOS' },
