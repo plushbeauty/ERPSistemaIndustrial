@@ -82,12 +82,12 @@ export default function AssistenteAjudaERP() {
         const history = await supabase.from('erp_ajuda_suporte')
           .select('id,usuario_id,pergunta,resposta_gerada,modulo_relacionado,created_at')
           .eq('empresa_id', currentProfile.empresa_id)
-          .order('created_at', { ascending: true })
+          .order('created_at', { ascending: false })
           .limit(100)
         if (history.error) throw history.error
         if (!active) return
         setProfile(currentProfile)
-        const stored = (history.data ?? []) as SupportRow[]
+        const stored = ((history.data ?? []) as SupportRow[]).reverse()
         if (stored.length) {
           setMessages(stored.flatMap(row => [
             { id: row.id + '-q', sender: 'user' as const, text: row.pergunta, created_at: row.created_at },
