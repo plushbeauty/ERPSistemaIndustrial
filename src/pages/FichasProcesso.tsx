@@ -152,7 +152,7 @@ export default function FichasProcesso(){
     atualizado_por:user.data.user?.id||null,atualizado_em:new Date().toISOString()
    }
    const result=form.id
-    ? await supabase.from('erp_fichas_processo').update(payload).eq('id',form.id).select('*').single()
+    ? await supabase.from('erp_fichas_processo').update(payload).eq('empresa_id',company.data).eq('id',form.id).select('*').single()
     : await supabase.from('erp_fichas_processo').insert({...payload,criado_por:user.data.user?.id||null}).select('*').single()
    if(result.error)throw result.error
    setForm(fromDb(result.data as Record<string,unknown>))
@@ -168,7 +168,9 @@ export default function FichasProcesso(){
   if(!window.confirm('Excluir esta ficha de processo?'))return
   setBusy(true);setError('')
   try{
-   const r=await supabase.from('erp_fichas_processo').delete().eq('id',form.id)
+   const company=await supabase.rpc('erp_current_empresa_id')
+   if(company.error||typeof company.data!=='string'||!company.data)throw company.error??new Error('Empresa ERP não identificada.')
+   const r=await supabase.from('erp_fichas_processo').delete().eq('empresa_id',company.data).eq('id',form.id)
    if(r.error)throw r.error
    newFicha();setMessage('Ficha excluída.');await load()
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível excluir a ficha.')}finally{setBusy(false)}
@@ -179,18 +181,18 @@ export default function FichasProcesso(){
    <div className="mx-auto flex max-w-[1700px] items-center justify-between gap-4">
     <div><p className="text-sm font-bold uppercase tracking-[0.18em] text-sky-300">ERP INDUSTRIAL • ENGENHARIA</p><h1 className="text-xl font-extrabold sm:text-2xl">Ficha de Processo Premium</h1></div>
     <div className="flex flex-wrap items-center justify-end gap-2">
-     <button type="button" onClick={newFicha} className="rounded-md border border-slate-500 px-4 h-[54px] text-sm font-bold text-white hover:bg-slate-800"><FileDown size={16} className="mr-2 inline"/>NOVO</button>
-     <button type="button" onClick={()=>void save()} disabled={busy} className="rounded-md bg-sky-600 px-5 h-[54px] text-sm font-extrabold text-white hover:bg-sky-500 disabled:opacity-50"><Save size={16} className="mr-2 inline"/>{busy?'GRAVANDO…':'GRAVAR'}</button>
-     <button type="button" onClick={()=>window.print()} className="rounded-md border border-slate-500 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800"><Printer size={16} className="mr-2 inline"/>IMPRIMIR</button>
-     <button type="button" onClick={()=>void load()} className="rounded-md border border-slate-500 p-2.5 text-white hover:bg-slate-800" title="Atualizar"><RotateCcw size={18}/></button>
-     <button type="button" onClick={()=>void remove()} disabled={!form.id||busy} className="rounded-md bg-red-700 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-600 disabled:opacity-40"><Trash2 size={16} className="mr-2 inline"/>DELETAR</button>
+     <button type="button" onClick={newFicha} className="inline-flex h-8 items-center rounded-[3px] border border-slate-500 px-2 text-[10px] font-bold text-white hover:bg-slate-800"><FileDown size={16} className="mr-2 inline"/>NOVO</button>
+     <button type="button" onClick={()=>void save()} disabled={busy} className="inline-flex h-8 items-center rounded-[3px] bg-sky-600 px-3 text-[10px] font-extrabold text-white hover:bg-sky-500 disabled:opacity-50"><Save size={16} className="mr-2 inline"/>{busy?'GRAVANDO…':'GRAVAR'}</button>
+     <button type="button" onClick={()=>window.print()} className="inline-flex h-8 items-center rounded-[3px] border border-slate-500 px-2 text-[10px] font-bold text-white hover:bg-slate-800"><Printer size={16} className="mr-2 inline"/>IMPRIMIR</button>
+     <button type="button" onClick={()=>void load()} className="inline-flex h-8 w-8 items-center justify-center rounded-[3px] border border-slate-500 text-white hover:bg-slate-800" title="Atualizar"><RotateCcw size={18}/></button>
+     <button type="button" onClick={()=>void remove()} disabled={!form.id||busy} className="inline-flex h-8 items-center rounded-[3px] bg-red-700 px-2 text-[10px] font-extrabold text-white hover:bg-red-600 disabled:opacity-40"><Trash2 size={16} className="mr-2 inline"/>DELETAR</button>
     </div>
    </div>
   </div>
 
   <div className="mx-auto grid max-w-[1700px] grid-cols-1 gap-5 p-4 lg:grid-cols-[290px_minmax(0,1fr)]">
    <aside className="rounded-md border border-slate-200 bg-white shadow-sm">
-    <div className="border-b border-slate-200 p-4"><p className="text-xs font-extrabold uppercase tracking-wider text-slate-600">FICHAS CADASTRADAS</p><div className="mt-3 flex gap-2"><input className="min-h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-base text-slate-900" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código / status"/><button type="button" className="rounded-md bg-slate-900 px-3 text-white" title="Pesquisar"><Search size={18}/></button></div></div>
+    <div className="border-b border-slate-200 p-4"><p className="text-xs font-extrabold uppercase tracking-wider text-slate-600">FICHAS CADASTRADAS</p><div className="mt-3 flex gap-2"><input className="h-8 min-w-0 w-full rounded-[3px] border border-slate-300 bg-white px-2 text-[11px] text-slate-900" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código / status"/><button type="button" className="rounded-md bg-slate-900 px-3 text-white" title="Pesquisar"><Search size={18}/></button></div></div>
     <div className="max-h-[70vh] overflow-auto p-2">
      {filtered.map(x=><button key={x.id} type="button" onClick={()=>openFicha(x)} className={x.id===form.id?'mb-2 w-full rounded-md border border-sky-400 bg-sky-50 p-3 text-left text-slate-900':'mb-2 w-full rounded-md border border-slate-200 bg-white p-3 text-left text-slate-900 hover:border-sky-300 hover:bg-slate-50'}><b className="block text-base">{x.codigo_ficha}</b><span className="block text-sm text-slate-700">{products.find(p=>p.id===x.produto_id)?.nome||'Produto não identificado'}</span><span className="mt-1 inline-block rounded bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700">Rev. {x.revisao} • {x.status}</span></button>)}
      {!filtered.length&&<div className="p-5 text-center text-sm font-semibold text-slate-600">Nenhuma ficha cadastrada.</div>}
