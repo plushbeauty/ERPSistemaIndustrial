@@ -185,7 +185,7 @@ export default function VendasCentral() {
           <span className="inline-flex items-center gap-1.5 rounded-sm bg-cyan-700 px-2 py-1"><i className="h-2 w-2 rounded-full bg-cyan-200" /> Almoxarifado</span>
           <span className="inline-flex items-center gap-1.5 rounded-sm bg-amber-600 px-2 py-1"><i className="h-2 w-2 rounded-full bg-amber-100" /> Qualidade</span>
           <span className="inline-flex items-center gap-1.5 rounded-sm bg-violet-700 px-2 py-1"><i className="h-2 w-2 rounded-full bg-violet-200" /> Expedição</span>
-          <span className="inline-flex items-center gap-1.5 rounded-sm bg-emerald-700 px-2 py-1"><i className="h-2 w-2 rounded-full bg-emerald-200" /> Fiscal</span>
+          <span className="inline-flex items-center gap-1.5 rounded-sm bg-emerald-700 px-2 py-1"><i className="h-2 w-2 rounded-full bg-emerald-200" /> Fiscal / NF / Saída</span>
         </div>
         <section className="sales-orders-card">
           <div className="synqra-status-grid sales-orders-status-grid" role="tablist" aria-label="Filtrar pedidos por status">
