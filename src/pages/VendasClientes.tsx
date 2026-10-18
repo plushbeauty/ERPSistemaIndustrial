@@ -1,3 +1,8 @@
+/**
+ * @DATA_REVISAO_APROVACAO: 2026-10-18
+ * @STATUS_APROVACAO: CLIENTES-UI-PRINT-001
+ * Mantém consultas Supabase com escopo de empresa e adiciona ficha imprimível.
+ */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Building2, Check, MapPin, Pencil, Plus, Printer, RefreshCw, Search, Trash2, Truck, UserRound } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -509,7 +514,7 @@ export default function VendasClientes() {
               <div className="flex items-center gap-1.5"><span className="text-[11px] font-semibold text-sky-800">{selected ? 'EDITAR CLIENTE' : 'NOVO CLIENTE'}</span><HelpTip text="Preencha as abas da esquerda para a direita. Campos que alimentam pedidos, fiscal e comercial ficam no cadastro do cliente para evitar cadastros duplicados." /></div>
               
             </header>
-            <nav className="flex flex-wrap border-b border-slate-200 bg-white px-1">{tabs.map(([id, label]) => <button key={id} type="button" onClick={() => setTab(id)} className={'border-b-2 px-3 py-1.5 text-[9px] font-semibold ' + (tab === id ? 'border-sky-700 bg-sky-50 text-sky-800' : 'border-transparent text-slate-500 hover:bg-slate-50')}>{label}</button>)}</nav>
+            <nav aria-label="Seções do cadastro de cliente" className="flex flex-wrap items-end gap-0.5 border-b border-slate-200 bg-slate-50/70 px-1 pt-1 no-print">{tabs.map(([id, label]) => <button key={id} type="button" aria-current={tab === id ? 'page' : undefined} onClick={() => setTab(id)} className={'relative z-0 -mb-px h-7 rounded-t border-x border-t px-3 text-[10px] font-bold transition-colors ' + (tab === id ? 'relative z-10 -mb-px border-slate-200 bg-white text-sky-800 font-black shadow-sm' : 'border-transparent bg-slate-50/50 text-slate-500 hover:bg-slate-100')}>{label}</button>)}</nav>
             <div className="p-2">
               {tab === 'fiscal' && <div className="space-y-2">
                 <div className="grid gap-1.5 md:grid-cols-[100px_100px_190px_auto]">
