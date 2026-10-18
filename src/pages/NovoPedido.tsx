@@ -1,9 +1,9 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-10-16
- * @REVISAO_APROVACAO: APROV-001
- * @STATUS_APROVACAO: APROVADO-IMUTAVEL
+ * @DATA_REVISAO_APROVACAO: 2026-10-18
+ * @REVISAO_APROVACAO: APROV-005
+ * @STATUS_APROVACAO: AJUSTE-EXPRESSAMENTE-AUTORIZADO-2026-10-18
  * @FONTE_APROVADA: Vercel preview READY / commit 94da86b985c12801525661328577f7bd96188b85
- * @REGRA: não alterar layout, conteúdo ou comportamento sem nova autorização explícita do usuário.
+ * @REGRA: ajuste compacto de campos autorizado expressamente em 2026-10-18; preservar fluxo funcional, cabeçalho azul e geometria aprovada.
  * @ESCOPO_ORIGINAL: Vendas > Novo Pedido; preserva fluxo funcional e geometria visual da versão aprovada.
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
