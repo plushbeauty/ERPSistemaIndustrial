@@ -39,7 +39,7 @@ export default function ModuloCadastroProdutos() {
       nav={nav}
       activeId={view}
       onNav={(next) => setView(next as View)}
-      onHome={() => { window.location.href = '/tablet/dashboard' }}
+      onHome={() => { window.location.href = '/erp-industrial' }}
     >
       {/* Container de Renderização Dinâmica - Isola o conteúdo das abas para evitar vazamento de layout */}
       <div className="w-full bg-[#f8fafc] min-h-[500px]">
@@ -63,7 +63,7 @@ export default function ModuloCadastroProdutos() {
         
         <button
           type="button"
-          onClick={() => { window.location.href = '/tablet/dashboard' }}
+          onClick={() => { window.location.href = '/erp-industrial' }}
           className="inline-flex h-8 items-center gap-2 rounded-[2px] border border-slate-300 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all duration-150 hover:bg-slate-50 hover:text-slate-900 active:scale-[0.98]"
         >
           <Home size={15} className="text-slate-500" />
