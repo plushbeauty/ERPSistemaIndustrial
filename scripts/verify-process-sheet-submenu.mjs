@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import assert from 'node:assert/strict'
 
 const menu = readFileSync('src/components/PCPTabletMenuModal.tsx', 'utf8')
@@ -25,6 +25,10 @@ for (const item of approvedItems) {
   assert.ok(menu.includes(`route: '${item.route}'`), `Incorrect or missing destination for: ${item.label}`)
 }
 assert.match(routes, /<Route path="\/pcp\/fichas-processo"[^\n]*PCPFichasProcesso/)
+assert.match(routes, /<Route path="\/engenharia\/fichas-processo" element={<Navigate to="\/pcp\/fichas-processo" replace \/>} \/>/, 'Legacy Engineering route must redirect to the approved PCP screen')
+assert.match(routes, /<Route path="\/fichas-processo" element={<Navigate to="\/pcp\/fichas-processo" replace \/>} \/>/, 'Legacy generic route must redirect to the approved PCP screen')
+assert.ok(!routes.includes("import('./pages/FichasProcesso')"), 'Legacy process-sheet component must not be bundled or referenced')
+assert.ok(!existsSync('src/pages/FichasProcesso.tsx'), 'Legacy process-sheet screen source must stay removed')
 assert.match(routes, /<Route path="\/ficha-engenharia"[^\n]*FichaEngenharia/)
 for (const kind of ['PRENSADOS', 'INJETADOS', 'ACABAMENTO', 'MONTAGEM_EMBALAGEM']) {
   assert.ok(processSheets.includes(`'${kind}'`), `Canonical process sheet no longer supports approved type ${kind}`)
