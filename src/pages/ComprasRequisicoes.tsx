@@ -1,3 +1,9 @@
+/**
+ * @DATA_REVISAO_APROVACAO: 2026-10-18
+ * @HORA_REVISAO: 19:20 America/Sao_Paulo
+ * @REVISAO: COMPRAS-REQUISICOES-R2
+ * @STATUS_APROVACAO: REQUISICOES-MRP-UI-PREMIUM-OK
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { Printer, ShoppingCart } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -131,11 +137,11 @@ export default function ComprasRequisicoes() {
           <h1 className="text-xl font-bold text-slate-950">Gestão de Compras e Suprimentos Industriais</h1>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => void forwardSelected()} disabled={busy || selectedRequisitions.size === 0} className="min-h-11 rounded-md bg-slate-900 px-5 py-3 font-bold text-white disabled:opacity-50">
+          <button type="button" onClick={() => void forwardSelected()} disabled={busy || selectedRequisitions.size === 0} className="h-8 rounded-md bg-slate-900 px-5 py-3 font-bold text-white disabled:opacity-50">
             <ShoppingCart className="mr-2 inline" size={17}/>ENCAMINHAR SELECIONADAS
           </button>
-          <button type="button" onClick={() => void load()} disabled={busy} className="min-h-11 rounded-md border border-slate-300 bg-white px-4 py-3 font-bold disabled:opacity-50">Atualizar</button>
-          <button type="button" onClick={() => window.print()} className="min-h-11 rounded-md bg-slate-700 px-4 py-3 font-bold text-white"><Printer className="mr-2 inline" size={17}/>RELATÓRIO</button>
+          <button type="button" onClick={() => void load()} disabled={busy} className="h-8 rounded-md border border-slate-300 bg-white px-4 py-3 font-bold disabled:opacity-50">Atualizar</button>
+          <button type="button" onClick={() => window.print()} className="h-8 rounded-md bg-slate-700 px-4 py-3 font-bold text-white"><Printer className="mr-2 inline" size={17}/>RELATÓRIO</button>
         </div>
       </header>
 
@@ -173,7 +179,7 @@ export default function ComprasRequisicoes() {
         </div>
         {visibleItems.length > PAGE_SIZE && <nav aria-label="Paginação das requisições de compra" className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-3 text-sm">
           <span aria-live="polite">Exibindo {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, visibleItems.length)} de {visibleItems.length}</span>
-          <div className="flex gap-2"><button type="button" className="min-h-10 rounded border px-3 disabled:opacity-50" disabled={page === 1} onClick={() => setPage(current => Math.max(1, current - 1))}>Anterior</button><span className="self-center">Página {page} de {pageCount}</span><button type="button" className="min-h-10 rounded border px-3 disabled:opacity-50" disabled={page === pageCount} onClick={() => setPage(current => Math.min(pageCount, current + 1))}>Próxima</button></div>
+          <div className="flex gap-2"><button type="button" className="h-8 rounded border px-3 disabled:opacity-50" disabled={page === 1} onClick={() => setPage(current => Math.max(1, current - 1))}>Anterior</button><span className="self-center">Página {page} de {pageCount}</span><button type="button" className="h-8 rounded border px-3 disabled:opacity-50" disabled={page === pageCount} onClick={() => setPage(current => Math.min(pageCount, current + 1))}>Próxima</button></div>
         </nav>}
         {busy && <p role="status" className="mt-3 text-sm text-slate-600">Carregando ou atualizando requisições…</p>}
       </section>
