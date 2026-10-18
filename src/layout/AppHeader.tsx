@@ -73,8 +73,6 @@ export default function AppHeader() {
     window.location.href = '/login'
   }
 
-  const goTablet = () => navigate('/tablet/dashboard')
-
   return (
     <header className="synqra-app-header" aria-label="Barra superior padrão do ERP">
       <div className="synqra-header-brand">
@@ -108,9 +106,6 @@ export default function AppHeader() {
       </div>
 
       <div className="synqra-header-actions">
-        <button type="button" className="synqra-header-tablet" onClick={goTablet} aria-label="Abrir Tablet operacional">
-          MÓDULOS TABLET
-        </button>
         <div className="synqra-header-user">
           <span>OPERADOR</span>
           <strong>{profile?.nome ?? 'Usuário'}</strong>
