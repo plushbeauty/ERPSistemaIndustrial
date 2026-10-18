@@ -100,3 +100,13 @@ Nenhum desses sete arquivos foi alterado nesta branch.
 - **Bloqueio de banco real:** a integração Supabase não expõe projetos acessíveis nesta execução (`list_projects` retornou lista vazia e `get_project` foi recusado por permissão). Portanto, nenhuma afirmação de que as migrations estão aplicadas ou de que os campos já existem no banco remoto é válida até obter acesso e consultar o schema.
 - O status de Vercel/CI do commit mais recente ainda estava pendente na última consulta. Não houve merge em `main` nem confirmação de publicação em produção nesta execução.
 
+
+
+## Fechamento do ciclo CI — 2026-10-18
+
+- Execução GitHub Actions **#6378 — ERP Industrial CI: PASS**, workflow run `39136717581`, no commit `31a03042bdf2498a4902528b4df7edfb17313657`.
+- Passaram TypeScript, ESLint, auditorias global/brutal/interações, lazy imports, build de produção, rotas, contrato do tablet SGQ, shell horizontal, assets, submenu/fichas/IA, hash lock das telas aprovadas e política de segurança.
+- A execução anterior #6376 falhou no contrato do tablet SGQ porque o item global Qualidade ainda mantinha o bloco de submenu. O shell foi corrigido para o item de barra abrir o modal Tablet SGQ; a execução #6378 passou sem alterar os sete arquivos congelados.
+- O commit de programação PCP adiciona a seleção de ficha LIBERADA do mesmo produto/empresa, preenche máquina/ciclo/cavidades/setup, grava o vínculo e a revisão, e desabilita a seleção enquanto as novas colunas não estiverem confirmadas no banco.
+- O status Vercel do commit continuava `pending` na última consulta. O PR #148 segue em rascunho, não mesclado.
+- A sincronização integral do RAR continua **incompleta**: dashboard e fichas têm diferenças de hash, e outras divergências estão descritas neste relatório. A execução do CI valida a branch atual, não prova que todos os arquivos do RAR foram substituídos nem que o banco remoto foi migrado.
