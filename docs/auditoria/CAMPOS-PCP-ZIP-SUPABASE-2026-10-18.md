@@ -65,3 +65,17 @@ A segunda consulta pode precisar de ajuste conforme a versão/configuração do 
 2. Aplicar as migrations pendentes somente após validar a ordem e as dependências de schema, com backup/ambiente apropriado.
 3. Testar leitura/gravação com sessão autenticada e duas empresas distintas; confirmar RLS, constraints, FK e revisão histórica.
 4. Manter o fluxo marcado como pendente até obter resultados reais dessas consultas e testes.
+
+
+## Atualização de implementação — 2026-10-18
+
+O arquivo `src/pages/PCPIndustrial.tsx` foi atualizado na branch para:
+- consultar fichas ativas com status `LIBERADA` da mesma empresa e produto;
+- preencher máquina, ciclo, cavidades e setup a partir da ficha selecionada, mantendo o roteiro existente como alternativa;
+- gravar `ficha_processo_id` e a revisão escolhida junto à programação;
+- carregar as referências já gravadas sem quebrar a carga principal quando a migration ainda não estiver instalada;
+- desabilitar o seletor de ficha enquanto o contrato das novas colunas não puder ser confirmado.
+
+O teste de contrato foi executado por leitura do conteúdo da branch e passou em nove verificações estáticas: categorias novas, colunas da migration, FK composta por empresa, consulta das fichas, gravação do vínculo/revisão e bloqueio do seletor quando o schema não está disponível. Isso é uma validação estática do repositório, não um teste de sessão autenticada nem de persistência no banco remoto.
+
+**Próxima barreira:** CI e Vercel ainda estavam pendentes na última consulta. O Supabase remoto continua inacessível pela integração atual; não aplicar a migration nem declarar a persistência em produção até validar as colunas e o registro de migrations no projeto real.
