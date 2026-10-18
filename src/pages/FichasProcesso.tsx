@@ -41,9 +41,9 @@ const blank:FormState={
  zona1:'',zona2:'',zona3:'',zona4:'',imagem_url:'',observacoes_setup:'',observacoes:''
 }
 
-const field='mt-2 h-[54px] w-full rounded-md border border-slate-300 bg-white px-3 text-base font-medium text-slate-900 outline-none transition focus:border-sky-600 focus:ring-2 focus:ring-sky-100'
-const label='block text-sm font-bold uppercase tracking-wide text-slate-800'
-const card='rounded-md border border-slate-200 bg-white p-5 shadow-sm'
+const field='mt-1 h-8 w-full min-w-0 rounded-[3px] border border-slate-300 bg-white px-2 text-[11px] font-medium text-slate-900 outline-none transition focus:border-[#2D8DB8] focus:ring-1 focus:ring-sky-100'
+const label='mb-1 block text-[9px] font-bold uppercase tracking-wide text-slate-500'
+const card='min-w-0 rounded-[3px] border border-slate-200 bg-white p-2 shadow-sm'
 
 export default function FichasProcesso(){
  const [form,setForm]=useState<FormState>(blank)
