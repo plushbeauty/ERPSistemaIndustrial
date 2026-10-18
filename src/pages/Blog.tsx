@@ -1,36 +1,286 @@
-import { useMemo, useState } from 'react'
-import { ArrowLeft, ArrowRight, BookOpen, Factory, Package, ShieldCheck, Wrench, BarChart3, Boxes, X } from 'lucide-react'
-import '../styles/login-blog-fix.css'
-import '../styles/blog-visual-2026.css'
+/**
+ * @DATA_REVISAO: 2026-10-18
+ * @ESCOPO: Portal de Conhecimento e POPs industriais
+ * @STATUS: IMPLEMENTAÇÃO PARCIAL — depende da migration e validação autenticada.
+ */
+import { useEffect, useMemo, useState } from 'react'
+import {
+  ArrowLeft,
+  ArrowRight,
+  BarChart3,
+  BookOpen,
+  Boxes,
+  Factory,
+  Filter,
+  Package,
+  Search,
+  ShieldCheck,
+  Wrench,
+  X,
+} from 'lucide-react'
+import { supabase } from '../lib/supabaseClient'
 
-type Article = { category: string; title: string; excerpt: string; content: string[] }
+type Article = {
+  id: string
+  category: string
+  title: string
+  excerpt: string
+  content: string[]
+  created_at: string
+}
 
-const articles: Article[] = [
-  { category:'PCP / MRP', title:'O que é MRP e como ele ajuda a indústria a planejar materiais?', excerpt:'Entenda como demanda, estoque, estrutura e prazo se transformam em necessidades de compra e produção.', content:['MRP é o planejamento das necessidades de materiais. Ele cruza demanda, estoque disponível, estrutura do produto (BOM), ordens em aberto e prazos para indicar o que precisa ser comprado ou produzido, quanto e quando.','No SGQ ERP, esse raciocínio está conectado ao cadastro de produtos, fichas técnicas/BOM, parâmetros de processo, estoque, compras e ordens de produção. Assim, o PCP deixa de depender de planilhas isoladas.','Para uma indústria de plásticos, uma necessidade de produto acabado pode resultar em consumo planejado de resina, pigmento, embalagem e outros componentes. O estoque disponível e as compras já abertas precisam ser considerados antes de gerar uma nova necessidade.','A qualidade do MRP depende de dados confiáveis: cadastro correto, unidade de medida, BOM atualizada, estoque correto e prazos de compra/produção coerentes. O SGQ ERP foi estruturado para manter essas informações conectadas ao processo industrial.','Resultado esperado: menos falta de material, menos excesso de estoque, compras mais previsíveis e maior capacidade de cumprir o planejamento.'] },
-  { category:'Estoque', title:'Gestão de estoque industrial: matéria-prima, lote e rastreabilidade', excerpt:'Como reduzir faltas, excesso e perdas mantendo cada movimentação vinculada ao processo.', content:['Estoque industrial não é apenas saber quantas unidades existem. É saber onde estão, qual lote foi recebido, quanto foi consumido, quanto permanece disponível e qual processo utilizou aquele material.','O SGQ ERP contempla produtos e materiais, movimentações de estoque, lotes de matéria-prima, estoque mínimo e vínculo com produção. Isso permite acompanhar a movimentação desde a entrada até o consumo e o produto acabado.','A rastreabilidade é especialmente importante quando há exigência de identificar lote, origem, consumo, produção e qualidade. Em caso de desvio, a empresa consegue investigar o caminho do material em vez de procurar informações em planilhas.','Indicadores de estoque crítico ajudam o PCP e Compras a agir antes da parada. O objetivo é equilibrar disponibilidade, capital imobilizado e demanda produtiva.'] },
-  { category:'Qualidade', title:'Controle de qualidade industrial: da inspeção à não conformidade', excerpt:'Veja como conectar inspeções, ordens, lotes, desvios e ações corretivas em um único fluxo.', content:['Qualidade industrial precisa estar dentro do processo, não somente no final da produção. Inspeções, resultados, evidências e não conformidades precisam estar associados aos itens e processos corretos.','No SGQ ERP, a estrutura contempla inspeções de qualidade, não conformidades/RPNC, severidade, descrição, prazo, causa, ação corretiva e histórico. Esses registros podem ser relacionados à operação industrial e à rastreabilidade.','Quando um lote apresenta desvio, a empresa precisa saber o que foi produzido, qual material foi utilizado, qual ordem estava em execução e qual tratamento foi dado ao problema. Essa integração reduz retrabalho e acelera a tomada de decisão.','O objetivo não é apenas registrar defeitos: é transformar cada ocorrência em informação para prevenção, melhoria do processo e redução de perdas.'] },
-  { category:'Produção', title:'Como controlar uma Ordem de Produção do planejamento ao apontamento', excerpt:'Planejamento, execução, consumo, produção, refugo e encerramento sem depender de planilhas.', content:['A Ordem de Produção transforma o planejamento em execução. Ela define o produto, quantidade, processos e acompanhamento do que realmente aconteceu no chão de fábrica.','No SGQ ERP, as OPs são conectadas a produto, quantidade planejada, processos, máquinas e apontamentos. O acompanhamento pode registrar quantidade boa, refugo e paradas.','Essa diferença entre planejado e realizado é fundamental para o PCP. A gestão consegue identificar atrasos, gargalos, perdas e capacidade utilizada.','Depois da produção, os dados alimentam estoque, qualidade e custos. Dessa forma, a OP não termina como um documento isolado: ela faz parte do fluxo integrado da fábrica.'] },
-  { category:'Custos', title:'Custo industrial: o que realmente entra no custo de fabricação?', excerpt:'Material, mão de obra, máquina, energia, perdas, terceirização e custos indiretos.', content:['Conhecer o custo de fabricação é essencial para formar preço e proteger margem. O custo não deve ser confundido simplesmente com o valor da matéria-prima.','O modelo industrial do SGQ ERP considera materiais, mão de obra, máquinas, custos indiretos e perdas dentro da análise de custo do produto. A estrutura de BOM e os processos produtivos ajudam a formar a composição.','Com o custo calculado, a gestão pode comparar custo e preço de venda, acompanhar margem e identificar quais produtos ou processos pressionam o resultado.','O custo também deve ser analisado junto com estoque, produção e perdas. Uma matéria-prima desperdiçada, uma máquina parada ou um processo ineficiente pode alterar significativamente o custo real.'] },
-  { category:'Manutenção', title:'Manutenção preventiva e corretiva: como evitar paradas inesperadas', excerpt:'Organize máquinas, ordens de manutenção, histórico e indicadores para aumentar a disponibilidade.', content:['Manutenção industrial precisa sair do modelo de somente consertar quando quebra. Histórico de equipamentos, preventiva, corretiva e ordens de manutenção ajudam a reduzir indisponibilidade.','O SGQ ERP possui estrutura para máquinas, equipamentos e ordens de manutenção, permitindo registrar status, prioridade, responsável, descrição e datas.','Quando a manutenção está integrada ao estoque, também é possível relacionar peças e materiais necessários ao reparo. Isso ajuda a evitar que uma intervenção fique parada por falta de componente.','A gestão pode acompanhar disponibilidade, backlog e histórico de intervenções para decidir onde priorizar recursos e reduzir reincidência de falhas.'] },
-  { category:'Tecnologia', title:'ERP industrial: por que integrar produção, estoque e financeiro?', excerpt:'Dados conectados reduzem retrabalho e dão à gestão uma visão única da operação.', content:['Um ERP industrial deve conectar as áreas que participam do mesmo processo. Pedido, PCP, compras, estoque, produção, qualidade, expedição, fiscal e financeiro não deveriam depender de bases paralelas.','A arquitetura do SGQ ERP foi pensada como um núcleo integrado e multissegmento. Para a indústria, os módulos podem trabalhar sobre a mesma empresa e seus dados operacionais.','Essa integração reduz redigitação e melhora a rastreabilidade das informações. Uma necessidade identificada no planejamento pode chegar a Compras; uma produção concluída pode refletir no estoque; uma venda pode ser acompanhada até a entrega.','Tecnologia só gera valor quando melhora o processo. Por isso, o sistema deve combinar automação, permissões, histórico, validações e dados reais em vez de telas isoladas.'] },
-  { category:'Fiscal', title:'Reforma Tributária 2026: por que o ERP precisa estar preparado', excerpt:'Um panorama operacional para empresas que precisam manter processos e dados fiscais organizados.', content:['Mudanças tributárias exigem organização cadastral e capacidade de adaptação. Produtos, clientes, fornecedores, operações e documentos fiscais precisam estar corretamente estruturados para acompanhar regras que evoluem.','No SGQ ERP, o fiscal está conectado ao restante da operação para evitar que a informação comercial e produtiva fique isolada da documentação fiscal.','A preparação deve envolver cadastro, parametrização tributária, documentos, validações e acompanhamento das regras aplicáveis à empresa. A emissão fiscal em produção depende de configuração e provedores/certificados reais; o sistema não deve simular autorização.','O melhor momento para preparar o ERP é antes da necessidade operacional: revisar cadastros, processos e integrações reduz risco quando novas regras entrarem em vigor.'] },
-  { category:'Gestão', title:'Dashboard industrial: quais indicadores realmente importam?', excerpt:'Transforme dados operacionais em decisões sobre produção, estoque, qualidade, prazo e custos.', content:['Dashboard não deve ser uma coleção de números bonitos. Os indicadores precisam responder perguntas que ajudam a gestão a agir.','Na indústria, alguns grupos essenciais são produção planejada x realizada, OPs atrasadas, capacidade, refugo, estoque crítico, qualidade, manutenção, custos e margem.','O SGQ ERP foi estruturado para apresentar uma visão executiva conectando esses processos. O objetivo é permitir que a gestão saia do problema para a causa e da causa para a ação.','Um bom indicador também precisa de contexto. OEE, por exemplo, ganha valor quando analisado junto com paradas, qualidade, produção e manutenção, em vez de ser tratado como um percentual isolado.'] }
-]
-
-const cats = ['Todos', ...Array.from(new Set(articles.map(a => a.category)))]
-const icons: Record<string, typeof Factory> = { 'PCP / MRP': Factory, Estoque: Package, Qualidade: ShieldCheck, Produção: Boxes, Custos: BarChart3, Manutenção: Wrench, Tecnologia: Factory, Fiscal: BookOpen, Gestão: BarChart3 }
+const icons: Record<string, typeof Factory> = {
+  'PCP / MRP': Factory,
+  Estoque: Package,
+  Qualidade: ShieldCheck,
+  Produção: Boxes,
+  Custos: BarChart3,
+  Manutenção: Wrench,
+  Tecnologia: Factory,
+  Fiscal: BookOpen,
+  Gestão: BarChart3,
+}
 
 export default function Blog() {
   const [category, setCategory] = useState('Todos')
+  const [searchQuery, setSearchQuery] = useState('')
   const [selected, setSelected] = useState<Article | null>(null)
-  const visible = useMemo(() => category === 'Todos' ? articles : articles.filter(a => a.category === category), [category])
-  return <main className="blog-page">
-    <header className="blog-nav"><a className="blog-brand" href="/"><img src="/logo/logo.png" alt="SGQ ERP" /></a><nav className="blog-nav-links"><a href="/">Início</a><a href="/#solucoes">Soluções</a><a href="/#segmentos">Segmentos</a><a href="/blog">Blog</a><a href="/#contato">Contato</a><a href="/login">Entrar</a></nav></header>
-    <section className="blog-hero"><div className="blog-hero-inner"><div className="blog-kicker">BLOG INDUSTRIAL SGQ ERP</div><h1>Conhecimento para quem administra uma indústria</h1><p>Produção, PCP, MRP, estoque, qualidade, custos, manutenção, fiscal e tecnologia industrial — conteúdo prático para transformar gestão em resultado.</p></div></section>
-    <section className="blog-container">
-      <div className="blog-categories">{cats.map(c => <button key={c} className={category === c ? 'active' : ''} onClick={() => setCategory(c)}>{c}</button>)}</div>
-      <div id="artigos" className="blog-grid">{visible.map(a => { const Icon = icons[a.category] ?? Factory; return <article className="blog-card" key={a.title}><Icon size={25} /><span className="blog-tag">{a.category}</span><h3>{a.title}</h3><p>{a.excerpt}</p><button className="read" type="button" onClick={() => setSelected(a)}>Ler artigo <ArrowRight size={15} /></button></article> })}</div>
-    </section>
-    {selected && <div className="blog-modal" role="dialog" aria-modal="true"><article className="blog-modal-card"><button className="blog-modal-close" type="button" onClick={() => setSelected(null)} aria-label="Fechar"><X size={20}/></button><span className="blog-tag">{selected.category}</span><h2>{selected.title}</h2><p className="blog-modal-excerpt">{selected.excerpt}</p><div className="blog-modal-content">{selected.content.map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div><button className="read" type="button" onClick={() => setSelected(null)}><ArrowLeft size={16}/> Voltar aos artigos</button></article></div>}
-  </main>
+  const [articles, setArticles] = useState<Article[]>([])
+  const [loading, setLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState('')
+
+  useEffect(() => {
+    let active = true
+
+    const fetchArticles = async () => {
+      setLoading(true)
+      setErrorMessage('')
+
+      try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getUser()
+        if (sessionError) throw sessionError
+        if (!sessionData.user) throw new Error('AUTH_SESSION_REQUIRED')
+
+        const { data: companyId, error: companyError } = await supabase.rpc('erp_current_empresa_id')
+        if (companyError) throw companyError
+        if (typeof companyId !== 'string' || !companyId.trim()) {
+          throw new Error('TENANT_CONTEXT_REQUIRED')
+        }
+
+        const { data, error } = await supabase
+          .from('erp_portal_conhecimento')
+          .select('id, category, title, excerpt, content, created_at')
+          .eq('empresa_id', companyId)
+          .eq('status', 'publicado')
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+        if (active) setArticles((data ?? []) as Article[])
+      } catch (error) {
+        if (!active) return
+        setArticles([])
+        const code = error instanceof Error ? error.message : ''
+        setErrorMessage(
+          code === 'AUTH_SESSION_REQUIRED'
+            ? 'Entre no sistema para consultar os procedimentos da sua empresa.'
+            : code === 'TENANT_CONTEXT_REQUIRED'
+              ? 'Não foi possível identificar a empresa da sessão. Verifique o vínculo do usuário.'
+              : 'Não foi possível carregar a biblioteca. Confirme se a migration do portal foi aplicada e tente novamente.',
+        )
+      } finally {
+        if (active) setLoading(false)
+      }
+    }
+
+    void fetchArticles()
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const categories = useMemo(
+    () => ['Todos', ...Array.from(new Set(articles.map((article) => article.category)))],
+    [articles],
+  )
+
+  const visibleArticles = useMemo(() => {
+    const query = searchQuery.trim().toLocaleLowerCase('pt-BR')
+    return articles.filter((article) => {
+      const matchesCategory = category === 'Todos' || article.category === category
+      const matchesSearch =
+        !query ||
+        article.title.toLocaleLowerCase('pt-BR').includes(query) ||
+        article.excerpt.toLocaleLowerCase('pt-BR').includes(query) ||
+        article.category.toLocaleLowerCase('pt-BR').includes(query)
+      return matchesCategory && matchesSearch
+    })
+  }, [articles, category, searchQuery])
+
+  return (
+    <main className="min-h-screen bg-[#F4FBFD] p-3 font-sans text-[#123B50] antialiased sm:p-4">
+      <div className="mx-auto max-w-[1500px] space-y-3">
+        <section className="rounded border border-slate-700 bg-[#123B50] p-4 text-white shadow-sm sm:p-6">
+          <span className="mb-1 block text-[9px] font-black uppercase tracking-[0.18em] text-cyan-300">
+            SGQ · Capacitação operacional
+          </span>
+          <h1 className="text-lg font-bold tracking-tight sm:text-xl">
+            Portal de Conhecimento e POPs Industriais
+          </h1>
+          <p className="mt-1.5 max-w-3xl text-[11px] font-medium leading-relaxed text-cyan-50/80">
+            Manuais de chão de fábrica, instruções de processo, roteiros de qualidade e orientações de
+            compliance — consultados a partir da biblioteca publicada para a empresa autenticada.
+          </p>
+        </section>
+
+        <section className="grid grid-cols-1 items-center gap-2 rounded border border-slate-200 bg-white p-2.5 shadow-sm md:grid-cols-12">
+          <label className="flex h-8 min-w-0 items-center gap-2 rounded border border-slate-300 bg-white px-2 md:col-span-8">
+            <Search size={13} className="shrink-0 text-slate-400" aria-hidden="true" />
+            <span className="sr-only">Pesquisar procedimentos</span>
+            <input
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Pesquisar por título, categoria ou palavra-chave..."
+              className="h-full min-w-0 flex-1 border-0 bg-transparent text-[11px] font-medium outline-none placeholder:text-slate-400 focus:ring-0"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-500 hover:bg-slate-100"
+                aria-label="Limpar pesquisa"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </label>
+          <div className="flex h-8 items-center justify-between gap-2 rounded border border-slate-200 bg-slate-50 px-2.5 text-[10px] font-bold text-slate-500 md:col-span-4">
+            <span className="flex items-center gap-1.5"><Filter size={11} /> Artigos publicados</span>
+            <span className="tabular-nums">{loading ? '—' : visibleArticles.length}</span>
+          </div>
+        </section>
+
+        <section className="flex gap-1 overflow-x-auto rounded border border-slate-200 bg-white p-1.5 shadow-sm" aria-label="Filtrar por categoria">
+          {categories.map((item) => (
+            <button
+              key={item}
+              type="button"
+              aria-pressed={category === item}
+              onClick={() => setCategory(item)}
+              className={`h-6 shrink-0 rounded border px-3 text-[10px] font-bold uppercase tracking-wide transition-colors ${
+                category === item
+                  ? 'border-[#123B50] bg-[#123B50] text-white'
+                  : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+              }`}
+            >
+              {item}
+            </button>
+          ))}
+        </section>
+
+        <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {loading ? (
+            <div className="col-span-full rounded border border-slate-200 bg-white p-10 text-center text-[10px] font-bold uppercase tracking-wider text-slate-400" role="status">
+              Carregando biblioteca do Supabase...
+            </div>
+          ) : errorMessage ? (
+            <div className="col-span-full rounded border border-amber-200 bg-amber-50 p-5 text-[11px] font-medium text-amber-900" role="alert">
+              {errorMessage}
+            </div>
+          ) : (
+            <>
+              {visibleArticles.map((article) => {
+                const Icon = icons[article.category] ?? Factory
+                return (
+                  <article key={article.id} className="flex min-w-0 flex-col justify-between rounded border border-slate-200 bg-white p-3.5 shadow-sm transition-shadow hover:shadow-md">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="max-w-[80%] truncate rounded border border-sky-100 bg-sky-50 px-2 py-0.5 font-mono text-[8px] font-bold uppercase tracking-wide text-sky-700">
+                          {article.category}
+                        </span>
+                        <Icon size={14} className="shrink-0 text-slate-400" aria-hidden="true" />
+                      </div>
+                      <h2 className="line-clamp-2 min-h-8 text-[11px] font-bold uppercase leading-tight tracking-wide text-slate-800">
+                        {article.title}
+                      </h2>
+                      <p className="line-clamp-3 min-h-12 text-[10px] font-medium leading-relaxed text-slate-500">
+                        {article.excerpt}
+                      </p>
+                    </div>
+                    <div className="mt-2 flex justify-end border-t border-slate-100 pt-2.5">
+                      <button
+                        type="button"
+                        onClick={() => setSelected(article)}
+                        className="flex h-7 items-center gap-1 rounded border border-slate-200 bg-slate-100 px-2.5 text-[10px] font-bold text-slate-700 transition-colors hover:bg-slate-200"
+                      >
+                        Ler instrução <ArrowRight size={11} />
+                      </button>
+                    </div>
+                  </article>
+                )
+              })}
+              {!visibleArticles.length && (
+                <div className="col-span-full rounded border border-dashed border-slate-300 bg-white p-10 text-center text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Nenhum artigo publicado corresponde aos filtros.
+                </div>
+              )}
+            </>
+          )}
+        </section>
+      </div>
+
+      {selected && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-3 backdrop-blur-sm"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setSelected(null)
+          }}
+        >
+          <article
+            className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-y-auto rounded border border-slate-200 bg-white shadow-2xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="portal-article-title"
+          >
+            <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-700 bg-slate-900 px-3 py-2 text-white">
+              <div className="min-w-0 space-y-1">
+                <span className="inline-block max-w-full truncate rounded bg-sky-900 px-1.5 py-0.5 font-mono text-[8px] font-black uppercase tracking-wide text-cyan-200">
+                  {selected.category}
+                </span>
+                <h2 id="portal-article-title" className="truncate text-[11px] font-bold uppercase tracking-wide">
+                  {selected.title}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelected(null)}
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-slate-700 text-slate-300 hover:bg-slate-800"
+                aria-label="Fechar artigo"
+              >
+                <X size={14} />
+              </button>
+            </header>
+            <div className="space-y-3 p-4 text-xs font-medium leading-relaxed text-slate-600">
+              <p className="rounded-r border-l-2 border-sky-600 bg-slate-50 py-2 pl-2 text-[11px] font-bold text-slate-800">
+                RESUMO: {selected.excerpt}
+              </p>
+              <div className="space-y-2.5">
+                {selected.content.map((paragraph, index) => (
+                  <p key={`${selected.id}-paragraph-${index}`}>{paragraph}</p>
+                ))}
+              </div>
+              <div className="flex justify-start border-t border-slate-100 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setSelected(null)}
+                  className="flex h-7 items-center gap-1.5 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-600 transition-colors hover:bg-slate-50"
+                >
+                  <ArrowLeft size={12} /> Voltar à biblioteca
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+      )}
+    </main>
+  )
 }
