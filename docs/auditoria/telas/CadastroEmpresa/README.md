@@ -2,7 +2,7 @@
 
 - **Data da revisão:** 2026-10-18
 - **Branch:** `fix/blog-portal-conhecimento-20261018`
-- **Status:** **PARCIAL — correções de código gravadas; homologação live e segurança antiabuso pendentes**
+- **Status:** **PARCIAL — CI automatizado PASS; homologação live, antiabuso e deploy Supabase pendentes**
 - **Escopo:** cadastro público de empresa, Edge Function `erp-company-signup`, plano, documento fiscal, perfil inicial e rota POP.
 - **Restrição:** não alterar `AtivarAcesso.tsx` nesta etapa.
 
@@ -32,15 +32,15 @@
 | Validação de CPF/CNPJ com dígitos verificadores | Código atualizado; casos automatizados de execução pendentes |
 | Persistência e validação do plano pelo catálogo ativo | Código atualizado; teste live pendente |
 | Honestidade sobre seleção de módulo | Código atualizado; não persiste módulo isolado |
-| Verificador estático do contrato | Criado e registrado no package.json; execução pendente |
-| Type-check / lint / auditorias globais / rotas / imports / build | Pendente de execução no ambiente de CI |
+| Verificador estático do contrato | **PASS** no GitHub Actions run `39164859314` |
+| TypeScript / ESLint / auditorias global, brutal e interações / imports lazy / rotas / build / output | **PASS** no GitHub Actions run `39164859314` |
 | Teste válido de cadastro e login | Pendente |
 | Documento inválido, plano inativo/desconhecido, e-mail duplicado | Pendente |
 | Duplicidade concorrente e rollback de cada etapa | Pendente |
 | RLS com duas empresas e tentativa de acesso cruzado | Pendente |
 | Rate limit/CAPTCHA e abuso do endpoint público | Pendente |
 | Deploy/versão ativa da Edge Function | Não confirmado |
-| Homologação de produção | **Não aprovada** |
+| Approved UI immutable hash lock | **PASS** após restaurar as duas telas congeladas à revisão aprovada |\n| Homologação de produção | **Não aprovada** |
 
 ## Commits desta etapa
 
@@ -59,3 +59,12 @@
 4. Fazer testes em ambiente de homologação com documentos e e-mails de teste controlados, sem criar contas de produção fictícias.
 5. Validar Auth, perfil ADMIN, vínculo `auth_user_id`, plano gravado e isolamento entre duas empresas.
 6. Retomar as auditorias pendentes anteriores após a bateria global; manter `AtivarAcesso.tsx` aguardando.
+
+
+## Verificação ponta a ponta — atualização posterior
+
+- **CI run:** [ERP Industrial CI #39164859314](https://github.com/plushbeauty/ERPSistemaIndustrial/actions/runs/39164859314) — **SUCCESS** no commit `ae7b6061022f3bef5c85e7516abc1eac47677cf8`.
+- Passaram no CI: instalação, lockfile, configuração Vercel, política CI, contrato Auth/Master, **contrato de cadastro**, naming, guards Supabase, integridade de deploy, TypeScript, ESLint, auditorias global/brutal/interações, imports lazy, build de produção, build output, rotas, contratos de regressão do tablet SGQ, shell horizontal, assets de logo, submenu de fichas/rota IA, hash lock das telas aprovadas, contrato de UI de login/produtos e política de segurança.
+- A primeira execução falhou somente no hash lock porque `src/pages/PCPFichasProcesso.tsx` e `src/PublicIndustrialHome.tsx` tinham divergido dos hashes aprovados. Ambos foram restaurados exatamente aos blobs esperados (`8bcf9407...` e `37f0e2ef...`), e a execução seguinte passou.
+- **Vercel:** ainda retorna `build-rate-limit`; não há evidência de deployment de produção neste commit.
+- **Supabase real:** a CI validou contrato estático. Não executou cadastro real, Auth real, teste RLS entre duas empresas, validação concorrente de duplicidade, antiabuso, nem confirmou a versão implantada da Edge Function.
