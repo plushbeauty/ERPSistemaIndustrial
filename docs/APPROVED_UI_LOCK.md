@@ -49,3 +49,10 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - O texto descritivo institucional também recebe branco, negrito e contorno/sombra escura para legibilidade sobre a imagem.
 - Login, autenticação Supabase, recuperação de senha e validações de sessão não foram alterados.
 - O hash do CSS foi atualizado deliberadamente no lock e o contrato visual passa a verificar o novo estilo.
+
+
+## Registro da revisão APROV-007 — 2026-10-18
+- Vendas → Novo Pedido (`src/pages/NovoPedido.tsx`): card Dados do Cliente ocupa toda a linha; Pedido e Entrega/Logística ficam lado a lado em desktop; campos de pedido e grade de itens usam colunas compactas.
+- Preservados os carregamentos reais do Supabase, isolamento por empresa, busca de clientes/produtos/transportadoras, cálculo de custo industrial, validações, anexos, importação de e-mail e RPCs de gravação/finalização.
+- A numeração do pedido continua sendo atribuída e confirmada pelo banco/RPC, evitando sequência calculada apenas no navegador e colisões entre usuários.
+- O hash do Novo Pedido foi atualizado deliberadamente no lock e o contrato visual passa a verificar a nova geometria. Build/CI deve confirmar o JSX e a integridade final antes de considerar a revisão validada.
