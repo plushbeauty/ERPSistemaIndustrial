@@ -6,7 +6,7 @@ const items=[
   {key:'projetos',label:'PROJETOS',icon:FolderKanban},
   {key:'pedidos',label:'PEDIDOS',icon:ClipboardList,route:'/vendas'},
   {key:'entradas',label:'ENTRADAS',icon:Inbox,route:'/recebimento-materiais'},
-  {key:'fichas',label:'FICHAS DE PROCESSO',icon:Wrench,route:'/engenharia/fichas-processo'},
+  {key:'fichas',label:'FICHAS DE PROCESSO',icon:Wrench,route:'/pcp/fichas-processo'},
   {key:'codigos',label:'CÓDIGOS DE PRODUTOS',icon:PackageSearch,route:'/produtos'},
   {key:'config',label:'CONFIGURAÇÕES',icon:Settings,route:'/configuracoes-adm'}
 ] as const
