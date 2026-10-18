@@ -1,50 +1,61 @@
-# Auditoria de tela — CadastroEmpresa.tsx
+# Auditoria de tela e contrato — CadastroEmpresa.tsx
 
-- **Data:** 2026-10-18
-- **Arquivos:** `src/pages/CadastroEmpresa.tsx`, `src/pages/HelpCadastroEmpresa.tsx`, `src/AppEntryV2.tsx`
-- **Status:** **PARCIAL — layout ajustado; onboarding e contrato de segurança ainda exigem homologação**
+- **Data da revisão:** 2026-10-18
 - **Branch:** `fix/blog-portal-conhecimento-20261018`
+- **Status:** **PARCIAL — correções de código gravadas; homologação live e segurança antiabuso pendentes**
+- **Escopo:** cadastro público de empresa, Edge Function `erp-company-signup`, plano, documento fiscal, perfil inicial e rota POP.
+- **Restrição:** não alterar `AtivarAcesso.tsx` nesta etapa.
 
-## Achados verificados no código
+## Contrato corrigido nesta revisão
 
-1. A tela usava classes antigas `company-signup-page`, `company-signup-card`, `selected-plan-signup`, entre outras. O formulário foi migrado para Tailwind com grid responsivo de 12 colunas e controles de 32 px.
-2. A tela chama a Edge Function existente `erp-company-signup`; o nome da função foi preservado para evitar quebra do contrato.
-3. A rota pública `/ajuda/cadastro-empresa` foi adicionada no roteador principal, e a página contém o POP operacional.
+1. **Administrador de tenant não é Master:** o provisionamento grava explicitamente `perfil='ADMIN'`, `nivel_admin=1`, `is_master=false`. O cadastro público não permite escolher nem enviar papel Master.
+2. **Documento fiscal:** a função normaliza os dígitos, valida dígitos verificadores de CPF/CNPJ e persiste `documento` e `tipo_documento`. Mantém o campo legado `cnpj` preenchido para compatibilidade com consumidores antigos, pois o esquema versionado ainda o usa como campo obrigatório. A semântica legada precisa ser removida numa migração planejada, depois de auditar todos os leitores.
+3. **Plano:** o código recebido é resolvido em `erp_planos_catalogo` e precisa estar ativo; a função persiste o código canônico em `erp_empresas.plano` e devolve o plano efetivamente gravado. Não confia em preço/descrição enviados pelo browser.
+4. **Módulo:** o esquema observado não fornece um vínculo por empresa para a seleção isolada enviada pelo formulário. A resposta agora indica explicitamente `modulo_persistido=false`; a seleção não deve ser anunciada como contratada/persistida.
+5. **Falhas e rollback:** erros de servidor devolvem mensagem pública genérica; detalhes ficam no log do servidor. O rollback compensatório continua tentando remover identidade Auth, setores e empresa criados pela requisição.
+6. **Teste estático:** criado `scripts/verify-company-signup-contract.mjs` e registrado `npm run verify:company-signup-contract`.
 
-## Riscos P1/P0 identificados no contrato atual do backend
+## Riscos ainda abertos
 
-1. **Não é provisionamento Master:** `supabase/functions/erp-company-signup/index.ts` cria `erp_usuarios.perfil='ADMIN'`, `nivel_admin=1`, `is_master=false`. O POP e a tela não prometem acesso Master global.
-2. **CPF incompatível com o armazenamento atual:** a função insere o documento recebido em `erp_empresas.cnpj`, independentemente de `tipo_documento`. A opção CPF no formulário não deve ser considerada operacional até haver contrato de banco separado e validação fiscal adequada.
-3. **Plano/módulo não persistidos:** a função atualmente grava `plano: 'Essencial'` e não utiliza o módulo enviado. Os parâmetros `plano`/`modulo` exibidos pelo formulário não alteram por si só o plano contratado no banco.
-4. **Endpoint público privilegiado:** a Edge Function usa `SUPABASE_SERVICE_ROLE_KEY` no servidor e `verify_jwt = false` conforme configuração do projeto. Não há neste código uma defesa visível de rate limit/CAPTCHA/anti-automação. Antes de produção, é necessária proteção contra abuso e criação concorrente duplicada, além de revisar CORS e monitoramento.
-5. A busca prévia de duplicidade de documento/e-mail não é uma garantia contra duas requisições concorrentes; constraints únicas no banco e tratamento de conflito devem ser verificados.
+- `verify_jwt=false` mantém o endpoint público. A função usa chave privilegiada apenas no servidor, mas ainda é necessário instalar/validar rate limit ou CAPTCHA server-side, proteção anti-automação e monitoramento antes de considerar o endpoint seguro para produção.
+- A verificação de duplicidade é uma consulta prévia e **não substitui constraints únicas no banco**. Antes de adicionar índices únicos, é necessário inspecionar e reconciliar possíveis duplicatas existentes.
+- A criação multi-etapas não está dentro de uma transação PostgreSQL única. O rollback é compensatório e pode falhar; os logs de rollback agora são explícitos.
+- `cnpj` legado recebe o documento normalizado inclusive para CPF para satisfazer compatibilidade do esquema atual. Não interpretar esse campo isoladamente: usar `tipo_documento` e `documento`. Uma migração futura deve tornar o campo legado opcional após revisão dos consumidores.
+- Não há prova nesta revisão de deploy da nova versão da Edge Function no projeto Supabase, de migração aplicada, de teste de Auth real, de RLS cross-tenant ou de proteção antiabuso live.
 
-## Alterações desta revisão
+## Bateria de validação
 
-- Substituídas as classes CSS específicas da página por classes Tailwind locais, grid responsivo e campos compactos.
-- Preservado `InfrastructureTrust` e a chamada à Edge Function existente.
-- Mantidos os campos enviados no contrato atual; sem mudanças na Edge Function nem nas permissões de provisionamento.
-- Adicionada página `HelpCadastroEmpresa.tsx` e rota pública `/ajuda/cadastro-empresa`.
-- Documentado no POP que o fluxo cria administrador de tenant, não Master global, e que CPF/plano/módulo precisam de correção de backend.
-
-## Validação
-
-| Verificação | Resultado |
+| Verificação | Estado |
 |---|---|
-| Leitura do componente e Edge Function | Concluída |
-| Refatoração Tailwind | Gravada no branch; inspeção visual real pendente |
-| Rota do POP | Gravada no roteador; verificação automatizada pendente |
-| Type-check / lint | Pendente |
-| Auditorias globais/interações | Pendente |
-| Verificação de rotas/imports | Pendente |
-| Build | Pendente; status Vercel pode ser bloqueado por limite de build |
-| Teste real de onboarding | Pendente |
-| Verificação de duplicidade / rollback transacional | Pendente |
-| Testes de segurança do endpoint público | Pendente |
-| Deploy de produção | Não confirmado |
+| Inspeção do contrato anterior, cadastro, esquema de planos e regra Master | Concluída |
+| Correção de perfil inicial e separação Master | Código atualizado; teste live pendente |
+| Validação de CPF/CNPJ com dígitos verificadores | Código atualizado; casos automatizados de execução pendentes |
+| Persistência e validação do plano pelo catálogo ativo | Código atualizado; teste live pendente |
+| Honestidade sobre seleção de módulo | Código atualizado; não persiste módulo isolado |
+| Verificador estático do contrato | Criado e registrado no package.json; execução pendente |
+| Type-check / lint / auditorias globais / rotas / imports / build | Pendente de execução no ambiente de CI |
+| Teste válido de cadastro e login | Pendente |
+| Documento inválido, plano inativo/desconhecido, e-mail duplicado | Pendente |
+| Duplicidade concorrente e rollback de cada etapa | Pendente |
+| RLS com duas empresas e tentativa de acesso cruzado | Pendente |
+| Rate limit/CAPTCHA e abuso do endpoint público | Pendente |
+| Deploy/versão ativa da Edge Function | Não confirmado |
+| Homologação de produção | **Não aprovada** |
 
-## Commits
+## Commits desta etapa
 
-- Tela: `4ab03e358ca1f2bd2278523770efb6d97aa7d254`
+- Frontend: `4ab03e358ca1f2bd2278523770efb6d97aa7d254`
 - POP: `bcd3e229b53fe62040ac32c0179be6a1a03814a6`
-- Rota: `72336a6a1ab36c6854d51da0540e618dda8b0c43`
+- Rota POP: `72336a6a1ab36c6854d51da0540e618dda8b0c43`
+- Contrato da Edge Function: `b33350cf88f9903d74ab369b27b809c65cfa4b27`
+- Verificador estático: `cdc8386d01a725cdc2e95b50ca44d0317515222d`
+- Script registrado no package: `ab3826dfd07def3e77bd292b7e33261a1df9bfa8`
+
+## Próximas ações obrigatórias
+
+1. Executar `npm run verify:company-signup-contract`, `npm run type-check`, `npm run lint:check`, `npm run audit:all`, `npm run verify:lazy-imports`, `npm run verify-routes` e build em ambiente com dependências instaladas.
+2. Revisar/implantar proteção antiabuso para a Edge Function pública e constraints de unicidade sem colidir com dados legados.
+3. Implantar a Edge Function no Supabase somente após revisão do diff e de testes; verificar versão ativa depois.
+4. Fazer testes em ambiente de homologação com documentos e e-mails de teste controlados, sem criar contas de produção fictícias.
+5. Validar Auth, perfil ADMIN, vínculo `auth_user_id`, plano gravado e isolamento entre duas empresas.
+6. Retomar as auditorias pendentes anteriores após a bateria global; manter `AtivarAcesso.tsx` aguardando.
