@@ -1,14 +1,9 @@
-﻿/**
- * =========================================================================
- * REVISÃO DE ENGENHARIA DE SOFTWARE INDUSTRIAL
- * Data/Hora: 24/09/2026 - 11:43 BRT
- * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
- * ID da Revisão: REV-065
- * Alterações: Corrigir horas_turno e aceitar IDs opcionais na timeline estrita.
- * Status do Build Local: Não executado — ambiente local sem acesso de rede ao repositório.
- * =========================================================================
+/**
+ * REVISÃO PCP TABLET LAUNCHER — 2026-10-18 · REV-PCP-LAUNCHER-001
+ * Alteração: painel PCP em grade compacta para tablet, acesso direto às rotinas existentes,
+ * remoção do submenu lateral duplicado e preservação das consultas/ações operacionais.
+ * Não altera PCPTabletOperador, autenticação, contratos Supabase ou rotinas de gravação.
  */
-
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
@@ -265,92 +260,56 @@ const heightBucket=(ratio:number)=>{
 const tabs:[Tab,string,string][]=[['visao','Visão geral','Gauge'],['novaop','Criar Nova OP','Plus'],['pedidos','Pedidos / Demanda','ClipboardList'],['ops','Ordens de Produção','Factory'],['materiais','Materiais / MRP','Package'],['producao','Apontar produção','Play'],['programacao','Programação / Gantt','CalendarDays'],['capacidade','Capacidade / Máquinas','Wrench'],['qualidade','Qualidade / Defeitos','ShieldCheck']]
 
  return <main className={`pcp-modern-page pcp-industrial-shell${hostedBySynqra?' pcp-hosted-by-synqra':''}`}>
-  {!hostedBySynqra && (
-  <nav className={`pcp-sidebar${hostedBySynqra?' pcp-sidebar-context':''}`} aria-label="Navegação do PCP">
-   <div className="pcp-sidebar-brand"><img src="/logo/logo.png" alt="SYSNQRA ERP & SGQ INDUSTRIAL"/><div><strong>SYSNQRA ERP & SGQ INDUSTRIAL</strong><small>PCP INDUSTRIAL</small></div></div>
-   <button className="pcp-side-item" onClick={()=>window.location.href='/erp-industrial'}><span>⌂</span> DASHBOARD</button>
-   <div className="pcp-side-section">PLANEJAMENTO E CONTROLE</div>
-   <button className={`pcp-side-item ${tab==='visao'?'active':''}`} aria-current={tab==='visao'?'page':undefined} onClick={()=>selectTab('visao')}><span>▦</span> VISÃO GERAL</button>
-   <button className={`pcp-side-item ${tab==='novaop'?'active':''}`} aria-current={tab==='novaop'?'page':undefined} onClick={()=>selectTab('novaop')}><span>＋</span> CRIAR NOVA OP</button>
-   <button className={`pcp-side-item ${tab==='pedidos'?'active':''}`} aria-current={tab==='pedidos'?'page':undefined} onClick={()=>window.location.href='/pcp/demanda'}><span>▤</span> DEMANDA CENTRAL</button>
-   <button className={`pcp-side-item ${tab==='ops'?'active':''}`} aria-current={tab==='ops'?'page':undefined} onClick={()=>window.location.href='/pcp/ordens'}><span>□</span> ORDENS DE PRODUÇÃO</button>
-   <button className={`pcp-side-item ${tab==='materiais'?'active':''}`} aria-current={tab==='materiais'?'page':undefined} onClick={()=>selectTab('materiais')}><span>◇</span> MATERIAIS / MRP</button>
-   <button className={`pcp-side-item ${tab==='programacao'?'active':''}`} aria-current={tab==='programacao'?'page':undefined} onClick={()=>selectTab('programacao')}><span>◉</span> CALENDÁRIO / PROGRAMAÇÃO</button>
-   <button className={`pcp-side-item ${tab==='capacidade'?'active':''}`} aria-current={tab==='capacidade'?'page':undefined} onClick={()=>selectTab('capacidade')}><span>▥</span> CENTROS DE TRABALHO / MÁQUINAS</button>
-   <button className={`pcp-side-item ${tab==='producao'?'active':''}`} aria-current={tab==='producao'?'page':undefined} onClick={()=>selectTab('producao')}><span>▶</span> APONTAMENTO DE PRODUÇÃO</button>
-   <button className="pcp-side-item" onClick={()=>window.location.href='/pcp/paradas'}><span>Ⅱ</span> PARADAS / SETUP</button>
-   <button className={`pcp-side-item ${tab==='qualidade'?'active':''}`} aria-current={tab==='qualidade'?'page':undefined} onClick={()=>selectTab('qualidade')}><span>✓</span> QUALIDADE / DEFEITOS</button>
-   <div className="pcp-side-section">PLANEJAMENTO AVANÇADO</div>
-   <button className="pcp-side-item" onClick={()=>window.location.href='/pcp/planejamento'}><span>◈</span> MPS / CAPACIDADE</button>
-   <button className="pcp-side-item" onClick={()=>window.location.href='/mrp'}><span>◌</span> MRP MULTINÍVEL</button>
-   <button className="pcp-side-item" onClick={()=>window.location.href='/configuracao-lote-pcp'}><span>⚙</span> CONFIGURAÇÃO DE LOTE</button>
-   <button className="pcp-side-item" onClick={()=>window.location.href='/qualidade/refugos'}><span>△</span> REFUGO / RETRABALHO</button>
-   <button className="pcp-side-item" onClick={()=>window.location.href='/central-custos-industrial'}><span>▤</span> RELATÓRIOS / CUSTOS</button>
-   <div className="pcp-side-spacer"/>
-   <button className="pcp-side-item" onClick={()=>window.location.href='/manual-usuario'}><span>?</span> MANUAL</button>
-  </nav>
-
-  )}
   <section className="pcp-main">
    {!hostedBySynqra&&<header className="pcp-topbar">
     <div className="pcp-top-title"><div><strong>PCP Industrial</strong><small>PCP · PLANEJAMENTO E CONTROLE DA PRODUÇÃO</small></div></div>
     <div className="pcp-top-actions"><span className="pcp-supabase-dot"><i/> DADOS SUPABASE</span><span className="pcp-top-user"><i/>{profileName}</span><span className="pcp-top-clock">{clock.toLocaleDateString('pt-BR')} · {clock.toLocaleTimeString('pt-BR')}</span><button type="button" className="pcp-top-light" onClick={()=>document.documentElement.classList.toggle("dark")}>☼ Light</button><button className="pcp-top-exit" onClick={()=>void supabase.auth.signOut().then(()=>window.location.replace('/login'))}>Sair</button></div>
    </header>}
    <div className="pcp-page-head"><div className="pcp-page-heading-row"><div><span>PCP · PLANEJAMENTO E CONTROLE DA PRODUÇÃO</span><h1>{tab==='visao'?'DASHBOARD':tab==='novaop'?'NOVA ORDEM DE PRODUÇÃO':help[tab].title.toUpperCase()}</h1><p>{tab==='visao'?'Visão geral da programação, produção, capacidade e qualidade da fábrica.':tab==='novaop'?'Cadastro operacional da OP, explosão de materiais e roteiro de produção.':help[tab].what}</p></div></div>
-    <div className="pcp-nav-strip">
-     {tabs.map(([id, label, iconName]) => (
-      <button
-       key={id}
-       type="button"
-       className={`pcp-nav-tab ${tab === id ? "active" : ""}`}
-       onClick={() => selectTab(id)}
-      >
-       <InlineIcon name={iconName} size={13} />
-       <span>{label.toUpperCase()}</span>
-      </button>
-     ))}
-    </div>
-   </div>
+    {tab!=='visao'&&<div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-2">
+      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Área operacional · {help[tab].title}</span>
+      <button type="button" onClick={()=>selectTab('visao')} className="inline-flex h-[30px] items-center gap-2 border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-700 hover:border-sky-600 hover:text-sky-800">← Painel principal do PCP</button>
+    </div>}
    {(message||error)&&<div className={error?'error':'notice mb-3'}>{error||message}</div>}
    <div className="pcp-content">
   {tab==='novaop'&&<NovaOPScreen orders={orders} orderItems={orderItems} products={products} clients={clients} machines={machines} fichas={fichas} fitems={fitems} fichaOps={fichaOps} onCancel={()=>selectTab('visao')} onSave={createOP} busy={busy} form={opForm} setForm={setOpForm}/>}
 
-  {tab==='visao'&&<section>
-   <div className="quality-kpis">
-    <article><span>PEDIDOS</span><strong>{orders.length}</strong><small>demanda registrada</small></article>
-    <article><span>OPs ABERTAS</span><strong>{openOps}</strong><small>ordens em execução</small></article>
-    <article><span>PRODUÇÃO BOA</span><strong>{totalGood.toLocaleString('pt-BR')}</strong><small>quantidade apontada</small></article>
-    <article><span>REFUGO / DEFEITOS</span><strong>{totalScrap.toLocaleString('pt-BR')}</strong><small>quantidade registrada</small></article>
+  {tab==='visao'&&<section className="space-y-3">
+   <div className="flex flex-wrap items-center justify-between gap-2 border border-[#123B50] bg-[#123B50] px-3 py-3 text-white">
+    <div><p className="text-[9px] font-bold uppercase tracking-[.18em] text-cyan-200">Centro de comando industrial</p><h2 className="mt-1 text-[16px] font-black">Planejamento e Controle da Produção</h2><p className="mt-1 text-[10px] text-slate-200">Acesse as rotinas do PCP sem menus laterais duplicados. Cada tela consulta os dados reais da empresa autenticada.</p></div>
+    <button type="button" onClick={()=>selectTab('novaop')} className="inline-flex h-[32px] items-center gap-2 border border-cyan-200 bg-[#2D8DB8] px-3 text-[10px] font-black text-white hover:bg-[#24799e]">＋ CRIAR NOVA OP</button>
    </div>
-
-   <div className="pcp-dashboard-grid">
-    <article className="pcp-dash-card">
-     <h2>Pedidos por Status</h2>
-     {statusSummary.length ? statusSummary.map(([name,n])=><div className="pcp-status-row" key={name}><span>{name}</span><div className="pcp-status-bar"><i className={widthBucket(n/Math.max(1,ops.length))}/></div><b>{n}</b></div>) : <div className="pcp-empty">Nenhuma OP real encontrada.</div>}
-    </article>
-    <article className="pcp-dash-card">
-     <h2>Produção (últimos 7 dias)</h2>
-     {productionDays.length ? <div className="pcp-prod-bars">{productionDays.map(d=><div className="pcp-prod-day" key={d.date}><b>{(d.good+d.scrap).toLocaleString('pt-BR')}</b><div className={`pcp-prod-bar ${heightBucket((d.good+d.scrap)/Math.max(1,maxProduction))}`}/><small>{new Date(d.date+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</small></div>)}</div> : <div className="pcp-chart-empty">Nenhuma produção apontada nos últimos 7 dias.</div>}
-    </article>
-    <article className="pcp-dash-card">
-     <h2>Alertas do PCP</h2>
-     <div className="pcp-alert-list">
-      {openOps>0&&<div className="pcp-alert"><span className="pcp-alert-icon">!</span><div><strong>{openOps} OPs em aberto</strong><small>Acompanhar programação e produção.</small></div></div>}
-      {totalScrap>0&&<div className="pcp-alert"><span className="pcp-alert-icon">!</span><div><strong>{totalScrap.toLocaleString('pt-BR')} peças em refugo</strong><small>Verificar Qualidade / Refugo.</small></div></div>}
-      {programs.filter(p=>String(p.status||'').toLowerCase().includes('program')).length===0&&<div className="pcp-alert"><span className="pcp-alert-icon">i</span><div><strong>Sem programação ativa</strong><small>Use Agenda de Máquinas para programar ordens reais da fábrica.</small></div></div>}
-      {!openOps&&!totalScrap&&programs.length>0&&<div className="pcp-alert"><span className="pcp-alert-icon">✓</span><div><strong>PCP sem alertas calculados</strong><small>Dados atuais não indicam pendências.</small></div></div>}
-      {!ops.length&&!programs.length&&<div className="pcp-chart-empty">Sem registros reais para gerar alertas.</div>}
-     </div>
-    </article>
+   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
+    {[
+     {title:'Ordens de produção',desc:'Consultar OPs, prazos, quantidades e situação.',path:'/pcp/ordens',icon:'Factory',tone:'border-sky-200 bg-sky-50 text-sky-800'},
+     {title:'Demanda / pedidos',desc:'Acompanhar pedidos comerciais que geram produção.',tab:'pedidos' as Tab,icon:'ClipboardList',tone:'border-cyan-200 bg-cyan-50 text-cyan-900'},
+     {title:'Materiais / MRP',desc:'Necessidade de componentes e disponibilidade de estoque.',tab:'materiais' as Tab,icon:'Package',tone:'border-indigo-200 bg-indigo-50 text-indigo-900'},
+     {title:'Apontamento de produção',desc:'Registrar quantidade boa, refugo e defeitos.',tab:'producao' as Tab,icon:'Play',tone:'border-emerald-200 bg-emerald-50 text-emerald-900'},
+     {title:'Agenda de máquinas',desc:'Programação por máquina, dia e intervalo.',path:'/pcp/agenda-maquinas',icon:'CalendarDays',tone:'border-blue-200 bg-blue-50 text-blue-900'},
+     {title:'Capacidade industrial',desc:'Carga ativa e distribuição de ordens por máquina.',path:'/pcp/capacidade',icon:'Wrench',tone:'border-violet-200 bg-violet-50 text-violet-900'},
+     {title:'Execução / apontamentos',desc:'Acompanhar OPs e apontamentos por processo.',path:'/pcp/execucao-industrial',icon:'Activity',tone:'border-teal-200 bg-teal-50 text-teal-900'},
+     {title:'Planejamento industrial',desc:'Planejamento mestre e visão de capacidade.',path:'/pcp/planejamento',icon:'ChartNoAxesCombined',tone:'border-orange-200 bg-orange-50 text-orange-900'},
+     {title:'MRP multinível',desc:'Explodir BOM e avaliar necessidades de compra/produção.',path:'/pcp/mrp-ii',icon:'Boxes',tone:'border-amber-200 bg-amber-50 text-amber-900'},
+     {title:'Engenharia / BOM',desc:'Estrutura de produto e componentes da ficha técnica.',path:'/pcp/engenharia-bom',icon:'Layers',tone:'border-slate-300 bg-slate-100 text-slate-800'},
+     {title:'Roteiros de operação',desc:'Sequência de operações e parâmetros do processo.',path:'/pcp/roteiro-operacoes',icon:'Route',tone:'border-sky-200 bg-sky-50 text-sky-800'},
+     {title:'Fichas de processo',desc:'Consultar e manter parâmetros de fabricação.',path:'/pcp/ficha-processo',icon:'ClipboardCheck',tone:'border-cyan-200 bg-cyan-50 text-cyan-900'},
+     {title:'Sequenciamento',desc:'Ordenar operações e reduzir conflitos de produção.',path:'/pcp/sequenciamento',icon:'ArrowUpDown',tone:'border-indigo-200 bg-indigo-50 text-indigo-900'},
+     {title:'Paradas / setup',desc:'Registrar paradas e acompanhar tempos improdutivos.',path:'/pcp/paradas',icon:'Pause',tone:'border-rose-200 bg-rose-50 text-rose-900'},
+     {title:'Indicadores OEE',desc:'Acompanhar eficiência, disponibilidade e desempenho.',path:'/pcp/dashboard-oee',icon:'Gauge',tone:'border-emerald-200 bg-emerald-50 text-emerald-900'},
+     {title:'Tablet do operador',desc:'Interface operacional para o chão de fábrica.',path:'/pcp/tablet-operador',icon:'Tablet',tone:'border-slate-300 bg-slate-100 text-slate-800'},
+     {title:'Auditoria do PCP',desc:'Achados, criticidade, correções e evidências.',path:'/pcp/auditoria',icon:'ShieldCheck',tone:'border-orange-200 bg-orange-50 text-orange-900'},
+     {title:'Qualidade / defeitos',desc:'Consultar defeitos registrados durante a produção.',tab:'qualidade' as Tab,icon:'ShieldCheck',tone:'border-rose-200 bg-rose-50 text-rose-900'}
+    ].map((item)=> <button key={item.title} type="button" onClick={()=>{if('tab' in item&&item.tab)selectTab(item.tab);else if('path' in item&&item.path)window.location.href=item.path}} className="group flex min-h-[112px] flex-col items-start border border-slate-200 bg-white p-3 text-left shadow-sm transition hover:-translate-y-px hover:border-[#2D8DB8] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-500">
+      <span className={`mb-2 flex h-8 w-8 items-center justify-center border ${item.tone}`}><InlineIcon name={item.icon} size={17}/></span>
+      <strong className="text-[11px] font-black leading-4 text-slate-800">{item.title}</strong>
+      <span className="mt-1 text-[9px] leading-4 text-slate-500">{item.desc}</span>
+      <span className="mt-auto pt-2 text-[9px] font-black uppercase tracking-wide text-[#2D8DB8]">Abrir rotina →</span>
+    </button>)}
    </div>
-
-   <div className="pcp-dashboard-tables">
-    <article className="pcp-mini-table"><h2>Últimas Ordens de Produção</h2><table><thead><tr><th>OP</th><th>Produto</th><th>Quantidade</th><th>Status</th></tr></thead><tbody>{ops.slice(0,5).map(o=><tr key={o.id}><td><b>{o.numero_op}</b></td><td>{products.find(p=>p.id===o.produto_id)?.codigo||'—'}</td><td>{Number(o.quantidade||0).toLocaleString('pt-BR')}</td><td>{o.status}</td></tr>)}{!ops.length&&<tr><td colSpan={4}>Nenhuma ordem real cadastrada.</td></tr>}</tbody></table></article>
-    <article className="pcp-mini-table"><h2>Programações recentes</h2><table><thead><tr><th>Máquina</th><th>OP</th><th>Início</th><th>Status</th></tr></thead><tbody>{schedule.slice(0,5).map(p=><tr key={p.id}><td>{p.machine?.codigo||'—'}</td><td>{p.op?.numero_op||'—'}</td><td>{new Date(p.inicio_planejado).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td><td>{p.status}</td></tr>)}{!schedule.length&&<tr><td colSpan={4}>Nenhuma programação real cadastrada.</td></tr>}</tbody></table></article>
-   </div>
-
-   <div className="pcp-flow">
-    {(['pedidos','ops','materiais','programacao','producao','qualidade'] as Tab[]).map((id,i)=><button key={id} onClick={()=>selectTab(id)}><b>{i+1}</b><strong>{help[id].title}</strong><small>{help[id].what}</small><em>{help[id].action} →</em></button>)}
+   <div className="grid gap-2 md:grid-cols-3">
+    <article className="border border-slate-200 bg-white p-3"><p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Ordens em aberto</p><strong className="mt-1 block text-[22px] font-black tabular-nums text-[#123B50]">{openOps}</strong><p className="text-[9px] text-slate-500">Calculado das OPs retornadas pelo Supabase.</p></article>
+    <article className="border border-slate-200 bg-white p-3"><p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Produção boa apontada</p><strong className="mt-1 block text-[22px] font-black tabular-nums text-emerald-700">{totalGood.toLocaleString('pt-BR')}</strong><p className="text-[9px] text-slate-500">Soma dos apontamentos de produção carregados.</p></article>
+    <article className="border border-slate-200 bg-white p-3"><p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">Refugo registrado</p><strong className="mt-1 block text-[22px] font-black tabular-nums text-rose-700">{totalScrap.toLocaleString('pt-BR')}</strong><p className="text-[9px] text-slate-500">Soma de quantidades de refugo registradas.</p></article>
    </div>
   </section>}
 
