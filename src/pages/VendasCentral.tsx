@@ -169,7 +169,7 @@ export default function VendasCentral() {
         {error && <div className="sales-alert" role="alert"><CircleAlert size={17} />{error}</div>}
 
         <section className="sales-orders-card">
-          <div className="synqra-status-grid sales-orders-status-grid" role="tablist" aria-label="Filtrar pedidos por status" style={{display:'grid',gridTemplateColumns:'repeat(6,minmax(0,1fr))',gap:6,alignItems:'stretch',width:'100%'}}>
+          <div className="synqra-status-grid sales-orders-status-grid" role="tablist" aria-label="Filtrar pedidos por status" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,145px),1fr))',gap:6,alignItems:'stretch',width:'100%'}}>
             {filters.map(({ id, label, icon: Icon }) => {
               const value = id === 'todos' ? counts.all
                 : id === 'rascunho' ? counts.drafts
