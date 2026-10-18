@@ -19,6 +19,7 @@ const checks = [
   ['Consulta fiscal oficial Classif preservada', product.includes('portalunico.siscomex.gov.br/classif')],
   ['Login em imagem institucional de tela inteira preservado', login.includes('width:100vw!important') && login.includes('height:100dvh!important')],
   ['Texto institucional do login centralizado', login.includes('top: 50%') && login.includes('text-align:center') && login.includes('translate(-50%,-50%)')],
+  ['Boas-vindas do login em branco, negrito e contorno preto', login.includes('color: #fff !important') && login.includes('-webkit-text-stroke: 1px #000') && login.includes('font-weight: 900 !important')],
   ['Ícone decorativo de chave removido do login', !loginPage.includes('KeyRound') && !loginPage.includes('auth-key-icon')],
   ['CTAs secundários de cadastro e teste removidos', !loginPage.includes('cadastro-empresa') && !loginPage.includes('cadastro-master') && !loginPage.includes('Começar teste grátis')],
   ['Recuperação de senha preservada', loginPage.includes('Esqueci minha senha')],
