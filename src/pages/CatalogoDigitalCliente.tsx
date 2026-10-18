@@ -5,7 +5,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import {
-  ArrowRight, Check, ChevronRight, Filter, Grid2X2, Info, Minus, Package,
+  ArrowRight, ChevronRight, Filter, Grid2X2, Info, Minus, Package,
   Plus, Search, Send, ShoppingBag, X
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -98,6 +98,7 @@ export default function CatalogoDigitalCliente() {
   useEffect(() => {
     if (!selected || !companyId) {
       setBom([])
+      setBomBusy(false)
       return
     }
     let active = true
@@ -116,7 +117,7 @@ export default function CatalogoDigitalCliente() {
           ? await supabase.from('erp_produtos').select('id,nome').eq('empresa_id', companyId).in('id', ids)
           : { data: [], error: null }
         if (components.error) throw components.error
-        const names = new Map((components.data ?? []).map((row: { id: string; nome: string }) => [row.id, row.nome]))
+        const names = new Map<string, string>((components.data ?? []).map((row: { id: string; nome: string }) => [row.id, row.nome] as [string, string]))
         if (active) setBom(rows.map(row => ({ ...row, nome_componente: names.get(row.produto_id) ?? row.sku_insumo })))
       } catch {
         if (active) setBom([])
