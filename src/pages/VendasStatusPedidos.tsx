@@ -114,7 +114,6 @@ export default function VendasStatusPedidos() {
       }
     })()
     // Carregamento inicial intencional; a atualização manual usa load().
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadItems = async (row: Row) => {
