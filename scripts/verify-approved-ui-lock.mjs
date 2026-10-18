@@ -2,12 +2,12 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 
 /**
- * Approved UI lock — reviewed 2026-10-18, approval revision APROV-006. User explicitly authorized restoring the approved login stylesheet and hiding carousel movement controls while enlarging the public-home image card; all other locked screens remain immutable.
+ * Approved UI lock — reviewed 2026-10-18, approval revision APROV-008. User explicitly authorized replacing the Vendas status-stage layout with five independent sector rows. All other locked screens remain immutable.
  * Any edit to a frozen file must fail CI until the user explicitly approves a new revision.
  * Do not update these hashes as part of ordinary styling/refactor work.
  */
 const approved = [
-  { path: 'src/pages/VendasCentral.tsx', sha: '99cdbdb065ef5c2e4182dfb1ff8d267c6adce3c2', label: 'Vendas / Status do pedido', source: 'explicit user-authorized revision APROV-007 — balanced wide cards, visible five-stage legend and real order tracking' },
+  { path: 'src/pages/VendasCentral.tsx', sha: '42f0997ddf548ed598378094a37be27fe0b6ab7e', label: 'Vendas / Status do pedido', source: 'explicit user-authorized revision APROV-008 — five independent sector rows PCP, Almoxarifado, Qualidade, Expedição and Fiscal; uniform h-11 and strong legend' },
   { path: 'src/pages/NovoPedido.tsx', sha: '350786aa95de8a2c3cfe514b8394859bb44253b6', label: 'Vendas / Novo Pedido', source: 'explicit user-authorized revision APROV-007 — 30px controls, 9px labels, three aligned top cards' },
   { path: 'src/pages/ProdutosVendasIndustrial.tsx', sha: 'b1cbdd042c95c547c7d315afb0ee94bba529865f', label: 'Cadastros / Produtos', source: 'approved UI contract' },
   { path: 'src/styles/industrial-login.css', sha: 'c77134e5eaf528438eb137f6a1f6e737aeb5d863', label: 'Login institucional', source: 'restored exact approved stylesheet APROV-002; no unauthorized APROV-005 overrides' },
