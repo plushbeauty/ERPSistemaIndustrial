@@ -7,6 +7,7 @@ const publicHome = readFileSync('src/PublicIndustrialHome.tsx', 'utf8')
 const vendasStatus = readFileSync('src/pages/VendasCentral.tsx', 'utf8')
 const novoPedido = readFileSync('src/pages/NovoPedido.tsx', 'utf8')
 const horizontalShell = readFileSync('src/components/layout/ERPHorizontalShell.tsx', 'utf8')
+const appRoutes = readFileSync('src/AppEntryV2.tsx', 'utf8')
 
 const checks = [
   ['Cadastro de Produtos com abas', product.includes("['gerais','DADOS GERAIS'") && product.includes("['fiscal','FISCAL'") && product.includes("['estoque','ESTOQUE'")],
@@ -26,6 +27,7 @@ const checks = [
   ['Status de Vendas mantém seis filtros e legenda visível das etapas', vendasStatus.includes('sales-orders-status-grid') && vendasStatus.includes('sales-process-legend') && vendasStatus.includes('NF / Saída')],
   ['Novo Pedido usa controles compactos e três cartões superiores alinhados', novoPedido.includes('h-[30px]') && novoPedido.includes('text-[9px]') && novoPedido.includes('md:grid-cols-6') && ['Dados do Cliente','Dados do Pedido','Entrega e Logística'].every(label => novoPedido.includes(label))],
   ['Menu PCP oferece nove tipos de ficha de processo', ['INJETADOS','PRENSADOS','ESTAMPARIA','MECANICA','TRATAMENTO_SUPERFICIAL','PINTURA_QUIMICA','CORTE_VINCO','ACABAMENTO','MONTAGEM_EMBALAGEM'].every(tipo => horizontalShell.includes('?tipo=' + tipo))],
+  ['Rotas antigas redirecionam para a ficha PCP aprovada', appRoutes.includes('path="/engenharia/fichas-processo" element={<Navigate to="/pcp/fichas-processo" replace />}') && appRoutes.includes('path="/fichas-processo" element={<Navigate to="/pcp/fichas-processo" replace />}') && !appRoutes.includes("import('./pages/FichasProcesso')")],
 ]
 
 const failed = checks.filter(([, ok]) => !ok)
