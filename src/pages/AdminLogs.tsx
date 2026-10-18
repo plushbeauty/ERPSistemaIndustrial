@@ -89,15 +89,15 @@ export default function AdminLogs() {
     </header>
     {error && <div role="alert" className="rounded-[3px] border border-red-200 bg-red-50 p-2 text-[10px] font-bold text-red-700">{error}</div>}
     <section className="rounded-[3px] border border-slate-200 bg-white p-3 shadow-sm">
-      <div className="mb-4 flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400"><Filter size={17} className="text-[#2D8DB8}" />Filtros de rastreabilidade</div>
+      <div className="mb-2 flex items-center gap-2 text-[9px] font-black uppercase tracking-wider text-slate-500"><Filter size={17} className="text-[#2D8DB8}" />Filtros de rastreabilidade</div>
       <div className="grid grid-cols-1 gap-2 md:grid-cols-12">
-        <label className="text-[11px] font-black uppercase text-slate-500">Filtrar por usuário
+        <label className="min-w-0 text-[9px] font-bold uppercase text-slate-500 md:col-span-6">Filtrar por usuário
           <select value={usuarioFiltro} onChange={event => { setUsuarioFiltro(event.target.value); setPage(0) }} className="mt-1 h-8 w-full min-w-0 rounded-[3px] border border-slate-300 bg-white px-2 text-[11px] font-semibold text-slate-800">
             <option value="Todos">Todos os usuários</option>
             {users.filter(user => user.auth_user_id).map(user => <option key={user.auth_user_id} value={user.auth_user_id ?? ''}>{user.nome || user.email || user.auth_user_id}</option>)}
           </select>
         </label>
-        <label className="text-[11px] font-black uppercase text-slate-500">Módulo / entidade
+        <label className="min-w-0 text-[9px] font-bold uppercase text-slate-500 md:col-span-6">Módulo / entidade
           <select value={moduloFiltro} onChange={event => { setModuloFiltro(event.target.value); setPage(0) }} className="mt-1 w-full rounded-2xl border-2 border-slate-100 bg-slate-50 px-4 py-2 text-sm font-bold text-slate-800">
             <option value="Todos">Todos os módulos</option>
             {moduleOptions.map(module => <option key={module} value={module}>{module}</option>)}
