@@ -1,7 +1,8 @@
 /**
  * @DATA_REVISAO_APROVACAO: 2026-10-18
+ * @HORA_REVISAO: 19:00 -03:00
  * @STATUS_APROVACAO: COCKPIT-COMERCIAL-PREMIUM-UI-OK
- * @REVISAO: COM-UI-001
+ * @REVISAO: COM-UI-002
  */
 import { useEffect, useMemo, useState } from 'react'
 import { ClipboardList, RefreshCw, Plus, Search, Users, Package, ShoppingCart, ArrowRight, Eye, Save, TrendingUp, AlertCircle } from 'lucide-react'
@@ -63,7 +64,7 @@ export default function ComercialSuprimentos() {
  async function updateStatus(id:string,status:string) {
   if(!empresaId){setError('Empresa da sessão não identificada.');return}
   setBusy(true);setError('');setMessage('')
-  try{const result=await supabase.from('erp_pedidos_venda').update({status}).eq('empresa_id',empresaId).eq('id',id);if(result.error)throw result.error;setMessage('Status atualizado.');await load()}
+  try{const result=await supabase.from('erp_pedidos_venda').update({status}).eq('empresa_id',empresaId).eq('id',id).select('id').maybeSingle();if(result.error)throw result.error;if(!result.data)throw new Error('Nenhum pedido correspondente foi atualizado. Verifique a empresa, a permissão e o status atual.');setMessage('Status atualizado.');await load()}
   catch(e){setError(e instanceof Error?e.message:'Falha ao atualizar status.')}finally{setBusy(false)}
  }
  const kpis=[
