@@ -194,7 +194,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : undefined
   const current = currentModuleMenu ?? menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
   const normalizedSearch = moduleSearch.trim().toLocaleLowerCase('pt-BR')
-  const searchedMenus = normalizedSearch ? menus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : menus
+  const searchedMenus = normalizedSearch ? menus.map(menu => ({ ...menu, children: menu.children?.map(child => ({ ...child, children: child.children?.filter(grandchild => grandchild.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)) })).filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(child.children?.length)) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : menus
   useEffect(() => {
     setOpenMenu(null)
     setOpenSubmenu(null)
