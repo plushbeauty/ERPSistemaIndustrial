@@ -36,3 +36,11 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Cadastro de Fornecedores já utiliza botão primário azul `#2D8DB8` com texto branco; permanece como referência visual.
 - Status do pedido fica congelado novamente nesta revisão. Mudanças futuras exigem ordem expressa do usuário e nova revisão do hash.
 - O contrato de lock também foi sincronizado com os hashes Git reais atuais de Produtos e Login, sem alterar o conteúdo dessas duas telas.
+
+
+## Registro da revisão APROV-008 — 2026-10-18
+
+- Vendas → Status do pedido: a grade de acompanhamento passa a exibir cinco setores independentes: PCP, Almoxarifado, Qualidade, Expedição e Fiscal.
+- Linhas dos setores padronizadas em `h-11`, com labels compactos e legenda superior em cores fortes.
+- Almoxarifado mostra somente movimentos reais da tabela `erp_estoque_movimentos` vinculados às OPs do pedido e filtrados por `empresa_id`; ausência de movimento é indicada explicitamente, sem dados fictícios.
+- Atualizado o hash aprovado de `src/pages/VendasCentral.tsx` no gate `verify:approved-ui-lock`. Os demais arquivos congelados permanecem sem alteração.
