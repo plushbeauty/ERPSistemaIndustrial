@@ -81,7 +81,7 @@ jobs:
       - name: Routes
         run: npm run verify-routes
 
-      - name: Quality tablet regression contract
+      - name: Tablet removal regression contract
         run: npm run verify:quality-tablet-contract
       - name: Global horizontal shell regression contract
         run: npm run verify:global-horizontal-shell
