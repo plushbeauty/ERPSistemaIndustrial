@@ -76,7 +76,19 @@ const menus: MenuItem[] = [
     { label: 'Agenda de máquinas', route: '/pcp/agenda-maquinas' },
     { label: 'Sequenciamento', route: '/pcp/sequenciamento' },
     { label: 'Planejamento', route: '/pcp/planejamento' },
-    { label: 'Fichas de processo', route: '/pcp/fichas-processo' },
+    // @REVISAO_PCP_FICHAS: 2026-10-18 — item único no menu principal com submenu de categorias.
+    { label: 'Fichas de Processo', route: '/pcp/fichas-processo', children: [
+      { label: 'Todas as fichas', route: '/pcp/fichas-processo' },
+      { label: 'Injetados', route: '/pcp/fichas-processo?tipo=INJETADOS' },
+      { label: 'Prensados', route: '/pcp/fichas-processo?tipo=PRENSADOS' },
+      { label: 'Estamparia', route: '/pcp/fichas-processo?tipo=ESTAMPARIA' },
+      { label: 'Mecânica', route: '/pcp/fichas-processo?tipo=MECANICA' },
+      { label: 'Tratamento superficial', route: '/pcp/fichas-processo?tipo=TRATAMENTO_SUPERFICIAL' },
+      { label: 'Pintura / Química', route: '/pcp/fichas-processo?tipo=PINTURA_QUIMICA' },
+      { label: 'Corte e vinco', route: '/pcp/fichas-processo?tipo=CORTE_VINCO' },
+      { label: 'Acabamento', route: '/pcp/fichas-processo?tipo=ACABAMENTO' },
+      { label: 'Montagem e embalagem', route: '/pcp/fichas-processo?tipo=MONTAGEM_EMBALAGEM' },
+    ] },
     { label: 'Paradas / setup', route: '/pcp/paradas' },
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
     { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
@@ -103,6 +115,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null)
   const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
@@ -184,6 +197,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const searchedMenus = normalizedSearch ? menus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : menus
   useEffect(() => {
     setOpenMenu(null)
+    setOpenSubmenu(null)
     setStartMenuOpen(false)
   }, [pathname])
   const openMenuItem = (item: Pick<MenuItem, 'route' | 'action' | 'newTab'>) => {
@@ -285,7 +299,18 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                     {hasChildren && <button type="button" className="erp-windows-menu-expand" aria-label={`Expandir ${menu.label}`} aria-expanded={expanded} onClick={() => { setOpenMenu(value => value === menu.label ? null : menu.label);  }}>{expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}</button>}
                   </div>
                   {hasChildren && expanded && <div className="erp-windows-menu-children">
-                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => <button type="button" key={child.label + child.route} className={pathname === child.route ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }}>{child.label}</button>)}
+                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || child.children?.some(grandchild => grandchild.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch))).map(child => {
+                      const hasGrandchildren = Boolean(child.children?.length)
+                      const submenuExpanded = openSubmenu === child.label || Boolean(normalizedSearch && child.children?.some(grandchild => grandchild.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)))
+                      return <div className="erp-windows-menu-subgroup" key={child.label + child.route}>
+                        {hasGrandchildren
+                          ? <button type="button" className={submenuExpanded ? 'erp-windows-submenu-trigger is-open' : 'erp-windows-submenu-trigger'} aria-expanded={submenuExpanded} onClick={() => setOpenSubmenu(value => value === child.label ? null : child.label)}><span>{child.label}</span>{submenuExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}</button>
+                          : <button type="button" className={pathname + window.location.search === child.route || pathname === child.route ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }}>{child.label}</button>}
+                        {hasGrandchildren && submenuExpanded && <div className="erp-windows-menu-grandchildren">
+                          {child.children?.filter(grandchild => !normalizedSearch || grandchild.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(grandchild => <button type="button" key={grandchild.label + grandchild.route} className={window.location.pathname + window.location.search === grandchild.route || pathname === grandchild.route.split('?')[0] && window.location.search === (grandchild.route.includes('?') ? '?' + grandchild.route.split('?')[1] : '') ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); go(grandchild.route) }}>{grandchild.label}</button>)}
+                        </div>}
+                      </div>
+                    })}
                   </div>}
                 </div>
               })}
@@ -357,6 +382,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-menu-children{margin:0 0 4px 24px;padding:2px 0 2px 8px;border-left:1px solid #cbd5e1}
         .erp-windows-menu-children button{display:block;width:100%;min-height:29px;padding:5px 8px;border:0;background:#fff;text-align:left;color:#334155;font-size:10px;cursor:pointer}
         .erp-windows-menu-children button:hover,.erp-windows-menu-children button.is-active{background:#eaf5f8;color:#123b50}
+        .erp-windows-menu-subgroup{min-width:0}.erp-windows-menu-children .erp-windows-submenu-trigger{display:flex;align-items:center;justify-content:space-between;gap:6px}.erp-windows-menu-children .erp-windows-submenu-trigger.is-open{background:#f1f5f9;color:#123b50}.erp-windows-menu-grandchildren{margin:0 0 3px 8px;padding:2px 0 2px 8px;border-left:1px solid #b9d4df}.erp-windows-menu-grandchildren button{min-height:27px;font-size:10px;padding-left:10px}
         .erp-windows-no-results{margin:12px 8px;font-size:10px;color:#64748b}
         .erp-windows-start-footer{min-height:38px;display:flex;align-items:center;gap:6px;padding:0 10px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:10px;color:#334155}
         .erp-windows-start-footer span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
