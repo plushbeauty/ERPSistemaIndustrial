@@ -1,6 +1,6 @@
 /**
- * REVISÃO: 2026-10-16 · REV-PCP-AGENDA-002
- * Alteração: retirar a legenda da área superior e mantê-la no rodapé da agenda.
+ * REVISÃO: 2026-10-18 · REV-PCP-AGENDA-003
+ * Alteração: remover o rótulo textual “Legenda”; manter apenas as chaves visuais compactas no rodapé.
  * Preservado: regras operacionais, dados Supabase, ações e tablets aprovados (sem alteração).
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -149,7 +149,7 @@ export default function PCPAgendaMaquinas(){
     </div>
    </div>}
    <p className="mt-2 text-[9px] text-slate-500">Agenda semanal filtrada pelos dias de trabalho configurados. Programações não podem se sobrepor na mesma máquina; intervalos são validados no banco. Horas alocadas consideram as programações visíveis.</p>
-   <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 border border-slate-200 bg-white px-2 py-1.5 text-[9px]"><span className="font-bold uppercase text-slate-600">Legenda</span><span className="flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-emerald-600"/>Concluída / liberada</span><span className="flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-sky-600"/>Em execução</span><span className="flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-amber-500"/>Planejada / pendente</span><span className="flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-rose-600"/>Bloqueada / cancelada</span><span className="ml-auto text-slate-500">Clique em uma célula máquina/dia para consultar e programar OPs</span></div>
+   <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 border border-slate-200 bg-white px-2 py-1.5 text-[9px]"><span className="flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-emerald-600"/>Concluída / liberada</span><span className="flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-sky-600"/>Em execução</span><span className="flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-amber-500"/>Planejada / pendente</span><span className="flex items-center gap-1"><i className="h-2 w-2 rounded-full bg-rose-600"/>Bloqueada / cancelada</span><span className="ml-auto text-slate-500">Clique em uma célula máquina/dia para consultar e programar OPs</span></div>
   </div>
   {selected&&<div className="fixed inset-0 z-50 flex justify-end bg-slate-950/30 backdrop-blur-sm print:hidden" onMouseDown={e=>{if(e.target===e.currentTarget)setSelected(null)}}><aside role="dialog" aria-modal="true" aria-label="Programação da máquina" className="flex h-full w-full max-w-[900px] flex-col overflow-y-auto border-l border-slate-200 bg-white shadow-2xl">
    <header className="sticky top-0 z-10 flex items-center gap-2 border-b border-slate-200 bg-white/95 p-3 backdrop-blur-sm"><div className="min-w-0"><p className="text-[9px] font-bold uppercase text-sky-700">DBGrid · programação por recurso</p><h2 className="text-[14px] font-semibold">{selected.machine.codigo} · {selected.machine.nome}</h2><p className="text-[10px] text-slate-500">{selected.date.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'})}</p></div><button className={btn+' ml-auto'} onClick={()=>setSelected(null)} aria-label="Fechar painel"><X size={13}/></button></header>
