@@ -1,9 +1,9 @@
 /**
  * @DATA_REVISAO_APROVACAO: 2026-10-18
- * @REVISAO_APROVACAO: APROV-007
- * @STATUS_APROVACAO: APROVADO-IMUTAVEL
- * @REGRA: revisão APROV-007 autorizada expressamente pelo usuário; preservar cards amplos, etapas reais e legenda visível.
- * @ESCOPO: corrigir geometria dos seis cards, exibir legenda das cinco etapas e manter acompanhamento real do pedido até NF/saída.
+ * @REVISAO_APROVACAO: APROV-008
+ * @STATUS_APROVACAO: NOVA REVISAO EXPRESSAMENTE AUTORIZADA
+ * @REGRA: substituir a grade de etapas por cinco setores independentes, com legenda forte e linhas uniformes h-11.
+ * @ESCOPO: PCP, Almoxarifado, Qualidade, Expedição e Fiscal com dados reais isolados por empresa autenticada.
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -40,6 +40,7 @@ type ProductionStage = { id: string; pedido_venda_id: string; numero_op: string;
 type QualityStage = { ordem_producao_id: string; tipo: string; resultado: string; quantidade_reprovada: number }
 type ExpeditionStage = { pedido_venda_id: string; numero: number; status: string; transportadora: string | null }
 type FiscalStage = { pedido_venda_id: string; tipo: string; status: string; quantidade_pendente: number }
+type StockStage = { ordem_producao_id: string | null; tipo: string; quantidade: number; created_at: string }
 
 const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 const PAGE_SIZE = 25
@@ -76,6 +77,7 @@ const filters: Array<{ id: StatusFilter; label: string; icon: typeof ClipboardLi
 export default function VendasCentral() {
   const [orders, setOrders] = useState<Order[]>([])
   const [productionByOrder, setProductionByOrder] = useState<Record<string, ProductionStage[]>>({})
+  const [stockByOrder, setStockByOrder] = useState<Record<string, StockStage[]>>({})
   const [qualityByOrder, setQualityByOrder] = useState<Record<string, QualityStage[]>>({})
   const [expeditionByOrder, setExpeditionByOrder] = useState<Record<string, ExpeditionStage[]>>({})
   const [fiscalByOrder, setFiscalByOrder] = useState<Record<string, FiscalStage[]>>({})
@@ -102,6 +104,7 @@ export default function VendasCentral() {
       const orderIds = orderRows.map((order) => order.id)
       if (!orderIds.length) {
         setProductionByOrder({})
+        setStockByOrder({})
         setQualityByOrder({})
         setExpeditionByOrder({})
         setFiscalByOrder({})
@@ -114,12 +117,21 @@ export default function VendasCentral() {
         ])
         const productionRows = (productionResult.data ?? []) as ProductionStage[]
         const productionIds = productionRows.map((row) => row.id)
-        const qualityResult = productionIds.length ? await supabase.from('erp_inspecoes').select('ordem_producao_id,tipo,resultado,quantidade_reprovada').eq('empresa_id', companyId).in('ordem_producao_id', productionIds) : null
-        const stageErrors = [productionResult.error, qualityResult?.error, expeditionResult.error, fiscalResult.error].filter(Boolean)
+        const [qualityResult, stockResult] = productionIds.length ? await Promise.all([
+          supabase.from('erp_inspecoes').select('ordem_producao_id,tipo,resultado,quantidade_reprovada').eq('empresa_id', companyId).in('ordem_producao_id', productionIds),
+          supabase.from('erp_estoque_movimentos').select('ordem_producao_id,tipo,quantidade,created_at').eq('empresa_id', companyId).in('ordem_producao_id', productionIds).order('created_at', { ascending: false }),
+        ]) : [null, null]
+        const stageErrors = [productionResult.error, qualityResult?.error, stockResult?.error, expeditionResult.error, fiscalResult.error].filter(Boolean)
         if (stageErrors.length) setError(`Pedidos carregados; não foi possível completar todas as etapas industriais: ${stageErrors.map((item) => item?.message).join(' • ')}`)
         const byOrder = <T extends { pedido_venda_id: string }>(rows: T[] | null) => (rows ?? []).reduce<Record<string, T[]>>((map, row) => { map[row.pedido_venda_id] = [...(map[row.pedido_venda_id] ?? []), row]; return map }, {})
         setProductionByOrder(byOrder(productionRows))
         const opToOrder = new Map(productionRows.map((row) => [row.id, row.pedido_venda_id]))
+        const stockMap = ((stockResult?.data ?? []) as StockStage[]).reduce<Record<string, StockStage[]>>((map, row) => {
+          const orderId = row.ordem_producao_id ? opToOrder.get(row.ordem_producao_id) : undefined
+          if (orderId) map[orderId] = [...(map[orderId] ?? []), row]
+          return map
+        }, {})
+        setStockByOrder(stockMap)
         const qualityMap = ((qualityResult?.data ?? []) as QualityStage[]).reduce<Record<string, QualityStage[]>>((map, row) => { const orderId = opToOrder.get(row.ordem_producao_id); if (orderId) map[orderId] = [...(map[orderId] ?? []), row]; return map }, {})
         setQualityByOrder(qualityMap)
         setExpeditionByOrder(byOrder((expeditionResult.data ?? []) as ExpeditionStage[]))
@@ -252,7 +264,7 @@ export default function VendasCentral() {
                       </span>
                     </td>
                     <td><span className={`sales-status ${statusTone(order.status)}`}>{order.status}</span></td>
-                    <td><ProcessStages order={order} production={productionByOrder[order.id] ?? []} inspections={qualityByOrder[order.id] ?? []} expeditions={expeditionByOrder[order.id] ?? []} fiscal={fiscalByOrder[order.id] ?? []} /></td>
+                    <td><ProcessStages order={order} production={productionByOrder[order.id] ?? []} stock={stockByOrder[order.id] ?? []} inspections={qualityByOrder[order.id] ?? []} expeditions={expeditionByOrder[order.id] ?? []} fiscal={fiscalByOrder[order.id] ?? []} /></td>
                     <td className="sales-number sales-total">{currency.format(Number(order.total ?? 0))}</td>
                   </tr>
                 ))}
@@ -285,7 +297,7 @@ export default function VendasCentral() {
   )
 }
 
-function ProcessStages({ order, production, inspections, expeditions, fiscal }: { order: Order; production: ProductionStage[]; inspections: QualityStage[]; expeditions: ExpeditionStage[]; fiscal: FiscalStage[] }) {
+function ProcessStages({ order, production, stock, inspections, expeditions, fiscal }: { order: Order; production: ProductionStage[]; stock: StockStage[]; inspections: QualityStage[]; expeditions: ExpeditionStage[]; fiscal: FiscalStage[] }) {
   const cancelled = isCancelled(order.status)
   const draft = isDraft(order.status)
   const productionDone = production.length > 0 && production.every((row) => {
@@ -293,18 +305,23 @@ function ProcessStages({ order, production, inspections, expeditions, fiscal }: 
     return status.includes('conclu') || status.includes('finaliz') || status.includes('encerr') || (Number(row.quantidade_planejada || row.quantidade || 0) > 0 && Number(row.quantidade_produzida || 0) >= Number(row.quantidade_planejada || row.quantidade || 0))
   })
   const productionActive = production.length > 0 && !productionDone
+  const stockIn = stock.filter((row) => normalize(row.tipo).includes('entrada'))
+  const stockOut = stock.filter((row) => normalize(row.tipo).includes('saida') || normalize(row.tipo).includes('saída'))
   const qualityRejected = inspections.some((row) => normalize(row.resultado).includes('reprov'))
   const qualityDone = inspections.length > 0 && inspections.every((row) => normalize(row.resultado).includes('aprov') && Number(row.quantidade_reprovada || 0) === 0)
   const expeditionDone = expeditions.length > 0 && expeditions.every((row) => ['expedido', 'entregue', 'conclu', 'finaliz'].some((word) => normalize(row.status).includes(word)))
   const fiscalDone = fiscal.length > 0 && fiscal.every((row) => ['emit', 'autoriz', 'fatur', 'conclu', 'finaliz'].some((word) => normalize(row.status).includes(word)))
-  const stages = [
-    { label: 'Pedido', detail: order.status || 'Recebido', tone: cancelled ? 'is-stage-red' : draft ? 'is-stage-amber' : 'is-stage-green' },
-    { label: 'Produção', detail: production.length ? production.map((row) => `OP ${row.numero_op}: ${row.status} (${Number(row.quantidade_produzida || 0)}/${Number(row.quantidade_planejada || row.quantidade || 0)})`).join(' • ') : 'Aguardando OP', tone: cancelled ? 'is-stage-muted' : productionDone ? 'is-stage-green' : productionActive ? 'is-stage-blue' : 'is-stage-muted' },
-    { label: 'Qualidade', detail: inspections.length ? inspections.map((row) => `${row.tipo}: ${row.resultado}${Number(row.quantidade_reprovada || 0) > 0 ? ` (${Number(row.quantidade_reprovada)} reprovada(s))` : ''}`).join(' • ') : 'Aguardando inspeção', tone: cancelled ? 'is-stage-muted' : qualityRejected ? 'is-stage-red' : qualityDone ? 'is-stage-green' : inspections.length ? 'is-stage-amber' : 'is-stage-muted' },
-    { label: 'Expedição', detail: expeditions.length ? expeditions.map((row) => `EXP ${row.numero}: ${row.status}${row.transportadora ? ` • ${row.transportadora}` : ''}`).join(' • ') : 'Aguardando expedição', tone: cancelled ? 'is-stage-muted' : expeditionDone ? 'is-stage-green' : expeditions.length ? 'is-stage-violet' : 'is-stage-muted' },
-    { label: 'NF / Saída', detail: fiscal.length ? fiscal.map((row) => `${row.tipo}: ${row.status} (pendente ${Number(row.quantidade_pendente || 0)})`).join(' • ') : 'Aguardando liberação fiscal', tone: cancelled ? 'is-stage-muted' : fiscalDone ? 'is-stage-green' : fiscal.length ? 'is-stage-cyan' : 'is-stage-muted' },
+  const sectors = [
+    { label: 'PCP', detail: production.length ? production.map((row) => `OP ${row.numero_op}: ${row.status} • ${Number(row.quantidade_produzida || 0)}/${Number(row.quantidade_planejada || row.quantidade || 0)}`).join(' | ') : 'Aguardando OP', tone: cancelled ? 'is-stage-muted' : productionDone ? 'is-stage-green' : productionActive ? 'is-stage-blue' : 'is-stage-muted' },
+    { label: 'ALMOXARIFADO', detail: stock.length ? `${stock.length} movimento(s) • entradas ${stockIn.length} • saídas ${stockOut.length}` : production.length ? 'Sem movimento vinculado às OPs' : 'Aguardando OP / movimento', tone: cancelled ? 'is-stage-muted' : stock.length ? 'is-stage-cyan' : 'is-stage-muted' },
+    { label: 'QUALIDADE', detail: inspections.length ? inspections.map((row) => `${row.tipo}: ${row.resultado}${Number(row.quantidade_reprovada || 0) > 0 ? ` (${Number(row.quantidade_reprovada)} reprovada(s))` : ''}`).join(' | ') : 'Aguardando inspeção', tone: cancelled ? 'is-stage-muted' : qualityRejected ? 'is-stage-red' : qualityDone ? 'is-stage-green' : inspections.length ? 'is-stage-amber' : 'is-stage-muted' },
+    { label: 'EXPEDIÇÃO', detail: expeditions.length ? expeditions.map((row) => `EXP ${row.numero}: ${row.status}${row.transportadora ? ` • ${row.transportadora}` : ''}`).join(' | ') : 'Aguardando expedição', tone: cancelled ? 'is-stage-muted' : expeditionDone ? 'is-stage-green' : expeditions.length ? 'is-stage-violet' : 'is-stage-muted' },
+    { label: 'FISCAL', detail: fiscal.length ? fiscal.map((row) => `${row.tipo}: ${row.status} (pendente ${Number(row.quantidade_pendente || 0)})`).join(' | ') : 'Aguardando liberação fiscal', tone: cancelled ? 'is-stage-muted' : fiscalDone ? 'is-stage-green' : fiscal.length ? 'is-stage-cyan' : 'is-stage-muted' },
   ]
-  return <div className="sales-process-stages" aria-label={`Etapas do pedido PV-${String(order.numero).padStart(6, '0')}`}>
-    {stages.map((stage) => <div key={stage.label} className={`sales-process-stage ${stage.tone}`} title={`${stage.label}: ${stage.detail}`}><span>{stage.label}</span><strong>{stage.detail}</strong></div>)}
+  return <div className="sales-process-stages sales-sector-columns" aria-label={`Setores do pedido PV-${String(order.numero).padStart(6, '0')}`}>
+    {sectors.map((sector) => <div key={sector.label} className={`sales-process-stage sales-sector-row h-11 ${sector.tone}`} title={`${sector.label}: ${sector.detail}`}>
+      <span>{sector.label}</span>
+      <strong>{sector.detail}</strong>
+    </div>)}
   </div>
 }
