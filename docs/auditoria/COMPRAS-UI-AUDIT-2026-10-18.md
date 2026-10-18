@@ -1,10 +1,10 @@
 # Auditoria de UI — Compras/Suprimentos
 
 - Data: 2026-10-18
-- Revisão: COMPRAS-UI-R2
+- Revisão: COMPRAS-UI-R3
 - Branch: `fix/compras-ui-standardization-2026-10-18`
 - Escopo: padronização visual e correções pontuais das telas do módulo Compras.
-- Status: **em validação; não marcar como concluído antes do CI, build e inspeção visual**.
+- Status: **fluxos funcionais principais aprovados pelo usuário; validação técnica/visual e produção ainda pendentes**.
 
 ## Referências usadas
 
@@ -30,7 +30,19 @@
 - Não foram alterados schemas, migrations, RPCs, autenticação, RBAC, políticas RLS, cálculos de compra ou regras fiscais.
 - A tela de ordem de compra permanece apontada pela rota existente; não houve troca de rotas neste ajuste.
 
-## Verificações ainda obrigatórias
+## Verificações
+
+### Fluxos funcionais confirmados pelo usuário — PASS
+
+- [x] Central de Compras: carregar dados e apresentar erros corretamente.
+- [x] Pedidos de compra: abrir e consultar registros.
+- [x] Requisições: consultar e navegar pelos registros.
+- [x] RFQ: abrir, atualizar a tela e conferir cotações.
+- [x] Recebimentos: abrir e consultar materiais.
+- [x] Fornecedores: consultar e navegar pelos registros.
+- [x] Validação Fiscal: carregar pedidos e fornecedores.
+
+### Verificações técnicas/visuais ainda obrigatórias
 
 - [ ] Type-check.
 - [ ] Lint.
@@ -43,4 +55,4 @@
 
 ## Limitações
 
-Esta é uma alteração de código e uma auditoria estática inicial. Até que as verificações acima terminem, não há declaração de build verde, comportamento visual validado no navegador ou publicação em produção. O item UI-030 continua aberto até haver evidência suficiente.
+Os sete fluxos acima foram testados e informados como PASS pelo usuário. Isso confirma a validação funcional manual desses caminhos, mas não substitui as verificações técnicas/visuais ainda marcadas como pendentes. O build remoto da branch e o preview estão READY no SHA `83ed9e8f3c47173b86b112a72f833351c5be3f11`; o PR #150 continua sem merge. Não há declaração de publicação em produção. O item UI-030 permanece aberto até concluir as verificações restantes.
