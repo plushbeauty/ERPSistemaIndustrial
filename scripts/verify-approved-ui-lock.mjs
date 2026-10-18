@@ -17,6 +17,7 @@ const approved = [
   { path: 'src/components/PCPTabletMenuModal.tsx', sha: 'b02e84ec48381d26b50d05362d35cee24f378f37', label: 'PCP / Submenu Fichas de Processo', source: 'explicit user-approved submenu revision 2026-10-18 — freeze labels and destinations unless explicitly authorized' },
   { path: 'src/components/IndustrialCommandDashboard.tsx', sha: '821b2cb2add9ec0a31d0c81e906a2c1f6e84118b', label: 'Dashboard principal industrial', source: 'restored from user-provided archive 2026-10-18; freeze unless explicitly authorized' },
   { path: 'src/pages/PCPFichasProcesso.tsx', sha: '8bcf940773f34515475d65d1f7fa1f6334c67307', label: 'PCP / Fichas de Processo (Prensados, Injetados, Acabamento, Montagem)', source: 'restored from user-provided archive 2026-10-18; freeze unless explicitly authorized' },
+  { path: 'src/PublicIndustrialHome.tsx', sha: '37f0e2efd19f0f6e635d3a0d921a514ebf9a0cbc', label: 'Página inicial pública / Carrossel e planos', source: 'restored from user-provided archive 2026-10-18; freeze unless explicitly authorized' },
 ]
 
 let failed = false
