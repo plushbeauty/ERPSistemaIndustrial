@@ -116,6 +116,8 @@ const PedidoVendaCompleto = lazyPage(() => import('./pages/NovoPedido'), 'NovoPe
 const DashboardComercial = lazyPage(() => import('./pages/DashboardComercial'), 'DashboardComercial')
 const VendasCentral = lazyPage(() => import('./pages/VendasCentral'), 'default')
 const VendasCatalogoDigital = lazyPage(() => import('./pages/VendasCatalogoDigital'), 'VendasCatalogoDigital')
+const CatalogoDigitalCliente = lazyPage(() => import('./pages/CatalogoDigitalCliente'), 'CatalogoDigitalCliente')
+const HelpCatalogoDigitalCliente = lazyPage(() => import('./pages/HelpCatalogoDigitalCliente'), 'HelpCatalogoDigitalCliente')
 const VendasAnaliseCustos = lazyPage(() => import('./pages/VendasAnaliseCustos'), 'VendasAnaliseCustos')
 const VendasDashboardGraficos = lazyPage(() => import('./pages/VendasDashboardGraficos'), 'VendasDashboardGraficos')
 const VendasMetas = lazyPage(() => import('./pages/VendasMetas'), 'VendasMetas')
@@ -479,6 +481,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/cadastros/clientes" element={<VendasClientesPage />} />
       <Route path="/cadastros/fornecedores" element={<FornecedoresIndustrial />} />
       <Route path="/vendas/catalogo-digital" element={<VendasCatalogoDigital />} />
+      <Route path="/vendas/catalogo-cliente" element={<QualityPlanGate><CatalogoDigitalCliente /></QualityPlanGate>} />
+      <Route path="/vendas/catalogo-ajuda" element={<QualityPlanGate><HelpCatalogoDigitalCliente /></QualityPlanGate>} />
       <Route path="/vendas/analise-custos" element={<QualityPlanGate>{<VendasAnaliseCustos />}</QualityPlanGate>} />
       <Route path="/vendas/dashboard-graficos" element={<VendasDashboardGraficos />} />
       <Route path="/vendas/metas" element={<VendasMetas />} />
