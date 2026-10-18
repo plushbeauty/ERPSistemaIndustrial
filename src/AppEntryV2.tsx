@@ -101,6 +101,7 @@ const PCPExecucaoIndustrial = lazyPage(() => import('./pages/PCPExecucaoIndustri
 const PCPCapacidade = lazyPage(() => import('./pages/PCPCapacidade'), 'default')
 const PCPAgendaMaquinas = lazyPage(() => import('./pages/PCPAgendaMaquinas'), 'default')
 const PCPFichasProcesso = lazyPage(() => import('./pages/PCPFichasProcesso'), 'default')
+const HelpPCPFichas = lazyPage(() => import('./pages/HelpPCPFichas'), 'default')
 const PCPParadas = lazyPage(() => import('./pages/PCPParadas'), 'PCPParadas')
 const PCPSequenciamento = lazyPage(() => import('./pages/PCPSequenciamento'), 'PCPSequenciamento')
 const PCPPlanejamentoIndustrial = lazyPage(() => import('./pages/PCPPlanejamentoIndustrial'), 'PCPPlanejamentoIndustrial')
@@ -550,6 +551,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/capacidade" element={<QualityPlanGate><PCPCapacidade /></QualityPlanGate>} />
       <Route path="/pcp/agenda-maquinas" element={<QualityPlanGate>{<PCPAgendaMaquinas />}</QualityPlanGate>} />
       <Route path="/pcp/fichas-processo" element={<QualityPlanGate>{<PCPFichasProcesso />}</QualityPlanGate>} />
+      <Route path="/ajuda/pcp-fichas-processo" element={<HelpPCPFichas />} />
       <Route path="/pcp/mrp-ii" element={<QualityPlanGate>{<MRPIndustrial />}</QualityPlanGate>} />
       <Route path="/pcp/execucao-industrial" element={<QualityPlanGate>{<PCPExecucaoIndustrial />}</QualityPlanGate>} />
       <Route path="/pcp/dashboard-oee" element={<QualityPlanGate>{<PCPDashboardOEE />}</QualityPlanGate>} />
