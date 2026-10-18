@@ -54,3 +54,158 @@
 .compras-compact .supplier-page form{padding:8px!important;border-radius:2px!important}
 @media(max-width:900px){.compras-compact .pc-grid{grid-template-columns:1fr 1fr}.compras-compact .pc-page{padding:6px!important}}
 @media(max-width:620px){.compras-compact .pc-grid{grid-template-columns:1fr}}
+
+/* Revisão UI-REF-R1 — Compras alinhado ao padrão industrial compacto (32 px). */
+/* Controles operacionais seguem o token mestre; checkbox/radio preservam o tamanho nativo. */
+.compras-compact input:not([type="checkbox"]):not([type="radio"]),
+.compras-compact select,
+.compras-compact .buy-form input,
+.compras-compact .buy-form select,
+.compras-compact .buy-search input,
+.compras-compact .buy-report-search input {
+  box-sizing: border-box;
+  height: 32px !important;
+  min-height: 32px !important;
+  border-radius: 2px !important;
+  font-size: 11px !important;
+}
+.compras-compact textarea {
+  height: auto !important;
+  min-height: 64px !important;
+  border-radius: 2px !important;
+  font-size: 11px !important;
+}
+.compras-compact button,
+.compras-compact .buy-report-btn,
+.compras-compact .buy-form-actions button {
+  box-sizing: border-box;
+  min-height: 32px !important;
+  height: 32px !important;
+  border-radius: 2px !important;
+  padding: 0 8px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.compras-compact .buy-nav {
+  height: auto !important;
+  min-height: 32px !important;
+  flex-shrink: 0;
+}
+.compras-compact .buy-message[role="alert"] {
+  background: #fff1f2 !important;
+  border: 1px solid #fecdd3 !important;
+  color: #9f1239 !important;
+}
+.compras-compact .buy-message[role="status"] {
+  background: #ecfdf5 !important;
+  border: 1px solid #a7f3d0 !important;
+  color: #166534 !important;
+}
+.compras-compact main.min-h-screen {
+  min-height: 0 !important;
+  padding: 8px !important;
+}
+.compras-compact .p-5,
+.compras-compact .p-4 {
+  padding: 8px !important;
+}
+.compras-compact .px-5 {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+.compras-compact .py-3 {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+.compras-compact .h-12,
+.compras-compact th.h-12,
+.compras-compact tr.h-14 {
+  height: 32px !important;
+}
+.compras-compact .min-h-10,
+.compras-compact .min-h-11 {
+  min-height: 32px !important;
+}
+.compras-compact .rounded-full,
+.compras-compact .rounded-lg,
+.compras-compact .rounded-md,
+.compras-compact .rounded-xl {
+  border-radius: 2px !important;
+}
+.compras-compact .shadow,
+.compras-compact .shadow-sm,
+.compras-compact .shadow-md,
+.compras-compact .buy-card,
+.compras-compact .buy-report-card {
+  box-shadow: none !important;
+}
+.compras-compact .buy-head h1,
+.compras-compact .buy-report-head h1,
+.compras-compact .buy-help-head h1 {
+  font-size: 18px !important;
+  line-height: 1.25 !important;
+  font-weight: 500 !important;
+}
+.compras-compact .buy-kpis article,
+.compras-compact .buy-card header,
+.compras-compact .buy-bars,
+.compras-compact .buy-flow,
+.compras-compact .buy-list,
+.compras-compact .buy-report-kpis article,
+.compras-compact .buy-report-card,
+.compras-compact .buy-help-card {
+  padding: 8px !important;
+  border-radius: 2px !important;
+}
+.compras-compact .buy-kpis b,
+.compras-compact .buy-report-kpis strong {
+  font-size: 18px !important;
+}
+.compras-compact .buy-report {
+  min-height: 0 !important;
+  padding: 8px !important;
+}
+.compras-compact .buy-report-btn,
+.compras-compact .buy-report-search,
+.compras-compact .buy-help-card {
+  border-radius: 2px !important;
+}
+.compras-compact .buy-report-table th,
+.compras-compact .buy-report-table td,
+.compras-compact .buy-content table th,
+.compras-compact .buy-content table td,
+.compras-compact .pc-table th,
+.compras-compact .pc-table td {
+  padding: 4px 7px !important;
+  font-size: 10px !important;
+}
+.compras-compact .buy-help {
+  min-height: 0 !important;
+  padding: 8px !important;
+}
+.compras-compact .buy-help-grid {
+  gap: 8px !important;
+}
+.compras-compact .buy-help-card h2 {
+  font-size: 13px !important;
+}
+.compras-compact .buy-help-card ul {
+  line-height: 1.5 !important;
+}
+@media (max-width: 620px) {
+  .compras-compact .buy-kpis,
+  .compras-compact .buy-report-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .compras-compact .buy-head,
+  .compras-compact .buy-report-head {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .compras-compact .buy-form {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
