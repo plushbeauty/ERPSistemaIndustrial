@@ -1,85 +1,191 @@
-/*
-📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
-- Arquivo: src/pages/ClientesIndustrial.tsx
-- Status Atual: Revisão 3 (Cadastro Comercial e Política de Preços)
-- Total de Linhas Gerado: 27 Desenvolverdor FernandoSch.
-- Assinatura de Entrada (Primeiros 3 Imports): import { FormEvent, useEffect, useState } from 'react' | import { Check, Pencil, Plus, Search, X, Trash2, RefreshCw, Printer, Filter } from 'lucide-react' | import { supabase } from '../lib/supabaseClient'
-- Regra de Negócio Incorporada: Cadastro real de cliente com tipo comercial, tabela de preço e desconto percentual padrão.
-*/
-import { FormEvent, useEffect, useState } from 'react'
-import { Check, Pencil, Plus, X, Trash2, RefreshCw, Printer, Filter } from 'lucide-react'
+/**
+ * @DATA_REVISAO_APROVACAO: 2026-10-18
+ * @REVISAO: APROV-CLIENTES-001
+ * @STATUS_APROVACAO: CLIENTES-INDUSTRIAL-UI-ALINHADA
+ */
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { BookOpen, Check, CreditCard, Filter, Pencil, Plus, Printer, RefreshCw, Search, ShieldCheck, Trash2, Users, X } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import VendasLayout from './VendasLayout'
 
-type Client={id:string;codigo:string|null;nome:string;documento:string|null;email:string|null;telefone:string|null;tipo_cliente:string|null;tabela_preco_id:string|null;desconto_padrao_percentual:number;ativo:boolean}
-type PriceTable={id:string;codigo:string;nome:string;ativo:boolean}
-type Form={codigo:string;nome:string;documento:string;email:string;telefone:string;tipo_cliente:string;tabela_preco_id:string;desconto_padrao_percentual:string;ativo:boolean}
-const empty:Form={codigo:'',nome:'',documento:'',email:'',telefone:'',tipo_cliente:'PADRAO',tabela_preco_id:'',desconto_padrao_percentual:'0',ativo:true}
-const input:React.CSSProperties={width:'100%',height:28,border:'1px solid #b9c9d4',borderRadius:2,padding:'0 6px',boxSizing:'border-box',background:'#fff',color:'#111827',fontSize:10,minWidth:0}
-const label:React.CSSProperties={display:'grid',gap:2,fontSize:9,fontWeight:700,textTransform:'uppercase',color:'#344054',minWidth:0}
-const panel:React.CSSProperties={background:'#fff',border:'1px solid #c7dce8',borderRadius:2,boxShadow:'0 2px 7px rgba(18,59,80,.08)'}
-const action=(primary=false,danger=false):React.CSSProperties=>({height:30,display:'inline-flex',alignItems:'center',justifyContent:'center',gap:4,border:'1px solid '+(primary?'#2D8DB8':danger?'#d65b61':'#b9c9d4'),borderRadius:2,padding:'0 8px',fontSize:9,fontWeight:700,cursor:'pointer',background:primary?'#2D8DB8':danger?'#fff5f5':'#fff',color:primary?'#fff':danger?'#b42318':'#123B50',whiteSpace:'nowrap'})
-export default function ClientesIndustrial(){
- const [rows,setRows]=useState<Client[]>([]),[tables,setTables]=useState<PriceTable[]>([]),[form,setForm]=useState<Form>(empty),[editing,setEditing]=useState<string|null>(null),[selected,setSelected]=useState<Client|null>(null),[show,setShow]=useState(false),[filterOpen,setFilterOpen]=useState(true),[query,setQuery]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
- const load=async()=>{setBusy(true);setError('');try{const {data:empresa,error:ee}=await supabase.rpc('erp_current_empresa_id');if(ee||!empresa)throw ee??new Error('Empresa da sessão não identificada.');const id=String(empresa);const [c,t]=await Promise.all([supabase.from('erp_clientes').select('id,codigo,nome,documento,email,telefone,tipo_cliente,tabela_preco_id,desconto_padrao_percentual,ativo').eq('empresa_id',id).order('nome').limit(1000),supabase.from('erp_tabelas_preco').select('id,codigo,nome,ativo').eq('empresa_id',id).eq('ativo',true).order('nome')]);if(c.error)throw c.error;if(t.error)throw t.error;setRows((c.data??[]) as Client[]);setTables((t.data??[]) as PriceTable[])}catch(e){setError(e instanceof Error?e.message:'Não foi possível carregar clientes.')}finally{setBusy(false)}}
- useEffect(()=>{void load()},[])
- const filtered=rows.filter(r=>{const q=query.trim().toLowerCase();return !q||`${r.codigo??''} ${r.nome} ${r.documento??''}`.toLowerCase().includes(q)})
- const save=async(e:FormEvent)=>{e.preventDefault();setBusy(true);setError('');setMessage('');try{if(!form.nome.trim())throw new Error('Informe o nome/razão social.');const desconto=Number(form.desconto_padrao_percentual)||0;if(desconto<0||desconto>100)throw new Error('O desconto deve estar entre 0 e 100%.');const {data:empresa,error:ee}=await supabase.rpc('erp_current_empresa_id');if(ee||!empresa)throw ee??new Error('Empresa não identificada.');const payload={empresa_id:String(empresa),codigo:form.codigo.trim()||null,nome:form.nome.trim(),documento:form.documento.trim()||null,email:form.email.trim()||null,telefone:form.telefone.trim()||null,tipo_cliente:form.tipo_cliente.trim()||'PADRAO',tabela_preco_id:form.tabela_preco_id||null,desconto_padrao_percentual:desconto,ativo:form.ativo};const r=editing?await supabase.from('erp_clientes').update(payload).eq('id',editing):await supabase.from('erp_clientes').insert(payload);if(r.error)throw r.error;setShow(false);setMessage(editing?'Cliente atualizado com política comercial.':'Cliente cadastrado com política comercial.');await load()}catch(e){setError(e instanceof Error?e.message:'Não foi possível salvar o cliente.')}finally{setBusy(false)}}
- const edit=(r:Client)=>{setEditing(r.id);setForm({codigo:r.codigo??'',nome:r.nome,documento:r.documento??'',email:r.email??'',telefone:r.telefone??'',tipo_cliente:r.tipo_cliente??'PADRAO',tabela_preco_id:r.tabela_preco_id??'',desconto_padrao_percentual:String(r.desconto_padrao_percentual??0),ativo:r.ativo});setShow(true)}
- const open=()=>{setEditing(null);setForm(empty);setShow(true);setError('');setMessage('')}
- const openEdit=()=>{if(selected)edit(selected)}
- const remove=async()=>{if(!selected)return;if(!window.confirm(`Excluir o cliente ${selected.nome}?`))return;setBusy(true);setError('');setMessage('');try{const {data:empresa,error:ee}=await supabase.rpc('erp_current_empresa_id');if(ee||!empresa)throw ee??new Error('Empresa não identificada.');const r=await supabase.from('erp_clientes').delete().eq('id',selected.id).eq('empresa_id',String(empresa));if(r.error)throw r.error;setSelected(null);setMessage('Cliente excluído.');await load()}catch(e){setError(e instanceof Error?e.message:'Não foi possível excluir o cliente.')}finally{setBusy(false)}}
- const print=()=>window.print()
- return (
-  <main style={{minHeight:'100vh',background:'#F4FBFD',color:'#123B50',padding:10,boxSizing:'border-box'}}>
-    <div style={{maxWidth:1600,margin:'0 auto'}}>
-      <section style={{...panel,overflow:'hidden',marginBottom:7}}>
-        <div style={{padding:'9px 11px',background:'linear-gradient(115deg,#123B50 0%,#1C6387 45%,#2D8DB8 78%,#48B7C7 100%)',color:'#fff',boxShadow:'inset 0 1px 0 rgba(255,255,255,.22)'}}>
-          <div style={{display:'flex',justifyContent:'space-between',gap:8,alignItems:'center',flexWrap:'wrap'}}>
-            <div><div style={{fontSize:9,fontWeight:800,letterSpacing:'.08em',color:'#c9f2ff'}}>COMERCIAL • CADASTRO MESTRE</div><h1 style={{margin:'2px 0',fontSize:17,fontWeight:700}}>Clientes</h1><p style={{margin:0,fontSize:10,color:'#e4f7ff'}}>Cadastro de clientes, contatos e política comercial.</p></div>
-            <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
-              <button type="button" onClick={open} style={action(true)}><Plus size={12}/> NOVO CLIENTE</button>
-              <button type="button" className="erp-edit-button" onClick={openEdit} disabled={!selected} style={{...action(),opacity:selected?1:.5,cursor:selected?'pointer':'not-allowed'}}><Pencil size={12}/> EDITAR</button>
-              <button type="button" onClick={()=>void remove()} disabled={!selected||busy} style={{...action(false,true),opacity:selected?1:.5,cursor:selected?'pointer':'not-allowed'}}><Trash2 size={12}/> EXCLUIR</button>
-              <button type="button" onClick={()=>setFilterOpen(v=>!v)} style={action()}><Filter size={12}/> FILTRO</button>
-              <button type="button" onClick={()=>void load()} disabled={busy} style={{...action(),opacity:busy ? .5 : 1}}><RefreshCw size={12}/> ATUALIZAR</button>
-              <button type="button" onClick={print} style={action()}><Printer size={12}/> IMPRIMIR</button>
-            </div>
+type Client = { id: string; codigo: string | null; nome: string; documento: string | null; email: string | null; telefone: string | null; tipo_cliente: string | null; tabela_preco_id: string | null; desconto_padrao_percentual: number; ativo: boolean }
+type PriceTable = { id: string; codigo: string; nome: string; ativo: boolean }
+type ClientForm = { codigo: string; nome: string; documento: string; email: string; telefone: string; tipo_cliente: string; tabela_preco_id: string; desconto_padrao_percentual: string; ativo: boolean }
+
+const empty: ClientForm = { codigo: '', nome: '', documento: '', email: '', telefone: '', tipo_cliente: 'PADRAO', tabela_preco_id: '', desconto_padrao_percentual: '0', ativo: true }
+const field = 'h-8 w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-800 outline-none placeholder:font-normal placeholder:text-slate-400 focus:border-sky-600 focus:ring-1 focus:ring-sky-100 disabled:bg-slate-100'
+const label = 'grid min-w-0 gap-1 text-[9px] font-bold uppercase tracking-wide text-slate-600'
+const button = 'inline-flex h-7 items-center justify-center gap-1.5 rounded-[2px] border border-slate-300 bg-white px-2.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40'
+const primary = 'inline-flex h-7 items-center justify-center gap-1.5 rounded-[2px] border border-teal-800 bg-teal-700 px-3 text-[10px] font-black text-white hover:bg-teal-800 disabled:opacity-40'
+
+export default function ClientesIndustrial() {
+  const [rows, setRows] = useState<Client[]>([])
+  const [tables, setTables] = useState<PriceTable[]>([])
+  const [form, setForm] = useState<ClientForm>(empty)
+  const [editing, setEditing] = useState<string | null>(null)
+  const [selected, setSelected] = useState<Client | null>(null)
+  const [show, setShow] = useState(false)
+  const [filterOpen, setFilterOpen] = useState(true)
+  const [query, setQuery] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+
+  const load = async () => {
+    setBusy(true)
+    setError('')
+    try {
+      const { data: empresa, error: companyError } = await supabase.rpc('erp_current_empresa_id')
+      if (companyError || !empresa) throw companyError ?? new Error('Empresa da sessão não identificada.')
+      const companyId = String(empresa)
+      const [clients, priceTables] = await Promise.all([
+        supabase.from('erp_clientes').select('id,codigo,nome,documento,email,telefone,tipo_cliente,tabela_preco_id,desconto_padrao_percentual,ativo').eq('empresa_id', companyId).order('nome').limit(1000),
+        supabase.from('erp_tabelas_preco').select('id,codigo,nome,ativo').eq('empresa_id', companyId).eq('ativo', true).order('nome'),
+      ])
+      if (clients.error) throw clients.error
+      if (priceTables.error) throw priceTables.error
+      setRows((clients.data ?? []) as Client[])
+      setTables((priceTables.data ?? []) as PriceTable[])
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível carregar os clientes.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  useEffect(() => { void load() }, [])
+
+  const filtered = useMemo(() => {
+    const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    const q = normalize(query.trim())
+    return rows.filter(row => !q || normalize([row.codigo, row.nome, row.documento, row.email].filter(Boolean).join(' ')).includes(q))
+  }, [rows, query])
+
+  const startNew = () => { setEditing(null); setForm(empty); setError(''); setMessage(''); setShow(true) }
+  const edit = (row: Client) => {
+    setEditing(row.id)
+    setForm({ codigo: row.codigo ?? '', nome: row.nome, documento: row.documento ?? '', email: row.email ?? '', telefone: row.telefone ?? '', tipo_cliente: row.tipo_cliente ?? 'PADRAO', tabela_preco_id: row.tabela_preco_id ?? '', desconto_padrao_percentual: String(row.desconto_padrao_percentual ?? 0), ativo: row.ativo })
+    setError('')
+    setMessage('')
+    setShow(true)
+  }
+
+  const save = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setBusy(true)
+    setError('')
+    setMessage('')
+    try {
+      if (!form.nome.trim()) throw new Error('Informe o nome ou a razão social.')
+      const discount = Number(form.desconto_padrao_percentual)
+      if (!Number.isFinite(discount) || discount < 0 || discount > 100) throw new Error('O desconto deve ficar entre 0% e 100%.')
+      const { data: empresa, error: companyError } = await supabase.rpc('erp_current_empresa_id')
+      if (companyError || !empresa) throw companyError ?? new Error('Empresa da sessão não identificada.')
+      const companyId = String(empresa)
+      const payload = { empresa_id: companyId, codigo: form.codigo.trim() || null, nome: form.nome.trim(), documento: form.documento.trim() || null, email: form.email.trim() || null, telefone: form.telefone.trim() || null, tipo_cliente: form.tipo_cliente.trim() || 'PADRAO', tabela_preco_id: form.tabela_preco_id || null, desconto_padrao_percentual: discount, ativo: form.ativo }
+      const result = editing
+        ? await supabase.from('erp_clientes').update(payload).eq('id', editing).eq('empresa_id', companyId)
+        : await supabase.from('erp_clientes').insert(payload)
+      if (result.error) throw result.error
+      setShow(false)
+      setMessage(editing ? 'Cadastro e política comercial atualizados.' : 'Cliente cadastrado com sucesso.')
+      await load()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível salvar o cliente.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const remove = async () => {
+    if (!selected || !window.confirm(`Excluir o cliente ${selected.nome}?`)) return
+    setBusy(true)
+    setError('')
+    setMessage('')
+    try {
+      const { data: empresa, error: companyError } = await supabase.rpc('erp_current_empresa_id')
+      if (companyError || !empresa) throw companyError ?? new Error('Empresa da sessão não identificada.')
+      const result = await supabase.from('erp_clientes').delete().eq('id', selected.id).eq('empresa_id', String(empresa))
+      if (result.error) throw result.error
+      setSelected(null)
+      setMessage('Cliente removido.')
+      await load()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível excluir o cliente.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <VendasLayout title="Ficha Cadastral de Clientes" subtitle="Cadastro mestre, contatos e parametrização comercial" onRefresh={() => { void load() }} titleActions={<Link to="/ajuda/clientes-industrial" className={button}><BookOpen size={12} /> POP / AJUDA</Link>}>
+      <div className="space-y-3 p-1 text-xs">
+        {(message || error) && <div role="alert" className={`rounded-[2px] border px-3 py-2 text-[10px] font-bold ${error ? 'border-red-200 bg-red-50 text-red-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'}`}>{error || message}</div>}
+
+        <section className="flex flex-col gap-2 rounded-[2px] border border-slate-200 bg-slate-50 p-2.5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wide text-slate-600"><Users size={14} className="text-sky-700" /> Operação de cadastro de parceiros</div>
+          <div className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap">
+            <button type="button" onClick={startNew} className={primary}><Plus size={12} /> NOVO CLIENTE</button>
+            <button type="button" onClick={() => selected && edit(selected)} disabled={!selected || busy} className={button}><Pencil size={12} /> EDITAR</button>
+            <button type="button" onClick={() => void remove()} disabled={!selected || busy} className={`${button} border-red-200 bg-red-50 text-red-700 hover:bg-red-100`}><Trash2 size={12} /> EXCLUIR</button>
+            <button type="button" onClick={() => setFilterOpen(value => !value)} aria-expanded={filterOpen} className={button}><Filter size={12} /> FILTROS</button>
+            <button type="button" onClick={() => void load()} disabled={busy} className={button}><RefreshCw size={12} className={busy ? 'animate-spin' : ''} /> ATUALIZAR</button>
+            <button type="button" onClick={() => window.print()} className={button}><Printer size={12} /> IMPRIMIR</button>
           </div>
-        </div>
-        {(message||error)&&<div style={{padding:'6px 10px',fontSize:10,background:error?'#fff1f2':'#ecfdf5',color:error?'#b42318':'#047857',borderBottom:'1px solid #d5e4ec'}}>{error||message}</div>}
-      </section>
-      <section style={{...panel,overflow:'hidden',marginBottom:7}}>
-        <div style={{padding:'7px 9px',background:'linear-gradient(90deg,#e2f3fa,#f4fbfd)',borderBottom:'1px solid #c7dce8',display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}}>
-          <strong style={{fontSize:10,color:'#123B50'}}>CONSULTA DE CLIENTES</strong><span style={{fontSize:9,color:'#466779'}}>{filtered.length} registro(s)</span>
-        </div>
-        {filterOpen&&<div style={{display:'grid',gridTemplateColumns:'minmax(240px,1fr) auto',gap:7,alignItems:'end',padding:8,background:'#f8fcfe',borderBottom:'1px solid #dce8ef'}}>
-          <label style={label}>PESQUISAR CLIENTE / DOCUMENTO / CÓDIGO<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Digite para localizar" style={input}/></label>
-          <button type="button" onClick={()=>setQuery('')} style={action()}><X size={12}/> LIMPAR</button>
+        </section>
+
+        <section className="overflow-hidden rounded-[2px] border border-slate-200 bg-white">
+          <div className="flex flex-col gap-1 border-b border-slate-200 bg-[#F4FBFD] px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wide text-[#123B50]"><CreditCard size={13} /> Carteira de clientes</h2>
+            <span className="text-[10px] font-semibold text-slate-500">{filtered.length} registro(s) {busy ? '• atualizando…' : ''}</span>
+          </div>
+          {filterOpen && <div className="grid grid-cols-1 items-end gap-3 border-b border-slate-200 bg-slate-50 p-3 md:grid-cols-12">
+            <label className={`${label} md:col-span-10`}><span className="flex items-center gap-1"><Search size={11} /> Pesquisar nome, documento, código ou e-mail</span><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Digite para localizar…" className={field} /></label>
+            <div className="md:col-span-2"><button type="button" onClick={() => setQuery('')} className={`${button} h-8 w-full`}><X size={12} /> LIMPAR</button></div>
+          </div>}
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] border-collapse text-left text-[11px]">
+              <thead className="h-8 bg-[#123B50] text-[9px] uppercase tracking-wide text-white"><tr>
+                <th className="px-3 py-2 font-black">Código</th><th className="px-3 py-2 font-black">Razão social / documento</th><th className="px-3 py-2 font-black">Segmentação</th><th className="px-3 py-2 font-black">Tabela vinculada</th><th className="px-3 py-2 text-right font-black">Desconto</th><th className="px-3 py-2 font-black">Status</th>
+              </tr></thead>
+              <tbody>{filtered.map(row => <tr key={row.id} tabIndex={0} aria-selected={selected?.id === row.id} onClick={() => setSelected(row)} onDoubleClick={() => edit(row)} onKeyDown={event => { if (event.key === 'Enter') setSelected(row); if (event.key === 'Escape') setSelected(null) }} className={`h-9 cursor-pointer border-b border-slate-100 ${selected?.id === row.id ? 'bg-sky-50 font-bold ring-1 ring-inset ring-sky-300' : 'hover:bg-slate-50'}`}>
+                <td className="whitespace-nowrap px-3 py-2 font-mono text-slate-600">{row.codigo || '—'}</td>
+                <td className="max-w-[360px] px-3 py-2"><div className="truncate font-bold text-slate-800">{row.nome}</div><div className="truncate text-[9px] font-normal text-slate-500">{row.documento || 'Documento não informado'}</div></td>
+                <td className="whitespace-nowrap px-3 py-2">{row.tipo_cliente || 'PADRAO'}</td>
+                <td className="max-w-[220px] truncate px-3 py-2">{tables.find(table => table.id === row.tabela_preco_id)?.nome || 'Preço base de fábrica'}</td>
+                <td className="whitespace-nowrap px-3 py-2 text-right font-mono">{Number(row.desconto_padrao_percentual || 0).toFixed(2)}%</td>
+                <td className="px-3 py-2"><span className={`inline-flex min-w-14 items-center justify-center rounded-[2px] px-1.5 py-1 text-[9px] font-black ${row.ativo ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>{row.ativo ? 'ATIVO' : 'INATIVO'}</span></td>
+              </tr>)}</tbody>
+            </table>
+            {!filtered.length && <div className="px-4 py-10 text-center text-[11px] text-slate-500">{busy ? 'Carregando clientes da empresa autenticada…' : 'Nenhum parceiro comercial localizado com esse filtro.'}</div>}
+          </div>
+        </section>
+
+        {show && <div className="fixed inset-0 z-[100] grid place-items-center overflow-y-auto bg-slate-950/60 p-3 sm:p-6">
+          <form onSubmit={save} aria-labelledby="client-form-title" className="my-auto max-h-[94vh] w-full max-w-4xl overflow-y-auto rounded-[2px] border border-slate-300 bg-white shadow-2xl">
+            <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-200 bg-[#123B50] px-4 py-3 text-white">
+              <div><div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-cyan-200"><ShieldCheck size={12} /> Dados fiscais e comerciais</div><h2 id="client-form-title" className="mt-1 text-sm font-black">{editing ? 'Ficha de alteração cadastral' : 'Abertura de cadastro mestre'}</h2></div>
+              <button type="button" onClick={() => setShow(false)} aria-label="Fechar ficha" className="inline-flex h-7 w-7 items-center justify-center rounded-[2px] border border-white/30 text-white hover:bg-white/10"><X size={14} /></button>
+            </header>
+            <div className="grid grid-cols-1 gap-x-3 gap-y-3 p-4 sm:grid-cols-12">
+              <label className={`${label} sm:col-span-3 lg:col-span-2`}>Código interno<input value={form.codigo} onChange={event => setForm({ ...form, codigo: event.target.value })} placeholder="CLI-001" className={field} /></label>
+              <label className={`${label} sm:col-span-9 lg:col-span-7`}>Razão social / nome completo *<input required value={form.nome} onChange={event => setForm({ ...form, nome: event.target.value })} placeholder="Nome ou razão social" className={field} /></label>
+              <label className={`${label} sm:col-span-6 lg:col-span-3`}>CNPJ / CPF<input value={form.documento} onChange={event => setForm({ ...form, documento: event.target.value })} placeholder="00.000.000/0000-00" className={`${field} font-mono`} /></label>
+              <label className={`${label} sm:col-span-6 lg:col-span-5`}>E-mail de faturamento<input type="email" value={form.email} onChange={event => setForm({ ...form, email: event.target.value })} placeholder="nfe@empresa.com.br" className={`${field} font-mono`} /></label>
+              <label className={`${label} sm:col-span-6 lg:col-span-3`}>Telefone de contato<input value={form.telefone} onChange={event => setForm({ ...form, telefone: event.target.value })} placeholder="(00) 00000-0000" className={field} /></label>
+              <label className={`${label} sm:col-span-6 lg:col-span-4`}>Segmentação operacional<select value={form.tipo_cliente} onChange={event => setForm({ ...form, tipo_cliente: event.target.value })} className={field}><option value="PADRAO">PADRÃO</option><option value="INDUSTRIAL">INDUSTRIAL</option><option value="REVENDA">REVENDA</option><option value="DISTRIBUIDOR">DISTRIBUIDOR</option><option value="OUTRO">OUTRO</option></select></label>
+              <label className={`${label} sm:col-span-8 lg:col-span-7`}>Tabela de preço vinculada<select value={form.tabela_preco_id} onChange={event => setForm({ ...form, tabela_preco_id: event.target.value })} className={field}><option value="">Preço base de fábrica</option>{tables.map(table => <option key={table.id} value={table.id}>{table.codigo} • {table.nome}</option>)}</select></label>
+              <label className={`${label} sm:col-span-4 lg:col-span-2`}>Desconto padrão %<input type="number" min="0" max="100" step="0.01" value={form.desconto_padrao_percentual} onChange={event => setForm({ ...form, desconto_padrao_percentual: event.target.value })} className={`${field} text-right font-mono`} /></label>
+              <label className={`${label} sm:col-span-6 lg:col-span-3`}>Situação do cadastro<select value={form.ativo ? 'SIM' : 'NAO'} onChange={event => setForm({ ...form, ativo: event.target.value === 'SIM' })} className={field}><option value="SIM">ATIVO</option><option value="NAO">INATIVO</option></select></label>
+            </div>
+            <footer className="flex flex-col-reverse gap-2 border-t border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:justify-end">
+              <button type="button" onClick={() => setShow(false)} className={button}><X size={12} /> CANCELAR</button>
+              <button type="submit" disabled={busy} className={primary}><Check size={12} /> {busy ? 'SALVANDO…' : 'SALVAR CLIENTE'}</button>
+            </footer>
+          </form>
         </div>}
-        <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:10,minWidth:780}}><thead><tr style={{background:'#123B50',color:'#fff'}}>{['Código','Cliente','Tipo','Tabela','Desconto','Status'].map(h=><th key={h} style={{textAlign:'left',padding:'6px 8px',fontSize:9,fontWeight:700}}>{h}</th>)}</tr></thead>
-        <tbody>{filtered.map(r=><tr key={r.id} onClick={()=>setSelected(r)} onDoubleClick={()=>edit(r)} style={{cursor:'pointer',background:selected?.id===r.id?'#d9eff9':'#fff',borderBottom:'1px solid #e3edf2'}}>
-          <td style={{padding:'6px 8px'}}>{r.codigo||'—'}</td><td style={{padding:'6px 8px'}}><b style={{fontWeight:700}}>{r.nome}</b><small style={{display:'block',color:'#607987',fontSize:9}}>{r.documento||'—'}</small></td><td style={{padding:'6px 8px'}}>{r.tipo_cliente||'PADRAO'}</td><td style={{padding:'6px 8px'}}>{tables.find(t=>t.id===r.tabela_preco_id)?.nome||'Preço base'}</td><td style={{padding:'6px 8px'}}>{Number(r.desconto_padrao_percentual||0).toFixed(2)}%</td><td style={{padding:'6px 8px',color:r.ativo?'#16794a':'#b42318',fontWeight:700}}>{r.ativo?'ATIVO':'INATIVO'}</td>
-        </tr>)}</tbody></table>{!filtered.length&&<div style={{padding:22,textAlign:'center',fontSize:10,color:'#607987'}}>Nenhum cliente encontrado.</div>}</div>
-      </section>
-    </div>
-    {show&&<div style={{position:'fixed',inset:0,zIndex:30,background:'rgba(15,23,42,.58)',display:'grid',placeItems:'center',padding:12}}>
-      <form onSubmit={save} style={{...panel,background:'#fafdff',padding:10,width:'min(760px,100%)',maxHeight:'92vh',overflowY:'auto'}}>
-        <header style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,padding:'8px 10px',marginBottom:9,borderRadius:2,background:'linear-gradient(110deg,#123B50,#2D8DB8 70%,#48B7C7)',color:'#fff'}}><div><div style={{fontSize:9,fontWeight:700,color:'#d7f5ff'}}>COMERCIAL • CADASTRO MESTRE</div><h2 style={{margin:'2px 0',fontSize:15,fontWeight:700}}>{editing?'Editar cliente':'Novo cliente'}</h2></div><button type="button" onClick={()=>setShow(false)} style={{...action(),width:28,padding:0}}><X size={14}/></button></header>
-        <div style={{display:'grid',gridTemplateColumns:'90px minmax(220px,2fr) minmax(120px,1fr)',gap:8}}>
-          <label style={label}>CÓDIGO<input style={input} value={form.codigo} onChange={e=>setForm({...form,codigo:e.target.value})}/></label>
-          <label style={label}>NOME / RAZÃO SOCIAL *<input required style={input} value={form.nome} onChange={e=>setForm({...form,nome:e.target.value})}/></label>
-          <label style={label}>CPF / CNPJ<input style={input} value={form.documento} onChange={e=>setForm({...form,documento:e.target.value})}/></label>
-          <label style={label}>E-MAIL<input type="email" style={input} value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/></label>
-          <label style={label}>TELEFONE<input style={input} value={form.telefone} onChange={e=>setForm({...form,telefone:e.target.value})}/></label>
-          <label style={label}>TIPO DE CLIENTE<input style={input} value={form.tipo_cliente} onChange={e=>setForm({...form,tipo_cliente:e.target.value})}/></label>
-          <label style={label}>TABELA DE PREÇO<select style={input} value={form.tabela_preco_id} onChange={e=>setForm({...form,tabela_preco_id:e.target.value})}><option value="">Preço base</option>{tables.map(t=><option key={t.id} value={t.id}>{t.codigo} • {t.nome}</option>)}</select></label>
-          <label style={label}>DESCONTO %<input type="number" min="0" max="100" step="0.01" style={input} value={form.desconto_padrao_percentual} onChange={e=>setForm({...form,desconto_padrao_percentual:e.target.value})}/></label>
-          <label style={label}>SITUAÇÃO<select style={input} value={form.ativo?'SIM':'NÃO'} onChange={e=>setForm({...form,ativo:e.target.value==='SIM'})}><option value="SIM">ATIVO</option><option value="NÃO">INATIVO</option></select></label>
-        </div>
-        <footer style={{display:'flex',justifyContent:'flex-end',gap:5,marginTop:10,paddingTop:8,borderTop:'1px solid #dce8ef'}}><button type="button" onClick={()=>setShow(false)} style={action()}><X size={12}/> CANCELAR</button><button disabled={busy} style={{...action(true),opacity:busy ? .5 : 1}}><Check size={12}/> SALVAR CLIENTE</button></footer>
-      </form>
-    </div>}
-    <style>{`@media print{button{display:none!important}main{background:#fff!important;padding:0!important}}`}</style>
-  </main>
-)}
-/* Revisão 3 registrada após validação estrutural do arquivo. */
+      </div>
+    </VendasLayout>
+  )
+}
