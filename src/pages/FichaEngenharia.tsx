@@ -145,13 +145,14 @@ export default function FichaEngenharia(){
    const ib=await supabase.from('erp_ficha_itens').insert(bom.map(x=>({empresa_id:empresaId,ficha_id:fichaId,componente_id:x.componente_id,quantidade:Number(x.quantidade),perda_percentual:Number(x.perda_percentual),lote_obrigatorio:x.lote_obrigatorio,tipo_item:x.tipo_item,sequencia:x.sequencia})));if(ib.error)throw ib.error
    const dops=await supabase.from('erp_ficha_operacoes').delete().eq('empresa_id',empresaId).eq('ficha_id',fichaId);if(dops.error)throw dops.error
    const io=await supabase.from('erp_ficha_operacoes').insert(ops.map(x=>({empresa_id:empresaId,ficha_id:fichaId,sequencia:x.sequencia,operacao:x.operacao.trim(),maquina_id:x.maquina_id||null,molde_id:x.molde_id||null,setup_min:Number(x.setup_min),ciclo_seg:Number(x.ciclo_seg),instrucoes:x.instrucoes.trim()||null})));if(io.error)throw io.error
+   const savedQualityRows:QualityRow[]=[]
    for(const q of quality.filter(x=>x.caracteristica.trim())){
     const qp={empresa_id:empresaId,codigo:q.codigo.trim()||('CQ-'+Date.now()),produto_id:productId,caracteristica:q.caracteristica.trim(),unidade:q.unidade.trim()||null,valor_nominal:q.nominal.trim()||null,limite_inferior:q.limite_inferior===''?null:Number(q.limite_inferior),limite_superior:q.limite_superior===''?null:Number(q.limite_superior),frequencia:q.frequencia.trim()||'100%',status:q.status}
-    const qr=q.id?await supabase.from('erp_planos_inspecao').update(qp).eq('id',q.id).eq('empresa_id',empresaId):await supabase.from('erp_planos_inspecao').insert(qp)
-    if(qr.error)throw qr.error
+    if(q.id){const qr=await supabase.from('erp_planos_inspecao').update(qp).eq('id',q.id).eq('empresa_id',empresaId);if(qr.error)throw qr.error;savedQualityRows.push(q)}
+    else{const qr=await supabase.from('erp_planos_inspecao').insert(qp).select('id').single();if(qr.error)throw qr.error;savedQualityRows.push({...q,id:String(qr.data.id)})}
    }
-   const retainedQualityIds=quality.flatMap(q=>q.id?[q.id]:[]);const removedQualityIds=originalQualityIds.filter(id=>!retainedQualityIds.includes(id));if(removedQualityIds.length){const removed=await supabase.from('erp_planos_inspecao').delete().eq('empresa_id',empresaId).eq('produto_id',productId).in('id',removedQualityIds);if(removed.error)throw removed.error}
-   setOriginalQualityIds(retainedQualityIds)
+   const retainedQualityIds=savedQualityRows.flatMap(q=>q.id?[q.id]:[]);const removedQualityIds=originalQualityIds.filter(id=>!retainedQualityIds.includes(id));if(removedQualityIds.length){const removed=await supabase.from('erp_planos_inspecao').delete().eq('empresa_id',empresaId).eq('produto_id',productId).in('id',removedQualityIds);if(removed.error)throw removed.error}
+   setQuality(savedQualityRows.length?savedQualityRows:[emptyQuality()]);setOriginalQualityIds(retainedQualityIds)
    setFicha(saved.data as Ficha);setCatalog(rows=>[{id:String(saved.data.id),produto_id:productId,versao:Number(version),observacoes:JSON.stringify(payload)},...rows.filter(x=>x.id!==String(saved.data.id))]);setNotice('Ficha de processo gravada: parâmetros, ferramental, fotos, materiais, roteiro e controles de qualidade registrados.')
   }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
  }
