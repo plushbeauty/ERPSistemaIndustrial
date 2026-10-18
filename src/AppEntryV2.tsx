@@ -112,6 +112,8 @@ const EstoqueAlmoxarifado = lazyPage(() => import('./pages/EstoqueAlmoxarifadoCo
 const ProdutosVendasIndustrial = lazyPage(() => import('./pages/ProdutosVendasIndustrial'), 'ProdutosVendasIndustrial')
 const ModuloCadastroProdutos = lazyPage(() => import('./pages/cadastro-produtos/ModuloCadastroProdutos'), 'ModuloCadastroProdutos')
 const HelpFichaTecnica = lazyPage(() => import('./pages/cadastro-produtos/HelpFichaTecnica'), 'HelpFichaTecnica')
+const HelpParametrosCodigo = lazyPage(() => import('./pages/cadastro-produtos/HelpParametrosCodigo'), 'HelpParametrosCodigo')
+const ParametrosCodigo = lazyPage(() => import('./pages/cadastro-produtos/ParametrosCodigo'), 'ParametrosCodigo')
 const HelpListagemProdutos = lazyPage(() => import('./pages/cadastro-produtos/HelpListagemProdutos'), 'HelpListagemProdutos')
 const TabletDashboard = lazyPage(() => import('./pages/TabletDashboard'), 'TabletDashboard')
 const PedidoVendaCompleto = lazyPage(() => import('./pages/NovoPedido'), 'NovoPedido')
@@ -592,6 +594,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/produtos-vendas" element={<ProdutosVendasIndustrial />} />
       <Route path="/cadastro-produtos" element={<ModuloCadastroProdutos />} />
       <Route path="/ajuda/ficha-tecnica" element={<HelpFichaTecnica />} />
+      <Route path="/cadastro-produtos/parametros-codigo" element={<ParametrosCodigo />} />
+      <Route path="/ajuda/parametros-codigo" element={<HelpParametrosCodigo />} />
       <Route path="/ajuda/listagem-produtos" element={<HelpListagemProdutos />} />
       <Route path="/operacao-industrial" element={<QualityPlanGate>{<OperacaoIndustrial />}</QualityPlanGate>} />
       <Route path="/moldes-injecao" element={<QualityPlanGate>{<MoldesFerramentaria />}</QualityPlanGate>} />
