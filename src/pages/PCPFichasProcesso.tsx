@@ -350,10 +350,14 @@ export default function PCPFichasProcesso() {
 
  return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-4">
   <div className="mx-auto max-w-[1800px]">
-   <header className="mb-3 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
-    <span className="flex h-8 w-8 items-center justify-center bg-[#123B50] text-white"><FileSliders size={16}/></span>
-    <div><p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#2D8DB8]">MANUFATURA / PCP / ENGENHARIA</p><h1 className="text-[16px] font-semibold leading-5">Fichas de processo e parâmetros técnicos</h1><p className="text-[10px] text-slate-500">Roteiro, setup, parâmetros críticos, homologação e rastreabilidade de revisão.</p></div>
-    <div className="ml-auto flex gap-1"><button className="erp-premium-button erp-premium-button-secondary print:hidden" type="button" onClick={()=>window.print()}><Printer size={12}/> Imprimir ficha</button><button className="erp-premium-button erp-premium-button-secondary print:hidden" onClick={()=>void load()} disabled={busy}><RefreshCw size={12}/> Atualizar</button><button className="erp-premium-button" onClick={()=>{setCode('');setProductId('');setToolId('');setMachineId('');setVersion('1');setApprovedAt('');setSignature('');setStatus('RASCUNHO');setParams(blankParameters(category));setInstructions('');setHistoryFichaId('');setHistory([])}}>Nova ficha</button></div>
+   <header className="mb-3 flex flex-wrap items-start gap-2 border-b border-slate-200 pb-2">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-[#123B50] text-white"><FileSliders size={16}/></span>
+    <div className="min-w-0 flex-1 basis-[min(100%,420px)]">
+     <p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#2D8DB8]">MANUFATURA / PCP / ENGENHARIA</p>
+     <h1 className="break-words text-[16px] font-semibold leading-5">Fichas de processo e parâmetros técnicos</h1>
+     <p className="mt-1 max-w-3xl break-words text-[10px] leading-4 text-slate-500 [overflow-wrap:anywhere]">Roteiro, setup, parâmetros críticos, homologação e rastreabilidade de revisão.</p>
+    </div>
+    <div className="ml-auto flex max-w-full shrink-0 flex-wrap items-center gap-1"><button className="erp-premium-button erp-premium-button-secondary print:hidden" type="button" onClick={()=>window.print()}><Printer size={12}/> Imprimir ficha</button><button className="erp-premium-button erp-premium-button-secondary print:hidden" onClick={()=>void load()} disabled={busy}><RefreshCw size={12}/> Atualizar</button><button className="erp-premium-button" onClick={()=>{setCode('');setProductId('');setToolId('');setMachineId('');setVersion('1');setApprovedAt('');setSignature('');setStatus('RASCUNHO');setParams(blankParameters(category));setInstructions('');setHistoryFichaId('');setHistory([])}}>Nova ficha</button></div>
    </header>
    {error && <div role="alert" className="mb-2 border border-rose-300 bg-rose-50 p-2 text-[10px] text-rose-800">{error}</div>}
    {notice && <div role="status" className="mb-2 flex items-center gap-2 border border-emerald-300 bg-emerald-50 p-2 text-[10px] text-emerald-800"><CheckCircle2 size={13}/>{notice}</div>}
