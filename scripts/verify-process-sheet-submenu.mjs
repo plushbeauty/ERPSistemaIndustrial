@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import assert from 'node:assert/strict'
 
 const menu = readFileSync('src/components/PCPTabletMenuModal.tsx', 'utf8')
+const globalShell = readFileSync('src/components/layout/ERPHorizontalShell.tsx', 'utf8')
 const routes = readFileSync('src/AppEntryV2.tsx', 'utf8')
 const processSheets = readFileSync('src/pages/PCPFichasProcesso.tsx', 'utf8')
 const migration = readFileSync('supabase/migrations/20261017140000_pcp_fichas_acabamento_embalagem.sql', 'utf8')
@@ -19,6 +20,24 @@ const approvedItems = [
 ]
 
 assert.match(menu, /APROVADO — submenu de Fichas de Processo/)
+assert.match(globalShell, /label: 'Fichas de Processo', route: '\/pcp\/fichas-processo', children: \[/, 'Main menu must expose one Fichas de Processo parent with a nested submenu')
+for (const [label, kind] of [
+  ['Todas as fichas', ''],
+  ['Injetados', 'INJETADOS'],
+  ['Prensados', 'PRENSADOS'],
+  ['Estamparia', 'ESTAMPARIA'],
+  ['Mecânica', 'MECANICA'],
+  ['Tratamento superficial', 'TRATAMENTO_SUPERFICIAL'],
+  ['Pintura / Química', 'PINTURA_QUIMICA'],
+  ['Corte e vinco', 'CORTE_VINCO'],
+  ['Acabamento', 'ACABAMENTO'],
+  ['Montagem e embalagem', 'MONTAGEM_EMBALAGEM'],
+]) {
+  const route = kind ? `/pcp/fichas-processo?tipo=${kind}` : '/pcp/fichas-processo'
+  assert.ok(globalShell.includes(`label: '${label}', route: '${route}'`), `Missing nested main-menu process-sheet category: ${label}`)
+}
+assert.ok(!globalShell.includes("label: 'Ficha — Injetados'"), 'Process-sheet categories must not return as separate main-menu shortcuts')
+assert.match(globalShell, /const \[openSubmenu, setOpenSubmenu\]/, 'Nested menu expansion state must exist')
 assert.match(menu, /if \(!processSheetsOpen && module\.number === 'P09'\) setProcessSheetsOpen\(true\)/, 'P09 must open its submenu instead of navigating directly')
 for (const item of approvedItems) {
   assert.ok(menu.includes(`label: '${item.label}'`), `Missing approved submenu item: ${item.label}`)
