@@ -139,11 +139,11 @@ export default function VendasConfiguracoes() {
             </header>
             <div className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2">
               <label className="block min-w-0 text-[9px] font-bold uppercase tracking-wide text-slate-500">
-                <span className="inline-flex items-center gap-1">Validade do orçamento (dias)<HelpCircle size={10} title="Prazo padrão de validade dos orçamentos." /></span>
+                <span className="inline-flex items-center gap-1">Validade do orçamento (dias)<HelpCircle size={10} aria-hidden="true" /></span>
                 <input type="number" min={1} step={1} value={config.dias_validade_orcamento} disabled={loading || saving} onChange={(event) => setConfig((current) => ({ ...current, dias_validade_orcamento: Number(event.target.value) }))} className={fieldClass} />
               </label>
               <label className="block min-w-0 text-[9px] font-bold uppercase tracking-wide text-slate-500">
-                <span className="inline-flex items-center gap-1">Desconto máximo (%)<HelpCircle size={10} title="Limite percentual de desconto configurado para a empresa." /></span>
+                <span className="inline-flex items-center gap-1">Desconto máximo (%)<HelpCircle size={10} aria-hidden="true" /></span>
                 <input type="number" min={0} max={100} step="0.01" value={config.desconto_maximo_percentual} disabled={loading || saving} onChange={(event) => setConfig((current) => ({ ...current, desconto_maximo_percentual: Number(event.target.value) }))} className={fieldClass} />
               </label>
             </div>
