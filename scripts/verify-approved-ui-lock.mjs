@@ -18,6 +18,7 @@ const approved = [
   { path: 'src/components/IndustrialCommandDashboard.tsx', sha: '821b2cb2add9ec0a31d0c81e906a2c1f6e84118b', label: 'Dashboard principal industrial', source: 'restored from user-provided archive 2026-10-18; freeze unless explicitly authorized' },
   { path: 'src/pages/PCPFichasProcesso.tsx', sha: '8bcf940773f34515475d65d1f7fa1f6334c67307', label: 'PCP / Fichas de Processo (Prensados, Injetados, Acabamento, Montagem)', source: 'restored from user-provided archive 2026-10-18; freeze unless explicitly authorized' },
   { path: 'src/PublicIndustrialHome.tsx', sha: '37f0e2efd19f0f6e635d3a0d921a514ebf9a0cbc', label: 'Página inicial pública / Carrossel e planos', source: 'restored from user-provided archive 2026-10-18; freeze unless explicitly authorized' },
+  { path: 'src/components/PCPMoldPhotoPanel.tsx', sha: '7764fc6d527cfecac69ff8f32c8dd589ecd047d9', label: 'PCP / Fotos da ficha de processo', source: 'restored from user-provided archive 2026-10-18; freeze unless explicitly authorized' },
 ]
 
 let failed = false
