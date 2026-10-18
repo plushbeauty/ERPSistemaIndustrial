@@ -88,3 +88,15 @@ Nenhum desses sete arquivos foi alterado nesta branch.
 6. As migrations adicionadas ao repositório não foram aplicadas ao Supabase remoto nesta etapa. A aplicação no banco exige validação separada do schema e das políticas RLS.
 
 **Estado:** auditoria comparativa iniciada e causa principal confirmada; esta branch restaura os componentes centrais e adiciona proteção de regressão. A revisão dos demais 25 arquivos divergentes ainda precisa ser concluída antes de declarar que todo o RAR foi sincronizado.
+
+
+## Atualização de execução — 2026-10-18
+
+- O RAR foi extraído localmente para análise. `src/AppIndustrialV7.tsx` e `src/pages/Fiscal.tsx` têm o mesmo hash Git que o conteúdo de referência; `src/components/IndustrialCommandDashboard.tsx` e `src/pages/PCPFichasProcesso.tsx` continuam com hash diferente e exigem revisão/restauração específica antes de marcar como sincronizados.
+- O type-check executado diretamente sobre o conteúdo extraído do RAR passou (`npm run type-check`). O build não foi validado: o binário `vite` não tinha permissão de execução no arquivo extraído e, ao invocar o CLI com Node, faltou o pacote opcional `@rollup/rollup-linux-x64-gnu` no `node_modules` incluído no RAR. O build de CI em instalação limpa continua sendo a fonte de validação.
+- Foi acrescentada a migration `supabase/migrations/20261017130000_pcp_programacao_ficha_processo.sql` no commit `359d20ad7d4b36426b94882f8d2675dd62e92cad` para persistir `ficha_processo_id` e `ficha_processo_revisao` com referência composta por empresa e validação de revisão.
+- O teste `scripts/verify-process-sheet-submenu.mjs` foi ampliado no commit `67400b7e270509ce5df9797a9a0b179cb3ba1c20` para verificar a migration, a FK tenant-aware e o payload gravado pelo PCP.
+- Criado `docs/auditoria/CAMPOS-PCP-ZIP-SUPABASE-2026-10-18.md` no commit `256af22ded853d1087497cdf19c84591353a9492` com o mapa de campos, migrations e consultas de verificação somente leitura.
+- **Bloqueio de banco real:** a integração Supabase não expõe projetos acessíveis nesta execução (`list_projects` retornou lista vazia e `get_project` foi recusado por permissão). Portanto, nenhuma afirmação de que as migrations estão aplicadas ou de que os campos já existem no banco remoto é válida até obter acesso e consultar o schema.
+- O status de Vercel/CI do commit mais recente ainda estava pendente na última consulta. Não houve merge em `main` nem confirmação de publicação em produção nesta execução.
+
