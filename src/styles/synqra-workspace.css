@@ -110,3 +110,9 @@
 .sales-process-legend .legend-dot{display:inline-block;width:8px;height:8px;border:1px solid currentColor;border-radius:50%}
 .sales-process-legend .is-stage-green{background:#3A9D78;color:#17603c}.sales-process-legend .is-stage-blue{background:#2D8DB8;color:#174a86}.sales-process-legend .is-stage-amber{background:#E6A34A;color:#8a4b08}.sales-process-legend .is-stage-violet{background:#8B5CF6;color:#5b3a9e}.sales-process-legend .is-stage-cyan{background:#48B7C7;color:#126579}.sales-process-legend .is-stage-red{background:#D65B61;color:#a11b1b}
 @media(max-width:800px){.sales-orders-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.sales-process-legend{gap:5px 9px}}
+
+/* APROV-007 — controls in Novo Pedido: force the same compact dimensions regardless of utility-class drift. */
+.erp-compact input:not([type=checkbox]):not([type=file]),.erp-compact select{height:30px!important;min-height:30px!important;max-height:30px!important;box-sizing:border-box;font-size:10px!important;line-height:14px!important;padding-left:6px!important;padding-right:6px!important;border-radius:2px!important}
+.erp-compact label{font-size:9px!important;line-height:12px!important;letter-spacing:.03em}
+.erp-compact section{min-width:0}
+.erp-compact .space-y-3>:not([hidden])~:not([hidden]){margin-top:8px!important}
