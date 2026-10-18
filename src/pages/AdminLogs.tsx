@@ -10,6 +10,7 @@ type Log = {
   action: string
   entity_type: string
   entity_id: string | null
+  empresa_id: string | null
 }
 type User = { auth_user_id: string | null; nome: string | null; email: string | null }
 
@@ -30,20 +31,38 @@ export default function AdminLogs() {
     setBusy(true)
     setError('')
     try {
+      const [tenantResult, masterResult] = await Promise.all([
+        supabase.rpc('erp_current_empresa_id'),
+        supabase.rpc('erp_is_master'),
+      ])
+      if (masterResult.error) throw masterResult.error
+      const master = masterResult.data === true
+      const companyId = typeof tenantResult.data === 'string' && tenantResult.data
+        ? tenantResult.data
+        : null
+
+      if (tenantResult.error && !master) throw tenantResult.error
+      if (!master && !companyId) {
+        throw new Error('Empresa da sessão não identificada. Consulta de auditoria bloqueada.')
+      }
+
       let logQuery = supabase.from('erp_audit_logs')
-        .select('id,created_at,actor_user_id,action,entity_type,entity_id', { count: 'exact' })
+        .select('id,created_at,actor_user_id,action,entity_type,entity_id,empresa_id', { count: 'exact' })
         .order('created_at', { ascending: false })
+      if (!master && companyId) logQuery = logQuery.eq('empresa_id', companyId)
       if (usuarioFiltro !== 'Todos') logQuery = logQuery.eq('actor_user_id', usuarioFiltro)
       if (moduloFiltro !== 'Todos') logQuery = logQuery.eq('entity_type', moduloFiltro)
 
       const [logResult, userRows] = await Promise.all([
         logQuery.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1),
-        fetchAllPages<User>((from, to) => supabase.from('erp_usuarios')
-          .select('auth_user_id,nome,email', { count: 'exact' })
-          .eq('ativo', true)
-          .is('deleted_at', null)
-          .order('nome')
-          .range(from, to)),
+        fetchAllPages<User>((from, to) => {
+          let userQuery = supabase.from('erp_usuarios')
+            .select('auth_user_id,nome,email', { count: 'exact' })
+            .eq('ativo', true)
+            .is('deleted_at', null)
+          if (!master && companyId) userQuery = userQuery.eq('empresa_id', companyId)
+          return userQuery.order('nome').range(from, to)
+        }),
       ])
       if (logResult.error) throw logResult.error
       setRows((logResult.data ?? []) as Log[])
@@ -56,11 +75,13 @@ export default function AdminLogs() {
       ])).sort((left, right) => left.localeCompare(right, 'pt-BR')))
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível carregar a trilha de auditoria.')
+      setRows([])
+      setTotal(0)
+      setUsers([])
     } finally {
       setBusy(false)
     }
   }, [moduloFiltro, page, usuarioFiltro])
-
   useEffect(() => { void load() }, [load])
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
@@ -73,7 +94,7 @@ export default function AdminLogs() {
     <header className="border-b border-slate-200 pb-4">
       <span className="block text-xs font-bold uppercase tracking-wider text-blue-600">Configurações / Auditoria</span>
       <h2 className="text-3xl font-black tracking-tight text-slate-900">Logs do Sistema</h2>
-      <p className="mt-1 text-sm text-slate-500">Rastreamento persistido em erp_audit_logs, protegido pelas políticas RLS do tenant.</p>
+      <p className="mt-1 text-sm text-slate-500">Rastreamento persistido em erp_audit_logs, com escopo de empresa e autorização reforçados pelo RLS.</p>
     </header>
     {error && <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">{error}</div>}
     <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-xl shadow-slate-200/40">
@@ -126,7 +147,7 @@ export default function AdminLogs() {
     </section>
     <section className="rounded-3xl border border-cyan-100 bg-white p-6 shadow-xl shadow-slate-200/30">
       <div className="flex items-center gap-2 font-black text-[#123B50]"><ShieldCheck size={18} className="text-[#2D8DB8}" />Rastreabilidade por empresa</div>
-      <p className="mt-2 text-sm text-slate-600">A consulta usa a tabela de auditoria oficial. A separação entre tenants e a autorização de leitura são aplicadas pelo RLS do banco.</p>
+      <p className="mt-2 text-sm text-slate-600">A tela filtra explicitamente a empresa da sessão; o RLS do banco continua sendo a barreira de segurança obrigatória. Registros históricos sem empresa vinculada não devem ser atribuídos automaticamente.</p>
     </section>
   </div>
 }
