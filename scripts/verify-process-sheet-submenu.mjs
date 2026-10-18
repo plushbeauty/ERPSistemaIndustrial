@@ -28,4 +28,4 @@ for (const kind of ['PRENSADOS', 'INJETADOS', 'ACABAMENTO', 'MONTAGEM_EMBALAGEM'
 assert.match(processSheets, /category === 'ACABAMENTO' \? finishing/)
 assert.match(processSheets, /category === 'MONTAGEM_EMBALAGEM' \? packaging/)
 assert.match(migration, /'ACABAMENTO'[\s\S]*'MONTAGEM_EMBALAGEM'/, 'Database constraint must allow both approved process categories')
-process.stdout.write('PASS — submenu aprovado de Fichas de Processo, cinco destinos e rotas/tipos de engenharia verificados.\\n')
+process.stdout.write('PASS — submenu aprovado de Fichas de Processo, cinco destinos e rotas/tipos de engenharia verificados.\n')
