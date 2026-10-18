@@ -132,6 +132,8 @@ const FiscalCompras = lazyPage(() => import('./pages/FiscalCompras'), 'default')
 const ComprasRelatorios = lazyPage(() => import('./pages/ComprasRelatorios'), 'default')
 const ComprasAjuda = lazyPage(() => import('./pages/ComprasAjuda'), 'default')
 const ComprasAnalisePrecos = lazyPage(() => import('./pages/ComprasAnalisePrecos'), 'default')
+const HelpComercialSuprimentos = lazyPage(() => import('./pages/HelpComercialSuprimentos'), 'default')
+const HelpComprasAnalisePrecos = lazyPage(() => import('./pages/HelpComprasAnalisePrecos'), 'default')
 const PedidoCompra = lazyPage(() => import('./pages/PedidoCompra'), 'default')
 const VendasClientesPage = lazyPage(() => import('./pages/VendasClientes'), 'default')
 const CentralCustosIndustrial = lazyPage(() => import('./pages/CentralCustosIndustrial'), 'CentralCustosIndustrial')
@@ -633,6 +635,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/fiscal" element={<QualityPlanGate>{<Fiscal />}</QualityPlanGate>} />
       <Route path="/fiscal/compras" element={<QualityPlanGate>{<ComprasRoute><FiscalCompras /></ComprasRoute>}</QualityPlanGate>} />
       <Route path="/compras/analise-precos" element={<ComprasRoute><ComprasAnalisePrecos /></ComprasRoute>} />
+      <Route path="/ajuda/comercial-suprimentos" element={<HelpComercialSuprimentos />} />
+      <Route path="/ajuda/compras-analise-precos" element={<HelpComprasAnalisePrecos />} />
       <Route path="/compras/relatorios" element={<ComprasRoute><ComprasRelatorios /></ComprasRoute>} />
       <Route path="/compras/ajuda" element={<ComprasRoute><ComprasAjuda /></ComprasRoute>} />
       <Route path="/fiscal/emissao" element={<QualityPlanGate>{<NFeEmissao />}</QualityPlanGate>} />
