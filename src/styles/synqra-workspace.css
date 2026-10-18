@@ -97,3 +97,16 @@
 .sales-process-stage.is-stage-muted{background:#f5f7f8;border-color:#d3dce0;color:#64748b}
 @media(max-width:1100px){.sales-orders-status-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.sales-process-stages{min-width:230px}}
 @media(max-width:800px){.sales-orders-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sales-process-stages{min-width:220px}}
+
+
+/* APROV-007 — 2026-10-18: geometria compacta/alinhada para Status do Pedido e legenda de etapas visível. */
+.sales-orders-status-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;margin-bottom:10px!important}
+.sales-orders-status-card{min-height:66px!important;height:auto!important;padding:9px 12px!important;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px}
+.sales-orders-status-card span{font-size:10px!important;line-height:13px!important;white-space:normal!important}
+.sales-orders-status-card strong{font-size:22px!important;line-height:23px!important;font-weight:700!important}
+.sales-process-legend{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;margin:0 0 8px;padding:7px 9px;border:1px solid #cbd5e1;border-radius:2px;background:#fff;color:#334155;font-size:9px;line-height:13px}
+.sales-process-legend>strong{color:#123b50;font-size:9px;letter-spacing:.06em}
+.sales-process-legend>span{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.sales-process-legend .legend-dot{display:inline-block;width:8px;height:8px;border:1px solid currentColor;border-radius:50%}
+.sales-process-legend .is-stage-green{background:#3A9D78;color:#17603c}.sales-process-legend .is-stage-blue{background:#2D8DB8;color:#174a86}.sales-process-legend .is-stage-amber{background:#E6A34A;color:#8a4b08}.sales-process-legend .is-stage-violet{background:#8B5CF6;color:#5b3a9e}.sales-process-legend .is-stage-cyan{background:#48B7C7;color:#126579}.sales-process-legend .is-stage-red{background:#D65B61;color:#a11b1b}
+@media(max-width:800px){.sales-orders-status-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.sales-process-legend{gap:5px 9px}}
