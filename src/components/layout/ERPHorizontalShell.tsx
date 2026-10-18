@@ -11,6 +11,7 @@ type MenuItem = {
   route: string
   icon?: LucideIcon
   action?: 'qualityTablet' | 'pcpTablet'
+  newTab?: boolean
   children?: MenuItem[]
 }
 
@@ -54,7 +55,7 @@ const menus: MenuItem[] = [
     { label: 'Estrutura BOM', route: '/engenharia/bom' },
     { label: 'Roteiros de fabricação', route: '/engenharia/roteiros' },
     { label: 'Revisões BOM', route: '/engenharia/revisoes-bom' },
-    { label: 'Fichas de processo', route: '/engenharia/fichas-processo' },
+    { label: 'Ficha de Processo', route: '/engenharia/fichas-processo', newTab: true },
   ] },
   { label: 'Financeiro', route: '/financeiro/custo-padrao', icon: Wallet, children: [
     { label: 'Custo padrão', route: '/financeiro/custo-padrao' },
@@ -185,7 +186,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     setOpenMenu(null)
     setStartMenuOpen(false)
   }, [pathname])
-  const openMenuItem = (item: Pick<MenuItem, 'route' | 'action'>) => {
+  const openMenuItem = (item: Pick<MenuItem, 'route' | 'action' | 'newTab'>) => {
     if (item.action === 'pcpTablet') {
       setPcpTabletOpen(true)
       setOpenMenu(null)
@@ -196,6 +197,11 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       setOpenMenu(null)
       
       
+      return
+    }
+    if (item.newTab) {
+      window.open(item.route, '_blank', 'noopener,noreferrer')
+      setOpenMenu(null)
       return
     }
     go(item.route)
