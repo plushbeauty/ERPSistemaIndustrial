@@ -7,8 +7,8 @@ import { readFileSync } from 'node:fs'
  * Do not update these hashes as part of ordinary styling/refactor work.
  */
 const approved = [
-  { path: 'src/pages/VendasCentral.tsx', sha: '9177ae072e85e2cd5bd2b62780671f9aad20cf28', label: 'Vendas / Status do pedido', source: 'explicit user-authorized revision APROV-004 — wider cards and real order/production/quality/expedition/fiscal stages; frozen after this revision' },
-  { path: 'src/pages/NovoPedido.tsx', sha: '8650bcf2af2f8a8813e80c082fbe4de33cbb47ab', label: 'Vendas / Novo Pedido', source: 'Vercel READY commit 94da86b985c12801525661328577f7bd96188b85' },
+  { path: 'src/pages/VendasCentral.tsx', sha: '99cdbdb065ef5c2e4182dfb1ff8d267c6adce3c2', label: 'Vendas / Status do pedido', source: 'explicit user-authorized revision APROV-007 — balanced wide cards, visible five-stage legend and real order tracking' },
+  { path: 'src/pages/NovoPedido.tsx', sha: '350786aa95de8a2c3cfe514b8394859bb44253b6', label: 'Vendas / Novo Pedido', source: 'explicit user-authorized revision APROV-007 — 30px controls, 9px labels, three aligned top cards' },
   { path: 'src/pages/ProdutosVendasIndustrial.tsx', sha: 'b1cbdd042c95c547c7d315afb0ee94bba529865f', label: 'Cadastros / Produtos', source: 'approved UI contract' },
   { path: 'src/styles/industrial-login.css', sha: 'c77134e5eaf528438eb137f6a1f6e737aeb5d863', label: 'Login institucional', source: 'restored exact approved stylesheet APROV-002; no unauthorized APROV-005 overrides' },
   { path: 'src/pages/QualidadeCentralTablet.tsx', sha: '3f8e359a770f0d433f1ed1d24d383254e04e7c1e', label: 'Qualidade / Tablet SGQ', source: 'user-approved tablet revision' },
