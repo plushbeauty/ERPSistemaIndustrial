@@ -22,7 +22,6 @@ type Props = {
   actions?: PageAction[]
   backHref?: string
   footer?: ReactNode
-  tablet?: boolean
 }
 
 const actionClass: Record<NonNullable<PageAction['type']>, string> = {
