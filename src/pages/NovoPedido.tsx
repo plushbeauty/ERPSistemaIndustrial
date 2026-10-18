@@ -1,10 +1,10 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-10-16
- * @REVISAO_APROVACAO: APROV-001
+ * @DATA_REVISAO_APROVACAO: 2026-10-18
+ * @REVISAO_APROVACAO: APROV-007
  * @STATUS_APROVACAO: APROVADO-IMUTAVEL
- * @FONTE_APROVADA: Vercel preview READY / commit 94da86b985c12801525661328577f7bd96188b85
- * @REGRA: não alterar layout, conteúdo ou comportamento sem nova autorização explícita do usuário.
- * @ESCOPO_ORIGINAL: Vendas > Novo Pedido; preserva fluxo funcional e geometria visual da versão aprovada.
+ * @FONTE_APROVADA: instrução expressa do usuário em 2026-10-18 para restaurar o padrão compacto/alinhado.
+ * @REGRA: manter a geometria APROV-007; alterações futuras exigem autorização explícita.
+ * @ESCOPO: controles 30px, rótulos 9px, espaçamento compacto e três cartões de identificação na mesma linha.
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Check, Edit3, FilePlus2, MailCheck, Paperclip, Plus, Save, Search, Trash2, XCircle, Printer } from 'lucide-react'
@@ -18,9 +18,9 @@ type Transportadora={id:string;codigo:string;razao_social:string}
 type Vendedor={id:string;nome:string}
 type Item={produto_id:string;codigo:string;descricao:string;quantidade:number;unidade:string;valor_unitario:number;desconto:number;estoque:number;preco_custo_industrial:number}
 
-const inputStyle='h-8 w-full rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 outline-none transition-all focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
-const labelStyle='flex flex-col gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-500'
-const buttonStyle='flex h-8 items-center justify-center gap-1 rounded-[2px] px-3 text-xs font-semibold'
+const inputStyle='h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-semibold text-slate-800 outline-none transition-all focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
+const labelStyle='flex flex-col gap-1 text-[9px] font-semibold uppercase tracking-wide text-slate-500'
+const buttonStyle='flex h-[30px] items-center justify-center gap-1 rounded-[2px] px-2 text-[10px] font-semibold'
 const brl=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number.isFinite(v)?v:0)
 const n=(v:string|number)=>Number(v)||0
 const digits=(v:string)=>v.replace(/\D/g,'')
@@ -94,10 +94,10 @@ export default function NovoPedido(){
     </div>
    </div>
 
-   <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-    <section className="min-w-0 md:col-span-2 bg-white border border-slate-300 rounded-[2px] p-5 shadow-sm space-y-6">
+   <div className="grid grid-cols-1 gap-2 md:grid-cols-6">
+    <section className="min-w-0 md:col-span-2 bg-white border border-slate-300 rounded-[2px] p-2.5 shadow-sm space-y-3">
      <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Dados do Cliente</h3>
-     <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+     <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
       <Field label="Localizar por" width="100%"><select value={clienteModo} onChange={e=>{const m=e.target.value as 'Código'|'CNPJ';setClienteModo(m);setEdCodigoCliente('');setValidationField(null)}} className={inputStyle}><option>Código</option><option>CNPJ</option></select></Field>
       <Field label="Código / CNPJ" required><div className="flex gap-1"><input id="edCodigoCliente" ref={clienteRef} value={clienteModo==='CNPJ'?maskCnpj(edCodigoCliente):edCodigoCliente} onChange={e=>{setEdCodigoCliente(clienteModo==='CNPJ'?digits(e.target.value):e.target.value);setValidationField(null);setError('')}} onBlur={e=>{if(!e.target.value.trim()){setValidationField('cliente');return}void clienteBusca(e.target.value)}} placeholder={validationField==='cliente'?'Preencher...':undefined} className={validationField==='cliente'?inputStyle+' border-red-500 bg-red-50 placeholder:text-red-400':inputStyle}/><button type="button" aria-label="Consultar clientes" onClick={()=>{setBusca('');setConsulta('cliente')}} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[2px] border border-slate-300 bg-slate-50 text-xs font-semibold text-slate-600 hover:bg-slate-100"><Search size={12}/></button></div></Field>
       <div className="md:col-span-2"><Field label="Cliente / Razão Social" required><input id="edNomeCliente" title={edNomeCliente} value={edNomeCliente} readOnly onBlur={e=>{if(!e.target.value.trim())setValidationField('cliente')}} placeholder={validationField==='cliente'?'Selecione um cliente cadastrado': 'Selecione um cliente cadastrado'} className={validationField==='cliente'?inputStyle+' border-red-500 bg-red-50 placeholder:text-red-400':inputStyle}/></Field></div>
@@ -107,7 +107,7 @@ export default function NovoPedido(){
 
     <section className="min-w-0 md:col-span-2 bg-white border border-slate-300 rounded-[2px] p-5 shadow-sm space-y-6">
      <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Dados do Pedido</h3>
-     <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+     <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
       <Field label="Nº do Pedido"><input id="edPedido" value={edPedido} readOnly className={inputStyle+' bg-slate-100 font-semibold text-slate-600'}/></Field>
       <Field label="Data do Pedido" required><input id="edDataEntrada" type="date" value={edDataEntrada} onChange={e=>setEdDataEntrada(e.target.value)} className={inputStyle}/></Field>
       <Field label="Condição de Pagamento" required><input id="edCondicaoPagamento" value={edCondicaoPagamento} onChange={e=>{setEdCondicaoPagamento(e.target.value);setValidationField(null)}} onBlur={e=>{if(!e.target.value.trim())setValidationField('condicao')}} className={validationField==='condicao'?inputStyle+' border-red-500 bg-red-50':inputStyle}/></Field>
@@ -118,7 +118,7 @@ export default function NovoPedido(){
      </div>
     </section>
 
-    <section className="min-w-0 md:col-span-4 bg-white border border-slate-300 rounded-[2px] p-5 shadow-sm space-y-6">
+    <section className="min-w-0 md:col-span-2 bg-white border border-slate-300 rounded-[2px] p-2.5 shadow-sm space-y-3">
      <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Entrega e Logística</h3>
      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
       <Field label="Previsão de Entrega" required><input id="edDataEntrega" type="date" value={edDataEntrega} onChange={e=>{setEdDataEntrega(e.target.value);setValidationField(null)}} onBlur={e=>{if(!e.target.value)setValidationField('dataEntrega')}} className={validationField==='dataEntrega'?inputStyle+' border-red-500 bg-red-50':inputStyle}/></Field>
@@ -128,7 +128,7 @@ export default function NovoPedido(){
     </section>
    </div>
 
-   <section className="md:col-span-4 bg-white border border-slate-300 rounded-[2px] p-5 shadow-sm space-y-6">
+   <section className="md:col-span-6 bg-white border border-slate-300 rounded-[2px] p-2.5 shadow-sm space-y-3">
     <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Itens do Pedido</h3>
     <div className="grid grid-cols-1 gap-4 md:grid-cols-4 md:items-end">
      <Field label="Código do Produto" width="100%" required><div className="flex gap-1"><input id="edCodigoInterno" ref={produtoRef} value={edCodigoInterno} onChange={e=>{setEdCodigoInterno(e.target.value);setValidationField(null);setError('')}} onBlur={e=>{if(!e.target.value.trim()){setValidationField('produto');return}void produtoBusca(e.target.value)}} placeholder={validationField==='produto'?'Preencher...':'Código / SKU'} className={validationField==='produto'?inputStyle+' border-red-500 bg-red-50 placeholder:text-red-400':inputStyle}/><button type="button" aria-label="Consultar produtos" onClick={()=>{setBusca('');setConsulta('produto')}} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[2px] border border-slate-300 bg-slate-50 text-xs font-semibold text-slate-600 hover:bg-slate-100"><Search size={12}/></button></div></Field>
