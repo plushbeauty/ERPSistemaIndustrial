@@ -1,8 +1,8 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-10-16
- * @REVISAO_APROVACAO: APROV-004
- * @STATUS_APROVACAO: APROVADO-IMUTAVEL
- * @REGRA: revisão APROV-004 autorizada expressamente; novas alterações exigem nova ordem expressa.
+ * @DATA_REVISAO_APROVACAO: 2026-10-18
+ * @REVISAO_APROVACAO: APROV-006
+ * @STATUS_APROVACAO: AJUSTE-EXPRESSAMENTE-AUTORIZADO-2026-10-18
+ * @REGRA: ajuste de alinhamento dos cards e legenda de cores autorizado expressamente em 2026-10-18; manter os dados reais e o fluxo existente.
  * @ESCOPO: cards ampliados e acompanhamento real de pedido, produção, qualidade, expedição e NF/saída.
  */
 import { useEffect, useMemo, useState } from 'react'
