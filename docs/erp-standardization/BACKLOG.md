@@ -74,3 +74,6 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - UI-030 continua **aberto**: iniciada padronização scoped do módulo Compras/Suprimentos na branch `fix/compras-ui-standardization-2026-10-18`.
 - Ajustes realizados em CSS compartilhado, Central de Compras, RFQ, Relatórios, Ajuda e Validação Fiscal; ver [auditoria detalhada](../auditoria/COMPRAS-UI-AUDIT-2026-10-18.md).
 - Não mover para COMPLETED até type-check, lint, auditorias, contratos de UI, rotas, build, inspeção visual e deploy do SHA final estarem confirmados.
+
+
+- Atualização 2026-10-18: o usuário confirmou PASS manual nos fluxos Central de Compras, Pedidos de compra, Requisições, RFQ (incluindo atualização), Recebimentos, Fornecedores e Validação Fiscal. Registro detalhado em [auditoria de Compras](../auditoria/COMPRAS-UI-AUDIT-2026-10-18.md). UI-030 permanece aberto até type-check/lint/auditorias/contratos/rotas e inspeção visual estarem evidenciados; build remoto do preview está verde, mas PR #150 não foi integrado à produção.
