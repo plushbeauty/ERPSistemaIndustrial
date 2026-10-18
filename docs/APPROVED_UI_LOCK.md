@@ -9,9 +9,15 @@
 | Vendas → Novo Pedido — `src/pages/NovoPedido.tsx` | Preview Vercel READY; commit `94da86b985c12801525661328577f7bd96188b85` | Hash Git do arquivo verificado no CI |
 | Cadastro de Produtos — `src/pages/ProdutosVendasIndustrial.tsx` | Referência aprovada anterior | Hash Git do arquivo verificado no CI |
 | Login institucional — `src/styles/industrial-login.css` | Referência aprovada anterior | Hash Git do arquivo verificado no CI |
-| Qualidade Tablet — `src/pages/QualidadeCentralTablet.tsx` | Tablet aprovado pelo usuário | Hash Git do arquivo verificado no CI |
-| Qualidade Tablet padrão — `src/components/TabletMenuModal.tsx` | Modal central, 22 módulos; visual aprovado preservado | Hash Git do arquivo verificado no CI |
-| PCP Tablet do operador — `src/pages/PCPTabletOperador.tsx` | Padrão operacional aprovado; visual preservado | Hash Git do arquivo verificado no CI |
+| Qualidade Tablet — `src/pages/QualidadeCentralTablet.tsx` | Artefato histórico preservado; rota de tablet desativada pela revisão APROV-005 | Hash Git do arquivo verificado no CI |
+| Qualidade Tablet padrão — `src/components/TabletMenuModal.tsx` | Artefato histórico preservado; launcher global removido pela revisão APROV-005 | Hash Git do arquivo verificado no CI |
+| PCP Tablet do operador — `src/pages/PCPTabletOperador.tsx` | Artefato histórico preservado; rota desativada pela revisão APROV-005 | Hash Git do arquivo verificado no CI |
+
+## Registro da revisão APROV-005 — 2026-10-18
+- Autorização explícita do usuário para retirar a interface Tablet do uso do ERP.
+- Removidos atalhos globais e do PCP; login não redireciona mais por tamanho/tipo de dispositivo.
+- Usuários `OPERADOR_FABRIL` passam a `/pcp`; URLs antigas de tablet redirecionam às telas desktop correspondentes.
+- Os componentes visuais aprovados do tablet permanecem sem alteração como artefatos históricos, mas não são mais carregados pelo roteador.
 
 ## Registro da revisão APROV-002 — 2026-10-16
 
