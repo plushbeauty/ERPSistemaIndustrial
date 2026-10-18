@@ -112,7 +112,6 @@ const AcompanhamentoNaoConformidade = lazyPage(() => import('./pages/Acompanhame
 const EstoqueAlmoxarifado = lazyPage(() => import('./pages/EstoqueAlmoxarifadoCompact'), 'default')
 const ProdutosVendasIndustrial = lazyPage(() => import('./pages/ProdutosVendasIndustrial'), 'ProdutosVendasIndustrial')
 const ModuloCadastroProdutos = lazyPage(() => import('./pages/cadastro-produtos/ModuloCadastroProdutos'), 'ModuloCadastroProdutos')
-const TabletDashboard = lazyPage(() => import('./pages/TabletDashboard'), 'TabletDashboard')
 const PedidoVendaCompleto = lazyPage(() => import('./pages/NovoPedido'), 'NovoPedido')
 const DashboardComercial = lazyPage(() => import('./pages/DashboardComercial'), 'DashboardComercial')
 const VendasCentral = lazyPage(() => import('./pages/VendasCentral'), 'default')
@@ -124,7 +123,6 @@ const VendasRelatorios = lazyPage(() => import('./pages/VendasRelatorios'), 'Ven
 const VendasPedidoStatus = lazyPage(() => import('./pages/VendasPedidoStatus'), 'VendasPedidoStatus')
 const VendasCatalogoDigitalGestao = lazyPage(() => import('./pages/VendasCatalogoDigitalGestao'), 'VendasCatalogoDigitalGestao')
 const VendasPDV = lazyPage(() => import('./pages/VendasPDV'), 'default')
-const VendasTablet = lazyPage(() => import('./pages/VendasTablet'), 'default')
 const ComprasRFQ = lazyPage(() => import('./pages/ComprasRFQ'), 'default')
 const ComprasIndustrial = lazyPage(() => import('./pages/ComprasIndustrial'), 'default')
 const ComprasRequisicoes = lazyPage(() => import('./pages/ComprasRequisicoes'), 'default')
@@ -183,7 +181,6 @@ const ManutencaoCentral = lazyPage(() => import('./pages/ManutencaoCentral'), 'd
 const ManutencaoCronograma = lazyPage(() => import('./pages/ManutencaoCronograma'), 'default')
 const ManutencaoPlanoMestre = lazyPage(() => import('./pages/ManutencaoPlanoMestre'), 'default')
 const ManutencaoIndicadores = lazyPage(() => import('./pages/manutencao/ManutencaoIndicadores'), 'default')
-const PCPTabletOperador = lazyPage(() => import('./pages/PCPTabletOperador'), 'PCPTabletOperador')
 const EstoqueAjustes = lazyPage(() => import('./pages/EstoqueAjustes'), 'EstoqueAjustes')
 const EstoqueSeparacao = lazyPage(() => import('./pages/EstoqueSeparacao'), 'EstoqueSeparacao')
 const EstoqueEtiquetas = lazyPage(() => import('./pages/EstoqueEtiquetas'), 'EstoqueEtiquetas')
@@ -203,7 +200,6 @@ const QualidadeAuditoria5S = lazyPage(() => import('./pages/QualidadeAuditoria5S
 const QualidadeMetodologia8D = lazyPage(() => import('./pages/QualidadeMetodologia8D'), 'QualidadeMetodologia8D')
 const QualidadeInspecaoProcesso = lazyPage(() => import('./pages/QualidadeInspecaoProcesso'), 'QualidadeInspecaoProcesso')
 const QualidadeInspecoesIndustrial = lazyPage(() => import('./pages/QualidadeInspecoesIndustrial'), 'default')
-const QualidadeTablet = lazyPage(() => import('./pages/QualidadeTablet'), 'default')
 const QualidadeEspecificacoesTecnicas = lazyPage(() => import('./pages/QualidadeEspecificacoesTecnicas'), 'default')
 const MoldesFerramentaria = lazyPage(() => import('./pages/MoldesFerramentaria'), 'MoldesFerramentaria')
 const OperacaoIndustrial = lazyPage(() => import('./pages/OperacaoIndustrial'), 'OperacaoIndustrial')
@@ -448,14 +444,14 @@ function AppIndustrialAuthenticated() {
     <Routes>
       <Route path="/comercial" element={<AppIndustrial />} />
       <Route path="/erp-industrial" element={<AppIndustrial />} />
-      <Route path="/tablet/dashboard" element={<TabletDashboard />} />
-      <Route path="/tablet" element={<Navigate to="/tablet/dashboard" replace />} />
-      <Route path="/tablet/home" element={<TabletDashboard />} />
+      <Route path="/tablet/dashboard" element={<Navigate to="/erp-industrial" replace />} />
+      <Route path="/tablet" element={<Navigate to="/erp-industrial" replace />} />
+      <Route path="/tablet/home" element={<Navigate to="/erp-industrial" replace />} />
       <Route path="/vendas" element={<DashboardComercial />} />
       <Route path="/vendas/dashboard" element={<DashboardComercial />} />
       <Route path="/vendas/pedidos" element={<Navigate to="/vendas/status" replace />} />
       <Route path="/vendas/pdv" element={<VendasPDV />} />
-      <Route path="/vendas/tablet" element={<VendasTablet />} />
+      <Route path="/vendas/tablet" element={<Navigate to="/vendas" replace />} />
       <Route path="/vendas/novo-pedido" element={<PedidoVendaCompleto />} />
       <Route path="/configuracoes" element={<Navigate to="/configuracoes-adm" replace />} />
       <Route path="/vendas/orcamentos" element={<VendasAnaliseCustos />} />
@@ -548,8 +544,8 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/mrp-ii" element={<QualityPlanGate>{<MRPIndustrial />}</QualityPlanGate>} />
       <Route path="/pcp/execucao-industrial" element={<QualityPlanGate>{<PCPExecucaoIndustrial />}</QualityPlanGate>} />
       <Route path="/pcp/dashboard-oee" element={<QualityPlanGate>{<PCPDashboardOEE />}</QualityPlanGate>} />
-      <Route path="/pcp/tablet-operador" element={<QualityPlanGate>{<PCPTabletOperador />}</QualityPlanGate>} />
-      <Route path="/pcp/tablet" element={<Navigate to="/pcp/tablet-operador" replace />} />
+      <Route path="/pcp/tablet-operador" element={<Navigate to="/pcp" replace />} />
+      <Route path="/pcp/tablet" element={<Navigate to="/pcp" replace />} />
       <Route path="/pcp/auditoria" element={<QualityPlanGate>{<PCPAuditoria />}</QualityPlanGate>} />
       <Route path="/qualidade/industrial" element={<QualityPlanGate><QualidadeIndustrial /></QualityPlanGate>} />
       <Route path="/qualidade" element={<QualityPlanGate><QualidadeDashboardSGQ /></QualityPlanGate>} />
@@ -560,7 +556,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/documentos" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
       <Route path="/qualidade/inspecao-processo" element={<QualityPlanGate><QualidadeInspecaoProcesso /></QualityPlanGate>} />
       <Route path="/qualidade/inspecoes" element={<QualityPlanGate><QualidadeInspecoesIndustrial /></QualityPlanGate>} />
-      <Route path="/qualidade/tablet" element={<QualityPlanGate><QualidadeTablet /></QualityPlanGate>} />
+      <Route path="/qualidade/tablet" element={<Navigate to="/qualidade" replace />} />
       <Route path="/qualidade/inspecoes/operacao" element={<Navigate to="/qualidade/inspecoes" replace />} />
       <Route path="/qualidade/metodologia-8d" element={<QualityPlanGate><QualidadeMetodologia8D /></QualityPlanGate>} />
       <Route path="/qualidade/auditoria-5s" element={<QualityPlanGate><QualidadeAuditoria5S /></QualityPlanGate>} />
