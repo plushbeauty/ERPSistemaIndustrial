@@ -35,7 +35,7 @@ export default function CentraisIndustriais({ module }: { module: Module }) {
         if (!auth.user) throw new Error('Sessão não encontrada.')
         const { data, error: profileError } = await supabase.from('erp_usuarios').select('empresa_id,is_master').eq('auth_user_id', auth.user.id).eq('ativo', true).is('deleted_at', null).maybeSingle()
         if (profileError) throw profileError
-        if (!data?.empresa_id && data?.is_master !== true) throw new Error('Empresa não identificada.')
+        if (!data?.empresa_id) throw new Error('Empresa não identificada. Se o perfil for Master, selecione explicitamente uma empresa autorizada antes de consultar dados.')
         if (alive) setProfile(data as Profile)
       } catch (cause) {
         if (alive) setError(cause instanceof Error ? cause.message : 'Não foi possível validar o acesso.')
@@ -65,8 +65,8 @@ export default function CentraisIndustriais({ module }: { module: Module }) {
         }
         const config = configs[module]
         let request = supabase.from(config.table).select(config.select).order(config.order, { ascending: config.ascending ?? true }).limit(500)
-        if (profile.empresa_id) request = request.eq('empresa_id', profile.empresa_id)
-        else if (profile.is_master !== true) throw new Error('Perfil sem empresa autorizada.')
+        if (!profile.empresa_id) throw new Error('Consulta bloqueada: nenhuma empresa foi selecionada.')
+        request = request.eq('empresa_id', profile.empresa_id)
         const { data, error: queryError } = await request
         if (queryError) throw queryError
         let result = (data ?? []) as unknown as Row[]
@@ -75,7 +75,7 @@ export default function CentraisIndustriais({ module }: { module: Module }) {
           const productIds = [...new Set(result.map(r => String(r.produto_id ?? '')).filter(Boolean))]
           if (productIds.length) {
             let productsQuery = supabase.from('erp_produtos').select('id,codigo,nome').in('id', productIds)
-            if (profile.empresa_id) productsQuery = productsQuery.eq('empresa_id', profile.empresa_id)
+            productsQuery = productsQuery.eq('empresa_id', profile.empresa_id as string)
             const { data: products, error: productsError } = await productsQuery
             if (productsError) throw productsError
             const byId = new Map((products ?? []).map((p: { id: string; codigo: string; nome: string }) => [p.id, { codigo: p.codigo, nome: p.nome }]))
