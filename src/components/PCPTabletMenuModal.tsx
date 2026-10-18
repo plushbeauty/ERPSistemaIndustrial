@@ -19,10 +19,10 @@ type ModuleItem = {
 
 const processSheetItems: readonly ModuleItem[] = [
   { number: 'FP00', label: 'FICHAS DE PROCESSO', description: 'Catálogo geral de fichas, revisões, parâmetros técnicos e homologações.', route: '/pcp/fichas-processo', icon: FileSliders },
-  { number: 'FP01', label: 'PRENSADOS', description: 'Composto, prensa, molde, pressão, temperatura, cura e pós-cura.', route: '/ficha-engenharia?tipo=PRENSADOS', icon: Factory },
-  { number: 'FP02', label: 'INJETADOS', description: 'Material, secagem, molde, cavidades, temperaturas, injeção e ciclo.', route: '/ficha-engenharia?tipo=INJETADOS', icon: Boxes },
-  { number: 'FP03', label: 'ACABAMENTO', description: 'Preparação, operação, equipamento, parâmetros e inspeção.', route: '/ficha-engenharia?tipo=ACABAMENTO', icon: Wrench },
-  { number: 'FP04', label: 'MONTAGEM', description: 'Sequência de montagem, componentes, conferência e embalagem.', route: '/ficha-engenharia?tipo=MONTAGEM_EMBALAGEM', icon: PackageSearch },
+  { number: 'FP01', label: 'PRENSADOS', description: 'Composto, prensa, molde, pressão, temperatura, cura e pós-cura.', route: '/pcp/fichas-processo?tipo=PRENSADOS', icon: Factory },
+  { number: 'FP02', label: 'INJETADOS', description: 'Material, secagem, molde, cavidades, temperaturas, injeção e ciclo.', route: '/pcp/fichas-processo?tipo=INJETADOS', icon: Boxes },
+  { number: 'FP03', label: 'ACABAMENTO', description: 'Preparação, operação, equipamento, parâmetros e inspeção.', route: '/pcp/fichas-processo?tipo=ACABAMENTO', icon: Wrench },
+  { number: 'FP04', label: 'MONTAGEM', description: 'Sequência de montagem, componentes, conferência e embalagem.', route: '/pcp/fichas-processo?tipo=MONTAGEM_EMBALAGEM', icon: PackageSearch },
 ]
 
 const modules: readonly ModuleItem[] = [
