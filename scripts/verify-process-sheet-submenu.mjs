@@ -45,7 +45,10 @@ for (const item of approvedItems) {
 }
 assert.match(routes, /<Route path="\/pcp\/fichas-processo"[^\n]*PCPFichasProcesso/)
 assert.match(routes, /<Route path="\/ficha-engenharia"[^\n]*FichaEngenharia/)
-for (const kind of ['PRENSADOS', 'INJETADOS', 'ACABAMENTO', 'MONTAGEM_EMBALAGEM']) {
+assert.match(processSheets, /APROVADO — ficha de processo restaurada do arquivo enviado em 2026-10-18/, 'Approved archive revision marker must remain on the canonical process-sheet screen')
+assert.match(processSheets, /const inputClass = 'h-8 /, 'Process-sheet edit controls must remain compact')
+assert.match(processSheets, /const labelClass = 'mb-1 block text-\[9px\]/, 'Process-sheet labels must remain compact')
+for (const kind of ['PRENSADOS', 'INJETADOS', 'ESTAMPARIA', 'MECANICA', 'TRATAMENTO_SUPERFICIAL', 'PINTURA_QUIMICA', 'CORTE_VINCO', 'ACABAMENTO', 'MONTAGEM_EMBALAGEM']) {
   assert.ok(processSheets.includes(`'${kind}'`), `Canonical process sheet no longer supports approved type ${kind}`)
 }
 assert.match(processSheets, /category === 'ACABAMENTO' \? finishing/)
@@ -61,4 +64,4 @@ assert.match(aiPage, /supabase\.functions\.invoke\('erp-ai-process-sheet'/)
 assert.match(aiFunction, /client\.auth\.getUser\(\)/, 'AI function must validate the authenticated user')
 assert.match(aiFunction, /erp_current_empresa_id/, 'AI function must require the active company context')
 assert.ok(!aiFunction.includes('service_role'), 'AI function must not use a service-role key in client-facing logic')
-process.stdout.write('PASS — submenu aprovado, cinco destinos, categorias, IA autenticada e contrato de persistência da ficha/revisão na programação verificados.\n')
+process.stdout.write('PASS — submenu global e tablet, dez destinos, revisão aprovada, controles compactos, nove categorias, IA autenticada e contrato de persistência verificados.\n')
