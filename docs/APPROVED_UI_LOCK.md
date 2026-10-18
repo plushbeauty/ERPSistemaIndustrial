@@ -42,3 +42,10 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Cadastro de Fornecedores já utiliza botão primário azul `#2D8DB8` com texto branco; permanece como referência visual.
 - Status do pedido fica congelado novamente nesta revisão. Mudanças futuras exigem ordem expressa do usuário e nova revisão do hash.
 - O contrato de lock também foi sincronizado com os hashes Git reais atuais de Produtos e Login, sem alterar o conteúdo dessas duas telas.
+
+
+## Registro da revisão APROV-006 — 2026-10-18
+- Autorização explícita para deixar “Bem-vindo à sua operação mais inteligente.” em branco, negrito e com contorno preto.
+- O texto descritivo institucional também recebe branco, negrito e contorno/sombra escura para legibilidade sobre a imagem.
+- Login, autenticação Supabase, recuperação de senha e validações de sessão não foram alterados.
+- O hash do CSS foi atualizado deliberadamente no lock e o contrato visual passa a verificar o novo estilo.
