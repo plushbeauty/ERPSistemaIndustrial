@@ -181,6 +181,15 @@ export default function PublicIndustrialHome(){
   @media(prefers-reduced-motion:reduce){.sgq-stage-media img,.sgq-module,.sgq-trial-cta,.sgq-help{transition:none!important;animation:none!important}}
   @media(max-width:620px){.sgq-stage-caption{max-width:calc(100% - 18px);left:10px!important;bottom:10px!important}.sgq-dots{right:10px!important;bottom:10px!important;gap:4px;padding:5px}.sgq-carousel-control{width:30px;height:30px}.sgq-dot{width:7px;height:7px}}
 
+  /* APROV-006 — restauração autorizada em 2026-10-18: sem botões de avanço/retrocesso no carrossel. */
+  .sgq-public-home .sgq-dots{display:none!important}
+  @media(min-width:761px){
+    .sgq-public-home .sgq-hero-inner{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+    .sgq-public-home .sgq-stage{height:clamp(500px,70vh,760px)!important}
+    .sgq-public-home .sgq-stage-media img{object-fit:cover!important;padding:0!important}
+  }
+
+
   `}
   </style>
   <header className="sgq-nav">
