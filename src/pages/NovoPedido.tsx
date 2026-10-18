@@ -96,7 +96,7 @@ export default function NovoPedido(){
 
    <div className="grid grid-cols-1 gap-2 md:grid-cols-6">
     <section className="min-w-0 md:col-span-2 bg-white border border-slate-300 rounded-[2px] p-2.5 shadow-sm space-y-3">
-     <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Dados do Cliente</h3>
+     <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-2">Dados do Cliente</h3>
      <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
       <Field label="Localizar por" width="100%"><select value={clienteModo} onChange={e=>{const m=e.target.value as 'Código'|'CNPJ';setClienteModo(m);setEdCodigoCliente('');setValidationField(null)}} className={inputStyle}><option>Código</option><option>CNPJ</option></select></Field>
       <Field label="Código / CNPJ" required><div className="flex gap-1"><input id="edCodigoCliente" ref={clienteRef} value={clienteModo==='CNPJ'?maskCnpj(edCodigoCliente):edCodigoCliente} onChange={e=>{setEdCodigoCliente(clienteModo==='CNPJ'?digits(e.target.value):e.target.value);setValidationField(null);setError('')}} onBlur={e=>{if(!e.target.value.trim()){setValidationField('cliente');return}void clienteBusca(e.target.value)}} placeholder={validationField==='cliente'?'Preencher...':undefined} className={validationField==='cliente'?inputStyle+' border-red-500 bg-red-50 placeholder:text-red-400':inputStyle}/><button type="button" aria-label="Consultar clientes" onClick={()=>{setBusca('');setConsulta('cliente')}} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[2px] border border-slate-300 bg-slate-50 text-xs font-semibold text-slate-600 hover:bg-slate-100"><Search size={12}/></button></div></Field>
@@ -105,8 +105,8 @@ export default function NovoPedido(){
      </div>
     </section>
 
-    <section className="min-w-0 md:col-span-2 bg-white border border-slate-300 rounded-[2px] p-5 shadow-sm space-y-6">
-     <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Dados do Pedido</h3>
+    <section className="min-w-0 md:col-span-2 bg-white border border-slate-300 rounded-[2px] p-2.5 shadow-sm space-y-3">
+     <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-2">Dados do Pedido</h3>
      <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
       <Field label="Nº do Pedido"><input id="edPedido" value={edPedido} readOnly className={inputStyle+' bg-slate-100 font-semibold text-slate-600'}/></Field>
       <Field label="Data do Pedido" required><input id="edDataEntrada" type="date" value={edDataEntrada} onChange={e=>setEdDataEntrada(e.target.value)} className={inputStyle}/></Field>
@@ -119,8 +119,8 @@ export default function NovoPedido(){
     </section>
 
     <section className="min-w-0 md:col-span-2 bg-white border border-slate-300 rounded-[2px] p-2.5 shadow-sm space-y-3">
-     <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Entrega e Logística</h3>
-     <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+     <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-2">Entrega e Logística</h3>
+     <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
       <Field label="Previsão de Entrega" required><input id="edDataEntrega" type="date" value={edDataEntrega} onChange={e=>{setEdDataEntrega(e.target.value);setValidationField(null)}} onBlur={e=>{if(!e.target.value)setValidationField('dataEntrega')}} className={validationField==='dataEntrega'?inputStyle+' border-red-500 bg-red-50':inputStyle}/></Field>
       <Field label="Tipo de Frete" required><select id="edFreteTipo" value={edFreteTipo} onChange={e=>{setEdFreteTipo(e.target.value);setValidationField(null)}} onBlur={e=>{if(!e.target.value)setValidationField('frete')}} className={validationField==='frete'?inputStyle+' border-red-500 bg-red-50':inputStyle}><option value="">Selecione...</option><option value="CIF">CIF</option><option value="FOB">FOB</option></select></Field>
       <div className="md:col-span-2"><Field label="Transportadora"><div className="flex gap-1"><select id="edTransportadora" value={transportadora} onChange={e=>setTransportadora(e.target.value)} className={inputStyle}><option value="">Selecione uma transportadora</option>{transportadoras.map(t=><option key={t.id} value={t.codigo}>{t.codigo} — {t.razao_social}</option>)}</select><button type="button" aria-label="Consultar transportadoras" onClick={()=>{setBusca(transportadora);setConsulta('transportadora')}} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[2px] border border-slate-300 bg-slate-50 text-xs font-semibold text-slate-600 hover:bg-slate-100"><Search size={12}/></button></div></Field></div>
@@ -129,8 +129,8 @@ export default function NovoPedido(){
    </div>
 
    <section className="md:col-span-6 bg-white border border-slate-300 rounded-[2px] p-2.5 shadow-sm space-y-3">
-    <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Itens do Pedido</h3>
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-4 md:items-end">
+    <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-2">Itens do Pedido</h3>
+    <div className="grid grid-cols-1 gap-2 md:grid-cols-4 md:items-end">
      <Field label="Código do Produto" width="100%" required><div className="flex gap-1"><input id="edCodigoInterno" ref={produtoRef} value={edCodigoInterno} onChange={e=>{setEdCodigoInterno(e.target.value);setValidationField(null);setError('')}} onBlur={e=>{if(!e.target.value.trim()){setValidationField('produto');return}void produtoBusca(e.target.value)}} placeholder={validationField==='produto'?'Preencher...':'Código / SKU'} className={validationField==='produto'?inputStyle+' border-red-500 bg-red-50 placeholder:text-red-400':inputStyle}/><button type="button" aria-label="Consultar produtos" onClick={()=>{setBusca('');setConsulta('produto')}} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[2px] border border-slate-300 bg-slate-50 text-xs font-semibold text-slate-600 hover:bg-slate-100"><Search size={12}/></button></div></Field>
      <div className="md:col-span-2"><Field label="Descrição do Produto" width="100%"><input id="edDescricaoProduto" value={edDescricaoProduto} readOnly className={inputStyle+' bg-slate-50'}/></Field></div>
      <Field label="Quantidade" width="100%" required><input id="edQuantidade" type="number" min="0.0001" step="any" value={edQuantidade} onChange={e=>{setEdQuantidade(e.target.value);setValidationField(null);setError('')}} onBlur={e=>{if(n(e.target.value)<=0)setValidationField('quantidade')}} className={validationField==='quantidade'?inputStyle+' border-red-500 bg-red-50':inputStyle}/></Field>
@@ -148,16 +148,16 @@ export default function NovoPedido(){
     <div className="flex items-center justify-end border-t border-slate-200 bg-slate-50 px-2 py-1.5"><span className="text-[10px] text-slate-500">{gridItens.length} {gridItens.length===1?'item':'itens'} no pedido</span></div>
    </section>
 
-   <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-    <section className="md:col-span-2 bg-white border border-slate-300 rounded-[2px] p-5 shadow-sm space-y-6">
-     <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Informações Adicionais</h3>
+   <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
+    <section className="md:col-span-2-4 bg-white border border-slate-300 rounded-[2px] p-2.5 shadow-sm space-y-3">
+     <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-2">Informações Adicionais</h3>
      <div className="space-y-2"><Field label="Preço de custo industrial do item selecionado"><input value={selectedItem===null?'':brl(gridItens[selectedItem]?.preco_custo_industrial??0)} readOnly className={inputStyle+' bg-slate-50'}/></Field><p className="mt-1 text-[9px] text-slate-500">Margem apresentada na grade é calculada com base no custo industrial retornado pelo ERP.</p></div>
     </section>
-    <section className="md:col-span-2 bg-white border border-slate-300 rounded-[2px] p-5 shadow-sm space-y-6">
-     <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-4">Resumo do Pedido</h3>
+    <section className="md:col-span-2 bg-white border border-slate-300 rounded-[2px] p-2.5 shadow-sm space-y-3">
+     <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-2">Resumo do Pedido</h3>
      <div className="space-y-4">
       <div className="flex items-center justify-between text-[10px] text-slate-600"><span>Subtotal dos itens</span><span className="tabular-nums">{brl(subtotal)}</span></div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4"><div className="md:col-span-2"><Field label="Frete (R$)"><input value={frete} onChange={e=>setFrete(e.target.value)} className={inputStyle}/></Field></div><div className="md:col-span-2"><Field label="Outras despesas (R$)"><input value={outras} onChange={e=>setOutras(e.target.value)} className={inputStyle}/></Field></div></div>
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-4"><div className="md:col-span-2"><Field label="Frete (R$)"><input value={frete} onChange={e=>setFrete(e.target.value)} className={inputStyle}/></Field></div><div className="md:col-span-2"><Field label="Outras despesas (R$)"><input value={outras} onChange={e=>setOutras(e.target.value)} className={inputStyle}/></Field></div></div>
       <div className="flex items-center justify-between border-t border-slate-200 pt-2 text-[13px] font-semibold text-blue-800"><span>Total Líquido</span><span className="tabular-nums">{brl(total)}</span></div>
      </div>
     </section>
