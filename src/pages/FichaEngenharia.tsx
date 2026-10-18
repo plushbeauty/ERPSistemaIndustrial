@@ -130,6 +130,7 @@ export default function FichaEngenharia(){
  async function save(){
   if(!kind)return setNotice('Selecione o tipo de ficha.')
   if(!productId)return setNotice('Selecione o produto produzido.')
+  if((kind==='PRENSADOS'||kind==='INJETADOS')&&!spec.fotoPrincipal)return setNotice('Anexe a imagem técnica aprovada de Prensados/Injetados antes de gravar; a temperatura será registrada sobre essa referência visual.')
   if((kind==='PRENSADOS'||kind==='INJETADOS')&&(!spec.moldeId||Number(spec.cavidades)<=0))return setNotice('Para Prensados e Injetados, informe o molde e a quantidade de cavidades.')
   if((kind==='ESTAMPARIA'||kind==='CORTE_VINCO')&&!spec.moldeId)return setNotice('Selecione o estampo/ferramental cadastrado para este processo.')
   if(bom.some(x=>!x.componente_id||Number(x.quantidade)<=0))return setNotice('Preencha todos os materiais da BOM.')
