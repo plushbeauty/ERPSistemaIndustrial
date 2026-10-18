@@ -8,7 +8,7 @@
  */
 
 import { useEffect, useState, type ReactNode } from 'react'
-import { ChevronRight, LogOut, User, Tablet } from 'lucide-react'
+import { ChevronRight, LogOut, User } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useSynqraLayout } from './SynqraLayoutContext'
@@ -164,15 +164,7 @@ export default function IndustrialReferenceShell({
           <div className="flex items-center space-x-3">
             {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
             
-            <button 
-              type="button" 
-              title="Abrir Tablet operacional" 
-              onClick={() => { window.location.href = '/tablet/dashboard' }} 
-              className="inline-flex h-8 items-center gap-2 rounded-[2px] border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900"
-            >
-              <Tablet className="h-3.5 w-3.5 text-slate-400" /> 
-              TABLET
-            </button>
+
 
             <div className="hidden text-right text-[10px] font-bold leading-tight text-slate-400 border-l border-slate-200 pl-3 md:block">
               <div className="text-slate-600">{clock.toLocaleDateString('pt-BR')}</div>
