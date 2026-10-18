@@ -42,6 +42,9 @@ jobs:
       - name: Auth Master contract
         run: npm run verify:auth-master-contract
 
+      - name: Company signup contract
+        run: npm run verify:company-signup-contract
+
       - name: Public naming
         run: npm run verify:public-naming
 
