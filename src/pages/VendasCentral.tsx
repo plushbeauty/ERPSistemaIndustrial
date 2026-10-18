@@ -179,14 +179,13 @@ export default function VendasCentral() {
     <VendasLayout title="Status do pedido" showStatusCards={false}>
       <main className="sales-workspace">
         {error && <div className="sales-alert" role="alert"><CircleAlert size={17} />{error}</div>}
-        <div className="sales-process-legend" aria-label="Legenda das etapas do processo do pedido">
-          <strong>LEGENDA DO PROCESSO</strong>
-          <span><i className="legend-dot is-stage-green" /> Pedido / concluído</span>
-          <span><i className="legend-dot is-stage-blue" /> Produção</span>
-          <span><i className="legend-dot is-stage-amber" /> Qualidade / pendência</span>
-          <span><i className="legend-dot is-stage-violet" /> Expedição</span>
-          <span><i className="legend-dot is-stage-cyan" /> NF / saída</span>
-          <span><i className="legend-dot is-stage-red" /> Atraso / reprovação</span>
+        <div className="sales-process-legend mb-2 flex flex-wrap items-center gap-2 border border-slate-300 bg-slate-900 px-3 py-2 text-[9px] font-bold uppercase tracking-wide text-white" aria-label="Legenda das etapas do processo do pedido">
+          <strong className="mr-1 text-amber-300">LEGENDA DOS SETORES</strong>
+          <span className="inline-flex items-center gap-1.5 rounded-sm bg-sky-700 px-2 py-1"><i className="h-2 w-2 rounded-full bg-sky-200" /> PCP</span>
+          <span className="inline-flex items-center gap-1.5 rounded-sm bg-cyan-700 px-2 py-1"><i className="h-2 w-2 rounded-full bg-cyan-200" /> Almoxarifado</span>
+          <span className="inline-flex items-center gap-1.5 rounded-sm bg-amber-600 px-2 py-1"><i className="h-2 w-2 rounded-full bg-amber-100" /> Qualidade</span>
+          <span className="inline-flex items-center gap-1.5 rounded-sm bg-violet-700 px-2 py-1"><i className="h-2 w-2 rounded-full bg-violet-200" /> Expedição</span>
+          <span className="inline-flex items-center gap-1.5 rounded-sm bg-emerald-700 px-2 py-1"><i className="h-2 w-2 rounded-full bg-emerald-200" /> Fiscal</span>
         </div>
         <section className="sales-orders-card">
           <div className="synqra-status-grid sales-orders-status-grid" role="tablist" aria-label="Filtrar pedidos por status">
@@ -318,10 +317,19 @@ function ProcessStages({ order, production, stock, inspections, expeditions, fis
     { label: 'EXPEDIÇÃO', detail: expeditions.length ? expeditions.map((row) => `EXP ${row.numero}: ${row.status}${row.transportadora ? ` • ${row.transportadora}` : ''}`).join(' | ') : 'Aguardando expedição', tone: cancelled ? 'is-stage-muted' : expeditionDone ? 'is-stage-green' : expeditions.length ? 'is-stage-violet' : 'is-stage-muted' },
     { label: 'FISCAL', detail: fiscal.length ? fiscal.map((row) => `${row.tipo}: ${row.status} (pendente ${Number(row.quantidade_pendente || 0)})`).join(' | ') : 'Aguardando liberação fiscal', tone: cancelled ? 'is-stage-muted' : fiscalDone ? 'is-stage-green' : fiscal.length ? 'is-stage-cyan' : 'is-stage-muted' },
   ]
-  return <div className="sales-process-stages sales-sector-columns" aria-label={`Setores do pedido PV-${String(order.numero).padStart(6, '0')}`}>
-    {sectors.map((sector) => <div key={sector.label} className={`sales-process-stage sales-sector-row h-11 ${sector.tone}`} title={`${sector.label}: ${sector.detail}`}>
-      <span>{sector.label}</span>
-      <strong>{sector.detail}</strong>
-    </div>)}
+  return <div className="sales-process-stages sales-sector-columns grid min-w-[240px] gap-1" aria-label={`Setores do pedido PV-${String(order.numero).padStart(6, '0')}`}>
+    {sectors.map((sector) => {
+      const toneClass = sector.tone === 'is-stage-green' ? 'border-emerald-600 bg-emerald-50 text-emerald-950'
+        : sector.tone === 'is-stage-blue' ? 'border-sky-600 bg-sky-50 text-sky-950'
+        : sector.tone === 'is-stage-cyan' ? 'border-cyan-600 bg-cyan-50 text-cyan-950'
+        : sector.tone === 'is-stage-amber' ? 'border-amber-500 bg-amber-50 text-amber-950'
+        : sector.tone === 'is-stage-violet' ? 'border-violet-600 bg-violet-50 text-violet-950'
+        : sector.tone === 'is-stage-red' ? 'border-rose-600 bg-rose-50 text-rose-950'
+        : 'border-slate-300 bg-slate-50 text-slate-700'
+      return <div key={sector.label} className={`sales-process-stage sales-sector-row grid h-11 grid-cols-[82px_minmax(0,1fr)] items-center gap-2 overflow-hidden rounded-[2px] border-l-4 px-2 ${toneClass}`} title={`${sector.label}: ${sector.detail}`}>
+        <span className="text-[9px] font-extrabold uppercase tracking-wide">{sector.label}</span>
+        <strong className="truncate text-[10px] font-semibold">{sector.detail}</strong>
+      </div>
+    })}
   </div>
 }
