@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 
 const product = readFileSync('src/pages/ProdutosVendasIndustrial.tsx', 'utf8')
+const newOrder = readFileSync('src/pages/NovoPedido.tsx', 'utf8')
 const login = readFileSync('src/styles/industrial-login.css', 'utf8')
 const loginPage = readFileSync('src/IndustrialLoginDirect.tsx', 'utf8')
 const appEntry = readFileSync('src/AppEntryV2.tsx', 'utf8')
@@ -10,6 +11,9 @@ const purchases = readFileSync('src/pages/ComprasIndustrial.tsx', 'utf8')
 const fiscalPages = ['src/pages/Fiscal.tsx', 'src/pages/FiscalPendencias.tsx', 'src/pages/FiscalImpostos.tsx', 'src/pages/FiscalCarteiraNFe.tsx', 'src/pages/FiscalNFeEntradas.tsx'].map(path => readFileSync(path, 'utf8'))
 
 const checks = [
+  ['Novo Pedido — Dados do Cliente ocupam a linha inteira', newOrder.includes('@REVISAO_APROVACAO: APROV-007') && newOrder.includes('md:col-span-12 bg-white')],
+  ['Novo Pedido — Pedido e Logística em colunas compactas', newOrder.includes('md:col-span-7 bg-white') && newOrder.includes('md:col-span-5 bg-white')],
+  ['Novo Pedido — grade de itens usa colunas compactas', newOrder.includes('md:grid-cols-12 md:items-end') && newOrder.includes('label="Código do Produto"') && newOrder.includes('label="Quantidade"')],
   ['Cadastro de Produtos com abas', product.includes("['gerais','DADOS GERAIS'") && product.includes("['fiscal','FISCAL'") && product.includes("['estoque','ESTOQUE'")],
   ['Seção de identificação do produto', product.includes('IDENTIFICAÇÃO DO PRODUTO')],
   ['Grade compacta do formulário aprovado', product.includes('product-form-grid') && product.includes('product-general-row')],
