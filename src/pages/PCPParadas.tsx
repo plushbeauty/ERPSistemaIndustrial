@@ -41,7 +41,7 @@ export default function PCPParadas() {
           .eq('empresa_id', id).eq('ativo', true).order('codigo').range(from, to)),
         fetchAllPages<Order>((from, to) => supabase.from('erp_ordens_producao')
           .select('id,numero_op,numero', { count: 'exact' })
-          .eq('empresa_id', id).order('created_at', { ascending: false }).range(from, to)),
+          .eq('empresa_id', id).order('numero_op', { ascending: false }).range(from, to)),
         supabase.from('erp_producao_paradas')
           .select('id,maquina_id,ordem_producao_id,motivo,inicio,observacao')
           .eq('empresa_id', id).eq('status', 'ABERTA').is('fim', null).is('ordem_manutencao_id', null)
