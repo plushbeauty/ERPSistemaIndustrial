@@ -82,11 +82,14 @@ export default function AcompanhamentoNaoConformidade(){
   const load=async()=>{
     setBusy(true);setError('')
     try{
+      const tenant=await supabase.rpc('erp_current_empresa_id')
+      if(tenant.error||typeof tenant.data!=='string'||!tenant.data) throw tenant.error??new Error('Empresa da sessão não identificada.')
+      const empresaId=tenant.data
       const [r,a,u,i]=await Promise.all([
-        supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,acao_corretiva,status').order('criado_em',{ascending:false}).limit(1000),
-        supabase.from('erp_qualidade_acoes').select('id,origem_id,what,why,where_to,when_date,who_id,how,how_much,status,eficacia').eq('origem_tipo','RPNC').order('when_date',{ascending:true}).limit(2000),
-        supabase.from('erp_usuarios').select('id,nome,matricula').eq('ativo',true).is('deleted_at',null).order('nome').limit(500),
-        supabase.from('erp_qualidade_ishikawa').select('id,rpnc_id,efeito,maquina,metodo,mao_de_obra,material,medicao,meio_ambiente,cinco_porques').order('created_at',{ascending:false}).limit(1000)
+        supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,acao_corretiva,status').eq('empresa_id',empresaId).order('criado_em',{ascending:false}).limit(1000),
+        supabase.from('erp_qualidade_acoes').select('id,origem_id,what,why,where_to,when_date,who_id,how,how_much,status,eficacia').eq('empresa_id',empresaId).eq('origem_tipo','RPNC').order('when_date',{ascending:true}).limit(2000),
+        supabase.from('erp_usuarios').select('id,nome,matricula').eq('empresa_id',empresaId).eq('ativo',true).is('deleted_at',null).order('nome').limit(500),
+        supabase.from('erp_qualidade_ishikawa').select('id,rpnc_id,efeito,maquina,metodo,mao_de_obra,material,medicao,meio_ambiente,cinco_porques').eq('empresa_id',empresaId).order('created_at',{ascending:false}).limit(1000)
       ])
       for(const x of [r,a,u,i]) if(x.error) throw x.error
       setRpnc((r.data||[]) as Rpn[]);setActions((a.data||[]) as Action[]);setUsers((u.data||[]) as User[]);setIshikawa((i.data||[]) as Ishikawa[])
@@ -144,7 +147,8 @@ export default function AcompanhamentoNaoConformidade(){
     if(!selected)return
     setBusy(true);setError('')
     try{
-      const {error}=await supabase.from('erp_rpnc').update({status}).eq('id',selected.id);if(error)throw error
+      const tenant=await supabase.rpc('erp_current_empresa_id');if(tenant.error||typeof tenant.data!=='string'||!tenant.data)throw tenant.error??new Error('Empresa da sessão não identificada.')
+      const {error}=await supabase.from('erp_rpnc').update({status}).eq('empresa_id',tenant.data).eq('id',selected.id);if(error)throw error
       setSelected({...selected,status});setRpnc(prev=>prev.map(x=>x.id===selected.id?{...x,status}:x));setMessage('Status atualizado.')
     }catch(e){setError(e instanceof Error?e.message:'Não foi possível atualizar o status.')}
     finally{setBusy(false)}
@@ -186,7 +190,7 @@ export default function AcompanhamentoNaoConformidade(){
 
   const updateAction=async(id:string,status:string)=>{
     setBusy(true);setError('')
-    try{const{error}=await supabase.from('erp_qualidade_acoes').update({status}).eq('id',id);if(error)throw error;setActions(prev=>prev.map(a=>a.id===id?{...a,status}:a));setMessage('Ação atualizada.')}
+    try{const tenant=await supabase.rpc('erp_current_empresa_id');if(tenant.error||typeof tenant.data!=='string'||!tenant.data)throw tenant.error??new Error('Empresa da sessão não identificada.');const{error}=await supabase.from('erp_qualidade_acoes').update({status}).eq('empresa_id',tenant.data).eq('id',id);if(error)throw error;setActions(prev=>prev.map(a=>a.id===id?{...a,status}:a));setMessage('Ação atualizada.')}
     catch(e){setError(e instanceof Error?e.message:'Não foi possível atualizar a ação.')}finally{setBusy(false)}
   }
 
