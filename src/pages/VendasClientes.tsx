@@ -1,3 +1,8 @@
+/**
+ * REVISÃO: 2026-10-18
+ * ESCOPO: cadastro de clientes — corrigir seleção/edição pela grade e ampliar pesquisa.
+ * SEGURANÇA: manter consultas e gravações vinculadas à empresa autenticada.
+ */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Building2, Check, MapPin, Pencil, Plus, RefreshCw, Search, Trash2, Truck, UserRound } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -213,8 +218,12 @@ export default function VendasClientes() {
   useEffect(() => { void load() }, [])
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    return rows.filter(row => !q || [row.codigo, row.nome, row.nome_fantasia, row.documento, row.email].filter(Boolean).join(' ').toLowerCase().includes(q))
+    const normalize = (value: string) => value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase()
+    const q = normalize(query.trim())
+    return rows.filter(row => !q || normalize([
+      row.codigo, row.nome, row.nome_fantasia, row.documento, row.email,
+      row.telefone, row.whatsapp, row.cidade, row.estado, row.contato_nome,
+    ].filter(Boolean).join(' ')).includes(q))
   }, [rows, query])
 
   const selectedClient = rows.find(row => row.id === selected) ?? null
@@ -597,7 +606,7 @@ export default function VendasClientes() {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[900px] text-[10px]">
                 <thead className="bg-slate-100"><tr className="h-7 text-left font-semibold"><th className="px-2">Código</th><th className="px-2">Razão Social / Nome</th><th className="px-2">CNPJ / CPF</th><th className="px-2">Contato</th><th className="px-2">Cidade/UF</th><th className="px-2">Status</th></tr></thead>
-                <tbody>{filtered.map(row => <tr key={row.id} onClick={() => { setSelected(row.id); if (!open) edit(row) }} className={'h-7 cursor-pointer border-t border-slate-200 ' + (selected === row.id ? 'bg-sky-50' : 'hover:bg-slate-50')}><td className="px-2 font-mono">{row.codigo ?? '—'}</td><td className="px-2">{row.nome}<span className="ml-2 text-slate-500">{row.nome_fantasia ?? ''}</span></td><td className="px-2">{row.documento ?? '—'}</td><td className="px-2">{row.contato_nome ?? '—'}</td><td className="px-2">{[row.cidade, row.estado].filter(Boolean).join(' / ') || '—'}</td><td className={row.ativo ? 'px-2 text-emerald-700' : 'px-2 text-rose-700'}>{row.ativo ? 'ATIVO' : 'INATIVO'}</td></tr>)}</tbody>
+                <tbody>{filtered.map(row => <tr key={row.id} onClick={() => edit(row)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); edit(row) } }} tabIndex={0} aria-label={'Editar cliente ' + row.nome} className={'h-7 cursor-pointer border-t border-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-600 ' + (selected === row.id ? 'bg-sky-50' : 'hover:bg-slate-50')}><td className="px-2 font-mono">{row.codigo ?? '—'}</td><td className="px-2">{row.nome}<span className="ml-2 text-slate-500">{row.nome_fantasia ?? ''}</span></td><td className="px-2">{row.documento ?? '—'}</td><td className="px-2">{row.contato_nome ?? '—'}</td><td className="px-2">{[row.cidade, row.estado].filter(Boolean).join(' / ') || '—'}</td><td className={row.ativo ? 'px-2 text-emerald-700' : 'px-2 text-rose-700'}>{row.ativo ? 'ATIVO' : 'INATIVO'}</td></tr>)}</tbody>
               </table>
             </div>
             {!busy && !filtered.length && <p className="p-6 text-center text-[10px] text-slate-500">Nenhum cliente encontrado.</p>}
