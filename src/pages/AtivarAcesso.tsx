@@ -26,7 +26,7 @@ export default function AtivarAcesso() {
     setError('')
     setMessage('')
     if (!supabaseConfigurado) return setError('Ambiente Supabase não configurado.')
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email.trim())) return setError('Informe o mesmo e-mail usado no convite.')
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return setError('Informe o mesmo e-mail usado no convite.')
     setBusy(true)
     try {
       const { error: otpError } = await supabase.auth.signInWithOtp({
@@ -47,11 +47,11 @@ export default function AtivarAcesso() {
     setError('')
     setMessage('')
     if (!supabaseConfigurado) return setError('Ambiente Supabase não configurado.')
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email.trim()) || !/^\\d{6,8}$/.test(code.trim())) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || !/^\d{6,8}$/.test(code.trim())) {
       return setError('Informe o e-mail do convite e o código numérico recebido.')
     }
     if (nome.trim().length < 3) return setError('Informe seu nome completo.')
-    if (password.length < 12 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\\d/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+    if (password.length < 12 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
       return setError('A senha deve ter 12 caracteres ou mais e incluir maiúscula, minúscula, número e símbolo.')
     }
     if (password !== confirm) return setError('A confirmação da senha não confere.')
@@ -117,7 +117,7 @@ export default function AtivarAcesso() {
           </div>
           <div className="sm:col-span-4">
             <label className={labelClass}>Código OTP</label>
-            <input className={fieldClass + ' text-center font-mono font-black tracking-[.2em]'} inputMode="numeric" maxLength={8} value={code} onChange={event => setCode(event.target.value.replace(/\\D/g, ''))} placeholder="000000" autoComplete="one-time-code" required disabled={busy} />
+            <input className={fieldClass + ' text-center font-mono font-black tracking-[.2em]'} inputMode="numeric" maxLength={8} value={code} onChange={event => setCode(event.target.value.replace(/\D/g, ''))} placeholder="000000" autoComplete="one-time-code" required disabled={busy} />
           </div>
           <div className="sm:col-span-8">
             <label className={labelClass}><User size={11} /> Nome completo</label>
