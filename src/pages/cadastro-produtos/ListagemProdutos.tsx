@@ -1,12 +1,13 @@
 /**
  * SYNQRA ERP — LISTAGEM GERAL E FILTROS MESTRE DE PRODUTOS
- * REVISÃO: 1.1 | DATA: 16/10/2026
- * ID: #AUDIT-ERP-LISTAGEM-20261016-12
- * ESCOPO: Alinhamento industrial compacto, filtros e impressão do catálogo.
- * NOTA: Dados reais do tenant autenticado; sem registros demonstrativos.
+ * @DATA_REVISAO_APROVACAO: 2026-10-18
+ * @STATUS_APROVACAO: LISTAGEM-PRODUTOS-PREMIUM-UI-OK
+ * ESCOPO: filtros responsivos, catálogo denso e impressão sem CSS inline.
+ * DADOS: Supabase real, sessão autenticada e isolamento por empresa.
  */
-import { RefreshCw, Search } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Box, Building2, Filter, HelpCircle, Printer, RefreshCw, Search, Tag, Layers } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 
 type P = {
@@ -19,6 +20,11 @@ type P = {
   ativo: boolean
 }
 
+const baseInput = 'h-8 w-full min-w-0 rounded border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-800 outline-none transition-colors placeholder:text-slate-400 focus:border-sky-600 focus:ring-1 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-50'
+const labelClass = 'grid min-w-0 gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-500'
+const headerCell = 'h-8 border-b border-slate-700 bg-[#123B50] px-2.5 text-left align-middle text-[9px] font-black uppercase tracking-wider text-white'
+const bodyCell = 'h-8 border-b border-slate-100 px-2.5 py-1 align-middle text-[10px] text-slate-700'
+
 export default function ListagemProdutos({ onOpenFicha }: { onOpenFicha: (id?: string) => void }) {
   const [rows, setRows] = useState<P[]>([])
   const [q, setQ] = useState('')
@@ -28,180 +34,166 @@ export default function ListagemProdutos({ onOpenFicha }: { onOpenFicha: (id?: s
   const [busy, setBusy] = useState(true)
   const [error, setError] = useState('')
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setBusy(true)
     setError('')
     try {
-      const u = await supabase.auth.getUser()
-      if (u.error) throw u.error
-      if (!u.data.user) throw new Error('Sessão não autenticada.')
+      const auth = await supabase.auth.getUser()
+      if (auth.error) throw auth.error
+      if (!auth.data.user) throw new Error('Sessão corporativa não autenticada.')
 
-      const p = await supabase
+      const profile = await supabase
         .from('erp_usuarios')
         .select('empresa_id')
-        .eq('auth_user_id', u.data.user.id)
+        .eq('auth_user_id', auth.data.user.id)
         .eq('ativo', true)
         .is('deleted_at', null)
         .maybeSingle()
-      if (p.error) throw p.error
-      if (!p.data?.empresa_id) throw new Error('Empresa não identificada.')
+      if (profile.error) throw profile.error
+      if (!profile.data?.empresa_id) throw new Error('Empresa da sessão não identificada.')
 
-      const r = await supabase
+      const result = await supabase
         .from('erp_produtos')
         .select('id,codigo,nome,categoria,unidade,cliente,ativo')
-        .eq('empresa_id', p.data.empresa_id)
-        .order('codigo')
+        .eq('empresa_id', profile.data.empresa_id)
+        .order('codigo', { ascending: true })
         .limit(2000)
-      if (r.error) throw r.error
-      setRows((r.data ?? []) as P[])
+      if (result.error) throw result.error
+      setRows((result.data ?? []) as P[])
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Falha ao carregar produtos.')
+      setError(e instanceof Error ? e.message : 'Falha ao carregar catálogo mestre.')
+      setRows([])
     } finally {
       setBusy(false)
     }
-  }
+  }, [])
 
-  useEffect(() => { void load() }, [])
+  useEffect(() => { void load() }, [load])
 
-  const categorias = useMemo(() => [...new Set(rows.map(x => x.categoria).filter(Boolean) as string[])].sort(), [rows])
-  const unidades = useMemo(() => [...new Set(rows.map(x => x.unidade).filter(Boolean))].sort(), [rows])
-  const clientes = useMemo(() => [...new Set(rows.map(x => x.cliente).filter(Boolean) as string[])].sort(), [rows])
-  const data = rows.filter(x => {
-    const term = q.trim().toLowerCase()
-    return (!term || (x.codigo + ' ' + x.nome).toLowerCase().includes(term))
+  const categorias = useMemo(() => [...new Set(rows.map(x => x.categoria).filter((v): v is string => Boolean(v)))].sort((a, b) => a.localeCompare(b, 'pt-BR')), [rows])
+  const unidades = useMemo(() => [...new Set(rows.map(x => x.unidade).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')), [rows])
+  const clientes = useMemo(() => [...new Set(rows.map(x => x.cliente).filter((v): v is string => Boolean(v)))].sort((a, b) => a.localeCompare(b, 'pt-BR')), [rows])
+
+  const data = useMemo(() => {
+    const term = q.trim().toLocaleLowerCase('pt-BR')
+    return rows.filter(x =>
+      (!term || (x.codigo + ' ' + x.nome).toLocaleLowerCase('pt-BR').includes(term))
       && (!categoria || x.categoria === categoria)
       && (!unidade || x.unidade === unidade)
-      && (!cliente || x.cliente === cliente)
-  })
+      && (!cliente || x.cliente === cliente),
+    )
+  }, [rows, q, categoria, unidade, cliente])
 
-  const labelClass = 'flex min-w-0 flex-col gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-600'
-  const field = 'h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-semibold text-slate-800 outline-none transition-colors focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
-  const sectionTitle = 'mb-3 block border-b border-slate-200 pb-1 text-[10px] font-extrabold uppercase tracking-widest text-[#2D8DB8]'
-  const tableHeaderClass = 'h-8 border-b border-slate-700 bg-[#123B50] px-3 text-left align-middle text-[9px] font-bold uppercase tracking-wider text-white'
-  const tableCellClass = 'h-8 border-b border-slate-200 px-3 py-1 align-middle text-[11px] font-medium text-slate-800'
+  const hasFilters = Boolean(q || categoria || unidade || cliente)
+  const clearFilters = () => { setQ(''); setCategoria(''); setUnidade(''); setCliente('') }
 
   return (
-    <section className="product-list-print space-y-3 bg-[#f8fafc] p-3 text-slate-800">
-      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-300 pb-2">
-        <div>
-          <p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#2D8DB8]">Cadastro mestre · Produtos</p>
-          <h2 className="text-base font-bold leading-6 text-[#123B50]">Listagem Geral de Itens</h2>
-          <p className="text-[10px] text-slate-600">Dados reais da empresa autenticada. Nenhuma linha demonstrativa é criada.</p>
+    <section className="product-list-print space-y-3 bg-transparent p-1 text-[11px] text-slate-800">
+      <header className="no-print flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-2">
+        <div className="min-w-0">
+          <p className="flex items-center gap-1 text-[9px] font-black uppercase tracking-[.16em] text-sky-700"><Box size={12} /> Cadastro mestre · Produtos</p>
+          <h2 className="text-sm font-black uppercase tracking-tight text-slate-900">Listagem Geral de Itens</h2>
+          <p className="text-[10px] text-slate-500">Catálogo da empresa autenticada · sem registros demonstrativos.</p>
         </div>
-        <button type="button" onClick={() => void load()} disabled={busy} className="inline-flex h-8 items-center gap-2 rounded-[2px] border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-60 print:hidden">
-          <RefreshCw size={13} className={busy ? 'animate-spin' : ''} />
-          Atualizar dados
-        </button>
-      </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link to="/ajuda/listagem-produtos" className="inline-flex h-8 items-center gap-1.5 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold uppercase text-slate-700 hover:bg-slate-50"><HelpCircle size={12} /> POP / Ajuda</Link>
+          <button type="button" onClick={() => void load()} disabled={busy} className="inline-flex h-8 items-center gap-1.5 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold uppercase text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-60">
+            <RefreshCw size={12} className={busy ? 'animate-spin' : ''} /> Atualizar
+          </button>
+        </div>
+      </header>
 
-      <div className="rounded-[2px] border border-slate-300 bg-white p-3 shadow-sm">
-        <span className={sectionTitle}>Filtros de busca</span>
-        <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          <label className={`${labelClass} xl:col-span-2`}>
-            SKU / Descrição do produto
-            <span className="relative block w-full">
-              <Search className="pointer-events-none absolute left-2.5 top-2 text-slate-400" size={14} />
-              <input className={`${field} pl-8`} maxLength={50} value={q} onChange={e => setQ(e.target.value)} placeholder="Pesquisar código ou nome" />
-            </span>
-          </label>
-          <label className={labelClass}>
-            Categoria
-            <select className={field} value={categoria} onChange={e => setCategoria(e.target.value)}>
-              <option value="">Todas</option>
-              {categorias.map(x => <option key={x} value={x}>{x}</option>)}
-            </select>
-          </label>
-          <label className={labelClass}>
-            Unidade base
-            <select className={field} value={unidade} onChange={e => setUnidade(e.target.value)}>
-              <option value="">Todas</option>
-              {unidades.map(x => <option key={x} value={x}>{x}</option>)}
-            </select>
-          </label>
-          <label className={labelClass}>
-            Mercado / Cliente
-            <select className={field} value={cliente} onChange={e => setCliente(e.target.value)}>
-              <option value="">Todos</option>
-              {clientes.map(x => <option key={x} value={x}>{x}</option>)}
-            </select>
-          </label>
+      {error && <div role="alert" className="rounded border border-rose-200 bg-rose-50 p-2.5 text-[10px] font-bold text-rose-800">Falha ao carregar produtos: {error}</div>}
+
+      <section className="no-print grid grid-cols-1 items-end gap-3 rounded border border-slate-200 bg-white p-3 shadow-sm sm:grid-cols-2 xl:grid-cols-12">
+        <div className="xl:col-span-12 flex items-center gap-1 border-b border-slate-100 pb-1 text-[9px] font-black uppercase tracking-wider text-slate-500">
+          <Filter size={11} className="text-sky-700" /> Filtros de especificação
         </div>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-2">
-          <span className="text-[10px] text-slate-500">{busy ? 'Consultando Supabase…' : `${data.length} produto(s) exibido(s)`}</span>
-          <div className="flex items-center gap-2 print:hidden">
-            {(q || categoria || unidade || cliente) && <button type="button" onClick={() => { setQ(''); setCategoria(''); setUnidade(''); setCliente('') }} className="h-7 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-bold text-[#123B50] hover:bg-slate-50">Limpar filtros</button>}
-            <button type="button" onClick={() => window.print()} className="h-7 rounded-[2px] bg-[#123B50] px-3 text-[10px] font-bold text-white hover:bg-[#1a4f6c]">IMPRIMIR CATÁLOGO</button>
+        <label className={labelClass + ' xl:col-span-4'}>
+          SKU / Descrição
+          <span className="flex h-8 min-w-0 items-center gap-2 rounded border border-slate-300 bg-white px-2 focus-within:border-sky-600">
+            <Search size={13} className="shrink-0 text-slate-400" />
+            <input maxLength={50} value={q} onChange={e => setQ(e.target.value)} placeholder="Pesquisar código ou nome" className="h-full min-w-0 flex-1 border-0 bg-transparent text-xs font-semibold text-slate-800 outline-none placeholder:text-slate-400" />
+          </span>
+        </label>
+        <label className={labelClass + ' xl:col-span-3'}>
+          <span className="flex items-center gap-1"><Layers size={10} /> Categoria / Família</span>
+          <select className={baseInput} value={categoria} onChange={e => setCategoria(e.target.value)}>
+            <option value="">Todas as famílias</option>
+            {categorias.map(x => <option key={x} value={x}>{x}</option>)}
+          </select>
+        </label>
+        <label className={labelClass + ' xl:col-span-2'}>
+          <span className="flex items-center gap-1"><Tag size={10} /> Unidade base</span>
+          <select className={baseInput} value={unidade} onChange={e => setUnidade(e.target.value)}>
+            <option value="">Todas</option>
+            {unidades.map(x => <option key={x} value={x}>{x}</option>)}
+          </select>
+        </label>
+        <label className={labelClass + ' xl:col-span-3'}>
+          <span className="flex items-center gap-1"><Building2 size={10} /> Mercado / Cliente</span>
+          <select className={baseInput} value={cliente} onChange={e => setCliente(e.target.value)}>
+            <option value="">Todos os mercados</option>
+            {clientes.map(x => <option key={x} value={x}>{x}</option>)}
+          </select>
+        </label>
+        <div className="xl:col-span-12 mt-0.5 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2">
+          <span className="text-[10px] font-semibold text-slate-500">{busy ? 'Sincronizando com Supabase…' : `${data.length} item(ns) filtrado(s) de ${rows.length}`}</span>
+          <div className="flex items-center gap-1.5">
+            {hasFilters && <button type="button" onClick={clearFilters} className="h-7 rounded border border-slate-300 bg-white px-2.5 text-[10px] font-bold text-slate-700 hover:bg-slate-50">Limpar filtros</button>}
+            <button type="button" onClick={() => window.print()} className="inline-flex h-7 items-center gap-1.5 rounded bg-[#123B50] px-3 text-[9px] font-black uppercase tracking-wide text-white hover:bg-[#1a4f6c]"><Printer size={11} /> Imprimir catálogo</button>
           </div>
         </div>
+      </section>
+
+      <div className="hidden border-b-2 border-slate-900 pb-2 print:block">
+        <p className="text-[9px] font-black uppercase tracking-wider text-slate-500">SYNQRA ERP · Cadastro mestre</p>
+        <h1 className="mt-1 text-base font-black uppercase text-slate-900">Catálogo mestre de produtos cadastrados</h1>
+        <p className="mt-1 text-[9px] font-mono text-slate-500">Emitido em {new Date().toLocaleString('pt-BR')}</p>
       </div>
 
-      <div className="overflow-hidden rounded-[2px] border border-slate-300 bg-white shadow-sm">
-        <div className="hidden border-b border-slate-200 bg-slate-50 p-3 print:block">
-          <p className="text-[10px] font-bold tracking-wider text-slate-900">SYNQRA ERP · CADASTRO MESTRE</p>
-          <h3 className="mt-0.5 text-sm font-bold text-slate-700">CATÁLOGO OFICIAL DE PRODUTOS</h3>
-          <p className="text-[9px] text-slate-500">Emitido em {new Date().toLocaleString('pt-BR')}</p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left">
+      <section className="overflow-hidden rounded border border-slate-200 bg-white shadow-sm print:border-0 print:shadow-none">
+        <div className="overflow-x-auto print:overflow-visible">
+          <table className="w-full min-w-[850px] border-collapse text-left text-[11px]">
             <thead>
               <tr>
-                <th className={tableHeaderClass}>Código SKU</th>
-                <th className={tableHeaderClass}>Nome / descrição técnica</th>
-                <th className={tableHeaderClass}>Categoria</th>
-                <th className={tableHeaderClass}>U.M.</th>
-                <th className={tableHeaderClass}>Mercado / cliente</th>
-                <th className={tableHeaderClass}>Status</th>
-                <th className={`${tableHeaderClass} text-center print:hidden`}>Ações</th>
+                <th className={headerCell + ' w-28 text-center'}>Código SKU</th>
+                <th className={headerCell}>Nome / Descrição técnica</th>
+                <th className={headerCell + ' w-36'}>Categoria</th>
+                <th className={headerCell + ' w-20 text-center'}>U.M.</th>
+                <th className={headerCell + ' w-44'}>Mercado / Cliente</th>
+                <th className={headerCell + ' w-24 text-center'}>Situação</th>
+                <th className={headerCell + ' w-20 text-center print:hidden'}>Ficha</th>
               </tr>
             </thead>
             <tbody>
               {data.map((p, index) => (
-                <tr key={p.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-[#EAF5F9]'} border-l-2 border-l-transparent transition-colors hover:border-l-[#2D8DB8] hover:bg-[#D9F1F6]`}>
-                  <td className={`${tableCellClass} whitespace-nowrap font-bold tabular-nums text-[#2D8DB8]`}>{p.codigo}</td>
-                  <td className={`${tableCellClass} min-w-[180px] font-semibold text-slate-900`}>{p.nome}</td>
-                  <td className={tableCellClass}>{p.categoria || '—'}</td>
-                  <td className={`${tableCellClass} whitespace-nowrap font-mono text-[10px]`}>{p.unidade}</td>
-                  <td className={tableCellClass}>{p.cliente || '—'}</td>
-                  <td className={tableCellClass}>
-                    <span className={`inline-flex items-center rounded-[2px] border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${p.ativo ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-rose-200 bg-rose-50 text-rose-800'}`}>
-                      {p.ativo ? 'ATIVO' : 'INATIVO'}
-                    </span>
+                <tr key={p.id} className={`transition-colors hover:bg-sky-50/60 ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}`}>
+                  <td className={bodyCell + ' whitespace-nowrap text-center font-mono font-bold text-sky-800'}>{p.codigo}</td>
+                  <td className={bodyCell + ' min-w-[220px] font-semibold text-slate-900'}>{p.nome}</td>
+                  <td className={bodyCell + ' text-slate-600'}>{p.categoria || '—'}</td>
+                  <td className={bodyCell + ' whitespace-nowrap text-center font-mono'}>{p.unidade}</td>
+                  <td className={bodyCell + ' text-slate-600'}>{p.cliente || 'Mercado livre'}</td>
+                  <td className={bodyCell + ' text-center'}>
+                    <span className={`inline-flex items-center rounded border px-2 py-0.5 text-[8px] font-black uppercase tracking-wide ${p.ativo ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-rose-200 bg-rose-50 text-rose-800'}`}>{p.ativo ? 'Ativo' : 'Inativo'}</span>
                   </td>
-                  <td className={`${tableCellClass} text-center print:hidden`}>
-                    <button type="button" onClick={() => onOpenFicha(p.id)} className="inline-flex h-6 items-center rounded-[2px] bg-[#123B50] px-3 text-[9px] font-bold text-white hover:bg-[#1a4f6c]">ABRIR</button>
+                  <td className={bodyCell + ' text-center print:hidden'}>
+                    <button type="button" onClick={() => onOpenFicha(p.id)} className="inline-flex h-6 items-center rounded bg-[#123B50] px-2.5 text-[9px] font-bold uppercase text-white hover:bg-[#1a4f6c]">Abrir</button>
                   </td>
                 </tr>
               ))}
-              {!busy && !error && !data.length && (
-                <tr>
-                  <td colSpan={7} className="py-10 text-center">
-                    <p className="text-xs font-bold text-slate-800">Nenhum registro encontrado</p>
-                    <p className="mt-1 text-[10px] text-slate-500">{rows.length ? 'Ajuste os filtros ou limpe a pesquisa.' : 'Não há produtos cadastrados para esta empresa.'}</p>
-                  </td>
-                </tr>
+              {!busy && !error && data.length === 0 && (
+                <tr><td colSpan={7} className="px-3 py-10 text-center">
+                  <p className="text-xs font-bold text-slate-800">Nenhum registro encontrado</p>
+                  <p className="mt-1 text-[10px] text-slate-500">{rows.length ? 'Ajuste ou limpe os filtros para ampliar a pesquisa.' : 'Não há produtos cadastrados para esta empresa.'}</p>
+                </td></tr>
               )}
             </tbody>
           </table>
         </div>
-        {busy && <div className="animate-pulse border-t border-slate-200 bg-slate-50 p-4 text-center text-[10px] font-semibold text-slate-500">Sincronizando com o Supabase…</div>}
-        {error && <div role="alert" className="border-t border-rose-200 bg-rose-50 p-3 text-[11px] font-semibold text-rose-800">Falha ao carregar produtos: {error}</div>}
-      </div>
-
-      <style>{`@media print {
-        @page { size: landscape; margin: 12mm; }
-        body { background: #fff !important; }
-        body * { visibility: hidden !important; }
-        .product-list-print, .product-list-print * { visibility: visible !important; }
-        .product-list-print { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; padding: 0 !important; background: #fff !important; }
-        .product-list-print .print\\:hidden, .product-list-print button { display: none !important; }
-        .product-list-print .print\\:block { display: block !important; }
-        .product-list-print .overflow-hidden, .product-list-print .overflow-x-auto { overflow: visible !important; }
-        .product-list-print table { width: 100% !important; font-size: 9pt !important; }
-        .product-list-print th, .product-list-print td { border: 1px solid #cbd5e1 !important; padding: 4px 6px !important; }
-        .product-list-print th { background: #fff !important; color: #111827 !important; }
-        .product-list-print tr { height: auto !important; break-inside: avoid; }
-        .product-list-print .shadow-sm { box-shadow: none !important; }
-      }`}</style>
+        {busy && <div className="animate-pulse border-t border-slate-200 bg-slate-50 p-3 text-center text-[10px] font-semibold text-slate-500 print:hidden">Sincronizando com o Supabase…</div>}
+      </section>
+      <p className="hidden text-[8px] text-slate-400 print:block">Relatório gerado a partir dos registros visíveis no catálogo da empresa autenticada.</p>
     </section>
   )
 }
