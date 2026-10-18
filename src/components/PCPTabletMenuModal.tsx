@@ -1,3 +1,7 @@
+/**
+ * APROVADO — submenu de Fichas de Processo conforme autorização do usuário em 2026-10-18.
+ * Não alterar a estrutura, os rótulos nem os destinos aprovados sem autorização expressa.
+ */
 import { useState } from 'react'
 import { ShieldCheck,
   Activity, BarChart3, Boxes, CalendarDays, ClipboardList, Factory,
