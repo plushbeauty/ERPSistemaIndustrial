@@ -2,7 +2,8 @@
  * @DATA_REVISAO_APROVACAO: 2026-10-18
  * @REVISAO_APROVACAO: CATALOGO-UI-001
  * @STATUS_APROVACAO: GESTAO-CATALOGO-UI-ALINHADA
- * @ESCOPO: KPIs, filtros compactos, tabela responsiva e status visuais.
+ * @REVISAO: CATALOGO-BULK-PUBLISH-001
+ * @ESCOPO: KPIs, filtros compactos, seleção em massa por grupo e status visuais.
  * @REGRA: manter Supabase real, isolamento por empresa e gravação existente.
  */
 import { useEffect, useMemo, useState } from 'react'
@@ -18,6 +19,7 @@ type Product = {
   descricao: string | null
   preco_venda: number | null
   foto_url: string | null
+  grupo: string | null
   catalogo_disponivel: boolean
 }
 
@@ -28,6 +30,7 @@ export default function VendasCatalogoDigitalGestao() {
   const [rows, setRows] = useState<Product[]>([])
   const [selected, setSelected] = useState<Record<string, boolean>>({})
   const [query, setQuery] = useState('')
+  const [groupFilter, setGroupFilter] = useState('TODOS')
   const [busy, setBusy] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -48,7 +51,7 @@ export default function VendasCatalogoDigitalGestao() {
       const products = await fetchAllPages<Product>((from, to) =>
         supabase
           .from('erp_produtos')
-          .select('id,codigo,nome,descricao,preco_venda,foto_url,catalogo_disponivel', { count: 'exact' })
+          .select('id,codigo,nome,descricao,preco_venda,foto_url,grupo,catalogo_disponivel', { count: 'exact' })
           .eq('empresa_id', currentCompanyId)
           .eq('ativo', true)
           .order('codigo')
@@ -69,15 +72,30 @@ export default function VendasCatalogoDigitalGestao() {
     void load()
   }, [])
 
+  const groups = useMemo(
+    () => Array.from(new Set(rows.map((product) => product.grupo?.trim() || 'SEM GRUPO'))).sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    [rows],
+  )
+
   const visible = useMemo(() => {
     const term = query.trim().toLocaleLowerCase('pt-BR')
-    return rows.filter(
-      (product) =>
-        !term ||
+    return rows.filter((product) => {
+      const matchesTerm = !term ||
         product.codigo.toLocaleLowerCase('pt-BR').includes(term) ||
-        product.nome.toLocaleLowerCase('pt-BR').includes(term),
-    )
-  }, [query, rows])
+        product.nome.toLocaleLowerCase('pt-BR').includes(term) ||
+        (product.descricao ?? '').toLocaleLowerCase('pt-BR').includes(term)
+      const group = product.grupo?.trim() || 'SEM GRUPO'
+      return matchesTerm && (groupFilter === 'TODOS' || group === groupFilter)
+    })
+  }, [groupFilter, query, rows])
+
+  const allVisiblePublished = visible.length > 0 && visible.every((product) => selected[product.id] === true)
+  const setVisiblePublication = (published: boolean) => {
+    setSelected((current) => ({
+      ...current,
+      ...Object.fromEntries(visible.map((product) => [product.id, published])),
+    }))
+  }
 
   const kpis = useMemo(
     () => ({
@@ -191,25 +209,47 @@ export default function VendasCatalogoDigitalGestao() {
                   </button>
                 )}
               </label>
+              <select
+                value={groupFilter}
+                onChange={(event) => setGroupFilter(event.target.value)}
+                aria-label="Filtrar produtos por grupo"
+                className="h-[30px] max-w-[190px] rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] text-slate-700"
+              >
+                <option value="TODOS">Todos os grupos</option>
+                {groups.map((group) => <option key={group} value={group}>{group}</option>)}
+              </select>
               <span className="self-start rounded-[2px] border border-slate-200 bg-white px-2 py-1 text-[9px] font-semibold text-slate-600 sm:self-auto">
                 {visible.length} de {rows.length} produtos
               </span>
             </div>
-            <button
-              type="button"
-              onClick={() => void save()}
-              disabled={saving || busy || !companyId}
-              className="inline-flex h-[30px] w-full items-center justify-center gap-1.5 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-[#1f6281] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-            >
-              <Save size={12} /> {saving ? 'Salvando…' : 'Salvar alterações'}
-            </button>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button type="button" onClick={() => setVisiblePublication(true)} disabled={saving || busy || visible.length === 0} className="inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-emerald-700 bg-white px-2 text-[9px] font-bold uppercase text-emerald-800 disabled:opacity-50">
+                <Check size={12} /> Publicar filtrados
+              </button>
+              <button type="button" onClick={() => setVisiblePublication(false)} disabled={saving || busy || visible.length === 0} className="inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[9px] font-bold uppercase text-slate-600 disabled:opacity-50">
+                <EyeOff size={12} /> Retirar filtrados
+              </button>
+              <button
+                type="button"
+                onClick={() => void save()}
+                disabled={saving || busy || !companyId}
+                className="inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-[#1f6281] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Save size={12} /> {saving ? 'Salvando…' : 'Salvar alterações'}
+              </button>
+            </div>
           </header>
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-[820px] table-fixed border-collapse text-left text-[10px]">
               <thead>
                 <tr className="h-8 border-b border-slate-200 bg-slate-50 text-[9px] font-bold uppercase tracking-wide text-slate-600">
-                  <th scope="col" className="w-[76px] px-2 text-center">Publicar</th>
+                  <th scope="col" className="w-[110px] px-2 text-center">
+                    <label className="inline-flex cursor-pointer items-center justify-center gap-1.5">
+                      <input type="checkbox" aria-label="Selecionar todos os produtos filtrados para publicação" checked={allVisiblePublished} disabled={saving || busy || visible.length === 0} onChange={(event) => setVisiblePublication(event.target.checked)} className="h-3.5 w-3.5 accent-[#2D8DB8]" />
+                      <span>Todos</span>
+                    </label>
+                  </th>
                   <th scope="col" className="w-[100px] px-2">Código SKU</th>
                   <th scope="col" className="w-[19%] px-2">Produto</th>
                   <th scope="col" className="px-2">Descrição</th>
