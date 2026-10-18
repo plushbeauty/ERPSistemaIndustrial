@@ -54,7 +54,7 @@ const errorText=(e:unknown)=>e instanceof Error?e.message:String((e as {message?
 export default function FichaEngenharia(){
  const location=useLocation()
  const [kind,setKind]=useState<Kind|null>(null),[products,setProducts]=useState<Product[]>([]),[machines,setMachines]=useState<Machine[]>([]),[molds,setMolds]=useState<Mold[]>([]),[catalog,setCatalog]=useState<{id:string;produto_id:string;versao:number;observacoes:string|null}[]>([])
- const [ficha,setFicha]=useState<Ficha|null>(null),[productId,setProductId]=useState(''),[productCode,setProductCode]=useState(''),[version,setVersion]=useState('1'),[rendimento,setRendimento]=useState('1'),[unit,setUnit]=useState('UN')
+ const [ficha,setFicha]=useState<Ficha|null>(null),[originalQualityIds,setOriginalQualityIds]=useState<string[]>([]),[productId,setProductId]=useState(''),[productCode,setProductCode]=useState(''),[version,setVersion]=useState('1'),[rendimento,setRendimento]=useState('1'),[unit,setUnit]=useState('UN')
  const [processCode,setProcessCode]=useState(''),[processName,setProcessName]=useState(''),[notes,setNotes]=useState('')
  const [bom,setBom]=useState<BomRow[]>([emptyBom()]),[ops,setOps]=useState<OpRow[]>([emptyOp()]),[quality,setQuality]=useState<QualityRow[]>([emptyQuality()])
  const [spec,setSpec]=useState<Record<string,string>>({}),[photoPreview,setPhotoPreview]=useState<{fotoPrincipal:string;fotoSecundaria:string}>({fotoPrincipal:'',fotoSecundaria:''}),[requestedFichaVersion,setRequestedFichaVersion]=useState<number|null>(null),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[search,setSearch]=useState(''),[catalogKind,setCatalogKind]=useState<Kind|''>(''),[catalogMold,setCatalogMold]=useState(''),[previewKind,setPreviewKind]=useState<Kind|null>(null)
@@ -109,16 +109,16 @@ export default function FichaEngenharia(){
    const[bi,ro,qi]=await Promise.all([
     supabase.from('erp_ficha_itens').select('id,componente_id,quantidade,perda_percentual,lote_obrigatorio,tipo_item,sequencia').eq('empresa_id',empresaId).eq('ficha_id',current.id).order('sequencia'),
     supabase.from('erp_ficha_operacoes').select('id,sequencia,operacao,maquina_id,molde_id,setup_min,ciclo_seg,instrucoes').eq('empresa_id',empresaId).eq('ficha_id',current.id).order('sequencia'),
-    supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,limite_inferior,limite_superior,frequencia,status').eq('empresa_id',empresaId).eq('produto_id',id).order('codigo').limit(200)
+    supabase.from('erp_planos_inspecao').select('id,codigo,caracteristica,unidade,valor_nominal,limite_inferior,limite_superior,frequencia,status').eq('empresa_id',empresaId).eq('produto_id',id).order('codigo').limit(200)
    ])
    if(bi.error)throw bi.error;if(ro.error)throw ro.error;if(qi.error)throw qi.error
    setBom((bi.data??[]).map(x=>({id:x.id,componente_id:x.componente_id,quantidade:String(x.quantidade),perda_percentual:String(x.perda_percentual),lote_obrigatorio:Boolean(x.lote_obrigatorio),tipo_item:x.tipo_item,sequencia:x.sequencia})))
    setOps((ro.data??[]).map(x=>({id:x.id,sequencia:x.sequencia,operacao:x.operacao,maquina_id:x.maquina_id??'',molde_id:x.molde_id??'',setup_min:String(x.setup_min),ciclo_seg:String(x.ciclo_seg),instrucoes:x.instrucoes??''})))
-   const loadedQuality: QualityRow[] = (qi.data??[]).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',nominal:'',limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status})); setQuality(loadedQuality.length ? loadedQuality : [emptyQuality()])
+   const loadedQuality: QualityRow[] = (qi.data??[]).map(x=>({id:x.id,codigo:x.codigo,caracteristica:x.caracteristica,unidade:x.unidade??'',nominal:x.valor_nominal??'',limite_inferior:x.limite_inferior==null?'':String(x.limite_inferior),limite_superior:x.limite_superior==null?'':String(x.limite_superior),frequencia:x.frequencia??'',status:x.status}));setOriginalQualityIds(loadedQuality.flatMap(x=>x.id?[x.id]:[]));setQuality(loadedQuality.length ? loadedQuality : [emptyQuality()])
   }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
  }
  function resetForm(keepProduct=false,id=''){
-  setFicha(null);setRequestedFichaVersion(null);if(!keepProduct){setProductId('');setKind(null)}else setProductId(id)
+  setFicha(null);setOriginalQualityIds([]);setRequestedFichaVersion(null);if(!keepProduct){setProductId('');setKind(null)}else setProductId(id)
   setVersion('1');setRendimento('1');setUnit('UN');setProcessCode('');setProcessName('');setNotes('');setSpec({});setPhotoPreview({fotoPrincipal:'',fotoSecundaria:''});setBom([emptyBom()]);setOps([emptyOp()]);setQuality([emptyQuality()])
  }
  function setS(k:string,v:string){setSpec(x=>({...x,[k]:v}))}
@@ -146,10 +146,12 @@ export default function FichaEngenharia(){
    const dops=await supabase.from('erp_ficha_operacoes').delete().eq('empresa_id',empresaId).eq('ficha_id',fichaId);if(dops.error)throw dops.error
    const io=await supabase.from('erp_ficha_operacoes').insert(ops.map(x=>({empresa_id:empresaId,ficha_id:fichaId,sequencia:x.sequencia,operacao:x.operacao.trim(),maquina_id:x.maquina_id||null,molde_id:x.molde_id||null,setup_min:Number(x.setup_min),ciclo_seg:Number(x.ciclo_seg),instrucoes:x.instrucoes.trim()||null})));if(io.error)throw io.error
    for(const q of quality.filter(x=>x.caracteristica.trim())){
-    const qp={empresa_id:empresaId,codigo:q.codigo.trim()||('CQ-'+Date.now()),produto_id:productId,caracteristica:q.caracteristica.trim(),unidade:q.unidade.trim()||null,limite_inferior:q.limite_inferior===''?null:Number(q.limite_inferior),limite_superior:q.limite_superior===''?null:Number(q.limite_superior),frequencia:q.frequencia.trim()||'100%',status:q.status}
+    const qp={empresa_id:empresaId,codigo:q.codigo.trim()||('CQ-'+Date.now()),produto_id:productId,caracteristica:q.caracteristica.trim(),unidade:q.unidade.trim()||null,valor_nominal:q.nominal.trim()||null,limite_inferior:q.limite_inferior===''?null:Number(q.limite_inferior),limite_superior:q.limite_superior===''?null:Number(q.limite_superior),frequencia:q.frequencia.trim()||'100%',status:q.status}
     const qr=q.id?await supabase.from('erp_planos_inspecao').update(qp).eq('id',q.id).eq('empresa_id',empresaId):await supabase.from('erp_planos_inspecao').insert(qp)
     if(qr.error)throw qr.error
    }
+   const retainedQualityIds=quality.flatMap(q=>q.id?[q.id]:[]);const removedQualityIds=originalQualityIds.filter(id=>!retainedQualityIds.includes(id));if(removedQualityIds.length){const removed=await supabase.from('erp_planos_inspecao').delete().eq('empresa_id',empresaId).eq('produto_id',productId).in('id',removedQualityIds);if(removed.error)throw removed.error}
+   setOriginalQualityIds(retainedQualityIds)
    setFicha(saved.data as Ficha);setCatalog(rows=>[{id:String(saved.data.id),produto_id:productId,versao:Number(version),observacoes:JSON.stringify(payload)},...rows.filter(x=>x.id!==String(saved.data.id))]);setNotice('Ficha de processo gravada: parâmetros, ferramental, fotos, materiais, roteiro e controles de qualidade registrados.')
   }catch(e){setNotice(errorText(e))}finally{setBusy(false)}
  }
