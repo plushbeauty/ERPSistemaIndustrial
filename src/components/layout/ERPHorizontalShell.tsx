@@ -55,7 +55,6 @@ const menus: MenuItem[] = [
     { label: 'Estrutura BOM', route: '/engenharia/bom' },
     { label: 'Roteiros de fabricação', route: '/engenharia/roteiros' },
     { label: 'Revisões BOM', route: '/engenharia/revisoes-bom' },
-    { label: 'Ficha de Processo', route: '/engenharia/fichas-processo', newTab: true },
   ] },
   { label: 'Financeiro', route: '/financeiro/custo-padrao', icon: Wallet, children: [
     { label: 'Custo padrão', route: '/financeiro/custo-padrao' },
