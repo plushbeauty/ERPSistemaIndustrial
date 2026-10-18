@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs'
  */
 const approved = [
   { path: 'src/components/IndustrialCommandDashboard.tsx', sha: '16cb49413073d7f52e903aa73594d7b3bf4cb184', label: 'Início / Dashboard principal aprovado', source: 'approved recovery baseline: ad704aa4 dashboard update plus 0ef3f154 schema correction' },
-  { path: 'src/IndustrialLoginDirect.tsx', sha: 'a772153046440832d093fdb75c42cd893946af79', label: 'Login institucional aprovado', source: 'approved login revision from ad704aa4; keep unchanged unless user requests a new revision' },
+  { path: 'src/IndustrialLoginDirect.tsx', sha: '33aa130d751b10265b0c8d9e710d8d40e6a62750', label: 'Login institucional — roteamento desktop', source: 'explicit user authorization APROV-005 — remove device-based tablet redirect; OPERADOR_FABRIL now enters PCP desktop, 2026-10-18' },
   { path: 'src/pages/configuracoes/ConfiguracoesADM.tsx', sha: '7299116e3bea43db83bdc1e3bbae6a386eb4d1e3', label: 'Configurações administrativas aprovadas', source: 'approved settings revision from ad704aa4; keep unchanged unless user requests a new revision' },
   { path: 'src/pages/VendasCentral.tsx', sha: '9177ae072e85e2cd5bd2b62780671f9aad20cf28', label: 'Vendas / Status do pedido', source: 'explicit user-authorized revision APROV-004 — wider cards and real order/production/quality/expedition/fiscal stages; frozen after this revision' },
   { path: 'src/pages/NovoPedido.tsx', sha: '8650bcf2af2f8a8813e80c082fbe4de33cbb47ab', label: 'Vendas / Novo Pedido', source: 'Vercel READY commit 94da86b985c12801525661328577f7bd96188b85' },
