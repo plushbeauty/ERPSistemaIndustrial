@@ -5,7 +5,6 @@ import {
   ExternalLink,
   Search,
   ShoppingBag,
-  TrendingUp,
   X,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
