@@ -200,7 +200,7 @@ export default function FichaEngenharia(){
   <section className="industrial-panel">
    <div className="process-section-heading"><span>1 • IDENTIFICAÇÃO E CONTROLE DO DOCUMENTO</span><h2>Dados mestres</h2></div>
    <div className="process-form-grid">
-    <label>Código do produto<input value={productCode} list="produto-codigos" onChange={e=>{const code=e.target.value.trim();setProductCode(e.target.value);const p=products.find(x=>x.codigo.toLowerCase()===code.toLowerCase());if(p)setProductId(p.id)}} placeholder="Digite o código da peça"/><datalist id="produto-codigos">{products.map(p=><option key={p.id} value={p.codigo}>{p.nome}</option>)}</datalist></label>
+    <label>Código do produto<input value={productCode} list="produto-codigos" onChange={e=>{const code=e.target.value.trim();setRequestedFichaVersion(null);setProductCode(e.target.value);const p=products.find(x=>x.codigo.toLowerCase()===code.toLowerCase());if(p)setProductId(p.id)}} placeholder="Digite o código da peça"/><datalist id="produto-codigos">{products.map(p=><option key={p.id} value={p.codigo}>{p.nome}</option>)}</datalist></label>
     <label>Produto / peça<select value={productId} onChange={e=>{setProductId(e.target.value);const p=products.find(x=>x.id===e.target.value);setProductCode(p?.codigo||'')}}><option value="">Selecione o produto</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select></label>
     <label>Código da ficha<input value={processCode} onChange={e=>setProcessCode(e.target.value)}/></label>
     <label>Revisão<input type="number" min="1" value={version} onChange={e=>setVersion(e.target.value)}/></label>
