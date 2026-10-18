@@ -701,6 +701,6 @@ function AppIndustrialAuthenticated() {
       </Suspense>
     </Boundary>
   )
-  // O ERP entra diretamente no conteúdo operacional. A navegação lateral global foi removida; o dashboard industrial/Tablet concentra os módulos.
+  // O ERP entra diretamente no conteúdo operacional; os módulos são acessados pela navegação desktop.
   return appContent
 }
