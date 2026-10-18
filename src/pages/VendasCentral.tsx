@@ -189,6 +189,15 @@ export default function VendasCentral() {
               </button>
             })}
           </div>
+          <div className="sales-status-legend" aria-label="Legenda de cores do status dos pedidos" style={{display:'flex',flexWrap:'wrap',alignItems:'center',gap:'6px 12px',padding:'7px 2px 9px',fontSize:'10px',color:'#475569'}}>
+            <strong style={{fontSize:'9px',letterSpacing:'.06em',textTransform:'uppercase'}}>Legenda</strong>
+            <span style={{display:'inline-flex',alignItems:'center',gap:5}}><i aria-hidden="true" style={{width:8,height:8,borderRadius:2,background:'#3A9D78'}}/>Todos</span>
+            <span style={{display:'inline-flex',alignItems:'center',gap:5}}><i aria-hidden="true" style={{width:8,height:8,borderRadius:2,background:'#E6A34A'}}/>Rascunho</span>
+            <span style={{display:'inline-flex',alignItems:'center',gap:5}}><i aria-hidden="true" style={{width:8,height:8,borderRadius:2,background:'#2D8DB8'}}/>Em andamento</span>
+            <span style={{display:'inline-flex',alignItems:'center',gap:5}}><i aria-hidden="true" style={{width:8,height:8,borderRadius:2,background:'#D65B61'}}/>Atrasado</span>
+            <span style={{display:'inline-flex',alignItems:'center',gap:5}}><i aria-hidden="true" style={{width:8,height:8,borderRadius:2,background:'#48B7C7'}}/>Faturado</span>
+            <span style={{display:'inline-flex',alignItems:'center',gap:5}}><i aria-hidden="true" style={{width:8,height:8,borderRadius:2,background:'#64748b'}}/>Cancelado</span>
+          </div>
 
           <div className="sales-list-toolbar">
             <label className="sales-search">
