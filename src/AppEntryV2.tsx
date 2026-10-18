@@ -136,6 +136,7 @@ const PedidoCompra = lazyPage(() => import('./pages/PedidoCompra'), 'default')
 const VendasClientesPage = lazyPage(() => import('./pages/VendasClientes'), 'default')
 const CentralCustosIndustrial = lazyPage(() => import('./pages/CentralCustosIndustrial'), 'CentralCustosIndustrial')
 const CadastroEmpresa = lazyPage(() => import('./pages/CadastroEmpresa'), 'CadastroEmpresa')
+const HelpCadastroEmpresa = lazyPage(() => import('./pages/HelpCadastroEmpresa'), 'default')
 const PlanosIndustrial = lazyPage(() => import('./pages/PlanosIndustrial'), 'PlanosIndustrial')
 const AtivarAcesso = lazyPage(() => import('./pages/AtivarAcesso'), 'AtivarAcesso')
 const SolicitacaoCompra = lazyPage(() => import('./pages/SolicitacaoCompra'), 'SolicitacaoCompra')
@@ -341,6 +342,7 @@ export default function AppEntryV2() {
   const routeLocation = useLocation()
   const path = routeLocation.pathname
   if (path === '/cadastro-empresa') return <PublicPage><CadastroEmpresa /></PublicPage>
+  if (path === '/ajuda/cadastro-empresa') return <PublicPage><HelpCadastroEmpresa /></PublicPage>
   if (path === '/planos') return <PublicPage><PlanosIndustrial /></PublicPage>
   if (path === '/ativar-acesso') return <PublicPage><AtivarAcesso /></PublicPage>
   if (path === '/cadastro-master' || path === '/configuracao-adm-master') return <PublicPage><SetupADMInicial /></PublicPage>
