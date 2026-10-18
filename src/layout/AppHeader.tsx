@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { LogOut, Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
 import { supabase } from '../lib/supabaseClient'
 
@@ -12,7 +12,6 @@ type Profile = {
 export default function AppHeader() {
   const { isExpanded, isMobileOpen, toggleSidebar, toggleMobileSidebar, closeMobileSidebar } = useSidebar()
   const location = useLocation()
-  const navigate = useNavigate()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [empresaNome, setEmpresaNome] = useState('Empresa industrial')
   const [clock, setClock] = useState(() => new Date())
