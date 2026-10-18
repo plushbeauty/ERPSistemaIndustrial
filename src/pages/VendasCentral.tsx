@@ -169,7 +169,7 @@ export default function VendasCentral() {
         {error && <div className="sales-alert" role="alert"><CircleAlert size={17} />{error}</div>}
 
         <section className="sales-orders-card">
-          <div className="synqra-status-grid sales-orders-status-grid" role="tablist" aria-label="Filtrar pedidos por status">
+          <div className="synqra-status-grid sales-orders-status-grid" role="tablist" aria-label="Filtrar pedidos por status" style={{display:'grid',gridTemplateColumns:'repeat(6,minmax(0,1fr))',gap:6,alignItems:'stretch',width:'100%'}}>
             {filters.map(({ id, label, icon: Icon }) => {
               const value = id === 'todos' ? counts.all
                 : id === 'rascunho' ? counts.drafts
@@ -183,7 +183,7 @@ export default function VendasCentral() {
                 : id === 'faturados' ? 'synqra-status-cyan'
                 : id === 'cancelados' ? 'synqra-status-slate'
                 : 'synqra-status-green'
-              return <button key={id} type="button" role="tab" aria-selected={filter === id} className={`synqra-status-cell ${tone} sales-orders-status-card${filter === id ? ' is-active' : ''}`} onClick={() => { setFilter(id); setPage(0) }}>
+              return <button key={id} type="button" role="tab" aria-selected={filter === id} className={`synqra-status-cell ${tone} sales-orders-status-card${filter === id ? ' is-active' : ''}`} style={{minWidth:0,minHeight:54,height:54,padding:'7px 9px',display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:8,borderRadius:2,boxSizing:'border-box'}} onClick={() => { setFilter(id); setPage(0) }}>
                 <span><Icon size={15} aria-hidden="true" /> {label}</span>
                 <strong>{loading ? '—' : value}</strong>
               </button>
