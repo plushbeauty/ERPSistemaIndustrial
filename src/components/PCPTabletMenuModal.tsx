@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { ShieldCheck,
   Activity, BarChart3, Boxes, CalendarDays, ClipboardList, Factory,
   FileSliders, Gauge, ListOrdered, PackageSearch, RefreshCw, Wrench, X,
@@ -11,6 +12,14 @@ type ModuleItem = {
   route: string
   icon: LucideIcon
 }
+
+const processSheetItems: readonly ModuleItem[] = [
+  { number: 'FP00', label: 'FICHAS DE PROCESSO', description: 'Catálogo geral de fichas, revisões, parâmetros técnicos e homologações.', route: '/pcp/fichas-processo', icon: FileSliders },
+  { number: 'FP01', label: 'PRENSADOS', description: 'Composto, prensa, molde, pressão, temperatura, cura e pós-cura.', route: '/ficha-engenharia?tipo=PRENSADOS', icon: Factory },
+  { number: 'FP02', label: 'INJETADOS', description: 'Material, secagem, molde, cavidades, temperaturas, injeção e ciclo.', route: '/ficha-engenharia?tipo=INJETADOS', icon: Boxes },
+  { number: 'FP03', label: 'ACABAMENTO', description: 'Preparação, operação, equipamento, parâmetros e inspeção.', route: '/ficha-engenharia?tipo=ACABAMENTO', icon: Wrench },
+  { number: 'FP04', label: 'MONTAGEM', description: 'Sequência de montagem, componentes, conferência e embalagem.', route: '/ficha-engenharia?tipo=MONTAGEM_EMBALAGEM', icon: PackageSearch },
+]
 
 const modules: readonly ModuleItem[] = [
   { number: 'P01', label: 'VISÃO GERAL', description: 'Indicadores, ordens abertas e alertas do PCP.', route: '/pcp', icon: Gauge },
@@ -38,7 +47,10 @@ export default function PCPTabletMenuModal({
   onClose: () => void
   onNavigate: (route: string) => void
 }) {
+  const [processSheetsOpen, setProcessSheetsOpen] = useState(false)
   if (!isOpen) return null
+
+  const visibleModules = processSheetsOpen ? processSheetItems : modules
 
   return (
     <div
@@ -58,8 +70,8 @@ export default function PCPTabletMenuModal({
               <Factory size={22} />
             </span>
             <div className="min-w-0">
-              <strong className="block text-[14px] font-bold leading-tight tracking-[0.08em] text-white">PCP · CENTRAL DE MANUFATURA</strong>
-              <p className="mt-1 text-[11px] leading-tight text-slate-300">Selecione uma rotina para abrir a tela operacional correspondente.</p>
+              <strong className="block text-[14px] font-bold leading-tight tracking-[0.08em] text-white">{processSheetsOpen ? 'PCP · FICHAS DE PROCESSO' : 'PCP · CENTRAL DE MANUFATURA'}</strong>
+              <p className="mt-1 text-[11px] leading-tight text-slate-300">{processSheetsOpen ? 'Selecione a ficha aprovada para abrir o processo correspondente.' : 'Selecione uma rotina para abrir a tela operacional correspondente.'}</p>
             </div>
           </div>
           <button
@@ -73,14 +85,19 @@ export default function PCPTabletMenuModal({
           </button>
         </header>
 
-        <div className="mt-3 grid min-h-0 flex-1 grid-cols-4 content-start gap-2 overflow-y-auto pr-1 max-[1050px]:grid-cols-3 max-[720px]:grid-cols-2 max-[420px]:grid-cols-1">
-          {modules.map(module => {
+        <div className="mt-3 flex min-h-0 flex-1 flex-col overflow-y-auto pr-1">
+          {processSheetsOpen && <button type="button" onClick={() => setProcessSheetsOpen(false)} className="mb-2 flex min-h-[30px] w-fit items-center border border-[#526170] bg-[#272d38] px-3 text-[10px] font-bold text-white hover:border-[#48B7C7]">← VOLTAR AOS MÓDULOS DO PCP</button>}
+          <div className="grid min-h-0 grid-cols-4 content-start gap-2 max-[1050px]:grid-cols-3 max-[720px]:grid-cols-2 max-[420px]:grid-cols-1">
+          {visibleModules.map(module => {
             const Icon = module.icon
             return (
               <button
                 key={module.number}
                 type="button"
-                onClick={() => onNavigate(module.route)}
+                onClick={() => {
+                  if (!processSheetsOpen && module.number === 'P09') setProcessSheetsOpen(true)
+                  else onNavigate(module.route)
+                }}
                 className="group flex min-h-[106px] min-w-0 flex-col items-start border border-[#3a4654] bg-[#272d38] p-3 text-left transition-colors hover:border-[#48B7C7] hover:bg-[#303947] focus:outline-none focus:ring-2 focus:ring-[#48B7C7]"
               >
                 <span className="flex w-full items-center justify-between gap-2">
@@ -94,6 +111,7 @@ export default function PCPTabletMenuModal({
               </button>
             )
           })}
+          </div>
         </div>
       </section>
     </div>
