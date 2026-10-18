@@ -209,3 +209,47 @@
   }
 }
 
+.compras-compact .h-10,
+.compras-compact .h-11 {
+  height: 32px !important;
+}
+.compras-compact .p-3,
+.compras-compact .p-4,
+.compras-compact .p-5 {
+  padding: 8px !important;
+}
+.compras-compact .px-3,
+.compras-compact .px-4,
+.compras-compact .px-5 {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+.compras-compact .py-2,
+.compras-compact .py-3,
+.compras-compact .py-4 {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+.compras-compact .gap-5 {
+  gap: 8px !important;
+}
+.compras-compact .mt-5,
+.compras-compact .my-5 {
+  margin-top: 8px !important;
+}
+.compras-compact .mb-4 {
+  margin-bottom: 8px !important;
+}
+.compras-compact .compras-rfq-compact header > div {
+  min-height: 44px !important;
+  padding: 6px 8px !important;
+}
+.compras-compact .compras-rfq-compact .grid {
+  min-width: 0;
+}
+.compras-compact .compras-rfq-compact section,
+.compras-compact .compras-rfq-compact .rounded-lg,
+.compras-compact .compras-rfq-compact .rounded-md,
+.compras-compact .compras-rfq-compact .rounded {
+  border-radius: 2px !important;
+}
