@@ -24,14 +24,9 @@ function normalizeIndustrialLogin(value: string) {
 
 type IndustrialDestination = { profile: Record<string, unknown>; empresa: Record<string, unknown> | null; isMaster: boolean; perfil: string }
 
-function isTabletDevice() {
-  if (typeof navigator === 'undefined') return false
-  return /Tablet|iPad|Android(?!.*Mobile)/i.test(navigator.userAgent) || Math.min(window.innerWidth, window.innerHeight) >= 600 && Math.max(window.innerWidth, window.innerHeight) <= 1366 && navigator.maxTouchPoints > 1
-}
-
 function destinationAfterLogin(result: IndustrialDestination, requested?: string | null) {
   if (result.isMaster) return '/diretoria/dashboard'
-  if (isTabletDevice() || result.perfil === 'OPERADOR_FABRIL') return '/tablet/dashboard'
+  if (result.perfil === 'OPERADOR_FABRIL') return '/pcp'
   const desktopProfiles = new Set(['DIRETOR', 'ADMINISTRADOR', 'ADMIN', 'PCP', 'PCPISTA', 'PLANEJADOR', 'PLANEJADOR_PCP'])
   if (desktopProfiles.has(result.perfil)) return '/diretoria/dashboard'
   return safeReturnTo(requested)
