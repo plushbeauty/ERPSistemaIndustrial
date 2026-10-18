@@ -137,17 +137,26 @@ Deno.serve(async (req) => {
       })
       if (changed.error) return json({ error: changed.error.message }, 400)
 
-      const { error: profileError } = await admin
+      // Persistir o aceite somente após validar OTP e localizar convite vigente.
+      // O mesmo instante é usado no perfil e no convite para manter a trilha consistente.
+      const acceptedAt = new Date().toISOString()
+      const { data: updatedProfile, error: profileError } = await admin
         .from('erp_usuarios')
-        .update({ nome, email, ativo: true, updated_at: new Date().toISOString() })
+        .update({ nome, email, ativo: true, convite_aceito_em: acceptedAt, updated_at: acceptedAt })
+        .eq('auth_user_id', authData.user.id)
         .eq('id', authData.user.id)
         .eq('empresa_id', invite.empresa_id)
+        .select('id')
+        .maybeSingle()
       if (profileError) throw profileError
+      if (!updatedProfile) return json({ error: 'Perfil interno não encontrado para o convite validado.' }, 409)
 
       const { error: closeError } = await admin
         .from('erp_convites_acesso')
-        .update({ verificado_em: new Date().toISOString(), concluido_em: new Date().toISOString() })
+        .update({ verificado_em: acceptedAt, concluido_em: acceptedAt })
         .eq('id', invite.id)
+        .is('concluido_em', null)
+        .is('cancelado_em', null)
       if (closeError) throw closeError
 
       return json({ ok: true, message: 'Cadastro concluído. Seu acesso está habilitado.' })
