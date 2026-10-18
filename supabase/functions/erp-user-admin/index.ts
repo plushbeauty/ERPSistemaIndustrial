@@ -130,6 +130,18 @@ Deno.serve(async (req) => {
       if (inviteError) throw inviteError
       if (!invite) return json({ error: 'Convite inexistente, expirado ou já utilizado.' }, 409)
 
+      // Validar o perfil ERP antes de alterar a credencial Auth para evitar ativação parcial.
+      // O perfil pode usar o UUID interno em id ou referenciar o UUID Auth em auth_user_id.
+      const profileFilter = `auth_user_id.eq.${authData.user.id},id.eq.${authData.user.id}`
+      const { data: profileCandidate, error: profileLookupError } = await admin
+        .from('erp_usuarios')
+        .select('id')
+        .eq('empresa_id', invite.empresa_id)
+        .or(profileFilter)
+        .maybeSingle()
+      if (profileLookupError) throw profileLookupError
+      if (!profileCandidate) return json({ error: 'Perfil interno não encontrado para o convite validado.' }, 409)
+
       const changed = await admin.auth.admin.updateUserById(authData.user.id, {
         password,
         user_metadata: { ...authData.user.user_metadata, nome, must_change_password: false, invited_user: true },
@@ -143,9 +155,8 @@ Deno.serve(async (req) => {
       const { data: updatedProfile, error: profileError } = await admin
         .from('erp_usuarios')
         .update({ nome, email, ativo: true, convite_aceito_em: acceptedAt, updated_at: acceptedAt })
-        .eq('auth_user_id', authData.user.id)
-        .eq('id', authData.user.id)
         .eq('empresa_id', invite.empresa_id)
+        .or(profileFilter)
         .select('id')
         .maybeSingle()
       if (profileError) throw profileError
