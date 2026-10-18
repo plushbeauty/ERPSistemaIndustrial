@@ -11,6 +11,7 @@ type MenuItem = {
   route: string
   icon?: LucideIcon
   action?: 'qualityTablet' | 'pcpTablet'
+  newTab?: boolean
   children?: MenuItem[]
 }
 
@@ -54,7 +55,7 @@ const menus: MenuItem[] = [
     { label: 'Estrutura BOM', route: '/engenharia/bom' },
     { label: 'Roteiros de fabricação', route: '/engenharia/roteiros' },
     { label: 'Revisões BOM', route: '/engenharia/revisoes-bom' },
-    { label: 'Fichas de processo', route: '/engenharia/fichas-processo' },
+    { label: 'Ficha de Processo', route: '/engenharia/fichas-processo', newTab: true },
   ] },
   { label: 'Financeiro', route: '/financeiro/custo-padrao', icon: Wallet, children: [
     { label: 'Custo padrão', route: '/financeiro/custo-padrao' },
@@ -75,22 +76,24 @@ const menus: MenuItem[] = [
     { label: 'Agenda de máquinas', route: '/pcp/agenda-maquinas' },
     { label: 'Sequenciamento', route: '/pcp/sequenciamento' },
     { label: 'Planejamento', route: '/pcp/planejamento' },
-    { label: 'Fichas de processo', route: '/pcp/fichas-processo' },
+    // @REVISAO_PCP_FICHAS: 2026-10-18 — item único no menu principal com submenu de categorias.
+    { label: 'Fichas de Processo', route: '/pcp/fichas-processo', children: [
+      { label: 'Todas as fichas', route: '/pcp/fichas-processo' },
+      { label: 'Injetados', route: '/pcp/fichas-processo?tipo=INJETADOS' },
+      { label: 'Prensados', route: '/pcp/fichas-processo?tipo=PRENSADOS' },
+      { label: 'Estamparia', route: '/pcp/fichas-processo?tipo=ESTAMPARIA' },
+      { label: 'Mecânica', route: '/pcp/fichas-processo?tipo=MECANICA' },
+      { label: 'Tratamento superficial', route: '/pcp/fichas-processo?tipo=TRATAMENTO_SUPERFICIAL' },
+      { label: 'Pintura / Química', route: '/pcp/fichas-processo?tipo=PINTURA_QUIMICA' },
+      { label: 'Corte e vinco', route: '/pcp/fichas-processo?tipo=CORTE_VINCO' },
+      { label: 'Acabamento', route: '/pcp/fichas-processo?tipo=ACABAMENTO' },
+      { label: 'Montagem e embalagem', route: '/pcp/fichas-processo?tipo=MONTAGEM_EMBALAGEM' },
+    ] },
     { label: 'Paradas / setup', route: '/pcp/paradas' },
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
     { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
-  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
-    { label: 'Visual geral da Qualidade', route: '/qualidade' },
-    { label: 'Inspeções de lotes', route: '/qualidade/inspecoes' },
-    { label: 'Inspeção em processo', route: '/qualidade/inspecao-processo' },
-    { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
-    { label: 'FMEA / PFMEA', route: '/qualidade/fmea' },
-    { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
-    { label: 'CEP / medições', route: '/qualidade/cep' },
-    { label: 'Cadastro de documentos (GED)', route: '/qualidade/ged-documentos' },
-    { label: 'Qualidade Tablet', route: '/qualidade', action: 'qualityTablet' },
-  ] },
+  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet' },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench, children: [
     { label: 'Central de manutenção', route: '/manutencao' },
     { label: 'Ordens de manutenção', route: '/manutencao/ordens' },
@@ -112,6 +115,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null)
   const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
@@ -190,12 +194,13 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : undefined
   const current = currentModuleMenu ?? menus.find(menu => pathname === menu.route || pathname.startsWith(menu.route + '/'))
   const normalizedSearch = moduleSearch.trim().toLocaleLowerCase('pt-BR')
-  const searchedMenus = normalizedSearch ? menus.map(menu => ({ ...menu, children: menu.children?.filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : menus
+  const searchedMenus = normalizedSearch ? menus.map(menu => ({ ...menu, children: menu.children?.map(child => ({ ...child, children: child.children?.filter(grandchild => grandchild.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)) })).filter(child => child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(child.children?.length)) })).filter(menu => menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.route.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || Boolean(menu.children?.length)) : menus
   useEffect(() => {
     setOpenMenu(null)
+    setOpenSubmenu(null)
     setStartMenuOpen(false)
   }, [pathname])
-  const openMenuItem = (item: Pick<MenuItem, 'route' | 'action'>) => {
+  const openMenuItem = (item: Pick<MenuItem, 'route' | 'action' | 'newTab'>) => {
     if (item.action === 'pcpTablet') {
       setPcpTabletOpen(true)
       setOpenMenu(null)
@@ -206,6 +211,11 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       setOpenMenu(null)
       
       
+      return
+    }
+    if (item.newTab) {
+      window.open(item.route, '_blank', 'noopener,noreferrer')
+      setOpenMenu(null)
       return
     }
     go(item.route)
@@ -289,7 +299,18 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                     {hasChildren && <button type="button" className="erp-windows-menu-expand" aria-label={`Expandir ${menu.label}`} aria-expanded={expanded} onClick={() => { setOpenMenu(value => value === menu.label ? null : menu.label);  }}>{expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}</button>}
                   </div>
                   {hasChildren && expanded && <div className="erp-windows-menu-children">
-                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => <button type="button" key={child.label + child.route} className={pathname === child.route ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }}>{child.label}</button>)}
+                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || child.children?.some(grandchild => grandchild.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch))).map(child => {
+                      const hasGrandchildren = Boolean(child.children?.length)
+                      const submenuExpanded = openSubmenu === child.label || Boolean(normalizedSearch && child.children?.some(grandchild => grandchild.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)))
+                      return <div className="erp-windows-menu-subgroup" key={child.label + child.route}>
+                        {hasGrandchildren
+                          ? <button type="button" className={submenuExpanded ? 'erp-windows-submenu-trigger is-open' : 'erp-windows-submenu-trigger'} aria-expanded={submenuExpanded} onClick={() => setOpenSubmenu(value => value === child.label ? null : child.label)}><span>{child.label}</span>{submenuExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}</button>
+                          : <button type="button" className={pathname + window.location.search === child.route || pathname === child.route ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }}>{child.label}</button>}
+                        {hasGrandchildren && submenuExpanded && <div className="erp-windows-menu-grandchildren">
+                          {child.children?.filter(grandchild => !normalizedSearch || grandchild.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(grandchild => <button type="button" key={grandchild.label + grandchild.route} className={window.location.pathname + window.location.search === grandchild.route || pathname === grandchild.route.split('?')[0] && window.location.search === (grandchild.route.includes('?') ? '?' + grandchild.route.split('?')[1] : '') ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); go(grandchild.route) }}>{grandchild.label}</button>)}
+                        </div>}
+                      </div>
+                    })}
                   </div>}
                 </div>
               })}
@@ -361,6 +382,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-menu-children{margin:0 0 4px 24px;padding:2px 0 2px 8px;border-left:1px solid #cbd5e1}
         .erp-windows-menu-children button{display:block;width:100%;min-height:29px;padding:5px 8px;border:0;background:#fff;text-align:left;color:#334155;font-size:10px;cursor:pointer}
         .erp-windows-menu-children button:hover,.erp-windows-menu-children button.is-active{background:#eaf5f8;color:#123b50}
+        .erp-windows-menu-subgroup{min-width:0}.erp-windows-menu-children .erp-windows-submenu-trigger{display:flex;align-items:center;justify-content:space-between;gap:6px}.erp-windows-menu-children .erp-windows-submenu-trigger.is-open{background:#f1f5f9;color:#123b50}.erp-windows-menu-grandchildren{margin:0 0 3px 8px;padding:2px 0 2px 8px;border-left:1px solid #b9d4df}.erp-windows-menu-grandchildren button{min-height:27px;font-size:10px;padding-left:10px}
         .erp-windows-no-results{margin:12px 8px;font-size:10px;color:#64748b}
         .erp-windows-start-footer{min-height:38px;display:flex;align-items:center;gap:6px;padding:0 10px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:10px;color:#334155}
         .erp-windows-start-footer span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -374,6 +396,9 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-workspace .rounded-xl,.erp-horizontal-workspace .rounded-2xl{border-radius:4px!important}.erp-horizontal-workspace .rounded-lg{border-radius:3px!important}
         .erp-horizontal-workspace table thead th{background:#dcecf2;color:#17445a;border-bottom-color:#b9d4df}.erp-horizontal-workspace table tbody tr:nth-child(even){background-color:#f0f7fa}.erp-horizontal-workspace table tbody tr:hover{background-color:#e0f1f7}
         .erp-horizontal-workspace input:focus,.erp-horizontal-workspace select:focus,.erp-horizontal-workspace textarea:focus{border-color:#2d8db8;outline-color:#2d8db8;box-shadow:0 0 0 2px rgba(45,141,184,.12)}
+        /* @REVISAO_EDIT_GLOBAL: 2026-10-18 — padronização global de campos editáveis, sem limitar áreas de texto. */
+        .erp-horizontal-workspace input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=hidden]):not([type=submit]):not([type=button]):not([type=reset]),.erp-horizontal-workspace select{height:30px!important;min-height:30px!important;max-height:30px!important;box-sizing:border-box!important;border-radius:2px!important;padding-top:0!important;padding-bottom:0!important}
+        .erp-horizontal-workspace label{font-size:9px!important}
         .erp-horizontal-workspace-compact h1{font-size:18px!important;line-height:1.2!important;font-weight:500!important}.erp-horizontal-workspace-compact h2{font-size:15px!important;line-height:1.25!important;font-weight:500!important}.erp-horizontal-workspace-compact h3{font-size:13px!important;line-height:1.3!important;font-weight:500!important}
         .erp-horizontal-workspace-compact p{font-size:10px!important;line-height:1.4!important}.erp-horizontal-workspace-compact table{font-size:10px!important}.erp-horizontal-workspace-compact tbody td{font-size:10px!important;line-height:1.25!important}.erp-horizontal-workspace-compact thead th{font-size:9px!important;line-height:1.2!important;font-weight:500!important}.erp-horizontal-workspace-compact button{font-size:10px}.erp-horizontal-workspace-compact label{font-size:9px}.erp-horizontal-workspace-compact input,.erp-horizontal-workspace-compact select,.erp-horizontal-workspace-compact textarea{font-size:10px}
         @media print{@page{size:A4;margin:12mm}.erp-windows-topbar,.print-hidden{display:none!important}.erp-horizontal-shell,.erp-horizontal-workspace{min-height:0!important;background:#fff!important;padding:0!important}.erp-horizontal-workspace *{box-shadow:none!important;backdrop-filter:none!important}thead{display:table-header-group}tr{break-inside:avoid}}

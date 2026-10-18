@@ -30,20 +30,32 @@ export default function AdminLogs() {
     setBusy(true)
     setError('')
     try {
+      const auth = await supabase.auth.getUser()
+      if (auth.error || !auth.data.user) throw auth.error ?? new Error('Sessão autenticada necessária para consultar a auditoria.')
+      const [tenant, master] = await Promise.all([supabase.rpc('erp_current_empresa_id'), supabase.rpc('erp_is_master')])
+      if (tenant.error) throw tenant.error
+      if (master.error) throw master.error
+      const isMaster = master.data === true
+      const empresaId = typeof tenant.data === 'string' ? tenant.data : ''
+      if (!isMaster && !empresaId) throw new Error('Empresa da sessão não identificada para consultar a auditoria.')
+
       let logQuery = supabase.from('erp_audit_logs')
         .select('id,created_at,actor_user_id,action,entity_type,entity_id', { count: 'exact' })
         .order('created_at', { ascending: false })
+      if (!isMaster) logQuery = logQuery.eq('empresa_id', empresaId)
       if (usuarioFiltro !== 'Todos') logQuery = logQuery.eq('actor_user_id', usuarioFiltro)
       if (moduloFiltro !== 'Todos') logQuery = logQuery.eq('entity_type', moduloFiltro)
 
       const [logResult, userRows] = await Promise.all([
         logQuery.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1),
-        fetchAllPages<User>((from, to) => supabase.from('erp_usuarios')
-          .select('auth_user_id,nome,email', { count: 'exact' })
-          .eq('ativo', true)
-          .is('deleted_at', null)
-          .order('nome')
-          .range(from, to)),
+        fetchAllPages<User>((from, to) => {
+          let userQuery = supabase.from('erp_usuarios')
+            .select('auth_user_id,nome,email', { count: 'exact' })
+            .eq('ativo', true)
+            .is('deleted_at', null)
+          if (!isMaster) userQuery = userQuery.eq('empresa_id', empresaId)
+          return userQuery.order('nome').range(from, to)
+        }),
       ])
       if (logResult.error) throw logResult.error
       setRows((logResult.data ?? []) as Log[])
@@ -69,23 +81,23 @@ export default function AdminLogs() {
       .map(user => [user.auth_user_id, user]),
   ), [users])
 
-  return <div className="space-y-6 bg-[#F4F7FE]">
-    <header className="border-b border-slate-200 pb-4">
+  return <div className="min-w-0 space-y-3 bg-[#F4FBFD]">
+    <header className="border-b border-slate-200 pb-2">
       <span className="block text-xs font-bold uppercase tracking-wider text-blue-600">Configurações / Auditoria</span>
-      <h2 className="text-3xl font-black tracking-tight text-slate-900">Logs do Sistema</h2>
-      <p className="mt-1 text-sm text-slate-500">Rastreamento persistido em erp_audit_logs, protegido pelas políticas RLS do tenant.</p>
+      <h2 className="text-[15px] font-bold tracking-tight text-[#123B50]">Logs do Sistema</h2>
+      <p className="mt-1 text-[10px] text-slate-500">Rastreamento persistido em erp_audit_logs, protegido pelas políticas RLS do tenant.</p>
     </header>
-    {error && <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">{error}</div>}
-    <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-xl shadow-slate-200/40">
-      <div className="mb-4 flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400"><Filter size={17} className="text-[#2D8DB8}" />Filtros de rastreabilidade</div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <label className="text-[11px] font-black uppercase text-slate-500">Filtrar por usuário
-          <select value={usuarioFiltro} onChange={event => { setUsuarioFiltro(event.target.value); setPage(0) }} className="mt-1 w-full rounded-2xl border-2 border-slate-100 bg-slate-50 px-4 py-2 text-sm font-bold text-slate-800">
+    {error && <div role="alert" className="rounded-[3px] border border-red-200 bg-red-50 p-2 text-[10px] font-bold text-red-700">{error}</div>}
+    <section className="rounded-[3px] border border-slate-200 bg-white p-3 shadow-sm">
+      <div className="mb-2 flex items-center gap-2 text-[9px] font-black uppercase tracking-wider text-slate-500"><Filter size={17} className="text-[#2D8DB8}" />Filtros de rastreabilidade</div>
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-12">
+        <label className="min-w-0 text-[9px] font-bold uppercase text-slate-500 md:col-span-6">Filtrar por usuário
+          <select value={usuarioFiltro} onChange={event => { setUsuarioFiltro(event.target.value); setPage(0) }} className="mt-1 h-8 w-full min-w-0 rounded-[3px] border border-slate-300 bg-white px-2 text-[11px] font-semibold text-slate-800">
             <option value="Todos">Todos os usuários</option>
             {users.filter(user => user.auth_user_id).map(user => <option key={user.auth_user_id} value={user.auth_user_id ?? ''}>{user.nome || user.email || user.auth_user_id}</option>)}
           </select>
         </label>
-        <label className="text-[11px] font-black uppercase text-slate-500">Módulo / entidade
+        <label className="min-w-0 text-[9px] font-bold uppercase text-slate-500 md:col-span-6">Módulo / entidade
           <select value={moduloFiltro} onChange={event => { setModuloFiltro(event.target.value); setPage(0) }} className="mt-1 w-full rounded-2xl border-2 border-slate-100 bg-slate-50 px-4 py-2 text-sm font-bold text-slate-800">
             <option value="Todos">Todos os módulos</option>
             {moduleOptions.map(module => <option key={module} value={module}>{module}</option>)}
@@ -93,13 +105,13 @@ export default function AdminLogs() {
         </label>
       </div>
     </section>
-    <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-xl shadow-slate-200/40">
+    <section className="min-w-0 overflow-hidden rounded-[3px] border border-slate-200 bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-slate-100 p-6">
         <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400"><History size={17} className="text-[#2D8DB8}" />Histórico cronológico de ocorrências</h3>
         <button type="button" onClick={() => void load()} disabled={busy} className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-[#123B50] disabled:opacity-50"><RefreshCw size={15} />Atualizar</button>
       </div>
       <div className="overflow-auto">
-        <table className="w-full min-w-[1050px] text-sm">
+        <table className="w-full min-w-[850px] text-[10px]">
           <thead className="bg-[#123B50] text-white"><tr><th scope="col" className="p-4 text-left">Data / hora</th><th scope="col" className="p-4 text-left">Usuário</th><th scope="col" className="p-4 text-left">Entidade</th><th scope="col" className="p-4 text-left">Ação registrada</th><th scope="col" className="p-4 text-left">Registro</th></tr></thead>
           <tbody>
             {busy
@@ -124,7 +136,7 @@ export default function AdminLogs() {
         </div>
       </nav>
     </section>
-    <section className="rounded-3xl border border-cyan-100 bg-white p-6 shadow-xl shadow-slate-200/30">
+    <section className="rounded-[3px] border border-cyan-100 bg-white p-3 shadow-sm">
       <div className="flex items-center gap-2 font-black text-[#123B50]"><ShieldCheck size={18} className="text-[#2D8DB8}" />Rastreabilidade por empresa</div>
       <p className="mt-2 text-sm text-slate-600">A consulta usa a tabela de auditoria oficial. A separação entre tenants e a autorização de leitura são aplicadas pelo RLS do banco.</p>
     </section>
