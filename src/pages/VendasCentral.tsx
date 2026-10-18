@@ -1,9 +1,9 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-10-16
- * @REVISAO_APROVACAO: APROV-004
+ * @DATA_REVISAO_APROVACAO: 2026-10-18
+ * @REVISAO_APROVACAO: APROV-007
  * @STATUS_APROVACAO: APROVADO-IMUTAVEL
- * @REGRA: revisão APROV-004 autorizada expressamente; novas alterações exigem nova ordem expressa.
- * @ESCOPO: cards ampliados e acompanhamento real de pedido, produção, qualidade, expedição e NF/saída.
+ * @REGRA: revisão APROV-007 autorizada expressamente pelo usuário; preservar cards amplos, etapas reais e legenda visível.
+ * @ESCOPO: corrigir geometria dos seis cards, exibir legenda das cinco etapas e manter acompanhamento real do pedido até NF/saída.
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -167,7 +167,15 @@ export default function VendasCentral() {
     <VendasLayout title="Status do pedido" showStatusCards={false}>
       <main className="sales-workspace">
         {error && <div className="sales-alert" role="alert"><CircleAlert size={17} />{error}</div>}
-
+        <div className="sales-process-legend" aria-label="Legenda das etapas do processo do pedido">
+          <strong>LEGENDA DO PROCESSO</strong>
+          <span><i className="legend-dot is-stage-green" /> Pedido / concluído</span>
+          <span><i className="legend-dot is-stage-blue" /> Produção</span>
+          <span><i className="legend-dot is-stage-amber" /> Qualidade / pendência</span>
+          <span><i className="legend-dot is-stage-violet" /> Expedição</span>
+          <span><i className="legend-dot is-stage-cyan" /> NF / saída</span>
+          <span><i className="legend-dot is-stage-red" /> Atraso / reprovação</span>
+        </div>
         <section className="sales-orders-card">
           <div className="synqra-status-grid sales-orders-status-grid" role="tablist" aria-label="Filtrar pedidos por status">
             {filters.map(({ id, label, icon: Icon }) => {
