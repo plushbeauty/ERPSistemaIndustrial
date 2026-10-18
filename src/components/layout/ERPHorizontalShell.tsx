@@ -80,17 +80,7 @@ const menus: MenuItem[] = [
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
     { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
-  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
-    { label: 'Visual geral da Qualidade', route: '/qualidade' },
-    { label: 'Inspeções de lotes', route: '/qualidade/inspecoes' },
-    { label: 'Inspeção em processo', route: '/qualidade/inspecao-processo' },
-    { label: 'Especificações técnicas', route: '/qualidade/especificacoes' },
-    { label: 'FMEA / PFMEA', route: '/qualidade/fmea' },
-    { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
-    { label: 'CEP / medições', route: '/qualidade/cep' },
-    { label: 'Cadastro de documentos (GED)', route: '/qualidade/ged-documentos' },
-    { label: 'Qualidade Tablet', route: '/qualidade', action: 'qualityTablet' },
-  ] },
+  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet' },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench, children: [
     { label: 'Central de manutenção', route: '/manutencao' },
     { label: 'Ordens de manutenção', route: '/manutencao/ordens' },
