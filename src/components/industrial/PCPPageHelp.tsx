@@ -184,15 +184,7 @@ const HELP: Record<string, HelpEntry> = {
     integrates: 'Execução → Paradas → Qualidade → Manutenção → Melhoria contínua.',
     errors: ['OEE sem dados: confira apontamentos e intervalo.', 'Taxa anormal: revisar duração e quantidades registradas.']
   },
-  '/pcp/tablet-operador': {
-    title: 'Tablet do operador',
-    purpose: 'Oferecer uma rotina direta para o chão de fábrica com foco na OP ativa e nos apontamentos.',
-    prerequisites: ['Sessão autenticada, operador identificado e máquina atribuída.'],
-    steps: ['Identifique o operador.', 'Confirme OP, operação e máquina antes de iniciar.', 'Registre produção, refugo e parada no momento em que ocorrerem.', 'Confirme o retorno de gravação antes de trocar de OP.'],
-    rules: ['Não compartilhar usuário e senha.', 'Não registrar operação em máquina diferente da real.'],
-    integrates: 'Operador → PCP → Qualidade → Estoque → OEE.',
-    errors: ['Sem OP ativa: consultar o PCP antes de iniciar.', 'Falha de gravação: confirmar histórico antes de reenviar.']
-  },
+
   '/mrp': {
     title: 'Planejamento de necessidades (MRP)',
     purpose: 'Calcular materiais necessários para atender demanda real, considerando a estrutura do produto.',
