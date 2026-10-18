@@ -1,77 +1,79 @@
+/**
+ * @DATA_REVISAO_APROVACAO: 2026-10-18
+ * @HORA_REVISAO: 19:20 America/Sao_Paulo
+ * @REVISAO: COMPRAS-RELATORIOS-R2
+ * @STATUS_APROVACAO: COMPRAS-RELATORIOS-PREMIUM-UI-OK
+ */
 import { useEffect, useMemo, useState } from 'react'
-import { BarChart3, FileDown, RefreshCw, Search, TrendingUp } from 'lucide-react'
+import { BarChart3, Printer, RefreshCw, Search, TrendingUp, DollarSign, ClipboardList, ShieldAlert } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
 
-type Purchase = { id:string; numero:number; status:string; total:number; data_pedido:string; fornecedor_id:string|null; fiscal_status:string|null }
-type Request = { id:string; status:string; prioridade:string; created_at:string }
-type Rfq = { id:string; status:string; created_at:string }
-type Supplier = { id:string; razao_social:string; nome_fantasia:string|null }
+type Purchase = { id: string; numero: number; status: string; total: number; data_pedido: string; fornecedor_id: string | null; fiscal_status: string | null }
+type Request = { id: string; status: string; prioridade: string; created_at: string }
+type Rfq = { id: string; status: string; created_at: string }
+type Supplier = { id: string; razao_social: string; nome_fantasia: string | null }
+const money = (v: number) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+const monthKey = (v: string) => { const d = new Date(v); return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString('pt-BR', { month: '2-digit', year: '2-digit' }) }
+const input = 'h-8 w-full rounded-sm border border-slate-300 bg-white px-2 text-xs text-slate-800 outline-none focus:border-sky-600 focus:ring-1 focus:ring-sky-100'
 
-const money=(v:number)=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
-const monthKey=(v:string)=>{const d=new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('pt-BR',{month:'2-digit',year:'2-digit'})}
-
-export default function ComprasRelatorios(){
- const [purchases,setPurchases]=useState<Purchase[]>([]),[requests,setRequests]=useState<Request[]>([]),[rfqs,setRfqs]=useState<Rfq[]>([]),[suppliers,setSuppliers]=useState<Supplier[]>([])
- const [busy,setBusy]=useState(false),[q,setQ]=useState(''),[message,setMessage]=useState(''),[error,setError]=useState('')
- const load=async()=>{
-  setBusy(true);setError('')
-  try{
-   const company=await supabase.rpc('erp_current_empresa_id');if(company.error||!company.data)throw company.error??new Error('Empresa da sessão não identificada.')
-   const id=String(company.data)
-   const [p,r,f,s]=await Promise.all([
-    fetchAllPages<Purchase>((a,b)=>supabase.from('erp_pedidos_compra').select('id,numero,status,total,data_pedido,fornecedor_id,fiscal_status',{count:'exact'}).eq('empresa_id',id).order('data_pedido',{ascending:false}).range(a,b)),
-    fetchAllPages<Request>((a,b)=>supabase.from('erp_solicitacoes_compra').select('id,status,prioridade,created_at',{count:'exact'}).eq('empresa_id',id).order('created_at',{ascending:false}).range(a,b)),
-    fetchAllPages<Rfq>((a,b)=>supabase.from('erp_rfq').select('id,status,created_at',{count:'exact'}).eq('empresa_id',id).order('created_at',{ascending:false}).range(a,b)),
-    fetchAllPages<Supplier>((a,b)=>supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia',{count:'exact'}).eq('empresa_id',id).range(a,b)),
-   ])
-   setPurchases(p);setRequests(r);setRfqs(f);setSuppliers(s)
-  }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar relatórios de compras.')}finally{setBusy(false)}
- }
- useEffect(()=>{void load()},[])
- const supplierMap=useMemo(()=>new Map(suppliers.map(s=>[s.id,s.nome_fantasia||s.razao_social])),[suppliers])
- const visible=purchases.filter(p=>`${p.numero} ${supplierMap.get(p.fornecedor_id||'')||''} ${p.status} ${p.fiscal_status||''}`.toLowerCase().includes(q.toLowerCase()))
- const total=visible.reduce((s,p)=>s+Number(p.total||0),0)
- const approved=visible.filter(p=>p.status==='APROVADO'||p.status==='RECEBIMENTO_PARCIAL'||p.status==='RECEBIDO')
- const pending=visible.filter(p=>p.status==='PENDENTE_APROVACAO').length
- const blockedFiscal=visible.filter(p=>p.fiscal_status==='BLOQUEADO').length
- const byMonth=useMemo(()=>{
-  const map=new Map<string,number>();for(const p of visible){const k=monthKey(p.data_pedido);map.set(k,(map.get(k)||0)+Number(p.total||0))}
-  return [...map.entries()].reverse().slice(-12).map(([mes,total])=>({mes,total}))
- },[visible])
- const byStatus=useMemo(()=>{
-  const map=new Map<string,number>();for(const p of visible)map.set(p.status,(map.get(p.status)||0)+1)
-  return [...map.entries()].map(([status,quantidade])=>({status,quantidade}))
- },[visible])
- const topSuppliers=useMemo(()=>{
-  const map=new Map<string,number>();for(const p of visible)if(p.fornecedor_id)map.set(p.fornecedor_id,(map.get(p.fornecedor_id)||0)+Number(p.total||0))
-  return [...map.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8).map(([id,total])=>({fornecedor:(supplierMap.get(id)||'Fornecedor').slice(0,24),total}))
- },[visible])
- const print=()=>window.print()
- return <VendasLayout title="Relatórios de compras" subtitle="Indicadores • gastos • fornecedores • aprovações • fiscal" onRefresh={()=>void load()}>
-  <main className="buy-report">
-   <style>{`.buy-report{min-height:100vh;background:#f8fafc;color:#0f172a;padding:20px}.buy-report-wrap{max-width:1500px;margin:0 auto}.buy-report-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}.buy-report-head h1{margin:4px 0;font-size:27px}.buy-report-head p{margin:0;color:#64748b;font-size:12px}.buy-report-actions{display:flex;gap:8px;flex-wrap:wrap}.buy-report-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid #cbd5e1;background:#fff;border-radius:7px;padding:9px 12px;font-weight:800;cursor:pointer}.buy-report-btn.primary{background:#2563eb;color:#fff;border-color:#2563eb}.buy-report-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.buy-report-kpis article,.buy-report-card{background:#fff;border:1px solid #dbe3ea;border-radius:8px;box-shadow:0 2px 8px rgba(15,23,42,.04)}.buy-report-kpis article{padding:14px}.buy-report-kpis span{display:block;color:#64748b;font-size:10px;font-weight:800}.buy-report-kpis strong{display:block;font-size:22px;margin-top:6px}.buy-report-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:10px;margin-top:10px}.buy-report-card{padding:15px}.buy-report-card h2{margin:0 0 10px;font-size:15px}.buy-report-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:10px}.buy-report-search{display:flex;align-items:center;gap:7px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;padding:0 9px;max-width:420px;width:100%}.buy-report-search input{border:0;outline:0;padding:9px;width:100%}.buy-report-table{width:100%;border-collapse:collapse;font-size:11px}.buy-report-table th,.buy-report-table td{padding:9px;border-bottom:1px solid #edf1f4;text-align:left}.buy-report-table th{font-size:9px;color:#64748b;text-transform:uppercase}.buy-report-empty{padding:25px;text-align:center;color:#64748b}@media(max-width:1000px){.buy-report-kpis{grid-template-columns:repeat(3,1fr)}.buy-report-grid{grid-template-columns:1fr}}@media(max-width:650px){.buy-report{padding:12px}.buy-report-kpis{grid-template-columns:1fr 1fr}.buy-report-head{flex-direction:column}}@media print{.buy-report-actions,.buy-report-search{display:none!important}.buy-report{background:#fff;padding:0}.buy-report-card,.buy-report-kpis article{box-shadow:none}}`}</style>
-   <div className="buy-report-wrap">
-    <header className="buy-report-head"><div><span style={{fontSize:9,fontWeight:900,color:'#2563eb',letterSpacing:'.12em'}}>COMPRAS • GESTÃO</span><h1>Relatórios e gráficos</h1><p>Valores e volumes derivados dos documentos reais da empresa.</p></div><div className="buy-report-actions"><button className="buy-report-btn" onClick={()=>void load()} disabled={busy}><RefreshCw size={14}/> Atualizar</button><button className="buy-report-btn" onClick={print}><FileDown size={14}/> Imprimir / PDF</button></div></header>
-    {(message||error)&&<div style={{marginBottom:10,padding:10,borderRadius:7,background:error?'#fef2f2':'#ecfdf5',color:error?'#991b1b':'#166534'}}>{error||message}</div>}
-    <section className="buy-report-kpis">
-      <article><span>Pedidos filtrados</span><strong>{visible.length}</strong></article>
-      <article><span>Valor dos pedidos</span><strong>{money(total)}</strong></article>
-      <article><span>Aprovados / recebidos</span><strong>{approved.length}</strong></article>
-      <article><span>Aguardando aprovação</span><strong>{pending}</strong></article>
-      <article><span>Bloqueios fiscais</span><strong>{blockedFiscal}</strong></article>
-    </section>
-    <div className="buy-report-grid">
-      <section className="buy-report-card"><h2>Gasto por mês</h2><div style={{height:300}}><ResponsiveContainer width="100%" height="100%"><BarChart data={byMonth}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="mes"/><YAxis/><Tooltip formatter={(v)=>money(Number(v))}/><Bar dataKey="total" name="Compras"/></BarChart></ResponsiveContainer></div></section>
-      <section className="buy-report-card"><h2>Status dos pedidos</h2><div style={{height:300}}><ResponsiveContainer width="100%" height="100%"><BarChart data={byStatus} layout="vertical"><CartesianGrid strokeDasharray="3 3"/><XAxis type="number"/><YAxis type="category" dataKey="status" width={130}/><Tooltip/><Bar dataKey="quantidade" name="Pedidos"/></BarChart></ResponsiveContainer></div></section>
-    </div>
-    <section className="buy-report-card" style={{marginTop:10}}><h2>Maiores fornecedores por valor</h2><div style={{height:280}}><ResponsiveContainer width="100%" height="100%"><BarChart data={topSuppliers} layout="vertical"><CartesianGrid strokeDasharray="3 3"/><XAxis type="number"/><YAxis type="category" dataKey="fornecedor" width={170}/><Tooltip formatter={(v)=>money(Number(v))}/><Bar dataKey="total" name="Valor comprado"/></BarChart></ResponsiveContainer></div></section>
-    <section className="buy-report-card" style={{marginTop:10}}><div className="buy-report-toolbar"><div className="buy-report-search"><Search size={14}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Pedido, fornecedor, status ou fiscal..."/></div><span style={{fontSize:11,color:'#64748b'}}>{requests.length} solicitações • {rfqs.length} RFQs • {suppliers.length} fornecedores</span></div>
-      <div style={{overflowX:'auto'}}><table className="buy-report-table"><thead><tr><th>Pedido</th><th>Fornecedor</th><th>Status</th><th>Fiscal</th><th>Data</th><th>Total</th></tr></thead><tbody>{visible.slice(0,100).map(p=><tr key={p.id}><td>PC-{String(p.numero).padStart(4,'0')}</td><td>{supplierMap.get(p.fornecedor_id||'')||'—'}</td><td>{p.status}</td><td>{p.fiscal_status||'NAO_ANALISADO'}</td><td>{new Date(p.data_pedido).toLocaleDateString('pt-BR')}</td><td>{money(p.total)}</td></tr>)}{!visible.length&&<tr><td colSpan={6} className="buy-report-empty">Nenhum pedido encontrado.</td></tr>}</tbody></table></div>
-    </section>
-   </div>
-  </main>
- </VendasLayout>
+export default function ComprasRelatorios() {
+  const [purchases, setPurchases] = useState<Purchase[]>([])
+  const [requests, setRequests] = useState<Request[]>([])
+  const [rfqs, setRfqs] = useState<Rfq[]>([])
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [q, setQ] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const load = async () => {
+    setBusy(true); setError('')
+    try {
+      const company = await supabase.rpc('erp_current_empresa_id')
+      if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
+      const id = String(company.data)
+      const [p, r, f, s] = await Promise.all([
+        fetchAllPages<Purchase>((a, b) => supabase.from('erp_pedidos_compra').select('id,numero,status,total,data_pedido,fornecedor_id,fiscal_status', { count: 'exact' }).eq('empresa_id', id).order('data_pedido', { ascending: false }).range(a, b)),
+        fetchAllPages<Request>((a, b) => supabase.from('erp_solicitacoes_compra').select('id,status,prioridade,created_at', { count: 'exact' }).eq('empresa_id', id).order('created_at', { ascending: false }).range(a, b)),
+        fetchAllPages<Rfq>((a, b) => supabase.from('erp_rfq').select('id,status,created_at', { count: 'exact' }).eq('empresa_id', id).order('created_at', { ascending: false }).range(a, b)),
+        fetchAllPages<Supplier>((a, b) => supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia', { count: 'exact' }).eq('empresa_id', id).range(a, b)),
+      ])
+      setPurchases(p); setRequests(r); setRfqs(f); setSuppliers(s)
+    } catch (e) { setError(e instanceof Error ? e.message : 'Falha ao carregar relatórios de compras.') }
+    finally { setBusy(false) }
+  }
+  useEffect(() => { void load() }, [])
+  const supplierMap = useMemo(() => new Map(suppliers.map(s => [s.id, s.nome_fantasia || s.razao_social])), [suppliers])
+  const visible = useMemo(() => purchases.filter(p => `${p.numero} ${supplierMap.get(p.fornecedor_id || '') || ''} ${p.status} ${p.fiscal_status || ''}`.toLowerCase().includes(q.toLowerCase())), [purchases, q, supplierMap])
+  const total = visible.reduce((sum, p) => sum + Number(p.total || 0), 0)
+  const approved = visible.filter(p => ['APROVADO', 'RECEBIMENTO_PARCIAL', 'RECEBIDO'].includes(String(p.status).toUpperCase())).length
+  const pending = visible.filter(p => String(p.status).toUpperCase() === 'PENDENTE_APROVACAO').length
+  const blocked = visible.filter(p => String(p.fiscal_status).toUpperCase() === 'BLOQUEADO').length
+  const byMonth = useMemo(() => { const m = new Map<string, number>(); visible.forEach(p => { const k = monthKey(p.data_pedido); m.set(k, (m.get(k) || 0) + Number(p.total || 0)) }); return [...m].reverse().slice(-12).map(([mes, total]) => ({ mes, total })) }, [visible])
+  const byStatus = useMemo(() => { const m = new Map<string, number>(); visible.forEach(p => m.set(p.status || 'Sem status', (m.get(p.status || 'Sem status') || 0) + 1)); return [...m].map(([status, quantidade]) => ({ status, quantidade })) }, [visible])
+  const topSuppliers = useMemo(() => { const m = new Map<string, number>(); visible.forEach(p => { if (p.fornecedor_id) m.set(p.fornecedor_id, (m.get(p.fornecedor_id) || 0) + Number(p.total || 0)) }); return [...m].sort((a,b) => b[1]-a[1]).slice(0,8).map(([id,total]) => ({ fornecedor: (supplierMap.get(id) || 'Fornecedor').slice(0,24), total })) }, [visible, supplierMap])
+  const kpis = [
+    { label: 'Pedidos filtrados', value: String(visible.length), icon: ClipboardList, color: 'border-l-slate-500', text: 'text-slate-800' },
+    { label: 'Capital alocado', value: money(total), icon: DollarSign, color: 'border-l-emerald-500', text: 'text-emerald-800' },
+    { label: 'Pedidos concluídos', value: String(approved), icon: TrendingUp, color: 'border-l-sky-500', text: 'text-sky-800' },
+    { label: 'Aguardando aprovação', value: String(pending), icon: ClipboardList, color: 'border-l-amber-500', text: 'text-amber-700' },
+    { label: 'Bloqueios fiscais', value: String(blocked), icon: ShieldAlert, color: 'border-l-rose-500', text: 'text-rose-700' },
+  ]
+  return <VendasLayout title="Dashboard de Performance de Suprimentos" subtitle="Gastos, fornecedores, aprovações e indicadores fiscais" onRefresh={() => void load()}>
+    <main className="space-y-3 p-1 text-[11px] text-slate-800">
+      {error && <div role="alert" className="border border-rose-200 bg-rose-50 p-2 text-rose-800">{error}</div>}
+      <section className="no-print grid grid-cols-1 items-end gap-2 border border-slate-200 bg-slate-50 p-2 md:grid-cols-12">
+        <label className="grid gap-1 md:col-span-8"><span className="text-[9px] font-black uppercase tracking-wide text-slate-500"><Search size={12} className="mr-1 inline"/>Pesquisa de pedidos e fornecedores</span><input className={input} value={q} onChange={e => setQ(e.target.value)} placeholder="Número, fornecedor, status ou situação fiscal"/></label>
+        <div className="flex gap-2 md:col-span-4"><button type="button" onClick={() => void load()} disabled={busy} className="flex h-8 flex-1 items-center justify-center gap-1 border border-slate-300 bg-white px-2 text-[10px] font-bold disabled:opacity-50"><RefreshCw size={12} className={busy ? 'animate-spin' : ''}/>{busy ? 'Lendo…' : 'Atualizar'}</button><button type="button" onClick={() => window.print()} className="flex h-8 flex-1 items-center justify-center gap-1 bg-sky-700 px-2 text-[10px] font-bold text-white"><Printer size={12}/>Imprimir / PDF</button></div>
+      </section>
+      <section className="grid grid-cols-2 gap-2 md:grid-cols-5">{kpis.map(({label,value,icon:Icon,color,text}) => <article key={label} className={`min-w-0 border border-slate-200 border-l-4 bg-white p-2.5 shadow-sm ${color}`}><div className="flex items-center justify-between gap-1 text-[9px] font-black uppercase text-slate-500"><span>{label}</span><Icon size={14}/></div><strong className={`mt-1 block truncate font-mono text-base ${text}`} title={value}>{value}</strong></article>)}</section>
+      <section className="grid grid-cols-1 gap-3 xl:grid-cols-12">
+        <article className="min-w-0 border border-slate-200 bg-white p-3 xl:col-span-7"><h2 className="mb-2 flex items-center gap-2 text-xs font-black text-[#123B50]"><BarChart3 size={14}/>Histórico de desembolso mensal</h2><div className="h-56"><ResponsiveContainer width="100%" height="100%"><BarChart data={byMonth} margin={{top:8,right:8,bottom:4,left:8}}><CartesianGrid strokeDasharray="3 3" vertical={false}/><XAxis dataKey="mes" tick={{fontSize:10}}/><YAxis tick={{fontSize:10}} tickFormatter={v => `R$${Number(v)/1000}k`}/><Tooltip formatter={v => money(Number(v))}/><Bar dataKey="total" name="Total" fill="#2D8DB8" radius={[2,2,0,0]}/></BarChart></ResponsiveContainer></div></article>
+        <article className="min-w-0 border border-slate-200 bg-white p-3 xl:col-span-5"><h2 className="mb-2 text-xs font-black text-[#123B50]">Volume por etapa</h2><div className="h-56"><ResponsiveContainer width="100%" height="100%"><BarChart data={byStatus} layout="vertical" margin={{top:4,right:12,bottom:4,left:8}}><CartesianGrid strokeDasharray="3 3" horizontal={false}/><XAxis type="number" tick={{fontSize:10}} allowDecimals={false}/><YAxis type="category" dataKey="status" width={110} tick={{fontSize:9}}/><Tooltip/><Bar dataKey="quantidade" name="Pedidos" fill="#123B50" radius={[0,2,2,0]}/></BarChart></ResponsiveContainer></div></article>
+        <article className="min-w-0 border border-slate-200 bg-white p-3 xl:col-span-12"><h2 className="mb-2 text-xs font-black text-[#123B50]">Maiores fornecedores por valor de pedidos</h2><div className="h-56"><ResponsiveContainer width="100%" height="100%"><BarChart data={topSuppliers} layout="vertical" margin={{top:4,right:20,bottom:4,left:8}}><CartesianGrid strokeDasharray="3 3" horizontal={false}/><XAxis type="number" tick={{fontSize:10}} tickFormatter={v => `R$${Number(v)/1000}k`}/><YAxis type="category" dataKey="fornecedor" width={150} tick={{fontSize:9}}/><Tooltip formatter={v => money(Number(v))}/><Bar dataKey="total" name="Total" fill="#16796f" radius={[0,2,2,0]}/></BarChart></ResponsiveContainer></div></article>
+      </section>
+      <section className="overflow-hidden border border-slate-200 bg-white"><header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 p-2"><strong className="text-[10px] font-black uppercase">Pedidos de compra recentes</strong><span className="text-[10px] text-slate-500">{requests.length} solicitações · {rfqs.length} RFQs · {suppliers.length} fornecedores</span></header><div className="overflow-x-auto"><table className="w-full min-w-[760px] border-collapse text-left"><thead className="bg-[#123B50] text-[9px] uppercase text-white"><tr>{['Pedido','Fornecedor','Status','Fiscal','Data','Total'].map(x=><th key={x} className="p-2">{x}</th>)}</tr></thead><tbody>{visible.slice(0,100).map(p=><tr key={p.id} className="border-b border-slate-100 odd:bg-white even:bg-slate-50"><td className="p-2 font-mono">PC-{String(p.numero).padStart(5,'0')}</td><td className="p-2">{supplierMap.get(p.fornecedor_id || '') || '—'}</td><td className="p-2">{p.status}</td><td className="p-2">{p.fiscal_status || 'Não analisado'}</td><td className="p-2">{p.data_pedido ? new Date(p.data_pedido).toLocaleDateString('pt-BR') : '—'}</td><td className="p-2 font-mono">{money(p.total)}</td></tr>)}{!visible.length && <tr><td colSpan={6} className="p-5 text-center text-slate-500">Nenhum pedido encontrado.</td></tr>}</tbody></table></div></section>
+    </main>
+  </VendasLayout>
 }
