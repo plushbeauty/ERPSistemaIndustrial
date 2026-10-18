@@ -95,8 +95,9 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
       }
       const values = { nome: nome.trim(), categoria: categoria.trim() || null, unidade: unidade.trim().toUpperCase(), unidade_compra: unidade.trim().toUpperCase(), unidade_venda: unidade.trim().toUpperCase(), cliente: cliente.trim() || null }
       if (p) {
-        const r = await supabase.from('erp_produtos').update(values).eq('id', p.id).eq('empresa_id', empresa)
+        const r = await supabase.from('erp_produtos').update(values).eq('id', p.id).eq('empresa_id', empresa).select('id').maybeSingle()
         if (r.error) throw r.error
+        if (!r.data?.id) throw new Error('Nenhuma ficha foi atualizada. Verifique a empresa e as permissões RLS.')
       } else {
         const r = await supabase.from('erp_produtos').insert({ empresa_id: empresa, codigo, ...values, ativo: true }).select('id,codigo,nome,categoria,unidade,cliente').single()
         if (r.error) throw r.error
