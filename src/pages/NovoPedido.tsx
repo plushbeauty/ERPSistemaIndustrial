@@ -149,7 +149,7 @@ export default function NovoPedido(){
    </section>
 
    <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
-    <section className="md:col-span-2-4 bg-white border border-slate-300 rounded-[2px] p-2.5 shadow-sm space-y-3">
+    <section className="md:col-span-4 bg-white border border-slate-300 rounded-[2px] p-2.5 shadow-sm space-y-3">
      <h3 className="block text-xs font-extrabold uppercase tracking-widest text-[#2D8DB8] border-b border-slate-200 pb-1 mb-2">Informações Adicionais</h3>
      <div className="space-y-2"><Field label="Preço de custo industrial do item selecionado"><input value={selectedItem===null?'':brl(gridItens[selectedItem]?.preco_custo_industrial??0)} readOnly className={inputStyle+' bg-slate-50'}/></Field><p className="mt-1 text-[9px] text-slate-500">Margem apresentada na grade é calculada com base no custo industrial retornado pelo ERP.</p></div>
     </section>
