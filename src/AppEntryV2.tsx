@@ -163,7 +163,6 @@ const ClientesIndustrial = lazyPage(() => import('./pages/ClientesIndustrial'), 
 const TabelaPrecos = lazyPage(() => import('./pages/TabelaPrecos'), 'TabelaPrecos')
 const AjusteGlobal = lazyPage(() => import('./pages/AjusteGlobal'), 'default')
 const CatalogoDigital = lazyPage(() => import('./pages/CatalogoDigital'), 'CatalogoDigital')
-const FichasProcesso = lazyPage(() => import('./pages/FichasProcesso'), 'FichasProcesso')
 const AssistenteAjudaERP = lazyPage(() => import('./pages/AssistenteAjudaERP'), 'AssistenteAjudaERP')
 const ComprasSolicitacaoManual = lazyPage(() => import('./pages/ComprasSolicitacaoManual'), 'ComprasSolicitacaoManual')
 const ExpedicaoPortaria = lazyPage(() => import('./pages/ExpedicaoPortaria'), 'ExpedicaoPortaria')
@@ -602,7 +601,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/engenharia" element={<QualityPlanGate>{<EngenhariaCentral />}</QualityPlanGate>} />
       <Route path="/engenharia/revisoes-bom" element={<QualityPlanGate>{<EngenhariaRevisoesBOM />}</QualityPlanGate>} />
       <Route path="/engenharia/ficha" element={<QualityPlanGate>{<FichaEngenharia />}</QualityPlanGate>} />
-      <Route path="/engenharia/fichas-processo" element={<QualityPlanGate>{<FichasProcesso />}</QualityPlanGate>} />
+      <Route path="/engenharia/fichas-processo" element={<Navigate to="/pcp/fichas-processo" replace />} />
       <Route path="/financeiro/importar-extratos" element={<QualityPlanGate>{<BankingStatementImporter />}</QualityPlanGate>} />
       <Route path="/financeiro/reconciliacao" element={<QualityPlanGate>{<BankingReconciliation />}</QualityPlanGate>} />
       <Route path="/financeiro/grafico-desvios" element={<QualityPlanGate>{<FinanceiroGraficoDesvios />}</QualityPlanGate>} />
@@ -680,7 +679,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/pcp/controle-injetora" element={<ControleProcessoInjetora />} />
       <Route path="/qualidade/controle-injetora" element={<Navigate to="/pcp/controle-injetora" replace />} />
       <Route path="/estoque/recebimento" element={<EstoqueRecebimentoLotes />} />
-      <Route path="/fichas-processo" element={<QualityPlanGate>{<FichasProcesso />}</QualityPlanGate>} />
+      <Route path="/fichas-processo" element={<Navigate to="/pcp/fichas-processo" replace />} />
       <Route path="/processos/injecao" element={<QualityPlanGate>{<InjecaoIndustrial />}</QualityPlanGate>} />
       <Route path="/processos/prensados" element={<QualityPlanGate>{<ProcessoIndustrialPage />}</QualityPlanGate>} />
       <Route path="/processos/estamparia" element={<QualityPlanGate>{<ProcessoIndustrialPage />}</QualityPlanGate>} />
