@@ -135,6 +135,7 @@ const ComprasAnalisePrecos = lazyPage(() => import('./pages/ComprasAnalisePrecos
 const PedidoCompra = lazyPage(() => import('./pages/PedidoCompra'), 'default')
 const VendasClientesPage = lazyPage(() => import('./pages/VendasClientes'), 'default')
 const CentralCustosIndustrial = lazyPage(() => import('./pages/CentralCustosIndustrial'), 'CentralCustosIndustrial')
+const HelpCentralCustos = lazyPage(() => import('./pages/HelpCentralCustos'), 'HelpCentralCustos')
 const CadastroEmpresa = lazyPage(() => import('./pages/CadastroEmpresa'), 'CadastroEmpresa')
 const HelpCadastroEmpresa = lazyPage(() => import('./pages/HelpCadastroEmpresa'), 'default')
 const PlanosIndustrial = lazyPage(() => import('./pages/PlanosIndustrial'), 'PlanosIndustrial')
@@ -596,6 +597,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/mrp" element={<QualityPlanGate>{<MRPIndustrial />}</QualityPlanGate>} />
       <Route path="/qualidade/refugos" element={<QualityPlanGate><CentraisIndustriais module="refugos" /></QualityPlanGate>} />
       <Route path="/central-custos-industrial" element={<QualityPlanGate>{<CentralCustosIndustrial />}</QualityPlanGate>} />
+      <Route path="/ajuda/central-custos" element={<QualityPlanGate>{<HelpCentralCustos />}</QualityPlanGate>} />
       <Route path="/expedicao/roteirizacao" element={<ExpedicaoRoteirizacao />} />
       <Route path="/expedicao/portaria" element={<ExpedicaoPortaria />} />
       <Route path="/engenharia" element={<QualityPlanGate>{<EngenhariaCentral />}</QualityPlanGate>} />
