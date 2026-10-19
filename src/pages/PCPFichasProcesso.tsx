@@ -152,7 +152,8 @@ const packaging: Param[] = [
  {key:'emb_instrucao_paletizacao',label:'Padrão de paletização e empilhamento',unit:'—',type:'text',multiline:true},
  {key:'emb_criterio_liberacao',label:'Critérios de conferência e liberação',unit:'—',type:'text',multiline:true},
 ]
-export const paramsFor = (category: Category) => category === 'ACABAMENTO' ? finishing : category === 'MONTAGEM_EMBALAGEM' ? packaging : [...common, ...(category === 'INJETADOS' ? injection : category === 'PRENSADOS' ? press : category === 'ESTAMPARIA' || category === 'MECANICA' ? stamping : category === 'TRATAMENTO_SUPERFICIAL' || category === 'PINTURA_QUIMICA' ? surface : cutting)]
+const setupCommon = common.filter(p => ['tempo_ciclo_seg','altura_molde_mm','tipo_fixacao','tempo_setup_min','tempo_limpeza_min','seguranca_ppe'].includes(p.key))
+export const paramsFor = (category: Category) => category === 'INJETADOS' ? [...common, ...injection] : category === 'PRENSADOS' ? [...setupCommon, ...press] : category === 'ESTAMPARIA' || category === 'MECANICA' ? [...setupCommon.filter(p => p.key !== 'altura_molde_mm' && p.key !== 'tipo_fixacao'), ...stamping] : category === 'TRATAMENTO_SUPERFICIAL' || category === 'PINTURA_QUIMICA' ? surface : category === 'CORTE_VINCO' ? cutting : category === 'ACABAMENTO' ? finishing : packaging
 const processParamGroups: Partial<Record<Category,{title:string;keys:string[]}[]>> = {
  INJETADOS:[
   {title:'Matéria-prima e preparação',keys:['material_polimero','temperatura_secagem_c','tempo_secagem_h','peso_peca_g','peso_canal_g']},
@@ -174,7 +175,7 @@ const processParamGroups: Partial<Record<Category,{title:string;keys:string[]}[]
   {title:'4. Embalagem e etiquetagem',keys:['acabamento_embalagem_posto','acabamento_embalagem_setor','acabamento_embalagem_tempo','acabamento_embalagem_checklist','acabamento_embalagem_referencia']},
  ],
  MONTAGEM_EMBALAGEM:[
-  {title:'1. Embalagem em saco plástico / contagem',keys:['aplica_embalagem_plastica','emb_amostragem_base','emb_codigo_balanca','emb_dimensional_saco','emb_quantidade_pecas_saco','emb_peso_pacote_cheio_g']},
+  {title:'1. Dados gerais, saco plástico e contagem',keys:['material_base','tempo_ciclo_seg','aplica_embalagem_plastica','emb_amostragem_base','emb_codigo_balanca','emb_dimensional_saco','emb_quantidade_pecas_saco','emb_peso_pacote_cheio_g']},
   {title:'2. Embalagem em caixa de papelão',keys:['emb_sacos_caixa','emb_pecas_direto_caixa','emb_dimensional_caixa','emb_caixa_modelo']},
   {title:'3. Roteiro de montagem, etiqueta e paletização',keys:['emb_disposicao_pecas','emb_instrucao_montagem','emb_instrucao_etiqueta','emb_instrucao_paletizacao','emb_criterio_liberacao']},
  ],
@@ -435,7 +436,7 @@ export default function PCPFichasProcesso() {
     <label className="mt-4 block"><span className={labelClass}>Instruções de setup / processo / segurança</span><textarea className="min-h-[100px] w-full rounded-md border border-[#294456] bg-[#071522] p-3 text-sm text-[#F4FBFD] outline-none focus:border-[#48B7C7]" value={instructions} onChange={e=>setInstructions(e.target.value)} placeholder="Sequência operacional, parâmetros de controle, inspeção inicial, reação a desvio, EPI e cuidados ambientais…"/></label>
     <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#294456] pt-3"><span className="text-xs text-white">Dados separados por empresa · revisão técnica · parâmetros sem valores fictícios</span><button className="erp-premium-button print:hidden" type="button" onClick={()=>void save()} disabled={busy}><Save size={14}/>{busy?'Salvando…':isEditing?'Atualizar ficha':'Gravar ficha'}</button></div>
    </section>
-   <div className="print:hidden"><PCPMoldPhotoPanel productId={productId} /></div>
+   {category!=='MONTAGEM_EMBALAGEM'&&<div className="print:hidden"><PCPMoldPhotoPanel productId={productId} /></div>}
    <footer className="mt-3 flex items-center gap-2 text-xs text-white print:hidden"><CalendarRange size={14}/>{singleResourceProcess?'O PCP estima a duração a partir da ficha liberada, capacidade, ciclo e setup; datas continuam sujeitas ao calendário de recursos.':'Para programar este roteiro multiposto, cadastre as operações e recursos correspondentes no roteiro do PCP; ele não será aplicado como ciclo de uma única máquina.'}</footer>
   </div>
  <style>{'@media print{body{background:#fff!important;color:#111!important}.pcp-ficha-print-sheet,.pcp-ficha-print-sheet article,.pcp-ficha-print-sheet div{background:#fff!important;color:#111!important;border-color:#777!important;box-shadow:none!important}.pcp-ficha-print-sheet{break-inside:avoid;border:0!important;padding:0!important}.pcp-ficha-print-sheet input,.pcp-ficha-print-sheet select,.pcp-ficha-print-sheet textarea{color:#111!important;background:#fff!important;border-color:#777!important;box-shadow:none!important;print-color-adjust:exact}.pcp-ficha-print-sheet label{break-inside:avoid}.pcp-ficha-print-sheet button{display:none!important}.pcp-ficha-print-sheet span,.pcp-ficha-print-sheet dt,.pcp-ficha-print-sheet p{color:#333!important}}'}</style>
