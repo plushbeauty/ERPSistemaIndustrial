@@ -1,0 +1,47 @@
+/*
+ * SYSNQRA ERP — ponte de tokens para componentes shadcn/ui.
+ * Escopo: apenas tokens de componentes novos; não sobrescreve telas legadas.
+ * Base visual industrial aprovada: azul #2D8DB8, tinta #123B50, superfície #F4FBFD.
+ */
+:root {
+  --background: 195 60% 98%;
+  --foreground: 198 61% 19%;
+  --card: 0 0% 100%;
+  --card-foreground: 198 61% 19%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 198 61% 19%;
+  --primary: 199 61% 45%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 195 45% 94%;
+  --secondary-foreground: 198 61% 19%;
+  --muted: 195 30% 94%;
+  --muted-foreground: 201 18% 42%;
+  --accent: 188 52% 88%;
+  --accent-foreground: 198 61% 19%;
+  --destructive: 357 58% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 197 31% 84%;
+  --input: 197 31% 84%;
+  --ring: 199 61% 45%;
+  --radius: 2px;
+}
+
+/* Regras de tamanho limitadas a componentes que optarem por esta classe. */
+.ui-industrial-control {
+  min-height: 30px;
+  height: 30px;
+  border-radius: 2px;
+  font-size: 11px;
+  line-height: 14px;
+}
+.ui-industrial-label {
+  color: #536b76;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-industrial-motion { animation: none !important; transition: none !important; }
+}
