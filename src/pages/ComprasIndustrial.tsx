@@ -85,7 +85,6 @@ ${hostedBySynqra?'.buy-hosted-by-synqra{display:block;min-height:0;background:tr
 .buy-shell .buy-form input.edit-8{display:inline-block!important;width:10ch!important;max-width:100%!important;box-sizing:border-box;font-variant-numeric:tabular-nums}
 .buy-shell .buy-form input.edit-12{display:inline-block!important;width:14ch!important;max-width:100%!important;box-sizing:border-box;font-variant-numeric:tabular-nums}
 .buy-shell .buy-form input.edit-20{display:inline-block!important;width:22ch!important;max-width:100%!important;box-sizing:border-box}
-.buy-shell .buy-form input.edit-20{display:inline-block!important;width:22ch!important;max-width:100%!important;box-sizing:border-box}
 .buy-shell .buy-form label:nth-child(1),.buy-shell .buy-form label:nth-child(2){grid-column:span 2}
 .buy-shell .buy-form .buy-fullfield{grid-column:1/-1}
 @media(max-width:1000px){.buy-shell .buy-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.buy-shell .buy-form{grid-template-columns:repeat(2,minmax(0,1fr))}}
