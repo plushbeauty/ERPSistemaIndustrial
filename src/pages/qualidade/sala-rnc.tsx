@@ -43,7 +43,7 @@ const fieldClass = 'h-[30px] min-h-[30px] w-full rounded-[2px] border border-[#2
 const areaClass = 'min-h-[74px] w-full resize-y rounded-[2px] border border-[#2E4A62] bg-[#0E1E2F] px-2 py-1.5 text-[10px] leading-4 text-[#F4FBFD] outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
 const labelClass = 'mb-1 flex min-h-[12px] items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-300'
 const buttonClass = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-bold text-white hover:bg-[#236f91] disabled:cursor-not-allowed disabled:opacity-50'
-const secondaryButton = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-200 hover:bg-slate-50 disabled:opacity-50'
+const secondaryButton = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-[#2E4A62] bg-[#123B50] px-3 text-[10px] font-bold text-white hover:bg-[#18516b] disabled:opacity-50'
 const emptyAction = (): ActionRow => ({ id: crypto.randomUUID(), oQue: '', quem: '', quando: '', como: '', porQue: '', onde: '', quanto: '' })
 const Help = ({ text }: { text: string }) => <span className="group relative inline-flex shrink-0 items-center" title={text} aria-label={text}><CircleHelp size={10} className="cursor-help text-[#2D8DB8]" /><span role="tooltip" className="pointer-events-none absolute bottom-full left-0 z-50 mb-1 hidden w-64 rounded-[2px] border border-sky-200 bg-[#123B50] p-2 text-[10px] font-normal normal-case leading-4 text-white shadow-lg group-hover:block group-focus-within:block">{text}</span></span>
 function FieldLabel({ children, help }: { children: string; help: string }) { return <label className={labelClass}>{children}<Help text={help}/></label> }
@@ -207,6 +207,26 @@ export default function SalaRNC() {
     }
   }
 
+  const saveIshikawa = async () => {
+    if (!selectedRecord || !companyId) { setError('Selecione uma RPNC da empresa antes de salvar a investigação.'); return }
+    setBusy(true)
+    setError('')
+    setNotice('')
+    try {
+      const whyAnswers = whys.filter(item => item.answer.trim()).map(item => ({ question: item.question, answer: item.answer.trim(), evidence: item.evidence.trim() }))
+      const whyText = whyAnswers.map((item, index) => (index + 1) + '. ' + item.question + '\\nCausa: ' + item.answer + '\\nEvidência objetiva: ' + item.evidence).join('\\n\\n')
+      const investigation = [whyText, '\\n\\n[ISHIKAWA_6M_JSON]' + JSON.stringify(ishikawa)].filter(Boolean).join('')
+      const result = await supabase.from('erp_rpnc').update({ investigacao: investigation, porques_evidencias: whyAnswers }).eq('id', selectedRecord.id).eq('empresa_id', companyId)
+      if (result.error) throw result.error
+      setNotice('Investigação Ishikawa 6M e 5 Porquês gravada na RPNC ' + selectedRecord.numero_rpnc + '.')
+      await load()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao salvar a investigação Ishikawa.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const saveActions = async () => {
     if (!selectedRecord) { setError('Selecione ou registre uma RPNC antes de salvar ações.'); return }
     setBusy(true)
@@ -294,6 +314,7 @@ export default function SalaRNC() {
                   <textarea className={areaClass} value={newCause} onChange={event => setNewCause(event.target.value)} placeholder="Descreva a causa observada com base em evidência…"/>
                   <button type="submit" className={buttonClass}><Plus size={12}/> Adicionar causa</button>
                   <p className="text-[9px] text-slate-500">As causas são registradas na investigação da RPNC existente, sem criar tabela paralela.</p>
+                  {selectedRecord && <button type="button" className={buttonClass} onClick={() => void saveIshikawa()} disabled={busy || loading}><Save size={12}/> Salvar investigação na RPNC</button>}
                 </form>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
                   {ISHIKAWA_GROUPS.map(group => <article key={group.key} className="min-w-0 border border-[#2E4A62] bg-[#071522] p-2 print:break-inside-avoid">
