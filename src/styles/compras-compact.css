@@ -54,3 +54,91 @@
 .compras-compact .supplier-page form{padding:8px!important;border-radius:2px!important}
 @media(max-width:900px){.compras-compact .pc-grid{grid-template-columns:1fr 1fr}.compras-compact .pc-page{padding:6px!important}}
 @media(max-width:620px){.compras-compact .pc-grid{grid-template-columns:1fr}}
+
+
+/*
+ * Padronização visual transversal de Compras — revisão 2026-10-19.
+ * Escopo restrito às superfícies do módulo de suprimentos; não altera o shell global.
+ * Contrato: campos 30px, labels 9px, radius 2px, tabelas densas e paleta industrial.
+ */
+.buy-shell,
+.compras-rfq-compact,
+.buy-report,
+.supplier-page,
+.compras-pedido-page {
+  --compras-ink: #123B50;
+  --compras-blue: #2D8DB8;
+  --compras-cyan: #48B7C7;
+  --compras-canvas: #F4FBFD;
+  --compras-border: #CBDDE5;
+  font-size: 11px;
+}
+.buy-shell { background: var(--compras-canvas) !important; color: #172B3A !important; }
+.buy-shell .buy-sidebar { width: auto !important; min-width: 0 !important; flex-direction: row !important; align-items: center !important; gap: 4px !important; margin: 0 0 8px !important; padding: 6px !important; border: 1px solid var(--compras-border) !important; background: #fff !important; color: var(--compras-ink) !important; box-shadow: none !important; overflow-x: auto !important; }
+.buy-shell .buy-brand, .buy-shell .buy-section, .buy-shell .buy-spacer { display: none !important; }
+.buy-shell .buy-nav { flex: 0 0 auto !important; min-height: 30px !important; height: 30px !important; padding: 0 8px !important; gap: 5px !important; border-radius: 2px !important; color: #375563 !important; white-space: nowrap !important; }
+.buy-shell .buy-nav b { font-size: 10px !important; font-weight: 700 !important; }
+.buy-shell .buy-nav small { display: none !important; }
+.buy-shell .buy-nav.active { background: var(--compras-blue) !important; color: #fff !important; }
+.buy-shell .buy-top { height: 42px !important; padding: 0 10px !important; gap: 8px !important; }
+.buy-shell .buy-top-title strong { font-size: 14px !important; color: var(--compras-ink) !important; }
+.buy-shell .buy-head { padding: 8px !important; gap: 8px !important; align-items: center !important; }
+.buy-shell .buy-head h1 { margin: 2px 0 !important; font-size: 18px !important; font-weight: 600 !important; color: var(--compras-ink) !important; }
+.buy-shell .buy-head p { font-size: 10px !important; }
+.buy-shell .buy-content { padding: 0 8px 8px !important; }
+.buy-shell .buy-commandbar { display: flex !important; flex-wrap: wrap !important; gap: 4px !important; padding: 0 8px 8px !important; }
+.buy-shell button, .buy-shell input, .buy-shell select, .buy-shell textarea { border-radius: 2px !important; }
+.buy-shell .buy-card, .buy-shell .buy-grid > section, .buy-shell .buy-kpis > article { border-radius: 2px !important; box-shadow: none !important; }
+.buy-shell .buy-card { border-color: var(--compras-border) !important; }
+.buy-shell .buy-card header span, .buy-shell .buy-head span { color: #236F91 !important; }
+.buy-shell .buy-primary { background: var(--compras-blue) !important; border-color: var(--compras-blue) !important; }
+.buy-shell input, .buy-shell select { min-width: 0; }
+.buy-shell label { font-size: 9px !important; letter-spacing: .04em !important; text-transform: uppercase; }
+.buy-shell table th, .buy-shell table td { padding: 4px 6px !important; font-size: 10px !important; }
+.buy-shell table th { height: 28px !important; }
+.buy-shell table td { min-height: 30px !important; }
+.compras-rfq-compact { background: var(--compras-canvas) !important; color: #172B3A !important; }
+.compras-rfq-compact > header > div { min-height: 42px !important; padding: 6px 10px !important; }
+.compras-rfq-compact h1 { font-size: 18px !important; font-weight: 600 !important; color: var(--compras-ink) !important; }
+.compras-rfq-compact input, .compras-rfq-compact select { height: 30px !important; min-height: 30px !important; max-width: 100%; border-radius: 2px !important; font-size: 11px !important; }
+.compras-rfq-compact textarea { min-height: 58px !important; border-radius: 2px !important; font-size: 11px !important; }
+.compras-rfq-compact label { font-size: 9px !important; line-height: 1.2 !important; text-transform: uppercase; letter-spacing: .04em; }
+.compras-rfq-compact button { min-height: 30px !important; height: 30px !important; padding: 0 8px !important; border-radius: 2px !important; font-size: 10px !important; }
+.compras-rfq-compact section { padding: 8px !important; }
+.compras-rfq-compact table th, .compras-rfq-compact table td { padding: 4px 6px !important; font-size: 10px !important; }
+.buy-report { padding: 8px !important; background: var(--compras-canvas) !important; }
+.buy-report .buy-report-wrap { max-width: none !important; }
+.buy-report .buy-report-head { gap: 8px !important; margin-bottom: 8px !important; align-items: center !important; }
+.buy-report .buy-report-head h1 { margin: 2px 0 !important; font-size: 18px !important; font-weight: 600 !important; color: var(--compras-ink) !important; }
+.buy-report .buy-report-card { border: 1px solid var(--compras-border) !important; border-radius: 2px !important; padding: 8px !important; box-shadow: none !important; }
+.buy-report input, .buy-report select { height: 30px !important; min-height: 30px !important; max-width: 100%; border-radius: 2px !important; font-size: 11px !important; }
+.buy-report label { font-size: 9px !important; text-transform: uppercase; letter-spacing: .04em; }
+.buy-report button { min-height: 30px !important; height: 30px !important; border-radius: 2px !important; font-size: 10px !important; }
+.buy-report .buy-report-table th, .buy-report .buy-report-table td { padding: 4px 6px !important; font-size: 10px !important; }
+.supplier-page { padding: 8px !important; background: var(--compras-canvas) !important; }
+.supplier-page .supplier-page-head { margin-bottom: 8px !important; }
+.supplier-page .supplier-page-head h1 { font-size: 18px !important; font-weight: 600 !important; color: var(--compras-ink) !important; }
+.supplier-page section, .supplier-page form { border-radius: 2px !important; box-shadow: none !important; padding: 8px !important; }
+.supplier-page label { font-size: 9px !important; text-transform: uppercase; letter-spacing: .04em; }
+.supplier-page input, .supplier-page select { height: 30px !important; min-height: 30px !important; max-width: 100%; border-radius: 2px !important; font-size: 11px !important; }
+.supplier-page button { min-height: 30px !important; height: 30px !important; border-radius: 2px !important; font-size: 10px !important; }
+.compras-pedido-page { background: var(--compras-canvas) !important; color: #172B3A !important; }
+.compras-pedido-page > main { padding: 8px !important; }
+.compras-pedido-page section { border-color: var(--compras-border) !important; border-radius: 2px !important; box-shadow: none !important; }
+.compras-pedido-page .bg-neutral-950 { background: #fff !important; }
+.compras-pedido-page .bg-neutral-900 { background: #F4FBFD !important; }
+.compras-pedido-page .text-white { color: #172B3A !important; }
+.compras-pedido-page .text-neutral-400 { color: #536D7B !important; }
+.compras-pedido-page .border-neutral-800, .compras-pedido-page .border-neutral-700 { border-color: var(--compras-border) !important; }
+.compras-pedido-page input, .compras-pedido-page select, .compras-pedido-page textarea { box-sizing: border-box; max-width: 100%; min-width: 0; border-radius: 2px !important; font-size: 11px !important; }
+.compras-pedido-page label { font-size: 9px !important; text-transform: uppercase; letter-spacing: .04em; }
+.compras-pedido-page table th, .compras-pedido-page table td { padding: 4px 6px !important; font-size: 10px !important; }
+@media (max-width: 760px) {
+  .buy-shell { display: block !important; }
+  .buy-shell .buy-sidebar { width: 100% !important; }
+  .buy-shell .buy-top-right { gap: 5px !important; font-size: 9px !important; }
+  .buy-shell .buy-head { flex-wrap: wrap !important; }
+  .compras-rfq-compact .grid-cols-2, .compras-rfq-compact .grid-cols-3, .compras-rfq-compact .grid-cols-4 { grid-template-columns: minmax(0, 1fr) !important; }
+  .compras-pedido-page .grid-cols-12 { grid-template-columns: minmax(0, 1fr) !important; }
+  .compras-pedido-page .col-span-3, .compras-pedido-page .col-span-4, .compras-pedido-page .col-span-6 { grid-column: span 1 / span 1 !important; }
+}
