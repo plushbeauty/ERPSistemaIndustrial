@@ -290,7 +290,7 @@ export default function PCPFichasProcesso() {
  const expectedPph = singleResourceProcess && Number(params.tempo_ciclo_seg) > 0 ? (3600 / Number(params.tempo_ciclo_seg)) * Math.max(1, Number(params.cavidades_ativas) || 1) : 0
  const fieldGroups = processParamGroups[category] ?? [{title:'Parâmetros técnicos do processo',keys:fields.map(field=>field.key)}]
  const assignedKeys = new Set(fieldGroups.flatMap(group=>group.keys))
- const temperatureOverlayKeys = new Set(category === 'INJETADOS' ? ['zona1_c','zona2_c','zona3_c','zona4_c'] : category === 'PRENSADOS' ? ['temp_plato_superior_c','temp_plato_inferior_c','temperatura_molde_c'] : [])
+ const temperatureOverlayKeys = new Set(category === 'INJETADOS' ? ['zona1_c','zona2_c','zona3_c','zona4_c'] : category === 'PRENSADOS' ? ['temp_plato_superior_c','temp_plato_inferior_c','temperatura_molde_c','pressao_bomba_bar'] : [])
  const parameterCards = [...fieldGroups.map(group=>({...group,fields:fields.filter(field=>group.keys.includes(field.key) && !temperatureOverlayKeys.has(field.key))})).filter(group=>group.fields.length>0),...(fields.some(field=>!assignedKeys.has(field.key) && !temperatureOverlayKeys.has(field.key))?[{title:'Parâmetros complementares',keys:[],fields:fields.filter(field=>!assignedKeys.has(field.key) && !temperatureOverlayKeys.has(field.key))}]:[])]
  const valueLabel = (key:string,unit='') => params[key] ? `${params[key]}${unit ? ` ${unit}` : ''}` : 'Não informado'
  const summaryPanels = category === 'ACABAMENTO'
