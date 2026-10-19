@@ -143,7 +143,7 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
         if (configResult.error) throw configResult.error
         if (supplierResult.error) throw supplierResult.error
         if (locationResult.error) throw locationResult.error
-        let loaded = initial()
+        const loaded = initial()
         if (productId) {
           const result = await supabase.from('erp_produtos').select('*').eq('id', productId).eq('empresa_id', empresaId).maybeSingle()
           if (result.error) throw result.error
@@ -308,7 +308,7 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
       <label className="flex min-h-8 items-center gap-2 rounded-[2px] border border-slate-200 bg-slate-50 px-2 text-[10px] font-semibold"><input type="checkbox" checked={form.ativo} disabled={loading||busy} onChange={e=>update('ativo',e.target.checked)}/> Produto ativo</label>
     </div>}
     <button type="button" onClick={()=>setAdvanced(v=>!v)} className="flex h-8 w-full items-center justify-between rounded-[2px] border border-slate-300 bg-slate-50 px-2 text-[9px] font-black uppercase text-slate-700"><span>Campos complementares / dimensões</span>{advanced?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
-    {advanced && <div className={section}>{numericFields.map(item=>numberField(item.key,item.label,item.step))}{<label className={label}>Fornecedor padrão<select className={input} disabled={loading||busy} value={form.fornecedor_padrao_id} onChange={e=>update('fornecedor_padrao_id',e.target.value)}><option value="">Sem fornecedor padrão</option>{suppliers.map(s=><option key={s.id} value={s.id}>{s.codigo ? s.codigo+' · ' : ''}{s.nome_fantasia||s.razao_social}</option>)}</select></label>}
+    {advanced && <div className={section}>{numericFields.map(item=>numberField(item.key,item.label,item.step))}{<label className={label}>Fornecedor padrão<select className={input} disabled={loading||busy} value={form.fornecedor_padrao_id} onChange={e=>update('fornecedor_padrao_id',e.target.value)}><option value="">Sem fornecedor padrão</option>{suppliers.map(s=><option key={s.id} value={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>}
       {<label className={label}>Localização padrão<select className={input} disabled={loading||busy} value={form.localizacao_padrao_id} onChange={e=>update('localizacao_padrao_id',e.target.value)}><option value="">Sem localização padrão</option>{locations.map(l=><option key={l.id} value={l.id}>{l.codigo} · {l.nome}{l.tipo?' · '+l.tipo:''}</option>)}</select></label>}{checks}</div>}
     <footer className="flex items-center justify-between gap-2 border-t border-slate-200 pt-2">
       <span className="text-[9px] text-slate-500">{loading?'Carregando…':productId?'Edição de cadastro existente':'Novo cadastro · SKU transacional'}</span>
