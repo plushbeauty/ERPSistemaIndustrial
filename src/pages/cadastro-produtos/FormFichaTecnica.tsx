@@ -106,7 +106,7 @@ const boolFields: Array<{ key: keyof ProductForm; label: string }> = [
   { key: 'permite_estoque_negativo', label: 'Permite estoque negativo' },
   { key: 'inspecao_qualidade_obrigatoria', label: 'Inspeção de qualidade obrigatória' },
 ]
-export default function FormFichaTecnica({ productId, onSaved }: { productId?: string; onSaved: () => void }) {
+export default function FormFichaTecnica({ productId, onSaved }: { productId?: string; onSaved: (id?: string) => void }) {
   const [form, setForm] = useState<ProductForm>(initial)
   const [empresa, setEmpresa] = useState('')
   const [rules, setRules] = useState<CodeRule[]>([])
@@ -206,17 +206,20 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
         prazo_producao_dias: form.prazo_producao_dias, tolerancia_percentual: form.tolerancia_percentual,
         ativo: form.ativo, updated_at: new Date().toISOString()
       }
+      let savedId = productId
       if (productId) {
         const result = await supabase.from('erp_produtos').update(payload).eq('id', productId).eq('empresa_id', empresa).select('id').maybeSingle()
         if (result.error) throw result.error
         if (!result.data?.id) throw new Error('Nenhuma alteração gravada. Verifique as permissões RLS da empresa.')
+        savedId = result.data.id
       } else {
         const result = await supabase.from('erp_produtos').insert({ empresa_id: empresa, codigo, ...payload }).select('id').single()
         if (result.error) throw result.error
+        savedId = result.data.id
       }
       setForm(prev => ({ ...prev, codigo }))
       setSuccess('Cadastro gravado no banco de dados. SKU: ' + codigo)
-      onSaved()
+      onSaved(savedId)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Não foi possível gravar o cadastro.')
     } finally { setBusy(false) }
