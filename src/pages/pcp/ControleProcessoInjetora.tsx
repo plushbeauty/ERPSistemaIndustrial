@@ -257,7 +257,7 @@ export default function ControleProcessoInjetora() {
         </div>
         {(error || notice) && <div role="status" className={'border p-2 text-[10px] ' + (error ? 'border-rose-300 bg-rose-50 text-rose-800' : 'border-emerald-300 bg-emerald-50 text-emerald-800')}>{error || notice}</div>}
         <section className="grid gap-3 xl:grid-cols-[minmax(0,1.5fr)_minmax(340px,0.8fr)]">
-          <form onSubmit={saveControl} className="no-print space-y-3 border border-[#2E4A62] bg-[#0D2638] p-3">
+          <form onSubmit={saveControl} className="space-y-3 border border-[#2E4A62] bg-[#0D2638] p-3">
             <div className="flex items-center justify-between border-b border-[#2E4A62] pb-2"><h2 className="text-[11px] font-black uppercase tracking-wide">Cartão de Controle de Processo Produtivo (CCPP)</h2><span className="text-[9px] text-slate-400">Preencher sem rasuras</span></div>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               <label><span className={labelClass}>Data da produção *</span><input className={inputClass} type="date" required value={form.data_producao} onChange={e => setForm({ ...form, data_producao: e.target.value })} /></label>
