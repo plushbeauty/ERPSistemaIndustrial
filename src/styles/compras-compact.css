@@ -127,7 +127,8 @@
 .compras-pedido-page section { border-color: var(--compras-border) !important; border-radius: 2px !important; box-shadow: none !important; }
 .compras-pedido-page .bg-neutral-950 { background: #fff !important; }
 .compras-pedido-page .bg-neutral-900 { background: #F4FBFD !important; }
-.compras-pedido-page .text-white { color: #172B3A !important; }
+.compras-pedido-page .bg-neutral-950 { color: #172B3A !important; }
+.compras-pedido-page .bg-neutral-950 .text-white:not(button):not([role="status"]) { color: #172B3A !important; }
 .compras-pedido-page .text-neutral-400 { color: #536D7B !important; }
 .compras-pedido-page .border-neutral-800, .compras-pedido-page .border-neutral-700 { border-color: var(--compras-border) !important; }
 .compras-pedido-page input, .compras-pedido-page select, .compras-pedido-page textarea { box-sizing: border-box; max-width: 100%; min-width: 0; border-radius: 2px !important; font-size: 11px !important; }
@@ -141,4 +142,39 @@
   .compras-rfq-compact .grid-cols-2, .compras-rfq-compact .grid-cols-3, .compras-rfq-compact .grid-cols-4 { grid-template-columns: minmax(0, 1fr) !important; }
   .compras-pedido-page .grid-cols-12 { grid-template-columns: minmax(0, 1fr) !important; }
   .compras-pedido-page .col-span-3, .compras-pedido-page .col-span-4, .compras-pedido-page .col-span-6 { grid-column: span 1 / span 1 !important; }
+}
+
+
+/* Continuação da revisão ponta a ponta — superfícies que não estavam cobertas pelo primeiro passe. */
+.compras-requisicoes-page { background: var(--compras-canvas) !important; padding: 8px !important; }
+.compras-requisicoes-page > header { max-width: none !important; gap: 8px !important; padding-bottom: 8px !important; }
+.compras-requisicoes-page > header h1 { font-size: 18px !important; line-height: 1.25 !important; font-weight: 600 !important; color: var(--compras-ink) !important; }
+.compras-requisicoes-page > header p { font-size: 9px !important; }
+.compras-requisicoes-page button { min-height: 30px !important; height: 30px !important; padding: 0 8px !important; border-radius: 2px !important; font-size: 10px !important; }
+.compras-requisicoes-page section { border-radius: 2px !important; padding: 8px !important; box-shadow: none !important; }
+.compras-requisicoes-page input, .compras-requisicoes-page select, .compras-requisicoes-page textarea { min-height: 30px !important; height: 30px !important; max-width: 100%; border-radius: 2px !important; padding: 0 6px !important; font-size: 11px !important; }
+.compras-requisicoes-page table th { height: 28px !important; padding: 4px 6px !important; font-size: 9px !important; }
+.compras-requisicoes-page table td { height: 32px !important; padding: 4px 6px !important; font-size: 10px !important; }
+.compras-requisicoes-page tr { height: 32px !important; }
+.compras-analise-page { background: var(--compras-canvas) !important; color: #172B3A !important; }
+.compras-analise-page > header { align-items: center !important; padding-bottom: 8px !important; }
+.compras-analise-page h1 { color: var(--compras-ink) !important; font-size: 18px !important; font-weight: 600 !important; }
+.compras-analise-page section { border-radius: 2px !important; padding: 8px !important; }
+.compras-analise-page input, .compras-analise-page select { min-height: 30px !important; height: 30px !important; max-width: 100%; border-radius: 2px !important; font-size: 11px !important; }
+.compras-analise-page button, .compras-analise-page a { border-radius: 2px !important; }
+.compras-solicitacao-page { padding: 8px !important; max-width: none !important; background: var(--compras-canvas) !important; }
+.compras-solicitacao-page > header { margin-bottom: 8px !important; }
+.compras-solicitacao-page h1 { font-size: 18px !important; font-weight: 600 !important; color: var(--compras-ink) !important; }
+.compras-solicitacao-page input, .compras-solicitacao-page select, .compras-solicitacao-page textarea { box-sizing: border-box; min-height: 30px !important; height: 30px !important; max-width: 100%; border-radius: 2px !important; padding: 0 6px !important; font-size: 11px !important; }
+.compras-solicitacao-page button { min-height: 30px !important; height: 30px !important; padding: 0 8px !important; border-radius: 2px !important; font-size: 10px !important; }
+.compras-solicitacao-page section, .compras-solicitacao-page article { border-radius: 2px !important; }
+.receipt-workspace.compras-compact { padding: 8px !important; }
+.receipt-workspace.compras-compact .industrial-page-head { gap: 8px !important; margin-bottom: 8px !important; }
+.receipt-workspace.compras-compact .industrial-page-head h1 { font-size: 18px !important; }
+.receipt-workspace.compras-compact .industrial-panel { padding: 8px !important; border-radius: 2px !important; box-shadow: none !important; }
+.receipt-workspace.compras-compact .industrial-section-head { margin-bottom: 6px !important; }
+@media (max-width: 760px) {
+  .compras-requisicoes-page > header { align-items: flex-start !important; }
+  .compras-requisicoes-page > header h1 { font-size: 16px !important; }
+  .compras-solicitacao-page { padding: 6px !important; }
 }
