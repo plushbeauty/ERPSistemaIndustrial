@@ -266,7 +266,7 @@ export default function SolicitacaoCompra() {
 
   return (
     <VendasLayout title="Solicitação de compra" subtitle="Necessidade interna • autorização • encaminhamento" onRefresh={() => void load()}>
-    <main className="pcp-page" style={{ padding: 24, maxWidth: 1440, margin: '0 auto' }}>
+    <main className="compras-compact compras-solicitacao-page pcp-page" style={{ padding: 8, maxWidth: 'none', margin: '0 auto' }}>
       <header style={{ marginBottom: 22 }}>
         <span className="v2-eyebrow">COMPRAS • SOLICITAÇÃO INTERNA</span>
         <h1 style={{ fontSize: 32, margin: '6px 0' }}>Solicitação de compra</h1>
