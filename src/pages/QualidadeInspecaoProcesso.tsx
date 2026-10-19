@@ -10,10 +10,10 @@
  * As seis medidas e os atributos são persistidos no JSONB existente "medicoes".
  * Não cria tabela, coluna ou RPC nova.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import {
   Activity, AlertTriangle, CheckCircle2, Clock3, Microscope, Plus,
-  RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal, Trash2,
+  RefreshCw, Save, Search, ShieldCheck, SlidersHorizontal,
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 
@@ -195,7 +195,7 @@ export default function QualidadeInspecaoProcesso() {
     setError('')
   }
 
-  async function save(event?: React.FormEvent<HTMLFormElement>) {
+  async function save(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault()
     setBusy(true)
     setError('')
