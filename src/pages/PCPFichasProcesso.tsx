@@ -1,21 +1,25 @@
-/** @DATA_REVISAO_APROVACAO: 2026-10-18 | PCP-FICHAS-PROCESSO-PRENSADOS-GRAFICO-OK */
+/**
+ * APROVADO — ficha de processo restaurada do arquivo enviado em 2026-10-18.
+ * Não alterar a estrutura, categorias, campos ou comportamento sem autorização expressa.
+ */
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowRight, CalendarRange, CheckCircle2, FileSliders, Printer, RefreshCw, Save, Search, Thermometer, Gauge, Hammer } from 'lucide-react'
+import { CalendarRange, CheckCircle2, FileSliders, Printer, RefreshCw, Save, Search, Sparkles } from 'lucide-react'
 import PCPMoldPhotoPanel from '../components/PCPMoldPhotoPanel'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 
 type Product = { id: string; codigo: string; nome: string }
 type Tool = { id: string; codigo: string; nome: string; tipo: string }
 type Machine = { id: string; codigo: string; nome: string; tipo: string | null }
-type Category = 'INJETADOS' | 'PRENSADOS' | 'ESTAMPARIA' | 'MECANICA' | 'TRATAMENTO_SUPERFICIAL' | 'PINTURA_QUIMICA' | 'CORTE_VINCO'
-type Param = { key: string; label: string; unit: string; type?: 'number' | 'text'; required?: boolean; step?: string }
+export type Category = 'INJETADOS' | 'PRENSADOS' | 'ESTAMPARIA' | 'MECANICA' | 'TRATAMENTO_SUPERFICIAL' | 'PINTURA_QUIMICA' | 'CORTE_VINCO' | 'ACABAMENTO' | 'MONTAGEM_EMBALAGEM'
+export type Param = { key: string; label: string; unit: string; type?: 'number' | 'text' | 'select'; required?: boolean; step?: string; multiline?: boolean; options?: string[] }
 type Saved = { id: string; codigo_ficha: string; produto_id: string; ferramenta_id?: string | null; maquina_id?: string | null; categoria_processo: Category; versao_ficha: number; status: string; data_homologacao?: string | null; assinatura_tecnica?: string | null; parametros_tecnicos: Record<string, unknown>; revisao?: number }
-const categories: { value: Category; label: string }[] = [
+export const categories: { value: Category; label: string }[] = [
  { value: 'INJETADOS', label: 'Injetados' }, { value: 'PRENSADOS', label: 'Prensados' },
  { value: 'ESTAMPARIA', label: 'Estampos / Estamparia' }, { value: 'MECANICA', label: 'Mecânica' },
  { value: 'TRATAMENTO_SUPERFICIAL', label: 'Tratamento superficial' },
  { value: 'PINTURA_QUIMICA', label: 'Pintura / Química' }, { value: 'CORTE_VINCO', label: 'Corte e vinco' },
+ { value: 'ACABAMENTO', label: 'Acabamento unificado' }, { value: 'MONTAGEM_EMBALAGEM', label: 'Montagem, embalagem e paletização' },
 ]
 const common: Param[] = [
  {key:'tempo_ciclo_seg',label:'Tempo de ciclo padrão',unit:'s',type:'number',step:'0.01',required:true},
@@ -33,6 +37,13 @@ const injection: Param[] = [
  {key:'forca_fechamento_ton',label:'Força de fechamento',unit:'ton',type:'number',step:'0.1',required:true},
  {key:'pressao_injecao_bar',label:'Pressão de injeção',unit:'bar',type:'number',step:'0.1'},
  {key:'pressao_recalque_bar',label:'Pressão de recalque',unit:'bar',type:'number',step:'0.1'},
+ {key:'velocidade_injecao_mm_s',label:'Velocidade de injeção',unit:'mm/s',type:'number',step:'0.1'},
+ {key:'tempo_injecao_seg',label:'Tempo de injeção',unit:'s',type:'number',step:'0.01'},
+ {key:'tempo_recalque_seg',label:'Tempo de recalque',unit:'s',type:'number',step:'0.01'},
+ {key:'pressao_contrapressao_bar',label:'Contrapressão',unit:'bar',type:'number',step:'0.1'},
+ {key:'rpm_rosca',label:'Rotação da rosca',unit:'rpm',type:'number',step:'1'},
+ {key:'posicao_dosagem_mm',label:'Posição de dosagem',unit:'mm',type:'number',step:'0.1'},
+ {key:'posicao_comutacao_mm',label:'Posição de comutação',unit:'mm',type:'number',step:'0.1'},
  {key:'zona1_c',label:'Temperatura zona 1',unit:'°C',type:'number',step:'0.1'},
  {key:'zona2_c',label:'Temperatura zona 2',unit:'°C',type:'number',step:'0.1'},
  {key:'zona3_c',label:'Temperatura zona 3',unit:'°C',type:'number',step:'0.1'},
@@ -48,13 +59,23 @@ const injection: Param[] = [
 const press: Param[] = [
  {key:'tonelagem_prensa',label:'Tonelagem requerida',unit:'ton',type:'number',step:'0.1',required:true},
  {key:'pressao_prensagem_bar',label:'Pressão de prensagem',unit:'bar',type:'number',step:'0.1'},
- {key:'pressao_bomba_bar',label:'Pressão da bomba hidráulica',unit:'bar',type:'number',step:'0.1'},
- {key:'temp_placa_sup',label:'Temperatura do platô superior',unit:'°C',type:'number',step:'0.1'},
- {key:'temp_placa_inf',label:'Temperatura do platô inferior',unit:'°C',type:'number',step:'0.1'},
  {key:'temperatura_molde_c',label:'Temperatura do molde',unit:'°C',type:'number',step:'0.1'},
  {key:'tempo_cura_seg',label:'Tempo de cura',unit:'s',type:'number',step:'0.1'},
  {key:'tempo_pos_cura_min',label:'Tempo de pós-cura',unit:'min',type:'number',step:'0.1'},
  {key:'composto_material',label:'Composto / material',unit:'—',type:'text',required:true},
+ {key:'dureza_shore_a',label:'Dureza solicitada',unit:'Shore A',type:'number',step:'1'},
+ {key:'peso_carga_cavidade_g',label:'Peso da carga por cavidade',unit:'g',type:'number',step:'0.001'},
+ {key:'peso_total_carga_g',label:'Peso total da carga',unit:'g',type:'number',step:'0.001'},
+ {key:'dimensional_molde_mm',label:'Dimensional do molde (C × L × A)',unit:'mm',type:'text'},
+ {key:'peso_molde_kg',label:'Peso do molde',unit:'kg',type:'number',step:'0.1'},
+ {key:'tempo_pre_aquecimento_seg',label:'Pré-aquecimento da matéria-prima',unit:'s',type:'number',step:'0.1'},
+ {key:'temp_plato_superior_c',label:'Temperatura do platô superior',unit:'°C',type:'number',step:'0.1'},
+ {key:'temp_plato_inferior_c',label:'Temperatura do platô inferior',unit:'°C',type:'number',step:'0.1'},
+ {key:'tolerancia_temp_platos_c',label:'Tolerância dos platôs',unit:'°C',type:'number',step:'0.1'},
+ {key:'forca_fechamento_recomendada_ton',label:'Força de fechamento recomendada',unit:'ton',type:'number',step:'0.1'},
+ {key:'numero_respiros',label:'Número de respiros',unit:'ciclos',type:'number',step:'1'},
+ {key:'tempo_primeiro_respiro_seg',label:'Tempo para o 1º respiro',unit:'s',type:'number',step:'0.1'},
+ {key:'tempo_alivio_prensa_aberta_seg',label:'Tempo de alívio (prensa aberta)',unit:'s',type:'number',step:'0.1'},
 ]
 const stamping: Param[] = [
  {key:'material_chapa',label:'Material da chapa',unit:'—',type:'text',required:true},
@@ -84,9 +105,82 @@ const cutting: Param[] = [
  {key:'sequencia_operacao',label:'Sequência de corte e vinco',unit:'—',type:'text',required:true},
  {key:'criterio_rebarba',label:'Critério de rebarba / descarte',unit:'—',type:'text'},
 ]
-const paramsFor = (category: Category) => [...common, ...(category === 'INJETADOS' ? injection : category === 'PRENSADOS' ? press : category === 'ESTAMPARIA' || category === 'MECANICA' ? stamping : category === 'TRATAMENTO_SUPERFICIAL' || category === 'PINTURA_QUIMICA' ? surface : cutting)]
-const inputClass = 'h-[30px] w-full rounded-[3px] border border-slate-300 bg-white px-2 text-[11px] font-medium text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-sky-100'
-const labelClass = 'mb-1 block text-[9px] font-bold uppercase tracking-wider text-neutral-500/90'
+const finishing: Param[] = [
+ {key:'material_base',label:'Material base definido na OP',unit:'—',type:'text'},
+ {key:'dureza_shore_a',label:'Dureza especificada',unit:'Shore A',type:'number',step:'1'},
+ {key:'cavidades_ativas',label:'Quantidade de cavidades',unit:'un',type:'number',step:'1'},
+ {key:'dimensional_molde_mm',label:'Dimensional do molde',unit:'mm',type:'text'},
+ {key:'tempo_ciclo_seg',label:'Tempo de processo padrão',unit:'s',type:'number',step:'0.01'},
+ {key:'acabamento_inspecao_posto',label:'Máquina / posto de inspeção',unit:'—',type:'text'},
+ {key:'acabamento_inspecao_setor',label:'Setor de inspeção',unit:'—',type:'text'},
+ {key:'acabamento_inspecao_ambiente',label:'Condição / temperatura ambiente',unit:'—',type:'text'},
+ {key:'acabamento_inspecao_tempo',label:'Tempo de preparação',unit:'s/pc',type:'number',step:'0.01'},
+ {key:'acabamento_inspecao_checklist',label:'Checklist de inspeção visual e separação',unit:'—',type:'text',multiline:true},
+ {key:'acabamento_inspecao_referencia',label:'Referência visual de defeitos',unit:'—',type:'text'},
+ {key:'acabamento_rebarba_posto',label:'Máquina / posto de rebarbação',unit:'—',type:'text'},
+ {key:'acabamento_rebarba_setor',label:'Setor de rebarbação',unit:'—',type:'text'},
+ {key:'acabamento_rebarba_tempo',label:'Tempo de preparação',unit:'s/pc',type:'number',step:'0.01'},
+ {key:'acabamento_rebarba_checklist',label:'Checklist de rebarbação',unit:'—',type:'text',multiline:true},
+ {key:'acabamento_rebarba_referencia',label:'Referência de rebarbação',unit:'—',type:'text'},
+ {key:'acabamento_limpeza_posto',label:'Máquina / posto de limpeza',unit:'—',type:'text'},
+ {key:'acabamento_limpeza_setor',label:'Setor de limpeza',unit:'—',type:'text'},
+ {key:'acabamento_limpeza_tempo',label:'Tempo de preparação',unit:'s/lote',type:'number',step:'0.01'},
+ {key:'acabamento_limpeza_checklist',label:'Checklist de limpeza e lubrificação',unit:'—',type:'text',multiline:true},
+ {key:'acabamento_limpeza_referencia',label:'Procedimento de limpeza',unit:'—',type:'text'},
+ {key:'acabamento_embalagem_posto',label:'Máquina / posto de embalagem',unit:'—',type:'text'},
+ {key:'acabamento_embalagem_setor',label:'Setor de embalagem',unit:'—',type:'text'},
+ {key:'acabamento_embalagem_tempo',label:'Tempo de preparação',unit:'s/pc',type:'number',step:'0.01'},
+ {key:'acabamento_embalagem_checklist',label:'Checklist de embalagem e etiqueta',unit:'—',type:'text',multiline:true},
+ {key:'acabamento_embalagem_referencia',label:'Modelo de etiqueta / embalagem',unit:'—',type:'text'},
+]
+const packaging: Param[] = [
+ {key:'material_base',label:'Material base definido na OP',unit:'—',type:'text'},
+ {key:'tempo_ciclo_seg',label:'Tempo de processo padrão',unit:'s',type:'number',step:'0.01'},
+ {key:'aplica_embalagem_plastica',label:'Aplicar embalagem plástica?',unit:'—',type:'select',options:['Sim','Não']},
+ {key:'emb_amostragem_base',label:'Amostragem base para contagem',unit:'peças',type:'number',step:'1'},
+ {key:'emb_codigo_balanca',label:'Código da balança de contagem',unit:'—',type:'text'},
+ {key:'emb_dimensional_saco',label:'Dimensional do saco (L × C × espessura)',unit:'mm',type:'text'},
+ {key:'emb_quantidade_pecas_saco',label:'Quantidade de peças por saco',unit:'un',type:'number',step:'1'},
+ {key:'emb_peso_pacote_cheio_g',label:'Peso padrão do pacote cheio',unit:'g',type:'number',step:'0.1'},
+ {key:'emb_sacos_caixa',label:'Quantidade de sacos por caixa',unit:'sacos',type:'number',step:'1'},
+ {key:'emb_pecas_direto_caixa',label:'Quantidade de peças diretas por caixa',unit:'un',type:'number',step:'1'},
+ {key:'emb_dimensional_caixa',label:'Dimensional da caixa (C × L × A)',unit:'mm',type:'text'},
+ {key:'emb_caixa_modelo',label:'Modelo / referência de montagem da caixa',unit:'—',type:'text'},
+ {key:'emb_disposicao_pecas',label:'Referência da disposição das peças',unit:'—',type:'text'},
+ {key:'emb_instrucao_montagem',label:'Roteiro de montagem da caixa e acondicionamento',unit:'—',type:'text',multiline:true},
+ {key:'emb_instrucao_etiqueta',label:'Instrução de identificação e etiqueta',unit:'—',type:'text',multiline:true},
+ {key:'emb_instrucao_paletizacao',label:'Padrão de paletização e empilhamento',unit:'—',type:'text',multiline:true},
+ {key:'emb_criterio_liberacao',label:'Critérios de conferência e liberação',unit:'—',type:'text',multiline:true},
+]
+export const paramsFor = (category: Category) => category === 'ACABAMENTO' ? finishing : category === 'MONTAGEM_EMBALAGEM' ? packaging : [...common, ...(category === 'INJETADOS' ? injection : category === 'PRENSADOS' ? press : category === 'ESTAMPARIA' || category === 'MECANICA' ? stamping : category === 'TRATAMENTO_SUPERFICIAL' || category === 'PINTURA_QUIMICA' ? surface : cutting)]
+const processParamGroups: Partial<Record<Category,{title:string;keys:string[]}[]>> = {
+ INJETADOS:[
+  {title:'Matéria-prima e preparação',keys:['material_polimero','temperatura_secagem_c','tempo_secagem_h','peso_peca_g','peso_canal_g']},
+  {title:'Perfil térmico da injetora',keys:['zona1_c','zona2_c','zona3_c','zona4_c']},
+  {title:'Injeção, recalque e plasticização',keys:['forca_fechamento_ton','pressao_injecao_bar','velocidade_injecao_mm_s','tempo_injecao_seg','pressao_recalque_bar','tempo_recalque_seg','pressao_contrapressao_bar','rpm_rosca','posicao_dosagem_mm','posicao_comutacao_mm']},
+  {title:'Molde, ciclo e refrigeração',keys:['cavidades_ativas','tempo_ciclo_seg','tempo_resfriamento_seg','temperatura_molde_c','altura_molde_mm','tipo_fixacao','tipo_refrigeracao','vazao_refrigeracao_l_min','tempo_setup_min','tempo_limpeza_min','torque_aperto_nm','velocidade_dosagem_curso','seguranca_ppe']},
+ ],
+ PRENSADOS:[
+  {title:'1. Dados do molde e setup',keys:['cavidades_ativas','dimensional_molde_mm','peso_molde_kg','tempo_setup_min','altura_molde_mm','tipo_fixacao','seguranca_ppe']},
+  {title:'2. Matéria-prima e carga',keys:['composto_material','dureza_shore_a','peso_carga_cavidade_g','peso_total_carga_g']},
+  {title:'3. Temperatura dos platôs e molde',keys:['temp_plato_superior_c','temp_plato_inferior_c','tolerancia_temp_platos_c','temperatura_molde_c','tipo_refrigeracao','vazao_refrigeracao_l_min']},
+  {title:'4. Parâmetros de cura e vulcanização',keys:['tempo_pre_aquecimento_seg','tempo_cura_seg','pressao_prensagem_bar','tonelagem_prensa','forca_fechamento_recomendada_ton','tempo_pos_cura_min']},
+  {title:'5. Ciclo de desgaseificação (respiro)',keys:['numero_respiros','tempo_primeiro_respiro_seg','tempo_alivio_prensa_aberta_seg','tempo_ciclo_seg','tempo_limpeza_min']},
+ ],
+ ACABAMENTO:[
+  {title:'1. Inspeção visual e separação de canais',keys:['acabamento_inspecao_posto','acabamento_inspecao_setor','acabamento_inspecao_ambiente','acabamento_inspecao_tempo','acabamento_inspecao_checklist','acabamento_inspecao_referencia']},
+  {title:'2. Rebarbação manual',keys:['acabamento_rebarba_posto','acabamento_rebarba_setor','acabamento_rebarba_tempo','acabamento_rebarba_checklist','acabamento_rebarba_referencia']},
+  {title:'3. Limpeza e lubrificação',keys:['acabamento_limpeza_posto','acabamento_limpeza_setor','acabamento_limpeza_tempo','acabamento_limpeza_checklist','acabamento_limpeza_referencia']},
+  {title:'4. Embalagem e etiquetagem',keys:['acabamento_embalagem_posto','acabamento_embalagem_setor','acabamento_embalagem_tempo','acabamento_embalagem_checklist','acabamento_embalagem_referencia']},
+ ],
+ MONTAGEM_EMBALAGEM:[
+  {title:'1. Embalagem em saco plástico / contagem',keys:['aplica_embalagem_plastica','emb_amostragem_base','emb_codigo_balanca','emb_dimensional_saco','emb_quantidade_pecas_saco','emb_peso_pacote_cheio_g']},
+  {title:'2. Embalagem em caixa de papelão',keys:['emb_sacos_caixa','emb_pecas_direto_caixa','emb_dimensional_caixa','emb_caixa_modelo']},
+  {title:'3. Roteiro de montagem, etiqueta e paletização',keys:['emb_disposicao_pecas','emb_instrucao_montagem','emb_instrucao_etiqueta','emb_instrucao_paletizacao','emb_criterio_liberacao']},
+ ],
+}
+const inputClass = 'h-9 w-full rounded-md border border-[#294456] bg-[#071522] px-3 text-sm font-medium text-[#F4FBFD] outline-none focus:border-[#48B7C7] focus:ring-2 focus:ring-[#48B7C7]/20'
+const labelClass = 'mb-1 block text-[10px] font-bold uppercase tracking-wider text-[#A8BBC8]'
 const blankParameters = (category: Category) => Object.fromEntries(paramsFor(category).map(p => [p.key, ''])) as Record<string, string>
 
 export default function PCPFichasProcesso() {
@@ -190,23 +284,45 @@ export default function PCPFichasProcesso() {
  const selectedProduct = products.find(p => p.id === productId)
  const selectedTool = tools.find(t => t.id === toolId)
  const selectedMachine = machines.find(m => m.id === machineId)
- const expectedPph = Number(params.tempo_ciclo_seg) > 0 ? (3600 / Number(params.tempo_ciclo_seg)) * Math.max(1, Number(params.cavidades_ativas) || 1) : 0
+ const singleResourceProcess = category !== 'ACABAMENTO' && category !== 'MONTAGEM_EMBALAGEM'
+ const expectedPph = singleResourceProcess && Number(params.tempo_ciclo_seg) > 0 ? (3600 / Number(params.tempo_ciclo_seg)) * Math.max(1, Number(params.cavidades_ativas) || 1) : 0
+ const fieldGroups = processParamGroups[category] ?? [{title:'Parâmetros técnicos do processo',keys:fields.map(field=>field.key)}]
+ const assignedKeys = new Set(fieldGroups.flatMap(group=>group.keys))
+ const parameterCards = [...fieldGroups.map(group=>({...group,fields:fields.filter(field=>group.keys.includes(field.key))})).filter(group=>group.fields.length>0),...(fields.some(field=>!assignedKeys.has(field.key))?[{title:'Parâmetros complementares',keys:[],fields:fields.filter(field=>!assignedKeys.has(field.key))}]:[])]
+ const valueLabel = (key:string,unit='') => params[key] ? `${params[key]}${unit ? ` ${unit}` : ''}` : 'Não informado'
+ const summaryPanels = category === 'ACABAMENTO'
+  ? [
+   {title:'Identificação do produto',items:[['Produto',selectedProduct?.nome||'—'],['SKU',selectedProduct?.codigo||'—'],['Dureza',valueLabel('dureza_shore_a','Shore A')],['Dimensional do molde',valueLabel('dimensional_molde_mm','mm')]]},
+   {title:'Dados de processo',items:[['Cavidades',valueLabel('cavidades_ativas')],['Material base',valueLabel('material_base')],['Tempo padrão',valueLabel('tempo_ciclo_seg','s')],['Recurso principal',selectedMachine?.codigo||'Não definido']]},
+   {title:'Roteiro e controle',items:[['Etapas', 'Inspeção · rebarbação · limpeza · embalagem'],['Revisão',version],['Estado',status],['Homologação',approvedAt||'Não homologada']]},
+  ]
+  : category === 'MONTAGEM_EMBALAGEM'
+   ? [
+    {title:'Identificação do produto',items:[['Produto',selectedProduct?.nome||'—'],['SKU',selectedProduct?.codigo||'—'],['Material base',valueLabel('material_base')]]},
+    {title:'Contagem e acondicionamento',items:[['Embalagem plástica',valueLabel('aplica_embalagem_plastica')],['Amostragem',valueLabel('emb_amostragem_base','peças')],['Peças por saco',valueLabel('emb_quantidade_pecas_saco','un')],['Peso pacote',valueLabel('emb_peso_pacote_cheio_g','g')]]},
+    {title:'Caixa e processo',items:[['Sacos por caixa',valueLabel('emb_sacos_caixa')],['Dimensional da caixa',valueLabel('emb_dimensional_caixa','mm')],['Tempo padrão',valueLabel('tempo_ciclo_seg','s')],['Recurso principal',selectedMachine?.codigo||'Não definido']]},
+   ]
+   : []
+ const injectionZones = ['zona1_c','zona2_c','zona3_c','zona4_c'].map((key,index)=>({key,label:`Zona ${index+1}`,value:Number(params[key])})).filter(zone=>Number.isFinite(zone.value)&&zone.value>0)
+ const maxZoneTemp = Math.max(1,...injectionZones.map(zone=>zone.value))
+ const pressCharge = Number(params.peso_carga_cavidade_g)>0&&Number(params.cavidades_ativas)>0?Number(params.peso_carga_cavidade_g)*Number(params.cavidades_ativas):null
 
- return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-4">
+ return <main className="min-h-screen bg-[#071522] p-3 text-[#F4FBFD] md:p-5">
   <div className="mx-auto max-w-[1800px]">
-   <header className="mb-3 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
-    <span className="flex h-8 w-8 items-center justify-center bg-[#123B50] text-white"><FileSliders size={16}/></span>
-    <div><p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#2D8DB8]">MANUFATURA / PCP / ENGENHARIA</p><h1 className="text-[16px] font-semibold leading-5">Fichas de processo e parâmetros técnicos</h1><p className="text-[10px] text-slate-500">Roteiro, setup, parâmetros críticos, homologação e rastreabilidade de revisão.</p></div>
-    <div className="ml-auto flex gap-1"><button className="erp-premium-button erp-premium-button-secondary print:hidden" type="button" onClick={()=>window.print()}><Printer size={12}/> Imprimir ficha</button><button className="erp-premium-button erp-premium-button-secondary print:hidden" onClick={()=>void load()} disabled={busy}><RefreshCw size={12}/> Atualizar</button><button className="erp-premium-button" onClick={()=>{setCode('');setProductId('');setToolId('');setMachineId('');setVersion('1');setApprovedAt('');setSignature('');setStatus('RASCUNHO');setParams(blankParameters(category));setInstructions('')}}>Nova ficha</button></div>
+   <header className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-[#294456] bg-[#0D2638] p-4 shadow-xl shadow-black/10">
+    <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#48B7C7]/30 bg-[#071522] text-[#48B7C7]"><FileSliders size={20}/></span>
+    <div className="min-w-[240px]"><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#48B7C7]">MANUFATURA / PCP / ENGENHARIA</p><h1 className="text-lg font-bold leading-6 md:text-xl">{category==='INJETADOS'?'Ficha técnica de processo — Injetados':category==='PRENSADOS'?'Ficha hidráulica de processo — Prensados':`Ficha de processo — ${categories.find(item=>item.value===category)?.label??category}`}</h1><p className="text-xs text-[#A8BBC8]">Parâmetros homologados, preparação, capacidade e rastreabilidade de revisão.</p></div>
+    <div className="ml-auto grid min-w-[260px] flex-1 grid-cols-3 gap-2 md:max-w-[430px]">{[{label:'Documento',value:code||'Novo documento'},{label:'Revisão',value:version.padStart(2,'0')},{label:'Status',value:status}].map(item=><div key={item.label} className="rounded-lg border border-[#294456] bg-[#071522] px-3 py-2"><span className="block text-[10px] text-[#A8BBC8]">{item.label}</span><strong className={`mt-0.5 block truncate text-sm ${item.label==='Status'&&['APROVADA','LIBERADA'].includes(status)?'text-[#3A9D78]':'text-[#F4FBFD]'}`}>{item.value}</strong></div>)}</div>
+    <div className="flex w-full flex-wrap justify-end gap-2 print:hidden"><Link className="erp-premium-button erp-premium-button-secondary" to="/pcp/fichas-processo/ia"><Sparkles size={14}/> Criar com IA</Link><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>window.print()}><Printer size={14}/> Imprimir ficha</button><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>void load()} disabled={busy}><RefreshCw size={14}/> Atualizar</button><button className="erp-premium-button" type="button" onClick={()=>{setCode('');setProductId('');setToolId('');setMachineId('');setVersion('1');setApprovedAt('');setSignature('');setStatus('RASCUNHO');setParams(blankParameters(category));setInstructions('')}}>Nova ficha</button></div>
    </header>
-   {error && <div role="alert" className="mb-2 border border-rose-300 bg-rose-50 p-2 text-[10px] text-rose-800">{error}</div>}
-   {notice && <div role="status" className="mb-2 flex items-center gap-2 border border-emerald-300 bg-emerald-50 p-2 text-[10px] text-emerald-800"><CheckCircle2 size={13}/>{notice}</div>}
-   <section className="mb-3 border border-slate-200 bg-white p-2 print:hidden">
-    <div className="mb-2 flex flex-wrap items-center gap-2"><label className="min-w-[220px] flex-1"><span className={labelClass}>Pesquisar ficha / produto</span><span className="relative block"><Search size={12} className="absolute left-2 top-2.5 text-slate-400"/><input className={inputClass+' pl-7'} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código, produto, categoria ou estado"/></span></label><div className="min-w-[220px] flex-1"><span className={labelClass}>Categoria de processo</span><select className={inputClass} value={category} onChange={e=>{const next=e.target.value as Category;setCategory(next);setParams(blankParameters(next));setSearchParams({tipo:next})}}>{categories.map(c=><option key={c.value} value={c.value}>{c.label}</option>)}</select></div></div>
-    <div className="grid grid-cols-1 gap-1 xl:grid-cols-2">{visibleRows.map(row=><button key={row.id} type="button" onClick={()=>openRow(row)} className="grid min-h-[44px] grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border border-slate-200 px-2 text-left hover:bg-slate-50"><span className="min-w-0"><span className="block truncate text-[10px] font-bold">{row.codigo_ficha} · {products.find(p=>p.id===row.produto_id)?.codigo ?? 'Produto'}</span><span className="block truncate text-[9px] text-slate-500">{categories.find(c=>c.value===row.categoria_processo)?.label ?? row.categoria_processo} · v{row.versao_ficha ?? row.revisao} · {row.status}</span></span><span className="text-[9px] text-sky-700">Abrir</span></button>)}</div>
+   {error && <div role="alert" className="mb-3 rounded-lg border border-[#D65B61]/50 bg-[#D65B61]/10 p-3 text-sm text-[#F4B8BB]">{error}</div>}
+   {notice && <div role="status" className="mb-3 flex items-center gap-2 rounded-lg border border-[#3A9D78]/40 bg-[#3A9D78]/10 p-3 text-sm text-[#8ED0B4]"><CheckCircle2 size={16}/>{notice}</div>}
+   <section className="mb-4 rounded-xl border border-[#294456] bg-[#0D2638] p-3 print:hidden">
+    <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-2"><label><span className={labelClass}>Pesquisar ficha / produto</span><span className="relative block"><Search size={15} className="absolute left-3 top-3 text-[#8297A5]"/><input className={inputClass+' pl-9'} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Código, produto, categoria ou estado"/></span></label><label><span className={labelClass}>Modelo da ficha</span><select className={inputClass} value={category} onChange={e=>{const next=e.target.value as Category;setCategory(next);setParams(blankParameters(next));setSearchParams({tipo:next})}}>{categories.map(c=><option key={c.value} value={c.value}>{c.label}</option>)}</select></label></div>
+    <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">{visibleRows.map(row=><button key={row.id} type="button" onClick={()=>openRow(row)} className="grid min-h-[52px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-[#294456] bg-[#071522] px-3 text-left transition hover:border-[#48B7C7] hover:bg-[#123B50]"><span className="min-w-0"><span className="block truncate text-xs font-bold text-[#F4FBFD]">{row.codigo_ficha} · {products.find(p=>p.id===row.produto_id)?.codigo ?? 'Produto'}</span><span className="block truncate text-[11px] text-[#A8BBC8]">{categories.find(c=>c.value===row.categoria_processo)?.label ?? row.categoria_processo} · revisão {row.versao_ficha ?? row.revisao} · {row.status}</span></span><span className="text-xs font-semibold text-[#48B7C7]">Abrir ficha →</span></button>)}</div>
    </section>
-   <section className="pcp-ficha-print-sheet border border-slate-200 bg-white p-3 print:border-0 print:p-0"><div className="mb-3 hidden border-b border-slate-400 pb-2 print:block"><h1 className="text-base font-bold">FICHA TÉCNICA DE PROCESSO INDUSTRIAL</h1><p className="text-[10px]">Documento operacional para consulta e assinatura no posto de trabalho.</p></div>
-    <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2 print:hidden"><h2 className="text-[11px] font-bold uppercase tracking-wider print:hidden">Identificação e homologação</h2><div className="text-right"><span className="block text-[9px] text-slate-600">{selectedProduct ? selectedProduct.codigo+' · '+selectedProduct.nome : 'Selecione um produto'}</span><span className="block text-[9px] text-slate-500">Ferramenta: {selectedTool?.codigo ?? '—'} · Máquina: {selectedMachine?.codigo ?? '—'}</span></div></div>
+   <section className="pcp-ficha-print-sheet rounded-xl border border-[#294456] bg-[#0D2638] p-4 shadow-xl shadow-black/10 print:border-0 print:p-0"><div className="mb-3 hidden border-b border-slate-400 pb-2 print:block"><h1 className="text-base font-bold">FICHA TÉCNICA DE PROCESSO INDUSTRIAL</h1><p className="text-[10px]">Documento operacional para consulta e assinatura no posto de trabalho.</p></div>
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[#294456] pb-3 print:hidden"><div><p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#48B7C7]">{category==='INJETADOS'?'PROCESSO · INJEÇÃO':category==='PRENSADOS'?'PROCESSO · PRENSA E VULCANIZAÇÃO':'PROCESSO · '+(categories.find(item=>item.value===category)?.label||category)}</p><h2 className="mt-1 text-lg font-semibold text-[#F4FBFD]">{selectedProduct?selectedProduct.nome:'Selecione o produto da ficha'}</h2><p className="text-xs text-[#A8BBC8]">{selectedProduct?`${selectedProduct.codigo} · ${selectedTool?.codigo??'sem ferramental'} · ${selectedMachine?.codigo??'sem máquina vinculada'}`:'A ficha salva usará os cadastros reais da empresa.'}</p></div><span className="rounded-lg border border-[#48B7C7]/40 bg-[#48B7C7]/10 px-3 py-2 text-sm font-semibold text-[#48B7C7]">{status}</span></div>
     <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
      <label><span className={labelClass}>ID / código da ficha</span><input className={inputClass} value={code} onChange={e=>setCode(e.target.value)} required/></label>
      <label><span className={labelClass}>Código do produto (FK)</span><select className={inputClass} value={productId} onChange={e=>setProductId(e.target.value)} required><option value="">Selecione</option>{products.map(p=><option key={p.id} value={p.id}>{p.codigo} · {p.nome}</option>)}</select></label>
@@ -217,41 +333,38 @@ export default function PCPFichasProcesso() {
      <label className="xl:col-span-2"><span className={labelClass}>Assinatura técnica do engenheiro</span><input className={inputClass} value={signature} onChange={e=>setSignature(e.target.value)} placeholder="Nome completo / registro profissional"/></label>
      <label><span className={labelClass}>Estado da ficha</span><select className={inputClass} value={status} onChange={e=>setStatus(e.target.value)}><option>RASCUNHO</option><option>EM_ANALISE</option><option>APROVADA</option><option>LIBERADA</option><option>OBSOLETA</option></select></label>
     </div>
-    <div className="mt-3 flex flex-wrap items-center gap-3 border-y border-slate-100 py-2 text-[9px]"><span className="font-bold uppercase text-slate-500">Capacidade nominal calculada</span><strong className="text-[12px] tabular-nums">{expectedPph > 0 ? expectedPph.toLocaleString('pt-BR',{maximumFractionDigits:1})+' peças/h' : 'Informe ciclo e cavidades'}</strong><span className="text-slate-500">Cálculo = 3.600 ÷ ciclo (s) × cavidades ativas</span></div>
-    {category === 'PRENSADOS' && <section className="mt-3 overflow-hidden border border-slate-700 bg-[#142633] text-white shadow-sm">
-     <header className="flex flex-wrap items-center gap-2 border-b border-white/10 bg-[#0D1E29] px-3 py-2"><Hammer size={14} className="text-amber-300"/><div><h3 className="text-[10px] font-black uppercase tracking-[.14em]">Prensa hidráulica · distribuição térmica e força</h3><p className="text-[9px] text-slate-400">Esquema técnico ilustrativo; informe os parâmetros homologados da máquina e da matriz.</p></div><span className="ml-auto text-[9px] font-bold text-amber-200">SETUP PCP</span></header>
-     <div className="grid grid-cols-1 gap-2 p-3 lg:grid-cols-12">
-      <div className="space-y-2 lg:col-span-8">
-       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <label className="border border-purple-400/50 bg-[#211D35] p-2"><span className="mb-2 flex items-center gap-2 text-[9px] font-black uppercase tracking-wide text-purple-200"><Thermometer size={12}/> Platô térmico superior</span><span className="flex items-center gap-2"><input aria-label="Temperatura do platô superior em graus Celsius" className="h-8 min-w-0 w-full border border-purple-300/30 bg-[#100F1B] px-2 text-center font-mono text-[14px] font-black text-purple-200 outline-none focus:border-purple-300" type="number" step="0.1" value={String(params.temp_placa_sup??'')} onChange={e=>updateParam('temp_placa_sup',e.target.value)} placeholder="—"/><span className="text-[10px] font-bold text-purple-200">°C</span></span></label>
-        <div className="flex min-h-[72px] flex-col items-center justify-center border border-dashed border-slate-500 bg-[#0B1821] px-3 py-2 text-center"><span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Área de cura</span><span className="mt-1 text-[11px] font-bold text-slate-100">Fechamento da matriz</span><span className="mt-1 text-[8px] text-slate-500">Cavidade / composto</span></div>
-        <label className="border border-indigo-400/50 bg-[#1A203A] p-2"><span className="mb-2 flex items-center gap-2 text-[9px] font-black uppercase tracking-wide text-indigo-200"><Thermometer size={12}/> Platô térmico inferior</span><span className="flex items-center gap-2"><input aria-label="Temperatura do platô inferior em graus Celsius" className="h-8 min-w-0 w-full border border-indigo-300/30 bg-[#101526] px-2 text-center font-mono text-[14px] font-black text-indigo-200 outline-none focus:border-indigo-300" type="number" step="0.1" value={String(params.temp_placa_inf??'')} onChange={e=>updateParam('temp_placa_inf',e.target.value)} placeholder="—"/><span className="text-[10px] font-bold text-indigo-200">°C</span></span></label>
-        <div className="flex items-center justify-center border border-slate-700 bg-[#101E29] p-2"><div className="text-center"><span className="block text-[8px] font-bold uppercase tracking-widest text-slate-500">Estrutura da prensa</span><span className="mt-1 block text-[10px] font-black text-slate-200">Colunas · cilindro · platôs</span><span className="mt-1 block text-[8px] text-slate-500">Diagrama esquemático, não dimensional</span></div></div>
-       </div>
+    {summaryPanels.length>0&&<div className="mt-4 grid grid-cols-1 gap-2 lg:grid-cols-3">{summaryPanels.map((panel,index)=><article key={panel.title} className="overflow-hidden rounded-lg border border-[#294456] bg-[#071522]"><h3 className={`border-b border-[#294456] px-3 py-2 text-xs font-bold ${index===0?'bg-[#123B50] text-[#F4FBFD]':'text-[#48B7C7]'}`}>{panel.title}</h3><dl className="divide-y divide-[#294456] px-3">{panel.items.map(([label,value])=><div key={label} className="flex min-h-9 items-center justify-between gap-3 py-1.5 text-xs"><dt className="text-[#A8BBC8]">{label}</dt><dd className="text-right font-semibold text-[#F4FBFD]">{value}</dd></div>)}</dl></article>)}</div>}
+    <div className="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-3">
+     <article className="rounded-lg border border-[#294456] bg-[#071522] p-3"><h3 className="text-xs font-bold uppercase tracking-wide text-[#F4FBFD]">Identificação e componentes</h3><dl className="mt-2 divide-y divide-[#294456] text-xs"><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Documento</dt><dd className="font-semibold">{code||'—'}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Produto</dt><dd className="text-right font-semibold">{selectedProduct?`${selectedProduct.codigo} · ${selectedProduct.nome}`:'—'}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Ferramental / máquina</dt><dd className="text-right font-semibold">{selectedTool?.codigo??'—'} / {selectedMachine?.codigo??'—'}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Cavidades ativas</dt><dd className="font-semibold">{valueLabel('cavidades_ativas','cav.')}</dd></div></dl></article>
+     {category==='INJETADOS'?<article className="rounded-lg border border-[#294456] bg-[#071522] p-3"><h3 className="text-xs font-bold uppercase tracking-wide text-[#F4FBFD]">Perfil de temperatura por zona</h3><div className="mt-3 grid grid-cols-4 gap-2">{['zona1_c','zona2_c','zona3_c','zona4_c'].map((key,index)=>{const temperature=Number(params[key]);const hasValue=Number.isFinite(temperature)&&temperature>0;return <div key={key} className="flex min-w-0 flex-col items-center gap-2"><span className="text-[10px] text-[#A8BBC8]">Z{index+1}</span><div className="flex h-20 w-full items-end rounded bg-[#0D2638] p-1"><i className="w-full rounded-sm bg-gradient-to-t from-[#2D8DB8] to-[#48B7C7]" style={{height:hasValue?`${Math.max(8,temperature/maxZoneTemp*100)}%`:'3px'}}/></div><strong className="text-[11px] tabular-nums">{hasValue?`${temperature}°C`:'—'}</strong></div>})}</div><p className="mt-2 text-[10px] text-[#8297A5]">Escala relativa apenas entre zonas preenchidas; não substitui os limites homologados.</p></article>:category==='PRENSADOS'?<article className="rounded-lg border border-[#294456] bg-[#071522] p-3"><h3 className="text-xs font-bold uppercase tracking-wide text-[#F4FBFD]">Matéria-prima e carga</h3><dl className="mt-2 divide-y divide-[#294456] text-xs"><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Composto</dt><dd className="text-right font-semibold">{valueLabel('composto_material')}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Dureza</dt><dd className="font-semibold">{valueLabel('dureza_shore_a','Shore A')}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Carga / cavidade</dt><dd className="font-semibold">{valueLabel('peso_carga_cavidade_g','g')}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Carga total calculada</dt><dd className="font-semibold">{pressCharge===null?'—':`${pressCharge.toLocaleString('pt-BR',{maximumFractionDigits:3})} g`}</dd></div></dl></article>:<article className="rounded-lg border border-[#294456] bg-[#071522] p-3"><h3 className="text-xs font-bold uppercase tracking-wide text-[#F4FBFD]">Material e preparação</h3><dl className="mt-2 divide-y divide-[#294456] text-xs"><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Ciclo padrão</dt><dd className="font-semibold">{valueLabel('tempo_ciclo_seg','s')}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Setup</dt><dd className="font-semibold">{valueLabel('tempo_setup_min','min')}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Capacidade nominal</dt><dd className="font-semibold">{expectedPph>0?`${expectedPph.toLocaleString('pt-BR',{maximumFractionDigits:1})} peças/h`:'—'}</dd></div></dl></article>}
+     {category==='INJETADOS'?<article className="rounded-lg border border-[#294456] bg-[#071522] p-3"><h3 className="text-xs font-bold uppercase tracking-wide text-[#F4FBFD]">Tempos do ciclo</h3>{[{label:'Injeção',key:'tempo_injecao_seg'},{label:'Recalque',key:'tempo_recalque_seg'},{label:'Resfriamento',key:'tempo_resfriamento_seg'},{label:'Ciclo total',key:'tempo_ciclo_seg'}].map(item=><div key={item.key} className="mt-2"><div className="flex justify-between gap-2 text-xs"><span className="text-[#A8BBC8]">{item.label}</span><strong>{valueLabel(item.key,'s')}</strong></div><div className="mt-1 h-1.5 overflow-hidden rounded bg-[#294456]"><i className="block h-full rounded bg-[#3A9D78]" style={{width:Number(params[item.key])>0&&Number(params.tempo_ciclo_seg)>0?`${Math.max(4,Math.min(100,Number(params[item.key])/Number(params.tempo_ciclo_seg)*100))}%`:'0%'}}/></div></div>)}</article>:category==='PRENSADOS'?<article className="rounded-lg border border-[#294456] bg-[#071522] p-3"><h3 className="text-xs font-bold uppercase tracking-wide text-[#F4FBFD]">Cura e parâmetros da prensa</h3><dl className="mt-2 divide-y divide-[#294456] text-xs"><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Pré-aquecimento</dt><dd className="font-semibold">{valueLabel('tempo_pre_aquecimento_seg','s')}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Cura / vulcanização</dt><dd className="font-semibold">{valueLabel('tempo_cura_seg','s')}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Pressão de trabalho</dt><dd className="font-semibold">{valueLabel('pressao_prensagem_bar','bar')}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Força recomendada</dt><dd className="font-semibold">{valueLabel('forca_fechamento_recomendada_ton','ton')}</dd></div></dl></article>:null}
+    </div>
+    <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-[#294456] bg-[#071522] px-3 py-3"><span className="text-[10px] font-bold uppercase tracking-wide text-[#A8BBC8]">{singleResourceProcess?'Capacidade nominal de saída':'Planejamento do roteiro'}</span><strong className="text-lg tabular-nums text-[#48B7C7]">{singleResourceProcess?(expectedPph>0?expectedPph.toLocaleString('pt-BR',{maximumFractionDigits:1})+' peças/h':'Informe ciclo e cavidades'):'Fluxo multiposto — definir operações e recursos no PCP'}</strong><span className="text-xs text-[#8297A5]">{singleResourceProcess?'Cálculo: 3.600 ÷ ciclo (s) × cavidades ativas; sem aplicar eficiência ou paradas.':'Esta ficha não é usada como ciclo único de máquina, evitando estimativa incorreta para etapas distintas.'}</span></div>
+    {(category==='ACABAMENTO'||category==='MONTAGEM_EMBALAGEM')&&<section className="mt-4 rounded-lg border border-[#294456] bg-[#071522] p-3"><div className="mb-3 border-b border-[#294456] pb-2"><p className="text-[10px] font-bold uppercase tracking-wide text-[#48B7C7]">VISUALIZAÇÃO OPERACIONAL</p><h3 className="text-sm font-bold text-[#F4FBFD]">{category==='ACABAMENTO'?'Roteiro de acabamento por posto':'Fluxo de embalagem e paletização'}</h3><p className="mt-1 text-xs text-[#A8BBC8]">A prévia reflete os dados preenchidos abaixo; campos sem definição aparecem como “Não informado”.</p></div>{category==='ACABAMENTO'?<div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">{[{title:'1. Inspeção visual e separação de canais',post:'acabamento_inspecao_posto',sector:'acabamento_inspecao_setor',time:'acabamento_inspecao_tempo',timeUnit:'s/pc',checklist:'acabamento_inspecao_checklist',reference:'acabamento_inspecao_referencia'},{title:'2. Rebarbação manual',post:'acabamento_rebarba_posto',sector:'acabamento_rebarba_setor',time:'acabamento_rebarba_tempo',timeUnit:'s/pc',checklist:'acabamento_rebarba_checklist',reference:'acabamento_rebarba_referencia'},{title:'3. Limpeza e lubrificação',post:'acabamento_limpeza_posto',sector:'acabamento_limpeza_setor',time:'acabamento_limpeza_tempo',timeUnit:'s/lote',checklist:'acabamento_limpeza_checklist',reference:'acabamento_limpeza_referencia'},{title:'4. Embalagem e etiquetagem',post:'acabamento_embalagem_posto',sector:'acabamento_embalagem_setor',time:'acabamento_embalagem_tempo',timeUnit:'s/pc',checklist:'acabamento_embalagem_checklist',reference:'acabamento_embalagem_referencia'}].map((stage,index)=><article key={stage.title} className="flex min-h-[230px] flex-col rounded-lg border border-[#294456] bg-[#0D2638] p-3"><h4 className={`min-h-10 border-b border-[#294456] pb-2 text-xs font-bold ${index===0?'bg-gradient-to-r from-[#2D8DB8]/20 to-transparent text-[#48B7C7]':'text-[#F4FBFD]'}`}>{stage.title}</h4><dl className="mt-2 space-y-2 text-xs"><div><dt className="text-[#A8BBC8]">Máquina / posto</dt><dd className="font-medium">{valueLabel(stage.post)}</dd></div><div><dt className="text-[#A8BBC8]">Setor</dt><dd className="font-medium">{valueLabel(stage.sector)}</dd></div><div><dt className="text-[#A8BBC8]">Tempo de preparação</dt><dd className="font-medium">{valueLabel(stage.time,stage.timeUnit)}</dd></div><div><dt className="text-[#A8BBC8]">Checklist</dt><dd className="whitespace-pre-line font-medium">{valueLabel(stage.checklist)}</dd></div><div className="mt-auto border-t border-[#294456] pt-2"><dt className="text-[#A8BBC8]">Documento de referência</dt><dd className="font-medium">{valueLabel(stage.reference)}</dd></div></dl></article>)}</div>:<div className="grid grid-cols-1 gap-3 xl:grid-cols-2"><article className="rounded-lg border border-[#294456] bg-[#0D2638] p-3"><h4 className="border-b border-[#294456] pb-2 text-xs font-bold text-[#F4FBFD]">1. Embalagem em saco plástico / contagem</h4><dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-2 text-xs sm:grid-cols-2">{[['Embalagem plástica','aplica_embalagem_plastica'],['Amostragem base','emb_amostragem_base'],['Código da balança','emb_codigo_balanca'],['Dimensional do saco','emb_dimensional_saco'],['Peças por saco','emb_quantidade_pecas_saco'],['Peso pacote cheio','emb_peso_pacote_cheio_g']].map(([label,key])=><div key={key}><dt className="text-[#A8BBC8]">{label}</dt><dd className="font-medium">{valueLabel(key)}</dd></div>)}</dl></article><article className="rounded-lg border border-[#294456] bg-[#0D2638] p-3"><h4 className="border-b border-[#294456] pb-2 text-xs font-bold text-[#F4FBFD]">2. Embalagem em caixa de papelão</h4><dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-2 text-xs sm:grid-cols-2">{[['Sacos por caixa','emb_sacos_caixa'],['Peças diretas por caixa','emb_pecas_direto_caixa'],['Dimensional da caixa','emb_dimensional_caixa'],['Referência de montagem','emb_caixa_modelo']].map(([label,key])=><div key={key}><dt className="text-[#A8BBC8]">{label}</dt><dd className="font-medium">{valueLabel(key)}</dd></div>)}</dl></article><article className="rounded-lg border border-[#294456] bg-[#0D2638] p-3 xl:col-span-2"><h4 className="border-b border-[#294456] pb-2 text-xs font-bold text-[#F4FBFD]">3. Roteiro de montagem, etiqueta e paletização</h4><dl className="mt-2 grid grid-cols-1 gap-3 text-xs md:grid-cols-2">{[['Disposição das peças','emb_disposicao_pecas'],['Instruções de montagem','emb_instrucao_montagem'],['Etiqueta e identificação','emb_instrucao_etiqueta'],['Padrão de paletização','emb_instrucao_paletizacao'],['Critérios de liberação','emb_criterio_liberacao']].map(([label,key])=><div key={key}><dt className="text-[#A8BBC8]">{label}</dt><dd className="whitespace-pre-line font-medium">{valueLabel(key)}</dd></div>)}</dl></article></div>}</section>}
+    <div className="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-2">
+     {parameterCards.map(group=><article key={group.title} className="rounded-lg border border-[#294456] bg-[#071522] p-3">
+      <h3 className="mb-3 border-b border-[#294456] pb-2 text-xs font-bold uppercase tracking-wide text-[#48B7C7]">{group.title}</h3>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+       {group.fields.map(field=><label key={field.key} className={field.multiline?'sm:col-span-2':''}>
+        <span className={labelClass}>{field.label} {field.required&&<span className="text-[#D65B61]">*</span>}</span>
+        <span className="flex">
+         {field.type==='select'
+          ? <select className={inputClass+' rounded-r-none'} value={params[field.key]??''} onChange={event=>updateParam(field.key,event.target.value)}><option value="">Selecione</option>{(field.options??[]).map(option=><option key={option} value={option}>{option}</option>)}</select>
+          : field.multiline
+           ? <textarea className={inputClass+' min-h-[76px] resize-y rounded-r-none py-2'} value={params[field.key]??''} onChange={event=>updateParam(field.key,event.target.value)} placeholder="Registrar instruções aprovadas"/>
+           : <input className={inputClass+' rounded-r-none'} type={field.type==='number'?'number':'text'} step={field.step} value={params[field.key]??''} onChange={event=>updateParam(field.key,event.target.value)} placeholder={field.unit==='—'?'Informar':field.unit}/>}
+         <span className="flex min-h-9 min-w-[54px] items-center justify-center rounded-r-md border border-l-0 border-[#294456] bg-[#123B50] px-2 text-[10px] text-[#A8BBC8]">{field.unit}</span>
+        </span>
+       </label>)}
       </div>
-      <div className="space-y-2 lg:col-span-4">
-       <label className="block border border-amber-400/50 bg-[#302718] p-3"><span className="mb-2 flex items-center gap-2 text-[9px] font-black uppercase tracking-wide text-amber-200"><Gauge size={13}/> Manômetro · bomba hidráulica</span><span className="flex items-center gap-2"><input aria-label="Pressão da bomba hidráulica em bar" className="h-8 min-w-0 w-full border border-amber-300/30 bg-[#17130D] px-2 text-center font-mono text-[14px] font-black text-amber-200 outline-none focus:border-amber-300" type="number" step="0.1" value={String(params.pressao_bomba_bar??'')} onChange={e=>updateParam('pressao_bomba_bar',e.target.value)} placeholder="—"/><span className="text-[10px] font-bold text-amber-200">bar</span></span></label>
-       <label className="block border border-emerald-400/50 bg-[#132D2A] p-3"><span className="mb-2 block text-[9px] font-black uppercase tracking-wide text-emerald-200">Força de fechamento</span><span className="flex items-center gap-2"><input aria-label="Tonelagem requerida da prensa" className="h-8 min-w-0 w-full border border-emerald-300/30 bg-[#0B1A19] px-2 text-center font-mono text-[14px] font-black text-emerald-200 outline-none focus:border-emerald-300" type="number" step="0.1" value={String(params.tonelagem_prensa??'')} onChange={e=>updateParam('tonelagem_prensa',e.target.value)} placeholder="—"/><span className="text-[10px] font-bold text-emerald-200">ton</span></span></label>
-       <p className="border-l-2 border-amber-400 px-2 py-1 text-[9px] leading-relaxed text-slate-400">Confirme pressão, tonelagem e temperatura na documentação homologada da prensa. O desenho é representativo e não substitui intertravamentos nem validação de segurança.</p>
-      </div>
-     </div>
-    </section>}
-    {category === 'INJETADOS' && <section className="mt-3 overflow-hidden border border-slate-700 bg-[#142633] text-white shadow-sm">
-     <header className="flex flex-wrap items-center gap-2 border-b border-white/10 bg-[#0D1E29] px-3 py-2"><Thermometer size={14} className="text-cyan-300"/><div><h3 className="text-[10px] font-black uppercase tracking-[.14em]">Perfil térmico · fluxo do canhão</h3><p className="text-[9px] text-slate-400">Parâmetros de referência homologados para material, máquina e molde.</p></div><span className="ml-auto text-[9px] font-bold text-cyan-200">°C</span></header>
-     <div className="grid grid-cols-1 gap-2 p-3 sm:grid-cols-4">
-      {[{key:'zona1_c',label:'Zona 01 · traseira',color:'border-cyan-400',text:'text-cyan-200'},{key:'zona2_c',label:'Zona 02 · intermediária',color:'border-amber-400',text:'text-amber-200'},{key:'zona3_c',label:'Zona 03 · frontal',color:'border-orange-400',text:'text-orange-200'},{key:'zona4_c',label:'Bico · injeção',color:'border-rose-400',text:'text-rose-200'}].map((zone,index)=><div key={zone.key} className={'relative min-w-0 border-l-2 '+zone.color+' bg-white/[.04] p-2'}>
-       <div className="mb-2 flex items-center justify-between gap-1"><span className="text-[9px] font-bold uppercase tracking-wide text-slate-300">{zone.label}</span>{index<3&&<ArrowRight size={11} className="shrink-0 text-slate-500"/>}</div>
-       <div className="flex items-center gap-1"><input aria-label={zone.label+' em graus Celsius'} className="h-8 min-w-0 w-full border border-white/15 bg-[#0B1821] px-2 text-center font-mono text-[13px] font-black text-white outline-none focus:border-cyan-300 focus:ring-1 focus:ring-cyan-300/30" type="number" step="0.1" value={String(params[zone.key]??'')} onChange={e=>updateParam(zone.key,e.target.value)} placeholder="—"/><span className={'text-[10px] font-bold '+zone.text}>°C</span></div>
-      </div>)}
-     </div><p className="border-t border-white/10 px-3 py-2 text-[9px] text-slate-400">Confirme os limites aprovados para o material e o processo antes de iniciar a produção. Não use receitas genéricas como valores de liberação.</p>
-    </section>}
-    <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">{fields.filter(field => !(category === 'INJETADOS' && ['zona1_c','zona2_c','zona3_c','zona4_c'].includes(field.key)) && !(category === 'PRENSADOS' && ['tonelagem_prensa','pressao_bomba_bar','temp_placa_sup','temp_placa_inf'].includes(field.key))).map(field=><label key={field.key}><span className={labelClass}>{field.label} {field.required && <span className="text-rose-600">*</span>}</span><span className="flex"><input className={inputClass+' rounded-r-none'} type={field.type==='number'?'number':'text'} step={field.step} value={params[field.key]??''} onChange={e=>updateParam(field.key,e.target.value)} placeholder={field.unit==='—'?'Informar':field.unit}/><span className="flex h-[30px] min-w-[46px] items-center justify-center border border-l-0 border-slate-300 bg-slate-50 px-1 text-[9px] text-slate-500">{field.unit}</span></span></label>)}</div>
-    <label className="mt-3 block"><span className={labelClass}>Instruções de setup / processo / segurança</span><textarea className="min-h-[72px] w-full rounded-[3px] border border-slate-300 p-2 text-[10px] outline-none focus:border-[#2D8DB8]" value={instructions} onChange={e=>setInstructions(e.target.value)} placeholder="Sequência operacional, parâmetros de controle, inspeção inicial, reação a desvio, EPI e cuidados ambientais…"/></label>
-    <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-2"><span className="text-[9px] text-slate-500">Dados separados por empresa · revisão técnica · sem valores fictícios</span><button className="erp-premium-button print:hidden" onClick={()=>void save()} disabled={busy}><Save size={12}/> Gravar ficha</button></div>
+     </article>)}
+    </div>
+    <label className="mt-4 block"><span className={labelClass}>Instruções de setup / processo / segurança</span><textarea className="min-h-[100px] w-full rounded-md border border-[#294456] bg-[#071522] p-3 text-sm text-[#F4FBFD] outline-none focus:border-[#48B7C7]" value={instructions} onChange={e=>setInstructions(e.target.value)} placeholder="Sequência operacional, parâmetros de controle, inspeção inicial, reação a desvio, EPI e cuidados ambientais…"/></label>
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#294456] pt-3"><span className="text-xs text-[#A8BBC8]">Dados separados por empresa · revisão técnica · parâmetros sem valores fictícios</span><button className="erp-premium-button print:hidden" type="button" onClick={()=>void save()} disabled={busy}><Save size={14}/>{busy?'Gravando…':'Gravar ficha'}</button></div>
    </section>
    <div className="print:hidden"><PCPMoldPhotoPanel productId={productId} /></div>
-   <footer className="mt-2 flex flex-wrap items-center gap-2 text-[9px] text-slate-500 print:hidden"><CalendarRange size={12}/> Calendário de recursos e parâmetros de processo devem usar capacidade, ciclo e setup homologados.<a href="/ajuda/pcp-fichas-processo" className="ml-auto inline-flex h-8 items-center border border-slate-300 bg-white px-2 font-bold text-[#123B50] hover:bg-slate-50">POP · Ajuda técnica</a></footer>
+   <footer className="mt-3 flex items-center gap-2 text-xs text-[#8297A5] print:hidden"><CalendarRange size={14}/>{singleResourceProcess?'O PCP estima a duração a partir da ficha liberada, capacidade, ciclo e setup; datas continuam sujeitas ao calendário de recursos.':'Para programar este roteiro multiposto, cadastre as operações e recursos correspondentes no roteiro do PCP; ele não será aplicado como ciclo de uma única máquina.'}</footer>
   </div>
- <style>{'@media print{body{background:#fff!important;color:#111!important}.pcp-ficha-print-sheet{break-inside:avoid;border:0!important;padding:0!important}.pcp-ficha-print-sheet input,.pcp-ficha-print-sheet select,.pcp-ficha-print-sheet textarea{color:#111!important;background:#fff!important;border-color:#777!important;box-shadow:none!important;print-color-adjust:exact}.pcp-ficha-print-sheet label{break-inside:avoid}.pcp-ficha-print-sheet button{display:none!important}}'}</style>
+ <style>{'@media print{body{background:#fff!important;color:#111!important}.pcp-ficha-print-sheet,.pcp-ficha-print-sheet article,.pcp-ficha-print-sheet div{background:#fff!important;color:#111!important;border-color:#777!important;box-shadow:none!important}.pcp-ficha-print-sheet{break-inside:avoid;border:0!important;padding:0!important}.pcp-ficha-print-sheet input,.pcp-ficha-print-sheet select,.pcp-ficha-print-sheet textarea{color:#111!important;background:#fff!important;border-color:#777!important;box-shadow:none!important;print-color-adjust:exact}.pcp-ficha-print-sheet label{break-inside:avoid}.pcp-ficha-print-sheet button{display:none!important}.pcp-ficha-print-sheet span,.pcp-ficha-print-sheet dt,.pcp-ficha-print-sheet p{color:#333!important}}'}</style>
   </main>
 }

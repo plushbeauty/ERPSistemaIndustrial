@@ -1,3 +1,7 @@
+/**
+ * APROVADO — painel de fotos de moldes/processos restaurado do arquivo enviado em 2026-10-18.
+ * Não alterar a apresentação ou fluxo de fotos sem autorização expressa.
+ */
 import { useEffect, useState } from 'react'
 import { Camera, ImagePlus, RefreshCw } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -27,8 +31,6 @@ export default function PCPMoldPhotoPanel({ productId }: { productId?: string })
   const [selectedId, setSelectedId] = useState('')
   const [moldQuery, setMoldQuery] = useState('')
   const [photos, setPhotos] = useState<Photo[]>([])
-  const [activeView, setActiveView] = useState(0)
-  const inspectionViews = ['Cavidade', 'Extrator', 'Lado fixo', 'Lado móvel']
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -55,7 +57,6 @@ export default function PCPMoldPhotoPanel({ productId }: { productId?: string })
 
   async function loadPhotos(moldId: string) {
     setPhotos([])
-    setActiveView(0)
     if (!company || !moldId) return
     const result = await supabase
       .from('erp_documentos_anexos')
@@ -63,7 +64,7 @@ export default function PCPMoldPhotoPanel({ productId }: { productId?: string })
       .eq('empresa_id', company)
       .eq('entidade_tipo', 'molde')
       .eq('entidade_id', moldId)
-      .order('created_at', { ascending: true })
+      .order('created_at', { ascending: false })
       .limit(50)
     if (result.error) throw result.error
     const rows = result.data ?? []
@@ -78,7 +79,7 @@ export default function PCPMoldPhotoPanel({ productId }: { productId?: string })
         url: signed.error ? '' : (signed.data?.signedUrl ?? ''),
       } satisfies Photo
     }))
-    setPhotos(withUrls.filter(photo => photo.url && (photo.mime_type ?? '').startsWith('image/')).slice(0, 4))
+    setPhotos(withUrls.filter(photo => photo.url && (photo.mime_type ?? '').startsWith('image/')))
   }
 
   useEffect(() => {
@@ -95,7 +96,6 @@ export default function PCPMoldPhotoPanel({ productId }: { productId?: string })
 
   async function uploadPhoto(file?: File) {
     if (!file || !selectedId || !company) return
-    if (photos.length >= 4) { setError('Limite de 4 fotos por molde atingido. Revise o dossiê existente antes de anexar outra imagem.'); return }
     setError('')
     setNotice('')
     if (!file.type.startsWith('image/')) { setError('Selecione um arquivo de imagem.'); return }
@@ -132,51 +132,49 @@ export default function PCPMoldPhotoPanel({ productId }: { productId?: string })
   const productMolds = [...molds].sort((a, b) => Number(b.produto_id === productId) - Number(a.produto_id === productId)).filter(m => !moldQuery || (m.codigo + ' ' + m.nome).toLocaleLowerCase().includes(moldQuery.toLocaleLowerCase()))
 
   return (
-    <section className="mt-3 border border-slate-200 bg-white p-3">
-      <header className="mb-3 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
-        <span className="grid h-7 w-7 place-items-center bg-[#123B50] text-white"><Camera size={14} /></span>
+    <section className="mt-4 rounded-xl border border-[#294456] bg-[#0D2638] p-4">
+      <header className="mb-3 flex flex-wrap items-center gap-3 border-b border-[#294456] pb-3">
+        <span className="grid h-9 w-9 place-items-center rounded-lg border border-[#48B7C7]/30 bg-[#071522] text-[#48B7C7]"><Camera size={17} /></span>
         <div>
-          <h2 className="text-[11px] font-bold uppercase">Fotos do molde · localização visual na fábrica</h2>
-          <p className="text-[9px] text-slate-500">Identifique o número do molde antes do setup e consulte imagens para inspeção visual.</p>
+          <h2 className="text-sm font-bold uppercase text-[#F4FBFD]">Fotos do molde · localização visual na fábrica</h2>
+          <p className="text-xs text-[#A8BBC8]">Identifique o número do molde antes do setup e consulte imagens para inspeção visual.</p>
         </div>
-        <button type="button" className="ml-auto flex h-[30px] items-center gap-1 border border-slate-300 px-2 text-[10px] font-semibold" disabled={busy} onClick={() => { setBusy(true); void loadMolds().then(() => selectedId ? loadPhotos(selectedId) : undefined).catch(e => setError(e instanceof Error ? e.message : 'Falha ao atualizar.')).finally(() => setBusy(false)) }}><RefreshCw size={12} /> Atualizar</button>
+        <button type="button" className="erp-premium-button erp-premium-button-secondary ml-auto" disabled={busy} onClick={() => { setBusy(true); void loadMolds().then(() => selectedId ? loadPhotos(selectedId) : undefined).catch(e => setError(e instanceof Error ? e.message : 'Falha ao atualizar.')).finally(() => setBusy(false)) }}><RefreshCw size={14} /> Atualizar</button>
       </header>
-      {error && <p role="alert" className="mb-2 border border-rose-300 bg-rose-50 p-2 text-[10px] text-rose-800">{error}</p>}
-      {notice && <p role="status" className="mb-2 border border-emerald-300 bg-emerald-50 p-2 text-[10px] text-emerald-800">{notice}</p>}
+      {error && <p role="alert" className="mb-3 rounded-lg border border-[#D65B61]/50 bg-[#D65B61]/10 p-3 text-sm text-[#F4B8BB]">{error}</p>}
+      {notice && <p role="status" className="mb-3 rounded-lg border border-[#3A9D78]/40 bg-[#3A9D78]/10 p-3 text-sm text-[#8ED0B4]">{notice}</p>}
       <div className="grid gap-3 md:grid-cols-[minmax(240px,360px)_minmax(0,1fr)]">
         <div>
           <label className="block">
-            <span className="mb-1 block text-[9px] font-bold uppercase tracking-wider">Buscar número / código do molde</span>
-            <input className="mb-1 h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px]" value={moldQuery} onChange={e => setMoldQuery(e.target.value)} placeholder="Digite o código ou descrição do molde"/>
-            <select className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px]" value={selectedId} onChange={e => setSelectedId(e.target.value)}>
+            <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[#A8BBC8]">Buscar número / código do molde</span>
+            <input className="mb-2 h-9 w-full rounded-md border border-[#294456] bg-[#071522] px-3 text-sm text-[#F4FBFD] outline-none focus:border-[#48B7C7]" value={moldQuery} onChange={e => setMoldQuery(e.target.value)} placeholder="Digite o código ou descrição do molde"/>
+            <select className="h-9 w-full rounded-md border border-[#294456] bg-[#071522] px-3 text-sm text-[#F4FBFD] outline-none focus:border-[#48B7C7]" value={selectedId} onChange={e => setSelectedId(e.target.value)}>
               <option value="">Selecione um molde cadastrado ({productMolds.length} encontrados)</option>
               {productMolds.map(m => <option key={m.id} value={m.id}>{m.codigo} · {m.nome}</option>)}
             </select>
           </label>
-          {selected && <div className="mt-2 border border-slate-200 bg-slate-50 p-2 text-[10px]">
+          {selected && <div className="mt-3 rounded-lg border border-[#294456] bg-[#071522] p-3 text-xs text-[#A8BBC8]">
             <p><strong>Código:</strong> {selected.codigo}</p>
             <p><strong>Descrição:</strong> {selected.nome}</p>
             <p><strong>Situação:</strong> {selected.status}</p>
             <p><strong>Cavidades:</strong> {selected.cavidades_ativas} ativas / {selected.numero_cavidades} totais</p>
           </div>}
-          <label className="mt-2 flex min-h-[34px] cursor-pointer items-center justify-center gap-2 border border-[#2D8DB8] bg-[#F4FBFD] px-2 text-[10px] font-bold text-[#123B50]">
-            <ImagePlus size={14} /> {busy ? 'Enviando foto…' : 'Adicionar foto do molde'}
+          <label className="erp-premium-button mt-3 flex min-h-10 cursor-pointer items-center justify-center gap-2">
+            <ImagePlus size={15} /> {busy ? 'Enviando foto…' : 'Adicionar foto do molde'}
             <input className="sr-only" type="file" accept="image/*" disabled={busy || !selectedId} onChange={e => { const file = e.target.files?.[0]; e.target.value = ''; void uploadPhoto(file) }} />
           </label>
-          <p className="mt-1 text-[9px] text-slate-500">Imagens são salvas no Storage privado da empresa, com vínculo ao ID do molde. Limite: 15 MB por imagem.</p>
+          <p className="mt-2 text-[11px] text-[#8297A5]">Imagens são salvas no Storage privado da empresa, com vínculo ao ID do molde. Limite: 15 MB por imagem.</p>
         </div>
         <div className="min-w-0">
-          {photos.length ? <div className="min-w-0">
-            <div className="mb-2 grid grid-cols-2 gap-1 sm:grid-cols-4">
-              {inspectionViews.map((view,index)=><button key={view} type="button" disabled={!photos[index]} onClick={()=>setActiveView(index)} className={'h-8 border px-2 text-[9px] font-black uppercase transition '+(activeView===index?'border-[#123B50] bg-[#123B50] text-white':'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40')}>{String(index+1).padStart(2,'0')} · {view}</button>)}
-            </div>
-            {photos[activeView] ? <figure className="overflow-hidden border border-slate-200 bg-white">
-              <a href={photos[activeView].url} target="_blank" rel="noreferrer" className="grid h-[230px] place-items-center bg-slate-100 sm:h-[300px]"><img src={photos[activeView].url} alt={'Molde '+(selected?.codigo??'')+' · '+inspectionViews[activeView]+': '+photos[activeView].nome_arquivo} className="h-full w-full object-contain" loading="lazy" /></a>
-              <figcaption className="flex flex-wrap items-center justify-between gap-1 border-t border-slate-200 px-2 py-1.5 text-[9px] text-slate-600"><span className="font-bold uppercase text-[#123B50]">{inspectionViews[activeView]}</span><span className="truncate" title={photos[activeView].nome_arquivo}>{photos[activeView].nome_arquivo}</span></figcaption>
-            </figure> : <div className="grid min-h-[230px] place-items-center border border-dashed border-slate-300 bg-slate-50 p-4 text-center"><div><ImagePlus size={22} className="mx-auto mb-2 text-slate-400"/><p className="text-[10px] font-semibold text-slate-600">Aba {inspectionViews[activeView]} sem imagem vinculada.</p><p className="mt-1 text-[9px] text-slate-500">Anexe as fotos na ordem das quatro vistas: cavidade, extrator, lado fixo e lado móvel.</p></div></div>}
-            <div className="mt-2 grid grid-cols-4 gap-1">{inspectionViews.map((view,index)=><div key={view} className="border border-slate-200 bg-white p-1"><span className="block text-[8px] font-black uppercase text-slate-500">{view}</span><span className="block truncate text-[9px] text-slate-700">{photos[index]?.nome_arquivo??'Sem foto'}</span></div>)}</div>
-          </div> : <div className="grid min-h-[145px] place-items-center border border-dashed border-slate-300 bg-slate-50 p-4 text-center">
-            <div><ImagePlus size={22} className="mx-auto mb-2 text-slate-400" /><p className="text-[10px] font-semibold text-slate-600">{selected ? 'Nenhuma foto salva para este molde.' : 'Selecione um molde para consultar as fotos.'}</p><p className="mt-1 text-[9px] text-slate-500">Anexe as quatro vistas na ordem: cavidade, extrator, lado fixo e lado móvel.</p></div>
+          {photos.length ? <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+            {photos.map(photo => <figure key={photo.id} className="overflow-hidden rounded-lg border border-[#294456] bg-[#071522]">
+              <a href={photo.url} target="_blank" rel="noreferrer" className="block h-[145px] bg-[#071522]">
+                <img src={photo.url} alt={'Foto do molde ' + (selected?.codigo ?? '') + ': ' + photo.nome_arquivo} className="h-full w-full object-contain" loading="lazy" />
+              </a>
+              <figcaption className="truncate px-3 py-2 text-[11px] text-[#A8BBC8]" title={photo.nome_arquivo}>{photo.nome_arquivo}</figcaption>
+            </figure>)}
+          </div> : <div className="grid min-h-[145px] place-items-center rounded-lg border border-dashed border-[#294456] bg-[#071522] p-4 text-center">
+            <div><ImagePlus size={22} className="mx-auto mb-2 text-[#8297A5]" /><p className="text-xs font-semibold text-[#A8BBC8]">{selected ? 'Nenhuma foto salva para este molde.' : 'Selecione um molde para consultar as fotos.'}</p><p className="mt-1 text-[11px] text-[#8297A5]">Cadastre fotos gerais e detalhes para reconhecer cavidades, conexões e sinais de desgaste.</p></div>
           </div>}
         </div>
       </div>
