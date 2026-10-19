@@ -183,6 +183,77 @@ const inputClass = 'h-9 w-full rounded-md border border-[#294456] bg-[#071522] p
 const labelClass = 'mb-1 block text-[10px] font-bold uppercase tracking-wider text-[#A8BBC8]'
 const blankParameters = (category: Category) => Object.fromEntries(paramsFor(category).map(p => [p.key, ''])) as Record<string, string>
 
+
+/**
+ * REV-2026-10-19 — correção visual isolada: diagramas técnicos de processo
+ * com controles editáveis sobre o equipamento. Persistência e campos existentes preservados.
+ */
+function ProcessEquipmentDiagram({ category, params, onParamChange }: {
+ category: Category
+ params: Record<string, string>
+ onParamChange: (key: string, value: string) => void
+}) {
+ const fieldClass = 'h-7 w-[74px] rounded border border-[#48B7C7]/70 bg-[#071522]/95 px-1 text-center text-[11px] font-bold text-[#F4FBFD] shadow-md outline-none focus:border-[#E6A34A] focus:ring-1 focus:ring-[#E6A34A]'
+ const tagClass = 'absolute z-10 flex flex-col items-center gap-0.5 rounded border border-[#48B7C7]/40 bg-[#071522]/95 p-1 text-[9px] font-bold uppercase tracking-wide text-[#A8BBC8] shadow-lg'
+ if (category !== 'INJETADOS' && category !== 'PRENSADOS') return null
+ const press = category === 'PRENSADOS'
+ const fields = press
+  ? [{key:'temp_plato_superior_c',label:'Platô superior',unit:'°C'},{key:'temperatura_molde_c',label:'Molde',unit:'°C'},{key:'temp_plato_inferior_c',label:'Platô inferior',unit:'°C'},{key:'pressao_prensagem_bar',label:'Pressão de prensagem',unit:'bar'},{key:'tempo_cura_seg',label:'Tempo de cura',unit:'s'}]
+  : [{key:'zona1_c',label:'Zona 1',unit:'°C'},{key:'zona2_c',label:'Zona 2',unit:'°C'},{key:'zona3_c',label:'Zona 3',unit:'°C'},{key:'zona4_c',label:'Zona 4',unit:'°C'}]
+ return <section className="mt-4 overflow-hidden rounded-xl border border-[#294456] bg-[#071522] print:break-inside-avoid">
+  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#294456] bg-[#123B50] px-3 py-2">
+   <div><p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#48B7C7]">FICHA VISUAL DE PROCESSO</p><h3 className="text-sm font-bold text-[#F4FBFD]">{press?'Prensa hidráulica · platôs, molde e pressão':'Injetora · canhão e perfil térmico'}</h3></div>
+   <span className="rounded border border-[#48B7C7]/40 bg-[#071522]/70 px-2 py-1 text-[9px] font-semibold text-[#48B7C7]">VALORES EDITÁVEIS SOBRE O DIAGRAMA</span>
+  </div>
+  <div className="grid grid-cols-1 gap-3 p-3 lg:grid-cols-[minmax(0,1.65fr)_minmax(220px,1fr)]">
+   <div className="relative min-h-[280px] overflow-hidden rounded-lg border border-[#294456] bg-[radial-gradient(ellipse_at_center,_#123B50_0%,_#071522_75%)]">
+    <svg viewBox="0 0 760 340" className="absolute inset-0 h-full w-full" role="img" aria-label={press?'Diagrama técnico da prensa hidráulica com platôs e manômetro':'Diagrama técnico do canhão da injetora com quatro zonas térmicas'} preserveAspectRatio="xMidYMid meet">
+     <defs>
+      <linearGradient id="pcp-steel-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#D9E7ED"/><stop offset="35%" stopColor="#66899B"/><stop offset="65%" stopColor="#294456"/><stop offset="100%" stopColor="#8DAFBE"/></linearGradient>
+      <linearGradient id="pcp-heat-grad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#2D8DB8"/><stop offset="50%" stopColor="#E6A34A"/><stop offset="100%" stopColor="#D65B61"/></linearGradient>
+      <pattern id="pcp-technical-grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#48B7C7" strokeOpacity=".08" strokeWidth="1"/></pattern>
+     </defs>
+     <rect width="760" height="340" fill="url(#pcp-technical-grid)"/>
+     {press ? <g>
+      <g stroke="#7FA5B6" strokeWidth="2" fill="url(#pcp-steel-grad)">
+       <rect x="155" y="36" width="450" height="28" rx="3"/><rect x="178" y="60" width="22" height="236" rx="3"/><rect x="560" y="60" width="22" height="236" rx="3"/>
+       <rect x="252" y="68" width="256" height="44" rx="4"/><rect x="348" y="18" width="64" height="53" rx="7"/>
+       <rect x="238" y="126" width="284" height="24" rx="2"/><rect x="278" y="154" width="204" height="34" rx="2" fill="#2D8DB8"/>
+       <rect x="258" y="193" width="244" height="30" rx="2"/><rect x="238" y="230" width="284" height="24" rx="2"/>
+       <rect x="155" y="278" width="450" height="20" rx="3"/><rect x="112" y="298" width="536" height="17" rx="3"/>
+      </g>
+      <g fill="none" stroke="#E6A34A" strokeWidth="3"><path d="M290 171H470"/><path d="M290 206H470"/></g>
+      <g stroke="#48B7C7" strokeWidth="3" fill="none"><path d="M605 258h32v-68h25"/><circle cx="684" cy="190" r="24"/><path d="M684 190l11 -11"/></g>
+      <g fill="#A8BBC8" fontSize="12" fontWeight="700"><text x="30" y="45">CILINDRO</text><text x="30" y="60">HIDRÁULICO</text><path d="M120 52H340" stroke="#48B7C7" strokeDasharray="4 4"/><text x="28" y="150">PLATÔ</text><text x="28" y="165">SUPERIOR</text><path d="M125 158H236" stroke="#48B7C7" strokeDasharray="4 4"/><text x="30" y="211">MOLDE /</text><text x="30" y="226">CAVIDADE</text><path d="M130 218H255" stroke="#48B7C7" strokeDasharray="4 4"/><text x="30" y="266">PLATÔ</text><text x="30" y="281">INFERIOR</text><path d="M130 273H236" stroke="#48B7C7" strokeDasharray="4 4"/><text x="650" y="235">MANÔMETRO</text><text x="625" y="332">PRENSA · ESQUEMA TÉCNICO</text></g>
+     </g> : <g>
+      <g stroke="#7FA5B6" strokeWidth="2" fill="url(#pcp-steel-grad)">
+       <path d="M72 95h72v-22h44v22h42v-22h44v22h42v-22h44v22h42v-22h44v22h52l28 26-28 26H72z"/>
+       <rect x="75" y="105" width="365" height="37" rx="3" fill="#294456"/><rect x="90" y="112" width="325" height="22" rx="2" fill="url(#pcp-heat-grad)" stroke="#E6A34A"/>
+       <path d="M440 105h44l40 18-40 18h-44z" fill="#66899B"/><path d="M524 123h50l30 12-30 12h-50z" fill="#D9E7ED"/>
+       <path d="M116 70V40h65v30" fill="#294456"/><path d="M132 40V23h32v17" fill="#66899B"/>
+       <rect x="84" y="158" width="355" height="17" rx="3"/><rect x="92" y="185" width="342" height="18" rx="3"/>
+      </g>
+      <g fill="#A8BBC8" fontSize="12" fontWeight="700"><text x="82" y="219">CANHÃO DE PLASTIFICAÇÃO</text><text x="82" y="238">ZONAS TÉRMICAS → BICO → MOLDE</text><text x="82" y="320">INJETORA · ESQUEMA TÉCNICO</text></g>
+      <g stroke="#48B7C7" strokeWidth="1.5" strokeDasharray="4 4"><path d="M150 83V55"/><path d="M230 83V55"/><path d="M310 83V55"/><path d="M390 83V55"/></g>
+     </g>}
+    </svg>
+    {press ? <div>
+     <label className={tagClass} style={{left:'35%',top:'34%'}}>Platô superior<input aria-label="Temperatura do platô superior sobre o diagrama" className={fieldClass} inputMode="decimal" value={params.temp_plato_superior_c??''} onChange={e=>onParamChange('temp_plato_superior_c',e.target.value)} placeholder="°C"/></label>
+     <label className={tagClass} style={{left:'43%',top:'49%'}}>Temperatura do molde<input aria-label="Temperatura do molde sobre o diagrama" className={fieldClass} inputMode="decimal" value={params.temperatura_molde_c??''} onChange={e=>onParamChange('temperatura_molde_c',e.target.value)} placeholder="°C"/></label>
+     <label className={tagClass} style={{left:'35%',top:'64%'}}>Platô inferior<input aria-label="Temperatura do platô inferior sobre o diagrama" className={fieldClass} inputMode="decimal" value={params.temp_plato_inferior_c??''} onChange={e=>onParamChange('temp_plato_inferior_c',e.target.value)} placeholder="°C"/></label>
+     <label className={tagClass} style={{left:'76%',top:'48%'}}>Pressão<input aria-label="Pressão de prensagem sobre o diagrama" className={fieldClass} inputMode="decimal" value={params.pressao_prensagem_bar??''} onChange={e=>onParamChange('pressao_prensagem_bar',e.target.value)} placeholder="bar"/></label>
+    </div> : <div>
+     {fields.map((field,index)=><label key={field.key} className={tagClass} style={{left:(14+index*10.5)+'%',top:'25%'}}>Zona {index+1}<input aria-label={'Temperatura zona '+(index+1)+' sobre o canhão'} className={fieldClass} inputMode="decimal" value={params[field.key]??''} onChange={e=>onParamChange(field.key,e.target.value)} placeholder="°C"/></label>)}
+    </div>}
+   </div>
+   <div className="flex flex-col gap-2">
+    <div className="rounded-lg border border-[#294456] bg-[#0D2638] p-3"><p className="text-[10px] font-bold uppercase tracking-wide text-[#48B7C7]">{press?'Controle da prensa':'Perfil térmico do canhão'}</p><p className="mt-1 text-xs leading-5 text-[#A8BBC8]">{press?'Edite as temperaturas diretamente sobre os platôs/molde e a pressão no manômetro. Os mesmos valores ficam sincronizados com os campos técnicos da ficha.':'Informe as temperaturas nas caixas sobre cada zona do canhão. Os valores ficam sincronizados com os parâmetros técnicos da ficha.'}</p></div>
+    {fields.map(field=><label key={field.key} className="grid grid-cols-[minmax(0,1fr)_94px] items-center gap-2 rounded border border-[#294456] bg-[#0D2638] px-2 py-1.5"><span className="text-[10px] font-semibold text-[#A8BBC8]">{field.label}</span><span className="flex items-center gap-1"><input aria-label={field.label} className="h-7 min-w-0 w-full rounded border border-[#294456] bg-[#071522] px-1.5 text-right text-xs font-bold text-[#F4FBFD] outline-none focus:border-[#48B7C7]" value={params[field.key]??''} onChange={e=>onParamChange(field.key,e.target.value)} inputMode="decimal"/><small className="text-[9px] text-[#8297A5]">{field.unit}</small></span></label>)}
+   </div>
+  </div>
+ </section>
+}
+
 export default function PCPFichasProcesso() {
  const [searchParams, setSearchParams] = useSearchParams()
  const initialCategory = (categories.find(c => c.value === searchParams.get('tipo')?.toUpperCase())?.value ?? 'INJETADOS') as Category
@@ -333,6 +404,7 @@ export default function PCPFichasProcesso() {
      <label className="xl:col-span-2"><span className={labelClass}>Assinatura técnica do engenheiro</span><input className={inputClass} value={signature} onChange={e=>setSignature(e.target.value)} placeholder="Nome completo / registro profissional"/></label>
      <label><span className={labelClass}>Estado da ficha</span><select className={inputClass} value={status} onChange={e=>setStatus(e.target.value)}><option>RASCUNHO</option><option>EM_ANALISE</option><option>APROVADA</option><option>LIBERADA</option><option>OBSOLETA</option></select></label>
     </div>
+    <ProcessEquipmentDiagram category={category} params={params} onParamChange={(key,value)=>setParams(current=>({...current,[key]:value}))}/>
     {summaryPanels.length>0&&<div className="mt-4 grid grid-cols-1 gap-2 lg:grid-cols-3">{summaryPanels.map((panel,index)=><article key={panel.title} className="overflow-hidden rounded-lg border border-[#294456] bg-[#071522]"><h3 className={`border-b border-[#294456] px-3 py-2 text-xs font-bold ${index===0?'bg-[#123B50] text-[#F4FBFD]':'text-[#48B7C7]'}`}>{panel.title}</h3><dl className="divide-y divide-[#294456] px-3">{panel.items.map(([label,value])=><div key={label} className="flex min-h-9 items-center justify-between gap-3 py-1.5 text-xs"><dt className="text-[#A8BBC8]">{label}</dt><dd className="text-right font-semibold text-[#F4FBFD]">{value}</dd></div>)}</dl></article>)}</div>}
     <div className="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-3">
      <article className="rounded-lg border border-[#294456] bg-[#071522] p-3"><h3 className="text-xs font-bold uppercase tracking-wide text-[#F4FBFD]">Identificação e componentes</h3><dl className="mt-2 divide-y divide-[#294456] text-xs"><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Documento</dt><dd className="font-semibold">{code||'—'}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Produto</dt><dd className="text-right font-semibold">{selectedProduct?`${selectedProduct.codigo} · ${selectedProduct.nome}`:'—'}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Ferramental / máquina</dt><dd className="text-right font-semibold">{selectedTool?.codigo??'—'} / {selectedMachine?.codigo??'—'}</dd></div><div className="flex justify-between gap-3 py-2"><dt className="text-[#A8BBC8]">Cavidades ativas</dt><dd className="font-semibold">{valueLabel('cavidades_ativas','cav.')}</dd></div></dl></article>
