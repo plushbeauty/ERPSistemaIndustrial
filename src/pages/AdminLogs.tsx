@@ -53,12 +53,9 @@ export default function AdminLogs() {
         .order('created_at', { ascending: false })
 
       if (usuarioFiltro !== 'Todos') {
-        const selectedUser = users.find(user => user.id === usuarioFiltro)
-        if (selectedUser) {
-          const actorIds = [selectedUser.id, selectedUser.auth_user_id].filter((id): id is string => Boolean(id))
-          if (actorIds.length === 1) logQuery = logQuery.eq('actor_user_id', actorIds[0])
-          else if (actorIds.length > 1) logQuery = logQuery.or(actorIds.map(id => `actor_user_id.eq.${id}`).join(','))
-        }
+        const actorIds = usuarioFiltro.split('::').filter(Boolean)
+        if (actorIds.length === 1) logQuery = logQuery.eq('actor_user_id', actorIds[0])
+        else if (actorIds.length > 1) logQuery = logQuery.or(actorIds.map(id => `actor_user_id.eq.${id}`).join(','))
       }
       if (moduloFiltro !== 'Todos') logQuery = logQuery.eq('entity_type', moduloFiltro)
       if (acaoFiltro !== 'Todos') logQuery = logQuery.eq('action', acaoFiltro)
@@ -151,7 +148,7 @@ export default function AdminLogs() {
             <select value={usuarioFiltro} onChange={event => { setUsuarioFiltro(event.target.value); setPage(0) }} className={controlClass}>
               <option value="Todos">Todos os usuários</option>
               {users.filter(user => user.id).map(user => (
-                <option key={user.id} value={user.id}>{user.nome || user.email || user.id}</option>
+                <option key={user.id} value={[user.id, user.auth_user_id].filter(Boolean).join("::")}>{user.nome || user.email || user.id}</option>
               ))}
             </select>
           </label>
