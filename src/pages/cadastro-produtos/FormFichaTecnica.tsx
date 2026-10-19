@@ -270,7 +270,7 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
         {textFields.map(item => field(item.key, item.label, item.max))}
         {selectField('origem','Origem da mercadoria', [['0 - Nacional','0 - Nacional'],['1 - Estrangeira - Importação direta','1 - Importação direta'],['2 - Estrangeira - mercado interno','2 - Mercado interno']])}
         {field('unidade','Unidade de estoque',3)}{field('unidade_compra','Unidade de compra',3)}{field('unidade_venda','Unidade de venda',3)}
-        {numberFieldsPlaceholder}
+        {numberField('peso_liquido','Peso líquido (kg)','0.001')}{numberField('peso_bruto','Peso bruto (kg)','0.001')}{numberField('comprimento_mm','Comprimento (mm)','0.1')}{numberField('largura_mm','Largura (mm)','0.1')}{numberField('altura_mm','Altura (mm)','0.1')}
       </div>
     </>}
     {tab==='fiscal' && <div className={section}>
