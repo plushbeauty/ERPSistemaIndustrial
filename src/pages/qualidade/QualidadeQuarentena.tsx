@@ -1,16 +1,30 @@
 /**
- * ERPSis — QUALIDADE / QUARENTENA DE LOTES
- * Data: 2026-10-16 | Revisão: REV-065
- * Escopo: compactação visual industrial; RPCs e persistência mantidas sem alteração.
+ * @DATA_REVISAO_APROVACAO: 2026-10-19
+ * @DESENVOLVEDOR: FernandoSch
+ * @NOME_SISTEMA: MOLDPLÁS ERP INDUSTRIAL
+ * @STATUS_APROVACAO: QUALIDADE-QUARENTENA-STEEL-BLUE-OK
+ * @ESCOPO: UI Steel Blue compacta; preserva a RPC transacional erp_reter_lote e o schema existente.
  */
 import { useCallback, useEffect, useState, type ReactElement } from 'react'
-import { AlertTriangle, Ban, LockKeyhole, RefreshCw, Search, ShieldCheck, UnlockKeyhole } from 'lucide-react'
+import { AlertTriangle, Ban, LockKeyhole, RefreshCw, Search, ShieldCheck, Server } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import QualitySidebar from '../../components/quality/QualitySidebar'
 
-type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; quantidade_disponivel: number; status_inspecao: string | null }
+type Lot = {
+  id: string
+  lote_interno: string
+  lote_fornecedor: string | null
+  produto_id: string
+  quantidade_disponivel: number
+  status_inspecao: string | null
+}
 type Product = { codigo: string; nome: string }
 type Quarantine = { id: string; lote_id: string; motivo: string; status: string; created_at: string }
+
+const panelClass = 'min-w-0 border border-[#2E4A62] bg-[#0D2638] shadow-sm'
+const labelClass = 'mb-1 block text-[9px] font-black uppercase tracking-widest text-[#8DA7BB]'
+const inputClass = 'h-8 w-full min-w-0 rounded-none border border-[#2E4A62] bg-[#0E1E2F] px-2.5 text-xs font-mono font-bold text-[#F4FBFD] outline-none transition-colors placeholder:text-slate-500 focus:border-[#48B7C7] disabled:cursor-not-allowed disabled:opacity-60'
+const buttonClass = 'inline-flex h-8 items-center justify-center gap-1.5 rounded-none border border-[#2E4A62] px-3 text-[9px] font-black uppercase tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-50'
 
 export default function QualidadeQuarentena(): ReactElement {
   const [query, setQuery] = useState('')
@@ -19,81 +33,194 @@ export default function QualidadeQuarentena(): ReactElement {
   const [reason, setReason] = useState('')
   const [rows, setRows] = useState<Quarantine[]>([])
   const [busy, setBusy] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [tenantReady, setTenantReady] = useState(false)
 
   const carregar = useCallback(async () => {
+    setLoading(true)
     setError('')
-    const { data: empresaId, error: empresaError } = await supabase.rpc('erp_current_empresa_id')
-    if (empresaError) { setError(empresaError.message); return }
-    if (!empresaId) { setError('Empresa não identificada.'); return }
-    const { data, error: listError } = await supabase.from('erp_quarentenas_lotes').select('id,lote_id,motivo,status,created_at').eq('empresa_id', empresaId).order('created_at', { ascending: false }).limit(50)
-    if (listError) setError(listError.message)
-    else setRows((data ?? []) as Quarantine[])
+    try {
+      const { data: empresaId, error: empresaError } = await supabase.rpc('erp_current_empresa_id')
+      if (empresaError) throw empresaError
+      if (!empresaId) throw new Error('Empresa não identificada na sessão autenticada.')
+      setTenantReady(true)
+      const { data, error: listError } = await supabase
+        .from('erp_quarentenas_lotes')
+        .select('id,lote_id,motivo,status,created_at')
+        .eq('empresa_id', empresaId)
+        .order('created_at', { ascending: false })
+        .limit(50)
+      if (listError) throw listError
+      setRows((data ?? []) as Quarantine[])
+    } catch (err) {
+      setTenantReady(false)
+      setError(err instanceof Error ? err.message : 'Falha ao consultar quarentenas.')
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => { void carregar() }, [carregar])
 
   const localizar = async () => {
     const codigo = query.trim()
-    if (!codigo) return
-    setBusy(true); setError(''); setMessage('')
+    if (!codigo) {
+      setError('Informe o lote interno ou o lote do fornecedor.')
+      return
+    }
+    setBusy(true)
+    setError('')
+    setMessage('')
+    setLot(null)
+    setProduct(null)
     try {
       const { data: empresaId, error: empresaError } = await supabase.rpc('erp_current_empresa_id')
       if (empresaError) throw empresaError
-      if (!empresaId) throw new Error('Empresa não identificada.')
-      const { data, error: lotError } = await supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,quantidade_disponivel,status_inspecao').eq('empresa_id', empresaId).or(`lote_interno.eq.${codigo},lote_fornecedor.eq.${codigo}`).maybeSingle()
+      if (!empresaId) throw new Error('Empresa não identificada na sessão autenticada.')
+      const { data, error: lotError } = await supabase
+        .from('erp_estoque_lotes')
+        .select('id,lote_interno,lote_fornecedor,produto_id,quantidade_disponivel,status_inspecao')
+        .eq('empresa_id', empresaId)
+        .or(`lote_interno.eq.${codigo},lote_fornecedor.eq.${codigo}`)
+        .maybeSingle()
       if (lotError) throw lotError
       if (!data) throw new Error('Lote não encontrado na empresa atual.')
       setLot(data as Lot)
-      const { data: productData, error: productError } = await supabase.from('erp_produtos').select('codigo,nome').eq('id', data.produto_id).eq('empresa_id', empresaId).maybeSingle()
+      const { data: productData, error: productError } = await supabase
+        .from('erp_produtos')
+        .select('codigo,nome')
+        .eq('id', data.produto_id)
+        .eq('empresa_id', empresaId)
+        .maybeSingle()
       if (productError) throw productError
-      setProduct(productData)
+      setProduct(productData as Product | null)
     } catch (err) {
-      setLot(null); setProduct(null); setError(err instanceof Error ? err.message : 'Falha ao localizar lote.')
-    } finally { setBusy(false) }
+      setError(err instanceof Error ? err.message : 'Falha ao localizar lote.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   const reter = async () => {
-    if (!lot || reason.trim().length < 5) { setError('Selecione um lote e informe um motivo com pelo menos 5 caracteres.'); return }
-    setBusy(true); setError(''); setMessage('')
+    if (!lot || reason.trim().length < 5) {
+      setError('Selecione um lote e informe o motivo com pelo menos 5 caracteres.')
+      return
+    }
+    setBusy(true)
+    setError('')
+    setMessage('')
     try {
-      const { data, error: rpcError } = await supabase.rpc('erp_reter_lote', { p_lote_id: lot.id, p_motivo: reason.trim() })
+      // A RPC existente realiza a retenção transacional e valida a sessão no banco.
+      const { data, error: rpcError } = await supabase.rpc('erp_reter_lote', {
+        p_lote_id: lot.id,
+        p_motivo: reason.trim(),
+      })
       if (rpcError) throw rpcError
-      setMessage(`Lote retido. Quarentena ${String(data)} registrada e status de qualidade atualizado.`)
+      setMessage(`Lote retido com sucesso. Registro de quarentena: ${String(data)}.`)
       setReason('')
-      await localizar()
+      setLot(null)
+      setProduct(null)
+      setQuery('')
       await carregar()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Falha ao reter lote.')
-    } finally { setBusy(false) }
+      setError(err instanceof Error ? err.message : 'Falha ao registrar retenção no banco.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
-    <main className="min-h-screen bg-[#F4FBFD] p-3 md:p-3 text-slate-900"><QualitySidebar active="/qualidade/quarentena" />
-      <section className="mx-auto max-w-7xl rounded-[2px] border border-slate-200 bg-white shadow-sm">
-        <header className="flex flex-col gap-3 border-b border-slate-200 p-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3"><ShieldCheck className="h-7 w-7 text-rose-700" /><div><p className="text-xs font-black uppercase tracking-widest text-slate-500">Qualidade</p><h1 className="text-base font-black">Central de Bloqueio e Quarentena</h1></div></div>
-          <button type="button" onClick={() => void carregar()} className="inline-flex h-[30px] items-center gap-1.5 rounded-[2px] border border-slate-300 bg-white px-3 text-[10px] font-bold"><RefreshCw size={17} /> Atualizar</button>
-        </header>
-        <div className="space-y-6 p-3">
-          {error && <div className="rounded-[2px] border border-rose-200 bg-rose-50 p-3 font-bold text-rose-900">{error}</div>}
-          {message && <div className="rounded-[2px] border border-emerald-200 bg-emerald-50 p-3 font-bold text-emerald-900">{message}</div>}
-          <div className="grid gap-3 lg:grid-cols-[1fr_1fr]">
-            <div className="rounded-[2px] border border-slate-200 p-3">
-              <h2 className="mb-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider"><LockKeyhole size={18} /> Reter novo lote</h2>
-              <label className="text-[9px] font-bold uppercase tracking-wider text-slate-600">Lote
-                <div className="mt-1 flex min-w-0"><input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') void localizar() }} placeholder="Lote interno ou fornecedor" className="h-[30px] min-w-0 w-full rounded-l-[2px] border border-slate-300 px-2 text-[10px] font-semibold outline-none focus:border-[#2D8DB8]" /><button type="button" disabled={busy} onClick={() => void localizar()} className="h-[30px] shrink-0 rounded-r-[2px] bg-[#2D8DB8] px-3 text-white disabled:opacity-50"><Search size={18} /></button></div>
-              </label>
-              {lot && <div className="mt-4 space-y-2 rounded-[2px] bg-slate-50 p-3"><div><span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Lote</span><p className="font-black">{lot.lote_interno}</p></div><div><span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Produto</span><p className="font-bold">{product ? `${product.codigo} — ${product.nome}` : '—'}</p></div><div><span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Saldo disponível</span><p className="font-bold">{lot.quantidade_disponivel}</p></div><div><span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Status atual</span><p className="font-bold">{lot.status_inspecao ?? 'não informado'}</p></div></div>}
-              <label className="mt-4 block text-[9px] font-bold uppercase tracking-wider text-slate-600">Motivo da retenção<textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Descreva a não conformidade ou suspeita." className="mt-1 min-h-[74px] w-full rounded-[2px] border border-slate-300 p-2 text-[10px] font-medium" /></label>
-              <button type="button" disabled={busy || !lot || reason.trim().length < 5} onClick={() => void reter()} className="mt-3 inline-flex h-[30px] w-full items-center justify-center gap-2 rounded-[2px] bg-rose-700 px-3 text-[10px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"><Ban size={18} /> RETER LOTE E BLOQUEAR</button>
-            </div>
-            <div className="rounded-[2px] border border-rose-200 bg-rose-50 p-3">
-              <div className="flex items-start gap-3"><AlertTriangle className="mt-1 text-rose-700" /><div><h2 className="font-black">Bloqueio de segurança</h2><p className="mt-1 text-sm font-medium text-rose-900">A retenção é transacional no Supabase: o lote recebe status RETIDO e a ocorrência é auditável. A emissão fiscal e os movimentos de estoque devem consultar esse status antes de confirmar a operação.</p></div></div>
+    <main className="min-h-screen bg-[#0E1E2F] p-2.5 font-mono text-[#F4FBFD] antialiased md:p-3">
+      <QualitySidebar active="/qualidade/quarentena" />
+      <section className="mx-auto max-w-[1600px] space-y-3">
+        <header className="flex flex-wrap items-center justify-between gap-3 border border-[#2E4A62] bg-[#0D2638] p-3">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <ShieldCheck className="h-6 w-6 shrink-0 text-[#48B7C7]" />
+            <div className="min-w-0">
+              <p className="text-[9px] font-black uppercase tracking-[.2em] text-[#48B7C7]">MOLDPLÁS ERP · SGQ</p>
+              <h1 className="text-sm font-black uppercase tracking-wide sm:text-base">Quarentena de lotes e materiais bloqueados</h1>
+              <p className="mt-1 text-[10px] text-slate-400">Retenção transacional, rastreabilidade e segregação de não conformidades.</p>
             </div>
           </div>
-          <div><h2 className="mb-2 text-[10px] font-bold uppercase tracking-wider">Quarentenas recentes</h2><div className="overflow-x-auto rounded-[2px] border"><table className="w-full text-left text-[10px]"><thead><tr className="h-[30px] bg-slate-100 text-xs font-black uppercase"><th className="px-2 py-1.5">Data</th><th className="px-2 py-1.5">Lote</th><th className="px-2 py-1.5">Motivo</th><th className="px-2 py-1.5">Status</th></tr></thead><tbody>{rows.map((row) => <tr key={row.id} className="h-[30px] border-t"><td className="px-2 py-1.5">{new Date(row.created_at).toLocaleString('pt-BR')}</td><td className="px-2 py-1.5 font-bold">{row.lote_id}</td><td className="px-2 py-1.5">{row.motivo}</td><td className="px-2 py-1.5 font-black">{row.status}</td></tr>)}{rows.length===0 && <tr className="h-[30px]"><td colSpan={4} className="px-2 py-1.5 text-center text-slate-500">Nenhuma retenção registrada.</td></tr>}</tbody></table></div></div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`inline-flex h-7 items-center gap-1.5 border px-2 text-[8px] font-black uppercase tracking-wide ${tenantReady ? 'border-emerald-800 bg-emerald-950 text-emerald-300' : 'border-amber-800 bg-amber-950 text-amber-300'}`}>
+              <Server size={12} /> {tenantReady ? 'Sessão / empresa identificada' : 'Verificando sessão'}
+            </span>
+            <button type="button" disabled={loading} onClick={() => void carregar()} className={`${buttonClass} bg-[#123B50] text-white hover:bg-[#18516B]`}>
+              <RefreshCw size={13} className={loading ? 'animate-spin' : ''} /> Atualizar
+            </button>
+          </div>
+        </header>
+
+        {error && <div role="alert" className="border border-rose-800 bg-rose-950/70 p-2.5 text-xs font-bold text-rose-200">{error}</div>}
+        {message && <div role="status" className="border border-emerald-800 bg-emerald-950/70 p-2.5 text-xs font-bold text-emerald-200">{message}</div>}
+
+        <div className="grid grid-cols-1 items-start gap-3 xl:grid-cols-12">
+          <section className={`${panelClass} xl:col-span-5`}>
+            <header className="flex items-center gap-2 border-b border-[#2E4A62] bg-[#0E1E2F] px-3 py-2.5">
+              <LockKeyhole size={14} className="text-[#48B7C7]" />
+              <h2 className="text-[10px] font-black uppercase tracking-widest">Reter novo lote</h2>
+            </header>
+            <div className="space-y-3 p-3">
+              <div>
+                <label htmlFor="qua-lote" className={labelClass}>Lote interno ou lote do fornecedor *</label>
+                <div className="flex min-w-0 gap-1.5">
+                  <input id="qua-lote" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void localizar() } }} placeholder="Informe a identificação física" className={inputClass} />
+                  <button type="button" disabled={busy || !query.trim()} onClick={() => void localizar()} aria-label="Localizar lote" className={`${buttonClass} shrink-0 bg-[#2D8DB8] text-white hover:bg-[#236f91]`}>
+                    <Search size={13} /> Localizar
+                  </button>
+                </div>
+              </div>
+
+              {lot && (
+                <div className="grid grid-cols-1 gap-2 border border-[#2E4A62] bg-[#071522] p-2.5 sm:grid-cols-2">
+                  <div className="min-w-0"><span className={labelClass}>Lote interno</span><p className="break-words text-xs font-black text-[#48B7C7]">{lot.lote_interno}</p></div>
+                  <div className="min-w-0"><span className={labelClass}>Produto / SKU</span><p className="break-words text-xs font-bold">{product ? `${product.codigo} — ${product.nome}` : 'Produto não disponível'}</p></div>
+                  <div><span className={labelClass}>Saldo disponível</span><p className="text-sm font-black tabular-nums">{lot.quantidade_disponivel}</p></div>
+                  <div><span className={labelClass}>Status de inspeção</span><p className="text-xs font-black uppercase text-amber-300">{lot.status_inspecao || 'Não informado'}</p></div>
+                </div>
+              )}
+
+              <div>
+                <label htmlFor="qua-motivo" className={labelClass}>Motivo técnico / descrição da não conformidade *</label>
+                <textarea id="qua-motivo" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Descreva o desvio identificado e a evidência observada..." rows={4} className="w-full resize-y rounded-none border border-[#2E4A62] bg-[#0E1E2F] p-2.5 text-xs font-semibold text-[#F4FBFD] outline-none placeholder:text-slate-500 focus:border-[#48B7C7]" />
+                <p className="mt-1 text-[9px] text-slate-500">Mínimo de 5 caracteres. A operação final é validada pela função do banco.</p>
+              </div>
+              <button type="button" disabled={busy || !lot || reason.trim().length < 5} onClick={() => void reter()} className={`${buttonClass} w-full border-rose-800 bg-rose-700 text-white hover:bg-rose-800`}>
+                <Ban size={13} /> {busy ? 'Processando retenção...' : 'Reter lote e registrar bloqueio'}
+              </button>
+            </div>
+          </section>
+
+          <section className={`${panelClass} xl:col-span-7`}>
+            <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2E4A62] bg-[#0E1E2F] px-3 py-2.5">
+              <div className="flex items-center gap-2"><ShieldCheck size={14} className="text-[#48B7C7]" /><h2 className="text-[10px] font-black uppercase tracking-widest">Quarentenas recentes</h2></div>
+              <span className="border border-[#2E4A62] px-2 py-1 text-[9px] font-black text-slate-300">{rows.length} REGISTROS · LIMITE 50</span>
+            </header>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left text-[10px]">
+                <thead><tr className="h-8 border-b border-[#2E4A62] bg-[#071522] text-[8px] font-black uppercase tracking-wider text-[#48B7C7]">
+                  <th className="whitespace-nowrap px-2.5 py-2">Data / hora</th><th className="px-2.5 py-2">Lote ID</th><th className="min-w-40 px-2.5 py-2">Motivo</th><th className="px-2.5 py-2">Status</th>
+                </tr></thead>
+                <tbody className="divide-y divide-[#2E4A62]/70">
+                  {rows.map((row) => <tr key={row.id} className="min-h-8 hover:bg-[#123B50]/60">
+                    <td className="whitespace-nowrap px-2.5 py-2 text-slate-400">{row.created_at ? new Date(row.created_at).toLocaleString('pt-BR') : '—'}</td>
+                    <td className="whitespace-nowrap px-2.5 py-2 font-black text-[#48B7C7]">{row.lote_id}</td>
+                    <td className="max-w-sm px-2.5 py-2 text-slate-200">{row.motivo}</td>
+                    <td className="whitespace-nowrap px-2.5 py-2"><span className={`inline-flex border px-1.5 py-0.5 text-[8px] font-black uppercase ${String(row.status).toUpperCase() === 'RETIDO' ? 'border-rose-800 bg-rose-950 text-rose-300' : 'border-[#2E4A62] bg-[#071522] text-slate-300'}`}>{row.status || '—'}</span></td>
+                  </tr>)}
+                  {!loading && rows.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-[10px] text-slate-400">Nenhuma retenção registrada para a empresa autenticada.</td></tr>}
+                  {loading && <tr><td colSpan={4} className="p-6 text-center text-[10px] text-slate-400">Consultando registros no Supabase...</td></tr>}
+                </tbody>
+              </table>
+            </div>
+            <footer className="flex items-start gap-2 border-t border-[#2E4A62] bg-[#071522] p-2.5 text-[9px] leading-relaxed text-slate-400">
+              <AlertTriangle size={13} className="mt-0.5 shrink-0 text-amber-400" />
+              <p>A tela registra retenção por meio da RPC existente <span className="font-bold text-slate-200">erp_reter_lote</span>. Não executa liberação, reclassificação nem expurgo diretamente; essas destinações exigem fluxo autorizado próprio.</p>
+            </footer>
+          </section>
         </div>
       </section>
     </main>
