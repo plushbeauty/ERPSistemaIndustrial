@@ -171,7 +171,7 @@ export default function QualidadeInspecaoProcesso() {
     setError('')
   }
 
-  function resetForm() {
+  function resetForm(showResetNotice = true) {
     setProduto('')
     setOp('')
     setMachine('')
@@ -190,7 +190,7 @@ export default function QualidadeInspecaoProcesso() {
     setManchado(false)
     setResultadoManual('APROVADO')
     setAcaoBloqueio('NENHUMA')
-    setNotice('Formulário limpo. Selecione entidades reais e preencha os dados da coleta.')
+    if (showResetNotice) setNotice('Formulário limpo. Selecione entidades reais e preencha os dados da coleta.')
     setError('')
   }
 
@@ -203,6 +203,7 @@ export default function QualidadeInspecaoProcesso() {
       const company = await supabase.rpc('erp_current_empresa_id')
       const user = await supabase.auth.getUser()
       if (company.error || !company.data) throw company.error ?? new Error('Empresa da sessão não identificada.')
+      if (user.error || !user.data.user) throw user.error ?? new Error('Sessão autenticada necessária para registrar a inspeção.')
       if (!produto) throw new Error('Selecione um produto cadastrado.')
       if (!instrument) throw new Error('Selecione o instrumento de medição.')
       if (!selectedInstrument || !validInstrument(selectedInstrument)) throw new Error('Instrumento bloqueado: exige calibração APROVADA e vigente.')
@@ -224,6 +225,7 @@ export default function QualidadeInspecaoProcesso() {
       const finalResult = resultadoCalculado
       if (finalResult === 'REPROVADO' && rejected < 1) throw new Error('Resultado reprovado exige ao menos uma unidade reprovada na quantidade registrada.')
       if (finalResult === 'APROVADO' && rejected > 0) throw new Error('Há unidades reprovadas; revise o resultado da inspeção antes de gravar.')
+      if (finalResult === 'CONDICIONAL' && rejected === 0) throw new Error('Resultado condicional exige informar ao menos uma unidade reprovada ou revisar a decisão.')
       const finalBlockAction = finalResult === 'APROVADO' ? 'NENHUMA' : acaoBloqueio
       if (finalResult !== 'APROVADO' && finalBlockAction === 'NENHUMA') throw new Error('Inspeção reprovada exige uma ação de bloqueio.')
       const measurementsPayload = abaAtiva === 'DIMENSIONAL'
@@ -264,8 +266,8 @@ export default function QualidadeInspecaoProcesso() {
         criado_por: user.data.user?.id || null,
       })
       if (result.error) throw result.error
+      resetForm(false)
       setNotice('Coleta registrada no histórico real de inspeções.')
-      resetForm()
       await load()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao salvar a inspeção.')
