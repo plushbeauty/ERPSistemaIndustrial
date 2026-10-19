@@ -61,7 +61,7 @@ export default function QualidadeGenealogiaLote() {
   const [qtdVinculada, setQtdVinculada] = useState('1')
   const [opId, setOpId] = useState('')
 
-  const loadGenealogyCatalog = useCallback(async () => {
+  const loadGenealogyCatalog = useCallback(async (): Promise<boolean> => {
     setLoading(true)
     setError('')
     try {
@@ -104,9 +104,11 @@ export default function QualidadeGenealogiaLote() {
       setProducts(productRows)
       setRows(mapped)
       setDatabaseStatus('LIDO')
+      return true
     } catch (loadError) {
       setDatabaseStatus('ERRO')
       setError(messageOf(loadError))
+      return false
     } finally {
       setLoading(false)
     }
@@ -197,7 +199,8 @@ export default function QualidadeGenealogiaLote() {
       if (result.error) throw result.error
       setSuccess('Vínculo enviado ao banco. Atualizando a listagem para confirmar a persistência...')
       clearForm()
-      await loadGenealogyCatalog()
+      const reloadConfirmed = await loadGenealogyCatalog()
+      if (!reloadConfirmed) throw new Error('O envio foi aceito, mas a releitura de confirmação falhou. Verifique a listagem antes de tentar cadastrar novamente.')
       setSuccess('Vínculo registrado e confirmado pela releitura do banco.')
     } catch (saveError) {
       setError(messageOf(saveError))
