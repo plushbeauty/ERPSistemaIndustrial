@@ -157,7 +157,7 @@ export default function QualidadeLiberacaoLotes() {
         <header className="flex flex-wrap items-center justify-between gap-3 border border-[#2E4A62] bg-[#0D2638] p-3">
           <div className="flex min-w-0 items-center gap-2.5">
             <span className="grid h-9 w-9 shrink-0 place-items-center border border-[#2D8DB8] bg-[#123B50] text-[#48B7C7]"><ClipboardCheck size={20} /></span>
-            <div><p className="text-[9px] font-black uppercase tracking-[.18em] text-[#48B7C7]">MOLDPLÁS ERP · SGQ</p><h1 className="text-sm font-black uppercase tracking-wide">Liberação de lotes e saldo físico</h1><p className="mt-0.5 text-[10px] text-slate-400">Rastreabilidade de produto, volume e parecer de conformidade</p></div>
+            <div><p className="text-[9px] font-black uppercase tracking-[.18em] text-[#48B7C7]">MOLDPLÁS ERP · SGQ</p><h1 className="text-sm font-black uppercase tracking-wide">Liberação de lotes e parecer SGQ</h1><p className="mt-0.5 text-[10px] text-slate-400">Registro de decisão de qualidade e rastreabilidade por empresa</p></div>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
             <button type="button" onClick={() => window.print()} className="inline-flex h-8 items-center gap-1.5 border border-[#2E4A62] px-2.5 text-[10px] font-bold hover:bg-[#123B50]"><Printer size={13} /> Imprimir</button>
