@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Activity, AlertTriangle, Boxes, ClipboardList, Factory, Printer, RefreshCw, Save } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 
 type Product = { id:string; codigo:string; nome:string; unidade:string|null }
 type Order = { id:string; numero_op:number|string; produto_id:string|null; quantidade:number|null; quantidade_planejada:number|null; quantidade_produzida:number|null; status:string; data_prevista:string|null; maquina_id:string|null }
@@ -21,8 +22,8 @@ const field='h-8 w-full rounded-[2px] border border-slate-300 bg-white px-3 text
 const label='flex flex-col gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-500'
 const btn='inline-flex h-8 items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold hover:bg-slate-50 disabled:opacity-50'
 const primary='inline-flex h-8 items-center justify-center gap-1 rounded-[2px] border border-sky-700 bg-sky-700 px-3 text-[10px] font-semibold text-white hover:bg-sky-800 disabled:opacity-50'
-const th='h-9 bg-slate-900 text-left text-[10px] font-black uppercase tracking-wider text-white border-b border-slate-800 align-middle h-8 border-b border-slate-200 bg-slate-100 px-2 text-left text-[9px] font-bold uppercase text-slate-600'
-const td='h-10 px-4 py-2 text-xs font-semibold text-slate-800 border-b border-slate-200 align-middle h-[32px] border-b border-slate-100 px-2 text-[10px] text-slate-700'
+const th='h-8 border-b border-slate-200 bg-slate-100 px-2 text-left align-middle text-[9px] font-bold uppercase tracking-wider text-slate-600'
+const td='h-[32px] border-b border-slate-100 px-2 py-1 align-middle text-[10px] font-medium text-slate-700'
 const localDateTime=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
 const messageOf=(e:unknown)=>e instanceof Error?e.message:'Falha na execução do PCP.'
 
@@ -48,15 +49,23 @@ export default function PCPExecucaoIndustrial(){
    const tenant=await supabase.rpc('erp_current_empresa_id')
    if(tenant.error||typeof tenant.data!=='string'||!tenant.data)throw tenant.error??new Error('Empresa da sessão não identificada; PCP bloqueado.')
    const company=tenant.data
-   const [p,o,m,pr,a]=await Promise.all([
-    supabase.from('erp_produtos').select('id,codigo,nome,unidade').eq('empresa_id',company).eq('ativo',true).order('codigo').limit(3000),
-    supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,quantidade_planejada,quantidade_produzida,status,data_prevista,maquina_id').eq('empresa_id',company).order('created_at',{ascending:false}).limit(2000),
-    supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id',company).eq('ativo',true).order('codigo').limit(1000),
-    supabase.from('erp_processos_industriais').select('id,codigo,nome').eq('empresa_id',company).eq('ativo',true).order('codigo').limit(1000),
-    supabase.from('erp_apontamentos_processo').select('id,ordem_producao_id,maquina_id,processo_id,inicio_em,fim_em,quantidade_planejada,quantidade_boa,quantidade_refugada,motivo_parada,observacoes,created_at').eq('empresa_id',company).order('created_at',{ascending:false}).limit(1000)
+   const [productRows, orderRows, machineRows, processRows, entryRows] = await Promise.all([
+    fetchAllPages<Product>((from, to) => supabase.from('erp_produtos')
+     .select('id,codigo,nome,unidade', { count: 'exact' }).eq('empresa_id', company).eq('ativo', true).order('codigo').range(from, to)),
+    fetchAllPages<Order>((from, to) => supabase.from('erp_ordens_producao')
+     .select('id,numero_op,produto_id,quantidade_planejada,quantidade_produzida,status,data_prevista,maquina_id', { count: 'exact' }).eq('empresa_id', company).order('created_at', { ascending: false }).range(from, to)),
+    fetchAllPages<Machine>((from, to) => supabase.from('erp_maquinas')
+     .select('id,codigo,nome', { count: 'exact' }).eq('empresa_id', company).eq('ativo', true).order('codigo').range(from, to)),
+    fetchAllPages<Process>((from, to) => supabase.from('erp_processos_industriais')
+     .select('id,codigo,nome', { count: 'exact' }).eq('empresa_id', company).eq('ativo', true).order('codigo').range(from, to)),
+    fetchAllPages<Entry>((from, to) => supabase.from('erp_apontamentos_processo')
+     .select('id,ordem_producao_id,maquina_id,processo_id,inicio_em,fim_em,quantidade_planejada,quantidade_boa,quantidade_refugada,motivo_parada,observacoes,created_at', { count: 'exact' }).eq('empresa_id', company).order('created_at', { ascending: false }).range(from, to))
    ])
-   for(const r of [p,o,m,pr,a])if(r.error)throw r.error
-   setProducts((p.data??[]) as Product[]);setOrders((o.data??[]) as Order[]);setMachines((m.data??[]) as Machine[]);setProcesses((pr.data??[]) as Process[]);setEntries((a.data??[]) as Entry[])
+   setProducts(productRows)
+   setOrders(orderRows)
+   setMachines(machineRows)
+   setProcesses(processRows)
+   setEntries(entryRows)
   }catch(e){setError(messageOf(e))}finally{setBusy(false)}
  },[])
  useEffect(()=>{void load()},[load])
