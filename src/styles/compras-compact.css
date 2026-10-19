@@ -353,15 +353,15 @@
 .buy-report button,
 .supplier-page button,
 .compras-pedido-page button {
-  background-color: #123B50;
-  border-color: #2C6478;
-  color: #F4FBFD;
+  background-color: #123B50 !important;
+  border-color: #2C6478 !important;
+  color: #F4FBFD !important;
 }
 .compras-compact button.industrial-primary,
 .compras-compact button.buy-primary,
 .compras-compact button.bg-blue-600,
 .buy-shell button.buy-primary,
-.compras-rfq-compact button.bg-\[\#2D8DB8\],
+.compras-rfq-compact button[class*="bg-[#2D8DB8]"],
 .buy-report button.primary,
 .supplier-page button.bg-blue-600,
 .compras-pedido-page button.bg-blue-600,
