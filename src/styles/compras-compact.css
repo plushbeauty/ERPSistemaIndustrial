@@ -54,3 +54,441 @@
 .compras-compact .supplier-page form{padding:8px!important;border-radius:2px!important}
 @media(max-width:900px){.compras-compact .pc-grid{grid-template-columns:1fr 1fr}.compras-compact .pc-page{padding:6px!important}}
 @media(max-width:620px){.compras-compact .pc-grid{grid-template-columns:1fr}}
+
+
+/*
+ * Padronização visual transversal de Compras — revisão 2026-10-19.
+ * Escopo restrito às superfícies do módulo de suprimentos; não altera o shell global.
+ * Contrato: campos 30px, labels 9px, radius 2px, tabelas densas e paleta industrial.
+ */
+.buy-shell,
+.compras-rfq-compact,
+.buy-report,
+.supplier-page,
+.compras-pedido-page {
+  --compras-ink: #123B50;
+  --compras-blue: #2D8DB8;
+  --compras-cyan: #48B7C7;
+  --compras-canvas: #F4FBFD;
+  --compras-border: #CBDDE5;
+  font-size: 11px;
+}
+.buy-shell { background: var(--compras-canvas) !important; color: #172B3A !important; }
+.buy-shell .buy-sidebar { width: auto !important; min-width: 0 !important; flex-direction: row !important; align-items: center !important; gap: 4px !important; margin: 0 0 8px !important; padding: 6px !important; border: 1px solid var(--compras-border) !important; background: #fff !important; color: var(--compras-ink) !important; box-shadow: none !important; overflow-x: auto !important; }
+.buy-shell .buy-brand, .buy-shell .buy-section, .buy-shell .buy-spacer { display: none !important; }
+.buy-shell .buy-nav { flex: 0 0 auto !important; min-height: 30px !important; height: 30px !important; padding: 0 8px !important; gap: 5px !important; border-radius: 2px !important; color: #375563 !important; white-space: nowrap !important; }
+.buy-shell .buy-nav b { font-size: 10px !important; font-weight: 700 !important; }
+.buy-shell .buy-nav small { display: none !important; }
+.buy-shell .buy-nav.active { background: var(--compras-blue) !important; color: #fff !important; }
+.buy-shell .buy-top { height: 42px !important; padding: 0 10px !important; gap: 8px !important; }
+.buy-shell .buy-top-title strong { font-size: 14px !important; color: var(--compras-ink) !important; }
+.buy-shell .buy-head { padding: 8px !important; gap: 8px !important; align-items: center !important; }
+.buy-shell .buy-head h1 { margin: 2px 0 !important; font-size: 18px !important; font-weight: 600 !important; color: var(--compras-ink) !important; }
+.buy-shell .buy-head p { font-size: 10px !important; }
+.buy-shell .buy-content { padding: 0 8px 8px !important; }
+.buy-shell .buy-commandbar { display: flex !important; flex-wrap: wrap !important; gap: 4px !important; padding: 0 8px 8px !important; }
+.buy-shell button, .buy-shell input, .buy-shell select, .buy-shell textarea { border-radius: 2px !important; }
+.buy-shell .buy-card, .buy-shell .buy-grid > section, .buy-shell .buy-kpis > article { border-radius: 2px !important; box-shadow: none !important; }
+.buy-shell .buy-card { border-color: var(--compras-border) !important; }
+.buy-shell .buy-card header span, .buy-shell .buy-head span { color: #236F91 !important; }
+.buy-shell .buy-primary { background: var(--compras-blue) !important; border-color: var(--compras-blue) !important; }
+.buy-shell input, .buy-shell select { min-width: 0; }
+.buy-shell label { font-size: 9px !important; letter-spacing: .04em !important; text-transform: uppercase; }
+.buy-shell table th, .buy-shell table td { padding: 4px 6px !important; font-size: 10px !important; }
+.buy-shell table th { height: 28px !important; }
+.buy-shell table td { min-height: 30px !important; }
+.compras-rfq-compact { background: var(--compras-canvas) !important; color: #172B3A !important; }
+.compras-rfq-compact > header > div { min-height: 42px !important; padding: 6px 10px !important; }
+.compras-rfq-compact h1 { font-size: 18px !important; font-weight: 600 !important; color: var(--compras-ink) !important; }
+.compras-rfq-compact input, .compras-rfq-compact select { height: 30px !important; min-height: 30px !important; max-width: 100%; border-radius: 2px !important; font-size: 11px !important; }
+.compras-rfq-compact textarea { min-height: 58px !important; border-radius: 2px !important; font-size: 11px !important; }
+.compras-rfq-compact label { font-size: 9px !important; line-height: 1.2 !important; text-transform: uppercase; letter-spacing: .04em; }
+.compras-rfq-compact button { min-height: 30px !important; height: 30px !important; padding: 0 8px !important; border-radius: 2px !important; font-size: 10px !important; }
+.compras-rfq-compact section { padding: 8px !important; }
+.compras-rfq-compact table th, .compras-rfq-compact table td { padding: 4px 6px !important; font-size: 10px !important; }
+.buy-report { padding: 8px !important; background: var(--compras-canvas) !important; }
+.buy-report .buy-report-wrap { max-width: none !important; }
+.buy-report .buy-report-head { gap: 8px !important; margin-bottom: 8px !important; align-items: center !important; }
+.buy-report .buy-report-head h1 { margin: 2px 0 !important; font-size: 18px !important; font-weight: 600 !important; color: var(--compras-ink) !important; }
+.buy-report .buy-report-card { border: 1px solid var(--compras-border) !important; border-radius: 2px !important; padding: 8px !important; box-shadow: none !important; }
+.buy-report input, .buy-report select { height: 30px !important; min-height: 30px !important; max-width: 100%; border-radius: 2px !important; font-size: 11px !important; }
+.buy-report label { font-size: 9px !important; text-transform: uppercase; letter-spacing: .04em; }
+.buy-report button { min-height: 30px !important; height: 30px !important; border-radius: 2px !important; font-size: 10px !important; }
+.buy-report .buy-report-table th, .buy-report .buy-report-table td { padding: 4px 6px !important; font-size: 10px !important; }
+.supplier-page { padding: 8px !important; background: var(--compras-canvas) !important; }
+.supplier-page .supplier-page-head { margin-bottom: 8px !important; }
+.supplier-page .supplier-page-head h1 { font-size: 18px !important; font-weight: 600 !important; color: var(--compras-ink) !important; }
+.supplier-page section, .supplier-page form { border-radius: 2px !important; box-shadow: none !important; padding: 8px !important; }
+.supplier-page label { font-size: 9px !important; text-transform: uppercase; letter-spacing: .04em; }
+.supplier-page input, .supplier-page select { height: 30px !important; min-height: 30px !important; max-width: 100%; border-radius: 2px !important; font-size: 11px !important; }
+.supplier-page button { min-height: 30px !important; height: 30px !important; border-radius: 2px !important; font-size: 10px !important; }
+.compras-pedido-page { background: var(--compras-canvas) !important; color: #172B3A !important; }
+.compras-pedido-page > main { padding: 8px !important; }
+.compras-pedido-page section { border-color: var(--compras-border) !important; border-radius: 2px !important; box-shadow: none !important; }
+.compras-pedido-page .bg-neutral-950 { background: #fff !important; }
+.compras-pedido-page .bg-neutral-900 { background: #F4FBFD !important; }
+.compras-pedido-page .bg-neutral-950 { color: #172B3A !important; }
+.compras-pedido-page .bg-neutral-950 .text-white:not(button):not([role="status"]) { color: #172B3A !important; }
+.compras-pedido-page .text-neutral-400 { color: #536D7B !important; }
+.compras-pedido-page .border-neutral-800, .compras-pedido-page .border-neutral-700 { border-color: var(--compras-border) !important; }
+.compras-pedido-page input, .compras-pedido-page select, .compras-pedido-page textarea { box-sizing: border-box; max-width: 100%; min-width: 0; border-radius: 2px !important; font-size: 11px !important; }
+.compras-pedido-page label { font-size: 9px !important; text-transform: uppercase; letter-spacing: .04em; }
+.compras-pedido-page table th, .compras-pedido-page table td { padding: 4px 6px !important; font-size: 10px !important; }
+@media (max-width: 760px) {
+  .buy-shell { display: block !important; }
+  .buy-shell .buy-sidebar { width: 100% !important; }
+  .buy-shell .buy-top-right { gap: 5px !important; font-size: 9px !important; }
+  .buy-shell .buy-head { flex-wrap: wrap !important; }
+  .compras-rfq-compact .grid-cols-2, .compras-rfq-compact .grid-cols-3, .compras-rfq-compact .grid-cols-4 { grid-template-columns: minmax(0, 1fr) !important; }
+  .compras-pedido-page .grid-cols-12 { grid-template-columns: minmax(0, 1fr) !important; }
+  .compras-pedido-page .col-span-3, .compras-pedido-page .col-span-4, .compras-pedido-page .col-span-6 { grid-column: span 1 / span 1 !important; }
+}
+
+
+/* Continuação da revisão ponta a ponta — superfícies que não estavam cobertas pelo primeiro passe. */
+.compras-requisicoes-page { background: var(--compras-canvas) !important; padding: 8px !important; }
+.compras-requisicoes-page > header { max-width: none !important; gap: 8px !important; padding-bottom: 8px !important; }
+.compras-requisicoes-page > header h1 { font-size: 18px !important; line-height: 1.25 !important; font-weight: 600 !important; color: var(--compras-ink) !important; }
+.compras-requisicoes-page > header p { font-size: 9px !important; }
+.compras-requisicoes-page button { min-height: 30px !important; height: 30px !important; padding: 0 8px !important; border-radius: 2px !important; font-size: 10px !important; }
+.compras-requisicoes-page section { border-radius: 2px !important; padding: 8px !important; box-shadow: none !important; }
+.compras-requisicoes-page input, .compras-requisicoes-page select, .compras-requisicoes-page textarea { min-height: 30px !important; height: 30px !important; max-width: 100%; border-radius: 2px !important; padding: 0 6px !important; font-size: 11px !important; }
+.compras-requisicoes-page table th { height: 28px !important; padding: 4px 6px !important; font-size: 9px !important; }
+.compras-requisicoes-page table td { height: 32px !important; padding: 4px 6px !important; font-size: 10px !important; }
+.compras-requisicoes-page tr { height: 32px !important; }
+.compras-analise-page { background: var(--compras-canvas) !important; color: #172B3A !important; }
+.compras-analise-page > header { align-items: center !important; padding-bottom: 8px !important; }
+.compras-analise-page h1 { color: var(--compras-ink) !important; font-size: 18px !important; font-weight: 600 !important; }
+.compras-analise-page section { border-radius: 2px !important; padding: 8px !important; }
+.compras-analise-page input, .compras-analise-page select { min-height: 30px !important; height: 30px !important; max-width: 100%; border-radius: 2px !important; font-size: 11px !important; }
+.compras-analise-page button, .compras-analise-page a { border-radius: 2px !important; }
+.compras-solicitacao-page { padding: 8px !important; max-width: none !important; background: var(--compras-canvas) !important; }
+.compras-solicitacao-page > header { margin-bottom: 8px !important; }
+.compras-solicitacao-page h1 { font-size: 18px !important; font-weight: 600 !important; color: var(--compras-ink) !important; }
+.compras-solicitacao-page input, .compras-solicitacao-page select, .compras-solicitacao-page textarea { box-sizing: border-box; min-height: 30px !important; height: 30px !important; max-width: 100%; border-radius: 2px !important; padding: 0 6px !important; font-size: 11px !important; }
+.compras-solicitacao-page button { min-height: 30px !important; height: 30px !important; padding: 0 8px !important; border-radius: 2px !important; font-size: 10px !important; }
+.compras-solicitacao-page section, .compras-solicitacao-page article { border-radius: 2px !important; }
+.receipt-workspace.compras-compact { padding: 8px !important; }
+.receipt-workspace.compras-compact .industrial-page-head { gap: 8px !important; margin-bottom: 8px !important; }
+.receipt-workspace.compras-compact .industrial-page-head h1 { font-size: 18px !important; }
+.receipt-workspace.compras-compact .industrial-panel { padding: 8px !important; border-radius: 2px !important; box-shadow: none !important; }
+.receipt-workspace.compras-compact .industrial-section-head { margin-bottom: 6px !important; }
+@media (max-width: 760px) {
+  .compras-requisicoes-page > header { align-items: flex-start !important; }
+  .compras-requisicoes-page > header h1 { font-size: 16px !important; }
+  .compras-solicitacao-page { padding: 6px !important; }
+}
+
+
+/* Paleta oficial MOLDPLÁS — aplicada ao módulo Compras em 2026-10-19.
+   Escopo local: não altera o shell global nem módulos externos a Compras. */
+.compras-compact,
+.buy-shell,
+.compras-rfq-compact,
+.buy-report,
+.supplier-page,
+.compras-pedido-page {
+  --compras-bg: #0E1E2F;
+  --compras-panel: #123B50;
+  --compras-accent: #48B7C7;
+  --compras-text: #F4FBFD;
+  --compras-success: #3A9D78;
+  --compras-warning: #E6A34A;
+  --compras-danger: #D65B61;
+  --compras-border: #2C6478;
+  background-color: var(--compras-bg) !important;
+  color: var(--compras-text) !important;
+}
+.compras-compact :is(h1,h2,h3,h4,p,span,small,strong,th,td,legend),
+.buy-shell :is(h1,h2,h3,h4,p,span,small,strong,th,td,legend),
+.compras-rfq-compact :is(h1,h2,h3,h4,p,span,small,strong,th,td,legend),
+.buy-report :is(h1,h2,h3,h4,p,span,small,strong,th,td,legend),
+.supplier-page :is(h1,h2,h3,h4,p,span,small,strong,th,td,legend),
+.compras-pedido-page :is(h1,h2,h3,h4,p,span,small,strong,th,td,legend) {
+  color: var(--compras-text);
+}
+.compras-compact :is(section,article,fieldset,.industrial-panel,.industrial-form-page,.pc-card,.pc-list,.pc-detail,.pc-modal,.receipt-item,.receipt-summary,.buy-card,.buy-report-card),
+.buy-shell :is(.buy-card,.buy-grid>section,.buy-kpis>article,.buy-sidebar),
+.compras-rfq-compact section,
+.buy-report .buy-report-card,
+.supplier-page :is(section,form),
+.compras-pedido-page section {
+  background-color: var(--compras-panel) !important;
+  color: var(--compras-text) !important;
+  border-color: var(--compras-border) !important;
+}
+.compras-compact :is(input,select,textarea),
+.buy-shell :is(input,select,textarea),
+.compras-rfq-compact :is(input,select,textarea),
+.buy-report :is(input,select,textarea),
+.supplier-page :is(input,select,textarea),
+.compras-pedido-page :is(input,select,textarea) {
+  background-color: #0B293A !important;
+  color: var(--compras-text) !important;
+  border: 1px solid var(--compras-border) !important;
+  caret-color: var(--compras-accent);
+}
+.compras-compact :is(input,select,textarea)::placeholder,
+.buy-shell :is(input,select,textarea)::placeholder,
+.compras-rfq-compact :is(input,select,textarea)::placeholder,
+.buy-report :is(input,select,textarea)::placeholder,
+.supplier-page :is(input,select,textarea)::placeholder,
+.compras-pedido-page :is(input,select,textarea)::placeholder {
+  color: #B4CDD7 !important;
+  opacity: 1;
+}
+.compras-compact :is(input,select,textarea):focus,
+.buy-shell :is(input,select,textarea):focus,
+.compras-rfq-compact :is(input,select,textarea):focus,
+.buy-report :is(input,select,textarea):focus,
+.supplier-page :is(input,select,textarea):focus,
+.compras-pedido-page :is(input,select,textarea):focus {
+  outline: 1px solid var(--compras-accent) !important;
+  border-color: var(--compras-accent) !important;
+  box-shadow: 0 0 0 1px rgb(72 183 199 / 22%) !important;
+}
+.compras-compact table,
+.buy-shell table,
+.compras-rfq-compact table,
+.buy-report table,
+.supplier-page table,
+.compras-pedido-page table {
+  color: var(--compras-text);
+  border-color: var(--compras-border);
+}
+.compras-compact thead,
+.buy-shell thead,
+.compras-rfq-compact thead,
+.buy-report thead,
+.supplier-page thead,
+.compras-pedido-page thead {
+  background: #0A2A3B !important;
+  color: var(--compras-text) !important;
+}
+.compras-compact tbody tr,
+.buy-shell tbody tr,
+.compras-rfq-compact tbody tr,
+.buy-report tbody tr,
+.supplier-page tbody tr,
+.compras-pedido-page tbody tr {
+  border-color: var(--compras-border) !important;
+}
+.compras-compact :is(button,.industrial-primary,.buy-primary),
+.buy-shell :is(button,.buy-primary),
+.compras-rfq-compact .bg-blue-600,
+.buy-report .bg-blue-600,
+.supplier-page .bg-blue-600,
+.compras-pedido-page .bg-blue-600 {
+  background-color: var(--compras-accent) !important;
+  border-color: var(--compras-accent) !important;
+  color: #0E1E2F !important;
+}
+.compras-compact :is(button,.industrial-primary,.buy-primary):hover,
+.buy-shell :is(button,.buy-primary):hover {
+  filter: brightness(1.08);
+}
+.compras-compact :is(.text-emerald-500,.text-emerald-600,.text-green-500,.text-green-600),
+.buy-shell :is(.text-emerald-500,.text-emerald-600,.text-green-500,.text-green-600) { color: var(--compras-success) !important; }
+.compras-compact :is(.text-amber-500,.text-amber-600,.text-orange-500,.text-orange-600),
+.buy-shell :is(.text-amber-500,.text-amber-600,.text-orange-500,.text-orange-600) { color: var(--compras-warning) !important; }
+.compras-compact :is(.text-red-500,.text-red-600,.text-rose-500,.text-rose-600),
+.buy-shell :is(.text-red-500,.text-red-600,.text-rose-500,.text-rose-600) { color: var(--compras-danger) !important; }
+.compras-compact :is(.border,.border-slate-200,.border-gray-200,.border-neutral-200),
+.buy-shell :is(.border,.border-slate-200,.border-gray-200,.border-neutral-200),
+.compras-rfq-compact :is(.border,.border-slate-200,.border-gray-200),
+.buy-report :is(.border,.border-slate-200,.border-gray-200),
+.supplier-page :is(.border,.border-slate-200,.border-gray-200),
+.compras-pedido-page :is(.border,.border-slate-200,.border-gray-200) {
+  border-color: var(--compras-border) !important;
+}
+.compras-compact .bg-white,
+.buy-shell .bg-white,
+.compras-rfq-compact .bg-white,
+.buy-report .bg-white,
+.supplier-page .bg-white,
+.compras-pedido-page .bg-white {
+  background-color: var(--compras-panel) !important;
+}
+.compras-compact .text-slate-900,
+.compras-compact .text-slate-800,
+.compras-compact .text-gray-900,
+.compras-compact .text-gray-800,
+.compras-compact .text-neutral-900,
+.buy-shell .text-slate-900,
+.buy-shell .text-slate-800,
+.buy-shell .text-gray-900,
+.buy-shell .text-gray-800,
+.buy-shell .text-neutral-900,
+.compras-rfq-compact .text-slate-900,
+.compras-rfq-compact .text-gray-900,
+.buy-report .text-slate-900,
+.buy-report .text-gray-900,
+.supplier-page .text-slate-900,
+.supplier-page .text-gray-900,
+.compras-pedido-page .text-slate-900,
+.compras-pedido-page .text-gray-900 {
+  color: var(--compras-text) !important;
+}
+.compras-compact .text-slate-500,
+.compras-compact .text-gray-500,
+.compras-compact .text-neutral-500,
+.buy-shell .text-slate-500,
+.buy-shell .text-gray-500,
+.compras-rfq-compact .text-slate-500,
+.compras-rfq-compact .text-gray-500,
+.buy-report .text-slate-500,
+.buy-report .text-gray-500,
+.supplier-page .text-slate-500,
+.supplier-page .text-gray-500,
+.compras-pedido-page .text-slate-500,
+.compras-pedido-page .text-gray-500 {
+  color: #B4CDD7 !important;
+}
+
+
+/* Refinamento de contraste e hierarquia: botões comuns não herdam cor de ação primária. */
+.compras-compact button,
+.buy-shell button,
+.compras-rfq-compact button,
+.buy-report button,
+.supplier-page button,
+.compras-pedido-page button {
+  background-color: #123B50 !important;
+  border-color: #2C6478 !important;
+  color: #F4FBFD !important;
+}
+.compras-compact button.industrial-primary,
+.compras-compact button.buy-primary,
+.compras-compact button.bg-blue-600,
+.buy-shell button.buy-primary,
+.compras-rfq-compact button[class*="bg-[#2D8DB8]"],
+.buy-report button.primary,
+.supplier-page button.bg-blue-600,
+.compras-pedido-page button.bg-blue-600,
+.compras-compact .sales-button--primary {
+  background-color: #48B7C7 !important;
+  border-color: #48B7C7 !important;
+  color: #0E1E2F !important;
+}
+.compras-compact button.industrial-danger,
+.compras-compact button.bg-red-600,
+.compras-compact button.bg-rose-600,
+.compras-compact .sales-button--danger {
+  background-color: #D65B61 !important;
+  border-color: #D65B61 !important;
+  color: #FFFFFF !important;
+}
+.compras-compact button.industrial-warning,
+.compras-compact .sales-button--warning {
+  background-color: #E6A34A !important;
+  border-color: #E6A34A !important;
+  color: #0E1E2F !important;
+}
+.compras-compact .buy-top {
+  background: #123B50 !important;
+  color: #F4FBFD !important;
+  border-color: #2C6478 !important;
+}
+.compras-compact .buy-top-title strong,
+.compras-compact .buy-top-right,
+.compras-compact .buy-user {
+  color: #F4FBFD !important;
+}
+.compras-compact .buy-user {
+  background: #0B293A !important;
+  border-color: #2C6478 !important;
+}
+.compras-compact .buy-commandbar button,
+.compras-compact .buy-actions button,
+.compras-compact .buy-card header button,
+.compras-compact .buy-list-actions button {
+  background: #123B50 !important;
+  color: #F4FBFD !important;
+  border-color: #2C6478 !important;
+}
+.compras-compact .buy-message {
+  background: #123B50 !important;
+  color: #F4FBFD !important;
+  border-color: #3A9D78 !important;
+}
+.compras-compact .buy-flow button {
+  background: #0B293A !important;
+  color: #F4FBFD !important;
+  border-color: #2C6478 !important;
+}
+.compras-compact .buy-flow button:hover,
+.compras-compact .buy-nav:hover {
+  background: #1A5066 !important;
+}
+.compras-compact .buy-nav.active {
+  background: #48B7C7 !important;
+  color: #0E1E2F !important;
+}
+.compras-compact .buy-nav.active small {
+  color: #0E1E2F !important;
+}
+.compras-compact .buy-top .buy-tablet {
+  background: #E6A34A !important;
+  color: #0E1E2F !important;
+  border-color: #E6A34A !important;
+}
+.compras-compact .sales-workspace {
+  min-height: 100vh;
+  padding: 8px !important;
+  background: #0E1E2F !important;
+  color: #F4FBFD !important;
+}
+.compras-compact .sales-page-heading,
+.compras-compact .sales-workspace section:not(.sales-page-heading) {
+  background: #123B50 !important;
+  border-color: #2C6478 !important;
+  color: #F4FBFD !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+.compras-compact .sales-page-heading :is(h1,h2,p,span),
+.compras-compact .sales-workspace :is(th,td,label) {
+  color: #F4FBFD !important;
+}
+.compras-compact .sales-workspace input,
+.compras-compact .sales-workspace select,
+.compras-compact .sales-workspace textarea {
+  background: #0B293A !important;
+  color: #F4FBFD !important;
+  border-color: #2C6478 !important;
+  min-height: 30px !important;
+  height: 30px !important;
+  border-radius: 2px !important;
+}
+.compras-compact .sales-workspace .sales-button--secondary,
+.compras-compact .sales-workspace .sales-icon-action {
+  background: #0B293A !important;
+  color: #F4FBFD !important;
+  border-color: #2C6478 !important;
+}
+.compras-compact .sales-workspace .sales-alert {
+  background: #123B50 !important;
+  color: #F4FBFD !important;
+  border-color: #48B7C7 !important;
+}
+
+
+/* Ajustes finais de relatórios e mensagens de validação no tema escuro. */
+.buy-report [style*="background: #fef2f2"],
+.buy-report [style*="background: #ecfdf5"],
+.buy-report [style*="background: rgb(254, 242, 242)"],
+.buy-report [style*="background: rgb(236, 253, 245)"] {
+  background: #123B50 !important;
+  color: #F4FBFD !important;
+  border: 1px solid #2C6478 !important;
+}
+.buy-report .recharts-default-tooltip {
+  background: #0B293A !important;
+  border: 1px solid #2C6478 !important;
+  color: #F4FBFD !important;
+  border-radius: 2px !important;
+}
+.buy-report .recharts-tooltip-label,
+.buy-report .recharts-tooltip-item {
+  color: #F4FBFD !important;
+}

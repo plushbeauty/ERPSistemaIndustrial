@@ -159,7 +159,7 @@ export default function RecebimentoMateriais() {
       setSaving(false)
     }
   }
-  return <div className="industrial-form-page receipt-workspace">
+  return <div className="compras-compact industrial-form-page receipt-workspace">
     <header className="industrial-page-head">
       <div><span className="industrial-eyebrow">ALMOXARIFADO • ENTRADA DE MATERIAIS</span><h1>Recebimento de materiais</h1><p>Registre a entrada pela NF-e, manualmente ou pelo XML, e faça a rastreabilidade por lote.</p></div>
       <div className="receipt-actions"><button className="industrial-secondary" type="button" onClick={reset}><RefreshCw size={17}/> Novo</button><button className="industrial-secondary" type="button" onClick={() => window.print()}><Printer size={17}/> Imprimir</button><a className="industrial-secondary" href="/erp-industrial"><ArrowLeft size={17}/> Voltar</a></div>

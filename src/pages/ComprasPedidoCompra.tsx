@@ -129,7 +129,7 @@ export default function ComprasPedidoCompra() {
     }
   }
 
-  return <div className="min-h-screen bg-neutral-900 text-white">
+  return <div className="compras-compact compras-pedido-page min-h-screen bg-[#F4FBFD] text-slate-900">
     <ERPHeader />
     <main className="p-2 space-y-2">
       {(error || message) && <div role={error ? 'alert' : 'status'} className={`h-[30px] flex items-center px-2 rounded-[2px] border text-[11px] ${error ? 'border-red-500 bg-red-50/50 text-red-700' : 'border-emerald-700 bg-emerald-950 text-emerald-300'}`}>{error || message}</div>}
