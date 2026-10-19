@@ -202,10 +202,12 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       return
     }
     if (item.action === 'qualityTablet') {
-      setTabletOpen(true)
+      // REVISÃO 2026-10-19: o menu Qualidade deve abrir a Central SGQ Tablet atual,
+      // não o modal legado TabletMenuModal.
+      setTabletOpen(false)
       setOpenMenu(null)
-      
-      
+      setStartMenuOpen(false)
+      navigate('/qualidade/tablet')
       return
     }
     go(item.route)
