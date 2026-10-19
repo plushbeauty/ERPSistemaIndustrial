@@ -344,3 +344,130 @@
 .compras-pedido-page .text-gray-500 {
   color: #B4CDD7 !important;
 }
+
+
+/* Refinamento de contraste e hierarquia: botões comuns não herdam cor de ação primária. */
+.compras-compact button,
+.buy-shell button,
+.compras-rfq-compact button,
+.buy-report button,
+.supplier-page button,
+.compras-pedido-page button {
+  background-color: #123B50;
+  border-color: #2C6478;
+  color: #F4FBFD;
+}
+.compras-compact button.industrial-primary,
+.compras-compact button.buy-primary,
+.compras-compact button.bg-blue-600,
+.buy-shell button.buy-primary,
+.compras-rfq-compact button.bg-\[\#2D8DB8\],
+.buy-report button.primary,
+.supplier-page button.bg-blue-600,
+.compras-pedido-page button.bg-blue-600,
+.compras-compact .sales-button--primary {
+  background-color: #48B7C7 !important;
+  border-color: #48B7C7 !important;
+  color: #0E1E2F !important;
+}
+.compras-compact button.industrial-danger,
+.compras-compact button.bg-red-600,
+.compras-compact button.bg-rose-600,
+.compras-compact .sales-button--danger {
+  background-color: #D65B61 !important;
+  border-color: #D65B61 !important;
+  color: #FFFFFF !important;
+}
+.compras-compact button.industrial-warning,
+.compras-compact .sales-button--warning {
+  background-color: #E6A34A !important;
+  border-color: #E6A34A !important;
+  color: #0E1E2F !important;
+}
+.compras-compact .buy-top {
+  background: #123B50 !important;
+  color: #F4FBFD !important;
+  border-color: #2C6478 !important;
+}
+.compras-compact .buy-top-title strong,
+.compras-compact .buy-top-right,
+.compras-compact .buy-user {
+  color: #F4FBFD !important;
+}
+.compras-compact .buy-user {
+  background: #0B293A !important;
+  border-color: #2C6478 !important;
+}
+.compras-compact .buy-commandbar button,
+.compras-compact .buy-actions button,
+.compras-compact .buy-card header button,
+.compras-compact .buy-list-actions button {
+  background: #123B50 !important;
+  color: #F4FBFD !important;
+  border-color: #2C6478 !important;
+}
+.compras-compact .buy-message {
+  background: #123B50 !important;
+  color: #F4FBFD !important;
+  border-color: #3A9D78 !important;
+}
+.compras-compact .buy-flow button {
+  background: #0B293A !important;
+  color: #F4FBFD !important;
+  border-color: #2C6478 !important;
+}
+.compras-compact .buy-flow button:hover,
+.compras-compact .buy-nav:hover {
+  background: #1A5066 !important;
+}
+.compras-compact .buy-nav.active {
+  background: #48B7C7 !important;
+  color: #0E1E2F !important;
+}
+.compras-compact .buy-nav.active small {
+  color: #0E1E2F !important;
+}
+.compras-compact .buy-top .buy-tablet {
+  background: #E6A34A !important;
+  color: #0E1E2F !important;
+  border-color: #E6A34A !important;
+}
+.compras-compact .sales-workspace {
+  min-height: 100vh;
+  padding: 8px !important;
+  background: #0E1E2F !important;
+  color: #F4FBFD !important;
+}
+.compras-compact .sales-page-heading,
+.compras-compact .sales-workspace section:not(.sales-page-heading) {
+  background: #123B50 !important;
+  border-color: #2C6478 !important;
+  color: #F4FBFD !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+.compras-compact .sales-page-heading :is(h1,h2,p,span),
+.compras-compact .sales-workspace :is(th,td,label) {
+  color: #F4FBFD !important;
+}
+.compras-compact .sales-workspace input,
+.compras-compact .sales-workspace select,
+.compras-compact .sales-workspace textarea {
+  background: #0B293A !important;
+  color: #F4FBFD !important;
+  border-color: #2C6478 !important;
+  min-height: 30px !important;
+  height: 30px !important;
+  border-radius: 2px !important;
+}
+.compras-compact .sales-workspace .sales-button--secondary,
+.compras-compact .sales-workspace .sales-icon-action {
+  background: #0B293A !important;
+  color: #F4FBFD !important;
+  border-color: #2C6478 !important;
+}
+.compras-compact .sales-workspace .sales-alert {
+  background: #123B50 !important;
+  color: #F4FBFD !important;
+  border-color: #48B7C7 !important;
+}
