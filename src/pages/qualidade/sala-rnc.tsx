@@ -214,8 +214,8 @@ export default function SalaRNC() {
     setNotice('')
     try {
       const whyAnswers = whys.filter(item => item.answer.trim()).map(item => ({ question: item.question, answer: item.answer.trim(), evidence: item.evidence.trim() }))
-      const whyText = whyAnswers.map((item, index) => (index + 1) + '. ' + item.question + '\\nCausa: ' + item.answer + '\\nEvidência objetiva: ' + item.evidence).join('\\n\\n')
-      const investigation = [whyText, '\\n\\n[ISHIKAWA_6M_JSON]' + JSON.stringify(ishikawa)].filter(Boolean).join('')
+      const whyText = whyAnswers.map((item, index) => (index + 1) + '. ' + item.question + '\nCausa: ' + item.answer + '\nEvidência objetiva: ' + item.evidence).join('\n\n')
+      const investigation = [whyText, '\n\n[ISHIKAWA_6M_JSON]' + JSON.stringify(ishikawa)].filter(Boolean).join('')
       const result = await supabase.from('erp_rpnc').update({ investigacao: investigation, porques_evidencias: whyAnswers }).eq('id', selectedRecord.id).eq('empresa_id', companyId)
       if (result.error) throw result.error
       setNotice('Investigação Ishikawa 6M e 5 Porquês gravada na RPNC ' + selectedRecord.numero_rpnc + '.')
