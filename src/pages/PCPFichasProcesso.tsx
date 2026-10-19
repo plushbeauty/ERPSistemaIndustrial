@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabaseClient'
 type Product = { id: string; codigo: string; nome: string }
 type Tool = { id: string; codigo: string; nome: string; tipo: string }
 type Machine = { id: string; codigo: string; nome: string; tipo: string | null }
-type Category = 'INJETADOS' | 'PRENSADOS' | 'ESTAMPARIA' | 'MECANICA' | 'TRATAMENTO_SUPERFICIAL' | 'PINTURA_QUIMICA' | 'CORTE_VINCO'
+type Category = 'INJETADOS' | 'PRENSADO' | 'ESTAMPARIA' | 'MECANICA' | 'TRATAMENTO_SUPERFICIAL' | 'PINTURA_QUIMICA' | 'CORTE_VINCO'
 type Param = { key: string; label: string; unit: string; type?: 'number' | 'text'; required?: boolean; step?: string }
 type Saved = { id: string; codigo_ficha: string; produto_id: string; ferramenta_id?: string | null; maquina_id?: string | null; categoria_processo: Category; versao_ficha: number; status: string; data_homologacao?: string | null; assinatura_tecnica?: string | null; parametros_tecnicos: Record<string, unknown>; revisao?: number }
 const categories: { value: Category; label: string }[] = [
