@@ -471,3 +471,24 @@
   color: #F4FBFD !important;
   border-color: #48B7C7 !important;
 }
+
+
+/* Ajustes finais de relatórios e mensagens de validação no tema escuro. */
+.buy-report [style*="background: #fef2f2"],
+.buy-report [style*="background: #ecfdf5"],
+.buy-report [style*="background: rgb(254, 242, 242)"],
+.buy-report [style*="background: rgb(236, 253, 245)"] {
+  background: #123B50 !important;
+  color: #F4FBFD !important;
+  border: 1px solid #2C6478 !important;
+}
+.buy-report .recharts-default-tooltip {
+  background: #0B293A !important;
+  border: 1px solid #2C6478 !important;
+  color: #F4FBFD !important;
+  border-radius: 2px !important;
+}
+.buy-report .recharts-tooltip-label,
+.buy-report .recharts-tooltip-item {
+  color: #F4FBFD !important;
+}
