@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Activity, AlertOctagon, BookOpenCheck, CheckCircle2, ClipboardCheck, ClipboardList,
+  Activity, AlertOctagon, BookOpenCheck, ClipboardCheck, ClipboardList,
   FileCheck2, FileText, Gauge, GitBranch, ListChecks, Microscope, Radio, RefreshCw,
   SearchCheck, Shield, ShieldAlert, ShieldCheck, Target, Wrench, Workflow,
 } from 'lucide-react'
@@ -60,13 +60,6 @@ const toneClasses = {
   amber: 'border-l-amber-500 text-amber-300',
   red: 'border-l-red-500 text-red-300',
   blue: 'border-l-sky-500 text-sky-300',
-} as const
-
-const metricIcons = {
-  green: ShieldCheck,
-  amber: Gauge,
-  red: AlertOctagon,
-  blue: Wrench,
 } as const
 
 export default function QualidadeCentralTablet() {
