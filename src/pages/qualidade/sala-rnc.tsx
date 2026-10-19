@@ -87,7 +87,7 @@ export default function SalaRNC() {
         return { question, answer: saved?.answer ?? '', evidence: saved?.evidence ?? '' }
       }))
     }
-    const marker = '\\n\\n[ISHIKAWA_6M_JSON]'
+    const marker = '\n\n[ISHIKAWA_6M_JSON]'
     const investigation = record.investigacao ?? ''
     const markerIndex = investigation.indexOf(marker)
     if (markerIndex >= 0) {
