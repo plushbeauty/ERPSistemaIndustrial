@@ -2,7 +2,7 @@
  * @DATA_REVISAO_APROVACAO: 2026-10-19
  * @DESENVOLVEDOR: FernandoSch
  * @NOME_SISTEMA: MOLDPLÁS ERP INDUSTRIAL
- * @STATUS_APROVACAO: INSPECAO-PROCESSO-CEP-STEEL-BLUE-OK
+ * @STATUS_APROVACAO: INSPECAO-PROCESSO-CEP-STEEL-BLUE-AGUARDANDO-VALIDACAO
  *
  * Revisão visual Steel Blue. Mantém o contrato real existente:
  * erp_inspecoes, erp_produtos, erp_ordens_producao, erp_maquinas,
@@ -47,7 +47,6 @@ const sectionTitle = 'mb-3 flex items-center gap-2 border-b border-[#2E4A62] pb-
 const button = 'inline-flex h-8 items-center justify-center gap-1.5 rounded-none border border-[#2E4A62] px-2.5 text-[9px] font-black uppercase tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-50'
 const buttonPrimary = button + ' border-[#287DA0] bg-[#176487] text-white hover:bg-[#1D789F]'
 const buttonQuiet = button + ' bg-[#102C40] text-[#D5E5ED] hover:bg-[#183B51]'
-const buttonDanger = button + ' border-red-900 bg-[#32151C] text-red-200 hover:bg-[#491A23]'
 const tableHead = 'bg-[#123B50] px-2 py-2 text-left text-[9px] font-black uppercase tracking-wide text-[#DFF5FC]'
 const cell = 'border-b border-[#203D51] px-2 py-1.5 align-middle text-[10px] text-[#D9E8EF]'
 
@@ -223,6 +222,8 @@ export default function QualidadeInspecaoProcesso() {
         throw new Error('Informe ao menos um atributo de defeito ou revise o resultado.')
       }
       const finalResult = resultadoCalculado
+      if (finalResult === 'REPROVADO' && rejected < 1) throw new Error('Resultado reprovado exige ao menos uma unidade reprovada na quantidade registrada.')
+      if (finalResult === 'APROVADO' && rejected > 0) throw new Error('Há unidades reprovadas; revise o resultado da inspeção antes de gravar.')
       const finalBlockAction = finalResult === 'APROVADO' ? 'NENHUMA' : acaoBloqueio
       if (finalResult !== 'APROVADO' && finalBlockAction === 'NENHUMA') throw new Error('Inspeção reprovada exige uma ação de bloqueio.')
       const measurementsPayload = abaAtiva === 'DIMENSIONAL'
