@@ -6,7 +6,7 @@
  * Revisão visual: Steel Blue, controles compactos, cantos retos e impressão A4 paisagem.
  */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { AlertTriangle, Clock3, Factory, Plus, Printer, RefreshCw, Save, ShieldCheck } from 'lucide-react'
+import { AlertTriangle, Clock3, Factory, Plus, Printer, RefreshCw, Save, ShieldCheck, Thermometer } from 'lucide-react'
 import ERPHorizontalShell from '../../components/layout/ERPHorizontalShell'
 import { supabase } from '../../lib/supabaseClient'
 
@@ -15,7 +15,8 @@ type Control = {
   id: string; data_producao: string; status: string; maquina_id: string; operador_id: string;
   ordem_producao_id: string | null; quantidade_total_pecas: number; numero_cavidades: number;
   hora_inicio: string | null; hora_fim: string | null; material_atual: string | null; cor_atual: string | null;
-  observacoes: string | null; criado_em: string; pom_guilhotina_fechada: boolean; pom_residuo_consumido: boolean
+  observacoes: string | null; criado_em: string; pom_guilhotina_fechada: boolean; pom_residuo_consumido: boolean;
+  temp_zona1: number | null; temp_zona2: number | null; temp_zona3: number | null; temp_zona4: number | null; temp_bico: number | null; temp_molde: number | null
 }
 type Sample = { id: string; numero_injecao: number; quantidade_inspecionada: number; resultado: 'APROVADO' | 'REPROVADO'; defeitos_observados: string | null; material_segregado: boolean; criado_em: string }
 type Downtime = { id: string; hora_parada: string; hora_retorno: string | null; motivo: string; criado_em: string }
@@ -24,6 +25,7 @@ type FormState = {
   ordem_producao_id: string; maquina_id: string; operador_id: string; produto_id: string; lote_id: string;
   data_producao: string; turno: string; hora_inicio: string; hora_fim: string;
   quantidade_injecoes: string; numero_cavidades: string; quantidade_total_pecas: string;
+  temp_zona1: string; temp_zona2: string; temp_zona3: string; temp_zona4: string; temp_bico: string; temp_molde: string;
   material_anterior: string; material_atual: string; cor_anterior: string; cor_atual: string;
   limpeza_cilindro_confirmada: boolean; limpeza_funil_confirmada: boolean; purga_sem_residuo_confirmada: boolean;
   borra_descartada: boolean; pom_procedimento_confirmado: boolean; pom_guilhotina_fechada: boolean;
@@ -40,6 +42,7 @@ const emptyForm = (): FormState => ({
   ordem_producao_id: '', maquina_id: '', operador_id: '', produto_id: '', lote_id: '',
   data_producao: today(), turno: '', hora_inicio: '', hora_fim: '',
   quantidade_injecoes: '0', numero_cavidades: '1', quantidade_total_pecas: '0',
+  temp_zona1: '', temp_zona2: '', temp_zona3: '', temp_zona4: '', temp_bico: '', temp_molde: '',
   material_anterior: '', material_atual: '', cor_anterior: '', cor_atual: '',
   limpeza_cilindro_confirmada: false, limpeza_funil_confirmada: false, purga_sem_residuo_confirmada: false,
   borra_descartada: false, pom_procedimento_confirmado: false, pom_guilhotina_fechada: false,
@@ -103,7 +106,7 @@ export default function ControleProcessoInjetora() {
         supabase.from('erp_ordens_producao').select('id,numero_op').eq('empresa_id', company.data).order('criado_em', { ascending: false }).limit(200),
         supabase.from('erp_produtos').select('id,codigo,nome').eq('empresa_id', company.data).eq('ativo', true).order('codigo').limit(500),
         supabase.from('erp_estoque_lotes').select('id,lote_interno,status_inspecao').eq('empresa_id', company.data).neq('status_inspecao', 'RETIDO').order('created_at', { ascending: false }).limit(500),
-        supabase.from('erp_qualidade_controles_injetora').select('id,data_producao,status,maquina_id,operador_id,ordem_producao_id,quantidade_total_pecas,numero_cavidades,hora_inicio,hora_fim,material_atual,cor_atual,observacoes,criado_em,pom_guilhotina_fechada,pom_residuo_consumido').eq('empresa_id', company.data).order('criado_em', { ascending: false }).limit(100)
+        supabase.from('erp_qualidade_controles_injetora').select('id,data_producao,status,maquina_id,operador_id,ordem_producao_id,quantidade_total_pecas,numero_cavidades,hora_inicio,hora_fim,material_atual,cor_atual,observacoes,criado_em,pom_guilhotina_fechada,pom_residuo_consumido,temp_zona1,temp_zona2,temp_zona3,temp_zona4,temp_bico,temp_molde').eq('empresa_id', company.data).order('criado_em', { ascending: false }).limit(100)
       ])
       for (const result of [m, o, op, p, l, c]) if (result.error) throw result.error
       setMachines((m.data ?? []) as Lookup[]); setOperators((o.data ?? []) as Lookup[])
@@ -152,6 +155,12 @@ export default function ControleProcessoInjetora() {
         operador_id: form.operador_id, produto_id: form.produto_id || null, lote_id: form.lote_id || null,
         data_producao: form.data_producao, turno: form.turno.trim() || null, hora_inicio: form.hora_inicio || null,
         hora_fim: form.hora_fim || null, quantidade_injecoes: Math.max(0, Number(form.quantidade_injecoes) || 0),
+        temp_zona1: form.temp_zona1 === '' ? null : Number(form.temp_zona1),
+        temp_zona2: form.temp_zona2 === '' ? null : Number(form.temp_zona2),
+        temp_zona3: form.temp_zona3 === '' ? null : Number(form.temp_zona3),
+        temp_zona4: form.temp_zona4 === '' ? null : Number(form.temp_zona4),
+        temp_bico: form.temp_bico === '' ? null : Number(form.temp_bico),
+        temp_molde: form.temp_molde === '' ? null : Number(form.temp_molde),
         numero_cavidades: Math.max(1, Number(form.numero_cavidades) || 1), quantidade_total_pecas: Math.max(0, Number(form.quantidade_total_pecas) || 0),
         material_anterior: form.material_anterior.trim() || null, material_atual: form.material_atual.trim() || null,
         cor_anterior: form.cor_anterior.trim() || null, cor_atual: form.cor_atual.trim() || null,
@@ -169,7 +178,7 @@ export default function ControleProcessoInjetora() {
       if (result.error) throw result.error
       setNotice('Controle de processo salvo. Situação: ' + status.replaceAll('_', ' ') + '.')
       setForm(emptyForm()); await load()
-      const created = (await supabase.from('erp_qualidade_controles_injetora').select('id,data_producao,status,maquina_id,operador_id,ordem_producao_id,quantidade_total_pecas,numero_cavidades,hora_inicio,hora_fim,material_atual,cor_atual,observacoes,criado_em,pom_guilhotina_fechada,pom_residuo_consumido').eq('id', result.data.id).single())
+      const created = (await supabase.from('erp_qualidade_controles_injetora').select('id,data_producao,status,maquina_id,operador_id,ordem_producao_id,quantidade_total_pecas,numero_cavidades,hora_inicio,hora_fim,material_atual,cor_atual,observacoes,criado_em,pom_guilhotina_fechada,pom_residuo_consumido,temp_zona1,temp_zona2,temp_zona3,temp_zona4,temp_bico,temp_molde').eq('id', result.data.id).single())
       if (!created.error && created.data) await openRecord(created.data as Control)
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Não foi possível salvar o controle.') }
     finally { setBusy(false) }
@@ -245,7 +254,8 @@ export default function ControleProcessoInjetora() {
   return <ERPHorizontalShell>
     <main className="pcp-injetora-page min-h-screen bg-[#0E1E2F] p-3 font-mono text-[#F4FBFD] antialiased">
       <style>{'@media print{.no-print{display:none!important}.pcp-injetora-page{background:#fff!important;color:#111827!important;padding:0!important}.pcp-injetora-page *{color:#111827!important;box-shadow:none!important}.pcp-injetora-page section,.pcp-injetora-page form,.pcp-injetora-page aside,.pcp-injetora-page header{background:#fff!important;border-color:#cbd5e1!important}.pcp-injetora-page input,.pcp-injetora-page select,.pcp-injetora-page textarea{background:#fff!important;border-color:#cbd5e1!important;color:#111827!important}.pcp-injetora-page{font-family:Arial,sans-serif!important}@page{size:A4 landscape;margin:10mm}}'}</style>
-      <div className="mx-auto max-w-[1600px] space-y-3">\n        <div className="hidden print:block border-b-2 border-slate-900 pb-2 text-[#F4FBFD]"><h1 className="text-base font-black uppercase">MOLDPLÁS ERP INDUSTRIAL — Controle de Processo da Injetora</h1><p className="text-[9px]">Emitido em {new Date().toLocaleString()} • Desenvolvedor FernandoSch • Registro controlado do SGQ</p></div>
+      <div className="mx-auto max-w-[1600px] space-y-3">
+        <div className="hidden print:block border-b-2 border-slate-900 pb-2 text-[#F4FBFD]"><h1 className="text-base font-black uppercase">MOLDPLÁS ERP INDUSTRIAL — Controle de Processo da Injetora</h1><p className="text-[9px]">Emitido em {new Date().toLocaleString()} • Desenvolvedor FernandoSch • Registro controlado do SGQ</p></div>
         <header className="flex flex-wrap items-center gap-3 border border-[#2E4A62] bg-[#0D2638] p-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-[2px] bg-[#123B50] text-white"><Factory size={18} /></div>
           <div><p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#2D8DB8]">SGQ • INJETADOS • IT-IJ-001 Rev. 00</p><h1 className="text-[15px] font-black">Controle de Processo da Injetora</h1><p className="text-[10px] text-slate-400">CCPP • liberação de máquina • amostragem • Diário de Bordo</p></div>
@@ -277,6 +287,15 @@ export default function ControleProcessoInjetora() {
               <label><span className={labelClass}>Cor anterior</span><input className={inputClass} value={form.cor_anterior} onChange={e => setForm({ ...form, cor_anterior: e.target.value })} /></label>
               <label><span className={labelClass}>Cor atual</span><input className={inputClass} value={form.cor_atual} onChange={e => setForm({ ...form, cor_atual: e.target.value })} /></label>
             </div>
+            <section aria-label="Perfil térmico da injetora" className="border border-[#2E4A62] bg-[#0E1E2F] p-2">
+              <div className="mb-2 flex items-center gap-2 border-b border-[#2E4A62] pb-2"><Thermometer size={15} className="text-[#48B7C7]" /><h3 className="text-[10px] font-black uppercase tracking-wide">Perfil térmico — temperaturas reais (°C)</h3></div>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+                {([{ key: 'temp_zona1', label: 'Zona 1' }, { key: 'temp_zona2', label: 'Zona 2' }, { key: 'temp_zona3', label: 'Zona 3' }, { key: 'temp_zona4', label: 'Zona 4' }, { key: 'temp_bico', label: 'Bico' }, { key: 'temp_molde', label: 'Molde' }] as const).map(item => <label key={item.key} className="min-w-0"><span className={labelClass}>{item.label} · °C</span><input className={inputClass + ' text-center'} aria-label={'Temperatura ' + item.label + ' em graus Celsius'} type="number" min="0" max={item.key === 'temp_molde' ? 300 : 500} step="0.1" value={form[item.key]} onChange={e => setForm(current => ({ ...current, [item.key]: e.target.value }))} placeholder="—" /></label>)}
+              </div>
+              <div className="mt-2 grid grid-cols-4 gap-1" aria-label="Diagrama das zonas de aquecimento">
+                {(['Zona 1', 'Zona 2', 'Zona 3', 'Zona 4'] as const).map((zone, index) => <div key={zone} className="border border-[#2E4A62] bg-[#123B50] p-2 text-center"><div className="mx-auto mb-1 h-1.5 w-7 rounded-full bg-[#E6A34A]" /><span className="block text-[9px] font-black">{zone}</span><span className="text-[10px] font-bold text-[#48B7C7]">{form[(['temp_zona1', 'temp_zona2', 'temp_zona3', 'temp_zona4'] as const)[index]] || '—'} °C</span></div>)}
+              </div>
+            </section>
             <div className="border-t border-[#2E4A62] pt-2"><h3 className="mb-2 text-[10px] font-black uppercase">Preparação e liberação inicial</h3><div className="grid gap-2 md:grid-cols-2">{checks.map(item => checkbox(item.key, item.label))}</div></div>
             {isPom && <div className="grid gap-2 border border-amber-500 bg-[#332817] p-2 md:grid-cols-3">
               {checkbox('pom_procedimento_confirmado', 'Li e confirmei o procedimento crítico de segurança POM')}
