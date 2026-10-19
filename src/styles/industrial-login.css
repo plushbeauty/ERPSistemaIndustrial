@@ -1,6 +1,6 @@
 /*
- * DATA_REVISAO_APROVACAO: 2026-10-16
- * REVISAO_APROVACAO: APROV-001
+ * DATA_REVISAO_APROVACAO: 2026-10-18
+ * REVISAO_APROVACAO: APROV-005
  * STATUS_APROVACAO: APROVADO-IMUTAVEL
  * REGRA: preservar o layout aprovado do login; mudanças exigem autorização explícita do usuário.
  */
@@ -141,3 +141,14 @@
 .auth-divider,.auth-register,.auth-trial{display:none!important}
 .auth-submit{width:100%;min-height:40px;border-radius:3px}
 @media(min-width:821px){.auth-visual-message{left:50%!important;transform:translate(-50%,-50%)!important;width:min(600px,calc(100% - 72px))!important}}
+
+
+/* APROV-005 — ajuste explicitamente solicitado: texto institucional legível sobre a arte. */
+.auth-visual-message h2,
+.auth-visual-message p,
+.auth-visual-message > span {
+  color: #fff !important;
+  -webkit-text-stroke: .55px #000;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 0 2px 5px rgba(0,0,0,.95) !important;
+}
+.auth-visual-message h2 { -webkit-text-stroke: .8px #000; }
