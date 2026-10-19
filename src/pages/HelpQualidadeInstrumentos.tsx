@@ -3,7 +3,7 @@
  * @STATUS_APROVACAO: POP-AJUDA-INSTRUMENTOS-METROLOGIA-EM-REVISAO
  * @SISTEMA: MOLDPLÁS ERP INDUSTRIAL
  */
-import { BookOpen, CheckCircle2, Clock3, Scale, ShieldCheck } from 'lucide-react'
+import { CheckCircle2, Clock3, Scale, ShieldCheck } from 'lucide-react'
 import VendasLayout from './VendasLayout'
 
 const sections = [
