@@ -3,7 +3,7 @@
  * Revisão: 2026-10-19 | Reconstrução do fluxo de listagem + ficha mestre.
  * Mantém rotas e módulos auxiliares existentes; escopo limitado ao cadastro de produtos.
  */
-import { Barcode, ClipboardList, Home, PackagePlus, Settings2 } from 'lucide-react'
+import { Barcode, ChevronDown, ChevronRight, ClipboardList, Home, PackagePlus, Settings2 } from 'lucide-react'
 import { useState } from 'react'
 import IndustrialReferenceShell from '../../layout/IndustrialReferenceShell'
 import ListagemProdutos from './ListagemProdutos'
@@ -23,13 +23,14 @@ export default function ModuloCadastroProdutos() {
   const [view, setView] = useState<View>('lista')
   const [id, setId] = useState<string | undefined>()
   const [refreshKey, setRefreshKey] = useState(0)
+  const [formOpen, setFormOpen] = useState(true)
   const saved = (savedId?: string) => {
     if (savedId) setId(savedId)
     setRefreshKey(value => value + 1)
     setView('lista')
   }
-  const open = (productId?: string) => { setId(productId); setView('lista') }
-  const newProduct = () => { setId(undefined); setView('lista') }
+  const open = (productId?: string) => { setId(productId); setView('lista'); setFormOpen(true) }
+  const newProduct = () => { setId(undefined); setView('lista'); setFormOpen(true) }
 
   return (
     <IndustrialReferenceShell
@@ -40,19 +41,27 @@ export default function ModuloCadastroProdutos() {
       onNav={(next) => {
         const nextView = next as View
         if (nextView === 'ficha' && view !== 'ficha' && !id) setId(undefined)
+        if (nextView === 'ficha') setFormOpen(true)
         setView(nextView)
       }}
       onHome={() => { window.location.href = '/tablet/dashboard' }}
     >
       <div className="min-h-[500px] w-full bg-[#F4FBFD] p-2">
-        {view === 'lista' && <div className="grid min-w-0 grid-cols-1 items-start gap-3 xl:grid-cols-12">
-          <div className="min-w-0 xl:col-span-5">
-            <ListagemProdutos onOpenFicha={open} onNewFicha={newProduct} selectedId={id} refreshKey={refreshKey} />
+        {view === 'lista' && <>
+          <div className="mb-2 flex justify-end">
+            <button type="button" onClick={() => setFormOpen(value => !value)} className="inline-flex h-8 items-center gap-1 rounded-[2px] border border-slate-300 bg-white px-3 text-[9px] font-black uppercase text-[#123B50]">
+              {formOpen ? <ChevronRight size={13}/> : <ChevronDown size={13}/>} {formOpen ? 'Recolher ficha' : 'Expandir ficha'}
+            </button>
           </div>
-          <aside className="min-w-0 rounded-[2px] border border-slate-200 bg-white p-3 shadow-sm xl:col-span-7">
-            <FormFichaTecnica key={id || 'novo-produto'} productId={id} onSaved={saved} />
-          </aside>
-        </div>}
+          <div className="grid min-w-0 grid-cols-1 items-start gap-3 xl:grid-cols-12">
+            <div className={formOpen ? 'min-w-0 xl:col-span-5' : 'min-w-0 xl:col-span-12'}>
+              <ListagemProdutos onOpenFicha={open} onNewFicha={newProduct} selectedId={id} refreshKey={refreshKey} />
+            </div>
+            {formOpen && <aside className="min-w-0 rounded-[2px] border border-slate-200 bg-white p-3 shadow-sm xl:col-span-7">
+              <FormFichaTecnica key={id || 'novo-produto'} productId={id} onSaved={saved} />
+            </aside>}
+          </div>
+        </>}
         {view === 'ficha' && <div className="mx-auto max-w-5xl rounded-[2px] border border-slate-200 bg-white p-3 shadow-sm">
           <FormFichaTecnica key={id || 'nova-ficha'} productId={id} onSaved={saved} />
         </div>}
