@@ -57,7 +57,7 @@ export default function FichaEngenharia(){
  const [ficha,setFicha]=useState<Ficha|null>(null),[productId,setProductId]=useState(''),[productCode,setProductCode]=useState(''),[version,setVersion]=useState('1'),[rendimento,setRendimento]=useState('1'),[unit,setUnit]=useState('UN')
  const [processCode,setProcessCode]=useState(''),[processName,setProcessName]=useState(''),[notes,setNotes]=useState('')
  const [bom,setBom]=useState<BomRow[]>([emptyBom()]),[ops,setOps]=useState<OpRow[]>([emptyOp()]),[quality,setQuality]=useState<QualityRow[]>([emptyQuality()])
- const [spec,setSpec]=useState<Record<string,string>>({}),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[search,setSearch]=useState(''),[catalogKind,setCatalogKind]=useState<Kind|''>(''),[catalogMold,setCatalogMold]=useState(''),[previewKind,setPreviewKind]=useState<Kind|null>(null)
+ const [spec,setSpec]=useState<Record<string,string>>({}),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[search,setSearch]=useState(''),[catalogKind,setCatalogKind]=useState<Kind|''>(''),[catalogMold,setCatalogMold]=useState(''),[previewKind,setPreviewKind]=useState<Kind|null>(null),[activePhotoTab,setActivePhotoTab]=useState(0)
 
  const selected=useMemo(()=>products.find(p=>p.id===productId),[products,productId])
  useEffect(()=>{void loadBase()},[])
@@ -80,11 +80,12 @@ export default function FichaEngenharia(){
  async function loadBase(){
   setLoading(true)
   try{
+   const empresaId=await company()
    const[p,m,md,fc]=await Promise.all([
-    supabase.from('erp_produtos').select('id,codigo,nome,unidade').eq('ativo',true).order('codigo').limit(2000),
-    supabase.from('erp_maquinas').select('id,codigo,nome').not('status','eq','INATIVA').order('codigo').limit(500),
-    supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades,cavidades_ativas,ativo').eq('ativo',true).order('codigo').limit(1000),
-    supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,observacoes').eq('ativa',true).order('updated_at',{ascending:false}).limit(1000)
+    supabase.from('erp_produtos').select('id,codigo,nome,unidade').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(2000),
+    supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id',empresaId).not('status','eq','INATIVA').order('codigo').limit(500),
+    supabase.from('erp_moldes').select('id,codigo,nome,tipo,status,produto_id,numero_cavidades,cavidades,cavidades_ativas,ativo').eq('empresa_id',empresaId).eq('ativo',true).order('codigo').limit(1000),
+    supabase.from('erp_fichas_tecnicas').select('id,produto_id,versao,observacoes').eq('empresa_id',empresaId).eq('ativa',true).order('updated_at',{ascending:false}).limit(1000)
    ])
    if(p.error)throw p.error;if(m.error)throw m.error;if(md.error)throw md.error;if(fc.error)throw fc.error
    const productRows=(p.data??[]) as Product[]
@@ -202,10 +203,31 @@ export default function FichaEngenharia(){
   </section>
 
   <section className="industrial-panel">
-   <div className="process-section-heading"><span>IDENTIFICAÇÃO VISUAL DA FICHA</span><h2>Fotos da peça, ferramental e setup</h2><p>As imagens ficam vinculadas a esta ficha de processo, junto com a revisão e os parâmetros técnicos.</p></div>
-   <div className="process-form-grid"><label>Foto principal<input type="file" accept="image/*" onChange={e=>setPhoto('fotoPrincipal',e.target.files?.[0]??null)}/><input value={spec.fotoPrincipal||''} onChange={e=>setS('fotoPrincipal',e.target.value)} placeholder="Ou informe URL https://…"/></label><label>Foto complementar<input type="file" accept="image/*" onChange={e=>setPhoto('fotoSecundaria',e.target.files?.[0]??null)}/><input value={spec.fotoSecundaria||''} onChange={e=>setS('fotoSecundaria',e.target.value)} placeholder="Ou informe URL https://…"/></label></div>
-   {(spec.fotoPrincipal||spec.fotoSecundaria)&&<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:12,marginTop:14}}>{[spec.fotoPrincipal,spec.fotoSecundaria].filter(Boolean).map((src,i)=><figure key={src} style={{margin:0,minWidth:0,border:'1px solid #d7e6eb',padding:8,background:'#fff'}}><img src={src} alt={i?'Foto complementar da ficha':'Foto principal da ficha'} style={{display:'block',width:'100%',maxHeight:300,objectFit:'contain',background:'#f8fbfc'}} onError={e=>{e.currentTarget.style.display='none'}}/><figcaption style={{display:'flex',alignItems:'center',gap:6,marginTop:7,fontSize:10,color:'#526b76'}}><ImageIcon size={14}/> {i?'Foto complementar':'Foto principal'}</figcaption></figure>)}</div>}
+   <div className="process-section-heading"><span>IDENTIFICAÇÃO VISUAL DA FICHA</span><h2>Referências técnicas por etapa</h2><p>Quatro referências vinculadas à ficha e à revisão. Use URL HTTPS de imagem aprovada pela Engenharia.</p></div>
+   <div role="tablist" aria-label="Abas de fotos técnicas" style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
+    {['Setup / peça','Lado fixo','Defeitos padrão','Embalagem'].map((label,index)=><button key={label} type="button" role="tab" aria-selected={activePhotoTab===index} onClick={()=>setActivePhotoTab(index)} style={{height:30,padding:'0 12px',fontSize:10,fontWeight:800,border:'1px solid '+(activePhotoTab===index?'#2D8DB8':'#c7dce8'),background:activePhotoTab===index?'#123B50':'#fff',color:activePhotoTab===index?'#fff':'#365564',borderRadius:2}}>{label}</button>)}
+   </div>
+   <div className="process-form-grid">
+    <label>{['Foto de setup / peça','Foto do lado fixo','Foto de defeito padrão','Foto de embalagem'][activePhotoTab]}<input value={spec['fotoUrl'+(activePhotoTab+1)]||''} onChange={e=>setS('fotoUrl'+(activePhotoTab+1),e.target.value)} placeholder="https://…"/></label>
+    <label>Observação da referência<input value={spec['fotoNota'+(activePhotoTab+1)]||''} onChange={e=>setS('fotoNota'+(activePhotoTab+1),e.target.value)} placeholder="Identificação, revisão ou critério visual"/></label>
+   </div>
+   <div style={{marginTop:12,minHeight:170,border:'1px dashed #9dc5d5',background:'#f4fbfd',padding:10,display:'grid',placeItems:'center'}}>
+    {spec['fotoUrl'+(activePhotoTab+1)] ? <img src={spec['fotoUrl'+(activePhotoTab+1)]} alt={['Setup / peça','Lado fixo','Defeitos padrão','Embalagem'][activePhotoTab]} style={{maxWidth:'100%',maxHeight:280,objectFit:'contain'}} onError={e=>{e.currentTarget.style.display='none'}}/> : <div style={{textAlign:'center',color:'#607987',fontSize:11}}><ImageIcon size={28}/><p style={{margin:'6px 0 0'}}>Nenhuma imagem informada nesta aba.</p></div>}
+   </div>
+   <div style={{display:'flex',gap:6,marginTop:10,flexWrap:'wrap'}}>{[0,1,2,3].map(index=><span key={index} style={{fontSize:9,padding:'4px 7px',border:'1px solid #c7dce8',background:spec['fotoUrl'+(index+1)]?'#e2f3fa':'#fff',color:'#365564'}}>{['Setup','Lado fixo','Defeitos','Embalagem'][index]}: {spec['fotoUrl'+(index+1)]?'referência informada':'sem imagem'}</span>)}</div>
   </section>
+
+  {(kind==='INJETADOS'||kind==='PRENSADOS')&&<section className="industrial-panel">
+   <div className="process-section-heading"><span>PERFIL TÉRMICO DO PROCESSO</span><h2>{kind==='INJETADOS'?'Canhão de plastificação e bico':'Platôs térmicos da prensa'}</h2><p>Parâmetros diretos por zona; os valores ficam gravados no campo técnico da ficha.</p></div>
+   {kind==='INJETADOS'?<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:10,alignItems:'end'}}>
+    {[1,2,3].map(zone=><label key={zone} style={{display:'block',border:'1px solid #c7dce8',background:'#f4fbfd',padding:10,color:'#365564',fontSize:10,fontWeight:800}}>ZONA 0{zone} (°C)<input type="number" value={spec['temp_z'+zone]||''} onChange={e=>setS('temp_z'+zone,e.target.value)} style={{display:'block',width:'100%',height:32,marginTop:6,border:'1px solid #c7dce8',background:'#fff',padding:'0 8px',color:'#123B50',fontWeight:800}}/></label>)}
+    <label style={{display:'block',border:'1px solid #e7c8c8',background:'#fff7f7',padding:10,color:'#9f3838',fontSize:10,fontWeight:800}}>BICO / NOZZLE (°C)<input type="number" value={spec.temp_bico||''} onChange={e=>setS('temp_bico',e.target.value)} style={{display:'block',width:'100%',height:32,marginTop:6,border:'1px solid #e7c8c8',background:'#fff',padding:'0 8px',color:'#9f3838',fontWeight:800}}/></label>
+   </div>:<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:10}}>
+    <label style={{display:'block',border:'1px solid #c7dce8',background:'#f4fbfd',padding:10,color:'#365564',fontSize:10,fontWeight:800}}>PLATÔ SUPERIOR (°C)<input type="number" value={spec.temp_placa_sup||''} onChange={e=>setS('temp_placa_sup',e.target.value)} style={{display:'block',width:'100%',height:32,marginTop:6,border:'1px solid #c7dce8',background:'#fff',padding:'0 8px',color:'#123B50',fontWeight:800}}/></label>
+    <label style={{display:'block',border:'1px solid #c7dce8',background:'#f4fbfd',padding:10,color:'#365564',fontSize:10,fontWeight:800}}>PLATÔ INFERIOR (°C)<input type="number" value={spec.temp_placa_inf||''} onChange={e=>setS('temp_placa_inf',e.target.value)} style={{display:'block',width:'100%',height:32,marginTop:6,border:'1px solid #c7dce8',background:'#fff',padding:'0 8px',color:'#123B50',fontWeight:800}}/></label>
+    <label style={{display:'block',border:'1px solid #f0dfb7',background:'#fffaf0',padding:10,color:'#8a5a12',fontSize:10,fontWeight:800}}>PRESSÃO DA BOMBA (bar)<input type="number" value={spec.pressao_bomba||''} onChange={e=>setS('pressao_bomba',e.target.value)} style={{display:'block',width:'100%',height:32,marginTop:6,border:'1px solid #f0dfb7',background:'#fff',padding:'0 8px',color:'#8a5a12',fontWeight:800}}/></label>
+   </div>}
+  </section>}
 
   <section className="industrial-panel">
    <div className="process-section-heading"><span>2 • PARÂMETROS ESPECÍFICOS DO PROCESSO</span><h2>{kinds.find(x=>x.id===kind)?.title.replace('Ficha de Processo — ','')}</h2><p>Campos técnicos específicos para não transformar todas as tecnologias em uma ficha genérica.</p></div>
