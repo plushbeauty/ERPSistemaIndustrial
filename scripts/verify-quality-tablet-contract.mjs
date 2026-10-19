@@ -8,7 +8,7 @@ const tablet = read('../src/components/TabletMenuModal.tsx')
 const checks = [
   [shell.includes("import TabletMenuModal from '../TabletMenuModal'"), 'O shell horizontal precisa importar o modal de Qualidade Tablet.'],
   [shell.includes("action?: 'qualityTablet'"), 'O contrato do menu precisa suportar a ação qualityTablet.'],
-  [!shell.includes("label: 'Menu SGQ'") && shell.includes("{ label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet' }"), 'A barra horizontal deve ocultar o botão Menu SGQ e abrir o tablet pelo botão Qualidade.'],
+  [!shell.includes("label: 'Menu SGQ'") && /label: 'Qualidade', route: '\/qualidade', icon: ShieldCheck, action: 'qualityTablet', children:/.test(shell), 'A barra horizontal deve ocultar o botão Menu SGQ e abrir o tablet pelo botão Qualidade, preservando o submenu pela seta.'],
   [!shell.includes("erp-horizontal-refresh-module") && !shell.includes("RefreshCw"), 'O botão Atualizar manual não deve voltar ao menu horizontal.'],
   [shell.includes(".channel(`erp-global-data-refresh-${Date.now()}-${Math.random().toString(36).slice(2)}`)"), 'A atualização automática por Realtime deve usar tópico exclusivo e permanecer ativa.'],
   [shell.includes("if (item.action === 'qualityTablet')") && shell.includes('setTabletOpen(true)'), 'O atalho precisa abrir o modal sem navegar para outra página.'],
