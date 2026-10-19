@@ -1,5 +1,12 @@
+/**
+ * @DATA_REVISAO_APROVACAO: 2026-10-19
+ * @DESENVOLVEDOR: FernandoSch
+ * @NOME_SISTEMA: MOLDPLÁS ERP INDUSTRIAL
+ * @STATUS_APROVACAO: CONTROLE-PROCESSO-INJETORA-PREMIUM-OK
+ * Revisão visual: Steel Blue, controles compactos, cantos retos e impressão A4 paisagem.
+ */
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { AlertTriangle, CheckCircle2, ClipboardCheck, Clock3, Factory, Plus, RefreshCw, Save, ShieldCheck } from 'lucide-react'
+import { AlertTriangle, Clock3, Factory, Plus, Printer, RefreshCw, Save, ShieldCheck } from 'lucide-react'
 import ERPHorizontalShell from '../../components/layout/ERPHorizontalShell'
 import { supabase } from '../../lib/supabaseClient'
 
@@ -40,11 +47,11 @@ const emptyForm = (): FormState => ({
   checklist_maquina_ok: false, molde_verificado: false, comparacao_amostra_padrao: false,
   liberacao_qualidade: false, liberacao_provisoria: false, responsavel_liberacao_id: '', observacoes: ''
 })
-const inputClass = 'h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
-const areaClass = 'min-h-[62px] w-full rounded-[2px] border border-slate-300 bg-white p-2 text-[10px] leading-4 text-slate-800 outline-none focus:border-[#2D8DB8]'
-const labelClass = 'mb-1 block text-[9px] font-bold uppercase tracking-wide text-slate-600'
-const buttonClass = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-bold text-white hover:bg-[#236f91] disabled:opacity-50'
-const secondaryClass = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50'
+const inputClass = 'h-8 w-full min-w-0 rounded-none border border-[#2E4A62] bg-[#0E1E2F] px-2.5 text-xs font-mono font-bold text-[#F4FBFD] outline-none transition-all placeholder:text-slate-400 focus:border-[#48B7C7] focus:ring-1 focus:ring-[#48B7C7]/20'
+const areaClass = 'min-h-[62px] w-full min-w-0 rounded-none border border-[#2E4A62] bg-[#0E1E2F] p-2 text-xs leading-4 text-[#F4FBFD] outline-none focus:border-[#48B7C7]'
+const labelClass = 'mb-1 block text-[9px] font-black uppercase tracking-widest text-[#A8BBC8]'
+const buttonClass = 'inline-flex h-8 items-center justify-center gap-1.5 rounded-none border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-black uppercase tracking-wide text-white transition-colors hover:bg-[#236f91] disabled:opacity-50'
+const secondaryClass = 'inline-flex h-8 items-center justify-center gap-1.5 rounded-none border border-[#2E4A62] bg-[#0E1E2F] px-3 text-[10px] font-bold text-[#F4FBFD] transition-colors hover:bg-[#123B50] disabled:opacity-50'
 const checks: { key: keyof FormState; label: string }[] = [
   { key: 'limpeza_cilindro_confirmada', label: 'Cilindro limpo na troca de material/cor' },
   { key: 'limpeza_funil_confirmada', label: 'Funil limpo, centralizado e travado' },
@@ -229,28 +236,29 @@ export default function ControleProcessoInjetora() {
   }
 
   const checkbox = (key: keyof FormState, labelText: string) => (
-    <label key={key} className="flex items-start gap-2 rounded-[2px] border border-slate-200 bg-white p-2 text-[10px] leading-4 text-slate-700">
+    <label key={key} className="flex items-start gap-2 rounded-[2px] border border-[#2E4A62] bg-[#0D2638] p-2 text-[10px] leading-4 text-[#D9E5EC]">
       <input type="checkbox" className="mt-0.5 accent-[#2D8DB8]" checked={Boolean(form[key])} onChange={e => setForm(current => ({ ...current, [key]: e.target.checked }))} />
       <span>{labelText}</span>
     </label>
   )
 
   return <ERPHorizontalShell>
-    <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900">
-      <div className="mx-auto max-w-[1600px] space-y-3">
-        <header className="flex flex-wrap items-center gap-3 border-b border-slate-200 bg-white p-3">
+    <main className="pcp-injetora-page min-h-screen bg-[#0E1E2F] p-3 font-mono text-[#F4FBFD] antialiased">
+      <style>{'@media print{.no-print{display:none!important}.pcp-injetora-page{background:#fff!important;color:#111827!important;padding:0!important}.pcp-injetora-page *{color:#111827!important;box-shadow:none!important}.pcp-injetora-page section,.pcp-injetora-page form,.pcp-injetora-page aside,.pcp-injetora-page header{background:#fff!important;border-color:#cbd5e1!important}.pcp-injetora-page input,.pcp-injetora-page select,.pcp-injetora-page textarea{background:#fff!important;border-color:#cbd5e1!important;color:#111827!important}.pcp-injetora-page{font-family:Arial,sans-serif!important}@page{size:A4 landscape;margin:10mm}}'}</style>
+      <div className="mx-auto max-w-[1600px] space-y-3">\n        <div className="hidden print:block border-b-2 border-slate-900 pb-2 text-[#F4FBFD]"><h1 className="text-base font-black uppercase">MOLDPLÁS ERP INDUSTRIAL — Controle de Processo da Injetora</h1><p className="text-[9px]">Emitido em {new Date().toLocaleString()} • Desenvolvedor FernandoSch • Registro controlado do SGQ</p></div>
+        <header className="flex flex-wrap items-center gap-3 border border-[#2E4A62] bg-[#0D2638] p-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-[2px] bg-[#123B50] text-white"><Factory size={18} /></div>
-          <div><p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#2D8DB8]">SGQ • INJETADOS • IT-IJ-001 Rev. 00</p><h1 className="text-[15px] font-black">Controle de Processo da Injetora</h1><p className="text-[10px] text-slate-500">CCPP • liberação de máquina • amostragem • Diário de Bordo</p></div>
-          <div className="ml-auto flex gap-2"><button className={secondaryClass} type="button" onClick={() => void load()} disabled={loading || busy}><RefreshCw size={13} /> Atualizar</button><span className="self-center text-[9px] text-slate-500">Próxima revisão da IT: 05/06/2028</span></div>
+          <div><p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#2D8DB8]">SGQ • INJETADOS • IT-IJ-001 Rev. 00</p><h1 className="text-[15px] font-black">Controle de Processo da Injetora</h1><p className="text-[10px] text-slate-400">CCPP • liberação de máquina • amostragem • Diário de Bordo</p></div>
+          <div className="no-print ml-auto flex flex-wrap gap-2"><button className={secondaryClass} type="button" onClick={() => window.print()}><Printer size={13} /> Imprimir A4</button><button className={secondaryClass} type="button" onClick={() => void load()} disabled={loading || busy}><RefreshCw size={13} /> Atualizar</button><span className="self-center text-[9px] text-slate-400">Próxima revisão da IT: 05/06/2028</span></div>
         </header>
-        <div className="border border-amber-300 bg-amber-50 p-2 text-[10px] leading-4 text-amber-950">
+        <div className="border border-amber-500 bg-[#332817] p-2 text-[10px] leading-4 text-amber-100">
           <strong className="flex items-center gap-1"><AlertTriangle size={13} /> ALERTA CRÍTICO — POM / POLIACETAL</strong>
           Se o material atual for POM, confirme o procedimento de segurança. Uma hora antes do término planejado, fechar a guilhotina do funil para consumir o material do canhão; nunca encerrar o lote deixando POM no cilindro.
         </div>
         {(error || notice) && <div role="status" className={'border p-2 text-[10px] ' + (error ? 'border-rose-300 bg-rose-50 text-rose-800' : 'border-emerald-300 bg-emerald-50 text-emerald-800')}>{error || notice}</div>}
         <section className="grid gap-3 xl:grid-cols-[minmax(0,1.5fr)_minmax(340px,0.8fr)]">
-          <form onSubmit={saveControl} className="space-y-3 border border-slate-200 bg-white p-3">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-2"><h2 className="text-[11px] font-black uppercase tracking-wide">Cartão de Controle de Processo Produtivo (CCPP)</h2><span className="text-[9px] text-slate-500">Preencher sem rasuras</span></div>
+          <form onSubmit={saveControl} className="no-print space-y-3 border border-[#2E4A62] bg-[#0D2638] p-3">
+            <div className="flex items-center justify-between border-b border-[#2E4A62] pb-2"><h2 className="text-[11px] font-black uppercase tracking-wide">Cartão de Controle de Processo Produtivo (CCPP)</h2><span className="text-[9px] text-slate-400">Preencher sem rasuras</span></div>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               <label><span className={labelClass}>Data da produção *</span><input className={inputClass} type="date" required value={form.data_producao} onChange={e => setForm({ ...form, data_producao: e.target.value })} /></label>
               <label><span className={labelClass}>Turno</span><input className={inputClass} value={form.turno} onChange={e => setForm({ ...form, turno: e.target.value })} placeholder="Ex.: 1º turno" /></label>
@@ -269,8 +277,8 @@ export default function ControleProcessoInjetora() {
               <label><span className={labelClass}>Cor anterior</span><input className={inputClass} value={form.cor_anterior} onChange={e => setForm({ ...form, cor_anterior: e.target.value })} /></label>
               <label><span className={labelClass}>Cor atual</span><input className={inputClass} value={form.cor_atual} onChange={e => setForm({ ...form, cor_atual: e.target.value })} /></label>
             </div>
-            <div className="border-t border-slate-200 pt-2"><h3 className="mb-2 text-[10px] font-black uppercase">Preparação e liberação inicial</h3><div className="grid gap-2 md:grid-cols-2">{checks.map(item => checkbox(item.key, item.label))}</div></div>
-            {isPom && <div className="grid gap-2 border border-amber-300 bg-amber-50 p-2 md:grid-cols-3">
+            <div className="border-t border-[#2E4A62] pt-2"><h3 className="mb-2 text-[10px] font-black uppercase">Preparação e liberação inicial</h3><div className="grid gap-2 md:grid-cols-2">{checks.map(item => checkbox(item.key, item.label))}</div></div>
+            {isPom && <div className="grid gap-2 border border-amber-500 bg-[#332817] p-2 md:grid-cols-3">
               {checkbox('pom_procedimento_confirmado', 'Li e confirmei o procedimento crítico de segurança POM')}
               {checkbox('pom_guilhotina_fechada', 'Guilhotina do funil fechada antes do fim do lote')}
               {checkbox('pom_residuo_consumido', 'Todo POM consumido; cilindro sem resíduo ao encerrar')}
@@ -282,44 +290,44 @@ export default function ControleProcessoInjetora() {
             </div>
             <label><span className={labelClass}>Responsável pela liberação</span><select className={inputClass} value={form.responsavel_liberacao_id} onChange={e => setForm({ ...form, responsavel_liberacao_id: e.target.value })}><option value="">Selecione responsável</option>{operators.map(row => <option key={row.id} value={row.id}>{optionLabel(row)}</option>)}</select></label>
             <label><span className={labelClass}>Observações do processo</span><textarea className={areaClass} value={form.observacoes} onChange={e => setForm({ ...form, observacoes: e.target.value })} /></label>
-            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-2"><span className="text-[9px] text-slate-500">{selectedMachine ? 'Máquina selecionada: ' + optionLabel(selectedMachine) : 'Selecione a máquina correta da empresa.'} • status calculado pelas confirmações</span><div className="flex gap-2"><button className={secondaryClass} type="button" onClick={() => { setForm(emptyForm()); setSelected(null); setSamples([]); setDowntimes([]); setError(''); setNotice('') }}>Limpar</button><button className={buttonClass} type="submit" disabled={busy || loading}><Save size={13} /> Salvar controle</button></div></div>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#2E4A62] pt-2"><span className="text-[9px] text-slate-400">{selectedMachine ? 'Máquina selecionada: ' + optionLabel(selectedMachine) : 'Selecione a máquina correta da empresa.'} • status calculado pelas confirmações</span><div className="flex gap-2"><button className={secondaryClass} type="button" onClick={() => { setForm(emptyForm()); setSelected(null); setSamples([]); setDowntimes([]); setError(''); setNotice('') }}>Limpar</button><button className={buttonClass} type="submit" disabled={busy || loading}><Save size={13} /> Salvar controle</button></div></div>
           </form>
-          <aside className="space-y-3">
-            <section className="border border-slate-200 bg-white p-3">
-              <div className="mb-2 flex items-center justify-between"><h2 className="text-[11px] font-black uppercase">Registros recentes</h2><span className="text-[9px] text-slate-500">{records.length} registros</span></div>
-              {loading ? <p className="text-[10px] text-slate-500">Carregando dados reais do ERP…</p> : records.length === 0 ? <p className="text-[10px] text-slate-500">Ainda não há controles de injetora nesta empresa.</p> :
-                <div className="max-h-[460px] space-y-1 overflow-auto">{records.map(row => <button type="button" key={row.id} onClick={() => void openRecord(row)} className={'w-full border p-2 text-left ' + (selected?.id === row.id ? 'border-[#2D8DB8] bg-sky-50' : 'border-slate-200 bg-white hover:bg-slate-50')}><div className="flex items-center justify-between gap-2"><strong className="text-[10px]">{row.data_producao} • {row.status.replaceAll('_', ' ')}</strong><span className="text-[9px] text-slate-500">{Number(row.quantidade_total_pecas).toLocaleString('pt-BR')} peças</span></div><p className="mt-1 text-[9px] text-slate-500">Criado {datePt(row.criado_em)}</p></button>)}</div>}
+          <aside className="no-print space-y-3">
+            <section className="border border-[#2E4A62] bg-[#0D2638] p-3">
+              <div className="mb-2 flex items-center justify-between"><h2 className="text-[11px] font-black uppercase">Registros recentes</h2><span className="text-[9px] text-slate-400">{records.length} registros</span></div>
+              {loading ? <p className="text-[10px] text-slate-400">Carregando dados reais do ERP…</p> : records.length === 0 ? <p className="text-[10px] text-slate-400">Ainda não há controles de injetora nesta empresa.</p> :
+                <div className="max-h-[460px] space-y-1 overflow-auto">{records.map(row => <button type="button" key={row.id} onClick={() => void openRecord(row)} className={'w-full border p-2 text-left ' + (selected?.id === row.id ? 'border-[#2D8DB8] bg-[#123B50]' : 'border-[#2E4A62] bg-[#0D2638] hover:bg-[#0E1E2F]')}><div className="flex items-center justify-between gap-2"><strong className="text-[10px]">{row.data_producao} • {row.status.replaceAll('_', ' ')}</strong><span className="text-[9px] text-slate-400">{Number(row.quantidade_total_pecas).toLocaleString('pt-BR')} peças</span></div><p className="mt-1 text-[9px] text-slate-400">Criado {datePt(row.criado_em)}</p></button>)}</div>}
             </section>
-            {selected && <section className="space-y-3 border border-slate-200 bg-white p-3">
+            {selected && <section className="space-y-3 border border-[#2E4A62] bg-[#0D2638] p-3">
               <div className="flex items-center justify-between"><h2 className="text-[11px] font-black uppercase">Acompanhamento do registro</h2><span className="text-[9px] font-bold text-[#2D8DB8]">{selected.status.replaceAll('_', ' ')}</span></div>
-              <form onSubmit={addSample} className="space-y-2 border-t border-slate-200 pt-2">
+              <form onSubmit={addSample} className="space-y-2 border-t border-[#2E4A62] pt-2">
                 <h3 className="text-[10px] font-black uppercase">Amostragem volante — cabos: 2 peças por injeção</h3>
                 <div className="grid grid-cols-2 gap-2"><label><span className={labelClass}>Nº da injeção *</span><input className={inputClass} type="number" min="1" required value={sampleForm.numero_injecao} onChange={e => setSampleForm({ ...sampleForm, numero_injecao: e.target.value })} /></label><label><span className={labelClass}>Peças verificadas</span><input className={inputClass} type="number" min="1" required value={sampleForm.quantidade_inspecionada} onChange={e => setSampleForm({ ...sampleForm, quantidade_inspecionada: e.target.value })} /></label></div>
                 <label><span className={labelClass}>Resultado</span><select className={inputClass} value={sampleForm.resultado} onChange={e => setSampleForm({ ...sampleForm, resultado: e.target.value as 'APROVADO' | 'REPROVADO' })}><option value="APROVADO">Aprovado</option><option value="REPROVADO">Reprovado</option></select></label>
                 {sampleForm.resultado === 'REPROVADO' && <><label><span className={labelClass}>Defeito observado *</span><textarea required className={areaClass} value={sampleForm.defeitos_observados} onChange={e => setSampleForm({ ...sampleForm, defeitos_observados: e.target.value })} /></label><label className="flex items-center gap-2 text-[10px]"><input type="checkbox" checked={sampleForm.material_segregado} onChange={e => setSampleForm({ ...sampleForm, material_segregado: e.target.checked })} /> Material reprovado separado em caixa identificada</label></>}
                 <button className={buttonClass} type="submit" disabled={busy}><Plus size={13} /> Registrar amostra</button>
-                <div className="space-y-1">{samples.map(sample => <div key={sample.id} className="border border-slate-200 p-2 text-[9px]"><strong>Injeção {sample.numero_injecao}</strong> • {sample.quantidade_inspecionada} peças • <span className={sample.resultado === 'REPROVADO' ? 'text-rose-700' : 'text-emerald-700'}>{sample.resultado}</span>{sample.defeitos_observados && <p>{sample.defeitos_observados}</p>}</div>)}</div>
+                <div className="space-y-1">{samples.map(sample => <div key={sample.id} className="border border-[#2E4A62] p-2 text-[9px]"><strong>Injeção {sample.numero_injecao}</strong> • {sample.quantidade_inspecionada} peças • <span className={sample.resultado === 'REPROVADO' ? 'text-rose-700' : 'text-emerald-700'}>{sample.resultado}</span>{sample.defeitos_observados && <p>{sample.defeitos_observados}</p>}</div>)}</div>
               </form>
-              <form onSubmit={addDowntime} className="space-y-2 border-t border-slate-200 pt-2">
+              <form onSubmit={addDowntime} className="space-y-2 border-t border-[#2E4A62] pt-2">
                 <h3 className="flex items-center gap-1 text-[10px] font-black uppercase"><Clock3 size={13} /> Diário de Bordo — paradas</h3>
                 <div className="grid grid-cols-2 gap-2"><label><span className={labelClass}>Hora da parada *</span><input className={inputClass} type="time" required value={stopForm.hora_parada} onChange={e => setStopForm({ ...stopForm, hora_parada: e.target.value })} /></label><label><span className={labelClass}>Hora do retorno</span><input className={inputClass} type="time" value={stopForm.hora_retorno} onChange={e => setStopForm({ ...stopForm, hora_retorno: e.target.value })} /></label></div>
                 <label><span className={labelClass}>Motivo exato da parada *</span><textarea className={areaClass} required value={stopForm.motivo} onChange={e => setStopForm({ ...stopForm, motivo: e.target.value })} /></label>
                 <button className={secondaryClass} type="submit" disabled={busy}><Plus size={13} /> Registrar parada</button>
-                <div className="space-y-1">{downtimes.map(stop => <div key={stop.id} className="border border-slate-200 p-2 text-[9px]"><strong>{stop.hora_parada} → {stop.hora_retorno ?? 'em aberto'}</strong><p>{stop.motivo}</p></div>)}</div>
+                <div className="space-y-1">{downtimes.map(stop => <div key={stop.id} className="border border-[#2E4A62] p-2 text-[9px]"><strong>{stop.hora_parada} → {stop.hora_retorno ?? 'em aberto'}</strong><p>{stop.motivo}</p></div>)}</div>
               </form>
-              <div className="border-t border-slate-200 pt-2">
+              <div className="border-t border-[#2E4A62] pt-2">
                 <label className="mb-2 block"><span className={labelClass}>Horário real de término</span><input className={inputClass} type="time" value={finalHour} onChange={e => setFinalHour(e.target.value)} /></label>
                 {/POM|POLIACETAL/i.test(selected.material_atual ?? '') && <div className="mb-2 grid gap-2 border border-amber-300 bg-amber-50 p-2 text-[10px]">
                   <label className="flex items-center gap-2"><input type="checkbox" checked={finalPomGuilhotina} onChange={e => setFinalPomGuilhotina(e.target.checked)} /> Guilhotina fechada antes do fim do lote</label>
                   <label className="flex items-center gap-2"><input type="checkbox" checked={finalPomResiduo} onChange={e => setFinalPomResiduo(e.target.checked)} /> Todo POM consumido; cilindro sem resíduo</label>
                 </div>}
-                <p className="mb-2 text-[9px] text-slate-500">Encerrar registra o término real e, para POM, exige confirmar o esvaziamento seguro do cilindro.</p>
+                <p className="mb-2 text-[9px] text-slate-400">Encerrar registra o término real e, para POM, exige confirmar o esvaziamento seguro do cilindro.</p>
                 <button type="button" className={buttonClass} disabled={busy || selected.status === 'ENCERRADO' || !['LIBERADO', 'LIBERACAO_PROVISORIA', 'EM_PRODUCAO'].includes(selected.status)} onClick={() => void closeProduction()}><ShieldCheck size={13} /> Encerrar produção</button>
               </div>
             </section>}
           </aside>
         </section>
-        <footer className="flex flex-wrap justify-between gap-2 border-t border-slate-200 px-1 py-2 text-[9px] text-slate-500"><span>SYSNQRA ERP & SGQ INDUSTRIAL • IT-IJ-001 Rev. 00 • Departamento de Injetados</span><span>Registro operacional auditável • documentos originais permanecem sob controle do GED</span></footer>
+        <footer className="flex flex-wrap justify-between gap-2 border-t border-[#2E4A62] px-1 py-2 text-[9px] text-slate-400"><span>SYSNQRA ERP & SGQ INDUSTRIAL • IT-IJ-001 Rev. 00 • Departamento de Injetados</span><span>Registro operacional auditável • documentos originais permanecem sob controle do GED</span></footer>
       </div>
     </main>
   </ERPHorizontalShell>
