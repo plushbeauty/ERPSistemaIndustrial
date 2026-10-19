@@ -82,6 +82,17 @@ export default function PCPFichasProcessoCadastro(){
   }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar fichas de processo.')}
  }
 
+ function normalizeImageValue(value:string){
+  if(!value)return ''
+  if(value.startsWith('data:'))return value
+  const marker='/object/sign/erp-fichas-processo/'
+  const index=value.indexOf(marker)
+  if(index>=0){
+   const raw=value.slice(index+marker.length).split('?')[0]
+   try{return decodeURIComponent(raw)}catch{return raw}
+  }
+  return value
+ }
  function fromDb(x:Record<string,unknown>):FormState{
   const z=(x.zonas_temperatura??{}) as Record<string,unknown>
   return {
@@ -92,7 +103,7 @@ export default function PCPFichasProcessoCadastro(){
    temperatura_trabalho:String(x.temperatura_trabalho??''),pressao_injecao:String(x.pressao_injecao??''),
    ciclo_seg:String(x.ciclo_seg??''),peso_peca:String(x.peso_peca??''),peso_canal:String(x.peso_canal??''),
    zona1:String(z.zona1??''),zona2:String(z.zona2??''),zona3:String(z.zona3??''),zona4:String(z.zona4??''),
-   imagem_url:String(x.imagem_url??''),observacoes_setup:String(x.observacoes_setup??''),observacoes:String(x.observacoes??'')
+   imagem_url:normalizeImageValue(String(x.imagem_url??'')),observacoes_setup:String(x.observacoes_setup??''),observacoes:String(x.observacoes??'')
   }
  }
 
@@ -109,8 +120,10 @@ export default function PCPFichasProcessoCadastro(){
 
  async function previewFor(value:string){
   if(!value)return ''
-  if(value.startsWith('http://')||value.startsWith('https://')||value.startsWith('data:'))return value
-  const signed=await supabase.storage.from('erp-fichas-processo').createSignedUrl(value,60*60)
+  if(value.startsWith('data:'))return value
+  const normalized=normalizeImageValue(value)
+  if((normalized.startsWith('http://')||normalized.startsWith('https://'))&&normalized===value)return value
+  const signed=await supabase.storage.from('erp-fichas-processo').createSignedUrl(normalized,60*60)
   if(signed.error)throw signed.error
   return signed.data.signedUrl
  }
