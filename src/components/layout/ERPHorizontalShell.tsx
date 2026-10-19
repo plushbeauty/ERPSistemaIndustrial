@@ -3,7 +3,6 @@ import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Da
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
-import TabletMenuModal from '../TabletMenuModal'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
 
 type MenuItem = {
@@ -80,7 +79,7 @@ const menus: MenuItem[] = [
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
     { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
-  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet', children: [
+  { label: 'Qualidade', route: '/qualidade/tablet', icon: ShieldCheck, action: 'qualityTablet', children: [
     { label: 'Visual geral da Qualidade', route: '/qualidade' },
     { label: 'Inspeções de lotes', route: '/qualidade/inspecoes' },
     { label: 'Inspeção em processo', route: '/qualidade/inspecao-processo' },
@@ -89,7 +88,7 @@ const menus: MenuItem[] = [
     { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
     { label: 'CEP / medições', route: '/qualidade/cep' },
     { label: 'Cadastro de documentos (GED)', route: '/qualidade/ged-documentos' },
-    { label: 'Qualidade Tablet', route: '/qualidade', action: 'qualityTablet' },
+    { label: 'Qualidade Tablet', route: '/qualidade/tablet' },
   ] },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench, children: [
     { label: 'Central de manutenção', route: '/manutencao' },
@@ -115,7 +114,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
-  const [tabletOpen, setTabletOpen] = useState(false)
   const [pcpTabletOpen, setPcpTabletOpen] = useState(false)
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
@@ -141,12 +139,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
     document.addEventListener('mousedown', close)
     return () => document.removeEventListener('mousedown', close)
-  }, [])
-
-  useEffect(() => {
-    const openQualityTablet = () => setTabletOpen(true)
-    window.addEventListener('erp:open-quality-tablet', openQualityTablet)
-    return () => window.removeEventListener('erp:open-quality-tablet', openQualityTablet)
   }, [])
 
   // Atualização automática por mudanças reais no banco, sem botão manual.
@@ -202,10 +194,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       return
     }
     if (item.action === 'qualityTablet') {
-      setTabletOpen(true)
       setOpenMenu(null)
-      
-      
+      navigate('/qualidade/tablet')
       return
     }
     go(item.route)
@@ -323,7 +313,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
       </main>
-      <TabletMenuModal isOpen={tabletOpen} onClose={() => setTabletOpen(false)} onNavigate={(route) => { setTabletOpen(false); go(route) }} />
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
 
       <style>{`
