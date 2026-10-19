@@ -1,7 +1,7 @@
 /**
  * @DATA_REVISAO_APROVACAO: 2026-10-19
  * @DESENVOLVEDOR: FernandoSch
- * @NOME_SISTEMA: MOLDPLÁS ERP INDUSTRIAL
+ * @NOME_SISTEMA: SYSNQRA ERP & SGQ INDUSTRIAL
  * @REVISAO: Análise assistida de imagem/laudo para Ishikawa 6M e 5 Porquês
  * @SEGURANCA: JWT obrigatório, usuário ativo, segredo OpenAI somente no servidor
  */
@@ -103,7 +103,7 @@ Deno.serve(async (req: Request) => {
     }
     if (imageBase64 && fileBase64) return json({ error: "Envie uma imagem ou um PDF por solicitação, não ambos." }, 400);
 
-    const instructions = `Você é um especialista de engenharia de qualidade do MOLDPLÁS ERP INDUSTRIAL. Analise apenas evidências fornecidas; não invente medições, lotes, máquinas, causas ou fatos. Separe hipóteses de fatos comprovados, use linguagem técnica em português e evite atribuir culpa sem evidência. Gere até 4 causas concisas por categoria, podendo deixar listas vazias quando não houver evidência. Os cinco porquês devem formar uma cadeia causal coerente; use "Hipótese a validar" quando faltarem dados. Retorne somente JSON com este formato: {"ishikawa_6m":{"MAO_DE_OBRA":[],"MATERIA_PRIMA":[],"METODO":[],"MAQUINA":[],"MEDICAO":[],"AMBIENTE":[]},"porques_analise":{"p1":"","p2":"","p3":"","p4":"","p5":""}}.`;
+    const instructions = `Você é um especialista de engenharia de qualidade do SYSNQRA ERP & SGQ INDUSTRIAL. Analise apenas evidências fornecidas; não invente medições, lotes, máquinas, causas ou fatos. Separe hipóteses de fatos comprovados, use linguagem técnica em português e evite atribuir culpa sem evidência. Gere até 4 causas concisas por categoria, podendo deixar listas vazias quando não houver evidência. Os cinco porquês devem formar uma cadeia causal coerente; use "Hipótese a validar" quando faltarem dados. Retorne somente JSON com este formato: {"ishikawa_6m":{"MAO_DE_OBRA":[],"MATERIA_PRIMA":[],"METODO":[],"MAQUINA":[],"MEDICAO":[],"AMBIENTE":[]},"porques_analise":{"p1":"","p2":"","p3":"","p4":"","p5":""}}.`;
     const content: JsonRecord[] = [{
       type: "input_text",
       text: `Categoria/origem informada: ${category || "não informada"}\nDescrição do desvio: ${description || "não informada"}\n\nAnalise o conteúdo anexado e proponha Ishikawa 6M e 5 Porquês. Não considere exemplos genéricos como fatos desta ocorrência.`,
