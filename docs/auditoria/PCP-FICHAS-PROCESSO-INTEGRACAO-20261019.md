@@ -23,6 +23,10 @@
 - `src/pages/PCPFichasProcessoCadastro.tsx`
 - `src/pages/PCPFichaEngenhariaCompleta.tsx`
 
+## Proteção contra regressão
+
+O script `scripts/verify-pcp-process-sheets-contract.mjs` é executado por `verify:production`, `audit:production` e `verify:release`. Ele protege a rota oficial, os três componentes e os marcadores funcionais essenciais.
+
 ## Verificação pendente
 
 - Confirmar o resultado dos checks automáticos de CI e do build Vercel deste branch.
