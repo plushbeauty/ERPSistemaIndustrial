@@ -27,10 +27,8 @@ export default function PCPFichasProcesso() {
     {models.map(({id,label,description,Icon})=><button key={id} type="button" aria-pressed={model===id} title={description} onClick={()=>setModel(id)} className={model===id?'inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-[#48B7C7] bg-[#2D8DB8] px-3 text-[10px] font-bold text-white':'inline-flex h-[30px] items-center gap-1 rounded-[2px] border border-white/20 bg-[#1a4b61] px-3 text-[10px] font-semibold text-slate-100 hover:bg-[#245d75]'}><Icon size={13}/>{label}</button>)}
    </div>
   </nav>
-  <div key={model}>
-   {model==='categorias'&&<PCPFichasProcessoCategorias/>}
-   {model==='cadastro'&&<PCPFichasProcessoCadastro/>}
-   {model==='engenharia'&&<PCPFichaEngenhariaCompleta/>}
-  </div>
+  <div hidden={model!=='categorias'}><PCPFichasProcessoCategorias/></div>
+  <div hidden={model!=='cadastro'}><PCPFichasProcessoCadastro/></div>
+  <div hidden={model!=='engenharia'}><PCPFichaEngenhariaCompleta/></div>
  </div>
 }
