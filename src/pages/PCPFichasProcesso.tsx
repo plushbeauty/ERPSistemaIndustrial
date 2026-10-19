@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CalendarRange, CheckCircle2, FileSliders, Printer, RefreshCw, Save, Search } from 'lucide-react'
 import PCPMoldPhotoPanel from '../components/PCPMoldPhotoPanel'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 
 type Product = { id: string; codigo: string; nome: string }
