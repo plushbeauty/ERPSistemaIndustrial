@@ -203,6 +203,7 @@ const OutlookConfiguracao = lazyPage(() => import('./pages/OutlookConfiguracao')
 const OutlookCaixaEntrada = lazyPage(() => import('./pages/OutlookCaixaEntrada'), 'OutlookCaixaEntrada')
 const AdminLogs = lazyPage(() => import('./pages/AdminLogs'), 'AdminLogs')
 const CalibracaoIndustrial = lazyPage(() => import('./pages/CalibracaoIndustrial'), 'CalibracaoIndustrial')
+const HelpCalibracao = lazyPage(() => import('./pages/HelpCalibracao'), 'HelpCalibracao')
 const QualidadeRelatoriosDocumentos = lazyPage(() => import('./pages/QualidadeRelatoriosDocumentos'), 'QualidadeRelatoriosDocumentos')
 const QualidadeListaMestre = lazyPage(() => import('./pages/QualidadeListaMestre'), 'QualidadeListaMestre')
 const QualidadeAuditoria5S = lazyPage(() => import('./pages/QualidadeAuditoria5S'), 'QualidadeAuditoria5S')
@@ -575,6 +576,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/relatorios-documentos" element={<QualityPlanGate><QualidadeRelatoriosDocumentos /></QualityPlanGate>} />
       <Route path="/qualidade/metrologia" element={<QualityPlanGate><CentraisIndustriais module="metrologia" /></QualityPlanGate>} />
       <Route path="/qualidade/calibracao" element={<QualityPlanGate><CalibracaoIndustrial /></QualityPlanGate>} />
+      <Route path="/qualidade/calibracao/ajuda" element={<QualityPlanGate><HelpCalibracao /></QualityPlanGate>} />
       <Route path="/qualidade/editor-it" element={<QualityPlanGate><QualidadeEditorIT /></QualityPlanGate>} />
       <Route path="/qualidade/procedimentos" element={<QualityPlanGate><QualidadeProcedimentos /></QualityPlanGate>} />
       <Route path="/qualidade/assinatura-it" element={<QualityPlanGate><QualidadeAssinaturaIT /></QualityPlanGate>} />
