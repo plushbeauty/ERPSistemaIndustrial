@@ -67,3 +67,13 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - Contagens estáticas: 248 declarações Route, 247 padrões únicos, 156 imports dinâmicos, 11 rotas para workspace genérico. Não são contagens de módulos funcionais.
 - Referências externas consultadas: SAP S/4HANA Cloud (10 áreas principais na página de áreas), ERPNext (21 nomes em modules.txt) e TOTVS Protheus Backoffice (18 tópicos/subitens explicitados na página pública). As taxonomias não são diretamente equivalentes.
 - Status: inventário/matriz documentados; execução funcional, build, type-check e publicação ainda pendentes. Nenhuma rota/módulo marcado concluído.
+
+
+## Atualização de Compras — 2026-10-18 (em validação)
+
+- UI-030 continua **aberto**: iniciada padronização scoped do módulo Compras/Suprimentos na branch `fix/compras-ui-standardization-2026-10-18`.
+- Ajustes realizados em CSS compartilhado, Central de Compras, RFQ, Relatórios, Ajuda e Validação Fiscal; ver [auditoria detalhada](../auditoria/COMPRAS-UI-AUDIT-2026-10-18.md).
+- Não mover para COMPLETED até type-check, lint, auditorias, contratos de UI, rotas, build, inspeção visual e deploy do SHA final estarem confirmados.
+
+
+- Atualização 2026-10-18: o usuário confirmou PASS manual nos fluxos Central de Compras, Pedidos de compra, Requisições, RFQ (incluindo atualização), Recebimentos, Fornecedores e Validação Fiscal. Registro detalhado em [auditoria de Compras](../auditoria/COMPRAS-UI-AUDIT-2026-10-18.md). UI-030 permanece aberto até type-check/lint/auditorias/contratos/rotas e inspeção visual estarem evidenciados; build remoto do preview está verde, mas PR #150 não foi integrado à produção.

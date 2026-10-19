@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { CheckCircle2, RefreshCw, Search, XCircle } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
 
 type Row={id:string;numero:number;status:string;fiscal_status:string;fiscal_parecer:string|null;total:number;data_pedido:string;fornecedor_id:string}
@@ -8,7 +9,7 @@ type Supplier={id:string;razao_social:string;nome_fantasia:string|null}
 
 export default function FiscalCompras(){
  const [rows,setRows]=useState<Row[]>([]),[suppliers,setSuppliers]=useState<Supplier[]>([]),[q,setQ]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
- const load=async()=>{setBusy(true);setError('');try{const e=await supabase.rpc('erp_current_empresa_id');if(e.error||!e.data)throw e.error??new Error('Empresa não identificada.');const id=String(e.data);const [p,s]=await Promise.all([supabase.from('erp_pedidos_compra').select('id,numero,status,fiscal_status,fiscal_parecer,total,data_pedido,fornecedor_id').eq('empresa_id',id).order('data_pedido',{ascending:false}),supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia').eq('empresa_id',id).eq('ativo',true)]);if(p.error)throw p.error;if(s.error)throw s.error;setRows((p.data??[]) as Row[]);setSuppliers((s.data??[]) as Supplier[])}catch(e){setError(e instanceof Error?e.message:'Falha ao carregar compras.')}finally{setBusy(false)}} 
+ const load=async()=>{setBusy(true);setError('');try{const e=await supabase.rpc('erp_current_empresa_id');if(e.error||!e.data)throw e.error??new Error('Empresa não identificada.');const id=String(e.data);const [p,s]=await Promise.all([fetchAllPages<Row>((from,to)=>supabase.from('erp_pedidos_compra').select('id,numero,status,fiscal_status,fiscal_parecer,total,data_pedido,fornecedor_id',{count:'exact'}).eq('empresa_id',id).order('data_pedido',{ascending:false}).range(from,to)),fetchAllPages<Supplier>((from,to)=>supabase.from('erp_fornecedores').select('id,razao_social,nome_fantasia',{count:'exact'}).eq('empresa_id',id).eq('ativo',true).order('razao_social').range(from,to))]);setRows(p);setSuppliers(s)}catch(e){setError(e instanceof Error?e.message:'Falha ao carregar compras.')}finally{setBusy(false)}} 
  useEffect(()=>{void load()},[])
  const supplier=new Map(suppliers.map(s=>[s.id,s.nome_fantasia||s.razao_social]))
  const visible=rows.filter(r=>(String(r.numero)+' '+(supplier.get(r.fornecedor_id)||'')+' '+r.status+' '+r.fiscal_status).toLowerCase().includes(q.toLowerCase()))
