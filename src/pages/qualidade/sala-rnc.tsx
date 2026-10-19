@@ -261,7 +261,7 @@ export default function SalaRNC() {
     <ERPHorizontalShell>
       <main className="rnc-print-document min-h-[calc(100vh-48px)] bg-[#0E1E2F] pb-12 text-[#F4FBFD] print:min-h-0 print:bg-white print:p-0">
         <div className="rnc-print-header hidden grid-cols-3 border border-slate-400 bg-white text-center text-slate-900">
-          <div className="flex min-h-[48px] items-center justify-center border-r border-slate-400 p-2 text-[10px] font-bold uppercase">SYSNQRA ERP &amp; SGQ INDUSTRIAL</div>
+          <div className="flex min-h-[48px] items-center justify-center border-r border-slate-400 p-2 text-[10px] font-bold uppercase">MOLDPLÁS ERP INDUSTRIAL</div>
           <div className="flex flex-col justify-center border-r border-slate-400 p-2"><strong className="text-[10px] uppercase">Registro de Não Conformidade</strong><span className="text-[8px]">Sistema de Gestão da Qualidade · CAPA</span></div>
           <div className="flex flex-col justify-center p-2 text-left text-[8px]"><span>CÓDIGO: {selectedRecord?.numero_rpnc || 'GERADO AO SALVAR'}</span><span>EMISSÃO: {new Date().toLocaleString('pt-BR')}</span></div>
         </div>
