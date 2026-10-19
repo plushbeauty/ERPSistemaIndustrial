@@ -1,9 +1,9 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-10-16
- * @REVISAO_APROVACAO: APROV-001
- * @STATUS_APROVACAO: APROVADO-IMUTAVEL
+ * @DATA_REVISAO_APROVACAO: 2026-10-18
+ * @REVISAO_APROVACAO: APROV-005
+ * @STATUS_APROVACAO: AJUSTE-EXPRESSAMENTE-AUTORIZADO-2026-10-18
  * @FONTE_APROVADA: Vercel preview READY / commit 94da86b985c12801525661328577f7bd96188b85
- * @REGRA: não alterar layout, conteúdo ou comportamento sem nova autorização explícita do usuário.
+ * @REGRA: ajuste compacto de campos autorizado expressamente em 2026-10-18; preservar fluxo funcional, cabeçalho azul e geometria aprovada.
  * @ESCOPO_ORIGINAL: Vendas > Novo Pedido; preserva fluxo funcional e geometria visual da versão aprovada.
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
@@ -18,9 +18,9 @@ type Transportadora={id:string;codigo:string;razao_social:string}
 type Vendedor={id:string;nome:string}
 type Item={produto_id:string;codigo:string;descricao:string;quantidade:number;unidade:string;valor_unitario:number;desconto:number;estoque:number;preco_custo_industrial:number}
 
-const inputStyle='h-8 w-full rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 outline-none transition-all focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
-const labelStyle='flex flex-col gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-500'
-const buttonStyle='flex h-8 items-center justify-center gap-1 rounded-[2px] px-3 text-xs font-semibold'
+const inputStyle='h-[30px] w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-semibold text-slate-800 outline-none transition-all focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
+const labelStyle='flex flex-col gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-500'
+const buttonStyle='flex h-[30px] items-center justify-center gap-1 rounded-[2px] px-2 text-[10px] font-semibold'
 const brl=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number.isFinite(v)?v:0)
 const n=(v:string|number)=>Number(v)||0
 const digits=(v:string)=>v.replace(/\D/g,'')

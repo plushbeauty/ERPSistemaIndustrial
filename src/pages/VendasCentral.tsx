@@ -1,8 +1,8 @@
 /**
- * @DATA_REVISAO_APROVACAO: 2026-10-16
- * @REVISAO_APROVACAO: APROV-004
- * @STATUS_APROVACAO: APROVADO-IMUTAVEL
- * @REGRA: revisão APROV-004 autorizada expressamente; novas alterações exigem nova ordem expressa.
+ * @DATA_REVISAO_APROVACAO: 2026-10-18
+ * @REVISAO_APROVACAO: APROV-006
+ * @STATUS_APROVACAO: AJUSTE-EXPRESSAMENTE-AUTORIZADO-2026-10-18
+ * @REGRA: ajuste de alinhamento dos cards e legenda de cores autorizado expressamente em 2026-10-18; manter os dados reais e o fluxo existente.
  * @ESCOPO: cards ampliados e acompanhamento real de pedido, produção, qualidade, expedição e NF/saída.
  */
 import { useEffect, useMemo, useState } from 'react'
@@ -169,7 +169,7 @@ export default function VendasCentral() {
         {error && <div className="sales-alert" role="alert"><CircleAlert size={17} />{error}</div>}
 
         <section className="sales-orders-card">
-          <div className="synqra-status-grid sales-orders-status-grid" role="tablist" aria-label="Filtrar pedidos por status">
+          <div className="synqra-status-grid sales-orders-status-grid" role="tablist" aria-label="Filtrar pedidos por status" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,145px),1fr))',gap:6,alignItems:'stretch',width:'100%'}}>
             {filters.map(({ id, label, icon: Icon }) => {
               const value = id === 'todos' ? counts.all
                 : id === 'rascunho' ? counts.drafts
@@ -183,11 +183,20 @@ export default function VendasCentral() {
                 : id === 'faturados' ? 'synqra-status-cyan'
                 : id === 'cancelados' ? 'synqra-status-slate'
                 : 'synqra-status-green'
-              return <button key={id} type="button" role="tab" aria-selected={filter === id} className={`synqra-status-cell ${tone} sales-orders-status-card${filter === id ? ' is-active' : ''}`} onClick={() => { setFilter(id); setPage(0) }}>
+              return <button key={id} type="button" role="tab" aria-selected={filter === id} className={`synqra-status-cell ${tone} sales-orders-status-card${filter === id ? ' is-active' : ''}`} style={{minWidth:0,minHeight:54,height:54,padding:'7px 9px',display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:8,borderRadius:2,boxSizing:'border-box'}} onClick={() => { setFilter(id); setPage(0) }}>
                 <span><Icon size={15} aria-hidden="true" /> {label}</span>
                 <strong>{loading ? '—' : value}</strong>
               </button>
             })}
+          </div>
+          <div className="sales-status-legend" aria-label="Legenda de cores do status dos pedidos" style={{display:'flex',flexWrap:'wrap',alignItems:'center',gap:'6px 12px',padding:'7px 2px 9px',fontSize:'10px',color:'#475569'}}>
+            <strong style={{fontSize:'9px',letterSpacing:'.06em',textTransform:'uppercase'}}>Legenda</strong>
+            <span style={{display:'inline-flex',alignItems:'center',gap:5}}><i aria-hidden="true" style={{width:8,height:8,borderRadius:2,background:'#3A9D78'}}/>Todos</span>
+            <span style={{display:'inline-flex',alignItems:'center',gap:5}}><i aria-hidden="true" style={{width:8,height:8,borderRadius:2,background:'#E6A34A'}}/>Rascunho</span>
+            <span style={{display:'inline-flex',alignItems:'center',gap:5}}><i aria-hidden="true" style={{width:8,height:8,borderRadius:2,background:'#2D8DB8'}}/>Em andamento</span>
+            <span style={{display:'inline-flex',alignItems:'center',gap:5}}><i aria-hidden="true" style={{width:8,height:8,borderRadius:2,background:'#D65B61'}}/>Atrasado</span>
+            <span style={{display:'inline-flex',alignItems:'center',gap:5}}><i aria-hidden="true" style={{width:8,height:8,borderRadius:2,background:'#48B7C7'}}/>Faturado</span>
+            <span style={{display:'inline-flex',alignItems:'center',gap:5}}><i aria-hidden="true" style={{width:8,height:8,borderRadius:2,background:'#64748b'}}/>Cancelado</span>
           </div>
 
           <div className="sales-list-toolbar">
