@@ -52,7 +52,14 @@ export default function AdminLogs() {
         .select('id,created_at,actor_user_id,action,entity_type,entity_id', { count: 'exact' })
         .order('created_at', { ascending: false })
 
-      if (usuarioFiltro !== 'Todos') logQuery = logQuery.eq('actor_user_id', usuarioFiltro)
+      if (usuarioFiltro !== 'Todos') {
+        const selectedUser = users.find(user => user.id === usuarioFiltro)
+        if (selectedUser) {
+          const actorIds = [selectedUser.id, selectedUser.auth_user_id].filter((id): id is string => Boolean(id))
+          if (actorIds.length === 1) logQuery = logQuery.eq('actor_user_id', actorIds[0])
+          else if (actorIds.length > 1) logQuery = logQuery.or(actorIds.map(id => `actor_user_id.eq.${id}`).join(','))
+        }
+      }
       if (moduloFiltro !== 'Todos') logQuery = logQuery.eq('entity_type', moduloFiltro)
       if (acaoFiltro !== 'Todos') logQuery = logQuery.eq('action', acaoFiltro)
 
@@ -85,9 +92,14 @@ export default function AdminLogs() {
   useEffect(() => { void load() }, [load])
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE))
-  const userMap = useMemo(() => new Map(
-    users.map(user => [user.id, user]),
-  ), [users])
+  const userMap = useMemo(() => {
+    const map = new Map<string, User>()
+    users.forEach(user => {
+      map.set(user.id, user)
+      if (user.auth_user_id) map.set(user.auth_user_id, user)
+    })
+    return map
+  }, [users])
 
   const visibleRows = useMemo(() => {
     const term = query.trim().toLocaleLowerCase('pt-BR')
