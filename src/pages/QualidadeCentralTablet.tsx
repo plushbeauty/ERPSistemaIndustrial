@@ -2,7 +2,8 @@
  * @DATA_REVISAO_APROVACAO: 2026-10-19
  * @DESENVOLVEDOR: FernandoSch
  * @NOME_SISTEMA: MOLDPLÁS ERP INDUSTRIAL
- * @STATUS_APROVACAO: CENTRAL-TABLET-HIGH-DENSITY-STEEL-BLUE
+ * @STATUS_APROVACAO: CENTRAL-TABLET-HIGH-CONTRAST-FIX
+ * @REVISAO_VISUAL: Contraste explícito, grade compacta e cards quadrados
  * @REVISAO: Bento grid compacto, indicadores consultados no Supabase e navegação SGQ.
  */
 import { useCallback, useEffect, useState } from 'react'
@@ -133,6 +134,11 @@ export default function QualidadeCentralTablet() {
 
         {error && <div role="status" className="border border-amber-800 bg-[#2B2113] px-3 py-2 text-[10px] font-bold text-amber-300">{error}</div>}
 
+        <div className="flex items-center gap-2 border border-[#2E4A62] bg-[#071522] px-3 py-2 text-[10px] font-semibold text-white">
+          <span className="h-2 w-2 shrink-0 bg-[#48B7C7]" aria-hidden="true" />
+          <span>PAINEL SGQ · títulos e descrições com contraste reforçado; falhas de consulta são informadas acima.</span>
+        </div>
+
         <section aria-label="Indicadores operacionais do SGQ" className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
           {metrics.map(metric => {
             const Icon = metric.icon
@@ -161,7 +167,7 @@ export default function QualidadeCentralTablet() {
           </div>
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
             {qualityModules.map(({ label, description, route, icon: Icon, badge, badgeColor }) => (
-              <Link key={route} to={route} className="group relative flex min-h-[100px] min-w-0 flex-col justify-between border border-[#2E4A62] bg-[#071522] p-2.5 shadow-sm transition-colors hover:border-[#48B7C7] hover:bg-[#123B50] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#48B7C7]">
+              <Link key={route} to={route} className="group relative flex min-h-[108px] min-w-0 flex-col justify-between rounded-none border border-[#2E4A62] bg-[#071522] p-3 text-white shadow-sm transition-colors hover:border-[#48B7C7] hover:bg-[#123B50] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#48B7C7]">
                 <div className="flex w-full min-w-0 items-start gap-2.5">
                   <span className="grid h-8 w-8 shrink-0 place-items-center border border-[#2E4A62] bg-[#0D2638] text-[#48B7C7] transition-colors group-hover:border-[#48B7C7]">
                     <Icon size={14} strokeWidth={2.1} />
