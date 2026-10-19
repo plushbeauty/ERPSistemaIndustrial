@@ -72,6 +72,8 @@ export default function SalaRNC() {
   const [ishikawa, setIshikawa] = useState<IshikawaMap>(emptyIshikawa)
   const [activeCauseGroup, setActiveCauseGroup] = useState<IshikawaKey>('MAO_DE_OBRA')
   const [newCause, setNewCause] = useState('')
+  const [analysisAttachment, setAnalysisAttachment] = useState<{ data: string; name: string; mimeType: string } | null>(null)
+  const [analysisLoading, setAnalysisLoading] = useState(false)
   const [actions, setActions] = useState<ActionRow[]>([emptyAction()])
   const [busy, setBusy] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -209,6 +211,51 @@ export default function SalaRNC() {
     }
   }
 
+  const analyzeEvidenceWithAI = async () => {
+    setError('')
+    setNotice('')
+    if (!description.trim() && !analysisAttachment) {
+      setError('Informe a descrição do defeito ou anexe uma imagem/laudo para a IA analisar.')
+      return
+    }
+    setAnalysisLoading(true)
+    try {
+      const body: Record<string, string> = { category: origin, description: description.trim() }
+      if (analysisAttachment) {
+        if (analysisAttachment.mimeType === 'application/pdf') {
+          body.file_base64 = analysisAttachment.data
+          body.file_name = analysisAttachment.name
+          body.mime_type = analysisAttachment.mimeType
+        } else {
+          body.image_base64 = analysisAttachment.data
+        }
+      }
+      const { data, error: invokeError } = await supabase.functions.invoke('erp-ai-process-sheet', { body })
+      if (invokeError) throw invokeError
+      const result = (data?.parameters ?? data) as { ishikawa_6m?: Record<string, unknown>; porques_analise?: Record<string, unknown> } | null
+      if (!result?.ishikawa_6m || !result.porques_analise) throw new Error(data?.error || 'A IA não retornou Ishikawa 6M e 5 Porquês válidos.')
+      const groups: Record<IshikawaKey, string[]> = {
+        MAO_DE_OBRA: [], MATERIA_PRIMA: [], METODO: [], MAQUINA: [], MEDICAO: [], MEIO_AMBIENTE: []
+      }
+      for (const key of Object.keys(groups) as IshikawaKey[]) {
+        const sourceKey = key === 'MEIO_AMBIENTE' ? 'AMBIENTE' : key
+        const values = result.ishikawa_6m[sourceKey] ?? result.ishikawa_6m[key]
+        groups[key] = Array.isArray(values) ? values.filter((item): item is string => typeof item === 'string').slice(0, 4) : []
+      }
+      setIshikawa(groups)
+      const whyData = result.porques_analise
+      setWhys(WHY_QUESTIONS.map((question, index) => {
+        const answer = whyData['p' + (index + 1)]
+        return { question, answer: typeof answer === 'string' ? answer : '', evidence: '' }
+      }))
+      setNotice('Análise preliminar gerada pela IA. Valide cada causa contra evidências objetivas antes de aprovar ou salvar.')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao analisar a imagem ou o laudo.')
+    } finally {
+      setAnalysisLoading(false)
+    }
+  }
+
   const saveIshikawa = async () => {
     if (!selectedRecord || !companyId) { setError('Selecione uma RPNC da empresa antes de salvar a investigação.'); return }
     setBusy(true)
@@ -314,6 +361,23 @@ export default function SalaRNC() {
                   <select className={fieldClass} value={activeCauseGroup} onChange={event => setActiveCauseGroup(event.target.value as IshikawaKey)}>{ISHIKAWA_GROUPS.map(group => <option key={group.key} value={group.key}>{group.label}</option>)}</select>
                   <label className={labelClass}>Nova causa identificada</label>
                   <textarea className={areaClass} value={newCause} onChange={event => setNewCause(event.target.value)} placeholder="Descreva a causa observada com base em evidência…"/>
+                  <label className={labelClass}>Imagem ou laudo PDF para análise assistida</label>
+                  <input className="block w-full text-[10px] text-slate-300 file:mr-2 file:h-[28px] file:rounded-[2px] file:border-0 file:bg-[#2D8DB8] file:px-2 file:text-[10px] file:font-bold file:text-white" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" onChange={event => {
+                    const file = event.target.files?.[0]
+                    if (!file) { setAnalysisAttachment(null); return }
+                    if (file.size > 6 * 1024 * 1024) { setError('O arquivo deve ter no máximo 6 MB.'); event.currentTarget.value = ''; return }
+                    if (!file.type.startsWith('image/') && file.type !== 'application/pdf') { setError('Envie uma imagem PNG/JPG/WEBP ou um laudo PDF.'); event.currentTarget.value = ''; return }
+                    const reader = new FileReader()
+                    reader.onload = () => {
+                      if (typeof reader.result === 'string') setAnalysisAttachment({ data: reader.result, name: file.name, mimeType: file.type })
+                    }
+                    reader.onerror = () => setError('Não foi possível ler o arquivo selecionado.')
+                    reader.readAsDataURL(file)
+                  }}/>
+                  {analysisAttachment && <p className="break-all text-[9px] text-slate-400">Anexo: {analysisAttachment.name}</p>}
+                  <button type="button" className={secondaryButton} onClick={() => void analyzeEvidenceWithAI()} disabled={analysisLoading || busy}>
+                    {analysisLoading ? 'Analisando evidência…' : 'Analisar com IA · Ishikawa + 5 Porquês'}
+                  </button>
                   <button type="submit" className={buttonClass}><Plus size={12}/> Adicionar causa</button>
                   <p className="text-[9px] text-slate-500">As causas são registradas na investigação da RPNC existente, sem criar tabela paralela.</p>
                   {selectedRecord && <button type="button" className={buttonClass} onClick={() => void saveIshikawa()} disabled={busy || loading}><Save size={12}/> Salvar investigação na RPNC</button>}
