@@ -10,6 +10,26 @@ type Sector = { id: string; nome: string }
 type Operator = { id: string; nome: string | null; email: string | null }
 type ActionRow = { id: string; oQue: string; quem: string; quando: string; como: string; porQue: string; onde: string; quanto: string }
 type WhyAnswer = { question: string; answer: string; evidence: string }
+type CreatedRpncResult = { id: string; numero_rpnc: string; codigo_8d?: string; acoes_gravadas?: number }
+type SavedActionsResult = { count: number; capa_id?: string }
+
+function isCreatedRpncResult(value: unknown): value is CreatedRpncResult {
+  if (typeof value !== 'object' || value === null) return false
+  const record = value as Record<string, unknown>
+  return typeof record.id === 'string'
+    && typeof record.numero_rpnc === 'string'
+    && (record.codigo_8d === undefined || typeof record.codigo_8d === 'string')
+    && (record.acoes_gravadas === undefined || typeof record.acoes_gravadas === 'number')
+}
+
+function isSavedActionsResult(value: unknown): value is SavedActionsResult {
+  if (typeof value !== 'object' || value === null) return false
+  const record = value as Record<string, unknown>
+  return typeof record.count === 'number'
+    && Number.isInteger(record.count)
+    && record.count >= 0
+    && (record.capa_id === undefined || typeof record.capa_id === 'string')
+}
 
 const WHY_QUESTIONS = [
   'Por que o defeito ocorreu diretamente?',
@@ -63,7 +83,7 @@ export default function SalaRNC() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
-  const [deployStatus, setDeployStatus] = useState('VALIDAÇÃO PENDENTE')
+  const [dataSyncStatus, setDataSyncStatus] = useState('AGUARDANDO LEITURA')
 
   const selectedLot = useMemo(() => lots.find(lot => lot.id === lotId) ?? null, [lots, lotId])
   const selectedRecord = useMemo(() => records.find(record => record.id === selectedRnc) ?? null, [records, selectedRnc])
@@ -88,8 +108,9 @@ export default function SalaRNC() {
       setOperators(userRows)
       setRecords(rncRows)
       if (!selectedRnc && rncRows[0]) setSelectedRnc(rncRows[0].id)
-      setDeployStatus('CÓDIGO ENVIADO · BUILD PENDENTE')
+      setDataSyncStatus('LEITURA CONCLUÍDA · DEPLOY NÃO VERIFICADO')
     } catch (cause) {
+      setDataSyncStatus('FALHA NA LEITURA')
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar os dados da Sala de RNC.')
     } finally {
       setLoading(false)
@@ -135,15 +156,16 @@ export default function SalaRNC() {
         p_actions_json: actionPayload
       })
       if (result.error) throw result.error
-      const created = result.data as (Rnc & { codigo_8d?: string; acoes_gravadas?: number }) | null
-      if (!created?.id || !created.numero_rpnc) throw new Error('O banco não retornou a RPNC criada.')
-      const metadata = await supabase.from('erp_rpnc').update({ gravidade: criticality.toLocaleLowerCase('pt-BR'), data_ocorrencia: new Date(occurredAt).toISOString(), inspetor_id: inspectorId, disposicao_fisica: disposition, requisito_violado: requirementViolated.trim(), evidencias_objetivas: [{ descricao: objectiveEvidence.trim(), registrada_em: new Date().toISOString() }], porques_evidencias: whyAnswers, causa_raiz_validada: rootCauseValidated, causa_raiz_validacao_observacao: rootCauseValidationNote.trim() || null }).eq('id', created.id).eq('empresa_id', companyId)
-      if (metadata.error) throw new Error('RPNC criada e lote retido, mas os metadados complementares não foram gravados: ' + metadata.error.message + '. Abra o registro e complete os campos antes de encerrar.')
+      const createdData: unknown = result.data
+      if (!isCreatedRpncResult(createdData)) throw new Error('O banco não retornou uma confirmação válida da RPNC criada.')
+      const created = createdData
+      const metadata = await supabase.from('erp_rpnc').update({ gravidade: criticality.toLocaleLowerCase('pt-BR'), data_ocorrencia: new Date(occurredAt).toISOString(), inspetor_id: inspectorId, disposicao_fisica: disposition, requisito_violado: requirementViolated.trim(), evidencias_objetivas: [{ descricao: objectiveEvidence.trim(), registrada_em: new Date().toISOString() }], porques_evidencias: whyAnswers, causa_raiz_validada: rootCauseValidated, causa_raiz_validacao_observacao: rootCauseValidationNote.trim() || null }).eq('id', created.id).eq('empresa_id', companyId).select('id').maybeSingle()
+      if (metadata.error || !metadata.data?.id) throw new Error('RPNC criada e lote retido, mas os metadados complementares não tiveram confirmação de gravação: ' + (metadata.error?.message ?? 'nenhuma linha foi confirmada') + '. Abra o registro e complete os campos antes de encerrar.')
       const sourceRecord = await supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,origem,gravidade,lote_producao,quantidade_segregada,bloqueia_lote,status,criado_em,data_ocorrencia,inspetor_id,disposicao_fisica,requisito_violado,evidencias_objetivas,porques_evidencias,causa_raiz_validada,causa_raiz_validacao_observacao,investigacao').eq('id', created.id).eq('empresa_id', companyId).single()
       if (sourceRecord.error) throw new Error('RPNC gravada, mas não foi possível ler sua fotografia para o protocolo 8D: ' + sourceRecord.error.message)
-      const snapshot = await supabase.from('erp_qualidade_8d').update({ rpnc_snapshot: sourceRecord.data, snapshot_capturado_em: new Date().toISOString(), numero_rpnc_origem: created.numero_rpnc, origem_rpnc: sourceRecord.data.origem }).eq('empresa_id', companyId).eq('rpnc_id', created.id).is('rpnc_snapshot', null)
-      if (snapshot.error) throw new Error('RPNC gravada, mas a fotografia histórica do protocolo 8D não foi anexada: ' + snapshot.error.message)
-      setNotice('RPNC ' + created.numero_rpnc + ', análise 8D, CAPA/5W2H e retenção do lote gravadas em transação única. Ações iniciais: ' + String(created.acoes_gravadas ?? 0) + '.')
+      const snapshot = await supabase.from('erp_qualidade_8d').update({ rpnc_snapshot: sourceRecord.data, snapshot_capturado_em: new Date().toISOString(), numero_rpnc_origem: created.numero_rpnc, origem_rpnc: sourceRecord.data.origem }).eq('empresa_id', companyId).eq('rpnc_id', created.id).is('rpnc_snapshot', null).select('id').maybeSingle()
+      if (snapshot.error || !snapshot.data?.id) throw new Error('RPNC gravada, mas a fotografia histórica do protocolo 8D não teve confirmação de gravação: ' + (snapshot.error?.message ?? 'nenhuma linha 8D pendente foi atualizada'))
+      setNotice('RPNC ' + created.numero_rpnc + ' registrada. A retenção do lote e as ações iniciais foram processadas pela RPC; os metadados complementares e a fotografia histórica 8D foram confirmados separadamente. Ações iniciais: ' + String(created.acoes_gravadas ?? 0) + '.')
       setSelectedRnc(created.id)
       setDescription('')
       setRequirementViolated('')
@@ -183,8 +205,9 @@ export default function SalaRNC() {
         p_actions_json: actionPayload
       })
       if (result.error) throw result.error
-      const saved = result.data as { count?: number } | null
-      setNotice(String(saved?.count ?? ready.length) + ' ação(ões) CAPA gravada(s) com atualização do plano 5W2H.')
+      const savedData: unknown = result.data
+      if (!isSavedActionsResult(savedData)) throw new Error('O banco não retornou confirmação válida das ações CAPA.')
+      setNotice(String(savedData.count) + ' ação(ões) CAPA confirmada(s) pela RPC com atualização do plano 5W2H.')
       setActions([emptyAction()])
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao salvar ações CAPA.')
@@ -281,8 +304,8 @@ export default function SalaRNC() {
         <footer className="fixed bottom-0 left-0 right-0 z-40 grid h-8 grid-cols-2 items-center border-t border-slate-300 bg-[#123B50] px-3 text-[9px] text-white md:grid-cols-4 print:static print:mt-4 print:grid print:bg-white print:text-slate-800">
           <span><strong>SGQ-RNC</strong> · ISO 9001:2015</span>
           <span className="hidden text-center md:block">Revisão automática · RPNC / 5W2H</span>
-          <span className="text-right md:text-center">{deployStatus}</span>
-          <span className="text-right">Dados por empresa · RLS ativo</span>
+          <span className="text-right md:text-center">{dataSyncStatus}</span>
+          <span className="text-right">Tenant da sessão · consultas filtradas</span>
         </footer>
         <style>{'@media print{@page{size:A4 portrait;margin:10mm}.rnc-screen-header,.rnc-history-section{display:none!important}.rnc-print-header{display:grid!important}.rnc-print-document{max-width:none!important;width:100%!important}.rnc-actions-table{min-width:0!important;font-size:8px!important}.rnc-actions-table th,.rnc-actions-table td{padding:2px!important;overflow-wrap:anywhere}.rnc-actions-table input,.rnc-actions-table select{height:auto!important;min-height:0!important;padding:1px!important;border:0!important;background:transparent!important;font-size:8px!important;color:#111!important}.rnc-actions-table button,.group span[role=tooltip]{display:none!important}.rnc-section{margin-bottom:6px!important;break-inside:avoid}.rnc-signatures{padding-top:22px!important;padding-bottom:8px!important}.rnc-signatures div{min-height:22px}}'}</style>
       </main>
