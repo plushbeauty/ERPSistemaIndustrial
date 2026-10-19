@@ -316,7 +316,7 @@ export default function PCPFichasProcesso() {
   setParams({ ...blankParameters(row.categoria_processo), ...Object.fromEntries(Object.entries(row.parametros_tecnicos ?? {}).map(([k,v]) => [k, String(v ?? '')])) })
   setApprovedAt(row.data_homologacao ?? ''); setSignature(row.assinatura_tecnica ?? ''); setInstructions(String(row.parametros_tecnicos?.instrucoes_setup ?? ''))
   setSearchParams({ tipo: row.categoria_processo, produto: row.produto_id })
-  setError(''); setNotice('')
+  setError(''); setNotice('Ficha carregada para edição. Altere os campos e clique em “Atualizar ficha”.')
  }
 
  async function save() {
@@ -352,6 +352,7 @@ export default function PCPFichasProcesso() {
  }
 
  const fields = paramsFor(category)
+ const isEditing = rows.some(row => row.codigo_ficha === code)
  const selectedProduct = products.find(p => p.id === productId)
  const selectedTool = tools.find(t => t.id === toolId)
  const selectedMachine = machines.find(m => m.id === machineId)
@@ -384,7 +385,7 @@ export default function PCPFichasProcesso() {
     <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#48B7C7]/30 bg-[#071522] text-[#48B7C7]"><FileSliders size={20}/></span>
     <div className="min-w-[240px]"><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#48B7C7]">MANUFATURA / PCP / ENGENHARIA</p><h1 className="text-lg font-bold leading-6 md:text-xl">{category==='INJETADOS'?'Ficha técnica de processo — Injetados':category==='PRENSADOS'?'Ficha hidráulica de processo — Prensados':`Ficha de processo — ${categories.find(item=>item.value===category)?.label??category}`}</h1><p className="text-xs text-white">Parâmetros homologados, preparação, capacidade e rastreabilidade de revisão.</p></div>
     <div className="ml-auto grid min-w-[260px] flex-1 grid-cols-3 gap-2 md:max-w-[430px]">{[{label:'Documento',value:code||'Novo documento'},{label:'Revisão',value:version.padStart(2,'0')},{label:'Status',value:status}].map(item=><div key={item.label} className="rounded-lg border border-[#294456] bg-[#071522] px-3 py-2"><span className="block text-[10px] text-white">{item.label}</span><strong className={`mt-0.5 block truncate text-sm ${item.label==='Status'&&['APROVADA','LIBERADA'].includes(status)?'text-[#3A9D78]':'text-[#F4FBFD]'}`}>{item.value}</strong></div>)}</div>
-    <div className="flex w-full flex-wrap justify-end gap-2 print:hidden"><Link className="erp-premium-button erp-premium-button-secondary" to="/pcp/fichas-processo/ia"><Sparkles size={14}/> Criar com IA</Link><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>window.print()}><Printer size={14}/> Imprimir ficha</button><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>void load()} disabled={busy}><RefreshCw size={14}/> Atualizar</button><button className="erp-premium-button" type="button" onClick={()=>{setCode('');setProductId('');setToolId('');setMachineId('');setVersion('1');setApprovedAt('');setSignature('');setStatus('RASCUNHO');setParams(blankParameters(category));setInstructions('')}}>Nova ficha</button></div>
+    <div className="flex w-full flex-wrap justify-end gap-2 print:hidden"><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>{if(!rows.some(row=>row.codigo_ficha===code)){setError('Abra uma ficha existente na lista para editar.');return}setNotice('Ficha pronta para edição. Altere os campos e clique em Atualizar ficha.')}}><FileSliders size={14}/> Editar ficha</button><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>window.print()}><Printer size={14}/> Imprimir ficha</button><button className="erp-premium-button erp-premium-button-secondary" type="button" onClick={()=>void load()} disabled={busy}><RefreshCw size={14}/> Recarregar lista</button><button className="erp-premium-button" type="button" onClick={()=>{setCode('');setProductId('');setToolId('');setMachineId('');setVersion('1');setApprovedAt('');setSignature('');setStatus('RASCUNHO');setParams(blankParameters(category));setInstructions('');setNotice('Nova ficha pronta para preencher.');setError('')}}>Nova ficha</button></div>
    </header>
    {error && <div role="alert" className="mb-3 rounded-lg border border-[#D65B61]/50 bg-[#D65B61]/10 p-3 text-sm text-[#F4B8BB]">{error}</div>}
    {notice && <div role="status" className="mb-3 flex items-center gap-2 rounded-lg border border-[#3A9D78]/40 bg-[#3A9D78]/10 p-3 text-sm text-[#8ED0B4]"><CheckCircle2 size={16}/>{notice}</div>}
@@ -432,7 +433,7 @@ export default function PCPFichasProcesso() {
      </article>)}
     </div>
     <label className="mt-4 block"><span className={labelClass}>Instruções de setup / processo / segurança</span><textarea className="min-h-[100px] w-full rounded-md border border-[#294456] bg-[#071522] p-3 text-sm text-[#F4FBFD] outline-none focus:border-[#48B7C7]" value={instructions} onChange={e=>setInstructions(e.target.value)} placeholder="Sequência operacional, parâmetros de controle, inspeção inicial, reação a desvio, EPI e cuidados ambientais…"/></label>
-    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#294456] pt-3"><span className="text-xs text-white">Dados separados por empresa · revisão técnica · parâmetros sem valores fictícios</span><button className="erp-premium-button print:hidden" type="button" onClick={()=>void save()} disabled={busy}><Save size={14}/>{busy?'Gravando…':'Gravar ficha'}</button></div>
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#294456] pt-3"><span className="text-xs text-white">Dados separados por empresa · revisão técnica · parâmetros sem valores fictícios</span><button className="erp-premium-button print:hidden" type="button" onClick={()=>void save()} disabled={busy}><Save size={14}/>{busy?'Salvando…':isEditing?'Atualizar ficha':'Gravar ficha'}</button></div>
    </section>
    <div className="print:hidden"><PCPMoldPhotoPanel productId={productId} /></div>
    <footer className="mt-3 flex items-center gap-2 text-xs text-white print:hidden"><CalendarRange size={14}/>{singleResourceProcess?'O PCP estima a duração a partir da ficha liberada, capacidade, ciclo e setup; datas continuam sujeitas ao calendário de recursos.':'Para programar este roteiro multiposto, cadastre as operações e recursos correspondentes no roteiro do PCP; ele não será aplicado como ciclo de uma única máquina.'}</footer>
