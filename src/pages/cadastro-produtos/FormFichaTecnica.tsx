@@ -89,13 +89,6 @@ const textFields: Array<{ key: keyof ProductForm; label: string; max?: number }>
   { key: 'referencia_interna', label: 'Referência interna', max: 80 },
   { key: 'referencia_cliente', label: 'Referência do cliente', max: 80 },
 ]
-const numericFields: Array<{ key: keyof ProductForm; label: string; step?: string }> = [
-  { key: 'peso_liquido', label: 'Peso líquido (kg)', step: '0.001' },
-  { key: 'peso_bruto', label: 'Peso bruto (kg)', step: '0.001' },
-  { key: 'comprimento_mm', label: 'Comprimento (mm)', step: '0.1' },
-  { key: 'largura_mm', label: 'Largura (mm)', step: '0.1' },
-  { key: 'altura_mm', label: 'Altura (mm)', step: '0.1' },
-]
 const fiscalText: Array<{ key: keyof ProductForm; label: string; max?: number }> = [
   { key: 'ncm', label: 'NCM (8 dígitos)', max: 8 }, { key: 'cest', label: 'CEST (7 dígitos)', max: 7 },
   { key: 'cst_icms', label: 'CST ICMS', max: 3 }, { key: 'csosn', label: 'CSOSN', max: 3 },
@@ -307,9 +300,9 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
       {checks.filter((_,i)=>i<=2||i===6)}
       <label className="flex min-h-8 items-center gap-2 rounded-[2px] border border-slate-200 bg-slate-50 px-2 text-[10px] font-semibold"><input type="checkbox" checked={form.ativo} disabled={loading||busy} onChange={e=>update('ativo',e.target.checked)}/> Produto ativo</label>
     </div>}
-    <button type="button" onClick={()=>setAdvanced(v=>!v)} className="flex h-8 w-full items-center justify-between rounded-[2px] border border-slate-300 bg-slate-50 px-2 text-[9px] font-black uppercase text-slate-700"><span>Campos complementares / dimensões</span>{advanced?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
+    <button type="button" onClick={()=>setAdvanced(v=>!v)} className="flex h-8 w-full items-center justify-between rounded-[2px] border border-slate-300 bg-slate-50 px-2 text-[9px] font-black uppercase text-slate-700"><span>Cadastros vinculados</span>{advanced?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
     {advanced && <div className={section}>{numericFields.map(item=>numberField(item.key,item.label,item.step))}{<label className={label}>Fornecedor padrão<select className={input} disabled={loading||busy} value={form.fornecedor_padrao_id} onChange={e=>update('fornecedor_padrao_id',e.target.value)}><option value="">Sem fornecedor padrão</option>{suppliers.map(s=><option key={s.id} value={s.id}>{s.nome_fantasia||s.razao_social}</option>)}</select></label>}
-      {<label className={label}>Localização padrão<select className={input} disabled={loading||busy} value={form.localizacao_padrao_id} onChange={e=>update('localizacao_padrao_id',e.target.value)}><option value="">Sem localização padrão</option>{locations.map(l=><option key={l.id} value={l.id}>{l.codigo} · {l.nome}{l.tipo?' · '+l.tipo:''}</option>)}</select></label>}{checks}</div>}
+      {<label className={label}>Localização padrão<select className={input} disabled={loading||busy} value={form.localizacao_padrao_id} onChange={e=>update('localizacao_padrao_id',e.target.value)}><option value="">Sem localização padrão</option>{locations.map(l=><option key={l.id} value={l.id}>{l.codigo} · {l.nome}{l.tipo?' · '+l.tipo:''}</option>)}</select></label></div>}
     <footer className="flex items-center justify-between gap-2 border-t border-slate-200 pt-2">
       <span className="text-[9px] text-slate-500">{loading?'Carregando…':productId?'Edição de cadastro existente':'Novo cadastro · SKU transacional'}</span>
       <button type="button" onClick={()=>void save()} disabled={loading||busy} className="inline-flex h-8 items-center gap-1.5 rounded-[2px] bg-[#123B50] px-3 text-[10px] font-black uppercase text-white hover:bg-[#1d536e] disabled:opacity-50"><Save size={13}/>{busy?'Salvando…':'Salvar produto'}</button>
