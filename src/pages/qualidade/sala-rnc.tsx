@@ -86,6 +86,8 @@ export default function SalaRNC() {
         const saved = record.porques_evidencias?.[index]
         return { question, answer: saved?.answer ?? '', evidence: saved?.evidence ?? '' }
       }))
+    } else {
+      setWhys(WHY_QUESTIONS.map(question => ({ question, answer: '', evidence: '' })))
     }
     const marker = '\n\n[ISHIKAWA_6M_JSON]'
     const investigation = record.investigacao ?? ''
