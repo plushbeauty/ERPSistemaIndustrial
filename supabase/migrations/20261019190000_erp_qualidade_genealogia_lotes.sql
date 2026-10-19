@@ -49,13 +49,13 @@ create policy erp_qualidade_genealogia_insert_tenant
       select 1
       from public.erp_produtos pp
       where pp.id = produto_pai_id
-        and pp.empresa_id = empresa_id
+        and pp.empresa_id = erp_qualidade_genealogia_lotes.empresa_id
     )
     and exists (
       select 1
       from public.erp_produtos pf
       where pf.id = produto_filho_id
-        and pf.empresa_id = empresa_id
+        and pf.empresa_id = erp_qualidade_genealogia_lotes.empresa_id
     )
   );
 
