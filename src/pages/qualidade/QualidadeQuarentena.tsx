@@ -84,21 +84,20 @@ export default function QualidadeQuarentena() {
     setLot(null)
     setProduct(null)
     try {
-      if (!empresaId) {
+      let tenantId = empresaId
+      if (!tenantId) {
         const tenant = await supabase.rpc('erp_current_empresa_id')
         if (tenant.error) throw tenant.error
         if (!tenant.data) throw new Error('Empresa não identificada.')
-        setEmpresaId(String(tenant.data))
+        tenantId = String(tenant.data)
+        setEmpresaId(tenantId)
       }
-      const tenantId = empresaId || String((await supabase.rpc('erp_current_empresa_id')).data ?? '')
-      if (!tenantId) throw new Error('Empresa não identificada.')
-      const { data, error: lotError } = await supabase
-        .from('erp_estoque_lotes')
-        .select('id,lote_interno,lote_fornecedor,produto_id,quantidade_disponivel,status_inspecao')
-        .eq('empresa_id', tenantId)
-        .or(`lote_interno.eq.${codigo},lote_fornecedor.eq.${codigo}`)
-        .maybeSingle()
-      if (lotError) throw lotError
+      const lotColumns = 'id,lote_interno,lote_fornecedor,produto_id,quantidade_disponivel,status_inspecao'
+      const internalLookup = await supabase.from('erp_estoque_lotes').select(lotColumns).eq('empresa_id', tenantId).eq('lote_interno', codigo).maybeSingle()
+      if (internalLookup.error) throw internalLookup.error
+      const supplierLookup = internalLookup.data ? null : await supabase.from('erp_estoque_lotes').select(lotColumns).eq('empresa_id', tenantId).eq('lote_fornecedor', codigo).maybeSingle()
+      if (supplierLookup?.error) throw supplierLookup.error
+      const data = internalLookup.data ?? supplierLookup?.data
       if (!data) throw new Error('Lote não encontrado na empresa atual. Confira o código informado.')
       setLot(data as Lot)
       const { data: productData, error: productError } = await supabase
