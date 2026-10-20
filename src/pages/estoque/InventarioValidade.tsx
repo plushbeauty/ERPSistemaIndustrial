@@ -39,7 +39,7 @@ const todayISO = () => {
 function expiryStatus(expiry: string | null, today: string): ExpiryStatus {
   if (!expiry) return 'SEM VALIDADE'
   const days = Math.floor((Date.parse(expiry + 'T00:00:00') - Date.parse(today + 'T00:00:00')) / 86400000)
-  if (days < 0) return 'VENCIDO'
+  if (days <= 0) return 'VENCIDO'
   if (days <= 30) return 'EXPIRANDO'
   return 'REGULAR'
 }
