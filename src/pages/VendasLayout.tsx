@@ -58,6 +58,7 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
 }){
  const {pathname}=useLocation()
  const isVendas=pathname.startsWith('/vendas')
+ const isCompras=pathname.startsWith('/compras') || pathname === '/fiscal/compras'
  const vendas=useVendasStatus()
  useEffect(()=>{if(isVendas)void vendas.load().catch(()=>undefined)},[isVendas,vendas.load])
 
@@ -74,7 +75,52 @@ export default function VendasLayout({children,title,subtitle,onRefresh,topConte
   <main className="synqra-workspace-main">
     {isVendas&&showCards&&<VendasStatusCards status={vendas.status} loading={vendas.loading}/>} 
     {(title || subtitle || titleActions) && <div className="synqra-workspace-title">{titleActions&&<div className="synqra-title-actions">{titleActions}</div>}<div className="synqra-title-main">{title&&<h1>{title}</h1>}{subtitle&&<p>{subtitle}</p>}</div></div>}
-    {topContent}{children}
+    {topContent}
+    {isCompras ? <div className="synqra-compras-surface">
+      <style>{`
+        .synqra-compras-surface{--compras-ink:#123b50;--compras-blue:#2d8db8;--compras-cyan:#48b7c7;--compras-border:#c9dde5;min-width:0;color:var(--compras-ink)}
+        .synqra-compras-surface>main{min-height:0!important;padding:8px!important;background:#f4fbfd!important;color:var(--compras-ink)!important}
+        .synqra-compras-surface h1,.synqra-compras-surface .buy-report-head h1,.synqra-compras-surface .buy-help-head h1{font-size:18px!important;line-height:1.25!important;font-weight:700!important;color:var(--compras-ink)!important}
+        .synqra-compras-surface h2,.synqra-compras-surface .buy-report-card h2,.synqra-compras-surface .buy-help-card h2{font-size:13px!important;line-height:1.3!important;font-weight:700!important;color:var(--compras-ink)!important}
+        .synqra-compras-surface p{font-size:10px;line-height:1.45}
+        .synqra-compras-surface label{font-size:9px!important;font-weight:700!important;letter-spacing:.02em}
+        .synqra-compras-surface input:not([type=checkbox]):not([type=radio]),.synqra-compras-surface select,.synqra-compras-surface textarea{min-width:0;max-width:100%!important;height:32px!important;min-height:32px;border:1px solid var(--compras-border)!important;border-radius:2px!important;padding:4px 7px!important;background:#fff;color:#123b50;font-size:11px!important;box-shadow:none}
+        .synqra-compras-surface textarea{height:auto!important;min-height:56px!important;resize:vertical}
+        .synqra-compras-surface input:focus,.synqra-compras-surface select:focus,.synqra-compras-surface textarea:focus{outline:1px solid var(--compras-blue);border-color:var(--compras-blue)!important}
+        .synqra-compras-surface button,.synqra-compras-surface a[role=button]{border-radius:2px!important;font-size:10px}
+        .synqra-compras-surface .rounded-full{border-radius:2px!important}
+        .synqra-compras-surface .rounded-xl,.synqra-compras-surface .rounded-2xl,.synqra-compras-surface .rounded-lg,.synqra-compras-surface .rounded-md{border-radius:2px!important}
+        .synqra-compras-surface .shadow,.synqra-compras-surface .shadow-sm,.synqra-compras-surface .shadow-md{box-shadow:none!important}
+        .synqra-compras-surface .buy-report{min-height:0!important;padding:8px!important;background:#f4fbfd!important}
+        .synqra-compras-surface .buy-report-wrap,.synqra-compras-surface .buy-help-wrap{max-width:none!important;width:100%}
+        .synqra-compras-surface .buy-report-head{align-items:center;margin-bottom:8px;padding:8px 10px;background:#123b50;color:#f4fbfd}
+        .synqra-compras-surface .buy-report-head h1,.synqra-compras-surface .buy-report-head p{color:#f4fbfd!important}
+        .synqra-compras-surface .buy-report-kpis{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+        .synqra-compras-surface .buy-report-kpis article,.synqra-compras-surface .buy-report-card,.synqra-compras-surface .buy-help-card{border:1px solid var(--compras-border)!important;border-radius:2px!important;box-shadow:none!important;padding:8px!important}
+        .synqra-compras-surface .buy-report-kpis strong{font-size:17px!important}
+        .synqra-compras-surface .buy-report-grid{gap:8px;margin-top:8px}
+        .synqra-compras-surface .buy-report-card [style*="height:300px"]{height:230px!important}
+        .synqra-compras-surface .buy-report-card [style*="height:280px"]{height:220px!important}
+        .synqra-compras-surface .buy-report-table{font-size:10px!important}
+        .synqra-compras-surface .buy-report-table th{height:32px!important;padding:5px 7px!important;background:#123b50!important;color:#f4fbfd!important;font-size:9px!important}
+        .synqra-compras-surface .buy-report-table td{height:32px!important;padding:5px 7px!important;border-color:var(--compras-border)!important}
+        .synqra-compras-surface .buy-help-grid{gap:8px}
+        .synqra-compras-surface .buy-help-card ul{font-size:10px!important;line-height:1.55!important}
+        .synqra-compras-surface form .grid{grid-template-columns:repeat(12,minmax(0,1fr))!important;gap:8px!important}
+        .synqra-compras-surface form .grid>label{grid-column:span 3;max-width:none!important;width:100%!important;min-width:0}
+        .synqra-compras-surface form .grid>label>*{max-width:100%!important;width:100%!important;min-width:0}
+        .synqra-compras-surface form .grid>label:has(textarea){grid-column:1/-1}
+        .synqra-compras-surface table{border-collapse:collapse;font-size:10px!important}
+        .synqra-compras-surface table thead th{height:32px!important;padding:5px 8px!important;background:#123b50!important;color:#f4fbfd!important;font-size:9px!important;font-weight:700!important}
+        .synqra-compras-surface table tbody tr{height:32px!important}
+        .synqra-compras-surface table tbody td{height:32px!important;padding:5px 8px!important;border-bottom:1px solid var(--compras-border)!important;font-size:10px!important}
+        .synqra-compras-surface table tbody tr:nth-child(even){background:#edf6fa!important}
+        @media(max-width:900px){.synqra-compras-surface .buy-report-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.synqra-compras-surface .buy-report-grid{grid-template-columns:1fr}.synqra-compras-surface form .grid>label{grid-column:span 6}}
+        @media(max-width:560px){.synqra-compras-surface form .grid>label{grid-column:1/-1}.synqra-compras-surface .buy-report-head{flex-direction:column}.synqra-compras-surface .buy-report-actions{width:100%}}
+        @media print{.synqra-compras-surface>main{padding:0!important}.synqra-compras-surface .buy-report-head{background:#fff;color:#123b50}.synqra-compras-surface .buy-report-head h1,.synqra-compras-surface .buy-report-head p{color:#123b50!important}}
+      `}</style>
+      {children}
+    </div> : children}
   </main>
  </SynqraLayoutProvider>
 }
