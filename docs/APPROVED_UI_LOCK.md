@@ -48,7 +48,7 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 ## Registro da revisão APROV-009 — 2026-10-20
 
 - Shell global: barra lateral vertical azul industrial, recolhível, com trilho de ícones persistente e gaveta de módulos/submódulos.
-- PCP expõe Central PCP, Ordens de produção, Capacidade/Gantt, Agenda de máquinas, Fichas de processo e Auditoria PCP usando rotas declaradas em `src/AppEntryV2.tsx`.
+- PCP expõe Central PCP, Ordens de produção, Capacidade/Gantt, Agenda de máquinas, Fichas de processo e Auditoria PCP usando rotas declaradas em `src/AppEntryV2.tsx`; rotas do menu foram comparadas com as declarações existentes e `/relatorios` foi substituída por `/vendas/relatorios`.
 - Cabeçalho usa nome/e-mail da sessão Supabase atual, reagindo a alterações de autenticação; não fixa identidade de usuário.
 - Configurações navega para `/configuracoes-adm`; saída chama `supabase.auth.signOut()` e retorna ao login.
 - Ajuda contextual e modais/atalhos existentes de tablet PCP e Qualidade são preservados. O conteúdo das telas operacionais e os arquivos de tablet congelados não foram alterados.
