@@ -1,3 +1,4 @@
+/** @DATA_REVISAO_APROVACAO: 2026-10-20 @STATUS_APROVACAO: COMPRAS-SOLICITACAO-MANUAL-TRAVADO-OK @ESCOPO: restaurar identidade industrial clara aprovada; somente apresentação, fluxo/RPC/RLS preservados. */
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { CheckCircle2, Plus, Printer, ShoppingCart, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -266,33 +267,86 @@ export default function SolicitacaoCompra() {
 
   return (
     <VendasLayout title="Solicitação de compra" subtitle="Necessidade interna • autorização • encaminhamento" onRefresh={() => void load()}>
-    <main className="pcp-page" style={{ padding: 24, maxWidth: 1440, margin: '0 auto' }}>
-      <header style={{ marginBottom: 22 }}>
-        <span className="v2-eyebrow">COMPRAS • SOLICITAÇÃO INTERNA</span>
-        <h1 style={{ fontSize: 32, margin: '6px 0' }}>Solicitação de compra</h1>
-        <p style={{ color: '#64748b', margin: 0 }}>
-          Registre materiais para autorização e encaminhamento ao setor de Compras.
-        </p>
+    <main className="pcp-page compras-solicitacao-manual" style={{ padding: 12, maxWidth: 1800, margin: '0 auto' }}>
+      <style>{`
+        .compras-solicitacao-manual { color: #123B50; font-size: 12px; background: #F4F7F9; }
+        .compras-solicitacao-manual .compras-page-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:0 0 12px!important; padding:12px 16px; color:#F4FBFD; background:linear-gradient(105deg,#123B50 0%,#0E1E2F 100%); border-left:4px solid #48B7C7; }
+        .compras-solicitacao-manual .compras-page-heading .v2-eyebrow { display:block; color:#9DDFE6; font-size:9px; font-weight:900; letter-spacing:.12em; }
+        .compras-solicitacao-manual .compras-page-heading h1 { font-size:17px!important; line-height:1.25; margin:3px 0!important; font-weight:800; color:#fff; }
+        .compras-solicitacao-manual .compras-page-heading p { font-size:11px; margin:0; color:#D5E7EC; }
+        .compras-solicitacao-manual .compras-card-title { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 10px; padding-bottom:8px; border-bottom:1px solid #D8E4EA; }
+        .compras-solicitacao-manual .compras-card-title h2 { margin:0; color:#123B50; font-size:12px; font-weight:900; }
+        .compras-solicitacao-manual .compras-card-title p { margin:3px 0 0; color:#647985; font-size:10px; }
+        .compras-solicitacao-manual .compras-recent-heading { margin:0 0 10px; font-size:12px; font-weight:900; color:#123B50; }
+        .compras-solicitacao-manual .compras-recent-subtitle { margin:-5px 0 10px; color:#647985; font-size:10px; }
+        .compras-solicitacao-manual .compras-unit { display:inline-flex; min-width:32px; height:24px; align-items:center; justify-content:center; padding:0 6px; border:1px solid #D8E4EA; background:#F4F7F9; color:#123B50; font-size:10px; font-weight:800; }
+        .compras-solicitacao-manual .compras-priority { display:inline-block; padding:3px 6px; border:1px solid #D8E4EA; background:#F4F7F9; color:#123B50; font-size:9px; font-weight:900; text-transform:uppercase; }
+        .compras-solicitacao-manual .compras-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:12px; padding-top:10px; border-top:1px solid #D8E4EA; }
+        .compras-solicitacao-manual .compras-message { padding:8px 10px; border:1px solid; border-radius:2px; font-size:11px; font-weight:700; }
+        .compras-solicitacao-manual > header { margin-bottom: 12px !important; }
+        .compras-solicitacao-manual > header h1 { font-size: 17px !important; line-height: 1.25; margin: 3px 0 !important; font-weight: 800; color: #123B50; }
+        .compras-solicitacao-manual > header p { font-size: 11px; }
+        .compras-solicitacao-manual > section { border-radius: 2px !important; padding: 12px !important; border-color: #D8E4EA !important; box-shadow: 0 2px 8px rgba(18,59,80,.04); }
+        .compras-solicitacao-manual form label { display: flex; flex-direction: column; align-items: stretch; gap: 5px; min-width: 0; line-height: 1.3; color: #123B50; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .025em; }
+        .compras-solicitacao-manual .compras-cabecalho-grid { grid-template-columns: minmax(220px, 1.15fr) minmax(240px, 1.4fr) minmax(130px, .65fr) minmax(240px, 1.25fr) !important; align-items: start; }
+        .compras-solicitacao-manual .compras-cabecalho-grid input, .compras-solicitacao-manual .compras-cabecalho-grid select { width: 100%; max-width: none; min-width: 0; }
+        .compras-solicitacao-manual form input:not([type="checkbox"]), .compras-solicitacao-manual form select { box-sizing: border-box; width: 100%; min-width: 0; max-width: 260px; height: 32px; padding: 0 8px; border: 1px solid #D8E4EA; border-radius: 0; background: #fff; color: #123B50; font-size: 11px; font-weight: 600; outline: none; }
+        .compras-solicitacao-manual form input:focus, .compras-solicitacao-manual form select:focus, .compras-solicitacao-manual form textarea:focus { border-color: #48B7C7; }
+        .compras-solicitacao-manual form textarea { box-sizing: border-box; border: 1px solid #D8E4EA; border-radius: 0; padding: 8px; font-size: 11px; color: #123B50; }
+        .compras-solicitacao-manual .industrial-section-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px!important; padding-bottom:7px; border-bottom:1px solid #D8E4EA; }
+        .compras-solicitacao-manual .industrial-section-head span { font-size: 9px; font-weight: 900; letter-spacing: .1em; color: #2D8DB8; }
+        .compras-solicitacao-manual .industrial-section-head h2 { margin-top: 3px; font-size: 12px; font-weight: 800; color: #123B50; }
+        .compras-solicitacao-manual .crud-table-wrap { width:100%; overflow-x:auto; border:1px solid #D8E4EA; }
+        .compras-solicitacao-manual .compras-itens-table { min-width:780px; }
+        .compras-solicitacao-manual .compras-recentes-table { min-width:680px; }
+        .compras-solicitacao-manual table { width: 100%; min-width: 760px; table-layout: fixed; border-collapse: collapse; font-size: 11px; }
+        .compras-solicitacao-manual th:nth-child(1), .compras-solicitacao-manual td:nth-child(1) { width: 42%; }
+        .compras-solicitacao-manual th:nth-child(2), .compras-solicitacao-manual td:nth-child(2) { width: 10%; }
+        .compras-solicitacao-manual th:nth-child(3), .compras-solicitacao-manual td:nth-child(3) { width: 15%; }
+        .compras-solicitacao-manual th:nth-child(4), .compras-solicitacao-manual td:nth-child(4) { width: 23%; }
+        .compras-solicitacao-manual th:nth-child(5), .compras-solicitacao-manual td:nth-child(5) { width: 10%; }
+        .compras-solicitacao-manual th { height: 28px; padding: 5px 8px; background: #EAF3F7; color: #123B50; text-align: left; font-size: 9px; font-weight: 900; text-transform: uppercase; border: 1px solid #D8E4EA; }
+        .compras-solicitacao-manual td { padding: 5px 8px; border: 1px solid #D8E4EA; vertical-align: middle; }
+        .compras-solicitacao-manual td input, .compras-solicitacao-manual td select { box-sizing: border-box; width: 100%; max-width: none !important; min-width: 0; }
+        .compras-solicitacao-manual td select { text-overflow: ellipsis; }
+        .compras-solicitacao-manual button { min-height:30px; border-radius:2px!important; font-size:10px; font-weight:800; }
+        .compras-solicitacao-manual .compras-page-heading button { border-color:rgba(244,251,253,.35)!important; color:#fff!important; }
+        .compras-solicitacao-manual .compras-page-heading button:hover { background:rgba(244,251,253,.1)!important; }
+        @media (max-width: 1100px) { .compras-solicitacao-manual .compras-cabecalho-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
+        @media (max-width:640px) { .compras-solicitacao-manual { padding:8px!important; } .compras-solicitacao-manual > section { padding:9px!important; } .compras-solicitacao-manual .compras-page-heading { align-items:flex-start; padding:10px; } .compras-solicitacao-manual .compras-cabecalho-grid { grid-template-columns:minmax(0,1fr)!important; } .compras-solicitacao-manual .industrial-section-head { align-items:flex-start; flex-direction:column; } }
+        @media print { .compras-solicitacao-manual .secondary-v2, .compras-solicitacao-manual .primary { display: none !important; } }
+      `}</style>
+
+      <header className="compras-page-heading">
+        <div>
+          <span className="v2-eyebrow">COMPRAS • SOLICITAÇÃO INTERNA</span>
+          <h1>Solicitação manual de compra</h1>
+          <p>Registre materiais para autorização e encaminhamento ao setor de Compras.</p>
+        </div>
       </header>
 
       {error && (
-        <p role="alert" style={{ padding: 12, color: '#991b1b', background: '#fef2f2', borderRadius: 8 }}>
+        <p role="alert" className="compras-message" style={{ color: '#991b1b', background: '#fef2f2', borderColor: '#fecaca' }}>
           {error}
         </p>
       )}
       {message && (
-        <p role="status" style={{ padding: 12, color: '#166534', background: '#f0fdf4', borderRadius: 8 }}>
+        <p role="status" className="compras-message" style={{ color: '#166534', background: '#f0fdf4', borderColor: '#bbf7d0' }}>
           {message}
         </p>
       )}
 
-      <section style={{ background: '#fff', border: '1px solid #dfe7e4', borderRadius: 14, padding: 20 }}>
+      <section className="compras-card" style={{ background: '#fff', border: '1px solid #D8E4EA', borderRadius: 2, padding: 12 }}>
+        <div className="compras-card-title">
+          <div><h2>Dados da solicitação</h2><p>Preencha o motivo, a prioridade e os dados de encaminhamento.</p></div>
+        </div>
         <form onSubmit={(event) => void save(event)}>
           <div
+            className="compras-cabecalho-grid"
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))',
-              gap: 14,
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))',
+              gap: 10,
             }}
           >
             <label>
@@ -358,7 +412,7 @@ export default function SolicitacaoCompra() {
           </div>
 
           <div className="crud-table-wrap">
-            <table>
+            <table className="compras-itens-table">
               <thead>
                 <tr>
                   <th>Produto / material</th>
@@ -392,7 +446,7 @@ export default function SolicitacaoCompra() {
                         ))}
                       </select>
                     </td>
-                    <td>{item.unidade}</td>
+                    <td><span className="compras-unit">{item.unidade}</span></td>
                     <td>
                       <input
                         type="number"
@@ -435,7 +489,7 @@ export default function SolicitacaoCompra() {
             </table>
           </div>
 
-          <label style={{ display: 'block', marginTop: 14 }}>
+          <label style={{ display: 'flex', flexDirection: 'column', marginTop: 12, maxWidth: '100%' }}>
             Observações
             <textarea
               value={observacoes}
@@ -446,7 +500,7 @@ export default function SolicitacaoCompra() {
             />
           </label>
 
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
+          <div className="compras-actions">
             <button className="primary" type="submit" disabled={busy || !empresaId}>
               <ShoppingCart size={18} /> {busy ? 'Salvando…' : 'Registrar solicitação'}
             </button>
@@ -457,18 +511,11 @@ export default function SolicitacaoCompra() {
         </form>
       </section>
 
-      <section
-        style={{
-          marginTop: 20,
-          background: '#fff',
-          border: '1px solid #dfe7e4',
-          borderRadius: 14,
-          padding: 20,
-        }}
-      >
-        <h2 style={{ marginTop: 0 }}>Solicitações recentes</h2>
+      <section className="compras-card compras-recentes-card" style={{ marginTop: 12, background: '#fff', border: '1px solid #D8E4EA', borderRadius: 2, padding: 12 }}>
+        <h2 className="compras-recent-heading">Solicitações recentes</h2>
+        <p className="compras-recent-subtitle">Acompanhe o status e autorize as solicitações conforme sua permissão.</p>
         <div className="crud-table-wrap">
-          <table>
+          <table className="compras-recentes-table">
             <thead>
               <tr>
                 <th>Número</th>
@@ -484,7 +531,7 @@ export default function SolicitacaoCompra() {
                 <tr key={row.id} style={{ background: index % 2 === 1 ? '#f8fafc' : '#fff' }}>
                   <td>#{row.numero}</td>
                   <td>{row.descricao}</td>
-                  <td>{row.prioridade}</td>
+                  <td><span className="compras-priority">{row.prioridade}</span></td>
                   <td>{supplierById.get(row.fornecedor_id ?? '')?.razao_social ?? '—'}</td>
                   <td>{row.status}</td>
                   <td>
