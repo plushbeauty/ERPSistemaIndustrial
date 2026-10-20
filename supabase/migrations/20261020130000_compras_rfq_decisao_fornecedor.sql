@@ -6,6 +6,7 @@ alter table public.erp_rfq
   add column if not exists comprador_responsavel varchar(100),
   add column if not exists data_limite date,
   add column if not exists previsao_entrega date,
+  add column if not exists data_conclusao date,
   add column if not exists menor_custo_liquido_atendido boolean not null default true;
 
 alter table public.erp_rfq_fornecedores
