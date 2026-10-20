@@ -104,7 +104,7 @@ const menus: MenuItem[] = [
     { label: 'EPIs', route: '/rh/epis' },
     { label: 'Entregas de EPI', route: '/rh/epis/entregas' },
   ] },
-  { label: 'Relatórios', route: '/relatorios', icon: BarChart3 },
+  { label: 'Relatórios de vendas', route: '/vendas/relatorios', icon: BarChart3 },
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
 ]
 
@@ -211,6 +211,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   useEffect(() => {
     setOpenMenu(null)
     setStartMenuOpen(false)
+    if (pathname.startsWith('/pcp') || pathname.startsWith('/qualidade')) setSidebarExpanded(true)
   }, [pathname])
   const openMenuItem = (item: Pick<MenuItem, 'route' | 'action'>) => {
     if (item.action === 'pcpTablet') {
