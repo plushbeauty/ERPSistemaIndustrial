@@ -4,13 +4,12 @@ import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import TabletMenuModal from '../TabletMenuModal'
-import PCPTabletMenuModal from '../PCPTabletMenuModal'
 
 type MenuItem = {
   label: string
   route: string
   icon?: LucideIcon
-  action?: 'qualityTablet' | 'pcpTablet'
+  action?: 'qualityTablet'
   children?: MenuItem[]
 }
 
@@ -78,7 +77,6 @@ const menus: MenuItem[] = [
     { label: 'Fichas de processo', route: '/pcp/fichas-processo' },
     { label: 'Paradas / setup', route: '/pcp/paradas' },
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
-    { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
   { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet', children: [
     { label: 'Visual geral da Qualidade', route: '/qualidade' },
@@ -116,7 +114,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
   const [tabletOpen, setTabletOpen] = useState(false)
-  const [pcpTabletOpen, setPcpTabletOpen] = useState(false)
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
   const ref = useRef<HTMLDivElement>(null)
@@ -196,11 +193,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     setStartMenuOpen(false)
   }, [pathname])
   const openMenuItem = (item: Pick<MenuItem, 'route' | 'action'>) => {
-    if (item.action === 'pcpTablet') {
-      setPcpTabletOpen(true)
-      setOpenMenu(null)
-      return
-    }
     if (item.action === 'qualityTablet') {
       // REVISÃO 2026-10-19: o menu Qualidade deve abrir a Central SGQ Tablet atual,
       // não o modal legado TabletMenuModal.
@@ -283,7 +275,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                 return <div className="erp-windows-menu-group" key={menu.label}>
                   <div className={`erp-windows-menu-row ${current?.label === menu.label ? 'is-active' : ''}`}>
                     <button type="button" className="erp-windows-menu-main" onClick={() => {
-                      if (menu.action === 'qualityTablet' || menu.action === 'pcpTablet') { setStartMenuOpen(false); openMenuItem(menu) }
+                      if (menu.action === 'qualityTablet') { setStartMenuOpen(false); openMenuItem(menu) }
                       else if (hasChildren) { setOpenMenu(value => value === menu.label ? null : menu.label);  }
                       else { setStartMenuOpen(false); openMenuItem(menu) }
                     }}>
@@ -326,7 +318,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         {children}
       </main>
       <TabletMenuModal isOpen={tabletOpen} onClose={() => setTabletOpen(false)} onNavigate={(route) => { setTabletOpen(false); go(route) }} />
-      <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%);color:#123b50}
