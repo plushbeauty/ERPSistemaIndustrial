@@ -52,3 +52,12 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - O escopo da revisão é restrito ao shell global e ao contrato de hash desse componente. As páginas aprovadas e o tablet de operador PCP não foram editados por esta revisão.
 - O hash do shell foi atualizado no verificador de UI aprovada para congelar esta revisão. Alterações futuras no menu global exigem nova autorização explícita e revisão do contrato.
 - Validação de CI e publicação ainda pendentes; não considerar disponível em produção até os gates concluírem.
+
+
+## Registro da revisão APROV-011 — 2026-10-20
+
+- Correção do menu global Windows 11 após constatação de que a barra lateral fixa criava uma segunda barra e reservava até 498 px da área útil.
+- O shell passa a usar uma única barra superior; o menu de módulos/rotinas abre pelo botão do topo e mantém pesquisa e navegação interna.
+- Removido o painel lateral fixo; a área de trabalho volta a ocupar 100% da largura disponível, com ajuste responsivo para telas menores.
+- Escopo limitado a `src/components/layout/ERPHorizontalShell.tsx` e ao contrato de proteção desta revisão. Nenhuma página operacional aprovada foi editada.
+- Validação de CI e publicação ainda pendentes; não considerar disponível em produção até os gates concluírem.
