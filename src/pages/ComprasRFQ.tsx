@@ -188,6 +188,7 @@ export default function ComprasRFQ() {
           status_aprovacao: approvalStatus,
           data_limite: deadline || null,
           previsao_entrega: deliveryForecast || null,
+          data_conclusao: ['APROVADO', 'REJEITADO'].includes(approvalStatus) ? new Date().toISOString().slice(0, 10) : null,
           justificativa_escolha: justification.trim() || null,
           menor_custo_liquido_atendido: !justificationRequired,
           data_necessidade: items.map(item => item.data_necessidade).filter(Boolean).sort()[0] || null,
