@@ -181,6 +181,31 @@ export default function PublicIndustrialHome(){
   @media(prefers-reduced-motion:reduce){.sgq-stage-media img,.sgq-module,.sgq-trial-cta,.sgq-help{transition:none!important;animation:none!important}}
   @media(max-width:620px){.sgq-stage-caption{max-width:calc(100% - 18px);left:10px!important;bottom:10px!important}.sgq-dots{right:10px!important;bottom:10px!important;gap:4px;padding:5px}.sgq-carousel-control{width:30px;height:30px}.sgq-dot{width:7px;height:7px}}
 
+
+    /* HOME-PREMIUM-FULLIMAGE-TOPTEXT-TRAVADO-OK — revisão 2026-10-20. Último bloco prevalece sobre regras antigas conflitantes sem alterar outras telas. */
+  .sgq-public-home .sgq-hero{height:auto!important;min-height:0!important;padding:30px 22px 36px!important;display:block!important;overflow:hidden!important;background:linear-gradient(135deg,#123B50 0%,#164f67 56%,#1d6675 100%)!important}
+  .sgq-public-home .sgq-hero-inner{position:relative!important;inset:auto!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;align-items:stretch!important;justify-content:initial!important;gap:clamp(22px,3vw,42px)!important;width:min(1240px,100%)!important;max-width:1240px!important;height:auto!important;margin:0 auto!important;padding:0!important;text-align:left!important}
+  .sgq-public-home .sgq-hero-copy{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;align-self:stretch!important;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;padding:clamp(18px,2.2vw,30px)!important;border:1px solid rgba(255,255,255,.24)!important;border-radius:4px!important;background:rgba(10,36,48,.38)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important;backdrop-filter:blur(14px)!important;-webkit-backdrop-filter:blur(14px)!important;text-align:left!important}
+  .sgq-public-home .sgq-hero-copy .sgq-kicker{color:#8FE1ED!important}
+  .sgq-public-home .sgq-hero-copy h1{margin:0 0 14px!important;color:#fff!important;font-size:clamp(32px,3.5vw,54px)!important;line-height:1.08!important;letter-spacing:-1.2px!important}
+  .sgq-public-home .sgq-hero-copy p{max-width:58ch!important;margin:0!important;color:#f0f7fa!important;font-size:clamp(13px,1.2vw,16px)!important;line-height:1.65!important}
+  .sgq-public-home .sgq-hero-copy .sgq-trial-cta{margin:20px 0 0!important}
+  .sgq-public-home .sgq-stage{position:relative!important;inset:auto!important;align-self:stretch!important;width:100%!important;max-width:none!important;height:clamp(360px,42vw,620px)!important;min-width:0!important;margin:0!important;padding:0!important;border:1px solid rgba(255,255,255,.22)!important;border-radius:4px!important;background:#123B50!important;box-shadow:0 18px 44px rgba(0,0,0,.2)!important;overflow:hidden!important}
+  .sgq-public-home .sgq-stage-media{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:#123B50!important;overflow:hidden!important}
+  .sgq-public-home .sgq-stage-media img{position:absolute!important;inset:0!important;display:block!important;width:100%!important;max-width:none!important;height:100%!important;object-fit:cover!important;object-position:center!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;opacity:0!important;transform:none!important;transition:opacity .35s ease!important}
+  .sgq-public-home .sgq-stage-media img.active{opacity:1!important}
+  .sgq-public-home .sgq-stage-caption,.sgq-public-home .sgq-dots,.sgq-public-home .sgq-carousel-control{display:none!important}
+  .sgq-public-home .sgq-hero-shade{z-index:0!important;pointer-events:none!important;background:radial-gradient(ellipse at 50% 0%,rgba(72,183,199,.18),transparent 60%)!important}
+  .sgq-public-home .sgq-hero-inner{z-index:1!important}
+  @media(max-width:760px){
+    .sgq-public-home .sgq-hero{padding:20px 14px 24px!important}
+    .sgq-public-home .sgq-hero-inner{grid-template-columns:minmax(0,1fr)!important;gap:14px!important}
+    .sgq-public-home .sgq-hero-copy{padding:18px!important}
+    .sgq-public-home .sgq-hero-copy h1{font-size:clamp(29px,7vw,42px)!important}
+    .sgq-public-home .sgq-stage{height:clamp(240px,62vw,420px)!important}
+  }
+  @media(prefers-reduced-motion:reduce){.sgq-public-home .sgq-stage-media img{transition:none!important}}
+
   `}
   </style>
   <header className="sgq-nav">
