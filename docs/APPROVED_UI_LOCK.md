@@ -12,7 +12,6 @@
 | Login institucional — `src/styles/industrial-login.css` | APROV-005, texto institucional branco com contorno escuro | Hash Git do arquivo verificado no CI |
 | Qualidade Tablet — `src/pages/QualidadeCentralTablet.tsx` | Tablet aprovado pelo usuário | Hash Git do arquivo verificado no CI |
 | Qualidade Tablet padrão — `src/components/TabletMenuModal.tsx` | Modal central, 22 módulos; visual aprovado preservado | Hash Git do arquivo verificado no CI |
-| PCP → Submenu de fichas — `src/components/PCPTabletMenuModal.tsx` | Submenu de fichas aprovado em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Shell horizontal — `src/components/layout/ERPHorizontalShell.tsx` | APROV-007: Qualidade abre o tablet; seta mantém acesso ao submenu | Hash Git do arquivo verificado no CI |
 | Dashboard industrial — `src/components/IndustrialCommandDashboard.tsx` | Restaurado da referência aprovada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | PCP → Fichas de Processo — `src/pages/PCPFichasProcesso.tsx` | Restaurada da referência aprovada em 2026-10-18 | Hash Git do arquivo verificado no CI |
@@ -43,3 +42,9 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Cadastro de Fornecedores já utiliza botão primário azul `#2D8DB8` com texto branco; permanece como referência visual.
 - Status do pedido fica congelado novamente nesta revisão. Mudanças futuras exigem ordem expressa do usuário e nova revisão do hash.
 - O contrato de lock também foi sincronizado com os hashes Git reais atuais de Produtos e Login, sem alterar o conteúdo dessas duas telas.
+## Registro da revisão APROV-009 — 2026-10-20
+
+- Por solicitação expressa do usuário, a Central Tablet do PCP (`src/components/PCPTabletMenuModal.tsx`) foi retirada do menu principal e descontinuada; o componente foi removido.
+- O menu Manufatura / PCP mantém os atalhos operacionais, incluindo `Central PCP` (`/pcp`) e `Fichas de processo` (`/pcp/fichas-processo`).
+- O Tablet do Operador (`src/pages/PCPTabletOperador.tsx`) e o tablet da Qualidade permanecem preservados. A navegação da Qualidade não foi alterada.
+- O hash do shell foi atualizado no verificador para registrar a remoção autorizada; nenhum arquivo de tela PCP ou Qualidade foi sobrescrito.
