@@ -314,9 +314,12 @@ export default function ComprasRFQ() {
                   <input
                     type="checkbox"
                     checked={selectedSuppliers.includes(supplier.id)}
-                    onChange={event => setSelectedSuppliers(current => event.target.checked
-                      ? [...current, supplier.id]
-                      : current.filter(id => id !== supplier.id))}
+                    onChange={event => {
+                      setSelectedSuppliers(current => event.target.checked
+                        ? [...current, supplier.id]
+                        : current.filter(id => id !== supplier.id))
+                      if (!event.target.checked && winnerId === supplier.id) setWinnerId('')
+                    }}
                   />
                   <span>
                     <strong>{supplier.razao_social}</strong>
@@ -375,12 +378,12 @@ export default function ComprasRFQ() {
             </section>
 
             <div className="mt-5 grid grid-cols-12 gap-2">
-              <div className="relative min-w-0">
+              <div className="relative col-span-12 min-w-0 sm:col-span-6 lg:col-span-7">
                 <input value={productQuery} onChange={event => { setProductQuery(event.target.value); setProductId('') }} onKeyDown={event => { if (event.key === 'Enter' && visibleProducts[0]) { event.preventDefault(); setProductId(visibleProducts[0].id); setProductQuery(visibleProducts[0].codigo + ' — ' + visibleProducts[0].nome) } }} placeholder="Digite código ou descrição do produto..." className="h-9 w-full rounded border px-3" aria-label="Pesquisar produto por código ou descrição" />
                 {productQuery && !productId && <div className="absolute left-0 right-0 top-11 z-20 max-h-56 overflow-auto rounded border bg-white shadow-lg">{visibleProducts.map(product => <button key={product.id} type="button" className="block w-full border-b px-3 py-2 text-left text-xs hover:bg-slate-50" onClick={() => { setProductId(product.id); setProductQuery(product.codigo + ' — ' + product.nome) }}><strong>{product.codigo}</strong> — {product.nome} <span className="text-slate-500">({product.unidade})</span></button>)}{!visibleProducts.length && <p className="px-3 py-3 text-xs text-slate-500">Nenhum produto ativo encontrado.</p>}</div>}
               </div>
-              <input aria-label="Quantidade" type="number" min="0.0001" step="0.0001" value={quantity} onChange={event => setQuantity(event.target.value)} className="h-9 rounded border px-3" />
-              <button type="button" onClick={addItem} className="col-span-12 flex h-9 items-center justify-center gap-1 rounded bg-[#123B50] text-xs text-white sm:col-span-3">
+              <input aria-label="Quantidade" type="number" min="0.0001" step="0.0001" value={quantity} onChange={event => setQuantity(event.target.value)} className="col-span-6 h-9 rounded border px-3 sm:col-span-3 lg:col-span-2" />
+              <button type="button" onClick={addItem} className="col-span-6 flex h-9 items-center justify-center gap-1 rounded bg-[#123B50] text-xs text-white sm:col-span-3 lg:col-span-3">
                 <Plus size={15} /> Adicionar
               </button>
             </div>
