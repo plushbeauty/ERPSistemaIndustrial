@@ -21,13 +21,13 @@ function parseScanResult(value: unknown): ScanResult | null {
   const result: ScanResult = {}
   if (typeof record.tipo === 'string') result.tipo = record.tipo
   if (typeof record.id === 'string') result.id = record.id
-  if (typeof record.codigo === 'string' || record.codigo === null) result.codigo = record.codigo
-  if (typeof record.nome === 'string' || record.nome === null) result.nome = record.nome
-  if (typeof record.descricao === 'string' || record.descricao === null) result.descricao = record.descricao
-  if (typeof record.codigo_barras === 'string' || record.codigo_barras === null) result.codigo_barras = record.codigo_barras
-  if (typeof record.referencia_interna === 'string' || record.referencia_interna === null) result.referencia_interna = record.referencia_interna
-  if (typeof record.status === 'string' || record.status === null) result.status = record.status
-  if (typeof record.data === 'string' || record.data === null) result.data = record.data
+  if (typeof record.codigo === 'string') result.codigo = record.codigo
+  if (typeof record.nome === 'string') result.nome = record.nome
+  if (typeof record.descricao === 'string') result.descricao = record.descricao
+  if (typeof record.codigo_barras === 'string') result.codigo_barras = record.codigo_barras
+  if (typeof record.referencia_interna === 'string') result.referencia_interna = record.referencia_interna
+  if (typeof record.status === 'string') result.status = record.status
+  if (typeof record.data === 'string') result.data = record.data
   if (typeof record.mensagem === 'string') result.mensagem = record.mensagem
   return result
 }
