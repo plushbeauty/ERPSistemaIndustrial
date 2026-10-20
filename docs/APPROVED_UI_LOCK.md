@@ -43,3 +43,12 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Cadastro de Fornecedores já utiliza botão primário azul `#2D8DB8` com texto branco; permanece como referência visual.
 - Status do pedido fica congelado novamente nesta revisão. Mudanças futuras exigem ordem expressa do usuário e nova revisão do hash.
 - O contrato de lock também foi sincronizado com os hashes Git reais atuais de Produtos e Login, sem alterar o conteúdo dessas duas telas.
+
+
+## Registro da revisão APROV-010 — 2026-10-20
+
+- Navegação global: barra lateral persistente inspirada no Windows 11, disponível em todas as rotas internas envolvidas pelo `ERPHorizontalShell`.
+- A barra contém trilho de atalhos, catálogo de módulos com pesquisa e painel adjacente de rotinas; os destinos usam navegação interna do React Router.
+- O escopo da revisão é restrito ao shell global e ao contrato de hash desse componente. As páginas aprovadas e o tablet de operador PCP não foram editados por esta revisão.
+- O hash do shell foi atualizado no verificador de UI aprovada para congelar esta revisão. Alterações futuras no menu global exigem nova autorização explícita e revisão do contrato.
+- Validação de CI e publicação ainda pendentes; não considerar disponível em produção até os gates concluírem.
