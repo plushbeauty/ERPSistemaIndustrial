@@ -44,7 +44,7 @@ begin
     p.descricao_resumida,
     p.codigo_barras,
     p.referencia_interna,
-    p.created_at
+    coalesce(to_jsonb(p)->>'created_at', to_jsonb(p)->>'criado_em')
   into v_produto
   from public.erp_produtos as p
   where p.empresa_id = v_empresa_id
@@ -54,7 +54,7 @@ begin
       or upper(coalesce(p.codigo, '')) = v_codigo
       or upper(coalesce(p.referencia_interna, '')) = v_codigo
     )
-  order by p.created_at desc
+  order by coalesce(to_jsonb(p)->>'created_at', to_jsonb(p)->>'criado_em') desc nulls last
   limit 1;
 
   if found then
