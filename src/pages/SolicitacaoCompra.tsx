@@ -1,3 +1,4 @@
+/** @DATA_REVISAO_APROVACAO: 2026-10-20 @ESCOPO: compactação visual isolada da solicitação de compras; fluxo/RPC/RLS preservados. */
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { CheckCircle2, Plus, Printer, ShoppingCart, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -266,7 +267,30 @@ export default function SolicitacaoCompra() {
 
   return (
     <VendasLayout title="Solicitação de compra" subtitle="Necessidade interna • autorização • encaminhamento" onRefresh={() => void load()}>
-    <main className="pcp-page" style={{ padding: 24, maxWidth: 1440, margin: '0 auto' }}>
+    <main className="pcp-page compras-solicitacao-manual" style={{ padding: 12, maxWidth: 1800, margin: '0 auto' }}>
+      <style>{`
+        .compras-solicitacao-manual { color: #123B50; font-size: 12px; }
+        .compras-solicitacao-manual > header { margin-bottom: 12px !important; }
+        .compras-solicitacao-manual > header h1 { font-size: 17px !important; line-height: 1.25; margin: 3px 0 !important; font-weight: 800; color: #123B50; }
+        .compras-solicitacao-manual > header p { font-size: 11px; }
+        .compras-solicitacao-manual > section { border-radius: 2px !important; padding: 12px !important; border-color: #D8E4EA !important; box-shadow: 0 2px 8px rgba(18,59,80,.04); }
+        .compras-solicitacao-manual form label { display: flex; flex-direction: column; gap: 4px; min-width: 0; color: #123B50; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .025em; }
+        .compras-solicitacao-manual form input:not([type="checkbox"]), .compras-solicitacao-manual form select { box-sizing: border-box; width: 100%; min-width: 0; max-width: 260px; height: 32px; padding: 0 8px; border: 1px solid #D8E4EA; border-radius: 0; background: #fff; color: #123B50; font-size: 11px; font-weight: 600; outline: none; }
+        .compras-solicitacao-manual form input:focus, .compras-solicitacao-manual form select:focus, .compras-solicitacao-manual form textarea:focus { border-color: #48B7C7; }
+        .compras-solicitacao-manual form textarea { box-sizing: border-box; border: 1px solid #D8E4EA; border-radius: 0; padding: 8px; font-size: 11px; color: #123B50; }
+        .compras-solicitacao-manual .industrial-section-head { margin-top: 14px !important; padding-bottom: 7px; border-bottom: 1px solid #D8E4EA; }
+        .compras-solicitacao-manual .industrial-section-head span { font-size: 9px; font-weight: 900; letter-spacing: .1em; color: #2D8DB8; }
+        .compras-solicitacao-manual .industrial-section-head h2 { margin-top: 3px; font-size: 12px; font-weight: 800; color: #123B50; }
+        .compras-solicitacao-manual .crud-table-wrap { overflow-x: auto; }
+        .compras-solicitacao-manual table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .compras-solicitacao-manual th { height: 28px; padding: 5px 8px; background: #EAF3F7; color: #123B50; text-align: left; font-size: 9px; font-weight: 900; text-transform: uppercase; border: 1px solid #D8E4EA; }
+        .compras-solicitacao-manual td { padding: 5px 8px; border: 1px solid #D8E4EA; vertical-align: middle; }
+        .compras-solicitacao-manual td input, .compras-solicitacao-manual td select { max-width: none !important; }
+        .compras-solicitacao-manual button { border-radius: 2px !important; }
+        @media (max-width: 640px) { .compras-solicitacao-manual { padding: 8px !important; } .compras-solicitacao-manual > section { padding: 9px !important; } }
+        @media print { .compras-solicitacao-manual .secondary-v2, .compras-solicitacao-manual .primary { display: none !important; } }
+      `} />
+
       <header style={{ marginBottom: 22 }}>
         <span className="v2-eyebrow">COMPRAS • SOLICITAÇÃO INTERNA</span>
         <h1 style={{ fontSize: 32, margin: '6px 0' }}>Solicitação de compra</h1>
@@ -291,8 +315,8 @@ export default function SolicitacaoCompra() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))',
-              gap: 14,
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))',
+              gap: 10,
             }}
           >
             <label>
