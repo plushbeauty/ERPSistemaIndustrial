@@ -63,8 +63,6 @@ export default function ComprasRequisicoes() {
       ])
       const machineRows = await fetchAllPages<Machine>((from, to) => supabase.from('erp_maquinas').select('id,codigo,nome', { count: 'exact' }).eq('empresa_id', id).eq('ativo', true).order('codigo').range(from, to))
       setMachines(machineRows)
-      const machineRows = await fetchAllPages<Machine>((from, to) => supabase.from('erp_maquinas').select('id,codigo,nome', { count: 'exact' }).eq('empresa_id', id).eq('ativo', true).order('codigo').range(from, to))
-      setMachines(machineRows)
       setCompanyId(id)
       setRequisitions(requestRows)
       setItems(itemRows)
@@ -85,20 +83,6 @@ export default function ComprasRequisicoes() {
   }
 
   useEffect(() => { void load() }, [])
-
-  async function createRequest(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setBusy(true); setError(''); setMessage('')
-    try {
-      const quantity = Number(requestForm.quantity)
-      if (!requestForm.productId || !Number.isFinite(quantity) || quantity <= 0 || !requestForm.unit.trim() || !requestForm.justification.trim()) throw new Error('Informe material, quantidade, unidade comercial e justificativa.')
-      const result = await supabase.rpc('erp_compras_criar_requisicao_pcp', { p_produto_id: requestForm.productId, p_quantidade: quantity, p_unidade_comercial: requestForm.unit.trim().toUpperCase(), p_ordem_producao_id: requestForm.orderId || null, p_data_limite: requestForm.dueDate || null, p_fornecedor_id: requestForm.supplierId || null, p_lote_destino_op: requestForm.lotDestination.trim() || null, p_maquina_recurso_id: requestForm.machineId || null, p_centro_custo: requestForm.costCenter, p_urgencia_prioridade: requestForm.priority, p_justificativa_uso: requestForm.justification.trim(), p_comprador_nome: requestForm.buyerName.trim() || null })
-      if (result.error) throw result.error
-      const data = result.data as { codigo?: string } | null
-      setMessage('Requisição ' + String(data?.codigo ?? '') + ' criada e confirmada pelo banco.')
-      setRequestForm({ productId: '', quantity: '1', unit: 'UN', orderId: '', dueDate: '', supplierId: '', lotDestination: '', machineId: '', costCenter: 'PRODUCAO', priority: 'MEDIA', justification: '', buyerName: '' })
-      setShowCreateForm(false); await load()
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao criar requisição de compra.') } finally { setBusy(false) }
-  }
 
   async function createRequest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); setError(''); setMessage('')
