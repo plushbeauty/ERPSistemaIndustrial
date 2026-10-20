@@ -10,12 +10,12 @@
  */
 
 import { useEffect,useMemo,useState } from 'react'
-import { ArrowLeft, ArrowRightLeft, Boxes, CheckCircle2, ClipboardCheck, PackagePlus, PackageMinus, RefreshCw, Search, Warehouse, X, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, ArrowRightLeft, CalendarClock, Boxes, CheckCircle2, ClipboardCheck, PackagePlus, PackageMinus, RefreshCw, Search, Warehouse, X, AlertTriangle } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout, { type SalesNavSection } from './VendasLayout'
-const stockNav: SalesNavSection[] = [{label:'Estoque',items:[{label:'Saldos',href:'/estoque/saldos',icon:Boxes},{label:'Ajustes',href:'/estoque/ajustes',icon:PackagePlus},{label:'Separação',href:'/estoque/separacao',icon:ClipboardCheck},{label:'Recebimento',href:'/estoque/recebimento-lotes',icon:PackageMinus},{label:'Etiquetas',href:'/estoque/etiquetas',icon:Boxes},{label:'Curva ABC',href:'/estoque/curva-abc',icon:Warehouse}]},{label:'Integrações',items:[{label:'Compras',href:'/compras',icon:PackagePlus},{label:'PCP',href:'/pcp',icon:Boxes},{label:'Qualidade',href:'/qualidade',icon:ClipboardCheck}]}]
+const stockNav: SalesNavSection[] = [{label:'Estoque',items:[{label:'Saldos',href:'/estoque/saldos',icon:Boxes},{label:'Ajustes',href:'/estoque/ajustes',icon:PackagePlus},{label:'Separação',href:'/estoque/separacao',icon:ClipboardCheck},{label:'Recebimento',href:'/estoque/recebimento-lotes',icon:PackageMinus},{label:'Etiquetas',href:'/estoque/etiquetas',icon:Boxes},{label:'Validade / FIFO',href:'/estoque/validade',icon:CalendarClock},{label:'Curva ABC',href:'/estoque/curva-abc',icon:Warehouse}]},{label:'Integrações',items:[{label:'Compras',href:'/compras',icon:PackagePlus},{label:'PCP',href:'/pcp',icon:Boxes},{label:'Qualidade',href:'/qualidade',icon:ClipboardCheck}]}]
 type Tab='saldo'|'entrada'|'saida'|'transferencia'|'almox'|'producao'|'historico'|'inventario'
 type Product={id:string;codigo:string;nome:string;estoque_atual:number;estoque_maximo:number;ponto_reposicao:number;categoria:string|null}
 type Location={id:string;codigo:string;nome:string;almoxarifado_id:string;tipo:string;ativo:boolean}
