@@ -9,7 +9,7 @@
  * Escopo: preservar o desenho aprovado; mudanças futuras exigem autorização explícita.
  * Validação: integração no main e publicação ainda pendentes de CI/deploy.
  */
-import { ArrowRight, BarChart3, Boxes, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, Factory, FileText, PackageCheck, Pause, Play, Receipt, ShieldCheck, Truck, Users, Wrench, X, Settings, Bot } from 'lucide-react'
+import { ArrowRight, BarChart3, Boxes, ChevronDown, ClipboardCheck, Factory, FileText, PackageCheck, Receipt, ShieldCheck, Truck, Users, Wrench, X, Settings, Bot } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useMemo, useState, type KeyboardEvent } from 'react'
 
@@ -61,7 +61,7 @@ const visuals = [
 ]
 
 export default function PublicIndustrialHome(){
- const [menuOpen,setMenuOpen]=useState(false),[index,setIndex]=useState(0),[helpOpen,setHelpOpen]=useState(false),[selectedModule,setSelectedModule]=useState<Module|null>(null),[billingPeriod,setBillingPeriod]=useState<'monthly'|'annual'>('monthly'),[rotationPaused,setRotationPaused]=useState(false),[reducedMotion,setReducedMotion]=useState(false)
+ const [menuOpen,setMenuOpen]=useState(false),[index,setIndex]=useState(0),[helpOpen,setHelpOpen]=useState(false),[selectedModule,setSelectedModule]=useState<Module|null>(null),[billingPeriod,setBillingPeriod]=useState<'monthly'|'annual'>('monthly'),[reducedMotion,setReducedMotion]=useState(false)
  const current=visuals[index]
  useEffect(()=>{
   const preference=window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -71,10 +71,10 @@ export default function PublicIndustrialHome(){
   return()=>preference.removeEventListener('change',updatePreference)
  },[])
  useEffect(()=>{
-  if(rotationPaused||reducedMotion)return
+  if(reducedMotion)return
   const timer=window.setInterval(()=>setIndex(value=>(value+1)%visuals.length),5000)
   return()=>window.clearInterval(timer)
- },[rotationPaused,reducedMotion])
+ },[reducedMotion])
  const moveSlide=(direction:number)=>setIndex(value=>(value+direction+visuals.length)%visuals.length)
  const handleCarouselKeyDown=(event:KeyboardEvent<HTMLElement>)=>{
   if(event.key==='ArrowLeft'){event.preventDefault();moveSlide(-1)}
@@ -181,6 +181,70 @@ export default function PublicIndustrialHome(){
   @media(prefers-reduced-motion:reduce){.sgq-stage-media img,.sgq-module,.sgq-trial-cta,.sgq-help{transition:none!important;animation:none!important}}
   @media(max-width:620px){.sgq-stage-caption{max-width:calc(100% - 18px);left:10px!important;bottom:10px!important}.sgq-dots{right:10px!important;bottom:10px!important;gap:4px;padding:5px}.sgq-carousel-control{width:30px;height:30px}.sgq-dot{width:7px;height:7px}}
 
+
+  /* HOME APROVADA — carrossel ampliado sem botões flutuantes de anterior/próximo/pausa. */
+  .sgq-public-home .sgq-hero{
+    position:relative!important;isolation:isolate!important;display:block!important;
+    width:100%!important;min-height:0!important;height:calc(100dvh - 74px)!important;
+    padding:0!important;overflow:hidden!important;background:#0e1e2f!important;
+  }
+  .sgq-public-home .sgq-hero-inner{
+    position:absolute!important;inset:0!important;z-index:5!important;display:block!important;
+    width:100%!important;max-width:none!important;height:100%!important;margin:0!important;padding:0!important;
+  }
+  .sgq-public-home .sgq-stage{
+    position:absolute!important;inset:0!important;z-index:0!important;display:block!important;
+    width:100%!important;max-width:none!important;height:100%!important;min-width:0!important;
+    margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+    background:#0e1e2f!important;box-shadow:none!important;overflow:hidden!important;
+  }
+  .sgq-public-home .sgq-stage-media{
+    position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+    margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:#0e1e2f!important;
+  }
+  .sgq-public-home .sgq-stage-media img{
+    position:absolute!important;inset:0!important;width:100%!important;max-width:none!important;height:100%!important;
+    object-fit:cover!important;object-position:center!important;padding:0!important;margin:0!important;
+    border:0!important;border-radius:0!important;opacity:0!important;transform:none!important;
+    transition:opacity 1.1s ease!important;
+  }
+  .sgq-public-home .sgq-stage-media img.active{opacity:1!important}
+  .sgq-public-home .sgq-stage-media:after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(90deg,rgba(14,30,47,.94) 0%,rgba(14,30,47,.82) 30%,rgba(14,30,47,.34) 62%,rgba(14,30,47,.10) 100%);
+  }
+  .sgq-public-home .sgq-hero-copy{
+    position:absolute!important;inset:0 auto 0 0!important;z-index:3!important;
+    display:flex!important;flex-direction:column!important;justify-content:center!important;
+    width:min(48%,680px)!important;max-width:680px!important;margin:0!important;
+    padding:clamp(24px,5vw,76px)!important;text-align:left!important;
+    background:linear-gradient(90deg,rgba(14,30,47,.82),rgba(14,30,47,.45) 78%,transparent)!important;
+    border:0!important;backdrop-filter:blur(3px)!important;
+  }
+  .sgq-public-home .sgq-stage-caption{
+    display:block!important;position:absolute!important;z-index:4!important;
+    right:clamp(14px,3vw,36px)!important;bottom:clamp(14px,3vw,36px)!important;
+    left:auto!important;max-width:min(42%,440px)!important;
+  }
+  .sgq-public-home .sgq-dots{
+    display:flex!important;position:absolute!important;z-index:5!important;
+    left:clamp(24px,5vw,76px)!important;right:auto!important;bottom:clamp(18px,3vw,34px)!important;
+    gap:10px!important;padding:8px 10px!important;border:1px solid rgba(255,255,255,.28)!important;
+    border-radius:8px!important;background:rgba(14,30,47,.7)!important;backdrop-filter:blur(10px)!important;
+  }
+  .sgq-public-home .sgq-carousel-control{display:none!important}
+  .sgq-public-home .sgq-dot{width:22px!important;height:3px!important;padding:0!important;border:0!important;border-radius:0!important;background:rgba(244,251,253,.45)!important;cursor:pointer!important}
+  .sgq-public-home .sgq-dot.active{width:34px!important;background:#48b7c7!important}
+  @media(max-width:760px){
+    .sgq-public-home .sgq-hero{height:calc(100dvh - 62px)!important;min-height:540px!important}
+    .sgq-public-home .sgq-hero-copy{inset:0!important;width:100%!important;max-width:none!important;padding:28px 22px 90px!important;background:linear-gradient(90deg,rgba(14,30,47,.86),rgba(14,30,47,.56))!important}
+    .sgq-public-home .sgq-hero h1{font-size:clamp(30px,8vw,44px)!important;letter-spacing:-1px!important}
+    .sgq-public-home .sgq-hero-copy p{max-width:560px!important}
+    .sgq-public-home .sgq-stage-caption{right:12px!important;bottom:62px!important;max-width:calc(100% - 24px)!important}
+    .sgq-public-home .sgq-dots{left:18px!important;bottom:14px!important}
+  }
+  @media(prefers-reduced-motion:reduce){.sgq-public-home .sgq-stage-media img{transition:none!important}}
+
   `}
   </style>
   <header className="sgq-nav">
@@ -188,7 +252,7 @@ export default function PublicIndustrialHome(){
    <div className="sgq-nav-links"><a className="sgq-nav-link" href="#inicio">Início</a><div className="sgq-product" onMouseEnter={()=>setMenuOpen(true)} onMouseLeave={()=>setMenuOpen(false)}><button className="sgq-product-button" type="button" aria-expanded={menuOpen} aria-haspopup="true" onClick={()=>setMenuOpen(v=>!v)}>Descubra nossos produtos <ChevronDown size={15}/></button>{menuOpen&&<div className="sgq-product-menu">{productMenuModules.map(m=>{const Icon=m.Icon;return <a key={m.key} href="#modulo-detalhe" onClick={()=>{setSelectedModule(m);setMenuOpen(false)}}><Icon size={17}/><span><strong>{m.title}</strong><small>{m.description}</small></span></a>})}</div>}</div><a className="sgq-nav-link" href="#planos">Planos</a><a className="sgq-nav-link" href="/blog">Blog</a><a className="sgq-nav-link" href="/contato">Contato</a></div>
    <div className="sgq-nav-actions"><a className="sgq-owner" href="/cadastro-master" title="Cadastro do proprietário Master" aria-label="Cadastro do proprietário Master"><Settings size={17}/></a><a className="sgq-login" href="/login">Entrar</a></div>
   </header>
-  <section id="inicio" className="sgq-hero"><div className="sgq-hero-shade" aria-hidden="true"/><div className="sgq-wrap sgq-hero-inner"><div className="sgq-hero-copy"><span className="sgq-kicker">ERP &amp; SGQ INDUSTRIAL INTEGRADO</span><h1>SYNQRA: controle total da operação industrial.</h1><p>Conecte materiais, produção, qualidade, financeiro e pessoas em um ecossistema industrial com processos rastreáveis e informação integrada.</p><a className="sgq-trial-cta" href="/cadastro-empresa">🚀 TESTAR ERP GRÁTIS POR 14 DIAS <ArrowRight size={16}/></a></div><div className="sgq-stage" role="region" aria-roledescription="carrossel" aria-label="Apresentação visual do SYNQRA ERP Industrial" tabIndex={0} onKeyDown={handleCarouselKeyDown}><div className="sgq-stage-media" aria-live="off">{visuals.map((v,i)=><img key={v.src} src={v.src} alt={i===index?v.alt:''} aria-hidden={i!==index} className={i===index?'active':''} loading={i===index?'eager':'lazy'} decoding="async"/>)}</div><div className="sgq-stage-caption" aria-live="polite"><span>{current.eyebrow}</span><strong>{current.label}</strong></div><div className="sgq-dots" role="group" aria-label="Controles do carrossel"><button className="sgq-carousel-control" type="button" aria-label="Imagem anterior" onClick={()=>moveSlide(-1)}><ChevronLeft size={17}/></button>{visuals.map((v,i)=><button key={v.src} type="button" className={i===index?'sgq-dot active':'sgq-dot'} aria-label={'Mostrar '+v.label} aria-pressed={i===index} onClick={()=>setIndex(i)}/>) }<button className="sgq-carousel-control" type="button" aria-label="Próxima imagem" onClick={()=>moveSlide(1)}><ChevronRight size={17}/></button><button className="sgq-carousel-control" type="button" aria-label={rotationPaused?'Iniciar rotação automática':'Pausar rotação automática'} aria-pressed={rotationPaused} disabled={reducedMotion} title={reducedMotion?'Rotação automática desativada pela preferência de movimento reduzido':rotationPaused?'Iniciar rotação automática':'Pausar rotação automática'} onClick={()=>setRotationPaused(value=>!value)}>{rotationPaused?<Play size={15}/>:<Pause size={15}/>}</button></div></div></div></section>
+  <section id="inicio" className="sgq-hero"><div className="sgq-hero-shade" aria-hidden="true"/><div className="sgq-wrap sgq-hero-inner"><div className="sgq-hero-copy"><span className="sgq-kicker">ERP &amp; SGQ INDUSTRIAL INTEGRADO</span><h1>SYNQRA: controle total da operação industrial.</h1><p>Conecte materiais, produção, qualidade, financeiro e pessoas em um ecossistema industrial com processos rastreáveis e informação integrada.</p><a className="sgq-trial-cta" href="/cadastro-empresa">🚀 TESTAR ERP GRÁTIS POR 14 DIAS <ArrowRight size={16}/></a></div><div className="sgq-stage" role="region" aria-roledescription="carrossel" aria-label="Apresentação visual do SYNQRA ERP Industrial" tabIndex={0} onKeyDown={handleCarouselKeyDown}><div className="sgq-stage-media" aria-live="off">{visuals.map((v,i)=><img key={v.src} src={v.src} alt={i===index?v.alt:''} aria-hidden={i!==index} className={i===index?'active':''} loading={i===index?'eager':'lazy'} decoding="async"/>)}</div><div className="sgq-stage-caption" aria-live="polite"><span>{current.eyebrow}</span><strong>{current.label}</strong></div><div className="sgq-dots" role="group" aria-label="Selecionar imagem do carrossel">{visuals.map((v,i)=><button key={v.src} type="button" className={i===index?'sgq-dot active':'sgq-dot'} aria-label={'Mostrar '+v.label} aria-pressed={i===index} onClick={()=>setIndex(i)}/>)}</div></div></div></section>
   <section id="planos" className="sgq-section sgq-pricing"><div className="sgq-wrap"><div className="sgq-section-heading"><span>NOSSOS PLANOS</span><h2>Escolha o plano certo para sua indústria.</h2><p>Compare as opções e comece pelo nível que faz sentido para a sua operação.</p></div><div className="sgq-billing-toggle" role="group" aria-label="Periodicidade de cobrança"><button type="button" aria-pressed={billingPeriod==='monthly'} onClick={()=>setBillingPeriod('monthly')}>Mensal</button><button type="button" aria-pressed={billingPeriod==='annual'} onClick={()=>setBillingPeriod('annual')}>Anual</button><span className="sgq-billing-savings">15% de desconto no anual</span></div><div className="sgq-plans">{plans.map((p,i)=>{const annualPrice=p.monthly===null?null:Math.round(p.monthly*0.85*100)/100;const shownPrice=p.monthly===null?'Sob consulta':(billingPeriod==='annual'?annualPrice!:p.monthly).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});const annualTotal=annualPrice===null?null:annualPrice*12;return <article key={p.key} className={`sgq-plan ${i===1?'featured':''}`}><small>{i===1?'MAIS ESCOLHIDO':i===2?'OPERAÇÃO AVANÇADA':'PLANO DE ENTRADA'}</small><h3>{p.name}</h3><strong>{shownPrice}</strong>{p.monthly!==null&&<span className="sgq-price-period">{billingPeriod==='annual'?'por mês no plano anual':'por mês'}</span>}{billingPeriod==='annual'&&annualTotal!==null&&<span className="sgq-annual-total">Total anual: {annualTotal.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</span>}<p>{p.description}</p><a href="/cadastro-empresa">{p.monthly===null?'Falar sobre Enterprise':'Começar agora'} <ArrowRight size={14}/></a>{p.monthly!==null&&<span className="sgq-plan-secondary">{billingPeriod==='annual'?'Cobrança anual com 15% de desconto.':'Altere para anual e economize 15%.'}</span>}</article>})}</div><div className="sgq-plans-page-link"><a href="/planos">Ver catálogo completo de planos <ArrowRight size={16}/></a></div></div></section>
   <section id="modulos" className="sgq-section"><div className="sgq-wrap"><div className="sgq-section-heading"><span>DESCUBRA NOSSOS PRODUTOS</span><h2>Cada módulo tem uma função clara dentro da operação.</h2><p>Clique em qualquer módulo para ver o que ele faz, como trabalha, quais indicadores entrega e qual fluxo ele atende.</p></div><div className="sgq-modules">{featured.map(m=>{const Icon=m.Icon;return <article key={m.key} className="sgq-module"><span className="sgq-module-icon"><Icon size={20}/></span><h3>{m.title}</h3><p>{m.description}</p><div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:13}}><a className="sgq-module-link" href="#modulo-detalhe" onClick={()=>setSelectedModule(m)}>Ver como funciona <ArrowRight size={14}/></a></div></article>})}</div><div id="modulo-detalhe" className="sgq-module-detail" aria-live="polite">{selectedModule&&(()=>{const m=selectedModule;const Icon=m.Icon;const details:Record<string,{items:string[];flow:string[];results:string[]}>={pcp:{items:['Planejamento e programação das ordens de produção','Capacidade de máquinas, turnos e recursos','Apontamentos, paradas, setup e perdas','Rastreabilidade e fechamento da produção'],flow:['Planejar','Programar','Produzir','Apontar','Inspecionar','Fechar'],results:['Ordens e quantidades produzidas','Eficiência e paradas','Perdas e refugo','Integração com estoque e qualidade']},estoque:{items:['Consulta de saldo por item e localização','Entradas, saídas e ajustes controlados','Lotes, rastreabilidade e inventário','Materiais críticos e necessidades de reposição'],flow:['Necessidade','Receber','Armazenar','Consumir','Inventariar'],results:['Saldos disponíveis','Movimentações','Itens críticos','Histórico por lote']},qualidade:{items:['Inspeções e critérios de aceitação','Não conformidades e ações corretivas','Auditorias e evidências','Documentos controlados e revisões'],flow:['Inspecionar','Registrar','Analisar risco','Corrigir','Verificar'],results:['Inspeções e ocorrências','Ações em aberto','Auditorias','Documentos vigentes']},recebimento:{items:['Conferência de NF-e XML e itens','Validação de quantidades recebidas','Identificação e controle de lotes','Encaminhamento rastreável ao estoque'],flow:['NF-e','Conferir','Identificar lotes','Registrar','Armazenar'],results:['Recebimentos pendentes','Divergências','Lotes recebidos','Entrada rastreável']},compras:{items:['Solicitações e cotações de compra','Cadastro e acompanhamento de fornecedores','Pedidos e aprovações','Controle de prazos e recebimentos'],flow:['Solicitar','Cotizar','Aprovar','Comprar','Receber'],results:['Pedidos abertos','Prazos de entrega','Fornecedores','Compras do período']},manutencao:{items:['Cadastro e histórico de equipamentos','Planos preventivos e ordens corretivas','Registro de intervenções e paradas','Integração com máquinas e produção'],flow:['Ativo','Planejar','Abrir ordem','Executar','Registrar'],results:['Ordens abertas','Preventivas pendentes','Paradas','Disponibilidade']},fiscal:{items:['Documentos e processos fiscais','Conferência de eventos da operação','Acompanhamento financeiro relacionado','Consultas e relatórios gerenciais'],flow:['Operação','Documento','Validar','Integrar','Analisar'],results:['Pendências fiscais','Documentos processados','Previsões','Movimentações']}};const d=details[m.key]||{items:[m.description,'Cadastros e consultas relacionados ao processo','Acompanhamento de etapas e pendências','Integração com áreas conectadas do ERP'],flow:['Cadastrar','Planejar','Executar','Conferir','Acompanhar'],results:['Status do processo','Pendências','Histórico','Integrações relacionadas']};return <><div className="sgq-module-detail-head"><span className="sgq-module-icon"><Icon size={22}/></span><div><span className="sgq-kicker">{m.title.toUpperCase()}</span><h2>{m.title}</h2><p>{m.description}</p></div><a className="sgq-detail-back" href="#inicio">Voltar ao início ↑</a></div><div className="sgq-detail-grid"><article><h3>O que este módulo contempla</h3><ul>{d.items.map(x=><li key={x}>{x}</li>)}</ul></article><article><h3>Fluxo de trabalho</h3><ol>{d.flow.map((x,i)=><li key={x}><b>{String(i+1).padStart(2,'0')}</b>{x}</li>)}</ol></article><article><h3>O que você acompanha</h3><ul>{d.results.map(x=><li key={x}>{x}</li>)}</ul></article></div><p className="sgq-detail-security">Esta é uma apresentação pública do módulo. Para acessar dados e executar operações reais, é necessário entrar no sistema com usuário e senha.</p></>})()}</div><div className="sgq-all-modules"><button type="button" className="sgq-product-button" onClick={()=>setMenuOpen(true)}>Ver todos os produtos <ChevronDown size={15}/></button></div></div></section>
   <section id="fluxo" className="sgq-section sgq-flow"><div className="sgq-wrap"><div className="sgq-section-heading"><span>COMO O ERP SE CONECTA</span><h2>Da matéria-prima ao resultado.</h2><p>Os módulos se conectam para reduzir retrabalho e manter rastreabilidade entre áreas.</p></div><div className="sgq-flow-grid"><article className="sgq-flow-card"><b>01 · PLANEJAR</b><h3>Engenharia + PCP + MRP</h3><p>Estrutura, capacidade, necessidades e programação antes da execução.</p></article><article className="sgq-flow-card"><b>02 · EXECUTAR</b><h3>Produção + Estoque + Qualidade</h3><p>Apontamentos, materiais, inspeções, lotes, perdas e evidências conectados.</p></article><article className="sgq-flow-card"><b>03 · GERIR</b><h3>Custos + Fiscal + Indicadores</h3><p>Os dados operacionais viram visão financeira, fiscal e gerencial.</p></article></div></div></section>
