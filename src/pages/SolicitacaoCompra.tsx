@@ -267,12 +267,13 @@ export default function SolicitacaoCompra() {
   return (
     <VendasLayout title="Solicitação de compra" subtitle="Necessidade interna • autorização • encaminhamento" onRefresh={() => void load()}>
     <main className="pcp-page" style={{ padding: 24, maxWidth: 1440, margin: '0 auto' }}>
-      <header style={{ marginBottom: 22 }}>
-        <span className="v2-eyebrow">COMPRAS • SOLICITAÇÃO INTERNA</span>
-        <h1 style={{ fontSize: 32, margin: '6px 0' }}>Solicitação de compra</h1>
-        <p style={{ color: '#64748b', margin: 0 }}>
-          Registre materiais para autorização e encaminhamento ao setor de Compras.
-        </p>
+      <header
+        className="rounded-none"
+        style={{ marginBottom: 18, padding: '18px 20px', color: '#FFFFFF', background: 'linear-gradient(110deg, #123B50 0%, #0E1E2F 100%)', border: '1px solid #123B50' }}
+      >
+        <span className="text-[9px] font-semibold uppercase tracking-[0.12em]" style={{ color: '#F4FBFD' }}>COMPRAS • SOLICITAÇÃO INTERNA</span>
+        <h1 style={{ fontSize: 24, lineHeight: 1.2, margin: '5px 0' }}>Solicitação de compra</h1>
+        <p style={{ color: '#F4FBFD', fontSize: 12, margin: 0 }}>Registre materiais para autorização e encaminhamento ao setor de Compras.</p>
       </header>
 
       {error && (
@@ -286,95 +287,48 @@ export default function SolicitacaoCompra() {
         </p>
       )}
 
-      <section style={{ background: '#fff', border: '1px solid #dfe7e4', borderRadius: 14, padding: 20 }}>
+      <section style={{ background: '#FFFFFF', color: '#123B50', border: '1px solid #D8E4EA', borderRadius: 0, padding: 16 }}>
         <form onSubmit={(event) => void save(event)}>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))',
-              gap: 14,
-            }}
-          >
-            <label>
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+            <label className="block min-w-0 md:col-span-4 max-w-[280px] text-[10px] font-semibold uppercase tracking-wide" style={{ color: '#123B50' }}>
               Motivo da solicitação
-              <input
-                required
-                value={descricao}
-                onChange={(event) => setDescricao(event.target.value)}
-                maxLength={500}
-              />
+              <input className="mt-1 block h-8 w-full max-w-[280px] rounded-none border px-2 text-xs font-normal normal-case" style={{ height: 32, borderColor: '#D8E4EA', background: '#FFFFFF', color: '#123B50', boxSizing: 'border-box' }} required value={descricao} onChange={(event) => setDescricao(event.target.value)} maxLength={500} />
             </label>
-            <label>
+            <label className="block min-w-0 md:col-span-3 max-w-[220px] text-[10px] font-semibold uppercase tracking-wide" style={{ color: '#123B50' }}>
               Fornecedor sugerido
-              <select value={fornecedorId} onChange={(event) => setFornecedorId(event.target.value)}>
+              <select className="mt-1 block h-8 w-full max-w-[220px] rounded-none border px-2 text-xs font-normal normal-case" style={{ height: 32, borderColor: '#D8E4EA', background: '#FFFFFF', color: '#123B50', boxSizing: 'border-box' }} value={fornecedorId} onChange={(event) => setFornecedorId(event.target.value)}>
                 <option value="">Sem preferência</option>
-                {[...fornecedores]
-                  .sort(
-                    (left, right) =>
-                      Number(right.iso_9001_certificado) - Number(left.iso_9001_certificado) ||
-                      left.razao_social.localeCompare(right.razao_social),
-                  )
-                  .map((supplier) => (
-                    <option key={supplier.id} value={supplier.id}>
-                      {supplier.iso_9001_certificado ? 'ISO 9001 • ' : ''}
-                      {supplier.razao_social}
-                      {supplier.documento ? ` • ${supplier.documento}` : ''}
-                    </option>
-                  ))}
+                {[...fornecedores].sort((left, right) => Number(right.iso_9001_certificado) - Number(left.iso_9001_certificado) || left.razao_social.localeCompare(right.razao_social)).map((supplier) => (
+                  <option key={supplier.id} value={supplier.id}>{supplier.iso_9001_certificado ? 'ISO 9001 • ' : ''}{supplier.razao_social}{supplier.documento ? ` • ${supplier.documento}` : ''}</option>
+                ))}
               </select>
             </label>
-            <label>
+            <label className="block min-w-0 md:col-span-2 max-w-[160px] text-[10px] font-semibold uppercase tracking-wide" style={{ color: '#123B50' }}>
               Prioridade
-              <select value={prioridade} onChange={(event) => setPrioridade(event.target.value)}>
-                <option value="normal">Normal</option>
-                <option value="alta">Alta</option>
-                <option value="urgente">Urgente</option>
+              <select className="mt-1 block h-8 w-full max-w-[160px] rounded-none border px-2 text-xs font-normal normal-case" style={{ height: 32, borderColor: '#D8E4EA', background: '#FFFFFF', color: '#123B50', boxSizing: 'border-box' }} value={prioridade} onChange={(event) => setPrioridade(event.target.value)}>
+                <option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option>
               </select>
             </label>
-            <label>
+            <label className="block min-w-0 md:col-span-3 max-w-[240px] text-[10px] font-semibold uppercase tracking-wide" style={{ color: '#123B50' }}>
               E-mail do setor responsável
-              <input
-                type="email"
-                value={emailDestino}
-                onChange={(event) => setEmailDestino(event.target.value)}
-                maxLength={254}
-                placeholder="compras@empresa.com.br"
-              />
+              <input className="mt-1 block h-8 w-full max-w-[240px] rounded-none border px-2 text-xs font-normal normal-case" style={{ height: 32, borderColor: '#D8E4EA', background: '#FFFFFF', color: '#123B50', boxSizing: 'border-box' }} type="email" value={emailDestino} onChange={(event) => setEmailDestino(event.target.value)} maxLength={254} placeholder="compras@empresa.com.br" />
             </label>
           </div>
 
-          <div className="industrial-section-head" style={{ marginTop: 22 }}>
-            <div>
-              <span>ITENS DA SOLICITAÇÃO</span>
-              <h2>Produtos e materiais</h2>
-            </div>
-            <button
-              className="secondary-v2"
-              type="button"
-              onClick={() => setItems((current) => [...current, emptyItem()])}
-            >
-              <Plus size={17} /> Adicionar item
-            </button>
+          <div className="industrial-section-head" style={{ marginTop: 18, marginBottom: 8, alignItems: 'center' }}>
+            <div><span style={{ color: '#2D8DB8', fontSize: 9, fontWeight: 700 }}>ITENS DA SOLICITAÇÃO</span><h2 style={{ color: '#123B50', fontSize: 15, margin: '3px 0' }}>Produtos e materiais</h2></div>
+            <button className="secondary-v2 h-8 rounded-none px-3 text-xs" style={{ height: 32, borderRadius: 0, borderColor: '#D8E4EA', color: '#123B50' }} type="button" onClick={() => setItems((current) => [...current, emptyItem()])}><Plus size={14} /> Adicionar item</button>
           </div>
 
-          <div className="crud-table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Produto / material</th>
-                  <th>Unidade</th>
-                  <th>Quantidade</th>
-                  <th>Valor estimado unitário</th>
-                  <th>Ação</th>
-                </tr>
-              </thead>
+          <div className="crud-table-wrap" style={{ border: '1px solid #D8E4EA', borderRadius: 0, overflowX: 'auto' }}>
+            <table style={{ width: '100%', minWidth: 640, tableLayout: 'fixed', borderCollapse: 'collapse', color: '#123B50' }}>
+              <colgroup><col /><col style={{ width: 70 }} /><col style={{ width: 100 }} /><col style={{ width: 130 }} /><col style={{ width: 50 }} /></colgroup>
+              <thead><tr><th>Produto / material</th><th style={{ width: 70, textAlign: 'center' }}>Unidade</th><th style={{ width: 100, textAlign: 'center' }}>Quantidade</th><th style={{ width: 130 }}>Valor estimado unitário</th><th style={{ width: 50, textAlign: 'center' }}>Ação</th></tr></thead>
               <tbody>
                 {items.map((item, index) => (
                   <tr key={index}>
-                    <td>
-                      <select
-                        required
-                        value={item.produto_id}
+                    <td style={{ minWidth: 0, padding: 6 }}>
+                      <select className="h-8 w-full rounded-none border px-2 text-xs" style={{ height: 32, minWidth: 0, borderRadius: 0, borderColor: '#D8E4EA', background: '#FFFFFF', color: '#123B50', boxSizing: 'border-box' }} required value={item.produto_id}
                         onChange={(event) => {
                           const product = products.find((candidate) => candidate.id === event.target.value)
                           updateItem(index, {
@@ -392,10 +346,9 @@ export default function SolicitacaoCompra() {
                         ))}
                       </select>
                     </td>
-                    <td>{item.unidade}</td>
-                    <td>
-                      <input
-                        type="number"
+                    <td style={{ width: 70, textAlign: 'center', padding: 6 }}><span className="text-xs">{item.unidade}</span></td>
+                    <td style={{ width: 100, padding: 6 }}>
+                      <input className="h-8 w-full rounded-none border px-1 text-center text-xs" style={{ height: 32, width: '100%', borderRadius: 0, borderColor: '#D8E4EA', background: '#FFFFFF', color: '#123B50', boxSizing: 'border-box' }} type="number"
                         min="0.001"
                         step="0.001"
                         required
@@ -403,20 +356,15 @@ export default function SolicitacaoCompra() {
                         onChange={(event) => updateItem(index, { quantidade: event.target.value })}
                       />
                     </td>
-                    <td>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
+                    <td style={{ width: 130, padding: 6 }}>
+                      <input className="h-8 w-full rounded-none border px-1 text-xs" style={{ height: 32, width: '100%', borderRadius: 0, borderColor: '#D8E4EA', background: '#FFFFFF', color: '#123B50', boxSizing: 'border-box' }} type="number" min="0" step="0.01"
                         required
                         value={item.valor_estimado}
                         onChange={(event) => updateItem(index, { valor_estimado: event.target.value })}
                       />
                     </td>
-                    <td>
-                      <button
-                        className="icon-button danger"
-                        type="button"
+                    <td style={{ width: 50, textAlign: 'center', padding: 4 }}>
+                      <button className="icon-button danger h-8 w-[50px] rounded-none" style={{ width: 50, height: 32, borderRadius: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} type="button"
                         aria-label={`Remover item ${index + 1}`}
                         onClick={() =>
                           setItems((current) =>
@@ -435,37 +383,22 @@ export default function SolicitacaoCompra() {
             </table>
           </div>
 
-          <label style={{ display: 'block', marginTop: 14 }}>
-            Observações
-            <textarea
-              value={observacoes}
-              onChange={(event) => setObservacoes(event.target.value)}
-              maxLength={2000}
-              rows={3}
-              style={{ width: '100%', marginTop: 6 }}
-            />
+          <label className="mt-3 block text-[10px] font-semibold uppercase tracking-wide" style={{ color: '#123B50' }}>Observações
+            <textarea className="mt-1 block w-full rounded-none border px-2 py-1 text-xs font-normal normal-case" value={observacoes} onChange={(event) => setObservacoes(event.target.value)} maxLength={2000} rows={3} style={{ minHeight: 64, borderColor: '#D8E4EA', background: '#FFFFFF', color: '#123B50' }} />
           </label>
 
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
-            <button className="primary" type="submit" disabled={busy || !empresaId}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+            <button className="primary h-8 rounded-none px-3 text-xs" style={{ height: 32, borderRadius: 0 }} type="submit" disabled={busy || !empresaId}>
               <ShoppingCart size={18} /> {busy ? 'Salvando…' : 'Registrar solicitação'}
             </button>
-            <button className="secondary-v2" type="button" onClick={() => window.print()}>
+            <button className="secondary-v2 h-8 rounded-none px-3 text-xs" style={{ height: 32, borderRadius: 0 }} type="button" onClick={() => window.print()}>
               <Printer size={18} /> Imprimir / Salvar PDF
             </button>
           </div>
         </form>
       </section>
 
-      <section
-        style={{
-          marginTop: 20,
-          background: '#fff',
-          border: '1px solid #dfe7e4',
-          borderRadius: 14,
-          padding: 20,
-        }}
-      >
+      <section style={{ marginTop: 16, background: '#FFFFFF', color: '#123B50', border: '1px solid #D8E4EA', borderRadius: 0, padding: 16 }}>
         <h2 style={{ marginTop: 0 }}>Solicitações recentes</h2>
         <div className="crud-table-wrap">
           <table>
@@ -540,7 +473,7 @@ export default function SolicitacaoCompra() {
           </button>
         </nav>
       </section>
-      <small style={{ display: 'block', marginTop: 14, color: '#64748b' }}>
+      <small style={{ display: 'block', marginTop: 12, color: '#64748b', fontSize: 10 }}>
         Toda solicitação é registrada para autorização. A liberação é protegida pela permissão de edição de Compras.
       </small>
     </main>
