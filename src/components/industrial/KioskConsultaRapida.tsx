@@ -6,13 +6,13 @@ type ScanResult = {
   tipo?: string
   mensagem?: string
   id?: string
-  codigo?: string | null
-  nome?: string | null
-  descricao?: string | null
-  codigo_barras?: string | null
-  referencia_interna?: string | null
-  status?: string | null
-  data?: string | null
+  codigo?: string
+  nome?: string
+  descricao?: string
+  codigo_barras?: string
+  referencia_interna?: string
+  status?: string
+  data?: string
 }
 
 function parseScanResult(value: unknown): ScanResult | null {
