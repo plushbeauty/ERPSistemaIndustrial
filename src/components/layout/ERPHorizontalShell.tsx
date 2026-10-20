@@ -112,7 +112,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [openMenu, setOpenMenu] = useState<string | null>(null)
-  const [sidebarExpanded, setSidebarExpanded] = useState(true)
+  const [sidebarExpanded, setSidebarExpanded] = useState(() => pathname.startsWith('/pcp') || pathname.startsWith('/qualidade'))
   const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
@@ -275,6 +275,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     navigate(route)
   }
 
+  // REVISÃO 2026-10-20: shell único com barra lateral industrial recolhível; mantém sessão Supabase, ajuda e launchers de tablet.
   return (
     <div className={`erp-horizontal-shell ${sidebarExpanded ? 'erp-sidebar-expanded' : 'erp-sidebar-collapsed'}`} ref={ref}>
       <aside className="erp-fixed-sidebar" aria-label="Navegação principal SYSNQRA">
