@@ -19,10 +19,16 @@ function parseScanResult(value: unknown): ScanResult | null {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return null
   const record = value as Record<string, unknown>
   const result: ScanResult = {}
-  for (const key of ['tipo', 'id', 'codigo', 'nome', 'descricao', 'codigo_barras', 'referencia_interna', 'status', 'data', 'mensagem'] as const) {
-    const field = record[key]
-    if (typeof field === 'string' || field === null) result[key] = field
-  }
+  if (typeof record.tipo === 'string') result.tipo = record.tipo
+  if (typeof record.id === 'string') result.id = record.id
+  if (typeof record.codigo === 'string' || record.codigo === null) result.codigo = record.codigo
+  if (typeof record.nome === 'string' || record.nome === null) result.nome = record.nome
+  if (typeof record.descricao === 'string' || record.descricao === null) result.descricao = record.descricao
+  if (typeof record.codigo_barras === 'string' || record.codigo_barras === null) result.codigo_barras = record.codigo_barras
+  if (typeof record.referencia_interna === 'string' || record.referencia_interna === null) result.referencia_interna = record.referencia_interna
+  if (typeof record.status === 'string' || record.status === null) result.status = record.status
+  if (typeof record.data === 'string' || record.data === null) result.data = record.data
+  if (typeof record.mensagem === 'string') result.mensagem = record.mensagem
   return result
 }
 
