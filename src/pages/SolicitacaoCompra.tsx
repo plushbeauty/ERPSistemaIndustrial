@@ -274,7 +274,9 @@ export default function SolicitacaoCompra() {
         .compras-solicitacao-manual > header h1 { font-size: 17px !important; line-height: 1.25; margin: 3px 0 !important; font-weight: 800; color: #123B50; }
         .compras-solicitacao-manual > header p { font-size: 11px; }
         .compras-solicitacao-manual > section { border-radius: 2px !important; padding: 12px !important; border-color: #D8E4EA !important; box-shadow: 0 2px 8px rgba(18,59,80,.04); }
-        .compras-solicitacao-manual form label { display: flex; flex-direction: column; gap: 4px; min-width: 0; color: #123B50; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .025em; }
+        .compras-solicitacao-manual form label { display: flex; flex-direction: column; align-items: stretch; gap: 5px; min-width: 0; line-height: 1.3; color: #123B50; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .025em; }
+        .compras-solicitacao-manual .compras-cabecalho-grid { grid-template-columns: minmax(220px, 1.15fr) minmax(240px, 1.4fr) minmax(130px, .65fr) minmax(240px, 1.25fr) !important; align-items: start; }
+        .compras-solicitacao-manual .compras-cabecalho-grid input, .compras-solicitacao-manual .compras-cabecalho-grid select { width: 100%; max-width: none; min-width: 0; }
         .compras-solicitacao-manual form input:not([type="checkbox"]), .compras-solicitacao-manual form select { box-sizing: border-box; width: 100%; min-width: 0; max-width: 260px; height: 32px; padding: 0 8px; border: 1px solid #D8E4EA; border-radius: 0; background: #fff; color: #123B50; font-size: 11px; font-weight: 600; outline: none; }
         .compras-solicitacao-manual form input:focus, .compras-solicitacao-manual form select:focus, .compras-solicitacao-manual form textarea:focus { border-color: #48B7C7; }
         .compras-solicitacao-manual form textarea { box-sizing: border-box; border: 1px solid #D8E4EA; border-radius: 0; padding: 8px; font-size: 11px; color: #123B50; }
@@ -282,12 +284,19 @@ export default function SolicitacaoCompra() {
         .compras-solicitacao-manual .industrial-section-head span { font-size: 9px; font-weight: 900; letter-spacing: .1em; color: #2D8DB8; }
         .compras-solicitacao-manual .industrial-section-head h2 { margin-top: 3px; font-size: 12px; font-weight: 800; color: #123B50; }
         .compras-solicitacao-manual .crud-table-wrap { overflow-x: auto; }
-        .compras-solicitacao-manual table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .compras-solicitacao-manual table { width: 100%; min-width: 760px; table-layout: fixed; border-collapse: collapse; font-size: 11px; }
+        .compras-solicitacao-manual th:nth-child(1), .compras-solicitacao-manual td:nth-child(1) { width: 42%; }
+        .compras-solicitacao-manual th:nth-child(2), .compras-solicitacao-manual td:nth-child(2) { width: 10%; }
+        .compras-solicitacao-manual th:nth-child(3), .compras-solicitacao-manual td:nth-child(3) { width: 15%; }
+        .compras-solicitacao-manual th:nth-child(4), .compras-solicitacao-manual td:nth-child(4) { width: 23%; }
+        .compras-solicitacao-manual th:nth-child(5), .compras-solicitacao-manual td:nth-child(5) { width: 10%; }
         .compras-solicitacao-manual th { height: 28px; padding: 5px 8px; background: #EAF3F7; color: #123B50; text-align: left; font-size: 9px; font-weight: 900; text-transform: uppercase; border: 1px solid #D8E4EA; }
         .compras-solicitacao-manual td { padding: 5px 8px; border: 1px solid #D8E4EA; vertical-align: middle; }
-        .compras-solicitacao-manual td input, .compras-solicitacao-manual td select { max-width: none !important; }
+        .compras-solicitacao-manual td input, .compras-solicitacao-manual td select { box-sizing: border-box; width: 100%; max-width: none !important; min-width: 0; }
+        .compras-solicitacao-manual td select { text-overflow: ellipsis; }
         .compras-solicitacao-manual button { border-radius: 2px !important; }
-        @media (max-width: 640px) { .compras-solicitacao-manual { padding: 8px !important; } .compras-solicitacao-manual > section { padding: 9px !important; } }
+        @media (max-width: 1100px) { .compras-solicitacao-manual .compras-cabecalho-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
+        @media (max-width: 640px) { .compras-solicitacao-manual { padding: 8px !important; } .compras-solicitacao-manual > section { padding: 9px !important; } .compras-solicitacao-manual .compras-cabecalho-grid { grid-template-columns: minmax(0, 1fr) !important; } }
         @media print { .compras-solicitacao-manual .secondary-v2, .compras-solicitacao-manual .primary { display: none !important; } }
       `}</style>
 
@@ -313,6 +322,7 @@ export default function SolicitacaoCompra() {
       <section style={{ background: '#fff', border: '1px solid #dfe7e4', borderRadius: 14, padding: 20 }}>
         <form onSubmit={(event) => void save(event)}>
           <div
+            className="compras-cabecalho-grid"
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))',
