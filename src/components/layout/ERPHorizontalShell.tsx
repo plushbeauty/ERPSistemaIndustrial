@@ -266,6 +266,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                   <div className={`erp-windows-menu-row ${current?.label === menu.label ? 'is-active' : ''}`}>
                     <button type="button" className="erp-windows-menu-main" onClick={() => {
                       if (menu.action === 'pcpTablet') { setStartMenuOpen(false); openMenuItem(menu) }
+                      else if (menu.label === 'Qualidade') { go(menu.route) }
                       else if (hasChildren) { setOpenMenu(value => value === menu.label ? null : menu.label);  }
                       else { setStartMenuOpen(false); openMenuItem(menu) }
                     }}>
