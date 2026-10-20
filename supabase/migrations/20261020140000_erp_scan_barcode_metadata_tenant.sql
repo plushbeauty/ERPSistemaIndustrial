@@ -44,7 +44,7 @@ begin
     p.descricao_resumida,
     p.codigo_barras,
     p.referencia_interna,
-    coalesce(to_jsonb(p)->>'created_at', to_jsonb(p)->>'criado_em')
+    coalesce(to_jsonb(p)->>'created_at', to_jsonb(p)->>'criado_em') as data_criacao
   into v_produto
   from public.erp_produtos as p
   where p.empresa_id = v_empresa_id
@@ -66,7 +66,7 @@ begin
       'descricao', v_produto.descricao_resumida,
       'codigo_barras', v_produto.codigo_barras,
       'referencia_interna', v_produto.referencia_interna,
-      'data', v_produto.created_at
+      'data', v_produto.data_criacao
     );
   end if;
 
