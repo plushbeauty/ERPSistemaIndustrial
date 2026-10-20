@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabaseClient'
 
 type ScanResult = {
   tipo?: string
+  mensagem?: string
   id?: string
   codigo?: string | null
   nome?: string | null
@@ -18,7 +19,7 @@ function parseScanResult(value: unknown): ScanResult | null {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return null
   const record = value as Record<string, unknown>
   const result: ScanResult = {}
-  for (const key of ['tipo', 'id', 'codigo', 'nome', 'descricao', 'codigo_barras', 'referencia_interna', 'status', 'data'] as const) {
+  for (const key of ['tipo', 'id', 'codigo', 'nome', 'descricao', 'codigo_barras', 'referencia_interna', 'status', 'data', 'mensagem'] as const) {
     const field = record[key]
     if (typeof field === 'string' || field === null) result[key] = field
   }
@@ -48,6 +49,7 @@ export default function KioskConsultaRapida() {
       if (response.error) throw response.error
       const parsed = parseScanResult(response.data)
       if (!parsed) throw new Error('O banco não retornou metadados reconhecidos para esse código.')
+      if (parsed.tipo === 'nao_encontrado') throw new Error(parsed.mensagem || 'Código não localizado na empresa autenticada.')
       setResult(parsed)
     } catch (cause: unknown) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível consultar o código na empresa autenticada.')
