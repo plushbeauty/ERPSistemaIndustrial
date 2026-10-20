@@ -24,7 +24,7 @@
  */
 
 import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from 'react'
-import { Check, Plus, Printer, RefreshCw, Star, Trash2, Filter, Pencil } from 'lucide-react'
+import { Barcode, Check, Plus, Printer, RefreshCw, Star, Trash2, Filter, Pencil } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
@@ -43,11 +43,24 @@ const formatCnpj=(value:string)=>{const d=digits(value).slice(0,14);if(d.length<
 function isoValido(s:Supplier){return s.iso_9001_certificado&&(!s.iso_certificado_validade||s.iso_certificado_validade>=today())}
 function purchaseStatus(rows:Purchase[],supplierId:string){const open=rows.filter(x=>x.fornecedor_id===supplierId&&!['recebido','recebida','concluido','concluida','cancelado','cancelada','encerrado','encerrada'].includes(String(x.status||'').toLowerCase()));if(open.some(x=>x.data_prevista&&x.data_prevista<today()))return 'ATRASADO';if(open.length)return 'EM DIA';return 'SEM PEDIDOS'}
 export default function FornecedoresIndustrial(){
- const [empresaId,setEmpresaId]=useState(''),[rows,setRows]=useState<Supplier[]>([]),[purchases,setPurchases]=useState<Purchase[]>([]),[query,setQuery]=useState(''),[filterOpen,setFilterOpen]=useState(false),[statusFilter,setStatusFilter]=useState(''),[editing,setEditing]=useState<string|null>(null),[selected,setSelected]=useState<Supplier|null>(null),[form,setForm]=useState<Form>(empty),[file,setFile]=useState<File|null>(null),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
+ const [empresaId,setEmpresaId]=useState(''),[rows,setRows]=useState<Supplier[]>([]),[purchases,setPurchases]=useState<Purchase[]>([]),[query,setQuery]=useState(''),[barcodeQuery,setBarcodeQuery]=useState(''),[filterOpen,setFilterOpen]=useState(false),[statusFilter,setStatusFilter]=useState(''),[editing,setEditing]=useState<string|null>(null),[selected,setSelected]=useState<Supplier|null>(null),[form,setForm]=useState<Form>(empty),[file,setFile]=useState<File|null>(null),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
  const load=async()=>{setBusy(true);setError('');try{const {data:empresa,error:ee}=await supabase.rpc('erp_current_empresa_id');if(ee||!empresa)throw ee??new Error('Empresa da sessão não identificada.');const id=String(empresa);setEmpresaId(id);const [suppliers,orders]=await Promise.all([fetchAllPages<Supplier>((from:number,to:number)=>supabase.from('erp_fornecedores').select('*',{count:'exact'}).eq('empresa_id',id).order('razao_social').range(from,to)),fetchAllPages<Purchase>((from:number,to:number)=>supabase.from('erp_pedidos_compra').select('fornecedor_id,status,data_prevista',{count:'exact'}).eq('empresa_id',id).range(from,to))]);setRows(suppliers);setPurchases(orders)}catch(e){setError(e instanceof Error?e.message:'Não foi possível carregar fornecedores.')}finally{setBusy(false)}}
  useEffect(()=>{void load()},[])
  const statusOf=(r:Supplier)=>purchaseStatus(purchases,r.id)
  const filtered=useMemo(()=>rows.filter(r=>{const q=query.trim().toLowerCase();const text=`${r.razao_social} ${r.nome_fantasia??''} ${r.documento??''} ${r.codigo??''}`.toLowerCase();return (!q||text.includes(q))&&(!statusFilter||statusOf(r)===statusFilter)}),[rows,purchases,query,statusFilter])
+ const handleQuickScan=(value:string)=>{
+  setBarcodeQuery(value)
+  const scanned=digits(value)
+  if(scanned.length!==14)return
+  const match=rows.find(r=>digits(r.documento??'')===scanned)
+  if(match){
+   loadForm(match)
+   setQuery(match.razao_social)
+   setFilterOpen(true)
+   setMessage('Fornecedor localizado pelo CNPJ e carregado para conferência.')
+   setError('')
+  }
+ }
  const selectRow=(r:Supplier)=>{setSelected(r)}
  const loadForm=(r:Supplier)=>{setSelected(r);setEditing(r.id);setForm({codigo:r.codigo??'',razao_social:r.razao_social,nome_fantasia:r.nome_fantasia??'',documento:r.documento??'',email:r.email??'',telefone:r.telefone??'',endereco:r.endereco??'',cidade:r.cidade??'',estado:r.estado??'',contato:r.contato??'',iso_9001_certificado:r.iso_9001_certificado,iso_certificado_validade:r.iso_certificado_validade??'',iso_certificado_numero:r.iso_certificado_numero??'',observacoes:r.observacoes??''});setFile(null);setMessage('');setError('')}
  const openNew=()=>{setSelected(null);setEditing(null);setForm(empty);setFile(null);setMessage('');setError('')}
@@ -55,11 +68,11 @@ export default function FornecedoresIndustrial(){
  const save=async(e:FormEvent)=>{e.preventDefault();if(!empresaId)return;setBusy(true);setError('');setMessage('');try{if(!form.razao_social.trim())throw new Error('Informe a razão social.');const cnpj=digits(form.documento);if(cnpj&&cnpj.length!==14)throw new Error('CNPJ deve conter 14 dígitos.');if(form.iso_9001_certificado&&!file&&!editing&&!selected)throw new Error('Anexe o certificado ISO 9001.');let id=editing;const payload={empresa_id:empresaId,codigo:form.codigo.trim()||null,razao_social:form.razao_social.trim(),nome_fantasia:form.nome_fantasia.trim()||null,documento:cnpj||null,email:form.email.trim()||null,telefone:form.telefone.trim()||null,endereco:form.endereco.trim()||null,cidade:form.cidade.trim()||null,estado:form.estado.trim().toUpperCase()||null,contato:form.contato.trim()||null,iso_9001_certificado:form.iso_9001_certificado,iso_certificado_validade:form.iso_certificado_validade||null,iso_certificado_numero:form.iso_certificado_numero.trim()||null,observacoes:form.observacoes.trim()||null,updated_at:new Date().toISOString()};if(id){const {error:e}=await supabase.from('erp_fornecedores').update(payload).eq('id',id).eq('empresa_id',empresaId);if(e)throw e}else{const {data,error:e}=await supabase.from('erp_fornecedores').insert(payload).select('id').single();if(e||!data)throw e??new Error('Fornecedor não retornado pelo banco.');id=data.id}if(file&&id){const safe=file.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]/g,'_');const path=`${empresaId}/${id}/iso-9001-${Date.now()}-${safe}`;const upload=await supabase.storage.from('erp-fornecedor-certificados').upload(path,file,{upsert:true,contentType:file.type||'application/octet-stream'});if(upload.error)throw upload.error;const {error:e}=await supabase.from('erp_fornecedores').update({iso_certificado_nome:file.name,iso_certificado_path:path,iso_9001_certificado:true,updated_at:new Date().toISOString()}).eq('id',id).eq('empresa_id',empresaId);if(e)throw e}setMessage(editing?'Fornecedor atualizado.':'Fornecedor cadastrado.');await load()}catch(e){setError(e instanceof Error?e.message:'Não foi possível salvar o fornecedor.')}finally{setBusy(false)}}
  const remove=async()=>{if(!selected)return;if(!window.confirm(`Excluir o fornecedor ${selected.razao_social}?`))return;setBusy(true);try{const {error:e}=await supabase.from('erp_fornecedores').delete().eq('id',selected.id).eq('empresa_id',empresaId);if(e)throw e;setSelected(null);setMessage('Fornecedor excluído.');await load()}catch(e){setError(e instanceof Error?e.message:'Não foi possível excluir o fornecedor.')}finally{setBusy(false)}}
  const print=()=>window.print()
- return <VendasLayout title="" onRefresh={()=>void load()}>
-  <main style={{minHeight:'100vh',background:'#F4FBFD',color:'#111827',padding:10,boxSizing:'border-box'}}>
+ return <VendasLayout title="Homologação e Cadastro de Fornecedores" onRefresh={()=>void load()}>
+  <main className="supplier-page" style={{minHeight:'100vh',background:'#F4FBFD',color:'#111827',padding:10,boxSizing:'border-box'}}>
    <section style={{...panel,padding:0,marginBottom:7,overflow:'hidden'}}>
     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,flexWrap:'wrap',padding:9,background:'linear-gradient(115deg,#123B50 0%,#1C6387 45%,#2D8DB8 78%,#48B7C7 100%)',color:'#fff',boxShadow:'inset 0 1px 0 rgba(255,255,255,.22)'}}>
-      <div><div style={{fontSize:9,color:'#c9f2ff',fontWeight:800,letterSpacing:'.08em'}}>COMPRAS • CADASTRO MESTRE</div><h1 style={{margin:'2px 0',fontSize:16,color:'#fff',fontWeight:700}}>Fornecedores</h1><div style={{fontSize:9,color:'#e4f7ff'}}>Cadastro, qualificação, documentos e desempenho de entrega.</div></div>
+      <div><div style={{fontSize:9,color:'#c9f2ff',fontWeight:800,letterSpacing:'.08em'}}>COMPRAS • SUPRIMENTOS • COMPLIANCE</div><h1 style={{margin:'2px 0',fontSize:16,color:'#fff',fontWeight:700}}>Homologação e Cadastro de Fornecedores</h1><div style={{fontSize:9,color:'#e4f7ff'}}>Cadastro mestre, qualificação ISO 9001, documentos e desempenho de entrega.</div></div>
       <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
        <button type="button" style={button('primary')} onClick={openNew}><Plus size={12}/>NOVO</button>
        <button type="button" className="erp-edit-button" style={button(selected?'normal':'disabled')} disabled={!selected} onClick={openEdit}><Pencil size={12}/>EDITAR</button>
@@ -69,6 +82,10 @@ export default function FornecedoresIndustrial(){
        <button type="button" style={button('normal')} onClick={print}><Printer size={12}/>IMPRIMIR</button>
       </div>
     </div>
+   </section>
+   <section style={{...panel,padding:8,marginBottom:7,display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,flexWrap:'wrap'}}>
+    <div style={{display:'flex',alignItems:'center',gap:7,minWidth:0}}><Barcode size={15} color="#2D8DB8"/><div><div style={{fontSize:9,fontWeight:700,color:'#123B50'}}>CONSULTA RÁPIDA • LEITOR DE CÓDIGO</div><div style={{fontSize:8,color:'#667085'}}>Bipe ou digite o CNPJ para localizar o cadastro existente.</div></div></div>
+    <input aria-label="Consulta rápida por CNPJ" inputMode="numeric" value={barcodeQuery} onChange={e=>handleQuickScan(e.target.value)} placeholder="CNPJ do fornecedor" style={{...input,width:'100%',maxWidth:260,fontFamily:'ui-monospace,monospace',borderColor:'#48B7C7',background:'#F4FBFD'}}/>
    </section>
    {filterOpen&&<section style={{...panel,padding:8,marginBottom:7,display:'grid',gridTemplateColumns:'minmax(260px,1fr) 150px auto',gap:7,alignItems:'end'}}>
     <label style={label}>PESQUISAR FORNECEDOR / CNPJ / CÓDIGO<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Digite para localizar" style={input}/></label>
