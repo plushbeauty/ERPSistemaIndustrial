@@ -1,11 +1,11 @@
 /**
  * SYNQRA ERP — CHANGELOG DE GOVERNANÇA
- * REVISÃO: 0.1 | DATA: 16/10/2026
+ * REVISÃO: 0.2 | DATA: 20/10/2026
  * ID: #AUDIT-ERP-20261016-14
  * ESCOPO: src/pages/FornecedoresIndustrial.tsx
  * REVISADO: persistência em public.erp_fornecedores, RLS por empresa, certificado ISO em bucket privado,
  * pesquisa/filtro, geometria de campos e imports/estado/funções não utilizados.
- * ALTERAÇÕES: remove código morto; adiciona classes dimensionais em ch e trava de flex no wrapper;
+ * ALTERAÇÕES: controles de edição padronizados em 36px (h-9); mantém persistência, RLS e campos existentes;
  * preserva schema real, VendasLayout, autenticação e filtro empresa_id.
  * VALIDAÇÃO: pipeline será disparado pelo commit; type-check/build local e teste visual ainda não executados.
  * NOTA: schema verificado não possui colunas inscrição_estadual/condicao_pagto nem tabela de condições;
@@ -33,7 +33,7 @@ type Supplier={id:string;codigo:string|null;razao_social:string;nome_fantasia:st
 type Purchase={fornecedor_id:string;status:string|null;data_prevista:string|null}
 type Form={codigo:string;razao_social:string;nome_fantasia:string;documento:string;email:string;telefone:string;endereco:string;cidade:string;estado:string;contato:string;iso_9001_certificado:boolean;iso_certificado_validade:string;iso_certificado_numero:string;observacoes:string}
 const empty:Form={codigo:'',razao_social:'',nome_fantasia:'',documento:'',email:'',telefone:'',endereco:'',cidade:'',estado:'',contato:'',iso_9001_certificado:false,iso_certificado_validade:'',iso_certificado_numero:'',observacoes:''}
-const input:React.CSSProperties={width:'100%',height:28,border:'1px solid #b9c9d4',borderRadius:2,padding:'0 6px',boxSizing:'border-box',background:'#fff',color:'#111827',fontSize:9}
+const input:React.CSSProperties={width:'100%',height:36,border:'1px solid #b9c9d4',borderRadius:2,padding:'0 6px',boxSizing:'border-box',background:'#fff',color:'#111827',fontSize:9}
 const label:React.CSSProperties={display:'grid',gap:1,fontSize:8,fontWeight:500,textTransform:'uppercase',color:'#344054'}
 const panel:React.CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2}
 const button=(kind:'primary'|'normal'|'danger'|'disabled'):React.CSSProperties=>({height:30,display:'inline-flex',alignItems:'center',justifyContent:'center',gap:5,border:'1px solid '+(kind==='primary'?'#2D8DB8':kind==='danger'?'#d65b61':'#b9c9d4'),borderRadius:2,padding:'0 8px',fontSize:9,fontWeight:600,cursor:kind==='disabled'?'not-allowed':'pointer',background:kind==='primary'?'#2D8DB8':kind==='danger'?'#fff5f5':'#fff',color:kind==='primary'?'#fff':kind==='danger'?'#b42318':'#123B50',opacity:kind==='disabled'?0.5:1})
