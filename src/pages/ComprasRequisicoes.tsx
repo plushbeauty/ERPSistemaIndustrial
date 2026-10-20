@@ -1,15 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Printer, ShoppingCart } from 'lucide-react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { Barcode, Printer, RefreshCw, ShoppingCart } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
 import VendasLayout from './VendasLayout'
 
-type Requisition = { id: string; codigo: string; ordem_producao_id: string | null; status: string }
+type Requisition = { id: string; codigo: string; ordem_producao_id: string | null; status: string; lote_destino_op?: string | null }
 type Item = { id: string; requisicao_id: string; produto_id: string; quantidade: number; fornecedor_id: string | null; status: string }
 type Product = { id: string; codigo: string; nome: string; descricao: string | null; estoque_atual: number }
 type Supplier = { id: string; codigo: string | null; razao_social: string; nome_fantasia: string | null }
 type ProductionOrder = { id: string; numero_op: string | null; numero: string | null }
+type Machine = { id: string; codigo: string; nome: string }
+type Machine = { id: string; codigo: string; nome: string }
 
 const PAGE_SIZE = 25
 
@@ -20,6 +22,14 @@ export default function ComprasRequisicoes() {
   const [products, setProducts] = useState<Product[]>([])
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [productionOrders, setProductionOrders] = useState<LookupRecord[]>([])
+  const [barcodeQuery, setBarcodeQuery] = useState('')
+  const [barcodeMessage, setBarcodeMessage] = useState('')
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [machines, setMachines] = useState<Machine[]>([])
+  const [requestForm, setRequestForm] = useState({ productId: '', quantity: '1', unit: 'UN', orderId: '', dueDate: '', supplierId: '', lotDestination: '', machineId: '', costCenter: 'PRODUCAO', priority: 'MEDIA', justification: '', buyerName: '' })
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [machines, setMachines] = useState<Machine[]>([])
+  const [requestForm, setRequestForm] = useState({ productId: '', quantity: '1', unit: 'UN', orderId: '', dueDate: '', supplierId: '', lotDestination: '', machineId: '', costCenter: 'PRODUCAO', priority: 'MEDIA', justification: '', buyerName: '' })
   const [selectedOrder, setSelectedOrder] = useState('')
   const [selectedRequisitions, setSelectedRequisitions] = useState<Set<string>>(new Set())
   const [page, setPage] = useState(1)
@@ -36,7 +46,7 @@ export default function ComprasRequisicoes() {
       const id = String(company.data)
       const [requestRows, itemRows, productRows, supplierRows, orderRows] = await Promise.all([
         fetchAllPages<Requisition>((from, to) => supabase.from('erp_requisicoes_compra')
-          .select('id,codigo,ordem_producao_id,status', { count: 'exact' })
+          .select('id,codigo,ordem_producao_id,status,lote_destino_op', { count: 'exact' })
           .eq('empresa_id', id).order('created_at', { ascending: false }).range(from, to)),
         fetchAllPages<Item>((from, to) => supabase.from('erp_requisicoes_compra_itens')
           .select('id,requisicao_id,produto_id,quantidade,fornecedor_id,status', { count: 'exact' })
@@ -51,6 +61,10 @@ export default function ComprasRequisicoes() {
           .select('id,numero_op,numero', { count: 'exact' })
           .eq('empresa_id', id).order('created_at', { ascending: false }).range(from, to)),
       ])
+      const machineRows = await fetchAllPages<Machine>((from, to) => supabase.from('erp_maquinas').select('id,codigo,nome', { count: 'exact' }).eq('empresa_id', id).eq('ativo', true).order('codigo').range(from, to))
+      setMachines(machineRows)
+      const machineRows = await fetchAllPages<Machine>((from, to) => supabase.from('erp_maquinas').select('id,codigo,nome', { count: 'exact' }).eq('empresa_id', id).eq('ativo', true).order('codigo').range(from, to))
+      setMachines(machineRows)
       setCompanyId(id)
       setRequisitions(requestRows)
       setItems(itemRows)
@@ -71,6 +85,34 @@ export default function ComprasRequisicoes() {
   }
 
   useEffect(() => { void load() }, [])
+
+  async function createRequest(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setBusy(true); setError(''); setMessage('')
+    try {
+      const quantity = Number(requestForm.quantity)
+      if (!requestForm.productId || !Number.isFinite(quantity) || quantity <= 0 || !requestForm.unit.trim() || !requestForm.justification.trim()) throw new Error('Informe material, quantidade, unidade comercial e justificativa.')
+      const result = await supabase.rpc('erp_compras_criar_requisicao_pcp', { p_produto_id: requestForm.productId, p_quantidade: quantity, p_unidade_comercial: requestForm.unit.trim().toUpperCase(), p_ordem_producao_id: requestForm.orderId || null, p_data_limite: requestForm.dueDate || null, p_fornecedor_id: requestForm.supplierId || null, p_lote_destino_op: requestForm.lotDestination.trim() || null, p_maquina_recurso_id: requestForm.machineId || null, p_centro_custo: requestForm.costCenter, p_urgencia_prioridade: requestForm.priority, p_justificativa_uso: requestForm.justification.trim(), p_comprador_nome: requestForm.buyerName.trim() || null })
+      if (result.error) throw result.error
+      const data = result.data as { codigo?: string } | null
+      setMessage('Requisição ' + String(data?.codigo ?? '') + ' criada e confirmada pelo banco.')
+      setRequestForm({ productId: '', quantity: '1', unit: 'UN', orderId: '', dueDate: '', supplierId: '', lotDestination: '', machineId: '', costCenter: 'PRODUCAO', priority: 'MEDIA', justification: '', buyerName: '' })
+      setShowCreateForm(false); await load()
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao criar requisição de compra.') } finally { setBusy(false) }
+  }
+
+  async function createRequest(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setBusy(true); setError(''); setMessage('')
+    try {
+      const quantity = Number(requestForm.quantity)
+      if (!requestForm.productId || !Number.isFinite(quantity) || quantity <= 0 || !requestForm.unit.trim() || !requestForm.justification.trim()) throw new Error('Informe material, quantidade, unidade comercial e justificativa.')
+      const result = await supabase.rpc('erp_compras_criar_requisicao_pcp', { p_produto_id: requestForm.productId, p_quantidade: quantity, p_unidade_comercial: requestForm.unit.trim().toUpperCase(), p_ordem_producao_id: requestForm.orderId || null, p_data_limite: requestForm.dueDate || null, p_fornecedor_id: requestForm.supplierId || null, p_lote_destino_op: requestForm.lotDestination.trim() || null, p_maquina_recurso_id: requestForm.machineId || null, p_centro_custo: requestForm.costCenter, p_urgencia_prioridade: requestForm.priority, p_justificativa_uso: requestForm.justification.trim(), p_comprador_nome: requestForm.buyerName.trim() || null })
+      if (result.error) throw result.error
+      const data = result.data as { codigo?: string } | null
+      setMessage('Requisição ' + String(data?.codigo ?? '') + ' criada e confirmada pelo banco.')
+      setRequestForm({ productId: '', quantity: '1', unit: 'UN', orderId: '', dueDate: '', supplierId: '', lotDestination: '', machineId: '', costCenter: 'PRODUCAO', priority: 'MEDIA', justification: '', buyerName: '' })
+      setShowCreateForm(false); await load()
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Falha ao criar requisição de compra.') } finally { setBusy(false) }
+  }
 
   const visibleItems = useMemo(() => items.filter(item => {
     const request = requisitions.find(entry => entry.id === item.requisicao_id)
@@ -124,11 +166,11 @@ export default function ComprasRequisicoes() {
 
   return (
     <VendasLayout title="Requisições de compra" subtitle="PCP • MRP • materiais • cotação" onRefresh={() => void load()}>
-    <main className="min-h-screen bg-slate-100 p-5 text-slate-900">
-      <header className="mx-auto flex max-w-[1800px] flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
+    <main className="min-h-screen bg-[#F4F7F9] p-3 text-[#123B50] sm:p-4">
+      <header className="mx-auto flex max-w-[1800px] flex-wrap items-center justify-between gap-3 border-b border-[#D8E4EA] bg-gradient-to-r from-[#123B50] to-[#0E1E2F] px-4 py-3 text-[#F4FBFD] shadow-sm">
         <div>
-          <p className="text-sm font-bold text-sky-700">COMPRAS &gt; REQUISIÇÕES MRP</p>
-          <h1 className="text-xl font-bold text-slate-950">Gestão de Compras e Suprimentos Industriais</h1>
+          <p className="text-[9px] font-black tracking-widest text-[#48B7C7]">COMPRAS &gt; REQUISIÇÕES MRP</p>
+          <h1 className="text-base font-black text-[#F4FBFD]">Gestão de Compras e Suprimentos Industriais</h1>
         </div>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={() => void forwardSelected()} disabled={busy || selectedRequisitions.size === 0} className="min-h-11 rounded-md bg-slate-900 px-5 py-3 font-bold text-white disabled:opacity-50">
@@ -141,13 +183,52 @@ export default function ComprasRequisicoes() {
 
       {(error || message) && <div role={error ? 'alert' : 'status'} className={`mx-auto mt-4 max-w-[1800px] rounded-md border p-4 font-bold ${error ? 'border-rose-200 bg-rose-50 text-rose-900' : 'border-emerald-200 bg-emerald-50 text-emerald-900'}`}>{error || message}</div>}
 
-      <section className="mx-auto mt-5 max-w-[1800px] rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="max-w-xl">
+      <section className="mx-auto mt-3 max-w-[1800px] border border-[#D8E4EA] bg-white p-3 shadow-sm">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#D8E4EA] pb-2"><div><p className="text-[9px] font-black uppercase tracking-widest text-[#2D8DB8]">PCP / Suprimentos</p><h2 className="text-sm font-black">Abertura de requisição de compra</h2></div><button type="button" onClick={() => setShowCreateForm(v => !v)} className="h-8 bg-[#2D8DB8] px-3 text-xs font-black text-white">{showCreateForm ? 'Fechar formulário' : '+ Nova requisição'}</button></div>
+        {showCreateForm && <form onSubmit={createRequest} className="mb-4 border border-[#D8E4EA] bg-[#F4F7F9] p-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Material<select required value={requestForm.productId} onChange={e => setRequestForm(v => ({...v,productId:e.target.value}))} className="h-8 w-full max-w-[240px] border border-[#D8E4EA] bg-white px-2 text-xs"><option value="">Selecione…</option>{products.map(p => <option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Quantidade<input required type="number" min="0.001" step="0.001" value={requestForm.quantity} onChange={e => setRequestForm(v => ({...v,quantity:e.target.value}))} className="h-8 w-full max-w-[140px] border border-[#D8E4EA] px-2 text-xs font-mono"/></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Unidade comercial<input required maxLength={20} value={requestForm.unit} onChange={e => setRequestForm(v => ({...v,unit:e.target.value}))} className="h-8 w-full max-w-[140px] border border-[#D8E4EA] px-2 text-xs uppercase" placeholder="UN, KG, M"/></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Ordem de produção<select value={requestForm.orderId} onChange={e => setRequestForm(v => ({...v,orderId:e.target.value}))} className="h-8 w-full max-w-[240px] border border-[#D8E4EA] bg-white px-2 text-xs"><option value="">Sem vínculo</option>{productionOrders.map(o => <option key={o.id} value={o.id}>{o.codigo}</option>)}</select></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Lote mestre destino<input maxLength={100} value={requestForm.lotDestination} onChange={e => setRequestForm(v => ({...v,lotDestination:e.target.value}))} className="h-8 w-full max-w-[240px] border border-[#D8E4EA] px-2 text-xs font-mono"/></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Máquina / recurso<select value={requestForm.machineId} onChange={e => setRequestForm(v => ({...v,machineId:e.target.value}))} className="h-8 w-full max-w-[240px] border border-[#D8E4EA] bg-white px-2 text-xs"><option value="">Sem vínculo</option>{machines.map(m => <option key={m.id} value={m.id}>{m.codigo} — {m.nome}</option>)}</select></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Centro de custo<select value={requestForm.costCenter} onChange={e => setRequestForm(v => ({...v,costCenter:e.target.value}))} className="h-8 w-full max-w-[240px] border border-[#D8E4EA] bg-white px-2 text-xs"><option value="PRODUCAO">Produção</option><option value="MANUTENCAO">Manutenção / setup</option><option value="QUALIDADE">Qualidade / SGQ</option><option value="ADMINISTRATIVO">Administrativo</option></select></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Prioridade<select value={requestForm.priority} onChange={e => setRequestForm(v => ({...v,priority:e.target.value}))} className="h-8 w-full max-w-[240px] border border-[#D8E4EA] bg-white px-2 text-xs"><option value="BAIXA">Baixa</option><option value="MEDIA">Média</option><option value="ALTA">Alta</option><option value="CRITICA">Crítica / parada</option></select></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Fornecedor sugerido<select value={requestForm.supplierId} onChange={e => setRequestForm(v => ({...v,supplierId:e.target.value}))} className="h-8 w-full max-w-[240px] border border-[#D8E4EA] bg-white px-2 text-xs"><option value="">Não definido</option>{suppliers.map(x => <option key={x.id} value={x.id}>{x.nome_fantasia || x.razao_social}</option>)}</select></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Data limite<input type="date" value={requestForm.dueDate} onChange={e => setRequestForm(v => ({...v,dueDate:e.target.value}))} className="h-8 w-full max-w-[180px] border border-[#D8E4EA] bg-white px-2 text-xs"/></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Solicitante<input maxLength={120} value={requestForm.buyerName} onChange={e => setRequestForm(v => ({...v,buyerName:e.target.value}))} className="h-8 w-full max-w-[240px] border border-[#D8E4EA] px-2 text-xs"/></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase sm:col-span-2 lg:col-span-4">Justificativa técnica<textarea required maxLength={2000} rows={2} value={requestForm.justification} onChange={e => setRequestForm(v => ({...v,justification:e.target.value}))} className="w-full border border-[#D8E4EA] bg-white p-2 text-xs font-medium"/></label>
+          </div><div className="mt-3 flex justify-end gap-2"><button type="button" onClick={() => setShowCreateForm(false)} className="h-8 border border-[#D8E4EA] bg-white px-3 text-xs">Cancelar</button><button type="submit" disabled={busy} className="h-8 bg-[#123B50] px-3 text-xs font-black text-white disabled:opacity-50">{busy ? 'Gravando…' : 'Gravar requisição'}</button></div>
+        </form>}
+
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#D8E4EA] pb-2"><div><p className="text-[9px] font-black uppercase tracking-widest text-[#2D8DB8]">PCP / Suprimentos</p><h2 className="text-sm font-black">Abertura de requisição de compra</h2></div><button type="button" onClick={() => setShowCreateForm(v => !v)} className="h-8 bg-[#2D8DB8] px-3 text-xs font-black text-white">{showCreateForm ? 'Fechar formulário' : '+ Nova requisição'}</button></div>
+        {showCreateForm && <form onSubmit={createRequest} className="mb-4 border border-[#D8E4EA] bg-[#F4F7F9] p-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Material<select required value={requestForm.productId} onChange={e => setRequestForm(v => ({...v,productId:e.target.value}))} className="h-8 w-full max-w-[240px] border border-[#D8E4EA] bg-white px-2 text-xs"><option value="">Selecione…</option>{products.map(p => <option key={p.id} value={p.id}>{p.codigo} — {p.nome}</option>)}</select></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Quantidade<input required type="number" min="0.001" step="0.001" value={requestForm.quantity} onChange={e => setRequestForm(v => ({...v,quantity:e.target.value}))} className="h-8 w-full max-w-[140px] border border-[#D8E4EA] px-2 text-xs font-mono"/></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Unidade comercial<input required maxLength={20} value={requestForm.unit} onChange={e => setRequestForm(v => ({...v,unit:e.target.value}))} className="h-8 w-full max-w-[140px] border border-[#D8E4EA] px-2 text-xs uppercase" placeholder="UN, KG, M"/></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Ordem de produção<select value={requestForm.orderId} onChange={e => setRequestForm(v => ({...v,orderId:e.target.value}))} className="h-8 w-full max-w-[240px] border border-[#D8E4EA] bg-white px-2 text-xs"><option value="">Sem vínculo</option>{productionOrders.map(o => <option key={o.id} value={o.id}>{o.codigo}</option>)}</select></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Lote mestre destino<input maxLength={100} value={requestForm.lotDestination} onChange={e => setRequestForm(v => ({...v,lotDestination:e.target.value}))} className="h-8 w-full max-w-[240px] border border-[#D8E4EA] px-2 text-xs font-mono"/></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Máquina / recurso<select value={requestForm.machineId} onChange={e => setRequestForm(v => ({...v,machineId:e.target.value}))} className="h-8 w-full max-w-[240px] border border-[#D8E4EA] bg-white px-2 text-xs"><option value="">Sem vínculo</option>{machines.map(m => <option key={m.id} value={m.id}>{m.codigo} — {m.nome}</option>)}</select></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Centro de custo<select value={requestForm.costCenter} onChange={e => setRequestForm(v => ({...v,costCenter:e.target.value}))} className="h-8 w-full max-w-[240px] border border-[#D8E4EA] bg-white px-2 text-xs"><option value="PRODUCAO">Produção</option><option value="MANUTENCAO">Manutenção / setup</option><option value="QUALIDADE">Qualidade / SGQ</option><option value="ADMINISTRATIVO">Administrativo</option></select></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Prioridade<select value={requestForm.priority} onChange={e => setRequestForm(v => ({...v,priority:e.target.value}))} className="h-8 w-full max-w-[240px] border border-[#D8E4EA] bg-white px-2 text-xs"><option value="BAIXA">Baixa</option><option value="MEDIA">Média</option><option value="ALTA">Alta</option><option value="CRITICA">Crítica / parada</option></select></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Fornecedor sugerido<select value={requestForm.supplierId} onChange={e => setRequestForm(v => ({...v,supplierId:e.target.value}))} className="h-8 w-full max-w-[240px] border border-[#D8E4EA] bg-white px-2 text-xs"><option value="">Não definido</option>{suppliers.map(x => <option key={x.id} value={x.id}>{x.nome_fantasia || x.razao_social}</option>)}</select></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Data limite<input type="date" value={requestForm.dueDate} onChange={e => setRequestForm(v => ({...v,dueDate:e.target.value}))} className="h-8 w-full max-w-[180px] border border-[#D8E4EA] bg-white px-2 text-xs"/></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase">Solicitante<input maxLength={120} value={requestForm.buyerName} onChange={e => setRequestForm(v => ({...v,buyerName:e.target.value}))} className="h-8 w-full max-w-[240px] border border-[#D8E4EA] px-2 text-xs"/></label>
+            <label className="flex flex-col gap-1 text-[9px] font-black uppercase sm:col-span-2 lg:col-span-4">Justificativa técnica<textarea required maxLength={2000} rows={2} value={requestForm.justification} onChange={e => setRequestForm(v => ({...v,justification:e.target.value}))} className="w-full border border-[#D8E4EA] bg-white p-2 text-xs font-medium"/></label>
+          </div><div className="mt-3 flex justify-end gap-2"><button type="button" onClick={() => setShowCreateForm(false)} className="h-8 border border-[#D8E4EA] bg-white px-3 text-xs">Cancelar</button><button type="submit" disabled={busy} className="h-8 bg-[#123B50] px-3 text-xs font-black text-white disabled:opacity-50">{busy ? 'Gravando…' : 'Gravar requisição'}</button></div>
+        </form>}
+
+        <form onSubmit={event => { event.preventDefault(); const term = barcodeQuery.trim().toLowerCase(); const hit = requisitions.find(request => request.codigo.toLowerCase() === term || String(request.lote_destino_op ?? '').toLowerCase() === term); setBarcodeMessage(hit ? `Leitura confirmada: ${hit.codigo}` : 'Código/lote não localizado.'); if (hit) { setSelectedOrder(hit.ordem_producao_id ?? ''); setPage(1) } }} className="mb-3 flex flex-wrap items-end gap-2 border-b border-[#D8E4EA] pb-3">
+          <label className="flex min-w-[240px] flex-1 flex-col gap-1 text-[9px] font-black uppercase tracking-widest text-[#2D8DB8]"><span><Barcode className="mr-1 inline" size={13}/>Kiosk de consulta rápida • bipe de requisição/lote</span><input value={barcodeQuery} onChange={event => setBarcodeQuery(event.target.value)} placeholder="Leia código de barras ou digite código/lote" className="h-8 w-full max-w-[320px] rounded-none border border-[#48B7C7] bg-[#F4FBFD] px-2 text-xs font-mono font-bold text-[#123B50] outline-none" /></label><button type="submit" className="h-8 bg-[#123B50] px-3 text-xs font-bold text-white">Consultar</button>{barcodeMessage && <span role="status" className="text-xs font-bold text-[#2D8DB8]">{barcodeMessage}</span>}
+        </form>
+        <div className="max-w-[240px]">
           <EntityCodeLookup label="FILTRAR PENDÊNCIAS POR OP" value={selectedOrder} records={productionOrders} onChange={value => { setSelectedOrder(value); setPage(1) }} onSelect={record => { setSelectedOrder(record.id); setPage(1) }}/>
         </div>
         <div className="mt-5 overflow-x-auto">
-          <table className="w-full min-w-[1050px] border-collapse text-sm">
-            <thead className="bg-slate-900 text-left text-white"><tr>
+          <table className="w-full min-w-[1050px] border-collapse text-xs">
+            <thead className="bg-gradient-to-r from-[#123B50] to-[#0E1E2F] text-left text-[#F4FBFD]"><tr>
               <th className="h-12 px-4"><span className="sr-only">Selecionar</span></th>
               <th className="px-4">Requisição</th><th className="px-4">Ordem</th><th className="px-4">Insumo</th><th className="px-4">Quantidade</th><th className="px-4">Fornecedor indicado</th><th className="px-4">Status</th>
             </tr></thead>
