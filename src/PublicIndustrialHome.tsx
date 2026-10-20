@@ -1,4 +1,10 @@
 /**
+ * @DATA_REVISAO_APROVACAO: 2026-10-20
+ * @NOME_SISTEMA: SYSNQRA ERP & SGQ INDUSTRIAL
+ * @STATUS_APROVACAO: PORTAL-HOME-PREMIUM-FULLSCREEN-TRAVADO-OK
+ * Escopo: somente a página pública principal; CSS antigo removido e estilos isolados em .sgq-public-home.
+ */
+/**
  * APROVADO — página pública restaurada do arquivo enviado em 2026-10-18.
  * Não alterar hero, carrossel, acessibilidade ou planos sem autorização expressa.
  */
@@ -83,8 +89,7 @@ export default function PublicIndustrialHome(){
  const featured=useMemo(()=>modules.slice(0,7),[])
  return <main className="sgq-public-home">
   <style>{`
-:root{color-scheme:light}
-.sgq-public-home{--ink:#123B50;--muted:#617985;--line:#d7e5eb;--brand:#2D8DB8;--deep:#123B50;--aqua:#48B7C7;--green:#3A9D78;--gold:#E6A34A;min-height:100vh;background:#F4FBFD;color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:clip}
+.sgq-public-home{color-scheme:light;--ink:#123B50;--muted:#617985;--line:#d7e5eb;--brand:#2D8DB8;--deep:#123B50;--aqua:#48B7C7;--green:#3A9D78;--gold:#E6A34A;min-height:100vh;background:#F4FBFD;color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:clip}
 .sgq-public-home *{box-sizing:border-box}.sgq-public-home a{text-decoration:none;color:inherit}
 .sgq-nav{position:relative;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:18px;height:64px;padding:0 clamp(14px,3vw,42px);background:#123B50;border-bottom:1px solid rgba(255,255,255,.16)}
 .sgq-brand{display:flex;align-items:center;min-width:0}.sgq-brand img{display:block;width:205px;height:58px;object-fit:contain;object-position:left center}
