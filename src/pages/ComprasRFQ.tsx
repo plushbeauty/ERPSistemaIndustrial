@@ -354,8 +354,6 @@ export default function ComprasRFQ() {
               </label>
               <label className="col-span-12 text-xs sm:col-span-6 lg:col-span-4">
                 Prazo para resposta
-              <label className="text-xs">
-                Prazo para resposta
                 <input type="date" value={responseDate} onChange={event => setResponseDate(event.target.value)} className="mt-1 h-9 w-full rounded border px-3" />
               </label>
               <label className="col-span-12 text-xs sm:col-span-6 lg:col-span-4">
