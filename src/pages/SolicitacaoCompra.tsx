@@ -289,7 +289,7 @@ export default function SolicitacaoCompra() {
         .compras-solicitacao-manual button { border-radius: 2px !important; }
         @media (max-width: 640px) { .compras-solicitacao-manual { padding: 8px !important; } .compras-solicitacao-manual > section { padding: 9px !important; } }
         @media print { .compras-solicitacao-manual .secondary-v2, .compras-solicitacao-manual .primary { display: none !important; } }
-      `} />
+      `}</style>
 
       <header style={{ marginBottom: 22 }}>
         <span className="v2-eyebrow">COMPRAS • SOLICITAÇÃO INTERNA</span>
