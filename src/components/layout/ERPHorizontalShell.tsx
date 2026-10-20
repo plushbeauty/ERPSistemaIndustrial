@@ -1,3 +1,8 @@
+/**
+ * @DATA_REVISAO_APROVACAO: 2026-10-20
+ * @NOME_SISTEMA: SYSNQRA ERP & SGQ INDUSTRIAL
+ * @REVISAO: Menu inicial em grade responsiva; preserva rotas, sessão, ajuda e modais de tablet.
+ */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -267,37 +272,45 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           </button>
           {startMenuOpen && <section className="erp-windows-start-menu" aria-label="Menu principal do ERP">
             <div className="erp-windows-start-heading">
-              <div><strong>SGQERP INDUSTRIAL</strong><small>Menu de módulos</small></div>
-              <button type="button" aria-label="Fechar menu" onClick={() => setStartMenuOpen(false)}><X size={14} /></button>
+              <div><strong>SYSNQRA ERP &amp; SGQ INDUSTRIAL</strong><small>Módulos de navegação</small></div>
+              <button type="button" aria-label="Fechar menu" onClick={() => { setStartMenuOpen(false); setOpenMenu(null) }}><X size={14} /></button>
             </div>
             <label className="erp-windows-menu-search">
               <Search size={14} />
-              <input value={moduleSearch} onChange={event => setModuleSearch(event.target.value)} placeholder="Pesquisar módulo ou rotina..." aria-label="Pesquisar módulo ou rotina" />
-              {moduleSearch && <button type="button" aria-label="Limpar pesquisa" onClick={() => setModuleSearch('')}><X size={12} /></button>}
+              <input value={moduleSearch} onChange={event => { setModuleSearch(event.target.value); setOpenMenu(null) }} placeholder="Pesquisar módulo ou rotina..." aria-label="Pesquisar módulo ou rotina" />
+              {moduleSearch && <button type="button" aria-label="Limpar pesquisa" onClick={() => { setModuleSearch(''); setOpenMenu(null) }}><X size={12} /></button>}
             </label>
-            <div className="erp-windows-menu-list">
+            <div className="erp-windows-menu-list" role="list" aria-label="Módulos">
               {searchedMenus.map(menu => {
                 const Icon = menu.icon ?? Home
                 const hasChildren = Boolean(menu.children?.length)
-                const expanded = openMenu === menu.label || Boolean(normalizedSearch && menu.children?.length)
-                return <div className="erp-windows-menu-group" key={menu.label}>
-                  <div className={`erp-windows-menu-row ${current?.label === menu.label ? 'is-active' : ''}`}>
-                    <button type="button" className="erp-windows-menu-main" onClick={() => {
-                      if (menu.action === 'qualityTablet' || menu.action === 'pcpTablet') { setStartMenuOpen(false); openMenuItem(menu) }
-                      else if (hasChildren) { setOpenMenu(value => value === menu.label ? null : menu.label);  }
-                      else { setStartMenuOpen(false); openMenuItem(menu) }
-                    }}>
-                      <Icon size={16} /><span>{menu.label}</span>
-                    </button>
-                    {hasChildren && <button type="button" className="erp-windows-menu-expand" aria-label={`Expandir ${menu.label}`} aria-expanded={expanded} onClick={() => { setOpenMenu(value => value === menu.label ? null : menu.label);  }}>{expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}</button>}
-                  </div>
-                  {hasChildren && expanded && <div className="erp-windows-menu-children">
-                    {menu.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || menu.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => <button type="button" key={child.label + child.route} className={pathname === child.route ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); if (child.action) openMenuItem(child); else go(child.route) }}>{child.label}</button>)}
-                  </div>}
+                const expanded = openMenu === menu.label
+                const active = current?.label === menu.label || pathname === menu.route
+                return <div className={`erp-windows-menu-group ${active ? 'is-active' : ''} ${expanded ? 'is-expanded' : ''}`} key={menu.label}>
+                  <button type="button" className="erp-windows-menu-tile" aria-expanded={hasChildren ? expanded : undefined} onClick={() => {
+                    if (menu.action === 'qualityTablet' || menu.action === 'pcpTablet' || !hasChildren) {
+                      openMenuItem(menu)
+                    } else {
+                      setOpenMenu(value => value === menu.label ? null : menu.label)
+                    }
+                  }}>
+                    <Icon size={19} aria-hidden="true" />
+                    <span>{menu.label}</span>
+                    {hasChildren && <span className="erp-windows-tile-chevron" aria-hidden="true">{expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}</span>}
+                  </button>
                 </div>
               })}
               {searchedMenus.length === 0 && <p className="erp-windows-no-results">Nenhum módulo ou rotina encontrado.</p>}
             </div>
+            {openMenu && searchedMenus.find(menu => menu.label === openMenu)?.children?.length ? <div className="erp-windows-subroutes">
+              <div className="erp-windows-subroutes-heading">
+                <strong>{openMenu}</strong>
+                <button type="button" aria-label="Fechar subrotas" onClick={() => setOpenMenu(null)}><X size={12} /></button>
+              </div>
+              <div className="erp-windows-subroutes-grid">
+                {searchedMenus.find(menu => menu.label === openMenu)?.children?.filter(child => !normalizedSearch || child.label.toLocaleLowerCase('pt-BR').includes(normalizedSearch) || openMenu.toLocaleLowerCase('pt-BR').includes(normalizedSearch)).map(child => <button type="button" key={child.label + child.route} className={pathname === child.route ? 'is-active' : ''} onClick={() => { setStartMenuOpen(false); setOpenMenu(null); if (child.action) openMenuItem(child); else go(child.route) }}>{child.label}<ChevronRight size={12} /></button>)}
+              </div>
+            </div> : null}
             <div className="erp-windows-start-footer"><UserRound size={13} /><span>{operatorName === 'Usuário ERP' ? sessionOperator : operatorName}</span><button type="button" title="Sair da sessão" onClick={() => void logout()}><LogOut size={13} /> Sair</button></div>
           </section>}
         </div>
@@ -307,7 +320,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           {moduleSearch && <button type="button" aria-label="Limpar pesquisa" onClick={() => setModuleSearch('')}><X size={12} /></button>}
         </label>
         <div className="erp-windows-system-title" aria-live="polite">
-          <strong>SGQERP INDUSTRIAL</strong><span>GESTÃO INTEGRADA · v0.1.7</span>
+          <strong>SYSNQRA ERP &amp; SGQ INDUSTRIAL</strong><span>GESTÃO INDUSTRIAL INTEGRADA</span>
         </div>
         <div className="erp-windows-session">
           <time dateTime={now.toISOString()}>{new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)} <span>·</span> {new Intl.DateTimeFormat('pt-BR', { timeStyle: 'medium' }).format(now)}</time>
@@ -330,41 +343,45 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%);color:#123b50}
-        .erp-windows-topbar{height:48px;min-height:48px;display:grid;grid-template-columns:auto minmax(145px,210px) minmax(220px,1fr) auto;align-items:center;gap:10px;padding:0 10px;background:#fff;border-bottom:1px solid #cbd5e1;box-sizing:border-box;position:sticky;top:0;z-index:1600;color:#111827}
+        .erp-windows-topbar{height:48px;min-height:48px;display:grid;grid-template-columns:auto minmax(145px,210px) minmax(220px,1fr) auto;align-items:center;gap:10px;padding:0 10px;background:linear-gradient(110deg,#123B50 0%,#0E1E2F 100%);border-bottom:1px solid #2d5267;box-sizing:border-box;position:sticky;top:0;z-index:1600;color:#F4FBFD}
         .erp-windows-start-anchor{position:relative;height:100%;display:flex;align-items:center}
-        .erp-windows-start-button{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid #d1d5db;border-radius:2px;background:#fff;cursor:pointer}
-        .erp-windows-start-button:hover,.erp-windows-start-button.is-open{background:#eaf5f8;border-color:#2d8db8}
-        .erp-windows-logo{width:24px;height:24px;display:flex;align-items:center;justify-content:center;background:#123b50;color:#fff;font-size:17px;font-weight:800;line-height:1}
+        .erp-windows-start-button{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid #48B7C7;border-radius:2px;background:#0E1E2F;cursor:pointer}
+        .erp-windows-start-button:hover,.erp-windows-start-button.is-open{background:#1d526a;border-color:#48B7C7}
+        .erp-windows-logo{width:24px;height:24px;display:flex;align-items:center;justify-content:center;background:#48B7C7;color:#0E1E2F;font-size:17px;font-weight:900;line-height:1}
         .erp-windows-quick-search,.erp-windows-menu-search{height:30px;display:flex;align-items:center;gap:6px;padding:0 8px;border:1px solid #cbd5e1;background:#fff;color:#475569;box-sizing:border-box}
-        .erp-windows-quick-search:focus-within,.erp-windows-menu-search:focus-within{border-color:#2d8db8;box-shadow:0 0 0 1px rgba(45,141,184,.15)}
-        .erp-windows-quick-search input,.erp-windows-menu-search input{width:100%;min-width:0;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;font-size:11px!important;color:#111827}
+        .erp-windows-quick-search:focus-within,.erp-windows-menu-search:focus-within{border-color:#48B7C7;box-shadow:0 0 0 1px rgba(72,183,199,.18)}
+        .erp-windows-quick-search input,.erp-windows-menu-search input{width:100%;min-width:0;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;font-size:11px!important;color:#123B50}
         .erp-windows-quick-search button,.erp-windows-menu-search button{border:0;background:transparent;display:flex;align-items:center;justify-content:center;padding:2px;cursor:pointer}
         .erp-windows-system-title{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;text-align:center}
-        .erp-windows-system-title strong{font-size:13px;font-weight:800;letter-spacing:.06em;color:#123b50;white-space:nowrap}
-        .erp-windows-system-title span{font-size:9px;font-weight:600;color:#64748b;letter-spacing:.06em;white-space:nowrap}
-        .erp-windows-session{display:flex;align-items:center;justify-content:flex-end;gap:9px;min-width:0;font-size:10px;color:#111827}
+        .erp-windows-system-title strong{font-size:12px;font-weight:800;letter-spacing:.035em;color:#F4FBFD;white-space:nowrap}
+        .erp-windows-system-title span{font-size:9px;font-weight:600;color:#b8d2df;letter-spacing:.05em;white-space:nowrap}
+        .erp-windows-session{display:flex;align-items:center;justify-content:flex-end;gap:9px;min-width:0;font-size:10px;color:#F4FBFD}
         .erp-windows-session time{white-space:nowrap;font-variant-numeric:tabular-nums}
-        .erp-windows-session time span{color:#94a3b8;padding:0 2px}
-        .erp-windows-user{display:flex;align-items:center;gap:5px;max-width:190px;min-width:0;padding-left:9px;border-left:1px solid #e2e8f0}
+        .erp-windows-session time span{color:#94b7c8;padding:0 2px}
+        .erp-windows-user{display:flex;align-items:center;gap:5px;max-width:190px;min-width:0;padding-left:9px;border-left:1px solid #45677a}
         .erp-windows-user span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
-        .erp-windows-help,.erp-windows-logout{width:27px;height:27px;display:flex;align-items:center;justify-content:center;border:1px solid #e2e8f0;background:#fff;color:#334155;border-radius:2px;cursor:pointer}
-        .erp-windows-help:hover,.erp-windows-logout:hover{background:#eaf5f8;border-color:#b9d4df}
-        .erp-windows-start-menu{position:absolute;top:47px;left:0;width:min(340px,calc(100vw - 16px));max-height:min(72vh,620px);display:flex;flex-direction:column;background:#fff;border:1px solid #cbd5e1;box-shadow:0 12px 32px rgba(15,23,42,.2);z-index:1800}
-        .erp-windows-start-heading{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0}
-        .erp-windows-start-heading div{display:flex;flex-direction:column;gap:2px}.erp-windows-start-heading strong{font-size:11px;color:#123b50}.erp-windows-start-heading small{font-size:9px;color:#64748b}
-        .erp-windows-start-heading>button{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:0;background:transparent;cursor:pointer}
+        .erp-windows-help,.erp-windows-logout{width:27px;height:27px;display:flex;align-items:center;justify-content:center;border:1px solid #45677a;background:#123B50;color:#F4FBFD;border-radius:2px;cursor:pointer}
+        .erp-windows-help:hover,.erp-windows-logout:hover{background:#24617a;border-color:#48B7C7}
+        .erp-windows-start-menu{position:fixed;top:52px;left:50%;transform:translateX(-50%);width:min(560px,calc(100vw - 16px));max-height:min(78vh,680px);display:flex;flex-direction:column;background:#fff;border:1px solid #b8cbd4;box-shadow:0 16px 38px rgba(15,23,42,.28);z-index:1800;color:#123B50}
+        .erp-windows-start-heading{min-height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:linear-gradient(110deg,#123B50 0%,#0E1E2F 100%);border-bottom:1px solid #2d5267}
+        .erp-windows-start-heading div{display:flex;flex-direction:column;gap:2px}.erp-windows-start-heading strong{font-size:11px;color:#F4FBFD}.erp-windows-start-heading small{font-size:9px;color:#b8d2df}
+        .erp-windows-start-heading>button{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:1px solid #45677a;background:transparent;color:#fff;cursor:pointer}
         .erp-windows-menu-search{margin:9px 10px 7px;flex:0 0 30px}
-        .erp-windows-menu-list{padding:0 6px 8px;overflow:auto;min-height:0}
-        .erp-windows-menu-row{min-height:34px;display:flex;align-items:center;border:1px solid transparent}
-        .erp-windows-menu-row.is-active{background:#edf6fa;border-color:#d5e8ef}
-        .erp-windows-menu-main{flex:1;min-width:0;min-height:32px;display:flex;align-items:center;gap:9px;padding:0 8px;border:0;background:transparent;text-align:left;color:#1e293b;font-size:11px;cursor:pointer}
-        .erp-windows-menu-main span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .erp-windows-menu-main:hover,.erp-windows-menu-expand:hover{background:#f1f5f9}
-        .erp-windows-menu-expand{width:30px;align-self:stretch;display:flex;align-items:center;justify-content:center;border:0;background:transparent;cursor:pointer;color:#475569}
-        .erp-windows-menu-children{margin:0 0 4px 24px;padding:2px 0 2px 8px;border-left:1px solid #cbd5e1}
-        .erp-windows-menu-children button{display:block;width:100%;min-height:29px;padding:5px 8px;border:0;background:#fff;text-align:left;color:#334155;font-size:10px;cursor:pointer}
-        .erp-windows-menu-children button:hover,.erp-windows-menu-children button.is-active{background:#eaf5f8;color:#123b50}
-        .erp-windows-no-results{margin:12px 8px;font-size:10px;color:#64748b}
+        .erp-windows-menu-list{padding:8px 10px 10px;overflow-y:auto;overflow-x:hidden;min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;scrollbar-width:thin;scrollbar-color:#b8cbd4 transparent}
+        .erp-windows-menu-list::-webkit-scrollbar,.erp-windows-subroutes-grid::-webkit-scrollbar{width:4px;height:4px}.erp-windows-menu-list::-webkit-scrollbar-track,.erp-windows-subroutes-grid::-webkit-scrollbar-track{background:transparent}.erp-windows-menu-list::-webkit-scrollbar-thumb,.erp-windows-subroutes-grid::-webkit-scrollbar-thumb{background:#b8cbd4}
+        .erp-windows-menu-group{min-width:0;border:1px solid #d8e4ea;background:#f8fafc}
+        .erp-windows-menu-group.is-active,.erp-windows-menu-group.is-expanded{border-color:#48B7C7;background:#eaf7fa}
+        .erp-windows-menu-tile{position:relative;width:100%;min-width:0;height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:8px 5px;border:0;background:transparent;color:#123B50;font-size:10px;font-weight:700;text-align:center;cursor:pointer}
+        .erp-windows-menu-tile>svg{flex:0 0 auto;color:#2D8DB8}.erp-windows-menu-tile>span:not(.erp-windows-tile-chevron){max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .erp-windows-menu-tile:hover{background:#123B50;color:#fff}.erp-windows-menu-tile:hover>svg{color:#48B7C7}
+        .erp-windows-tile-chevron{position:absolute;top:4px;right:4px;display:flex;align-items:center;color:#648393}
+        .erp-windows-subroutes{padding:0 10px 10px;min-height:0;overflow:auto}
+        .erp-windows-subroutes-heading{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;background:#eaf3f7;border:1px solid #d8e4ea;font-size:10px}
+        .erp-windows-subroutes-heading button{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border:1px solid #c5d7df;background:#fff;color:#123B50;cursor:pointer}
+        .erp-windows-subroutes-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:7px;border:1px solid #d8e4ea;border-top:0;max-height:210px;overflow:auto}
+        .erp-windows-subroutes-grid button{min-width:0;min-height:30px;display:flex;align-items:center;justify-content:space-between;gap:5px;padding:5px 7px;border:1px solid #d8e4ea;background:#fff;color:#123B50;text-align:left;font-size:9px;font-weight:600;cursor:pointer}
+        .erp-windows-subroutes-grid button>svg{flex:0 0 auto;color:#2D8DB8}.erp-windows-subroutes-grid button:hover,.erp-windows-subroutes-grid button.is-active{background:#123B50;border-color:#48B7C7;color:#fff}
+        .erp-windows-no-results{grid-column:1/-1;margin:12px 8px;font-size:10px;color:#64748b}
         .erp-windows-start-footer{min-height:38px;display:flex;align-items:center;gap:6px;padding:0 10px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:10px;color:#334155}
         .erp-windows-start-footer span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .erp-windows-start-footer button{height:25px;display:flex;align-items:center;gap:4px;padding:0 7px;border:1px solid #cbd5e1;background:#fff;border-radius:2px;font-size:10px;cursor:pointer}
@@ -380,8 +397,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-workspace-compact h1{font-size:18px!important;line-height:1.2!important;font-weight:500!important}.erp-horizontal-workspace-compact h2{font-size:15px!important;line-height:1.25!important;font-weight:500!important}.erp-horizontal-workspace-compact h3{font-size:13px!important;line-height:1.3!important;font-weight:500!important}
         .erp-horizontal-workspace-compact p{font-size:10px!important;line-height:1.4!important}.erp-horizontal-workspace-compact table{font-size:10px!important}.erp-horizontal-workspace-compact tbody td{font-size:10px!important;line-height:1.25!important}.erp-horizontal-workspace-compact thead th{font-size:9px!important;line-height:1.2!important;font-weight:500!important}.erp-horizontal-workspace-compact button{font-size:10px}.erp-horizontal-workspace-compact label{font-size:9px}.erp-horizontal-workspace-compact input,.erp-horizontal-workspace-compact select,.erp-horizontal-workspace-compact textarea{font-size:10px}
         @media print{@page{size:A4;margin:12mm}.erp-windows-topbar,.print-hidden{display:none!important}.erp-horizontal-shell,.erp-horizontal-workspace{min-height:0!important;background:#fff!important;padding:0!important}.erp-horizontal-workspace *{box-shadow:none!important;backdrop-filter:none!important}thead{display:table-header-group}tr{break-inside:avoid}}
-        @media(max-width:900px){.erp-windows-topbar{grid-template-columns:auto minmax(110px,170px) minmax(140px,1fr) auto;gap:6px;padding:0 6px}.erp-windows-session{gap:5px}.erp-windows-session time{font-size:9px}.erp-windows-user{max-width:120px;padding-left:5px}.erp-windows-system-title strong{font-size:11px}}
-        @media(max-width:650px){.erp-windows-topbar{height:48px;grid-template-columns:auto minmax(0,1fr) auto;gap:6px}.erp-windows-quick-search{display:none}.erp-windows-system-title{align-items:flex-start;text-align:left}.erp-windows-system-title strong{font-size:10px;letter-spacing:0}.erp-windows-system-title span{font-size:8px}.erp-windows-session time{display:none}.erp-windows-user{max-width:90px}.erp-windows-user span{display:none}}
+        @media(max-width:900px){.erp-windows-topbar{grid-template-columns:auto minmax(110px,170px) minmax(140px,1fr) auto;gap:6px;padding:0 6px}.erp-windows-session{gap:5px}.erp-windows-session time{font-size:9px}.erp-windows-user{max-width:120px;padding-left:5px}.erp-windows-system-title strong{font-size:11px}.erp-windows-start-menu{width:min(520px,calc(100vw - 16px))}}
+        @media(max-width:650px){.erp-windows-topbar{height:48px;grid-template-columns:auto minmax(0,1fr) auto;gap:6px}.erp-windows-quick-search{display:none}.erp-windows-system-title{align-items:flex-start;text-align:left}.erp-windows-system-title strong{font-size:10px;letter-spacing:0;white-space:normal}.erp-windows-system-title span{font-size:8px}.erp-windows-session time{display:none}.erp-windows-user{max-width:90px}.erp-windows-user span{display:none}.erp-windows-menu-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:7px}.erp-windows-menu-tile{height:68px;font-size:9px}.erp-windows-subroutes-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
         @media(prefers-reduced-motion:reduce){.erp-windows-start-menu{transition:none!important}}
       `}</style>
     </div>
