@@ -11,7 +11,7 @@ type Product = { id: string; codigo: string; nome: string; descricao: string | n
 type Supplier = { id: string; codigo: string | null; razao_social: string; nome_fantasia: string | null }
 type ProductionOrder = { id: string; numero_op: string | null; numero: string | null }
 type Machine = { id: string; codigo: string; nome: string }
-type Machine = { id: string; codigo: string; nome: string }
+
 
 const PAGE_SIZE = 25
 
@@ -27,9 +27,9 @@ export default function ComprasRequisicoes() {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [machines, setMachines] = useState<Machine[]>([])
   const [requestForm, setRequestForm] = useState({ productId: '', quantity: '1', unit: 'UN', orderId: '', dueDate: '', supplierId: '', lotDestination: '', machineId: '', costCenter: 'PRODUCAO', priority: 'MEDIA', justification: '', buyerName: '' })
-  const [showCreateForm, setShowCreateForm] = useState(false)
-  const [machines, setMachines] = useState<Machine[]>([])
-  const [requestForm, setRequestForm] = useState({ productId: '', quantity: '1', unit: 'UN', orderId: '', dueDate: '', supplierId: '', lotDestination: '', machineId: '', costCenter: 'PRODUCAO', priority: 'MEDIA', justification: '', buyerName: '' })
+
+
+
   const [selectedOrder, setSelectedOrder] = useState('')
   const [selectedRequisitions, setSelectedRequisitions] = useState<Set<string>>(new Set())
   const [page, setPage] = useState(1)
