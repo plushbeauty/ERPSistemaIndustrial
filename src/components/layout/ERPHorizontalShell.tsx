@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
+import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X, Barcode } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import TabletMenuModal from '../TabletMenuModal'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
+import KioskConsultaRapida from '../KioskConsultaRapida'
 
 type MenuItem = {
   label: string
@@ -117,6 +118,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [helpOpen, setHelpOpen] = useState(false)
   const [tabletOpen, setTabletOpen] = useState(false)
   const [pcpTabletOpen, setPcpTabletOpen] = useState(false)
+  const [quickLookupOpen, setQuickLookupOpen] = useState(false)
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
   const ref = useRef<HTMLDivElement>(null)
@@ -312,6 +314,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         <div className="erp-windows-session">
           <time dateTime={now.toISOString()}>{new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)} <span>·</span> {new Intl.DateTimeFormat('pt-BR', { timeStyle: 'medium' }).format(now)}</time>
           <div className="erp-windows-user"><UserRound size={14} /><span>{operatorName === 'Usuário ERP' ? sessionOperator : operatorName}</span></div>
+          <button type="button" className="erp-windows-quick-lookup" title="Pesquisa rápida por código de barras, lote, produto ou RPNC" aria-label="Abrir Pesquisa Rápida" aria-expanded={quickLookupOpen} onClick={() => { setQuickLookupOpen(value => !value); setHelpOpen(false) }}><Barcode size={15} /><span>Pesquisa rápida</span></button>
           <button type="button" className="erp-windows-help" title="Ajuda da tela atual" aria-expanded={helpOpen} onClick={() => setHelpOpen(value => !value)}><CircleHelp size={15} /></button>
           <button type="button" className="erp-windows-logout" onClick={() => void logout()} title="Sair da sessão"><LogOut size={13} /></button>
         </div>
@@ -327,6 +330,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </main>
       <TabletMenuModal isOpen={tabletOpen} onClose={() => setTabletOpen(false)} onNavigate={(route) => { setTabletOpen(false); go(route) }} />
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
+      {quickLookupOpen && <div className="erp-quick-lookup-overlay" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setQuickLookupOpen(false) }}><div className="erp-quick-lookup-dialog" role="dialog" aria-modal="true" aria-label="Pesquisa rápida do ERP"><KioskConsultaRapida onCloseKiosk={() => setQuickLookupOpen(false)} /></div></div>}
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%);color:#123b50}
@@ -348,6 +352,10 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-user{display:flex;align-items:center;gap:5px;max-width:190px;min-width:0;padding-left:9px;border-left:1px solid #e2e8f0}
         .erp-windows-user span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
         .erp-windows-help,.erp-windows-logout{width:27px;height:27px;display:flex;align-items:center;justify-content:center;border:1px solid #e2e8f0;background:#fff;color:#334155;border-radius:2px;cursor:pointer}
+        .erp-windows-quick-lookup{height:28px;display:flex;align-items:center;justify-content:center;gap:5px;padding:0 8px;border:1px solid #48b7c7;background:#f4fbfd;color:#123b50;border-radius:2px;font-size:10px;font-weight:700;white-space:nowrap;cursor:pointer}
+        .erp-windows-quick-lookup:hover,.erp-windows-quick-lookup[aria-expanded="true"]{background:#123b50;color:#fff;border-color:#123b50}
+        .erp-quick-lookup-overlay{position:fixed;inset:48px 0 0;z-index:3000;display:flex;align-items:flex-start;justify-content:center;padding:8vh 12px 20px;background:rgba(14,30,47,.46);overflow-y:auto}
+        .erp-quick-lookup-dialog{width:min(760px,100%);max-height:84vh;overflow:auto;border:1px solid #48b7c7;background:#fff;box-shadow:0 18px 60px rgba(14,30,47,.3)}
         .erp-windows-help:hover,.erp-windows-logout:hover{background:#eaf5f8;border-color:#b9d4df}
         .erp-windows-start-menu{position:absolute;top:47px;left:0;width:min(340px,calc(100vw - 16px));max-height:min(72vh,620px);display:flex;flex-direction:column;background:#fff;border:1px solid #cbd5e1;box-shadow:0 12px 32px rgba(15,23,42,.2);z-index:1800}
         .erp-windows-start-heading{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0}
