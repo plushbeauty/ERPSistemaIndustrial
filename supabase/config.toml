@@ -8,3 +8,6 @@ verify_jwt = true
 
 [functions.erp-company-signup]
 verify_jwt = false
+
+[functions.erp-ai-process-sheet]
+verify_jwt = true

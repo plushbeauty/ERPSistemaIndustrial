@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Check, CircleHelp, ClipboardList, Plus, Printer, RefreshCw, Save, ShieldCheck, Trash2 } from 'lucide-react'
+import { AlertTriangle, Check, CircleHelp, ClipboardList, GitBranch, Plus, Printer, RefreshCw, Save, ShieldCheck, Trash2 } from 'lucide-react'
 import ERPHorizontalShell from '../../components/layout/ERPHorizontalShell'
 import { supabase } from '../../lib/supabaseClient'
 import { fetchAllPages } from '../../lib/supabasePagination'
 
 type Lot = { id: string; lote_interno: string; lote_fornecedor: string | null; produto_id: string; quantidade_disponivel: number; status_inspecao: string }
-type Rnc = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; origem: string | null; status: string; lote_producao: string | null; criado_em: string }
+type Rnc = { id: string; numero_rpnc: string; descricao_nao_conformidade: string; origem: string | null; status: string; lote_producao: string | null; criado_em: string; investigacao: string | null; porques_evidencias: WhyAnswer[] | null }
 type Sector = { id: string; nome: string }
 type Operator = { id: string; nome: string | null; email: string | null }
 type ActionRow = { id: string; oQue: string; quem: string; quando: string; como: string; porQue: string; onde: string; quanto: string }
 type WhyAnswer = { question: string; answer: string; evidence: string }
+type IshikawaKey = 'MAO_DE_OBRA' | 'MATERIA_PRIMA' | 'METODO' | 'MAQUINA' | 'MEDICAO' | 'MEIO_AMBIENTE'
+type IshikawaMap = Record<IshikawaKey, string[]>
 
 const WHY_QUESTIONS = [
   'Por que o defeito ocorreu diretamente?',
@@ -18,6 +20,15 @@ const WHY_QUESTIONS = [
   'Por que o controle anterior não detectou ou preveniu?',
   'Qual falha sistêmica permitiu a recorrência?'
 ] as const
+const ISHIKAWA_GROUPS: { key: IshikawaKey; label: string }[] = [
+  { key: 'MAO_DE_OBRA', label: 'Mão de obra' },
+  { key: 'MATERIA_PRIMA', label: 'Matéria-prima' },
+  { key: 'METODO', label: 'Método' },
+  { key: 'MAQUINA', label: 'Máquina' },
+  { key: 'MEDICAO', label: 'Medição' },
+  { key: 'MEIO_AMBIENTE', label: 'Meio ambiente' },
+]
+const emptyIshikawa = (): IshikawaMap => ({ MAO_DE_OBRA: [], MATERIA_PRIMA: [], METODO: [], MAQUINA: [], MEDICAO: [], MEIO_AMBIENTE: [] })
 const origins = [
   { value: 'Fornecedor', label: 'Fornecedor' },
   { value: 'Processo Interno', label: 'Processo interno' },
@@ -28,11 +39,11 @@ const dispositions = [
   { value: 'REPROCESSAR', label: 'Reprocessar' },
   { value: 'DEVOLVER', label: 'Devolver ao fornecedor' }
 ] as const
-const fieldClass = 'h-[30px] min-h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
-const areaClass = 'min-h-[74px] w-full resize-y rounded-[2px] border border-slate-300 bg-white px-2 py-1.5 text-[10px] leading-4 text-slate-800 outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
-const labelClass = 'mb-1 flex min-h-[12px] items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-600'
+const fieldClass = 'h-[30px] min-h-[30px] w-full rounded-[2px] border border-[#2E4A62] bg-[#0E1E2F] px-2 text-[10px] text-[#F4FBFD] outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
+const areaClass = 'min-h-[74px] w-full resize-y rounded-[2px] border border-[#2E4A62] bg-[#0E1E2F] px-2 py-1.5 text-[10px] leading-4 text-[#F4FBFD] outline-none focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20'
+const labelClass = 'mb-1 flex min-h-[12px] items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-300'
 const buttonClass = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-[#2D8DB8] bg-[#2D8DB8] px-3 text-[10px] font-bold text-white hover:bg-[#236f91] disabled:cursor-not-allowed disabled:opacity-50'
-const secondaryButton = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50'
+const secondaryButton = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border border-[#2E4A62] bg-[#123B50] px-3 text-[10px] font-bold text-white hover:bg-[#18516b] disabled:opacity-50'
 const emptyAction = (): ActionRow => ({ id: crypto.randomUUID(), oQue: '', quem: '', quando: '', como: '', porQue: '', onde: '', quanto: '' })
 const Help = ({ text }: { text: string }) => <span className="group relative inline-flex shrink-0 items-center" title={text} aria-label={text}><CircleHelp size={10} className="cursor-help text-[#2D8DB8]" /><span role="tooltip" className="pointer-events-none absolute bottom-full left-0 z-50 mb-1 hidden w-64 rounded-[2px] border border-sky-200 bg-[#123B50] p-2 text-[10px] font-normal normal-case leading-4 text-white shadow-lg group-hover:block group-focus-within:block">{text}</span></span>
 function FieldLabel({ children, help }: { children: string; help: string }) { return <label className={labelClass}>{children}<Help text={help}/></label> }
@@ -58,12 +69,42 @@ export default function SalaRNC() {
   const [disposition, setDisposition] = useState<(typeof dispositions)[number]['value']>('REPROCESSAR')
   const [segregatedQty, setSegregatedQty] = useState('0')
   const [whys, setWhys] = useState<WhyAnswer[]>(WHY_QUESTIONS.map(question => ({ question, answer: '', evidence: '' })))
+  const [ishikawa, setIshikawa] = useState<IshikawaMap>(emptyIshikawa)
+  const [activeCauseGroup, setActiveCauseGroup] = useState<IshikawaKey>('MAO_DE_OBRA')
+  const [newCause, setNewCause] = useState('')
+  const [analysisAttachment, setAnalysisAttachment] = useState<{ data: string; name: string; mimeType: string } | null>(null)
+  const [analysisLoading, setAnalysisLoading] = useState(false)
   const [actions, setActions] = useState<ActionRow[]>([emptyAction()])
   const [busy, setBusy] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [deployStatus, setDeployStatus] = useState('VALIDAÇÃO PENDENTE')
+
+  const openRncRecord = (record: Rnc) => {
+    setSelectedRnc(record.id)
+    if (Array.isArray(record.porques_evidencias)) {
+      setWhys(WHY_QUESTIONS.map((question, index) => {
+        const saved = record.porques_evidencias?.[index]
+        return { question, answer: saved?.answer ?? '', evidence: saved?.evidence ?? '' }
+      }))
+    } else {
+      setWhys(WHY_QUESTIONS.map(question => ({ question, answer: '', evidence: '' })))
+    }
+    const marker = '\n\n[ISHIKAWA_6M_JSON]'
+    const investigation = record.investigacao ?? ''
+    const markerIndex = investigation.indexOf(marker)
+    if (markerIndex >= 0) {
+      try {
+        const parsed = JSON.parse(investigation.slice(markerIndex + marker.length)) as Partial<IshikawaMap>
+        setIshikawa({ ...emptyIshikawa(), ...Object.fromEntries(ISHIKAWA_GROUPS.map(group => [group.key, Array.isArray(parsed[group.key]) ? parsed[group.key]!.filter((item): item is string => typeof item === 'string') : []])) } as IshikawaMap)
+      } catch {
+        setIshikawa(emptyIshikawa())
+      }
+    } else {
+      setIshikawa(emptyIshikawa())
+    }
+  }
 
   const selectedLot = useMemo(() => lots.find(lot => lot.id === lotId) ?? null, [lots, lotId])
   const selectedRecord = useMemo(() => records.find(record => record.id === selectedRnc) ?? null, [records, selectedRnc])
@@ -81,14 +122,14 @@ export default function SalaRNC() {
         fetchAllPages<Lot>((from, to) => supabase.from('erp_estoque_lotes').select('id,lote_interno,lote_fornecedor,produto_id,quantidade_disponivel,status_inspecao', { count: 'exact' }).eq('empresa_id', tenantId).order('lote_interno').range(from, to)),
         fetchAllPages<Sector>((from, to) => supabase.from('erp_setores').select('id,nome', { count: 'exact' }).eq('empresa_id', tenantId).eq('ativo', true).order('nome').range(from, to)),
         fetchAllPages<Operator>((from, to) => supabase.from('erp_usuarios').select('id,nome,email', { count: 'exact' }).eq('empresa_id', tenantId).eq('ativo', true).is('deleted_at', null).order('nome').range(from, to)),
-        fetchAllPages<Rnc>((from, to) => supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,origem,status,lote_producao,criado_em', { count: 'exact' }).eq('empresa_id', tenantId).order('criado_em', { ascending: false }).range(from, to))
+        fetchAllPages<Rnc>((from, to) => supabase.from('erp_rpnc').select('id,numero_rpnc,descricao_nao_conformidade,origem,status,lote_producao,criado_em,investigacao,porques_evidencias', { count: 'exact' }).eq('empresa_id', tenantId).order('criado_em', { ascending: false }).range(from, to))
       ])
       setLots(lotRows)
       setSectors(sectorRows)
       setOperators(userRows)
       setRecords(rncRows)
       if (!selectedRnc && rncRows[0]) setSelectedRnc(rncRows[0].id)
-      setDeployStatus('CÓDIGO ENVIADO · BUILD PENDENTE')
+      setDeployStatus('DADOS RNC · RLS ATIVO')
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar os dados da Sala de RNC.')
     } finally {
@@ -117,6 +158,8 @@ export default function SalaRNC() {
     try {
       const whyAnswers = whys.filter(item => item.answer.trim()).map(item => ({ question: item.question, answer: item.answer.trim(), evidence: item.evidence.trim() }))
       const whyText = whyAnswers.map((item, index) => (index + 1) + '. ' + item.question + '\nCausa: ' + item.answer + '\nEvidência objetiva: ' + item.evidence).join('\n\n')
+      const ishikawaMarker = '\n\n[ISHIKAWA_6M_JSON]'
+      const investigationText = [whyText, ishikawaMarker + JSON.stringify(ishikawa)].filter(Boolean).join('')
       const readyActions = actions.filter(row => row.oQue.trim() && row.quem && row.quando && row.como.trim())
       const actionPayload = readyActions.map(row => ({
         what: row.oQue.trim(), why: row.porQue.trim() || null, where_to: row.onde.trim() || null,
@@ -130,7 +173,7 @@ export default function SalaRNC() {
         p_origem: origin.toLowerCase(),
         p_quantidade: quantity,
         p_disposition: disposition,
-        p_whys_text: whyText || null,
+        p_whys_text: investigationText || null,
         p_whys_json: whyAnswers,
         p_actions_json: actionPayload
       })
@@ -156,10 +199,78 @@ export default function SalaRNC() {
       setLotId('')
       setSegregatedQty('0')
       setWhys(WHY_QUESTIONS.map(question => ({ question, answer: '', evidence: '' })))
+      setIshikawa(emptyIshikawa())
+      setActiveCauseGroup('MAO_DE_OBRA')
+      setNewCause('')
       setActions([emptyAction()])
       await load()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao registrar a RPNC e a retenção do lote.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const analyzeEvidenceWithAI = async () => {
+    setError('')
+    setNotice('')
+    if (!description.trim() && !analysisAttachment) {
+      setError('Informe a descrição do defeito ou anexe uma imagem/laudo para a IA analisar.')
+      return
+    }
+    setAnalysisLoading(true)
+    try {
+      const body: Record<string, string> = { category: origin, description: description.trim() }
+      if (analysisAttachment) {
+        if (analysisAttachment.mimeType === 'application/pdf') {
+          body.file_base64 = analysisAttachment.data
+          body.file_name = analysisAttachment.name
+          body.mime_type = analysisAttachment.mimeType
+        } else {
+          body.image_base64 = analysisAttachment.data
+        }
+      }
+      const { data, error: invokeError } = await supabase.functions.invoke('erp-ai-process-sheet', { body })
+      if (invokeError) throw invokeError
+      const result = (data?.parameters ?? data) as { ishikawa_6m?: Record<string, unknown>; porques_analise?: Record<string, unknown> } | null
+      if (!result?.ishikawa_6m || !result.porques_analise) throw new Error(data?.error || 'A IA não retornou Ishikawa 6M e 5 Porquês válidos.')
+      const groups: Record<IshikawaKey, string[]> = {
+        MAO_DE_OBRA: [], MATERIA_PRIMA: [], METODO: [], MAQUINA: [], MEDICAO: [], MEIO_AMBIENTE: []
+      }
+      for (const key of Object.keys(groups) as IshikawaKey[]) {
+        const sourceKey = key === 'MEIO_AMBIENTE' ? 'AMBIENTE' : key
+        const values = result.ishikawa_6m[sourceKey] ?? result.ishikawa_6m[key]
+        groups[key] = Array.isArray(values) ? values.filter((item): item is string => typeof item === 'string').slice(0, 4) : []
+      }
+      setIshikawa(groups)
+      const whyData = result.porques_analise
+      setWhys(WHY_QUESTIONS.map((question, index) => {
+        const answer = whyData['p' + (index + 1)]
+        return { question, answer: typeof answer === 'string' ? answer : '', evidence: '' }
+      }))
+      setNotice('Análise preliminar gerada pela IA. Valide cada causa contra evidências objetivas antes de aprovar ou salvar.')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao analisar a imagem ou o laudo.')
+    } finally {
+      setAnalysisLoading(false)
+    }
+  }
+
+  const saveIshikawa = async () => {
+    if (!selectedRecord || !companyId) { setError('Selecione uma RPNC da empresa antes de salvar a investigação.'); return }
+    setBusy(true)
+    setError('')
+    setNotice('')
+    try {
+      const whyAnswers = whys.filter(item => item.answer.trim()).map(item => ({ question: item.question, answer: item.answer.trim(), evidence: item.evidence.trim() }))
+      const whyText = whyAnswers.map((item, index) => (index + 1) + '. ' + item.question + '\nCausa: ' + item.answer + '\nEvidência objetiva: ' + item.evidence).join('\n\n')
+      const investigation = [whyText, '\n\n[ISHIKAWA_6M_JSON]' + JSON.stringify(ishikawa)].filter(Boolean).join('')
+      const result = await supabase.from('erp_rpnc').update({ investigacao: investigation, porques_evidencias: whyAnswers }).eq('id', selectedRecord.id).eq('empresa_id', companyId)
+      if (result.error) throw result.error
+      setNotice('Investigação Ishikawa 6M e 5 Porquês gravada na RPNC ' + selectedRecord.numero_rpnc + '.')
+      await load()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao salvar a investigação Ishikawa.')
     } finally {
       setBusy(false)
     }
@@ -195,17 +306,17 @@ export default function SalaRNC() {
 
   return (
     <ERPHorizontalShell>
-      <main className="rnc-print-document min-h-[calc(100vh-48px)] bg-[#F4FBFD] pb-12 text-slate-800 print:min-h-0 print:bg-white print:p-0">
+      <main className="rnc-print-document min-h-[calc(100vh-48px)] bg-[#0E1E2F] pb-12 text-[#F4FBFD] print:min-h-0 print:bg-white print:p-0">
         <div className="rnc-print-header hidden grid-cols-3 border border-slate-400 bg-white text-center text-slate-900">
-          <div className="flex min-h-[48px] items-center justify-center border-r border-slate-400 p-2 text-[10px] font-bold uppercase">SYSNQRA ERP &amp; SGQ INDUSTRIAL</div>
+          <div className="flex min-h-[48px] items-center justify-center border-r border-slate-400 p-2 text-[10px] font-bold uppercase">SYSNQRA ERP & SGQ INDUSTRIAL</div>
           <div className="flex flex-col justify-center border-r border-slate-400 p-2"><strong className="text-[10px] uppercase">Registro de Não Conformidade</strong><span className="text-[8px]">Sistema de Gestão da Qualidade · CAPA</span></div>
           <div className="flex flex-col justify-center p-2 text-left text-[8px]"><span>CÓDIGO: {selectedRecord?.numero_rpnc || 'GERADO AO SALVAR'}</span><span>EMISSÃO: {new Date().toLocaleString('pt-BR')}</span></div>
         </div>
-        <header className="rnc-screen-header flex min-h-[64px] flex-wrap items-center gap-3 border-b border-slate-200 bg-white px-3 py-2 print:hidden">
+        <header className="rnc-screen-header flex min-h-[64px] flex-wrap items-center gap-3 border-b border-[#2E4A62] bg-[#0D2638] px-3 py-2 print:hidden">
           <span className="grid size-9 place-items-center rounded-[2px] bg-[#123B50] text-white"><ClipboardList size={18}/></span>
           <div className="min-w-0">
             <p className="text-[9px] font-bold uppercase tracking-[.18em] text-[#2D8DB8]">SGQ · SALA DE NÃO CONFORMIDADES</p>
-            <h1 className="text-base font-semibold text-[#123B50]">Sala de RNC / RPNC</h1>
+            <h1 className="text-base font-semibold text-white">Sala de RNC / RPNC</h1>
             <p className="text-[10px] text-slate-500">Triagem, disposição física, análise dos 5 Porquês e ações mitigatórias 5W2H.</p>
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -218,8 +329,8 @@ export default function SalaRNC() {
           {error && <div role="alert" className="flex items-start gap-2 border border-rose-300 bg-rose-50 p-2 text-[10px] text-rose-800"><AlertTriangle size={14} className="mt-0.5 shrink-0"/><span>{error}</span></div>}
           {notice && <div role="status" className="flex items-start gap-2 border border-emerald-300 bg-emerald-50 p-2 text-[10px] text-emerald-800"><Check size={14} className="mt-0.5 shrink-0"/><span>{notice}</span></div>}
           {loading ? <div className="border border-slate-200 bg-white p-5 text-center text-[10px]">Carregando cadastros reais da empresa…</div> : <>
-            <section className="rnc-section border border-slate-200 bg-white print:break-inside-avoid">
-              <div className="flex h-8 items-center gap-2 border-b border-slate-200 bg-[#eaf4f8] px-3"><span className="text-[10px] font-bold text-[#123B50]">01</span><h2 className="text-[10px] font-bold uppercase tracking-wider text-[#123B50]">Triagem e disposição física</h2><ShieldCheck size={13} className="ml-auto text-[#2D8DB8]"/></div>
+            <section className="rnc-section border border-[#2E4A62] bg-[#0D2638] print:break-inside-avoid">
+              <div className="flex h-8 items-center gap-2 border-b border-[#2E4A62] bg-[#123B50] px-3"><span className="text-[10px] font-bold text-[#123B50]">01</span><h2 className="text-[10px] font-bold uppercase tracking-wider text-[#123B50]">Triagem e disposição física</h2><ShieldCheck size={13} className="ml-auto text-[#2D8DB8]"/></div>
               <div className="grid grid-cols-1 gap-3 p-3 md:grid-cols-2 xl:grid-cols-4">
                 <div><FieldLabel help="Data e hora em que o desvio foi observado; diferente da data automática de abertura do registro.">Data/hora da ocorrência *</FieldLabel><input className={fieldClass} type="datetime-local" value={occurredAt} onChange={event => setOccurredAt(event.target.value)} required/></div>
                 <div><FieldLabel help="Classificação inicial do risco. A reclassificação deve seguir a matriz de criticidade do SGQ.">Grau de criticidade *</FieldLabel><select className={fieldClass} value={criticality} onChange={event => setCriticality(event.target.value as typeof criticality)}><option value="Critica">Crítica</option><option value="Maior">Maior</option><option value="Menor">Menor</option></select></div>
@@ -243,7 +354,45 @@ export default function SalaRNC() {
             </section>
 
             <section className="rnc-section border border-slate-200 bg-white print:break-inside-avoid">
-              <div className="flex min-h-8 flex-wrap items-center gap-2 border-b border-slate-200 bg-[#eaf4f8] px-3 py-1.5"><span className="text-[10px] font-bold text-[#123B50]">03</span><h2 className="text-[10px] font-bold uppercase tracking-wider text-[#123B50]">Plano de ação mitigatório · 5W2H</h2><button type="button" className={secondaryButton + ' ml-auto'} onClick={() => setActions(current => [...current, emptyAction()])}><Plus size={12}/> Adicionar ação</button><button type="button" className={buttonClass} onClick={() => void saveActions()} disabled={busy || !selectedRecord}><Save size={12}/> Salvar ações</button></div>
+              <div className="flex min-h-8 items-center gap-2 border-b border-slate-200 bg-[#eaf4f8] px-3 py-1.5"><span className="text-[10px] font-bold text-[#123B50]">03</span><h2 className="text-[10px] font-bold uppercase tracking-wider text-[#123B50]">Investigação de causa e efeito · Ishikawa 6M</h2><GitBranch size={13} className="ml-auto text-[#2D8DB8]"/></div>
+              <div className="grid gap-3 p-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+                <form className="grid content-start gap-2 no-print" onSubmit={event => { event.preventDefault(); const cause = newCause.trim(); if (!cause) return; setIshikawa(current => ({ ...current, [activeCauseGroup]: [...current[activeCauseGroup], cause] })); setNewCause('') }}>
+                  <label className={labelClass}>Categoria 6M</label>
+                  <select className={fieldClass} value={activeCauseGroup} onChange={event => setActiveCauseGroup(event.target.value as IshikawaKey)}>{ISHIKAWA_GROUPS.map(group => <option key={group.key} value={group.key}>{group.label}</option>)}</select>
+                  <label className={labelClass}>Nova causa identificada</label>
+                  <textarea className={areaClass} value={newCause} onChange={event => setNewCause(event.target.value)} placeholder="Descreva a causa observada com base em evidência…"/>
+                  <label className={labelClass}>Imagem ou laudo PDF para análise assistida</label>
+                  <input className="block w-full text-[10px] text-slate-300 file:mr-2 file:h-[28px] file:rounded-[2px] file:border-0 file:bg-[#2D8DB8] file:px-2 file:text-[10px] file:font-bold file:text-white" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" onChange={event => {
+                    const file = event.target.files?.[0]
+                    if (!file) { setAnalysisAttachment(null); return }
+                    if (file.size > 6 * 1024 * 1024) { setError('O arquivo deve ter no máximo 6 MB.'); event.currentTarget.value = ''; return }
+                    if (!file.type.startsWith('image/') && file.type !== 'application/pdf') { setError('Envie uma imagem PNG/JPG/WEBP ou um laudo PDF.'); event.currentTarget.value = ''; return }
+                    const reader = new FileReader()
+                    reader.onload = () => {
+                      if (typeof reader.result === 'string') setAnalysisAttachment({ data: reader.result, name: file.name, mimeType: file.type })
+                    }
+                    reader.onerror = () => setError('Não foi possível ler o arquivo selecionado.')
+                    reader.readAsDataURL(file)
+                  }}/>
+                  {analysisAttachment && <p className="break-all text-[9px] text-slate-400">Anexo: {analysisAttachment.name}</p>}
+                  <button type="button" className={secondaryButton} onClick={() => void analyzeEvidenceWithAI()} disabled={analysisLoading || busy}>
+                    {analysisLoading ? 'Analisando evidência…' : 'Analisar com IA · Ishikawa + 5 Porquês'}
+                  </button>
+                  <button type="submit" className={buttonClass}><Plus size={12}/> Adicionar causa</button>
+                  <p className="text-[9px] text-slate-500">As causas são registradas na investigação da RPNC existente, sem criar tabela paralela.</p>
+                  {selectedRecord && <button type="button" className={buttonClass} onClick={() => void saveIshikawa()} disabled={busy || loading}><Save size={12}/> Salvar investigação na RPNC</button>}
+                </form>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {ISHIKAWA_GROUPS.map(group => <article key={group.key} className="min-w-0 border border-[#2E4A62] bg-[#071522] p-2 print:break-inside-avoid">
+                    <h3 className="mb-2 border-b border-slate-200 pb-1 text-[9px] font-black uppercase tracking-wider text-[#123B50]">{group.label}</h3>
+                    {ishikawa[group.key].length ? <ul className="space-y-1.5">{ishikawa[group.key].map((cause, index) => <li key={group.key + '-' + index} className="flex items-start gap-1.5 text-[10px] leading-4 text-slate-700"><span className="mt-1 text-[#2D8DB8]">◆</span><span className="min-w-0 flex-1 break-words">{cause}</span><button type="button" className="no-print print:hidden shrink-0 text-rose-600" aria-label={'Remover causa ' + (index + 1) + ' de ' + group.label} onClick={() => setIshikawa(current => ({ ...current, [group.key]: current[group.key].filter((_, i) => i !== index) }))}><Trash2 size={11}/></button></li>)}</ul> : <p className="text-[9px] italic text-slate-400">Nenhuma causa registrada.</p>}
+                  </article>)}
+                </div>
+              </div>
+            </section>
+
+            <section className="rnc-section border border-slate-200 bg-white print:break-inside-avoid">
+              <div className="flex min-h-8 flex-wrap items-center gap-2 border-b border-slate-200 bg-[#eaf4f8] px-3 py-1.5"><span className="text-[10px] font-bold text-[#123B50]">04</span><h2 className="text-[10px] font-bold uppercase tracking-wider text-[#123B50]">Plano de ação mitigatório · 5W2H</h2><button type="button" className={secondaryButton + ' ml-auto'} onClick={() => setActions(current => [...current, emptyAction()])}><Plus size={12}/> Adicionar ação</button><button type="button" className={buttonClass} onClick={() => void saveActions()} disabled={busy || !selectedRecord}><Save size={12}/> Salvar ações</button></div>
               <div className="overflow-x-auto">
                 <table className="rnc-actions-table w-full min-w-[1000px] table-fixed border-collapse print:min-w-0">
                   <thead className="bg-slate-100 text-left text-[9px] font-bold uppercase text-slate-600"><tr className="h-8">{['O quê','Quem · responsável','Quando · prazo','Como','Por quê','Onde','Quanto',''].map((title, index) => <th key={title || index} className="border-b border-r border-slate-200 px-2">{title}</th>)}</tr></thead>
@@ -262,12 +411,12 @@ export default function SalaRNC() {
               <p className="border-t border-slate-100 px-3 py-2 text-[9px] text-slate-500">Uma ação só será persistida quando O QUÊ, QUEM, QUANDO e COMO estiverem preenchidos. As ações são gravadas na tabela CAPA existente, sob as políticas RLS da empresa.</p>
             </section>
 
-            <section className="rnc-history-section border border-slate-200 bg-white print:hidden">
+            <section className="rnc-history-section border border-[#2E4A62] bg-[#0D2638] print:hidden">
               <div className="flex h-8 items-center gap-2 border-b border-slate-200 bg-[#eaf4f8] px-3"><h2 className="text-[10px] font-bold uppercase tracking-wider text-[#123B50]">Registro de RPNCs da empresa</h2><span className="ml-auto text-[9px] text-slate-500">{records.length} registro(s)</span></div>
               <div className="max-h-[280px] overflow-auto">
                 <table className="w-full min-w-[800px] border-collapse text-left">
                   <thead className="sticky top-0 bg-slate-100 text-[9px] font-bold uppercase text-slate-600"><tr className="h-8"><th className="px-2">Número</th><th className="px-2">Descrição</th><th className="px-2">Origem</th><th className="px-2">Lote</th><th className="px-2">Status</th><th className="px-2">Criada em</th></tr></thead>
-                  <tbody className="text-[10px]">{records.map(record => <tr key={record.id} className={'h-8 cursor-pointer border-t border-slate-100 hover:bg-sky-50 ' + (record.id === selectedRnc ? 'bg-sky-50' : '')} onClick={() => setSelectedRnc(record.id)}><td className="px-2 font-semibold text-[#2D8DB8]">{record.numero_rpnc}</td><td className="max-w-[420px] truncate px-2" title={record.descricao_nao_conformidade}>{record.descricao_nao_conformidade}</td><td className="px-2">{record.origem || '—'}</td><td className="px-2">{record.lote_producao || '—'}</td><td className="px-2">{record.status}</td><td className="px-2">{record.criado_em ? new Date(record.criado_em).toLocaleString('pt-BR') : '—'}</td></tr>)}</tbody>
+                  <tbody className="text-[10px]">{records.map(record => <tr key={record.id} className={'h-8 cursor-pointer border-t border-slate-100 hover:bg-sky-50 ' + (record.id === selectedRnc ? 'bg-sky-50' : '')} onClick={() => openRncRecord(record)}><td className="px-2 font-semibold text-[#2D8DB8]">{record.numero_rpnc}</td><td className="max-w-[420px] truncate px-2" title={record.descricao_nao_conformidade}>{record.descricao_nao_conformidade}</td><td className="px-2">{record.origem || '—'}</td><td className="px-2">{record.lote_producao || '—'}</td><td className="px-2">{record.status}</td><td className="px-2">{record.criado_em ? new Date(record.criado_em).toLocaleString('pt-BR') : '—'}</td></tr>)}</tbody>
                 </table>
               </div>
             </section>
@@ -284,7 +433,7 @@ export default function SalaRNC() {
           <span className="text-right md:text-center">{deployStatus}</span>
           <span className="text-right">Dados por empresa · RLS ativo</span>
         </footer>
-        <style>{'@media print{@page{size:A4 portrait;margin:10mm}.rnc-screen-header,.rnc-history-section{display:none!important}.rnc-print-header{display:grid!important}.rnc-print-document{max-width:none!important;width:100%!important}.rnc-actions-table{min-width:0!important;font-size:8px!important}.rnc-actions-table th,.rnc-actions-table td{padding:2px!important;overflow-wrap:anywhere}.rnc-actions-table input,.rnc-actions-table select{height:auto!important;min-height:0!important;padding:1px!important;border:0!important;background:transparent!important;font-size:8px!important;color:#111!important}.rnc-actions-table button,.group span[role=tooltip]{display:none!important}.rnc-section{margin-bottom:6px!important;break-inside:avoid}.rnc-signatures{padding-top:22px!important;padding-bottom:8px!important}.rnc-signatures div{min-height:22px}}'}</style>
+        <style>{'@media print{@page{size:A4 landscape;margin:8mm}.rnc-print-document,.rnc-section{background:#fff!important;color:#111!important}.rnc-section h2,.rnc-section h3{color:#111!important}.rnc-section{border-color:#888!important}.rnc-section>div:first-child{background:#eee!important;color:#111!important}.rnc-section *{background-color:transparent!important;color:#111!important;border-color:#aaa!important;box-shadow:none!important}.rnc-section button{display:none!important}.rnc-screen-header,.rnc-history-section{display:none!important}.rnc-print-header{display:grid!important}.rnc-print-document{max-width:none!important;width:100%!important}.rnc-actions-table{min-width:0!important;font-size:8px!important}.rnc-actions-table th,.rnc-actions-table td{padding:2px!important;overflow-wrap:anywhere}.rnc-actions-table input,.rnc-actions-table select{height:auto!important;min-height:0!important;padding:1px!important;border:0!important;background:transparent!important;font-size:8px!important;color:#111!important}.rnc-actions-table button,.group span[role=tooltip]{display:none!important}.rnc-section{margin-bottom:6px!important;break-inside:avoid}.rnc-signatures{padding-top:22px!important;padding-bottom:8px!important}.rnc-signatures div{min-height:22px}}'}</style>
       </main>
     </ERPHorizontalShell>
   )
