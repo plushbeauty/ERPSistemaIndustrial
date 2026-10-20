@@ -66,6 +66,11 @@ export default function QualidadeFMEA() {
       setError('Preencha item/processo, função, modo de falha, efeito, causa e controles atuais.')
       return
     }
+    const riskScores = [draft.severidade, draft.ocorrencia, draft.deteccao]
+    if (!riskScores.every(score => Number.isInteger(score) && score >= 1 && score <= 10)) {
+      setError('Severidade, ocorrência e detecção devem ser números inteiros entre 1 e 10.')
+      return
+    }
     setSaving(true)
     try {
       const result = await supabase.from('qualidade_fmea').insert({
