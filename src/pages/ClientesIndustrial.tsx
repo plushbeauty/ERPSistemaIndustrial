@@ -1,7 +1,7 @@
 /*
 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
 - Arquivo: src/pages/ClientesIndustrial.tsx
-- Status Atual: Revisão 3 (Cadastro Comercial e Política de Preços)
+- Status Atual: Revisão 4 (Controles h-9 e persistência preservada) — 20/10/2026
 - Total de Linhas Gerado: 27 Desenvolverdor FernandoSch.
 - Assinatura de Entrada (Primeiros 3 Imports): import { FormEvent, useEffect, useState } from 'react' | import { Check, Pencil, Plus, Search, X, Trash2, RefreshCw, Printer, Filter } from 'lucide-react' | import { supabase } from '../lib/supabaseClient'
 - Regra de Negócio Incorporada: Cadastro real de cliente com tipo comercial, tabela de preço e desconto percentual padrão.
@@ -14,7 +14,7 @@ type Client={id:string;codigo:string|null;nome:string;documento:string|null;emai
 type PriceTable={id:string;codigo:string;nome:string;ativo:boolean}
 type Form={codigo:string;nome:string;documento:string;email:string;telefone:string;tipo_cliente:string;tabela_preco_id:string;desconto_padrao_percentual:string;ativo:boolean}
 const empty:Form={codigo:'',nome:'',documento:'',email:'',telefone:'',tipo_cliente:'PADRAO',tabela_preco_id:'',desconto_padrao_percentual:'0',ativo:true}
-const input:React.CSSProperties={width:'100%',height:28,border:'1px solid #b9c9d4',borderRadius:2,padding:'0 6px',boxSizing:'border-box',background:'#fff',color:'#111827',fontSize:10,minWidth:0}
+const input:React.CSSProperties={width:'100%',height:36,border:'1px solid #b9c9d4',borderRadius:2,padding:'0 6px',boxSizing:'border-box',background:'#fff',color:'#111827',fontSize:10,minWidth:0}
 const label:React.CSSProperties={display:'grid',gap:2,fontSize:9,fontWeight:700,textTransform:'uppercase',color:'#344054',minWidth:0}
 const panel:React.CSSProperties={background:'#fff',border:'1px solid #c7dce8',borderRadius:2,boxShadow:'0 2px 7px rgba(18,59,80,.08)'}
 const action=(primary=false,danger=false):React.CSSProperties=>({height:30,display:'inline-flex',alignItems:'center',justifyContent:'center',gap:4,border:'1px solid '+(primary?'#2D8DB8':danger?'#d65b61':'#b9c9d4'),borderRadius:2,padding:'0 8px',fontSize:9,fontWeight:700,cursor:'pointer',background:primary?'#2D8DB8':danger?'#fff5f5':'#fff',color:primary?'#fff':danger?'#b42318':'#123B50',whiteSpace:'nowrap'})
