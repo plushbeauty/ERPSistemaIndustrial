@@ -29,6 +29,8 @@ export default function ComprasRFQ() {
   const [needDate, setNeedDate] = useState('')
   const [responseDate, setResponseDate] = useState('')
   const [paymentCondition, setPaymentCondition] = useState('')
+  const [buyerResponsible, setBuyerResponsible] = useState('')
+  const [generalTerms, setGeneralTerms] = useState('')
   const [supplierQuery, setSupplierQuery] = useState('')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(true)
@@ -160,6 +162,8 @@ export default function ComprasRFQ() {
           data_necessidade: items.map(item => item.data_necessidade).filter(Boolean).sort()[0] || null,
           prazo_resposta: responseDate || null,
           condicao_pagamento: paymentCondition.trim() || null,
+          comprador_responsavel: buyerResponsible.trim() || null,
+          termo_condicao_geral: generalTerms.trim() || null,
           observacoes: notes.trim() || null,
           created_by: profile.data.id,
         })
@@ -292,10 +296,18 @@ export default function ComprasRFQ() {
                 <input value={paymentCondition} onChange={event => setPaymentCondition(event.target.value)} className="mt-1 h-10 w-full rounded border p-2" />
               </label>
               <label className="text-xs">
-                Necessidade
-                <input type="date" value={needDate} onChange={event => setNeedDate(event.target.value)} className="mt-1 h-10 w-full rounded border p-2" />
+                Necessidade / entrega na fábrica
+                <input type="date" value={needDate} onChange={event => setNeedDate(event.target.value)} className="mt-1 h-9 w-full rounded border p-2" />
+              </label>
+              <label className="text-xs md:col-span-2">
+                Comprador responsável
+                <input value={buyerResponsible} onChange={event => setBuyerResponsible(event.target.value)} maxLength={100} className="mt-1 h-9 w-full rounded border p-2" placeholder="Nome do comprador responsável" />
               </label>
             </div>
+            <label className="mt-4 block text-xs">
+              Termos e condições gerais de fornecimento
+              <textarea value={generalTerms} onChange={event => setGeneralTerms(event.target.value)} rows={3} className="mt-1 min-h-20 w-full rounded border p-3 text-sm" maxLength={10000} placeholder="Condições gerais, requisitos de embalagem, documentação e qualidade..." />
+            </label>
 
             <div className="mt-5 grid gap-2 md:grid-cols-[minmax(0,1fr)_120px_100px]">
               <div className="relative min-w-0">
