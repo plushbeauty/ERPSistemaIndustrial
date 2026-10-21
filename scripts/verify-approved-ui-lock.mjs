@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 
 /**
- * Approved UI lock — reviewed 2026-10-20, approval revision APROV-009 (global vertical sidebar, authenticated session header, and working settings/logout actions explicitly authorized by user). Explicitly authorized revisions APROV-005 (Novo Pedido), APROV-006 (Vendas / Status), and APROV-009 (global shell) are frozen alongside the restored screens.
+ * Approved UI lock — reviewed 2026-10-20, approval revision APROV-010 (right-aligned industrial icon rail; no Windows Start-menu navigation; authenticated session header and settings/logout preserved). Explicitly authorized revisions APROV-005 (Novo Pedido), APROV-006 (Vendas / Status), and APROV-009 (global shell) are frozen alongside the restored screens.
  * Any edit to a frozen file must fail CI until the user explicitly approves a new revision.
  * Do not update these hashes as part of ordinary styling/refactor work.
  */
@@ -15,7 +15,7 @@ const approved = [
   { path: 'src/components/TabletMenuModal.tsx', sha: '5a416adfe3154227f7b4a652543584dca88e58d0', label: 'Qualidade / Modal Tablet padrão (22 módulos)', source: 'approved modal design — keep unchanged unless explicitly authorized' },
   { path: 'src/pages/PCPTabletOperador.tsx', sha: 'a8384f3e0319a60a05592213cbb065006795cf2f', label: 'PCP / Tablet do operador', source: 'approved PCP tablet standard — keep unchanged unless explicitly authorized' },
   { path: 'src/components/PCPTabletMenuModal.tsx', sha: 'b02e84ec48381d26b50d05362d35cee24f378f37', label: 'PCP / Submenu Fichas de Processo', source: 'explicit user-approved submenu revision 2026-10-18 — freeze labels and destinations unless explicitly authorized' },
-  { path: 'src/components/layout/ERPHorizontalShell.tsx', sha: 'd7a68c345fb59a2d7ad1302d3a837e433af2586a', label: 'Shell global / barra lateral industrial recolhível', source: 'APROV-009 — sidebar azul industrial, rotas PCP reais, sessão Supabase, ajuda contextual, configurações e saída; launchers tablet preservados' },
+  { path: 'src/components/layout/ERPHorizontalShell.tsx', sha: '7f26d07257b1f079c0abfb76ac8d78da366b4058', label: 'Shell global / barra de ícones à direita', source: 'APROV-010 — trilho industrial à direita, rotinas acessíveis, sem menu Windows 11; sessão Supabase, ajuda contextual, configurações, saída e launchers tablet preservados' },
   { path: 'src/components/IndustrialCommandDashboard.tsx', sha: '821b2cb2add9ec0a31d0c81e906a2c1f6e84118b', label: 'Dashboard principal industrial', source: 'restored from user-provided archive 2026-10-18; freeze unless explicitly authorized' },
   { path: 'src/pages/PCPFichasProcesso.tsx', sha: '14a131d7c46eaee4ae8872a451914035358dab29', label: 'PCP / Fichas de Processo (Prensados, Injetados, Estamparia, Montagem)', source: 'explicitly authorized UI revision APROV-008 on 2026-10-19 — compact controls, white contrast, single source of truth for thermal zones, edit/update flow, A4 print and packaging photo workflow; frozen after this revision' },
   { path: 'src/pages/QualidadeInspecoesIndustrial.tsx', sha: 'ebb5bd1e523f38a2ab6169bda4e7a9855ee3e65a', label: 'Qualidade / Inspeções de Lotes', source: 'explicit user-provided approval directive 2026-10-19 — Steel Blue split-screen, compact h-8 controls and dense inspection grid; frozen after revision' },
