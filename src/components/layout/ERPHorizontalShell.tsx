@@ -306,7 +306,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           {searchedMenus.length === 0 && sidebarExpanded && <p className="erp-fixed-sidebar-empty">Nenhum módulo ou rotina encontrado.</p>}
         </nav>
         <div className="erp-fixed-sidebar-footer">
-          <button type="button" onClick={() => navigate('/configuracoes-adm')} title="Configurações" aria-label="Configurações"><Settings size={17} />{sidebarExpanded && <span>Configurações</span>}</button>
           <button type="button" onClick={() => void logout()} title="Sair da sessão" aria-label="Sair da sessão"><LogOut size={17} />{sidebarExpanded && <span>Sair da sessão</span>}</button>
         </div>
       </aside>
@@ -318,8 +317,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           <time dateTime={now.toISOString()}>{new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)} <span>·</span> {new Intl.DateTimeFormat('pt-BR', { timeStyle: 'medium' }).format(now)}</time>
           <div className="erp-windows-user"><UserRound size={14} /><span>{operatorName === 'Usuário ERP' ? sessionOperator : operatorName}</span></div>
           <button type="button" className="erp-windows-help" title="Ajuda da tela atual" aria-expanded={helpOpen} onClick={() => setHelpOpen(value => !value)}><CircleHelp size={15} /></button>
-          <button type="button" className="erp-windows-settings" onClick={() => navigate('/configuracoes-adm')} title="Abrir configurações" aria-label="Abrir configurações"><Settings size={14} /></button>
-          <button type="button" className="erp-windows-logout" onClick={() => void logout()} title="Sair da sessão"><LogOut size={13} /></button>
         </div>
         {helpOpen && <div className="erp-windows-help-panel" role="dialog" aria-label="Ajuda contextual da tela">
           <strong>{contextualHelp.title}</strong><p>{contextualHelp.purpose}</p><strong>Como usar</strong>
@@ -425,8 +422,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-system-title{align-items:flex-start;text-align:left}
         .erp-windows-system-title strong{font-size:12px;letter-spacing:.02em}
         .erp-windows-system-title span{max-width:42vw;overflow:hidden;text-overflow:ellipsis}
-        .erp-windows-settings{width:27px;height:27px;display:flex;align-items:center;justify-content:center;border:1px solid #cbd5e1;background:#fff;color:#123b50;cursor:pointer}
-        .erp-windows-settings:hover{background:#eaf5f8;border-color:#2d8db8}
         .erp-horizontal-workspace{margin-right:56px;width:calc(100% - 56px);min-height:calc(100vh - 48px)}
         .erp-windows-help-panel{position:fixed;top:54px;right:12px}
         @media(max-width:900px){.erp-fixed-sidebar{width:52px}.erp-sidebar-expanded .erp-fixed-sidebar{width:min(248px,82vw);box-shadow:-4px 0 22px rgba(0,0,0,.25)}.erp-windows-topbar{margin-right:52px;width:calc(100% - 52px);grid-template-columns:minmax(0,1fr) auto;padding:0 7px}.erp-horizontal-workspace{margin-right:52px;width:calc(100% - 52px)}.erp-windows-session time,.erp-windows-user{display:none}.erp-windows-system-title strong{font-size:10px}.erp-windows-system-title span{display:none}}
