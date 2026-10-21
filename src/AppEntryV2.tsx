@@ -184,6 +184,7 @@ const ControleProcessoInjetora = lazyPage(() => import('./pages/pcp/ControleProc
 const EstoqueCurvaABC = lazyPage(() => import('./pages/EstoqueCurvaABC'), 'EstoqueCurvaABC')
 const FinanceiroGraficoDesvios = lazyPage(() => import('./pages/FinanceiroGraficoDesvios'), 'FinanceiroGraficoDesvios')
 const ExpedicaoRoteirizacao = lazyPage(() => import('./pages/ExpedicaoRoteirizacao'), 'ExpedicaoRoteirizacao')
+const RomaneioCarga = lazyPage(() => import('./pages/logistica/RomaneioCarga'), 'default')
 const QualidadePFMEA = lazyPage(() => import('./pages/QualidadePFMEA'), 'QualidadePFMEA')
 const ManutencaoOrdens = lazyPage(() => import('./pages/ManutencaoOrdens'), 'ManutencaoOrdens')
 const ManutencaoCentral = lazyPage(() => import('./pages/ManutencaoCentral'), 'default')
@@ -612,6 +613,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/central-custos-industrial" element={<QualityPlanGate>{<CentralCustosIndustrial />}</QualityPlanGate>} />
       <Route path="/expedicao/roteirizacao" element={<ExpedicaoRoteirizacao />} />
       <Route path="/expedicao/portaria" element={<ExpedicaoPortaria />} />
+      <Route path="/logistica/romaneio-carga" element={<RomaneioCarga />} />
       <Route path="/engenharia" element={<QualityPlanGate>{<EngenhariaCentral />}</QualityPlanGate>} />
       <Route path="/engenharia/revisoes-bom" element={<QualityPlanGate>{<EngenhariaRevisoesBOM />}</QualityPlanGate>} />
       <Route path="/engenharia/ficha" element={<QualityPlanGate>{<FichaEngenharia />}</QualityPlanGate>} />
