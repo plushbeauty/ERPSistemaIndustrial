@@ -112,7 +112,7 @@ export default function PCPProgramacaoGantt() {
           <label className="sqg-search"><Search size={15} /><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar máquina..." /></label>
           <div className="sqg-nav">
             <button type="button" aria-label="Dia anterior" onClick={() => setFrom(d => new Date(d.getTime() - DAY_MS))}><ChevronLeft size={16} /></button>
-            <button type="button" onClick={() => setFrom(startOfDay(new Date(Date.now() - DAY_MS)))}><CalendarDays size={15} /> Hoje</button>
+            <button type="button" onClick={() => setFrom(startOfDay(new Date()))><CalendarDays size={15} /> Hoje</button>
             <button type="button" aria-label="Próximo dia" onClick={() => setFrom(d => new Date(d.getTime() + DAY_MS))}><ChevronRight size={16} /></button>
           </div>
           <button type="button" className="sqg-primary" onClick={() => void load()} disabled={busy}><RefreshCw size={15} className={busy ? 'spin' : ''} /> Atualizar</button>
