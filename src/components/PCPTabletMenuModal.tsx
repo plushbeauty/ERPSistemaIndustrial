@@ -40,6 +40,7 @@ const modules: readonly ModuleItem[] = [
   { number: 'P12', label: 'OEE / INDICADORES', description: 'Indicadores de eficiência produtiva.', route: '/pcp/dashboard-oee', icon: RefreshCw },
   { number: 'P13', label: 'AUDITORIA PCP', description: 'Registro de conformidade, erros e melhorias do PCP.', route: '/pcp/auditoria', icon: ShieldCheck },
   { number: 'P14', label: 'TABLET OPERADOR', description: 'Interface dedicada para apontamento no chão de fábrica.', route: '/pcp/tablet-operador', icon: Factory },
+  { number: 'P15', label: 'PROGRAMAÇÃO GANTT', description: 'Programação visual das ordens por máquina e horário.', route: '/pcp/programacao-gantt', icon: CalendarDays },
 ]
 
 export default function PCPTabletMenuModal({
