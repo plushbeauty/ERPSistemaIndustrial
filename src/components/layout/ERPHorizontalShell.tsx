@@ -227,7 +227,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     : pathname.startsWith('/rh') ? { title: 'Recursos Humanos', subtitle: 'Cadastros e rotinas de recursos humanos' }
     : pathname.startsWith('/produtos-vendas') || pathname.startsWith('/cadastros') ? { title: 'Cadastros Mestres', subtitle: 'Dados mestres utilizados pelos módulos do ERP' }
     : pathname.startsWith('/configuracoes') ? { title: 'Configurações do ERP', subtitle: 'Parâmetros e administração do ambiente' }
-    : { title: 'SGQERP INDUSTRIAL', subtitle: 'Gestão integrada da operação industrial' }
+    : { title: 'SYSNQRA ERP & SGQ INDUSTRIAL', subtitle: 'Gestão integrada da operação industrial' }
 
   const contextualHelp = pathname.startsWith('/pcp/mrp-ii')
     ? { title: 'MRP II — Planejamento de materiais', purpose: 'Calcular necessidades de materiais a partir da demanda, estrutura dos produtos, estoque e ordens existentes. Esta tela não é a agenda de máquinas.', steps: ['Confirme que produtos, fichas técnicas/estruturas e saldos de estoque estão atualizados.', 'Execute o cálculo MRP e confira as necessidades líquidas por componente.', 'Revise as sugestões de comprar ou produzir antes de gerar ordens planejadas.'], fields: ['Produto/demanda: item acabado e quantidade a planejar.', 'Horizonte/data: período considerado no planejamento.', 'Necessidade líquida: quantidade que falta após estoque e reservas.', 'Sugestão: comprar ou produzir; confira antes de confirmar.'] }
@@ -268,7 +268,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           </button>
           {startMenuOpen && <section className="erp-windows-start-menu" aria-label="Menu principal do ERP">
             <div className="erp-windows-start-heading">
-              <div><strong>SGQERP INDUSTRIAL</strong><small>Menu de módulos</small></div>
+              <div><strong>SYSNQRA ERP & SGQ INDUSTRIAL</strong><small>Menu de módulos</small></div>
               <button type="button" aria-label="Fechar menu" onClick={() => setStartMenuOpen(false)}><X size={14} /></button>
             </div>
             <label className="erp-windows-menu-search">
@@ -308,7 +308,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           {moduleSearch && <button type="button" aria-label="Limpar pesquisa" onClick={() => setModuleSearch('')}><X size={12} /></button>}
         </label>
         <div className="erp-windows-system-title" aria-live="polite">
-          <strong>SGQERP INDUSTRIAL</strong><span>GESTÃO INTEGRADA · v0.1.7</span>
+          <strong>SYSNQRA ERP & SGQ INDUSTRIAL</strong><span>GESTÃO INTEGRADA · v0.1.7</span>
         </div>
         <div className="erp-windows-session">
           <time dateTime={now.toISOString()}>{new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(now)} <span>·</span> {new Intl.DateTimeFormat('pt-BR', { timeStyle: 'medium' }).format(now)}</time>
