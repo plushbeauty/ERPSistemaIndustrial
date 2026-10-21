@@ -180,11 +180,11 @@ export default function PCPProgramacaoGantt() {
           const routes: Record<string, string> = {
             pcp: '/pcp/programacao-gantt',
             maq: '/pcp/agenda-maquinas',
-            est: '/estoque',
+            est: '/estoque/saldos',
             op: '/pcp/ordens',
             man: '/manutencao',
             ind: '/pcp/capacidade',
-            usu: '/configuracoes-adm',
+            usu: '/usuarios',
             cfg: '/configuracoes-adm',
           }
           navigate(routes[id] ?? '/pcp')
