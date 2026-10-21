@@ -3,7 +3,6 @@ import { Menu } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
 import { SYNQRA_MODULES } from '../assets/synqra/icons'
-import synqraLogo from '../assets/synqra/logo-synqra.png'
 
 type MenuItem = { label: string; route: string }
 
@@ -97,19 +96,16 @@ export default function Sidebar() {
   return (
     <>
       {isMobileOpen && (
-        <button
-          type="button"
-          className="synqra-sidebar-backdrop"
-          onClick={closeMobileSidebar}
-          aria-label="Fechar navegação"
-        />
+        <button type="button" className="synqra-sidebar-backdrop" onClick={closeMobileSidebar} aria-label="Fechar navegação" />
       )}
       <aside
         className={`synqra-sidebar${isExpanded ? ' is-expanded' : ' is-collapsed'}${isMobileOpen ? ' is-mobile-open' : ''}`}
         aria-label="Navegação principal do SYSNQRA ERP & SGQ INDUSTRIAL"
       >
-        <div className="synqra-sidebar-brand" title="SYSNQRA ERP & SGQ INDUSTRIAL">
-          <img src={synqraLogo} alt="SYSNQRA ERP & SGQ INDUSTRIAL" />
+        <div className="synqra-sidebar-brand">
+          <button type="button" className="synqra-sidebar-toggle" onClick={toggleSidebar} aria-label={isExpanded ? 'Recolher menu' : 'Abrir menu'} title={isExpanded ? 'Recolher menu' : 'Abrir menu'} aria-expanded={isExpanded}>
+            <Menu size={20} aria-hidden="true" />
+          </button>
         </div>
         <nav className="synqra-sidebar-nav" aria-label="Módulos do ERP">
           {modules.map(({ key, label, route, Icon }) => {
@@ -124,7 +120,9 @@ export default function Sidebar() {
                 aria-haspopup="menu"
                 aria-expanded={expanded}
                 title={label}
-                onClick={() => {
+                onClick={event => {
+                  const rect = event.currentTarget.getBoundingClientRect()
+                  setFlyoutTop(Math.max(8, Math.min(rect.top, window.innerHeight - 260)))
                   setOpenKey(value => value === key ? null : key)
                 }}
               >
@@ -143,23 +141,14 @@ export default function Sidebar() {
             {flyoutItems.map(item => {
               const active = location.pathname === item.route
               return (
-                <button
-                  key={item.route}
-                  type="button"
-                  role="menuitem"
-                  className={`synqra-sidebar-flyout-item${active ? ' is-active' : ''}`}
-                  onClick={() => goTo(item.route)}
-                  title={item.label}
-                >
+                <button key={item.route} type="button" role="menuitem" className={`synqra-sidebar-flyout-item${active ? ' is-active' : ''}`} onClick={() => goTo(item.route)} title={item.label}>
                   <span>{item.label}</span>
                 </button>
               )
             })}
           </section>
         )}
-        <div className="synqra-sidebar-footer" title="SYSNQRA ERP & SGQ INDUSTRIAL">
-          <span className="synqra-slashes" aria-hidden="true"><i /><i /><i /></span>
-        </div>
+        <div className="synqra-sidebar-footer" aria-hidden="true" />
       </aside>
     </>
   )
