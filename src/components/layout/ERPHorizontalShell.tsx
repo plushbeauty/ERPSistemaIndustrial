@@ -331,7 +331,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
       <BarraWindows11
         ativo={pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/estoque') ? 'est' : pathname.startsWith('/manutencao') ? 'man' : pathname.startsWith('/vendas') ? 'vend' : pathname.startsWith('/compras') ? 'comp' : pathname.startsWith('/qualidade') ? 'qual' : pathname.startsWith('/fiscal') ? 'fis' : pathname.startsWith('/financeiro') ? 'fin' : pathname.startsWith('/engenharia') ? 'eng' : pathname.startsWith('/usuarios') ? 'usu' : pathname.startsWith('/configuracoes') ? 'cfg' : ''}
-        operador={operatorName === 'Usuário ERP' ? sessionOperator : operatorName}
         onAbrir={(id) => {
           const routes: Record<string, string> = {
             pcp: '/pcp/programacao-gantt',
@@ -351,7 +350,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           }
           go(routes[id] ?? '/erp-industrial')
         }}
-        onDesligar={() => { void logout() }}
       />
 
       <style>{`
