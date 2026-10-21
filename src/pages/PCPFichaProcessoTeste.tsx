@@ -1,3 +1,9 @@
+/**
+ * REV-PCP-FICHA-TESTE-001 | 2026-10-21
+ * Fonte: protótipo visual enviado pelo Lovable.dev.
+ * Escopo: avaliação visual isolada; dados demonstrativos claramente identificados.
+ * Segurança: não grava dados e não substitui a ficha aprovada.
+ */
 import { useMemo, useState } from 'react'
 import { Activity, ArrowLeft, BadgeCheck, Box, CalendarClock, ClipboardList, Factory, Gauge, Printer, Search, Thermometer, Wrench } from 'lucide-react'
 import { Link } from 'react-router-dom'
