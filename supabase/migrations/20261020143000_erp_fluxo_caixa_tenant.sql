@@ -13,9 +13,7 @@ create table if not exists public.erp_fluxo_caixa (
   status varchar(20) not null default 'PENDENTE' check (status in ('PENDENTE','PAGO')),
   pedido_venda_id uuid null references public.erp_pedidos_venda(id) on delete set null,
   rfq_id uuid null references public.erp_rfq(id) on delete set null,
-  created_at timestamptz not null default now(),
-  constraint erp_fluxo_caixa_data_pagamento_check
-    check (data_pagamento is null or data_pagamento >= data_vencimento or status = 'PAGO')
+  created_at timestamptz not null default now()
 );
 
 create index if not exists idx_erp_fluxo_caixa_empresa_vencimento
