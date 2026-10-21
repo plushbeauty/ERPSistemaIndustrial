@@ -43,3 +43,11 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Cadastro de Fornecedores já utiliza botão primário azul `#2D8DB8` com texto branco; permanece como referência visual.
 - Status do pedido fica congelado novamente nesta revisão. Mudanças futuras exigem ordem expressa do usuário e nova revisão do hash.
 - O contrato de lock também foi sincronizado com os hashes Git reais atuais de Produtos e Login, sem alterar o conteúdo dessas duas telas.
+
+
+## Registro da revisão APROV-011 — 2026-10-21
+
+- Navegação global: mantém uma única barra superior inspirada no Windows 11 em todas as rotas internas envolvidas pelo `ERPHorizontalShell`.
+- Uniformiza a identidade textual do shell para `SYSNQRA ERP & SGQ INDUSTRIAL`, preservando o menu de módulos, pesquisa e navegação interna.
+- Escopo restrito ao shell global e ao contrato de hash. Nenhuma página operacional aprovada foi editada.
+- O verificador de UI aprovada congela o hash desta revisão; alterações futuras exigem nova autorização explícita.
