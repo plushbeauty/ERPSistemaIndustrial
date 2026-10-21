@@ -106,6 +106,24 @@ const menus: MenuItem[] = [
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
 ]
 
+const moduleColors: Record<string, string> = {
+  'Início': 'linear-gradient(135deg,#0ea5e9,#0369a1)',
+  'Cadastros': 'linear-gradient(135deg,#6366f1,#3730a3)',
+  'Vendas': 'linear-gradient(135deg,#22c55e,#15803d)',
+  'Compras': 'linear-gradient(135deg,#f59e0b,#b45309)',
+  'Estoque': 'linear-gradient(135deg,#a16207,#713f12)',
+  'Engenharia': 'linear-gradient(135deg,#06b6d4,#0e7490)',
+  'Financeiro': 'linear-gradient(135deg,#10b981,#047857)',
+  'Fiscal': 'linear-gradient(135deg,#64748b,#334155)',
+  'Manufatura / PCP': 'linear-gradient(135deg,#f97316,#c2410c)',
+  'Qualidade': 'linear-gradient(135deg,#1e293b,#020617)',
+  'Manutenção': 'linear-gradient(135deg,#ef4444,#b91c1c)',
+  'Recursos Humanos': 'linear-gradient(135deg,#ec4899,#be185d)',
+  'Relatórios': 'linear-gradient(135deg,#3b82f6,#1d4ed8)',
+  'Configuração': 'linear-gradient(135deg,#71717a,#3f3f46)',
+}
+const moduleColor = (label: string) => moduleColors[label] ?? 'linear-gradient(135deg,#0ea5e9,#0369a1)'
+
 export default function ERPHorizontalShell({ children, operatorName = 'Usuário ERP' }: { children: ReactNode; operatorName?: string }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
