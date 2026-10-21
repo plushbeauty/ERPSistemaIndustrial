@@ -6,6 +6,7 @@ import { fetchAllPages } from '../lib/supabasePagination'
 import VendasLayout from './VendasLayout'
 
 type Supplier = { id: string; razao_social: string; email: string | null }
+type SupplierQuote = { custo: string; prazo: string; condicao: string }
 type Product = { id: string; codigo: string; nome: string; unidade: string }
 type Item = {
   produto_id: string
@@ -22,6 +23,13 @@ export default function ComprasRFQ() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>([])
+  const [quotes, setQuotes] = useState<Record<string, SupplierQuote>>({})
+  const [winnerId, setWinnerId] = useState('')
+  const [buyer, setBuyer] = useState('')
+  const [approvalStatus, setApprovalStatus] = useState('EM_ANALISE')
+  const [deadline, setDeadline] = useState('')
+  const [deliveryForecast, setDeliveryForecast] = useState('')
+  const [justification, setJustification] = useState('')
   const [items, setItems] = useState<Item[]>([])
   const [productId, setProductId] = useState('')
   const [productQuery, setProductQuery] = useState('')
@@ -29,8 +37,6 @@ export default function ComprasRFQ() {
   const [needDate, setNeedDate] = useState('')
   const [responseDate, setResponseDate] = useState('')
   const [paymentCondition, setPaymentCondition] = useState('')
-  const [buyerResponsible, setBuyerResponsible] = useState('')
-  const [generalTerms, setGeneralTerms] = useState('')
   const [supplierQuery, setSupplierQuery] = useState('')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(true)
@@ -84,6 +90,13 @@ export default function ComprasRFQ() {
     return suppliers.filter(supplier => !query
       || `${supplier.razao_social} ${supplier.email ?? ''}`.toLocaleLowerCase('pt-BR').includes(query))
   }, [supplierQuery, suppliers])
+  const selectedQuotes = useMemo(() => selectedSuppliers.map(id => ({ id, quote: quotes[id] })).filter((entry): entry is { id: string; quote: SupplierQuote } => Boolean(entry.quote)), [selectedSuppliers, quotes])
+  const lowestNetCost = useMemo(() => {
+    const costs = selectedQuotes.map(({ quote }) => quote.custo.trim() === '' ? Number.NaN : Number(quote.custo)).filter(value => Number.isFinite(value) && value >= 0)
+    return costs.length ? Math.min(...costs) : null
+  }, [selectedQuotes])
+  const winnerCost = winnerId ? Number(quotes[winnerId]?.custo) : NaN
+  const justificationRequired = lowestNetCost !== null && winnerId !== '' && Number.isFinite(winnerCost) && winnerCost > lowestNetCost
   const totalQuantity = useMemo(
     () => items.reduce((sum, item) => sum + Number(item.quantidade), 0),
     [items],
@@ -125,6 +138,18 @@ export default function ComprasRFQ() {
       setError('Selecione ao menos um fornecedor e um item.')
       return
     }
+    if (!winnerId || !selectedSuppliers.includes(winnerId)) {
+      setError('Selecione o fornecedor vencedor entre os fornecedores cotados.')
+      return
+    }
+    if (selectedQuotes.length !== selectedSuppliers.length || selectedQuotes.some(({ quote }) => quote.custo.trim() === '' || !Number.isFinite(Number(quote.custo)) || Number(quote.custo) < 0 || quote.prazo.trim() === '' || !Number.isFinite(Number(quote.prazo)) || Number(quote.prazo) < 0)) {
+      setError('Informe custo líquido e prazo válidos para todos os fornecedores selecionados.')
+      return
+    }
+    if (justificationRequired && !justification.trim()) {
+      setError('A justificativa é obrigatória quando o fornecedor escolhido não oferece o menor custo líquido.')
+      return
+    }
     setBusy(true)
     setError('')
     setMessage('')
@@ -159,11 +184,16 @@ export default function ComprasRFQ() {
         .insert({
           empresa_id: empresaId,
           status: 'ABERTA',
+          comprador_responsavel: buyer.trim() || null,
+          status_aprovacao: approvalStatus,
+          data_limite: deadline || null,
+          previsao_entrega: deliveryForecast || null,
+          data_conclusao: ['APROVADO', 'REJEITADO'].includes(approvalStatus) ? new Date().toISOString().slice(0, 10) : null,
+          justificativa_escolha: justification.trim() || null,
+          menor_custo_liquido_atendido: !justificationRequired,
           data_necessidade: items.map(item => item.data_necessidade).filter(Boolean).sort()[0] || null,
           prazo_resposta: responseDate || null,
           condicao_pagamento: paymentCondition.trim() || null,
-          comprador_responsavel: buyerResponsible.trim() || null,
-          termo_condicao_geral: generalTerms.trim() || null,
           observacoes: notes.trim() || null,
           created_by: profile.data.id,
         })
@@ -176,11 +206,23 @@ export default function ComprasRFQ() {
 
       const supplierInsert = await supabase
         .from('erp_rfq_fornecedores')
-        .insert(selectedSuppliers.map(fornecedorId => ({
-          empresa_id: empresaId,
-          rfq_id: rfqId,
-          fornecedor_id: fornecedorId,
-        })))
+        .insert(selectedSuppliers.map(fornecedorId => {
+          const quote = quotes[fornecedorId]
+          const cost = Number(quote.custo)
+          return {
+            empresa_id: empresaId,
+            rfq_id: rfqId,
+            fornecedor_id: fornecedorId,
+            valor_total: cost,
+            valor_frete: 0,
+            valor_desconto: 0,
+            prazo_entrega_dias: Number(quote.prazo),
+            condicao_pagamento: quote.condicao.trim() || paymentCondition.trim() || null,
+            custo_liquido_total: cost,
+            selecionado_para_pedido: fornecedorId === winnerId,
+            status: fornecedorId === winnerId ? 'SELECIONADO' : 'COTADO',
+          }
+        }))
       if (supplierInsert.error) throw supplierInsert.error
 
       const itemInsert = await supabase
@@ -201,6 +243,9 @@ export default function ComprasRFQ() {
       setMessage(`RFQ #${header.data.numero} criada com ${selectedSuppliers.length} fornecedor(es) e ${totalQuantity} unidades.`)
       setItems([])
       setSelectedSuppliers([])
+      setQuotes({})
+      setWinnerId('')
+      setJustification('')
     } catch (cause) {
       if (rfqId && empresaId) {
         const rollback = await supabase
@@ -222,7 +267,7 @@ export default function ComprasRFQ() {
 
   return (
     <VendasLayout title="Cotação de compras" subtitle="Fornecedores • materiais • prazo • condição de pagamento" onRefresh={() => window.location.reload()}>
-    <div className="compras-rfq-compact min-h-screen bg-[#F4F7FE] text-slate-900">
+    <div className="compras-rfq-compact min-h-screen bg-slate-50 text-slate-900">
       <header className="border-b bg-white">
         <div className="flex min-h-[70px] items-center justify-between gap-3 px-5 lg:px-8">
           <div>
@@ -270,9 +315,12 @@ export default function ComprasRFQ() {
                   <input
                     type="checkbox"
                     checked={selectedSuppliers.includes(supplier.id)}
-                    onChange={event => setSelectedSuppliers(current => event.target.checked
-                      ? [...current, supplier.id]
-                      : current.filter(id => id !== supplier.id))}
+                    onChange={event => {
+                      setSelectedSuppliers(current => event.target.checked
+                        ? [...current, supplier.id]
+                        : current.filter(id => id !== supplier.id))
+                      if (!event.target.checked && winnerId === supplier.id) setWinnerId('')
+                    }}
                   />
                   <span>
                     <strong>{supplier.razao_social}</strong>
@@ -286,36 +334,55 @@ export default function ComprasRFQ() {
           </section>
 
           <section className="rounded-lg border bg-white p-5 lg:col-span-2">
-            <div className="grid gap-3 md:grid-cols-4">
-              <label className="text-xs">
-                Prazo para resposta
-                <input type="date" value={responseDate} onChange={event => setResponseDate(event.target.value)} className="mt-1 h-10 w-full rounded border p-2" />
-              </label>
-              <label className="text-xs md:col-span-2">
-                Condição de pagamento
-                <input value={paymentCondition} onChange={event => setPaymentCondition(event.target.value)} className="mt-1 h-10 w-full rounded border p-2" />
-              </label>
-              <label className="text-xs">
-                Necessidade / entrega na fábrica
-                <input type="date" value={needDate} onChange={event => setNeedDate(event.target.value)} className="mt-1 h-9 w-full rounded border p-2" />
-              </label>
-              <label className="text-xs md:col-span-2">
+            <div className="grid grid-cols-12 gap-3">
+              <label className="col-span-12 text-xs sm:col-span-6 lg:col-span-4">
                 Comprador responsável
-                <input value={buyerResponsible} onChange={event => setBuyerResponsible(event.target.value)} maxLength={100} className="mt-1 h-9 w-full rounded border p-2" placeholder="Nome do comprador responsável" />
+                <input value={buyer} onChange={event => setBuyer(event.target.value)} className="mt-1 h-9 w-full rounded border px-3" maxLength={100} />
+              </label>
+              <label className="col-span-12 text-xs sm:col-span-6 lg:col-span-4">
+                Status da aprovação
+                <select value={approvalStatus} onChange={event => setApprovalStatus(event.target.value)} className="mt-1 h-9 w-full rounded border px-3">
+                  <option value="EM_ANALISE">Em análise</option><option value="APROVADO">Aprovado</option><option value="REPROVADO">Reprovado</option>
+                </select>
+              </label>
+              <label className="col-span-12 text-xs sm:col-span-6 lg:col-span-4">
+                Data limite
+                <input type="date" value={deadline} onChange={event => setDeadline(event.target.value)} className="mt-1 h-9 w-full rounded border px-3" />
+              </label>
+              <label className="col-span-12 text-xs sm:col-span-6 lg:col-span-4">
+                Previsão de entrega
+                <input type="date" value={deliveryForecast} onChange={event => setDeliveryForecast(event.target.value)} className="mt-1 h-9 w-full rounded border px-3" />
+              </label>
+              <label className="col-span-12 text-xs sm:col-span-6 lg:col-span-4">
+                Prazo para resposta
+                <input type="date" value={responseDate} onChange={event => setResponseDate(event.target.value)} className="mt-1 h-9 w-full rounded border px-3" />
+              </label>
+              <label className="col-span-12 text-xs sm:col-span-6 lg:col-span-4">
+                Condição de pagamento
+                <input value={paymentCondition} onChange={event => setPaymentCondition(event.target.value)} className="mt-1 h-9 w-full rounded border px-3" />
+              </label>
+              <label className="col-span-12 text-xs sm:col-span-6 lg:col-span-4">
+                Necessidade
+                <input type="date" value={needDate} onChange={event => setNeedDate(event.target.value)} className="mt-1 h-9 w-full rounded border px-3" />
               </label>
             </div>
-            <label className="mt-4 block text-xs">
-              Termos e condições gerais de fornecimento
-              <textarea value={generalTerms} onChange={event => setGeneralTerms(event.target.value)} rows={3} className="mt-1 min-h-20 w-full rounded border p-3 text-sm" maxLength={10000} placeholder="Condições gerais, requisitos de embalagem, documentação e qualidade..." />
-            </label>
 
-            <div className="mt-5 grid gap-2 md:grid-cols-[minmax(0,1fr)_120px_100px]">
-              <div className="relative min-w-0">
-                <input value={productQuery} onChange={event => { setProductQuery(event.target.value); setProductId('') }} onKeyDown={event => { if (event.key === 'Enter' && visibleProducts[0]) { event.preventDefault(); setProductId(visibleProducts[0].id); setProductQuery(visibleProducts[0].codigo + ' — ' + visibleProducts[0].nome) } }} placeholder="Digite código ou descrição do produto..." className="h-10 w-full rounded border px-3" aria-label="Pesquisar produto por código ou descrição" />
+            <section className="mt-4 overflow-x-auto rounded-lg border border-slate-200 p-3">
+              <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-[#123B50]">Mapa de custo líquido e seleção do fornecedor</h3>
+              {!selectedSuppliers.length ? <p className="text-xs text-slate-500">Selecione fornecedores no painel à esquerda para registrar as propostas.</p> : <table className="w-full min-w-[680px] text-xs"><thead><tr className="border-b bg-slate-50 text-left"><th className="p-2">Fornecedor</th><th className="p-2">Custo líquido (R$)</th><th className="p-2">Prazo (dias)</th><th className="p-2">Condição de pagamento</th><th className="p-2">Vencedor</th></tr></thead><tbody>{selectedSuppliers.map(id => { const supplier = suppliers.find(entry => entry.id === id); const quote = quotes[id] ?? { custo: '', prazo: '', condicao: '' }; return <tr key={id} className="border-b"><td className="p-2 font-semibold">{supplier?.razao_social ?? 'Fornecedor'}</td><td className="p-2"><input aria-label={`Custo líquido de ${supplier?.razao_social ?? 'fornecedor'}`} type="number" min="0" step="0.01" value={quote.custo} onChange={event => setQuotes(current => ({ ...current, [id]: { ...quote, custo: event.target.value } }))} className="h-9 w-32 rounded border px-2" /></td><td className="p-2"><input aria-label={`Prazo de ${supplier?.razao_social ?? 'fornecedor'}`} type="number" min="0" step="1" value={quote.prazo} onChange={event => setQuotes(current => ({ ...current, [id]: { ...quote, prazo: event.target.value } }))} className="h-9 w-24 rounded border px-2" /></td><td className="p-2"><input aria-label={`Condição de pagamento de ${supplier?.razao_social ?? 'fornecedor'}`} value={quote.condicao} onChange={event => setQuotes(current => ({ ...current, [id]: { ...quote, condicao: event.target.value } }))} className="h-9 w-40 rounded border px-2" /></td><td className="p-2 text-center"><input type="radio" name="rfq-winner" checked={winnerId === id} onChange={() => setWinnerId(id)} aria-label={`Selecionar ${supplier?.razao_social ?? 'fornecedor'} como vencedor`} /></td></tr> })}</tbody></table>}
+              {justificationRequired && <p className="mt-2 text-xs font-semibold text-amber-700">O fornecedor escolhido tem custo acima do menor valor (R$ {lowestNetCost?.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}). Justificativa obrigatória.</p>}
+              <label className="mt-3 block text-xs font-semibold text-slate-700">Justificativa de escolha {justificationRequired ? '(obrigatória)' : '(opcional)'}
+                <textarea value={justification} onChange={event => setJustification(event.target.value)} disabled={!justificationRequired} className="mt-1 min-h-20 w-full rounded border p-3 text-sm disabled:bg-slate-50 disabled:text-slate-400" placeholder={justificationRequired ? 'Explique o motivo comercial/técnico para escolher uma proposta mais cara.' : 'Não exigida quando o menor custo líquido é selecionado.'} />
+              </label>
+            </section>
+
+            <div className="mt-5 grid grid-cols-12 gap-2">
+              <div className="relative col-span-12 min-w-0 sm:col-span-6 lg:col-span-7">
+                <input value={productQuery} onChange={event => { setProductQuery(event.target.value); setProductId('') }} onKeyDown={event => { if (event.key === 'Enter' && visibleProducts[0]) { event.preventDefault(); setProductId(visibleProducts[0].id); setProductQuery(visibleProducts[0].codigo + ' — ' + visibleProducts[0].nome) } }} placeholder="Digite código ou descrição do produto..." className="h-9 w-full rounded border px-3" aria-label="Pesquisar produto por código ou descrição" />
                 {productQuery && !productId && <div className="absolute left-0 right-0 top-11 z-20 max-h-56 overflow-auto rounded border bg-white shadow-lg">{visibleProducts.map(product => <button key={product.id} type="button" className="block w-full border-b px-3 py-2 text-left text-xs hover:bg-slate-50" onClick={() => { setProductId(product.id); setProductQuery(product.codigo + ' — ' + product.nome) }}><strong>{product.codigo}</strong> — {product.nome} <span className="text-slate-500">({product.unidade})</span></button>)}{!visibleProducts.length && <p className="px-3 py-3 text-xs text-slate-500">Nenhum produto ativo encontrado.</p>}</div>}
               </div>
-              <input aria-label="Quantidade" type="number" min="0.0001" step="0.0001" value={quantity} onChange={event => setQuantity(event.target.value)} className="h-10 rounded border px-3" />
-              <button type="button" onClick={addItem} className="flex min-h-10 items-center justify-center gap-1 rounded bg-[#123B50] text-xs text-white">
+              <input aria-label="Quantidade" type="number" min="0.0001" step="0.0001" value={quantity} onChange={event => setQuantity(event.target.value)} className="col-span-6 h-9 rounded border px-3 sm:col-span-3 lg:col-span-2" />
+              <button type="button" onClick={addItem} className="col-span-6 flex h-9 items-center justify-center gap-1 rounded bg-[#123B50] text-xs text-white sm:col-span-3 lg:col-span-3">
                 <Plus size={15} /> Adicionar
               </button>
             </div>
@@ -355,73 +422,7 @@ export default function ComprasRFQ() {
           </section>
         </div>
       </main>
-      <style>{`
-/* Revisão visual RFQ — 20/10/2026 — Light Premium Azul; lógica e integração Supabase preservadas. */
-.compras-rfq-compact{min-height:100%;background:#f8fafc;color:#334155;font-family:Inter,ui-sans-serif,system-ui,sans-serif}
-.compras-rfq-compact>header{background:#f8fafc;border-color:#e2e8f0}
-.compras-rfq-compact>header>div{min-height:64px!important;padding:12px 20px!important;max-width:1600px;margin:auto}
-.compras-rfq-compact header h1{font-size:22px;font-weight:750;letter-spacing:-.025em;color:#0f172a}
-.compras-rfq-compact header p{font-size:10px;font-weight:800;letter-spacing:.14em;color:#2563eb}
-.compras-rfq-compact main{max-width:1600px!important;padding:18px!important}
-.compras-rfq-compact main>.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:18px}
-.compras-rfq-compact main>.grid>section:first-child{grid-column:span 4}
-.compras-rfq-compact main>.grid>section:nth-child(2){grid-column:span 8}
-.compras-rfq-compact section{min-width:0;padding:18px!important;background:#fff;border:1px solid #e2e8f0;border-radius:12px!important;box-shadow:0 4px 12px rgba(15,23,42,.05),0 1px 2px rgba(15,23,42,.03)}
-.compras-rfq-compact section h2{font-size:13px;font-weight:800;letter-spacing:.035em;color:#1e293b}
-.compras-rfq-compact label{color:#475569;font-size:11px;font-weight:700}
-.compras-rfq-compact input:not([type=checkbox]),.compras-rfq-compact select{box-sizing:border-box;width:100%;height:36px!important;min-height:36px!important;padding:0 10px;border:1px solid #cbd5e1;border-radius:7px!important;background:#fff;color:#334155;font-size:12px!important;outline:none;transition:border-color .15s,box-shadow .15s,background .15s}
-.compras-rfq-compact input::placeholder{color:#94a3b8}
-.compras-rfq-compact input:focus,.compras-rfq-compact select:focus,.compras-rfq-compact textarea:focus{border-color:#2563eb!important;box-shadow:0 0 0 3px rgba(37,99,235,.12);outline:none}
-.compras-rfq-compact textarea{box-sizing:border-box;width:100%;min-height:88px;padding:10px;border:1px solid #cbd5e1;border-radius:7px!important;background:#fff;color:#334155;font-size:12px!important;resize:vertical}
-.compras-rfq-compact input[type=checkbox]{width:16px;height:16px;flex:0 0 auto;accent-color:#2563eb;margin-top:2px}
-.compras-rfq-compact section:first-child label:has(input[type=checkbox]){align-items:flex-start;padding:11px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;transition:border-color .15s,background .15s}
-.compras-rfq-compact section:first-child label:has(input[type=checkbox]):hover{border-color:#bfdbfe;background:#eff6ff}
-.compras-rfq-compact section:first-child label strong{font-size:11px;line-height:1.4;color:#334155}
-.compras-rfq-compact section:first-child label span span{font-size:10px}
-.compras-rfq-compact section:first-child label:has(svg){height:36px;background:#f8fafc;border-color:#cbd5e1}
-.compras-rfq-compact section:first-child label:has(svg) input{border:0!important;box-shadow:none!important;background:transparent}
-.compras-rfq-compact button{min-height:36px;border-radius:7px!important;font-size:11px!important;font-weight:700;transition:background .15s,border-color .15s,box-shadow .15s}
-.compras-rfq-compact button:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
-.compras-rfq-compact main>div.grid>section:nth-child(2)>div:first-child{grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}
-.compras-rfq-compact main>div.grid>section:nth-child(2)>div:first-child label{grid-column:span 4;display:flex;flex-direction:column;gap:6px}
-.compras-rfq-compact main>div.grid>section:nth-child(2)>div:nth-child(2){grid-template-columns:minmax(0,1fr) 100px 120px;gap:10px}
-.compras-rfq-compact table{width:100%;border-collapse:separate;border-spacing:0;font-size:11px}
-.compras-rfq-compact thead{background:#eff6ff;color:#1e40af}
-.compras-rfq-compact th{padding:11px 12px!important;border-bottom:1px solid #dbeafe;text-align:left;font-size:9px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
-.compras-rfq-compact td{padding:10px 12px!important;border-bottom:1px solid #edf2f7;color:#334155;vertical-align:middle}
-.compras-rfq-compact tbody tr:nth-child(even){background:#f8fafc}
-.compras-rfq-compact tbody tr:hover{background:#eff6ff}
-.compras-rfq-compact td button{display:inline-grid;place-items:center;width:30px;height:30px;min-height:30px;border:1px solid #fecaca;background:#fff;color:#b91c1c}
-.compras-rfq-compact td button:hover{background:#fef2f2}
-.compras-rfq-compact .bg-red-50,.compras-rfq-compact .bg-emerald-50{border-radius:8px}
-.compras-rfq-compact button.bg-\\[\\#123B50\\]{background:#1e3a8a;box-shadow:0 2px 4px rgba(30,58,138,.16)}
-.compras-rfq-compact button.bg-\\[\\#123B50\\]:hover{background:#1d4ed8}
-.compras-rfq-compact button.bg-\\[\\#2D8DB8\\]{background:#2563eb;box-shadow:0 3px 8px rgba(37,99,235,.18)}
-.compras-rfq-compact button.bg-\\[\\#2D8DB8\\]:hover{background:#1d4ed8}
-.compras-rfq-compact button:disabled{opacity:.55;cursor:not-allowed}
-@media(max-width:900px){.compras-rfq-compact main>.grid{gap:12px}.compras-rfq-compact main>.grid>section:first-child,.compras-rfq-compact main>.grid>section:nth-child(2){grid-column:span 12}.compras-rfq-compact main>div.grid>section:nth-child(2)>div:first-child label{grid-column:span 12}.compras-rfq-compact main>div.grid>section:nth-child(2)>div:nth-child(2){grid-template-columns:minmax(0,1fr) 84px 110px}}
-@media(max-width:520px){.compras-rfq-compact>header>div{align-items:flex-start!important;flex-direction:column;padding:12px!important}.compras-rfq-compact header h1{font-size:18px}.compras-rfq-compact main{padding:10px!important}.compras-rfq-compact section{padding:12px!important}.compras-rfq-compact main>div.grid>section:nth-child(2)>div:nth-child(2){grid-template-columns:minmax(0,1fr) 80px}.compras-rfq-compact main>div.grid>section:nth-child(2)>div:nth-child(2)>button{grid-column:span 2}}
-@media(prefers-reduced-motion:reduce){.compras-rfq-compact *{transition:none!important}}
-
-/* Ajuste pontual RFQ — 20/10/2026: logo em 95%, faixa branca e tipografia uniforme de 13px. */
-body:has(.compras-rfq-compact) .synqra-workspace-header{background:#fff!important;color:#111827!important;border-bottom-color:#e2e8f0!important}
-body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-workspace-brand{background:#fff!important;color:#111827!important}
-body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-workspace-brand img{transform:scale(.95);transform-origin:center}
-body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-workspace-brand span{border-left-color:#d1d5db!important}
-body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-workspace-brand strong,
-body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-workspace-brand small,
-body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-header-title,
-body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-header-title small,
-body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-session strong,
-body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-session span,
-body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-logout,
-body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-tool-button{font-size:13px!important;color:#111827!important}
-.compras-rfq-compact,.compras-rfq-compact :is(p,h1,h2,h3,label,span,strong,small,button,input,select,textarea,th,td,a){font-size:13px!important}
-.compras-rfq-compact header h1{font-size:13px!important;line-height:1.25!important}
-.compras-rfq-compact header p{font-size:13px!important;letter-spacing:.02em!important}
-.compras-rfq-compact table,.compras-rfq-compact th,.compras-rfq-compact td{font-size:13px!important}
-.compras-rfq-compact input::placeholder,.compras-rfq-compact textarea::placeholder{font-size:13px!important}
-
+      <style>{`.compras-rfq-compact header>div{min-height:44px!important;padding:6px 12px!important}.compras-rfq-compact main{max-width:none!important;padding:8px!important}.compras-rfq-compact .rounded,.compras-rfq-compact .rounded-md,.compras-rfq-compact .rounded-lg{border-radius:3px!important}.compras-rfq-compact section{padding:12px!important}.compras-rfq-compact input:not([type=checkbox]):not([type=radio]),.compras-rfq-compact select{height:36px!important;min-height:36px!important;border-radius:3px!important;font-size:12px!important}.compras-rfq-compact textarea{border-radius:3px!important;font-size:12px!important}.compras-rfq-compact table{font-size:11px!important}.compras-rfq-compact th,.compras-rfq-compact td{padding:6px 8px!important}.compras-rfq-compact button{border-radius:3px!important;font-size:11px!important}
 `}</style>
     </div>
     </VendasLayout>
