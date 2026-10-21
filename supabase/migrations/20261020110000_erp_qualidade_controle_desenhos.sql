@@ -44,7 +44,7 @@ create or replace function public.erp_qualidade_desenho_nova_revisao(
   p_url_arquivo_cad text,
   p_motivo_alteracao text
 ) returns jsonb
-language plpgsql security invoker
+language plpgsql security definer
 set search_path = pg_catalog, public
 as $function$
 declare
@@ -102,7 +102,7 @@ $function$;
 
 create or replace function public.erp_qualidade_desenho_homologar(p_desenho_id uuid)
 returns jsonb
-language plpgsql security invoker
+language plpgsql security definer
 set search_path = pg_catalog, public
 as $function$
 declare
