@@ -71,6 +71,7 @@ const menus: MenuItem[] = [
     { label: 'Apontamentos', route: '/pcp/apontamentos' },
     { label: 'Demanda', route: '/pcp/demanda' },
     { label: 'Capacidade / Gantt', route: '/pcp/capacidade' },
+    { label: 'Programação Gantt', route: '/pcp/programacao-gantt' },
     { label: 'MRP II', route: '/pcp/mrp-ii' },
     { label: 'Agenda de máquinas', route: '/pcp/agenda-maquinas' },
     { label: 'Sequenciamento', route: '/pcp/sequenciamento' },
