@@ -117,8 +117,8 @@ export default function PublicIndustrialHome(){
 .sgq-trial-cta:hover{background:#2f8767;transform:translateY(-1px)}
 .sgq-stage{position:relative;align-self:stretch;width:100%;height:100%;min-width:0;margin:0;padding:0;border:0;border-radius:0;background:#123B50;box-shadow:none;overflow:hidden}
 .sgq-stage-media{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;border-radius:0;background:#123B50;overflow:hidden}
-.sgq-stage-media img{position:absolute;inset:0;display:block;width:100%;max-width:none;height:100%;object-fit:cover;object-position:center;padding:0;margin:0;border:0;border-radius:0;opacity:0;transform:scale(1.015);transition:opacity .65s ease,transform 5s ease}
-.sgq-stage-media img.active{opacity:1;transform:scale(1)}.sgq-stage-caption,.sgq-dots,.sgq-carousel-control{display:none!important}
+.sgq-stage-media img{position:absolute;inset:0;display:block;width:100%;max-width:none;height:100%;object-fit:cover;object-position:center;padding:0;margin:0;border:0;border-radius:0;opacity:0;transform:scale(1);transition:opacity .65s ease,transform 5s ease}
+.sgq-stage-media img.active{opacity:1;transform:scale(.95)}.sgq-stage-caption,.sgq-dots,.sgq-carousel-control{display:none!important}
 .sgq-wrap{width:min(1320px,calc(100% - 40px));margin:0 auto}.sgq-section{padding:68px 0;background:#fff}
 .sgq-section-heading{max-width:820px;margin:0 auto 30px;text-align:center}.sgq-section-heading>span{color:#2D8DB8;font-size:9px;font-weight:950;letter-spacing:2px}
 .sgq-section-heading h2{margin:9px 0;font-size:clamp(27px,3vw,40px);line-height:1.15;letter-spacing:-1px;color:#123B50}.sgq-section-heading p{margin:0;color:var(--muted);font-size:13px;line-height:1.7}
