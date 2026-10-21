@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Activity, AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, CircleCheck, CirclePause, Factory, Gauge, RefreshCw, Search } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useNavigate } from 'react-router-dom'
@@ -55,7 +55,7 @@ export default function PCPProgramacaoGantt() {
   const [now, setNow] = useState(() => new Date())
   const scroller = useRef<HTMLDivElement>(null)
 
-  async function load() {
+  const load = useCallback(async () => {
     setBusy(true); setError('')
     try {
       const tenant = await supabase.rpc('erp_current_empresa_id')
@@ -73,8 +73,8 @@ export default function PCPProgramacaoGantt() {
       setMachines((m.data ?? []) as Machine[]); setPrograms((p.data ?? []) as Program[]); setOrders((o.data ?? []) as Order[]); setProducts((pr.data ?? []) as Product[])
     } catch (x) { setError(x instanceof Error ? x.message : 'Falha ao carregar a programação.') }
     finally { setBusy(false) }
-  }
-  useEffect(() => { void load() }, [from])
+  }, [from])
+  useEffect(() => { void load() }, [load])
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 60000); return () => clearInterval(t) }, [])
   useEffect(() => { // centraliza no "agora"
     const el = scroller.current; if (!el) return
