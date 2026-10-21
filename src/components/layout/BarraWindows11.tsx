@@ -80,7 +80,7 @@ export function BarraWindows11({ ativo = "pcp", onAbrir, onDesligar }: { ativo?:
           ))}
         </div>
         <div className="w11-tray">
-          <button className="w11-btn small" aria-label="Mais"><ChevronUp size={14} /></button>
+          <button className="w11-btn small" aria-label="Mais opções" title="Abrir menu de aplicativos" onClick={() => setMenu(true)}><ChevronUp size={14} /></button>
           <div className="w11-sys"><Wifi size={15} /><Volume2 size={15} /><BatteryFull size={15} /></div>
           <div className="w11-clock">
             <span>{agora?.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) ?? "--:--"}</span>
