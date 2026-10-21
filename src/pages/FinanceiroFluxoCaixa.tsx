@@ -144,7 +144,7 @@ export default function FinanceiroFluxoCaixa() {
           <div className="col-span-12 sm:col-span-4 md:col-span-2"><Field label="Valor (R$)"><input required type="number" min="0.01" step="0.01" value={valor} onChange={event => setValor(event.target.value)} className="h-9 w-full" /></Field></div>
           <div className="col-span-12 sm:col-span-4 md:col-span-3"><Field label="Vencimento"><input required type="date" value={vencimento} onChange={event => setVencimento(event.target.value)} className="h-9 w-full" /></Field></div>
         </div>
-        <div className="ips-bottom-actions"><ToolbarButton tone="primary" type="submit" disabled={saving || !empresaId}><Save size={14} className="mr-1 inline" />{saving ? 'GRAVANDO…' : 'REGISTRAR TÍTULO'}</ToolbarButton></div>
+        <div className="ips-bottom-actions"><button type="submit" disabled={saving || !empresaId} className="inline-flex min-h-[36px] items-center gap-2 rounded border border-[#123B50] bg-[#123B50] px-3 text-[12px] font-bold text-white disabled:opacity-50"><Save size={14} className="mr-1 inline" />{saving ? 'GRAVANDO…' : 'REGISTRAR TÍTULO'}</button></div>
       </form>
     </SectionCard>
     <SectionCard title="3. Extrato projetado de contas">
