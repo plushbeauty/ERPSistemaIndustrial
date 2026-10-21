@@ -199,6 +199,7 @@ const ExpedicaoNFe = lazyPage(() => import('./pages/logistica/ExpedicaoNFe'), 'd
 const RomaneioCarga = lazyPage(() => import('./pages/logistica/RomaneioCarga'), 'default')
 const ImpressaoEtiquetas = lazyPage(() => import('./pages/logistica/ImpressaoEtiquetas'), 'default')
 const EstoqueRecebimentoLotes = lazyPage(() => import('./pages/estoque/EstoqueRecebimentoLotes'), 'EstoqueRecebimentoLotes')
+const InventarioValidade = lazyPage(() => import('./pages/estoque/InventarioValidade'), 'InventarioValidade')
 const HelpEstoqueRecebimento = lazyPage(() => import('./pages/estoque/HelpEstoqueRecebimento'), 'HelpEstoqueRecebimento')
 const QualidadeGenealogiaLote = lazyPage(() => import('./pages/qualidade/QualidadeGenealogiaLote'), 'QualidadeGenealogiaLote')
 const QualidadeEditorIT = lazyPage(() => import('./pages/qualidade/QualidadeEditorIT'), 'QualidadeEditorIT')
@@ -595,6 +596,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/estoque/separacao" element={<EstoqueSeparacao />} />
       <Route path="/estoque/etiquetas" element={<EstoqueEtiquetas />} />
       <Route path="/estoque/recebimento-lotes" element={<EstoqueRecebimentoLotes />} />
+      <Route path="/estoque/validade" element={<InventarioValidade />} />
       <Route path="/ajuda/estoque-recebimento" element={<HelpEstoqueRecebimento />} />
       <Route path="/estoque/curva-abc" element={<EstoqueCurvaABC />} />
       <Route path="/inventario" element={<Navigate to="/inventario/balanco" replace />} />

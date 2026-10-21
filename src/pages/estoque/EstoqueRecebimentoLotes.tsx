@@ -19,6 +19,7 @@ type Product = LookupRecord & {
 type QualityStatus = 'APROVADO' | 'REPROVADO'
 
 const numberFormat = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 3 })
+const localDateISO = () => { const now = new Date(); return [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-') }
 const inputClass = 'h-8 w-full min-w-0 rounded-[2px] border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-sky-600 focus:ring-1 focus:ring-sky-100 placeholder:text-slate-400'
 const labelClass = 'grid min-w-0 gap-1 text-[9px] font-bold uppercase tracking-wide text-slate-500'
 const sectionClass = 'grid grid-cols-1 items-end gap-x-3 gap-y-2.5 rounded-[3px] border border-slate-200 bg-white p-3 md:grid-cols-12'
@@ -30,6 +31,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
   const [produtoDescricao, setProdutoDescricao] = useState('')
   const [notaFiscal, setNotaFiscal] = useState('')
   const [loteFornecedor, setLoteFornecedor] = useState('')
+  const [dataValidade, setDataValidade] = useState('')
   const [quantidade, setQuantidade] = useState('')
   const [laudoStatus, setLaudoStatus] = useState<QualityStatus>('APROVADO')
   const [certificado, setCertificado] = useState<File | null>(null)
@@ -97,6 +99,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
     if (!produtoId) { setError('Selecione o insumo mestre pela lupa.'); return }
     if (!notaFiscal.trim()) { setError('Informe o número da NF-e de entrada.'); return }
     if (!loteFornecedor.trim()) { setError('O lote do fornecedor é obrigatório.'); return }
+    if (dataValidade && dataValidade <= localDateISO()) { setError('A validade deve ser posterior à data de recebimento.'); return }
     if (!Number.isFinite(quantity) || quantity <= 0) { setError('A quantidade deve ser maior que zero.'); return }
     if (!certificado) { setError('Anexe o certificado químico em PDF antes de integrar o lote.'); return }
     if (laudoStatus !== 'APROVADO') { setError('Lote reprovado bloqueado: não é permitido integrar ao saldo ativo.'); return }
@@ -118,6 +121,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
         p_produto_id: produtoId,
         p_nf_numero: notaFiscal.trim(),
         p_lote_fornecedor: loteFornecedor.trim(),
+        p_data_validade: dataValidade || null,
         p_quantidade: quantity,
         p_status_qualidade: laudoStatus,
         p_certificado_path: certificatePath,
@@ -128,6 +132,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
       setSuccess(`Lote ${loteFornecedor.trim()} recebido. ${numberFormat.format(quantity)} ${selected?.unidade ?? 'kg'} integrados ao saldo físico.`)
       setNotaFiscal('')
       setLoteFornecedor('')
+      setDataValidade('')
       setQuantidade('')
       setCertificado(null)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -197,6 +202,10 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
                 <option value="APROVADO">APROVADO / LIBERADO PARA ALMOXARIFADO</option>
                 <option value="REPROVADO">REPROVADO / RETER LOTE</option>
               </select>
+            </label>
+
+            <label className={`${labelClass} md:col-span-4`}>Data de validade
+              <input type="date" value={dataValidade} onChange={event => setDataValidade(event.target.value)} className={inputClass} min={localDateISO()} />
             </label>
 
             <div className="flex min-w-0 items-center justify-between gap-3 border border-slate-200 bg-slate-50 px-2.5 py-2 md:col-span-12">
