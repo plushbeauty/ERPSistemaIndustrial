@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Activity, AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, CircleCheck, CirclePause, Factory, Gauge, RefreshCw, Search } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { useNavigate } from 'react-router-dom'
+import { BarraWindows11 } from '../components/layout/BarraWindows11'
 
 /**
  * SYNQRA — Programação de Produção (Gantt) · tema claro premium
@@ -41,6 +43,7 @@ const machineTone = (m: Machine, rows: Program[], orders: Map<string, Order>): T
 const toneLabel: Record<Tone, string> = { ok: 'Programada', run: 'Em produção', stop: 'Parada', late: 'Atrasada' }
 
 export default function PCPProgramacaoGantt() {
+  const navigate = useNavigate()
   const [machines, setMachines] = useState<Machine[]>([])
   const [programs, setPrograms] = useState<Program[]>([])
   const [orders, setOrders] = useState<Order[]>([])
@@ -101,7 +104,7 @@ export default function PCPProgramacaoGantt() {
   const efficiency = machines.length ? Math.round(((machines.length - stopped) / machines.length) * 100) : 0
 
   return (
-    <main className="sqg">
+    <main className="sqg sqg-with-taskbar">
       <header className="sqg-head">
         <div>
           <span className="sqg-eyebrow"><Factory size={13} /> PCP · Programação</span>
@@ -171,6 +174,26 @@ export default function PCPProgramacaoGantt() {
       </section>
 
       <style>{CSS}</style>
+      <BarraWindows11
+        ativo="pcp"
+        onAbrir={(id) => {
+          const routes: Record<string, string> = {
+            pcp: '/pcp/programacao-gantt',
+            maq: '/pcp/agenda-maquinas',
+            est: '/estoque',
+            op: '/pcp/ordens',
+            man: '/manutencao',
+            ind: '/pcp/capacidade',
+            usu: '/configuracoes-adm',
+            cfg: '/configuracoes-adm',
+          }
+          navigate(routes[id] ?? '/pcp')
+        }}
+        onDesligar={async () => {
+          await supabase.auth.signOut()
+          navigate('/login', { replace: true })
+        }}
+      />
     </main>
   )
 }
@@ -183,6 +206,7 @@ function Kpi({ icon, label, value, tone, ring }: { icon: React.ReactNode; label:
 }
 
 const CSS = `
+.sqg-with-taskbar{padding-bottom:72px}
 .sqg{--navy:#0B2545;--blue:#1D5FD1;--cyan:#22B8CF;--bg:#F5F7FB;--bd:#E4E9F2;--mut:#5B6B82;--ok:#1D5FD1;--run:#059669;--stop:#D97706;--late:#DC2626;
   min-height:100vh;background:var(--bg);padding:24px;color:var(--navy);font-family:Inter,system-ui,sans-serif;box-sizing:border-box}
 .sqg *{box-sizing:border-box}
