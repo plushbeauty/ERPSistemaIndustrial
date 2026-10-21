@@ -1,3 +1,4 @@
+/**
  * REVISÃO PCP TABLET LAUNCHER — 2026-10-18 · REV-PCP-LAUNCHER-001
  * Alteração: painel PCP em grade compacta para tablet, acesso direto às rotinas existentes,
  * remoção do submenu lateral duplicado e preservação das consultas/ações operacionais.
