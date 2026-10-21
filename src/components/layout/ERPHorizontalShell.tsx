@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
+import { CircleHelp, ChevronDown, ChevronLeft, UserRound, ChevronRight, ShieldCheck, Home, Database, ShoppingCart, Truck, Package, Wallet, FileText, Factory, Wrench, BarChart3, Settings, LogOut, Search, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -281,7 +281,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
           <span className="erp-fixed-sidebar-mark" aria-hidden="true">S</span>
           {sidebarExpanded && <span className="erp-fixed-sidebar-brand-text">SYSNQRA ERP &amp; SGQ INDUSTRIAL</span>}
           <button type="button" className="erp-fixed-sidebar-toggle" onClick={() => setSidebarExpanded(value => !value)} aria-label={sidebarExpanded ? 'Recolher menu lateral' : 'Expandir menu lateral'} title={sidebarExpanded ? 'Recolher menu' : 'Expandir menu'}>
-            {sidebarExpanded ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+            {sidebarExpanded ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
         </div>
         {sidebarExpanded && <label className="erp-fixed-sidebar-search"><Search size={13} /><input value={moduleSearch} onChange={event => setModuleSearch(event.target.value)} placeholder="Pesquisar módulo ou rotina" aria-label="Pesquisar módulo ou rotina" />{moduleSearch && <button type="button" onClick={() => setModuleSearch('')} aria-label="Limpar pesquisa"><X size={12} /></button>}</label>}
