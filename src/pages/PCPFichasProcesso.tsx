@@ -204,14 +204,14 @@ function ProcessEquipmentDiagram({ category, params, onParamChange }: {
  const fields = press
   ? [{key:'temp_plato_superior_c',label:'Platô superior',unit:'°C'},{key:'temperatura_molde_c',label:'Molde',unit:'°C'},{key:'temp_plato_inferior_c',label:'Platô inferior',unit:'°C'},{key:'pressao_prensagem_bar',label:'Pressão de prensagem',unit:'bar'},{key:'tempo_cura_seg',label:'Tempo de cura',unit:'s'}]
   : [{key:'zona1_c',label:'Zona 1 · alimentação',unit:'°C'},{key:'zona2_c',label:'Zona 2 · compressão',unit:'°C'},{key:'zona3_c',label:'Zona 3 · dosagem',unit:'°C'},{key:'zona4_c',label:'Zona 4 · frontal',unit:'°C'},{key:'temp_bico_c',label:'Bico de injeção',unit:'°C'},{key:'temp_molde_fixo_c',label:'Molde fixo',unit:'°C'},{key:'temp_molde_movel_c',label:'Molde móvel',unit:'°C'}]
- return <section className="mt-4 overflow-hidden rounded-xl border border-[#294456] bg-[#071522] print:break-inside-avoid">
-  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#294456] bg-[#123B50] px-3 py-2">
+ return <section className="mt-3 overflow-hidden rounded-[2px] border border-[#2E4A62] bg-[#071522] print:break-inside-avoid">
+  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2E4A62] bg-[#123B50] px-3 py-2">
    <div><p className="text-[9px] font-bold uppercase tracking-[.16em] text-white">FICHA VISUAL DE PROCESSO</p><h3 className="text-sm font-bold text-[#F4FBFD]">{press?'Prensa hidráulica · platôs, molde e pressão':'Injetora · canhão e perfil térmico'}</h3></div>
    <span className="rounded border border-[#48B7C7]/40 bg-[#071522]/70 px-2 py-1 text-[9px] font-semibold text-white">VALORES EDITÁVEIS SOBRE O DIAGRAMA</span>
   </div>
   <div className="grid grid-cols-1 gap-3 p-3 lg:grid-cols-[minmax(0,1.65fr)_minmax(220px,1fr)]">
    <div className="relative min-h-[280px] overflow-hidden rounded-lg border border-[#294456] bg-[radial-gradient(ellipse_at_center,_#123B50_0%,_#071522_75%)]">
-    <svg viewBox="0 0 760 340" className="absolute inset-0 h-full w-full" role="img" aria-label={press?'Diagrama técnico da prensa hidráulica com platôs e manômetro':'Diagrama técnico do canhão da injetora com quatro zonas térmicas'} preserveAspectRatio="xMidYMid meet">
+    <svg viewBox="0 0 760 340" className="absolute inset-0 h-full w-full" role="img" aria-label={press?'Diagrama técnico da prensa hidráulica com platôs e manômetro':'Diagrama técnico do canhão da injetora com quatro zonas térmicas, bico e moldes'} preserveAspectRatio="xMidYMid meet">
      <defs>
       <linearGradient id="pcp-steel-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#D9E7ED"/><stop offset="35%" stopColor="#66899B"/><stop offset="65%" stopColor="#294456"/><stop offset="100%" stopColor="#8DAFBE"/></linearGradient>
       <linearGradient id="pcp-heat-grad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#2D8DB8"/><stop offset="50%" stopColor="#E6A34A"/><stop offset="100%" stopColor="#D65B61"/></linearGradient>
@@ -381,8 +381,6 @@ export default function PCPFichasProcesso() {
     {title:'Caixa e processo',items:[['Sacos por caixa',valueLabel('emb_sacos_caixa')],['Dimensional da caixa',valueLabel('emb_dimensional_caixa','mm')],['Tempo padrão',valueLabel('tempo_ciclo_seg','s')],['Recurso principal',selectedMachine?.codigo||'Não definido']]},
    ]
    : []
- const injectionZones = ['zona1_c','zona2_c','zona3_c','zona4_c','temp_bico_c','temp_molde_fixo_c','temp_molde_movel_c'].map((key,index)=>({key,label:['Zona 1','Zona 2','Zona 3','Zona 4','Bico','Molde fixo','Molde móvel'][index],value:Number(params[key])})).filter(zone=>Number.isFinite(zone.value)&&zone.value>0)
- const maxZoneTemp = Math.max(1,...injectionZones.map(zone=>zone.value))
  const pressCharge = Number(params.peso_carga_cavidade_g)>0&&Number(params.cavidades_ativas)>0?Number(params.peso_carga_cavidade_g)*Number(params.cavidades_ativas):null
 
  return <main className="pcp-process-page min-h-screen bg-[#071522] p-2 text-[#F4FBFD] md:p-3">
