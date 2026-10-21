@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { RefreshCw, Square } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import '../styles/synqra-premium.css'
 
 type Machine = { id: string; codigo: string; nome: string }
 type Order = { id: string; numero_op: string | null; numero: string | null }
@@ -146,58 +147,58 @@ export default function PCPParadas() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f4fbfd] p-3 text-[#123b50]">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#cbd9e1] pb-3">
+    <main className="min-h-screen bg-[#F5F8FF] p-3 text-[#0B2545]">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[#DCE3EE] pb-3">
         <div>
-          <p className="text-[9px] font-bold tracking-wider text-[#2d8db8]">PCP &gt; PARADAS / SETUP</p>
+          <p className="text-[11px] font-bold tracking-wider text-[#1D5FD1]">PCP &gt; PARADAS / SETUP</p>
           <h1 className="text-[16px] font-extrabold">Registro de Parada de Máquina</h1>
         </div>
         <div className="flex gap-2">
-          <button type="button" onClick={() => void load()} disabled={busy} className="h-[30px] rounded-[2px] border border-[#b8cbd5] bg-white px-3 text-[10px] font-bold text-[#123b50] disabled:opacity-50">
+          <button type="button" onClick={() => void load()} disabled={busy} className="h-[30px] rounded-lg border border-[#D3DCE8] bg-white px-3 text-xs font-bold text-[#0B2545] disabled:opacity-50">
             <RefreshCw className="mr-2 inline" size={17} />Atualizar
           </button>
-          <button type="button" onClick={() => void close()} disabled={busy || !stopId} className="h-[30px] rounded-[2px] bg-[#2d8db8] px-3 text-[10px] font-bold text-white disabled:opacity-40">
+          <button type="button" onClick={() => void close()} disabled={busy || !stopId} className="h-[30px] rounded-lg bg-[#1D5FD1] px-3 text-xs font-bold text-white disabled:opacity-40">
             <Square className="mr-2 inline" size={17} />FECHAR EVENTO
           </button>
         </div>
       </header>
 
-      {(error || message) && <div role={error ? 'alert' : 'status'} className={`mx-auto mt-3 max-w-[1600px] rounded-[2px] border p-2 text-[11px] font-bold ${error ? 'border-rose-300 bg-rose-50 text-rose-800' : 'border-emerald-300 bg-emerald-50 text-emerald-800'}`}>{error || message}</div>}
+      {(error || message) && <div role={error ? 'alert' : 'status'} className={`mx-auto mt-3 max-w-[1600px] rounded-lg border p-2 text-[11px] font-bold ${error ? 'border-rose-300 bg-rose-50 text-rose-800' : 'border-emerald-300 bg-emerald-50 text-emerald-800'}`}>{error || message}</div>}
 
       <div className="mx-auto mt-3 grid max-w-[1600px] grid-cols-1 gap-3 lg:grid-cols-2">
-        <section className="rounded-[2px] border border-[#cbd9e1] bg-white p-3">
+        <section className="rounded-lg border border-[#DCE3EE] bg-white p-3">
           <div className="grid grid-cols-2 gap-3">
-            <label className="grid gap-1 text-[9px] font-bold tracking-wider text-[#315466]">MÁQUINA
-              <select value={machine} disabled={Boolean(stopId) || busy} onChange={event => setMachine(event.target.value)} className="h-[30px] rounded-[2px] border border-[#b8cbd5] bg-white px-2 text-[10px] text-[#123b50]">
+            <label className="grid gap-1 text-[11px] font-bold tracking-wider text-[#334155]">MÁQUINA
+              <select value={machine} disabled={Boolean(stopId) || busy} onChange={event => setMachine(event.target.value)} className="h-[30px] rounded-lg border border-[#D3DCE8] bg-white px-2 text-xs text-[#0B2545]">
                 <option value="">Selecionar máquina</option>
                 {machines.map(entry => <option key={entry.id} value={entry.id}>{entry.codigo} — {entry.nome}</option>)}
               </select>
             </label>
-            <label className="grid gap-1 text-[9px] font-bold tracking-wider text-[#315466]">ORDEM DE PRODUÇÃO
-              <select value={order} disabled={Boolean(stopId) || busy} onChange={event => setOrder(event.target.value)} className="h-[30px] rounded-[2px] border border-[#b8cbd5] bg-white px-2 text-[10px] text-[#123b50]">
+            <label className="grid gap-1 text-[11px] font-bold tracking-wider text-[#334155]">ORDEM DE PRODUÇÃO
+              <select value={order} disabled={Boolean(stopId) || busy} onChange={event => setOrder(event.target.value)} className="h-[30px] rounded-lg border border-[#D3DCE8] bg-white px-2 text-xs text-[#0B2545]">
                 <option value="">Sem vínculo a OP</option>
                 {orders.map(entry => <option key={entry.id} value={entry.id}>{entry.numero_op || entry.numero || entry.id.slice(0, 8)}</option>)}
               </select>
             </label>
           </div>
-          <div className="mt-3 rounded-[2px] border border-[#d8e5eb] bg-[#f4fbfd] p-3 text-center">
-            <span className="text-[9px] font-bold tracking-wider text-[#526d7a]">TEMPO DE PARADA</span>
+          <div className="mt-3 rounded-lg border border-[#E4E9F2] bg-[#F5F8FF] p-3 text-center">
+            <span className="text-[11px] font-bold tracking-wider text-[#5B6B82]">TEMPO DE PARADA</span>
             <div className="mt-1 font-mono text-3xl font-bold text-[#b7791f]">{formatElapsed(elapsed)}</div>
           </div>
-          {reason && <p className="mt-2 text-[10px] font-bold text-[#8a5a13]">Motivo registrado: {reason}</p>}
+          {reason && <p className="mt-2 text-xs font-bold text-[#8a5a13]">Motivo registrado: {reason}</p>}
         </section>
 
-        <section className="rounded-[2px] border border-[#cbd9e1] bg-white p-3">
-          <h2 className="text-[10px] font-extrabold tracking-wider text-[#123b50]">MOTIVO OBRIGATÓRIO</h2>
+        <section className="rounded-lg border border-[#DCE3EE] bg-white p-3">
+          <h2 className="text-xs font-extrabold tracking-wider text-[#0B2545]">MOTIVO OBRIGATÓRIO</h2>
           <div className="mt-3 grid gap-2">
             {reasons.map(([label, color]) => (
-              <button key={label} type="button" disabled={busy || Boolean(stopId) || !machine} onClick={() => void start(label)} className={`min-h-[30px] rounded-[2px] border border-slate-200 px-3 py-1 text-left text-[10px] leading-tight font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 ${color}`}>
+              <button key={label} type="button" disabled={busy || Boolean(stopId) || !machine} onClick={() => void start(label)} className={`min-h-[30px] rounded-lg border border-slate-200 px-3 py-1 text-left text-xs leading-tight font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 ${color}`}>
                 {label}
               </button>
             ))}
           </div>
-          <label className="mt-3 grid gap-1 text-[9px] font-bold tracking-wider text-[#315466]">OBSERVAÇÃO
-            <textarea disabled={Boolean(stopId) || busy} className="min-h-[64px] w-full rounded-[2px] border border-[#b8cbd5] bg-white p-2 text-[11px] text-[#123b50] disabled:opacity-70" value={observation} onChange={event => setObservation(event.target.value)} placeholder="Observação do operador"/>
+          <label className="mt-3 grid gap-1 text-[11px] font-bold tracking-wider text-[#334155]">OBSERVAÇÃO
+            <textarea disabled={Boolean(stopId) || busy} className="min-h-[64px] w-full rounded-lg border border-[#D3DCE8] bg-white p-2 text-[11px] text-[#0B2545] disabled:opacity-70" value={observation} onChange={event => setObservation(event.target.value)} placeholder="Observação do operador"/>
           </label>
         </section>
       </div>
