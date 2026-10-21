@@ -266,7 +266,46 @@ export default function SolicitacaoCompra() {
 
   return (
     <VendasLayout title="Solicitação de compra" subtitle="Necessidade interna • autorização • encaminhamento" onRefresh={() => void load()}>
-    <main className="pcp-page" style={{ padding: 24, maxWidth: 1440, margin: '0 auto' }}>
+    <main className="pcp-page purchase-request-premium" style={{ padding: 8, maxWidth: 1440, margin: '0 auto' }}>
+      <style>{`
+/* Revisão visual Compras — 20/10/2026 — referência premium aplicada somente à Solicitação de Compra. */
+.purchase-request-premium{color:#123b50;font-family:Inter,Roboto,Arial,sans-serif}
+.purchase-request-premium>header{margin-bottom:10px!important;padding:0 0 10px;border-bottom:1px solid #dbe5eb}
+.purchase-request-premium .v2-eyebrow{font-size:9px!important;letter-spacing:.13em;font-weight:900;color:#2d8db8}
+.purchase-request-premium h1{font-size:20px!important;font-weight:700;color:#123b50}
+.purchase-request-premium>header p{font-size:11px}
+.purchase-request-premium>section{border:1px solid #d8e3e9!important;border-radius:2px!important;padding:12px!important;box-shadow:0 2px 7px #123b5008}
+.purchase-request-premium form>div:first-child{grid-template-columns:repeat(12,minmax(0,1fr))!important;gap:10px!important}
+.purchase-request-premium form>div:first-child>label{grid-column:span 6;display:flex;flex-direction:column;gap:4px;min-width:0;font-size:9px;font-weight:700;letter-spacing:.02em;color:#385566}
+.purchase-request-premium form>div:first-child>label:first-child{grid-column:span 6}
+.purchase-request-premium form>div:first-child>label:nth-child(2){grid-column:span 6}
+.purchase-request-premium form>div:first-child>label:nth-child(3){grid-column:span 4}
+.purchase-request-premium form>div:first-child>label:nth-child(4){grid-column:span 8}
+.purchase-request-premium input,.purchase-request-premium select,.purchase-request-premium textarea{box-sizing:border-box;min-width:0;width:100%;min-height:30px;height:30px;padding:0 8px;border:1px solid #c5d4dc;border-radius:2px;background:#fff;color:#123b50;font:400 11px Inter,Roboto,Arial,sans-serif;outline:none;transition:border-color .15s,box-shadow .15s}
+.purchase-request-premium input:focus,.purchase-request-premium select:focus,.purchase-request-premium textarea:focus{border-color:#2d8db8;box-shadow:0 0 0 2px #2d8db81f}
+.purchase-request-premium textarea{height:auto;min-height:66px;padding:8px;resize:vertical}
+.purchase-request-premium .industrial-section-head{margin-top:14px!important;padding:10px 0;border-bottom:1px solid #e3ebef}
+.purchase-request-premium .industrial-section-head span{font-size:9px;font-weight:900;letter-spacing:.12em;color:#2d8db8}
+.purchase-request-premium .industrial-section-head h2{font-size:14px;margin:3px 0;color:#123b50}
+.purchase-request-premium button{min-height:30px;border-radius:2px;font-size:10px;font-weight:600}
+.purchase-request-premium .crud-table-wrap{width:100%;overflow-x:auto;border:1px solid #e0e8ed;border-radius:2px}
+.purchase-request-premium table{width:100%;border-collapse:collapse;font-size:10px}
+.purchase-request-premium th{height:30px;padding:5px 8px;background:#123b50;color:#f4fbfd;text-align:left;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.purchase-request-premium td{height:34px;padding:5px 8px;border-bottom:1px solid #e7edf1;color:#28495a;vertical-align:middle}
+.purchase-request-premium tbody tr:nth-child(even){background:#f4fbfd}
+.purchase-request-premium tbody tr:hover{background:#eaf5f8}
+.purchase-request-premium td input,.purchase-request-premium td select{height:28px;min-height:28px}
+.purchase-request-premium .icon-button{width:30px;height:30px;display:inline-grid;place-items:center;border:1px solid #f2c4c4;background:#fff;color:#b4232c}
+.purchase-request-premium form>label{display:flex;flex-direction:column;gap:4px;margin-top:12px;font-size:9px;font-weight:700;color:#385566}
+.purchase-request-premium form>label textarea{width:100%}
+.purchase-request-premium form>div:last-of-type{margin-top:12px!important;gap:6px!important}
+.purchase-request-premium form>div:last-of-type button{height:30px;min-height:30px;padding:0 10px}
+.purchase-request-premium .primary{background:#2d8db8;border:1px solid #2d8db8;color:white}
+.purchase-request-premium .secondary-v2{background:#fff;border:1px solid #bfcfd8;color:#234b5d}
+.purchase-request-premium nav button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:700px){.purchase-request-premium form>div:first-child>label,.purchase-request-premium form>div:first-child>label:first-child,.purchase-request-premium form>div:first-child>label:nth-child(2),.purchase-request-premium form>div:first-child>label:nth-child(3),.purchase-request-premium form>div:first-child>label:nth-child(4){grid-column:span 12}.purchase-request-premium>header h1{font-size:17px!important}.purchase-request-premium>section{padding:8px!important}.purchase-request-premium table{min-width:680px}}
+@media(prefers-reduced-motion:reduce){.purchase-request-premium *{transition:none!important}}
+`}</style>
       <header style={{ marginBottom: 22 }}>
         <span className="v2-eyebrow">COMPRAS • SOLICITAÇÃO INTERNA</span>
         <h1 style={{ fontSize: 32, margin: '6px 0' }}>Solicitação de compra</h1>

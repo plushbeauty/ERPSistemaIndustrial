@@ -102,6 +102,7 @@ const PCPCapacidade = lazyPage(() => import('./pages/PCPCapacidade'), 'default')
 const PCPAgendaMaquinas = lazyPage(() => import('./pages/PCPAgendaMaquinas'), 'default')
 const PCPProgramacaoGantt = lazyPage(() => import('./pages/PCPProgramacaoGantt'), 'default')
 const PCPFichasProcesso = lazyPage(() => import('./pages/PCPFichasProcesso'), 'default')
+const QualidadeFichasProcesso = lazyPage(() => import('./pages/qualidade/FichasProcesso'), 'default')
 const HelpPCPFichas = lazyPage(() => import('./pages/HelpPCPFichas'), 'default')
 const PCPParadas = lazyPage(() => import('./pages/PCPParadas'), 'PCPParadas')
 const PCPSequenciamento = lazyPage(() => import('./pages/PCPSequenciamento'), 'PCPSequenciamento')
@@ -154,6 +155,7 @@ const QualidadeLiberacaoLotes = lazyPage(() => import('./pages/qualidade/Qualida
 const QualidadeCEP = lazyPage(() => import('./pages/qualidade/CEP'), 'default')
 const QualidadeFMEA = lazyPage(() => import('./pages/qualidade/FMEA'), 'default')
 const GEDDocumentos = lazyPage(() => import('./pages/qualidade/GEDDocumentos'), 'default')
+const ControleDesenhos = lazyPage(() => import('./pages/qualidade/ControleDesenhos'), 'default')
 const RecebimentoMateriais = lazyPage(() => import('./pages/RecebimentoMateriais'), 'RecebimentoMateriais')
 const ManualUsuario = lazyPage(() => import('./pages/ManualUsuario'), 'ManualUsuario')
 const RHIndustrial = lazyPage(() => import('./pages/RHIndustrial'), 'RHIndustrial')
@@ -194,7 +196,11 @@ const PCPTabletOperador = lazyPage(() => import('./pages/PCPTabletOperador'), 'P
 const EstoqueAjustes = lazyPage(() => import('./pages/EstoqueAjustes'), 'EstoqueAjustes')
 const EstoqueSeparacao = lazyPage(() => import('./pages/EstoqueSeparacao'), 'EstoqueSeparacao')
 const EstoqueEtiquetas = lazyPage(() => import('./pages/EstoqueEtiquetas'), 'EstoqueEtiquetas')
+const ExpedicaoNFe = lazyPage(() => import('./pages/logistica/ExpedicaoNFe'), 'default')
+const RomaneioCarga = lazyPage(() => import('./pages/logistica/RomaneioCarga'), 'default')
+const ImpressaoEtiquetas = lazyPage(() => import('./pages/logistica/ImpressaoEtiquetas'), 'default')
 const EstoqueRecebimentoLotes = lazyPage(() => import('./pages/estoque/EstoqueRecebimentoLotes'), 'EstoqueRecebimentoLotes')
+const InventarioValidade = lazyPage(() => import('./pages/estoque/InventarioValidade'), 'InventarioValidade')
 const HelpEstoqueRecebimento = lazyPage(() => import('./pages/estoque/HelpEstoqueRecebimento'), 'HelpEstoqueRecebimento')
 const QualidadeGenealogiaLote = lazyPage(() => import('./pages/qualidade/QualidadeGenealogiaLote'), 'QualidadeGenealogiaLote')
 const QualidadeEditorIT = lazyPage(() => import('./pages/qualidade/QualidadeEditorIT'), 'QualidadeEditorIT')
@@ -527,6 +533,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/capa" element={<QualityPlanGate><QualidadeRNC initialTab="capa" /></QualityPlanGate>} />
       <Route path="/qualidade/cep" element={<QualityPlanGate><QualidadeCEP /></QualityPlanGate>} />
       <Route path="/qualidade/ged-documentos" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
+      <Route path="/qualidade/controle-desenhos" element={<QualityPlanGate><ControleDesenhos /></QualityPlanGate>} />
       <Route path="/qualidade/ged-documentos/nova" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
       <Route path="/qualidade/ged-documentos/:id" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
       <Route path="/pcp/ordens-industriais" element={<QualityPlanGate>{<PCPExecucaoIndustrial />}</QualityPlanGate>} />
@@ -569,6 +576,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/pfmea" element={<QualityPlanGate><QualidadePFMEA /></QualityPlanGate>} />
       <Route path="/qualidade/documentos" element={<QualityPlanGate><DocumentosQualidadeControle /></QualityPlanGate>} />
       <Route path="/qualidade/inspecao-processo" element={<QualityPlanGate><QualidadeInspecaoProcesso /></QualityPlanGate>} />
+      <Route path="/qualidade/fichas-processo" element={<QualityPlanGate><QualidadeFichasProcesso /></QualityPlanGate>} />
       <Route path="/qualidade/inspecoes" element={<QualityPlanGate><QualidadeInspecoesIndustrial /></QualityPlanGate>} />
       <Route path="/qualidade/tablet" element={<QualityPlanGate><QualidadeCentralTablet /></QualityPlanGate>} />
       <Route path="/qualidade/inspecoes/operacao" element={<Navigate to="/qualidade/inspecoes" replace />} />
@@ -590,6 +598,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/estoque/separacao" element={<EstoqueSeparacao />} />
       <Route path="/estoque/etiquetas" element={<EstoqueEtiquetas />} />
       <Route path="/estoque/recebimento-lotes" element={<EstoqueRecebimentoLotes />} />
+      <Route path="/estoque/validade" element={<InventarioValidade />} />
       <Route path="/ajuda/estoque-recebimento" element={<HelpEstoqueRecebimento />} />
       <Route path="/estoque/curva-abc" element={<EstoqueCurvaABC />} />
       <Route path="/inventario" element={<Navigate to="/inventario/balanco" replace />} />
@@ -612,6 +621,9 @@ function AppIndustrialAuthenticated() {
       <Route path="/central-custos-industrial" element={<QualityPlanGate>{<CentralCustosIndustrial />}</QualityPlanGate>} />
       <Route path="/expedicao/roteirizacao" element={<ExpedicaoRoteirizacao />} />
       <Route path="/expedicao/portaria" element={<ExpedicaoPortaria />} />
+      <Route path="/logistica/expedicao-nfe" element={<ExpedicaoNFe />} />
+      <Route path="/logistica/romaneio-carga" element={<RomaneioCarga />} />
+      <Route path="/logistica/impressao-etiquetas" element={<ImpressaoEtiquetas />} />
       <Route path="/engenharia" element={<QualityPlanGate>{<EngenhariaCentral />}</QualityPlanGate>} />
       <Route path="/engenharia/revisoes-bom" element={<QualityPlanGate>{<EngenhariaRevisoesBOM />}</QualityPlanGate>} />
       <Route path="/engenharia/ficha" element={<QualityPlanGate>{<FichaEngenharia />}</QualityPlanGate>} />

@@ -1,7 +1,7 @@
 /*
 📝 IDENTIFICAÇÃO DE LEITURA E REVISÃO DE CÓDIGO:
 - Arquivo: src/pages/ClientesIndustrial.tsx
-- Status Atual: Revisão 3 (Cadastro Comercial e Política de Preços)
+- Status Atual: Revisão 4 (Controles h-9 e persistência preservada) — 20/10/2026
 - Total de Linhas Gerado: 27 Desenvolverdor FernandoSch.
 - Assinatura de Entrada (Primeiros 3 Imports): import { FormEvent, useEffect, useState } from 'react' | import { Check, Pencil, Plus, Search, X, Trash2, RefreshCw, Printer, Filter } from 'lucide-react' | import { supabase } from '../lib/supabaseClient'
 - Regra de Negócio Incorporada: Cadastro real de cliente com tipo comercial, tabela de preço e desconto percentual padrão.
@@ -14,7 +14,7 @@ type Client={id:string;codigo:string|null;nome:string;documento:string|null;emai
 type PriceTable={id:string;codigo:string;nome:string;ativo:boolean}
 type Form={codigo:string;nome:string;documento:string;email:string;telefone:string;tipo_cliente:string;tabela_preco_id:string;desconto_padrao_percentual:string;ativo:boolean}
 const empty:Form={codigo:'',nome:'',documento:'',email:'',telefone:'',tipo_cliente:'PADRAO',tabela_preco_id:'',desconto_padrao_percentual:'0',ativo:true}
-const input:React.CSSProperties={width:'100%',height:28,border:'1px solid #b9c9d4',borderRadius:2,padding:'0 6px',boxSizing:'border-box',background:'#fff',color:'#111827',fontSize:10,minWidth:0}
+const input:React.CSSProperties={width:'100%',height:36,border:'1px solid #b9c9d4',borderRadius:2,padding:'0 6px',boxSizing:'border-box',background:'#fff',color:'#111827',fontSize:10,minWidth:0}
 const label:React.CSSProperties={display:'grid',gap:2,fontSize:9,fontWeight:700,textTransform:'uppercase',color:'#344054',minWidth:0}
 const panel:React.CSSProperties={background:'#fff',border:'1px solid #c7dce8',borderRadius:2,boxShadow:'0 2px 7px rgba(18,59,80,.08)'}
 const action=(primary=false,danger=false):React.CSSProperties=>({height:30,display:'inline-flex',alignItems:'center',justifyContent:'center',gap:4,border:'1px solid '+(primary?'#2D8DB8':danger?'#d65b61':'#b9c9d4'),borderRadius:2,padding:'0 8px',fontSize:9,fontWeight:700,cursor:'pointer',background:primary?'#2D8DB8':danger?'#fff5f5':'#fff',color:primary?'#fff':danger?'#b42318':'#123B50',whiteSpace:'nowrap'})
@@ -30,7 +30,7 @@ export default function ClientesIndustrial(){
  const remove=async()=>{if(!selected)return;if(!window.confirm(`Excluir o cliente ${selected.nome}?`))return;setBusy(true);setError('');setMessage('');try{const {data:empresa,error:ee}=await supabase.rpc('erp_current_empresa_id');if(ee||!empresa)throw ee??new Error('Empresa não identificada.');const r=await supabase.from('erp_clientes').delete().eq('id',selected.id).eq('empresa_id',String(empresa));if(r.error)throw r.error;setSelected(null);setMessage('Cliente excluído.');await load()}catch(e){setError(e instanceof Error?e.message:'Não foi possível excluir o cliente.')}finally{setBusy(false)}}
  const print=()=>window.print()
  return (
-  <main style={{minHeight:'100vh',background:'#F4FBFD',color:'#123B50',padding:10,boxSizing:'border-box'}}>
+  <main className="clients-page" style={{minHeight:'100vh',background:'#f8fafc',color:'#334155',padding:10,boxSizing:'border-box'}}>
     <div style={{maxWidth:1600,margin:'0 auto'}}>
       <section style={{...panel,overflow:'hidden',marginBottom:7}}>
         <div style={{padding:'9px 11px',background:'linear-gradient(115deg,#123B50 0%,#1C6387 45%,#2D8DB8 78%,#48B7C7 100%)',color:'#fff',boxShadow:'inset 0 1px 0 rgba(255,255,255,.22)'}}>
@@ -52,7 +52,7 @@ export default function ClientesIndustrial(){
         <div style={{padding:'7px 9px',background:'linear-gradient(90deg,#e2f3fa,#f4fbfd)',borderBottom:'1px solid #c7dce8',display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}}>
           <strong style={{fontSize:10,color:'#123B50'}}>CONSULTA DE CLIENTES</strong><span style={{fontSize:9,color:'#466779'}}>{filtered.length} registro(s)</span>
         </div>
-        {filterOpen&&<div style={{display:'grid',gridTemplateColumns:'minmax(240px,1fr) auto',gap:7,alignItems:'end',padding:8,background:'#f8fcfe',borderBottom:'1px solid #dce8ef'}}>
+        {filterOpen&&<div style={{display:'grid',gridTemplateColumns:'repeat(12,minmax(0,1fr))',gap:16,alignItems:'end',padding:8,background:'#f8fcfe',borderBottom:'1px solid #dce8ef'}}>
           <label style={label}>PESQUISAR CLIENTE / DOCUMENTO / CÓDIGO<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Digite para localizar" style={input}/></label>
           <button type="button" onClick={()=>setQuery('')} style={action()}><X size={12}/> LIMPAR</button>
         </div>}
@@ -65,7 +65,7 @@ export default function ClientesIndustrial(){
     {show&&<div style={{position:'fixed',inset:0,zIndex:30,background:'rgba(15,23,42,.58)',display:'grid',placeItems:'center',padding:12}}>
       <form onSubmit={save} style={{...panel,background:'#fafdff',padding:10,width:'min(760px,100%)',maxHeight:'92vh',overflowY:'auto'}}>
         <header style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,padding:'8px 10px',marginBottom:9,borderRadius:2,background:'linear-gradient(110deg,#123B50,#2D8DB8 70%,#48B7C7)',color:'#fff'}}><div><div style={{fontSize:9,fontWeight:700,color:'#d7f5ff'}}>COMERCIAL • CADASTRO MESTRE</div><h2 style={{margin:'2px 0',fontSize:15,fontWeight:700}}>{editing?'Editar cliente':'Novo cliente'}</h2></div><button type="button" onClick={()=>setShow(false)} style={{...action(),width:28,padding:0}}><X size={14}/></button></header>
-        <div style={{display:'grid',gridTemplateColumns:'90px minmax(220px,2fr) minmax(120px,1fr)',gap:8}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(12,minmax(0,1fr))',gap:16}}>
           <label style={label}>CÓDIGO<input style={input} value={form.codigo} onChange={e=>setForm({...form,codigo:e.target.value})}/></label>
           <label style={label}>NOME / RAZÃO SOCIAL *<input required style={input} value={form.nome} onChange={e=>setForm({...form,nome:e.target.value})}/></label>
           <label style={label}>CPF / CNPJ<input style={input} value={form.documento} onChange={e=>setForm({...form,documento:e.target.value})}/></label>
@@ -79,7 +79,7 @@ export default function ClientesIndustrial(){
         <footer style={{display:'flex',justifyContent:'flex-end',gap:5,marginTop:10,paddingTop:8,borderTop:'1px solid #dce8ef'}}><button type="button" onClick={()=>setShow(false)} style={action()}><X size={12}/> CANCELAR</button><button disabled={busy} style={{...action(true),opacity:busy ? .5 : 1}}><Check size={12}/> SALVAR CLIENTE</button></footer>
       </form>
     </div>}
-    <style>{`@media print{button{display:none!important}main{background:#fff!important;padding:0!important}}`}</style>
+    <style>{`.clients-page input:not([type=file]),.clients-page select{width:100%;height:36px!important;box-sizing:border-box;padding:0 12px!important;border:1px solid #cbd5e1!important;border-radius:8px!important;font-size:14px!important;min-width:0}.clients-page input:focus,.clients-page select:focus{outline:2px solid rgba(37,99,235,.15);border-color:#2563eb!important}.clients-page form>div[style*='grid-template-columns']{grid-template-columns:repeat(12,minmax(0,1fr))!important;gap:16px!important}.clients-page form>div[style*='grid-template-columns']>label{grid-column:span 4;min-width:0}.clients-page form>div[style*='grid-template-columns']>label:nth-child(2){grid-column:span 6}.clients-page form>div[style*='grid-template-columns']>label:nth-child(4){grid-column:span 6}.clients-page > div > section{border-radius:12px!important;box-shadow:0 4px 12px rgba(0,0,0,.04)!important;border-color:rgba(226,232,240,.8)!important}@media(max-width:767px){.clients-page form>div[style*='grid-template-columns']>label{grid-column:span 12!important}}@media print{button{display:none!important}main{background:#fff!important;padding:0!important}}`}</style>
   </main>
 )}
 /* Revisão 3 registrada após validação estrutural do arquivo. */

@@ -4,7 +4,8 @@
  * Data/Hora: 24/09/2026 - 13:00 BRT
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-059
- * Data da revisão de aprovação: 2026-10-16
+ * Data da revisão autorizada: 2026-10-20
+ * Revisão: APROV-008 — ajuste autorizado do cadastro mestre
  * Status da tela: APROVADO-IMUTAVEL (não alterar sem autorização explícita do usuário).
  * Alterações: Remoção de cast Event→FormEvent artificial no salvamento de produtos; ação agora chama save() diretamente.
  * Status do Build Local: Não executado — validação será feita pelo gate remoto.
@@ -67,7 +68,7 @@ const money=(v:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency
 const n=(v:unknown)=>Number(v??0)||0
 const fmt=(v:unknown)=>n(v).toLocaleString('pt-BR',{maximumFractionDigits:3})
 const panel:CSSProperties={background:'#fff',border:'1px solid #d5dde7',borderRadius:2}
-const input:CSSProperties={width:'100%',height:30,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box'}
+const input:CSSProperties={width:'100%',height:36,border:'1px solid #c4ced9',borderRadius:2,padding:'0 8px',fontSize:11,background:'#fff',boxSizing:'border-box'}
 const label:CSSProperties={display:'grid',gap:3,minWidth:0,fontSize:9,lineHeight:'11px',fontWeight:500,color:'#344054',textTransform:'uppercase',overflowWrap:'anywhere'}
 const btn=(kind:'primary'|'normal'|'danger'):CSSProperties=>({display:'inline-flex',alignItems:'center',justifyContent:'center',gap:6,height:30,padding:'0 10px',borderRadius:2,border:'1px solid '+(kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#B8CDD5'),background:kind==='danger'?'#D65B61':kind==='primary'?'#2D8DB8':'#F4FBFD',color:kind==='primary'||kind==='danger'?'#fff':'#123B50',fontSize:11,fontWeight:600,textTransform:'uppercase',cursor:'pointer',whiteSpace:'nowrap'})
 const emptyRow=(text:string,col=7)=><tr><td colSpan={col} style={{padding:22,textAlign:'center',color:'#667085'}}>{text}</td></tr>

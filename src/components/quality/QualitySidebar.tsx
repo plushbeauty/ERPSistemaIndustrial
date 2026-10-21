@@ -22,6 +22,7 @@ const modules = [
   { label: 'Metodologia 8D', route: '/qualidade/metodologia-8d', icon: Target },
   { label: 'FMEA / PFMEA', route: '/qualidade/pfmea', icon: Activity },
   { label: 'Documentos controlados / GED', route: '/qualidade/ged-documentos', icon: FileText },
+  { label: 'Controle de desenhos técnicos', route: '/qualidade/controle-desenhos', icon: FileCheck2 },
   { label: 'Procedimentos e PDFs', route: '/qualidade/procedimentos', icon: BookOpenCheck },
   { label: 'Lista mestre', route: '/qualidade/lista-mestre', icon: FileText },
   { label: 'Auditoria 5S', route: '/qualidade/auditoria-5s', icon: SearchCheck },
