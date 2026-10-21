@@ -51,3 +51,10 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Uniformiza a identidade textual do shell para `SYSNQRA ERP & SGQ INDUSTRIAL`, preservando o menu de módulos, pesquisa e navegação interna.
 - Escopo restrito ao shell global e ao contrato de hash. Nenhuma página operacional aprovada foi editada.
 - O verificador de UI aprovada congela o hash desta revisão; alterações futuras exigem nova autorização explícita.
+
+
+## Registro da revisão APROV-012 — 2026-10-21
+
+- Cadastro Mestre de Produtos: revisão autorizada para integrar campos técnicos de injeção (molde, cavidades, resina/cor, temperaturas e ciclo) e compactação dos campos do cadastro.
+- A revisão fica congelada no verificador de UI aprovada; novas alterações exigem autorização explícita.
+- As telas aprovadas de login, dashboard, PCP Tablet do operador, Qualidade Tablet e Novo Pedido não foram alteradas por esta revisão.
