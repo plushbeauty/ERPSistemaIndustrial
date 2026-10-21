@@ -20,6 +20,7 @@ const APPS: App[] = [
 
 export function BarraWindows11({ ativo = "pcp", onAbrir, onDesligar }: { ativo?: string; onAbrir?: (id: string) => void; onDesligar?: () => void | Promise<void> }) {
   const [menu, setMenu] = useState(false);
+  const [mais, setMais] = useState(false);
   const [busca, setBusca] = useState("");
   const [agora, setAgora] = useState<Date | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -79,8 +80,15 @@ export function BarraWindows11({ ativo = "pcp", onAbrir, onDesligar }: { ativo?:
             </button>
           ))}
         </div>
+        {mais && (
+          <div className="w11-hidden-icons" role="dialog" aria-label="Ícones ocultos">
+            <div><Wifi size={15} /><span>Conectividade</span></div>
+            <div><Volume2 size={15} /><span>Áudio</span></div>
+            <div><BatteryFull size={15} /><span>Energia</span></div>
+          </div>
+        )}
         <div className="w11-tray">
-          <button className="w11-btn small" aria-label="Mais"><ChevronUp size={14} /></button>
+          <button className={`w11-btn small ${mais ? "on" : ""}`} aria-label="Mostrar ícones ocultos" aria-expanded={mais} onClick={() => setMais((value) => !value)}><ChevronUp size={14} /></button>
           <div className="w11-sys"><Wifi size={15} /><Volume2 size={15} /><BatteryFull size={15} /></div>
           <div className="w11-clock">
             <span>{agora?.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) ?? "--:--"}</span>
@@ -120,5 +128,7 @@ const css = `
 .w11-user{display:flex;align-items:center;gap:10px;font-size:13px}
 .w11-avatar{width:30px;height:30px;border-radius:50%;background:#ddd;display:grid;place-items:center}
 .w11-ico{border:0;background:transparent;border-radius:6px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer}.w11-ico:hover{background:rgba(255,255,255,.8)}
+.w11-hidden-icons{position:fixed;right:120px;bottom:56px;z-index:52;min-width:190px;padding:8px;background:rgba(242,242,242,.96);backdrop-filter:blur(24px);border:1px solid rgba(0,0,0,.1);border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.18);font:12px "Segoe UI",system-ui,sans-serif;color:#1f1f1f}
+.w11-hidden-icons>div{display:flex;align-items:center;gap:10px;padding:8px;border-radius:5px}.w11-hidden-icons>div:hover{background:rgba(255,255,255,.8)}
 @media(max-width:640px){.w11-grid{grid-template-columns:repeat(4,1fr)}.w11-tray .w11-sys{display:none}}
 `;
