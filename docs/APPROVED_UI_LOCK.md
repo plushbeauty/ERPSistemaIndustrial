@@ -59,5 +59,5 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 
 - Correção expressamente solicitada: a barra de módulos fica FIXA NO LADO DIREITO, com ícones de todos os módulos visíveis, e não à esquerda nem como menu Iniciar estilo Windows 11.
 - O trilho recolhido mantém os ícones; ao selecionar um módulo com rotinas, abre a gaveta lateral para acessar seus submenus. O conteúdo operacional permanece à esquerda e não precisa retornar à página inicial para navegar.
-- Removido o menu Iniciar/pesquisa superior estilo Windows do JSX. Cabeçalho contextual, usuário/sessão Supabase, data/hora, ajuda, configurações e saída permanecem.
+- Removido o menu Iniciar/pesquisa superior estilo Windows do JSX. O cabeçalho mantém contexto da tela, usuário/sessão Supabase, data/hora e ajuda; Configuração aparece uma única vez entre os módulos e Sair fica no rodapé da barra direita.
 - Escopo exclusivo: `src/components/layout/ERPHorizontalShell.tsx`, mais a atualização deliberada do hash do lock. Nenhuma tela operacional aprovada foi modificada.
