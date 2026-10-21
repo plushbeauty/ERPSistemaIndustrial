@@ -55,6 +55,7 @@ export const SYNQRA_MODULES: readonly SynqraModule[] = [
   { key: 'rh', label: 'RH', route: '/rh', Icon: Users },
   { key: 'administracao', label: 'Administração / Usuários', route: '/usuarios-admin', permission: 'users.read', Icon: ClipboardList },
   { key: 'logistica', label: 'Logística', route: '/expedicao/roteirizacao', permission: 'inventory.read', Icon: Truck },
+  { key: 'logistica-romaneio-carga', label: 'Logística · Romaneios', route: '/logistica/romaneio-carga', permission: 'inventory.read', Icon: ClipboardList },
   { key: 'manutencao', label: 'Manutenção', route: '/manutencao', permission: 'production.read', Icon: Wrench },
   { key: 'materiais', label: 'Controle de Materiais', route: '/pcp/materiais', Icon: PackageSearch },
   { key: 'documentos', label: 'Documentos', route: '/documentos-qualidade', permission: 'audit.read', Icon: FileText },
