@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { CheckCircle, CloudOff, LogOut, RefreshCw, ShieldAlert, Wifi } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { cn } from '../utils/cn'
+import '../styles/synqra-premium.css'
 
 type OP = {
   id: string
@@ -391,10 +392,10 @@ export default function PCPTabletOperador() {
   }
 
   const statePanel = loadState === 'loading'
-    ? <div className="rounded-xl border border-slate-700 bg-slate-900 p-5 text-slate-200">LOADING · Carregando OPs reais do Supabase…</div>
+    ? <div className="rounded-xl border border-slate-200 bg-white p-5 text-slate-800">LOADING · Carregando OPs reais do Supabase…</div>
     : loadState === 'error'
       ? (
-        <div className="rounded-xl border border-rose-500/40 bg-rose-950/50 p-5 text-rose-100">
+        <div className="rounded-xl border border-rose-500/40 bg-rose-50 p-5 text-rose-800">
           <strong>ERROR · Falha técnica do Supabase</strong>
           <p className="mt-2 break-words text-sm">{loadError}</p>
           <button type="button" onClick={() => void load()} className="mt-4 min-h-[60px] rounded-xl bg-rose-600 px-5 font-black text-white hover:bg-rose-500">
@@ -403,13 +404,13 @@ export default function PCPTabletOperador() {
         </div>
       )
       : loadState === 'empty'
-        ? <div className="rounded-xl border border-amber-500/40 bg-amber-950/40 p-5 text-amber-100">EMPTY · Nenhuma OP disponível para o operador nesta empresa.</div>
-        : <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/30 p-5 text-emerald-100">SUCCESS · OPs carregadas do banco e isoladas pelo contexto da empresa.</div>
+        ? <div className="rounded-xl border border-amber-500/40 bg-amber-50 p-5 text-amber-800">EMPTY · Nenhuma OP disponível para o operador nesta empresa.</div>
+        : <div className="rounded-xl border border-emerald-500/30 bg-emerald-50 p-5 text-emerald-800">SUCCESS · OPs carregadas do banco e isoladas pelo contexto da empresa.</div>
 
   return (
-    <main className="min-h-screen bg-[#05050a] p-3 text-slate-100 md:p-5">
+    <main className="min-h-screen bg-[#F5F7FB] p-3 text-slate-900 md:p-5">
       <div className="mx-auto max-w-[1600px]">
-        <header className="flex flex-col gap-4 border-b border-slate-800 pb-4 md:flex-row md:items-start md:justify-between">
+        <header className="flex flex-col gap-4 border-b border-slate-200 pb-4 md:flex-row md:items-start md:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-3">
               <span className={cn(
@@ -422,20 +423,20 @@ export default function PCPTabletOperador() {
                 {statusText}
               </span>
               {pendingCount > 0 && (
-                <span className="inline-flex min-h-[54px] items-center rounded-xl border border-sky-500/40 bg-sky-500/10 px-4 text-sm font-black text-sky-300">
+                <span className="inline-flex min-h-[54px] items-center rounded-xl border border-sky-500/40 bg-[#EEF4FF] px-4 text-sm font-black text-[#1D5FD1]">
                   {pendingCount} pendente{pendingCount === 1 ? '' : 's'}
                 </span>
               )}
             </div>
             <p className="mt-3 text-xs font-black uppercase tracking-[0.16em] text-slate-500">CHÃO DE FÁBRICA · TERMINAL TOUCH</p>
-            <h1 className="mt-1 text-2xl font-black tracking-tight text-white md:text-4xl">Terminal Touch do Operador</h1>
+            <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-900 md:text-4xl">Terminal Touch do Operador</h1>
           </div>
 
           <button
             type="button"
             disabled={busy}
             onClick={() => void supabase.auth.signOut().then(() => window.location.replace('/login'))}
-            className="inline-flex h-[64px] w-full items-center justify-center rounded-xl bg-red-600 px-5 text-lg font-black text-white shadow-xl shadow-red-950/40 hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto"
+            className="inline-flex h-[64px] w-full items-center justify-center rounded-xl bg-red-600 px-5 text-lg font-black text-white shadow-[0_4px_16px_rgba(11,37,69,0.06)] shadow-red-950/40 hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto"
             aria-label="Sair do terminal tablet"
           >
             <LogOut className="mr-2" size={26} />
@@ -445,14 +446,14 @@ export default function PCPTabletOperador() {
 
         <div className="my-5">{statePanel}</div>
 
-        <section className="rounded-2xl border border-slate-800 bg-[#0f172a] p-4 shadow-2xl md:p-6">
-          <label className="block text-sm font-black uppercase tracking-wide text-slate-300">
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_8px_30px_rgba(11,37,69,0.08)] md:p-6">
+          <label className="block text-sm font-black uppercase tracking-wide text-slate-600">
             Ordem de produção
             <select
               value={opId}
               onChange={(event) => setOpId(event.target.value)}
               disabled={busy || loadState !== 'success'}
-              className="mt-2 min-h-[60px] w-full rounded-xl border border-slate-700 bg-[#05050a] px-4 text-lg font-black text-white outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-2 min-h-[60px] w-full rounded-xl border border-slate-200 bg-[#F5F7FB] px-4 text-lg font-black text-slate-900 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="">Selecione uma OP real</option>
               {ops.map((entry) => (
@@ -463,31 +464,31 @@ export default function PCPTabletOperador() {
         </section>
 
         <div className="my-5 grid gap-5 lg:grid-cols-2">
-          <section className="rounded-2xl border border-slate-800 bg-[#0f172a] p-5 shadow-2xl md:p-6">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-sky-400">APONTAMENTO REAL</p>
-            <h2 className="mt-1 text-2xl font-black text-white">Produção e refugo</h2>
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_30px_rgba(11,37,69,0.08)] md:p-6">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#1D5FD1]">APONTAMENTO REAL</p>
+            <h2 className="mt-1 text-2xl font-black text-slate-900">Produção e refugo</h2>
 
             <div className="mt-7 space-y-7">
               <div>
-                <h3 className="text-sm font-black uppercase tracking-wide text-slate-300">Peças encontradas</h3>
+                <h3 className="text-sm font-black uppercase tracking-wide text-slate-600">Peças encontradas</h3>
                 <div className="mt-3 grid grid-cols-5 gap-2">
                   {[-10, -1].map((delta) => (
-                    <button key={delta} type="button" disabled={busy} onClick={() => step(setFound, delta)} className="min-h-[64px] rounded-xl bg-slate-700 text-xl font-black text-white hover:bg-slate-600 disabled:opacity-40">{delta}</button>
+                    <button key={delta} type="button" disabled={busy} onClick={() => step(setFound, delta)} className="min-h-[64px] rounded-xl bg-slate-100 text-xl font-black text-slate-900 hover:bg-slate-200 disabled:opacity-40">{delta}</button>
                   ))}
-                  <strong className="grid min-h-[64px] place-items-center rounded-xl border border-slate-700 bg-[#05050a] text-4xl tabular-nums text-white">{found}</strong>
+                  <strong className="grid min-h-[64px] place-items-center rounded-xl border border-slate-200 bg-[#F5F7FB] text-4xl tabular-nums text-slate-900">{found}</strong>
                   {[1, 10].map((delta) => (
-                    <button key={delta} type="button" disabled={busy} onClick={() => step(setFound, delta)} className="min-h-[64px] rounded-xl bg-sky-700 text-xl font-black text-white hover:bg-sky-600 disabled:opacity-40">+{delta}</button>
+                    <button key={delta} type="button" disabled={busy} onClick={() => step(setFound, delta)} className="min-h-[64px] rounded-xl bg-[#1D5FD1] text-xl font-black text-white hover:bg-[#174FB3] disabled:opacity-40">+{delta}</button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <h3 className="text-sm font-black uppercase tracking-wide text-slate-300">Refugo</h3>
+                <h3 className="text-sm font-black uppercase tracking-wide text-slate-600">Refugo</h3>
                 <div className="mt-3 grid grid-cols-5 gap-2">
                   {[-10, -1].map((delta) => (
-                    <button key={delta} type="button" disabled={busy} onClick={() => step(setDefects, delta, found)} className="min-h-[64px] rounded-xl bg-slate-700 text-xl font-black text-white hover:bg-slate-600 disabled:opacity-40">{delta}</button>
+                    <button key={delta} type="button" disabled={busy} onClick={() => step(setDefects, delta, found)} className="min-h-[64px] rounded-xl bg-slate-100 text-xl font-black text-slate-900 hover:bg-slate-200 disabled:opacity-40">{delta}</button>
                   ))}
-                  <strong className="grid min-h-[64px] place-items-center rounded-xl border border-slate-700 bg-[#05050a] text-4xl tabular-nums text-white">{defects}</strong>
+                  <strong className="grid min-h-[64px] place-items-center rounded-xl border border-slate-200 bg-[#F5F7FB] text-4xl tabular-nums text-slate-900">{defects}</strong>
                   {[1, 10].map((delta) => (
                     <button key={delta} type="button" disabled={busy} onClick={() => step(setDefects, delta, found)} className="min-h-[64px] rounded-xl bg-red-700 text-xl font-black text-white hover:bg-red-600 disabled:opacity-40">+{delta}</button>
                   ))}
@@ -496,18 +497,18 @@ export default function PCPTabletOperador() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 {defects > 0 && (
-                  <label className="text-sm font-black uppercase tracking-wide text-slate-300">
+                  <label className="text-sm font-black uppercase tracking-wide text-slate-600">
                     Motivo do refugo · obrigatório
                     <input
                       required
                       value={reason}
                       onChange={(event) => setReason(event.target.value)}
                       disabled={busy}
-                      className="mt-2 min-h-[60px] w-full rounded-xl border border-red-500/50 bg-[#05050a] px-3 text-base font-bold normal-case text-white outline-none focus:border-red-400 disabled:opacity-50"
+                      className="mt-2 min-h-[60px] w-full rounded-xl border border-red-500/50 bg-[#F5F7FB] px-3 text-base font-bold normal-case text-slate-900 outline-none focus:border-red-400 disabled:opacity-50"
                     />
                   </label>
                 )}
-                <label className="text-sm font-black uppercase tracking-wide text-slate-300">
+                <label className="text-sm font-black uppercase tracking-wide text-slate-600">
                   TAG do paquímetro / instrumento
                   <input
                     value={instrument}
@@ -519,7 +520,7 @@ export default function PCPTabletOperador() {
                     onBlur={() => void check()}
                     disabled={busy}
                     placeholder="BIPAR / DIGITAR TAG"
-                    className="mt-2 min-h-[60px] w-full rounded-xl border border-slate-600 bg-[#05050a] px-3 text-base font-black uppercase text-white outline-none focus:border-sky-400 disabled:opacity-50"
+                    className="mt-2 min-h-[60px] w-full rounded-xl border border-slate-300 bg-[#F5F7FB] px-3 text-base font-black uppercase text-slate-900 outline-none focus:border-sky-400 disabled:opacity-50"
                   />
                   <span className={cn(
                     'mt-2 flex min-h-[44px] items-center rounded-lg px-3 text-xs font-black',
@@ -533,7 +534,7 @@ export default function PCPTabletOperador() {
               </div>
 
               {blocked && (
-                <div className="flex items-start gap-3 rounded-xl border border-rose-500/40 bg-rose-950/40 p-4 text-rose-100">
+                <div className="flex items-start gap-3 rounded-xl border border-rose-500/40 bg-rose-50 p-4 text-rose-800">
                   <ShieldAlert className="mt-0.5 shrink-0" size={20} />
                   <strong>{blocked}</strong>
                 </div>
@@ -541,9 +542,9 @@ export default function PCPTabletOperador() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-slate-800 bg-[#0f172a] p-5 shadow-2xl md:p-6">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-400">CONFERÊNCIA</p>
-            <h2 className="mt-1 text-2xl font-black text-white">Resultado em tempo real</h2>
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_30px_rgba(11,37,69,0.08)] md:p-6">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-600">CONFERÊNCIA</p>
+            <h2 className="mt-1 text-2xl font-black text-slate-900">Resultado em tempo real</h2>
 
             <div className="mt-6 grid grid-cols-2 gap-3">
               {[
@@ -553,17 +554,17 @@ export default function PCPTabletOperador() {
                 ['REFUGO', defects],
                 ['QUALIDADE', quality.toFixed(1) + '%'],
               ].map(([label, value]) => (
-                <article key={String(label)} className="rounded-xl border border-slate-800 bg-[#05050a] p-4">
+                <article key={String(label)} className="rounded-xl border border-slate-200 bg-[#F5F7FB] p-4">
                   <span className="text-xs font-black uppercase tracking-wide text-slate-500">{label}</span>
-                  <strong className="mt-2 block text-2xl tabular-nums text-white md:text-3xl">{value}</strong>
+                  <strong className="mt-2 block text-2xl tabular-nums text-slate-900 md:text-3xl">{value}</strong>
                 </article>
               ))}
             </div>
 
-            <div className="mt-4 rounded-xl border border-sky-500/30 bg-sky-500/5 p-4">
-              <p className="text-xs font-black uppercase tracking-wide text-sky-300">Equação operacional</p>
-              <p className="mt-1 text-xl font-black tabular-nums text-white">Peças Boas = Peças Encontradas − Peças Defeituosas</p>
-              <p className="mt-1 text-2xl font-black tabular-nums text-sky-300">{found} − {defects} = {good}</p>
+            <div className="mt-4 rounded-xl border border-sky-500/30 bg-[#F5F8FF] p-4">
+              <p className="text-xs font-black uppercase tracking-wide text-[#1D5FD1]">Equação operacional</p>
+              <p className="mt-1 text-xl font-black tabular-nums text-slate-900">Peças Boas = Peças Encontradas − Peças Defeituosas</p>
+              <p className="mt-1 text-2xl font-black tabular-nums text-[#1D5FD1]">{found} − {defects} = {good}</p>
             </div>
 
             {pendingCount > 0 && (
@@ -571,7 +572,7 @@ export default function PCPTabletOperador() {
                 type="button"
                 disabled={busy || !online}
                 onClick={() => void syncQueue()}
-                className="mt-4 inline-flex min-h-[60px] w-full items-center justify-center gap-2 rounded-xl border border-slate-600 bg-slate-800 px-4 font-black text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+                className="mt-4 inline-flex min-h-[60px] w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-slate-50 px-4 font-black text-slate-900 hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <RefreshCw size={18} /> Sincronizar fila
               </button>
@@ -581,7 +582,7 @@ export default function PCPTabletOperador() {
               type="button"
               onClick={() => void save()}
               disabled={!canSave}
-              className="mt-5 min-h-[68px] w-full rounded-xl bg-emerald-600 px-5 text-lg font-black text-white shadow-xl shadow-emerald-950/40 hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
+              className="mt-5 min-h-[68px] w-full rounded-xl bg-emerald-600 px-5 text-lg font-black text-white shadow-[0_4px_16px_rgba(11,37,69,0.06)] shadow-emerald-950/40 hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
             >
               <CheckCircle className="mr-2 inline" size={22} />
               {busy ? 'GRAVANDO / SINCRONIZANDO…' : 'CONFERIR E GRAVAR APONTAMENTO'}
@@ -594,7 +595,7 @@ export default function PCPTabletOperador() {
         </div>
 
         {message && (
-          <div className="rounded-xl border border-slate-700 bg-slate-900 p-4 text-sm font-bold text-slate-200" role="status">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm font-bold text-slate-800" role="status">
             {message}
           </div>
         )}
