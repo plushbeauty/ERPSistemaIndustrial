@@ -95,10 +95,10 @@ export default function PublicIndustrialHome(){
 .sgq-product-menu a,.sgq-product-option{display:flex;align-items:flex-start;gap:9px;padding:10px;border:0;border-radius:2px;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer;width:100%}
 .sgq-product-menu a:hover,.sgq-product-option:hover{background:#EAF7FA}.sgq-product-menu svg{flex:0 0 auto;color:var(--brand);margin-top:2px}.sgq-product-menu strong{display:block;font-size:11px}.sgq-product-menu small{display:block;margin-top:3px;color:var(--muted);font-size:9px;line-height:1.4}
 .sgq-nav-actions{gap:8px}
-/* Revisão autorizada 20/10/2026 — somente barra superior: logo 95%, fundo branco e tipografia 13px. Carrossel/hero preservados. */
+/* Revisão autorizada 20/10/2026 — somente barra superior: logo 88%, fundo branco e tipografia 13px. Carrossel/hero preservados. */
 .sgq-nav{background:#fff!important;border-bottom:1px solid #d7e5eb!important;color:#111827!important}
 .sgq-brand{background:#fff!important}
-.sgq-brand img{transform:scale(.95);transform-origin:left center}
+.sgq-brand img{transform:scale(.88);transform-origin:left center}
 .sgq-nav :is(.sgq-nav-link,.sgq-product-button){font-size:13px!important;color:#111827!important}
 .sgq-nav :is(.sgq-nav-link,.sgq-product-button):hover{background:#eaf7fa!important;color:#123b50!important}
 .sgq-nav .sgq-owner{color:#111827!important;border-color:#cbd5e1!important}
