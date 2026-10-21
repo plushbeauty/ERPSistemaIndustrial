@@ -70,7 +70,19 @@ export default function PCPProgramacaoGantt() {
       ])
       const err = m.error || p.error || o.error || pr.error
       if (err) throw err
-      setMachines((m.data ?? []) as Machine[]); setPrograms((p.data ?? []) as Program[]); setOrders((o.data ?? []) as Order[]); setProducts((pr.data ?? []) as Product[])
+      const rawPrograms = (p.data ?? []) as Program[]
+      const validPrograms = rawPrograms.filter(program => {
+        const start = Date.parse(program.inicio_planejado)
+        const end = Date.parse(program.fim_planejado)
+        return Number.isFinite(start) && Number.isFinite(end) && end >= start
+      })
+      setMachines((m.data ?? []) as Machine[])
+      setPrograms(validPrograms)
+      setOrders((o.data ?? []) as Order[])
+      setProducts((pr.data ?? []) as Product[])
+      if (validPrograms.length !== rawPrograms.length) {
+        setError('Algumas programações com datas inválidas foram ignoradas.')
+      }
     } catch (x) { setError(x instanceof Error ? x.message : 'Falha ao carregar a programação.') }
     finally { setBusy(false) }
   }, [from])
@@ -158,7 +170,7 @@ export default function PCPProgramacaoGantt() {
                   const order = p.ordem_producao_id ? orderMap.get(p.ordem_producao_id) : undefined
                   const prod = productMap.get(p.produto_id ?? order?.produto_id ?? '')
                   const t = toneOf(p, order)
-                  const pct = p.quantidade_planejada ? Math.min(100, Math.round(((p.quantidade_produzida ?? 0) / p.quantidade_planejada) * 100)) : 0
+                  const pct = Number.isFinite(p.quantidade_planejada) && p.quantidade_planejada > 0 ? Math.min(100, Math.max(0, Math.round(((Number.isFinite(p.quantidade_produzida) ? p.quantidade_produzida ?? 0 : 0) / p.quantidade_planejada) * 100))) : 0
                   return <div key={p.id} className={`sqg-bar ${t}`} style={{ left: s * HOUR_W, width: Math.max(28, (e - s) * HOUR_W - 4) }} title={`${order?.numero_op ?? 'OP'} · ${prod?.nome ?? ''} · ${toneLabel[t]}`}>
                     <div className="top"><b>{order?.numero_op ?? 'OP'}</b><span>{p.quantidade_planejada} un</span></div>
                     <div className="name">{prod?.nome ?? '—'}</div>
