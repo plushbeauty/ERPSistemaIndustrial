@@ -449,3 +449,57 @@ table td{color:#17333F!important;border-color:#dceaf0!important;font-size:16px!i
   .erp-horizontal-workspace table{min-width:640px}
 }
 @media(prefers-reduced-motion:reduce){.erp-horizontal-workspace *{transition:none!important;animation:none!important}}
+
+
+/* SYNQRA PREMIUM SYSTEM THEME — 2026-10-20 · REV-SQ-THEME-001 */
+/* System-wide tokens: visual layer only; no component logic, data, routes, auth, or RLS changes. */
+:root{
+  --sq-navy:#0B2545;--sq-blue:#1D5FD1;--sq-blue-600:#174FB3;--sq-cyan:#22B8CF;
+  --sq-grad:linear-gradient(135deg,#1D5FD1 0%,#22B8CF 100%);
+  --sq-bg:#F5F7FB;--sq-surface:#FFFFFF;--sq-soft:#F1F4F9;--sq-border:#E4E9F2;
+  --sq-text:#0B2545;--sq-muted:#5B6B82;--sq-ok:#059669;--sq-warn:#D97706;--sq-err:#DC2626;
+  --sq-r-sm:4px;--sq-r:6px;--sq-r-lg:8px;
+  --sq-shadow:0 1px 2px rgba(11,37,69,.04),0 4px 14px rgba(11,37,69,.06);
+  --sq-shadow-hover:0 2px 4px rgba(11,37,69,.06),0 10px 28px rgba(11,37,69,.10);
+  --erp-bg:var(--sq-bg);--erp-surface:var(--sq-surface);--erp-line:var(--sq-border);
+  --erp-text:var(--sq-text);--erp-muted:var(--sq-muted);--erp-blue:var(--sq-blue);
+}
+html,body,#root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--sq-text)}
+body{background:var(--sq-bg);color:var(--sq-text)}
+.erp-horizontal-shell,.erp-horizontal-workspace,.erp-premium-shell-body{background:var(--sq-bg)}
+/* Shared surfaces: use existing component classes so layout and behavior remain intact. */
+.erp-horizontal-workspace :is(.erp-card,.industrial-panel,.industrial-table-scroll,.pcp-dash-card,.pcp-mini-table,.pcp-modern-panel,.pcp-capacity-grid article,.quality-kpis article,.mw3-card,.mw3-actions,.industrial-info-grid article,.industrial-capacity article,.industrial-k-grid article){
+  background:var(--sq-surface);
+  border-color:var(--sq-border)!important;
+  box-shadow:var(--sq-shadow);
+}
+.erp-horizontal-workspace :is(h1,h2,h3){color:var(--sq-navy)}
+.erp-horizontal-workspace :is(.industrial-primary,.pcp-top-tablet,.mw3-btn.primary,.erp-primary-action,button[data-variant="primary"]){
+  background:var(--sq-grad)!important;color:#fff!important;border-color:transparent!important;
+}
+.erp-horizontal-workspace :is(.industrial-secondary,.pcp-top-light,.mw3-btn:not(.primary)){
+  background:#fff;color:var(--sq-navy);border-color:var(--sq-border);
+}
+.erp-horizontal-workspace :is(input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea,[role=combobox]){
+  border-color:var(--sq-border);
+}
+.erp-horizontal-workspace :is(input,select,textarea,[role=combobox]):focus-visible{
+  outline:2px solid rgba(29,95,209,.22);outline-offset:1px;border-color:var(--sq-blue)!important;
+  box-shadow:0 0 0 2px rgba(29,95,209,.08);
+}
+.erp-horizontal-workspace :is(.industrial-table-scroll,.mw3-table-wrap,.crud-table-wrap,.industrial-table-scroll){
+  border-color:var(--sq-border);border-radius:var(--sq-r);
+}
+.erp-horizontal-workspace :is(table thead th,.mw3-table-wrap th){
+  background:var(--sq-soft);color:var(--sq-muted);border-color:var(--sq-border);
+}
+.erp-horizontal-workspace :is(table tbody tr:hover, .industrial-table tbody tr:hover td){background:#F5F8FF}
+.erp-horizontal-workspace :is(.notice,.industrial-notice){border-color:#A7F3D0;background:#ECFDF5;color:#065F46}
+.erp-horizontal-workspace :is(.error){border-color:#FECACA;background:#FEF2F2;color:#991B1B}
+.erp-horizontal-workspace :is(.pcp-dash-card,.quality-kpis article,.mw3-card){transition:box-shadow .18s,transform .18s}
+.erp-horizontal-workspace :is(.pcp-dash-card,.quality-kpis article):hover{box-shadow:var(--sq-shadow-hover)}
+/* Preserve the approved compact ERP control contract: 30px fields and 32px grid rows. */
+.erp-premium-shell-body>.erp-horizontal-workspace :is(input:not([type=checkbox]):not([type=radio]):not([type=range]),select,button,[role=combobox]){
+  min-height:30px!important;height:30px!important;border-radius:3px!important;
+}
+@media(prefers-reduced-motion:reduce){.erp-horizontal-workspace *{transition:none!important;animation:none!important}}
