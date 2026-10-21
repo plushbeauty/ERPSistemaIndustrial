@@ -1,0 +1,10 @@
+/*
+ * SYNQRA PREMIUM — base compartilhada do PCP.
+ * Revisão: 2026-10-21.
+ *
+ * Este arquivo restaura o caminho de importação usado pelas telas do PCP.
+ * Mantido intencionalmente sem regras globais para não sobrescrever Tailwind,
+ * os estilos locais das telas nem páginas com contrato visual aprovado.
+ * Novas regras devem ser escopadas a classes próprias e validadas antes de
+ * alterar a aparência de telas congeladas.
+ */
