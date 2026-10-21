@@ -97,7 +97,7 @@ describe('Segurança RLS — isolamento entre Empresa A e Empresa B', () => {
   })
 
   it('não permite que a sessão da Empresa B enumere registros do tenant A por ID conhecido', async () => {
-    const clientB = createAuthenticatedClient('ERP_TEST_COMPANY_B_EMAIL', 'ERP_TEST_COMPANY_B_PASSWORD')
+    const clientB = createAuthenticatedClient()
     const { error: authError } = await clientB.auth.signInWithPassword({
       email: requiredEnv('ERP_TEST_COMPANY_B_EMAIL'),
       password: requiredEnv('ERP_TEST_COMPANY_B_PASSWORD'),
