@@ -47,7 +47,6 @@ const qualityModules: readonly QualityModule[] = [
   { label: 'Metodologia 8D', description: 'Resolução estruturada de problemas em oito disciplinas.', route: '/qualidade/metodologia-8d', icon: Target },
   { label: 'FMEA / PFMEA', description: 'Matriz de risco de produto e processo.', route: '/qualidade/pfmea', icon: Activity },
   { label: 'Documentos controlados', description: 'Documentos do SGQ, revisões e vigência.', route: '/qualidade/ged-documentos', icon: FileText },
-  { label: 'Controle de desenhos técnicos', description: 'Revisões de moldes e homologação CAD.', route: '/qualidade/controle-desenhos', icon: FileCheck2 },
   { label: 'Procedimentos e PDFs', description: 'Manuais técnicos e instruções operacionais.', route: '/qualidade/procedimentos', icon: BookOpenCheck },
   { label: 'Lista mestre', description: 'Índice controlado da documentação interna.', route: '/qualidade/lista-mestre', icon: FileText },
   { label: 'Auditoria 5S', description: 'Organização, disciplina e melhoria contínua.', route: '/qualidade/auditoria-5s', icon: SearchCheck },
