@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, CheckCircle2, Gauge, Plus, RefreshCw, Save, Shuffle, Target, Boxes } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
+import '../styles/synqra-premium.css'
 
 type Product={id:string;codigo:string;nome:string;estoque_atual:number}
 type MPS={id:string;produto_id:string;periodo_inicio:string;periodo_fim:string;quantidade_prevista:number;estoque_alvo:number;demanda_confirmada:number;status:string}
@@ -142,7 +143,7 @@ export default function PCPPlanejamentoIndustrial(){
   {tab==='capacidade'&&<section className="industrial-panel">
    <div className="process-section-heading"><span>FINITE CAPACITY</span><h2>Capacidade e carga</h2><p>Consulte postos de trabalho cadastrados e acompanhe a carga horária derivada das programações reais das máquinas.</p></div>
    <div className="process-form-grid"><label>Código do posto<input value={center.codigo_posto} onChange={e=>setCenter({...center,codigo_posto:e.target.value})}/></label><label>Nome do posto<input value={center.nome_posto} onChange={e=>setCenter({...center,nome_posto:e.target.value})}/></label><label>Taxa por hora (R$)<input type="number" min="0" step="0.01" value={center.taxa_hora} onChange={e=>setCenter({...center,taxa_hora:e.target.value})}/></label><div style={{display:'flex',alignItems:'end'}}><button className="industrial-primary" type="button" onClick={()=>void createCenter()} disabled={busy}><Plus size={16}/> Cadastrar posto</button></div></div>
-   <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">{centers.map(c=><article key={c.id} style={{border:'1px solid #cfe1e7',borderRadius:2,padding:12}}><strong>{c.codigo_posto}</strong><h3>{c.nome_posto}</h3><p>Taxa por hora: {Number(c.taxa_hora).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</p></article>)}</div>
+   <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">{centers.map(c=><article key={c.id} style={{border:'1px solid #E4E9F2',borderRadius:12,padding:12}}><strong>{c.codigo_posto}</strong><h3>{c.nome_posto}</h3><p>Taxa por hora: {Number(c.taxa_hora).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</p></article>)}</div>
    <div className="industrial-table-scroll" style={{marginTop:16}}><table className="industrial-table"><thead><tr><th>Máquina</th><th>Programações</th><th>Horas carregadas</th><th>Utilização</th><th>Status</th></tr></thead><tbody>{machineLoad.map(x=><tr key={x.m.id}><td>{x.m.codigo} • {x.m.nome}</td><td>{x.rows.length}</td><td>{x.hours.toFixed(1)} h</td><td>{x.hours>0?'Carga registrada':'Livre'}</td><td>{x.m.status}</td></tr>)}</tbody></table></div>
   </section>}
 
