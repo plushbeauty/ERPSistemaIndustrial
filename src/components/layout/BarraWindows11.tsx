@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import type { LucideIcon } from "lucide-react";
 import {
   LayoutGrid, Search, CalendarClock, Factory, Package, ClipboardList, Wrench,
   BarChart3, Users, Settings, Power, Wifi, Volume2, BatteryFull, ChevronUp, User,
 } from "lucide-react";
 
-type App = { id: string; nome: string; icone: React.ComponentType<{ size?: number; color?: string }>; cor: string };
+type App = { id: string; nome: string; icone: LucideIcon; cor: string };
 
 const APPS: App[] = [
   { id: "pcp", nome: "Programação", icone: CalendarClock, cor: "#0078d4" },
