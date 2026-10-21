@@ -3,6 +3,7 @@ import { AlertCircle, CheckCircle2, ClipboardList, Printer, RefreshCw, ShoppingC
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 import EntityCodeLookup, { type LookupRecord } from '../components/industrial/EntityCodeLookup'
+import KioskConsultaRapida from '../components/KioskConsultaRapida'
 import VendasLayout from './VendasLayout'
 
 interface Requisition {
@@ -245,6 +246,10 @@ export default function ComprasRequisicoes() {
               </div>
             </div>
           </header>
+
+          <div className="mt-3">
+            <KioskConsultaRapida />
+          </div>
 
           {(error || message) && (
             <div role={error ? 'alert' : 'status'} className={`mt-3 flex items-start gap-2 rounded-[3px] border px-3 py-2 text-xs font-semibold ${error ? 'border-[#E9B8B8] bg-[#FFF3F2] text-[#9D3030]' : 'border-[#B8DCCB] bg-[#EFF9F3] text-[#226847]'}`}>
