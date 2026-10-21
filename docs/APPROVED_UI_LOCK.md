@@ -57,4 +57,12 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 
 - Cadastro Mestre de Produtos: revisão autorizada para integrar campos técnicos de injeção (molde, cavidades, resina/cor, temperaturas e ciclo) e compactação dos campos do cadastro.
 - A revisão fica congelada no verificador de UI aprovada; novas alterações exigem autorização explícita.
-- As telas aprovadas de login, dashboard, PCP Tablet do operador, Qualidade Tablet e Novo Pedido não foram alteradas por esta revisão.
+- Login, dashboard e Novo Pedido permanecem protegidos; as revisões dos tablets PCP e Qualidade são registradas separadamente em APROV-013.
+
+
+## Registro da revisão APROV-013 — 2026-10-21
+
+- Tablet SGQ: incorpora a revisão de alto contraste datada de 19/10, explicitamente incluída pelo usuário no pedido de consolidar os códigos enviados de 19 a 21/10.
+- Tablet PCP do operador: registra a revisão do código operacional enviada em 20/10, sem substituir os fluxos reais de apontamento e sessão.
+- Modal do PCP: registra a inclusão do atalho de Programação Gantt solicitada pelo usuário; os módulos e destinos permanecem congelados após esta revisão.
+- O protótipo separado `/pcp/ficha-processo-teste` não substitui a ficha aprovada.
