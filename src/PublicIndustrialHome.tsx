@@ -94,7 +94,17 @@ export default function PublicIndustrialHome(){
 .sgq-product-menu{position:absolute;top:42px;left:0;width:700px;max-width:calc(100vw - 24px);padding:12px;border:1px solid var(--line);border-radius:3px;background:#fff;box-shadow:0 18px 45px rgba(10,36,48,.24);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
 .sgq-product-menu a,.sgq-product-option{display:flex;align-items:flex-start;gap:9px;padding:10px;border:0;border-radius:2px;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer;width:100%}
 .sgq-product-menu a:hover,.sgq-product-option:hover{background:#EAF7FA}.sgq-product-menu svg{flex:0 0 auto;color:var(--brand);margin-top:2px}.sgq-product-menu strong{display:block;font-size:11px}.sgq-product-menu small{display:block;margin-top:3px;color:var(--muted);font-size:9px;line-height:1.4}
-.sgq-nav-actions{gap:8px}.sgq-owner{display:grid;place-items:center;width:32px;height:32px;border:1px solid rgba(255,255,255,.24);border-radius:2px;color:#F4FBFD}.sgq-owner:hover{background:rgba(72,183,199,.18)}
+.sgq-nav-actions{gap:8px}
+/* Revisão autorizada 20/10/2026 — somente barra superior: logo 95%, fundo branco e tipografia 13px. Carrossel/hero preservados. */
+.sgq-nav{background:#fff!important;border-bottom:1px solid #d7e5eb!important;color:#111827!important}
+.sgq-brand{background:#fff!important}
+.sgq-brand img{transform:scale(.95);transform-origin:left center}
+.sgq-nav :is(.sgq-nav-link,.sgq-product-button){font-size:13px!important;color:#111827!important}
+.sgq-nav :is(.sgq-nav-link,.sgq-product-button):hover{background:#eaf7fa!important;color:#123b50!important}
+.sgq-nav .sgq-owner{color:#111827!important;border-color:#cbd5e1!important}
+.sgq-nav :is(.sgq-login,.sgq-contact){font-size:13px!important}
+.sgq-nav .sgq-contact{background:#fff!important;color:#111827!important;border-color:#cbd5e1!important}
+.sgq-owner{display:grid;place-items:center;width:32px;height:32px;border:1px solid rgba(255,255,255,.24);border-radius:2px;color:#F4FBFD}.sgq-owner:hover{background:rgba(72,183,199,.18)}
 .sgq-login,.sgq-contact{display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:0 13px;border-radius:2px;font-size:10px;font-weight:900;white-space:nowrap}.sgq-login{background:var(--green);color:#fff!important}.sgq-contact{border:1px solid var(--line);background:#fff}
 .sgq-hero{position:relative;isolation:isolate;width:100%;height:calc(100dvh - 64px);min-height:560px;max-height:1000px;overflow:hidden;background:#123B50}
 .sgq-hero-shade{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(18,59,80,.24),rgba(18,59,80,0) 70%)}
