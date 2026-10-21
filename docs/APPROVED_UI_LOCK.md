@@ -53,3 +53,11 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Configurações navega para `/configuracoes-adm`; saída chama `supabase.auth.signOut()` e retorna ao login.
 - Ajuda contextual e modais/atalhos existentes de tablet PCP e Qualidade são preservados. O conteúdo das telas operacionais e os arquivos de tablet congelados não foram alterados.
 - A revisão foi autorizada expressamente pelo usuário; o verificador de hashes foi atualizado deliberadamente para o novo hash do shell.
+
+
+## Registro da revisão APROV-010 — 2026-10-20
+
+- Correção expressamente solicitada: a barra de módulos fica FIXA NO LADO DIREITO, com ícones de todos os módulos visíveis, e não à esquerda nem como menu Iniciar estilo Windows 11.
+- O trilho recolhido mantém os ícones; ao selecionar um módulo com rotinas, abre a gaveta lateral para acessar seus submenus. O conteúdo operacional permanece à esquerda e não precisa retornar à página inicial para navegar.
+- Removido o menu Iniciar/pesquisa superior estilo Windows do JSX. Cabeçalho contextual, usuário/sessão Supabase, data/hora, ajuda, configurações e saída permanecem.
+- Escopo exclusivo: `src/components/layout/ERPHorizontalShell.tsx`, mais a atualização deliberada do hash do lock. Nenhuma tela operacional aprovada foi modificada.
