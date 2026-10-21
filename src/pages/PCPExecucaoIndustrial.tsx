@@ -1,7 +1,7 @@
 /**
  * ERPSis — CONTROLE DE REVISÃO VISUAL
- * Data Atual: 2026-10-16
- * Revisão Incremental: REV-061
+ * Data Atual: 2026-10-21
+ * Revisão Incremental: REV-062 — alinhamento de controles e grade à referência PCPOrdens
  * Escopo: padronização industrial de inputs, seletores, botões e densidade tipográfica;
  * cantos retos, foco azul, cabeçalhos escuros e alinhamento de dados conforme aplicável.
  * Escopo funcional preservado: consultas Supabase, validações, tenant, RPCs e gravações.
@@ -17,12 +17,12 @@ type Process = { id:string; codigo:string; nome:string }
 type Entry = { id:string; ordem_producao_id:string; maquina_id:string|null; processo_id:string|null; inicio_em:string|null; fim_em:string|null; quantidade_planejada:number|null; quantidade_boa:number|null; quantidade_refugada:number|null; motivo_parada:string|null; observacoes:string|null; created_at:string }
 type Material = { produto_id:string; codigo:string; descricao:string; nivel:number; necessidade_bruta:number; saldo_disponivel:number; necessidade_liquida:number; perda_estimada:number }
 
-const field='h-8 w-full rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 outline-none transition-all focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
+const field='h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800 outline-none transition-all focus:border-[#2D8DB8] focus:ring-1 focus:ring-[#2D8DB8]/20 disabled:bg-slate-100'
 const label='flex flex-col gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-500'
-const btn='inline-flex h-8 items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold hover:bg-slate-50 disabled:opacity-50'
-const primary='inline-flex h-8 items-center justify-center gap-1 rounded-[2px] border border-sky-700 bg-sky-700 px-3 text-[10px] font-semibold text-white hover:bg-sky-800 disabled:opacity-50'
-const th='h-9 bg-slate-900 text-left text-[10px] font-black uppercase tracking-wider text-white border-b border-slate-800 align-middle h-8 border-b border-slate-200 bg-slate-100 px-2 text-left text-[9px] font-bold uppercase text-slate-600'
-const td='h-10 px-4 py-2 text-xs font-semibold text-slate-800 border-b border-slate-200 align-middle h-[32px] border-b border-slate-100 px-2 text-[10px] text-slate-700'
+const btn='inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-3 text-xs font-semibold hover:bg-slate-50 disabled:opacity-50'
+const primary='inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-sky-700 bg-sky-700 px-3 text-[10px] font-semibold text-white hover:bg-sky-800 disabled:opacity-50'
+const th='h-[30px] border-b border-slate-200 bg-slate-100 px-2 text-left align-middle text-[9px] font-bold uppercase text-slate-600'
+const td='h-[30px] border-b border-slate-100 px-2 align-middle text-[10px] font-semibold text-slate-700'
 const localDateTime=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
 const messageOf=(e:unknown)=>e instanceof Error?e.message:'Falha na execução do PCP.'
 
