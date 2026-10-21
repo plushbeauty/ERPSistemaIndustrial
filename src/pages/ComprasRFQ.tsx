@@ -422,7 +422,21 @@ export default function ComprasRFQ() {
           </section>
         </div>
       </main>
-      <style>{`.compras-rfq-compact header>div{min-height:44px!important;padding:6px 12px!important}.compras-rfq-compact main{max-width:none!important;padding:8px!important}.compras-rfq-compact .rounded,.compras-rfq-compact .rounded-md,.compras-rfq-compact .rounded-lg{border-radius:3px!important}.compras-rfq-compact section{padding:12px!important}.compras-rfq-compact input:not([type=checkbox]):not([type=radio]),.compras-rfq-compact select{height:36px!important;min-height:36px!important;border-radius:3px!important;font-size:12px!important}.compras-rfq-compact textarea{border-radius:3px!important;font-size:12px!important}.compras-rfq-compact table{font-size:11px!important}.compras-rfq-compact th,.compras-rfq-compact td{padding:6px 8px!important}.compras-rfq-compact button{border-radius:3px!important;font-size:11px!important}`}</style>
+      <style>{`.compras-rfq-compact header>div{min-height:44px!important;padding:6px 12px!important}.compras-rfq-compact main{max-width:none!important;padding:8px!important}.compras-rfq-compact .rounded,.compras-rfq-compact .rounded-md,.compras-rfq-compact .rounded-lg{border-radius:3px!important}.compras-rfq-compact section{padding:12px!important}.compras-rfq-compact input:not([type=checkbox]):not([type=radio]),.compras-rfq-compact select{height:36px!important;min-height:36px!important;border-radius:3px!important;font-size:12px!important}.compras-rfq-compact textarea{border-radius:3px!important;font-size:12px!important}.compras-rfq-compact table{font-size:11px!important}.compras-rfq-compact th,.compras-rfq-compact td{padding:6px 8px!important}.compras-rfq-compact button{border-radius:3px!important;font-size:11px!important}
+/* Revisão visual RFQ — 20/10/2026: zoom 95%, barra do logo branca e textos 13px. */
+body:has(.compras-rfq-compact) .synqra-app-header,
+body:has(.compras-rfq-compact) .synqra-workspace-header{background:#fff!important;color:#111827!important;border-color:#e2e8f0!important}
+body:has(.compras-rfq-compact) .synqra-app-header :is(.synqra-header-brand,.synqra-workspace-brand),
+body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-workspace-brand{background:#fff!important;color:#111827!important}
+body:has(.compras-rfq-compact) .synqra-app-header .synqra-header-brand img,
+body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-workspace-brand img{transform:scale(.95);transform-origin:center}
+body:has(.compras-rfq-compact) .synqra-app-header :is(.synqra-header-title,.synqra-header-title small,.synqra-session strong,.synqra-session span,.synqra-header-brand strong,.synqra-header-brand small,.synqra-tool-button,.synqra-logout),
+body:has(.compras-rfq-compact) .synqra-workspace-header :is(.synqra-header-title,.synqra-header-title small,.synqra-session strong,.synqra-session span,.synqra-workspace-brand strong,.synqra-workspace-brand small,.synqra-tool-button,.synqra-logout){font-size:13px!important;color:#111827!important}
+.compras-rfq-compact,.compras-rfq-compact :is(p,h1,h2,h3,label,span,strong,small,button,input,select,textarea,th,td,a){font-size:13px!important}
+.compras-rfq-compact header h1,.compras-rfq-compact header p{font-size:13px!important;line-height:1.25!important;letter-spacing:.02em!important}
+.compras-rfq-compact table,.compras-rfq-compact th,.compras-rfq-compact td{font-size:13px!important}
+.compras-rfq-compact input::placeholder,.compras-rfq-compact textarea::placeholder{font-size:13px!important}
+`}</style>
     </div>
     </VendasLayout>
   )
