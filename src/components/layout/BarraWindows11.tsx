@@ -18,7 +18,7 @@ const APPS: App[] = [
   { id: "cfg", nome: "Configurações", icone: Settings, cor: "#475569" },
 ];
 
-export function BarraWindows11({ ativo = "pcp", onAbrir }: { ativo?: string; onAbrir?: (id: string) => void }) {
+export function BarraWindows11({ ativo = "pcp", onAbrir, onDesligar }: { ativo?: string; onAbrir?: (id: string) => void; onDesligar?: () => void | Promise<void> }) {
   const [menu, setMenu] = useState(false);
   const [busca, setBusca] = useState("");
   const [agora, setAgora] = useState<Date | null>(null);
@@ -62,7 +62,7 @@ export function BarraWindows11({ ativo = "pcp", onAbrir }: { ativo?: string; onA
           </div>
           <div className="w11-foot">
             <div className="w11-user"><span className="w11-avatar"><User size={16} /></span>Operador PCP</div>
-            <button className="w11-ico" aria-label="Desligar"><Power size={16} /></button>
+            <button className="w11-ico" aria-label="Desligar" onClick={() => { void onDesligar?.(); setMenu(false); }}><Power size={16} /></button>
           </div>
         </div>
       )}
