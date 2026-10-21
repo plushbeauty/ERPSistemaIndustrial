@@ -3,6 +3,7 @@ import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Da
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
+import { BarraWindows11 } from './BarraWindows11'
 import TabletMenuModal from '../TabletMenuModal'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
 
@@ -328,6 +329,22 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       </main>
       <TabletMenuModal isOpen={tabletOpen} onClose={() => setTabletOpen(false)} onNavigate={(route) => { setTabletOpen(false); go(route) }} />
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
+      <BarraWindows11
+        ativo={pathname.startsWith('/pcp') ? 'pcp' : pathname.startsWith('/estoque') ? 'est' : pathname.startsWith('/manutencao') ? 'man' : pathname.startsWith('/usuarios') ? 'usu' : pathname.startsWith('/configuracoes') ? 'cfg' : ''}
+        onAbrir={(id) => {
+          const routes: Record<string, string> = {
+            pcp: '/pcp/programacao-gantt',
+            maq: '/pcp/agenda-maquinas',
+            est: '/estoque/saldos',
+            op: '/pcp/ordens',
+            man: '/manutencao',
+            ind: '/pcp/capacidade',
+            usu: '/usuarios',
+            cfg: '/configuracoes-adm',
+          }
+          go(routes[id] ?? '/erp-industrial')
+        }}
+      />
 
       <style>{`
         .erp-horizontal-shell{min-height:100vh;background:linear-gradient(135deg,#eaf4f8 0%,#f4f8fb 48%,#eaf2f7 100%);color:#123b50}
