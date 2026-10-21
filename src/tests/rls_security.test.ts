@@ -22,7 +22,7 @@ const requiredEnv = (name: string): string => {
   return value
 }
 
-function createAuthenticatedClient(emailVariable: string, passwordVariable: string): SupabaseClient {
+function createAuthenticatedClient(): SupabaseClient {
   const client = createClient(
     requiredEnv('ERP_TEST_SUPABASE_URL'),
     requiredEnv('ERP_TEST_SUPABASE_ANON_KEY'),
@@ -40,8 +40,8 @@ function createAuthenticatedClient(emailVariable: string, passwordVariable: stri
 
 describe('Segurança RLS — isolamento entre Empresa A e Empresa B', () => {
   it('impede que a sessão da Empresa B leia a RNC pertencente à Empresa A', async () => {
-    const clientA = createAuthenticatedClient('ERP_TEST_COMPANY_A_EMAIL', 'ERP_TEST_COMPANY_A_PASSWORD')
-    const clientB = createAuthenticatedClient('ERP_TEST_COMPANY_B_EMAIL', 'ERP_TEST_COMPANY_B_PASSWORD')
+    const clientA = createAuthenticatedClient()
+    const clientB = createAuthenticatedClient()
 
     const { error: authAError } = await clientA.auth.signInWithPassword({
       email: requiredEnv('ERP_TEST_COMPANY_A_EMAIL'),
