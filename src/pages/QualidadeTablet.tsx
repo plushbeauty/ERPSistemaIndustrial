@@ -26,6 +26,7 @@ const sections = [
   ]},
   { title: 'SISTEMA DE GESTÃO E CONFORMIDADE', description: 'Documentos controlados, auditoria e melhoria contínua', items: [
     { label: 'Documentos controlados / GED', description: 'Documentos, revisões e vigência', route: '/qualidade/ged-documentos', icon: FileText },
+    { label: 'Controle de desenhos técnicos', description: 'Revisões de moldes e homologação CAD', route: '/qualidade/controle-desenhos', icon: FileCheck2 },
     { label: 'Procedimentos e PDFs', description: 'Procedimentos e padrões do SGQ', route: '/qualidade/procedimentos', icon: BookOpenCheck },
     { label: 'Lista mestre', description: 'Índice de documentos controlados', route: '/qualidade/lista-mestre', icon: FileText },
     { label: 'Auditoria 5S', description: 'Auditorias de organização e disciplina', route: '/qualidade/auditoria-5s', icon: SearchCheck },
