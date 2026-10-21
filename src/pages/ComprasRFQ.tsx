@@ -402,6 +402,26 @@ export default function ComprasRFQ() {
 @media(max-width:900px){.compras-rfq-compact main>.grid{gap:12px}.compras-rfq-compact main>.grid>section:first-child,.compras-rfq-compact main>.grid>section:nth-child(2){grid-column:span 12}.compras-rfq-compact main>div.grid>section:nth-child(2)>div:first-child label{grid-column:span 12}.compras-rfq-compact main>div.grid>section:nth-child(2)>div:nth-child(2){grid-template-columns:minmax(0,1fr) 84px 110px}}
 @media(max-width:520px){.compras-rfq-compact>header>div{align-items:flex-start!important;flex-direction:column;padding:12px!important}.compras-rfq-compact header h1{font-size:18px}.compras-rfq-compact main{padding:10px!important}.compras-rfq-compact section{padding:12px!important}.compras-rfq-compact main>div.grid>section:nth-child(2)>div:nth-child(2){grid-template-columns:minmax(0,1fr) 80px}.compras-rfq-compact main>div.grid>section:nth-child(2)>div:nth-child(2)>button{grid-column:span 2}}
 @media(prefers-reduced-motion:reduce){.compras-rfq-compact *{transition:none!important}}
+
+/* Ajuste pontual RFQ — 20/10/2026: logo em 95%, faixa branca e tipografia uniforme de 13px. */
+body:has(.compras-rfq-compact) .synqra-workspace-header{background:#fff!important;color:#111827!important;border-bottom-color:#e2e8f0!important}
+body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-workspace-brand{background:#fff!important;color:#111827!important}
+body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-workspace-brand img{transform:scale(.95);transform-origin:center}
+body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-workspace-brand span{border-left-color:#d1d5db!important}
+body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-workspace-brand strong,
+body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-workspace-brand small,
+body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-header-title,
+body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-header-title small,
+body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-session strong,
+body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-session span,
+body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-logout,
+body:has(.compras-rfq-compact) .synqra-workspace-header .synqra-tool-button{font-size:13px!important;color:#111827!important}
+.compras-rfq-compact,.compras-rfq-compact :is(p,h1,h2,h3,label,span,strong,small,button,input,select,textarea,th,td,a){font-size:13px!important}
+.compras-rfq-compact header h1{font-size:13px!important;line-height:1.25!important}
+.compras-rfq-compact header p{font-size:13px!important;letter-spacing:.02em!important}
+.compras-rfq-compact table,.compras-rfq-compact th,.compras-rfq-compact td{font-size:13px!important}
+.compras-rfq-compact input::placeholder,.compras-rfq-compact textarea::placeholder{font-size:13px!important}
+
 `}</style>
     </div>
     </VendasLayout>
