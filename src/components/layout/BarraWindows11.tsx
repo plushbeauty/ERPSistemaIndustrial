@@ -3,9 +3,8 @@ import {
   LayoutGrid, Search, CalendarClock, Factory, Package, ClipboardList, Wrench,
   BarChart3, Users, Settings, Power, Wifi, Volume2, BatteryFull, ChevronUp, User,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 
-type App = { id: string; nome: string; icone: LucideIcon; cor: string };
+type App = { id: string; nome: string; icone: React.ComponentType<{ size?: number; color?: string }>; cor: string };
 
 const APPS: App[] = [
   { id: "pcp", nome: "Programação", icone: CalendarClock, cor: "#0078d4" },
@@ -18,7 +17,7 @@ const APPS: App[] = [
   { id: "cfg", nome: "Configurações", icone: Settings, cor: "#475569" },
 ];
 
-export function BarraWindows11({ ativo = "pcp", onAbrir, onDesligar }: { ativo?: string; onAbrir?: (id: string) => void; onDesligar?: () => void }) {
+export function BarraWindows11({ ativo = "pcp", onAbrir }: { ativo?: string; onAbrir?: (id: string) => void }) {
   const [menu, setMenu] = useState(false);
   const [busca, setBusca] = useState("");
   const [agora, setAgora] = useState<Date | null>(null);
@@ -62,7 +61,7 @@ export function BarraWindows11({ ativo = "pcp", onAbrir, onDesligar }: { ativo?:
           </div>
           <div className="w11-foot">
             <div className="w11-user"><span className="w11-avatar"><User size={16} /></span>Operador PCP</div>
-            <button className="w11-ico" aria-label="Sair da sessão" title="Sair da sessão" onClick={onDesligar}><Power size={16} /></button>
+            <button className="w11-ico" aria-label="Desligar"><Power size={16} /></button>
           </div>
         </div>
       )}
@@ -80,7 +79,7 @@ export function BarraWindows11({ ativo = "pcp", onAbrir, onDesligar }: { ativo?:
           ))}
         </div>
         <div className="w11-tray">
-          <button className="w11-btn small" aria-label="Mais opções" title="Abrir menu de aplicativos" onClick={() => setMenu(true)}><ChevronUp size={14} /></button>
+          <button className="w11-btn small" aria-label="Mais"><ChevronUp size={14} /></button>
           <div className="w11-sys"><Wifi size={15} /><Volume2 size={15} /><BatteryFull size={15} /></div>
           <div className="w11-clock">
             <span>{agora?.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) ?? "--:--"}</span>
