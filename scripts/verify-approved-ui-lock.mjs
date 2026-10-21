@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 
 /**
- * Approved UI lock — reviewed 2026-10-19, approval revision APROV-008 (compact edit sizing and removal of duplicated zone controls explicitly authorized by user). Explicitly authorized revisions APROV-005 (Novo Pedido), APROV-006 (Vendas / Status), and APROV-011 (single top Windows 11 navigation) are frozen alongside the restored screens.
+ * Approved UI lock — reviewed 2026-10-19, approval revision APROV-008 (compact edit sizing and removal of duplicated zone controls explicitly authorized by user). Explicitly authorized revisions APROV-005 (Novo Pedido), APROV-006 (Vendas / Status), and APROV-011 (single top Windows 11 navigation with visible Menu control) are frozen alongside the restored screens.
  * Any edit to a frozen file must fail CI until the user explicitly approves a new revision.
  * Do not update these hashes as part of ordinary styling/refactor work.
  */
@@ -15,7 +15,7 @@ const approved = [
   { path: 'src/components/TabletMenuModal.tsx', sha: '5a416adfe3154227f7b4a652543584dca88e58d0', label: 'Qualidade / Modal Tablet padrão (22 módulos)', source: 'approved modal design — keep unchanged unless explicitly authorized' },
   { path: 'src/pages/PCPTabletOperador.tsx', sha: 'a8384f3e0319a60a05592213cbb065006795cf2f', label: 'PCP / Tablet do operador', source: 'approved PCP tablet standard — keep unchanged unless explicitly authorized' },
   { path: 'src/components/PCPTabletMenuModal.tsx', sha: 'b02e84ec48381d26b50d05362d35cee24f378f37', label: 'PCP / Submenu Fichas de Processo', source: 'explicit user-approved submenu revision 2026-10-18 — freeze labels and destinations unless explicitly authorized' },
-  { path: 'src/components/layout/ERPHorizontalShell.tsx', sha: '14aff6ee071787fa8ae396274b5e36d172b8b6cc', label: 'Shell global / menu superior único Windows 11', source: 'revisão explicitamente autorizada pelo usuário em 2026-10-20 — menu superior único, identidade SYSNQRA, sem painel lateral fixo; preservar páginas aprovadas' },
+  { path: 'src/components/layout/ERPHorizontalShell.tsx', sha: 'c396a6a1b292b504bd183d826e1a5f887161ebbb', label: 'Shell global / menu superior único Windows 11', source: 'revisão explicitamente autorizada pelo usuário em 2026-10-21 — botão Menu visível com ícone de quatro painéis, identidade SYSNQRA, sem painel lateral fixo; preservar páginas aprovadas' },
   { path: 'src/components/IndustrialCommandDashboard.tsx', sha: '821b2cb2add9ec0a31d0c81e906a2c1f6e84118b', label: 'Dashboard principal industrial', source: 'restored from user-provided archive 2026-10-18; freeze unless explicitly authorized' },
   { path: 'src/pages/PCPFichasProcesso.tsx', sha: '14a131d7c46eaee4ae8872a451914035358dab29', label: 'PCP / Fichas de Processo (Prensados, Injetados, Estamparia, Montagem)', source: 'explicitly authorized UI revision APROV-008 on 2026-10-19 — compact controls, white contrast, single source of truth for thermal zones, edit/update flow, A4 print and packaging photo workflow; frozen after this revision' },
   { path: 'src/pages/QualidadeInspecoesIndustrial.tsx', sha: 'ebb5bd1e523f38a2ab6169bda4e7a9855ee3e65a', label: 'Qualidade / Inspeções de Lotes', source: 'explicit user-provided approval directive 2026-10-19 — Steel Blue split-screen, compact h-8 controls and dense inspection grid; frozen after revision' },
