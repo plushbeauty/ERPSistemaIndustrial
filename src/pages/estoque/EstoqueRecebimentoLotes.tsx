@@ -30,6 +30,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
   const [produtoDescricao, setProdutoDescricao] = useState('')
   const [notaFiscal, setNotaFiscal] = useState('')
   const [loteFornecedor, setLoteFornecedor] = useState('')
+  const [dataValidade, setDataValidade] = useState('')
   const [quantidade, setQuantidade] = useState('')
   const [laudoStatus, setLaudoStatus] = useState<QualityStatus>('APROVADO')
   const [certificado, setCertificado] = useState<File | null>(null)
@@ -97,6 +98,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
     if (!produtoId) { setError('Selecione o insumo mestre pela lupa.'); return }
     if (!notaFiscal.trim()) { setError('Informe o número da NF-e de entrada.'); return }
     if (!loteFornecedor.trim()) { setError('O lote do fornecedor é obrigatório.'); return }
+    if (dataValidade && dataValidade <= new Date().toLocaleDateString('en-CA')) { setError('A validade deve ser posterior à data de recebimento.'); return }
     if (!Number.isFinite(quantity) || quantity <= 0) { setError('A quantidade deve ser maior que zero.'); return }
     if (!certificado) { setError('Anexe o certificado químico em PDF antes de integrar o lote.'); return }
     if (laudoStatus !== 'APROVADO') { setError('Lote reprovado bloqueado: não é permitido integrar ao saldo ativo.'); return }
@@ -118,6 +120,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
         p_produto_id: produtoId,
         p_nf_numero: notaFiscal.trim(),
         p_lote_fornecedor: loteFornecedor.trim(),
+        p_data_validade: dataValidade || null,
         p_quantidade: quantity,
         p_status_qualidade: laudoStatus,
         p_certificado_path: certificatePath,
@@ -128,6 +131,7 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
       setSuccess(`Lote ${loteFornecedor.trim()} recebido. ${numberFormat.format(quantity)} ${selected?.unidade ?? 'kg'} integrados ao saldo físico.`)
       setNotaFiscal('')
       setLoteFornecedor('')
+      setDataValidade('')
       setQuantidade('')
       setCertificado(null)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -191,6 +195,9 @@ export default function EstoqueRecebimentoLotes(): ReactElement {
                 <input type="number" min="0.001" step="0.001" value={quantidade} onChange={event => setQuantidade(event.target.value)} className={`${inputClass} rounded-r-none font-mono`} placeholder="0,000" required />
                 <span className="inline-flex h-8 items-center border border-l-0 border-slate-300 bg-slate-100 px-2 text-[10px] font-black text-slate-600">kg</span>
               </span>
+            </label>
+            <label className={`${labelClass} md:col-span-4`}>Data de validade
+              <input type="date" value={dataValidade} onChange={event => setDataValidade(event.target.value)} className={inputClass} min={new Date().toLocaleDateString('en-CA')} />
             </label>
             <label className={`${labelClass} md:col-span-5`}>Parecer técnico da qualidade *
               <select value={laudoStatus} onChange={event => setLaudoStatus(event.target.value as QualityStatus)} className={`${inputClass} font-black uppercase ${laudoStatus === 'APROVADO' ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-800'}`}>
