@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 
 type C = { id: string; prefixo: string; digitos_produto: number }
-type P = { id: string; codigo: string; nome: string; categoria: string | null; unidade: string; cliente: string | null }
+type P = { id: string; codigo: string; nome: string; categoria: string | null; unidade: string; cliente: string | null; molde_codigo: string | null; cavidades: number | null; resina_tipo: string | null; cor_resina: string | null; temp_bico_padrao: number | null; tempo_ciclo_padrao: number | null }
 
 const baseInput = 'h-8 w-full min-w-0 rounded border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-800 outline-none transition-colors placeholder:text-slate-400 focus:border-sky-600 focus:ring-1 focus:ring-sky-100 disabled:cursor-not-allowed disabled:bg-slate-50'
 const labelClass = 'grid min-w-0 gap-1 text-[9px] font-bold uppercase tracking-wider text-slate-500'
@@ -24,6 +24,12 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
   const [categoria, setCategoria] = useState('')
   const [unidade, setUnidade] = useState('UN')
   const [cliente, setCliente] = useState('')
+  const [moldeCodigo, setMoldeCodigo] = useState('')
+  const [cavidades, setCavidades] = useState(1)
+  const [resinaTipo, setResinaTipo] = useState('')
+  const [corResina, setCorResina] = useState('')
+  const [tempBico, setTempBico] = useState(220)
+  const [tempoCiclo, setTempoCiclo] = useState(28)
   const [empresa, setEmpresa] = useState('')
   const [error, setError] = useState('')
   const [ok, setOk] = useState('')
@@ -47,7 +53,7 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
         if (c.error) throw c.error
         let product: P | null = null
         if (productId) {
-          const x = await supabase.from('erp_produtos').select('id,codigo,nome,categoria,unidade,cliente').eq('id', productId).eq('empresa_id', empresaId).maybeSingle()
+          const x = await supabase.from('erp_produtos').select('id,codigo,nome,categoria,unidade,cliente,molde_codigo,cavidades,resina_tipo,cor_resina,temp_bico_padrao,tempo_ciclo_padrao').eq('id', productId).eq('empresa_id', empresaId).maybeSingle()
           if (x.error) throw x.error
           if (!x.data) throw new Error('Produto não encontrado nesta empresa ou sem permissão de acesso.')
           product = x.data as P
@@ -62,6 +68,12 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
         setCategoria(product?.categoria ?? '')
         setUnidade(product?.unidade ?? 'UN')
         setCliente(product?.cliente ?? '')
+        setMoldeCodigo(product?.molde_codigo ?? '')
+        setCavidades(product?.cavidades ?? 1)
+        setResinaTipo(product?.resina_tipo ?? '')
+        setCorResina(product?.cor_resina ?? '')
+        setTempBico(product?.temp_bico_padrao ?? 220)
+        setTempoCiclo(product?.tempo_ciclo_padrao ?? 28)
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Falha ao carregar a ficha técnica.')
       } finally {
@@ -83,6 +95,9 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
     if (loading) { setError('Aguarde o carregamento dos dados da empresa.'); return }
     if (!empresa || !nome.trim()) { setError('Empresa e Nome do Produto são obrigatórios.'); return }
     if (!unidade.trim()) { setError('Informe a unidade de medida.'); return }
+    if (!moldeCodigo.trim()) { setError('Informe o código do molde.'); return }
+    if (!Number.isInteger(cavidades) || cavidades < 1) { setError('Cavidades deve ser um inteiro maior que zero.'); return }
+    if (!Number.isFinite(tempBico) || tempBico < 0 || !Number.isFinite(tempoCiclo) || tempoCiclo <= 0) { setError('Confira a temperatura do bico e o tempo de ciclo.'); return }
     setBusy(true)
     try {
       let codigo = p?.codigo || ''
@@ -93,13 +108,13 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
         if (r.data === null || r.data === undefined || String(r.data).trim() === '') throw new Error('A rotina de numeração não retornou um SKU válido.')
         codigo = String(r.data)
       }
-      const values = { nome: nome.trim(), categoria: categoria.trim() || null, unidade: unidade.trim().toUpperCase(), unidade_compra: unidade.trim().toUpperCase(), unidade_venda: unidade.trim().toUpperCase(), cliente: cliente.trim() || null }
+      const values = { nome: nome.trim(), categoria: categoria.trim() || null, unidade: unidade.trim().toUpperCase(), unidade_compra: unidade.trim().toUpperCase(), unidade_venda: unidade.trim().toUpperCase(), cliente: cliente.trim() || null, molde_codigo: moldeCodigo.trim(), cavidades, resina_tipo: resinaTipo.trim() || null, cor_resina: corResina.trim() || null, temp_bico_padrao: tempBico, tempo_ciclo_padrao: tempoCiclo }
       if (p) {
         const r = await supabase.from('erp_produtos').update(values).eq('id', p.id).eq('empresa_id', empresa).select('id').maybeSingle()
         if (r.error) throw r.error
         if (!r.data?.id) throw new Error('Nenhuma ficha foi atualizada. Verifique a empresa e as permissões RLS.')
       } else {
-        const r = await supabase.from('erp_produtos').insert({ empresa_id: empresa, codigo, ...values, ativo: true }).select('id,codigo,nome,categoria,unidade,cliente').single()
+        const r = await supabase.from('erp_produtos').insert({ empresa_id: empresa, codigo, ...values, ativo: true }).select('id,codigo,nome,categoria,unidade,cliente,molde_codigo,cavidades,resina_tipo,cor_resina,temp_bico_padrao,tempo_ciclo_padrao').single()
         if (r.error) throw r.error
         setP(r.data as P)
       }
@@ -154,6 +169,36 @@ export default function FormFichaTecnica({ productId, onSaved }: { productId?: s
           <input maxLength={50} className={baseInput} disabled={loading} value={cliente} onChange={e => setCliente(e.target.value)} placeholder="Cliente ou mercado de destino" />
         </label>
       </div>
+
+      <section className="space-y-3 rounded border border-sky-200 bg-sky-50/50 p-3 shadow-sm">
+        <header className="flex items-center gap-2 border-b border-sky-100 pb-2">
+          <Cpu size={14} className="text-sky-700" />
+          <div>
+            <h3 className="text-[11px] font-black uppercase tracking-wider text-slate-800">Parâmetros técnicos de injeção</h3>
+            <p className="text-[9px] text-slate-500">Dados-base de engenharia associados ao produto.</p>
+          </div>
+        </header>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-12">
+          <label className={labelClass + ' lg:col-span-3'}>Código do molde *
+            <input className={baseInput} maxLength={50} value={moldeCodigo} onChange={e => setMoldeCodigo(e.target.value)} disabled={loading} placeholder="Ex.: M-2026-089" required />
+          </label>
+          <label className={labelClass + ' lg:col-span-2'}>Cavidades *
+            <input className={baseInput} type="number" min={1} step={1} value={cavidades} onChange={e => setCavidades(Number(e.target.value))} disabled={loading} required />
+          </label>
+          <label className={labelClass + ' lg:col-span-3'}>Tipo de resina
+            <input className={baseInput} maxLength={100} value={resinaTipo} onChange={e => setResinaTipo(e.target.value)} disabled={loading} placeholder="Ex.: PP copolímero" />
+          </label>
+          <label className={labelClass + ' lg:col-span-4'}>Cor da resina
+            <input className={baseInput} maxLength={50} value={corResina} onChange={e => setCorResina(e.target.value)} disabled={loading} placeholder="Ex.: Preto / natural" />
+          </label>
+          <label className={labelClass + ' lg:col-span-3'}>Temperatura base do bico (°C)
+            <input className={baseInput} type="number" min={0} step={1} value={tempBico} onChange={e => setTempBico(Number(e.target.value))} disabled={loading} required />
+          </label>
+          <label className={labelClass + ' lg:col-span-3'}>Tempo de ciclo base (s)
+            <input className={baseInput} type="number" min={0.01} step={0.01} value={tempoCiclo} onChange={e => setTempoCiclo(Number(e.target.value))} disabled={loading} required />
+          </label>
+        </div>
+      </section>
 
       <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-3">
         <p className="text-[9px] text-slate-500">{loading ? 'Carregando dados da empresa…' : p ? 'Edição de cadastro existente' : 'Novo cadastro · SKU gerado pela rotina do banco'}</p>
