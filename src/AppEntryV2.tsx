@@ -195,6 +195,7 @@ const EstoqueAjustes = lazyPage(() => import('./pages/EstoqueAjustes'), 'Estoque
 const EstoqueSeparacao = lazyPage(() => import('./pages/EstoqueSeparacao'), 'EstoqueSeparacao')
 const EstoqueEtiquetas = lazyPage(() => import('./pages/EstoqueEtiquetas'), 'EstoqueEtiquetas')
 const ExpedicaoNFe = lazyPage(() => import('./pages/logistica/ExpedicaoNFe'), 'default')
+const RomaneioCarga = lazyPage(() => import('./pages/logistica/RomaneioCarga'), 'default')
 const ImpressaoEtiquetas = lazyPage(() => import('./pages/logistica/ImpressaoEtiquetas'), 'default')
 const EstoqueRecebimentoLotes = lazyPage(() => import('./pages/estoque/EstoqueRecebimentoLotes'), 'EstoqueRecebimentoLotes')
 const HelpEstoqueRecebimento = lazyPage(() => import('./pages/estoque/HelpEstoqueRecebimento'), 'HelpEstoqueRecebimento')
@@ -615,6 +616,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/expedicao/roteirizacao" element={<ExpedicaoRoteirizacao />} />
       <Route path="/expedicao/portaria" element={<ExpedicaoPortaria />} />
       <Route path="/logistica/expedicao-nfe" element={<ExpedicaoNFe />} />
+      <Route path="/logistica/romaneio-carga" element={<RomaneioCarga />} />
       <Route path="/logistica/impressao-etiquetas" element={<ImpressaoEtiquetas />} />
       <Route path="/engenharia" element={<QualityPlanGate>{<EngenhariaCentral />}</QualityPlanGate>} />
       <Route path="/engenharia/revisoes-bom" element={<QualityPlanGate>{<EngenhariaRevisoesBOM />}</QualityPlanGate>} />
