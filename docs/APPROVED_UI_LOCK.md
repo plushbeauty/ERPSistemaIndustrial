@@ -1,7 +1,7 @@
 # Contrato de telas aprovadas — ERP Industrial
 
-**Data da revisão:** 2026-10-19  
-**Revisão:** APROV-007  
+**Data da revisão:** 2026-10-20  
+**Revisão:** APROV-009  
 **Regra:** telas aprovadas são imutáveis por padrão. Não alterar layout, conteúdo, geometria, comportamento ou estrutura sem autorização explícita do usuário para uma nova revisão.
 
 | Tela/arquivo | Referência aprovada | Proteção |
@@ -13,7 +13,7 @@
 | Qualidade Tablet — `src/pages/QualidadeCentralTablet.tsx` | Tablet aprovado pelo usuário | Hash Git do arquivo verificado no CI |
 | Qualidade Tablet padrão — `src/components/TabletMenuModal.tsx` | Modal central, 22 módulos; visual aprovado preservado | Hash Git do arquivo verificado no CI |
 | PCP → Submenu de fichas — `src/components/PCPTabletMenuModal.tsx` | Submenu de fichas aprovado em 2026-10-18 | Hash Git do arquivo verificado no CI |
-| Shell horizontal — `src/components/layout/ERPHorizontalShell.tsx` | APROV-007: Qualidade abre o tablet; seta mantém acesso ao submenu | Hash Git do arquivo verificado no CI |
+| Shell global — `src/components/layout/ERPHorizontalShell.tsx` | APROV-009: barra lateral azul industrial recolhível; sessão autenticada, ajuda, configurações, saída e acessos tablet preservados | Hash Git do arquivo verificado no CI |
 | Dashboard industrial — `src/components/IndustrialCommandDashboard.tsx` | Restaurado da referência aprovada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | PCP → Fichas de Processo — `src/pages/PCPFichasProcesso.tsx` | Restaurada da referência aprovada em 2026-10-18 | Hash Git do arquivo verificado no CI |
 | Página pública — `src/PublicIndustrialHome.tsx` | Carrossel acessível e planos da referência aprovada | Hash Git do arquivo verificado no CI |
@@ -43,3 +43,21 @@ Este contrato protege os arquivos listados; ele não substitui a configuração 
 - Cadastro de Fornecedores já utiliza botão primário azul `#2D8DB8` com texto branco; permanece como referência visual.
 - Status do pedido fica congelado novamente nesta revisão. Mudanças futuras exigem ordem expressa do usuário e nova revisão do hash.
 - O contrato de lock também foi sincronizado com os hashes Git reais atuais de Produtos e Login, sem alterar o conteúdo dessas duas telas.
+
+
+## Registro da revisão APROV-009 — 2026-10-20
+
+- Shell global: barra lateral vertical azul industrial, recolhível, com trilho de ícones persistente e gaveta de módulos/submódulos.
+- PCP expõe Central PCP, Ordens de produção, Capacidade/Gantt, Agenda de máquinas, Fichas de processo e Auditoria PCP usando rotas declaradas em `src/AppEntryV2.tsx`; rotas do menu foram comparadas com as declarações existentes e `/relatorios` foi substituída por `/vendas/relatorios`.
+- Cabeçalho usa nome/e-mail da sessão Supabase atual, reagindo a alterações de autenticação; não fixa identidade de usuário.
+- Configurações navega para `/configuracoes-adm`; saída chama `supabase.auth.signOut()` e retorna ao login.
+- Ajuda contextual e modais/atalhos existentes de tablet PCP e Qualidade são preservados. O conteúdo das telas operacionais e os arquivos de tablet congelados não foram alterados.
+- A revisão foi autorizada expressamente pelo usuário; o verificador de hashes foi atualizado deliberadamente para o novo hash do shell.
+
+
+## Registro da revisão APROV-010 — 2026-10-20
+
+- Correção expressamente solicitada: a barra de módulos fica FIXA NO LADO DIREITO, com ícones de todos os módulos visíveis, e não à esquerda nem como menu Iniciar estilo Windows 11.
+- O trilho recolhido mantém os ícones; ao selecionar um módulo com rotinas, abre a gaveta lateral para acessar seus submenus. O conteúdo operacional permanece à esquerda e não precisa retornar à página inicial para navegar.
+- Removido o menu Iniciar/pesquisa superior estilo Windows do JSX. O cabeçalho mantém contexto da tela, usuário/sessão Supabase, data/hora e ajuda; Configuração aparece uma única vez entre os módulos e Sair fica no rodapé da barra direita.
+- Escopo exclusivo: `src/components/layout/ERPHorizontalShell.tsx`, mais a atualização deliberada do hash do lock. Nenhuma tela operacional aprovada foi modificada.
