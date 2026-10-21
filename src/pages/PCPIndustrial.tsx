@@ -1,7 +1,8 @@
 /**
- * REVISÃO PCP TABLET LAUNCHER — 2026-10-18 · REV-PCP-LAUNCHER-001
- * Alteração: painel PCP em grade compacta para tablet, acesso direto às rotinas existentes,
- * remoção do submenu lateral duplicado e preservação das consultas/ações operacionais.
+ * REVISÃO PCP TABLET LAUNCHER — 2026-10-20 · REV-PCP-TS-002
+ * Correção: garantir o delimitador de abertura do comentário de revisão para que TypeScript
+ * não interprete o cabeçalho como código. O build observado em f2fa7f1 usou conteúdo inválido;
+ * esta versão mantém o cabeçalho sintaticamente correto e preserva o comportamento operacional.
  * Não altera PCPTabletOperador, autenticação, contratos Supabase ou rotinas de gravação.
  */
 import { useEffect, useMemo, useState } from 'react'
