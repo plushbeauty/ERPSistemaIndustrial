@@ -1,73 +1,155 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowDown, ArrowUp, CalendarRange, RefreshCw, Search, Shuffle } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { AlertTriangle, CheckCircle2, Gauge, Plus, RefreshCw, Save, Shuffle, Target, Boxes } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { fetchAllPages } from '../lib/supabasePagination'
+import '../styles/synqra-premium.css'
 
-type Machine = { id:string; codigo:string; nome:string }
-type Order = { id:string; numero_op:string|number; produto_id:string|null; status:string }
-type Slot = { id:string; maquina_id:string; ordem_producao_id:string; molde_id:string|null; quantidade_programada:number; lote_producao:string|null; data_hora_inicio:string; data_hora_fim:string; status:string }
-const btn='inline-flex h-[30px] items-center justify-center gap-1 rounded-[2px] border border-slate-300 bg-white px-2 text-[10px] font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40'
-const th='h-[30px] border-b border-slate-200 bg-slate-100 px-2 text-left text-[9px] font-bold uppercase tracking-wide text-slate-600'
-const td='h-[32px] border-b border-slate-100 px-2 text-[10px] text-slate-700'
-const monday=(d:Date)=>{const x=new Date(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x}
-const fmt=(v:string)=>new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(v))
-const errMsg=(e:unknown)=>e instanceof Error?e.message:'Não foi possível carregar o sequenciamento.'
-export default function PCPSequenciamento(){
- const [company,setCompany]=useState('')
+type Product={id:string;codigo:string;nome:string;estoque_atual:number}
+type MPS={id:string;produto_id:string;periodo_inicio:string;periodo_fim:string;quantidade_prevista:number;estoque_alvo:number;demanda_confirmada:number;status:string}
+type Planned={id:string;produto_id:string;quantidade:number;data_necessaria:string;origem:string;status:string}
+type Center={id:string;codigo_posto:string;nome_posto:string;taxa_hora:number;ativo:boolean}
+type Program={id:string;maquina_id:string|null;inicio_planejado:string;fim_planejado:string;quantidade_planejada:number;status:string}
+type Machine={id:string;codigo:string;nome:string;status:string}
+type AlertRow={id:string;tipo:string;severidade:string;mensagem:string;status:string;created_at:string}
+
+const today=()=>new Date().toISOString().slice(0,10)
+const productLabel=(p:Product)=>p.codigo+' • '+p.nome
+
+export default function PCPPlanejamentoIndustrial(){
+ const [tab,setTab]=useState<'mps'|'necessidades'|'capacidade'|'alertas'>('mps')
+ const [products,setProducts]=useState<Product[]>([])
+ const [mps,setMps]=useState<MPS[]>([])
+ const [planned,setPlanned]=useState<Planned[]>([])
+ const [centers,setCenters]=useState<Center[]>([])
+ const [programs,setPrograms]=useState<Program[]>([])
  const [machines,setMachines]=useState<Machine[]>([])
- const [orders,setOrders]=useState<Order[]>([])
- const [slots,setSlots]=useState<Slot[]>([])
- const [week,setWeek]=useState(()=>monday(new Date()))
- const [machineFilter,setMachineFilter]=useState('TODAS')
- const [statusFilter,setStatusFilter]=useState('ATIVAS')
- const [query,setQuery]=useState('')
- const [busy,setBusy]=useState(false)
- const [error,setError]=useState('')
- const [notice,setNotice]=useState('')
- const endWeek=useMemo(()=>{const d=new Date(week);d.setDate(d.getDate()+7);return d},[week])
- const load=useCallback(async()=>{
+ const [alerts,setAlerts]=useState<AlertRow[]>([])
+ const [productId,setProductId]=useState(''),[qty,setQty]=useState(''),[target,setTarget]=useState(''),[start,setStart]=useState(today()),[end,setEnd]=useState(today())
+ const [center,setCenter]=useState({codigo_posto:'',nome_posto:'',taxa_hora:'0'})
+ const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('')
+
+ async function load(){
   setBusy(true);setError('')
   try{
    const tenant=await supabase.rpc('erp_current_empresa_id')
-   if(tenant.error||typeof tenant.data!=='string'||!tenant.data)throw tenant.error??new Error('Empresa da sessão não identificada.')
-   const id=tenant.data;setCompany(id)
-   const [m,o,a]=await Promise.all([
-    supabase.from('erp_maquinas').select('id,codigo,nome').eq('empresa_id',id).eq('ativo',true).order('codigo').limit(2000),
-    supabase.from('erp_ordens_producao').select('id,numero_op,produto_id,status').eq('empresa_id',id).order('numero_op',{ascending:false}).limit(3000),
-    supabase.from('pcp_agenda_maquinas').select('id,maquina_id,ordem_producao_id,molde_id,quantidade_programada,lote_producao,data_hora_inicio,data_hora_fim,status').eq('empresa_id',id).gte('data_hora_inicio',week.toISOString()).lt('data_hora_inicio',endWeek.toISOString()).order('maquina_id').order('data_hora_inicio').limit(5000)
+   if(tenant.error||typeof tenant.data!=='string'||!tenant.data) throw tenant.error??new Error('Empresa da sessão não identificada; planejamento bloqueado.')
+   const empresaId=tenant.data
+   const [p,m,o,c,pr,ma,a]=await Promise.all([
+    fetchAllPages<Product>((from,to)=>supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to)),
+    fetchAllPages<MPS>((from,to)=>supabase.from('erp_pcp_planos_mestres').select('id,produto_id,periodo_inicio,periodo_fim,quantidade_prevista,estoque_alvo,demanda_confirmada,status',{count:'exact'}).eq('empresa_id',empresaId).order('periodo_inicio').range(from,to)),
+    fetchAllPages<Planned>((from,to)=>supabase.from('erp_pcp_ordens_planejadas').select('id,produto_id,quantidade,data_necessaria,origem,status',{count:'exact'}).eq('empresa_id',empresaId).order('data_necessaria').range(from,to)),
+    fetchAllPages<Center>((from,to)=>supabase.from('erp_postos_trabalho').select('id,codigo_posto,nome_posto,taxa_hora,ativo',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo_posto').range(from,to)),
+    fetchAllPages<Program>((from,to)=>supabase.from('erp_pcp_programacoes').select('id,maquina_id,inicio_planejado,fim_planejado,quantidade_planejada,status',{count:'exact'}).eq('empresa_id',empresaId).neq('status','cancelada').order('inicio_planejado').range(from,to)),
+    fetchAllPages<Machine>((from,to)=>supabase.from('erp_maquinas').select('id,codigo,nome,status',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to)),
+    fetchAllPages<AlertRow>((from,to)=>supabase.from('erp_pcp_alertas').select('id,tipo,severidade,mensagem,status,created_at',{count:'exact'}).eq('empresa_id',empresaId).neq('status','RESOLVIDO').order('created_at',{ascending:false}).range(from,to))
    ])
-   for(const r of [m,o,a])if(r.error)throw r.error
-   setMachines((m.data??[]) as Machine[]);setOrders((o.data??[]) as Order[]);setSlots((a.data??[]) as Slot[])
-  }catch(e){setError(errMsg(e))}finally{setBusy(false)}
- },[week,endWeek])
- useEffect(()=>{void load()},[load])
- const machineMap=useMemo(()=>new Map(machines.map(m=>[m.id,m])),[machines])
- const orderMap=useMemo(()=>new Map(orders.map(o=>[o.id,o])),[orders])
- const visible=useMemo(()=>slots.filter(s=>{
-  if(machineFilter!=='TODAS'&&s.maquina_id!==machineFilter)return false
-  if(statusFilter==='ATIVAS'&&s.status==='cancelada')return false
-  if(statusFilter!=='TODAS'&&statusFilter!=='ATIVAS'&&s.status!==statusFilter)return false
-  const machine=machineMap.get(s.maquina_id);const order=orderMap.get(s.ordem_producao_id)
-  return !query||[String(order?.numero_op??''),s.lote_producao??'',machine?.codigo??'',machine?.nome??'',s.status].join(' ').toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR'))
- }),[slots,machineFilter,statusFilter,query,machineMap,orderMap])
- const move=async(slot:Slot,direction:-1|1)=>{
-  const sameMachine=visible.filter(s=>s.maquina_id===slot.maquina_id&&new Date(s.data_hora_inicio).toDateString()===new Date(slot.data_hora_inicio).toDateString()).sort((a,b)=>a.data_hora_inicio.localeCompare(b.data_hora_inicio))
-  const i=sameMachine.findIndex(s=>s.id===slot.id);const other=sameMachine[i+direction]
-  if(!other){setError('A troca só pode ocorrer entre programações da mesma máquina e do mesmo dia.');return}
-  if(slot.status==='em_execucao'||slot.status==='concluida'||other.status==='em_execucao'||other.status==='concluida'){setError('Programações em execução ou concluídas não podem ser reordenadas.');return}
-  setBusy(true);setError('');setNotice('')
-  try{
-   const r=await supabase.rpc('erp_pcp_reordenar_agenda_maquinas',{p_agenda_id:slot.id,p_vizinha_id:other.id})
-   if(r.error)throw r.error
-   setNotice('Sequência atualizada pela rotina transacional do banco.')
-   await load()
-  }catch(e){setError(errMsg(e))}finally{setBusy(false)}
+   setProducts(p);setMps(m);setPlanned(o);setCenters(c);setPrograms(pr);setMachines(ma);setAlerts(a)
+  }catch(e){setError(e instanceof Error?e.message:'Falha ao carregar planejamento PCP.')}
+  finally{setBusy(false)}
  }
- const labelWeek=`${week.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})} – ${new Date(endWeek.getTime()-86400000).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'})}`
- return <main className="min-h-screen bg-[#F4FBFD] p-3 text-slate-900 md:p-4"><div className="mx-auto max-w-[1700px]">
-  <header className="mb-3 flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2"><span className="flex h-8 w-8 items-center justify-center bg-[#123B50] text-white"><Shuffle size={16}/></span><div><p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#2D8DB8]">MANUFATURA / PCP</p><h1 className="text-[16px] font-semibold">Sequenciamento de produção</h1><p className="text-[10px] text-slate-500">Fila por máquina · capacidade finita · troca transacional de intervalos</p></div><div className="ml-auto flex flex-wrap gap-1"><button className={btn} onClick={()=>setWeek(d=>{const n=new Date(d);n.setDate(n.getDate()-7);return n})}>← Semana</button><button className={btn} onClick={()=>setWeek(monday(new Date()))}>Hoje</button><button className={btn} onClick={()=>setWeek(d=>{const n=new Date(d);n.setDate(n.getDate()+7);return n})}>Semana →</button><button className={btn} onClick={()=>void load()} disabled={busy}><RefreshCw size={12}/> Atualizar</button></div></header>
-  <section className="mb-2 grid grid-cols-1 gap-2 md:grid-cols-[180px_180px_minmax(220px,1fr)_auto]"><div className="border border-slate-200 bg-white p-2"><span className="mb-[2px] block text-[9px] font-bold uppercase text-slate-500">Período</span><span className="text-[11px] font-semibold">{labelWeek}</span></div><label className="border border-slate-200 bg-white p-2"><span className="mb-[2px] block text-[9px] font-bold uppercase text-slate-500">Máquina</span><select className="h-[30px] w-full rounded-[2px] border border-slate-300 px-2 text-[10px]" value={machineFilter} onChange={e=>setMachineFilter(e.target.value)}><option value="TODAS">Todas as máquinas</option>{machines.map(m=><option key={m.id} value={m.id}>{m.codigo} · {m.nome}</option>)}</select></label><label className="border border-slate-200 bg-white p-2"><span className="mb-[2px] block text-[9px] font-bold uppercase text-slate-500">Pesquisa</span><span className="relative block"><Search size={12} className="absolute left-2 top-2.5 text-slate-400"/><input className="h-[30px] w-full rounded-[2px] border border-slate-300 pl-7 pr-2 text-[10px]" value={query} onChange={e=>setQuery(e.target.value)} placeholder="OP, lote ou máquina"/></span></label><label className="border border-slate-200 bg-white p-2"><span className="mb-[2px] block text-[9px] font-bold uppercase text-slate-500">Estado</span><select className="h-[30px] w-full rounded-[2px] border border-slate-300 px-2 text-[10px]" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}><option value="ATIVAS">Não canceladas</option><option value="TODAS">Todos</option><option value="planejada">Planejada</option><option value="confirmada">Confirmada</option><option value="em_execucao">Em execução</option><option value="concluida">Concluída</option><option value="cancelada">Cancelada</option></select></label></section>
-  {error&&<div role="alert" className="mb-2 border border-rose-300 bg-rose-50 p-2 text-[10px] text-rose-800">{error}</div>}{notice&&<div role="status" className="mb-2 border border-emerald-300 bg-emerald-50 p-2 text-[10px] text-emerald-800">{notice}</div>}
-  <section className="border border-slate-200 bg-white"><div className="flex items-center gap-2 border-b border-slate-200 p-2"><CalendarRange size={13} className="text-sky-700"/><h2 className="mr-auto text-[10px] font-bold uppercase">Fila programada</h2><span className="text-[9px] text-slate-500">{visible.length} programação(ões)</span></div><div className="overflow-x-auto"><table className="w-full min-w-[1100px] border-collapse"><thead><tr>{['Máquina','OP','Lote','Início','Término','Quantidade','Estado','Reordenar'].map(x=><th key={x} className={th}>{x}</th>)}</tr></thead><tbody>{visible.map(slot=>{const machine=machineMap.get(slot.maquina_id);const order=orderMap.get(slot.ordem_producao_id);const canMove=!['em_execucao','concluida','cancelada'].includes(slot.status);return <tr key={slot.id} className="hover:bg-slate-50"><td className={td}><span className="font-bold">{machine?.codigo??'—'}</span><span className="ml-1 text-slate-500">{machine?.nome??'Máquina não localizada'}</span></td><td className={td+' font-semibold'}>OP-{order?.numero_op??'—'}</td><td className={td}>{slot.lote_producao??'—'}</td><td className={td+' text-right tabular-nums'}>{fmt(slot.data_hora_inicio)}</td><td className={td+' text-right tabular-nums'}>{fmt(slot.data_hora_fim)}</td><td className={td+' text-right tabular-nums'}>{Number(slot.quantidade_programada).toLocaleString('pt-BR')}</td><td className={td}>{slot.status}</td><td className={td}><div className="flex justify-center gap-1"><button className={btn} title="Subir na sequência" aria-label="Subir na sequência" disabled={busy||!canMove} onClick={()=>void move(slot,-1)}><ArrowUp size={12}/></button><button className={btn} title="Descer na sequência" aria-label="Descer na sequência" disabled={busy||!canMove} onClick={()=>void move(slot,1)}><ArrowDown size={12}/></button></div></td></tr>})}{visible.length===0&&<tr><td colSpan={8} className="h-[48px] text-center text-[10px] text-slate-500">{busy?'Carregando programação…':'Nenhuma programação para os filtros e período selecionados.'}</td></tr>}</tbody></table></div></section>
-  <p className="mt-2 text-[9px] text-slate-500">A reordenação usa a função transacional do PostgreSQL e só é concluída se os intervalos continuarem válidos. OPs em execução ou concluídas ficam bloqueadas para troca.</p>
- </div></main>
+ useEffect(()=>{void load()},[])
+
+ const names=useMemo(()=>new Map(products.map(p=>[p.id,productLabel(p)])),[products])
+ const machineLoad=useMemo(()=>machines.map(m=>{
+  const rows=programs.filter(p=>p.maquina_id===m.id)
+  const hours=rows.reduce((s,p)=>s+Math.max(0,(new Date(p.fim_planejado).getTime()-new Date(p.inicio_planejado).getTime())/3600000),0)
+  return {m,rows,hours}
+ }),[machines,programs])
+ const shortages=useMemo(()=>products.filter(p=>Number(p.estoque_atual||0)<0),[products])
+
+ async function createMPS(){
+  const q=Number(qty),t=Number(target)
+  if(!productId||q<0||t<0||!start||!end){setError('Produto, período e quantidades válidas são obrigatórios.');return}
+  if(end<start){setError('O fim do período não pode ser anterior ao início.');return}
+  setBusy(true);setError('');setMessage('')
+  try{
+   const tenant=await supabase.rpc('erp_current_empresa_id')
+   if(tenant.error||typeof tenant.data!=='string'||!tenant.data) throw tenant.error??new Error('Empresa da sessão não identificada.')
+   const r=await supabase.from('erp_pcp_planos_mestres').insert({empresa_id:tenant.data,produto_id:productId,periodo_inicio:start,periodo_fim:end,quantidade_prevista:q,estoque_alvo:t,demanda_confirmada:0,status:'ABERTO'}).select('id').single()
+   if(r.error)throw r.error
+   setMessage('Plano mestre criado e disponível para revisão do PCP.');setQty('');setTarget('');await load()
+  }catch(e){setError(e instanceof Error?e.message:'Não foi possível criar o plano mestre.')}finally{setBusy(false)}
+ }
+
+ async function generatePlanned(){
+  setBusy(true);setError('');setMessage('')
+  try{
+   const tenant=await supabase.rpc('erp_current_empresa_id')
+   if(tenant.error||typeof tenant.data!=='string'||!tenant.data) throw tenant.error??new Error('Empresa da sessão não identificada.')
+   const empresaId=tenant.data
+   const latestRun=await supabase.from('erp_mrp_runs').select('id').eq('empresa_id',empresaId).order('created_at',{ascending:false}).limit(1).maybeSingle()
+   if(latestRun.error) throw latestRun.error
+   if(!latestRun.data){setMessage('Execute o MRP primeiro; não existe cálculo de necessidades para esta empresa.');return}
+   const needs=await supabase.from('erp_mrp_necessidades').select('componente_id,necessidade_liquida,sugestao').eq('empresa_id',empresaId).eq('run_id',latestRun.data.id).gt('necessidade_liquida',0).eq('sugestao','PRODUZIR').limit(3000)
+   if(needs.error) throw needs.error
+   const aggregated=new Map<string,number>()
+   for(const row of needs.data??[]) aggregated.set(row.componente_id,(aggregated.get(row.componente_id)??0)+Number(row.necessidade_liquida))
+   if(!aggregated.size){setMessage('O último MRP não contém necessidades líquidas classificadas como PRODUZIR.');return}
+   const existing=await supabase.from('erp_pcp_ordens_planejadas').select('produto_id').eq('empresa_id',empresaId).eq('origem','MRP').eq('status','PLANEJADA')
+   if(existing.error) throw existing.error
+   const alreadyPlanned=new Set((existing.data??[]).map(row=>row.produto_id))
+   const rows=[...aggregated.entries()].filter(([productId])=>!alreadyPlanned.has(productId)).map(([productId,quantity])=>({empresa_id:empresaId,produto_id:productId,quantidade:quantity,data_necessaria:today(),origem:'MRP',status:'PLANEJADA'}))
+   if(!rows.length){setMessage('As necessidades do último MRP já possuem ordens planejadas abertas; nenhuma duplicata foi criada.');return}
+   const ins=await supabase.from('erp_pcp_ordens_planejadas').insert(rows)
+   if(ins.error) throw ins.error
+   setMessage(rows.length+' ordens planejadas criadas a partir do último MRP; necessidades por componente agregadas e duplicatas abertas evitadas.')
+   await load()
+  }catch(e){setError(e instanceof Error?e.message:'Não foi possível gerar ordens planejadas.')}finally{setBusy(false)}
+ }
+
+ async function createCenter(){
+  if(!center.codigo_posto.trim()||!center.nome_posto.trim()){setError('Código e nome do posto de trabalho são obrigatórios.');return}
+  const rate=Number(center.taxa_hora)
+  if(!Number.isFinite(rate)||rate<0){setError('A taxa por hora deve ser um valor válido e não negativo.');return}
+  setBusy(true);setError('');setMessage('')
+  try{
+   const tenant=await supabase.rpc('erp_current_empresa_id')
+   if(tenant.error||typeof tenant.data!=='string'||!tenant.data) throw tenant.error??new Error('Empresa da sessão não identificada.')
+   const r=await supabase.from('erp_postos_trabalho').insert({empresa_id:tenant.data,codigo_posto:center.codigo_posto.trim().toUpperCase(),nome_posto:center.nome_posto.trim(),taxa_hora:rate,ativo:true})
+   if(r.error)throw r.error
+   setCenter({codigo_posto:'',nome_posto:'',taxa_hora:'0'});setMessage('Centro de trabalho cadastrado.');await load()
+  }catch(e){setError(e instanceof Error?e.message:'Não foi possível cadastrar o centro de trabalho.')}finally{setBusy(false)}
+ }
+
+ async function resolveAlert(id:string){
+  setBusy(true);setError('')
+  try{const tenant=await supabase.rpc('erp_current_empresa_id');if(tenant.error||typeof tenant.data!=='string'||!tenant.data)throw tenant.error??new Error('Empresa da sessão não identificada.');const r=await supabase.from('erp_pcp_alertas').update({status:'RESOLVIDO'}).eq('empresa_id',tenant.data).eq('id',id);if(r.error)throw r.error;setMessage('Alerta resolvido.');await load()}
+  catch(e){setError(e instanceof Error?e.message:'Não foi possível resolver o alerta.')}finally{setBusy(false)}
+ }
+
+ return <main className="industrial-form-page" style={{maxWidth:1500,margin:'0 auto'}}>
+  <header className="process-sheet-header"><div><button className="industrial-secondary" type="button" onClick={()=>location.href='/pcp'}>← PCP</button><span className="industrial-eyebrow">PCP • PLANEJAMENTO AVANÇADO</span><h1>Planejamento Mestre, Capacidade e Sequenciamento</h1><p>MPS → MRP → ordens planejadas → capacidade → carga → alertas → reprogramação.</p></div><button className="industrial-secondary" type="button" onClick={()=>void load()} disabled={busy}><RefreshCw size={16}/> Atualizar</button></header>
+  {(message||error)&&<div className={error?'error':'notice'} style={{margin:'12px 0'}}>{error||message}</div>}
+  <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+   <article className="industrial-panel"><Target size={20}/><small>Planos mestres</small><strong>{mps.length}</strong></article>
+   <article className="industrial-panel"><Boxes size={20}/><small>Ordens planejadas</small><strong>{planned.length}</strong></article>
+   <article className="industrial-panel"><Gauge size={20}/><small>Horas programadas</small><strong>{machineLoad.reduce((s,x)=>s+x.hours,0).toFixed(1)} h</strong></article>
+   <article className="industrial-panel"><AlertTriangle size={20}/><small>Alertas abertos</small><strong>{alerts.length}</strong></article>
+  </div>
+  <nav style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:16}}>{[['mps','MPS / Plano Mestre'],['necessidades','Ordens Planejadas / MRP'],['capacidade','Capacidade / Centros'],['alertas','Alertas / Exceções']].map(([id,label])=><button key={id} className={tab===id?'industrial-primary':'industrial-secondary'} onClick={()=>setTab(id as typeof tab)}>{label}</button>)}</nav>
+
+  {tab==='mps'&&<section className="industrial-panel">
+   <div className="process-section-heading"><span>MPS</span><h2>Plano Mestre de Produção</h2><p>Registre previsão, demanda confirmada e estoque-alvo por produto e período. O plano é uma entrada explícita para o MRP.</p></div>
+   <div className="process-form-grid"><label>Produto<select value={productId} onChange={e=>setProductId(e.target.value)}><option value="">Selecione</option>{products.map(p=><option key={p.id} value={p.id}>{productLabel(p)}</option>)}</select></label><label>Quantidade prevista<input type="number" min="0" value={qty} onChange={e=>setQty(e.target.value)}/></label><label>Estoque alvo<input type="number" min="0" value={target} onChange={e=>setTarget(e.target.value)}/></label><label>Início<input type="date" value={start} onChange={e=>setStart(e.target.value)}/></label><label>Fim<input type="date" value={end} onChange={e=>setEnd(e.target.value)}/></label><div style={{display:'flex',alignItems:'end'}}><button className="industrial-primary" type="button" onClick={()=>void createMPS()} disabled={busy}><Save size={16}/> Gravar MPS</button></div></div>
+   <div className="industrial-table-scroll"><table className="industrial-table"><thead><tr><th>Produto</th><th>Período</th><th>Previsto</th><th>Demanda confirmada</th><th>Estoque alvo</th><th>Status</th></tr></thead><tbody>{mps.map(x=><tr key={x.id}><td>{names.get(x.produto_id)||x.produto_id}</td><td>{x.periodo_inicio} → {x.periodo_fim}</td><td>{x.quantidade_prevista}</td><td>{x.demanda_confirmada}</td><td>{x.estoque_alvo}</td><td>{x.status}</td></tr>)}{!mps.length&&<tr><td colSpan={6}>Nenhum plano mestre cadastrado.</td></tr>}</tbody></table></div>
+  </section>}
+
+  {tab==='necessidades'&&<section className="industrial-panel">
+   <div className="process-section-heading"><span>MRP → PCP</span><h2>Ordens planejadas</h2><p>Transforme necessidades líquidas já calculadas pelo motor MRP em ordens planejadas para revisão antes da liberação.</p></div>
+   <button className="industrial-primary" type="button" onClick={()=>void generatePlanned()} disabled={busy}><Shuffle size={16}/> Gerar a partir das necessidades MRP</button>
+   <div className="industrial-table-scroll" style={{marginTop:16}}><table className="industrial-table"><thead><tr><th>Produto</th><th>Quantidade</th><th>Necessária em</th><th>Origem</th><th>Status</th></tr></thead><tbody>{planned.map(x=><tr key={x.id}><td>{names.get(x.produto_id)||x.produto_id}</td><td>{x.quantidade}</td><td>{x.data_necessaria}</td><td>{x.origem}</td><td>{x.status}</td></tr>)}{!planned.length&&<tr><td colSpan={5}>Nenhuma ordem planejada aberta.</td></tr>}</tbody></table></div>
+  </section>}
+
+  {tab==='capacidade'&&<section className="industrial-panel">
+   <div className="process-section-heading"><span>FINITE CAPACITY</span><h2>Capacidade e carga</h2><p>Consulte postos de trabalho cadastrados e acompanhe a carga horária derivada das programações reais das máquinas.</p></div>
+   <div className="process-form-grid"><label>Código do posto<input value={center.codigo_posto} onChange={e=>setCenter({...center,codigo_posto:e.target.value})}/></label><label>Nome do posto<input value={center.nome_posto} onChange={e=>setCenter({...center,nome_posto:e.target.value})}/></label><label>Taxa por hora (R$)<input type="number" min="0" step="0.01" value={center.taxa_hora} onChange={e=>setCenter({...center,taxa_hora:e.target.value})}/></label><div style={{display:'flex',alignItems:'end'}}><button className="industrial-primary" type="button" onClick={()=>void createCenter()} disabled={busy}><Plus size={16}/> Cadastrar posto</button></div></div>
+   <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">{centers.map(c=><article key={c.id} style={{border:'1px solid #E4E9F2',borderRadius:12,padding:12}}><strong>{c.codigo_posto}</strong><h3>{c.nome_posto}</h3><p>Taxa por hora: {Number(c.taxa_hora).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</p></article>)}</div>
+   <div className="industrial-table-scroll" style={{marginTop:16}}><table className="industrial-table"><thead><tr><th>Máquina</th><th>Programações</th><th>Horas carregadas</th><th>Utilização</th><th>Status</th></tr></thead><tbody>{machineLoad.map(x=><tr key={x.m.id}><td>{x.m.codigo} • {x.m.nome}</td><td>{x.rows.length}</td><td>{x.hours.toFixed(1)} h</td><td>{x.hours>0?'Carga registrada':'Livre'}</td><td>{x.m.status}</td></tr>)}</tbody></table></div>
+  </section>}
+
+  {tab==='alertas'&&<section className="industrial-panel">
+   <div className="process-section-heading"><span>EXCEÇÕES</span><h2>Alertas do PCP</h2><p>Fila de exceções que exige ação do planejador: atraso, falta, capacidade, conflito e máquina indisponível.</p></div>
+   <div className="industrial-table-scroll"><table className="industrial-table"><thead><tr><th>Data</th><th>Tipo</th><th>Severidade</th><th>Mensagem</th><th>Ação</th></tr></thead><tbody>{alerts.map(a=><tr key={a.id}><td>{new Date(a.created_at).toLocaleString('pt-BR')}</td><td>{a.tipo}</td><td>{a.severidade}</td><td>{a.mensagem}</td><td><button className="industrial-secondary" onClick={()=>void resolveAlert(a.id)} disabled={busy}><CheckCircle2 size={15}/> Resolver</button></td></tr>)}{!alerts.length&&<tr><td colSpan={5}>Nenhum alerta aberto.</td></tr>}</tbody></table></div>
+  </section>}
+ </main>
 }
