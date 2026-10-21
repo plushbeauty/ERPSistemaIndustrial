@@ -20,6 +20,7 @@ const APPS: App[] = [
 
 export function BarraWindows11({ ativo = "pcp", onAbrir, onDesligar }: { ativo?: string; onAbrir?: (id: string) => void; onDesligar?: () => void | Promise<void> }) {
   const [menu, setMenu] = useState(false);
+  const [trayOpen, setTrayOpen] = useState(false);
   const [busca, setBusca] = useState("");
   const [agora, setAgora] = useState<Date | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -31,8 +32,8 @@ export function BarraWindows11({ ativo = "pcp", onAbrir, onDesligar }: { ativo?:
   }, []);
 
   useEffect(() => {
-    const fora = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setMenu(false); };
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setMenu(false); };
+    const fora = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) { setMenu(false); setTrayOpen(false); } };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") { setMenu(false); setTrayOpen(false); } };
     document.addEventListener("mousedown", fora);
     document.addEventListener("keydown", esc);
     return () => { document.removeEventListener("mousedown", fora); document.removeEventListener("keydown", esc); };
@@ -80,7 +81,8 @@ export function BarraWindows11({ ativo = "pcp", onAbrir, onDesligar }: { ativo?:
           ))}
         </div>
         <div className="w11-tray">
-          <button className="w11-btn small" aria-label="Mais"><ChevronUp size={14} /></button>
+          <button className={`w11-btn small ${trayOpen ? "on" : ""}`} aria-label="Mais opções da bandeja" aria-expanded={trayOpen} onClick={() => setTrayOpen((open) => !open)}><ChevronUp size={14} /></button>
+          {trayOpen && <div className="w11-hidden-tray" role="dialog" aria-label="Ícones da bandeja do sistema"><div><Wifi size={16} /><span>Rede</span></div><div><Volume2 size={16} /><span>Áudio</span></div><div><BatteryFull size={16} /><span>Bateria</span></div></div>}
           <div className="w11-sys"><Wifi size={15} /><Volume2 size={15} /><BatteryFull size={15} /></div>
           <div className="w11-clock">
             <span>{agora?.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) ?? "--:--"}</span>
@@ -101,7 +103,9 @@ const css = `
 .w11-btn:active{transform:scale(.94)}
 .w11-btn.ativo::after{content:"";position:absolute;bottom:2px;width:16px;height:3px;border-radius:2px;background:#0078d4}
 .w11-btn.small{width:28px}
-.w11-tray{position:absolute;right:8px;display:flex;align-items:center;gap:4px;font-size:12px}
+ .w11-tray{position:absolute;right:8px;display:flex;align-items:center;gap:4px;font-size:12px}
+.w11-hidden-tray{position:absolute;right:0;bottom:54px;display:flex;gap:14px;padding:14px 16px;border:1px solid rgba(0,0,0,.1);border-radius:10px;background:rgba(248,248,248,.96);box-shadow:0 12px 36px rgba(0,0,0,.18);color:#1f1f1f;backdrop-filter:blur(20px);z-index:52}
+.w11-hidden-tray>div{display:flex;min-width:52px;flex-direction:column;align-items:center;gap:6px;font-size:11px}
 .w11-sys{display:flex;gap:8px;padding:8px 10px;border-radius:6px}.w11-sys:hover,.w11-clock:hover{background:rgba(255,255,255,.7)}
 .w11-clock{display:flex;flex-direction:column;align-items:flex-end;padding:4px 8px;border-radius:6px;line-height:1.3}
 .w11-start{position:fixed;bottom:58px;left:50%;transform:translateX(-50%);width:min(600px,94vw);z-index:51;border-radius:10px;
