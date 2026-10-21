@@ -39,15 +39,15 @@ function AccordionItem({ value, className, children, ...props }: React.HTMLAttri
 function AccordionTrigger({ className, children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const context = React.useContext(AccordionContext)
   const item = React.useContext(AccordionItemValueContext)
-  const value = props['data-accordion-value'] ?? item
+  const value = (props as TriggerPropsWithAccordionValue)['data-accordion-value'] ?? item
   const open = Boolean(value && context?.openItems.includes(value))
   return <button type="button" aria-expanded={open} className={['flex w-full items-center justify-between gap-3 py-3 text-left text-sm font-bold text-slate-700 transition-colors hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500', className].filter(Boolean).join(' ')} onClick={() => value && context?.toggle(value)} {...props}>{children}<ChevronDown aria-hidden="true" className={['h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200', open ? 'rotate-180 text-blue-600' : ''].join(' ')} /></button>
 }
-const AccordionItemValueContext = React.createContext<string | null>(null)
+type TriggerPropsWithAccordionValue = React.ButtonHTMLAttributes<HTMLButtonElement> & { 'data-accordion-value'?: string }\nconst AccordionItemValueContext = React.createContext<string | null>(null)
 
 function AccordionContent({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   const context = React.useContext(AccordionContext)
-  const value = props['data-accordion-value']
+  const value = (props as React.HTMLAttributes<HTMLDivElement> & { 'data-accordion-value'?: string })['data-accordion-value']
   const open = Boolean(value && context?.openItems.includes(value))
   if (!open) return null
   return <div data-slot="accordion-content" className={['pb-4 pt-0 text-sm text-slate-600', className].filter(Boolean).join(' ')} {...props}>{children}</div>
