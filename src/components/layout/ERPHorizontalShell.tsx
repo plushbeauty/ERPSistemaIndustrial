@@ -3,14 +3,13 @@ import { CircleHelp, ChevronDown, UserRound, ChevronRight, ShieldCheck, Home, Da
 import type { LucideIcon } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
-import TabletMenuModal from '../TabletMenuModal'
 import PCPTabletMenuModal from '../PCPTabletMenuModal'
 
 type MenuItem = {
   label: string
   route: string
   icon?: LucideIcon
-  action?: 'qualityTablet' | 'pcpTablet'
+  action?: 'pcpTablet'
   children?: MenuItem[]
 }
 
@@ -80,7 +79,7 @@ const menus: MenuItem[] = [
     { label: 'Auditoria PCP', route: '/pcp/auditoria' },
     { label: 'PCP Tablet', route: '/pcp', action: 'pcpTablet' },
   ] },
-  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, action: 'qualityTablet', children: [
+  { label: 'Qualidade', route: '/qualidade', icon: ShieldCheck, children: [
     { label: 'Visual geral da Qualidade', route: '/qualidade' },
     { label: 'Inspeções de lotes', route: '/qualidade/inspecoes' },
     { label: 'Inspeção em processo', route: '/qualidade/inspecao-processo' },
@@ -89,7 +88,6 @@ const menus: MenuItem[] = [
     { label: 'RNC / CAPA', route: '/qualidade/rnc-capa' },
     { label: 'CEP / medições', route: '/qualidade/cep' },
     { label: 'Cadastro de documentos (GED)', route: '/qualidade/ged-documentos' },
-    { label: 'Qualidade Tablet', route: '/qualidade', action: 'qualityTablet' },
   ] },
   { label: 'Manutenção', route: '/manutencao', icon: Wrench, children: [
     { label: 'Central de manutenção', route: '/manutencao' },
@@ -108,6 +106,24 @@ const menus: MenuItem[] = [
   { label: 'Configuração', route: '/configuracoes-adm', icon: Settings },
 ]
 
+const moduleColors: Record<string, string> = {
+  'Início': 'linear-gradient(135deg,#0ea5e9,#0369a1)',
+  'Cadastros': 'linear-gradient(135deg,#6366f1,#3730a3)',
+  'Vendas': 'linear-gradient(135deg,#22c55e,#15803d)',
+  'Compras': 'linear-gradient(135deg,#f59e0b,#b45309)',
+  'Estoque': 'linear-gradient(135deg,#a16207,#713f12)',
+  'Engenharia': 'linear-gradient(135deg,#06b6d4,#0e7490)',
+  'Financeiro': 'linear-gradient(135deg,#10b981,#047857)',
+  'Fiscal': 'linear-gradient(135deg,#64748b,#334155)',
+  'Manufatura / PCP': 'linear-gradient(135deg,#f97316,#c2410c)',
+  'Qualidade': 'linear-gradient(135deg,#1e293b,#020617)',
+  'Manutenção': 'linear-gradient(135deg,#ef4444,#b91c1c)',
+  'Recursos Humanos': 'linear-gradient(135deg,#ec4899,#be185d)',
+  'Relatórios': 'linear-gradient(135deg,#3b82f6,#1d4ed8)',
+  'Configuração': 'linear-gradient(135deg,#71717a,#3f3f46)',
+}
+const moduleColor = (label: string) => moduleColors[label] ?? 'linear-gradient(135deg,#0ea5e9,#0369a1)'
+
 export default function ERPHorizontalShell({ children, operatorName = 'Usuário ERP' }: { children: ReactNode; operatorName?: string }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -115,7 +131,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
   const [startMenuOpen, setStartMenuOpen] = useState(false)
   const [moduleSearch, setModuleSearch] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
-  const [tabletOpen, setTabletOpen] = useState(false)
   const [pcpTabletOpen, setPcpTabletOpen] = useState(false)
   const [now, setNow] = useState(() => new Date())
   const [sessionOperator, setSessionOperator] = useState('Usuário ERP')
@@ -141,12 +156,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     }
     document.addEventListener('mousedown', close)
     return () => document.removeEventListener('mousedown', close)
-  }, [])
-
-  useEffect(() => {
-    const openQualityTablet = () => setTabletOpen(true)
-    window.addEventListener('erp:open-quality-tablet', openQualityTablet)
-    return () => window.removeEventListener('erp:open-quality-tablet', openQualityTablet)
   }, [])
 
   // Atualização automática por mudanças reais no banco, sem botão manual.
@@ -199,15 +208,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
     if (item.action === 'pcpTablet') {
       setPcpTabletOpen(true)
       setOpenMenu(null)
-      return
-    }
-    if (item.action === 'qualityTablet') {
-      // REVISÃO 2026-10-19: o menu Qualidade deve abrir a Central SGQ Tablet atual,
-      // não o modal legado TabletMenuModal.
-      setTabletOpen(false)
-      setOpenMenu(null)
-      setStartMenuOpen(false)
-      navigate('/qualidade/tablet')
       return
     }
     go(item.route)
@@ -275,6 +275,7 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
               <input value={moduleSearch} onChange={event => setModuleSearch(event.target.value)} placeholder="Pesquisar módulo ou rotina..." aria-label="Pesquisar módulo ou rotina" />
               {moduleSearch && <button type="button" aria-label="Limpar pesquisa" onClick={() => setModuleSearch('')}><X size={12} /></button>}
             </label>
+            <div className="erp-win-content">
             <div className="erp-windows-menu-list">
               {searchedMenus.map(menu => {
                 const Icon = menu.icon ?? Home
@@ -283,7 +284,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                 return <div className="erp-windows-menu-group" key={menu.label}>
                   <div className={`erp-windows-menu-row ${current?.label === menu.label ? 'is-active' : ''}`}>
                     <button type="button" className="erp-windows-menu-main" onClick={() => {
-                      if (menu.action === 'qualityTablet' || menu.action === 'pcpTablet') { setStartMenuOpen(false); openMenuItem(menu) }
+                      if (menu.action === 'pcpTablet') { setStartMenuOpen(false); openMenuItem(menu) }
+                      else if (menu.label === 'Qualidade') { go(menu.route) }
                       else if (hasChildren) { setOpenMenu(value => value === menu.label ? null : menu.label);  }
                       else { setStartMenuOpen(false); openMenuItem(menu) }
                     }}>
@@ -297,6 +299,21 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
                 </div>
               })}
               {searchedMenus.length === 0 && <p className="erp-windows-no-results">Nenhum módulo ou rotina encontrado.</p>}
+            </div>
+              <div className="erp-win-tiles" aria-label="Atalhos dos módulos">
+                {menus.map(menu => {
+                  const Icon = menu.icon ?? Home
+                  return <button type="button" key={menu.label} className={`erp-win-tile ${current?.label === menu.label ? 'is-active' : ''}`} onClick={() => {
+                    if (menu.label === 'Qualidade') { setStartMenuOpen(false); go(menu.route) }
+                    else if (menu.action) { setStartMenuOpen(false); openMenuItem(menu) }
+                    else if (menu.children?.length) setOpenMenu(value => value === menu.label ? null : menu.label)
+                    else { setStartMenuOpen(false); openMenuItem(menu) }
+                  }} title={menu.label}>
+                    <span className="erp-win-tile-icon" style={{ background: moduleColor(menu.label) }}><Icon size={25} strokeWidth={1.9} /></span>
+                    <span className="erp-win-tile-label">{menu.label}</span>
+                  </button>
+                })}
+              </div>
             </div>
             <div className="erp-windows-start-footer"><UserRound size={13} /><span>{operatorName === 'Usuário ERP' ? sessionOperator : operatorName}</span><button type="button" title="Sair da sessão" onClick={() => void logout()}><LogOut size={13} /> Sair</button></div>
           </section>}
@@ -325,7 +342,6 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
       <main className={`erp-horizontal-workspace${pathname.startsWith('/fiscal') || pathname.includes('/nfe') || pathname.startsWith('/vendas/fiscal') || pathname.includes('nota-fiscal') ? ' erp-horizontal-workspace-fiscal' : ' erp-horizontal-workspace-compact'}`}>
         {children}
       </main>
-      <TabletMenuModal isOpen={tabletOpen} onClose={() => setTabletOpen(false)} onNavigate={(route) => { setTabletOpen(false); go(route) }} />
       <PCPTabletMenuModal isOpen={pcpTabletOpen} onClose={() => setPcpTabletOpen(false)} onNavigate={(route) => { setPcpTabletOpen(false); go(route) }} />
 
       <style>{`
@@ -349,7 +365,26 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-windows-user span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
         .erp-windows-help,.erp-windows-logout{width:27px;height:27px;display:flex;align-items:center;justify-content:center;border:1px solid #e2e8f0;background:#fff;color:#334155;border-radius:2px;cursor:pointer}
         .erp-windows-help:hover,.erp-windows-logout:hover{background:#eaf5f8;border-color:#b9d4df}
-        .erp-windows-start-menu{position:absolute;top:47px;left:0;width:min(340px,calc(100vw - 16px));max-height:min(72vh,620px);display:flex;flex-direction:column;background:#fff;border:1px solid #cbd5e1;box-shadow:0 12px 32px rgba(15,23,42,.2);z-index:1800}
+        .erp-windows-start-menu{position:absolute;top:47px;left:0;width:min(820px,calc(100vw - 16px));height:min(78vh,640px);max-height:calc(100vh - 64px);display:flex;flex-direction:column;background:rgba(226,226,226,.96);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid #c8c8c8;box-shadow:0 16px 40px rgba(0,0,0,.26);z-index:1800;font-family:'Segoe UI',system-ui,sans-serif;animation:erpWinIn .16s ease-out;overflow:hidden}
+        @keyframes erpWinIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        .erp-windows-start-heading{flex:0 0 48px}
+        .erp-windows-start-menu>.erp-windows-menu-search{flex:0 0 30px}
+        .erp-win-content{display:grid;grid-template-columns:minmax(230px,300px) minmax(0,1fr);gap:10px;min-height:0;flex:1;padding:0 8px 8px}
+        .erp-win-content>.erp-windows-menu-list{min-height:0;overflow:auto;background:rgba(255,255,255,.38);padding:0 6px 8px}
+        .erp-win-content .erp-windows-menu-row{min-height:38px}
+        .erp-win-content .erp-windows-menu-main{min-height:36px;font-family:'Segoe UI',system-ui,sans-serif;font-size:13px}
+        .erp-win-content .erp-windows-menu-main>svg{flex:0 0 auto;color:#475569}
+        .erp-win-content .erp-windows-menu-main span{font-size:13px}
+        .erp-win-content .erp-windows-menu-children button{font-family:'Segoe UI',system-ui,sans-serif;font-size:12px}
+        .erp-win-tiles{overflow:auto;padding:4px;display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));grid-auto-rows:112px;gap:6px;align-content:start}
+        .erp-win-tile{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;border:2px solid transparent;background:rgba(248,248,248,.76);font-family:'Segoe UI',system-ui,sans-serif;cursor:pointer;transition:transform .12s ease,border-color .12s ease,background .12s ease}
+        .erp-win-tile:hover{border-color:rgba(0,0,0,.24);background:rgba(255,255,255,.92)}
+        .erp-win-tile:active{transform:scale(.97)}
+        .erp-win-tile.is-active{border-color:#0078d4;background:rgba(255,255,255,.96)}
+        .erp-win-tile-icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:8px;color:#fff;margin-bottom:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 3px 8px rgba(0,0,0,.22)}
+        .erp-win-tile-label{position:absolute;left:7px;right:7px;bottom:7px;font-size:12px;color:#1f1f1f;text-align:left;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .erp-windows-start-footer{flex:0 0 38px}
+
         .erp-windows-start-heading{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0}
         .erp-windows-start-heading div{display:flex;flex-direction:column;gap:2px}.erp-windows-start-heading strong{font-size:11px;color:#123b50}.erp-windows-start-heading small{font-size:9px;color:#64748b}
         .erp-windows-start-heading>button{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:0;background:transparent;cursor:pointer}
@@ -380,8 +415,8 @@ export default function ERPHorizontalShell({ children, operatorName = 'Usuário 
         .erp-horizontal-workspace-compact h1{font-size:18px!important;line-height:1.2!important;font-weight:500!important}.erp-horizontal-workspace-compact h2{font-size:15px!important;line-height:1.25!important;font-weight:500!important}.erp-horizontal-workspace-compact h3{font-size:13px!important;line-height:1.3!important;font-weight:500!important}
         .erp-horizontal-workspace-compact p{font-size:10px!important;line-height:1.4!important}.erp-horizontal-workspace-compact table{font-size:10px!important}.erp-horizontal-workspace-compact tbody td{font-size:10px!important;line-height:1.25!important}.erp-horizontal-workspace-compact thead th{font-size:9px!important;line-height:1.2!important;font-weight:500!important}.erp-horizontal-workspace-compact button{font-size:10px}.erp-horizontal-workspace-compact label{font-size:9px}.erp-horizontal-workspace-compact input,.erp-horizontal-workspace-compact select,.erp-horizontal-workspace-compact textarea{font-size:10px}
         @media print{@page{size:A4;margin:12mm}.erp-windows-topbar,.print-hidden{display:none!important}.erp-horizontal-shell,.erp-horizontal-workspace{min-height:0!important;background:#fff!important;padding:0!important}.erp-horizontal-workspace *{box-shadow:none!important;backdrop-filter:none!important}thead{display:table-header-group}tr{break-inside:avoid}}
-        @media(max-width:900px){.erp-windows-topbar{grid-template-columns:auto minmax(110px,170px) minmax(140px,1fr) auto;gap:6px;padding:0 6px}.erp-windows-session{gap:5px}.erp-windows-session time{font-size:9px}.erp-windows-user{max-width:120px;padding-left:5px}.erp-windows-system-title strong{font-size:11px}}
-        @media(max-width:650px){.erp-windows-topbar{height:48px;grid-template-columns:auto minmax(0,1fr) auto;gap:6px}.erp-windows-quick-search{display:none}.erp-windows-system-title{align-items:flex-start;text-align:left}.erp-windows-system-title strong{font-size:10px;letter-spacing:0}.erp-windows-system-title span{font-size:8px}.erp-windows-session time{display:none}.erp-windows-user{max-width:90px}.erp-windows-user span{display:none}}
+        @media(max-width:900px){.erp-win-content{grid-template-columns:minmax(200px,250px) minmax(0,1fr)}.erp-win-tiles{grid-template-columns:repeat(auto-fill,minmax(90px,1fr));grid-auto-rows:96px}.erp-windows-topbar{grid-template-columns:auto minmax(110px,170px) minmax(140px,1fr) auto;gap:6px;padding:0 6px}.erp-windows-session{gap:5px}.erp-windows-session time{font-size:9px}.erp-windows-user{max-width:120px;padding-left:5px}.erp-windows-system-title strong{font-size:11px}}
+        @media(max-width:650px){.erp-win-content{grid-template-columns:minmax(0,1fr)}.erp-win-tiles{display:none}.erp-windows-start-menu{width:min(380px,calc(100vw - 16px));height:min(78vh,640px)}.erp-windows-topbar{height:48px;grid-template-columns:auto minmax(0,1fr) auto;gap:6px}.erp-windows-quick-search{display:none}.erp-windows-system-title{align-items:flex-start;text-align:left}.erp-windows-system-title strong{font-size:10px;letter-spacing:0}.erp-windows-system-title span{font-size:8px}.erp-windows-session time{display:none}.erp-windows-user{max-width:90px}.erp-windows-user span{display:none}}
         @media(prefers-reduced-motion:reduce){.erp-windows-start-menu{transition:none!important}}
       `}</style>
     </div>

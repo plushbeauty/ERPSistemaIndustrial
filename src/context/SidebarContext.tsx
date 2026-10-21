@@ -12,7 +12,7 @@ const SidebarContext = createContext<SidebarContextValue | undefined>(undefined)
 const STORAGE_KEY = 'sgq-erp-sidebar-expanded'
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
-  const [isExpanded, setExpanded] = useState(true)
+  const [isExpanded, setExpanded] = useState(false)
   const [isMobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {

@@ -113,3 +113,268 @@
 .synqra-sidebar-subnav .synqra-sidebar-link { min-height: 30px; height: 30px; padding: 0 8px 0 14px; border-radius: 2px; font-size: 10px; }
 .synqra-sidebar-subnav .synqra-sidebar-link-label { font-size: 10px; line-height: 1; }
 .synqra-sidebar-subnav .synqra-sidebar-link.is-active { background: #eef6fa; color: #17445a; box-shadow: inset 2px 0 #2d8db8; }
+
+
+/* SYSNQRA navigation rail: icons only; each icon opens its labeled flyout. */
+:root { --synqra-sidebar-width: 56px; }
+.synqra-sidebar {
+  width: 56px;
+  overflow: visible;
+  background: #123b50;
+  border-right-color: #0b3042;
+}
+.synqra-sidebar.is-collapsed { --synqra-sidebar-width: 56px; }
+.synqra-sidebar-brand { height: 56px; flex-basis: 56px; padding: 5px; border-bottom-color: #28566b; }
+.synqra-sidebar-brand img { width: 42px; height: 42px; object-fit: contain; }
+.synqra-sidebar-caption { display: none; }
+.synqra-sidebar-nav { flex: 1; overflow-x: visible; overflow-y: auto; padding: 8px 5px; gap: 4px; }
+.synqra-sidebar-link {
+  position: relative;
+  width: 44px;
+  min-height: 40px;
+  height: 40px;
+  justify-content: center;
+  margin: 0 auto;
+  padding: 0;
+  color: #d9edf5;
+  border-color: transparent;
+  background: transparent;
+}
+.synqra-sidebar-link:hover:not(:disabled),
+.synqra-sidebar-link.is-menu-open { background: #1d789f; color: #fff; }
+.synqra-sidebar-link.is-active { background: #236f93; border-color: #4e9bb8; color: #fff; box-shadow: inset 3px 0 #f59e0b; }
+.synqra-sidebar.is-collapsed .synqra-sidebar-link-label,
+.synqra-sidebar.is-collapsed .synqra-sidebar-unavailable,
+.synqra-sidebar-footer-copy { display: none; }
+.synqra-sidebar-flyout {
+  position: fixed;
+  z-index: 1500;
+  top: 112px;
+  left: 64px;
+  display: flex;
+  width: 238px;
+  max-height: calc(100vh - 132px);
+  flex-direction: column;
+  overflow: auto;
+  border: 1px solid #c7dbe4;
+  border-radius: 3px;
+  background: #fff;
+  color: #123b50;
+  box-shadow: 0 12px 32px rgb(15 42 58 / 22%);
+  padding: 6px;
+}
+.synqra-sidebar-flyout-heading {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid #dbe7ec;
+  margin-bottom: 4px;
+  padding: 0 5px 5px 8px;
+  color: #123b50;
+  font-size: 12px;
+  font-weight: 800;
+}
+.synqra-sidebar-flyout-heading button {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid #d7e2e8;
+  border-radius: 2px;
+  background: #f8fbfc;
+  color: #123b50;
+  cursor: pointer;
+  font-size: 18px;
+}
+.synqra-sidebar-flyout-item {
+  display: flex;
+  width: 100%;
+  min-height: 34px;
+  align-items: center;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: #344f5d;
+  cursor: pointer;
+  padding: 6px 9px;
+  text-align: left;
+  font-size: 11px;
+}
+.synqra-sidebar-flyout-item:hover,
+.synqra-sidebar-flyout-item.is-active { background: #eaf6fa; color: #145d7b; }
+.synqra-sidebar-footer { min-height: 34px; border-top-color: #28566b; }
+.synqra-slashes i { background: #48b7c7; }
+.synqra-slashes i:nth-child(2) { background: #2d8db8; }
+.synqra-slashes i:nth-child(3) { background: #f59e0b; }
+.synqra-header-menu-desktop { display: none !important; }
+.synqra-app-header { left: 56px; }
+.synqra-app-content { margin-left: 56px; }
+@media (max-width: 900px) {
+  .synqra-sidebar { width: 240px; overflow: hidden; transform: translateX(-105%); }
+  .synqra-sidebar.is-collapsed { --synqra-sidebar-width: 240px; }
+  .synqra-sidebar.is-mobile-open { transform: translateX(0); }
+  .synqra-sidebar-brand { height: 56px; flex-basis: 56px; }
+  .synqra-sidebar-brand img { width: 120px; max-width: 100%; height: 42px; }
+  .synqra-sidebar-nav { padding: 6px; }
+  .synqra-sidebar-link { width: 100%; min-height: 36px; height: 36px; justify-content: flex-start; gap: 10px; padding: 0 9px; }
+  .synqra-sidebar.is-collapsed .synqra-sidebar-link-label { display: inline; color: inherit; }
+  .synqra-sidebar-flyout { position: static; width: auto; max-height: 38vh; margin: 4px 7px 8px; box-shadow: none; }
+  .synqra-app-header { left: 0; }
+  .synqra-app-content { margin-left: 0; }
+}
+
+
+/* Navigation rail positioned on the RIGHT; flyouts open to the LEFT like Windows 11. */
+:root { --synqra-sidebar-width: 56px; }
+.synqra-sidebar {
+  inset: 0 0 0 auto !important;
+  left: auto !important;
+  right: 0 !important;
+  width: 56px;
+  overflow: visible;
+  border-right: 0;
+  border-left: 1px solid #0b3042;
+  background: #123b50;
+  transition: width 160ms ease, transform 160ms ease;
+}
+.synqra-sidebar.is-collapsed { width: 56px; --synqra-sidebar-width: 56px; }
+.synqra-sidebar.is-expanded { width: 220px; --synqra-sidebar-width: 220px; }
+.synqra-sidebar-brand {
+  display: flex;
+  height: 56px;
+  flex: 0 0 56px;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border-bottom: 1px solid #28566b;
+}
+.synqra-sidebar-toggle {
+  display: grid;
+  width: 42px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid #2d6077;
+  border-radius: 3px;
+  background: #17485e;
+  color: #fff;
+  cursor: pointer;
+}
+.synqra-sidebar-toggle:hover { background: #1d789f; }
+.synqra-sidebar-nav { flex: 1; overflow-x: visible; overflow-y: auto; padding: 8px 5px; gap: 4px; }
+.synqra-sidebar-link {
+  position: relative;
+  width: 44px;
+  min-height: 40px;
+  height: 40px;
+  justify-content: center;
+  margin: 0 auto;
+  padding: 0;
+  color: #d9edf5;
+  border-color: transparent;
+  background: transparent;
+}
+.synqra-sidebar.is-expanded .synqra-sidebar-link {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 0 10px;
+}
+.synqra-sidebar.is-collapsed .synqra-sidebar-link-label { display: none; }
+.synqra-sidebar.is-expanded .synqra-sidebar-link-label { display: inline; color: inherit; font-size: 11px; }
+.synqra-sidebar-link:hover:not(:disabled),
+.synqra-sidebar-link.is-menu-open { background: #1d789f; color: #fff; }
+.synqra-sidebar-link.is-active { background: #236f93; border-color: #4e9bb8; color: #fff; box-shadow: inset -3px 0 #f59e0b; }
+.synqra-sidebar-flyout {
+  position: fixed;
+  z-index: 1500;
+  top: 112px;
+  right: calc(var(--synqra-sidebar-width) + 8px);
+  left: auto;
+  display: flex;
+  width: 238px;
+  max-height: calc(100vh - 16px);
+  flex-direction: column;
+  overflow: auto;
+  border: 1px solid #c7dbe4;
+  border-radius: 3px;
+  background: #fff;
+  color: #123b50;
+  box-shadow: 0 12px 32px rgb(15 42 58 / 22%);
+  padding: 6px;
+}
+.synqra-sidebar-flyout-heading {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid #dbe7ec;
+  margin-bottom: 4px;
+  padding: 0 5px 5px 8px;
+  color: #123b50;
+  font-size: 12px;
+  font-weight: 800;
+}
+.synqra-sidebar-flyout-heading button {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid #d7e2e8;
+  border-radius: 2px;
+  background: #f8fbfc;
+  color: #123b50;
+  cursor: pointer;
+  font-size: 18px;
+}
+.synqra-sidebar-flyout-item {
+  display: flex;
+  width: 100%;
+  min-height: 34px;
+  align-items: center;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: #344f5d;
+  cursor: pointer;
+  padding: 6px 9px;
+  text-align: left;
+  font-size: 11px;
+}
+.synqra-sidebar-flyout-item:hover,
+.synqra-sidebar-flyout-item.is-active { background: #eaf6fa; color: #145d7b; }
+.synqra-sidebar-footer { min-height: 20px; border-top: 1px solid #28566b; }
+.synqra-slashes { display: none !important; }
+.synqra-app-header { left: 0 !important; right: 56px !important; }
+.synqra-app-content { margin-left: 0 !important; margin-right: 56px !important; }
+.synqra-header-menu-desktop { display: none !important; }
+@media (max-width: 900px) {
+  .synqra-sidebar,
+  .synqra-sidebar.is-collapsed,
+  .synqra-sidebar.is-expanded {
+    inset: 0 0 0 auto !important;
+    left: auto !important;
+    right: 0 !important;
+    width: 240px;
+    --synqra-sidebar-width: 240px;
+    overflow: hidden;
+    transform: translateX(105%);
+  }
+  .synqra-sidebar.is-mobile-open { transform: translateX(0); }
+  .synqra-sidebar-brand img { display: none; }
+  .synqra-sidebar-link,
+  .synqra-sidebar.is-expanded .synqra-sidebar-link { width: 100%; min-height: 36px; height: 36px; justify-content: flex-start; gap: 10px; padding: 0 9px; }
+  .synqra-sidebar.is-collapsed .synqra-sidebar-link-label,
+  .synqra-sidebar.is-expanded .synqra-sidebar-link-label { display: inline; color: inherit; }
+  .synqra-sidebar-flyout { right: 248px; left: auto; width: min(238px, calc(100vw - 260px)); }
+  .synqra-app-header { left: 0 !important; right: 0 !important; }
+  .synqra-app-content { margin-left: 0 !important; margin-right: 0 !important; }
+}
+@media (max-width: 520px) {
+  .synqra-sidebar-flyout { right: 8px; width: calc(100vw - 16px); z-index: 1600; }
+}
+
+html:not(.sgq-collapsed) .synqra-app-header { right: 220px !important; }
+html:not(.sgq-collapsed) .synqra-app-content { margin-right: 220px !important; }
