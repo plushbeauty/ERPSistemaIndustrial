@@ -71,7 +71,7 @@ export default function PCPProgramacaoGantt() {
     } catch (x) { setError(x instanceof Error ? x.message : 'Falha ao carregar a programação.') }
     finally { setBusy(false) }
   }
-  useEffect(() => { void load() }, [from]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { void load() }, [from])
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 60000); return () => clearInterval(t) }, [])
   useEffect(() => { // centraliza no "agora"
     const el = scroller.current; if (!el) return
