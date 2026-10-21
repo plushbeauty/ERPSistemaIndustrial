@@ -1,10 +1,10 @@
 /**
  * SYSNQRA ERP & SGQ INDUSTRIAL
  * REVISÃO: 1.0 | DATA: 20/10/2026
- * ESCOPO: consulta operacional de lotes, validade, FIFO/PEPS e localização física.
+ * ESCOPO: consulta operacional de lotes recebidos, validade e FIFO/PEPS.
  * PRESERVADO: shell global e geometria das telas existentes; esta página não altera estilos globais.
  * SEGURANÇA: tenant obtido pela RPC erp_current_empresa_id e filtro empresa_id em todas as consultas.
- * NOTA: utiliza o contrato existente de erp_estoque_lotes; não cria tabela paralela.
+ * NOTA: consulta a mesma tabela de rastreabilidade gravada pela RPC de recebimento.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, Boxes, CalendarClock, MapPin, RefreshCw, Search, ShieldCheck } from 'lucide-react'
@@ -15,19 +15,15 @@ type LotRow = {
   id: string
   empresa_id: string
   produto_id: string
-  lote_interno: string
-  lote_fornecedor: string | null
-  quantidade_recebida: number | null
-  quantidade_disponivel: number | null
-  quantidade_reservada: number | null
-  localizacao: string | null
-  status_inspecao: string | null
-  data_entrada: string
+  lote_fornecedor: string
+  quantidade_inicial: number
+  quantidade_disponivel: number
+  status_qualidade: string
   data_validade: string | null
   created_at: string
 }
 type ProductRow = { id: string; codigo: string | null; nome: string | null; unidade_medida: string | null }
-type InventoryLot = LotRow & { codigo: string; descricao: string; unidade: string }
+type InventoryLot = LotRow & { codigo: string; descricao: string; unidade: string; data_entrada: string; lote_interno: string | null; localizacao: string | null; status_inspecao: string | null; quantidade_recebida: number | null }
 
 type ExpiryStatus = 'VENCIDO' | 'EXPIRANDO' | 'REGULAR' | 'SEM VALIDADE'
 
@@ -70,10 +66,9 @@ export default function InventarioValidade() {
       const tenantId = company.data
       const [lotRows, productRows] = await Promise.all([
         fetchAllPages<LotRow>((from, to) => supabase
-          .from('erp_estoque_lotes')
-          .select('id,empresa_id,produto_id,lote_interno,lote_fornecedor,quantidade_recebida,quantidade_disponivel,quantidade_reservada,localizacao,status_inspecao,data_entrada,data_validade,created_at', { count: 'exact' })
+          .from('erp_estoque_lotes_rastreabilidade')
+          .select('id,empresa_id,produto_id,lote_fornecedor,quantidade_inicial,quantidade_disponivel,status_qualidade,data_validade,created_at', { count: 'exact' })
           .eq('empresa_id', tenantId)
-          .order('data_entrada', { ascending: true })
           .order('created_at', { ascending: true })
           .range(from, to)),
         fetchAllPages<ProductRow>((from, to) => supabase
@@ -88,6 +83,11 @@ export default function InventarioValidade() {
         const product = products.get(lot.produto_id)
         return {
           ...lot,
+          data_entrada: lot.created_at.slice(0, 10),
+          lote_interno: null,
+          localizacao: null,
+          status_inspecao: lot.status_qualidade,
+          quantidade_recebida: lot.quantidade_inicial,
           codigo: product?.codigo ?? '—',
           descricao: product?.nome ?? 'Produto não localizado',
           unidade: product?.unidade_medida ?? '',
@@ -108,7 +108,7 @@ export default function InventarioValidade() {
   const filtered = useMemo(() => {
     const term = search.trim().toLocaleLowerCase('pt-BR')
     return rows.filter(row => !term || [
-      row.codigo, row.descricao, row.lote_interno, row.lote_fornecedor ?? '', row.localizacao ?? '',
+      row.codigo, row.descricao, row.lote_interno ?? '', row.lote_fornecedor, row.localizacao ?? '',
     ].some(value => value.toLocaleLowerCase('pt-BR').includes(term)))
       // PEPS/FIFO usa data de entrada; validade é um alerta independente (FEFO não é sinônimo de FIFO).
       .sort((a, b) => a.data_entrada.localeCompare(b.data_entrada) || a.created_at.localeCompare(b.created_at))
@@ -134,7 +134,7 @@ export default function InventarioValidade() {
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-sky-700">ESTOQUE • RASTREABILIDADE</p>
             <h1 className="mt-1 text-xl font-bold tracking-tight text-slate-900">Controle de Validade e FIFO / PEPS</h1>
-            <p className="mt-1 text-xs font-medium text-slate-500">SYSNQRA ERP &amp; SGQ INDUSTRIAL · lotes, shelf-life e localização física</p>
+            <p className="mt-1 text-xs font-medium text-slate-500">SYSNQRA ERP &amp; SGQ INDUSTRIAL · lotes recebidos, shelf-life e fila PEPS</p>
           </div>
           <button type="button" onClick={() => void load()} disabled={loading} className="inline-flex h-9 items-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 disabled:opacity-50">
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Atualizar
@@ -171,20 +171,20 @@ export default function InventarioValidade() {
         <label htmlFor="inventory-expiry-search" className="mb-1.5 block text-[10px] font-bold uppercase tracking-wide text-slate-600">Filtro de rastreabilidade</label>
         <div className="relative">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input id="inventory-expiry-search" type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Código, descrição, lote ou localização..." className="h-9 w-full rounded-md border border-slate-300 bg-white pl-9 pr-3 text-xs text-slate-800 focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-sky-600" />
+          <input id="inventory-expiry-search" type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Código, descrição ou lote do fornecedor..." className="h-9 w-full rounded-md border border-slate-300 bg-white pl-9 pr-3 text-xs text-slate-800 focus:border-sky-600 focus:outline-none focus:ring-1 focus:ring-sky-600" />
         </div>
       </section>
 
       <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-3">
-          <div><h2 className="text-xs font-bold text-slate-900">Fila de lotes · PEPS</h2><p className="mt-1 text-[10px] text-slate-500">Ordenação pela data de entrada mais antiga primeiro</p></div>
+          <div><h2 className="text-xs font-bold text-slate-900">Fila de recebimentos · PEPS</h2><p className="mt-1 text-[10px] text-slate-500">Ordenação pela data do recebimento mais antiga primeiro</p></div>
           <span className="text-[10px] font-semibold text-slate-500">{filtered.length} registro(s)</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left text-xs">
             <thead className="border-b border-slate-200 bg-slate-50 text-[9px] font-bold uppercase tracking-wider text-slate-500">
               <tr>
-                <th className="whitespace-nowrap px-3 py-3">Código</th><th className="min-w-44 px-3 py-3">Material</th><th className="whitespace-nowrap px-3 py-3">Lote interno / fornecedor</th><th className="whitespace-nowrap px-3 py-3 text-right">Disponível</th><th className="whitespace-nowrap px-3 py-3">Entrada</th><th className="whitespace-nowrap px-3 py-3">Validade</th><th className="whitespace-nowrap px-3 py-3">Localização física</th><th className="whitespace-nowrap px-3 py-3">Qualidade</th><th className="whitespace-nowrap px-3 py-3">Alerta</th>
+                <th className="whitespace-nowrap px-3 py-3">Código</th><th className="min-w-44 px-3 py-3">Material</th><th className="whitespace-nowrap px-3 py-3">Lote do fornecedor / registro</th><th className="whitespace-nowrap px-3 py-3 text-right">Disponível</th><th className="whitespace-nowrap px-3 py-3">Entrada</th><th className="whitespace-nowrap px-3 py-3">Validade</th><th className="whitespace-nowrap px-3 py-3">Localização</th><th className="whitespace-nowrap px-3 py-3">Qualidade</th><th className="whitespace-nowrap px-3 py-3">Alerta</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -197,7 +197,7 @@ export default function InventarioValidade() {
                   return <tr key={row.id} className={rowStyle}>
                     <td className="whitespace-nowrap px-3 py-3 font-bold text-slate-800">{row.codigo}</td>
                     <td className="px-3 py-3"><div className="font-semibold text-slate-800">{row.descricao}</div><div className="mt-0.5 text-[10px] text-slate-500">{row.unidade || 'Unidade não informada'}</div></td>
-                    <td className="whitespace-nowrap px-3 py-3"><div className="font-semibold">{row.lote_interno}</div><div className="mt-0.5 text-[10px] text-slate-500">{row.lote_fornecedor || 'Fornecedor não informado'}</div></td>
+                    <td className="whitespace-nowrap px-3 py-3"><div className="font-semibold">{row.lote_fornecedor}</div><div className="mt-0.5 text-[10px] text-slate-500">Registro {row.id.slice(0, 8)}</div></td>
                     <td className="whitespace-nowrap px-3 py-3 text-right font-semibold tabular-nums">{Number(row.quantidade_disponivel ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}</td>
                     <td className="whitespace-nowrap px-3 py-3">{formatDate(row.data_entrada)}</td>
                     <td className="whitespace-nowrap px-3 py-3">{formatDate(row.data_validade)}</td>
