@@ -5,8 +5,9 @@
  * Desenvolvedor: IA Co-Pilot (Homologado por Fernando)
  * ID da Revisão: REV-059
  * Data da revisão de aprovação: 2026-10-16
- * Status da tela: APROVADO-IMUTAVEL (não alterar sem autorização explícita do usuário).
- * Alterações: Remoção de cast Event→FormEvent artificial no salvamento de produtos; ação agora chama save() diretamente.
+ * Status da tela: REVISÃO VISUAL AUTORIZADA PELO USUÁRIO — escopo exclusivo Produtos/Vendas.
+ * Revisão 2026-10-20: padronização responsiva da grade 12 colunas, campos h-9 (36px), cartões e foco.
+ * Persistência Supabase, autenticação, filtros empresa_id, rotas e regras de negócio preservados.
  * Status do Build Local: Não executado — validação será feita pelo gate remoto.
  * =========================================================================
  */
@@ -413,6 +414,36 @@ export default function ProdutosVendasIndustrial(){
       .product-master-screen .product-plus-button{height:30px;width:30px;border:1px solid #2D8DB8;background:#eaf4f8;color:#123B50;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;cursor:pointer}
       .product-master-screen .product-inline-create{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto;gap:5px;padding:7px;margin-top:5px;background:#f4fbfd;border:1px solid #c8dfe8;align-items:end}
       @media(max-width:700px){.product-master-screen .product-form-grid,.product-master-screen .product-responsive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.product-master-screen .product-unit-row{grid-column:span 2;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.product-master-screen .product-unit-row label{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(12px,auto) 30px;gap:2px}.product-master-screen .product-general-row>*{grid-column:span 1!important}.product-master-screen .product-general-row>*:nth-child(3),.product-master-screen .product-general-row>*:nth-child(4){grid-column:span 2!important}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 2!important}.product-master-screen .product-responsive-grid{row-gap:9px}.product-master-screen .product-tabs button{padding:7px 8px!important;font-size:9px!important}.product-master-screen .product-responsive-grid>*{grid-column:span 1!important}.product-master-screen .product-inline-create{grid-template-columns:1fr}.product-master-screen .product-commercial-row .product-observations-field{grid-column:span 1!important}}
+
+      /* SYSNQRA • revisão visual autorizada 2026-10-20 — escopo somente Produtos/Vendas */
+      .product-master-screen{width:100%;max-width:1600px!important;margin:0 auto!important;padding:16px!important;background:#f8fafc!important;color:#334155!important;box-sizing:border-box}
+      .product-master-screen .product-workspace{grid-template-columns:minmax(290px,.78fr) minmax(0,1.72fr);gap:16px!important;margin:0 0 16px!important;align-items:start}
+      .product-master-screen .product-editor-panel,.product-master-screen .product-list-panel,.product-master-screen .product-master-header,.product-master-screen .product-screen-footer,.product-master-screen .product-form-section{border-radius:12px!important}
+      .product-master-screen .product-editor-panel,.product-master-screen .product-list-panel{background:#fff!important;border:1px solid #e2e8f0!important;box-shadow:0 4px 12px rgba(0,0,0,.04)!important;overflow:hidden}
+      .product-master-screen .product-editor-panel{padding:20px!important}
+      .product-master-screen .product-list-panel{position:sticky;top:12px}
+      .product-master-screen .product-form-section{padding:14px!important;margin:0 0 12px!important;border:1px solid #e2e8f0!important;background:#fff!important}
+      .product-master-screen .product-form-section-title{border-radius:8px!important;background:#eff6ff!important;border-left:3px solid #2563eb!important;color:#1e3a8a!important;padding:10px 12px!important;font-size:11px!important}
+      .product-master-screen .product-form-grid,.product-master-screen .product-responsive-grid{grid-template-columns:repeat(12,minmax(0,1fr))!important;column-gap:12px!important;row-gap:12px!important;align-items:end!important}
+      .product-master-screen .product-form-grid>* ,.product-master-screen .product-responsive-grid>*{grid-column:span 3;min-width:0}
+      .product-master-screen .product-form-grid label,.product-master-screen .product-responsive-grid label{grid-template-rows:minmax(18px,auto) 36px!important;gap:4px!important;font-size:10px!important;line-height:13px!important;color:#475569!important}
+      .product-master-screen .product-form-grid label>input,.product-master-screen .product-form-grid label>select,.product-master-screen .product-form-grid label>textarea,.product-master-screen .product-responsive-grid input:not([type="checkbox"]):not([type="file"]),.product-master-screen .product-responsive-grid select,.product-master-screen .product-responsive-grid textarea{height:36px!important;min-height:36px!important;padding:0 12px!important;border:1px solid #cbd5e1!important;border-radius:8px!important;font-size:14px!important;line-height:20px!important;background:#fff;box-sizing:border-box!important}
+      .product-master-screen input:not([type="checkbox"]):not([type="file"]),.product-master-screen select,.product-master-screen textarea{border-radius:8px!important;border-color:#cbd5e1!important;font-size:14px!important;box-sizing:border-box!important}
+      .product-master-screen input:not([type="checkbox"]):not([type="file"]):focus,.product-master-screen select:focus,.product-master-screen textarea:focus{outline:0!important;border-color:#2563eb!important;box-shadow:0 0 0 2px rgba(37,99,235,.12)!important}
+      .product-master-screen .product-responsive-grid label:has(textarea),.product-master-screen .product-form-grid label:has(textarea),.product-master-screen .product-responsive-grid .product-observations-field{grid-column:1/-1!important}
+      .product-master-screen .product-form-grid label:has(input[type="file"]),.product-master-screen .product-responsive-grid label:has(input[type="file"]){grid-column:span 6}
+      .product-master-screen .product-tabs{gap:6px!important;padding-bottom:8px!important;border-bottom:1px solid #e2e8f0!important}
+      .product-master-screen .product-tabs button{height:36px!important;min-height:36px!important;border-radius:8px!important;padding:0 14px!important;font-size:11px!important}
+      .product-master-screen button{border-radius:8px!important;min-height:36px}
+      .product-master-screen .product-plus-button{height:36px!important;width:36px!important;border-radius:8px!important}
+      .product-master-screen .product-list-panel>div:first-child{padding:16px!important;gap:12px!important;background:#f8fafc!important}
+      .product-master-screen .product-list-panel table th{background:#f1f5f9!important;color:#334155!important;font-size:10px!important;padding:10px 8px!important}
+      .product-master-screen .product-list-panel table td{padding:10px 8px!important;font-size:11px!important}
+      .product-master-screen .product-list-panel tbody tr[aria-selected="true"]{background:#dbeafe!important}
+      .product-master-screen .product-screen-footer{padding:14px!important;background:#fff!important;border:1px solid #e2e8f0!important}
+      @media(max-width:1100px){.product-master-screen{padding:12px!important}.product-master-screen .product-workspace{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"editor" "list"!important}.product-master-screen .product-list-panel{position:static!important}.product-master-screen .product-editor-panel{padding:14px!important}}
+      @media(max-width:700px){.product-master-screen .product-form-grid,.product-master-screen .product-responsive-grid{grid-template-columns:repeat(12,minmax(0,1fr))!important}.product-master-screen .product-form-grid>* ,.product-master-screen .product-responsive-grid>*{grid-column:span 6!important}.product-master-screen .product-form-grid label:has(textarea),.product-master-screen .product-responsive-grid label:has(textarea),.product-master-screen .product-responsive-grid .product-observations-field{grid-column:1/-1!important}.product-master-screen .product-form-grid label:has(input[type="file"]),.product-master-screen .product-responsive-grid label:has(input[type="file"]){grid-column:1/-1!important}.product-master-screen .product-editor-panel{padding:10px!important}.product-master-screen .product-tabs button{padding:0 9px!important;font-size:10px!important}}
+      @media print{.product-master-screen{padding:0!important;background:#fff!important}.product-master-screen .product-editor-panel,.product-master-screen .product-list-panel,.product-master-screen .product-form-section{box-shadow:none!important;border-radius:0!important}}
     `}</style>
     <header style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'6px 8px',borderBottom:'1px solid #d6dde6',background:'#fff',flexWrap:'wrap'}}>
       <div><div style={{fontSize:11,fontWeight:800,color:'#2D8DB8'}}>CADASTROS • PRODUTOS</div><h1 style={{margin:'2px 0 0',fontSize:15,color:'#123B50'}}>Cadastro de Produtos</h1></div>
