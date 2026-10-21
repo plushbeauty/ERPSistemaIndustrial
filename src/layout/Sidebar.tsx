@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Menu } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useSidebar } from '../context/SidebarContext'
 import { SYNQRA_MODULES } from '../assets/synqra/icons'
@@ -70,10 +71,11 @@ const childKeys = new Set([
 ])
 
 export default function Sidebar() {
-  const { isMobileOpen, closeMobileSidebar } = useSidebar()
+  const { isExpanded, toggleSidebar, isMobileOpen, closeMobileSidebar } = useSidebar()
   const location = useLocation()
   const navigate = useNavigate()
   const [openKey, setOpenKey] = useState<string | null>(null)
+  const [flyoutTop, setFlyoutTop] = useState(112)
 
   const modules = SYNQRA_MODULES.filter(module => module.route && !childKeys.has(module.key))
   const current = [...SYNQRA_MODULES]
@@ -103,7 +105,7 @@ export default function Sidebar() {
         />
       )}
       <aside
-        className={`synqra-sidebar is-collapsed${isMobileOpen ? ' is-mobile-open' : ''}`}
+        className={`synqra-sidebar${isExpanded ? ' is-expanded' : ' is-collapsed'}${isMobileOpen ? ' is-mobile-open' : ''}`}
         aria-label="Navegação principal do SYSNQRA ERP & SGQ INDUSTRIAL"
       >
         <div className="synqra-sidebar-brand" title="SYSNQRA ERP & SGQ INDUSTRIAL">
@@ -133,7 +135,7 @@ export default function Sidebar() {
           })}
         </nav>
         {openModule && (
-          <section className="synqra-sidebar-flyout" aria-label={`Menu ${openModule.label}`} role="menu">
+          <section className="synqra-sidebar-flyout" style={{ top: flyoutTop }} aria-label={`Menu ${openModule.label}`} role="menu">
             <div className="synqra-sidebar-flyout-heading">
               <strong>{openModule.label}</strong>
               <button type="button" onClick={() => setOpenKey(null)} aria-label="Fechar submenu" title="Fechar submenu">×</button>
