@@ -154,6 +154,7 @@ const QualidadeLiberacaoLotes = lazyPage(() => import('./pages/qualidade/Qualida
 const QualidadeCEP = lazyPage(() => import('./pages/qualidade/CEP'), 'default')
 const QualidadeFMEA = lazyPage(() => import('./pages/qualidade/FMEA'), 'default')
 const GEDDocumentos = lazyPage(() => import('./pages/qualidade/GEDDocumentos'), 'default')
+const ControleDesenhos = lazyPage(() => import('./pages/qualidade/ControleDesenhos'), 'default')
 const RecebimentoMateriais = lazyPage(() => import('./pages/RecebimentoMateriais'), 'RecebimentoMateriais')
 const ManualUsuario = lazyPage(() => import('./pages/ManualUsuario'), 'ManualUsuario')
 const RHIndustrial = lazyPage(() => import('./pages/RHIndustrial'), 'RHIndustrial')
@@ -527,6 +528,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/qualidade/capa" element={<QualityPlanGate><QualidadeRNC initialTab="capa" /></QualityPlanGate>} />
       <Route path="/qualidade/cep" element={<QualityPlanGate><QualidadeCEP /></QualityPlanGate>} />
       <Route path="/qualidade/ged-documentos" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
+      <Route path="/qualidade/controle-desenhos" element={<QualityPlanGate><ControleDesenhos /></QualityPlanGate>} />
       <Route path="/qualidade/ged-documentos/nova" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
       <Route path="/qualidade/ged-documentos/:id" element={<QualityPlanGate><GEDDocumentos /></QualityPlanGate>} />
       <Route path="/pcp/ordens-industriais" element={<QualityPlanGate>{<PCPExecucaoIndustrial />}</QualityPlanGate>} />
