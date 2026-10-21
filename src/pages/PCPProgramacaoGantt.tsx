@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Activity, AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, CircleCheck, CirclePause, Factory, Gauge, RefreshCw, Search } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useNavigate } from 'react-router-dom'
-import { BarraWindows11 } from '../components/layout/BarraWindows11'
 
 /**
  * SYNQRA — Programação de Produção (Gantt) · tema claro premium
@@ -174,26 +173,6 @@ export default function PCPProgramacaoGantt() {
       </section>
 
       <style>{CSS}</style>
-      <BarraWindows11
-        ativo="pcp"
-        onAbrir={(id) => {
-          const routes: Record<string, string> = {
-            pcp: '/pcp/programacao-gantt',
-            maq: '/pcp/agenda-maquinas',
-            est: '/estoque/saldos',
-            op: '/pcp/ordens',
-            man: '/manutencao',
-            ind: '/pcp/capacidade',
-            usu: '/usuarios',
-            cfg: '/configuracoes-adm',
-          }
-          navigate(routes[id] ?? '/pcp')
-        }}
-        onDesligar={async () => {
-          await supabase.auth.signOut()
-          navigate('/login', { replace: true })
-        }}
-      />
     </main>
   )
 }
