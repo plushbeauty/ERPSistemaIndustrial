@@ -57,8 +57,8 @@ export default function PCPAgendaMaquinas(){
     supabase.from('erp_pcp_calendario_trabalho').select('dias_trabalho,horario_inicio_jornada,horario_fim_jornada').eq('empresa_id',id).maybeSingle(),
     fetchAllPages<ProcessCycle>((from,to)=>supabase.from('erp_fichas_processo').select('produto_id,ciclo_seg,cavidades_ativas,parametros_tecnicos',{count:'exact'}).eq('empresa_id',id).eq('ativo',true).range(from,to))
    ])
-   for(const r of [m,o,mo,a,c,fc])if(r.error)throw r.error
-   setMachines((m.data??[]) as Machine[]);setOrders((o.data??[]) as Order[]);setMolds((mo.data??[]) as Mold[]);setSlots((a.data??[]) as Slot[]);setProcessCycles((fc.data??[]) as ProcessCycle[])
+   for(const r of [m,mo,c])if(r.error)throw r.error
+   setMachines((m.data??[]) as Machine[]);setOrders(o);setMolds((mo.data??[]) as Mold[]);setSlots(a);setProcessCycles(fc)
    if(c.data){setCalendar(c.data as Calendar);setCalendarDraft(c.data as Calendar)}
   }catch(e){setError(messageOf(e))}
   finally{setBusy(false)}
