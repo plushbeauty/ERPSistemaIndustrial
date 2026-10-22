@@ -1,7 +1,7 @@
 /**
- * REVISÃO: 2026-10-20 · REV-PCP-AGENDA-004
- * Alteração: consultas de OPs, agenda e fichas técnicas sem limites fixos de linhas; leitura integral por paginação Supabase.
- * Preservado: calendário finito, RPCs, identidade de empresa, regras operacionais e layout aprovado.
+ * REVISÃO: 2026-10-22 · REV-PCP-AGENDA-005
+ * Alteração: consultas paginadas e limpeza de dados/seleção/calendário anteriores antes de revalidar a empresa da sessão.
+ * Preservado: RPCs, filtros por empresa_id, regras operacionais e layout aprovado.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CalendarRange, Factory, RefreshCw, Plus, Play, ArrowUpDown, X, Printer, CircleAlert } from 'lucide-react'
