@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { Link } from 'react-router-dom'
 import VendasLayout from './VendasLayout'
 import { supabase } from '../lib/supabaseClient'
+import QualitySidebar from '../components/quality/QualitySidebar'
 import { fetchAllPages } from '../lib/supabasePagination'
 
 type Inspection = { id:string; resultado:string; tipo:string; created_at:string; quantidade_inspecionada:number|null; quantidade_aprovada:number|null; quantidade_reprovada:number|null }
@@ -36,6 +37,7 @@ export default function QualidadeDashboardSGQ(){
  const docsActive=documents.filter(x=>['vigente','liberada','aprovada','ativo'].includes(String(x.status).toLowerCase())).length
  const monthly=Array.from({length:6},(_,index)=>{const date=new Date();date.setMonth(date.getMonth()-(5-index));const key=date.toISOString().slice(0,7);const data=inspections.filter(x=>String(x.created_at).slice(0,7)===key);return {mes:date.toLocaleDateString('pt-BR',{month:'short'}),aprovadas:data.filter(x=>String(x.resultado).toUpperCase()==='APROVADO').length,reprovadas:data.filter(x=>String(x.resultado).toUpperCase()==='REPROVADO').length}})
  return <VendasLayout title="Painel de Gestão da Qualidade" subtitle="Indicadores calculados a partir dos registros da empresa autenticada." onRefresh={() => void load()} topContent={<div className="mb-3 flex min-h-[30px] items-center border border-[#C8E3EE] bg-[#EAF6FA] px-3 py-1 text-[#123B50]"><p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#2D8DB8]">SGQ INDUSTRIAL · INDICADORES</p></div>}>
+  <QualitySidebar active="/qualidade" />
   {error&&<p role="alert" className="border border-rose-200 bg-rose-50 p-2 text-[10px] text-rose-800">{error}</p>}
   <section className="grid grid-cols-2 gap-2 lg:grid-cols-4">
    {[{label:'Inspeções carregadas',value:inspections.length,Icon:Activity},{label:'Inspeções aprovadas',value:approved,Icon:CheckCircle2},{label:'Inspeções reprovadas',value:rejected,Icon:AlertTriangle},{label:'Documentos controlados',value:documents.length,Icon:FileText}].map(({label,value,Icon})=><article key={label} className="flex min-h-[88px] items-center gap-3 border border-slate-200 bg-white px-3 py-3 text-slate-900"><span className="grid h-8 w-8 place-items-center border border-[#C8E3EE] bg-[#EAF6FA] text-[#2D8DB8]"><Icon size={16}/></span><div><p className="text-[9px] font-bold uppercase text-slate-500">{label}</p><p className="text-[20px] font-semibold tabular-nums">{value}</p></div></article>)}
