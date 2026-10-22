@@ -1,6 +1,7 @@
 /**
  * SYSNQRA — PCP / APONTAMENTO DE PARADAS DE MÁQUINA
- * REV-PCP-PARADAS-001 | 2026-10-21
+ * REV-PCP-PARADAS-002 | 2026-10-21
+ * Consulta de OP alinhada às colunas essenciais; mantém filtro empresa_id e created_at.
  * Usa a tabela existente erp_producao_paradas e suas políticas RLS/RBAC.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -9,7 +10,7 @@ import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
 
 type Machine = { id: string; codigo: string; nome: string; status?: string | null }
-type Order = { id: string; numero_op?: string | number | null; numero?: string | null; status?: string | null }
+type Order = { id: string; numero_op?: string | number | null; status?: string | null }
 type Stop = { id: string; empresa_id: string; maquina_id: string; ordem_producao_id: string | null; motivo: string; inicio: string; fim: string | null; observacao: string | null; status: 'ABERTA' | 'ENCERRADA' | string; ordem_manutencao_id?: string | null }
 
 const reasons = [
@@ -55,7 +56,7 @@ export default function PCPParadasMaquina() {
       const tenantId = String(company.data)
       const [machineRows, orderRows, stopRows] = await Promise.all([
         fetchAllPages<Machine>((from, to) => supabase.from('erp_maquinas').select('id,codigo,nome,status', { count: 'exact' }).eq('empresa_id', tenantId).eq('ativo', true).order('codigo').range(from, to)),
-        fetchAllPages<Order>((from, to) => supabase.from('erp_ordens_producao').select('id,numero_op,numero,status', { count: 'exact' }).eq('empresa_id', tenantId).order('created_at', { ascending: false }).range(from, to)),
+        fetchAllPages<Order>((from, to) => supabase.from('erp_ordens_producao').select('id,numero_op,status', { count: 'exact' }).eq('empresa_id', tenantId).order('created_at', { ascending: false }).range(from, to)),
         fetchAllPages<Stop>((from, to) => supabase.from('erp_producao_paradas').select('id,empresa_id,maquina_id,ordem_producao_id,motivo,inicio,fim,observacao,status,ordem_manutencao_id', { count: 'exact' }).eq('empresa_id', tenantId).order('inicio', { ascending: false }).range(from, to)),
       ])
       setCompanyId(tenantId); setMachines(machineRows); setOrders(orderRows); setStops(stopRows)
@@ -73,7 +74,7 @@ export default function PCPParadasMaquina() {
     return stops.filter(s => {
       if (s.ordem_manutencao_id || (statusFilter !== 'TODAS' && s.status !== statusFilter) || (machineFilter && s.maquina_id !== machineFilter)) return false
       const m = machineMap.get(s.maquina_id), o = s.ordem_producao_id ? orderMap.get(s.ordem_producao_id) : null
-      return !needle || [m?.codigo, m?.nome, s.motivo, s.observacao, o?.numero_op, o?.numero].filter(Boolean).join(' ').toLocaleLowerCase('pt-BR').includes(needle)
+      return !needle || [m?.codigo, m?.nome, s.motivo, s.observacao, o?.numero_op].filter(Boolean).join(' ').toLocaleLowerCase('pt-BR').includes(needle)
     })
   }, [stops, search, machineFilter, statusFilter, machineMap, orderMap])
   const openStops = stops.filter(s => s.status === 'ABERTA' && !s.fim && !s.ordem_manutencao_id)
@@ -146,7 +147,7 @@ export default function PCPParadasMaquina() {
           <div className="mb-3 flex items-center justify-between gap-2 border-b border-[#E2EBF0] pb-2"><div><h2 className="text-[12px] font-extrabold">{activeStop?'Parada em andamento':'Registrar parada'}</h2><p className="mt-1 text-[9px] text-[#6B818D]">{activeStop?'Encerre o evento atual para liberar novo apontamento.':'Informe máquina, OP e justificativa.'}</p></div>{activeStop&&<span className="inline-flex items-center gap-1 rounded-[2px] bg-[#FFF1F1] px-2 py-1 text-[9px] font-bold text-[#B43B43]"><PauseCircle size={12}/>ABERTA</span>}</div>
           <div className="paradas-grid">
             <label className={labelClass}>Máquina afetada *<select className={inputClass} value={machineId} disabled={Boolean(activeStop)||saving} onChange={e=>setMachineId(e.target.value)} required><option value="">Selecione a máquina</option>{machines.map(m=><option key={m.id} value={m.id}>{m.codigo} — {m.nome}</option>)}</select></label>
-            <label className={labelClass}>Ordem de produção<select className={inputClass} value={orderId} disabled={Boolean(activeStop)||saving} onChange={e=>setOrderId(e.target.value)}><option value="">Sem OP vinculada</option>{orders.map(o=><option key={o.id} value={o.id}>{o.numero_op??o.numero??o.id.slice(0,8)}{o.status?' • '+o.status:''}</option>)}</select></label>
+            <label className={labelClass}>Ordem de produção<select className={inputClass} value={orderId} disabled={Boolean(activeStop)||saving} onChange={e=>setOrderId(e.target.value)}><option value="">Sem OP vinculada</option>{orders.map(o=><option key={o.id} value={o.id}>{o.numero_op??o.id.slice(0,8)}{o.status?' • '+o.status:''}</option>)}</select></label>
             <label className="span-12 grid min-w-0 gap-[3px] text-[9px] font-bold uppercase tracking-wide text-[#526B7A]">Motivo da parada *<select className={inputClass} value={reason} disabled={Boolean(activeStop)||saving} onChange={e=>setReason(e.target.value)} required><option value="">Selecione a justificativa</option>{reasons.map(r=><option key={r.label} value={r.label}>{r.label}</option>)}</select></label>
             <label className="span-12 grid min-w-0 gap-[3px] text-[9px] font-bold uppercase tracking-wide text-[#526B7A]">Observação / análise de falha<textarea className="min-h-[72px] w-full resize-y rounded-[2px] border border-[#C8D6E0] bg-white p-2 text-[11px] text-[#123B50] outline-none focus:border-[#2D8DB8] disabled:bg-[#EEF3F6]" value={observation} disabled={saving} onChange={e=>setObservation(e.target.value)} placeholder="Descreva a ocorrência, causa provável ou ação corretiva."/></label>
           </div>
