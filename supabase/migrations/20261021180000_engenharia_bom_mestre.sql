@@ -68,6 +68,7 @@ declare
   v_componente uuid;
   v_qtd numeric;
   v_perda numeric;
+  v_ficha_id uuid;
 begin
   if auth.uid() is null then raise exception 'Sessão autenticada obrigatória.'; end if;
   if v_empresa is null then raise exception 'Empresa da sessão não identificada.'; end if;
@@ -118,6 +119,14 @@ begin
     where p.id is null
   ) then raise exception 'Um componente está inativo ou não pertence à empresa atual.'; end if;
 
+  if exists (
+    select 1 from public.erp_engenharia_bom
+    where empresa_id = v_empresa and produto_pai_id = p_produto_pai_id
+      and versao = p_versao and status = 'HOMOLOGADA'
+  ) then
+    raise exception 'Versão homologada é imutável. Crie uma nova versão para revisar a estrutura.';
+  end if;
+
   insert into public.erp_engenharia_bom
     (empresa_id, produto_pai_id, ferramenta_id, versao, observacoes, status, criado_por, updated_at)
   values
@@ -142,9 +151,86 @@ begin
     values (v_empresa, v_bom_id, v_componente, v_qtd, v_perda, 0);
   end loop;
 
-  return jsonb_build_object('id',v_bom_id,'produto_pai_id',p_produto_pai_id,'versao',p_versao,'status','RASCUNHO','componentes',jsonb_array_length(p_componentes_json));
+  /*
+   * Compatibilidade com o contrato já consumido por erp_mrp_explodir:
+   * rascunhos ficam inativos; somente a RPC de homologação ativa a ficha.
+   */
+  insert into public.erp_fichas_tecnicas
+    (empresa_id, produto_id, versao, rendimento, unidade_rendimento, observacoes, ativa, updated_at)
+  values
+    (v_empresa, p_produto_pai_id, p_versao, 1, 'UN', nullif(trim(p_observacoes),''), false, now())
+  on conflict (empresa_id, produto_id, versao) do update
+    set rendimento = 1,
+        observacoes = excluded.observacoes,
+        ativa = false,
+        updated_at = now()
+  returning id into v_ficha_id;
+
+  delete from public.erp_ficha_itens
+    where empresa_id = v_empresa and ficha_id = v_ficha_id;
+
+  insert into public.erp_ficha_itens
+    (empresa_id, ficha_id, componente_id, quantidade, perda_percentual, tipo_item, sequencia)
+  select v_empresa, v_ficha_id, (e->>'componente_id')::uuid,
+         (e->>'quantidade_gasto')::numeric,
+         coalesce((e->>'perda_pct')::numeric,0),
+         case when coalesce(p.fabricado,false) then 'FABRICADO' else 'COMPRADO' end,
+         row_number() over (order by e.ordinality)::integer * 10
+  from jsonb_array_elements(p_componentes_json) with ordinality e
+  join public.erp_produtos p on p.id = (e->>'componente_id')::uuid and p.empresa_id = v_empresa;
+
+  return jsonb_build_object('id',v_bom_id,'ficha_mrp_id',v_ficha_id,'produto_pai_id',p_produto_pai_id,'versao',p_versao,'status','RASCUNHO','componentes',jsonb_array_length(p_componentes_json));
 end;
-$$;
+$;
+
+create or replace function public.erp_homologar_bom_mestre(p_bom_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $
+declare
+  v_empresa uuid := public.erp_current_empresa_id();
+  v_produto uuid;
+  v_versao integer;
+  v_ficha uuid;
+begin
+  if auth.uid() is null then raise exception 'Sessão autenticada obrigatória.'; end if;
+  if v_empresa is null then raise exception 'Empresa da sessão não identificada.'; end if;
+
+  select produto_pai_id, versao into v_produto, v_versao
+  from public.erp_engenharia_bom
+  where id = p_bom_id and empresa_id = v_empresa and status in ('RASCUNHO','HOMOLOGADA')
+  for update;
+  if not found then raise exception 'Ficha BOM não encontrada na empresa autenticada.'; end if;
+
+  if not exists (select 1 from public.erp_engenharia_bom_itens where bom_id=p_bom_id and empresa_id=v_empresa) then
+    raise exception 'Não é possível homologar ficha sem componentes.';
+  end if;
+
+  update public.erp_engenharia_bom
+  set status='OBSOLETA', updated_at=now()
+  where empresa_id=v_empresa and produto_pai_id=v_produto and status='HOMOLOGADA' and id<>p_bom_id;
+
+  update public.erp_engenharia_bom
+  set status='HOMOLOGADA', updated_at=now()
+  where id=p_bom_id and empresa_id=v_empresa;
+
+  update public.erp_fichas_tecnicas
+  set ativa=false, updated_at=now()
+  where empresa_id=v_empresa and produto_id=v_produto and ativa=true;
+
+  update public.erp_fichas_tecnicas
+  set ativa=true, updated_at=now()
+  where empresa_id=v_empresa and produto_id=v_produto and versao=v_versao
+  returning id into v_ficha;
+
+  if v_ficha is null then raise exception 'Ficha compatível com MRP não encontrada.'; end if;
+  return jsonb_build_object('id',p_bom_id,'ficha_mrp_id',v_ficha,'status','HOMOLOGADA');
+end;
+$;
 
 revoke all on function public.erp_salvar_bom_mestre(uuid,uuid,integer,text,jsonb) from public, anon;
 grant execute on function public.erp_salvar_bom_mestre(uuid,uuid,integer,text,jsonb) to authenticated;
+revoke all on function public.erp_homologar_bom_mestre(uuid) from public, anon;
+grant execute on function public.erp_homologar_bom_mestre(uuid) to authenticated;
