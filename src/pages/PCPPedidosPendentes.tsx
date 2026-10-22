@@ -20,11 +20,12 @@ type SalesOrder = { id: string; numero: number | string; cliente_id: string | nu
 type SalesItem = { id: string; pedido_id: string; produto_id: string; quantidade: number }
 type ProductionOrder = { pedido_item_id?: string | null; produto_id: string | null; pedido_venda_id: string | null; quantidade?: number | null; quantidade_planejada?: number | null; status: string }
 type Client = { id: string; nome: string }
+type StockReservation = { pedido_item_id: string; produto_id: string; quantidade: number; status: string }
 type Row = {
   itemId: string; pedidoId: string; pedidoCodigo: string; clienteNome: string
   dataEntrada: string | null; dataEntrega: string | null; produtoId: string
   codigo: string; produto: string; unidade: string; solicitada: number
-  estoque: number; emOP: number; falta: number; statusPcp: string
+  estoque: number; reservado: number; emOP: number; falta: number; statusPcp: string
 }
 const inputClass = 'h-[30px] w-full min-w-0 rounded-[2px] border border-[#2E4A62] bg-[#0E1E2F] px-2.5 text-[11px] font-semibold text-white outline-none placeholder:text-slate-500 focus:border-[#48B7C7]'
 const btnClass = 'inline-flex h-[30px] items-center justify-center gap-1.5 rounded-[2px] border px-3 text-[10px] font-black uppercase tracking-wide disabled:cursor-not-allowed disabled:opacity-50'
@@ -47,17 +48,25 @@ export default function PCPPedidosPendentes() {
       const tenant = await supabase.rpc('erp_current_empresa_id')
       if (tenant.error || !tenant.data) throw tenant.error ?? new Error('Empresa da sessão não identificada.')
       const empresaId = String(tenant.data)
-      const [products, orders, items, productionOrders, clients] = await Promise.all([
+      const [products, orders, items, productionOrders, clients, reservations] = await Promise.all([
         fetchAllPages<Product>((from, to) => supabase.from('erp_produtos').select('id,codigo,nome,estoque_atual,unidade',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('codigo').range(from,to)),
         fetchAllPages<SalesOrder>((from, to) => supabase.from('erp_pedidos_venda').select('id,numero,cliente_id,status,data_entrada,data_entrega_prometida',{count:'exact'}).eq('empresa_id',empresaId).order('numero',{ascending:false}).range(from,to)),
         fetchAllPages<SalesItem>((from, to) => supabase.from('erp_pedidos_venda_itens').select('id,pedido_id,produto_id,quantidade',{count:'exact'}).eq('empresa_id',empresaId).range(from,to)),
         fetchAllPages<ProductionOrder>((from, to) => supabase.from('erp_ordens_producao').select('pedido_item_id,produto_id,pedido_venda_id,quantidade,quantidade_planejada,status',{count:'exact'}).eq('empresa_id',empresaId).range(from,to)),
-        fetchAllPages<Client>((from, to) => supabase.from('erp_clientes').select('id,nome',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('nome').range(from,to))
+        fetchAllPages<Client>((from, to) => supabase.from('erp_clientes').select('id,nome',{count:'exact'}).eq('empresa_id',empresaId).eq('ativo',true).order('nome').range(from,to)),
+        fetchAllPages<StockReservation>((from, to) => supabase.from('erp_estoque_reservas').select('pedido_item_id,produto_id,quantidade,status',{count:'exact'}).eq('empresa_id',empresaId).eq('status','ATIVA').range(from,to))
       ])
       const productMap = new Map(products.map(p => [p.id,p]))
       const clientMap = new Map(clients.map(c => [c.id,c.nome]))
       const orderMap = new Map(orders.map(o => [o.id,o]))
       const activeOps = productionOrders.filter(o => activeStatus(o.status))
+      const reservedByItem = new Map<string,number>()
+      const reservedByProduct = new Map<string,number>()
+      reservations.forEach(reservation => {
+        const qty = Math.max(0,Number(reservation.quantidade || 0))
+        reservedByItem.set(reservation.pedido_item_id,(reservedByItem.get(reservation.pedido_item_id) ?? 0) + qty)
+        reservedByProduct.set(reservation.produto_id,(reservedByProduct.get(reservation.produto_id) ?? 0) + qty)
+      })
       const itemLinkedQty = new Map<string,number>()
       const orderProductLinkedQty = new Map<string,number>()
       activeOps.forEach(op => {
@@ -73,13 +82,14 @@ export default function PCPPedidosPendentes() {
         if (!product) return
         const requested = Number(item.quantidade || 0)
         const stock = Math.max(0,Number(product.estoque_atual || 0))
+        const reserved = reservedByItem.get(item.id) ?? 0
         const linked = itemLinkedQty.get(item.id) ?? orderProductLinkedQty.get(order.id + '|' + product.id) ?? 0
-        const shortage = Math.max(0,requested - stock - linked)
+        const shortage = Math.max(0,requested - reserved - linked)
         nextRows.push({
           itemId:item.id,pedidoId:order.id,pedidoCodigo:String(order.numero),clienteNome:clientMap.get(order.cliente_id || '') || 'Cliente não identificado',
           dataEntrada:order.data_entrada ?? null,dataEntrega:order.data_entrega_prometida ?? null,produtoId:product.id,
-          codigo:product.codigo,produto:product.nome,unidade:product.unidade || 'un',solicitada:requested,estoque:stock,emOP:linked,falta:shortage,
-          statusPcp:linked > 0 ? 'OP VINCULADA' : 'AGUARDANDO PCP'
+          codigo:product.codigo,produto:product.nome,unidade:product.unidade || 'un',solicitada:requested,estoque:stock,reservado:reserved,emOP:linked,falta:shortage,
+          statusPcp:shortage <= 0 ? (reserved >= requested ? 'LIBERADO · RESERVADO' : 'COBERTO POR OP') : (reserved > 0 ? 'RESERVA PARCIAL' : linked > 0 ? 'OP VINCULADA' : 'AGUARDANDO RESERVA/OP')
         })
       })
       nextRows.sort((a,b) => (a.dataEntrega || '9999-12-31').localeCompare(b.dataEntrega || '9999-12-31') || a.pedidoCodigo.localeCompare(b.pedidoCodigo))
@@ -128,8 +138,8 @@ export default function PCPPedidosPendentes() {
       </section>
       <section className="overflow-hidden rounded-[3px] border border-[#2E4A62] bg-[#0D2638]">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2E4A62] bg-[#123B50] px-3 py-2"><div className="flex items-center gap-2 text-[10px] font-black uppercase"><ClipboardList size={14} className="text-[#48B7C7]"/> Esteira de pedidos pendentes <span className="rounded-[2px] bg-white/10 px-1.5 py-0.5 text-[9px]">{filtered.length} itens</span></div><span className="text-[9px] text-slate-300">Ordenação por data prometida e número do pedido</span></div>
-        <div className="overflow-x-auto"><table className="w-full min-w-[1250px] text-left text-[10px]"><thead className="bg-[#091A28] text-[9px] uppercase tracking-wider text-[#A8BBC8]"><tr><th className="px-3 py-2">Cliente / Pedido</th><th className="px-3 py-2">Entrada</th><th className="px-3 py-2">Código</th><th className="px-3 py-2">Descrição do produto</th><th className="px-3 py-2">Entrega</th><th className="px-3 py-2 text-right">Qtd. pedida</th><th className="px-3 py-2 text-right">Estoque</th><th className="px-3 py-2 text-right">Em OP</th><th className="px-3 py-2 text-right">Falta fabricar</th><th className="px-3 py-2">PCP</th><th className="px-3 py-2 text-right">Ação</th></tr></thead><tbody>{filtered.map((r,i)=><tr key={r.itemId} className={'border-t border-[#2E4A62] '+(i%2?'bg-[#0B2030]':'bg-[#0D2638]')}><td className="px-3 py-2"><div className="font-black text-white">PV-{r.pedidoCodigo}</div><div className="mt-0.5 text-[9px] text-slate-300">{r.clienteNome}</div></td><td className="px-3 py-2 text-slate-300">{dateBR(r.dataEntrada)}</td><td className="px-3 py-2 font-bold text-[#48B7C7]">{r.codigo}</td><td className="max-w-[280px] px-3 py-2 text-slate-200">{r.produto}</td><td className="px-3 py-2 text-slate-300">{dateBR(r.dataEntrega)}</td><td className="px-3 py-2 text-right font-bold">{fmt(r.solicitada)}</td><td className="px-3 py-2 text-right">{fmt(r.estoque)}</td><td className="px-3 py-2 text-right">{fmt(r.emOP)}</td><td className="px-3 py-2 text-right"><span className={'inline-flex rounded-[2px] px-2 py-1 font-black '+(r.falta>0?'bg-amber-500/15 text-amber-200':'bg-emerald-500/15 text-emerald-200')}>{fmt(r.falta)} {r.unidade}</span></td><td className="px-3 py-2"><span className={'rounded-[2px] border px-1.5 py-1 text-[8px] font-black '+(r.emOP>0?'border-sky-400/30 bg-sky-500/10 text-sky-200':'border-amber-400/30 bg-amber-500/10 text-amber-200')}>{r.statusPcp}</span></td><td className="px-3 py-2 text-right"><button type="button" disabled={r.falta<=0} onClick={()=>openInPCP(r)} title={r.falta<=0?'Estoque e OPs existentes cobrem a quantidade pedida':'Abrir modal de OP com pedido, item, produto e saldo preenchidos'} className="inline-flex h-[28px] items-center gap-1 rounded-[2px] bg-[#2D8DB8] px-2.5 text-[9px] font-black uppercase text-white hover:bg-[#236F91] disabled:bg-slate-700 disabled:text-slate-400"><Package size={12}/>{r.falta>0?'Vincular e gerar OP':'Atendido'}{r.falta>0&&<ArrowRight size={12}/>}</button></td></tr>)}{!filtered.length&&<tr><td colSpan={11} className="px-4 py-12 text-center text-[11px] text-slate-300">{loading?'Carregando carteira real do Supabase...':error?'Corrija o erro de carregamento para consultar a carteira.':'Nenhum pedido com saldo pendente corresponde aos filtros.'}</td></tr>}</tbody></table></div>
-        <footer className="flex items-center gap-2 border-t border-[#2E4A62] px-3 py-2 text-[9px] text-slate-400"><CheckCircle2 size={12} className="text-[#48B7C7]"/> A criação da OP exige confirmação na tela de PCPOrdens. Esta carteira não gera OPs silenciosamente.</footer>
+        <div className="overflow-x-auto"><table className="w-full min-w-[1250px] text-left text-[10px]"><thead className="bg-[#091A28] text-[9px] uppercase tracking-wider text-[#A8BBC8]"><tr><th className="px-3 py-2">Cliente / Pedido</th><th className="px-3 py-2">Entrada</th><th className="px-3 py-2">Código</th><th className="px-3 py-2">Descrição do produto</th><th className="px-3 py-2">Entrega</th><th className="px-3 py-2 text-right">Qtd. pedida</th><th className="px-3 py-2 text-right">Estoque físico</th><th className="px-3 py-2 text-right">Reservado</th><th className="px-3 py-2 text-right">Em OP</th><th className="px-3 py-2 text-right">Falta fabricar</th><th className="px-3 py-2">PCP</th><th className="px-3 py-2 text-right">Ação</th></tr></thead><tbody>{filtered.map((r,i)=><tr key={r.itemId} className={'border-t border-[#2E4A62] '+(i%2?'bg-[#0B2030]':'bg-[#0D2638]')}><td className="px-3 py-2"><div className="font-black text-white">PV-{r.pedidoCodigo}</div><div className="mt-0.5 text-[9px] text-slate-300">{r.clienteNome}</div></td><td className="px-3 py-2 text-slate-300">{dateBR(r.dataEntrada)}</td><td className="px-3 py-2 font-bold text-[#48B7C7]">{r.codigo}</td><td className="max-w-[280px] px-3 py-2 text-slate-200">{r.produto}</td><td className="px-3 py-2 text-slate-300">{dateBR(r.dataEntrega)}</td><td className="px-3 py-2 text-right font-bold">{fmt(r.solicitada)}</td><td className="px-3 py-2 text-right">{fmt(r.estoque)}</td><td className="px-3 py-2 text-right font-bold text-emerald-200">{fmt(r.reservado)}</td><td className="px-3 py-2 text-right">{fmt(r.emOP)}</td><td className="px-3 py-2 text-right"><span className={'inline-flex rounded-[2px] px-2 py-1 font-black '+(r.falta>0?'bg-amber-500/15 text-amber-200':'bg-emerald-500/15 text-emerald-200')}>{fmt(r.falta)} {r.unidade}</span></td><td className="px-3 py-2"><span className={'rounded-[2px] border px-1.5 py-1 text-[8px] font-black '+(r.falta<=0?'border-emerald-400/40 bg-emerald-500/15 text-emerald-200':r.reservado>0?'border-sky-400/30 bg-sky-500/10 text-sky-200':'border-amber-400/30 bg-amber-500/10 text-amber-200')}>{r.statusPcp}</span></td><td className="px-3 py-2 text-right"><button type="button" disabled={r.falta<=0} onClick={()=>openInPCP(r)} title={r.falta<=0?'A quantidade já está coberta por reserva ativa e/ou OP vinculada':'Abrir modal de OP com pedido, item, produto e saldo faltante preenchidos'} className={'inline-flex h-[28px] items-center gap-1 rounded-[2px] px-2.5 text-[9px] font-black uppercase text-white disabled:text-slate-300 '+(r.falta<=0?'bg-emerald-700 disabled:bg-emerald-800':'bg-[#2D8DB8] hover:bg-[#236F91] disabled:bg-slate-700')}><Package size={12}/>{r.falta>0?'Vincular e gerar OP':r.reservado>=r.solicitada?'Liberado':'Coberto'}{r.falta>0&&<ArrowRight size={12}/>}</button></td></tr>)}{!filtered.length&&<tr><td colSpan={12} className="px-4 py-12 text-center text-[11px] text-slate-300">{loading?'Carregando carteira real do Supabase...':error?'Corrija o erro de carregamento para consultar a carteira.':'Nenhum pedido com saldo pendente corresponde aos filtros.'}</td></tr>}</tbody></table></div>
+        <footer className="flex items-center gap-2 border-t border-[#2E4A62] px-3 py-2 text-[9px] text-slate-400"><CheckCircle2 size={12} className="text-[#48B7C7]"/> Reservas exibidas são registros ativos reais de erp_estoque_reservas; esta tela não cria reservas fictícias nem baixa estoque. A criação da OP exige confirmação na tela de PCPOrdens.</footer>
       </section>
     </div>
   </main>
