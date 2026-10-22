@@ -4,7 +4,7 @@
  * Escopo: indicadores reais por empresa autenticada; sem fallback ou dados simulados.
  * Nota: custo estimado usa custo_medio do cadastro do produto, não substitui custo BOM validado.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { AlertTriangle, BarChart3, CalendarDays, Coins, RefreshCw, Scale, PackageSearch } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { fetchAllPages } from '../lib/supabasePagination'
@@ -119,7 +119,7 @@ export default function QualidadeGraficosRefugo() {
     }
   }, [records, startDate, endDate, orderMap, productMap, defectMap])
 
-  const BarList = ({ title, subtitle, empty, children }: { title: string; subtitle: string; empty: boolean; children: React.ReactNode }) => (
+  const BarList = ({ title, subtitle, empty, children }: { title: string; subtitle: string; empty: boolean; children: ReactNode }) => (
     <section className="min-w-0 border border-[#2E4A62] bg-[#0E1E2F] p-3">
       <div className="mb-3 border-b border-[#2E4A62] pb-2"><h2 className="text-xs font-black uppercase text-[#F4FBFD]">{title}</h2><p className="mt-1 text-[9px] text-[#A8BBC8]">{subtitle}</p></div>
       {empty ? <p className="py-8 text-center text-[10px] text-slate-400">Sem registros para o período selecionado.</p> : <div className="space-y-3">{children}</div>}
