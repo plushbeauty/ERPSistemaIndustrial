@@ -108,3 +108,14 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Validação ainda pendente:** type-check, lint, auditorias, build, navegação autenticada e deployment Vercel precisam ser consultados antes de declarar a alteração publicada.
 - **GED/ISO:** esta mudança resolve a navegação solicitada; não declara concluídos os novos campos de validade, elaboração/aprovação, referências vinculadas e alertas de obsolescência, que ainda exigem mapear e validar o contrato persistente do banco/RPC.
 
+
+
+## Evidência incremental — agenda de máquinas PCP (2026-10-22)
+
+- **Rota:** `/pcp/agenda-maquinas`.
+- **Arquivo alterado:** `src/AppEntryV2.tsx` (revisão 0.3, 22/10/2026).
+- **Problema confirmado:** o shell global renderizava `ERPStatusLegend` condicionalmente no topo dessa rota, acrescentando a legenda redundante que já havia sido solicitada para remoção.
+- **Correção:** removidos apenas o import e a renderização condicional de `ERPStatusLegend`; nenhuma tela congelada do contrato visual foi alterada.
+- **Commit:** `11b05e404ce0377303c657b5eedea3a93e22cf62`.
+- **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO. Ainda faltam type-check, lint, verify-routes, verify:approved-ui-lock, auditorias e build após o commit. A remoção de legenda não valida toda a agenda nem a capacidade do PCP.
+- **Pendência:** UI-040 continua aberta até validar as duas rotas, interações e visual no navegador.
