@@ -110,6 +110,8 @@ export default function AlmoxarifadoInventario() {
     }).sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id))
   }, [lots, search, materialFilter])
 
+  const nextEligibleLotId = fifoRows.find(lot => lot.status_qualidade === 'APROVADO' && lot.validadeStatus !== 'VENCIDO' && Number(lot.quantidade_disponivel) > 0)?.id ?? null
+
   const kpis = useMemo(() => ({
     total: lots.length,
     expired: lots.filter(l => l.validadeStatus === 'VENCIDO' && Number(l.quantidade_disponivel) > 0).length,
