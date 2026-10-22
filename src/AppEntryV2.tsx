@@ -244,7 +244,7 @@ const PerfilVendedorComissao = lazyPage(() => import('./features/comissoes/Perfi
 const BalancoEstoque = lazyPage(() => import('./features/inventario/BalancoEstoque'), 'BalancoEstoque')
 const RegrasDepreciacao = lazyPage(() => import('./features/inventario/RegrasDepreciacao'), 'RegrasDepreciacao')
 const AuditoriaSaldos = lazyPage(() => import('./features/inventario/AuditoriaSaldos'), 'AuditoriaSaldos')
-const EngenhariaBOM = lazyPage(() => import('./features/pcp/EngenhariaBOM'), 'EngenhariaBOM')
+const EngenhariaBOMPCP = lazyPage(() => import('./features/pcp/EngenhariaBOM'), 'EngenhariaBOM')
 const RoteiroOperacoes = lazyPage(() => import('./features/pcp/RoteiroOperacoes'), 'RoteiroOperacoes')
 const PostosTrabalho = lazyPage(() => import('./features/pcp/PostosTrabalho'), 'PostosTrabalho')
 const FichaProcesso = lazyPage(() => import('./features/pcp/FichaProcesso'), 'FichaProcesso')
@@ -552,7 +552,7 @@ function AppIndustrialAuthenticated() {
       <Route path="/rh/turnos" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/rh/epis" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
       <Route path="/rh/epis/entregas" element={<QualityPlanGate>{<IndustrialDataWorkspace />}</QualityPlanGate>} />
-      <Route path="/pcp/engenharia-bom" element={<QualityPlanGate>{<EngenhariaBOM />}</QualityPlanGate>} />
+      <Route path="/pcp/engenharia-bom" element={<QualityPlanGate>{<EngenhariaBOMPCP />}</QualityPlanGate>} />
       <Route path="/pcp/roteiro-operacoes" element={<QualityPlanGate>{<RoteiroOperacoes />}</QualityPlanGate>} />
       <Route path="/pcp/ficha-processo" element={<QualityPlanGate>{<FichaProcesso />}</QualityPlanGate>} />
       <Route path="/pcp/postos-trabalho" element={<QualityPlanGate>{<PostosTrabalho />}</QualityPlanGate>} />
