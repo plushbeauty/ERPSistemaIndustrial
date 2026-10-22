@@ -119,3 +119,12 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - **Commit:** `11b05e404ce0377303c657b5eedea3a93e22cf62`.
 - **Estado:** CORRIGIDO AGUARDANDO VALIDAÇÃO. Ainda faltam type-check, lint, verify-routes, verify:approved-ui-lock, auditorias e build após o commit. A remoção de legenda não valida toda a agenda nem a capacidade do PCP.
 - **Pendência:** UI-040 continua aberta até validar as duas rotas, interações e visual no navegador.
+
+## Entrega incremental — Auditorias de planta e Área do Funcionário / CPP (2026-10-22)
+
+- **Auditorias internas:** criado `src/pages/QualidadeAuditoriasPlanta.tsx`, com ícone no menu principal da Qualidade e rota `/qualidade/auditorias-planta`. Checklist inicia como não verificado; o salvamento exige responder aos três critérios e exige descrição quando há desvio. Não há dados de demonstração ou fallback fictício.
+- **Persistência:** migration `supabase/migrations/20261022120000_erp_qualidade_auditorias_planta.sql` cria a tabela de auditorias, código gerado no banco, índice e RLS multiempresa. **A migration precisa ser aplicada no Supabase antes de a tela funcionar em ambiente publicado.**
+- **Limite funcional declarado:** a tela registra o parecer do auditor, mas ainda não consulta automaticamente a revisão da ficha de processo, a validade de cada instrumento nem o lote FIFO. A ligação de evidências anexas e abertura automática de RNC permanecem pendentes.
+- **Área do Funcionário / CPP:** criado `src/pages/PCPAreaFuncionario.tsx` e rota `/area-funcionario`; o atalho com ícone foi adicionado à faixa de estações rápidas de `TabletDashboard.tsx`. A programação é consultada em `erp_pcp_programacoes`, filtrada pelos operadores frente/atrás atribuídos; o CPP usa produto, OP, máquina, receita aprovada e estrutura de materiais reais. Início e término geram/atualizam `erp_apontamentos_processo`, incluindo quantidade boa, refugo, motivo de parada e observações para consulta no PCP.
+- **Autenticação do funcionário:** esta primeira versão exige sessão autenticada e associa a conta ao cadastro RH pelo e-mail. Não usa CPF ou matrícula como senha. Acesso por crachá + PIN ainda exige provisionamento e validação de credenciais no servidor; não foi simulado no navegador.
+- **Validação:** commits de código criados no GitHub. Type-check, testes de execução com sessão/RLS, aplicação da migration e estado READY no Vercel ainda precisam ser confirmados; não declarar a entrega como homologada até essas verificações.
