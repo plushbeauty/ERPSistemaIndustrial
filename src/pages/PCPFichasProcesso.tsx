@@ -259,6 +259,7 @@ function ProcessEquipmentDiagram({ category, params, onParamChange, productId }:
     <div className="rounded-[2px] border border-slate-200 bg-white p-3">
      <h4 className="mb-1 text-[11px] font-black uppercase tracking-wide text-[#123B50]">Imagem do Molde</h4>
      <p className="mb-2 text-xs text-slate-600">Anexar a foto do molde para consulta durante o setup.</p>
+     {press&&<label className="mb-3 block"><span className="mb-1 block text-[9px] font-black uppercase tracking-wide text-slate-600">Tempo de cura (s)</span><input aria-label="Tempo de cura em segundos" className="h-[30px] w-full rounded-[2px] border border-slate-300 bg-white px-2 text-xs font-semibold text-[#123B50]" inputMode="decimal" value={params.tempo_cura_seg??''} onChange={e=>onParamChange('tempo_cura_seg',e.target.value)} placeholder="Informar segundos"/></label>}
      <PCPMoldPhotoPanel productId={productId}/>
     </div>
 </div>
