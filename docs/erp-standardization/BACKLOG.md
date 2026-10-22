@@ -154,3 +154,12 @@ Próxima ação: UI-001 e UI-002. Não afirmar varredura completa antes de gerar
 - [ ] Para acesso por crachá sem login tradicional, implementar e testar fluxo servidor-side de matrícula + PIN (armazenamento seguro do hash, limitação de tentativas, bloqueio/expiração e auditoria), com autorização restrita às próprias programações e apontamentos. Não liberar gravação por chave pública/anon sem validação.
 - [ ] Validar no Vercel o build com as rotas novas e executar teste de ponta a ponta no Supabase: programação atribuída → receita aprovada → início → quantidades/refugo/parada → consulta pelo PCP.
 - [ ] O protótipo colado pelo usuário não deve ser considerado produção homologada: suas ordens em memória e o login fixo não escrevem no PCP real.
+
+
+## Evidência incremental — Portal do Operador revalida estado da sessão (2026-10-22)
+
+- **Arquivo:** `src/pages/PCPAreaFuncionario.tsx`; rotas `/area-funcionario` e `/pcp/portal-operador`.
+- **Correção aplicada:** a atualização limpa estado de funcionário/tenant e dados derivados antes de validar novamente a sessão, evitando manter visíveis dados antigos se a sessão mudar ou a consulta falhar.
+- **Commit de código:** `dc6559d033125a9371cbd76b14982d41faee6356`.
+- **Relatório:** `ROUTE-AUDIT-2026-10-16.md`, commit `89e14f6a4a3773d7495ed57e61d472d04463a6e9`.
+- **Estado:** correção estática revisada, aguardando type-check, lint, testes autenticados/RLS e verificação do deployment. UI-040 e QA-040 permanecem pendentes.
